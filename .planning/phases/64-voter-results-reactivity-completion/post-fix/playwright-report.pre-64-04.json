@@ -400,12 +400,12 @@
                   "workerIndex": 27,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 215,
+                  "duration": 212,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-04-27T18:39:18.346Z",
+                  "startTime": "2026-04-27T16:57:54.205Z",
                   "annotations": [],
                   "attachments": [
                     {
@@ -440,12 +440,12 @@
                   "workerIndex": 28,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 31,
+                  "duration": 32,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-04-27T18:39:19.304Z",
+                  "startTime": "2026-04-27T16:57:55.166Z",
                   "annotations": [],
                   "attachments": [
                     {
@@ -497,7 +497,7 @@
                       "workerIndex": 1,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 11337,
+                      "duration": 11448,
                       "error": {
                         "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('voter-questions-category-list')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('voter-questions-category-list')\u001b[22m\n",
                         "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('voter-questions-category-list')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('voter-questions-category-list')\u001b[22m\n\n    at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-settings.spec.ts:116:32",
@@ -521,7 +521,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:27:50.719Z",
+                      "startTime": "2026-04-27T16:49:45.806Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -568,7 +568,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:28:02.731Z",
+                      "startTime": "2026-04-27T16:49:57.971Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -612,7 +612,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:28:02.731Z",
+                      "startTime": "2026-04-27T16:49:57.971Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -648,7 +648,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:28:02.731Z",
+                      "startTime": "2026-04-27T16:49:57.971Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -692,7 +692,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:28:02.731Z",
+                      "startTime": "2026-04-27T16:49:57.971Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -736,7 +736,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:28:02.731Z",
+                      "startTime": "2026-04-27T16:49:57.971Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -780,7 +780,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:28:02.731Z",
+                      "startTime": "2026-04-27T16:49:57.971Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -940,12 +940,12 @@
                   "workerIndex": 2,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1667,
+                  "duration": 1078,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-04-27T18:28:03.438Z",
+                  "startTime": "2026-04-27T16:49:58.580Z",
                   "annotations": [],
                   "attachments": [
                     {
@@ -988,12 +988,12 @@
                   "workerIndex": 2,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 995,
+                  "duration": 948,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-04-27T18:28:05.450Z",
+                  "startTime": "2026-04-27T16:50:00.064Z",
                   "annotations": [],
                   "attachments": [
                     {
@@ -1066,12 +1066,12 @@
                       "workerIndex": 24,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1018,
+                      "duration": 1026,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:38:22.751Z",
+                      "startTime": "2026-04-27T16:56:57.266Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1109,12 +1109,12 @@
                       "workerIndex": 24,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 726,
+                      "duration": 732,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:38:24.088Z",
+                      "startTime": "2026-04-27T16:56:58.636Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1168,12 +1168,12 @@
                       "workerIndex": 24,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1240,
+                      "duration": 772,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:38:24.850Z",
+                      "startTime": "2026-04-27T16:56:59.408Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1210,12 +1210,12 @@
                       "workerIndex": 24,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1278,
+                      "duration": 1060,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:38:26.126Z",
+                      "startTime": "2026-04-27T16:57:00.237Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1252,12 +1252,12 @@
                       "workerIndex": 24,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1631,
+                      "duration": 1553,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:38:27.449Z",
+                      "startTime": "2026-04-27T16:57:01.367Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1294,12 +1294,12 @@
                       "workerIndex": 24,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1679,
+                      "duration": 1616,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:38:29.164Z",
+                      "startTime": "2026-04-27T16:57:03.035Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1336,12 +1336,12 @@
                       "workerIndex": 24,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1966,
+                      "duration": 2327,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:38:30.915Z",
+                      "startTime": "2026-04-27T16:57:04.761Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1378,12 +1378,12 @@
                       "workerIndex": 24,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1960,
+                      "duration": 2940,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:38:32.972Z",
+                      "startTime": "2026-04-27T16:57:07.256Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1428,12 +1428,12 @@
                       "workerIndex": 24,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 387,
+                      "duration": 635,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:38:35.034Z",
+                      "startTime": "2026-04-27T16:57:10.364Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1470,12 +1470,12 @@
                       "workerIndex": 24,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 845,
+                      "duration": 977,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:38:35.444Z",
+                      "startTime": "2026-04-27T16:57:11.044Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1529,12 +1529,12 @@
                       "workerIndex": 25,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 4255,
+                      "duration": 3872,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:38:37.171Z",
+                      "startTime": "2026-04-27T16:57:13.715Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1571,7 +1571,7 @@
                       "workerIndex": 25,
                       "parallelIndex": 0,
                       "status": "timedOut",
-                      "duration": 30104,
+                      "duration": 30098,
                       "error": {
                         "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
@@ -1587,12 +1587,20 @@
                             "line": 25
                           },
                           "message": "Error: page.waitForEvent: Test timeout of 30000ms exceeded.\n=========================== logs ===========================\nwaiting for event \"filechooser\"\n============================================================\n\n   at pages/candidate/ProfilePage.ts:25\n\n  23 |    */\n  24 |   async uploadImage(filePath: string): Promise<void> {\n> 25 |     const fileChooserPromise = this.page.waitForEvent('filechooser');\n     |                                          ^\n  26 |     // Click the inner interactive label, not the outer container\n  27 |     await this.imageUpload.locator('label[tabindex=\"0\"]').click();\n  28 |     const fileChooser = await fileChooserPromise;\n    at ProfilePage.uploadImage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/pages/candidate/ProfilePage.ts:25:42)\n    at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/candidate/candidate-profile.spec.ts:129:23"
+                        },
+                        {
+                          "location": {
+                            "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/pages/candidate/ProfilePage.ts",
+                            "column": 59,
+                            "line": 27
+                          },
+                          "message": "Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('profile-image-upload').locator('label[tabindex=\"0\"]')\u001b[22m\n\n\n   at pages/candidate/ProfilePage.ts:27\n\n  25 |     const fileChooserPromise = this.page.waitForEvent('filechooser');\n  26 |     // Click the inner interactive label, not the outer container\n> 27 |     await this.imageUpload.locator('label[tabindex=\"0\"]').click();\n     |                                                           ^\n  28 |     const fileChooser = await fileChooserPromise;\n  29 |     await fileChooser.setFiles(filePath);\n  30 |   }\n    at ProfilePage.uploadImage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/pages/candidate/ProfilePage.ts:27:59)\n    at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/candidate/candidate-profile.spec.ts:129:23"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:38:41.844Z",
+                      "startTime": "2026-04-27T16:57:18.041Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1639,7 +1647,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:39:12.042Z",
+                      "startTime": "2026-04-27T16:57:48.241Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1675,7 +1683,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:39:12.042Z",
+                      "startTime": "2026-04-27T16:57:48.241Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1723,16 +1731,16 @@
                       "workerIndex": 26,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 73,
+                      "duration": 78,
                       "errors": [],
                       "stdout": [
                         {
-                          "text": "[REG] Callback URL: http://localhost:5173/en/candidate/auth/callback?token_hash=b2fa9405c1fba1ef9c4dfd8c491aaa06d5f42ca1164b539375acd5a4&type=invite\n"
+                          "text": "[REG] Callback URL: http://localhost:5173/en/candidate/auth/callback?token_hash=3eb46e81bde4a16e6d24fd6e6cd9bd6a786c95844473c47327f8d5ba&type=invite\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:39:12.815Z",
+                      "startTime": "2026-04-27T16:57:49.032Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1769,12 +1777,12 @@
                       "workerIndex": 26,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2471,
+                      "duration": 2191,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:39:12.901Z",
+                      "startTime": "2026-04-27T16:57:49.123Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1819,12 +1827,12 @@
                       "workerIndex": 26,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1907,
+                      "duration": 1530,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:39:15.744Z",
+                      "startTime": "2026-04-27T16:57:51.901Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -2623,12 +2631,12 @@
                   "workerIndex": 28,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 50,
+                  "duration": 46,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-04-27T18:39:19.224Z",
+                  "startTime": "2026-04-27T16:57:55.085Z",
                   "annotations": [],
                   "attachments": [
                     {
@@ -2671,12 +2679,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2381,
+                  "duration": 2364,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-04-27T18:27:47.561Z",
+                  "startTime": "2026-04-27T16:49:42.790Z",
                   "annotations": [],
                   "attachments": [
                     {
@@ -2727,29 +2735,32 @@
                     {
                       "workerIndex": 3,
                       "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 30199,
+                      "status": "failed",
+                      "duration": 17703,
                       "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
+                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 80
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible"
                       },
                       "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
-                        },
                         {
                           "location": {
                             "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
                             "column": 18,
-                            "line": 85
+                            "line": 80
                           },
-                          "message": "Error: page.waitForURL: Test timeout of 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:28:07.174Z",
+                      "startTime": "2026-04-27T16:50:01.702Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -2762,7 +2773,12 @@
                           "contentType": "application/zip",
                           "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-detail-voter-entity--c4b90-when-clicking-a-result-card-voter-app/trace.zip"
                         }
-                      ]
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 80
+                      }
                     }
                   ],
                   "status": "unexpected"
@@ -2790,29 +2806,32 @@
                     {
                       "workerIndex": 4,
                       "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 30205,
+                      "status": "failed",
+                      "duration": 20686,
                       "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
+                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 80
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible"
                       },
                       "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
-                        },
                         {
                           "location": {
                             "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
                             "column": 18,
-                            "line": 85
+                            "line": 80
                           },
-                          "message": "Error: page.waitForURL: Test timeout of 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:28:38.558Z",
+                      "startTime": "2026-04-27T16:50:20.681Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -2825,7 +2844,12 @@
                           "contentType": "application/zip",
                           "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-detail-voter-entity--0df99-date-info-and-opinions-tabs-voter-app/trace.zip"
                         }
-                      ]
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 80
+                      }
                     }
                   ],
                   "status": "unexpected"
@@ -2853,29 +2877,32 @@
                     {
                       "workerIndex": 5,
                       "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 30246,
+                      "status": "failed",
+                      "duration": 20677,
                       "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
+                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 80
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible"
                       },
                       "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
-                        },
                         {
                           "location": {
                             "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
                             "column": 18,
-                            "line": 85
+                            "line": 80
                           },
-                          "message": "Error: page.waitForURL: Test timeout of 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:29:10.149Z",
+                      "startTime": "2026-04-27T16:50:42.545Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -2888,7 +2915,12 @@
                           "contentType": "application/zip",
                           "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-detail-voter-entity--33c2e-y-in-info-and-opinions-tabs-voter-app/trace.zip"
                         }
-                      ]
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 80
+                      }
                     }
                   ],
                   "status": "unexpected"
@@ -2916,29 +2948,32 @@
                     {
                       "workerIndex": 6,
                       "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 30200,
+                      "status": "failed",
+                      "duration": 20667,
                       "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
+                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 80
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible"
                       },
                       "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
-                        },
                         {
                           "location": {
                             "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
                             "column": 18,
-                            "line": 85
+                            "line": 80
                           },
-                          "message": "Error: page.waitForURL: Test timeout of 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:29:41.908Z",
+                      "startTime": "2026-04-27T16:51:04.477Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -2951,7 +2986,12 @@
                           "contentType": "application/zip",
                           "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-detail-voter-entity--2787f-andidates-and-opinions-tabs-voter-app/trace.zip"
                         }
-                      ]
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 80
+                      }
                     }
                   ],
                   "status": "unexpected"
@@ -2998,12 +3038,12 @@
                       "workerIndex": 22,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 346,
+                      "duration": 403,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:38:11.679Z",
+                      "startTime": "2026-04-27T16:56:46.614Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -3035,12 +3075,12 @@
                       "workerIndex": 22,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 6,
+                      "duration": 12,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:38:12.620Z",
+                      "startTime": "2026-04-27T16:56:47.350Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -3072,7 +3112,7 @@
                       "workerIndex": 22,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 5099,
+                      "duration": 5088,
                       "error": {
                         "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/questions/\u001b[39m\nReceived string:  \u001b[31m\"http://localhost:5173/elections\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 5000ms\u001b[22m\n\u001b[2m    9 × unexpected value \"http://localhost:5173/elections\"\u001b[22m\n",
                         "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/questions/\u001b[39m\nReceived string:  \u001b[31m\"http://localhost:5173/elections\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 5000ms\u001b[22m\n\u001b[2m    9 × unexpected value \"http://localhost:5173/elections\"\u001b[22m\n\n    at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-journey.spec.ts:88:30",
@@ -3096,7 +3136,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:38:12.629Z",
+                      "startTime": "2026-04-27T16:56:47.367Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -3144,7 +3184,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:38:17.785Z",
+                      "startTime": "2026-04-27T16:56:52.516Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -3192,7 +3232,7 @@
                       "workerIndex": 7,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 25481,
+                      "duration": 22296,
                       "error": {
                         "message": "TimeoutError: locator.waitFor: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('voter-results-list') to be visible\u001b[22m\n",
                         "stack": "TimeoutError: locator.waitFor: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('voter-results-list') to be visible\u001b[22m\n\n    at navigateToResults (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-matching.spec.ts:161:54)\n    at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-matching.spec.ts:172:5",
@@ -3216,7 +3256,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:30:13.527Z",
+                      "startTime": "2026-04-27T16:51:26.376Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -3268,7 +3308,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:30:39.679Z",
+                      "startTime": "2026-04-27T16:51:49.203Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -3304,7 +3344,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:30:39.679Z",
+                      "startTime": "2026-04-27T16:51:49.203Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -3340,7 +3380,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:30:39.679Z",
+                      "startTime": "2026-04-27T16:51:49.203Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -3376,7 +3416,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:30:39.679Z",
+                      "startTime": "2026-04-27T16:51:49.203Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -3412,7 +3452,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:30:39.679Z",
+                      "startTime": "2026-04-27T16:51:49.203Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -3448,7 +3488,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:30:39.679Z",
+                      "startTime": "2026-04-27T16:51:49.203Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -3496,12 +3536,12 @@
                       "workerIndex": 23,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 3235,
+                      "duration": 3042,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:38:18.444Z",
+                      "startTime": "2026-04-27T16:56:53.160Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -3549,12 +3589,12 @@
                       "workerIndex": 8,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1173,
+                      "duration": 1260,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:30:40.496Z",
+                      "startTime": "2026-04-27T16:51:49.891Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -3591,12 +3631,12 @@
                       "workerIndex": 8,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1103,
+                      "duration": 1139,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:30:42.295Z",
+                      "startTime": "2026-04-27T16:51:51.693Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -3649,29 +3689,32 @@
                     {
                       "workerIndex": 8,
                       "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 30227,
+                      "status": "failed",
+                      "duration": 20458,
                       "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
+                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 80
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible"
                       },
                       "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
-                        },
                         {
                           "location": {
                             "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
                             "column": 18,
-                            "line": 85
+                            "line": 80
                           },
-                          "message": "Error: page.waitForURL: Test timeout of 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:30:43.465Z",
+                      "startTime": "2026-04-27T16:51:52.906Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -3684,7 +3727,12 @@
                           "contentType": "application/zip",
                           "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-bb8ae-s-section-with-result-cards-voter-app/trace.zip"
                         }
-                      ]
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 80
+                      }
                     }
                   ],
                   "status": "unexpected"
@@ -3712,29 +3760,32 @@
                     {
                       "workerIndex": 9,
                       "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 30195,
+                      "status": "failed",
+                      "duration": 20714,
                       "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
+                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 80
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible"
                       },
                       "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
-                        },
                         {
                           "location": {
                             "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
                             "column": 18,
-                            "line": 85
+                            "line": 80
                           },
-                          "message": "Error: page.waitForURL: Test timeout of 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:31:14.693Z",
+                      "startTime": "2026-04-27T16:52:14.227Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -3747,7 +3798,12 @@
                           "contentType": "application/zip",
                           "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-9d642-andidates-and-organizations-voter-app/trace.zip"
                         }
-                      ]
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 80
+                      }
                     }
                   ],
                   "status": "unexpected"
@@ -3775,29 +3831,32 @@
                     {
                       "workerIndex": 10,
                       "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 30209,
+                      "status": "failed",
+                      "duration": 20649,
                       "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
+                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 80
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible"
                       },
                       "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
-                        },
                         {
                           "location": {
                             "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
                             "column": 18,
-                            "line": 85
+                            "line": 80
                           },
-                          "message": "Error: page.waitForURL: Test timeout of 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:31:46.255Z",
+                      "startTime": "2026-04-27T16:52:36.244Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -3810,7 +3869,12 @@
                           "contentType": "application/zip",
                           "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-55265-ns-parties-section-and-back-voter-app/trace.zip"
                         }
-                      ]
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 80
+                      }
                     }
                   ],
                   "status": "unexpected"
@@ -3838,29 +3902,32 @@
                     {
                       "workerIndex": 11,
                       "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 30224,
+                      "status": "failed",
+                      "duration": 20729,
                       "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
+                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 80
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible"
                       },
                       "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
-                        },
                         {
                           "location": {
                             "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
                             "column": 18,
-                            "line": 85
+                            "line": 80
                           },
-                          "message": "Error: page.waitForURL: Test timeout of 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:32:17.770Z",
+                      "startTime": "2026-04-27T16:52:58.092Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -3873,7 +3940,12 @@
                           "contentType": "application/zip",
                           "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-609a9-lts-candidates-RESEARCH-A3--voter-app/trace.zip"
                         }
-                      ]
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 80
+                      }
                     }
                   ],
                   "status": "unexpected"
@@ -3901,29 +3973,32 @@
                     {
                       "workerIndex": 12,
                       "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 30207,
+                      "status": "failed",
+                      "duration": 20758,
                       "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
+                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 80
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible"
                       },
                       "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
-                        },
                         {
                           "location": {
                             "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
                             "column": 18,
-                            "line": 85
+                            "line": 80
                           },
-                          "message": "Error: page.waitForURL: Test timeout of 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:32:49.289Z",
+                      "startTime": "2026-04-27T16:53:20.125Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -3936,7 +4011,12 @@
                           "contentType": "application/zip",
                           "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-57295-eded-RESULTS-01-RESULTS-02--voter-app/trace.zip"
                         }
-                      ]
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 80
+                      }
                     }
                   ],
                   "status": "unexpected"
@@ -3964,29 +4044,32 @@
                     {
                       "workerIndex": 13,
                       "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 30209,
+                      "status": "failed",
+                      "duration": 20690,
                       "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
+                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 80
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible"
                       },
                       "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
-                        },
                         {
                           "location": {
                             "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
                             "column": 18,
-                            "line": 85
+                            "line": 80
                           },
-                          "message": "Error: page.waitForURL: Test timeout of 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:33:20.894Z",
+                      "startTime": "2026-04-27T16:53:42.235Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -3999,7 +4082,12 @@
                           "contentType": "application/zip",
                           "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-4c163--on-plural-tab-switch-D-14--voter-app/trace.zip"
                         }
-                      ]
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 80
+                      }
                     }
                   ],
                   "status": "unexpected"
@@ -4027,29 +4115,32 @@
                     {
                       "workerIndex": 14,
                       "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 30189,
+                      "status": "failed",
+                      "duration": 20633,
                       "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
+                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 80
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible"
                       },
                       "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
-                        },
                         {
                           "location": {
                             "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
                             "column": 18,
-                            "line": 85
+                            "line": 80
                           },
-                          "message": "Error: page.waitForURL: Test timeout of 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:33:52.463Z",
+                      "startTime": "2026-04-27T16:54:04.314Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -4062,7 +4153,12 @@
                           "contentType": "application/zip",
                           "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-456f5-ves-drawer-open-close-D-15--voter-app/trace.zip"
                         }
-                      ]
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 80
+                      }
                     }
                   ],
                   "status": "unexpected"
@@ -4090,29 +4186,32 @@
                     {
                       "workerIndex": 15,
                       "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 30203,
+                      "status": "failed",
+                      "duration": 20703,
                       "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
+                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 80
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible"
                       },
                       "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
-                        },
                         {
                           "location": {
                             "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
                             "column": 18,
-                            "line": 85
+                            "line": 80
                           },
-                          "message": "Error: page.waitForURL: Test timeout of 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:34:23.984Z",
+                      "startTime": "2026-04-27T16:54:26.185Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -4125,7 +4224,12 @@
                           "contentType": "application/zip",
                           "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-130c0-th-RESULTS-03-D-08-shape-3--voter-app/trace.zip"
                         }
-                      ]
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 80
+                      }
                     }
                   ],
                   "status": "unexpected"
@@ -4153,29 +4257,32 @@
                     {
                       "workerIndex": 16,
                       "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 30196,
+                      "status": "failed",
+                      "duration": 20616,
                       "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
+                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 80
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible"
                       },
                       "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
-                        },
                         {
                           "location": {
                             "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
                             "column": 18,
-                            "line": 85
+                            "line": 80
                           },
-                          "message": "Error: page.waitForURL: Test timeout of 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:34:55.809Z",
+                      "startTime": "2026-04-27T16:54:48.162Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -4188,7 +4295,12 @@
                           "contentType": "application/zip",
                           "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-bfde9-didate-drawer-D-08-shape-4--voter-app/trace.zip"
                         }
-                      ]
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 80
+                      }
                     }
                   ],
                   "status": "unexpected"
@@ -4216,29 +4328,32 @@
                     {
                       "workerIndex": 17,
                       "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 30206,
+                      "status": "failed",
+                      "duration": 20703,
                       "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
+                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 80
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible"
                       },
                       "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
-                        },
                         {
                           "location": {
                             "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
                             "column": 18,
-                            "line": 85
+                            "line": 80
                           },
-                          "message": "Error: page.waitForURL: Test timeout of 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:35:27.573Z",
+                      "startTime": "2026-04-27T16:55:09.989Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -4251,7 +4366,12 @@
                           "contentType": "application/zip",
                           "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-e5867-gh-tab-drawer-changes-D-13--voter-app/trace.zip"
                         }
-                      ]
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 80
+                      }
                     }
                   ],
                   "status": "unexpected"
@@ -4279,29 +4399,32 @@
                     {
                       "workerIndex": 18,
                       "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 30187,
+                      "status": "failed",
+                      "duration": 20766,
                       "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
+                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 80
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible"
                       },
                       "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
-                        },
                         {
                           "location": {
                             "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
                             "column": 18,
-                            "line": 85
+                            "line": 80
                           },
-                          "message": "Error: page.waitForURL: Test timeout of 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:35:59.158Z",
+                      "startTime": "2026-04-27T16:55:32.053Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -4314,7 +4437,12 @@
                           "contentType": "application/zip",
                           "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-52788-l-matcher-returns-404-D-11--voter-app/trace.zip"
                         }
-                      ]
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 80
+                      }
                     }
                   ],
                   "status": "unexpected"
@@ -4342,29 +4470,32 @@
                     {
                       "workerIndex": 19,
                       "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 30209,
+                      "status": "failed",
+                      "duration": 20836,
                       "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
+                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 80
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible"
                       },
                       "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
-                        },
                         {
                           "location": {
                             "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
                             "column": 18,
-                            "line": 85
+                            "line": 80
                           },
-                          "message": "Error: page.waitForURL: Test timeout of 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:36:30.815Z",
+                      "startTime": "2026-04-27T16:55:54.039Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -4377,7 +4508,12 @@
                           "contentType": "application/zip",
                           "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-f257f-ithout-id-→-list-view-D-11--voter-app/trace.zip"
                         }
-                      ]
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 80
+                      }
                     }
                   ],
                   "status": "unexpected"
@@ -4405,29 +4541,32 @@
                     {
                       "workerIndex": 20,
                       "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 30188,
+                      "status": "failed",
+                      "duration": 20910,
                       "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
+                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 80
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible"
                       },
                       "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"answeredVoterPage\".\u001b[39m"
-                        },
                         {
                           "location": {
                             "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
                             "column": 18,
-                            "line": 85
+                            "line": 80
                           },
-                          "message": "Error: page.waitForURL: Test timeout of 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:80\n\n  78 |     if (!page.url().includes('/results')) {\n  79 |       await page.getByTestId(testIds.voter.questions.nextButton).click();\n> 80 |       await page.waitForURL(/\\/results/, { timeout: 10000 });\n     |                  ^\n  81 |     }\n  82 |\n  83 |     // Wait for the results list to be visible\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:80:18)"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:37:02.367Z",
+                      "startTime": "2026-04-27T16:56:16.189Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -4440,7 +4579,12 @@
                           "contentType": "application/zip",
                           "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-6bf7d-e-order-content-visibility--voter-app/trace.zip"
                         }
-                      ]
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 80
+                      }
                     }
                   ],
                   "status": "unexpected"
@@ -4487,12 +4631,12 @@
                       "workerIndex": 21,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 621,
+                      "duration": 534,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:37:33.847Z",
+                      "startTime": "2026-04-27T16:56:38.548Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -4530,12 +4674,12 @@
                       "workerIndex": 21,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 467,
+                      "duration": 470,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:37:34.940Z",
+                      "startTime": "2026-04-27T16:56:39.623Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -4573,12 +4717,12 @@
                       "workerIndex": 21,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 444,
+                      "duration": 408,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-27T18:37:35.428Z",
+                      "startTime": "2026-04-27T16:56:40.120Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -4614,7 +4758,7 @@
               "specs": [
                 {
                   "title": "should render nominations page with entries",
-                  "ok": false,
+                  "ok": true,
                   "tags": [
                     "voter"
                   ],
@@ -4629,29 +4773,13 @@
                         {
                           "workerIndex": 21,
                           "parallelIndex": 0,
-                          "status": "timedOut",
-                          "duration": 35056,
-                          "error": {
-                            "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
-                            "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
-                          },
-                          "errors": [
-                            {
-                              "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
-                            },
-                            {
-                              "location": {
-                                "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-static-pages.spec.ts",
-                                "column": 75,
-                                "line": 103
-                              },
-                              "message": "Error: expect.toBeVisible: Test timeout of 30000ms exceeded.\n\n  101 |\n  102 |       // Wait for nominations container (layout loads data async, shows Loading first)\n> 103 |       await expect(page.getByTestId(testIds.voter.nominations.container)).toBeVisible({ timeout: 15000 });\n      |                                                                           ^\n  104 |\n  105 |       // Verify nominations list is visible\n  106 |       await expect(page.getByTestId(testIds.voter.nominations.list)).toBeVisible();\n    at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-static-pages.spec.ts:103:75"
-                            }
-                          ],
+                          "status": "passed",
+                          "duration": 4885,
+                          "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-04-27T18:37:35.890Z",
+                          "startTime": "2026-04-27T16:56:40.552Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -4662,7 +4790,7 @@
                           ]
                         }
                       ],
-                      "status": "unexpected"
+                      "status": "expected"
                     }
                   ],
                   "id": "a577203968f351b2fe58-2aa37be4453b944b9c1d",
@@ -4693,20 +4821,26 @@
                       "projectName": "voter-app",
                       "results": [
                         {
-                          "workerIndex": -1,
-                          "parallelIndex": -1,
-                          "status": "skipped",
-                          "duration": 0,
+                          "workerIndex": 21,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 435,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-04-27T18:38:11.070Z",
+                          "startTime": "2026-04-27T16:56:45.508Z",
                           "annotations": [],
-                          "attachments": []
+                          "attachments": [
+                            {
+                              "name": "trace",
+                              "contentType": "application/zip",
+                              "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-static-pages-nominat-b7deb-showAllNominations-is-false-voter-app/trace.zip"
+                            }
+                          ]
                         }
                       ],
-                      "status": "skipped"
+                      "status": "expected"
                     }
                   ],
                   "id": "a577203968f351b2fe58-1c184a2da09dde7b2b4a",
@@ -4828,11 +4962,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-04-27T18:27:46.463Z",
-    "duration": 692889.633,
-    "expected": 28,
-    "skipped": 52,
-    "unexpected": 22,
+    "startTime": "2026-04-27T16:49:41.747Z",
+    "duration": 493473.147,
+    "expected": 30,
+    "skipped": 51,
+    "unexpected": 21,
     "flaky": 0
   }
 }
