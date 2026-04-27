@@ -811,10 +811,28 @@ export const e2eTemplate: Template = {
   // §3.2 voter-dataset:   7 candidate + 2 organization = 9
   // §3.3 addendum:        2 candidate (both unconfirmed: true) = 2
   //
-  // Candidate-type nominations carry ONLY the candidate ref per
-  // NominationsGenerator.ts comment + RESEARCH §9 (the legacy fixture's
-  // redundant `organization` ref on candidate-type rows is dropped).
-  // Party-candidate linkage flows through candidates.organization_id.
+  // Phase 64 Plan 64-01 extension (D-04 + 64-RESEARCH.md §3 + repro-notes.md):
+  // The 11 visible candidate nominations are linked to the 4 organization
+  // nominations via parent_nomination so buildParentFilters() (in
+  // apps/frontend/src/lib/contexts/voter/filters/buildParentFilters.ts) sees
+  // a populated parent set and emits a party EnumeratedFilter on the voter
+  // results candidates tab. Without this wiring, FilterGroup.filters.length
+  // is 0 on the candidates tab and the entity-list-filter button does NOT
+  // render — this is the empirically-confirmed root cause of the post-Task-2
+  // hard-fail signal in voter-results.spec.ts (RESULTS-01/02 + D-14 + D-15).
+  // The 1 hidden candidate (unconfirmed) and 2 addendum candidates (also
+  // unconfirmed) intentionally retain NO parent_nomination — adding party
+  // links to invisible candidates would be coupling-noise.
+  //
+  // Distribution (3-3-3-2 across 4 parties):
+  //   test-nom-org-party-a       → alpha, beta, agree            (3 candidates)
+  //   test-nom-org-party-b       → gamma, delta, close           (3 candidates)
+  //   test-voter-nom-org-party-a → epsilon, neutral, oppose      (3 candidates)
+  //   test-voter-nom-org-party-b → mixed, partial                (2 candidates)
+  // Validation invariant (validate_nomination trigger lines 360-373):
+  // each child's election_id, constituency_id, election_round must equal the
+  // parent's. All triangles use election=test-election-1, constituency=
+  // test-constituency-alpha, election_round=1, so the constraint holds.
   //
   // Organization-type nominations (test-nom-org-*) make the 4 parties
   // visible on the voter results "parties" tab.
@@ -825,43 +843,12 @@ export const e2eTemplate: Template = {
   nominations: {
     count: 0,
     fixed: [
-      // §3.1 — default-dataset candidate triangles
-      {
-        external_id: 'test-nom-alpha',
-        candidate: { external_id: 'test-candidate-alpha' },
-        election: { external_id: 'test-election-1' },
-        constituency: { external_id: 'test-constituency-alpha' },
-        election_round: 1
-      },
-      {
-        external_id: 'test-nom-beta',
-        candidate: { external_id: 'test-candidate-beta' },
-        election: { external_id: 'test-election-1' },
-        constituency: { external_id: 'test-constituency-alpha' },
-        election_round: 1
-      },
-      {
-        external_id: 'test-nom-gamma',
-        candidate: { external_id: 'test-candidate-gamma' },
-        election: { external_id: 'test-election-1' },
-        constituency: { external_id: 'test-constituency-alpha' },
-        election_round: 1
-      },
-      {
-        external_id: 'test-nom-delta',
-        candidate: { external_id: 'test-candidate-delta' },
-        election: { external_id: 'test-election-1' },
-        constituency: { external_id: 'test-constituency-alpha' },
-        election_round: 1
-      },
-      {
-        external_id: 'test-nom-epsilon',
-        candidate: { external_id: 'test-candidate-epsilon' },
-        election: { external_id: 'test-election-1' },
-        constituency: { external_id: 'test-constituency-alpha' },
-        election_round: 1
-      },
-      // §3.1 — default-dataset organization triangles
+      // §3.1 — default-dataset organization triangles (declared FIRST so the
+      // candidate triangles below can resolve parent_nomination external_ids).
+      // bulk_import resolves parent_nomination at write time with the same
+      // FK semantics as election/constituency refs; declaring parents above
+      // children keeps the literal ordering self-documenting even though the
+      // resolver doesn't strictly require it.
       {
         external_id: 'test-nom-org-party-a',
         organization: { external_id: 'test-party-a' },
@@ -876,63 +863,8 @@ export const e2eTemplate: Template = {
         constituency: { external_id: 'test-constituency-alpha' },
         election_round: 1
       },
-      // §3.2 — voter-dataset candidate triangles
-      {
-        external_id: 'test-voter-nom-agree',
-        candidate: { external_id: 'test-voter-cand-agree' },
-        election: { external_id: 'test-election-1' },
-        constituency: { external_id: 'test-constituency-alpha' },
-        election_round: 1
-      },
-      {
-        external_id: 'test-voter-nom-close',
-        candidate: { external_id: 'test-voter-cand-close' },
-        election: { external_id: 'test-election-1' },
-        constituency: { external_id: 'test-constituency-alpha' },
-        election_round: 1
-      },
-      {
-        external_id: 'test-voter-nom-neutral',
-        candidate: { external_id: 'test-voter-cand-neutral' },
-        election: { external_id: 'test-election-1' },
-        constituency: { external_id: 'test-constituency-alpha' },
-        election_round: 1
-      },
-      {
-        external_id: 'test-voter-nom-oppose',
-        candidate: { external_id: 'test-voter-cand-oppose' },
-        election: { external_id: 'test-election-1' },
-        constituency: { external_id: 'test-constituency-alpha' },
-        election_round: 1
-      },
-      {
-        external_id: 'test-voter-nom-mixed',
-        candidate: { external_id: 'test-voter-cand-mixed' },
-        election: { external_id: 'test-election-1' },
-        constituency: { external_id: 'test-constituency-alpha' },
-        election_round: 1
-      },
-      {
-        external_id: 'test-voter-nom-partial',
-        candidate: { external_id: 'test-voter-cand-partial' },
-        election: { external_id: 'test-election-1' },
-        constituency: { external_id: 'test-constituency-alpha' },
-        election_round: 1
-      },
-      // §8.3 — double-belt-and-braces invisibility for test-voter-cand-hidden:
-      // candidate lacks terms_of_use_accepted (candidate-level hidden) AND
-      // the nomination carries `unconfirmed: true` (nomination-level hidden).
-      // voter-matching.spec.ts:234-240 asserts NOT visible via candidate-level
-      // absence; the nomination-level flag is preserved for robustness.
-      {
-        external_id: 'test-voter-nom-hidden',
-        candidate: { external_id: 'test-voter-cand-hidden' },
-        election: { external_id: 'test-election-1' },
-        constituency: { external_id: 'test-constituency-alpha' },
-        election_round: 1,
-        unconfirmed: true
-      },
-      // §3.2 — voter-dataset organization triangles
+      // §3.2 — voter-dataset organization triangles (declared early for the
+      // same parent-resolution reason as §3.1's organization triangles).
       {
         external_id: 'test-voter-nom-org-party-a',
         organization: { external_id: 'test-voter-party-a' },
@@ -947,7 +879,114 @@ export const e2eTemplate: Template = {
         constituency: { external_id: 'test-constituency-alpha' },
         election_round: 1
       },
+      // §3.1 — default-dataset candidate triangles (Phase 64 P01: parent_nomination)
+      {
+        external_id: 'test-nom-alpha',
+        candidate: { external_id: 'test-candidate-alpha' },
+        parent_nomination: { external_id: 'test-nom-org-party-a' },
+        election: { external_id: 'test-election-1' },
+        constituency: { external_id: 'test-constituency-alpha' },
+        election_round: 1
+      },
+      {
+        external_id: 'test-nom-beta',
+        candidate: { external_id: 'test-candidate-beta' },
+        parent_nomination: { external_id: 'test-nom-org-party-a' },
+        election: { external_id: 'test-election-1' },
+        constituency: { external_id: 'test-constituency-alpha' },
+        election_round: 1
+      },
+      {
+        external_id: 'test-nom-gamma',
+        candidate: { external_id: 'test-candidate-gamma' },
+        parent_nomination: { external_id: 'test-nom-org-party-b' },
+        election: { external_id: 'test-election-1' },
+        constituency: { external_id: 'test-constituency-alpha' },
+        election_round: 1
+      },
+      {
+        external_id: 'test-nom-delta',
+        candidate: { external_id: 'test-candidate-delta' },
+        parent_nomination: { external_id: 'test-nom-org-party-b' },
+        election: { external_id: 'test-election-1' },
+        constituency: { external_id: 'test-constituency-alpha' },
+        election_round: 1
+      },
+      {
+        external_id: 'test-nom-epsilon',
+        candidate: { external_id: 'test-candidate-epsilon' },
+        parent_nomination: { external_id: 'test-voter-nom-org-party-a' },
+        election: { external_id: 'test-election-1' },
+        constituency: { external_id: 'test-constituency-alpha' },
+        election_round: 1
+      },
+      // §3.2 — voter-dataset candidate triangles (Phase 64 P01: parent_nomination)
+      {
+        external_id: 'test-voter-nom-agree',
+        candidate: { external_id: 'test-voter-cand-agree' },
+        parent_nomination: { external_id: 'test-nom-org-party-a' },
+        election: { external_id: 'test-election-1' },
+        constituency: { external_id: 'test-constituency-alpha' },
+        election_round: 1
+      },
+      {
+        external_id: 'test-voter-nom-close',
+        candidate: { external_id: 'test-voter-cand-close' },
+        parent_nomination: { external_id: 'test-nom-org-party-b' },
+        election: { external_id: 'test-election-1' },
+        constituency: { external_id: 'test-constituency-alpha' },
+        election_round: 1
+      },
+      {
+        external_id: 'test-voter-nom-neutral',
+        candidate: { external_id: 'test-voter-cand-neutral' },
+        parent_nomination: { external_id: 'test-voter-nom-org-party-a' },
+        election: { external_id: 'test-election-1' },
+        constituency: { external_id: 'test-constituency-alpha' },
+        election_round: 1
+      },
+      {
+        external_id: 'test-voter-nom-oppose',
+        candidate: { external_id: 'test-voter-cand-oppose' },
+        parent_nomination: { external_id: 'test-voter-nom-org-party-a' },
+        election: { external_id: 'test-election-1' },
+        constituency: { external_id: 'test-constituency-alpha' },
+        election_round: 1
+      },
+      {
+        external_id: 'test-voter-nom-mixed',
+        candidate: { external_id: 'test-voter-cand-mixed' },
+        parent_nomination: { external_id: 'test-voter-nom-org-party-b' },
+        election: { external_id: 'test-election-1' },
+        constituency: { external_id: 'test-constituency-alpha' },
+        election_round: 1
+      },
+      {
+        external_id: 'test-voter-nom-partial',
+        candidate: { external_id: 'test-voter-cand-partial' },
+        parent_nomination: { external_id: 'test-voter-nom-org-party-b' },
+        election: { external_id: 'test-election-1' },
+        constituency: { external_id: 'test-constituency-alpha' },
+        election_round: 1
+      },
+      // §8.3 — double-belt-and-braces invisibility for test-voter-cand-hidden:
+      // candidate lacks terms_of_use_accepted (candidate-level hidden) AND
+      // the nomination carries `unconfirmed: true` (nomination-level hidden).
+      // voter-matching.spec.ts:234-240 asserts NOT visible via candidate-level
+      // absence; the nomination-level flag is preserved for robustness.
+      // No parent_nomination — hidden candidates intentionally have no party
+      // affiliation; this row is invisible regardless.
+      {
+        external_id: 'test-voter-nom-hidden',
+        candidate: { external_id: 'test-voter-cand-hidden' },
+        election: { external_id: 'test-election-1' },
+        constituency: { external_id: 'test-constituency-alpha' },
+        election_round: 1,
+        unconfirmed: true
+      },
       // §3.3 — addendum candidate triangles (unconfirmed: true required)
+      // No parent_nomination — addendum candidates are unconfirmed test
+      // material; party affiliation isn't required for these.
       {
         external_id: 'test-nom-unregistered',
         candidate: { external_id: 'test-candidate-unregistered' },
