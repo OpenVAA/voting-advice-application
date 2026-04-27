@@ -76,9 +76,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
    * Localizes string fields, converts storage image paths to absolute URLs,
    * localizes translation overrides and FAQ entries.
    */
-  protected async _getAppCustomization(
-    options?: GetAppCustomizationOptions
-  ): Promise<DPDataType['appCustomization']> {
+  protected async _getAppCustomization(options?: GetAppCustomizationOptions): Promise<DPDataType['appCustomization']> {
     const { data, error } = await this.supabase.from('app_settings').select('customization').limit(1).single();
 
     if (error) {
@@ -164,9 +162,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
    * Fetch constituency groups (with their member constituency IDs) and all constituencies.
    * Keywords are localized and split by comma into string arrays.
    */
-  protected async _getConstituencyData(
-    options?: GetConstituenciesOptions
-  ): Promise<DPDataType['constituencies']> {
+  protected async _getConstituencyData(options?: GetConstituenciesOptions): Promise<DPDataType['constituencies']> {
     const locale = options?.locale ?? this.locale;
     const supabaseUrl = constants.PUBLIC_SUPABASE_URL;
 
@@ -188,9 +184,9 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
       return {
         ...obj,
         image: parseStoredImage(row.image as any, supabaseUrl),
-        constituencyIds: (
-          (row.constituency_group_constituencies as Array<{ constituency_id: string }>) ?? []
-        ).map((jt) => jt.constituency_id)
+        constituencyIds: ((row.constituency_group_constituencies as Array<{ constituency_id: string }>) ?? []).map(
+          (jt) => jt.constituency_id
+        )
       } as ConstituencyGroupData;
     });
 
@@ -223,9 +219,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
    * all 4 entity tables. Deduplicates entities client-side using a Map keyed by entity_id.
    * Candidate entities include firstName, lastName, organizationId.
    */
-  protected async _getNominationData(
-    options?: GetNominationsOptions
-  ): Promise<DPDataType['nominations']> {
+  protected async _getNominationData(options?: GetNominationsOptions): Promise<DPDataType['nominations']> {
     const locale = options?.locale ?? this.locale;
     const supabaseUrl = constants.PUBLIC_SUPABASE_URL;
 
@@ -270,10 +264,29 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     const nominations: AnyNominationVariantPublicData[] = [];
     const seenNominationIds = new Set<string>();
 
+    // Build nomination_id → entity_type map for parent-type derivation.
+    // Phase 64 P01: the schema's `nominations` table stores `parent_nomination_id`
+    // but the parent's entity_type is not denormalized into the child row — it
+    // must be looked up from the parent. The Nomination base class
+    // (packages/data/src/objects/nominations/base/nomination.ts:38-45) throws if
+    // `parentNominationId` is set without a matching `parentNominationType`,
+    // so we must populate both. The `get_nominations` RPC returns ALL relevant
+    // nominations (parents and children) in the same fan-out, so this lookup
+    // is purely in-memory and adds no DB round-trips.
+    const nominationTypeById = new Map<string, string>();
+    for (const row of data) {
+      if (row.id != null && row.entity_type != null) {
+        nominationTypeById.set(row.id as string, row.entity_type as string);
+      }
+    }
+
     for (const row of data) {
       if (seenNominationIds.has(row.id as string)) continue;
       seenNominationIds.add(row.id as string);
       // Build nomination object from nomination-level columns
+      const parentNominationId = row.parent_nomination_id as string | null | undefined;
+      const parentNominationType =
+        parentNominationId != null ? (nominationTypeById.get(parentNominationId) ?? null) : null;
       const nomRow = {
         id: row.id,
         name: row.name,
@@ -288,16 +301,31 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
         constituency_id: row.constituency_id,
         election_round: row.election_round,
         election_symbol: row.election_symbol,
-        parent_nomination_id: row.parent_nomination_id
+        parent_nomination_id: parentNominationId ?? null
       };
       const nomObj = toDataObject(nomRow as Record<string, unknown>, locale, this.defaultLocale);
 
-      nominations.push({
+      // Phase 64 P01: enforce the Nomination "either both or neither"
+      // invariant (packages/data/src/objects/nominations/base/nomination.ts:38-45).
+      // mapRow() doesn't synthesize parentNominationType (no column map entry);
+      // we set it here based on the in-memory parent lookup. If the parent's
+      // entity_type can't be resolved (parent not in this fan-out's result
+      // set — e.g., a cross-constituency parent that the RPC filtered out),
+      // we DROP parentNominationId so the constructor doesn't throw.
+      const nominationOut: Record<string, unknown> = {
         ...nomObj,
         entityType: row.entity_type,
         entityId: row.entity_id,
         image: parseStoredImage(row.image as any, supabaseUrl)
-      } as AnyNominationVariantPublicData);
+      };
+      if (parentNominationId != null && parentNominationType != null) {
+        nominationOut.parentNominationType = parentNominationType;
+      } else {
+        // Either no parent (default) or unresolvable parent — clear the id
+        // to keep the invariant intact.
+        nominationOut.parentNominationId = null;
+      }
+      nominations.push(nominationOut as AnyNominationVariantPublicData);
 
       // Extract and deduplicate entity
       const entityId = row.entity_id as string;

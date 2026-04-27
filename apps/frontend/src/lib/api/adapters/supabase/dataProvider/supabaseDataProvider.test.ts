@@ -1427,13 +1427,19 @@ describe('SupabaseDataProvider', () => {
     });
 
     it('nomination objects include entityType, entityId, electionId, constituencyId fields', async () => {
+      // Phase 64 P01: include orgNomRow so the candidate nomination's parent
+      // (n3 → organization) resolves in the in-memory parent-type lookup.
+      // Without it, the adapter clears parentNominationId to honor the
+      // Nomination "either both or neither" invariant. In production,
+      // get_nominations always returns all nominations for the election so
+      // the parent IS in the same fan-out.
       mockSupabase._mockRpcResponses['get_nominations'] = {
-        data: [baseCandidateNomRow],
+        data: [baseCandidateNomRow, orgNomRow],
         error: null
       };
 
       const result = await provider.getNominationData();
-      const nom = (result.nominations as any[])[0];
+      const nom = (result.nominations as any[]).find((n: any) => n.id === 'n1');
 
       expect(nom.entityType).toBe('candidate');
       expect(nom.entityId).toBe('c1');
@@ -1442,6 +1448,25 @@ describe('SupabaseDataProvider', () => {
       expect(nom.electionRound).toBe(1);
       expect(nom.electionSymbol).toBe('42');
       expect(nom.parentNominationId).toBe('n3');
+      // Phase 64 P01: parentNominationType is derived from the parent's entity_type.
+      expect(nom.parentNominationType).toBe('organization');
+    });
+
+    it('clears parentNominationId when the parent nomination is not in the result set (Phase 64 P01)', async () => {
+      // If the RPC fan-out doesn't include the parent (e.g., a cross-constituency
+      // parent that the filter excluded), the adapter MUST clear parentNominationId
+      // so the Nomination constructor's "either both or neither" invariant holds.
+      mockSupabase._mockRpcResponses['get_nominations'] = {
+        data: [baseCandidateNomRow], // no orgNomRow — parent unresolvable
+        error: null
+      };
+
+      const result = await provider.getNominationData();
+      const nom = (result.nominations as any[]).find((n: any) => n.id === 'n1');
+
+      expect(nom.entityType).toBe('candidate');
+      expect(nom.parentNominationId).toBeNull();
+      expect(nom.parentNominationType).toBeUndefined();
     });
 
     it('entity and nomination images are converted via parseStoredImage', async () => {
