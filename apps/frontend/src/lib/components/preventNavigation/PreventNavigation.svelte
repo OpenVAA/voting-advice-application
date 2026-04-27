@@ -17,6 +17,7 @@ Functional component used to block user nagivation.
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
   import { beforeNavigate } from '$app/navigation';
+  import { browser } from '$app/environment';
   import { getComponentContext } from '$lib/contexts/component';
   import type { PreventNavigationProps } from './PreventNavigation.type';
 
@@ -38,13 +39,14 @@ Functional component used to block user nagivation.
     }
   });
 
-  // prevent navigation on mount
+  // prevent navigation on mount (browser-only; onMount itself doesn't fire on the server)
   onMount(() => {
     addEventListener('beforeunload', handleBeforeUnload);
   });
 
-  // remove event handler on unmount
+  // remove event handler on unmount (onDestroy fires on both server and client; guard the
+  // browser-only API so SSR teardown of this component doesn't throw ReferenceError)
   onDestroy(() => {
-    removeEventListener('beforeunload', handleBeforeUnload);
+    if (browser) removeEventListener('beforeunload', handleBeforeUnload);
   });
 </script>
