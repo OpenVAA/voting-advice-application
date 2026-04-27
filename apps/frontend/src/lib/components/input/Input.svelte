@@ -196,7 +196,7 @@ Multilingual features are only available if the `locales` store contains more th
   ////////////////////////////////////////////////////////////////////
 
   /** The input is hidden and triggered when the image preview or custom button is pressed */
-  let fileInput: HTMLInputElement | undefined;
+  let fileInput: HTMLInputElement | undefined = $state();
 
   /**
    * Open the file dialog when the label or image label when `Space` or `Enter` is pressed.

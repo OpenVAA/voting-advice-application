@@ -44,7 +44,7 @@ Displays a warning if the selected constituency does not have nominations in all
   type NominationStatus = 'all' | 'none' | 'some';
 
   let error = $state<Error | undefined>(undefined);
-  let modalRef: Modal;
+  let modalRef: Modal | undefined = $state();
   let ready = $state(false);
   let hasNominations = $state<NominationStatus>('none');
 

@@ -88,51 +88,64 @@ You should not try to use a variant and customize at the same time.
   // Styling
   ////////////////////////////////////////////////////////////////////
 
-  // Build classes
+  // Build classes (Svelte 5: derive reactively from props instead of
+  // mutating top-level locals at init).
   // 1. Base classes for all collapse components
-  let collapseClasses = 'collapse rounded-none min-h-touch min-w-touch h-auto w-full';
-  let titleClasses = 'collapse-title text-center px-md';
-  let contentClasses = 'collapse-content p-md';
-  let iconClass = '';
+  const collapseClasses = 'collapse rounded-none min-h-touch min-w-touch h-auto w-full';
 
-  // 2. Variant-defined classes
-  switch (variant) {
-    case 'read-more':
-      titleClasses += ' !px-0 text-primary';
-      contentClasses += ' !px-0';
-      break;
-    case 'category':
-      titleClasses += ' !px-md text-xl bg-base-300 font-bold';
-      contentClasses += ' pt-lg';
-      iconPos = 'left';
-      break;
-    case 'question':
-      titleClasses += ' !px-0 text-lg font-bold';
-      contentClasses += ' !px-0';
-      break;
-    case 'question-help':
-      titleClasses += ' text-lg font-bold flex flex-row justify-between !text-left';
-      contentClasses += ' !text-left';
-      break;
-  }
+  // 2. Variant + iconPos resolution. The original code mutated `iconPos`
+  // when variant === 'category'; we replicate that with an effective
+  // iconPos derived from variant.
+  const effectiveIconPos = $derived(variant === 'category' ? 'left' : iconPos);
 
-  // 3. Icon position
-  switch (iconPos) {
-    case 'left':
-      titleClasses += ' flex items-center justify-center';
-      break;
-    case 'text':
-      iconClass = 'inline-block whitespace-nowrap';
-      break;
-  }
+  const titleClasses = $derived.by(() => {
+    let cls = 'collapse-title text-center px-md';
+    switch (variant) {
+      case 'read-more':
+        cls += ' !px-0 text-primary';
+        break;
+      case 'category':
+        cls += ' !px-md text-xl bg-base-300 font-bold';
+        break;
+      case 'question':
+        cls += ' !px-0 text-lg font-bold';
+        break;
+      case 'question-help':
+        cls += ' text-lg font-bold flex flex-row justify-between !text-left';
+        break;
+    }
+    if (effectiveIconPos === 'left') {
+      cls += ' flex items-center justify-center';
+    }
+    if (customTitleClass) {
+      cls += ` ${customTitleClass}`;
+    }
+    return cls;
+  });
 
-  // 4. Add custom classes
-  if (customContentClass) {
-    contentClasses += ` ${customContentClass}`;
-  }
-  if (customTitleClass) {
-    titleClasses += ` ${customTitleClass}`;
-  }
+  const contentClasses = $derived.by(() => {
+    let cls = 'collapse-content p-md';
+    switch (variant) {
+      case 'read-more':
+        cls += ' !px-0';
+        break;
+      case 'category':
+        cls += ' pt-lg';
+        break;
+      case 'question':
+        cls += ' !px-0';
+        break;
+      case 'question-help':
+        cls += ' !text-left';
+        break;
+    }
+    if (customContentClass) {
+      cls += ` ${customContentClass}`;
+    }
+    return cls;
+  });
+
+  const iconClass = $derived(effectiveIconPos === 'text' ? 'inline-block whitespace-nowrap' : '');
 </script>
 
 <div {...concatClass(restProps, collapseClasses)}>

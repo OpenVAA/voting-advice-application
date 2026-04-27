@@ -25,7 +25,7 @@ Display an `Entity`’s open answer to a question. If the content is empty, noth
 
   const id = getUUID();
 
-  let el: HTMLDivElement;
+  let el: HTMLDivElement | undefined = $state();
   let collapsible = $state(false);
   let expanded = $state(false);
   let fullHeight = $state('none');

@@ -55,7 +55,7 @@
   let email = $state('');
   let emailInput = $state<HTMLInputElement | undefined>(undefined);
   let errorMessage = $state<string | undefined>(undefined);
-  let passwordFieldRef: { focus: () => void };
+  let passwordFieldRef: { focus: () => void } | undefined = $state();
   let password = $state('');
   let showPasswordSetMessage = $state(false);
   let status = $state<ActionStatus>('idle');

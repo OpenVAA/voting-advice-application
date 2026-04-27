@@ -48,8 +48,11 @@ Accesses `CandidateContext`.
   ////////////////////////////////////////////////////////////////////
 
   // reference to TimedModal
-  let timedModalRef: TimedModal;
-  let timeLeft = logoutModalTimer;
+  let timedModalRef: TimedModal | undefined = $state();
+  // `timeLeft` is bound by TimedModal (countdown ticks); seed from the
+  // prop's initial value. Reading the prop inside the initializer is
+  // intentional: we want the initial seed, not a reactive dependency.
+  let timeLeft = $state(logoutModalTimer);
 
   async function triggerLogout() {
     if (!candCtx.answersLocked && (candCtx.unansweredOpinionQuestions?.length !== 0 || candCtx.unansweredRequiredInfoQuestions?.length !== 0)) {

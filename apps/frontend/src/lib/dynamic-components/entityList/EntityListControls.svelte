@@ -41,7 +41,7 @@ TODO: Consider moving the tracking events away from the component and just addin
   let { entities, filterGroup, searchProperty = 'name', onUpdate, ...restProps }: EntityListControlsProps = $props();
 
   const { locale, startEvent, t } = getAppContext();
-  let filtersModalRef: Modal;
+  let filtersModalRef: Modal | undefined = $state();
   let filteredContents: EntityListControlsProps['entities'] = $state([]);
   let output: EntityListControlsProps['entities'] = $state([]);
   let numActiveFilters = $state(0);

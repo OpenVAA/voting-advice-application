@@ -49,8 +49,12 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   let { entity, ...restProps }: EntityDetailsProps = $props();
 
   const { appSettings, appType, startEvent, t } = getAppContext();
+  // appType is determined at app boot and does not change at runtime; we
+  // read it once at init to decide whether voter context is available.
+  // `answers` is consumed in the template so it must be in the reactive
+  // graph — declare with $state.
   let voterContext: VoterContext | undefined;
-  let answers: AnswerStore | undefined;
+  let answers: AnswerStore | undefined = $state(undefined);
   if ($appType === 'voter') {
     voterContext = getVoterContext();
     answers = voterContext.answers;

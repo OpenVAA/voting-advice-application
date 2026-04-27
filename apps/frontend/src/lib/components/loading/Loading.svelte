@@ -36,25 +36,30 @@ Used to display a loading spinner with an optionally visible text label.
   // Styling
   ////////////////////////////////////////////////////////////////////
 
-  let classes = 'text-secondary ';
-  classes += inline
-    ? 'inline-flex flex-row align-bottom gap-sm'
-    : 'flex flex-col items-center justify-center h-full w-full gap-md';
-  let spinnerClass = 'loading loading-spinner ';
-  switch (size) {
-    case 'xs':
-      spinnerClass += 'loading-xs';
-      break;
-    case 'sm':
-      spinnerClass += 'loading-sm';
-      break;
-    case 'md':
-      spinnerClass += 'loading-md';
-      break;
-    case 'lg':
-    default:
-      spinnerClass += 'loading-lg';
-  }
+  const classes = $derived(
+    'text-secondary ' +
+      (inline
+        ? 'inline-flex flex-row align-bottom gap-sm'
+        : 'flex flex-col items-center justify-center h-full w-full gap-md')
+  );
+  const spinnerClass = $derived.by(() => {
+    let cls = 'loading loading-spinner ';
+    switch (size) {
+      case 'xs':
+        cls += 'loading-xs';
+        break;
+      case 'sm':
+        cls += 'loading-sm';
+        break;
+      case 'md':
+        cls += 'loading-md';
+        break;
+      case 'lg':
+      default:
+        cls += 'loading-lg';
+    }
+    return cls;
+  });
 </script>
 
 <div data-testid="loading-indicator" {...concatClass(restProps, classes)}>

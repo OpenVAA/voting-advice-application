@@ -28,7 +28,7 @@ Accesses `AppContext` to get `appSettings` and `userPreferences`.
   let { variant = 'default', ...restProps }: SurveyBannerProps = $props();
 
   const { appSettings, userPreferences, t } = getAppContext();
-  let clicked: boolean;
+  let clicked: boolean = $state(false);
 </script>
 
 {#if clicked || ($appSettings.survey && $userPreferences.survey?.status !== 'received')}

@@ -69,7 +69,7 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
 
   const id = getUUID();
   const selectedPrefix = '✔︎ ';
-  let autocompleteInput: HTMLInputElement | undefined;
+  let autocompleteInput: HTMLInputElement | undefined = $state();
 
   let canonicalOptions = $derived(options.map((o) => (typeof o === 'string' ? { id: o, label: o } : o)));
 

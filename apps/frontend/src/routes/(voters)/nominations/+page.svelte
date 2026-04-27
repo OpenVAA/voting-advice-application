@@ -32,7 +32,7 @@ List all nominations in the application.
   ////////////////////////////////////////////////////////////////////
 
   // This will hold the filtered entities returned by EntityListControls
-  let filteredEntities = new Array<MaybeWrappedEntityVariant>();
+  let filteredEntities: Array<MaybeWrappedEntityVariant> = $state([]);
 
   const filterGroup = new FilterGroup(
     buildParentFilters({
