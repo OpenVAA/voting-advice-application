@@ -53,12 +53,14 @@ const DRAWER_TESTID = 'voter-results-drawer';
  *   /results/candidates/candidate/abc123?electionId=xyz
  *   /fi/results/organizations/organization/def456?electionId=xyz
  */
-function parseResultHref(href: string | null): {
-  entityTypePlural: 'candidates' | 'organizations';
-  entityTypeSingular: 'candidate' | 'organization';
-  id: string;
-  search: string;
-} | undefined {
+function parseResultHref(href: string | null):
+  | {
+      entityTypePlural: 'candidates' | 'organizations';
+      entityTypeSingular: 'candidate' | 'organization';
+      id: string;
+      search: string;
+    }
+  | undefined {
   if (!href) return undefined;
   const [pathOnly, queryString] = href.split('?');
   const search = queryString ? `?${queryString}` : '';
@@ -166,23 +168,35 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
 
     // Open filter modal
     const filterButton = page.getByTestId('entity-list-filter');
-    if ((await filterButton.count()) === 0) {
-      test.skip(true, 'No filters available in the seed — e2e template carries no question-filter targets. Skipping filter toggle test (Rule: skip when prerequisites missing).');
-      return;
-    }
+    await expect
+      .poll(() => filterButton.count(), {
+        timeout: 5000,
+        message: 'Party filter button must render — e2e seed has 4 parties (Phase 64 D-11 + D-12)'
+      })
+      .toBeGreaterThan(0);
     await filterButton.first().click();
 
     // Check the first available filter checkbox inside the filter modal.
     // The EnumeratedEntityFilter renders checkboxes inside a <dialog>.
     const firstCheckbox = page.locator('dialog input[type="checkbox"]').first();
-    if ((await firstCheckbox.count()) === 0) {
-      test.skip(true, 'Filter modal rendered but no checkbox filters exposed in the seed. Skipping.');
-      return;
-    }
+    await expect
+      .poll(() => firstCheckbox.count(), {
+        timeout: 5000,
+        message:
+          'Filter dialog must contain at least one party checkbox (Phase 64 D-11 + D-12 — EnumeratedEntityFilter dynamic import settles)'
+      })
+      .toBeGreaterThan(0);
     await firstCheckbox.check();
 
-    // Close the modal — click "Apply and close" button (first button in actions row)
-    await page.locator('dialog').getByRole('button').first().click();
+    // Click the "Apply and close" / "Close filters" button — the modal-action
+    // snippet's `variant="main"` button (EntityListWithControls.svelte:204).
+    // Match by the i18n-resolved label rather than `getByRole('button').first()`
+    // (which previously matched the unrelated "Select all" button inside the
+    // EnumeratedEntityFilter — Phase 64 D-11 + D-12 hardening).
+    await page
+      .locator('dialog')
+      .getByRole('button', { name: /close filters/i })
+      .click();
 
     // Wait for the filter to propagate
     await page.waitForTimeout(500);
@@ -191,27 +205,43 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
     // should be present. Assert no infinite-loop console warnings were emitted.
     const filteredCount = await page.getByTestId(testIds.voter.results.card).count();
     expect(filteredCount).toBeLessThanOrEqual(initialCount);
-    expect(
-      consoleErrors.filter((e) => e.includes('effect_update_depth_exceeded'))
-    ).toEqual([]);
+    expect(consoleErrors.filter((e) => e.includes('effect_update_depth_exceeded'))).toEqual([]);
   });
 
   test('filter state resets on plural tab switch (D-14)', async ({ answeredVoterPage: page }) => {
-    // On candidates tab — try to activate a filter and read the badge count.
-    // If no filters present on the candidates side, skip (seed-dependent).
+    // On candidates tab — activate a filter and read the badge count.
     const filterButton = page.getByTestId('entity-list-filter');
-    if ((await filterButton.count()) === 0) {
-      test.skip(true, 'Seed has no filters on the candidates tab — D-14 scope-reset gate requires filterable data.');
-      return;
-    }
+    await expect
+      .poll(() => filterButton.count(), {
+        timeout: 5000,
+        message: 'Party filter button must render — e2e seed has 4 parties (Phase 64 D-11 + D-14 — candidates side)'
+      })
+      .toBeGreaterThan(0);
     await filterButton.first().click();
     const firstCheckbox = page.locator('dialog input[type="checkbox"]').first();
-    if ((await firstCheckbox.count()) === 0) {
-      test.skip(true, 'No checkbox filter in modal on candidates tab — cannot test scope reset.');
-      return;
-    }
+    await expect
+      .poll(() => firstCheckbox.count(), {
+        timeout: 5000,
+        message: 'Filter dialog must contain at least one party checkbox (Phase 64 D-11 + D-14 — candidates side)'
+      })
+      .toBeGreaterThan(0);
     await firstCheckbox.check();
-    await page.locator('dialog').getByRole('button').first().click();
+    // Click the "Apply and close" / "Close filters" button — the modal-action
+    // snippet's `variant="main"` button (EntityListWithControls.svelte:204).
+    // Match by the i18n-resolved label rather than `getByRole('button').first()`
+    // (which previously matched the unrelated "Select all" button inside the
+    // EnumeratedEntityFilter — Phase 64 D-11 + D-14 + D-15 hardening).
+    await page
+      .locator('dialog')
+      .getByRole('button', { name: /close filters/i })
+      .click();
+
+    // Wait for the filter dialog to fully close before clicking the parties tab.
+    // The <dialog> element stays in the DOM after closeModal() (Modal.svelte +
+    // ModalContainer.svelte:131-144) but its `open` attribute is removed — once
+    // open is gone, the dialog stops intercepting pointer events and the
+    // parties tab becomes clickable (Phase 64 D-11 + D-14).
+    await expect(page.locator('dialog[open]')).toHaveCount(0, { timeout: 5000 });
 
     // Switch to organizations tab
     const entityTabs = page.getByTestId(testIds.voter.results.entityTabs);
@@ -230,27 +260,44 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
   test('filter state survives drawer open/close (D-15)', async ({ answeredVoterPage: page }) => {
     // Activate a filter on candidates — same pattern as above.
     const filterButton = page.getByTestId('entity-list-filter');
-    if ((await filterButton.count()) === 0) {
-      test.skip(true, 'No filters available in the seed.');
-      return;
-    }
+    await expect
+      .poll(() => filterButton.count(), {
+        timeout: 5000,
+        message: 'Party filter button must render — e2e seed has 4 parties (Phase 64 D-11 + D-15)'
+      })
+      .toBeGreaterThan(0);
     await filterButton.first().click();
     const firstCheckbox = page.locator('dialog input[type="checkbox"]').first();
-    if ((await firstCheckbox.count()) === 0) {
-      test.skip(true, 'No checkbox filter in modal.');
-      return;
-    }
+    await expect
+      .poll(() => firstCheckbox.count(), {
+        timeout: 5000,
+        message:
+          'Filter dialog must contain at least one party checkbox (Phase 64 D-11 + D-15 — EnumeratedEntityFilter dynamic import settles)'
+      })
+      .toBeGreaterThan(0);
     await firstCheckbox.check();
-    await page.locator('dialog').getByRole('button').first().click();
+    // Click the "Apply and close" / "Close filters" button — the modal-action
+    // snippet's `variant="main"` button (EntityListWithControls.svelte:204).
+    // Match by the i18n-resolved label rather than `getByRole('button').first()`
+    // (which previously matched the unrelated "Select all" button inside the
+    // EnumeratedEntityFilter — Phase 64 D-11 + D-14 + D-15 hardening).
+    await page
+      .locator('dialog')
+      .getByRole('button', { name: /close filters/i })
+      .click();
+    // Wait for the filter dialog's `open` attribute to be removed — same modal-
+    // close race as D-14 above. Without this gate, the entity-card-action
+    // click below races with the modal close animation (Phase 64 D-11 + D-15).
+    await expect(page.locator('dialog[open]')).toHaveCount(0, { timeout: 5000 });
     const beforeFilterCount = await page.getByTestId(testIds.voter.results.card).count();
 
     // Open the first entity's drawer by clicking its card.
-    const firstCard = page.getByTestId(testIds.voter.results.card).first();
-    const firstCardLink = firstCard.getByRole('link').first();
-    if ((await firstCardLink.count()) === 0) {
-      test.skip(true, 'Entity card has no link — cannot open drawer.');
-      return;
-    }
+    // The entity-card-action <a> wraps the entity-card article (EntityCard.svelte:184) —
+    // it lives OUTSIDE the article, so querying with `firstCard.getByRole('link')`
+    // returns 0 hits even though the link exists. Use the entity-card-action
+    // testid directly, matching the deeplink test below (Phase 64 D-11).
+    const firstCardLink = page.getByTestId('entity-card-action').first();
+    await expect(firstCardLink).toHaveCount(1, { timeout: 5000 });
     await firstCardLink.click();
     // Drawer URL: /results/candidates/candidate/[id]
     await page.waitForURL(/\/results\/candidates\/candidate\//, { timeout: 5000 });
@@ -259,14 +306,24 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
     await page.goBack();
     await page.waitForURL((u) => !/\/candidate\/[^/]+/.test(u.toString()), { timeout: 5000 });
 
-    // After closing drawer — filter should still be active (card count unchanged from when filter was applied).
-    const afterDrawerCount = await page.getByTestId(testIds.voter.results.card).count();
-    expect(afterDrawerCount).toEqual(beforeFilterCount);
+    // Wait for the drawer to fully unmount — the post-back render briefly
+    // includes both drawer-internal and list-internal entity-card elements
+    // until the drawer transition completes (Phase 64 D-11 + D-15 hardening).
+    await expect(page.getByTestId(DRAWER_TESTID)).toHaveCount(0, { timeout: 5000 });
+
+    // After closing drawer — filter should still be active (card count unchanged
+    // from when filter was applied). Use expect.poll so the assertion has
+    // settle headroom — the layout's $derived re-evaluation after URL change
+    // briefly desyncs entity-card count from the steady-state filter result.
+    await expect
+      .poll(() => page.getByTestId(testIds.voter.results.card).count(), {
+        timeout: 5000,
+        message: `Card count after drawer close must match pre-drawer count (${beforeFilterCount}) — filter state must survive drawer cycle (Phase 64 D-11 + D-15)`
+      })
+      .toEqual(beforeFilterCount);
   });
 
-  test('deeplink list+drawer URL renders both (RESULTS-03, D-08 shape 3)', async ({
-    answeredVoterPage: page
-  }) => {
+  test('deeplink list+drawer URL renders both (RESULTS-03, D-08 shape 3)', async ({ answeredVoterPage: page }) => {
     // Extract a candidate id + electionId from the first rendered card.
     // The entity-card-action <a> wraps the entity-card article when there
     // are no subcards, so we query the action testid directly.
@@ -327,9 +384,7 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
     expect(response?.status()).toBe(404);
   });
 
-  test('coupling-rule redirect: singular without id → list view (D-11)', async ({
-    answeredVoterPage: page
-  }) => {
+  test('coupling-rule redirect: singular without id → list view (D-11)', async ({ answeredVoterPage: page }) => {
     const currentUrl = new URL(page.url());
     await page.goto(`/results/candidates/candidate${currentUrl.search}`);
     // +page.ts coupling guard throws redirect(307) back to /results/candidates
