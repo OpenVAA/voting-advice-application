@@ -168,3 +168,108 @@ Per CONTEXT D-08 + Pitfall 5, the parity-script constants regen would commit a n
 - STATE.md and ROADMAP.md UNCHANGED by this re-capture (per executor prompt instructions)
 - v2.5 baseline at `.planning/phases/59-e2e-fixture-migration/post-swap/playwright-report.json` UNCHANGED (Phase 63 D-15 honored)
 - `diff-playwright-reports.ts` UNCHANGED (Pitfall 5 honored — constants regen would have locked in regression)
+
+---
+
+## Attempt 3 — Option A landed (commit `c8a4a457e`); cascade UNCHANGED in count, diagnostic FUNDAMENTALLY SHIFTED
+
+**Date:** 2026-04-27 (post Option A)
+**Commit landed:** `c8a4a457e` — `playwright.config.ts:51 timeout: 30000 → 90000`
+**Capture:** `.planning/phases/64-voter-results-reactivity-completion/post-fix/playwright-report.json` (overwritten)
+**Verdict:** **Option A INSUFFICIENT — inner waitForURL reveals as the actual binding constraint, NOT the wrapper.**
+
+### Stats comparison (3 attempts side-by-side)
+
+| Metric | Attempt 1 (pre-64-04, 30s wrapper) | Attempt 2 (post-64-04, 30s wrapper) | **Attempt 3 (post-Option-A, 90s wrapper)** |
+|--------|-----------------------------------|-------------------------------------|-------------------------------------------|
+| Expected (passed) | 30 | 28 | **30** |
+| Unexpected (failed/timedOut) | 21 | 22 | **21** |
+| Skipped | 51 | 52 | **51** |
+| Duration | 493s | 693s | **950s** |
+| 5 named voter-results tests | 5 timedOut | 5 timedOut | **5 failed** |
+
+Identical cascade count (21) as attempt 1, but with cleaner failure surface — tests no longer killed at 30s wrapper; they now run their full inner waitForURL budget (30s) + cleanup (~10s) = **~40500ms per cascaded test**, deterministic across all 5 named + 13 voter-results + 4 voter-detail.
+
+### What Option A revealed
+
+In attempts 1+2 (wrapper=30s), Playwright reported:
+> `Test timeout of 30000ms exceeded while setting up "answeredVoterPage"` at `voter.fixture.ts:85`.
+
+In attempt 3 (wrapper=90s), Playwright now reports:
+> `TimeoutError: page.waitForURL: Timeout 30000ms exceeded.` at `voter.fixture.ts:85`.
+
+The two error messages have DIFFERENT semantics:
+- The first ("test timeout exceeded WHILE SETTING UP fixture") means the wrapper killed the test mid-fixture — could be ANYWHERE in the fixture, including the answer-loop on line 71.
+- The second ("page.waitForURL: Timeout 30000ms exceeded") means the call at line 85 ran for its FULL 30s budget and then naturally raised. **Specifically diagnostic: the fallback `nextButton` click → `waitForURL(/\/results/, { timeout: 30000 })` is the deterministic hang point.**
+
+This means attempts 1+2 were ambiguous — the wrapper kill could have been masking ANY slow step. Attempt 3 nails it: the answer-loop completes (~10.5s, within budget), the post-loop `if (!page.url().includes('/results'))` branch enters, the `nextButton` is clicked, and **the URL never transitions to `/results` within 30 seconds**.
+
+### The new finding: fallback path takes >30s OR navigation never happens
+
+| Fixture step | Wall-clock under attempt-3 conditions | Notes |
+|---|---|---|
+| Lines 53-77 (navigate + 16 answer-loop iterations) | ~10.5s | Auto-advance fires on each question successfully |
+| Line 81: `if (!page.url().includes('/results'))` | enters | URL after last question is NOT `/results` (auto-advance to results didn't fire on last question) |
+| Line 82: `nextButton.click()` | ~immediate | Click registers but no navigation follows |
+| Line 85: `waitForURL(/\/results/, { timeout: 30000 })` | **30000ms — TIMES OUT** | This is the new bottleneck |
+
+The fact that ALL 5 named tests + 13 voter-results + 4 voter-detail (18 total) fail at line 85 with EXACTLY ~40500ms duration — same to within 200ms — strongly suggests this is a **deterministic product bug**, not stochastic render-pressure variability. Render pressure produces variable durations; deterministic ~40.5s every test = a navigation that fundamentally isn't happening, hits the timeout, then unwinds.
+
+### Hypothesis for the deterministic hang
+
+The `nextButton` at end-of-questions either:
+1. Doesn't exist on the last-question DOM under full-suite seed conditions (e2e seed with 16 opinion questions, single election, single constituency)
+2. Exists but its click handler is racing with something else (auth re-init? voterContext settlement? matching-engine spinup?)
+3. Auto-advance from the last question to `/results` IS firing in the same tick, but the URL change happens before line 71 detects the URL change as ≠ `urlBefore` — so the loop exits with `page.url()` already on `/results`, and the `if (!.includes('/results'))` branch should be SKIPPED (fast path)... but apparently isn't being skipped, because we're in the fallback.
+
+Most likely: scenario 3 is a microtask race. Line 71's `waitForURL((url) => url.toString() !== urlBefore)` returns when URL ≠ urlBefore. If the URL transitions intermediate-page → `/results` very fast, line 71 may capture the intermediate URL state (URL changed, condition met) and exit. Then `page.url()` at line 81 reads the CURRENT URL — which by then might be `/results`, OR might still be the intermediate page if the navigation is multi-step. If `page.url()` returns the intermediate, line 81 enters, nextButton click does nothing useful (user is no longer on questions page), and line 85 hangs forever.
+
+### Options NOW (attempt 3 superset of options A/B/C)
+
+Given Option A alone didn't close the cascade, the choices have shifted:
+
+**Option A2 (extend Path A): bump fixture-internal `waitForURL` timeouts to 60s or 90s**
+- Edit `voter.fixture.ts:71` (10s → 30s), line 85 (30s → 60s), line 91 (30s → 60s)
+- Pros: trivially mechanical; if the navigation DOES eventually complete (just slowly), this catches it
+- Cons: based on attempt-3 evidence, the navigation appears DETERMINISTICALLY stuck, not just slow. 30s × 3 = 90s budget already; timing out at 30 vs 60 vs 90 likely all produce the same failure
+- **Likely insufficient if the hang is deterministic** (which the ~40500ms uniformity suggests)
+
+**Option A3 (debug-investigate): inspect what the fixture sees at line 81-85**
+- Add diagnostic logging or use Playwright trace viewer on one cascaded test to see what `page.url()` is at line 81, whether `nextButton` exists and is visible, what the page DOM looks like
+- Pros: surfaces the actual bug; much higher probability of fix
+- Cons: investigation cost; turns Plan 64-03 into a debug session not a verification capture; could spawn new tasks
+- The traces are auto-collected (`use.trace: 'on'` at config:76) — they exist now in `playwright-results/` for any failed test
+
+**Option B (now compound with A): reduce voterAnswerCount default 16 → 4**
+- Same as before: changes test semantics; needs grep audit
+- Less attractive now that Option A revealed the issue is end-of-questions navigation, not loop-cost
+
+**Option C (defer to new phase): voterContext reactive-chain optimization**
+- Same as before: large scope; defers v2.6 close
+
+**Option E (NEW — fix the fixture's URL-detection logic)**
+- Tighten the fast-path: line 71's `waitForURL` should specifically wait for either `/results` URL OR a NEW question URL (not just "any URL change"); on the last iteration, wait specifically for `/results`
+- Pros: addresses the diagnosed root cause (microtask race in URL detection); narrowly scoped; doesn't change test data
+- Cons: requires careful fixture edit; needs validation across all voter specs that consume `answeredVoterPage`
+- This is a **fixture bug fix**, not a workaround
+
+**Option F (NEW — accept Phase 64 shortfall, close v2.6 with documented gap)**
+- Commit attempt-3 capture as the final v2.6 baseline
+- Run Plan 64-03 Task 2 (constants regen) classifying the 18-test answeredVoterPage cascade as `DATA_RACE_TESTS` (under fixture-instability rationale, not imgproxy)
+- Document the deterministic hang as known v2.6 debt to be addressed in a v2.7 phase
+- Run Plan 64-03 Task 3 manual smoke
+- Accept Phase 64 partial-closure: ROADMAP §Goal "flip v2.6 parity gate to PASS" is NOT achieved
+- Pros: unblocks /gsd-complete-milestone; preserves the diagnostic finding for v2.7
+- Cons: explicit shortfall against ROADMAP success criteria; may require ROADMAP amendment or REQUIREMENTS revision
+
+### Recommended path (revised)
+
+Given the new diagnostic (deterministic ~40500ms hang at fixture line 85), the recommended path is now:
+
+**Option A3 (trace investigation) → Option E (fixture URL-detection fix) → re-capture.**
+
+The trace is already collected. ~30 minutes of investigation should reveal whether scenario 3 (microtask URL race) is correct, and Option E fix is a small surgical edit if so.
+
+If user prefers fastest-close-with-known-debt: **Option F** — accept the cascade as fixture-instability data-race, close milestone with documented gap.
+
+Plan 64-04's earlier "Path A (timeout) + Path B (voterContext) hard split" is no longer adequate framing — the bottleneck is fixture URL-detection, NOT timeouts and NOT voterContext.
