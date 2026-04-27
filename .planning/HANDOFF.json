@@ -1,0 +1,45 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-04-27T18:45:23.670Z",
+  "phase": "64",
+  "phase_name": "voter-results-reactivity-completion",
+  "phase_dir": ".planning/phases/64-voter-results-reactivity-completion",
+  "plan": 3,
+  "task": 1,
+  "total_tasks": 3,
+  "status": "blocked",
+  "completed_tasks": [
+    {"id": "64-01", "name": "Reactivity bridge + fixture stabilization", "status": "done", "commit": "c5d4578e4"},
+    {"id": "64-02", "name": "Deeplink load chain (NONE outcome)", "status": "done", "commit": "731d8ff86"},
+    {"id": "64-04", "name": "Svelte 5 hygiene sweep + Path A timeout bumps", "status": "done", "commit": "e804bc41b"},
+    {"id": "64-03 Task 1 (attempt 1)", "name": "Canonical capture, pre-Plan-64-04", "status": "done", "commit": "35c84ef43", "result": "5/5 named tests fail, 21 unexpected"},
+    {"id": "64-03 Task 1 (attempt 2)", "name": "Canonical capture, post-Plan-64-04", "status": "done", "commit": "976658b0f", "result": "5/5 named tests still fail (test-budget ceiling), 22 unexpected"}
+  ],
+  "remaining_tasks": [
+    {"id": "decision", "name": "Choose fix-path Option A (raise playwright.config.ts:51 timeout to 90000ms), B (reduce voterAnswerCount default 16→4), or C (voterContext optimization, new phase)", "status": "awaiting_user"},
+    {"id": "64-03 Task 1 (attempt 3)", "name": "Re-run canonical capture after chosen fix-path lands", "status": "blocked_on_decision"},
+    {"id": "64-03 Task 2", "name": "Parity-script constants regen (D-08)", "status": "blocked_on_capture_pass"},
+    {"id": "64-03 Task 3", "name": "9-step manual smoke checkpoint (D-10)", "status": "blocked_on_capture_pass"}
+  ],
+  "blockers": [
+    {
+      "description": "tests/playwright.config.ts:51 caps every test at timeout: 30000ms. voter.fixture.ts internal waitForURL bumps (Plan 64-04 Task 6) cannot exceed this ceiling. Under full-suite render contention (~102 tests, dev server under HMR pressure), the answer-loop consumes most of the 30s budget; the post-loop waitForURL runs out of room.",
+      "type": "technical",
+      "workaround": "Option A: 1-line bump to 90000ms in playwright.config.ts:51 (recommended). Option B: reduce voter.fixture.ts:49 voterAnswerCount default 16→4 (changes test semantics). Option C: voterContext reactive-chain optimization (future phase scope)."
+    }
+  ],
+  "human_actions_pending": [
+    {"action": "Choose between fix-path Options A / B / C", "context": "See 64-03-RECAPTURE-NOTES.md for full analysis. Recommended: Option A.", "blocking": true}
+  ],
+  "decisions": [
+    {"decision": "@openvaa/filters source IS in scope for Phase 64, but UI-framework agnosticism is binding (no $state/$derived/svelte/* imports inside the package)", "rationale": "CONTEXT D-01; agnosticism preserved by `grep -rn \"from 'svelte\" packages/filters/src/` returning 0", "phase": "64"},
+    {"decision": "Phase 64 owns parity-script constants regeneration (folded in from Phase 63 D-13 originally allocated to /gsd-complete-milestone)", "rationale": "CONTEXT D-08; single canonical capture serves both PASS verification and constants-regen baseline (RESEARCH Pitfall 6)", "phase": "64"},
+    {"decision": "imgproxy upload + 13 cascades reclassify into DATA_RACE_TESTS in regenerated constants", "rationale": "CONTEXT D-09; semantically correct (intermittent infrastructure flake, not deterministic failure)", "phase": "64"},
+    {"decision": "Plan 64-01 e2e seed parent_nomination wiring (D-04 authorized) + Supabase adapter parentNominationType derivation", "rationale": "Without parent links, buildParentFilters returns 0 filters and the entity-list-filter button never renders on candidates tab — empirical root cause of the post-Task-2 hard-fail signal", "phase": "64"},
+    {"decision": "Plan 64-04 added as a side-plan to address pre-existing Svelte 5 hygiene warnings + Path A fixture timeout bumps", "rationale": "User direction: 'Do D first, then A. With D also fix similar errors from these warnings'. 50+ warnings cleared across 5 categories; ElectionSelector init-time if-block converted to $effect (critical case empirically linked to voter-app cascade)", "phase": "64"},
+    {"decision": "Plan 64-04 fixture-internal timeout bumps (5s/10s/10s → 10s/30s/30s) were correct but insufficient — the ceiling is at the test wrapper level (playwright.config.ts:51), not inside the fixture", "rationale": "Empirical recapture verified; 4 of 5 named tests still timeout at fixture line 85 with 'Test timeout of 30000ms exceeded while setting up answeredVoterPage'", "phase": "64"}
+  ],
+  "uncommitted_files": [],
+  "next_action": "User decides Option A / B / C from 64-03-RECAPTURE-NOTES.md. Recommended: Option A — single-line bump of playwright.config.ts:51 from 30000 to 90000. Then resume Plan 64-03 Task 1 (third attempt) → Task 2 (constants regen, only if 5/5 named tests pass) → Task 3 (manual smoke checkpoint).",
+  "context_notes": "All 5 named voter-results tests pass DETERMINISTICALLY in focused-grep runs (Plans 64-01/02 evidence + post-Plan-64-04 voter-results.spec.ts focused: 13/13 pass). The cascade is structural per-test timeout under full-suite render pressure, not spec-assertion incompatibility. ElectionSelector $effect conversion (Plan 64-04 Task 4) likely closed the auto-imply-single-election short-circuit issue but cannot be verified without re-running canonical capture after Option A lands. Pre-Plan-64-04 capture preserved at post-fix/playwright-report.pre-64-04.json for audit comparison."
+}
