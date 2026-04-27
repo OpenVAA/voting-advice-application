@@ -47,8 +47,12 @@ export default defineConfig({
   /* Screenshot baselines stored alongside specs in a git-trackable directory */
   snapshotPathTemplate: '{testDir}/__screenshots__/{testFileName}/{arg}{ext}',
 
-  /* Per-test timeout */
-  timeout: 30000,
+  /* Per-test timeout — 90s ceiling required for full-suite render-pressured fixtures.
+   * Plan 64-04 Task 6 bumped voter.fixture.ts internal waitForURL budgets to 30s, but the
+   * per-test wrapper timeout was the binding constraint: under --workers=1 full-suite
+   * contention the answer-loop + post-loop waitForURL exceeded 30s and timed out at
+   * voter.fixture.ts:85. Path A continuation per .planning/phases/64-voter-results-reactivity-completion/64-03-RECAPTURE-NOTES.md. */
+  timeout: 90000,
 
   /* Run tests in files in parallel */
   fullyParallel: true,
