@@ -38,6 +38,11 @@
 
   let status = $state<ActionStatus>('idle');
   let termsAcceptedLocal = $state(false);
+  // Gates the layoutState 'terms' → 'ready' transition. Set true only after
+  // handleSubmit's save() resolves, so ticking the checkbox alone does not
+  // unmount the form before Continue is clicked (which would short-circuit
+  // userData.save() and leave acceptance unpersisted).
+  let termsSubmitted = $state(false);
 
   async function handleSubmit() {
     if (!termsAcceptedLocal) return;
@@ -45,7 +50,7 @@
     userData.setTermsOfUseAccepted(new Date().toJSON());
     await userData.save();
     status = 'success';
-    // layoutState recomputes automatically via $derived from termsAcceptedLocal — no explicit write.
+    termsSubmitted = true;
   }
 
   async function handleCancel() {
@@ -94,7 +99,7 @@
   const layoutState = $derived<'loading' | 'error' | 'terms' | 'ready'>(
     validity.state === 'error'
       ? 'error'
-      : !validity.candidate.termsOfUseAccepted && !termsAcceptedLocal
+      : !validity.candidate.termsOfUseAccepted && !termsSubmitted
         ? 'terms'
         : 'ready'
   );
