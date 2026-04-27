@@ -23,7 +23,7 @@ A `Drawer` that displays `EntityDetails`.
 
   let { entity, ...restProps }: EntityDetailsDrawerProps = $props();
 
-  const { entity: nakedEntity } = unwrapEntity(entity);
+  const nakedEntity = $derived(unwrapEntity(entity).entity);
 </script>
 
 <Drawer title={nakedEntity.name} {...concatClass(restProps, '!p-0')}>

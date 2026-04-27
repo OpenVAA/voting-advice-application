@@ -39,8 +39,9 @@ Display the question's expandable information content.
 
   const { t } = getComponentContext();
 
-  const { info } = question;
-  const { arguments: args, infoSections } = getCustomData(question);
+  const info = $derived(question.info);
+  const args = $derived(getCustomData(question).arguments);
+  const infoSections = $derived(getCustomData(question).infoSections);
 </script>
 
 <div {...concatClass(restProps, 'flex flex-col gap-lg justify-stretch')}>

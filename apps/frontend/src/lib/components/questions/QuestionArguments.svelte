@@ -30,7 +30,7 @@ Display the pros and cons arguments related to a question.
 
   const { t } = getComponentContext();
 
-  const { arguments: args } = getCustomData(question) || {};
+  const args = $derived(getCustomData(question)?.arguments);
 
   const TITLE_KEYS: Record<ArgumentType, TranslationKey> = {
     [ARGUMENT_TYPE.BooleanCons]: 'questions.arguments.pro',

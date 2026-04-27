@@ -52,6 +52,7 @@ Accesses `CandidateContext`.
   // `timeLeft` is bound by TimedModal (countdown ticks); seed from the
   // prop's initial value. Reading the prop inside the initializer is
   // intentional: we want the initial seed, not a reactive dependency.
+  // svelte-ignore state_referenced_locally
   let timeLeft = $state(logoutModalTimer);
 
   async function triggerLogout() {

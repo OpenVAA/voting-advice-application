@@ -38,13 +38,16 @@ PasswordField is an input box for password that comes with a button to reveal an
     input?.focus();
   }
 
-  const id = idProp ?? getUUID();
+  // Generate a stable fallback id once at mount (UUID must not regenerate
+  // per-derived-call). Effective id falls back to the prop when supplied.
+  const fallbackId = getUUID();
+  const id = $derived(idProp ?? fallbackId);
 
   const { t } = getComponentContext();
 
   let passwordRevealed = $state(false);
   /** variable used to refer to the input box in code to change its type*/
-  let input: HTMLInputElement;
+  let input: HTMLInputElement | undefined = $state();
   /** function that hides and reveals the password and changes the icon of the button*/
   function toggleRevealed() {
     passwordRevealed = !passwordRevealed;

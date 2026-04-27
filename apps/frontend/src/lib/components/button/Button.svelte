@@ -86,13 +86,15 @@ text="Add to list">
   // Styling
   ////////////////////////////////////////////////////////////////////
 
-  // Check iconPos
-  if (
+  // Check iconPos: certain variants don't support top/bottom; coerce to
+  // 'right' instead. Derived (not a prop reassignment) so it stays
+  // reactive when props change.
+  const effectiveIconPos = $derived(
     (variant === 'main' || variant === 'prominent' || variant === 'responsive-icon') &&
-    (iconPos === 'top' || iconPos === 'bottom')
-  ) {
-    iconPos = 'right';
-  }
+      (iconPos === 'top' || iconPos === 'bottom')
+      ? 'right'
+      : iconPos
+  );
 
   // Build classes reactively so that we can incorporate any changes to `icon` and `color` properties
   let classes = $derived.by(() => {
@@ -117,7 +119,7 @@ text="Add to list">
     }
 
     // 3. Icon position
-    switch (iconPos) {
+    switch (effectiveIconPos) {
       case 'top':
         c += ' flex-col';
         break;
@@ -156,7 +158,7 @@ text="Add to list">
         lc += ' flex-grow text-center';
         if (icon) {
           // If an icon is used, add left or right margin so that the text is  nicely centered: ml/r is calculated so that it is the sum of the gap (4) and icon widths (24) = 28/16 rem
-          lc += iconPos === 'right' ? ' ml-[1.75rem]' : ' mr-[1.75rem]';
+          lc += effectiveIconPos === 'right' ? ' ml-[1.75rem]' : ' mr-[1.75rem]';
         }
         break;
       case 'responsive-icon':

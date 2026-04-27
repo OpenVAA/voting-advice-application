@@ -46,6 +46,8 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
     ...restProps
   }: ConstituencySelectorProps = $props();
 
+  // Hard error guard — must run synchronously at mount.
+  // svelte-ignore state_referenced_locally
   if (!elections.length) error(500, 'No elections provided');
 
   ////////////////////////////////////////////////////////////////////

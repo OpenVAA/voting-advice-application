@@ -85,8 +85,11 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
   let description = $state('');
   let errorTimeout: NodeJS.Timeout | undefined;
   let rating: number | undefined = $state(undefined);
+  // textareaExpanded seeds from variant prop (one-shot read at init);
+  // becomes mutable local UI state thereafter (toggled on focus).
+  // svelte-ignore state_referenced_locally
   let textareaExpanded = $state(variant === 'default');
-  let zeroInput: HTMLInputElement;
+  let zeroInput: HTMLInputElement | undefined = $state();
 
   onDestroy(clearErrorTimeout);
 

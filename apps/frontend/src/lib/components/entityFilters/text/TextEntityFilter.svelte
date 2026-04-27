@@ -17,7 +17,6 @@ Render a text filter for entities.
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { Icon } from '$lib/components/icon';
   import { getComponentContext } from '$lib/contexts/component';
   import { concatClass } from '$lib/utils/components';
@@ -35,6 +34,10 @@ Render a text filter for entities.
   // Filtering
   ////////////////////////////////////////////////////////////////////
 
+  // value seeds from filter.include at mount; mutable thereafter (bound
+  // by the input element). filter is treated as a stable reference for
+  // the component's lifetime per filterContext design.
+  // svelte-ignore state_referenced_locally
   let value: string = $state(filter.include);
 
   // Update filter values when selection changes
@@ -42,11 +45,12 @@ Render a text filter for entities.
     filter.include = value;
   });
 
-  // Update selection when filter values change
-  filter.onChange(updateText);
-
-  // Cleanup
-  onDestroy(() => filter.onChange(updateText, false));
+  // Wire onChange in an effect so the cleanup handler runs symmetrically
+  // (matches the pattern used elsewhere in the filter components).
+  $effect(() => {
+    filter.onChange(updateText);
+    return () => filter.onChange(updateText, false);
+  });
 
   ////////////////////////////////////////////////////////////////////
   // Functions

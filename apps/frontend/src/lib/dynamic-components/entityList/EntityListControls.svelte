@@ -26,7 +26,6 @@ TODO: Consider moving the tracking events away from the component and just addin
 
 <script lang="ts">
   import { TextPropertyFilter } from '@openvaa/filters';
-  import { onDestroy } from 'svelte';
   import { slide } from 'svelte/transition';
   import { Button } from '$lib/components/button';
   import { EntityFilters } from '$lib/components/entityFilters';
@@ -46,24 +45,32 @@ TODO: Consider moving the tracking events away from the component and just addin
   let output: EntityListControlsProps['entities'] = $state([]);
   let numActiveFilters = $state(0);
 
-  const searchFilter = searchProperty
-    ? new TextPropertyFilter<MaybeWrappedEntityVariant>(
-        { property: searchProperty as keyof MaybeWrappedEntityVariant },
-        locale
-      )
-    : undefined;
+  // searchFilter depends on searchProperty + locale; recompute reactively
+  // (the props are typically stable, but this honors Svelte 5 idioms).
+  const searchFilter = $derived(
+    searchProperty
+      ? new TextPropertyFilter<MaybeWrappedEntityVariant>(
+          { property: searchProperty as keyof MaybeWrappedEntityVariant },
+          locale
+        )
+      : undefined
+  );
 
-  filterGroup?.onChange(updateFilters);
-  searchFilter?.onChange(updateSearch);
+  // Wire onChange handlers via $effect so cleanup runs symmetrically and
+  // re-attaches if filterGroup / searchFilter ever change.
+  $effect(() => {
+    filterGroup?.onChange(updateFilters);
+    return () => filterGroup?.onChange(updateFilters, false);
+  });
+
+  $effect(() => {
+    searchFilter?.onChange(updateSearch);
+    return () => searchFilter?.onChange(updateSearch, false);
+  });
 
   $effect(() => {
     entities;
     updateFilters();
-  });
-
-  onDestroy(() => {
-    filterGroup?.onChange(updateFilters, false);
-    searchFilter?.onChange(updateSearch, false);
   });
 
   function updateFilters() {

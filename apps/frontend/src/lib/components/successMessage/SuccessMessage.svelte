@@ -26,27 +26,30 @@ Used to display a message when an action succeeds.
 
   const { t } = getComponentContext();
 
-  message ||= t('common.success');
+  // Derived effective message so the prop isn't reassigned (Svelte 5).
+  const effectiveMessage = $derived(message || t('common.success'));
   const emoji = t('dynamic.success.heroEmoji');
 
   ////////////////////////////////////////////////////////////////////
   // Styling
   ////////////////////////////////////////////////////////////////////
 
-  const classes = inline
-    ? 'inline-flex flex-row align-bottom gap-sm'
-    : 'flex flex-col items-center justify-center h-full w-full gap-y-lg pb-safelgb pl-safelgl pr-safelgr pt-lg';
+  const classes = $derived(
+    inline
+      ? 'inline-flex flex-row align-bottom gap-sm'
+      : 'flex flex-col items-center justify-center h-full w-full gap-y-lg pb-safelgb pl-safelgl pr-safelgr pt-lg'
+  );
 </script>
 
 <div {...concatClass(restProps, classes)}>
   {#if inline}
-    <span class="text-success text-center">{emoji} {message}</span>
+    <span class="text-success text-center">{emoji} {effectiveMessage}</span>
   {:else}
     {#if emoji}
       <figure role="presentation" class="my-lg">
         <HeroEmoji {emoji} />
       </figure>
     {/if}
-    <h2 class="text-success text-center">{message}</h2>
+    <h2 class="text-success text-center">{effectiveMessage}</h2>
   {/if}
 </div>

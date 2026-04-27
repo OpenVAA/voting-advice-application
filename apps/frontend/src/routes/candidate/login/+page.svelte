@@ -62,9 +62,11 @@
 
   if (errorParam) {
     const errorKey = getErrorTranslationKey(errorParam);
-    if (errorKey) errorMessage = t(errorKey);
+    if (errorKey) {
+      errorMessage = t(errorKey);
+      status = 'error';
+    }
   }
-  if (errorMessage) status = 'error';
 
   if (candCtx.newUserEmail != null) {
     email = candCtx.newUserEmail;

@@ -104,21 +104,25 @@ Multilingual features are only available if the `locales` store contains more th
   // Handling multilinguality, disabled and other cases
   ////////////////////////////////////////////////////////////////////
 
-  const maxFilesizeInMB = Math.floor((maxFilesize ?? 0) / (1024 * 1024));
-  const multilingual = type.endsWith('-multilingual');
+  const maxFilesizeInMB = $derived(Math.floor((maxFilesize ?? 0) / (1024 * 1024)));
+  const multilingual = $derived(type.endsWith('-multilingual'));
   /** Whether the label is above the field or inside it */
-  const isLabelOutside = multilingual || type.startsWith('textarea');
+  const isLabelOutside = $derived(multilingual || type.startsWith('textarea'));
 
-  /*** Extend info */
-  if (multilingual && locales.length > 1 && multilingualInfo != '') {
-    multilingualInfo ??= t('components.input.multilingualInfo');
-    info ??= '';
-    info += ` ${multilingualInfo}`;
-  }
-  if (type === 'image') {
-    info ??= '';
-    info += ` ${t('components.input.imageInfo', { maxFilesize: maxFilesizeInMB })}`;
-  }
+  /*** Extend info — derived so the prop isn't mutated. */
+  const effectiveMultilingualInfo = $derived(
+    multilingual && locales.length > 1 && multilingualInfo != ''
+      ? (multilingualInfo ?? t('components.input.multilingualInfo'))
+      : ''
+  );
+  const effectiveInfo = $derived.by(() => {
+    let result = info ?? '';
+    if (effectiveMultilingualInfo) result += ` ${effectiveMultilingualInfo}`;
+    if (type === 'image') {
+      result += ` ${t('components.input.imageInfo', { maxFilesize: maxFilesizeInMB })}`;
+    }
+    return result || undefined;
+  });
 
   let error: string | undefined = $state(undefined);
   let isDisabled = $derived(!!(disabled || locked));
@@ -613,12 +617,12 @@ Multilingual features are only available if the `locales` store contains more th
 
   <!-- Optional elements below the form widgets -->
 
-  {#if (multilingual && locales.length > 1) || info}
+  {#if (multilingual && locales.length > 1) || effectiveInfo}
     <!-- If both info and the multilingual button are shown, they're arranged side by side -->
-    <div class="gap-md flex {multilingual && info ? 'flex-row items-start' : 'flex-col'}">
-      {#if info}
+    <div class="gap-md flex {multilingual && effectiveInfo ? 'flex-row items-start' : 'flex-col'}">
+      {#if effectiveInfo}
         <!-- pt-4 aligns the info more nicely with the multilingual button -->
-        <div class="{infoClass} {multilingual ? 'pt-4' : ''} grow">{info}</div>
+        <div class="{infoClass} {multilingual ? 'pt-4' : ''} grow">{effectiveInfo}</div>
       {/if}
       {#if multilingual && locales.length > 1}
         <Button

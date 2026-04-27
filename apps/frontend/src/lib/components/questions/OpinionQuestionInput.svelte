@@ -48,8 +48,12 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
     ...restProps
   }: OpinionQuestionInputProps = $props();
 
-  if (mode === 'display' && otherAnswer && !otherLabel)
-    logDebugError('You should supply an otherLabel when mode is "display" and otherSelected is provided');
+  // Debug warning — runs reactively so devs see the warning whenever the
+  // prop combination becomes invalid, not just at mount.
+  $effect(() => {
+    if (mode === 'display' && otherAnswer && !otherLabel)
+      logDebugError('You should supply an otherLabel when mode is "display" and otherSelected is provided');
+  });
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
