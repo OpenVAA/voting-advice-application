@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.6
 milestone_name: Svelte 5 Migration Cleanup
-status: executing
-stopped_at: "Phase 63 partial: 63-01 + 63-02 complete; 63-03 deferred (parity gate needs live dev server)."
-last_updated: "2026-04-25T10:49:35.947Z"
-last_activity: 2026-04-24 -- Phase 63 execution started
+status: ready-for-milestone-close
+stopped_at: "Phase 63 complete (63-01 + 63-02 + 63-03). Parity gate FAIL per script but all 19 residuals classify Category A; pending_review: false."
+last_updated: "2026-04-27T07:25:00.000Z"
+last_activity: 2026-04-27 -- Phase 63-03 parity gate executed; 1 D-07 fix applied (commit c2bd3594b); artifacts committed (ec5ddeb9a)
 progress:
   total_phases: 4
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 14
-  completed_plans: 13
-  percent: 93
+  completed_plans: 14
+  percent: 100
 ---
 
 # Project State
@@ -110,9 +110,9 @@ Key context for v2.6:
 
 ## Session Continuity
 
-Last session: --stopped-at
-Stopped at: Phase 63 partial: 63-01 + 63-02 complete; 63-03 deferred (parity gate needs live dev server).
-Resume file: --resume-file
-Next action: `/gsd-plan-phase 60` — plan Phase 60 (Layout Runes Migration & Hydration Fix, LAYOUT-01/02/03)
+Last session: 2026-04-27
+Stopped at: Phase 63 complete. 63-03 parity gate executed; 1 D-07 fix applied (`c2bd3594b` — protected-layout `termsSubmitted` flag replacing `!termsAcceptedLocal` gate); artifacts committed (`ec5ddeb9a`). Verdict: PARITY GATE FAIL per script (19 regressions) but all classify Category A with specific pointers (1 imgproxy infrastructure flake + 13 cascades + 5 incomplete Phase-62 voter-results tests); `pending_review: false`. Stats: v2.5 41p/10f/38c → post-v2.6 62p/5f/35c (+21 pass, −5 fail, +13 new tests from Phase 62).
+Resume file: --
+Next action: `/gsd-complete-milestone` to close v2.6 — or address Phase-62 RESULTS shortfall first (5 voter-results tests still failing) and revisit imgproxy infrastructure flake.
 
-**Planned Phase:** 63 (E2E Template Extension & Greening) — 3 plans — 2026-04-24T22:14:01.451Z
+**v2.6 Milestone Status:** All 4 phases (60, 61, 62, 63) complete. Outstanding decisions for milestone close: (a) accept the 5 incomplete Phase-62 voter-results tests as deferred-to-next-milestone or open Phase 62-bis; (b) acknowledge imgproxy intermittent crash as known infrastructure debt.
