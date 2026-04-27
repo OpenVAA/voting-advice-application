@@ -114,10 +114,12 @@ Phases execute in numeric order: 60 → 61 → 62 → 63
 Close out 5 voter-results E2E failures deferred from Phase 63's parity gate: RESULTS-01/02 (filter toggle), D-14 (plural-tab switch), D-15 (drawer survival), D-08 shape 3 (list+drawer deeplink), D-08 shape 4 (organizations+candidate-drawer deeplink). All in `tests/tests/specs/voter/voter-results.spec.ts`. Root cause: incomplete Phase 62 `entity-list-controls` reactivity refactor.
 
 **Goal:** Flip the v2.6 parity gate to PASS so `/gsd-complete-milestone` can proceed without `pending_review` caveat.
-**Requirements**: TBD
+**Requirements**: RESULTS-01, RESULTS-02, RESULTS-03
 **Depends on:** Phase 63
 **Out of scope:** imgproxy infrastructure flake (separate concern; tracked as STATE.md known infrastructure debt).
-**Plans:** 0 plans
+**Plans:** 3 plans
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 64 to break down)
+- [ ] 64-01-PLAN.md - Reactivity bridge + fixture stabilization (RESULTS-01/02 + D-14 + D-15): empirical reproduction, 6 truthy test.skip(true) replacements with expect.poll (D-11), selected fixture-flake fix path (F1/F2/spec-only) per repro outcome
+- [ ] 64-02-PLAN.md - Deeplink load chain (RESULTS-03 / D-08 shape 3+4): independent reproduction via direct page.goto bypassing answeredVoterPage; conditional fix in +layout.svelte / +layout.ts / +page.ts only if reproduction surfaces a rendering defect (default = NONE - Plan 64-01 fixture fix closes shapes 3+4)
+- [ ] 64-03-PLAN.md - Verification + close: single canonical Playwright JSON capture (D-07 + Pitfall 6), parity-script constants regeneration (D-08 + D-09 + Pitfall 5), Phase 64 verification report, 9-step manual smoke checkpoint (D-10)
