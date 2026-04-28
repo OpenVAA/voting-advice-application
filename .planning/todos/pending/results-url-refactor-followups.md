@@ -72,6 +72,50 @@ Phase 62 migrated only `/results/`. Other voter routes stay session-based for el
 - Product decision: which voter URLs are expected to be shareable? (probably /results/* and individual /questions/[qid]; maybe /questions/category)
 - Interaction with Phase 61 (QUESTION-03 category selection + QUESTION-04 candidate-questions testIds) — schedule to avoid double-migrating routes.
 
+## 4. Address by nominationId, not entityId — drop id from search params
+
+Surfaced during Phase 64 manual smoke (2026-04-28). The current results
+drawer route is `/results/[entityTypePlural]/[entityTypeSingular]/[id]`
+where `[id]` is the entity id, with `nominationId` carried as a search
+param (`results/+layout.svelte:169`
+`page.url.searchParams.get('nominationId')`). Two problems with this:
+
+- **Wrong identifier semantics.** A candidate is one entity but can have
+  multiple nominations (different elections / constituencies). The URL is
+  trying to address a nomination but uses the entity id, then disambiguates
+  with a side-channel search param. Addressing the nomination directly is
+  the correct primary key for "this candidate-in-this-race".
+- **Search-param drift.** Carrying `nominationId` (and the URL also
+  carries `electionId` + `constituencyId`) means deeplinks have a tail of
+  query string that the path already implies. Bookmarks and shares grow
+  noisier than necessary.
+
+**Direction to explore:**
+- Switch to `/results/[entType]/[nominationId]` as the primary detail
+  route. Server- or load-resolve nominationId → (entityId, electionId,
+  constituencyId) so the rest of the page wiring keeps working.
+- Drop `nominationId` from search params entirely. Audit
+  `electionId` / `constituencyId` for the same — once the nomination
+  pins the (election, constituency, entity) tuple, those query params
+  are redundant for the drawer route.
+- Coordinate with the cross-type edge case
+  (`results/organizations/candidate/[id]` — see `results/+layout.svelte`
+  routing comment at line 10) so the `[entType]` segment correctly
+  identifies what the path-id refers to.
+- Migration plan for any inbound bookmarks on the legacy entity-id +
+  query-param shape (likely just a redirect resolver in the route's
+  `+page.ts`).
+
+**Open questions:**
+- Where does the `[entType]` segment refer — the nomination's
+  entity type or the originating list's plural? The current cross-type
+  shape lets organizations link to candidate detail; the new shape needs
+  to preserve that.
+- Single nomination id is enough only when nominations are uniquely
+  keyed app-wide. Confirm.
+- Interaction with item 1 (shorter IDs) — apply the same shortening
+  scheme to nomination ids.
+
 ## Related
 
 - `.planning/todos/pending/session-storage-election-constituency.md` — partially addressed by Phase 62 (election now in URL for /results); broader session-storage question carries forward here.
