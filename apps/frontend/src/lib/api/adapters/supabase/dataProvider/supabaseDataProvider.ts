@@ -362,6 +362,60 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
       }
     }
 
+    // Reverse-fill parent → children id arrays. The data layer's nomination
+    // constructors only auto-populate these when nominations arrive in the
+    // nested form (e.g. `org.data.candidates = [...]`). Our flat schema only
+    // sets the child→parent edge (`parent_nomination_id`); without the
+    // reverse fill, `OrganizationNomination.candidateNominationIds` is
+    // undefined, `hasCandidates` is false, and `nominationAndQuestionStore`
+    // filters every org out under the default `hideIfMissingAnswers.candidate`
+    // setting — surfaced as "parties tab is empty" during Phase 64 manual
+    // smoke. The full child→parent → grandparent walk also covers
+    // candidate→faction→organization→alliance and faction→organization edges.
+    const childIdsByParentAndType = new Map<string, Map<string, Array<string>>>();
+    for (const child of nominations) {
+      const c = child as unknown as {
+        id: string;
+        parentNominationId?: string | null;
+        entityType: string;
+      };
+      if (!c.parentNominationId) continue;
+      let typeMap = childIdsByParentAndType.get(c.parentNominationId);
+      if (!typeMap) {
+        typeMap = new Map();
+        childIdsByParentAndType.set(c.parentNominationId, typeMap);
+      }
+      let ids = typeMap.get(c.entityType);
+      if (!ids) {
+        ids = [];
+        typeMap.set(c.entityType, ids);
+      }
+      ids.push(c.id);
+    }
+    for (const parent of nominations) {
+      const p = parent as unknown as {
+        id: string;
+        entityType: string;
+        candidateNominationIds?: Array<string>;
+        factionNominationIds?: Array<string>;
+        organizationNominationIds?: Array<string>;
+      };
+      const typeMap = childIdsByParentAndType.get(p.id);
+      if (!typeMap) continue;
+      const candIds = typeMap.get(ENTITY_TYPE.Candidate);
+      const factionIds = typeMap.get(ENTITY_TYPE.Faction);
+      const orgIds = typeMap.get(ENTITY_TYPE.Organization);
+      if (candIds && (p.entityType === ENTITY_TYPE.Organization || p.entityType === ENTITY_TYPE.Faction)) {
+        p.candidateNominationIds = candIds;
+      }
+      if (factionIds && p.entityType === ENTITY_TYPE.Organization) {
+        p.factionNominationIds = factionIds;
+      }
+      if (orgIds && p.entityType === ENTITY_TYPE.Alliance) {
+        p.organizationNominationIds = orgIds;
+      }
+    }
+
     return {
       nominations,
       entities: Array.from(entityMap.values())
