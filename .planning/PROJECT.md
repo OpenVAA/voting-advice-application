@@ -10,32 +10,24 @@ A reliable, well-tested VAA framework that developers can confidently extend, cu
 
 ## Current State
 
-**v2.5 Dev Data Seeding Toolkit shipped 2026-04-24.** 4 phases (56-59), 34 plans, 63 tasks across 2 days. Delivered:
+**v2.6 Svelte 5 Migration Cleanup shipped 2026-04-28.** 5 phases (60-64), 18 plans, 48 tasks across 4 days (137 commits). Delivered:
 
-- `@openvaa/dev-seed` private workspace (new) with 14 per-entity generator classes producing typed rows against `@openvaa/supabase-types`, bulk-import via `SupabaseAdminClient` (D-24 split: base class in package, subclass shell in `tests/` for auth/email helpers)
-- Latent-factor answer model (PCA-inspired pluggable pipeline — 6 sub-steps independently overridable) producing party-clustered candidate answers with measurable inter-question correlation (verified: intra-party vs inter-party distance ratio 0.0713; |r| 0.993 at defaults)
-- Built-in `default` template (1 election × 13 constituencies × 8 parties × 100 candidates × 24 questions × 4 locales) + `e2e` template (audit-driven from Playwright spec inventory; 2 elections × 2 constituencies × 4 parties × 14 candidates × 17 questions) + filesystem variant templates
-- CLI surface: `yarn dev:seed --template <name|path>`, `yarn dev:seed:teardown`, `yarn dev:reset-with-data`; NF-01 <10s budget validated end-to-end
-- E2E fixture migration: `tests/seed-test-data.ts` rewritten as 37-line thin wrapper over `@openvaa/dev-seed`; 3 legacy JSON fixtures (default-dataset / voter-dataset / candidate-addendum) deleted along with mergeDatasets.ts and 3 orphan overlays; 8 module-level fixture consumers migrated to `tests/tests/utils/e2eFixtureRefs.ts` typed barrel
-- Playwright parity gate: baseline captured at SHA `f09daea34` (41 pass / 10 data-race / 38 skipped = 89 tests), post-swap run matches baseline exactly — zero regressions per D-59-04. Diff script codifies the delta rule and prints `PARITY GATE: PASS|FAIL` literal. Data-race pool actually shrank post-swap (9/10 baseline flakes now pass).
+- Runes-mode migration of the last two legacy layouts: root `+layout.svelte` and `candidate/(protected)/+layout.svelte` — both refactored from the hydration-unsafe `$effect + Promise.all(...).then()` pattern to a pure `$derived.by` discriminated-union validity check + a dedicated `$effect` for `$dataRoot` / `userData.init` batching. SSR microtask race eliminated; protected-layout stuck-at-`<Loading />` fixed.
+- `PopupRenderer` wrapper deleted atomically — inline popup rendering via `{@const Component = item.component}` + `<Component ...>` works under Svelte 5 runes on full-page SSR+hydration; D-09 `voter-popup-hydration.spec.ts` E2E proves it.
+- Voter-app question flow: BooleanQuestion renderer (`isBooleanQuestion` type guard + `OpinionQuestionInput` 2-button branch); candidate result-detail boolean match-breakdown via shared dispatch; category-selection migrated from `sessionStorageWritable` to pure `$state<Array<Id>>` with default-all-checked seeding; candidate-questions reactivity restored via push-based `$state + $effect` mirror replacing the pull-chain `$derived.by` helper-store chain (8 direct + 18 cascade tests unblocked).
+- Results page consolidated: `EntityListControls` + `EntityList` merged into `EntityListWithControls`; `filterContext` (Symbol-keyed module with `$state` version counter that bridges `FilterGroup.onChange → $derived` consumers, scoped per `(electionId, entityTypePlural)` tuple); single 4-segment optional-param route `/results/[electionId]/[[entityTypePlural]]/[[entityTypeSingular]]/[[id]]` with typed American-spelled param matchers; coupling-guard `+page.ts` 307-redirects malformed URLs; drawer-first DOM source order + `content-visibility: auto` for cold-deeplink paint.
+- Phase 64 (Phase 62-bis) closed the parity gate: 6 silent `test.skip(true)` voter-results paths converted to `expect.poll` hard assertions (D-11); supabase adapter now reverse-fills nomination parent → children id arrays (closes the "empty parties tab" + cross-type drawer gaps); 4-layer reactivity-cascade fix (content-equality guards on `selectedElections`/`selectedConstituencies` `$state` reassignment + ref-equality guards on `appSettingsValue`/`appCustomizationValue` + `noScroll: true` on `goto()` for drawer close + `void fctx.version` subscription on `numActiveFilters`); 9-step manual smoke approved 9/9; 50+ pre-existing svelte-compiler warnings cleared across 5 categories.
+- Default seed densified mid-Phase-64 to 5 constituencies × 8 parties × matrix-distributed candidates (327 total) so the parties tab and categorical-question filter axes are realistically exercisable in dev.
+- Dev-seed e2e template now ships its own `app_settings.fixed[]` block — `mergeSettings` + `DeepPartial` hoisted from frontend `utils/merge.ts` to `@openvaa/app-shared` as a tested shared utility; 4 legacy `updateAppSettings(...)` calls retired (~60 lines).
+- v2.6 anchor parity gate: PARITY GATE: PASS at HEAD `2c7ad2dea` (the post-v2.6 baseline regenerated in Plan 64-03). Imgproxy intermittent crash remains acknowledged infrastructure debt (out of scope; fixable with `supabase stop && supabase start`).
 
-**Historical context (pre-v2.5):** v2.4 shipped 2026-03-28 — full Svelte 5 rewrite complete (context system on $state/$derived, global runes mode, 167 per-file opt-ins removed). v2.3 delivered Idura FTN bank auth + IdentityProvider abstraction. v2.2 paused (Deno feasibility validated, evaluation deferred).
+**Historical context (pre-v2.6):** v2.5 (2026-04-24) shipped `@openvaa/dev-seed` (14 generators, latent-factor answer model, default + e2e templates, parity gate vs SHA `f09daea34`). v2.4 (2026-03-28) shipped the full Svelte 5 rewrite (global runes mode, 167 opt-ins removed, 141 components on direct property access). v2.3 delivered Idura FTN bank auth + IdentityProvider abstraction. v2.2 paused (Deno feasibility validated, evaluation deferred).
 
 Known infrastructure issue: local imgproxy Docker container crashes intermittently (502 on image upload) — not a code issue, fix with `supabase stop && supabase start`.
 
-## Current Milestone: v2.6 Svelte 5 Migration Cleanup
+## Next Milestone: Not yet planned
 
-**Goal:** Close out the Svelte 5 migration debt — fix hydration reactivity bugs, migrate the remaining legacy layouts to runes, resolve voter-app rendering gaps surfaced by v2.5 UAT, and drive the E2E carry-forward pool toward green.
-
-**Target features:**
-
-- Runes-mode migration for root layout (`+layout.svelte`) + candidate protected layout; drop `PopupRenderer` workaround if viable
-- Fix Svelte 5 hydration bug where `$state` writes in `$effect` + `.then()` don't trigger re-renders (unblocks 2 registration tests + 35 cascade)
-- Merge `EntityListControls` with `EntityList`; replace `$effect` + `filterGroup.onChange` loop with `$derived`; re-enable results-page filters; collapse `results/+page.svelte` into `[entityType]/[entityId]`
-- Voter-app question/results surfaces: boolean question renderer, candidate-result detail handling for boolean questions, category-selection default + reactive question-count derivation
-- E2E carry-forward: retire 10 data-race + 38 cascade failures; extend e2e template with `app_settings` block to remove the ~60-line legacy `updateAppSettings` workaround from Plan 59-04
-
-**Out of milestone scope:** 165 pre-existing intra-package circular deps in `@openvaa/data`/`matching`/`filters` — deferred to a later structural refactor.
+Run `/gsd-new-milestone` to question → research → write requirements → roadmap the next milestone. The v2.6 manual-smoke session surfaced 3 user-flagged follow-ups worth considering as candidates: switch results detail route to `/results/[entType]/[nominationId]` (drop `nominationId` from search params) — see `.planning/todos/pending/results-url-refactor-followups.md`; sweep all `bind:*` and all `{#key …}` usages in `apps/frontend/src/lib/**/*.svelte` (audits 4+5 in `svelte5-cleanup.md`); densify default seed further (alliances). The 18 currently-pending todos in `.planning/todos/pending/` are the next-milestone backlog candidates.
 
 ## Requirements
 
@@ -104,10 +96,20 @@ Known infrastructure issue: local imgproxy Docker container crashes intermittent
 - ✓ `tests/seed-test-data.ts` rewritten on top of the new generator; legacy JSON fixtures retired — v2.5
 - ✓ Matching-realistic synthetic candidate positions (party-axis clustering via latent-factor pipeline) — v2.5
 - ✓ Optional deterministic `seed: number` for reproducible faker output — v2.5
+- ✓ Root `+layout.svelte` migrated to Svelte 5 runes mode — `$props`, `$derived.by` discriminated-union validity, `{@render children()}`; no `export let`, no `$:`, no `<slot />` — v2.6
+- ✓ Candidate `(protected)/+layout.svelte` renders post-hydration on full page loads — `Promise.all().then()` + `await tick()` pattern replaced with `$derived.by` 4-way `layoutState` + dedicated `$effect` for batched store mutations — v2.6
+- ✓ `PopupRenderer` workaround removed — inline popup rendering via `{@const Component = ...}` + `<Component ...>` works under runes — v2.6
+- ✓ Boolean-type questions render binary answer control in voter flow + candidate result-detail match-breakdown — v2.6
+- ✓ Category-selection screen has default-all-checked seeding + reactive question-count derivation — v2.6
+- ✓ Candidate-app question-list reactivity restored — testIds visible within Playwright timeout; 6 direct + 18 cascade tests pass — v2.6
+- ✓ `EntityListControls` + `EntityList` merged into `EntityListWithControls`; infinite `$effect + filterGroup.onChange` loop replaced with `$derived` over a `$state` version counter — v2.6
+- ✓ Voter results-page filters re-enabled; shared `filterContext` scoped per `(electionId, entityTypePlural)` tuple, exposed via `voterContext` getter for future LLM-chat integration — v2.6
+- ✓ Empty `results/+page.svelte` removed; results list and entity-detail drawer share a 4-segment optional-param route with typed American-spelled param matchers; coupling-guard `+page.ts` 307-redirects malformed URLs; drawer-first paint via DOM source order + `content-visibility: auto` — v2.6
+- ✓ E2E carry-forward pool measurably reduced from post-v2.5 baseline; `e2e` template ships `app_settings.fixed[]`; 4 legacy `updateAppSettings(...)` calls deleted; `mergeSettings` + `DeepPartial` hoisted to `@openvaa/app-shared` — v2.6
 
 ### Active
 
-_v2.6 requirements are defined inline in `.planning/REQUIREMENTS.md` and traced via `.planning/ROADMAP.md`._
+_No active milestone. Run `/gsd-new-milestone` to define the next set of requirements._
 
 ### Future
 - [ ] Claude Skills: architect, components, LLM (deferred to post-Svelte 5 stabilization)
@@ -137,18 +139,18 @@ _v2.6 requirements are defined inline in `.planning/REQUIREMENTS.md` and traced 
 
 ## Context
 
-The project is a mature monorepo used for real election deployments. As of v2.1:
+The project is a mature monorepo used for real election deployments. As of v2.6:
 
-- **Codebase:** 138 plans + 6 tasks completed across 9 milestones (27 days, 2026-03-01 to 2026-03-27)
-- **Tech stack:** SvelteKit 2, Svelte 5 (fully runes-idiomatic), Tailwind 4, DaisyUI 5, Paraglide JS, Node 22, Supabase, Postgres, Yarn 4.13, Turborepo 2.8, Changesets
-- **Backend:** Supabase with 17-table schema, 269 pgTAP tests, 79 RLS policies, 3 Edge Functions (identity-callback, invite-candidate, send-email)
+- **Codebase:** 195 plans + 6 tasks completed across 11 shipped milestones (32 days, 2026-03-01 → 2026-04-28); v2.6 alone added ~5,400 LOC across 146 frontend/test files in 4 days (137 commits).
+- **Tech stack:** SvelteKit 2, Svelte 5 (fully runes-idiomatic on every layout, including the post-v2.6 root + candidate-protected pair), Tailwind 4, DaisyUI 5, Paraglide JS, Node 22, Supabase, Postgres, Yarn 4.13, Turborepo 2.8, Changesets
+- **Backend:** Supabase with 17-table schema, 269 pgTAP tests, 79 RLS policies, 3 Edge Functions (identity-callback, invite-candidate, send-email); supabase adapter now reverse-fills nomination parent → children id arrays in-memory before returning to the data model
 - **Auth:** Provider abstraction layer supporting Signicat (PKCE + client_secret) and Idura (JAR + private_key_jwt) via env config
 - **Build system:** Turborepo with content-based caching, tsup for publishable packages, @tailwindcss/vite
-- **Testing:** Playwright E2E (597 unit tests, 50 E2E specs), Vitest unit tests, pgTAP database tests, bank-auth E2E (opt-in)
+- **Testing:** Playwright E2E (post-v2.6 baseline regenerated at HEAD `2c7ad2dea`; PARITY GATE: PASS), Vitest unit tests (60-case `mergeSettings` + filterContext + EntityListWithControls coverage added in v2.6), pgTAP database tests, bank-auth E2E (opt-in); `@openvaa/dev-seed` powers all data via templates (default + e2e + variant overlays)
 - **CI:** GitHub Actions with pgTAP, E2E via supabase CLI, skill-drift-check, Turborepo remote caching
-- **Publishing:** 4 packages (@openvaa/core, data, matching, filters) ready for npm with ESM output
-- **Deno validated:** Runtime works (SvelteKit, auth, E2E), evaluation deferred — research in `.planning/phases/42-runtime-validation-and-poc/`
-- **Known issues:** Svelte 5 pushState reactivity bug (10 E2E tests skipped); context system uses Svelte 4 store patterns (CTX-01 deferred); local imgproxy crashes intermittently
+- **Publishing:** 4 packages (@openvaa/core, data, matching, filters) ready for npm with ESM output; trusted publishing (OIDC) deferred until after initial manual publish
+- **Deno validated:** Runtime works (SvelteKit, auth, E2E), evaluation deferred — research in archived `.planning/milestones/sb-v3.0-ROADMAP.md` and v2.2 records
+- **Known issues:** Local imgproxy Docker container crashes intermittently (502 on image upload — fix with `supabase stop && supabase start`, not a code issue); 165 pre-existing intra-package circular deps in `@openvaa/data` / `matching` / `filters` (the `internal.ts` barrel pattern) — explicitly out of v2.6 scope, deferred to a dedicated structural refactor milestone
 
 ## Constraints
 
@@ -173,12 +175,14 @@ Each major initiative is a separate milestone, executed in order:
 9. ~~**Idura FTN Auth**~~ — Shipped v2.3 (2026-03-27)
 10. ~~**Full Svelte 5 Rewrite**~~ — Shipped v2.4 (2026-03-28)
 11. ~~**Dev Data Seeding Toolkit**~~ — Shipped v2.5 (2026-04-24)
-12. **Claude Skills (remaining)** — Architect, components, LLM skills
-13. **Admin App Migration** — Move admin functions from Strapi plugin to frontend Admin App
-14. **Security Scanning** — Automated security, secrets scanning, and testing
-15. **Svelte 5 Migration Cleanup** — In progress as v2.6 (2026-04-24). Scope: runes migration for root + candidate-protected layouts, `$effect` + `.then()` hydration bug fix, `EntityListControls` loop resolution, voter-app question/results surfaces (boolean renderer, category-selection reactivity), and E2E carry-forward greening
+12. ~~**Svelte 5 Migration Cleanup**~~ — Shipped v2.6 (2026-04-28). Runes migration for root + candidate-protected layouts; protected-layout hydration bug fixed via `$derived.by` discriminated-union pattern; `EntityListControls` infinite-loop resolved via `$state` version-counter bridge; voter-app question/results surfaces fully reactive; `PopupRenderer` removed; e2e template ships `app_settings.fixed[]`
+13. **Claude Skills (remaining)** — Architect, components, LLM skills
+14. **Admin App Migration** — Move admin functions from Strapi plugin to frontend Admin App
+15. **Security Scanning** — Automated security, secrets scanning, and testing
 16. **Settings & Configuration Reorg** — Rationalize the split between StaticSettings, DynamicSettings, env vars, and the `app_settings` / `app_customization` tables; unify the customization paradigm across voter, candidate, and admin apps
 17. **Parties in Candidate App** — Generalize the candidate-app preregistration and profile flows so party organizations (not just individual candidates) can onboard, manage members, and maintain their public-facing data
+18. **Results URL refactor** — Switch `/results` detail route from `[entityType]/[entityType]/[id]?nominationId=...` to `/results/[entType]/[nominationId]`; drop redundant `nominationId`/`electionId`/`constituencyId` search params; consider extending the `[electionId]` path prefix to upstream voter routes (`/questions/category`, etc.); evaluate shorter URL IDs (slug or short-hash) — see `.planning/todos/pending/results-url-refactor-followups.md`
+19. **Svelte 5 audit sweep** — `bind:*` audit (zero `binding_property_non_reactive` warnings on any voter-flow path; documented decision per remaining `bind:*` site) + `{#key …}` audit (every retained block has inline justification or test demonstrating remount is observable behavior) — `.planning/todos/pending/svelte5-cleanup.md` items 4-5
 
 ## Key Decisions
 
@@ -259,6 +263,22 @@ Each major initiative is a separate milestone, executed in order:
 | Relaxed teardown assertion for dual-teardown setups | `toBeGreaterThanOrEqual(0)` matches pre-swap idempotent behavior; prefix-mismatch regressions surface elsewhere | ✓ Good (v2.5) |
 | Zero-new-tool dep-graph verification | Use `yarn build` (Turborepo cycle detection) as primary dep-check + npx madge as supplement — no new repo dependency | ✓ Good (v2.5) |
 
+| `$derived.by` discriminated-union for loader-data validity | Avoids intermediate `$state` flags that introduce microtask races during SSR hydration (root + protected layouts) | ✓ Good (v2.6) |
+| Dedicated `$effect` for batched store mutations beside `$derived` validity | Replaces `$effect + Promise.all().then() + await tick()` pattern that left layouts stuck at `<Loading />` post-hydration | ✓ Good (v2.6) |
+| `get(store)` + `untrack(...)` for store mutation inside `$effect` | New runes-mode pitfall: `$storeName.update()` inside `$effect` triggers `effect_update_depth_exceeded` (auto-subscription + version++ `$state` cycle); same for fromStore-bridged mutations | ✓ Good (v2.6) |
+| SSR guards in client-only utilities | `typeof window`/`typeof navigator` checks in any util called from a component that might render server-side after reactivity-timing changes (e.g., `getEmailUrl`) | ✓ Good (v2.6) |
+| `filterContext` Symbol-keyed module + `$state` version counter | Bridges imperative `FilterGroup.onChange` to `$derived` consumers without re-introducing the circular `$effect` chain; scoped per `(electionId, entityTypePlural)` tuple for cross-tab isolation | ✓ Good (v2.6) |
+| 4-segment optional-param `/results` route + typed param matchers | Single shape covers all four valid URL variants (list-only, list-with-plural-tab, list+matching-drawer, list+cross-type-drawer); coupling-guard `+page.ts` 307-redirects malformed singular-without-id URLs | ✓ Good (v2.6) |
+| Drawer-first paint via DOM source order + `content-visibility: auto` | Cold deeplinks to entity detail render the drawer before the list body, improving perceived performance without a separate route component | ✓ Good (v2.6) |
+| Content-equality (`sameRefs`) before `$state` reassignment | Breaks reactivity cascades through `selectedElections` / `selectedConstituencies` / `appSettingsValue` when SvelteKit `parseParams(page)` returns fresh arrays per call but content is unchanged | ✓ Good (v2.6) |
+| `noScroll: true` on drawer-close `goto()` | Round-trip drawer open/close preserves scroll position — Svelte 4 stores absorbed no-op writes via `safe_not_equal`; raw `$state =` doesn't, so cascades had to be cut explicitly | ✓ Good (v2.6) |
+| Adapter-side reverse-fill of nomination parent → children id arrays | DB stores `parent_nomination_id` (flat); `OrganizationNomination` constructor only auto-populates `candidateNominationIds` from inline nested data, so adapter must derive children before returning | ✓ Good (v2.6) |
+| `expect.poll(...).toBeGreaterThan(0)` over `test.skip(true)` | Replaces 6 silent skips with race-tolerant locator hard assertions; surfaces upstream defects (missing parent_nomination chains, missing `parentNominationType`) instead of masking them | ✓ Good (v2.6) |
+| Phase 62-bis (Phase 64) pattern over rollback | When a milestone-anchor parity gate FAILs but the regressions are orthogonal, scope a sibling phase to absorb the deferred work rather than blocking close — preserves forward progress while keeping the gate honest | ✓ Good (v2.6) |
+| Push-based `$state + $effect` mirror over pull-chain `$derived.by` helper-store | Reactivity propagates through context getters — pull-chain helper-store derived through destructured context capture broke reactive tracking across child-layout consumer boundaries | ✓ Good (v2.6) |
+| Hoist `mergeSettings` from frontend `utils/merge.ts` to `@openvaa/app-shared` | Single source of truth — both `@openvaa/dev-seed` (e2e template overlays) and frontend share the same deep-merge contract; vitest 6-case coverage in package | ✓ Good (v2.6) |
+| Densify default seed mid-milestone when smoke surfaces dead UI | Parties tab + categorical filter axes need ≥2 parties × ≥3 candidates per axis to be realistically exercisable in dev; densified to 5 constituencies × 8 parties × 327 candidates | ✓ Good (v2.6) |
+
 ## Evolution
 
 This document evolves at phase transitions and milestone boundaries.
@@ -278,4 +298,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-_Last updated: 2026-04-24 — milestone v2.6 Svelte 5 Migration Cleanup started_
+_Last updated: 2026-04-28 after v2.6 Svelte 5 Migration Cleanup milestone shipped_
