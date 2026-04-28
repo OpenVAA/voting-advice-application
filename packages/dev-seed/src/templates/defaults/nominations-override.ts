@@ -2,112 +2,201 @@
  * Default-template nominations override — D-25 Overrides signature.
  *
  * Replaces Phase 56 NominationsGenerator's "all-on-constituency-0" emission
- * with a realistic linear-falloff distribution across every constituency in
- * `ctx.refs.constituencies`.
+ * with a per-(party × constituency) matrix distribution. Every (party,
+ * constituency) cell carries ≥1 candidate, so every constituency has the full
+ * 8-party slate and every party fields candidates in every constituency.
  *
- * The built-in generator wires every candidate-type nomination to the first
- * election × first constituency (NominationsGenerator.ts:122-123) — fine for
- * Phase 56's "exercise polymorphism end-to-end" goal, but it produces a
- * degenerate voter-app demo: 12 of the 13 constituencies are empty.
+ * Distribution shape (Phase 64 manual-smoke densification):
+ *   PARTY_CONSTITUENCY_MATRIX[p][c] = candidate count for party p in constituency c.
+ *   Linear interpolation between four corners:
+ *     largest party  × largest constituency  = 15
+ *     smallest party × largest constituency  =  5
+ *     largest party  × smallest constituency =  9
+ *     smallest party × smallest constituency =  3
  *
- * Distribution shape:
- *   Linear weights from 3.0 (largest constituency) down to 1.0 (smallest),
- *   evenly spaced across `M = constituencies.length` slots. Total candidates
- *   `N = candidates.length` are allocated via largest-remainder rounding so
- *   the counts sum to exactly N and the largest:smallest ratio is exactly
- *   3:1 when N is large enough to avoid rounding collapse.
+ *   Row sums (party totals) MUST equal PARTY_WEIGHTS in candidates-override:
+ *     [61, 56, 49, 43, 38, 33, 26, 21] = 327
+ *   Column sums (constituency totals):
+ *     [80, 74, 66, 59, 48] = 327
  *
- *   For M=13, N=100 (the default template config) this yields
- *   `[12, 11, 10, 10, 9, 8, 8, 7, 6, 6, 5, 4, 4]` — sum 100, ratio 12/4 = 3.0,
- *   monotonically declining.
+ *   Constituencies in `ctx.refs.constituencies` are interpreted in ref order
+ *   (largest first). The default template's fixed[] block is ordered c_01 →
+ *   c_05 to align.
  *
- *   For other (M, N) pairs the shape is still linear-falloff; the exact
- *   ratio varies with N (tiny N can collapse to a flatter profile after
- *   rounding, but that's the correct behavior — you can't express a 3:1
- *   ratio with <3 units).
+ * Each candidate-type nomination is wired via `parent_nomination` to an
+ * organization-type nomination of its party in the same constituency. The
+ * validate_nomination DB trigger requires this constituency identity to hold;
+ * it does. With the matrix dense (every cell > 0), 8 × C org nominations are
+ * emitted (40 for C=5).
  *
- * Candidates are walked sequentially into constituencies in ref order, so
- * the earlier parties (party_blue with 20 candidates, party_green with 18
- * etc. per `candidates-override.ts`) concentrate in the larger
- * constituencies. Party clustering for matching/compass purposes is
- * unaffected — that's driven by the latent-factor answer model, not by
- * geographic wiring.
+ * Party clustering for matching/compass purposes is unaffected — that's
+ * driven by the latent-factor answer model, not by geographic wiring.
  *
- * Phase 58 UAT follow-up (2026-04-23).
+ * Phase 58 UAT follow-up (2026-04-23); Phase 64 manual-smoke densification +
+ * parent_nomination wiring (2026-04-28).
  */
 
+import { PARTY_WEIGHTS } from './candidates-override';
 import type { TablesInsert } from '@openvaa/supabase-types';
 import type { Ctx } from '../../types';
 
 type CandidateRef = { candidate: { external_id: string } };
+type OrganizationRef = { organization: { external_id: string } };
+type ParentRef = { parent_nomination: { external_id: string } };
 
-type NominationRow = Omit<TablesInsert<'nominations'>, 'election_id' | 'constituency_id'> &
-  CandidateRef & {
+type CandidateNominationRow = Omit<TablesInsert<'nominations'>, 'election_id' | 'constituency_id'> &
+  CandidateRef &
+  ParentRef & {
     election: { external_id: string };
     constituency: { external_id: string };
   };
 
+type OrganizationNominationRow = Omit<TablesInsert<'nominations'>, 'election_id' | 'constituency_id'> &
+  OrganizationRef & {
+    election: { external_id: string };
+    constituency: { external_id: string };
+  };
+
+type NominationRow = CandidateNominationRow | OrganizationNominationRow;
+
 /**
- * Allocate `N` items across `M` slots with linear-falloff weights from 3.0
- * (slot 0) down to 1.0 (slot M-1), then round using largest-remainder so the
- * counts sum to exactly `N`.
+ * Per-(party × constituency) candidate count matrix.
  *
- * Exported for unit testing. Pure, deterministic.
+ * Rows = parties in PARTY_WEIGHTS order (sorted descending in size).
+ * Cols = constituencies in `ctx.refs.constituencies` order (sorted descending
+ *        in size by template convention — largest first).
+ *
+ * Linear-interpolated between four corners:
+ *   M[0][0] = 15  (largest party in largest constituency)
+ *   M[7][0] =  5  (smallest party in largest constituency)
+ *   M[0][4] =  9  (largest party in smallest constituency)
+ *   M[7][4] =  3  (smallest party in smallest constituency)
+ *
+ * Row sums = PARTY_WEIGHTS = [61, 56, 49, 43, 38, 33, 26, 21] = 327
+ * Col sums = [80, 74, 66, 59, 48] = 327
+ *
+ * Every cell > 0 so every (party, constituency) pair gets at least one
+ * candidate AND one organization-type nomination — every constituency
+ * shows the full 8-party slate in the voter app's filter modal.
  */
-export function allocateLinearFalloff(M: number, N: number): Array<number> {
-  if (M <= 0 || N <= 0) return new Array(Math.max(M, 0)).fill(0);
-  if (M === 1) return [N];
-
-  const weights = Array.from({ length: M }, (_, i) => 3 - (2 * i) / (M - 1));
-  const sumW = weights.reduce((s, w) => s + w, 0);
-  const raw = weights.map((w) => (w / sumW) * N);
-  const base = raw.map((x) => Math.floor(x));
-
-  let assigned = base.reduce((s, x) => s + x, 0);
-  const remainders = raw.map((x, i) => ({ i, r: x - Math.floor(x) })).sort((a, b) => b.r - a.r);
-
-  let k = 0;
-  while (assigned < N && k < remainders.length) {
-    base[remainders[k].i] += 1;
-    assigned += 1;
-    k += 1;
-  }
-  return base;
-}
+export const PARTY_CONSTITUENCY_MATRIX: ReadonlyArray<ReadonlyArray<number>> = [
+  [15, 14, 12, 11, 9],
+  [14, 13, 11, 10, 8],
+  [12, 11, 10, 9, 7],
+  [11, 10, 9, 7, 6],
+  [9, 8, 8, 7, 6],
+  [8, 7, 7, 6, 5],
+  [6, 6, 5, 5, 4],
+  [5, 5, 4, 4, 3]
+] as const;
 
 export function nominationsOverride(_fragment: unknown, ctx: Ctx): Array<Record<string, unknown>> {
   const { projectId, externalIdPrefix, refs } = ctx;
   const candidates = refs.candidates;
   const constituencies = refs.constituencies;
   const elections = refs.elections;
+  const organizations = refs.organizations;
 
-  if (candidates.length === 0 || constituencies.length === 0 || elections.length === 0) {
+  if (
+    candidates.length === 0 ||
+    constituencies.length === 0 ||
+    elections.length === 0 ||
+    organizations.length === 0
+  ) {
     throw new Error(
-      '[dev-seed] nominationsOverride: ctx.refs is empty for candidates / constituencies / elections. ' +
+      '[dev-seed] nominationsOverride: ctx.refs is empty for candidates / constituencies / elections / organizations. ' +
         'Ensure the pipeline runs in D-06 topo order and that the template requests non-zero counts.'
     );
   }
 
+  if (organizations.length !== PARTY_WEIGHTS.length) {
+    throw new Error(
+      `[dev-seed] nominationsOverride: expected ${PARTY_WEIGHTS.length} organizations (matching PARTY_WEIGHTS), got ${organizations.length}. ` +
+        'PARTY_WEIGHTS in candidates-override.ts and the organizations.fixed[] block in default.ts must stay aligned.'
+    );
+  }
+
+  if (PARTY_CONSTITUENCY_MATRIX.length !== PARTY_WEIGHTS.length) {
+    throw new Error(
+      `[dev-seed] nominationsOverride: PARTY_CONSTITUENCY_MATRIX has ${PARTY_CONSTITUENCY_MATRIX.length} rows but PARTY_WEIGHTS has ${PARTY_WEIGHTS.length}. The matrix and weights must agree on party count.`
+    );
+  }
+
+  if (constituencies.length !== PARTY_CONSTITUENCY_MATRIX[0].length) {
+    throw new Error(
+      `[dev-seed] nominationsOverride: PARTY_CONSTITUENCY_MATRIX has ${PARTY_CONSTITUENCY_MATRIX[0].length} columns but ctx.refs.constituencies has ${constituencies.length} entries. The matrix and constituencies.fixed[] must agree on column count.`
+    );
+  }
+
+  // Validate row sums match PARTY_WEIGHTS (matrix integrity gate). If a future
+  // edit changes the matrix without updating PARTY_WEIGHTS (or vice versa) the
+  // candidate→constituency walk would silently desynchronize from the candidate→
+  // party walk — fail loudly here instead.
+  for (let p = 0; p < PARTY_CONSTITUENCY_MATRIX.length; p++) {
+    const rowSum = PARTY_CONSTITUENCY_MATRIX[p].reduce((s, x) => s + x, 0);
+    if (rowSum !== PARTY_WEIGHTS[p]) {
+      throw new Error(
+        `[dev-seed] nominationsOverride: PARTY_CONSTITUENCY_MATRIX row ${p} sums to ${rowSum} but PARTY_WEIGHTS[${p}] is ${PARTY_WEIGHTS[p]}. The matrix and weights must stay aligned.`
+      );
+    }
+  }
+
   const electionExtId = elections[0].external_id;
-  const counts = allocateLinearFalloff(constituencies.length, candidates.length);
+
+  const orgNomExtId = (orgIdx: number, constIdx: number): string =>
+    `${externalIdPrefix}nom_org_${organizations[orgIdx].external_id}_${constituencies[constIdx].external_id}`;
 
   const rows: Array<NominationRow> = [];
-  let candIdx = 0;
-  for (let c = 0; c < constituencies.length; c++) {
-    const constExtId = constituencies[c].external_id;
-    const n = counts[c];
-    for (let k = 0; k < n; k++) {
-      const cand = candidates[candIdx];
+
+  // Emit org-type nominations FIRST: one per (party × constituency) cell
+  // where the matrix has a non-zero count. With the dense matrix, all
+  // P × C cells have ≥1 candidate, so all P × C org nominations are emitted.
+  // bulk_import resolves parent_nomination external_ids regardless of literal
+  // ordering, but emitting parents before children keeps the row sequence
+  // self-documenting.
+  for (let p = 0; p < PARTY_CONSTITUENCY_MATRIX.length; p++) {
+    for (let c = 0; c < PARTY_CONSTITUENCY_MATRIX[p].length; c++) {
+      if (PARTY_CONSTITUENCY_MATRIX[p][c] === 0) continue;
       rows.push({
-        external_id: `${externalIdPrefix}nom_cand_${String(candIdx).padStart(4, '0')}`,
+        external_id: orgNomExtId(p, c),
         project_id: projectId,
-        candidate: { external_id: cand.external_id },
+        organization: { external_id: organizations[p].external_id },
         election: { external_id: electionExtId },
-        constituency: { external_id: constExtId },
+        constituency: { external_id: constituencies[c].external_id },
         election_round: 1
       });
-      candIdx += 1;
     }
+  }
+
+  // Emit candidate nominations. Walk per-party (matching candidates-override's
+  // PARTY_WEIGHTS expansion: candidates 0..PARTY_WEIGHTS[0]-1 belong to party 0,
+  // etc.); within each party, distribute across constituencies per the matrix
+  // row. Each candidate's parent_nomination references the (party, constituency)
+  // org nomination emitted above.
+  let candIdx = 0;
+  for (let p = 0; p < PARTY_CONSTITUENCY_MATRIX.length; p++) {
+    for (let c = 0; c < PARTY_CONSTITUENCY_MATRIX[p].length; c++) {
+      const cellCount = PARTY_CONSTITUENCY_MATRIX[p][c];
+      for (let k = 0; k < cellCount; k++) {
+        const cand = candidates[candIdx];
+        rows.push({
+          external_id: `${externalIdPrefix}nom_cand_${String(candIdx).padStart(4, '0')}`,
+          project_id: projectId,
+          candidate: { external_id: cand.external_id },
+          parent_nomination: { external_id: orgNomExtId(p, c) },
+          election: { external_id: electionExtId },
+          constituency: { external_id: constituencies[c].external_id },
+          election_round: 1
+        });
+        candIdx += 1;
+      }
+    }
+  }
+
+  if (candIdx !== candidates.length) {
+    throw new Error(
+      `[dev-seed] nominationsOverride: assigned ${candIdx} candidates but ctx.refs.candidates has ${candidates.length}. PARTY_CONSTITUENCY_MATRIX total (${candIdx}) must equal candidates.count.`
+    );
   }
 
   return rows as unknown as Array<Record<string, unknown>>;

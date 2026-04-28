@@ -21,7 +21,7 @@
  * answers "for free" without explicit override. `latent` block omitted →
  * Phase 57 uses built-in defaults (defaultDimensions, defaultCentroids, etc.).
  *
- * `nominations.count: 100` pairs with `candidates.count: 100` so Phase 56's
+ * `nominations.count: 327` pairs with `candidates.count: 327` so Phase 56's
  * NominationsGenerator emits one candidate-type nomination per candidate
  * wired to the single election × first constituency.
  */
@@ -66,9 +66,9 @@ export const defaultTemplate: Template = {
     ]
   },
 
-  // 13 invented Finnish-flavored district names — NOT real electoral districts.
-  // The naming draws on Finnish place-name morphology (suffixes like -maa,
-  // -anmaa, compass directions) without duplicating any real constituency.
+  // 5 invented Finnish-flavored district names — NOT real electoral districts.
+  // Sized + ordered largest-to-smallest in alignment with `nominations-override.ts`'s
+  // PARTY_CONSTITUENCY_MATRIX (column 0 = largest constituency, column 4 = smallest).
   constituencies: {
     count: 0,
     fixed: [
@@ -76,15 +76,7 @@ export const defaultTemplate: Template = {
       { external_id: 'c_02', name: { en: 'Uudenmaa South' }, sort_order: 1, is_generated: false },
       { external_id: 'c_03', name: { en: 'Varsinais-Suomi' }, sort_order: 2, is_generated: false },
       { external_id: 'c_04', name: { en: 'Satakunta East' }, sort_order: 3, is_generated: false },
-      { external_id: 'c_05', name: { en: 'Pirkanmaa' }, sort_order: 4, is_generated: false },
-      { external_id: 'c_06', name: { en: 'Kainuu-Pohjois-Karjala' }, sort_order: 5, is_generated: false },
-      { external_id: 'c_07', name: { en: 'Etelä-Savo-Keski-Suomi' }, sort_order: 6, is_generated: false },
-      { external_id: 'c_08', name: { en: 'Pohjanmaa Coast' }, sort_order: 7, is_generated: false },
-      { external_id: 'c_09', name: { en: 'Keski-Pohjanmaa' }, sort_order: 8, is_generated: false },
-      { external_id: 'c_10', name: { en: 'Pohjois-Pohjanmaa' }, sort_order: 9, is_generated: false },
-      { external_id: 'c_11', name: { en: 'Lappi-North' }, sort_order: 10, is_generated: false },
-      { external_id: 'c_12', name: { en: 'Lappi-South' }, sort_order: 11, is_generated: false },
-      { external_id: 'c_13', name: { en: 'Åland Islands' }, sort_order: 12, is_generated: false }
+      { external_id: 'c_05', name: { en: 'Pirkanmaa' }, sort_order: 4, is_generated: false }
     ]
   },
 
@@ -205,18 +197,22 @@ export const defaultTemplate: Template = {
   },
 
   // Exact shape via defaultOverrides.candidates — override replaces the
-  // class-based CandidatesGenerator and emits 100 candidates non-uniformly
-  // distributed across the 8 parties per PARTY_WEIGHTS.
+  // class-based CandidatesGenerator and emits 327 candidates non-uniformly
+  // distributed across the 8 parties per PARTY_WEIGHTS = [61, 56, 49, 43, 38,
+  // 33, 26, 21]. Row sums of `PARTY_CONSTITUENCY_MATRIX` in nominations-override.
   candidates: {
-    count: 100
+    count: 327
   },
 
-  // One candidate-type nomination per candidate, distributed across the 13
-  // constituencies via `defaultOverrides.nominations` — linear-falloff weights
-  // give a 3:1 ratio between the largest and smallest constituency
-  // (12 / 11 / 10 / 10 / 9 / 8 / 8 / 7 / 6 / 6 / 5 / 4 / 4 = 100).
+  // One candidate-type nomination per candidate (327 total), plus one
+  // organization-type nomination per (party × constituency) cell where ≥1
+  // candidate of that party is nominated in that constituency (40 org noms
+  // = 8 parties × 5 constituencies, since the matrix is dense). Total: 367
+  // nominations. Distribution per `nominations-override.ts`'s
+  // PARTY_CONSTITUENCY_MATRIX (largest constituency: 15→5 across parties;
+  // smallest: 9→3; linear interpolation in between).
   nominations: {
-    count: 100
+    count: 327
   },
 
   // Mirror the default dynamic-settings `entities` block so the voter app's

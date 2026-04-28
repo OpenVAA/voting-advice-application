@@ -34,16 +34,16 @@ function fourCategories(): Array<{ external_id: string }> {
 // ---------------------------------------------------------------------------
 
 describe('candidatesOverride — non-uniform distribution + locale cycling', () => {
-  it('Test 1: produces exactly 100 candidate rows given 8 orgs', () => {
+  it('Test 1: produces exactly 327 candidate rows given 8 orgs', () => {
     const ctx = makeCtx({ refs: { ...makeCtx().refs, organizations: eightParties() } });
     const rows = candidatesOverride({}, ctx);
-    expect(rows).toHaveLength(100);
+    expect(rows).toHaveLength(327);
   });
 
-  it('Test 2: party assignment follows PARTY_WEIGHTS [20,18,15,12,10,10,8,7]', () => {
+  it('Test 2: party assignment follows PARTY_WEIGHTS [61,56,49,43,38,33,26,21]', () => {
     const ctx = makeCtx({ refs: { ...makeCtx().refs, organizations: eightParties() } });
     const rows = candidatesOverride({}, ctx);
-    const expected = [20, 18, 15, 12, 10, 10, 8, 7];
+    const expected = [61, 56, 49, 43, 38, 33, 26, 21];
     const counts: Record<string, number> = {};
     for (const row of rows) {
       const org = (row as { organization?: { external_id: string } }).organization;
@@ -101,7 +101,7 @@ describe('candidatesOverride — non-uniform distribution + locale cycling', () 
     expect(() => candidatesOverride({}, ctx)).toThrow(/8 organizations|PARTY_WEIGHTS/);
   });
 
-  it('Test 8: external_ids are cand_0000 through cand_0099 (sort-order determinism)', () => {
+  it('Test 8: external_ids are cand_0000 through cand_0326 (sort-order determinism)', () => {
     const ctx = makeCtx({ refs: { ...makeCtx().refs, organizations: eightParties() } });
     const rows = candidatesOverride({}, ctx);
     for (let i = 0; i < rows.length; i++) {
@@ -118,15 +118,16 @@ describe('candidatesOverride — non-uniform distribution + locale cycling', () 
     expect(JSON.stringify(rowsA)).toEqual(JSON.stringify(rowsB));
   });
 
-  it('Test 10: faker locale cycling — 25 candidates per locale block (en/fi/sv/da)', () => {
-    // Spec: indices 0-24 use en, 25-49 fi, 50-74 sv, 75-99 da. We cannot easily
-    // assert the locale packet, but we can assert that names within a block are
-    // byte-identical to a freshly-seeded per-locale Faker. The override's
-    // LOCALE_BLOCK_SIZE constant is 25. Shape-only assertion: non-empty strings.
+  it('Test 10: faker locale cycling — 82 candidates per locale block (en/fi/sv/da)', () => {
+    // Spec: indices 0-81 use en, 82-163 fi, 164-245 sv, 246-326 da. We cannot
+    // easily assert the locale packet, but we can assert that names within a
+    // block are byte-identical to a freshly-seeded per-locale Faker. The
+    // override's LOCALE_BLOCK_SIZE constant is 82. Shape-only assertion:
+    // non-empty strings.
     const ctx = makeCtx({ refs: { ...makeCtx().refs, organizations: eightParties() } });
     const rows = candidatesOverride({}, ctx);
     // Spot-check the 4 block starts have non-empty names.
-    for (const idx of [0, 25, 50, 75]) {
+    for (const idx of [0, 82, 164, 246]) {
       const r = rows[idx] as { first_name?: string; last_name?: string };
       expect(r.first_name).toBeTruthy();
       expect(r.last_name).toBeTruthy();
@@ -241,8 +242,8 @@ describe('defaultTemplate — shape & frontmatter constants', () => {
     expect(defaultTemplate.constituency_groups?.fixed).toHaveLength(1);
   });
 
-  it('Test 22: constituencies.fixed has 13 entries (D-58-02)', () => {
-    expect(defaultTemplate.constituencies?.fixed).toHaveLength(13);
+  it('Test 22: constituencies.fixed has 5 entries (Phase 64 manual-smoke densification)', () => {
+    expect(defaultTemplate.constituencies?.fixed).toHaveLength(5);
   });
 
   it('Test 23: question_categories.fixed has 4 entries (D-58-02)', () => {
@@ -253,8 +254,8 @@ describe('defaultTemplate — shape & frontmatter constants', () => {
     expect(defaultTemplate.questions?.count).toBe(24);
   });
 
-  it('Test 25: candidates.count === 100 (D-58-02)', () => {
-    expect(defaultTemplate.candidates?.count).toBe(100);
+  it('Test 25: candidates.count === 327 (Phase 64 manual-smoke densification)', () => {
+    expect(defaultTemplate.candidates?.count).toBe(327);
   });
 
   it('Test 26: seed is set (deterministic default template)', () => {
@@ -269,11 +270,12 @@ describe('defaultTemplate — shape & frontmatter constants', () => {
     const rows = runPipeline(defaultTemplate, defaultOverrides);
     expect(rows.elections).toHaveLength(1);
     expect(rows.constituency_groups).toHaveLength(1);
-    expect(rows.constituencies).toHaveLength(13);
+    expect(rows.constituencies).toHaveLength(5);
     expect(rows.organizations).toHaveLength(8);
     expect(rows.question_categories).toHaveLength(4);
     expect(rows.questions).toHaveLength(24);
-    expect(rows.candidates).toHaveLength(100);
-    expect(rows.nominations).toHaveLength(100);
+    expect(rows.candidates).toHaveLength(327);
+    // 327 candidate noms + 8 × 5 = 40 organization noms (matrix is dense, every cell ≥ 1)
+    expect(rows.nominations).toHaveLength(327 + 40);
   });
 });

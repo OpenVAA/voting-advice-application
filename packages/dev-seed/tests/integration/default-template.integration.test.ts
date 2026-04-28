@@ -142,33 +142,34 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
       expect(elapsedMs).toBeLessThan(10_000);
 
       // -----------------------------------------------------------------------
-      // 2. In-memory row counts match the default template (D-58-02)
+      // 2. In-memory row counts match the default template (Phase 64 densification)
       // -----------------------------------------------------------------------
       expect(rows.elections.length).toBe(1);
       expect(rows.constituency_groups.length).toBe(1);
-      expect(rows.constituencies.length).toBe(13);
+      expect(rows.constituencies.length).toBe(5);
       expect(rows.organizations.length).toBe(8);
-      expect(rows.candidates.length).toBe(100);
+      expect(rows.candidates.length).toBe(327);
       expect(rows.questions.length).toBe(24);
       expect(rows.question_categories.length).toBe(4);
-      expect(rows.nominations.length).toBe(100);
+      // 327 candidate noms + 8 × 5 = 40 organization noms (matrix is dense)
+      expect(rows.nominations.length).toBe(327 + 40);
 
       // -----------------------------------------------------------------------
-      // 3. Portraits uploaded — 100 candidates, one portrait each
+      // 3. Portraits uploaded — 327 candidates, one portrait each
       // -----------------------------------------------------------------------
-      expect(portraits).toBe(100);
+      expect(portraits).toBe(327);
 
       // -----------------------------------------------------------------------
       // 4. DB-level row counts via `seed_` prefix filter (idempotent re-runs)
       // -----------------------------------------------------------------------
       expect(await countByPrefix(readClient, 'elections', prefix)).toBe(1);
       expect(await countByPrefix(readClient, 'constituency_groups', prefix)).toBe(1);
-      expect(await countByPrefix(readClient, 'constituencies', prefix)).toBe(13);
+      expect(await countByPrefix(readClient, 'constituencies', prefix)).toBe(5);
       expect(await countByPrefix(readClient, 'organizations', prefix)).toBe(8);
-      expect(await countByPrefix(readClient, 'candidates', prefix)).toBe(100);
+      expect(await countByPrefix(readClient, 'candidates', prefix)).toBe(327);
       expect(await countByPrefix(readClient, 'questions', prefix)).toBe(24);
       expect(await countByPrefix(readClient, 'question_categories', prefix)).toBe(4);
-      expect(await countByPrefix(readClient, 'nominations', prefix)).toBe(100);
+      expect(await countByPrefix(readClient, 'nominations', prefix)).toBe(327 + 40);
 
       // -----------------------------------------------------------------------
       // 5. Candidates have organization_id + non-NULL image.path (Pitfall #2 —
@@ -180,7 +181,7 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
         .eq('project_id', TEST_PROJECT_ID)
         .like('external_id', `${prefix}%`);
       expect(candErr).toBeNull();
-      expect(candidates?.length).toBe(100);
+      expect(candidates?.length).toBe(327);
       for (const cand of candidates ?? []) {
         expect(cand.organization_id).not.toBeNull();
         const img = cand.image as { path?: string } | null;
@@ -188,19 +189,32 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
       }
 
       // -----------------------------------------------------------------------
-      // 6. Nominations have all four FK refs resolved
+      // 6. Nominations have FK refs resolved per type:
+      //    - Candidate-type: candidate_id non-null, parent_nomination_id non-null
+      //    - Organization-type: organization_id non-null, parent_nomination_id null
+      //    - Both types: election_id + constituency_id non-null
       // -----------------------------------------------------------------------
       const { data: nominations, error: nomErr } = await readClient
         .from('nominations')
-        .select('id, external_id, candidate_id, election_id, constituency_id')
+        .select('id, external_id, candidate_id, organization_id, election_id, constituency_id, parent_nomination_id')
         .eq('project_id', TEST_PROJECT_ID)
         .like('external_id', `${prefix}%`);
       expect(nomErr).toBeNull();
-      expect(nominations?.length).toBe(100);
-      for (const nom of nominations ?? []) {
-        expect(nom.candidate_id).not.toBeNull();
+      // 327 candidate noms + 40 org noms = 367 total
+      expect(nominations?.length).toBe(327 + 40);
+      const candNoms = (nominations ?? []).filter((n) => n.candidate_id != null);
+      const orgNoms = (nominations ?? []).filter((n) => n.candidate_id == null && n.organization_id != null);
+      expect(candNoms.length).toBe(327);
+      expect(orgNoms.length).toBe(40);
+      for (const nom of candNoms) {
         expect(nom.election_id).not.toBeNull();
         expect(nom.constituency_id).not.toBeNull();
+        expect(nom.parent_nomination_id).not.toBeNull();
+      }
+      for (const nom of orgNoms) {
+        expect(nom.election_id).not.toBeNull();
+        expect(nom.constituency_id).not.toBeNull();
+        expect(nom.parent_nomination_id).toBeNull();
       }
 
       // -----------------------------------------------------------------------
@@ -217,11 +231,11 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
       expect(Object.keys(electionName).sort()).toEqual(['da', 'en', 'fi', 'sv']);
 
       // -----------------------------------------------------------------------
-      // 8. Storage bucket has ≥100 portrait objects under
+      // 8. Storage bucket has ≥327 portrait objects under
       //    `${projectId}/candidates/` (1 portrait per candidate)
       // -----------------------------------------------------------------------
       const portraitPaths = await listCandidatePortraitPaths(readClient);
-      expect(portraitPaths.length).toBeGreaterThanOrEqual(100);
+      expect(portraitPaths.length).toBeGreaterThanOrEqual(327);
     },
     60_000
   );

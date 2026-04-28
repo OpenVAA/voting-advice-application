@@ -4,17 +4,18 @@
  * Replaces Phase 56 CandidatesGenerator's round-robin `i % orgCount` party
  * assignment with a sorted-descending non-uniform distribution per D-58-02.
  *
- * Weights: [20, 18, 15, 12, 10, 10, 8, 7] → sum 100, 8 parties.
- * Shape: sorted descending; two adjacent slots at `10, 10` reflect realistic
- * close-sibling parties; tail party is 35% of the largest (7/20) — ensures
- * the 8th party is not invisibly small while keeping the profile clearly
- * non-uniform for matching/clustering visibility.
+ * Weights: [61, 56, 49, 43, 38, 33, 26, 21] → sum 327, 8 parties. These are
+ * the row sums of `nominations-override.ts`'s `PARTY_CONSTITUENCY_MATRIX`.
+ * Shape: sorted descending; tail party is 34% of the largest (21/61) —
+ * ensures the 8th party is not invisibly small while keeping the profile
+ * clearly non-uniform for matching/clustering visibility.
  *
  * Per RESEARCH §Open Q 4 (resolved): cycle faker locale per candidate for
- * visual variety. 25 candidates per locale block — candidates 0-24 use en,
- * 25-49 fi, 50-74 sv, 75-99 da. The locale packs are fresh per-locale Faker
- * instances seeded deterministically at fixed offsets so the 4 blocks produce
- * visibly distinct name output while the overall run stays deterministic.
+ * visual variety. 82 candidates per locale block (last block has 81) —
+ * candidates 0-81 use en, 82-163 fi, 164-245 sv, 246-326 da. The locale
+ * packs are fresh per-locale Faker instances seeded deterministically at
+ * fixed offsets so the 4 blocks produce visibly distinct name output while
+ * the overall run stays deterministic.
  *
  * THROWS if `ctx.refs.organizations.length !== 8` — the weights are tuned for
  * 8 parties. T-58-06-02 mitigation: if a future edit adds or drops a party in
@@ -37,15 +38,22 @@ import type { Overrides } from '../../types';
 
 /**
  * Sorted-descending weights. Sum MUST equal the candidates count.
- * D-58-02 + Claude's Discretion.
+ * Row sums of `nominations-override.ts`'s `PARTY_CONSTITUENCY_MATRIX`:
+ * each party's row in that matrix sums to its weight here.
+ *   [61, 56, 49, 43, 38, 33, 26, 21] = 327 candidates.
+ * D-58-02 + Phase 64 manual-smoke densification.
  */
-export const PARTY_WEIGHTS: ReadonlyArray<number> = [20, 18, 15, 12, 10, 10, 8, 7];
+export const PARTY_WEIGHTS: ReadonlyArray<number> = [61, 56, 49, 43, 38, 33, 26, 21];
 
-/** TOTAL_CANDIDATES = 100 per D-58-02. Derived from PARTY_WEIGHTS for consistency. */
+/** TOTAL_CANDIDATES derived from PARTY_WEIGHTS for consistency. */
 const TOTAL_CANDIDATES = PARTY_WEIGHTS.reduce((a, b) => a + b, 0);
 
-/** 100 candidates / 4 locales = 25 per block. */
-export const LOCALE_BLOCK_SIZE = 25;
+/**
+ * 327 candidates / 4 locales ≈ 82 per block. The first 3 blocks have 82
+ * candidates each (en, fi, sv); the last block (da) has 81. Math.floor(i / 82)
+ * gives the locale index for candidate i in [0, 327).
+ */
+export const LOCALE_BLOCK_SIZE = 82;
 
 /**
  * Per-locale faker seed offsets. Same pattern as `locales.ts` fanOutLocales —
@@ -97,8 +105,8 @@ export const candidatesOverride: NonNullable<Overrides['candidates']> = (_fragme
     );
   }
 
-  // Expand weights → flat party-ref array of length 100.
-  //   [party_0, party_0, ... ×20, party_1, party_1, ... ×18, ...]
+  // Expand weights → flat party-ref array of length 327.
+  //   [party_0, party_0, ... ×61, party_1, party_1, ... ×56, ...]
   const partyByIndex: Array<{ external_id: string }> = [];
   for (let p = 0; p < PARTY_WEIGHTS.length; p++) {
     for (let k = 0; k < PARTY_WEIGHTS[p]; k++) {

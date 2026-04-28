@@ -128,6 +128,11 @@ export function questionsOverride(_fragment: unknown, ctx: Ctx): Array<Record<st
       // 3-5 choices per categorical question for variety.
       const n = 3 + faker.number.int({ min: 0, max: 2 });
       row.choices = buildCategoricalChoices(faker, n);
+      // Mark categorical questions filterable so they render in the voter
+      // results filter modal — combined with the parent-nomination filters
+      // (party affiliation), this exercises the full filter surface against
+      // the default Finnish demo seed.
+      row.custom_data = { filterable: true };
     }
     // boolean: no choices (QuestionsGenerator pattern — boolean is schema-free).
 
