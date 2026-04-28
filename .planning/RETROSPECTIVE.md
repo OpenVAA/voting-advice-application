@@ -431,6 +431,66 @@
 
 ---
 
+## Milestone: v2.6 — Svelte 5 Migration Cleanup
+
+**Shipped:** 2026-04-28
+**Phases:** 5 (60-64) | **Plans:** 18 | **Tasks:** 48 | **Commits:** 137 | **Wall-clock:** 4 days (2026-04-24 → 2026-04-28)
+
+### What Was Built
+- Runes-mode migration of the last two legacy layouts (root `+layout.svelte` + candidate `(protected)/+layout.svelte`) — `Promise.all().then() + await tick()` pattern replaced with `$derived.by` discriminated-union validity + dedicated `$effect` for batched store mutations. Protected-layout stuck-at-`<Loading />` gone; SSR microtask race eliminated.
+- `PopupRenderer` workaround deleted atomically — inline popup rendering via `{@const Component = item.component}` + `<Component ...>` works under Svelte 5 runes; D-09 `voter-popup-hydration.spec.ts` E2E proves it.
+- Voter-app question flow restored: `isBooleanQuestion` type guard + boolean answer/match-breakdown UI; category-selection migrated to pure `$state` with default-all-checked seeding; candidate-questions reactivity restored via push-based `$state + $effect` mirror replacing the broken pull-chain `$derived.by` helper-store chain.
+- Results page consolidated: `EntityListWithControls` compound merges list + controls; `filterContext` Symbol-keyed module bridges `FilterGroup.onChange → $derived` via a `$state` version counter; single 4-segment optional-param `/results` route with typed American-spelled matchers; coupling-guard 307-redirects malformed URLs; drawer-first DOM source order + `content-visibility: auto`.
+- Phase 62-bis (Phase 64) closed the parity gate via 4-layer reactivity-cascade fix (content-equality guards on `$state` reassignment + `noScroll: true` on drawer-close `goto()` + adapter-side reverse-fill of nomination parent → children id arrays + `expect.poll` hard assertions replacing 6 silent `test.skip(true)` paths). 9-step manual smoke approved 9/9 with 7 in-flight production fixes diagnosed during the smoke session.
+- E2E template extension: `mergeSettings` + `DeepPartial` hoisted from frontend `utils/merge.ts` to `@openvaa/app-shared`; e2e template ships `app_settings.fixed[]` + 3 variant overlays; 4 legacy `updateAppSettings(...)` calls retired.
+- Default seed densified mid-milestone to 5 constituencies × 8 parties × 327 candidates so parties tab + categorical filter axes are realistically exercisable in dev.
+
+### What Worked
+- **Phase 62-bis (Phase 64) pattern over rollback** — Phase 60 SC-4 parity gate FAILed with 24 regressions, all Category A (orthogonal, surfaced-not-introduced). Rather than retroactively expanding Phase 60 or blocking close, scoping a sibling phase to absorb the voter-results work was the cleanest path. Phase 64 then absorbed Phase 62's deferred 9-step manual smoke + 5 voter-results E2E that Phase 63 had handed forward, AND closed the v2.6 anchor parity gate. Two sub-phases overlapping a single resolution.
+- **Hard-assertion E2E surfacing latent defects** — replacing 6 silent `test.skip(true)` paths in voter-results.spec.ts with `expect.poll(...).toBeGreaterThan(0)` hard assertions surfaced two latent defects that had been masked: e2e seed missing `parent_nomination` chains (only 11/14 candidates linked to parties) AND supabase adapter not deriving `parentNominationType` from inline org payload. Both fixed in flight in Plan 64-01.
+- **Mid-milestone seed densification when smoke surfaces dead UI** — Phase 64 manual smoke surfaced "no parties listed" + "categorical filter checkboxes all disabled". User flagged the parties-tab gap; densifying default seed to 5 constituencies × 8 parties × matrix-distributed candidates (327 total) made the tab and filters realistically exercisable AND gave Phase 64 manual smoke a usable surface to actually test the per-tuple FilterGroup scoping.
+- **Independent Chrome walkthrough verifying user-reported smoke results** — when the user said "all 9 steps pass" and asked Claude to walk through it themselves via Chrome, the independent verification (using `mcp__claude-in-chrome__*` tools) reproduced the same 9/9 PASS, confirming parity gate close was real.
+- **Atomic deletion path on the optimistic D-08 outcome** — D-08 reserved a "PopupRenderer retention with documented rationale" fallback in case inline rendering didn't work. Empirical D-09 gate passed first try; the rationale-retention branch was never invoked. Pre-committing to "delete atomically if D-09 PASS" worked.
+- **Audit-driven todo capture during manual smoke** — items like `bind:*` audit, `{#key}` audit, and the `/results/[entType]/[nominationId]` route refactor were captured into existing/new todo files as they surfaced, not at end-of-session. Three durable follow-ups added to `.planning/todos/pending/` during smoke (svelte5-cleanup items 4 & 5 + results-url-refactor-followups item 4) — captured-when-discovered, not lost-by-end-of-session.
+
+### What Was Inefficient
+- **W-5 constant-count "DRIFT" was an arithmetic error** — Plan 60-01 reported a 22-test gap between baseline (89) and constants (67) and flagged it for Plan 60-05 inspection. Plan 60-05 found CASCADE_TESTS had been undercounted as 16 (actual 25); real gap was 89-76 = 13, which exactly matched the 13 SOURCE_SKIP tests. No drift, no re-embed needed. Cost was ~1 plan-step of unnecessary preflight noise.
+- **Pull-chain `$derived.by` helper-store pattern hides destructured-context capture bugs** — Phase 61 candidate-questions reactivity required a full rewrite of the candidate context (push-based `$state + $effect` mirror) plus a non-destructured `ctx.X` access pattern at the consumer boundary. The pull-chain pattern looked fine in static code review and worked when accessed directly in the same component, but broke across child-layout consumer boundaries with destructuring. Costly to diagnose (full Plan 61-03 produced a permanent diagnosis record).
+- **The cascade through SvelteKit `parseParams(page)` took 4 separate component-level guards to fully break** — Svelte 5 raw `$state =` doesn't have Svelte 4's `safe_not_equal` absorber. SvelteKit returns fresh `parseParams(page)` arrays per call → cascades through `selectedElections` → `selectedConstituencies` → `appSettingsValue` → `nominationAndQuestionStore` → `filterStore` → new FilterGroup. Required guards on `voterContext.selectedElections`/`selectedConstituencies` (sameRefs content-equality) AND `appContext.appSettingsValue`/`appCustomizationValue` (ref-equality) to fully break the cascade. Each guard was simple; finding all four was iterative.
+- **Silent `test.skip(true)` had been masking 2 production defects for an unknown duration** — the 6 voter-results paths converted to hard assertions in Plan 64-01 surfaced the seed parent_nomination + adapter parentNominationType defects that had been latent through Phase 62 close. Lesson: silent skip is a debt accelerator; replace with deliberate `test.fixme` + tracked unblock work, never silent skip.
+- **Phase 60 SC-4 `pending_review: true` flag was the right escape hatch but added verification debt** — flagging the gate FAIL as "alternative evidence + handoff to Phase 61" was correct, but the corresponding Phase 61 (and downstream Phase 64) re-verification work was implicit rather than explicit. A formal "handoff debt register" entry would make these obligations more visible.
+
+### Patterns Established
+- **`$derived.by` discriminated-union for SSR-safe loader-data validity** — pure, no intermediate `$state` flags, no microtask races. Pair with a dedicated `$effect` for batched store mutations. (Applied in root + candidate-protected layouts.)
+- **`get(store)` + `untrack(...)` for store mutation inside `$effect`** — `$storeName.update()` (and fromStore-bridged equivalents) inside `$effect` triggers `effect_update_depth_exceeded` due to auto-subscription + version++ `$state` cycle. Mechanical workaround.
+- **`filterContext` Symbol-keyed module + `$state` version counter** — bridges imperative `FilterGroup.onChange` callbacks to `$derived` consumers without re-introducing a circular `$effect` chain. Scope per `(electionId, entityTypePlural)` tuple for cross-tab isolation.
+- **4-segment optional-param `/results` route + typed param matchers** — single shape covers all four valid URL variants; coupling-guard `+page.ts` 307-redirects malformed singular-without-id URLs.
+- **Drawer-first paint via DOM source order + `content-visibility: auto`** — cold deeplinks render the drawer before the list body without a separate route component.
+- **Content-equality (`sameRefs`) before `$state` reassignment** — required to break Svelte 5 reactivity cascades when upstream returns fresh arrays/objects with same content. Must be applied at the assignment site, not consumer side.
+- **`noScroll: true` on goto for round-trip drawer close** — preserves scroll position when URL changes but document content is conceptually unchanged. Pair with `data-sveltekit-noscroll` on individual links if applicable.
+- **`expect.poll(...).toBeGreaterThan(0)` over `test.skip(true)` for race-tolerant E2E** — race-tolerant locator hard assertion replaces silent skip while remaining deterministic.
+- **Phase 62-bis (sibling-phase absorbs deferred milestone-anchor work)** — when parity gate FAILs but regressions are orthogonal, scope a sibling phase to close them rather than rolling back or retroactively expanding the originating phase.
+- **Adapter-side reverse-fill of nomination parent → children id arrays** — DB stores flat `parent_nomination_id`; data-model constructors only auto-populate from inline nested payloads. Adapter must derive children before returning.
+
+### Key Lessons
+1. **Svelte 5 raw `$state =` doesn't have Svelte 4's `safe_not_equal` absorber.** Content-equal reassignments still cascade through `$derived` consumers unless guarded explicitly at the assignment site (`===` for objects/arrays, deep `sameRefs(...)` for collections). Multi-context cascades require guards at every layer; a single guard is rarely enough.
+2. **`$storeName.update()` and fromStore-bridged mutations inside `$effect` are a runes-mode pitfall.** Symptom is `effect_update_depth_exceeded`; root cause is store auto-subscription + subscribe-notify + version++ `$state` cycle. Workaround is mechanical (`get(store)` + `untrack(...)`) but recognizing the symptom takes one bug.
+3. **Silent `test.skip(true)` is a debt accelerator.** Each path in v2.6's voter-results suite had been masking an upstream production defect for an unknown duration. Forcing hard assertions surfaced both. Use `test.fixme` with a tracked unblock task instead — never silent skip.
+4. **Manual smoke catches what E2E doesn't.** Phase 64's 9-step manual smoke surfaced 7 in-flight production fixes (badge persistence, scroll preservation, portrait reload flicker, parties tab empty, categorical filter checkboxes disabled) that no automated test was covering. UX-class bugs survive E2E because E2E checks state, not transitions and continuity. Keep manual checkpoints in the GSD verification protocol for reactivity-heavy phases.
+5. **Phase 62-bis pattern: when a milestone-anchor parity gate FAILs but regressions are orthogonal, scope a sibling phase.** Faster than retroactively expanding the originating phase, cleaner than rollback, preserves verification ledger continuity. v2.6 used it twice (Phase 60 → Phase 61 candidate-questions handoff, then Phase 63 → Phase 64 voter-results handoff).
+6. **Reactivity-heavy refactors need a "cascade map" before execution.** v2.6 reactivity bugs (Phase 64 cascade fix) required 4 separate guards because the cascade chain wasn't enumerated up front — each guard surfaced the next missing one. A pre-execution cascade map (every $state → $derived edge in voter-flow context system) would have surfaced all 4 in one pass.
+7. **Densifying default seed mid-milestone is a positive signal, not scope creep.** When manual smoke surfaces dead UI in a feature that exists in code (parties tab, categorical filters), the seed gap is real production debt — densify and continue. v2.6 default-seed densification (5 constituencies × 8 parties × 327 candidates) made future debugging dramatically easier.
+
+### Cost Observations
+- **Sessions:** Multiple sessions across phases; Phase 64 alone produced 35 commits in 1 day (the largest single-phase commit count in the milestone, driven by manual smoke fix-as-you-go cadence).
+- **Model mix:** Predominantly Claude Opus 4.7 (1M context) for executor + planner agents; Sonnet 4.6 for plan-checker and verifier (per milestone default profile).
+- **Wall-clock vs CPU:** ~4 days wall-clock; agent CPU substantially lower. Phase 64 manual smoke session was the wall-clock-heavy segment due to live UAT cadence.
+- **Notable efficiency:** the Phase 62-bis pattern saved an entire rollback cycle. If Phase 60's SC-4 parity FAIL had triggered a Phase 60 retroactive expansion, the milestone would have grown 2-3 plans without separating concerns; instead, two sibling phases (61 + 64) absorbed the work cleanly.
+- **Notable inefficiency:** the W-5 arithmetic-error preflight noise (one plan-step of unnecessary signal); the 4-layer cascade discovery iteration (~3 commits to enumerate all 4 guard sites).
+- **Open artifact audit at close:** 1 verification gap (Phase 62 `human_needed`, resolved by Phase 64 manual smoke) + 18 pending todos (4 partially-resolved-by-v2.6 with audit additions; 14 carry-forward to v2.7 backlog).
+
+---
+
 ## Cross-Milestone Trends
 
 *Note: Parallel branch milestones (sb-v2.0, sb-v3.0) are documented above but not included in cumulative quality metrics — those milestones will be re-executed on this branch during v2.0 integration.*
@@ -445,6 +505,8 @@
 | v1.3      | 99      | 5      | 19    | ~8min    | Content migration at scale (98 components) — runes patterns validated |
 | v1.4      | 21      | 2      | 7     | ~10min   | Fastest milestone — established patterns, focused scope |
 | v2.2      | 20      | 1/3    | 2     | ~19min   | First paused milestone — feasibility spike with rollback |
+| v2.5      | 28      | 4      | 34    | ~3min    | Toolkit milestone — generators + parity-gate baseline-as-contract |
+| v2.6      | 137     | 5      | 18    | ~32min   | Largest plan size to date — reactivity cascades + manual-smoke fix-as-you-go cadence |
 
 ### Cumulative Quality
 
@@ -456,6 +518,8 @@
 | v1.3      | 20/20       | 100%     | 19    | 0 (14 tech debt items, all non-blocking) |
 | v1.4      | 10/10       | 100%     | 7     | 0 |
 | v2.2      | 8/14        | 57%      | 2     | 6 (EVAL/RPT — milestone paused) |
+| v2.5      | 16/16       | 100%     | 34    | 18 (carry-forward backlog at close) |
+| v2.6      | 12/12       | 100%     | 18    | 18 (carry-forward + 3 new audit todos surfaced during smoke) |
 
 ### Top Lessons (Verified Across Milestones)
 
@@ -470,3 +534,7 @@
 9. Validation gate as dedicated phase catches regressions other tools miss — now validated across 5 milestones
 10. Established patterns compound — each subsequent milestone is faster than the last (v1.4 completed in 1 day vs v1.0's 11 days)
 11. Feasibility studies should be scoped as spikes — validate fast, rollback if no forcing function, preserve research (v2.2)
+12. Baseline-as-contract beats CI-retention parity gates (v2.5, v2.6) — commit Playwright JSON + diff script with grep-able verdict literal
+13. Hard-assertion E2E surfaces latent defects that silent skips mask (v2.6) — replace `test.skip(true)` with `expect.poll(...).toBeGreaterThan(0)` to force the upstream to fix or fail visibly
+14. Phase 62-bis pattern: when a milestone-anchor parity gate FAILs but regressions are orthogonal, scope a sibling phase (v2.6) — preserves verification ledger continuity, avoids retroactive expansion or rollback
+15. Manual smoke catches what E2E doesn't (v2.6) — UX-class bugs (scroll preservation, badge persistence, portrait reload flicker) survive automated coverage; keep manual checkpoints for reactivity-heavy phases
