@@ -264,7 +264,11 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   }
 
   function handleDrawerClose(): void {
-    goto(buildListRoute(_urlPlural ?? _pluralForActiveType(), activeElectionId));
+    // `noScroll: true` mirrors the entity-card open path (EntityCardAction
+    // uses `data-sveltekit-noscroll`). Without it, SvelteKit's default
+    // scroll-on-navigation snaps the list back to the top — surfaced during
+    // Phase 64 manual smoke as "page scrolls when drawer closes".
+    goto(buildListRoute(_urlPlural ?? _pluralForActiveType(), activeElectionId), { noScroll: true });
   }
 
   function _pluralForActiveType(): EntityPlural | undefined {

@@ -78,13 +78,29 @@ export function initVoterContext(): VoterContext {
   let selectedElections = $state<Array<Election>>([]);
   let selectedConstituencies = $state<Array<Constituency>>([]);
 
+  // Content-equality short-circuit: every URL change runs `parseParams(page)`
+  // which produces fresh query-param arrays even when content is unchanged
+  // (e.g., drawer open/close adds /candidate/[id] route segments while
+  // electionId search param is identical). Without this guard, every
+  // navigation cascaded selectedElections → nominationAndQuestionStore →
+  // filterStore, rebuilding FilterGroup instances and dropping any active
+  // filter rules — surfaced during Phase 64 manual smoke as "filter badge
+  // disappears after closing candidate drawer". Svelte 4 stores absorbed this
+  // via `writable.set()`'s no-op-write skip; Svelte 5 raw `$state` writes
+  // need an explicit equality check.
+  function sameRefs<T>(a: ReadonlyArray<T>, b: ReadonlyArray<T>): boolean {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+    return true;
+  }
+
   $effect(() => {
     const dr = reactiveDataRoot.current;
     const settings = appSettingsState.current;
     const electionId = _electionId.value;
     const constituencyId = _constituencyId.value;
     if (!dr.elections.length) {
-      selectedElections = [];
+      if (selectedElections.length !== 0) selectedElections = [];
       return;
     }
     const ids = electionId?.length
@@ -95,11 +111,12 @@ export function initVoterContext(): VoterContext {
           selectedConstituencyIds: constituencyId
         });
     if (!ids?.length) {
-      selectedElections = [];
+      if (selectedElections.length !== 0) selectedElections = [];
       return;
     }
     try {
-      selectedElections = ids.map((id) => dr.getElection(id));
+      const next = ids.map((id) => dr.getElection(id));
+      if (!sameRefs(next, selectedElections)) selectedElections = next;
     } catch (e) {
       // DataRoot lookup throws transiently during navigation: when the URL
       // changes the page params arrive on the new route before the loader
@@ -110,7 +127,7 @@ export function initVoterContext(): VoterContext {
       // and let the route's `+page.ts` / `+layout.ts` `redirect()` decide
       // whether a redirect is actually needed.
       logDebugError(`[selectedElections] Error fetching election: ${e}`);
-      selectedElections = [];
+      if (selectedElections.length !== 0) selectedElections = [];
     }
   });
 
@@ -119,7 +136,7 @@ export function initVoterContext(): VoterContext {
     const constituencyId = _constituencyId.value;
     const electionId = _electionId.value;
     if (!dr.constituencies.length) {
-      selectedConstituencies = [];
+      if (selectedConstituencies.length !== 0) selectedConstituencies = [];
       return;
     }
     const ids = constituencyId?.length
@@ -129,17 +146,18 @@ export function initVoterContext(): VoterContext {
           selectedElectionIds: electionId
         });
     if (!ids?.length) {
-      selectedConstituencies = [];
+      if (selectedConstituencies.length !== 0) selectedConstituencies = [];
       return;
     }
     try {
-      selectedConstituencies = ids.map((id) => dr.getConstituency(id));
+      const next = ids.map((id) => dr.getConstituency(id));
+      if (!sameRefs(next, selectedConstituencies)) selectedConstituencies = next;
     } catch (e) {
       // See parallel selectedElections catch above — clear the local mirror
       // and let the route loader handle redirects so we don't race the
       // in-flight navigation.
       logDebugError(`[selectedConstituencies] Error fetching constituency: ${e}`);
-      selectedConstituencies = [];
+      if (selectedConstituencies.length !== 0) selectedConstituencies = [];
     }
   });
 

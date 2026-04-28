@@ -116,7 +116,17 @@ component-local). See `EntityListWithControls.helpers.ts` for the pure
     );
   });
 
-  const numActiveFilters = $derived(countActiveFilters(activeFilterGroup));
+  // Read fctx.version so this $derived re-runs on filter mutations. Without
+  // the subscription, version bumps trigger _filterGroup to re-derive but the
+  // returned FilterGroup is identity-equal (same instance, mutated in place),
+  // so Svelte 5's chained $derived bails on equality and downstream consumers
+  // never see the new active count. Symptom before fix: badge stale at 1
+  // when multiple filters active; reset button shows "disabled" after a
+  // reset because numActiveFilters is still cached from before.
+  const numActiveFilters = $derived.by(() => {
+    void fctx.version;
+    return countActiveFilters(activeFilterGroup);
+  });
 
   let filtersModalRef = $state<Modal | undefined>();
 

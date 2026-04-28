@@ -101,7 +101,7 @@ This is a dynamic component, because it renders the dynamic `EntityCard` compone
       <div class="{PAGE_CLASS} gap-md flex flex-col" id="div-{i}">
         {#if i <= currentPage}
           {#each items as item}
-            {#key item}<EntityCard {...item} />{/key}
+            <EntityCard {...item} />
           {/each}
         {/if}
         {#if i > 0}

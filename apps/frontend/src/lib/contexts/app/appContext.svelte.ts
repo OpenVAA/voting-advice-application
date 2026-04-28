@@ -80,8 +80,21 @@ export function initAppContext(): AppContext {
   );
 
   // Read appSettingsData directly from page.data (replaces pageDatumStore per D-02)
+  //
+  // Track the previous `data` reference to skip merges when SvelteKit hands us
+  // the same loader result on a URL change (e.g., drawer open/close — root
+  // layout loader has no URL deps so its data is cached). Without this guard
+  // `mergeAppSettings` always produces a new AppSettings object, which Svelte
+  // 5 propagates as a state change, cascading through `entityTypes` →
+  // `nominationAndQuestionStore` → `filterStore` and recreating every
+  // `FilterGroup` on every navigation. Surfaced during Phase 64 manual smoke
+  // as "filter badge disappears on drawer open / portraits reload on close".
+  // Svelte 4 stores absorbed this via `safe_not_equal`; raw `$state =` doesn't.
+  let prevAppSettingsData: DynamicSettings | Error | undefined;
   $effect(() => {
     const data = page.data?.appSettingsData as DynamicSettings | Error | undefined;
+    if (data === prevAppSettingsData) return;
+    prevAppSettingsData = data;
     if (!data || data instanceof Error) return;
     appSettingsValue = mergeAppSettings(appSettingsValue, data);
   });
@@ -94,9 +107,12 @@ export function initAppContext(): AppContext {
     }
   );
 
-  // Read appCustomizationData directly from page.data (replaces pageDatumStore per D-02)
+  // Same reference-equality guard as appSettingsData above.
+  let prevAppCustomizationData: AppCustomization | Error | undefined;
   $effect(() => {
     const data = page.data?.appCustomizationData as AppCustomization | Error | undefined;
+    if (data === prevAppCustomizationData) return;
+    prevAppCustomizationData = data;
     if (!data || data instanceof Error) return;
     appCustomizationValue = data;
   });
