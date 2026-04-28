@@ -34,7 +34,7 @@ export function filterStore({
     const tree: Partial<FilterTree> = {};
     for (const [electionId, electionContent] of Object.entries(nq)) {
       tree[electionId] = Object.fromEntries(
-        Object.entries(electionContent).map(([entityType, { nominations, infoQuestions }]) => {
+        Object.entries(electionContent).map(([entityType, { nominations, infoQuestions, opinionQuestions }]) => {
           const filters = new Array<Filter<MaybeWrappedEntityVariant, unknown>>();
 
           // Build parent nomination filters
@@ -52,8 +52,12 @@ export function filterStore({
             );
           }
 
-          // Build info question filters
-          const filterableQuestions = infoQuestions.filter((q) => getCustomData(q).filterable);
+          // Build question filters from any question (info or opinion) flagged
+          // `filterable: true`. Opinion-category questions with the flag let
+          // voters narrow results by candidate answer to a specific question.
+          const filterableQuestions = [...infoQuestions, ...opinionQuestions].filter(
+            (q) => getCustomData(q).filterable
+          );
           filters.push(
             ...filterableQuestions
               .map((q) => buildQuestionFilter({ question: q, locale: currentLocale }))
