@@ -39,7 +39,7 @@ Full details: `.planning/milestones/v2.6-ROADMAP.md`
 
 **Milestone Goal:** Close the v2.6 supabase-adapter cleanup tail and complete the deferred Svelte 5 audit sweeps in one cohesive milestone. The DB-01 + ADAPTER-01 + SEED-01 cluster all touches `apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.ts` and `@openvaa/dev-seed`, so closing them together means one round of integration testing.
 
-- [ ] **Phase 65: Svelte 5 Audit Sweeps** — Codebase-wide `bind:*` audit, `{#key}` audit, and context-destructuring reactivity rule documented and applied
+- [x] **Phase 65: Svelte 5 Audit Sweeps** — Codebase-wide `bind:*` audit, `{#key}` audit, and context-destructuring reactivity rule documented and applied (completed 2026-04-29)
 - [ ] **Phase 66: Adapter Type Cleanup** — Clean up the 2 `as unknown as` casts in `supabaseDataProvider.ts` (v2.6 P64 reverse-fill pass) using a real intermediate type (`InternalFlatNomination`) in a sibling `.types.ts` file (scope narrowed 2026-04-29: schema migration deferred per Phase 66 CONTEXT D-01; the `nominations` table stays as is)
 - [ ] **Phase 67: Default Seed Alliances** — `~2-3` alliances grouping subsets of the default seed's 8 parties; empirically exercises the v2.6 P64 alliance branch of the adapter reverse-fill
 - [ ] **Phase 68: Dev-Tooling Trio** — Frontend autoreload on package source / env-var changes, lint-all-imports rules + monorepo-wide cleanup, Deno tooling scoped strictly to `apps/supabase/functions/*`
@@ -58,7 +58,7 @@ Full details: `.planning/milestones/v2.6-ROADMAP.md`
 **Plans**: 3 plans
 - [x] 65-01-PLAN.md — bind:* audit + inline justifications across 93 sites under apps/frontend/src/lib
 - [x] 65-02-PLAN.md — {#key} audit + context-destructure audit + CLAUDE.md rule subsection
-- [ ] 65-03-PLAN.md — Verification (svelte-check + vitest + Playwright parity gate + voter 9-step + candidate 4-step manual smoke)
+- [x] 65-03-PLAN.md — Verification (svelte-check + vitest + Playwright parity gate + voter 9-step + candidate 4-step manual smoke)
 
 **UI hint**: yes
 
@@ -113,7 +113,7 @@ Run `/gsd-new-milestone` to question → research → write requirements → roa
 | 62. Results Page Consolidation | v2.6 | 3/3 | Complete | 2026-04-26 |
 | 63. E2E Template Extension & Greening | v2.6 | 3/3 | Complete | 2026-04-27 |
 | 64. Voter Results Reactivity Completion | v2.6 | 4/4 | Complete | 2026-04-28 |
-| 65. Svelte 5 Audit Sweeps | v2.7 | 2/3 | In Progress|  |
+| 65. Svelte 5 Audit Sweeps | v2.7 | 3/3 | Complete    | 2026-04-29 |
 | 66. Adapter Type Cleanup | v2.7 | 0/1 | Not started | — |
 | 67. Default Seed Alliances | v2.7 | 0/2 | Not started | — |
 | 68. Dev-Tooling Trio | v2.7 | 0/3 | Not started | — |

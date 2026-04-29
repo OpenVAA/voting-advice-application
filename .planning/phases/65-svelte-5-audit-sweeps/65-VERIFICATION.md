@@ -1,7 +1,7 @@
 ---
 phase: 65-svelte-5-audit-sweeps
 verified: 2026-04-29
-status: PASS
+status: passed
 ---
 
 # Phase 65 Verification Report
