@@ -24,7 +24,7 @@
 
 ### ADAPTER — Supabase adapter type cleanup
 
-- [ ] **ADAPTER-01**: `apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.ts` carries zero `as unknown as { ... }` casts (or each remaining one is justified inline with `// @ts-expect-error — reason: …` or a comment). No `any` types remain. The reverse-fill pass uses a real intermediate type (e.g., `InternalFlatNomination`) defined once in a sibling `supabaseDataProvider.types.ts` file and reused across the parent/child mapping loops. Type errors surface at the call site, not in downstream consumers.
+- [x] **ADAPTER-01**: `apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.ts` carries zero `as unknown as { ... }` casts (or each remaining one is justified inline with `// @ts-expect-error — reason: …` or a comment). No `any` types remain. The reverse-fill pass uses a real intermediate type (e.g., `InternalFlatNomination`) defined once in a sibling `supabaseDataProvider.types.ts` file and reused across the parent/child mapping loops. Type errors surface at the call site, not in downstream consumers.
 
 ### DB — _(no v2.7 requirements; DB-01 deferred — see Future Requirements below)_
 
