@@ -240,6 +240,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   {@const customData = getCustomData(question)}
   {@const answer = userData.current?.candidate.answers?.[question.id]}
 
+  <!-- {#key}: keep — remount drops in-progress draft state from the prior question (form input refs, OpinionQuestionInput internal $state) when the URL navigates question N → N+1. Without it, draft state from the prior question would leak into the next form on navigation. -->
   {#key question.id}
     <PreventNavigation
       active={() => !bypassPreventNavigation && userData.hasUnsaved && !answersLocked}

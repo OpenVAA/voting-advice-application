@@ -369,6 +369,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
                     : activeEntityType === 'organization'
                       ? 'voter-results-party-section'
                       : undefined}>
+                  <!-- {#key}: keep — scope-tuple change (Phase 62 D-14) discards per-scope filter UI state; without remount, EntityListWithControls would carry filter selections from one election:entityType context into the next. -->
                   {#key `${activeElectionId}:${activeEntityType}`}
                     <h3 class="my-lg mx-10 text-xl">
                       {t(`results.${activeEntityType}.numShown`, { numShown: activeMatches.length })}

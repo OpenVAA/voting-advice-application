@@ -273,7 +273,8 @@ Shows the candidate's basic information, some of which is editable.
 
       <!-- Editable Info questions -->
 
-      {#each candCtx.infoQuestions.filter((q) => !getCustomData(q).locked) as question}
+      <!-- {#each}: keyed — QuestionInput carries per-item interactive state (bind:value, focus, uncommitted draft); positional reuse on reorder/filter would corrupt state across questions -->
+      {#each candCtx.infoQuestions.filter((q) => !getCustomData(q).locked) as question (question.id)}
         {@const answer = userData.current?.candidate.answers?.[question.id]}
         <QuestionInput {question} {answer} onChange={handleQuestionInputChange} locked={candCtx.answersLocked} onShadedBg />
       {/each}
