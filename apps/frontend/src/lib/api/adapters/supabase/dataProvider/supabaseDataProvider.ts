@@ -27,6 +27,7 @@ import type {
   ElectionData,
   QuestionCategoryData
 } from '@openvaa/data';
+import type { InternalFlatNomination } from './supabaseDataProvider.type';
 import type { TranslationKey } from '$types';
 
 /**
@@ -373,46 +374,34 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     // smoke. The full child→parent → grandparent walk also covers
     // candidate→faction→organization→alliance and faction→organization edges.
     const childIdsByParentAndType = new Map<string, Map<string, Array<string>>>();
-    for (const child of nominations) {
-      const c = child as unknown as {
-        id: string;
-        parentNominationId?: string | null;
-        entityType: string;
-      };
-      if (!c.parentNominationId) continue;
-      let typeMap = childIdsByParentAndType.get(c.parentNominationId);
+    for (const child of nominations as Array<InternalFlatNomination>) {
+      if (!child.parentNominationId) continue;
+      let typeMap = childIdsByParentAndType.get(child.parentNominationId);
       if (!typeMap) {
         typeMap = new Map();
-        childIdsByParentAndType.set(c.parentNominationId, typeMap);
+        childIdsByParentAndType.set(child.parentNominationId, typeMap);
       }
-      let ids = typeMap.get(c.entityType);
+      let ids = typeMap.get(child.entityType);
       if (!ids) {
         ids = [];
-        typeMap.set(c.entityType, ids);
+        typeMap.set(child.entityType, ids);
       }
-      ids.push(c.id);
+      ids.push(child.id);
     }
-    for (const parent of nominations) {
-      const p = parent as unknown as {
-        id: string;
-        entityType: string;
-        candidateNominationIds?: Array<string>;
-        factionNominationIds?: Array<string>;
-        organizationNominationIds?: Array<string>;
-      };
-      const typeMap = childIdsByParentAndType.get(p.id);
+    for (const parent of nominations as Array<InternalFlatNomination>) {
+      const typeMap = childIdsByParentAndType.get(parent.id);
       if (!typeMap) continue;
       const candIds = typeMap.get(ENTITY_TYPE.Candidate);
       const factionIds = typeMap.get(ENTITY_TYPE.Faction);
       const orgIds = typeMap.get(ENTITY_TYPE.Organization);
-      if (candIds && (p.entityType === ENTITY_TYPE.Organization || p.entityType === ENTITY_TYPE.Faction)) {
-        p.candidateNominationIds = candIds;
+      if (candIds && (parent.entityType === ENTITY_TYPE.Organization || parent.entityType === ENTITY_TYPE.Faction)) {
+        parent.candidateNominationIds = candIds;
       }
-      if (factionIds && p.entityType === ENTITY_TYPE.Organization) {
-        p.factionNominationIds = factionIds;
+      if (factionIds && parent.entityType === ENTITY_TYPE.Organization) {
+        parent.factionNominationIds = factionIds;
       }
-      if (orgIds && p.entityType === ENTITY_TYPE.Alliance) {
-        p.organizationNominationIds = orgIds;
+      if (orgIds && parent.entityType === ENTITY_TYPE.Alliance) {
+        parent.organizationNominationIds = orgIds;
       }
     }
 
