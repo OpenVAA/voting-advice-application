@@ -13,6 +13,7 @@ Show a modal dialog for sending feedback.
 <script lang="ts">
   let openFeedback: () => void;
 </script>
+// bind: keep — usage example in @component doc
 <FeedbackModal bind:openFeedback>
 <Button onclick={openFeedback} text="Open feedback"/>
 ```
@@ -52,10 +53,12 @@ Show a modal dialog for sending feedback.
   }
 </script>
 
+<!-- bind: keep — modalRef is plain let Modal; single ref read in closeFeedback/openFeedback -->
 <Modal
   title={title ?? t('feedback.title')}
   boxClass="sm:max-w-[calc(36rem_+_2_*_24px)]"
   bind:this={modalRef}
   {...restProps}>
+  <!-- bind: keep — feedbackRef is plain let; single ref read in onSent -->
   <Feedback onCancel={closeFeedback} {onSent} bind:this={feedbackRef} />
 </Modal>

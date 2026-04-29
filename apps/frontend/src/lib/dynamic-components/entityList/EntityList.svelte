@@ -26,6 +26,7 @@ This is a dynamic component, because it renders the dynamic `EntityCard` compone
 
 ```tsx
 <h2>{itemsShown} candidates of {candidates.length}</h2>
+// bind: keep — usage example in @component doc
 <EntityList bind:itemsShown contents={candidates} actionCallBack={({id}) => $getRoute({route: ROUTE.Candidate, id})}/>
 ```
 -->
@@ -95,6 +96,7 @@ This is a dynamic component, because it renders the dynamic `EntityCard` compone
   }
 </script>
 
+<!-- bind: keep — div is plain let HTMLDivElement; single ref read in scrollToCard (event handler via setTimeout) -->
 <div bind:this={div} data-testid="entity-list" {...concatClass(restProps, 'flex flex-col gap-md')}>
   {#each pages as items, i}
     {#if i <= currentPage + 1}

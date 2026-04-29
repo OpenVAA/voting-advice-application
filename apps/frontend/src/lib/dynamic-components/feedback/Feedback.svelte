@@ -40,6 +40,7 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
     reset();
   }
 </script>
+// bind: keep — usage example in @component doc
 <Feedback bind:reset onCancel={close} onSent={close}/>
 ```
 -->
@@ -162,6 +163,7 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
       {t('feedback.rating.label')}
     </legend>
     <div class="rating">
+      <!-- bind: keep — zeroInput is $state(); single ref read in reset() -->
       <input
         bind:this={zeroInput}
         onclick={() => (rating = undefined)}
@@ -187,6 +189,7 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
   </fieldset>
 
   <!-- Description textarea -->
+  <!-- bind: keep — two-way DOM textarea bind:value={description}; description is $state('') -->
   <textarea
     bind:value={description}
     onfocus={() => (textareaExpanded = true)}

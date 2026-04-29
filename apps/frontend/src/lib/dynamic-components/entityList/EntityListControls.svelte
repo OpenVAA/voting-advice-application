@@ -20,6 +20,7 @@ TODO: Consider moving the tracking events away from the component and just addin
 ### Usage
 
 ```tsx
+// bind: keep — usage example in @component doc
 <EntityListControls entities={allParties} bind:output={filteredParties}/>
 ```
 -->
@@ -152,6 +153,7 @@ TODO: Consider moving the tracking events away from the component and just addin
 </div>
 
 {#if filterGroup?.filters.length}
+  <!-- bind: keep — filtersModalRef is $state(); single ref read in event handlers -->
   <Modal
     bind:this={filtersModalRef}
     title={t('entityFilters.filters')}

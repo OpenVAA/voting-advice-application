@@ -161,6 +161,8 @@ If not provided, the `video` element will be hidden until these properties are p
   // BOUND PROPS OF <video>
   ////////////////////////////////////////////////////////////////////////////////
 
+  // bind: keep — single-ref `bind:this={video}`; the four below feed
+  // two-way DOM `<video>` properties (bind:currentTime/duration/muted/paused).
   let video: HTMLVideoElement | undefined;
   let currentTime = $state(0);
   let duration = $state<number>(0);
@@ -681,7 +683,7 @@ If not provided, the `video` element will be hidden until these properties are p
 
   <!-- Video -->
   <div class="h-full w-full" class:hidden={transcriptVisible}>
-    <!-- bind: keep — bind:this={video} single ref; bind:currentTime/duration/muted/paused are two-way DOM video properties (currentTime/duration/muted/boundPaused are $state) -->
+    <!-- bind: keep — single ref; two-way DOM video props ($state) -->
     <video
       bind:this={video}
       bind:currentTime

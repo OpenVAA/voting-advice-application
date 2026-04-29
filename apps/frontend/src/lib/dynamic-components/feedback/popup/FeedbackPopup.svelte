@@ -51,9 +51,11 @@ Show a popup asking for user feedback.
   }
 </script>
 
+<!-- bind: keep — alertRef is plain let Alert; single ref read in onSent/onSubmit -->
 <Alert bind:this={alertRef} title={t('privacy.title')} {...restProps}>
   <div class="justify-self-stretch">
     <h3 class="mb-lg mt-0 text-center">{t('feedback.popupTitle')}</h3>
+    <!-- bind: keep — Pattern 2: Feedback.canSubmit/status are $bindable; bind:this single ref to feedbackRef -->
     <Feedback
       {onSent}
       bind:canSubmit

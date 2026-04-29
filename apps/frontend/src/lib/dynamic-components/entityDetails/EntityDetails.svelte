@@ -113,6 +113,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     <EntityCard {entity} variant="details" class="!p-lg" />
   </header>
   {#if contentTabs.length > 1}
+    <!-- bind: keep — Pattern 2: Tabs.activeIndex is $bindable(0) -->
     <Tabs tabs={contentTabs} bind:activeIndex onChange={handleContentTabChange} class="px-10" />
   {/if}
   {#if contentTabs[activeIndex]?.content === 'info'}

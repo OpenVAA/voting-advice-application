@@ -38,6 +38,7 @@ Accesses `AppContext` to get `appSettings` and `userPreferences`.
       restProps,
       'grid justify-items-center w-full ' + (variant === 'compact' ? '' : 'rounded-lg bg-base-200 p-lg pt-md')
     )}>
+    <!-- bind: keep — Pattern 2: SurveyButton.clicked is $bindable(false) -->
     <SurveyButton bind:clicked />
     {#if variant !== 'compact'}
       <div class="small-info text-center">{t('dynamic.survey.info')}</div>

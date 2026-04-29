@@ -49,6 +49,7 @@ Accesses `AppContext` to read `appSettings`.
   text={t('privacy.dataConsentInfoButton')}
   {...restProps} />
 
+<!-- bind: keep — modalRef is plain let Modal; single ref read in onclick -->
 <Modal bind:this={modalRef} title={t('common.privacy.dataCollection.title')}>
   {#if $appSettings.analytics?.platform?.name}
     <p>{@html sanitizeHtml(t('common.privacy.dataCollection.content'))}</p>

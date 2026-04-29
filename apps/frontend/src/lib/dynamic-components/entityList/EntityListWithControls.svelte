@@ -203,6 +203,7 @@ component-local). See `EntityListWithControls.helpers.ts` for the pure
 </div>
 
 {#if activeFilterGroup?.filters.length}
+  <!-- bind: keep — filtersModalRef is $state<Modal>; single ref read in event handlers (openFilters/resetAllFilters) -->
   <Modal
     bind:this={filtersModalRef}
     title={t('entityFilters.filters')}

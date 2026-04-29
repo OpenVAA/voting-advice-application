@@ -26,6 +26,7 @@ Show a popup with a data consent form, if data consent has not been given yet.
   let alertRef: Alert;
 </script>
 
+<!-- bind: keep — alertRef is plain let Alert; single ref read in onChange callback -->
 <Alert bind:this={alertRef} title={t('common.privacy.dataCollection.title')} icon="privacy" {...restProps}>
   <div class="gap-md grid grid-flow-row">
     <p class="my-0">{t('dynamic.privacy.dataConsentIntro.popup')}</p>
