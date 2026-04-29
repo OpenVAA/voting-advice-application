@@ -18,6 +18,7 @@ Contains the dynamic `PasswordValidator` component.
 ### Usage
 
 ```tsx
+// bind: keep — usage example in @component doc
 <PasswordSetter
   bind:password={password}
   bind:valid={canSubmit}/>
@@ -72,12 +73,15 @@ Contains the dynamic `PasswordValidator` component.
   <p class="mx-md my-0 self-stretch">
     {t('candidateApp.setPassword.ingress')}
   </p>
+  <!-- bind: keep — Pattern 2: PasswordValidator.validPassword is $bindable(false) -->
   <PasswordValidator bind:validPassword {password} />
   <div class="mb-md mt-md flex w-full flex-col gap-6">
     <div data-testid={passwordTestId}>
+      <!-- bind: keep — Pattern 2: PasswordField.password is $bindable('') -->
       <PasswordField bind:password id="password-{id}" label={t('common.password')} {autocomplete} />
     </div>
     <div data-testid={confirmPasswordTestId}>
+      <!-- bind: keep — Pattern 2: PasswordField.password is $bindable('') -->
       <PasswordField
         bind:password={passwordConfirmation}
         id="confirmation-{id}"

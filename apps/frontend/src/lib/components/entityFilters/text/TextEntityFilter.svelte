@@ -80,6 +80,7 @@ Render a text filter for entities.
 <div {...concatClass(restProps, '')}>
   <label class={labelClass}>
     <span class="sr-only">{t('entityFilters.text.ariaLabel')}</span>
+    <!-- bind: keep — two-way DOM input bind:value; value is $state(filter.include) -->
     <input
       bind:value
       type="text"

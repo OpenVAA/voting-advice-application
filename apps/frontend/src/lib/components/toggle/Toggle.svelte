@@ -29,6 +29,7 @@ Display a short list of options as toggleable text or icon buttons from which on
   ];
   let selected: string;
 </script>
+// bind: keep — usage example in @component doc
 <Toggle bind:selected label="Switch between video and text display" {options}/>
 
 <script lang="ts">
@@ -47,6 +48,7 @@ Display a short list of options as toggleable text or icon buttons from which on
   ];
   let selected: string;
 </script>
+// bind: keep — usage example in @component doc
 <Toggle bind:selected label="Switch between video and text display" {options}/>
 ```
 -->
@@ -69,6 +71,7 @@ Display a short list of options as toggleable text or icon buttons from which on
   <legend class="sr-only">{label}</legend>
   {#each options as option}
     <label class="small-label rounded-full px-8 py-4">
+      <!-- bind: keep — two-way DOM radio group bind:group={selected}; selected is $bindable() -->
       <input tabindex="0" type="radio" name="toggle-options" value={option.key} bind:group={selected} class="sr-only" />
       {#if option.icon}
         <Icon name={option.icon} size="sm" />

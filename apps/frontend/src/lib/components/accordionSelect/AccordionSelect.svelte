@@ -15,6 +15,7 @@ If there's only one option, it is automatically selected and no interactions are
 ### Usage
 
 ```tsx
+// bind: keep — usage example in @component doc
 <AccordionSelect bind:activeIndex options={['Basic Info', 'Opinions']}/>
 ```
 -->

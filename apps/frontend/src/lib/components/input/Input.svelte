@@ -211,9 +211,10 @@ Multilingual features are only available if the `locales` store contains more th
     fileInput?.click();
   }
 
-  // `mainInputs` must be $state in Svelte 5 because `bind:this={mainInputs[i]}`
-  // mutates a property on it. A plain array triggers `binding_property_non_reactive`.
-  // Mirrors the Phase 64 fix at QuestionChoices.svelte:122-124.
+  // bind: migrate — `mainInputs` must be $state in Svelte 5 because
+  // `bind:this={mainInputs[i]}` mutates a property on it. A plain array
+  // triggers `binding_property_non_reactive`. Mirrors the Phase 64 fix
+  // at QuestionChoices.svelte:122-124.
   const mainInputs: Array<HTMLElement> = $state([]);
   /**
    * Return focus to the main input after a multilingual item has been expanded or an option has been deleted in select-multiple.
@@ -391,7 +392,9 @@ Multilingual features are only available if the `locales` store contains more th
                 class:opacity-0={!isTranslationsVisible}>{t(assertTranslationKey(`lang.${locale}`))}</label>
               <!-- The actual textarea
                    NB. Join does not work it, so we do it by hand -->
+              <!-- bind: keep — Pattern 1 ($state target for bind:this; mainInputs is $state([]) per declaration above) -->
               <textarea
+                bind:this={mainInputs[i]}
                 id="{id}-{locale}"
                 aria-labelledby="{id}-label {id}-label-{locale}"
                 {placeholder}
@@ -401,7 +404,6 @@ Multilingual features are only available if the `locales` store contains more th
                 class:pt-24={isTranslationsVisible}
                 class:rounded-t-none={isTranslationsVisible && i > 0}
                 class:rounded-b-none={isTranslationsVisible && i !== locales.length - 1}
-                bind:this={mainInputs[i]}
                 onchange={(e) => handleChange(e, locale)}
                 value={getLocalizedValue(locale)}></textarea>
             </div>
@@ -415,14 +417,15 @@ Multilingual features are only available if the `locales` store contains more th
                 class:opacity-0={!isTranslationsVisible}>{t(assertTranslationKey(`lang.${locale}`))}</label>
               <div class={inputAndIconContainerClass}>
                 <!-- The actual text input -->
+                <!-- bind: keep — Pattern 1 ($state target for bind:this; mainInputs is $state([]) per declaration above) -->
                 <input
+                  bind:this={mainInputs[i]}
                   type="text"
                   id="{id}-{locale}"
                   aria-labelledby="{id}-label {id}-label-{locale}"
                   {placeholder}
                   disabled={isDisabled}
                   {...concatClass(restProps, inputClass)}
-                  bind:this={mainInputs[i]}
                   onchange={(e) => handleChange(e, locale)}
                   value={getLocalizedValue(locale)} />
               </div>
@@ -456,11 +459,12 @@ Multilingual features are only available if the `locales` store contains more th
         <label class={inputLabelClass} for={id}>{label}</label>
         <div class={inputAndIconContainerClass}>
           {#if options?.length}
+            <!-- bind: keep — Pattern 1 ($state target for bind:this; mainInputs is $state([]) per declaration above) -->
             <select
+              bind:this={mainInputs[0]}
               {id}
               disabled={isDisabled}
               {...concatClass(restProps, selectClass)}
-              bind:this={mainInputs[0]}
               onchange={handleChange}>
               <option disabled selected
                 >{placeholder ||
@@ -539,13 +543,14 @@ Multilingual features are only available if the `locales` store contains more th
             </div>
           {/if}
         </label>
+        <!-- bind: keep — fileInput is $state(); single ref read in event handlers -->
         <input
+          bind:this={fileInput}
           type="file"
           {id}
           aria-labelledby="{id}-label {id}-image-label"
           disabled={isDisabled}
           class="hidden"
-          bind:this={fileInput}
           onchange={handleChange}
           accept="image/jpeg, image/png, image/gif" />
         {#if showRequired}

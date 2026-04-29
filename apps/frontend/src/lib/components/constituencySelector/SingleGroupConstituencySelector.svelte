@@ -17,6 +17,7 @@ Display constituency selection input for just one `ConstituencyGroup` which is n
 ### Usage
 
 ```tsx
+// bind: keep — usage example in @component doc
 <SingleGroupConstituencySelector
   group={election.constituencyGroups[0]}
   bind:selected={selectedId}
@@ -64,6 +65,7 @@ Display constituency selection input for just one `ConstituencyGroup` which is n
   }
 </script>
 
+<!-- bind: keep — Pattern 2: Select.selected is $bindable('') -->
 <Select
   label={effectiveLabel}
   options={sort(group.constituencies).map((c) => ({ id: c.id, label: c.name }))}

@@ -18,6 +18,7 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
 ### Usage
 
 ```tsx
+// bind: keep — usage example in @component doc
 <ConstituencySelector
   elections={$dataRoot.elections}
   bind:selected={$selectedConstituencies}
@@ -202,6 +203,7 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
                 {#if group.info}
                   <p class="m-0">{group.info}</p>
                 {/if}
+                <!-- bind: keep — Pattern 1 ($state target for bind:selected; sections is $state([])) -->
                 <SingleGroupConstituencySelector
                   {group}
                   {disableSorting}
@@ -218,6 +220,7 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
           {@const group = groups[0]}
           <!-- Use a simple ayout if there is only one constituency group -->
 
+          <!-- bind: keep — Pattern 1 ($state target for bind:selected; sections is $state([])) -->
           <SingleGroupConstituencySelector
             {group}
             {disableSorting}

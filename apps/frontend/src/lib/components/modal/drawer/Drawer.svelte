@@ -69,6 +69,7 @@ See the `<ModalContainer>` component documentation for more information.
   });
 </script>
 
+<!-- bind: keep — containerRef is $state() single ref; bind:isOpen against ModalContainer.isOpen = $bindable(false) -->
 <ModalContainer
   bind:this={containerRef}
   {title}

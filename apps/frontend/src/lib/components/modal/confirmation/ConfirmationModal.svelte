@@ -19,6 +19,7 @@ A modal dialog that asks for user confirmation.
 ### Usage
 
 ```tsx
+// bind: keep — usage example in @component doc
 <ConfirmationModal
   bind:this={confirmModal}
   title="Are you sure?"
@@ -77,6 +78,7 @@ A modal dialog that asks for user confirmation.
   }
 </script>
 
+<!-- bind: keep — modalRef is $state(undefined) single ref; read in event handlers -->
 <Modal bind:this={modalRef} onClose={handleClose} {title} closeOnBackdropClick={false} {...restProps}>
   {@render children?.()}
   {#snippet actions()}

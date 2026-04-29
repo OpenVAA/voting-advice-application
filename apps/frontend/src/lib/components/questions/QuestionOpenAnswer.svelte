@@ -41,6 +41,7 @@ Display an `Entity`’s open answer to a question. If the content is empty, noth
 </script>
 
 {#if content && content.trim() !== ''}
+  <!-- bind: keep — el is $state(); single ref read in onMount/tick -->
   <div
     bind:this={el}
     {id}

@@ -19,6 +19,7 @@ Show a tab title bar that can be used to switch between different tabs.
 ### Usage
 
 ```tsx
+// bind: keep — usage example in @component doc
 <Tabs bind:activeIndex tabs={['Basic Info', 'Opinions']}/>
 ```
 -->

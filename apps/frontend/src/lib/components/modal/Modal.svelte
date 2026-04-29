@@ -44,6 +44,7 @@ See the `<ModalContainer>` component documentation for more information.
 
 <h2>Answer: {answer}</h2>
 
+// bind: keep — usage example in @component doc
 <Modal
   bind:this={modalRef}
   title="What's your answer?"
@@ -83,6 +84,7 @@ See the `<ModalContainer>` component documentation for more information.
   const { t } = getComponentContext();
 </script>
 
+<!-- bind: keep — containerRef is $state() single ref; bind:isOpen against ModalContainer.isOpen = $bindable(false) -->
 <ModalContainer
   bind:this={containerRef}
   {...concatClass(restProps, 'modal-bottom sm:modal-middle')}

@@ -39,6 +39,7 @@ popupQueue.push({
   }
 </script>
 
+<!-- bind: keep — single ref alertRef read in handleClick (Svelte 5 discussion #15979) -->
 <Alert bind:this={alertRef} {title} icon="login" {...restProps}>
   <div class="gap-md grid grid-flow-row">
     <h3>{title}</h3>

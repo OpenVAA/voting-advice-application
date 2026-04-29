@@ -33,6 +33,7 @@ A modal dialog.
   let containerRef: ModalContainer;
 </script>
 
+// bind: keep — usage example in @component doc
 <ModalContainer bind:this={containerRef} {title}>
   <div class="modal-box">
     <h2 class="mb-lg text-center">{title}</h2>
@@ -128,6 +129,7 @@ A modal dialog.
 
 <svelte:document onkeydown={handleEscape} />
 
+<!-- bind: keep — modalContainer is $state(undefined) single ref; read in event handlers -->
 <dialog
   bind:this={modalContainer}
   ontransitionend={handleTransitionEnd}

@@ -34,6 +34,7 @@ Show a notification popup to the user.
   let icon: IconName = $derived((data.icon && data.icon in ICONS ? data.icon : 'important') as IconName);
 </script>
 
+<!-- bind: keep — single ref alertRef read in close action (Svelte 5 discussion #15979) -->
 <Alert bind:this={alertRef} {title} {icon} {...restProps}>
   <div class="gap-md grid grid-flow-row">
     <h3>{title}</h3>

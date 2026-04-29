@@ -44,6 +44,7 @@ text="Continue"/>
 
 <Button {text} onclick={() => confirmModalRef?.openModal()} {...restProps}></Button>
 
+<!-- bind: keep — confirmModalRef is plain let; single ref read in onclick (Svelte 5 discussion #15979) -->
 <ConfirmationModal
   bind:this={confirmModalRef}
   title={modalTitle}

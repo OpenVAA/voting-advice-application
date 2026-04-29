@@ -13,6 +13,7 @@ Reusable component for selecting target language for language-based features (qu
 ### Usage
 
 ```tsx
+// bind: keep — usage example in @component doc
 <LanguageSelector bind:selected={targetLanguage} />
 ```
 -->
@@ -45,6 +46,7 @@ Reusable component for selecting target language for language-based features (qu
   <label for={id} class="label">
     {t('adminApp.languageFeatures.targetLanguage.label')}
   </label>
+  <!-- bind: keep — Pattern 2: Select.selected is $bindable('') -->
   <Select {id} {name} bind:selected {options} class="max-w-none" autocomplete="off" />
   <div class="mt-md text-secondary text-sm">
     {t('adminApp.languageFeatures.targetLanguage.help')}

@@ -114,7 +114,7 @@ If not provided, the `video` element will be hidden until these properties are p
   ////////////////////////////////////////////////////////////////////////////////
 
   // Props that are reassigned in load() need $bindable() to allow internal mutation.
-  // mode is bound by Layout.svelte via bind:mode; atEnd is mutated internally.
+  // bind: keep — explanatory note: mode is bound by Layout.svelte via bind:mode; atEnd is mutated internally.
   let {
     title = $bindable(undefined),
     sources = $bindable(undefined),
@@ -681,6 +681,7 @@ If not provided, the `video` element will be hidden until these properties are p
 
   <!-- Video -->
   <div class="h-full w-full" class:hidden={transcriptVisible}>
+    <!-- bind: keep — bind:this={video} single ref; bind:currentTime/duration/muted/paused are two-way DOM video properties (currentTime/duration/muted/boundPaused are $state) -->
     <video
       bind:this={video}
       bind:currentTime

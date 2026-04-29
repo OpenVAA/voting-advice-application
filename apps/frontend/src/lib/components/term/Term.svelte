@@ -66,6 +66,7 @@ Uses the `term` and `definition` roles.
 
 <svelte:window onresize={() => calculatePosition()} />
 
+<!-- bind: keep — triggerElement is plain let; read in calculatePosition (onMount + onresize) -->
 <span class="group relative" bind:this={triggerElement} role="term">
   <span
     {...concatClass(
@@ -73,6 +74,7 @@ Uses the `term` and `definition` roles.
       showUnderline ? 'underline underline-offset-[0.2em] decoration-primary decoration-dotted' : ''
     )}
     aria-details={definitionId}>{@render children?.()}</span>
+  <!-- bind: keep — definitionDiv is plain let; read in calculatePosition (onMount + onresize) -->
   <div
     bind:this={definitionDiv}
     id={definitionId}

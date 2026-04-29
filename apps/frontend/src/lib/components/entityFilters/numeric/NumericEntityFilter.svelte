@@ -78,11 +78,13 @@ Render a numeric filter for entities.
     {#if range.min != null && range.max != null}
       <label class="label gap-xs !px-0">
         <span class="text-label min-w-[6rem] text-start">{t('entityFilters.numeric.minLabel')}</span>
+        <!-- bind: keep — two-way DOM range bind:value={min}; min is $state(0) -->
         <input bind:value={min} onchange={setMin} type="range" min={range.min} max={range.max} class="range" />
         <span class="w-[5rem] text-end">{min}</span>
       </label>
       <label class="label gap-xs !px-0">
         <span class="text-label min-w-[6rem] text-start">{t('entityFilters.numeric.maxLabel')}</span>
+        <!-- bind: keep — two-way DOM range bind:value={max}; max is $state(0) -->
         <input bind:value={max} onchange={setMax} type="range" min={range.min} max={range.max} class="range" />
         <span class="w-[5rem] text-end">{max}</span>
       </label>
@@ -91,6 +93,7 @@ Render a numeric filter for entities.
       <label class="label gap-xs !px-0">
         <span class="text-label min-w-[6rem] justify-start text-start">{t('entityFilters.missingValue')}</span>
         <!-- Disable the missing values selection if there are only missing values -->
+        <!-- bind: keep — two-way DOM checkbox bind:checked={includeMissing}; includeMissing is $state(true) -->
         <input
           bind:checked={includeMissing}
           type="checkbox"

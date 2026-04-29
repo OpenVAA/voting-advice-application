@@ -69,6 +69,7 @@ This is a preview component for trying out the color contrast utility. For use i
     Original color = {computed.parsedColor} • Contrast = {computed.origContrast.toFixed(2)} • Luminance = {computed.origLuminance.toFixed(
       2
     )}
+    <!-- bind: keep — two-way DOM input bind:value={origColor}; origColor is $state -->
     <input bind:value={origColor} type="text" class="input w-full" />
   </label>
   <label>
@@ -77,6 +78,7 @@ This is a preview component for trying out the color contrast utility. For use i
   </label>
   <label>
     Bg color • Luminance = {computed.bgLum.toFixed(2)}
+    <!-- bind: keep — two-way DOM input bind:value={bgColor}; bgColor is $state -->
     <input bind:value={bgColor} type="text" class="input w-full" />
   </label>
 </div>

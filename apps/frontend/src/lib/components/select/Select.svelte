@@ -31,6 +31,7 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
 ### Usage
 
 ```tsx
+// bind: keep — usage example in @component doc
 <Select
   label="Select option"
   options={[{ id: '1', label: "Label" }]}
@@ -251,6 +252,7 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
 </script>
 
 {#if name}
+  <!-- bind: keep — hidden DOM input bind:value={selected}; selected is $bindable('') -->
   <input type="hidden" {name} bind:value={selected} />
 {/if}
 
@@ -266,12 +268,13 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
   </div>
 {:else if autocomplete === 'on'}
   <div class="w-full max-w-md place-self-center" onfocusout={handleFocusOut}>
+    <!-- bind: keep — autocompleteInput is $state() single ref; bind:value={inputValue} is two-way DOM input ($state) -->
     <input
+      bind:this={autocompleteInput}
+      bind:value={inputValue}
       {...concatClass(restProps, `select ${inputClass}`)}
       class:text-secondary={selected === ''}
       placeholder={effectiveLabel}
-      bind:this={autocompleteInput}
-      bind:value={inputValue}
       onfocus={handleFocus}
       onkeydown={handleKeydown}
       role="combobox"
@@ -320,11 +323,12 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
     {/if}
   </div>
 {:else}
+  <!-- bind: keep — two-way DOM select bind:value={selected}; selected is $bindable('') -->
   <select
+    bind:value={selected}
     aria-label={effectiveLabel}
     {...concatClass(restProps, `select ${inputClass}`)}
     class:text-secondary={selected === ''}
-    bind:value={selected}
     onclick={handleClick}
     onchange={handleChange}>
     <option disabled selected value="">

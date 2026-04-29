@@ -81,6 +81,7 @@ any valid attributes of the `<svg>` element.
   });
 </script>
 
+<!-- bind: keep — svgElement is plain let; read in $effect to call loadSvg -->
 <svg
   bind:this={svgElement}
   aria-hidden="true"

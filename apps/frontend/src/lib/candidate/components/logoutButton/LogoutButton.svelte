@@ -76,6 +76,7 @@ Accesses `CandidateContext`.
 
 <Button onclick={triggerLogout} icon="logout" text={t('common.logout')} color="warning" {...restProps} />
 
+<!-- bind: keep — timedModalRef is $state(); single ref read in event handlers. bind:timeLeft against TimedModal.timeLeft = $bindable(...) -->
 <TimedModal
   bind:this={timedModalRef}
   bind:timeLeft

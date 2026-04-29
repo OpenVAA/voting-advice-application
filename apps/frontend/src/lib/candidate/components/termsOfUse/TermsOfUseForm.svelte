@@ -18,6 +18,7 @@ Accesses `CandidateContext`.
   let termsAccepted: boolean;
   $: console.info('termsAccepted:', termsAccepted);
 </script>
+// bind: keep — usage example in @component doc
 <TermsOfUseForm bind:termsAccepted/>
 ```
 -->
@@ -49,11 +50,12 @@ Accesses `CandidateContext`.
     </div>
   </Expander>
   <label class="label mb-md mt-sm gap-sm cursor-pointer justify-start !p-0">
+    <!-- bind: keep — two-way DOM checkbox; termsAccepted is $bindable(false) -->
     <input
+      bind:checked={termsAccepted}
       type="checkbox"
       class="checkbox"
       name="termsAccepted"
-      bind:checked={termsAccepted}
       data-testid="terms-checkbox" />
     <span>{t('dynamic.candidateAppPrivacy.consent.acceptLabel')}</span>
   </label>

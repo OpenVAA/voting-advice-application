@@ -36,6 +36,7 @@ See the `<Modal>` component documentation for more information.
   let timedModal: TimedModal;
 </script>
 
+// bind: keep — usage example in @component doc
 <TimedModal
   bind:this={timedModal}
   title="Timeout modal"
@@ -146,6 +147,7 @@ See the `<Modal>` component documentation for more information.
   }
 </script>
 
+<!-- bind: keep — modalRef is $state(undefined) single ref; bind:isOpen against Modal.isOpen = $bindable(false) -->
 <Modal
   bind:this={modalRef}
   bind:isOpen

@@ -133,6 +133,7 @@ Render an enumerated filter for entities that displays a list of values to inclu
     {#if label != null}
       <label class="label gap-sm cursor-pointer !items-start !p-0">
         <!-- Disable the input if there is only one value -->
+        <!-- bind: keep — two-way DOM checkbox group bind:group={selected}; selected is $state -->
         <input type="checkbox" class="checkbox" {value} bind:group={selected} {name} disabled={values.length === 1} />
         <span class="w-full pt-2 text-left">
           {label} <span class="pl-sm text-secondary">{count}</span>

@@ -119,8 +119,9 @@ The same component can also be used to display the answers of the voter and anot
 
   /** Holds the currently selected value and is initialized with the value of `selectedId` */
   let selected: Id | null | undefined = $state(undefined);
-  // `inputs` must be $state in Svelte 5 because `bind:this={inputs[id]}` mutates
-  // a property on it. A plain `const` triggers `binding_property_non_reactive`.
+  // bind: keep — `inputs` must be $state in Svelte 5 because
+  // `bind:this={inputs[id]}` mutates a property on it. A plain `const`
+  // triggers `binding_property_non_reactive`.
   const inputs: Record<string, HTMLInputElement> = $state({});
   $effect(() => {
     selected = selectedId;
@@ -262,7 +263,10 @@ The same component can also be used to display the answers of the voter and anot
          Both pointer and keyboard interactions are handled. -->
     <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
     <label onclick={(e) => handleClick(e, id)} onkeyup={(e) => handleKeyUp(e, id)}>
+      <!-- bind: keep — Pattern 1 ($state target for bind:this; inputs is $state({}) per Phase 64 fix above); two-way DOM radio group bind:group={selected}, selected is $state -->
       <input
+        bind:this={inputs[id]}
+        bind:group={selected}
         type="radio"
         class="radio-primary radio border-lg bg-base-100 relative h-32 w-32 outline outline-4 outline-[var(--radio-bg)] disabled:opacity-100"
         class:entitySelected={otherSelected == id}
@@ -270,8 +274,6 @@ The same component can also be used to display the answers of the voter and anot
         disabled={mode !== 'answer'}
         value={id}
         data-testid="question-choice"
-        bind:this={inputs[id]}
-        bind:group={selected}
         onkeyup={(e) => handleKeyUp(e, id)} />
 
       <!-- The text label. If we are displaying answers, we only show the label when it's in use to reduce clutter. We do show the answer also, when none are selected, because it would look weird otherwise. Due to Aria concerns we always show it to screenreaders. -->

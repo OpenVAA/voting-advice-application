@@ -15,6 +15,7 @@ PasswordField is an input box for password that comes with a button to reveal an
 ### Usage
 
 ```tsx
+// bind: keep — usage example in @component doc
 <PasswordField bind:password={passwordOfContext} autocomplete="current-password" />
 ```
 -->
@@ -59,15 +60,16 @@ PasswordField is an input box for password that comes with a button to reveal an
   {#if !externalLabel}
     <label for={id} class="sr-only">{label || t('common.password')}</label>
   {/if}
+  <!-- bind: keep — two-way DOM input bind:value={password} (line below); bind:this={input} is a single ref read in toggleRevealed/focus -->
   <input
+    bind:value={password}
+    bind:this={input}
     {id}
     type="password"
     name="password"
     class="input w-full"
     placeholder={t('components.passwordInput.placeholder')}
     data-testid="password-field"
-    bind:value={password}
-    bind:this={input}
     autocomplete={autocomplete as AutoFill}
     required />
   <Button

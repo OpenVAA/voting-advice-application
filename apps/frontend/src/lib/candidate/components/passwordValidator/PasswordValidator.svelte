@@ -33,6 +33,7 @@ When using this component, the `validPassword` property should be bound to a boo
 `password` and `username` should be given as props.
 
 ```tsx
+// bind: keep — usage example in @component doc
 <PasswordValidator bind:validPassword={validPassword} password={password} username={username} />
 ```
 -->
