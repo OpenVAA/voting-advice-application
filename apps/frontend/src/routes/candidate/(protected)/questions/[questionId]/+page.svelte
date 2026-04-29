@@ -44,8 +44,14 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { answersLocked, appSettings, dataRoot, getRoute, questionBlocks, unansweredOpinionQuestions, t, userData } =
-    getCandidateContext();
+  // Stable references (functions, stores, objects with internal getters): destructure-safe.
+  const candCtx = getCandidateContext();
+  const { appSettings, dataRoot, getRoute, t, userData } = candCtx;
+  // Reactive accessors ($state / $derived backed): read via candCtx.X. Aliased
+  // through $derived for template readability — see CLAUDE.md §Context Destructuring Rule.
+  const answersLocked = $derived(candCtx.answersLocked);
+  const questionBlocks = $derived(candCtx.questionBlocks);
+  const unansweredOpinionQuestions = $derived(candCtx.unansweredOpinionQuestions);
   const { pageStyles, video } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////

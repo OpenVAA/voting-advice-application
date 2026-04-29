@@ -10,9 +10,11 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
+  // Stable references (functions, stores, objects with internal getters): destructure-safe.
+  // Reactive accessors (constituenciesSelectable) read via candCtx.X — see CLAUDE.md §Context Destructuring Rule.
   const candCtx = getCandidateContext();
-  const { constituenciesSelectable, dataRoot, getRoute, t } = candCtx;
-  const nextRoute = constituenciesSelectable ? 'CandAppPreregisterConstituency' : 'CandAppPreregisterEmail';
+  const { dataRoot, getRoute, t } = candCtx;
+  const nextRoute = $derived(candCtx.constituenciesSelectable ? 'CandAppPreregisterConstituency' : 'CandAppPreregisterEmail');
 </script>
 
 <MainContent title={t('candidateApp.preregister.electionSelect.title')}>

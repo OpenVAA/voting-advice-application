@@ -10,8 +10,10 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
+  // Stable references (functions): destructure-safe.
+  // Reactive accessors (preregistrationElections) read via candCtx.X — see CLAUDE.md §Context Destructuring Rule.
   const candCtx = getCandidateContext();
-  const { getRoute, preregistrationElections, t } = candCtx;
+  const { getRoute, t } = candCtx;
 
   let selectionComplete = $state(false);
 </script>
@@ -23,7 +25,7 @@
   <ConstituencySelector
     onShadedBg
     class="mb-md"
-    elections={preregistrationElections}
+    elections={candCtx.preregistrationElections}
     bind:selected={candCtx.preregistrationConstituencyIds}
     bind:selectionComplete
     data-testid="preregister-constituencies-list" />

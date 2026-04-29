@@ -25,8 +25,11 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { constituenciesSelectable, electionsSelectable, getRoute, idTokenClaims, isPreregistered, popupQueue, t } =
-    getCandidateContext();
+  // Stable references (functions, queues): destructure-safe.
+  // Reactive accessors (constituenciesSelectable, electionsSelectable, idTokenClaims,
+  // isPreregistered) read via candCtx.X — see CLAUDE.md §Context Destructuring Rule.
+  const candCtx = getCandidateContext();
+  const { getRoute, popupQueue, t } = candCtx;
   const { navigationSettings } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
@@ -35,7 +38,7 @@
 
   $effect(() => {
     // Show possible notification
-    if (isPreregistered && !idTokenClaims)
+    if (candCtx.isPreregistered && !candCtx.idTokenClaims)
       popupQueue.push({
         component: PreregisteredNotification
       });
@@ -45,19 +48,25 @@
   // Build steps, init elections and handle redirection
   ////////////////////////////////////////////////////////////////////
 
-  const steps = [
-    t('candidateApp.preregister.identification.start.step.identification'),
-    electionsSelectable ? t('candidateApp.preregister.identification.start.step.electionSelect') : undefined,
-    constituenciesSelectable ? t('candidateApp.preregister.identification.start.step.constituencySelect') : undefined,
-    t('candidateApp.preregister.identification.start.step.emailVerification'),
-    t('candidateApp.preregister.identification.start.step.passwordSelect')
-  ].filter(Boolean);
+  const steps = $derived(
+    [
+      t('candidateApp.preregister.identification.start.step.identification'),
+      candCtx.electionsSelectable ? t('candidateApp.preregister.identification.start.step.electionSelect') : undefined,
+      candCtx.constituenciesSelectable
+        ? t('candidateApp.preregister.identification.start.step.constituencySelect')
+        : undefined,
+      t('candidateApp.preregister.identification.start.step.emailVerification'),
+      t('candidateApp.preregister.identification.start.step.passwordSelect')
+    ].filter(Boolean)
+  );
 
-  const nextRoute = electionsSelectable
-    ? 'CandAppPreregisterElection'
-    : constituenciesSelectable
-      ? 'CandAppPreregisterConstituency'
-      : 'CandAppPreregisterEmail';
+  const nextRoute = $derived(
+    candCtx.electionsSelectable
+      ? 'CandAppPreregisterElection'
+      : candCtx.constituenciesSelectable
+        ? 'CandAppPreregisterConstituency'
+        : 'CandAppPreregisterEmail'
+  );
 
   async function redirectToIdentityProvider() {
     if (!browser) return;
@@ -110,11 +119,11 @@
   // Top bar
   ////////////////////////////////////////////////////////////////////
 
-  if (idTokenClaims) navigationSettings.push({ hide: true });
+  if (candCtx.idTokenClaims) navigationSettings.push({ hide: true });
 </script>
 
-{#if idTokenClaims}
-  <MainContent title={t('candidateApp.preregister.identification.success.title', idTokenClaims)}>
+{#if candCtx.idTokenClaims}
+  <MainContent title={t('candidateApp.preregister.identification.success.title', candCtx.idTokenClaims)}>
     {#snippet hero()}
       <figure role="presentation">
         <HeroEmoji emoji={t('candidateApp.preregister.identification.success.heroEmoji')} />

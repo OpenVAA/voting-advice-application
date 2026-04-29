@@ -27,8 +27,11 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
+  // Stable references (functions, userData object): destructure-safe.
+  // Reactive accessor isAuthenticated read via candCtx.X (one-shot read at
+  // component init via $derived) — see CLAUDE.md §Context Destructuring Rule.
   const candCtx = getCandidateContext();
-  const { getRoute, isAuthenticated, register, setPassword, t, userData } = candCtx;
+  const { getRoute, register, setPassword, t, userData } = candCtx;
 
   ////////////////////////////////////////////////////////////////////
   // Check flow type and params
@@ -39,7 +42,7 @@
   const email = page.url.searchParams.get('email') || '';
 
   // Invite flow: user has a session from auth callback verifyOtp, email is provided but no registrationKey
-  const isInviteFlow = isAuthenticated && email !== '' && registrationKey === '';
+  const isInviteFlow = candCtx.isAuthenticated && email !== '' && registrationKey === '';
 
   if (!isInviteFlow) {
     // Registration key flow: both registrationKey and email are required
