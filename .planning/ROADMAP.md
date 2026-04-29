@@ -72,6 +72,7 @@ Full details: `.planning/milestones/v2.6-ROADMAP.md`
   3. Type errors surface at the call site, not in downstream consumers — `yarn workspace @openvaa/frontend check` passes.
   4. The v2.6 parity gate at HEAD `2c7ad2dea` continues to pass after the adapter retyping lands.
 **Plans**: 1 plan (reduced from 3 per 2026-04-29 scope reframe)
+- [ ] 66-01-PLAN.md — Adapter retype + verification: define InternalFlatNomination in sibling .type.ts; replace 2 `as unknown as` casts at supabaseDataProvider.ts:377+396; svelte-check + vitest regression + v2.6 parity gate
 
 ### Phase 67: Default Seed Alliances
 **Goal**: After `yarn dev:reset-with-data`, the default voter flow shows a populated alliances surface; the v2.6 P64 supabase-adapter reverse-fill of `organizationNominationIds` on alliance parents — implemented but never empirically exercised — is now exercised on every dev-seed run.
