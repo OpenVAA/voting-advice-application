@@ -56,6 +56,10 @@ Full details: `.planning/milestones/v2.6-ROADMAP.md`
   3. `CLAUDE.md` (or the appropriate per-package README) records the project rule for `const { … } = ctx` / `const { … } = getContext(...)` / `const { … } = use*Context()` patterns: either banned via lint rule, or "use direct property access for reactive reads, destructuring is fine for one-shot reads." Any broken-by-destructure-but-working sites identified in the audit are either rewritten or carry an inline justification.
   4. The v2.6 parity gate at HEAD `2c7ad2dea` continues to pass after the audit fixes land — no E2E regressions.
 **Plans**: 3 plans
+- [ ] 65-01-PLAN.md — bind:* audit + inline justifications across 93 sites under apps/frontend/src/lib
+- [ ] 65-02-PLAN.md — {#key} audit + context-destructure audit + CLAUDE.md rule subsection
+- [ ] 65-03-PLAN.md — Verification (svelte-check + vitest + Playwright parity gate + voter 9-step + candidate 4-step manual smoke)
+
 **UI hint**: yes
 
 ### Phase 66: Adapter Type Cleanup
