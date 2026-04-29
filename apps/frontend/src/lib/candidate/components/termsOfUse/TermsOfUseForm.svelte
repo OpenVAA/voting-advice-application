@@ -50,12 +50,12 @@ Accesses `CandidateContext`.
     </div>
   </Expander>
   <label class="label mb-md mt-sm gap-sm cursor-pointer justify-start !p-0">
-    <!-- bind: keep — two-way DOM checkbox; termsAccepted is $bindable(false) -->
+    <!-- bind: keep — two-way DOM checkbox; termsAccepted is $bindable(false). Bind placed AFTER type= for symmetry with Phase 65 reorder revert (see QuestionChoices.svelte). -->
     <input
-      bind:checked={termsAccepted}
       type="checkbox"
       class="checkbox"
       name="termsAccepted"
+      bind:checked={termsAccepted}
       data-testid="terms-checkbox" />
     <span>{t('dynamic.candidateAppPrivacy.consent.acceptLabel')}</span>
   </label>

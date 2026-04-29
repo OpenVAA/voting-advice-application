@@ -392,9 +392,8 @@ Multilingual features are only available if the `locales` store contains more th
                 class:opacity-0={!isTranslationsVisible}>{t(assertTranslationKey(`lang.${locale}`))}</label>
               <!-- The actual textarea
                    NB. Join does not work it, so we do it by hand -->
-              <!-- bind: keep — Pattern 1 ($state target for bind:this; mainInputs is $state([]) per declaration above) -->
+              <!-- bind: keep — Pattern 1 ($state target for bind:this; mainInputs is $state([]) per declaration above). bind: placed AFTER value/class for symmetry with Phase 65 reorder revert. -->
               <textarea
-                bind:this={mainInputs[i]}
                 id="{id}-{locale}"
                 aria-labelledby="{id}-label {id}-label-{locale}"
                 {placeholder}
@@ -404,6 +403,7 @@ Multilingual features are only available if the `locales` store contains more th
                 class:pt-24={isTranslationsVisible}
                 class:rounded-t-none={isTranslationsVisible && i > 0}
                 class:rounded-b-none={isTranslationsVisible && i !== locales.length - 1}
+                bind:this={mainInputs[i]}
                 onchange={(e) => handleChange(e, locale)}
                 value={getLocalizedValue(locale)}></textarea>
             </div>
@@ -417,15 +417,15 @@ Multilingual features are only available if the `locales` store contains more th
                 class:opacity-0={!isTranslationsVisible}>{t(assertTranslationKey(`lang.${locale}`))}</label>
               <div class={inputAndIconContainerClass}>
                 <!-- The actual text input -->
-                <!-- bind: keep — Pattern 1 ($state target for bind:this; mainInputs is $state([]) per declaration above) -->
+                <!-- bind: keep — Pattern 1 ($state target for bind:this; mainInputs is $state([]) per declaration above). bind: placed AFTER type/value for symmetry with Phase 65 reorder revert. -->
                 <input
-                  bind:this={mainInputs[i]}
                   type="text"
                   id="{id}-{locale}"
                   aria-labelledby="{id}-label {id}-label-{locale}"
                   {placeholder}
                   disabled={isDisabled}
                   {...concatClass(restProps, inputClass)}
+                  bind:this={mainInputs[i]}
                   onchange={(e) => handleChange(e, locale)}
                   value={getLocalizedValue(locale)} />
               </div>
@@ -459,12 +459,12 @@ Multilingual features are only available if the `locales` store contains more th
         <label class={inputLabelClass} for={id}>{label}</label>
         <div class={inputAndIconContainerClass}>
           {#if options?.length}
-            <!-- bind: keep — Pattern 1 ($state target for bind:this; mainInputs is $state([]) per declaration above) -->
+            <!-- bind: keep — Pattern 1 ($state target for bind:this; mainInputs is $state([]) per declaration above). bind: placed AFTER class= for symmetry with Phase 65 reorder revert. -->
             <select
-              bind:this={mainInputs[0]}
               {id}
               disabled={isDisabled}
               {...concatClass(restProps, selectClass)}
+              bind:this={mainInputs[0]}
               onchange={handleChange}>
               <option disabled selected
                 >{placeholder ||

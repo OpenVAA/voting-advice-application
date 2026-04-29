@@ -268,13 +268,13 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
   </div>
 {:else if autocomplete === 'on'}
   <div class="w-full max-w-md place-self-center" onfocusout={handleFocusOut}>
-    <!-- bind: keep — autocompleteInput is $state() single ref; bind:value={inputValue} is two-way DOM input ($state) -->
+    <!-- bind: keep — autocompleteInput is $state() single ref; bind:value={inputValue} is two-way DOM input ($state). Bind directives placed AFTER value-affecting attributes (Phase 65 reorder reverted). -->
     <input
-      bind:this={autocompleteInput}
-      bind:value={inputValue}
       {...concatClass(restProps, `select ${inputClass}`)}
       class:text-secondary={selected === ''}
       placeholder={effectiveLabel}
+      bind:this={autocompleteInput}
+      bind:value={inputValue}
       onfocus={handleFocus}
       onkeydown={handleKeydown}
       role="combobox"
@@ -323,12 +323,12 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
     {/if}
   </div>
 {:else}
-  <!-- bind: keep — two-way DOM select bind:value={selected}; selected is $bindable('') -->
+  <!-- bind: keep — two-way DOM select bind:value={selected}; selected is $bindable(''). Bind placed AFTER class= for symmetry with Phase 65 reorder revert. -->
   <select
-    bind:value={selected}
     aria-label={effectiveLabel}
     {...concatClass(restProps, `select ${inputClass}`)}
     class:text-secondary={selected === ''}
+    bind:value={selected}
     onclick={handleClick}
     onchange={handleChange}>
     <option disabled selected value="">
