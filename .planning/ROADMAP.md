@@ -56,7 +56,7 @@ Full details: `.planning/milestones/v2.6-ROADMAP.md`
   3. `CLAUDE.md` (or the appropriate per-package README) records the project rule for `const { … } = ctx` / `const { … } = getContext(...)` / `const { … } = use*Context()` patterns: either banned via lint rule, or "use direct property access for reactive reads, destructuring is fine for one-shot reads." Any broken-by-destructure-but-working sites identified in the audit are either rewritten or carry an inline justification.
   4. The v2.6 parity gate at HEAD `2c7ad2dea` continues to pass after the audit fixes land — no E2E regressions.
 **Plans**: 3 plans
-- [ ] 65-01-PLAN.md — bind:* audit + inline justifications across 93 sites under apps/frontend/src/lib
+- [x] 65-01-PLAN.md — bind:* audit + inline justifications across 93 sites under apps/frontend/src/lib
 - [ ] 65-02-PLAN.md — {#key} audit + context-destructure audit + CLAUDE.md rule subsection
 - [ ] 65-03-PLAN.md — Verification (svelte-check + vitest + Playwright parity gate + voter 9-step + candidate 4-step manual smoke)
 
@@ -113,7 +113,7 @@ Run `/gsd-new-milestone` to question → research → write requirements → roa
 | 62. Results Page Consolidation | v2.6 | 3/3 | Complete | 2026-04-26 |
 | 63. E2E Template Extension & Greening | v2.6 | 3/3 | Complete | 2026-04-27 |
 | 64. Voter Results Reactivity Completion | v2.6 | 4/4 | Complete | 2026-04-28 |
-| 65. Svelte 5 Audit Sweeps | v2.7 | 0/3 | Not started | — |
+| 65. Svelte 5 Audit Sweeps | v2.7 | 1/3 | In Progress|  |
 | 66. Adapter Type Cleanup | v2.7 | 0/1 | Not started | — |
 | 67. Default Seed Alliances | v2.7 | 0/2 | Not started | — |
 | 68. Dev-Tooling Trio | v2.7 | 0/3 | Not started | — |
