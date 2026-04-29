@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v2.7
 milestone_name: Svelte 5 Polish + Supabase-Adapter Loose Ends
 status: planning
-last_updated: "2026-04-29T07:19:05.733Z"
+last_updated: "2026-04-29T12:00:00.000Z"
 last_activity: 2026-04-29
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 11
+  total_plans: 9
   completed_plans: 0
   percent: 0
 ---
@@ -24,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-04-29)
 
 ## Current Position
 
-Phase: Not started (roadmap drafted)
+Phase: 65 (context captured 2026-04-29; ready for plan-phase)
 Plan: —
-Status: Planning
-Last activity: 2026-04-29 — Milestone v2.7 roadmap drafted (4 phases, 11 plans)
+Status: Planning (CONTEXT.md captured for all 4 phases via batched /gsd-discuss-phase --chain)
+Last activity: 2026-04-29 — Phases 65-68 CONTEXT.md captured. Phase 66 scope narrowed mid-discussion (DB-01 deferred to Future Requirements). Total plan count revised 11 → 9.
 
 ## Performance Metrics
 
@@ -78,6 +78,7 @@ Snapshot taken at v2.6 milestone close on 2026-04-28. The four todos that v2.6 p
   - Phase 67 — Default Seed Alliances (SEED-01) — 2 plans (empirically exercises the v2.6 P64 alliance branch of the adapter reverse-fill that was previously dev-blind)
   - Phase 68 — Dev-Tooling Trio (DEVTOOLS-01, 02, 03) — 3 plans
 - All 9 v2.7 requirements mapped 1:1 to a phase; no orphans, no duplicates.
+- 2026-04-29 (later that day): CONTEXT.md captured for all 4 phases via `/gsd-discuss-phase 65 66 67 68 --chain`. **Phase 66 scope narrowed mid-discussion** — user opted to keep the `nominations` table as is (`entity_type` is a STORED GENERATED column structurally safe from drift; `name` is harmless). DB-01 requirement moved to "Future Requirements (deferred)" in REQUIREMENTS.md. Phase 66 now adapter-retype only — 1 plan instead of 3. **Total v2.7 plan count: 9 (was 11).** Phases 65, 67, 68 unchanged in scope. Decisions captured in `.planning/phases/{65,66,67,68}-*/{phase}-CONTEXT.md`.
 
 ### Decisions
 
@@ -95,14 +96,14 @@ Key cross-milestone reference points carried forward:
 
 - Local imgproxy Docker container crashes intermittently (502 on image upload) — not a code issue; carry-forward infrastructure debt.
 - 165 pre-existing intra-package circular deps in `@openvaa/data`/`matching`/`filters` — deferred to a dedicated structural refactor milestone.
-- v2.7 Phase 66 carries the only non-trivial moving part of the milestone (the `nominations` DB migration); risk profile otherwise low.
+- v2.7 Phase 66 was originally the highest-risk phase (the `nominations` DB migration); after the 2026-04-29 scope reframe (migration deferred), Phase 66 narrows to a low-risk adapter retype (~1 plan, 2 cast sites). Milestone risk profile is now uniformly low.
 
 ## Session Continuity
 
 Last session: 2026-04-29
-Stopped at: v2.7 roadmap drafted (Phases 65-68, 11 plans, 9 requirements 100% mapped). Files written: ROADMAP.md, REQUIREMENTS.md (traceability table), STATE.md.
-Resume file: none — ready for `/gsd-plan-phase 65`.
-Next action: `/gsd-plan-phase 65` to decompose Phase 65 (Svelte 5 Audit Sweeps) into executable plans.
+Stopped at: v2.7 CONTEXT captured for all 4 phases (65-68) via `/gsd-discuss-phase 65 66 67 68 --chain`. Phase 66 scope narrowed (DB-01 → deferred). Total plans: 9 (revised from 11). 8 of 9 requirements mapped to a phase (DB-01 deferred). Files written: 4 × CONTEXT.md, 4 × DISCUSSION-LOG.md, ROADMAP.md, REQUIREMENTS.md, STATE.md updates.
+Resume file: `.planning/phases/65-svelte-5-audit-sweeps/65-CONTEXT.md` — auto-advancing to plan-phase via --chain.
+Next action: `/gsd-plan-phase 65 --auto` (auto-advance per --chain) to decompose Phase 65 (Svelte 5 Audit Sweeps) into executable plans.
 
 ### Next milestone seed (selected 2026-04-29)
 
@@ -115,7 +116,7 @@ Candidate scope (6 todos):
 | 20 | `svelte5-cleanup.md` | medium | – | Mandatory — `bind:*` + `{#key}` audits left over from v2.6 P64 manual smoke | 65 |
 | 4  | `2026-04-25-investigate-destructuring-contexts.md` | medium | ui | Svelte 5 sibling; pairs with item 20 audit sweeps | 65 |
 | 10 | `2026-04-28-add-alliances-to-default-test-data.md` | medium | dev-seed | Exercises the 4th branch of the v2.6 P64 adapter reverse-fill (alliance → organizations) that wasn't seeded | 67 |
-| 11 | `2026-04-28-cleanup-nominations-table.md` | medium | db | Drop redundant `name` + `entityType` columns; touches the same `supabaseDataProvider.ts` reverse-fill code path | 66 |
+| 11 | `2026-04-28-cleanup-nominations-table.md` | medium | db | ~~Drop redundant `name` + `entityType` columns~~ — DEFERRED 2026-04-29 (user opted to keep table as is; `entity_type` is structurally safe via STORED GENERATED column, `name` harmless). Stays in `.planning/todos/pending/`. | ~~66~~ deferred |
 | 7  | `2026-04-27-cleanup-sloppy-typing-supabaseDataProvider.md` | medium | api | Cleans up the `as unknown as { ... }` casts the v2.6 P64 reverse-fill introduced; same file as item 11 | 66 |
 | 3  | `2026-04-25-dev-tooling-cleanup-trio.md` | low | dev-tooling | Small bundling of three unrelated dev-tooling cleanups (frontend autoreload, lint imports, retire Deno linting) | 68 |
 
@@ -123,4 +124,4 @@ Candidate scope (6 todos):
 
 **Indefinitely deferred:** rename-admin-writer (#17), sql-linting-formatting (#19), adapter-package-loading (#12), configurable-mock-data (#13) — nice-to-haves, not blocking.
 
-**Estimate:** ~12-15 plans across ~4-5 phases. Drafted at 11 plans across 4 phases — within the lean end of the estimate. Risk: low-medium (the `nominations` DB migration in Phase 66 is the only non-trivial moving part).
+**Estimate:** ~12-15 plans across ~4-5 phases. Drafted at 11 plans across 4 phases — within the lean end of the estimate. **Revised 2026-04-29 to 9 plans** after Phase 66 scope narrow (migration deferred). Risk: low (no DB migration; uniformly small phases).

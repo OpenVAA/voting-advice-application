@@ -40,7 +40,7 @@ Full details: `.planning/milestones/v2.6-ROADMAP.md`
 **Milestone Goal:** Close the v2.6 supabase-adapter cleanup tail and complete the deferred Svelte 5 audit sweeps in one cohesive milestone. The DB-01 + ADAPTER-01 + SEED-01 cluster all touches `apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.ts` and `@openvaa/dev-seed`, so closing them together means one round of integration testing.
 
 - [ ] **Phase 65: Svelte 5 Audit Sweeps** — Codebase-wide `bind:*` audit, `{#key}` audit, and context-destructuring reactivity rule documented and applied
-- [ ] **Phase 66: Nominations Schema + Adapter Type Cleanup** — Drop redundant `nominations.name` + `nominations.entityType` columns; clean up `as unknown as` casts in `supabaseDataProvider.ts` over the new shape
+- [ ] **Phase 66: Adapter Type Cleanup** — Clean up the 2 `as unknown as` casts in `supabaseDataProvider.ts` (v2.6 P64 reverse-fill pass) using a real intermediate type (`InternalFlatNomination`) in a sibling `.types.ts` file (scope narrowed 2026-04-29: schema migration deferred per Phase 66 CONTEXT D-01; the `nominations` table stays as is)
 - [ ] **Phase 67: Default Seed Alliances** — `~2-3` alliances grouping subsets of the default seed's 8 parties; empirically exercises the v2.6 P64 alliance branch of the adapter reverse-fill
 - [ ] **Phase 68: Dev-Tooling Trio** — Frontend autoreload on package source / env-var changes, lint-all-imports rules + monorepo-wide cleanup, Deno tooling scoped strictly to `apps/supabase/functions/*`
 
@@ -58,16 +58,16 @@ Full details: `.planning/milestones/v2.6-ROADMAP.md`
 **Plans**: 3 plans
 **UI hint**: yes
 
-### Phase 66: Nominations Schema + Adapter Type Cleanup
-**Goal**: The `nominations` table sheds its redundant `name` + `entityType` columns; nothing in the codebase still reads them; `supabaseDataProvider.ts` carries zero `as unknown as { ... }` casts over the new shape, with a real intermediate type (e.g., `InternalFlatNomination`) defined once and reused across the parent/child reverse-fill loops.
-**Depends on**: Phase 65 (clean Svelte 5 baseline before touching adapter typing — keeps the integration test signal honest when alliances land in Phase 67)
-**Requirements**: DB-01, ADAPTER-01
+### Phase 66: Adapter Type Cleanup
+**Goal**: `supabaseDataProvider.ts` carries zero `as unknown as { ... }` casts over the v2.6 P64 reverse-fill pass, with a real intermediate type (e.g., `InternalFlatNomination`) defined once in a sibling `.types.ts` file and reused across the parent/child mapping loops. The `nominations` table is unchanged (schema migration deferred — see Phase 66 CONTEXT D-01).
+**Depends on**: Phase 65 (clean Svelte 5 baseline before touching adapter typing)
+**Requirements**: ADAPTER-01 (DB-01 deferred to Future Requirements per 2026-04-29 scope reframe)
 **Success Criteria** (what must be TRUE):
-  1. After applying the new supabase migration, `nominations` row shape is just relationship + `parent_nomination_id` (no `name`, no `entityType`) — or `entityType` is replaced by a generated column / not-null check derived from the FK, with the trade-off documented inline. The migration applies cleanly with zero data loss for any populated `name` values, and pgTAP tests are updated to match.
-  2. `grep -rn "nominations.name\|nominations\.entity_type\|nominations\.entityType" apps packages` returns zero hits across frontend, Edge Functions, dev-seed, RLS policies, and pgTAP tests after the cleanup. `yarn supabase:types` regenerates a tighter type for the `nominations` table.
-  3. `apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.ts` carries zero `as unknown as { ... }` casts (or each remaining one is justified inline with `// @ts-expect-error — reason: …` or a comment), zero `any` types, and the v2.6 P64 reverse-fill pass uses a single named intermediate type defined once at the top of the file.
-  4. Type errors surface at the call site, not in downstream consumers — `yarn workspace @openvaa/frontend check` passes; the v2.6 parity gate at HEAD `2c7ad2dea` continues to pass after the migration + adapter retyping land.
-**Plans**: 3 plans
+  1. `apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.ts` carries zero `as unknown as { ... }` casts (or each remaining one is justified inline with `// @ts-expect-error — reason: …` or a comment), zero `any` types remain (already true at scout — invariant asserted), and the v2.6 P64 reverse-fill pass uses a single named intermediate type defined once in a sibling `supabaseDataProvider.types.ts` file.
+  2. The intermediate type bridges from `@openvaa/supabase-types` row shapes to `@openvaa/data` Nomination variants without leaking adapter concerns into either package.
+  3. Type errors surface at the call site, not in downstream consumers — `yarn workspace @openvaa/frontend check` passes.
+  4. The v2.6 parity gate at HEAD `2c7ad2dea` continues to pass after the adapter retyping lands.
+**Plans**: 1 plan (reduced from 3 per 2026-04-29 scope reframe)
 
 ### Phase 67: Default Seed Alliances
 **Goal**: After `yarn dev:reset-with-data`, the default voter flow shows a populated alliances surface; the v2.6 P64 supabase-adapter reverse-fill of `organizationNominationIds` on alliance parents — implemented but never empirically exercised — is now exercised on every dev-seed run.
@@ -110,6 +110,6 @@ Run `/gsd-new-milestone` to question → research → write requirements → roa
 | 63. E2E Template Extension & Greening | v2.6 | 3/3 | Complete | 2026-04-27 |
 | 64. Voter Results Reactivity Completion | v2.6 | 4/4 | Complete | 2026-04-28 |
 | 65. Svelte 5 Audit Sweeps | v2.7 | 0/3 | Not started | — |
-| 66. Nominations Schema + Adapter Type Cleanup | v2.7 | 0/3 | Not started | — |
+| 66. Adapter Type Cleanup | v2.7 | 0/1 | Not started | — |
 | 67. Default Seed Alliances | v2.7 | 0/2 | Not started | — |
 | 68. Dev-Tooling Trio | v2.7 | 0/3 | Not started | — |
