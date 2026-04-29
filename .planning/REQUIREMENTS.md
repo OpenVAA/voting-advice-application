@@ -19,8 +19,8 @@
 ### SVELTE5 — Svelte 5 audit sweeps + reactivity-rule documentation
 
 - [x] **SVELTE5-01**: Codebase-wide `bind:*` audit is complete. Every `bind:*` use under `apps/frontend/src/lib/**/*.svelte` has been classified as keep / migrate / remove. Zero `binding_property_non_reactive` warnings on any voter-flow path during dev. Each retained `bind:*` site has an inline justification (or matches a documented pattern in `CLAUDE.md`).
-- [ ] **SVELTE5-02**: Codebase-wide `{#key …}` audit is complete. Every retained `{#key}` block has either an inline justification or a test demonstrating that the remount is observable behavior. Defensive `{#key item}`-inside-`{#each}` patterns are removed unless the test gates them.
-- [ ] **SVELTE5-03**: Context-destructuring reactivity rule is documented. `CLAUDE.md` (or the appropriate per-package README) records the decision for `const { … } = ctx` / `const { … } = getContext(...)` / `const { … } = use*Context()` patterns: either banned via lint rule, or "use direct property access for reactive reads, destructuring is fine for one-shot reads." Codebase audit complete; any broken-by-destructure-but-working sites are either rewritten or flagged with an inline justification.
+- [x] **SVELTE5-02**: Codebase-wide `{#key …}` audit is complete. Every retained `{#key}` block has either an inline justification or a test demonstrating that the remount is observable behavior. Defensive `{#key item}`-inside-`{#each}` patterns are removed unless the test gates them.
+- [x] **SVELTE5-03**: Context-destructuring reactivity rule is documented. `CLAUDE.md` (or the appropriate per-package README) records the decision for `const { … } = ctx` / `const { … } = getContext(...)` / `const { … } = use*Context()` patterns: either banned via lint rule, or "use direct property access for reactive reads, destructuring is fine for one-shot reads." Codebase audit complete; any broken-by-destructure-but-working sites are either rewritten or flagged with an inline justification.
 
 ### ADAPTER — Supabase adapter type cleanup
 
