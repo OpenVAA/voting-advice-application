@@ -69,16 +69,16 @@ _Items tracked but not in v2.7 scope. Carry forward to v2.8+ or backlog._
 
 ## Traceability
 
-Phase assignments will be mapped by `.planning/ROADMAP.md`. Success-criterion references will point to the numbered criteria under each phase's `**Success Criteria**` block in ROADMAP.md.
+Phase assignments mapped to `.planning/ROADMAP.md`. Success-criterion references point to the numbered criteria under each phase's `**Success Criteria**` block in ROADMAP.md.
 
 | REQ-ID | Phase | Phase Goal | Success Criterion |
 |--------|-------|------------|-------------------|
-| SVELTE5-01 | TBD | TBD | TBD |
-| SVELTE5-02 | TBD | TBD | TBD |
-| SVELTE5-03 | TBD | TBD | TBD |
-| ADAPTER-01 | TBD | TBD | TBD |
-| DB-01 | TBD | TBD | TBD |
-| SEED-01 | TBD | TBD | TBD |
-| DEVTOOLS-01 | TBD | TBD | TBD |
-| DEVTOOLS-02 | TBD | TBD | TBD |
-| DEVTOOLS-03 | TBD | TBD | TBD |
+| SVELTE5-01 | Phase 65: Svelte 5 Audit Sweeps | Every `bind:*` and `{#key …}` use under `apps/frontend/src/lib/**/*.svelte` is classified, justified inline, or removed; the context-destructuring reactivity hazard is documented as a project rule and the codebase is audit-clean against it. | SC-1 (`bind:*` audit complete; zero `binding_property_non_reactive` warnings; inline justification per retained site) |
+| SVELTE5-02 | Phase 65: Svelte 5 Audit Sweeps | Every `bind:*` and `{#key …}` use under `apps/frontend/src/lib/**/*.svelte` is classified, justified inline, or removed; the context-destructuring reactivity hazard is documented as a project rule and the codebase is audit-clean against it. | SC-2 (`{#key}` audit complete; retained blocks carry inline justification or test gate; defensive `{#key item}`-in-`{#each}` removed) |
+| SVELTE5-03 | Phase 65: Svelte 5 Audit Sweeps | Every `bind:*` and `{#key …}` use under `apps/frontend/src/lib/**/*.svelte` is classified, justified inline, or removed; the context-destructuring reactivity hazard is documented as a project rule and the codebase is audit-clean against it. | SC-3 (Context-destructuring rule documented in `CLAUDE.md` or per-package README; codebase audit complete; broken-but-working sites rewritten or flagged) |
+| DB-01 | Phase 66: Nominations Schema + Adapter Type Cleanup | The `nominations` table sheds redundant `name` + `entityType` columns; nothing in the codebase still reads them; `supabaseDataProvider.ts` carries zero `as unknown as { ... }` casts over the new shape, with a real intermediate type defined once and reused across the parent/child reverse-fill loops. | SC-1 + SC-2 (migration drops `nominations.name` + `entityType`; zero codebase reads of either column; pgTAP tests updated; `yarn supabase:types` regenerates a tighter type) |
+| ADAPTER-01 | Phase 66: Nominations Schema + Adapter Type Cleanup | The `nominations` table sheds redundant `name` + `entityType` columns; nothing in the codebase still reads them; `supabaseDataProvider.ts` carries zero `as unknown as { ... }` casts over the new shape, with a real intermediate type defined once and reused across the parent/child reverse-fill loops. | SC-3 + SC-4 (zero `as unknown as` casts in `supabaseDataProvider.ts`; real intermediate type for reverse-fill; `yarn workspace @openvaa/frontend check` passes; v2.6 parity gate continues to pass) |
+| SEED-01 | Phase 67: Default Seed Alliances | After `yarn dev:reset-with-data`, the default voter flow shows a populated alliances surface; the v2.6 P64 supabase-adapter reverse-fill of `organizationNominationIds` on alliance parents — implemented but never empirically exercised — is now exercised on every dev-seed run. | SC-1 through SC-4 (default template emits ~2-3 alliances + `alliance_nominations`; populated alliances surface in voter results; reverse-fill of `organizationNominationIds` on `Alliance` parents returns non-empty; matching/filters handle alliances correctly) |
+| DEVTOOLS-01 | Phase 68: Dev-Tooling Trio | Three independent dev-tooling cleanups land together — frontend dev loop autoreloads on package + env changes, ESLint catches cross-cutting import inconsistencies monorepo-wide, and Deno tooling is scoped strictly to where it belongs. | SC-1 (Frontend reloads on `@openvaa/*` package source + `.env` edits without manual `yarn dev:reset`; chosen mechanism documented) |
+| DEVTOOLS-02 | Phase 68: Dev-Tooling Trio | Three independent dev-tooling cleanups land together — frontend dev loop autoreloads on package + env changes, ESLint catches cross-cutting import inconsistencies monorepo-wide, and Deno tooling is scoped strictly to where it belongs. | SC-2 (`yarn lint:check` green at HEAD with new import rules enforced; monorepo-wide cleanup applied) |
+| DEVTOOLS-03 | Phase 68: Dev-Tooling Trio | Three independent dev-tooling cleanups land together — frontend dev loop autoreloads on package + env changes, ESLint catches cross-cutting import inconsistencies monorepo-wide, and Deno tooling is scoped strictly to where it belongs. | SC-3 (Top-level `deno.*` scoped or removed outside `apps/supabase/functions/`; VSCode config matches; no Deno lint/check on non-edge code in CI) |

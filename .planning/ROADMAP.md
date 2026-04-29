@@ -4,6 +4,7 @@
 
 - ✅ **v2.5 Dev Data Seeding Toolkit** — Phases 56-59 (shipped 2026-04-24)
 - ✅ **v2.6 Svelte 5 Migration Cleanup** — Phases 60-64 (shipped 2026-04-28)
+- 🚧 **v2.7 Svelte 5 Polish + Supabase-Adapter Loose Ends** — Phases 65-68 (started 2026-04-29)
 
 See `.planning/MILESTONES.md` for cumulative history and `.planning/milestones/` for archived roadmaps + requirements.
 
@@ -34,6 +35,63 @@ Full details: `.planning/milestones/v2.6-ROADMAP.md`
 
 </details>
 
+### 🚧 v2.7 Svelte 5 Polish + Supabase-Adapter Loose Ends (In Progress)
+
+**Milestone Goal:** Close the v2.6 supabase-adapter cleanup tail and complete the deferred Svelte 5 audit sweeps in one cohesive milestone. The DB-01 + ADAPTER-01 + SEED-01 cluster all touches `apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.ts` and `@openvaa/dev-seed`, so closing them together means one round of integration testing.
+
+- [ ] **Phase 65: Svelte 5 Audit Sweeps** — Codebase-wide `bind:*` audit, `{#key}` audit, and context-destructuring reactivity rule documented and applied
+- [ ] **Phase 66: Nominations Schema + Adapter Type Cleanup** — Drop redundant `nominations.name` + `nominations.entityType` columns; clean up `as unknown as` casts in `supabaseDataProvider.ts` over the new shape
+- [ ] **Phase 67: Default Seed Alliances** — `~2-3` alliances grouping subsets of the default seed's 8 parties; empirically exercises the v2.6 P64 alliance branch of the adapter reverse-fill
+- [ ] **Phase 68: Dev-Tooling Trio** — Frontend autoreload on package source / env-var changes, lint-all-imports rules + monorepo-wide cleanup, Deno tooling scoped strictly to `apps/supabase/functions/*`
+
+## Phase Details
+
+### Phase 65: Svelte 5 Audit Sweeps
+**Goal**: Every `bind:*` and `{#key …}` use under `apps/frontend/src/lib/**/*.svelte` is classified, justified inline, or removed; the context-destructuring reactivity hazard surfaced during v2.6 Phase 61 Plan 03 is documented as a project rule and the codebase is audit-clean against it.
+**Depends on**: Nothing (first phase of v2.7; runs over the v2.6 baseline at HEAD `2c7ad2dea`)
+**Requirements**: SVELTE5-01, SVELTE5-02, SVELTE5-03
+**Success Criteria** (what must be TRUE):
+  1. `grep -rn "bind:" apps/frontend/src/lib --include='*.svelte'` lists only sites that are either (a) classified keep with inline justification or (b) match a documented pattern in `CLAUDE.md`. The dev server emits zero `binding_property_non_reactive` warnings during a 9-step manual smoke of the voter flow + a candidate-app smoke.
+  2. `grep -rn "{#key" apps/frontend/src --include='*.svelte'` lists only retained `{#key}` blocks that carry an inline justification or are gated by a test demonstrating the remount is observable behavior. Defensive `{#key item}`-inside-`{#each}` patterns are removed unless a test exercises them.
+  3. `CLAUDE.md` (or the appropriate per-package README) records the project rule for `const { … } = ctx` / `const { … } = getContext(...)` / `const { … } = use*Context()` patterns: either banned via lint rule, or "use direct property access for reactive reads, destructuring is fine for one-shot reads." Any broken-by-destructure-but-working sites identified in the audit are either rewritten or carry an inline justification.
+  4. The v2.6 parity gate at HEAD `2c7ad2dea` continues to pass after the audit fixes land — no E2E regressions.
+**Plans**: 3 plans
+**UI hint**: yes
+
+### Phase 66: Nominations Schema + Adapter Type Cleanup
+**Goal**: The `nominations` table sheds its redundant `name` + `entityType` columns; nothing in the codebase still reads them; `supabaseDataProvider.ts` carries zero `as unknown as { ... }` casts over the new shape, with a real intermediate type (e.g., `InternalFlatNomination`) defined once and reused across the parent/child reverse-fill loops.
+**Depends on**: Phase 65 (clean Svelte 5 baseline before touching adapter typing — keeps the integration test signal honest when alliances land in Phase 67)
+**Requirements**: DB-01, ADAPTER-01
+**Success Criteria** (what must be TRUE):
+  1. After applying the new supabase migration, `nominations` row shape is just relationship + `parent_nomination_id` (no `name`, no `entityType`) — or `entityType` is replaced by a generated column / not-null check derived from the FK, with the trade-off documented inline. The migration applies cleanly with zero data loss for any populated `name` values, and pgTAP tests are updated to match.
+  2. `grep -rn "nominations.name\|nominations\.entity_type\|nominations\.entityType" apps packages` returns zero hits across frontend, Edge Functions, dev-seed, RLS policies, and pgTAP tests after the cleanup. `yarn supabase:types` regenerates a tighter type for the `nominations` table.
+  3. `apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.ts` carries zero `as unknown as { ... }` casts (or each remaining one is justified inline with `// @ts-expect-error — reason: …` or a comment), zero `any` types, and the v2.6 P64 reverse-fill pass uses a single named intermediate type defined once at the top of the file.
+  4. Type errors surface at the call site, not in downstream consumers — `yarn workspace @openvaa/frontend check` passes; the v2.6 parity gate at HEAD `2c7ad2dea` continues to pass after the migration + adapter retyping land.
+**Plans**: 3 plans
+
+### Phase 67: Default Seed Alliances
+**Goal**: After `yarn dev:reset-with-data`, the default voter flow shows a populated alliances surface; the v2.6 P64 supabase-adapter reverse-fill of `organizationNominationIds` on alliance parents — implemented but never empirically exercised — is now exercised on every dev-seed run.
+**Depends on**: Phase 66 (alliance nominations write through the cleaned-up `nominations` shape; reverse-fill code path is exercised over the cleaned-up adapter typing)
+**Requirements**: SEED-01
+**Success Criteria** (what must be TRUE):
+  1. The default template (`packages/dev-seed/src/templates/default/`) emits ~2-3 alliances grouping named subsets of the existing 8 parties into coalitions, plus the corresponding `alliance_nominations` linking the contributing party nominations per constituency.
+  2. After `yarn dev:reset-with-data`, the voter results page shows a populated alliances entity tab (or wherever the alliances surface lives), and filtering / grouping by alliance works on real seeded data — no empty-tab dev-blind state.
+  3. The supabase adapter's reverse-fill of `organizationNominationIds` on `Alliance` parents (the v2.6 P64 Plan 01 path) returns non-empty arrays when queried; this path is no longer dev-blind.
+  4. `@openvaa/matching` and `@openvaa/filters` handle alliances correctly with the seeded data — no runtime errors, no empty match-breakdown sections caused by alliance entities the algorithms didn't anticipate.
+**Plans**: 2 plans
+**UI hint**: yes
+
+### Phase 68: Dev-Tooling Trio
+**Goal**: Three independent dev-tooling cleanups land together — the frontend dev loop autoreloads on package and env changes without manual restarts, ESLint catches cross-cutting import inconsistencies monorepo-wide, and Deno tooling is scoped strictly to where it belongs.
+**Depends on**: Nothing (independent of Phases 65-67; can run in parallel with any of them, but scheduled last per the milestone close cadence)
+**Requirements**: DEVTOOLS-01, DEVTOOLS-02, DEVTOOLS-03
+**Success Criteria** (what must be TRUE):
+  1. Editing a `@openvaa/*` package source file or the root `.env` file triggers a frontend reload during `yarn dev` without manual `yarn dev:reset` or restart. The chosen mechanism — Vite HMR watching `packages/*/dist/`, `vite-plugin-restart`, Turborepo `--watch` composed with Vite HMR, or another option — is documented in the relevant README.
+  2. `yarn lint:check` is green at HEAD with rules covering `@typescript-eslint/consistent-type-imports`, `import/order`, `import/newline-after-import`, `import/no-duplicates`, unused imports, and a project-specific preference for `$lib/...` over deep relative imports actively enforced. Monorepo-wide cleanup applied where the new rules surface violations.
+  3. Top-level `deno.json` / `deno.jsonc` / `deno.lock` files (if any exist outside `apps/supabase/functions/`) are removed or scoped; VSCode `deno.enable` / `deno.enablePaths` config matches; no `deno lint` or `deno check` runs against non-edge-function code in CI.
+  4. The v2.6 parity gate at HEAD `2c7ad2dea` continues to pass after the dev-tooling changes — `yarn build`, `yarn test:unit`, and `yarn lint:check` all green.
+**Plans**: 3 plans
+
 ### 🆕 Next milestone — Not yet planned
 
 Run `/gsd-new-milestone` to question → research → write requirements → roadmap the next milestone.
@@ -51,3 +109,7 @@ Run `/gsd-new-milestone` to question → research → write requirements → roa
 | 62. Results Page Consolidation | v2.6 | 3/3 | Complete | 2026-04-26 |
 | 63. E2E Template Extension & Greening | v2.6 | 3/3 | Complete | 2026-04-27 |
 | 64. Voter Results Reactivity Completion | v2.6 | 4/4 | Complete | 2026-04-28 |
+| 65. Svelte 5 Audit Sweeps | v2.7 | 0/3 | Not started | — |
+| 66. Nominations Schema + Adapter Type Cleanup | v2.7 | 0/3 | Not started | — |
+| 67. Default Seed Alliances | v2.7 | 0/2 | Not started | — |
+| 68. Dev-Tooling Trio | v2.7 | 0/3 | Not started | — |
