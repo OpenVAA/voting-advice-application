@@ -116,9 +116,63 @@ param (`results/+layout.svelte:169`
 - Interaction with item 1 (shorter IDs) — apply the same shortening
   scheme to nomination ids.
 
+## 5. Sharing links to results and individual nominations (merged from session-storage-election-constituency.md, 2026-04-29)
+
+The `session-storage-election-constituency.md` todo (originally
+high-priority, 2026-03-23) proposed moving `electionId` and
+`constituencyId` from URL search params to session storage on the
+grounds that they "clutter the URL and complicate routing… selections
+are per-session state, not shareable via URL." Phase 62 partially
+ships the inverse — election is now a path segment for `/results`,
+which bakes context into the URL precisely so deeplinks survive
+new-window navigation.
+
+The unresolved tension is that **we still don't have a clean answer
+for shareable links**:
+
+- A voter wants to text "look at this candidate" → currently the only
+  way is to copy the long entity-id URL with `nominationId` query
+  param (see item 4 above).
+- A voter wants to text "look at the candidates in our constituency" →
+  works for the list view, but the URL is still UUID-laden (see item 1).
+- A voter wants to text their own results page → the per-voter answer
+  state lives in localStorage; the URL doesn't carry it. Sharing the
+  URL gives the recipient an empty results state.
+
+**Direction to explore:**
+
+- Item 4 (nominationId-keyed routes) makes the candidate-detail link
+  sharable in shape but not in length until item 1 (shorter IDs)
+  lands.
+- For the voter's *own* results, decide product policy: is the results
+  page sharable at all? Options include
+  (a) results are private and require the answers in localStorage,
+  (b) results can be encoded into a sharable URL token (encoded
+  voter answers + entity context — privacy implications), or
+  (c) results have a server-issued share token that wraps the answer
+  state (server-stored, explicit opt-in, expirable).
+- The "send a link to a specific candidate" flow could use the
+  candidate-detail route (post item 4) without requiring voter
+  answers — it just deep-links to the entity.
+
+**Open questions:**
+
+- What does "share" mean per route? Catalogue each shareable
+  voter URL and decide (private / link-with-answers / server-token).
+- Do we want session storage to hold the *voter's answers* even though
+  election + constituency now live in the URL? The original
+  session-storage todo conflated "session state" with "voter
+  answer state"; with election+constituency in the URL these are now
+  different concerns.
+- Interaction with item 4 (nominationId routing) — drawer URLs become
+  natively shareable once nominationId is the primary key.
+
+The original `session-storage-election-constituency.md` content is
+preserved here (merged 2026-04-29) so the discussion of "URL search
+params vs session storage" stays in one place.
+
 ## Related
 
-- `.planning/todos/pending/session-storage-election-constituency.md` — partially addressed by Phase 62 (election now in URL for /results); broader session-storage question carries forward here.
 - `.planning/todos/pending/frontend-project-id-scoping.md` — architecture multi-tenant prep; may interact with URL ID shortening if IDs become project-scoped.
 
 ## Acceptance
@@ -128,3 +182,4 @@ Success for the full follow-up (whether shipped as one milestone or split):
 - URLs for every shareable voter route carry the necessary context (election, constituency if applicable) so new-window deeplinks work without session.
 - IDs in URLs are short enough to share verbally / via SMS / in print materials.
 - Multi-election/constituency selection is either explicitly supported in the UX or explicitly restricted with a clear product rationale.
+- Each shareable voter route has a documented sharing policy (private / link-with-answers / server-token) — see item 5.

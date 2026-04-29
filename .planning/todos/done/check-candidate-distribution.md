@@ -46,3 +46,10 @@ constituency.
 Not urgent — the current shape is correct at the aggregate level
 and clustering is visible in the full candidate pool. Revisit if UAT
 #1 (voter walkthrough + compass visual check) reveals a problem.
+
+
+---
+
+## Resolution
+
+**Closed 2026-04-29** — partly mitigated by v2.6 default-seed densification (5 constituencies × 8 parties × matrix-distributed candidates = 327 total, replacing the original 100-candidate × 13-constituency lumpy walk). Each constituency now has multiple parties; the per-constituency candidate count is high enough (typical ≥20) that party clustering is visibly preserved. Re-open if a deeper distribution audit is later needed; current shape is sufficient for development sessions and dev seed UAT.

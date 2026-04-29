@@ -26,3 +26,18 @@ Moving the results list from `+page.svelte` into `+layout.svelte` (to enable lay
 - `apps/frontend/src/routes/(voters)/(located)/results/+page.svelte` — empty page to remove
 - `apps/frontend/src/routes/(voters)/(located)/results/[entityType]/[entityId]/+page.svelte` — make params optional
 - `packages/filters/` — FilterGroup.onChange implementation
+
+---
+
+## Resolution
+
+**Closed 2026-04-29** — resolved by v2.6 Phase 62 (Results Page Consolidation) and finalized by Phase 64 (Phase 62-bis):
+
+- `EntityListControls` and `EntityList` merged into `EntityListWithControls` compound component (Phase 62 Plan 01).
+- Infinite `$effect` loop replaced with `$derived.by` over a `$state` version counter that bridges `FilterGroup.onChange` to consumers (`filterContext.svelte.ts`).
+- Empty `results/+page.svelte` removed; entity-detail route params made optional via 4-segment optional-param shape `/results/[electionId]/[[entityTypePlural]]/[[entityTypeSingular]]/[[id]]` with typed param matchers (Phase 62 Plan 02).
+- Coupling-guard `+page.ts` 307-redirects malformed singular-without-id URLs.
+- Filters re-enabled and exposed via shared `filterContext` scoped per `(electionId, entityTypePlural)` tuple (D-05); preserved across drawer open/close.
+- Phase 64 Plan 01 hardened the reactivity bridge with content-equality (`sameRefs`) guards on `$state` reassignment and `void fctx.version` subscription on `numActiveFilters` to break SvelteKit `parseParams(page)` cascade-induced badge loss.
+
+`@openvaa/filters` was untouched throughout — consumer-side refactor only.

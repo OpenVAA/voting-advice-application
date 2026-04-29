@@ -10,3 +10,11 @@ Remove `electionId` and `constituencyId` from URL search params in the voter app
 - `apps/frontend/src/routes/(voters)/(located)/+layout.ts` — currently reads params from URL
 - `apps/frontend/src/lib/utils/route/` — route building and param parsing
 - Voter context — election/constituency selection state
+
+---
+
+## Resolution
+
+**Closed 2026-04-29 — merged into `results-url-refactor-followups.md` item 5.**
+
+v2.6 Phase 62 took the opposite direction from this todo's original proposal: rather than moving `electionId` + `constituencyId` *out* of URL params *into* session storage, the results subtree was migrated to a path-based shape (`/results/[electionId]/...`) precisely so deeplinks survive new-window navigation. The unresolved tension — what does "share a link" mean for results vs nominations — was relocated to `results-url-refactor-followups.md` item 5 where the URL strategy questions live.

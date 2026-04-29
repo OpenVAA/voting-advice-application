@@ -42,3 +42,15 @@ This is already covered by a complete runes migration milestone (check ROADMAP.m
 - Replace `$store` auto-subscriptions with explicit patterns if needed
 - Remove the `PopupRenderer` workaround if direct store rendering works after migration
 - Test all existing E2E tests pass after migration
+
+---
+
+## Resolution
+
+**Closed 2026-04-29** — resolved by v2.6 Phase 60 (Layout Runes Migration & Hydration Fix):
+
+- Root `+layout.svelte` migrated from Svelte 4 legacy to runes mode using `$derived.by` discriminated-union validity + dedicated `$effect` for `$dataRoot` batching (Plan 60-02).
+- Candidate `(protected)/+layout.svelte` migrated from `$effect + Promise.all().then() + await tick()` pattern to `$derived.by` 4-way `layoutState` + dedicated `$effect` for batched store mutations (Plan 60-03). Stuck-at-`<Loading />` symptom eliminated.
+- `PopupRenderer` wrapper component deleted atomically; inline popup rendering via `{@const Component = item.component}` + `<Component ...>` works under runes (Plan 60-04). D-09 `voter-popup-hydration.spec.ts` E2E proves the runes-idiomatic pattern.
+- New runes-mode pitfall surfaced: `$storeName.update()` and fromStore-bridged mutations inside `$effect` trigger `effect_update_depth_exceeded`. Workaround: `get(store)` + `untrack(...)`. Applied to root layout `dataRoot.current.update()` and AccordionSelect's auto-select effect.
+- Surfaced and auto-fixed a latent SSR crash in `getEmailUrl` via SSR guards (`typeof window`/`typeof navigator` checks).

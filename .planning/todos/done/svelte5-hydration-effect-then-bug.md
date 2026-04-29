@@ -44,3 +44,16 @@ Refactor the protected layout's data loading to NOT use `$effect` + `.then()`. O
 - Convert to a wrapper component pattern (like PopupRenderer)
 - Migrate to synchronous data resolution with `untrack()` for `$dataRoot` mutations — but writes inside `untrack()` also don't trigger re-renders
 - Wait for Svelte 5 bugfix (file upstream issue)
+
+---
+
+## Resolution
+
+**Closed 2026-04-29** — resolved by v2.6 Phase 60 LAYOUT-02 (Plan 60-03):
+
+- Root cause confirmed in execution: the `$effect + Promise.all(...).then() + $state = ...` pattern leaves the layout stuck at `<Loading />` post-hydration because `$state` mutations from microtasks inside an `$effect` don't propagate to the SSR-hydrated DOM.
+- Fixed by replacing the pattern with `$derived.by` discriminated-union loader-data validity + a dedicated `$effect` for `$dataRoot` / `userData.init` batched store mutations.
+- 2 named target tests (`candidate-registration.spec.ts:64`, `candidate-profile.spec.ts:51`) PASS; auth-setup + candidate-auth valid-login PASS as collateral confirmation.
+- Pattern documented in PROJECT.md Key Decisions: "Dedicated `$effect` for batched store mutations beside `$derived` validity" + "`get(store)` + `untrack(...)` for store mutation inside `$effect`".
+
+The originally-planned upstream Svelte issue filing is no longer required because the in-userland fix works.
