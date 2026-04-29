@@ -307,4 +307,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-_Last updated: 2026-04-29 — v2.7 Phase 65 (Svelte 5 audit sweeps) complete; v2.6 parity gate continues to PASS_
+_Last updated: 2026-04-29 — v2.7 Phases 65 + 66 complete; v2.6 parity gate continues to PASS_
