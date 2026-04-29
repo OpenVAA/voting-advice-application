@@ -211,7 +211,10 @@ Multilingual features are only available if the `locales` store contains more th
     fileInput?.click();
   }
 
-  let mainInputs = new Array<HTMLElement>();
+  // `mainInputs` must be $state in Svelte 5 because `bind:this={mainInputs[i]}`
+  // mutates a property on it. A plain array triggers `binding_property_non_reactive`.
+  // Mirrors the Phase 64 fix at QuestionChoices.svelte:122-124.
+  const mainInputs: Array<HTMLElement> = $state([]);
   /**
    * Return focus to the main input after a multilingual item has been expanded or an option has been deleted in select-multiple.
    */
