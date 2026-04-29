@@ -25,9 +25,18 @@ A reliable, well-tested VAA framework that developers can confidently extend, cu
 
 Known infrastructure issue: local imgproxy Docker container crashes intermittently (502 on image upload) — not a code issue, fix with `supabase stop && supabase start`.
 
-## Next Milestone: Not yet planned
+## Current Milestone: v2.7 Svelte 5 Polish + Supabase-Adapter Loose Ends
 
-Run `/gsd-new-milestone` to question → research → write requirements → roadmap the next milestone. The v2.6 manual-smoke session surfaced 3 user-flagged follow-ups worth considering as candidates: switch results detail route to `/results/[entType]/[nominationId]` (drop `nominationId` from search params) — see `.planning/todos/pending/results-url-refactor-followups.md`; sweep all `bind:*` and all `{#key …}` usages in `apps/frontend/src/lib/**/*.svelte` (audits 4+5 in `svelte5-cleanup.md`); densify default seed further (alliances). The 18 currently-pending todos in `.planning/todos/pending/` are the next-milestone backlog candidates.
+**Goal:** Close the v2.6 supabase-adapter cleanup tail and complete the deferred Svelte 5 audit sweeps in one cohesive milestone — `cleanup-nominations-table`, `cleanup-sloppy-typing-supabaseDataProvider`, and `add-alliances-to-default-test-data` all touch `supabaseDataProvider.ts` + `@openvaa/dev-seed`, so closing them together means one round of integration testing.
+
+**Target features:**
+- Svelte 5 frontend audit sweeps — `bind:*` + `{#key}` usages, plus context-destructuring rule
+- Supabase adapter type cleanup — drop the `as unknown as` casts introduced by v2.6 P64 reverse-fill
+- `nominations` table cleanup — drop redundant `name` + `entityType` columns
+- Alliances in default seed — exercise the 4th branch of the v2.6 P64 reverse-fill (alliance → organizations)
+- Dev-tooling cleanup trio — Vite autoreload on package/env changes, lint-all-imports, retire Deno linting outside `apps/supabase/functions/`
+
+**Out of scope (deferred to v2.8+):** `results-url-refactor-followups` + `frontend-project-id-scoping` — pair as a "sharable URLs + multi-tenant" milestone, benefits from the adapter cleanup landing first.
 
 ## Requirements
 
@@ -109,7 +118,7 @@ Run `/gsd-new-milestone` to question → research → write requirements → roa
 
 ### Active
 
-_No active milestone. Run `/gsd-new-milestone` to define the next set of requirements._
+_v2.7 Svelte 5 Polish + Supabase-Adapter Loose Ends — requirements being defined, see `.planning/REQUIREMENTS.md`._
 
 ### Future
 - [ ] Claude Skills: architect, components, LLM (deferred to post-Svelte 5 stabilization)
@@ -298,4 +307,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-_Last updated: 2026-04-28 after v2.6 Svelte 5 Migration Cleanup milestone shipped_
+_Last updated: 2026-04-29 — v2.7 Svelte 5 Polish + Supabase-Adapter Loose Ends started_

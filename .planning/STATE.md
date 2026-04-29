@@ -1,11 +1,10 @@
 ---
 gsd_state_version: 1.0
-milestone: null
-milestone_name: null
-status: milestone_closed
-stopped_at: v2.6 shipped — awaiting next milestone definition
-last_updated: "2026-04-28T00:00:00.000Z"
-last_activity: 2026-04-28 -- v2.6 Svelte 5 Migration Cleanup shipped
+milestone: v2.7
+milestone_name: Svelte 5 Polish + Supabase-Adapter Loose Ends
+status: planning
+last_updated: "2026-04-29T07:19:05.733Z"
+last_activity: 2026-04-29
 progress:
   total_phases: 0
   completed_phases: 0
@@ -18,15 +17,17 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-28)
+See: .planning/PROJECT.md (updated 2026-04-29)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Awaiting next milestone — run `/gsd-new-milestone`.
+**Current focus:** v2.7 Svelte 5 Polish + Supabase-Adapter Loose Ends — defining requirements.
 
 ## Current Position
 
-Milestone: none active.
-Last shipped: v2.6 Svelte 5 Migration Cleanup (Phases 60-64) on 2026-04-28.
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-29 — Milestone v2.7 started
 
 ## Performance Metrics
 
