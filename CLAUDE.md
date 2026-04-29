@@ -290,7 +290,43 @@ latent-factor answer model overrides).
 - **Matching algorithms** - questions creating subdimensions (like categorical) need special handling
 - **Missing values** - use `MISSING_VALUE` from `@openvaa/core` in matching contexts, `undefined` or empty literals elsewhere
 - **Localization** - all user-facing strings must support multiple locales (see `packages/app-shared/src/settings/staticSettings.ts` for `supportedLocales`)
-- **Always** check that your code against the [Code review checklist](docs/code-review-checklist.md)
+- **Always** check your code against the [Code review checklist](/.agents/code-review-checklist.md)
+
+### Context Destructuring Rule (Svelte 5)
+
+OpenVAA's Svelte 5 contexts (`getCandidateContext()`, `getVoterContext()`, `getAppContext()`, plus generic `getContext()` consumers) expose two property classes that have **different reactivity semantics under destructuring**:
+
+1. **Stable references** — translation function `t`, route helper `getRoute`, stores like `appSettings` / `dataRoot` / `darkMode` / `locale` / `answers`, the `userData` object (whose internal `$state` getters are accessed by property), lifecycle functions (`logout`, `register`, `preregister`, `startEvent`, `*Countdown`). These can be safely destructured:
+   ```ts
+   const { t, getRoute, appSettings, dataRoot } = getVoterContext();
+   ```
+
+2. **Reactive accessors** — getters returning `$state`- or `$derived`-backed values that change over time: `selectedElections`, `selectedConstituencies`, `opinionQuestions`, `infoQuestions`, `infoQuestionCategories`, `opinionQuestionCategories`, `questionBlocks`, `unansweredOpinionQuestions`, `unansweredRequiredInfoQuestions`, `requiredInfoQuestions`, `answersLocked`, `profileComplete`, `electionsSelectable`, `constituenciesSelectable`, `matches`, `nominationsAvailable`, `resultsAvailable`, `idTokenClaims`, `isPreregistered`, `isAuthenticated`, `preregistrationElections`, `preregistrationNominations`, `newUserEmail`. These **MUST** be read via direct property access:
+
+   ```ts
+   const ctx = getCandidateContext();
+   const opinionQuestions = $derived(ctx.opinionQuestions); //  correct
+   // const { opinionQuestions } = ctx;                     //  captures initial empty array
+   ```
+
+   **Why:** Destructuring invokes the getter ONCE at component-init time and binds the captured value (the initial empty `$state` array) to a local var. Subsequent reads of the local var are reads of a static binding — not getter calls — and do not propagate dependency invalidation. Reads via `ctx.X` re-invoke the getter inside the tracking scope each time, preserving the reactive edge.
+
+**Canonical pattern** (`apps/frontend/src/routes/(voters)/(located)/results/+layout.svelte:61-79`):
+
+```ts
+const ctx = getVoterContext();
+// Stable: destructure ok.
+const { t, getRoute, appSettings, dataRoot, answers } = ctx;
+// Reactive: read via ctx.X (aliased through $derived for template readability).
+const elections = $derived(ctx.selectedElections);
+const constituencies = $derived(ctx.selectedConstituencies);
+```
+
+**Diagnostic origin:** v2.6 Phase 61 Plan 03 — see `.planning/milestones/v2.6-phases/61-voter-app-question-flow/61-03-DIAGNOSIS.md`. The `candidateContext` `$derived` chain captured initial empty arrays at component init and never re-evaluated after the data layer populated, because consumers destructured reactive properties out of the context object. The fix landed by switching consumers to `ctx.X` reads. The in-tree explanation lives at `apps/frontend/src/lib/contexts/candidate/candidateContext.svelte.ts:106-123`.
+
+**Caveat — legacy `$store` auto-subscribe:** Stores like `appSettings`/`dataRoot`/`getRoute` are stable references AND are consumed via the `$appSettings.X` template auto-subscribe pattern. The `$` prefix only auto-subscribes top-level identifiers, so `$ctx.appSettings` does NOT work — stable stores **must remain destructured** to keep template auto-subscription functioning.
+
+**Lint enforcement** is currently a guideline, not an automated rule. A future phase may add a custom svelte-eslint rule if violations recur.
 
 ## Deployment
 
