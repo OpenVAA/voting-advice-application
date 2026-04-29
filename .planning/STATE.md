@@ -91,7 +91,28 @@ Key cross-milestone reference points carried forward:
 
 ## Session Continuity
 
-Last session: 2026-04-28
-Stopped at: v2.6 milestone shipped — tagged, archived, planning docs reset.
+Last session: 2026-04-29
+Stopped at: v2.6 milestone shipped + post-close todo triage complete (5 closed, 7 promoted from notes, session-storage merged into results-url-refactor).
 Resume file: none — next milestone not yet defined.
-Next action: `/gsd-new-milestone` to define v2.7 (or follow-up milestone).
+Next action: `/gsd-new-milestone` to define v2.7.
+
+### Next milestone seed (selected 2026-04-29)
+
+User selected Option C — "Svelte 5 polish + finish v2.6 supabase-adapter loose ends" — as the v2.7 scope. Cohesion: items 7 + 10 + 11 all touch `supabaseDataProvider.ts` + `@openvaa/dev-seed`, so closing them together means one round of integration testing.
+
+Candidate scope (6 todos):
+
+| # | Todo | Pri | Area | Why in v2.7 |
+|---|------|-----|------|-------------|
+| 20 | `svelte5-cleanup.md` | medium | – | Mandatory — `bind:*` + `{#key}` audits left over from v2.6 P64 manual smoke |
+| 4  | `2026-04-25-investigate-destructuring-contexts.md` | medium | ui | Svelte 5 sibling; pairs with item 20 audit sweeps |
+| 10 | `2026-04-28-add-alliances-to-default-test-data.md` | medium | dev-seed | Exercises the 4th branch of the v2.6 P64 adapter reverse-fill (alliance → organizations) that wasn't seeded |
+| 11 | `2026-04-28-cleanup-nominations-table.md` | medium | db | Drop redundant `name` + `entityType` columns; touches the same `supabaseDataProvider.ts` reverse-fill code path |
+| 7  | `2026-04-27-cleanup-sloppy-typing-supabaseDataProvider.md` | medium | api | Cleans up the `as unknown as { ... }` casts the v2.6 P64 reverse-fill introduced; same file as item 11 |
+| 3  | `2026-04-25-dev-tooling-cleanup-trio.md` | low | dev-tooling | Small bundling of three unrelated dev-tooling cleanups (frontend autoreload, lint imports, retire Deno linting) |
+
+**Out of scope (deferred to v2.8+):** results-url-refactor-followups (#18) + frontend-project-id-scoping (#14) — pair as a "sharable URLs + multi-tenant" milestone, benefits from the adapter cleanup landing first.
+
+**Indefinitely deferred:** rename-admin-writer (#17), sql-linting-formatting (#19), adapter-package-loading (#12), configurable-mock-data (#13) — nice-to-haves, not blocking.
+
+**Estimate:** ~12-15 plans across ~4-5 phases. Risk: low-medium (DB migration on `nominations` is the only non-trivial moving part).
