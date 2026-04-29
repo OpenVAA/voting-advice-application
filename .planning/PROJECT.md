@@ -307,4 +307,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-_Last updated: 2026-04-29 — v2.7 Svelte 5 Polish + Supabase-Adapter Loose Ends started_
+_Last updated: 2026-04-29 — v2.7 Phase 65 (Svelte 5 audit sweeps) complete; v2.6 parity gate continues to PASS_
