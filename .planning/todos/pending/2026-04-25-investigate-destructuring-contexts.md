@@ -4,6 +4,7 @@ priority: medium
 area: ui
 created: 2026-04-25
 promoted: 2026-04-29
+resolves_phase: 65
 context: Captured as a note (`.planning/notes/2026-04-25-investigate-destructuring-contexts-removed.md`) on 2026-04-25, after v2.6 Phase 61 Plan 03 diagnosed that destructuring a context object (e.g., `const { electionData, candidates } = ctx`) breaks Svelte 5's reactive tracking when the destructured locals are read inside `$derived` blocks. The fix in Phase 61 was to access via `ctx.X` non-destructured everywhere; the open question is whether destructuring should be banned codebase-wide.
 ---
 

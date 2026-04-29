@@ -3,6 +3,7 @@ title: Svelte 5 frontend audit sweeps — `bind:*` and `{#key}` usages
 priority: medium
 created: 2026-04-23
 updated: 2026-04-29
+resolves_phase: 65
 context: Originally surfaced during Phase 58 voter-app UAT (5-section list); sections 1-3 (boolean-question rendering, candidate-result detail boolean handling, category-selection reactivity) were resolved by v2.6 Phase 61 (QUESTION-01/02/03/04). Items 4 and 5 below were added during v2.6 Phase 64 manual smoke (2026-04-28) and remain open as audit sweeps.
 ---
 

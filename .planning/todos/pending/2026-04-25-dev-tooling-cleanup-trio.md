@@ -4,6 +4,7 @@ priority: low
 area: dev-tooling
 created: 2026-04-25
 promoted: 2026-04-29
+resolves_phase: 68
 context: Three small dev-tooling cleanup notes captured 2026-04-25 (`frontend-autoreload-on-package-env-changes`, `lint-all-imports`, `remove-deno-linting-except-edge-funcs`). Grouped into a single low-priority "dev cleanup" todo at the user's request during v2.6 milestone close — the work is small enough per-item that splitting into three separate todos is administrative overhead.
 ---
 

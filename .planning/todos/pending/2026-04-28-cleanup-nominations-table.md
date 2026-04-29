@@ -4,6 +4,7 @@ priority: medium
 area: db
 created: 2026-04-28
 promoted: 2026-04-29
+resolves_phase: 66
 context: Captured as a note (`.planning/notes/2026-04-28-clean-up-nominations-table.md`) during v2.6 Phase 64 work on the supabase adapter parent-nomination derivation. The `nominations` table carries a `name` column that is rarely (never?) populated and an `entityType` column that is redundant given that the actual entity is referenced by one of `candidate_id` / `organization_id` / `faction_id` / `alliance_id` (whichever column is non-null already determines the entity type).
 ---
 

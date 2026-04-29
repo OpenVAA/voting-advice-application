@@ -4,6 +4,7 @@ priority: medium
 area: api
 created: 2026-04-27
 promoted: 2026-04-29
+resolves_phase: 66
 context: Captured as a one-line note (`.planning/notes/2026-04-27-cleanup-sloppy-typing-supabaseDataProvider.md`) on 2026-04-27. Promoted to a real todo on 2026-04-29 during v2.6 milestone close — the file accumulated several `as unknown as { ... }` casts during Phase 64 Plan 01 (parent-nomination type derivation) and Phase 64 Plan 03 (reverse-fill of nomination parent → children id arrays) that should be replaced with proper types.
 ---
 

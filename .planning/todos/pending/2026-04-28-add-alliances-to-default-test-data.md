@@ -4,6 +4,7 @@ priority: medium
 area: dev-seed
 created: 2026-04-28
 promoted: 2026-04-29
+resolves_phase: 67
 context: Captured as a note (`.planning/notes/2026-04-28-add-alliances-to-default-test-data.md`) during v2.6 Phase 64 manual smoke. The default seed was densified mid-Phase-64 to 5 constituencies × 8 parties × 327 candidates so the parties tab and categorical filter axes became realistically exercisable. The next gap surfaced is alliances — `@openvaa/data`'s `Alliance` entity type exists but the default template doesn't seed any, so any UI surface that depends on alliances is dev-blind.
 ---
 
