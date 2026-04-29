@@ -1,7 +1,7 @@
 ---
 phase: 66-nominations-schema-adapter-type-cleanup
 verified: 2026-04-29
-status: PASS
+status: passed
 requirements_verified: [ADAPTER-01]
 success_criteria_verified: [SC-1, SC-2, SC-3, SC-4]
 ---

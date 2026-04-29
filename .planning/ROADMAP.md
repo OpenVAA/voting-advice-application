@@ -40,7 +40,7 @@ Full details: `.planning/milestones/v2.6-ROADMAP.md`
 **Milestone Goal:** Close the v2.6 supabase-adapter cleanup tail and complete the deferred Svelte 5 audit sweeps in one cohesive milestone. The DB-01 + ADAPTER-01 + SEED-01 cluster all touches `apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.ts` and `@openvaa/dev-seed`, so closing them together means one round of integration testing.
 
 - [x] **Phase 65: Svelte 5 Audit Sweeps** — Codebase-wide `bind:*` audit, `{#key}` audit, and context-destructuring reactivity rule documented and applied (completed 2026-04-29)
-- [ ] **Phase 66: Adapter Type Cleanup** — Clean up the 2 `as unknown as` casts in `supabaseDataProvider.ts` (v2.6 P64 reverse-fill pass) using a real intermediate type (`InternalFlatNomination`) in a sibling `.types.ts` file (scope narrowed 2026-04-29: schema migration deferred per Phase 66 CONTEXT D-01; the `nominations` table stays as is)
+- [x] **Phase 66: Adapter Type Cleanup** — Clean up the 2 `as unknown as` casts in `supabaseDataProvider.ts` (v2.6 P64 reverse-fill pass) using a real intermediate type (`InternalFlatNomination`) in a sibling `.types.ts` file (scope narrowed 2026-04-29: schema migration deferred per Phase 66 CONTEXT D-01; the `nominations` table stays as is) (completed 2026-04-29)
 - [ ] **Phase 67: Default Seed Alliances** — `~2-3` alliances grouping subsets of the default seed's 8 parties; empirically exercises the v2.6 P64 alliance branch of the adapter reverse-fill
 - [ ] **Phase 68: Dev-Tooling Trio** — Frontend autoreload on package source / env-var changes, lint-all-imports rules + monorepo-wide cleanup, Deno tooling scoped strictly to `apps/supabase/functions/*`
 
@@ -115,6 +115,6 @@ Run `/gsd-new-milestone` to question → research → write requirements → roa
 | 63. E2E Template Extension & Greening | v2.6 | 3/3 | Complete | 2026-04-27 |
 | 64. Voter Results Reactivity Completion | v2.6 | 4/4 | Complete | 2026-04-28 |
 | 65. Svelte 5 Audit Sweeps | v2.7 | 3/3 | Complete    | 2026-04-29 |
-| 66. Adapter Type Cleanup | v2.7 | 1/1 | Complete   | 2026-04-29 |
+| 66. Adapter Type Cleanup | v2.7 | 1/1 | Complete    | 2026-04-29 |
 | 67. Default Seed Alliances | v2.7 | 0/2 | Not started | — |
 | 68. Dev-Tooling Trio | v2.7 | 0/3 | Not started | — |
