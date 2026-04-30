@@ -84,6 +84,9 @@ Full details: `.planning/milestones/v2.6-ROADMAP.md`
   3. The supabase adapter's reverse-fill of `organizationNominationIds` on `Alliance` parents (the v2.6 P64 Plan 01 path) returns non-empty arrays when queried; this path is no longer dev-blind.
   4. `@openvaa/matching` and `@openvaa/filters` handle alliances correctly with the seeded data — no runtime errors, no empty match-breakdown sections caused by alliance entities the algorithms didn't anticipate.
 **Plans**: 2 plans
+- [ ] 67-01-PLAN.md — Seed authoring: create alliances-override.ts (2 alliance entities + 10 alliance noms); wire parent_nomination on 30 of 40 org-noms; widen DynamicSettings.results.sections type union; extend default-template.integration.test.ts with alliance assertions
+- [ ] 67-02-PLAN.md — Validation + UI smoke: live `yarn dev:reset-with-data` + integration test; 6-step manual voter-flow smoke; v2.6 Playwright parity gate against HEAD `2c7ad2dea`; phase verification report
+
 **UI hint**: yes
 
 ### Phase 68: Dev-Tooling Trio
