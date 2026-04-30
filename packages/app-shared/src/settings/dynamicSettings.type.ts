@@ -219,7 +219,7 @@ export type DynamicSettings = {
     /**
      * Which entity types to show in the results view. There must be at least one.
      */
-    sections: Array<typeof ENTITY_TYPE.Candidate | typeof ENTITY_TYPE.Organization>;
+    sections: Array<typeof ENTITY_TYPE.Candidate | typeof ENTITY_TYPE.Organization | typeof ENTITY_TYPE.Alliance>;
     /**
      * If defined, a feedback popup will be shown on the next page load, when the user has reached the results section and the number of seconds given by this value has passed. The popup will not be shown, if the user has already given some feedback.
      */
