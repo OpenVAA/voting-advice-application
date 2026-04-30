@@ -3,7 +3,9 @@
  *
  * Covers the PARTY_CONSTITUENCY_MATRIX integrity + the end-to-end override shape.
  * Phase 58 UAT follow-up (2026-04-23); Phase 64 manual-smoke densification +
- * parent_nomination wiring (2026-04-28).
+ * parent_nomination wiring (2026-04-28); Phase 67 adds 10 alliance noms
+ * (2 alliances × 5 constituencies) emitted from this override into the
+ * nominations table (alliance ENTITY rows live in alliances-override.ts).
  */
 
 import { describe, expect, it } from 'vitest';
@@ -104,15 +106,28 @@ describe('nominationsOverride', () => {
 
   const CANONICAL = { candidates: 327, constituencies: 5, organizations: 8 };
 
-  it('emits 367 rows (327 candidate + 40 org) for the default config', () => {
+  it('emits 377 rows (327 candidate + 40 org + 10 alliance) for the default config', () => {
     const rows = nominationsOverride({}, makeCtx(CANONICAL));
-    expect(rows).toHaveLength(327 + 40);
+    expect(rows).toHaveLength(327 + 40 + 10);
   });
 
   it('emits exactly one organization-type nomination per (party × constituency) cell', () => {
     const rows = nominationsOverride({}, makeCtx(CANONICAL));
     const orgRows = rows.filter((r) => 'organization' in r && !('candidate' in r));
     expect(orgRows).toHaveLength(8 * 5);
+  });
+
+  it('emits exactly one alliance-type nomination per (alliance × constituency) cell — 2 × 5 = 10', () => {
+    const rows = nominationsOverride({}, makeCtx(CANONICAL));
+    const allianceRows = rows.filter(
+      (r) => 'alliance' in r && !('organization' in r) && !('candidate' in r)
+    );
+    expect(allianceRows).toHaveLength(2 * 5);
+    // No alliance nom carries parent_nomination (validate_nomination trigger
+    // raises if alliance noms have a parent — schema invariant).
+    for (const row of allianceRows) {
+      expect('parent_nomination' in row).toBe(false);
+    }
   });
 
   it('emits exactly one candidate-type nomination per candidate', () => {
@@ -130,8 +145,12 @@ describe('nominationsOverride', () => {
 
   it('every candidate-type nomination references a valid (party × constituency) parent_nomination', () => {
     const rows = nominationsOverride({}, makeCtx(CANONICAL));
+    // Phase 67: scope parent set to org-noms specifically (alliance noms are
+    // in the row set but candidate parents are only ever org-noms).
     const orgIds = new Set(
-      rows.filter((r) => !('candidate' in r)).map((r) => (r as { external_id: string }).external_id)
+      rows
+        .filter((r) => 'organization' in r && !('candidate' in r))
+        .map((r) => (r as { external_id: string }).external_id)
     );
     const candRows = rows.filter((r) => 'candidate' in r);
     for (const row of candRows) {

@@ -272,10 +272,13 @@ describe('defaultTemplate — shape & frontmatter constants', () => {
     expect(rows.constituency_groups).toHaveLength(1);
     expect(rows.constituencies).toHaveLength(5);
     expect(rows.organizations).toHaveLength(8);
+    // Phase 67: 2 hand-authored alliances (Progressive Front + Conservative Bloc).
+    expect(rows.alliances).toHaveLength(2);
     expect(rows.question_categories).toHaveLength(4);
     expect(rows.questions).toHaveLength(24);
     expect(rows.candidates).toHaveLength(327);
     // 327 candidate noms + 8 × 5 = 40 organization noms (matrix is dense, every cell ≥ 1)
-    expect(rows.nominations).toHaveLength(327 + 40);
+    // + 10 alliance noms (2 alliances × 5 constituencies, Phase 67)
+    expect(rows.nominations).toHaveLength(327 + 40 + 10);
   });
 });

@@ -42,13 +42,14 @@
  * alliance entities + alliance noms in the DB.
  */
 
-import { findAllianceForParty } from './alliances-override';
+import { ALLIANCE_KEYS, allianceExtId, allianceNomExtId, findAllianceForParty } from './alliances-override';
 import { PARTY_WEIGHTS } from './candidates-override';
 import type { TablesInsert } from '@openvaa/supabase-types';
 import type { Ctx } from '../../types';
 
 type CandidateRef = { candidate: { external_id: string } };
 type OrganizationRef = { organization: { external_id: string } };
+type AllianceRef = { alliance: { external_id: string } };
 type ParentRef = { parent_nomination: { external_id: string } };
 
 type CandidateNominationRow = Omit<TablesInsert<'nominations'>, 'election_id' | 'constituency_id'> &
@@ -65,7 +66,13 @@ type OrganizationNominationRow = Omit<TablesInsert<'nominations'>, 'election_id'
     constituency: { external_id: string };
   };
 
-type NominationRow = CandidateNominationRow | OrganizationNominationRow;
+type AllianceNominationRow = Omit<TablesInsert<'nominations'>, 'election_id' | 'constituency_id'> &
+  AllianceRef & {
+    election: { external_id: string };
+    constituency: { external_id: string };
+  };
+
+type NominationRow = CandidateNominationRow | OrganizationNominationRow | AllianceNominationRow;
 
 /**
  * Per-(party × constituency) candidate count matrix.
@@ -156,7 +163,29 @@ export function nominationsOverride(_fragment: unknown, ctx: Ctx): Array<Record<
 
   const rows: Array<NominationRow> = [];
 
-  // Emit org-type nominations FIRST: one per (party × constituency) cell
+  // Phase 67: emit 10 alliance-type nominations FIRST — 2 alliances ×
+  // 5 constituencies (D-02). These have NO parent_nomination per
+  // 011-validation-functions.sql:265 (validate_nomination trigger raises if
+  // an alliance nom has a parent). External_id is constituency-specific so
+  // org-noms in c_03 reference the alliance nom in c_03, not c_01
+  // (RESEARCH Pitfall 3). The alliance entity rows themselves are emitted
+  // upstream at TOPO_ORDER index 6 by `alliancesOverride` in
+  // `defaults/alliances-override.ts` (output.alliances → alliances table);
+  // the 10 nomination rows go to output.nominations → nominations table.
+  for (const allianceKey of ALLIANCE_KEYS) {
+    for (const constituency of constituencies) {
+      rows.push({
+        external_id: allianceNomExtId(allianceKey, constituency.external_id, externalIdPrefix),
+        project_id: projectId,
+        alliance: { external_id: allianceExtId(allianceKey, externalIdPrefix) },
+        election: { external_id: electionExtId },
+        constituency: { external_id: constituency.external_id },
+        election_round: 1
+      });
+    }
+  }
+
+  // Emit org-type nominations: one per (party × constituency) cell
   // where the matrix has a non-zero count. With the dense matrix, all
   // P × C cells have ≥1 candidate, so all P × C org nominations are emitted.
   // bulk_import resolves parent_nomination external_ids regardless of literal

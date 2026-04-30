@@ -2,14 +2,22 @@
  * Default-template alliances override — D-25 Overrides signature.
  *
  * Phase 67: hand-authored 2 alliances grouping 6 of 8 parties into ideological
- * blocs (D-01) + 10 AllianceNomination rows (2 alliances × 5 constituencies)
- * (D-02). Standalone parties (party_people, party_coast) exercise the
+ * blocs (D-01). Standalone parties (party_people, party_coast) exercise the
  * no-alliance UI path. Empirically exercises the v2.6 P64 supabase-adapter
  * reverse-fill of `organizationNominationIds` on Alliance parents
  * (supabaseDataProvider.ts:391-405) which had shipped without seed data.
  *
+ * Scope split (after fallback applied during Plan 67-01 Task 5 integration
+ * test): this override emits the 2 ALLIANCE ENTITY rows only (output.alliances
+ * → bulk_import → alliances table). The 10 AllianceNomination rows live in
+ * `nominations-override.ts` so they land in output.nominations → the
+ * nominations table. Without this split, bulk_import routes all rows under
+ * the override key to the same table and the polymorphic `alliance: { ... }`
+ * ref on nomination rows is misinterpreted as a column on the alliances table.
+ *
  * ALLIANCE_MEMBERSHIP and findAllianceForParty are exported so
- * `nominations-override.ts` can wire org-nom parent_nomination to the
+ * `nominations-override.ts` can (a) emit alliance noms with constituency-
+ * specific external_ids and (b) wire org-nom parent_nomination to the
  * matching alliance nom in the same constituency.
  *
  * No real Finnish coalition names (D-58-01); invented neutral names per D-04.
@@ -20,17 +28,7 @@
 import type { TablesInsert } from '@openvaa/supabase-types';
 import type { Ctx } from '../../types';
 
-type AllianceRef = { alliance: { external_id: string } };
-
 type AllianceEntityRow = Partial<TablesInsert<'alliances'>> & { external_id: string };
-
-type AllianceNominationRow = Omit<TablesInsert<'nominations'>, 'election_id' | 'constituency_id'> &
-  AllianceRef & {
-    election: { external_id: string };
-    constituency: { external_id: string };
-  };
-
-type AllianceRow = AllianceEntityRow | AllianceNominationRow;
 
 /**
  * Alliance → member-party external_ids (without the externalIdPrefix).
@@ -91,35 +89,44 @@ const ALLIANCE_ENTITY_ROWS: ReadonlyArray<{
   }
 ] as const;
 
-const allianceExtId = (key: 'L' | 'R', externalIdPrefix: string): string =>
+/**
+ * Locked alliance keys per D-01. Exported so `nominations-override.ts` can
+ * iterate the alliance noms without duplicating the literal.
+ */
+export const ALLIANCE_KEYS: ReadonlyArray<'L' | 'R'> = ['L', 'R'];
+
+/**
+ * Build the prefixed external_id for an alliance entity. Mirrors the
+ * organization-entity prefix pattern at `default.ts:90` (`seed_party_blue`).
+ */
+export const allianceExtId = (key: 'L' | 'R', externalIdPrefix: string): string =>
   `${externalIdPrefix}alliance_${key}`;
 
-const allianceNomExtId = (key: 'L' | 'R', constituencyExtId: string, externalIdPrefix: string): string =>
-  `${externalIdPrefix}nom_alliance_${key}_${constituencyExtId}`;
+/**
+ * Build the constituency-specific external_id for an alliance nomination.
+ * Mirrors the org-nom external_id pattern at
+ * `nominations-override.ts:147` (`seed_nom_org_<party>_<constituency>`).
+ *
+ * Constituency-specificity is critical (RESEARCH Pitfall 3): an org-nom in
+ * c_03 must point at the alliance nom in c_03, not the alliance nom in c_01.
+ */
+export const allianceNomExtId = (
+  key: 'L' | 'R',
+  constituencyExtId: string,
+  externalIdPrefix: string
+): string => `${externalIdPrefix}nom_alliance_${key}_${constituencyExtId}`;
 
 export function alliancesOverride(_fragment: unknown, ctx: Ctx): Array<Record<string, unknown>> {
-  const { projectId, externalIdPrefix, refs } = ctx;
-  const constituencies = refs.constituencies;
-  const elections = refs.elections;
-  const organizations = refs.organizations;
+  const { projectId, externalIdPrefix } = ctx;
 
-  // refs.alliances is EMPTY here — this override populates it. Guard the
-  // upstream refs that MUST be populated by TOPO_ORDER (organizations,
-  // constituencies, elections all run before alliances at index 6).
-  if (constituencies.length === 0 || elections.length === 0 || organizations.length === 0) {
-    throw new Error(
-      '[dev-seed] alliancesOverride: ctx.refs is empty for constituencies / elections / organizations. ' +
-        'Ensure the pipeline runs in D-06 topo order and that the template requests non-zero counts.'
-    );
-  }
+  const rows: Array<AllianceEntityRow> = [];
 
-  const electionExtId = elections[0].external_id;
-
-  const rows: Array<AllianceRow> = [];
-
-  // 1. Emit 2 Alliance entity rows — these populate the `alliances` table.
-  //    External_ids must include externalIdPrefix manually (overrides bypass
-  //    the per-table generator's prefixing logic in AlliancesGenerator.ts:35).
+  // Emit 2 Alliance entity rows — these populate the `alliances` table.
+  // External_ids must include externalIdPrefix manually (overrides bypass
+  // the per-table generator's prefixing logic in AlliancesGenerator.ts:35).
+  // Alliance NOMINATION rows live in `nominations-override.ts` (they go to
+  // the `nominations` table, not the `alliances` table — bulk_import routes
+  // by override key, so dual-emitting from this file mis-routes).
   for (const ent of ALLIANCE_ENTITY_ROWS) {
     rows.push({
       external_id: `${externalIdPrefix}${ent.external_id}`,
@@ -132,31 +139,10 @@ export function alliancesOverride(_fragment: unknown, ctx: Ctx): Array<Record<st
     } satisfies AllianceEntityRow as AllianceEntityRow);
   }
 
-  // 2. Emit 10 AllianceNomination rows — 2 alliances × 5 constituencies (D-02).
-  //    Each row has alliance + election + constituency polymorphic refs;
-  //    NO parent_nomination — alliance noms cannot have parents per
-  //    011-validation-functions.sql:265 ("Alliance nominations cannot have a parent").
-  //    External_id naming MUST be constituency-specific so org-noms in c_01
-  //    point at the alliance nom in c_01 (Pitfall 3 from RESEARCH).
-  const allianceKeys: ReadonlyArray<'L' | 'R'> = ['L', 'R'];
-  for (const key of allianceKeys) {
-    for (const constituency of constituencies) {
-      rows.push({
-        external_id: allianceNomExtId(key, constituency.external_id, externalIdPrefix),
-        project_id: projectId,
-        alliance: { external_id: allianceExtId(key, externalIdPrefix) },
-        election: { external_id: electionExtId },
-        constituency: { external_id: constituency.external_id },
-        election_round: 1
-      } satisfies AllianceNominationRow as AllianceNominationRow);
-    }
-  }
-
-  // Sanity-check counts. This file is the only emitter; 2 entities + (2 × C) noms.
-  const expectedRows = ALLIANCE_ENTITY_ROWS.length + allianceKeys.length * constituencies.length;
-  if (rows.length !== expectedRows) {
+  // Sanity-check count.
+  if (rows.length !== ALLIANCE_ENTITY_ROWS.length) {
     throw new Error(
-      `[dev-seed] alliancesOverride: emitted ${rows.length} rows, expected ${expectedRows} (2 entities + 2 alliances × ${constituencies.length} constituencies).`
+      `[dev-seed] alliancesOverride: emitted ${rows.length} alliance entity rows, expected ${ALLIANCE_ENTITY_ROWS.length}.`
     );
   }
 
