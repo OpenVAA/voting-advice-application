@@ -41,7 +41,7 @@ Full details: `.planning/milestones/v2.6-ROADMAP.md`
 
 - [x] **Phase 65: Svelte 5 Audit Sweeps** — Codebase-wide `bind:*` audit, `{#key}` audit, and context-destructuring reactivity rule documented and applied (completed 2026-04-29)
 - [x] **Phase 66: Adapter Type Cleanup** — Clean up the 2 `as unknown as` casts in `supabaseDataProvider.ts` (v2.6 P64 reverse-fill pass) using a real intermediate type (`InternalFlatNomination`) in a sibling `.types.ts` file (scope narrowed 2026-04-29: schema migration deferred per Phase 66 CONTEXT D-01; the `nominations` table stays as is) (completed 2026-04-29)
-- [ ] **Phase 67: Default Seed Alliances** — `~2-3` alliances grouping subsets of the default seed's 8 parties; empirically exercises the v2.6 P64 alliance branch of the adapter reverse-fill
+- [x] **Phase 67: Default Seed Alliances** — `~2-3` alliances grouping subsets of the default seed's 8 parties; empirically exercises the v2.6 P64 alliance branch of the adapter reverse-fill (completed 2026-04-30)
 - [ ] **Phase 68: Dev-Tooling Trio** — Frontend autoreload on package source / env-var changes, lint-all-imports rules + monorepo-wide cleanup, Deno tooling scoped strictly to `apps/supabase/functions/*`
 
 ## Phase Details
@@ -85,7 +85,7 @@ Full details: `.planning/milestones/v2.6-ROADMAP.md`
   4. `@openvaa/matching` and `@openvaa/filters` handle alliances correctly with the seeded data — no runtime errors, no empty match-breakdown sections caused by alliance entities the algorithms didn't anticipate.
 **Plans**: 2 plans
 - [x] 67-01-PLAN.md — Seed authoring: create alliances-override.ts (2 alliance entities + 10 alliance noms); wire parent_nomination on 30 of 40 org-noms; widen DynamicSettings.results.sections type union; extend default-template.integration.test.ts with alliance assertions
-- [ ] 67-02-PLAN.md — Validation + UI smoke: live `yarn dev:reset-with-data` + integration test; 6-step manual voter-flow smoke; v2.6 Playwright parity gate against HEAD `2c7ad2dea`; phase verification report
+- [x] 67-02-PLAN.md — Validation + UI smoke: live `yarn dev:reset-with-data` + integration test; 6-step manual voter-flow smoke; v2.6 Playwright parity gate against HEAD `2c7ad2dea`; phase verification report
 
 **UI hint**: yes
 
@@ -119,5 +119,5 @@ Run `/gsd-new-milestone` to question → research → write requirements → roa
 | 64. Voter Results Reactivity Completion | v2.6 | 4/4 | Complete | 2026-04-28 |
 | 65. Svelte 5 Audit Sweeps | v2.7 | 3/3 | Complete    | 2026-04-29 |
 | 66. Adapter Type Cleanup | v2.7 | 1/1 | Complete    | 2026-04-29 |
-| 67. Default Seed Alliances | v2.7 | 1/2 | In Progress|  |
+| 67. Default Seed Alliances | v2.7 | 2/2 | Complete   | 2026-04-30 |
 | 68. Dev-Tooling Trio | v2.7 | 0/3 | Not started | — |

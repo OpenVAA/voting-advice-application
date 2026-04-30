@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.7
 milestone_name: Svelte 5 Polish + Supabase-Adapter Loose Ends
-status: executing
-stopped_at: "Phase 67 Plan 01 complete (6 commits): 1 NEW alliances-override.ts + 5 modified files. 2 alliances + 10 alliance noms + 30/10 org-nom parent split seeded; DynamicSettings.results.sections type union widened; full monorepo build green; 484/484 dev-seed tests green (incl. integration test against live Supabase). Rule 1 deviation auto-fixed mid-execution (alliance-nom routing via override-pair pattern). Plan 67-02 next: UI smoke + parity gate."
-last_updated: "2026-04-30T06:35:09.370Z"
+status: verifying
+stopped_at: "Phase 67 Plan 02 complete (12 commits total: 6 from Plan 01 + 6 from Plan 02 incl. 4 cross-cutting fixes during UI smoke). PARITY GATE: PASS (67p/1f/34c identical to v2.6 baseline). 67-VERIFICATION.md written; SUMMARY.md written. Pending Task 5 final approval checkpoint."
+last_updated: "2026-04-30T18:46:45.219Z"
 last_activity: 2026-04-30
 progress:
   total_phases: 4
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 6
-  completed_plans: 5
-  percent: 83
+  completed_plans: 6
+  percent: 100
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-29)
 
 Phase: 67 (default-seed-alliances) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-30
 
 ## Performance Metrics
@@ -71,6 +71,7 @@ Snapshot taken at v2.6 milestone close on 2026-04-28. The four todos that v2.6 p
 | Phase 65 P02 | 25min | 3 tasks | 9 files |
 | Phase 66 P01 | 60min | 4 tasks | 4 files |
 | Phase 67 P01 | 25min | 5 tasks | 6 files |
+| Phase 67 P02 | 90min | 5 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -101,6 +102,10 @@ Key cross-milestone reference points carried forward:
 - [Phase ?]: Phase 66: Adapter retype complete — 2 'as unknown as { ... }' casts removed via InternalFlatNomination in sibling .type.ts. PARITY GATE: PASS (67p/1f/34c identical to v2.6 anchor). svelte-check baseline preserved (160 err / 12 warn). Vitest 646/646 green. Variance fallback not needed. Id imported from @openvaa/core (deviation from plan literal which said @openvaa/data).
 - [Phase ?]: Override-pair pattern: alliance entity rows in alliancesOverride (table=alliances), alliance nomination rows in nominationsOverride (table=nominations); bulk_import routes by override key
 - [Phase ?]: Type-union widening before value-literal write: widen DynamicSettings.results.sections (Candidate|Organization|Alliance) before adding 'alliance' literal in seed-layer override
+- [Phase 67]: Phase 64 attempt-4 protocol applies to v2.7+ parity gates: yarn supabase:reset (NOT yarn dev:reset-with-data) before Playwright capture. Mixed default+e2e seed produces a 20-test cascade-failure false-positive (40 voter questions). Anchored on Phase 66 66-VALIDATION.md:73-82.
+- [Phase 67]: Dual-emission constructor pattern (nested-or-ids) is mandatory for any @openvaa/data variant whose supabase adapter populates ids on the reverse-fill path. AllianceNomination missed it (fixed in 643eea880); OrganizationNomination has it. Pattern enforced going forward.
+- [Phase 67]: Full-block app_settings seed authoring: client-side mergeAppSettings is a shallow Object.assign over the persisted row vs the TS default. Partial overrides for top-level keys (e.g. results: { sections: [...] }) REPLACE the entire block. Seed must write the FULL block for any key it touches.
+- [Phase 67]: SC-3 deliberately surfaces 'previously dev-blind' bugs — Phase 67 hit 3 of them (AllianceNomination crash, partial seed wipe of cardContents, missing optional-chain on cardContents reads). All 3 fixed atomically. Treating these as the deliverable, not regressions.
 
 ### Blockers/Concerns
 
@@ -110,8 +115,8 @@ Key cross-milestone reference points carried forward:
 
 ## Session Continuity
 
-Last session: 2026-04-30T06:35:09.366Z
-Stopped at: Phase 67 Plan 01 complete (6 commits): seed authoring landed (2 alliances + 10 alliance noms + 30/10 org-nom parent split + type union widening + app_settings.results.sections override). Rule 1 deviation auto-fixed mid-execution (alliance-nom routing via override-pair pattern). Plan 67-02 next: UI smoke + adapter sanity + v2.6 parity gate.
+Last session: 2026-04-30T18:46:45.211Z
+Stopped at: Phase 67 Plan 02 complete (12 commits total: 6 from Plan 01 + 6 from Plan 02 incl. 4 cross-cutting fixes during UI smoke). PARITY GATE: PASS (67p/1f/34c identical to v2.6 baseline). 67-VERIFICATION.md written; SUMMARY.md written. Pending Task 5 final approval checkpoint.
 Resume file: None
 Next action: Execute Plan 67-02 (validation + UI smoke + adapter sanity check + v2.6 parity gate).
 
