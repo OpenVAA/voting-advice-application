@@ -33,9 +33,16 @@
  * driven by the latent-factor answer model, not by geographic wiring.
  *
  * Phase 58 UAT follow-up (2026-04-23); Phase 64 manual-smoke densification +
- * parent_nomination wiring (2026-04-28).
+ * parent_nomination wiring (2026-04-28); Phase 67 extends parent_nomination
+ * to wire org-noms whose party belongs to an alliance (per ALLIANCE_MEMBERSHIP)
+ * up to the alliance nom in the same constituency. This is what makes the v2.6
+ * P64 supabase-adapter reverse-fill of `organizationNominationIds` on Alliance
+ * parents (supabaseDataProvider.ts:391-405) populate non-empty arrays at
+ * runtime — without this wiring, the reverse-fill stays dev-blind even with
+ * alliance entities + alliance noms in the DB.
  */
 
+import { findAllianceForParty } from './alliances-override';
 import { PARTY_WEIGHTS } from './candidates-override';
 import type { TablesInsert } from '@openvaa/supabase-types';
 import type { Ctx } from '../../types';
@@ -52,7 +59,8 @@ type CandidateNominationRow = Omit<TablesInsert<'nominations'>, 'election_id' | 
   };
 
 type OrganizationNominationRow = Omit<TablesInsert<'nominations'>, 'election_id' | 'constituency_id'> &
-  OrganizationRef & {
+  OrganizationRef &
+  Partial<ParentRef> & {
     election: { external_id: string };
     constituency: { external_id: string };
   };
@@ -157,13 +165,37 @@ export function nominationsOverride(_fragment: unknown, ctx: Ctx): Array<Record<
   for (let p = 0; p < PARTY_CONSTITUENCY_MATRIX.length; p++) {
     for (let c = 0; c < PARTY_CONSTITUENCY_MATRIX[p].length; c++) {
       if (PARTY_CONSTITUENCY_MATRIX[p][c] === 0) continue;
+      // Phase 67: organizations[p].external_id is the PREFIXED id (e.g.
+      // 'seed_party_social') because the per-table generator at
+      // OrganizationsGenerator runs before this override and prefixes it.
+      // findAllianceForParty expects the UNPREFIXED form, so strip the prefix
+      // first. If the prefix isn't present, partyExtIdRaw is unchanged
+      // (defensive — should never happen in the default template).
+      const partyExtIdPrefixed = organizations[p].external_id;
+      const partyExtIdRaw = partyExtIdPrefixed.startsWith(externalIdPrefix)
+        ? partyExtIdPrefixed.slice(externalIdPrefix.length)
+        : partyExtIdPrefixed;
+      const allianceKey = findAllianceForParty(partyExtIdRaw); // 'L' | 'R' | undefined
+      const constituencyExtId = constituencies[c].external_id;
       rows.push({
         external_id: orgNomExtId(p, c),
         project_id: projectId,
-        organization: { external_id: organizations[p].external_id },
+        organization: { external_id: partyExtIdPrefixed },
         election: { external_id: electionExtId },
-        constituency: { external_id: constituencies[c].external_id },
-        election_round: 1
+        constituency: { external_id: constituencyExtId },
+        election_round: 1,
+        // Phase 67: wire alliance parent if this party belongs to an alliance.
+        // Standalone parties (party_people, party_coast) get no parent and
+        // exercise the no-alliance UI path. The alliance nom external_id format
+        // MUST be constituency-specific (Pitfall 3) — alliance nom in c_03 is
+        // the parent of org-noms in c_03, NOT alliance nom in c_01.
+        ...(allianceKey
+          ? {
+              parent_nomination: {
+                external_id: `${externalIdPrefix}nom_alliance_${allianceKey}_${constituencyExtId}`
+              }
+            }
+          : {})
       });
     }
   }
