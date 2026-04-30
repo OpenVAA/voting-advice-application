@@ -26,6 +26,7 @@
  * wired to the single election × first constituency.
  */
 
+import { alliancesOverride } from './defaults/alliances-override';
 import { candidatesOverride } from './defaults/candidates-override';
 import { nominationsOverride } from './defaults/nominations-override';
 import { questionsOverride } from './defaults/questions-override';
@@ -233,6 +234,17 @@ export const defaultTemplate: Template = {
           entities: {
             showAllNominations: true,
             hideIfMissingAnswers: { candidate: true }
+          },
+          // Phase 67: surface the Alliance entity tab in voter results. The
+          // default `dynamicSettings.results.sections` (dynamicSettings.ts:66)
+          // is `['candidate', 'organization']`; without this override the
+          // alliance tab does not render even though alliance entities + noms
+          // exist in the DB (RESEARCH Pitfall 1). The writer's merge_jsonb_column
+          // RPC deep-merges this `results` object into the bootstrap row,
+          // replacing the `sections` array (a leaf) while leaving sibling keys
+          // (cardContents, showFeedbackPopup, showSurveyPopup) intact.
+          results: {
+            sections: ['candidate', 'organization', 'alliance']
           }
         }
       }
@@ -246,6 +258,7 @@ export const defaultTemplate: Template = {
  * `defaultTemplate` in `BUILT_IN_TEMPLATES`.
  */
 export const defaultOverrides: Overrides = {
+  alliances: alliancesOverride,
   candidates: candidatesOverride,
   nominations: nominationsOverride,
   questions: questionsOverride
