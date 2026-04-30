@@ -358,7 +358,7 @@ export function initVoterContext(): VoterContext {
 
   /** Get the entityTypes whose cardContents include `submatches` */
   const calcSubmatches = $derived.by(() =>
-    Object.entries(appSettingsState.current.results.cardContents)
+    Object.entries(appSettingsState.current.results?.cardContents ?? {})
       .filter(([, value]) => value?.includes('submatches'))
       .map(([type]) => type as EntityType)
   );

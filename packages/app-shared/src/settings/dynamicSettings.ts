@@ -59,7 +59,8 @@ export const dynamicSettings: DynamicSettings = {
   results: {
     cardContents: {
       candidate: ['submatches'],
-      organization: ['candidates']
+      organization: ['candidates'],
+      alliance: []
     },
     showFeedbackPopup: 180,
     showSurveyPopup: 500,

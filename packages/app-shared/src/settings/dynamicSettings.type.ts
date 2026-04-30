@@ -215,6 +215,19 @@ export type DynamicSettings = {
          */
         | QuestionInCardContent
       >;
+      /**
+       * The additional contents of alliance cards. NB. the order of the items has currently no effect.
+       */
+      [ENTITY_TYPE.Alliance]?: Array<
+        /**
+         * Show the matching scores for each question category.
+         */
+        | 'submatches'
+        /**
+         * Show the entity's answer to a specific question. Only applies to the results list.
+         */
+        | QuestionInCardContent
+      >;
     };
     /**
      * Which entity types to show in the results view. There must be at least one.

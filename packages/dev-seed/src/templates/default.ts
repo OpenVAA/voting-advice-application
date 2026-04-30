@@ -235,15 +235,21 @@ export const defaultTemplate: Template = {
             showAllNominations: true,
             hideIfMissingAnswers: { candidate: true }
           },
-          // Phase 67: surface the Alliance entity tab in voter results. The
-          // default `dynamicSettings.results.sections` (dynamicSettings.ts:66)
-          // is `['candidate', 'organization']`; without this override the
-          // alliance tab does not render even though alliance entities + noms
-          // exist in the DB (RESEARCH Pitfall 1). The writer's merge_jsonb_column
-          // RPC deep-merges this `results` object into the bootstrap row,
-          // replacing the `sections` array (a leaf) while leaving sibling keys
-          // (cardContents, showFeedbackPopup, showSurveyPopup) intact.
+          // Phase 67: surface the Alliance entity tab in voter results.
+          // The frontend's `mergeAppSettings` (apps/frontend/src/lib/utils/settings.ts)
+          // shallow-merges by root key, so any value we write here REPLACES
+          // the whole `results` object from the TS defaults — we MUST mirror
+          // the full default shape (cardContents for every entity type listed
+          // in `sections`, the popup delays) and only diff `sections` to add
+          // 'alliance'. Mirrors `packages/app-shared/src/settings/dynamicSettings.ts:59-67`.
           results: {
+            cardContents: {
+              candidate: ['submatches'],
+              organization: ['candidates'],
+              alliance: []
+            },
+            showFeedbackPopup: 180,
+            showSurveyPopup: 500,
             sections: ['candidate', 'organization', 'alliance']
           }
         }
