@@ -1,45 +1,46 @@
 {
   "version": "1.0",
-  "timestamp": "2026-04-27T18:45:23.670Z",
-  "phase": "64",
-  "phase_name": "voter-results-reactivity-completion",
-  "phase_dir": ".planning/phases/64-voter-results-reactivity-completion",
-  "plan": 3,
-  "task": 1,
-  "total_tasks": 3,
-  "status": "blocked",
+  "timestamp": "2026-04-30T19:05:05.274Z",
+  "phase": "67",
+  "phase_name": "default-seed-alliances",
+  "phase_dir": ".planning/phases/67-default-seed-alliances",
+  "plan": "67-02",
+  "task": 5,
+  "total_tasks": 5,
+  "status": "paused_at_final_approval",
   "completed_tasks": [
-    {"id": "64-01", "name": "Reactivity bridge + fixture stabilization", "status": "done", "commit": "c5d4578e4"},
-    {"id": "64-02", "name": "Deeplink load chain (NONE outcome)", "status": "done", "commit": "731d8ff86"},
-    {"id": "64-04", "name": "Svelte 5 hygiene sweep + Path A timeout bumps", "status": "done", "commit": "e804bc41b"},
-    {"id": "64-03 Task 1 (attempt 1)", "name": "Canonical capture, pre-Plan-64-04", "status": "done", "commit": "35c84ef43", "result": "5/5 named tests fail, 21 unexpected"},
-    {"id": "64-03 Task 1 (attempt 2)", "name": "Canonical capture, post-Plan-64-04", "status": "done", "commit": "976658b0f", "result": "5/5 named tests still fail (test-budget ceiling), 22 unexpected"}
+    {"id": "67-01", "name": "Plan 67-01 Seed authoring", "status": "done", "commits": ["5db390c64", "750e7416e", "df6e17207", "b68d71021", "42786597b", "8febeafc7", "daef1c958"], "summary": ".planning/phases/67-default-seed-alliances/67-01-SUMMARY.md"},
+    {"id": "67-02-1", "name": "Plan 67-02 Task 1 Live seed + integration test", "status": "done", "artifacts": ["/tmp/67-02-seed.log", "/tmp/67-02-integration.log", "/tmp/67-02-raw-counts.log"], "result": "484/484 dev-seed tests green; raw counts verified (alliances=2, alliance_noms=10, org_noms_with_parent=30, org_noms_standalone=10, cand_noms=327)"},
+    {"id": "67-02-2", "name": "Plan 67-02 Task 2 Manual UI smoke", "status": "done_with_deferred_concern", "commits": ["643eea880", "ac46a2cbf", "586412370", "9d2e9686c"], "deferred_todo": ".planning/todos/pending/2026-04-30-alliance-tab-rendering-and-sections-config.md", "result": "User APPROVED with deferred-todo notation. Smoke surfaced 3 pre-existing latent bugs that the unseeded alliance reverse-fill never tripped — exactly what SC-3 was designed to surface. All 3 fixed atomically."},
+    {"id": "67-02-3", "name": "Plan 67-02 Task 3 v2.6 Playwright parity gate", "status": "done", "commit": "7b1656a07", "result": "PARITY GATE: PASS — Baseline 67p/1f/34c == Post 67p/1f/34c (carry-forward imgproxy CAND-03 timeout flake)", "artifacts": ["/tmp/67-02-parity-diff.log", "/tmp/67-02-playwright.json", "/tmp/67-02-dev-server.log", ".planning/phases/67-default-seed-alliances/post-fix/playwright-report.json"]},
+    {"id": "67-02-4", "name": "Plan 67-02 Task 4 Write VERIFICATION.md", "status": "done", "commit": "6191c3b99", "artifact": ".planning/phases/67-default-seed-alliances/67-VERIFICATION.md", "result": "208 lines; status: PASS-WITH-CONCERNS; SC-1/SC-3/SC-4 PASS; SC-2 PASS-WITH-CONCERNS (alliance tab render deferred)"}
   ],
   "remaining_tasks": [
-    {"id": "decision", "name": "Choose fix-path Option A (raise playwright.config.ts:51 timeout to 90000ms), B (reduce voterAnswerCount default 16→4), or C (voterContext optimization, new phase)", "status": "awaiting_user"},
-    {"id": "64-03 Task 1 (attempt 3)", "name": "Re-run canonical capture after chosen fix-path lands", "status": "blocked_on_decision"},
-    {"id": "64-03 Task 2", "name": "Parity-script constants regen (D-08)", "status": "blocked_on_capture_pass"},
-    {"id": "64-03 Task 3", "name": "9-step manual smoke checkpoint (D-10)", "status": "blocked_on_capture_pass"}
+    {"id": "67-02-5", "name": "Plan 67-02 Task 5 Final approval checkpoint", "status": "awaiting_user_signoff", "options": ["approved → close phase 67, advance STATE.md to phase 68 Dev-Tooling Trio", "revisit → executor patches and re-runs the relevant task", "concerns → close with additional follow-up todo notes"]}
   ],
   "blockers": [
-    {
-      "description": "tests/playwright.config.ts:51 caps every test at timeout: 30000ms. voter.fixture.ts internal waitForURL bumps (Plan 64-04 Task 6) cannot exceed this ceiling. Under full-suite render contention (~102 tests, dev server under HMR pressure), the answer-loop consumes most of the 30s budget; the post-loop waitForURL runs out of room.",
-      "type": "technical",
-      "workaround": "Option A: 1-line bump to 90000ms in playwright.config.ts:51 (recommended). Option B: reduce voter.fixture.ts:49 voterAnswerCount default 16→4 (changes test semantics). Option C: voterContext reactive-chain optimization (future phase scope)."
-    }
+    {"description": "Phase 67 close-out is blocked on user reading 67-VERIFICATION.md and signing off on Plan 67-02 Task 5", "type": "human_action", "workaround": "User reviews .planning/phases/67-default-seed-alliances/67-VERIFICATION.md (208 lines) and the deferred-concern todo at .planning/todos/pending/2026-04-30-alliance-tab-rendering-and-sections-config.md, then replies approved/revisit/concerns"}
   ],
   "human_actions_pending": [
-    {"action": "Choose between fix-path Options A / B / C", "context": "See 64-03-RECAPTURE-NOTES.md for full analysis. Recommended: Option A.", "blocking": true}
+    {"action": "Review 67-VERIFICATION.md and reply approved/revisit/concerns", "context": "Phase 67 outcome is PASS-WITH-CONCERNS. SC-1/SC-3/SC-4 PASS unconditionally. SC-2 has the deferred alliance-tab render concern. User needs to confirm acceptable for v2.7 close.", "blocking": true},
+    {"action": "Decide on alliance-tab rendering remediation lane (A/B/C from todo)", "context": "Lane A = build alliance card render; Lane B = drop alliance from sections (rollback); Lane C = conditional render guard. Not required for Phase 67 close — todo can be revisited later in v2.7 or v2.8.", "blocking": false},
+    {"action": "Cleanup: also captured a follow-up to remove bind: comments from Phase 65-01 after Phase 67 closes (user requested via /gsd-do mid-session, but not yet captured as a todo file because we returned to debug the phase 67 crash)", "context": "User said: 'After this phase, perform a clean-up of the bind comments created in 65-01. Now that we've checked and justified all bind call sites, we can remove all the comments detailing their rationale.' This is a separate todo; capture before resuming if not already.", "blocking": false}
   ],
   "decisions": [
-    {"decision": "@openvaa/filters source IS in scope for Phase 64, but UI-framework agnosticism is binding (no $state/$derived/svelte/* imports inside the package)", "rationale": "CONTEXT D-01; agnosticism preserved by `grep -rn \"from 'svelte\" packages/filters/src/` returning 0", "phase": "64"},
-    {"decision": "Phase 64 owns parity-script constants regeneration (folded in from Phase 63 D-13 originally allocated to /gsd-complete-milestone)", "rationale": "CONTEXT D-08; single canonical capture serves both PASS verification and constants-regen baseline (RESEARCH Pitfall 6)", "phase": "64"},
-    {"decision": "imgproxy upload + 13 cascades reclassify into DATA_RACE_TESTS in regenerated constants", "rationale": "CONTEXT D-09; semantically correct (intermittent infrastructure flake, not deterministic failure)", "phase": "64"},
-    {"decision": "Plan 64-01 e2e seed parent_nomination wiring (D-04 authorized) + Supabase adapter parentNominationType derivation", "rationale": "Without parent links, buildParentFilters returns 0 filters and the entity-list-filter button never renders on candidates tab — empirical root cause of the post-Task-2 hard-fail signal", "phase": "64"},
-    {"decision": "Plan 64-04 added as a side-plan to address pre-existing Svelte 5 hygiene warnings + Path A fixture timeout bumps", "rationale": "User direction: 'Do D first, then A. With D also fix similar errors from these warnings'. 50+ warnings cleared across 5 categories; ElectionSelector init-time if-block converted to $effect (critical case empirically linked to voter-app cascade)", "phase": "64"},
-    {"decision": "Plan 64-04 fixture-internal timeout bumps (5s/10s/10s → 10s/30s/30s) were correct but insufficient — the ceiling is at the test wrapper level (playwright.config.ts:51), not inside the fixture", "rationale": "Empirical recapture verified; 4 of 5 named tests still timeout at fixture line 85 with 'Test timeout of 30000ms exceeded while setting up answeredVoterPage'", "phase": "64"}
+    {"decision": "Make AllianceNomination constructor accept either nested organizations data OR organizationNominationIds (mirror OrganizationNomination pattern)", "rationale": "Supabase adapter reverse-fill (v2.6 P64) populates organizationNominationIds without nested data. Constructor previously crashed unconditionally on data.organizations.length. Type updated to make organizations optional; createDeterministicId.ts non-null assertion is safe (only reachable from nested-data path).", "phase": "67", "commit": "643eea880"},
+    {"decision": "Seed must write the FULL results block in app_settings (not just sections diff)", "rationale": "Client-side mergeAppSettings (apps/frontend/src/lib/utils/settings.ts) is shallow Object.assign at root keys, not deep-merge. Plan 67-01 incorrectly assumed deep-merge symmetry between server (jsonb merge_jsonb_column) and client. Partial seed → cardContents wiped → results page crash.", "phase": "67", "commit": "ac46a2cbf"},
+    {"decision": "Defensive optional-chain on appSettings.results.cardContents reads at all 3 sites (EntityCard.svelte:121,137 + entityCards.ts:25 + voterContext.svelte.ts:361)", "rationale": "Defense-in-depth — partial dynamic settings should not crash the results page regardless of merge logic.", "phase": "67", "commit": "586412370"},
+    {"decision": "Defer alliance-tab rendering to a follow-up todo with three remediation lanes documented", "rationale": "The immediate Phase 67 SCs are met (data flows, reverse-fill exercised, matching/filters clean, parity gate green). Alliance card render path is a UX design decision that requires its own scope.", "phase": "67", "todo": ".planning/todos/pending/2026-04-30-alliance-tab-rendering-and-sections-config.md"}
   ],
-  "uncommitted_files": [],
-  "next_action": "User decides Option A / B / C from 64-03-RECAPTURE-NOTES.md. Recommended: Option A — single-line bump of playwright.config.ts:51 from 30000 to 90000. Then resume Plan 64-03 Task 1 (third attempt) → Task 2 (constants regen, only if 5/5 named tests pass) → Task 3 (manual smoke checkpoint).",
-  "context_notes": "All 5 named voter-results tests pass DETERMINISTICALLY in focused-grep runs (Plans 64-01/02 evidence + post-Plan-64-04 voter-results.spec.ts focused: 13/13 pass). The cascade is structural per-test timeout under full-suite render pressure, not spec-assertion incompatibility. ElectionSelector $effect conversion (Plan 64-04 Task 4) likely closed the auto-imply-single-election short-circuit issue but cannot be verified without re-running canonical capture after Option A lands. Pre-Plan-64-04 capture preserved at post-fix/playwright-report.pre-64-04.json for audit comparison."
+  "uncommitted_files": [
+    ".planning/config.json (workflow._auto_chain_active=true — internal flag set during /gsd-plan-phase --auto chain; clean up after Phase 67 closes)",
+    ".claude/scheduled_tasks.lock (runtime-managed, ignore)"
+  ],
+  "next_action": "1. Surface 67-VERIFICATION.md to user via AskUserQuestion (approved / revisit / concerns). 2. On approved: advance STATE.md to phase 68; reset workflow._auto_chain_active to false; capture the bind-comments-cleanup todo from this session if not already; commit final close-out. 3. On revisit/concerns: hand back to executor with user's notes.",
+  "context_notes": "Phase 67 was the v2.6 P64 reverse-fill validation phase. It empirically exercised an adapter code path that had shipped but never been used with real alliance data. As designed, the smoke surfaced 3 latent bugs (AllianceNomination constructor, partial settings shallow merge, missing optional-chain on cardContents) that would have shipped to first customer with alliance authoring. All 3 fixed atomically. The phase delivered exactly what SC-3 promised: 'the previously dev-blind path is now empirically exercised.' Mid-session the user invoked /gsd-do to capture a Phase-65-01 bind-comments cleanup follow-up, but the routing to /gsd-add-todo did not complete because they immediately redirected back to fixing the runtime crash. That bind-comments cleanup todo should be captured before resuming.",
+  "anti_patterns": [
+    {"name": "Settings shallow-merge asymmetry", "description": "Server-side merge_jsonb_column deep-merges JSONB; client-side mergeAppSettings is shallow Object.assign at root keys. Plan 67-01 assumed symmetry and wrote a partial results override, which the client merge then used to REPLACE the entire results block, wiping cardContents/showFeedbackPopup/showSurveyPopup defaults.", "severity": "advisory", "prevention": "When writing dynamic settings overrides in dev-seed, mirror the FULL TS-default shape from packages/app-shared/src/settings/dynamicSettings.ts. Only diff leaf values; never write a partial sub-object."},
+    {"name": "Vite dep-optimization cache stale after package rebuild", "description": "After @openvaa/* package rebuild, Vite's node_modules/.vite/ cache holds the OLD bundled dist. Restarting yarn dev does NOT invalidate this cache. Symptom: identical crash persists despite the fix being in dist/index.js.", "severity": "advisory", "prevention": "After rebuilding any @openvaa/* package consumed by apps/frontend, run `rm -rf apps/frontend/node_modules/.vite` before restarting yarn dev. Worth documenting in CLAUDE.md if not already."},
+    {"name": "Playwright parity-gate setup contamination", "description": "Running `yarn dev:reset-with-data` (default template) before Playwright contaminates the DB because tests/tests/setup/data.setup.ts only clears test- prefix rows, not seed-. Both datasets coexist → 40 questions instead of 20 → 20 voter-app tests timeout at q18/40 → false-positive parity FAIL of 30p/21f/51c.", "severity": "advisory", "prevention": "Phase 66 66-VALIDATION.md:73-82 protocol: `yarn supabase:reset` (clean DB) before Playwright. Now also documented in 67-VERIFICATION.md. Consider promoting to CLAUDE.md or adding a guard in the parity-gate script."}
+  ]
 }
