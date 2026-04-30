@@ -84,7 +84,7 @@ Full details: `.planning/milestones/v2.6-ROADMAP.md`
   3. The supabase adapter's reverse-fill of `organizationNominationIds` on `Alliance` parents (the v2.6 P64 Plan 01 path) returns non-empty arrays when queried; this path is no longer dev-blind.
   4. `@openvaa/matching` and `@openvaa/filters` handle alliances correctly with the seeded data — no runtime errors, no empty match-breakdown sections caused by alliance entities the algorithms didn't anticipate.
 **Plans**: 2 plans
-- [ ] 67-01-PLAN.md — Seed authoring: create alliances-override.ts (2 alliance entities + 10 alliance noms); wire parent_nomination on 30 of 40 org-noms; widen DynamicSettings.results.sections type union; extend default-template.integration.test.ts with alliance assertions
+- [x] 67-01-PLAN.md — Seed authoring: create alliances-override.ts (2 alliance entities + 10 alliance noms); wire parent_nomination on 30 of 40 org-noms; widen DynamicSettings.results.sections type union; extend default-template.integration.test.ts with alliance assertions
 - [ ] 67-02-PLAN.md — Validation + UI smoke: live `yarn dev:reset-with-data` + integration test; 6-step manual voter-flow smoke; v2.6 Playwright parity gate against HEAD `2c7ad2dea`; phase verification report
 
 **UI hint**: yes
@@ -119,5 +119,5 @@ Run `/gsd-new-milestone` to question → research → write requirements → roa
 | 64. Voter Results Reactivity Completion | v2.6 | 4/4 | Complete | 2026-04-28 |
 | 65. Svelte 5 Audit Sweeps | v2.7 | 3/3 | Complete    | 2026-04-29 |
 | 66. Adapter Type Cleanup | v2.7 | 1/1 | Complete    | 2026-04-29 |
-| 67. Default Seed Alliances | v2.7 | 0/2 | Not started | — |
+| 67. Default Seed Alliances | v2.7 | 1/2 | In Progress|  |
 | 68. Dev-Tooling Trio | v2.7 | 0/3 | Not started | — |

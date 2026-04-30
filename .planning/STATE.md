@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.7
 milestone_name: Svelte 5 Polish + Supabase-Adapter Loose Ends
-status: ready_to_execute
-stopped_at: "Phase 67 (Default Seed Alliances) planned: 2 plans in 2 waves. Plan 67-01 = seed authoring (alliance entities + 10 alliance_nominations + parent_nomination wiring on 30 of 40 org-noms + sections type widening). Plan 67-02 = validation + UI smoke + v2.6 parity gate. Sequential per CONTEXT D-05."
-last_updated: "2026-04-30T07:00:00.000Z"
-last_activity: 2026-04-30 -- Phase 67 planning complete
+status: executing
+stopped_at: "Phase 67 Plan 01 complete (6 commits): 1 NEW alliances-override.ts + 5 modified files. 2 alliances + 10 alliance noms + 30/10 org-nom parent split seeded; DynamicSettings.results.sections type union widened; full monorepo build green; 484/484 dev-seed tests green (incl. integration test against live Supabase). Rule 1 deviation auto-fixed mid-execution (alliance-nom routing via override-pair pattern). Plan 67-02 next: UI smoke + parity gate."
+last_updated: "2026-04-30T06:35:09.370Z"
+last_activity: 2026-04-30
 progress:
   total_phases: 4
-  completed_phases: 3
-  total_plans: 11
-  completed_plans: 4
-  percent: 75
+  completed_phases: 2
+  total_plans: 6
+  completed_plans: 5
+  percent: 83
 ---
 
 # Project State
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-04-29)
 
 ## Current Position
 
-Phase: 67
-Plan: Not started
+Phase: 67 (default-seed-alliances) — EXECUTING
+Plan: 2 of 2
 Status: Ready to execute
-Last activity: 2026-04-30 -- Phase 67 planning complete
+Last activity: 2026-04-30
 
 ## Performance Metrics
 
@@ -70,6 +70,7 @@ Snapshot taken at v2.6 milestone close on 2026-04-28. The four todos that v2.6 p
 | Phase 65-svelte-5-audit-sweeps P01 | 90min | 3 tasks | 45 files |
 | Phase 65 P02 | 25min | 3 tasks | 9 files |
 | Phase 66 P01 | 60min | 4 tasks | 4 files |
+| Phase 67 P01 | 25min | 5 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -98,6 +99,8 @@ Key cross-milestone reference points carried forward:
 - [Phase ?]: Phase 65 Plan 01: 92 bind:* directives annotated in apps/frontend/src/lib; Pattern 1 fix on Input.svelte mainInputs (mirrors Phase 64 QuestionChoices fix); zero Pattern 2 violations or deep-chain bindings found.
 - [Phase ?]: Phase 65 Plan 02: 2 {#key} annotations + 1 Pattern B keyed each + 6 reactive-accessor destructure rewrites + CLAUDE.md Context Destructuring Rule subsection (catalog includes 22 reactive-accessor names; RESEARCH draft was 18, audit added isAuthenticated, isPreregistered, preregistrationElections, preregistrationNominations).
 - [Phase ?]: Phase 66: Adapter retype complete — 2 'as unknown as { ... }' casts removed via InternalFlatNomination in sibling .type.ts. PARITY GATE: PASS (67p/1f/34c identical to v2.6 anchor). svelte-check baseline preserved (160 err / 12 warn). Vitest 646/646 green. Variance fallback not needed. Id imported from @openvaa/core (deviation from plan literal which said @openvaa/data).
+- [Phase ?]: Override-pair pattern: alliance entity rows in alliancesOverride (table=alliances), alliance nomination rows in nominationsOverride (table=nominations); bulk_import routes by override key
+- [Phase ?]: Type-union widening before value-literal write: widen DynamicSettings.results.sections (Candidate|Organization|Alliance) before adding 'alliance' literal in seed-layer override
 
 ### Blockers/Concerns
 
@@ -107,10 +110,10 @@ Key cross-milestone reference points carried forward:
 
 ## Session Continuity
 
-Last session: 2026-04-29T20:00:39.097Z
-Stopped at: v2.7 CONTEXT captured for all 4 phases (65-68) via `/gsd-discuss-phase 65 66 67 68 --chain`. Phase 66 scope narrowed (DB-01 → deferred). Total plans: 9 (revised from 11). 8 of 9 requirements mapped to a phase (DB-01 deferred). Files written: 4 × CONTEXT.md, 4 × DISCUSSION-LOG.md, ROADMAP.md, REQUIREMENTS.md, STATE.md updates.
+Last session: 2026-04-30T06:35:09.366Z
+Stopped at: Phase 67 Plan 01 complete (6 commits): seed authoring landed (2 alliances + 10 alliance noms + 30/10 org-nom parent split + type union widening + app_settings.results.sections override). Rule 1 deviation auto-fixed mid-execution (alliance-nom routing via override-pair pattern). Plan 67-02 next: UI smoke + adapter sanity + v2.6 parity gate.
 Resume file: None
-Next action: `/gsd-plan-phase 65 --auto` (auto-advance per --chain) to decompose Phase 65 (Svelte 5 Audit Sweeps) into executable plans.
+Next action: Execute Plan 67-02 (validation + UI smoke + adapter sanity check + v2.6 parity gate).
 
 ### Next milestone seed (selected 2026-04-29)
 

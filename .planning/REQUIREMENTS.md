@@ -30,7 +30,7 @@
 
 ### SEED — Default seed completion
 
-- [ ] **SEED-01**: Alliances are present in the default seed. After `yarn dev:reset-with-data`, the default voter flow shows a populated alliances surface (entity tab on the results page, or wherever the alliances UI lives). The default template emits ~2-3 alliances grouping subsets of the existing 8 parties into named coalitions, and `alliance_nominations` link the contributing party nominations. The supabase adapter reverse-fill of `organizationNominationIds` on alliance parents (the v2.6 Phase 64 Plan 01 path that was previously dev-blind) is empirically exercised. `@openvaa/matching` and `@openvaa/filters` handle alliances correctly with seeded data.
+- [x] **SEED-01**: Alliances are present in the default seed. After `yarn dev:reset-with-data`, the default voter flow shows a populated alliances surface (entity tab on the results page, or wherever the alliances UI lives). The default template emits ~2-3 alliances grouping subsets of the existing 8 parties into named coalitions, and `alliance_nominations` link the contributing party nominations. The supabase adapter reverse-fill of `organizationNominationIds` on alliance parents (the v2.6 Phase 64 Plan 01 path that was previously dev-blind) is empirically exercised. `@openvaa/matching` and `@openvaa/filters` handle alliances correctly with seeded data.
 
 ### DEVTOOLS — Dev tooling cleanup trio
 
