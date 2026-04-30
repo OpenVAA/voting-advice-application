@@ -151,8 +151,10 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
       expect(rows.candidates.length).toBe(327);
       expect(rows.questions.length).toBe(24);
       expect(rows.question_categories.length).toBe(4);
-      // 327 candidate noms + 8 × 5 = 40 organization noms (matrix is dense)
-      expect(rows.nominations.length).toBe(327 + 40);
+      // Phase 67: alliances + alliance noms
+      expect(rows.alliances.length).toBe(2);
+      // 327 candidate noms + 40 org noms + 10 alliance noms (2 alliances × 5 constituencies)
+      expect(rows.nominations.length).toBe(327 + 40 + 10);
 
       // -----------------------------------------------------------------------
       // 3. Portraits uploaded — 327 candidates, one portrait each
@@ -169,7 +171,9 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
       expect(await countByPrefix(readClient, 'candidates', prefix)).toBe(327);
       expect(await countByPrefix(readClient, 'questions', prefix)).toBe(24);
       expect(await countByPrefix(readClient, 'question_categories', prefix)).toBe(4);
-      expect(await countByPrefix(readClient, 'nominations', prefix)).toBe(327 + 40);
+      // Phase 67: 2 alliance entities + 327 cand noms + 40 org noms + 10 alliance noms
+      expect(await countByPrefix(readClient, 'alliances', prefix)).toBe(2);
+      expect(await countByPrefix(readClient, 'nominations', prefix)).toBe(327 + 40 + 10);
 
       // -----------------------------------------------------------------------
       // 5. Candidates have organization_id + non-NULL image.path (Pitfall #2 —
@@ -191,30 +195,72 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
       // -----------------------------------------------------------------------
       // 6. Nominations have FK refs resolved per type:
       //    - Candidate-type: candidate_id non-null, parent_nomination_id non-null
-      //    - Organization-type: organization_id non-null, parent_nomination_id null
-      //    - Both types: election_id + constituency_id non-null
+      //    - Organization-type:
+      //        * 30 of 40 (parties belonging to an alliance) have
+      //          parent_nomination_id non-null pointing at an alliance nom
+      //          in the SAME constituency (Phase 67)
+      //        * 10 of 40 (party_people, party_coast — 2 standalone × 5 const)
+      //          have parent_nomination_id null (Phase 67 no-alliance path)
+      //    - Alliance-type: alliance_id non-null, parent_nomination_id null
+      //      (alliances cannot have parents per validate_nomination trigger)
+      //    - All types: election_id + constituency_id non-null
       // -----------------------------------------------------------------------
       const { data: nominations, error: nomErr } = await readClient
         .from('nominations')
-        .select('id, external_id, candidate_id, organization_id, election_id, constituency_id, parent_nomination_id')
+        .select(
+          'id, external_id, candidate_id, organization_id, alliance_id, election_id, constituency_id, parent_nomination_id'
+        )
         .eq('project_id', TEST_PROJECT_ID)
         .like('external_id', `${prefix}%`);
       expect(nomErr).toBeNull();
-      // 327 candidate noms + 40 org noms = 367 total
-      expect(nominations?.length).toBe(327 + 40);
+      // Phase 67: 327 + 40 + 10 = 377 total
+      expect(nominations?.length).toBe(327 + 40 + 10);
       const candNoms = (nominations ?? []).filter((n) => n.candidate_id != null);
-      const orgNoms = (nominations ?? []).filter((n) => n.candidate_id == null && n.organization_id != null);
+      const orgNoms = (nominations ?? []).filter((n) => n.organization_id != null);
+      const allianceNoms = (nominations ?? []).filter((n) => n.alliance_id != null);
       expect(candNoms.length).toBe(327);
       expect(orgNoms.length).toBe(40);
+      expect(allianceNoms.length).toBe(10);
+
       for (const nom of candNoms) {
         expect(nom.election_id).not.toBeNull();
         expect(nom.constituency_id).not.toBeNull();
         expect(nom.parent_nomination_id).not.toBeNull();
       }
+
+      // Phase 67: split org-noms by parent presence.
+      const orgNomsWithParent = orgNoms.filter((n) => n.parent_nomination_id != null);
+      const orgNomsStandalone = orgNoms.filter((n) => n.parent_nomination_id == null);
+      // 6 of 8 parties × 5 constituencies = 30 with-parent (alliance members)
+      expect(orgNomsWithParent.length).toBe(30);
+      // 2 of 8 parties × 5 constituencies = 10 standalone (party_people, party_coast)
+      expect(orgNomsStandalone.length).toBe(10);
       for (const nom of orgNoms) {
         expect(nom.election_id).not.toBeNull();
         expect(nom.constituency_id).not.toBeNull();
+      }
+
+      // Phase 67: alliance noms have NO parent (validate_nomination trigger).
+      const allianceNomIds = new Set(allianceNoms.map((n) => n.id));
+      for (const nom of allianceNoms) {
+        expect(nom.election_id).not.toBeNull();
+        expect(nom.constituency_id).not.toBeNull();
         expect(nom.parent_nomination_id).toBeNull();
+      }
+
+      // Phase 67: every parent_nomination_id on an org-nom resolves to an
+      // alliance-nom in the same constituency (the wiring that powers the
+      // v2.6 P64 supabase-adapter reverse-fill of organizationNominationIds).
+      const allianceNomById = new Map(allianceNoms.map((n) => [n.id, n]));
+      for (const orgNom of orgNomsWithParent) {
+        expect(allianceNomIds.has(orgNom.parent_nomination_id)).toBe(true);
+        const parent = allianceNomById.get(orgNom.parent_nomination_id);
+        // Constituency identity invariant (validate_nomination trigger:
+        // 011-validation-functions.sql:264-272). Belt + suspenders — the
+        // trigger would have raised on INSERT, but we also assert here so a
+        // future schema-bypass regression surfaces in this test.
+        expect(parent?.constituency_id).toBe(orgNom.constituency_id);
+        expect(parent?.election_id).toBe(orgNom.election_id);
       }
 
       // -----------------------------------------------------------------------
