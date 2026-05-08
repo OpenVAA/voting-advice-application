@@ -99,6 +99,9 @@ Full details: `.planning/milestones/v2.6-ROADMAP.md`
   3. Top-level `deno.json` / `deno.jsonc` / `deno.lock` files (if any exist outside `apps/supabase/functions/`) are removed or scoped; VSCode `deno.enable` / `deno.enablePaths` config matches; no `deno lint` or `deno check` runs against non-edge-function code in CI.
   4. The v2.6 parity gate at HEAD `2c7ad2dea` continues to pass after the dev-tooling changes — `yarn build`, `yarn test:unit`, and `yarn lint:check` all green.
 **Plans**: 3 plans
+- [ ] 68-01-PLAN.md — Frontend autoreload (vite-plugin-restart for .env + concurrently-composed dev script + apps/frontend/README.md Dev workflow doc)
+- [ ] 68-02-PLAN.md — ESLint cleanup (eslint-plugin-unused-imports + $lib-preference no-restricted-imports + paraglide ignore + lint:fix sweep + cross-cutting phase verification incl. v2.6 parity gate)
+- [ ] 68-03-PLAN.md — Deno scope inversion (.vscode/settings.json deno.enablePaths corrected to apps/supabase/supabase/functions; phantom _deno_shims removed)
 
 ### 🆕 Next milestone — Not yet planned
 
