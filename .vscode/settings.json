@@ -1,0 +1,8 @@
+{
+  "workbench.colorCustomizations": {
+    "titleBar.activeBackground": "#2546a8",
+    "titleBar.activeForeground": "#ffffff"
+  },
+  "workbench.colorTheme": "Dark Modern",
+  "deno.enablePaths": ["apps/supabase/supabase/functions"]
+}

@@ -33,7 +33,8 @@ Thumbs.db
 *.swp
 *.swo
 *~
-.vscode/
+.vscode/*
+!.vscode/settings.json
 *.code-workspace
 .env.*
 node_modules/
