@@ -42,7 +42,7 @@ Full details: `.planning/milestones/v2.6-ROADMAP.md`
 - [x] **Phase 65: Svelte 5 Audit Sweeps** — Codebase-wide `bind:*` audit, `{#key}` audit, and context-destructuring reactivity rule documented and applied (completed 2026-04-29)
 - [x] **Phase 66: Adapter Type Cleanup** — Clean up the 2 `as unknown as` casts in `supabaseDataProvider.ts` (v2.6 P64 reverse-fill pass) using a real intermediate type (`InternalFlatNomination`) in a sibling `.types.ts` file (scope narrowed 2026-04-29: schema migration deferred per Phase 66 CONTEXT D-01; the `nominations` table stays as is) (completed 2026-04-29)
 - [x] **Phase 67: Default Seed Alliances** — `~2-3` alliances grouping subsets of the default seed's 8 parties; empirically exercises the v2.6 P64 alliance branch of the adapter reverse-fill (completed 2026-04-30)
-- [ ] **Phase 68: Dev-Tooling Trio** — Frontend autoreload on package source / env-var changes, lint-all-imports rules + monorepo-wide cleanup, Deno tooling scoped strictly to `apps/supabase/functions/*`
+- [x] **Phase 68: Dev-Tooling Trio** — Frontend autoreload on package source / env-var changes, lint-all-imports rules + monorepo-wide cleanup, Deno tooling scoped strictly to `apps/supabase/supabase/functions/*` (completed 2026-05-08; 95 pre-existing frontend lint errors deferred per Option C)
 
 ## Phase Details
 
@@ -123,4 +123,4 @@ Run `/gsd-new-milestone` to question → research → write requirements → roa
 | 65. Svelte 5 Audit Sweeps | v2.7 | 3/3 | Complete    | 2026-04-29 |
 | 66. Adapter Type Cleanup | v2.7 | 1/1 | Complete    | 2026-04-29 |
 | 67. Default Seed Alliances | v2.7 | 2/2 | Complete    | 2026-05-08 |
-| 68. Dev-Tooling Trio | v2.7 | 0/3 | Not started | — |
+| 68. Dev-Tooling Trio | v2.7 | 3/3 | Complete    | 2026-05-08 |
