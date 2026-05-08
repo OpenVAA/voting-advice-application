@@ -3,6 +3,7 @@ phase: 68
 plan: 02
 subsystem: dev-tooling
 tags: [eslint, unused-imports, lib-preference, paraglide-ignore, lint-fix-sweep, deferred-tech-debt, option-c]
+requirements_completed: [DEVTOOLS-02]
 requires:
   - DEVTOOLS-01-autoreload-stack  # Plan 68-01 (sequential default)
 provides:

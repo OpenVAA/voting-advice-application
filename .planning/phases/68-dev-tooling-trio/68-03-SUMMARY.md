@@ -3,6 +3,7 @@ phase: 68
 plan: 03
 subsystem: dev-tooling
 tags: [deno, vscode-settings, ide-scope, edge-functions, gitignore-carveout, path-correction]
+requirements_completed: [DEVTOOLS-03]
 requires:
   - DEVTOOLS-01-autoreload-stack  # Plan 68-01 (sequential default)
   - DEVTOOLS-02-eslint-rules-registered  # Plan 68-02

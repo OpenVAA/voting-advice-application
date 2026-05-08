@@ -34,9 +34,9 @@
 
 ### DEVTOOLS — Dev tooling cleanup trio
 
-- [ ] **DEVTOOLS-01**: Frontend autoreloads on `@openvaa/*` package source changes and on root `.env` edits without manual `yarn dev:reset` or restart. Whichever mechanism is chosen — Vite HMR watching `packages/*/dist/`, `vite-plugin-restart`, Turborepo `--watch` composed with Vite HMR, or another option — is documented in the relevant README.
-- [ ] **DEVTOOLS-02**: ESLint catches cross-cutting import inconsistencies. Rules covering `@typescript-eslint/consistent-type-imports`, `import/order`, `import/newline-after-import`, `import/no-duplicates`, unused imports, and a project-specific preference for `$lib/...` over deep relative imports are configured and tuned. Fixes applied across the monorepo so `yarn lint:check` is green at HEAD.
-- [ ] **DEVTOOLS-03**: Deno tooling is scoped strictly to `apps/supabase/functions/*`. Top-level `deno.json` / `deno.jsonc` / `deno.lock` (if any exist outside `apps/supabase/functions/`) are removed or scoped. VSCode `deno.enable` / `deno.enablePaths` config matches. No `deno lint` or `deno check` runs against non-edge code in CI.
+- [x] **DEVTOOLS-01**: Frontend autoreloads on `@openvaa/*` package source changes and on root `.env` edits without manual `yarn dev:reset` or restart. Whichever mechanism is chosen — Vite HMR watching `packages/*/dist/`, `vite-plugin-restart`, Turborepo `--watch` composed with Vite HMR, or another option — is documented in the relevant README.
+- [x] **DEVTOOLS-02**: ESLint catches cross-cutting import inconsistencies. Rules covering `@typescript-eslint/consistent-type-imports`, `import/order`, `import/newline-after-import`, `import/no-duplicates`, unused imports, and a project-specific preference for `$lib/...` over deep relative imports are configured and tuned. Fixes applied across the monorepo so `yarn lint:check` is green at HEAD. _(95 pre-existing apps/frontend errors deferred per user-approved Option C — see `phases/68-dev-tooling-trio/68-02-DEFERRED.md`.)_
+- [x] **DEVTOOLS-03**: Deno tooling is scoped strictly to `apps/supabase/functions/*`. Top-level `deno.json` / `deno.jsonc` / `deno.lock` (if any exist outside `apps/supabase/functions/`) are removed or scoped. VSCode `deno.enable` / `deno.enablePaths` config matches. No `deno lint` or `deno check` runs against non-edge code in CI.
 
 ---
 
