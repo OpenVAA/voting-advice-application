@@ -1,8 +1,8 @@
 ---
 phase: 65
 slug: svelte-5-audit-sweeps
-status: draft
-nyquist_compliant: false
+status: approved
+nyquist_compliant: true
 wave_0_complete: true
 created: 2026-04-29
 revised: 2026-04-29
