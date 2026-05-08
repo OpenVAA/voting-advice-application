@@ -491,6 +491,60 @@
 
 ---
 
+## Milestone: v2.7 — Svelte 5 Polish + Supabase-Adapter Loose Ends
+
+**Shipped:** 2026-05-08
+**Phases:** 4 (65-68) | **Plans:** 9 | **Tasks:** 28
+
+### What Was Built
+- **Phase 65 (SVELTE5-01/02/03):** 92 `bind:*` directives audited and justified; 2 `{#key}` annotations + 1 Pattern B keyed each; 6 reactive-accessor destructure rewrites; CLAUDE.md "Context Destructuring Rule (Svelte 5)" subsection codifies the v2.6 P61-03 hazard with a 22-name reactive-accessor catalog.
+- **Phase 66 (ADAPTER-01):** Zero `as unknown as` casts in `supabaseDataProvider.ts` over the v2.6 P64 reverse-fill pass; `InternalFlatNomination` defined once in sibling `.types.ts`. svelte-check baseline preserved (160 err / 12 warn); v2.6 parity gate `67p/1f/34c` identical to anchor.
+- **Phase 67 (SEED-01):** Default seed ships 2 alliances + 10 alliance-noms + 30/10 org-nom parent split; v2.6 P64 alliance reverse-fill empirically exercised; 3 cross-cutting bugs surfaced + fixed during smoke. PASS-WITH-CONCERNS — alliance card render path deferred (3 lanes captured).
+- **Phase 68 (DEVTOOLS-01/02/03):** Frontend autoreload via Turborepo `--watch` + Vite HMR + `vite-plugin-restart` for `.env`; root `yarn dev` composed via `concurrently`. ESLint gains `eslint-plugin-unused-imports` + `no-restricted-imports` `$lib`-preference + paraglide `ignores` (new rules: 0 violations). Deno IDE scope corrected to `apps/supabase/supabase/functions` (doubled `supabase/`; CONTEXT.md D-03 path was wrong); `.gitignore` carve-out for team-durable fix.
+
+### What Worked
+- **Discuss-phase batching across 4 phases (`/gsd-discuss-phase 65 66 67 68 --chain`):** all CONTEXT.md captured in one autonomous session 2026-04-29; Phase 66 scope narrowed mid-discussion (DB-01 deferred) without restarting the chain. The user-stated preference to "always discuss multiple independent phases together" paid off.
+- **Cross-phase coherence by design:** SVELTE5 (65) → ADAPTER-01 (66) → SEED-01 (67) clustered intentionally so the cluster's integration test cycle ran once. Phase 67 SEED-01 validated Phase 66's `InternalFlatNomination` reverse-fill empirically — exactly the design intent.
+- **Plan-checker first-iteration pass on Phase 68:** zero BLOCKERs, 4 non-blocking warnings. Tight `<read_first>` + `<acceptance_criteria>` + concrete `<action>` blocks paid off; the executor produced complete work without rework.
+- **Critical correction surfaced in research, propagated through patterns + plans:** Phase 68 RESEARCH caught the `apps/supabase/functions` → `apps/supabase/supabase/functions` path bug in CONTEXT.md D-03 before the planner wrote tasks. Documented in commit body of `36ed3f459` for PR-review traceability.
+- **Option C / Option B checkpoint pattern:** when Plan 68-02 (95 pre-existing lint errors) and Plan 68-03 (`.gitignore` carve-out) hit Rule 4 architectural decisions, the executor checkpointed cleanly with 4 numbered options each. User decision in seconds; no rework.
+- **Hygiene-fix-before-close pattern:** the audit surfaced 4 hygiene gaps (SUMMARY frontmatter, REQUIREMENTS.md checkboxes, nyquist_compliant flags, manual smoke). Cleaned inline (~2 commits) before milestone close → archives are bookkeeping-consistent.
+
+### What Was Inefficient
+- **Phase 67 PASS-WITH-CONCERNS deferral:** alliance card render path discovered late (after Plan 67-01 + 67-02 executed). Three remediation lanes captured in pending todo — but earlier discovery during discuss-phase would have either folded a lane into Phase 67 or split the UI work into a separate phase. The `cardContents.alliance: []` seed empty-array choice + EntityCard render path's missing alliance branch is exactly the kind of "frontend wiring contract" that the cross-cutting Phase 67 fix burst should have caught one round earlier.
+- **Phase 68 SUMMARY frontmatter `requirements_completed` empty across all 3 plans:** the executor populated tags + provides + affects + tech_stack but missed `requirements_completed`. Hygiene fix at close was easy, but auto-population from frontmatter `requirements:` would prevent the gap entirely.
+- **Husky pre-commit hook bypass burden:** every commit (~25 across the milestone) required `git -c core.hooksPath=/dev/null` per the project memory workaround. The underlying global config issue should be fixed; the per-commit ceremony is friction.
+- **VALIDATION.md `nyquist_compliant: false` left as draft** in 3/4 phases despite all 4 phases passing verification. The flag is a planner-stage marker that should auto-flip on verification PASS. Manual retroflip at audit time is not the right loop.
+
+### Patterns Established
+- **Adapter dataflow + seed empirical-exercise contract:** any `@openvaa/data` variant whose supabase adapter populates ids on the reverse-fill path MUST have a dual-emission constructor (`organizationNominationIds: ids[]` accepted alongside nested data). `OrganizationNomination` had this; `AllianceNomination` missed it (Phase 67 fix `643eea880` retrofitted). Pattern enforced going forward.
+- **Full-block app_settings seed authoring:** client-side `mergeAppSettings` is a shallow `Object.assign` — partial overrides for top-level keys (e.g., `results: { sections: [...] }`) REPLACE the entire block. Seed authors must write the FULL block for any key they touch (Phase 67 cross-cutting fix `586412370`).
+- **Override-pair pattern for entity types:** `alliances` table override + `nominations` table override emit separately; bulk_import routes by override key. Used for alliances; transfers to any future entity-with-nomination type.
+- **Phase 64 attempt-4 protocol applies to all v2.7+ parity gates:** `yarn supabase:reset` (NOT `yarn dev:reset-with-data`) before Playwright capture — mixed default+e2e seed produces a 20-test cascade-failure false-positive (40 voter questions). Anchored in Phase 67 SUMMARY.
+- **Path-correction-via-research pattern:** when CONTEXT.md contains a path/identifier the discuss-phase author couldn't verify, the phase-researcher MUST verify on disk (Phase 68's `apps/supabase/functions` → doubled-supabase correction). The PATTERNS map then carries the correction with a CRITICAL callout.
+- **Single-source-of-truth ESLint preserved:** rule additions go in `packages/shared-config/eslint.config.mjs` only. Workspace-level overrides forbidden — root `eslint.config.mjs` re-exports the shared one in 1 line. Pattern from prior milestones; reaffirmed by Phase 68.
+- **`.gitignore` carve-out (`!path`) is the canonical form** for tracking a single file inside a directory-ignored tree (must use `dir/*` then `!dir/single-file`, NOT `dir/` directly). Phase 68 Plan 68-03's discovery; documented in commit body of `36ed3f459`.
+- **`requirements_completed` SUMMARY frontmatter is mandatory** — the milestone audit's 3-source cross-reference requires it. Hygiene gap discovered at v2.7 close; will enforce at execute-phase time going forward.
+
+### Key Lessons
+- **The cluster-coherence claim must hold under deferral pressure.** Phase 66 scope narrow mid-discuss-phase (DB-01 deferred) cut 2 plans. The cluster (SVELTE5 → ADAPTER-01 → SEED-01) still held because the *adapter typing* + *seeded alliance exercise* axes were the load-bearing pair, not the schema migration. Lesson: the cohesion invariant is the integration test cycle (cluster touches one set of files), not the requirement count.
+- **Pre-existing tech debt surfaces at the gate, not before.** DEVTOOLS-02's `yarn lint:check` gate revealed 95 pre-existing apps/frontend errors that the v2.6 parity gate (E2E + visual) didn't catch. The pattern: when a milestone adds a NEW gate, accept that the gate will surface accumulated debt — pre-write the deferral plan rather than treating as a blocker.
+- **User-approved checkpoints with numbered options are dramatically faster than open-ended escalation.** Both Plan 68-02 (Option C) and Plan 68-03 (Option B) checkpointed with 4 concrete tradeoff-tabulated options. User decision in seconds; total checkpoint round-trip ~2 minutes each. The alternative (executor narrative + user free-form decision) burns 10x the time.
+- **Audit-as-gate works retroactively.** v2.7's milestone audit (`tech_debt` verdict) surfaced 4 hygiene gaps that the per-phase verifications had missed. The audit is a 3rd-line check, not redundant with phase verifications — it catches drift between SUMMARY/REQUIREMENTS/VERIFICATION cross-references.
+- **Critical path corrections from RESEARCH outweigh CONTEXT.md authority.** Phase 68's `apps/supabase/functions` → doubled-supabase fix is the second time research has caught a CONTEXT.md path/identifier bug (first time: v2.6 Phase 62 had a similar route-naming correction). Lesson: discuss-phase captures intent; research-phase verifies on disk. The two stages are non-redundant by design.
+
+### Cost Observations
+- Model mix: ~70% opus (planner, researcher, executor), ~25% sonnet (plan-checker, integration-checker, verifier), ~5% haiku.
+- Total commits across v2.7: 30 (per `git log` v2.6-tag → HEAD).
+- Phase 65 timing: 90min P01 + 25min P02 (3 tasks each).
+- Phase 66 timing: 60min single plan (4 tasks).
+- Phase 67 timing: 25min P01 + 90min P02 (Plan P02 included 4 cross-cutting fix commits during manual smoke).
+- Phase 68 timing: 137s P01 + ~21min P02 (with checkpoint) + ~3min P03 (with checkpoint).
+- Notable efficiency: the autonomous chain (`/gsd-plan-phase 68 --chain`) ran research → plan → check → execute → verify in a single session (~25min total) once the user's two checkpoint decisions landed.
+- Notable inefficiency: husky bypass `git -c core.hooksPath=/dev/null` ceremony on every commit — adds ~5s per commit × ~30 commits = ~2.5min of friction.
+
+---
+
 ## Cross-Milestone Trends
 
 *Note: Parallel branch milestones (sb-v2.0, sb-v3.0) are documented above but not included in cumulative quality metrics — those milestones will be re-executed on this branch during v2.0 integration.*
@@ -507,6 +561,7 @@
 | v2.2      | 20      | 1/3    | 2     | ~19min   | First paused milestone — feasibility spike with rollback |
 | v2.5      | 28      | 4      | 34    | ~3min    | Toolkit milestone — generators + parity-gate baseline-as-contract |
 | v2.6      | 137     | 5      | 18    | ~32min   | Largest plan size to date — reactivity cascades + manual-smoke fix-as-you-go cadence |
+| v2.7      | 30      | 4      | 9     | ~25min   | Cluster-coherence milestone — SVELTE5 → ADAPTER → SEED clustered for one integration cycle; first audit-as-gate close (`tech_debt`) |
 
 ### Cumulative Quality
 
@@ -520,6 +575,7 @@
 | v2.2      | 8/14        | 57%      | 2     | 6 (EVAL/RPT — milestone paused) |
 | v2.5      | 16/16       | 100%     | 34    | 18 (carry-forward backlog at close) |
 | v2.6      | 12/12       | 100%     | 18    | 18 (carry-forward + 3 new audit todos surfaced during smoke) |
+| v2.7      | 8/8         | 100%     | 9     | 3 (alliance card render UI; 95 pre-existing frontend lint errors per Option C; @openvaa/supabase lint-script bug) |
 
 ### Top Lessons (Verified Across Milestones)
 
@@ -538,3 +594,7 @@
 13. Hard-assertion E2E surfaces latent defects that silent skips mask (v2.6) — replace `test.skip(true)` with `expect.poll(...).toBeGreaterThan(0)` to force the upstream to fix or fail visibly
 14. Phase 62-bis pattern: when a milestone-anchor parity gate FAILs but regressions are orthogonal, scope a sibling phase (v2.6) — preserves verification ledger continuity, avoids retroactive expansion or rollback
 15. Manual smoke catches what E2E doesn't (v2.6) — UX-class bugs (scroll preservation, badge persistence, portrait reload flicker) survive automated coverage; keep manual checkpoints for reactivity-heavy phases
+16. Cluster phases by integration test cycle, not requirement count (v2.7) — SVELTE5 → ADAPTER → SEED clustered around the supabase-adapter dataflow so one round of integration testing covers the cluster; mid-discuss-phase scope narrow (DB-01 deferred) preserved cluster cohesion when 2 plans were cut from Phase 66
+17. Numbered-options checkpoints save 10x time vs open-ended escalation (v2.7) — Plan 68-02 Option C and Plan 68-03 Option B each presented 4 concrete tradeoff-tabulated options; user decision in seconds; total round-trip ~2 minutes
+18. New gates surface accumulated tech debt — pre-write the deferral plan, don't treat as a blocker (v2.7) — DEVTOOLS-02's `yarn lint:check` gate revealed 95 pre-existing apps/frontend errors that the v2.6 parity gate (E2E + visual) didn't catch; user-approved Option C deferral kept the milestone on track
+19. Audit-as-gate is non-redundant with phase verifications (v2.7) — the 3-source cross-reference (REQUIREMENTS + VERIFICATION + SUMMARY frontmatter) catches drift between bookkeeping artifacts that per-phase checks miss; v2.7 audit surfaced 4 hygiene gaps fixed inline before close
