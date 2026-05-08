@@ -119,5 +119,5 @@ Run `/gsd-new-milestone` to question → research → write requirements → roa
 | 64. Voter Results Reactivity Completion | v2.6 | 4/4 | Complete | 2026-04-28 |
 | 65. Svelte 5 Audit Sweeps | v2.7 | 3/3 | Complete    | 2026-04-29 |
 | 66. Adapter Type Cleanup | v2.7 | 1/1 | Complete    | 2026-04-29 |
-| 67. Default Seed Alliances | v2.7 | 2/2 | Complete   | 2026-04-30 |
+| 67. Default Seed Alliances | v2.7 | 2/2 | Complete    | 2026-05-08 |
 | 68. Dev-Tooling Trio | v2.7 | 0/3 | Not started | — |

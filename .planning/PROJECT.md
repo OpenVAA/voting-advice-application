@@ -115,6 +115,9 @@ Known infrastructure issue: local imgproxy Docker container crashes intermittent
 - ✓ Voter results-page filters re-enabled; shared `filterContext` scoped per `(electionId, entityTypePlural)` tuple, exposed via `voterContext` getter for future LLM-chat integration — v2.6
 - ✓ Empty `results/+page.svelte` removed; results list and entity-detail drawer share a 4-segment optional-param route with typed American-spelled param matchers; coupling-guard `+page.ts` 307-redirects malformed URLs; drawer-first paint via DOM source order + `content-visibility: auto` — v2.6
 - ✓ E2E carry-forward pool measurably reduced from post-v2.5 baseline; `e2e` template ships `app_settings.fixed[]`; 4 legacy `updateAppSettings(...)` calls deleted; `mergeSettings` + `DeepPartial` hoisted to `@openvaa/app-shared` — v2.6
+- ✓ 92 `bind:*` directives audited and justified across `apps/frontend/src/lib/**/*.svelte`; 2 `{#key}` annotations + 1 Pattern B keyed each + 6 reactive-accessor destructure rewrites; CLAUDE.md "Context Destructuring Rule (Svelte 5)" subsection codifies the v2.6 P61-03 hazard structurally — v2.7 (Phase 65)
+- ✓ `supabaseDataProvider.ts` zero `as unknown as { ... }` casts over the v2.6 P64 reverse-fill pass; `InternalFlatNomination` defined once in a sibling `.types.ts` file and reused across the parent/child mapping loops — v2.7 (Phase 66)
+- ✓ Default seed ships 2 alliances (Progressive Front + Conservative Bloc, invented neutral names) + 10 alliance-noms + 30/10 org-nom parent split; the v2.6 P64 supabase-adapter alliance reverse-fill of `organizationNominationIds` is empirically exercised on every dev-seed run; 3 cross-cutting bugs surfaced + fixed during smoke (AllianceNomination dual-emission constructor, partial seed `results` block wipe, missing optional-chain on cardContents reads) — v2.7 (Phase 67)
 
 ### Active
 
@@ -307,4 +310,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-_Last updated: 2026-04-29 — v2.7 Phases 65 + 66 complete; v2.6 parity gate continues to PASS_
+_Last updated: 2026-05-08 — v2.7 Phases 65 + 66 + 67 complete; Phase 68 (Dev-Tooling Trio) ready to plan; v2.6 parity gate continues to PASS (67p/1f/34c)_
