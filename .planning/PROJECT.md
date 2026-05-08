@@ -25,18 +25,17 @@ A reliable, well-tested VAA framework that developers can confidently extend, cu
 
 Known infrastructure issue: local imgproxy Docker container crashes intermittently (502 on image upload) — not a code issue, fix with `supabase stop && supabase start`.
 
-## Current Milestone: v2.7 Svelte 5 Polish + Supabase-Adapter Loose Ends
+## Last Shipped: v2.7 Svelte 5 Polish + Supabase-Adapter Loose Ends (2026-05-08)
 
-**Goal:** Close the v2.6 supabase-adapter cleanup tail and complete the deferred Svelte 5 audit sweeps in one cohesive milestone — `cleanup-nominations-table`, `cleanup-sloppy-typing-supabaseDataProvider`, and `add-alliances-to-default-test-data` all touch `supabaseDataProvider.ts` + `@openvaa/dev-seed`, so closing them together means one round of integration testing.
+**Delivered:** 4 phases (65-68), 9 plans, 28 tasks across 9 days. Closed the v2.6 supabase-adapter cleanup tail and the deferred Svelte 5 audit sweeps in one cohesive milestone.
 
-**Target features:**
-- Svelte 5 frontend audit sweeps — `bind:*` + `{#key}` usages, plus context-destructuring rule
-- Supabase adapter type cleanup — drop the `as unknown as` casts introduced by v2.6 P64 reverse-fill
-- `nominations` table cleanup — drop redundant `name` + `entityType` columns
-- Alliances in default seed — exercise the 4th branch of the v2.6 P64 reverse-fill (alliance → organizations)
-- Dev-tooling cleanup trio — Vite autoreload on package/env changes, lint-all-imports, retire Deno linting outside `apps/supabase/functions/`
+- **Phase 65 (SVELTE5-01/02/03):** 92 `bind:*` directives audited and justified across `apps/frontend/src/lib/**/*.svelte`; 2 `{#key}` annotations + 1 Pattern B keyed each + 6 reactive-accessor destructure rewrites; CLAUDE.md "Context Destructuring Rule (Svelte 5)" subsection codifies the v2.6 P61-03 hazard structurally with a 22-name reactive-accessor catalog.
+- **Phase 66 (ADAPTER-01):** `supabaseDataProvider.ts` zero `as unknown as { ... }` casts over the v2.6 P64 reverse-fill pass; `InternalFlatNomination` defined once in a sibling `.types.ts` file; svelte-check baseline preserved (160 err / 12 warn); v2.6 parity gate `67p/1f/34c` identical to anchor. (Phase 66 scope narrowed mid-discussion — DB-01 deferred per user; `nominations` table kept as is.)
+- **Phase 67 (SEED-01):** Default seed ships 2 alliances (Progressive Front + Conservative Bloc) + 10 alliance-noms + 30/10 org-nom parent split; the v2.6 P64 supabase-adapter alliance reverse-fill of `organizationNominationIds` is empirically exercised on every dev-seed run; 3 cross-cutting bugs surfaced + fixed during smoke (AllianceNomination dual-emission constructor, partial seed `results` block wipe, missing optional-chain on `cardContents` reads). Verification status: PASS-WITH-CONCERNS (alliance-card render path deferred to follow-up todo with 3 lanes; SC-2 literal acceptance — populated alliance surface — met via the 3-tab visible surface).
+- **Phase 68 (DEVTOOLS-01/02/03):** Frontend autoreloads on `@openvaa/*` source via Turborepo `--watch` composed with Vite HMR over `dist/` (existing `yarn watch:shared` script); `vite-plugin-restart` watches root `.env` for full Vite restart; `concurrently` composes `yarn dev` to launch both. ESLint gains `eslint-plugin-unused-imports` + `no-restricted-imports` `$lib`-preference rule + paraglide `ignores`; auto-fix sweep clears the new-rule violations to 0. Deno IDE scope inverted from 6 wrong entries (incl. phantom `_deno_shims/`) to single correct path `apps/supabase/supabase/functions` (note: doubled `supabase/`; CONTEXT.md D-03 path was wrong); `.gitignore` carve-out makes the fix team-durable. **Option C deferral:** 95 pre-existing `apps/frontend/` ESLint errors (67 `no-explicit-any`, 13 `naming-convention`, 11 `func-style`, etc.) accumulated through Phases 60-67; tracked in `.planning/milestones/v2.7-phases/68-dev-tooling-trio/68-02-DEFERRED.md` for a v2.8 cleanup phase.
+- **Audit verdict:** `tech_debt` — 8/8 requirements wired end-to-end; cross-phase connections (adapter↔seed↔matching) verified; `yarn build` + `yarn test:unit` green; v2.6 parity gate `67p/1f/34c` continues to pass at HEAD. Three documented deferrals carried forward (Phase 67 alliance-card render, Phase 68 Option C, Phase 68 `@openvaa/supabase` lint-script bug).
 
-**Out of scope (deferred to v2.8+):** `results-url-refactor-followups` + `frontend-project-id-scoping` — pair as a "sharable URLs + multi-tenant" milestone, benefits from the adapter cleanup landing first.
+**Out of scope (deferred to v2.8+):** `results-url-refactor-followups` + `frontend-project-id-scoping` — pair as a "sharable URLs + multi-tenant" milestone. Plus: `nominations` table cleanup (DB-01); 95 pre-existing frontend lint errors; alliance card render UI work; `@openvaa/supabase` lint-script rename.
 
 ## Requirements
 
@@ -118,10 +117,19 @@ Known infrastructure issue: local imgproxy Docker container crashes intermittent
 - ✓ 92 `bind:*` directives audited and justified across `apps/frontend/src/lib/**/*.svelte`; 2 `{#key}` annotations + 1 Pattern B keyed each + 6 reactive-accessor destructure rewrites; CLAUDE.md "Context Destructuring Rule (Svelte 5)" subsection codifies the v2.6 P61-03 hazard structurally — v2.7 (Phase 65)
 - ✓ `supabaseDataProvider.ts` zero `as unknown as { ... }` casts over the v2.6 P64 reverse-fill pass; `InternalFlatNomination` defined once in a sibling `.types.ts` file and reused across the parent/child mapping loops — v2.7 (Phase 66)
 - ✓ Default seed ships 2 alliances (Progressive Front + Conservative Bloc, invented neutral names) + 10 alliance-noms + 30/10 org-nom parent split; the v2.6 P64 supabase-adapter alliance reverse-fill of `organizationNominationIds` is empirically exercised on every dev-seed run; 3 cross-cutting bugs surfaced + fixed during smoke (AllianceNomination dual-emission constructor, partial seed `results` block wipe, missing optional-chain on cardContents reads) — v2.7 (Phase 67)
+- ✓ Frontend autoreload composed via Turborepo `--watch` + Vite HMR over `dist/` (existing `yarn watch:shared`) + `vite-plugin-restart` for `.env`; root `yarn dev` script launches package watcher + Vite dev concurrently; `apps/frontend/README.md` Dev workflow section documents the contract — v2.7 (Phase 68 / DEVTOOLS-01)
+- ✓ ESLint gains `eslint-plugin-unused-imports` + `no-restricted-imports` `$lib`-preference rule + paraglide `ignores`; new rules surface 0 violations; lint:fix auto-sweep applied. _(95 pre-existing apps/frontend errors deferred per user-approved Option C — v2.8 candidate)_ — v2.7 (Phase 68 / DEVTOOLS-02)
+- ✓ Deno IDE scope corrected to `apps/supabase/supabase/functions` (doubled `supabase/`; CONTEXT.md D-03 had wrong path); 5 wrong package entries + phantom `_deno_shims/` removed; `.vscode/settings.json` tracked via `.gitignore` carve-out — v2.7 (Phase 68 / DEVTOOLS-03)
 
 ### Active
 
-_v2.7 Svelte 5 Polish + Supabase-Adapter Loose Ends — requirements being defined, see `.planning/REQUIREMENTS.md`._
+_v2.8 — to be defined. Run `/gsd-new-milestone` to scope the next milestone via questioning → research → requirements → roadmap._
+
+**Likely v2.8 candidates** (carried forward):
+- "Sharable URLs + multi-tenant" pair: `results-url-refactor-followups` + `frontend-project-id-scoping`
+- Frontend strict-typing migration: 95 pre-existing ESLint errors documented in v2.7 Phase 68 DEFERRED
+- Alliance card render path (3 lanes captured in pending todo from Phase 67)
+- `@openvaa/supabase` lint-script rename (SQL/ESLint pipeline conflation)
 
 ### Future
 - [ ] Claude Skills: architect, components, LLM (deferred to post-Svelte 5 stabilization)
@@ -188,13 +196,13 @@ Each major initiative is a separate milestone, executed in order:
 10. ~~**Full Svelte 5 Rewrite**~~ — Shipped v2.4 (2026-03-28)
 11. ~~**Dev Data Seeding Toolkit**~~ — Shipped v2.5 (2026-04-24)
 12. ~~**Svelte 5 Migration Cleanup**~~ — Shipped v2.6 (2026-04-28). Runes migration for root + candidate-protected layouts; protected-layout hydration bug fixed via `$derived.by` discriminated-union pattern; `EntityListControls` infinite-loop resolved via `$state` version-counter bridge; voter-app question/results surfaces fully reactive; `PopupRenderer` removed; e2e template ships `app_settings.fixed[]`
-13. **Claude Skills (remaining)** — Architect, components, LLM skills
-14. **Admin App Migration** — Move admin functions from Strapi plugin to frontend Admin App
-15. **Security Scanning** — Automated security, secrets scanning, and testing
-16. **Settings & Configuration Reorg** — Rationalize the split between StaticSettings, DynamicSettings, env vars, and the `app_settings` / `app_customization` tables; unify the customization paradigm across voter, candidate, and admin apps
-17. **Parties in Candidate App** — Generalize the candidate-app preregistration and profile flows so party organizations (not just individual candidates) can onboard, manage members, and maintain their public-facing data
-18. **Results URL refactor** — Switch `/results` detail route from `[entityType]/[entityType]/[id]?nominationId=...` to `/results/[entType]/[nominationId]`; drop redundant `nominationId`/`electionId`/`constituencyId` search params; consider extending the `[electionId]` path prefix to upstream voter routes (`/questions/category`, etc.); evaluate shorter URL IDs (slug or short-hash) — see `.planning/todos/pending/results-url-refactor-followups.md`
-19. **Svelte 5 audit sweep** — `bind:*` audit (zero `binding_property_non_reactive` warnings on any voter-flow path; documented decision per remaining `bind:*` site) + `{#key …}` audit (every retained block has inline justification or test demonstrating remount is observable behavior) — `.planning/todos/pending/svelte5-cleanup.md` items 4-5
+13. ~~**Svelte 5 Polish + Supabase-Adapter Loose Ends**~~ — Shipped v2.7 (2026-05-08). 4 phases (65-68), 9 plans, 28 tasks. SVELTE5 audit sweeps (92 `bind:*` annotations, `{#key}` justifications, context-destructuring rule); ADAPTER-01 type cleanup (zero `as unknown as` casts, `InternalFlatNomination` intermediate); SEED-01 default-seed alliances exercising the v2.6 P64 reverse-fill (PASS-WITH-CONCERNS — alliance card render deferred); DEVTOOLS trio (autoreload via Turborepo `--watch` + Vite HMR + `vite-plugin-restart` + `concurrently`-composed `yarn dev`; ESLint gains `unused-imports` + `$lib`-preference; Deno IDE scope corrected to doubled `apps/supabase/supabase/functions`). 95 pre-existing frontend lint errors deferred per user-approved Option C
+14. **Claude Skills (remaining)** — Architect, components, LLM skills
+15. **Admin App Migration** — Move admin functions from Strapi plugin to frontend Admin App
+16. **Security Scanning** — Automated security, secrets scanning, and testing
+17. **Settings & Configuration Reorg** — Rationalize the split between StaticSettings, DynamicSettings, env vars, and the `app_settings` / `app_customization` tables; unify the customization paradigm across voter, candidate, and admin apps
+18. **Parties in Candidate App** — Generalize the candidate-app preregistration and profile flows so party organizations (not just individual candidates) can onboard, manage members, and maintain their public-facing data
+19. **Results URL refactor** — Switch `/results` detail route from `[entityType]/[entityType]/[id]?nominationId=...` to `/results/[entType]/[nominationId]`; drop redundant `nominationId`/`electionId`/`constituencyId` search params; consider extending the `[electionId]` path prefix to upstream voter routes (`/questions/category`, etc.); evaluate shorter URL IDs (slug or short-hash) — see `.planning/todos/pending/results-url-refactor-followups.md`
 
 ## Key Decisions
 
@@ -310,4 +318,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-_Last updated: 2026-05-08 — v2.7 Phases 65 + 66 + 67 complete; Phase 68 (Dev-Tooling Trio) ready to plan; v2.6 parity gate continues to PASS (67p/1f/34c)_
+_Last updated: 2026-05-08 after v2.7 milestone shipped (4 phases, 9 plans, 28 tasks; audit verdict tech_debt with 8/8 reqs wired and 3 documented deferrals; v2.6 parity gate continues to PASS at 67p/1f/34c)_

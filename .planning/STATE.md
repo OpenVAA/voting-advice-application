@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v2.7
 milestone_name: Svelte 5 Polish + Supabase-Adapter Loose Ends
-status: completed
+status: Awaiting next milestone
 stopped_at: Phase 67 closed (UAT 10/10, security 6/6 closed with 2 accepted risks, parity gate PASS). Ready to plan Phase 68 (Dev-Tooling Trio).
-last_updated: "2026-05-08T13:10:16.100Z"
-last_activity: 2026-05-08 -- Phase 68 marked complete
+last_updated: "2026-05-08T19:21:31.042Z"
+last_activity: 2026-05-08 — Milestone v2.7 completed and archived
 progress:
   total_phases: 4
   completed_phases: 4
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 
 ## Current Position
 
-Phase: 68 — COMPLETE
-Plan: 1 of 3
-Status: Phase 68 complete
-Last activity: 2026-05-08 -- Phase 68 marked complete
+Phase: Milestone v2.7 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-05-08 — Milestone v2.7 completed and archived
 
 ## Performance Metrics
 
@@ -140,3 +140,7 @@ Candidate scope (6 todos):
 **Indefinitely deferred:** rename-admin-writer (#17), sql-linting-formatting (#19), adapter-package-loading (#12), configurable-mock-data (#13) — nice-to-haves, not blocking.
 
 **Estimate:** ~12-15 plans across ~4-5 phases. Drafted at 11 plans across 4 phases — within the lean end of the estimate. **Revised 2026-04-29 to 9 plans** after Phase 66 scope narrow (migration deferred). Risk: low (no DB migration; uniformly small phases).
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone

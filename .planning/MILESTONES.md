@@ -1,5 +1,23 @@
 # Milestones
 
+## v2.7 Svelte 5 Polish + Supabase-Adapter Loose Ends (Shipped: 2026-05-08)
+
+**Phases completed:** 4 phases, 9 plans, 28 tasks
+
+**Key accomplishments:**
+
+- Pattern 1 fix (1 file):
+- Closed SVELTE5-02 (2 `{#key}` annotations + 1 Pattern B keyed each conversion) and SVELTE5-03 (6 reactive-accessor destructure rewrites + new CLAUDE.md rule subsection). Also fixed a stray broken `docs/code-review-checklist.md` link in CLAUDE.md.
+- Phase 65 verification: PASS.
+- Replaced 2 inline `as unknown as { ... }` casts in `supabaseDataProvider.ts` with a single named `InternalFlatNomination` type defined in a sibling `.type.ts` file; svelte-check baseline preserved at 160 err / 12 warn; vitest 646/646 green; v2.6 parity gate `67p / 1f / 34c` identical to Phase 64 anchor (PARITY GATE: PASS).
+- 2 alliances + 10 alliance noms + 30/10 org-nom parent_nomination split land in the default seed; the v2.6 P64 supabase-adapter alliance reverse-fill is empirically exercised end-to-end.
+- Live seed pipeline + integration test + manual UI smoke + Playwright parity gate landed; the v2.6 P64 supabase-adapter alliance reverse-fill is now empirically exercised end-to-end; 3 cross-cutting bugs surfaced + fixed before the verification report closed.
+- One-liner:
+- One-liner:
+- One-liner:
+
+---
+
 ## v2.6 Svelte 5 Migration Cleanup (Shipped: 2026-04-28)
 
 **Phases completed:** 5 phases, 17 plans, 48 tasks
