@@ -10,7 +10,7 @@
  * httpOnly cookies for CSRF and replay protection on callback.
  */
 
-import { json, error } from '@sveltejs/kit';
+import { error,json } from '@sveltejs/kit';
 import { getActiveProvider } from '$lib/api/utils/auth/providers';
 import type { RequestEvent } from '@sveltejs/kit';
 

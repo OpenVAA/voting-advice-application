@@ -20,7 +20,6 @@
 
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
-  import type { Snippet } from 'svelte';
   import { Notification } from '$lib/components/notification';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { initVoterContext } from '$lib/contexts/voter';
@@ -28,6 +27,7 @@
   import { VoterNav } from '$lib/dynamic-components/navigation/voter/';
   import Layout from '../Layout.svelte';
   import MaintenancePage from '../MaintenancePage.svelte';
+  import type { Snippet } from 'svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Init Voter Context

@@ -38,8 +38,8 @@ export function matchStore({
   const _value = $derived.by(() => {
     const currentAnswers = answers.answers;
     const nq = nominationsAndQuestions();
-    let minAns = minAnswers() ?? 1;
-    let submatches = calcSubmatches() ?? [];
+    const minAns = minAnswers() ?? 1;
+    const submatches = calcSubmatches() ?? [];
     const parentMethod = parentMatchingMethod();
 
     const voter = new Voter(currentAnswers);

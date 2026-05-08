@@ -8,7 +8,7 @@
  * NO Deno imports. NO SvelteKit imports. Pure jose v6 only.
  */
 
-import { SignJWT, CompactEncrypt } from 'jose';
+import { CompactEncrypt,SignJWT } from 'jose';
 import type { TestKeySet } from './keys';
 
 /**

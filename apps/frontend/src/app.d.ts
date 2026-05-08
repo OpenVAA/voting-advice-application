@@ -1,7 +1,7 @@
-import type { DPReturnType } from '$lib/api/base/dataProvider.type';
-import type { CandidateUserData } from '$lib/api/base/dataWriter.type';
 import type { Database } from '@openvaa/supabase-types';
 import type { Session, SupabaseClient, User } from '@supabase/supabase-js';
+import type { DPReturnType } from '$lib/api/base/dataProvider.type';
+import type { CandidateUserData } from '$lib/api/base/dataWriter.type';
 
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces

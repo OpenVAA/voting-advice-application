@@ -69,7 +69,7 @@ export class BaseController implements Controller {
   /**
    * Override in subclasses to implement sub-operation progress logging.
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   defineSubOperations(operationId: string, subOperations: Array<{ id: string; weight?: number }>): void {
     // No-op by default
   }

@@ -18,7 +18,8 @@ A template part that language selection options for the navigation menu if these
   import { getAppContext } from '$lib/contexts/app';
   import { NavGroup, NavItem } from '$lib/dynamic-components/navigation';
   import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
-  import { locales as paraglideLocales, localizeHref } from '$lib/paraglide/runtime';
+import { localizeHref } from '$lib/paraglide/runtime';
+  import type { locales as paraglideLocales} from '$lib/paraglide/runtime';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts

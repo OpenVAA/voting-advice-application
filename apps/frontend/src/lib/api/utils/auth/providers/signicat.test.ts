@@ -8,7 +8,8 @@
  * @vitest-environment node
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach,describe, expect, it, vi } from 'vitest';
+import { signicatProvider } from './signicat';
 
 // Mock env modules BEFORE importing any modules that depend on them.
 // This follows the established pattern from supabaseDataWriter.test.ts.
@@ -31,8 +32,6 @@ vi.mock('$env/dynamic/private', () => ({
     IDENTITY_PROVIDER_ISSUER: 'https://signicat.example'
   }
 }));
-
-import { signicatProvider } from './signicat';
 
 describe('Signicat provider', () => {
   beforeEach(() => {

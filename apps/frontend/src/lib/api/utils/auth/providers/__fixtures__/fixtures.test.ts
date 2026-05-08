@@ -7,10 +7,11 @@
  * @vitest-environment node
  */
 
-import { describe, it, expect, beforeAll } from 'vitest';
 import * as jose from 'jose';
-import { createTestKeySet, type TestKeySet } from './keys';
+import { beforeAll,describe, expect, it } from 'vitest';
+import { createTestKeySet  } from './keys';
 import { createTestJwe, createTestJwt } from './tokens';
+import type {TestKeySet} from './keys';
 
 describe('Test fixture factories', () => {
   let rsaOaepKeys: TestKeySet;

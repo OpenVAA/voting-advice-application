@@ -42,7 +42,7 @@ export interface AuthConfig {
    * These claims are saved alongside the identity match value in the user's
    * `app_metadata` for later use (e.g., identity verification, audit trail).
    */
-  extractClaims: string[];
+  extractClaims: Array<string>;
 
   /**
    * Which id_token claim maps to the candidate's first name.

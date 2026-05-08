@@ -1,5 +1,5 @@
-import type { DataWriter } from '$lib/api/base/dataWriter.type';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
+import type { DataWriter } from '$lib/api/base/dataWriter.type';
 
 export type AuthContext = {
   /**

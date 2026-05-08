@@ -8,8 +8,9 @@
  * @vitest-environment node
  */
 
-import { describe, it, expect, vi, beforeAll, afterEach } from 'vitest';
 import * as jose from 'jose';
+import { afterEach,beforeAll, describe, expect, it, vi } from 'vitest';
+import { iduraProvider } from './idura';
 
 // Use vi.hoisted to create shared state accessible from vi.mock factories.
 // vi.mock factories are hoisted above all imports, so they cannot reference
@@ -56,8 +57,6 @@ vi.mock('$lib/server/constants', () => ({
     return mockConstants;
   }
 }));
-
-import { iduraProvider } from './idura';
 
 describe('Idura provider', () => {
   beforeAll(async () => {

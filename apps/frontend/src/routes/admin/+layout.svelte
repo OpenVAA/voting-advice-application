@@ -8,13 +8,13 @@
 
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import type { Snippet } from 'svelte';
   import { fromStore } from 'svelte/store';
   import { initAdminContext } from '$lib/contexts/admin';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { AdminNav } from '$lib/dynamic-components/navigation/admin';
   import Layout from '../Layout.svelte';
   import MaintenancePage from '../MaintenancePage.svelte';
+  import type { Snippet } from 'svelte';
 
   let { children }: { children: Snippet } = $props();
 

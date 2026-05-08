@@ -8,7 +8,9 @@
  * @vitest-environment node
  */
 
-import { describe, it, expect, vi, beforeAll } from 'vitest';
+import * as jose from 'jose';
+import { beforeAll,describe, expect, it, vi } from 'vitest';
+import { getIdTokenClaims } from './getIdTokenClaims';
 
 // Use vi.hoisted to store the local JWKS getter that replaces createRemoteJWKSet.
 const { localJwksState } = vi.hoisted(() => ({
@@ -40,12 +42,9 @@ vi.mock('jose', async (importOriginal) => {
   const actual = await importOriginal<typeof import('jose')>();
   return {
     ...actual,
-    createRemoteJWKSet: (..._args: unknown[]) => localJwksState.getKey
+    createRemoteJWKSet: (..._args: Array<unknown>) => localJwksState.getKey
   };
 });
-
-import * as jose from 'jose';
-import { getIdTokenClaims } from './getIdTokenClaims';
 
 describe('getIdTokenClaims', () => {
   // Shared signing key pair -- one pair for all tests.

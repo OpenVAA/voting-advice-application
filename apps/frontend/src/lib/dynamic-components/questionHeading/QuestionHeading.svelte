@@ -37,8 +37,6 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
   import { getElectionsToShow } from '$lib/utils/questions';
   import { escapeRegExp } from '$lib/utils/regexp';
   import type { TermDefinition } from '@openvaa/app-shared';
-  import type { Election } from '@openvaa/data';
-  import type { QuestionBlock } from '$lib/contexts/utils/questionBlockStore.type';
   import type { QuestionHeadingProps } from './QuestionHeading.type';
 
   type TitlePart = { text: string; explanation?: string; title?: string };

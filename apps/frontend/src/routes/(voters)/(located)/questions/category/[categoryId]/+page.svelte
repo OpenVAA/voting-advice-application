@@ -16,7 +16,6 @@ Display the intro to a question category and possibly a button with which to ski
 
 <script lang="ts">
   import { getCustomData } from '@openvaa/app-shared';
-  import { error } from '@sveltejs/kit';
   import { onDestroy, onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';

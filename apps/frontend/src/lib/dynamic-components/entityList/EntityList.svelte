@@ -38,7 +38,6 @@ This is a dynamic component, because it renders the dynamic `EntityCard` compone
   import { EntityCard } from '$lib/dynamic-components/entityCard';
   import { concatClass } from '$lib/utils/components';
   import { DELAY } from '$lib/utils/timing';
-  import type { EntityCardProps } from '$lib/dynamic-components/entityCard';
   import type { EntityListProps } from './EntityList.type';
 
   let {

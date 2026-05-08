@@ -20,7 +20,7 @@ export class AlliancesGenerator {
   constructor(private ctx: Ctx) {}
 
   // Phase 56 ignores ctx here; Phase 57/58 generators read ctx.refs to scale counts.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   defaults(ctx: Ctx): AlliancesFragment {
     return { count: 0 };
   }

@@ -12,8 +12,9 @@
  * @vitest-environment node
  */
 
-import { describe, it, expect, vi, beforeAll, afterEach } from 'vitest';
 import * as jose from 'jose';
+import { afterEach,beforeAll, describe, expect, it, vi } from 'vitest';
+import { POST } from '../../../../../routes/api/oidc/authorize/+server';
 
 // Use vi.hoisted for dynamic mock state (signing keys injected in beforeAll)
 const { mockServerConstants, mockPublicConstants } = vi.hoisted(() => ({
@@ -65,8 +66,6 @@ vi.mock('$lib/utils/constants', () => ({
     return mockPublicConstants;
   }
 }));
-
-import { POST } from '../../../../../routes/api/oidc/authorize/+server';
 
 describe('POST /api/oidc/authorize', () => {
   let signingPublicKey: CryptoKey;

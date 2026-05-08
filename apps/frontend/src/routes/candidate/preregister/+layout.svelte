@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { Snippet } from 'svelte';
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
@@ -7,6 +6,7 @@
   import { getLayoutContext } from '$lib/contexts/layout';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import MainContent from '../../MainContent.svelte';
+  import type { Snippet } from 'svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts

@@ -27,7 +27,7 @@ export type AppContext = Omit<ComponentContext, 'locale' | 'locales' | 'darkMode
     /**
      * Available locales as a readable store (store-wrapped for downstream context compat).
      */
-    locales: Readable<readonly string[]>;
+    locales: Readable<ReadonlyArray<string>>;
     /**
      * Dark mode state as a readable store (store-wrapped for downstream context compat).
      */

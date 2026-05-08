@@ -36,7 +36,7 @@ export class AccountsGenerator {
 
   // Phase 56 ignores ctx here; kept on the signature for consistency with the
   // rest of the generator classes + the D-08 contract.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   defaults(ctx: Ctx): AccountsFragment {
     return { count: 0 };
   }

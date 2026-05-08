@@ -18,8 +18,8 @@
 -->
 <script lang="ts">
   import { initFilterContext } from '../filterContext.svelte';
-  import type { FilterContext, InitFilterContextArgs } from '../filterContext.type';
   import type { FilterTree } from '$lib/contexts/voter/filters/filterStore.svelte';
+  import type { FilterContext, InitFilterContextArgs } from '../filterContext.type';
 
   type Props = {
     init?: InitFilterContextArgs;

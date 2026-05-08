@@ -14,9 +14,9 @@
  */
 
 import { constants } from '$lib/utils/constants';
-import type { IdentityProvider, ProviderType } from './types';
-import { signicatProvider } from './signicat';
 import { iduraProvider } from './idura';
+import { signicatProvider } from './signicat';
+import type { IdentityProvider, ProviderType } from './types';
 
 /**
  * Get the active identity provider based on environment configuration.
@@ -39,4 +39,4 @@ export function getActiveProvider(): IdentityProvider {
   }
 }
 
-export type { IdentityProvider, AuthConfig, ProviderType } from './types';
+export type { AuthConfig, IdentityProvider, ProviderType } from './types';

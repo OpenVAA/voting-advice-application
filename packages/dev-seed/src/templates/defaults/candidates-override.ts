@@ -34,7 +34,7 @@
 import { da, en, Faker, fi, sv } from '@faker-js/faker';
 import { defaultRandomValidEmit } from '../../emitters/answers';
 import type { TablesInsert } from '@openvaa/supabase-types';
-import type { Overrides } from '../../types';
+import type { Ctx } from '../../ctx';
 
 /**
  * Sorted-descending weights. Sum MUST equal the candidates count.
@@ -96,7 +96,7 @@ function buildLocaleFaker(locale: LocaleCode): Faker {
  *   2. Names are drawn from per-locale Faker instances (25-per-locale cycling).
  *   3. Answer emission goes through the same D-27 seam the generator uses.
  */
-export const candidatesOverride: NonNullable<Overrides['candidates']> = (_fragment, ctx) => {
+export function candidatesOverride(_fragment: unknown, ctx: Ctx): Array<Record<string, unknown>> {
   const orgs = ctx.refs.organizations;
   if (orgs.length !== PARTY_WEIGHTS.length) {
     throw new Error(
@@ -167,7 +167,7 @@ export const candidatesOverride: NonNullable<Overrides['candidates']> = (_fragme
   }
 
   return rows;
-};
+}
 
 /**
  * Internal helper exposed for unit tests that need to construct a locale Faker

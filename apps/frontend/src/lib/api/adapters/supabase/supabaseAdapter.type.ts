@@ -1,5 +1,5 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@openvaa/supabase-types';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import type { AdapterConfig } from '$lib/api/base/universalAdapter.type';
 
 /**

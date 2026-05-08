@@ -7,8 +7,7 @@ import { mergeSettings } from '$lib/utils/merge';
 import { DELAY } from '$lib/utils/timing';
 import { StackedState } from '../utils/StackedState.svelte';
 import type { VideoContent } from '@openvaa/app-shared';
-import type { Video, VideoMode } from '$lib/components/video';
-import type { OptionalVideoProps } from '$lib/components/video';
+import type { OptionalVideoProps,Video, VideoMode  } from '$lib/components/video';
 import type { DeepPartial } from '$lib/utils/merge';
 import type {
   LayoutContext,

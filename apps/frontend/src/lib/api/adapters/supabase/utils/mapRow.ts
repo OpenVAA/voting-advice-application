@@ -31,6 +31,6 @@ export function mapRowToDb<T extends Record<string, unknown>>(obj: T): Record<st
 /**
  * Map an array of snake_case database rows to camelCase domain objects.
  */
-export function mapRows<T extends Record<string, unknown>>(rows: T[]): Record<string, unknown>[] {
+export function mapRows<T extends Record<string, unknown>>(rows: Array<T>): Array<Record<string, unknown>> {
   return rows.map(mapRow);
 }

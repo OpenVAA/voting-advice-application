@@ -65,7 +65,6 @@ The same component can also be used to display the answers of the voter and anot
   import { getComponentContext } from '$lib/contexts/component';
   import { onKeyboardFocusOut } from '$lib/utils/onKeyboardFocusOut';
   import type { Id } from '@openvaa/core';
-  import type { Choice } from '@openvaa/data';
   import type { QuestionChoicesProps } from './QuestionChoices.type';
 
   let {

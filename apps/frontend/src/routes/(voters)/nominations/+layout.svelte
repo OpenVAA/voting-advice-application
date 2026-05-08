@@ -11,11 +11,11 @@ Provides the data used by the nominations route.
 
 <script lang="ts">
   import { tick } from 'svelte';
-  import type { Snippet } from 'svelte';
   import { isValidResult } from '$lib/api/utils/isValidResult.js';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Loading } from '$lib/components/loading';
   import { getVoterContext } from '$lib/contexts/voter';
+  import type { Snippet } from 'svelte';
   import type { DPDataType } from '$lib/api/base/dataTypes';
 
   let { data, children }: { data: any; children: Snippet } = $props();

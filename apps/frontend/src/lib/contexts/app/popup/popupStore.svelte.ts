@@ -6,7 +6,7 @@ import type { PopupStore } from './popupStore.type';
  * Create a store that manages a queue of popup components and resolves to the first component in the queue.
  */
 export function popupStore(): PopupStore {
-  let queue = $state<PopupQueueItem[]>([]);
+  let queue = $state<Array<PopupQueueItem>>([]);
   const firstItem = $derived(queue[0]);
 
   function push(item: PopupQueueItem): void {

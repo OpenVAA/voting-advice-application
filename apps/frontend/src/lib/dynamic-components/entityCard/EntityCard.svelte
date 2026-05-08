@@ -56,7 +56,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   import { findCandidateNominations } from '$lib/utils/matches';
   import EntityCard from './EntityCard.svelte';
   import EntityCardAction from './EntityCardAction.svelte';
-  import type { AnyEntityVariant, AnyNominationVariant, AnyQuestionVariant } from '@openvaa/data';
+  import type { AnyQuestionVariant } from '@openvaa/data';
   import type { InfoAnswerProps } from '$lib/components/infoAnswer';
   import type { EntityCardProps } from './EntityCard.type';
 

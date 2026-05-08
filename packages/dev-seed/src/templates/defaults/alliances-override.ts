@@ -99,8 +99,9 @@ export const ALLIANCE_KEYS: ReadonlyArray<'L' | 'R'> = ['L', 'R'];
  * Build the prefixed external_id for an alliance entity. Mirrors the
  * organization-entity prefix pattern at `default.ts:90` (`seed_party_blue`).
  */
-export const allianceExtId = (key: 'L' | 'R', externalIdPrefix: string): string =>
-  `${externalIdPrefix}alliance_${key}`;
+export function allianceExtId(key: 'L' | 'R', externalIdPrefix: string): string {
+  return `${externalIdPrefix}alliance_${key}`;
+}
 
 /**
  * Build the constituency-specific external_id for an alliance nomination.
@@ -110,11 +111,13 @@ export const allianceExtId = (key: 'L' | 'R', externalIdPrefix: string): string 
  * Constituency-specificity is critical (RESEARCH Pitfall 3): an org-nom in
  * c_03 must point at the alliance nom in c_03, not the alliance nom in c_01.
  */
-export const allianceNomExtId = (
+export function allianceNomExtId(
   key: 'L' | 'R',
   constituencyExtId: string,
   externalIdPrefix: string
-): string => `${externalIdPrefix}nom_alliance_${key}_${constituencyExtId}`;
+): string {
+  return `${externalIdPrefix}nom_alliance_${key}_${constituencyExtId}`;
+}
 
 export function alliancesOverride(_fragment: unknown, ctx: Ctx): Array<Record<string, unknown>> {
   const { projectId, externalIdPrefix } = ctx;

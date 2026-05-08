@@ -15,8 +15,7 @@ Displays a warning if the selected constituency does not have nominations in all
 -->
 
 <script lang="ts">
-  import { tick, untrack } from 'svelte';
-  import type { Snippet } from 'svelte';
+  import { untrack } from 'svelte';
   import { goto } from '$app/navigation';
   import { isValidResult } from '$lib/api/utils/isValidResult.js';
   import { Button } from '$lib/components/button';
@@ -26,6 +25,7 @@ Displays a warning if the selected constituency does not have nominations in all
   import { Modal } from '$lib/components/modal';
   import { getVoterContext } from '$lib/contexts/voter';
   import { sanitizeHtml } from '$lib/utils/sanitize.js';
+  import type { Snippet } from 'svelte';
   import type { DPDataType } from '$lib/api/base/dataTypes';
 
   let { data, children }: { data: any; children: Snippet } = $props();

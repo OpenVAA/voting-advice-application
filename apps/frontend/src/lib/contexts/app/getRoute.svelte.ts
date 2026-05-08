@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
-import { page } from '$app/state';
 import { afterNavigate } from '$app/navigation';
+import { page } from '$app/state';
 import { buildRoute } from '$lib/utils/route';
 import type { Readable } from 'svelte/store';
 import type { RouteOptions } from '$lib/utils/route';

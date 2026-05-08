@@ -11,18 +11,17 @@
  * - Claims extraction: JWE decrypt + JWT verify with config-driven claim mapping
  */
 
-import type {
-  IdentityProvider,
-  AuthorizeParams,
-  AuthorizeResult,
-  TokenExchangeParams,
-  TokenExchangeResult,
-  IdTokenClaimsResult
-} from './types';
-import { SIGNICAT_AUTH_CONFIG } from './authConfig';
+import * as jose from 'jose';
 import { constants } from '$lib/server/constants';
 import { constants as publicConstants } from '$lib/utils/constants';
-import * as jose from 'jose';
+import { SIGNICAT_AUTH_CONFIG } from './authConfig';
+import type {
+  AuthorizeParams,
+  AuthorizeResult,
+  IdentityProvider,
+  IdTokenClaimsResult,
+  TokenExchangeParams,
+  TokenExchangeResult} from './types';
 
 export const signicatProvider: IdentityProvider = {
   type: 'signicat',
@@ -35,12 +34,12 @@ export const signicatProvider: IdentityProvider = {
     const authorizeUrl =
       `${PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT}` +
       `?client_id=${PUBLIC_IDENTITY_PROVIDER_CLIENT_ID}` +
-      `&response_type=code` +
+      '&response_type=code' +
       `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-      `&scope=openid%20profile` +
-      `&prompt=login` +
+      '&scope=openid%20profile' +
+      '&prompt=login' +
       `&code_challenge=${codeChallenge}` +
-      `&code_challenge_method=S256`;
+      '&code_challenge_method=S256';
 
     return { authorizeUrl, clientSideRedirect: true };
   },
@@ -76,7 +75,7 @@ export const signicatProvider: IdentityProvider = {
 
   async getIdTokenClaims(idToken: string): Promise<IdTokenClaimsResult> {
     try {
-      const privateEncryptionJWKSet: jose.JWK[] = JSON.parse(constants.IDENTITY_PROVIDER_DECRYPTION_JWKS || '[]');
+      const privateEncryptionJWKSet: Array<jose.JWK> = JSON.parse(constants.IDENTITY_PROVIDER_DECRYPTION_JWKS || '[]');
 
       const { kid } = jose.decodeProtectedHeader(idToken);
       const privateEncryptionJWK = privateEncryptionJWKSet.find((jwk) => jwk.kid === kid);

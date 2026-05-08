@@ -10,7 +10,7 @@
  */
 export type I18nContext = {
   locale: string;
-  locales: readonly string[];
+  locales: ReadonlyArray<string>;
   t: (key: string, params?: Record<string, unknown>) => string;
   translate: (strings: LocalizedString | string | undefined | null, locale?: string | null) => string;
 };

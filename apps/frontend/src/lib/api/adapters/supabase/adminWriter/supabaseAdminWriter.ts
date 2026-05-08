@@ -74,10 +74,10 @@ export class SupabaseAdminWriter extends supabaseAdapterMixin(UniversalAdapter) 
     dryRun
   }: {
     templates: Record<string, { subject: string; text: string; html: string }>;
-    recipientUserIds: string[];
+    recipientUserIds: Array<string>;
     from?: string;
     dryRun?: boolean;
-  }): Promise<{ type: 'success'; sent: number; failed: number; results: unknown[] }> {
+  }): Promise<{ type: 'success'; sent: number; failed: number; results: Array<unknown> }> {
     const { data, error } = await this.supabase.functions.invoke('send-email', {
       body: {
         templates,

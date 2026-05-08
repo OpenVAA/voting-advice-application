@@ -1,8 +1,9 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { createBrowserClient } from '@supabase/ssr';
+import { createClient  } from '@supabase/supabase-js';
 import { browser } from '$app/environment';
-import type { Database } from '@openvaa/supabase-types';
 import { constants } from '$lib/utils/constants';
+import type { Database } from '@openvaa/supabase-types';
+import type {SupabaseClient} from '@supabase/supabase-js';
 import type { UniversalAdapter } from '$lib/api/base/universalAdapter';
 import type { SupabaseAdapter, SupabaseAdapterConfig } from './supabaseAdapter.type';
 

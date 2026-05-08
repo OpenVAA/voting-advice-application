@@ -1,11 +1,12 @@
 import qs from 'qs';
 import { resolveRoute } from '$app/paths';
-import { locales as paraglideLocales, localizeHref } from '$lib/paraglide/runtime';
+import { localizeHref } from '$lib/paraglide/runtime';
 import { filterPersistent } from './filterPersistent';
 import { isRouteParam } from './params';
 import { parseParams } from './parseParams';
 import { DEFAULT_PARAMS, ROUTE } from './route';
 import { removeDuplicates } from '../removeDuplicates';
+import type { locales as paraglideLocales} from '$lib/paraglide/runtime';
 import type { Params } from './params';
 import type { Route } from './route';
 

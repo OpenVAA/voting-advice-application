@@ -48,8 +48,8 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   import { ucFirst } from '$lib/utils/text/ucFirst';
   import { DELAY } from '$lib/utils/timing';
   import MainContent from '../../../MainContent.svelte';
-  import type { Snippet } from 'svelte';
   import type { Election, EntityType } from '@openvaa/data';
+  import type { Snippet } from 'svelte';
   import type { Tab } from '$lib/components/tabs';
 
   let { children }: { children: Snippet } = $props();

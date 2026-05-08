@@ -44,7 +44,7 @@ export class AppSettingsGenerator {
   constructor(private ctx: Ctx) {}
 
   // Phase 56 ignores ctx here; kept on the signature for D-08 consistency.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   defaults(ctx: Ctx): AppSettingsFragment {
     return { count: 0 };
   }

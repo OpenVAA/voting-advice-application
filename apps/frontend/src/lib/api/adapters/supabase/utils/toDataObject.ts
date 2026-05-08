@@ -1,5 +1,5 @@
-import { mapRow } from './mapRow';
 import { localizeRow } from './localizeRow';
+import { mapRow } from './mapRow';
 
 /**
  * Fields that are localized on every DataObject table.
@@ -25,7 +25,7 @@ export function toDataObject(
   row: Record<string, unknown>,
   locale: string,
   defaultLocale: string = 'en',
-  additionalLocalizedFields: string[] = []
+  additionalLocalizedFields: Array<string> = []
 ): Record<string, unknown> {
   const localized = localizeRow(
     row,

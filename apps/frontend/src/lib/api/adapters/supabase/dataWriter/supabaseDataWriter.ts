@@ -1,10 +1,10 @@
 import { ENTITY_TYPE } from '@openvaa/data';
 import { UniversalDataWriter } from '$lib/api/base/universalDataWriter';
-import { supabaseAdapterMixin } from '../supabaseAdapter';
-import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import { constants } from '$lib/utils/constants';
-import { toDataObject } from '../utils/toDataObject';
+import { supabaseAdapterMixin } from '../supabaseAdapter';
 import { parseStoredImage } from '../utils/storageUrl';
+import { toDataObject } from '../utils/toDataObject';
+import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type {
   BasicUserData,
   CandidateUserData,

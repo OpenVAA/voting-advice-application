@@ -16,8 +16,8 @@ Functional component used to block user nagivation.
 
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
-  import { beforeNavigate } from '$app/navigation';
   import { browser } from '$app/environment';
+  import { beforeNavigate } from '$app/navigation';
   import { getComponentContext } from '$lib/contexts/component';
   import type { PreventNavigationProps } from './PreventNavigation.type';
 

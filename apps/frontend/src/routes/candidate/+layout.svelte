@@ -15,7 +15,6 @@
 
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import type { Snippet } from 'svelte';
   import { Notification } from '$lib/components/notification';
   import { getAppContext } from '$lib/contexts/app';
   import { initCandidateContext } from '$lib/contexts/candidate';
@@ -23,6 +22,7 @@
   import { CandidateNav } from '$lib/dynamic-components/navigation/candidate';
   import Layout from '../Layout.svelte';
   import MaintenancePage from '../MaintenancePage.svelte';
+  import type { Snippet } from 'svelte';
 
   let { children }: { children: Snippet } = $props();
 

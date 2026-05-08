@@ -1,6 +1,6 @@
 import { staticSettings } from '@openvaa/app-shared';
-import { browser } from '$app/environment';
 import { toStore } from 'svelte/store';
+import { browser } from '$app/environment';
 import { logDebugError } from '$lib/utils/logger';
 import type { Writable } from 'svelte/store';
 

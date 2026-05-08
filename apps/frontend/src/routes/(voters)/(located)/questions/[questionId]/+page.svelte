@@ -36,7 +36,6 @@ Display a question for answering.
   import { DELAY } from '$lib/utils/timing';
   import MainContent from '../../../../MainContent.svelte';
   import type { AnyQuestionVariant } from '@openvaa/data';
-  import type { QuestionBlock } from '$lib/contexts/utils/questionBlockStore.type';
   //import {type VideoMode, Video} from '$lib/components/video';
 
   ////////////////////////////////////////////////////////////////////

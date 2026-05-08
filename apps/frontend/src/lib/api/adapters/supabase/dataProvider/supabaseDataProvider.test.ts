@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach,describe, expect, it, vi } from 'vitest';
+import { SupabaseDataProvider } from './supabaseDataProvider';
 
 // Mock $env/dynamic/public before any imports that depend on it
 vi.mock('$env/dynamic/public', () => ({
@@ -22,8 +23,6 @@ vi.mock('$lib/api/utils/parseAnswers', () => ({
     return result;
   })
 }));
-
-import { SupabaseDataProvider } from './supabaseDataProvider';
 
 /**
  * A flexible mock Supabase client that supports chainable PostgREST query patterns:
@@ -649,7 +648,7 @@ describe('SupabaseDataProvider', () => {
         error: null
       };
 
-      const result = (await provider.getEntityData()) as any[];
+      const result = (await provider.getEntityData()) as Array<any>;
 
       const candidate = result.find((e: any) => e.id === 'c1');
       expect(candidate).toBeDefined();
@@ -682,7 +681,7 @@ describe('SupabaseDataProvider', () => {
         error: null
       };
 
-      const result = (await provider.getEntityData()) as any[];
+      const result = (await provider.getEntityData()) as Array<any>;
 
       const org = result.find((e: any) => e.id === 'org1');
       expect(org).toBeDefined();
@@ -714,7 +713,7 @@ describe('SupabaseDataProvider', () => {
       await provider.getEntityData({ entityType: 'candidate' as any });
 
       // Should only query candidates table, not organizations
-      const calledTables = mockSupabase.from.mock.calls.map((c: any[]) => c[0]);
+      const calledTables = mockSupabase.from.mock.calls.map((c: Array<any>) => c[0]);
       expect(calledTables).toContain('candidates');
       expect(calledTables).not.toContain('organizations');
     });
@@ -810,7 +809,7 @@ describe('SupabaseDataProvider', () => {
         error: null
       };
 
-      const result = (await provider.getEntityData()) as any[];
+      const result = (await provider.getEntityData()) as Array<any>;
 
       expect(result[0].image?.url).toBe(
         'http://localhost:54321/storage/v1/object/public/public-assets/proj/cand/c1/photo.jpg'
@@ -848,7 +847,7 @@ describe('SupabaseDataProvider', () => {
         defaultLocale: 'en'
       });
 
-      const result = (await fiProvider.getEntityData()) as any[];
+      const result = (await fiProvider.getEntityData()) as Array<any>;
 
       const org = result.find((e: any) => e.id === 'org1');
       expect(org.name).toBe('Party FI');
@@ -1372,8 +1371,8 @@ describe('SupabaseDataProvider', () => {
 
       const result = await provider.getNominationData();
 
-      const nominations = result.nominations as any[];
-      const entities = result.entities as any[];
+      const nominations = result.nominations as Array<any>;
+      const entities = result.entities as Array<any>;
 
       // 3 nominations (no dedup)
       expect(nominations).toHaveLength(3);
@@ -1389,7 +1388,7 @@ describe('SupabaseDataProvider', () => {
       };
 
       const result = await provider.getNominationData();
-      const entities = result.entities as any[];
+      const entities = result.entities as Array<any>;
       const candidate = entities.find((e: any) => e.id === 'c1');
 
       expect(candidate).toBeDefined();
@@ -1406,7 +1405,7 @@ describe('SupabaseDataProvider', () => {
       };
 
       const result = await provider.getNominationData();
-      const entities = result.entities as any[];
+      const entities = result.entities as Array<any>;
       const org = entities.find((e: any) => e.id === 'org1');
 
       expect(org).toBeDefined();
@@ -1439,7 +1438,7 @@ describe('SupabaseDataProvider', () => {
       };
 
       const result = await provider.getNominationData();
-      const nom = (result.nominations as any[]).find((n: any) => n.id === 'n1');
+      const nom = (result.nominations as Array<any>).find((n: any) => n.id === 'n1');
 
       expect(nom.entityType).toBe('candidate');
       expect(nom.entityId).toBe('c1');
@@ -1462,7 +1461,7 @@ describe('SupabaseDataProvider', () => {
       };
 
       const result = await provider.getNominationData();
-      const nom = (result.nominations as any[]).find((n: any) => n.id === 'n1');
+      const nom = (result.nominations as Array<any>).find((n: any) => n.id === 'n1');
 
       expect(nom.entityType).toBe('candidate');
       expect(nom.parentNominationId).toBeNull();
@@ -1476,8 +1475,8 @@ describe('SupabaseDataProvider', () => {
       };
 
       const result = await provider.getNominationData();
-      const nom = (result.nominations as any[])[0];
-      const entity = (result.entities as any[])[0];
+      const nom = (result.nominations as Array<any>)[0];
+      const entity = (result.entities as Array<any>)[0];
 
       expect(nom.image?.url).toBe(
         'http://localhost:54321/storage/v1/object/public/public-assets/proj/nom/n3/img.png'

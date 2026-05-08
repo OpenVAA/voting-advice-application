@@ -1,7 +1,7 @@
 import { ENTITY_TYPE } from '@openvaa/data';
 import { fromStore } from 'svelte/store';
-import { prepareDataWriter } from '../utils/prepareDataWriter';
 import { localStorageWritable } from '../utils/persistedState.svelte';
+import { prepareDataWriter } from '../utils/prepareDataWriter';
 import type { LocalizedAnswer } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
 import type { Image } from '@openvaa/data';

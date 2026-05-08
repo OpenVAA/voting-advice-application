@@ -6,6 +6,7 @@ import typescriptEslint from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 import importPlugin from 'eslint-plugin-import';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
+import unusedImports from 'eslint-plugin-unused-imports';
 import globals from 'globals';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -31,6 +32,7 @@ export default [
       '**/package-lock.json',
       '**/yarn.lock',
       '**/$types.d.ts',
+      '**/src/lib/paraglide/**',
       '**/*.yaml'
     ]
   },
@@ -39,7 +41,8 @@ export default [
     plugins: {
       '@typescript-eslint': typescriptEslint,
       'simple-import-sort': simpleImportSort, // https://github.com/lydell/eslint-plugin-simple-import-sort?tab=readme-ov-file
-      import: importPlugin
+      import: importPlugin,
+      'unused-imports': unusedImports
     },
 
     languageOptions: {
@@ -121,6 +124,32 @@ export default [
           disallowTypeAnnotations: true,
           fixStyle: 'separate-type-imports',
           prefer: 'type-imports'
+        }
+      ],
+
+      '@typescript-eslint/no-unused-vars': 'off',
+
+      'unused-imports/no-unused-imports': 'error',
+
+      'unused-imports/no-unused-vars': [
+        'warn',
+        {
+          vars: 'all',
+          varsIgnorePattern: '^_',
+          args: 'after-used',
+          argsIgnorePattern: '^_'
+        }
+      ],
+
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: '^(\\.\\./){2,}lib(/|$)',
+              message: 'Use the $lib alias instead of deep relative imports. Example: import X from "$lib/components/Foo".'
+            }
+          ]
         }
       ],
 

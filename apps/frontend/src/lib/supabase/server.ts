@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
+import { constants } from '$lib/utils/constants';
 import type { Database } from '@openvaa/supabase-types';
 import type { RequestEvent } from '@sveltejs/kit';
-import { constants } from '$lib/utils/constants';
 
 /**
  * Create a Supabase server client with cookie-based auth.

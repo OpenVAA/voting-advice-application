@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach,describe, expect, it, vi } from 'vitest';
+import { SupabaseAdminWriter } from './supabaseAdminWriter';
 
 // Mock $env/dynamic/public before any imports that depend on it
 vi.mock('$env/dynamic/public', () => ({
@@ -7,8 +8,6 @@ vi.mock('$env/dynamic/public', () => ({
     PUBLIC_SUPABASE_ANON_KEY: 'test-anon-key'
   }
 }));
-
-import { SupabaseAdminWriter } from './supabaseAdminWriter';
 
 /**
  * Creates a mock Supabase client with chainable PostgREST query patterns

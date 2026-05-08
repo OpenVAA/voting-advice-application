@@ -1,6 +1,6 @@
 import { createBrowserClient } from '@supabase/ssr';
-import type { Database } from '@openvaa/supabase-types';
 import { constants } from '$lib/utils/constants';
+import type { Database } from '@openvaa/supabase-types';
 
 let browserClient: ReturnType<typeof createBrowserClient<Database>> | null = null;
 

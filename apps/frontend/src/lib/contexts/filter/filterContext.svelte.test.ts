@@ -6,8 +6,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { page as mockPage } from '$app/state';
 import FilterContextHarness from './__tests__/FilterContextHarness.svelte';
 import GetFilterContextHarness from './__tests__/GetFilterContextHarness.svelte';
-import type { FilterContext } from './filterContext.type';
 import type { FilterTree } from '$lib/contexts/voter/filters/filterStore.svelte';
+import type { FilterContext } from './filterContext.type';
 
 // Helper: assigns to the `mockPage.params` stub. Cast to a permissive Record
 // because SvelteKit's auto-generated `app.d.ts` constrains `page.params` to

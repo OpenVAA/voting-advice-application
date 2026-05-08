@@ -10,7 +10,6 @@
 
 <script lang="ts">
   import { untrack } from 'svelte';
-  import type { Snippet } from 'svelte';
   import { get } from 'svelte/store';
   import { TermsOfUseForm } from '$candidate/components/termsOfUse';
   import { isValidResult } from '$lib/api/utils/isValidResult';
@@ -21,6 +20,7 @@
   import { getCandidateContext } from '$lib/contexts/candidate/candidateContext.svelte';
   import { logDebugError } from '$lib/utils/logger';
   import MainContent from '../../MainContent.svelte';
+  import type { Snippet } from 'svelte';
   import type { DPDataType } from '$lib/api/base/dataTypes';
   import type { LayoutData } from './$types';
 

@@ -37,7 +37,7 @@ export class FeedbackGenerator {
   constructor(private ctx: Ctx) {}
 
   // Phase 56 ignores ctx here; kept on the signature for D-08 consistency.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   defaults(ctx: Ctx): FeedbackFragment {
     return { count: 0 };
   }
@@ -52,7 +52,7 @@ export class FeedbackGenerator {
     for (const fx of fragment.fixed ?? []) {
       // Discard the external_id sentinel from Fragment<T>; feedback table has
       // no corresponding column. Postgres would reject it as an unknown field.
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+       
       const { external_id, ...rest } = fx;
       rows.push({
         ...rest,

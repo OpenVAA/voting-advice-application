@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { StackedState, simpleStackedState } from './StackedState.svelte';
+import { simpleStackedState,StackedState } from './StackedState.svelte';
 
 describe('StackedState', () => {
   it('constructor sets initial value as current (getLength() returns 1)', () => {
@@ -78,7 +78,7 @@ describe('StackedState', () => {
   it('push with mergeSettings-style updater (matching layoutContext pattern)', () => {
     // Simulates the pattern used in layoutContext.ts: mergeSettings on the last element
     type Settings = { a: number; b: string };
-    const mergeUpdater = (current: Settings[], value: Partial<Settings>) => [
+    const mergeUpdater = (current: Array<Settings>, value: Partial<Settings>) => [
       ...current,
       { ...current[current.length - 1], ...value }
     ];

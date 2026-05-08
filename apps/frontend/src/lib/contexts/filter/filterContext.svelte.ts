@@ -106,13 +106,13 @@ export function initFilterContext({ entityFilters }: InitFilterContextArgs): Fil
       _filterGroup?.reset();
     },
     addFilter(_spec) {
-      // eslint-disable-next-line no-console
+       
       console.warn(
         'filterContext.addFilter() is not implemented in Phase 62 — see D-06 (future LLM chat follow-up).'
       );
     },
     removeFilter(_id) {
-      // eslint-disable-next-line no-console
+       
       console.warn(
         'filterContext.removeFilter() is not implemented in Phase 62 — see D-06 (future LLM chat follow-up).'
       );

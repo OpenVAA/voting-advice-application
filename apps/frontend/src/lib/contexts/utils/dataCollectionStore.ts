@@ -1,5 +1,5 @@
-import { removeDuplicates } from '$lib/utils/removeDuplicates';
 import { derived } from 'svelte/store';
+import { removeDuplicates } from '$lib/utils/removeDuplicates';
 import type { Id } from '@openvaa/core';
 import type { DataObject, DataRoot } from '@openvaa/data';
 import type { Readable } from 'svelte/store';

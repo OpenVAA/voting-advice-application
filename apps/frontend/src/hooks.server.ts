@@ -1,10 +1,11 @@
 /* eslint-disable func-style -- SvelteKit hooks use typed const exports by convention */
-import { redirect, type Handle, type HandleServerError } from '@sveltejs/kit';
+import {  redirect } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { API_ROOT } from '$lib/api/base/universalApiRoutes';
 import { getLocale } from '$lib/paraglide/runtime';
 import { paraglideMiddleware } from '$lib/paraglide/server';
 import { createSupabaseServerClient } from '$lib/supabase/server';
+import type {Handle, HandleServerError} from '@sveltejs/kit';
 
 const NORMALIZED_API_ROOT = API_ROOT.replace(/^\/*/, '/');
 

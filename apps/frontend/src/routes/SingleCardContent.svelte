@@ -18,9 +18,9 @@ Defines the layout of the content of the `main` element (following the possible 
 -->
 
 <script lang="ts">
-  import type { Snippet } from 'svelte';
   import { getComponentContext } from '$lib/contexts/component';
   import { concatClass } from '$lib/utils/components';
+  import type { Snippet } from 'svelte';
   import type { MainContentProps } from './MainContent.type';
 
   type SingleCardContentProps = Omit<MainContentProps, 'titleClass' | 'primaryActionsLabel'> & {

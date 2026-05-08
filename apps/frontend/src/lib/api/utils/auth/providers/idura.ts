@@ -10,18 +10,17 @@
  *   claim mappings (`sub` for identity, plus `hetu` and `country`).
  */
 
-import type {
-  IdentityProvider,
-  AuthorizeParams,
-  AuthorizeResult,
-  TokenExchangeParams,
-  TokenExchangeResult,
-  IdTokenClaimsResult
-} from './types';
-import { IDURA_AUTH_CONFIG } from './authConfig';
+import * as jose from 'jose';
 import { constants } from '$lib/server/constants';
 import { constants as publicConstants } from '$lib/utils/constants';
-import * as jose from 'jose';
+import { IDURA_AUTH_CONFIG } from './authConfig';
+import type {
+  AuthorizeParams,
+  AuthorizeResult,
+  IdentityProvider,
+  IdTokenClaimsResult,
+  TokenExchangeParams,
+  TokenExchangeResult} from './types';
 
 /**
  * Load the Idura RS256 signing key from environment configuration.
@@ -33,7 +32,7 @@ import * as jose from 'jose';
  * @throws {Error} If the signing key cannot be found for the configured KID.
  */
 async function getSigningKey(): Promise<{ key: CryptoKey | Uint8Array; jwk: jose.JWK }> {
-  const signingJwkSet = JSON.parse(constants.IDURA_SIGNING_JWKS || '[]') as jose.JWK[];
+  const signingJwkSet = JSON.parse(constants.IDURA_SIGNING_JWKS || '[]') as Array<jose.JWK>;
   const signingJwk = signingJwkSet.find((jwk) => jwk.kid === constants.IDURA_SIGNING_KEY_KID);
   if (!signingJwk) {
     throw new Error('Idura signing key not found for kid: ' + constants.IDURA_SIGNING_KEY_KID);
@@ -116,7 +115,7 @@ export const iduraProvider: IdentityProvider = {
 
   async getIdTokenClaims(idToken: string): Promise<IdTokenClaimsResult> {
     try {
-      const privateEncryptionJWKSet: jose.JWK[] = JSON.parse(constants.IDENTITY_PROVIDER_DECRYPTION_JWKS || '[]');
+      const privateEncryptionJWKSet: Array<jose.JWK> = JSON.parse(constants.IDENTITY_PROVIDER_DECRYPTION_JWKS || '[]');
 
       const { kid } = jose.decodeProtectedHeader(idToken);
       const privateEncryptionJWK = privateEncryptionJWKSet.find((jwk) => jwk.kid === kid);

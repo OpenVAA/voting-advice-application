@@ -35,7 +35,9 @@ describe('mergeSettings', () => {
   });
 
   test('Should preserve function values from the overlay by reference', () => {
-    const fn = (): number => 42;
+    function fn(): number {
+      return 42;
+    }
     const result = mergeSettings({}, { fn });
     expect(typeof result.fn).toBe('function');
     expect(result.fn()).toBe(42);

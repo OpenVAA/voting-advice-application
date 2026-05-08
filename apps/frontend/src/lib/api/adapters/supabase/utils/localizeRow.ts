@@ -14,7 +14,7 @@ import { getLocalized } from './getLocalized';
  */
 export function localizeRow(
   row: Record<string, unknown>,
-  fields: string[],
+  fields: Array<string>,
   locale: string,
   defaultLocale: string = 'en'
 ): Record<string, unknown> {

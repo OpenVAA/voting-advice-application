@@ -42,7 +42,6 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   import type { AnyQuestionVariant } from '@openvaa/data';
   import type { Tab } from '$lib/components/tabs';
   import type { AnswerStore } from '$lib/contexts/voter';
-  import type { MatchTree } from '$lib/contexts/voter/matchStore.svelte';
   import type { VoterContext } from '$lib/contexts/voter/voterContext.type';
   import type { EntityDetailsProps } from './EntityDetails.type';
 

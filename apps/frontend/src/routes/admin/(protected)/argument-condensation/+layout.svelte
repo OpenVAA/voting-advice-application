@@ -8,13 +8,13 @@
 -->
 
 <script lang="ts">
-  import type { Snippet } from 'svelte';
   import WithPolling from '$lib/admin/components/jobs/WithPolling.svelte';
   import { isValidResult } from '$lib/api/utils/isValidResult';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Loading } from '$lib/components/loading';
   import { getAdminContext } from '$lib/contexts/admin';
   import { logDebugError } from '$lib/utils/logger';
+  import type { Snippet } from 'svelte';
   import type { DPDataType } from '$lib/api/base/dataTypes';
 
   let { data, children }: { data: any; children: Snippet } = $props();

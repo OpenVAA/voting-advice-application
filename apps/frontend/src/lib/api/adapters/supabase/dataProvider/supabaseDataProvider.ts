@@ -1,11 +1,21 @@
+import { ENTITY_TYPE } from '@openvaa/data';
 import { UniversalDataProvider } from '$lib/api/base/universalDataProvider';
-import { supabaseAdapterMixin } from '../supabaseAdapter';
-import { getLocalized } from '../utils/getLocalized';
-import { toDataObject } from '../utils/toDataObject';
-import { parseStoredImage } from '../utils/storageUrl';
 import { parseAnswers } from '$lib/api/utils/parseAnswers';
 import { constants } from '$lib/utils/constants';
-import { ENTITY_TYPE } from '@openvaa/data';
+import { supabaseAdapterMixin } from '../supabaseAdapter';
+import { getLocalized } from '../utils/getLocalized';
+import { parseStoredImage } from '../utils/storageUrl';
+import { toDataObject } from '../utils/toDataObject';
+import type { DynamicSettings } from '@openvaa/app-shared';
+import type {
+  AnyEntityVariantData,
+  AnyNominationVariantPublicData,
+  AnyQuestionVariantData,
+  ConstituencyData,
+  ConstituencyGroupData,
+  ElectionData,
+  QuestionCategoryData
+} from '@openvaa/data';
 import type { DPDataType } from '$lib/api/base/dataTypes';
 import type {
   GetAppCustomizationOptions,
@@ -17,18 +27,8 @@ import type {
   GetQuestionsOptions
 } from '$lib/api/base/getDataOptions.type';
 import type { AppCustomization } from '$lib/contexts/app';
-import type { DynamicSettings } from '@openvaa/app-shared';
-import type {
-  AnyEntityVariantData,
-  AnyNominationVariantPublicData,
-  AnyQuestionVariantData,
-  ConstituencyData,
-  ConstituencyGroupData,
-  ElectionData,
-  QuestionCategoryData
-} from '@openvaa/data';
-import type { InternalFlatNomination } from './supabaseDataProvider.type';
 import type { TranslationKey } from '$types';
+import type { InternalFlatNomination } from './supabaseDataProvider.type';
 
 /**
  * Supabase implementation of the DataProvider.
@@ -262,7 +262,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     // unique (election_id, constituency_id) keys so the fan-out cannot produce
     // nomination duplicates, but guard with a Set to be safe.
     const entityMap = new Map<string, AnyEntityVariantData>();
-    const nominations: AnyNominationVariantPublicData[] = [];
+    const nominations: Array<AnyNominationVariantPublicData> = [];
     const seenNominationIds = new Set<string>();
 
     // Build nomination_id → entity_type map for parent-type derivation.
@@ -429,7 +429,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
       types.push({ table: 'organizations', entityType: ENTITY_TYPE.Organization });
     }
 
-    const results: AnyEntityVariantData[] = [];
+    const results: Array<AnyEntityVariantData> = [];
 
     for (const { table, entityType } of types) {
       let query = this.supabase.from(table).select('*').order('sort_order');
@@ -483,7 +483,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     if (options?.electionId) {
       const filterElectionId = Array.isArray(options.electionId) ? options.electionId : [options.electionId];
       categories = categories.filter((cat) => {
-        const catElectionIds = (cat as any).electionIds as string[] | null;
+        const catElectionIds = (cat as any).electionIds as Array<string> | null;
         // Include categories with no electionIds (applicable to all) or matching
         return (
           !catElectionIds ||

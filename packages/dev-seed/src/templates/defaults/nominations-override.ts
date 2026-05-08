@@ -158,8 +158,9 @@ export function nominationsOverride(_fragment: unknown, ctx: Ctx): Array<Record<
 
   const electionExtId = elections[0].external_id;
 
-  const orgNomExtId = (orgIdx: number, constIdx: number): string =>
-    `${externalIdPrefix}nom_org_${organizations[orgIdx].external_id}_${constituencies[constIdx].external_id}`;
+  function orgNomExtId(orgIdx: number, constIdx: number): string {
+    return `${externalIdPrefix}nom_org_${organizations[orgIdx].external_id}_${constituencies[constIdx].external_id}`;
+  }
 
   const rows: Array<NominationRow> = [];
 

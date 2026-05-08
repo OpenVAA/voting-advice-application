@@ -8,11 +8,11 @@
 -->
 
 <script lang="ts">
-  import type { Snippet } from 'svelte';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Loading } from '$lib/components/loading';
   import { getAdminContext } from '$lib/contexts/admin';
   import { logDebugError } from '$lib/utils/logger';
+  import type { Snippet } from 'svelte';
 
   let { data, children }: { data: any; children: Snippet } = $props();
 

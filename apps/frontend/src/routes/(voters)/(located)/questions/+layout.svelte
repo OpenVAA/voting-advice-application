@@ -8,12 +8,12 @@
 
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import type { Snippet } from 'svelte';
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
   import MainContent from '../../../MainContent.svelte';
+  import type { Snippet } from 'svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts

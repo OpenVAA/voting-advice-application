@@ -19,8 +19,8 @@ import type { Readable } from 'svelte/store';
  * @typeParam TAddition - The type of items added to the stack. Defaults to `TMerged`.
  */
 export class StackedState<TMerged, TAddition = TMerged> implements Readable<TMerged> {
-  #stack: TMerged[] = $state([]);
-  #updater: (current: TMerged[], value: TAddition) => TMerged[];
+  #stack: Array<TMerged> = $state([]);
+  #updater: (current: Array<TMerged>, value: TAddition) => Array<TMerged>;
   #store: Readable<TMerged> | undefined;
 
   /**
@@ -28,7 +28,7 @@ export class StackedState<TMerged, TAddition = TMerged> implements Readable<TMer
    */
   readonly current: TMerged = $derived(this.#stack[this.#stack.length - 1]);
 
-  constructor(initialValue: TMerged, updater: (current: TMerged[], value: TAddition) => TMerged[]) {
+  constructor(initialValue: TMerged, updater: (current: Array<TMerged>, value: TAddition) => Array<TMerged>) {
     this.#stack = [initialValue];
     this.#updater = updater;
   }
