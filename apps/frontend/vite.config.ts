@@ -2,6 +2,7 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
+import ViteRestart from 'vite-plugin-restart';
 
 export default defineConfig({
   plugins: [
@@ -12,7 +13,10 @@ export default defineConfig({
       strategy: ['url', 'cookie', 'baseLocale']
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }) as any,
-    sveltekit()
+    sveltekit(),
+    ViteRestart({
+      restart: ['../../.env']
+    })
   ],
   resolve: {
     preserveSymlinks: true
