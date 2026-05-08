@@ -37,6 +37,30 @@ Known infrastructure issue: local imgproxy Docker container crashes intermittent
 
 **Out of scope (deferred to v2.8+):** `results-url-refactor-followups` + `frontend-project-id-scoping` — pair as a "sharable URLs + multi-tenant" milestone. Plus: `nominations` table cleanup (DB-01); 95 pre-existing frontend lint errors; alliance card render UI work; `@openvaa/supabase` lint-script rename.
 
+## Current Milestone: v2.8 Alliance Card + Frontend Hygiene Sweep
+
+**Goal:** Close v2.7's deferred Svelte 5 / typing / lint loose ends and finish the alliance card render path, in one cohesive frontend hygiene + small-UI-feature milestone.
+
+**Target features (7):**
+
+- Alliance card render path (Lane A — full alliance card with member-orgs surface; reconciles v2.7 SEED-01 SC-2 PASS-WITH-CONCERNS)
+- Svelte 5 / SSR / a11y warning sweep (consolidated `state_referenced_locally` + missing `<slot />` / `{@render children()}` + a11y warnings surfaced during Phase 67 UAT)
+- Frontend strict-typing cleanup (95 pre-existing ESLint errors deferred under v2.7 Phase 68 Option C — 67 `no-explicit-any`, 13 `naming-convention`, 11 `func-style`, etc.)
+- `@openvaa/app-shared` paradigm normalisation (imports/barrel/build conventions aligned with core/data/matching/filters)
+- Remove `mergeSettings` re-export shim in `apps/frontend/src/lib/utils/merge.ts`
+- `@openvaa/supabase` lint-script rename (SQL/ESLint pipeline conflation)
+- Phase 65 Plan 01 `bind:*` rationale comment cleanup (strip 92 inline `// bind: keep —` lines now that the audit is captured in CLAUDE.md)
+
+**Out of scope (deferred to v2.9+):**
+
+- **E2E coverage workstream** — inventory captured in `.planning/notes/2026-05-08-e2e-test-inventory.md` (~103 tests, ~30 gap categories). User-led audit of the inventory is the input to the v2.9 requirements step.
+- **Sharable URLs + multi-tenant pair** — `results-url-refactor-followups` + `frontend-project-id-scoping`. Pair best together; benefits from v2.8's typing cleanup landing first.
+
+**Key context:**
+
+- All 7 v2.8 features cluster as 1 small user-facing feature (alliance card) + 6 frontend/package hygiene items. Risk profile: low. Phases can be discussed and planned in parallel.
+- Pending todos remain in `.planning/todos/pending/` for future milestones: party-app generalization, candidate-answer-store investigation, password-reset-code-method + register-page-registrationkey-method (Strapi-era cleanup), configurable-mock-data, adapter-package-loading, rename-admin-writer.
+
 ## Requirements
 
 ### Validated
@@ -123,13 +147,29 @@ Known infrastructure issue: local imgproxy Docker container crashes intermittent
 
 ### Active
 
-_v2.8 — to be defined. Run `/gsd-new-milestone` to scope the next milestone via questioning → research → requirements → roadmap._
+**v2.8 — Alliance Card + Frontend Hygiene Sweep** (current milestone — see "Current Milestone: v2.8" above for the full target-feature list and out-of-scope notes)
 
-**Likely v2.8 candidates** (carried forward):
+- [ ] Alliance card render path (Lane A)
+- [ ] Svelte 5 / SSR / a11y warning sweep
+- [ ] Frontend strict-typing cleanup (95 ESLint errors)
+- [ ] `@openvaa/app-shared` paradigm normalisation
+- [ ] Remove `mergeSettings` re-export shim
+- [ ] `@openvaa/supabase` lint-script rename
+- [ ] Phase 65 Plan 01 `bind:*` rationale comment cleanup
+
+**Likely v2.9 candidates** (carried forward, deferred from v2.8 scoping):
+- E2E coverage gap closure + suite determinism — anchored on `.planning/notes/2026-05-08-e2e-test-inventory.md` (user-led inventory audit pending)
 - "Sharable URLs + multi-tenant" pair: `results-url-refactor-followups` + `frontend-project-id-scoping`
-- Frontend strict-typing migration: 95 pre-existing ESLint errors documented in v2.7 Phase 68 DEFERRED
-- Alliance card render path (3 lanes captured in pending todo from Phase 67)
-- `@openvaa/supabase` lint-script rename (SQL/ESLint pipeline conflation)
+
+**Other pending todos** (carried forward, lower priority — not on a current milestone roadmap):
+- Generalize candidate app to support parties as first-class registrants
+- Investigate migrating candidate answer store (architectural)
+- `password-reset-code-method` + `register-page-registrationkey-method` (Strapi-era leftovers; both medium priority)
+- `configurable-mock-data` (Supabase replacement for `GENERATE_MOCK_DATA_ON_INITIALISE`)
+- `adapter-package-loading` (tsconfig-based importable adapter)
+- `extend-e2e-filter-type-coverage` + `remove-e2e-skip-modifiers` (will fold into the v2.9 E2E milestone)
+- `rename-admin-writer` (dev-seed internal API hygiene)
+- `sql-linting-formatting` (CI hygiene)
 
 ### Future
 - [ ] Claude Skills: architect, components, LLM (deferred to post-Svelte 5 stabilization)
@@ -197,12 +237,14 @@ Each major initiative is a separate milestone, executed in order:
 11. ~~**Dev Data Seeding Toolkit**~~ — Shipped v2.5 (2026-04-24)
 12. ~~**Svelte 5 Migration Cleanup**~~ — Shipped v2.6 (2026-04-28). Runes migration for root + candidate-protected layouts; protected-layout hydration bug fixed via `$derived.by` discriminated-union pattern; `EntityListControls` infinite-loop resolved via `$state` version-counter bridge; voter-app question/results surfaces fully reactive; `PopupRenderer` removed; e2e template ships `app_settings.fixed[]`
 13. ~~**Svelte 5 Polish + Supabase-Adapter Loose Ends**~~ — Shipped v2.7 (2026-05-08). 4 phases (65-68), 9 plans, 28 tasks. SVELTE5 audit sweeps (92 `bind:*` annotations, `{#key}` justifications, context-destructuring rule); ADAPTER-01 type cleanup (zero `as unknown as` casts, `InternalFlatNomination` intermediate); SEED-01 default-seed alliances exercising the v2.6 P64 reverse-fill (PASS-WITH-CONCERNS — alliance card render deferred); DEVTOOLS trio (autoreload via Turborepo `--watch` + Vite HMR + `vite-plugin-restart` + `concurrently`-composed `yarn dev`; ESLint gains `unused-imports` + `$lib`-preference; Deno IDE scope corrected to doubled `apps/supabase/supabase/functions`). 95 pre-existing frontend lint errors deferred per user-approved Option C
-14. **Claude Skills (remaining)** — Architect, components, LLM skills
-15. **Admin App Migration** — Move admin functions from Strapi plugin to frontend Admin App
-16. **Security Scanning** — Automated security, secrets scanning, and testing
-17. **Settings & Configuration Reorg** — Rationalize the split between StaticSettings, DynamicSettings, env vars, and the `app_settings` / `app_customization` tables; unify the customization paradigm across voter, candidate, and admin apps
-18. **Parties in Candidate App** — Generalize the candidate-app preregistration and profile flows so party organizations (not just individual candidates) can onboard, manage members, and maintain their public-facing data
-19. **Results URL refactor** — Switch `/results` detail route from `[entityType]/[entityType]/[id]?nominationId=...` to `/results/[entType]/[nominationId]`; drop redundant `nominationId`/`electionId`/`constituencyId` search params; consider extending the `[electionId]` path prefix to upstream voter routes (`/questions/category`, etc.); evaluate shorter URL IDs (slug or short-hash) — see `.planning/todos/pending/results-url-refactor-followups.md`
+14. **Alliance Card + Frontend Hygiene Sweep** (v2.8 — current) — Alliance card Lane A; Svelte 5 / SSR / a11y warning sweep; 95 ESLint errors strict-typing cleanup; `@openvaa/app-shared` paradigm normalisation; `mergeSettings` re-export shim removal; `@openvaa/supabase` lint-script rename; `bind:*` rationale-comment cleanup
+15. **E2E Coverage + Suite Determinism** (v2.9 candidate) — Fill gaps from `.planning/notes/2026-05-08-e2e-test-inventory.md`; remove all `test.skip(true, …)`; resolve 19 data-loading race failures; add filter-type / locale / a11y coverage
+16. **Sharable URLs + Multi-tenant** (v2.9 candidate, paired with above) — Shorter IDs / multi-election URL schema (`results-url-refactor-followups`) + per-instance project scoping in frontend data provider (`frontend-project-id-scoping`)
+17. **Claude Skills (remaining)** — Architect, components, LLM skills
+18. **Admin App Migration** — Move admin functions from Strapi plugin to frontend Admin App
+19. **Security Scanning** — Automated security, secrets scanning, and testing
+20. **Settings & Configuration Reorg** — Rationalize the split between StaticSettings, DynamicSettings, env vars, and the `app_settings` / `app_customization` tables; unify the customization paradigm across voter, candidate, and admin apps
+21. **Parties in Candidate App** — Generalize the candidate-app preregistration and profile flows so party organizations (not just individual candidates) can onboard, manage members, and maintain their public-facing data
 
 ## Key Decisions
 
@@ -318,4 +360,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-_Last updated: 2026-05-08 after v2.7 milestone shipped (4 phases, 9 plans, 28 tasks; audit verdict tech_debt with 8/8 reqs wired and 3 documented deferrals; v2.6 parity gate continues to PASS at 67p/1f/34c)_
+_Last updated: 2026-05-08 after v2.8 (Alliance Card + Frontend Hygiene Sweep) milestone scoped — 7 target features (1 user-facing UI feature + 6 frontend/package hygiene items). E2E coverage workstream + sharable URLs / multi-tenant pair deferred to v2.9. E2E test inventory captured at `.planning/notes/2026-05-08-e2e-test-inventory.md`._

@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.7
-milestone_name: Svelte 5 Polish + Supabase-Adapter Loose Ends
-status: Awaiting next milestone
-stopped_at: Phase 67 closed (UAT 10/10, security 6/6 closed with 2 accepted risks, parity gate PASS). Ready to plan Phase 68 (Dev-Tooling Trio).
-last_updated: "2026-05-08T19:21:31.042Z"
-last_activity: 2026-05-08 — Milestone v2.7 completed and archived
+milestone: v2.8
+milestone_name: Alliance Card + Frontend Hygiene Sweep
+status: planning
+last_updated: "2026-05-08T19:52:55.338Z"
+last_activity: 2026-05-08
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 9
-  completed_plans: 9
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -25,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 
 ## Current Position
 
-Phase: Milestone v2.7 complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-05-08 — Milestone v2.7 completed and archived
+Status: Defining requirements
+Last activity: 2026-05-08 — Milestone v2.8 started
 
 ## Performance Metrics
 
