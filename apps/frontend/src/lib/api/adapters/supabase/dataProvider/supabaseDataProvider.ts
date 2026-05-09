@@ -7,6 +7,8 @@ import { getLocalized } from '../utils/getLocalized';
 import { parseStoredImage } from '../utils/storageUrl';
 import { toDataObject } from '../utils/toDataObject';
 import type { DynamicSettings } from '@openvaa/app-shared';
+import type { StoredImage } from '../utils/storageUrl';
+import type { LocalizedAnswers } from '$lib/api/base/dataWriter.type';
 import type {
   AnyEntityVariantData,
   AnyNominationVariantPublicData,
@@ -16,6 +18,7 @@ import type {
   ElectionData,
   QuestionCategoryData
 } from '@openvaa/data';
+import type { Json } from '@openvaa/supabase-types';
 import type { DPDataType } from '$lib/api/base/dataTypes';
 import type {
   GetAppCustomizationOptions,
@@ -98,9 +101,10 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     }
 
     // Convert image storage paths to URLs
-    result.publisherLogo = parseStoredImage(raw.publisherLogo as any, supabaseUrl);
-    result.poster = parseStoredImage(raw.poster as any, supabaseUrl);
-    result.candPoster = parseStoredImage(raw.candPoster as any, supabaseUrl);
+    // reason: JSONB columns return Json (structural superset of StoredImage); parseStoredImage runtime-guards on .path
+    result.publisherLogo = parseStoredImage(raw.publisherLogo as Json as unknown as StoredImage | null, supabaseUrl);
+    result.poster = parseStoredImage(raw.poster as Json as unknown as StoredImage | null, supabaseUrl);
+    result.candPoster = parseStoredImage(raw.candPoster as Json as unknown as StoredImage | null, supabaseUrl);
 
     // Localize translation overrides (each value is a LocalizedString)
     if (raw.translationOverrides && typeof raw.translationOverrides === 'object') {
@@ -151,7 +155,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
         date: row.election_date ? String(row.election_date) : undefined,
         round: row.current_round ?? undefined,
         subtype: row.election_type ?? row.subtype ?? undefined,
-        image: parseStoredImage(row.image as any, supabaseUrl),
+        image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl),
         constituencyGroupIds: (
           (row.election_constituency_groups as Array<{ constituency_group_id: string }>) ?? []
         ).map((jt) => jt.constituency_group_id)
@@ -184,7 +188,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
       const obj = toDataObject(row as Record<string, unknown>, locale, this.defaultLocale);
       return {
         ...obj,
-        image: parseStoredImage(row.image as any, supabaseUrl),
+        image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl),
         constituencyIds: ((row.constituency_group_constituencies as Array<{ constituency_id: string }>) ?? []).map(
           (jt) => jt.constituency_id
         )
@@ -207,7 +211,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
       const keywords = localizedKeywords ? localizedKeywords.split(/,\s*/).filter(Boolean) : undefined;
       return {
         ...obj,
-        image: parseStoredImage(row.image as any, supabaseUrl),
+        image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl),
         keywords
       } as ConstituencyData;
     });
@@ -317,7 +321,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
         ...nomObj,
         entityType: row.entity_type,
         entityId: row.entity_id,
-        image: parseStoredImage(row.image as any, supabaseUrl)
+        image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl)
       };
       if (parentNominationId != null && parentNominationType != null) {
         nominationOut.parentNominationType = parentNominationType;
@@ -348,8 +352,8 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
         const entity: Record<string, unknown> = {
           ...entityObj,
           type: entityType,
-          image: parseStoredImage(row.entity_image as any, supabaseUrl),
-          answers: parseAnswers(row.entity_answers as any, locale)
+          image: parseStoredImage(row.entity_image as Json as unknown as StoredImage | null, supabaseUrl),
+          answers: parseAnswers(row.entity_answers as Json as unknown as LocalizedAnswers | null, locale)
         };
 
         // Candidate-specific fields
@@ -444,8 +448,8 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
         results.push({
           ...obj,
           type: entityType,
-          image: parseStoredImage(row.image as any, supabaseUrl),
-          answers: parseAnswers(row.answers as any, locale)
+          image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl),
+          answers: parseAnswers(row.answers as Json as unknown as LocalizedAnswers | null, locale)
         } as AnyEntityVariantData);
       }
     }
@@ -475,7 +479,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
         ...obj,
         // QuestionCategoryData uses 'type' not 'categoryType'
         type: row.category_type ?? 'opinion',
-        image: parseStoredImage(row.image as any, supabaseUrl)
+        image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl)
       } as QuestionCategoryData;
     });
 
@@ -483,7 +487,8 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     if (options?.electionId) {
       const filterElectionId = Array.isArray(options.electionId) ? options.electionId : [options.electionId];
       categories = categories.filter((cat) => {
-        const catElectionIds = (cat as any).electionIds as Array<string> | null;
+        // reason: electionIds is a runtime-only field tacked on by toDataObject; not yet in QuestionCategoryData
+        const catElectionIds = (cat as QuestionCategoryData & { electionIds?: Array<string> | null }).electionIds ?? null;
         // Include categories with no electionIds (applicable to all) or matching
         return (
           !catElectionIds ||
@@ -524,7 +529,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
         ...obj,
         type: row.type, // question_type enum passes through as-is
         choices,
-        image: parseStoredImage(row.image as any, supabaseUrl)
+        image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl)
       } as AnyQuestionVariantData;
     });
 

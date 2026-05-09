@@ -4,6 +4,8 @@ import { constants } from '$lib/utils/constants';
 import { supabaseAdapterMixin } from '../supabaseAdapter';
 import { parseStoredImage } from '../utils/storageUrl';
 import { toDataObject } from '../utils/toDataObject';
+import type { Json, Tables } from '@openvaa/supabase-types';
+import type { StoredImage } from '../utils/storageUrl';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type {
   BasicUserData,
@@ -202,7 +204,8 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
       id: entityRow.id,
       answers: (entityRow.answers as LocalizedAnswers) ?? {},
       termsOfUseAccepted: entityRow.terms_of_use_accepted ?? null,
-      image: parseStoredImage(entityRow.image as any, constants.PUBLIC_SUPABASE_URL)
+      // reason: JSONB columns return Json (structural superset of StoredImage); parseStoredImage runtime-guards on .path
+      image: parseStoredImage(entityRow.image as Json as unknown as StoredImage | null, constants.PUBLIC_SUPABASE_URL)
     } as LocalizedCandidateData;
 
     // Load nominations if requested
@@ -217,7 +220,7 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
 
       if (nomError) throw new Error(`Failed to load nominations: ${nomError.message}`);
 
-      const nominationsList = (nomData ?? []).map((n: any) => ({
+      const nominationsList = (nomData ?? []).map((n: Tables<'nominations'>['Row']) => ({
         electionId: n.election_id,
         constituencyId: n.constituency_id,
         electionRound: n.election_round ?? 1,
@@ -346,7 +349,8 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     if (error) throw new Error(`updateEntityProperties: ${error.message}`);
     return {
       termsOfUseAccepted: data.terms_of_use_accepted ?? null,
-      image: parseStoredImage(data.image as any, constants.PUBLIC_SUPABASE_URL)
+      // reason: JSONB columns return Json (structural superset of StoredImage); parseStoredImage runtime-guards on .path
+      image: parseStoredImage(data.image as Json as unknown as StoredImage | null, constants.PUBLIC_SUPABASE_URL)
     } as unknown as LocalizedCandidateData;
   }
 
