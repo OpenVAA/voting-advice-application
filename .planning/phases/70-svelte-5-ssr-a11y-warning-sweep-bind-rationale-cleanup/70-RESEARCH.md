@@ -721,22 +721,22 @@ The following project-instruction directives apply to Phase 70 work:
 | A3 | The likely Cat D site is `WithPolling.svelte:24` `startPolling()` because it fires synchronously at component-init and the polling kickoff calls `fetch` immediately | §Confirmed Warning Sites Category D | MEDIUM — static analysis suggests this is the only site, but the CONTEXT.md anchor mentions `apps/frontend/src/lib/api/adapters/supabase/**` as a likely target. Plan-70-04 Task 1 cold-start capture is the source of truth. |
 | A4 | Pattern 3 Option A (`<button>` promotion) for Input.svelte:521 likely doesn't break visual styling since the file-input click target is a visually-prominent button-like UI ("Add image" / image preview) anyway | §Pitfall 3 | LOW — visual smoke during Plan-70-03 confirms or denies. Fallback (Option B) is well-defined. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should Plan-70-04 Task 1 be a separate "capture" plan (60 min: cold-start + walk dev-server traces) before Task 2 implementation?**
    - What we know: Cat D's per-site surface is unknowable from static analysis alone; the cold-start capture is the source of truth.
    - What's unclear: Whether to model Task 1 as a "research-style task within the plan" or split into a separate scout plan first.
-   - Recommendation: Keep Task 1 inside Plan-70-04 (matches the v2.7 Phase 65 pattern of audit-then-fix in one plan). Don't split.
+   - RESOLVED: Keep Task 1 inside Plan-70-04 (matches the v2.7 Phase 65 pattern of audit-then-fix in one plan). Don't split.
 
 2. **Should the `// svelte-warning: accepted —` convention be added to CLAUDE.md as a permanent format rule (per D-05's "planner may pick a different convention")?**
    - What we know: D-05 specifies `// svelte-warning: accepted — <reason>`. Phase 65 used `// bind: keep —` and `// bind: migrate —`. Both are precedent.
    - What's unclear: Whether to add a one-paragraph CLAUDE.md note documenting `// svelte-warning: accepted —` as the standing pattern for future phases.
-   - Recommendation: ADD a 3-line note to CLAUDE.md §"Important Implementation Notes" or a new §"Svelte Warning Conventions" — matches the spirit of D-02's CLAUDE.md anchor for the Cat A pattern. Plan-70-03 Task N (the only plan that adds an `accepted` justification) can do this in the same commit.
+   - RESOLVED: Defer to a follow-up todo (NOT folded into Plan-70-03). The CLAUDE.md update is a separate small docs task. Plan-70-03's `<files>` lists only `Input.svelte`, so adding a CLAUDE.md edit would inflate scope; and currently 0 sites use Option B `// svelte-warning: accepted —` (the planning surface is structural fixes per Pattern 3 Option A), so the doc note would be preemptive. Captured at `.planning/todos/pending/2026-05-09-claude-md-svelte-warning-accepted-format.md` and tied to "after Phase 70 lands a real Option B accepted-warning case".
 
 3. **Should Plan-70-05 also strip the 11 existing `// svelte-ignore state_referenced_locally` lines in test harnesses + production sites (e.g., LogoutButton.svelte:55, ConstituencySelector.svelte:51)?**
    - What we know: 11 such silences exist `[VERIFIED]`. They were added pre-Phase-70 (likely Phase 65 or earlier).
    - What's unclear: Whether they're in scope for Phase 70's "leave a clean tree" charter.
-   - Recommendation: **OUT OF SCOPE.** They are deliberate silences with a known intent. CONTEXT.md `<deferred>` doesn't enumerate them; Phase 70 doesn't revisit. A future phase (or a follow-up todo) may audit if needed.
+   - RESOLVED: **OUT OF SCOPE.** They are deliberate silences with a known intent. CONTEXT.md `<deferred>` doesn't enumerate them; Phase 70 doesn't revisit. A future phase (or a follow-up todo) may audit if needed.
 
 ## Sources
 

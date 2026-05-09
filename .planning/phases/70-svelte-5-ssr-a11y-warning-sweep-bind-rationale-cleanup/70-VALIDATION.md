@@ -48,8 +48,8 @@ created: 2026-05-09
 | 70-02-02 | 02 (Cat B) | 1 | WARN-01 SC-2 | — | render preserved | smoke | manual: voter-flow navigation through `(voters)/(located)/results/` and `nominations` paths — children render correctly | ✅ manual | ⬜ pending |
 | 70-03-01 | 03 (Cat C) | 1 | WARN-01 SC-3 | — | a11y compliant | static | `yarn workspace @openvaa/frontend check 2>&1 \| grep "a11y_no_noninteractive_element_interactions" \| wc -l` returns `0` (or accepted with `// svelte-warning: accepted —`) | ✅ existing infra | ⬜ pending |
 | 70-03-02 | 03 (Cat C) | 1 | WARN-01 SC-3 | — | label-for-input association | manual | keyboard: tab into Input.svelte focus chain; screen-reader: label announces with input | ✅ manual | ⬜ pending |
-| 70-04-01 | 04 (Cat D) | 1 | WARN-01 SC-1b/D | — | N/A (hygiene) | dynamic | cold `yarn workspace @openvaa/frontend dev` 2>&1 \| grep "fetch.*eagerly" \| wc -l` returns `0` (after WithPolling.svelte fix moves `startPolling()` into `onMount`) | ✅ existing infra | ⬜ pending |
-| 70-04-02 | 04 (Cat D) | 1 | WARN-01 SC-1b/D | — | polling still works | smoke | manual: navigate to admin/jobs route — polling fetches still trigger and update UI | ✅ manual | ⬜ pending |
+| 70-04-01 | 04 (Cat D) | 2 | WARN-01 SC-1b/D | — | N/A (hygiene) | dynamic | cold `yarn workspace @openvaa/frontend dev` 2>&1 \| grep "fetch.*eagerly" \| wc -l` returns `0` (after WithPolling.svelte fix moves `startPolling()` into `onMount`); Plan-70-04 depends_on 70-02 (script-block merge ordering) | ✅ existing infra | ⬜ pending |
+| 70-04-02 | 04 (Cat D) | 2 | WARN-01 SC-1b/D | — | polling still works | smoke | manual: navigate to admin/jobs route — polling fetches still trigger and update UI | ✅ manual | ⬜ pending |
 | 70-05-01 | 05 (BIND) | 2 | BIND-01 SC-4 | — | N/A (comment-only) | static | `git grep -nE "// bind: (keep\|ok\|justified)" apps/frontend/src/lib/ \| wc -l` returns `0`; `git grep -n "// bind: migrate" apps/frontend/src/lib/input/Input.svelte` returns the preserved 3-line block at lines 214-217 | ✅ existing infra | ⬜ pending |
 | 70-05-02 | 05 (BIND) | 2 | BIND-01 SC-4 | — | bind directives untouched | static | `git diff --stat HEAD~1 HEAD apps/frontend/src/lib/**/*.svelte` shows comment-only changes (no `bind:` line additions/removals) | ✅ existing infra | ⬜ pending |
 | 70-VR-01 | verify | close | WARN-01 + BIND-01 SC-5 | — | regression-free | full | `yarn workspace @openvaa/frontend build && yarn test:unit && yarn test:e2e` exits 0; v2.7-close Playwright parity baseline preserved | ✅ existing infra | ⬜ pending |
@@ -87,3 +87,5 @@ created: 2026-05-09
 - [ ] `nyquist_compliant: true` set in frontmatter (set after gsd-plan-checker passes)
 
 **Approval:** pending
+</content>
+</invoke>
