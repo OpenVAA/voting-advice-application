@@ -92,22 +92,25 @@ _Items tracked but not in v2.8 scope. Carry forward to v2.9+ or backlog._
 
 Phase assignments mapped to `.planning/ROADMAP.md`. Success-criterion references point to the numbered criteria under each phase's `**Success Criteria**` block in ROADMAP.md.
 
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| ALLIANCE-01 | TBD (roadmap) | Pending |
-| WARN-01 | TBD (roadmap) | Pending |
-| BIND-01 | TBD (roadmap) | Pending |
-| TYPING-01 | TBD (roadmap) | Pending |
-| SHARED-01 | TBD (roadmap) | Pending |
-| SHARED-02 | TBD (roadmap) | Pending |
-| LINT-01 | TBD (roadmap) | Pending |
+| Requirement | Phase | Success Criteria | Status |
+|-------------|-------|------------------|--------|
+| ALLIANCE-01 | Phase 69 — Alliance Card Lane A | SC-1, SC-2, SC-3, SC-4 | Pending |
+| WARN-01 | Phase 70 — Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup | SC-1 (Category A), SC-2 (Category B), SC-3 (Category C), SC-5 (regression gate) | Pending |
+| BIND-01 | Phase 70 — Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup | SC-4 (comment strip), SC-5 (regression gate) | Pending |
+| TYPING-01 | Phase 71 — Frontend Strict-Typing Cleanup | SC-1, SC-2, SC-3, SC-4 | Pending |
+| SHARED-01 | Phase 72 — Package Hygiene Trio | SC-1, SC-4 (regression gate) | Pending |
+| SHARED-02 | Phase 72 — Package Hygiene Trio | SC-2, SC-4 (regression gate) | Pending |
+| LINT-01 | Phase 72 — Package Hygiene Trio | SC-3, SC-4 (regression gate) | Pending |
 
 **Coverage:**
 - v2.8 requirements: 7 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 7 ⚠️ (will be filled by `gsd-roadmapper` in step 10)
+- Mapped to phases: 7 ✓
+- Unmapped: 0 ✓
+- Phases used: 4 (Phase 69, 70, 71, 72)
+- Orphaned phases: none (every phase has at least one requirement)
+- Duplicates: none (every requirement maps to exactly one phase)
 
 ---
 
 *Requirements defined: 2026-05-08*
-*Last updated: 2026-05-08 after initial definition*
+*Last updated: 2026-05-08 after roadmap drafted (4 phases 69-72; 7 requirements mapped 1:1)*

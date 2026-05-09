@@ -3,10 +3,10 @@ gsd_state_version: 1.0
 milestone: v2.8
 milestone_name: Alliance Card + Frontend Hygiene Sweep
 status: planning
-last_updated: "2026-05-08T19:52:55.338Z"
+last_updated: "2026-05-08T20:30:00.000Z"
 last_activity: 2026-05-08
 progress:
-  total_phases: 0
+  total_phases: 4
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -20,126 +20,116 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-08)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 68 — Dev-Tooling Trio
+**Current focus:** Phase 69 — Alliance Card Lane A (first phase of v2.8 Alliance Card + Frontend Hygiene Sweep; reconciles v2.7 SEED-01 SC-2 PASS-WITH-CONCERNS)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: Not started (roadmap drafted; awaiting `/gsd-discuss-phase` / `/gsd-plan-phase 69`)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-05-08 — Milestone v2.8 started
+Status: Roadmap drafted — 4 phases (69-72), 7 requirements mapped 1:1
+Last activity: 2026-05-08 — v2.8 ROADMAP.md written, REQUIREMENTS.md traceability filled
 
 ## Performance Metrics
 
 **Cumulative:**
 
-- Milestones shipped: 11 (v1.0, v1.1, v1.2, v1.3, v1.4, v2.0, v2.1, v2.3, v2.4, v2.5, v2.6) + 1 paused (v2.2)
-- Total plans completed: 201 + 6 tasks
-- Timeline: 32 days across 4 work windows (2026-03-01 → 2026-03-28 + v2.5 2026-04-23→24 + v2.6 2026-04-24→28)
-- v2.6 specifically: 5 phases, 18 plans, 48 tasks, 137 commits, ~5,400 LOC across 146 frontend/test files in 4 days
+- Milestones shipped: 12 (v1.0, v1.1, v1.2, v1.3, v1.4, v2.0, v2.1, v2.3, v2.4, v2.5, v2.6, v2.7) + 1 paused (v2.2)
+- Total plans completed: 210 + 6 tasks (v2.7 added 9 plans)
+- Timeline: 41 days across 5 work windows (2026-03-01 → 2026-03-28 + v2.5 2026-04-23→24 + v2.6 2026-04-24→28 + v2.7 2026-04-29→05-08)
+- v2.7 specifically: 4 phases (65-68), 9 plans, 28 tasks across 9 days
 
 ## Deferred Items
 
-Snapshot taken at v2.6 milestone close on 2026-04-28. The four todos that v2.6 phases addressed (entity-list-controls-infinite-loop, root-layout-runes-migration, svelte5-cleanup, svelte5-hydration-effect-then-bug) remain in `.planning/todos/pending/` because each accumulated extra audit items during execution that haven't been actioned yet (e.g. svelte5-cleanup picked up `bind:*` and `{#key}` audits during Phase 64 manual smoke).
+Snapshot taken at v2.7 milestone close on 2026-05-08. v2.8 requirements consume four of the listed pending todos directly (alliance card render, warning sweep, app-shared paradigm, mergeSettings shim, bind-rationale cleanup) plus the 95-error frontend lint deferral and the supabase lint-script rename — those will be removed from `.planning/todos/pending/` (or marked resolved) at v2.8 milestone close.
 
 | Category | Item | Status / Notes |
 |----------|------|----------------|
-| todo | 2026-03-28-generalize-candidate-app-to-party-app.md | ui — future party-app variant |
-| todo | 2026-03-28-investigate-migrating-candidate-answer-store.md | ui — architectural investigation |
-| todo | 2026-04-27-extend-e2e-filter-type-coverage.md | medium — added during v2.6 Phase 63 |
-| todo | 2026-04-27-remove-e2e-skip-modifiers.md | medium — added during v2.6 Phase 63 |
-| todo | adapter-package-loading.md | medium — tsconfig-based importable adapter |
-| todo | check-candidate-distribution.md | low — default seed candidate spread follow-up (partly mitigated by v2.6 densification) |
+| todo | 2026-03-28-generalize-candidate-app-to-party-app.md | ui — future party-app variant; not v2.8 |
+| todo | 2026-03-28-investigate-migrating-candidate-answer-store.md | ui — architectural investigation; not v2.8 |
+| todo | 2026-04-25-normalise-app-shared-paradigm.md | **v2.8 Phase 72 / SHARED-01** — mapped |
+| todo | 2026-04-25-remove-mergesettings-reexports.md | **v2.8 Phase 72 / SHARED-02** — mapped |
+| todo | 2026-04-27-extend-e2e-filter-type-coverage.md | medium — v2.9 E2E coverage milestone |
+| todo | 2026-04-27-remove-e2e-skip-modifiers.md | medium — v2.9 E2E coverage milestone |
+| todo | 2026-04-28-cleanup-nominations-table.md | DB-01 — deferred 2026-04-29; user opted to keep table as is |
+| todo | 2026-04-30-alliance-tab-rendering-and-sections-config.md | **v2.8 Phase 69 / ALLIANCE-01** (Lane A) — mapped |
+| todo | 2026-05-08-cleanup-65-01-bind-rationale-comments.md | **v2.8 Phase 70 / BIND-01** — mapped |
+| todo | 2026-05-08-expander-state-referenced-locally.md | superseded by `2026-05-08-results-layout-missing-slot-render-tag.md` (kept for history) |
+| todo | 2026-05-08-results-layout-missing-slot-render-tag.md | **v2.8 Phase 70 / WARN-01** (Categories A/B/C) — mapped |
+| todo | adapter-package-loading.md | medium — tsconfig-based importable adapter; not v2.8 |
+| todo | check-candidate-distribution.md | low — default seed candidate spread follow-up |
 | todo | configurable-mock-data.md | medium — Supabase GENERATE_MOCK_DATA env replacement |
-| todo | entity-list-controls-infinite-loop.md | resolved by v2.6 Phase 62 RESULTS-01/02/03 — file remains for any residual audit items |
-| todo | frontend-project-id-scoping.md | architecture — multi-tenant prep |
-| todo | password-reset-code-method.md | candidate-app auth flow |
-| todo | register-page-registrationkey-method.md | candidate-app auth flow |
-| todo | rename-admin-writer.md | dev-seed internal API hygiene |
-| todo | results-url-refactor-followups.md | added during v2.6 Phase 64 manual smoke — switch results detail to `/results/[entType]/[nominationId]`; drop redundant query params |
-| todo | root-layout-runes-migration.md | resolved by v2.6 Phase 60 LAYOUT-01/02/03 — file remains for any residual notes |
-| todo | session-storage-election-constituency.md | frontend session handling — partly mitigated by Phase 62's URL-based election scoping |
-| todo | sql-linting-formatting.md | CI hygiene |
-| todo | svelte5-cleanup.md | partly resolved (boolean Q + categories in Phase 61); items 4 (`bind:*` audit) and 5 (`{#key}` audit) added during Phase 64 — scheduled in v2.7 Phase 65 |
-| todo | svelte5-hydration-effect-then-bug.md | resolved by v2.6 Phase 60 LAYOUT-02 — file remains for any residual notes |
-| carry-forward | 165 pre-existing intra-package circular deps (data/matching/filters internal.ts barrel pattern) | Out-of-scope per v2.6 REQUIREMENTS.md §Future; dedicated refactor milestone |
-| infrastructure | Local imgproxy Docker container 502 on image upload (intermittent) | Not a code issue; fix with `supabase stop && supabase start`. Out-of-scope per v2.6 closure. |
+| todo | frontend-project-id-scoping.md | architecture — multi-tenant prep; v2.9 candidate (paired with results-url-refactor-followups) |
+| todo | password-reset-code-method.md | candidate-app auth flow; Strapi-era leftover |
+| todo | register-page-registrationkey-method.md | candidate-app auth flow; Strapi-era leftover |
+| todo | rename-admin-writer.md | dev-seed internal API hygiene; low priority |
+| todo | results-url-refactor-followups.md | architecture — sharable URLs; v2.9 candidate (paired with frontend-project-id-scoping) |
+| todo | session-storage-election-constituency.md | partly mitigated by v2.6 Phase 62 URL-based election scoping |
+| todo | sql-linting-formatting.md | CI hygiene; not v2.8 (LINT-01 is the supabase-package script rename, not the linter itself) |
+| carry-forward | 95 pre-existing apps/frontend ESLint errors (Option C deferral from v2.7 Phase 68) | **v2.8 Phase 71 / TYPING-01** — mapped (source: `.planning/milestones/v2.7-phases/68-dev-tooling-trio/68-02-DEFERRED.md`) |
+| carry-forward | @openvaa/supabase lint-script rename | **v2.8 Phase 72 / LINT-01** — mapped |
+| carry-forward | 165 pre-existing intra-package circular deps (data/matching/filters internal.ts barrel pattern) | Out of v2.8 scope; dedicated structural refactor milestone |
+| infrastructure | Local imgproxy Docker container 502 on image upload (intermittent) | Not a code issue; fix with `supabase stop && supabase start`. Carried forward. |
 
-**Pending todo count at close:** 18 (full audit available via `gsd-sdk query audit-open`).
-| Phase 65-svelte-5-audit-sweeps P01 | 90min | 3 tasks | 45 files |
-| Phase 65 P02 | 25min | 3 tasks | 9 files |
-| Phase 66 P01 | 60min | 4 tasks | 4 files |
-| Phase 67 P01 | 25min | 5 tasks | 6 files |
-| Phase 67 P02 | 90min | 5 tasks | 11 files |
+**Pending todo count at v2.7 close:** 18 (v2.8 will resolve 5 of these — 2026-04-25-normalise-app-shared-paradigm, 2026-04-25-remove-mergesettings-reexports, 2026-04-30-alliance-tab-rendering-and-sections-config, 2026-05-08-cleanup-65-01-bind-rationale-comments, 2026-05-08-results-layout-missing-slot-render-tag — plus the supersedes-relationship retire of 2026-05-08-expander-state-referenced-locally).
 
 ## Accumulated Context
 
 ### Roadmap Evolution
 
 - 2026-04-28: v2.6 Svelte 5 Migration Cleanup shipped. 5 phases (60-64), 18 plans, 48 tasks, 4 days. Tagged `v2.6` and archived to `.planning/milestones/v2.6-*`. Phase directories archived under `.planning/milestones/v2.6-phases/`.
-- 2026-04-29: v2.7 Svelte 5 Polish + Supabase-Adapter Loose Ends roadmap drafted. 4 phases (65-68), 11 plans estimated:
-  - Phase 65 — Svelte 5 Audit Sweeps (SVELTE5-01, 02, 03) — 3 plans
-  - Phase 66 — Nominations Schema + Adapter Type Cleanup (DB-01, ADAPTER-01) — 3 plans (DB migration is the highest-risk item; adapter retype lands in the same phase to keep the integration test cycle single)
-  - Phase 67 — Default Seed Alliances (SEED-01) — 2 plans (empirically exercises the v2.6 P64 alliance branch of the adapter reverse-fill that was previously dev-blind)
-  - Phase 68 — Dev-Tooling Trio (DEVTOOLS-01, 02, 03) — 3 plans
-- All 9 v2.7 requirements mapped 1:1 to a phase; no orphans, no duplicates.
-- 2026-04-29 (later that day): CONTEXT.md captured for all 4 phases via `/gsd-discuss-phase 65 66 67 68 --chain`. **Phase 66 scope narrowed mid-discussion** — user opted to keep the `nominations` table as is (`entity_type` is a STORED GENERATED column structurally safe from drift; `name` is harmless). DB-01 requirement moved to "Future Requirements (deferred)" in REQUIREMENTS.md. Phase 66 now adapter-retype only — 1 plan instead of 3. **Total v2.7 plan count: 9 (was 11).** Phases 65, 67, 68 unchanged in scope. Decisions captured in `.planning/phases/{65,66,67,68}-*/{phase}-CONTEXT.md`.
+- 2026-04-29: v2.7 Svelte 5 Polish + Supabase-Adapter Loose Ends roadmap drafted. Phase 66 scope narrowed mid-discussion (DB-01 deferred per user; `nominations` table kept as is). Final shape: 4 phases (65-68), 9 plans.
+- 2026-05-08: v2.7 shipped. 4 phases (65-68), 9 plans, 28 tasks across 9 days. Audit verdict `tech_debt` (8/8 reqs wired; 3 documented deferrals: alliance card render, 95 frontend lint errors via Option C, `@openvaa/supabase` lint-script rename). Tagged `v2.7` and archived to `.planning/milestones/v2.7-*`.
+- 2026-05-08: v2.8 Alliance Card + Frontend Hygiene Sweep scoped. 7 requirements across 6 categories (ALLIANCE / WARN / BIND / TYPING / SHARED ×2 / LINT). E2E coverage workstream and sharable-URLs / multi-tenant pair both deferred to v2.9 candidates. E2E test inventory captured at `.planning/notes/2026-05-08-e2e-test-inventory.md` for v2.9 user-led audit.
+- 2026-05-08: v2.8 ROADMAP.md drafted. 4 phases (69-72), 7 requirements mapped 1:1 (no orphans, no duplicates):
+  - **Phase 69 — Alliance Card Lane A** (ALLIANCE-01): single small UI feature; reconciles v2.7 SEED-01 SC-2 PASS-WITH-CONCERNS
+  - **Phase 70 — Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup** (WARN-01, BIND-01): two requirements paired per cohesion guidance — both touch `apps/frontend/src/lib/**/*.svelte`, both are Svelte 5 hygiene
+  - **Phase 71 — Frontend Strict-Typing Cleanup** (TYPING-01): standalone — 95 ESLint errors warrant phase isolation from the warning sweep that touches the same files
+  - **Phase 72 — Package Hygiene Trio** (SHARED-01, SHARED-02, LINT-01): three package-level cleanups bundled — mirrors v2.7 Phase 68 Dev-Tooling Trio pattern
+- Phase numbering continues from v2.7 (last phase: 68); v2.8 starts at 69. No reset.
+- Plan count is TBD per phase (filled by `/gsd-plan-phase`); estimate ~2-4 plans per phase, ~10-14 plans total across the milestone.
 
 ### Decisions
 
-Full decision log in PROJECT.md Key Decisions table (15 v2.6 entries added at close).
+Full decision log in PROJECT.md Key Decisions table.
 
-Key cross-milestone reference points carried forward:
+Key cross-milestone reference points carried forward into v2.8:
 
-- `@openvaa/dev-seed` is the canonical data path for both dev and E2E (default + e2e templates + variant overlays via `mergeSettings`).
-- Playwright parity baseline at v2.6 close: HEAD `2c7ad2dea` regenerated by Plan 64-03 (PARITY GATE: PASS). v2.7 must not regress this baseline.
-- All voter-flow E2E hard-asserted via `expect.poll` (no silent `test.skip(true)` paths remain in voter-results.spec.ts as of Phase 64).
-- Supabase adapter reverse-fills nomination parent → children id arrays in-memory before returning to the data model — required because the DB stores flat `parent_nomination_id` while `OrganizationNomination` only auto-populates `candidateNominationIds` from inline nested data. v2.7 Phase 66 cleans up the type story over this code; v2.7 Phase 67 first exercises the alliance branch.
-- Default seed densified to 5 constituencies × 8 parties × 327 candidates so dev sessions exercise parties tab + categorical-question filter axes. v2.7 Phase 67 extends this with ~2-3 alliances.
-- [Phase ?]: Phase 65 Plan 01: 92 bind:* directives annotated in apps/frontend/src/lib; Pattern 1 fix on Input.svelte mainInputs (mirrors Phase 64 QuestionChoices fix); zero Pattern 2 violations or deep-chain bindings found.
-- [Phase ?]: Phase 65 Plan 02: 2 {#key} annotations + 1 Pattern B keyed each + 6 reactive-accessor destructure rewrites + CLAUDE.md Context Destructuring Rule subsection (catalog includes 22 reactive-accessor names; RESEARCH draft was 18, audit added isAuthenticated, isPreregistered, preregistrationElections, preregistrationNominations).
-- [Phase ?]: Phase 66: Adapter retype complete — 2 'as unknown as { ... }' casts removed via InternalFlatNomination in sibling .type.ts. PARITY GATE: PASS (67p/1f/34c identical to v2.6 anchor). svelte-check baseline preserved (160 err / 12 warn). Vitest 646/646 green. Variance fallback not needed. Id imported from @openvaa/core (deviation from plan literal which said @openvaa/data).
-- [Phase ?]: Override-pair pattern: alliance entity rows in alliancesOverride (table=alliances), alliance nomination rows in nominationsOverride (table=nominations); bulk_import routes by override key
-- [Phase ?]: Type-union widening before value-literal write: widen DynamicSettings.results.sections (Candidate|Organization|Alliance) before adding 'alliance' literal in seed-layer override
-- [Phase 67]: Phase 64 attempt-4 protocol applies to v2.7+ parity gates: yarn supabase:reset (NOT yarn dev:reset-with-data) before Playwright capture. Mixed default+e2e seed produces a 20-test cascade-failure false-positive (40 voter questions). Anchored on Phase 66 66-VALIDATION.md:73-82.
-- [Phase 67]: Dual-emission constructor pattern (nested-or-ids) is mandatory for any @openvaa/data variant whose supabase adapter populates ids on the reverse-fill path. AllianceNomination missed it (fixed in 643eea880); OrganizationNomination has it. Pattern enforced going forward.
-- [Phase 67]: Full-block app_settings seed authoring: client-side mergeAppSettings is a shallow Object.assign over the persisted row vs the TS default. Partial overrides for top-level keys (e.g. results: { sections: [...] }) REPLACE the entire block. Seed must write the FULL block for any key it touches.
-- [Phase 67]: SC-3 deliberately surfaces 'previously dev-blind' bugs — Phase 67 hit 3 of them (AllianceNomination crash, partial seed wipe of cardContents, missing optional-chain on cardContents reads). All 3 fixed atomically. Treating these as the deliverable, not regressions.
+- `@openvaa/dev-seed` is the canonical data path for both dev and E2E. The default seed at v2.7-close ships 2 alliances + 10 alliance-noms + 30/10 org-nom parent split — v2.8 Phase 69 consumes this directly.
+- Playwright parity baseline at v2.7 close: `67p / 1f / 34c` carrying forward from the v2.6 anchor at HEAD `2c7ad2dea`. v2.8 must not regress this baseline.
+- Supabase adapter reverse-fills `organizationNominationIds` on `Alliance` parents (the v2.6 P64 Plan 01 path) — empirically exercised since v2.7 SEED-01 but the *render path* is what Phase 69 actually closes.
+- CLAUDE.md "Context Destructuring Rule (Svelte 5)" subsection (codified in v2.7 Phase 65) is the permanent reference that BIND-01 (Phase 70) relies on — the inline rationale comments are removable precisely because the rule is documented structurally.
+- v2.7 Phase 68 Option C: 95 pre-existing `apps/frontend/` ESLint errors deferred to v2.8 with the explicit handoff in `.planning/milestones/v2.7-phases/68-dev-tooling-trio/68-02-DEFERRED.md`. v2.8 Phase 71 / TYPING-01 owns this resolution.
+- v2.6 Phase 63 Plan 01 hoisted `mergeSettings` + `DeepPartial` to `@openvaa/app-shared`; the `apps/frontend/src/lib/utils/merge.ts` re-export shim was added as a transitional measure. v2.8 Phase 72 / SHARED-02 retires that shim.
+- `@openvaa/app-shared` divergence from the canonical core/data/matching/filters paradigm has been on the pending-todo list since 2026-04-25; v2.8 Phase 72 / SHARED-01 normalises it.
+- `@openvaa/supabase` `yarn supabase:lint` script semantics are SQL-only (sqlfluff) but the script name conflates with the monorepo's JS/TS `lint:check` convention. v2.8 Phase 72 / LINT-01 disambiguates.
+- All v2.8 work is frontend / package-level — NO Supabase migrations, NO E2E coverage expansion (E2E is v2.9 anchor).
 
 ### Blockers/Concerns
 
 - Local imgproxy Docker container crashes intermittently (502 on image upload) — not a code issue; carry-forward infrastructure debt.
-- 165 pre-existing intra-package circular deps in `@openvaa/data`/`matching`/`filters` — deferred to a dedicated structural refactor milestone.
-- v2.7 Phase 66 was originally the highest-risk phase (the `nominations` DB migration); after the 2026-04-29 scope reframe (migration deferred), Phase 66 narrows to a low-risk adapter retype (~1 plan, 2 cast sites). Milestone risk profile is now uniformly low.
+- 165 pre-existing intra-package circular deps in `@openvaa/data` / `matching` / `filters` — deferred to a dedicated structural refactor milestone.
+- v2.8 risk profile is uniformly low: 1 small UI feature + 4 hygiene phases. No DB migrations, no public-API changes, no upstream dependencies. Phases can be discussed and planned in parallel per the v2.8 PROJECT.md note.
 
 ## Session Continuity
 
 Last session: 2026-05-08
-Stopped at: Phase 67 closed (UAT 10/10, security 6/6 closed with 2 accepted risks, parity gate PASS). Ready to plan Phase 68 (Dev-Tooling Trio).
+Stopped at: v2.8 ROADMAP.md drafted; 4 phases (69-72), 7/7 requirements mapped (no orphans, no duplicates); REQUIREMENTS.md traceability table filled.
 Resume file: None
-Next action: /gsd-plan-phase 68 (CONTEXT.md exists from 2026-04-29 discuss-phase chain).
+Next action: `/gsd-discuss-phase 69 70 71 72 --chain` to capture CONTEXT.md for all four phases (per `feedback_batch_discussions.md` user preference — discuss multiple independent phases together so planning/execution can run autonomously). Then `/gsd-plan-phase 69` to start execution.
 
-### Next milestone seed (selected 2026-04-29)
+### Plan-count estimate (drafted 2026-05-08)
 
-User selected Option C — "Svelte 5 polish + finish v2.6 supabase-adapter loose ends" — as the v2.7 scope. Cohesion: items 7 + 10 + 11 all touch `supabaseDataProvider.ts` + `@openvaa/dev-seed`, so closing them together means one round of integration testing.
+| Phase | Likely plan count | Notes |
+|-------|-------------------|-------|
+| 69 — Alliance Card Lane A | 2 plans | (1) EntityCard subentities branch + cardContents widening; (2) drawer wiring + manual smoke + parity verification |
+| 70 — Warning Sweep + bind-rationale Cleanup | 2-3 plans | (1) Category A — `state_referenced_locally` rewrites; (2) Categories B + C — missing-render + a11y; (3) bind-comment strip + verification (may collapse 1+3 if scope is small) |
+| 71 — Frontend Strict-Typing Cleanup | 2-3 plans | (1) `no-explicit-any` 67-error sweep; (2) `naming-convention` + `func-style` + long-tail; (3) verification (may collapse 2+3) |
+| 72 — Package Hygiene Trio | 3 plans | (1) SHARED-01 — `@openvaa/app-shared` paradigm; (2) SHARED-02 — `mergeSettings` shim retire; (3) LINT-01 — `@openvaa/supabase` lint-script rename — same shape as v2.7 Phase 68 trio |
 
-Candidate scope (6 todos):
-
-| # | Todo | Pri | Area | Why in v2.7 | Phase |
-|---|------|-----|------|-------------|-------|
-| 20 | `svelte5-cleanup.md` | medium | – | Mandatory — `bind:*` + `{#key}` audits left over from v2.6 P64 manual smoke | 65 |
-| 4  | `2026-04-25-investigate-destructuring-contexts.md` | medium | ui | Svelte 5 sibling; pairs with item 20 audit sweeps | 65 |
-| 10 | `2026-04-28-add-alliances-to-default-test-data.md` | medium | dev-seed | Exercises the 4th branch of the v2.6 P64 adapter reverse-fill (alliance → organizations) that wasn't seeded | 67 |
-| 11 | `2026-04-28-cleanup-nominations-table.md` | medium | db | ~~Drop redundant `name` + `entityType` columns~~ — DEFERRED 2026-04-29 (user opted to keep table as is; `entity_type` is structurally safe via STORED GENERATED column, `name` harmless). Stays in `.planning/todos/pending/`. | ~~66~~ deferred |
-| 7  | `2026-04-27-cleanup-sloppy-typing-supabaseDataProvider.md` | medium | api | Cleans up the `as unknown as { ... }` casts the v2.6 P64 reverse-fill introduced; same file as item 11 | 66 |
-| 3  | `2026-04-25-dev-tooling-cleanup-trio.md` | low | dev-tooling | Small bundling of three unrelated dev-tooling cleanups (frontend autoreload, lint imports, retire Deno linting) | 68 |
-
-**Out of scope (deferred to v2.8+):** results-url-refactor-followups (#18) + frontend-project-id-scoping (#14) — pair as a "sharable URLs + multi-tenant" milestone, benefits from the adapter cleanup landing first.
-
-**Indefinitely deferred:** rename-admin-writer (#17), sql-linting-formatting (#19), adapter-package-loading (#12), configurable-mock-data (#13) — nice-to-haves, not blocking.
-
-**Estimate:** ~12-15 plans across ~4-5 phases. Drafted at 11 plans across 4 phases — within the lean end of the estimate. **Revised 2026-04-29 to 9 plans** after Phase 66 scope narrow (migration deferred). Risk: low (no DB migration; uniformly small phases).
+**Total v2.8 estimate:** ~9-11 plans across 4 phases. Risk: low (uniformly small phases, no DB migration, no breaking-API change).
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Discuss all four phases in one chained session: `/gsd-discuss-phase 69 70 71 72 --chain` (per `feedback_batch_discussions.md` and `feedback_skip_area_continuation_prompts.md` user preferences)
+- Then plan: `/gsd-plan-phase 69`
+- Reminder: Commits in this repo must use `git -c core.hooksPath=/dev/null` until global config is fixed (`project_gsd_repo_hook_workaround.md`).
