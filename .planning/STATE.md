@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.8
 milestone_name: Alliance Card + Frontend Hygiene Sweep
 status: executing
-stopped_at: Phase 69 Plan 01 complete (alliance card render path + 'candidates' to 'children' rename — Plan 02 next)
-last_updated: "2026-05-09T11:31:42.901Z"
-last_activity: 2026-05-09 -- Phase 69 Plan 01 complete
+stopped_at: Phase 69 complete (alliance card render path + matching cascade; parity gate deferred to follow-up todo); ready for /gsd-verify-work or next phase
+last_updated: "2026-05-09T15:30:00.000Z"
+last_activity: 2026-05-09 -- Phase 69 Alliance Card Lane A complete (2 plans; SC-4 manual smoke PASSED; parity gate deferred to follow-up)
 progress:
   total_phases: 4
-  completed_phases: 1
-  total_plans: 5
-  completed_plans: 4
-  percent: 80
+  completed_phases: 2
+  total_plans: 6
+  completed_plans: 6
+  percent: 100
 ---
 
 # Project State
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 
 ## Current Position
 
-Phase: 69 (Alliance Card Lane A) — EXECUTING
-Plan: 2 of 2
-Status: Plan 01 complete; Plan 02 (matching cascade + manual smoke) ready
-Last activity: 2026-05-09 -- Phase 69 Plan 01 complete
+Phase: 69 (Alliance Card Lane A) — COMPLETE
+Plan: 2 of 2 — DONE
+Status: Phase 69 complete (Plans 69-01 + 69-02 both shipped; SC-4 manual smoke PASSED; Playwright parity gate deferred to follow-up todo per executor fallback). Ready for `/gsd-verify-work 69` or next phase (70).
+Last activity: 2026-05-09 -- Phase 69 Alliance Card Lane A complete
 
 ## Performance Metrics
 
@@ -124,10 +124,10 @@ Key cross-milestone reference points carried forward into v2.8:
 
 ## Session Continuity
 
-Last session: 2026-05-09T11:31:42.895Z
-Stopped at: Phase 72 Plan 03 complete (supabase lint-script hard rename — Phase 72 fully shipped)
+Last session: 2026-05-09T15:30:00.000Z
+Stopped at: Phase 69 complete (Plan 02 matching cascade + manual smoke PASSED + 2 deferred follow-up todos captured: imputation-paradigm refactor + parity-gate run)
 Resume file: None
-Next action: Phase 69 Plan 02 — matching pipeline cascade (D-05 imputeParentAnswers proxy-children + D-06 matchStore alliance branch + D-07 parentMatchingMethod default for alliances). Capture new pending todo "Rewrite parent answer imputation logic so that entity answers are not overwritten ad hoc". Run 5-step manual smoke per ROADMAP SC-4. Re-confirm Playwright parity (67p / 1f / 34c).
+Next action: Run `/gsd-verify-work 69` to confirm phase verification. Outstanding follow-ups: (a) Playwright parity-gate capture (deferred from Plan 02 Task 6 because user's `yarn dev` was active during smoke; tracked at `.planning/todos/pending/2026-05-09-phase-69-parity-gate-followup.md`), (b) broader imputation-paradigm refactor (v2.9+ candidate; tracked at `.planning/todos/pending/2026-05-09-rewrite-parent-answer-imputation.md`). Then proceed to `/gsd-plan-phase 70`.
 
 ### Plan-count estimate (drafted 2026-05-08)
 
@@ -142,6 +142,8 @@ Next action: Phase 69 Plan 02 — matching pipeline cascade (D-05 imputeParentAn
 
 ## Operator Next Steps
 
-- Discuss all four phases in one chained session: `/gsd-discuss-phase 69 70 71 72 --chain` (per `feedback_batch_discussions.md` and `feedback_skip_area_continuation_prompts.md` user preferences)
-- Then plan: `/gsd-plan-phase 69`
+- Run `/gsd-verify-work 69` to confirm phase verification, then proceed to `/gsd-plan-phase 70`.
+- Outstanding Phase 69 follow-ups (do not block Phase 69 close; tracked in `.planning/todos/pending/`):
+  - Playwright parity-gate capture (deferred during Plan 02 Task 6 because `yarn dev` was running for the smoke).
+  - Broader imputation-paradigm refactor (v2.9+ candidate; Phase 69's proxy-children extension is a partial step).
 - Reminder: Commits in this repo must use `git -c core.hooksPath=/dev/null` until global config is fixed (`project_gsd_repo_hook_workaround.md`).

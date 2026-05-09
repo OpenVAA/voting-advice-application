@@ -23,7 +23,7 @@
 
 ### ALLIANCE — Alliance card render path (closes v2.7 SEED-01 SC-2 PASS-WITH-CONCERNS)
 
-- [ ] **ALLIANCE-01**: The voter results "Alliances" tab renders a working entity card per alliance entity. Lane A from the deferred 3-lane analysis: a real alliance card with at minimum (a) alliance name, (b) member organizations as a sub-list, and (c) an "X candidates across N parties" summary. EntityCard's "subentities" branch (currently hard-coded to `OrganizationNomination → CandidateNomination`) is extended to handle `OBJECT_TYPE.AllianceNomination → OrganizationNomination` correctly. `cardContents.alliance` shape decisions are captured (likely adding `'organizations'` to the union). Voter clicks the Alliances tab → sees populated cards (default seed has 2 alliances + 10 alliance_nominations + 30/10 org-nom parent split per v2.7 SEED-01). The drawer-open path from an alliance card also works (alliance detail tab structure: info, member organizations, [no opinions because alliances do not have own answers]). Manual smoke includes: tab visible, cards populated, click-to-drawer works, member orgs render in the drawer.
+- [x] **ALLIANCE-01**: The voter results "Alliances" tab renders a working entity card per alliance entity. Lane A from the deferred 3-lane analysis: a real alliance card with at minimum (a) alliance name, (b) member organizations as a sub-list, and (c) an "X candidates across N parties" summary. EntityCard's "subentities" branch (currently hard-coded to `OrganizationNomination → CandidateNomination`) is extended to handle `OBJECT_TYPE.AllianceNomination → OrganizationNomination` correctly. `cardContents.alliance` shape decisions are captured (likely adding `'organizations'` to the union). Voter clicks the Alliances tab → sees populated cards (default seed has 2 alliances + 10 alliance_nominations + 30/10 org-nom parent split per v2.7 SEED-01). The drawer-open path from an alliance card also works (alliance detail tab structure: info, member organizations, [no opinions because alliances do not have own answers]). Manual smoke includes: tab visible, cards populated, click-to-drawer works, member orgs render in the drawer.
 
 ### WARN — Svelte 5 / SSR / a11y warning sweep
 
@@ -94,7 +94,7 @@ Phase assignments mapped to `.planning/ROADMAP.md`. Success-criterion references
 
 | Requirement | Phase | Success Criteria | Status |
 |-------------|-------|------------------|--------|
-| ALLIANCE-01 | Phase 69 — Alliance Card Lane A | SC-1, SC-2, SC-3, SC-4 | Pending |
+| ALLIANCE-01 | Phase 69 — Alliance Card Lane A | SC-1, SC-2, SC-3, SC-4 | Complete (Plans 69-01 + 69-02; SC-4 manual smoke PASSED 2026-05-09; parity gate deferred — see `.planning/todos/pending/2026-05-09-phase-69-parity-gate-followup.md`) |
 | WARN-01 | Phase 70 — Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup | SC-1 (Category A), SC-2 (Category B), SC-3 (Category C), SC-5 (regression gate) | Pending |
 | BIND-01 | Phase 70 — Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup | SC-4 (comment strip), SC-5 (regression gate) | Pending |
 | TYPING-01 | Phase 71 — Frontend Strict-Typing Cleanup | SC-1, SC-2, SC-3, SC-4 | Pending |

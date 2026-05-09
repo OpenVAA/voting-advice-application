@@ -126,12 +126,16 @@ describe('imputeParentAnswers', () => {
         makeFakeChild({ id: 'cand1', entityAnswers: { q1: { value: 5 } } }),
         makeFakeChild({ id: 'cand2', entityAnswers: { q1: { value: 7 } } })
       ];
-      const parent = makeFakeOrgParent({ id: 'org1', ownAnswers: {}, candidates: children });
-      // Capture the answers reference before the call. The function must not write
-      // to parent.answers; only the returned proxy object holds the imputed values.
-      const ownAnswersBefore = { ...parent.answers };
+      // Bind ownAnswers BEFORE constructing the parent so we can reference it after the call
+      // without going through parent.answers (which is typed `never` due to the synthetic-fixture
+      // cast and would trip svelte-check).
+      const ownAnswers: FakeAnswers = {};
+      const parent = makeFakeOrgParent({ id: 'org1', ownAnswers, candidates: children });
+      const ownAnswersBefore = { ...ownAnswers };
       imputeParentAnswers({ nominations: [parent], questions: [q] });
-      expect(parent.answers).toEqual(ownAnswersBefore); // entity unchanged
+      // The function must not write to the parent entity's answers; only the returned proxy
+      // object holds the imputed values. Compare via the bound ownAnswers reference.
+      expect(ownAnswers).toEqual(ownAnswersBefore);
     });
 
     it('skips parents whose own answer is already present (matchableQuestions filter)', () => {
