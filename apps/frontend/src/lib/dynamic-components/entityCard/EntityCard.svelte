@@ -281,11 +281,16 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
       </header>
 
       <!-- Alliance summary line (Phase 69 D-04): "X candidates across N parties" -->
+      <!-- Composed from 3 keys to work around an inlang plugin-message-format dual-selector compile bug. -->
       {#if parsed.allianceSummary}
         <p class="text-sm text-secondary">
-          {t('results.alliance.summary', {
-            numCandidates: parsed.allianceSummary.numCandidates,
-            numParties: parsed.allianceSummary.numParties
+          {t('results.alliance.summary.template', {
+            candidates: t('results.alliance.summary.candidates', {
+              numCandidates: parsed.allianceSummary.numCandidates
+            }),
+            parties: t('results.alliance.summary.parties', {
+              numParties: parsed.allianceSummary.numParties
+            })
           })}
         </p>
       {/if}

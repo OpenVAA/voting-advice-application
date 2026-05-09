@@ -12,28 +12,31 @@
           }
         }
       ],
-      "summary": [
-        {
-          "declarations": [
-            "input numCandidates",
-            "input numParties",
-            "local numCandidatesPlural = numCandidates: plural",
-            "local numPartiesPlural = numParties: plural"
-          ],
-          "selectors": ["numCandidatesPlural", "numPartiesPlural"],
-          "match": {
-            "numCandidatesPlural=zero numPartiesPlural=zero": "No candidates across no parties",
-            "numCandidatesPlural=zero numPartiesPlural=one": "No candidates across 1 party",
-            "numCandidatesPlural=zero numPartiesPlural=other": "No candidates across {numParties} parties",
-            "numCandidatesPlural=one numPartiesPlural=zero": "1 candidate across no parties",
-            "numCandidatesPlural=one numPartiesPlural=one": "1 candidate across 1 party",
-            "numCandidatesPlural=one numPartiesPlural=other": "1 candidate across {numParties} parties",
-            "numCandidatesPlural=other numPartiesPlural=zero": "{numCandidates} candidates across no parties",
-            "numCandidatesPlural=other numPartiesPlural=one": "{numCandidates} candidates across 1 party",
-            "numCandidatesPlural=other numPartiesPlural=other": "{numCandidates} candidates across {numParties} parties"
+      "summary": {
+        "template": "{candidates} across {parties}",
+        "candidates": [
+          {
+            "declarations": ["input numCandidates", "local numCandidatesPlural = numCandidates: plural"],
+            "selectors": ["numCandidatesPlural"],
+            "match": {
+              "numCandidatesPlural=zero": "No candidates",
+              "numCandidatesPlural=one": "1 candidate",
+              "numCandidatesPlural=other": "{numCandidates} candidates"
+            }
           }
-        }
-      ]
+        ],
+        "parties": [
+          {
+            "declarations": ["input numParties", "local numPartiesPlural = numParties: plural"],
+            "selectors": ["numPartiesPlural"],
+            "match": {
+              "numPartiesPlural=zero": "no parties",
+              "numPartiesPlural=one": "1 party",
+              "numPartiesPlural=other": "{numParties} parties"
+            }
+          }
+        ]
+      }
     },
     "candidate": {
       "numShown": [

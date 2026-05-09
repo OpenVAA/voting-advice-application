@@ -1,7 +1,11 @@
 {
   "alliance": {
     "numShown": "{numShown, plural, =0 {Ei vaaliliittoja} =1 {1 vaaliliitto} other {# vaaliliittoa}}",
-    "summary": "{numCandidates, plural, =0 {Ei ehdokkaita} =1 {1 ehdokas} other {# ehdokasta}} yhteensä {numParties, plural, =0 {ei puoluetta} =1 {1 puolueesta} other {# puolueesta}}"
+    "summary": {
+      "template": "{candidates} yhteensä {parties}",
+      "candidates": "{numCandidates, plural, =0 {Ei ehdokkaita} =1 {1 ehdokas} other {# ehdokasta}}",
+      "parties": "{numParties, plural, =0 {ei puoluetta} =1 {1 puolueesta} other {# puolueesta}}"
+    }
   },
   "candidate": {
     "numShown": "{numShown, plural, =0 {Ei ehdokkaita}=1 {1 ehdokas} other {# ehdokasta}}"

@@ -12,28 +12,31 @@
           }
         }
       ],
-      "summary": [
-        {
-          "declarations": [
-            "input numCandidates",
-            "input numParties",
-            "local numCandidatesPlural = numCandidates: plural",
-            "local numPartiesPlural = numParties: plural"
-          ],
-          "selectors": ["numCandidatesPlural", "numPartiesPlural"],
-          "match": {
-            "numCandidatesPlural=zero numPartiesPlural=zero": "Keng Kandidaten iwwer keng Parteien",
-            "numCandidatesPlural=zero numPartiesPlural=one": "Keng Kandidaten iwwer 1 Partei",
-            "numCandidatesPlural=zero numPartiesPlural=other": "Keng Kandidaten iwwer {numParties} Parteien",
-            "numCandidatesPlural=one numPartiesPlural=zero": "1 Kandidat iwwer keng Parteien",
-            "numCandidatesPlural=one numPartiesPlural=one": "1 Kandidat iwwer 1 Partei",
-            "numCandidatesPlural=one numPartiesPlural=other": "1 Kandidat iwwer {numParties} Parteien",
-            "numCandidatesPlural=other numPartiesPlural=zero": "{numCandidates} Kandidaten iwwer keng Parteien",
-            "numCandidatesPlural=other numPartiesPlural=one": "{numCandidates} Kandidaten iwwer 1 Partei",
-            "numCandidatesPlural=other numPartiesPlural=other": "{numCandidates} Kandidaten iwwer {numParties} Parteien"
+      "summary": {
+        "template": "{candidates} iwwer {parties}",
+        "candidates": [
+          {
+            "declarations": ["input numCandidates", "local numCandidatesPlural = numCandidates: plural"],
+            "selectors": ["numCandidatesPlural"],
+            "match": {
+              "numCandidatesPlural=zero": "Keng Kandidaten",
+              "numCandidatesPlural=one": "1 Kandidat",
+              "numCandidatesPlural=other": "{numCandidates} Kandidaten"
+            }
           }
-        }
-      ]
+        ],
+        "parties": [
+          {
+            "declarations": ["input numParties", "local numPartiesPlural = numParties: plural"],
+            "selectors": ["numPartiesPlural"],
+            "match": {
+              "numPartiesPlural=zero": "keng Parteien",
+              "numPartiesPlural=one": "1 Partei",
+              "numPartiesPlural=other": "{numParties} Parteien"
+            }
+          }
+        ]
+      }
     },
     "candidate": {
       "numShown": [

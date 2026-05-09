@@ -1,7 +1,11 @@
 {
   "alliance": {
     "numShown": "{numShown, plural, =0 {Keng Allianzen} =1 {1 Allianz} other {# Allianzen}}",
-    "summary": "{numCandidates, plural, =0 {Keng Kandidaten} =1 {1 Kandidat} other {# Kandidaten}} iwwer {numParties, plural, =0 {keng Parteien} =1 {1 Partei} other {# Parteien}}"
+    "summary": {
+      "template": "{candidates} iwwer {parties}",
+      "candidates": "{numCandidates, plural, =0 {Keng Kandidaten} =1 {1 Kandidat} other {# Kandidaten}}",
+      "parties": "{numParties, plural, =0 {keng Parteien} =1 {1 Partei} other {# Parteien}}"
+    }
   },
   "candidate": {
     "numShown": "{numShown, plural, =0 {Keng Kandidat*inne} =1 {1 Kandidat*in} other {# Kandidat*inne}}"

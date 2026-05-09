@@ -12,28 +12,31 @@
           }
         }
       ],
-      "summary": [
-        {
-          "declarations": [
-            "input numCandidates",
-            "input numParties",
-            "local numCandidatesPlural = numCandidates: plural",
-            "local numPartiesPlural = numParties: plural"
-          ],
-          "selectors": ["numCandidatesPlural", "numPartiesPlural"],
-          "match": {
-            "numCandidatesPlural=zero numPartiesPlural=zero": "Ühtegi kandidaati kokku ühestki erakonnast",
-            "numCandidatesPlural=zero numPartiesPlural=one": "Ühtegi kandidaati kokku 1 erakonnast",
-            "numCandidatesPlural=zero numPartiesPlural=other": "Ühtegi kandidaati kokku {numParties} erakonnast",
-            "numCandidatesPlural=one numPartiesPlural=zero": "1 kandidaat kokku ühestki erakonnast",
-            "numCandidatesPlural=one numPartiesPlural=one": "1 kandidaat kokku 1 erakonnast",
-            "numCandidatesPlural=one numPartiesPlural=other": "1 kandidaat kokku {numParties} erakonnast",
-            "numCandidatesPlural=other numPartiesPlural=zero": "{numCandidates} kandidaati kokku ühestki erakonnast",
-            "numCandidatesPlural=other numPartiesPlural=one": "{numCandidates} kandidaati kokku 1 erakonnast",
-            "numCandidatesPlural=other numPartiesPlural=other": "{numCandidates} kandidaati kokku {numParties} erakonnast"
+      "summary": {
+        "template": "{candidates} kokku {parties}",
+        "candidates": [
+          {
+            "declarations": ["input numCandidates", "local numCandidatesPlural = numCandidates: plural"],
+            "selectors": ["numCandidatesPlural"],
+            "match": {
+              "numCandidatesPlural=zero": "Ühtegi kandidaati",
+              "numCandidatesPlural=one": "1 kandidaat",
+              "numCandidatesPlural=other": "{numCandidates} kandidaati"
+            }
           }
-        }
-      ]
+        ],
+        "parties": [
+          {
+            "declarations": ["input numParties", "local numPartiesPlural = numParties: plural"],
+            "selectors": ["numPartiesPlural"],
+            "match": {
+              "numPartiesPlural=zero": "ühestki erakonnast",
+              "numPartiesPlural=one": "1 erakonnast",
+              "numPartiesPlural=other": "{numParties} erakonnast"
+            }
+          }
+        ]
+      }
     },
     "candidate": {
       "numShown": [

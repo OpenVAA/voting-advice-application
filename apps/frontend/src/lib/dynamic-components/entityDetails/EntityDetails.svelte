@@ -135,9 +135,9 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     <EntityCard {entity} variant="details" class="!p-lg" />
     {#if allianceSummary}
       <p class="text-sm text-secondary mx-md mt-sm">
-        {t('results.alliance.summary', {
-          numCandidates: allianceSummary.numCandidates,
-          numParties: allianceSummary.numParties
+        {t('results.alliance.summary.template', {
+          candidates: t('results.alliance.summary.candidates', { numCandidates: allianceSummary.numCandidates }),
+          parties: t('results.alliance.summary.parties', { numParties: allianceSummary.numParties })
         })}
       </p>
     {/if}

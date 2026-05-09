@@ -12,28 +12,31 @@
           }
         }
       ],
-      "summary": [
-        {
-          "declarations": [
-            "input numCandidates",
-            "input numParties",
-            "local numCandidatesPlural = numCandidates: plural",
-            "local numPartiesPlural = numParties: plural"
-          ],
-          "selectors": ["numCandidatesPlural", "numPartiesPlural"],
-          "match": {
-            "numCandidatesPlural=zero numPartiesPlural=zero": "Inga kandidater fördelade på inga partier",
-            "numCandidatesPlural=zero numPartiesPlural=one": "Inga kandidater fördelade på 1 parti",
-            "numCandidatesPlural=zero numPartiesPlural=other": "Inga kandidater fördelade på {numParties} partier",
-            "numCandidatesPlural=one numPartiesPlural=zero": "1 kandidat fördelade på inga partier",
-            "numCandidatesPlural=one numPartiesPlural=one": "1 kandidat fördelade på 1 parti",
-            "numCandidatesPlural=one numPartiesPlural=other": "1 kandidat fördelade på {numParties} partier",
-            "numCandidatesPlural=other numPartiesPlural=zero": "{numCandidates} kandidater fördelade på inga partier",
-            "numCandidatesPlural=other numPartiesPlural=one": "{numCandidates} kandidater fördelade på 1 parti",
-            "numCandidatesPlural=other numPartiesPlural=other": "{numCandidates} kandidater fördelade på {numParties} partier"
+      "summary": {
+        "template": "{candidates} fördelade på {parties}",
+        "candidates": [
+          {
+            "declarations": ["input numCandidates", "local numCandidatesPlural = numCandidates: plural"],
+            "selectors": ["numCandidatesPlural"],
+            "match": {
+              "numCandidatesPlural=zero": "Inga kandidater",
+              "numCandidatesPlural=one": "1 kandidat",
+              "numCandidatesPlural=other": "{numCandidates} kandidater"
+            }
           }
-        }
-      ]
+        ],
+        "parties": [
+          {
+            "declarations": ["input numParties", "local numPartiesPlural = numParties: plural"],
+            "selectors": ["numPartiesPlural"],
+            "match": {
+              "numPartiesPlural=zero": "inga partier",
+              "numPartiesPlural=one": "1 parti",
+              "numPartiesPlural=other": "{numParties} partier"
+            }
+          }
+        ]
+      }
     },
     "candidate": {
       "numShown": [
