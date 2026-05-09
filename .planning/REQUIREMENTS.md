@@ -27,7 +27,7 @@
 
 ### WARN — Svelte 5 / SSR / a11y warning sweep
 
-- [ ] **WARN-01**: All vite-plugin-svelte and SvelteKit dev/build warnings surfaced during Phase 67 UAT (consolidated in `.planning/todos/pending/2026-05-08-results-layout-missing-slot-render-tag.md`) are resolved or documented as accepted. Three categories must be addressed:
+- [x] **WARN-01**: All vite-plugin-svelte and SvelteKit dev/build warnings surfaced during Phase 67 UAT (consolidated in `.planning/todos/pending/2026-05-08-results-layout-missing-slot-render-tag.md`) are resolved or documented as accepted. Three categories must be addressed:
   - **Category A — Svelte 5 reactivity hazards (`state_referenced_locally`)**: Every confirmed site (e.g. `Expander.svelte:76 defaultExpanded`, `EnumeratedEntityFilter.svelte:48 filter`, plus any others surfaced by a fresh `yarn dev` warning sweep) is rewritten using direct property access or `$derived` so the prop/state read happens inside the tracking scope. Pattern matches the v2.6 P61-03 context-destructuring rule (CLAUDE.md).
   - **Category B — Missing `<slot />` / `{@render children()}` (or equivalent SSR-correct render)**: Every site that triggers the missing-render warning is fixed (or, if intentionally rendering nothing, documented inline).
   - **Category C — A11y warnings**: WCAG 2.1 AA-relevant warnings are fixed (label associations, aria-* attributes, keyboard handling). Cosmetic-only a11y warnings (if any) may be accepted with inline justification.
