@@ -35,7 +35,7 @@
 
 ### BIND — `bind:*` rationale-comment cleanup
 
-- [ ] **BIND-01**: The 92 inline `// bind: keep — <rationale>` comments added by v2.7 Phase 65 Plan 01 are removed from `apps/frontend/src/lib/**/*.svelte`, with the underlying `bind:*` directives left in place untouched. The rationale is already captured permanently in CLAUDE.md (Context Destructuring Rule + reactive-accessor catalog); the inline comments served the audit moment and now constitute long-term noise. After the sweep: `git grep -nE "// bind: (keep|ok|justified)" apps/frontend/src/lib/` returns zero matches. `yarn build` and `yarn test:unit` remain green; `git diff` is comment-only (no behavioral code changes).
+- [x] **BIND-01**: The 92 inline `// bind: keep — <rationale>` comments added by v2.7 Phase 65 Plan 01 are removed from `apps/frontend/src/lib/**/*.svelte`, with the underlying `bind:*` directives left in place untouched. The rationale is already captured permanently in CLAUDE.md (Context Destructuring Rule + reactive-accessor catalog); the inline comments served the audit moment and now constitute long-term noise. After the sweep: `git grep -nE "// bind: (keep|ok|justified)" apps/frontend/src/lib/` returns zero matches. `yarn build` and `yarn test:unit` remain green; `git diff` is comment-only (no behavioral code changes).
 
 ### TYPING — Frontend strict-typing cleanup (95 ESLint errors deferred under v2.7 Phase 68 Option C)
 

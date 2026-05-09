@@ -54,7 +54,7 @@ Audit: `.planning/milestones/v2.7-MILESTONE-AUDIT.md` (status: tech_debt — 8/8
 **Milestone Goal:** Close v2.7's deferred Svelte 5 / typing / lint / packaging loose ends and finish the alliance card render path, in one cohesive frontend hygiene + small-UI-feature milestone. The 7 requirements split as 1 small user-facing UI feature (alliance card Lane A — reconciles v2.7 SEED-01 SC-2 PASS-WITH-CONCERNS) plus 6 frontend / package hygiene items that pay interest forward into v2.9 (E2E coverage) and v3.x (multi-tenant). All work is frontend / package-level — no Supabase migrations, no E2E coverage expansion (E2E is the v2.9 anchor).
 
 - [x] **Phase 69: Alliance Card Lane A** — Voter results "Alliances" tab renders a working entity card per alliance (name + member organizations + summary), with the EntityCard subentities branch extended to handle `AllianceNomination → OrganizationNomination` and the drawer-open path working end-to-end on the v2.7 SEED-01 default seed (completed 2026-05-09)
-- [ ] **Phase 70: Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup** — All three categories of dev/build warnings surfaced during v2.7 Phase 67 UAT (`state_referenced_locally`, missing `<slot />` / `{@render children()}`, a11y) resolved or accepted with inline justification, and the 92 inline `// bind: keep —` rationale comments from v2.7 Phase 65 Plan 01 are removed (rationale is permanently captured in CLAUDE.md)
+- [x] **Phase 70: Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup** — All three categories of dev/build warnings surfaced during v2.7 Phase 67 UAT (`state_referenced_locally`, missing `<slot />` / `{@render children()}`, a11y) resolved or accepted with inline justification, and the 92 inline `// bind: keep —` rationale comments from v2.7 Phase 65 Plan 01 are removed (rationale is permanently captured in CLAUDE.md) (completed 2026-05-09)
 - [ ] **Phase 71: Frontend Strict-Typing Cleanup** — The 95 pre-existing `apps/frontend/` ESLint errors deferred under v2.7 Phase 68 Option C are resolved (~67 `no-explicit-any`, ~13 `naming-convention`, ~11 `func-style`, ~4 long-tail); frontend matches the rest of the monorepo's lint-clean baseline
 - [x] **Phase 72: Package Hygiene Trio** — `@openvaa/app-shared` paradigm normalised against `@openvaa/core` / `data` / `matching` / `filters`; the `apps/frontend/src/lib/utils/merge.ts` re-export shim retired in favour of direct `@openvaa/app-shared` imports; `@openvaa/supabase` lint-script disambiguated (SQL vs ESLint pipelines) (completed 2026-05-09)
 
@@ -89,7 +89,7 @@ Audit: `.planning/milestones/v2.7-MILESTONE-AUDIT.md` (status: tech_debt — 8/8
 - [x] 70-02-PLAN.md — Cat B `<slot />` → `{@render children?.()}` (WithPolling.svelte 3-part Snippet patch) [Wave 1]
 - [x] 70-03-PLAN.md — Cat C a11y fix (Input.svelte:521 `<label>` → `<button>` Option A; Option B fallback if visual smoke fails) [Wave 1, has checkpoint]
 - [x] 70-04-PLAN.md — Cat D SSR fetch-eagerness (cold-start capture + `onMount` wrap; primary site WithPolling.svelte:24) [Wave 1]
-- [ ] 70-05-PLAN.md — BIND-01 strip 26 `// bind: (keep|ok|justified)` comments across 24 files; preserve `// bind: migrate` block [Wave 2, depends on 70-03]
+- [x] 70-05-PLAN.md — BIND-01 strip 26 `// bind: (keep|ok|justified)` comments across 24 files; preserve `// bind: migrate` block [Wave 2, depends on 70-03]
 **UI hint**: yes
 
 ### Phase 71: Frontend Strict-Typing Cleanup
@@ -139,6 +139,6 @@ Run `/gsd-new-milestone` to question → research → write requirements → roa
 | 67. Default Seed Alliances | v2.7 | 2/2 | Complete | 2026-04-30 |
 | 68. Dev-Tooling Trio | v2.7 | 3/3 | Complete | 2026-05-08 |
 | 69. Alliance Card Lane A | v2.8 | 2/2 | Complete   | 2026-05-09 |
-| 70. Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup | v2.8 | 4/5 | In Progress|  |
+| 70. Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup | v2.8 | 5/5 | Complete   | 2026-05-09 |
 | 71. Frontend Strict-Typing Cleanup | v2.8 | 0/? | Not started | - |
 | 72. Package Hygiene Trio | v2.8 | 3/3 | Complete   | 2026-05-09 |
