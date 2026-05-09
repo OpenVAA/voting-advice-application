@@ -56,7 +56,7 @@ Audit: `.planning/milestones/v2.7-MILESTONE-AUDIT.md` (status: tech_debt — 8/8
 - [ ] **Phase 69: Alliance Card Lane A** — Voter results "Alliances" tab renders a working entity card per alliance (name + member organizations + summary), with the EntityCard subentities branch extended to handle `AllianceNomination → OrganizationNomination` and the drawer-open path working end-to-end on the v2.7 SEED-01 default seed
 - [ ] **Phase 70: Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup** — All three categories of dev/build warnings surfaced during v2.7 Phase 67 UAT (`state_referenced_locally`, missing `<slot />` / `{@render children()}`, a11y) resolved or accepted with inline justification, and the 92 inline `// bind: keep —` rationale comments from v2.7 Phase 65 Plan 01 are removed (rationale is permanently captured in CLAUDE.md)
 - [ ] **Phase 71: Frontend Strict-Typing Cleanup** — The 95 pre-existing `apps/frontend/` ESLint errors deferred under v2.7 Phase 68 Option C are resolved (~67 `no-explicit-any`, ~13 `naming-convention`, ~11 `func-style`, ~4 long-tail); frontend matches the rest of the monorepo's lint-clean baseline
-- [ ] **Phase 72: Package Hygiene Trio** — `@openvaa/app-shared` paradigm normalised against `@openvaa/core` / `data` / `matching` / `filters`; the `apps/frontend/src/lib/utils/merge.ts` re-export shim retired in favour of direct `@openvaa/app-shared` imports; `@openvaa/supabase` lint-script disambiguated (SQL vs ESLint pipelines)
+- [x] **Phase 72: Package Hygiene Trio** — `@openvaa/app-shared` paradigm normalised against `@openvaa/core` / `data` / `matching` / `filters`; the `apps/frontend/src/lib/utils/merge.ts` re-export shim retired in favour of direct `@openvaa/app-shared` imports; `@openvaa/supabase` lint-script disambiguated (SQL vs ESLint pipelines) (completed 2026-05-09)
 
 ## Phase Details
 
@@ -136,4 +136,4 @@ Run `/gsd-new-milestone` to question → research → write requirements → roa
 | 69. Alliance Card Lane A | v2.8 | 0/2 | Not started | - |
 | 70. Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup | v2.8 | 0/? | Not started | - |
 | 71. Frontend Strict-Typing Cleanup | v2.8 | 0/? | Not started | - |
-| 72. Package Hygiene Trio | v2.8 | 3/3 | Complete | 2026-05-09 |
+| 72. Package Hygiene Trio | v2.8 | 3/3 | Complete   | 2026-05-09 |
