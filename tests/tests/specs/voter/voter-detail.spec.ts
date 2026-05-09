@@ -138,9 +138,9 @@ test.describe('voter entity detail', { tag: ['@voter'] }, () => {
     // Assert info tab is visible (default tab)
     await expect(dialog.getByTestId(testIds.voter.entityDetail.infoTab)).toBeVisible();
 
-    // Switch to candidates/submatches tab
-    await dialog.getByRole('tab', { name: /candidates/i }).click();
-    await expect(dialog.getByTestId(testIds.voter.entityDetail.submatchesTab)).toBeVisible();
+    // Switch to children/members tab (renamed from candidates/submatches in Phase 69 — English label is now "Members")
+    await dialog.getByRole('tab', { name: /members/i }).click();
+    await expect(dialog.getByTestId(testIds.voter.entityDetail.childrenTab)).toBeVisible();
 
     // Switch to opinions tab
     await dialog.getByRole('tab', { name: /opinions/i }).click();

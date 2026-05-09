@@ -156,12 +156,15 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
       scsMaxOverride = Infinity; // Phase 69 D-03: render all member orgs, not just top-3
     }
 
-    // Alliance summary "X candidates across N parties" — used in card list variant + drawer-header details variant
+    // Alliance summary "X candidates across N parties" — rendered on the list-variant alliance card.
+    // The drawer-header surface is rendered by EntityDetails.svelte (which itself wraps EntityCard
+    // variant=details); rendering it only on `'list'` here avoids a visible duplicate when EntityCard
+    // is consumed inside EntityDetails. Phase 69 D-04 / executor Rule 1 — see SUMMARY.md.
     let allianceSummary: { numCandidates: number; numParties: number } | undefined;
     if (
       unwrapped.nomination &&
       isObjectType(unwrapped.nomination, OBJECT_TYPE.AllianceNomination) &&
-      (variant === 'list' || variant === 'details')
+      variant === 'list'
     ) {
       allianceSummary = getAllianceSummary(unwrapped.nomination);
     }

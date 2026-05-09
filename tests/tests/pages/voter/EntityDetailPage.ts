@@ -6,7 +6,7 @@ export class EntityDetailPage {
   readonly detailContainer: Locator;
   readonly infoTab: Locator;
   readonly opinionsTab: Locator;
-  readonly submatchesTab: Locator;
+  readonly childrenTab: Locator;
   readonly drawer: Locator;
   private readonly inDrawer: boolean;
 
@@ -23,17 +23,17 @@ export class EntityDetailPage {
       : page.getByTestId(testIds.voter.entityDetail.container);
     this.infoTab = scope.getByTestId(testIds.voter.entityDetail.infoTab);
     this.opinionsTab = scope.getByTestId(testIds.voter.entityDetail.opinionsTab);
-    this.submatchesTab = scope.getByTestId(testIds.voter.entityDetail.submatchesTab);
+    this.childrenTab = scope.getByTestId(testIds.voter.entityDetail.childrenTab);
   }
 
   /**
    * Switch to a tab in the entity detail view.
    */
-  async switchToTab(tabName: 'info' | 'opinions' | 'submatches'): Promise<void> {
+  async switchToTab(tabName: 'info' | 'opinions' | 'children'): Promise<void> {
     const tabMap = {
       info: this.infoTab,
       opinions: this.opinionsTab,
-      submatches: this.submatchesTab
+      children: this.childrenTab
     } as const;
     await tabMap[tabName].click();
   }

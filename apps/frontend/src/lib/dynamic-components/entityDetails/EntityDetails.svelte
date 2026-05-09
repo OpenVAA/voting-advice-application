@@ -35,10 +35,11 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   import { EntityCard } from '$lib/dynamic-components/entityCard';
   import { concatClass } from '$lib/utils/components';
   import { unwrapEntity } from '$lib/utils/entities';
-  import { findCandidateNominations } from '$lib/utils/matches';
+  import { getAllianceSummary } from '$lib/utils/getAllianceSummary';
+  import { findCandidateNominations, findOrganizationNominations } from '$lib/utils/matches';
   import { sortQuestions } from '$lib/utils/sorting';
   import { EntityChildren, EntityInfo, EntityOpinions } from './';
-  import type { CustomData, EntityDetailsContent, OrganizationDetailsContent } from '@openvaa/app-shared';
+  import type { CustomData, EntityDetailsContent, ParentEntityDetailsContent } from '@openvaa/app-shared';
   import type { AnyQuestionVariant } from '@openvaa/data';
   import type { Tab } from '$lib/components/tabs';
   import type { AnswerStore } from '$lib/contexts/voter';
@@ -59,25 +60,43 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     answers = voterContext.answers;
   }
 
-  type ContentTab = { content: EntityDetailsContent | OrganizationDetailsContent; label: string };
+  type ContentTab = { content: EntityDetailsContent | ParentEntityDetailsContent; label: string };
 
   let activeIndex = $state(0);
 
   let contentTabs: Array<ContentTab> = $derived.by(() => {
     const { entity: nakedEntity } = unwrapEntity(entity);
-    let tabs: Array<EntityDetailsContent | OrganizationDetailsContent> =
+    let tabs: Array<EntityDetailsContent | ParentEntityDetailsContent> =
       $appSettings.entityDetails.contents[nakedEntity.type as keyof AppSettings['entityDetails']['contents']];
     if (!tabs?.length)
-      tabs = nakedEntity.type === 'organization' ? ['info', 'opinions', 'candidates'] : ['info', 'opinions'];
+      tabs =
+        nakedEntity.type === 'alliance'
+          ? ['info', 'children']
+          : nakedEntity.type === 'organization'
+            ? ['info', 'opinions', 'children']
+            : ['info', 'opinions'];
     return tabs.map((tab) => ({ content: tab, label: t(`entityDetails.tabs.${tab}`) }));
   });
 
   let children: Array<MaybeWrappedEntityVariant> = $derived.by(() => {
     const { nomination } = unwrapEntity(entity);
     const tabs = contentTabs.map((ct) => ct.content);
-    if (tabs.includes('candidates') && isObjectType(nomination, OBJECT_TYPE.OrganizationNomination))
-      return findCandidateNominations({ matches: voterContext?.matches, nomination });
+    if (tabs.includes('children')) {
+      if (isObjectType(nomination, OBJECT_TYPE.OrganizationNomination))
+        return findCandidateNominations({ matches: voterContext?.matches, nomination });
+      if (isObjectType(nomination, OBJECT_TYPE.AllianceNomination))
+        return findOrganizationNominations({ matches: voterContext?.matches, nomination });
+    }
     return [];
+  });
+
+  // Phase 69 D-04: alliance drawer-header "X candidates across N parties" summary
+  let allianceSummary: { numCandidates: number; numParties: number } | undefined = $derived.by(() => {
+    const { nomination } = unwrapEntity(entity);
+    if (isObjectType(nomination, OBJECT_TYPE.AllianceNomination)) {
+      return getAllianceSummary(nomination);
+    }
+    return undefined;
   });
 
   let infoQuestions: Array<AnyQuestionVariant> = $derived.by(() => {
@@ -110,6 +129,14 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 <article data-testid="entity-details" {...concatClass(restProps, 'flex flex-col grow')}>
   <header class:bottomBorder={contentTabs.length === 1}>
     <EntityCard {entity} variant="details" class="!p-lg" />
+    {#if allianceSummary}
+      <p class="text-sm text-secondary mx-md mt-sm">
+        {t('results.alliance.summary', {
+          numCandidates: allianceSummary.numCandidates,
+          numParties: allianceSummary.numParties
+        })}
+      </p>
+    {/if}
   </header>
   {#if contentTabs.length > 1}
     <!-- bind: keep — Pattern 2: Tabs.activeIndex is $bindable(0) -->
@@ -121,9 +148,13 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     <div data-testid="voter-entity-detail-opinions">
       <EntityOpinions {entity} questions={opinionQuestions} {answers} />
     </div>
-  {:else if contentTabs[activeIndex]?.content === 'candidates'}
-    <div data-testid="voter-entity-detail-submatches">
-      <EntityChildren entities={children} entityType={ENTITY_TYPE.Candidate} />
+  {:else if contentTabs[activeIndex]?.content === 'children'}
+    <div data-testid="voter-entity-detail-children">
+      <EntityChildren
+        entities={children}
+        entityType={isObjectType(unwrapEntity(entity).nomination, OBJECT_TYPE.AllianceNomination)
+          ? ENTITY_TYPE.Organization
+          : ENTITY_TYPE.Candidate} />
     </div>
   {/if}
 </article>

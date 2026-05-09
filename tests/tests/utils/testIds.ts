@@ -115,7 +115,7 @@ export const testIds = {
       container: 'voter-entity-detail',
       infoTab: 'voter-entity-detail-info',
       opinionsTab: 'voter-entity-detail-opinions',
-      submatchesTab: 'voter-entity-detail-submatches'
+      childrenTab: 'voter-entity-detail-children'
     },
     nav: {
       resultsLink: 'voter-nav-results'
