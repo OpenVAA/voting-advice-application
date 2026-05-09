@@ -1,5 +1,7 @@
 import { beforeEach,describe, expect, it, vi } from 'vitest';
 import { SupabaseDataWriter } from './supabaseDataWriter';
+import type { Database } from '@openvaa/supabase-types';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 // Mock $env/dynamic/public before any imports that depend on it
 vi.mock('$env/dynamic/public', () => ({
@@ -33,16 +35,20 @@ function createMockSupabaseClient() {
   };
 }
 
+type MockClient = ReturnType<typeof createMockSupabaseClient>;
+// reason: createMockSupabaseClient is structural-only; SupabaseClient<Database> has 50+ methods we don't mock
+const asSupabaseMock = (m: MockClient) => m as unknown as SupabaseClient<Database>;
+
 describe('SupabaseDataWriter', () => {
   let writer: SupabaseDataWriter;
-  let mockSupabase: ReturnType<typeof createMockSupabaseClient>;
+  let mockSupabase: MockClient;
 
   beforeEach(() => {
     mockSupabase = createMockSupabaseClient();
     writer = new SupabaseDataWriter();
     writer.init({
       fetch: vi.fn(),
-      serverClient: mockSupabase as any
+      serverClient: asSupabaseMock(mockSupabase)
     });
     // Mock global fetch for _logout's server-side cookie clearing call
     globalThis.fetch = vi.fn().mockResolvedValue({ ok: true });

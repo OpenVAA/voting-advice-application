@@ -1,5 +1,9 @@
+import { ENTITY_TYPE } from '@openvaa/data';
 import { beforeEach,describe, expect, it, vi } from 'vitest';
 import { SupabaseDataProvider } from './supabaseDataProvider';
+import type { DynamicSettings } from '@openvaa/app-shared';
+import type { Database } from '@openvaa/supabase-types';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 // Mock $env/dynamic/public before any imports that depend on it
 vi.mock('$env/dynamic/public', () => ({
@@ -70,16 +74,62 @@ function createMockSupabaseClient() {
   return client;
 }
 
+type MockClient = ReturnType<typeof createMockSupabaseClient>;
+// reason: createMockSupabaseClient is structural-only; SupabaseClient<Database> has 50+ methods we don't mock
+const asSupabaseMock = (m: MockClient) => m as unknown as SupabaseClient<Database>;
+
+// Local narrow type for assertion casts in this file (replaces `(result as any)` patterns).
+// reason: assertions read into nested JSONB shapes that aren't in DynamicSettings's strict typing
+type DynamicSettingsTestNarrow = Partial<DynamicSettings> & {
+  notifications?: {
+    candidateApp?: { title?: string; content?: string };
+    voterApp?: { title?: string; content?: string };
+  };
+};
+
+// Local narrow for entity/nomination test assertions — tests read fields the variant types make optional.
+// reason: AnyEntityVariantData / AnyNominationVariantPublicData are discriminated unions; tests read across variants
+type EntityTestNarrow = {
+  id: string;
+  type?: string;
+  firstName?: string;
+  lastName?: string;
+  organizationId?: string;
+  name?: string;
+  shortName?: string;
+  info?: string;
+  image?: { url?: string };
+};
+type NominationTestNarrow = {
+  id: string;
+  entityType?: string;
+  entityId?: string;
+  electionId?: string;
+  constituencyId?: string;
+  electionRound?: number;
+  electionSymbol?: string;
+  parentNominationId?: string | null;
+  parentNominationType?: string;
+  image?: { url?: string };
+};
+type QuestionTestNarrow = {
+  choices?: Array<{ label?: string }>;
+  settings?: unknown;
+  electionIds?: Array<string>;
+  constituencyIds?: Array<string>;
+  entityType?: Array<string>;
+};
+
 describe('SupabaseDataProvider', () => {
   let provider: SupabaseDataProvider;
-  let mockSupabase: ReturnType<typeof createMockSupabaseClient>;
+  let mockSupabase: MockClient;
 
   beforeEach(() => {
     mockSupabase = createMockSupabaseClient();
     provider = new SupabaseDataProvider();
     provider.init({
       fetch: vi.fn(),
-      serverClient: mockSupabase as any,
+      serverClient: asSupabaseMock(mockSupabase),
       locale: 'en',
       defaultLocale: 'en'
     });
@@ -126,17 +176,18 @@ describe('SupabaseDataProvider', () => {
       const fiProvider = new SupabaseDataProvider();
       fiProvider.init({
         fetch: vi.fn(),
-        serverClient: mockSupabase as any,
+        serverClient: asSupabaseMock(mockSupabase),
         locale: 'fi',
         defaultLocale: 'en'
       });
 
       const result = await fiProvider.getAppSettings();
 
-      expect((result as any).notifications.candidateApp.title).toBe('Finnish title');
-      expect((result as any).notifications.candidateApp.content).toBe('Finnish content');
-      expect((result as any).notifications.voterApp.title).toBe('Voter FI');
-      expect((result as any).notifications.voterApp.content).toBe('Content FI');
+      const r = result as DynamicSettingsTestNarrow;
+      expect(r.notifications?.candidateApp?.title).toBe('Finnish title');
+      expect(r.notifications?.candidateApp?.content).toBe('Finnish content');
+      expect(r.notifications?.voterApp?.title).toBe('Voter FI');
+      expect(r.notifications?.voterApp?.content).toBe('Content FI');
     });
 
     it('returns empty object if no app_settings row exists', async () => {
@@ -174,7 +225,7 @@ describe('SupabaseDataProvider', () => {
       const fiProvider = new SupabaseDataProvider();
       fiProvider.init({
         fetch: vi.fn(),
-        serverClient: mockSupabase as any,
+        serverClient: asSupabaseMock(mockSupabase),
         locale: 'fi',
         defaultLocale: 'en'
       });
@@ -220,15 +271,17 @@ describe('SupabaseDataProvider', () => {
       const fiProvider = new SupabaseDataProvider();
       fiProvider.init({
         fetch: vi.fn(),
-        serverClient: mockSupabase as any,
+        serverClient: asSupabaseMock(mockSupabase),
         locale: 'fi',
         defaultLocale: 'en'
       });
 
       const result = await fiProvider.getAppCustomization();
 
-      expect(result.translationOverrides?.['common.appTitle' as any]).toBe('Minun VAA');
-      expect(result.translationOverrides?.['common.startButton' as any]).toBe('Aloita');
+      // reason: tests use string literals not in the strict TranslationKey union; index access requires the same key type
+      const overrides = result.translationOverrides as Record<string, string> | undefined;
+      expect(overrides?.['common.appTitle']).toBe('Minun VAA');
+      expect(overrides?.['common.startButton']).toBe('Aloita');
     });
 
     it('localizes candidateAppFAQ question and answer fields', async () => {
@@ -249,7 +302,7 @@ describe('SupabaseDataProvider', () => {
       const fiProvider = new SupabaseDataProvider();
       fiProvider.init({
         fetch: vi.fn(),
-        serverClient: mockSupabase as any,
+        serverClient: asSupabaseMock(mockSupabase),
         locale: 'fi',
         defaultLocale: 'en'
       });
@@ -421,7 +474,7 @@ describe('SupabaseDataProvider', () => {
       const fiProvider = new SupabaseDataProvider();
       fiProvider.init({
         fetch: vi.fn(),
-        serverClient: mockSupabase as any,
+        serverClient: asSupabaseMock(mockSupabase),
         locale: 'fi',
         defaultLocale: 'en'
       });
@@ -648,14 +701,14 @@ describe('SupabaseDataProvider', () => {
         error: null
       };
 
-      const result = (await provider.getEntityData()) as Array<any>;
+      const result = (await provider.getEntityData()) as Array<EntityTestNarrow>;
 
-      const candidate = result.find((e: any) => e.id === 'c1');
+      const candidate = result.find((e) => e.id === 'c1');
       expect(candidate).toBeDefined();
-      expect(candidate.type).toBe('candidate');
-      expect(candidate.firstName).toBe('Jane');
-      expect(candidate.lastName).toBe('Doe');
-      expect(candidate.organizationId).toBe('org1');
+      expect(candidate?.type).toBe('candidate');
+      expect(candidate?.firstName).toBe('Jane');
+      expect(candidate?.lastName).toBe('Doe');
+      expect(candidate?.organizationId).toBe('org1');
     });
 
     it('fetches organizations and sets type to organization', async () => {
@@ -681,11 +734,11 @@ describe('SupabaseDataProvider', () => {
         error: null
       };
 
-      const result = (await provider.getEntityData()) as Array<any>;
+      const result = (await provider.getEntityData()) as Array<EntityTestNarrow>;
 
-      const org = result.find((e: any) => e.id === 'org1');
+      const org = result.find((e) => e.id === 'org1');
       expect(org).toBeDefined();
-      expect(org.type).toBe('organization');
+      expect(org?.type).toBe('organization');
     });
 
     it('applies entityType filter (queries only the specified entity table)', async () => {
@@ -710,10 +763,10 @@ describe('SupabaseDataProvider', () => {
         error: null
       };
 
-      await provider.getEntityData({ entityType: 'candidate' as any });
+      await provider.getEntityData({ entityType: ENTITY_TYPE.Candidate });
 
       // Should only query candidates table, not organizations
-      const calledTables = mockSupabase.from.mock.calls.map((c: Array<any>) => c[0]);
+      const calledTables = mockSupabase.from.mock.calls.map((c) => c[0]);
       expect(calledTables).toContain('candidates');
       expect(calledTables).not.toContain('organizations');
     });
@@ -809,7 +862,7 @@ describe('SupabaseDataProvider', () => {
         error: null
       };
 
-      const result = (await provider.getEntityData()) as Array<any>;
+      const result = (await provider.getEntityData()) as Array<EntityTestNarrow>;
 
       expect(result[0].image?.url).toBe(
         'http://localhost:54321/storage/v1/object/public/public-assets/proj/cand/c1/photo.jpg'
@@ -842,17 +895,17 @@ describe('SupabaseDataProvider', () => {
       const fiProvider = new SupabaseDataProvider();
       fiProvider.init({
         fetch: vi.fn(),
-        serverClient: mockSupabase as any,
+        serverClient: asSupabaseMock(mockSupabase),
         locale: 'fi',
         defaultLocale: 'en'
       });
 
-      const result = (await fiProvider.getEntityData()) as Array<any>;
+      const result = (await fiProvider.getEntityData()) as Array<EntityTestNarrow>;
 
-      const org = result.find((e: any) => e.id === 'org1');
-      expect(org.name).toBe('Party FI');
-      expect(org.shortName).toBe('P-FI');
-      expect(org.info).toBe('Info FI');
+      const org = result.find((e) => e.id === 'org1');
+      expect(org?.name).toBe('Party FI');
+      expect(org?.shortName).toBe('P-FI');
+      expect(org?.info).toBe('Info FI');
     });
   });
 
@@ -996,7 +1049,7 @@ describe('SupabaseDataProvider', () => {
       const fiProvider = new SupabaseDataProvider();
       fiProvider.init({
         fetch: vi.fn(),
-        serverClient: mockSupabase as any,
+        serverClient: asSupabaseMock(mockSupabase),
         locale: 'fi',
         defaultLocale: 'en'
       });
@@ -1066,16 +1119,16 @@ describe('SupabaseDataProvider', () => {
       const fiProvider = new SupabaseDataProvider();
       fiProvider.init({
         fetch: vi.fn(),
-        serverClient: mockSupabase as any,
+        serverClient: asSupabaseMock(mockSupabase),
         locale: 'fi',
         defaultLocale: 'en'
       });
 
       const result = await fiProvider.getQuestionData();
 
-      const choices = (result.questions[0] as any).choices;
-      expect(choices[0].label).toBe('Samaa mielta');
-      expect(choices[1].label).toBe('Eri mielta');
+      const choices = (result.questions[0] as QuestionTestNarrow).choices;
+      expect(choices?.[0].label).toBe('Samaa mielta');
+      expect(choices?.[1].label).toBe('Eri mielta');
     });
 
     it('passes through settings, electionIds, constituencyIds, entityType', async () => {
@@ -1128,7 +1181,7 @@ describe('SupabaseDataProvider', () => {
       };
 
       const result = await provider.getQuestionData();
-      const q = result.questions[0] as any;
+      const q = result.questions[0] as QuestionTestNarrow;
 
       expect(q.settings).toEqual({ display: 'likert' });
       expect(q.electionIds).toEqual(['e1']);
@@ -1371,8 +1424,8 @@ describe('SupabaseDataProvider', () => {
 
       const result = await provider.getNominationData();
 
-      const nominations = result.nominations as Array<any>;
-      const entities = result.entities as Array<any>;
+      const nominations = result.nominations as Array<NominationTestNarrow>;
+      const entities = result.entities as Array<EntityTestNarrow>;
 
       // 3 nominations (no dedup)
       expect(nominations).toHaveLength(3);
@@ -1388,14 +1441,14 @@ describe('SupabaseDataProvider', () => {
       };
 
       const result = await provider.getNominationData();
-      const entities = result.entities as Array<any>;
-      const candidate = entities.find((e: any) => e.id === 'c1');
+      const entities = result.entities as Array<EntityTestNarrow>;
+      const candidate = entities.find((e) => e.id === 'c1');
 
       expect(candidate).toBeDefined();
-      expect(candidate.type).toBe('candidate');
-      expect(candidate.firstName).toBe('Jane');
-      expect(candidate.lastName).toBe('Doe');
-      expect(candidate.organizationId).toBe('org1');
+      expect(candidate?.type).toBe('candidate');
+      expect(candidate?.firstName).toBe('Jane');
+      expect(candidate?.lastName).toBe('Doe');
+      expect(candidate?.organizationId).toBe('org1');
     });
 
     it('organization entities have type=organization', async () => {
@@ -1405,11 +1458,11 @@ describe('SupabaseDataProvider', () => {
       };
 
       const result = await provider.getNominationData();
-      const entities = result.entities as Array<any>;
-      const org = entities.find((e: any) => e.id === 'org1');
+      const entities = result.entities as Array<EntityTestNarrow>;
+      const org = entities.find((e) => e.id === 'org1');
 
       expect(org).toBeDefined();
-      expect(org.type).toBe('organization');
+      expect(org?.type).toBe('organization');
     });
 
     it('entity answers are processed through parseAnswers', async () => {
@@ -1438,17 +1491,17 @@ describe('SupabaseDataProvider', () => {
       };
 
       const result = await provider.getNominationData();
-      const nom = (result.nominations as Array<any>).find((n: any) => n.id === 'n1');
+      const nom = (result.nominations as Array<NominationTestNarrow>).find((n) => n.id === 'n1');
 
-      expect(nom.entityType).toBe('candidate');
-      expect(nom.entityId).toBe('c1');
-      expect(nom.electionId).toBe('e1');
-      expect(nom.constituencyId).toBe('co1');
-      expect(nom.electionRound).toBe(1);
-      expect(nom.electionSymbol).toBe('42');
-      expect(nom.parentNominationId).toBe('n3');
+      expect(nom?.entityType).toBe('candidate');
+      expect(nom?.entityId).toBe('c1');
+      expect(nom?.electionId).toBe('e1');
+      expect(nom?.constituencyId).toBe('co1');
+      expect(nom?.electionRound).toBe(1);
+      expect(nom?.electionSymbol).toBe('42');
+      expect(nom?.parentNominationId).toBe('n3');
       // Phase 64 P01: parentNominationType is derived from the parent's entity_type.
-      expect(nom.parentNominationType).toBe('organization');
+      expect(nom?.parentNominationType).toBe('organization');
     });
 
     it('clears parentNominationId when the parent nomination is not in the result set (Phase 64 P01)', async () => {
@@ -1461,11 +1514,11 @@ describe('SupabaseDataProvider', () => {
       };
 
       const result = await provider.getNominationData();
-      const nom = (result.nominations as Array<any>).find((n: any) => n.id === 'n1');
+      const nom = (result.nominations as Array<NominationTestNarrow>).find((n) => n.id === 'n1');
 
-      expect(nom.entityType).toBe('candidate');
-      expect(nom.parentNominationId).toBeNull();
-      expect(nom.parentNominationType).toBeUndefined();
+      expect(nom?.entityType).toBe('candidate');
+      expect(nom?.parentNominationId).toBeNull();
+      expect(nom?.parentNominationType).toBeUndefined();
     });
 
     it('entity and nomination images are converted via parseStoredImage', async () => {
@@ -1475,8 +1528,8 @@ describe('SupabaseDataProvider', () => {
       };
 
       const result = await provider.getNominationData();
-      const nom = (result.nominations as Array<any>)[0];
-      const entity = (result.entities as Array<any>)[0];
+      const nom = (result.nominations as Array<NominationTestNarrow>)[0];
+      const entity = (result.entities as Array<EntityTestNarrow>)[0];
 
       expect(nom.image?.url).toBe(
         'http://localhost:54321/storage/v1/object/public/public-assets/proj/nom/n3/img.png'

@@ -1,5 +1,6 @@
 import { describe, expect,it } from 'vitest';
 import { parseStoredImage } from '../utils/storageUrl';
+import type { StoredImage } from '../utils/storageUrl';
 
 describe('parseStoredImage', () => {
   const supabaseUrl = 'http://localhost:54321';
@@ -33,7 +34,8 @@ describe('parseStoredImage', () => {
   });
 
   it('returns undefined for missing path', () => {
-    const result = parseStoredImage({} as any, supabaseUrl);
+    // reason: fixture intentionally omits required `path` to exercise the missing-path guard
+    const result = parseStoredImage({} as Partial<StoredImage> as StoredImage, supabaseUrl);
     expect(result).toBeUndefined();
   });
 

@@ -1,5 +1,9 @@
 import { beforeEach,describe, expect, it, vi } from 'vitest';
 import { SupabaseAdminWriter } from './supabaseAdminWriter';
+import type { Database } from '@openvaa/supabase-types';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { AdminFeature } from '$lib/admin/features';
+import type { TemporarySetQuestionData } from '$lib/api/base/dataWriter.type';
 
 // Mock $env/dynamic/public before any imports that depend on it
 vi.mock('$env/dynamic/public', () => ({
@@ -38,16 +42,20 @@ function createMockSupabaseClient() {
   };
 }
 
+type MockClient = ReturnType<typeof createMockSupabaseClient>;
+// reason: createMockSupabaseClient is structural-only; SupabaseClient<Database> has 50+ methods we don't mock
+const asSupabaseMock = (m: MockClient) => m as unknown as SupabaseClient<Database>;
+
 describe('SupabaseAdminWriter', () => {
   let writer: SupabaseAdminWriter;
-  let mockSupabase: ReturnType<typeof createMockSupabaseClient>;
+  let mockSupabase: MockClient;
 
   beforeEach(() => {
     mockSupabase = createMockSupabaseClient();
     writer = new SupabaseAdminWriter();
     writer.init({
       fetch: vi.fn(),
-      serverClient: mockSupabase as any
+      serverClient: asSupabaseMock(mockSupabase)
     });
   });
 
@@ -73,7 +81,8 @@ describe('SupabaseAdminWriter', () => {
         writer.updateQuestion({
           authToken: '',
           id: 'q1',
-          data: { customData: null as any }
+          // reason: deliberately pass null to exercise the runtime customData-shape guard
+          data: { customData: null as unknown as TemporarySetQuestionData['customData'] }
         })
       ).rejects.toThrow('Expected a customData object');
     });
@@ -106,7 +115,8 @@ describe('SupabaseAdminWriter', () => {
         authToken: '',
         data: {
           jobId: 'j1',
-          jobType: 'generateArguments' as any,
+          // reason: legacy fixture string predates AdminFeature union; cast keeps test green without widening prod types
+          jobType: 'generateArguments' as unknown as AdminFeature,
           electionId: 'e1',
           author: 'admin@test.com',
           endStatus: 'completed'
@@ -127,7 +137,8 @@ describe('SupabaseAdminWriter', () => {
           authToken: '',
           data: {
             jobId: 'j1',
-            jobType: 'generateArguments' as any,
+            // reason: legacy fixture string predates AdminFeature union; cast keeps test green without widening prod types
+            jobType: 'generateArguments' as unknown as AdminFeature,
             electionId: 'bad',
             author: 'a',
             endStatus: 'completed'
@@ -151,7 +162,8 @@ describe('SupabaseAdminWriter', () => {
           authToken: '',
           data: {
             jobId: 'j2',
-            jobType: 'generateArguments' as any,
+            // reason: legacy fixture string predates AdminFeature union; cast keeps test green without widening prod types
+            jobType: 'generateArguments' as unknown as AdminFeature,
             electionId: 'e1',
             author: 'a',
             endStatus: 'completed'
