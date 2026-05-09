@@ -441,22 +441,25 @@ No `turbo.json` edit required — `turbo run lint` only invokes scripts that exi
 
 **If this table contains 3 entries:** A1 is the only assumption with non-trivial planner / discuss-phase implications. A2 and A3 are routine "verify by running the build" assumptions.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **What is the actual CJS consumer of `@openvaa/app-shared`?**
    - What we know: Build outputs `dist/index.cjs`; no `apps/supabase/functions/*` files import `@openvaa/app-shared`; all other consumers are ESM (`type: module`).
    - What's unclear: Whether some legacy or external integration depends on the CJS output (e.g., a tooling script not in this repo, a downstream consumer that sets `"main"` resolution, a future Edge Function rewrite that someone has planned).
    - Recommendation: Plan-72-01 should write the dual-build justification truthfully — either "preserved as a future-compatibility hedge; no current CJS consumer in-repo" OR ask the user explicitly via a /gsd-discuss-phase round before locking the language. Per D-06 the build itself is preserved either way.
+   - **RESOLVED:** Plan-72-01 Task 2 adopts the "future-compatibility hedge" wording verbatim. No current in-repo CJS consumer exists at the time of writing; the dual build is preserved as a hedge against a future Edge Function rewrite or external integration. README.md and `package.json` `description` reflect this truthfully.
 
 2. **Should the planner add an actual ESLint script to `apps/supabase/package.json` after the rename?**
    - What we know: The supabase workspace has TS files in `vitest.config.ts` + Edge Functions (Deno scope, out of node lint pipeline) + `scripts/lint-schema.mjs`. None of these are currently linted by the workspace's own `lint` script. Phase 68 P68-03 explicitly inverted the Deno scope to keep Edge Functions OUT of the Node toolchain.
    - What's unclear: Whether Plan-72-03 should leave `lint` undefined (turbo no-ops) or add `"lint": "eslint --flag v10_config_lookup_from_file vitest.config.ts scripts/"` (matching every other workspace).
    - Recommendation: **Default = leave undefined** (consistent with Phase 68 deferred-tech-debt §2's recommendation; SQL-only workspace for the lint pipeline). The planner may flip this to "add a real lint script" if the user wants strict symmetry — that's a 1-line addition.
+   - **RESOLVED:** Plan-72-03 Task 1 adopts the default — `lint` is left undefined after the hard rename to `lint:sql`. Turborepo's script-existence-driven fan-out cleanly skips `@openvaa/supabase` from the JS lint pipeline (per Phase 68 deferred-tech-debt §2). No real ESLint script was added; the SQL-only workspace identity is preserved.
 
 3. **Should the `packages/README.md` paradigm doc include a "minimum viable package" template?**
    - What we know: D-03 leaves this to planner discretion. The user explicitly noted "new pkg creation is a rare task."
    - What's unclear: Whether a code-snippet template (full `package.json` + `tsconfig.json` skeletons) belongs in v2.8 or in a future phase.
    - Recommendation: Default = prose-only (1–2 paragraphs naming the canonical packages + linking to their `package.json` files). If the planner's diff is small, a minimal template adds value. Avoid duplicating the actual canonical package files — link to them by path.
+   - **RESOLVED:** Plan-72-01 Task 3 adopts the prose-only default per D-03. `packages/README.md` names the canonical 4, explains the paradigm in prose, and links to live `packages/core/*` files (`package.json`, `tsconfig.json`, `tsup.config.ts`, `src/index.ts`) by path rather than embedding code-snippet templates. A "minimum viable package" template can be added in a future phase if new-package creation frequency justifies it.
 
 ## Environment Availability
 

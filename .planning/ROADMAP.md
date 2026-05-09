@@ -105,7 +105,10 @@ Audit: `.planning/milestones/v2.7-MILESTONE-AUDIT.md` (status: tech_debt — 8/8
   2. **SHARED-02 — `mergeSettings` re-export shim retired.** Every consumer in `apps/frontend/src/lib/**` and `tests/**` imports `mergeSettings` / `DeepPartial` directly from `@openvaa/app-shared`; the `apps/frontend/src/lib/utils/merge.ts` shim file is deleted; `git grep -nE "from ['\"]\\\$lib/utils/merge['\"]" apps/frontend/ tests/ packages/` returns zero matches. Any other shape-equivalent re-export shims in `apps/frontend/src/lib/utils/` discovered during the sweep are either retired (preferred) or carried forward with an explicit follow-up todo.
   3. **LINT-01 — `@openvaa/supabase` lint-script disambiguation.** The script that runs the SQL linter (current `yarn supabase:lint` semantics) is renamed to a SQL-specific name (e.g., `lint:sql`); the ESLint script (if any) gets a separate `lint:js` or matches the monorepo `lint:check` convention. Root-level `package.json`, `turbo.json`, `CLAUDE.md` Supabase Commands section, README, and CI workflow references are updated. `yarn supabase:lint` either continues to work as a deprecated alias OR is removed if no consumer remains. After the rename, `yarn lint:check` at the root runs only the JS/TS linter and does not touch SQL files; the renamed SQL script runs the SQL linter against `apps/supabase/migrations/`.
   4. `yarn build`, `yarn test:unit`, and `yarn lint:check` all green at HEAD; the v2.7-close Playwright parity baseline continues to pass — no behavioral regressions from the package-level changes.
-**Plans**: TBD
+**Plans**: 3 plans
+- [ ] 72-01-PLAN.md — `@openvaa/app-shared` paradigm normalisation (SHARED-01)
+- [ ] 72-02-PLAN.md — `mergeSettings` shim retirement (SHARED-02)
+- [ ] 72-03-PLAN.md — `@openvaa/supabase` lint-script hard rename (LINT-01)
 
 ### 🆕 Next milestone — Not yet planned
 
@@ -131,4 +134,4 @@ Run `/gsd-new-milestone` to question → research → write requirements → roa
 | 69. Alliance Card Lane A | v2.8 | 0/? | Not started | - |
 | 70. Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup | v2.8 | 0/? | Not started | - |
 | 71. Frontend Strict-Typing Cleanup | v2.8 | 0/? | Not started | - |
-| 72. Package Hygiene Trio | v2.8 | 0/? | Not started | - |
+| 72. Package Hygiene Trio | v2.8 | 0/3 | Not started | - |
