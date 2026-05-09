@@ -66,3 +66,61 @@ This run did not fail or hang, but it DID fail to exercise the `WithPolling` SSR
 
 - **Source-of-truth gap:** This run cannot empirically confirm whether `WithPolling.svelte:27` fires the warning at SSR time (admin-protected route + no auth context). Confidence is now **HIGH-on-correctness** (the fix is the canonical Svelte 5 lifecycle pattern; no downside) but **MEDIUM-on-empirical-trigger** (we apply the fix without seeing the warning surface in THIS run).
 - **Phase-close re-verification:** `/gsd-verify-work 70` runs the cold-start protocol with operator-driven admin sign-in, which surfaces the warning empirically before the fix and confirms its absence after. The fix landing in this plan is independent of empirical pre-confirmation.
+
+---
+
+## Post-Fix Verification
+
+**Captured:** 2026-05-09 (immediately after Task 2 commit `a3c142c23`)
+**Cold-start log:** `/tmp/70-04-cold-start-post.log` (18 lines total at capture)
+**Procedure:** Identical to pre-fix run.
+
+1. `rm -rf apps/frontend/.svelte-kit node_modules/.vite/` — caches re-wiped.
+2. `yarn workspace @openvaa/frontend dev` started in background; ready in 1708 ms on `http://localhost:5174/`.
+3. Same SSR pass via `curl -sL`:
+   - `GET /` → 200
+   - `GET /en` → 200
+   - `GET /fi` → 200
+   - `GET /elections` → 200 (redirected to `/constituencies?electionId=…`)
+   - `GET /results` → 200 (redirected to `/constituencies?electionId=…`)
+   - `GET /admin` → 200 (redirected to `/admin/login?errorMessage=loginFailed`)
+   - `GET /admin/jobs` → 200 (redirected to `/admin/login?errorMessage=loginFailed`)
+4. Dev server killed.
+5. `grep -cE "(fetch.*eagerly|Avoid calling fetch eagerly)" /tmp/70-04-cold-start-post.log` → **`0`** ✅
+
+**Result:** Post-fix `fetch.*eagerly` count is `0`, matching the pre-fix run. The voter SSR pass surfaces no Cat D warnings either before or after the WithPolling fix (no regression). The admin/jobs SSR coverage gap (auth-protected) persists identically for both runs.
+
+### Manual Admin Polling DevTools Smoke
+
+**Status: DEFERRED to phase-close `/gsd-verify-work 70`.**
+
+**Rationale:** The auto-mode executor has no operator browser session, so the canonical admin-polling DevTools smoke (sign in to /admin/jobs → Network tab → confirm initial fetch + interval fetch + cleanup-on-unmount) cannot be performed in this run. Per the spawn-prompt auto-mode handling protocol:
+
+> "auto-mode accepts this gap and defers the manual smoke to `/gsd-verify-work 70` at phase close"
+
+This matches the deferral pattern used by Plans 70-01, 70-02, and 70-03 — all reactivity / render / a11y manual smokes are deferred to the phase-close cold-start protocol per CONTEXT.md D-04.
+
+### Static-gate confirmation (svelte-check baseline)
+
+`yarn workspace @openvaa/frontend check` post-Task-2 reports:
+
+| Metric | Pre-Plan-70-04 | Post-Plan-70-04 | Δ |
+|--------|----------------|-----------------|----|
+| Total errors | 160 | 160 | 0 (no regression) |
+| Total warnings | 0 | 0 | 0 (Plan 70-03 already eliminated the last Cat C warning; no new ones introduced) |
+| Files with problems | 35 | 35 | 0 |
+| WithPolling.svelte errors | 0 | 0 | 0 |
+| WithPolling.svelte warnings | 0 | 0 | 0 |
+
+### Acceptance criteria
+
+- ✅ `70-04-CAPTURE.md` contains a `## Post-Fix Verification` section.
+- ✅ The section records the post-fix cold-start `grep -c "fetch.*eagerly"` count: **`0`**.
+- ✅ The section records the manual polling smoke disposition (DEFERRED to phase-close, with rationale per the auto-mode protocol).
+- ✅ No additional CAPTURE.md sites surfaced; nothing remains to fix in this plan.
+
+### Phase-close handoff
+
+`/gsd-verify-work 70` MUST run the authenticated cold-start protocol (operator-driven admin sign-in to /admin/jobs) and record:
+- `grep -c "fetch.*eagerly" /tmp/<phase-close-log>` → expected `0` (this fix's structural correctness).
+- DevTools Network tab observation: initial polling fetch fires after page mount; interval fetches continue; cleanup on navigate-away. Expected PASS based on the canonical lifecycle pattern (`onMount(() => { fetch + setInterval; return () => clearInterval(); })`).
