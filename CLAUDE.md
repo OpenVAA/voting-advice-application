@@ -122,6 +122,8 @@ When adding interdependencies:
 1. Add to `package.json`: `"@openvaa/core": "workspace:^"`
 2. Add TypeScript reference: `"references": [{ "path": "../core/tsconfig.json" }]`
 
+**Canonical package paradigm:** New `packages/<name>/` workspaces follow the shape of `@openvaa/core` (lowest in the dep graph; tiebreaker per the canonical-paradigm doc). Same `package.json` scripts + `exports`, `tsconfig.json` extends `@openvaa/shared-config/ts`, `tsup.config.ts`, flat `src/index.ts` barrel, no `.js` extensions on TS-internal relative imports. See `packages/README.md` for the full reference.
+
 ### Build System
 
 The project uses [Turborepo](https://turbo.build) for build orchestration. Configuration is in `turbo.json` at the project root. Turborepo provides:
