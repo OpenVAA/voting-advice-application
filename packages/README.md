@@ -26,7 +26,7 @@ All four are `type: module`, build with [`tsup`](https://tsup.egoist.dev/) + `ts
 
 A package may diverge from the canonical paradigm only when the divergence is documented inline (in `package.json`'s `description`, in the package's `README.md`, or in a comment beside the divergent field). The current divergences in the repo:
 
-- **`@openvaa/app-shared`** is `private: true`, has a `main: "./dist/index.cjs"` field, an `exports[...].require` branch, a `tsup.config.ts: format: ['esm', 'cjs']` dual build, and a `scripts.test:unit: "vitest run --passWithNoTests"`. Rationale (see `packages/app-shared/README.md` §"Dual ESM + CommonJS build"): the package preserves a CommonJS output as a future-compatibility hedge, and has real unit tests in `src/` that need a workspace-level `test:unit` runner.
+- **`@openvaa/app-shared`** is `private: true` (not published — internal cross-cut between `apps/frontend/` and `apps/supabase/` plus dev tooling) and has a `scripts.test:unit: "vitest run --passWithNoTests"` (real unit tests live in `src/`).
 
 No other packages currently diverge.
 
