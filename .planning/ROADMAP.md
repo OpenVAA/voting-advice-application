@@ -86,7 +86,7 @@ Audit: `.planning/milestones/v2.7-MILESTONE-AUDIT.md` (status: tech_debt — 8/8
   5. `yarn build` and `yarn test:unit` remain green; the v2.7-close Playwright parity baseline continues to pass — no E2E regressions from the warning fixes or comment strip.
 **Plans**: 5 plans
 - [x] 70-01-PLAN.md — Cat A `state_referenced_locally` rewrites (5 files, 9 sites; LogoutButton.svelte analog) [Wave 1]
-- [ ] 70-02-PLAN.md — Cat B `<slot />` → `{@render children?.()}` (WithPolling.svelte 3-part Snippet patch) [Wave 1]
+- [x] 70-02-PLAN.md — Cat B `<slot />` → `{@render children?.()}` (WithPolling.svelte 3-part Snippet patch) [Wave 1]
 - [ ] 70-03-PLAN.md — Cat C a11y fix (Input.svelte:521 `<label>` → `<button>` Option A; Option B fallback if visual smoke fails) [Wave 1, has checkpoint]
 - [ ] 70-04-PLAN.md — Cat D SSR fetch-eagerness (cold-start capture + `onMount` wrap; primary site WithPolling.svelte:24) [Wave 1]
 - [ ] 70-05-PLAN.md — BIND-01 strip 26 `// bind: (keep|ok|justified)` comments across 24 files; preserve `// bind: migrate` block [Wave 2, depends on 70-03]
@@ -139,6 +139,6 @@ Run `/gsd-new-milestone` to question → research → write requirements → roa
 | 67. Default Seed Alliances | v2.7 | 2/2 | Complete | 2026-04-30 |
 | 68. Dev-Tooling Trio | v2.7 | 3/3 | Complete | 2026-05-08 |
 | 69. Alliance Card Lane A | v2.8 | 2/2 | Complete   | 2026-05-09 |
-| 70. Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup | v2.8 | 1/5 | In Progress|  |
+| 70. Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup | v2.8 | 2/5 | In Progress|  |
 | 71. Frontend Strict-Typing Cleanup | v2.8 | 0/? | Not started | - |
 | 72. Package Hygiene Trio | v2.8 | 3/3 | Complete   | 2026-05-09 |

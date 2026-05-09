@@ -95,7 +95,7 @@ Phase assignments mapped to `.planning/ROADMAP.md`. Success-criterion references
 | Requirement | Phase | Success Criteria | Status |
 |-------------|-------|------------------|--------|
 | ALLIANCE-01 | Phase 69 — Alliance Card Lane A | SC-1, SC-2, SC-3, SC-4 | Complete (Plans 69-01 + 69-02; SC-4 manual smoke PASSED 2026-05-09; parity gate deferred — see `.planning/todos/pending/2026-05-09-phase-69-parity-gate-followup.md`) |
-| WARN-01 | Phase 70 — Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup | SC-1 (Category A), SC-2 (Category B), SC-3 (Category C), SC-5 (regression gate) | In Progress (Plan 70-01 complete: SC-1 Category A — 10 warnings → 0; Plans 70-02/03/04 pending for SC-2/SC-3/SC-1b) |
+| WARN-01 | Phase 70 — Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup | SC-1 (Category A), SC-2 (Category B), SC-3 (Category C), SC-5 (regression gate) | In Progress (Plan 70-01 complete: SC-1 Category A — 10 warnings → 0; Plan 70-02 complete: SC-2 Category B — 1 warning → 0; Plans 70-03/04 pending for SC-3/SC-1b) |
 | BIND-01 | Phase 70 — Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup | SC-4 (comment strip), SC-5 (regression gate) | Pending |
 | TYPING-01 | Phase 71 — Frontend Strict-Typing Cleanup | SC-1, SC-2, SC-3, SC-4 | Pending |
 | SHARED-01 | Phase 72 — Package Hygiene Trio | SC-1, SC-4 (regression gate) | Pending |
