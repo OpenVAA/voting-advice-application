@@ -69,7 +69,9 @@ Audit: `.planning/milestones/v2.7-MILESTONE-AUDIT.md` (status: tech_debt — 8/8
   2. After `yarn dev:reset-with-data`, the voter results page's "Alliances" entity tab renders a populated card per seeded alliance — at minimum each card shows (a) the alliance name, (b) member organizations as a sub-list, and (c) an "X candidates across N parties" summary derived from the v2.6 P64 reverse-filled `organizationNominationIds`. No empty cards, no `cardContents` runtime errors.
   3. Clicking an alliance card opens the entity detail drawer; the drawer's tab structure is appropriate for an alliance entity (info + member organizations; no opinions tab since alliances do not own answers). Member-org rendering inside the drawer reuses the existing organization-nomination rendering surface — no new bespoke components for the drawer body.
   4. A 5-step manual smoke (tab visible → cards populated → click-to-drawer → member orgs render in the drawer → return to list) passes on a clean `yarn dev:reset-with-data` start. The v2.7-close Playwright parity baseline continues to pass — no E2E regressions from the EntityCard / cardContents changes.
-**Plans**: TBD
+**Plans**: 2 plans
+- [ ] 69-01-PLAN.md — Type rename ('candidates' → 'children') + alliance render path (EntityCard + EntityDetails) + route-matcher widening + +layout.svelte tab handling + dev-seed templates + i18n + fixture pin updates [Wave 1]
+- [ ] 69-02-PLAN.md — Cascading-impute pipeline (imputeParentAnswers childProxies generalisation + matchStore Alliance branch) + regression-guard unit test + manual smoke + Playwright parity gate + broader-refactor todo capture [Wave 2, depends on 01]
 **UI hint**: yes
 
 ### Phase 70: Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup
@@ -131,7 +133,7 @@ Run `/gsd-new-milestone` to question → research → write requirements → roa
 | 66. Adapter Type Cleanup | v2.7 | 1/1 | Complete | 2026-04-29 |
 | 67. Default Seed Alliances | v2.7 | 2/2 | Complete | 2026-04-30 |
 | 68. Dev-Tooling Trio | v2.7 | 3/3 | Complete | 2026-05-08 |
-| 69. Alliance Card Lane A | v2.8 | 0/? | Not started | - |
+| 69. Alliance Card Lane A | v2.8 | 0/2 | Not started | - |
 | 70. Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup | v2.8 | 0/? | Not started | - |
 | 71. Frontend Strict-Typing Cleanup | v2.8 | 0/? | Not started | - |
 | 72. Package Hygiene Trio | v2.8 | 1/3 | In Progress|  |
