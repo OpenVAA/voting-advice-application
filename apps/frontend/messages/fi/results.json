@@ -11,6 +11,28 @@
             "numShownPlural=other": "{numShown} vaaliliittoa"
           }
         }
+      ],
+      "summary": [
+        {
+          "declarations": [
+            "input numCandidates",
+            "input numParties",
+            "local numCandidatesPlural = numCandidates: plural",
+            "local numPartiesPlural = numParties: plural"
+          ],
+          "selectors": ["numCandidatesPlural", "numPartiesPlural"],
+          "match": {
+            "numCandidatesPlural=zero numPartiesPlural=zero": "Ei ehdokkaita yhteensä ei puoluetta",
+            "numCandidatesPlural=zero numPartiesPlural=one": "Ei ehdokkaita yhteensä 1 puolueesta",
+            "numCandidatesPlural=zero numPartiesPlural=other": "Ei ehdokkaita yhteensä {numParties} puolueesta",
+            "numCandidatesPlural=one numPartiesPlural=zero": "1 ehdokas yhteensä ei puoluetta",
+            "numCandidatesPlural=one numPartiesPlural=one": "1 ehdokas yhteensä 1 puolueesta",
+            "numCandidatesPlural=one numPartiesPlural=other": "1 ehdokas yhteensä {numParties} puolueesta",
+            "numCandidatesPlural=other numPartiesPlural=zero": "{numCandidates} ehdokasta yhteensä ei puoluetta",
+            "numCandidatesPlural=other numPartiesPlural=one": "{numCandidates} ehdokasta yhteensä 1 puolueesta",
+            "numCandidatesPlural=other numPartiesPlural=other": "{numCandidates} ehdokasta yhteensä {numParties} puolueesta"
+          }
+        }
       ]
     },
     "candidate": {

@@ -11,6 +11,28 @@
             "numShownPlural=other": "{numShown} alliancer"
           }
         }
+      ],
+      "summary": [
+        {
+          "declarations": [
+            "input numCandidates",
+            "input numParties",
+            "local numCandidatesPlural = numCandidates: plural",
+            "local numPartiesPlural = numParties: plural"
+          ],
+          "selectors": ["numCandidatesPlural", "numPartiesPlural"],
+          "match": {
+            "numCandidatesPlural=zero numPartiesPlural=zero": "Ingen kandidater på tværs af ingen partier",
+            "numCandidatesPlural=zero numPartiesPlural=one": "Ingen kandidater på tværs af 1 parti",
+            "numCandidatesPlural=zero numPartiesPlural=other": "Ingen kandidater på tværs af {numParties} partier",
+            "numCandidatesPlural=one numPartiesPlural=zero": "1 kandidat på tværs af ingen partier",
+            "numCandidatesPlural=one numPartiesPlural=one": "1 kandidat på tværs af 1 parti",
+            "numCandidatesPlural=one numPartiesPlural=other": "1 kandidat på tværs af {numParties} partier",
+            "numCandidatesPlural=other numPartiesPlural=zero": "{numCandidates} kandidater på tværs af ingen partier",
+            "numCandidatesPlural=other numPartiesPlural=one": "{numCandidates} kandidater på tværs af 1 parti",
+            "numCandidatesPlural=other numPartiesPlural=other": "{numCandidates} kandidater på tværs af {numParties} partier"
+          }
+        }
       ]
     },
     "candidate": {

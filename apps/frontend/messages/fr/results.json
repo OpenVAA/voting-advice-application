@@ -11,6 +11,28 @@
             "numShownPlural=other": "{numShown} alliances"
           }
         }
+      ],
+      "summary": [
+        {
+          "declarations": [
+            "input numCandidates",
+            "input numParties",
+            "local numCandidatesPlural = numCandidates: plural",
+            "local numPartiesPlural = numParties: plural"
+          ],
+          "selectors": ["numCandidatesPlural", "numPartiesPlural"],
+          "match": {
+            "numCandidatesPlural=zero numPartiesPlural=zero": "Aucun candidat répartis sur aucun parti",
+            "numCandidatesPlural=zero numPartiesPlural=one": "Aucun candidat répartis sur 1 parti",
+            "numCandidatesPlural=zero numPartiesPlural=other": "Aucun candidat répartis sur {numParties} partis",
+            "numCandidatesPlural=one numPartiesPlural=zero": "1 candidat répartis sur aucun parti",
+            "numCandidatesPlural=one numPartiesPlural=one": "1 candidat répartis sur 1 parti",
+            "numCandidatesPlural=one numPartiesPlural=other": "1 candidat répartis sur {numParties} partis",
+            "numCandidatesPlural=other numPartiesPlural=zero": "{numCandidates} candidats répartis sur aucun parti",
+            "numCandidatesPlural=other numPartiesPlural=one": "{numCandidates} candidats répartis sur 1 parti",
+            "numCandidatesPlural=other numPartiesPlural=other": "{numCandidates} candidats répartis sur {numParties} partis"
+          }
+        }
       ]
     },
     "candidate": {

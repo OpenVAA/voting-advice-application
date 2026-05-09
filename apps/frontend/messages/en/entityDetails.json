@@ -3,7 +3,7 @@
     "links": "Links",
     "memberOfOrganization": "member of {organization}",
     "tabs": {
-      "candidates": "candidates",
+      "children": "Members",
       "info": "Basic Info",
       "opinions": "Opinions"
     }

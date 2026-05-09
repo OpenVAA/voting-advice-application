@@ -3,7 +3,7 @@
     "links": "Lingid",
     "memberOfOrganization": "erakonna {organization} liige",
     "tabs": {
-      "candidates": "kandidaadid",
+      "children": "Liikmed",
       "info": "Põhiandmed",
       "opinions": "Arvamused"
     }
