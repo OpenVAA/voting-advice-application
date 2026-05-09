@@ -17,8 +17,9 @@ Provides the data used by the nominations route.
   import { getVoterContext } from '$lib/contexts/voter';
   import type { Snippet } from 'svelte';
   import type { DPDataType } from '$lib/api/base/dataTypes';
+  import type { LayoutData } from './$types';
 
-  let { data, children }: { data: any; children: Snippet } = $props();
+  let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
   const { dataRoot } = getVoterContext();
 

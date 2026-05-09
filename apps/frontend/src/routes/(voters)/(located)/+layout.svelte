@@ -27,8 +27,9 @@ Displays a warning if the selected constituency does not have nominations in all
   import { sanitizeHtml } from '$lib/utils/sanitize.js';
   import type { Snippet } from 'svelte';
   import type { DPDataType } from '$lib/api/base/dataTypes';
+  import type { LayoutData } from './$types';
 
-  let { data, children }: { data: any; children: Snippet } = $props();
+  let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
   // Keep context ref for reactive getter access (destructuring captures static values)
   const voterCtx = getVoterContext();
