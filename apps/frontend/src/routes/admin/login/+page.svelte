@@ -57,6 +57,9 @@
     const errorKey = getErrorTranslationKey(errorParam);
     if (errorKey) errorMessage = t(errorKey);
   }
+  // One-shot init-only translation of URL ?error= → status; subsequent
+  // errorMessage updates flow through form-action handlers.
+  // svelte-ignore state_referenced_locally
   if (errorMessage) status = 'error';
 
   let canSubmit = $derived(!!(status !== 'loading' && email && password));

@@ -36,6 +36,10 @@
 
   // Get key from search params
   let registrationKey = $state(page.url.searchParams.get('registrationKey') ?? '');
+  // One-shot init-only kickoff: validate the key from URL on mount.
+  // Subsequent registrationKey changes are tracked by the $effect at
+  // line 43-48 (the changedAfterCheck flag).
+  // svelte-ignore state_referenced_locally
   if (registrationKey) checkKeyAndContinue(registrationKey);
 
   let canSubmit = $derived(status !== 'loading' && registrationKey !== '' && (status !== 'error' || changedAfterCheck));
