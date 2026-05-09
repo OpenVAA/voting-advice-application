@@ -25,6 +25,7 @@ import type { PageLoad } from './$types';
  * (id set, both plural AND singular missing) as a 404 — it's a bad URL where
  * the user typed something that matched none of the matchers.
  */
+// eslint-disable-next-line func-style -- reason: SvelteKit PageLoad type-binding requires const-form annotation
 export const load: PageLoad = async ({ params, url }) => {
   const { entityTypeSingular, id, entityTypePlural } = params;
 

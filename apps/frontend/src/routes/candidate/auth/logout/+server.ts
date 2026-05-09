@@ -9,6 +9,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
+// eslint-disable-next-line func-style -- reason: SvelteKit RequestHandler type-binding requires const-form annotation
 export const POST: RequestHandler = async ({ locals }) => {
   await locals.supabase.auth.signOut({ scope: 'local' });
   return json({ success: true });

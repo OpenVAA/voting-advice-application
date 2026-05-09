@@ -20,6 +20,7 @@ import type { LayoutLoad } from './$types';
  * 3. No search params → unlikely (the (located) layout guarantees both) but
  *    falls through harmlessly, redirecting to `/results/candidates`.
  */
+// eslint-disable-next-line func-style -- reason: SvelteKit LayoutLoad type-binding requires const-form annotation
 export const load: LayoutLoad = async ({ params, url }) => {
   if (params.entityTypePlural) return {};
   if (params.entityTypeSingular || params.id) return {};

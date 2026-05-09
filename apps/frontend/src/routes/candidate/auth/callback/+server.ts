@@ -16,6 +16,7 @@ import type { RequestHandler } from './$types';
  * Uses `locals.supabase` (server client from hooks.server.ts) so session cookies
  * are set automatically by @supabase/ssr.
  */
+// eslint-disable-next-line func-style -- reason: SvelteKit RequestHandler type-binding requires const-form annotation
 export const GET: RequestHandler = async ({ url, locals }) => {
   const token_hash = url.searchParams.get('token_hash');
   const type = url.searchParams.get('type') as EmailOtpType | null;
