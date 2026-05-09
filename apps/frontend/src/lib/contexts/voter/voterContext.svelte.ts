@@ -88,7 +88,7 @@ export function initVoterContext(): VoterContext {
   // disappears after closing candidate drawer". Svelte 4 stores absorbed this
   // via `writable.set()`'s no-op-write skip; Svelte 5 raw `$state` writes
   // need an explicit equality check.
-  function sameRefs<T>(a: ReadonlyArray<T>, b: ReadonlyArray<T>): boolean {
+  function sameRefs<TItem>(a: ReadonlyArray<TItem>, b: ReadonlyArray<TItem>): boolean {
     if (a.length !== b.length) return false;
     for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
     return true;

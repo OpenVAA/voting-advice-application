@@ -72,7 +72,7 @@ class FakeGroup {
     // Wire each filter's onChange to bubble up to the group's handlers (mirrors real FilterGroup ctor)
     filters.forEach((f) => f.onChange(() => this._handlers.forEach((h) => h(this))));
   }
-  apply<T>(targets: Array<T>): Array<T> {
+  apply<TVal>(targets: Array<TVal>): Array<TVal> {
     return this.active ? [] : [...targets];
   }
   get active() {

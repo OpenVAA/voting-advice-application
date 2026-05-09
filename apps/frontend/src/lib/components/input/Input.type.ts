@@ -48,11 +48,11 @@ export type InputType = InputProps['type'];
  */
 /**
  * @typeParam TValue - The type of value associated with the input.
- * @typeParam _TElement - Retained for API compatibility but no longer used to derive the base type.
+ * @typeParam TElement - Retained for API compatibility but no longer used to derive the base type.
  *   Uses `HTMLAttributes<HTMLElement>` instead of `SvelteHTMLElements[TElement]` to avoid
  *   "union too complex" TypeScript errors in the 10-way `InputProps` union.
  */
-export type InputPropsBase<TValue, _TElement extends string = 'input'> = Omit<
+export type InputPropsBase<TValue, TElement extends string = 'input'> = Omit<
   HTMLAttributes<HTMLElement>,
   'disabled' | 'id' | 'label' | 'value'
 > & {
@@ -107,7 +107,7 @@ export type InputPropsBase<TValue, _TElement extends string = 'input'> = Omit<
   /**
    * The options to show for a `select` or `select-multiple` input.
    */
-  options?: _TElement extends 'select' ? Array<AnyChoice> : never;
+  options?: TElement extends 'select' ? Array<AnyChoice> : never;
   /**
    * If `true`, enables ordering of the values of a `select-multiple` input. @default false
    */
