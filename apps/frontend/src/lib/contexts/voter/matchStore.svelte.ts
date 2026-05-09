@@ -46,55 +46,58 @@ export function matchStore({
     const tree: Partial<MatchTree> = {};
 
     for (const [electionId, electionContent] of Object.entries(nq)) {
-      tree[electionId] = Object.fromEntries(
-        Object.entries(electionContent).map(([entityType, { nominations, opinionQuestions: questions }]) => {
-          const numAnswers = countAnswers({ questions, answers: currentAnswers });
-          // If there are no applicable answers, just return the nominations.
-          if (numAnswers < minAns) return [entityType, nominations];
+      const electionMatches: Record<EntityType, Array<MaybeWrappedEntityVariant>> = {} as never;
+      for (const [entityType, { nominations, opinionQuestions: questions }] of Object.entries(electionContent)) {
+        const numAnswers = countAnswers({ questions, answers: currentAnswers });
+        // If there are no applicable answers, just return the nominations.
+        if (numAnswers < minAns) {
+          electionMatches[entityType as EntityType] = nominations;
+          continue;
+        }
 
-          // If there are no nominations, return an empty array
-          if (!nominations.length) return [entityType, []];
+        // If there are no nominations, return an empty array
+        if (!nominations.length) {
+          electionMatches[entityType as EntityType] = [];
+          continue;
+        }
 
-          // Get question categories for submatches if necessary
-          const questionGroups = submatches.includes(entityType as EntityType)
-            ? removeDuplicates(questions.map((q) => q.category))
-            : undefined;
+        // Get question categories for submatches if necessary
+        const questionGroups = submatches.includes(entityType as EntityType)
+          ? removeDuplicates(questions.map((q) => q.category))
+          : undefined;
 
-          // Possibly impute parent entity answers
-          let proxies: Array<MatchingProxy<AnyNominationVariant>> | undefined;
-          if (entityType === ENTITY_TYPE.Organization || entityType === ENTITY_TYPE.Faction) {
-            switch (parentMethod) {
-              case 'impute':
-                proxies = imputeParentAnswers({
-                  nominations: nominations as Array<OrganizationNomination | FactionNomination>,
-                  questions
-                });
-                break;
-              case 'answersOnly':
-              case 'none':
-                break;
-              default:
-                throw new Error(`Unsupported parent matching method: ${parentMethod}`);
-            }
+        // Possibly impute parent entity answers
+        let proxies: Array<MatchingProxy<AnyNominationVariant>> | undefined;
+        if (entityType === ENTITY_TYPE.Organization || entityType === ENTITY_TYPE.Faction) {
+          switch (parentMethod) {
+            case 'impute':
+              proxies = imputeParentAnswers({
+                nominations: nominations as Array<OrganizationNomination | FactionNomination>,
+                questions
+              });
+              break;
+            case 'answersOnly':
+            case 'none':
+              break;
+            default:
+              throw new Error(`Unsupported parent matching method: ${parentMethod}`);
           }
+        }
 
-          const matches = algorithm.match<AnyNominationVariant | MatchingProxy<AnyNominationVariant>>({
-            questions,
-            reference: voter,
-            // Use proxies in matching if available
-            targets: proxies ?? nominations,
-            options: { questionGroups }
-          });
+        const matches = algorithm.match<AnyNominationVariant | MatchingProxy<AnyNominationVariant>>({
+          questions,
+          reference: voter,
+          // Use proxies in matching if available
+          targets: proxies ?? nominations,
+          options: { questionGroups }
+        });
 
-          return [
-            entityType,
-            // If we used proxies, unwrap them
-            proxies
-              ? matches.map((m) => unwrapProxiedMatch(m as Match<MatchingProxy<AnyNominationVariant>>))
-              : matches
-          ];
-        })
-      );
+        // If we used proxies, unwrap them
+        electionMatches[entityType as EntityType] = proxies
+          ? matches.map((m) => unwrapProxiedMatch(m as Match<MatchingProxy<AnyNominationVariant>>))
+          : matches;
+      }
+      tree[electionId] = electionMatches;
     }
     return tree as MatchTree;
   });
