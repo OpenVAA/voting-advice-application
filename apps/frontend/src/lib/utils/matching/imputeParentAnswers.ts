@@ -6,6 +6,7 @@ import { median } from './median';
 import { mode } from './mode';
 import type { AnswerDict, Id } from '@openvaa/core';
 import type {
+  AllianceNomination,
   Answer,
   AnyNominationVariant,
   AnyQuestionVariant,
@@ -15,16 +16,60 @@ import type {
 
 /**
  * Impute the answers for the provided `Nomination`s from their child `Nomination`s.
- * @param nominations - The array of `Nomination`s to impute answers for. Note they will be edited in place!
- * @param questions - The array of `Question`s to impute answers to
- * @returns an array of `MatchingProxy`es for each `Nomination` with the imputed answers
+ *
+ * # Cascading-proxy pattern (Phase 69)
+ *
+ * Two-pass cascade:
+ *   - **Pass 1 (existing):** candidate-noms (children) → organization/faction-noms
+ *     (parents). Output: `MatchingProxy<OrganizationNomination | FactionNomination>`
+ *     per parent.
+ *   - **Pass 2 (Phase 69):** organization-noms (children) → alliance-noms (parents).
+ *     Reads child answers from the Pass-1 proxy map (`childProxies` arg) instead of
+ *     `child.entity.getAnswer(...)` because alliance children (organization-noms)
+ *     typically don't own answers — only their candidates do.
+ *
+ * # Why proxies, not entity writes
+ *
+ * The original implementation could have written imputed values back to the parent
+ * entity via `entity.setAnswer()`. That approach (a) leaks imputed values into other
+ * read paths (filters, drawers, info questions) and (b) is non-reversible. The proxy
+ * pattern keeps imputation scoped to the matching pipeline only — `algorithm.match()`
+ * accepts proxies directly, and after matching is complete the proxies are discarded.
+ *
+ * # Why optional childProxies
+ *
+ * Backward-compat: when `childProxies` is undefined, the function reads child answers
+ * from `child.entity.getAnswer(...)` exactly as it did pre-Phase-69 — output is
+ * byte-identical for organization + faction parents. Callers only pass `childProxies`
+ * when they want to compose passes (e.g. matchStore Pass 2 for alliances).
+ *
+ * # Org-first invariant
+ *
+ * `matchStore.svelte.ts` MUST run the Organization branch before the Alliance branch
+ * within each election iteration so the org proxies are available when alliance-pass
+ * runs. The sequential for...of loop in matchStore documents this invariant.
+ *
+ * # Future refactor
+ *
+ * The broader imputation-paradigm refactor (per-entity-type matching method,
+ * separation of imputation strategy from the matching loop) is captured in the
+ * pending todo `2026-05-09-rewrite-parent-answer-imputation.md`.
+ *
+ * @param nominations - The parent-entity nominations to impute answers for.
+ * @param questions - The question pool to consider; only matchable opinion questions are imputed.
+ * @param childProxies - Optional map of pre-imputed proxy answers, keyed by child nomination id. When a child has a proxy in this map, its `proxy.answers[questionId]?.value` is read instead of `child.entity.getAnswer(question)?.value`. Enables Pass 2 cascading.
+ * @returns An array of `MatchingProxy<TNomination>` — one per input nomination, with imputed answers attached.
  */
-export function imputeParentAnswers<TNomination extends OrganizationNomination | FactionNomination>({
+export function imputeParentAnswers<
+  TNomination extends OrganizationNomination | FactionNomination | AllianceNomination
+>({
   nominations,
-  questions
+  questions,
+  childProxies
 }: {
   nominations: Array<TNomination>;
   questions: Array<AnyQuestionVariant>;
+  childProxies?: Map<Id, MatchingProxy<AnyNominationVariant>>;
 }): Array<MatchingProxy<TNomination>> {
   // The base for proxy answers
   const proxyAnswers: Array<AnswerDict> = nominations.map((n) => structuredClone(n.answers ?? {}));
@@ -41,10 +86,14 @@ export function imputeParentAnswers<TNomination extends OrganizationNomination |
 
   for (let i = 0; i < nominations.length; i++) {
     const parent = nominations[i];
-    const children =
-      isObjectType(parent, OBJECT_TYPE.OrganizationNomination) && parent.hasFactions
-        ? parent.factionNominations
-        : parent.candidateNominations;
+    let children: ReadonlyArray<AnyNominationVariant>;
+    if (isObjectType(parent, OBJECT_TYPE.AllianceNomination)) {
+      children = parent.organizationNominations;
+    } else if (isObjectType(parent, OBJECT_TYPE.OrganizationNomination) && parent.hasFactions) {
+      children = parent.factionNominations;
+    } else {
+      children = (parent as OrganizationNomination | FactionNomination).candidateNominations;
+    }
     if (children.length === 0) continue;
 
     // Only impute the answer if it's missing
@@ -53,7 +102,13 @@ export function imputeParentAnswers<TNomination extends OrganizationNomination |
     if (unansweredQuestions.length === 0) continue;
 
     for (const question of unansweredQuestions) {
-      const answers = children.map((c) => c.entity.getAnswer(question)?.value).filter((v) => v != null);
+      const answers = children
+        .map((c) => {
+          const proxy = childProxies?.get(c.id);
+          if (proxy) return proxy.answers[question.id]?.value;
+          return c.entity.getAnswer(question)?.value;
+        })
+        .filter((v) => v != null);
       if (answers.length === 0) continue;
 
       // Impute the answer based on the question type
