@@ -986,27 +986,31 @@ See dedicated section below.
 | A6 | Adding `'alliances'` to `entityTypePlural.ts` matcher does not require a parallel matcher for any other route surface (the matcher is shared by all `/results/*` routes) | Finding #1 + Risk #4 | LOW — single matcher file is the contract; SvelteKit picks it via the bracket-name. [VERIFIED via `apps/frontend/src/routes/(voters)/(located)/results/[[entityTypePlural=entityTypePlural]]/...` directory structure and Phase 62 RESEARCH §Pitfall 7] |
 | A7 | Phase 69 does NOT need to add a new `ResultAlliance` entry to `route.ts` ROUTE table or DEFAULT_PARAMS — `ResultEntity` already covers the path with explicit params | File Inventory § Route widening | LOW — simplifies the route surface; planner can add ResultAlliance for symmetry if desired. [ASSUMED based on existing `ResultEntity` route id at route.ts:32] |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should the `entityDetails.tabs.{key}` translation key be renamed `candidates` → `children`, or kept as `candidates` plus a new parallel `children`?**
    - What we know: 7 locales currently have `tabs.candidates: "Candidates"`. The renamed type union has the value `'children'` — which means EntityDetails.svelte:72 `t(\`entityDetails.tabs.${tab}\`)` would fall through to `tabs.children` after the rename. Without a corresponding JSON key, the t() call returns the key string `"entityDetails.tabs.children"` literal as fallback (sveltekit-i18n behaviour).
    - What's unclear: whether the user prefers graceful migration (keep both keys + label both "Candidates" or "Members") or hard rename.
    - Recommendation: **rename** `tabs.candidates` → `tabs.children` in all 7 locales; for the **English label**, use entity-context-aware labels at the t() callsite — e.g. for an alliance drawer, the children tab label could be "Member Parties"; for an organization drawer, "Candidates". This means the t() call may need to switch to a context-aware key like `entityDetails.tabs.{entityType}.children` (e.g. `tabs.alliance.children: "Member Parties"`, `tabs.organization.children: "Candidates"`). Alternatively keep the rename simple and label both as `"Members"` / `"Children"` (semantically uniform but less polished UX). Defer to planner.
+   - RESOLVED: Plan 01 Task 7 implements the hard rename — `entityDetails.tabs.candidates` → `entityDetails.tabs.children` across 7 locale JSON files; no graceful-migration window. The semantic-uniform single key (English label "Members") was selected over the context-aware nested-key alternative; translation key generator regen sequenced after JSON edits.
 
 2. **Should the org-pass `imputeParentAnswers` regression test (Risk #7 mitigation) be added to Phase 69, or deferred to a follow-up todo?**
    - What we know: D-03 says "manual UI smoke is the validation surface"; CONTEXT explicitly defers new unit tests in `@openvaa/matching` / `@openvaa/filters`. The function `imputeParentAnswers` lives in `apps/frontend/src/lib/utils/matching/`, not in the `@openvaa/matching` package.
    - What's unclear: whether the spirit of D-03 ("no coupling unit tests to seed shape") allows a frontend-side unit test of the imputeParentAnswers function directly (no seed coupling — tests just feed in synthetic nominations + answer dicts).
    - Recommendation: ADD a small unit test (5-10 cases) at `apps/frontend/src/lib/utils/matching/imputeParentAnswers.test.ts`. Synthetic input — no seed data — so D-03 spirit is preserved. The cascade is the most behaviourally sensitive part of Phase 69; a unit guard prevents regression without manual rerun.
+   - RESOLVED: Plan 02 Task 4 adds `apps/frontend/src/lib/utils/matching/imputeParentAnswers.test.ts` with regression-guard cases — (a) org-pass output unchanged when childProxies omitted (Risk #7 backward-compat), (b) alliance-pass cascades through Pass-1 org proxies, (c) Alliance parent type new branch reads parent.organizationNominations as children. Frontend-side unit test (NOT in @openvaa/matching) per CONTEXT D-03 spirit (no seed coupling — synthetic input only).
 
 3. **Should the matchStore loop refactor (Pattern 3) ship as a standalone commit (preserving easy revert) or bundled with the alliance branch addition?**
    - What we know: refactor is ~30 lines net; combined with alliance branch is ~50 lines.
    - What's unclear: reviewer preference.
    - Recommendation: standalone commit FIRST ("refactor: convert matchStore loop to sequential for...of for cross-iteration state cache"), THEN alliance branch ("feat: add alliance cascade impute via childProxies"). Cleaner for `git bisect` if a regression appears.
+   - RESOLVED: Plan 02 Task 1 ships the .map → for...of refactor as a standalone preparatory step BEFORE Task 2 generalises imputeParentAnswers and Task 3 adds the Alliance branch — keeps the diff bisectable and isolates the structural loop change from the new feature behaviour.
 
 4. **For the dev seed default template, should the alliance cardContents include `['submatches', 'children']` or just `['children']`?**
    - What we know: D-04 says alliance summary is on card AND drawer; the summary is computed from organizationNominations directly, NOT from match.subMatches. Submatches require submatches-by-question-category from the match; alliances don't have own answers, so submatches via cascading-impute would be available, but the UX value is questionable (submatches are generally more useful for entities the voter directly compares against).
    - What's unclear: whether the user wants alliance cards to show submatches when answered.
    - Recommendation: ship `['children']` only by default. Submatches can be added later via dynamicSettings override.
+   - RESOLVED: Plan 01 Task 1 ships `cardContents.alliance = ['children']` only — submatches NOT included by default since alliances have no own answers; if a future deployer wants alliance submatches via the cascade, they opt in by setting `['children', 'submatches']` in their app settings.
 
 ## Environment Availability
 
