@@ -2,7 +2,13 @@ import { ENTITY_TYPE } from '@openvaa/data';
 import { unwrapEntity } from './entities';
 import { compareMaybeWrappedEntities } from './sorting';
 import type { Id } from '@openvaa/core';
-import type { CandidateNomination, EntityType, OrganizationNomination, QuestionCategory } from '@openvaa/data';
+import type {
+  AllianceNomination,
+  CandidateNomination,
+  EntityType,
+  OrganizationNomination,
+  QuestionCategory
+} from '@openvaa/data';
 import type { Match } from '@openvaa/matching';
 import type { MatchTree } from '$lib/contexts/voter/matchStore.svelte';
 
@@ -78,4 +84,36 @@ export function findCandidateNominations({
   // if (candidateMatches.length === candidateNominations.length)
   //   return candidateMatches as Array<Match<CandidateNomination, QuestionCategory>>;
   // return candidateNominations.sort(compareMaybeWrappedEntities);
+}
+
+/**
+ * A utility function to find the `OrganizationNomination`s for an `AllianceNomination` in the match tree.
+ * Mirror of {@link findCandidateNominations} one level up the parent hierarchy: an alliance's "children"
+ * are its member organization-nominations.
+ * @param matches - The possible `MatchTree`.
+ * @param nomination - The `AllianceNomination` whose member organization-nominations to find.
+ * @returns An array of `OrganizationNomination` matches; falls back to the non-matched `OrganizationNomination`s sorted by `compareMaybeWrappedEntities` if matches are not found for all member orgs.
+ */
+export function findOrganizationNominations({
+  matches,
+  nomination: { organizationNominations }
+}: {
+  matches?: MatchTree;
+  nomination: AllianceNomination;
+}): Array<OrganizationNomination | Match<OrganizationNomination, QuestionCategory>> {
+  if (!matches) return organizationNominations.sort(compareMaybeWrappedEntities);
+
+  const orgMatches = organizationNominations
+    .map(
+      ({ id }) =>
+        findNomination({
+          matches,
+          entityType: ENTITY_TYPE.Organization,
+          nominationId: id
+        })?.match
+    )
+    .filter((n) => n != null)
+    .sort(compareMaybeWrappedEntities);
+
+  return orgMatches as Array<Match<OrganizationNomination, QuestionCategory>>;
 }
