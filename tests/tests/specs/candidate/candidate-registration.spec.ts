@@ -10,7 +10,6 @@
  */
 
 import { expect,test } from '../../fixtures';
-import { buildRoute } from '../../utils/buildRoute';
 import { E2E_ADDENDUM_CANDIDATES, TEST_CANDIDATE_ALPHA_EMAIL } from '../../utils/e2eFixtureRefs';
 import { countEmailsForRecipient, extractLinkFromHtml, getLatestEmailHtml, toCallbackUrl } from '../../utils/emailHelper';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';

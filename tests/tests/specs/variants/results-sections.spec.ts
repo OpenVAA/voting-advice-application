@@ -16,8 +16,8 @@
 
 import { expect, test } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
-import { testIds } from '../../utils/testIds';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
+import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
 
 // Disable tracing for this serial spec to avoid ENOENT errors with
@@ -59,7 +59,7 @@ const defaultQuestionSettings = {
 /**
  * Complete results component settings for configuring results.sections.
  */
-function resultsSettings(sections: string[]) {
+function resultsSettings(sections: Array<string>) {
   return {
     results: {
       sections,
@@ -280,7 +280,7 @@ test.describe('Results section variants', { tag: ['@variant'] }, () => {
 
     // Verify entity tabs are NOT visible (single section = no tabs needed)
     const entityTabs = sharedPage.getByTestId(testIds.voter.results.entityTabs);
-    await expect(entityTabs).not.toBeVisible();
+    await expect(entityTabs).toBeHidden();
 
     // Verify candidate section IS visible
     const candidateSection = sharedPage.getByTestId(testIds.voter.results.candidateSection);
@@ -288,7 +288,7 @@ test.describe('Results section variants', { tag: ['@variant'] }, () => {
 
     // Verify party section is NOT visible
     const partySection = sharedPage.getByTestId(testIds.voter.results.partySection);
-    await expect(partySection).not.toBeVisible();
+    await expect(partySection).toBeHidden();
   });
 
   test('should show only organizations when sections is ["organization"]', async () => {
@@ -307,7 +307,7 @@ test.describe('Results section variants', { tag: ['@variant'] }, () => {
 
     // Verify entity tabs are NOT visible (single section = no tabs)
     const entityTabs = sharedPage.getByTestId(testIds.voter.results.entityTabs);
-    await expect(entityTabs).not.toBeVisible();
+    await expect(entityTabs).toBeHidden();
 
     // Verify party section IS visible
     const partySection = sharedPage.getByTestId(testIds.voter.results.partySection);
@@ -315,7 +315,7 @@ test.describe('Results section variants', { tag: ['@variant'] }, () => {
 
     // Verify candidate section is NOT visible
     const candidateSection = sharedPage.getByTestId(testIds.voter.results.candidateSection);
-    await expect(candidateSection).not.toBeVisible();
+    await expect(candidateSection).toBeHidden();
   });
 
   test('should show both sections with tabs when sections is ["candidate", "organization"]', async () => {

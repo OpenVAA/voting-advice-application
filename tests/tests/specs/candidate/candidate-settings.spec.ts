@@ -16,10 +16,10 @@
  * question visibility) run serially to prevent race conditions.
  */
 
-import { test, expect } from '../../fixtures';
+import { expect,test } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
-import { testIds } from '../../utils/testIds';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
+import { testIds } from '../../utils/testIds';
 
 // All describe blocks in this file share global app state — run serially.
 test.describe.configure({ mode: 'serial' });
@@ -100,7 +100,7 @@ test.describe('app mode: disabled (CAND-10)', { tag: ['@candidate'] }, () => {
     // The candidate layout shows MaintenancePage when candidateApp is false.
     // MaintenancePage renders a <main> element with a title and content.
     // The normal candidate home content (status message) should NOT be visible.
-    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).not.toBeVisible();
+    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeHidden();
 
     // The page should show a MaintenancePage with a heading
     // MaintenancePage uses <h1> for the title
@@ -134,7 +134,7 @@ test.describe('app mode: maintenance (CAND-11)', { tag: ['@candidate'] }, () => 
     // The root layout shows MaintenancePage when underMaintenance is true.
     // This happens at the root level, before the candidate layout even renders.
     // The normal candidate home content should NOT be visible.
-    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).not.toBeVisible();
+    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeHidden();
 
     // The page should show a MaintenancePage <main> element
     await expect(page.locator('main')).toBeVisible();
@@ -256,7 +256,7 @@ test.describe('question visibility settings (CAND-15)', { tag: ['@candidate'] },
     const heroFigure = page.locator('figure[role="presentation"]');
     // The figure element exists (it's the slot container) but should be empty
     // when hideHero is true. The Hero component class contains "overflow-hidden".
-    await expect(heroFigure.locator('.overflow-hidden')).not.toBeVisible();
+    await expect(heroFigure.locator('.overflow-hidden')).toBeHidden();
   });
 
   test('should show hero when hideHero is disabled', async ({ page, candidateQuestionsPage }) => {

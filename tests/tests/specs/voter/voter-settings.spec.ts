@@ -21,10 +21,10 @@
  * from intercepting test clicks.
  */
 
-import { test, expect } from '../../fixtures';
+import { expect,test } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
-import { testIds } from '../../utils/testIds';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
+import { testIds } from '../../utils/testIds';
 
 // All describe blocks share global app settings state -- run serially.
 test.describe.configure({ mode: 'serial' });

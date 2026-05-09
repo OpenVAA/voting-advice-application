@@ -11,7 +11,7 @@
  * storageState via auth-setup.
  */
 
-import { test, expect } from '../../fixtures';
+import { expect,test } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
 import { TEST_CANDIDATE_EMAIL as CANDIDATE_EMAIL, TEST_CANDIDATE_PASSWORD as CANDIDATE_PASSWORD } from '../../utils/testCredentials';
 

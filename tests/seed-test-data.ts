@@ -13,8 +13,8 @@
  *          SUPABASE_SERVICE_ROLE_KEY set (via root .env).
  */
 
-import dotenv from 'dotenv';
 import { BUILT_IN_OVERRIDES, BUILT_IN_TEMPLATES, fanOutLocales, runPipeline, Writer } from '@openvaa/dev-seed';
+import dotenv from 'dotenv';
 
 dotenv.config();
 

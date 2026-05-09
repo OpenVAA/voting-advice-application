@@ -20,9 +20,9 @@
  * full OIDC redirect flow.
  */
 
-import { test, expect } from '../../fixtures';
 import { createClient } from '@supabase/supabase-js';
 import * as jose from 'jose';
+import { expect,test } from '../../fixtures';
 
 const SUPABASE_URL = process.env.SUPABASE_URL ?? 'http://localhost:54321';
 const SUPABASE_SERVICE_ROLE_KEY =

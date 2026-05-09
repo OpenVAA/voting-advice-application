@@ -49,8 +49,9 @@
  *     query by external_id (which they do — see results-sections.spec.ts:171
  *     and multi-election.spec.ts:135).
  */
-import { BUILT_IN_TEMPLATES, E2E_BASE_APP_SETTINGS, type Template } from '@openvaa/dev-seed';
 import { mergeSettings } from '@openvaa/app-shared';
+import { BUILT_IN_TEMPLATES, E2E_BASE_APP_SETTINGS  } from '@openvaa/dev-seed';
+import type {Template} from '@openvaa/dev-seed';
 
 const base = BUILT_IN_TEMPLATES.e2e;
 if (!base) throw new Error('variant-constituency: BUILT_IN_TEMPLATES.e2e is undefined.');

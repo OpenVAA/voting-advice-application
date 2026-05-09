@@ -18,6 +18,7 @@
 
 import * as jose from 'jose';
 import { afterEach,beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { POST as TokenPostHandler } from '../../../../../routes/api/oidc/token/+server';
 
 // Use vi.hoisted at file level so both describe blocks can access the mock state
 const { mockServerConstants, mockPublicConstants } = vi.hoisted(() => ({
@@ -87,7 +88,7 @@ function createMockRequestEvent(body: Record<string, unknown>) {
       getAll: vi.fn(() => []),
       serialize: vi.fn()
     }
-  } as unknown as Parameters<typeof import('../../../../../routes/api/oidc/token/+server').POST>[0];
+  } as unknown as Parameters<typeof TokenPostHandler>[0];
 }
 
 // ── Idura test suite ──

@@ -18,10 +18,11 @@
  * storageState tokens after that will fail with "session not found".
  */
 
-import { test, expect } from '../../fixtures';
+import { expect,test } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
 import { TEST_CANDIDATE_EMAIL as CANDIDATE_EMAIL, TEST_CANDIDATE_PASSWORD as CANDIDATE_PASSWORD } from '../../utils/testCredentials';
 import { testIds } from '../../utils/testIds';
+import type { Page } from '@playwright/test';
 
 // Use empty storageState — tests authenticate themselves via login form
 test.use({ storageState: { cookies: [], origins: [] } });
@@ -29,7 +30,7 @@ test.use({ storageState: { cookies: [], origins: [] } });
 /**
  * Log in as the alpha candidate via the login form.
  */
-async function loginAsCandidate(page: import('@playwright/test').Page, password = CANDIDATE_PASSWORD): Promise<void> {
+async function loginAsCandidate(page: Page, password = CANDIDATE_PASSWORD): Promise<void> {
   await page.goto(buildRoute({ route: 'CandAppHome', locale: 'en' }));
   await page.getByTestId(testIds.candidate.login.email).waitFor({ state: 'visible', timeout: 15000 });
   await page.getByTestId(testIds.candidate.login.email).fill(CANDIDATE_EMAIL);

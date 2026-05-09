@@ -22,6 +22,7 @@ import { E2E_ADDENDUM_CANDIDATES } from '../../utils/e2eFixtureRefs';
 import { countEmailsForRecipient, extractLinkFromHtml, getLatestEmailHtml, toCallbackUrl } from '../../utils/emailHelper';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
+import type { Page } from '@playwright/test';
 
 // Run all tests in this file without pre-existing authentication
 test.use({ storageState: { cookies: [], origins: [] } });
@@ -39,7 +40,7 @@ test.describe('candidate profile (fresh candidate)', { tag: ['@candidate'] }, ()
    * Serial mode does NOT share browser contexts, so each test after
    * registration must authenticate independently.
    */
-  async function loginAsCandidate(page: import('@playwright/test').Page): Promise<void> {
+  async function loginAsCandidate(page: Page): Promise<void> {
     await page.goto(buildRoute({ route: 'CandAppHome', locale: 'en' }));
     // The home page redirects to login for unauthenticated users
     await page.getByTestId(testIds.candidate.login.email).fill(candidateEmail);

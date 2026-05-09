@@ -42,10 +42,10 @@ interface MailpitMessage extends MailpitMessageSummary {
  * @param recipientEmail - The email address to search for
  * @returns Array of message summaries, sorted by Created date (newest first)
  */
-export async function fetchEmails(recipientEmail: string): Promise<MailpitMessageSummary[]> {
+export async function fetchEmails(recipientEmail: string): Promise<Array<MailpitMessageSummary>> {
   const response = await fetch(`${MAILPIT_URL}/api/v1/search?query=to:${encodeURIComponent(recipientEmail)}`);
   if (!response.ok) return [];
-  const data = (await response.json()) as { total: number; messages: MailpitMessageSummary[] };
+  const data = (await response.json()) as { total: number; messages: Array<MailpitMessageSummary> };
   return data.messages ?? [];
 }
 

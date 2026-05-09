@@ -23,8 +23,8 @@
 
 import { expect, test } from '@playwright/test';
 import { buildRoute } from '../../utils/buildRoute';
-import { testIds } from '../../utils/testIds';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
+import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
 
 // Disable tracing for this serial spec to avoid ENOENT errors with

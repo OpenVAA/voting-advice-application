@@ -21,8 +21,8 @@
 
 import { expect, test } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
-import { testIds } from '../../utils/testIds';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
+import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
 
 // Disable tracing for this serial spec to avoid ENOENT errors with
@@ -126,8 +126,8 @@ test.describe('Multi-election voter journey', { tag: ['@variant'] }, () => {
 
   let sharedPage: Page;
   const adminClient = new SupabaseAdminClient();
-  let electionUuids: string[] = [];
-  let constituencyUuids: string[] = [];
+  const electionUuids: Array<string> = [];
+  const constituencyUuids: Array<string> = [];
 
   test.beforeAll(async ({ browser }) => {
     sharedPage = await browser.newPage();
@@ -168,7 +168,7 @@ test.describe('Multi-election voter journey', { tag: ['@variant'] }, () => {
     // CONF-04: No constituency selection page appears because each election
     // has a single constituency (auto-implied). Verify constituency list is NOT visible.
     const constituenciesList = sharedPage.getByTestId(testIds.voter.constituencies.list);
-    await expect(constituenciesList).not.toBeVisible();
+    await expect(constituenciesList).toBeHidden();
 
     // TODO: Remove this goto() fallback. The elections page Continue button triggers
     // SvelteKit goto() which silently fails in the sharedPage context. The fallback
@@ -338,7 +338,7 @@ test.describe('disallowSelection mode', { tag: ['@variant'] }, () => {
     await answerOption.first().or(electionsList).waitFor({ state: 'visible', timeout: 10000 });
 
     // Verify election list is NOT visible
-    await expect(electionsList).not.toBeVisible();
+    await expect(electionsList).toBeHidden();
 
     // Dismiss the "missing nominations" dialog if it appears
     const dialog = page.locator('dialog[open]');

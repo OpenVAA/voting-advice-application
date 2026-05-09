@@ -31,8 +31,9 @@
  * form; template-schema-managed fields (project id, published) dropped.
  * See variant-constituency.ts header for the full transcription recipe.
  */
-import { BUILT_IN_TEMPLATES, E2E_BASE_APP_SETTINGS, type Template } from '@openvaa/dev-seed';
 import { mergeSettings } from '@openvaa/app-shared';
+import { BUILT_IN_TEMPLATES, E2E_BASE_APP_SETTINGS  } from '@openvaa/dev-seed';
+import type {Template} from '@openvaa/dev-seed';
 
 const base = BUILT_IN_TEMPLATES.e2e;
 if (!base) throw new Error('variant-startfromcg: BUILT_IN_TEMPLATES.e2e is undefined.');

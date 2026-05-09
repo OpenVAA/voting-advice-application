@@ -1,7 +1,7 @@
-import { expect, test as teardown } from '@playwright/test';
 import { runTeardown } from '@openvaa/dev-seed';
-import { SupabaseAdminClient } from '../utils/supabaseAdminClient';
+import { expect, test as teardown } from '@playwright/test';
 import { TEST_UNREGISTERED_EMAILS } from '../utils/e2eFixtureRefs';
+import { SupabaseAdminClient } from '../utils/supabaseAdminClient';
 
 const PREFIX = 'test-';
 

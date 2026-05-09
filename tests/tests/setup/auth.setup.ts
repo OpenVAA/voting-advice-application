@@ -48,7 +48,7 @@ setup('authenticate as candidate', async ({ page }) => {
         // Final attempt failed
         throw new Error(
           `Login form did not appear after ${attempt + 1} attempts. ` +
-            `The candidate app may be stuck on the loading screen due to the backend being unresponsive.`
+            'The candidate app may be stuck on the loading screen due to the backend being unresponsive.'
         );
       }
     }

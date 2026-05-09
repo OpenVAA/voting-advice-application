@@ -1,4 +1,3 @@
-import { expect, test as setup } from '@playwright/test';
 import {
   BUILT_IN_OVERRIDES,
   fanOutLocales,
@@ -6,8 +5,9 @@ import {
   runTeardown,
   Writer
 } from '@openvaa/dev-seed';
-import { SupabaseAdminClient } from '../utils/supabaseAdminClient';
+import { expect, test as setup } from '@playwright/test';
 import variantStartFromCgTemplate from './templates/variant-startfromcg';
+import { SupabaseAdminClient } from '../utils/supabaseAdminClient';
 
 const PREFIX = 'test-';
 

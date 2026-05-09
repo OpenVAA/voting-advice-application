@@ -69,7 +69,7 @@ TODO: Consider moving the tracking events away from the component and just addin
   });
 
   $effect(() => {
-    entities;
+    void entities;
     updateFilters();
   });
 

@@ -11,6 +11,7 @@
 import * as jose from 'jose';
 import { beforeAll,describe, expect, it, vi } from 'vitest';
 import { getIdTokenClaims } from './getIdTokenClaims';
+import type * as JoseType from 'jose';
 
 // Use vi.hoisted to store the local JWKS getter that replaces createRemoteJWKSet.
 const { localJwksState } = vi.hoisted(() => ({
@@ -39,7 +40,7 @@ vi.mock('$env/dynamic/private', () => ({
 // Mock jose to replace createRemoteJWKSet with our local JWKS.
 // ESM exports are not configurable, so vi.spyOn won't work.
 vi.mock('jose', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('jose')>();
+  const actual = await importOriginal<typeof JoseType>();
   return {
     ...actual,
     createRemoteJWKSet: (..._args: Array<unknown>) => localJwksState.getKey

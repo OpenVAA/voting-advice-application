@@ -1,7 +1,7 @@
-import { voterTest as test } from '../../fixtures/voter.fixture';
 import { expect } from '@playwright/test';
-import { testIds } from '../../utils/testIds';
+import { voterTest as test } from '../../fixtures/voter.fixture';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
+import { testIds } from '../../utils/testIds';
 
 // LAYOUT-03 / D-09 regression gate:
 //

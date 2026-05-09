@@ -29,8 +29,9 @@
  *     re-nominating base candidates alpha/beta/gamma onto Election-2 (the
  *     defining multi-election shape: candidates appear on BOTH elections)
  */
-import { BUILT_IN_TEMPLATES, E2E_BASE_APP_SETTINGS, type Template } from '@openvaa/dev-seed';
 import { mergeSettings } from '@openvaa/app-shared';
+import { BUILT_IN_TEMPLATES, E2E_BASE_APP_SETTINGS  } from '@openvaa/dev-seed';
+import type {Template} from '@openvaa/dev-seed';
 
 const base = BUILT_IN_TEMPLATES.e2e;
 if (!base) throw new Error('variant-multi-election: BUILT_IN_TEMPLATES.e2e is undefined.');

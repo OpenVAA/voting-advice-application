@@ -1,4 +1,3 @@
-import { expect, test as setup } from '@playwright/test';
 import {
   BUILT_IN_OVERRIDES,
   BUILT_IN_TEMPLATES,
@@ -7,8 +6,9 @@ import {
   runTeardown,
   Writer
 } from '@openvaa/dev-seed';
-import { SupabaseAdminClient } from '../utils/supabaseAdminClient';
+import { expect, test as setup } from '@playwright/test';
 import { TEST_UNREGISTERED_EMAILS } from '../utils/e2eFixtureRefs';
+import { SupabaseAdminClient } from '../utils/supabaseAdminClient';
 import { TEST_CANDIDATE_EMAIL, TEST_CANDIDATE_PASSWORD } from '../utils/testCredentials';
 
 const PREFIX = 'test-';

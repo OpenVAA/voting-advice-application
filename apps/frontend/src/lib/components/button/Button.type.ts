@@ -1,3 +1,4 @@
+import type { Snippet } from 'svelte';
 import type { HTMLAttributes } from 'svelte/elements';
 import type { IconName } from '$lib/components/icon';
 
@@ -5,7 +6,7 @@ export type ButtonProps = ButtonBaseElementProps & {
   /**
    * A snippet for adding a badge to the button.
    */
-  badge?: import('svelte').Snippet;
+  badge?: Snippet;
   /**
    * The required text of the button. If `variant` is `icon`, the text will be used as the `aria-label` and `title` for the button. You can override both by providing them as attributes, e.g. `aria-label="Another text"`.
    */
