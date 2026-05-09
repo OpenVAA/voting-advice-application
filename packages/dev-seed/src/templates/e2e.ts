@@ -94,7 +94,7 @@ export const E2E_BASE_APP_SETTINGS = {
   results: {
     cardContents: {
       candidate: ['submatches'],
-      organization: ['candidates']
+      organization: ['children']
     },
     sections: ['candidate', 'organization']
   },

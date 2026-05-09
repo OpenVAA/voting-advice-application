@@ -116,7 +116,7 @@ describe('variant-multi-election — app_settings overlay (adds popup suppressio
     const results = (row?.settings as { results?: { cardContents?: Record<string, Array<string>> } })?.results;
     expect(results?.cardContents).toEqual({
       candidate: ['submatches'],
-      organization: ['candidates']
+      organization: ['children']
     });
   });
 

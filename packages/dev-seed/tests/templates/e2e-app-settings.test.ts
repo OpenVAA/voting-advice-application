@@ -104,7 +104,7 @@ describe('E2E_BASE_APP_SETTINGS — legacy data.setup.ts:53-72 byte-for-byte con
     expect(E2E_BASE_APP_SETTINGS.results).toEqual({
       cardContents: {
         candidate: ['submatches'],
-        organization: ['candidates']
+        organization: ['children']
       },
       sections: ['candidate', 'organization']
     });

@@ -245,8 +245,8 @@ export const defaultTemplate: Template = {
           results: {
             cardContents: {
               candidate: ['submatches'],
-              organization: ['candidates'],
-              alliance: []
+              organization: ['children'],
+              alliance: ['children']
             },
             showFeedbackPopup: 180,
             showSurveyPopup: 500,

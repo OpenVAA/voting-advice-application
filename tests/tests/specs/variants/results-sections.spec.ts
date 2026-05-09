@@ -63,7 +63,7 @@ function resultsSettings(sections: string[]) {
   return {
     results: {
       sections,
-      cardContents: { candidate: ['submatches'], organization: ['candidates'] },
+      cardContents: { candidate: ['submatches'], organization: ['children'] },
       showFeedbackPopup: 0,
       showSurveyPopup: 0
     }
@@ -143,7 +143,7 @@ test.describe('Results section variants', { tag: ['@variant'] }, () => {
       ...defaultEntitySettings,
       results: {
         sections: ['candidate', 'organization'],
-        cardContents: { candidate: ['submatches'], organization: ['candidates'] },
+        cardContents: { candidate: ['submatches'], organization: ['children'] },
         showFeedbackPopup: 0,
         showSurveyPopup: 0
       },

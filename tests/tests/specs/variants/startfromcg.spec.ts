@@ -68,7 +68,7 @@ test.describe('startFromConstituencyGroup variant', { tag: ['@variant'] }, () =>
       },
       results: {
         sections: ['candidate', 'organization'],
-        cardContents: { candidate: ['submatches'], organization: ['candidates'] },
+        cardContents: { candidate: ['submatches'], organization: ['children'] },
         showFeedbackPopup: 0,
         showSurveyPopup: 0
       },
@@ -97,7 +97,7 @@ test.describe('startFromConstituencyGroup variant', { tag: ['@variant'] }, () =>
         },
         results: {
           sections: ['candidate', 'organization'],
-          cardContents: { candidate: ['submatches'], organization: ['candidates'] },
+          cardContents: { candidate: ['submatches'], organization: ['children'] },
           showFeedbackPopup: 0,
           showSurveyPopup: 0
         },

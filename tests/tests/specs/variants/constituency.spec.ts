@@ -55,7 +55,7 @@ test.describe('Constituency selection variant', { tag: ['@variant'] }, () => {
       },
       results: {
         sections: ['candidate', 'organization'],
-        cardContents: { candidate: ['submatches'], organization: ['candidates'] },
+        cardContents: { candidate: ['submatches'], organization: ['children'] },
         showFeedbackPopup: 0,
         showSurveyPopup: 0
       }
