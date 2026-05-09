@@ -96,7 +96,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   // handlers continue to append electionId to the search params on the
   // first explicit navigation).
 
-  const ENTITY_PLURALS = ['candidates', 'organizations'] as const;
+  const ENTITY_PLURALS = ['candidates', 'organizations', 'alliances'] as const;
   type EntityPlural = (typeof ENTITY_PLURALS)[number];
 
   const _parsedParams = $derived(parseParams(page));
@@ -115,7 +115,9 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
 
   const _urlPluralRaw = $derived(page.params.entityTypePlural);
   const _urlPlural = $derived<EntityPlural | undefined>(
-    _urlPluralRaw === 'candidates' || _urlPluralRaw === 'organizations' ? _urlPluralRaw : undefined
+    _urlPluralRaw === 'candidates' || _urlPluralRaw === 'organizations' || _urlPluralRaw === 'alliances'
+      ? _urlPluralRaw
+      : undefined
   );
 
   // The map of plurals available for the active election (possibly just candidates,
@@ -138,7 +140,13 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   // fall back to the first available tab for the active election.
   const activeEntityType = $derived.by<EntityType | undefined>(() => {
     const fromUrl: EntityType | undefined =
-      _urlPlural === 'candidates' ? 'candidate' : _urlPlural === 'organizations' ? 'organization' : undefined;
+      _urlPlural === 'candidates'
+        ? 'candidate'
+        : _urlPlural === 'organizations'
+          ? 'organization'
+          : _urlPlural === 'alliances'
+            ? 'alliance'
+            : undefined;
     if (fromUrl && entityTabs.some((t) => t.type === fromUrl)) return fromUrl;
     return entityTabs[0]?.type;
   });
@@ -261,6 +269,11 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
       startEvent('results_changeTab', { section: 'organization' });
       return;
     }
+    if (typed?.type === 'alliance' || index === 2) {
+      goto(buildListRoute('alliances', activeElectionId));
+      startEvent('results_changeTab', { section: 'alliance' });
+      return;
+    }
   }
 
   function handleDrawerClose(): void {
@@ -274,6 +287,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   function _pluralForActiveType(): EntityPlural | undefined {
     if (activeEntityType === 'candidate') return 'candidates';
     if (activeEntityType === 'organization') return 'organizations';
+    if (activeEntityType === 'alliance') return 'alliances';
     return undefined;
   }
 
@@ -368,7 +382,9 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
                     ? 'voter-results-candidate-section'
                     : activeEntityType === 'organization'
                       ? 'voter-results-party-section'
-                      : undefined}>
+                      : activeEntityType === 'alliance'
+                        ? 'voter-results-alliance-section'
+                        : undefined}>
                   <!-- {#key}: keep — scope-tuple change (Phase 62 D-14) discards per-scope filter UI state; without remount, EntityListWithControls would carry filter selections from one election:entityType context into the next. -->
                   {#key `${activeElectionId}:${activeEntityType}`}
                     <h3 class="my-lg mx-10 text-xl">
