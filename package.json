@@ -35,7 +35,7 @@
     "supabase:reset": "yarn workspace @openvaa/supabase reset",
     "supabase:status": "yarn workspace @openvaa/supabase status",
     "supabase:types": "yarn workspace @openvaa/supabase-types generate",
-    "supabase:lint": "yarn workspace @openvaa/supabase lint:all"
+    "supabase:lint:sql": "yarn workspace @openvaa/supabase lint:all"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.6.0",

@@ -60,7 +60,7 @@ yarn supabase:stop            # Stop local Supabase instance
 yarn supabase:reset           # Reset database (drops and recreates)
 yarn supabase:status          # Show service status
 yarn supabase:types           # Regenerate TypeScript types from schema
-yarn supabase:lint            # Run SQL linter on all migrations
+yarn supabase:lint:sql        # Run SQL linter on all migrations (sqlfluff + Splinter advisors)
 ```
 
 ### Single Test Development
