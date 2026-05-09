@@ -45,7 +45,7 @@
 
 - [x] **SHARED-01**: `@openvaa/app-shared` is normalised to match the import / barrel / build paradigm of `@openvaa/core`, `@openvaa/data`, `@openvaa/matching`, `@openvaa/filters`. Concretely: (a) consistent `.js` extension policy on TS-internal imports (matching the rest of the monorepo's TS+ESM convention); (b) flat exports vs. nested utils sub-barrel decision aligned with the canonical paradigm; (c) `package.json` scripts and `exports` field aligned; (d) the dual ESM+CommonJS build (kept for backend Edge Function consumption) is preserved AND explicitly justified in a brief doc-comment at the top of the package's README or `package.json`. Per-package divergences (if any survive) are inline-justified. Reference: a one-paragraph "this is how all packages look" anchor lands in `CLAUDE.md` or a packages-level README.
 
-- [ ] **SHARED-02**: The `apps/frontend/src/lib/utils/merge.ts` re-export shim (added in v2.6 Phase 63 Plan 01 to keep import sites stable when `mergeSettings` + `DeepPartial` were hoisted to `@openvaa/app-shared`) is retired. Every consumer in `apps/frontend/src/lib/**` and `tests/**` imports `mergeSettings` / `DeepPartial` directly from `@openvaa/app-shared`. The shim file is deleted. `git grep -nE "from ['\"]\\\$lib/utils/merge['\"]" apps/frontend/ tests/ packages/` returns zero matches. `yarn build` + `yarn test:unit` remain green. Any other re-export shims of the same shape in `apps/frontend/src/lib/utils/` discovered during this sweep (per the source todo) are inventoried and either retired (preferred) or carried forward as a follow-up todo with an explicit reason.
+- [x] **SHARED-02**: The `apps/frontend/src/lib/utils/merge.ts` re-export shim (added in v2.6 Phase 63 Plan 01 to keep import sites stable when `mergeSettings` + `DeepPartial` were hoisted to `@openvaa/app-shared`) is retired. Every consumer in `apps/frontend/src/lib/**` and `tests/**` imports `mergeSettings` / `DeepPartial` directly from `@openvaa/app-shared`. The shim file is deleted. `git grep -nE "from ['\"]\\\$lib/utils/merge['\"]" apps/frontend/ tests/ packages/` returns zero matches. `yarn build` + `yarn test:unit` remain green. Any other re-export shims of the same shape in `apps/frontend/src/lib/utils/` discovered during this sweep (per the source todo) are inventoried and either retired (preferred) or carried forward as a follow-up todo with an explicit reason.
 
 ### LINT — `@openvaa/supabase` lint-script rename
 
@@ -99,7 +99,7 @@ Phase assignments mapped to `.planning/ROADMAP.md`. Success-criterion references
 | BIND-01 | Phase 70 — Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup | SC-4 (comment strip), SC-5 (regression gate) | Pending |
 | TYPING-01 | Phase 71 — Frontend Strict-Typing Cleanup | SC-1, SC-2, SC-3, SC-4 | Pending |
 | SHARED-01 | Phase 72 — Package Hygiene Trio | SC-1, SC-4 (regression gate) | Pending |
-| SHARED-02 | Phase 72 — Package Hygiene Trio | SC-2, SC-4 (regression gate) | Pending |
+| SHARED-02 | Phase 72 — Package Hygiene Trio | SC-2, SC-4 (regression gate) | Complete |
 | LINT-01 | Phase 72 — Package Hygiene Trio | SC-3, SC-4 (regression gate) | Pending |
 
 **Coverage:**
