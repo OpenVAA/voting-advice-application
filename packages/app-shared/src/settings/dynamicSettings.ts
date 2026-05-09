@@ -4,7 +4,8 @@ export const dynamicSettings: DynamicSettings = {
   entityDetails: {
     contents: {
       candidate: ['info', 'opinions'],
-      organization: ['info', 'candidates', 'opinions']
+      organization: ['info', 'children', 'opinions'],
+      alliance: ['info', 'children']
     },
     showMissingElectionSymbol: {
       candidate: true,
@@ -59,8 +60,8 @@ export const dynamicSettings: DynamicSettings = {
   results: {
     cardContents: {
       candidate: ['submatches'],
-      organization: ['candidates'],
-      alliance: []
+      organization: ['children'],
+      alliance: ['children']
     },
     showFeedbackPopup: 180,
     showSurveyPopup: 500,
