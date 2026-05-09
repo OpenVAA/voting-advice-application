@@ -517,12 +517,12 @@ Multilingual features are only available if the `locales` store contains more th
       <!-- svelte-ignore a11y_label_has_associated_control -->
       <label id="{id}-label" class={inputLabelClass}>{label}</label>
       <div class={inputAndIconContainerClass}>
-        <!-- svelte-ignore a11y_no_noninteractive_tabindex a11y_no_noninteractive_element_interactions a11y_label_has_associated_control -->
-        <label
+        <button
+          type="button"
           id="{id}-image-label"
-          tabindex="0"
           class="text-primary flex h-60 justify-stretch"
           class:cursor-pointer={!isDisabled}
+          disabled={isDisabled}
           onclick={() => fileInput?.click()}
           onkeydown={handleFileInputLabelKeydown}>
           {#if isLoading}
@@ -542,7 +542,7 @@ Multilingual features are only available if the `locales` store contains more th
               {t('components.input.noImage')}
             </div>
           {/if}
-        </label>
+        </button>
         <!-- bind: keep — fileInput is $state(); single ref read in event handlers -->
         <input
           bind:this={fileInput}
