@@ -114,7 +114,6 @@ If not provided, the `video` element will be hidden until these properties are p
   ////////////////////////////////////////////////////////////////////////////////
 
   // Props that are reassigned in load() need $bindable() to allow internal mutation.
-  // bind: keep — explanatory note: mode is bound by Layout.svelte via bind:mode; atEnd is mutated internally.
   let {
     title = $bindable(undefined),
     sources = $bindable(undefined),
@@ -161,8 +160,6 @@ If not provided, the `video` element will be hidden until these properties are p
   // BOUND PROPS OF <video>
   ////////////////////////////////////////////////////////////////////////////////
 
-  // bind: keep — single-ref `bind:this={video}`; the four below feed
-  // two-way DOM `<video>` properties (bind:currentTime/duration/muted/paused).
   let video: HTMLVideoElement | undefined;
   let currentTime = $state(0);
   let duration = $state<number>(0);

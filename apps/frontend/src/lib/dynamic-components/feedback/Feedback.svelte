@@ -40,7 +40,6 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
     reset();
   }
 </script>
-// bind: keep — usage example in @component doc
 <Feedback bind:reset onCancel={close} onSent={close}/>
 ```
 -->

@@ -18,7 +18,6 @@ Contains the dynamic `PasswordValidator` component.
 ### Usage
 
 ```tsx
-// bind: keep — usage example in @component doc
 <PasswordSetter
   bind:password={password}
   bind:valid={canSubmit}/>

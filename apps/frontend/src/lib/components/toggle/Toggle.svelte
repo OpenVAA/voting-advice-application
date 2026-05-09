@@ -29,7 +29,6 @@ Display a short list of options as toggleable text or icon buttons from which on
   ];
   let selected: string;
 </script>
-// bind: keep — usage example in @component doc
 <Toggle bind:selected label="Switch between video and text display" {options}/>
 
 <script lang="ts">
@@ -48,7 +47,6 @@ Display a short list of options as toggleable text or icon buttons from which on
   ];
   let selected: string;
 </script>
-// bind: keep — usage example in @component doc
 <Toggle bind:selected label="Switch between video and text display" {options}/>
 ```
 -->

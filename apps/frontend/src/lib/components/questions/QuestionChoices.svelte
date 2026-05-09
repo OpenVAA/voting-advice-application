@@ -118,9 +118,6 @@ The same component can also be used to display the answers of the voter and anot
 
   /** Holds the currently selected value and is initialized with the value of `selectedId` */
   let selected: Id | null | undefined = $state(undefined);
-  // bind: keep — `inputs` must be $state in Svelte 5 because
-  // `bind:this={inputs[id]}` mutates a property on it. A plain `const`
-  // triggers `binding_property_non_reactive`.
   const inputs: Record<string, HTMLInputElement> = $state({});
   $effect(() => {
     selected = selectedId;

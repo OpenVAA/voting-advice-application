@@ -25,7 +25,6 @@ Accesses `AppContext` to set and read the current survey status and link.
 ### Usage
 
 ```tsx
-// bind: keep — usage example in @component doc
 <SurveyButton bind:clicked onClick={() => console.info('Clicked!')}/>
 <SurveyButton variant="main"/>
 ```

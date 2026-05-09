@@ -18,7 +18,6 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
 ### Usage
 
 ```tsx
-// bind: keep — usage example in @component doc
 <ConstituencySelector
   elections={$dataRoot.elections}
   bind:selected={$selectedConstituencies}

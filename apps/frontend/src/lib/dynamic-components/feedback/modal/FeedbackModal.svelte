@@ -13,7 +13,6 @@ Show a modal dialog for sending feedback.
 <script lang="ts">
   let openFeedback: () => void;
 </script>
-// bind: keep — usage example in @component doc
 <FeedbackModal bind:openFeedback>
 <Button onclick={openFeedback} text="Open feedback"/>
 ```

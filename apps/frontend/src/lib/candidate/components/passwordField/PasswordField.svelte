@@ -15,7 +15,6 @@ PasswordField is an input box for password that comes with a button to reveal an
 ### Usage
 
 ```tsx
-// bind: keep — usage example in @component doc
 <PasswordField bind:password={passwordOfContext} autocomplete="current-password" />
 ```
 -->

@@ -31,7 +31,6 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
 ### Usage
 
 ```tsx
-// bind: keep — usage example in @component doc
 <Select
   label="Select option"
   options={[{ id: '1', label: "Label" }]}

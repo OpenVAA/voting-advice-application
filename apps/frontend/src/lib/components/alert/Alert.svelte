@@ -28,7 +28,6 @@ Show a non-model alert or dialog that appears at the bottom of the screen.
 <script lang="ts">
   let alertRef: Alert;
 </script>
-// bind: keep — usage example in @component doc
 <Alert
   bind:this={alertRef}
   title="Can we help you?"

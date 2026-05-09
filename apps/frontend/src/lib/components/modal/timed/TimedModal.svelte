@@ -36,7 +36,6 @@ See the `<Modal>` component documentation for more information.
   let timedModal: TimedModal;
 </script>
 
-// bind: keep — usage example in @component doc
 <TimedModal
   bind:this={timedModal}
   title="Timeout modal"

@@ -20,7 +20,6 @@ TODO: Consider moving the tracking events away from the component and just addin
 ### Usage
 
 ```tsx
-// bind: keep — usage example in @component doc
 <EntityListControls entities={allParties} bind:output={filteredParties}/>
 ```
 -->

@@ -19,7 +19,6 @@ A modal dialog that asks for user confirmation.
 ### Usage
 
 ```tsx
-// bind: keep — usage example in @component doc
 <ConfirmationModal
   bind:this={confirmModal}
   title="Are you sure?"

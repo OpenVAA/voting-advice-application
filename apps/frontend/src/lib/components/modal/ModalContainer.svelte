@@ -33,7 +33,6 @@ A modal dialog.
   let containerRef: ModalContainer;
 </script>
 
-// bind: keep — usage example in @component doc
 <ModalContainer bind:this={containerRef} {title}>
   <div class="modal-box">
     <h2 class="mb-lg text-center">{title}</h2>

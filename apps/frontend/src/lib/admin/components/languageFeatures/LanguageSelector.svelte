@@ -13,7 +13,6 @@ Reusable component for selecting target language for language-based features (qu
 ### Usage
 
 ```tsx
-// bind: keep — usage example in @component doc
 <LanguageSelector bind:selected={targetLanguage} />
 ```
 -->

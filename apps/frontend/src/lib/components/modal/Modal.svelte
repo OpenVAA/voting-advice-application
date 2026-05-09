@@ -44,7 +44,6 @@ See the `<ModalContainer>` component documentation for more information.
 
 <h2>Answer: {answer}</h2>
 
-// bind: keep — usage example in @component doc
 <Modal
   bind:this={modalRef}
   title="What's your answer?"

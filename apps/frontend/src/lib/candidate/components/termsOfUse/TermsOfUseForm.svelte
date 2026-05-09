@@ -18,7 +18,6 @@ Accesses `CandidateContext`.
   let termsAccepted: boolean;
   $: console.info('termsAccepted:', termsAccepted);
 </script>
-// bind: keep — usage example in @component doc
 <TermsOfUseForm bind:termsAccepted/>
 ```
 -->

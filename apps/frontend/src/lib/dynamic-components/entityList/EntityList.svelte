@@ -26,7 +26,6 @@ This is a dynamic component, because it renders the dynamic `EntityCard` compone
 
 ```tsx
 <h2>{itemsShown} candidates of {candidates.length}</h2>
-// bind: keep — usage example in @component doc
 <EntityList bind:itemsShown contents={candidates} actionCallBack={({id}) => $getRoute({route: ROUTE.Candidate, id})}/>
 ```
 -->

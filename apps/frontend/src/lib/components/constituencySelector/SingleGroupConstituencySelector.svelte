@@ -17,7 +17,6 @@ Display constituency selection input for just one `ConstituencyGroup` which is n
 ### Usage
 
 ```tsx
-// bind: keep — usage example in @component doc
 <SingleGroupConstituencySelector
   group={election.constituencyGroups[0]}
   bind:selected={selectedId}
