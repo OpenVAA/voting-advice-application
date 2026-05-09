@@ -101,7 +101,10 @@ Audit: `.planning/milestones/v2.7-MILESTONE-AUDIT.md` (status: tech_debt — 8/8
   2. `yarn workspace @openvaa/frontend check` (svelte-check) baseline does not regress beyond the v2.7-close baseline of 160 errors / 12 warnings without explicit acknowledgement in the phase verification report. Reductions are welcome but not gated.
   3. Root-level `yarn lint:check` is green across the monorepo — the frontend now matches the lint-clean state of `@openvaa/core`, `@openvaa/data`, `@openvaa/matching`, `@openvaa/filters`, `@openvaa/app-shared`.
   4. `yarn test:unit` remains green and the v2.7-close Playwright parity baseline continues to pass — no behavioral regressions from the typing tightening.
-**Plans**: TBD
+**Plans**: 3 plans
+- [ ] 71-01-PLAN.md — `no-explicit-any` sweep (67 errors: 44 test-mock + 17 production-adapter + 5 route-layout + 1 storage-test) [Wave 1]
+- [ ] 71-02-PLAN.md — `naming-convention` sweep (13 errors — type-parameter `T → TX` renames + 1 `_Unused` deletion; NOT DB-row snake_case per RESEARCH reframing of CONTEXT D-02) [Wave 1]
+- [ ] 71-03-PLAN.md — `func-style` sweep (11 errors: 7 mechanical + 4 SvelteKit type-binding inline-justified disables) + long-tail (3 `consistent-type-imports` + 1 `no-unused-expressions`) — merged per CONTEXT D-01 + RESEARCH recommendation [Wave 1]
 
 ### Phase 72: Package Hygiene Trio
 **Goal**: Three independent package-level cleanups land together — `@openvaa/app-shared` is normalised to match the import / barrel / build paradigm of the canonical reference packages (`core`, `data`, `matching`, `filters`); the `apps/frontend/src/lib/utils/merge.ts` re-export shim is retired in favour of direct `@openvaa/app-shared` imports at every consumer; and the conflated SQL/ESLint pipelines in `apps/supabase/package.json` are disambiguated with explicit `lint:sql` / `lint:js` (or equivalent) script names.
@@ -140,5 +143,5 @@ Run `/gsd-new-milestone` to question → research → write requirements → roa
 | 68. Dev-Tooling Trio | v2.7 | 3/3 | Complete | 2026-05-08 |
 | 69. Alliance Card Lane A | v2.8 | 2/2 | Complete   | 2026-05-09 |
 | 70. Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup | v2.8 | 5/5 | Complete   | 2026-05-09 |
-| 71. Frontend Strict-Typing Cleanup | v2.8 | 0/? | Not started | - |
+| 71. Frontend Strict-Typing Cleanup | v2.8 | 0/3 | Planned   | - |
 | 72. Package Hygiene Trio | v2.8 | 3/3 | Complete   | 2026-05-09 |
