@@ -76,7 +76,9 @@ function createMockSupabaseClient() {
 
 type MockClient = ReturnType<typeof createMockSupabaseClient>;
 // reason: createMockSupabaseClient is structural-only; SupabaseClient<Database> has 50+ methods we don't mock
-const asSupabaseMock = (m: MockClient) => m as unknown as SupabaseClient<Database>;
+function asSupabaseMock(m: MockClient): SupabaseClient<Database> {
+  return m as unknown as SupabaseClient<Database>;
+}
 
 // Local narrow type for assertion casts in this file (replaces `(result as any)` patterns).
 // reason: assertions read into nested JSONB shapes that aren't in DynamicSettings's strict typing

@@ -33,22 +33,24 @@ describe('persistedState helpers', () => {
     vi.resetModules();
     mockStorageData = {};
 
-    const createMockStorage = (): Storage => ({
-      getItem: vi.fn((key: string) => mockStorageData[key] ?? null),
-      setItem: vi.fn((key: string, value: string) => {
-        mockStorageData[key] = value;
-      }),
-      removeItem: vi.fn((key: string) => {
-        delete mockStorageData[key];
-      }),
-      clear: vi.fn(() => {
-        mockStorageData = {};
-      }),
-      get length() {
-        return Object.keys(mockStorageData).length;
-      },
-      key: vi.fn((index: number) => Object.keys(mockStorageData)[index] ?? null)
-    });
+    function createMockStorage(): Storage {
+      return {
+        getItem: vi.fn((key: string) => mockStorageData[key] ?? null),
+        setItem: vi.fn((key: string, value: string) => {
+          mockStorageData[key] = value;
+        }),
+        removeItem: vi.fn((key: string) => {
+          delete mockStorageData[key];
+        }),
+        clear: vi.fn(() => {
+          mockStorageData = {};
+        }),
+        get length() {
+          return Object.keys(mockStorageData).length;
+        },
+        key: vi.fn((index: number) => Object.keys(mockStorageData)[index] ?? null)
+      };
+    }
     mockLocalStorage = createMockStorage();
     mockSessionStorage = createMockStorage();
 

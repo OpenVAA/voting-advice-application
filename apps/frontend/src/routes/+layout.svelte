@@ -161,9 +161,9 @@
   // Submit any possible event data if the window is closed or refreshed
   $effect(() => {
     if (!appSettings.current.analytics?.platform) return;
-    const handler = () => {
+    function handler() {
       if (document.visibilityState === 'hidden') submitAllEvents();
-    };
+    }
     document.addEventListener('visibilitychange', handler);
     return () => document.removeEventListener('visibilitychange', handler);
   });

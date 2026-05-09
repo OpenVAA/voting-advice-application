@@ -78,10 +78,9 @@ describe('StackedState', () => {
   it('push with mergeSettings-style updater (matching layoutContext pattern)', () => {
     // Simulates the pattern used in layoutContext.ts: mergeSettings on the last element
     type Settings = { a: number; b: string };
-    const mergeUpdater = (current: Array<Settings>, value: Partial<Settings>) => [
-      ...current,
-      { ...current[current.length - 1], ...value }
-    ];
+    function mergeUpdater(current: Array<Settings>, value: Partial<Settings>): Array<Settings> {
+      return [...current, { ...current[current.length - 1], ...value }];
+    }
     const stack = new StackedState<Settings, Partial<Settings>>({ a: 1, b: 'hello' }, mergeUpdater);
     expect(stack.current).toEqual({ a: 1, b: 'hello' });
 

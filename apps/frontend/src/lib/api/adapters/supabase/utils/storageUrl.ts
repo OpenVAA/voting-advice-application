@@ -28,7 +28,9 @@ export function parseStoredImage(
 ): Image | undefined {
   if (!stored?.path) return undefined;
 
-  const toUrl = (p: string) => `${supabaseUrl}/storage/v1/object/public/public-assets/${p}`;
+  function toUrl(p: string): string {
+    return `${supabaseUrl}/storage/v1/object/public/public-assets/${p}`;
+  }
 
   const image: Image = {
     url: toUrl(stored.path)

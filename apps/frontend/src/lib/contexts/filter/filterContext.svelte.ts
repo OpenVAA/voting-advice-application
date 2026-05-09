@@ -80,9 +80,9 @@ export function initFilterContext({ entityFilters }: InitFilterContextArgs): Fil
   $effect(() => {
     const fg = _filterGroup;
     if (!fg) return;
-    const handler = () => {
+    function handler() {
       version++;
-    };
+    }
     fg.onChange(handler, true);
     return () => fg.onChange(handler, false);
   });

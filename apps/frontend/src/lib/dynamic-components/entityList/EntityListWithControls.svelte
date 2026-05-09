@@ -88,9 +88,9 @@ component-local). See `EntityListWithControls.helpers.ts` for the pure
   $effect(() => {
     const sf = searchFilter;
     if (!sf) return;
-    const handler = () => {
+    function handler() {
       searchVersion++;
-    };
+    }
     sf.onChange(handler, true);
     // Pitfall 2: mandatory cleanup. The $effect re-runs when searchFilter
     // changes (rare — only if searchProperty changes), so we MUST detach the

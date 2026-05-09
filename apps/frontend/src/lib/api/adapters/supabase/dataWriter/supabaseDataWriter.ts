@@ -5,7 +5,6 @@ import { supabaseAdapterMixin } from '../supabaseAdapter';
 import { parseStoredImage } from '../utils/storageUrl';
 import { toDataObject } from '../utils/toDataObject';
 import type { Json, Tables } from '@openvaa/supabase-types';
-import type { StoredImage } from '../utils/storageUrl';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type {
   BasicUserData,
@@ -21,6 +20,7 @@ import type {
   SetQuestionOptions,
   WithAuth
 } from '$lib/api/base/dataWriter.type';
+import type { StoredImage } from '../utils/storageUrl';
 
 /**
  * Supabase implementation of the DataWriter.

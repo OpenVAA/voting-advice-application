@@ -33,10 +33,10 @@ export type RouteBuilder = (options: RouteOptions) => string;
  * `DataRoot` singleton.
  */
 export function createGetRoute(): Readable<RouteBuilder> {
-  const buildFn: () => RouteBuilder = () => {
+  function buildFn(): RouteBuilder {
     const { params, route, url } = page;
     return (options: RouteOptions) => buildRoute(options, { params, route, url });
-  };
+  }
   const store = writable<RouteBuilder>(buildFn());
   const setStore = (store as { set: (v: RouteBuilder) => void }).set;
   afterNavigate(() => setStore(buildFn()));

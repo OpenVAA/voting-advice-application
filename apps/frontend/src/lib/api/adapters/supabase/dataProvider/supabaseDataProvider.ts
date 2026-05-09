@@ -7,8 +7,6 @@ import { getLocalized } from '../utils/getLocalized';
 import { parseStoredImage } from '../utils/storageUrl';
 import { toDataObject } from '../utils/toDataObject';
 import type { DynamicSettings } from '@openvaa/app-shared';
-import type { StoredImage } from '../utils/storageUrl';
-import type { LocalizedAnswers } from '$lib/api/base/dataWriter.type';
 import type {
   AnyEntityVariantData,
   AnyNominationVariantPublicData,
@@ -20,6 +18,7 @@ import type {
 } from '@openvaa/data';
 import type { Json } from '@openvaa/supabase-types';
 import type { DPDataType } from '$lib/api/base/dataTypes';
+import type { LocalizedAnswers } from '$lib/api/base/dataWriter.type';
 import type {
   GetAppCustomizationOptions,
   GetConstituenciesOptions,
@@ -31,6 +30,7 @@ import type {
 } from '$lib/api/base/getDataOptions.type';
 import type { AppCustomization } from '$lib/contexts/app';
 import type { TranslationKey } from '$types';
+import type { StoredImage } from '../utils/storageUrl';
 import type { InternalFlatNomination } from './supabaseDataProvider.type';
 
 /**
