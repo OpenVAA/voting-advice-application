@@ -2,7 +2,7 @@
   "links": "Linken",
   "memberOfOrganization": "Member vu {organization}",
   "tabs": {
-    "candidates": "Kandidat*inne",
+    "children": "Memberen",
     "info": "Kommentaren",
     "opinions": "Positiounen"
   }

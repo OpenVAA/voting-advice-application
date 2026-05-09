@@ -1,6 +1,7 @@
 {
   "alliance": {
-    "numShown": "{numShown, plural, =0 {Valimisliite ei ole} =1 {1 valimisliit} other {# valimisliitu}}"
+    "numShown": "{numShown, plural, =0 {Valimisliite ei ole} =1 {1 valimisliit} other {# valimisliitu}}",
+    "summary": "{numCandidates, plural, =0 {Ühtegi kandidaati} =1 {1 kandidaat} other {# kandidaati}} kokku {numParties, plural, =0 {ühestki erakonnast} =1 {1 erakonnast} other {# erakonnast}}"
   },
   "candidate": {
     "numShown": "{numShown, plural, =0 {Kandidaate ei ole} =1 {1 kandidaat} other {# kandidaati}}"

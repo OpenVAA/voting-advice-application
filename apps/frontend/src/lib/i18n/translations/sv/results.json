@@ -1,6 +1,7 @@
 {
   "alliance": {
-    "numShown": "{numShown, plural, =0 {Inga allianser} =1 {1 alliance} other {# alliances}}"
+    "numShown": "{numShown, plural, =0 {Inga allianser} =1 {1 alliance} other {# alliances}}",
+    "summary": "{numCandidates, plural, =0 {Inga kandidater} =1 {1 kandidat} other {# kandidater}} fördelade på {numParties, plural, =0 {inga partier} =1 {1 parti} other {# partier}}"
   },
   "candidate": {
     "numShown": "{numShown, plural, =0 {Inga kandidater} =1 {1 kandidat} other {# kandidater}}"

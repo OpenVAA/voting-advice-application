@@ -1,6 +1,7 @@
 {
   "alliance": {
-    "numShown": "{numShown, plural, =0 {Aucune alliance} =1 {1 alliance} other {# alliances}}"
+    "numShown": "{numShown, plural, =0 {Aucune alliance} =1 {1 alliance} other {# alliances}}",
+    "summary": "{numCandidates, plural, =0 {Aucun candidat} =1 {1 candidat} other {# candidats}} répartis sur {numParties, plural, =0 {aucun parti} =1 {1 parti} other {# partis}}"
   },
   "candidate": {
     "numShown": "{numShown, plural, =0 {Aucun·e candidat·es} =1 {1 candidat·e} other {# candidat·es}}"

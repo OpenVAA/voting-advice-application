@@ -1,6 +1,7 @@
 {
   "alliance": {
-    "numShown": "{numShown, plural, =0 {Ingen alliancer} =1 {1 alliance} other {# alliancer}}"
+    "numShown": "{numShown, plural, =0 {Ingen alliancer} =1 {1 alliance} other {# alliancer}}",
+    "summary": "{numCandidates, plural, =0 {Ingen kandidater} =1 {1 kandidat} other {# kandidater}} på tværs af {numParties, plural, =0 {ingen partier} =1 {1 parti} other {# partier}}"
   },
   "candidate": {
     "numShown": "{numShown, plural, =0 {Ingen kandidater} =1 {1 kandidat} other {# kandidater}}"
