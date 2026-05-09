@@ -73,6 +73,9 @@ You should not try to use a variant and customize at the same time.
   // Handle expansion/collapse
   ////////////////////////////////////////////////////////////////////
 
+  // `defaultExpanded` is a render-time-only prop; consumers do not
+  // toggle it after mount. Seed once, then own state locally.
+  // svelte-ignore state_referenced_locally
   let expanded = $state(defaultExpanded);
 
   function toggleExpanded() {
