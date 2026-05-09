@@ -4,14 +4,14 @@ milestone: v2.8
 milestone_name: Alliance Card + Frontend Hygiene Sweep
 status: executing
 stopped_at: Phase 69 UI-SPEC approved
-last_updated: "2026-05-09T10:36:46.593Z"
-last_activity: 2026-05-09 -- Phase 72 planning complete
+last_updated: "2026-05-09T10:45:35.582Z"
+last_activity: 2026-05-09
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 4
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 25
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-08)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 69 — Alliance Card Lane A (first phase of v2.8 Alliance Card + Frontend Hygiene Sweep; reconciles v2.7 SEED-01 SC-2 PASS-WITH-CONCERNS)
+**Current focus:** Phase 72 — package-hygiene-trio
 
 ## Current Position
 
-Phase: Not started (roadmap drafted; awaiting `/gsd-discuss-phase` / `/gsd-plan-phase 69`)
-Plan: —
+Phase: 72 (package-hygiene-trio) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-05-09 -- Phase 72 planning complete
+Last activity: 2026-05-09
 
 ## Performance Metrics
 
@@ -72,6 +72,7 @@ Snapshot taken at v2.7 milestone close on 2026-05-08. v2.8 requirements consume 
 | infrastructure | Local imgproxy Docker container 502 on image upload (intermittent) | Not a code issue; fix with `supabase stop && supabase start`. Carried forward. |
 
 **Pending todo count at v2.7 close:** 18 (v2.8 will resolve 5 of these — 2026-04-25-normalise-app-shared-paradigm, 2026-04-25-remove-mergesettings-reexports, 2026-04-30-alliance-tab-rendering-and-sections-config, 2026-05-08-cleanup-65-01-bind-rationale-comments, 2026-05-08-results-layout-missing-slot-render-tag — plus the supersedes-relationship retire of 2026-05-08-expander-state-referenced-locally).
+| Phase 72 P01 | 25 | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -104,6 +105,8 @@ Key cross-milestone reference points carried forward into v2.8:
 - `@openvaa/app-shared` divergence from the canonical core/data/matching/filters paradigm has been on the pending-todo list since 2026-04-25; v2.8 Phase 72 / SHARED-01 normalises it.
 - `@openvaa/supabase` `yarn supabase:lint` script semantics are SQL-only (sqlfluff) but the script name conflates with the monorepo's JS/TS `lint:check` convention. v2.8 Phase 72 / LINT-01 disambiguates.
 - All v2.8 work is frontend / package-level — NO Supabase migrations, NO E2E coverage expansion (E2E is v2.9 anchor).
+- [Phase ?]: Phase 72 Plan 01 — Option A taken for CLAUDE.md anchor (D-03 default). Net +2 lines in CLAUDE.md.
+- [Phase ?]: Phase 72 Plan 01 — Dual-build justification rewritten to 'future-compatibility hedge' language per RESEARCH A1 flag.
 
 ### Blockers/Concerns
 
@@ -113,9 +116,9 @@ Key cross-milestone reference points carried forward into v2.8:
 
 ## Session Continuity
 
-Last session: 2026-05-09T10:15:53.757Z
+Last session: 2026-05-09T10:45:24.009Z
 Stopped at: Phase 69 UI-SPEC approved
-Resume file: .planning/phases/69-alliance-card-lane-a/69-UI-SPEC.md
+Resume file: None
 Next action: `/gsd-discuss-phase 69 70 71 72 --chain` to capture CONTEXT.md for all four phases (per `feedback_batch_discussions.md` user preference — discuss multiple independent phases together so planning/execution can run autonomously). Then `/gsd-plan-phase 69` to start execution.
 
 ### Plan-count estimate (drafted 2026-05-08)
