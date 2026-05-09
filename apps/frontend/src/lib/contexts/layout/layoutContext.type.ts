@@ -1,7 +1,6 @@
-import type { VideoContent } from '@openvaa/app-shared';
+import type { DeepPartial, VideoContent } from '@openvaa/app-shared';
 import type { Tween } from 'svelte/motion';
 import type { OptionalVideoProps, Video, VideoMode } from '$lib/components/video';
-import type { DeepPartial } from '$lib/utils/merge';
 import type { StackedState } from '../utils/StackedState.svelte';
 
 export type LayoutContext = {

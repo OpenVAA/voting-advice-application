@@ -1,14 +1,13 @@
+import { mergeSettings } from '@openvaa/app-shared';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
 import { cubicOut } from 'svelte/easing';
 import { Tween } from 'svelte/motion';
 import { afterNavigate, beforeNavigate } from '$app/navigation';
-import { mergeSettings } from '$lib/utils/merge';
 import { DELAY } from '$lib/utils/timing';
 import { StackedState } from '../utils/StackedState.svelte';
-import type { VideoContent } from '@openvaa/app-shared';
+import type { DeepPartial, VideoContent } from '@openvaa/app-shared';
 import type { OptionalVideoProps,Video, VideoMode  } from '$lib/components/video';
-import type { DeepPartial } from '$lib/utils/merge';
 import type {
   LayoutContext,
   Navigation,
