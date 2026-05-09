@@ -2,6 +2,7 @@
   "private": true,
   "name": "@openvaa/app-shared",
   "version": "0.1.0",
+  "description": "Settings and utilities shared between OpenVAA frontend and backend. Builds to both ESM (current consumers) and CommonJS (preserved as a future-compatibility hedge — no current in-repo CJS consumer at the time of writing). See README.md for full rationale.",
   "scripts": {
     "build": "tsup && tsc --emitDeclarationOnly --outDir dist",
     "lint": "eslint --flag v10_config_lookup_from_file src/",
