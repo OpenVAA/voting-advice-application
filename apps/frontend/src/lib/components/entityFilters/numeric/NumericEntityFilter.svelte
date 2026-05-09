@@ -37,11 +37,16 @@ Render a numeric filter for entities.
   let max: number = $state(0);
   let includeMissing = $state(true);
 
-  // Initialize values and possibly saved filter state
+  // `filter` and `targets` are stable per parent contract:
+  // EntityList remounts via {#key} on filter-scope change, so the
+  // init-time read here matches the component lifecycle. No reactive
+  // re-derivation needed.
+  // svelte-ignore state_referenced_locally
   const range = filter.parseValues(targets);
   updateValues();
 
   // Update selection when filter values change
+  // svelte-ignore state_referenced_locally
   filter.onChange(updateValues);
 
   // Cleanup
