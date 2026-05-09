@@ -4,6 +4,7 @@ priority: medium
 area: packages
 created: 2026-04-25
 promoted: 2026-04-29
+resolves_phase: 72
 context: Captured as a note (`.planning/notes/2026-04-25-remove-re-exports-like-mergesettings.md`) on 2026-04-25. v2.6 Phase 63 Plan 01 hoisted `mergeSettings` + `DeepPartial` from `apps/frontend/src/lib/utils/merge.ts` into `@openvaa/app-shared`, leaving `apps/frontend/src/lib/utils/merge.ts` as a re-export shim "to keep 3 existing $lib/utils/merge import sites stable". The shim is intentional short-term scaffolding; long-term consumers should import directly from `@openvaa/app-shared`.
 ---
 

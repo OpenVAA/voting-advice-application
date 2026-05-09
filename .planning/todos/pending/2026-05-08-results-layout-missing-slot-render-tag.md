@@ -7,6 +7,8 @@ backlog of vite-plugin-svelte console warnings).
 **Source:** Phase 67 manual UI smoke + clean-protocol Playwright re-run (browser DevTools
 + vite-plugin-svelte HMR output).
 
+**Resolves phase:** 70 (v2.8 Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup, WARN-01 Categories A/B/C)
+
 ## Why this is a sweep (not three independent todos)
 
 The warnings below cluster into three Svelte-5 / SvelteKit categories that all recur

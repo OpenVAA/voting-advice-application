@@ -4,6 +4,7 @@ priority: medium
 area: packages
 created: 2026-04-25
 promoted: 2026-04-29
+resolves_phase: 72
 context: Captured as a note (`.planning/notes/2026-04-25-normalise-app-shared-paradigm.md`) on 2026-04-25. The hoist of `mergeSettings` + `DeepPartial` from `apps/frontend/src/lib/utils/merge.ts` into `@openvaa/app-shared` (v2.6 Phase 63 Plan 01) made this divergence more visible — the new utility's import paths and barrel surface look slightly different from how `@openvaa/core` / `@openvaa/data` / `@openvaa/matching` / `@openvaa/filters` are organized.
 ---
 

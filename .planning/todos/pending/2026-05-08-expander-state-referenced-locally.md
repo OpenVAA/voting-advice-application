@@ -7,6 +7,7 @@
 
 **Captured:** 2026-05-08 during Phase 67 UAT
 **Source:** vite-plugin-svelte build/dev warning (HMR-time, 11:41:07 AM)
+**Resolves phase:** 70 (v2.8 Svelte 5 / SSR / a11y Warning Sweep, WARN-01 Category A — covered transitively via the consolidated sweep)
 
 ## Problem
 

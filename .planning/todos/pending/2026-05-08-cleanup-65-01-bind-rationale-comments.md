@@ -3,6 +3,7 @@
 **Captured:** 2026-05-08 (originally requested by user via `/gsd-do` mid-session during
 Phase 67 execution; deferred while a runtime crash was being fixed; captured at Phase 67
 close-out per the HANDOFF.json human-actions-pending list).
+**Resolves phase:** 70 (v2.8 Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup, BIND-01)
 
 ## Problem
 

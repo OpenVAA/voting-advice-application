@@ -2,6 +2,7 @@
 
 **Captured:** 2026-04-30 during Phase 67 manual UI smoke
 **Source:** Phase 67 (Default Seed Alliances) — Plan 67-02 voter-flow smoke
+**Resolves phase:** 69 (v2.8 Alliance Card Lane A)
 
 ## Problem
 
