@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.8
 milestone_name: Alliance Card + Frontend Hygiene Sweep
 status: executing
-stopped_at: Phase 72 Plan 02 complete (mergeSettings shim retired)
-last_updated: "2026-05-09T10:50:34Z"
+stopped_at: Phase 72 Plan 03 complete (supabase lint-script hard rename — Phase 72 fully shipped)
+last_updated: "2026-05-09T10:57:00Z"
 last_activity: 2026-05-09
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 4
-  completed_plans: 2
-  percent: 50
+  completed_plans: 3
+  percent: 75
 ---
 
 # Project State
@@ -25,9 +25,9 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 
 ## Current Position
 
-Phase: 72 (package-hygiene-trio) — EXECUTING
+Phase: 72 (package-hygiene-trio) — COMPLETE
 Plan: 3 of 3
-Status: Plan 02 complete; Plan 03 (LINT-01) ready to execute
+Status: All 3 plans (SHARED-01, SHARED-02, LINT-01) shipped. Phase-close verification gate pending.
 Last activity: 2026-05-09
 
 ## Performance Metrics
@@ -74,6 +74,7 @@ Snapshot taken at v2.7 milestone close on 2026-05-08. v2.8 requirements consume 
 **Pending todo count at v2.7 close:** 18 (v2.8 will resolve 5 of these — 2026-04-25-normalise-app-shared-paradigm, 2026-04-25-remove-mergesettings-reexports, 2026-04-30-alliance-tab-rendering-and-sections-config, 2026-05-08-cleanup-65-01-bind-rationale-comments, 2026-05-08-results-layout-missing-slot-render-tag — plus the supersedes-relationship retire of 2026-05-08-expander-state-referenced-locally).
 | Phase 72 P01 | 25 | 3 tasks | 8 files |
 | Phase 72 P02 | 3 | 3 tasks | 3 files |
+| Phase 72 P03 | 3 | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -110,6 +111,9 @@ Key cross-milestone reference points carried forward into v2.8:
 - [Phase ?]: Phase 72 Plan 01 — Dual-build justification rewritten to 'future-compatibility hedge' language per RESEARCH A1 flag.
 - [Phase 72 Plan 02]: Cosmetic import merge applied — combined `DeepPartial` with existing `VideoContent` type-import (both from `@openvaa/app-shared`) in both `layoutContext.svelte.ts` and `layoutContext.type.ts`. Auto-sorted by `simple-import-sort/imports` during eslint --fix.
 - [Phase 72 Plan 02]: D-07 audit confirmed only `apps/frontend/src/lib/utils/merge.ts` qualified as a shape-equivalent re-export shim; no follow-up todo needed.
+- [Phase 72 Plan 03]: D-02 hard rename completed — `yarn supabase:lint` now errors with "Couldn't find a script named 'supabase:lint'" (no deprecated alias). New target: `yarn supabase:lint:sql`.
+- [Phase 72 Plan 03]: RESEARCH-verified non-edits held — zero changes to `turbo.json` or `.github/workflows/`. Turborepo's lint task is script-existence-driven; supabase workspace drops out of the JS lint fan-out cleanly with `<NONEXISTENT>` placeholder (no failing task).
+- [Phase 72 Plan 03]: ROADMAP SC-3 satisfied — `yarn lint:check` no longer invokes `supabase db lint` (verified by output grep returning 0).
 
 ### Blockers/Concerns
 
@@ -119,10 +123,10 @@ Key cross-milestone reference points carried forward into v2.8:
 
 ## Session Continuity
 
-Last session: 2026-05-09T10:50:34Z
-Stopped at: Phase 72 Plan 02 complete (mergeSettings shim retired)
+Last session: 2026-05-09T10:57:00Z
+Stopped at: Phase 72 Plan 03 complete (supabase lint-script hard rename — Phase 72 fully shipped)
 Resume file: None
-Next action: Plan 72-03 (LINT-01) — `@openvaa/supabase` lint-script hard rename. Independent of 72-01 / 72-02. Phase verification gate runs at phase close.
+Next action: Phase 72 close — run phase-close verification gate (`yarn build`, `yarn test:unit`, `yarn lint:check` modulo Phase 71 deferral, `yarn supabase:start && yarn supabase:lint:sql` live SQL lint, Playwright parity baseline). Then proceed to Phase 69 (Alliance Card Lane A) or close v2.8 milestone audit.
 
 ### Plan-count estimate (drafted 2026-05-08)
 

@@ -49,7 +49,7 @@
 
 ### LINT — `@openvaa/supabase` lint-script rename
 
-- [ ] **LINT-01**: The conflated SQL/ESLint pipelines in `apps/supabase/package.json` are disambiguated. The script that runs `sqlfluff` (or whichever SQL linter — see existing `yarn supabase:lint` semantics) is renamed to a SQL-specific name (e.g., `lint:sql`); the ESLint script (if any) gets a separate `lint:js` or matches the monorepo `lint:check` convention. Root-level `package.json` and `turbo.json` task references updated. Documentation (`CLAUDE.md` Supabase Commands section, README) updated. CI workflow references updated. `yarn supabase:lint` either continues to work as a deprecated alias OR is removed if no consumer remains. Verification: `yarn supabase:lint:sql` (or the chosen final name) runs the SQL linter against `apps/supabase/migrations/`; `yarn lint:check` at the root runs only the JS/TS linter and does not touch SQL files.
+- [x] **LINT-01**: The conflated SQL/ESLint pipelines in `apps/supabase/package.json` are disambiguated. The script that runs `sqlfluff` (or whichever SQL linter — see existing `yarn supabase:lint` semantics) is renamed to a SQL-specific name (e.g., `lint:sql`); the ESLint script (if any) gets a separate `lint:js` or matches the monorepo `lint:check` convention. Root-level `package.json` and `turbo.json` task references updated. Documentation (`CLAUDE.md` Supabase Commands section, README) updated. CI workflow references updated. `yarn supabase:lint` either continues to work as a deprecated alias OR is removed if no consumer remains. Verification: `yarn supabase:lint:sql` (or the chosen final name) runs the SQL linter against `apps/supabase/migrations/`; `yarn lint:check` at the root runs only the JS/TS linter and does not touch SQL files.
 
 ---
 
@@ -100,7 +100,7 @@ Phase assignments mapped to `.planning/ROADMAP.md`. Success-criterion references
 | TYPING-01 | Phase 71 — Frontend Strict-Typing Cleanup | SC-1, SC-2, SC-3, SC-4 | Pending |
 | SHARED-01 | Phase 72 — Package Hygiene Trio | SC-1, SC-4 (regression gate) | Pending |
 | SHARED-02 | Phase 72 — Package Hygiene Trio | SC-2, SC-4 (regression gate) | Complete |
-| LINT-01 | Phase 72 — Package Hygiene Trio | SC-3, SC-4 (regression gate) | Pending |
+| LINT-01 | Phase 72 — Package Hygiene Trio | SC-3, SC-4 (regression gate) | Complete (Plan 72-03) |
 
 **Coverage:**
 - v2.8 requirements: 7 total

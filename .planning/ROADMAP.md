@@ -110,7 +110,7 @@ Audit: `.planning/milestones/v2.7-MILESTONE-AUDIT.md` (status: tech_debt — 8/8
 **Plans**: 3 plans
 - [x] 72-01-PLAN.md — `@openvaa/app-shared` paradigm normalisation (SHARED-01)
 - [x] 72-02-PLAN.md — `mergeSettings` shim retirement (SHARED-02)
-- [ ] 72-03-PLAN.md — `@openvaa/supabase` lint-script hard rename (LINT-01)
+- [x] 72-03-PLAN.md — `@openvaa/supabase` lint-script hard rename (LINT-01)
 
 ### 🆕 Next milestone — Not yet planned
 
@@ -136,4 +136,4 @@ Run `/gsd-new-milestone` to question → research → write requirements → roa
 | 69. Alliance Card Lane A | v2.8 | 0/2 | Not started | - |
 | 70. Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup | v2.8 | 0/? | Not started | - |
 | 71. Frontend Strict-Typing Cleanup | v2.8 | 0/? | Not started | - |
-| 72. Package Hygiene Trio | v2.8 | 2/3 | In Progress|  |
+| 72. Package Hygiene Trio | v2.8 | 3/3 | Complete | 2026-05-09 |
