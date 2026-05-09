@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.8
 milestone_name: Alliance Card + Frontend Hygiene Sweep
 status: executing
-stopped_at: Phase 72 Plan 03 complete (supabase lint-script hard rename — Phase 72 fully shipped)
-last_updated: "2026-05-09T11:08:08.501Z"
-last_activity: 2026-05-09 -- Phase 69 planning complete
+stopped_at: Phase 69 Plan 01 complete (alliance card render path + 'candidates' to 'children' rename — Plan 02 next)
+last_updated: "2026-05-09T11:31:42.901Z"
+last_activity: 2026-05-09 -- Phase 69 Plan 01 complete
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 5
-  completed_plans: 3
-  percent: 60
+  completed_plans: 4
+  percent: 80
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-08)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 72 — package-hygiene-trio
+**Current focus:** Phase 69 — Alliance Card Lane A
 
 ## Current Position
 
-Phase: 72 (package-hygiene-trio) — COMPLETE
-Plan: 3 of 3
-Status: Ready to execute
-Last activity: 2026-05-09 -- Phase 69 planning complete
+Phase: 69 (Alliance Card Lane A) — EXECUTING
+Plan: 2 of 2
+Status: Plan 01 complete; Plan 02 (matching cascade + manual smoke) ready
+Last activity: 2026-05-09 -- Phase 69 Plan 01 complete
 
 ## Performance Metrics
 
@@ -75,6 +75,7 @@ Snapshot taken at v2.7 milestone close on 2026-05-08. v2.8 requirements consume 
 | Phase 72 P01 | 25 | 3 tasks | 8 files |
 | Phase 72 P02 | 3 | 3 tasks | 3 files |
 | Phase 72 P03 | 3 | 3 tasks | 3 files |
+| Phase 69 P1 | 75 | 9 tasks | 32 files |
 
 ## Accumulated Context
 
@@ -123,10 +124,10 @@ Key cross-milestone reference points carried forward into v2.8:
 
 ## Session Continuity
 
-Last session: 2026-05-09T10:57:00Z
+Last session: 2026-05-09T11:31:42.895Z
 Stopped at: Phase 72 Plan 03 complete (supabase lint-script hard rename — Phase 72 fully shipped)
 Resume file: None
-Next action: Phase 72 close — run phase-close verification gate (`yarn build`, `yarn test:unit`, `yarn lint:check` modulo Phase 71 deferral, `yarn supabase:start && yarn supabase:lint:sql` live SQL lint, Playwright parity baseline). Then proceed to Phase 69 (Alliance Card Lane A) or close v2.8 milestone audit.
+Next action: Phase 69 Plan 02 — matching pipeline cascade (D-05 imputeParentAnswers proxy-children + D-06 matchStore alliance branch + D-07 parentMatchingMethod default for alliances). Capture new pending todo "Rewrite parent answer imputation logic so that entity answers are not overwritten ad hoc". Run 5-step manual smoke per ROADMAP SC-4. Re-confirm Playwright parity (67p / 1f / 34c).
 
 ### Plan-count estimate (drafted 2026-05-08)
 
