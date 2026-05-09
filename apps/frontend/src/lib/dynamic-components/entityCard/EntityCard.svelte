@@ -53,7 +53,8 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   import { concatClass, getUUID } from '$lib/utils/components';
   import { unwrapEntity } from '$lib/utils/entities';
   import { getCardQuestions } from '$lib/utils/entityCards';
-  import { findCandidateNominations } from '$lib/utils/matches';
+  import { getAllianceSummary } from '$lib/utils/getAllianceSummary';
+  import { findCandidateNominations, findOrganizationNominations } from '$lib/utils/matches';
   import EntityCard from './EntityCard.svelte';
   import EntityCardAction from './EntityCardAction.svelte';
   import type { AnyQuestionVariant } from '@openvaa/data';
@@ -107,7 +108,8 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
       action ??
       $getRoute({
         route: 'ResultEntity',
-        entityTypePlural: type === 'candidate' ? 'candidates' : 'organizations',
+        entityTypePlural:
+          type === 'candidate' ? 'candidates' : type === 'alliance' ? 'alliances' : 'organizations',
         entityTypeSingular: type,
         id,
         nominationId: unwrapped.nomination?.id
@@ -130,15 +132,38 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
     // The possible subentities to display in the card, shown only in the list variant
     let scs: Array<EntityCardProps> | undefined;
+    let scsMaxOverride: number | undefined; // Phase 69 D-03: alliance branch overrides maxSubcards to render all member orgs
     if (
       variant === 'list' &&
       unwrapped.nomination &&
       isObjectType(unwrapped.nomination, OBJECT_TYPE.OrganizationNomination) &&
-      $appSettings.results?.cardContents?.organization?.includes('candidates')
+      $appSettings.results?.cardContents?.organization?.includes('children')
     ) {
       scs = findCandidateNominations({ matches: voterContext?.matches, nomination: unwrapped.nomination }).map((e) => ({
         entity: e
       }));
+    } else if (
+      variant === 'list' &&
+      unwrapped.nomination &&
+      isObjectType(unwrapped.nomination, OBJECT_TYPE.AllianceNomination) &&
+      $appSettings.results?.cardContents?.alliance?.includes('children')
+    ) {
+      scs = findOrganizationNominations({ matches: voterContext?.matches, nomination: unwrapped.nomination }).map(
+        (e) => ({
+          entity: e
+        })
+      );
+      scsMaxOverride = Infinity; // Phase 69 D-03: render all member orgs, not just top-3
+    }
+
+    // Alliance summary "X candidates across N parties" — used in card list variant + drawer-header details variant
+    let allianceSummary: { numCandidates: number; numParties: number } | undefined;
+    if (
+      unwrapped.nomination &&
+      isObjectType(unwrapped.nomination, OBJECT_TYPE.AllianceNomination) &&
+      (variant === 'list' || variant === 'details')
+    ) {
+      allianceSummary = getAllianceSummary(unwrapped.nomination);
     }
 
     return {
@@ -149,7 +174,9 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
       action: effectiveAction,
       questions: qs,
       showSubMatches: showSM,
-      subcards: scs
+      subcards: scs,
+      subcardsMax: scsMaxOverride,
+      allianceSummary
     };
   });
 
@@ -250,6 +277,16 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
         {/if}
       </header>
 
+      <!-- Alliance summary line (Phase 69 D-04): "X candidates across N parties" -->
+      {#if parsed.allianceSummary}
+        <p class="text-sm text-secondary">
+          {t('results.alliance.summary', {
+            numCandidates: parsed.allianceSummary.numCandidates,
+            numParties: parsed.allianceSummary.numParties
+          })}
+        </p>
+      {/if}
+
       <!-- Submatches -->
       {#if variant !== 'subcard' && parsed.match?.subMatches?.length && parsed.showSubMatches}
         <SubMatches
@@ -284,10 +321,10 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     <!-- Subentities -->
     {#if parsed.subcards?.length}
       <div class="mt-md gap-lg grid empty:mt-0">
-        {#each parsed.subcards.slice(0, showAllSubcards ? undefined : maxSubcards) as ecProps}
+        {#each parsed.subcards.slice(0, showAllSubcards ? undefined : (parsed.subcardsMax ?? maxSubcards)) as ecProps}
           <EntityCard variant="subcard" {...concatClass(ecProps, 'offset-border')} />
         {/each}
-        {#if parsed.subcards.length > maxSubcards}
+        {#if parsed.subcards.length > (parsed.subcardsMax ?? maxSubcards)}
           <div class="offset-border -my-md relative after:!top-0">
             <Button
               onclick={handleSubcardsToggle}
