@@ -44,7 +44,9 @@ Render an enumerated filter for entities that displays a list of values to inclu
   /** A unique input.value for missing values */
   const missingValue = getUUID();
 
-  // Initialize values and possibly saved filter state
+  // `filter` and `targets` are stable per parent contract (sister
+  // component NumericEntityFilter follows the same pattern).
+  // svelte-ignore state_referenced_locally
   const values = filter.parseValues(targets);
   let selected: Array<MaybeMissing<string>> = $state([]);
   /** Track whether `toggleSelectAll()` will select or deselect all */
@@ -62,6 +64,7 @@ Render an enumerated filter for entities that displays a list of values to inclu
   });
 
   // Update selection when filter values change
+  // svelte-ignore state_referenced_locally
   filter.onChange(updateSelected);
 
   // Clean up
