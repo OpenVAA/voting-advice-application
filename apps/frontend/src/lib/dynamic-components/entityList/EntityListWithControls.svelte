@@ -105,7 +105,7 @@ component-local). See `EntityListWithControls.helpers.ts` for the pure
   // The structural casts to `{ apply: ... }` close the generic-variance gap in
   // TextPropertyFilter / FilterGroup whose `apply` is invariant in TEntity;
   // computeFiltered only consumes the contravariant `apply` shape.
-  type ApplyFn = { apply: <T>(targets: Array<T>) => Array<T> };
+  type ApplyFn = { apply: <TFn>(targets: Array<TFn>) => Array<TFn> };
   const filtered = $derived.by(() => {
     void fctx.version; // subscribe to filterGroup mutations via filterContext bridge
     void searchVersion; // subscribe to searchFilter mutations via local bridge

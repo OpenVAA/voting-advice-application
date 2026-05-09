@@ -20,7 +20,7 @@ class FakeFilter {
   constructor(name = 'f') {
     this.name = name;
   }
-  apply<T>(targets: Array<T>): Array<T> {
+  apply<TVal>(targets: Array<TVal>): Array<TVal> {
     return this.active ? [] : [...targets];
   }
   setActive(v: boolean) {
@@ -37,7 +37,7 @@ class FakeGroup {
   get active() {
     return this.filters.some((f) => f.active);
   }
-  apply<T>(targets: Array<T>): Array<T> {
+  apply<TVal>(targets: Array<TVal>): Array<TVal> {
     this.applySpy(targets);
     return this.active ? [] : [...targets];
   }
@@ -46,7 +46,7 @@ class FakeGroup {
 class FakeSearchFilter {
   applySpy = vi.fn();
   rule = '';
-  apply<T>(targets: Array<T>): Array<T> {
+  apply<TVal>(targets: Array<TVal>): Array<TVal> {
     this.applySpy(targets);
     if (!this.rule) return [...targets];
     return targets.filter((t) =>

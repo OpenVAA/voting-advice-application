@@ -15,8 +15,8 @@ import type { FilterGroup } from '@openvaa/filters';
  */
 export function computeFiltered<TEntity>(
   entities: ReadonlyArray<TEntity>,
-  filterGroup: { apply: <T>(targets: Array<T>) => Array<T> } | undefined,
-  searchFilter: { apply: <T>(targets: Array<T>) => Array<T> } | undefined
+  filterGroup: { apply: <TFn>(targets: Array<TFn>) => Array<TFn> } | undefined,
+  searchFilter: { apply: <TFn>(targets: Array<TFn>) => Array<TFn> } | undefined
 ): Array<TEntity> {
   const afterGroup = filterGroup ? filterGroup.apply([...entities]) : [...entities];
   return searchFilter ? searchFilter.apply(afterGroup) : afterGroup;
@@ -43,5 +43,3 @@ export function countActiveFilters(
 export type FilterGroupLike<TEntity> = Pick<FilterGroup<MaybeWrappedEntityVariant>, 'apply' | 'filters'> & {
   filters: ReadonlyArray<{ active: boolean; name: string }>;
 };
-// Suppress unused TEntity if not needed by consumers — kept for future generic extension.
-export type _Unused<TEntity> = TEntity;
