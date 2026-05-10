@@ -1,116 +1,161 @@
-# Milestone v2.8: Alliance Card + Frontend Hygiene Sweep — Requirements
+# Milestone v2.9: E2E Coverage + Suite Determinism — Requirements
 
-**Defined:** 2026-05-08
+**Defined:** 2026-05-10
 **Core Value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
 
-**Goal:** Close v2.7's deferred Svelte 5 / typing / lint / packaging loose ends and finish the alliance card render path, in one cohesive frontend hygiene + small-UI-feature milestone. All 7 requirements are predominantly independent and can be developed in parallel; the user-facing surface is a single small UI feature (alliance card), the rest is tech-debt and package hygiene that pays interest forward into v2.9 (E2E coverage) and v3.x (multi-tenant).
+**Goal:** Reduce the Playwright suite to a hard pass/fail signal first (skip-modifier sweep + 19 data-loading races + 98 `playwright/*` warnings), then add high-leverage coverage on top of that stable base — translation surface, browse-without-match, election/constituency selector matrix, voter answer rendering, skip/delete/back navigation, locale switching, focused question-rendering specs, candidate profile validation+persistence, automated a11y, and the `appSettings`/`appCustomization` toggle matrix (plus `customData.allowOpen` and per-question visibility/required gap-fills). Close residual operator + post-71 hygiene todos in a final cleanup phase.
+
+**Strategy: determinism first, coverage on top.** Adding new tests against an unstable suite hides regressions: a new test failing for a real reason looks like just-another-flake. Phase A (DETERM) is gating — Phases B, C, D, E do not start coverage work until the existing suite is 0 skipped / 0 races / 0 `playwright/*` warnings.
 
 **Context sources:**
 
-- `.planning/todos/pending/2026-04-30-alliance-tab-rendering-and-sections-config.md` — alliance card 3-lane analysis (A/B/C); lane A selected
-- `.planning/todos/pending/2026-05-08-results-layout-missing-slot-render-tag.md` — consolidated Svelte 5 / SSR / a11y warning sweep (Categories A/B/C captured during Phase 67 UAT)
-- `.planning/todos/pending/2026-05-08-expander-state-referenced-locally.md` — superseded by the consolidated sweep above (kept for history)
-- `.planning/milestones/v2.7-phases/68-dev-tooling-trio/68-02-DEFERRED.md` — 95 pre-existing `apps/frontend/` ESLint errors (Option C) deferred from v2.7
-- `.planning/todos/pending/2026-04-25-normalise-app-shared-paradigm.md` — `@openvaa/app-shared` divergence from core/data/matching/filters
-- `.planning/todos/pending/2026-04-25-remove-mergesettings-reexports.md` — `apps/frontend/src/lib/utils/merge.ts` shim retire-out
-- `.planning/todos/pending/2026-05-08-cleanup-65-01-bind-rationale-comments.md` — strip 92 `// bind: keep —` rationale comments from Phase 65 Plan 01
-- `.planning/STATE.md` Accumulated Context — v2.7 close + v2.8 scope decision
-- v2.7 PROJECT.md "Out of scope (deferred to v2.8+)" — `@openvaa/supabase` lint-script rename (SQL/ESLint pipeline conflation)
+- `.planning/notes/2026-05-10-v2.9-e2e-coverage-inventory.md` — E2E gap inventory + REAL/NOT-REAL classification + operator-pre-drafted 6-phase shape (compiled 2026-05-10 during v2.8 close)
+- `.planning/notes/2026-05-08-e2e-test-inventory.md` — broader E2E test inventory (~103 tests, ~30 gap categories) underlying the v2.9 framing
+- `.planning/todos/pending/2026-04-27-remove-e2e-skip-modifiers.md` — `test.skip(true, …)` sweep plan + classification protocol
+- `.planning/todos/pending/2026-05-10-tests-playwright-hygiene-sweep.md` — 98 `playwright/*` warnings sweep
+- `.planning/todos/pending/2026-04-27-extend-e2e-filter-type-coverage.md` — filter-type matrix coverage (folds into SETTINGS-01)
+- `.planning/todos/pending/2026-05-10-rename-package-scripts-dev-to-db.md` — `dev:* → db:*` script rename + `dev:clean` cache wipe
+- `.planning/todos/pending/2026-05-10-redirect-unlocated-voter-to-selectors.md` — voter-not-located deferred-target redirect
+- `.planning/todos/pending/2026-05-10-d04-per-cast-reason-distribution.md` — D-04 per-cast `// reason:` anchor distribution
+- `.planning/todos/pending/2026-05-10-getroute-setstore-cast-cleanup.md` — `setStore` cast cleanup at `getRoute.svelte.ts:41`
+- `.planning/todos/pending/2026-05-09-claude-md-svelte-warning-accepted-format.md` — CLAUDE.md Svelte warning-accepted format anchor
+- `.planning/todos/pending/2026-05-09-tighten-i18n-wrapper.md` — i18n wrapper tightening (paired with locale-switching coverage)
+- PROJECT.md "Current Milestone: v2.9" — full goal + 6-phase A–F shape + key context
+- v2.8 PROJECT.md "Out of scope (deferred to v2.9+)" — E2E coverage workstream as v2.9 anchor
 
 ---
 
-## v2.8 Requirements
+## v2.9 Requirements
 
-### ALLIANCE — Alliance card render path (closes v2.7 SEED-01 SC-2 PASS-WITH-CONCERNS)
+### DETERM — Determinism baseline (gating prerequisite for Phases B–E)
 
-- [x] **ALLIANCE-01**: The voter results "Alliances" tab renders a working entity card per alliance entity. Lane A from the deferred 3-lane analysis: a real alliance card with at minimum (a) alliance name, (b) member organizations as a sub-list, and (c) an "X candidates across N parties" summary. EntityCard's "subentities" branch (currently hard-coded to `OrganizationNomination → CandidateNomination`) is extended to handle `OBJECT_TYPE.AllianceNomination → OrganizationNomination` correctly. `cardContents.alliance` shape decisions are captured (likely adding `'organizations'` to the union). Voter clicks the Alliances tab → sees populated cards (default seed has 2 alliances + 10 alliance_nominations + 30/10 org-nom parent split per v2.7 SEED-01). The drawer-open path from an alliance card also works (alliance detail tab structure: info, member organizations, [no opinions because alliances do not have own answers]). Manual smoke includes: tab visible, cards populated, click-to-drawer works, member orgs render in the drawer.
+- [ ] **DETERM-01**: All `test.skip(true, …)` modifiers across the Playwright suite are either removed (when the underlying issue is resolved or the test was permanently obsolete) or converted to `expect.poll(...).toBeGreaterThan(0)` race-tolerant hard assertions (matching the v2.6 Phase 64 pattern that cleared the 6 voter-results.spec.ts skips). Each skip is classified per the protocol in `2026-04-27-remove-e2e-skip-modifiers.md` (legitimate skip / convert-to-poll / fix-and-remove). After the sweep: `git grep -nE "test\.skip\(true," tests/` returns zero matches outside of comments. Post-resolution suite shows 0 skipped tests on the green run.
 
-### WARN — Svelte 5 / SSR / a11y warning sweep
+- [ ] **DETERM-02**: The 19 known pre-existing data-loading race E2E failures (PROJECT.md "Future") are resolved deterministically. Each failure is investigated per failure type (race in initial data fetch / subscription not flushed before assertion / auth-cookie not set in time / hydration timing) and given a deterministic fix at the test level (proper `waitFor` against the asserted element, replacing `waitForLoadState('networkidle')`, removing `if (...)` branches that mask race outcomes) or at the code level (where the race surfaces a real product bug). Post-resolution: 3 consecutive `yarn test:e2e --workers=1` runs pass identically (same pass/fail set across runs); the v2.6 parity baseline `67p / 1f / 34c` shifts to a stable green count or is explicitly re-baselined.
 
-- [x] **WARN-01**: All vite-plugin-svelte and SvelteKit dev/build warnings surfaced during Phase 67 UAT (consolidated in `.planning/todos/pending/2026-05-08-results-layout-missing-slot-render-tag.md`) are resolved or documented as accepted. Three categories must be addressed:
-  - **Category A — Svelte 5 reactivity hazards (`state_referenced_locally`)**: Every confirmed site (e.g. `Expander.svelte:76 defaultExpanded`, `EnumeratedEntityFilter.svelte:48 filter`, plus any others surfaced by a fresh `yarn dev` warning sweep) is rewritten using direct property access or `$derived` so the prop/state read happens inside the tracking scope. Pattern matches the v2.6 P61-03 context-destructuring rule (CLAUDE.md).
-  - **Category B — Missing `<slot />` / `{@render children()}` (or equivalent SSR-correct render)**: Every site that triggers the missing-render warning is fixed (or, if intentionally rendering nothing, documented inline).
-  - **Category C — A11y warnings**: WCAG 2.1 AA-relevant warnings are fixed (label associations, aria-* attributes, keyboard handling). Cosmetic-only a11y warnings (if any) may be accepted with inline justification.
-  - Verification: `yarn dev` from a clean `rm -rf apps/frontend/.svelte-kit node_modules/.vite/` start logs zero un-justified Svelte 5 / SSR / a11y warnings on cold load + voter-flow happy path. `yarn build` for `@openvaa/frontend` is also warning-clean (or, where a warning is accepted, the inline justification is captured).
+- [ ] **DETERM-03**: All 98 pre-existing `playwright/*` ESLint warnings in `tests/` are resolved. Breakdown per `2026-05-10-tests-playwright-hygiene-sweep.md`: `playwright/no-conditional-in-test` (`if (...)` branches inside test bodies replaced with explicit assertions or split into separate tests), `playwright/no-raw-locators` (`page.locator('...')` rewritten to semantic locators `getByRole`/`getByText`/`getByTestId`), `playwright/no-networkidle` (`waitForLoadState('networkidle')` replaced with `waitFor` against the asserted element). Post-sweep: `yarn lint:check` exits 0 with 0 warnings across all workspaces (frontend lint baseline 0 errors / 0 warnings; tests/ contributes 0 of either). The hygiene sweep forces the rewrite of the conditional / `networkidle` patterns that drive flakiness — paired with DETERM-02.
 
-### BIND — `bind:*` rationale-comment cleanup
+### E2E — High-leverage E2E coverage (depends on DETERM Phase A green)
 
-- [x] **BIND-01**: The 92 inline `// bind: keep — <rationale>` comments added by v2.7 Phase 65 Plan 01 are removed from `apps/frontend/src/lib/**/*.svelte`, with the underlying `bind:*` directives left in place untouched. The rationale is already captured permanently in CLAUDE.md (Context Destructuring Rule + reactive-accessor catalog); the inline comments served the audit moment and now constitute long-term noise. After the sweep: `git grep -nE "// bind: (keep|ok|justified)" apps/frontend/src/lib/` returns zero matches. `yarn build` and `yarn test:unit` remain green; `git diff` is comment-only (no behavioral code changes).
+- [ ] **E2E-01**: A multilocale candidate sees and uses the translation surface; a single-locale candidate does not. When `staticSettings.supportedLocales.length > 1`, candidates can add translations to questions where `localizationDisabled` is not set. When `staticSettings.supportedLocales.length === 1`, the translation tab/dialog is not rendered. Asserted on a parameterized fixture — multilocale + single-locale variants — via `aria-label` / role-based locators on the translation surface.
 
-### TYPING — Frontend strict-typing cleanup (95 ESLint errors deferred under v2.7 Phase 68 Option C)
+- [ ] **E2E-02**: A voter with a completed location but fewer than `minimumAnswers` opinion answers can still browse the entity list (results page). The list does not show match scores; the page intro text does not reference matches. Variant fixture sets `minimumAnswers` low enough that the voter has not crossed it after location is set; spec navigates to results and asserts absence of match-score column + alternative intro copy.
 
-- [x] **TYPING-01**: The 95 pre-existing `apps/frontend/` ESLint errors deferred under v2.7 Phase 68 Option C are resolved. Breakdown per `.planning/milestones/v2.7-phases/68-dev-tooling-trio/68-02-DEFERRED.md`: 67 `@typescript-eslint/no-explicit-any`, 13 `@typescript-eslint/naming-convention` (type-parameter renames; CONTEXT D-02's adapter-boundary framing was reframed during research — adapter boundary already enforces camelCase via `mapRow()` + `COLUMN_MAP`), 11 `func-style`, plus 4 long-tail. Each `no-explicit-any` error resolved via real types (preferred) or `unknown` + runtime narrow + inline `// reason:` (D-04, introduced fresh in Phase 71). Each `naming-convention` and `func-style` error fixed at the source site (4 SvelteKit `RequestHandler`/`LayoutLoad` type-binding sites carry inline-justified `func-style` disables with the canonical `-- reason: SvelteKit <TypeName> type-binding requires const-form annotation` wording). Post-phase: `yarn workspace @openvaa/frontend lint:check` exits 0 with 0 errors / 98 warnings (warnings out of scope). Svelte-check baseline 159 ERRORS (≤ 160 gate; net −1 incidental tightening). Root `yarn lint:check` exits 0. Unit suite 658/658 green. E2E parity baseline manual smoke deferred per VALIDATION.md manual-only convention (bundled with Phase 69 follow-up todo `.planning/todos/pending/2026-05-09-phase-69-parity-gate-followup.md`). Completed Phase 71 (2026-05-10).
+- [ ] **E2E-03**: A voter's typed feedback text persists across dismissing the dialog and is reset after the message is sent. Sequence: open feedback → type text → dismiss → reopen → expect text retained. Then: type new text → send → reopen → expect empty.
 
-### SHARED — `@openvaa/app-shared` package hygiene
+- [ ] **E2E-04**: The election + constituency selectors are bypassed whenever the election + constituency can be implied from the data, not just the trivial `1e × 1c` case. Variant matrix covers `1e × 1c` (already covered, kept as regression baseline), `1e × Nc`, `Ne × 1c`, `Ne × Nc`, plus `startFromConstituency` setups. Each cell asserts URL state (selectors-bypassed vs. shown) and selector visibility on the page. The constituency dropdown options for a selected election filter to that election's constituencies only (no cross-election bleed).
 
-- [x] **SHARED-01**: `@openvaa/app-shared` is normalised to match the import / barrel / build paradigm of `@openvaa/core`, `@openvaa/data`, `@openvaa/matching`, `@openvaa/filters`. Concretely: (a) consistent `.js` extension policy on TS-internal imports (matching the rest of the monorepo's TS+ESM convention); (b) flat exports vs. nested utils sub-barrel decision aligned with the canonical paradigm; (c) `package.json` scripts and `exports` field aligned; (d) the dual ESM+CommonJS build (kept for backend Edge Function consumption) is preserved AND explicitly justified in a brief doc-comment at the top of the package's README or `package.json`. Per-package divergences (if any survive) are inline-justified. Reference: a one-paragraph "this is how all packages look" anchor lands in `CLAUDE.md` or a packages-level README.
+- [ ] **E2E-05**: The voter's answer is rendered alongside the entity's answer on the entity-detail drawer for all four cases: (a) both answered, (b) voter answered + entity missing, (c) voter missing + entity answered, (d) both missing. Parameterized fixture with each case; voter-detail spec asserts both rows present with appropriate visual state (agree / disagree / missing-marker).
 
-- [x] **SHARED-02**: The `apps/frontend/src/lib/utils/merge.ts` re-export shim (added in v2.6 Phase 63 Plan 01 to keep import sites stable when `mergeSettings` + `DeepPartial` were hoisted to `@openvaa/app-shared`) is retired. Every consumer in `apps/frontend/src/lib/**` and `tests/**` imports `mergeSettings` / `DeepPartial` directly from `@openvaa/app-shared`. The shim file is deleted. `git grep -nE "from ['\"]\\\$lib/utils/merge['\"]" apps/frontend/ tests/ packages/` returns zero matches. `yarn build` + `yarn test:unit` remain green. Any other re-export shims of the same shape in `apps/frontend/src/lib/utils/` discovered during this sweep (per the source todo) are inventoried and either retired (preferred) or carried forward as a follow-up todo with an explicit reason.
+- [ ] **E2E-06**: A voter who skips a question, deletes their answer, and navigates back sees predictable result-CTA availability. Specifically: deleting an answer that brings count below `minimumAnswers` hides the results CTA; re-answering re-enables it. Sequence test answers N questions → deletes one → asserts results-CTA disabled → re-answers → asserts re-enabled.
 
-### LINT — `@openvaa/supabase` lint-script rename
+- [ ] **E2E-07**: The per-category match SubMatch breakdown renders correctly on the voter-detail spec. Existing voter-detail tests cover info+opinions tabs; this adds a per-category assertion block that reuses the fixture's category metadata to verify the subdimensional-pillar rendering for both Manhattan and directional metric paths.
 
-- [x] **LINT-01**: The conflated SQL/ESLint pipelines in `apps/supabase/package.json` are disambiguated. The script that runs `sqlfluff` (or whichever SQL linter — see existing `yarn supabase:lint` semantics) is renamed to a SQL-specific name (e.g., `lint:sql`); the ESLint script (if any) gets a separate `lint:js` or matches the monorepo `lint:check` convention. Root-level `package.json` and `turbo.json` task references updated. Documentation (`CLAUDE.md` Supabase Commands section, README) updated. CI workflow references updated. `yarn supabase:lint` either continues to work as a deprecated alias OR is removed if no consumer remains. Verification: `yarn supabase:lint:sql` (or the chosen final name) runs the SQL linter against `apps/supabase/migrations/`; `yarn lint:check` at the root runs only the JS/TS linter and does not touch SQL files.
+- [ ] **E2E-08**: A voter switches locale and the UI translates correctly. Spec visits the page in `en` → asserts key strings → switches to `fi` (or another configured locale) → asserts translated key strings → switches back. Both the route-prefixed form (`/fi/...`) and the locale-switcher widget (if present) are covered. (i18n is a v1.2 milestone capability; no E2E covers this end-to-end yet.)
+
+### QSPEC — Question-rendering specs (parallel with E2E Phase B)
+
+- [ ] **QSPEC-01**: A focused user-story spec walks the voter through a Boolean opinion question end-to-end — input shape correct (2-button radio per v2.6 P61), voter answers, navigates, sees their answer reflected on entity-detail. Deduplicated against existing matching tests (assertion-by-assertion).
+
+- [ ] **QSPEC-02**: A focused user-story spec walks the voter through a categorical (single-choice + multi-choice) opinion question end-to-end — input shape correct, voter answers, navigates, sees their answer reflected on entity-detail. The per-category match breakdown is verified separately by E2E-07 — QSPEC-02 only covers the input + flow.
+
+### A11Y — Profile + accessibility (parallel with Phase B)
+
+- [ ] **A11Y-01**: Candidate profile field validation rejection paths are E2E-covered. Parameterized profile spec exercises bad-input cells (invalid email format, name length boundaries, image type/size violations); each asserts validation error UI + unsaved-state preservation. Happy paths remain covered by existing profile spec.
+
+- [ ] **A11Y-02**: Candidate profile field reload-persistence is E2E-covered for all profile fields, not just the image. Existing CAND-12 covers image + answers + comment text; A11Y-02 extends the spec to cover name, bio, and social links (note: social links depend on configured info questions, so the fixture must include them). After save → page reload → all fields show their saved values.
+
+- [ ] **A11Y-03**: `@axe-core/playwright` is integrated into the suite as a WCAG 2.1 AA smoke. Initial wiring covers the 5 highest-traffic routes — home, election/constituency selector, questions flow, results list, voter-detail drawer. Violations surfaced by the smoke are documented in a follow-up todo for cite-and-fix in a future phase (not in scope for v2.9 — wiring + first-run baseline only).
+
+### SETTINGS — Settings matrix + question-customization gap-fills (parallel with Phase B)
+
+- [ ] **SETTINGS-01**: `appSettings` / `appCustomization` per-toggle E2E coverage. Enumerate the toggles surfaced by `staticSettings` + `dynamicSettings` (extending the v2.4 candidate-settings.spec.ts which covers app-mode + notifications + hideHero + help/privacy); add an assertion-per-toggle (parameterized matrix-driven spec where shape allows, dedicated specs where toggle interactions warrant). Folds the existing `2026-04-27-extend-e2e-filter-type-coverage.md` todo (filter-type matrix becomes one slice of the toggle coverage).
+
+- [ ] **SETTINGS-02**: `customData.allowOpen` E2E-covered per the v2.0 milestone-notes gap. Variant fixture enables `allowOpen` on a subset of questions; spec asserts the open-comment UI surfaces, voter can author comment text, comment persists across reload (matching the existing CAND-12 persistence pattern for candidate comments).
+
+- [ ] **SETTINGS-03**: Per-question visibility flags + "must-answer" enforcement E2E-covered. `hideHero` is already covered (existing settings spec); SETTINGS-03 adds variant-fixture coverage for the remaining per-question visibility/required configuration: hidden questions don't render in the question flow; required-but-unanswered questions block navigation to results (per `requiredInfoQuestions` / `unansweredOpinionQuestions` voter-context contracts).
+
+### CLEAN — Cleanup hygiene phase (Phase F shape, like v2.7 P68 / v2.8 P72)
+
+- [ ] **CLEAN-01**: The `yarn dev:*` Supabase scripts are renamed to `yarn db:*` per `2026-05-10-rename-package-scripts-dev-to-db.md`. Renames: `dev:start → db:start`, `dev:stop → db:stop`, `dev:down → db:down`, `dev:reset → db:reset`, `dev:reset-with-data → db:reset-with-data`, `dev:status → db:status`, `dev:seed → db:seed`. A new `yarn dev:clean` is added that wipes `apps/frontend/.svelte-kit` + `node_modules/.vite/`. `db:reset` and `db:reset-with-data` chain `dev:clean` after the supabase reset (the v2.8-close hidden-gotcha recipe). Root `package.json`, CI workflows, and CLAUDE.md "Supabase Commands" section are updated. Verification: `yarn db:status` runs the supabase status command; `yarn dev:* → db:*` aliases either are removed or kept as deprecated shims with a logged deprecation warning (decision deferred to phase planning).
+
+- [ ] **CLEAN-02**: Voters who hit a located route (`/results/...`, `/questions/...`) without `selectedElection` + `selectedConstituency` set are redirected through the selector with the original route preserved as a deferred-target — after the voter completes selection, they resume the originally-requested route. Source: `2026-05-10-redirect-unlocated-voter-to-selectors.md`. E2E-covered by a spec that arrives at `/results/X` cold (no localStorage), completes the selector, and asserts final URL matches the original deferred target.
+
+- [ ] **CLEAN-03**: The 3 post-71 carry-forward Phase 71 OOS findings are closed:
+  - **D-04 per-cast distribution** (`2026-05-10-d04-per-cast-reason-distribution.md`): the cluster-level `// reason:` anchor in `supabaseDataProvider.ts` (covering 13 cast sites) is distributed to per-cast lines, with reason text that distinguishes JSONB → typed-shape vs. JSONB → answers cases.
+  - **`setStore` cast cleanup** (`2026-05-10-getroute-setstore-cast-cleanup.md`): the structural cast at `apps/frontend/src/lib/contexts/app/getRoute.svelte.ts:41` is replaced with a properly-typed approach (likely returning the writable as `Writable<RouteBuilder>` rather than `Readable` from the factory, or restructuring to avoid the setter-extraction pattern).
+  - **CLAUDE.md Svelte warning-accepted format** (`2026-05-09-claude-md-svelte-warning-accepted-format.md`): canonical anchor for the v2.8 Phase 70 Cat A "inline ignore-with-rationale preamble" pattern is added to CLAUDE.md so future warning-acceptance decisions follow the same shape.
+
+- [ ] **CLEAN-04**: The i18n wrapper (`apps/frontend/src/lib/i18n/`) is tightened per `2026-05-09-tighten-i18n-wrapper.md`. Paired with E2E-08 (locale switching) so the wrapper improvements are exercised by the new locale-switching coverage. Specific tightening tracked in the source todo; expected outcome: stricter typing on translation function arguments + cleaner runtime override surface.
 
 ---
 
 ## Future Requirements (deferred)
 
-_Items tracked but not in v2.8 scope. Carry forward to v2.9+ or backlog._
+_Items tracked but not in v2.9 scope. Carry forward to v2.10+ or backlog._
 
-- **E2E coverage workstream (v2.9 anchor)** — Fill voter/candidate/variant/visual/perf gaps catalogued in `.planning/notes/2026-05-08-e2e-test-inventory.md` (~30 gap categories across ~103 existing tests). Specific work units include: filter-type matrix coverage (`.planning/todos/pending/2026-04-27-extend-e2e-filter-type-coverage.md`), `test.skip(true, …)` sweep (`.planning/todos/pending/2026-04-27-remove-e2e-skip-modifiers.md`), 19 pre-existing data-loading race failures, locale switching, automated a11y sweep, expanded perf budgets, expanded visual baselines. User-led inventory audit is the entry-point.
-- **Sharable URLs + multi-tenant (v2.9 candidate, paired)** — `results-url-refactor-followups` (shorter IDs, multi-election URL schema, upstream voter routes; `.planning/todos/pending/results-url-refactor-followups.md`) + `frontend-project-id-scoping` (per-instance project scoping in voter data provider; `.planning/todos/pending/frontend-project-id-scoping.md`). Pair as a single milestone — multi-tenant prep wants the typing cleanup landing first.
-- **DB-01 nominations table cleanup** — deferred 2026-04-29 during v2.7 Phase 66 discussion; user opted to keep the table as is. Source todo `.planning/todos/pending/2026-04-28-cleanup-nominations-table.md` stays open.
-- **Generalize candidate app to support parties** — `.planning/todos/pending/2026-03-28-generalize-candidate-app-to-party-app.md` + PROJECT.md §Milestones #21.
-- **Investigate migrating candidate answer store** — architectural investigation, `.planning/todos/pending/2026-03-28-investigate-migrating-candidate-answer-store.md`.
-- **Strapi-era auth-flow leftovers** — `password-reset-code-method` (`.planning/todos/pending/password-reset-code-method.md`) + `register-page-registrationkey-method` (`.planning/todos/pending/register-page-registrationkey-method.md`). Pair as a small "candidate-app auth dead-code retirement" workstream.
-- **Configurable mock data generation** — `.planning/todos/pending/configurable-mock-data.md`. Supabase replacement for the old Strapi `GENERATE_MOCK_DATA_ON_INITIALISE`.
-- **Adapter package loading via TSConfig** — `.planning/todos/pending/adapter-package-loading.md`.
-- **AdminWriter rename** — `.planning/todos/pending/rename-admin-writer.md`. Low priority.
-- **SQL linting / formatting tooling** — `.planning/todos/pending/sql-linting-formatting.md`. CI hygiene.
-- **Admin App migration** — PROJECT.md §Milestones #18.
-- **Settings & Configuration paradigm reorg** — PROJECT.md §Milestones #20.
-- **Automated security and secrets scanning** — PROJECT.md §Milestones #19.
-- **Trusted publishing for npm (OIDC)** — deferred until after initial manual publish (PROJECT.md Future).
-- **165 pre-existing intra-package circular deps** in `@openvaa/data` / `@openvaa/matching` / `@openvaa/filters` (the `internal.ts` barrel pattern) — dedicated structural refactor milestone.
-- **Claude Skills: architect, components, LLM** — deferred to post-Svelte 5 stabilization (PROJECT.md Future + §Milestones #17).
+- **Sharable URLs + multi-tenant pair (v2.10 candidate)** — `results-url-refactor-followups` (shorter IDs, multi-election URL schema, upstream voter routes; `.planning/todos/pending/results-url-refactor-followups.md`) + `frontend-project-id-scoping` (per-instance project scoping in voter data provider; `.planning/todos/pending/frontend-project-id-scoping.md`). Pair as one milestone; multi-tenant prep wanted typing cleanup (now done in v2.8 P71).
+- **Luxembourg + Danish VAA reconciliation** — `2026-05-10-incorporate-luxembourg-and-danish-vaa-changes.md`. Inventory deltas, classify, merge or reject. Operator deferred — deltas unscoped.
+- **Cite-and-fix WCAG 2.1 AA violations surfaced by the v2.9 axe smoke** — A11Y-03 only covers wiring; violations from the first-run baseline are tracked as a follow-up phase.
+- **DB-01 nominations table cleanup** — deferred 2026-04-29 during v2.7 Phase 66 discussion; user opted to keep table as is. Source: `2026-04-28-cleanup-nominations-table.md`.
+- **Generalize candidate app to support parties** — `2026-03-28-generalize-candidate-app-to-party-app.md` + PROJECT.md §Milestones #22.
+- **Investigate migrating candidate answer store** — architectural; `2026-03-28-investigate-migrating-candidate-answer-store.md`.
+- **Strapi-era auth-flow leftovers** — `password-reset-code-method` + `register-page-registrationkey-method`. Pair as a small "candidate-app auth dead-code retirement" workstream.
+- **Configurable mock data generation** — `configurable-mock-data.md`. Supabase replacement for the old Strapi `GENERATE_MOCK_DATA_ON_INITIALISE`.
+- **Adapter package loading via TSConfig** — `adapter-package-loading.md`.
+- **AdminWriter rename** — `rename-admin-writer.md`. Low priority.
+- **`2026-05-09-rewrite-parent-answer-imputation`** — matching-package internal; future matching-focused milestone.
+- **SQL linting / formatting tooling** — `sql-linting-formatting.md`. CI hygiene.
+- **Admin App migration** — PROJECT.md §Milestones #19.
+- **Settings & Configuration paradigm reorg** — PROJECT.md §Milestones #21.
+- **Automated security and secrets scanning** — PROJECT.md §Milestones #20.
+- **Trusted publishing for npm (OIDC)** — deferred until after initial manual publish.
+- **165 pre-existing intra-package circular deps** in `@openvaa/data` / `@openvaa/matching` / `@openvaa/filters` (`internal.ts` barrel pattern) — dedicated structural refactor milestone.
+- **Claude Skills: architect, components, LLM** — deferred to post-Svelte 5 stabilization.
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| New voter / candidate / admin features | v2.8 is hygiene + 1 small UI feature only. No new user-facing capabilities beyond ALLIANCE-01. |
-| Alliance card Lane B (drop alliance from sections) or Lane C (conditional render guard) | ALLIANCE-01 commits to Lane A. Lanes B/C are quick rollback / temporary hack alternatives that this milestone explicitly rejects. |
-| Schema migrations (DB-01, project-scoping schema work) | All v2.8 work is frontend / package-level. No supabase migration files touched. |
-| `@openvaa/data` / `@openvaa/matching` / `@openvaa/filters` paradigm changes | SHARED-01 is `@openvaa/app-shared` only. Other packages are the canonical reference, not the target. |
-| E2E coverage expansion | v2.9 anchor. Existing E2E suite must continue to pass at the v2.7-close baseline; that's the only E2E gate for v2.8. |
-| Local imgproxy intermittent crash | Infrastructure debt, not a code issue (fix with `supabase stop && supabase start`). Carried forward from v2.6/v2.7. |
-| `yarn workspace @openvaa/frontend check` (svelte-check) baseline reduction | TYPING-01 commits to "do not regress beyond 160 err / 12 warn." Reducing the baseline is welcome but not gated. |
+| Mobile native apps | Web-first approach (long-standing project decision) |
+| Package manager migration to pnpm | High risk, low reward with Turborepo on Yarn 4 |
+| Nx / Lerna adoption | Overkill for 9-package monorepo; Turborepo + Yarn 4 is sufficient |
+| oxlint migration | Svelte template linting not supported; re-evaluate when Svelte support ships |
+| Adding more test runners | Playwright + Vitest + pgTAP is the durable stack; v2.9 deepens this stack, doesn't replace it |
+| New visual-regression baselines | `PLAYWRIGHT_VISUAL` env-gated regime is the existing convention; v2.9 does not expand visual baselines (that's a separate milestone if/when needed) |
+| Performance budget expansion | `PLAYWRIGHT_PERF` env-gated regime stays as is; v2.9 does not expand perf coverage |
+| Cite-and-fix WCAG violations from axe smoke | A11Y-03 wires the harness; violation triage is a follow-up phase. Keeps Phase D bounded. |
+| Scope expansion to "all" `customData.*` fields | SETTINGS-02 covers `allowOpen` specifically (named gap from v2.0 notes); other `customData` fields are not currently exposed gaps and are out of scope for v2.9 |
+| New E2E framework / migration | Playwright 1.58.2 is the durable stack; v2.9 is content (coverage + determinism), not infrastructure |
 
 ---
 
 ## Traceability
 
-Phase assignments mapped to `.planning/ROADMAP.md`. Success-criterion references point to the numbered criteria under each phase's `**Success Criteria**` block in ROADMAP.md.
+_Filled by `/gsd-new-milestone` roadmapper after roadmap creation. Each requirement maps to exactly one phase._
 
-| Requirement | Phase | Success Criteria | Status |
-|-------------|-------|------------------|--------|
-| ALLIANCE-01 | Phase 69 — Alliance Card Lane A | SC-1, SC-2, SC-3, SC-4 | Complete (Plans 69-01 + 69-02; SC-4 manual smoke PASSED 2026-05-09; bundled parity gate PASSED 2026-05-10) |
-| WARN-01 | Phase 70 — Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup | SC-1 (Category A), SC-2 (Category B), SC-3 (Category C), SC-5 (regression gate) | Complete (Plans 70-01..04 landed: Cat A 10→0, Cat B 1→0, Cat C 1→0 via Pattern 3 Option A button promotion, Cat D onMount wrap on WithPolling.svelte; build + unit tests green; bundled parity gate PASSED 2026-05-10) |
-| BIND-01 | Phase 70 — Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup | SC-4 (comment strip), SC-5 (regression gate) | Complete (Plan 70-05 stripped 26 sites across 24 files; `git grep` returns 0; bundled parity gate PASSED 2026-05-10) |
-| TYPING-01 | Phase 71 — Frontend Strict-Typing Cleanup | SC-1, SC-2, SC-3, SC-4 | Complete (bundled parity gate PASSED 2026-05-10 after vite-cache clear; 660/660 unit tests; svelte-check 155 ERRORS post-cleanup-batch-2) |
-| SHARED-01 | Phase 72 — Package Hygiene Trio | SC-1, SC-4 (regression gate) | Complete |
-| SHARED-02 | Phase 72 — Package Hygiene Trio | SC-2, SC-4 (regression gate) | Complete |
-| LINT-01 | Phase 72 — Package Hygiene Trio | SC-3, SC-4 (regression gate) | Complete (Plan 72-03) |
-
-**Coverage:**
-- v2.8 requirements: 7 total
-- Mapped to phases: 7 ✓
-- Unmapped: 0 ✓
-- Phases used: 4 (Phase 69, 70, 71, 72)
-- Orphaned phases: none (every phase has at least one requirement)
-- Duplicates: none (every requirement maps to exactly one phase)
-
----
-
-*Requirements defined: 2026-05-08*
-*Last updated: 2026-05-08 after roadmap drafted (4 phases 69-72; 7 requirements mapped 1:1)*
+| REQ-ID | Phase | Notes |
+|--------|-------|-------|
+| DETERM-01 | TBD | |
+| DETERM-02 | TBD | |
+| DETERM-03 | TBD | |
+| E2E-01 | TBD | |
+| E2E-02 | TBD | |
+| E2E-03 | TBD | |
+| E2E-04 | TBD | |
+| E2E-05 | TBD | |
+| E2E-06 | TBD | |
+| E2E-07 | TBD | |
+| E2E-08 | TBD | |
+| QSPEC-01 | TBD | |
+| QSPEC-02 | TBD | |
+| A11Y-01 | TBD | |
+| A11Y-02 | TBD | |
+| A11Y-03 | TBD | |
+| SETTINGS-01 | TBD | |
+| SETTINGS-02 | TBD | |
+| SETTINGS-03 | TBD | |
+| CLEAN-01 | TBD | |
+| CLEAN-02 | TBD | |
+| CLEAN-03 | TBD | |
+| CLEAN-04 | TBD | |
