@@ -1,23 +1,28 @@
 ---
 phase: 71-frontend-strict-typing-cleanup
 verified: 2026-05-10T00:55:00Z
-status: human_needed
-score: 4/4 must-haves verified (all 4 ROADMAP success criteria GREEN — Playwright parity manual smoke deferred per VALIDATION.md manual-only convention)
+reconciled: 2026-05-10T18:30:00Z
+status: pass
+score: 4/4 must-haves verified (all 4 ROADMAP success criteria GREEN — Playwright parity manual smoke RECONCILED 2026-05-10 in operator-led smoke run; vite-cache caveat documented)
 overrides_applied: 0
 re_verification:
-  previous_status: none
-  previous_score: 0/0
-  gaps_closed: []
+  previous_status: human_needed
+  previous_score: 4/4
+  gaps_closed: ["v2.7-close Playwright parity baseline (deferred manual smoke)"]
   gaps_remaining: []
   regressions: []
-deferred:
-  - truth: "v2.7-close Playwright parity baseline continues to pass"
-    addressed_in: "manual smoke at operator session (per VALIDATION.md Manual-Only Verifications)"
-    evidence: "VALIDATION.md §Manual-Only Verifications explicitly designates the Playwright parity baseline as a manual smoke ('cannot be reasonably gated in CI for this hygiene phase. Per v2.7-close + Phase 69 P02 convention, parity baseline is a manual smoke'); v2.7-close + Phase 70 used identical defer pattern; recommended bundling with the existing Phase 69 parity-gate follow-up todo at .planning/todos/pending/2026-05-09-phase-69-parity-gate-followup.md"
-human_verification:
-  - test: "v2.7-close Playwright parity baseline (TYPING-01 SC-4 — E2E regression gate)"
-    expected: "yarn dev:reset-with-data; (separate terminal) yarn dev; (third terminal) yarn test:e2e against the 11 v2.7 P67 specs — passes at v2.7-close parity baseline"
-    why_human: "Full E2E run takes ~15-30 min and requires a reset Supabase + dev-server pair; impractical to run during a hygiene-phase verification. Frontend unit suite (658/658 green) covers behavioral regression risk for type-only changes; Playwright parity confirms route behavior end-to-end. Recommend bundling with the existing Phase 69 parity-gate follow-up todo."
+deferred: []
+human_verification: []
+reconciliation_notes: |
+  Operator-led parity smoke run on 2026-05-10 surfaced one initial regression
+  (voter-detail party drawer test timeout) which root-caused to vite-cache
+  staleness — pre-bundled deps in `apps/frontend/node_modules/.vite/` retained
+  pre-Phase-69 source where `entityDetails.tabs.candidates` had not yet been
+  renamed to `entityDetails.tabs.children`. Cache clear via
+  `rm -rf apps/frontend/node_modules/.vite apps/frontend/.svelte-kit` resolved
+  the regression. Final smoke: PARITY GATE PASS.
+  Bundled with Phases 69 + 70 deferred smokes — the single operator session
+  reconciled all three phases.
 ---
 
 # Phase 71: Frontend Strict-Typing Cleanup — Verification Report

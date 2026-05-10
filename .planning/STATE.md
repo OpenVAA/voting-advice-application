@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v2.8
 milestone_name: Alliance Card + Frontend Hygiene Sweep
-status: executing
-stopped_at: "Phase 71 complete (PASS-WITH-DEFERRAL: Playwright manual smoke pending)"
-last_updated: "2026-05-09T21:55:53.829Z"
-last_activity: 2026-05-09 -- Phase 71 execution started
+status: shipped
+stopped_at: "v2.8 shipped 2026-05-10 — bundled Phase 69+70+71 parity gate PASSED; 4 phases, 13 plans, all 7 requirements wired"
+last_updated: "2026-05-10T18:30:00Z"
+last_activity: 2026-05-10 -- v2.8 milestone closed; v2.9 framing pending
 progress:
   total_phases: 4
   completed_phases: 4
@@ -21,23 +21,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-08)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 71 — frontend-strict-typing-cleanup
+**Current focus:** v2.9 framing — E2E coverage workstream (determinism-first)
 
 ## Current Position
 
-Phase: 71 (frontend-strict-typing-cleanup) — EXECUTING
-Plan: 1 of 3
-Status: Executing Phase 71
-Last activity: 2026-05-09 -- Phase 71 execution started
+Milestone: v2.8 — SHIPPED 2026-05-10
+Next milestone: v2.9 — not yet planned (framing pending; see `.planning/notes/2026-05-10-v2.9-e2e-coverage-inventory.md`)
+Last activity: 2026-05-10 -- v2.8 closed; v2.9 inputs captured
 
 ## Performance Metrics
 
 **Cumulative:**
 
-- Milestones shipped: 12 (v1.0, v1.1, v1.2, v1.3, v1.4, v2.0, v2.1, v2.3, v2.4, v2.5, v2.6, v2.7) + 1 paused (v2.2)
-- Total plans completed: 210 + 6 tasks (v2.7 added 9 plans)
-- Timeline: 41 days across 5 work windows (2026-03-01 → 2026-03-28 + v2.5 2026-04-23→24 + v2.6 2026-04-24→28 + v2.7 2026-04-29→05-08)
+- Milestones shipped: 13 (v1.0, v1.1, v1.2, v1.3, v1.4, v2.0, v2.1, v2.3, v2.4, v2.5, v2.6, v2.7, v2.8) + 1 paused (v2.2)
+- Total plans completed: 223 + 6 tasks (v2.8 added 13 plans)
+- Timeline: 43 days across 6 work windows (2026-03-01 → 2026-03-28 + v2.5 2026-04-23→24 + v2.6 2026-04-24→28 + v2.7 2026-04-29→05-08 + v2.8 2026-05-08→10)
 - v2.7 specifically: 4 phases (65-68), 9 plans, 28 tasks across 9 days
+- v2.8 specifically: 4 phases (69-72), 13 plans, ~37 tasks across 3 days (uniformly low risk — 1 small UI feature + 4 hygiene phases)
 
 ## Deferred Items
 
@@ -141,10 +141,15 @@ Key cross-milestone reference points carried forward into v2.8:
 
 ## Session Continuity
 
-Last session: 2026-05-09T21:55:53.825Z
-Stopped at: Phase 71 complete (PASS-WITH-DEFERRAL: Playwright manual smoke pending)
-Resume file: .planning/phases/71-frontend-strict-typing-cleanup/71-VERIFICATION.md
-Next action: Run `/gsd-verify-work 69` to confirm phase verification. Outstanding follow-ups: (a) Playwright parity-gate capture (deferred from Plan 02 Task 6 because user's `yarn dev` was active during smoke; tracked at `.planning/todos/pending/2026-05-09-phase-69-parity-gate-followup.md`), (b) broader imputation-paradigm refactor (v2.9+ candidate; tracked at `.planning/todos/pending/2026-05-09-rewrite-parent-answer-imputation.md`). Then proceed to `/gsd-plan-phase 70`.
+Last session: 2026-05-10T18:30:00Z
+Stopped at: v2.8 milestone shipped — all 4 phases complete, bundled parity gate PASSED, post-71 cleanup batch 2 landed; v2.9 framing inputs captured.
+Resume file: .planning/notes/2026-05-10-v2.9-e2e-coverage-inventory.md (E2E gap list + determinism-first plan)
+Next action: Run `/gsd-new-milestone` to frame v2.9 against the captured inputs. Carry-forward inputs:
+  - Determinism-first strategy: clear `test.skip(true, …)` (todo `2026-04-27-remove-e2e-skip-modifiers.md`) + fix 19 data-loading race failures BEFORE adding new coverage on top.
+  - 14 newly-catalogued E2E gaps + 2 NOT-REAL gaps (see `2026-05-10-v2.9-e2e-coverage-inventory.md`).
+  - 3 v2.8-→v2.9 carry-forward todos (playwright-hygiene-sweep, d04-per-cast-distribution, getroute-setstore-cleanup).
+  - 3 new operator todos captured 2026-05-10 (Luxembourg+Danish VAA changes; voter-not-located redirect; package-script rename `dev:* → db:*`).
+  - Existing v2.9 candidates: `2026-04-27-extend-e2e-filter-type-coverage.md`, `frontend-project-id-scoping.md`, `results-url-refactor-followups.md`.
 
 ### Plan-count estimate (drafted 2026-05-08)
 
@@ -159,8 +164,8 @@ Next action: Run `/gsd-verify-work 69` to confirm phase verification. Outstandin
 
 ## Operator Next Steps
 
-- Run `/gsd-verify-work 69` to confirm phase verification, then proceed to `/gsd-plan-phase 70`.
-- Outstanding Phase 69 follow-ups (do not block Phase 69 close; tracked in `.planning/todos/pending/`):
-  - Playwright parity-gate capture (deferred during Plan 02 Task 6 because `yarn dev` was running for the smoke).
-  - Broader imputation-paradigm refactor (v2.9+ candidate; Phase 69's proxy-children extension is a partial step).
+- v2.8 is shipped (2026-05-10). Audit at `.planning/milestones/v2.8-MILESTONE-AUDIT.md`.
+- Run `/gsd-new-milestone` to frame v2.9. The captured inputs (E2E coverage inventory, determinism-first strategy, 3 operator todos, 3 carry-forward todos from v2.8) live at:
+  - `.planning/notes/2026-05-10-v2.9-e2e-coverage-inventory.md` — E2E gap list + REAL/NOT-REAL classification
+  - `.planning/todos/pending/2026-05-10-*.md` — 6 new pending entries (3 carry-forward + 3 operator)
 - Reminder: Commits in this repo must use `git -c core.hooksPath=/dev/null` until global config is fixed (`project_gsd_repo_hook_workaround.md`).

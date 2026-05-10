@@ -5,7 +5,8 @@
 - ✅ **v2.5 Dev Data Seeding Toolkit** — Phases 56-59 (shipped 2026-04-24)
 - ✅ **v2.6 Svelte 5 Migration Cleanup** — Phases 60-64 (shipped 2026-04-28)
 - ✅ **v2.7 Svelte 5 Polish + Supabase-Adapter Loose Ends** — Phases 65-68 (shipped 2026-05-08)
-- 🚧 **v2.8 Alliance Card + Frontend Hygiene Sweep** — Phases 69-72 (started 2026-05-08)
+- ✅ **v2.8 Alliance Card + Frontend Hygiene Sweep** — Phases 69-72 (shipped 2026-05-10)
+- 🆕 **v2.9** — Not yet planned (E2E coverage workstream + determinism-first; framing inputs at `.planning/notes/2026-05-10-v2.9-e2e-coverage-inventory.md`)
 
 See `.planning/MILESTONES.md` for cumulative history and `.planning/milestones/` for archived roadmaps + requirements.
 
@@ -49,14 +50,16 @@ Audit: `.planning/milestones/v2.7-MILESTONE-AUDIT.md` (status: tech_debt — 8/8
 
 </details>
 
-### 🚧 v2.8 Alliance Card + Frontend Hygiene Sweep (In Progress)
+### ✅ v2.8 Alliance Card + Frontend Hygiene Sweep — SHIPPED 2026-05-10
 
 **Milestone Goal:** Close v2.7's deferred Svelte 5 / typing / lint / packaging loose ends and finish the alliance card render path, in one cohesive frontend hygiene + small-UI-feature milestone. The 7 requirements split as 1 small user-facing UI feature (alliance card Lane A — reconciles v2.7 SEED-01 SC-2 PASS-WITH-CONCERNS) plus 6 frontend / package hygiene items that pay interest forward into v2.9 (E2E coverage) and v3.x (multi-tenant). All work is frontend / package-level — no Supabase migrations, no E2E coverage expansion (E2E is the v2.9 anchor).
 
 - [x] **Phase 69: Alliance Card Lane A** — Voter results "Alliances" tab renders a working entity card per alliance (name + member organizations + summary), with the EntityCard subentities branch extended to handle `AllianceNomination → OrganizationNomination` and the drawer-open path working end-to-end on the v2.7 SEED-01 default seed (completed 2026-05-09)
 - [x] **Phase 70: Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup** — All three categories of dev/build warnings surfaced during v2.7 Phase 67 UAT (`state_referenced_locally`, missing `<slot />` / `{@render children()}`, a11y) resolved or accepted with inline justification, and the 92 inline `// bind: keep —` rationale comments from v2.7 Phase 65 Plan 01 are removed (rationale is permanently captured in CLAUDE.md) (completed 2026-05-09)
-- [x] **Phase 71: Frontend Strict-Typing Cleanup** — The 95 pre-existing `apps/frontend/` ESLint errors deferred under v2.7 Phase 68 Option C are resolved (67 `no-explicit-any`, 13 `naming-convention` (type-parameter renames), 11 `func-style`, 4 long-tail); frontend matches the rest of the monorepo's lint-clean baseline (completed 2026-05-10; PASS-WITH-DEFERRAL: Playwright parity manual smoke deferred per VALIDATION manual-only convention)
+- [x] **Phase 71: Frontend Strict-Typing Cleanup** — The 95 pre-existing `apps/frontend/` ESLint errors deferred under v2.7 Phase 68 Option C are resolved (67 `no-explicit-any`, 13 `naming-convention` (type-parameter renames), 11 `func-style`, 4 long-tail); frontend matches the rest of the monorepo's lint-clean baseline (completed 2026-05-10; bundled parity gate PASSED 2026-05-10 after vite-cache clear)
 - [x] **Phase 72: Package Hygiene Trio** — `@openvaa/app-shared` paradigm normalised against `@openvaa/core` / `data` / `matching` / `filters`; the `apps/frontend/src/lib/utils/merge.ts` re-export shim retired in favour of direct `@openvaa/app-shared` imports; `@openvaa/supabase` lint-script disambiguated (SQL vs ESLint pipelines) (completed 2026-05-09)
+
+Audit: `.planning/milestones/v2.8-MILESTONE-AUDIT.md`
 
 ## Phase Details
 
