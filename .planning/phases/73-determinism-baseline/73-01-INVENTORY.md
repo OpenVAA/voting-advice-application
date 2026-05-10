@@ -6,6 +6,132 @@
 **Lint probe:** post-fix/lint-baseline.txt
 **Capture commits:** 5e81276cc (runs) + 59400e50e (lint)
 
+> **READER NOTICE:** the original Plan-01 capture below is now SUPERSEDED by the Post-Hotfix Re-Capture section that follows. Plan 02 Task 0 landed the data.setup hotfix (`c208ba7c7`); Plan 02 Task 0.5 re-captured 3 cold-start `--workers=1` runs against the post-hotfix HEAD. The runtime-evidence classification below replaces the structural-inference classification of the original 36-test pool table. Plans 03/04/05 MUST consume the **Post-Hotfix Re-Capture** section, not the original §"36-Test Race Pool" table.
+
+---
+
+## Post-Hotfix Re-Capture (2026-05-10)
+
+**Captured:** 2026-05-10 (post Plan-02 Task 0)
+**HEAD:** c208ba7c7 (`fix(73-02): repair data-setup TypeError by removing async from query()`)
+**Source runs:** post-fix/inventory-run-{1,2,3}-report.json (overwrites Plan-01's broken-baseline captures)
+**Hotfix commit:** c208ba7c7 (Task 0 — 3 LOC across 2 files; within CONTEXT D-05 cap)
+
+### Run statistics (3 cold-start --workers=1, identical pass/fail set)
+
+| Run | Expected | Unexpected | Skipped | Flaky | Duration |
+|-----|----------|------------|---------|-------|----------|
+| 1   | 30       | 21         | 51      | 0     | 944.6s   |
+| 2   | 30       | 21         | 51      | 0     | 954.5s   |
+| 3   | 30       | 21         | 51      | 0     | 936.9s   |
+
+**0 flaky across 3 runs** — the suite is deterministic at this HEAD; the 21 unexpected and 51 skipped sets are stable across runs (every test that fails fails in all 3; every test that's-skipped is-skipped in all 3). This means we can classify each test by runtime evidence with confidence.
+
+**Status decomposition** (Run 1, identical for 2 and 3):
+- 30 `passed` (expected pass)
+- 20 `failed` (real failures or product/race issues — see below)
+- 1 `timedOut` (`candidate-app-mutation > should upload a profile image (CAND-03)` — root cascade source for all downstream `didNotRun`)
+- 36 `didNotRun` (Playwright counts 27 of these as "skipped" in stats; cascade-skipped by upstream project failures — primarily the row-4 timeout)
+- 15 `skipped` (explicit `test.fixme()` / conditional skip in spec source)
+
+Sum: 30 + 20 + 1 + 36 + 15 = 102. Stats reports `expected=30 / unexpected=21 / skipped=51 / flaky=0` because Playwright counts the 1 timedOut + 20 failed = 21 unexpected, and the 36 cascade-skips + 15 explicit skips = 51 skipped.
+
+### Binding Contract (replaces structural inference)
+
+The structural-inference 36-test classification in §"36-Test Race Pool" below (rows where status was set to `cascade` because nothing actually ran) is now **SUPERSEDED** by runtime evidence from these 3 runs. Reclassification rules:
+
+- Tests **PASSING in all 3 runs** → reclassify `passes-now` (remove from race pool).
+- Tests **FAILING (failed/timedOut) in all 3 runs** → `consistent-fail` (real product bug, real race, or imgproxy-tied infrastructure flake — see CONTEXT D-02).
+- Tests **`didNotRun` in all 3 runs** → `cascade-skip` (downstream of an upstream project failure — fixing the upstream test unblocks all downstreams together).
+- Tests **explicitly `skipped` in all 3 runs** → `skipped (explicit)` — these are gated by `test.fixme()` or condition-based skip in spec source; out of Phase 73 scope unless the gate itself is the bug.
+- Tests **MIXED across runs** → `flake (race-tolerant)` → use `expect.poll`. **None observed in this capture.**
+
+### Cascade Source Analysis
+
+A single upstream test causes the bulk of the 36 `didNotRun`s:
+
+- **`candidate-app-mutation :: candidate-profile.spec.ts > should upload a profile image (CAND-03)`** times out at 90s in all 3 runs. Its project (`candidate-app-mutation`) is a project dependency for `re-auth-setup → candidate-app-settings → candidate-app-password → data-setup-multi-election → variant-multi-election → variant-results-sections → data-setup-constituency → variant-constituency → data-setup-startfromcg → variant-startfromcg`.
+- That single timeout cascade-skips ~27 downstream tests across 8 projects. Per CONTEXT D-02 this is canonically imgproxy-tied infrastructure (the candidate-profile upload triggers an imgproxy roundtrip that 502s when the imgproxy container is stopped). `yarn dev:status` confirms `supabase_imgproxy_openvaa-local` is stopped at this capture; running `supabase stop && supabase start` for Plan 06's gate run should green this and unblock the cascade.
+- **`voter-app-settings :: voter-settings.spec.ts > should show category checkboxes when allowCategorySelection enabled`** also fails consistently. It's a 1-test project; doesn't cascade to others.
+- **`voter-app` cluster (15 tests)** all fail with the same root cause: `answeredVoterPage` fixture timeout at `voter.fixture.ts:85` — `page.waitForURL(/\/results/, { timeout: 30000 })` exhausts. This is a real data-loading race that Plan 03 owns (per CONTEXT D-04 cluster ownership; 15 voter-app tests + 1 voter-app-settings test).
+
+### 36-Test Pool — Runtime-Evidence Classification
+
+| # | Test ID (project :: spec > title) | Pool | R1 | R2 | R3 | Runtime Class | Recommended Fix Shape | Assigned Plan |
+|---|-----------------------------------|------|----|----|----|---------------|-----------------------|---------------|
+| 1 | auth-setup :: setup/re-auth.setup.ts > re-authenticate as candidate | DATA_RACE | passed | passed | passed | **passes-now** | NONE — remove from post-73 race pool | 06 (verification doc — note as cleared) |
+| 2 | candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should persist profile image after page reload (CAND-12) | DATA_RACE | skipped | skipped | skipped | **skipped (explicit)** | NONE — gated by `test.fixme()` or env-conditional in spec source | 04 (verify gate is intentional) |
+| 3 | candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should show editable info fields on profile page (CAND-03) | DATA_RACE | skipped | skipped | skipped | **skipped (explicit)** | NONE — gated in spec source | 04 (verify gate is intentional) |
+| 4 | candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should upload a profile image (CAND-03) | DATA_RACE | timedOut | timedOut | timedOut | **consistent-fail (imgproxy)** | DEFER per CONTEXT D-02 — `supabase stop && supabase start` recipe; document in 73-VERIFICATION.md | 06 (verification doc) |
+| 5 | candidate-app-password :: specs/candidate/candidate-password.spec.ts > should change password and login with new password | DATA_RACE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks (imgproxy fix); test-level `waitForURL` if it fails post-unblock | 04 |
+| 6 | candidate-app-password :: specs/candidate/candidate-password.spec.ts > should logout and return to login page | DATA_RACE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks; test-level `waitForURL(/login/)` if it fails post-unblock | 04 |
+| 7 | candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should display notification popup when enabled | DATA_RACE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks; test-level `expect.poll` against popup locator if it fails post-unblock | 04 |
+| 8 | candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should hide hero when hideHero is enabled | DATA_RACE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks; test-level `waitFor` against hero locator if it fails post-unblock | 04 |
+| 9 | candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should render help page correctly | DATA_RACE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks; test-level `waitFor` on h1 if it fails post-unblock | 04 |
+| 10 | candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should render privacy page correctly | DATA_RACE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks; test-level `waitFor` on h1 if it fails post-unblock | 04 |
+| 11 | candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should show hero when hideHero is disabled | DATA_RACE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks; test-level `waitFor` against hero locator if it fails post-unblock | 04 |
+| 12 | candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should show maintenance page when candidateApp is disabled | DATA_RACE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks; test-level `waitFor` on maintenance banner if it fails post-unblock | 04 |
+| 13 | candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should show maintenance page when underMaintenance is true | DATA_RACE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks; test-level `waitFor` on maintenance banner if it fails post-unblock | 04 |
+| 14 | candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should show read-only warning when answers are locked | DATA_RACE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks; test-level `expect.poll` against warning visibility if it fails post-unblock | 04 |
+| 15 | re-auth-setup :: setup/re-auth.setup.ts > re-authenticate as candidate | DATA_RACE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks (re-auth-setup depends on candidate-app-mutation completing) | 05 / 06 |
+| 16 | data-setup-constituency :: setup/variant-constituency.setup.ts > import constituency dataset | CASCADE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks (transitive dependency through variant chain) | 05 |
+| 17 | data-setup-multi-election :: setup/variant-multi-election.setup.ts > import multi-election dataset | CASCADE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks | 05 |
+| 18 | data-setup-startfromcg :: setup/variant-startfromcg.setup.ts > import startfromcg dataset | CASCADE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks | 05 |
+| 19 | variant-constituency :: specs/variants/constituency.spec.ts > should allow constituency selection and proceed to questions | CASCADE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks; per-test fix only if it then surfaces a real race | 05 |
+| 20 | variant-constituency :: specs/variants/constituency.spec.ts > should answer questions and reach results | CASCADE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks | 05 |
+| 21 | variant-constituency :: specs/variants/constituency.spec.ts > should display constituency-filtered results | CASCADE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks | 05 |
+| 22 | variant-constituency :: specs/variants/constituency.spec.ts > should show constituency selection page after election selection | CASCADE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks | 05 |
+| 23 | variant-constituency :: specs/variants/constituency.spec.ts > should show election accordion in multi-election results | CASCADE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks | 05 |
+| 24 | variant-constituency :: specs/variants/constituency.spec.ts > should show missing nominations warning for partial-coverage constituency | CASCADE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks | 05 |
+| 25 | variant-multi-election :: specs/variants/multi-election.spec.ts > should bypass election selection when disallowSelection is true | CASCADE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks | 05 |
+| 26 | variant-multi-election :: specs/variants/multi-election.spec.ts > should display election-specific questions | CASCADE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks | 05 |
+| 27 | variant-multi-election :: specs/variants/multi-election.spec.ts > should display questions and reach results | CASCADE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks | 05 |
+| 28 | variant-multi-election :: specs/variants/multi-election.spec.ts > should show election accordion and results after selecting election | CASCADE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks | 05 |
+| 29 | variant-multi-election :: specs/variants/multi-election.spec.ts > should show election selection page with 2 elections | CASCADE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks | 05 |
+| 30 | variant-results-sections :: specs/variants/results-sections.spec.ts > should show both sections with tabs when sections is ["candidate", "organization"] | CASCADE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks | 05 |
+| 31 | variant-results-sections :: specs/variants/results-sections.spec.ts > should show only candidates when sections is ["candidate"] | CASCADE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks | 05 |
+| 32 | variant-results-sections :: specs/variants/results-sections.spec.ts > should show only organizations when sections is ["organization"] | CASCADE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks | 05 |
+| 33 | variant-startfromcg :: specs/variants/startfromcg.spec.ts > should complete journey through questions to results | CASCADE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks | 05 |
+| 34 | variant-startfromcg :: specs/variants/startfromcg.spec.ts > should handle orphan municipality without error | CASCADE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks | 05 |
+| 35 | variant-startfromcg :: specs/variants/startfromcg.spec.ts > should show constituency selection first (reversed flow) | CASCADE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks | 05 |
+| 36 | variant-startfromcg :: specs/variants/startfromcg.spec.ts > should show election selection after constituency selection | CASCADE | didNotRun | didNotRun | didNotRun | **cascade-skip (upstream-fail)** | will green when row 4 unblocks | 05 |
+
+### New Failures Surfaced (NOT in original 36-pool — runtime-evidence additions)
+
+The post-hotfix runs surfaced 16 voter-app failures that the original Plan-01 cascade hid. These are NOT in the binding 36-test pool (which is locked from P64 per CONTEXT D-01) but they ARE real test failures Plans 03 must address:
+
+| # | Test ID | R1 | R2 | R3 | Runtime Class | Notes |
+|---|---------|----|----|----|---------------|-------|
+| N1 | voter-app-settings :: voter-settings.spec.ts > should show category checkboxes when allowCategorySelection enabled | failed | failed | failed | consistent-fail (race) | Plan 03 owns voter-settings cluster |
+| N2-N6 | voter-app :: voter-detail.spec.ts > 4 tests | failed × 3 | failed × 3 | failed × 3 | consistent-fail (race) | All fail at `voter.fixture.ts:85` — `answeredVoterPage` fixture timeout reaching `/results`. Plan 03 owns voter-detail cluster |
+| N7 | voter-app :: voter-journey.spec.ts > should show questions intro page with start button | failed | failed | failed | consistent-fail (race) | Plan 03 owns voter-journey |
+| N8 | voter-app :: voter-matching.spec.ts > should display candidates in correct match ranking order | failed | failed | failed | consistent-fail (race) | Plan 03 owns voter-matching |
+| N9-N16 | voter-app :: voter-results.spec.ts > 12 tests | failed × 12 | failed × 12 | failed × 12 | consistent-fail (race) | All fail at `voter.fixture.ts:85`. Plan 03 owns voter-results cluster |
+
+The 16 voter-app failures all share the same root cause: **`answeredVoterPage` fixture cannot reach `/results` within 30s timeout**. This is a real data-loading race in voter flow that Plan 03 must investigate at the spec/fixture level. The fixture-level issue may be addressed by upstream voter-fixture changes rather than per-spec fixes (Rule 4 escalation territory if it requires > 50 LOC). Plan 03's executor should check the fixture root cause first.
+
+## Plan Ownership Updates (post-hotfix)
+
+The runtime evidence above does NOT move tests between Plans 03/04/05 — the original CONTEXT D-04 cluster boundaries hold:
+
+- **Plan 03 (voter cluster)** still owns voter-settings + voter-detail + voter-results + voter-journey + voter-matching (16 new failures surfaced; **scope expanded** from "lint hygiene only" to "lint + 16 race fixes — fixture-level if shared root cause confirmed"). Plan 03's executor is bound to investigate the `answeredVoterPage` fixture as a unified root cause before per-test fixes (it owns the voter cluster regardless).
+- **Plan 04 (candidate cluster)** still owns rows 5-14 (10 cascade-skip tests in candidate-password + candidate-settings — **all should green when row 4 unblocks**, so Plan 04's actual investigative scope drops to just bank-auth + candidate-auth + candidate-questions + 1 candidate-profile (CAND-03 upload race). Significant scope reduction vs original D-04 estimate.
+- **Plan 05 (variants + setups)** still owns rows 15-36 (22 cascade-skip tests — **all should green when row 4 unblocks** + the data.setup hotfix already shipped). Plan 05's actual investigative scope drops to just lint hygiene on setup files (no race fixes needed unless variants surface NEW races post-unblock).
+- **Plan 06 (verification + DEFER)** still owns row 4 (canonical imgproxy timeout) + 73-VERIFICATION.md per CONTEXT D-02. **Row 1 (auth-setup re-auth)** now reclassifies `passes-now` and is DOCUMENTED as cleared in 73-VERIFICATION.md (Plan 06 task) rather than left as DATA_RACE.
+
+### Net effect on Plan 03/04/05/06 scope
+
+Total Phase 73 race-fix scope **decreases** post-hotfix vs Plan-01's structural-inference projection:
+
+| Plan | Plan-01 estimate | Post-hotfix actual |
+|------|------------------|--------------------|
+| 03   | 0 race-fix tests + lint hygiene only | 16 race-fix tests (likely 1 fixture-level fix unblocks all 16) + lint hygiene |
+| 04   | 10 race-fix tests + bank-auth + auth lint hygiene | ~3 race-fix tests (CAND-03 upload only) + bank-auth + auth lint hygiene |
+| 05   | 22 race-fix tests + setup lint hygiene | ~0 race-fix tests (all should green post-row-4 unblock) + setup lint hygiene |
+| 06   | 4 imgproxy DEFER + parity-gate regen | 1 imgproxy DEFER (row 4) + parity-gate regen + clear row 1 from pool |
+
+**Key reframing:** the original "21 data-loading race E2E failures" carried forward from PROJECT.md (DETERM-02) is much more accurately characterized post-hotfix as "1 imgproxy timeout (row 4) cascading to 27 downstream tests + 16 voter-fixture races (likely 1 root cause)". The race investigation scope of Phases 03-05 is therefore **significantly smaller** than Plan-01 estimated (because most of the 36-pool's "races" are downstream of a single imgproxy timeout, not 22 distinct races).
+
 ---
 
 ## Executive Finding (operator gate)
