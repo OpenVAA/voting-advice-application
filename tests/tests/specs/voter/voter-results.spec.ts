@@ -198,13 +198,19 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
       .getByRole('button', { name: /close filters/i })
       .click();
 
-    // Wait for the filter to propagate
-    await page.waitForTimeout(500);
+    // Poll until the filter has propagated and the visible-card count narrows
+    // (or holds equal). Replaces the prior `page.waitForTimeout(500)` —
+    // RESEARCH §"Example 3" / DETERM-03 no-wait-for-timeout. expect.poll
+    // preserves the original contract (filteredCount ≤ initialCount) with
+    // race-tolerant settle-headroom.
+    await expect
+      .poll(() => page.getByTestId(testIds.voter.results.card).count(), {
+        timeout: 5000,
+        message: 'Filtered card count must narrow after applying filter (RESULTS-01/02)'
+      })
+      .toBeLessThanOrEqual(initialCount);
 
-    // List should now be narrower OR the banner "showingNumResults" text
-    // should be present. Assert no infinite-loop console warnings were emitted.
-    const filteredCount = await page.getByTestId(testIds.voter.results.card).count();
-    expect(filteredCount).toBeLessThanOrEqual(initialCount);
+    // Assert no infinite-loop console warnings were emitted.
     expect(consoleErrors.filter((e) => e.includes('effect_update_depth_exceeded'))).toEqual([]);
   });
 
