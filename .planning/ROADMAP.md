@@ -163,7 +163,13 @@ Phase 78 (CLEAN)  ← independent of 73-77; may run in parallel with 74-77
   3. **Playwright lint warnings resolved.** All 98 pre-existing `playwright/*` ESLint warnings in `tests/` are cleared per the breakdown in `.planning/todos/pending/2026-05-10-tests-playwright-hygiene-sweep.md`: `playwright/no-conditional-in-test` (`if (...)` branches inside test bodies replaced with explicit assertions or split into separate tests), `playwright/no-raw-locators` (`page.locator('...')` rewritten to semantic locators `getByRole` / `getByText` / `getByTestId`), `playwright/no-networkidle` (`waitForLoadState('networkidle')` replaced with `waitFor` against the asserted element). After the sweep: `yarn lint:check` at the root exits 0 with 0 warnings across all workspaces (frontend baseline 0/0; tests/ contributes 0/0). The conditional / `networkidle` rewrites are paired with DETERM-02 — the same patterns drive both the warnings and the flakiness.
   4. **Determinism gate.** A single fresh `yarn dev:reset-with-data && yarn test:e2e` cold-start run (followed by 2 re-runs without resetting) produces identical pass/fail sets across all three runs; the gate is recorded in the phase verification report so subsequent phases inherit the baseline.
   5. **No new gaps introduced.** `yarn build`, `yarn test:unit`, root `yarn lint:check`, and workspace `svelte-check` remain at or below their v2.8-close baselines (frontend lint 0 errors / 0 warnings target; svelte-check ≤ 159 errors). No new `test.skip(true, …)`, no new `if (...)` branches in test bodies, no new `networkidle` waits introduced by the sweep itself.
-**Plans**: TBD (estimate ~4-6 plans — likely 1 plan per skip-modifier classification batch + 2-3 plans per failure-type cluster across the 19 races + 1 plan for the lint warning sweep + 1 verification/parity plan; ranges depend on how many of the 19 races cluster into a shared root cause)
+**Plans**: 6 plans
+- [ ] 73-01-PLAN.md — Inventory: 3 cold --workers=1 runs + classify 36-test race pool by failure type + lint-baseline re-baselining (CONTEXT D-03) [Wave 1]
+- [ ] 73-02-PLAN.md — Mechanical sweep: no-networkidle (6) + no-raw-locators (37) — semantic locators via testIds registry; zero behavioral risk [Wave 2, depends on 01]
+- [ ] 73-03-PLAN.md — Voter-specs cluster: voter-settings/voter-popup-hydration/voter-journey conditional rewrites + voter-results no-wait-for-timeout (paired DETERM-02 + DETERM-03) [Wave 3, depends on 01,02]
+- [ ] 73-04-PLAN.md — Candidate-specs cluster + bank-auth D-07: 17 bank-auth warnings (12 cond-expect + 4 cond + 1 D-07-justified skip) + candidate-profile/settings/questions/auth (operator-review checkpoint on // reason: text quality) [Wave 4, depends on 01-03, has checkpoint]
+- [ ] 73-05-PLAN.md — Variants + setup hooks cluster: variant specs + auth.setup.ts auth-cookie race + data.setup idempotence + DETERM-01 cross-check [Wave 5, depends on 01-04]
+- [ ] 73-06-PLAN.md — Parity-gate regen + 3-run determinism gate + lint-gate bump 'warn'→'error' + 73-VERIFICATION.md (operator-review checkpoint on per-test DATA_RACE pool rationale) [Wave 6, depends on 01-05, has checkpoint]
 
 ### Phase 74: High-Leverage E2E Coverage
 **Goal**: After this phase, Playwright covers eight high-leverage user-flow gaps that v2.8 explicitly deferred to v2.9: a multilocale candidate using the translation surface (and a single-locale candidate not seeing it); a voter who is located but under `minimumAnswers` browsing the entity list without match scores; feedback-dialog text persistence across dismiss + reset on send; the full election + constituency selector matrix (1e×1c / 1e×Nc / Ne×1c / Ne×Nc + startFromConstituency); the voter's answer rendering alongside the entity's answer in the entity-detail drawer for all four (answered / missing) cases; skip / delete / back navigation with predictable result-CTA availability; per-category SubMatch breakdown on voter-detail; and locale switching (route-prefixed + locale-switcher widget). Each gap maps to a focused spec or a parameterized matrix-driven spec.
@@ -262,7 +268,7 @@ After v2.9 ships, run `/gsd-new-milestone` to frame the next milestone. v2.10 ca
 | 70. Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup | v2.8 | 5/5 | Complete | 2026-05-09 |
 | 71. Frontend Strict-Typing Cleanup | v2.8 | 3/3 | Complete | 2026-05-09 |
 | 72. Package Hygiene Trio | v2.8 | 3/3 | Complete | 2026-05-09 |
-| 73. Determinism Baseline | v2.9 | 0/TBD | Not started | — |
+| 73. Determinism Baseline | v2.9 | 0/6 | Planning | — |
 | 74. High-Leverage E2E Coverage | v2.9 | 0/TBD | Not started | — |
 | 75. Question-Rendering Specs | v2.9 | 0/TBD | Not started | — |
 | 76. Profile + A11y | v2.9 | 0/TBD | Not started | — |
