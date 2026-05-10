@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.9
 milestone_name: E2E Coverage + Suite Determinism
 status: planning
-last_updated: "2026-05-10T18:45:00.000Z"
-last_activity: 2026-05-10
+stopped_at: Phase 73 context gathered
+last_updated: "2026-05-10T16:56:33.489Z"
+last_activity: "2026-05-10 — v2.9 ROADMAP.md drafted; 23 requirements mapped 1:1 across 6 phases (73-78); REQUIREMENTS.md Traceability filled"
 progress:
-  total_phases: 6
+  total_phases: 10
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
-  percent: 0
 ---
 
 # Project State
@@ -120,9 +120,9 @@ Key cross-milestone reference points carried forward into v2.9:
 
 ## Session Continuity
 
-Last session: 2026-05-10T18:45:00Z
-Stopped at: v2.9 roadmap drafted — 6 phases (73-78), 23 requirements mapped 1:1, REQUIREMENTS.md Traceability filled, ROADMAP.md updated with Phase Details + Progress table rows for the new phases.
-Resume file: .planning/ROADMAP.md (Phase 73 Determinism Baseline section)
+Last session: 2026-05-10T16:56:33.479Z
+Stopped at: Phase 73 context gathered
+Resume file: .planning/phases/73-determinism-baseline/73-CONTEXT.md
 Next action: Run `/gsd-plan-phase 73` to start planning the determinism baseline. Phase 73 is gating for Phases 74-77 — plan it first; Phase 78 (CLEAN) may be planned in parallel since it's independent of Phase 73.
 
 ### Plan-count estimate (drafted 2026-05-10)
