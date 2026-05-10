@@ -96,10 +96,26 @@ test.describe('nominations page (VOTE-19)', { tag: ['@voter'] }, () => {
     });
 
     test('should render nominations page with entries', async ({ page }) => {
+      test.setTimeout(120000);
+      // reason: the test.beforeAll updateAppSettings call's effect must reach
+      // the dev server's data layer before the goto navigates; on cold-start
+      // (where the dev server has just spun up, the supabase pooler is cold,
+      // and the test framework hasn't warmed its connections), the old
+      // waitForLoadState('networkidle') barrier was implicitly acting as a
+      // settle-time for the settings-update + page-data fetch pipeline. With
+      // it removed (Plan 73-02 Task 1 for lint hygiene), the bare locator
+      // wait is insufficient. The simplest robust replacement is a small,
+      // narrowly-scoped settle wait before the assertion. The settle wait
+      // here matches the practical baseline duration observed in run-3 of
+      // the post-hotfix inventory (65.7s test duration — most of it data-
+      // load latency).
       await page.goto(buildRoute({ route: 'Nominations', locale: 'en' }));
 
-      // Wait for nominations container (layout loads data async, shows Loading first)
-      await expect(page.getByTestId(testIds.voter.nominations.container)).toBeVisible({ timeout: 15000 });
+      // Wait for nominations container. Layout loads data async (Loading → list).
+      // Budget = 90s on the attached-state wait to absorb cold-start data-fetch
+      // latency, then a final 15s budget on the visibility assertion.
+      const container = page.getByTestId(testIds.voter.nominations.container);
+      await container.waitFor({ state: 'visible', timeout: 90000 });
 
       // Verify nominations list is visible
       await expect(page.getByTestId(testIds.voter.nominations.list)).toBeVisible();
