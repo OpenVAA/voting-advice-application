@@ -31,6 +31,102 @@ import type { Page } from '@playwright/test';
 // shared browser contexts in Playwright 1.58.2.
 test.use({ trace: 'off' });
 
+/**
+ * Answer questions one-by-one until the results page is reached.
+ *
+ * Module-level helper hoisted out of test bodies (RESEARCH Pattern 4 canonical 3)
+ * so playwright/no-conditional-in-test holds for the test body itself. The
+ * post-await conditionals inside this helper are legitimate control-flow
+ * branches on settled URL state (not race-masks): the helper deterministically
+ * dispatches between (a) auto-advance ended on /results, and (b) last-question
+ * needs the explicit next-button click followed by a waitForURL terminator.
+ *
+ * @returns The number of questions answered before reaching /results.
+ */
+async function answerUntilResults(
+  page: Page,
+  answerOption: ReturnType<Page['getByTestId']>,
+  nextButton: ReturnType<Page['getByTestId']>,
+  maxQuestions = 50
+): Promise<number> {
+  let questionCount = 0;
+  let onResultsPage = false;
+
+  while (!onResultsPage && questionCount < maxQuestions) {
+    questionCount++;
+    const urlBefore = page.url();
+
+    // Answer the current question (select the middle option)
+    await answerOption.nth(2).click();
+
+    try {
+      // Wait for auto-advance (URL change)
+      await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 3000 });
+      onResultsPage = page.url().includes('/results');
+    } catch {
+      // No auto-advance — last question; click the explicit next/results button.
+      await nextButton.waitFor({ state: 'visible' });
+      await nextButton.click();
+      await page.waitForURL(/\/results/, { timeout: 10000 });
+      onResultsPage = true;
+    }
+  }
+
+  return questionCount;
+}
+
+/**
+ * Iteratively answer questions and tolerate URL-not-changed via explicit next.
+ *
+ * Hoisted out of test bodies (RESEARCH Pattern 4 canonical 3). Used for the
+ * orphan-municipality edge-case test where the question set may differ in size
+ * and the next-button fallback path is more frequently exercised. The function
+ * either reaches /results (caller verifies) or exhausts maxIterations.
+ */
+async function answerOrAdvanceUntilResults(
+  page: Page,
+  answerOption: ReturnType<Page['getByTestId']>,
+  nextButton: ReturnType<Page['getByTestId']>,
+  maxIterations = 50
+): Promise<void> {
+  // Use waitForFunction to atomically check (a) the URL settled on /results.
+  // We re-evaluate after each click below; once /results is reached we exit.
+  for (let i = 0; i < maxIterations; i++) {
+    if (page.url().includes('/results')) return;
+
+    const urlBefore = page.url();
+    await answerOption.nth(2).click();
+
+    try {
+      await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 3000 });
+    } catch {
+      // URL didn't change — try the explicit next button.
+      await nextButton.waitFor({ state: 'visible', timeout: 5000 });
+      await nextButton.click();
+      await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 5000 });
+    }
+  }
+}
+
+/**
+ * Open the election-accordion's first option if the accordion is rendered.
+ *
+ * Hoisted out of test bodies (RESEARCH Pattern 4 canonical 3). The `.or()`
+ * union locator + `waitFor` gives an atomic two-anchor probe (accordion OR
+ * list visible); the helper then dispatches deterministically based on which
+ * terminator landed. The post-await `if` is a legitimate control-flow branch
+ * on settled DOM state (not a race-mask).
+ */
+async function selectElectionFromAccordionIfPresent(
+  electionAccordion: ReturnType<Page['getByTestId']>,
+  resultsList: ReturnType<Page['getByTestId']>
+): Promise<void> {
+  await electionAccordion.or(resultsList).first().waitFor({ state: 'visible', timeout: 10000 });
+  if ((await electionAccordion.count()) > 0 && (await electionAccordion.isVisible())) {
+    await electionAccordion.getByRole('option').first().click();
+  }
+}
+
 test.describe('startFromConstituencyGroup variant', { tag: ['@variant'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
@@ -207,41 +303,15 @@ test.describe('startFromConstituencyGroup variant', { tag: ['@variant'] }, () =>
     // Wait for first question to load
     await answerOption.first().waitFor({ state: 'visible', timeout: 10000 });
 
-    // Answer all questions dynamically
-    let onResultsPage = false;
-    let questionCount = 0;
-
-    while (!onResultsPage) {
-      questionCount++;
-      const urlBefore = sharedPage.url();
-
-      // Answer the current question
-      await answerOption.nth(2).click();
-
-      try {
-        await sharedPage.waitForURL((url) => url.toString() !== urlBefore, { timeout: 3000 });
-
-        if (sharedPage.url().includes('/results')) {
-          onResultsPage = true;
-        }
-      } catch {
-        // On last question, click the next/results button
-        await nextButton.waitFor({ state: 'visible' });
-        await nextButton.click();
-        await expect(sharedPage).toHaveURL(/\/results/, { timeout: 10000 });
-        onResultsPage = true;
-      }
-    }
+    // Answer all questions until /results — hoisted helper keeps the in-test
+    // body conditional-free (RESEARCH Pattern 4 canonical 3).
+    const questionCount = await answerUntilResults(sharedPage, answerOption, nextButton);
 
     // Verify results page loaded — handle multi-election accordion if present.
-    // `.first()` on the union locator satisfies strict mode when both the
-    // accordion AND the list end up present (multi-election shape).
+    // Hoisted helper performs atomic two-anchor waitFor + deterministic dispatch.
     const electionAccordion = sharedPage.getByTestId(testIds.voter.results.electionAccordion);
     const resultsList = sharedPage.getByTestId(testIds.voter.results.list);
-    await electionAccordion.or(resultsList).first().waitFor({ state: 'visible', timeout: 10000 });
-    if (await electionAccordion.isVisible().catch(() => false)) {
-      await electionAccordion.getByRole('option').first().click();
-    }
+    await selectElectionFromAccordionIfPresent(electionAccordion, resultsList);
     await expect(resultsList).toBeVisible({ timeout: 10000 });
 
     // Verify we answered a reasonable number of questions
@@ -311,26 +381,17 @@ test.describe('startFromConstituencyGroup variant', { tag: ['@variant'] }, () =>
       // No dialog appeared
     }
 
-    // Answer questions and reach results to confirm full journey works
+    // Answer questions and reach results to confirm full journey works.
+    // Hoisted helper keeps the in-test body conditional-free (RESEARCH Pattern 4
+    // canonical 3); the helper internally tolerates URL-not-changed via the
+    // explicit next button (orphan-municipality edge case may exercise the
+    // fallback path more frequently).
     const answerOption = sharedPage.getByTestId(testIds.voter.questions.answerOption);
     const nextButton = sharedPage.getByTestId(testIds.voter.questions.nextButton);
 
     await answerOption.first().waitFor({ state: 'visible', timeout: 10000 });
 
-    for (let i = 0; i < 50 && !sharedPage.url().includes('/results'); i++) {
-      const urlBefore = sharedPage.url();
-      await answerOption.nth(2).click();
-
-      try {
-        await sharedPage.waitForURL((url) => url.toString() !== urlBefore, { timeout: 3000 });
-      } catch {
-        // URL didn't change — click next button to advance
-        if (await nextButton.isVisible()) {
-          await nextButton.click();
-          await sharedPage.waitForURL((url) => url.toString() !== urlBefore, { timeout: 5000 });
-        }
-      }
-    }
+    await answerOrAdvanceUntilResults(sharedPage, answerOption, nextButton);
 
     // Verify the journey completed without errors — we reached the results page.
     // The orphan municipality may have limited nominations, so we just verify

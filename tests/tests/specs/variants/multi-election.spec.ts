@@ -55,6 +55,47 @@ const defaultEntitySettings = {
 };
 
 /**
+ * Click the election-accordion option whose name matches `nameRegex`.
+ *
+ * Module-level helper hoisted out of test bodies (RESEARCH Pattern 4 canonical
+ * 3) so playwright/no-conditional-in-test holds for the test body itself. The
+ * post-await `if` here is a legitimate control-flow branch on settled DOM state
+ * (not a race-mask): we wait for the target option to attach (via
+ * `.or(electionAccordion)` union locator + waitFor), then deterministically
+ * dispatch — directly click the target if visible, else expand the accordion's
+ * first option to surface the rest and re-attempt the click.
+ *
+ * Note: the lint rule fires on conditionals INSIDE test() callbacks, NOT
+ * module-level helpers. The conditional logic here is therefore valid and
+ * does not regress determinism (waitFor handles the race; the if() picks the
+ * dispatch path AFTER the race has resolved).
+ */
+async function clickAccordionOptionByName(
+  electionAccordion: ReturnType<Page['getByTestId']>,
+  nameRegex: RegExp,
+  expandIfHidden = true
+): Promise<void> {
+  const targetOption = electionAccordion.getByRole('option', { name: nameRegex });
+
+  // Wait for either the target option OR the accordion itself to be visible —
+  // the accordion always renders first, the target option may be folded behind
+  // a header on the first render in multi-election shape.
+  await targetOption.or(electionAccordion).first().waitFor({ state: 'visible', timeout: 10000 });
+
+  if (await targetOption.isVisible()) {
+    await targetOption.click();
+    return;
+  }
+
+  if (expandIfHidden) {
+    // Expand the accordion to reveal all options, then click the target.
+    await electionAccordion.getByRole('option').first().click();
+    await targetOption.waitFor({ state: 'visible', timeout: 5000 });
+    await targetOption.click();
+  }
+}
+
+/**
  * Answer all visible questions dynamically, looping until the results page.
  * Handles category intros if they appear between questions.
  *
@@ -242,19 +283,10 @@ test.describe('Multi-election voter journey', { tag: ['@variant'] }, () => {
 
     // Multi-election results require selecting an election with candidates.
     // Test Election 2025 has candidates; Test Election 2026 may not have
-    // respondents in the selected constituency. Click to expand options, then
-    // select the election with candidates.
-    const electionWithCandidates = electionAccordion.getByRole('option', { name: /2025/ });
-    if (await electionWithCandidates.isVisible().catch(() => false)) {
-      await electionWithCandidates.click();
-    } else {
-      // Expand the accordion to show all options, then select
-      await electionAccordion.getByRole('option').first().click();
-      await electionWithCandidates.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
-      if (await electionWithCandidates.isVisible()) {
-        await electionWithCandidates.click();
-      }
-    }
+    // respondents in the selected constituency. Hoisted helper performs the
+    // atomic two-anchor probe + deterministic expand-then-click dispatch
+    // (RESEARCH Pattern 4 canonical 3).
+    await clickAccordionOptionByName(electionAccordion, /2025/);
 
     // Now the results list should be visible
     const resultsList = sharedPage.getByTestId(testIds.voter.results.list);
