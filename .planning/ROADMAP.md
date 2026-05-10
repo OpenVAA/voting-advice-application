@@ -167,7 +167,7 @@ Phase 78 (CLEAN)  ← independent of 73-77; may run in parallel with 74-77
 - [x] 73-01-PLAN.md — Inventory: 3 cold --workers=1 runs + classify 36-test race pool by failure type + lint-baseline re-baselining (CONTEXT D-03) [Wave 1]
 - [x] 73-02-PLAN.md — Mechanical sweep: no-networkidle (6) + no-raw-locators (37) — semantic locators via testIds registry; zero behavioral risk [Wave 2, depends on 01]
 - [x] 73-03-PLAN.md — Voter-specs cluster: voter-settings/voter-popup-hydration/voter-journey conditional rewrites + voter-results no-wait-for-timeout (paired DETERM-02 + DETERM-03) [Wave 3, depends on 01,02]
-- [ ] 73-04-PLAN.md — Candidate-specs cluster + bank-auth D-07: 17 bank-auth warnings (12 cond-expect + 4 cond + 1 D-07-justified skip) + candidate-profile/settings/questions/auth (operator-review checkpoint on // reason: text quality) [Wave 4, depends on 01-03, has checkpoint]
+- [x] 73-04-PLAN.md — Candidate-specs cluster + bank-auth D-07: 17 bank-auth warnings (12 cond-expect + 4 cond + 1 D-07-justified skip) + candidate-profile/settings/questions/auth (operator-review checkpoint on // reason: text quality) [Wave 4, depends on 01-03, has checkpoint]
 - [ ] 73-05-PLAN.md — Variants + setup hooks cluster: variant specs + auth.setup.ts auth-cookie race + data.setup idempotence + DETERM-01 cross-check [Wave 5, depends on 01-04]
 - [ ] 73-06-PLAN.md — Parity-gate regen + 3-run determinism gate + lint-gate bump 'warn'→'error' + 73-VERIFICATION.md (operator-review checkpoint on per-test DATA_RACE pool rationale) [Wave 6, depends on 01-05, has checkpoint]
 
@@ -268,7 +268,7 @@ After v2.9 ships, run `/gsd-new-milestone` to frame the next milestone. v2.10 ca
 | 70. Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup | v2.8 | 5/5 | Complete | 2026-05-09 |
 | 71. Frontend Strict-Typing Cleanup | v2.8 | 3/3 | Complete | 2026-05-09 |
 | 72. Package Hygiene Trio | v2.8 | 3/3 | Complete | 2026-05-09 |
-| 73. Determinism Baseline | v2.9 | 3/6 | In Progress|  |
+| 73. Determinism Baseline | v2.9 | 4/6 | In Progress|  |
 | 74. High-Leverage E2E Coverage | v2.9 | 0/TBD | Not started | — |
 | 75. Question-Rendering Specs | v2.9 | 0/TBD | Not started | — |
 | 76. Profile + A11y | v2.9 | 0/TBD | Not started | — |
