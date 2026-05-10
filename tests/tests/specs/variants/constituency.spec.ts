@@ -285,7 +285,9 @@ test.describe('Constituency selection variant', { tag: ['@variant'] }, () => {
 
     // The missing nominations warning dialog should appear because
     // East Municipality has nominations for Election 1 but NOT Election 2.
-    const dialog = sharedPage.locator('dialog[open]');
+    // getByRole('dialog') only matches an open <dialog>; closed dialogs are
+    // hidden from the accessibility tree.
+    const dialog = sharedPage.getByRole('dialog');
     await dialog.waitFor({ state: 'visible', timeout: 5000 });
 
     // Verify the dialog shows the "some nominations" variant with

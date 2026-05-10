@@ -39,7 +39,7 @@ test.describe('voter entity detail', { tag: ['@voter'] }, () => {
     await page.getByTestId(testIds.voter.results.card).first().click();
 
     // Assert a drawer/dialog opens
-    const dialog = page.locator('dialog[open]');
+    const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
 
     // Assert entity details are visible inside the drawer
@@ -51,7 +51,7 @@ test.describe('voter entity detail', { tag: ['@voter'] }, () => {
     await page.getByTestId(testIds.voter.results.card).first().click();
 
     // Assert drawer is open
-    const dialog = page.locator('dialog[open]');
+    const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
 
     // Assert info tab content is visible (default tab)
@@ -78,7 +78,7 @@ test.describe('voter entity detail', { tag: ['@voter'] }, () => {
     // - Opinion answers with open answers on default-dataset Q1, Q3, and Q5
     await page.getByTestId(testIds.voter.results.card).filter({ hasText: alphaCandidate.last_name! }).click();
 
-    const dialog = page.locator('dialog[open]');
+    const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
 
     // --- Info tab: candidate's info question answers are displayed ---
@@ -94,13 +94,22 @@ test.describe('voter entity detail', { tag: ['@voter'] }, () => {
     await expect(opinionsTab).toBeVisible();
 
     // Candidate's opinion answer is correctly indicated:
-    // Alpha answered Q1 — the corresponding choice radio has entitySelected class
+    // Alpha answered Q1 — the corresponding choice radio has entitySelected class.
+    // reason: 'entitySelected' is a CSS class set by the OpinionQuestionInput
+    // component to mark the candidate's answer position; it has no ARIA role
+    // (the role lives on the underlying <input type="radio">), no associated
+    // text, and no testId. The class is the contract — getByRole/getByText/etc.
+    // would match either too few elements (no class info) or too many (all
+    // radios). Inline-justified per RESEARCH §"Pitfall" + §"Anti-Patterns".
     const firstQuestionInput = opinionsTab.getByTestId('opinion-question-input').first();
+    // eslint-disable-next-line playwright/no-raw-locators
     await expect(firstQuestionInput.locator('.entitySelected')).toHaveCount(1);
 
     // Voter's answer is displayed alongside the candidate's:
-    // The voter's selected radio is checked, and voter label ("You") is shown
-    await expect(firstQuestionInput.locator('input:checked')).toHaveCount(1);
+    // The voter's selected radio is checked, and voter label ("You") is shown.
+    // getByRole('radio', { checked: true }) is the semantic equivalent of input:checked
+    // for radios; OpinionQuestionInput renders one radio per choice.
+    await expect(firstQuestionInput.getByRole('radio', { checked: true })).toHaveCount(1);
     await expect(firstQuestionInput.getByText('You')).toBeAttached();
 
     // Candidate's open answers are displayed where provided (from dataset info fields)
@@ -131,7 +140,7 @@ test.describe('voter entity detail', { tag: ['@voter'] }, () => {
     await partySection.getByTestId('entity-card-action').first().click();
 
     // Assert drawer opens with party entity details
-    const dialog = page.locator('dialog[open]');
+    const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
     await expect(dialog.getByTestId('entity-details')).toBeVisible();
 

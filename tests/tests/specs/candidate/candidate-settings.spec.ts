@@ -105,10 +105,10 @@ test.describe('app mode: disabled (CAND-10)', { tag: ['@candidate'] }, () => {
 
     // The page should show a MaintenancePage with a heading
     // MaintenancePage uses <h1> for the title
-    await expect(page.locator('h1')).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
     // The page should contain a <main> element from MaintenancePage
-    await expect(page.locator('main')).toBeVisible();
+    await expect(page.getByRole('main')).toBeVisible();
   });
 });
 
@@ -138,10 +138,10 @@ test.describe('app mode: maintenance (CAND-11)', { tag: ['@candidate'] }, () => 
     await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeHidden();
 
     // The page should show a MaintenancePage <main> element
-    await expect(page.locator('main')).toBeVisible();
+    await expect(page.getByRole('main')).toBeVisible();
 
     // The page should contain a heading from MaintenancePage
-    await expect(page.locator('h1')).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   });
 });
 
@@ -252,11 +252,17 @@ test.describe('question visibility settings (CAND-15)', { tag: ['@candidate'] },
 
     // The Hero component renders inside a <figure role="presentation"> slot.
     // When hideHero is true, the Hero component is NOT rendered inside the figure.
-    // Verify the figure[role="presentation"] either does not contain a Hero
-    // (which renders as a div with an img or emoji inside it)
+    // reason: figure[role="presentation"] explicitly removes the figure's
+    // implicit role from the accessibility tree (presentation = decorative
+    // wrapper); getByRole/getByText/etc. cannot match a presentational element
+    // by intent. The class-based check on .overflow-hidden tests for the Hero
+    // component's wrapper styling — also class-only, no role/text equivalent.
+    // Both inline-justified per RESEARCH §"Pitfall" + §"Anti-Patterns".
+    // eslint-disable-next-line playwright/no-raw-locators
     const heroFigure = page.locator('figure[role="presentation"]');
     // The figure element exists (it's the slot container) but should be empty
     // when hideHero is true. The Hero component class contains "overflow-hidden".
+    // eslint-disable-next-line playwright/no-raw-locators
     await expect(heroFigure.locator('.overflow-hidden')).toBeHidden();
   });
 
@@ -281,6 +287,9 @@ test.describe('question visibility settings (CAND-15)', { tag: ['@candidate'] },
     // figure slot exists but is empty. We just verify the page is functional
     // and the setting doesn't break rendering (answer input visible above).
     // The figure[role="presentation"] slot container should exist in the DOM.
+    // reason: same as L257 above — figure[role="presentation"] is a decorative
+    // wrapper excluded from the accessibility tree; no semantic alternative.
+    // eslint-disable-next-line playwright/no-raw-locators
     const heroFigure = page.locator('figure[role="presentation"]');
     expect(await heroFigure.count()).toBeGreaterThanOrEqual(0);
   });

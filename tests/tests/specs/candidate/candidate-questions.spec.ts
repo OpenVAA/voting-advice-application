@@ -238,11 +238,12 @@ test.describe('candidate preview', { tag: ['@candidate'] }, () => {
     // Once loaded, EntityDetails renders the candidate's profile.
     // Verify the container has meaningful content (not empty or error state).
 
-    // Check that the container has some child content rendered
-    // EntityDetails renders candidate name, answers, etc.
-    const containerContent = previewPage.container.locator('*');
-    const childCount = await containerContent.count();
-    expect(childCount).toBeGreaterThan(0);
+    // Check that the container has some text content rendered.
+    // EntityDetails renders candidate name, answers, etc., so a non-empty text
+    // body is the semantic contract — replaces former locator('*') descendant
+    // count, which had no role/text equivalent (it asked "any child element"
+    // structurally; "any visible text" is the user-perceivable equivalent).
+    await expect(previewPage.container).not.toHaveText('');
 
     // Verify no error message is displayed
     const errorMessage = previewPage.container.getByTestId(testIds.shared.errorMessage);

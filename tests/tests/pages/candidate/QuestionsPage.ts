@@ -33,7 +33,12 @@ export class QuestionsPage {
    */
   async expandAllCategories(): Promise<void> {
     await this.waitForLoad();
-    const checkboxes = this.page.locator('.collapse input[type="checkbox"]');
+    // Each category renders a DaisyUI Expander with a focusable checkbox that
+    // controls open/closed state; getByRole('checkbox') matches the input,
+    // which is the same element the prior CSS-selector targeted. The
+    // candidate-questions page does not contain other top-level checkboxes,
+    // so role-based selection is unambiguous here.
+    const checkboxes = this.page.getByRole('checkbox');
     const count = await checkboxes.count();
     for (let i = 0; i < count; i++) {
       if (!(await checkboxes.nth(i).isChecked())) {

@@ -191,7 +191,8 @@ test.describe('startFromConstituencyGroup variant', { tag: ['@variant'] }, () =>
     await expect(sharedPage).toHaveURL(/\/questions/);
 
     // Dismiss the "missing nominations" dialog if it appears
-    const dialog = sharedPage.locator('dialog[open]');
+    // getByRole('dialog') matches only open <dialog>; closed dialogs are hidden.
+    const dialog = sharedPage.getByRole('dialog');
     try {
       await dialog.waitFor({ state: 'visible', timeout: 3000 });
       await dialog.getByRole('button', { name: /continue/i }).click();
@@ -300,7 +301,8 @@ test.describe('startFromConstituencyGroup variant', { tag: ['@variant'] }, () =>
     await expect(sharedPage).toHaveURL(/\/questions/, { timeout: 10000 });
 
     // Dismiss the "missing nominations" dialog if it appears
-    const orphanDialog = sharedPage.locator('dialog[open]');
+    // getByRole('dialog') matches only open <dialog>; closed dialogs are hidden.
+    const orphanDialog = sharedPage.getByRole('dialog');
     try {
       await orphanDialog.waitFor({ state: 'visible', timeout: 3000 });
       await orphanDialog.getByRole('button', { name: /continue/i }).click();

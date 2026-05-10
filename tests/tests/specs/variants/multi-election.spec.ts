@@ -341,7 +341,8 @@ test.describe('disallowSelection mode', { tag: ['@variant'] }, () => {
     await expect(electionsList).toBeHidden();
 
     // Dismiss the "missing nominations" dialog if it appears
-    const dialog = page.locator('dialog[open]');
+    // getByRole('dialog') matches only open <dialog>; closed dialogs are hidden.
+    const dialog = page.getByRole('dialog');
     try {
       await dialog.waitFor({ state: 'visible', timeout: 3000 });
       await dialog.getByRole('button', { name: /continue/i }).click();

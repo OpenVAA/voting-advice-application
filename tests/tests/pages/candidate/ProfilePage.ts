@@ -23,7 +23,14 @@ export class ProfilePage {
    */
   async uploadImage(filePath: string): Promise<void> {
     const fileChooserPromise = this.page.waitForEvent('filechooser');
-    // Click the inner interactive label, not the outer container
+    // Click the inner interactive label, not the outer container.
+    // reason: the Input/type="image" component renders a presentational <label tabindex="0">
+    // wrapping a hidden <input type="file">. The label has no implicit ARIA role and no
+    // associated visible text or accessible name (the surrounding testId container holds
+    // the label text). Targeting by tabindex is the only stable structural anchor for the
+    // focusable file-trigger surface; getByRole/getByText/getByLabel all match the wrong
+    // element or no element. Scoped to the imageUpload testId so this stays narrow.
+    // eslint-disable-next-line playwright/no-raw-locators
     await this.imageUpload.locator('label[tabindex="0"]').click();
     const fileChooser = await fileChooserPromise;
     await fileChooser.setFiles(filePath);

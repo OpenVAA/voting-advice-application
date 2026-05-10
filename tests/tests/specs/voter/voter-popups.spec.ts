@@ -105,7 +105,7 @@ test.describe('feedback popup (VOTE-15)', { tag: ['@voter'] }, () => {
 
     // Verify the dialog is visible and contains a heading (feedback popup has an h3 title)
     await expect(dialog).toBeVisible();
-    await expect(dialog.locator('h3').first()).toBeVisible();
+    await expect(dialog.getByRole('heading', { level: 3 }).first()).toBeVisible();
   });
 
   test('should remember dismissal after page reload', async ({ answeredVoterPage }) => {
@@ -118,8 +118,11 @@ test.describe('feedback popup (VOTE-15)', { tag: ['@voter'] }, () => {
     await dialog.waitFor({ state: 'visible', timeout: 7000 });
     await expect(dialog).toBeVisible();
 
-    // Dismiss the popup by clicking the close button (the X button inside the dialog)
-    await dialog.locator('button.btn-circle').click();
+    // Dismiss the popup by clicking the close button.
+    // Modal/Drawer/Alert components render a btn-circle close button with sr-only
+    // text from t('common.closeDialog'); getByRole + locale-resilient regex matches
+    // 'Close' (en), 'Sulje' (fi), 'Stäng' (sv), 'Luk' (da) per supportedLocales.
+    await dialog.getByRole('button', { name: /close|sulje|stäng|luk/i }).click();
 
     // Wait for the dialog to disappear
     await expect(dialog).not.toBeVisible({ timeout: 3000 });
@@ -176,7 +179,7 @@ test.describe('survey popup (VOTE-16)', { tag: ['@voter'] }, () => {
 
     // Verify the dialog is visible and contains the survey action button
     await expect(dialog).toBeVisible();
-    await expect(dialog.locator('h3').first()).toBeVisible();
+    await expect(dialog.getByRole('heading', { level: 3 }).first()).toBeVisible();
     await expect(dialog.getByRole('button', { name: /survey/i })).toBeVisible();
   });
 });

@@ -13,7 +13,10 @@ export class EntityDetailPage {
   constructor(page: Page, options?: { inDrawer?: boolean }) {
     this.page = page;
     this.inDrawer = options?.inDrawer ?? false;
-    this.drawer = page.locator('dialog[open]');
+    // getByRole('dialog') matches only the open <dialog>; closed dialogs are
+    // hidden and excluded from the accessibility tree (RESEARCH §"Pattern 3"
+    // canonical example).
+    this.drawer = page.getByRole('dialog');
 
     // Scope locators to either the drawer or the full page
     const scope = this.inDrawer ? this.drawer : page;

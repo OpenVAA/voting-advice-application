@@ -120,7 +120,7 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
     // Note: entity-card testId is shared by party cards AND nested candidate subcards,
     // so we verify the party section heading count instead of counting entity-card elements.
     // Use first() because the section also contains party card h3 headings.
-    await expect(partySection.locator('h3').first()).toContainText(`${totalPartyCount} parties`);
+    await expect(partySection.getByRole('heading', { level: 3 }).first()).toContainText(`${totalPartyCount} parties`);
 
     // Switch back to candidates tab
     await entityTabs.getByRole('tab', { name: /candidate/i }).click();
@@ -178,7 +178,7 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
 
     // Check the first available filter checkbox inside the filter modal.
     // The EnumeratedEntityFilter renders checkboxes inside a <dialog>.
-    const firstCheckbox = page.locator('dialog input[type="checkbox"]').first();
+    const firstCheckbox = page.getByRole('dialog').getByRole('checkbox').first();
     await expect
       .poll(() => firstCheckbox.count(), {
         timeout: 5000,
@@ -194,7 +194,7 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
     // (which previously matched the unrelated "Select all" button inside the
     // EnumeratedEntityFilter — Phase 64 D-11 + D-12 hardening).
     await page
-      .locator('dialog')
+      .getByRole('dialog')
       .getByRole('button', { name: /close filters/i })
       .click();
 
@@ -218,7 +218,7 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
       })
       .toBeGreaterThan(0);
     await filterButton.first().click();
-    const firstCheckbox = page.locator('dialog input[type="checkbox"]').first();
+    const firstCheckbox = page.getByRole('dialog').getByRole('checkbox').first();
     await expect
       .poll(() => firstCheckbox.count(), {
         timeout: 5000,
@@ -232,7 +232,7 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
     // (which previously matched the unrelated "Select all" button inside the
     // EnumeratedEntityFilter — Phase 64 D-11 + D-14 + D-15 hardening).
     await page
-      .locator('dialog')
+      .getByRole('dialog')
       .getByRole('button', { name: /close filters/i })
       .click();
 
@@ -241,7 +241,9 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
     // ModalContainer.svelte:131-144) but its `open` attribute is removed — once
     // open is gone, the dialog stops intercepting pointer events and the
     // parties tab becomes clickable (Phase 64 D-11 + D-14).
-    await expect(page.locator('dialog[open]')).toHaveCount(0, { timeout: 5000 });
+    // getByRole('dialog') matches only open <dialog> elements (closed dialogs are
+    // hidden from the accessibility tree); count==0 == no open dialog.
+    await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 5000 });
 
     // Switch to organizations tab
     const entityTabs = page.getByTestId(testIds.voter.results.entityTabs);
@@ -251,9 +253,15 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
     // Organizations-side filter button should show no active filters (badge == 0 or absent).
     // The InfoBadge only renders when numActiveFilters > 0 in the warning-button variant.
     // Look for the warning-colored filter button — if absent, badge is 0.
-    const warningFilterBtn = page
-      .getByTestId('entity-list-filter')
-      .filter({ has: page.locator('.btn-warning, [color="warning"]') });
+    // reason: the warning state is signalled by a DaisyUI .btn-warning class
+    // (or the [color="warning"] prop reflected to attribute by the Button
+    // component) and there is no role/text/aria-label equivalent — the visual
+    // warning indicator IS the contract. Inline-justified per RESEARCH §"Anti-
+    // Patterns" + the canonical example for color/state attributes.
+    const warningFilterBtn = page.getByTestId('entity-list-filter').filter({
+      // eslint-disable-next-line playwright/no-raw-locators
+      has: page.locator('.btn-warning, [color="warning"]')
+    });
     await expect(warningFilterBtn).toHaveCount(0);
   });
 
@@ -267,7 +275,7 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
       })
       .toBeGreaterThan(0);
     await filterButton.first().click();
-    const firstCheckbox = page.locator('dialog input[type="checkbox"]').first();
+    const firstCheckbox = page.getByRole('dialog').getByRole('checkbox').first();
     await expect
       .poll(() => firstCheckbox.count(), {
         timeout: 5000,
@@ -282,13 +290,15 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
     // (which previously matched the unrelated "Select all" button inside the
     // EnumeratedEntityFilter — Phase 64 D-11 + D-14 + D-15 hardening).
     await page
-      .locator('dialog')
+      .getByRole('dialog')
       .getByRole('button', { name: /close filters/i })
       .click();
     // Wait for the filter dialog's `open` attribute to be removed — same modal-
     // close race as D-14 above. Without this gate, the entity-card-action
     // click below races with the modal close animation (Phase 64 D-11 + D-15).
-    await expect(page.locator('dialog[open]')).toHaveCount(0, { timeout: 5000 });
+    // getByRole('dialog') matches only open <dialog> elements (closed dialogs are
+    // hidden from the accessibility tree); count==0 == no open dialog.
+    await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 5000 });
     const beforeFilterCount = await page.getByTestId(testIds.voter.results.card).count();
 
     // Open the first entity's drawer by clicking its card.

@@ -147,7 +147,7 @@ test.describe('candidate profile (fresh candidate)', { tag: ['@candidate'] }, ()
 
     // Verify editable inputs are present (date, number, text, or checkbox)
     // Target main content area to avoid matching hidden drawer toggles
-    const main = page.locator('main');
+    const main = page.getByRole('main');
     await expect(main.getByRole('textbox').first()).toBeVisible();
   });
 
@@ -161,14 +161,16 @@ test.describe('candidate profile (fresh candidate)', { tag: ['@candidate'] }, ()
       page.getByTestId(testIds.candidate.profile.submit).or(page.getByTestId(testIds.candidate.profile.returnButton))
     ).toBeVisible();
 
-    // Verify previously uploaded image persists (saved in image upload test)
+    // Verify previously uploaded image persists (saved in image upload test).
+    // <img> has implicit role="img" — getByRole('img') is the semantic equivalent
+    // of locator('img') and matches the rendered avatar element.
     const imageArea = page.getByTestId(testIds.candidate.profile.imageUpload);
     await expect(imageArea).toBeVisible();
-    await expect(imageArea.locator('img')).toBeVisible();
+    await expect(imageArea.getByRole('img')).toBeVisible();
 
     // Reload and verify image still persists
     await page.reload();
     await expect(page.getByTestId(testIds.candidate.profile.imageUpload)).toBeVisible();
-    await expect(page.getByTestId(testIds.candidate.profile.imageUpload).locator('img')).toBeVisible();
+    await expect(page.getByTestId(testIds.candidate.profile.imageUpload).getByRole('img')).toBeVisible();
   });
 });
