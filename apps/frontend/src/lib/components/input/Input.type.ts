@@ -44,10 +44,6 @@ export type InputType = InputProps['type'];
 
 /**
  * @typeParam TValue - The type of value associated with the input.
- * @typeParam TElement - The type of the underlying HTML element for the input. Defaults to 'input'.
- */
-/**
- * @typeParam TValue - The type of value associated with the input.
  * @typeParam TElement - Retained for API compatibility but no longer used to derive the base type.
  *   Uses `HTMLAttributes<HTMLElement>` instead of `SvelteHTMLElements[TElement]` to avoid
  *   "union too complex" TypeScript errors in the 10-way `InputProps` union.

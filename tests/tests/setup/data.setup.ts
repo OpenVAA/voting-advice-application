@@ -36,6 +36,53 @@ setup('import test dataset', async () => {
 
   const client = new SupabaseAdminClient();
 
+  // 0. Fresh-database precondition check.
+  //
+  //    The e2e suite expects a database containing ONLY 'test-'-prefixed rows
+  //    (cleared + reseeded by step 1 below). Pre-existing non-test data —
+  //    typically the operator's local dev seed (`yarn dev:reset-with-data`) —
+  //    coexists with the seeded test data and produces confusing test
+  //    results: extra entities show up in result lists, filter counts do not
+  //    match expected fixture values, parity-baseline diffs flag spurious
+  //    failures.
+  //
+  //    Probe `candidates` and `organizations` for any row whose `external_id`
+  //    is NOT prefixed with 'test-'. By default this WARNS (so a CI run that
+  //    pointed at a clean DB sees no impact); set `E2E_REQUIRE_FRESH_DB=true`
+  //    to escalate to a hard failure.
+  //
+  //    TODO: when we move to project scoping, the e2e can seed its own
+  //    project (`projectId: TEST_PROJECT_ID`) and this check becomes obsolete
+  //    — the operator's dev data will live under a different project_id and
+  //    not interfere with the e2e dataset. See REQUIREMENTS.md
+  //    `frontend-project-id-scoping` (v2.9 candidate).
+  {
+    const requireFresh = process.env.E2E_REQUIRE_FRESH_DB === 'true';
+    const candQuery = await client.query('candidates');
+    const { data: nonTestCands, error: candErr } = await candQuery.not('external_id', 'like', `${PREFIX}%`).limit(5);
+    const orgQuery = await client.query('organizations');
+    const { data: nonTestOrgs, error: orgErr } = await orgQuery.not('external_id', 'like', `${PREFIX}%`).limit(5);
+
+    if (candErr || orgErr) {
+      // Probe failed (e.g. RLS, missing tables) — log but do not block.
+      // eslint-disable-next-line no-console -- reason: setup-phase diagnostic; logs visible in playwright stdout
+      console.warn(
+        `[data.setup] Fresh-database probe failed (candidates: ${candErr?.message ?? 'ok'}; organizations: ${orgErr?.message ?? 'ok'}) — proceeding without precondition guarantee.`
+      );
+    } else {
+      const totalNonTest = (nonTestCands?.length ?? 0) + (nonTestOrgs?.length ?? 0);
+      if (totalNonTest > 0) {
+        const message = `[data.setup] Database is NOT fresh — found ${nonTestCands?.length ?? 0} non-test candidate(s) and ${nonTestOrgs?.length ?? 0} non-test organization(s) (probe limited to 5 each). Pre-existing non-test data will coexist with the seeded e2e dataset and may produce confusing test failures (extra entities in result lists, mismatched filter counts, spurious parity diffs). Run \`yarn supabase:reset\` (migrations only, no seed overlay) before re-running the e2e suite, or set E2E_REQUIRE_FRESH_DB=false to silence this. (Set E2E_REQUIRE_FRESH_DB=true to make this a hard failure.)`;
+        if (requireFresh) {
+          throw new Error(message);
+        } else {
+          // eslint-disable-next-line no-console -- reason: setup-phase diagnostic; logs visible in playwright stdout
+          console.warn(message);
+        }
+      }
+    }
+  }
+
   // 1. Pre-clear any stale state from a prior run. runTeardown enforces its
   //    own 2-char guard; PREFIX ('test-', 5 chars) is safe and matches what
   //    the e2e template emits verbatim (D-58-15 + 59 prefix reconciliation).

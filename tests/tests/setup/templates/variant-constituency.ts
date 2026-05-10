@@ -50,8 +50,8 @@
  *     and multi-election.spec.ts:135).
  */
 import { mergeSettings } from '@openvaa/app-shared';
-import { BUILT_IN_TEMPLATES, E2E_BASE_APP_SETTINGS  } from '@openvaa/dev-seed';
-import type {Template} from '@openvaa/dev-seed';
+import { BUILT_IN_TEMPLATES, E2E_BASE_APP_SETTINGS } from '@openvaa/dev-seed';
+import type { Template } from '@openvaa/dev-seed';
 
 const base = BUILT_IN_TEMPLATES.e2e;
 if (!base) throw new Error('variant-constituency: BUILT_IN_TEMPLATES.e2e is undefined.');
@@ -75,7 +75,17 @@ const CONSTITUENCY_APP_SETTINGS_OVERLAY = {
 
 type FixedRow = Record<string, unknown>;
 
-function baseFixed(table: 'elections' | 'constituency_groups' | 'constituencies' | 'organizations' | 'question_categories' | 'questions' | 'candidates' | 'nominations'): Array<FixedRow> {
+function baseFixed(
+  table:
+    | 'elections'
+    | 'constituency_groups'
+    | 'constituencies'
+    | 'organizations'
+    | 'question_categories'
+    | 'questions'
+    | 'candidates'
+    | 'nominations'
+): Array<FixedRow> {
   const fragment = base[table] as { fixed?: Array<FixedRow> } | undefined;
   return fragment?.fixed ?? [];
 }
@@ -112,10 +122,7 @@ export const variantConstituencyTemplate: Template = {
     fixed: [
       ...baseFixed('elections').map((row) => ({
         ...row,
-        constituency_groups: [
-          { external_id: 'test-cg-regions' },
-          { external_id: 'test-cg-municipalities' }
-        ]
+        constituency_groups: [{ external_id: 'test-cg-regions' }, { external_id: 'test-cg-municipalities' }]
       })),
       {
         external_id: 'test-election-2',
@@ -143,10 +150,7 @@ export const variantConstituencyTemplate: Template = {
         name: { en: 'Regions' },
         sort_order: 10,
         is_generated: false,
-        constituencies: [
-          { external_id: 'test-const-region-north' },
-          { external_id: 'test-const-region-south' }
-        ]
+        constituencies: [{ external_id: 'test-const-region-north' }, { external_id: 'test-const-region-south' }]
       },
       {
         external_id: 'test-cg-municipalities',

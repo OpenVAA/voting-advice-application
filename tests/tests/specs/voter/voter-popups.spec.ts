@@ -217,7 +217,7 @@ test.describe('popups disabled', { tag: ['@voter'] }, () => {
     await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 3000 });
 
     // After waiting, verify no dialog appeared
-    const dialogCount = page.getByRole('dialog');
-    await expect(dialogCount).toHaveCount(0);
+    const dialogLocator = page.getByRole('dialog');
+    await expect(dialogLocator).toHaveCount(0);
   });
 });

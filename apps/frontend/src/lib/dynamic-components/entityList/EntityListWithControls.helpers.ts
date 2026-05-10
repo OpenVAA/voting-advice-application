@@ -1,5 +1,3 @@
-import type { FilterGroup } from '@openvaa/filters';
-
 /**
  * Pure helper used inside `EntityListWithControls.svelte`'s `$derived.by`.
  * Applies the active `FilterGroup` (if any) followed by the search filter
@@ -35,11 +33,3 @@ export function countActiveFilters(
   return filterGroup.filters.filter((f) => f.active).length;
 }
 
-/**
- * Re-export shape used by `EntityListWithControls.svelte` so the
- * filterGroup parameter accepts both the real `@openvaa/filters` `FilterGroup`
- * and the structurally-compatible test fakes.
- */
-export type FilterGroupLike<TEntity> = Pick<FilterGroup<MaybeWrappedEntityVariant>, 'apply' | 'filters'> & {
-  filters: ReadonlyArray<{ active: boolean; name: string }>;
-};

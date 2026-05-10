@@ -30,8 +30,8 @@
  *     defining multi-election shape: candidates appear on BOTH elections)
  */
 import { mergeSettings } from '@openvaa/app-shared';
-import { BUILT_IN_TEMPLATES, E2E_BASE_APP_SETTINGS  } from '@openvaa/dev-seed';
-import type {Template} from '@openvaa/dev-seed';
+import { BUILT_IN_TEMPLATES, E2E_BASE_APP_SETTINGS } from '@openvaa/dev-seed';
+import type { Template } from '@openvaa/dev-seed';
 
 const base = BUILT_IN_TEMPLATES.e2e;
 if (!base) throw new Error('variant-multi-election: BUILT_IN_TEMPLATES.e2e is undefined.');
@@ -61,7 +61,17 @@ const MULTI_ELECTION_APP_SETTINGS_OVERLAY = {
 
 type FixedRow = Record<string, unknown>;
 
-function baseFixed(table: 'elections' | 'constituency_groups' | 'constituencies' | 'organizations' | 'question_categories' | 'questions' | 'candidates' | 'nominations'): Array<FixedRow> {
+function baseFixed(
+  table:
+    | 'elections'
+    | 'constituency_groups'
+    | 'constituencies'
+    | 'organizations'
+    | 'question_categories'
+    | 'questions'
+    | 'candidates'
+    | 'nominations'
+): Array<FixedRow> {
   const fragment = base[table] as { fixed?: Array<FixedRow> } | undefined;
   return fragment?.fixed ?? [];
 }
