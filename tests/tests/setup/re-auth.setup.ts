@@ -18,11 +18,13 @@ const authFile = path.join(currentDir, '../../playwright/.auth/user.json');
  * for downstream projects (candidate-app-password, candidate-app-settings).
  */
 setup('re-authenticate as candidate', async ({ page }) => {
-  // Ensure the auth directory exists
+  // Ensure the auth directory exists. `recursive: true` is idempotent: it
+  // does NOT throw if the directory already exists (Node fs docs), so the
+  // prior `if (!existsSync) mkdirSync` conditional is redundant. Replacing
+  // with the unconditional mkdir clears playwright/no-conditional-in-test
+  // without changing semantics.
   const authDir = path.dirname(authFile);
-  if (!fs.existsSync(authDir)) {
-    fs.mkdirSync(authDir, { recursive: true });
-  }
+  fs.mkdirSync(authDir, { recursive: true });
 
   // Navigate to candidate login
   const candidateHome = buildRoute({ route: 'CandAppHome', locale: 'en' });

@@ -43,11 +43,12 @@ setup('import constituency dataset', async () => {
   // (Pitfall 3); we verify our keys made it, not exclusive equality.
   {
     const expected = template.app_settings?.fixed?.[0]?.settings;
-    if (!expected) {
-      throw new Error(
-        'post-seed assertion: variantConstituencyTemplate missing app_settings.fixed[0].settings — Phase 63 regression?'
-      );
-    }
+    // Unconditional assertion replaces the prior `if (!expected) throw` guard
+    // (Pattern 5 — same idiom as variant-startfromcg.setup.ts).
+    expect(
+      expected,
+      'post-seed assertion: variantConstituencyTemplate missing app_settings.fixed[0].settings — Phase 63 regression?'
+    ).toBeDefined();
     const persisted = await client.getAppSettings();
     expect(persisted, 'post-seed app_settings row should exist').toBeTruthy();
     expect(persisted).toMatchObject(expected as Record<string, unknown>);

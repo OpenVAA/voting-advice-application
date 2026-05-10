@@ -47,11 +47,16 @@ setup('import startfromcg dataset', async () => {
   // (Pitfall 3); we verify our keys made it, not exclusive equality.
   {
     const expected = template.app_settings?.fixed?.[0]?.settings;
-    if (!expected) {
-      throw new Error(
-        'post-seed assertion: variantStartFromCgTemplate missing app_settings.fixed[0].settings — Phase 63 regression?'
-      );
-    }
+    // Unconditional assertion replaces the prior `if (!expected) throw` guard
+    // (Pattern 5 — unconditional `expect()` form per Plan 03's voter-popup-
+    // hydration precedent). If the variant template loses its
+    // app_settings.fixed[0].settings block, this assertion surfaces the
+    // regression with a clear message before any downstream subset match
+    // can crash on a null/undefined target.
+    expect(
+      expected,
+      'post-seed assertion: variantStartFromCgTemplate missing app_settings.fixed[0].settings — Phase 63 regression?'
+    ).toBeDefined();
     const persisted = await client.getAppSettings();
     expect(persisted, 'post-seed app_settings row should exist').toBeTruthy();
     expect(persisted).toMatchObject(expected as Record<string, unknown>);
