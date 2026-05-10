@@ -2,6 +2,7 @@
 title: Rename `yarn dev:*` supabase scripts to `yarn db:*`; add `yarn dev:clean` for vite + svelte-kit cache wipe
 priority: medium
 created: 2026-05-10
+resolves_phase: 78
 context: Captured at v2.8 milestone close. The current `yarn dev:start / dev:stop / dev:reset / dev:reset-with-data / dev:status / dev:seed` family conflates "dev server" and "supabase database" semantics under one prefix. Rename for clarity, and add a separate `yarn dev:clean` that wipes the vite + svelte-kit caches (the recipe that v2.8 close revealed is a hidden gotcha behind manual smoke tests).
 ---
 

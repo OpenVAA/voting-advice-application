@@ -2,6 +2,7 @@
 title: Voter-not-located → access located route → redirect via const/election selector then to desired page
 priority: medium
 created: 2026-05-10
+resolves_phase: 78
 context: Captured at v2.8 milestone close. Located routes (e.g. `/results/...`, `/questions/...`) currently fail or render empty when the voter has not yet selected an election + constituency. The expected UX is: bounce to the selector, complete selection, then resume the originally-requested route.
 ---
 

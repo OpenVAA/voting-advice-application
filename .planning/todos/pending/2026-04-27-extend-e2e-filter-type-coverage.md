@@ -2,7 +2,8 @@
 title: Extend E2E tests to cover all supported filter types
 priority: medium
 created: 2026-04-27
-context: Captured during Phase 64 discuss-phase as a deferred follow-up. Phase 64 closes the 5 voter-results E2E tests using the implicit party (EnumeratedFilter via nominate_for) source. Other filter types remain uncovered at the E2E layer.
+resolves_phase: 77
+context: Captured during Phase 64 discuss-phase as a deferred follow-up. Phase 64 closes the 5 voter-results E2E tests using the implicit party (EnumeratedFilter via nominate_for) source. Other filter types remain uncovered at the E2E layer. Folded into v2.9 SETTINGS-01 (filter-type matrix becomes one slice of the broader appSettings/appCustomization toggle coverage).
 ---
 
 # Extend E2E tests to cover all supported filter types

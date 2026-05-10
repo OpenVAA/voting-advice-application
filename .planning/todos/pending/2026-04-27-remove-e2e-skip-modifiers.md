@@ -2,6 +2,7 @@
 title: Sweep E2E suite for `test.skip(true, ...)` modifiers — make the suite deterministic
 priority: medium
 created: 2026-04-27
+resolves_phase: 73
 context: Captured during Phase 64 discuss-phase as a deferred follow-up. Every `test.skip(true, ...)` is a place where the test contract is data-dependent. Phase 64 removes them in `voter-results.spec.ts` for RESULTS-01/02 + D-14 + D-15; the rest of the suite carries similar skip paths that should be evaluated.
 ---
 

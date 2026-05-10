@@ -2,6 +2,7 @@
 title: Distribute the per-cluster `// reason:` anchor in supabaseDataProvider.ts to per-cast lines (D-04 strict reading)
 priority: low
 created: 2026-05-10
+resolves_phase: 78
 context: Captured during Phase 71 OOS triage (`71-OUT-OF-SCOPE-FINDINGS.md` row #9). Phase 71 D-04 (`// reason:` convention) was anchored cluster-level in supabaseDataProvider.ts (one anchor per file); the strict reading of D-04 expects one anchor per cast. The grep gate (`≥ 7`) is satisfied with 15 matches across `apps/frontend/src/`, but the supabaseDataProvider.ts cluster has 13 cast sites covered by a single anchor.
 ---
 

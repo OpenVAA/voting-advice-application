@@ -3,7 +3,8 @@ title: Tighten i18n wrapper — type t() with TranslationKey, remove redundant t
 priority: low
 area: frontend
 created: 2026-05-09
-context: Captured during v2.8 Phase 69 Plan 02 Task 5 manual UI smoke after a Paraglide compile-bug fix-up surfaced that the i18n wrapper at `apps/frontend/src/lib/i18n/wrapper.ts` accepts `key: string` rather than the auto-generated `TranslationKey` type, which would have caught the dual-selector compile bug at compile time.
+resolves_phase: 78
+context: Captured during v2.8 Phase 69 Plan 02 Task 5 manual UI smoke after a Paraglide compile-bug fix-up surfaced that the i18n wrapper at `apps/frontend/src/lib/i18n/wrapper.ts` accepts `key: string` rather than the auto-generated `TranslationKey` type, which would have caught the dual-selector compile bug at compile time. Folded into v2.9 CLEAN-04 (paired with E2E-08 locale switching per Phase 78 Pairing note).
 ---
 
 # Tighten i18n wrapper

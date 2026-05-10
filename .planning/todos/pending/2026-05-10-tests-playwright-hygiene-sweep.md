@@ -2,6 +2,7 @@
 title: Test-infrastructure hygiene phase — clear the 98 pre-existing playwright/* warnings in tests/
 priority: medium
 created: 2026-05-10
+resolves_phase: 73
 context: Captured during Phase 71 OOS triage (`71-OUT-OF-SCOPE-FINDINGS.md` row #6). Phase 71 cleared the 27 unused-imports warnings in `apps/frontend/`; the 98 playwright warnings in `tests/` are not auto-fixable and require a dedicated test-hygiene phase.
 ---
 

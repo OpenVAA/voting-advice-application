@@ -2,6 +2,7 @@
 title: Clean up the `setStore` cast at `getRoute.svelte.ts:41` (pre-existing, marked OOS by Phase 71 reviewer)
 priority: low
 created: 2026-05-10
+resolves_phase: 78
 context: Captured during Phase 71 OOS triage (`71-OUT-OF-SCOPE-FINDINGS.md` row #10). The Phase 71 code reviewer flagged the `setStore` cast at `getRoute.svelte.ts:41` as IN-03 with explicit "No action required. Noted only because adjacent." Phase 71 left it untouched per reviewer guidance to avoid gold-plating; it remains a candidate for a future cleanup pass.
 ---
 
