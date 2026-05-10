@@ -3,10 +3,10 @@ gsd_state_version: 1.0
 milestone: v2.9
 milestone_name: E2E Coverage + Suite Determinism
 status: planning
-last_updated: "2026-05-10T15:41:37.121Z"
+last_updated: "2026-05-10T18:45:00.000Z"
 last_activity: 2026-05-10
 progress:
-  total_phases: 0
+  total_phases: 6
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -17,17 +17,17 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-08)
+See: .planning/PROJECT.md (updated 2026-05-10)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** v2.9 framing — E2E coverage workstream (determinism-first)
+**Current focus:** v2.9 Phase 73 — Determinism Baseline (defining)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 73 — Determinism Baseline (defining)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-05-10 — Milestone v2.9 started
+Status: Roadmap drafted; awaiting `/gsd-plan-phase 73` to begin planning the determinism baseline
+Last activity: 2026-05-10 — v2.9 ROADMAP.md drafted; 23 requirements mapped 1:1 across 6 phases (73-78); REQUIREMENTS.md Traceability filled
 
 ## Performance Metrics
 
@@ -41,46 +41,40 @@ Last activity: 2026-05-10 — Milestone v2.9 started
 
 ## Deferred Items
 
-Snapshot taken at v2.7 milestone close on 2026-05-08. v2.8 requirements consume four of the listed pending todos directly (alliance card render, warning sweep, app-shared paradigm, mergeSettings shim, bind-rationale cleanup) plus the 95-error frontend lint deferral and the supabase lint-script rename — those will be removed from `.planning/todos/pending/` (or marked resolved) at v2.8 milestone close.
+Snapshot taken at v2.8 milestone close on 2026-05-10. v2.9 requirements consume nine of the listed pending todos directly (skip-modifier sweep, playwright-hygiene-sweep, filter-type coverage, dev:* → db:* rename, voter-not-located redirect, D-04 distribution, setStore cast cleanup, CLAUDE.md warning-accepted anchor, i18n wrapper tightening) — those will be removed from `.planning/todos/pending/` (or marked resolved) at v2.9 milestone close.
 
 | Category | Item | Status / Notes |
 |----------|------|----------------|
-| todo | 2026-03-28-generalize-candidate-app-to-party-app.md | ui — future party-app variant; not v2.8 |
-| todo | 2026-03-28-investigate-migrating-candidate-answer-store.md | ui — architectural investigation; not v2.8 |
-| todo | 2026-04-25-normalise-app-shared-paradigm.md | **v2.8 Phase 72 / SHARED-01** — mapped |
-| todo | 2026-04-25-remove-mergesettings-reexports.md | **v2.8 Phase 72 / SHARED-02** — mapped |
-| todo | 2026-04-27-extend-e2e-filter-type-coverage.md | medium — v2.9 E2E coverage milestone |
-| todo | 2026-04-27-remove-e2e-skip-modifiers.md | medium — v2.9 E2E coverage milestone |
+| todo | 2026-04-27-extend-e2e-filter-type-coverage.md | **v2.9 Phase 77 / SETTINGS-01** — folded into the toggle matrix |
+| todo | 2026-04-27-remove-e2e-skip-modifiers.md | **v2.9 Phase 73 / DETERM-01** — mapped |
+| todo | 2026-05-10-tests-playwright-hygiene-sweep.md | **v2.9 Phase 73 / DETERM-03** — mapped (paired with DETERM-02) |
+| todo | 2026-05-10-rename-package-scripts-dev-to-db.md | **v2.9 Phase 78 / CLEAN-01** — mapped |
+| todo | 2026-05-10-redirect-unlocated-voter-to-selectors.md | **v2.9 Phase 78 / CLEAN-02** — mapped |
+| todo | 2026-05-10-d04-per-cast-reason-distribution.md | **v2.9 Phase 78 / CLEAN-03** (sub-finding 1) — mapped |
+| todo | 2026-05-10-getroute-setstore-cast-cleanup.md | **v2.9 Phase 78 / CLEAN-03** (sub-finding 2) — mapped |
+| todo | 2026-05-09-claude-md-svelte-warning-accepted-format.md | **v2.9 Phase 78 / CLEAN-03** (sub-finding 3) — mapped |
+| todo | 2026-05-09-tighten-i18n-wrapper.md | **v2.9 Phase 78 / CLEAN-04** — mapped (paired with E2E-08) |
+| todo | 2026-05-10-incorporate-luxembourg-and-danish-vaa-changes.md | Deferred to a separate milestone — deltas unscoped |
 | todo | 2026-04-28-cleanup-nominations-table.md | DB-01 — deferred 2026-04-29; user opted to keep table as is |
-| todo | 2026-04-30-alliance-tab-rendering-and-sections-config.md | **v2.8 Phase 69 / ALLIANCE-01** (Lane A) — mapped |
-| todo | 2026-05-08-cleanup-65-01-bind-rationale-comments.md | **v2.8 Phase 70 / BIND-01** — mapped |
-| todo | 2026-05-08-expander-state-referenced-locally.md | superseded by `2026-05-08-results-layout-missing-slot-render-tag.md` (kept for history) |
-| todo | 2026-05-08-results-layout-missing-slot-render-tag.md | **v2.8 Phase 70 / WARN-01** (Categories A/B/C) — mapped |
-| todo | adapter-package-loading.md | medium — tsconfig-based importable adapter; not v2.8 |
+| todo | 2026-03-28-generalize-candidate-app-to-party-app.md | future party-app variant; not v2.9 |
+| todo | 2026-03-28-investigate-migrating-candidate-answer-store.md | architectural investigation; not v2.9 |
+| todo | adapter-package-loading.md | medium — tsconfig-based importable adapter; not v2.9 |
 | todo | check-candidate-distribution.md | low — default seed candidate spread follow-up |
 | todo | configurable-mock-data.md | medium — Supabase GENERATE_MOCK_DATA env replacement |
-| todo | frontend-project-id-scoping.md | architecture — multi-tenant prep; v2.9 candidate (paired with results-url-refactor-followups) |
+| todo | frontend-project-id-scoping.md | architecture — multi-tenant prep; v2.10 candidate (paired with results-url-refactor-followups) |
 | todo | password-reset-code-method.md | candidate-app auth flow; Strapi-era leftover |
 | todo | register-page-registrationkey-method.md | candidate-app auth flow; Strapi-era leftover |
 | todo | rename-admin-writer.md | dev-seed internal API hygiene; low priority |
-| todo | results-url-refactor-followups.md | architecture — sharable URLs; v2.9 candidate (paired with frontend-project-id-scoping) |
+| todo | results-url-refactor-followups.md | architecture — sharable URLs; v2.10 candidate |
 | todo | session-storage-election-constituency.md | partly mitigated by v2.6 Phase 62 URL-based election scoping |
-| todo | sql-linting-formatting.md | CI hygiene; not v2.8 (LINT-01 is the supabase-package script rename, not the linter itself) |
-| carry-forward | 95 pre-existing apps/frontend ESLint errors (Option C deferral from v2.7 Phase 68) | **v2.8 Phase 71 / TYPING-01** — mapped (source: `.planning/milestones/v2.7-phases/68-dev-tooling-trio/68-02-DEFERRED.md`) |
-| carry-forward | @openvaa/supabase lint-script rename | **v2.8 Phase 72 / LINT-01** — mapped |
-| carry-forward | 165 pre-existing intra-package circular deps (data/matching/filters internal.ts barrel pattern) | Out of v2.8 scope; dedicated structural refactor milestone |
+| todo | sql-linting-formatting.md | CI hygiene; not v2.9 |
+| todo | 2026-05-09-rewrite-parent-answer-imputation.md | matching-package internal; future matching-focused milestone |
+| carry-forward | 19 pre-existing data-loading race E2E failures (PROJECT.md "Future") | **v2.9 Phase 73 / DETERM-02** — mapped |
+| carry-forward | 165 pre-existing intra-package circular deps (data/matching/filters internal.ts barrel pattern) | Out of v2.9 scope; dedicated structural refactor milestone |
+| carry-forward | Cite-and-fix WCAG violations from v2.9 A11Y-03 axe smoke first-run | Tracked as follow-up todo at A11Y-03 close; not v2.9 scope |
 | infrastructure | Local imgproxy Docker container 502 on image upload (intermittent) | Not a code issue; fix with `supabase stop && supabase start`. Carried forward. |
 
-**Pending todo count at v2.7 close:** 18 (v2.8 will resolve 5 of these — 2026-04-25-normalise-app-shared-paradigm, 2026-04-25-remove-mergesettings-reexports, 2026-04-30-alliance-tab-rendering-and-sections-config, 2026-05-08-cleanup-65-01-bind-rationale-comments, 2026-05-08-results-layout-missing-slot-render-tag — plus the supersedes-relationship retire of 2026-05-08-expander-state-referenced-locally).
-| Phase 72 P01 | 25 | 3 tasks | 8 files |
-| Phase 72 P02 | 3 | 3 tasks | 3 files |
-| Phase 72 P03 | 3 | 3 tasks | 3 files |
-| Phase 69 P1 | 75 | 9 tasks | 32 files |
-| Phase 70 P01 | 9min | 5 tasks | 5 files |
-| Phase 70 P02 | 4min | 2 tasks | 1 files |
-| Phase 70 P03 | 2min | 3 tasks | 1 files |
-| Phase 70 P4 | 8 | 3 tasks | 2 files |
-| Phase 70 P05 | 2 | 3 tasks | 24 files |
+**Pending todo count at v2.9 planning start:** 18 (v2.9 will resolve 9 of these — see "v2.9 maps to" rows above; 1 deferred to a separate milestone; 8 remain pending into v2.10+ or backlog).
 
 ## Accumulated Context
 
@@ -89,84 +83,65 @@ Snapshot taken at v2.7 milestone close on 2026-05-08. v2.8 requirements consume 
 - 2026-04-28: v2.6 Svelte 5 Migration Cleanup shipped. 5 phases (60-64), 18 plans, 48 tasks, 4 days. Tagged `v2.6` and archived to `.planning/milestones/v2.6-*`. Phase directories archived under `.planning/milestones/v2.6-phases/`.
 - 2026-04-29: v2.7 Svelte 5 Polish + Supabase-Adapter Loose Ends roadmap drafted. Phase 66 scope narrowed mid-discussion (DB-01 deferred per user; `nominations` table kept as is). Final shape: 4 phases (65-68), 9 plans.
 - 2026-05-08: v2.7 shipped. 4 phases (65-68), 9 plans, 28 tasks across 9 days. Audit verdict `tech_debt` (8/8 reqs wired; 3 documented deferrals: alliance card render, 95 frontend lint errors via Option C, `@openvaa/supabase` lint-script rename). Tagged `v2.7` and archived to `.planning/milestones/v2.7-*`.
-- 2026-05-08: v2.8 Alliance Card + Frontend Hygiene Sweep scoped. 7 requirements across 6 categories (ALLIANCE / WARN / BIND / TYPING / SHARED ×2 / LINT). E2E coverage workstream and sharable-URLs / multi-tenant pair both deferred to v2.9 candidates. E2E test inventory captured at `.planning/notes/2026-05-08-e2e-test-inventory.md` for v2.9 user-led audit.
-- 2026-05-08: v2.8 ROADMAP.md drafted. 4 phases (69-72), 7 requirements mapped 1:1 (no orphans, no duplicates):
-  - **Phase 69 — Alliance Card Lane A** (ALLIANCE-01): single small UI feature; reconciles v2.7 SEED-01 SC-2 PASS-WITH-CONCERNS
-  - **Phase 70 — Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup** (WARN-01, BIND-01): two requirements paired per cohesion guidance — both touch `apps/frontend/src/lib/**/*.svelte`, both are Svelte 5 hygiene
-  - **Phase 71 — Frontend Strict-Typing Cleanup** (TYPING-01): standalone — 95 ESLint errors warrant phase isolation from the warning sweep that touches the same files
-  - **Phase 72 — Package Hygiene Trio** (SHARED-01, SHARED-02, LINT-01): three package-level cleanups bundled — mirrors v2.7 Phase 68 Dev-Tooling Trio pattern
-- Phase numbering continues from v2.7 (last phase: 68); v2.8 starts at 69. No reset.
-- Plan count is TBD per phase (filled by `/gsd-plan-phase`); estimate ~2-4 plans per phase, ~10-14 plans total across the milestone.
+- 2026-05-08: v2.8 Alliance Card + Frontend Hygiene Sweep scoped. 7 requirements across 6 categories (ALLIANCE / WARN / BIND / TYPING / SHARED ×2 / LINT). E2E coverage workstream and sharable-URLs / multi-tenant pair both deferred to v2.9 candidates.
+- 2026-05-08: v2.8 ROADMAP.md drafted. 4 phases (69-72), 7 requirements mapped 1:1 (no orphans, no duplicates).
+- 2026-05-10: v2.8 shipped. 4 phases (69-72), 13 plans, ~37 tasks across 3 days. Bundled parity gate PASSED. Phase numbering continues from 72 → v2.9 starts at 73. v2.9 framing inputs captured (E2E coverage inventory + 6 new pending todos + 3 carry-forward todos).
+- 2026-05-10: v2.9 E2E Coverage + Suite Determinism roadmap drafted. **6 phases (73-78), 23 requirements mapped 1:1 across 6 categories (DETERM ×3 / E2E ×8 / QSPEC ×2 / A11Y ×3 / SETTINGS ×3 / CLEAN ×4):**
+  - **Phase 73 — Determinism Baseline** (DETERM-01, DETERM-02, DETERM-03): hard prerequisite for Phases 74-77. Skip-modifier sweep + 19 data-loading races + 98 playwright/* warnings.
+  - **Phase 74 — High-Leverage E2E Coverage** (E2E-01..E2E-08): 8 high-leverage gaps in one phase, content-heavy. Depends on Phase 73 GREEN.
+  - **Phase 75 — Question-Rendering Specs** (QSPEC-01, QSPEC-02): 2 focused user-story specs. Parallel with 74 after 73.
+  - **Phase 76 — Profile + A11y** (A11Y-01, A11Y-02, A11Y-03): profile validation + reload-persistence + axe wiring. Parallel with 74 after 73.
+  - **Phase 77 — Settings Matrix + Question-Customization Gap-Fills** (SETTINGS-01, SETTINGS-02, SETTINGS-03): toggle matrix + allowOpen + visibility/required. Parallel with 74 after 73.
+  - **Phase 78 — Cleanup Hygiene Phase** (CLEAN-01, CLEAN-02, CLEAN-03, CLEAN-04): bundled like v2.7 P68 / v2.8 P72 trio. Independent of 73 — may run in parallel with 74-77. CLEAN-04 ↔ E2E-08 i18n pairing recorded with two valid orderings.
+- Phase numbering continues from v2.8 (last phase: 72); v2.9 starts at 73. No reset.
+- Plan count is TBD per phase (filled by `/gsd-plan-phase`); estimates per phase below.
 
 ### Decisions
 
 Full decision log in PROJECT.md Key Decisions table.
 
-Key cross-milestone reference points carried forward into v2.8:
+Key cross-milestone reference points carried forward into v2.9:
 
-- `@openvaa/dev-seed` is the canonical data path for both dev and E2E. The default seed at v2.7-close ships 2 alliances + 10 alliance-noms + 30/10 org-nom parent split — v2.8 Phase 69 consumes this directly.
-- Playwright parity baseline at v2.7 close: `67p / 1f / 34c` carrying forward from the v2.6 anchor at HEAD `2c7ad2dea`. v2.8 must not regress this baseline.
-- Supabase adapter reverse-fills `organizationNominationIds` on `Alliance` parents (the v2.6 P64 Plan 01 path) — empirically exercised since v2.7 SEED-01 but the *render path* is what Phase 69 actually closes.
-- CLAUDE.md "Context Destructuring Rule (Svelte 5)" subsection (codified in v2.7 Phase 65) is the permanent reference that BIND-01 (Phase 70) relies on — the inline rationale comments are removable precisely because the rule is documented structurally.
-- v2.7 Phase 68 Option C: 95 pre-existing `apps/frontend/` ESLint errors deferred to v2.8 with the explicit handoff in `.planning/milestones/v2.7-phases/68-dev-tooling-trio/68-02-DEFERRED.md`. v2.8 Phase 71 / TYPING-01 owns this resolution.
-- v2.6 Phase 63 Plan 01 hoisted `mergeSettings` + `DeepPartial` to `@openvaa/app-shared`; the `apps/frontend/src/lib/utils/merge.ts` re-export shim was added as a transitional measure. v2.8 Phase 72 / SHARED-02 retires that shim.
-- `@openvaa/app-shared` divergence from the canonical core/data/matching/filters paradigm has been on the pending-todo list since 2026-04-25; v2.8 Phase 72 / SHARED-01 normalises it.
-- `@openvaa/supabase` `yarn supabase:lint` script semantics are SQL-only (sqlfluff) but the script name conflates with the monorepo's JS/TS `lint:check` convention. v2.8 Phase 72 / LINT-01 disambiguates.
-- All v2.8 work is frontend / package-level — NO Supabase migrations, NO E2E coverage expansion (E2E is v2.9 anchor).
-- [Phase ?]: Phase 72 Plan 01 — Option A taken for CLAUDE.md anchor (D-03 default). Net +2 lines in CLAUDE.md.
-- [Phase ?]: Phase 72 Plan 01 — Dual-build justification rewritten to 'future-compatibility hedge' language per RESEARCH A1 flag.
-- [Phase 72 Plan 02]: Cosmetic import merge applied — combined `DeepPartial` with existing `VideoContent` type-import (both from `@openvaa/app-shared`) in both `layoutContext.svelte.ts` and `layoutContext.type.ts`. Auto-sorted by `simple-import-sort/imports` during eslint --fix.
-- [Phase 72 Plan 02]: D-07 audit confirmed only `apps/frontend/src/lib/utils/merge.ts` qualified as a shape-equivalent re-export shim; no follow-up todo needed.
-- [Phase 72 Plan 03]: D-02 hard rename completed — `yarn supabase:lint` now errors with "Couldn't find a script named 'supabase:lint'" (no deprecated alias). New target: `yarn supabase:lint:sql`.
-- [Phase 72 Plan 03]: RESEARCH-verified non-edits held — zero changes to `turbo.json` or `.github/workflows/`. Turborepo's lint task is script-existence-driven; supabase workspace drops out of the JS lint fan-out cleanly with `<NONEXISTENT>` placeholder (no failing task).
-- [Phase 72 Plan 03]: ROADMAP SC-3 satisfied — `yarn lint:check` no longer invokes `supabase db lint` (verified by output grep returning 0).
-- [Phase 70 Plan 01]: Option A applied uniformly to all 9 Cat A state_referenced_locally sites — no Option B flips. Default per RESEARCH.md verdict held.
-- [Phase 70 Plan 01]: Diff is comment-only — every offending line preserved verbatim, only preceded by a 2-3 line prose+ignore preamble. Manual reactivity smoke deferred to /gsd-verify-work 70 cold-start protocol.
-- [Phase 70]: Plan 02 — Pattern 2 (3-part Snippet patch) applied verbatim to WithPolling.svelte; Cat B surface fully resolved (1 site → 0 warnings).
-- [Phase 70]: Plan 02 — Did NOT touch startPolling()/onDestroy() lifecycle; Plan-70-04 (Wave 2) owns the SSR fetch-eagerness fix per RESEARCH.md wave-1/wave-2 sequencing.
-- [Phase 70]: Plan 02 — Manual children-render smoke deferred to phase-close /gsd-verify-work 70 cold-start protocol per CONTEXT.md D-04 (same handling as Plan 70-01).
-- [Phase 70]: Plan 03 — Pattern 3 Option A applied to Input.svelte:521; <label> → <button type="button"> with disabled={isDisabled}; Cat C surface fully resolved (1 → 0 warnings); workspace svelte-check now reports 0 WARNINGS overall.
-- [Phase 70]: Plan 03 — auto-mode visual-verify checkpoint auto-approved; manual keyboard + screen-reader smoke deferred to phase-close /gsd-verify-work 70 cold-start protocol per CONTEXT.md D-04 (same handling as Plans 70-01 and 70-02).
-- [Phase 70]: Plan 03 — line-546 <!-- bind: keep --> comment preserved (untouched) for Plan-70-05 to strip; line-214-217 multi-line // bind: migrate — block preserved by design (excluded from BIND-01 strip regex).
-- [Phase ?]: [Phase 70]: Plan 04 — Pattern 4 Option A applied to WithPolling.svelte; startPolling() now wrapped in onMount with cleanup-return; onDestroy import + standalone call removed (semantics absorbed).
-- [Phase ?]: [Phase 70]: Plan 04 — Cold-start curl-driven SSR (auto-mode, no auth) surfaced 0 fetch.*eagerly warnings pre-fix and post-fix; admin SSR coverage gap deferred to /gsd-verify-work 70 operator-driven walkthrough.
-- [Phase ?]: [Phase 70]: Plan 05 — BIND-01 SC-4 grep gate satisfied (26 → 0 matches across 24 files); 29 lines deleted; comment-only diff; bind:migrate block at Input.svelte:214-217 preserved by design.
-- [Phase ?]: [Phase 70]: Plan 05 — 54 HTML-comment-style <!-- bind: (keep|ok|justified) --> annotations remain in apps/frontend/src/lib/ (out of scope per RESEARCH.md regex; recommended follow-up todo if symmetry is desired).
+- v2.6 parity baseline `67p / 1f / 34c` at HEAD `2c7ad2dea` carries forward through v2.7 + v2.8. v2.9 Phase 73 / DETERM-02 either lifts this to a stable green count or explicitly re-baselines (whichever is honest given what investigation surfaces).
+- `@openvaa/dev-seed` is the canonical data path for both dev and E2E. v2.9 coverage phases will likely add new variant fixtures (multilocale, single-locale, low-minimum-answers, allowOpen-enabled, hidden-questions) on top of the existing default + e2e templates.
+- `test.skip(true, …)` sweep extends the v2.6 Phase 64 voter-results.spec.ts pattern (6 silent skips converted to `expect.poll().toBeGreaterThan(0)`). Protocol documented in `.planning/todos/pending/2026-04-27-remove-e2e-skip-modifiers.md`.
+- 98 `playwright/*` warnings are NOT auto-fixable; each requires manual rewriting (`no-conditional-in-test`, `no-raw-locators`, `no-networkidle`). Pairing DETERM-03 with DETERM-02 forces the rewrite of conditional / `networkidle` patterns that are the actual flakiness drivers.
+- E2E-08 (locale switching) and CLEAN-04 (i18n wrapper tightening) are deliberately paired — locale-switching coverage exercises the i18n wrapper improvements. Two valid orderings recorded in Phase 78 Pairing note (Order A: 78 first, then 74; Order B: 74 first, then 78). Either honest at planning time.
+- Phase 78 follows the v2.7 P68 / v2.8 P72 hygiene-trio bundling pattern — 4 small reqs in one phase, NOT split into 4 phases. Project convention for residual cleanup work.
+- A11Y-03 wiring + first-run baseline ONLY — cite-and-fix of WCAG violations surfaced is explicitly out of scope for v2.9, tracked as a follow-up todo at A11Y-03 close. Keeps Phase 76 bounded.
+- Phase 73 is the highest-risk phase of v2.9 (19 race-failure investigations, some may surface real product bugs requiring code fixes). Phases 74-77 are content-heavy (writing new Playwright specs against a now-stable suite). Phase 78 is low-risk hygiene.
+- All v2.9 work is testing + frontend / package-level — NO Supabase migrations, NO new test runners, NO E2E framework migration (Playwright 1.58.2 is the durable stack).
 
 ### Blockers/Concerns
 
-- Local imgproxy Docker container crashes intermittently (502 on image upload) — not a code issue; carry-forward infrastructure debt.
+- Local imgproxy Docker container crashes intermittently (502 on image upload) — not a code issue; carry-forward infrastructure debt. May affect Phase 76 A11Y-01 image-upload validation cells if it crashes during the run.
 - 165 pre-existing intra-package circular deps in `@openvaa/data` / `matching` / `filters` — deferred to a dedicated structural refactor milestone.
-- v2.8 risk profile is uniformly low: 1 small UI feature + 4 hygiene phases. No DB migrations, no public-API changes, no upstream dependencies. Phases can be discussed and planned in parallel per the v2.8 PROJECT.md note.
+- Phase 73 risk profile: high. The 19 data-loading races may include cases that surface real product bugs requiring code-level fixes (not test-level fixes), which could expand Phase 73 scope mid-execution. Phase planning will need to call out this branching risk explicitly.
 
 ## Session Continuity
 
-Last session: 2026-05-10T18:30:00Z
-Stopped at: v2.8 milestone shipped — all 4 phases complete, bundled parity gate PASSED, post-71 cleanup batch 2 landed; v2.9 framing inputs captured.
-Resume file: .planning/notes/2026-05-10-v2.9-e2e-coverage-inventory.md (E2E gap list + determinism-first plan)
-Next action: Run `/gsd-new-milestone` to frame v2.9 against the captured inputs. Carry-forward inputs:
+Last session: 2026-05-10T18:45:00Z
+Stopped at: v2.9 roadmap drafted — 6 phases (73-78), 23 requirements mapped 1:1, REQUIREMENTS.md Traceability filled, ROADMAP.md updated with Phase Details + Progress table rows for the new phases.
+Resume file: .planning/ROADMAP.md (Phase 73 Determinism Baseline section)
+Next action: Run `/gsd-plan-phase 73` to start planning the determinism baseline. Phase 73 is gating for Phases 74-77 — plan it first; Phase 78 (CLEAN) may be planned in parallel since it's independent of Phase 73.
 
-  - Determinism-first strategy: clear `test.skip(true, …)` (todo `2026-04-27-remove-e2e-skip-modifiers.md`) + fix 19 data-loading race failures BEFORE adding new coverage on top.
-  - 14 newly-catalogued E2E gaps + 2 NOT-REAL gaps (see `2026-05-10-v2.9-e2e-coverage-inventory.md`).
-  - 3 v2.8-→v2.9 carry-forward todos (playwright-hygiene-sweep, d04-per-cast-distribution, getroute-setstore-cleanup).
-  - 3 new operator todos captured 2026-05-10 (Luxembourg+Danish VAA changes; voter-not-located redirect; package-script rename `dev:* → db:*`).
-  - Existing v2.9 candidates: `2026-04-27-extend-e2e-filter-type-coverage.md`, `frontend-project-id-scoping.md`, `results-url-refactor-followups.md`.
-
-### Plan-count estimate (drafted 2026-05-08)
+### Plan-count estimate (drafted 2026-05-10)
 
 | Phase | Likely plan count | Notes |
 |-------|-------------------|-------|
-| 69 — Alliance Card Lane A | 2 plans | (1) EntityCard subentities branch + cardContents widening; (2) drawer wiring + manual smoke + parity verification |
-| 70 — Warning Sweep + bind-rationale Cleanup | 2-3 plans | (1) Category A — `state_referenced_locally` rewrites; (2) Categories B + C — missing-render + a11y; (3) bind-comment strip + verification (may collapse 1+3 if scope is small) |
-| 71 — Frontend Strict-Typing Cleanup | 2-3 plans | (1) `no-explicit-any` 67-error sweep; (2) `naming-convention` + `func-style` + long-tail; (3) verification (may collapse 2+3) |
-| 72 — Package Hygiene Trio | 3 plans | (1) SHARED-01 — `@openvaa/app-shared` paradigm; (2) SHARED-02 — `mergeSettings` shim retire; (3) LINT-01 — `@openvaa/supabase` lint-script rename — same shape as v2.7 Phase 68 trio |
+| 73 — Determinism Baseline | 4-6 plans | (1) skip-modifier classification + sweep; (2-4) data-loading race investigations clustered by failure type (initial-fetch race / subscription-not-flushed / auth-cookie / hydration-timing); (5) playwright/* warning sweep paired with the conditional/networkidle rewrites; (6) verification + parity gate. Range depends on how many of the 19 races cluster into a shared root cause. |
+| 74 — High-Leverage E2E Coverage | 6-8 plans | Likely 1 plan per E2E-0X requirement; E2E-04 the largest given the 5-cell selector matrix; E2E-05 + E2E-07 may bundle since both extend voter-detail.spec.ts. |
+| 75 — Question-Rendering Specs | 2 plans | (1) QSPEC-01 Boolean spec; (2) QSPEC-02 categorical spec. Small + focused. |
+| 76 — Profile + A11y | 3-4 plans | (1) A11Y-01 profile validation; (2) A11Y-02 profile reload-persistence; (3) A11Y-03 axe wiring; potentially (4) split A11Y-03 into "wire harness" + "first-run baseline + follow-up todo capture". |
+| 77 — Settings Matrix | 3-5 plans | SETTINGS-01 likely 2-3 plans (toggle matrix breadth); SETTINGS-02 + SETTINGS-03 likely 1 plan each. |
+| 78 — Cleanup Hygiene Phase | 4-5 plans | 1 per CLEAN-0X requirement, with CLEAN-03 potentially splitting into 1 plan per sub-finding given the 3-pack shape; matches the v2.8 Phase 72 trio plan-count cadence. |
 
-**Total v2.8 estimate:** ~9-11 plans across 4 phases. Risk: low (uniformly small phases, no DB migration, no breaking-API change).
+**Total v2.9 estimate:** ~22-30 plans across 6 phases. Risk: high on Phase 73 (race investigations may surface code-level bugs); moderate on Phases 74-77 (content-heavy spec authoring against a now-stable suite); low on Phase 78 (hygiene bundle).
 
 ## Operator Next Steps
 
-- v2.8 is shipped (2026-05-10). Audit at `.planning/milestones/v2.8-MILESTONE-AUDIT.md`.
-- Run `/gsd-new-milestone` to frame v2.9. The captured inputs (E2E coverage inventory, determinism-first strategy, 3 operator todos, 3 carry-forward todos from v2.8) live at:
-  - `.planning/notes/2026-05-10-v2.9-e2e-coverage-inventory.md` — E2E gap list + REAL/NOT-REAL classification
-  - `.planning/todos/pending/2026-05-10-*.md` — 6 new pending entries (3 carry-forward + 3 operator)
+- v2.9 ROADMAP.md drafted (2026-05-10). Phase 73 is the gating prerequisite for Phases 74-77; Phase 78 is independent and may run in parallel.
+- Run `/gsd-plan-phase 73` to begin planning the determinism baseline. Optionally run `/gsd-plan-phase 78` in parallel since it's independent of Phase 73.
+- After Phase 73 verification passes (3-run-stable, 0 skipped, 0 warnings), Phases 74, 75, 76, 77 may be planned concurrently — they share the determinism prerequisite but are independent of each other.
 - Reminder: Commits in this repo must use `git -c core.hooksPath=/dev/null` until global config is fixed (`project_gsd_repo_hook_workaround.md`).
+- Reminder: Discuss multiple independent phases together so planning can run autonomously (`feedback_batch_discussions.md`). Phases 74, 75, 76, 77, 78 are all independent of each other (74-77 share Phase 73 prerequisite; 78 is fully independent) — natural batch candidates once Phase 73 is mid-flight.

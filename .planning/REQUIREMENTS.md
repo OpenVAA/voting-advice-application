@@ -132,30 +132,30 @@ _Items tracked but not in v2.9 scope. Carry forward to v2.10+ or backlog._
 
 ## Traceability
 
-_Filled by `/gsd-new-milestone` roadmapper after roadmap creation. Each requirement maps to exactly one phase._
+_Each requirement maps to exactly one phase. Filled by `/gsd-new-milestone` roadmapper at roadmap creation (2026-05-10). 23 requirements / 6 phases / 100% coverage._
 
 | REQ-ID | Phase | Notes |
 |--------|-------|-------|
-| DETERM-01 | TBD | |
-| DETERM-02 | TBD | |
-| DETERM-03 | TBD | |
-| E2E-01 | TBD | |
-| E2E-02 | TBD | |
-| E2E-03 | TBD | |
-| E2E-04 | TBD | |
-| E2E-05 | TBD | |
-| E2E-06 | TBD | |
-| E2E-07 | TBD | |
-| E2E-08 | TBD | |
-| QSPEC-01 | TBD | |
-| QSPEC-02 | TBD | |
-| A11Y-01 | TBD | |
-| A11Y-02 | TBD | |
-| A11Y-03 | TBD | |
-| SETTINGS-01 | TBD | |
-| SETTINGS-02 | TBD | |
-| SETTINGS-03 | TBD | |
-| CLEAN-01 | TBD | |
-| CLEAN-02 | TBD | |
-| CLEAN-03 | TBD | |
-| CLEAN-04 | TBD | |
+| DETERM-01 | Phase 73 | Skip-modifier sweep — extends v2.6 Phase 64 voter-results.spec.ts pattern |
+| DETERM-02 | Phase 73 | 19 data-loading races — paired with DETERM-03 (same patterns drive both) |
+| DETERM-03 | Phase 73 | 98 `playwright/*` warnings — paired with DETERM-02 |
+| E2E-01 | Phase 74 | Multilocale candidate translation surface |
+| E2E-02 | Phase 74 | Browse-without-match results |
+| E2E-03 | Phase 74 | Feedback dialog persistence |
+| E2E-04 | Phase 74 | Election + constituency selector matrix (5 cells) |
+| E2E-05 | Phase 74 | Voter answer in entity details (4 cases) |
+| E2E-06 | Phase 74 | Skip / delete / back navigation |
+| E2E-07 | Phase 74 | Per-category SubMatch breakdown |
+| E2E-08 | Phase 74 | Locale switching — paired with CLEAN-04 (i18n wrapper) per Phase 78 Pairing note |
+| QSPEC-01 | Phase 75 | Boolean question rendering (voter flow) |
+| QSPEC-02 | Phase 75 | Categorical (single+multi) question rendering (voter flow) |
+| A11Y-01 | Phase 76 | Candidate profile validation rejection paths |
+| A11Y-02 | Phase 76 | Candidate profile reload-persistence (extends v2.1 CAND-12) |
+| A11Y-03 | Phase 76 | `@axe-core/playwright` WCAG 2.1 AA smoke wiring (5 routes) |
+| SETTINGS-01 | Phase 77 | `appSettings` / `appCustomization` per-toggle matrix — folds `2026-04-27-extend-e2e-filter-type-coverage` |
+| SETTINGS-02 | Phase 77 | `customData.allowOpen` (closes v2.0 milestone-notes gap) |
+| SETTINGS-03 | Phase 77 | Per-question visibility flags + must-answer enforcement |
+| CLEAN-01 | Phase 78 | `dev:* → db:*` rename + `dev:clean` + `db:reset` chain |
+| CLEAN-02 | Phase 78 | Voter-not-located deferred-target redirect |
+| CLEAN-03 | Phase 78 | Post-71 carry-forward trio (D-04 distribution + `setStore` cleanup + CLAUDE.md anchor) |
+| CLEAN-04 | Phase 78 | i18n wrapper tightening — paired with E2E-08 per Phase 78 Pairing note |
