@@ -58,9 +58,9 @@ setup('import test dataset', async () => {
   //    `frontend-project-id-scoping` (v2.9 candidate).
   {
     const requireFresh = process.env.E2E_REQUIRE_FRESH_DB === 'true';
-    const candQuery = await client.query('candidates');
+    const candQuery = client.query('candidates');
     const { data: nonTestCands, error: candErr } = await candQuery.not('external_id', 'like', `${PREFIX}%`).limit(5);
-    const orgQuery = await client.query('organizations');
+    const orgQuery = client.query('organizations');
     const { data: nonTestOrgs, error: orgErr } = await orgQuery.not('external_id', 'like', `${PREFIX}%`).limit(5);
 
     if (candErr || orgErr) {

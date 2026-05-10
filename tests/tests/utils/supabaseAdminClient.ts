@@ -247,7 +247,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
    * @param collection - Collection name (camelCase or snake_case)
    * @returns PostgREST query builder scoped to this project
    */
-  async query(collection: string) {
+  query(collection: string) {
     const tableName = resolveCollectionName(collection);
     return this.client.from(tableName).select('*').eq('project_id', this.projectId);
   }
