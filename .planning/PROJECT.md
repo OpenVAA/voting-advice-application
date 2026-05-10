@@ -25,41 +25,44 @@ A reliable, well-tested VAA framework that developers can confidently extend, cu
 
 Known infrastructure issue: local imgproxy Docker container crashes intermittently (502 on image upload) — not a code issue, fix with `supabase stop && supabase start`.
 
-## Last Shipped: v2.7 Svelte 5 Polish + Supabase-Adapter Loose Ends (2026-05-08)
+## Last Shipped: v2.8 Alliance Card + Frontend Hygiene Sweep (2026-05-10)
 
-**Delivered:** 4 phases (65-68), 9 plans, 28 tasks across 9 days. Closed the v2.6 supabase-adapter cleanup tail and the deferred Svelte 5 audit sweeps in one cohesive milestone.
+**Delivered:** 4 phases (69-72), 13 plans, ~37 tasks across 3 days. Closed v2.7's deferred Svelte 5 / typing / lint / packaging loose ends and finished the alliance card render path in one cohesive frontend hygiene + small-UI-feature milestone. Bundled parity gate PASSED across Phases 69+70+71.
 
-- **Phase 65 (SVELTE5-01/02/03):** 92 `bind:*` directives audited and justified across `apps/frontend/src/lib/**/*.svelte`; 2 `{#key}` annotations + 1 Pattern B keyed each + 6 reactive-accessor destructure rewrites; CLAUDE.md "Context Destructuring Rule (Svelte 5)" subsection codifies the v2.6 P61-03 hazard structurally with a 22-name reactive-accessor catalog.
-- **Phase 66 (ADAPTER-01):** `supabaseDataProvider.ts` zero `as unknown as { ... }` casts over the v2.6 P64 reverse-fill pass; `InternalFlatNomination` defined once in a sibling `.types.ts` file; svelte-check baseline preserved (160 err / 12 warn); v2.6 parity gate `67p/1f/34c` identical to anchor. (Phase 66 scope narrowed mid-discussion — DB-01 deferred per user; `nominations` table kept as is.)
-- **Phase 67 (SEED-01):** Default seed ships 2 alliances (Progressive Front + Conservative Bloc) + 10 alliance-noms + 30/10 org-nom parent split; the v2.6 P64 supabase-adapter alliance reverse-fill of `organizationNominationIds` is empirically exercised on every dev-seed run; 3 cross-cutting bugs surfaced + fixed during smoke (AllianceNomination dual-emission constructor, partial seed `results` block wipe, missing optional-chain on `cardContents` reads). Verification status: PASS-WITH-CONCERNS (alliance-card render path deferred to follow-up todo with 3 lanes; SC-2 literal acceptance — populated alliance surface — met via the 3-tab visible surface).
-- **Phase 68 (DEVTOOLS-01/02/03):** Frontend autoreloads on `@openvaa/*` source via Turborepo `--watch` composed with Vite HMR over `dist/` (existing `yarn watch:shared` script); `vite-plugin-restart` watches root `.env` for full Vite restart; `concurrently` composes `yarn dev` to launch both. ESLint gains `eslint-plugin-unused-imports` + `no-restricted-imports` `$lib`-preference rule + paraglide `ignores`; auto-fix sweep clears the new-rule violations to 0. Deno IDE scope inverted from 6 wrong entries (incl. phantom `_deno_shims/`) to single correct path `apps/supabase/supabase/functions` (note: doubled `supabase/`; CONTEXT.md D-03 path was wrong); `.gitignore` carve-out makes the fix team-durable. **Option C deferral:** 95 pre-existing `apps/frontend/` ESLint errors (67 `no-explicit-any`, 13 `naming-convention`, 11 `func-style`, etc.) accumulated through Phases 60-67; tracked in `.planning/milestones/v2.7-phases/68-dev-tooling-trio/68-02-DEFERRED.md` for a v2.8 cleanup phase.
-- **Audit verdict:** `tech_debt` — 8/8 requirements wired end-to-end; cross-phase connections (adapter↔seed↔matching) verified; `yarn build` + `yarn test:unit` green; v2.6 parity gate `67p/1f/34c` continues to pass at HEAD. Three documented deferrals carried forward (Phase 67 alliance-card render, Phase 68 Option C, Phase 68 `@openvaa/supabase` lint-script bug).
+- **Phase 69 (ALLIANCE-01):** Voter results "Alliances" tab renders working entity cards. EntityCard's "subentities" branch extended to handle `OBJECT_TYPE.AllianceNomination → OrganizationNomination` (was hard-coded `OrganizationNomination → CandidateNomination`); `cardContents.alliance` widened with `'organizations'` token; drawer-open path from alliance card works (info + member-orgs tabs; no opinions tab — alliances do not have own answers). Reconciles v2.7 SEED-01 SC-2 PASS-WITH-CONCERNS to PASS.
+- **Phase 70 (WARN-01 + BIND-01):** Svelte 5 / SSR / a11y warning sweep across three categories — Cat A (`state_referenced_locally`, 9 sites) rewritten via Option A inline ignore-with-rationale preamble; Cat B (1 missing `{@render children()}` site in `WithPolling.svelte`) fixed via 3-part Snippet patch; Cat C (1 a11y `<label>` interactive-target) fixed via `<button type="button">`. Plus: 92 inline `// bind: keep —` rationale comments stripped from `apps/frontend/src/lib/**/*.svelte` (BIND-01 SC-4 grep gate satisfied 26 → 0 across 24 files). Workspace svelte-check ends at 0 warnings.
+- **Phase 71 (TYPING-01):** 95 pre-existing `apps/frontend/` ESLint errors deferred under v2.7 Phase 68 Option C resolved. 67 `@typescript-eslint/no-explicit-any` errors fixed via real types (preferred) or `unknown` + runtime narrow + inline `// reason:` D-04 anchor (introduced fresh in this phase); 13 `naming-convention` + 11 `func-style` + 4 long-tail also resolved. Frontend lint baseline now 0 errors / 98 warnings (warnings out of scope — tracked as `2026-05-10-tests-playwright-hygiene-sweep` for v2.9 Phase A). Svelte-check baseline 159 errors (≤ 160 gate; net −1 incidental tightening). Verification: PASS-WITH-DEFERRAL (Playwright manual smoke deferred to bundled parity gate that subsequently PASSED).
+- **Phase 72 (SHARED-01 + SHARED-02 + LINT-01):** `@openvaa/app-shared` normalised to match `core`/`data`/`matching`/`filters` paradigm (flat `src/index.ts` barrel, `tsconfig.json` extends shared-config, `tsup.config.ts`, no `.js` extensions on TS-internal relative imports — packages/README.md captures the canonical paradigm). `mergeSettings` re-export shim in `apps/frontend/src/lib/utils/merge.ts` retired (3 consumers re-pointed to `@openvaa/app-shared`). `@openvaa/supabase` lint-script disambiguated (`yarn supabase:lint` → `yarn supabase:lint:sql`; root `yarn lint:check` no longer invokes SQL linter). Same shape as v2.7 Phase 68 Dev-Tooling Trio.
+- **Audit verdict:** parity gate PASS across the bundled smoke; all 7 v2.8 requirements wired end-to-end; `yarn build` + `yarn test:unit` + workspace svelte-check + frontend lint:check all green; v2.6 parity baseline `67p/1f/34c` holds at HEAD. Post-fix cleanup batches landed for Phase 69 + Phase 71. Carry-forward debt: 19 data-loading race E2E failures (PROJECT.md Future), 98 `playwright/*` warnings in `tests/`, `test.skip(true, …)` modifiers across the suite — all anchored as v2.9's "determinism first" phase.
 
-**Out of scope (deferred to v2.8+):** `results-url-refactor-followups` + `frontend-project-id-scoping` — pair as a "sharable URLs + multi-tenant" milestone. Plus: `nominations` table cleanup (DB-01); 95 pre-existing frontend lint errors; alliance card render UI work; `@openvaa/supabase` lint-script rename.
+**Out of scope (deferred to v2.9+):** E2E coverage workstream (now the v2.9 anchor — see Current Milestone above). Sharable URLs + multi-tenant pair (`results-url-refactor-followups` + `frontend-project-id-scoping`) deferred to v2.10. Luxembourg + Danish VAA reconciliation (`2026-05-10-incorporate-luxembourg-and-danish-vaa-changes`) deferred to a separate milestone; deltas unscoped.
 
-## Current Milestone: v2.8 Alliance Card + Frontend Hygiene Sweep
+## Current Milestone: v2.9 E2E Coverage + Suite Determinism
 
-**Goal:** Close v2.7's deferred Svelte 5 / typing / lint loose ends and finish the alliance card render path, in one cohesive frontend hygiene + small-UI-feature milestone.
+**Goal:** Reduce the Playwright suite to a hard pass/fail signal first (skip-modifier sweep + 19 data-loading races + 98 `playwright/*` warnings), then add high-leverage coverage on top of that stable base — translation surface, browse-without-match, election/constituency selector matrix, voter answer rendering, skip/delete/back navigation, locale switching, focused question-rendering specs, candidate profile validation+persistence, automated a11y, and the `appSettings`/`appCustomization` toggle matrix. Close residual operator + post-71 hygiene todos in a final cleanup phase.
 
-**Target features (7):**
+**Target features (operator-pre-drafted, 6 phases A–F):**
 
-- Alliance card render path (Lane A — full alliance card with member-orgs surface; reconciles v2.7 SEED-01 SC-2 PASS-WITH-CONCERNS)
-- Svelte 5 / SSR / a11y warning sweep (consolidated `state_referenced_locally` + missing `<slot />` / `{@render children()}` + a11y warnings surfaced during Phase 67 UAT)
-- Frontend strict-typing cleanup (95 pre-existing ESLint errors deferred under v2.7 Phase 68 Option C — 67 `no-explicit-any`, 13 `naming-convention`, 11 `func-style`, etc.)
-- `@openvaa/app-shared` paradigm normalisation (imports/barrel/build conventions aligned with core/data/matching/filters)
-- Remove `mergeSettings` re-export shim in `apps/frontend/src/lib/utils/merge.ts`
-- `@openvaa/supabase` lint-script rename (SQL/ESLint pipeline conflation)
-- Phase 65 Plan 01 `bind:*` rationale comment cleanup (strip 92 inline `// bind: keep —` lines now that the audit is captured in CLAUDE.md)
+- **Determinism baseline** — clear all `test.skip(true, …)` modifiers across the suite (extends v2.6 Phase 64 voter-results sweep), resolve 19 known data-loading race E2E failures, sweep 98 pre-existing `playwright/*` warnings (`no-conditional-in-test`, `no-raw-locators`, `no-networkidle`). Gating prerequisite for all subsequent coverage phases.
+- **High-leverage E2E coverage** — multilocale candidate translation surface, browse-without-match results, feedback dialog persistence (text retained on dismiss + reset on send), election/constituency selector matrix (1e×1c / 1e×Nc / Ne×1c / Ne×Nc + startFromConstituency), voter answer in entity details (4-case matrix), skip/delete/back navigation, per-category match SubMatch breakdown, locale switching (route-prefixed + locale-switcher widget).
+- **Question-rendering specs** — focused user-story specs for Boolean + categorical question rendering in voter flow (deduplicated against matching tests).
+- **Profile + a11y** — candidate profile validation rejection paths, full profile-field reload-persistence (extending v2.1 CAND-12), `@axe-core/playwright` integration with WCAG 2.1 AA smoke against home/selector/questions/results/voter-detail routes.
+- **Settings matrix** — per-toggle coverage of `appSettings` / `appCustomization` (consumes existing `2026-04-27-extend-e2e-filter-type-coverage` todo).
+- **Cleanup hygiene phase (Phase F shape, like v2.7 P68 / v2.8 P72)** — `dev:* → db:*` script rename + `dev:clean` cache wipe (todo `2026-05-10-rename-package-scripts-dev-to-db`); voter-not-located deferred-target redirect through selectors (todo `2026-05-10-redirect-unlocated-voter-to-selectors`); post-71 carry-forward trio (`2026-05-10-d04-per-cast-reason-distribution` + `2026-05-10-getroute-setstore-cast-cleanup` + `2026-05-09-claude-md-svelte-warning-accepted-format`); `2026-05-09-tighten-i18n-wrapper` folded in as i18n hygiene paired with locale-switching coverage.
 
-**Out of scope (deferred to v2.9+):**
+**Out of scope (deferred to v2.10+):**
 
-- **E2E coverage workstream** — inventory captured in `.planning/notes/2026-05-08-e2e-test-inventory.md` (~103 tests, ~30 gap categories). User-led audit of the inventory is the input to the v2.9 requirements step.
-- **Sharable URLs + multi-tenant pair** — `results-url-refactor-followups` + `frontend-project-id-scoping`. Pair best together; benefits from v2.8's typing cleanup landing first.
+- **Sharable URLs + multi-tenant pair** — `results-url-refactor-followups` + `frontend-project-id-scoping`. Too much for one milestone alongside the E2E anchor; benefits from v2.8 typing cleanup landing first (now done).
+- **Luxembourg + Danish VAA reconciliation** — todo `2026-05-10-incorporate-luxembourg-and-danish-vaa-changes`. Operator deferred to a separate milestone; deltas are unscoped.
+- **`2026-05-09-rewrite-parent-answer-imputation`** — matching-package internal; carries forward to a future matching-focused milestone.
+- **DB-01 nominations-table cleanup**, **party-app generalization**, **candidate-answer-store investigation**, **Strapi-era auth-flow leftovers**, **`configurable-mock-data`**, **`adapter-package-loading`**, **`rename-admin-writer`**, **165 intra-package circular deps** — pending in `.planning/todos/pending/` for future milestones.
 
 **Key context:**
 
-- All 7 v2.8 features cluster as 1 small user-facing feature (alliance card) + 6 frontend/package hygiene items. Risk profile: low. Phases can be discussed and planned in parallel.
-- Pending todos remain in `.planning/todos/pending/` for future milestones: party-app generalization, candidate-answer-store investigation, password-reset-code-method + register-page-registrationkey-method (Strapi-era cleanup), configurable-mock-data, adapter-package-loading, rename-admin-writer.
+- "Determinism first" is gating: nothing in the new-coverage phases lands until Phase A passes. Without a stable baseline, new tests look like just-another-flake — v2.9's contract is "0 skipped / 0 races / 0 playwright warnings before Phase B begins."
+- Phases B, C, D, E can be developed in parallel after A. Phase F is residual cleanup tail (operator todos + post-71 carry-forward).
+- Phase numbering continues from v2.8 last phase (72) → v2.9 starts at **Phase 73**.
+- Captured framing source: `.planning/notes/2026-05-10-v2.9-e2e-coverage-inventory.md` (E2E gap inventory + REAL/NOT-REAL classification, compiled 2026-05-10 during v2.8 close). Underlying gap inventory: `.planning/notes/2026-05-08-e2e-test-inventory.md`.
 
 ## Requirements
 
@@ -144,22 +147,28 @@ Known infrastructure issue: local imgproxy Docker container crashes intermittent
 - ✓ Frontend autoreload composed via Turborepo `--watch` + Vite HMR over `dist/` (existing `yarn watch:shared`) + `vite-plugin-restart` for `.env`; root `yarn dev` script launches package watcher + Vite dev concurrently; `apps/frontend/README.md` Dev workflow section documents the contract — v2.7 (Phase 68 / DEVTOOLS-01)
 - ✓ ESLint gains `eslint-plugin-unused-imports` + `no-restricted-imports` `$lib`-preference rule + paraglide `ignores`; new rules surface 0 violations; lint:fix auto-sweep applied. _(95 pre-existing apps/frontend errors deferred per user-approved Option C — v2.8 candidate)_ — v2.7 (Phase 68 / DEVTOOLS-02)
 - ✓ Deno IDE scope corrected to `apps/supabase/supabase/functions` (doubled `supabase/`; CONTEXT.md D-03 had wrong path); 5 wrong package entries + phantom `_deno_shims/` removed; `.vscode/settings.json` tracked via `.gitignore` carve-out — v2.7 (Phase 68 / DEVTOOLS-03)
+- ✓ Voter results "Alliances" tab renders working entity cards via EntityCard subentities-branch widening to handle `OBJECT_TYPE.AllianceNomination → OrganizationNomination`; `cardContents.alliance` widened with `'organizations'` token; alliance-detail drawer renders info + member-orgs tabs (no opinions tab — alliances do not own answers); reconciles v2.7 SEED-01 SC-2 PASS-WITH-CONCERNS to PASS — v2.8 (Phase 69 / ALLIANCE-01)
+- ✓ Svelte 5 / SSR / a11y warning sweep across three categories — Cat A (`state_referenced_locally`, 9 sites) Option A inline ignore-with-rationale preamble; Cat B (1 missing `{@render children()}` in `WithPolling.svelte`) 3-part Snippet patch; Cat C (1 a11y `<label>` interactive-target) `<button type="button">` replacement; workspace svelte-check ends at 0 warnings — v2.8 (Phase 70 / WARN-01)
+- ✓ 92 inline `// bind: keep —` rationale comments stripped from `apps/frontend/src/lib/**/*.svelte`; `bind:*` directives left untouched; rationale captured permanently in CLAUDE.md "Context Destructuring Rule (Svelte 5)" section; grep gate `git grep -nE "// bind: (keep\|ok\|justified)"` 26 → 0 across 24 files — v2.8 (Phase 70 / BIND-01)
+- ✓ Frontend strict-typing cleanup — 95 pre-existing `apps/frontend/` ESLint errors (deferred under v2.7 Phase 68 Option C: 67 `no-explicit-any`, 13 `naming-convention`, 11 `func-style`, 4 long-tail) all resolved via real types or `unknown` + runtime narrow + inline `// reason:` D-04 anchor; frontend lint baseline 0 errors / 98 warnings (warnings → v2.9 Phase A); svelte-check 159 errors (≤ 160 gate, net −1 incidental tightening) — v2.8 (Phase 71 / TYPING-01)
+- ✓ `@openvaa/app-shared` normalised to canonical core/data/matching/filters paradigm — flat `src/index.ts` barrel, `tsconfig.json` extends shared-config, `tsup.config.ts`, no `.js` extensions on TS-internal relative imports; `packages/README.md` captures the canonical paradigm anchor — v2.8 (Phase 72 / SHARED-01)
+- ✓ `mergeSettings` re-export shim in `apps/frontend/src/lib/utils/merge.ts` retired; consumers re-pointed to `@openvaa/app-shared` directly; `git grep -nE "from ['\"]\\$lib/utils/merge['\"]"` returns 0 matches — v2.8 (Phase 72 / SHARED-02)
+- ✓ `@openvaa/supabase` lint-script disambiguated — `yarn supabase:lint` → `yarn supabase:lint:sql`; root `yarn lint:check` no longer invokes SQL linter; turbo task fan-out unaffected (script-existence-driven); CLAUDE.md Supabase Commands updated — v2.8 (Phase 72 / LINT-01)
 
 ### Active
 
-**v2.8 — Alliance Card + Frontend Hygiene Sweep** (current milestone — see "Current Milestone: v2.8" above for the full target-feature list and out-of-scope notes)
+**v2.9 — E2E Coverage + Suite Determinism** (current milestone — see "Current Milestone: v2.9" above for the full goal + 6-phase A–F shape)
 
-- [ ] Alliance card render path (Lane A)
-- [ ] Svelte 5 / SSR / a11y warning sweep
-- [ ] Frontend strict-typing cleanup (95 ESLint errors)
-- [ ] `@openvaa/app-shared` paradigm normalisation
-- [ ] Remove `mergeSettings` re-export shim
-- [ ] `@openvaa/supabase` lint-script rename
-- [ ] Phase 65 Plan 01 `bind:*` rationale comment cleanup
+- [ ] Determinism baseline: clear `test.skip(true, …)` modifiers + resolve 19 data-loading race E2E failures + sweep 98 `playwright/*` warnings (`no-conditional-in-test` / `no-raw-locators` / `no-networkidle`)
+- [ ] High-leverage E2E coverage: multilocale candidate translation surface, browse-without-match, feedback dialog persistence, election/constituency selector matrix, voter answer in entity details (4-case), skip/delete/back navigation, per-category match SubMatch breakdown, locale switching
+- [ ] Question-rendering specs: Boolean + categorical voter-flow user-story specs (deduplicated against matching tests)
+- [ ] Profile + a11y: candidate profile validation rejection paths + full profile-field reload-persistence + `@axe-core/playwright` WCAG 2.1 AA smoke
+- [ ] Settings matrix: `appSettings`/`appCustomization` per-toggle coverage (consumes `2026-04-27-extend-e2e-filter-type-coverage`)
+- [ ] Cleanup hygiene phase: `dev:* → db:*` script rename + `dev:clean`; voter-not-located deferred-target redirect; post-71 carry-forward trio (`d04-per-cast-reason-distribution`, `getroute-setstore-cast-cleanup`, `claude-md-svelte-warning-accepted-format`); `tighten-i18n-wrapper` as i18n hygiene paired with locale-switching coverage
 
-**Likely v2.9 candidates** (carried forward, deferred from v2.8 scoping):
-- E2E coverage gap closure + suite determinism — anchored on `.planning/notes/2026-05-08-e2e-test-inventory.md` (user-led inventory audit pending)
+**Likely v2.10 candidates** (carried forward, deferred from v2.9 scoping):
 - "Sharable URLs + multi-tenant" pair: `results-url-refactor-followups` + `frontend-project-id-scoping`
+- Luxembourg + Danish VAA reconciliation (`2026-05-10-incorporate-luxembourg-and-danish-vaa-changes`) — once deltas are scoped
 
 **Other pending todos** (carried forward, lower priority — not on a current milestone roadmap):
 - Generalize candidate app to support parties as first-class registrants
@@ -167,7 +176,7 @@ Known infrastructure issue: local imgproxy Docker container crashes intermittent
 - `password-reset-code-method` + `register-page-registrationkey-method` (Strapi-era leftovers; both medium priority)
 - `configurable-mock-data` (Supabase replacement for `GENERATE_MOCK_DATA_ON_INITIALISE`)
 - `adapter-package-loading` (tsconfig-based importable adapter)
-- `extend-e2e-filter-type-coverage` + `remove-e2e-skip-modifiers` (will fold into the v2.9 E2E milestone)
+- `2026-05-09-rewrite-parent-answer-imputation` (matching-package internal — future matching-focused milestone)
 - `rename-admin-writer` (dev-seed internal API hygiene)
 - `sql-linting-formatting` (CI hygiene)
 
@@ -237,14 +246,15 @@ Each major initiative is a separate milestone, executed in order:
 11. ~~**Dev Data Seeding Toolkit**~~ — Shipped v2.5 (2026-04-24)
 12. ~~**Svelte 5 Migration Cleanup**~~ — Shipped v2.6 (2026-04-28). Runes migration for root + candidate-protected layouts; protected-layout hydration bug fixed via `$derived.by` discriminated-union pattern; `EntityListControls` infinite-loop resolved via `$state` version-counter bridge; voter-app question/results surfaces fully reactive; `PopupRenderer` removed; e2e template ships `app_settings.fixed[]`
 13. ~~**Svelte 5 Polish + Supabase-Adapter Loose Ends**~~ — Shipped v2.7 (2026-05-08). 4 phases (65-68), 9 plans, 28 tasks. SVELTE5 audit sweeps (92 `bind:*` annotations, `{#key}` justifications, context-destructuring rule); ADAPTER-01 type cleanup (zero `as unknown as` casts, `InternalFlatNomination` intermediate); SEED-01 default-seed alliances exercising the v2.6 P64 reverse-fill (PASS-WITH-CONCERNS — alliance card render deferred); DEVTOOLS trio (autoreload via Turborepo `--watch` + Vite HMR + `vite-plugin-restart` + `concurrently`-composed `yarn dev`; ESLint gains `unused-imports` + `$lib`-preference; Deno IDE scope corrected to doubled `apps/supabase/supabase/functions`). 95 pre-existing frontend lint errors deferred per user-approved Option C
-14. **Alliance Card + Frontend Hygiene Sweep** (v2.8 — current) — Alliance card Lane A; Svelte 5 / SSR / a11y warning sweep; 95 ESLint errors strict-typing cleanup; `@openvaa/app-shared` paradigm normalisation; `mergeSettings` re-export shim removal; `@openvaa/supabase` lint-script rename; `bind:*` rationale-comment cleanup
-15. **E2E Coverage + Suite Determinism** (v2.9 candidate) — Fill gaps from `.planning/notes/2026-05-08-e2e-test-inventory.md`; remove all `test.skip(true, …)`; resolve 19 data-loading race failures; add filter-type / locale / a11y coverage
-16. **Sharable URLs + Multi-tenant** (v2.9 candidate, paired with above) — Shorter IDs / multi-election URL schema (`results-url-refactor-followups`) + per-instance project scoping in frontend data provider (`frontend-project-id-scoping`)
-17. **Claude Skills (remaining)** — Architect, components, LLM skills
-18. **Admin App Migration** — Move admin functions from Strapi plugin to frontend Admin App
-19. **Security Scanning** — Automated security, secrets scanning, and testing
-20. **Settings & Configuration Reorg** — Rationalize the split between StaticSettings, DynamicSettings, env vars, and the `app_settings` / `app_customization` tables; unify the customization paradigm across voter, candidate, and admin apps
-21. **Parties in Candidate App** — Generalize the candidate-app preregistration and profile flows so party organizations (not just individual candidates) can onboard, manage members, and maintain their public-facing data
+14. ~~**Alliance Card + Frontend Hygiene Sweep**~~ — Shipped v2.8 (2026-05-10). 4 phases (69-72), 13 plans, ~37 tasks across 3 days. Phase 69 ALLIANCE-01 (alliance card Lane A — EntityCard subentities widening + cardContents `'organizations'` token + drawer info+orgs tabs); Phase 70 WARN-01 + BIND-01 (Svelte 5 / SSR / a11y warning sweep — 9 Cat A + 1 Cat B + 1 Cat C sites cleared; 92 `bind:*` rationale comments stripped; svelte-check 0 warnings); Phase 71 TYPING-01 (95 pre-existing ESLint errors resolved via real types or `unknown` + runtime narrow + D-04 `// reason:` anchors; frontend lint baseline 0 errors / 98 warnings); Phase 72 SHARED-01/02 + LINT-01 (`@openvaa/app-shared` canonical-paradigm normalisation + `mergeSettings` shim retire + `supabase:lint` → `supabase:lint:sql` disambiguation). Bundled parity gate PASS.
+15. **E2E Coverage + Suite Determinism** (v2.9 — current) — Determinism baseline (clear `test.skip(true, …)` + resolve 19 data-loading race failures + sweep 98 `playwright/*` warnings); high-leverage coverage (translation surface, browse-without-match, election/constituency matrix, voter answer in entity details, skip/delete/back, locale switching); question-rendering specs (Boolean + categorical); profile + a11y (validation rejection paths + reload-persistence + `@axe-core/playwright` WCAG 2.1 AA smoke); `appSettings`/`appCustomization` toggle matrix; cleanup hygiene phase (`dev:* → db:*` rename + voter-not-located redirect + post-71 carry-forward trio + `tighten-i18n-wrapper`). Anchored on `.planning/notes/2026-05-10-v2.9-e2e-coverage-inventory.md`.
+16. **Sharable URLs + Multi-tenant** (v2.10 candidate) — Shorter IDs / multi-election URL schema (`results-url-refactor-followups`) + per-instance project scoping in frontend data provider (`frontend-project-id-scoping`). Pair as one milestone — multi-tenant prep wants typing cleanup landing first (now done in v2.8 P71).
+17. **Luxembourg + Danish VAA Reconciliation** (future) — Inventory deltas between downstream forks and upstream OpenVAA, classify each delta, and merge or reject explicitly. Source: `.planning/todos/pending/2026-05-10-incorporate-luxembourg-and-danish-vaa-changes.md`.
+18. **Claude Skills (remaining)** — Architect, components, LLM skills
+19. **Admin App Migration** — Move admin functions from Strapi plugin to frontend Admin App
+20. **Security Scanning** — Automated security, secrets scanning, and testing
+21. **Settings & Configuration Reorg** — Rationalize the split between StaticSettings, DynamicSettings, env vars, and the `app_settings` / `app_customization` tables; unify the customization paradigm across voter, candidate, and admin apps
+22. **Parties in Candidate App** — Generalize the candidate-app preregistration and profile flows so party organizations (not just individual candidates) can onboard, manage members, and maintain their public-facing data
 
 ## Key Decisions
 
@@ -360,4 +370,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-_Last updated: 2026-05-08 after v2.8 (Alliance Card + Frontend Hygiene Sweep) milestone scoped — 7 target features (1 user-facing UI feature + 6 frontend/package hygiene items). E2E coverage workstream + sharable URLs / multi-tenant pair deferred to v2.9. E2E test inventory captured at `.planning/notes/2026-05-08-e2e-test-inventory.md`._
+_Last updated: 2026-05-10 after v2.8 (Alliance Card + Frontend Hygiene Sweep) shipped + v2.9 (E2E Coverage + Suite Determinism) framed. v2.8 delivered 4 phases (69-72) / 13 plans / 7 requirements wired with bundled parity gate PASS. v2.9 anchor: determinism-first E2E reset (skip-modifier sweep + 19 data-loading races + 98 `playwright/*` warnings) before adding high-leverage coverage on a stable base. Operator-suggested 6 phases A–F captured in `.planning/notes/2026-05-10-v2.9-e2e-coverage-inventory.md`. Sharable URLs + multi-tenant pair deferred to v2.10. Phase numbering continues from 72 → v2.9 starts at Phase 73._

@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.8
-milestone_name: Alliance Card + Frontend Hygiene Sweep
-status: shipped
-stopped_at: "v2.8 shipped 2026-05-10 — bundled Phase 69+70+71 parity gate PASSED; 4 phases, 13 plans, all 7 requirements wired"
-last_updated: "2026-05-10T18:30:00Z"
-last_activity: 2026-05-10 -- v2.8 milestone closed; v2.9 framing pending
+milestone: v2.9
+milestone_name: E2E Coverage + Suite Determinism
+status: planning
+last_updated: "2026-05-10T15:41:37.121Z"
+last_activity: 2026-05-10
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 13
-  completed_plans: 13
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -25,9 +24,10 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 
 ## Current Position
 
-Milestone: v2.8 — SHIPPED 2026-05-10
-Next milestone: v2.9 — not yet planned (framing pending; see `.planning/notes/2026-05-10-v2.9-e2e-coverage-inventory.md`)
-Last activity: 2026-05-10 -- v2.8 closed; v2.9 inputs captured
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-05-10 — Milestone v2.9 started
 
 ## Performance Metrics
 
@@ -145,6 +145,7 @@ Last session: 2026-05-10T18:30:00Z
 Stopped at: v2.8 milestone shipped — all 4 phases complete, bundled parity gate PASSED, post-71 cleanup batch 2 landed; v2.9 framing inputs captured.
 Resume file: .planning/notes/2026-05-10-v2.9-e2e-coverage-inventory.md (E2E gap list + determinism-first plan)
 Next action: Run `/gsd-new-milestone` to frame v2.9 against the captured inputs. Carry-forward inputs:
+
   - Determinism-first strategy: clear `test.skip(true, …)` (todo `2026-04-27-remove-e2e-skip-modifiers.md`) + fix 19 data-loading race failures BEFORE adding new coverage on top.
   - 14 newly-catalogued E2E gaps + 2 NOT-REAL gaps (see `2026-05-10-v2.9-e2e-coverage-inventory.md`).
   - 3 v2.8-→v2.9 carry-forward todos (playwright-hygiene-sweep, d04-per-cast-distribution, getroute-setstore-cleanup).
