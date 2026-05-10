@@ -54,8 +54,9 @@ test.describe('app mode: answers locked (CAND-09)', { tag: ['@candidate'] }, () 
       access: { ...defaultAccess, answersLocked: true }
     });
 
-    // Navigate to candidate home page with full load to pick up settings
-    await page.goto(buildRoute({ route: 'CandAppHome', locale: 'en' }), { waitUntil: 'networkidle' });
+    // Navigate to candidate home page; the explicit testId wait below is the
+    // determinism contract (replaces former { waitUntil: 'networkidle' }).
+    await page.goto(buildRoute({ route: 'CandAppHome', locale: 'en' }));
 
     // The home page shows a Warning component when answersLocked is true
     // The Warning component renders with role-less div containing an icon and text.

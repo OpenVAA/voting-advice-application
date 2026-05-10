@@ -26,7 +26,6 @@ voterTest.describe('Voter Results - Desktop @visual', { tag: ['@visual'] }, () =
   voterTest.use({ viewport: { width: 1280, height: 720 } });
 
   voterTest('screenshot matches baseline', async ({ answeredVoterPage: page }) => {
-    await page.waitForLoadState('networkidle');
     await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible' });
 
     await voterTest.expect(page).toHaveScreenshot('voter-results-desktop.png', {
@@ -43,7 +42,6 @@ voterTest.describe('Voter Results - Mobile @visual', { tag: ['@visual'] }, () =>
   voterTest.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
 
   voterTest('screenshot matches baseline', async ({ answeredVoterPage: page }) => {
-    await page.waitForLoadState('networkidle');
     await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible' });
 
     await voterTest.expect(page).toHaveScreenshot('voter-results-mobile.png', {
@@ -62,7 +60,6 @@ test.describe('Candidate Preview - Desktop @visual', { tag: ['@visual'] }, () =>
   test('screenshot matches baseline', async ({ page }) => {
     await page.goto(buildRoute({ route: 'CandAppPreview', locale: 'en' }));
     await page.getByTestId(testIds.candidate.preview.container).waitFor({ state: 'visible' });
-    await page.waitForLoadState('networkidle');
 
     await expect(page).toHaveScreenshot('candidate-preview-desktop.png', {
       fullPage: true,
@@ -85,7 +82,6 @@ test.describe('Candidate Preview - Mobile @visual', { tag: ['@visual'] }, () => 
   test('screenshot matches baseline', async ({ page }) => {
     await page.goto(buildRoute({ route: 'CandAppPreview', locale: 'en' }));
     await page.getByTestId(testIds.candidate.preview.container).waitFor({ state: 'visible' });
-    await page.waitForLoadState('networkidle');
 
     await expect(page).toHaveScreenshot('candidate-preview-mobile.png', {
       fullPage: true,

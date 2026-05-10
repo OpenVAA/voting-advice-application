@@ -97,7 +97,6 @@ test.describe('nominations page (VOTE-19)', { tag: ['@voter'] }, () => {
 
     test('should render nominations page with entries', async ({ page }) => {
       await page.goto(buildRoute({ route: 'Nominations', locale: 'en' }));
-      await page.waitForLoadState('networkidle');
 
       // Wait for nominations container (layout loads data async, shows Loading first)
       await expect(page.getByTestId(testIds.voter.nominations.container)).toBeVisible({ timeout: 15000 });
