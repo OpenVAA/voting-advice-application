@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.9
 milestone_name: E2E Coverage + Suite Determinism
 status: executing
-stopped_at: Phase 73 context gathered
-last_updated: "2026-05-10T17:54:34.969Z"
-last_activity: 2026-05-10 -- Phase 73 execution started
+stopped_at: Completed Phase 73 Plan 01 — inventory + lint baseline + HEAD blocker surfaced
+last_updated: "2026-05-10T18:13:08.709Z"
+last_activity: 2026-05-10
 progress:
   total_phases: 10
   completed_phases: 0
   total_plans: 6
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 17
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-05-10)
 ## Current Position
 
 Phase: 73 (Determinism Baseline) — EXECUTING
-Plan: 1 of 6
-Status: Executing Phase 73
-Last activity: 2026-05-10 -- Phase 73 execution started
+Plan: 2 of 6
+Status: Ready to execute
+Last activity: 2026-05-10
 
 ## Performance Metrics
 
@@ -76,6 +76,7 @@ Snapshot taken at v2.8 milestone close on 2026-05-10. v2.9 requirements consume 
 | infrastructure | Local imgproxy Docker container 502 on image upload (intermittent) | Not a code issue; fix with `supabase stop && supabase start`. Carried forward. |
 
 **Pending todo count at v2.9 planning start:** 18 (v2.9 will resolve 9 of these — see "v2.9 maps to" rows above; 1 deferred to a separate milestone; 8 remain pending into v2.10+ or backlog).
+| Phase 73 P01 | 18min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -112,18 +113,21 @@ Key cross-milestone reference points carried forward into v2.9:
 - A11Y-03 wiring + first-run baseline ONLY — cite-and-fix of WCAG violations surfaced is explicitly out of scope for v2.9, tracked as a follow-up todo at A11Y-03 close. Keeps Phase 76 bounded.
 - Phase 73 is the highest-risk phase of v2.9 (19 race-failure investigations, some may surface real product bugs requiring code fixes). Phases 74-77 are content-heavy (writing new Playwright specs against a now-stable suite). Phase 78 is low-risk hygiene.
 - All v2.9 work is testing + frontend / package-level — NO Supabase migrations, NO new test runners, NO E2E framework migration (Playwright 1.58.2 is the durable stack).
+- [Phase 73 Plan 01]: Locked 101 playwright/* warnings as the binding baseline (vs 103 in CONTEXT D-03; small downward drift accepted)
+- [Phase 73 Plan 01]: Surfaced data.setup.ts:61-64 HEAD blocker via INVENTORY.md (recommended Plan 02 Task 0 hotfix path, within CONTEXT D-05 cap)
 
 ### Blockers/Concerns
 
 - Local imgproxy Docker container crashes intermittently (502 on image upload) — not a code issue; carry-forward infrastructure debt. May affect Phase 76 A11Y-01 image-upload validation cells if it crashes during the run.
 - 165 pre-existing intra-package circular deps in `@openvaa/data` / `matching` / `filters` — deferred to a dedicated structural refactor milestone.
 - Phase 73 risk profile: high. The 19 data-loading races may include cases that surface real product bugs requiring code-level fixes (not test-level fixes), which could expand Phase 73 scope mid-execution. Phase planning will need to call out this branching risk explicitly.
+- data.setup.ts:61-64 TypeError cascades entire e2e suite (98 cascaded in all 3 inventory runs). Recommended Plan 02 Task 0 hotfix per INVENTORY.md.
 
 ## Session Continuity
 
-Last session: 2026-05-10T16:56:33.479Z
-Stopped at: Phase 73 context gathered
-Resume file: .planning/phases/73-determinism-baseline/73-CONTEXT.md
+Last session: 2026-05-10T18:13:08.705Z
+Stopped at: Completed Phase 73 Plan 01 — inventory + lint baseline + HEAD blocker surfaced
+Resume file: None
 Next action: Run `/gsd-plan-phase 73` to start planning the determinism baseline. Phase 73 is gating for Phases 74-77 — plan it first; Phase 78 (CLEAN) may be planned in parallel since it's independent of Phase 73.
 
 ### Plan-count estimate (drafted 2026-05-10)
