@@ -37,7 +37,11 @@ test.describe('candidate authentication', { tag: ['@candidate', '@smoke'] }, () 
 
     await loginPage.login(CANDIDATE_EMAIL, 'WrongPassword!');
 
-    // Expect the error message to appear
-    await loginPage.expectLoginError();
+    // Expect the login error message to be visible.
+    // Using a real expect() here (rather than the page-object's waitFor-only
+    // helper) carries the assertion into the test body so playwright/expect-expect
+    // recognizes the test contract — the named behavior is "error appears on
+    // invalid credentials", which IS an assertion, not a side-effect.
+    await expect(loginPage.errorMessage).toBeVisible();
   });
 });

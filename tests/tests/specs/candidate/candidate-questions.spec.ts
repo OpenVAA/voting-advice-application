@@ -83,10 +83,13 @@ test.describe('candidate opinion questions', { tag: ['@candidate'] }, () => {
     // The questions list groups questions by category using Expander components.
     // Verify we can interact with questions from different categories.
 
-    // Count total question cards visible on the page
+    // Count total question cards visible on the page. Strengthen the precondition
+    // from `> 0` to `> 1` so the "navigate to a different question (last card)"
+    // assertion below can be made unconditional — the seed has at least 2 cards
+    // (CAND-05 test 1 already asserts `expect(count).toBeGreaterThanOrEqual(2)`).
     const cards = candidateQuestionsPage.questionCard;
     const totalCards = await cards.count();
-    expect(totalCards).toBeGreaterThan(0);
+    expect(totalCards).toBeGreaterThan(1);
 
     // Navigate to a question from the first visible card
     await candidateQuestionsPage.navigateToQuestion(0);
@@ -97,12 +100,12 @@ test.describe('candidate opinion questions', { tag: ['@candidate'] }, () => {
     await candidateQuestionsPage.expandAllCategories();
     await expect(cards.first()).toBeVisible();
 
-    // Navigate to a different question (last card to likely be in a different category)
-    const lastIndex = (await cards.count()) - 1;
-    if (lastIndex > 0) {
-      await candidateQuestionsPage.navigateToQuestion(lastIndex);
-      await expect(page.getByTestId(testIds.candidate.questions.answerInput)).toBeVisible();
-    }
+    // Navigate to a different question (last card to likely be in a different category).
+    // With totalCards > 1 asserted above, lastIndex > 0 is guaranteed — the original
+    // `if (lastIndex > 0)` race-mask is collapsed into an unconditional dispatch.
+    const lastIndex = totalCards - 1;
+    await candidateQuestionsPage.navigateToQuestion(lastIndex);
+    await expect(page.getByTestId(testIds.candidate.questions.answerInput)).toBeVisible();
   });
 
   test('should edit a previously answered question (CAND-05)', async ({
@@ -276,15 +279,11 @@ test.describe('candidate preview', { tag: ['@candidate'] }, () => {
 
     // After clicking Opinions tab, at least one Likert answer label should appear.
     // The candidate has question 1 answered with choice "4" = "Somewhat agree".
-    const answerLabels = ['Fully disagree', 'Somewhat disagree', 'Neutral', 'Somewhat agree', 'Fully agree'];
-    let answerVisible = false;
-    for (const label of answerLabels) {
-      const el = previewPage.container.getByText(label, { exact: false });
-      if ((await el.count()) > 0) {
-        answerVisible = true;
-        break;
-      }
-    }
-    expect(answerVisible).toBe(true);
+    // Use a regex-union locator so the assertion is a single unconditional
+    // race-tolerant `expect.toBeVisible` — replaces the original for/break/flag
+    // pattern (which had an in-test conditional `if ((await el.count()) > 0)`
+    // and a flag-based `expect(answerVisible).toBe(true)`).
+    const answerLabelPattern = /fully disagree|somewhat disagree|neutral|somewhat agree|fully agree/i;
+    await expect(previewPage.container.getByText(answerLabelPattern).first()).toBeVisible({ timeout: 10000 });
   });
 });

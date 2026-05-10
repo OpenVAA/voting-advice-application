@@ -27,6 +27,39 @@ import type { Page } from '@playwright/test';
 // Run all tests in this file without pre-existing authentication
 test.use({ storageState: { cookies: [], origins: [] } });
 
+/**
+ * Module-level helper: log in if the page redirected to login after registration.
+ *
+ * Hoisted out of the test body per RESEARCH §"Pattern 4 canonical 3" so that
+ * playwright/no-conditional-in-test holds — the rule fires on conditionals INSIDE
+ * `test()` callbacks, not module-level helpers. The `if` here is legitimate
+ * post-await dispatch on a known URL (we just synchronously read `page.url()`),
+ * NOT a race-mask: by the time `waitForURL` returns, the URL is settled, and the
+ * branch only chooses between two deterministic paths (already-on-home vs. land
+ * on login due to session-not-established).
+ *
+ * Replaces the original race-tolerant `await page.waitForTimeout(2000); if
+ * (page.url().includes('login'))` pattern in the registration test (which
+ * triggered playwright/no-wait-for-timeout + 1 no-conditional-in-test +
+ * 2 no-conditional-expect warnings).
+ */
+async function loginIfRedirectedToLoginPage(page: Page, email: string, password: string): Promise<void> {
+  // Wait for navigation to settle on EITHER the home or the login URL — race-tolerant
+  // wait against two anchors in a single tracking scope (no .catch swallow-trap).
+  await page.waitForURL((url) => url.pathname.includes('/login') || url.pathname.includes('/candidate'), {
+    timeout: 15000
+  });
+  if (page.url().includes('login')) {
+    // Session wasn't established by verifyOtp — fall through to manual login
+    const emailInput = page.getByTestId(testIds.candidate.login.email);
+    await emailInput.waitFor({ state: 'visible', timeout: 5000 });
+    await emailInput.fill(email);
+    await page.getByTestId(testIds.candidate.login.password).fill(password);
+    await page.getByTestId(testIds.candidate.login.submit).click();
+    await page.waitForURL((url) => !url.pathname.includes('/login'), { timeout: 10000 });
+  }
+}
+
 test.describe('candidate profile (fresh candidate)', { tag: ['@candidate'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
@@ -93,17 +126,11 @@ test.describe('candidate profile (fresh candidate)', { tag: ['@candidate'] }, ()
     // In either case, ensure password is set via admin API for reliable login.
     await client.setPassword(candidateEmail, candidatePassword);
 
-    // Step 6: Wait for navigation to settle, then log in if needed
-    await page.waitForTimeout(2000);
-    if (page.url().includes('login')) {
-      // Wait for login form to render, fill, and submit
-      const emailInput = page.getByTestId(testIds.candidate.login.email);
-      await expect(emailInput).toBeVisible({ timeout: 5000 });
-      await emailInput.fill(candidateEmail);
-      await page.getByTestId(testIds.candidate.login.password).fill(candidatePassword);
-      await page.getByTestId(testIds.candidate.login.submit).click();
-      await expect(page).not.toHaveURL(/login/, { timeout: 10000 });
-    }
+    // Step 6: Wait for navigation to settle on either home or login, and log in
+    // if redirected. Hoisted to module-level `loginIfRedirectedToLoginPage` helper
+    // so the conditional dispatch lives outside the test body (Pattern 4 canonical 3
+    // — the lint rule allows conditionals in helpers; only test() bodies are flagged).
+    await loginIfRedirectedToLoginPage(page, candidateEmail, candidatePassword);
 
     // Step 7: Accept Terms of Use (shown on first login after registration)
     const touCheckbox = page.getByTestId(testIds.candidate.terms.checkbox);
