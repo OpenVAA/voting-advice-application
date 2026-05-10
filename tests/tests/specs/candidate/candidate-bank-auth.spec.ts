@@ -217,9 +217,11 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
   });
 
   test('should return structured error from identity-callback when Edge Function keys are not configured', async () => {
-    // reason: complementary precondition-gate to the keys-configured path above — gates the
-    //   inverse precondition (keys absent) on the same env-gated bank-auth project. NOT a race;
-    //   converting to expect.poll would mask "keys ARE configured" → false-positive timeout.
+    // reason: complementary precondition-gate to the keys-configured path above. bank-auth is
+    //   opt-in via @bank-auth tag (env-gated; PLAYWRIGHT_BANK_AUTH=1 selects the project per
+    //   playwright.config.ts; disabled by default in CI). This skip gates the inverse
+    //   precondition (keys absent), NOT a race — converting to expect.poll would mask
+    //   "keys ARE configured" → false-positive timeout.
     // eslint-disable-next-line playwright/no-skipped-test
     test.skip(!probe || probe.keysConfigured, 'Edge Function keys ARE configured — keys-not-configured path skipped');
 
