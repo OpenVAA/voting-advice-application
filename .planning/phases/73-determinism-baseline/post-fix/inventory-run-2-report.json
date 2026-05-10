@@ -397,15 +397,15 @@
               "projectName": "data-teardown-variants",
               "results": [
                 {
-                  "workerIndex": 1,
+                  "workerIndex": 27,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 61,
+                  "duration": 192,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-05-10T18:01:25.453Z",
+                  "startTime": "2026-05-10T19:31:43.847Z",
                   "annotations": [],
                   "attachments": [
                     {
@@ -437,15 +437,15 @@
               "projectName": "data-teardown",
               "results": [
                 {
-                  "workerIndex": 2,
+                  "workerIndex": 28,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 31,
+                  "duration": 30,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-05-10T18:01:26.226Z",
+                  "startTime": "2026-05-10T19:31:44.791Z",
                   "annotations": [],
                   "attachments": [
                     {
@@ -481,7 +481,7 @@
           "specs": [
             {
               "title": "should show category checkboxes when allowCategorySelection enabled",
-              "ok": true,
+              "ok": false,
               "tags": [
                 "voter"
               ],
@@ -492,8 +492,52 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app-settings",
                   "projectName": "voter-app-settings",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 10504,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('voter-questions-category-list')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('voter-questions-category-list')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('voter-questions-category-list')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('voter-questions-category-list')\u001b[22m\n\n    at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-settings.spec.ts:116:32",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-settings.spec.ts",
+                          "column": 32,
+                          "line": 116
+                        },
+                        "snippet": "  114 |     // Verify category list container is visible\n  115 |     const categoryList = page.getByTestId(testIds.voter.questions.categoryList);\n> 116 |     await expect(categoryList).toBeVisible({ timeout: 10000 });\n      |                                ^\n  117 |\n  118 |     // Verify category checkboxes are present (at least 2 -- one per category in dataset)\n  119 |     const categoryCheckboxes = page.getByTestId(testIds.voter.questions.categoryCheckbox);"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-settings.spec.ts",
+                            "column": 32,
+                            "line": 116
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('voter-questions-category-list')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('voter-questions-category-list')\u001b[22m\n\n\n  114 |     // Verify category list container is visible\n  115 |     const categoryList = page.getByTestId(testIds.voter.questions.categoryList);\n> 116 |     await expect(categoryList).toBeVisible({ timeout: 10000 });\n      |                                ^\n  117 |\n  118 |     // Verify category checkboxes are present (at least 2 -- one per category in dataset)\n  119 |     const categoryCheckboxes = page.getByTestId(testIds.voter.questions.categoryCheckbox);\n    at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-settings.spec.ts:116:32"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:15:57.204Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-settings-category-se-ffbda-owCategorySelection-enabled-voter-app-settings/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-settings.spec.ts",
+                        "column": 32,
+                        "line": 116
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
                 }
               ],
               "id": "19e80438cfd700b02ab4-c489f447dadbb4949f1e",
@@ -514,7 +558,21 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app-settings",
                   "projectName": "voter-app-settings",
-                  "results": [],
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:16:08.334Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
                   "status": "skipped"
                 }
               ],
@@ -544,7 +602,21 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app-settings",
                   "projectName": "voter-app-settings",
-                  "results": [],
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:16:08.334Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
                   "status": "skipped"
                 }
               ],
@@ -566,7 +638,21 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app-settings",
                   "projectName": "voter-app-settings",
-                  "results": [],
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:16:08.334Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
                   "status": "skipped"
                 }
               ],
@@ -596,7 +682,21 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app-settings",
                   "projectName": "voter-app-settings",
-                  "results": [],
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:16:08.334Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
                   "status": "skipped"
                 }
               ],
@@ -626,7 +726,21 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app-settings",
                   "projectName": "voter-app-settings",
-                  "results": [],
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:16:08.334Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
                   "status": "skipped"
                 }
               ],
@@ -656,7 +770,21 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app-settings",
                   "projectName": "voter-app-settings",
-                  "results": [],
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:16:08.334Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
                   "status": "skipped"
                 }
               ],
@@ -807,8 +935,28 @@
               "expectedStatus": "passed",
               "projectId": "auth-setup",
               "projectName": "auth-setup",
-              "results": [],
-              "status": "skipped"
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1698,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-05-10T19:16:08.970Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/setup-auth.setup.ts-authenticate-as-candidate-auth-setup/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
             }
           ],
           "id": "e717b06d8d484d1cd946-4bbf5ae0a5fc893a93f3",
@@ -835,8 +983,28 @@
               "expectedStatus": "passed",
               "projectId": "auth-setup",
               "projectName": "auth-setup",
-              "results": [],
-              "status": "skipped"
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 963,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-05-10T19:16:11.030Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/setup-re-auth.setup.ts-re-authenticate-as-candidate-auth-setup/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
             }
           ],
           "id": "13c9519bc5ddfb3cb0d7-ced5f2ea453444d74557",
@@ -893,8 +1061,28 @@
                   "expectedStatus": "passed",
                   "projectId": "candidate-app",
                   "projectName": "candidate-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 24,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1732,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:29:47.326Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-auth-candidate-a-0a29c-ogin-with-valid-credentials-candidate-app/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "f79ff6def10e8d34cbda-7a0d44a8b434fa809020",
@@ -916,8 +1104,28 @@
                   "expectedStatus": "passed",
                   "projectId": "candidate-app",
                   "projectName": "candidate-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 24,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1453,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:29:49.491Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-auth-candidate-a-759b1-rror-on-invalid-credentials-candidate-app/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "f79ff6def10e8d34cbda-ce6f08ec1c012e0c87fe",
@@ -955,8 +1163,28 @@
                   "expectedStatus": "passed",
                   "projectId": "candidate-app",
                   "projectName": "candidate-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 24,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 758,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:29:50.988Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-questions-candid-1f3f7-anized-by-category-CAND-05--candidate-app/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "d713f3f6e6d38ac7ddeb-ec521d7189454e27a51e",
@@ -977,8 +1205,28 @@
                   "expectedStatus": "passed",
                   "projectId": "candidate-app",
                   "projectName": "candidate-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 24,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1027,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:29:51.790Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-questions-candid-f74db--question-and-save-CAND-04--candidate-app/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "d713f3f6e6d38ac7ddeb-80b35ba41eb02ec0201d",
@@ -999,8 +1247,28 @@
                   "expectedStatus": "passed",
                   "projectId": "candidate-app",
                   "projectName": "candidate-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 24,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1599,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:29:52.859Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-questions-candid-7279e-between-categories-CAND-05--candidate-app/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "d713f3f6e6d38ac7ddeb-a58416dae03b43249acf",
@@ -1021,8 +1289,28 @@
                   "expectedStatus": "passed",
                   "projectId": "candidate-app",
                   "projectName": "candidate-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 24,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1610,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:29:54.526Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-questions-candid-013e0--answered-question-CAND-05--candidate-app/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "d713f3f6e6d38ac7ddeb-1263ee3c5c4ba89b0819",
@@ -1043,8 +1331,28 @@
                   "expectedStatus": "passed",
                   "projectId": "candidate-app",
                   "projectName": "candidate-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 24,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1892,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:29:56.211Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-questions-candid-07a77--after-page-reload-CAND-12--candidate-app/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "d713f3f6e6d38ac7ddeb-eef40ee40ed9807c0d0d",
@@ -1065,8 +1373,28 @@
                   "expectedStatus": "passed",
                   "projectId": "candidate-app",
                   "projectName": "candidate-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 24,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1985,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:29:58.201Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-questions-candid-698a8--after-page-reload-CAND-12--candidate-app/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "d713f3f6e6d38ac7ddeb-a7f8a27b963fa830b512",
@@ -1095,8 +1423,28 @@
                   "expectedStatus": "passed",
                   "projectId": "candidate-app",
                   "projectName": "candidate-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 24,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 358,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:30:00.300Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-questions-candid-5ef84-ta-on-preview-page-CAND-06--candidate-app/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "d713f3f6e6d38ac7ddeb-ce877da3dce255027407",
@@ -1117,8 +1465,28 @@
                   "expectedStatus": "passed",
                   "projectId": "candidate-app",
                   "projectName": "candidate-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 24,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1286,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:30:00.683Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-questions-candid-f11b9-uestion-in-preview-CAND-06--candidate-app/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "d713f3f6e6d38ac7ddeb-bbb3cf810bb94ab221a7",
@@ -1151,13 +1519,33 @@
               ],
               "tests": [
                 {
-                  "timeout": 90000,
+                  "timeout": 60000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "candidate-app-mutation",
                   "projectName": "candidate-app-mutation",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 25,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3778,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:30:02.839Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-profile-candidat-1485d-sh-candidate-via-email-link-candidate-app-mutation/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "0d629d3f780ed259d629-1ae8ef05b411f213a40f",
@@ -1167,7 +1555,7 @@
             },
             {
               "title": "should upload a profile image (CAND-03)",
-              "ok": true,
+              "ok": false,
               "tags": [
                 "candidate"
               ],
@@ -1178,8 +1566,57 @@
                   "expectedStatus": "passed",
                   "projectId": "candidate-app-mutation",
                   "projectName": "candidate-app-mutation",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 25,
+                      "parallelIndex": 0,
+                      "status": "timedOut",
+                      "duration": 90122,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 90000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 90000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 90000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/pages/candidate/ProfilePage.ts",
+                            "column": 42,
+                            "line": 25
+                          },
+                          "message": "Error: page.waitForEvent: Test timeout of 90000ms exceeded.\n=========================== logs ===========================\nwaiting for event \"filechooser\"\n============================================================\n\n   at pages/candidate/ProfilePage.ts:25\n\n  23 |    */\n  24 |   async uploadImage(filePath: string): Promise<void> {\n> 25 |     const fileChooserPromise = this.page.waitForEvent('filechooser');\n     |                                          ^\n  26 |     // Click the inner interactive label, not the outer container\n  27 |     await this.imageUpload.locator('label[tabindex=\"0\"]').click();\n  28 |     const fileChooser = await fileChooserPromise;\n    at ProfilePage.uploadImage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/pages/candidate/ProfilePage.ts:25:42)\n    at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/candidate/candidate-profile.spec.ts:130:23"
+                        },
+                        {
+                          "location": {
+                            "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/pages/candidate/ProfilePage.ts",
+                            "column": 59,
+                            "line": 27
+                          },
+                          "message": "Error: locator.click: Test timeout of 90000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('profile-image-upload').locator('label[tabindex=\"0\"]')\u001b[22m\n\n\n   at pages/candidate/ProfilePage.ts:27\n\n  25 |     const fileChooserPromise = this.page.waitForEvent('filechooser');\n  26 |     // Click the inner interactive label, not the outer container\n> 27 |     await this.imageUpload.locator('label[tabindex=\"0\"]').click();\n     |                                                           ^\n  28 |     const fileChooser = await fileChooserPromise;\n  29 |     await fileChooser.setFiles(filePath);\n  30 |   }\n    at ProfilePage.uploadImage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/pages/candidate/ProfilePage.ts:27:59)\n    at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/candidate/candidate-profile.spec.ts:130:23"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:30:07.044Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-profile-candidat-c600e-ad-a-profile-image-CAND-03--candidate-app-mutation/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-profile-candidat-c600e-ad-a-profile-image-CAND-03--candidate-app-mutation/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
                 }
               ],
               "id": "0d629d3f780ed259d629-8fefec99018164acd587",
@@ -1200,7 +1637,21 @@
                   "expectedStatus": "passed",
                   "projectId": "candidate-app-mutation",
                   "projectName": "candidate-app-mutation",
-                  "results": [],
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:31:37.264Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
                   "status": "skipped"
                 }
               ],
@@ -1222,7 +1673,21 @@
                   "expectedStatus": "passed",
                   "projectId": "candidate-app-mutation",
                   "projectName": "candidate-app-mutation",
-                  "results": [],
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:31:37.264Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
                   "status": "skipped"
                 }
               ],
@@ -1261,8 +1726,32 @@
                   "expectedStatus": "passed",
                   "projectId": "candidate-app-mutation",
                   "projectName": "candidate-app-mutation",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 26,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 90,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[REG] Callback URL: http://localhost:5173/en/candidate/auth/callback?token_hash=734b93092bd8ad867386d139b2d69a1810a1a02b7f076fed14e7bb33&type=invite\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:31:38.016Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-registration-can-30e09-tion-email-and-extract-link-candidate-app-mutation/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "433975f5accc4dc854db-b226561349ab0f00c48b",
@@ -1278,13 +1767,33 @@
               ],
               "tests": [
                 {
-                  "timeout": 90000,
+                  "timeout": 60000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "candidate-app-mutation",
                   "projectName": "candidate-app-mutation",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 26,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2538,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:31:38.119Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-registration-can-6d26d-registration-via-email-link-candidate-app-mutation/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "433975f5accc4dc854db-da633b73a541226ee089",
@@ -1313,8 +1822,28 @@
                   "expectedStatus": "passed",
                   "projectId": "candidate-app-mutation",
                   "projectName": "candidate-app-mutation",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 26,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1938,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:31:41.153Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-registration-can-a7877-set-flow-via-Inbucket-email-candidate-app-mutation/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "433975f5accc4dc854db-21d3aaf5536ae07c2544",
@@ -2099,15 +2628,15 @@
               "projectName": "data-teardown",
               "results": [
                 {
-                  "workerIndex": 2,
+                  "workerIndex": 28,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 57,
+                  "duration": 47,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-05-10T18:01:26.139Z",
+                  "startTime": "2026-05-10T19:31:44.713Z",
                   "annotations": [],
                   "attachments": [
                     {
@@ -2136,7 +2665,7 @@
       "specs": [
         {
           "title": "import test dataset",
-          "ok": false,
+          "ok": true,
           "tags": [],
           "tests": [
             {
@@ -2149,32 +2678,17 @@
                 {
                   "workerIndex": 0,
                   "parallelIndex": 0,
-                  "status": "failed",
-                  "duration": 32,
-                  "error": {
-                    "message": "TypeError: candQuery.not is not a function",
-                    "stack": "TypeError: candQuery.not is not a function\n    at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/setup/data.setup.ts:62:68",
-                    "location": {
-                      "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/setup/data.setup.ts",
-                      "column": 68,
-                      "line": 62
-                    },
-                    "snippet": "  60 |     const requireFresh = process.env.E2E_REQUIRE_FRESH_DB === 'true';\n  61 |     const candQuery = await client.query('candidates');\n> 62 |     const { data: nonTestCands, error: candErr } = await candQuery.not('external_id', 'like', `${PREFIX}%`).limit(5);\n     |                                                                    ^\n  63 |     const orgQuery = await client.query('organizations');\n  64 |     const { data: nonTestOrgs, error: orgErr } = await orgQuery.not('external_id', 'like', `${PREFIX}%`).limit(5);\n  65 |"
-                  },
-                  "errors": [
+                  "status": "passed",
+                  "duration": 5214,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
                     {
-                      "location": {
-                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/setup/data.setup.ts",
-                        "column": 68,
-                        "line": 62
-                      },
-                      "message": "TypeError: candQuery.not is not a function\n\n  60 |     const requireFresh = process.env.E2E_REQUIRE_FRESH_DB === 'true';\n  61 |     const candQuery = await client.query('candidates');\n> 62 |     const { data: nonTestCands, error: candErr } = await candQuery.not('external_id', 'like', `${PREFIX}%`).limit(5);\n     |                                                                    ^\n  63 |     const orgQuery = await client.query('organizations');\n  64 |     const { data: nonTestOrgs, error: orgErr } = await orgQuery.not('external_id', 'like', `${PREFIX}%`).limit(5);\n  65 |\n    at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/setup/data.setup.ts:62:68"
+                      "text": "[data.setup] Database is NOT fresh — found 5 non-test candidate(s) and 5 non-test organization(s) (probe limited to 5 each). Pre-existing non-test data will coexist with the seeded e2e dataset and may produce confusing test failures (extra entities in result lists, mismatched filter counts, spurious parity diffs). Run `yarn supabase:reset` (migrations only, no seed overlay) before re-running the e2e suite, or set E2E_REQUIRE_FRESH_DB=false to silence this. (Set E2E_REQUIRE_FRESH_DB=true to make this a hard failure.)\n"
                     }
                   ],
-                  "stdout": [],
-                  "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-05-10T18:01:24.776Z",
+                  "startTime": "2026-05-10T19:15:51.327Z",
                   "annotations": [],
                   "attachments": [
                     {
@@ -2182,15 +2696,10 @@
                       "contentType": "application/zip",
                       "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/setup-data.setup.ts-import-test-dataset-data-setup/trace.zip"
                     }
-                  ],
-                  "errorLocation": {
-                    "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/setup/data.setup.ts",
-                    "column": 68,
-                    "line": 62
-                  }
+                  ]
                 }
               ],
-              "status": "unexpected"
+              "status": "expected"
             }
           ],
           "id": "126741afc9fe195882b8-615224fdf337b91a3d31",
@@ -2215,7 +2724,7 @@
           "specs": [
             {
               "title": "should open candidate detail drawer when clicking a result card",
-              "ok": true,
+              "ok": false,
               "tags": [
                 "voter"
               ],
@@ -2226,8 +2735,57 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 40312,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 85
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible."
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                            "column": 18,
+                            "line": 85
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:16:12.673Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-detail-voter-entity--c4b90-when-clicking-a-result-card-voter-app/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-detail-voter-entity--c4b90-when-clicking-a-result-card-voter-app/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 85
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
                 }
               ],
               "id": "db47c94dbd0a28054b61-c79518b8aa731c03045e",
@@ -2237,7 +2795,7 @@
             },
             {
               "title": "should display candidate info and opinions tabs",
-              "ok": true,
+              "ok": false,
               "tags": [
                 "voter"
               ],
@@ -2248,8 +2806,57 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 40434,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 85
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible."
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                            "column": 18,
+                            "line": 85
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:16:54.188Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-detail-voter-entity--0df99-date-info-and-opinions-tabs-voter-app/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-detail-voter-entity--0df99-date-info-and-opinions-tabs-voter-app/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 85
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
                 }
               ],
               "id": "db47c94dbd0a28054b61-48bcd700aba5c5264076",
@@ -2259,7 +2866,7 @@
             },
             {
               "title": "should display candidate answers correctly in info and opinions tabs",
-              "ok": true,
+              "ok": false,
               "tags": [
                 "voter"
               ],
@@ -2270,8 +2877,57 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 40554,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 85
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible."
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                            "column": 18,
+                            "line": 85
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:17:35.944Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-detail-voter-entity--33c2e-y-in-info-and-opinions-tabs-voter-app/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-detail-voter-entity--33c2e-y-in-info-and-opinions-tabs-voter-app/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 85
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
                 }
               ],
               "id": "db47c94dbd0a28054b61-4a89e9cf754279c8a5a9",
@@ -2281,7 +2937,7 @@
             },
             {
               "title": "should open party detail drawer with info, candidates, and opinions tabs",
-              "ok": true,
+              "ok": false,
               "tags": [
                 "voter"
               ],
@@ -2292,8 +2948,57 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 40395,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 85
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible."
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                            "column": 18,
+                            "line": 85
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:18:17.803Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-detail-voter-entity--2787f-andidates-and-opinions-tabs-voter-app/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-detail-voter-entity--2787f-andidates-and-opinions-tabs-voter-app/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 85
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
                 }
               ],
               "id": "db47c94dbd0a28054b61-3a295969ee0031a51984",
@@ -2332,8 +3037,22 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 22,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 300,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:29:36.705Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "00bb2ae7b55e530fba81-418135f215ef4f9efbc0",
@@ -2355,8 +3074,22 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 22,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 11,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:29:37.479Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "00bb2ae7b55e530fba81-3ffdcdbb9c4431fcde58",
@@ -2366,7 +3099,7 @@
             },
             {
               "title": "should show questions intro page with start button",
-              "ok": true,
+              "ok": false,
               "tags": [
                 "voter",
                 "smoke"
@@ -2378,8 +3111,52 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 22,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 5081,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/questions/\u001b[39m\nReceived string:  \u001b[31m\"http://localhost:5173/elections\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 5000ms\u001b[22m\n\u001b[2m    9 × unexpected value \"http://localhost:5173/elections\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/questions/\u001b[39m\nReceived string:  \u001b[31m\"http://localhost:5173/elections\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 5000ms\u001b[22m\n\u001b[2m    9 × unexpected value \"http://localhost:5173/elections\"\u001b[22m\n\n    at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-journey.spec.ts:88:30",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-journey.spec.ts",
+                          "column": 30,
+                          "line": 88
+                        },
+                        "snippet": "  86 |\n  87 |     // Verify navigation to questions (URL contains /questions)\n> 88 |     await expect(sharedPage).toHaveURL(/\\/questions/);\n     |                              ^\n  89 |   });\n  90 |\n  91 |   test('should answer all Likert questions with navigation', async () => {"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-journey.spec.ts",
+                            "column": 30,
+                            "line": 88
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/questions/\u001b[39m\nReceived string:  \u001b[31m\"http://localhost:5173/elections\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 5000ms\u001b[22m\n\u001b[2m    9 × unexpected value \"http://localhost:5173/elections\"\u001b[22m\n\n\n  86 |\n  87 |     // Verify navigation to questions (URL contains /questions)\n> 88 |     await expect(sharedPage).toHaveURL(/\\/questions/);\n     |                              ^\n  89 |   });\n  90 |\n  91 |   test('should answer all Likert questions with navigation', async () => {\n    at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-journey.spec.ts:88:30"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:29:37.494Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-journey-voter-journe-74b4d-ntro-page-with-start-button-voter-app/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-journey.spec.ts",
+                        "column": 30,
+                        "line": 88
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
                 }
               ],
               "id": "00bb2ae7b55e530fba81-f7c6d05b01cecf74945e",
@@ -2401,7 +3178,21 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:29:42.642Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
                   "status": "skipped"
                 }
               ],
@@ -2429,7 +3220,7 @@
           "specs": [
             {
               "title": "should display candidates in correct match ranking order",
-              "ok": true,
+              "ok": false,
               "tags": [
                 "voter"
               ],
@@ -2440,8 +3231,57 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 24970,
+                      "error": {
+                        "message": "TimeoutError: locator.waitFor: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('voter-results-list') to be visible\u001b[22m\n",
+                        "stack": "TimeoutError: locator.waitFor: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('voter-results-list') to be visible\u001b[22m\n\n    at navigateToResults (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-matching.spec.ts:161:54)\n    at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-matching.spec.ts:172:5",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-matching.spec.ts",
+                          "column": 54,
+                          "line": 161
+                        },
+                        "snippet": "  159 |   // After answering the last question, the auto-advance timer navigates to results.\n  160 |   // Wait for the results page to load.\n> 161 |   await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 15000 });\n      |                                                      ^\n  162 | }\n  163 |\n  164 | // ---------------------------------------------------------------------------"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-matching.spec.ts",
+                            "column": 54,
+                            "line": 161
+                          },
+                          "message": "TimeoutError: locator.waitFor: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('voter-results-list') to be visible\u001b[22m\n\n\n  159 |   // After answering the last question, the auto-advance timer navigates to results.\n  160 |   // Wait for the results page to load.\n> 161 |   await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 15000 });\n      |                                                      ^\n  162 | }\n  163 |\n  164 | // ---------------------------------------------------------------------------\n    at navigateToResults (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-matching.spec.ts:161:54)\n    at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-matching.spec.ts:172:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:18:59.558Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-matching-matching-al-8f03f-correct-match-ranking-order-voter-app/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-matching-matching-al-8f03f-correct-match-ranking-order-voter-app/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-matching.spec.ts",
+                        "column": 54,
+                        "line": 161
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
                 }
               ],
               "id": "1ccf1bda51fc764aadcf-32a658db949647ece6f1",
@@ -2462,7 +3302,21 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:19:25.141Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
                   "status": "skipped"
                 }
               ],
@@ -2484,7 +3338,21 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:19:25.141Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
                   "status": "skipped"
                 }
               ],
@@ -2506,7 +3374,21 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:19:25.141Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
                   "status": "skipped"
                 }
               ],
@@ -2528,7 +3410,21 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:19:25.141Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
                   "status": "skipped"
                 }
               ],
@@ -2550,7 +3446,21 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:19:25.141Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
                   "status": "skipped"
                 }
               ],
@@ -2572,7 +3482,21 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:19:25.141Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
                   "status": "skipped"
                 }
               ],
@@ -2611,8 +3535,22 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 23,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2869,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:29:43.331Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "3412f67b0e8ffcf99a9e-e8b7542784145fd0d4eb",
@@ -2650,8 +3588,28 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1055,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:19:25.882Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-questions-voter-ques-067d3-ter-non-zero-on-first-paint-voter-app/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "09cd1141b9b95f632421-0f58f227b8a6116894c9",
@@ -2672,8 +3630,28 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1083,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:19:27.397Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-questions-voter-ques-ed16b-actively-on-category-toggle-voter-app/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "09cd1141b9b95f632421-cdefb048c9514934b13d",
@@ -2700,7 +3678,7 @@
           "specs": [
             {
               "title": "should display candidates section with result cards",
-              "ok": true,
+              "ok": false,
               "tags": [
                 "voter"
               ],
@@ -2711,8 +3689,57 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 40323,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 85
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible."
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                            "column": 18,
+                            "line": 85
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:19:28.538Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-bb8ae-s-section-with-result-cards-voter-app/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-bb8ae-s-section-with-result-cards-voter-app/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 85
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
                 }
               ],
               "id": "1371c49aca7feb847bb2-ba60d2f30ca778a7f576",
@@ -2722,7 +3749,7 @@
             },
             {
               "title": "should display entity type tabs for switching between candidates and organizations",
-              "ok": true,
+              "ok": false,
               "tags": [
                 "voter"
               ],
@@ -2733,8 +3760,57 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 40448,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 85
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible."
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                            "column": 18,
+                            "line": 85
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:20:09.782Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-9d642-andidates-and-organizations-voter-app/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-9d642-andidates-and-organizations-voter-app/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 85
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
                 }
               ],
               "id": "1371c49aca7feb847bb2-60a05904ba27f7b678cd",
@@ -2744,7 +3820,7 @@
             },
             {
               "title": "should switch to organizations/parties section and back",
-              "ok": true,
+              "ok": false,
               "tags": [
                 "voter"
               ],
@@ -2755,8 +3831,57 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 37368,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 85
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible."
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                            "column": 18,
+                            "line": 85
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:20:51.540Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-55265-ns-parties-section-and-back-voter-app/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-55265-ns-parties-section-and-back-voter-app/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 85
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
                 }
               ],
               "id": "1371c49aca7feb847bb2-6f6f55a933259dc0d56e",
@@ -2766,7 +3891,7 @@
             },
             {
               "title": "canonical URL: /results redirects to /results/candidates (RESEARCH A3)",
-              "ok": true,
+              "ok": false,
               "tags": [
                 "voter"
               ],
@@ -2777,8 +3902,57 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 40350,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 85
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible."
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                            "column": 18,
+                            "line": 85
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:21:30.288Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-609a9-lts-candidates-RESEARCH-A3--voter-app/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-609a9-lts-candidates-RESEARCH-A3--voter-app/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 85
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
                 }
               ],
               "id": "1371c49aca7feb847bb2-1bd0993a5457206a2fc3",
@@ -2788,7 +3962,7 @@
             },
             {
               "title": "filter toggle narrows list without effect_update_depth_exceeded (RESULTS-01 + RESULTS-02)",
-              "ok": true,
+              "ok": false,
               "tags": [
                 "voter"
               ],
@@ -2799,8 +3973,57 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 40445,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 85
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible."
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                            "column": 18,
+                            "line": 85
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:22:12.028Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-57295-eded-RESULTS-01-RESULTS-02--voter-app/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-57295-eded-RESULTS-01-RESULTS-02--voter-app/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 85
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
                 }
               ],
               "id": "1371c49aca7feb847bb2-15aa76a59a46f6e2dd9b",
@@ -2810,7 +4033,7 @@
             },
             {
               "title": "filter state resets on plural tab switch (D-14)",
-              "ok": true,
+              "ok": false,
               "tags": [
                 "voter"
               ],
@@ -2821,8 +4044,57 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 13,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 40435,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 85
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible."
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                            "column": 18,
+                            "line": 85
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:22:53.743Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-4c163--on-plural-tab-switch-D-14--voter-app/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-4c163--on-plural-tab-switch-D-14--voter-app/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 85
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
                 }
               ],
               "id": "1371c49aca7feb847bb2-ebdfa559ffccf2283be5",
@@ -2832,7 +4104,7 @@
             },
             {
               "title": "filter state survives drawer open/close (D-15)",
-              "ok": true,
+              "ok": false,
               "tags": [
                 "voter"
               ],
@@ -2843,8 +4115,57 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 40554,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 85
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible."
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                            "column": 18,
+                            "line": 85
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:23:35.506Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-456f5-ves-drawer-open-close-D-15--voter-app/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-456f5-ves-drawer-open-close-D-15--voter-app/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 85
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
                 }
               ],
               "id": "1371c49aca7feb847bb2-f9f985d4f6da9bcf5763",
@@ -2854,7 +4175,7 @@
             },
             {
               "title": "deeplink list+drawer URL renders both (RESULTS-03, D-08 shape 3)",
-              "ok": true,
+              "ok": false,
               "tags": [
                 "voter"
               ],
@@ -2865,8 +4186,57 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 15,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 40496,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 85
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible."
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                            "column": 18,
+                            "line": 85
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:24:17.438Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-130c0-th-RESULTS-03-D-08-shape-3--voter-app/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-130c0-th-RESULTS-03-D-08-shape-3--voter-app/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 85
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
                 }
               ],
               "id": "1371c49aca7feb847bb2-35597ab4f55dc0189f47",
@@ -2876,7 +4246,7 @@
             },
             {
               "title": "deeplink edge case: organizations list + candidate drawer (D-08 shape 4)",
-              "ok": true,
+              "ok": false,
               "tags": [
                 "voter"
               ],
@@ -2887,8 +4257,57 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 40585,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 85
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible."
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                            "column": 18,
+                            "line": 85
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:24:59.297Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-bfde9-didate-drawer-D-08-shape-4--voter-app/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-bfde9-didate-drawer-D-08-shape-4--voter-app/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 85
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
                 }
               ],
               "id": "1371c49aca7feb847bb2-ad05e33b791bf78e8798",
@@ -2898,7 +4317,7 @@
             },
             {
               "title": "Browser Back steps through tab+drawer changes (D-13)",
-              "ok": true,
+              "ok": false,
               "tags": [
                 "voter"
               ],
@@ -2909,8 +4328,57 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 17,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 40672,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 85
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible."
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                            "column": 18,
+                            "line": 85
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:25:41.273Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-e5867-gh-tab-drawer-changes-D-13--voter-app/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-e5867-gh-tab-drawer-changes-D-13--voter-app/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 85
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
                 }
               ],
               "id": "1371c49aca7feb847bb2-7b4544238bb21cd33a26",
@@ -2920,7 +4388,7 @@
             },
             {
               "title": "invalid plural matcher returns 404 (D-11)",
-              "ok": true,
+              "ok": false,
               "tags": [
                 "voter"
               ],
@@ -2931,8 +4399,57 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 18,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 40507,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 85
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible."
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                            "column": 18,
+                            "line": 85
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:26:23.265Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-52788-l-matcher-returns-404-D-11--voter-app/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-52788-l-matcher-returns-404-D-11--voter-app/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 85
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
                 }
               ],
               "id": "1371c49aca7feb847bb2-7543866bd7db31958e67",
@@ -2942,7 +4459,7 @@
             },
             {
               "title": "coupling-rule redirect: singular without id → list view (D-11)",
-              "ok": true,
+              "ok": false,
               "tags": [
                 "voter"
               ],
@@ -2953,8 +4470,57 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 19,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 40498,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 85
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible."
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                            "column": 18,
+                            "line": 85
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:27:05.088Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-f257f-ithout-id-→-list-view-D-11--voter-app/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-f257f-ithout-id-→-list-view-D-11--voter-app/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 85
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
                 }
               ],
               "id": "1371c49aca7feb847bb2-acd46769420a1f8fcb29",
@@ -2964,7 +4530,7 @@
             },
             {
               "title": "drawer paints before list on cold deeplink (D-10 source-order + content-visibility)",
-              "ok": true,
+              "ok": false,
               "tags": [
                 "voter"
               ],
@@ -2975,8 +4541,57 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 20,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 40833,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                          "column": 18,
+                          "line": 85
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mfixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible."
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                            "column": 18,
+                            "line": 85
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n   at fixtures/voter.fixture.ts:85\n\n  83 |       // 30s budget (was 10s) for SSR + reactivity settle on full-suite\n  84 |       // runs. See Phase 64-04 SUMMARY.md (Task 6).\n> 85 |       await page.waitForURL(/\\/results/, { timeout: 30000 });\n     |                  ^\n  86 |     }\n  87 |\n  88 |     // Wait for the results list to be visible.\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:85:18)"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:27:47.021Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-6bf7d-e-order-content-visibility--voter-app/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-results-voter-result-6bf7d-e-order-content-visibility--voter-app/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts",
+                        "column": 18,
+                        "line": 85
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
                 }
               ],
               "id": "1371c49aca7feb847bb2-dac996579cc5a3350936",
@@ -3015,8 +4630,28 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 21,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 561,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:28:29.469Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-static-pages-static--81928-bout-page-renders-correctly-voter-app/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "a577203968f351b2fe58-cd7045a24762c6467dc7",
@@ -3038,8 +4673,28 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 21,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 215,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:28:30.466Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-static-pages-static--271ef-info-page-renders-correctly-voter-app/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "a577203968f351b2fe58-4f82b979989b03081730",
@@ -3061,8 +4716,28 @@
                   "expectedStatus": "passed",
                   "projectId": "voter-app",
                   "projectName": "voter-app",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 21,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 219,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-10T19:28:30.706Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-static-pages-static--c16ab-vacy-page-renders-correctly-voter-app/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "a577203968f351b2fe58-fc36b9dfd56937d6b0c4",
@@ -3098,8 +4773,28 @@
                       "expectedStatus": "passed",
                       "projectId": "voter-app",
                       "projectName": "voter-app",
-                      "results": [],
-                      "status": "skipped"
+                      "results": [
+                        {
+                          "workerIndex": 21,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 64534,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-05-10T19:28:30.944Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "trace",
+                              "contentType": "application/zip",
+                              "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-static-pages-nominat-90254-minations-page-with-entries-voter-app/trace.zip"
+                            }
+                          ]
+                        }
+                      ],
+                      "status": "expected"
                     }
                   ],
                   "id": "a577203968f351b2fe58-2aa37be4453b944b9c1d",
@@ -3128,8 +4823,28 @@
                       "expectedStatus": "passed",
                       "projectId": "voter-app",
                       "projectName": "voter-app",
-                      "results": [],
-                      "status": "skipped"
+                      "results": [
+                        {
+                          "workerIndex": 21,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 296,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-05-10T19:29:35.655Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "trace",
+                              "contentType": "application/zip",
+                              "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/voter-static-pages-nominat-b7deb-showAllNominations-is-false-voter-app/trace.zip"
+                            }
+                          ]
+                        }
+                      ],
+                      "status": "expected"
                     }
                   ],
                   "id": "a577203968f351b2fe58-1c184a2da09dde7b2b4a",
@@ -3251,11 +4966,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-05-10T18:01:23.696Z",
-    "duration": 2579.276,
-    "expected": 3,
-    "skipped": 98,
-    "unexpected": 1,
+    "startTime": "2026-05-10T19:15:50.334Z",
+    "duration": 954505.539,
+    "expected": 30,
+    "skipped": 51,
+    "unexpected": 21,
     "flaky": 0
   }
 }
