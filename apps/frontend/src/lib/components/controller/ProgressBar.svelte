@@ -28,7 +28,7 @@ Reusable progress bar component for displaying task progress.
     showPercentage = true,
     color = undefined,
     size = undefined,
-    ...restProps
+    ..._restProps
   }: ProgressBarProps = $props();
 
   const { t } = getComponentContext();

@@ -32,28 +32,29 @@ The "✅ FIT" rows above translate to a small follow-up commit batch that can la
 |-------|---------------|-------|------------------------|
 | 1 | `chore(v2.8): apply prettier to 3 variant template files (REVIEW IN-01)` | #11 | ✅ done 2026-05-10 |
 | 2 | `chore(v2.8): rename dialogCount → dialogLocator in voter-popups.spec.ts (REVIEW WR-01)` | #8 (the rename portion) | ✅ done 2026-05-10 |
-| 3 | `chore(v2.8): delete duplicate JSDoc block in Input.type.ts (REVIEW OOS)` | #1 | ~5 min |
-| 4 | `chore(v2.8): delete or fix broken FilterGroupLike alias (REVIEW OOS)` | #2 | ~10 min |
-| 5 | `chore(v2.8): retrofit 3 legacy any disables with // reason: justifications (PATTERNS legacy)` | #7 | ~30-60 min |
-| 6 | `chore(v2.8): clear 27 unused-imports/no-unused-vars warnings in apps/frontend/ (CONTEXT D-04 opportunistic)` | #5 | ~30-60 min |
-| 7 | `test(v2.8): tighten createRemoteJWKSet mock shape (REVIEW OOS)` | #4 | ~15 min |
+| 3 | `chore(v2.8): delete duplicate JSDoc block in Input.type.ts (REVIEW OOS)` | #1 | ✅ done 2026-05-10 |
+| 4 | `chore(v2.8): delete or fix broken FilterGroupLike alias (REVIEW OOS)` | #2 | ✅ done 2026-05-10 |
+| 5 | `chore(v2.8): retrofit 3 legacy any disables with // reason: justifications (PATTERNS legacy)` | #7 | ✅ done 2026-05-10 (each retained `any` with documented `// reason:` annotation; tighter alternatives broke 2 consumer sites under `concatClass`) |
+| 6 | `chore(v2.8): clear 27 unused-imports/no-unused-vars warnings in apps/frontend/ (CONTEXT D-04 opportunistic)` | #5 | ✅ done 2026-05-10 |
+| 7 | `test(v2.8): tighten createRemoteJWKSet mock shape (REVIEW OOS)` | #4 | ✅ done 2026-05-10 (parameter signature now matches jose API; return type cast through unknown to bridge local-vs-remote JWKS shape difference) |
+| 8 | `fix(v2.8): use paraglide getLocale() in supabaseDataWriter logout (REVIEW OOS)` | #3 | ✅ done 2026-05-10 (replaced `window.location.pathname.split('/')[1]` with `getLocale()` from `$lib/i18n`; added 2 regression tests in `supabaseDataWriter.test.ts`) |
 
-**Total estimated cleanup effort: ~2-3 hours.**
+**Total estimated cleanup effort: ~2-3 hours.** Actual: ~1.5 hours.
 
-After this batch, the only remaining "real bug" is item #3 (locale-extraction bug at `supabaseDataWriter.ts:49`) and the convention-tightening item #9 — both recommended for v2.9.
+After this batch, the only items remaining for v2.9 are items #6 (98 playwright warnings — dedicated test-hygiene phase), #9 (per-cast `// reason:` distribution — convention-tightening), and #10 (`getRoute.svelte.ts` setStore cast — strictly OOS per reviewer). All three are now captured as todos in `.planning/todos/pending/` (see _v2.9 candidate todos_ section below).
 
 ---
 
 ## v2.9 candidate todos (carry-forward)
 
-| Item | Source | Notes |
-|------|--------|-------|
-| Locale-extraction bug at `supabaseDataWriter.ts:49` | This file row #3 | Real bug; needs unit-test coverage. |
-| 98 playwright warnings (`no-conditional-in-test`, `no-raw-locators`, `no-networkidle`) | This file row #6 | Dedicated test-infra hygiene phase. |
-| `// reason:` per-cast distribution in supabaseDataProvider.ts (D-04 strict reading) | This file row #9 | Convention-tightening; non-gating. |
-| `getRoute.svelte.ts` `setStore` cast cleanup | REVIEW IN-03 | Strictly OOS per reviewer; reviewer says "future cleanup pass might consolidate". |
+| Item | Source | Captured todo | Notes |
+|------|--------|---------------|-------|
+| Locale-extraction bug at `supabaseDataWriter.ts:49` | This file row #3 | n/a — fixed in this v2.8 cleanup pass | Real bug; landed with regression tests. |
+| 98 playwright warnings (`no-conditional-in-test`, `no-raw-locators`, `no-networkidle`) | This file row #6 | `.planning/todos/pending/2026-05-10-tests-playwright-hygiene-sweep.md` | Dedicated test-infra hygiene phase. |
+| `// reason:` per-cast distribution in supabaseDataProvider.ts (D-04 strict reading) | This file row #9 | `.planning/todos/pending/2026-05-10-d04-per-cast-reason-distribution.md` | Convention-tightening; non-gating. |
+| `getRoute.svelte.ts` `setStore` cast cleanup | REVIEW IN-03 | `.planning/todos/pending/2026-05-10-getroute-setstore-cast-cleanup.md` | Strictly OOS per reviewer; reviewer says "future cleanup pass might consolidate". |
 
-These three should be captured as `.planning/todos/pending/` entries at v2.8 milestone close.
+The 4 items above were the original v2.9 carry-forward set. Item #3 (locale-extraction bug) was upgraded to v2.8 fixability and landed in this cleanup pass; the remaining 3 are now captured as `.planning/todos/pending/` entries for v2.9 milestone planning.
 
 ---
 

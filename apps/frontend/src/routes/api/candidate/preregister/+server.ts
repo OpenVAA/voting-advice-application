@@ -2,7 +2,7 @@ import { error, json } from '@sveltejs/kit';
 import { logDebugError } from '$lib/utils/logger';
 import type { EmailOtpType } from '@supabase/supabase-js';
 
-export async function POST({ cookies, request, locals }) {
+export async function POST({ cookies, request: _request, locals }) {
   const idToken = cookies.get('id_token');
 
   if (!idToken) {

@@ -117,8 +117,7 @@ describe('persistedState helpers', () => {
   it('saves localStorage data in versioned format { version, data }', async () => {
     const { localStorageWritable } = await importWithBrowser(true);
     const store = localStorageWritable('save-test', 'initial');
-    let value: string | undefined;
-    const unsub = store.subscribe((v) => (value = v));
+    const unsub = store.subscribe(() => {});
 
     // The subscribe callback in storageWritable fires synchronously on creation,
     // persisting the initial value immediately.

@@ -25,7 +25,6 @@ Page for controlling the question info generation feature.
     t,
     jobs: { activeJobsByFeature }
   } = getAdminContext();
-  const activeJobsState = fromStore(activeJobsByFeature);
 
   ////////////////////////////////////////////////////////////////////////
   // Get active job
@@ -119,7 +118,7 @@ Page for controlling the question info generation feature.
       return;
     }
 
-    return async ({ result, update }: { result: ActionResult; update: () => Promise<void> }) => {
+    return async ({ result, update: _update }: { result: ActionResult; update: () => Promise<void> }) => {
       if (result.type === 'error') {
         status = 'error';
       } else if (result.type === 'failure') {

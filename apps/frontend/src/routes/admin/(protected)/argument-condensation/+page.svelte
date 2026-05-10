@@ -24,7 +24,6 @@ Page for controlling the argument condensation feature.
     t,
     jobs: { activeJobsByFeature }
   } = getAdminContext();
-  const activeJobsState = fromStore(activeJobsByFeature);
 
   ////////////////////////////////////////////////////////////////////////
   // Get active job
@@ -96,7 +95,7 @@ Page for controlling the argument condensation feature.
     // 1. Create a job for tracking progress
     // 2. Run the actual argument condensation
     // 3. Update job progress and messages in real-time
-    return async ({ result, update }: { result: ActionResult; update: () => Promise<void> }) => {
+    return async ({ result, update: _update }: { result: ActionResult; update: () => Promise<void> }) => {
       if (result.type === 'error') {
         status = 'error';
       } else if (result.type === 'failure') {

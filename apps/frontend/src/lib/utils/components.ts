@@ -31,6 +31,9 @@ export function concatProps<TObject extends object>(props: TObject, defaults: Pa
  * @returns The merged props, based on a shallow copy of `props` with
  *   `classes` joined with possible `props.class`
  */
+// reason: SvelteKit's `HTMLAttributes<*>` types lack an index signature, so callers cannot
+// satisfy `Record<string, unknown>` without unsafe casting. `Record<string, any>` is the
+// minimum constraint that accepts every prop-record shape the framework produces.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function concatClass<TProps extends Record<string, any>>(props: TProps, classes: string) {
   // Normalize class to string if it's a non-string ClassValue (Svelte 5 compatibility)

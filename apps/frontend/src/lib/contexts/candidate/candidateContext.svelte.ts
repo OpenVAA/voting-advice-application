@@ -41,7 +41,7 @@ export function initCandidateContext(): CandidateContext {
   const { appSettings, getRoute, locale, reactiveDataRoot } = appContext;
 
   const authContext = getAuthContext();
-  const { isAuthenticated, logout: _logout } = authContext;
+  const { logout: _logout } = authContext;
 
   // Bridge store values to rune-compatible access
   const appSettingsState = fromStore(appSettings);

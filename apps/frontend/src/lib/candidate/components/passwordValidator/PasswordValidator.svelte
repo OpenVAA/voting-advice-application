@@ -51,7 +51,7 @@ When using this component, the `validPassword` property should be bound to a boo
     password = '',
     username = '',
     validPassword = $bindable(false),
-    ...restProps
+    ..._restProps
   }: PasswordValidatorProps = $props();
 
   const { t } = getComponentContext();

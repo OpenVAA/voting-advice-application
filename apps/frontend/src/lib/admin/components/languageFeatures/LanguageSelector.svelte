@@ -30,7 +30,7 @@ Reusable component for selecting target language for language-based features (qu
     selected = $bindable(locale),
     name = 'language',
     id = getUUID(),
-    ...restProps
+    ..._restProps
   }: LanguageSelectorProps = $props();
 
   const options = $derived(

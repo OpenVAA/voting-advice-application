@@ -24,7 +24,6 @@ export function initAdminContext(): AdminContext {
 
   const appContext = getAppContext();
   const authContext = getAuthContext();
-  const { isAuthenticated } = authContext;
 
   ////////////////////////////////////////////////////////////////////
   // Common contents

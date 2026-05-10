@@ -14,9 +14,13 @@ import { getIdTokenClaims } from './getIdTokenClaims';
 import type * as JoseType from 'jose';
 
 // Use vi.hoisted to store the local JWKS getter that replaces createRemoteJWKSet.
+// `createLocalJWKSet` returns the bare `JWTVerifyGetKey`-shaped function — a structural
+// subset of `createRemoteJWKSet`'s return (which also exposes `coolingDown` / `reload` /
+// `jwks`). Typing as the local return keeps the assignment in `beforeAll` direct, and the
+// mock factory below widens via cast to satisfy the remote signature consumers expect.
 const { localJwksState } = vi.hoisted(() => ({
   localJwksState: {
-    getKey: null as unknown
+    getKey: null as unknown as ReturnType<typeof JoseType.createLocalJWKSet>
   }
 }));
 
@@ -39,11 +43,23 @@ vi.mock('$env/dynamic/private', () => ({
 
 // Mock jose to replace createRemoteJWKSet with our local JWKS.
 // ESM exports are not configurable, so vi.spyOn won't work.
+//
+// Mock factory signature mirrors `jose.createRemoteJWKSet(url, options?)` exactly,
+// returning the same `JWTVerifyGetKey`-shaped function that `createLocalJWKSet`
+// produces. Keeps incorrect test usage (e.g. forgetting to call the factory) a
+// type error rather than a silent runtime mismatch.
 vi.mock('jose', async (importOriginal) => {
   const actual = await importOriginal<typeof JoseType>();
   return {
     ...actual,
-    createRemoteJWKSet: (..._args: Array<unknown>) => localJwksState.getKey
+    createRemoteJWKSet: (
+      _url: URL,
+      _options?: Parameters<typeof JoseType.createRemoteJWKSet>[1]
+    ): ReturnType<typeof JoseType.createRemoteJWKSet> =>
+      // Cast through unknown: the remote signature exposes coolingDown/reload/jwks
+      // members the local JWKS does not provide, but production code under test only
+      // uses the function-call form, so the additional members are unused at the seam.
+      localJwksState.getKey as unknown as ReturnType<typeof JoseType.createRemoteJWKSet>
   };
 });
 

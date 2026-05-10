@@ -19,7 +19,7 @@ Reusable component for displaying informational messages with scrolling.
   import { getAdminContext } from '$lib/contexts/admin';
   import type { InfoMessagesProps } from './InfoMessages.type';
 
-  let { messages = undefined, ...restProps }: InfoMessagesProps = $props();
+  let { messages = undefined, ..._restProps }: InfoMessagesProps = $props();
 
   const { t } = getAdminContext();
 

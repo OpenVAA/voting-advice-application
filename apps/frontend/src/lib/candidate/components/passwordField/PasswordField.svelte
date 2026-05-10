@@ -31,7 +31,7 @@ PasswordField is an input box for password that comes with a button to reveal an
     autocomplete = '',
     label = undefined,
     externalLabel = false,
-    ...restProps
+    ..._restProps
   }: PasswordFieldProps = $props();
 
   export function focus(): void {

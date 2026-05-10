@@ -1,5 +1,6 @@
 import { ENTITY_TYPE } from '@openvaa/data';
 import { UniversalDataWriter } from '$lib/api/base/universalDataWriter';
+import { getLocale } from '$lib/i18n';
 import { constants } from '$lib/utils/constants';
 import { supabaseAdapterMixin } from '../supabaseAdapter';
 import { parseStoredImage } from '../utils/storageUrl';
@@ -45,8 +46,9 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     // In the browser, call the server-side logout endpoint to clear httpOnly cookies.
     // Client-side signOut alone cannot remove httpOnly cookies set by createServerClient.
     if (typeof window !== 'undefined') {
-      // Extract the locale prefix from the current URL path (e.g., "/en/candidate/..." -> "en")
-      const locale = window.location.pathname.split('/')[1] || 'en';
+      // reason: read locale from paraglide runtime — splitting window.location.pathname returns
+      // 'candidate' for unprefixed routes (e.g. /candidate/...), producing /candidate/candidate/auth/logout.
+      const locale = getLocale();
       await fetch(`/${locale}/candidate/auth/logout`, { method: 'POST' });
     }
     const { error } = await this.supabase.auth.signOut({ scope: 'local' });

@@ -55,6 +55,10 @@ export function buildRoute(
   const routeId = route ? ROUTE[route] : current?.route?.id || ROUTE.Home;
 
   // Build url
+  // reason: SvelteKit's `resolveRoute` typings demand a literal route-id and a
+  // params record narrowed to that route. We assemble both dynamically from the
+  // generic ROUTE map at runtime, so the literal-type contract cannot be honored
+  // structurally — `as any` is the documented escape hatch for this pattern.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let url = resolveRoute(routeId as any, flattenParams(routeParams) as any);
   if (Object.keys(searchParams).length) url += `?${qs.stringify(searchParams, { encodeValuesOnly: true })}`;

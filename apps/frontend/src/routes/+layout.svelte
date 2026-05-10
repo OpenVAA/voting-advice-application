@@ -61,9 +61,11 @@
 
   // Bridge stores to runes reactivity
   const appSettings = fromStore(appSettingsStore);
-  const dataRoot = fromStore(dataRootStore);
-  const openFeedbackModal = fromStore(openFeedbackModalStore);
-  const sendTrackingEvent = fromStore(sendTrackingEventStore);
+  // reason: `_sendTrackingEvent` is a value-position type carrier — the bridge instance is
+  // referenced only via `typeof _sendTrackingEvent.current` below to type `umamiRef.trackEvent`.
+  // Direct reads/writes use `sendTrackingEventStore` (lines 148, 178). Renamed `_`-prefixed to
+  // satisfy unused-vars while preserving the type bridge.
+  const _sendTrackingEvent = fromStore(sendTrackingEventStore);
   const popupQueueState = fromStore(popupQueue);
 
   ////////////////////////////////////////////////////////////////////
@@ -142,7 +144,7 @@
   ////////////////////////////////////////////////////////////////////
 
   // Reference to UmamiAnalytics component to access its trackEvent export
-  let umamiRef = $state<{ trackEvent?: typeof sendTrackingEvent.current }>();
+  let umamiRef = $state<{ trackEvent?: typeof _sendTrackingEvent.current }>();
 
   $effect(() => {
     if (umamiRef?.trackEvent) sendTrackingEventStore.set(umamiRef.trackEvent);

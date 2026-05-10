@@ -20,7 +20,7 @@ Reusable component for displaying warning and error messages with scrolling.
   import { getAdminContext } from '$lib/contexts/admin';
   import type { WarningMessagesProps } from './WarningMessages.type';
 
-  let { warnings = [], errors = [], ...restProps }: WarningMessagesProps = $props();
+  let { warnings = [], errors = [], ..._restProps }: WarningMessagesProps = $props();
 
   const { t } = getAdminContext();
 

@@ -37,7 +37,7 @@ Display constituency selection input for just one `ConstituencyGroup` which is n
     onShadedBg,
     selected = $bindable(''),
     onChange,
-    ...restProps
+    ..._restProps
   }: SingleGroupConstituencySelectorProps = $props();
 
   ////////////////////////////////////////////////////////////////////

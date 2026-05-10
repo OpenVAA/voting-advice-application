@@ -19,7 +19,7 @@ Preview component displaying all available input types.
   import { Input } from '.';
   import type { PreviewAllInputsProps } from './PreviewAllInputs.type';
 
-  let { info, locked = false, ...restProps }: PreviewAllInputsProps = $props();
+  let { info, locked = false, ..._restProps }: PreviewAllInputsProps = $props();
 
   function onChange(value: unknown) {
     console.info('New value:', value);

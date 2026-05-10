@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { fromStore } from 'svelte/store';
   import { FeatureJobs } from '$lib/admin/components/jobs';
   import { ADMIN_FEATURES } from '$lib/admin/features';
   import { ButtonWithConfirmation } from '$lib/components/buttonWithConfirmation';
@@ -17,8 +16,6 @@
     jobs: { activeJobsByFeature, pastJobs },
     abortAllJobs
   } = getAdminContext();
-  const activeJobsState = fromStore(activeJobsByFeature);
-  const pastJobsState = fromStore(pastJobs);
 
   ////////////////////////////////////////////////////////////////////////
   // Get jobs

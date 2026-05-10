@@ -39,11 +39,10 @@ export function initVoterContext(): VoterContext {
   ////////////////////////////////////////////////////////////
 
   const appContext = getAppContext();
-  const { appSettings, getRoute, locale, reactiveDataRoot, startEvent, t } = appContext;
+  const { appSettings, locale, reactiveDataRoot, startEvent, t } = appContext;
 
   // Bridge store values to rune-compatible access
   const appSettingsState = fromStore(appSettings);
-  const getRouteState = fromStore(getRoute);
   const localeState = fromStore(locale);
 
   ////////////////////////////////////////////////////////////

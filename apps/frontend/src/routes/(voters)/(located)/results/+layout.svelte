@@ -52,7 +52,8 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   import type { Snippet } from 'svelte';
   import type { Tab } from '$lib/components/tabs';
 
-  let { children }: { children: Snippet } = $props();
+  // reason: child routes render via URL-driven Drawer state inside this layout, not via `{@render children()}`. Renamed to `_children` to satisfy unused-vars while preserving SvelteKit prop contract.
+  let { children: _children }: { children: Snippet } = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -96,8 +97,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   // handlers continue to append electionId to the search params on the
   // first explicit navigation).
 
-  const ENTITY_PLURALS = ['candidates', 'organizations', 'alliances'] as const;
-  type EntityPlural = (typeof ENTITY_PLURALS)[number];
+  type EntityPlural = 'candidates' | 'organizations' | 'alliances';
 
   const _parsedParams = $derived(parseParams(page));
   const _urlElectionIdRaw = $derived(_parsedParams.electionId);

@@ -11,6 +11,12 @@ vi.mock('$env/dynamic/public', () => ({
   }
 }));
 
+// Mock $lib/i18n so tests can assert locale flow into _logout's server POST.
+const i18nMocks = vi.hoisted(() => ({ getLocale: vi.fn(() => 'en') }));
+vi.mock('$lib/i18n', () => ({
+  getLocale: i18nMocks.getLocale
+}));
+
 /**
  * Creates a mock Supabase client with auth methods as vi.fn() stubs.
  */
@@ -101,6 +107,10 @@ describe('SupabaseDataWriter', () => {
   });
 
   describe('logout (public override)', () => {
+    beforeEach(() => {
+      i18nMocks.getLocale.mockReturnValue('en');
+    });
+
     it('calls signOut directly without posting to universal logout route', async () => {
       mockSupabase.auth.signOut.mockResolvedValue({ error: null });
 
@@ -108,6 +118,30 @@ describe('SupabaseDataWriter', () => {
 
       expect(mockSupabase.auth.signOut).toHaveBeenCalledWith({ scope: 'local' });
       expect(result).toEqual({ type: 'success' });
+    });
+
+    it('posts cookie-clear request to /<locale>/candidate/auth/logout using paraglide locale', async () => {
+      mockSupabase.auth.signOut.mockResolvedValue({ error: null });
+      i18nMocks.getLocale.mockReturnValue('fi');
+
+      await writer.logout({ authToken: '' });
+
+      expect(globalThis.fetch).toHaveBeenCalledWith('/fi/candidate/auth/logout', { method: 'POST' });
+    });
+
+    it('does not derive locale from window.location.pathname (regression guard for /candidate-prefix bug)', async () => {
+      mockSupabase.auth.signOut.mockResolvedValue({ error: null });
+      i18nMocks.getLocale.mockReturnValue('en');
+      // Simulate an unprefixed candidate route URL — the previous implementation would
+      // have produced "/candidate/candidate/auth/logout" by parsing pathname[1].
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: { pathname: '/candidate/auth/logout', origin: 'http://localhost' }
+      });
+
+      await writer.logout({ authToken: '' });
+
+      expect(globalThis.fetch).toHaveBeenCalledWith('/en/candidate/auth/logout', { method: 'POST' });
     });
   });
 
@@ -250,7 +284,7 @@ describe('SupabaseDataWriter', () => {
       };
       mockSupabase.rpc.mockResolvedValue({ data: expectedAnswers, error: null });
 
-      const result = await writer.updateAnswers({
+      await writer.updateAnswers({
         authToken: '',
         target: { type: 'candidate', id: 'entity-1' },
         answers: mockAnswers

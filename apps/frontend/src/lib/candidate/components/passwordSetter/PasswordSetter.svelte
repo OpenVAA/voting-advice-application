@@ -38,7 +38,7 @@ Contains the dynamic `PasswordValidator` component.
     valid = $bindable(false),
     passwordTestId = undefined,
     confirmPasswordTestId = undefined,
-    ...restProps
+    ..._restProps
   }: PasswordSetterProps = $props();
 
   export function reset(): void {
