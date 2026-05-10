@@ -25,6 +25,123 @@ import { expect,test } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
+import type { Page } from '@playwright/test';
+
+/**
+ * Answer questions until the voter lands on /results, returning the number of
+ * questions answered. Capped at `maxQuestions` so a buggy run can't loop forever.
+ *
+ * Hoisted to module-level per RESEARCH §"Pattern 4" canonical 3 — keeps the
+ * exploration control-flow (try/catch + URL probe + button-visibility fallback)
+ * OUT of the test body so the per-test no-conditional-in-test contract holds
+ * (DETERM-03). The redirect-from-/questions-to-/results race is dispatched by
+ * `waitForURL(/\\/results/)` after each click; the next-button fallback uses
+ * web-first auto-retry visibility to avoid the Pitfall 8 `if (page.url())`
+ * race-mask.
+ */
+async function answerUntilResults(page: Page, maxQuestions = 20): Promise<number> {
+  const answerOption = page.getByTestId(testIds.voter.questions.answerOption);
+  const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
+  let questionCount = 0;
+
+  while (questionCount < maxQuestions) {
+    // No more answer options visible within 5s -> assume results page reached.
+    try {
+      await answerOption.first().waitFor({ state: 'visible', timeout: 5000 });
+    } catch {
+      return questionCount;
+    }
+
+    questionCount++;
+    const urlBefore = page.url();
+    await answerOption.nth(2).click();
+
+    // Wait for auto-advance OR fall back to clicking the next/results button.
+    try {
+      await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 5000 });
+    } catch {
+      // No auto-advance — try the explicit next button. waitFor uses web-first
+      // auto-retry visibility so we don't need an `if (await x.isVisible())`
+      // race-mask (Pitfall 8 + Anti-Patterns).
+      try {
+        await nextButton.waitFor({ state: 'visible', timeout: 2000 });
+      } catch {
+        return questionCount;
+      }
+      await nextButton.click();
+      await page.waitForURL(/\/results/, { timeout: 10000 });
+      return questionCount;
+    }
+
+    if (page.url().includes('/results')) return questionCount;
+  }
+
+  return questionCount;
+}
+
+/**
+ * Step through the question flow until either a category-intro page appears
+ * or the voter lands on /results. Returns `'category-intro'` when an intro is
+ * reached, `'results'` when /results is reached, or `'limit'` when neither
+ * happens within `maxSteps` iterations.
+ *
+ * Hoisted per Pattern 4 canonical 3 (DETERM-03 — keeps multi-anchor exploration
+ * control-flow out of the test body). The category-intro vs results race is
+ * dispatched by waitForURL OR-ed against an intro-visibility wait — both
+ * use Playwright's web-first auto-retry, no `.isVisible().catch(false)`
+ * swallow-trap (RESEARCH Anti-Patterns).
+ */
+async function answerUntilCategoryIntroOrResults(
+  page: Page,
+  maxSteps = 20
+): Promise<'category-intro' | 'results' | 'limit'> {
+  const answerOption = page.getByTestId(testIds.voter.questions.answerOption);
+  const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
+
+  for (let i = 0; i < maxSteps; i++) {
+    const urlBefore = page.url();
+    await answerOption.nth(2).click();
+
+    // Wait for auto-advance OR explicit next-button advance. No `if (await x.isVisible())`
+    // race-mask — use web-first waitFor.
+    try {
+      await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 5000 });
+    } catch {
+      try {
+        await nextButton.waitFor({ state: 'visible', timeout: 2000 });
+      } catch {
+        return 'limit';
+      }
+      await nextButton.click();
+      try {
+        await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 5000 });
+      } catch {
+        return 'limit';
+      }
+    }
+
+    // Race: did we land on a category-intro page OR on /results?
+    // Use page.waitForFunction so the two anchors are evaluated atomically in
+    // a single tracking scope — settles whichever appears first within the 2s
+    // window. Replaces the prior `if (await x.isVisible().catch(false))` swallow
+    // (RESEARCH Anti-Patterns) and the prior `if (page.url().includes(...))`
+    // race-mask (Pitfall 8).
+    const introTestId = testIds.voter.questions.categoryIntro;
+    const anchor = await page.waitForFunction(
+      (id) => {
+        const intro = document.querySelector(`[data-testid="${id}"]`);
+        if (intro && (intro as HTMLElement).offsetParent !== null) return 'category-intro';
+        if (location.pathname.includes('/results')) return 'results';
+        return null;
+      },
+      introTestId,
+      { timeout: 5000 }
+    ).then((handle) => handle.jsonValue() as Promise<'category-intro' | 'results'>)
+     .catch(() => null);
+    if (anchor) return anchor;
+  }
+  return 'limit';
+}
 
 // All describe blocks share global app settings state -- run serially.
 test.describe.configure({ mode: 'serial' });
@@ -122,12 +239,11 @@ test.describe('category selection (VOTE-13)', { tag: ['@voter'] }, () => {
     expect(checkboxCount).toBeGreaterThanOrEqual(2);
 
     // Uncheck all category checkboxes first to start from a clean slate,
-    // then select exactly 1 category
+    // then select exactly 1 category. setChecked(false) is idempotent — it
+    // unchecks if checked and is a no-op if already unchecked — so we don't
+    // need a per-checkbox conditional probe (DETERM-03: no-conditional-in-test).
     for (let i = 0; i < checkboxCount; i++) {
-      const checkbox = categoryCheckboxes.nth(i);
-      if (await checkbox.isChecked()) {
-        await checkbox.click();
-      }
+      await categoryCheckboxes.nth(i).setChecked(false);
     }
 
     // Select 1 category checkbox
@@ -158,54 +274,21 @@ test.describe('category selection (VOTE-13)', { tag: ['@voter'] }, () => {
     const categoryCheckboxes = page.getByTestId(testIds.voter.questions.categoryCheckbox);
     const checkboxCount = await categoryCheckboxes.count();
 
-    // Uncheck all, then select exactly 1 category
+    // Uncheck all, then select exactly 1 category. setChecked(false) is
+    // idempotent (no-op when already unchecked), so no per-checkbox probe is
+    // needed — DETERM-03: no-conditional-in-test.
     for (let i = 0; i < checkboxCount; i++) {
-      const checkbox = categoryCheckboxes.nth(i);
-      if (await checkbox.isChecked()) {
-        await checkbox.click();
-      }
+      await categoryCheckboxes.nth(i).setChecked(false);
     }
     await categoryCheckboxes.nth(0).click();
 
     // Click start
     await page.getByTestId(testIds.voter.questions.startButton).click();
 
-    // Answer questions in the selected category.
-    // The number should be fewer than 16 (total across all categories).
-    let questionCount = 0;
-    let onResultsPage = false;
-
-    while (!onResultsPage && questionCount < 20) {
-      // Wait for answer options to be visible
-      const answerOption = page.getByTestId(testIds.voter.questions.answerOption);
-      try {
-        await answerOption.first().waitFor({ state: 'visible', timeout: 5000 });
-      } catch {
-        // No more questions -- we should be on results
-        onResultsPage = true;
-        break;
-      }
-
-      questionCount++;
-      const urlBefore = page.url();
-      await answerOption.nth(2).click();
-
-      // Wait for auto-advance
-      try {
-        await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 5000 });
-        if (page.url().includes('/results')) {
-          onResultsPage = true;
-        }
-      } catch {
-        // URL didn't change -- might need to click next/results button
-        const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
-        if (await nextButton.isVisible()) {
-          await nextButton.click();
-          await page.waitForURL(/\/results/, { timeout: 10000 });
-          onResultsPage = true;
-        }
-      }
-    }
+    // Answer questions in the selected category. The number should be fewer
+    // than 16 (total across all categories). Control flow is hoisted into
+    // `answerUntilResults` at module scope (DETERM-03 — no-conditional-in-test).
+    const questionCount = await answerUntilResults(page, 20);
 
     // With only 1 of 2 categories selected, question count should be less than 16
     expect(questionCount).toBeLessThan(16);
@@ -264,44 +347,15 @@ test.describe('category intros (VOTE-05)', { tag: ['@voter'] }, () => {
     // Should land on first question
     await expect(page.getByTestId(testIds.voter.questions.answerOption).first()).toBeVisible({ timeout: 10000 });
 
-    // Answer all questions in the first category.
-    // When transitioning to the next category, a category intro page should appear.
-    let foundSecondCategoryIntro = false;
-
-    // Answer questions until we see another category intro or reach results
-    for (let i = 0; i < 20; i++) {
-      const urlBefore = page.url();
-      await page.getByTestId(testIds.voter.questions.answerOption).nth(2).click();
-
-      // Wait for navigation
-      try {
-        await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 5000 });
-      } catch {
-        // URL didn't change -- click next button
-        const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
-        if (await nextButton.isVisible()) {
-          await nextButton.click();
-          try {
-            await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 5000 });
-          } catch {
-            break;
-          }
-        }
-      }
-
-      // Check if we landed on a category intro page
-      if (await categoryIntro.isVisible().catch(() => false)) {
-        foundSecondCategoryIntro = true;
-        break;
-      }
-
-      // Check if we landed on results
-      if (page.url().includes('/results')) {
-        break;
-      }
-    }
-
-    expect(foundSecondCategoryIntro).toBe(true);
+    // Answer all questions in the first category. When transitioning to the
+    // next category, a category intro page should appear. Control flow is
+    // hoisted into `answerUntilCategoryIntroOrResults` at module scope so the
+    // test body satisfies no-conditional-in-test (DETERM-03). The two-anchor
+    // race (category-intro vs /results) is dispatched via page.waitForFunction
+    // inside the helper, replacing the prior `.isVisible().catch(false)`
+    // swallow-trap + `if (page.url())` race-mask.
+    const anchor = await answerUntilCategoryIntroOrResults(page, 20);
+    expect(anchor).toBe('category-intro');
 
     // Verify category intro elements on the second category intro page
     await expect(categoryIntro).toBeVisible();

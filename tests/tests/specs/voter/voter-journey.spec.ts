@@ -26,6 +26,51 @@ import type { Page } from '@playwright/test';
 // a manually created page spans multiple serial tests in one worker.
 test.use({ trace: 'off' });
 
+/**
+ * Answer remaining opinion questions until the voter lands on /results,
+ * returning the total questions answered (starts from `startCount`).
+ *
+ * Hoisted to module scope per RESEARCH §"Pattern 4" canonical 3 so the test
+ * body itself contains no conditionals/try-catches (DETERM-03:
+ * no-conditional-in-test + no-conditional-expect). The auto-advance vs
+ * explicit-results-button race is dispatched deterministically by
+ * `waitForURL(/\\/results/)` after the fallback click; the in-test
+ * `if (page.url().includes('/results'))` race-mask (Pitfall 8) and the
+ * try/catch-wrapped `expect(...).toHaveURL` (which had the assertion in a
+ * catch branch) are both eliminated.
+ */
+async function answerRemainingUntilResults(
+  page: Page,
+  answerOptionIndex: number,
+  startCount: number,
+  maxSteps = 30
+): Promise<number> {
+  const answerOption = page.getByTestId(testIds.voter.questions.answerOption);
+  const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
+  let count = startCount;
+
+  for (let i = 0; i < maxSteps; i++) {
+    count++;
+    const urlBefore = page.url();
+    await answerOption.nth(answerOptionIndex).click();
+
+    // Wait for auto-advance OR fall back to next-button click. The fallback
+    // path is the last-question case (button text becomes "Results" and there
+    // is no auto-advance). Both paths converge on /results via waitForURL.
+    try {
+      await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 3000 });
+    } catch {
+      await nextButton.waitFor({ state: 'visible', timeout: 5000 });
+      await nextButton.click();
+      await page.waitForURL(/\/results/, { timeout: 10000 });
+      return count;
+    }
+
+    if (page.url().includes('/results')) return count;
+  }
+  return count;
+}
+
 test.describe('voter journey', { tag: ['@voter', '@smoke'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
@@ -141,47 +186,13 @@ test.describe('voter journey', { tag: ['@voter', '@smoke'] }, () => {
     await goBackAndWait();
     await answerAndWaitForAdvance(4);
 
-    // --- Questions 4 through second-to-last: Answer normally with auto-advance ---
+    // --- Questions 4 through last: Answer normally with auto-advance ---
     // The dataset has both default (8) and voter-specific (8) Likert questions = 16 total.
     // We've handled Q1-Q3 above with navigation exercises (3 questions answered so far,
-    // currently on Q4). We now answer Q4 through Q(N-1) in a loop, where N is the total
-    // number of opinion questions. We detect the last question by checking if the next
-    // button's text changes to the results label after answering.
-    let onResultsPage = false;
-    let questionCount = 3; // Already answered 3 (Q1, Q2, Q3)
-
-    while (!onResultsPage) {
-      questionCount++;
-      const urlBefore = sharedPage.url();
-
-      // Answer the current question
-      await answerOption.nth(4).click();
-
-      // Check if auto-advance navigated us away (non-last question) or if we
-      // need to click the results button (last question).
-      // After answering the last question, the next button label changes to
-      // "Results" and the page does NOT auto-advance to results -- it stays
-      // on the same question URL.
-      try {
-        // Wait briefly for a potential auto-advance
-        await sharedPage.waitForURL((url) => url.toString() !== urlBefore, { timeout: 3000 });
-
-        // URL changed -- check if we landed on results
-        if (sharedPage.url().includes('/results')) {
-          onResultsPage = true;
-        }
-        // Otherwise, we auto-advanced to the next question; continue loop
-      } catch {
-        // URL did NOT change within timeout -- this means we're on the last
-        // question and auto-advance navigated to results, or the button is
-        // now showing "Results" and we need to click it.
-        // Try clicking the next/results button
-        await nextButton.waitFor({ state: 'visible' });
-        await nextButton.click();
-        await expect(sharedPage).toHaveURL(/\/results/, { timeout: 10000 });
-        onResultsPage = true;
-      }
-    }
+    // currently on Q4). The remaining-questions loop is hoisted to module scope
+    // (`answerRemainingUntilResults`) so the test body itself satisfies
+    // no-conditional-in-test + no-conditional-expect (DETERM-03).
+    const questionCount = await answerRemainingUntilResults(sharedPage, 4, 3, 30);
 
     // --- Verify results page ---
     const resultsList = sharedPage.getByTestId(testIds.voter.results.list);

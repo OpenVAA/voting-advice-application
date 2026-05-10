@@ -122,9 +122,12 @@ test.describe('setTimeout popup on full page load (LAYOUT-03 regression gate)', 
   test('popup appears on full page load to /results (LAYOUT-03 hydration path)', async ({ page }) => {
     test.setTimeout(60000);
 
-    // Fail fast if beforeAll discovery didn't populate IDs.
-    if (!electionId || !constituencyId)
-      throw new Error('electionId / constituencyId not discovered in beforeAll');
+    // Fail fast if beforeAll discovery didn't populate IDs. expect() is the
+    // unconditional assertion form per RESEARCH §"Pattern 5" — replaces the
+    // prior `if (!x) throw` precondition guard that triggered
+    // no-conditional-in-test (DETERM-03).
+    expect(electionId, 'electionId must be discovered in beforeAll').toBeTruthy();
+    expect(constituencyId, 'constituencyId must be discovered in beforeAll').toBeTruthy();
 
     // Seed voter answerStore in localStorage before navigation. Shape
     // matches apps/frontend/src/lib/contexts/utils/persistedState.svelte.ts
