@@ -120,13 +120,13 @@ Key cross-milestone reference points carried forward into v2.9:
 
 - Local imgproxy Docker container crashes intermittently (502 on image upload) — not a code issue; carry-forward infrastructure debt. May affect Phase 76 A11Y-01 image-upload validation cells if it crashes during the run.
 - 165 pre-existing intra-package circular deps in `@openvaa/data` / `matching` / `filters` — deferred to a dedicated structural refactor milestone.
-- Phase 73 risk profile: high. The 19 data-loading races may include cases that surface real product bugs requiring code-level fixes (not test-level fixes), which could expand Phase 73 scope mid-execution. Phase planning will need to call out this branching risk explicitly.
-- data.setup.ts:61-64 TypeError cascades entire e2e suite (98 cascaded in all 3 inventory runs). Recommended Plan 02 Task 0 hotfix per INVENTORY.md.
+- [Phase 73 follow-up] voter-popups race-tolerance regression — `waitFor({state:'visible'})` on already-visible anchors at `tests/tests/specs/voter/voter-popups.spec.ts:138, 220` defeats intended 2-5s popup-delay waits (advisory only; flagged in `73-REVIEW.md` CR-02 + `73-VERIFICATION.md` §Follow-up Items). Not a must-have failure; fix when convenient (consider `expect(dialog).toBeHidden({ timeout: 3000 })` pattern).
+- [Phase 73 follow-up] voter-fixture heterogeneous-question-types race — 16 voter-app failures share the `voter.fixture.ts` heterogeneous-question assumption (only 16 Likert assumed; seed ships 40). Escalated to `.planning/todos/pending/2026-05-11-voter-fixture-heterogeneous-question-types.md` per CONTEXT D-05 (60-120 LOC across 3 files, exceeds 50-LOC cap). Tests remain in post-73 DATA_RACE pool with leave-in-pool rationale.
 
 ## Session Continuity
 
-Last session: 2026-05-10T18:13:08.705Z
-Stopped at: Completed Phase 73 Plan 01 — inventory + lint baseline + HEAD blocker surfaced
+Last session: 2026-05-11
+Stopped at: Phase 73 complete, ready to plan Phase 74
 Resume file: None
 Next action: Run `/gsd-plan-phase 73` to start planning the determinism baseline. Phase 73 is gating for Phases 74-77 — plan it first; Phase 78 (CLEAN) may be planned in parallel since it's independent of Phase 73.
 
