@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.9
 milestone_name: E2E Coverage + Suite Determinism — PLANNING
 status: executing
-stopped_at: Phase 75 context gathered
-last_updated: "2026-05-11T17:22:12.578Z"
+stopped_at: Completed Phase 75 Plan 02a (QSPEC-02 + dedup audit)
+last_updated: "2026-05-11T17:36:16.577Z"
 last_activity: 2026-05-11
 progress:
   total_phases: 10
   completed_phases: 2
   total_plans: 16
-  completed_plans: 14
-  percent: 88
+  completed_plans: 15
+  percent: 94
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-10)
 ## Current Position
 
 Phase: 75 (question-rendering-specs) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-05-11
 
@@ -84,6 +84,7 @@ Snapshot taken at v2.8 milestone close on 2026-05-10. v2.9 requirements consume 
 | Phase 74 P04 | 85min | 4 tasks | 9 files |
 | Phase 74 P07 | 25200 | 5 tasks | 13 files |
 | Phase 75 P01 | 18min | - tasks | - files |
+| Phase 75 P02a | 25min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -135,6 +136,11 @@ Key cross-milestone reference points carried forward into v2.9:
 - [Phase ?]: Order B (CONTEXT D-06) confirmed for Phase 74 close: E2E-08 spec re-validates against tightened wrapper at Phase 78 close
 - [Phase ?]: Parity-script constants regenerated for Phase 74: CASCADE 55→65 (+10 with per-test rationale); PASS_LOCKED+DATA_RACE unchanged per D-09
 - [Phase ?]: Phase 75 Plan 01: Option A applied for Skip-Next fallback at sort 18 (3-iter loop); role 'radio' used (not 'button'); literal EN strings per W-03 deferred-todo
+- [Phase ?]: Plan 75-02a closed: QSPEC-02 single-choice categorical spec + unified dedup audit artifact landed.
+- [Phase ?]: Plan 75-02a: pre-flight gate (Task 0) confirmed cross-plan DB seed state (boolean@sort18=1, directional@sort17=1, Alpha boolean='true', Alpha directional='a'). PASS.
+- [Phase ?]: Plan 75-02a: yarn dev:reset-with-data seeds default template — Phase 75 Plan 02b verification gate should use 'yarn supabase:reset && yarn dev:seed --template e2e' instead.
+- [Phase ?]: Plan 75-02a: candidates.answers JSONB is keyed by question UUID (not external_id) — psql probes must join to questions table to resolve UUID.
+- [Phase ?]: Plan 75-02a: try/catch is canonical playwright/no-conditional-in-test workaround for spec test() body branching (vs 'if' usable in module-level helpers like voter-matching.spec.ts:182-187).
 
 ### Blockers/Concerns
 
@@ -144,8 +150,8 @@ Key cross-milestone reference points carried forward into v2.9:
 
 ## Session Continuity
 
-Last session: 2026-05-11T17:22:12.573Z
-Stopped at: Phase 75 context gathered
+Last session: 2026-05-11T17:36:16.572Z
+Stopped at: Completed Phase 75 Plan 02a (QSPEC-02 + dedup audit)
 Resume file: None
 Next action: Run `/gsd-plan-phase 73` to start planning the determinism baseline. Phase 73 is gating for Phases 74-77 — plan it first; Phase 78 (CLEAN) may be planned in parallel since it's independent of Phase 73.
 

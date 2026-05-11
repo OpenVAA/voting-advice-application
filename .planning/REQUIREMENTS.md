@@ -57,7 +57,7 @@
 
 - [x] **QSPEC-01**: A focused user-story spec walks the voter through a Boolean opinion question end-to-end — input shape correct (2-button radio per v2.6 P61), voter answers, navigates, sees their answer reflected on entity-detail. Deduplicated against existing matching tests (assertion-by-assertion).
 
-- [ ] **QSPEC-02**: A focused user-story spec walks the voter through a categorical (single-choice + multi-choice) opinion question end-to-end — input shape correct, voter answers, navigates, sees their answer reflected on entity-detail. The per-category match breakdown is verified separately by E2E-07 — QSPEC-02 only covers the input + flow.
+- [x] **QSPEC-02**: A focused user-story spec walks the voter through a categorical (single-choice + multi-choice) opinion question end-to-end — input shape correct, voter answers, navigates, sees their answer reflected on entity-detail. The per-category match breakdown is verified separately by E2E-07 — QSPEC-02 only covers the input + flow.
 
 ### A11Y — Profile + accessibility (parallel with Phase B)
 
