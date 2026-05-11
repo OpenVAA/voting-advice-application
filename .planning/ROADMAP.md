@@ -203,9 +203,10 @@ Phase 78 (CLEAN)  ← independent of 73-77; may run in parallel with 74-77
   2. **Categorical spec (QSPEC-02).** A focused spec walks the voter through a categorical opinion question end-to-end — both single-choice and multi-choice shapes — with the same shape: input renders correctly, voter answers, navigates, sees their answer reflected on entity-detail. Per-category match breakdown is NOT asserted here (that's E2E-07's responsibility — QSPEC-02 covers only the input + flow).
   3. **Deduplication.** Each new spec is checked assertion-by-assertion against existing matching tests in `tests/tests/specs/voter/voter-matching.spec.ts` and unit-level matching tests in `packages/matching/`; no assertion duplicates an existing test's coverage. Where overlap exists, the QSPEC version asserts the user-flow + render-shape contract (Playwright's strength), and the existing matching test continues to assert the matching-algorithm contract.
   4. **Determinism preserved.** Both new specs pass on 3 consecutive `--workers=1` runs identically; the post-Phase-73 baseline does not regress.
-**Plans**: 2 plans
-- [ ] 75-01-PLAN.md — QSPEC-01 (Boolean spec) + e2e template boolean-question addition + `walkToQuestion(page, sortOrder)` helper extraction [Wave 1, autonomous]
-- [ ] 75-02-PLAN.md — QSPEC-02 (single-choice categorical spec; multi-choice PASS-WITH-DEFERRAL per CONTEXT D-03) + inline verification gate (vite-cache wipe + 3-run cold-start + parity-script regen + 75-VERIFICATION.md + deferred-todo filing) [Wave 2, depends on 01, has checkpoint]
+**Plans**: 3 plans (split from 2 per 2026-05-12 revision: Plan 02 → Plan 02a + Plan 02b per CONTEXT D-01 fallback)
+- [ ] 75-01-PLAN.md — QSPEC-01 (Boolean spec) + e2e template boolean-question addition + `walkToQuestion(page, sortOrder)` helper extraction + W-03 i18n-hardening deferred-todo [Wave 1, autonomous]
+- [ ] 75-02a-PLAN.md — QSPEC-02 single-choice spec (4-step contract incl. B-02 browser-back persistence) + pre-flight DB seed gate (B-04) + unified dedup audit artifact at 75-02-DEDUP-AUDIT.md (B-03 Nyquist-compliant persistent file) [Wave 2, depends on 01, autonomous]
+- [ ] 75-02b-PLAN.md — Verification gate (vite-cache wipe + 3-run cold-start + parity-script regen) + 75-VERIFICATION.md + QSPEC-02 multi-choice deferred-todo + operator checkpoint [Wave 3, depends on 02a, has checkpoint]
 **UI hint**: yes
 
 ### Phase 76: Profile + A11y
