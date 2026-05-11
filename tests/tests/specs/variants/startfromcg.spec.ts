@@ -399,3 +399,147 @@ test.describe('startFromConstituencyGroup variant', { tag: ['@variant'] }, () =>
     await expect(sharedPage).toHaveURL(/\/results/, { timeout: 10000 });
   });
 });
+
+// ---------------------------------------------------------------------------
+// E2E-04 cell 5 (startFromConstituency) — ADDITIVE matrix assertion (Phase 74
+// Plan 04 Task 4)
+//
+// Reuses the startfromcg dataset. The matrix contract (cell 5):
+//   (1) constituency selector visible FIRST (reversed flow)
+//   (2) elections list HIDDEN at the constituency-pick step
+//   (3) After constituency continue → URL transitions to /elections
+//
+// Mirrors the locator shape used by the existing 'should show constituency
+// selection first (reversed flow)' test at lines 211-239 + the
+// 'should show election selection after constituency selection' test at
+// lines 241-281 (which proves the /elections URL transition after
+// constituency-continue).
+//
+// Settings setup (beforeAll/afterAll) is duplicated from the existing
+// describe block because the existing block's afterAll has already
+// RESTORED `startFromConstituencyGroup` to null by the time this additive
+// block runs. The duplication is intentional and ADDITIVE per Phase 74
+// CONTEXT D-05 — it does NOT modify the existing startFromConstituencyGroup
+// blocks above.
+// ---------------------------------------------------------------------------
+
+test.describe('matrix cell: startFromConstituency (E2E-04 cell 5)', { tag: ['@variant', '@matrix'] }, () => {
+  test.describe.configure({ mode: 'serial' });
+
+  let matrixClient: SupabaseAdminClient;
+
+  test.beforeAll(async () => {
+    matrixClient = new SupabaseAdminClient();
+
+    // Look up the municipalities constituency group's documentId. Same
+    // lookup as line 142-149 of the existing block, repeated locally.
+    const findResult = await matrixClient.findData('constituencyGroups', {
+      externalId: { $eq: 'test-cg-municipalities' }
+    });
+    expect(findResult.type).toBe('success');
+    expect(findResult.data).toBeDefined();
+    expect(findResult.data!.length).toBeGreaterThan(0);
+    const cgDocumentId = findResult.data![0].documentId as string;
+    expect(cgDocumentId).toBeTruthy();
+
+    await matrixClient.updateAppSettings({
+      elections: {
+        startFromConstituencyGroup: cgDocumentId,
+        disallowSelection: false,
+        showElectionTags: true
+      },
+      questions: {
+        categoryIntros: { show: false },
+        questionsIntro: { allowCategorySelection: false, show: false },
+        showResultsLink: true
+      },
+      results: {
+        sections: ['candidate', 'organization'],
+        cardContents: { candidate: ['submatches'], organization: ['children'] },
+        showFeedbackPopup: 0,
+        showSurveyPopup: 0
+      },
+      entities: {
+        hideIfMissingAnswers: { candidate: false },
+        showAllNominations: true
+      },
+      notifications: { voterApp: { show: false } },
+      analytics: { trackEvents: false }
+    });
+  });
+
+  test.afterAll(async () => {
+    if (matrixClient) {
+      await matrixClient.updateAppSettings({
+        elections: {
+          startFromConstituencyGroup: null,
+          disallowSelection: false,
+          showElectionTags: true
+        },
+        questions: {
+          categoryIntros: { show: false },
+          questionsIntro: { allowCategorySelection: false, show: false },
+          showResultsLink: true
+        },
+        results: {
+          sections: ['candidate', 'organization'],
+          cardContents: { candidate: ['submatches'], organization: ['children'] },
+          showFeedbackPopup: 0,
+          showSurveyPopup: 0
+        },
+        entities: {
+          hideIfMissingAnswers: { candidate: false },
+          showAllNominations: true
+        },
+        notifications: { voterApp: { show: false } },
+        analytics: { trackEvents: false }
+      });
+    }
+  });
+
+  test('startFromConstituency — constituency selector shown first; elections list hidden; constituency URL segment present', async ({
+    page
+  }) => {
+    test.setTimeout(30000);
+
+    // Reversed flow per startFromConstituencyGroup variant: constituency
+    // picked FIRST, election auto-bound. Mirrors the locator shape used by
+    // the existing 'should show constituency selection first (reversed
+    // flow)' test at lines 211-239.
+
+    await page.goto(buildRoute({ route: 'Home', locale: 'en' }));
+    await page.getByTestId(testIds.voter.home.startButton).click();
+
+    const introStart = page.getByTestId(testIds.voter.intro.startButton);
+    await introStart.waitFor({ state: 'visible' });
+    await introStart.click();
+
+    // (1) Constituency selector visible immediately (variant's defining
+    // behavior). The constituency-selector combobox lives inside the
+    // voter-constituencies-list container (testIds.voter.constituencies.list)
+    // — see startfromcg.spec.ts:225-238 for the canonical locator.
+    const constituenciesList = page.getByTestId(testIds.voter.constituencies.list);
+    const municipalityCombobox = constituenciesList.getByRole('combobox', { name: /Municipalities/ });
+    await expect(municipalityCombobox).toBeVisible({ timeout: 5000 });
+
+    // (2) Elections list HIDDEN at this point (variant skips elections step).
+    const electionsList = page.getByTestId(testIds.voter.elections.list);
+    await expect(electionsList).toBeHidden();
+
+    // Pick a municipality + continue (uses the autocomplete combobox per the
+    // existing 'should show election selection after constituency selection'
+    // test at startfromcg.spec.ts:248-261 canonical interaction shape).
+    await municipalityCombobox.click();
+    await municipalityCombobox.fill('North Municipality A');
+    const listbox = page.getByRole('listbox');
+    await listbox.waitFor({ state: 'visible', timeout: 5000 });
+    await listbox.getByRole('option', { name: /North Municipality A/ }).click();
+    await page.getByTestId(testIds.voter.constituencies.continue).click();
+
+    // (3) After continue, the URL transitions to /elections (proving the
+    // variant bypassed the canonical elections-first step). Mirrors the
+    // assertion at startfromcg.spec.ts:265-281.
+    await expect(page).toHaveURL(/\/elections/);
+    await expect(electionsList).toBeVisible({ timeout: 10000 });
+  });
+});

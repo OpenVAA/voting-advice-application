@@ -402,3 +402,46 @@ test.describe('disallowSelection mode', { tag: ['@variant'] }, () => {
     await expect(resultsList).toBeVisible({ timeout: 10000 });
   });
 });
+
+// ---------------------------------------------------------------------------
+// E2E-04 cell 3 (Ne × 1c) — ADDITIVE matrix assertion (Phase 74 Plan 04 Task 4)
+//
+// Reuses the multi-election dataset (variant-multi-election.ts: 2 elections,
+// each with exactly 1 constituency — test-constituency-alpha on E1 and
+// test-constituency-e2 on E2). The matrix contract:
+//   - 2 elections → election selection page SHOWN
+//   - 1 constituency per election → constituency selection page BYPASSED
+//     (auto-implied at the voter (located)/+layout.ts:55-67 redirect path)
+//
+// This block is ADDITIVE per Phase 74 CONTEXT D-05 — it does NOT modify the
+// CONF-01/CONF-02/CONF-04 invariants asserted by the test blocks above.
+// ---------------------------------------------------------------------------
+
+test.describe('matrix cell: Ne × 1c (E2E-04 cell 3)', { tag: ['@variant', '@matrix'] }, () => {
+  test('Ne × 1c — election selector shown; constituency auto-implied (single)', async ({ page }) => {
+    test.setTimeout(30000);
+
+    await page.goto(buildRoute({ route: 'Home', locale: 'en' }));
+    await page.getByTestId(testIds.voter.home.startButton).click();
+
+    const introStart = page.getByTestId(testIds.voter.intro.startButton);
+    await introStart.waitFor({ state: 'visible', timeout: 10000 });
+    await introStart.click();
+
+    // (1) Election selector visible — 2 elections (not auto-implied).
+    const electionsList = page.getByTestId(testIds.voter.elections.list);
+    await expect(electionsList).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId(testIds.voter.elections.card)).toHaveCount(2);
+
+    // Both elections are pre-checked by default. Continue with both selected
+    // — each election has 1 constituency, so constituency auto-implies for
+    // both elections at the (located)/+layout.ts:55-67 redirect path.
+    await page.getByTestId(testIds.voter.elections.continue).click();
+
+    // (2) Constituency selection page is BYPASSED — single constituency per
+    // election → auto-implied. The voter-constituencies-list must NOT be
+    // visible at any point; the flow proceeds directly to /questions (or an
+    // intermediate /intro if questions-intro is enabled).
+    await expect(page.getByTestId(testIds.voter.constituencies.list)).toBeHidden();
+  });
+});
