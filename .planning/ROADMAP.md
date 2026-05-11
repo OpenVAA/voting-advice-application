@@ -268,7 +268,7 @@ After v2.9 ships, run `/gsd-new-milestone` to frame the next milestone. v2.10 ca
 | 70. Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup | v2.8 | 5/5 | Complete | 2026-05-09 |
 | 71. Frontend Strict-Typing Cleanup | v2.8 | 3/3 | Complete | 2026-05-09 |
 | 72. Package Hygiene Trio | v2.8 | 3/3 | Complete | 2026-05-09 |
-| 73. Determinism Baseline | v2.9 | 6/6 | Complete   | 2026-05-11 |
+| 73. Determinism Baseline | v2.9 | 6/6 | Complete    | 2026-05-11 |
 | 74. High-Leverage E2E Coverage | v2.9 | 0/TBD | Not started | — |
 | 75. Question-Rendering Specs | v2.9 | 0/TBD | Not started | — |
 | 76. Profile + A11y | v2.9 | 0/TBD | Not started | — |
