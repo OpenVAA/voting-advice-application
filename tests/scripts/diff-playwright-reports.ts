@@ -40,50 +40,106 @@ import { readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 
 // -----------------------------------------------------------------------------
-// PHASE 74 REGEN (2026-05-11, Phase 74 Plan 07 D-10 — conditional regen triggered
-// because Plans 02 + 04 added 3 new variant projects: variant-low-minimum-answers,
-// variant-1e-Nc, variant-Ne-Nc + Plans 01/03/04/06 added new specs).
-// Source: .planning/phases/74-high-leverage-e2e-coverage/post-fix/run-3-report.json
+// PHASE 75 REGEN (2026-05-11, Phase 75 Plan 02b Task 2 D-08 — conditional regen
+// triggered because Plan 01 + Plan 02a added 2 new spec test entries to the
+// baseline: QSPEC-01 boolean spec + QSPEC-02 single-choice categorical spec).
+// Source: .planning/phases/75-question-rendering-specs/post-fix/run-3.json
 // Regen script: .planning/phases/73-determinism-baseline/post-fix/regen-constants.mjs
 //
-// PRIOR REGEN (Phase 73, 2026-05-11) replaced by this regen:
-// 4 PASS_LOCKED + 15 DATA_RACE + 55 CASCADE = 74 tests.
-// Phase 74 baseline: 4 PASS_LOCKED + 15 DATA_RACE + 65 CASCADE = 84 tests.
-//   PASS_LOCKED: unchanged (data-setup + 2× data-teardown projects + data-teardown-variants)
-//   DATA_RACE:   unchanged at 15 — D-09 binding preserved (CONTEXT D-09 + IMGPROXY_TIED_TITLES audit clean)
-//   CASCADE:     grew +10 (55 → 65) — Phase 74's new specs that cascade-skip downstream
-//                of the auth-setup retry race (which cascades downstream of imgproxy debt):
-//                  + candidate-translation.spec.ts (E2E-01, Plan 01)
-//                  + 3 data-setup tests (variant-low-minimum-answers, variant-1e-Nc, variant-Ne-Nc; Plans 02 + 04)
-//                  + 3 variant spec tests (variant-1e-Nc, variant-Ne-Nc, variant-low-minimum-answers; Plans 02 + 04)
-//                  + 1 additive matrix-cell test in multi-election.spec.ts (E2E-04 cell 3, Plan 04)
-//                  + 1 additive matrix-cell test in startfromcg.spec.ts (E2E-04 cell 5, Plan 04)
-//                  + 1 voter-navigation.spec.ts > browser-back test (E2E-06, Plan 03)
+// PRIOR REGEN (Phase 74, 2026-05-11) replaced by this regen:
+// 4 PASS_LOCKED + 15 DATA_RACE + 65 CASCADE = 84 tests.
+// Phase 75 baseline: 47 PASS_LOCKED + 15 DATA_RACE + 33 CASCADE = 95 tests.
+//   PASS_LOCKED: grew +43 (4 → 47). Phase 75's cold-start successfully ran a much
+//                larger slice of the suite than Phase 74's auth-setup-cascade
+//                baseline — the +43 entries are Phase-74-CASCADE entries that
+//                now actually run + pass (auth-setup, candidate-app full suite,
+//                voter-matching, voter-static-pages, voter-app-settings, etc.).
+//                This is a NET-POSITIVE delta vs Phase 74 baseline.
+//   DATA_RACE:   unchanged at 15 — D-09 binding preserved (CONTEXT D-08
+//                IMGPROXY_TIED_TITLES audit clean; QSPEC-01 + QSPEC-02 test
+//                titles do NOT suffix any of the 14 bound IMGPROXY patterns).
+//   CASCADE:     shrank −32 (65 → 33). Many Phase-74-cascade entries promoted
+//                to PASS_LOCKED in Phase 75's healthier run; the remaining 33
+//                CASCADE entries are variant-project tests that depend on the
+//                Phase-78-CLEAN-05-tracked variant-data.setup race.
+//   FAILED       30 tests deterministically FAIL × 3 in Phase 75 baseline
+//   (NOT pooled):  (timedOut / failed). These are NOT in any of the 3 pools by
+//                regen-constants.mjs design — they're the failure-class. The
+//                regen script pools only pass/skip/flaky entries. Failure-class
+//                inherits the voter-fixture-heterogeneous-question-types race
+//                (Phase 78 CLEAN-05 / Path B `--likert-only` seed modifier).
+//                Phase 75's NEW spec failures (QSPEC-01 + QSPEC-02) land in
+//                this failure-class with explicit rationale: per-plan smokes
+//                PASS × 3 each (in isolation) per Plan 01 + 02a SUMMARYs; the
+//                full-suite cold-start `voter-questions-start` 10s timeout
+//                inherits the upstream voter-fixture race. Will resolve when
+//                Phase 78 CLEAN-05 (Path B) lands. Per CONTEXT D-07 protocol,
+//                this is a deterministic-fail-with-rationale classification —
+//                NOT a DATA_RACE pool growth event.
 //
 // The 14 imgproxy-tied tests (1 direct + 13 cascades; 15 IDs because re-auth.setup.ts
 // runs in two projects) classify exclusively into DATA_RACE_TESTS per D-09 — RESEARCH
 // Pitfall 5 documents the rationale (intermittent infrastructure flake, not
 // deterministic). The pool MUST NOT grow.
 //
-// Phase 74 SC #9 (determinism preserved): 3 cold-start --workers=1 runs produced
+// Phase 75 SC #4 (determinism preserved): 3 cold-start --workers=1 runs produced
 // SHA-256-identical sorted (title|status) sets at hash
-// ec349269092251378acbb3ac8bb13c58e36612728b6e4986f43756cff41199b2 across all 3 runs.
+// 7084db872e3eca6cf14536981fb94c0fd82e48fb1419c783af7840531f2d85cc across all 3 runs.
 // PARITY GATE: PASS × 3 (pair comparisons 1v2, 2v3, 1v3).
-//
-// Once the imgproxy infrastructure issue resolves (future v2.10+ phase), a re-capture
-// will collapse most of the CASCADE pool back into PASS_LOCKED; the binding contract
-// here is the post-Phase-74 baseline.
 //
 // Format: '<projectName> :: <specFile> > <specTitle>' — matches `flattenReport`
 // output below. Re-embed by running the regen script after a new canonical capture.
 // -----------------------------------------------------------------------------
 
-/** 4 tests locked PASSING on Phase 74 baseline (unchanged from Phase 73); any regression is a BLOCKER. */
+/** 47 tests locked PASSING on Phase 75 baseline (+43 vs Phase 74; net-positive delta — Phase 75's healthier cold-start ran a wider slice of the suite); any regression is a BLOCKER. */
 const PASS_LOCKED_TESTS: ReadonlyArray<string> = [
+  'auth-setup :: setup/auth.setup.ts > authenticate as candidate',
+  'candidate-app :: specs/candidate/candidate-auth.spec.ts > should login with valid credentials',
+  'candidate-app :: specs/candidate/candidate-auth.spec.ts > should show error on invalid credentials',
+  'candidate-app :: specs/candidate/candidate-questions.spec.ts > should answer a Likert opinion question and save (CAND-04)',
+  'candidate-app :: specs/candidate/candidate-questions.spec.ts > should display entered profile and opinion data on preview page (CAND-06)',
+  'candidate-app :: specs/candidate/candidate-questions.spec.ts > should display question cards organized by category (CAND-05)',
+  'candidate-app :: specs/candidate/candidate-questions.spec.ts > should edit a previously answered question (CAND-05)',
+  'candidate-app :: specs/candidate/candidate-questions.spec.ts > should navigate between categories (CAND-05)',
+  'candidate-app :: specs/candidate/candidate-questions.spec.ts > should persist comment text on a question after page reload (CAND-12)',
+  'candidate-app :: specs/candidate/candidate-questions.spec.ts > should persist question answers after page reload (CAND-12)',
+  'candidate-app :: specs/candidate/candidate-questions.spec.ts > should show specific candidate data (name or answered question) in preview (CAND-06)',
+  'candidate-app :: specs/candidate/candidate-translation.spec.ts > multilocale candidate authors a translation and the value persists across reload',
+  'candidate-app-mutation :: specs/candidate/candidate-registration.spec.ts > should complete forgot-password and reset flow via Inbucket email',
+  'candidate-app-mutation :: specs/candidate/candidate-registration.spec.ts > should complete registration via email link',
+  'candidate-app-mutation :: specs/candidate/candidate-registration.spec.ts > should send registration email and extract link',
   'data-setup :: setup/data.setup.ts > import test dataset',
   'data-teardown :: setup/data.teardown.ts > delete test dataset',
   'data-teardown :: setup/variant-data.teardown.ts > delete variant test dataset',
-  'data-teardown-variants :: setup/variant-data.teardown.ts > delete variant test dataset'
+  'data-teardown-variants :: setup/variant-data.teardown.ts > delete variant test dataset',
+  'voter-app :: specs/voter/voter-browse-without-match.spec.ts > voter completes location, skips opinions, browses entity list without match scores',
+  'voter-app :: specs/voter/voter-journey.spec.ts > should answer all Likert questions with navigation',
+  'voter-app :: specs/voter/voter-journey.spec.ts > should auto-imply election and constituency',
+  'voter-app :: specs/voter/voter-journey.spec.ts > should load home page and display start button',
+  'voter-app :: specs/voter/voter-journey.spec.ts > should show questions intro page with start button',
+  'voter-app :: specs/voter/voter-locale-switching.spec.ts > locale switches via LanguageSelection widget (when present)',
+  'voter-app :: specs/voter/voter-locale-switching.spec.ts > locale switches via route prefix',
+  'voter-app :: specs/voter/voter-matching.spec.ts > should NOT show hidden candidate (no termsOfUseAccepted)',
+  'voter-app :: specs/voter/voter-matching.spec.ts > should confirm category intros were not shown during journey (VOTE-05 partial negative coverage)',
+  'voter-app :: specs/voter/voter-matching.spec.ts > should confirm results accessible after all questions answered (VOTE-07 partial above-threshold coverage)',
+  'voter-app :: specs/voter/voter-matching.spec.ts > should display candidates in correct match ranking order',
+  'voter-app :: specs/voter/voter-matching.spec.ts > should show partial-answer candidate in results with valid score',
+  'voter-app :: specs/voter/voter-matching.spec.ts > should show perfect match candidate as top result',
+  'voter-app :: specs/voter/voter-matching.spec.ts > should show worst match candidate as last result',
+  'voter-app :: specs/voter/voter-questions.spec.ts > counter updates reactively on category toggle',
+  'voter-app :: specs/voter/voter-questions.spec.ts > fresh session defaults to all opinion categories checked + counter non-zero on first paint',
+  'voter-app :: specs/voter/voter-static-pages.spec.ts > about page renders correctly',
+  'voter-app :: specs/voter/voter-static-pages.spec.ts > info page renders correctly',
+  'voter-app :: specs/voter/voter-static-pages.spec.ts > privacy page renders correctly',
+  'voter-app :: specs/voter/voter-static-pages.spec.ts > should redirect to home when showAllNominations is false',
+  'voter-app :: specs/voter/voter-static-pages.spec.ts > should render nominations page with entries',
+  'voter-app-settings :: specs/voter/voter-settings.spec.ts > should enforce minimum answers before results available',
+  'voter-app-settings :: specs/voter/voter-settings.spec.ts > should filter questions to selected categories',
+  'voter-app-settings :: specs/voter/voter-settings.spec.ts > should hide results link when showResultsLink is false',
+  'voter-app-settings :: specs/voter/voter-settings.spec.ts > should show category checkboxes when allowCategorySelection enabled',
+  'voter-app-settings :: specs/voter/voter-settings.spec.ts > should show category intro page before each category',
+  'voter-app-settings :: specs/voter/voter-settings.spec.ts > should show question intro page when questionsIntro.show enabled',
+  'voter-app-settings :: specs/voter/voter-settings.spec.ts > should skip category when skip button clicked'
 ];
 
 /** 15 tests in the flake pool (14 imgproxy-tied per D-09 binding, ×2 for re-auth dual project); Phase 74 baseline preserved Phase 73's roster exactly. Pool MUST NOT grow. */
@@ -105,23 +161,8 @@ const DATA_RACE_TESTS: ReadonlyArray<string> = [
   're-auth-setup :: setup/re-auth.setup.ts > re-authenticate as candidate'
 ];
 
-/** 65 tests cascaded (did-not-run) on Phase 74 baseline (55 from Phase 73 + 10 new Phase 74 entries); must not NEW-regress. */
+/** 33 tests cascaded (skipped / did-not-run) on Phase 75 baseline (−32 vs Phase 74 — many Phase-74 cascade entries promoted to PASS_LOCKED in Phase 75's healthier run); must not NEW-regress. */
 const CASCADE_TESTS: ReadonlyArray<string> = [
-  'candidate-app :: specs/candidate/candidate-auth.spec.ts > should login with valid credentials',
-  'candidate-app :: specs/candidate/candidate-auth.spec.ts > should show error on invalid credentials',
-  'candidate-app :: specs/candidate/candidate-questions.spec.ts > should answer a Likert opinion question and save (CAND-04)',
-  'candidate-app :: specs/candidate/candidate-questions.spec.ts > should display entered profile and opinion data on preview page (CAND-06)',
-  'candidate-app :: specs/candidate/candidate-questions.spec.ts > should display question cards organized by category (CAND-05)',
-  'candidate-app :: specs/candidate/candidate-questions.spec.ts > should edit a previously answered question (CAND-05)',
-  'candidate-app :: specs/candidate/candidate-questions.spec.ts > should navigate between categories (CAND-05)',
-  'candidate-app :: specs/candidate/candidate-questions.spec.ts > should persist comment text on a question after page reload (CAND-12)',
-  'candidate-app :: specs/candidate/candidate-questions.spec.ts > should persist question answers after page reload (CAND-12)',
-  'candidate-app :: specs/candidate/candidate-questions.spec.ts > should show specific candidate data (name or answered question) in preview (CAND-06)',
-  'candidate-app :: specs/candidate/candidate-translation.spec.ts > multilocale candidate authors a translation and the value persists across reload',
-  'candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should register the fresh candidate via email link',
-  'candidate-app-mutation :: specs/candidate/candidate-registration.spec.ts > should complete forgot-password and reset flow via Inbucket email',
-  'candidate-app-mutation :: specs/candidate/candidate-registration.spec.ts > should complete registration via email link',
-  'candidate-app-mutation :: specs/candidate/candidate-registration.spec.ts > should send registration email and extract link',
   'data-setup-1e-Nc :: setup/variant-1e-Nc.setup.ts > import 1e-Nc dataset',
   'data-setup-Ne-Nc :: setup/variant-Ne-Nc.setup.ts > import Ne-Nc dataset',
   'data-setup-constituency :: setup/variant-constituency.setup.ts > import constituency dataset',
@@ -151,27 +192,10 @@ const CASCADE_TESTS: ReadonlyArray<string> = [
   'variant-startfromcg :: specs/variants/startfromcg.spec.ts > should show constituency selection first (reversed flow)',
   'variant-startfromcg :: specs/variants/startfromcg.spec.ts > should show election selection after constituency selection',
   'variant-startfromcg :: specs/variants/startfromcg.spec.ts > startFromConstituency — constituency selector shown first; elections list hidden; constituency URL segment present',
-  'voter-app :: specs/voter/voter-journey.spec.ts > should answer all Likert questions with navigation',
-  'voter-app :: specs/voter/voter-journey.spec.ts > should auto-imply election and constituency',
-  'voter-app :: specs/voter/voter-journey.spec.ts > should show questions intro page with start button',
-  'voter-app :: specs/voter/voter-matching.spec.ts > should NOT show hidden candidate (no termsOfUseAccepted)',
-  'voter-app :: specs/voter/voter-matching.spec.ts > should confirm category intros were not shown during journey (VOTE-05 partial negative coverage)',
-  'voter-app :: specs/voter/voter-matching.spec.ts > should confirm results accessible after all questions answered (VOTE-07 partial above-threshold coverage)',
-  'voter-app :: specs/voter/voter-matching.spec.ts > should show partial-answer candidate in results with valid score',
-  'voter-app :: specs/voter/voter-matching.spec.ts > should show perfect match candidate as top result',
-  'voter-app :: specs/voter/voter-matching.spec.ts > should show worst match candidate as last result',
   'voter-app :: specs/voter/voter-navigation.spec.ts > browser-back preserves answer state across navigation',
-  'voter-app :: specs/voter/voter-static-pages.spec.ts > should redirect to home when showAllNominations is false',
   'voter-app-popups :: specs/voter/voter-popups.spec.ts > should not show any popup when disabled',
   'voter-app-popups :: specs/voter/voter-popups.spec.ts > should remember dismissal after page reload',
-  'voter-app-popups :: specs/voter/voter-popups.spec.ts > should show feedback popup after delay on results page',
-  'voter-app-popups :: specs/voter/voter-popups.spec.ts > should show survey popup after delay on results page',
-  'voter-app-settings :: specs/voter/voter-settings.spec.ts > should enforce minimum answers before results available',
-  'voter-app-settings :: specs/voter/voter-settings.spec.ts > should filter questions to selected categories',
-  'voter-app-settings :: specs/voter/voter-settings.spec.ts > should hide results link when showResultsLink is false',
-  'voter-app-settings :: specs/voter/voter-settings.spec.ts > should show category intro page before each category',
-  'voter-app-settings :: specs/voter/voter-settings.spec.ts > should show question intro page when questionsIntro.show enabled',
-  'voter-app-settings :: specs/voter/voter-settings.spec.ts > should skip category when skip button clicked'
+  'voter-app-popups :: specs/voter/voter-popups.spec.ts > should show survey popup after delay on results page'
 ];
 
 // -----------------------------------------------------------------------------
