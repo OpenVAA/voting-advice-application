@@ -4,14 +4,14 @@ milestone: v2.9
 milestone_name: E2E Coverage + Suite Determinism
 status: executing
 stopped_at: Phase 74 context gathered
-last_updated: "2026-05-11T06:49:28.810Z"
-last_activity: 2026-05-11 -- Phase 74 planning complete
+last_updated: "2026-05-11T07:40:12.383Z"
+last_activity: 2026-05-11
 progress:
   total_phases: 10
   completed_phases: 1
   total_plans: 13
-  completed_plans: 6
-  percent: 46
+  completed_plans: 8
+  percent: 62
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-10)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 73 — determinism-baseline
+**Current focus:** Phase 74 — high-leverage-e2e-coverage
 
 ## Current Position
 
-Phase: 74
-Plan: Not started
+Phase: 74 (high-leverage-e2e-coverage) — EXECUTING
+Plan: 2 of 7
 Status: Ready to execute
-Last activity: 2026-05-11 -- Phase 74 planning complete
+Last activity: 2026-05-11
 
 ## Performance Metrics
 
@@ -77,6 +77,7 @@ Snapshot taken at v2.8 milestone close on 2026-05-10. v2.9 requirements consume 
 
 **Pending todo count at v2.9 planning start:** 18 (v2.9 will resolve 9 of these — see "v2.9 maps to" rows above; 1 deferred to a separate milestone; 8 remain pending into v2.10+ or backlog).
 | Phase 73 P01 | 18min | 3 tasks | 5 files |
+| Phase 74 P03 | 45min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -115,6 +116,8 @@ Key cross-milestone reference points carried forward into v2.9:
 - All v2.9 work is testing + frontend / package-level — NO Supabase migrations, NO new test runners, NO E2E framework migration (Playwright 1.58.2 is the durable stack).
 - [Phase 73 Plan 01]: Locked 101 playwright/* warnings as the binding baseline (vs 103 in CONTEXT D-03; small downward drift accepted)
 - [Phase 73 Plan 01]: Surfaced data.setup.ts:61-64 HEAD blocker via INVENTORY.md (recommended Plan 02 Task 0 hotfix path, within CONTEXT D-05 cap)
+- [Phase ?]: Plan 74-03: Open Question 3 resolved to text-toggle path (results/browse) per VoterNav.svelte:87 voterCtx.resultsAvailable
+- [Phase ?]: Plan 74-03: 2 new specs inherit Phase-73-locked DATA_RACE for answeredVoterPage fixture; 3 tests added to DATA_RACE pool — Plan 07 must regenerate parity constants per CONTEXT D-10
 
 ### Blockers/Concerns
 
@@ -124,9 +127,9 @@ Key cross-milestone reference points carried forward into v2.9:
 
 ## Session Continuity
 
-Last session: 2026-05-11T05:55:37.239Z
+Last session: 2026-05-11T07:39:53.845Z
 Stopped at: Phase 74 context gathered
-Resume file: .planning/phases/74-high-leverage-e2e-coverage/74-CONTEXT.md
+Resume file: None
 Next action: Run `/gsd-plan-phase 73` to start planning the determinism baseline. Phase 73 is gating for Phases 74-77 — plan it first; Phase 78 (CLEAN) may be planned in parallel since it's independent of Phase 73.
 
 ### Plan-count estimate (drafted 2026-05-10)

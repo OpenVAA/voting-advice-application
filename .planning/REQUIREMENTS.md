@@ -41,13 +41,13 @@
 
 - [ ] **E2E-02**: A voter with a completed location but fewer than `minimumAnswers` opinion answers can still browse the entity list (results page). The list does not show match scores; the page intro text does not reference matches. Variant fixture sets `minimumAnswers` low enough that the voter has not crossed it after location is set; spec navigates to results and asserts absence of match-score column + alternative intro copy.
 
-- [ ] **E2E-03**: A voter's typed feedback text persists across dismissing the dialog and is reset after the message is sent. Sequence: open feedback → type text → dismiss → reopen → expect text retained. Then: type new text → send → reopen → expect empty.
+- [x] **E2E-03**: A voter's typed feedback text persists across dismissing the dialog and is reset after the message is sent. Sequence: open feedback → type text → dismiss → reopen → expect text retained. Then: type new text → send → reopen → expect empty.
 
 - [ ] **E2E-04**: The election + constituency selectors are bypassed whenever the election + constituency can be implied from the data, not just the trivial `1e × 1c` case. Variant matrix covers `1e × 1c` (already covered, kept as regression baseline), `1e × Nc`, `Ne × 1c`, `Ne × Nc`, plus `startFromConstituency` setups. Each cell asserts URL state (selectors-bypassed vs. shown) and selector visibility on the page. The constituency dropdown options for a selected election filter to that election's constituencies only (no cross-election bleed).
 
 - [ ] **E2E-05**: The voter's answer is rendered alongside the entity's answer on the entity-detail drawer for all four cases: (a) both answered, (b) voter answered + entity missing, (c) voter missing + entity answered, (d) both missing. Parameterized fixture with each case; voter-detail spec asserts both rows present with appropriate visual state (agree / disagree / missing-marker).
 
-- [ ] **E2E-06**: A voter who skips a question, deletes their answer, and navigates back sees predictable result-CTA availability. Specifically: deleting an answer that brings count below `minimumAnswers` hides the results CTA; re-answering re-enables it. Sequence test answers N questions → deletes one → asserts results-CTA disabled → re-answers → asserts re-enabled.
+- [x] **E2E-06**: A voter who skips a question, deletes their answer, and navigates back sees predictable result-CTA availability. Specifically: deleting an answer that brings count below `minimumAnswers` hides the results CTA; re-answering re-enables it. Sequence test answers N questions → deletes one → asserts results-CTA disabled → re-answers → asserts re-enabled.
 
 - [ ] **E2E-07**: The per-category match SubMatch breakdown renders correctly on the voter-detail spec. Existing voter-detail tests cover info+opinions tabs; this adds a per-category assertion block that reuses the fixture's category metadata to verify the subdimensional-pillar rendering for both Manhattan and directional metric paths.
 
