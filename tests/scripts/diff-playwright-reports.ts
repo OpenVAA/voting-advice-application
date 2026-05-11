@@ -40,36 +40,45 @@ import { readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 
 // -----------------------------------------------------------------------------
-// PHASE 73 REGEN (2026-05-11, Phase 73 D-08 + D-09 + RESEARCH Pitfall 5).
-// Source: .planning/phases/73-determinism-baseline/post-fix/run-3-report.json
+// PHASE 74 REGEN (2026-05-11, Phase 74 Plan 07 D-10 — conditional regen triggered
+// because Plans 02 + 04 added 3 new variant projects: variant-low-minimum-answers,
+// variant-1e-Nc, variant-Ne-Nc + Plans 01/03/04/06 added new specs).
+// Source: .planning/phases/74-high-leverage-e2e-coverage/post-fix/run-3-report.json
 // Regen script: .planning/phases/73-determinism-baseline/post-fix/regen-constants.mjs
+//
+// PRIOR REGEN (Phase 73, 2026-05-11) replaced by this regen:
+// 4 PASS_LOCKED + 15 DATA_RACE + 55 CASCADE = 74 tests.
+// Phase 74 baseline: 4 PASS_LOCKED + 15 DATA_RACE + 65 CASCADE = 84 tests.
+//   PASS_LOCKED: unchanged (data-setup + 2× data-teardown projects + data-teardown-variants)
+//   DATA_RACE:   unchanged at 15 — D-09 binding preserved (CONTEXT D-09 + IMGPROXY_TIED_TITLES audit clean)
+//   CASCADE:     grew +10 (55 → 65) — Phase 74's new specs that cascade-skip downstream
+//                of the auth-setup retry race (which cascades downstream of imgproxy debt):
+//                  + candidate-translation.spec.ts (E2E-01, Plan 01)
+//                  + 3 data-setup tests (variant-low-minimum-answers, variant-1e-Nc, variant-Ne-Nc; Plans 02 + 04)
+//                  + 3 variant spec tests (variant-1e-Nc, variant-Ne-Nc, variant-low-minimum-answers; Plans 02 + 04)
+//                  + 1 additive matrix-cell test in multi-election.spec.ts (E2E-04 cell 3, Plan 04)
+//                  + 1 additive matrix-cell test in startfromcg.spec.ts (E2E-04 cell 5, Plan 04)
+//                  + 1 voter-navigation.spec.ts > browser-back test (E2E-06, Plan 03)
 //
 // The 14 imgproxy-tied tests (1 direct + 13 cascades; 15 IDs because re-auth.setup.ts
 // runs in two projects) classify exclusively into DATA_RACE_TESTS per D-09 — RESEARCH
 // Pitfall 5 documents the rationale (intermittent infrastructure flake, not
 // deterministic). The pool MUST NOT grow.
 //
-// PRIOR EMBEDS (Phase 64 baseline, 2026-04-27 SHA 2832c4410) replaced by this regen:
-// 66 PASS_LOCKED + 15 DATA_RACE + 21 CASCADE = 102 tests. The Phase 73 anchor
-// reflects the canonical v2.9 cold-start state: imgproxy container down (PROJECT.md
-// "Known infrastructure issue") + the auth.setup retry-with-reload cycle that surfaces
-// as backend-cold cascade to many voter/candidate tests. This produces the wider
-// CASCADE pool (55 tests) vs P64's 21 — most tests are cascade-skipped downstream of
-// the auth-setup race that's bundled with the imgproxy infrastructure debt. The
-// 4 PASS_LOCKED tests (data-setup, 2× data-teardown projects, data-teardown-variants)
-// are the only tests that run without an auth-cookie/candidate-mutation upstream.
+// Phase 74 SC #9 (determinism preserved): 3 cold-start --workers=1 runs produced
+// SHA-256-identical sorted (title|status) sets at hash
+// ec349269092251378acbb3ac8bb13c58e36612728b6e4986f43756cff41199b2 across all 3 runs.
+// PARITY GATE: PASS × 3 (pair comparisons 1v2, 2v3, 1v3).
 //
 // Once the imgproxy infrastructure issue resolves (future v2.10+ phase), a re-capture
 // will collapse most of the CASCADE pool back into PASS_LOCKED; the binding contract
-// here is the post-Phase-73 baseline. Phase 73's regenerated DATA_RACE_TESTS is
-// IDENTICAL to P64's (the 14 imgproxy-tied + dual-project re-auth = 15) — D-09 is
-// honored without growing the pool.
+// here is the post-Phase-74 baseline.
 //
 // Format: '<projectName> :: <specFile> > <specTitle>' — matches `flattenReport`
 // output below. Re-embed by running the regen script after a new canonical capture.
 // -----------------------------------------------------------------------------
 
-/** 4 tests locked PASSING on Phase 73 baseline; any regression is a BLOCKER. */
+/** 4 tests locked PASSING on Phase 74 baseline (unchanged from Phase 73); any regression is a BLOCKER. */
 const PASS_LOCKED_TESTS: ReadonlyArray<string> = [
   'data-setup :: setup/data.setup.ts > import test dataset',
   'data-teardown :: setup/data.teardown.ts > delete test dataset',
@@ -77,7 +86,7 @@ const PASS_LOCKED_TESTS: ReadonlyArray<string> = [
   'data-teardown-variants :: setup/variant-data.teardown.ts > delete variant test dataset'
 ];
 
-/** 15 tests in the flake pool (14 imgproxy-tied per D-09 binding, ×2 for re-auth dual project); they may pass or fail post-swap. Pool MUST NOT grow. */
+/** 15 tests in the flake pool (14 imgproxy-tied per D-09 binding, ×2 for re-auth dual project); Phase 74 baseline preserved Phase 73's roster exactly. Pool MUST NOT grow. */
 const DATA_RACE_TESTS: ReadonlyArray<string> = [
   'auth-setup :: setup/re-auth.setup.ts > re-authenticate as candidate',
   'candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should persist profile image after page reload (CAND-12)',
@@ -96,7 +105,7 @@ const DATA_RACE_TESTS: ReadonlyArray<string> = [
   're-auth-setup :: setup/re-auth.setup.ts > re-authenticate as candidate'
 ];
 
-/** 55 tests cascaded (did-not-run) on Phase 73 baseline; must not NEW-regress. */
+/** 65 tests cascaded (did-not-run) on Phase 74 baseline (55 from Phase 73 + 10 new Phase 74 entries); must not NEW-regress. */
 const CASCADE_TESTS: ReadonlyArray<string> = [
   'candidate-app :: specs/candidate/candidate-auth.spec.ts > should login with valid credentials',
   'candidate-app :: specs/candidate/candidate-auth.spec.ts > should show error on invalid credentials',
@@ -108,19 +117,27 @@ const CASCADE_TESTS: ReadonlyArray<string> = [
   'candidate-app :: specs/candidate/candidate-questions.spec.ts > should persist comment text on a question after page reload (CAND-12)',
   'candidate-app :: specs/candidate/candidate-questions.spec.ts > should persist question answers after page reload (CAND-12)',
   'candidate-app :: specs/candidate/candidate-questions.spec.ts > should show specific candidate data (name or answered question) in preview (CAND-06)',
+  'candidate-app :: specs/candidate/candidate-translation.spec.ts > multilocale candidate authors a translation and the value persists across reload',
   'candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should register the fresh candidate via email link',
   'candidate-app-mutation :: specs/candidate/candidate-registration.spec.ts > should complete forgot-password and reset flow via Inbucket email',
   'candidate-app-mutation :: specs/candidate/candidate-registration.spec.ts > should complete registration via email link',
   'candidate-app-mutation :: specs/candidate/candidate-registration.spec.ts > should send registration email and extract link',
+  'data-setup-1e-Nc :: setup/variant-1e-Nc.setup.ts > import 1e-Nc dataset',
+  'data-setup-Ne-Nc :: setup/variant-Ne-Nc.setup.ts > import Ne-Nc dataset',
   'data-setup-constituency :: setup/variant-constituency.setup.ts > import constituency dataset',
+  'data-setup-low-minimum-answers :: setup/variant-low-minimum-answers.setup.ts > import low-minimum-answers dataset',
   'data-setup-multi-election :: setup/variant-multi-election.setup.ts > import multi-election dataset',
   'data-setup-startfromcg :: setup/variant-startfromcg.setup.ts > import startfromcg dataset',
+  'variant-1e-Nc :: specs/variants/1e-Nc.spec.ts > 1e × Nc — election selection bypassed; constituency selector shown with 3 options',
+  'variant-Ne-Nc :: specs/variants/Ne-Nc.spec.ts > Ne × Nc — both selectors shown; constituency dropdown filters by selected election (no cross-bleed)',
   'variant-constituency :: specs/variants/constituency.spec.ts > should allow constituency selection and proceed to questions',
   'variant-constituency :: specs/variants/constituency.spec.ts > should answer questions and reach results',
   'variant-constituency :: specs/variants/constituency.spec.ts > should display constituency-filtered results',
   'variant-constituency :: specs/variants/constituency.spec.ts > should show constituency selection page after election selection',
   'variant-constituency :: specs/variants/constituency.spec.ts > should show election accordion in multi-election results',
   'variant-constituency :: specs/variants/constituency.spec.ts > should show missing nominations warning for partial-coverage constituency',
+  'variant-low-minimum-answers :: specs/voter/voter-browse-without-match.spec.ts > voter completes location, skips opinions, browses entity list without match scores',
+  'variant-multi-election :: specs/variants/multi-election.spec.ts > Ne × 1c — election selector shown; constituency auto-implied (single)',
   'variant-multi-election :: specs/variants/multi-election.spec.ts > should bypass election selection when disallowSelection is true',
   'variant-multi-election :: specs/variants/multi-election.spec.ts > should display election-specific questions',
   'variant-multi-election :: specs/variants/multi-election.spec.ts > should display questions and reach results',
@@ -133,6 +150,7 @@ const CASCADE_TESTS: ReadonlyArray<string> = [
   'variant-startfromcg :: specs/variants/startfromcg.spec.ts > should handle orphan municipality without error',
   'variant-startfromcg :: specs/variants/startfromcg.spec.ts > should show constituency selection first (reversed flow)',
   'variant-startfromcg :: specs/variants/startfromcg.spec.ts > should show election selection after constituency selection',
+  'variant-startfromcg :: specs/variants/startfromcg.spec.ts > startFromConstituency — constituency selector shown first; elections list hidden; constituency URL segment present',
   'voter-app :: specs/voter/voter-journey.spec.ts > should answer all Likert questions with navigation',
   'voter-app :: specs/voter/voter-journey.spec.ts > should auto-imply election and constituency',
   'voter-app :: specs/voter/voter-journey.spec.ts > should show questions intro page with start button',
@@ -142,6 +160,7 @@ const CASCADE_TESTS: ReadonlyArray<string> = [
   'voter-app :: specs/voter/voter-matching.spec.ts > should show partial-answer candidate in results with valid score',
   'voter-app :: specs/voter/voter-matching.spec.ts > should show perfect match candidate as top result',
   'voter-app :: specs/voter/voter-matching.spec.ts > should show worst match candidate as last result',
+  'voter-app :: specs/voter/voter-navigation.spec.ts > browser-back preserves answer state across navigation',
   'voter-app :: specs/voter/voter-static-pages.spec.ts > should redirect to home when showAllNominations is false',
   'voter-app-popups :: specs/voter/voter-popups.spec.ts > should not show any popup when disabled',
   'voter-app-popups :: specs/voter/voter-popups.spec.ts > should remember dismissal after page reload',
