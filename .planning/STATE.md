@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.9
 milestone_name: E2E Coverage + Suite Determinism
 status: executing
-stopped_at: Completed 74-02-PLAN.md (E2E-02 browse-without-match Playwright gate)
-last_updated: "2026-05-11T07:45:29.143Z"
+stopped_at: 74-05 complete; ready for 74-06
+last_updated: "2026-05-11T09:31:00.327Z"
 last_activity: 2026-05-11
 progress:
   total_phases: 10
   completed_phases: 1
   total_plans: 13
-  completed_plans: 10
-  percent: 77
+  completed_plans: 11
+  percent: 85
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-10)
 ## Current Position
 
 Phase: 74 (high-leverage-e2e-coverage) — EXECUTING
-Plan: 4 of 7
+Plan: 5 of 7
 Status: Ready to execute
 Last activity: 2026-05-11
 
@@ -80,6 +80,7 @@ Snapshot taken at v2.8 milestone close on 2026-05-10. v2.9 requirements consume 
 | Phase 74 P03 | 45min | 2 tasks | 2 files |
 | Phase 74 P01 | 2134 | 1 tasks | 3 files |
 | Phase 74 P02 | 37min | 3 tasks | 4 files |
+| Phase 74 P05 | 120min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -122,6 +123,9 @@ Key cross-milestone reference points carried forward into v2.9:
 - [Phase ?]: Plan 74-03: 2 new specs inherit Phase-73-locked DATA_RACE for answeredVoterPage fixture; 3 tests added to DATA_RACE pool — Plan 07 must regenerate parity constants per CONTEXT D-10
 - [Phase ?]: Plan 74-01 (E2E-01): multilocale-only path covered via Playwright spec; single-locale deferred per D-04; lang.<locale> i18n keys discovered unwired (surfaced for Phase 78 CLEAN-04)
 - [Phase ?]: Phase 74-02 — Ingress assertion via content discriminator (browse-vs-results phrase) instead of translation-key probing; survives copy edits on either side.
+- [Phase ?]: Phase 74 Plan 05 — Card filter uses display name (e.g. 'CaseA Both') not external_id
+- [Phase ?]: Phase 74 Plan 05 — E2E-07 SubMatch locator: getByRole('meter', { name }) replaces inline-style [style*=grid-template-columns] which matched multiple non-SubMatch containers
+- [Phase ?]: Phase 74 Plan 05 — Cross-spec impact: adding categorical question at sort 17 required Skip-Next fallback in voter-matching navigateToResults + out-of-range guard in voter-journey answerRemainingUntilResults
 
 ### Blockers/Concerns
 
@@ -131,8 +135,8 @@ Key cross-milestone reference points carried forward into v2.9:
 
 ## Session Continuity
 
-Last session: 2026-05-11T07:45:29.137Z
-Stopped at: Completed 74-02-PLAN.md (E2E-02 browse-without-match Playwright gate)
+Last session: 2026-05-11T09:31:00.323Z
+Stopped at: 74-05 complete; ready for 74-06
 Resume file: None
 Next action: Run `/gsd-plan-phase 73` to start planning the determinism baseline. Phase 73 is gating for Phases 74-77 — plan it first; Phase 78 (CLEAN) may be planned in parallel since it's independent of Phase 73.
 
