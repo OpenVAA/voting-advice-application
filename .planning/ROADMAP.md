@@ -186,7 +186,7 @@ Phase 78 (CLEAN)  ← independent of 73-77; may run in parallel with 74-77
   8. **Locale switching (E2E-08).** Spec visits the page in `en` → asserts key strings → switches to `fi` (or another configured locale) via both the route-prefixed form (`/fi/...`) and the locale-switcher widget (if present) → asserts translated key strings → switches back. Coverage exercises the i18n wrapper improvements landed in CLEAN-04 if Phase 78 ran first; otherwise CLEAN-04 lands afterward and exercises this spec — the dependency direction is recorded in the phase verification report.
   9. **Determinism preserved.** All new specs pass on 3 consecutive `--workers=1` runs identically; the post-Phase-73 baseline does not regress (no new flakiness added).
 **Plans**: 7 plans
-- [ ] 74-01-PLAN.md — E2E-01 candidate translation surface (multilocale Button + reload-persistence) [Wave 1, autonomous]
+- [x] 74-01-PLAN.md — E2E-01 candidate translation surface (multilocale Button + reload-persistence) [Wave 1, autonomous]
 - [ ] 74-02-PLAN.md — E2E-02 browse-without-match: NEW variant-low-minimum-answers project + spec [Wave 1, autonomous]
 - [x] 74-03-PLAN.md — E2E-03 feedback dismiss-preserves/send-resets + E2E-06 skip/delete/back CTA toggle (2 specs bundled) [Wave 1, autonomous]
 - [ ] 74-04-PLAN.md — E2E-04 selector matrix: 2 NEW variants (1e-Nc + Ne-Nc) + 2 new specs + additive blocks in multi-election.spec.ts + startfromcg.spec.ts [Wave 1, autonomous]
@@ -283,7 +283,7 @@ After v2.9 ships, run `/gsd-new-milestone` to frame the next milestone. v2.10 ca
 | 71. Frontend Strict-Typing Cleanup | v2.8 | 3/3 | Complete | 2026-05-09 |
 | 72. Package Hygiene Trio | v2.8 | 3/3 | Complete | 2026-05-09 |
 | 73. Determinism Baseline | v2.9 | 6/6 | Complete    | 2026-05-11 |
-| 74. High-Leverage E2E Coverage | v2.9 | 2/7 | In Progress|  |
+| 74. High-Leverage E2E Coverage | v2.9 | 3/7 | In Progress|  |
 | 75. Question-Rendering Specs | v2.9 | 0/TBD | Not started | — |
 | 76. Profile + A11y | v2.9 | 0/TBD | Not started | — |
 | 77. Settings Matrix + Question-Customization Gap-Fills | v2.9 | 0/TBD | Not started | — |

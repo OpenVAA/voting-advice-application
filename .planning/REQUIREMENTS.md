@@ -37,7 +37,7 @@
 
 ### E2E — High-leverage E2E coverage (depends on DETERM Phase A green)
 
-- [ ] **E2E-01**: A multilocale candidate sees and uses the translation surface; a single-locale candidate does not. When `staticSettings.supportedLocales.length > 1`, candidates can add translations to questions where `localizationDisabled` is not set. When `staticSettings.supportedLocales.length === 1`, the translation tab/dialog is not rendered. Asserted on a parameterized fixture — multilocale + single-locale variants — via `aria-label` / role-based locators on the translation surface.
+- [x] **E2E-01**: A multilocale candidate sees and uses the translation surface; a single-locale candidate does not. When `staticSettings.supportedLocales.length > 1`, candidates can add translations to questions where `localizationDisabled` is not set. When `staticSettings.supportedLocales.length === 1`, the translation tab/dialog is not rendered. Asserted on a parameterized fixture — multilocale + single-locale variants — via `aria-label` / role-based locators on the translation surface.
 
 - [ ] **E2E-02**: A voter with a completed location but fewer than `minimumAnswers` opinion answers can still browse the entity list (results page). The list does not show match scores; the page intro text does not reference matches. Variant fixture sets `minimumAnswers` low enough that the voter has not crossed it after location is set; spec navigates to results and asserts absence of match-score column + alternative intro copy.
 
