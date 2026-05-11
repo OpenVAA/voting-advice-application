@@ -283,6 +283,20 @@ export const e2eTemplate: Template = {
         category_type: 'opinion',
         sort_order: 5,
         is_generated: false
+      },
+      // QSPEC-01/boolean-render-anchor: category housing the boolean opinion
+      // question that exercises @openvaa/data's BooleanQuestion render branch
+      // at OpinionQuestionInput.svelte:100-111. Phase 75 Plan 01 Task 1 —
+      // mirrors Phase 74 P05's test-category-directional pattern (CONTEXT
+      // D-02). category_type 'opinion' (NOT 'info'; folding into
+      // test-category-info would conflate category semantics per CONTEXT
+      // Claude's Discretion paragraph 4).
+      {
+        external_id: 'test-category-boolean',
+        name: { en: 'Test Category: Boolean (QSPEC-01)' },
+        category_type: 'opinion',
+        sort_order: 6,
+        is_generated: false
       }
     ]
   },
@@ -295,8 +309,11 @@ export const e2eTemplate: Template = {
   //   • 8 voter-dataset ordinal (test-voter-q-1..8) — voter-matching.spec.ts:42
   //     spreads all voterDataset.questions requiring singleChoiceOrdinal
   //
-  // EXCLUDED (§4.1): test-question-date, test-question-number, test-question-boolean
+  // EXCLUDED (§4.1): test-question-date, test-question-number
   // — zero grep hits in specs; dropping preserves the 8-ordinal filter result.
+  // NOTE: test-question-boolean was re-introduced as test-question-boolean-1 in
+  // Phase 75 Plan 01 (QSPEC-01 anchor; sort 18, required:false, new category
+  // test-category-boolean). The boolean exclusion is no longer "zero grep hits".
   //
   // test-question-1 carries `custom_data.allowOpen: true` per §8.4 —
   // candidate-questions.spec.ts:67-69 depends on the comment field being
@@ -529,6 +546,27 @@ export const e2eTemplate: Template = {
         required: false,
         sort_order: 17,
         is_generated: false
+      },
+      // QSPEC-01/boolean-render-anchor: boolean opinion question — exercises
+      // the v2.6 Phase 61 BooleanQuestion render branch at
+      // apps/frontend/src/lib/components/questions/OpinionQuestionInput.svelte:100-111
+      // (booleanChoices: 'No' / 'Yes' synthesized from t('common.answer.*')).
+      // NO `choices` field per packages/dev-seed/src/templates/defaults/
+      // questions-override.ts:53 (boolean is schema-free; booleanChoices is
+      // synthesized at render time, not stored in the question row). Phase 75
+      // Plan 01 Task 1 — `required: false` + sort_order 18 keeps the voter
+      // fixture's voterAnswerCount=16 Likert loop unaffected; the existing
+      // Phase 74 P05 Skip-Next fallback at voter-matching.spec.ts:167-177
+      // handles sort 18 transparently (sort-agnostic).
+      {
+        external_id: 'test-question-boolean-1',
+        type: 'boolean',
+        name: { en: 'Test Opinion Question Boolean 1 (QSPEC-01)' },
+        category: { external_id: 'test-category-boolean' },
+        allow_open: false,
+        required: false,
+        sort_order: 18,
+        is_generated: false
       }
     ]
   },
@@ -600,7 +638,16 @@ export const e2eTemplate: Template = {
           // directional SubMatch row in alpha's voter-detail drawer is the
           // entity-answered/voter-missing case — exactly what E2E-07's
           // "per-category SubMatch grid renders" asserts.
-          'test-question-directional-1': { value: 'a' }
+          'test-question-directional-1': { value: 'a' },
+          // QSPEC-01/boolean-render-anchor: alpha's answer to the boolean
+          // question (Phase 75 Plan 01 Task 1). Drives QSPEC-01 step 4
+          // entity-detail mirror — case-(a) "both answered same value true"
+          // per QuestionChoices.svelte:245-253 display-label branch:
+          // voter clicks 'Yes' (mapped to `true` via the onChange adapter at
+          // OpinionQuestionInput.svelte:110) + alpha answered true → both
+          // rows show 'Yes' selected. Spec asserts: .entitySelected count=1,
+          // radio[checked] count=1, getByText('You') attached.
+          'test-question-boolean-1': { value: true }
         }
       },
       {
