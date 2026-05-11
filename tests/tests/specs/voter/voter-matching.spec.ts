@@ -171,9 +171,19 @@ async function navigateToResults(page: Page): Promise<void> {
   // ignores categorical questions (filter at lines 40-43 only includes
   // singleChoiceOrdinal types), so we need to click Next (which renders
   // as "Skip" since the question is unanswered) to advance to /results.
-  if (!page.url().includes('/results')) {
+  //
+  // reason: Phase 75 Plan 01 — bumped from a single Skip to a 2-iteration
+  // loop because the e2e seed now includes test-question-boolean-1 at
+  // sort 18 (QSPEC-01 anchor, also required:false). After the 16 ordinal
+  // answers, auto-advance lands on sort 17 (categorical), one Skip
+  // advances to sort 18 (boolean), and a second Skip advances to /results.
+  // The maxSteps cap of 3 mirrors voter-journey.spec.ts:46 pattern. Once
+  // /results is reached, the loop breaks early.
+  for (let skip = 0; skip < 3; skip++) {
+    if (page.url().includes('/results')) break;
+    const urlBefore = page.url();
     await page.getByTestId(testIds.voter.questions.nextButton).click();
-    await page.waitForURL(/\/results/, { timeout: 30000 });
+    await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 30000 });
   }
 
   // After answering the last question, the auto-advance timer navigates to results.

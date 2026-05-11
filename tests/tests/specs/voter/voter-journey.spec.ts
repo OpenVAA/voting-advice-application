@@ -61,12 +61,23 @@ async function answerRemainingUntilResults(
     // path when the requested index is out of range — the question is
     // `required: false` so Skip→/results is a valid navigation from the
     // last question.
+    //
+    // reason: Phase 75 Plan 01 — the e2e seed now also includes
+    // test-question-boolean-1 at sort 18 (QSPEC-01 anchor, type:'boolean',
+    // 2 choices). For the Likert-5 voter (`answerOptionIndex=4`), BOTH the
+    // categorical (sort 17, 3 choices) and the boolean (sort 18, 2 choices)
+    // are out-of-range. Continue the outer for-loop (don't return early)
+    // so the next iteration handles the next sort-18 boolean Skip and the
+    // subsequent auto-advance lands on /results. The outer loop's maxSteps
+    // cap absorbs additional Skip iterations.
     const choiceCount = await answerOption.count();
     if (answerOptionIndex >= choiceCount) {
       await nextButton.waitFor({ state: 'visible', timeout: 5000 });
       await nextButton.click();
-      await page.waitForURL(/\/results/, { timeout: 10000 });
-      return count;
+      // Wait for navigation (either to the next question or to /results)
+      await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 10000 });
+      if (page.url().includes('/results')) return count;
+      continue;
     }
 
     await answerOption.nth(answerOptionIndex).click();
