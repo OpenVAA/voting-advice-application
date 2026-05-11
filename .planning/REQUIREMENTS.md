@@ -51,7 +51,7 @@
 
 - [x] **E2E-07**: The per-category match SubMatch breakdown renders correctly on the voter-detail spec. Existing voter-detail tests cover info+opinions tabs; this adds a per-category assertion block that reuses the fixture's category metadata to verify the subdimensional-pillar rendering for both Manhattan and directional metric paths.
 
-- [ ] **E2E-08**: A voter switches locale and the UI translates correctly. Spec visits the page in `en` → asserts key strings → switches to `fi` (or another configured locale) → asserts translated key strings → switches back. Both the route-prefixed form (`/fi/...`) and the locale-switcher widget (if present) are covered. (i18n is a v1.2 milestone capability; no E2E covers this end-to-end yet.)
+- [x] **E2E-08**: A voter switches locale and the UI translates correctly. Spec visits the page in `en` → asserts key strings → switches to `fi` (or another configured locale) → asserts translated key strings → switches back. Both the route-prefixed form (`/fi/...`) and the locale-switcher widget (if present) are covered. (i18n is a v1.2 milestone capability; no E2E covers this end-to-end yet.)
 
 ### QSPEC — Question-rendering specs (parallel with E2E Phase B)
 

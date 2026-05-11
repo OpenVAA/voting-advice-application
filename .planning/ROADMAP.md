@@ -84,7 +84,7 @@ Phase 78 (CLEAN)  ← independent of 73-77; may run in parallel with 74-77
 ```
 
 - [x] **Phase 73: Determinism Baseline** — Clear all `test.skip(true, …)` modifiers, resolve 19 known data-loading race E2E failures, sweep 98 pre-existing `playwright/*` warnings; suite reduces to a hard pass/fail signal (0 skipped, 3-run-stable, 0 lint warnings) — gating prerequisite for Phases 74-77 (completed 2026-05-11)
-- [ ] **Phase 74: High-Leverage E2E Coverage** — Multilocale candidate translation surface, browse-without-match results, feedback dialog persistence, election/constituency selector matrix (1e×1c / 1e×Nc / Ne×1c / Ne×Nc / startFromConstituency), voter answer in entity details (4-case), skip/delete/back navigation, per-category SubMatch breakdown, locale switching
+- [x] **Phase 74: High-Leverage E2E Coverage** — Multilocale candidate translation surface, browse-without-match results, feedback dialog persistence, election/constituency selector matrix (1e×1c / 1e×Nc / Ne×1c / Ne×Nc / startFromConstituency), voter answer in entity details (4-case), skip/delete/back navigation, per-category SubMatch breakdown, locale switching (completed 2026-05-11)
 - [ ] **Phase 75: Question-Rendering Specs** — Focused user-story specs for Boolean + categorical (single/multi-choice) question rendering in voter flow (deduplicated against matching tests)
 - [ ] **Phase 76: Profile + A11y** — Candidate profile validation rejection paths, full profile-field reload-persistence (extending v2.1 CAND-12), `@axe-core/playwright` WCAG 2.1 AA smoke wired against home/selector/questions/results/voter-detail routes
 - [ ] **Phase 77: Settings Matrix + Question-Customization Gap-Fills** — Per-toggle coverage of `appSettings` / `appCustomization` (consumes `2026-04-27-extend-e2e-filter-type-coverage`); `customData.allowOpen` E2E coverage; per-question visibility flags + must-answer enforcement
@@ -192,7 +192,7 @@ Phase 78 (CLEAN)  ← independent of 73-77; may run in parallel with 74-77
 - [x] 74-04-PLAN.md — E2E-04 selector matrix: 2 NEW variants (1e-Nc + Ne-Nc) + 2 new specs + additive blocks in multi-election.spec.ts + startfromcg.spec.ts [Wave 1, autonomous]
 - [x] 74-05-PLAN.md — E2E-05 4-case voter-vs-entity + E2E-07 per-category SubMatch (dev-seed extension + voter-detail.spec.ts additive blocks) [Wave 1, autonomous]
 - [x] 74-06-PLAN.md — E2E-08 locale switching (route-prefix + LanguageSelection widget; Order B per CONTEXT D-06) [Wave 1, autonomous]
-- [ ] 74-07-PLAN.md — Verification gate: vite-cache wipe + 3-run cold-start + parity-script regen + 74-VERIFICATION.md [Wave 2, depends on 01-06, has checkpoint]
+- [x] 74-07-PLAN.md — Verification gate: vite-cache wipe + 3-run cold-start + parity-script regen + 74-VERIFICATION.md [Wave 2, depends on 01-06, has checkpoint]
 
 ### Phase 75: Question-Rendering Specs
 **Goal**: After this phase, Playwright has two focused user-story specs that walk a voter end-to-end through a Boolean opinion question and a categorical (single-choice + multi-choice) opinion question — input shape correct, voter answers, navigates, sees their answer reflected on entity-detail. Closes the gap that matching tests cover question-shape indirectly but no permanent E2E user-story gate exists for the v2.6-shipped BooleanQuestion + the long-shipped categorical surfaces.
@@ -283,7 +283,7 @@ After v2.9 ships, run `/gsd-new-milestone` to frame the next milestone. v2.10 ca
 | 71. Frontend Strict-Typing Cleanup | v2.8 | 3/3 | Complete | 2026-05-09 |
 | 72. Package Hygiene Trio | v2.8 | 3/3 | Complete | 2026-05-09 |
 | 73. Determinism Baseline | v2.9 | 6/6 | Complete    | 2026-05-11 |
-| 74. High-Leverage E2E Coverage | v2.9 | 6/7 | In Progress|  |
+| 74. High-Leverage E2E Coverage | v2.9 | 7/7 | Complete   | 2026-05-11 |
 | 75. Question-Rendering Specs | v2.9 | 0/TBD | Not started | — |
 | 76. Profile + A11y | v2.9 | 0/TBD | Not started | — |
 | 77. Settings Matrix + Question-Customization Gap-Fills | v2.9 | 0/TBD | Not started | — |

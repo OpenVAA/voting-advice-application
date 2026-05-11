@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.9
 milestone_name: E2E Coverage + Suite Determinism
 status: executing
-stopped_at: Completed 74-04-PLAN.md
-last_updated: "2026-05-11T10:10:28.623Z"
+stopped_at: Completed 74-07-PLAN.md (Phase 74 closed GREEN-WITH-DEFERRAL)
+last_updated: "2026-05-11T15:24:32.510Z"
 last_activity: 2026-05-11
 progress:
   total_phases: 10
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 13
-  completed_plans: 12
-  percent: 92
+  completed_plans: 13
+  percent: 100
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-10)
 ## Current Position
 
 Phase: 74 (high-leverage-e2e-coverage) — EXECUTING
-Plan: 6 of 7
+Plan: 7 of 7
 Status: Ready to execute
 Last activity: 2026-05-11
 
@@ -82,6 +82,7 @@ Snapshot taken at v2.8 milestone close on 2026-05-10. v2.9 requirements consume 
 | Phase 74 P02 | 37min | 3 tasks | 4 files |
 | Phase 74 P05 | 120min | 2 tasks | 5 files |
 | Phase 74 P04 | 85min | 4 tasks | 9 files |
+| Phase 74 P07 | 25200 | 5 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -129,6 +130,9 @@ Key cross-milestone reference points carried forward into v2.9:
 - [Phase ?]: Phase 74 Plan 05 — Cross-spec impact: adding categorical question at sort 17 required Skip-Next fallback in voter-matching navigateToResults + out-of-range guard in voter-journey answerRemainingUntilResults
 - [Phase 74]: Plan 04: constituency-selector locator strategy uses outer voter-constituencies-list + inner getByRole('combobox', {name}) due to {...concatClass(restProps, ...)} testId-overwrite at ConstituencySelector.svelte:177 — Open Question 2 resolution; documented as inline // reason: in both new specs
 - [Phase 74]: Plan 04: Ne-Nc cross-bleed assertion uses symmetric for-of expect().not.toContain in both directions — for-of iteration is NOT a playwright/no-conditional-in-test violation; defense-in-depth even if option names ever overlap
+- [Phase ?]: Phase 74 closes GREEN-WITH-DEFERRAL — 8 PASS + 1 PASS-WITH-DEFERRAL (E2E-01 single-locale per D-04) + 0 FAIL across 9 ROADMAP SCs; 3-run SHA-identity ec349269...; 3 PARITY GATE PASS; DATA_RACE pool preserved at 15
+- [Phase ?]: Order B (CONTEXT D-06) confirmed for Phase 74 close: E2E-08 spec re-validates against tightened wrapper at Phase 78 close
+- [Phase ?]: Parity-script constants regenerated for Phase 74: CASCADE 55→65 (+10 with per-test rationale); PASS_LOCKED+DATA_RACE unchanged per D-09
 
 ### Blockers/Concerns
 
@@ -138,7 +142,7 @@ Key cross-milestone reference points carried forward into v2.9:
 
 ## Session Continuity
 
-Last session: 2026-05-11T10:10:28.619Z
+Last session: 2026-05-11T15:24:26.945Z
 Stopped at: Completed 74-04-PLAN.md
 Resume file: None
 Next action: Run `/gsd-plan-phase 73` to start planning the determinism baseline. Phase 73 is gating for Phases 74-77 — plan it first; Phase 78 (CLEAN) may be planned in parallel since it's independent of Phase 73.
