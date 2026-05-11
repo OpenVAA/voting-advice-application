@@ -393,29 +393,42 @@ describe('e2eTemplate — §Section 7 row-count minimums', () => {
     expect((fragmentOf('organizations')?.fixed ?? []).length).toBe(4);
   });
 
-  it('candidates.fixed.length === 14 (§7 breakdown: 5+6+1+2; audit header "13" is an arithmetic typo)', () => {
+  it('candidates.fixed.length === 18 (§7 breakdown: 5+6+1+2 + Phase 74 Plan 05 +4 Case markers)', () => {
     // 58-E2E-AUDIT.md §7 row "candidates" states "13" in the count column
     // but the breakdown beneath it sums to 14 (5 default registered +
     // 6 voter registered + 1 voter hidden + 2 addendum unregistered). The
     // template implements the breakdown verbatim — all 14 candidates have
     // audit citations in §1 / §1.1 / §2.2. Documented in 58-08-SUMMARY.md.
-    expect((fragmentOf('candidates')?.fixed ?? []).length).toBe(14);
+    //
+    // Phase 74 Plan 05 (E2E-05): +4 Case candidates (CaseA-Both,
+    // CaseB-VoterOnly, CaseC-EntityOnly, CaseD-Neither) exercising the
+    // 4-case voter-vs-entity answer-state contract → 14 + 4 = 18.
+    expect((fragmentOf('candidates')?.fixed ?? []).length).toBe(18);
   });
 
-  it('exactly 11 registered candidates (terms_of_use_accepted set) — voter-results 11-card assertion', () => {
+  it('exactly 15 registered candidates (terms_of_use_accepted set) — voter-results card-count assertion', () => {
+    // 11 base registered candidates (alpha/beta/gamma/delta/epsilon +
+    // voter-cand-agree/close/neutral/oppose/mixed/partial) + 4 Phase 74
+    // Plan 05 Case markers (terms_of_use_accepted SET so they appear in
+    // voter results for the voter-detail.spec.ts E2E-05 assertions).
+    //
+    // voter-results.spec.ts:38 computes visibleCandidateCount dynamically
+    // from `E2E_DEFAULT_CANDIDATES + E2E_VOTER_CANDIDATES` filtered by
+    // `terms_of_use_accepted` presence — the post-Phase-74 count (15)
+    // surfaces automatically without spec edits.
     const cands = (fragmentOf('candidates')?.fixed ?? []) as Array<{
       terms_of_use_accepted?: string;
     }>;
     const registered = cands.filter((c) => c.terms_of_use_accepted !== undefined);
-    expect(registered).toHaveLength(11);
+    expect(registered).toHaveLength(15);
   });
 
-  it('nominations.fixed.length === 18 (§7: 7 default + 9 voter + 2 addendum)', () => {
-    expect((fragmentOf('nominations')?.fixed ?? []).length).toBe(18);
+  it('nominations.fixed.length === 22 (§7: 7 default + 9 voter + 2 addendum + Phase 74 Plan 05 +4 Case)', () => {
+    expect((fragmentOf('nominations')?.fixed ?? []).length).toBe(22);
   });
 
-  it('questions.fixed.length === 17 (§7: 8 default ordinal + 8 voter ordinal + 1 text)', () => {
-    expect((fragmentOf('questions')?.fixed ?? []).length).toBe(17);
+  it('questions.fixed.length === 18 (§7: 8 default ordinal + 8 voter ordinal + 1 text + Phase 74 Plan 05 +1 directional categorical)', () => {
+    expect((fragmentOf('questions')?.fixed ?? []).length).toBe(18);
   });
 });
 

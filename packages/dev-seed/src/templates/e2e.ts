@@ -268,6 +268,21 @@ export const e2eTemplate: Template = {
         category_type: 'opinion',
         sort_order: 4,
         is_generated: false
+      },
+      // E2E-07/directional-metric-anchor: category housing the categorical
+      // question that exercises @openvaa/matching's directional SubMatch path.
+      // Phase 74 Plan 05 Task 1 — added so the per-category SubMatch grid in
+      // voter-detail.spec.ts asserts BOTH metric paths (Manhattan via the 4
+      // ordinal categories above + directional via this categorical category).
+      // @openvaa/matching/src/algorithms/matchingAlgorithm.ts dispatches
+      // categorical-question SubMatches to the directional path transparently;
+      // additive — existing CONF-01..CONF-06 invariants stay intact.
+      {
+        external_id: 'test-category-directional',
+        name: { en: 'Test Category: Directional (E2E-07)' },
+        category_type: 'opinion',
+        sort_order: 5,
+        is_generated: false
       }
     ]
   },
@@ -488,6 +503,32 @@ export const e2eTemplate: Template = {
         required: true,
         sort_order: 16,
         is_generated: false
+      },
+      // E2E-07/directional-metric-anchor: categorical question — exercises
+      // @openvaa/matching's directional-metric SubMatch path (vs. Manhattan
+      // for ordinal questions). singleChoiceCategorical satisfies the
+      // SingleChoiceQuestion + categorical-dispatch invariants in
+      // packages/matching/src/algorithms/matchingAlgorithm.ts.
+      //
+      // `required: false` and the sort_order 17 placement keep the voter
+      // fixture (voter.fixture.ts default voterAnswerCount=16) unaffected:
+      // voter answers the 16 ordinals first, encounters this categorical
+      // question last, and the fixture's post-loop fallback clicks "Skip"
+      // (nextButton) to navigate to /results. Phase 74 Plan 05 Task 1.
+      {
+        external_id: 'test-question-directional-1',
+        type: 'singleChoiceCategorical',
+        name: { en: 'Test Opinion Question Directional 1 (E2E-07)' },
+        choices: [
+          { id: 'a', label: { en: 'Option A' } },
+          { id: 'b', label: { en: 'Option B' } },
+          { id: 'c', label: { en: 'Option C' } }
+        ],
+        category: { external_id: 'test-category-directional' },
+        allow_open: false,
+        required: false,
+        sort_order: 17,
+        is_generated: false
       }
     ]
   },
@@ -552,7 +593,14 @@ export const e2eTemplate: Template = {
             info: { en: 'Healthcare is a fundamental right for everyone.' }
           },
           'test-question-7': { value: '4' },
-          'test-question-text': { value: { en: 'Progress for all' } }
+          'test-question-text': { value: { en: 'Progress for all' } },
+          // E2E-07/directional-metric-anchor: alpha's answer to the categorical
+          // question (Phase 74 Plan 05 Task 1). Voter doesn't answer the
+          // categorical (sort_order 17 > voter.fixture default 16), so the
+          // directional SubMatch row in alpha's voter-detail drawer is the
+          // entity-answered/voter-missing case — exactly what E2E-07's
+          // "per-category SubMatch grid renders" asserts.
+          'test-question-directional-1': { value: 'a' }
         }
       },
       {
@@ -801,6 +849,112 @@ export const e2eTemplate: Template = {
         sort_order: 13,
         is_generated: false,
         organization: { external_id: 'test-party-a' }
+      },
+      // ---------------------------------------------------------------------
+      // Phase 74 Plan 05 — E2E-05 4-case voter-vs-entity answer-state markers
+      //
+      // Four candidates exercising the 4-case answer-state contract in the
+      // voter-detail drawer's opinions tab. Each pairs the voter's fixture
+      // answers (Likert "Fully agree" via voter.fixture.ts:49 default
+      // voterAnswerCount=16, voterAnswerIndex=4) against a specific marker
+      // question to produce one of the 4 visual states asserted by
+      // voter-detail.spec.ts §"voter-detail answer cases (E2E-05)".
+      //
+      // Ranking design (matching invariants — voter-matching.spec.ts):
+      //   • Each candidate has ONE perfect ordinal-question answer ('5') and
+      //     leaves 15 ordinal questions missing.
+      //   • Under RelativeMaximum imputation (matchStore.svelte.ts dispatch +
+      //     impute.ts:43), each missing ordinal contributes the max diff per
+      //     question (4) → total Manhattan distance ≈ 60.
+      //   • This sits clearly BETWEEN agree (~32) and oppose (~64), so:
+      //       - "agree first" (voter-matching.spec.ts:199-206) — preserved
+      //       - "oppose last" (voter-matching.spec.ts:208-216) — preserved
+      //       - "partial in middle" (voter-matching.spec.ts:218-232) —
+      //         preserved (partial at ~52 stays distinct from Case ~60)
+      //   • The 4 Case candidates tie at distance 60 but oppose (64) is
+      //     clearly worst → lastCard assertion holds.
+      //
+      // terms_of_use_accepted SET on all 4 → they appear in voter results.
+      // parent_nomination links to test-nom-org-party-a (test-party-a) so
+      // buildParentFilters sees their party link (e2e.ts:817-826 comment).
+      //
+      // E2E-05/case-(a): both answered (voter Q1='5'; entity Q1='5')
+      {
+        external_id: 'test-candidate-CaseA-Both',
+        first_name: 'CaseA',
+        last_name: 'Both',
+        email: 'voter.cand.casea@openvaa.org',
+        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
+        sort_order: 14,
+        is_generated: false,
+        organization: { external_id: 'test-party-a' },
+        // Marker = test-question-1 (first opinion question in sort order).
+        // Both voter (via fixture: '5') and entity ('5') have answered →
+        // .first() opinion-question-input in CaseA drawer shows both rows.
+        answersByExternalId: {
+          'test-question-1': { value: '5' }
+        }
+      },
+      // E2E-05/case-(b): voter answered, entity missing
+      {
+        external_id: 'test-candidate-CaseB-VoterOnly',
+        first_name: 'CaseB',
+        last_name: 'VoterOnly',
+        email: 'voter.cand.caseb@openvaa.org',
+        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
+        sort_order: 15,
+        is_generated: false,
+        organization: { external_id: 'test-party-a' },
+        // Marker = test-question-1. Voter answered (via fixture: '5'); entity
+        // has NO answer for test-question-1. CaseB answers test-question-2='5'
+        // to keep matching distance at ~60 (one perfect answer + 15 missing).
+        // .first() opinion-question-input in CaseB drawer shows voter row
+        // only (no .entitySelected class on test-question-1).
+        answersByExternalId: {
+          'test-question-2': { value: '5' }
+        }
+      },
+      // E2E-05/case-(c): voter missing, entity answered
+      {
+        external_id: 'test-candidate-CaseC-EntityOnly',
+        first_name: 'CaseC',
+        last_name: 'EntityOnly',
+        email: 'voter.cand.casec@openvaa.org',
+        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
+        sort_order: 16,
+        is_generated: false,
+        organization: { external_id: 'test-party-a' },
+        // Marker = test-question-directional-1 (categorical question, sort 17,
+        // ABOVE voter fixture's voterAnswerCount=16 → voter doesn't answer).
+        // Entity has an answer for it. .last() opinion-question-input in
+        // CaseC drawer shows entity row only (entitySelected) with no 'You'
+        // label. CaseC also answers test-question-1='5' for ranking parity
+        // with the other Case candidates (~60 distance).
+        answersByExternalId: {
+          'test-question-1': { value: '5' },
+          'test-question-directional-1': { value: 'b' }
+        }
+      },
+      // E2E-05/case-(d): both missing
+      {
+        external_id: 'test-candidate-CaseD-Neither',
+        first_name: 'CaseD',
+        last_name: 'Neither',
+        email: 'voter.cand.cased@openvaa.org',
+        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
+        sort_order: 17,
+        is_generated: false,
+        organization: { external_id: 'test-party-a' },
+        // Marker = test-question-directional-1. Voter doesn't answer the
+        // categorical (sort 17 > voter fixture count 16); entity also has
+        // no answer for it. In CaseD's opinions tab, the directional question
+        // renders the "Neither you nor {entity} has answered this question"
+        // message (EntityOpinions.svelte:57-60, en/questions.json
+        // bothHaventAnswered). CaseD answers test-question-4='5' for ranking
+        // parity (~60 distance — keeps oppose clearly last).
+        answersByExternalId: {
+          'test-question-4': { value: '5' }
+        }
       }
     ]
   },
@@ -1002,6 +1156,55 @@ export const e2eTemplate: Template = {
         constituency: { external_id: 'test-constituency-alpha' },
         election_round: 1,
         unconfirmed: true
+      },
+      // ---------------------------------------------------------------------
+      // Phase 74 Plan 05 — E2E-05 4-case nominations.
+      //
+      // Each Case candidate is nominated under test-nom-org-party-a so that
+      // buildParentFilters (apps/frontend/src/lib/contexts/voter/filters/
+      // buildParentFilters.ts) sees a populated parent set — matches the
+      // existing "11 visible candidate nominations are linked to the 4
+      // organization nominations" pattern at e2e.ts:817-826.
+      //
+      // All 4 use test-election-1 + test-constituency-alpha + election_round=1
+      // so the validate_nomination trigger (migrations lines 360-373) holds:
+      // child's election/constituency/round must equal parent's.
+      // ---------------------------------------------------------------------
+      // E2E-05/case-(a) nomination
+      {
+        external_id: 'test-nom-CaseA-Both',
+        candidate: { external_id: 'test-candidate-CaseA-Both' },
+        parent_nomination: { external_id: 'test-nom-org-party-a' },
+        election: { external_id: 'test-election-1' },
+        constituency: { external_id: 'test-constituency-alpha' },
+        election_round: 1
+      },
+      // E2E-05/case-(b) nomination
+      {
+        external_id: 'test-nom-CaseB-VoterOnly',
+        candidate: { external_id: 'test-candidate-CaseB-VoterOnly' },
+        parent_nomination: { external_id: 'test-nom-org-party-a' },
+        election: { external_id: 'test-election-1' },
+        constituency: { external_id: 'test-constituency-alpha' },
+        election_round: 1
+      },
+      // E2E-05/case-(c) nomination
+      {
+        external_id: 'test-nom-CaseC-EntityOnly',
+        candidate: { external_id: 'test-candidate-CaseC-EntityOnly' },
+        parent_nomination: { external_id: 'test-nom-org-party-a' },
+        election: { external_id: 'test-election-1' },
+        constituency: { external_id: 'test-constituency-alpha' },
+        election_round: 1
+      },
+      // E2E-05/case-(d) nomination
+      {
+        external_id: 'test-nom-CaseD-Neither',
+        candidate: { external_id: 'test-candidate-CaseD-Neither' },
+        parent_nomination: { external_id: 'test-nom-org-party-a' },
+        election: { external_id: 'test-election-1' },
+        constituency: { external_id: 'test-constituency-alpha' },
+        election_round: 1
       }
     ]
   },
