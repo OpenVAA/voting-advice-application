@@ -185,7 +185,14 @@ Phase 78 (CLEAN)  ← independent of 73-77; may run in parallel with 74-77
   7. **Per-category SubMatch (E2E-07).** Voter-detail spec gains a per-category assertion block reusing fixture category metadata; verifies subdimensional-pillar rendering for both Manhattan and directional metric paths. Does NOT cover the input flow (that's QSPEC-02).
   8. **Locale switching (E2E-08).** Spec visits the page in `en` → asserts key strings → switches to `fi` (or another configured locale) via both the route-prefixed form (`/fi/...`) and the locale-switcher widget (if present) → asserts translated key strings → switches back. Coverage exercises the i18n wrapper improvements landed in CLEAN-04 if Phase 78 ran first; otherwise CLEAN-04 lands afterward and exercises this spec — the dependency direction is recorded in the phase verification report.
   9. **Determinism preserved.** All new specs pass on 3 consecutive `--workers=1` runs identically; the post-Phase-73 baseline does not regress (no new flakiness added).
-**Plans**: TBD (estimate ~6-8 plans — likely 1 plan per E2E-0X requirement, with E2E-04 the largest given the 5-cell matrix; E2E-05 + E2E-07 may bundle since both extend voter-detail.spec.ts)
+**Plans**: 7 plans
+- [ ] 74-01-PLAN.md — E2E-01 candidate translation surface (multilocale Button + reload-persistence) [Wave 1, autonomous]
+- [ ] 74-02-PLAN.md — E2E-02 browse-without-match: NEW variant-low-minimum-answers project + spec [Wave 1, autonomous]
+- [ ] 74-03-PLAN.md — E2E-03 feedback dismiss-preserves/send-resets + E2E-06 skip/delete/back CTA toggle (2 specs bundled) [Wave 1, autonomous]
+- [ ] 74-04-PLAN.md — E2E-04 selector matrix: 2 NEW variants (1e-Nc + Ne-Nc) + 2 new specs + additive blocks in multi-election.spec.ts + startfromcg.spec.ts [Wave 1, autonomous]
+- [ ] 74-05-PLAN.md — E2E-05 4-case voter-vs-entity + E2E-07 per-category SubMatch (dev-seed extension + voter-detail.spec.ts additive blocks) [Wave 1, autonomous]
+- [ ] 74-06-PLAN.md — E2E-08 locale switching (route-prefix + LanguageSelection widget; Order B per CONTEXT D-06) [Wave 1, autonomous]
+- [ ] 74-07-PLAN.md — Verification gate: vite-cache wipe + 3-run cold-start + parity-script regen + 74-VERIFICATION.md [Wave 2, depends on 01-06, has checkpoint]
 
 ### Phase 75: Question-Rendering Specs
 **Goal**: After this phase, Playwright has two focused user-story specs that walk a voter end-to-end through a Boolean opinion question and a categorical (single-choice + multi-choice) opinion question — input shape correct, voter answers, navigates, sees their answer reflected on entity-detail. Closes the gap that matching tests cover question-shape indirectly but no permanent E2E user-story gate exists for the v2.6-shipped BooleanQuestion + the long-shipped categorical surfaces.
