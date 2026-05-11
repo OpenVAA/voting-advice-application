@@ -289,6 +289,39 @@ export default defineConfig({
       dependencies: ['data-setup-low-minimum-answers']
     },
 
+    // Variant: 1e-Nc (Phase 74 E2E-04 cell 2 — 1 election × 3 constituencies)
+    {
+      name: 'data-setup-1e-Nc',
+      testMatch: /variant-1e-Nc\.setup\.ts/,
+      teardown: 'data-teardown-variants',
+      dependencies: ['variant-low-minimum-answers'] // Sequential: wait for previous variant (Pitfall 5)
+    },
+    {
+      name: 'variant-1e-Nc',
+      testDir: './tests/specs/variants',
+      testMatch: /1e-Nc\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-1e-Nc']
+    },
+
+    // Variant: Ne-Nc (Phase 74 E2E-04 cell 4 — 2 elections × 3 constituencies each;
+    // cross-bleed-free constituency dropdown filtering is the strongest matrix contract)
+    {
+      name: 'data-setup-Ne-Nc',
+      testMatch: /variant-Ne-Nc\.setup\.ts/,
+      teardown: 'data-teardown-variants',
+      dependencies: ['variant-1e-Nc'] // Sequential: wait for previous variant (Pitfall 5)
+    },
+    {
+      name: 'variant-Ne-Nc',
+      testDir: './tests/specs/variants',
+      testMatch: /Ne-Nc\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-Ne-Nc']
+    },
+
     // === Opt-in Specialized Projects ===
     // These projects are gated by environment variables and excluded from
     // the default `yarn test:e2e` run. Enable via:
