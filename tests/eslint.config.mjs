@@ -19,21 +19,25 @@ export default [
       // No test.only in committed code
       'playwright/no-focused-test': 'error',
 
-      // === Warning rules (aspirational — existing tests have many violations) ===
-      // Enforce getByTestId over raw CSS/text selectors
-      'playwright/no-raw-locators': 'warn',
-      // No waitForTimeout — use waitFor conditions instead
-      'playwright/no-wait-for-timeout': 'warn',
+      // === Phase 73 lint-gate bump (was 'warn'; final-step of 2026-05-10-tests-playwright-hygiene-sweep.md) ===
+      // Phase 73 Plans 02-05 cleared all 101 warnings; Plan 06 enforces 0/0 at CI time.
+      // Bank-auth has 3 inline-justified test.skip directives in candidate-bank-auth.spec.ts
+      // per CONTEXT D-07 + Plan 04 D-07 — each preceded by `// eslint-disable-next-line
+      // playwright/no-skipped-test` with `// reason:` block. These per-line disables MUST
+      // survive this bump.
+      'playwright/no-raw-locators': 'error',
+      'playwright/no-wait-for-timeout': 'error',
+      'playwright/no-skipped-test': 'error',
+      'playwright/no-conditional-in-test': 'error',
+      'playwright/no-networkidle': 'error',
+      'playwright/no-conditional-expect': 'error',
+      'playwright/expect-expect': 'error',
+
+      // === Other plugin warning rules (aspirational; not bumped in Phase 73) ===
       // Prefer web-first assertions (toBeVisible over manual checks)
       'playwright/prefer-web-first-assertions': 'warn',
       // No page.pause() in committed code
       'playwright/no-page-pause': 'warn',
-      // No test.skip — prefer conditional skip
-      'playwright/no-skipped-test': 'warn',
-      // No conditionals in tests (existing tests use many)
-      'playwright/no-conditional-in-test': 'warn',
-      // No networkidle — prefer load or domcontentloaded
-      'playwright/no-networkidle': 'warn',
 
       // === Disable shared config rules that conflict with test patterns ===
       // Tests use arrow functions in test() callbacks
