@@ -173,6 +173,54 @@ export async function walkToQuestionsIntro(page: Page): Promise<void> {
 }
 
 /**
+ * Walk from Home all the way to a specific question by sort_order, Skipping
+ * every preceding question via the nextButton (Skip CTA). Composes
+ * `walkToQuestionsIntro(page)` + clicks `voter.questions.startButton` (to
+ * advance from the intro to the first question at sort 0) + loops
+ * `voter.questions.nextButton.click()` × `sortOrder` times so the voter
+ * lands on the question at the given sort_order without answering any
+ * previous question.
+ *
+ * Used by Phase 75 Plan 01 (`voter-question-rendering-boolean.spec.ts`,
+ * QSPEC-01) and Plan 02a (`voter-question-rendering-categorical.spec.ts`,
+ * QSPEC-02) to reach the categorical question at sort 17 and the boolean
+ * question at sort 18 without relying on the `answeredVoterPage` fixture.
+ * The fixture's Likert `.nth(4)` click pattern is out of range for the
+ * boolean (2 choices) and the categorical (3 choices) per Phase 75
+ * RESEARCH Pitfall 6.
+ *
+ * NOTE: a future Phase 78 / CLEAN-05 follow-up (operator-locked Path B in
+ * `.planning/todos/pending/2026-05-11-voter-fixture-heterogeneous-question-types.md`)
+ * will introduce a `--likert-only` seed modifier that deprecates this
+ * manual walk. Until then this helper is the canonical heterogeneous-
+ * question-type navigation path for QSPEC-* specs.
+ *
+ * @param page - Playwright Page
+ * @param sortOrder - the number of Skip-Next clicks to perform after the
+ *   start CTA. Skipping `sortOrder` times from sort 0 lands on the
+ *   question at index `sortOrder`. The questions are `required: false`
+ *   from sort 17 onwards in the e2e seed, so this only works for
+ *   skipping past required:false questions or by answering the
+ *   required questions individually outside this helper.
+ */
+export async function walkToQuestion(page: Page, sortOrder: number): Promise<void> {
+  await walkToQuestionsIntro(page);
+
+  // Advance from the questions intro page to the first question (sort 0).
+  await page.getByTestId(testIds.voter.questions.startButton).click();
+
+  const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
+
+  // Click "Skip" (the unanswered-question CTA) `sortOrder` times so the
+  // voter lands on the question at index `sortOrder` without answering
+  // any of the preceding ones.
+  for (let i = 0; i < sortOrder; i++) {
+    await nextButton.waitFor({ state: 'visible', timeout: 10000 });
+    await nextButton.click();
+  }
+}
+
+/**
  * Click through any intermediate pages (questions intro, category intro)
  * until the first question's answer options are visible.
  *
