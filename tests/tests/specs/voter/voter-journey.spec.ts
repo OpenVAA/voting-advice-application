@@ -52,6 +52,23 @@ async function answerRemainingUntilResults(
   for (let i = 0; i < maxSteps; i++) {
     count++;
     const urlBefore = page.url();
+
+    // Phase 74 Plan 05 — the e2e dev-seed template now includes a
+    // categorical opinion question (test-question-directional-1, sort 17)
+    // with only 3 choices. When the voter reaches this question,
+    // `answerOption.nth(4)` (index for "Fully agree" on Likert-5) is out of
+    // range. Detect the choice count first and fall through to the Skip
+    // path when the requested index is out of range — the question is
+    // `required: false` so Skip→/results is a valid navigation from the
+    // last question.
+    const choiceCount = await answerOption.count();
+    if (answerOptionIndex >= choiceCount) {
+      await nextButton.waitFor({ state: 'visible', timeout: 5000 });
+      await nextButton.click();
+      await page.waitForURL(/\/results/, { timeout: 10000 });
+      return count;
+    }
+
     await answerOption.nth(answerOptionIndex).click();
 
     // Wait for auto-advance OR fall back to next-button click. The fallback

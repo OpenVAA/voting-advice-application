@@ -132,6 +132,14 @@ const opposeCandidate = E2E_VOTER_CANDIDATES.find((c) => c.external_id === 'test
  * Navigate the full voter journey: Home -> Intro -> answer all opinion questions -> Results.
  * Uses shared navigation helpers that handle optional intermediate pages
  * (questions intro, category intros) which may appear due to parallel settings specs.
+ *
+ * Phase 74 Plan 05 note: the e2e dev-seed template now includes 1
+ * categorical opinion question (`test-question-directional-1`, sort 17)
+ * after the 16 ordinal questions filtered by `singleChoiceOrdinal` /
+ * `test-voter-q-` prefixes at module scope above. The categorical
+ * question is `required: false` so the post-loop Skip→Next fallback
+ * (mirroring voter.fixture.ts:81-86) advances from the unanswered
+ * categorical question to /results without breaking the matching tests.
  */
 async function navigateToResults(page: Page): Promise<void> {
   // Navigate Home -> Intro -> (optional pages) -> First Question
@@ -154,6 +162,18 @@ async function navigateToResults(page: Page): Promise<void> {
       // Wait for next question, clicking through any category intro page
       await waitForNextQuestion(page, VOTER_ANSWER_INDEX);
     }
+  }
+
+  // Phase 74 Plan 05 — Skip→Next fallback for the non-ordinal categorical
+  // anchor question. After the 16 ordinal answers, auto-advance navigates
+  // to the 17th question (test-question-directional-1, sort 17,
+  // singleChoiceCategorical, required: false). The matching test loop
+  // ignores categorical questions (filter at lines 40-43 only includes
+  // singleChoiceOrdinal types), so we need to click Next (which renders
+  // as "Skip" since the question is unanswered) to advance to /results.
+  if (!page.url().includes('/results')) {
+    await page.getByTestId(testIds.voter.questions.nextButton).click();
+    await page.waitForURL(/\/results/, { timeout: 30000 });
   }
 
   // After answering the last question, the auto-advance timer navigates to results.
