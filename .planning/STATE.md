@@ -4,14 +4,14 @@ milestone: v2.9
 milestone_name: E2E Coverage + Suite Determinism — PLANNING
 status: executing
 stopped_at: Phase 75 context gathered
-last_updated: "2026-05-11T16:59:45.891Z"
-last_activity: 2026-05-11 -- Phase 75 planning complete
+last_updated: "2026-05-11T17:22:12.578Z"
+last_activity: 2026-05-11
 progress:
   total_phases: 10
   completed_phases: 2
   total_plans: 16
-  completed_plans: 13
-  percent: 81
+  completed_plans: 14
+  percent: 88
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-10)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 74 — high-leverage-e2e-coverage
+**Current focus:** Phase 75 — question-rendering-specs
 
 ## Current Position
 
-Phase: 74 — COMPLETE
-Plan: 7 of 7
+Phase: 75 (question-rendering-specs) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-05-11 -- Phase 75 planning complete
+Last activity: 2026-05-11
 
 ## Performance Metrics
 
@@ -83,6 +83,7 @@ Snapshot taken at v2.8 milestone close on 2026-05-10. v2.9 requirements consume 
 | Phase 74 P05 | 120min | 2 tasks | 5 files |
 | Phase 74 P04 | 85min | 4 tasks | 9 files |
 | Phase 74 P07 | 25200 | 5 tasks | 13 files |
+| Phase 75 P01 | 18min | - tasks | - files |
 
 ## Accumulated Context
 
@@ -133,6 +134,7 @@ Key cross-milestone reference points carried forward into v2.9:
 - [Phase ?]: Phase 74 closes GREEN-WITH-DEFERRAL — 8 PASS + 1 PASS-WITH-DEFERRAL (E2E-01 single-locale per D-04) + 0 FAIL across 9 ROADMAP SCs; 3-run SHA-identity ec349269...; 3 PARITY GATE PASS; DATA_RACE pool preserved at 15
 - [Phase ?]: Order B (CONTEXT D-06) confirmed for Phase 74 close: E2E-08 spec re-validates against tightened wrapper at Phase 78 close
 - [Phase ?]: Parity-script constants regenerated for Phase 74: CASCADE 55→65 (+10 with per-test rationale); PASS_LOCKED+DATA_RACE unchanged per D-09
+- [Phase ?]: Phase 75 Plan 01: Option A applied for Skip-Next fallback at sort 18 (3-iter loop); role 'radio' used (not 'button'); literal EN strings per W-03 deferred-todo
 
 ### Blockers/Concerns
 
@@ -142,9 +144,9 @@ Key cross-milestone reference points carried forward into v2.9:
 
 ## Session Continuity
 
-Last session: 2026-05-11T16:07:11.654Z
+Last session: 2026-05-11T17:22:12.573Z
 Stopped at: Phase 75 context gathered
-Resume file: .planning/phases/75-question-rendering-specs/75-CONTEXT.md
+Resume file: None
 Next action: Run `/gsd-plan-phase 73` to start planning the determinism baseline. Phase 73 is gating for Phases 74-77 — plan it first; Phase 78 (CLEAN) may be planned in parallel since it's independent of Phase 73.
 
 ### Plan-count estimate (drafted 2026-05-10)

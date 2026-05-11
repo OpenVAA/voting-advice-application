@@ -204,7 +204,7 @@ Phase 78 (CLEAN)  ← independent of 73-77; may run in parallel with 74-77
   3. **Deduplication.** Each new spec is checked assertion-by-assertion against existing matching tests in `tests/tests/specs/voter/voter-matching.spec.ts` and unit-level matching tests in `packages/matching/`; no assertion duplicates an existing test's coverage. Where overlap exists, the QSPEC version asserts the user-flow + render-shape contract (Playwright's strength), and the existing matching test continues to assert the matching-algorithm contract.
   4. **Determinism preserved.** Both new specs pass on 3 consecutive `--workers=1` runs identically; the post-Phase-73 baseline does not regress.
 **Plans**: 3 plans (split from 2 per 2026-05-12 revision: Plan 02 → Plan 02a + Plan 02b per CONTEXT D-01 fallback)
-- [ ] 75-01-PLAN.md — QSPEC-01 (Boolean spec) + e2e template boolean-question addition + `walkToQuestion(page, sortOrder)` helper extraction + W-03 i18n-hardening deferred-todo [Wave 1, autonomous]
+- [x] 75-01-PLAN.md — QSPEC-01 (Boolean spec) + e2e template boolean-question addition + `walkToQuestion(page, sortOrder)` helper extraction + W-03 i18n-hardening deferred-todo [Wave 1, autonomous]
 - [ ] 75-02a-PLAN.md — QSPEC-02 single-choice spec (4-step contract incl. B-02 browser-back persistence) + pre-flight DB seed gate (B-04) + unified dedup audit artifact at 75-02-DEDUP-AUDIT.md (B-03 Nyquist-compliant persistent file) [Wave 2, depends on 01, autonomous]
 - [ ] 75-02b-PLAN.md — Verification gate (vite-cache wipe + 3-run cold-start + parity-script regen) + 75-VERIFICATION.md + QSPEC-02 multi-choice deferred-todo + operator checkpoint [Wave 3, depends on 02a, has checkpoint]
 **UI hint**: yes
@@ -287,7 +287,7 @@ After v2.9 ships, run `/gsd-new-milestone` to frame the next milestone. v2.10 ca
 | 72. Package Hygiene Trio | v2.8 | 3/3 | Complete | 2026-05-09 |
 | 73. Determinism Baseline | v2.9 | 6/6 | Complete    | 2026-05-11 |
 | 74. High-Leverage E2E Coverage | v2.9 | 7/7 | Complete   | 2026-05-11 |
-| 75. Question-Rendering Specs | v2.9 | 0/2 | Not started | — |
+| 75. Question-Rendering Specs | v2.9 | 1/3 | In Progress|  |
 | 76. Profile + A11y | v2.9 | 0/TBD | Not started | — |
 | 77. Settings Matrix + Question-Customization Gap-Fills | v2.9 | 0/TBD | Not started | — |
 | 78. Cleanup Hygiene Phase | v2.9 | 0/TBD | Not started | — |
