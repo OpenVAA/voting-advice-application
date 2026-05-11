@@ -203,7 +203,9 @@ Phase 78 (CLEAN)  ← independent of 73-77; may run in parallel with 74-77
   2. **Categorical spec (QSPEC-02).** A focused spec walks the voter through a categorical opinion question end-to-end — both single-choice and multi-choice shapes — with the same shape: input renders correctly, voter answers, navigates, sees their answer reflected on entity-detail. Per-category match breakdown is NOT asserted here (that's E2E-07's responsibility — QSPEC-02 covers only the input + flow).
   3. **Deduplication.** Each new spec is checked assertion-by-assertion against existing matching tests in `tests/tests/specs/voter/voter-matching.spec.ts` and unit-level matching tests in `packages/matching/`; no assertion duplicates an existing test's coverage. Where overlap exists, the QSPEC version asserts the user-flow + render-shape contract (Playwright's strength), and the existing matching test continues to assert the matching-algorithm contract.
   4. **Determinism preserved.** Both new specs pass on 3 consecutive `--workers=1` runs identically; the post-Phase-73 baseline does not regress.
-**Plans**: TBD (estimate ~2 plans — 1 per spec, given the small + focused scope)
+**Plans**: 2 plans
+- [ ] 75-01-PLAN.md — QSPEC-01 (Boolean spec) + e2e template boolean-question addition + `walkToQuestion(page, sortOrder)` helper extraction [Wave 1, autonomous]
+- [ ] 75-02-PLAN.md — QSPEC-02 (single-choice categorical spec; multi-choice PASS-WITH-DEFERRAL per CONTEXT D-03) + inline verification gate (vite-cache wipe + 3-run cold-start + parity-script regen + 75-VERIFICATION.md + deferred-todo filing) [Wave 2, depends on 01, has checkpoint]
 **UI hint**: yes
 
 ### Phase 76: Profile + A11y
@@ -284,7 +286,7 @@ After v2.9 ships, run `/gsd-new-milestone` to frame the next milestone. v2.10 ca
 | 72. Package Hygiene Trio | v2.8 | 3/3 | Complete | 2026-05-09 |
 | 73. Determinism Baseline | v2.9 | 6/6 | Complete    | 2026-05-11 |
 | 74. High-Leverage E2E Coverage | v2.9 | 7/7 | Complete   | 2026-05-11 |
-| 75. Question-Rendering Specs | v2.9 | 0/TBD | Not started | — |
+| 75. Question-Rendering Specs | v2.9 | 0/2 | Not started | — |
 | 76. Profile + A11y | v2.9 | 0/TBD | Not started | — |
 | 77. Settings Matrix + Question-Customization Gap-Fills | v2.9 | 0/TBD | Not started | — |
 | 78. Cleanup Hygiene Phase | v2.9 | 0/TBD | Not started | — |
