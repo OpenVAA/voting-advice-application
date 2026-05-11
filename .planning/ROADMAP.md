@@ -83,7 +83,7 @@ Phase 78 (CLEAN)  ← independent of 73-77; may run in parallel with 74-77
                     (E2E-08 ↔ CLEAN-04 i18n pairing — see phase notes)
 ```
 
-- [ ] **Phase 73: Determinism Baseline** — Clear all `test.skip(true, …)` modifiers, resolve 19 known data-loading race E2E failures, sweep 98 pre-existing `playwright/*` warnings; suite reduces to a hard pass/fail signal (0 skipped, 3-run-stable, 0 lint warnings) — gating prerequisite for Phases 74-77
+- [x] **Phase 73: Determinism Baseline** — Clear all `test.skip(true, …)` modifiers, resolve 19 known data-loading race E2E failures, sweep 98 pre-existing `playwright/*` warnings; suite reduces to a hard pass/fail signal (0 skipped, 3-run-stable, 0 lint warnings) — gating prerequisite for Phases 74-77 (completed 2026-05-11)
 - [ ] **Phase 74: High-Leverage E2E Coverage** — Multilocale candidate translation surface, browse-without-match results, feedback dialog persistence, election/constituency selector matrix (1e×1c / 1e×Nc / Ne×1c / Ne×Nc / startFromConstituency), voter answer in entity details (4-case), skip/delete/back navigation, per-category SubMatch breakdown, locale switching
 - [ ] **Phase 75: Question-Rendering Specs** — Focused user-story specs for Boolean + categorical (single/multi-choice) question rendering in voter flow (deduplicated against matching tests)
 - [ ] **Phase 76: Profile + A11y** — Candidate profile validation rejection paths, full profile-field reload-persistence (extending v2.1 CAND-12), `@axe-core/playwright` WCAG 2.1 AA smoke wired against home/selector/questions/results/voter-detail routes
@@ -169,7 +169,7 @@ Phase 78 (CLEAN)  ← independent of 73-77; may run in parallel with 74-77
 - [x] 73-03-PLAN.md — Voter-specs cluster: voter-settings/voter-popup-hydration/voter-journey conditional rewrites + voter-results no-wait-for-timeout (paired DETERM-02 + DETERM-03) [Wave 3, depends on 01,02]
 - [x] 73-04-PLAN.md — Candidate-specs cluster + bank-auth D-07: 17 bank-auth warnings (12 cond-expect + 4 cond + 1 D-07-justified skip) + candidate-profile/settings/questions/auth (operator-review checkpoint on // reason: text quality) [Wave 4, depends on 01-03, has checkpoint]
 - [x] 73-05-PLAN.md — Variants + setup hooks cluster: variant specs + auth.setup.ts auth-cookie race + data.setup idempotence + DETERM-01 cross-check [Wave 5, depends on 01-04]
-- [ ] 73-06-PLAN.md — Parity-gate regen + 3-run determinism gate + lint-gate bump 'warn'→'error' + 73-VERIFICATION.md (operator-review checkpoint on per-test DATA_RACE pool rationale) [Wave 6, depends on 01-05, has checkpoint]
+- [x] 73-06-PLAN.md — Parity-gate regen + 3-run determinism gate + lint-gate bump 'warn'→'error' + 73-VERIFICATION.md (operator-review checkpoint on per-test DATA_RACE pool rationale) [Wave 6, depends on 01-05, has checkpoint]
 
 ### Phase 74: High-Leverage E2E Coverage
 **Goal**: After this phase, Playwright covers eight high-leverage user-flow gaps that v2.8 explicitly deferred to v2.9: a multilocale candidate using the translation surface (and a single-locale candidate not seeing it); a voter who is located but under `minimumAnswers` browsing the entity list without match scores; feedback-dialog text persistence across dismiss + reset on send; the full election + constituency selector matrix (1e×1c / 1e×Nc / Ne×1c / Ne×Nc + startFromConstituency); the voter's answer rendering alongside the entity's answer in the entity-detail drawer for all four (answered / missing) cases; skip / delete / back navigation with predictable result-CTA availability; per-category SubMatch breakdown on voter-detail; and locale switching (route-prefixed + locale-switcher widget). Each gap maps to a focused spec or a parameterized matrix-driven spec.
@@ -268,7 +268,7 @@ After v2.9 ships, run `/gsd-new-milestone` to frame the next milestone. v2.10 ca
 | 70. Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup | v2.8 | 5/5 | Complete | 2026-05-09 |
 | 71. Frontend Strict-Typing Cleanup | v2.8 | 3/3 | Complete | 2026-05-09 |
 | 72. Package Hygiene Trio | v2.8 | 3/3 | Complete | 2026-05-09 |
-| 73. Determinism Baseline | v2.9 | 5/6 | In Progress|  |
+| 73. Determinism Baseline | v2.9 | 6/6 | Complete   | 2026-05-11 |
 | 74. High-Leverage E2E Coverage | v2.9 | 0/TBD | Not started | — |
 | 75. Question-Rendering Specs | v2.9 | 0/TBD | Not started | — |
 | 76. Profile + A11y | v2.9 | 0/TBD | Not started | — |
