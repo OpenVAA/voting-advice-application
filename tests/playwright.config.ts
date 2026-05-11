@@ -108,7 +108,7 @@ export default defineConfig({
     {
       name: 'candidate-app',
       testDir: './tests/specs/candidate',
-      testMatch: /candidate-(auth|questions)\.spec\.ts/,
+      testMatch: /candidate-(auth|questions|translation)\.spec\.ts/,
       fullyParallel: false,
       use: {
         ...devices['Desktop Chrome'],
