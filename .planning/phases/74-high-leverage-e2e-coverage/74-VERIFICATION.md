@@ -10,6 +10,39 @@ follow_ups:
     severity: deferred
     file: .planning/todos/pending/2026-05-11-e2e-01-single-locale-runtime-override.md
     rationale: "PASS-WITH-DEFERRAL per CONTEXT D-04. Multilocale (higher-risk) path landed; single-locale (lower-risk absence-of-feature) deferred until Paraglide runtime locale-set override mechanism exists. Recommend revisiting at Phase 78 CLEAN-04 close."
+re_verification:
+  verified_at: 2026-05-11T20:00:00Z
+  verifier: gsd-verifier (goal-backward, independent)
+  previous_status: passed (Plan 07 self-authored)
+  previous_score: 9/9 SCs addressed (8 PASS + 1 PASS-WITH-DEFERRAL)
+  verdict: PASS-WITH-DEFERRAL — independently confirmed
+  notes: >
+    Goal-backward re-verification by gsd-verifier. All 8 spec files confirmed
+    substantive (not stubs). 3-run SHA-256 identity re-confirmed:
+    ec349269092251378acbb3ac8bb13c58e36612728b6e4986f43756cff41199b2 across
+    all 3 cold-start runs (using project-qualified title|status format from
+    post-fix/run-{1,2,3}-sorted-status.txt). Note: naive title-only hash
+    produces a different value (c7d92d7b...) — the difference is expected and
+    documented in §"SHA-Identity Re-Confirmation" below. Parity gate
+    independently re-run via `yarn tsx tests/scripts/diff-playwright-reports.ts`
+    for all 3 pairs: PASS × 3. Parity-script constants verified at
+    4 PASS_LOCKED / 15 DATA_RACE / 65 CASCADE (D-09 binding preserved; DATA_RACE
+    did not grow). Follow-up todo for E2E-01 single-locale confirmed present at
+    .planning/todos/pending/2026-05-11-e2e-01-single-locale-runtime-override.md.
+    No gaps found vs. Plan 07 verdict. ROADMAP SCs #1-9 all independently
+    satisfied or correctly deferred.
+  sha_hash_clarification: >
+    The claimed hash ec349269... is produced by SHA-256 of the joined
+    'projectName :: file > title|status' lines from the post-fix/*-sorted-status.txt
+    captures (122 data lines + trailing newline stripped = 123 entries). A
+    title-only SHA-256 (without project prefix) produces c7d92d7b... — different
+    but equally byte-identical across all 3 runs. Both confirm determinism.
+    The executor's hash method matches the pre-computed sorted-status files and
+    is the correct interpretation of "sorted title|status" in the Phase-73 gate shape
+    (which used the same project-qualified format).
+  gaps_closed: []
+  gaps_remaining: []
+  regressions: []
 ---
 
 # Phase 74 — Verification Record
@@ -76,6 +109,20 @@ Per CONTEXT D-09 + the Phase 73 SC #4 protocol: 3 consecutive `--workers=1` cold
 
 **Phase 73 comparison:** Phase 73's 3 anchors finished at ~37 min each (4p/7f/22t/69s = 102 tests). Phase 74's runs are ~55-60 min each because of the +21 tests (123 total, +3 variant projects + 6 new specs + 1 dev-seed extension that adds a 17th opinion question, lengthening the voter-loop in several existing specs).
 
+## SHA-Identity Re-Confirmation (Independent Verifier)
+
+The gsd-verifier independently re-computed the SHA-256 of the sorted title|status sets from the stored `post-fix/run-{1,2,3}-sorted-status.txt` captures:
+
+| File | Lines | SHA-256 |
+|------|-------|---------|
+| run-1-sorted-status.txt | 123 | `ec349269092251378acbb3ac8bb13c58e36612728b6e4986f43756cff41199b2` |
+| run-2-sorted-status.txt | 123 | `ec349269092251378acbb3ac8bb13c58e36612728b6e4986f43756cff41199b2` |
+| run-3-sorted-status.txt | 123 | `ec349269092251378acbb3ac8bb13c58e36612728b6e4986f43756cff41199b2` |
+
+**Claimed hash matches independently computed hash: CONFIRMED.**
+
+Note: a naive extraction of only `title|status` (without the `projectName :: file >` prefix) from the run-{1,2,3}-report.json files produces a different but equally byte-identical hash (`c7d92d7bee8246ff81f98a31936108a593b839c9dc6cf18746e681e30614ef2b` × 3). The difference is format — both confirm determinism. The executor's hash format (project-qualified) matches the pre-computed sorted-status captures and is the canonical Phase-73 gate shape.
+
 ## Parity Gate Output
 
 Captured verbatim from `.planning/phases/74-high-leverage-e2e-coverage/post-fix/parity-gate-output.txt`:
@@ -102,6 +149,21 @@ PARITY GATE: PASS — no regressions detected per D-59-04.
 
 **3 × PARITY GATE: PASS.** The cascade-tally column shows 79 (not the 65 in the contract) because the per-report cascade count includes additional tests not partitioned into the 3 named pools (failure-class entries — timedOut/failed tests that the regen-constants.mjs script does not classify into any pool); the contract preservation is on the named pools, which all match.
 
+**Independent re-run by gsd-verifier (2026-05-11):**
+
+```
+# Pair 1v2: yarn tsx tests/scripts/diff-playwright-reports.ts run-1-report.json run-2-report.json
+PARITY GATE: PASS — no regressions detected per D-59-04.
+
+# Pair 2v3: yarn tsx tests/scripts/diff-playwright-reports.ts run-2-report.json run-3-report.json
+PARITY GATE: PASS — no regressions detected per D-59-04.
+
+# Pair 1v3: yarn tsx tests/scripts/diff-playwright-reports.ts run-1-report.json run-3-report.json
+PARITY GATE: PASS — no regressions detected per D-59-04.
+```
+
+All 3 PARITY GATE PASS outputs independently confirmed.
+
 ## Constants Regen (CONTEXT D-10)
 
 Regen REQUIRED because Plans 02 + 04 added 3 new variant projects (variant-low-minimum-answers, variant-1e-Nc, variant-Ne-Nc). Each new project contributes new tests to the parity baseline → constants regen mandatory per CONTEXT D-10.
@@ -115,6 +177,8 @@ Regen REQUIRED because Plans 02 + 04 added 3 new variant projects (variant-low-m
 | PASS_LOCKED_TESTS | 4 | 4 | 0 | Unchanged — same 4 data-setup/teardown tests run without auth-cookie/candidate-mutation upstream. |
 | DATA_RACE_TESTS | 15 | 15 | 0 | UNCHANGED (D-09 binding preserved). Same 14 IMGPROXY_TIED_TITLES + 1 dual-project re-auth = 15 IDs. Pool MUST NOT grow per CONTEXT D-09; preservation confirmed. |
 | CASCADE_TESTS | 55 | 65 | +10 | Phase 74's new specs that cascade-skip downstream of the auth-setup retry race (which itself cascades downstream of the imgproxy infrastructure debt per PROJECT.md "Known infrastructure issue"). |
+
+**Constants independently verified by gsd-verifier:** diff-playwright-reports.ts array sizes confirmed at 4 PASS_LOCKED + 15 DATA_RACE + 65 CASCADE via code inspection.
 
 **The 10 new CASCADE entries:**
 
@@ -228,6 +292,33 @@ This plan was executed under AUTO_MODE per `workflow._auto_chain_active: true`. 
 
 ---
 
+## VERIFICATION COMPLETE
+
+**Verdict: PASS-WITH-DEFERRAL**
+
+Independent goal-backward re-verification by gsd-verifier (2026-05-11). All Plan 07 claims independently confirmed against the codebase. No gaps found vs. Plan 07's self-authored verdict.
+
+**Summary of findings:**
+
+- All 8 E2E-0X spec files confirmed PRESENT and SUBSTANTIVE (not stubs): `candidate-translation.spec.ts`, `voter-browse-without-match.spec.ts`, `voter-feedback-persistence.spec.ts`, `voter-navigation.spec.ts`, `1e-Nc.spec.ts`, `Ne-Nc.spec.ts`, `voter-detail.spec.ts` (extensions), `voter-locale-switching.spec.ts`.
+- All 3 new variant projects confirmed: `variant-low-minimum-answers`, `variant-1e-Nc`, `variant-Ne-Nc` — templates + setup drivers + playwright.config.ts entries all present.
+- SC #2 `minimumAnswers: 1` override confirmed in `variant-low-minimum-answers.ts:58`.
+- SC #3 dismiss-preserves / send-resets sequence confirmed in `voter-feedback-persistence.spec.ts:67-97`.
+- SC #4 all 5 matrix cells confirmed: Ne×1c additive in `multi-election.spec.ts`, startFromConstituency additive in `startfromcg.spec.ts`; cross-bleed `not.toContain` assertion confirmed in `Ne-Nc.spec.ts`.
+- SC #5 all 4 CaseA/B/C/D marker candidates confirmed in `packages/dev-seed/src/templates/e2e.ts` + `voter-detail.spec.ts`.
+- SC #7 BOTH Manhattan AND directional metric paths confirmed in `voter-detail.spec.ts` E2E-07 block (`getByRole('meter', { name: 'Test Category: Directional (E2E-07)' })`).
+- SC #8 route-prefix + direct-URL widget-equivalent coverage confirmed in `voter-locale-switching.spec.ts`; LanguageSelection widget bug documented honestly.
+- SC #9 SHA-256 identity claim `ec349269...` independently re-confirmed against `post-fix/run-{1,2,3}-sorted-status.txt` (exact hash match). Parity gate independently re-run: PASS × 3. Parity-script constants verified at 4/15/65.
+- E2E-01 follow-up todo confirmed at `.planning/todos/pending/2026-05-11-e2e-01-single-locale-runtime-override.md`.
+- DATA_RACE pool confirmed unchanged at 15 (D-09 binding preserved).
+- No stub patterns, no TODOs, no placeholder returns found in any Phase 74 spec files.
+
+**One clarification note (not a gap):** The claimed SHA-256 is derived from project-qualified `projectName :: file > title|status` lines (the format in the pre-computed sorted-status captures), not title-only pairs. Both formats confirm byte-identical determinism across 3 runs; the executor's format is correct and matches the Phase-73 gate shape.
+
+---
+
 *Phase: 74-High-Leverage E2E Coverage*
 *Verification completed: 2026-05-11*
 *HEAD at verification: 673d1c9eb5ed678733d5c4d561d9a3fa99f0b81e*
+*Re-verification completed: 2026-05-11*
+*Re-verifier: gsd-verifier (goal-backward, independent)*
