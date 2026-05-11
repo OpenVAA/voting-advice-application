@@ -707,32 +707,37 @@ test('locale switches via route prefix + via widget', async ({ page }) => {
 | A9 | `regen-constants.mjs` is at `.planning/phases/73-determinism-baseline/post-fix/regen-constants.mjs` (lives in planning dir, not tests/) | Don't Hand-Roll §Regen constants [VERIFIED: file exists at this path] | Plan 07 must reference this exact path; no copy needed |
 | A10 | Adding 3 new variant projects + their specs triggers `regen-constants.mjs` (per D-10 condition) | Validation Architecture §Plan 07 [VERIFIED: D-10 explicit "Plans 02 + 04 add 3 new projects → regen required"] | None |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Exact translation key for E2E-02 browse-without-match ingress copy**
    - What we know: `voter-results-ingress` testId exists; results page intro toggles between "results" and "browse" forms via `voterCtx.resultsAvailable`.
    - What's unclear: Exact translation key. Likely `results.title.browse` (per VoterNav pattern) or `results.ingress.browse`.
    - Recommendation: At PLAN.md time, read `apps/frontend/src/lib/i18n/translations/en/results.json` or grep `t('results.` in the results page to locate the exact key; lock in PLAN.md.
+   - **RESOLVED:** Plan 02 Task 3 acceptance criteria — spec asserts ingress visibility unconditionally and scopes a content-text assertion to the resolved key at execution-read time; if exact key is ambiguous at execution time, falls back to visibility-only and captures the key resolution as a follow-up surfaced to Plan 07.
 
 2. **E2E-04 cross-bleed dropdown locator shape**
    - What we know: Constituency selector exists at `testIds.voter.constituencies.selector`; dropdown implementation lives in `apps/frontend/src/lib/components/electionSelector` or equivalent.
    - What's unclear: Whether the dropdown is a native `<select>` (so `getByRole('option')` works) or a custom DaisyUI component (so locator may need adjustment).
    - Recommendation: At PLAN.md time, read the selector component to determine. If custom, add helper or inline `// reason:` for structural locator.
+   - **RESOLVED:** Plan 04 Tasks 3 + 4 acceptance criteria — primary locator path is `constSelector.getByRole("option")` (native-select assumption); if execution-time reading of `apps/frontend/src/lib/components/select` or `electionSelector` reveals a custom DaisyUI dropdown, pivot to `constSelector.getByText(/<constituency-prefix>/i)` or `getByRole("listbox")`-scoped option enumeration with inline `// reason:`. Both pivots preserve the cross-bleed enumeration contract (Election-1 options not present in Election-2).
 
 3. **E2E-06 results-CTA "disabled" vs "hidden" semantics**
    - What we know: `VoterNav.svelte:84-88` renders the nav item with `disabled` attribute when `!(elections.length && constituencies.length)`; the TEXT toggles via `resultsAvailable`.
    - What's unclear: Whether the operator-described "results-CTA disabled" means `disabled` attribute OR "browse" text. The CONTEXT says "results-CTA hides" — but the actual UI shows "Browse Entities" text rather than hiding.
    - Recommendation: Plan 03's PLAN.md must lock the assertion shape — likely `await expect(resultsNav).toHaveText(/browse/i)` for "below threshold" and `/results/i` for "at threshold".
+   - **RESOLVED:** Plan 03 Task 2 acceptance criteria — assertion shape locked to text-toggle (`/browse/i` ↔ `/results/i`) per VoterNav.svelte:84-88 `voterCtx.resultsAvailable` text contract. If execution-time inspection reveals `disabled`/`aria-disabled` attribute is the active contract, pivot to `toHaveAttribute('aria-disabled', 'true')` with inline `// reason:` and document the resolution to Plan 07.
 
 4. **E2E-07 directional metric path**
    - What we know: Default `e2e.ts` template has only ordinal categorical (`singleChoiceOrdinal`) questions. Manhattan distance is the only metric exercised.
    - What's unclear: How to assert the "directional metric path" if no categorical questions exist in the default e2e template. The CONTEXT specs this but the underlying data doesn't currently support it.
    - Recommendation: Plan 05's PLAN.md must decide: (a) extend `e2e.ts` to add categorical questions (out of D-07 scope but small), (b) defer directional metric path to QSPEC-02 in Phase 75 and assert only Manhattan in E2E-07, (c) add a small Phase 74 dev-seed extension with one categorical question. Most economical: option (b) — but ROADMAP SC #7 explicitly names both Manhattan and directional. Reconcile in PLAN.md.
+   - **RESOLVED:** Option (a) chosen (revision iteration 2 — per Blocker 2 of plan-checker verdict). Extend D-07 dev-seed extension to ALSO include a categorical (single-choice OR multi-choice) opinion question so the directional-metric assertion path is testable in Phase 74. Phase 74 covers BOTH metric paths per REQUIREMENTS E2E-07 + ROADMAP SC #7. Locked in Plan 05 Task 1 (categorical question seed marked `E2E-07/directional-metric-anchor`) and Plan 05 Task 2 (per-category SubMatch assertions cover both Manhattan and directional categories). The default `e2e.ts` categorical addition is small, additive, transparently handled by @openvaa/matching's categorical-question SubMatch logic, and does not break existing CONF-01..CONF-06 or matching tests.
 
 5. **E2E-01 fixture-managed candidate session**
    - What we know: `candidate-app` project depends on `auth-setup` which writes storageState to `STORAGE_STATE` file. The pre-authenticated candidate is `mock.candidate.2@openvaa.org` (`test-candidate-alpha` per data setup).
    - What's unclear: Whether translation surface on a question survives the candidate-questions auth context. (E2E-01 spec runs inside the `candidate-app` project; if it lands in CASCADE pool downstream of imgproxy-tied auth-setup cascade per Phase 73 D-09, the spec may not run.)
    - Recommendation: Plan 01 must verify that `candidate-translation.spec.ts` does NOT cascade-skip under the canonical cold-start state. If it does (likely, given E2E-01 sits in `candidate-app` which currently has CASCADE entries), the spec authoring still proceeds, but Plan 07 must classify the new spec as CASCADE OR DATA_RACE in `74-VERIFICATION.md`.
+   - **RESOLVED:** Plan 07 verification-time classification per CONTEXT D-09 rationale convention. Plan 01 authors the spec unconditionally; Plan 07's Task 2 3-run identity gate observes the runtime outcome and writes the classification (PASS_LOCKED / DATA_RACE / CASCADE) into `74-VERIFICATION.md` with rationale. If the spec lands in CASCADE downstream of imgproxy-tied auth-setup, Plan 07 records the dependency and surfaces a follow-up todo to investigate in v2.10+ imgproxy infrastructure work.
 
 ## Environment Availability
 
