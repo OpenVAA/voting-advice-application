@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v2.9
 milestone_name: E2E Coverage + Suite Determinism — PLANNING
-status: verifying
-stopped_at: Completed Phase 75 Plan 02b — operator Task 4 checkpoint PENDING
-last_updated: "2026-05-11T19:14:16.715Z"
-last_activity: 2026-05-11
+status: planning
+stopped_at: Phase 75 closed (operator-approved GREEN-WITH-DEFERRAL 2026-05-12) — ready to plan Phase 76 / 77 / 78
+last_updated: "2026-05-12T00:00:00.000Z"
+last_activity: 2026-05-12
 progress:
   total_phases: 10
   completed_phases: 3
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-05-10)
 
 ## Current Position
 
-Phase: 75 (question-rendering-specs) — EXECUTING
+Phase: 75 (question-rendering-specs) — COMPLETE (operator-approved GREEN-WITH-DEFERRAL 2026-05-12)
 Plan: 3 of 3
-Status: Phase complete — ready for verification
-Last activity: 2026-05-11
+Status: Phase 75 closed — ready to plan Phase 76 / 77 / 78 (all parallel-eligible)
+Last activity: 2026-05-12 -- Phase 75 marked complete (3/3 plans, GREEN-WITH-DEFERRAL, operator-approved)
 
 ## Performance Metrics
 
@@ -145,6 +145,7 @@ Key cross-milestone reference points carried forward into v2.9:
 - [Phase ?]: Phase 75 Plan 02b: 3-run cold-start --workers=1 smoke SHA-256-identical at 7084db87 x3; parity-script regen produced net-positive deltas (PASS_LOCKED +43 / DATA_RACE 0 / CASCADE -32)
 - [Phase ?]: Phase 75 Plan 02b: QSPEC-01 + QSPEC-02 deterministically FAIL x3 under full-suite cold-start (failure-class, NOT DATA_RACE — D-09 binding preserved); inherits Phase-78-CLEAN-05 voter-fixture race; per-plan smokes PASS x3 each verify spec correctness in isolation
 - [Phase ?]: Phase 75 closes GREEN-WITH-DEFERRAL pending operator Task 4 checkpoint: 4/4 ROADMAP SCs assessed (3 PASS + 1 PASS-WITH-DEFERRAL on SC #2 multi-choice per CONTEXT D-03); 3 follow-up todos filed
+- [Phase 75]: Operator approved Phase 75 close 2026-05-12 (GREEN-WITH-DEFERRAL); elected to file 58-E2E-AUDIT.md addendum as 4th follow-up todo at `.planning/todos/pending/2026-05-12-58-e2e-audit-addendum-qspec.md` (committed 3d05c5c6d); next action — plan Phase 76 / 77 / 78 (all parallel-eligible)
 
 ### Blockers/Concerns
 
@@ -154,10 +155,10 @@ Key cross-milestone reference points carried forward into v2.9:
 
 ## Session Continuity
 
-Last session: 2026-05-11T19:14:16.709Z
-Stopped at: Completed Phase 75 Plan 02b — operator Task 4 checkpoint PENDING
+Last session: 2026-05-12T00:00:00.000Z
+Stopped at: Phase 75 closed (operator-approved GREEN-WITH-DEFERRAL 2026-05-12) — 4 follow-up todos filed; ready to plan Phase 76 / 77 / 78
 Resume file: None
-Next action: Run `/gsd-plan-phase 73` to start planning the determinism baseline. Phase 73 is gating for Phases 74-77 — plan it first; Phase 78 (CLEAN) may be planned in parallel since it's independent of Phase 73.
+Next action: Plan Phase 76 (Profile + A11y) / Phase 77 (Settings Matrix) / Phase 78 (Cleanup Hygiene) — all three are parallel-eligible. Phases 76 + 77 share the Phase 73 determinism prerequisite (preserved by Phase 75 close); Phase 78 is fully independent and may run in parallel. Discuss multiple phases together per `feedback_batch_discussions.md`.
 
 ### Plan-count estimate (drafted 2026-05-10)
 

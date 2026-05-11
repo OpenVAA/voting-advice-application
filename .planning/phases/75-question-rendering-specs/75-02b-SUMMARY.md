@@ -69,7 +69,7 @@ Plan 02b ran the Phase 75 end-of-phase verification gate: pre-run vite-cache wip
 | 1 — Vite-cache wipe + DB reset + 3-run cold-start smoke | Both cache dirs wiped; e2e template provisioned (18 candidates / 19 questions / 22 nominations); 3 cold-start runs at 48p / 30f / 47s ≡ identical × 3; SHA-256 identity: `7084db872e3eca6cf14536981fb94c0fd82e48fb1419c783af7840531f2d85cc` × 3 → PASS. QSPEC-01 + QSPEC-02 deterministically FAIL × 3 under full-suite cold-start (inherits upstream voter-fixture race; per-plan smokes PASS × 3 in isolation per Plans 01 + 02a) → classified as failure-class per CONTEXT D-07. | post-fix/run-{1,2,3}.json + sorted-status.txt | 10279a2bf |
 | 2 — Parity-script constants regen + 3 PARITY GATE PASS | regen-constants.mjs exit 0 (IMGPROXY_TIED_TITLES match-count assertion PASS: 14 titles, 15 matches). Pool deltas vs Phase 74 baseline: PASS_LOCKED 4 → 47 (+43 net-positive); DATA_RACE 15 → 15 (D-09 preserved); CASCADE 65 → 33 (−32 net-positive). 3 pair comparisons (1v2, 2v3, 1v3) all output `PARITY GATE: PASS — no regressions detected per D-59-04.` Lint check green. | tests/scripts/diff-playwright-reports.ts + post-fix/parity-gate-output.txt + regen-output.txt | 3d7e08965 |
 | 3 — 75-VERIFICATION.md + QSPEC-02 multi-choice deferred-todo | VERIFICATION.md (317 LOC) authored mirroring Phase 74 shape; 4/4 ROADMAP SCs assessed (3 PASS + 1 PASS-WITH-DEFERRAL on SC #2 multi-choice per CONTEXT D-03; 0 FAIL); all 7 regression gates GREEN; 3 follow-up todos cross-referenced. Multi-choice deferred-todo (70 LOC) captures scope (~3-5 plans) + dependencies + cross-links. | .planning/phases/75-question-rendering-specs/75-VERIFICATION.md + .planning/todos/pending/2026-05-12-qspec-02-multi-choice-categorical-variant.md | e19bbbe6d |
-| 4 — Operator checkpoint (BLOCKING) | **PENDING — operator review required.** Plan 02b returns `## PLAN CHECKPOINT` to orchestrator; phase not closed until operator types `approved` (or describes issues sending executor back to Tasks 1-3). | (no commit — operator gate) | (pending) |
+| 4 — Operator checkpoint (BLOCKING) | **APPROVED 2026-05-12.** Operator selected "Approved + file 58-E2E-AUDIT addendum todo" from the 3 options presented at the checkpoint. 4th follow-up todo filed at `.planning/todos/pending/2026-05-12-58-e2e-audit-addendum-qspec.md` (committed `3d05c5c6d`). Phase 75 closes GREEN-WITH-DEFERRAL. | `.planning/todos/pending/2026-05-12-58-e2e-audit-addendum-qspec.md` + close-out edits to VERIFICATION.md + SUMMARY.md + STATE.md + ROADMAP.md | 3d05c5c6d (addendum todo) + [close-out commit, this entry] |
 
 ## 3-Run SHA Hashes + Identity Verdict
 
@@ -107,6 +107,7 @@ Plan 02b ran the Phase 75 end-of-phase verification gate: pre-run vite-cache wip
 1. **QSPEC-02 multi-choice categorical variant** — `.planning/todos/pending/2026-05-12-qspec-02-multi-choice-categorical-variant.md` (70 LOC) — D-03 PASS-WITH-DEFERRAL anchor. Effort: ~3-5 plans. Scope: OpinionQuestionInput.svelte branch + matching dispatch + dev-seed extension + spec + dedup + verification.
 2. **W-03 i18n-hardening** — `.planning/todos/pending/2026-05-12-qspec-01-i18n-hardening.md` (filed by Plan 01 Task 5) — Order B anchor for Phase 78 CLEAN-04 (i18n wrapper tightening retroactively validates QSPEC literal English strings).
 3. **Voter-fixture heterogeneous-question-types race** — `.planning/todos/pending/2026-05-11-voter-fixture-heterogeneous-question-types.md` (Phase 73 carry-forward) — Phase 78 CLEAN-05 (Path B `--likert-only` seed modifier). Resolution lifts QSPEC-01 + QSPEC-02 + voter-detail + voter-results + voter-feedback + voter-navigation from failure-class to PASS_LOCKED.
+4. **58-E2E-AUDIT.md addendum (QSPEC external_id/display-text contracts)** — `.planning/todos/pending/2026-05-12-58-e2e-audit-addendum-qspec.md` (filed at operator checkpoint approval 2026-05-12, committed `3d05c5c6d`) — Claude's Discretion §5 recommended-but-not-blocking. Adds boolean question + category external_id + display-text rows + cross-references existing `test-question-directional-1` to QSPEC-02. ~10-15 LOC.
 
 ## Reference to Unified Dedup Audit Artifact
 
@@ -114,11 +115,11 @@ Plan 02b ran the Phase 75 end-of-phase verification gate: pre-run vite-cache wip
 
 ## Optional 58-E2E-AUDIT.md Addendum Decision
 
-**Operator's call at Task 4 checkpoint** (recommended-but-not-blocking per CONTEXT Claude's Discretion paragraph 5). Recommended scope if accepted: add `test-question-boolean-1` (sort 18, type boolean) + `test-category-boolean` (sort 6, opinion) external_id/display-text contracts to the audit table at `.planning/milestones/v2.6-phases/58-e2e-template-audit/58-E2E-AUDIT.md`. Phase 75 Plan 02b SUMMARY documents this as a deferred Claude's Discretion item; the operator may file it as a separate post-phase-75 todo OR add an inline note directly to the audit file.
+**OPERATOR ELECTED TO FILE** at Task 4 checkpoint (2026-05-12). Filed at `.planning/todos/pending/2026-05-12-58-e2e-audit-addendum-qspec.md` (committed `3d05c5c6d`). Scope: add `test-question-boolean-1` (sort 18, type boolean) + `test-category-boolean` (sort 6, opinion) external_id/display-text contracts to `.planning/milestones/v2.5-phases/58-templates-cli-default-dataset/58-E2E-AUDIT.md`; also spec-anchor existing `test-question-directional-1` to QSPEC-02. Disposition: recommended-but-not-blocking — no v2.9 deadline; address whenever convenient.
 
 ## Operator Checkpoint Outcome
 
-**PENDING** — Task 4 is the BLOCKING operator-verify checkpoint. Plan 02b returns `## PLAN CHECKPOINT` to orchestrator; operator reviews the verification record + dedup audit + 3 follow-up todos before phase close.
+**APPROVED 2026-05-12.** Operator approved GREEN-WITH-DEFERRAL close at Task 4 checkpoint. Selected from 3 options presented: chose "Approved + file 58-E2E-AUDIT addendum todo" (vs. plain approval or send-back). Phase 75 cleared for phase close — 4 follow-up todos filed in `.planning/todos/pending/`. ROADMAP.md + STATE.md updated to reflect Phase 75 = Complete with 3/3 plans.
 
 ## 4/4 SC Classification
 
@@ -129,7 +130,7 @@ Plan 02b ran the Phase 75 end-of-phase verification gate: pre-run vite-cache wip
 | #3 — Deduplicated | **PASS** | 75-02-DEDUP-AUDIT.md (11 rows; AUDIT COMPLETE) |
 | #4 — Determinism preserved | **PASS** | 3-run SHA-256 = `7084db87...` × 3; 3 PARITY GATE PASS pair comparisons; DATA_RACE pool unchanged at 15 |
 
-**Phase 75 closes GREEN-WITH-DEFERRAL** (pending Task 4 operator sign-off).
+**Phase 75 closes GREEN-WITH-DEFERRAL** (operator sign-off received 2026-05-12).
 
 ## Recommendation for the Next Phase
 

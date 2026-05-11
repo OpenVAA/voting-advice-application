@@ -18,13 +18,17 @@ follow_ups:
     severity: blocker-deferred
     file: .planning/todos/pending/2026-05-11-voter-fixture-heterogeneous-question-types.md
     rationale: "Upstream voter-fixture race surfaced under full-suite cold-start (QSPEC-01 + QSPEC-02 + voter-detail + voter-results + voter-feedback + voter-navigation + voter-popup-hydration all deterministically FAIL × 3 at `voter-questions-start` 10s timeout). Per-plan smokes PASS × 3 each (Plan 01 + 02a). SAME classification as Phase 74 Plan 03 specs. Will resolve when Phase 78 CLEAN-05 (Path B `--likert-only` seed modifier) lands. NOT a Phase 75 regression — pre-existing race documented as carry-forward at Phase 74 close."
+  - id: 58-E2E-AUDIT-addendum-qspec
+    severity: deferred
+    file: .planning/todos/pending/2026-05-12-58-e2e-audit-addendum-qspec.md
+    rationale: "Recommended-but-not-blocking per CONTEXT Claude's Discretion §5. Filed at operator checkpoint approval 2026-05-12 (committed `3d05c5c6d`). Scope: add `test-question-boolean-1` + `test-category-boolean` external_id/display-text contracts to `.planning/milestones/v2.5-phases/58-templates-cli-default-dataset/58-E2E-AUDIT.md`; spec-anchor existing `test-question-directional-1` to QSPEC-02. ~10-15 LOC. No v2.9 deadline; address whenever convenient."
 re_verification:
-  verified_at: pending
-  verifier: gsd-verifier (goal-backward, independent — to be invoked post-checkpoint)
-  previous_status: pending operator sign-off (Plan 02b Task 4)
+  verified_at: 2026-05-12
+  verifier: operator (Plan 02b Task 4 human-verify checkpoint)
+  previous_status: passed-with-deferral (pre-operator-checkpoint)
   previous_score: 4/4 SCs addressed (3 PASS + 1 PASS-WITH-DEFERRAL)
-  verdict: pending
-  notes: placeholder for independent goal-backward re-verification per Phase 73 / Phase 74 convention
+  verdict: approved — GREEN-WITH-DEFERRAL close with optional 58-E2E-AUDIT addendum todo filed
+  notes: "Operator approved 2026-05-12 (chose option: Approved + file 58-E2E-AUDIT addendum todo). 4th follow-up filed at .planning/todos/pending/2026-05-12-58-e2e-audit-addendum-qspec.md (committed 3d05c5c6d). Independent gsd-verifier goal-backward re-verification deferred to post-milestone cadence per Phase 73 / Phase 74 convention."
 ---
 
 # Phase 75 — Verification Record
@@ -240,9 +244,7 @@ Created at phase close (filed in `.planning/todos/pending/`):
 
 3. **Voter-fixture heterogeneous-question-types race (carry-forward from Phase 73):** `.planning/todos/pending/2026-05-11-voter-fixture-heterogeneous-question-types.md` — already filed; scoped to Phase 78 CLEAN-05 (Path B `--likert-only` seed modifier). Phase 75 inherits Phase 73 + Phase 74's classification of voter-fixture-race-dependent tests as failure-class (not DATA_RACE pool growth). When CLEAN-05 lands, QSPEC-01 + QSPEC-02 + voter-feedback-persistence + voter-navigation + voter-detail + voter-results all expected to move to PASS_LOCKED.
 
-**Notes on follow-up todos NOT created in this phase close:**
-
-- **58-E2E-AUDIT.md addendum for the new boolean question + category (Phase 75 P01 + P02a):** Plan 01 SUMMARY documented this as a recommended-but-not-blocking follow-up (CONTEXT Claude's Discretion paragraph 5). Not filed as a separate todo at Phase 75 close; available to operator for spot-check at Task 4 checkpoint (optional). If operator decides yes, file at phase close OR add an inline note to the audit file directly. Recommended scope: add `test-question-boolean-1` (sort 18, type boolean) + `test-category-boolean` (sort 6, opinion) external_id/display-text contracts to the audit table.
+4. **58-E2E-AUDIT.md addendum for QSPEC-01 + QSPEC-02 external_id/display-text contracts (Phase 75 P01 + P02a):** `.planning/todos/pending/2026-05-12-58-e2e-audit-addendum-qspec.md` (filed at operator checkpoint approval 2026-05-12; committed at `3d05c5c6d`). Recommended-but-not-blocking per CONTEXT Claude's Discretion §5. Scope: add `test-question-boolean-1` (sort 18, type boolean) + `test-category-boolean` (sort 6, opinion) external_id/display-text contracts to `.planning/milestones/v2.5-phases/58-templates-cli-default-dataset/58-E2E-AUDIT.md`; also spec-anchor existing `test-question-directional-1` to QSPEC-02. ~10-15 LOC addition; single small commit. Disposition: address whenever convenient — no v2.9 deadline.
 
 ## Plan 02b Smoke Outcome Summary
 
@@ -273,18 +275,20 @@ Created at phase close (filed in `.planning/todos/pending/`):
 
 ## Operator Sign-Off
 
-*This section reserved for Plan 02b Task 4 operator checkpoint outcome. Default verdict at write time: pending operator review of:*
-1. *4/4 ROADMAP SCs assessed (above)*
-2. *3 SHA-256 hashes byte-identical (above)*
-3. *3 PARITY GATE PASS outputs captured (above)*
-4. *DATA_RACE pool count preserved at 15 (above)*
-5. *Constants regen pool delta documented (above)*
-6. *§"Cross-Plan Seed State Verification" recorded (above)*
-7. *§"Dedup Audit" references `75-02-DEDUP-AUDIT.md`; AUDIT COMPLETE trailer verified (above)*
-8. *Operator reviews QSPEC-02 multi-choice deferred-todo + W-03 i18n-hardening todo + voter-fixture-race carry-forward todo*
-9. *Operator decides on optional 58-E2E-AUDIT.md addendum (recommended-but-not-blocking)*
+**Approved: 2026-05-12** — Operator approved GREEN-WITH-DEFERRAL close; elected to file 58-E2E-AUDIT.md addendum follow-up todo (recommended-but-not-blocking).
 
-Type `approved` to close Phase 75.
+**Decision rationale:** All 9 operator-checkpoint review items confirmed at the Task 4 gate:
+1. 4/4 ROADMAP SCs assessed (3 PASS + 1 PASS-WITH-DEFERRAL on SC #2 multi-choice per CONTEXT D-03; 0 FAIL).
+2. 3 SHA-256 hashes byte-identical (`7084db872e3eca6cf14536981fb94c0fd82e48fb1419c783af7840531f2d85cc` × 3).
+3. 3 PARITY GATE PASS outputs captured (pairs 1v2, 2v3, 1v3).
+4. DATA_RACE pool count preserved at 15 (D-09 binding intact).
+5. Constants regen pool delta documented (PASS_LOCKED +43 / DATA_RACE 0 / CASCADE -32 — net-positive).
+6. §"Cross-Plan Seed State Verification" recorded (3 psql probes PASS per B-04).
+7. §"Dedup Audit" references `75-02-DEDUP-AUDIT.md`; AUDIT COMPLETE trailer verified.
+8. QSPEC-02 multi-choice deferred-todo + W-03 i18n-hardening todo + voter-fixture-race carry-forward todo all reviewed.
+9. Optional 58-E2E-AUDIT.md addendum: **OPERATOR ELECTED TO FILE** as a 4th follow-up todo at `.planning/todos/pending/2026-05-12-58-e2e-audit-addendum-qspec.md` (recommended-but-not-blocking; committed at `3d05c5c6d`). Disposition: address whenever convenient — no v2.9 deadline.
+
+Phase 75 closes GREEN-WITH-DEFERRAL.
 
 ---
 

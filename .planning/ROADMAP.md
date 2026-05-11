@@ -85,7 +85,7 @@ Phase 78 (CLEAN)  ← independent of 73-77; may run in parallel with 74-77
 
 - [x] **Phase 73: Determinism Baseline** — Clear all `test.skip(true, …)` modifiers, resolve 19 known data-loading race E2E failures, sweep 98 pre-existing `playwright/*` warnings; suite reduces to a hard pass/fail signal (0 skipped, 3-run-stable, 0 lint warnings) — gating prerequisite for Phases 74-77 (completed 2026-05-11)
 - [x] **Phase 74: High-Leverage E2E Coverage** — Multilocale candidate translation surface, browse-without-match results, feedback dialog persistence, election/constituency selector matrix (1e×1c / 1e×Nc / Ne×1c / Ne×Nc / startFromConstituency), voter answer in entity details (4-case), skip/delete/back navigation, per-category SubMatch breakdown, locale switching (completed 2026-05-11)
-- [x] **Phase 75: Question-Rendering Specs** — Focused user-story specs for Boolean + categorical (single/multi-choice) question rendering in voter flow (deduplicated against matching tests) (completed 2026-05-11)
+- [x] **Phase 75: Question-Rendering Specs** — Focused user-story specs for Boolean + categorical (single/multi-choice) question rendering in voter flow (deduplicated against matching tests) (completed 2026-05-12, operator-approved GREEN-WITH-DEFERRAL)
 - [ ] **Phase 76: Profile + A11y** — Candidate profile validation rejection paths, full profile-field reload-persistence (extending v2.1 CAND-12), `@axe-core/playwright` WCAG 2.1 AA smoke wired against home/selector/questions/results/voter-detail routes
 - [ ] **Phase 77: Settings Matrix + Question-Customization Gap-Fills** — Per-toggle coverage of `appSettings` / `appCustomization` (consumes `2026-04-27-extend-e2e-filter-type-coverage`); `customData.allowOpen` E2E coverage; per-question visibility flags + must-answer enforcement
 - [ ] **Phase 78: Cleanup Hygiene Phase** — `dev:* → db:*` script rename + `dev:clean` cache wipe; voter-not-located deferred-target redirect; post-71 carry-forward trio (D-04 per-cast distribution + `setStore` cast cleanup + CLAUDE.md Svelte warning-accepted format); i18n wrapper tightening (paired with E2E-08 locale switching); Phase 73 review follow-ups (CR-02 + 7 WR + 5 IN) + voter-fixture race-fix Path B with `--likert-only` seed modifier
@@ -287,7 +287,7 @@ After v2.9 ships, run `/gsd-new-milestone` to frame the next milestone. v2.10 ca
 | 72. Package Hygiene Trio | v2.8 | 3/3 | Complete | 2026-05-09 |
 | 73. Determinism Baseline | v2.9 | 6/6 | Complete    | 2026-05-11 |
 | 74. High-Leverage E2E Coverage | v2.9 | 7/7 | Complete   | 2026-05-11 |
-| 75. Question-Rendering Specs | v2.9 | 3/3 | Complete   | 2026-05-11 |
+| 75. Question-Rendering Specs | v2.9 | 3/3 | Complete   | 2026-05-12 |
 | 76. Profile + A11y | v2.9 | 0/TBD | Not started | — |
 | 77. Settings Matrix + Question-Customization Gap-Fills | v2.9 | 0/TBD | Not started | — |
 | 78. Cleanup Hygiene Phase | v2.9 | 0/TBD | Not started | — |
