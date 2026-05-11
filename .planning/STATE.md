@@ -120,8 +120,7 @@ Key cross-milestone reference points carried forward into v2.9:
 
 - Local imgproxy Docker container crashes intermittently (502 on image upload) — not a code issue; carry-forward infrastructure debt. May affect Phase 76 A11Y-01 image-upload validation cells if it crashes during the run.
 - 165 pre-existing intra-package circular deps in `@openvaa/data` / `matching` / `filters` — deferred to a dedicated structural refactor milestone.
-- [Phase 73 follow-up] voter-popups race-tolerance regression — `waitFor({state:'visible'})` on already-visible anchors at `tests/tests/specs/voter/voter-popups.spec.ts:138, 220` defeats intended 2-5s popup-delay waits (advisory only; flagged in `73-REVIEW.md` CR-02 + `73-VERIFICATION.md` §Follow-up Items). Not a must-have failure; fix when convenient (consider `expect(dialog).toBeHidden({ timeout: 3000 })` pattern).
-- [Phase 73 follow-up] voter-fixture heterogeneous-question-types race — 16 voter-app failures share the `voter.fixture.ts` heterogeneous-question assumption (only 16 Likert assumed; seed ships 40). Escalated to `.planning/todos/pending/2026-05-11-voter-fixture-heterogeneous-question-types.md` per CONTEXT D-05 (60-120 LOC across 3 files, exceeds 50-LOC cap). Tests remain in post-73 DATA_RACE pool with leave-in-pool rationale.
+- [Phase 73 → Phase 78 CLEAN-05] All Phase 73 follow-ups scoped into Phase 78 CLEAN-05 (2026-05-11). Covers CR-02 voter-popups race-tolerance regression + 7 WR + 5 IN review findings + voter-fixture heterogeneous-question-types race (Path B locked in with `--likert-only` seed modifier). See `.planning/REQUIREMENTS.md §CLEAN-05`, `.planning/ROADMAP.md §"Phase 78"` SC #5, `.planning/phases/73-determinism-baseline/73-REVIEW.md`, and `.planning/todos/pending/2026-05-11-voter-fixture-heterogeneous-question-types.md`. No longer dangling — scheduled.
 
 ## Session Continuity
 

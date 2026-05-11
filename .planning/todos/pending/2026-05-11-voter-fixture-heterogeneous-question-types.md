@@ -1,11 +1,16 @@
 ---
 created: 2026-05-11
 priority: high
-resolves_phase: post-73
+resolves_phase: 78
 escalated_from: 73-03
-status: pending
-tags: [tests, fixtures, voter, race-fix, escalation]
+status: scoped-into-CLEAN-05
+chosen_path: B
+chosen_modifier: --likert-only
+operator_decision_date: 2026-05-11
+tags: [tests, fixtures, voter, race-fix, escalation, scoped-to-phase-78]
 ---
+
+> **Operator decision (2026-05-11):** Path B locked in with the `--likert-only` seed modifier (CLI flag form). Scoped into Phase 78 CLEAN-05 — see `.planning/REQUIREMENTS.md §CLEAN-05` and `.planning/ROADMAP.md §"Phase 78"` SC #5. Path A (universal `answerCurrentQuestion` dispatcher) explicitly NOT chosen — heterogeneous-question-type coverage deferred to a future-milestone backlog item.
 
 # Voter fixture cannot answer heterogeneous question types — 16 voter-app failures cascade
 
@@ -87,7 +92,7 @@ Estimated: ~15 LOC in `packages/dev-seed/src/templates/e2e.ts` + 1 LOC change in
 
 **Path B is preferable** because it preserves the fixture's "happy path" contract (Likert-only voter
 journey is the simplest expressive surface) and shifts the multi-question-type coverage to dedicated
-spec(s) that exercise heterogeneous flows explicitly. Operator should decide.
+spec(s) that exercise heterogeneous flows explicitly. **Operator chose Path B on 2026-05-11 with `--likert-only` as the CLI-flag form** (rather than the alternative `voterFixtureOnlyLikert` template-override form). Scoped into Phase 78 CLEAN-05.
 
 ## Until then: leave failing tests in post-73 DATA_RACE pool
 
