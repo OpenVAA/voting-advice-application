@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v2.9
 milestone_name: E2E Coverage + Suite Determinism — PLANNING
 status: planning
-stopped_at: Phase 75 closed (operator-approved GREEN-WITH-DEFERRAL 2026-05-12) — ready to plan Phase 76 / 77 / 78
-last_updated: "2026-05-12T00:00:00.000Z"
-last_activity: 2026-05-12
+stopped_at: Phase 76/77/78 context gathered (batched --auto)
+last_updated: "2026-05-11T20:24:11.048Z"
+last_activity: 2026-05-12 -- Phase 75 marked complete (3/3 plans, GREEN-WITH-DEFERRAL, operator-approved)
 progress:
   total_phases: 10
   completed_phases: 3
@@ -155,9 +155,9 @@ Key cross-milestone reference points carried forward into v2.9:
 
 ## Session Continuity
 
-Last session: 2026-05-12T00:00:00.000Z
-Stopped at: Phase 75 closed (operator-approved GREEN-WITH-DEFERRAL 2026-05-12) — 4 follow-up todos filed; ready to plan Phase 76 / 77 / 78
-Resume file: None
+Last session: 2026-05-11T20:24:11.042Z
+Stopped at: Phase 76/77/78 context gathered (batched --auto)
+Resume file: .planning/phases/76-profile-a11y/76-CONTEXT.md
 Next action: Plan Phase 76 (Profile + A11y) / Phase 77 (Settings Matrix) / Phase 78 (Cleanup Hygiene) — all three are parallel-eligible. Phases 76 + 77 share the Phase 73 determinism prerequisite (preserved by Phase 75 close); Phase 78 is fully independent and may run in parallel. Discuss multiple phases together per `feedback_batch_discussions.md`.
 
 ### Plan-count estimate (drafted 2026-05-10)
