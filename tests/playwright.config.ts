@@ -272,6 +272,23 @@ export default defineConfig({
       dependencies: ['data-setup-startfromcg']
     },
 
+    // Variant: low-minimum-answers (Phase 74 E2E-02 — browse-without-match)
+    {
+      name: 'data-setup-low-minimum-answers',
+      testMatch: /variant-low-minimum-answers\.setup\.ts/,
+      teardown: 'data-teardown-variants',
+      dependencies: ['variant-startfromcg'] // Sequential: wait for previous variant (Pitfall 5)
+    },
+    {
+      name: 'variant-low-minimum-answers',
+      // E2E-02 spec lives under specs/voter/, not specs/variants/ (CONTEXT D-13)
+      testDir: './tests/specs/voter',
+      testMatch: /voter-browse-without-match\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-low-minimum-answers']
+    },
+
     // === Opt-in Specialized Projects ===
     // These projects are gated by environment variables and excluded from
     // the default `yarn test:e2e` run. Enable via:
