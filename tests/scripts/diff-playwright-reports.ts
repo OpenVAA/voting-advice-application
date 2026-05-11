@@ -433,8 +433,15 @@ if (isDirectInvocation) {
     const postPath = positionals[1];
     const baseRaw = readFileSync(basePath, 'utf8');
     const postRaw = readFileSync(postPath, 'utf8');
-    const baseParsed: unknown = JSON.parse(baseRaw);
-    const postParsed: unknown = JSON.parse(postRaw);
+    // Strip optional dotenv banner line (Phase 73 captures via `yarn playwright …` write a
+    // `[dotenv@…] injecting env …` line ahead of the JSON; the P64 captures did not). Split
+    // on first '\n{' rather than first newline so the strip is robust to multi-line banners.
+    const stripBanner = (raw: string): string => {
+      const idx = raw.indexOf('\n{');
+      return idx === -1 ? raw : raw.slice(idx + 1);
+    };
+    const baseParsed: unknown = JSON.parse(stripBanner(baseRaw));
+    const postParsed: unknown = JSON.parse(stripBanner(postRaw));
     const result = diffReports(baseParsed as PlaywrightReport, postParsed as PlaywrightReport);
 
     process.stdout.write(

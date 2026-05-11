@@ -18,7 +18,12 @@ import { dirname, join } from 'node:path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 // __dirname is .planning/phases/73-determinism-baseline/post-fix/ — 3 levels up to repo root.
 const reportPath = join(__dirname, 'run-3-report.json');
-const report = JSON.parse(readFileSync(reportPath, 'utf8'));
+// Strip optional dotenv banner line (Phase 73 captures via `yarn playwright …` write a
+// `[dotenv@…] injecting env …` line ahead of the JSON; the P64 captures did not). Split
+// on first '{' rather than first newline so the strip is robust to multi-line banners.
+const _raw = readFileSync(reportPath, 'utf8');
+const _braceIdx = _raw.indexOf('\n{');
+const report = JSON.parse(_braceIdx === -1 ? _raw : _raw.slice(_braceIdx + 1));
 
 function categorizeStatus(raw, err) {
   if (raw === 'passed') return 'pass';
