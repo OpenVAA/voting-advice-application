@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.9
 milestone_name: E2E Coverage + Suite Determinism
 status: executing
-stopped_at: 74-05 complete; ready for 74-06
-last_updated: "2026-05-11T09:31:00.327Z"
+stopped_at: Completed 74-04-PLAN.md
+last_updated: "2026-05-11T10:10:28.623Z"
 last_activity: 2026-05-11
 progress:
   total_phases: 10
   completed_phases: 1
   total_plans: 13
-  completed_plans: 11
-  percent: 85
+  completed_plans: 12
+  percent: 92
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-10)
 ## Current Position
 
 Phase: 74 (high-leverage-e2e-coverage) — EXECUTING
-Plan: 5 of 7
+Plan: 6 of 7
 Status: Ready to execute
 Last activity: 2026-05-11
 
@@ -81,6 +81,7 @@ Snapshot taken at v2.8 milestone close on 2026-05-10. v2.9 requirements consume 
 | Phase 74 P01 | 2134 | 1 tasks | 3 files |
 | Phase 74 P02 | 37min | 3 tasks | 4 files |
 | Phase 74 P05 | 120min | 2 tasks | 5 files |
+| Phase 74 P04 | 85min | 4 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -126,6 +127,8 @@ Key cross-milestone reference points carried forward into v2.9:
 - [Phase ?]: Phase 74 Plan 05 — Card filter uses display name (e.g. 'CaseA Both') not external_id
 - [Phase ?]: Phase 74 Plan 05 — E2E-07 SubMatch locator: getByRole('meter', { name }) replaces inline-style [style*=grid-template-columns] which matched multiple non-SubMatch containers
 - [Phase ?]: Phase 74 Plan 05 — Cross-spec impact: adding categorical question at sort 17 required Skip-Next fallback in voter-matching navigateToResults + out-of-range guard in voter-journey answerRemainingUntilResults
+- [Phase 74]: Plan 04: constituency-selector locator strategy uses outer voter-constituencies-list + inner getByRole('combobox', {name}) due to {...concatClass(restProps, ...)} testId-overwrite at ConstituencySelector.svelte:177 — Open Question 2 resolution; documented as inline // reason: in both new specs
+- [Phase 74]: Plan 04: Ne-Nc cross-bleed assertion uses symmetric for-of expect().not.toContain in both directions — for-of iteration is NOT a playwright/no-conditional-in-test violation; defense-in-depth even if option names ever overlap
 
 ### Blockers/Concerns
 
@@ -135,8 +138,8 @@ Key cross-milestone reference points carried forward into v2.9:
 
 ## Session Continuity
 
-Last session: 2026-05-11T09:31:00.323Z
-Stopped at: 74-05 complete; ready for 74-06
+Last session: 2026-05-11T10:10:28.619Z
+Stopped at: Completed 74-04-PLAN.md
 Resume file: None
 Next action: Run `/gsd-plan-phase 73` to start planning the determinism baseline. Phase 73 is gating for Phases 74-77 — plan it first; Phase 78 (CLEAN) may be planned in parallel since it's independent of Phase 73.
 

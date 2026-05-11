@@ -43,7 +43,7 @@
 
 - [x] **E2E-03**: A voter's typed feedback text persists across dismissing the dialog and is reset after the message is sent. Sequence: open feedback → type text → dismiss → reopen → expect text retained. Then: type new text → send → reopen → expect empty.
 
-- [ ] **E2E-04**: The election + constituency selectors are bypassed whenever the election + constituency can be implied from the data, not just the trivial `1e × 1c` case. Variant matrix covers `1e × 1c` (already covered, kept as regression baseline), `1e × Nc`, `Ne × 1c`, `Ne × Nc`, plus `startFromConstituency` setups. Each cell asserts URL state (selectors-bypassed vs. shown) and selector visibility on the page. The constituency dropdown options for a selected election filter to that election's constituencies only (no cross-election bleed).
+- [x] **E2E-04**: The election + constituency selectors are bypassed whenever the election + constituency can be implied from the data, not just the trivial `1e × 1c` case. Variant matrix covers `1e × 1c` (already covered, kept as regression baseline), `1e × Nc`, `Ne × 1c`, `Ne × Nc`, plus `startFromConstituency` setups. Each cell asserts URL state (selectors-bypassed vs. shown) and selector visibility on the page. The constituency dropdown options for a selected election filter to that election's constituencies only (no cross-election bleed).
 
 - [x] **E2E-05**: The voter's answer is rendered alongside the entity's answer on the entity-detail drawer for all four cases: (a) both answered, (b) voter answered + entity missing, (c) voter missing + entity answered, (d) both missing. Parameterized fixture with each case; voter-detail spec asserts both rows present with appropriate visual state (agree / disagree / missing-marker).
 
