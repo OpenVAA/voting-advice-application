@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.9
 milestone_name: E2E Coverage + Suite Determinism — PLANNING
-status: executing
-stopped_at: Completed Phase 75 Plan 02a (QSPEC-02 + dedup audit)
-last_updated: "2026-05-11T17:36:16.577Z"
+status: verifying
+stopped_at: Completed Phase 75 Plan 02b — operator Task 4 checkpoint PENDING
+last_updated: "2026-05-11T19:14:16.715Z"
 last_activity: 2026-05-11
 progress:
   total_phases: 10
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 16
-  completed_plans: 15
-  percent: 94
+  completed_plans: 16
+  percent: 100
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-05-10)
 
 Phase: 75 (question-rendering-specs) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-05-11
 
 ## Performance Metrics
@@ -85,6 +85,7 @@ Snapshot taken at v2.8 milestone close on 2026-05-10. v2.9 requirements consume 
 | Phase 74 P07 | 25200 | 5 tasks | 13 files |
 | Phase 75 P01 | 18min | - tasks | - files |
 | Phase 75 P02a | 25min | 3 tasks | 3 files |
+| Phase 75 P02b | 90min | 3 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -141,6 +142,9 @@ Key cross-milestone reference points carried forward into v2.9:
 - [Phase ?]: Plan 75-02a: yarn dev:reset-with-data seeds default template — Phase 75 Plan 02b verification gate should use 'yarn supabase:reset && yarn dev:seed --template e2e' instead.
 - [Phase ?]: Plan 75-02a: candidates.answers JSONB is keyed by question UUID (not external_id) — psql probes must join to questions table to resolve UUID.
 - [Phase ?]: Plan 75-02a: try/catch is canonical playwright/no-conditional-in-test workaround for spec test() body branching (vs 'if' usable in module-level helpers like voter-matching.spec.ts:182-187).
+- [Phase ?]: Phase 75 Plan 02b: 3-run cold-start --workers=1 smoke SHA-256-identical at 7084db87 x3; parity-script regen produced net-positive deltas (PASS_LOCKED +43 / DATA_RACE 0 / CASCADE -32)
+- [Phase ?]: Phase 75 Plan 02b: QSPEC-01 + QSPEC-02 deterministically FAIL x3 under full-suite cold-start (failure-class, NOT DATA_RACE — D-09 binding preserved); inherits Phase-78-CLEAN-05 voter-fixture race; per-plan smokes PASS x3 each verify spec correctness in isolation
+- [Phase ?]: Phase 75 closes GREEN-WITH-DEFERRAL pending operator Task 4 checkpoint: 4/4 ROADMAP SCs assessed (3 PASS + 1 PASS-WITH-DEFERRAL on SC #2 multi-choice per CONTEXT D-03); 3 follow-up todos filed
 
 ### Blockers/Concerns
 
@@ -150,8 +154,8 @@ Key cross-milestone reference points carried forward into v2.9:
 
 ## Session Continuity
 
-Last session: 2026-05-11T17:36:16.572Z
-Stopped at: Completed Phase 75 Plan 02a (QSPEC-02 + dedup audit)
+Last session: 2026-05-11T19:14:16.709Z
+Stopped at: Completed Phase 75 Plan 02b — operator Task 4 checkpoint PENDING
 Resume file: None
 Next action: Run `/gsd-plan-phase 73` to start planning the determinism baseline. Phase 73 is gating for Phases 74-77 — plan it first; Phase 78 (CLEAN) may be planned in parallel since it's independent of Phase 73.
 
