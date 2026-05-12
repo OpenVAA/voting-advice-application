@@ -31,6 +31,7 @@
 
 import { parseArgs } from 'node:util';
 import { USAGE } from './help';
+import { applyLikertOnlyFilter } from './likert-only';
 import { resolveTemplate } from './resolve-template';
 import { formatSummary } from './summary';
 import { fanOutLocales } from '../locales';
@@ -61,6 +62,7 @@ const { values } = parseArgs({
     template: { type: 'string', short: 't' },
     seed: { type: 'string' },
     'external-id-prefix': { type: 'string' },
+    'likert-only': { type: 'boolean' }, // Phase 78 CLEAN-05 Path B
     help: { type: 'boolean', short: 'h' }
   },
   strict: true,
@@ -79,6 +81,22 @@ try {
   // ships both; Plan 05 tolerated an absent module via loadBuiltIns' catch).
   const builtIns = await loadBuiltIns();
   const template = await resolveTemplate(templateArg, builtIns.templates);
+
+  // Phase 78 CLEAN-05 Path B: --likert-only restricts opinion questions to
+  // singleChoiceOrdinal while keeping all info questions. The voter-fixture
+  // answeredVoterPage at tests/tests/fixtures/voter.fixture.ts iterates
+  // Likert-only opinion questions; any non-Likert opinion question causes
+  // the loop to race. See packages/dev-seed/src/cli/likert-only.ts.
+  if (values['likert-only']) {
+    const stats = applyLikertOnlyFilter(template);
+    if (stats.applied) {
+      process.stdout.write(
+        `[--likert-only] questions.fixed: ${stats.before} → ${stats.after} (dropped ${stats.dropped} non-ordinal opinion questions)\n`
+      );
+    } else {
+      process.stdout.write('[--likert-only] template has no questions.fixed array; flag is a no-op for this template.\n');
+    }
+  }
 
   // Apply --seed override (parse string to int; reject non-numeric).
   if (values.seed !== undefined) {

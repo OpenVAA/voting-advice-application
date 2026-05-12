@@ -21,6 +21,9 @@ Options:
       --seed <integer>              Override template.seed for deterministic RNG.
       --external-id-prefix <str>    Override generator's external_id prefix
                                     (default 'seed_'). Teardown filters on this.
+      --likert-only                 Restrict opinion questions to singleChoiceOrdinal
+                                    (info questions unaffected). Used by the E2E
+                                    Likert-only voter-fixture per Phase 78 CLEAN-05.
   -h, --help                        Show this help and exit.
 
 Built-in templates:
