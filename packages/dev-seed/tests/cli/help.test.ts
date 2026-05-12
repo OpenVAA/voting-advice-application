@@ -18,6 +18,10 @@ describe('USAGE (CLI-04 / D-58-13)', () => {
     expect(USAGE).toContain('--external-id-prefix');
   });
 
+  it('documents --likert-only flag (Phase 78 CLEAN-05 Path B)', () => {
+    expect(USAGE).toContain('--likert-only');
+  });
+
   it('documents --help flag with short form -h', () => {
     expect(USAGE).toMatch(/-h, --help/);
   });
