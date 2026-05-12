@@ -421,11 +421,18 @@ export const e2eTemplate: Template = {
       },
       // Default-dataset info question — voter-detail.spec.ts:88 asserts on
       // alphaAnswers['test-question-text'].value (campaign slogan).
+      //
+      // Phase 77 / SETTINGS-01 wave B Plan 02 — adds `custom_data.filterable: true`
+      // so the question surfaces a TextFilter in the voter results filter dialog
+      // (per apps/frontend/src/lib/contexts/voter/filters/filterStore.svelte.ts:55-66
+      // which only includes questions where `getCustomData(q).filterable` is truthy).
+      // RESEARCH LANDMINE-2 (Phase 77).
       {
         external_id: 'test-question-text',
         type: 'text',
         name: { en: 'Campaign slogan' },
         category: { external_id: 'test-category-info' },
+        custom_data: { filterable: true }, // Phase 77 P02 — SETTINGS-01 wave B TextFilter anchor
         allow_open: false,
         required: false,
         sort_order: 8,
@@ -542,6 +549,12 @@ export const e2eTemplate: Template = {
           { id: 'c', label: { en: 'Option C' } }
         ],
         category: { external_id: 'test-category-directional' },
+        // Phase 77 / SETTINGS-01 wave B Plan 02 — `custom_data.filterable: true`
+        // makes this categorical question surface a ChoiceQuestionFilter in the
+        // voter results filter dialog (rendered via EnumeratedEntityFilter per
+        // EntityFilters.svelte:52-55). Spec uncheck Option A → Alpha filtered out.
+        // RESEARCH LANDMINE-2 (Phase 77).
+        custom_data: { filterable: true },
         allow_open: false,
         required: false,
         sort_order: 17,
@@ -613,6 +626,43 @@ export const e2eTemplate: Template = {
         allow_open: false,
         required: false,
         sort_order: 21,
+        is_generated: false
+      },
+      // Phase 77 / SETTINGS-01 wave B Plan 02 — NumberFilter anchor.
+      //
+      // First number-typed question in the e2e template. NumberFilter renders
+      // via EntityFilters.svelte:48-51 → NumericEntityFilter (2 range sliders).
+      // The filter UI's range derives from entity values via parseValues() (see
+      // packages/filters/src/filter/number/numberFilter.ts:38-51), NOT from the
+      // question's `data.min`/`max` — so the in-DB question shape MAY omit
+      // top-level `min`/`max` and the filter still renders correctly as long as
+      // ≥1 candidate has a non-missing number answer.
+      //
+      // `custom_data.{filterable, min, max}`:
+      //   - `filterable: true` is the gating flag (filterStore.svelte.ts:55-66).
+      //   - `min: 0` + `max: 100` document the intended range; NumberQuestion's
+      //     domain class reads `data.min`/`data.max` (NumberQuestionData type),
+      //     not `customData.min`/`customData.max` — so these specifically do NOT
+      //     propagate to `NumberQuestion.isMatchable` today (the Supabase adapter
+      //     does not lift `custom_data.{min,max}` to top-level NumberQuestionData
+      //     fields). This is intentional for Plan 02: the filter UI is the
+      //     assertion target; matching with min/max is OUT OF SCOPE.
+      //
+      // sort_order: 22 — placed AFTER Phase 76's test-question-social-1 (sort 21).
+      // Voter fixture's default voterAnswerCount=16 Likert loop is unaffected:
+      // sort 22 > 16, voter never encounters this info question.
+      //
+      // `required: false` keeps the voter answer flow + candidate `profileComplete`
+      // gating unchanged (this is an info question with `category: test-category-info`).
+      {
+        external_id: 'test-question-number-1',
+        type: 'number',
+        name: { en: 'Test Number Question 1 (SETTINGS-01 wave B NumberFilter anchor)' },
+        category: { external_id: 'test-category-info' },
+        custom_data: { filterable: true, min: 0, max: 100 },
+        allow_open: false,
+        required: false,
+        sort_order: 22,
         is_generated: false
       }
     ]
@@ -714,7 +764,12 @@ export const e2eTemplate: Template = {
           'test-question-bio': {
             value: { en: 'Phase 76 biography sentinel used by A11Y-02 reload-persistence.' }
           },
-          'test-question-social-1': { value: { en: 'https://example.com/sentinel-76' } }
+          'test-question-social-1': { value: { en: 'https://example.com/sentinel-76' } },
+          // Phase 77 / SETTINGS-01 wave B Plan 02 — Alpha's NumberFilter anchor
+          // answer. Value 25 sits well above 0 and below the other 3 candidates'
+          // values (60, 50, 75) so a min-slider move to >25 narrows Alpha out
+          // deterministically.
+          'test-question-number-1': { value: 25 }
         }
       },
       {
@@ -734,7 +789,9 @@ export const e2eTemplate: Template = {
           'test-question-5': { value: '4' },
           'test-question-6': { value: '5' },
           'test-question-7': { value: '5' },
-          'test-question-8': { value: '4' }
+          'test-question-8': { value: '4' },
+          // Phase 77 / SETTINGS-01 wave B Plan 02 — NumberFilter target.
+          'test-question-number-1': { value: 75 }
         }
       },
       {
@@ -754,7 +811,9 @@ export const e2eTemplate: Template = {
           'test-question-5': { value: '2' },
           'test-question-6': { value: '1' },
           'test-question-7': { value: '2' },
-          'test-question-8': { value: '1' }
+          'test-question-8': { value: '1' },
+          // Phase 77 / SETTINGS-01 wave B Plan 02 — NumberFilter target.
+          'test-question-number-1': { value: 50 }
         }
       },
       {
@@ -817,7 +876,9 @@ export const e2eTemplate: Template = {
           'test-voter-q-5': { value: '5' },
           'test-voter-q-6': { value: '5' },
           'test-voter-q-7': { value: '5' },
-          'test-voter-q-8': { value: '5' }
+          'test-voter-q-8': { value: '5' },
+          // Phase 77 / SETTINGS-01 wave B Plan 02 — NumberFilter target.
+          'test-question-number-1': { value: 60 }
         }
       },
       {
