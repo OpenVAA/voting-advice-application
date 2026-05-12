@@ -1,9 +1,11 @@
 # Phase 79 STATUS
 
-**Last updated:** 2026-05-13 (Plan 03 close)
-**Last agent action:** Plan 03 Task 6 — DETERM-05 constants regen committed; 3-pair parity gate PASS × 4 (self-identity + 4v5 + 5v6 + 4v6); IMGPROXY_TIED_TITLES audit PASS (14 titles, 15 matches); v2.10 verification anchor locked at SHA `ff0334f856…`.
-**Operator action needed?** NO — Phase 79 GREEN. Run `/gsd-verify-work 79` when ready; then `/gsd-discuss-phase 80 --chain` (or similar) to advance.
-**Phase verdict so far:** **DETERM-04 GREEN + DETERM-05 GREEN — Phase 79 COMPLETE (pending verify-work).**
+**Last updated:** 2026-05-13 (verifier close — human acceptance needed)
+**Last agent action:** gsd-verifier returned `human_needed` (3/4 SC verified programmatically; SC #1 partial due to separate image-upload root cause). HUMAN-UAT.md written with 2 strategic-acceptance items.
+**Operator action needed?** **YES — review `79-HUMAN-UAT.md`, then either:**
+  (a) accept partial SC #1 + the 80/15/57 anchor shape → add `overrides:` entry to `79-VERIFICATION.md` frontmatter → Phase 79 closes GREEN-WITH-DEFERRAL; or
+  (b) push back → run `/gsd-plan-phase 79 --gaps` for gap closure.
+**Phase verdict so far:** **DETERM-04 fix CONFIRMED + DETERM-05 anchor LOCKED — Phase 79 pending human acceptance of SC #1 partial.**
 
 ---
 
