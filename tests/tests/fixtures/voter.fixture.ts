@@ -76,13 +76,28 @@ export const voterTest = base.extend<VoterFixtures>({
       }
     }
 
-    // After the last question, auto-advance navigates to results.
-    // If we're not on results yet (e.g., auto-advance didn't fire), click the next button.
-    if (!page.url().includes('/results')) {
+    // After the last opinion answer, auto-advance lands either on /results
+    // or on a sort-17+ unanswered optional opinion question (categorical at
+    // sort 17, boolean at sort 18 per Phase 74 P05 + Phase 75 P01). The
+    // post-loop fallback needs to Skip-Next up to 3 times to walk past those
+    // optional questions and reach /results.
+    //
+    // reason: Phase 77 P02 — bumped from a single Skip to a 3-iteration loop
+    // (mirroring voter-matching.spec.ts:174 + voter-journey.spec.ts:64 Skip-Next
+    // fallback pattern established in Phase 75 P01). Before this fix the
+    // fixture's single nextButton.click() landed voter on sort 18 (boolean)
+    // and then page.waitForURL(/\/results/) timed out — surfacing as a
+    // fixture-level setup failure cascading into ALL voter-results spec
+    // cells. Mirrors the existing 3-iter pattern in voter-matching.spec.ts.
+    // The maxSteps cap of 3 covers sort 17 (categorical) + sort 18 (boolean)
+    // + a 3rd-headroom step. /results breaks the loop early.
+    for (let skip = 0; skip < 3; skip++) {
+      if (page.url().includes('/results')) break;
+      const urlBefore = page.url();
       await page.getByTestId(testIds.voter.questions.nextButton).click();
       // 30s budget (was 10s) for SSR + reactivity settle on full-suite
       // runs. See Phase 64-04 SUMMARY.md (Task 6).
-      await page.waitForURL(/\/results/, { timeout: 30000 });
+      await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 30000 });
     }
 
     // Wait for the results list to be visible.
