@@ -1,9 +1,9 @@
 # Phase 79 STATUS
 
-**Last updated:** 2026-05-13T00:32:00Z
-**Last agent action:** Plan 02 Task 3 — D-12 1-run cold-start smoke COMPLETE. DETERM-04 fix VERIFIED. Image-upload failure surfaces a NEW cascade source structurally unrelated to DETERM-04.
-**Operator action needed?** NO (Plan 02 closes with PASS-WITH-DEFERRAL on the image-upload cascade)
-**Phase verdict so far:** IN-PROGRESS — Plan 02 closing PASS-path; Plan 03 unblocked for DETERM-05 if operator chooses to proceed despite the new image-upload cascade
+**Last updated:** 2026-05-13T00:45:00Z
+**Last agent action:** Plan 02F (XOR fallback) closed DONE-AS-NOOP per Task 0 short-circuit (`RCA pivot-to-restructure trigger: N`). No restructure tasks executed.
+**Operator action needed?** NO (Plan 02F is the XOR pair of Plan 02; closure is automatic when Plan 02 PASSes)
+**Phase verdict so far:** IN-PROGRESS — Plans 02 and 02F both closed; Plan 03 (DETERM-05 3-run cold-start gate) unblocked.
 
 ---
 
@@ -17,7 +17,7 @@
    - **Image upload** (`should upload a profile image (CAND-03)`): FAIL [timedOut] at `waitForEvent('filechooser')` — separate root cause, see "Image upload cascade" note below
    - **candidate-profile.spec.ts cascade-skip (DETERM-04 critical metric):** 5 (all downstream of image-upload, NOT downstream of registration)
    - Total cold-start: 81 pass, ~10 fail (image-upload + several voter-app tests), 70 skipped (full cascade through re-auth-setup → candidate-app-settings → candidate-app-password → variants chain)
-- [x] Plan 02-fallback (79-02F restructure) — NOT TRIGGERED. See "Image upload cascade" note for the rationale: the restructure (extract registration into setup) would NOT resolve the new image-upload cascade — image-upload is the second test in the serial describe block; extracting only registration leaves the 5-test downstream cascade-skip intact.
+- [x] Plan 02-fallback (79-02F restructure) — DONE-AS-NOOP @ 2026-05-13. Task 0 trigger gate found `RCA pivot-to-restructure trigger: N`; per the plan's XOR contract (`xor_with: [79-02]`) and Task 0 short-circuit logic, no restructure tasks executed. No-op marker written at `post-fix/79-02F-skipped.txt`; SUMMARY at `79-02F-SUMMARY.md`. See "Image upload cascade" note for the rationale: the restructure (extract registration into setup) would NOT resolve the new image-upload cascade — image-upload is the second test in the serial describe block; extracting only registration leaves the 5-test downstream cascade-skip intact.
 
 **Hypothesis verdict (per post-fix/rca-traces/RCA-FINDINGS.md):**
 - H1 (auth session propagation): PARTIALLY CONFIRMED — re-framed. Session cookie IS valid throughout; the literal "session not propagated" framing is disproven by raw cookie evidence. However, H1's deeper concern (post-setPassword client-nav session unreliability) is acknowledged in source at `register/password/+page.svelte:78-80` and ENCODED as a defensive `/login` redirect, which IS the real-world manifestation observed.
@@ -69,7 +69,7 @@ Plan 02 complete. DETERM-04 fix VERIFIED.
 4. Decision point: proceed to Plan 03 (DETERM-05 3-run cold-start gate) DESPITE the new image-upload cascade, OR file a follow-up plan to investigate image-upload first. Recommendation: proceed to Plan 03 — DETERM-05's purpose is to capture a POST-FIX baseline; the new cascade becomes part of that baseline (matches Phase 73 D-09 IMGPROXY_TIED_TITLES precedent for documenting known data-race / infrastructure-class failures rather than blocking on them).
 5. Optional follow-up: investigate `[storage.image_transformation]` toggle in `apps/supabase/supabase/config.toml:130-131` — Phase 73 PASS_LOCKED assumed image_transformation enabled; current config has it commented out.
 
-No operator action needed before Plan 03. Plan 02-fallback (79-02F) is correctly flagged for no-op.
+No operator action needed before Plan 03. Plan 02-fallback (79-02F) closed DONE-AS-NOOP per XOR contract (see `79-02F-SUMMARY.md` + `post-fix/79-02F-skipped.txt`).
 
 ---
 
@@ -89,3 +89,4 @@ No operator action needed before Plan 03. Plan 02-fallback (79-02F) is correctly
   - candidate-profile.spec.ts: 1 pass (registration — DETERM-04 fix verified), 1 fail (image-upload at filechooser timeout), 5 cascade-skip (downstream of image-upload, NOT downstream of registration)
   - **DETERM-04 verdict: VERIFIED** — the URL-predicate fix resolves the registration cascade. The remaining cascade has a different root cause (image-upload).
 - 2026-05-13T00:32:00Z — Plan 02 close (PASS-with-deferral): fix committed. RCA pivot-to-restructure trigger = N (79-02F short-circuits to no-op). Image-upload cascade documented as a deferred follow-up (out-of-scope of DETERM-04; pre-existing issue surfaced by the fix).
+- 2026-05-13T00:45:00Z — Plan 02F dispatched. Task 0 trigger gate confirmed `RCA pivot-to-restructure trigger: N`; XOR `xor_with: [79-02]` short-circuit invoked. No-op marker `post-fix/79-02F-skipped.txt` written + 79-02F-SUMMARY.md (DONE-AS-NOOP). Tasks 1-4 (restructure) intentionally NOT executed; no modifications to tests/tests/setup/, tests/playwright.config.ts, or tests/tests/specs/candidate/candidate-profile.spec.ts.
