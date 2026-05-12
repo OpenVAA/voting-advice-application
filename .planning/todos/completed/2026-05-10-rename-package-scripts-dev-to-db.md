@@ -64,3 +64,16 @@ operators don't have to remember the second step.
   "Pre-capture caveat" — the vite-cache gotcha that motivates
   `dev:clean`.
 - CLAUDE.md `## Development Commands` — the doc to sync.
+
+## Resolution (2026-05-12, Phase 78 Plan 01)
+
+Resolved by Phase 78 Plan 01 (CLEAN-01). Outcome:
+- 8 Supabase-facing `dev:*` scripts renamed to `db:*` canonical names in root `package.json`.
+- New `dev:clean` script lands the v2.8-close vite-cache wipe recipe (`rm -rf apps/frontend/.svelte-kit apps/frontend/node_modules/.vite`).
+- `db:reset` and `db:reset-with-data` chain `dev:clean` after the supabase reset (per CONTEXT D-03: supabase reset → cache wipe, never reversed).
+- All 8 old `dev:*` names preserved as deprecated aliases — each emits `[deprecated] yarn dev:X is now yarn db:X; alias will be removed after v2.10` to stderr then forwards to canonical (CONTEXT D-02; in-flight Phases 76/77 cross-refs continue to work).
+- CLAUDE.md `## Supabase Commands` and `## Development Commands` updated; deprecated-aliases note added.
+- CI workflow grep at task time: zero `dev:reset` / `dev:seed` / `dev:status` / `dev:start` refs in `.github/workflows/*.yml` (CONTEXT D-04 verified).
+- Smoke tests passed: `yarn db:status` exits 0; `yarn dev:clean` wipes both cache dirs; `yarn dev:status` emits `[deprecated]` warning then forwards.
+- Source commit: `27e42f52d feat(78-01): rename dev:* supabase scripts to db:*; add dev:clean`.
+- Followup captured at phase close: removal of the 8 deprecated aliases scheduled for v2.10+ (per CONTEXT line 516).
