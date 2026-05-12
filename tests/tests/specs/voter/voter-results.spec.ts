@@ -514,29 +514,44 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
     }
 
     /**
-     * Expand a non-default-expanded filter inside the dialog. The Expander
-     * component (Expander.svelte:155) is driven by a checkbox with
-     * aria-label="Expand or collapse this section"; the title text identifies
-     * which filter to expand.
+     * Expand a non-default-expanded filter inside the dialog by its 0-based
+     * position. The Expander component (Expander.svelte:155) is driven by an
+     * `<input type="checkbox" aria-label="Expand or collapse this section">`;
+     * each filter in the dialog renders one such checkbox in source order.
      *
-     * The Expander surfaces the title as part of the same `<div>` carrying the
-     * checkbox; the checkbox sits adjacent. The page-level role tree exposes
-     * the title text, and locating the checkbox by its aria-label inside a
-     * scope that contains the title text is the canonical role/aria pattern.
+     * Locating: 4 filters are rendered in `EntityFilters.svelte:38 #each
+     * filterGroup.filters` in this fixed order:
+     *   - index 0 → Party (ObjectFilter, default-expanded by parent push)
+     *   - index 1 → Campaign slogan (TextQuestionFilter, since Phase 77 P02)
+     *   - index 2 → Test Number Question 1 (NumberQuestionFilter)
+     *   - index 3 → Test Opinion Question Directional 1 (ChoiceQuestionFilter)
+     *
+     * The 0-based index is therefore deterministic for the SETTINGS-01 wave B
+     * e2e fixture. We click the indexed checkbox directly (no force:true needed
+     * since the checkbox IS the role-based target; the title text is the
+     * decoration).
      */
-    async function expandFilter(dialog: Locator, titleSubstring: string | RegExp) {
-      // The Expander renders the title in a sibling `<div>` next to the
-      // checkbox; we locate the section by its visible title text, then click
-      // the title to toggle expansion (the title's parent is the clickable
-      // collapse-title region per DaisyUI .collapse semantics).
-      const titleMatcher =
-        typeof titleSubstring === 'string'
-          ? new RegExp(titleSubstring.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')
-          : titleSubstring;
-      const sectionTitle = dialog.getByText(titleMatcher).first();
-      await expect(sectionTitle).toBeVisible({ timeout: 5000 });
-      await sectionTitle.click();
+    async function expandFilterByIndex(dialog: Locator, index: number) {
+      const checkbox = dialog
+        .getByRole('checkbox', { name: /expand or collapse this section/i })
+        .nth(index);
+      await expect(checkbox).toBeVisible({ timeout: 5000 });
+      // Use .check() (not .click()) because the Expander's checkbox is a
+      // controlled input bound to a local $state — calling .check() ensures
+      // Playwright dispatches the click and waits for the checked state to
+      // settle (Svelte's controlled-input render race can occasionally land
+      // a .click() with no observable state change on cold-start renders).
+      // If the checkbox is already checked (e.g., Party expander whose
+      // defaultExpanded is true because the parent filter is "active" at
+      // mount), .check() is a no-op — that's the correct behavior here.
+      await checkbox.check();
     }
+    const FILTER_INDEX = {
+      party: 0,
+      campaignSlogan: 1,
+      number: 2,
+      categorical: 3
+    } as const;
 
     test('SETTINGS-01 wave B — NumberFilter', async ({ answeredVoterPage: page }) => {
       test.setTimeout(60000);
@@ -549,7 +564,7 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
 
       // Expand the NumberFilter expander (it is not default-expanded —
       // EntityFilters.svelte:43 only auto-expands TextFilter).
-      await expandFilter(dialog, /Test Number Question 1/i);
+      await expandFilterByIndex(dialog, FILTER_INDEX.number);
 
       // NumericEntityFilter renders 2 range sliders (min + max) when at least
       // one candidate has a non-missing answer (NumericEntityFilter.svelte:81).
@@ -606,10 +621,21 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
 
       const dialog = await openFilterDialog(page);
 
-      // TextFilter is the only filter that defaults to expanded
-      // (EntityFilters.svelte:43). The TextEntityFilter renders a single
-      // <input type="text"> with sr-only label "Text:" inside the dialog.
-      // Locator: role textbox with the i18n-resolved aria-label.
+      // The Campaign slogan question filter is a TextQuestionFilter
+      // (filterType === 'textQuestionFilter'). The Phase 77 P02
+      // EntityFilters.svelte fix now uses `isTextFilter()` to default-expand
+      // both TextFilter and TextQuestionFilter — but to be robust to a
+      // collapsed initial state on cold-start (the $effect that flips
+      // `expanded = defaultExpanded` may not have fired by the time the
+      // dialog opens), we explicitly expand the Campaign slogan filter at
+      // index 1.
+      await expandFilterByIndex(dialog, FILTER_INDEX.campaignSlogan);
+
+      // TextEntityFilter renders a single <input type="text"> with sr-only
+      // label "Text:" inside the now-expanded Expander.
+      // Locator: role textbox with the i18n-resolved aria-label, scoped to
+      // the dialog (the outside-dialog search-by-name textbox shares the same
+      // aria-label but lives at the EntityList top level).
       const textInput = dialog.getByRole('textbox', { name: /text:/i });
       await expect
         .poll(() => textInput.count(), {
@@ -655,8 +681,8 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
       const dialog = await openFilterDialog(page);
 
       // Expand the categorical-question filter (test-question-directional-1
-      // → "Test Opinion Question Directional 1").
-      await expandFilter(dialog, /Test Opinion Question Directional 1/i);
+      // → "Test Opinion Question Directional 1") at index 3.
+      await expandFilterByIndex(dialog, FILTER_INDEX.categorical);
 
       // EnumeratedEntityFilter renders one checkbox per choice. The 3 choice
       // labels are "Option A", "Option B", "Option C". Locator: checkboxes by
@@ -688,17 +714,27 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
         })
         .toBeLessThan(initialCount);
 
-      // Re-check Option A → restore.
-      await optionA.first().check();
+      // Restore via the dialog's "Reset filters" warning-variant button — the
+      // EnumeratedEntityFilter's `selected` $state binding does not include
+      // MISSING_VALUE when filter.include is non-empty (per
+      // convertMissingForInputs), so simply re-checking Option A would leave
+      // candidates with MISSING values on test-question-directional-1 still
+      // excluded. The Reset Filters button clears the FilterGroup state
+      // entirely (EntityListWithControls.svelte:139 `filters_reset` event).
+      //
+      // resetAllFilters() ALSO closes the dialog (calls closeModal internally),
+      // so we do NOT need to call closeFilterDialog after the reset click.
+      const resetButton = dialog.getByRole('button', { name: /reset filters/i });
+      await expect(resetButton).toBeVisible();
+      await resetButton.click();
+      await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 5000 });
 
       await expect
         .poll(() => cards.count(), {
           timeout: 5000,
-          message: 'ChoiceQuestionFilter restore must return the initial card count'
+          message: 'ChoiceQuestionFilter Reset Filters must return the initial card count'
         })
         .toEqual(initialCount);
-
-      await closeFilterDialog(page);
     });
 
     test('SETTINGS-01 wave B — FilterGroup AND', async ({ answeredVoterPage: page }) => {
@@ -710,25 +746,38 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
 
       // Capture per-filter narrow counts so the AND composition assertion is
       // count_AB < min(count_A, count_B). Each step opens the dialog, applies
-      // ONE filter, closes the dialog, records cards.count(), then resets via
-      // another open/close cycle. Reset path: open dialog → for ChoiceQuestion,
-      // re-check the unchecked option (default state is all-checked).
+      // ONE filter, closes the dialog, records cards.count(). Final restore
+      // uses the "Reset filters" button which clears the whole FilterGroup.
       //
-      // Step 1: Apply party filter (first checkbox in the parties section).
+      // Locator strategy for party value checkboxes: each party value checkbox
+      // has an accessible name equal to the party's shortName (per
+      // EnumeratedEntityFilter.svelte:118-126 getLabel via shortName). The
+      // e2e fixture seeds 4 parties (TPA, TPB, VPA, VPB). We target TPA — the
+      // first party in sort order — which is Alpha's party affiliation per
+      // the fixture, so unchecking TPA drops Alpha + Beta + Epsilon (all
+      // test-party-a) from the visible list.
+
+      // Step 1: Apply party filter (uncheck the TPA party value).
+      //
+      // The Party expander is rendered collapsed initially (per Expander.svelte
+      // local `expanded` $state — defaultExpanded only seeds the init value).
+      // Expand it explicitly so the inner party value checkboxes mount into
+      // the DOM.
       let dialog = await openFilterDialog(page);
-      const firstPartyCheckbox = dialog.getByRole('checkbox').first();
+      await expandFilterByIndex(dialog, FILTER_INDEX.party);
+
+      // Party value checkboxes have accessible names equal to party shortName +
+      // candidate-count suffix (e.g., "TPA 5"). We anchor on the shortName via
+      // a prefix regex.
+      const partyValueCheckbox = dialog.getByRole('checkbox', { name: /^TPA/ });
       await expect
-        .poll(() => firstPartyCheckbox.count(), {
+        .poll(() => partyValueCheckbox.count(), {
           timeout: 5000,
-          message: 'First party checkbox must render — EnumeratedFilter via buildParentFilters'
+          message: 'TPA party value checkbox must render — EnumeratedFilter via buildParentFilters'
         })
         .toBeGreaterThan(0);
 
-      // The parties filter is an EnumeratedFilter where all parties default to
-      // checked (no narrowing). To narrow, we UNCHECK one — same semantics as
-      // the categorical question filter above. We uncheck the first party so
-      // candidates affiliated with the first party drop out.
-      await firstPartyCheckbox.uncheck();
+      await partyValueCheckbox.uncheck();
       await closeFilterDialog(page);
 
       const partyOnlyCount = await cards.count();
@@ -739,7 +788,7 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
       // (UI is bound to the FilterGroup state, which persists per
       // filterContext.svelte.ts contract).
       dialog = await openFilterDialog(page);
-      await expandFilter(dialog, /Test Opinion Question Directional 1/i);
+      await expandFilterByIndex(dialog, FILTER_INDEX.categorical);
       const optionA = dialog.getByRole('checkbox', { name: /Option A/i });
       await expect
         .poll(() => optionA.count(), { timeout: 5000 })
@@ -762,12 +811,15 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
       expect(compositeCount).toBeLessThanOrEqual(partyOnlyCount);
       expect(compositeCount).toBeLessThan(initialCount);
 
-      // Reset both filters → restore.
+      // Reset via the "Reset filters" warning-variant button — clears the
+      // entire FilterGroup state. See ChoiceQuestionFilter cell rationale for
+      // why re-check is not used (MISSING_VALUE inclusion semantics).
+      // resetAllFilters() also closes the dialog internally.
       dialog = await openFilterDialog(page);
-      await firstPartyCheckbox.check();
-      await expandFilter(dialog, /Test Opinion Question Directional 1/i);
-      await optionA.first().check();
-      await closeFilterDialog(page);
+      const resetButton = dialog.getByRole('button', { name: /reset filters/i });
+      await expect(resetButton).toBeVisible();
+      await resetButton.click();
+      await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 5000 });
 
       await expect
         .poll(() => cards.count(), {
@@ -790,7 +842,7 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
       // (rendered when range.missingValues > 0 — NumericEntityFilter.svelte:97).
       // The fixture has 4 candidates with numeric answers (Alpha=25, voter-cand-agree=60,
       // Gamma=50, Beta=75) and the rest unanswered, so missingValues > 0.
-      await expandFilter(dialog, /Test Number Question 1/i);
+      await expandFilterByIndex(dialog, FILTER_INDEX.number);
 
       // The excludeMissing checkbox label is t('entityFilters.missingValue') =
       // "No answer" (per en/entityFilters.json:6).
