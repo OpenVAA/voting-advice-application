@@ -25,6 +25,15 @@ export async function load({ fetch, parent, untrack, url }) {
   // We need to be careful to not rerun the load function unnecessarily
   untrack(() => ({ electionId, constituencyId } = parseParams({ url })));
 
+  // reason: voter-app routes allowlist for ?next= deferred target — prevents
+  // open-redirect attacks per CLEAN-02 / CONTEXT D-05. The whitelist accepts
+  // either a locale-prefixed path (`/en/...`) or one of the bare voter-app
+  // route roots (`/results`, `/questions`, `/nominations`). Cross-origin
+  // values (`https://...`, `//evil.com`) fail the regex and are dropped —
+  // the redirect proceeds to the selector without a `?next=` parameter.
+  const isVoterRoute = /^\/[a-z]{2}\/.*|^\/(results|questions|nominations)\b/.test(url.pathname);
+  const nextParam = isVoterRoute ? `?next=${encodeURIComponent(url.pathname + url.search)}` : '';
+
   // Try to imply ids if not provided
   if (!electionId || !constituencyId) {
     const { appSettingsData, constituencyData, electionData } = await parent();
@@ -43,10 +52,10 @@ export async function load({ fetch, parent, untrack, url }) {
       if (!electionId) {
         redirect(
           307,
-          buildRoute({
+          `${buildRoute({
             route: 'Elections',
             locale: lang
-          })
+          })}${nextParam}`
         );
       }
     }
@@ -59,11 +68,11 @@ export async function load({ fetch, parent, untrack, url }) {
       if (!constituencyId) {
         redirect(
           307,
-          buildRoute({
+          `${buildRoute({
             route: 'Constituencies',
             electionId,
             locale: lang
-          })
+          })}${nextParam}`
         );
       }
     }
