@@ -13,6 +13,7 @@ See `+page.ts` for possible redirects.
 
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { page } from '$app/state';
   import { Button } from '$lib/components/button';
   import { ElectionSelector } from '$lib/components/electionSelector';
   import { HeroEmoji } from '$lib/components/heroEmoji';
@@ -80,11 +81,20 @@ See `+page.ts` for possible redirects.
   async function handleSubmit(): Promise<void> {
     if (!canSubmit) return;
     const electionId = Array.from(selected);
+    // CLEAN-02 (Phase 78 Plan 02): forward the deferred-target `?next=`
+    // parameter through to the constituency selector so the final selector
+    // step can resume the originally-requested route. `next` is NOT a
+    // persistent search param (see params.ts PERSISTENT_SEARCH_PARAMS), so
+    // buildRoute drops it unless we pass it explicitly. No whitelist
+    // re-check here — the entry-point check in `(located)/+layout.ts`
+    // already filtered before this point.
+    const next = page.url.searchParams.get('next');
+    const nextForward: { next?: string } = next ? { next } : {};
     await goto(
       $appSettings.elections?.startFromConstituencyGroup
-        ? $getRoute({ route: 'Questions', electionId })
+        ? $getRoute({ route: 'Questions', electionId, ...nextForward })
         : // Reset any lingering electionIds which may have been left in the search param if a different constituency was seleced before
-          $getRoute({ route: 'Constituencies', electionId, constituencyId: undefined })
+          $getRoute({ route: 'Constituencies', electionId, constituencyId: undefined, ...nextForward })
     );
   }
 </script>

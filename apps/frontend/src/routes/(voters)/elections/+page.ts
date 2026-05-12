@@ -38,13 +38,21 @@ export async function load({ parent, params, route, url }) {
     dataRoot
   });
 
+  // CLEAN-02 (Phase 78 Plan 02): a `?next=` deferred target from
+  // `(voters)/(located)/+layout.ts` is NOT a persistent search param, so it
+  // gets dropped by buildRoute's `filterPersistent` pass. Forward it
+  // explicitly so an auto-implied election still chains the deferred target
+  // through to /constituencies.
+  const nextSearch = url.searchParams.get('next');
+  const nextForward: { next?: string } = nextSearch ? { next: nextSearch } : {};
+
   // If startFromConstituencyGroup is set, this route is the last one before questions
   if (appSettings.elections?.startFromConstituencyGroup) {
     // Check whether we have the necessary constituencyId parameter. If not, redirect to constituency selection page
     // NB. We don't try to imply it, because we assume that if startFromConstituencyGroup is set, the constituency must be selected
     const { constituencyId } = parseParams({ params, url });
-    if (constituencyId && impliedElectionId) _redirect('Questions');
-    if (!constituencyId) _redirect('Constituencies');
+    if (constituencyId && impliedElectionId) _redirect('Questions', nextForward);
+    if (!constituencyId) _redirect('Constituencies', nextForward);
     // Show election selector
     return;
   }
@@ -53,7 +61,7 @@ export async function load({ parent, params, route, url }) {
   // Pass impliedElectionId forward so /constituencies and the voter context's
   // selectedElections see the implied id without re-implying it on every read.
   // (Symmetry with `(located)/+layout.ts:60-67` which also passes electionId.)
-  if (impliedElectionId) _redirect('Constituencies', { electionId: impliedElectionId });
+  if (impliedElectionId) _redirect('Constituencies', { electionId: impliedElectionId, ...nextForward });
   // Show election selector
   return;
 

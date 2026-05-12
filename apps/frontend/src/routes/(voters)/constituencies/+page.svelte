@@ -13,6 +13,7 @@ See `+page.ts` for possible redirects.
 
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { page } from '$app/state';
   import { Button } from '$lib/components/button';
   import { ConstituencySelector } from '$lib/components/constituencySelector';
   import { HeroEmoji } from '$lib/components/heroEmoji';
@@ -75,6 +76,27 @@ See `+page.ts` for possible redirects.
   async function handleSubmit(): Promise<void> {
     if (!canSubmit) return;
     const constituencyId = Object.values(selected).filter((id) => id);
+    // CLEAN-02 (Phase 78 Plan 02): if a deferred-target `?next=` is set,
+    // decode + re-validate against the voter-app URL whitelist regex and
+    // navigate to the original destination. Whitelist re-check is a
+    // defense-in-depth pass — the (located)/+layout.ts entry-point check
+    // already filtered open-redirect targets, but a fresh page load of
+    // `/constituencies?next=...` bypasses that gate, so this layer must
+    // re-validate before calling goto().
+    //
+    // reason: voter-app whitelist re-check — prevents open-redirect at
+    // selector-consumption layer (defense in depth vs CLEAN-02
+    // (located)/+layout.ts entry-point check).
+    const VOTER_ROUTE_WHITELIST = /^\/[a-z]{2}\/.*|^\/(results|questions|nominations)\b/;
+    const next = page.url.searchParams.get('next');
+    if (next) {
+      const decoded = decodeURIComponent(next);
+      if (VOTER_ROUTE_WHITELIST.test(decoded)) {
+        await goto(decoded);
+        return;
+      }
+      // Fall through to default navigation when whitelist rejects the value.
+    }
     await goto(
       $appSettings.elections?.startFromConstituencyGroup
         ? // Reset any lingering electionIds which may have been left in the search param if a different constituency was seleced before
