@@ -101,9 +101,11 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     }
 
     // Convert image storage paths to URLs
-    // reason: JSONB columns return Json (structural superset of StoredImage); parseStoredImage runtime-guards on .path
+    // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
     result.publisherLogo = parseStoredImage(raw.publisherLogo as Json as unknown as StoredImage | null, supabaseUrl);
+    // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
     result.poster = parseStoredImage(raw.poster as Json as unknown as StoredImage | null, supabaseUrl);
+    // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
     result.candPoster = parseStoredImage(raw.candPoster as Json as unknown as StoredImage | null, supabaseUrl);
 
     // Localize translation overrides (each value is a LocalizedString)
@@ -155,6 +157,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
         date: row.election_date ? String(row.election_date) : undefined,
         round: row.current_round ?? undefined,
         subtype: row.election_type ?? row.subtype ?? undefined,
+        // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
         image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl),
         constituencyGroupIds: (
           (row.election_constituency_groups as Array<{ constituency_group_id: string }>) ?? []
@@ -188,6 +191,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
       const obj = toDataObject(row as Record<string, unknown>, locale, this.defaultLocale);
       return {
         ...obj,
+        // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
         image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl),
         constituencyIds: ((row.constituency_group_constituencies as Array<{ constituency_id: string }>) ?? []).map(
           (jt) => jt.constituency_id
@@ -211,6 +215,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
       const keywords = localizedKeywords ? localizedKeywords.split(/,\s*/).filter(Boolean) : undefined;
       return {
         ...obj,
+        // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
         image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl),
         keywords
       } as ConstituencyData;
@@ -321,6 +326,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
         ...nomObj,
         entityType: row.entity_type,
         entityId: row.entity_id,
+        // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
         image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl)
       };
       if (parentNominationId != null && parentNominationType != null) {
@@ -352,7 +358,9 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
         const entity: Record<string, unknown> = {
           ...entityObj,
           type: entityType,
+          // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
           image: parseStoredImage(row.entity_image as Json as unknown as StoredImage | null, supabaseUrl),
+          // reason: JSONB → LocalizedAnswers shape; structural guard applied inside parseAnswers.
           answers: parseAnswers(row.entity_answers as Json as unknown as LocalizedAnswers | null, locale)
         };
 
@@ -448,7 +456,9 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
         results.push({
           ...obj,
           type: entityType,
+          // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
           image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl),
+          // reason: JSONB → LocalizedAnswers shape; structural guard applied inside parseAnswers.
           answers: parseAnswers(row.answers as Json as unknown as LocalizedAnswers | null, locale)
         } as AnyEntityVariantData);
       }
@@ -479,6 +489,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
         ...obj,
         // QuestionCategoryData uses 'type' not 'categoryType'
         type: row.category_type ?? 'opinion',
+        // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
         image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl)
       } as QuestionCategoryData;
     });
@@ -529,6 +540,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
         ...obj,
         type: row.type, // question_type enum passes through as-is
         choices,
+        // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
         image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl)
       } as AnyQuestionVariantData;
     });
