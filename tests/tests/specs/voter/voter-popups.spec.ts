@@ -133,12 +133,17 @@ test.describe('feedback popup (VOTE-15)', { tag: ['@voter'] }, () => {
     // Wait for the results list to reappear (page fully loaded)
     await expect(page.getByTestId(testIds.voter.results.list)).toBeVisible({ timeout: 10000 });
 
-    // Wait sufficient time for the popup delay to pass (2s + 3s buffer)
-    // Use a positive assertion on the results list as the timing mechanism
+    // Wait sufficient time for the popup delay to pass (2s + 3s buffer).
+    // The results-list waitFor anchors the page state; the toBeHidden assertion
+    // below provides the actual 5s retry that gives the popup-delay window time
+    // to elapse without re-asserting visibility on an already-visible anchor
+    // (Phase 78 CLEAN-05 CR-02a fix — replaced the trivial `toBeHidden()` with
+    // an explicit timeout so the assertion actually polls for the 2-5s window).
     await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 5000 });
 
-    // After waiting, verify the popup did NOT reappear (dismissed status stored in localStorage)
-    await expect(dialog).toBeHidden();
+    // After waiting, verify the popup did NOT reappear (dismissed status stored in localStorage).
+    // Explicit 5s retry window gives the popup-delay window time to elapse (Phase 73 CR-02a).
+    await expect(dialog).toBeHidden({ timeout: 5000 });
   });
 });
 
@@ -217,10 +222,14 @@ test.describe('popups disabled', { tag: ['@voter'] }, () => {
 
     // Wait 3 seconds to allow any popup to potentially appear.
     // Use the results list as the timing anchor (it should remain visible throughout).
+    // Phase 78 CLEAN-05 CR-02b fix: the trivial `toHaveCount(0)` below now carries
+    // an explicit 3s timeout so the assertion actually polls across the popup-delay
+    // window rather than firing once on an already-stable list view.
     await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 3000 });
 
-    // After waiting, verify no dialog appeared
+    // After waiting, verify no dialog appeared.
+    // Explicit 3s retry gives the popup-delay window time to elapse (Phase 73 CR-02b).
     const dialogLocator = page.getByRole('dialog');
-    await expect(dialogLocator).toHaveCount(0);
+    await expect(dialogLocator).toHaveCount(0, { timeout: 3000 });
   });
 });

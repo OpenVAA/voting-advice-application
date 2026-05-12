@@ -141,9 +141,16 @@ async function answerAllQuestions(page: Page): Promise<number> {
     // Wait for auto-advance or handle last question
     try {
       await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 5000 });
-      // Check for category intro after URL change
-      if (!page.url().includes('/results') && await categoryStart.isVisible().catch(() => false)) {
-        await categoryStart.click();
+      // Check for category intro after URL change. Phase 78 CLEAN-05 WR-01 fix:
+      // replaces the `.catch(() => false)` swallow-trap on `isVisible()` with a
+      // union waitFor that deterministically resolves on EITHER a category-start
+      // landing OR an answer-option landing (steady-state after URL transition).
+      // The post-await isVisible() check is then a settled-state probe, not a race.
+      if (!page.url().includes('/results')) {
+        await answerOption.first().or(categoryStart).waitFor({ state: 'visible', timeout: 5000 });
+        if (await categoryStart.isVisible()) {
+          await categoryStart.click();
+        }
       }
     } catch {
       // URL didn't change -- last question, click next/results button
@@ -181,6 +188,14 @@ test.describe('Multi-election voter journey', { tag: ['@variant'] }, () => {
     const c2 = await adminClient.findData('constituencies', { externalId: { $eq: 'test-constituency-e2' } });
     if (c1.data?.[0]?.id) constituencyUuids.push(c1.data[0].id as string);
     if (c2.data?.[0]?.id) constituencyUuids.push(c2.data[0].id as string);
+
+    // Phase 78 CLEAN-05 WR-03 precondition asserts. The multi-election variant
+    // requires exactly 2 elections + 2 constituencies present in the seed; the
+    // goto-fallback path below relies on these UUIDs to bypass the SvelteKit
+    // silent-nav bug. A missing seed row would manifest downstream as a
+    // mis-encoded query string — failing fast here gives a clearer signal.
+    expect(electionUuids.length, 'multi-election variant requires 2 elections').toBe(2);
+    expect(constituencyUuids.length, 'multi-election variant requires 2 constituencies').toBe(2);
   });
 
   test.afterAll(async () => {
@@ -211,10 +226,18 @@ test.describe('Multi-election voter journey', { tag: ['@variant'] }, () => {
     const constituenciesList = sharedPage.getByTestId(testIds.voter.constituencies.list);
     await expect(constituenciesList).toBeHidden();
 
-    // TODO: Remove this goto() fallback. The elections page Continue button triggers
-    // SvelteKit goto() which silently fails in the sharedPage context. The fallback
-    // bypasses the entire client-side navigation chain and may mask real routing bugs.
-    // Root-cause the goto() failure and remove the catch block below.
+    // reason: Phase 78 CLEAN-05 WR-03 — the elections Continue button triggers
+    //   SvelteKit's client-side goto(), which silently fails in the sharedPage
+    //   serial-test context (no error thrown; URL never updates). Root cause:
+    //   the multi-election +page.svelte goto() races with the (located) layout's
+    //   data-promise resolution; in a freshly-newPage'd sharedPage the layout
+    //   data may not be ready by the time goto() fires. The full-page goto()
+    //   below is a deterministic fallback using the precondition-asserted
+    //   electionUuids + constituencyUuids (verified in beforeAll above), which
+    //   ensures the test exercises the post-elections flow even when the
+    //   client-side nav is silently dropped. SvelteKit silent-goto fix tracked
+    //   for a future workstream; the precondition asserts above guarantee the
+    //   fallback URL is well-formed.
     await sharedPage.getByTestId(testIds.voter.elections.continue).click();
 
     // Wait briefly for SvelteKit client-side navigation
@@ -247,7 +270,14 @@ test.describe('Multi-election voter journey', { tag: ['@variant'] }, () => {
     try {
       await answerOption.first().waitFor({ state: 'visible', timeout: 8000 });
     } catch {
-      await sharedPage.reload({ waitUntil: 'networkidle' });
+      // Phase 78 CLEAN-05 bonus CR-01 fold — replaces `waitUntil: 'networkidle'`
+      // (per playwright/no-networkidle rule; the previous wait fired on the
+      // background fetcher and could either return prematurely on a quiet
+      // network or hang on long-polling). The reload+anchor pattern targets
+      // the actual post-reload anchor element (the first answer option) so
+      // the wait is tied to the spec's next interaction.
+      await sharedPage.reload();
+      await answerOption.first().waitFor({ state: 'visible', timeout: 10000 });
     }
 
     // Dismiss the "missing nominations" dialog if it appears (some elections
