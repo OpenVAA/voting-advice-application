@@ -597,32 +597,32 @@ Step 1 typically requires the voter fixture's answeredVoterPage flow OR direct U
 
 The default `e2e` results page shows candidates by default (per `E2E_BASE_APP_SETTINGS.results.cardContents` in e2e.ts). Voter-detail drawer opens on candidate click. **No additional fixture needed for the drawer route** — Alpha/Beta/Gamma/Delta/Epsilon are all visible (terms_of_use_accepted set). Pick the first card.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Should A11Y-02 extend `candidate-profile.spec.ts` directly or split to a new file?**
+1. **RESOLVED: Should A11Y-02 extend `candidate-profile.spec.ts` directly or split to a new file?** Extend `candidate-profile.spec.ts` directly per CONTEXT D-01 Claude's Discretion §2 default + Plan 02 truth #1.
    - What we know: CAND-12 lives at `candidate-profile.spec.ts:181-202`; the file is 204 lines today. Adding 3-4 new persistence tests for name + bio + social-link extends the file by ~80 LOC to ~285 LOC.
-   - What's unclear: Per-spec readability ceiling — Phase 75 split P02 into 02a + 02b at ~250 LOC. 285 is close to that ceiling.
-   - Recommendation: Default to extending `candidate-profile.spec.ts` (CONTEXT default; CAND-12 pattern is the immediate analog and the test infrastructure is already set up — `loginAsCandidate`, fresh-candidate registration, `serial` describe block). Split only if the planner finds the file becomes hard to read after extension.
+   - What's unclear (was): Per-spec readability ceiling — Phase 75 split P02 into 02a + 02b at ~250 LOC. 285 is close to that ceiling.
+   - Recommendation adopted: Extend `candidate-profile.spec.ts` (CONTEXT default; CAND-12 pattern is the immediate analog and the test infrastructure is already set up — `loginAsCandidate`, fresh-candidate registration, `serial` describe block). Split only if the planner finds the file becomes hard to read after extension.
 
-2. **Should the A11Y-01 spec use a `for…of` parameterized runner OR explicit `test()` per cell?**
+2. **RESOLVED: Should the A11Y-01 spec use a `for…of` parameterized runner OR explicit `test()` per cell?** Use `for…of` at module level per Plan 01 truth #5.
    - What we know: Lint rule `playwright/no-conditional-in-test` is at `'error'` post-Phase-73; conditional inside `test()` body is forbidden. `for…of` at module level (outside `test()`) is allowed (Phase 75 P01 + Phase 74 P05 use this pattern).
-   - What's unclear: 3 cells (the recommended scope) is small enough that explicit `test()` per cell is also clean.
-   - Recommendation: `for…of` at module level for parameterized cells (consistent with Phase 75 P01 boolean spec's pattern); each iteration registers 1 `test()` with cell-name in the title.
+   - What's unclear (was): 3 cells (the recommended scope) is small enough that explicit `test()` per cell is also clean.
+   - Recommendation adopted: `for…of` at module level for parameterized cells (consistent with Phase 75 P01 boolean spec's pattern); each iteration registers 1 `test()` with cell-name in the title.
 
-3. **Should A11Y-03 axe baseline include `wcag21aa` tag (in addition to `wcag2aa`)?**
+3. **RESOLVED: Should A11Y-03 axe baseline include `wcag21aa` tag (in addition to `wcag2aa`)?** Use the WCAG 2.1 AA superset `['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']` per Plan 03 truth #4.
    - What we know: ROADMAP A11Y-03 SC #3 says "WCAG 2.1 AA". `withTags(['wcag2aa'])` covers WCAG 2.0 AA only; `wcag21aa` adds the 2.1 delta rules (e.g., reflow, target-size).
-   - What's unclear: Whether the v2.9 cite-and-fix downstream phase wants 2.0 AA OR 2.1 AA OR superset.
-   - Recommendation: Use `withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])` — the WCAG 2.1 AA SUPERSET — per ROADMAP literal "WCAG 2.1 AA". First-run baseline captures the maximum surface; cite-and-fix downstream can subset later.
+   - What's unclear (was): Whether the v2.9 cite-and-fix downstream phase wants 2.0 AA OR 2.1 AA OR superset.
+   - Recommendation adopted: Use `withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])` — the WCAG 2.1 AA SUPERSET — per ROADMAP literal "WCAG 2.1 AA". First-run baseline captures the maximum surface; cite-and-fix downstream can subset later.
 
-4. **Is the `dependencies: ['data-setup']` enough for the axe project, or does it need `auth-setup` too?**
+4. **RESOLVED: Is the `dependencies: ['data-setup']` enough for the axe project, or does it need `auth-setup` too?** `dependencies: ['data-setup']` is sufficient per Plan 03 truth #2.
    - What we know: The 5 axe routes are all voter-app (unauthenticated). `data-setup` provides candidate/question data; `auth-setup` provides candidate-Alpha session storage (only needed for `/candidate/*` routes).
-   - What's unclear: Whether the `dependencies: ['data-setup']` chain alone produces the 327-candidate (default-template) seed OR the 18-candidate (e2e-template) seed at run-time.
-   - Recommendation: `dependencies: ['data-setup']` is correct (the existing `data.setup.ts` invokes the e2e template). No auth-setup needed. Confirms by inspection of `tests/tests/setup/data.setup.ts`.
+   - What's unclear (was): Whether the `dependencies: ['data-setup']` chain alone produces the 327-candidate (default-template) seed OR the 18-candidate (e2e-template) seed at run-time.
+   - Recommendation adopted: `dependencies: ['data-setup']` is correct (the existing `data.setup.ts` invokes the e2e template). No auth-setup needed. Confirms by inspection of `tests/tests/setup/data.setup.ts`.
 
-5. **Should the fixture extension (Plan 02) include adding `customData.maxlength` to `test-question-displayname` even though A11Y-02 only needs persistence (not the maxlength contract)?**
+5. **RESOLVED: Should the fixture extension (Plan 02) include adding `customData.maxlength` to `test-question-displayname` even though A11Y-02 only needs persistence (not the maxlength contract)?** Plan 01 owns the fixture extension (including maxlength); Plan 02 extends additively for bio + social-link per CONTEXT D-12 + Plan 01 fixture-ordering decision.
    - What we know: A11Y-02 needs persistence; A11Y-01 needs maxlength enforcement. Sharing 1 question for both lowers fixture surface.
-   - What's unclear: Whether A11Y-01 (Plan 01) or A11Y-02 (Plan 02) lands first per CONTEXT D-12 strict-serial order.
-   - Recommendation: D-12 says "01 → 02 → 03 → 04 strict serial". Plan 01 introduces the fixture extension (so A11Y-01 cell 3 has its maxlength field); Plan 02 extends the same fixture (bio + social-link) and writes the persistence tests. Plan 02's fixture diff is additive on top of Plan 01's. NO conflict if planner orders correctly.
+   - What's unclear (was): Whether A11Y-01 (Plan 01) or A11Y-02 (Plan 02) lands first per CONTEXT D-12 strict-serial order.
+   - Recommendation adopted: D-12 says "01 → 02 → 03 → 04 strict serial". Plan 01 introduces the fixture extension (so A11Y-01 cell 3 has its maxlength field); Plan 02 extends the same fixture (bio + social-link) and writes the persistence tests. Plan 02's fixture diff is additive on top of Plan 01's. NO conflict if planner orders correctly.
 
 ## Sources
 

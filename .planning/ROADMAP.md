@@ -219,7 +219,11 @@ Phase 78 (CLEAN)  ← independent of 73-77; may run in parallel with 74-77
   3. **Axe smoke wired (A11Y-03).** `@axe-core/playwright` is added as a dev dependency and integrated into the suite as a WCAG 2.1 AA smoke. Initial coverage: home, election/constituency selector, questions flow, results list, voter-detail drawer (5 routes). The smoke runs on every `yarn test:e2e` invocation OR is gated behind a `PLAYWRIGHT_A11Y` env flag (decision made during phase planning per existing `PLAYWRIGHT_VISUAL` / `PLAYWRIGHT_PERF` convention). Violations surfaced by the first run are documented in a follow-up todo at `.planning/todos/pending/` for cite-and-fix in a future phase — A11Y-03 is wiring + first-run baseline only.
   4. **No false-positive failures.** The first-run axe baseline is recorded; subsequent runs against an unchanged frontend produce identical violation lists. Wiring does not add flakiness (the smoke is deterministic).
   5. **Determinism preserved.** All new specs + the axe smoke pass on 3 consecutive `--workers=1` runs identically; the post-Phase-73 baseline does not regress.
-**Plans**: TBD (estimate ~3-4 plans — 1 plan per A11Y-0X requirement, with A11Y-03 potentially split into "wire harness" + "first-run baseline + follow-up todo capture")
+**Plans**: 4 plans
+- [ ] 76-01-PLAN.md — A11Y-01 validation rejection paths (3 reliably-renderable cells: image-type + image-size + name-too-long via HTML5 maxlength) + dev-seed e2e fixture extension (sort 19/20/21 info questions: displayname + bio + social-link + 3 Alpha answer cells) + PRODUCT-GAP follow-up todo for 3 deferred cells (email-format / url-format / required-empty per RESEARCH LANDMINE-2) [Wave 1, autonomous]
+- [ ] 76-02-PLAN.md — A11Y-02 reload-persistence extension (3 new test() blocks appended to candidate-profile.spec.ts inside existing serial describe block: displayName + bio + social-link assertions; A11Y-02 prefix for IMGPROXY safety) [Wave 2, depends on 01, autonomous]
+- [ ] 76-03-PLAN.md — A11Y-03 axe wiring (@axe-core/playwright@^4.x to root devDeps per RESEARCH LANDMINE-1 override of CONTEXT D-04; PLAYWRIGHT_A11Y conditional project; new tests/tests/specs/a11y/a11y-smoke.spec.ts walking 5 routes via WCAG 2.1 AA superset withTags; localStorage prefill for voter-detail-drawer per LANDMINE-6 OPTION-A) [Wave 1, autonomous]
+- [ ] 76-04-PLAN.md — Verification gate: vite-cache wipe + e2e-template seed protocol (per RESEARCH LANDMINE-5) + 3-run cold-start --workers=1 + parity-script regen (PASS_LOCKED +6) + 2x axe smoke determinism check + 76-A11Y-BASELINE.md authoring + cite-and-fix follow-up todo + 76-VERIFICATION.md (5/5 SCs assessed) + operator checkpoint [Wave 3, depends on 01,02,03, has checkpoint]
 **UI hint**: yes
 
 ### Phase 77: Settings Matrix + Question-Customization Gap-Fills
@@ -288,6 +292,6 @@ After v2.9 ships, run `/gsd-new-milestone` to frame the next milestone. v2.10 ca
 | 73. Determinism Baseline | v2.9 | 6/6 | Complete    | 2026-05-11 |
 | 74. High-Leverage E2E Coverage | v2.9 | 7/7 | Complete   | 2026-05-11 |
 | 75. Question-Rendering Specs | v2.9 | 3/3 | Complete   | 2026-05-12 |
-| 76. Profile + A11y | v2.9 | 0/TBD | Not started | — |
+| 76. Profile + A11y | v2.9 | 0/4 | Not started | — |
 | 77. Settings Matrix + Question-Customization Gap-Fills | v2.9 | 0/TBD | Not started | — |
 | 78. Cleanup Hygiene Phase | v2.9 | 0/TBD | Not started | — |
