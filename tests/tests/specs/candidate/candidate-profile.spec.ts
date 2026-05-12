@@ -46,11 +46,26 @@ test.use({ storageState: { cookies: [], origins: [] } });
  * 2 no-conditional-expect warnings).
  */
 async function loginIfRedirectedToLoginPage(page: Page, email: string, password: string): Promise<void> {
-  // Wait for navigation to settle on EITHER the home or the login URL — race-tolerant
-  // wait against two anchors in a single tracking scope (no .catch swallow-trap).
-  await page.waitForURL((url) => url.pathname.includes('/login') || url.pathname.includes('/candidate'), {
-    timeout: 15000
-  });
+  // Wait for the URL to settle on EITHER /candidate/login OR a /candidate/(protected) path,
+  // NOT on the intermediate /candidate/register/password page where we just submitted.
+  //
+  // Per Phase 79 Plan 01 RCA (post-fix/rca-traces/RCA-FINDINGS.md): the previous predicate
+  // `pathname.includes('/login') || pathname.includes('/candidate')` matched BOTH /candidate/login
+  // AND /candidate/register/password (the latter contains '/candidate'), causing waitForURL
+  // to exit immediately on the intermediate page. The `if (page.url().includes('login'))`
+  // branch was then skipped, manual login never happened, and the test failed 10s later
+  // when the ToU checkbox didn't render. The tightened predicate below excludes the
+  // /candidate/{register,auth} intermediate paths, so we wait until the deliberate
+  // post-setPassword /candidate/login redirect actually lands.
+  await page.waitForURL(
+    (url) =>
+      url.pathname.includes('/candidate/login') ||
+      url.pathname === '/candidate' ||
+      /\/candidate\/(?!register|auth|login)/.test(url.pathname),
+    {
+      timeout: 15000
+    }
+  );
   if (page.url().includes('login')) {
     // Session wasn't established by verifyOtp — fall through to manual login
     const emailInput = page.getByTestId(testIds.candidate.login.email);

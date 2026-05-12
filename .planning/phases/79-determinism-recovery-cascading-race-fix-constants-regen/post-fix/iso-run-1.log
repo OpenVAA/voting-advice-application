@@ -1,0 +1,32 @@
+[dotenv@17.3.1] injecting env (25) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+
+Running 17 tests using 1 worker
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🤖 agentic secret storage: https://dotenvx.com/as2
+
+[1A[2K[1/17] [data-setup] › tests/tests/setup/data.setup.ts:76:1 › import test dataset
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+
+[1A[2K[2/17] [auth-setup] › tests/tests/setup/auth.setup.ts:66:1 › authenticate as candidate
+[1A[2K[3/17] [auth-setup] › tests/tests/setup/re-auth.setup.ts:20:1 › re-authenticate as candidate
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2
+
+[1A[2K[4/17] [candidate-app] › tests/tests/specs/candidate/candidate-auth.spec.ts:19:3 › candidate authentication › should login with valid credentials @candidate @smoke
+[1A[2K[5/17] [candidate-app] › tests/tests/specs/candidate/candidate-auth.spec.ts:33:3 › candidate authentication › should show error on invalid credentials @candidate @smoke
+[1A[2K[6/17] [candidate-app] › tests/tests/specs/candidate/candidate-questions.spec.ts:27:3 › candidate opinion questions › should display question cards organized by category (CAND-05) @candidate
+[1A[2K[7/17] [candidate-app] › tests/tests/specs/candidate/candidate-questions.spec.ts:55:3 › candidate opinion questions › should answer a Likert opinion question and save (CAND-04) @candidate
+[1A[2K[8/17] [candidate-app] › tests/tests/specs/candidate/candidate-questions.spec.ts:88:3 › candidate opinion questions › should navigate between categories (CAND-05) @candidate
+[1A[2K[9/17] [candidate-app] › tests/tests/specs/candidate/candidate-questions.spec.ts:117:3 › candidate opinion questions › should edit a previously answered question (CAND-05) @candidate
+[1A[2K[10/17] [candidate-app] › tests/tests/specs/candidate/candidate-questions.spec.ts:154:3 › candidate opinion questions › should persist question answers after page reload (CAND-12) @candidate
+[1A[2K[11/17] [candidate-app] › tests/tests/specs/candidate/candidate-questions.spec.ts:192:3 › candidate opinion questions › should persist comment text on a question after page reload (CAND-12) @candidate
+[1A[2K[12/17] [candidate-app] › tests/tests/specs/candidate/candidate-questions.spec.ts:239:3 › candidate preview › should display entered profile and opinion data on preview page (CAND-06) @candidate
+[1A[2K[13/17] [candidate-app] › tests/tests/specs/candidate/candidate-questions.spec.ts:262:3 › candidate preview › should show specific candidate data (name or answered question) in preview (CAND-06) @candidate
+[1A[2K[14/17] [candidate-app] › tests/tests/specs/candidate/candidate-translation.spec.ts:27:3 › candidate translation surface (E2E-01) › multilocale candidate authors a translation and the value persists across reload @candidate
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+
+[1A[2K[15/17] [candidate-app-mutation] › tests/tests/specs/candidate/candidate-profile.spec.ts:102:3 › candidate profile (fresh candidate) › should register the fresh candidate via email link @candidate
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+
+[1A[2K[16/17] [data-teardown] › tests/tests/setup/data.teardown.ts:17:1 › delete test dataset
+[1A[2K[17/17] [data-teardown] › tests/tests/setup/variant-data.teardown.ts:12:1 › delete variant test dataset
+[1A[2K  17 passed (35.1s)
