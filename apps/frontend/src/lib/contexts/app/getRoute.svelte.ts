@@ -38,7 +38,6 @@ export function createGetRoute(): Readable<RouteBuilder> {
     return (options: RouteOptions) => buildRoute(options, { params, route, url });
   }
   const store = writable<RouteBuilder>(buildFn());
-  const setStore = (store as { set: (v: RouteBuilder) => void }).set;
-  afterNavigate(() => setStore(buildFn()));
+  afterNavigate(() => store.set(buildFn()));
   return store;
 }
