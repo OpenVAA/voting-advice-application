@@ -54,28 +54,23 @@ Known infrastructure issue: local imgproxy Docker container crashes intermittent
 
 **Out of scope (deferred to v2.9+):** E2E coverage workstream (now the v2.9 anchor — see Current Milestone above). Sharable URLs + multi-tenant pair (`results-url-refactor-followups` + `frontend-project-id-scoping`) deferred to v2.10. Luxembourg + Danish VAA reconciliation (`2026-05-10-incorporate-luxembourg-and-danish-vaa-changes`) deferred to a separate milestone; deltas unscoped.
 
-## Current Milestone: Awaiting v2.10 framing
+## Current Milestone: v2.10 Test Reliability + A11y Compliance
 
-v2.9 shipped 2026-05-12. v2.10 not yet planned — run `/gsd-new-milestone` to frame the next milestone.
+**Goal:** Restore Playwright suite parity-regen capability and reach WCAG 2.1 AA on the 2 axe-baselined routes by closing v2.9's HIGH/MEDIUM a11y + test-determinism deferrals.
 
-**Leading candidates (v2.9 close + earlier carry-forward):**
+**Target features (3 carry-forwards from v2.9):**
 
-- **HIGH:** Candidate-profile cascading race fix — `candidate-profile.spec.ts:85-145` cascade-skips 43+ downstream tests at every cold-start gate; blocks parity-script regen capability across all coverage phases (Phase 76 P04 + Phase 77 P05 + Phase 78 P07 all DEFERRED constants regen due to this race). Estimated 1-2 plans depending on root cause.
-- **MEDIUM PRODUCT-GAP cluster (each requires schema + component + i18n work):**
-  - A11Y-01 cells: email-format / url-format / required-empty validation (3-5 plans)
-  - SETTINGS-02 voter-authoring: open-comment input + `answerStore.setAnswer(info)` support
-  - SETTINGS-03 voter-required: voter context needs `requiredInfoQuestions` / `profileComplete` symbols
-  - FilterGroup OR-mode UI: EntityFilters.svelte AND/OR toggle (setter exists, no UI emits LOGIC_OP.Or)
-  - Voters-layout non-reactive topbar: refactor mount-time `$appSettings` reads (30-60 LOC)
-- **MEDIUM hygiene:** A11Y axe cite-and-fix (5 first-run WCAG 2.1 AA violations across results + voter-detail-drawer; cite-and-fix follow-up routed from v2.9 A11Y-03 close)
-- **LOW:** constituency-filter PRODUCT-GAP (`buildParentFilters` doesn't handle constituency)
-- **Architecture (carry-forward from v2.9 close — independent of above):** sharable URLs + multi-tenant pair (`results-url-refactor-followups` + `frontend-project-id-scoping`); Luxembourg + Danish VAA reconciliation (deltas unscoped — separate milestone candidate); matching-package `rewrite-parent-answer-imputation` (future matching-focused milestone); `165 intra-package circular deps` structural refactor
+- **HIGH — Candidate-profile cascading race fix.** `candidate-profile.spec.ts:85-145` registration→login→ToU race cascade-skips 43+ downstream tests at every cold-start gate; blocks parity-script regen capability (Phase 76 P04 + Phase 77 P05 + Phase 78 P07 all DEFERRED constants regen due to this race).
+- **MEDIUM — A11Y axe cite-and-fix.** 5 first-run WCAG 2.1 AA violations across `/results` + voter-detail-drawer routes (3 distinct rule-IDs; 2 of 3 are shared-component fixes that resolve in both routes simultaneously).
+- **MEDIUM — A11Y-01 PRODUCT-GAP cells.** Candidate profile field-validation negative paths: email-format + url-format + name-too-short / required-empty rejection assertions.
 
-**Key context for v2.10 framing:**
+**Key context for v2.10:**
 
 - Phase numbering continues from v2.9 last phase (78) → v2.10 starts at **Phase 79**.
+- **Cross-cutting contract:** once the HIGH cascading race is closed, regen the v2.6 parity-script constants (47/15/33 anchor) — DEFERRED-WITH-RATIONALE through Phases 76/77/78; the unlock condition for a clean v2.10 verification gate.
+- **Re-deferred to v2.11+** (need new UI/architecture work, not in v2.10 scope): SETTINGS-02 voter `answer.info` authoring; SETTINGS-03 voter `customData.required` enforcement; FilterGroup OR-mode UI; voters-layout non-reactive topbar/popup; constituency-filter PRODUCT-GAP.
+- **Stale-but-resolved todos cleared at milestone start:** Expander state-referenced-locally + results-layout missing slot — both already landed in v2.8 Phase 70 via `// svelte-ignore` + `// reason:` accept-with-rationale (moved pending → done).
 - Deprecated `dev:*` aliases scheduled for removal at v2.10 close (per Phase 78 Plan 01 SUMMARY).
-- Phase 75 PASS_LOCKED constants (47/15/33) preserved through v2.9 — first v2.10 phase that resolves the candidate-profile cascading race should regenerate via `node .planning/milestones/v2.9-phases/73-determinism-baseline/post-fix/regen-constants.mjs` (if phases are archived) or the v2.9 in-place path.
 
 ## Requirements
 
@@ -177,7 +172,7 @@ v2.9 shipped 2026-05-12. v2.10 not yet planned — run `/gsd-new-milestone` to f
 
 ### Active
 
-**Awaiting v2.10 framing** — see "Current Milestone: Awaiting v2.10 framing" above for leading candidates.
+**v2.10 (Test Reliability + A11y Compliance) — in planning.** See "Current Milestone" above for the 3-item focused scope (HIGH candidate-profile cascading race + A11Y axe cite-and-fix + A11Y-01 PRODUCT-GAP cells). REQ-IDs land via REQUIREMENTS.md after roadmap approval.
 
 **Pending todos** (carried forward, lower priority — not yet on a milestone roadmap):
 - Generalize candidate app to support parties as first-class registrants
@@ -379,4 +374,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-_Last updated: 2026-05-12 after v2.9 (E2E Coverage + Suite Determinism) shipped. 6 phases (73-78), 32 plans, 89 tasks across 3 days; audit verdict `tech_debt` — 24/24 requirements satisfied (12 PASS + 12 PASS-WITH-DEFERRAL); 8 v2.10+ candidate todos filed. Operator-approved across all 6 phases on 2026-05-12 via `/gsd-autonomous --from 69` resume-from-76 path. Cross-phase contracts honored — Phase 73 DATA_RACE pool preserved structurally through 78; Phase 75 PASS_LOCKED constants (47/15/33) preserved across 76/77/78 via three consecutive architectural-deferral decisions (inherited candidate-profile cascading race blocks parity-script regen until v2.10+). Next: `/gsd-new-milestone` to frame v2.10. Leading candidates: candidate-profile cascading race fix (HIGH), 5 PRODUCT-GAP closures (MEDIUM), axe cite-and-fix (MEDIUM), sharable URLs + multi-tenant pair (architecture)._
+_Last updated: 2026-05-12 framing v2.10 (Test Reliability + A11y Compliance). 3-item focused scope after re-deferring the 5 voter-side PRODUCT-GAPs to v2.11+: HIGH candidate-profile cascading race + MEDIUM A11Y axe cite-and-fix + MEDIUM A11Y-01 PRODUCT-GAP cells. Cross-cutting contract: parity-script constants regen (47/15/33 anchor) gated on the HIGH cascading race fix. Phase numbering continues from v2.9 (78) → v2.10 starts at Phase 79. Stale Svelte 5 todos (Expander + results-layout) cleared pending → done — both already resolved in v2.8 Phase 70 via accept-with-rationale._

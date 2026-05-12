@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.9
-milestone_name: E2E Coverage + Suite Determinism
-status: Awaiting next milestone
-stopped_at: All v2.9 phases operator-approved (Phases 73-75 prior; 76/77/78 approved 2026-05-12 via /gsd-autonomous resume-from-76)
-last_updated: "2026-05-12T17:24:39.645Z"
-last_activity: 2026-05-12 — Milestone v2.9 completed and archived
+milestone: v2.10
+milestone_name: Test Reliability + A11y Compliance
+status: planning
+last_updated: "2026-05-12T18:44:25.061Z"
+last_activity: 2026-05-12
 progress:
-  total_phases: 10
-  completed_phases: 6
-  total_plans: 32
-  completed_plans: 32
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -25,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-05-10)
 
 ## Current Position
 
-Phase: Milestone v2.9 complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-05-12 — Milestone v2.9 completed and archived
+Status: Defining requirements
+Last activity: 2026-05-12 — Milestone v2.10 started
 
 ## Performance Metrics
 
