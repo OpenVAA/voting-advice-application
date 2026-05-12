@@ -121,7 +121,7 @@ export default defineConfig({
     {
       name: 'candidate-app-mutation',
       testDir: './tests/specs/candidate',
-      testMatch: /candidate-(registration|profile)\.spec\.ts/,
+      testMatch: /candidate-(registration|profile|profile-validation)\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],
         storageState: STORAGE_STATE
