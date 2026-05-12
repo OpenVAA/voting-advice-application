@@ -1,9 +1,11 @@
 ---
 phase: 77-settings-matrix-question-customization-gap-fills
 verified: 2026-05-12T14:55:00Z
-status: human_needed
+status: passed-with-deferral
 score: 4/4 success criteria addressed (SC #1 PASS-WITH-DEFERRAL on 3 product-gap cells + 2 PRODUCT-GAP follow-ups; SC #2 PASS-WITH-DEFERRAL on LANDMINE-1 voter-authoring product-gap; SC #3 PASS for voter-hidden + candidate-required, PASS-WITH-DEFERRAL on voter-required product-gap; SC #4 PASS-WITH-DEFERRAL on inherited auth-setup race cascade)
 verifier: gsd-executor (self-authored per Plan 05 Task 3; routed to operator checkpoint Task 5)
+operator_approval: approved
+operator_approval_date: 2026-05-12
 overrides_applied: 0
 follow_ups:
   - id: filtergroup-or-mode-ui-product-gap
@@ -27,12 +29,12 @@ follow_ups:
     file: .planning/phases/76-profile-a11y/deferred-items.md
     rationale: "Pre-existing upstream auth-setup race documented at Phase 76 P02; confirmed cascading 3x in Phase 76 P04 cold-start; confirmed still active in this dev shell by all 4 Phase 77 plans which used `--no-deps` workarounds. Phase 78 hygiene candidate: resolve auth.setup.ts 'Login form did not appear after 3 attempts' race. When resolved, parity-gate auto-turns GREEN + constants can be regenerated to absorb Phase 77's 2 new variants."
 re_verification:
-  verified_at: pending
+  verified_at: 2026-05-12
   verifier: operator (Plan 05 Task 5 human-verify checkpoint)
   previous_status: green-with-deferral (pre-operator-checkpoint)
   previous_score: 4/4 SCs addressed (1 PASS + 3 PASS-WITH-DEFERRAL on PRODUCT-GAP + inherited race)
-  verdict: pending operator review
-  notes: "Operator review pending. Operator should: (1) confirm SC dispositions match operator's reading of Plans 01-04 outcomes; (2) confirm constants-regen DEFERRED decision per Phase 76 P04 precedent; (3) confirm LANDMINE-1 reframing acceptance (Plan 03 SETTINGS-02 display-side); (4) confirm 4 follow-up PRODUCT-GAP todos routing to v2.10+; (5) confirm auth-setup race triage routing (Phase 78 hygiene candidate)."
+  verdict: approved
+  notes: "Operator approved 2026-05-12 via /gsd-autonomous resume-from-76 path. Disposition: (1) SC dispositions match — 0 PASS + 4 PASS-WITH-DEFERRAL accepted; (2) constants-regen DEFERRED per Phase 76 P04 precedent — Phase 75 baseline preserved; (3) LANDMINE-1 SETTINGS-02 display-side reframing accepted (voter-authoring is PRODUCT-GAP); (4) 4 PRODUCT-GAP follow-up todos routed to v2.10+ (settings-02-voter-authoring, settings-03-voter-required, filtergroup-or-mode, constituency-filter); (5) auth-setup race triage routed to v2.10+ via candidate-profile-cascading-race todo (NOT a Phase 78 fold)."
 ---
 
 # Phase 77 — Verification Record

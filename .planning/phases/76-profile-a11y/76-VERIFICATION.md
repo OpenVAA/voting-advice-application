@@ -1,9 +1,11 @@
 ---
 phase: 76-profile-a11y
 verified: 2026-05-12T11:00:00Z
-status: human_needed
+status: passed-with-deferral
 score: 5/5 success criteria addressed (3 PASS + 2 PASS-WITH-DEFERRAL on SC #1 PRODUCT-GAP cells + SC #5 inherited auth-setup race; 0 FAIL)
 verifier: gsd-executor (self-authored per Plan 04 Task 4; routed to operator checkpoint Task 5)
+operator_approval: approved
+operator_approval_date: 2026-05-12
 overrides_applied: 1
 follow_ups:
   - id: A11Y-axe-first-run-violations-cite-and-fix
@@ -19,12 +21,12 @@ follow_ups:
     file: .planning/phases/76-profile-a11y/deferred-items.md
     rationale: "Pre-existing upstream auth-setup race promoted from intermittent (Plan 01) to deterministic gating (Plan 02) and now confirmed cascading 3x in cold-start full-suite (Plan 04 Task 1). The auth.setup.ts 'Login form did not appear after 3 attempts' failure cascades into ALL candidate-app + downstream tests, dropping baseline from Phase 75's 47 PASS_LOCKED → 4 PASS_LOCKED. NOT a Phase 76 regression — Phase 76 specs (3 A11Y-01 + 3 A11Y-02 + 6 A11Y-03 axe smoke) are cascade-blocked, not failing on their own merit. Per-plan smokes (Plans 01 + 03) PASS x 3 each in isolation; Plan 02 functional verification gated behind this same race. Recommended Plan 04 short-term workaround: switch host-file credentials to Test Candidate Alpha (Plan 01 P01 precedent); long-term: investigate upstream auth.setup.ts cold-start race in Phase 78 hygiene."
 re_verification:
-  verified_at: pending
+  verified_at: 2026-05-12
   verifier: operator (Plan 04 Task 5 human-verify checkpoint)
   previous_status: passed-with-deferral (pre-operator-checkpoint)
   previous_score: 5/5 SCs addressed (3 PASS + 2 PASS-WITH-DEFERRAL)
-  verdict: pending operator review
-  notes: "Operator review pending. Operator should: (1) sample 1-2 violations from 76-A11Y-BASELINE.md and visit helpUrl to confirm WCAG legitimacy; (2) decide whether Plan 02 PASS-WITH-DEFERRAL (3 A11Y-02 functional smoke gated behind upstream race) is acceptable for v2.9 ship OR whether to apply the Alpha-credentials workaround pre-close; (3) confirm cite-and-fix todo routing to v2.10+ vs immediate phase-77 dovetail."
+  verdict: approved
+  notes: "Operator approved 2026-05-12 via /gsd-autonomous resume-from-76 path. Disposition: (1) cite-and-fix axe violations routed to v2.10+ via 2026-05-12-a11y-axe-first-run-violations.md (acknowledged); (2) Plan 02 PASS-WITH-DEFERRAL on functional smoke accepted — upstream auth-setup race triage routes to v2.10+ candidate-profile-cascading-race todo, NOT to a Phase 77/78 dovetail; (3) constants-regen-deferral acknowledged (preserve Phase 75 baseline 47/15/33)."
 ---
 
 # Phase 76 — Verification Record

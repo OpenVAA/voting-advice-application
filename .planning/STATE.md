@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
 milestone: v2.9
-milestone_name: E2E Coverage + Suite Determinism — PLANNING
-status: executing
-stopped_at: Phase 76/77/78 context gathered (batched --auto)
-last_updated: "2026-05-12T15:43:46.238Z"
-last_activity: 2026-05-12 -- Phase 78 execution started
+milestone_name: E2E Coverage + Suite Determinism
+status: ready-for-lifecycle
+stopped_at: Phases 76/77/78 operator-approved; ready for milestone audit → complete → cleanup
+last_updated: "2026-05-12T20:00:00.000Z"
+last_activity: 2026-05-12 -- Phases 76/77/78 operator-approved GREEN-WITH-DEFERRAL via /gsd-autonomous resume-from-76
 progress:
-  total_phases: 10
-  completed_phases: 5
+  total_phases: 6
+  completed_phases: 6
   total_plans: 32
-  completed_plans: 25
-  percent: 78
+  completed_plans: 32
+  percent: 100
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-10)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 78 — Cleanup Hygiene Phase
+**Current focus:** v2.9 milestone lifecycle — audit → complete → cleanup
 
 ## Current Position
 
-Phase: 78 (Cleanup Hygiene Phase) — CLOSED (pending operator approval at Plan 07 Task 5 human-verify checkpoint)
-Plan: 7 of 7
-Status: Phase 78 closed pending operator approval
-Last activity: 2026-05-12 -- Phase 78 verification gate executed (Plan 07 Task 4)
+Phase: All v2.9 phases (73-78) closed and operator-approved
+Plan: 32 of 32 plans complete across 6 phases
+Status: Ready for milestone audit → complete → cleanup
+Last activity: 2026-05-12 -- Phases 76/77/78 operator-approved GREEN-WITH-DEFERRAL via /gsd-autonomous resume-from-76 path
 
 ## Performance Metrics
 
@@ -147,6 +147,7 @@ Key cross-milestone reference points carried forward into v2.9:
 - [Phase ?]: Phase 75 closes GREEN-WITH-DEFERRAL pending operator Task 4 checkpoint: 4/4 ROADMAP SCs assessed (3 PASS + 1 PASS-WITH-DEFERRAL on SC #2 multi-choice per CONTEXT D-03); 3 follow-up todos filed
 - [Phase 75]: Operator approved Phase 75 close 2026-05-12 (GREEN-WITH-DEFERRAL); elected to file 58-E2E-AUDIT.md addendum as 4th follow-up todo at `.planning/todos/pending/2026-05-12-58-e2e-audit-addendum-qspec.md` (committed 3d05c5c6d); next action — plan Phase 76 / 77 / 78 (all parallel-eligible)
 - 2026-05-12: Phase 78 closed pending operator approval (5/5 CLEAN reqs + #6 no-regressions: 4 PASS + 1 PASS-WITH-DEFERRAL on CLEAN-05 inherited candidate-profile cascading race; #6 PASS). 7 source todos resolved across per-plan closing commits (6 moved-to-completed by Plans 01-04 + 1 moved-to-completed by Plan 05). 2 NEW out-of-scope follow-up todos filed for v2.10+ (candidate-profile cascading race + voters-layout non-reactive topbar). 13 Phase 73 review findings + bonus CR-01 closed (Plan 06). Constants regen DEFERRED-WITH-RATIONALE per Phase 76 P04 + Phase 77 P05 architectural-deferral precedent (LANDMINE-2 candidate-profile cascade routes to v2.10+; cold-start gate ~54 min × 3 = ~162 min routed to operator-checkpoint). v2.9 progress: 6 / 6 phases closed (all GREEN-WITH-DEFERRAL pending operator approvals on Phase 76 / 77 / 78 verification checkpoints).
+- 2026-05-12: Phases 76, 77, 78 operator-approved GREEN-WITH-DEFERRAL via /gsd-autonomous resume-from-76 path. All v2.9 deferrals routed to v2.10+ (cite-and-fix axe, A11Y-01 PRODUCT-GAPs, SETTINGS-02/03 PRODUCT-GAPs, FilterGroup OR-mode, constituency-filter, candidate-profile cascading race, voters-layout non-reactive topbar). Constants regen DEFERRED across 76/77/78 — Phase 75 baseline (47/15/33) preserved. Cold-start gate NOT executed at Phase 78 close (~162 min cost with no empirical capture possible while candidate-profile cascade persists). All 6 v2.9 phases now Complete in ROADMAP.md. Milestone lifecycle: audit → complete → cleanup pending.
 
 ### Blockers/Concerns
 
@@ -159,10 +160,10 @@ Key cross-milestone reference points carried forward into v2.9:
 
 ## Session Continuity
 
-Last session: 2026-05-11T20:24:11.042Z
-Stopped at: Phase 76/77/78 context gathered (batched --auto)
-Resume file: .planning/phases/76-profile-a11y/76-CONTEXT.md
-Next action: Plan Phase 76 (Profile + A11y) / Phase 77 (Settings Matrix) / Phase 78 (Cleanup Hygiene) — all three are parallel-eligible. Phases 76 + 77 share the Phase 73 determinism prerequisite (preserved by Phase 75 close); Phase 78 is fully independent and may run in parallel. Discuss multiple phases together per `feedback_batch_discussions.md`.
+Last session: 2026-05-12T20:00:00.000Z
+Stopped at: All v2.9 phases operator-approved (Phases 73-75 prior; 76/77/78 approved 2026-05-12 via /gsd-autonomous resume-from-76)
+Resume file: .planning/ROADMAP.md (all 6 phase rows show Complete)
+Next action: Run milestone lifecycle — `/gsd-audit-milestone` → `/gsd-complete-milestone v2.9` → `/gsd-cleanup`. The autonomous loop is currently driving this. After cleanup, run `/gsd-new-milestone` to frame v2.10 (candidates: candidate-profile cascading race fix, voters-layout non-reactive topbar fix, sharable URLs + multi-tenant pair, axe cite-and-fix, Luxembourg + Danish VAA reconciliation).
 
 ### Plan-count estimate (drafted 2026-05-10)
 
@@ -179,8 +180,16 @@ Next action: Plan Phase 76 (Profile + A11y) / Phase 77 (Settings Matrix) / Phase
 
 ## Operator Next Steps
 
-- v2.9 ROADMAP.md drafted (2026-05-10). Phase 73 is the gating prerequisite for Phases 74-77; Phase 78 is independent and may run in parallel.
-- Run `/gsd-plan-phase 73` to begin planning the determinism baseline. Optionally run `/gsd-plan-phase 78` in parallel since it's independent of Phase 73.
-- After Phase 73 verification passes (3-run-stable, 0 skipped, 0 warnings), Phases 74, 75, 76, 77 may be planned concurrently — they share the determinism prerequisite but are independent of each other.
+- All v2.9 phases (73-78) are closed and operator-approved (2026-05-12). 32/32 plans complete; all deferrals routed to v2.10+.
+- Milestone lifecycle in progress via /gsd-autonomous: `/gsd-audit-milestone` → `/gsd-complete-milestone v2.9` → `/gsd-cleanup`.
+- After cleanup, run `/gsd-new-milestone` to frame v2.10. Candidate v2.10 scope (carry-forward from v2.9 deferrals + prior captures):
+  - **Candidate-profile cascading race fix** — LANDMINE-2, HIGH severity, blocks parity-script regen at every gate
+  - **Voters-layout non-reactive topbar** — Phase 77 P01 deferred cells, MEDIUM
+  - **Axe cite-and-fix** — 5 first-run violations across 2 routes (results + voter-detail-drawer); ~1-2 plans
+  - **A11Y-01 PRODUCT-GAP cells** — email-format / url-format / required-empty (~3-5 plans, requires schema + component + i18n additions)
+  - **SETTINGS-02 voter-authoring** — voter app needs open-comment input + answerStore.setAnswer(info) support
+  - **SETTINGS-03 voter-required derivation** — voter context needs requiredInfoQuestions / profileComplete symbols
+  - **FilterGroup OR-mode UI** — EntityFilters.svelte AND/OR toggle (setter exists, no UI emits LOGIC_OP.Or)
+  - **Sharable URLs + multi-tenant pair** — `results-url-refactor-followups` + `frontend-project-id-scoping`
+  - **Luxembourg + Danish VAA reconciliation** — deltas unscoped
 - Reminder: Commits in this repo must use `git -c core.hooksPath=/dev/null` until global config is fixed (`project_gsd_repo_hook_workaround.md`).
-- Reminder: Discuss multiple independent phases together so planning can run autonomously (`feedback_batch_discussions.md`). Phases 74, 75, 76, 77, 78 are all independent of each other (74-77 share Phase 73 prerequisite; 78 is fully independent) — natural batch candidates once Phase 73 is mid-flight.

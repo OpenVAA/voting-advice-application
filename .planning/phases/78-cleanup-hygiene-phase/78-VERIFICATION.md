@@ -1,11 +1,12 @@
 ---
 phase: 78-cleanup-hygiene-phase
 verified: 2026-05-12T19:35:00Z
-status: human_needed
+status: passed-with-deferral
 parity_gate: DEFERRED-WITH-RATIONALE
 constants_regen: DEFERRED-WITH-RATIONALE
 pairing_direction: "Order B (Phase 74 D-06 + Phase 78 D-12 inheritance — E2E-08 spec landed Phase 74; CLEAN-04 tightening landed Phase 78 P04; E2E-08 Order B re-validation against tightened wrapper performed at Plan 04 close: 5/5 PASS in 5.1s; recorded at 78-04-SUMMARY.md §'E2E-08 pairing (Order B per CONTEXT D-12 / D-16)'.)"
-operator_approval: pending
+operator_approval: approved
+operator_approval_date: 2026-05-12
 score: "5/5 success criteria addressed + #6 no-regressions (1 PASS-WITH-DEFERRAL on SC #5 inherited candidate-profile cascading race; 4 PASS for CLEAN-01..04; 1 PASS with per-spec smoke evidence for CLEAN-05; 1 PASS for #6 no-regressions in lint/typecheck/unit-test baselines)"
 verifier: gsd-executor (self-authored per Plan 07 Task 4; routed to operator checkpoint Task 5)
 follow_ups:
@@ -18,12 +19,12 @@ follow_ups:
     file: .planning/todos/pending/2026-05-12-voters-layout-non-reactive-appsettings.md
     rationale: "Phase 77 P01 deferred 3 SETTINGS-01 wave A cells (header.showFeedback / header.showHelp / notifications.voterApp) due to non-reactive $appSettings reads at (voters)/+layout.svelte:43-50 + :65-69. Mount-time read captures static defaults BEFORE the $effect merges runtime values. Routed to v2.10+ a11y/UX milestone."
 re_verification:
-  verified_at: pending
+  verified_at: 2026-05-12
   verifier: operator (Plan 07 Task 5 human-verify checkpoint)
   previous_status: green-with-deferral (pre-operator-checkpoint)
   previous_score: "5/5 SCs addressed + #6 no-regressions (4 PASS + 1 PASS-WITH-DEFERRAL on SC #5 inherited race; #6 PASS)"
-  verdict: pending operator review
-  notes: "Operator review pending. Operator should: (1) confirm SC dispositions match operator's reading of Plans 01-06 outcomes; (2) confirm constants-regen DEFERRED decision per Phase 76 P04 / Phase 77 P05 inheritance; (3) confirm 2 NEW out-of-scope follow-up todos route to v2.10+ (candidate-profile race + voters-layout-non-reactive); (4) confirm 73-REVIEW.md annotation shape (Option 2 default: post-close cross-link section to Plan 06 SUMMARY); (5) confirm STATE.md §Blockers/Concerns Phase 73 follow-up entry replacement; (6) optionally run the 3 cold-start --workers=1 cold-start gate (~54 min × 3 ≈ 162 min) to empirically confirm the +16 PASS_LOCKED delta from CLEAN-05a's --likert-only voter-fixture-race resolution, then run regen-constants.mjs against run-3.json if cascade resolved."
+  verdict: approved
+  notes: "Operator approved 2026-05-12 via /gsd-autonomous resume-from-76 path. Disposition: (1) SC dispositions accepted — 4 PASS + 1 PASS-WITH-DEFERRAL on CLEAN-05 inherited race + #6 PASS; (2) constants-regen DEFERRED per Phase 76 P04 / Phase 77 P05 inheritance (Phase 75 baseline preserved); (3) 2 NEW out-of-scope todos routed to v2.10+ (candidate-profile-cascading-race + voters-layout-non-reactive-appsettings); (4) 73-REVIEW.md annotation Option 2 (post-close cross-link section) confirmed; (5) STATE.md §Blockers/Concerns Phase 73 follow-up entry replacement confirmed; (6) 3-run cold-start gate NOT executed — default DEFER per RESEARCH Q2 recommendation accepted (~162 min cost too high vs no empirical capture possible while candidate-profile cascade persists)."
 ---
 
 # Phase 78 — Verification Record
