@@ -13,10 +13,10 @@ OpenVAA is a framework for building Voting Advice Applications (VAAs). It's a mo
 ```bash
 yarn install                    # Install all workspace dependencies
 yarn dev                        # Start Supabase + Vite dev server
-yarn dev:down                   # Stop Supabase services
-yarn dev:stop                   # Stop Supabase services
-yarn dev:reset                  # Reset database (drops and recreates)
-yarn dev:status                 # Show Supabase service status
+yarn db:down                    # Stop Supabase services
+yarn db:stop                    # Stop Supabase services
+yarn db:reset                   # Reset database (drops and recreates) + wipe vite cache
+yarn db:status                  # Show Supabase service status
 ```
 
 ### Building
@@ -55,13 +55,20 @@ yarn workspace @openvaa/frontend dev
 ### Supabase Commands
 
 ```bash
-yarn supabase:start           # Start local Supabase instance
-yarn supabase:stop            # Stop local Supabase instance
-yarn supabase:reset           # Reset database (drops and recreates)
-yarn supabase:status          # Show service status
+yarn db:start                 # Build packages, start local Supabase, launch frontend dev server
+yarn db:stop                  # Stop local Supabase instance (alias for db:down)
+yarn db:down                  # Stop local Supabase instance
+yarn db:reset                 # Reset database (drops + recreates) + wipe vite cache (supabase:reset && dev:clean)
+yarn db:reset-with-data       # supabase:reset + db:seed --template default + dev:clean
+yarn db:seed                  # Run @openvaa/dev-seed (accepts --template <name>, --likert-only, --seed <int>, --external-id-prefix <str>)
+yarn db:seed:teardown         # Remove all seed_-prefixed rows + portraits
+yarn db:status                # Show Supabase service status
+yarn dev:clean                # Wipe apps/frontend/.svelte-kit + apps/frontend/node_modules/.vite (vite-cache reset)
 yarn supabase:types           # Regenerate TypeScript types from schema
 yarn supabase:lint:sql        # Run SQL linter on all migrations (sqlfluff + Splinter advisors)
 ```
+
+**Deprecated aliases** (preserved through v2.10; each emits a `[deprecated]` warning on stderr then forwards to the canonical `db:*`): `dev:start`, `dev:down`, `dev:stop`, `dev:reset`, `dev:reset-with-data`, `dev:seed`, `dev:seed:teardown`, `dev:status`. Use the new `db:*` names in all new scripts and docs.
 
 ### Single Test Development
 
@@ -250,7 +257,7 @@ The development stack uses Supabase CLI for backend services:
 yarn test:unit
 
 # Full E2E (requires Supabase running)
-yarn dev:reset
+yarn db:reset
 yarn dev
 # Wait for services to be healthy
 yarn test:e2e
@@ -274,10 +281,10 @@ yarn build             # Rebuilds all packages (cached -- only changed packages 
 ### Seeding local data
 
 ```bash
-yarn dev:reset-with-data       # supabase db reset + default template (Finnish demo, 4 locales)
-yarn dev:seed --template e2e   # E2E test data for manual Playwright runs
-yarn dev:seed --template ./my-template.ts  # custom templates from filesystem
-yarn dev:seed:teardown         # remove all seed_-prefixed rows + portraits
+yarn db:reset-with-data        # supabase db reset + default template (Finnish demo, 4 locales) + vite-cache wipe
+yarn db:seed --template e2e    # E2E test data for manual Playwright runs
+yarn db:seed --template ./my-template.ts  # custom templates from filesystem
+yarn db:seed:teardown          # remove all seed_-prefixed rows + portraits
 ```
 
 See `packages/dev-seed/README.md` for authoring custom templates (mixing
@@ -342,7 +349,7 @@ See `render.example.yaml` for Render deployment configuration:
 
 ## Troubleshooting
 
-**Database issues**: Run `yarn dev:reset` to reset the database (drops and recreates all tables with fresh seed data).
+**Database issues**: Run `yarn db:reset` to reset the database (drops and recreates all tables with fresh seed data; also wipes the vite cache).
 
 **Port conflicts**: Check ports 54321 (Supabase API), 54323 (Supabase Studio), 5173 (frontend) are free.
 
