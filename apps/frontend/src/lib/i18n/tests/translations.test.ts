@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { describe, expect, test } from 'vitest';
+import { t } from '$lib/i18n/wrapper';
 
 // Path to inlang message files
 const messagesDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..', 'messages');
@@ -102,4 +103,17 @@ test('all message files are valid JSON', () => {
       expect(() => JSON.parse(content)).not.toThrow();
     }
   }
+});
+
+describe('TranslationKey type safety (CLEAN-04)', () => {
+  test('t() signature rejects non-TranslationKey strings at compile-time', () => {
+    // reason: regression-locker for Phase 78 CLEAN-04 (CONTEXT D-11 + RESEARCH Q7).
+    // If `t()` in wrapper.ts is loosened back to `key: string`, the @ts-expect-error
+    // directive below becomes "unused @ts-expect-error" and the typecheck (yarn check)
+    // fails. The real assertion is the compiler — the runtime smoke below only satisfies
+    // vitest's "at least one assertion per test" convention.
+    // @ts-expect-error — 'definitely.not.a.real.key' is not a TranslationKey union member
+    t('definitely.not.a.real.key');
+    expect(true).toBe(true);
+  });
 });
