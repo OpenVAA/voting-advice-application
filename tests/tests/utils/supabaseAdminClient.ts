@@ -36,7 +36,7 @@
  *   - `public updateAppSettings(partialSettings)` — see D-11 note above
  *
  * Added by this subclass:
- *   - Auth helpers (private): `fixGoTrueNulls`, `safeListUsers`
+ *   - Auth helpers (private): `safeListUsers`
  *   - E2E query helpers: `findData`, `query`, `update`, `getAppSettings`
  *   - Auth actions: `setPassword`, `forceRegister`, `unregisterCandidate`,
  *     `sendEmail`, `sendForgotPassword`, `deleteAllTestUsers`
@@ -114,46 +114,11 @@ function resolveFieldName(field: string): string {
 }
 
 export class SupabaseAdminClient extends DevSeedAdminClient {
-  /**
-   * Fix GoTrue NULL column bug: sets empty-string defaults on auth.users columns
-   * that GoTrue expects to be non-NULL. Must be called before any listUsers operation.
-   * Uses a direct SQL query via the service_role client.
-   */
-  private async fixGoTrueNulls(): Promise<void> {
-    await this.client
-      .rpc('merge_jsonb_column', {
-        p_table_name: '_dummy_',
-        p_column_name: '_dummy_',
-        p_row_id: '00000000-0000-0000-0000-000000000000',
-        p_partial_data: {}
-      })
-      .then(
-        () => {},
-        () => {}
-      ); // Ignore errors, just ensure connection is warm
-
-    // Use raw SQL via PostgREST - this runs as service_role which has auth admin rights
-    const { error } = await this.client.from('user_roles').select('id').limit(0);
-    if (error) return; // Can't even read, skip
-
-    // Fix NULLs via direct REST call to the database
-    await fetch(`${SUPABASE_URL}/rest/v1/rpc/merge_jsonb_column`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        apikey: process.env.SUPABASE_SERVICE_ROLE_KEY ?? '',
-        Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY ?? ''}`,
-        Prefer: 'return=minimal'
-      },
-      body: JSON.stringify({
-        p_table_name: '_fix_gotrue_nulls_',
-        p_column_name: '_dummy_',
-        p_row_id: '00000000-0000-0000-0000-000000000000',
-        p_partial_data: {}
-      })
-    });
-    // Ignore - the real fix is below via direct psql-equivalent
-  }
+  // Phase 78 CLEAN-05 WR-07: the prior `fixGoTrueNulls` method had ZERO callers
+  // anywhere in tests/, apps/, or packages/ (verified via repo-wide grep). It
+  // was a leftover from a since-removed workaround for the GoTrue NULL column
+  // bug; the `safeListUsers` method below now handles that bug independently
+  // by short-circuiting on listUsers failure. Removed as dead code.
 
   /**
    * Safely list all auth users, working around the GoTrue NULL column bug.
@@ -347,33 +312,53 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
     if (createError) throw new Error(`forceRegister: createUser failed: ${createError.message}`);
     const user = createData.user;
 
-    // 2. Look up candidate ID by external_id
-    const { data: candidate, error: cError } = await this.client
-      .from('candidates')
-      .select('id')
-      .eq('external_id', candidateExternalId)
-      .eq('project_id', this.projectId)
-      .single();
-    if (cError) {
-      throw new Error(`forceRegister: failed to find candidate ${candidateExternalId}: ${cError.message}`);
+    // Phase 78 CLEAN-05 WR-05: wrap the 4-step mutation chain in try/catch with
+    // a compensating `auth.admin.deleteUser` rollback on partial failure. The
+    // prior implementation could leave orphan auth users when step 2/3/4 failed
+    // — those orphans then surfaced as "User already exists" errors on
+    // subsequent test runs, requiring manual cleanup.
+    try {
+      // 2. Look up candidate ID by external_id
+      const { data: candidate, error: cError } = await this.client
+        .from('candidates')
+        .select('id')
+        .eq('external_id', candidateExternalId)
+        .eq('project_id', this.projectId)
+        .single();
+      if (cError) {
+        throw new Error(`forceRegister: failed to find candidate ${candidateExternalId}: ${cError.message}`);
+      }
+
+      // 3. Assign candidate role (user_roles table has no project_id column;
+      //    scope_type + scope_id define the scope)
+      const { error: roleError } = await this.client.from('user_roles').insert({
+        user_id: user.id,
+        role: 'candidate',
+        scope_type: 'candidate',
+        scope_id: candidate.id
+      });
+      if (roleError) throw new Error(`forceRegister: insert user_role failed: ${roleError.message}`);
+
+      // 4. Link auth user to candidate record
+      const { error: linkError } = await this.client
+        .from('candidates')
+        .update({ auth_user_id: user.id })
+        .eq('id', candidate.id);
+      if (linkError) throw new Error(`forceRegister: link auth user failed: ${linkError.message}`);
+    } catch (mutationErr) {
+      // reason: WR-05 — compensating rollback on partial failure prevents
+      // orphan auth users that cascade as "User already exists" errors across
+      // subsequent test runs. The rollback failure (if any) is logged but not
+      // re-thrown — we always re-throw the original mutationErr so the caller
+      // sees the real cause.
+      await this.client.auth.admin.deleteUser(user.id).then(
+        () => {},
+        (rollbackErr) => {
+          console.error('[forceRegister] rollback (auth.admin.deleteUser) failed:', rollbackErr);
+        }
+      );
+      throw mutationErr;
     }
-
-    // 3. Assign candidate role (user_roles table has no project_id column;
-    //    scope_type + scope_id define the scope)
-    const { error: roleError } = await this.client.from('user_roles').insert({
-      user_id: user.id,
-      role: 'candidate',
-      scope_type: 'candidate',
-      scope_id: candidate.id
-    });
-    if (roleError) throw new Error(`forceRegister: insert user_role failed: ${roleError.message}`);
-
-    // 4. Link auth user to candidate record
-    const { error: linkError } = await this.client
-      .from('candidates')
-      .update({ auth_user_id: user.id })
-      .eq('id', candidate.id);
-    if (linkError) throw new Error(`forceRegister: link auth user failed: ${linkError.message}`);
   }
 
   /**
@@ -534,15 +519,38 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
 
     const testUsers = users.filter((u) => u.email && (u.email.includes('openvaa.org') || u.email.includes('test')));
 
+    // Phase 78 CLEAN-05 WR-06: propagate per-user step errors instead of
+    // silently swallowing them. The prior implementation discarded
+    // PostgREST/admin-API errors on every step — when a teardown failed
+    // mid-loop the test suite would proceed against a corrupted state and
+    // produce confusing downstream failures. Collect errors and throw at the
+    // end with an aggregated message so partial deletions complete first.
+    const errors: Array<{ user: string; step: string; error: unknown }> = [];
+
     for (const user of testUsers) {
       // Clear auth_user_id on candidates
-      await this.client.from('candidates').update({ auth_user_id: null }).eq('auth_user_id', user.id);
+      const { error: clearError } = await this.client
+        .from('candidates')
+        .update({ auth_user_id: null })
+        .eq('auth_user_id', user.id);
+      if (clearError) errors.push({ user: user.id, step: 'clear-auth-user-id', error: clearError });
 
       // Delete user roles
-      await this.client.from('user_roles').delete().eq('user_id', user.id);
+      const { error: rolesError } = await this.client.from('user_roles').delete().eq('user_id', user.id);
+      if (rolesError) errors.push({ user: user.id, step: 'delete-user-roles', error: rolesError });
 
       // Delete auth user
-      await this.client.auth.admin.deleteUser(user.id);
+      const { error: deleteError } = await this.client.auth.admin.deleteUser(user.id);
+      if (deleteError) errors.push({ user: user.id, step: 'delete-auth-user', error: deleteError });
+    }
+
+    if (errors.length > 0) {
+      // reason: WR-06 — collect-and-throw at end so partial deletions complete
+      // first AND the caller sees the failures (matches `unregisterCandidate`'s
+      // throw-on-error pattern at lines 386-413 of this file).
+      throw new Error(
+        `deleteAllTestUsers: ${errors.length} failure(s) — ${JSON.stringify(errors)}`
+      );
     }
   }
 }

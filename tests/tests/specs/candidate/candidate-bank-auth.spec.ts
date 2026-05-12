@@ -25,12 +25,23 @@ import * as jose from 'jose';
 import { expect,test } from '../../fixtures';
 
 const SUPABASE_URL = process.env.SUPABASE_URL ?? 'http://localhost:54321';
-const SUPABASE_SERVICE_ROLE_KEY =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ??
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU';
-const SUPABASE_ANON_KEY =
-  process.env.SUPABASE_ANON_KEY ??
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WO_o0BopYEtxYdNlHfxNto_8VH1W-nHhQcyo';
+
+// Phase 78 CLEAN-05 IN-01: throw on missing keys rather than falling back to
+// hardcoded demo JWTs. The prior fallback masked misconfigured CI environments
+// — tests would run against the demo keys and produce mysterious 401s from the
+// Edge Function. Loud failure here surfaces the misconfiguration immediately.
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  throw new Error(
+    'SUPABASE_SERVICE_ROLE_KEY required for candidate-bank-auth tests (Phase 78 CLEAN-05 IN-01)'
+  );
+}
+if (!process.env.SUPABASE_ANON_KEY) {
+  throw new Error(
+    'SUPABASE_ANON_KEY required for candidate-bank-auth tests (Phase 78 CLEAN-05 IN-01)'
+  );
+}
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 
 // Test identity claims for a synthetic bank auth user
 const TEST_IDENTITY = {
@@ -161,12 +172,21 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
       throw new Error(`Unexpected probe response ${status}: ${JSON.stringify(body)}`);
     }
 
+    // Phase 78 CLEAN-05 IN-02: tighten the `body.error ?? body.msg ?? body.details`
+    // precedence chain with an explicit `typeof === 'string'` guard. The prior
+    // type-cast (`as string | null`) silently accepted non-string values (e.g.,
+    // `{ error: { code: 401 } }` would have flowed through as a non-null object
+    // misrepresented as a string). The typeof check returns null when none of
+    // the candidate properties is actually a string.
+    const candidateErrorValue = body.error ?? body.msg ?? body.details;
+    const errorMsg = keysConfigured ? null : (typeof candidateErrorValue === 'string' ? candidateErrorValue : null);
+
     probe = {
       status,
       body,
       keysConfigured,
       createdUserId: keysConfigured ? ((body.user_id as string) ?? null) : null,
-      errorMsg: keysConfigured ? null : ((body.error ?? body.msg ?? body.details) as string | null) ?? null
+      errorMsg
     };
   });
 
