@@ -54,3 +54,38 @@ Phase 64's scope is precisely the 5 voter-results residuals + parity-gate
 close. Extending coverage to all filter types is additive E2E work that
 fits a future test-hygiene phase (potentially paired with the broader
 suite-wide skip-path cleanup in `2026-04-27-remove-e2e-skip-modifiers.md`).
+
+---
+
+## Resolution (2026-05-13 — Phase 77 / SETTINGS-01 wave B)
+
+Folded into Phase 77 Plan 02. Resolution map:
+
+- **NumberFilter** — Phase 77 Plan 02 cell `SETTINGS-01 wave B — NumberFilter`
+  (PASS expected; smoke pending). Anchor: new e2e-fixture row
+  `test-question-number-1` (type `number`, sort 22, `custom_data.filterable: true`)
+  + Alpha/Beta/Gamma/voter-cand-agree number-answer cells.
+- **TextFilter** — Phase 77 Plan 02 cell `SETTINGS-01 wave B — TextFilter`
+  (PASS expected; smoke pending). Anchor: existing `test-question-text` (sort 8)
+  gained `custom_data.filterable: true` in Plan 02.
+- **ChoiceQuestionFilter (categorical)** — Phase 77 Plan 02 cell
+  `SETTINGS-01 wave B — ChoiceQuestionFilter (categorical)` (PASS expected).
+  Anchor: existing `test-question-directional-1` (sort 17) gained
+  `custom_data.filterable: true` in Plan 02.
+- **FilterGroup AND** — Phase 77 Plan 02 cell `SETTINGS-01 wave B — FilterGroup AND`
+  (PASS expected). Toggles party filter + categorical filter sequentially and
+  asserts the AND composition narrows further than either alone.
+- **MISSING_FILTER_VALUE** — Phase 77 Plan 02 cell `SETTINGS-01 wave B —
+  MISSING_FILTER_VALUE` (PASS expected). Uncheck "No answer" on NumberFilter →
+  candidates without numeric answers are excluded.
+- **Constituency-based filter** — Phase 77 Plan 02 additive PASS-WITH-DEFERRAL
+  block in `tests/tests/specs/variants/constituency.spec.ts`. OQ-5 resolution:
+  the voter results filter dialog does NOT render a constituency filter today
+  (buildParentFilters emits only alliance/faction/organization). Follow-up todo:
+  `.planning/todos/pending/2026-05-13-constituency-filter-product-gap.md`.
+- **FilterGroup OR** — captured PASS-WITH-DEFERRAL per RESEARCH LANDMINE-4
+  PRODUCT-GAP. UI surface does not exist today (`grep -rn "logicOperator|LOGIC_OP"
+  apps/frontend/src/lib/components/entityFilters/` → 0 hits). Follow-up todo:
+  `.planning/todos/pending/2026-05-13-filtergroup-or-mode-ui-product-gap.md`.
+
+Source: `.planning/phases/77-settings-matrix-question-customization-gap-fills/77-02-SUMMARY.md`.
