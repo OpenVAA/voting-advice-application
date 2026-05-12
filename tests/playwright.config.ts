@@ -322,6 +322,22 @@ export default defineConfig({
       dependencies: ['data-setup-Ne-Nc']
     },
 
+    // Variant: allowopen (Phase 77 SETTINGS-02 — display-side reframing per LANDMINE-1)
+    {
+      name: 'data-setup-allowopen',
+      testMatch: /variant-allowopen\.setup\.ts/,
+      teardown: 'data-teardown-variants',
+      dependencies: ['variant-Ne-Nc'] // Sequential: wait for previous variant (LANDMINE-6)
+    },
+    {
+      name: 'variant-allowopen',
+      testDir: './tests/specs/voter',
+      testMatch: /voter-allowopen\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-allowopen']
+    },
+
     // === Opt-in Specialized Projects ===
     // These projects are gated by environment variables and excluded from
     // the default `yarn test:e2e` run. Enable via:
