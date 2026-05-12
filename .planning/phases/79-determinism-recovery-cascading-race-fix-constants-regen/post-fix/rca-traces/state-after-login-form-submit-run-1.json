@@ -1,0 +1,25 @@
+{
+  "_provenance": "reconstructed-from-trace-run-1.zip per RCA-FINDINGS.md §'State JSON Reconstruction Note'.",
+  "_source_trace": "trace-run-1.zip",
+  "runTag": "1",
+  "checkpoint": "after-login-form-submit",
+  "_LANDMARK": "THIS BRANCH DID NOT EXECUTE",
+  "manual_login_branch_executed": false,
+  "_reason": "loginIfRedirectedToLoginPage's 'if (page.url().includes(\"login\"))' check at candidate-profile.spec.ts:54 evaluated to FALSE because the URL at that moment was '/en/candidate/register/password' (it contains '/candidate' but not '/login'). The branch that would have filled the login form (lines 56-61) was skipped entirely.",
+  "test_trace_api_call_sequence": [
+    "Frame.goto callback URL",
+    "Frame.fill register-password",
+    "Frame.fill register-confirm-password",
+    "Frame.click register-password-submit",
+    "Frame.waitForURL (at line 51 — helper's predicate)",
+    "Frame.expect terms-checkbox (at line 139 — FAILED after 10s timeout)"
+  ],
+  "expected_but_missing_api_calls": [
+    "Frame.waitFor login-email (helper line 57)",
+    "Frame.fill login-email (helper line 58)",
+    "Frame.fill login-password (helper line 59)",
+    "Frame.click login-submit (helper line 60)",
+    "Frame.waitForURL leaving /login (helper line 61)"
+  ],
+  "_summary": "The manual-login branch did NOT execute. The user is now navigating to /candidate/login (via the async goto from setPassword's handleSubmit), but the test has already moved past the helper."
+}

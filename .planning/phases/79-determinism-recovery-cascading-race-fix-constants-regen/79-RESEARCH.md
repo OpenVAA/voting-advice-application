@@ -1229,3 +1229,69 @@ Per `.planning/config.json` — no `security_enforcement` key present. Default i
 **Valid until:** 2026-06-12 (30 days for stable; the underlying Supabase + Playwright + SvelteKit + Svelte 5 stack is reasonably mature; the v2.10-Phase-79-specific code references are pinned to HEAD as of 2026-05-12 and won't shift unless Phase 79 itself modifies them).
 
 ## RESEARCH COMPLETE
+
+---
+
+## DETERM-04 RCA — Empirical Findings (Plan 01 close)
+
+**Appended:** 2026-05-12 (Plan 01 Task 3)
+**Source of truth:** `post-fix/rca-traces/RCA-FINDINGS.md` (full evidence + verdict + recommended fix)
+**Decision references:** D-04 (dual-hypothesis), D-05 (artifacts committed), D-06 (disproof preserved)
+
+This section is the canonical post-RCA empirical record. It distills the verdict from `RCA-FINDINGS.md` and updates downstream RESEARCH §"Frontend Race Fix Surface" with the empirically-chosen fix path.
+
+### H1 verdict + evidence
+
+**H1 (auth session propagation lag): PARTIALLY CONFIRMED — re-framed.**
+
+The empirical evidence DISPROVES the literal framing "login never happened / session not propagated":
+- `sb-127-auth-token` cookie IS valid throughout both runs (verified via raw cookie extraction from trace network log; decoded JWT payload includes `role: authenticated`, `expires_at: 1778620549`).
+- `setPassword` resolves in ~190ms with `type='success'` in BOTH runs (verified via `[RCA-H1]` console markers in trace).
+- The user does reach `/candidate/login` (verified via `error-context-run-{1,2}.md` page snapshot — heading "Your password is now set! Please log in using it.").
+
+However, H1's deeper concern is ACKNOWLEDGED IN SOURCE: `apps/frontend/src/routes/candidate/register/password/+page.svelte:78-80` comment states explicitly: *"The session from verifyOtp may not reliably persist through client-side navigation to the protected route, so we redirect to login for a clean auth flow."* The existence of this defensive `/login` redirect (line 97) IS itself confirmation that H1's session-propagation concern is real — encoded as a workaround, not as a fix.
+
+### H2 verdict + evidence
+
+**H2 (ToU hydration timing race): DISPROVEN BY ABSENCE OF EXERCISE.**
+
+- `window.__phase79RcaHydrated` was NEVER set in either run (verified via `grep '"text":"\\[RCA\\] Hydration complete:"' on the unzipped traces — ZERO matches). The `(protected)/+layout.svelte` `$effect` block (containing the H2 marker injection) NEVER FIRED.
+- No `/candidate/(protected)/` URLs in the network log (verified via network-log enumeration — only `/auth/callback`, `/register/password`, and `/login` plus its `__data.json` data-load were navigated).
+- DOM at failure shows the Login form, NOT `<TermsOfUseForm>`.
+
+The hypothesized hydration race had NO opportunity to manifest because the user never reached the protected layout. This RCA's evidence is SILENT on H2's behavior in scenarios where the user DOES reach `(protected)/`. Future investigation of a ToU hydration race (e.g., in a slow-server-load scenario) would need fresh instrumentation — this RCA's results should NOT be extrapolated to disprove H2 in OTHER scenarios.
+
+### Combined-mode verdict
+
+**NOT H1+H2 COMBINED MODE.** The two hypotheses are decoupled in the observed failure:
+- H1's concern (session propagation) is encoded as a defensive `/login` redirect that DID work — the user landed on `/login` with the cookie valid + email pre-filled.
+- H2's concern (hydration timing) was never exercised because `(protected)/` was never reached.
+
+The cascade-skip is caused by a THIRD factor that surfaced during RCA: a TEST-SPEC URL-PREDICATE BUG at `candidate-profile.spec.ts:48-63`. The spec's `loginIfRedirectedToLoginPage` helper uses the predicate `(url) => url.pathname.includes('/login') || url.pathname.includes('/candidate')`, which matches BOTH `/candidate/login` AND `/candidate/register/password` (the intermediate page). The `await page.waitForURL(<predicate>, {timeout:15000})` exits IMMEDIATELY because the current URL is `/en/candidate/register/password` (pathname includes `/candidate`), then the `if (page.url().includes('login'))` check is FALSE, the manual-login branch is skipped, and the test proceeds to the terms-checkbox assertion before the async `goto(CandAppLogin)` completes. The user ends up on `/candidate/login` ~100ms LATER, but by then the test is polling for `terms-checkbox` which only renders under `(protected)/`. 10s timeout → fail → cascade-skip downstream.
+
+### Recommended fix shape (chosen empirically)
+
+Per RESEARCH §"Frontend Race Fix Surface" — NEITHER the H1 frontend fix shapes (a/b/c) NOR the H2 frontend fix shapes (a/b/c) are required. The fix is a single-line SPEC-SIDE URL-predicate change:
+
+**Primary fix (Plan 02):** `tests/tests/specs/candidate/candidate-profile.spec.ts:51` — tighten the URL predicate so it does NOT match `/candidate/register/...` or `/candidate/auth/...` (only `/candidate/login` or genuine `/candidate/(protected)/` paths).
+
+Concrete diff (one of two equivalent forms suggested in RCA-FINDINGS.md):
+```diff
+-    await page.waitForURL((url) => url.pathname.includes('/login') || url.pathname.includes('/candidate'), {
++    await page.waitForURL(
++      (url) => url.pathname.includes('/candidate/login') || url.pathname === '/candidate' || url.pathname.match(/\/candidate\/(?!register|auth|login)/),
+       timeout: 15000
+-    });
++    );
+```
+
+**Secondary fix (OPTIONAL, Plan 02 follow-up only if D-12 smoke flakes):** `apps/frontend/src/lib/api/adapters/supabase/dataWriter/supabaseDataWriter.ts:83-89` — add explicit `await this.supabase.auth.getSession()` after `auth.updateUser({password})` to force session refresh on the browser client. Defer unless the spec fix alone proves insufficient.
+
+### Confidence
+
+HIGH. Both runs produced byte-identical page-snapshots at the failure moment. The trace API-call sequence is unambiguous (only 5 Frame calls before the failure: goto + 2 fills + click + waitForURL — NO subsequent login-form fill/click, which is the smoking gun for the helper-branch-skip). The fix is one line + a comment update.
+
+### Cross-reference
+
+Full evidence + per-checkpoint state JSONs + disproof preservation: see `post-fix/rca-traces/RCA-FINDINGS.md`.
+
