@@ -338,6 +338,44 @@ export default defineConfig({
       dependencies: ['data-setup-allowopen']
     },
 
+    // Variant: hidden+required (Phase 77 SETTINGS-03 — visibility filter + required-info enforcement;
+    // voter-required cell is PRODUCT-GAP per LANDMINE-3, captured as follow-up todo)
+    {
+      name: 'data-setup-hidden-required',
+      testMatch: /variant-hidden-required\.setup\.ts/,
+      teardown: 'data-teardown-variants',
+      dependencies: ['variant-allowopen'] // Sequential: wait for previous variant (LANDMINE-6)
+    },
+    {
+      // Voter-hidden cell — walks /questions and asserts the hidden question
+      // is absent from the DOM (voterContext filter at
+      // voterContext.svelte.ts:215-230). Voter routes only — no candidate
+      // auth dependency.
+      name: 'variant-hidden-required-voter',
+      testDir: './tests/specs/voter',
+      testMatch: /voter-visibility-required\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-hidden-required']
+    },
+    {
+      // Candidate-required cell — logs in as Alpha (reuses STORAGE_STATE from
+      // auth-setup; auth schema is NOT touched by dataset reset, so Alpha's
+      // pre-registered credentials remain valid against the variant's
+      // candidate row). Placed inside the variant project per RESEARCH OQ-3
+      // resolution (option B) to sidestep candidate-app-mutation's testMatch
+      // regex AND the upstream auth-setup race (LANDMINE-D).
+      name: 'variant-hidden-required-candidate',
+      testDir: './tests/specs/candidate',
+      testMatch: /candidate-required-info\.spec\.ts/,
+      fullyParallel: false,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: STORAGE_STATE
+      },
+      dependencies: ['variant-hidden-required-voter']
+    },
+
     // === Opt-in Specialized Projects ===
     // These projects are gated by environment variables and excluded from
     // the default `yarn test:e2e` run. Enable via:
