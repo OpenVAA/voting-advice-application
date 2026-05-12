@@ -1,0 +1,71 @@
+Phase 77 Plan 05 Task 2 — Parity-gate output + IMGPROXY_TIED_TITLES audit
+================================================================================
+
+Disposition: DEFERRED-WITH-RATIONALE (inherits Phase 76 P04 architectural decision)
+
+Per Phase 76 P04 precedent (commit f205b114f, 76-VERIFICATION.md §"Constants Regen
+(CONTEXT D-10) — NOT APPLIED"): when the cold-start gate captures degraded baseline
+due to upstream auth-setup race cascade, regenerating constants would lock in the
+degraded baseline (Phase 75: 47 PASS_LOCKED, Phase 76 actual cold-start: 4) and
+lose Phase 75's healthier reference. Phase 77 inherits this decision intact: the
+auth-setup race remains active in this dev shell (confirmed by all 4 Phase 77 plans
+using `--no-deps` workarounds to isolate their per-plan smokes from the upstream cascade).
+
+
+=== Pair 1: run-1 vs run-2 ===
+PARITY GATE: DEFERRED-WITH-RATIONALE
+Rationale: run-1.json and run-2.json are marker JSONs (no test results captured;
+see post-fix/run-{1,2}.json _note for full rationale). Pair comparison cannot
+be computed against marker JSONs. The parity-gate constants in
+tests/scripts/diff-playwright-reports.ts (Phase 75 baseline: 47 PASS_LOCKED /
+15 DATA_RACE / 33 CASCADE) remain PRESERVED per Phase 76 P04 architectural
+decision — they would otherwise FAIL loudly against any captured-degraded-baseline
+run-N.json, producing the same 43-regression set Phase 76 P04 documented.
+
+=== Pair 2: run-2 vs run-3 ===
+PARITY GATE: DEFERRED-WITH-RATIONALE (same rationale as Pair 1).
+
+=== Pair 3: run-1 vs run-3 ===
+PARITY GATE: DEFERRED-WITH-RATIONALE (same rationale as Pair 1).
+
+================================================================================
+Constants regen decision (CONTEXT D-10):
+================================================================================
+
+DECISION: PRESERVE Phase 75 baseline constants in tests/scripts/diff-playwright-reports.ts.
+
+Rationale (inherits Phase 76 P04 architectural precedent):
+1. CONTEXT D-10 instructs conditional regen IF (a) auth-setup race no longer cascades
+   AND (b) PASS_LOCKED grows net-positive. Phase 77 cold-start verification was NOT
+   completed; the per-plan evidence (all 4 plans used --no-deps workarounds) confirms
+   the auth-setup race is STILL active and would still cascade.
+2. Regenerating would lock in the degraded baseline (~4 PASS_LOCKED actual vs
+   47 Phase 75 baseline) and lose the loud forward-looking signal.
+3. The 2 new variant projects (variant-allowopen, variant-hidden-required) added by
+   Plans 03 + 04 contribute ~6 new test entries — these would land in PASS_LOCKED
+   only AFTER the upstream race resolves. Until then, they sit in cascade.
+
+Action: NO changes to tests/scripts/diff-playwright-reports.ts.
+
+================================================================================
+IMGPROXY_TIED_TITLES audit (Phase 77 title-collision safety check):
+================================================================================
+
+Source: tests/scripts/diff-playwright-reports.ts:154-162 + regen-constants.mjs:64-78
+        14 IMGPROXY-bound title suffix patterns (CONTEXT D-09 binding).
+
+Phase 77 new test titles (21 total across Plans 01-04):
+- 10 × 'SETTINGS-01 wave A — *' (Plan 01)
+- 6 × 'SETTINGS-01 wave B — *' (Plan 02; 5 PASS + 1 PRODUCT-GAP)
+- 3 × 'SETTINGS-02 entity comment surface *' (Plan 03)
+- 2 × 'SETTINGS-03 *' (Plan 04)
+
+Audit method: bash script at /tmp/77-imgproxy-audit.sh — for each Phase 77 title,
+check if it endsWith() any of the 14 bound IMGPROXY suffix patterns.
+
+Audit result: AUDIT CLEAN — 0 collisions. All 21 Phase 77 titles disjoint
+from 14 IMGPROXY-bound patterns. Phase-73-locked structural binding preserved.
+
+================================================================================
+End of parity-gate output.
+================================================================================
