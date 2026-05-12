@@ -3,12 +3,25 @@ created: 2026-05-11
 priority: high
 resolves_phase: 78
 escalated_from: 73-03
-status: scoped-into-CLEAN-05
+status: resolved-by-CLEAN-05
 chosen_path: B
 chosen_modifier: --likert-only
 operator_decision_date: 2026-05-11
-tags: [tests, fixtures, voter, race-fix, escalation, scoped-to-phase-78]
+resolved_date: 2026-05-12
+resolved_by_plan: 78-05
+resolved_commits:
+  - "8f1392fd1 test(78-05): add failing tests for --likert-only CLI flag"
+  - "15435d4df feat(78-05): add --likert-only CLI flag to @openvaa/dev-seed"
+tags: [tests, fixtures, voter, race-fix, escalation, scoped-to-phase-78, resolved]
 ---
+
+> **Resolution addendum (2026-05-12, Phase 78 Plan 05):** Path B `--likert-only` landed.
+>
+> - `@openvaa/dev-seed` CLI now accepts `--likert-only` (`packages/dev-seed/src/cli/seed.ts` + new `src/cli/likert-only.ts`).
+> - Filter keeps all info questions (Phase 76+77 additions preserved) and restricts opinion questions to `singleChoiceOrdinal` — produces a 16-ordinal-opinion + N-info seed shape compatible with the existing voter-fixture Likert loop.
+> - `tests/tests/fixtures/voter.fixture.ts` annotated with `// reason:` line referencing the `--likert-only` seed-mode dependency (≤1 LOC change per CONTEXT D-13).
+> - 16 voter-app tests previously parked in the post-73 DATA_RACE pool unblocked at the seed level; full 3-run cold-start determinism verification deferred to Phase 78 Plan 07.
+> - Heterogeneous-question-type voter-fixture coverage (Path A) remains OUT OF SCOPE per the "Recommended Fix Shape" section below — deferred to a future-milestone backlog item.
 
 > **Operator decision (2026-05-11):** Path B locked in with the `--likert-only` seed modifier (CLI flag form). Scoped into Phase 78 CLEAN-05 — see `.planning/REQUIREMENTS.md §CLEAN-05` and `.planning/ROADMAP.md §"Phase 78"` SC #5. Path A (universal `answerCurrentQuestion` dispatcher) explicitly NOT chosen — heterogeneous-question-type coverage deferred to a future-milestone backlog item.
 

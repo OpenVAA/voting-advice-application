@@ -50,6 +50,7 @@ export const voterTest = base.extend<VoterFixtures>({
   voterAnswerIndex: [4, { option: true }],
 
   answeredVoterPage: async ({ page, voterAnswerCount, voterAnswerIndex }, use) => {
+    // reason: requires --likert-only seed mode (singleChoiceOrdinal opinion questions only) per Phase 78 CLEAN-05 Path B. Run `yarn db:seed --template e2e --likert-only` first; see packages/dev-seed/src/cli/likert-only.ts.
     // Navigate Home -> Intro -> (optional pages) -> First Question
     await navigateToFirstQuestion(page);
 

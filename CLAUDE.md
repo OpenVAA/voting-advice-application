@@ -281,11 +281,16 @@ yarn build             # Rebuilds all packages (cached -- only changed packages 
 ### Seeding local data
 
 ```bash
-yarn db:reset-with-data        # supabase db reset + default template (Finnish demo, 4 locales) + vite-cache wipe
-yarn db:seed --template e2e    # E2E test data for manual Playwright runs
-yarn db:seed --template ./my-template.ts  # custom templates from filesystem
-yarn db:seed:teardown          # remove all seed_-prefixed rows + portraits
+yarn db:reset-with-data                        # supabase db reset + default template (Finnish demo, 4 locales) + vite-cache wipe
+yarn db:seed --template e2e                    # E2E test data for manual Playwright runs
+yarn db:seed --template e2e --likert-only      # E2E voter-fixture-compatible seed (Phase 78 CLEAN-05): restricts opinion questions to singleChoiceOrdinal, keeps all info questions
+yarn db:seed --template ./my-template.ts       # custom templates from filesystem
+yarn db:seed:teardown                          # remove all seed_-prefixed rows + portraits
 ```
+
+**Note on `--likert-only`:** the voter-fixture `answeredVoterPage` (`tests/tests/fixtures/voter.fixture.ts`) iterates Likert-only opinion questions and races against non-ordinal opinion questions (boolean / categorical / number) introduced by Phase 74+. Pass `--likert-only` to drop those non-ordinal opinion questions before running voter-app E2E specs. The flag is a no-op for templates without a `questions.fixed[]` array.
+
+**Yarn arg-forwarding caveat:** `yarn db:reset-with-data --likert-only` does NOT forward `--likert-only` through the `&&`-chain (yarn appends trailing args to the LAST command, which is `dev:clean`). Canonical invocation for a fully Likert-only reset is the manual chain: `yarn db:reset && yarn db:seed --template e2e --likert-only && yarn dev:clean`.
 
 See `packages/dev-seed/README.md` for authoring custom templates (mixing
 `fixed[]` hand-authored rows with synthetic `count`, 4-locale expansion,
