@@ -57,7 +57,7 @@ All gray areas auto-selected per `--auto` mode. Areas:
 - **Selected:** "TranslationKey union type from auto-generated `translationKey.ts`" (recommended default per source todo)
 
 - **Q:** "Handle `t.get = t` alias?"
-- **Selected:** "Grep audit at Plan 04 start; delete if zero consumers; rewrite + delete if 1-5; keep with inline `// reason:` if many" (recommended default — conditional disposition; PASS-WITH-DEFERRAL precedent if many consumers)
+- **Selected:** "Rewrite all consumers and remove alias" (user edited after auto discussion)
 
 - **Q:** "Add `@ts-expect-error` regression-locking test?"
 - **Selected:** "YES — assert in translations.test.ts that missing key is compile-time error" (recommended default — locks the tightening against future regressions)
