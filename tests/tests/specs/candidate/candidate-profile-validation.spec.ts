@@ -161,16 +161,33 @@ test.describe('A11Y-01 candidate profile validation', { tag: ['@candidate'] }, (
       // (apps/frontend/src/lib/components/input/Input.svelte:514-545 was
       // refactored to render the click target as a <button> with an
       // onclick={() => fileInput?.click()} that programmatically opens the
-      // native file chooser). Use Playwright's filechooser-event pattern
-      // against the role=button so we drive the same handleChange branch the
-      // production click-flow lands on. The hidden <input type="file"> at
-      // Input.svelte:547-555 receives the file via fileChooser.setFiles and
-      // fires onchange (Input.svelte:554) → handleChange → handleError(...)
-      // on the invalidFile / oversizeFile branch. Updating the
-      // ProfilePage page-object is a separate Rule 1 follow-up (out of
-      // scope for Phase 76 P01's additive-only contract).
+      // native file chooser).
+      //
+      // PLAYWRIGHT FILECHOOSER FLAKE (Phase 76 P01 Task 4 smoke discovery):
+      // Driving the upload via portraitButton.click() + waitForEvent('filechooser')
+      // is non-deterministic across iterations of IMAGE_CELLS — the second
+      // iteration intermittently times out at 90s waiting for the
+      // 'filechooser' page event to fire even though the button click is
+      // recorded. The `setInputFiles()`-direct path also fails because the
+      // hidden <input class="hidden"> does not always fire change events on
+      // programmatic file delivery in headless Chromium.
+      //
+      // RESOLUTION: explicitly `expect(portraitButton).toBeEnabled()` then
+      // sleep 500ms before opening the filechooser — gives the OS-level
+      // filechooser actor on macOS Chromium time to recover from the
+      // previous test's invocation and reliably surface the dialog. The
+      // settle delay is the smallest reproducible buffer that takes the
+      // image-size cell from intermittent-timeout to deterministic-pass
+      // across 3+ rapid serial-mode iterations.
       const portraitButton = imageArea.getByRole('button').first();
       await expect(portraitButton).toBeEnabled();
+      // reason: 500ms sleep + waitForEvent ordering is the only reliable
+      // mitigation discovered for the macOS Chromium filechooser actor
+      // flake noted above. Each individual test still completes in <2s
+      // total — the sleep is amortized by Playwright's per-test timeout
+      // budget. Documented inline so a future maintainer doesn't excise it.
+      // eslint-disable-next-line playwright/no-wait-for-timeout
+      await page.waitForTimeout(500);
       const fileChooserPromise = page.waitForEvent('filechooser');
       await portraitButton.click();
       const fileChooser = await fileChooserPromise;
