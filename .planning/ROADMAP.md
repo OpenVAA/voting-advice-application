@@ -116,7 +116,11 @@ Phase 79 (DETERM-04 + DETERM-05)
   2. Three consecutive `yarn test:e2e` cold-start runs show identical pass/fail sets across the full `auth-setup → candidate-app → candidate-app-mutation → re-auth-setup → candidate-app-settings → candidate-app-password` dependency chain.
   3. The parity-script constants reflect the post-DETERM-04 baseline (expected ~63 PASS_LOCKED — 47 v2.9 anchor + ~16 cascade-unblocked tests); regenerated constants committed via the v2.9 in-place path OR the archived `regen-constants.mjs` script.
   4. The regenerated baseline is wired as the v2.10 verification anchor for downstream Phases 80-82.
-**Plans**: TBD
+**Plans**: 4 plans
+- [ ] 79-01-PLAN.md — DETERM-04 RCA: dual-hypothesis instrumentation (H1 auth session propagation + H2 ToU hydration timing); committed trace artifacts; RCA-FINDINGS.md verdict
+- [ ] 79-02-PLAN.md — DETERM-04 fix: targeted frontend-race fix per RCA verdict; D-12 1-run cold-start smoke (run-0.json)
+- [ ] 79-02F-PLAN.md — DETERM-04 fallback (contingent, XOR with 79-02): restructure registration into register-fresh-candidate.setup.ts setup project per D-03
+- [ ] 79-03-PLAN.md — DETERM-05 3-run cold-start gate + SHA-256 identity + IMGPROXY audit + constants regen + atomic commit (long-running, ~3-4h unattended)
 
 ### Phase 80: A11Y Axe Cite-and-Fix
 **Goal**: The 5 first-run WCAG 2.1 AA violations surfaced by the Phase 76 A11Y-03 axe smoke baseline are all resolved. After Phase 80, `PLAYWRIGHT_A11Y=1 yarn test:e2e --project=a11y-smoke --workers=1` reports 0 violations across all 6 baselined routes, and per-rule regression assertions guard against recurrence.
@@ -186,7 +190,7 @@ Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82 (parall
 | 76. Profile + A11y | v2.9 | 4/4 | Complete | 2026-05-12 |
 | 77. Settings Matrix + Question-Customization Gap-Fills | v2.9 | 5/5 | Complete | 2026-05-12 |
 | 78. Cleanup Hygiene Phase | v2.9 | 7/7 | Complete | 2026-05-12 |
-| 79. Determinism Recovery (Cascading-Race Fix + Constants Regen) | v2.10 | 0/TBD | Not started | - |
+| 79. Determinism Recovery (Cascading-Race Fix + Constants Regen) | v2.10 | 0/4 | Not started | - |
 | 80. A11Y Axe Cite-and-Fix | v2.10 | 0/TBD | Not started | - |
 | 81. A11Y-01 PRODUCT-GAP Cells — Email + URL Format | v2.10 | 0/TBD | Not started | - |
 | 82. A11Y-01 PRODUCT-GAP Cell — Required-Empty | v2.10 | 0/TBD | Not started | - |
