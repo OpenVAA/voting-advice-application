@@ -4,14 +4,14 @@ milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance
 status: executing
 stopped_at: Phase 79 context gathered
-last_updated: "2026-05-12T21:33:05.292Z"
+last_updated: "2026-05-12T21:37:03.646Z"
 last_activity: 2026-05-12
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 4
-  completed_plans: 2
-  percent: 50
+  completed_plans: 3
+  percent: 75
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 ## Current Position
 
 Phase: 79 (Determinism Recovery (Cascading-Race Fix + Constants Regen)) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-05-12
 
@@ -73,6 +73,7 @@ Snapshot at v2.10 planning start (2026-05-12). v2.10 consumes 3 v2.9-routed v2.1
 | infrastructure | Local imgproxy Docker container 502 on image upload (intermittent) | Not a code issue; fix with `supabase stop && supabase start`. Carried forward. |
 | Phase 79 P01 | 2h | 4 tasks | 18 files |
 | Phase 79 P02 | 50min | 3 tasks | 9 files |
+| Phase 79 P02F | 3min | 0 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -106,6 +107,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Phase 79 Plan 01 (DETERM-04 RCA): H1 partially confirmed re-framed, H2 disproven by absence of exercise; proximate cause is test-spec URL-predicate bug at candidate-profile.spec.ts:51
 - [Phase ?]: Phase 79 Plan 02 (DETERM-04 fix): applied one-line URL-predicate fix at candidate-profile.spec.ts:51 per Plan 01 RCA; registration cascade resolved, verified across 3 isolated runs + cold-start
 - [Phase ?]: Phase 79 Plan 02: image-upload (CAND-03) cascade-skips 5 downstream tests post-fix; structurally unrelated to DETERM-04; flag 79-02F restructure trigger = N (restructure wouldn't help; image-upload investigation deferred to future plan)
+- [Phase ?]: Plan 79-02F closed DONE-AS-NOOP per XOR contract — Plan 02 PASSed, so the fallback restructure short-circuits without executing Tasks 1-4.
 
 ### Blockers/Concerns
 
@@ -115,7 +117,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-05-12T21:33:01.004Z
+Last session: 2026-05-12T21:36:59.505Z
 Stopped at: Phase 79 context gathered
 Resume file: None
 Next action: Run `/gsd-plan-phase 79` to plan the Determinism Recovery phase.
