@@ -172,6 +172,15 @@ Git commit form: `git -c core.hooksPath=/dev/null commit -m '...'` (memory: proj
     - If the flag is NOT present (79-02 PASS path landed; orchestrator dispatched 79-02F by mistake): write a STATUS.md note "79-02F triggered without 79-02 failure flag — STOPPING" and exit. Do NOT modify any other files.
 
     Verify `git status --short apps/` is clean (79-02 FAIL path was supposed to revert via `git checkout -- apps/` before flagging — if dirty, run `git -c core.hooksPath=/dev/null checkout -- apps/` to restore baseline so 79-02F starts from post-Plan-01 commit).
+
+    **W-3 cleanup of 79-02 FAIL-path stale artifacts:** Plan 79-02's FAIL path captures `post-fix/iso-run-{1,2,3}.log` and `post-fix/mutation-project-run.log` but does NOT commit them (FAIL path: no commit). Remove them now so 79-02F's atomic commit (Task 4) starts from a clean post-fix/ tree:
+    ```bash
+    rm -f .planning/phases/79-determinism-recovery-cascading-race-fix-constants-regen/post-fix/iso-run-1.log \
+          .planning/phases/79-determinism-recovery-cascading-race-fix-constants-regen/post-fix/iso-run-2.log \
+          .planning/phases/79-determinism-recovery-cascading-race-fix-constants-regen/post-fix/iso-run-3.log \
+          .planning/phases/79-determinism-recovery-cascading-race-fix-constants-regen/post-fix/mutation-project-run.log
+    ```
+    (Also `rm -f` any `post-fix/run-0.json`/`run-0.stderr.log`/`run-0-summary.txt` left over from a 79-02 FAIL-path D-12 attempt; 79-02F Task 4 will recapture run-0.json from scratch.)
   </action>
   <verify>
     <automated>grep -q "RCA pivot-to-restructure trigger: Y" .planning/phases/79-determinism-recovery-cascading-race-fix-constants-regen/STATUS.md &amp;&amp; { git -c core.hooksPath=/dev/null status --short apps/ 2>/dev/null | wc -l | awk '$1 == 0 {exit 0} {exit 1}' || git -c core.hooksPath=/dev/null checkout -- apps/; }</automated>
@@ -266,7 +275,7 @@ Git commit form: `git -c core.hooksPath=/dev/null commit -m '...'` (memory: proj
     ```
   </action>
   <verify>
-    <automated>grep -q "register-fresh-candidate-setup" tests/playwright.config.ts &amp;&amp; grep -q "testMatch.*register-fresh-candidate" tests/playwright.config.ts &amp;&amp; CHILD_DEP=$(grep -A1 "name: 'candidate-app-mutation'" tests/playwright.config.ts | head -50; awk "/name: 'candidate-app-mutation'/,/^\s*\}/" tests/playwright.config.ts) &amp;&amp; awk "/name: 'candidate-app-mutation'/,/^\s*\},?$/" tests/playwright.config.ts | grep -q "dependencies:.*'register-fresh-candidate-setup'"</automated>
+    <automated>grep -q "register-fresh-candidate-setup" tests/playwright.config.ts &amp;&amp; grep -q "testMatch.*register-fresh-candidate" tests/playwright.config.ts &amp;&amp; awk "/name: 'candidate-app-mutation'/,/^\s*\},?$/" tests/playwright.config.ts | grep -q "dependencies:.*'register-fresh-candidate-setup'"</automated>
   </verify>
   <acceptance_criteria>
     - `tests/playwright.config.ts` contains the string `register-fresh-candidate-setup` (the new project name) at least 2 times (definition + dependency reference).

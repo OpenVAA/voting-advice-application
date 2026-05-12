@@ -1124,7 +1124,16 @@ Per D-11 + D-15: operator leaves AFTER Plan 02 completes (with D-12 smoke green)
 
 ---
 
-## Open Questions for Planner
+## Open Questions for Planner (RESOLVED)
+
+**Resolution summary** (each question's recommendation is baked into the plans; the inline `**Recommendation:**` block under each question is the binding answer):
+
+1. RESOLVED: RCA test harness committed under `post-fix/rca-traces/registration-rca.spec.ts` (sibling of trace files, NOT under `tests/tests/specs/`); live-tree Svelte/component instrumentation reverted by Plan 01 Task 4 before Plan 02 starts.
+2. RESOLVED: H1 fix applied first; if 1-run smoke shows zero cascade, H2 is skipped (downstream symptom). If H2 still manifests, second commit applies H2 fix (combined mode = two atomic commits, not one).
+3. RESOLVED: D-12 1-run cold-start confirm = run-0 (separate file `post-fix/run-0.json`); does NOT count as run-1 of the 3-run gate. Total cold-starts: 4 (run-0 + run-1 + run-2 + run-3).
+4. RESOLVED: STATUS.md created in Plan 01 Task 1 (first plan of Phase 79) and updated at every plan close + every agent wake-up across all three plans.
+5. RESOLVED: regen-with-flag — if 3 runs are SHA-identical but reveal a NEW regression vs Phase 75, Plan 03 Task 6's atomic commit still lands the regen, BUT STATUS.md `## Escalation Flags` records the regression AND a follow-up todo file is filed in `.planning/todos/pending/` for Phases 80-82 to address.
+
 
 1. **Should Plan 01 commit RCA instrumentation code to git (under a `__rca__/` directory) or work entirely off-branch / off-tree?**
    - What we know: D-05 says "RCA artifacts committed" — but artifacts means traces + state JSONs + RCA-FINDINGS.md, not necessarily the instrumented test code itself.
