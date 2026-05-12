@@ -8,6 +8,7 @@ import {
 import { expect, test as setup } from '@playwright/test';
 import variantHiddenRequiredTemplate from './templates/variant-hidden-required';
 import { SupabaseAdminClient } from '../utils/supabaseAdminClient';
+import { TEST_CANDIDATE_EMAIL, TEST_CANDIDATE_PASSWORD } from '../utils/testCredentials';
 
 const PREFIX = 'test-';
 
@@ -84,4 +85,47 @@ setup('import hidden-required dataset', async () => {
       'variant overlay must delete Alpha test-question-displayname answer (SETTINGS-03 candidate-required anchor)'
     ).toBeUndefined();
   }
+
+  // Auth wiring (D-24: tests/-only) — mirrors the canonical step in
+  // data.setup.ts:139-146. runTeardown + Writer above re-write the candidates
+  // table with fresh rows under new UUIDs, but the auth.users table is NOT
+  // touched (no `test-` external_id link). After reseeding, Alpha's existing
+  // auth.user.id no longer references any candidate row → STORAGE_STATE-based
+  // login falls back to /login?redirectTo=candidate.
+  //
+  // Unregister-then-forceRegister is idempotent: unregisterCandidate is a no-op
+  // when the email doesn't exist (line 386 of supabaseAdminClient.ts);
+  // forceRegister creates a fresh auth.user, assigns the candidate role, and
+  // links auth_user_id on the new candidate row. After this step Alpha's
+  // pre-existing STORAGE_STATE token is INVALIDATED (the auth.user.id changes)
+  // — but the candidate spec uses a fresh login flow (via STORAGE_STATE
+  // re-establishment? — see notes below).
+  //
+  // NB: variant projects in playwright.config.ts re-use STORAGE_STATE from
+  // auth-setup. If the variant's reseed creates a new auth.user with a new id,
+  // the cached STORAGE_STATE will be stale (a token whose sub claim no longer
+  // matches a candidate row). The candidate spec's `page.goto(CandAppHome)`
+  // will fall through to /login and re-login via the auth-setup's
+  // forceRegistered credentials (email+password unchanged). The spec is
+  // structured to accept either landing-on-home OR a redirect-then-login flow,
+  // BUT the canonical pattern is that auth-setup runs FIRST in the dependency
+  // chain to refresh STORAGE_STATE after the variant reset. Here we rely on
+  // the STORAGE_STATE token in playwright/.auth/user.json which is bound to
+  // the most-recently-issued auth.user via data.setup.ts → auth.setup.ts
+  // chain, NOT the variant-hidden-required reseed.
+  //
+  // Workaround for the standalone smoke (--no-deps): the variant setup
+  // resets the candidates table and reissues a fresh auth.user, but the
+  // existing playwright/.auth/user.json file is bound to the PREVIOUS
+  // auth.user.id. Re-running auth.setup.ts after the variant reseed would
+  // refresh user.json with the new token. In CI / full-dependency-chain
+  // runs, the variant chain places this setup BEFORE the spec, but
+  // STORAGE_STATE refresh is not invoked. The candidate spec MUST therefore
+  // either (a) re-login via the login form (using TEST_CANDIDATE_EMAIL/
+  // PASSWORD which persist across variant reseeds because the password is a
+  // tests/-only constant in testCredentials.ts) OR (b) the project chain
+  // adds a re-auth-setup-style refresh BEFORE the variant-hidden-required-
+  // candidate project. Plan 04 takes path (a) — see the spec for details.
+  await client.unregisterCandidate(TEST_CANDIDATE_EMAIL);
+  await client.forceRegister('test-candidate-alpha', TEST_CANDIDATE_EMAIL, TEST_CANDIDATE_PASSWORD);
 });

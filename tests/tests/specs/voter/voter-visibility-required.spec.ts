@@ -114,10 +114,21 @@ test.describe(
       // and the negative-presence is a real filter effect, not a load
       // failure). `test-voter-q-1`'s English name is
       // `'Voter Test Question 1: Economy'` (per `e2e.ts:445`).
+      //
+      // The question name renders TWICE per row in EntityOpinions.svelte
+      // (once as the visible `<h3>` heading + once as a `<legend
+      // class="sr-only">` for screen readers — see QuestionHeading.svelte).
+      // Use count >= 1 (positive presence) instead of toBeVisible (which
+      // is strict-mode-sensitive when the locator matches multiple
+      // elements). At least one rendered = positive control satisfied.
       const visibleQuestion = E2E_QUESTIONS.find((q) => q.external_id === 'test-voter-q-1');
       const visibleQuestionEn = (visibleQuestion?.name as { en?: string } | undefined)?.en;
       expect(visibleQuestionEn, 'test-voter-q-1 must carry an English name in the seed').toBeTruthy();
-      await expect(opinionsTab.getByText(visibleQuestionEn!, { exact: true })).toBeVisible();
+      const visibleQuestionCount = await opinionsTab.getByText(visibleQuestionEn!, { exact: true }).count();
+      expect(
+        visibleQuestionCount,
+        'test-voter-q-1 must render at least once in the opinions tab as a positive control'
+      ).toBeGreaterThanOrEqual(1);
     });
   }
 );
