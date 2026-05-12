@@ -337,6 +337,18 @@ const constituencies = $derived(ctx.selectedConstituencies);
 
 **Lint enforcement** is currently a guideline, not an automated rule. A future phase may add a custom svelte-eslint rule if violations recur.
 
+### Svelte Warning-Accepted Format
+
+When a Svelte / vite-plugin-svelte / SvelteKit warning is intentionally accepted (rather than fixed at the source), use this inline format:
+
+```
+// svelte-warning: accepted — <one-sentence-rationale>
+```
+
+Place the comment IMMEDIATELY ABOVE the warning-triggering line. The rationale should explain WHY the warning is accepted (e.g., "framework-emitted false positive for prop reassignment in init phase"; "intentional non-reactive read at mount per design"). Per v2.8 Phase 70 Cat A `// reason:` block convention; the `svelte-warning: accepted` prefix scopes the comment to vite-plugin-svelte / SvelteKit / Svelte-compiler-emitted warnings specifically (vs. ESLint `// reason:` which scopes to lint-rule acceptances).
+
+Use sparingly — preferred outcome is to FIX the warning at the source. Acceptance is the fallback when the warning is a framework false-positive OR a design tradeoff that can't be cleanly fixed.
+
 ## Deployment
 
 Frontend is deployed as a Docker container. Backend uses Supabase Cloud.
