@@ -346,3 +346,43 @@ test.describe('Constituency selection variant', { tag: ['@variant'] }, () => {
     await expect(answerOption.first()).toBeVisible({ timeout: 10000 });
   });
 });
+
+////////////////////////////////////////////////////////////////////
+// Phase 77 / SETTINGS-01 wave B — constituency-filter (PASS-WITH-DEFERRAL)
+//
+// Per Phase 77 Plan 02 Task 3 (OQ-5 resolution).
+//
+// Plan 02 Task 0 audit:
+//   - `apps/frontend/src/lib/contexts/voter/filters/buildParentFilters.ts:9-13`
+//     emits filters ONLY for parent-nomination types (`alliance`, `faction`,
+//     `organization`) — NOT for `constituency`.
+//   - The voter results filter dialog therefore does NOT render a top-level
+//     constituency filter today. Constituency is a navigation/scope concern
+//     (election → constituency → questions/results), not a per-list filter.
+//   - Conclusion: constituency-filter cell is PASS-WITH-DEFERRAL pending a
+//     product decision on whether constituency should surface as a filter.
+//
+// This block is ADDITIVE — it does NOT modify the existing CONF-03 invariants
+// in the serial-mode 'Constituency selection variant' suite above. The skip
+// is structural (no surface to assert against), not a flake.
+////////////////////////////////////////////////////////////////////
+test.describe('SETTINGS-01 wave B — constituency-filter', { tag: ['@variant'] }, () => {
+  // reason: PASS-WITH-DEFERRAL stub — no constituency filter UI exists today
+  // (Phase 77 Plan 02 OQ-5 resolution). The test.skip annotation documents the
+  // PRODUCT-GAP and routes maintainers to the follow-up todo. Phase 77 Plan 01
+  // SUMMARY established this PASS-WITH-DEFERRAL pattern for product gaps that
+  // are asserter-able only against an absent surface.
+  // eslint-disable-next-line playwright/expect-expect
+  test('SETTINGS-01 wave B — constituency-filter (PRODUCT-GAP / PASS-WITH-DEFERRAL)', async () => {
+    // eslint-disable-next-line playwright/no-skipped-test
+    test.skip(
+      true,
+      [
+        'Phase 77 Plan 02 OQ-5 resolution: the voter results filter dialog does NOT render',
+        'a constituency filter today. buildParentFilters emits only alliance/faction/organization',
+        'filters; no constituency code path exists. PRODUCT-GAP — see follow-up todo at',
+        '.planning/todos/pending/2026-05-13-constituency-filter-product-gap.md.'
+      ].join(' ')
+    );
+  });
+});
