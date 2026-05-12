@@ -699,11 +699,22 @@ export const e2eTemplate: Template = {
           // Display-name + bio + social-link answer cells are read post-reload
           // by Plan 02's persistence spec; A11Y-01 cell-3 fills above the
           // maxlength=50 ceiling and asserts the HTML5 native cap kicks in.
-          'test-question-displayname': { value: { en: 'Alpha The Test' } },
+          //
+          // VALUE-DISJOINTNESS INVARIANT (Phase 76 P01 fixture-extension fix):
+          // these three answer values MUST NOT contain the substring 'Alpha'
+          // (case-insensitive substring `alpha`/`Alpha`). The existing
+          // candidate-questions.spec.ts CAND-06 assertion at line 271 reads
+          // `previewPage.container.getByText('Alpha', { exact: false })` in
+          // strict mode — adding more cells whose values render in the preview
+          // and contain 'Alpha' would surface the candidate's profile answers
+          // alongside the firstName/lastName 'Test Candidate Alpha' heading
+          // and break that single-anchor lookup. Phase 76 P01 keeps the
+          // additive contract by using disjoint sentinel strings.
+          'test-question-displayname': { value: { en: 'Display Name Sentinel 76' } },
           'test-question-bio': {
-            value: { en: 'Alpha biography text used by Phase 76 A11Y-02 reload-persistence.' }
+            value: { en: 'Phase 76 biography sentinel used by A11Y-02 reload-persistence.' }
           },
-          'test-question-social-1': { value: { en: 'https://example.com/alpha' } }
+          'test-question-social-1': { value: { en: 'https://example.com/sentinel-76' } }
         }
       },
       {
