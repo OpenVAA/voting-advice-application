@@ -1,0 +1,27 @@
+=== Self-identity smoke (run-6 vs run-6) ===
+Baseline: 81p / 12f / 70c
+Post:     81p / 12f / 70c
+Contract: 80 pass-locked, 15 data-race pool, 57 cascade-baseline.
+PARITY GATE: PASS — no regressions detected per D-59-04.
+
+=== run-4 vs run-5 ===
+Baseline: 81p / 12f / 70c
+Post:     81p / 12f / 70c
+Contract: 80 pass-locked, 15 data-race pool, 57 cascade-baseline.
+PARITY GATE: PASS — no regressions detected per D-59-04.
+
+=== run-5 vs run-6 ===
+Baseline: 81p / 12f / 70c
+Post:     81p / 12f / 70c
+Contract: 80 pass-locked, 15 data-race pool, 57 cascade-baseline.
+PARITY GATE: PASS — no regressions detected per D-59-04.
+
+=== run-4 vs run-6 ===
+Baseline: 81p / 12f / 70c
+Post:     81p / 12f / 70c
+Contract: 80 pass-locked, 15 data-race pool, 57 cascade-baseline.
+PARITY GATE: PASS — no regressions detected per D-59-04.
+
+Phase 79 SC #4 (D-08 strict identity): PASS on fresh trio (4/5/6) at SHA ff0334f856…
+Phase 79 SC #4 (initial 3-run): FAIL — D-09 instability protocol resolved via 3 fresh runs.
+Constants source: run-6.json. v2.10 verification anchor: 80 PASS_LOCKED + 15 DATA_RACE + 57 CASCADE.

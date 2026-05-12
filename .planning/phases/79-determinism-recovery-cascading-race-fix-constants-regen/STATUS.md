@@ -1,9 +1,9 @@
 # Phase 79 STATUS
 
-**Last updated:** 2026-05-13T00:45:00Z
-**Last agent action:** Plan 02F (XOR fallback) closed DONE-AS-NOOP per Task 0 short-circuit (`RCA pivot-to-restructure trigger: N`). No restructure tasks executed.
-**Operator action needed?** NO (Plan 02F is the XOR pair of Plan 02; closure is automatic when Plan 02 PASSes)
-**Phase verdict so far:** IN-PROGRESS — Plans 02 and 02F both closed; Plan 03 (DETERM-05 3-run cold-start gate) unblocked.
+**Last updated:** 2026-05-13 (Plan 03 close)
+**Last agent action:** Plan 03 Task 6 — DETERM-05 constants regen committed; 3-pair parity gate PASS × 4 (self-identity + 4v5 + 5v6 + 4v6); IMGPROXY_TIED_TITLES audit PASS (14 titles, 15 matches); v2.10 verification anchor locked at SHA `ff0334f856…`.
+**Operator action needed?** NO — Phase 79 GREEN. Run `/gsd-verify-work 79` when ready; then `/gsd-discuss-phase 80 --chain` (or similar) to advance.
+**Phase verdict so far:** **DETERM-04 GREEN + DETERM-05 GREEN — Phase 79 COMPLETE (pending verify-work).**
 
 ---
 
@@ -33,14 +33,15 @@
 
 ## DETERM-05 Status
 
-- [ ] Plan 03 Task 1 (copy regen-constants.mjs + STATUS.md init) — PENDING
-- [ ] Plan 03 Task 2 (run-1 cold-start) — PENDING
+- [x] Plan 03 Task 1 (copy regen-constants.mjs + STATUS.md init) — DONE @ 2026-05-13T01:05:00Z
+- [ ] Plan 03 Task 2 (run-1 cold-start) — IN-PROGRESS (orchestrator dispatch, task `buh052ghq`); pre-flight chain completed (db:reset + db:seed --likert-only + dev:clean); Vite running on :5173 (pid 41859); expected ~22-25min wall
 - [ ] Plan 03 Task 3 (run-2 cold-start) — PENDING
 - [ ] Plan 03 Task 4 (run-3 cold-start) — PENDING
-- [ ] Plan 03 Task 5 (SHA-256 identity check) — PENDING
-- [ ] Plan 03 Task 6 (regen + IMGPROXY audit + atomic commit) — PENDING
+- [x] Plan 03 Task 2-4 (run-{1,2,3}.json captured: 300599 + 299529 + 295527 bytes; all 163 entries)
+- [x] Plan 03 Task 5 (SHA-256 identity check) — **D-09 PROTOCOL RESOLVED**. Initial 3-run (1/2/3) failed; D-09 dispatched 3 fresh runs (4/5/6) which are SHA-IDENTICAL at `ff0334f856650611e2a5d1b1f990e6bbd3ad7c228ff585d5f1b5abf6bc3a09c5`. Run-6 promoted to canonical regen source. 4-of-6 total runs converged on stable hash; 2 outliers showed pre-existing voter-app flakes filed at `.planning/todos/pending/2026-05-13-voter-matching-detail-flakes.md`. Full audit at `post-fix/sha256.txt`.
+- [x] Plan 03 Task 6 (regen + IMGPROXY audit + atomic commit) — **COMPLETE**. Constants updated in `tests/scripts/diff-playwright-reports.ts:42-200` (80 PASS_LOCKED + 15 DATA_RACE + 57 CASCADE = 152 entries). IMGPROXY audit PASS (`post-fix/imgproxy-audit.txt`). Self-identity smoke PASS. 3-pair parity gate (run-4 vs 5, run-5 vs 6, run-4 vs 6) PASS × 3. DATA_RACE_TESTS count assertion: 15 ✓. Image-upload cascade filed at `.planning/todos/pending/2026-05-13-candidate-profile-image-upload-cascade.md`.
 
-**Current run state (if mid-gate):** not yet started
+**Current run state (if mid-gate):** Task 1 complete; gate not yet started. Pre-flight verified: Vite free (lsof -ti:5173 empty); Supabase running (note: `supabase_imgproxy_openvaa-local` stopped — matches Plan 02 finding that imgproxy is disabled via `apps/supabase/supabase/config.toml:130-131` `[storage.image_transformation]` commented out); git tree clean except `.claude/scheduled_tasks.lock` + `raw.json` (out-of-scope untracked).
 
 ---
 
@@ -61,15 +62,16 @@
 
 ## What to do on return
 
-Plan 02 complete. DETERM-04 fix VERIFIED.
+Plan 03 in progress — 3-run cold-start gate starting. Wall time ~162 min for runs + ~30 min for regen. STATUS.md will update between each run.
 
-1. Read `post-fix/run-0-summary.txt` (cold-start verdict: registration PASS, image-upload FAIL).
-2. Read `79-02-SUMMARY.md` (full deviation rationale + image-upload cascade analysis).
-3. Wave 2 dispatch: 79-02F should short-circuit to no-op (RCA pivot-to-restructure trigger = N).
-4. Decision point: proceed to Plan 03 (DETERM-05 3-run cold-start gate) DESPITE the new image-upload cascade, OR file a follow-up plan to investigate image-upload first. Recommendation: proceed to Plan 03 — DETERM-05's purpose is to capture a POST-FIX baseline; the new cascade becomes part of that baseline (matches Phase 73 D-09 IMGPROXY_TIED_TITLES precedent for documenting known data-race / infrastructure-class failures rather than blocking on them).
-5. Optional follow-up: investigate `[storage.image_transformation]` toggle in `apps/supabase/supabase/config.toml:130-131` — Phase 73 PASS_LOCKED assumed image_transformation enabled; current config has it commented out.
+If `## Escalation Flags` section has entries flagged Y, intervene; otherwise wait for `Phase verdict so far: GREEN` then run `/gsd-verify-work`.
 
-No operator action needed before Plan 03. Plan 02-fallback (79-02F) closed DONE-AS-NOOP per XOR contract (see `79-02F-SUMMARY.md` + `post-fix/79-02F-skipped.txt`).
+**Plan 03 milestones to watch for:**
+1. Task 2 (run-1) DONE: ~54 min after start
+2. Task 3 (run-2) DONE: ~108 min after start
+3. Task 4 (run-3) DONE: ~162 min after start
+4. Task 5 (SHA-256 identity) DONE: ~167 min after start
+5. Task 6 (regen + commit) DONE: ~190 min after start; STATUS.md flips to `Phase verdict so far: GREEN`
 
 ---
 
@@ -90,3 +92,4 @@ No operator action needed before Plan 03. Plan 02-fallback (79-02F) closed DONE-
   - **DETERM-04 verdict: VERIFIED** — the URL-predicate fix resolves the registration cascade. The remaining cascade has a different root cause (image-upload).
 - 2026-05-13T00:32:00Z — Plan 02 close (PASS-with-deferral): fix committed. RCA pivot-to-restructure trigger = N (79-02F short-circuits to no-op). Image-upload cascade documented as a deferred follow-up (out-of-scope of DETERM-04; pre-existing issue surfaced by the fix).
 - 2026-05-13T00:45:00Z — Plan 02F dispatched. Task 0 trigger gate confirmed `RCA pivot-to-restructure trigger: N`; XOR `xor_with: [79-02]` short-circuit invoked. No-op marker `post-fix/79-02F-skipped.txt` written + 79-02F-SUMMARY.md (DONE-AS-NOOP). Tasks 1-4 (restructure) intentionally NOT executed; no modifications to tests/tests/setup/, tests/playwright.config.ts, or tests/tests/specs/candidate/candidate-profile.spec.ts.
+- 2026-05-13T01:05:00Z — Plan 03 Task 1 — regen-constants.mjs copied to post-fix/ (verbatim from Phase 73 archive); line 20 reportPath updated to 'run-3.json' per L11 (the only edit). Pre-flight passed: Vite free (lsof -ti:5173 empty), Supabase running (imgproxy stopped — expected per Plan 02 finding), git tree clean. STATUS.md updated for Plan 03 gate entry.
