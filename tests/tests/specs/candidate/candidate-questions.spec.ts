@@ -31,6 +31,12 @@ test.describe('candidate opinion questions', { tag: ['@candidate'] }, () => {
     // The page shows either a "start" button (no answers yet) or a list
     // with category expanders. The pre-authenticated candidate has answers,
     // so the list view should render.
+    // reason: Phase 78 CLEAN-05 IN-03a — `testIds.candidate.questions.list`
+    //   is retained because the underlying element is a styling `<div>`
+    //   (apps/frontend/src/routes/candidate/(protected)/questions/+page.svelte:128)
+    //   with no native list semantics, no role="list", and no
+    //   accessible name. `getByRole('list')` would not match; `getByRole('list', { name })`
+    //   has no name to bind to. The testId is the canonical anchor.
     const questionsList = page.getByTestId(testIds.candidate.questions.list);
     const startButton = page.getByTestId(testIds.candidate.questions.start);
 

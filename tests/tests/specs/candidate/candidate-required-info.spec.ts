@@ -132,12 +132,14 @@ test.describe(
       await expect(questionsButton).toHaveAttribute('tabindex', '-1');
 
       // The Preview Button (line 140-146) has the SAME disabled binding.
-      // No central testId map entry for it — locate by data-testid attribute
-      // directly (matches the in-component attribute at line 146).
-      // reason: candidate-home-preview is not in the testIds central map but
-      // is a documented data-testid on +page.svelte:146; structural locator
-      // matches the file-level convention.
-      const previewButton = page.locator('[data-testid="candidate-home-preview"]');
+      // No central testId map entry for it — locate via getByTestId() with
+      // the literal data-testid string (matches the in-component attribute
+      // at +page.svelte:146).
+      // Phase 78 CLEAN-05 IN-03 (folded from Phase 78 P03 deferred lint
+      // errors): replaced `page.locator('[data-testid="..."]')` raw-locator
+      // with `page.getByTestId(...)` to clear the playwright/no-raw-locators
+      // error. Semantically equivalent — both target the same data-testid.
+      const previewButton = page.getByTestId('candidate-home-preview');
       await expect(previewButton).toBeVisible();
       await expect(previewButton).toHaveAttribute('disabled', 'true');
       await expect(previewButton).toHaveAttribute('tabindex', '-1');
@@ -146,10 +148,9 @@ test.describe(
       // gated by unansweredRequiredInfoQuestions — it's the candidate's
       // navigation path to FIX the missing answer, so it MUST remain
       // enabled even when profileComplete is false.
-      // reason: candidate-home-profile is the un-gated CTA per +page.svelte:118;
-      // assertion proves the gate is selective (only Questions+Preview
-      // disabled), not a generic "all CTAs off" state.
-      const profileButton = page.locator('[data-testid="candidate-home-profile"]');
+      // Phase 78 CLEAN-05 IN-03 (folded): same raw-locator → getByTestId
+      // rewrite as the Preview Button above.
+      const profileButton = page.getByTestId('candidate-home-profile');
       await expect(profileButton).toBeVisible();
       // Same Button-component caveat as above; assert the ABSENCE of the
       // disabled attribute on the Profile button (it should be in its

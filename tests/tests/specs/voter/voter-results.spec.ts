@@ -45,6 +45,25 @@ const LIST_CONTAINER_TESTID = 'voter-results-list-container';
 const DRAWER_TESTID = 'voter-results-drawer';
 
 /**
+ * Locate the entity-list filter button via its semantic role + name.
+ *
+ * Phase 78 CLEAN-05 IN-03c/d/e: extracted helper replaces the prior 3-site
+ * repetition of `page.getByTestId('entity-list-filter')`. The underlying
+ * Button component renders one of two variants (warning when active filters
+ * are present; plain otherwise — EntityListWithControls.svelte:165-183), and
+ * the i18n label `filterButtonLabel` resolves to "Filter" in en. The role +
+ * name regex matches both variants unambiguously (no other "Filter" button
+ * exists on these surfaces — verified via repo-wide grep on the en locale).
+ *
+ * Note: callers use `.first()` to handle the case where the warning + plain
+ * variants briefly coexist during a render cycle (only one is in the DOM at
+ * steady-state per the conditional renderer).
+ */
+function getFilterButton(page: Page): Locator {
+  return page.getByRole('button', { name: /^Filter\b/i });
+}
+
+/**
  * Extract `{ entityTypePlural, entityTypeSingular, id }` from an entity-card
  * `<a>` href for the current page. Returns `undefined` when the href does not
  * match the 4-segment results URL shape. `href` is a full pathname, including
@@ -167,8 +186,8 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
     const initialCount = await page.getByTestId(testIds.voter.results.card).count();
     expect(initialCount).toBeGreaterThan(0);
 
-    // Open filter modal
-    const filterButton = page.getByTestId('entity-list-filter');
+    // Open filter modal — Phase 78 CLEAN-05 IN-03c: semantic locator via helper.
+    const filterButton = getFilterButton(page);
     await expect
       .poll(() => filterButton.count(), {
         timeout: 5000,
@@ -199,17 +218,18 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
       .getByRole('button', { name: /close filters/i })
       .click();
 
-    // Poll until the filter has propagated and the visible-card count narrows
-    // (or holds equal). Replaces the prior `page.waitForTimeout(500)` —
-    // RESEARCH §"Example 3" / DETERM-03 no-wait-for-timeout. expect.poll
-    // preserves the original contract (filteredCount ≤ initialCount) with
-    // race-tolerant settle-headroom.
+    // Poll until the filter has propagated and the visible-card count strictly
+    // narrows. Phase 78 CLEAN-05 IN-04: strengthen `toBeLessThanOrEqual` to
+    // `toBeLessThan` — a filter that doesn't narrow is a regression. The e2e
+    // seed has 4 parties (TPA/TPB/VPA/VPB) and 11 visible candidates spread
+    // across them; checking one party MUST exclude candidates from the other
+    // parties, so the post-filter count is strictly less than the baseline.
     await expect
       .poll(() => page.getByTestId(testIds.voter.results.card).count(), {
         timeout: 5000,
-        message: 'Filtered card count must narrow after applying filter (RESULTS-01/02)'
+        message: 'Filtered card count must STRICTLY narrow after applying filter (RESULTS-01/02 + IN-04)'
       })
-      .toBeLessThanOrEqual(initialCount);
+      .toBeLessThan(initialCount);
 
     // Assert no infinite-loop console warnings were emitted.
     expect(consoleErrors.filter((e) => e.includes('effect_update_depth_exceeded'))).toEqual([]);
@@ -217,7 +237,8 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
 
   test('filter state resets on plural tab switch (D-14)', async ({ answeredVoterPage: page }) => {
     // On candidates tab — activate a filter and read the badge count.
-    const filterButton = page.getByTestId('entity-list-filter');
+    // Phase 78 CLEAN-05 IN-03d: semantic locator via helper.
+    const filterButton = getFilterButton(page);
     await expect
       .poll(() => filterButton.count(), {
         timeout: 5000,
@@ -274,7 +295,8 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
 
   test('filter state survives drawer open/close (D-15)', async ({ answeredVoterPage: page }) => {
     // Activate a filter on candidates — same pattern as above.
-    const filterButton = page.getByTestId('entity-list-filter');
+    // Phase 78 CLEAN-05 IN-03e: semantic locator via helper.
+    const filterButton = getFilterButton(page);
     await expect
       .poll(() => filterButton.count(), {
         timeout: 5000,

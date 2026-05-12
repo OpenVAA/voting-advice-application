@@ -62,6 +62,12 @@ test.describe('app mode: answers locked (CAND-09)', { tag: ['@candidate'] }, () 
     // The home page shows a Warning component when answersLocked is true
     // The Warning component renders with role-less div containing an icon and text.
     // Verify the home page status message is visible (page loaded successfully)
+    // reason: Phase 78 CLEAN-05 IN-03b — `testIds.candidate.home.statusMessage`
+    //   is retained because the underlying element is a plain `<p>` tag
+    //   (apps/frontend/src/routes/candidate/(protected)/+page.svelte:102) with
+    //   no `role="status"` annotation, no aria-live region, and no
+    //   accessible name. Promoting to `role="status"` is a UI change out
+    //   of scope here; the testId is the canonical anchor.
     await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({ timeout: 15000 });
 
     // The button text should change to "view" variants instead of "edit" when locked
