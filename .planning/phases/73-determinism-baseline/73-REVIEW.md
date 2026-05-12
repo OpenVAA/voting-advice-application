@@ -382,3 +382,48 @@ expect(candidate.data?.[0]?.auth_user_id, 'forceRegister must link auth user').t
 _Reviewed: 2026-05-11T00:00:00Z_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
+
+---
+
+## Resolution at Phase 78 close (2026-05-12)
+
+See `.planning/phases/78-cleanup-hygiene-phase/78-06-SUMMARY.md` for the per-finding outcome
+table covering all 13 source findings + 1 bonus CR-01 fold (12 fixed-in-code + 2 accepted-with-reason
+for IN-03a + IN-03b; bonus CR-01 fix at `multi-election.spec.ts:250`).
+
+Per-finding resolution mapping (cluster commits land in 4 atomic groups per Plan 06 commit_protocol):
+
+| Finding | File:Line | Disposition | Resolved by commit |
+|---------|-----------|-------------|--------------------|
+| CR-01 (bonus) | `multi-election.spec.ts:250` | fixed-in-code (`waitUntil: 'networkidle'` → `reload()` + `answerOption.waitFor()`) | `fffbf561e` (cluster A) |
+| CR-02a | `voter-popups.spec.ts:141` | fixed-in-code (`toBeHidden({ timeout: 5000 })`) | `fffbf561e` (cluster A) |
+| CR-02b | `voter-popups.spec.ts:224` | fixed-in-code (`toHaveCount(0, { timeout: 3000 })`) | `fffbf561e` (cluster A) |
+| WR-01 | `multi-election.spec.ts:145` | fixed-in-code (union waitFor + post-await isVisible probe) | `fffbf561e` (cluster A) |
+| WR-02a | `constituency.spec.ts:89-98` | fixed-in-code (dedicated `electionAccordion.waitFor().then/catch` branch) | `443f1cf7a` (cluster B) |
+| WR-02b | `startfromcg.spec.ts:120-128` | fixed-in-code (mirror of WR-02a) | `443f1cf7a` (cluster B) |
+| WR-03 | `multi-election.spec.ts:215-231` | fixed-in-code Option B (`// reason:` block + precondition asserts in beforeAll) | `fffbf561e` (cluster A) |
+| WR-04 | `auth.setup.ts:29-48` | fixed-in-code Option A (drop wasted reload in retry loop) — **code-quality only; does NOT resolve LANDMINE-2 candidate-profile.spec.ts:85-145 cascading race** (routed to v2.10+ via `2026-05-12-candidate-profile-cascading-race.md`) | `443f1cf7a` (cluster B) |
+| WR-05 | `supabaseAdminClient.ts:340-377` | fixed-in-code (try/catch + `auth.admin.deleteUser` compensating rollback in `forceRegister`) | `d372326c7` (cluster C) |
+| WR-06 | `supabaseAdminClient.ts:532-547` | fixed-in-code (collect-and-throw aggregated error in `deleteAllTestUsers`) | `d372326c7` (cluster C) |
+| WR-07 | `supabaseAdminClient.ts:122-156` | fixed-in-code (`fixGoTrueNulls` DELETED — zero callers verified via repo-wide grep) | `d372326c7` (cluster C) |
+| IN-01 | `candidate-bank-auth.spec.ts:28-33` | fixed-in-code (throw-on-missing `SUPABASE_SERVICE_ROLE_KEY` + `SUPABASE_ANON_KEY`) | `d372326c7` (cluster C) |
+| IN-02 | `candidate-bank-auth.spec.ts:169` | fixed-in-code (explicit `typeof === 'string'` guard via intermediate `candidateErrorValue`) | `d372326c7` (cluster C) |
+| IN-03a | `candidate-questions.spec.ts:34` | accepted-with-reason (`// reason:` block — element is styling `<div>` with no role/name) | `7531119ad` (cluster D) |
+| IN-03b | `candidate-settings.spec.ts:65` | accepted-with-reason (`// reason:` block — element is plain `<p>` with no role/name) | `7531119ad` (cluster D) |
+| IN-03c/d/e | `voter-results.spec.ts:171/220/277` | fixed-in-code (extracted `getFilterButton(page)` helper using `getByRole('button', { name: /^Filter\b/i })`) | `7531119ad` (cluster D) |
+| IN-03 bonus fold | `candidate-required-info.spec.ts:140,152` | fixed-in-code (raw `page.locator('[data-testid=...]')` → `page.getByTestId(...)` — clears 2 Phase 77 P04-origin lint errors) | `7531119ad` (cluster D) |
+| IN-04 | `voter-results.spec.ts:206-211` | fixed-in-code (strict-inequality `toBeLessThan`) | `7531119ad` (cluster D) |
+| IN-05 | `data.setup.ts:144-146` | fixed-in-code (semantic post-condition `expect(candidate.data?.[0]?.auth_user_id).toBeTruthy()`) | `443f1cf7a` (cluster B) |
+
+**Total: 14/14 findings closed across 4 cluster commits** (`fffbf561e`, `443f1cf7a`, `d372326c7`, `7531119ad`).
+
+**LANDMINE-2 callout retained:** WR-04 is **code-quality only** — it drops a wasted reload in the
+auth-setup retry loop. It does NOT resolve the candidate-profile.spec.ts:85-145 cascading race
+(43+ test cascade-skip) that Phase 76 P04 + Phase 77 P05 + Phase 78 P07 all DEFERRED constants
+regen because of. That cascade has a separate root cause (race in the post-set-password redirect
+chain — ToU checkbox never surfaces) and is tracked for v2.10+ as a follow-up at
+`.planning/todos/pending/2026-05-12-candidate-profile-cascading-race.md` (filed at Phase 78 P07 Task 5).
+
+_Resolution recorded: 2026-05-12T19:35:00Z_
+_Verifier: gsd-executor (Phase 78 Plan 07 Task 4)_
+_Cross-link: `.planning/phases/78-cleanup-hygiene-phase/78-VERIFICATION.md`_

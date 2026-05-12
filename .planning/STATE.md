@@ -4,8 +4,8 @@ milestone: v2.9
 milestone_name: E2E Coverage + Suite Determinism — PLANNING
 status: executing
 stopped_at: Phase 76/77/78 context gathered (batched --auto)
-last_updated: "2026-05-12T15:43:42.029Z"
-last_activity: 2026-05-12 -- Phase 78 planning complete
+last_updated: "2026-05-12T15:43:46.238Z"
+last_activity: 2026-05-12 -- Phase 78 execution started
 progress:
   total_phases: 10
   completed_phases: 5
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-10)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 77 — Settings Matrix + Question-Customization Gap-Fills
+**Current focus:** Phase 78 — Cleanup Hygiene Phase
 
 ## Current Position
 
-Phase: 77 (Settings Matrix + Question-Customization Gap-Fills) — EXECUTING
-Plan: 1 of 5
-Status: Ready to execute
-Last activity: 2026-05-12 -- Phase 78 planning complete
+Phase: 78 (Cleanup Hygiene Phase) — CLOSED (pending operator approval at Plan 07 Task 5 human-verify checkpoint)
+Plan: 7 of 7
+Status: Phase 78 closed pending operator approval
+Last activity: 2026-05-12 -- Phase 78 verification gate executed (Plan 07 Task 4)
 
 ## Performance Metrics
 
@@ -146,12 +146,16 @@ Key cross-milestone reference points carried forward into v2.9:
 - [Phase ?]: Phase 75 Plan 02b: QSPEC-01 + QSPEC-02 deterministically FAIL x3 under full-suite cold-start (failure-class, NOT DATA_RACE — D-09 binding preserved); inherits Phase-78-CLEAN-05 voter-fixture race; per-plan smokes PASS x3 each verify spec correctness in isolation
 - [Phase ?]: Phase 75 closes GREEN-WITH-DEFERRAL pending operator Task 4 checkpoint: 4/4 ROADMAP SCs assessed (3 PASS + 1 PASS-WITH-DEFERRAL on SC #2 multi-choice per CONTEXT D-03); 3 follow-up todos filed
 - [Phase 75]: Operator approved Phase 75 close 2026-05-12 (GREEN-WITH-DEFERRAL); elected to file 58-E2E-AUDIT.md addendum as 4th follow-up todo at `.planning/todos/pending/2026-05-12-58-e2e-audit-addendum-qspec.md` (committed 3d05c5c6d); next action — plan Phase 76 / 77 / 78 (all parallel-eligible)
+- 2026-05-12: Phase 78 closed pending operator approval (5/5 CLEAN reqs + #6 no-regressions: 4 PASS + 1 PASS-WITH-DEFERRAL on CLEAN-05 inherited candidate-profile cascading race; #6 PASS). 7 source todos resolved across per-plan closing commits (6 moved-to-completed by Plans 01-04 + 1 moved-to-completed by Plan 05). 2 NEW out-of-scope follow-up todos filed for v2.10+ (candidate-profile cascading race + voters-layout non-reactive topbar). 13 Phase 73 review findings + bonus CR-01 closed (Plan 06). Constants regen DEFERRED-WITH-RATIONALE per Phase 76 P04 + Phase 77 P05 architectural-deferral precedent (LANDMINE-2 candidate-profile cascade routes to v2.10+; cold-start gate ~54 min × 3 = ~162 min routed to operator-checkpoint). v2.9 progress: 6 / 6 phases closed (all GREEN-WITH-DEFERRAL pending operator approvals on Phase 76 / 77 / 78 verification checkpoints).
 
 ### Blockers/Concerns
 
 - Local imgproxy Docker container crashes intermittently (502 on image upload) — not a code issue; carry-forward infrastructure debt. May affect Phase 76 A11Y-01 image-upload validation cells if it crashes during the run.
 - 165 pre-existing intra-package circular deps in `@openvaa/data` / `matching` / `filters` — deferred to a dedicated structural refactor milestone.
-- [Phase 73 → Phase 78 CLEAN-05] All Phase 73 follow-ups scoped into Phase 78 CLEAN-05 (2026-05-11). Covers CR-02 voter-popups race-tolerance regression + 7 WR + 5 IN review findings + voter-fixture heterogeneous-question-types race (Path B locked in with `--likert-only` seed modifier). See `.planning/REQUIREMENTS.md §CLEAN-05`, `.planning/ROADMAP.md §"Phase 78"` SC #5, `.planning/phases/73-determinism-baseline/73-REVIEW.md`, and `.planning/todos/pending/2026-05-11-voter-fixture-heterogeneous-question-types.md`. No longer dangling — scheduled.
+- [Phase 78 CLEAN-05 resolution / 2026-05-12]: 13 Phase 73 review findings + bonus CR-01 closed (Plan 06 cluster commits `fffbf561e`, `443f1cf7a`, `d372326c7`, `7531119ad`); voter-fixture-race Path B landed via `--likert-only` CLI flag (Plan 05 commits `8f1392fd1`, `15435d4df`, `ad4b79891`). Constants regen DEFERRED-WITH-RATIONALE per LANDMINE-2 candidate-profile cascading race (out of Phase 78 scope; routed to v2.10+ via `.planning/todos/pending/2026-05-12-candidate-profile-cascading-race.md`). See `.planning/phases/78-cleanup-hygiene-phase/78-VERIFICATION.md` for the 5-SC + #6 assessment + per-plan disposition; see `.planning/phases/73-determinism-baseline/73-REVIEW.md §"Resolution at Phase 78 close"` for the per-finding cross-link.
+- 2 NEW out-of-scope follow-up todos filed at Phase 78 close (2026-05-12) → v2.10+ candidates:
+  - `.planning/todos/pending/2026-05-12-candidate-profile-cascading-race.md` — LANDMINE-2 cascading race (HIGH severity; blocks parity-script regen at every verification gate)
+  - `.planning/todos/pending/2026-05-12-voters-layout-non-reactive-appsettings.md` — Phase 77 P01 deferred cells (MEDIUM severity; non-reactive $appSettings read at (voters)/+layout.svelte)
 
 ## Session Continuity
 
