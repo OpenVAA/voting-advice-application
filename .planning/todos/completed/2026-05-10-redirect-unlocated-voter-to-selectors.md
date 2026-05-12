@@ -71,3 +71,53 @@ Two real-world scenarios that hit this:
 - `.planning/todos/pending/frontend-project-id-scoping.md` — related;
   when project scoping lands, the bounce-target needs to know which
   project's selectors to invoke.
+
+---
+
+## Resolution (2026-05-12)
+
+**Resolved by:** Phase 78 Plan 02 (CLEAN-02) — see
+`.planning/phases/78-cleanup-hygiene-phase/78-02-SUMMARY.md`.
+
+### What landed
+
+1. `apps/frontend/src/routes/(voters)/(located)/+layout.ts` — augmented
+   both `redirect(307, ...)` calls with a `?next=` query parameter
+   carrying `encodeURIComponent(url.pathname + url.search)`. The value
+   is guarded by a URL whitelist regex
+   (`/^\/[a-z]{2}\/.*|^\/(results|questions|nominations)\b/`) that
+   accepts locale-prefixed paths or bare voter-app route roots.
+   Open-redirect targets (cross-origin, protocol-relative) yield an
+   empty string and the redirect proceeds without a deferred target.
+2. `apps/frontend/src/routes/(voters)/elections/+page.{ts,svelte}` —
+   forward `next` past auto-redirects and the submit-handler `goto`.
+3. `apps/frontend/src/routes/(voters)/constituencies/+page.{ts,svelte}` —
+   forward `next` past auto-redirects; on successful submit, decode +
+   re-validate against the whitelist regex (defense in depth), then
+   `goto(decoded)`. On whitelist rejection, fall through to the default
+   post-selection navigation.
+4. NEW spec `tests/tests/specs/voter/voter-not-located-redirect.spec.ts`
+   with 5 `CLEAN-02 — ` prefixed tests:
+   - Direct link to `/results` → bounce twice → resume.
+   - Direct link with extra query param → bounce twice → resume with
+     param preserved.
+   - Election pre-selected via URL → bounce ONLY to /constituencies →
+     resume.
+   - Refresh on located route after `localStorage.clear()` → reload
+     resumes the URL-carried route params.
+   - Open-redirect attempt (`?next=https://evil.example/phish`) →
+     constituencies-side whitelist rejects → fallback to internal route.
+
+### Scope deltas
+
+- Path correction: the gate lives at `(voters)/(located)/+layout.ts` —
+  no `[[lang=locale]]` URL prefix (locale via Paraglide `getLocale()`
+  runtime). The original todo's path with `[[lang=locale]]` was a
+  reasonable guess but did not match the actual route tree.
+- Test 3 was implemented as "election pre-selected via URL" rather
+  than "single-election auto-implied" because the default `voter-app`
+  Playwright dataset has 2 elections (`test-election-1`,
+  `test-election-2`). The chosen variant exercises the same
+  `if (!constituencyId) redirect(307, ...)` branch that auto-implied
+  elections would hit — equivalent code-path coverage without a
+  variant project switch.
