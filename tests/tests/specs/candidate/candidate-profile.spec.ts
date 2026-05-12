@@ -4,6 +4,8 @@
  * Covers:
  * - CAND-03: Profile setup with image upload and all info field types
  * - CAND-12 (partial): Data persistence after page reload
+ * - A11Y-02: Reload-persistence extension for editable info questions
+ *            (display name, bio, social link) — Phase 76 Plan 02
  *
  * Per locked decision, profile tests use the fresh/unregistered candidate:
  * register via email link, then fill profile as the newly registered candidate.
@@ -199,5 +201,95 @@ test.describe('candidate profile (fresh candidate)', { tag: ['@candidate'] }, ()
     await page.reload();
     await expect(page.getByTestId(testIds.candidate.profile.imageUpload)).toBeVisible();
     await expect(page.getByTestId(testIds.candidate.profile.imageUpload).getByRole('img')).toBeVisible();
+  });
+
+  test('A11Y-02 should persist display name after page reload', async ({ page }) => {
+    // In serial mode, this test is skipped automatically if registration failed.
+    await loginAsCandidate(page);
+    await page.goto(buildRoute({ route: 'CandAppProfile', locale: 'en' }));
+
+    // Wait for profile to render (mirror CAND-12 anchor).
+    await expect(
+      page.getByTestId(testIds.candidate.profile.submit).or(page.getByTestId(testIds.candidate.profile.returnButton))
+    ).toBeVisible({ timeout: 10000 });
+
+    // Resolve the display-name input via the seeded question label (Plan 01 fixture anchor).
+    // The label string MUST match the seed exactly: 'Display name (Phase 76 anchor)'.
+    const displayNameInput = page.getByLabel('Display name (Phase 76 anchor)');
+    await expect(displayNameInput).toBeVisible({ timeout: 5000 });
+
+    // Overwrite any pre-existing value with a new test-anchored value to prove the
+    // round-trip persists THIS edit. Value is disjoint from the substring 'Alpha' per
+    // the value-disjointness invariant codified in packages/dev-seed/src/templates/e2e.ts
+    // (CAND-06 strict-mode 'Alpha' substring lookup hazard — see Plan 01 SUMMARY §Deviations #2).
+    const NEW_DISPLAY_NAME = 'Sentinel 76 P02 displayName';
+    await displayNameInput.fill(NEW_DISPLAY_NAME);
+
+    // Save the profile to persist the edit.
+    await page.getByTestId(testIds.candidate.profile.submit).click();
+
+    // After save, the profile may navigate away (matches CAND-03 pattern at line 164).
+    // Re-navigate to the profile page to assert post-reload state.
+    await page.goto(buildRoute({ route: 'CandAppProfile', locale: 'en' }));
+
+    // Reload to assert persistence across a hard page reload (CAND-12 shape).
+    await page.reload();
+
+    // Assert the new value persisted. Race-tolerant timeout absorbs post-reload async data-load.
+    const reloadedInput = page.getByLabel('Display name (Phase 76 anchor)');
+    await expect(reloadedInput).toHaveValue(NEW_DISPLAY_NAME, { timeout: 10000 });
+  });
+
+  test('A11Y-02 should persist bio after page reload', async ({ page }) => {
+    // In serial mode, this test is skipped automatically if registration failed.
+    await loginAsCandidate(page);
+    await page.goto(buildRoute({ route: 'CandAppProfile', locale: 'en' }));
+
+    await expect(
+      page.getByTestId(testIds.candidate.profile.submit).or(page.getByTestId(testIds.candidate.profile.returnButton))
+    ).toBeVisible({ timeout: 10000 });
+
+    // Bio renders as <textarea> per QuestionInput.svelte (customData.longText=true).
+    // getByLabel resolves correctly because the label-for / aria-labelledby bridge
+    // works for both <input> and <textarea>.
+    const bioInput = page.getByLabel('Biography (Phase 76 anchor)');
+    await expect(bioInput).toBeVisible({ timeout: 5000 });
+
+    const NEW_BIO = 'Sentinel 76 P02 biography — multi-line\nedit verifies textarea round-trip.';
+    await bioInput.fill(NEW_BIO);
+
+    await page.getByTestId(testIds.candidate.profile.submit).click();
+    await page.goto(buildRoute({ route: 'CandAppProfile', locale: 'en' }));
+    await page.reload();
+
+    const reloadedBio = page.getByLabel('Biography (Phase 76 anchor)');
+    await expect(reloadedBio).toHaveValue(NEW_BIO, { timeout: 10000 });
+  });
+
+  test('A11Y-02 should persist social link after page reload', async ({ page }) => {
+    // In serial mode, this test is skipped automatically if registration failed.
+    await loginAsCandidate(page);
+    await page.goto(buildRoute({ route: 'CandAppProfile', locale: 'en' }));
+
+    await expect(
+      page.getByTestId(testIds.candidate.profile.submit).or(page.getByTestId(testIds.candidate.profile.returnButton))
+    ).toBeVisible({ timeout: 10000 });
+
+    const socialInput = page.getByLabel('Social link (Phase 76 anchor)');
+    await expect(socialInput).toBeVisible({ timeout: 5000 });
+
+    // PRODUCT-GAP-PARTIAL: url-format validation deferred (see
+    // .planning/todos/pending/2026-05-12-a11y-01-product-gap-cells.md).
+    // This block exercises persistence ONLY — the saved string round-trips
+    // identically across reload, regardless of url-format validity.
+    const NEW_SOCIAL = 'https://github.com/openvaa/sentinel-76-p02';
+    await socialInput.fill(NEW_SOCIAL);
+
+    await page.getByTestId(testIds.candidate.profile.submit).click();
+    await page.goto(buildRoute({ route: 'CandAppProfile', locale: 'en' }));
+    await page.reload();
+
+    const reloadedSocial = page.getByLabel('Social link (Phase 76 anchor)');
+    await expect(reloadedSocial).toHaveValue(NEW_SOCIAL, { timeout: 10000 });
   });
 });
