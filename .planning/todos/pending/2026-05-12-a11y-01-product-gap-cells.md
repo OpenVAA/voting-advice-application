@@ -10,6 +10,7 @@ this todo for the remaining 3 cells per CONTEXT D-03 PRODUCT-GAP path +
 RESEARCH LANDMINE-2.
 **Effort:** ~3-5 plans total (1-2 plans each for email-format + url-format;
 1 plan for required-empty product-decision + plumbing).
+**Resolves phase:** 81 (email + url cells: A11Y-05 + A11Y-06) and 82 (required-empty cell: A11Y-07)
 **Source references:**
 - Phase 76 CONTEXT D-03 (`.planning/phases/76-profile-a11y/76-CONTEXT.md` §"D-03 — 4 cells, fail-loud rationale per cell")
 - Phase 76 RESEARCH §"Concrete Validation Cells" rows 4-6 + §"Recommended A11Y-01 Cell Set"

@@ -4,6 +4,7 @@
 **Source:** Phase 78 P07 verification gate per RESEARCH Q2 + LANDMINE-2; inherited from Phase 76 P04 + Phase 77 P05 deferred-items
 **Severity:** HIGH (blocks parity-script regen capability at every verification gate)
 **Routed to:** v2.10+ candidate (alongside frontend-project-id-scoping + results-url-refactor-followups)
+**Resolves phase:** 79 (v2.10 Determinism Recovery — DETERM-04 cascading-race fix + DETERM-05 parity-script constants regen)
 
 ## Defect
 

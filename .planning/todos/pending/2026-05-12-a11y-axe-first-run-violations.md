@@ -4,6 +4,7 @@
 **Source phase:** 76-profile-a11y (Plan 04 Task 3 close)
 **Scope:** Cite-and-fix the 5 WCAG 2.1 AA violations surfaced by the Phase 76 A11Y-03 axe smoke first-run baseline (`.planning/phases/76-profile-a11y/76-A11Y-BASELINE.md`).
 **Effort:** ~1-2 plans (small — 3 distinct rule-IDs across 2 routes; 2 of 3 rules are shared-component fixes that resolve in both routes simultaneously).
+**Resolves phase:** 80 (v2.10 A11Y Axe Cite-and-Fix — A11Y-04)
 **Source references:**
 - Phase 76 ROADMAP A11Y-03 SC #3 — "Violations surfaced by the smoke are documented in a follow-up todo at .planning/todos/pending/ for cite-and-fix in a future phase (not in scope for v2.9 — wiring + first-run baseline only)" — this todo is the literal A11Y-03 deliverable.
 - Phase 76 baseline artifact: `.planning/phases/76-profile-a11y/76-A11Y-BASELINE.md` — single source of truth for per-route per-rule breakdown.
