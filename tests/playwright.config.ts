@@ -352,6 +352,19 @@ export default defineConfig({
         ]
       : []),
 
+    // Accessibility smoke: WCAG 2.1 AA scan via @axe-core/playwright (Phase 76 A11Y-03)
+    //   PLAYWRIGHT_A11Y=1 npx playwright test -c tests/playwright.config.ts --project=a11y-smoke
+    ...(process.env.PLAYWRIGHT_A11Y
+      ? [
+          {
+            name: 'a11y-smoke',
+            testDir: './tests/specs/a11y',
+            use: { ...devices['Desktop Chrome'] },
+            dependencies: ['data-setup']
+          }
+        ]
+      : []),
+
     // Bank auth (Idura/Signicat): identity-callback Edge Function integration
     //   PLAYWRIGHT_BANK_AUTH=1 npx playwright test -c tests/playwright.config.ts --project=bank-auth
     ...(process.env.PLAYWRIGHT_BANK_AUTH
