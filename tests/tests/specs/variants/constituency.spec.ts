@@ -80,19 +80,35 @@ async function answerUntilResults(
  * Open the election-accordion's first option if the accordion is rendered.
  *
  * Hoisted out of test bodies (RESEARCH Pattern 4 canonical 3 — same idiom as
- * `answerUntilResults`). The `.or()` union locator + `waitFor` gives an atomic
- * two-anchor probe (accordion OR list visible); the helper then dispatches
- * deterministically based on which terminator landed. The post-await `if` here
- * is a legitimate control-flow branch on settled DOM state (not a race-mask):
- * the union waitFor has already resolved one of the two anchors.
+ * `answerUntilResults`). The union locator settles on EITHER the accordion or
+ * the bare results list; the helper then dispatches deterministically based on
+ * which anchor resolved.
+ *
+ * Phase 78 CLEAN-05 WR-02a fix: replaces the post-union snapshot pattern
+ * `(count > 0 && isVisible)` with a dedicated `electionAccordion.waitFor()` —
+ * if the union resolved on the results list (not the accordion), this nested
+ * waitFor races to timeout deterministically and we proceed to the no-op
+ * branch. The previous count+isVisible combo was a snapshot-of-races pattern
+ * that could pass on a half-rendered accordion. The accordion-specific waitFor
+ * makes the branch deterministic on a settled anchor.
  */
 async function selectElectionFromAccordionIfPresent(
   electionAccordion: ReturnType<Page['getByTestId']>,
   resultsList: ReturnType<Page['getByTestId']>
 ): Promise<void> {
+  // Union waitFor resolves the page-level race between "multi-election results
+  // with accordion" and "single-election results list".
   await electionAccordion.or(resultsList).first().waitFor({ state: 'visible', timeout: 10000 });
-  // Post-await: probe is settled. count() returns 0 or >0 deterministically.
-  if ((await electionAccordion.count()) > 0 && (await electionAccordion.isVisible())) {
+
+  // Deterministic-branch dispatch: short waitFor scoped to the accordion alone.
+  // If the union landed on the results list, this resolves to null and we skip
+  // the click; if the accordion is present, the waitFor confirms its visibility
+  // before we interact with it.
+  const accordionResolved = await electionAccordion
+    .waitFor({ state: 'visible', timeout: 1000 })
+    .then(() => true)
+    .catch(() => false);
+  if (accordionResolved) {
     await electionAccordion.getByRole('option').first().click();
   }
 }

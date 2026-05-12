@@ -141,7 +141,14 @@ setup('import test dataset', async () => {
   }
   await client.unregisterCandidate(TEST_CANDIDATE_EMAIL);
   await client.forceRegister('test-candidate-alpha', TEST_CANDIDATE_EMAIL, TEST_CANDIDATE_PASSWORD);
-  // forceRegister throws on any failure path (see supabaseAdminClient.ts:284-321);
-  // reaching here means auth wiring succeeded.
-  expect(true, 'forceRegister reached post-condition').toBe(true);
+
+  // Phase 78 CLEAN-05 IN-05 fix: replace the prior tautological
+  // `expect(true).toBe(true)` placeholder with a semantic post-condition that
+  // verifies `forceRegister`'s observable effect — the candidate row's
+  // `auth_user_id` is populated. The prior tautology made the test green even
+  // if forceRegister silently no-op'd; this assertion fails if the link step
+  // did not write the auth user id. (LANDMINE-8: 'test-candidate-alpha' is an
+  // EXISTING fixture external id, not a new sentinel value containing 'Alpha'.)
+  const candidate = await client.findData('candidates', { externalId: { $eq: 'test-candidate-alpha' } });
+  expect(candidate.data?.[0]?.auth_user_id, 'forceRegister must link auth_user_id on candidate row').toBeTruthy();
 });

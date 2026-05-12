@@ -111,18 +111,26 @@ async function answerOrAdvanceUntilResults(
 /**
  * Open the election-accordion's first option if the accordion is rendered.
  *
- * Hoisted out of test bodies (RESEARCH Pattern 4 canonical 3). The `.or()`
- * union locator + `waitFor` gives an atomic two-anchor probe (accordion OR
- * list visible); the helper then dispatches deterministically based on which
- * terminator landed. The post-await `if` is a legitimate control-flow branch
- * on settled DOM state (not a race-mask).
+ * Hoisted out of test bodies (RESEARCH Pattern 4 canonical 3). Phase 78
+ * CLEAN-05 WR-02b fix: mirrors the constituency.spec.ts WR-02a rewrite —
+ * union waitFor resolves the page-level race, then a dedicated
+ * `electionAccordion.waitFor()` determines the branch deterministically
+ * (instead of the prior count+isVisible snapshot-of-races).
  */
 async function selectElectionFromAccordionIfPresent(
   electionAccordion: ReturnType<Page['getByTestId']>,
   resultsList: ReturnType<Page['getByTestId']>
 ): Promise<void> {
+  // Union waitFor resolves the page-level race between "multi-election results
+  // with accordion" and "single-election results list".
   await electionAccordion.or(resultsList).first().waitFor({ state: 'visible', timeout: 10000 });
-  if ((await electionAccordion.count()) > 0 && (await electionAccordion.isVisible())) {
+
+  // Deterministic-branch dispatch: short waitFor scoped to the accordion alone.
+  const accordionResolved = await electionAccordion
+    .waitFor({ state: 'visible', timeout: 1000 })
+    .then(() => true)
+    .catch(() => false);
+  if (accordionResolved) {
     await electionAccordion.getByRole('option').first().click();
   }
 }

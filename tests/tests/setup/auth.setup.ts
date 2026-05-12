@@ -34,8 +34,17 @@ async function waitForLoginForm(
       return; // Login form appeared
     } catch {
       if (attempt < maxAttempts - 1) {
-        // Reload and retry
-        await page.reload({ waitUntil: 'domcontentloaded' });
+        // reason: Phase 78 CLEAN-05 WR-04 — the prior `page.reload(...)` call
+        //   here was wasted work. The next loop iteration starts with another
+        //   `page.goto(loginRoute, ...)` (line 30) which fully replaces the
+        //   page state — reloading first added an extra network round-trip
+        //   without observable effect. Fall through to the next iteration's
+        //   goto() instead.
+        //
+        //   LANDMINE-2: this fix is code-quality only. It does NOT resolve
+        //   the candidate-profile.spec.ts:85-145 cascading race that Phase
+        //   76/77 deferred — the cascade is a separate concern (race in the
+        //   profile-load chain), tracked separately for v2.10+.
       } else {
         // Final attempt failed
         throw new Error(
