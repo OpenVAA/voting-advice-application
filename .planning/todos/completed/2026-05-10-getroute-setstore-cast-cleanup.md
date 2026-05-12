@@ -59,3 +59,15 @@ pattern across the frontend.
   — the original observation + reviewer's "no action" verdict.
 - `.planning/phases/71-frontend-strict-typing-cleanup/71-OUT-OF-SCOPE-FINDINGS.md`
   row #10 — origin of this todo.
+
+## Resolution
+
+**Resolved:** 2026-05-12 — Phase 78 Plan 03 (CLEAN-03b). Commit `6068ba4df`.
+Approach: Option 2 (inline use) per CONTEXT D-09 default — `afterNavigate(()
+=> store.set(buildFn()));`. Eliminated the `setStore` local AND the structural
+cast in one edit. Function signature `createGetRoute(): Readable<RouteBuilder>`
+preserved. Typecheck clean for this file; global baseline preserved (155 errors).
+
+`dataContext.ts` analog cast is OUT OF SCOPE for Phase 78 per Deferred Ideas —
+flagged in 78-03-SUMMARY.md `## Followups` for a future-phase eradication.
+See `.planning/phases/78-cleanup-hygiene-phase/78-03-SUMMARY.md`.

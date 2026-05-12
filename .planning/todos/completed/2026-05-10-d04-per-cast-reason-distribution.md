@@ -62,3 +62,11 @@ addition) than to retrofit one cluster.
   row #9 — origin of this todo.
 - `.planning/phases/71-frontend-strict-typing-cleanup/71-REVIEW.md` IN-02
   — the underlying observation.
+
+## Resolution
+
+**Resolved:** 2026-05-12 — Phase 78 Plan 03 (CLEAN-03a). Commit `601822b3b`.
+Cluster-level anchor at line 104 removed; 13 per-cast `// reason:` blocks
+distributed across the inventoried sites (11 image + 2 answer). Grep gate
+satisfied with 14 total reason blocks (13 new + 1 pre-existing electionIds
+anchor). See `.planning/phases/78-cleanup-hygiene-phase/78-03-SUMMARY.md`.

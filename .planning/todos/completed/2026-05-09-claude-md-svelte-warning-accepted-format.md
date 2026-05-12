@@ -19,5 +19,13 @@ After Phase 70 (or any later phase) lands the **first** real Option B accepted-w
 ## Anchor
 
 Phase 70 D-05 specifies the format: `// svelte-warning: accepted — <reason>`. Carry that wording verbatim into CLAUDE.md when this todo is actioned.
-</content>
-</invoke>
+
+## Resolution
+
+**Resolved:** 2026-05-12 — Phase 78 Plan 03 (CLEAN-03c). Commit `f5793f78f`.
+Added `### Svelte Warning-Accepted Format` sub-section under `## Important
+Implementation Notes` in CLAUDE.md (line 340), positioned after `### Context
+Destructuring Rule (Svelte 5)` to keep Svelte conventions clustered (CONTEXT
+D-10 default). Documents the canonical `// svelte-warning: accepted —
+<one-sentence-rationale>` format with Phase 70 Cat A `// reason:` precedent.
+See `.planning/phases/78-cleanup-hygiene-phase/78-03-SUMMARY.md`.
