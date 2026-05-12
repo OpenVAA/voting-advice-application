@@ -4,14 +4,14 @@ milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance
 status: executing
 stopped_at: Phase 79 context gathered
-last_updated: "2026-05-12T20:08:42.272Z"
-last_activity: 2026-05-12 -- Phase 79 planning complete
+last_updated: "2026-05-12T20:52:53.422Z"
+last_activity: 2026-05-12
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 4
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 25
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** v2.10 milestone — close v2.9's HIGH/MEDIUM a11y + test-determinism deferrals (candidate-profile cascading race + parity-script constants regen + axe cite-and-fix + A11Y-01 PRODUCT-GAP cells).
+**Current focus:** Phase 79 — Determinism Recovery (Cascading-Race Fix + Constants Regen)
 
 ## Current Position
 
-Phase: Phase 79 Determinism Recovery (Cascading-Race Fix + Constants Regen) (not started)
-Plan: —
+Phase: 79 (Determinism Recovery (Cascading-Race Fix + Constants Regen)) — EXECUTING
+Plan: 2 of 4
 Status: Ready to execute
-Last activity: 2026-05-12 -- Phase 79 planning complete
+Last activity: 2026-05-12
 
 ## Performance Metrics
 
@@ -71,6 +71,7 @@ Snapshot at v2.10 planning start (2026-05-12). v2.10 consumes 3 v2.9-routed v2.1
 | todo | 2026-05-09-rewrite-parent-answer-imputation.md | Future matching-focused milestone |
 | carry-forward | 165 pre-existing intra-package circular deps (data/matching/filters internal.ts barrel pattern) | Out of v2.10 scope; dedicated structural refactor milestone |
 | infrastructure | Local imgproxy Docker container 502 on image upload (intermittent) | Not a code issue; fix with `supabase stop && supabase start`. Carried forward. |
+| Phase 79 P01 | 2h | 4 tasks | 18 files |
 
 ## Accumulated Context
 
@@ -101,6 +102,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - Phase 82 (A11Y-07) has the embedded product decision (REJECT-with-inline-error vs SOFT-WARN-ONLY = current badge + submit-button gating). Decision made at phase discuss time. If SOFT-WARN-ONLY: the cell closes as PRODUCT-CONFIRMED with no code changes — the spec asserts the existing badge + button-gating instead of a new error UI.
 - All v2.10 work is frontend / package-level + Playwright spec authoring — NO Supabase migrations, NO new test runners, NO E2E framework migration. Same durable stack as v2.9 (Playwright 1.58.2).
 - Deprecated `dev:*` script aliases scheduled for removal at v2.10 close (per Phase 78 Plan 01 SUMMARY commitment) — should be addressed as a sub-task during one of the v2.10 cleanup commits, not as a separate phase.
+- [Phase ?]: Phase 79 Plan 01 (DETERM-04 RCA): H1 partially confirmed re-framed, H2 disproven by absence of exercise; proximate cause is test-spec URL-predicate bug at candidate-profile.spec.ts:51
 
 ### Blockers/Concerns
 
@@ -110,9 +112,9 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-05-12T19:28:17.529Z
+Last session: 2026-05-12T20:52:34.447Z
 Stopped at: Phase 79 context gathered
-Resume file: .planning/phases/79-determinism-recovery-cascading-race-fix-constants-regen/79-CONTEXT.md
+Resume file: None
 Next action: Run `/gsd-plan-phase 79` to plan the Determinism Recovery phase.
 
 ### Plan-count estimate (drafted 2026-05-12)

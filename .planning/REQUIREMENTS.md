@@ -60,7 +60,7 @@ Which phases cover which requirements.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DETERM-04   | Phase 79 | Pending |
+| DETERM-04   | Phase 79 | In Progress (RCA done @ Plan 01; fix pending @ Plan 02) |
 | DETERM-05   | Phase 79 | Pending |
 | A11Y-04     | Phase 80 | Pending |
 | A11Y-05     | Phase 81 | Pending |

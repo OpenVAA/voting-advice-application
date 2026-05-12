@@ -152,9 +152,12 @@ None. The RCA did not require any authentication beyond what the test fixtures a
 
 None. RCA artifacts are complete; RCA-FINDINGS.md is authoritative; no placeholders or TODO markers remain.
 
-## Self-Check
+## Self-Check: PASSED
 
-(Populated after the atomic commit lands.)
+- All 14 artifact files verified present on disk (RCA-FINDINGS.md, registration-rca.spec.ts, 7 state-*.json, 2 trace-run-*.zip, STATUS.md, this SUMMARY.md, console-run-2.log)
+- Atomic commit `3c55dcc54` verified in git log with subject `feat(79-01): DETERM-04 RCA dual-hypothesis instrumentation + findings`
+- Live-tree grep (`__phase79RcaHydrated|[RCA]|[RCA-H1]|// RCA Phase 79`) returns ZERO matches in `(protected)/+layout.svelte` and `register/password/+page.svelte`
+- `git diff HEAD` for both live-tree files returns ZERO lines (frontend tree clean for Plan 02)
 
 ## Continue When Operator Returns
 

@@ -9,7 +9,7 @@
 
 ## DETERM-04 Status
 
-- [x] Plan 01 (RCA, dual-hypothesis instrumentation) — DONE @ <see git log>
+- [x] Plan 01 (RCA, dual-hypothesis instrumentation) — DONE @ `3c55dcc54`
 - [ ] Plan 02 (frontend fix per RCA findings) — PENDING
 - [ ] Plan 02-fallback (restructure to register-fresh-candidate.setup.ts) — NOT-TRIGGERED
 - [ ] 1-run cold-start smoke confirm (D-12) — PENDING
