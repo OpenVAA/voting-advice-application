@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v2.9
 milestone_name: E2E Coverage + Suite Determinism
-status: ready-for-lifecycle
-stopped_at: Phases 76/77/78 operator-approved; ready for milestone audit → complete → cleanup
-last_updated: "2026-05-12T20:00:00.000Z"
-last_activity: 2026-05-12 -- Phases 76/77/78 operator-approved GREEN-WITH-DEFERRAL via /gsd-autonomous resume-from-76
+status: Awaiting next milestone
+stopped_at: All v2.9 phases operator-approved (Phases 73-75 prior; 76/77/78 approved 2026-05-12 via /gsd-autonomous resume-from-76)
+last_updated: "2026-05-12T17:24:39.645Z"
+last_activity: 2026-05-12 — Milestone v2.9 completed and archived
 progress:
-  total_phases: 6
+  total_phases: 10
   completed_phases: 6
   total_plans: 32
   completed_plans: 32
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-05-10)
 
 ## Current Position
 
-Phase: All v2.9 phases (73-78) closed and operator-approved
-Plan: 32 of 32 plans complete across 6 phases
-Status: Ready for milestone audit → complete → cleanup
-Last activity: 2026-05-12 -- Phases 76/77/78 operator-approved GREEN-WITH-DEFERRAL via /gsd-autonomous resume-from-76 path
+Phase: Milestone v2.9 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-05-12 — Milestone v2.9 completed and archived
 
 ## Performance Metrics
 
@@ -180,16 +180,4 @@ Next action: Run milestone lifecycle — `/gsd-audit-milestone` → `/gsd-comple
 
 ## Operator Next Steps
 
-- All v2.9 phases (73-78) are closed and operator-approved (2026-05-12). 32/32 plans complete; all deferrals routed to v2.10+.
-- Milestone lifecycle in progress via /gsd-autonomous: `/gsd-audit-milestone` → `/gsd-complete-milestone v2.9` → `/gsd-cleanup`.
-- After cleanup, run `/gsd-new-milestone` to frame v2.10. Candidate v2.10 scope (carry-forward from v2.9 deferrals + prior captures):
-  - **Candidate-profile cascading race fix** — LANDMINE-2, HIGH severity, blocks parity-script regen at every gate
-  - **Voters-layout non-reactive topbar** — Phase 77 P01 deferred cells, MEDIUM
-  - **Axe cite-and-fix** — 5 first-run violations across 2 routes (results + voter-detail-drawer); ~1-2 plans
-  - **A11Y-01 PRODUCT-GAP cells** — email-format / url-format / required-empty (~3-5 plans, requires schema + component + i18n additions)
-  - **SETTINGS-02 voter-authoring** — voter app needs open-comment input + answerStore.setAnswer(info) support
-  - **SETTINGS-03 voter-required derivation** — voter context needs requiredInfoQuestions / profileComplete symbols
-  - **FilterGroup OR-mode UI** — EntityFilters.svelte AND/OR toggle (setter exists, no UI emits LOGIC_OP.Or)
-  - **Sharable URLs + multi-tenant pair** — `results-url-refactor-followups` + `frontend-project-id-scoping`
-  - **Luxembourg + Danish VAA reconciliation** — deltas unscoped
-- Reminder: Commits in this repo must use `git -c core.hooksPath=/dev/null` until global config is fixed (`project_gsd_repo_hook_workaround.md`).
+- Start the next milestone with /gsd-new-milestone

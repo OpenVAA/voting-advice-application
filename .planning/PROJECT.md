@@ -25,7 +25,24 @@ A reliable, well-tested VAA framework that developers can confidently extend, cu
 
 Known infrastructure issue: local imgproxy Docker container crashes intermittently (502 on image upload) — not a code issue, fix with `supabase stop && supabase start`.
 
-## Last Shipped: v2.8 Alliance Card + Frontend Hygiene Sweep (2026-05-10)
+## Last Shipped: v2.9 E2E Coverage + Suite Determinism (2026-05-12)
+
+**Delivered:** 6 phases (73-78), 32 plans, 89 tasks across 3 days. Audit verdict: `tech_debt` — 24/24 requirements satisfied (12 PASS + 12 PASS-WITH-DEFERRAL); 8 v2.10+ candidate todos filed for routed deferrals.
+
+- **Phase 73 (DETERM-01/02/03):** Skip-modifier sweep (0 `test.skip(true, …)` remaining); 19 data-loading races investigated + fixed deterministically; 98 `playwright/*` warnings resolved via mechanical sweeps (no-networkidle / no-raw-locators) + voter/candidate-spec rewrites (no-conditional-in-test). 3-run cold-start SHA-identical at `e2e56e73fa42…`; lint-gate bumped warn→error.
+- **Phase 74 (E2E-01..08):** 8 new spec surfaces in one phase. Multilocale translation surface (E2E-01); browse-without-match (E2E-02 + new `variant-low-minimum-answers` project); feedback persistence (E2E-03); 5-cell selector matrix (E2E-04 + 2 new variant projects); 4-case voter-vs-entity answer rendering (E2E-05); skip/delete/back CTA toggle (E2E-06); per-category SubMatch (E2E-07); locale switching (E2E-08).
+- **Phase 75 (QSPEC-01 + QSPEC-02):** Permanent E2E user-story gates for Boolean opinion + single-choice categorical opinion (deduplicated against matching tests via unified dedup audit artifact); `walkToQuestion(page, sortOrder)` helper extracted; multi-choice deferred to follow-up todo.
+- **Phase 76 (A11Y-01/02/03):** Profile validation rejection cells (image-type / image-size / name-too-long) + reload-persistence extension (displayName + bio + social link) + `@axe-core/playwright@4.11.3` integrated with `PLAYWRIGHT_A11Y` env-gated 6-route smoke. First-run baseline: 5 WCAG 2.1 AA violations across results + voter-detail-drawer (cite-and-fix routed to v2.10+).
+- **Phase 77 (SETTINGS-01/02/03):** Per-toggle matrix on candidate-settings (10 wave-A cells) + filter-type matrix on voter-results (6 wave-B cells folding the filter-type-coverage source todo); `customData.allowOpen` display-side via new `variant-allowopen` project (LANDMINE-1 reframing — voter-authoring half is PRODUCT-GAP); per-question visibility + must-answer via new `variant-hidden-required` project chain (voter-hidden + candidate-required cells).
+- **Phase 78 (CLEAN-01..05):** `dev:* → db:*` rename + new `dev:clean` cache wipe + `db:reset`/`db:reset-with-data` chain (8 deprecated aliases preserved through v2.10); voter-not-located `?next=` deferred-target redirect (5-cell E2E spec); 13 per-cast `// reason:` blocks + `setStore` cast elimination + CLAUDE.md Svelte warning-accepted format anchor; i18n wrapper tightened to `TranslationKey` union + `t.get` alias retired (E2E-08 Order B re-validation 5/5 PASS); `--likert-only` CLI flag added to `@openvaa/dev-seed` + 13 Phase 73 review findings + bonus CR-01 closed.
+
+**Cross-phase contracts:** Phase 73 DATA_RACE pool (15 IMGPROXY-tied) preserved structurally through 78. Phase 75 PASS_LOCKED constants (47/15/33) preserved across 76/77/78 via three architectural-deferral decisions; constants regen DEFERRED-WITH-RATIONALE due to inherited candidate-profile cascading race (routed to v2.10+ as HIGH severity).
+
+**Routed to v2.10+ (operator-approved):** candidate-profile cascading race (HIGH); A11Y-01 PRODUCT-GAP cells (email/url/required-empty); axe cite-and-fix (5 violations); SETTINGS-02 voter-authoring; SETTINGS-03 voter-required; FilterGroup OR-mode UI; voters-layout non-reactive topbar; constituency-filter PRODUCT-GAP (LOW).
+
+**Out of scope (deferred to v2.10+):** Sharable URLs + multi-tenant pair (`results-url-refactor-followups` + `frontend-project-id-scoping`). Luxembourg + Danish VAA reconciliation (deltas unscoped).
+
+## Previous: v2.8 Alliance Card + Frontend Hygiene Sweep (2026-05-10)
 
 **Delivered:** 4 phases (69-72), 13 plans, ~37 tasks across 3 days. Closed v2.7's deferred Svelte 5 / typing / lint / packaging loose ends and finished the alliance card render path in one cohesive frontend hygiene + small-UI-feature milestone. Bundled parity gate PASSED across Phases 69+70+71.
 
@@ -37,32 +54,28 @@ Known infrastructure issue: local imgproxy Docker container crashes intermittent
 
 **Out of scope (deferred to v2.9+):** E2E coverage workstream (now the v2.9 anchor — see Current Milestone above). Sharable URLs + multi-tenant pair (`results-url-refactor-followups` + `frontend-project-id-scoping`) deferred to v2.10. Luxembourg + Danish VAA reconciliation (`2026-05-10-incorporate-luxembourg-and-danish-vaa-changes`) deferred to a separate milestone; deltas unscoped.
 
-## Current Milestone: v2.9 E2E Coverage + Suite Determinism
+## Current Milestone: Awaiting v2.10 framing
 
-**Goal:** Reduce the Playwright suite to a hard pass/fail signal first (skip-modifier sweep + 19 data-loading races + 98 `playwright/*` warnings), then add high-leverage coverage on top of that stable base — translation surface, browse-without-match, election/constituency selector matrix, voter answer rendering, skip/delete/back navigation, locale switching, focused question-rendering specs, candidate profile validation+persistence, automated a11y, and the `appSettings`/`appCustomization` toggle matrix. Close residual operator + post-71 hygiene todos in a final cleanup phase.
+v2.9 shipped 2026-05-12. v2.10 not yet planned — run `/gsd-new-milestone` to frame the next milestone.
 
-**Target features (operator-pre-drafted, 6 phases A–F):**
+**Leading candidates (v2.9 close + earlier carry-forward):**
 
-- **Determinism baseline** — clear all `test.skip(true, …)` modifiers across the suite (extends v2.6 Phase 64 voter-results sweep), resolve 19 known data-loading race E2E failures, sweep 98 pre-existing `playwright/*` warnings (`no-conditional-in-test`, `no-raw-locators`, `no-networkidle`). Gating prerequisite for all subsequent coverage phases.
-- **High-leverage E2E coverage** — multilocale candidate translation surface, browse-without-match results, feedback dialog persistence (text retained on dismiss + reset on send), election/constituency selector matrix (1e×1c / 1e×Nc / Ne×1c / Ne×Nc + startFromConstituency), voter answer in entity details (4-case matrix), skip/delete/back navigation, per-category match SubMatch breakdown, locale switching (route-prefixed + locale-switcher widget).
-- **Question-rendering specs** — focused user-story specs for Boolean + categorical question rendering in voter flow (deduplicated against matching tests).
-- **Profile + a11y** — candidate profile validation rejection paths, full profile-field reload-persistence (extending v2.1 CAND-12), `@axe-core/playwright` integration with WCAG 2.1 AA smoke against home/selector/questions/results/voter-detail routes.
-- **Settings matrix** — per-toggle coverage of `appSettings` / `appCustomization` (consumes existing `2026-04-27-extend-e2e-filter-type-coverage` todo).
-- **Cleanup hygiene phase (Phase F shape, like v2.7 P68 / v2.8 P72)** — `dev:* → db:*` script rename + `dev:clean` cache wipe (todo `2026-05-10-rename-package-scripts-dev-to-db`); voter-not-located deferred-target redirect through selectors (todo `2026-05-10-redirect-unlocated-voter-to-selectors`); post-71 carry-forward trio (`2026-05-10-d04-per-cast-reason-distribution` + `2026-05-10-getroute-setstore-cast-cleanup` + `2026-05-09-claude-md-svelte-warning-accepted-format`); `2026-05-09-tighten-i18n-wrapper` folded in as i18n hygiene paired with locale-switching coverage.
+- **HIGH:** Candidate-profile cascading race fix — `candidate-profile.spec.ts:85-145` cascade-skips 43+ downstream tests at every cold-start gate; blocks parity-script regen capability across all coverage phases (Phase 76 P04 + Phase 77 P05 + Phase 78 P07 all DEFERRED constants regen due to this race). Estimated 1-2 plans depending on root cause.
+- **MEDIUM PRODUCT-GAP cluster (each requires schema + component + i18n work):**
+  - A11Y-01 cells: email-format / url-format / required-empty validation (3-5 plans)
+  - SETTINGS-02 voter-authoring: open-comment input + `answerStore.setAnswer(info)` support
+  - SETTINGS-03 voter-required: voter context needs `requiredInfoQuestions` / `profileComplete` symbols
+  - FilterGroup OR-mode UI: EntityFilters.svelte AND/OR toggle (setter exists, no UI emits LOGIC_OP.Or)
+  - Voters-layout non-reactive topbar: refactor mount-time `$appSettings` reads (30-60 LOC)
+- **MEDIUM hygiene:** A11Y axe cite-and-fix (5 first-run WCAG 2.1 AA violations across results + voter-detail-drawer; cite-and-fix follow-up routed from v2.9 A11Y-03 close)
+- **LOW:** constituency-filter PRODUCT-GAP (`buildParentFilters` doesn't handle constituency)
+- **Architecture (carry-forward from v2.9 close — independent of above):** sharable URLs + multi-tenant pair (`results-url-refactor-followups` + `frontend-project-id-scoping`); Luxembourg + Danish VAA reconciliation (deltas unscoped — separate milestone candidate); matching-package `rewrite-parent-answer-imputation` (future matching-focused milestone); `165 intra-package circular deps` structural refactor
 
-**Out of scope (deferred to v2.10+):**
+**Key context for v2.10 framing:**
 
-- **Sharable URLs + multi-tenant pair** — `results-url-refactor-followups` + `frontend-project-id-scoping`. Too much for one milestone alongside the E2E anchor; benefits from v2.8 typing cleanup landing first (now done).
-- **Luxembourg + Danish VAA reconciliation** — todo `2026-05-10-incorporate-luxembourg-and-danish-vaa-changes`. Operator deferred to a separate milestone; deltas are unscoped.
-- **`2026-05-09-rewrite-parent-answer-imputation`** — matching-package internal; carries forward to a future matching-focused milestone.
-- **DB-01 nominations-table cleanup**, **party-app generalization**, **candidate-answer-store investigation**, **Strapi-era auth-flow leftovers**, **`configurable-mock-data`**, **`adapter-package-loading`**, **`rename-admin-writer`**, **165 intra-package circular deps** — pending in `.planning/todos/pending/` for future milestones.
-
-**Key context:**
-
-- "Determinism first" is gating: nothing in the new-coverage phases lands until Phase A passes. Without a stable baseline, new tests look like just-another-flake — v2.9's contract is "0 skipped / 0 races / 0 playwright warnings before Phase B begins."
-- Phases B, C, D, E can be developed in parallel after A. Phase F is residual cleanup tail (operator todos + post-71 carry-forward).
-- Phase numbering continues from v2.8 last phase (72) → v2.9 starts at **Phase 73**.
-- Captured framing source: `.planning/notes/2026-05-10-v2.9-e2e-coverage-inventory.md` (E2E gap inventory + REAL/NOT-REAL classification, compiled 2026-05-10 during v2.8 close). Underlying gap inventory: `.planning/notes/2026-05-08-e2e-test-inventory.md`.
+- Phase numbering continues from v2.9 last phase (78) → v2.10 starts at **Phase 79**.
+- Deprecated `dev:*` aliases scheduled for removal at v2.10 close (per Phase 78 Plan 01 SUMMARY).
+- Phase 75 PASS_LOCKED constants (47/15/33) preserved through v2.9 — first v2.10 phase that resolves the candidate-profile cascading race should regenerate via `node .planning/milestones/v2.9-phases/73-determinism-baseline/post-fix/regen-constants.mjs` (if phases are archived) or the v2.9 in-place path.
 
 ## Requirements
 
@@ -155,22 +168,18 @@ Known infrastructure issue: local imgproxy Docker container crashes intermittent
 - ✓ `mergeSettings` re-export shim in `apps/frontend/src/lib/utils/merge.ts` retired; consumers re-pointed to `@openvaa/app-shared` directly; `git grep -nE "from ['\"]\\$lib/utils/merge['\"]"` returns 0 matches — v2.8 (Phase 72 / SHARED-02)
 - ✓ `@openvaa/supabase` lint-script disambiguated — `yarn supabase:lint` → `yarn supabase:lint:sql`; root `yarn lint:check` no longer invokes SQL linter; turbo task fan-out unaffected (script-existence-driven); CLAUDE.md Supabase Commands updated — v2.8 (Phase 72 / LINT-01)
 
+- ✓ Determinism baseline — 0 `test.skip(true, …)` modifiers + 19 data-loading races resolved + 98 `playwright/*` warnings cleared; 3-run cold-start SHA-identical (`e2e56e73fa42…`) — v2.9 (Phase 73 / DETERM-01..03)
+- ✓ High-leverage E2E coverage — multilocale translation surface, browse-without-match, feedback persistence, 5-cell selector matrix, 4-case voter-vs-entity answer rendering, skip/delete/back CTA toggle, per-category SubMatch, locale switching; +3 new Playwright variant projects — v2.9 (Phase 74 / E2E-01..08)
+- ✓ Question-rendering specs — focused E2E user-story gates for Boolean opinion (QSPEC-01) + single-choice categorical opinion (QSPEC-02), deduplicated against matching tests via unified dedup audit; `walkToQuestion` helper extracted — v2.9 (Phase 75)
+- ✓ Profile validation rejection paths + reload-persistence extension + `@axe-core/playwright@4.11.3` 6-route WCAG 2.1 AA smoke wired with `PLAYWRIGHT_A11Y` env-gate; first-run baseline: 5 violations across 2 routes (cite-and-fix → v2.10+) — v2.9 (Phase 76 / A11Y-01..03)
+- ✓ `appSettings` / `appCustomization` per-toggle matrix — 10 wave-A cells + 6 wave-B filter-type cells folding the filter-type-coverage source todo; `customData.allowOpen` display-side coverage (LANDMINE-1 reframing — voter-authoring PRODUCT-GAP routed to v2.10+); per-question visibility + must-answer (voter-hidden + candidate-required cells; voter-required PRODUCT-GAP routed to v2.10+) — v2.9 (Phase 77 / SETTINGS-01..03)
+- ✓ Cleanup hygiene bundle — `dev:* → db:*` rename + new `dev:clean` cache wipe + `db:reset`/`db:reset-with-data` chain (8 deprecated aliases preserved through v2.10); voter-not-located `?next=` redirect with URL-whitelist guard + 5-cell E2E spec; 13 per-cast `// reason:` blocks + `setStore` cast elimination + CLAUDE.md Svelte warning-accepted format anchor; i18n wrapper tightened to `TranslationKey` union; `--likert-only` CLI flag added to `@openvaa/dev-seed` (Path B voter-fixture race resolution); 14 Phase 73 review findings closed — v2.9 (Phase 78 / CLEAN-01..05)
+
 ### Active
 
-**v2.9 — E2E Coverage + Suite Determinism** (current milestone — see "Current Milestone: v2.9" above for the full goal + 6-phase A–F shape)
+**Awaiting v2.10 framing** — see "Current Milestone: Awaiting v2.10 framing" above for leading candidates.
 
-- [ ] Determinism baseline: clear `test.skip(true, …)` modifiers + resolve 19 data-loading race E2E failures + sweep 98 `playwright/*` warnings (`no-conditional-in-test` / `no-raw-locators` / `no-networkidle`)
-- [ ] High-leverage E2E coverage: multilocale candidate translation surface, browse-without-match, feedback dialog persistence, election/constituency selector matrix, voter answer in entity details (4-case), skip/delete/back navigation, per-category match SubMatch breakdown, locale switching
-- [ ] Question-rendering specs: Boolean + categorical voter-flow user-story specs (deduplicated against matching tests)
-- [ ] Profile + a11y: candidate profile validation rejection paths + full profile-field reload-persistence + `@axe-core/playwright` WCAG 2.1 AA smoke
-- [ ] Settings matrix: `appSettings`/`appCustomization` per-toggle coverage (consumes `2026-04-27-extend-e2e-filter-type-coverage`)
-- [ ] Cleanup hygiene phase: `dev:* → db:*` script rename + `dev:clean`; voter-not-located deferred-target redirect; post-71 carry-forward trio (`d04-per-cast-reason-distribution`, `getroute-setstore-cast-cleanup`, `claude-md-svelte-warning-accepted-format`); `tighten-i18n-wrapper` as i18n hygiene paired with locale-switching coverage
-
-**Likely v2.10 candidates** (carried forward, deferred from v2.9 scoping):
-- "Sharable URLs + multi-tenant" pair: `results-url-refactor-followups` + `frontend-project-id-scoping`
-- Luxembourg + Danish VAA reconciliation (`2026-05-10-incorporate-luxembourg-and-danish-vaa-changes`) — once deltas are scoped
-
-**Other pending todos** (carried forward, lower priority — not on a current milestone roadmap):
+**Pending todos** (carried forward, lower priority — not yet on a milestone roadmap):
 - Generalize candidate app to support parties as first-class registrants
 - Investigate migrating candidate answer store (architectural)
 - `password-reset-code-method` + `register-page-registrationkey-method` (Strapi-era leftovers; both medium priority)
@@ -370,4 +379,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-_Last updated: 2026-05-11 after v2.9 Phase 73 (Determinism Baseline) closed GREEN. Phase 73 delivered: 101 → 0 `playwright/*` warnings + lint gate `'warn'` → `'error'`; 3-run cold-start `--workers=1` IDENTICAL pass/fail × 3 (parity gate PASS × 3); 3 inline-justified bank-auth `// reason:` skips set the DETERM-01 D-07 convention; voter-fixture heterogeneous-question-types race escalated to `.planning/todos/pending/2026-05-11-voter-fixture-heterogeneous-question-types.md` (16 voter-app failures, exceeds D-05 cap); DETERM-01/02/03 closed jointly. Phases 74-77 (high-leverage E2E coverage / question-rendering / a11y / settings matrix) and Phase 78 (cleanup hygiene) unblocked. Code-review follow-up: voter-popups race-tolerance regression (`waitFor` on already-visible anchor) flagged advisory in 73-VERIFICATION.md §Follow-up Items — not a must-have failure. Next: Phase 74 (High-Leverage E2E Coverage)._
+_Last updated: 2026-05-12 after v2.9 (E2E Coverage + Suite Determinism) shipped. 6 phases (73-78), 32 plans, 89 tasks across 3 days; audit verdict `tech_debt` — 24/24 requirements satisfied (12 PASS + 12 PASS-WITH-DEFERRAL); 8 v2.10+ candidate todos filed. Operator-approved across all 6 phases on 2026-05-12 via `/gsd-autonomous --from 69` resume-from-76 path. Cross-phase contracts honored — Phase 73 DATA_RACE pool preserved structurally through 78; Phase 75 PASS_LOCKED constants (47/15/33) preserved across 76/77/78 via three consecutive architectural-deferral decisions (inherited candidate-profile cascading race blocks parity-script regen until v2.10+). Next: `/gsd-new-milestone` to frame v2.10. Leading candidates: candidate-profile cascading race fix (HIGH), 5 PRODUCT-GAP closures (MEDIUM), axe cite-and-fix (MEDIUM), sharable URLs + multi-tenant pair (architecture)._

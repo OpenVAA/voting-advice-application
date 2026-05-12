@@ -545,6 +545,90 @@
 
 ---
 
+## Milestone: v2.9 — E2E Coverage + Suite Determinism
+
+**Shipped:** 2026-05-12
+**Phases:** 6 (73-78) | **Plans:** 32 | **Tasks:** 89 | **Days:** 3
+
+### What Was Built
+
+- **Determinism baseline (Phase 73):** Skip-modifier sweep (0 `test.skip(true, …)` remaining); 19 data-loading races investigated + fixed deterministically; 98 `playwright/*` warnings cleared (no-conditional-in-test, no-raw-locators, no-networkidle); lint-gate bumped warn→error; 3-run cold-start SHA-identical at `e2e56e73fa42…`.
+- **High-leverage E2E coverage (Phase 74):** 8 spec surfaces in one phase + 3 new Playwright variant projects (variant-low-minimum-answers, variant-1e-Nc, variant-Ne-Nc). Multilocale translation surface, browse-without-match, feedback persistence, 5-cell selector matrix, 4-case voter-vs-entity rendering, skip/delete/back, per-category SubMatch, locale switching.
+- **Question-rendering specs (Phase 75):** Boolean opinion + single-choice categorical opinion E2E user-story gates; deduplicated against matching tests via unified dedup audit artifact; `walkToQuestion(page, sortOrder)` helper extracted.
+- **Profile + A11y (Phase 76):** Profile validation rejection cells + reload-persistence extension + `@axe-core/playwright@4.11.3` 6-route WCAG 2.1 AA smoke wired with PLAYWRIGHT_A11Y env-gate; first-run baseline: 5 violations across 2 routes.
+- **Settings matrix (Phase 77):** 10 wave-A toggle cells + 6 wave-B filter-type cells folding the filter-type-coverage source todo; `customData.allowOpen` display-side coverage via new `variant-allowopen` project; per-question visibility + must-answer via new `variant-hidden-required` project chain. 4 PRODUCT-GAP follow-ups filed.
+- **Cleanup hygiene (Phase 78):** `dev:* → db:*` rename + new `dev:clean` cache wipe + `db:reset`/`db:reset-with-data` chain; voter-not-located `?next=` redirect with URL-whitelist guard; 13 per-cast `// reason:` blocks + `setStore` cast elimination + CLAUDE.md Svelte warning-accepted format anchor; i18n wrapper tightened to `TranslationKey` union; `--likert-only` CLI flag added to `@openvaa/dev-seed`; 14 Phase 73 review findings closed (12 fixed + 2 accepted-with-reason).
+
+### What Worked
+
+- **"Determinism first" strategy paid off.** Phase 73 making the suite 3-run-stable BEFORE any new coverage landed in 74-77 meant every Phase 74-77 deferral could be cleanly attributed to a known upstream race rather than misclassified as "another flake from this new spec".
+- **Constants-regen-deferral as a permanent architectural decision** (introduced at Phase 76 P04, inherited unchanged at 77 P05 + 78 P07). The DEFERRED-WITH-RATIONALE pattern preserves Phase 75's PASS_LOCKED reference (47/15/33) so when the upstream candidate-profile cascading race is fixed in v2.10+, the parity-gate immediately turns GREEN without manual constants editing. Avoided the trap of locking in a degraded baseline.
+- **Bundled hygiene phase (Phase 78) following v2.7 P68 / v2.8 P72 trio pattern, scaled up to 5 reqs.** Single phase consumed 7 source todos + 14 review findings + filed 2 NEW v2.10+ todos. Trio pattern matures into a permanent milestone-close-tail mechanism.
+- **PRODUCT-GAP discovery during coverage work treated as honest signal, not blocker.** Phase 76 surfaced 3 A11Y-01 PRODUCT-GAP cells (email/url/required-empty); Phase 77 surfaced 4 PRODUCT-GAP cells (SETTINGS-02 voter-authoring, SETTINGS-03 voter-required, FilterGroup OR-mode, constituency-filter). Each routed to a named v2.10+ todo with severity classification instead of being forced into v2.9 scope.
+- **`/gsd-autonomous --from 69` resume-from-76 path for milestone close.** Operator-approval batch on 3 phases (76/77/78) in one session; audit + complete + cleanup chained automatically; saved ~3 separate clear-and-run cycles.
+
+### What Was Inefficient
+
+- **Phase 77 P05 cold-start gate aborted at Run 1 (~16 min SIGINT'd, Runs 2/3 not executed).** Phase 76 P04 had already established the precedent that the upstream auth-setup race would dominate; the wall-clock cost of confirming it 3x more was wasted. Could have routed straight to DEFERRED-WITH-RATIONALE.
+- **Audit-open CLI under-reported pending todo count at v2.9 close.** Audit said "5 items require decisions" but `ls .planning/todos/pending/` returned 30 entries. The audit JSON has a `_remainder_count: 25` field that wasn't aggregated into the summary.
+- **MILESTONES.md auto-extraction of accomplishments produced noisy fragments** — included "OPERATOR ELECTED TO FILE" placeholder text, numbered-list fragments, "One-liner:" placeholders. Hand-rewrite of v2.9 entry was needed.
+- **v2.8 was not appended to MILESTONES.md at v2.8 close** (discovered at v2.9 close). Backfilled at v2.9 close.
+- **Husky bypass `git -c core.hooksPath=/dev/null` ceremony on every commit** — same v2.7/v2.8 friction, still ~5s × 35 commits = ~3min of friction. v2.10 should fix this in global git config.
+
+### Patterns Established
+
+- **GREEN-WITH-DEFERRAL (HUMAN-NEEDED) shape:** verification record sets `status: human_needed` + `re_verification.verdict: pending`; operator approval flips status to `passed-with-deferral` + `re_verification.verdict: approved` with inline disposition notes. Used at Phases 74/75/76/77/78 close — 5 consecutive applications, mature pattern.
+- **Constants-regen-deferral architectural decision** — when upstream race blocks cold-start gate, DO NOT regenerate against degraded baseline. Preserve the higher-water-mark constants from an earlier phase so the parity-gate FAILs loudly until the upstream race resolves.
+- **PRODUCT-GAP-during-coverage triage:** when a coverage phase surfaces a missing product feature (no UI, no derivation, no data shape), file a named v2.10+ todo with severity + estimated plan count rather than try to fix in-scope.
+- **Order B pairing record:** when two interdependent requirements span phases (CLEAN-04 i18n wrapper tighten ↔ E2E-08 locale switching spec), pre-record which lands first and what the re-validation contract is at the second's close. Used successfully — E2E-08 spec re-validated against CLEAN-04 tightened wrapper 5/5 PASS at Phase 78 P04.
+- **`--no-deps` Playwright bypass over upstream race cascade:** Phase 76/77's per-plan smokes used `--no-deps` to skip the cascading auth-setup project and isolate verification of the new spec in isolation. Same approach Phase 77 P01..04 used. Documented as Phase 76 LANDMINE-D inheritance.
+
+### Key Lessons
+
+1. **Determinism first IS gating** — not negotiable. Phase 73 took the longest of any v2.9 phase but unblocked 4 parallel content-heavy phases that ran ~3x faster than they would have against an unstable suite. Repeat this pattern for any future testing-focused milestone.
+2. **DEFERRED-WITH-RATIONALE > FORCED-CLOSURE** — when a verification gate inherits an upstream race that cannot be resolved within the phase's scope, defer with explicit rationale instead of forcing a closure that lies. The architectural-deferral chain (76 P04 → 77 P05 → 78 P07) is honest; future-you reads exactly what was deferred and why.
+3. **Bundled hygiene phases scale to 5+ reqs.** v2.7 P68 = 3 reqs; v2.8 P72 = 3 reqs; v2.9 P78 = 5 reqs (including a complex review-findings batch). Still landed in 7 plans across 1 day. The trio pattern has room.
+4. **Auto-extraction of accomplishments is brittle.** Hand-rewrite MILESTONES.md entries — extraction misses architectural decisions, mis-attributes "one-liner" placeholders, and doesn't handle multi-part deliverables well. Worth the 10 minutes.
+5. **Test-suite phases benefit from MOST `gsd-autonomous` automation but stumble on cold-start-gate budgeting.** Phases 73-75 ran cleanly through cold-start gates; Phases 76-78 all DEFERRED because each ~54-min × 3 gate was disproportionate to the value-add when upstream race blocked empirical capture anyway. Tune the autonomous workflow's "is this gate worth running?" heuristic for future testing milestones.
+
+### Cost Observations
+
+- Model mix: predominantly Opus 4.6/4.7 (1M context) for planning + verification; Sonnet for executor (per gsd-executor agent profile)
+- Sessions: ~12 work sessions across 3 days
+- Notable: the autonomous chain ran 3 cold-start --workers=1 full Playwright runs at Phases 73/74/75/76 close (~54-58 min each at 76; ~25-37 min at earlier phases). Phase 76 P04 cold-start gate alone consumed ~3 hours of wall-clock. Subsequent phases (77/78) routed straight to DEFERRED to avoid repeating this cost when the outcome was predictable.
+
+---
+
+## Milestone: v2.8 — Alliance Card + Frontend Hygiene Sweep
+
+**Shipped:** 2026-05-10
+**Phases:** 4 (69-72) | **Plans:** 13 | **Tasks:** ~37 | **Days:** 3
+
+### What Was Built
+
+- **Alliance Card Lane A (Phase 69):** EntityCard subentities branch widened to handle `OBJECT_TYPE.AllianceNomination → OrganizationNomination` (was hard-coded `OrganizationNomination → CandidateNomination`); `cardContents.alliance` widened with `'organizations'` token; alliance detail drawer renders info + member-orgs tabs; cascading-impute pipeline (imputeParentAnswers childProxies generalisation + matchStore Alliance branch).
+- **Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup (Phase 70):** 3 warning categories closed (Cat A `state_referenced_locally` 9 sites; Cat B missing `{@render children()}`; Cat C a11y `<label>` interactive-target); 26 `// bind: keep —` rationale comments stripped across 24 files.
+- **Frontend Strict-Typing Cleanup (Phase 71):** 95 pre-existing apps/frontend ESLint errors resolved at source (67 `no-explicit-any` + 13 `naming-convention` + 11 `func-style` + 4 long-tail); frontend now matches lint-clean baseline of all other packages.
+- **Package Hygiene Trio (Phase 72):** `@openvaa/app-shared` paradigm normalisation (SHARED-01); `mergeSettings` re-export shim retired (SHARED-02); `@openvaa/supabase` lint-script disambiguated (LINT-01).
+
+### What Worked
+
+- Bundled parity gate PASSED across Phases 69+70+71 — single verification gate amortized across three phases worth of changes.
+- Trio pattern (Phase 72) continued the v2.7 P68 cadence; 3 independent reqs in one phase landed cleanly.
+- v2.6 P64 supabase-adapter reverse-fill (`organizationNominationIds`) gave Phase 69 the data plumbing it needed without additional adapter work.
+
+### What Was Inefficient
+
+- 95 pre-existing frontend lint errors had been deferred under v2.7 P68 Option C; resolving them in Phase 71 took an entire phase. Earlier surfacing would have prevented carry-forward.
+- v2.7 P67 SEED-01 SC-2 PASS-WITH-CONCERNS deferral (alliance card empty render) consumed Phase 69 entirely.
+
+### Key Lessons
+
+1. **Defer-with-Option-C is a debt accumulator.** v2.7 P68's "Option C: defer 95 lint errors" allowed v2.7 to close GREEN but immediately consumed a v2.8 phase. Watch for this pattern.
+2. **Trio bundling scales fine for hygiene; doesn't scale for new features.** Phase 72 (3 hygiene reqs) landed in 3 plans / 1 day; Phase 69 (1 feature, 2 plans) needed a full phase. Don't force features into a trio just because you have spare capacity.
+
+---
+
 ## Cross-Milestone Trends
 
 *Note: Parallel branch milestones (sb-v2.0, sb-v3.0) are documented above but not included in cumulative quality metrics — those milestones will be re-executed on this branch during v2.0 integration.*

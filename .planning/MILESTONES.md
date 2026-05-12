@@ -1,5 +1,49 @@
 # Milestones
 
+## v2.9 E2E Coverage + Suite Determinism (Shipped: 2026-05-12)
+
+**Phases completed:** 6 phases (73-78), 32 plans, 89 tasks
+**Timeline:** 3 days (2026-05-10 → 2026-05-12)
+**Audit:** `tech_debt` — 24/24 requirements satisfied; 12 PASS + 12 PASS-WITH-DEFERRAL; 8 v2.10+ candidate todos filed.
+
+**Key accomplishments:**
+
+- **Phase 73 — Determinism Baseline.** Reduced the Playwright suite to a hard pass/fail signal: 0 `test.skip(true, …)` modifiers (DETERM-01); 19 data-loading races diagnosed and fixed (DETERM-02 — 3-run cold-start SHA-identical at `e2e56e73fa42…`); 98 `playwright/*` ESLint warnings resolved with no-conditional-in-test / no-raw-locators / no-networkidle sweeps (DETERM-03); lint-gate bumped warn→error.
+- **Phase 74 — High-Leverage E2E Coverage.** 8 new spec surfaces in one phase: multilocale translation surface (E2E-01), browse-without-match (E2E-02 + new `variant-low-minimum-answers` Playwright project), feedback persistence (E2E-03), 5-cell selector matrix (E2E-04 + 2 new variant projects `1e-Nc` + `Ne-Nc`), 4-case voter-vs-entity answer rendering (E2E-05), skip/delete/back CTA toggle (E2E-06), per-category SubMatch breakdown (E2E-07), locale switching (E2E-08).
+- **Phase 75 — Question-Rendering Specs.** Permanent E2E user-story gates for Boolean opinion question (QSPEC-01, v2.6 P61 2-button radio) and single-choice categorical opinion question (QSPEC-02), deduplicated against existing matching tests via unified dedup audit; `walkToQuestion(page, sortOrder)` helper extracted.
+- **Phase 76 — Profile + A11y.** Candidate profile validation rejection paths (A11Y-01: image-type / image-size / name-too-long); reload-persistence extension covering displayName + bio + social link (A11Y-02); `@axe-core/playwright@4.11.3` integrated with `PLAYWRIGHT_A11Y` env-gated 6-route smoke (A11Y-03) — first-run baseline captures 5 WCAG 2.1 AA violations across results + voter-detail-drawer routes (cite-and-fix routed to v2.10+).
+- **Phase 77 — Settings Matrix + Q-Custom Gap-Fills.** Per-toggle `appSettings`/`appCustomization` matrix (SETTINGS-01 wave A 10 cells + wave B 6 filter-type cells folding the filter-type coverage todo); `customData.allowOpen` display-side coverage via new `variant-allowopen` project (SETTINGS-02 LANDMINE-1 reframing); per-question visibility + must-answer via new `variant-hidden-required` project chain (SETTINGS-03 voter-hidden + candidate-required cells).
+- **Phase 78 — Cleanup Hygiene.** 5 residual workstreams closed in one bundled phase: `dev:* → db:*` Supabase script rename + new `dev:clean` cache wipe + `db:reset`/`db:reset-with-data` chain (CLEAN-01); voter-not-located `?next=` deferred-target redirect with URL-whitelist guard + 5-cell E2E spec (CLEAN-02); 13 per-cast `// reason:` blocks + `setStore` cast elimination + CLAUDE.md Svelte warning-accepted format anchor (CLEAN-03); i18n wrapper tightened to `TranslationKey` union + `t.get` alias retired + `@ts-expect-error` regression-locker (CLEAN-04, Order B paired with E2E-08); `--likert-only` CLI flag added to `@openvaa/dev-seed` (Path B operator-locked-in for voter-fixture race) + 13 Phase 73 review findings + bonus CR-01 closed (CLEAN-05).
+
+**Cross-phase contracts:** Phase 73 DATA_RACE pool (15 IMGPROXY-tied) preserved structurally through 78. Phase 75 PASS_LOCKED constants (47/15/33) preserved across 76 → 77 → 78 via three consecutive architectural-deferral decisions; constants-regen and 3-run cold-start gate DEFERRED-WITH-RATIONALE at Phases 76/77/78 close due to inherited candidate-profile cascading race (routed to v2.10+).
+
+**Known Deferrals (routed to v2.10+):**
+- HIGH: candidate-profile cascading race (`candidate-profile.spec.ts:85-145`) — cascade-skips 43+ downstream tests; blocks parity-script regen at every gate
+- MEDIUM: 5 PRODUCT-GAP discoveries (A11Y-01 email/url/required-empty cells; SETTINGS-02 voter-authoring; SETTINGS-03 voter-required; FilterGroup OR-mode UI; voters-layout non-reactive topbar)
+- MEDIUM: A11Y axe cite-and-fix (5 first-run violations across 2 routes)
+- LOW: constituency-filter PRODUCT-GAP
+
+Tag: `v2.9` | Archive: `.planning/milestones/v2.9-*` | Audit: `.planning/milestones/v2.9-MILESTONE-AUDIT.md`
+
+---
+
+## v2.8 Alliance Card + Frontend Hygiene Sweep (Shipped: 2026-05-10)
+
+**Phases completed:** 4 phases (69-72), 13 plans, ~37 tasks
+**Timeline:** 3 days (2026-05-08 → 2026-05-10)
+**Audit:** `.planning/milestones/v2.8-MILESTONE-AUDIT.md`
+
+**Key accomplishments:**
+
+- **Phase 69 — Alliance Card Lane A.** Type rename (`'candidates' → 'children'`) + alliance render path through EntityCard + EntityDetails + cascading-impute pipeline (imputeParentAnswers childProxies generalisation + matchStore Alliance branch). Voters can now navigate the Alliances tab on results and see populated cards with member organizations + "X candidates across N parties" summary; alliance detail drawer renders member-orgs.
+- **Phase 70 — Svelte 5 / SSR / a11y Warning Sweep + bind-rationale Cleanup.** 3 warning categories surfaced during v2.7 Phase 67 UAT closed: Cat A `state_referenced_locally` rewrites (5 files / 9 sites), Cat B `<slot />` → `{@render children?.()}` (WithPolling.svelte), Cat C a11y fix (Input.svelte:521 `<label>` → `<button>`), Cat D SSR fetch-eagerness `onMount` wrap. 26 `// bind: keep —` rationale comments stripped across 24 files (BIND-01).
+- **Phase 71 — Frontend Strict-Typing Cleanup.** 95 pre-existing frontend ESLint errors resolved at source: `no-explicit-any` sweep (67 errors); `naming-convention` sweep (13 errors — type-parameter `T → TX` renames + 1 `_Unused` deletion); `func-style` + long-tail (15 errors). Frontend now matches the lint-clean baseline of `@openvaa/core`/`data`/`matching`/`filters`/`app-shared`.
+- **Phase 72 — Package Hygiene Trio.** `@openvaa/app-shared` paradigm normalised against canonical reference packages (SHARED-01); `mergeSettings` re-export shim retired from `apps/frontend/src/lib/utils/merge.ts` (SHARED-02); `@openvaa/supabase` lint-script disambiguated to `lint:sql` vs `lint:js` (LINT-01).
+
+Tag: `v2.8` | Archive: `.planning/milestones/v2.8-*`
+
+---
+
 ## v2.7 Svelte 5 Polish + Supabase-Adapter Loose Ends (Shipped: 2026-05-08)
 
 **Phases completed:** 4 phases, 9 plans, 28 tasks
