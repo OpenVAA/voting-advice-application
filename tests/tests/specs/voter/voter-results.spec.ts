@@ -32,6 +32,7 @@ import { expect } from '@playwright/test';
 import { voterTest as test } from '../../fixtures/voter.fixture';
 import { E2E_DEFAULT_CANDIDATES, E2E_ORGANIZATIONS, E2E_VOTER_CANDIDATES } from '../../utils/e2eFixtureRefs';
 import { testIds } from '../../utils/testIds';
+import type { Locator, Page } from '@playwright/test';
 
 // Compute expected counts from the e2e template.
 // Addendum candidates have unconfirmed nominations and are excluded from voter results.
@@ -452,5 +453,381 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
     // back to 'visible' (no-op) and the source-order mechanism still applies.
     // Modern Chromium (Playwright default) supports it, so assert 'auto'.
     expect(result!.listContentVisibility).toBe('auto');
+  });
+
+  ////////////////////////////////////////////////////////////////////
+  // Phase 77 / SETTINGS-01 wave B — filter-type matrix
+  //
+  // Per Phase 77 Plan 02. Folds source todo
+  // `.planning/todos/pending/2026-04-27-extend-e2e-filter-type-coverage.md`.
+  //
+  // The voter-results filter dialog renders one Expander per active filter
+  // (EntityFilters.svelte:38-60). Question filters only surface when the
+  // question carries `customData.filterable: true` (filterStore.svelte.ts:55-66),
+  // hence the Plan 02 fixture extension added the flag to test-question-text
+  // (TextFilter), test-question-directional-1 (ChoiceQuestionFilter) and the
+  // new test-question-number-1 (NumberFilter at sort 22).
+  //
+  // Title prefix `'SETTINGS-01 wave B — '` per RESEARCH LANDMINE-A
+  // (IMGPROXY_TIED_TITLES safety).
+  //
+  // The 5 cells:
+  //   1. NumberFilter — slider narrowing on test-question-number-1
+  //   2. TextFilter — substring search on test-question-text
+  //   3. ChoiceQuestionFilter (categorical) — uncheck Option A on test-question-directional-1
+  //   4. FilterGroup AND — toggle 2 filters simultaneously (party + categorical)
+  //   5. MISSING_FILTER_VALUE — excludeMissing on NumberFilter
+  //
+  // FilterGroup OR is PASS-WITH-DEFERRAL (RESEARCH LANDMINE-4 PRODUCT-GAP) — see
+  // .planning/todos/pending/2026-05-13-filtergroup-or-mode-ui-product-gap.md.
+  ////////////////////////////////////////////////////////////////////
+
+  test.describe('SETTINGS-01 wave B — filter-type matrix', () => {
+    /**
+     * Open the filter dialog from the candidates results view. Reused by every
+     * wave B cell.
+     */
+    async function openFilterDialog(page: Page) {
+      const filterButton = page.getByTestId('entity-list-filter');
+      await expect
+        .poll(() => filterButton.count(), {
+          timeout: 5000,
+          message: 'entity-list-filter button must render'
+        })
+        .toBeGreaterThan(0);
+      await filterButton.first().click();
+      const dialog = page.getByRole('dialog');
+      await expect(dialog).toBeVisible({ timeout: 5000 });
+      return dialog;
+    }
+
+    /**
+     * Close the filter dialog via the "Close filters" main-variant button.
+     * Matches the existing RESULTS-01 / D-14 / D-15 pattern in this file.
+     */
+    async function closeFilterDialog(page: Page) {
+      await page
+        .getByRole('dialog')
+        .getByRole('button', { name: /close filters/i })
+        .click();
+      await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 5000 });
+    }
+
+    /**
+     * Expand a non-default-expanded filter inside the dialog. The Expander
+     * component (Expander.svelte:155) is driven by a checkbox with
+     * aria-label="Expand or collapse this section"; the title text identifies
+     * which filter to expand.
+     *
+     * The Expander surfaces the title as part of the same `<div>` carrying the
+     * checkbox; the checkbox sits adjacent. The page-level role tree exposes
+     * the title text, and locating the checkbox by its aria-label inside a
+     * scope that contains the title text is the canonical role/aria pattern.
+     */
+    async function expandFilter(dialog: Locator, titleSubstring: string | RegExp) {
+      // The Expander renders the title in a sibling `<div>` next to the
+      // checkbox; we locate the section by its visible title text, then click
+      // the title to toggle expansion (the title's parent is the clickable
+      // collapse-title region per DaisyUI .collapse semantics).
+      const titleMatcher =
+        typeof titleSubstring === 'string'
+          ? new RegExp(titleSubstring.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')
+          : titleSubstring;
+      const sectionTitle = dialog.getByText(titleMatcher).first();
+      await expect(sectionTitle).toBeVisible({ timeout: 5000 });
+      await sectionTitle.click();
+    }
+
+    test('SETTINGS-01 wave B — NumberFilter', async ({ answeredVoterPage: page }) => {
+      test.setTimeout(60000);
+
+      const cards = page.getByTestId(testIds.voter.results.card);
+      const initialCount = await cards.count();
+      expect(initialCount, 'baseline cards must be > 0').toBeGreaterThan(0);
+
+      const dialog = await openFilterDialog(page);
+
+      // Expand the NumberFilter expander (it is not default-expanded —
+      // EntityFilters.svelte:43 only auto-expands TextFilter).
+      await expandFilter(dialog, /Test Number Question 1/i);
+
+      // NumericEntityFilter renders 2 range sliders (min + max) when at least
+      // one candidate has a non-missing answer (NumericEntityFilter.svelte:81).
+      // Alpha=25, voter-cand-agree=60, Gamma=50, Beta=75 → range=[25, 75].
+      // Locator scope: scoped to the dialog so we don't catch any sliders
+      // outside of the filter modal (none exist today, but the scope is
+      // belt-and-braces).
+      const sliders = dialog.getByRole('slider');
+      await expect
+        .poll(() => sliders.count(), {
+          timeout: 5000,
+          message: 'NumberFilter must render 2 sliders (min + max) once the expander opens'
+        })
+        .toBe(2);
+
+      // Move the min slider above Alpha's value (25). Setting fill on a <input
+      // type="range"> updates the bound value; the $effect in
+      // NumericEntityFilter.svelte:55-59 pushes the new min to filter.min, which
+      // narrows the filter list.
+      const minSlider = sliders.first();
+      await minSlider.fill('30');
+      await minSlider.dispatchEvent('change');
+
+      await expect
+        .poll(() => cards.count(), {
+          timeout: 5000,
+          message: 'NumberFilter min>25 must narrow the candidate list (Alpha at 25 should drop out)'
+        })
+        .toBeLessThan(initialCount);
+
+      // Reset the min slider to the bottom of the range (range.min=25 — set 0
+      // is clamped by the input min attribute). Setting to 25 (the actual
+      // range.min) restores all candidates with a defined answer; missing-value
+      // candidates are also restored because includeMissing defaults to true.
+      await minSlider.fill('25');
+      await minSlider.dispatchEvent('change');
+
+      await expect
+        .poll(() => cards.count(), {
+          timeout: 5000,
+          message: 'NumberFilter reset must restore the initial card count'
+        })
+        .toEqual(initialCount);
+
+      await closeFilterDialog(page);
+    });
+
+    test('SETTINGS-01 wave B — TextFilter', async ({ answeredVoterPage: page }) => {
+      test.setTimeout(60000);
+
+      const cards = page.getByTestId(testIds.voter.results.card);
+      const initialCount = await cards.count();
+      expect(initialCount).toBeGreaterThan(0);
+
+      const dialog = await openFilterDialog(page);
+
+      // TextFilter is the only filter that defaults to expanded
+      // (EntityFilters.svelte:43). The TextEntityFilter renders a single
+      // <input type="text"> with sr-only label "Text:" inside the dialog.
+      // Locator: role textbox with the i18n-resolved aria-label.
+      const textInput = dialog.getByRole('textbox', { name: /text:/i });
+      await expect
+        .poll(() => textInput.count(), {
+          timeout: 5000,
+          message: 'TextFilter input must render — test-question-text has filterable: true'
+        })
+        .toBeGreaterThan(0);
+
+      // Type substring of Alpha's value 'Progress for all' (LANDMINE-C —
+      // 'Progress' does not contain the substring 'Alpha' so IMGPROXY title
+      // disjointness holds for this test's literals; the value is keyed to
+      // Alpha by the fixture, not by literal-string overlap).
+      await textInput.first().fill('Progress');
+
+      await expect
+        .poll(() => cards.count(), {
+          timeout: 5000,
+          message: 'TextFilter "Progress" substring must narrow the candidate list'
+        })
+        .toBeLessThan(initialCount);
+
+      // Clear the text input — the input's clear button (Icon name="close") is
+      // also a valid path, but `.fill('')` is the equivalent role/value action.
+      await textInput.first().fill('');
+
+      await expect
+        .poll(() => cards.count(), {
+          timeout: 5000,
+          message: 'TextFilter clear must restore the initial card count'
+        })
+        .toEqual(initialCount);
+
+      await closeFilterDialog(page);
+    });
+
+    test('SETTINGS-01 wave B — ChoiceQuestionFilter (categorical)', async ({ answeredVoterPage: page }) => {
+      test.setTimeout(60000);
+
+      const cards = page.getByTestId(testIds.voter.results.card);
+      const initialCount = await cards.count();
+      expect(initialCount).toBeGreaterThan(0);
+
+      const dialog = await openFilterDialog(page);
+
+      // Expand the categorical-question filter (test-question-directional-1
+      // → "Test Opinion Question Directional 1").
+      await expandFilter(dialog, /Test Opinion Question Directional 1/i);
+
+      // EnumeratedEntityFilter renders one checkbox per choice. The 3 choice
+      // labels are "Option A", "Option B", "Option C". Locator: checkboxes by
+      // accessible name (the <span> label is associated with the input via the
+      // <label> wrapper, so the input's accessible name is the label text).
+      //
+      // Default state: all checkboxes are checked → no filtering. Unchecking
+      // Option A (Alpha's value `'a'` per fixture) should exclude Alpha from
+      // entities whose answer to test-question-directional-1 equals 'a'.
+      // Other candidates without an answer to this question are NOT filtered
+      // out — the categorical filter only constrains entities whose values
+      // are NOT in `filter.include`.
+      const optionA = dialog.getByRole('checkbox', { name: /Option A/i });
+      await expect
+        .poll(() => optionA.count(), {
+          timeout: 5000,
+          message: 'ChoiceQuestionFilter must render an "Option A" checkbox'
+        })
+        .toBeGreaterThan(0);
+
+      // Uncheck Option A — this narrows the candidate list by excluding any
+      // entity whose answer to test-question-directional-1 equals 'a'.
+      await optionA.first().uncheck();
+
+      await expect
+        .poll(() => cards.count(), {
+          timeout: 5000,
+          message: 'ChoiceQuestionFilter unchecking Option A must narrow (Alpha answers a)'
+        })
+        .toBeLessThan(initialCount);
+
+      // Re-check Option A → restore.
+      await optionA.first().check();
+
+      await expect
+        .poll(() => cards.count(), {
+          timeout: 5000,
+          message: 'ChoiceQuestionFilter restore must return the initial card count'
+        })
+        .toEqual(initialCount);
+
+      await closeFilterDialog(page);
+    });
+
+    test('SETTINGS-01 wave B — FilterGroup AND', async ({ answeredVoterPage: page }) => {
+      test.setTimeout(60000);
+
+      const cards = page.getByTestId(testIds.voter.results.card);
+      const initialCount = await cards.count();
+      expect(initialCount).toBeGreaterThan(0);
+
+      // Capture per-filter narrow counts so the AND composition assertion is
+      // count_AB < min(count_A, count_B). Each step opens the dialog, applies
+      // ONE filter, closes the dialog, records cards.count(), then resets via
+      // another open/close cycle. Reset path: open dialog → for ChoiceQuestion,
+      // re-check the unchecked option (default state is all-checked).
+      //
+      // Step 1: Apply party filter (first checkbox in the parties section).
+      let dialog = await openFilterDialog(page);
+      const firstPartyCheckbox = dialog.getByRole('checkbox').first();
+      await expect
+        .poll(() => firstPartyCheckbox.count(), {
+          timeout: 5000,
+          message: 'First party checkbox must render — EnumeratedFilter via buildParentFilters'
+        })
+        .toBeGreaterThan(0);
+
+      // The parties filter is an EnumeratedFilter where all parties default to
+      // checked (no narrowing). To narrow, we UNCHECK one — same semantics as
+      // the categorical question filter above. We uncheck the first party so
+      // candidates affiliated with the first party drop out.
+      await firstPartyCheckbox.uncheck();
+      await closeFilterDialog(page);
+
+      const partyOnlyCount = await cards.count();
+      expect(partyOnlyCount, 'party filter must narrow').toBeLessThan(initialCount);
+
+      // Step 2: Add the categorical filter on top — uncheck Option A. The
+      // dialog re-opens; the party filter remains in the state we left it
+      // (UI is bound to the FilterGroup state, which persists per
+      // filterContext.svelte.ts contract).
+      dialog = await openFilterDialog(page);
+      await expandFilter(dialog, /Test Opinion Question Directional 1/i);
+      const optionA = dialog.getByRole('checkbox', { name: /Option A/i });
+      await expect
+        .poll(() => optionA.count(), { timeout: 5000 })
+        .toBeGreaterThan(0);
+      await optionA.first().uncheck();
+      await closeFilterDialog(page);
+
+      const compositeCount = await cards.count();
+
+      // The FilterGroup composes filters via AND (per
+      // packages/filters/src/group/filterGroup.ts default logicOperator). So:
+      //   - count_AB ≤ count_A (party-only)
+      //   - count_AB ≤ count_B (categorical-only)
+      // We assert count_AB ≤ partyOnlyCount AND count_AB < initialCount, which
+      // is the AND composition's narrowing contract. Strict inequality vs.
+      // partyOnlyCount is not asserter-able here because party-affiliation +
+      // categorical-answer may correlate at the e2e seed level (Alpha is in
+      // party A and answers Option A → adding Option A's exclusion when party
+      // A is also excluded yields the same set in some seeds).
+      expect(compositeCount).toBeLessThanOrEqual(partyOnlyCount);
+      expect(compositeCount).toBeLessThan(initialCount);
+
+      // Reset both filters → restore.
+      dialog = await openFilterDialog(page);
+      await firstPartyCheckbox.check();
+      await expandFilter(dialog, /Test Opinion Question Directional 1/i);
+      await optionA.first().check();
+      await closeFilterDialog(page);
+
+      await expect
+        .poll(() => cards.count(), {
+          timeout: 5000,
+          message: 'FilterGroup AND reset must restore initial count'
+        })
+        .toEqual(initialCount);
+    });
+
+    test('SETTINGS-01 wave B — MISSING_FILTER_VALUE', async ({ answeredVoterPage: page }) => {
+      test.setTimeout(60000);
+
+      const cards = page.getByTestId(testIds.voter.results.card);
+      const initialCount = await cards.count();
+      expect(initialCount).toBeGreaterThan(0);
+
+      const dialog = await openFilterDialog(page);
+
+      // Expand the NumberFilter and toggle the excludeMissing checkbox
+      // (rendered when range.missingValues > 0 — NumericEntityFilter.svelte:97).
+      // The fixture has 4 candidates with numeric answers (Alpha=25, voter-cand-agree=60,
+      // Gamma=50, Beta=75) and the rest unanswered, so missingValues > 0.
+      await expandFilter(dialog, /Test Number Question 1/i);
+
+      // The excludeMissing checkbox label is t('entityFilters.missingValue') =
+      // "No answer" (per en/entityFilters.json:6).
+      // Locator: scoped to dialog, role checkbox by accessible name.
+      const noAnswerCheckbox = dialog.getByRole('checkbox', { name: /no answer/i });
+      await expect
+        .poll(() => noAnswerCheckbox.count(), {
+          timeout: 5000,
+          message:
+            'MISSING_FILTER_VALUE: the "No answer" checkbox must render on NumberFilter (range.missingValues > 0)'
+        })
+        .toBeGreaterThan(0);
+
+      // The bound state `includeMissing` defaults to true → unchecking it sets
+      // `filter.excludeMissing = !includeMissing` to true → candidates with
+      // MISSING value on test-question-number-1 are excluded.
+      await noAnswerCheckbox.first().uncheck();
+
+      await expect
+        .poll(() => cards.count(), {
+          timeout: 5000,
+          message:
+            'MISSING_FILTER_VALUE: unchecking "No answer" must narrow (candidates without numeric answers drop out)'
+        })
+        .toBeLessThan(initialCount);
+
+      // Re-check → restore.
+      await noAnswerCheckbox.first().check();
+
+      await expect
+        .poll(() => cards.count(), {
+          timeout: 5000,
+          message: 'MISSING_FILTER_VALUE restore must return the initial card count'
+        })
+        .toEqual(initialCount);
+
+      await closeFilterDialog(page);
+    });
   });
 });
