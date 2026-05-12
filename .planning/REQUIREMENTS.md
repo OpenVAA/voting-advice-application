@@ -9,9 +9,9 @@
 
 **Context sources:**
 
-- `.planning/todos/done/2026-05-12-candidate-profile-cascading-race.md` — cascading-race root-cause hypothesis + Phase 76/77/78 deferred-items lineage
-- `.planning/todos/done/2026-05-12-a11y-axe-first-run-violations.md` — 5-violation per-rule baseline + cite-and-fix scope
-- `.planning/todos/done/2026-05-12-a11y-01-product-gap-cells.md` — schema/component/i18n gap analysis per cell (email/url/required-empty)
+- `.planning/todos/pending/2026-05-12-candidate-profile-cascading-race.md` — cascading-race root-cause hypothesis + Phase 76/77/78 deferred-items lineage
+- `.planning/todos/pending/2026-05-12-a11y-axe-first-run-violations.md` — 5-violation per-rule baseline + cite-and-fix scope
+- `.planning/todos/pending/2026-05-12-a11y-01-product-gap-cells.md` — schema/component/i18n gap analysis per cell (email/url/required-empty)
 - `.planning/milestones/v2.9-phases/76-profile-a11y/76-A11Y-BASELINE.md` — per-route per-rule axe baseline (single source of truth)
 - `.planning/milestones/v2.9-phases/76-profile-a11y/76-CONTEXT.md` D-03 — PRODUCT-GAP cells rationale
 - `.planning/milestones/v2.9-phases/76-profile-a11y/deferred-items.md` #2 — cascading-race recommendation
@@ -56,22 +56,22 @@
 
 ## Traceability
 
-Which phases cover which requirements. Updated during roadmap creation.
+Which phases cover which requirements.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DETERM-04   | Phase TBD | Pending |
-| DETERM-05   | Phase TBD | Pending |
-| A11Y-04     | Phase TBD | Pending |
-| A11Y-05     | Phase TBD | Pending |
-| A11Y-06     | Phase TBD | Pending |
-| A11Y-07     | Phase TBD | Pending |
+| DETERM-04   | Phase 79 | Pending |
+| DETERM-05   | Phase 79 | Pending |
+| A11Y-04     | Phase 80 | Pending |
+| A11Y-05     | Phase 81 | Pending |
+| A11Y-06     | Phase 81 | Pending |
+| A11Y-07     | Phase 82 | Pending |
 
 **Coverage:**
 - v2.10 requirements: 6 total
-- Mapped to phases: 0 (filled by roadmap)
-- Unmapped: 6 — awaiting roadmap
+- Mapped to phases: 6 ✓
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-05-12*
-*Last updated: 2026-05-12 after initial v2.10 definition*
+*Last updated: 2026-05-12 after v2.10 roadmap creation (4 phases, 6 REQs mapped 1:1)*

@@ -7,7 +7,7 @@
 - ✅ **v2.7 Svelte 5 Polish + Supabase-Adapter Loose Ends** — Phases 65-68 (shipped 2026-05-08)
 - ✅ **v2.8 Alliance Card + Frontend Hygiene Sweep** — Phases 69-72 (shipped 2026-05-10)
 - ✅ **v2.9 E2E Coverage + Suite Determinism** — Phases 73-78 (shipped 2026-05-12)
-- 🆕 **v2.10** — Not yet planned (candidate-profile cascading race fix + PRODUCT-GAP closures + sharable URLs / multi-tenant pair are leading candidates)
+- 🆕 **v2.10 Test Reliability + A11y Compliance** — Phases 79-82 (planning, framed 2026-05-12)
 
 See `.planning/MILESTONES.md` for cumulative history and `.planning/milestones/` for archived roadmaps + requirements.
 
@@ -70,31 +70,96 @@ Audit: `.planning/milestones/v2.8-MILESTONE-AUDIT.md`
 - [x] Phase 73: Determinism Baseline (6/6 plans) — completed 2026-05-11
 - [x] Phase 74: High-Leverage E2E Coverage (7/7 plans) — completed 2026-05-11
 - [x] Phase 75: Question-Rendering Specs (3/3 plans) — completed 2026-05-12 _(GREEN-WITH-DEFERRAL; multi-choice deferred)_
-- [x] Phase 76: Profile + A11y (4/4 plans) — completed 2026-05-12 _(GREEN-WITH-DEFERRAL; PRODUCT-GAP cells + axe cite-and-fix routed to v2.10+)_
+- [x] Phase 76: Profile + A11y (4/4 plans) — completed 2026-05-12 _(GREEN-WITH-DEFERRAL; PRODUCT-GAP cells + axe cite-and-fix routed to v2.10)_
 - [x] Phase 77: Settings Matrix + Question-Customization Gap-Fills (5/5 plans) — completed 2026-05-12 _(GREEN-WITH-DEFERRAL; 4 PRODUCT-GAP follow-ups; cold-start gate deferred)_
-- [x] Phase 78: Cleanup Hygiene Phase (7/7 plans) — completed 2026-05-12 _(GREEN-WITH-DEFERRAL; CLEAN-05 inherited candidate-profile race routed to v2.10+; constants regen DEFERRED)_
+- [x] Phase 78: Cleanup Hygiene Phase (7/7 plans) — completed 2026-05-12 _(GREEN-WITH-DEFERRAL; CLEAN-05 inherited candidate-profile race routed to v2.10; constants regen DEFERRED)_
 
 Full details: `.planning/milestones/v2.9-ROADMAP.md`
 Audit: `.planning/milestones/v2.9-MILESTONE-AUDIT.md` (status: tech_debt — 24/24 reqs satisfied; 12 PASS + 12 PASS-WITH-DEFERRAL; 8 v2.10+ candidate todos filed)
 
 </details>
 
-### 🆕 Next milestone — Not yet planned
+### 🆕 v2.10 Test Reliability + A11y Compliance — PLANNING (framed 2026-05-12)
 
-After v2.9 shipped, run `/gsd-new-milestone` to frame v2.10. Leading candidates captured from v2.9 close + earlier deferrals:
+**Milestone Goal:** Restore Playwright suite parity-regen capability and reach WCAG 2.1 AA on the 2 axe-baselined routes by closing v2.9's HIGH/MEDIUM a11y + test-determinism deferrals. 3-item focused scope: (1) HIGH candidate-profile cascading race fix + parity-script constants regen; (2) MEDIUM A11Y axe cite-and-fix; (3) MEDIUM A11Y-01 PRODUCT-GAP cells (email-format / url-format / required-empty).
 
-**v2.10+ candidates (HIGH severity first):**
-- Candidate-profile cascading race fix (`candidate-profile.spec.ts:85-145` cascade-skips 43+ downstream tests; blocks parity-script regen at every gate)
-- A11Y-01 PRODUCT-GAP cells (email-format / url-format / required-empty — schema + component + i18n work, ~3-5 plans)
-- A11Y axe cite-and-fix (5 first-run WCAG 2.1 AA violations across 2 routes)
-- SETTINGS-02 voter-authoring (voter app needs open-comment input + answerStore.setAnswer(info) support)
-- SETTINGS-03 voter-required derivation (voter context needs requiredInfoQuestions / profileComplete symbols)
-- FilterGroup OR-mode UI (EntityFilters.svelte AND/OR toggle — setter exists, no UI emits LOGIC_OP.Or)
-- Voters-layout non-reactive topbar refactor
-- Sharable URLs + multi-tenant pair (`results-url-refactor-followups` + `frontend-project-id-scoping`)
-- Luxembourg + Danish VAA reconciliation (deltas unscoped)
+**Strategy: race-first, then a11y in parallel waves.** DETERM-04 (cascading race) is the unlock condition for parity-script regen — every verification gate in v2.10 benefits from a non-cascading suite. Once DETERM-04 is green, A11Y-04 (axe cite-and-fix) + A11Y-05/06 (email/url cells) + A11Y-07 (required-empty cell) are structurally independent and can run in parallel waves.
+
+**Gating + parallelism map:**
+
+```
+Phase 79 (DETERM-04 + DETERM-05)
+  │
+  └─ DETERM-04 green unblocks Phases 80-82 (clean assertion runs)
+        │
+        ├── Phase 80 (A11Y-04 axe cite-and-fix)     ← parallel-eligible
+        │
+        ├── Phase 81 (A11Y-05 + A11Y-06 email + url) ← parallel-eligible
+        │
+        └── Phase 82 (A11Y-07 required-empty)        ← parallel-eligible
+                                                      (embedded product decision)
+```
+
+- [ ] **Phase 79: Determinism Recovery (Cascading-Race Fix + Constants Regen)** — Fix the `candidate-profile.spec.ts:85-145` registration → set-password → ToU race (or restructure the test out of cascade-prone serial mode); regenerate parity-script constants from a clean 3-run cold-start baseline. Sequential REQs (DETERM-04 → DETERM-05). Unlock condition for Phases 80-82.
+- [ ] **Phase 80: A11Y Axe Cite-and-Fix** — Resolve the 5 first-run WCAG 2.1 AA violations across `/results` + voter-detail-drawer (`aria-required-parent` × 4, `list` × 2, `button-name` × 1). Re-run axe smoke verifies 0 violations; per-rule regression assertions added.
+- [ ] **Phase 81: A11Y-01 PRODUCT-GAP Cells — Email + URL Format** — Schema + component + i18n additions to close the email-format (A11Y-05) and URL-format (A11Y-06) candidate-profile validation cells. Shared `customData.format` / `Question.subtype` dispatch decision picked at phase discussion time.
+- [ ] **Phase 82: A11Y-01 PRODUCT-GAP Cell — Required-Empty** — Phase-discussion product decision (REJECT-with-error vs SOFT-WARN-ONLY) for empty-required save behavior; spec assertions reflect chosen mechanism. Closes A11Y-07.
+
+## Phase Details
+
+### Phase 79: Determinism Recovery (Cascading-Race Fix + Constants Regen)
+**Goal**: The candidate-profile test surface stops cascade-skipping downstream tests, and the parity-script constants (47/15/33 anchor preserved through v2.9 Phases 75 → 76 → 77 → 78) are regenerated from a clean 3-run cold-start baseline that reflects the post-fix suite. After Phase 79, the v2.10 verification anchor (~63 PASS_LOCKED — 47 v2.9 anchor + ~16 cascade-unblocked tests) is committed and becomes the binding parity gate for all future phases.
+**Depends on**: Nothing (first phase of v2.10; runs over the v2.9-close baseline at HEAD post-Phase-78). DETERM-04 is the unlock condition for DETERM-05 — DETERM-05 cannot capture a clean baseline until the race is resolved.
+**Requirements**: DETERM-04, DETERM-05
+**Success Criteria** (what must be TRUE):
+  1. `tests/tests/specs/candidate/candidate-profile.spec.ts` runs to completion in cold-start mode without "did not run" cascade-skipping downstream tests in the same `serial` describe block — either the underlying frontend race (auth session propagation OR ToU hydration timing) is fixed OR the test is restructured to bypass the cascade-prone serial mode.
+  2. Three consecutive `yarn test:e2e` cold-start runs show identical pass/fail sets across the full `auth-setup → candidate-app → candidate-app-mutation → re-auth-setup → candidate-app-settings → candidate-app-password` dependency chain.
+  3. The parity-script constants reflect the post-DETERM-04 baseline (expected ~63 PASS_LOCKED — 47 v2.9 anchor + ~16 cascade-unblocked tests); regenerated constants committed via the v2.9 in-place path OR the archived `regen-constants.mjs` script.
+  4. The regenerated baseline is wired as the v2.10 verification anchor for downstream Phases 80-82.
+**Plans**: TBD
+
+### Phase 80: A11Y Axe Cite-and-Fix
+**Goal**: The 5 first-run WCAG 2.1 AA violations surfaced by the Phase 76 A11Y-03 axe smoke baseline are all resolved. After Phase 80, `PLAYWRIGHT_A11Y=1 yarn test:e2e --project=a11y-smoke --workers=1` reports 0 violations across all 6 baselined routes, and per-rule regression assertions guard against recurrence.
+**Depends on**: Phase 79 (DETERM-04 green required for clean assertion runs — A11Y verification gates benefit from a non-cascading suite). Structurally independent of DETERM-05 constants regen.
+**Requirements**: A11Y-04
+**Success Criteria** (what must be TRUE):
+  1. `aria-required-parent` × 4 violations resolved across `/results` + voter-detail-drawer (likely shared-component fix in entity-card / voter-list).
+  2. `list` × 2 violations resolved (likely same shared-component fix as `aria-required-parent`).
+  3. `button-name` × 1 violation on voter-detail-drawer resolved via `aria-label` (i18n-aware) on the drawer's icon-button.
+  4. Re-run of the axe smoke reports 0 violations across all 6 routes (home + elections-selector + constituencies-selector + questions + results + voter-detail-drawer); per-rule regression assertions added to `tests/tests/specs/a11y/a11y-smoke.spec.ts`.
+  5. Successor baseline artifact (or in-place update to `.planning/milestones/v2.9-phases/76-profile-a11y/76-A11Y-BASELINE.md`) documents the 0-violation post-fix state.
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 81: A11Y-01 PRODUCT-GAP Cells — Email + URL Format
+**Goal**: Candidate profile rejects malformed email AND malformed URL input via inline validation errors that mirror the existing URL-validation surface in `Input.svelte:286-296`. After Phase 81, the candidate profile route has end-to-end email + URL format-rejection coverage (schema + render-path + i18n + fixture + spec) that exercises validation paths reachable from real candidate-profile editable info questions.
+**Depends on**: Phase 79 (DETERM-04 green required — A11Y-01 cells extend `candidate-profile-validation.spec.ts` which the cascade blocked). Structurally independent of Phase 80.
+**Requirements**: A11Y-05, A11Y-06
+**Success Criteria** (what must be TRUE):
+  1. A candidate typing a bad email into an email-format info question sees an inline `components.input.error.invalidEmail` error AND the input value is preserved.
+  2. A candidate typing a bad URL into a URL-format / social-link info question sees an inline `components.input.error.invalidUrl` error AND the input value is preserved.
+  3. Schema dispatch decision (likely `customData.format?: 'email' | 'url' | 'tel' | ...` enum on `CustomData.Question`, OR restored `Question.subtype` field — phase-discussion-time pick) covers both email + URL paths via a single mechanism; `INPUT_TYPES` in `QuestionInput.svelte` adds the `'email'` branch + the URL dispatch becomes reachable.
+  4. e2e fixture extended at `packages/dev-seed/src/templates/e2e.ts` with 1 email-format info question (sort 22) + 1 URL dispatch (sort 21 promoted OR new sort 23) + Alpha answer cells.
+  5. `tests/tests/specs/candidate/candidate-profile-validation.spec.ts` extended with A11Y-01 cell 5 (email) + cell 6 (URL) assertions; per-plan smoke PASS × 3 in isolation; Phase 76 P01 cells (image-type / image-size / name-too-long) continue to pass.
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 82: A11Y-01 PRODUCT-GAP Cell — Required-Empty
+**Goal**: Candidate profile required-empty save behavior is decided product-side and enforced consistently across the save path + the spec assertion. Phase 82 surfaces the embedded product decision at discuss-phase, lands the chosen implementation (REJECT-with-inline-error OR SOFT-WARN-ONLY-confirmed), and closes A11Y-01 cell 4.
+**Depends on**: Phase 79 (DETERM-04 green required — same `candidate-profile-validation.spec.ts` surface as Phase 81). Structurally independent of Phases 80 + 81.
+**Requirements**: A11Y-07
+**Success Criteria** (what must be TRUE):
+  1. Product decision recorded at phase discussion time: empty-required save REJECTED with inline error OR SOFT-WARN-ONLY (badge + submit-button gating remains the only enforcement).
+  2. If REJECT: save-path validation lands in `apps/frontend/src/routes/candidate/(protected)/profile/+page.svelte:125-143`; `Input.svelte` emits `components.input.error.required` (or `tooShort`) on submit-time validation failure; `required` i18n key added to all 4 locales' `input.error` blocks. If SOFT-WARN-ONLY: cell closes as PRODUCT-CONFIRMED — existing badge + submit-button gating documented as the enforcement (no code changes).
+  3. A11Y-01 cell 4 added to `candidate-profile-validation.spec.ts`: empty input → click submit → assert chosen behavior (error UI rendered + value preserved IF REJECT; submit-button disabled + no error UI IF SOFT-WARN).
+  4. Per-plan smoke PASS × 3 in isolation; existing Phase 76 P01 cells + Phase 81 cells 5+6 continue to pass.
+**Plans**: TBD
+**UI hint**: yes
 
 ## Progress
+
+**Execution Order:**
+Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82 (parallel-eligible after Phase 79 DETERM-04 green).
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -121,3 +186,7 @@ After v2.9 shipped, run `/gsd-new-milestone` to frame v2.10. Leading candidates 
 | 76. Profile + A11y | v2.9 | 4/4 | Complete | 2026-05-12 |
 | 77. Settings Matrix + Question-Customization Gap-Fills | v2.9 | 5/5 | Complete | 2026-05-12 |
 | 78. Cleanup Hygiene Phase | v2.9 | 7/7 | Complete | 2026-05-12 |
+| 79. Determinism Recovery (Cascading-Race Fix + Constants Regen) | v2.10 | 0/TBD | Not started | - |
+| 80. A11Y Axe Cite-and-Fix | v2.10 | 0/TBD | Not started | - |
+| 81. A11Y-01 PRODUCT-GAP Cells — Email + URL Format | v2.10 | 0/TBD | Not started | - |
+| 82. A11Y-01 PRODUCT-GAP Cell — Required-Empty | v2.10 | 0/TBD | Not started | - |

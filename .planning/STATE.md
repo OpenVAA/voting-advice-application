@@ -3,10 +3,10 @@ gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance
 status: planning
-last_updated: "2026-05-12T18:44:25.061Z"
+last_updated: "2026-05-12T20:30:00.000Z"
 last_activity: 2026-05-12
 progress:
-  total_phases: 0
+  total_phases: 4
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -17,166 +17,114 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-10)
+See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** v2.9 milestone lifecycle — audit → complete → cleanup
+**Current focus:** v2.10 milestone — close v2.9's HIGH/MEDIUM a11y + test-determinism deferrals (candidate-profile cascading race + parity-script constants regen + axe cite-and-fix + A11Y-01 PRODUCT-GAP cells).
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: Phase 79 Determinism Recovery (Cascading-Race Fix + Constants Regen) (not started)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-05-12 — Milestone v2.10 started
+Status: Ready to start
+Last activity: 2026-05-12 — v2.10 roadmap defined
 
 ## Performance Metrics
 
 **Cumulative:**
 
-- Milestones shipped: 13 (v1.0, v1.1, v1.2, v1.3, v1.4, v2.0, v2.1, v2.3, v2.4, v2.5, v2.6, v2.7, v2.8) + 1 paused (v2.2)
-- Total plans completed: 229 + 6 tasks (v2.8 added 13 plans)
-- Timeline: 43 days across 6 work windows (2026-03-01 → 2026-03-28 + v2.5 2026-04-23→24 + v2.6 2026-04-24→28 + v2.7 2026-04-29→05-08 + v2.8 2026-05-08→10)
-- v2.7 specifically: 4 phases (65-68), 9 plans, 28 tasks across 9 days
-- v2.8 specifically: 4 phases (69-72), 13 plans, ~37 tasks across 3 days (uniformly low risk — 1 small UI feature + 4 hygiene phases)
+- Milestones shipped: 14 (v1.0, v1.1, v1.2, v1.3, v1.4, v2.0, v2.1, v2.3, v2.4, v2.5, v2.6, v2.7, v2.8, v2.9) + 1 paused (v2.2)
+- Total plans completed: 261 + 6 tasks (v2.9 added 32 plans)
+- Timeline: 46 days across 7 work windows (2026-03-01 → 2026-03-28 + v2.5 2026-04-23→24 + v2.6 2026-04-24→28 + v2.7 2026-04-29→05-08 + v2.8 2026-05-08→10 + v2.9 2026-05-10→12)
+- v2.9 specifically: 6 phases (73-78), 32 plans, 89 tasks across 3 days
 
 ## Deferred Items
 
-Snapshot taken at v2.8 milestone close on 2026-05-10. v2.9 requirements consume nine of the listed pending todos directly (skip-modifier sweep, playwright-hygiene-sweep, filter-type coverage, dev:* → db:* rename, voter-not-located redirect, D-04 distribution, setStore cast cleanup, CLAUDE.md warning-accepted anchor, i18n wrapper tightening) — those will be removed from `.planning/todos/pending/` (or marked resolved) at v2.9 milestone close.
+Snapshot at v2.10 planning start (2026-05-12). v2.10 consumes 3 v2.9-routed v2.10+ candidates directly (candidate-profile cascading race, A11Y axe cite-and-fix, A11Y-01 PRODUCT-GAP cells). 5 other v2.9-routed v2.10+ candidates are explicitly re-deferred to v2.11+ (SETTINGS-02 / SETTINGS-03 / FilterGroup OR-mode / voters-layout non-reactive topbar / constituency-filter PRODUCT-GAP) — these need new UI/architecture work outside v2.10's 3-item scope.
 
 | Category | Item | Status / Notes |
 |----------|------|----------------|
-| todo | 2026-04-27-extend-e2e-filter-type-coverage.md | **v2.9 Phase 77 / SETTINGS-01** — folded into the toggle matrix |
-| todo | 2026-04-27-remove-e2e-skip-modifiers.md | **v2.9 Phase 73 / DETERM-01** — mapped |
-| todo | 2026-05-10-tests-playwright-hygiene-sweep.md | **v2.9 Phase 73 / DETERM-03** — mapped (paired with DETERM-02) |
-| todo | 2026-05-10-rename-package-scripts-dev-to-db.md | **v2.9 Phase 78 / CLEAN-01** — mapped |
-| todo | 2026-05-10-redirect-unlocated-voter-to-selectors.md | **v2.9 Phase 78 / CLEAN-02** — mapped |
-| todo | 2026-05-10-d04-per-cast-reason-distribution.md | **v2.9 Phase 78 / CLEAN-03** (sub-finding 1) — mapped |
-| todo | 2026-05-10-getroute-setstore-cast-cleanup.md | **v2.9 Phase 78 / CLEAN-03** (sub-finding 2) — mapped |
-| todo | 2026-05-09-claude-md-svelte-warning-accepted-format.md | **v2.9 Phase 78 / CLEAN-03** (sub-finding 3) — mapped |
-| todo | 2026-05-09-tighten-i18n-wrapper.md | **v2.9 Phase 78 / CLEAN-04** — mapped (paired with E2E-08) |
-| todo | 2026-05-10-incorporate-luxembourg-and-danish-vaa-changes.md | Deferred to a separate milestone — deltas unscoped |
+| todo | 2026-05-12-candidate-profile-cascading-race.md | **v2.10 Phase 79 / DETERM-04** — mapped |
+| todo | 2026-05-12-a11y-axe-first-run-violations.md | **v2.10 Phase 80 / A11Y-04** — mapped |
+| todo | 2026-05-12-a11y-01-product-gap-cells.md | **v2.10 Phase 81 / A11Y-05+06 + Phase 82 / A11Y-07** — mapped (split across email/url shared-dispatch + required-empty product-decision phase) |
+| todo | 2026-05-12-settings-02-voter-authoring-product-gap.md | Re-deferred to v2.11+ — voter-app PRODUCT-GAP, out of v2.10 focused scope |
+| todo | 2026-05-12-settings-03-voter-required-product-gap.md | Re-deferred to v2.11+ — voter-app PRODUCT-GAP, out of v2.10 focused scope |
+| todo | 2026-05-12-voters-layout-non-reactive-appsettings.md | Re-deferred to v2.11+ — Svelte 5 reactivity hardening, out of v2.10 focused scope |
+| todo | 2026-05-12-qspec-01-i18n-hardening.md | Backlog — small QSPEC follow-up; not v2.10 |
+| todo | 2026-05-12-qspec-02-multi-choice-categorical-variant.md | Backlog — QSPEC follow-up; not v2.10 |
+| todo | 2026-05-12-58-e2e-audit-addendum-qspec.md | Backlog — audit addendum hygiene; not v2.10 |
+| todo | results-url-refactor-followups.md | Re-deferred to v2.11+ — sharable URLs / multi-tenant pair |
+| todo | frontend-project-id-scoping.md | Re-deferred to v2.11+ — paired with results-url-refactor-followups |
+| todo | 2026-05-10-incorporate-luxembourg-and-danish-vaa-changes.md | Separate future milestone — deltas unscoped |
 | todo | 2026-04-28-cleanup-nominations-table.md | DB-01 — deferred 2026-04-29; user opted to keep table as is |
-| todo | 2026-03-28-generalize-candidate-app-to-party-app.md | future party-app variant; not v2.9 |
-| todo | 2026-03-28-investigate-migrating-candidate-answer-store.md | architectural investigation; not v2.9 |
-| todo | adapter-package-loading.md | medium — tsconfig-based importable adapter; not v2.9 |
-| todo | check-candidate-distribution.md | low — default seed candidate spread follow-up |
-| todo | configurable-mock-data.md | medium — Supabase GENERATE_MOCK_DATA env replacement |
-| todo | frontend-project-id-scoping.md | architecture — multi-tenant prep; v2.10 candidate (paired with results-url-refactor-followups) |
-| todo | password-reset-code-method.md | candidate-app auth flow; Strapi-era leftover |
-| todo | register-page-registrationkey-method.md | candidate-app auth flow; Strapi-era leftover |
+| todo | 2026-03-28-generalize-candidate-app-to-party-app.md | Future party-app variant |
+| todo | 2026-03-28-investigate-migrating-candidate-answer-store.md | Architectural investigation |
+| todo | adapter-package-loading.md | Medium — tsconfig-based importable adapter |
+| todo | check-candidate-distribution.md | Low — default seed candidate spread follow-up |
+| todo | configurable-mock-data.md | Medium — Supabase GENERATE_MOCK_DATA env replacement |
+| todo | password-reset-code-method.md | Strapi-era leftover |
+| todo | register-page-registrationkey-method.md | Strapi-era leftover |
 | todo | rename-admin-writer.md | dev-seed internal API hygiene; low priority |
-| todo | results-url-refactor-followups.md | architecture — sharable URLs; v2.10 candidate |
-| todo | session-storage-election-constituency.md | partly mitigated by v2.6 Phase 62 URL-based election scoping |
-| todo | sql-linting-formatting.md | CI hygiene; not v2.9 |
-| todo | 2026-05-09-rewrite-parent-answer-imputation.md | matching-package internal; future matching-focused milestone |
-| carry-forward | 19 pre-existing data-loading race E2E failures (PROJECT.md "Future") | **v2.9 Phase 73 / DETERM-02** — mapped |
-| carry-forward | 165 pre-existing intra-package circular deps (data/matching/filters internal.ts barrel pattern) | Out of v2.9 scope; dedicated structural refactor milestone |
-| carry-forward | Cite-and-fix WCAG violations from v2.9 A11Y-03 axe smoke first-run | Tracked as follow-up todo at A11Y-03 close; not v2.9 scope |
+| todo | session-storage-election-constituency.md | Partly mitigated by v2.6 Phase 62 URL-based election scoping |
+| todo | sql-linting-formatting.md | CI hygiene |
+| todo | 2026-05-09-rewrite-parent-answer-imputation.md | Future matching-focused milestone |
+| carry-forward | 165 pre-existing intra-package circular deps (data/matching/filters internal.ts barrel pattern) | Out of v2.10 scope; dedicated structural refactor milestone |
 | infrastructure | Local imgproxy Docker container 502 on image upload (intermittent) | Not a code issue; fix with `supabase stop && supabase start`. Carried forward. |
-
-**Pending todo count at v2.9 planning start:** 18 (v2.9 will resolve 9 of these — see "v2.9 maps to" rows above; 1 deferred to a separate milestone; 8 remain pending into v2.10+ or backlog).
-| Phase 73 P01 | 18min | 3 tasks | 5 files |
-| Phase 74 P03 | 45min | 2 tasks | 2 files |
-| Phase 74 P01 | 2134 | 1 tasks | 3 files |
-| Phase 74 P02 | 37min | 3 tasks | 4 files |
-| Phase 74 P05 | 120min | 2 tasks | 5 files |
-| Phase 74 P04 | 85min | 4 tasks | 9 files |
-| Phase 74 P07 | 25200 | 5 tasks | 13 files |
-| Phase 75 P01 | 18min | - tasks | - files |
-| Phase 75 P02a | 25min | 3 tasks | 3 files |
-| Phase 75 P02b | 90min | 3 tasks | 11 files |
 
 ## Accumulated Context
 
 ### Roadmap Evolution
 
-- 2026-04-28: v2.6 Svelte 5 Migration Cleanup shipped. 5 phases (60-64), 18 plans, 48 tasks, 4 days. Tagged `v2.6` and archived to `.planning/milestones/v2.6-*`. Phase directories archived under `.planning/milestones/v2.6-phases/`.
-- 2026-04-29: v2.7 Svelte 5 Polish + Supabase-Adapter Loose Ends roadmap drafted. Phase 66 scope narrowed mid-discussion (DB-01 deferred per user; `nominations` table kept as is). Final shape: 4 phases (65-68), 9 plans.
-- 2026-05-08: v2.7 shipped. 4 phases (65-68), 9 plans, 28 tasks across 9 days. Audit verdict `tech_debt` (8/8 reqs wired; 3 documented deferrals: alliance card render, 95 frontend lint errors via Option C, `@openvaa/supabase` lint-script rename). Tagged `v2.7` and archived to `.planning/milestones/v2.7-*`.
-- 2026-05-08: v2.8 Alliance Card + Frontend Hygiene Sweep scoped. 7 requirements across 6 categories (ALLIANCE / WARN / BIND / TYPING / SHARED ×2 / LINT). E2E coverage workstream and sharable-URLs / multi-tenant pair both deferred to v2.9 candidates.
-- 2026-05-08: v2.8 ROADMAP.md drafted. 4 phases (69-72), 7 requirements mapped 1:1 (no orphans, no duplicates).
-- 2026-05-10: v2.8 shipped. 4 phases (69-72), 13 plans, ~37 tasks across 3 days. Bundled parity gate PASSED. Phase numbering continues from 72 → v2.9 starts at 73. v2.9 framing inputs captured (E2E coverage inventory + 6 new pending todos + 3 carry-forward todos).
-- 2026-05-10: v2.9 E2E Coverage + Suite Determinism roadmap drafted. **6 phases (73-78), 23 requirements mapped 1:1 across 6 categories (DETERM ×3 / E2E ×8 / QSPEC ×2 / A11Y ×3 / SETTINGS ×3 / CLEAN ×4):**
-  - **Phase 73 — Determinism Baseline** (DETERM-01, DETERM-02, DETERM-03): hard prerequisite for Phases 74-77. Skip-modifier sweep + 19 data-loading races + 98 playwright/* warnings.
-  - **Phase 74 — High-Leverage E2E Coverage** (E2E-01..E2E-08): 8 high-leverage gaps in one phase, content-heavy. Depends on Phase 73 GREEN.
-  - **Phase 75 — Question-Rendering Specs** (QSPEC-01, QSPEC-02): 2 focused user-story specs. Parallel with 74 after 73.
-  - **Phase 76 — Profile + A11y** (A11Y-01, A11Y-02, A11Y-03): profile validation + reload-persistence + axe wiring. Parallel with 74 after 73.
-  - **Phase 77 — Settings Matrix + Question-Customization Gap-Fills** (SETTINGS-01, SETTINGS-02, SETTINGS-03): toggle matrix + allowOpen + visibility/required. Parallel with 74 after 73.
-  - **Phase 78 — Cleanup Hygiene Phase** (CLEAN-01, CLEAN-02, CLEAN-03, CLEAN-04): bundled like v2.7 P68 / v2.8 P72 trio. Independent of 73 — may run in parallel with 74-77. CLEAN-04 ↔ E2E-08 i18n pairing recorded with two valid orderings.
-- Phase numbering continues from v2.8 (last phase: 72); v2.9 starts at 73. No reset.
-- Plan count is TBD per phase (filled by `/gsd-plan-phase`); estimates per phase below.
+- 2026-04-28: v2.6 Svelte 5 Migration Cleanup shipped. 5 phases (60-64), 18 plans, 48 tasks, 4 days.
+- 2026-05-08: v2.7 shipped. 4 phases (65-68), 9 plans, 28 tasks, 9 days. `tech_debt` verdict (8/8 reqs wired; 3 documented deferrals).
+- 2026-05-10: v2.8 shipped. 4 phases (69-72), 13 plans, ~37 tasks, 3 days. Bundled parity gate PASSED.
+- 2026-05-12: v2.9 shipped. 6 phases (73-78), 32 plans, 89 tasks, 3 days. `tech_debt` verdict (24/24 reqs satisfied; 12 PASS + 12 PASS-WITH-DEFERRAL; 8 v2.10+ candidate todos filed).
+- 2026-05-12: v2.10 Test Reliability + A11y Compliance roadmap drafted. **4 phases (79-82), 6 requirements mapped 1:1 across 2 categories (DETERM ×2 / A11Y ×4):**
+  - **Phase 79 — Determinism Recovery** (DETERM-04, DETERM-05): cascading-race fix + parity-script constants regen. Sequential — fix must land before regen captures a clean baseline. Both REQs share the candidate-profile test surface.
+  - **Phase 80 — A11Y Axe Cite-and-Fix** (A11Y-04): resolve 5 first-run WCAG 2.1 AA violations across `/results` + voter-detail-drawer routes. Structurally independent of DETERM; can run in parallel with Phase 79 (benefits from DETERM-04 being green for clean assertion runs, but does not depend on DETERM-05 regen).
+  - **Phase 81 — A11Y-01 PRODUCT-GAP Cells: Email + URL Format** (A11Y-05, A11Y-06): shared `customData.format` / `Question.subtype` dispatch decision; both REQs land via the same schema + component + i18n surface. Depends on Phase 79 DETERM-04 being green for clean assertion runs (assertions live in `candidate-profile-validation.spec.ts` which the cascade blocked).
+  - **Phase 82 — A11Y-01 PRODUCT-GAP Cell: Required-Empty** (A11Y-07): embedded product decision (REJECT vs SOFT-WARN-ONLY) gates implementation shape — warrants its own discuss-phase gate. Depends on Phase 79 DETERM-04 being green.
+- Phase numbering continues from v2.9 (last phase: 78); v2.10 starts at 79. No reset.
+- Plan count is TBD per phase (filled by `/gsd-plan-phase`).
 
 ### Decisions
 
 Full decision log in PROJECT.md Key Decisions table.
 
-Key cross-milestone reference points carried forward into v2.9:
+Key cross-milestone reference points carried forward into v2.10:
 
-- v2.6 parity baseline `67p / 1f / 34c` at HEAD `2c7ad2dea` carries forward through v2.7 + v2.8. v2.9 Phase 73 / DETERM-02 either lifts this to a stable green count or explicitly re-baselines (whichever is honest given what investigation surfaces).
-- `@openvaa/dev-seed` is the canonical data path for both dev and E2E. v2.9 coverage phases will likely add new variant fixtures (multilocale, single-locale, low-minimum-answers, allowOpen-enabled, hidden-questions) on top of the existing default + e2e templates.
-- `test.skip(true, …)` sweep extends the v2.6 Phase 64 voter-results.spec.ts pattern (6 silent skips converted to `expect.poll().toBeGreaterThan(0)`). Protocol documented in `.planning/todos/pending/2026-04-27-remove-e2e-skip-modifiers.md`.
-- 98 `playwright/*` warnings are NOT auto-fixable; each requires manual rewriting (`no-conditional-in-test`, `no-raw-locators`, `no-networkidle`). Pairing DETERM-03 with DETERM-02 forces the rewrite of conditional / `networkidle` patterns that are the actual flakiness drivers.
-- E2E-08 (locale switching) and CLEAN-04 (i18n wrapper tightening) are deliberately paired — locale-switching coverage exercises the i18n wrapper improvements. Two valid orderings recorded in Phase 78 Pairing note (Order A: 78 first, then 74; Order B: 74 first, then 78). Either honest at planning time.
-- Phase 78 follows the v2.7 P68 / v2.8 P72 hygiene-trio bundling pattern — 4 small reqs in one phase, NOT split into 4 phases. Project convention for residual cleanup work.
-- A11Y-03 wiring + first-run baseline ONLY — cite-and-fix of WCAG violations surfaced is explicitly out of scope for v2.9, tracked as a follow-up todo at A11Y-03 close. Keeps Phase 76 bounded.
-- Phase 73 is the highest-risk phase of v2.9 (19 race-failure investigations, some may surface real product bugs requiring code fixes). Phases 74-77 are content-heavy (writing new Playwright specs against a now-stable suite). Phase 78 is low-risk hygiene.
-- All v2.9 work is testing + frontend / package-level — NO Supabase migrations, NO new test runners, NO E2E framework migration (Playwright 1.58.2 is the durable stack).
-- [Phase 73 Plan 01]: Locked 101 playwright/* warnings as the binding baseline (vs 103 in CONTEXT D-03; small downward drift accepted)
-- [Phase 73 Plan 01]: Surfaced data.setup.ts:61-64 HEAD blocker via INVENTORY.md (recommended Plan 02 Task 0 hotfix path, within CONTEXT D-05 cap)
-- [Phase ?]: Plan 74-03: Open Question 3 resolved to text-toggle path (results/browse) per VoterNav.svelte:87 voterCtx.resultsAvailable
-- [Phase ?]: Plan 74-03: 2 new specs inherit Phase-73-locked DATA_RACE for answeredVoterPage fixture; 3 tests added to DATA_RACE pool — Plan 07 must regenerate parity constants per CONTEXT D-10
-- [Phase ?]: Plan 74-01 (E2E-01): multilocale-only path covered via Playwright spec; single-locale deferred per D-04; lang.<locale> i18n keys discovered unwired (surfaced for Phase 78 CLEAN-04)
-- [Phase ?]: Phase 74-02 — Ingress assertion via content discriminator (browse-vs-results phrase) instead of translation-key probing; survives copy edits on either side.
-- [Phase ?]: Phase 74 Plan 05 — Card filter uses display name (e.g. 'CaseA Both') not external_id
-- [Phase ?]: Phase 74 Plan 05 — E2E-07 SubMatch locator: getByRole('meter', { name }) replaces inline-style [style*=grid-template-columns] which matched multiple non-SubMatch containers
-- [Phase ?]: Phase 74 Plan 05 — Cross-spec impact: adding categorical question at sort 17 required Skip-Next fallback in voter-matching navigateToResults + out-of-range guard in voter-journey answerRemainingUntilResults
-- [Phase 74]: Plan 04: constituency-selector locator strategy uses outer voter-constituencies-list + inner getByRole('combobox', {name}) due to {...concatClass(restProps, ...)} testId-overwrite at ConstituencySelector.svelte:177 — Open Question 2 resolution; documented as inline // reason: in both new specs
-- [Phase 74]: Plan 04: Ne-Nc cross-bleed assertion uses symmetric for-of expect().not.toContain in both directions — for-of iteration is NOT a playwright/no-conditional-in-test violation; defense-in-depth even if option names ever overlap
-- [Phase ?]: Phase 74 closes GREEN-WITH-DEFERRAL — 8 PASS + 1 PASS-WITH-DEFERRAL (E2E-01 single-locale per D-04) + 0 FAIL across 9 ROADMAP SCs; 3-run SHA-identity ec349269...; 3 PARITY GATE PASS; DATA_RACE pool preserved at 15
-- [Phase ?]: Order B (CONTEXT D-06) confirmed for Phase 74 close: E2E-08 spec re-validates against tightened wrapper at Phase 78 close
-- [Phase ?]: Parity-script constants regenerated for Phase 74: CASCADE 55→65 (+10 with per-test rationale); PASS_LOCKED+DATA_RACE unchanged per D-09
-- [Phase ?]: Phase 75 Plan 01: Option A applied for Skip-Next fallback at sort 18 (3-iter loop); role 'radio' used (not 'button'); literal EN strings per W-03 deferred-todo
-- [Phase ?]: Plan 75-02a closed: QSPEC-02 single-choice categorical spec + unified dedup audit artifact landed.
-- [Phase ?]: Plan 75-02a: pre-flight gate (Task 0) confirmed cross-plan DB seed state (boolean@sort18=1, directional@sort17=1, Alpha boolean='true', Alpha directional='a'). PASS.
-- [Phase ?]: Plan 75-02a: yarn dev:reset-with-data seeds default template — Phase 75 Plan 02b verification gate should use 'yarn supabase:reset && yarn dev:seed --template e2e' instead.
-- [Phase ?]: Plan 75-02a: candidates.answers JSONB is keyed by question UUID (not external_id) — psql probes must join to questions table to resolve UUID.
-- [Phase ?]: Plan 75-02a: try/catch is canonical playwright/no-conditional-in-test workaround for spec test() body branching (vs 'if' usable in module-level helpers like voter-matching.spec.ts:182-187).
-- [Phase ?]: Phase 75 Plan 02b: 3-run cold-start --workers=1 smoke SHA-256-identical at 7084db87 x3; parity-script regen produced net-positive deltas (PASS_LOCKED +43 / DATA_RACE 0 / CASCADE -32)
-- [Phase ?]: Phase 75 Plan 02b: QSPEC-01 + QSPEC-02 deterministically FAIL x3 under full-suite cold-start (failure-class, NOT DATA_RACE — D-09 binding preserved); inherits Phase-78-CLEAN-05 voter-fixture race; per-plan smokes PASS x3 each verify spec correctness in isolation
-- [Phase ?]: Phase 75 closes GREEN-WITH-DEFERRAL pending operator Task 4 checkpoint: 4/4 ROADMAP SCs assessed (3 PASS + 1 PASS-WITH-DEFERRAL on SC #2 multi-choice per CONTEXT D-03); 3 follow-up todos filed
-- [Phase 75]: Operator approved Phase 75 close 2026-05-12 (GREEN-WITH-DEFERRAL); elected to file 58-E2E-AUDIT.md addendum as 4th follow-up todo at `.planning/todos/pending/2026-05-12-58-e2e-audit-addendum-qspec.md` (committed 3d05c5c6d); next action — plan Phase 76 / 77 / 78 (all parallel-eligible)
-- 2026-05-12: Phase 78 closed pending operator approval (5/5 CLEAN reqs + #6 no-regressions: 4 PASS + 1 PASS-WITH-DEFERRAL on CLEAN-05 inherited candidate-profile cascading race; #6 PASS). 7 source todos resolved across per-plan closing commits (6 moved-to-completed by Plans 01-04 + 1 moved-to-completed by Plan 05). 2 NEW out-of-scope follow-up todos filed for v2.10+ (candidate-profile cascading race + voters-layout non-reactive topbar). 13 Phase 73 review findings + bonus CR-01 closed (Plan 06). Constants regen DEFERRED-WITH-RATIONALE per Phase 76 P04 + Phase 77 P05 architectural-deferral precedent (LANDMINE-2 candidate-profile cascade routes to v2.10+; cold-start gate ~54 min × 3 = ~162 min routed to operator-checkpoint). v2.9 progress: 6 / 6 phases closed (all GREEN-WITH-DEFERRAL pending operator approvals on Phase 76 / 77 / 78 verification checkpoints).
-- 2026-05-12: Phases 76, 77, 78 operator-approved GREEN-WITH-DEFERRAL via /gsd-autonomous resume-from-76 path. All v2.9 deferrals routed to v2.10+ (cite-and-fix axe, A11Y-01 PRODUCT-GAPs, SETTINGS-02/03 PRODUCT-GAPs, FilterGroup OR-mode, constituency-filter, candidate-profile cascading race, voters-layout non-reactive topbar). Constants regen DEFERRED across 76/77/78 — Phase 75 baseline (47/15/33) preserved. Cold-start gate NOT executed at Phase 78 close (~162 min cost with no empirical capture possible while candidate-profile cascade persists). All 6 v2.9 phases now Complete in ROADMAP.md. Milestone lifecycle: audit → complete → cleanup pending.
+- Phase 75 PASS_LOCKED baseline (47/15/33) preserved through v2.9 Phases 76 → 77 → 78 via three architectural-deferral decisions; constants regen DEFERRED-WITH-RATIONALE at every Phase 76/77/78 close. The unlock condition is Phase 79 DETERM-04 (cascading-race fix); Phase 79 DETERM-05 (regen) executes against a clean post-fix 3-run cold-start baseline.
+- Phase 79 sequencing: DETERM-04 MUST land before DETERM-05. The regen captures the post-fix baseline (expected ~63 PASS_LOCKED — 47 v2.9 anchor + ~16 cascade-unblocked tests). Regen path options: v2.9 in-place path OR the archived `node .planning/milestones/v2.9-phases/73-determinism-baseline/post-fix/regen-constants.mjs <run-3.json>` script.
+- Phase 80 (A11Y-04) is the smallest phase — 5 violations across 3 rule-IDs, 2 of which are shared-component fixes that resolve both routes simultaneously. Expected ~1-2 plans (per-rule batching: `aria-required-parent` + `list` likely co-located in entity-card/list component; `button-name` independent on drawer icon-button).
+- Phase 81 (A11Y-05 + A11Y-06) shares the schema dispatch question — phase discussion picks ONE mechanism (likely `customData.format` enum addition + INPUT_TYPES bridge) covering both email + URL paths. The Phase 76 P01 `test-question-social-1` slot (sort 21) MAY be promoted to carry the URL dispatch once schema lands.
+- Phase 82 (A11Y-07) has the embedded product decision (REJECT-with-inline-error vs SOFT-WARN-ONLY = current badge + submit-button gating). Decision made at phase discuss time. If SOFT-WARN-ONLY: the cell closes as PRODUCT-CONFIRMED with no code changes — the spec asserts the existing badge + button-gating instead of a new error UI.
+- All v2.10 work is frontend / package-level + Playwright spec authoring — NO Supabase migrations, NO new test runners, NO E2E framework migration. Same durable stack as v2.9 (Playwright 1.58.2).
+- Deprecated `dev:*` script aliases scheduled for removal at v2.10 close (per Phase 78 Plan 01 SUMMARY commitment) — should be addressed as a sub-task during one of the v2.10 cleanup commits, not as a separate phase.
 
 ### Blockers/Concerns
 
-- Local imgproxy Docker container crashes intermittently (502 on image upload) — not a code issue; carry-forward infrastructure debt. May affect Phase 76 A11Y-01 image-upload validation cells if it crashes during the run.
+- Local imgproxy Docker container crashes intermittently (502 on image upload) — not a code issue; carry-forward infrastructure debt. May affect any image-upload-touching E2E re-runs during Phase 79 verification (cold-start full-suite gate).
 - 165 pre-existing intra-package circular deps in `@openvaa/data` / `matching` / `filters` — deferred to a dedicated structural refactor milestone.
-- [Phase 78 CLEAN-05 resolution / 2026-05-12]: 13 Phase 73 review findings + bonus CR-01 closed (Plan 06 cluster commits `fffbf561e`, `443f1cf7a`, `d372326c7`, `7531119ad`); voter-fixture-race Path B landed via `--likert-only` CLI flag (Plan 05 commits `8f1392fd1`, `15435d4df`, `ad4b79891`). Constants regen DEFERRED-WITH-RATIONALE per LANDMINE-2 candidate-profile cascading race (out of Phase 78 scope; routed to v2.10+ via `.planning/todos/pending/2026-05-12-candidate-profile-cascading-race.md`). See `.planning/phases/78-cleanup-hygiene-phase/78-VERIFICATION.md` for the 5-SC + #6 assessment + per-plan disposition; see `.planning/phases/73-determinism-baseline/73-REVIEW.md §"Resolution at Phase 78 close"` for the per-finding cross-link.
-- 2 NEW out-of-scope follow-up todos filed at Phase 78 close (2026-05-12) → v2.10+ candidates:
-  - `.planning/todos/pending/2026-05-12-candidate-profile-cascading-race.md` — LANDMINE-2 cascading race (HIGH severity; blocks parity-script regen at every verification gate)
-  - `.planning/todos/pending/2026-05-12-voters-layout-non-reactive-appsettings.md` — Phase 77 P01 deferred cells (MEDIUM severity; non-reactive $appSettings read at (voters)/+layout.svelte)
+- The candidate-profile cascading race (DETERM-04) is the v2.10 critical path — if root-cause investigation surfaces a deeper Svelte 5 hydration OR Supabase auth-session race that needs upstream framework work, fallback is the test-restructure path (split registration assertion into a setup project so downstream tests don't depend on the redirect succeeding). Both paths are documented in `.planning/todos/pending/2026-05-12-candidate-profile-cascading-race.md` §"Recommended approach".
 
 ## Session Continuity
 
-Last session: 2026-05-12T20:00:00.000Z
-Stopped at: All v2.9 phases operator-approved (Phases 73-75 prior; 76/77/78 approved 2026-05-12 via /gsd-autonomous resume-from-76)
-Resume file: .planning/ROADMAP.md (all 6 phase rows show Complete)
-Next action: Run milestone lifecycle — `/gsd-audit-milestone` → `/gsd-complete-milestone v2.9` → `/gsd-cleanup`. The autonomous loop is currently driving this. After cleanup, run `/gsd-new-milestone` to frame v2.10 (candidates: candidate-profile cascading race fix, voters-layout non-reactive topbar fix, sharable URLs + multi-tenant pair, axe cite-and-fix, Luxembourg + Danish VAA reconciliation).
+Last session: 2026-05-12T20:30:00.000Z
+Stopped at: v2.10 roadmap drafted; 4 phases (79-82); 6 REQs mapped 1:1
+Resume file: .planning/ROADMAP.md
+Next action: Run `/gsd-plan-phase 79` to plan the Determinism Recovery phase.
 
-### Plan-count estimate (drafted 2026-05-10)
+### Plan-count estimate (drafted 2026-05-12)
 
 | Phase | Likely plan count | Notes |
 |-------|-------------------|-------|
-| 73 — Determinism Baseline | 4-6 plans | (1) skip-modifier classification + sweep; (2-4) data-loading race investigations clustered by failure type (initial-fetch race / subscription-not-flushed / auth-cookie / hydration-timing); (5) playwright/* warning sweep paired with the conditional/networkidle rewrites; (6) verification + parity gate. Range depends on how many of the 19 races cluster into a shared root cause. |
-| 74 — High-Leverage E2E Coverage | 6-8 plans | Likely 1 plan per E2E-0X requirement; E2E-04 the largest given the 5-cell selector matrix; E2E-05 + E2E-07 may bundle since both extend voter-detail.spec.ts. |
-| 75 — Question-Rendering Specs | 2 plans | (1) QSPEC-01 Boolean spec; (2) QSPEC-02 categorical spec. Small + focused. |
-| 76 — Profile + A11y | 3-4 plans | (1) A11Y-01 profile validation; (2) A11Y-02 profile reload-persistence; (3) A11Y-03 axe wiring; potentially (4) split A11Y-03 into "wire harness" + "first-run baseline + follow-up todo capture". |
-| 77 — Settings Matrix | 3-5 plans | SETTINGS-01 likely 2-3 plans (toggle matrix breadth); SETTINGS-02 + SETTINGS-03 likely 1 plan each. |
-| 78 — Cleanup Hygiene Phase | 4-5 plans | 1 per CLEAN-0X requirement, with CLEAN-03 potentially splitting into 1 plan per sub-finding given the 3-pack shape; matches the v2.8 Phase 72 trio plan-count cadence. |
+| 79 — Determinism Recovery | 2-4 plans | (1) DETERM-04 root-cause investigation + fix-or-restructure decision + implementation; (2) DETERM-04 verification (3-run cold-start identity); (3) DETERM-05 constants regen + commit; potentially (4) split if investigation surfaces a deeper Svelte 5 hydration OR Supabase auth-session race requiring its own plan. |
+| 80 — A11Y Axe Cite-and-Fix | 1-2 plans | (1) shared-component fix for `aria-required-parent` + `list` (likely entity-card list); (2) drawer `button-name` aria-label additions. Could collapse into a single plan if surfaces are co-located. |
+| 81 — A11Y-01 Email + URL Format Cells | 2-3 plans | (1) schema decision + `customData.format` enum + `INPUT_TYPES` email branch + i18n `invalidEmail`; (2) URL dispatch (subtype OR `customData.format='url'`) + fixture extension + spec cell 6; potentially (3) split if URL schema restoration requires more than a customData enum extension. |
+| 82 — A11Y-01 Required-Empty Cell | 1 plan | Product decision at discuss-phase + (if REJECT) save-path validation + `required` i18n key + spec cell 4; lighter if decision is SOFT-WARN-ONLY (spec only). |
 
-**Total v2.9 estimate:** ~22-30 plans across 6 phases. Risk: high on Phase 73 (race investigations may surface code-level bugs); moderate on Phases 74-77 (content-heavy spec authoring against a now-stable suite); low on Phase 78 (hygiene bundle).
+**Total v2.10 estimate:** ~6-10 plans across 4 phases. Risk: high on Phase 79 (race investigation may surface code-level bugs requiring framework or auth work); moderate on Phase 81 (schema decision drives implementation shape); low on Phases 80 + 82 (small focused fixes + product-decision-gated cell).
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Run `/gsd-plan-phase 79` to plan the Determinism Recovery phase (DETERM-04 cascading-race fix + DETERM-05 parity-script constants regen).
