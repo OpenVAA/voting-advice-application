@@ -567,6 +567,53 @@ export const e2eTemplate: Template = {
         required: false,
         sort_order: 18,
         is_generated: false
+      },
+      // Phase 76 A11Y-01 cell-3 (name-too-long via HTML5 maxlength) anchor +
+      // Phase 76 A11Y-02 displayName reload-persistence anchor.
+      // custom_data.maxlength=50 enables the HTML5 native cap assertion at
+      // apps/frontend/src/lib/components/input/Input.svelte:602; QuestionInput.svelte:79-85
+      // bridges custom_data.maxlength → Input prop. NO `customData.format` field
+      // exists on the Question type today (PRODUCT-GAP for email/url) — see
+      // .planning/todos/pending/2026-05-12-a11y-01-product-gap-cells.md.
+      {
+        external_id: 'test-question-displayname',
+        type: 'text',
+        name: { en: 'Display name (Phase 76 anchor)' },
+        category: { external_id: 'test-category-info' },
+        custom_data: { maxlength: 50 },
+        allow_open: false,
+        required: false,
+        sort_order: 19,
+        is_generated: false
+      },
+      // Phase 76 A11Y-02 bio reload-persistence anchor.
+      // custom_data.longText=true triggers <textarea> render path at
+      // apps/frontend/src/lib/components/input/QuestionInput.svelte:67;
+      // maxlength=500 caps textarea content per Input.svelte:602 native attr.
+      {
+        external_id: 'test-question-bio',
+        type: 'text',
+        name: { en: 'Biography (Phase 76 anchor)' },
+        category: { external_id: 'test-category-info' },
+        custom_data: { longText: true, maxlength: 500 },
+        allow_open: false,
+        required: false,
+        sort_order: 20,
+        is_generated: false
+      },
+      // Phase 76 A11Y-02 social-link reload-persistence anchor (PRODUCT-GAP-PARTIAL:
+      // url-format validation deferred per .planning/todos/pending/2026-05-12-a11y-01-product-gap-cells.md;
+      // this slot exercises persistence ONLY, asserting the saved URL string
+      // round-trips identically across page.reload()).
+      {
+        external_id: 'test-question-social-1',
+        type: 'text',
+        name: { en: 'Social link (Phase 76 anchor)' },
+        category: { external_id: 'test-category-info' },
+        allow_open: false,
+        required: false,
+        sort_order: 21,
+        is_generated: false
       }
     ]
   },
@@ -647,7 +694,16 @@ export const e2eTemplate: Template = {
           // OpinionQuestionInput.svelte:110) + alpha answered true → both
           // rows show 'Yes' selected. Spec asserts: .entitySelected count=1,
           // radio[checked] count=1, getByText('You') attached.
-          'test-question-boolean-1': { value: true }
+          'test-question-boolean-1': { value: true },
+          // Phase 76 A11Y-01 (cell-3 anchor) + A11Y-02 (persistence anchors).
+          // Display-name + bio + social-link answer cells are read post-reload
+          // by Plan 02's persistence spec; A11Y-01 cell-3 fills above the
+          // maxlength=50 ceiling and asserts the HTML5 native cap kicks in.
+          'test-question-displayname': { value: { en: 'Alpha The Test' } },
+          'test-question-bio': {
+            value: { en: 'Alpha biography text used by Phase 76 A11Y-02 reload-persistence.' }
+          },
+          'test-question-social-1': { value: { en: 'https://example.com/alpha' } }
         }
       },
       {
