@@ -32,27 +32,71 @@ plan; they are surfaced here for the verifier and downstream phases.
      P01 ships them. (Phase 76 P01's
      `candidate-profile-validation.spec.ts` is that regression test.)
 
-### 2. `candidate-profile.spec.ts` registration test is flaky
+### 2. `candidate-profile.spec.ts` registration test fails deterministically (originally documented as flake; promoted to gating issue at Plan 02)
 
 - **Location:** `tests/tests/specs/candidate/candidate-profile.spec.ts:85-145`
 - **Symptom:** The `should register the fresh candidate via email link`
-  test intermittently fails on `expect(touCheckbox).toBeVisible({ timeout: 10000 })`
-  at line 137. Reproduced in 2/2 isolated runs during Phase 76 P01
-  smoke; the Phase 73 baseline lists this test under PASS_LOCKED so the
-  flake is recent or environment-dependent.
-- **Why this is NOT a Phase 76 P01 regression:** my changes touch only
-  the dev-seed template (additive — 3 new info questions + 3 Alpha
-  answer cells) and the new validation spec. The registration test
-  exercises the inviteUserByEmail → Inbucket → set-password → ToU-checkbox
-  flow which has no dependency on the new questions or any other Phase 76
-  P01 change. The failure mode (terms-checkbox not appearing after
-  registration) suggests an upstream Inbucket / Supabase Auth race that
-  pre-dates Phase 76.
-- **Recommendation:** Re-baseline determinism in Phase 76 P04's verification
-  gate. If the flake reproduces in the cold-start 3-run smoke, file a
-  follow-up todo to investigate the registration flow's Inbucket + Auth
-  timing. If not, the flake is environment-specific to my development
-  shell session and not gating.
+  test fails on `expect(touCheckbox).toBeVisible({ timeout: 10000 })`
+  at line 139. After registration the URL re-redirects to `/login` with
+  a "Your password is now set! Please log in using it." heading; the
+  `loginIfRedirectedToLoginPage(...)` helper attempts a manual login but
+  the subsequent ToU checkbox never surfaces.
+- **Reproduced:**
+  - Plan 01 smoke (2/2 isolated runs).
+  - Plan 02 per-plan smoke (3/3 isolated runs at /tmp/76-02-run-{1,2,3}.log).
+    The third reproduction confirms the failure is now DETERMINISTIC in
+    this development shell, not intermittent.
+- **Cascade impact (new at Plan 02):** Because the host file uses
+  `test.describe.configure({ mode: 'serial' })`, all subsequent tests
+  in the describe block are SKIPPED with "did not run" when registration
+  fails. Plan 02 added 3 new A11Y-02 reload-persistence tests INSIDE this
+  same serial block (per CONTEXT D-01 + D-02). The 3 new tests are
+  STRUCTURALLY COMPLETE (Playwright lists them; lint passes; sentinel
+  values disjoint from 'Alpha'; locators match Plan 01 fixture labels
+  exactly) but cannot demonstrate functional PASS via the standard
+  per-plan smoke because the entire serial chain is gated by registration.
+  This is the **PASS-WITH-DEFERRAL** outcome per Phase 74 D-04 /
+  Phase 75 D-03 precedent.
+- **Why this is NOT a Phase 76 P02 regression:** Plan 02's diff is
+  PURELY ADDITIVE inside the existing serial block. The registration
+  test was already failing in Plan 01's environment (documented above);
+  Plan 02 inherits the cascade. The 3 new A11Y-02 tests do not depend
+  on the new questions or any Phase 76 change — they depend on the same
+  pre-existing registration flow as CAND-03 + CAND-12.
+- **Why this is NOT a Phase 76 P01 regression:** Plan 01's changes
+  touch only the dev-seed template (additive — 3 new info questions
+  + 3 Alpha answer cells) and the new validation spec. The registration
+  test exercises the inviteUserByEmail → Mailpit → set-password →
+  ToU-checkbox flow which has no dependency on the new questions or
+  any other Phase 76 P01/P02 change. The failure mode (URL re-redirects
+  to /login with "password is now set" heading, then ToU checkbox never
+  appears) is an upstream Mailpit / Supabase Auth post-set-password
+  redirect race that pre-dates Phase 76.
+- **Recommendation:**
+  1. Plan 04 verification gate should triage in cold-start environment
+     (vite-cache wipe + Supabase fully recycled). If reproduces in
+     cold-start, file a follow-up todo at
+     `.planning/todos/pending/2026-05-12-candidate-registration-redirect-race.md`
+     scoped to investigate the post-`client.setPassword` redirect to /login
+     and the subsequent helper login attempt's session establishment.
+  2. Short-term workaround (for Plan 02 functional verification at
+     Plan 04 triage): temporarily switch the host file's
+     `candidateEmail` / `candidatePassword` to Test Candidate Alpha
+     pre-registered credentials (matching the path Plan 01 took for
+     `candidate-profile-validation.spec.ts`). This is an architectural
+     change (different test fixture surface) — Plan 04 owns the call.
+  3. Alternative: extract the 3 new A11Y-02 persistence tests into a
+     new sibling spec file `candidate-profile-persistence.spec.ts` that
+     uses Alpha credentials, leaving the registration test isolated.
+     This is the CONTEXT D-01 "Claude's Discretion" fallback path —
+     Plan 02 chose the default (extend host file) per the plan contract
+     and per CONTEXT D-02 "additive only".
+
+### 4. macOS Chromium filechooser flake on serial-mode IMAGE_CELLS iteration (mitigated in Plan 01; restate for completeness)
+
+- Location: `tests/tests/specs/candidate/candidate-profile-validation.spec.ts`
+- Stabilized via 500ms pre-filechooser settle delay (commit 15107e336).
+- No action required at Plan 02; documented here for verifier audit trail.
 
 ### 3. `playwright.config.ts` testMatch regex required extension for new spec file
 
