@@ -235,7 +235,12 @@ Phase 78 (CLEAN)  ← independent of 73-77; may run in parallel with 74-77
   2. **`customData.allowOpen` (SETTINGS-02).** A variant fixture enables `allowOpen` on a subset of questions. Spec asserts (a) the open-comment UI surfaces on those questions, (b) voter can author comment text, (c) comment persists across reload (matching the existing CAND-12 persistence pattern for candidate comments). Closes the v2.0 milestone-notes gap.
   3. **Per-question visibility + must-answer (SETTINGS-03).** `hideHero` is already covered by the existing settings spec; SETTINGS-03 adds variant-fixture coverage for the remaining per-question visibility/required configuration: hidden questions don't render in the question flow; required-but-unanswered questions block navigation to results (per `requiredInfoQuestions` / `unansweredOpinionQuestions` voter-context contracts).
   4. **Determinism preserved.** All new specs + matrix-driven cells pass on 3 consecutive `--workers=1` runs identically; the post-Phase-73 baseline does not regress.
-**Plans**: TBD (estimate ~3-5 plans — SETTINGS-01 likely 2-3 plans given matrix breadth; SETTINGS-02 + SETTINGS-03 likely 1 plan each)
+**Plans**: 5 plans
+- [ ] 77-01-PLAN.md — SETTINGS-01 wave A: per-toggle matrix on candidate-settings.spec.ts (9-12 cells) [Wave 1, autonomous]
+- [ ] 77-02-PLAN.md — SETTINGS-01 wave B: filter-type matrix on voter-results.spec.ts + e2e fixture extension (test-question-number-1 + filterable flags); folds 2026-04-27-extend-e2e-filter-type-coverage [Wave 1, autonomous]
+- [ ] 77-03-PLAN.md — SETTINGS-02 display-side per LANDMINE-1: variant-allowopen + voter-allowopen.spec.ts + voter-authoring PRODUCT-GAP follow-up todo [Wave 2, autonomous, depends on 77-02]
+- [ ] 77-04-PLAN.md — SETTINGS-03 hidden + candidate-required per LANDMINE-3: variant-hidden-required + 2 specs + voter-required PRODUCT-GAP follow-up todo [Wave 2, autonomous, depends on 77-02 + 77-03]
+- [ ] 77-05-PLAN.md — Verification gate: vite-cache wipe + 3-run cold-start + parity-gate + conditional constants regen + 77-VERIFICATION.md (4 SCs assessed) + operator checkpoint [Wave 3, has checkpoint, depends on 77-01..04]
 
 ### Phase 78: Cleanup Hygiene Phase
 **Goal**: After this phase, five residual cleanup workstreams are closed in one bundled phase (same shape as v2.7 Phase 68 / v2.8 Phase 72 hygiene trios, scaled up): the `dev:* → db:*` Supabase script rename + new `dev:clean` cache wipe + `db:reset` / `db:reset-with-data` chaining `dev:clean` (the v2.8-close hidden-gotcha recipe); voters who hit a located route without `selectedElection` + `selectedConstituency` set are redirected through the selector with the original route preserved as a deferred-target; the 3 post-71 carry-forward findings (D-04 per-cast distribution + `setStore` cast cleanup + CLAUDE.md Svelte warning-accepted format) are resolved; the i18n wrapper is tightened, paired with E2E-08 locale-switching coverage; and the Phase 73 review backlog (CR-02 voter-popups race-tolerance regression + 7 WR test-quality findings + 5 IN polish findings) + voter-fixture heterogeneous-question-types race (Path B with `--likert-only` seed modifier) close jointly so the 16 tests in the post-73 DATA_RACE pool flip to PASS_LOCKED.
@@ -293,5 +298,5 @@ After v2.9 ships, run `/gsd-new-milestone` to frame the next milestone. v2.10 ca
 | 74. High-Leverage E2E Coverage | v2.9 | 7/7 | Complete   | 2026-05-11 |
 | 75. Question-Rendering Specs | v2.9 | 3/3 | Complete   | 2026-05-12 |
 | 76. Profile + A11y | v2.9 | 0/4 | Not started | — |
-| 77. Settings Matrix + Question-Customization Gap-Fills | v2.9 | 0/TBD | Not started | — |
+| 77. Settings Matrix + Question-Customization Gap-Fills | v2.9 | 0/5 | Not started | — |
 | 78. Cleanup Hygiene Phase | v2.9 | 0/TBD | Not started | — |
