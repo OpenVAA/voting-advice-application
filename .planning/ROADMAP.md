@@ -137,7 +137,8 @@ Phase 79 (DETERM-04 + DETERM-05) ✓ COMPLETE
   3. `button-name` × 1 violation on voter-detail-drawer resolved via `aria-label` (i18n-aware) on the drawer's icon-button.
   4. Re-run of the axe smoke reports 0 violations across all 6 routes (home + elections-selector + constituencies-selector + questions + results + voter-detail-drawer); per-rule regression assertions added to `tests/tests/specs/a11y/a11y-smoke.spec.ts`.
   5. Successor baseline artifact (or in-place update to `.planning/milestones/v2.9-phases/76-profile-a11y/76-A11Y-BASELINE.md`) documents the 0-violation post-fix state.
-**Plans**: TBD
+**Plans**: 1 plan
+- [ ] 80-01-PLAN.md — Shared-component a11y fix (NavGroup hoist + NavItem auto-detect + Button aria-label + Drawer i18n) + a11y-smoke per-rule + global-zero regression assertions + post-fix BASELINE.md + 3-run cold-start anchor preservation gate
 **UI hint**: yes
 
 ### Phase 81: A11Y-01 PRODUCT-GAP Cells — Email + URL Format
