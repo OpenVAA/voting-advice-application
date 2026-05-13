@@ -35,7 +35,13 @@ Show a tab title bar that can be used to switch between different tabs.
   }
 </script>
 
-<ul {...concatClass(restProps, 'flex items-center justify-start bg-base-300 px-0 py-8 overflow-auto')}>
+<!-- reason: role="tablist" — required so <li role="tab"> children satisfy
+     aria-required-parent (WAI-ARIA APG tabs pattern). Phase 80 cite-and-fix
+     (axe rules: aria-required-parent + list); discovered mid-execution as
+     a Rule 4 deviation when the locked NavGroup/NavItem decisions did not
+     resolve the baselined violations. See 80-VERIFICATION.md §Latent Risk
+     Surface Check + scout-misdiagnosis-correction note. -->
+<ul role="tablist" {...concatClass(restProps, 'flex items-center justify-start bg-base-300 px-0 py-8 overflow-auto')}>
   {#each tabs as tab, index}
     <li
       class="btn btn-outline text-md hover:bg-base-100 hover:text-primary focus:bg-base-100 focus:text-primary m-0 h-[2.2rem] min-h-[2.2rem] w-auto flex-grow
