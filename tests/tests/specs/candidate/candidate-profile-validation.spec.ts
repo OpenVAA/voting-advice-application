@@ -3,7 +3,7 @@
  *
  * Decoupled from `candidate-profile.spec.ts` (CAND-03 / CAND-12 happy paths)
  * per Phase 76 Plan 01 + Phase 75 D-04 scope-marked-filename precedent. Covers
- * 3 reliably-renderable cells against the existing product surface:
+ * 6 reliably-renderable cells against the existing product surface (3 original + 2 Phase 81 lifts + 1 Phase 82 standalone):
  *   1. image-type rejection → `components.input.error.invalidFile` at
  *      `apps/frontend/src/lib/components/input/Input.svelte:267`. Spec uploads
  *      a 5-byte plain-text fixture; the file-input handler rejects on the
@@ -48,7 +48,7 @@
  * switching to `t('components.input.error.{invalidFile,oversizeFile}')`
  * lookups across all Phase 76 + 75 specs.
  *
- * IMGPROXY_TIED_TITLES safety: all 3 test titles are PREFIXED `A11Y-01 ` and
+ * IMGPROXY_TIED_TITLES safety: all 6 test titles are PREFIXED `A11Y-01 ` and
  * do NOT end with any of the 14 bound patterns at Phase 73 P06
  * `regen-constants.mjs:64-78`. Confirmed at authoring time per Phase 76
  * RESEARCH LANDMINE-3.
