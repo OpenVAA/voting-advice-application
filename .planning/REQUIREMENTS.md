@@ -40,7 +40,7 @@
 
 - [x] **A11Y-06**: Candidate profile rejects malformed URL input on social-link fields via inline validation error. Schema: `Question.subtype` (or equivalent `customData.format='url'` dispatch — decision deferred to phase discussion) restored or plumbed through so the existing `QuestionInput.svelte:65` `subtype === 'link'` branch + `Input.svelte:286-296` URL-validation branch become reachable from the profile route. Seed: 1 new info question with the chosen dispatch (subtype OR `customData.format='url'`) — the Phase 76 P01 `test-question-social-1` slot (sort 21) MAY be promoted to carry the dispatch once the schema lands. Spec: A11Y-01 cell 6 added — type bad URL → assert `components.input.error.invalidUrl` + input value preserved.
 
-- [ ] **A11Y-07**: Candidate profile required-empty save behavior is decided and enforced consistently. **Phase-time product decision:** should empty-required save be REJECTED with an inline error (current behavior is soft — `required` attribute renders an sr-only "Required" badge + submit-button gating via `allRequiredFilled` at `profile/+page.svelte:94`, but the empty save is not blocked). If REJECT: add save-path validation in `apps/frontend/src/routes/candidate/(protected)/profile/+page.svelte:125-143` AND `Input.svelte` emits `components.input.error.required` (or `tooShort`) on submit-time validation failure; `required` i18n key added to 4-locale `input.error` blocks. If SOFT-WARN-ONLY (no change): the cell is closed as PRODUCT-CONFIRMED with the existing badge + button-gating documented as the enforcement. Spec: A11Y-01 cell 4 added to `candidate-profile-validation.spec.ts` — empty input → click submit → assert chosen behavior (error UI rendered + value preserved IF REJECT; submit-button disabled + no error UI IF SOFT-WARN).
+- [x] **A11Y-07**: Candidate profile required-empty save behavior is decided and enforced consistently. **Phase-time product decision:** should empty-required save be REJECTED with an inline error (current behavior is soft — `required` attribute renders an sr-only "Required" badge + submit-button gating via `allRequiredFilled` at `profile/+page.svelte:94`, but the empty save is not blocked). If REJECT: add save-path validation in `apps/frontend/src/routes/candidate/(protected)/profile/+page.svelte:125-143` AND `Input.svelte` emits `components.input.error.required` (or `tooShort`) on submit-time validation failure; `required` i18n key added to 4-locale `input.error` blocks. If SOFT-WARN-ONLY (no change): the cell is closed as PRODUCT-CONFIRMED with the existing badge + button-gating documented as the enforcement. Spec: A11Y-01 cell 4 added to `candidate-profile-validation.spec.ts` — empty input → click submit → assert chosen behavior (error UI rendered + value preserved IF REJECT; submit-button disabled + no error UI IF SOFT-WARN).
 
 ### DETERM-2 — Test reliability follow-ups (Phase 79 close exposed; gap-closed in-milestone)
 
@@ -74,7 +74,7 @@ Which phases cover which requirements.
 | A11Y-04     | Phase 80 | Complete (2026-05-13) |
 | A11Y-05     | Phase 81 | Complete |
 | A11Y-06     | Phase 81 | Complete |
-| A11Y-07     | Phase 82 | Pending |
+| A11Y-07     | Phase 82 | Complete |
 | DETERM-06   | Phase 83 | Pending |
 | DETERM-07   | Phase 83 | Pending |
 

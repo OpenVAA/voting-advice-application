@@ -1,0 +1,1621 @@
+{
+  "config": {
+    "configFile": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright.config.ts",
+    "rootDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "data-setup",
+        "name": "data-setup",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/data\\.setup\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "data-teardown",
+        "name": "data-teardown",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/data\\.teardown\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "auth-setup",
+        "name": "auth-setup",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/auth\\.setup\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "candidate-app",
+        "name": "candidate-app",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/candidate",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/candidate-(auth|questions|translation)\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "candidate-app-mutation",
+        "name": "candidate-app-mutation",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/candidate",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/candidate-(registration|profile|profile-validation)\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "re-auth-setup",
+        "name": "re-auth-setup",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/re-auth\\.setup\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "candidate-app-settings",
+        "name": "candidate-app-settings",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/candidate",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/candidate-settings\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "candidate-app-password",
+        "name": "candidate-app-password",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/candidate",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/candidate-password\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "voter-app",
+        "name": "voter-app",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter",
+        "testIgnore": [
+          "/voter-(settings|popups)\\.spec\\.ts/"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "voter-app-settings",
+        "name": "voter-app-settings",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/voter-settings\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "voter-app-popups",
+        "name": "voter-app-popups",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/voter-popups\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "data-teardown-variants",
+        "name": "data-teardown-variants",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/variant-data\\.teardown\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "data-setup-multi-election",
+        "name": "data-setup-multi-election",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/variant-multi-election\\.setup\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "variant-multi-election",
+        "name": "variant-multi-election",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/variants",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/multi-election\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "variant-results-sections",
+        "name": "variant-results-sections",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/variants",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/results-sections\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "data-setup-constituency",
+        "name": "data-setup-constituency",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/variant-constituency\\.setup\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "variant-constituency",
+        "name": "variant-constituency",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/variants",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/constituency\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "data-setup-startfromcg",
+        "name": "data-setup-startfromcg",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/variant-startfromcg\\.setup\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "variant-startfromcg",
+        "name": "variant-startfromcg",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/variants",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/startfromcg\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "data-setup-low-minimum-answers",
+        "name": "data-setup-low-minimum-answers",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/variant-low-minimum-answers\\.setup\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "variant-low-minimum-answers",
+        "name": "variant-low-minimum-answers",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/voter-browse-without-match\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "data-setup-1e-Nc",
+        "name": "data-setup-1e-Nc",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/variant-1e-Nc\\.setup\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "variant-1e-Nc",
+        "name": "variant-1e-Nc",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/variants",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/1e-Nc\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "data-setup-Ne-Nc",
+        "name": "data-setup-Ne-Nc",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/variant-Ne-Nc\\.setup\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "variant-Ne-Nc",
+        "name": "variant-Ne-Nc",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/variants",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/Ne-Nc\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "data-setup-allowopen",
+        "name": "data-setup-allowopen",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/variant-allowopen\\.setup\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "variant-allowopen",
+        "name": "variant-allowopen",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/voter-allowopen\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "data-setup-hidden-required",
+        "name": "data-setup-hidden-required",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/variant-hidden-required\\.setup\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "variant-hidden-required-voter",
+        "name": "variant-hidden-required-voter",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/voter-visibility-required\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "variant-hidden-required-candidate",
+        "name": "variant-hidden-required-candidate",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/candidate",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/candidate-required-info\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "runAgents": "none",
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.58.2",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "setup/data.teardown.ts",
+      "file": "setup/data.teardown.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "delete test dataset",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "data-teardown",
+              "projectName": "data-teardown",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 146,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-05-13T12:39:24.834Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/setup-data.teardown.ts-delete-test-dataset-data-teardown/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "78126b53f91cf451d89e-5cb9b645fe370e63a6b1",
+          "file": "setup/data.teardown.ts",
+          "line": 17,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "setup/variant-data.teardown.ts",
+      "file": "setup/variant-data.teardown.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "delete variant test dataset",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "data-teardown",
+              "projectName": "data-teardown",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 48,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-05-13T12:39:24.999Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/setup-variant-data.teardown.ts-delete-variant-test-dataset-data-teardown/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "03c666fc1bac03ab3725-93690b532566d030e62f",
+          "file": "setup/variant-data.teardown.ts",
+          "line": 12,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "setup/data.setup.ts",
+      "file": "setup/data.setup.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "import test dataset",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "data-setup",
+              "projectName": "data-setup",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 634,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-05-13T12:38:40.718Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/setup-data.setup.ts-import-test-dataset-data-setup/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "126741afc9fe195882b8-615224fdf337b91a3d31",
+          "file": "setup/data.setup.ts",
+          "line": 76,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "setup/auth.setup.ts",
+      "file": "setup/auth.setup.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "authenticate as candidate",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "auth-setup",
+              "projectName": "auth-setup",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4607,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-05-13T12:38:42.037Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/setup-auth.setup.ts-authenticate-as-candidate-auth-setup/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e717b06d8d484d1cd946-4bbf5ae0a5fc893a93f3",
+          "file": "setup/auth.setup.ts",
+          "line": 66,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "setup/re-auth.setup.ts",
+      "file": "setup/re-auth.setup.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "re-authenticate as candidate",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "auth-setup",
+              "projectName": "auth-setup",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1620,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-05-13T12:38:47.300Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/setup-re-auth.setup.ts-re-authenticate-as-candidate-auth-setup/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "13c9519bc5ddfb3cb0d7-ced5f2ea453444d74557",
+          "file": "setup/re-auth.setup.ts",
+          "line": 20,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "specs/candidate/candidate-auth.spec.ts",
+      "file": "specs/candidate/candidate-auth.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "candidate authentication",
+          "file": "specs/candidate/candidate-auth.spec.ts",
+          "line": 18,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should login with valid credentials",
+              "ok": true,
+              "tags": [
+                "candidate",
+                "smoke"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app",
+                  "projectName": "candidate-app",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1739,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-13T12:38:49.656Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-auth-candidate-a-0a29c-ogin-with-valid-credentials-candidate-app/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "f79ff6def10e8d34cbda-7a0d44a8b434fa809020",
+              "file": "specs/candidate/candidate-auth.spec.ts",
+              "line": 19,
+              "column": 3
+            },
+            {
+              "title": "should show error on invalid credentials",
+              "ok": true,
+              "tags": [
+                "candidate",
+                "smoke"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app",
+                  "projectName": "candidate-app",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1402,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-13T12:38:51.758Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-auth-candidate-a-759b1-rror-on-invalid-credentials-candidate-app/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "f79ff6def10e8d34cbda-ce6f08ec1c012e0c87fe",
+              "file": "specs/candidate/candidate-auth.spec.ts",
+              "line": 33,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/candidate/candidate-questions.spec.ts",
+      "file": "specs/candidate/candidate-questions.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "candidate opinion questions",
+          "file": "specs/candidate/candidate-questions.spec.ts",
+          "line": 18,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should display question cards organized by category (CAND-05)",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app",
+                  "projectName": "candidate-app",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1805,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-13T12:38:53.209Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-questions-candid-1f3f7-anized-by-category-CAND-05--candidate-app/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d713f3f6e6d38ac7ddeb-ec521d7189454e27a51e",
+              "file": "specs/candidate/candidate-questions.spec.ts",
+              "line": 27,
+              "column": 3
+            },
+            {
+              "title": "should answer a Likert opinion question and save (CAND-04)",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app",
+                  "projectName": "candidate-app",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1653,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-13T12:38:55.055Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-questions-candid-f74db--question-and-save-CAND-04--candidate-app/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d713f3f6e6d38ac7ddeb-80b35ba41eb02ec0201d",
+              "file": "specs/candidate/candidate-questions.spec.ts",
+              "line": 55,
+              "column": 3
+            },
+            {
+              "title": "should navigate between categories (CAND-05)",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app",
+                  "projectName": "candidate-app",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2266,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-13T12:38:56.782Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-questions-candid-7279e-between-categories-CAND-05--candidate-app/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d713f3f6e6d38ac7ddeb-a58416dae03b43249acf",
+              "file": "specs/candidate/candidate-questions.spec.ts",
+              "line": 88,
+              "column": 3
+            },
+            {
+              "title": "should edit a previously answered question (CAND-05)",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app",
+                  "projectName": "candidate-app",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2017,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-13T12:38:59.129Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-questions-candid-013e0--answered-question-CAND-05--candidate-app/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d713f3f6e6d38ac7ddeb-1263ee3c5c4ba89b0819",
+              "file": "specs/candidate/candidate-questions.spec.ts",
+              "line": 117,
+              "column": 3
+            },
+            {
+              "title": "should persist question answers after page reload (CAND-12)",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app",
+                  "projectName": "candidate-app",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2475,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-13T12:39:01.224Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-questions-candid-07a77--after-page-reload-CAND-12--candidate-app/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d713f3f6e6d38ac7ddeb-eef40ee40ed9807c0d0d",
+              "file": "specs/candidate/candidate-questions.spec.ts",
+              "line": 154,
+              "column": 3
+            },
+            {
+              "title": "should persist comment text on a question after page reload (CAND-12)",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app",
+                  "projectName": "candidate-app",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3031,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-13T12:39:03.795Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-questions-candid-698a8--after-page-reload-CAND-12--candidate-app/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d713f3f6e6d38ac7ddeb-a7f8a27b963fa830b512",
+              "file": "specs/candidate/candidate-questions.spec.ts",
+              "line": 192,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "candidate preview",
+          "file": "specs/candidate/candidate-questions.spec.ts",
+          "line": 238,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should display entered profile and opinion data on preview page (CAND-06)",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app",
+                  "projectName": "candidate-app",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 676,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-13T12:39:06.931Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-questions-candid-5ef84-ta-on-preview-page-CAND-06--candidate-app/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d713f3f6e6d38ac7ddeb-ce877da3dce255027407",
+              "file": "specs/candidate/candidate-questions.spec.ts",
+              "line": 239,
+              "column": 3
+            },
+            {
+              "title": "should show specific candidate data (name or answered question) in preview (CAND-06)",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app",
+                  "projectName": "candidate-app",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 801,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-13T12:39:07.624Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-questions-candid-f11b9-uestion-in-preview-CAND-06--candidate-app/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d713f3f6e6d38ac7ddeb-bbb3cf810bb94ab221a7",
+              "file": "specs/candidate/candidate-questions.spec.ts",
+              "line": 262,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/candidate/candidate-translation.spec.ts",
+      "file": "specs/candidate/candidate-translation.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "candidate translation surface (E2E-01)",
+          "file": "specs/candidate/candidate-translation.spec.ts",
+          "line": 19,
+          "column": 6,
+          "specs": [
+            {
+              "title": "multilocale candidate authors a translation and the value persists across reload",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app",
+                  "projectName": "candidate-app",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2940,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-13T12:39:08.481Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-translation-cand-56834-alue-persists-across-reload-candidate-app/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "378b40baf0759cbb1d19-d9314f0133ab208bb508",
+              "file": "specs/candidate/candidate-translation.spec.ts",
+              "line": 27,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/candidate/candidate-profile-validation.spec.ts",
+      "file": "specs/candidate/candidate-profile-validation.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "A11Y-01 candidate profile validation",
+          "file": "specs/candidate/candidate-profile-validation.spec.ts",
+          "line": 153,
+          "column": 6,
+          "specs": [
+            {
+              "title": "A11Y-01 image-type rejection surfaces invalidFile error",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-mutation",
+                  "projectName": "candidate-app-mutation",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1819,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-13T12:39:12.328Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-profile-validati-57285--surfaces-invalidFile-error-candidate-app-mutation/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3176c298771f83e58b92-d1798a9588333cc07f19",
+              "file": "specs/candidate/candidate-profile-validation.spec.ts",
+              "line": 178,
+              "column": 5
+            },
+            {
+              "title": "A11Y-01 image-size rejection surfaces oversizeFile error",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-mutation",
+                  "projectName": "candidate-app-mutation",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2396,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-13T12:39:14.679Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-profile-validati-8729c-surfaces-oversizeFile-error-candidate-app-mutation/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3176c298771f83e58b92-e1079a825fbf188be068",
+              "file": "specs/candidate/candidate-profile-validation.spec.ts",
+              "line": 178,
+              "column": 5
+            },
+            {
+              "title": "A11Y-01 name-too-long caps input value at maxlength=50 on display-name",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-mutation",
+                  "projectName": "candidate-app-mutation",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1702,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-13T12:39:17.143Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-profile-validati-226b4-axlength-50-on-display-name-candidate-app-mutation/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3176c298771f83e58b92-352bf880171222f904f5",
+              "file": "specs/candidate/candidate-profile-validation.spec.ts",
+              "line": 246,
+              "column": 5
+            },
+            {
+              "title": "A11Y-01 A11Y-05 email-format rejection surfaces invalidEmail error",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-mutation",
+                  "projectName": "candidate-app-mutation",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2117,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-13T12:39:18.920Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-profile-validati-5fd71-surfaces-invalidEmail-error-candidate-app-mutation/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3176c298771f83e58b92-a609049f2e6b55a98f28",
+              "file": "specs/candidate/candidate-profile-validation.spec.ts",
+              "line": 289,
+              "column": 5
+            },
+            {
+              "title": "A11Y-01 A11Y-06 url-format rejection surfaces invalidUrl error",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-mutation",
+                  "projectName": "candidate-app-mutation",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1275,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-13T12:39:21.105Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-profile-validati-5be03-n-surfaces-invalidUrl-error-candidate-app-mutation/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3176c298771f83e58b92-ef1c280c34c9d9615abe",
+              "file": "specs/candidate/candidate-profile-validation.spec.ts",
+              "line": 289,
+              "column": 5
+            },
+            {
+              "title": "A11Y-01 A11Y-07 required-empty disables submit button via canSubmit gate",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-mutation",
+                  "projectName": "candidate-app-mutation",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1534,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-13T12:39:22.443Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-profile-validati-45118-t-button-via-canSubmit-gate-candidate-app-mutation/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3176c298771f83e58b92-55ddd42d028241749b49",
+              "file": "specs/candidate/candidate-profile-validation.spec.ts",
+              "line": 339,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-05-13T12:38:39.815Z",
+    "duration": 45299.286,
+    "expected": 22,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

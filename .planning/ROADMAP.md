@@ -107,7 +107,7 @@ Phase 79 (DETERM-04 + DETERM-05) ✓ COMPLETE
 - [x] **Phase 79: Determinism Recovery (Cascading-Race Fix + Constants Regen)** — Fix the `candidate-profile.spec.ts:85-145` registration → set-password → ToU race (or restructure the test out of cascade-prone serial mode); regenerate parity-script constants from a clean 3-run cold-start baseline. Sequential REQs (DETERM-04 → DETERM-05). Unlock condition for Phases 80-83. (completed 2026-05-13, passed-with-deferral; 80/15/57 anchor locked at SHA `ff0334f856…`)
 - [x] **Phase 80: A11Y Axe Cite-and-Fix** — Resolve the 5 first-run WCAG 2.1 AA violations across `/results` + voter-detail-drawer (`aria-required-parent` × 4, `list` × 2, `button-name` × 1). Re-run axe smoke verifies 0 violations; per-rule regression assertions added. (completed 2026-05-13, GREEN; 5/5 SCs PASS; A11Y-04 closed; Phase 79 v2.10 anchor SHA `ff0334f856…` preserved)
 - [x] **Phase 81: A11Y-01 PRODUCT-GAP Cells — Email + URL Format** — Schema + component + i18n additions to close the email-format (A11Y-05) and URL-format (A11Y-06) candidate-profile validation cells. Shared `customData.format` / `Question.subtype` dispatch decision picked at phase discussion time. (completed 2026-05-13)
-- [ ] **Phase 82: A11Y-01 PRODUCT-GAP Cell — Required-Empty** — Phase-discussion product decision (REJECT-with-error vs SOFT-WARN-ONLY) for empty-required save behavior; spec assertions reflect chosen mechanism. Closes A11Y-07.
+- [x] **Phase 82: A11Y-01 PRODUCT-GAP Cell — Required-Empty** — Phase-discussion product decision (REJECT-with-error vs SOFT-WARN-ONLY) for empty-required save behavior; spec assertions reflect chosen mechanism. Closes A11Y-07. (completed 2026-05-13)
 - [ ] **Phase 83: Test Reliability Follow-ups (Image-Upload Cascade + Voter-App Flakes)** — Close DETERM-06 (image-upload CAND-03 cascade resolution; mitigations from todo §"Recommended approach": selector-drift fix / pre-filechooser delay / imgproxy re-enable) + DETERM-07 (voter-matching + voter-detail flakes stabilization to deterministic PASS or FAILURE-CLASS with rationale). May trigger a fresh constants regen if PASS_LOCKED shifts.
 
 ## Phase Details
@@ -165,7 +165,7 @@ Phase 79 (DETERM-04 + DETERM-05) ✓ COMPLETE
   3. A11Y-01 cell 4 added to `candidate-profile-validation.spec.ts`: empty input → click submit → assert chosen behavior (error UI rendered + value preserved IF REJECT; submit-button disabled + no error UI IF SOFT-WARN).
   4. Per-plan smoke PASS × 3 in isolation; existing Phase 76 P01 cells + Phase 81 cells 5+6 continue to pass.
 **Plans**: 1 plan
-- [ ] 82-01-PLAN.md — TIGHTEN-SOFT: wire allRequiredFilled into canSubmit + sort-24 fixture row + Alpha LocalizedString answer + A11Y-01 cell 4 spec + docstring update + 3-run cold-start determinism gate + additive +1 PASS_LOCKED constants regen
+- [x] 82-01-PLAN.md — TIGHTEN-SOFT: wire allRequiredFilled into canSubmit + sort-24 fixture row + Alpha LocalizedString answer + A11Y-01 cell 4 spec + docstring update + 3-run cold-start determinism gate + additive +1 PASS_LOCKED constants regen
 **UI hint**: yes (SKIPPED per D-15 — structural save-gate phase with no visual redesign, per Phase 76 / Phase 80 / Phase 81 precedent in feedback_skip_ui_spec_for_a11y_only_phases.md memory)
 
 ### Phase 83: Test Reliability Follow-ups (Image-Upload Cascade + Voter-App Flakes)
@@ -213,5 +213,5 @@ Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82, 83 (pa
 | 79. Determinism Recovery (Cascading-Race Fix + Constants Regen) | v2.10 | 4/4 | Complete (passed-with-deferral) | 2026-05-13 |
 | 80. A11Y Axe Cite-and-Fix | v2.10 | 1/1 | Complete | 2026-05-13 |
 | 81. A11Y-01 PRODUCT-GAP Cells — Email + URL Format | v2.10 | 1/1 | Complete    | 2026-05-13 |
-| 82. A11Y-01 PRODUCT-GAP Cell — Required-Empty | v2.10 | 0/TBD | Not started | - |
+| 82. A11Y-01 PRODUCT-GAP Cell — Required-Empty | v2.10 | 1/1 | Complete   | 2026-05-13 |
 | 83. Test Reliability Follow-ups (Image-Upload Cascade + Voter-App Flakes) | v2.10 | 0/TBD | Not started | - |
