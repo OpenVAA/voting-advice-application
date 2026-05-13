@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance
 status: executing
-stopped_at: Phase 80 context gathered
-last_updated: "2026-05-13T07:12:27.276Z"
-last_activity: 2026-05-13 -- Phase 80 planning complete
+stopped_at: Phase 80 plan 01 complete (passed; A11Y-04 closed)
+last_updated: "2026-05-13T09:00:51.547Z"
+last_activity: 2026-05-13 -- Phase 80 plan 01 complete (A11Y-04 closed)
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 5
-  completed_plans: 4
-  percent: 80
+  completed_plans: 5
+  percent: 40
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 79 — Determinism Recovery (Cascading-Race Fix + Constants Regen)
+**Current focus:** Phase 80 complete (A11Y-04 closed); next: Phase 81 / 82 / 83 (parallel-eligible)
 
 ## Current Position
 
-Phase: 79 — COMPLETE
-Plan: 4 of 4
-Status: Ready to execute
-Last activity: 2026-05-13 -- Phase 80 planning complete
+Phase: 80 (a11y-axe-cite-and-fix) — COMPLETE
+Plan: 1 of 1 complete
+Status: Phase 80 closed (5/5 SCs PASS; A11Y-04 satisfied)
+Last activity: 2026-05-13 -- Phase 80 plan 01 complete (A11Y-04 closed)
 
 ## Performance Metrics
 
@@ -76,6 +76,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | Phase 79 P01 | 2h | 4 tasks | 18 files |
 | Phase 79 P02 | 50min | 3 tasks | 9 files |
 | Phase 79 P02F | 3min | 0 tasks | 3 files |
+| Phase 80 P01 | ~6h | 6 tasks + 1 deviation (Task 5b) + 1 Rule 1 fix | 8 files + 2 deviation files |
 
 ## Accumulated Context
 
@@ -92,6 +93,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
   - **Phase 82 — A11Y-01 PRODUCT-GAP Cell: Required-Empty** (A11Y-07): embedded product decision (REJECT vs SOFT-WARN-ONLY) gates implementation shape — warrants its own discuss-phase gate. Depends on Phase 79 DETERM-04 being green.
 - 2026-05-13: Phase 79 SHIPPED passed-with-deferral. URL-predicate fix at `candidate-profile.spec.ts:51` (RCA verdict — neither H1 auth-session nor H2 ToU-hydration was the proximate cause; the bug was in the test helper). 6 cold-start captures (D-08 strict identity failed on initial trio due to pre-existing voter-app flakes; D-09 fresh trio SHA-identical at `ff0334f856…`). v2.10 anchor locked: 80 PASS_LOCKED + 15 DATA_RACE + 57 CASCADE.
 - 2026-05-13: v2.10 scope expanded from 4 phases / 6 REQs to **5 phases / 8 REQs**. **Phase 83 added** (Test Reliability Follow-ups — DETERM-06 image-upload cascade + DETERM-07 voter-app flakes) to absorb the 2 follow-up todos surfaced by Phase 79's DETERM-04 fix as in-milestone gap closure rather than re-deferring to v2.11+. Phase 83 depends only on Phase 79; structurally parallel-eligible with 80/81/82.
+- 2026-05-13: Phase 80 SHIPPED GREEN. A11Y-04 closed — 5 WCAG 2.1 AA violations resolved via Tabs.svelte `role="tablist"` root-cause fix (1-line) + Drawer/Button aria-label i18n (2-line). Scout misdiagnosis corrected mid-execution via Rule 4 deviation (operator-approved Option A: add 1-line Tabs.svelte fix in-plan as Task 5b; NavGroup/NavItem context-detect retained as orthogonal a11y improvement for candidate/admin nav surfaces). Per-rule + global-zero a11y regression gate landed; Phase 79 v2.10 anchor SHA `ff0334f856…` preserved verbatim (4 parity gates PASS). Latent heading-order risk did NOT surface. 0 deferred items for Phase 80.
 - Phase numbering continues from v2.9 (last phase: 78); v2.10 starts at 79 and extends through 83. No reset.
 - Plan count is TBD per phase (filled by `/gsd-plan-phase`).
 
@@ -112,6 +114,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Phase 79 Plan 02 (DETERM-04 fix): applied one-line URL-predicate fix at candidate-profile.spec.ts:51 per Plan 01 RCA; registration cascade resolved, verified across 3 isolated runs + cold-start
 - [Phase ?]: Phase 79 Plan 02: image-upload (CAND-03) cascade-skips 5 downstream tests post-fix; structurally unrelated to DETERM-04; flag 79-02F restructure trigger = N (restructure wouldn't help; image-upload investigation deferred to future plan)
 - [Phase ?]: Plan 79-02F closed DONE-AS-NOOP per XOR contract — Plan 02 PASSed, so the fallback restructure short-circuits without executing Tasks 1-4.
+- [Phase ?]: Phase 80 Plan 01 (A11Y-04) closes GREEN — Tabs.svelte role=tablist root-cause fix (1-line) corrects scout misdiagnosis via Rule 4 deviation; NavGroup/NavItem context-detect retained as independent a11y improvement; Phase 79 v2.10 anchor SHA ff0334f856… preserved (4 parity gates PASS)
 
 ### Blockers/Concerns
 
@@ -121,9 +124,9 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-05-13T06:38:04.926Z
-Stopped at: Phase 80 context gathered
-Resume file: .planning/phases/80-a11y-axe-cite-and-fix/80-CONTEXT.md
+Last session: 2026-05-13T09:00:04.597Z
+Stopped at: Phase 80 plan 01 complete (passed; A11Y-04 closed)
+Resume file: .planning/phases/80-a11y-axe-cite-and-fix/80-VERIFICATION.md
 Next action: Run `/gsd-plan-phase 79` to plan the Determinism Recovery phase.
 
 ### Plan-count estimate (drafted 2026-05-12)
@@ -139,4 +142,7 @@ Next action: Run `/gsd-plan-phase 79` to plan the Determinism Recovery phase.
 
 ## Operator Next Steps
 
-- Run `/gsd-plan-phase 79` to plan the Determinism Recovery phase (DETERM-04 cascading-race fix + DETERM-05 parity-script constants regen).
+- Phase 80 (A11Y-04) closed GREEN on 2026-05-13. v2.10 progress: 2 of 5 phases complete; 5 of 5 known plans complete.
+- Next phases parallel-eligible: Phase 81 (A11Y-05 + A11Y-06 email/URL format cells), Phase 82 (A11Y-07 required-empty cell — embedded product decision at discuss-time), Phase 83 (DETERM-06 image-upload cascade + DETERM-07 voter-app flakes). All 3 depend only on Phase 79 (already green); none depend on Phase 80 specifically.
+- Recommended next action: Run `/gsd-discuss-phase 81` (smaller A11Y phase first) OR `/gsd-discuss-phase 82` (product-decision phase — gates Phase 81 shape if it consolidates with email/url dispatch).
+- Optional UAT (operator discretion): Manual screen-reader smoke (VoiceOver / NVDA) on `/results` to confirm Tabs is announced as "tab list, N tabs"; not blocking phase close.

@@ -105,7 +105,7 @@ Phase 79 (DETERM-04 + DETERM-05) ✓ COMPLETE
 ```
 
 - [x] **Phase 79: Determinism Recovery (Cascading-Race Fix + Constants Regen)** — Fix the `candidate-profile.spec.ts:85-145` registration → set-password → ToU race (or restructure the test out of cascade-prone serial mode); regenerate parity-script constants from a clean 3-run cold-start baseline. Sequential REQs (DETERM-04 → DETERM-05). Unlock condition for Phases 80-83. (completed 2026-05-13, passed-with-deferral; 80/15/57 anchor locked at SHA `ff0334f856…`)
-- [ ] **Phase 80: A11Y Axe Cite-and-Fix** — Resolve the 5 first-run WCAG 2.1 AA violations across `/results` + voter-detail-drawer (`aria-required-parent` × 4, `list` × 2, `button-name` × 1). Re-run axe smoke verifies 0 violations; per-rule regression assertions added.
+- [x] **Phase 80: A11Y Axe Cite-and-Fix** — Resolve the 5 first-run WCAG 2.1 AA violations across `/results` + voter-detail-drawer (`aria-required-parent` × 4, `list` × 2, `button-name` × 1). Re-run axe smoke verifies 0 violations; per-rule regression assertions added. (completed 2026-05-13, GREEN; 5/5 SCs PASS; A11Y-04 closed; Phase 79 v2.10 anchor SHA `ff0334f856…` preserved)
 - [ ] **Phase 81: A11Y-01 PRODUCT-GAP Cells — Email + URL Format** — Schema + component + i18n additions to close the email-format (A11Y-05) and URL-format (A11Y-06) candidate-profile validation cells. Shared `customData.format` / `Question.subtype` dispatch decision picked at phase discussion time.
 - [ ] **Phase 82: A11Y-01 PRODUCT-GAP Cell — Required-Empty** — Phase-discussion product decision (REJECT-with-error vs SOFT-WARN-ONLY) for empty-required save behavior; spec assertions reflect chosen mechanism. Closes A11Y-07.
 - [ ] **Phase 83: Test Reliability Follow-ups (Image-Upload Cascade + Voter-App Flakes)** — Close DETERM-06 (image-upload CAND-03 cascade resolution; mitigations from todo §"Recommended approach": selector-drift fix / pre-filechooser delay / imgproxy re-enable) + DETERM-07 (voter-matching + voter-detail flakes stabilization to deterministic PASS or FAILURE-CLASS with rationale). May trigger a fresh constants regen if PASS_LOCKED shifts.
@@ -138,7 +138,7 @@ Phase 79 (DETERM-04 + DETERM-05) ✓ COMPLETE
   4. Re-run of the axe smoke reports 0 violations across all 6 routes (home + elections-selector + constituencies-selector + questions + results + voter-detail-drawer); per-rule regression assertions added to `tests/tests/specs/a11y/a11y-smoke.spec.ts`.
   5. Successor baseline artifact (or in-place update to `.planning/milestones/v2.9-phases/76-profile-a11y/76-A11Y-BASELINE.md`) documents the 0-violation post-fix state.
 **Plans**: 1 plan
-- [ ] 80-01-PLAN.md — Shared-component a11y fix (NavGroup hoist + NavItem auto-detect + Button aria-label + Drawer i18n) + a11y-smoke per-rule + global-zero regression assertions + post-fix BASELINE.md + 3-run cold-start anchor preservation gate
+- [x] 80-01-PLAN.md — A11Y-04 cite-and-fix: NavGroup/NavItem context-detect + Tabs.svelte role=tablist (Rule 4 deviation root-cause fix) + Button floating-icon aria-label + Drawer i18n + a11y-smoke per-rule + global-zero regression gate + post-fix 80-A11Y-BASELINE.md (0 violations × 6 routes) + 3-run cold-start parity gate (PASS × 4) (completed 2026-05-13; 5/5 SCs GREEN; Phase 79 v2.10 anchor preserved)
 **UI hint**: yes
 
 ### Phase 81: A11Y-01 PRODUCT-GAP Cells — Email + URL Format
@@ -209,7 +209,7 @@ Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82, 83 (pa
 | 77. Settings Matrix + Question-Customization Gap-Fills | v2.9 | 5/5 | Complete | 2026-05-12 |
 | 78. Cleanup Hygiene Phase | v2.9 | 7/7 | Complete | 2026-05-12 |
 | 79. Determinism Recovery (Cascading-Race Fix + Constants Regen) | v2.10 | 4/4 | Complete (passed-with-deferral) | 2026-05-13 |
-| 80. A11Y Axe Cite-and-Fix | v2.10 | 0/TBD | Not started | - |
+| 80. A11Y Axe Cite-and-Fix | v2.10 | 1/1 | Complete | 2026-05-13 |
 | 81. A11Y-01 PRODUCT-GAP Cells — Email + URL Format | v2.10 | 0/TBD | Not started | - |
 | 82. A11Y-01 PRODUCT-GAP Cell — Required-Empty | v2.10 | 0/TBD | Not started | - |
 | 83. Test Reliability Follow-ups (Image-Upload Cascade + Voter-App Flakes) | v2.10 | 0/TBD | Not started | - |

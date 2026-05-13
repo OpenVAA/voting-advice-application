@@ -34,7 +34,7 @@
 
 ### A11Y — Accessibility compliance (parallel with DETERM after gating)
 
-- [ ] **A11Y-04**: The 5 first-run WCAG 2.1 AA violations surfaced by the Phase 76 A11Y-03 axe smoke baseline (`76-A11Y-BASELINE.md`) are resolved: `aria-required-parent` × 4 nodes (results × 2 + voter-detail-drawer × 2), `list` × 2 nodes (results × 1 + voter-detail-drawer × 1), `button-name` × 1 node (voter-detail-drawer). Per-rule fix: `aria-required-parent` + `list` resolved together via entity-card/voter-list DOM restructure (likely same shared component); `button-name` resolved via `aria-label` addition on the drawer's icon-button(s). Post-fix: `PLAYWRIGHT_A11Y=1 yarn test:e2e --project=a11y-smoke --workers=1` reports 0 violations across all 6 baselined routes; per-rule regression assertions added to `tests/tests/specs/a11y/a11y-smoke.spec.ts`; a successor baseline artifact (or in-place update to `76-A11Y-BASELINE.md`) documents the 0-violation post-fix state.
+- [x] **A11Y-04**: The 5 first-run WCAG 2.1 AA violations surfaced by the Phase 76 A11Y-03 axe smoke baseline (`76-A11Y-BASELINE.md`) are resolved: `aria-required-parent` × 4 nodes (results × 2 + voter-detail-drawer × 2), `list` × 2 nodes (results × 1 + voter-detail-drawer × 1), `button-name` × 1 node (voter-detail-drawer). Per-rule fix: `aria-required-parent` + `list` resolved together via entity-card/voter-list DOM restructure (likely same shared component); `button-name` resolved via `aria-label` addition on the drawer's icon-button(s). Post-fix: `PLAYWRIGHT_A11Y=1 yarn test:e2e --project=a11y-smoke --workers=1` reports 0 violations across all 6 baselined routes; per-rule regression assertions added to `tests/tests/specs/a11y/a11y-smoke.spec.ts`; a successor baseline artifact (or in-place update to `76-A11Y-BASELINE.md`) documents the 0-violation post-fix state.
 
 - [ ] **A11Y-05**: Candidate profile rejects malformed email input via inline validation error. Schema: `customData.format?: 'email' | 'url' | 'tel' | ...` enum added to `CustomData.Question` at `packages/app-shared/src/data/customData.type.ts`. Component: `'email'` branch added to `INPUT_TYPES` in `apps/frontend/src/lib/components/input/QuestionInput.svelte` (with `customData.format → Input.type` bridge); `Input.svelte` emits `components.input.error.invalidEmail` on bad input mirroring the existing URL-validation branch at `:286-296`. i18n: `invalidEmail` key added to all 4 locales (`en`/`fi`/`sv`/`da` `components.json` under `input.error`). Seed: 1 new info question with `custom_data.format='email'` added to `packages/dev-seed/src/templates/e2e.ts` (sort 22, next available after Phase 76 sort 21 social-link) + Alpha email answer cell. Spec: A11Y-01 cell 5 added to `tests/tests/specs/candidate/candidate-profile-validation.spec.ts` — type bad email → assert error UI + input value preserved.
 
@@ -71,7 +71,7 @@ Which phases cover which requirements.
 |-------------|-------|--------|
 | DETERM-04   | Phase 79 | Complete (passed-with-deferral 2026-05-13) |
 | DETERM-05   | Phase 79 | Complete (passed-with-deferral 2026-05-13) |
-| A11Y-04     | Phase 80 | Pending |
+| A11Y-04     | Phase 80 | Complete (2026-05-13) |
 | A11Y-05     | Phase 81 | Pending |
 | A11Y-06     | Phase 81 | Pending |
 | A11Y-07     | Phase 82 | Pending |
