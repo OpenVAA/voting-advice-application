@@ -3,11 +3,11 @@ gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance — IN PROGRESS
 status: completed
-stopped_at: Phase 83 context gathered
-last_updated: "2026-05-13T18:16:31.612Z"
+stopped_at: Phases 84-87 batched context gathered
+last_updated: "2026-05-13T19:45:23.367Z"
 last_activity: 2026-05-13 -- Phase 83 marked complete
 progress:
-  total_phases: 5
+  total_phases: 9
   completed_phases: 5
   total_plans: 8
   completed_plans: 8
@@ -133,9 +133,9 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-05-13T18:04:04.252Z
-Stopped at: Phase 83 context gathered
-Resume file: None
+Last session: 2026-05-13T19:45:23.362Z
+Stopped at: Phases 84-87 batched context gathered
+Resume file: .planning/phases/84-imgproxy-decoupling-decouple-non-image-tests-from-imgproxy-i/84-CONTEXT.md
 Next action: Run `/gsd-plan-phase 79` to plan the Determinism Recovery phase.
 
 ### Plan-count estimate (drafted 2026-05-12)
