@@ -15,6 +15,7 @@
     "deleteOption": "Välj bort {option}",
     "error": {
       "fileLoadingError": "Det gick inte att ladda filen.",
+      "invalidEmail": "E-postadressen är ogiltig.",
       "invalidFile": "Filen är ogiltig.",
       "invalidUrl": "Webbadressen är inte giltig.",
       "oversizeFile": "Filen är för stor. Den maximala storleken är {maxFilesize} MB."

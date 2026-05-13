@@ -15,6 +15,7 @@
     "deleteOption": "{option} auswielen ophiewen",
     "error": {
       "fileLoadingError": "Datei konnt net geluede ginn.",
+      "invalidEmail": "D'E-Mail-Adress ass net valabel.",
       "invalidFile": "D’Datei ass net valabel.",
       "invalidUrl": "D’URL ass net valabel.",
       "oversizeFile": "D’Datei ass ze grouss. Déi maximal Gréisst ass {maxFilesize} MB."

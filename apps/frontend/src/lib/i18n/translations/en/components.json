@@ -15,6 +15,7 @@
     "deleteOption": "Deselect {option}",
     "error": {
       "fileLoadingError": "Failed to load the file.",
+      "invalidEmail": "The email address is not valid.",
       "invalidFile": "The file is invalid.",
       "invalidUrl": "The URL is not valid.",
       "oversizeFile": "The file is too large. The maximum size is {maxFilesize} MB."
