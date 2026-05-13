@@ -295,7 +295,15 @@ test.describe('A11Y-01 candidate profile validation', { tag: ['@candidate'] }, (
       // handleChange `return`s via `handleError(...)` BEFORE assigning
       // `value`, so the typed bad value stays on screen and the error
       // message renders next to the input.
+      //
+      // BLUR INVARIANT: Input.svelte binds `onchange` (NOT `oninput`) on the
+      // <input> at line 614-621. Playwright's `fill()` fires DOM `input`
+      // events on each keystroke but `change` only fires on blur. The
+      // existing maxlength cell at lines 239-273 doesn't assert error UI so
+      // doesn't expose this; the format cells DO assert error UI, so we
+      // must blur explicitly after fill to drive the change handler.
       await input.fill(cell.badValue);
+      await input.blur();
 
       // (a) i18n error surfaces.
       await expect(page.getByText(cell.expectedErrorText)).toBeVisible({ timeout: 5000 });
