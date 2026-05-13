@@ -130,11 +130,25 @@ export default defineConfig({
     },
 
     // 4b2. Re-auth: mutation tests (password reset) invalidate the alpha
-    //      candidate's refresh token, so re-authenticate before settings/password tests
+    //      candidate's refresh token, so re-authenticate before settings/password tests.
+    //
+    //      Phase 84 DETERM-08: repointed from 'candidate-app-mutation' to
+    //      'candidate-app' to break the imgproxy-502-cascade chain. The original
+    //      'candidate-app-mutation' dependency was a SEQUENCING constraint (run
+    //      AFTER mutation), not a data-flow dependency — candidate-app-mutation
+    //      tests use the FRESH E2E_ADDENDUM_CANDIDATES[1] candidate (see
+    //      candidate-profile.spec.ts:84-86), NOT Alpha. Repointing to
+    //      'candidate-app' preserves the data-flow contract (re-auth-setup needs
+    //      data-setup + auth-setup to have run, which 'candidate-app' transitively
+    //      depends on) while breaking the cascade-skip on mutation failures.
+    //      Verified via 84-RCA-FINDINGS.md: 11 candidate-app-settings tests + the
+    //      dual-project re-auth.setup.ts entries cold-start fetch zero
+    //      /storage/v1/* URLs; their imgproxy-tie is purely cascade-chain, not
+    //      initial-paint or prefetch.
     {
       name: 're-auth-setup',
       testMatch: /re-auth\.setup\.ts/,
-      dependencies: ['candidate-app-mutation']
+      dependencies: ['candidate-app']
     },
 
     // 4c. Candidate app: settings (mutates global app settings — must run alone)
