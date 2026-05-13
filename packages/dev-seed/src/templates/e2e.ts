@@ -698,6 +698,45 @@ export const e2eTemplate: Template = {
         required: false,
         sort_order: 23,
         is_generated: false
+      },
+      // Phase 82 A11Y-07 anchor — required-empty save-gate dispatch via custom_data.required=true.
+      // profile/+page.svelte:94 derives allRequiredFilled from candCtx.requiredInfoQuestions
+      // (apps/frontend/src/lib/contexts/candidate/candidateContext.svelte.ts:347-352, which reads
+      // getCustomData(q).required = q.customData.required) + isEmptyValue(
+      // userData.current?.candidate.answers?.[q.id]?.value). Phase 82 wires allRequiredFilled into
+      // canSubmit at :92 so the submit button becomes truly disabled when this row's answer is empty.
+      //
+      // CUSTOM_DATA INVARIANT (Phase 82 RESEARCH LANDMINE-1): `required` MUST be inside
+      // custom_data — the frontend filter at candidateContext.svelte.ts:350 reads
+      // `customData.required`, NOT the top-level `required` DB column. The variant-hidden-required
+      // template at tests/tests/setup/templates/variant-hidden-required.ts:151-156 is the canonical
+      // dispatch pattern.
+      //
+      // ALPHA-COMPLETENESS INVARIANT (Phase 76 P02 + Phase 81 + downstream specs assuming
+      // profileComplete): Alpha MUST seed an answer for this row so Alpha stays profileComplete by
+      // default. Otherwise candidate-app + candidate-app-mutation specs that don't explicitly clear
+      // answers would race against the "Required" notice + the newly-disabled submit button.
+      //
+      // VALUE-DISJOINTNESS INVARIANT (Phase 76 P01 fixture-extension fix + Phase 81 D-08 inheritance):
+      // Alpha's answer value MUST NOT contain the substring 'Alpha' / 'alpha' (case-insensitive).
+      // 'sentinel-82-required' below is disjoint.
+      //
+      // sort_order: 24 — placed AFTER Phase 81's test-question-email-1 (sort 23). Voter fixture
+      // only iterates opinion questions; this info question is never encountered regardless of
+      // sort_order. Phase 81 D-08 additive numbering convention preserved.
+      //
+      // No subtype: plain text input (dispatches to 'text-multilingual' per QuestionInput.svelte:72-77).
+      // No custom_data.maxlength: required-empty cell asserts on the gate, not on character-cap
+      // (Phase 76 P01 cell 3 already covers maxlength).
+      {
+        external_id: 'test-question-required-empty-1',
+        type: 'text',
+        name: { en: 'Required-empty (Phase 82 A11Y-07 anchor)' },
+        category: { external_id: 'test-category-info' },
+        custom_data: { required: true },
+        allow_open: false,
+        sort_order: 24,
+        is_generated: false
       }
     ]
   },
@@ -806,7 +845,14 @@ export const e2eTemplate: Template = {
           // deterministically.
           'test-question-number-1': { value: 25 },
           // reason: plain-string shape (NOT LocalizedString) so the subtype:'email' single-locale dispatch's ensureString path renders the seeded value correctly per Pitfall 4. sentinel-81 substring is disjoint from 'alpha' per the value-disjointness invariant.
-          'test-question-email-1': { value: 'sentinel-81@example.com' }
+          'test-question-email-1': { value: 'sentinel-81@example.com' },
+          // reason: LocalizedString shape matches the new question's text-multilingual dispatch
+          // (QuestionInput.svelte:72-77 — type='text' + no subtype). Plain-string answers no-op the
+          // write-back through Input.svelte:248-250's `(value as LocalizedString)[locale] = ...` line
+          // per Phase 82 RESEARCH LANDMINE-2. Mirrors test-question-displayname's LocalizedString
+          // answer at line 797. 'sentinel-82-required' is disjoint from 'alpha' substring per the
+          // value-disjointness invariant.
+          'test-question-required-empty-1': { value: { en: 'sentinel-82-required' } }
         }
       },
       {
