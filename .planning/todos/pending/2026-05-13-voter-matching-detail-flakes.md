@@ -1,9 +1,10 @@
-# Voter-app flakes surfaced by Phase 79 DETERM-04 fix (v2.11+)
+# Voter-app flakes surfaced by Phase 79 DETERM-04 fix (v2.10 Phase 83 / DETERM-07)
 
 **Filed:** 2026-05-13 at Phase 79 Plan 03 close (DETERM-05 regen)
 **Source:** Phase 79 D-09 instability investigation; `.planning/phases/79-determinism-recovery-cascading-race-fix-constants-regen/post-fix/sha256.txt`
 **Severity:** MEDIUM (intermittent — affects parity gate reliability, not user-facing behavior)
-**Routed to:** v2.11+ candidate
+**Routed to:** v2.10 Phase 83 (DETERM-07) — promoted from v2.11+ to in-milestone gap closure on 2026-05-13
+**Resolves phase:** 83 (v2.10 Test Reliability Follow-ups — DETERM-07)
 
 ## Symptom
 

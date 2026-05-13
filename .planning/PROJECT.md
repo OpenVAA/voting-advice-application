@@ -56,18 +56,21 @@ Known infrastructure issue: local imgproxy Docker container crashes intermittent
 
 ## Current Milestone: v2.10 Test Reliability + A11y Compliance
 
-**Goal:** Restore Playwright suite parity-regen capability and reach WCAG 2.1 AA on the 2 axe-baselined routes by closing v2.9's HIGH/MEDIUM a11y + test-determinism deferrals.
+**Goal:** Restore Playwright suite parity-regen capability and reach WCAG 2.1 AA on the 2 axe-baselined routes by closing v2.9's HIGH/MEDIUM a11y + test-determinism deferrals **+ close the 2 test-reliability surfaces that Phase 79's DETERM-04 fix exposed (image-upload cascade + voter-app flakes)**.
 
-**Target features (3 carry-forwards from v2.9):**
+**Target features (5-item scope; original 3 carry-forwards from v2.9 + 2 follow-ups added 2026-05-13 post-Phase-79-close):**
 
-- **HIGH — Candidate-profile cascading race fix.** `candidate-profile.spec.ts:85-145` registration→login→ToU race cascade-skips 43+ downstream tests at every cold-start gate; blocks parity-script regen capability (Phase 76 P04 + Phase 77 P05 + Phase 78 P07 all DEFERRED constants regen due to this race).
-- **MEDIUM — A11Y axe cite-and-fix.** 5 first-run WCAG 2.1 AA violations across `/results` + voter-detail-drawer routes (3 distinct rule-IDs; 2 of 3 are shared-component fixes that resolve in both routes simultaneously).
-- **MEDIUM — A11Y-01 PRODUCT-GAP cells.** Candidate profile field-validation negative paths: email-format + url-format + name-too-short / required-empty rejection assertions.
+- ✓ **HIGH — Candidate-profile cascading race fix + parity-script regen.** Phase 79 SHIPPED 2026-05-13: URL-predicate fix at `candidate-profile.spec.ts:51` (RCA verdict — not the originally-hypothesized frontend race) + v2.10 anchor locked at SHA `ff0334f856…` (80 PASS_LOCKED + 15 DATA_RACE + 57 CASCADE; passed-with-deferral on SC #1 partial).
+- **MEDIUM — A11Y axe cite-and-fix.** 5 first-run WCAG 2.1 AA violations across `/results` + voter-detail-drawer routes (3 distinct rule-IDs; 2 of 3 are shared-component fixes that resolve in both routes simultaneously). Phase 80.
+- **MEDIUM — A11Y-01 PRODUCT-GAP cells.** Candidate profile field-validation negative paths: email-format + url-format + name-too-short / required-empty rejection assertions. Phases 81+82.
+- **MEDIUM — Image-upload cascade resolution.** `should upload a profile image (CAND-03)` `waitForEvent('filechooser')` TIMEOUT cascade-skips 5 downstream tests in candidate-profile.spec.ts's serial describe block. Pre-existing failure, masked by the DETERM-04 registration cascade prior to Phase 79; surfaced in the post-fix baseline. Phase 83 (DETERM-06) — mitigations from todo §"Recommended approach": selector-drift fix / pre-filechooser delay / imgproxy re-enable.
+- **MEDIUM — Voter-app flake stabilization.** `voter-matching > should show worst match candidate as last result` + `voter-detail > should open party detail drawer` flake ~33% across cold-start runs (verified across Phase 79's 6 captures). Both are in the v2.10 PASS_LOCKED roster (NOT IMGPROXY-tied; cannot be added to DATA_RACE pool per Phase 73 D-09 binding). Phase 83 (DETERM-07) — fix / deterministic-skip / FAILURE-CLASS routing decided at discuss-phase.
 
 **Key context for v2.10:**
 
-- Phase numbering continues from v2.9 last phase (78) → v2.10 starts at **Phase 79**.
-- **Cross-cutting contract:** once the HIGH cascading race is closed, regen the v2.6 parity-script constants (47/15/33 anchor) — DEFERRED-WITH-RATIONALE through Phases 76/77/78; the unlock condition for a clean v2.10 verification gate.
+- Phase numbering continues from v2.9 last phase (78) → v2.10 starts at **Phase 79** and now extends through **Phase 83**.
+- ✓ **Cross-cutting contract DELIVERED:** The cascading-race fix and the parity-script constants regen both landed in Phase 79. The v2.10 verification anchor is locked at SHA `ff0334f856…`; subsequent phases verify against it.
+- **Phase 83 added 2026-05-13** post-Phase-79-close to absorb the 2 follow-up todos (`2026-05-13-candidate-profile-image-upload-cascade.md` + `2026-05-13-voter-matching-detail-flakes.md`) as in-milestone gap closure rather than re-deferring to v2.11+.
 - **Re-deferred to v2.11+** (need new UI/architecture work, not in v2.10 scope): SETTINGS-02 voter `answer.info` authoring; SETTINGS-03 voter `customData.required` enforcement; FilterGroup OR-mode UI; voters-layout non-reactive topbar/popup; constituency-filter PRODUCT-GAP.
 - **Stale-but-resolved todos cleared at milestone start:** Expander state-referenced-locally + results-layout missing slot — both already landed in v2.8 Phase 70 via `// svelte-ignore` + `// reason:` accept-with-rationale (moved pending → done).
 - Deprecated `dev:*` aliases scheduled for removal at v2.10 close (per Phase 78 Plan 01 SUMMARY).
@@ -172,7 +175,7 @@ Known infrastructure issue: local imgproxy Docker container crashes intermittent
 
 ### Active
 
-**v2.10 (Test Reliability + A11y Compliance) — in planning.** See "Current Milestone" above for the 3-item focused scope (HIGH candidate-profile cascading race + A11Y axe cite-and-fix + A11Y-01 PRODUCT-GAP cells). REQ-IDs land via REQUIREMENTS.md after roadmap approval.
+**v2.10 (Test Reliability + A11y Compliance) — in progress.** Phase 79 SHIPPED 2026-05-13 (DETERM-04 + DETERM-05 passed-with-deferral; v2.10 anchor locked at SHA `ff0334f856…`). 4 phases remaining: Phase 80 A11Y-04 axe cite-and-fix; Phase 81 A11Y-05+06 email+url cells; Phase 82 A11Y-07 required-empty cell; Phase 83 DETERM-06+07 test-reliability follow-ups (image-upload cascade + voter-app flakes, added 2026-05-13). See "Current Milestone" above for the 5-item scope. REQ-IDs land via REQUIREMENTS.md.
 
 **Pending todos** (carried forward, lower priority — not yet on a milestone roadmap):
 - Generalize candidate app to support parties as first-class registrants
@@ -374,4 +377,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-_Last updated: 2026-05-12 framing v2.10 (Test Reliability + A11y Compliance). 3-item focused scope after re-deferring the 5 voter-side PRODUCT-GAPs to v2.11+: HIGH candidate-profile cascading race + MEDIUM A11Y axe cite-and-fix + MEDIUM A11Y-01 PRODUCT-GAP cells. Cross-cutting contract: parity-script constants regen (47/15/33 anchor) gated on the HIGH cascading race fix. Phase numbering continues from v2.9 (78) → v2.10 starts at Phase 79. Stale Svelte 5 todos (Expander + results-layout) cleared pending → done — both already resolved in v2.8 Phase 70 via accept-with-rationale._
+_Last updated: 2026-05-13 after Phase 79 close + Phase 83 added to v2.10. Phase 79 (DETERM-04 + DETERM-05) shipped passed-with-deferral; v2.10 anchor locked at SHA `ff0334f856…` (80 PASS_LOCKED + 15 DATA_RACE + 57 CASCADE). Scope expanded from 3-item to 5-item: Phase 83 (DETERM-06 image-upload cascade + DETERM-07 voter-app flakes) absorbs the 2 follow-up todos surfaced by Phase 79's DETERM-04 fix, as in-milestone gap closure rather than re-deferring to v2.11+. 4 phases remaining (80, 81, 82, 83). Stale Svelte 5 todos (Expander + results-layout) cleared pending → done — both already resolved in v2.8 Phase 70 via accept-with-rationale._

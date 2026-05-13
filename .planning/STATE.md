@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
 milestone: v2.10
-milestone_name: Test Reliability + A11y Compliance — PLANNING
-status: completed
-stopped_at: Phase 79 COMPLETE (passed-with-deferral; DETERM-04+DETERM-05 GREEN)
-last_updated: "2026-05-13T05:30:05.783Z"
-last_activity: 2026-05-13 -- Phase 79 marked complete
+milestone_name: Test Reliability + A11y Compliance
+status: in_progress
+stopped_at: Phase 79 COMPLETE (passed-with-deferral; DETERM-04+DETERM-05 GREEN). Phase 83 added 2026-05-13 to absorb the 2 follow-up todos in-milestone.
+last_updated: "2026-05-13T06:00:00.000Z"
+last_activity: 2026-05-13 -- Phase 83 added to v2.10 (DETERM-06 + DETERM-07 in-milestone gap closure)
 progress:
-  total_phases: 4
+  total_phases: 5
   completed_phases: 1
   total_plans: 4
   completed_plans: 4
-  percent: 100
+  percent: 20
 ---
 
 # Project State
@@ -41,13 +41,15 @@ Last activity: 2026-05-13 -- Phase 79 marked complete
 
 ## Deferred Items
 
-Snapshot at v2.10 planning start (2026-05-12). v2.10 consumes 3 v2.9-routed v2.10+ candidates directly (candidate-profile cascading race, A11Y axe cite-and-fix, A11Y-01 PRODUCT-GAP cells). 5 other v2.9-routed v2.10+ candidates are explicitly re-deferred to v2.11+ (SETTINGS-02 / SETTINGS-03 / FilterGroup OR-mode / voters-layout non-reactive topbar / constituency-filter PRODUCT-GAP) — these need new UI/architecture work outside v2.10's 3-item scope.
+Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79 close added Phase 83 + 2 follow-up todos. v2.10 now consumes 5 in-milestone candidates (3 v2.9-routed originals + 2 Phase-79-surfaced follow-ups absorbed in-milestone rather than re-deferred). 5 other v2.9-routed v2.10+ candidates remain re-deferred to v2.11+ (SETTINGS-02 / SETTINGS-03 / FilterGroup OR-mode / voters-layout non-reactive topbar / constituency-filter PRODUCT-GAP) — these need new UI/architecture work outside v2.10's expanded scope.
 
 | Category | Item | Status / Notes |
 |----------|------|----------------|
-| todo | 2026-05-12-candidate-profile-cascading-race.md | **v2.10 Phase 79 / DETERM-04** — mapped |
+| todo | 2026-05-12-candidate-profile-cascading-race.md | **v2.10 Phase 79 / DETERM-04** — Complete (passed-with-deferral 2026-05-13) |
 | todo | 2026-05-12-a11y-axe-first-run-violations.md | **v2.10 Phase 80 / A11Y-04** — mapped |
 | todo | 2026-05-12-a11y-01-product-gap-cells.md | **v2.10 Phase 81 / A11Y-05+06 + Phase 82 / A11Y-07** — mapped (split across email/url shared-dispatch + required-empty product-decision phase) |
+| todo | 2026-05-13-candidate-profile-image-upload-cascade.md | **v2.10 Phase 83 / DETERM-06** — promoted 2026-05-13 from v2.11+ to in-milestone gap closure |
+| todo | 2026-05-13-voter-matching-detail-flakes.md | **v2.10 Phase 83 / DETERM-07** — promoted 2026-05-13 from v2.11+ to in-milestone gap closure |
 | todo | 2026-05-12-settings-02-voter-authoring-product-gap.md | Re-deferred to v2.11+ — voter-app PRODUCT-GAP, out of v2.10 focused scope |
 | todo | 2026-05-12-settings-03-voter-required-product-gap.md | Re-deferred to v2.11+ — voter-app PRODUCT-GAP, out of v2.10 focused scope |
 | todo | 2026-05-12-voters-layout-non-reactive-appsettings.md | Re-deferred to v2.11+ — Svelte 5 reactivity hardening, out of v2.10 focused scope |
@@ -88,7 +90,9 @@ Snapshot at v2.10 planning start (2026-05-12). v2.10 consumes 3 v2.9-routed v2.1
   - **Phase 80 — A11Y Axe Cite-and-Fix** (A11Y-04): resolve 5 first-run WCAG 2.1 AA violations across `/results` + voter-detail-drawer routes. Structurally independent of DETERM; can run in parallel with Phase 79 (benefits from DETERM-04 being green for clean assertion runs, but does not depend on DETERM-05 regen).
   - **Phase 81 — A11Y-01 PRODUCT-GAP Cells: Email + URL Format** (A11Y-05, A11Y-06): shared `customData.format` / `Question.subtype` dispatch decision; both REQs land via the same schema + component + i18n surface. Depends on Phase 79 DETERM-04 being green for clean assertion runs (assertions live in `candidate-profile-validation.spec.ts` which the cascade blocked).
   - **Phase 82 — A11Y-01 PRODUCT-GAP Cell: Required-Empty** (A11Y-07): embedded product decision (REJECT vs SOFT-WARN-ONLY) gates implementation shape — warrants its own discuss-phase gate. Depends on Phase 79 DETERM-04 being green.
-- Phase numbering continues from v2.9 (last phase: 78); v2.10 starts at 79. No reset.
+- 2026-05-13: Phase 79 SHIPPED passed-with-deferral. URL-predicate fix at `candidate-profile.spec.ts:51` (RCA verdict — neither H1 auth-session nor H2 ToU-hydration was the proximate cause; the bug was in the test helper). 6 cold-start captures (D-08 strict identity failed on initial trio due to pre-existing voter-app flakes; D-09 fresh trio SHA-identical at `ff0334f856…`). v2.10 anchor locked: 80 PASS_LOCKED + 15 DATA_RACE + 57 CASCADE.
+- 2026-05-13: v2.10 scope expanded from 4 phases / 6 REQs to **5 phases / 8 REQs**. **Phase 83 added** (Test Reliability Follow-ups — DETERM-06 image-upload cascade + DETERM-07 voter-app flakes) to absorb the 2 follow-up todos surfaced by Phase 79's DETERM-04 fix as in-milestone gap closure rather than re-deferring to v2.11+. Phase 83 depends only on Phase 79; structurally parallel-eligible with 80/81/82.
+- Phase numbering continues from v2.9 (last phase: 78); v2.10 starts at 79 and extends through 83. No reset.
 - Plan count is TBD per phase (filled by `/gsd-plan-phase`).
 
 ### Decisions

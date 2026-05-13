@@ -1,9 +1,10 @@
-# candidate-profile.spec.ts image-upload cascade (v2.11+)
+# candidate-profile.spec.ts image-upload cascade (v2.10 Phase 83 / DETERM-06)
 
 **Filed:** 2026-05-13 at Phase 79 Plan 02 close (DETERM-04 fix landed)
 **Source:** Plan 02's D-12 1-run cold-start confirm; `.planning/phases/79-determinism-recovery-cascading-race-fix-constants-regen/79-02-SUMMARY.md`
 **Severity:** MEDIUM (limited to test environment; does not block production candidate flows)
-**Routed to:** v2.11+ candidate
+**Routed to:** v2.10 Phase 83 (DETERM-06) — promoted from v2.11+ to in-milestone gap closure on 2026-05-13
+**Resolves phase:** 83 (v2.10 Test Reliability Follow-ups — DETERM-06)
 
 ## Symptom
 

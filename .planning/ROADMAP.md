@@ -7,7 +7,7 @@
 - ✅ **v2.7 Svelte 5 Polish + Supabase-Adapter Loose Ends** — Phases 65-68 (shipped 2026-05-08)
 - ✅ **v2.8 Alliance Card + Frontend Hygiene Sweep** — Phases 69-72 (shipped 2026-05-10)
 - ✅ **v2.9 E2E Coverage + Suite Determinism** — Phases 73-78 (shipped 2026-05-12)
-- 🆕 **v2.10 Test Reliability + A11y Compliance** — Phases 79-82 (planning, framed 2026-05-12)
+- 🆕 **v2.10 Test Reliability + A11y Compliance** — Phases 79-83 (in progress; framed 2026-05-12, Phase 83 added 2026-05-13)
 
 See `.planning/MILESTONES.md` for cumulative history and `.planning/milestones/` for archived roadmaps + requirements.
 
@@ -79,31 +79,36 @@ Audit: `.planning/milestones/v2.9-MILESTONE-AUDIT.md` (status: tech_debt — 24/
 
 </details>
 
-### 🆕 v2.10 Test Reliability + A11y Compliance — PLANNING (framed 2026-05-12)
+### 🆕 v2.10 Test Reliability + A11y Compliance — IN PROGRESS (framed 2026-05-12, Phase 83 added 2026-05-13 post-Phase-79-close)
 
-**Milestone Goal:** Restore Playwright suite parity-regen capability and reach WCAG 2.1 AA on the 2 axe-baselined routes by closing v2.9's HIGH/MEDIUM a11y + test-determinism deferrals. 3-item focused scope: (1) HIGH candidate-profile cascading race fix + parity-script constants regen; (2) MEDIUM A11Y axe cite-and-fix; (3) MEDIUM A11Y-01 PRODUCT-GAP cells (email-format / url-format / required-empty).
+**Milestone Goal:** Restore Playwright suite parity-regen capability and reach WCAG 2.1 AA on the 2 axe-baselined routes by closing v2.9's HIGH/MEDIUM a11y + test-determinism deferrals. 5-item scope: (1) HIGH candidate-profile cascading race fix + parity-script constants regen; (2) MEDIUM A11Y axe cite-and-fix; (3) MEDIUM A11Y-01 PRODUCT-GAP cells (email-format / url-format / required-empty); (4) MEDIUM image-upload cascade + (5) MEDIUM voter-app flakes (both surfaced by Phase 79's DETERM-04 fix; folded into Phase 83 as in-milestone gap closure rather than re-deferred to v2.11+).
 
-**Strategy: race-first, then a11y in parallel waves.** DETERM-04 (cascading race) is the unlock condition for parity-script regen — every verification gate in v2.10 benefits from a non-cascading suite. Once DETERM-04 is green, A11Y-04 (axe cite-and-fix) + A11Y-05/06 (email/url cells) + A11Y-07 (required-empty cell) are structurally independent and can run in parallel waves.
+**Strategy: race-first, then a11y in parallel waves, then test-reliability gap closure in Phase 83.** DETERM-04 (cascading race) is the unlock condition for parity-script regen — every verification gate in v2.10 benefits from a non-cascading suite. Once DETERM-04 is green, A11Y-04 (axe cite-and-fix) + A11Y-05/06 (email/url cells) + A11Y-07 (required-empty cell) are structurally independent and can run in parallel waves. Phase 83 (DETERM-06 + DETERM-07) closes the 2 test-reliability surfaces that Phase 79 surfaced; it depends only on Phase 79 (parallel-eligible with 80/81/82) and may trigger a fresh constants regen if the closure shifts PASS_LOCKED.
 
 **Gating + parallelism map:**
 
 ```
-Phase 79 (DETERM-04 + DETERM-05)
+Phase 79 (DETERM-04 + DETERM-05) ✓ COMPLETE
   │
-  └─ DETERM-04 green unblocks Phases 80-82 (clean assertion runs)
+  └─ DETERM-04 green unblocks Phases 80, 81, 82, 83 (clean assertion runs)
         │
-        ├── Phase 80 (A11Y-04 axe cite-and-fix)     ← parallel-eligible
+        ├── Phase 80 (A11Y-04 axe cite-and-fix)             ← parallel-eligible
         │
-        ├── Phase 81 (A11Y-05 + A11Y-06 email + url) ← parallel-eligible
+        ├── Phase 81 (A11Y-05 + A11Y-06 email + url)         ← parallel-eligible
         │
-        └── Phase 82 (A11Y-07 required-empty)        ← parallel-eligible
-                                                      (embedded product decision)
+        ├── Phase 82 (A11Y-07 required-empty)                ← parallel-eligible
+        │                                                      (embedded product decision)
+        │
+        └── Phase 83 (DETERM-06 image-upload + DETERM-07 voter-flakes) ← parallel-eligible
+                                                              (test-reliability gap closure;
+                                                               may trigger fresh constants regen)
 ```
 
-- [x] **Phase 79: Determinism Recovery (Cascading-Race Fix + Constants Regen)** — Fix the `candidate-profile.spec.ts:85-145` registration → set-password → ToU race (or restructure the test out of cascade-prone serial mode); regenerate parity-script constants from a clean 3-run cold-start baseline. Sequential REQs (DETERM-04 → DETERM-05). Unlock condition for Phases 80-82. (completed 2026-05-12)
+- [x] **Phase 79: Determinism Recovery (Cascading-Race Fix + Constants Regen)** — Fix the `candidate-profile.spec.ts:85-145` registration → set-password → ToU race (or restructure the test out of cascade-prone serial mode); regenerate parity-script constants from a clean 3-run cold-start baseline. Sequential REQs (DETERM-04 → DETERM-05). Unlock condition for Phases 80-83. (completed 2026-05-13, passed-with-deferral; 80/15/57 anchor locked at SHA `ff0334f856…`)
 - [ ] **Phase 80: A11Y Axe Cite-and-Fix** — Resolve the 5 first-run WCAG 2.1 AA violations across `/results` + voter-detail-drawer (`aria-required-parent` × 4, `list` × 2, `button-name` × 1). Re-run axe smoke verifies 0 violations; per-rule regression assertions added.
 - [ ] **Phase 81: A11Y-01 PRODUCT-GAP Cells — Email + URL Format** — Schema + component + i18n additions to close the email-format (A11Y-05) and URL-format (A11Y-06) candidate-profile validation cells. Shared `customData.format` / `Question.subtype` dispatch decision picked at phase discussion time.
 - [ ] **Phase 82: A11Y-01 PRODUCT-GAP Cell — Required-Empty** — Phase-discussion product decision (REJECT-with-error vs SOFT-WARN-ONLY) for empty-required save behavior; spec assertions reflect chosen mechanism. Closes A11Y-07.
+- [ ] **Phase 83: Test Reliability Follow-ups (Image-Upload Cascade + Voter-App Flakes)** — Close DETERM-06 (image-upload CAND-03 cascade resolution; mitigations from todo §"Recommended approach": selector-drift fix / pre-filechooser delay / imgproxy re-enable) + DETERM-07 (voter-matching + voter-detail flakes stabilization to deterministic PASS or FAILURE-CLASS with rationale). May trigger a fresh constants regen if PASS_LOCKED shifts.
 
 ## Phase Details
 
@@ -160,10 +165,22 @@ Phase 79 (DETERM-04 + DETERM-05)
 **Plans**: TBD
 **UI hint**: yes
 
+### Phase 83: Test Reliability Follow-ups (Image-Upload Cascade + Voter-App Flakes)
+**Goal**: Close the 2 test-reliability surfaces that Phase 79's DETERM-04 fix exposed. After Phase 83, (1) `should upload a profile image (CAND-03)` no longer cascade-skips its 5 downstream tests in `candidate-profile.spec.ts`'s serial describe block; and (2) the 2 voter-app intermittent flakes (`voter-matching > should show worst match candidate as last result` + `voter-detail > should open party detail drawer`) are stabilized to deterministic PASS or moved to FAILURE-CLASS with rationale. The v2.10 verification anchor at SHA `ff0334f856…` is preserved unless the closures shift PASS_LOCKED (in which case Phase 83 ends with a fresh constants regen via the archived `regen-constants.mjs` script).
+**Depends on**: Phase 79 (DETERM-04 green required — same `candidate-profile.spec.ts` surface as Phase 81; cold-start gates need a non-cascading registration path). Structurally independent of Phases 80 + 81 + 82.
+**Requirements**: DETERM-06, DETERM-07
+**Success Criteria** (what must be TRUE):
+  1. DETERM-06 closed: `tests/tests/specs/candidate/candidate-profile.spec.ts > should upload a profile image (CAND-03)` runs to completion in cold-start without `waitForEvent('filechooser')` TIMEOUT; 5 downstream tests in the serial describe block (`A11Y-02` × 3 + `CAND-12` × 1 + `CAND-03` × 1) cascade-skip count drops to 0. Mitigation picked at discuss-phase from the 3 candidates in the todo (selector-drift fix / pre-filechooser delay / imgproxy re-enable).
+  2. DETERM-07 closed: 3 consecutive cold-start runs SHA-identical on the FIRST try (no D-09 instability protocol required). Both flake surfaces are either (a) deterministically passing, (b) deterministically skipped with `test.skip()` + rationale comment, or (c) moved to FAILURE-CLASS in `regen-constants.mjs` with explicit Phase 75 QSPEC-01/02-style rationale.
+  3. If either closure shifts PASS_LOCKED, fresh constants regen runs via `node .planning/phases/79-determinism-recovery-cascading-race-fix-constants-regen/post-fix/regen-constants.mjs` (against a Phase-83-captured `run-3.json`) and updates `tests/scripts/diff-playwright-reports.ts`. Otherwise: the v2.10 anchor at SHA `ff0334f856…` is preserved verbatim.
+  4. The 2 follow-up todos (`2026-05-13-candidate-profile-image-upload-cascade.md` + `2026-05-13-voter-matching-detail-flakes.md`) move to `.planning/todos/done/` at phase close.
+**Plans**: TBD
+**UI hint**: no
+
 ## Progress
 
 **Execution Order:**
-Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82 (parallel-eligible after Phase 79 DETERM-04 green).
+Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82, 83 (parallel-eligible after Phase 79 DETERM-04 green).
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -190,7 +207,8 @@ Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82 (parall
 | 76. Profile + A11y | v2.9 | 4/4 | Complete | 2026-05-12 |
 | 77. Settings Matrix + Question-Customization Gap-Fills | v2.9 | 5/5 | Complete | 2026-05-12 |
 | 78. Cleanup Hygiene Phase | v2.9 | 7/7 | Complete | 2026-05-12 |
-| 79. Determinism Recovery (Cascading-Race Fix + Constants Regen) | v2.10 | 4/4 | Complete   | 2026-05-12 |
+| 79. Determinism Recovery (Cascading-Race Fix + Constants Regen) | v2.10 | 4/4 | Complete (passed-with-deferral) | 2026-05-13 |
 | 80. A11Y Axe Cite-and-Fix | v2.10 | 0/TBD | Not started | - |
 | 81. A11Y-01 PRODUCT-GAP Cells — Email + URL Format | v2.10 | 0/TBD | Not started | - |
 | 82. A11Y-01 PRODUCT-GAP Cell — Required-Empty | v2.10 | 0/TBD | Not started | - |
+| 83. Test Reliability Follow-ups (Image-Upload Cascade + Voter-App Flakes) | v2.10 | 0/TBD | Not started | - |

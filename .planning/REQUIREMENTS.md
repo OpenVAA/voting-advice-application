@@ -1,22 +1,25 @@
 # Milestone v2.10: Test Reliability + A11y Compliance — Requirements
 
-**Defined:** 2026-05-12
+**Defined:** 2026-05-12 · **Last updated:** 2026-05-13 (Phase 83 added post-Phase-79-close to absorb the 2 follow-up todos)
 **Core Value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
 
-**Goal:** Restore Playwright suite parity-regen capability and reach WCAG 2.1 AA on the 2 axe-baselined routes by closing v2.9's HIGH/MEDIUM a11y + test-determinism deferrals — 3 carry-forwards from v2.9 close (candidate-profile cascading race + axe cite-and-fix + A11Y-01 PRODUCT-GAP cells closure).
+**Goal:** Restore Playwright suite parity-regen capability and reach WCAG 2.1 AA on the 2 axe-baselined routes by closing v2.9's HIGH/MEDIUM a11y + test-determinism deferrals — 3 carry-forwards from v2.9 close (candidate-profile cascading race + axe cite-and-fix + A11Y-01 PRODUCT-GAP cells closure) **+ 2 follow-up surfaces (5-item scope post-Phase-79-close)** that Phase 79's DETERM-04 fix exposed (image-upload CAND-03 cascade + voter-app flakes).
 
-**Strategy: race-first, then a11y.** The HIGH candidate-profile cascading race is the unlock condition for parity-script regen; A11Y axe cite-and-fix + A11Y-01 cells are independent of the race and can run in parallel waves once DETERM is green.
+**Strategy: race-first, then a11y, then test-reliability gap closure.** The HIGH candidate-profile cascading race is the unlock condition for parity-script regen; A11Y axe cite-and-fix + A11Y-01 cells are independent of the race and can run in parallel waves once DETERM is green. Phase 83 (DETERM-06 + DETERM-07) closes the 2 test-reliability surfaces that Phase 79 surfaced — the v2.10 verification anchor at SHA `ff0334f856…` is preserved through Phase 83 unless one of the closures shifts PASS_LOCKED.
 
 **Context sources:**
 
 - `.planning/todos/pending/2026-05-12-candidate-profile-cascading-race.md` — cascading-race root-cause hypothesis + Phase 76/77/78 deferred-items lineage
 - `.planning/todos/pending/2026-05-12-a11y-axe-first-run-violations.md` — 5-violation per-rule baseline + cite-and-fix scope
 - `.planning/todos/pending/2026-05-12-a11y-01-product-gap-cells.md` — schema/component/i18n gap analysis per cell (email/url/required-empty)
+- `.planning/todos/pending/2026-05-13-candidate-profile-image-upload-cascade.md` — image-upload CAND-03 filechooser TIMEOUT + 5 downstream cascade-skips surfaced by Phase 79 DETERM-04 fix
+- `.planning/todos/pending/2026-05-13-voter-matching-detail-flakes.md` — voter-matching 5-test block + voter-detail open-drawer flakes (~33% across Phase 79's 6 cold-start captures)
 - `.planning/milestones/v2.9-phases/76-profile-a11y/76-A11Y-BASELINE.md` — per-route per-rule axe baseline (single source of truth)
 - `.planning/milestones/v2.9-phases/76-profile-a11y/76-CONTEXT.md` D-03 — PRODUCT-GAP cells rationale
 - `.planning/milestones/v2.9-phases/76-profile-a11y/deferred-items.md` #2 — cascading-race recommendation
 - `.planning/milestones/v2.9-phases/77-settings-matrix-question-customization-gap-fills/77-VERIFICATION.md` §"3-Run Determinism Record" — DEFERRED-WITH-RATIONALE lineage
 - `.planning/milestones/v2.9-phases/78-cleanup-hygiene-phase/78-VERIFICATION.md` §"Out-of-Scope Items (Filed as Follow-up Todos)" — third-phase deferral lineage
+- `.planning/phases/79-determinism-recovery-cascading-race-fix-constants-regen/79-VERIFICATION.md` §`overrides:` — Phase 79 accepted both follow-ups as deferred-with-rationale at close; Phase 83 promotes them in-milestone
 - PROJECT.md "Current Milestone: v2.10 Test Reliability + A11y Compliance" — full goal + key context
 
 ---
@@ -39,6 +42,12 @@
 
 - [ ] **A11Y-07**: Candidate profile required-empty save behavior is decided and enforced consistently. **Phase-time product decision:** should empty-required save be REJECTED with an inline error (current behavior is soft — `required` attribute renders an sr-only "Required" badge + submit-button gating via `allRequiredFilled` at `profile/+page.svelte:94`, but the empty save is not blocked). If REJECT: add save-path validation in `apps/frontend/src/routes/candidate/(protected)/profile/+page.svelte:125-143` AND `Input.svelte` emits `components.input.error.required` (or `tooShort`) on submit-time validation failure; `required` i18n key added to 4-locale `input.error` blocks. If SOFT-WARN-ONLY (no change): the cell is closed as PRODUCT-CONFIRMED with the existing badge + button-gating documented as the enforcement. Spec: A11Y-01 cell 4 added to `candidate-profile-validation.spec.ts` — empty input → click submit → assert chosen behavior (error UI rendered + value preserved IF REJECT; submit-button disabled + no error UI IF SOFT-WARN).
 
+### DETERM-2 — Test reliability follow-ups (Phase 79 close exposed; gap-closed in-milestone)
+
+- [ ] **DETERM-06**: The `should upload a profile image (CAND-03)` test surface in `tests/tests/specs/candidate/candidate-profile.spec.ts:164` runs to completion in cold-start mode without cascade-skipping its 5 downstream tests (`A11Y-02 should persist {display name, bio, social link} after page reload`, `should persist profile image after page reload (CAND-12)`, `should show editable info fields on profile page (CAND-03)`). Pre-existing failure mode: `waitForEvent('filechooser')` TIMEOUT — file-chooser dialog never fires when the inner click target is engaged; previously masked by the DETERM-04 registration cascade, surfaced in Phase 79's post-fix baseline. Recommended mitigations (cheapest first per todo §"Recommended approach"): (1) fix `ProfilePage.uploadImage()` selector drift at `tests/tests/pages/candidate/ProfilePage.ts:24-37` per Phase 76 deferred-items §1 (`label[tabindex="0"]` → `getByRole('button').first()`); (2) add 500ms pre-filechooser settle delay per Phase 76 P01 mitigation pattern; (3) enable `[storage.image_transformation]` in `apps/supabase/supabase/config.toml:130-131` for imgproxy parity with Phase 73 baseline. Post-fix: cold-start full-suite cascade-skip count for candidate-profile.spec.ts describe-block-downstream tests = 0; on next constants regen, the 5 cascaded tests + the image-upload test itself promote to PASS_LOCKED (DATA_RACE pool stays at 15 per Phase 73 D-09 binding only if image-upload remains IMGPROXY-tied; otherwise the pool shrinks by 1 + the 3 CAND-03/CAND-12 IDs and PASS_LOCKED grows by ~9).
+
+- [ ] **DETERM-07**: The 2 voter-app intermittent test flakes surfaced post-DETERM-04 are stabilized to deterministic PASS or moved to FAILURE-CLASS with explicit rationale: (1) `voter-app :: voter-matching.spec.ts > should show worst match candidate as last result` — failed in 1 of 6 Phase 79 cold-start captures, cascade-skipping 4 other voter-matching tests in the serial block; (2) `voter-app :: voter-detail.spec.ts > should open party detail drawer` — failed in 1 of 6 Phase 79 cold-start captures. Both are in the Phase 79 PASS_LOCKED roster (NOT IMGPROXY-tied per Phase 73 D-09 binding — cannot be classified into DATA_RACE without breaking the structural contract). Root cause hypothesis options per todo: (a) voter-app data-setup race, (b) voter results-page reactivity timing, (c) candidate-load ordering. Acceptance options (cheapest first): (1) **fix the flake** if root-cause is reachable; (2) **convert to deterministic skip** with `test.skip()` + rationale until fixed; (3) **move to FAILURE-CLASS** in `regen-constants.mjs` (rationale entry alongside Phase 75's QSPEC-01/02 precedent). Post-fix: 3 consecutive cold-start runs SHA-identical on the FIRST try (no D-09 instability protocol required); the v2.10 anchor SHA-256 hash stays at `ff0334f856…` OR a fresh regen is captured if the resolution touches the pass-set.
+
 ---
 
 ## Out of Scope (re-deferred to v2.11+)
@@ -60,18 +69,20 @@ Which phases cover which requirements.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DETERM-04   | Phase 79 | In Progress (RCA done @ Plan 01; fix pending @ Plan 02) |
-| DETERM-05   | Phase 79 | Pending |
+| DETERM-04   | Phase 79 | Complete (passed-with-deferral 2026-05-13) |
+| DETERM-05   | Phase 79 | Complete (passed-with-deferral 2026-05-13) |
 | A11Y-04     | Phase 80 | Pending |
 | A11Y-05     | Phase 81 | Pending |
 | A11Y-06     | Phase 81 | Pending |
 | A11Y-07     | Phase 82 | Pending |
+| DETERM-06   | Phase 83 | Pending |
+| DETERM-07   | Phase 83 | Pending |
 
 **Coverage:**
-- v2.10 requirements: 6 total
-- Mapped to phases: 6 ✓
+- v2.10 requirements: 8 total
+- Mapped to phases: 8 ✓
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-05-12*
-*Last updated: 2026-05-12 after v2.10 roadmap creation (4 phases, 6 REQs mapped 1:1)*
+*Last updated: 2026-05-13 after Phase 79 close added Phase 83 (DETERM-06 + DETERM-07) for test-reliability gap closure (5 phases / 8 REQs).*
