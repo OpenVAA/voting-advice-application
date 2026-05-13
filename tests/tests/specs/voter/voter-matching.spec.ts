@@ -239,6 +239,16 @@ test.describe('matching algorithm verification', { tag: ['@voter'] }, () => {
     await navigateToResults(page);
 
     const cards = page.getByTestId(testIds.voter.results.card);
+
+    // Phase 83 DETERM-07a: hydration-completeness guard — assert the FULL
+    // result-list has rendered before indexing into .last(). Without this,
+    // partial-hydration races produced ~33% flake under post-Phase-79
+    // cold-start timing (2/6 captures per .planning/phases/79-…/post-fix/
+    // sha256.txt). expectedRanking.length is the existing module-scope const
+    // from independent matching computation at lines 27-119 (already used by
+    // the sibling 'ranking order' test at line 215).
+    await expect(cards).toHaveCount(expectedRanking.length);
+
     const lastCard = cards.last();
     const opposeName = `${opposeCandidate.first_name} ${opposeCandidate.last_name}`;
 
