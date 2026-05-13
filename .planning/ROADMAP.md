@@ -106,7 +106,7 @@ Phase 79 (DETERM-04 + DETERM-05) ✓ COMPLETE
 
 - [x] **Phase 79: Determinism Recovery (Cascading-Race Fix + Constants Regen)** — Fix the `candidate-profile.spec.ts:85-145` registration → set-password → ToU race (or restructure the test out of cascade-prone serial mode); regenerate parity-script constants from a clean 3-run cold-start baseline. Sequential REQs (DETERM-04 → DETERM-05). Unlock condition for Phases 80-83. (completed 2026-05-13, passed-with-deferral; 80/15/57 anchor locked at SHA `ff0334f856…`)
 - [x] **Phase 80: A11Y Axe Cite-and-Fix** — Resolve the 5 first-run WCAG 2.1 AA violations across `/results` + voter-detail-drawer (`aria-required-parent` × 4, `list` × 2, `button-name` × 1). Re-run axe smoke verifies 0 violations; per-rule regression assertions added. (completed 2026-05-13, GREEN; 5/5 SCs PASS; A11Y-04 closed; Phase 79 v2.10 anchor SHA `ff0334f856…` preserved)
-- [ ] **Phase 81: A11Y-01 PRODUCT-GAP Cells — Email + URL Format** — Schema + component + i18n additions to close the email-format (A11Y-05) and URL-format (A11Y-06) candidate-profile validation cells. Shared `customData.format` / `Question.subtype` dispatch decision picked at phase discussion time.
+- [x] **Phase 81: A11Y-01 PRODUCT-GAP Cells — Email + URL Format** — Schema + component + i18n additions to close the email-format (A11Y-05) and URL-format (A11Y-06) candidate-profile validation cells. Shared `customData.format` / `Question.subtype` dispatch decision picked at phase discussion time. (completed 2026-05-13)
 - [ ] **Phase 82: A11Y-01 PRODUCT-GAP Cell — Required-Empty** — Phase-discussion product decision (REJECT-with-error vs SOFT-WARN-ONLY) for empty-required save behavior; spec assertions reflect chosen mechanism. Closes A11Y-07.
 - [ ] **Phase 83: Test Reliability Follow-ups (Image-Upload Cascade + Voter-App Flakes)** — Close DETERM-06 (image-upload CAND-03 cascade resolution; mitigations from todo §"Recommended approach": selector-drift fix / pre-filechooser delay / imgproxy re-enable) + DETERM-07 (voter-matching + voter-detail flakes stabilization to deterministic PASS or FAILURE-CLASS with rationale). May trigger a fresh constants regen if PASS_LOCKED shifts.
 
@@ -152,7 +152,7 @@ Phase 79 (DETERM-04 + DETERM-05) ✓ COMPLETE
   4. e2e fixture extended at `packages/dev-seed/src/templates/e2e.ts` with 1 email-format info question (sort 22) + 1 URL dispatch (sort 21 promoted OR new sort 23) + Alpha answer cells.
   5. `tests/tests/specs/candidate/candidate-profile-validation.spec.ts` extended with A11Y-01 cell 5 (email) + cell 6 (URL) assertions; per-plan smoke PASS × 3 in isolation; Phase 76 P01 cells (image-type / image-size / name-too-long) continue to pass.
 **Plans**: 1 plan
-- [ ] 81-01-PLAN.md — Schema dispatch (`Question.subtype` reuse) + Input.svelte email validation branch + `EMAIL_REGEX` const + Input.type.ts `email` variant + QuestionInput.svelte dispatch line + i18n `invalidEmail` key across 14 locale files (7 Paraglide + 7 legacy translations) + TranslationKey regen + e2e.ts sort-21 retrofit (subtype:'link') + new sort-23 email row + Alpha answer cells + plain-string migration for sort-21 + candidate-profile-validation.spec.ts `TEXT_CELLS` refactor with `kind` discriminant + 2 new cells (5 email + 6 URL) + 3-run cold-start determinism gate + parity-script self-identity smoke + 81-VERIFICATION.md
+- [x] 81-01-PLAN.md — Schema dispatch (`Question.subtype` reuse) + Input.svelte email validation branch + `EMAIL_REGEX` const + Input.type.ts `email` variant + QuestionInput.svelte dispatch line + i18n `invalidEmail` key across 14 locale files (7 Paraglide + 7 legacy translations) + TranslationKey regen + e2e.ts sort-21 retrofit (subtype:'link') + new sort-23 email row + Alpha answer cells + plain-string migration for sort-21 + candidate-profile-validation.spec.ts `TEXT_CELLS` refactor with `kind` discriminant + 2 new cells (5 email + 6 URL) + 3-run cold-start determinism gate + parity-script self-identity smoke + 81-VERIFICATION.md
 **UI hint**: yes
 
 ### Phase 82: A11Y-01 PRODUCT-GAP Cell — Required-Empty
@@ -211,6 +211,6 @@ Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82, 83 (pa
 | 78. Cleanup Hygiene Phase | v2.9 | 7/7 | Complete | 2026-05-12 |
 | 79. Determinism Recovery (Cascading-Race Fix + Constants Regen) | v2.10 | 4/4 | Complete (passed-with-deferral) | 2026-05-13 |
 | 80. A11Y Axe Cite-and-Fix | v2.10 | 1/1 | Complete | 2026-05-13 |
-| 81. A11Y-01 PRODUCT-GAP Cells — Email + URL Format | v2.10 | 0/1 | Not started | - |
+| 81. A11Y-01 PRODUCT-GAP Cells — Email + URL Format | v2.10 | 1/1 | Complete   | 2026-05-13 |
 | 82. A11Y-01 PRODUCT-GAP Cell — Required-Empty | v2.10 | 0/TBD | Not started | - |
 | 83. Test Reliability Follow-ups (Image-Upload Cascade + Voter-App Flakes) | v2.10 | 0/TBD | Not started | - |
