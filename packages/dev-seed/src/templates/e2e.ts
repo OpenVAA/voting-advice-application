@@ -618,9 +618,16 @@ export const e2eTemplate: Template = {
       // url-format validation deferred per .planning/todos/pending/2026-05-12-a11y-01-product-gap-cells.md;
       // this slot exercises persistence ONLY, asserting the saved URL string
       // round-trips identically across page.reload()).
+      //
+      // Phase 81 lifts the PRODUCT-GAP-PARTIAL to FULL via subtype:'link' dispatch —
+      // QuestionInput.svelte:65 remaps Text+subtype='link' to InputProps['type']='url'
+      // → Input.svelte URL validation branch at lines 286-296 is now REACHABLE on this
+      // row's candidate-profile input. See
+      // .planning/phases/81-a11y-01-product-gap-cells-email-url-format/81-VERIFICATION.md.
       {
         external_id: 'test-question-social-1',
         type: 'text',
+        subtype: 'link', // Phase 81 — enables URL dispatch via QuestionInput.svelte:65
         name: { en: 'Social link (Phase 76 anchor)' },
         category: { external_id: 'test-category-info' },
         allow_open: false,
@@ -663,6 +670,33 @@ export const e2eTemplate: Template = {
         allow_open: false,
         required: false,
         sort_order: 22,
+        is_generated: false
+      },
+      // Phase 81 A11Y-05 anchor — email-format dispatch via Question.subtype='email'.
+      // QuestionInput.svelte:65-67 dispatches subtype==='email' → InputProps['type']='email',
+      // which routes through Input.svelte's email validation branch (mirrors the URL branch
+      // at Input.svelte:286-296 — pragmatic regex check + handleError on fail + value-preservation
+      // by returning before value=assignment).
+      //
+      // VALUE-DISJOINTNESS INVARIANT (Phase 76 P01 fixture-extension fix):
+      // Alpha's answer value MUST NOT contain the substring 'Alpha' / 'alpha'
+      // (case-insensitive). The candidate-questions.spec.ts CAND-06 assertion at
+      // line 271 reads strict-mode getByText('Alpha', { exact: false }) — adding
+      // a cell whose preview-rendered value contains 'alpha' would break that
+      // single-anchor lookup. The 'sentinel-81@example.com' value below stays disjoint.
+      //
+      // sort_order: 23 — placed AFTER Phase 77's test-question-number-1 (sort 22).
+      // Voter fixture's default voterAnswerCount=16 Likert loop is unaffected:
+      // sort 23 > 16, voter never encounters this info question.
+      {
+        external_id: 'test-question-email-1',
+        type: 'text',
+        subtype: 'email',
+        name: { en: 'Email address (Phase 81 A11Y-05 anchor)' },
+        category: { external_id: 'test-category-info' },
+        allow_open: false,
+        required: false,
+        sort_order: 23,
         is_generated: false
       }
     ]
@@ -764,12 +798,15 @@ export const e2eTemplate: Template = {
           'test-question-bio': {
             value: { en: 'Phase 76 biography sentinel used by A11Y-02 reload-persistence.' }
           },
-          'test-question-social-1': { value: { en: 'https://example.com/sentinel-76' } },
+          // reason: post-Phase-81 sort-21 dispatches to single-locale 'url' input; LocalizedString {en:...} → MISSING_VALUE per TextQuestion._ensureValue. Plain string aligns with new render shape (Pitfall 4 option a).
+          'test-question-social-1': { value: 'https://example.com/sentinel-76' },
           // Phase 77 / SETTINGS-01 wave B Plan 02 — Alpha's NumberFilter anchor
           // answer. Value 25 sits well above 0 and below the other 3 candidates'
           // values (60, 50, 75) so a min-slider move to >25 narrows Alpha out
           // deterministically.
-          'test-question-number-1': { value: 25 }
+          'test-question-number-1': { value: 25 },
+          // reason: plain-string shape (NOT LocalizedString) so the subtype:'email' single-locale dispatch's ensureString path renders the seeded value correctly per Pitfall 4. sentinel-81 substring is disjoint from 'alpha' per the value-disjointness invariant.
+          'test-question-email-1': { value: 'sentinel-81@example.com' }
         }
       },
       {
