@@ -25,15 +25,21 @@ Accesses `LayoutContext`.
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
+  import { getContext, onDestroy } from 'svelte';
   import { Icon } from '$lib/components/icon';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { concatClass } from '$lib/utils/components';
+  import { NAV_GROUP_CONTEXT_KEY } from './navGroupContext';
   import type { NavItemProps } from './NavItem.type';
 
   let { autoCloseNav = true, disabled, href, icon, text, children, ...restProps }: NavItemProps = $props();
 
   const { navigation } = getLayoutContext(onDestroy);
+
+  // reason: Top-level getContext read — NOT inside an element attribute
+  // (Svelte issue #7549; RESEARCH §Pitfall 2). Static structural detection:
+  // NavItem's containment in a NavGroup is fixed at component creation.
+  const inNavGroup = getContext(NAV_GROUP_CONTEXT_KEY) === true;
 
   // Create classes
   const classes = $derived.by(() => {
@@ -47,8 +53,27 @@ Accesses `LayoutContext`.
   });
 </script>
 
-<!-- We use a div with an Aria role instead of a `<li>` because we don't place the items within a valid parent for a `<li>`. We need the wrapper because we can't change the role of `<ActionItem>`, which renders as an `<a>` or `<button>` and thus already has a defined Aria role. -->
-<div role="listitem">
+<!-- The wrapping <div role="listitem"> is rendered ONLY when this NavItem is a child of a NavGroup (auto-detected via getContext per Phase 80 D-03). Orphan NavItems (e.g., VoterNav/CandidateNav/AdminNav close-buttons) render bare to avoid the axe aria-required-parent violation. -->
+{#if inNavGroup}
+  <div role="listitem">
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <svelte:element
+      this={href == null ? 'button' : 'a'}
+      {href}
+      onclick={() => {
+        if (autoCloseNav && navigation.close) navigation.close();
+      }}
+      disabled={disabled || undefined}
+      data-testid="nav-menu-item"
+      {...concatClass(restProps, classes)}>
+      {#if icon}
+        <Icon name={icon} />
+      {/if}
+      <span class="uc-first">{text}</span>
+      {@render children?.()}
+    </svelte:element>
+  </div>
+{:else}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <svelte:element
     this={href == null ? 'button' : 'a'}
@@ -65,7 +90,7 @@ Accesses `LayoutContext`.
     <span class="uc-first">{text}</span>
     {@render children?.()}
   </svelte:element>
-</div>
+{/if}
 
 <style lang="postcss">
   @reference "../../../tailwind-theme.css";
