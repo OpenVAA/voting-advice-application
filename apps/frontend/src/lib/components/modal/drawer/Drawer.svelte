@@ -96,7 +96,7 @@ See the `<ModalContainer>` component documentation for more information.
       <Button
         type="button"
         variant="floating-icon"
-        text="close"
+        text={t('common.closeDialog')}
         icon="close"
         onclick={() => closeModal()}
         class="!absolute right-0 bottom-0 z-10" />

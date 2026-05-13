@@ -180,7 +180,7 @@ text="Add to list">
   role="button"
   tabindex={disabled ? -1 : 0}
   href={disabled ? undefined : href}
-  aria-label={variant === 'icon' ? effectiveText : undefined}
+  aria-label={variant === 'icon' || variant === 'floating-icon' ? effectiveText : undefined}
   title={variant === 'icon' || variant === 'responsive-icon' ? effectiveText : undefined}
   disabled={disabled || loading || undefined}
   {...concatClass(restProps, classes)}>
