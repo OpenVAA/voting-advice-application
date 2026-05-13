@@ -16,6 +16,7 @@
       "deleteOption": "Eemalda valik: {option}",
       "error": {
         "fileLoadingError": "Faili laadimine ebaõnnestus.",
+        "invalidEmail": "E-posti aadress ei kehti.",
         "invalidFile": "Fail on sobimatu.",
         "invalidUrl": "Veebiaadress ei ole kehtiv.",
         "oversizeFile": "Fail on liiga suur. Maksimaalne suurus on {maxFilesize} MB."

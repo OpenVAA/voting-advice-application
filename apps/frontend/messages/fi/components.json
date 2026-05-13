@@ -16,6 +16,7 @@
       "deleteOption": "Poista valinta: {option}",
       "error": {
         "fileLoadingError": "Tiedoston lataaminen ei onnistunut.",
+        "invalidEmail": "Sähköpostiosoite ei kelpaa.",
         "invalidFile": "Tiedosto on vääränlainen.",
         "invalidUrl": "Verkko-osoite ei ole kelvollinen.",
         "oversizeFile": "Tiedosto on liian suuri. Enimmäiskoko on {maxFilesize} Mt."

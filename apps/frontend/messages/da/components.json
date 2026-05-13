@@ -16,6 +16,7 @@
       "deleteOption": "Fravælg {option}",
       "error": {
         "fileLoadingError": "Kunne ikke indlæse filen.",
+        "invalidEmail": "E-mailadressen er ugyldig.",
         "invalidFile": "Filen er ugyldig.",
         "invalidUrl": "URL'en er ugyldig.",
         "oversizeFile": "Filen er for stor. Maksimal størrelse er {maxFilesize} MB."
