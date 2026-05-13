@@ -173,6 +173,22 @@ test.describe('candidate profile (fresh candidate)', { tag: ['@candidate'] }, ()
     // Upload image via the profile page object's file chooser pattern
     await profilePage.uploadImage(imagePath);
 
+    // Phase 83 DETERM-06 follow-on fix (Rule 2 deviation): Phase 82's
+    // `canSubmit && allRequiredFilled` save-gate at
+    // apps/frontend/src/routes/candidate/(protected)/profile/+page.svelte:103
+    // now correctly disables the submit button when any required-info question
+    // is empty. The fresh candidate has not answered the required
+    // `test-question-required-empty-1` (Phase 82 fixture row, sort 24,
+    // custom_data.required:true) — without satisfying that gate the submit
+    // click below would TIMEOUT against a permanently-disabled button. Fill
+    // it with a Phase 83 sentinel string before submit. Pre-Phase 82 this
+    // step was unnecessary because no info question carried `required:true`
+    // in the base e2e seed; the cascade-unblock from DETERM-06's ladder
+    // exposed this Phase 82 implicit-coupling regression.
+    const requiredEmptyInput = page.getByLabel('Required-empty (Phase 82 A11Y-07 anchor)');
+    await expect(requiredEmptyInput).toBeVisible({ timeout: 5000 });
+    await requiredEmptyInput.fill('Sentinel 83 DETERM-06 required-empty');
+
     // Save the profile to persist the image upload
     await profilePage.submit();
 
