@@ -164,8 +164,9 @@ Phase 79 (DETERM-04 + DETERM-05) ✓ COMPLETE
   2. If REJECT: save-path validation lands in `apps/frontend/src/routes/candidate/(protected)/profile/+page.svelte:125-143`; `Input.svelte` emits `components.input.error.required` (or `tooShort`) on submit-time validation failure; `required` i18n key added to all 4 locales' `input.error` blocks. If SOFT-WARN-ONLY: cell closes as PRODUCT-CONFIRMED — existing badge + submit-button gating documented as the enforcement (no code changes).
   3. A11Y-01 cell 4 added to `candidate-profile-validation.spec.ts`: empty input → click submit → assert chosen behavior (error UI rendered + value preserved IF REJECT; submit-button disabled + no error UI IF SOFT-WARN).
   4. Per-plan smoke PASS × 3 in isolation; existing Phase 76 P01 cells + Phase 81 cells 5+6 continue to pass.
-**Plans**: TBD
-**UI hint**: yes
+**Plans**: 1 plan
+- [ ] 82-01-PLAN.md — TIGHTEN-SOFT: wire allRequiredFilled into canSubmit + sort-24 fixture row + Alpha LocalizedString answer + A11Y-01 cell 4 spec + docstring update + 3-run cold-start determinism gate + additive +1 PASS_LOCKED constants regen
+**UI hint**: yes (SKIPPED per D-15 — structural save-gate phase with no visual redesign, per Phase 76 / Phase 80 / Phase 81 precedent in feedback_skip_ui_spec_for_a11y_only_phases.md memory)
 
 ### Phase 83: Test Reliability Follow-ups (Image-Upload Cascade + Voter-App Flakes)
 **Goal**: Close the 2 test-reliability surfaces that Phase 79's DETERM-04 fix exposed. After Phase 83, (1) `should upload a profile image (CAND-03)` no longer cascade-skips its 5 downstream tests in `candidate-profile.spec.ts`'s serial describe block; and (2) the 2 voter-app intermittent flakes (`voter-matching > should show worst match candidate as last result` + `voter-detail > should open party detail drawer`) are stabilized to deterministic PASS or moved to FAILURE-CLASS with rationale. The v2.10 verification anchor at SHA `ff0334f856…` is preserved unless the closures shift PASS_LOCKED (in which case Phase 83 ends with a fresh constants regen via the archived `regen-constants.mjs` script).
