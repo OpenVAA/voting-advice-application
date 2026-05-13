@@ -89,11 +89,18 @@ Shows the candidate's basic information, some of which is editable.
   // Handle saving answers and define submit label and notes
   ////////////////////////////////////////////////////////////////////
 
-  let canSubmit = $derived(status !== 'loading');
-
   let allRequiredFilled = $derived(
     !candCtx.requiredInfoQuestions.some((q) => isEmptyValue(userData.current?.candidate.answers?.[q.id]?.value))
   );
+
+  // Phase 82 A11Y-07 TIGHTEN-SOFT: submit button truly disabled when any required
+  // info question is empty. The `&& allRequiredFilled` extension makes the button
+  // match the existing "Required" notice + sr-only badge per Input.svelte:135. The
+  // handleSubmit guard at :126-130 stays as defense-in-depth (programmatic clicks).
+  // NOTE: `allRequiredFilled` is declared ABOVE this line (Svelte 5 $derived is lazy
+  // at runtime so the original order worked, but svelte-check's TS strict use-before
+  // -declaration check flagged it — minimal reorder swap to keep typecheck clean).
+  let canSubmit = $derived(status !== 'loading' && allRequiredFilled);
 
   let submitRouting = $derived.by(() => {
     if (allRequiredFilled && candCtx.unansweredOpinionQuestions.length && !candCtx.answersLocked) {
