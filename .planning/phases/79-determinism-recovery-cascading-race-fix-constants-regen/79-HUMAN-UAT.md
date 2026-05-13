@@ -1,14 +1,15 @@
 ---
-status: partial
+status: complete
 phase: 79-determinism-recovery-cascading-race-fix-constants-regen
 source: [79-VERIFICATION.md]
-started: 2026-05-13T00:00:00Z
-updated: 2026-05-13T00:00:00Z
+started: 2026-05-13
+updated: 2026-05-13
+accepted_by: kalle (via orchestrator continuation)
 ---
 
 ## Current Test
 
-[awaiting human review and acceptance]
+[both items accepted via override; see 79-VERIFICATION.md frontmatter `overrides:`]
 
 ## Tests
 
@@ -25,20 +26,20 @@ overrides:
     accepted_at: "<ISO timestamp>"
 ```
 
-**result:** [pending]
+**result:** ACCEPTED — override applied in 79-VERIFICATION.md frontmatter.
 
 ### 2. Accept v2.10 anchor shape (80 PASS_LOCKED + 15 DATA_RACE + 57 CASCADE = 152 pooled)
 
 **expected:** Confirm the over-delivered shape is the right baseline for Phases 80-82. PASS_LOCKED grew 47 → 80 (+33; planned ~+16); CASCADE grew 33 → 57 (+24; new image-upload downstream + variant chain). The parity-gate's PASS_LOCKED contract is the binding measure (no PASS_LOCKED regressions across the trio runs 4/5/6) — Phases 80-82 each run `tsx diff-playwright-reports.ts post-fix/run-6.json post-X.json` and their gates are well-defined.
 
-**result:** [pending]
+**result:** ACCEPTED — override applied in 79-VERIFICATION.md frontmatter.
 
 ## Summary
 
 total: 2
-passed: 0
+passed: 2
 issues: 0
-pending: 2
+pending: 0
 skipped: 0
 blocked: 0
 

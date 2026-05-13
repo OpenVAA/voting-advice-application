@@ -1,11 +1,11 @@
 # Phase 79 STATUS
 
-**Last updated:** 2026-05-13 (verifier close — human acceptance needed)
-**Last agent action:** gsd-verifier returned `human_needed` (3/4 SC verified programmatically; SC #1 partial due to separate image-upload root cause). HUMAN-UAT.md written with 2 strategic-acceptance items.
-**Operator action needed?** **YES — review `79-HUMAN-UAT.md`, then either:**
-  (a) accept partial SC #1 + the 80/15/57 anchor shape → add `overrides:` entry to `79-VERIFICATION.md` frontmatter → Phase 79 closes GREEN-WITH-DEFERRAL; or
-  (b) push back → run `/gsd-plan-phase 79 --gaps` for gap closure.
-**Phase verdict so far:** **DETERM-04 fix CONFIRMED + DETERM-05 anchor LOCKED — Phase 79 pending human acceptance of SC #1 partial.**
+**Last updated:** 2026-05-13 (phase close)
+**Last agent action:** Operator-continuation acceptance of the 2 human-UAT items. Both overrides applied to 79-VERIFICATION.md frontmatter; verifier verdict promoted from `human_needed` → `passed-with-deferral`. Image-upload + voter-app flake todos routed to v2.11+.
+**Operator action needed?** Optional — review the 2 v2.11+ follow-up todos at next milestone planning:
+  - `.planning/todos/pending/2026-05-13-candidate-profile-image-upload-cascade.md` (image-upload CAND-03)
+  - `.planning/todos/pending/2026-05-13-voter-matching-detail-flakes.md` (voter-matching + voter-detail flakes)
+**Phase verdict:** **PHASE 79 COMPLETE — passed-with-deferral. DETERM-04 GREEN + DETERM-05 GREEN. v2.10 anchor locked at SHA `ff0334f856…` (80/15/57). Phases 80-82 unblocked.**
 
 ---
 

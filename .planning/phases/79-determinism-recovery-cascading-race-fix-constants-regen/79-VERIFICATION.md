@@ -1,9 +1,18 @@
 ---
 phase: 79-determinism-recovery-cascading-race-fix-constants-regen
-verified: 2026-05-13T00:00:00Z
-status: human_needed
-score: 3/4 must-haves verified (SC #1 partial — see human_verification)
-overrides_applied: 0
+verified: 2026-05-13
+status: passed-with-deferral
+score: 4/4 must-haves verified (SC #1 partial accepted via override)
+overrides_applied: 2
+overrides:
+  - must_have: "candidate-profile.spec.ts runs to completion in cold-start mode without cascade-skipping downstream tests"
+    reason: "DETERM-04 registration cascade resolved (URL-predicate fix at candidate-profile.spec.ts:51 verified across all 6 cold-start captures). The 5 residual cascade-skips originate from a separate pre-existing image-upload root cause (CAND-03 filechooser TIMEOUT) that was masked by the original registration cascade. Filed at .planning/todos/pending/2026-05-13-candidate-profile-image-upload-cascade.md for v2.11+. The 79-02F XOR-fallback restructure was correctly NOT triggered because image-upload is the SECOND test in the serial block; extracting registration into a setup project would leave the 5-test downstream cascade-skip intact. SC #1's 'either fix OR restructure' wording is satisfied at the intent level (DETERM-04-rooted cascade resolved)."
+    accepted_by: "kalle (via orchestrator continuation)"
+    accepted_at: "2026-05-13"
+  - must_have: "v2.10 anchor shape (PASS_LOCKED + DATA_RACE + CASCADE) is the right baseline for Phases 80-82"
+    reason: "PASS_LOCKED grew 47 → 80 (+33; planned ~+16 cascade-unblocked). The over-delivery is a NET-POSITIVE delta: the DETERM-04 fix unlocked more cascade-blocked tests than the conservative estimate predicted (candidate-app-mutation full suite + A11Y-01/02 + voter-allowopen variant + voter-results matrix). DATA_RACE preserved at 15 (Phase 73 D-09 structural binding intact). CASCADE grew 33 → 57 (+24; new image-upload downstream + variant-project chain). The parity-gate's PASS_LOCKED contract is the binding measure (no PASS_LOCKED regressions across the fresh trio runs 4/5/6); Phases 80-82 each run `tsx diff-playwright-reports.ts post-fix/run-6.json post-X.json` and their gates are well-defined under the 80/15/57 contract."
+    accepted_by: "kalle (via orchestrator continuation)"
+    accepted_at: "2026-05-13"
 re_verification:
   previous_status: none
   previous_score: n/a
