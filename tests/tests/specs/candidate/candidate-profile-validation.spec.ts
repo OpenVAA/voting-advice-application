@@ -20,13 +20,19 @@
  *      i18n error message renders for this branch — the value-cap assertion
  *      IS the contract.
  *
- * PRODUCT-GAP cells (email-format / url-format / name-too-short /
- * required-empty) are deferred via single follow-up todo at
- * `.planning/todos/pending/2026-05-12-a11y-01-product-gap-cells.md` per
- * Phase 76 CONTEXT D-03 PRODUCT-GAP path + RESEARCH LANDMINE-2. The
- * deferred cells require schema (`customData.format` field) +
- * component (`Input.svelte` email branch) + i18n (`input.error.invalidEmail`
- * key) additions that exceed v2.9 coverage-phase scope.
+ * Phase 81 lift: A11Y-05 (email-format) + A11Y-06 (url-format) PRODUCT-GAP
+ * cells are NOW resolved by the additional TEXT_CELLS entries below (cells
+ * 2 + 3). Phase 81 uses Question.subtype dispatch (NOT customData.format) —
+ * see .planning/phases/81-a11y-01-product-gap-cells-email-url-format/81-CONTEXT.md
+ * D-01. The Input.svelte email branch mirrors the URL branch byte-for-byte
+ * (pragmatic regex + handleError + value-preservation), and the new i18n key
+ * `components.input.error.invalidEmail` is wired into all 14 locale catalogs
+ * (7 Paraglide + 7 legacy translations) with TranslationKey regen.
+ *
+ * Remaining PRODUCT-GAP cells (name-too-short / required-empty) stay deferred
+ * via `.planning/todos/pending/2026-05-12-a11y-01-product-gap-cells.md`; the
+ * required-empty cell is scheduled for Phase 82 / A11Y-07 with an embedded
+ * product decision (REJECT-with-inline-error vs SOFT-WARN-ONLY).
  *
  * i18n note (W-03 deferred-todo at
  * `.planning/todos/pending/2026-05-12-qspec-01-i18n-hardening.md`): error
@@ -106,15 +112,35 @@ const IMAGE_CELLS = [
 ] as const;
 
 /**
- * Text-input rejection cell — HTML5 maxlength cap on the seeded display-name
- * info question (`test-question-displayname`, `custom_data.maxlength=50`).
+ * Text-input rejection cells. Two kinds (discriminated by `kind`):
+ *   - `'maxlength'`: HTML5 native cap; assert value truncates silently to
+ *     the seeded `custom_data.maxlength` ceiling. No error UI renders.
+ *   - `'format'`: programmatic regex/URL rejection branch in
+ *     `Input.svelte handleChange`; assert error UI visible + input value
+ *     preserved as typed (value-preservation contract via early `return`
+ *     before `value =` assignment).
  */
 const TEXT_CELLS = [
   {
     name: 'name-too-long caps input value at maxlength=50 on display-name',
+    kind: 'maxlength' as const,
     fieldLabel: /Display name \(Phase 76 anchor\)/i,
     maxlength: 50,
     overflow: 60
+  },
+  {
+    name: 'A11Y-05 email-format rejection surfaces invalidEmail error',
+    kind: 'format' as const,
+    fieldLabel: /Email address \(Phase 81 A11Y-05 anchor\)/i,
+    badValue: 'not-an-email',
+    expectedErrorText: /The email address is not valid/i
+  },
+  {
+    name: 'A11Y-06 url-format rejection surfaces invalidUrl error',
+    kind: 'format' as const,
+    fieldLabel: /Social link \(Phase 76 anchor\)/i,
+    badValue: 'not a url',
+    expectedErrorText: /The URL is not valid/i
   }
 ] as const;
 
@@ -210,7 +236,7 @@ test.describe('A11Y-01 candidate profile validation', { tag: ['@candidate'] }, (
     });
   }
 
-  for (const cell of TEXT_CELLS) {
+  for (const cell of TEXT_CELLS.filter((c) => c.kind === 'maxlength')) {
     test(`A11Y-01 ${cell.name}`, async ({ page }) => {
       await loginAsCandidate(page);
       await page.goto(buildRoute({ route: 'CandAppProfile', locale: 'en' }));
@@ -244,6 +270,39 @@ test.describe('A11Y-01 candidate profile validation', { tag: ['@candidate'] }, (
       const observedValue = await input.inputValue();
       expect(observedValue).toHaveLength(cell.maxlength);
       expect(observedValue.startsWith('x')).toBe(true);
+    });
+  }
+
+  // Phase 81 format-rejection cells (A11Y-05 email + A11Y-06 url).
+  // The dispatch chain is: Question.subtype ('email' | 'link') →
+  // QuestionInput.svelte:65-67 remaps InputProps['type'] →
+  // Input.svelte handleChange's email/url branch surfaces an i18n
+  // error via `handleError(...)` AND returns BEFORE `value =`
+  // assignment so the typed value is preserved on screen.
+  for (const cell of TEXT_CELLS.filter((c) => c.kind === 'format')) {
+    test(`A11Y-01 ${cell.name}`, async ({ page }) => {
+      await loginAsCandidate(page);
+      await page.goto(buildRoute({ route: 'CandAppProfile', locale: 'en' }));
+
+      await expect(page.getByRole('heading', { name: /your profile/i })).toBeVisible({
+        timeout: 10000
+      });
+
+      const input = page.getByLabel(cell.fieldLabel).first();
+      await expect(input).toBeVisible({ timeout: 5000 });
+
+      // Fill with a value that fails the format regex; Input.svelte's
+      // handleChange `return`s via `handleError(...)` BEFORE assigning
+      // `value`, so the typed bad value stays on screen and the error
+      // message renders next to the input.
+      await input.fill(cell.badValue);
+
+      // (a) i18n error surfaces.
+      await expect(page.getByText(cell.expectedErrorText)).toBeVisible({ timeout: 5000 });
+
+      // (b) Value preservation contract — the typed bad value remains
+      // in the input element (handleChange did not overwrite it).
+      await expect(input).toHaveValue(cell.badValue);
     });
   }
 });
