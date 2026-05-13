@@ -63,6 +63,8 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
   const type = $derived.by<InputProps['type']>(() => {
     let t = INPUT_TYPES[question.type];
     if (question.type === QUESTION_TYPE.Text && question.subtype === 'link') t = 'url';
+    // reason: placed BEFORE longText + !disableMultilingual blocks so 'email' falls through unchanged (those blocks only remap 'text'/'textarea').
+    if (question.type === QUESTION_TYPE.Text && question.subtype === 'email') t = 'email';
     if (customData.longText) {
       if (t === 'text') t = 'textarea';
       else if (t === 'text-multilingual') t = 'textarea-multilingual';
