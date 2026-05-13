@@ -172,6 +172,13 @@ export const variantHiddenRequiredTemplate: Template = {
       if (row.external_id === 'test-candidate-alpha') {
         const answers = { ...((row.answersByExternalId ?? {}) as Record<string, unknown>) };
         delete answers['test-question-displayname'];
+        // Phase 83 WR-01 (D-05): also strip Phase 82's required-empty-1 answer
+        // so unansweredRequiredInfoQuestions.length === 2 in this variant
+        // (eliminates implicit additive coupling per Phase 82 REVIEW WR-01
+        // option b — the base seed now authors test-question-required-empty-1
+        // with custom_data.required: true, so without this delete the variant
+        // overlay silently leaves the count at 1 instead of the intended 2).
+        delete answers['test-question-required-empty-1'];
         return { ...row, answersByExternalId: answers };
       }
       return row;
