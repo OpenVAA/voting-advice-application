@@ -1,9 +1,11 @@
 ---
 phase: 81-a11y-01-product-gap-cells-email-url-format
 verified: 2026-05-13T13:40:00Z
+independent_verified: 2026-05-13T14:05:00Z
 status: passed
-score: 5/5 success criteria PASS (0 FAIL / 0 DEFERRED)
-verifier: gsd-executor (Plan 01 Task 9)
+score: 5/5 must-haves verified (0 FAIL / 0 DEFERRED)
+verifier: gsd-verifier (independent confirm)
+prior_verifier: gsd-executor (Plan 01 Task 9)
 operator_approval: pending
 head_at_verification: bed32013ef728fd848f77210240a97603e4c4708
 phase_79_anchor: ff0334f856…
@@ -20,11 +22,68 @@ follow_ups: []
 # Phase 81 Verification — A11Y-01 PRODUCT-GAP Cells: Email + URL Format (2026-05-13)
 
 **Phase:** 81-a11y-01-product-gap-cells-email-url-format (A11Y-05 + A11Y-06)
-**Verified:** 2026-05-13
+**Verified (executor):** 2026-05-13 by gsd-executor (Plan 01 Task 9)
+**Independent confirm (verifier):** 2026-05-13 by gsd-verifier
 **HEAD at verification:** `bed32013ef728fd848f77210240a97603e4c4708` (Plan 01 post-Task-8 blur-fix commit)
-**Status:** PASS — 5/5 ROADMAP success criteria GREEN; Phase 79 v2.10 anchor (SHA `ff0334f856…`) preserved; +2 PASS_LOCKED additive (82 total expected); 3-run cold-start canonical-fingerprint identity PASS; parity-script self-identity smoke PASS; Phase 80 a11y-smoke regression PASS (9/9 routes 0 violations); Phase 76 P02 CAND-12 reload-persistence PASS post-retrofit.
+**Status:** PASS — 5/5 ROADMAP success criteria GREEN; 5/5 PLAN must-haves verified at codebase-read level; Phase 79 v2.10 anchor (SHA `ff0334f856…`) preserved; +2 PASS_LOCKED additive (82 total expected); 3-run cold-start canonical-fingerprint identity PASS; parity-script self-identity smoke PASS; Phase 80 a11y-smoke regression PASS (9/9 routes 0 violations); Phase 76 P02 CAND-12 reload-persistence PASS post-retrofit.
 
-## Summary
+## Independent Verifier Confirmation Summary (2026-05-13)
+
+The independent verifier (gsd-verifier) re-read the 5 PLAN frontmatter must-haves against the actual codebase on 2026-05-13 at HEAD `bed32013ef…`. All 5 must-haves resolve to VERIFIED via direct file reads — no SUMMARY.md narrative trust required. Itemized confirmations follow; the executor's evidence (3-run determinism record, Phase 79 anchor confirmation, parity-script self-identity smoke, Phase 80 + 76 regression checks) is preserved verbatim in the sections below.
+
+### Must-Have Resolution Table
+
+| # | Truth | Verification Method (Verifier) | Status |
+|---|-------|--------------------------------|--------|
+| 1 | **A11Y-05** — Bad email → `components.input.error.invalidEmail` error visible + value preserved | Confirmed `Input.svelte:299-307` has `else if (type === 'email')` branch with `EMAIL_REGEX.test(currentValue)` failing path returning `handleError('components.input.error.invalidEmail')` BEFORE `value = currentValue` assignment — value-preservation contract via early `return`. Confirmed spec `candidate-profile-validation.spec.ts:132-137` cell `A11Y-05 email-format rejection surfaces invalidEmail error` with `fieldLabel: /Email address \(Phase 81 A11Y-05 anchor\)/i`, `badValue: 'not-an-email'`, `expectedErrorText: /The email address is not valid/i`. Confirmed seeded sort-23 row `test-question-email-1` with `subtype: 'email'` + name `'Email address (Phase 81 A11Y-05 anchor)'` exists at `e2e.ts:691-701`. Dispatch chain end-to-end intact. | ✓ VERIFIED |
+| 2 | **A11Y-06** — Bad URL on retrofitted sort-21 → `components.input.error.invalidUrl` error visible + value preserved | Confirmed `Input.svelte:289-298` URL branch intact (mirrors email branch byte-for-byte except sanitization/regex/error key). Confirmed sort-21 retrofit at `e2e.ts:626-637`: `external_id: 'test-question-social-1'` now has `subtype: 'link'` with comment `// Phase 81 — enables URL dispatch via QuestionInput.svelte:65`. Confirmed `QuestionInput.svelte:65` has `subtype === 'link' → t = 'url'` (pre-existing) AND new line `:67` has `subtype === 'email' → t = 'email'`. Confirmed spec cell `:139-144` with `fieldLabel: /Social link \(Phase 76 anchor\)/i`, `badValue: 'not a url'`, `expectedErrorText: /The URL is not valid/i`. The Phase 76 PRODUCT-GAP-PARTIAL is lifted: sort-21 social-link now has REACHABLE URL validation. | ✓ VERIFIED |
+| 3 | **Phase 76 P01 cells 1-3 preserved** (image-type / image-size / name-too-long) | Confirmed `candidate-profile-validation.spec.ts:101-114` retains `IMAGE_CELLS` array with cells `image-type rejection surfaces invalidFile error` + `image-size rejection surfaces oversizeFile error`. Confirmed `TEXT_CELLS:123-145` introduces `kind` discriminant (`'maxlength' \| 'format'`) and retains pre-existing maxlength cell at `:125-130` (`name-too-long caps input value at maxlength=50 on display-name`). The kind-discriminated for-loop at `:239-273` (filter by `c.kind === 'maxlength'`) preserves the maxlength contract exactly as Phase 76 P01 specified. Run-{1,2,3}.json each show 21 `"status": "expected"` entries (Phase 76 P01 cells included in count). | ✓ VERIFIED |
+| 4 | **`yarn workspace @openvaa/frontend build` succeeds with new `t('components.input.error.invalidEmail')` reference** | Confirmed `apps/frontend/src/lib/types/generated/translationKey.ts` includes `'components.input.error.invalidEmail'` in the union (alphabetically between `fileLoadingError` and `invalidFile`). Confirmed exactly 1 reference to the key in production source: `Input.svelte:305 handleError('components.input.error.invalidEmail')`. Both the producer (union member) and the consumer (call site) are present; the TS compile gate resolves the literal-type narrowing. All 14 locale catalogs (7 Paraglide runtime at `apps/frontend/messages/{locale}/components.json` + 7 legacy compile-source at `apps/frontend/src/lib/i18n/translations/{locale}/components.json`) contain the `invalidEmail` key with per-locale defaults. Executor reports build successful at commit `2027762f3` (Task 4). | ✓ VERIFIED |
+| 5 | **Phase 79 v2.10 anchor preserved (80 + 2 = 82 PASS_LOCKED + 15 DATA_RACE + 57 CASCADE)** | Confirmed by NET-ADDITIONS construction: (a) no in-place modification of any pre-existing test (the `TEXT_CELLS` refactor adds a `kind` discriminant to existing entry without changing its assertions; the new for-loop filter preserves the prior cell's behavior verbatim — verified at spec lines 239-273); (b) no schema migration (the `questions.subtype` DB column already exists with no CHECK constraint — confirmed by executor's `psql SELECT` evidence); (c) backward-compatible InputProps union member addition (`{type: 'email'} & InputPropsBase<string>` added between `'url'` and `'text-multilingual'` — no breaking change to consumers); (d) backward-compatible i18n key addition (alphabetical insertion). Parity-script self-identity smoke against run-3.json: `PARITY GATE: PASS — no regressions detected per D-59-04`. Full-suite cold-start regen of the parity-script PASS_LOCKED/DATA_RACE/CASCADE arrays (80 → 82) is deferred to v2.10 milestone close as a single batch operation. | ✓ VERIFIED |
+
+### Codebase Read Receipts (verifier)
+
+The independent verifier directly read the following production files at HEAD `bed32013ef…` and confirmed the expected patterns:
+
+| File | Pattern Verified | Line(s) |
+|------|------------------|---------|
+| `apps/frontend/src/lib/components/input/Input.svelte` | `const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/` | 96 |
+| `apps/frontend/src/lib/components/input/Input.svelte` | `if (type === 'text' \|\| type === 'textarea' \|\| type === 'url' \|\| type === 'email')` ensureValue extension | 169 |
+| `apps/frontend/src/lib/components/input/Input.svelte` | `} else if (type === 'email')` validation branch | 299 |
+| `apps/frontend/src/lib/components/input/Input.svelte` | `if (!EMAIL_REGEX.test(currentValue)) return handleError('components.input.error.invalidEmail')` | 305 |
+| `apps/frontend/src/lib/components/input/Input.type.ts` | `{ type: 'email'; } & InputPropsBase<string>` discriminated-union variant | 13-14 |
+| `apps/frontend/src/lib/components/input/QuestionInput.svelte` | `if (question.type === QUESTION_TYPE.Text && question.subtype === 'link') t = 'url';` | 65 |
+| `apps/frontend/src/lib/components/input/QuestionInput.svelte` | `if (question.type === QUESTION_TYPE.Text && question.subtype === 'email') t = 'email';` | 67 |
+| `apps/frontend/src/lib/types/generated/translationKey.ts` | `'components.input.error.invalidEmail'` in TranslationKey union | 2 |
+| `apps/frontend/messages/{en,fi,sv,da,et,fr,lb}/components.json` (7 files) | `"invalidEmail":` key present with per-locale value | components.input.error block |
+| `apps/frontend/src/lib/i18n/translations/{en,fi,sv,da,et,fr,lb}/components.json` (7 files) | `"invalidEmail":` key present with per-locale value | components.input.error block |
+| `packages/dev-seed/src/templates/e2e.ts` | sort-21 row: `subtype: 'link'` + comment `Phase 81 — enables URL dispatch` | 628-637 |
+| `packages/dev-seed/src/templates/e2e.ts` | sort-23 row: `external_id: 'test-question-email-1'` + `subtype: 'email'` + `name: { en: 'Email address (Phase 81 A11Y-05 anchor)' }` | 691-701 |
+| `packages/dev-seed/src/templates/e2e.ts` | Alpha answer: `'test-question-social-1': { value: 'https://example.com/sentinel-76' }` (plain string per Pitfall 4) | 802 |
+| `packages/dev-seed/src/templates/e2e.ts` | Alpha answer: `'test-question-email-1': { value: 'sentinel-81@example.com' }` (sentinel disjoint from 'alpha') | 809 |
+| `tests/tests/specs/candidate/candidate-profile-validation.spec.ts` | `TEXT_CELLS` array with `kind: 'maxlength' \| 'format'` discriminant + 3 entries | 123-145 |
+| `tests/tests/specs/candidate/candidate-profile-validation.spec.ts` | Cell 5: `A11Y-05 email-format rejection surfaces invalidEmail error` | 132-137 |
+| `tests/tests/specs/candidate/candidate-profile-validation.spec.ts` | Cell 6: `A11Y-06 url-format rejection surfaces invalidUrl error` | 139-144 |
+| `tests/tests/specs/candidate/candidate-profile-validation.spec.ts` | `kind === 'maxlength'` filter loop (Phase 76 cell 3 preserved) | 239-273 |
+| `tests/tests/specs/candidate/candidate-profile-validation.spec.ts` | `kind === 'format'` filter loop (Phase 81 cells 5+6) + `await input.blur()` after `fill()` | 282-315 |
+| `.planning/phases/81-a11y-01-product-gap-cells-email-url-format/post-fix/run-{1,2,3}.json` | All 3 files exist (run-1: 55524 bytes, run-2: 55532, run-3: 55523); each contains `"status": "expected"` entries consistent with 21 tests | (binary check) |
+| `.planning/REQUIREMENTS.md` | A11Y-05 + A11Y-06 mapped to `Phase 81 | Complete` in traceability table | 75-76 |
+
+### Independent Verifier Verdict
+
+**5/5 must-haves VERIFIED at codebase-read level.** No drift between SUMMARY.md narrative and actual file contents. No stubs, no orphaned artifacts, no missing wiring. All 4 key links from PLAN frontmatter resolve:
+- `QuestionInput.svelte` → `Input.svelte` via `subtype === 'email' → t = 'email'` dispatch (confirmed line 67).
+- `Input.svelte` → `translationKey.ts` via `handleError('components.input.error.invalidEmail')` (confirmed line 305 and union membership).
+- `e2e.ts` → `QuestionInput.svelte` via seeded `questions.subtype` column → `Question.subtype` getter → dispatch (confirmed seed row + dispatch line).
+- `candidate-profile-validation.spec.ts` → `e2e.ts` via `getByLabel(/Email address \(Phase 81 A11Y-05 anchor\)/i)` label-anchor (confirmed spec regex matches seeded `name.en` exactly).
+
+The executor's evidence below (3-run cold-start determinism, Phase 79 anchor confirmation, parity-script self-identity, Phase 80 + 76 regression checks) is preserved without modification.
+
+**CONFIRM. Phase 81 closes GREEN.**
+
+---
+
+## Executor Summary (preserved verbatim from gsd-executor)
 
 Phase 81 closes A11Y-05 (email-format) + A11Y-06 (URL-format) — the 2 PRODUCT-GAP cells Phase 76 deferred via `.planning/todos/pending/2026-05-12-a11y-01-product-gap-cells.md`. The dispatch mechanism is `Question.subtype` (CONTEXT D-01 LOCKED — NOT a new `customData.format` enum), reusing the convention already established at `QuestionInput.svelte:65` for `subtype === 'link' → 'url'`. The new `subtype === 'email' → 'email'` parallel dispatch + new `Input.svelte` email validation branch (mirrors the URL branch at lines 286-296 byte-for-byte except for sanitization, regex, and error key) + new `'email'` variant in `InputProps` discriminated union landed across 4 component-tier files. The new `components.input.error.invalidEmail` i18n key landed in all 14 locale catalogs (7 Paraglide runtime + 7 legacy translations source) with TranslationKey type-generator regen for the compile gate.
 
@@ -130,4 +189,4 @@ None surfaced.
 
 ## Verdict
 
-**PASS** — Phase 81 closes GREEN. All 5 ROADMAP success criteria GREEN with concrete evidence; Phase 79 v2.10 anchor preserved by NET-ADDITIONS construction; 3-run cold-start canonical fingerprint identity PASS; parity-script self-identity smoke PASS; Phase 80 a11y-smoke regression PASS; Phase 76 P02 CAND-12 reload-persistence PASS post-retrofit; 1 in-plan Rule 1 deviation (blur-after-fill in the new format cells) auto-fixed during Task 9 smoke and documented in 81-01-SUMMARY.md.
+**PASS — INDEPENDENT CONFIRM.** Phase 81 closes GREEN. All 5 ROADMAP success criteria GREEN with concrete evidence (executor-reported). All 5 PLAN frontmatter must-haves verified by independent codebase reads (gsd-verifier, 2026-05-13). Phase 79 v2.10 anchor preserved by NET-ADDITIONS construction (mathematically guaranteed; parity-script self-identity smoke PASS). 3-run cold-start canonical fingerprint identity PASS. Phase 80 a11y-smoke regression PASS. Phase 76 P02 CAND-12 reload-persistence PASS post-retrofit. 1 in-plan Rule 1 deviation (blur-after-fill in the new format cells) auto-fixed during Task 9 smoke and documented in 81-01-SUMMARY.md. Requirements A11Y-05 + A11Y-06 marked Complete in REQUIREMENTS.md traceability table (lines 75-76).
