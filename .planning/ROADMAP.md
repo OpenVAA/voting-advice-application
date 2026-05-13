@@ -180,7 +180,8 @@ Phase 79 (DETERM-04 + DETERM-05) ✓ COMPLETE
   5. **Phase 82 advisory follow-up WR-01 closed:** `tests/tests/setup/templates/variant-hidden-required.ts` gets a maintainer-facing inline comment (option-(a) hygiene fix per Phase 82 REVIEW.md §WR-01) noting that Phase 82 added `test-question-required-empty-1` to the base seed; the SETTINGS-03 overlay must NOT delete Alpha's `required-empty-1` answer without first updating `candidate-required-info.spec.ts` (or the InfoBadge count assertion at `apps/frontend/src/routes/candidate/(protected)/+page.svelte:121` will silently shift). Concrete location: after `variant-hidden-required.ts:156`, before the `return row;` catch-all in the candidate-row mapper.
   6. **Phase 82 advisory follow-up IN-01 closed:** `tests/tests/specs/candidate/candidate-profile-validation.spec.ts` docstring count corrected — line 6 "Covers 3 reliably-renderable cells" → "Covers 6 reliably-renderable cells (3 original + 2 Phase 81 lifts + 1 Phase 82 standalone)"; line 51 "all 3 test titles are PREFIXED `A11Y-01 `" → "all 6 test titles". Purely cosmetic; updates the lead-in count to match post-Phase-81+82 reality.
   7. **Phase 82 advisory follow-up IN-02 closed (v2.10 milestone-close binding):** Phase 81's deferred +2 PASS_LOCKED entries (A11Y-05 email-format + A11Y-06 url-format from `tests/tests/specs/candidate/candidate-profile-validation.spec.ts`) are backfilled into the `PASS_LOCKED_TESTS` array at `tests/scripts/diff-playwright-reports.ts:111-193` in alphabetical position, jsdoc count updated 81 → 83 (or → 83 + N if DETERM-06/07 also shift PASS_LOCKED). Verified by a fresh 3-run cold-start at phase close (folded into SC #3's regen if PASS_LOCKED otherwise shifts; otherwise standalone additive regen).
-**Plans**: TBD
+**Plans**: 1 plan
+- [ ] 83-01-PLAN.md — DETERM-06 image-upload cascade selector-drift fix (D-01a ladder) + DETERM-07a/b hydration-completeness guards (worst-match + party-drawer) + WR-01 variant overlay extend + IN-01 docstring count fix + IN-02 +2 PASS_LOCKED backfill + 3-run cold-start gate + atomic constants regen for v2.10 milestone-close anchor
 **UI hint**: no
 
 ## Progress
@@ -217,4 +218,4 @@ Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82, 83 (pa
 | 80. A11Y Axe Cite-and-Fix | v2.10 | 1/1 | Complete | 2026-05-13 |
 | 81. A11Y-01 PRODUCT-GAP Cells — Email + URL Format | v2.10 | 1/1 | Complete    | 2026-05-13 |
 | 82. A11Y-01 PRODUCT-GAP Cell — Required-Empty | v2.10 | 1/1 | Complete    | 2026-05-13 |
-| 83. Test Reliability Follow-ups (Image-Upload Cascade + Voter-App Flakes) | v2.10 | 0/TBD | Not started | - |
+| 83. Test Reliability Follow-ups (Image-Upload Cascade + Voter-App Flakes) | v2.10 | 0/1 | Not started | - |
