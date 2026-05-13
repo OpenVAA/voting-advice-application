@@ -107,7 +107,7 @@ import { parseArgs } from 'node:util';
 // output below. Re-embed by running the regen script after a new canonical capture.
 // -----------------------------------------------------------------------------
 
-/** 80 tests locked PASSING on Phase 79 baseline (+33 vs Phase 75; DETERM-04 fix promoted cascade-blocked entries into PASS_LOCKED); any regression is a BLOCKER. */
+/** 81 tests locked PASSING on Phase 82 baseline (Phase 79 baseline 80 + 1 net-addition: Phase 82 A11Y-07 required-empty save-gate cell). NOTE: Phase 81's +2 NET-ADDITIONS (A11Y-05 email + A11Y-06 url) were deferred from Phase 81 P01 close per Phase 81 VERIFICATION §"Anchor preservation: PASS by additivity" — they are NOT folded here; the v2.10 milestone-close pre-release regen is the canonical home for backfilling both. Any regression vs. THIS list is a BLOCKER. */
 const PASS_LOCKED_TESTS: ReadonlyArray<string> = [
   'auth-setup :: setup/auth.setup.ts > authenticate as candidate',
   'candidate-app :: specs/candidate/candidate-auth.spec.ts > should login with valid credentials',
@@ -121,6 +121,7 @@ const PASS_LOCKED_TESTS: ReadonlyArray<string> = [
   'candidate-app :: specs/candidate/candidate-questions.spec.ts > should persist question answers after page reload (CAND-12)',
   'candidate-app :: specs/candidate/candidate-questions.spec.ts > should show specific candidate data (name or answered question) in preview (CAND-06)',
   'candidate-app :: specs/candidate/candidate-translation.spec.ts > multilocale candidate authors a translation and the value persists across reload',
+  'candidate-app-mutation :: specs/candidate/candidate-profile-validation.spec.ts > A11Y-01 A11Y-07 required-empty disables submit button via canSubmit gate',
   'candidate-app-mutation :: specs/candidate/candidate-profile-validation.spec.ts > A11Y-01 image-size rejection surfaces oversizeFile error',
   'candidate-app-mutation :: specs/candidate/candidate-profile-validation.spec.ts > A11Y-01 image-type rejection surfaces invalidFile error',
   'candidate-app-mutation :: specs/candidate/candidate-profile-validation.spec.ts > A11Y-01 name-too-long caps input value at maxlength=50 on display-name',
