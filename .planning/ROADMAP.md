@@ -151,7 +151,8 @@ Phase 79 (DETERM-04 + DETERM-05) ✓ COMPLETE
   3. Schema dispatch decision (likely `customData.format?: 'email' | 'url' | 'tel' | ...` enum on `CustomData.Question`, OR restored `Question.subtype` field — phase-discussion-time pick) covers both email + URL paths via a single mechanism; `INPUT_TYPES` in `QuestionInput.svelte` adds the `'email'` branch + the URL dispatch becomes reachable.
   4. e2e fixture extended at `packages/dev-seed/src/templates/e2e.ts` with 1 email-format info question (sort 22) + 1 URL dispatch (sort 21 promoted OR new sort 23) + Alpha answer cells.
   5. `tests/tests/specs/candidate/candidate-profile-validation.spec.ts` extended with A11Y-01 cell 5 (email) + cell 6 (URL) assertions; per-plan smoke PASS × 3 in isolation; Phase 76 P01 cells (image-type / image-size / name-too-long) continue to pass.
-**Plans**: TBD
+**Plans**: 1 plan
+- [ ] 81-01-PLAN.md — Schema dispatch (`Question.subtype` reuse) + Input.svelte email validation branch + `EMAIL_REGEX` const + Input.type.ts `email` variant + QuestionInput.svelte dispatch line + i18n `invalidEmail` key across 14 locale files (7 Paraglide + 7 legacy translations) + TranslationKey regen + e2e.ts sort-21 retrofit (subtype:'link') + new sort-23 email row + Alpha answer cells + plain-string migration for sort-21 + candidate-profile-validation.spec.ts `TEXT_CELLS` refactor with `kind` discriminant + 2 new cells (5 email + 6 URL) + 3-run cold-start determinism gate + parity-script self-identity smoke + 81-VERIFICATION.md
 **UI hint**: yes
 
 ### Phase 82: A11Y-01 PRODUCT-GAP Cell — Required-Empty
@@ -210,6 +211,6 @@ Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82, 83 (pa
 | 78. Cleanup Hygiene Phase | v2.9 | 7/7 | Complete | 2026-05-12 |
 | 79. Determinism Recovery (Cascading-Race Fix + Constants Regen) | v2.10 | 4/4 | Complete (passed-with-deferral) | 2026-05-13 |
 | 80. A11Y Axe Cite-and-Fix | v2.10 | 1/1 | Complete | 2026-05-13 |
-| 81. A11Y-01 PRODUCT-GAP Cells — Email + URL Format | v2.10 | 0/TBD | Not started | - |
+| 81. A11Y-01 PRODUCT-GAP Cells — Email + URL Format | v2.10 | 0/1 | Not started | - |
 | 82. A11Y-01 PRODUCT-GAP Cell — Required-Empty | v2.10 | 0/TBD | Not started | - |
 | 83. Test Reliability Follow-ups (Image-Upload Cascade + Voter-App Flakes) | v2.10 | 0/TBD | Not started | - |
