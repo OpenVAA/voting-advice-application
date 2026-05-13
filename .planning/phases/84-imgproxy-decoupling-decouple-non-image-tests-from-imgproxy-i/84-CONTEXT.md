@@ -21,7 +21,7 @@ Decouple non-image tests from the Supabase imgproxy infrastructure flake so the 
 
 4. **Phase 73 D-09 structural binding renegotiation.** The `IMGPROXY_TIED_TITLES` array in `.planning/phases/79-determinism-recovery-cascading-race-fix-constants-regen/post-fix/regen-constants.mjs:67-82` shrinks from 14 titles (matching 15 IDs because re-auth is dual-project) to 3 titles (matching 3 IDs — only the image-intrinsic tests). The match-count assertion gate at lines 87-103 of the regen script will fail loudly on the post-fix capture if the candidate-app-settings titles still appear imgproxy-tied — that's the intended structural binding (any residual imgproxy-tie on a non-image test is a CASCADE classification, not DATA_RACE).
 
-5. **Fresh 3-run cold-start anchor.** Post-DETERM-08-fix (and DETERM-09 if escalated), capture a fresh 3-run cold-start gate via the archived `regen-constants.mjs` (path above) against a captured `run-3.json`. The new v2.10 anchor SUPERSEDES the Phase 83 SHA `d6bfeebdb0…` anchor. Expected pool sizes (planner verifies post-gate): ~106 PASS_LOCKED (94 + 12 net from the 11 candidate-app-settings + 1 re-auth-dual promotion) + 3 DATA_RACE + 47 CASCADE.
+5. **Fresh 3-run cold-start anchor.** Post-DETERM-08-fix (and DETERM-09 if escalated), capture a fresh 3-run cold-start gate via the archived `regen-constants.mjs` (path above) against a captured `run-3.json`. The new v2.10 anchor SUPERSEDES the Phase 83 SHA `d6bfeebdb0…` anchor. Expected pool sizes (planner verifies post-gate, figure is approximate — the actual count from `regen-output.txt` binds): ~108 PASS_LOCKED (94 + 14 net: 11 settings + 2 password + 1 re-auth-dual promoted from DATA_RACE) + 3 DATA_RACE + 47 CASCADE.
 
 **Out of scope (deferred to Phase 85+):**
 - 9 `data-setup-*` variant-cascade chains + 9 paired `variant-*` cascade chains (47 CASCADE entries) — Phase 85.
@@ -78,7 +78,7 @@ Phase 84 is the structural precondition for Phases 85 + 86 (parallel-eligible af
 
 - **D-06 — Atomic-commit-per-task pattern.** Per Phase 79 D-10 + Phase 83 atomic-commit precedent: each plan task lands its own commit. The constants regen commit (which combines IMGPROXY_TIED_TITLES shrink + run-3.json + diff-playwright-reports.ts jsdoc + DATA_RACE_TESTS array shrink) is the ONE exception — bundled atomically.
 
-- **D-07 — Anchor expectation (planner verifies post-gate).** Expected post-Phase-84 anchor: ~106 PASS_LOCKED (94 + 12 net from 11 settings + 1 re-auth-dual) + 3 DATA_RACE + 47 CASCADE = ~156 total. The Phase 83 SHA `d6bfeebdb0…` anchor is ABSORBED by this regen. The new anchor is what Phases 85, 86, 87 measure against.
+- **D-07 — Anchor expectation (planner verifies post-gate; figure is approximate).** Expected post-Phase-84 anchor: ~108 PASS_LOCKED (94 + 14 net: 11 settings + 2 password + 1 re-auth-dual — RCA-FINDINGS classifies 14 distinct cascade-victim titles producing 14-15 test IDs, since the re-auth.setup.ts row registers under BOTH `auth-setup` and `re-auth-setup` projects) + 3 DATA_RACE + 47 CASCADE = ~158 total. The actual count from `regen-output.txt` binds — if it deviates from ~108, USE THE ACTUAL count and note the discrepancy in the SUMMARY. The Phase 83 SHA `d6bfeebdb0…` anchor is ABSORBED by this regen. The new anchor is what Phases 85, 86, 87 measure against.
 
 - **D-08 — Gate execution: agent-inline via Bash run_in_background.** Per Phase 79 D-11 + Phase 83 D-10 precedent: ~54 min per cold-start × 3 runs = ~162 min total wall time. Operator (kalle) explicitly OK with unattended execution.
 

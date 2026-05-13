@@ -210,7 +210,9 @@ Phase 79 (DETERM-04 + DETERM-05) ✓ COMPLETE
   3. DATA_RACE pool: 15 → ≤3. Surviving entries are EXACTLY the tests that explicitly load/persist images (CAND-03 image-upload + CAND-12 readback + CAND-03 image-rendered-on-page). The dual-project `re-authenticate as candidate` entries (auth-setup + re-auth-setup) are removed.
   4. Phase 73 D-09 structural binding renegotiated: IMGPROXY_TIED_TITLES list shrinks to only the 3 image-rendering test titles; `regen-constants.mjs` partition contract updated to match.
   5. Fresh 3-run cold-start gate SHA-identical FIRST attempt; new anchor reflects the shrunken DATA_RACE pool (≥+12 net PASS_LOCKED expected from the 11 candidate-app-settings + 1 dual-project re-auth promotions).
-**Plans**: TBD
+**Plans**: 2 plans
+- [ ] 84-01-PLAN.md — DETERM-08 project-graph repoint (re-auth-setup → candidate-app) + 1-run cold-start smoke (D-03 gate) + IMGPROXY_TIED_TITLES shrink 14 → 3 + 3-run cold-start gate (D-08) + atomic constants regen (D-06 exception) for new Phase 84 anchor
+- [ ] 84-02-PLAN.md — DETERM-09 contingent fallback (atomic 4-knob [storage.image_transformation] tune per D-04; only executes if Plan 01 Task 3 escalates with DATA_RACE > 3)
 **UI hint**: no
 
 ### Phase 85: Variant-Project Cascade RCA & Fix
@@ -286,7 +288,7 @@ Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82, 83 (pa
 | 81. A11Y-01 PRODUCT-GAP Cells — Email + URL Format | v2.10 | 1/1 | Complete    | 2026-05-13 |
 | 82. A11Y-01 PRODUCT-GAP Cell — Required-Empty | v2.10 | 1/1 | Complete    | 2026-05-13 |
 | 83. Test Reliability Follow-ups (Image-Upload Cascade + Voter-App Flakes) | v2.10 | 1/1 | Complete   | 2026-05-13 |
-| 84. Imgproxy Decoupling | v2.10 | 0/TBD | Not started | - |
+| 84. Imgproxy Decoupling | v2.10 | 0/2 | Not started | - |
 | 85. Variant-Project Cascade RCA & Fix | v2.10 | 0/TBD | Not started | - |
 | 86. Voter-App FAILURE-CLASS Cleanup | v2.10 | 0/TBD | Not started | - |
 | 87. v2.10 All-Green Milestone-Close Anchor | v2.10 | 0/TBD | Not started | - |
