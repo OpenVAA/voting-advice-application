@@ -181,13 +181,25 @@ test.describe('candidate profile (fresh candidate)', { tag: ['@candidate'] }, ()
     // `test-question-required-empty-1` (Phase 82 fixture row, sort 24,
     // custom_data.required:true) — without satisfying that gate the submit
     // click below would TIMEOUT against a permanently-disabled button. Fill
-    // it with a Phase 83 sentinel string before submit. Pre-Phase 82 this
-    // step was unnecessary because no info question carried `required:true`
-    // in the base e2e seed; the cascade-unblock from DETERM-06's ladder
-    // exposed this Phase 82 implicit-coupling regression.
-    const requiredEmptyInput = page.getByLabel('Required-empty (Phase 82 A11Y-07 anchor)');
+    // it with a Phase 83 sentinel string + blur before submit. Pre-Phase 82
+    // this step was unnecessary because no info question carried
+    // `required:true` in the base e2e seed; the cascade-unblock from
+    // DETERM-06's ladder exposed this Phase 82 implicit-coupling regression.
+    //
+    // The question renders as `text-multilingual` (type=text + no
+    // disableMultilingual on profile route, per QuestionInput.svelte:72-77);
+    // multiple <input>s share the accessible name via aria-labelledby. .first()
+    // disambiguates to the EN input (mirrors the canonical pattern at
+    // candidate-profile-validation.spec.ts:358). isEmptyValue treats the
+    // object value `{en: 'value', fi: '', ...}` as non-empty as long as ONE
+    // locale is filled (packages/data/src/utils/answer.ts:15-23).
+    const requiredEmptyInput = page.getByLabel(/Required-empty \(Phase 82 A11Y-07 anchor\)/i).first();
     await expect(requiredEmptyInput).toBeVisible({ timeout: 5000 });
     await requiredEmptyInput.fill('Sentinel 83 DETERM-06 required-empty');
+    await requiredEmptyInput.blur();
+    // Wait for the submit button to enable in reaction to the fill — the
+    // `allRequiredFilled` $derived re-evaluates on userData.answers update.
+    await expect(page.getByTestId(testIds.candidate.profile.submit)).toBeEnabled({ timeout: 5000 });
 
     // Save the profile to persist the image upload
     await profilePage.submit();
