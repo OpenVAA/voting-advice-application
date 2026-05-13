@@ -35,6 +35,21 @@ export class ProfilePage {
    * @param filePath - Absolute path to the image file to upload
    */
   async uploadImage(filePath: string): Promise<void> {
+    // Phase 83 DETERM-06 D-01b escalation: 500ms pre-filechooser settle delay
+    // (per CONTEXT D-01b + Phase 76 P01 mitigation pattern). D-01a's selector
+    // fix alone was not sufficient to unblock the filechooser TIMEOUT in
+    // cold-start — the 1-run smoke at post-fix/smoke-output.txt reproduced
+    // the cascade even after switching from raw-locator to getByRole('button').
+    // The settle delay lets the page hydrate the click-target's onclick
+    // handler before Playwright registers the filechooser listener; without
+    // it the click can land before the handler is wired and `fileInput?.click()`
+    // never fires.
+    // reason: there is no public hydration signal on the image-upload button
+    // (no testId-marked hydration sentinel, no aria-busy attribute on the
+    // imageUpload container); a small timeout is the canonical pattern per
+    // Phase 76 P01 for filechooser-trigger races.
+    // eslint-disable-next-line playwright/no-wait-for-timeout
+    await this.page.waitForTimeout(500);
     const fileChooserPromise = this.page.waitForEvent('filechooser');
     await this.imageUpload.getByRole('button').first().click();
     const fileChooser = await fileChooserPromise;
