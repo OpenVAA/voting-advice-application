@@ -743,33 +743,48 @@ for (const cell of TEXT_CELLS) {
 | A10 | The cell 5 bad email `'not-an-email'` will fail the new EMAIL_REGEX | Pattern 2 | LOW — manually checked: `/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test('not-an-email')` → false (no `@` separator). CITED. |
 | A11 | Email translation defaults are reasonable for fi/sv/da/et/fr/lb (CONTEXT D-10 + Specifics block defaults are translation-correct) | Code Example for i18n | MEDIUM — Finnish "Sähköpostiosoite ei kelpaa." reads naturally per native conventions but is the writer's best guess. ASSUMED; planner may delegate to a translation pass. Phase 80's i18n D-05 added Finnish/Swedish/Danish strings via similar process. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-### O-1: Should the planner accept the DOM `type="email"` attribute change, OR override to `type="text"`?
+### O-1 (RESOLVED): Should the planner accept the DOM `type="email"` attribute change, OR override to `type="text"`?
+**Resolved:** ACCEPT DOM `type="email"` binding — mobile UX gain, matches URL precedent. Plan Task 4 implements without override.
+
+
 
 - **What we know:** CONTEXT D-05 paragraph claims DOM shape is unchanged. Research verifies it IS changed (Pitfall 3): a dispatched `type='email'` emits `<input type="email">` because `Input.svelte:602` binds the prop to the attribute via `<input {type} ...>`. The same is true today for `type='url'` (dispatched on `subtype='link'`).
 - **What's unclear:** Whether the CONTEXT.md author intended (a) "the dispatched prop is not the same name as the DOM attribute" (which is wrong) OR (b) "the visible UX shouldn't differ" (which is also wrong because mobile keyboards differ for `type="email"` vs `type="text"`).
 - **Recommendation:** Plan 01 accepts the actual rendered DOM type — `<input type="email">` is semantically correct, improves mobile keyboard UX, and matches the existing `<input type="url">` precedent on subtype='link'. The CONTEXT D-05 paragraph's REJECTED rationale about HTML5 `validity.typeMismatch` cross-UA quirks still holds — programmatic regex remains the authority. Add a 1-line note to the PLAN.md task ("DOM type attribute IS bound; this is the existing URL precedent") for traceability.
 
-### O-2: Should Alpha's social-link seed answer at e2e.ts:767 be migrated to a plain string?
+### O-2 (RESOLVED): Should Alpha's social-link seed answer at e2e.ts:767 be migrated to a plain string?
+**Resolved:** YES — migrate sort-21 `'test-question-social-1'` from `{ value: { en: '...' } }` LocalizedString to plain string per Pitfall 4 option a; apply same pattern to new sort-23 email Alpha cell. Plan Task 7 Edit D-1 (sort-21) + Edit D-2 (sort-23) implement.
+
+
 
 - **What we know:** Pitfall 4 — Alpha's existing `'test-question-social-1': { value: { en: 'https://example.com/sentinel-76' } }` is a LocalizedString. Post-Phase-81 retrofit, the new url-typed input dispatches through `ensureString` which returns MISSING_VALUE for non-string input.
 - **What's unclear:** Whether the dev-seed pipeline OR a downstream postgres trigger (`validate_answer_value`) rejects a plain-string answer on a text-typed question (Assumption A6). The migration preamble at `00001_initial_schema.sql:163-166` says plain string IS acceptable.
 - **Recommendation:** Plan 01 migrates both `test-question-social-1` (sort-21) and `test-question-email-1` (sort-23) Alpha cells to plain strings. Verify at PLAN.md authoring time that `validate_answer_value` accepts plain string. If it doesn't, fall back to Pitfall 4 option b (document the soft regression).
 
-### O-3: Should the email regex extraction (`apps/frontend/src/lib/utils/email.ts`) happen in Plan 01 OR defer to a future refactor?
+### O-3 (RESOLVED): Should the email regex extraction (`apps/frontend/src/lib/utils/email.ts`) happen in Plan 01 OR defer to a future refactor?
+**Resolved:** INLINE in Input.svelte `<script>` block per CONTEXT D-06 default. Avoid premature abstraction at 2 branches (URL + email); revisit if a 5th+ format-validation branch accumulates. Plan Task 4 Edit A implements.
+
+
 
 - **What we know:** CONTEXT D-06 Claude's Discretion: planner picks inline vs extracted. The current `Input.svelte` already imports `checkUrl` from `$lib/utils/links.ts` — the import pattern is established.
 - **What's unclear:** Whether the extra ~30 LOC (new util file + 1 test) for an extracted email util justifies cleaner architecture. Per Deferred Ideas, the v2.10 scope is "don't add abstractions beyond what the task requires."
 - **Recommendation:** Inline the regex in `Input.svelte` script block as a `const EMAIL_REGEX = /.../` at the top. No util file. If a future phase adds `tel` / `postal` / etc dispatches, that's the natural time to refactor into a shared validator registry.
 
-### O-4: Should Plan 01 split into 2 plans (component-tier + spec-tier)?
+### O-4 (RESOLVED): Should Plan 01 split into 2 plans (component-tier + spec-tier)?
+**Resolved:** ONE bundled plan (9 tasks) — fits under the ~10-task ceiling. CONTEXT D-18 default + RESEARCH O-4 recommendation. Plan 81-01-PLAN.md implements.
+
+
 
 - **What we know:** CONTEXT D-18 default is 1 bundled plan; total LOC ~100 across ~6 files. Per-plan complexity ceiling unspecified.
 - **What's unclear:** Whether the planner-checker / executor agent's per-plan task ceiling is exceeded.
 - **Recommendation:** Default 1 bundled plan. If PLAN.md task count exceeds 10 distinct task steps, split into 2 along the line: Plan A = component-tier (Input.svelte branch + Input.type.ts variant + QuestionInput.svelte dispatch + i18n keys + TranslationKey regen) + dev-seed fixture retrofit; Plan B = spec extension + verification gate.
 
-### O-5: Should the verification gate include a manual check of multilocale fallback (et/fr/lb locales)?
+### O-5 (RESOLVED): Should the verification gate include a manual check of multilocale fallback (et/fr/lb locales)?
+**Resolved:** VISUAL INSPECTION ONLY — no per-locale E2E. Documented in 81-VALIDATION.md §"Manual-Only Verifications" row 2. Paraglide fallback chain handles undefined-locale gracefully; spec runs default `en`.
+
+
 
 - **What we know:** Phase 81 adds the new key to all 7 Paraglide locales. The e2e specs run in default `en` locale; Phase 78 / CLEAN-04 deferred a full key-coverage audit.
 - **What's unclear:** Whether a missing translation in et/fr/lb would surface in any automated test.
