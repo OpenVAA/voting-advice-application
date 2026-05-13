@@ -10,6 +10,9 @@ export type InputProps =
       type: 'url';
     } & InputPropsBase<string>)
   | ({
+      type: 'email';
+    } & InputPropsBase<string>)
+  | ({
       type: 'text-multilingual';
     } & InputPropsBase<LocalizedString>)
   | ({
