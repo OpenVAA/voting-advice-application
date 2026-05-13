@@ -20,7 +20,7 @@
 
 import { expect } from '@playwright/test';
 import { voterTest as test } from '../../fixtures/voter.fixture';
-import { E2E_CANDIDATES } from '../../utils/e2eFixtureRefs';
+import { E2E_CANDIDATES, E2E_ORGANIZATIONS } from '../../utils/e2eFixtureRefs';
 import { testIds } from '../../utils/testIds';
 
 // The candidate used for detail content verification (has info answers and open answers)
@@ -29,6 +29,12 @@ const alphaAnswers = alphaCandidate.answersByExternalId as Record<
   string,
   { value: string | number | boolean | Record<string, string>; info?: Record<string, string> }
 >;
+
+// Phase 83 DETERM-07b — expected party count for hydration-completeness guard
+// below. E2E_ORGANIZATIONS.length === 4 (2 default parties + 2 voter parties
+// per packages/dev-seed/src/templates/e2e.ts:189-228). Mirrors the existing
+// totalPartyCount derivation in voter-results.spec.ts (sibling spec).
+const expectedPartyCount = E2E_ORGANIZATIONS.length;
 
 test.describe('voter entity detail', { tag: ['@voter'] }, () => {
 
@@ -131,6 +137,14 @@ test.describe('voter entity detail', { tag: ['@voter'] }, () => {
     // Wait for party section to be visible
     const partySection = page.getByTestId(testIds.voter.results.partySection);
     await expect(partySection).toBeVisible();
+
+    // Phase 83 DETERM-07b: hydration-completeness guard — assert all party
+    // cards have rendered before clicking .first() to open the drawer.
+    // Without this, the click races entity-list reactivity / results-page
+    // hydration; flake reproduced 1/6 cold-start runs in Phase 79 captures
+    // (sha256.txt). 'entity-card-action' is the existing raw testId used at
+    // the click target below — reusing the same locator as the click target.
+    await expect(partySection.getByTestId('entity-card-action')).toHaveCount(expectedPartyCount);
 
     // Click the first party card's action link to open drawer.
     // The EntityCardAction component renders as <a data-testid="entity-card-action">.
