@@ -29,10 +29,16 @@
  * `components.input.error.invalidEmail` is wired into all 14 locale catalogs
  * (7 Paraglide + 7 legacy translations) with TranslationKey regen.
  *
- * Remaining PRODUCT-GAP cells (name-too-short / required-empty) stay deferred
- * via `.planning/todos/pending/2026-05-12-a11y-01-product-gap-cells.md`; the
- * required-empty cell is scheduled for Phase 82 / A11Y-07 with an embedded
- * product decision (REJECT-with-inline-error vs SOFT-WARN-ONLY).
+ * Phase 82 lift: A11Y-07 (required-empty save gate) is NOW resolved by the
+ * standalone `A11Y-01 A11Y-07 required-empty ...` test below — TIGHTEN-SOFT
+ * decision: `allRequiredFilled` is wired into `canSubmit` at
+ * `apps/frontend/src/routes/candidate/(protected)/profile/+page.svelte:92`
+ * so the submit button is truly disabled when any required info question is
+ * empty. Cell 4 fixture row `test-question-required-empty-1` (sort 24) lives
+ * in `packages/dev-seed/src/templates/e2e.ts` with `custom_data.required: true`.
+ *
+ * Remaining PRODUCT-GAP cell (name-too-short) stays deferred for a future
+ * milestone with no current phase mapping.
  *
  * i18n note (W-03 deferred-todo at
  * `.planning/todos/pending/2026-05-12-qspec-01-i18n-hardening.md`): error
@@ -313,4 +319,52 @@ test.describe('A11Y-01 candidate profile validation', { tag: ['@candidate'] }, (
       await expect(input).toHaveValue(cell.badValue);
     });
   }
+
+  // Phase 82 A11Y-07 cell — required-empty disables submit button via canSubmit gate.
+  // Lives OUTSIDE the existing TEXT_CELLS / IMAGE_CELLS for-loops (D-06): cell 4's
+  // contract (button-disable assertion on the profile-submit testId) is structurally
+  // different from format ('error text + input value preservation') and maxlength
+  // ('input value truncates to cap').
+  //
+  // CELL 4 CONTRACT (Phase 82 A11Y-07 TIGHTEN-SOFT): assert the submit button transitions from
+  // enabled → disabled when a required info question's answer is cleared. The reactive chain is:
+  // Input.svelte handleChange (multilingual branch) → userData.setAnswer → candCtx
+  // .requiredInfoQuestions filter → allRequiredFilled $derived re-evaluation → canSubmit
+  // $derived re-evaluation → <Button disabled={!canSubmit}> re-render.
+  //
+  // BLUR INVARIANT (Phase 81 D-11 inheritance): Input.svelte binds `onchange` (NOT `oninput`);
+  // Playwright's fill('') fires `input` events but `change` only fires on blur. The
+  // allRequiredFilled re-derivation depends on the change event firing — fill('') + .blur() is
+  // mandatory.
+  test('A11Y-01 A11Y-07 required-empty disables submit button via canSubmit gate', async ({ page }) => {
+    await loginAsCandidate(page);
+    await page.goto(buildRoute({ route: 'CandAppProfile', locale: 'en' }));
+
+    await expect(page.getByRole('heading', { name: /your profile/i })).toBeVisible({
+      timeout: 10000
+    });
+
+    // (a) Sanity gate — Alpha is profileComplete by default; submit button is enabled.
+    // The submit button at +page.svelte:308 renders as a native <button type="submit">
+    // (href is unset → Button.svelte:178-186 selects `button` element); Playwright's
+    // toBeDisabled() matcher works on native form elements.
+    const submit = page.getByTestId(testIds.candidate.profile.submit);
+    await expect(submit).toBeEnabled({ timeout: 5000 });
+
+    // The new required info question renders as 'text-multilingual' (QuestionInput.svelte:72-77
+    // — no subtype, profile route does not set disableMultilingual). Multiple <input>s share
+    // the same accessible name via aria-labelledby="{id}-label {id}-label-{locale}". .first()
+    // disambiguates to the EN input (Input.svelte:395 iterates [currentLocale, ...others]).
+    const input = page.getByLabel(/Required-empty \(Phase 82 A11Y-07 anchor\)/i).first();
+    await expect(input).toBeVisible({ timeout: 5000 });
+    await input.fill('');
+    await input.blur();
+
+    // (b) Submit button is now disabled — TIGHTEN-SOFT gate engaged.
+    await expect(submit).toBeDisabled({ timeout: 5000 });
+
+    // (c) Value-preservation: the user's empty state is preserved on screen (the spec did not
+    // see the field revert to Alpha's seeded value).
+    await expect(input).toHaveValue('');
+  });
 });
