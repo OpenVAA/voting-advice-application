@@ -40,74 +40,83 @@ import { readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 
 // -----------------------------------------------------------------------------
-// PHASE 79 REGEN (2026-05-13, Phase 79 Plan 03 Task 6 — DETERM-05 constants regen
-// against the post-fix v2.10 verification anchor. Source: post-fix/run-6.json
-// (the canonical D-09 fresh-trio SHA-identical baseline; see post-fix/sha256.txt
-// for full audit). Regen script: .planning/phases/79-determinism-recovery-cascading
-// -race-fix-constants-regen/post-fix/regen-constants.mjs.
+// PHASE 83 REGEN (2026-05-13, Phase 83 Plan 01 Task 8 — DETERM-05 constants regen
+// for v2.10 milestone-close anchor. Source: post-fix/run-3.json (the canonical
+// 3-run cold-start SHA-identical baseline; see post-fix/sha256.txt for full
+// audit). Regen script: .planning/phases/83-test-reliability-follow-ups-image-
+// upload-cascade-voter-app-f/post-fix/regen-constants.mjs (Phase 79 verbatim
+// copy with reportPath edited to 'run-3.json').
 //
-// PHASE 79 STORY — the cascading-race fix unlocked +33 PASS_LOCKED tests.
-// DETERM-04 resolved the candidate-profile.spec.ts:51 URL-predicate bug that
-// cascade-skipped the registration test's downstream chain at every prior
-// v2.9 verification gate (deferred-with-rationale through Phases 76 → 78).
-// With the fix landed, the suite now exposes:
-//   - The full candidate-app-mutation tree (registration + A11Y-01 + downstream)
-//   - voter-app A11Y-02 reload-persistence tests
-//   - SETTINGS-02 voter-allowopen variant + per-tab voter-results entries
-//   - Many voter-app entries that were CASCADE in Phase 75
+// PHASE 83 STORY — Test reliability follow-ups + v2.10 milestone-close hygiene.
+// DETERM-06 image-upload cascade ladder (D-01a selector fix + D-01b 500ms
+// settle delay + D-01c imgproxy re-enable + Rule-2 fill-required-empty) closed
+// the CAND-03 filechooser TIMEOUT and unblocked 5 downstream tests
+// (A11Y-02 × 3 persist + CAND-12 + CAND-03 readback). DETERM-07a hydration-
+// completeness guard for voter-matching worst-match stabilized the ~33% flake.
+// DETERM-07b hydration-completeness guard for voter-detail party-drawer
+// stabilized the 1/6 flake and promoted the test from FAILURE-CLASS narrative
+// to PASS_LOCKED. IN-02 backfilled the 2 Phase 81 deferred PASS_LOCKED entries
+// (A11Y-05 email + A11Y-06 url). WR-01 extended the variant-hidden-required
+// overlay to strip BOTH required-info answers from Alpha. IN-01 corrected the
+// A11Y-01 spec docstring count 3 → 6.
 //
-// PRIOR REGEN (Phase 75, 2026-05-11) replaced by this regen:
-// 47 PASS_LOCKED + 15 DATA_RACE + 33 CASCADE = 95 tests.
-// Phase 79 baseline: 80 PASS_LOCKED + 15 DATA_RACE + 57 CASCADE = 152 tests.
-//   PASS_LOCKED: grew +33 (47 → 80). DETERM-04 fix promoted previously-
-//                cascade-blocked tests into PASS_LOCKED. Notable promotions:
-//                candidate-app-mutation full suite (registration + A11Y-01
-//                cells), voter-app A11Y-02 persistence, voter-allowopen variant,
-//                voter-results matrix (SETTINGS-01 wave B + URL/coupling tests).
-//                NET-POSITIVE delta vs Phase 75 baseline.
-//   DATA_RACE:   unchanged at 15 — D-09 binding preserved (Phase 73 CONTEXT D-08
-//                IMGPROXY_TIED_TITLES audit clean across all Phase 79 captures;
-//                pool MUST NOT grow). The 14 IMGPROXY-tied + 1 dual-project
-//                re-auth.setup.ts entries are preserved verbatim.
-//   CASCADE:     grew +24 (33 → 57). The new entries are downstream of the
-//                still-failing image-upload test (CAND-03; previously masked by
-//                the registration cascade — now exposed). Image-upload is the
-//                next cascade source in the candidate-profile.spec.ts serial
-//                describe block AND the new variant-project chain seed
-//                (data-setup-variants → variant-allowopen + variant-hidden-required
-//                etc.) gate-cascades. These are NOT DETERM-04 regressions; they
-//                are pre-existing pool-eligible cascades surfaced by the fix.
-//                Routed to v2.11+ per Phase 79 SUMMARY.
-//   FAILURE-CLASS  ~11 tests deterministically FAIL × 3 in Phase 79 baseline
-//   (NOT pooled):  (timedOut / failed). Includes the image-upload root cause
-//                + 2 known voter-app intermittents (voter-matching 'should show
-//                worst match candidate as last result' + voter-detail 'should
-//                open party detail drawer') flagged via D-09 protocol — see
-//                .planning/phases/79-…/post-fix/sha256.txt. Both voter-app
-//                flakes are NOT IMGPROXY-tied (cannot be classified into
-//                DATA_RACE per Phase 73 D-09); they reproduce ~33% of runs (2/6
-//                across the Phase 79 captures). Filed as follow-up at
-//                .planning/todos/pending/2026-05-13-voter-matching-detail-flakes.md.
+// PRIOR REGEN (Phase 79, 2026-05-13) replaced by this regen:
+// 80 PASS_LOCKED + 15 DATA_RACE + 57 CASCADE = 152 tests.
+// Phase 83 baseline: 94 PASS_LOCKED + 15 DATA_RACE + 47 CASCADE = 156 tests.
+//   PASS_LOCKED: grew +14 (80 → 94). DETERM-06 cascade unblock promoted 3
+//                A11Y-02 persistence tests; DETERM-07b promoted party-drawer;
+//                IN-02 backfilled A11Y-05 + A11Y-06; the candidate-app-mutation
+//                cascade unblock also exposed +7 SETTINGS-01 wave A tests that
+//                were previously cascade-blocked. Phase 82 baseline 81 +
+//                Phase 83 net +13 = 94. NET-POSITIVE delta vs Phase 79 baseline.
+//   DATA_RACE:   unchanged at 15 — D-09 binding preserved (Phase 73 CONTEXT
+//                D-08 IMGPROXY_TIED_TITLES audit clean across all Phase 83
+//                captures; pool MUST NOT grow). The 14 IMGPROXY-tied + 1
+//                dual-project re-auth.setup.ts entries are preserved verbatim.
+//                The 2 IMGPROXY-tied tests cascade-unblocked by DETERM-06
+//                (CAND-12 readback + CAND-03 readback) classify into DATA_RACE
+//                per the partition contract, not PASS_LOCKED.
+//   CASCADE:     shrank -10 (57 → 47). The DETERM-06 cascade-unblock promoted
+//                the 3 A11Y-02 tests + 7 SETTINGS-01 wave A tests OUT of
+//                CASCADE into PASS_LOCKED. Remaining 47 CASCADE entries are
+//                pre-existing variant-project cascades (data-setup-variants →
+//                variant-allowopen + variant-hidden-required etc.) NOT
+//                addressed by Phase 83 scope; routed to v2.11+ per Phase 83
+//                SUMMARY.
+//   FAILURE-CLASS  ~10 tests deterministically FAIL × 3 in Phase 83 baseline
+//   (NOT pooled):  (timedOut / failed). voter-detail 'should open party detail
+//                drawer' was previously in this class — Phase 83 DETERM-07b
+//                hydration-guard promoted it to PASS_LOCKED. voter-matching
+//                'should show worst match candidate as last result' remains in
+//                PASS_LOCKED — previously flaked ~33% pre-Phase-83, now
+//                deterministic per DETERM-07a hydration-guard.
+//                Pre-existing FAILURE-CLASS items NOT addressed by Phase 83:
+//                voter-app-popups dismissal-after-reload, voter-navigation
+//                results-CTA threshold, voter-not-located-redirect /results
+//                deeplink, voter-popup-hydration full-page-load, voter-question-
+//                rendering boolean + categorical, voter-results filter-toggle
+//                no-effect-update-depth, voter-feedback-persistence,
+//                voter-visibility-required SETTINGS-03 hidden absent,
+//                voter-detail case (d) both-missing. Filed as deferred items
+//                .planning/todos/done/2026-05-13-voter-matching-detail-flakes.md
+//                (DETERM-07 follow-up moved to done at Phase 83 close).
 //
 // The 14 imgproxy-tied tests (1 direct + 13 cascades; 15 IDs because re-auth.setup.ts
 // runs in two projects) classify exclusively into DATA_RACE_TESTS per D-09 — RESEARCH
 // Pitfall 5 documents the rationale (intermittent infrastructure flake, not
 // deterministic). The pool MUST NOT grow.
 //
-// Phase 79 SC #4 (determinism gate): initial 3-run cold-start (run-1/2/3) FAILED
-// the strict D-08 identity gate due to the voter-app flakes documented above.
-// D-09 instability protocol triggered: 3 additional cold-start runs (run-4/5/6)
-// were SHA-identical at hash
-// ff0334f856650611e2a5d1b1f990e6bbd3ad7c228ff585d5f1b5abf6bc3a09c5.
-// Run-2 (from the initial trio) also matches this hash — 4 of 6 total runs
-// converged on the stable baseline. PARITY GATE: PASS on (4,5,6) trio
-// pair comparisons. Run-6 promoted to canonical regen source.
+// Phase 83 SC #7 (determinism gate): 3-run cold-start (run-1/2/3) PASSED the
+// strict D-08 identity gate first attempt at hash
+// d6bfeebdb0ac29d3b1632095f6ae325b468a9e5193eb350cdcc6607848173d11.
+// Previous Phase 79 v2.10 anchor (ff0334f856…) is ABSORBED by this regen;
+// the new v2.10-close anchor (d6bfeebdb0…) is the binding gate for v2.11+.
 //
 // Format: '<projectName> :: <specFile> > <specTitle>' — matches `flattenReport`
 // output below. Re-embed by running the regen script after a new canonical capture.
 // -----------------------------------------------------------------------------
 
-/** 81 tests locked PASSING on Phase 82 baseline (Phase 79 baseline 80 + 1 net-addition: Phase 82 A11Y-07 required-empty save-gate cell). NOTE: Phase 81's +2 NET-ADDITIONS (A11Y-05 email + A11Y-06 url) were deferred from Phase 81 P01 close per Phase 81 VERIFICATION §"Anchor preservation: PASS by additivity" — they are NOT folded here; the v2.10 milestone-close pre-release regen is the canonical home for backfilling both. Any regression vs. THIS list is a BLOCKER. */
+/** 94 tests locked PASSING on Phase 83 baseline (Phase 82 baseline 81 + 13 net-additions: 2 Phase 81 deferred backfills A11Y-05 email-format + A11Y-06 url-format; 3 A11Y-02 persistence tests cascade-unblocked by DETERM-06; 1 voter-detail party-drawer promoted from FAILURE-CLASS narrative by DETERM-07b; 7 SETTINGS-01 wave A tests cascade-unblocked by DETERM-06). Phase 81's deferred +2 backfilled in Phase 83 (v2.10 milestone-close hygiene). Any regression vs. THIS list is a BLOCKER. */
 const PASS_LOCKED_TESTS: ReadonlyArray<string> = [
   'auth-setup :: setup/auth.setup.ts > authenticate as candidate',
   'candidate-app :: specs/candidate/candidate-auth.spec.ts > should login with valid credentials',
@@ -121,14 +130,26 @@ const PASS_LOCKED_TESTS: ReadonlyArray<string> = [
   'candidate-app :: specs/candidate/candidate-questions.spec.ts > should persist question answers after page reload (CAND-12)',
   'candidate-app :: specs/candidate/candidate-questions.spec.ts > should show specific candidate data (name or answered question) in preview (CAND-06)',
   'candidate-app :: specs/candidate/candidate-translation.spec.ts > multilocale candidate authors a translation and the value persists across reload',
+  'candidate-app-mutation :: specs/candidate/candidate-profile-validation.spec.ts > A11Y-01 A11Y-05 email-format rejection surfaces invalidEmail error',
+  'candidate-app-mutation :: specs/candidate/candidate-profile-validation.spec.ts > A11Y-01 A11Y-06 url-format rejection surfaces invalidUrl error',
   'candidate-app-mutation :: specs/candidate/candidate-profile-validation.spec.ts > A11Y-01 A11Y-07 required-empty disables submit button via canSubmit gate',
   'candidate-app-mutation :: specs/candidate/candidate-profile-validation.spec.ts > A11Y-01 image-size rejection surfaces oversizeFile error',
   'candidate-app-mutation :: specs/candidate/candidate-profile-validation.spec.ts > A11Y-01 image-type rejection surfaces invalidFile error',
   'candidate-app-mutation :: specs/candidate/candidate-profile-validation.spec.ts > A11Y-01 name-too-long caps input value at maxlength=50 on display-name',
+  'candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > A11Y-02 should persist bio after page reload',
+  'candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > A11Y-02 should persist display name after page reload',
+  'candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > A11Y-02 should persist social link after page reload',
   'candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should register the fresh candidate via email link',
   'candidate-app-mutation :: specs/candidate/candidate-registration.spec.ts > should complete forgot-password and reset flow via Inbucket email',
   'candidate-app-mutation :: specs/candidate/candidate-registration.spec.ts > should complete registration via email link',
   'candidate-app-mutation :: specs/candidate/candidate-registration.spec.ts > should send registration email and extract link',
+  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — access.voterApp',
+  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — elections.showElectionTags',
+  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — entities.hideIfMissingAnswers.candidate',
+  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — entities.showAllNominations',
+  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — questions.showCategoryTags',
+  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — questions.showResultsLink',
+  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — results.sections',
   'data-setup :: setup/data.setup.ts > import test dataset',
   'data-teardown :: setup/data.teardown.ts > delete test dataset',
   'data-teardown :: setup/variant-data.teardown.ts > delete variant test dataset',
@@ -145,6 +166,7 @@ const PASS_LOCKED_TESTS: ReadonlyArray<string> = [
   'voter-app :: specs/voter/voter-detail.spec.ts > should display candidate answers correctly in info and opinions tabs',
   'voter-app :: specs/voter/voter-detail.spec.ts > should display candidate info and opinions tabs',
   'voter-app :: specs/voter/voter-detail.spec.ts > should open candidate detail drawer when clicking a result card',
+  'voter-app :: specs/voter/voter-detail.spec.ts > should open party detail drawer with info, candidates, and opinions tabs',
   'voter-app :: specs/voter/voter-journey.spec.ts > should answer all Likert questions with navigation',
   'voter-app :: specs/voter/voter-journey.spec.ts > should auto-imply election and constituency',
   'voter-app :: specs/voter/voter-journey.spec.ts > should load home page and display start button',
@@ -192,7 +214,7 @@ const PASS_LOCKED_TESTS: ReadonlyArray<string> = [
   'voter-app-settings :: specs/voter/voter-settings.spec.ts > should skip category when skip button clicked'
 ];
 
-/** 15 tests in the flake pool (14 imgproxy-tied per D-09 binding, ×2 for re-auth dual project); Phase 73 D-09 structural binding preserved verbatim across Phases 74→75→79. Pool MUST NOT grow. */
+/** 15 tests in the flake pool (14 imgproxy-tied per D-09 binding, ×2 for re-auth dual project); Phase 73 D-09 structural binding preserved verbatim across Phases 74→75→79→83. Pool MUST NOT grow. */
 const DATA_RACE_TESTS: ReadonlyArray<string> = [
   'auth-setup :: setup/re-auth.setup.ts > re-authenticate as candidate',
   'candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should persist profile image after page reload (CAND-12)',
@@ -211,21 +233,11 @@ const DATA_RACE_TESTS: ReadonlyArray<string> = [
   're-auth-setup :: setup/re-auth.setup.ts > re-authenticate as candidate'
 ];
 
-/** 57 tests cascaded (skipped / did-not-run) on Phase 79 baseline (+24 vs Phase 75 — image-upload cascade now visible post-DETERM-04 fix, plus new variant setup/spec entries); must not NEW-regress. */
+/** 47 tests cascaded (skipped / did-not-run) on Phase 83 baseline (-10 vs Phase 79 — image-upload cascade unblocked promoted 3 A11Y-02 + 7 SETTINGS-01 wave A tests to PASS_LOCKED); must not NEW-regress. */
 const CASCADE_TESTS: ReadonlyArray<string> = [
-  'candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > A11Y-02 should persist bio after page reload',
-  'candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > A11Y-02 should persist display name after page reload',
-  'candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > A11Y-02 should persist social link after page reload',
-  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — access.voterApp',
-  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — elections.showElectionTags',
-  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — entities.hideIfMissingAnswers.candidate',
-  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — entities.showAllNominations',
   'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — header.showFeedback',
   'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — header.showHelp',
   'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — notifications.voterApp',
-  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — questions.showCategoryTags',
-  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — questions.showResultsLink',
-  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — results.sections',
   'data-setup-1e-Nc :: setup/variant-1e-Nc.setup.ts > import 1e-Nc dataset',
   'data-setup-Ne-Nc :: setup/variant-Ne-Nc.setup.ts > import Ne-Nc dataset',
   'data-setup-allowopen :: setup/variant-allowopen.setup.ts > import allowopen dataset',

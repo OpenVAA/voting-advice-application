@@ -1,0 +1,11 @@
+Phase 79 Plan 03 Task 5 — 3-run SHA-256 identity check (D-08).
+
+Format: sha256(sorted("<projectName> :: <specFile> > <specTitle>|<status>")).
+Status normalisation: regen-constants.mjs categorizeStatus → {pass, cascade, fail}.
+
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/.planning/phases/83-test-reliability-follow-ups-image-upload-cascade-voter-app-f/post-fix/run-1.json: d6bfeebdb0ac29d3b1632095f6ae325b468a9e5193eb350cdcc6607848173d11  (166 entries)
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/.planning/phases/83-test-reliability-follow-ups-image-upload-cascade-voter-app-f/post-fix/run-2.json: d6bfeebdb0ac29d3b1632095f6ae325b468a9e5193eb350cdcc6607848173d11  (166 entries)
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/.planning/phases/83-test-reliability-follow-ups-image-upload-cascade-voter-app-f/post-fix/run-3.json: d6bfeebdb0ac29d3b1632095f6ae325b468a9e5193eb350cdcc6607848173d11  (166 entries)
+
+Verdict: PASS
+All 3 hashes identical — D-08 strict identity gate PASSED. Regen allowed.
