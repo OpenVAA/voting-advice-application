@@ -92,6 +92,9 @@ Multilingual features are only available if the `locales` store contains more th
     ...restProps
   }: InputProps = $props();
 
+  // reason: pragmatic regex catches obvious typos; server-side does final validation. The 3 disjoint [^\s@]+ groups have no nested quantifiers, so this regex is ReDoS-safe by construction.
+  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
   // const SAVE_INTERVAL_MS = 1000;
 
   ////////////////////////////////////////////////////////////////////
@@ -163,7 +166,7 @@ Multilingual features are only available if the `locales` store contains more th
    */
   function ensureValue(): void {
     // Empty string values
-    if (type === 'text' || type === 'textarea' || type === 'url') {
+    if (type === 'text' || type === 'textarea' || type === 'url' || type === 'email') {
       value ??= '';
     }
     // Initialize the value for an empty `LocalizedString`
@@ -292,6 +295,15 @@ Multilingual features are only available if the `locales` store contains more th
         const url = checkUrl(currentValue);
         if (url == null) return handleError('components.input.error.invalidUrl');
         value = url;
+      }
+    } else if (type === 'email') {
+      // Only update the value if it's an empty string or a valid email
+      const currentValue = currentTarget.value.trim();
+      if (currentValue === '') {
+        value = '';
+      } else {
+        if (!EMAIL_REGEX.test(currentValue)) return handleError('components.input.error.invalidEmail');
+        value = currentValue;
       }
 
       // All other types
