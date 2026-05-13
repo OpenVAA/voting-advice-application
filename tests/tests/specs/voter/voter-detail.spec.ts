@@ -138,13 +138,19 @@ test.describe('voter entity detail', { tag: ['@voter'] }, () => {
     const partySection = page.getByTestId(testIds.voter.results.partySection);
     await expect(partySection).toBeVisible();
 
-    // Phase 83 DETERM-07b: hydration-completeness guard — assert all party
-    // cards have rendered before clicking .first() to open the drawer.
-    // Without this, the click races entity-list reactivity / results-page
-    // hydration; flake reproduced 1/6 cold-start runs in Phase 79 captures
-    // (sha256.txt). 'entity-card-action' is the existing raw testId used at
-    // the click target below — reusing the same locator as the click target.
-    await expect(partySection.getByTestId('entity-card-action')).toHaveCount(expectedPartyCount);
+    // Phase 83 DETERM-07b: hydration-completeness guard — assert the party
+    // section's heading reflects the expected total-party count before
+    // clicking .first() to open the drawer. Without this, the click races
+    // entity-list reactivity / results-page hydration; flake reproduced 1/6
+    // cold-start runs in Phase 79 captures (sha256.txt). NOTE: cannot count
+    // entity-card-action directly — that testId is shared by party-card
+    // top-level links AND nested candidate subcards (run-1.json measured 15
+    // elements, not 4 parties; see voter-results.spec.ts canonical pattern
+    // at the "switch to organizations/parties section and back" test which
+    // also asserts the heading text rather than card count).
+    await expect(partySection.getByRole('heading', { level: 3 }).first()).toContainText(
+      `${expectedPartyCount} parties`
+    );
 
     // Click the first party card's action link to open drawer.
     // The EntityCardAction component renders as <a data-testid="entity-card-action">.
