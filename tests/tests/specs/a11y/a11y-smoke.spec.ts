@@ -1,10 +1,10 @@
 /**
- * A11Y-03 axe smoke — WCAG 2.1 AA scan against 5 high-traffic voter-app routes.
+ * A11Y-04 axe smoke — WCAG 2.1 AA cite-and-fix regression gate.
  *
- * Phase 76 Plan 03 — wiring + first-run baseline only (cite-and-fix is OUT OF SCOPE for v2.9
- * per ROADMAP A11Y-03; tracked as a follow-up todo to be filed by Plan 04). The smoke runs
- * ONLY when PLAYWRIGHT_A11Y=1 is set (per the conditional-project block in
- * tests/playwright.config.ts).
+ * Phase 80 — cite-and-fix regression gate. Phase 76 baselined 5 violations across 3 rule-IDs
+ * (aria-required-parent × 4, list × 2, button-name × 1 — see `76-A11Y-BASELINE.md`).
+ * Phase 80 component fixes resolve all 5; this spec asserts the post-fix 0-violation state
+ * AND the per-rule regression (catches future reintroductions).
  *
  * Routes (per Phase 76 CONTEXT D-07; 5 distinct entries):
  *   1. Home (voter landing /en)
@@ -17,7 +17,7 @@
  *
  * Each route: navigate → settle via role-based content wait (NEVER networkidle per DETERM-03)
  * → run AxeBuilder.withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze()
- * → log violations.length (do NOT assert specific count — first-run baseline only).
+ * → assert per-rule 0-violation gate + global 0-violation gate.
  *
  * STATE PREFILL — voter context reads selectedElection / selectedConstituency from URL
  * SEARCH PARAMS (NOT localStorage; verified at planning time in
@@ -131,13 +131,13 @@ test.beforeAll(async () => {
   });
   if (elections.type !== 'success' || elections.data.length === 0) {
     throw new Error(
-      'A11Y-03: failed to resolve test-election-1 UUID — ' +
+      'A11Y-04: failed to resolve test-election-1 UUID — ' +
         `e2e seed not loaded? ${elections.type === 'failure' ? elections.cause : 'no rows'}`
     );
   }
   if (constituencies.type !== 'success' || constituencies.data.length === 0) {
     throw new Error(
-      'A11Y-03: failed to resolve test-constituency-alpha UUID — ' +
+      'A11Y-04: failed to resolve test-constituency-alpha UUID — ' +
         `e2e seed not loaded? ${constituencies.type === 'failure' ? constituencies.cause : 'no rows'}`
     );
   }
@@ -156,43 +156,58 @@ function buildLocatedUrl(routeId: Route): string {
 // Module-level for…of route runner — module-level dispatch satisfies
 // playwright/no-conditional-in-test (no `if` inside test() bodies).
 for (const route of UNLOCATED_ROUTES) {
-  test(`A11Y-03 axe smoke — ${route.name}`, async ({ page }, testInfo) => {
+  test(`A11Y-04 axe smoke — ${route.name}`, async ({ page }, testInfo) => {
     await page.goto(buildRoute({ route: route.routeId, locale: 'en' }));
     await route.settle(page);
 
     const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
-
-    // First-run baseline ONLY — log + attach raw violations JSON for Plan 04 baseline artifact.
-    // Do NOT assert results.violations.length === 0; that's the cite-and-fix downstream phase's job.
-     
-    console.log(`[A11Y-03] ${route.name}: ${results.violations.length} violations`);
 
     await testInfo.attach(`axe-violations-${route.name}.json`, {
       body: JSON.stringify(results.violations, null, 2),
       contentType: 'application/json'
     });
 
-    // Defensive sanity check — analyze() returned a result object with the expected shape.
+    // Phase 80 cite-and-fix gate. Phase 76 baselined 5 violations across 3 rule-IDs:
+    //   aria-required-parent × 4, list × 2, button-name × 1 (76-A11Y-BASELINE.md).
+    expect(results.violations.filter((v) => v.id === 'aria-required-parent')).toHaveLength(0);
+    expect(results.violations.filter((v) => v.id === 'list')).toHaveLength(0);
+    expect(results.violations.filter((v) => v.id === 'button-name')).toHaveLength(0);
+
+    // SC #4 global zero gate — "0 violations across all 6 routes". Catches new rule-IDs
+    // that the per-rule trio doesn't name (e.g., heading-order from a latent h4-hoist
+    // outline gap; RESEARCH §Pitfall 1).
+    expect(results.violations).toHaveLength(0);
+
+    // reason: defensive shape checks PRESERVED per RESEARCH §Open Question 3 — defends against AxeBuilder API breakage on future axe-core upgrades; zero runtime cost.
     expect(results).toHaveProperty('violations');
     expect(Array.isArray(results.violations)).toBe(true);
   });
 }
 
 for (const route of LOCATED_ROUTES) {
-  test(`A11Y-03 axe smoke — ${route.name}`, async ({ page }, testInfo) => {
+  test(`A11Y-04 axe smoke — ${route.name}`, async ({ page }, testInfo) => {
     await page.goto(buildLocatedUrl(route.routeId));
     await route.settle(page);
 
     const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
-
-     
-    console.log(`[A11Y-03] ${route.name}: ${results.violations.length} violations`);
 
     await testInfo.attach(`axe-violations-${route.name}.json`, {
       body: JSON.stringify(results.violations, null, 2),
       contentType: 'application/json'
     });
 
+    // Phase 80 cite-and-fix gate. Phase 76 baselined 5 violations across 3 rule-IDs:
+    //   aria-required-parent × 4, list × 2, button-name × 1 (76-A11Y-BASELINE.md).
+    expect(results.violations.filter((v) => v.id === 'aria-required-parent')).toHaveLength(0);
+    expect(results.violations.filter((v) => v.id === 'list')).toHaveLength(0);
+    expect(results.violations.filter((v) => v.id === 'button-name')).toHaveLength(0);
+
+    // SC #4 global zero gate — "0 violations across all 6 routes". Catches new rule-IDs
+    // that the per-rule trio doesn't name (e.g., heading-order from a latent h4-hoist
+    // outline gap; RESEARCH §Pitfall 1).
+    expect(results.violations).toHaveLength(0);
+
+    // reason: defensive shape checks PRESERVED per RESEARCH §Open Question 3 — defends against AxeBuilder API breakage on future axe-core upgrades; zero runtime cost.
     expect(results).toHaveProperty('violations');
     expect(Array.isArray(results.violations)).toBe(true);
   });
