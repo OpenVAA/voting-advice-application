@@ -48,6 +48,24 @@
 
 - [x] **DETERM-07**: The 2 voter-app intermittent test flakes surfaced post-DETERM-04 are stabilized to deterministic PASS or moved to FAILURE-CLASS with explicit rationale: (1) `voter-app :: voter-matching.spec.ts > should show worst match candidate as last result` — failed in 1 of 6 Phase 79 cold-start captures, cascade-skipping 4 other voter-matching tests in the serial block; (2) `voter-app :: voter-detail.spec.ts > should open party detail drawer` — failed in 1 of 6 Phase 79 cold-start captures. Both are in the Phase 79 PASS_LOCKED roster (NOT IMGPROXY-tied per Phase 73 D-09 binding — cannot be classified into DATA_RACE without breaking the structural contract). Root cause hypothesis options per todo: (a) voter-app data-setup race, (b) voter results-page reactivity timing, (c) candidate-load ordering. Acceptance options (cheapest first): (1) **fix the flake** if root-cause is reachable; (2) **convert to deterministic skip** with `test.skip()` + rationale until fixed; (3) **move to FAILURE-CLASS** in `regen-constants.mjs` (rationale entry alongside Phase 75's QSPEC-01/02 precedent). Post-fix: 3 consecutive cold-start runs SHA-identical on the FIRST try (no D-09 instability protocol required); the v2.10 anchor SHA-256 hash stays at `ff0334f856…` OR a fresh regen is captured if the resolution touches the pass-set.
 
+### DETERM-3 — All-Green Suite extension (Phase 83 close exposed the remaining non-green pools; v2.10 absorbs the cleanup)
+
+- [ ] **DETERM-08**: Non-image tests are decoupled from the Supabase imgproxy infrastructure flake. Portrait rendering on `candidate-home` + `candidate-app-settings` pages is gated behind a test-fixture mechanism (e.g., `?skipImages=1` query param consumed by the portrait component, OR a settings flag, OR below-fold IntersectionObserver lazy-load) so post-login pages do NOT block on imgproxy fetches on initial paint. After fix, `re-auth.setup.ts` and the 11 `candidate-app-settings` pages no longer surface as IMGPROXY-tied. Acceptance: the dual-project `re-authenticate as candidate` entries (auth-setup + re-auth-setup) leave DATA_RACE; the 11 candidate-app-settings entries leave DATA_RACE; DATA_RACE shrinks 15 → ≤3.
+
+- [ ] **DETERM-09**: `apps/supabase/supabase/config.toml [storage.image_transformation]` config tuned for cold-start resilience. Tunable knobs documented per choice (worker count, timeout, connection pool, retry policy). Rationale committed inline. Parallel lever to DETERM-08; not a substitute for the structural decoupling.
+
+- [ ] **DETERM-10**: RCA plan identifies the shared root cause of the 9 `data-setup-*` cascade-skip chains (1e-Nc, allowopen, constituency, hidden-required, low-minimum-answers, multi-election, Ne-Nc, results-sections, startfromcg). Hypotheses to instrument: (a) yarn-arg-forwarding LANDMINE-9-style propagation through nested project dependencies; (b) fixture-overlay-ordering races in the variant-data-setup chain; (c) shared bootstrap state contamination. RCA-FINDINGS.md committed with per-project run logs + convergent failure pattern.
+
+- [ ] **DETERM-11**: Targeted fix(es) implemented for the DETERM-10-identified root cause. All 9 `data-setup-*` projects run to completion in cold-start mode; the 47 CASCADE pool entries shrink to ≤5 (residual = explicit v2.11+ deferrals with rationale). Variant spec runs surface their own deterministic verdicts; new deterministic failures (if any) join the DETERM-12/13/14 FAILURE-CLASS cohort for Phase 86 attention.
+
+- [ ] **DETERM-12**: Voter-app popup + hydration FAILURE-CLASS cluster resolved: `voter-app-popups dismissal-after-reload` + `voter-popup-hydration full-page-load`. Each test either deterministically passes OR is `test.skip()`+rationale'd with a v2.11+ follow-up todo.
+
+- [ ] **DETERM-13**: Voter-app filter + feedback FAILURE-CLASS cluster resolved: `voter-results filter-toggle no-effect-update-depth` + `voter-feedback-persistence`. Each test either deterministically passes OR `test.skip()`+rationale.
+
+- [ ] **DETERM-14**: Voter-app visibility + edge-case + question-rendering + navigation FAILURE-CLASS cluster resolved: `voter-visibility-required SETTINGS-03 hidden absent`, `voter-detail case-d both-missing`, `voter-question-rendering boolean + categorical (QSPEC-01/02)`, `voter-navigation results-CTA threshold`, `voter-not-located-redirect /results deeplink`. Each test either deterministically passes OR `test.skip()`+rationale.
+
+- [ ] **DETERM-15**: Final v2.10-ship anchor captured. Fresh 3-run cold-start gate SHA-identical FIRST attempt against the post-84+85+86 codebase. Pool sizes: ~150-160 PASS_LOCKED + ≤3 DATA_RACE + 0 CASCADE + ≤2 FAILURE-CLASS (residual = explicit v2.11+ deferrals). Anchor SHA committed to `tests/scripts/diff-playwright-reports.ts` jsdoc. `/gsd-audit-milestone v2.10` runs cleanly; status = shippable.
+
 ---
 
 ## Out of Scope (re-deferred to v2.11+)
@@ -77,12 +95,20 @@ Which phases cover which requirements.
 | A11Y-07     | Phase 82 | Complete |
 | DETERM-06   | Phase 83 | Complete |
 | DETERM-07   | Phase 83 | Complete |
+| DETERM-08   | Phase 84 | Not started |
+| DETERM-09   | Phase 84 | Not started |
+| DETERM-10   | Phase 85 | Not started |
+| DETERM-11   | Phase 85 | Not started |
+| DETERM-12   | Phase 86 | Not started |
+| DETERM-13   | Phase 86 | Not started |
+| DETERM-14   | Phase 86 | Not started |
+| DETERM-15   | Phase 87 | Not started |
 
 **Coverage:**
-- v2.10 requirements: 8 total
-- Mapped to phases: 8 ✓
+- v2.10 requirements: 16 total (8 original + 8 All-Green Suite extension)
+- Mapped to phases: 16 ✓
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-05-12*
-*Last updated: 2026-05-13 after Phase 79 close added Phase 83 (DETERM-06 + DETERM-07) for test-reliability gap closure (5 phases / 8 REQs).*
+*Last updated: 2026-05-13 after Phase 83 close — milestone extended with All-Green Suite Phases 84-87 (DETERM-08..15) to drive DATA_RACE → ≤3, CASCADE → 0, FAILURE-CLASS → 0 (9 phases / 16 REQs).*

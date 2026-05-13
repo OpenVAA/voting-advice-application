@@ -7,7 +7,7 @@
 - ✅ **v2.7 Svelte 5 Polish + Supabase-Adapter Loose Ends** — Phases 65-68 (shipped 2026-05-08)
 - ✅ **v2.8 Alliance Card + Frontend Hygiene Sweep** — Phases 69-72 (shipped 2026-05-10)
 - ✅ **v2.9 E2E Coverage + Suite Determinism** — Phases 73-78 (shipped 2026-05-12)
-- 🆕 **v2.10 Test Reliability + A11y Compliance** — Phases 79-83 (in progress; framed 2026-05-12, Phase 83 added 2026-05-13)
+- 🆕 **v2.10 Test Reliability + A11y Compliance + All-Green Suite** — Phases 79-87 (in progress; framed 2026-05-12, extended 2026-05-13 to absorb the All-Green Suite work — Phases 84-87 added 2026-05-13 post-Phase-83-close)
 
 See `.planning/MILESTONES.md` for cumulative history and `.planning/milestones/` for archived roadmaps + requirements.
 
@@ -79,29 +79,41 @@ Audit: `.planning/milestones/v2.9-MILESTONE-AUDIT.md` (status: tech_debt — 24/
 
 </details>
 
-### 🆕 v2.10 Test Reliability + A11y Compliance — IN PROGRESS (framed 2026-05-12, Phase 83 added 2026-05-13 post-Phase-79-close)
+### 🆕 v2.10 Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS (framed 2026-05-12; Phase 83 added 2026-05-13 post-Phase-79-close; Phases 84-87 added 2026-05-13 post-Phase-83-close as the All-Green Suite extension)
 
-**Milestone Goal:** Restore Playwright suite parity-regen capability and reach WCAG 2.1 AA on the 2 axe-baselined routes by closing v2.9's HIGH/MEDIUM a11y + test-determinism deferrals. 5-item scope: (1) HIGH candidate-profile cascading race fix + parity-script constants regen; (2) MEDIUM A11Y axe cite-and-fix; (3) MEDIUM A11Y-01 PRODUCT-GAP cells (email-format / url-format / required-empty); (4) MEDIUM image-upload cascade + (5) MEDIUM voter-app flakes (both surfaced by Phase 79's DETERM-04 fix; folded into Phase 83 as in-milestone gap closure rather than re-deferred to v2.11+).
+**Milestone Goal (extended 2026-05-13):** Restore Playwright suite parity-regen capability, reach WCAG 2.1 AA on the 2 axe-baselined routes, AND reach an All-Green deterministic e2e suite with no DATA_RACE flakes, no CASCADE skips, no FAILURE-CLASS deterministic failures. 8-item scope: (1) HIGH candidate-profile cascading race fix + parity-script constants regen; (2) MEDIUM A11Y axe cite-and-fix; (3) MEDIUM A11Y-01 PRODUCT-GAP cells (email-format / url-format / required-empty); (4) MEDIUM image-upload cascade + (5) MEDIUM voter-app flakes; (6) Imgproxy structural decoupling (DATA_RACE 15 → 3); (7) Variant-project cascade RCA + fix (CASCADE 47 → 0); (8) Voter-app FAILURE-CLASS cleanup (~10 → 0). Final v2.10-ship anchor captured in Phase 87.
 
-**Strategy: race-first, then a11y in parallel waves, then test-reliability gap closure in Phase 83.** DETERM-04 (cascading race) is the unlock condition for parity-script regen — every verification gate in v2.10 benefits from a non-cascading suite. Once DETERM-04 is green, A11Y-04 (axe cite-and-fix) + A11Y-05/06 (email/url cells) + A11Y-07 (required-empty cell) are structurally independent and can run in parallel waves. Phase 83 (DETERM-06 + DETERM-07) closes the 2 test-reliability surfaces that Phase 79 surfaced; it depends only on Phase 79 (parallel-eligible with 80/81/82) and may trigger a fresh constants regen if the closure shifts PASS_LOCKED.
+**Strategy: race-first → a11y parallel → test-reliability gap closure → All-Green Suite expansion.** Phases 79-83 (now COMPLETE) restored parity-regen + closed v2.9-deferred a11y + test-reliability follow-ups; new anchor at SHA `d6bfeebdb0…` (94 PASS_LOCKED + 15 DATA_RACE + 47 CASCADE). Phases 84-87 close the remaining non-green pools by (a) decoupling non-image tests from imgproxy (Phase 84 unlock condition for cleaner regens downstream), (b) diagnosing + fixing 9 variant-project cascade chains in parallel with (c) cleaning up the ~10 deterministic voter-app fails, then (d) capturing the final all-green ship anchor in Phase 87.
 
 **Gating + parallelism map:**
 
 ```
 Phase 79 (DETERM-04 + DETERM-05) ✓ COMPLETE
   │
-  └─ DETERM-04 green unblocks Phases 80, 81, 82, 83 (clean assertion runs)
+  └─ DETERM-04 green unblocked Phases 80, 81, 82, 83
         │
-        ├── Phase 80 (A11Y-04 axe cite-and-fix)             ← parallel-eligible
-        │
-        ├── Phase 81 (A11Y-05 + A11Y-06 email + url)         ← parallel-eligible
-        │
-        ├── Phase 82 (A11Y-07 required-empty)                ← parallel-eligible
-        │                                                      (embedded product decision)
-        │
-        └── Phase 83 (DETERM-06 image-upload + DETERM-07 voter-flakes) ← parallel-eligible
-                                                              (test-reliability gap closure;
-                                                               may trigger fresh constants regen)
+        ├── Phase 80 (A11Y-04 axe cite-and-fix)             ✓ COMPLETE
+        ├── Phase 81 (A11Y-05 + A11Y-06 email + url)        ✓ COMPLETE
+        ├── Phase 82 (A11Y-07 required-empty)               ✓ COMPLETE
+        └── Phase 83 (DETERM-06 image-upload + DETERM-07)   ✓ COMPLETE
+                                                              (anchor: d6bfeebdb0…
+                                                               94 PASS_LOCKED + 15 DATA_RACE + 47 CASCADE)
+                  │
+                  └─ Phase 83 anchor unlocks Phases 84-87 (All-Green Suite extension)
+                        │
+                        └── Phase 84 (DETERM-08 + DETERM-09: imgproxy structural decoupling)
+                              │                              (DATA_RACE 15 → 3; sequential precondition)
+                              │
+                              ├── Phase 85 (DETERM-10 + DETERM-11: variant-cascade RCA + close)  ← parallel-eligible
+                              │                              (CASCADE 47 → 0)
+                              │
+                              └── Phase 86 (DETERM-12/13/14: voter-app FAILURE-CLASS cleanup)    ← parallel-eligible
+                                                              (FAILURE-CLASS ~10 → 0)
+                                                                          │
+                                                                          └── Phase 87 (DETERM-15: final all-green anchor)
+                                                                                (sequential after 85 + 86;
+                                                                                 fresh 3-run cold-start gate;
+                                                                                 milestone-ship anchor)
 ```
 
 - [x] **Phase 79: Determinism Recovery (Cascading-Race Fix + Constants Regen)** — Fix the `candidate-profile.spec.ts:85-145` registration → set-password → ToU race (or restructure the test out of cascade-prone serial mode); regenerate parity-script constants from a clean 3-run cold-start baseline. Sequential REQs (DETERM-04 → DETERM-05). Unlock condition for Phases 80-83. (completed 2026-05-13, passed-with-deferral; 80/15/57 anchor locked at SHA `ff0334f856…`)
@@ -109,6 +121,10 @@ Phase 79 (DETERM-04 + DETERM-05) ✓ COMPLETE
 - [x] **Phase 81: A11Y-01 PRODUCT-GAP Cells — Email + URL Format** — Schema + component + i18n additions to close the email-format (A11Y-05) and URL-format (A11Y-06) candidate-profile validation cells. Shared `customData.format` / `Question.subtype` dispatch decision picked at phase discussion time. (completed 2026-05-13)
 - [x] **Phase 82: A11Y-01 PRODUCT-GAP Cell — Required-Empty** — Phase-discussion product decision (REJECT-with-error vs SOFT-WARN-ONLY) for empty-required save behavior; spec assertions reflect chosen mechanism. Closes A11Y-07. (completed 2026-05-13)
 - [x] **Phase 83: Test Reliability Follow-ups (Image-Upload Cascade + Voter-App Flakes) + v2.10 Milestone-Close Hygiene** — Close DETERM-06 (image-upload CAND-03 cascade resolution; mitigations from todo §"Recommended approach": selector-drift fix / pre-filechooser delay / imgproxy re-enable) + DETERM-07 (voter-matching + voter-detail flakes stabilization to deterministic PASS or FAILURE-CLASS with rationale) + 3 Phase 82 advisory follow-ups folded 2026-05-13 (WR-01 variant-hidden-required hygiene comment; IN-01 docstring count fix; IN-02 Phase 81 deferred +2 PASS_LOCKED backfill for A11Y-05+A11Y-06). May trigger a fresh constants regen if PASS_LOCKED shifts. (completed 2026-05-13)
+- [ ] **Phase 84: Imgproxy Decoupling** — Decouple non-image tests from the imgproxy infrastructure flake. Gate portrait rendering behind a test-fixture flag (or below-fold lazy-load) so `re-auth.setup.ts` + 11 `candidate-app-settings` pages stop awaiting imgproxy on initial paint. Parallel lever: tune `apps/supabase/supabase/config.toml [storage.image_transformation]` (worker count, timeout, connection pool). Closes the structural DATA_RACE pool from 15 → 3 (only CAND-03 image-upload + CAND-12 readback + CAND-03 readback remain). Unlock condition for Phase 85 + Phase 86.
+- [ ] **Phase 85: Variant-Project Cascade RCA & Fix** — Investigate + close the 47 CASCADE entries across 9 `data-setup-*` projects + 9 paired `variant-*` spec projects. Phase entrypoint is a single RCA plan to identify the shared root cause (likely yarn-arg-forwarding LANDMINE-9-style or setup-overlay-ordering); follow-up plans implement targeted fixes. Closes CASCADE pool from 47 → 0 (or near 0). Parallel-eligible with Phase 86 after Phase 84 lands.
+- [ ] **Phase 86: Voter-App FAILURE-CLASS Cleanup** — Investigate + resolve the ~10 deterministic voter-app failures currently in the FAILURE-CLASS narrative block. Likely 3 plans grouped by surface: (1) popups + hydration cluster, (2) filter + feedback cluster, (3) visibility + edge-case cluster. Closes FAILURE-CLASS pool ~10 → 0. Parallel-eligible with Phase 85 after Phase 84 lands.
+- [ ] **Phase 87: v2.10 All-Green Milestone-Close Anchor** — Capture a fresh 3-run cold-start gate after Phases 84-86 land; confirm all-green deterministic state (target: ~150-160 PASS_LOCKED + 0 DATA_RACE + 0 CASCADE + 0 FAILURE-CLASS); produce the final v2.10-ship anchor via `regen-constants.mjs`; run `/gsd-audit-milestone` for shippability sign-off.
 
 ## Phase Details
 
@@ -184,10 +200,61 @@ Phase 79 (DETERM-04 + DETERM-05) ✓ COMPLETE
 - [x] 83-01-PLAN.md — DETERM-06 image-upload cascade selector-drift fix (D-01a ladder) + DETERM-07a/b hydration-completeness guards (worst-match + party-drawer) + WR-01 variant overlay extend + IN-01 docstring count fix + IN-02 +2 PASS_LOCKED backfill + 3-run cold-start gate + atomic constants regen for v2.10 milestone-close anchor
 **UI hint**: no
 
+### Phase 84: Imgproxy Decoupling
+**Goal**: Decouple non-image tests from the Supabase imgproxy infrastructure flake so the DATA_RACE pool shrinks from 15 to ≤3 (only CAND-03 image-upload + CAND-12 image-readback + CAND-03 image-rendered-on-page). After Phase 84, `re-auth.setup.ts` and 11 `candidate-app-settings` pages no longer synchronously await imgproxy on initial paint; the dual-project `re-authenticate as candidate` entry vanishes from DATA_RACE; and the post-login candidate-home + settings render paths are determined by test-controllable fixtures rather than image-transformation infrastructure. The parity-script jsdoc + DATA_RACE_TESTS array reflect the new pool size; the Phase 73 D-09 binding contract is renegotiated (pool size constant updated from 15 → 3 at this phase; new structural binding is "image-rendering tests only").
+**Depends on**: Phase 83 ✓ COMPLETE (v2.10-close anchor at SHA `d6bfeebdb0…` is the binding gate Phase 84 measures against).
+**Requirements**: DETERM-08, DETERM-09
+**Success Criteria** (what must be TRUE):
+  1. DETERM-08 closed: Portrait rendering on candidate-home + candidate-app-settings pages is gated behind a test-fixture mechanism (e.g., `?skipImages=1` query param, settings flag, or below-fold IntersectionObserver lazy-load). Post-login pages do NOT block on imgproxy fetches on initial paint.
+  2. DETERM-09 closed: `apps/supabase/supabase/config.toml [storage.image_transformation]` config tuned (worker count / timeout / connection pool) for cold-start resilience. Documented rationale per knob.
+  3. DATA_RACE pool: 15 → ≤3. Surviving entries are EXACTLY the tests that explicitly load/persist images (CAND-03 image-upload + CAND-12 readback + CAND-03 image-rendered-on-page). The dual-project `re-authenticate as candidate` entries (auth-setup + re-auth-setup) are removed.
+  4. Phase 73 D-09 structural binding renegotiated: IMGPROXY_TIED_TITLES list shrinks to only the 3 image-rendering test titles; `regen-constants.mjs` partition contract updated to match.
+  5. Fresh 3-run cold-start gate SHA-identical FIRST attempt; new anchor reflects the shrunken DATA_RACE pool (≥+12 net PASS_LOCKED expected from the 11 candidate-app-settings + 1 dual-project re-auth promotions).
+**Plans**: TBD
+**UI hint**: no
+
+### Phase 85: Variant-Project Cascade RCA & Fix
+**Goal**: Diagnose + close the 47 CASCADE entries spread across 9 `data-setup-*` projects (1e-Nc, allowopen, constituency, hidden-required, low-minimum-answers, multi-election, Ne-Nc, results-sections, startfromcg) + their paired 9 `variant-*` spec projects. After Phase 85, all 9 variant data-setup chains run to completion and their dependent variant-spec projects either pass or surface deterministic failures that are addressable by Phase 86's voter-FAILURE-CLASS path. The CASCADE pool shrinks from 47 → 0 (or near 0 — any residual entries are explicitly documented as v2.11+ deferrals with rationale).
+**Depends on**: Phase 84 (cleaner DATA_RACE baseline so the variant cascades are diagnosed against a non-imgproxy-flaky suite). Parallel-eligible with Phase 86.
+**Requirements**: DETERM-10, DETERM-11
+**Success Criteria** (what must be TRUE):
+  1. DETERM-10 closed: RCA plan identifies the shared root cause of the 9 data-setup chain failures (likely yarn-arg-forwarding LANDMINE-9-style, fixture-overlay-ordering, or shared bootstrap state). RCA-FINDINGS.md committed with diagnostic evidence (per-project run logs + the convergent failure pattern).
+  2. DETERM-11 closed: Targeted fix(es) implemented for the identified root cause. All 9 `data-setup-*` projects run to completion in cold-start.
+  3. CASCADE pool: 47 → ≤5 (residual entries documented as v2.11+ deferrals if any remain).
+  4. Variant spec runs surface their own deterministic verdicts (pass / fail) — any new failures join the FAILURE-CLASS cohort for Phase 86 attention.
+  5. Fresh 3-run cold-start gate SHA-identical FIRST attempt; new anchor reflects the CASCADE shrinkage.
+**Plans**: TBD
+**UI hint**: no
+
+### Phase 86: Voter-App FAILURE-CLASS Cleanup
+**Goal**: Investigate + resolve the ~10 deterministic voter-app failures currently in the FAILURE-CLASS narrative block at `tests/scripts/diff-playwright-reports.ts:87-101`. Items grouped by surface cluster: (1) popups + hydration (voter-app-popups dismissal-after-reload, voter-popup-hydration full-page-load), (2) navigation + redirects (voter-navigation results-CTA threshold, voter-not-located-redirect /results deeplink), (3) question-rendering (voter-question-rendering boolean + categorical / QSPEC-01/02), (4) filter + feedback (voter-results filter-toggle no-effect-update-depth, voter-feedback-persistence), (5) visibility + edge-cases (voter-visibility-required SETTINGS-03 hidden absent, voter-detail case-d both-missing). After Phase 86, all are deterministically passing OR explicitly demoted via `test.skip()` with rationale OR documented as v2.11+ product-decision deferrals.
+**Depends on**: Phase 84 (cleaner DATA_RACE baseline). Parallel-eligible with Phase 85.
+**Requirements**: DETERM-12, DETERM-13, DETERM-14
+**Success Criteria** (what must be TRUE):
+  1. DETERM-12 closed: Popups + hydration cluster (~2 tests) deterministically pass OR `test.skip()`+rationale.
+  2. DETERM-13 closed: Filter + feedback cluster (~3 tests) deterministically pass OR `test.skip()`+rationale.
+  3. DETERM-14 closed: Visibility + edge-cases cluster (~3 tests) + navigation/redirects (~2 tests) + question-rendering (~2 tests) deterministically pass OR `test.skip()`+rationale.
+  4. FAILURE-CLASS narrative block at `diff-playwright-reports.ts:87-101` shrinks to ≤2 entries (residual = explicit v2.11+ deferrals); the structural "FAILURE-CLASS" classification is renegotiated.
+  5. Fresh 3-run cold-start gate SHA-identical FIRST attempt; new anchor reflects ~+10 net PASS_LOCKED.
+**Plans**: TBD
+**UI hint**: maybe (popup + hydration cluster may surface UI work)
+
+### Phase 87: v2.10 All-Green Milestone-Close Anchor
+**Goal**: Capture the final v2.10-ship anchor after Phases 84-86 land. Run a fresh 3-run cold-start gate; confirm all-green deterministic state (target: ~150-160 PASS_LOCKED + ≤3 DATA_RACE + 0 CASCADE + 0 FAILURE-CLASS); produce the binding v2.10-ship anchor via `regen-constants.mjs`; run `/gsd-audit-milestone` for shippability sign-off. The v2.10 milestone is shippable post-Phase-87.
+**Depends on**: Phase 84 + Phase 85 + Phase 86 ALL COMPLETE.
+**Requirements**: DETERM-15
+**Success Criteria** (what must be TRUE):
+  1. DETERM-15 closed: Fresh 3-run cold-start gate SHA-identical FIRST attempt against the post-84+85+86 codebase.
+  2. Final v2.10-ship anchor: ~150-160 PASS_LOCKED + ≤3 DATA_RACE + 0 CASCADE + ≤2 FAILURE-CLASS (residual = explicit v2.11+ deferrals). Anchor SHA committed to `tests/scripts/diff-playwright-reports.ts` jsdoc.
+  3. Phase 87 SUMMARY documents the all-green achievement + lists any explicit v2.11+ deferrals.
+  4. `/gsd-audit-milestone v2.10` runs cleanly; status = shippable.
+**Plans**: TBD
+**UI hint**: no
+
 ## Progress
 
 **Execution Order:**
-Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82, 83 (parallel-eligible after Phase 79 DETERM-04 green).
+Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82, 83 (parallel-eligible after Phase 79 DETERM-04 green) → Phase 84 (sequential precondition for All-Green Suite) → Phases 85 + 86 (parallel-eligible after Phase 84) → Phase 87 (sequential after 85 + 86).
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -219,3 +286,7 @@ Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82, 83 (pa
 | 81. A11Y-01 PRODUCT-GAP Cells — Email + URL Format | v2.10 | 1/1 | Complete    | 2026-05-13 |
 | 82. A11Y-01 PRODUCT-GAP Cell — Required-Empty | v2.10 | 1/1 | Complete    | 2026-05-13 |
 | 83. Test Reliability Follow-ups (Image-Upload Cascade + Voter-App Flakes) | v2.10 | 1/1 | Complete   | 2026-05-13 |
+| 84. Imgproxy Decoupling | v2.10 | 0/TBD | Not started | - |
+| 85. Variant-Project Cascade RCA & Fix | v2.10 | 0/TBD | Not started | - |
+| 86. Voter-App FAILURE-CLASS Cleanup | v2.10 | 0/TBD | Not started | - |
+| 87. v2.10 All-Green Milestone-Close Anchor | v2.10 | 0/TBD | Not started | - |
