@@ -127,8 +127,15 @@ file_size_limit = "500MiB"
 enabled = true
 
 # Image transformation API is available to Supabase Pro plan.
-# [storage.image_transformation]
-# enabled = true
+# Phase 83 DETERM-06 D-01c escalation: re-enabled to unblock the
+# filechooser TIMEOUT cascade in cold-start E2E (the imgproxy container
+# is required for the CAND-03 image-upload happy path; without it, the
+# storage layer may fail to acknowledge the multipart upload and the
+# filechooser event never settles). D-01a (selector fix) and D-01b
+# (500ms settle delay) were both insufficient — see
+# post-fix/smoke-output.txt for the audit.
+[storage.image_transformation]
+enabled = true
 
 # Store analytical data in S3 for running ETL jobs over Iceberg Catalog
 # This feature is only available on the hosted platform.
