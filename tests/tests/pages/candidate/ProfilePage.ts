@@ -13,25 +13,30 @@ export class ProfilePage {
   }
 
   /**
-   * Upload an image file via the file chooser triggered by clicking the image upload element.
+   * Upload an image file via the file chooser triggered by clicking the image upload button.
    *
-   * The Input component for type="image" puts data-testid on the outer container (via
-   * containerProps). The actual clickable element is an inner <label tabindex="0"> that
-   * triggers the hidden file input.
+   * Per the Phase 70 P03 refactor of `apps/frontend/src/lib/components/input/Input.svelte:532-557`,
+   * the Input component for `type="image"` renders the click target as a
+   * `<button type="button" id="{id}-image-label">` whose `onclick` handler
+   * programmatically opens the hidden `<input type="file">` via
+   * `fileInput?.click()`. Accessible-name composition lives on the file input
+   * itself via `aria-labelledby="{id}-label {id}-image-label"` at
+   * `Input.svelte:563`, so the button satisfies the WCAG button-name contract
+   * through its rendered children (`addImage` / `changeImage` / `noImage`
+   * label text + Icon).
+   *
+   * The role-based locator below (`button`, first match scoped to the
+   * imageUpload testId container) is the canonical Playwright semantic locator —
+   * aligns with
+   * `playwright/no-raw-locators` lint policy (no eslint-disable needed). The
+   * Phase 76 P01 / Phase 83 D-01a fix closes the selector-drift loop opened by
+   * Phase 70 P03's `<label tabindex="0">` → `<button>` refactor.
    *
    * @param filePath - Absolute path to the image file to upload
    */
   async uploadImage(filePath: string): Promise<void> {
     const fileChooserPromise = this.page.waitForEvent('filechooser');
-    // Click the inner interactive label, not the outer container.
-    // reason: the Input/type="image" component renders a presentational <label tabindex="0">
-    // wrapping a hidden <input type="file">. The label has no implicit ARIA role and no
-    // associated visible text or accessible name (the surrounding testId container holds
-    // the label text). Targeting by tabindex is the only stable structural anchor for the
-    // focusable file-trigger surface; getByRole/getByText/getByLabel all match the wrong
-    // element or no element. Scoped to the imageUpload testId so this stays narrow.
-    // eslint-disable-next-line playwright/no-raw-locators
-    await this.imageUpload.locator('label[tabindex="0"]').click();
+    await this.imageUpload.getByRole('button').first().click();
     const fileChooser = await fileChooserPromise;
     await fileChooser.setFiles(filePath);
   }
