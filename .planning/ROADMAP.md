@@ -241,7 +241,7 @@ Phase 79 (DETERM-04 + DETERM-05) ✓ COMPLETE
   4. FAILURE-CLASS narrative block at `diff-playwright-reports.ts:87-101` shrinks to ≤2 entries (residual = explicit v2.11+ deferrals); the structural "FAILURE-CLASS" classification is renegotiated.
   5. Fresh 3-run cold-start gate SHA-identical FIRST attempt; new anchor reflects ~+10 net PASS_LOCKED.
 **Plans**: 4 plans
-- [ ] 86-01-PLAN.md — DETERM-12 popups + hydration + navigation/redirects cluster (5 tests: voter-popups dismissal, voter-popup-hydration LAYOUT-03, voter-navigation results-CTA, voter-not-located-redirect chain-head, voter-detail party-drawer boundary harden)
+- [x] 86-01-PLAN.md — DETERM-12 popups + hydration + navigation/redirects cluster (5 tests: voter-popups dismissal, voter-popup-hydration LAYOUT-03, voter-navigation results-CTA, voter-not-located-redirect chain-head, voter-detail party-drawer boundary harden)
 - [ ] 86-02-PLAN.md — DETERM-13 filter + feedback cluster (2 tests + contained 3-component reactivity audit)
 - [ ] 86-03-PLAN.md — DETERM-14 visibility + edge-cases + question-rendering cluster (4 tests: QSPEC-01/02, voter-visibility-required project-config exclusion, voter-detail case (d))
 - [ ] 86-04-PLAN.md — Close: 3-run cold-start gate + anchor regen + STATE/ROADMAP update + atomic close commit
@@ -296,5 +296,5 @@ Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82, 83 (pa
 | 83. Test Reliability Follow-ups (Image-Upload Cascade + Voter-App Flakes) | v2.10 | 1/1 | Complete   | 2026-05-13 |
 | 84. Imgproxy Decoupling | v2.10 | 2/2 | Complete   | 2026-05-14 |
 | 85. Variant-Project Cascade RCA & Fix | v2.10 | 2/2 | Complete   | 2026-05-14 |
-| 86. Voter-App FAILURE-CLASS Cleanup | v2.10 | 0/4 | Not started | - |
+| 86. Voter-App FAILURE-CLASS Cleanup | v2.10 | 1/4 | In Progress|  |
 | 87. v2.10 All-Green Milestone-Close Anchor | v2.10 | 0/TBD | Not started | - |

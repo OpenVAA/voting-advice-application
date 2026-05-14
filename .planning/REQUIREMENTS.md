@@ -58,7 +58,7 @@
 
 - [ ] **DETERM-11**: Targeted fix(es) implemented for the DETERM-10-identified root cause. All 9 `data-setup-*` projects run to completion in cold-start mode; the 47 CASCADE pool entries shrink to ≤5 (residual = explicit v2.11+ deferrals with rationale). Variant spec runs surface their own deterministic verdicts; new deterministic failures (if any) join the DETERM-12/13/14 FAILURE-CLASS cohort for Phase 86 attention.
 
-- [ ] **DETERM-12**: Voter-app popup + hydration FAILURE-CLASS cluster resolved: `voter-app-popups dismissal-after-reload` + `voter-popup-hydration full-page-load`. Each test either deterministically passes OR is `test.skip()`+rationale'd with a v2.11+ follow-up todo.
+- [x] **DETERM-12**: Voter-app popup + hydration FAILURE-CLASS cluster resolved: `voter-app-popups dismissal-after-reload` + `voter-popup-hydration full-page-load`. Each test either deterministically passes OR is `test.skip()`+rationale'd with a v2.11+ follow-up todo.
 
 - [ ] **DETERM-13**: Voter-app filter + feedback FAILURE-CLASS cluster resolved: `voter-results filter-toggle no-effect-update-depth` + `voter-feedback-persistence`. Each test either deterministically passes OR `test.skip()`+rationale.
 

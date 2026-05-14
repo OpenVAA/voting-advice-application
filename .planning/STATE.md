@@ -4,14 +4,14 @@ milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
 status: executing
 stopped_at: Phases 84-87 batched context gathered
-last_updated: "2026-05-14T17:06:56.794Z"
-last_activity: 2026-05-14 -- Phase 86 planning complete
+last_updated: "2026-05-14T17:14:37.056Z"
+last_activity: 2026-05-14
 progress:
   total_phases: 9
   completed_phases: 7
   total_plans: 16
-  completed_plans: 12
-  percent: 75
+  completed_plans: 13
+  percent: 81
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 85 — Variant-Project Cascade RCA Fix
+**Current focus:** Phase 86 — Voter-App FAILURE-CLASS Cleanup
 
 ## Current Position
 
-Phase: 85 — COMPLETE
-Plan: 1 of 2
+Phase: 86 (Voter-App FAILURE-CLASS Cleanup) — EXECUTING
+Plan: 2 of 4
 Status: Ready to execute
-Last activity: 2026-05-14 -- Phase 86 planning complete
+Last activity: 2026-05-14
 
 ## Performance Metrics
 
@@ -80,6 +80,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | Phase 81 P01 | 1h | 9 tasks | 24 files |
 | Phase 82 P01 | 26min | 6 tasks | 4 files |
 | Phase 83 P01 | 180min | 10 tasks | 8 files |
+| Phase 86 P86-01 | 15min | 5 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -124,6 +125,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: [Phase 81-01]: A11Y-05 + A11Y-06 closed via Question.subtype dispatch ('email' parallel to 'link'); 14-locale i18n + TranslationKey regen; e2e sort-21 retrofit + new sort-23; 3-run cold-start fingerprint identity PASS; v2.10 anchor preserved by NET-ADDITIONS construction.
 - [Phase ?]: Phase 82 P01: TIGHTEN-SOFT closed A11Y-07 via canSubmit && allRequiredFilled gate at +page.svelte:103; sort-24 fixture landed with custom_data.required (LANDMINE-1); 6-cell A11Y-01 green; 3-run cold-start fingerprint identical; parity-script PASS_LOCKED 80 → 81 additive
 - [Phase ?]: Phase 83 P01: DETERM-06 closed via 4-rung ladder (D-01a+D-01b+D-01c+Rule-2); DETERM-07a/b via hydration guards; v2.10-close anchor regenerated at SHA d6bfeebdb0...
+- [Phase ?]: Phase 86 Plan 01 (DETERM-12 popups+hydration+navigation cluster): 5/5 tests fixed (0 skips, 0 todos); cluster RCA lens (hydration timing + nav state propagation) held; CASCADE-unblock predicted for 4 CLEAN-02 sibling cells at Plan 04 gate
 
 ### Blockers/Concerns
 
@@ -133,9 +135,9 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-05-13T19:45:23.362Z
+Last session: 2026-05-14T17:14:22.960Z
 Stopped at: Phases 84-87 batched context gathered
-Resume file: .planning/phases/84-imgproxy-decoupling-decouple-non-image-tests-from-imgproxy-i/84-CONTEXT.md
+Resume file: None
 Next action: Run `/gsd-plan-phase 79` to plan the Determinism Recovery phase.
 
 ### Plan-count estimate (drafted 2026-05-12)
