@@ -1,5 +1,5 @@
 
-=== PASS_LOCKED_TESTS (109) ===
+=== PASS_LOCKED_TESTS (113) ===
   'auth-setup :: setup/auth.setup.ts > authenticate as candidate',
   'auth-setup :: setup/re-auth.setup.ts > re-authenticate as candidate',
   'candidate-app :: specs/candidate/candidate-auth.spec.ts > should login with valid credentials',
@@ -92,6 +92,7 @@
   'voter-app :: specs/voter/voter-results.spec.ts > drawer paints before list on cold deeplink (D-10 source-order + content-visibility)',
   'voter-app :: specs/voter/voter-results.spec.ts > filter state resets on plural tab switch (D-14)',
   'voter-app :: specs/voter/voter-results.spec.ts > filter state survives drawer open/close (D-15)',
+  'voter-app :: specs/voter/voter-results.spec.ts > filter toggle narrows list without effect_update_depth_exceeded (RESULTS-01 + RESULTS-02)',
   'voter-app :: specs/voter/voter-results.spec.ts > invalid plural matcher returns 404 (D-11)',
   'voter-app :: specs/voter/voter-results.spec.ts > should display candidates section with result cards',
   'voter-app :: specs/voter/voter-results.spec.ts > should display entity type tabs for switching between candidates and organizations',
@@ -101,7 +102,10 @@
   'voter-app :: specs/voter/voter-static-pages.spec.ts > privacy page renders correctly',
   'voter-app :: specs/voter/voter-static-pages.spec.ts > should redirect to home when showAllNominations is false',
   'voter-app :: specs/voter/voter-static-pages.spec.ts > should render nominations page with entries',
+  'voter-app-popups :: specs/voter/voter-popups.spec.ts > should not show any popup when disabled',
+  'voter-app-popups :: specs/voter/voter-popups.spec.ts > should remember dismissal after page reload',
   'voter-app-popups :: specs/voter/voter-popups.spec.ts > should show feedback popup after delay on results page',
+  'voter-app-popups :: specs/voter/voter-popups.spec.ts > should show survey popup after delay on results page',
   'voter-app-settings :: specs/voter/voter-settings.spec.ts > should enforce minimum answers before results available',
   'voter-app-settings :: specs/voter/voter-settings.spec.ts > should filter questions to selected categories',
   'voter-app-settings :: specs/voter/voter-settings.spec.ts > should hide results link when showResultsLink is false',
@@ -156,5 +160,5 @@
   'voter-app :: specs/voter/voter-not-located-redirect.spec.ts > CLEAN-02 — multi-election multi-constituency bounces twice and resumes deferred target with query params preserved',
   'voter-app :: specs/voter/voter-not-located-redirect.spec.ts > CLEAN-02 — open-redirect attempt to external URL is rejected by whitelist (defense-in-depth)',
   'voter-app :: specs/voter/voter-not-located-redirect.spec.ts > CLEAN-02 — refresh after localStorage clear mid-session resumes deferred target',
-  'voter-app-popups :: specs/voter/voter-popups.spec.ts > should not show any popup when disabled',
-  'voter-app-popups :: specs/voter/voter-popups.spec.ts > should show survey popup after delay on results page'
+  'voter-app :: specs/voter/voter-question-rendering-boolean.spec.ts > boolean opinion question renders, voter answers, persists across goBack, mirrors on entity-detail',
+  'voter-app :: specs/voter/voter-question-rendering-categorical.spec.ts > categorical opinion question (single-choice) renders, voter answers, persists across goBack, mirrors on entity-detail'

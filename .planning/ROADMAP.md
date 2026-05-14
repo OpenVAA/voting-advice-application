@@ -123,7 +123,7 @@ Phase 79 (DETERM-04 + DETERM-05) ✓ COMPLETE
 - [x] **Phase 83: Test Reliability Follow-ups (Image-Upload Cascade + Voter-App Flakes) + v2.10 Milestone-Close Hygiene** — Close DETERM-06 (image-upload CAND-03 cascade resolution; mitigations from todo §"Recommended approach": selector-drift fix / pre-filechooser delay / imgproxy re-enable) + DETERM-07 (voter-matching + voter-detail flakes stabilization to deterministic PASS or FAILURE-CLASS with rationale) + 3 Phase 82 advisory follow-ups folded 2026-05-13 (WR-01 variant-hidden-required hygiene comment; IN-01 docstring count fix; IN-02 Phase 81 deferred +2 PASS_LOCKED backfill for A11Y-05+A11Y-06). May trigger a fresh constants regen if PASS_LOCKED shifts. (completed 2026-05-13)
 - [x] **Phase 84: Imgproxy Decoupling** — Decouple non-image tests from the imgproxy infrastructure flake. Gate portrait rendering behind a test-fixture flag (or below-fold lazy-load) so `re-auth.setup.ts` + 11 `candidate-app-settings` pages stop awaiting imgproxy on initial paint. Parallel lever: tune `apps/supabase/supabase/config.toml [storage.image_transformation]` (worker count, timeout, connection pool). Closes the structural DATA_RACE pool from 15 → 3 (only CAND-03 image-upload + CAND-12 readback + CAND-03 readback remain). Unlock condition for Phase 85 + Phase 86. (completed 2026-05-14)
 - [x] **Phase 85: Variant-Project Cascade RCA & Fix** — Investigate + close the 47 CASCADE entries across 9 `data-setup-*` projects + 9 paired `variant-*` spec projects. Phase entrypoint is a single RCA plan to identify the shared root cause (likely yarn-arg-forwarding LANDMINE-9-style or setup-overlay-ordering); follow-up plans implement targeted fixes. Closes CASCADE pool from 47 → 0 (or near 0). Parallel-eligible with Phase 86 after Phase 84 lands. (completed 2026-05-14)
-- [ ] **Phase 86: Voter-App FAILURE-CLASS Cleanup** — Investigate + resolve the ~10 deterministic voter-app failures currently in the FAILURE-CLASS narrative block. Likely 3 plans grouped by surface: (1) popups + hydration cluster, (2) filter + feedback cluster, (3) visibility + edge-case cluster. Closes FAILURE-CLASS pool ~10 → 0. Parallel-eligible with Phase 85 after Phase 84 lands.
+- [x] **Phase 86: Voter-App FAILURE-CLASS Cleanup** — Investigate + resolve the ~10 deterministic voter-app failures currently in the FAILURE-CLASS narrative block. Likely 3 plans grouped by surface: (1) popups + hydration cluster, (2) filter + feedback cluster, (3) visibility + edge-case cluster. Closes FAILURE-CLASS pool ~10 → 0. Parallel-eligible with Phase 85 after Phase 84 lands. (completed 2026-05-14)
 - [ ] **Phase 87: v2.10 All-Green Milestone-Close Anchor** — Capture a fresh 3-run cold-start gate after Phases 84-86 land; confirm all-green deterministic state (target: ~150-160 PASS_LOCKED + 0 DATA_RACE + 0 CASCADE + 0 FAILURE-CLASS); produce the final v2.10-ship anchor via `regen-constants.mjs`; run `/gsd-audit-milestone` for shippability sign-off.
 
 ## Phase Details
@@ -244,7 +244,7 @@ Phase 79 (DETERM-04 + DETERM-05) ✓ COMPLETE
 - [x] 86-01-PLAN.md — DETERM-12 popups + hydration + navigation/redirects cluster (5 tests: voter-popups dismissal, voter-popup-hydration LAYOUT-03, voter-navigation results-CTA, voter-not-located-redirect chain-head, voter-detail party-drawer boundary harden)
 - [x] 86-02-PLAN.md — DETERM-13 filter + feedback cluster (2 tests + contained 3-component reactivity audit)
 - [x] 86-03-PLAN.md — DETERM-14 visibility + edge-cases + question-rendering cluster (4 tests: QSPEC-01/02, voter-visibility-required project-config exclusion, voter-detail case (d))
-- [ ] 86-04-PLAN.md — Close: 3-run cold-start gate + anchor regen + STATE/ROADMAP update + atomic close commit
+- [x] 86-04-PLAN.md — Close: 3-run cold-start gate (ALMOST-STRICT — party-drawer boundary flake; run-3 canonical) + anchor regen at SHA `9a6d74a3088ec2de933cce9ff40797ec1a1cf8180923f02fbfcaf6f690a30af9` (113 PASS_LOCKED / 3 DATA_RACE / 40 CASCADE / 2 SKIPPED) + SKIPPED_TESTS const introduced + FAILURE-CLASS narrative shrunk + STATE/ROADMAP update + atomic close commit (completed 2026-05-14)
 **UI hint**: maybe (popup + hydration cluster may surface UI work)
 
 ### Phase 87: v2.10 All-Green Milestone-Close Anchor
@@ -296,5 +296,5 @@ Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82, 83 (pa
 | 83. Test Reliability Follow-ups (Image-Upload Cascade + Voter-App Flakes) | v2.10 | 1/1 | Complete   | 2026-05-13 |
 | 84. Imgproxy Decoupling | v2.10 | 2/2 | Complete   | 2026-05-14 |
 | 85. Variant-Project Cascade RCA & Fix | v2.10 | 2/2 | Complete   | 2026-05-14 |
-| 86. Voter-App FAILURE-CLASS Cleanup | v2.10 | 3/4 | In Progress|  |
+| 86. Voter-App FAILURE-CLASS Cleanup | v2.10 | 4/4 | Complete   | 2026-05-14 |
 | 87. v2.10 All-Green Milestone-Close Anchor | v2.10 | 0/TBD | Not started | - |
