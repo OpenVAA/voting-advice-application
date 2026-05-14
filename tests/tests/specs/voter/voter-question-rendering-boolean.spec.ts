@@ -60,9 +60,47 @@ import { walkToQuestion } from '../../utils/voterNavigation';
 // assertion per CONTEXT D-04 + ROADMAP SC #3.
 
 test.describe('voter question rendering — boolean (QSPEC-01)', { tag: ['@voter'] }, () => {
+  ////////////////////////////////////////////////////////////////////
+  // Phase 86 DETERM-14 skip-with-rationale (Plan 03 Task 1):
+  //   QSPEC-01 inherits Phase 75 PASS-WITH-DEFERRAL classification.
+  //   `walkToQuestion(page, 17)` calls `walkToQuestionsIntro` which
+  //   waits up to 10s on getByTestId('voter-questions-start') (apps/
+  //   frontend/src/routes/(voters)/(located)/questions/+page.svelte:161).
+  //   Phase 85 run-3 cold-start: 10s timeout in 3/3 runs (deterministic
+  //   FAIL inheriting upstream voter-fixture race).
+  //   Per-plan smoke remains PASS × 3 in isolation (verified Phase 75).
+  //
+  //   Per Phase 86 CONTEXT.md D-03 (fix-preferred-skip-acceptable, 1h
+  //   investigation cap) + D-08 (no SETTINGS-03 product-fix), Phase 86
+  //   inherits Phase 75's classification rather than:
+  //     - flipping the project-wide `--likert-only` seed (regresses 60+
+  //       voter-app PASS_LOCKED cells)
+  //     - patching the shared `walkToQuestion` helper (risk-unbounded
+  //       across the voter-app cluster)
+  //     - per-spec `appSettings.questions.questionsIntro.show: true`
+  //       override (settings persistence leak across adjacent tests)
+  //
+  //   v2.11+ scope captured at:
+  //   `.planning/todos/pending/2026-05-14-qspec-walkToQuestion-cold-start-race.md`
+  //   (shared with QSPEC-02 — same root cause per RESEARCH §3.10).
+  ////////////////////////////////////////////////////////////////////
+  // eslint-disable-next-line playwright/expect-expect
   test('boolean opinion question renders, voter answers, persists across goBack, mirrors on entity-detail', async ({
     page
   }) => {
+    // eslint-disable-next-line playwright/no-skipped-test
+    test.skip(
+      true,
+      [
+        'Phase 75 PASS-WITH-DEFERRAL inheritance: walkToQuestion intro-start CTA wait races',
+        'full-suite settings overlay (10s timeout on voter-questions-start in 3/3 Phase 85',
+        'cold-start runs). Per-plan smoke remains PASS × 3 in isolation. Project-wide',
+        '--likert-only seed flip would regress 60+ PASS_LOCKED cells; per-spec fixture',
+        'override risk-unbounded. v2.11+:',
+        '.planning/todos/pending/2026-05-14-qspec-walkToQuestion-cold-start-race.md'
+      ].join(' ')
+    );
+
     // ---------------------------------------------------------------
     // Step 1 — Walk to the boolean question at sort 18 + assert input
     // renders as 2 radios ('No' / 'Yes' per booleanChoices synthesized
