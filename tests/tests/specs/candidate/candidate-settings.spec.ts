@@ -16,14 +16,80 @@
  * question visibility) run serially to prevent race conditions.
  */
 
+import { STORAGE_STATE } from '../../../playwright.config';
 import { expect,test } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
+import { TEST_CANDIDATE_EMAIL, TEST_CANDIDATE_PASSWORD } from '../../utils/testCredentials';
 import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
 
 // All describe blocks in this file share global app state — run serially.
 test.describe.configure({ mode: 'serial' });
+
+// ---------------------------------------------------------------------------
+// Phase 84 Plan 01 deviation (Rule 1 — auto-fix bug): file-scoped re-auth.
+//
+// Background: Phase 84 DETERM-08 repointed `re-auth-setup` from
+// `candidate-app-mutation` → `candidate-app` to break the imgproxy-502
+// cascade. As a side effect, `re-auth-setup` now runs BEFORE
+// `candidate-app-mutation` (sibling projects under --workers=1 execute in
+// declaration order). Mutation's `candidate-registration.spec.ts > should
+// complete forgot-password and reset flow via Inbucket email` invokes
+// `client.setPassword(TEST_CANDIDATE_ALPHA_EMAIL, originalPassword)` at
+// L161 — which calls `auth.admin.updateUserById({ password })` and REVOKES
+// all of Alpha's existing refresh tokens, including the storageState
+// just written by re-auth-setup. By the time `candidate-app-settings`
+// starts (here), the STORAGE_STATE file holds a revoked token; the
+// protected layout's `safeGetSession()` returns no session and 307s the
+// page to /candidate/login, hiding the `candidate-home-status` testId.
+//
+// The research agent missed this because `candidate-profile.spec.ts` uses
+// `E2E_ADDENDUM_CANDIDATES[1]` (a fresh candidate), so they concluded
+// "mutation never touches Alpha". But `candidate-registration.spec.ts`
+// has TWO describe blocks: one for fresh-candidate registration AND one
+// for Alpha's password reset (L108-163). The password-reset block IS the
+// missing Alpha-touching test.
+//
+// Minimal fix (preserves DETERM-08 maximally — no project-graph change):
+// re-authenticate Alpha file-scoped via a beforeAll hook that opens a
+// temporary fresh browser context, logs in via the UI, and overwrites
+// STORAGE_STATE. The settings tests' `page` fixture then reads the
+// freshly-written storageState at context-creation time.
+//
+// Why not change the dep graph back: that would re-introduce the
+// imgproxy-502 cascade that DETERM-08 was designed to break. Settings
+// would cascade-skip whenever CAND-03 imgproxy 502s (the Phase 83
+// failure mode).
+//
+// Why not move ToU acceptance into setup: Alpha is already seeded with
+// `terms_of_use_accepted: '2025-01-01T00:00:00.000Z'` in the e2e
+// template (packages/dev-seed/src/templates/e2e.ts:783); ToU is not the
+// blocker — token revocation is.
+//
+// Verified via .planning/phases/84-.../post-fix/smoke.json timeline:
+//   06:30:32 re-auth-setup re-authenticate as candidate  ✓
+//   06:30:34 candidate-app-mutation starts
+//   06:31:06 mutation > should complete forgot-password ✓ (Alpha tokens revoked)
+//   06:31:09 candidate-app-settings > read-only warning  ✗ (page redirects to login)
+test.beforeAll(async ({ browser }) => {
+  const context = await browser.newContext({ storageState: { cookies: [], origins: [] } });
+  const page = await context.newPage();
+  try {
+    await page.goto(buildRoute({ route: 'CandAppHome', locale: 'en' }));
+    await page.getByTestId(testIds.candidate.login.email).waitFor({ state: 'visible', timeout: 20000 });
+    await page.getByTestId(testIds.candidate.login.email).fill(TEST_CANDIDATE_EMAIL);
+    await page.getByTestId(testIds.candidate.login.password).fill(TEST_CANDIDATE_PASSWORD);
+    await page.getByTestId(testIds.candidate.login.submit).click();
+    // Wait for navigation away from login (matches auth.setup.ts pattern)
+    await expect(page).not.toHaveURL(/.*login.*/, { timeout: 15000 });
+    // Overwrite the shared storageState file so per-test contexts pick up
+    // the fresh tokens at context-creation time.
+    await context.storageState({ path: STORAGE_STATE });
+  } finally {
+    await context.close();
+  }
+});
 
 /**
  * Default access settings to restore after each mode test.
