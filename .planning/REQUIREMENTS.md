@@ -60,7 +60,7 @@
 
 - [x] **DETERM-12**: Voter-app popup + hydration FAILURE-CLASS cluster resolved: `voter-app-popups dismissal-after-reload` + `voter-popup-hydration full-page-load`. Each test either deterministically passes OR is `test.skip()`+rationale'd with a v2.11+ follow-up todo.
 
-- [ ] **DETERM-13**: Voter-app filter + feedback FAILURE-CLASS cluster resolved: `voter-results filter-toggle no-effect-update-depth` + `voter-feedback-persistence`. Each test either deterministically passes OR `test.skip()`+rationale.
+- [x] **DETERM-13**: Voter-app filter + feedback FAILURE-CLASS cluster resolved: `voter-results filter-toggle no-effect-update-depth` + `voter-feedback-persistence`. Each test either deterministically passes OR `test.skip()`+rationale.
 
 - [ ] **DETERM-14**: Voter-app visibility + edge-case + question-rendering + navigation FAILURE-CLASS cluster resolved: `voter-visibility-required SETTINGS-03 hidden absent`, `voter-detail case-d both-missing`, `voter-question-rendering boolean + categorical (QSPEC-01/02)`, `voter-navigation results-CTA threshold`, `voter-not-located-redirect /results deeplink`. Each test either deterministically passes OR `test.skip()`+rationale.
 
