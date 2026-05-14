@@ -62,7 +62,7 @@
 
 - [x] **DETERM-13**: Voter-app filter + feedback FAILURE-CLASS cluster resolved: `voter-results filter-toggle no-effect-update-depth` + `voter-feedback-persistence`. Each test either deterministically passes OR `test.skip()`+rationale.
 
-- [ ] **DETERM-14**: Voter-app visibility + edge-case + question-rendering + navigation FAILURE-CLASS cluster resolved: `voter-visibility-required SETTINGS-03 hidden absent`, `voter-detail case-d both-missing`, `voter-question-rendering boolean + categorical (QSPEC-01/02)`, `voter-navigation results-CTA threshold`, `voter-not-located-redirect /results deeplink`. Each test either deterministically passes OR `test.skip()`+rationale.
+- [x] **DETERM-14**: Voter-app visibility + edge-case + question-rendering + navigation FAILURE-CLASS cluster resolved: `voter-visibility-required SETTINGS-03 hidden absent`, `voter-detail case-d both-missing`, `voter-question-rendering boolean + categorical (QSPEC-01/02)`, `voter-navigation results-CTA threshold`, `voter-not-located-redirect /results deeplink`. Each test either deterministically passes OR `test.skip()`+rationale.
 
 - [ ] **DETERM-15**: Final v2.10-ship anchor captured. Fresh 3-run cold-start gate SHA-identical FIRST attempt against the post-84+85+86 codebase. Pool sizes: ~150-160 PASS_LOCKED + ≤3 DATA_RACE + 0 CASCADE + ≤2 FAILURE-CLASS (residual = explicit v2.11+ deferrals). Anchor SHA committed to `tests/scripts/diff-playwright-reports.ts` jsdoc. `/gsd-audit-milestone v2.10` runs cleanly; status = shippable.
 
