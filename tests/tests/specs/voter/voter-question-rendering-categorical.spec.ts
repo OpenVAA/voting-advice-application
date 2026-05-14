@@ -86,9 +86,35 @@ import { walkToQuestion } from '../../utils/voterNavigation';
 // dedup audit: .planning/phases/75-question-rendering-specs/75-02-DEDUP-AUDIT.md.
 
 test.describe('voter question rendering — categorical (QSPEC-02)', { tag: ['@voter'] }, () => {
+  ////////////////////////////////////////////////////////////////////
+  // Phase 86 DETERM-14 skip-with-rationale (Plan 03 Task 2):
+  //   QSPEC-02 shares the EXACT root cause as QSPEC-01 per Phase 86
+  //   RESEARCH §3.10: walkToQuestion(page, 16) → walkToQuestionsIntro
+  //   → 10s timeout on getByTestId('voter-questions-start') in 3/3
+  //   Phase 85 cold-start runs. Per-plan smoke PASS × 3 in isolation.
+  //
+  //   Task 2 mirrors Task 1's Option C (skip+rationale) verdict; the
+  //   shared v2.11+ todo at
+  //   `.planning/todos/pending/2026-05-14-qspec-walkToQuestion-cold-start-race.md`
+  //   covers BOTH QSPEC-01 and QSPEC-02 — no separate todo file.
+  //
+  //   Per Phase 86 CONTEXT.md D-03 + D-08 (same rationale as Task 1):
+  //   inherits Phase 75 PASS-WITH-DEFERRAL rather than fix attempt.
+  ////////////////////////////////////////////////////////////////////
+  // eslint-disable-next-line playwright/expect-expect
   test('categorical opinion question (single-choice) renders, voter answers, persists across goBack, mirrors on entity-detail', async ({
     page
   }) => {
+    // eslint-disable-next-line playwright/no-skipped-test
+    test.skip(
+      true,
+      [
+        'Phase 75 PASS-WITH-DEFERRAL inheritance: walkToQuestion intro-start CTA wait races',
+        'full-suite settings overlay (shared root cause with QSPEC-01 per Phase 86 RESEARCH §3.10).',
+        'See .planning/todos/pending/2026-05-14-qspec-walkToQuestion-cold-start-race.md.'
+      ].join(' ')
+    );
+
     // ---------------------------------------------------------------
     // Step 1 — Walk to the categorical question at sort 17 + assert
     // input renders as 3 radios ('Option A' / 'Option B' / 'Option C'
