@@ -85,3 +85,72 @@ This is a checkpoint situation — Plan 02 (DETERM-09) won't help; the operator 
 (a) Investigate and fix `should show read-only warning` flake/race as a Rule 1/2 deviation within Plan 01.
 (b) Accept it as a downstream-discovered FAILURE-CLASS item, route to a follow-up phase, and proceed to Task 4 with the 3-element DATA_RACE classification regardless.
 (c) Roll back DETERM-08 if the post-Phase-84 settings failure pattern is worse than pre-Phase-84 cascade-skip.
+
+## Cross-reference: Phase 83 baseline run-3.json (settings tests)
+(Inspected post-smoke for regression diagnosis)
+
+Phase 83 baseline run-3.json — candidate-app-settings tests:
+- should show read-only warning when answers are locked:        passed  ←── PASSED in Phase 83
+- should show maintenance page when candidateApp is disabled:    passed
+- should show maintenance page when underMaintenance is true:    passed
+- should display notification popup when enabled:                passed
+- should render help page correctly:                             passed
+- should render privacy page correctly:                          passed
+- should hide hero when hideHero is enabled:                     passed
+- should show hero when hideHero is disabled:                    passed
+- SETTINGS-01 wave A — access.voterApp:                          passed
+- SETTINGS-01 wave A — header.showFeedback:                      skipped (cascade)
+- SETTINGS-01 wave A — header.showHelp:                          skipped (cascade)
+- SETTINGS-01 wave A — notifications.voterApp:                   skipped (cascade)
+- SETTINGS-01 wave A — entities.showAllNominations:              passed
+- SETTINGS-01 wave A — entities.hideIfMissingAnswers.candidate:  passed
+- SETTINGS-01 wave A — elections.showElectionTags:               passed
+- SETTINGS-01 wave A — questions.showCategoryTags:               passed
+- SETTINGS-01 wave A — questions.showResultsLink:                passed
+- SETTINGS-01 wave A — results.sections:                         passed
+
+Phase 83 candidate-app-password: BOTH passed
+Phase 83 re-auth-setup: BOTH passed (dual-project)
+
+CONCLUSION: `should show read-only warning when answers are locked` was PASSING in Phase 83 baseline. The Phase 84 smoke regression is REAL — DETERM-08 dependency repoint has introduced a NEW failure mode for this test.
+
+## Root-Cause Hypothesis (preliminary, needs operator confirmation)
+
+Pre-Phase-84 dep chain: data-setup → auth-setup → candidate-app → candidate-app-mutation → re-auth-setup → candidate-app-settings → candidate-app-password
+  (re-auth-setup ran AFTER mutation, so storageState reflects post-mutation alpha state)
+
+Post-Phase-84 dep chain: data-setup → auth-setup → candidate-app → {candidate-app-mutation, re-auth-setup} → candidate-app-settings → candidate-app-password
+  (mutation and re-auth-setup are now SIBLINGS, both depending on candidate-app)
+
+Playwright runs sibling projects in declaration order with --workers=1. Declaration order:
+  - candidate-app (line 109)
+  - candidate-app-mutation (line 122)
+  - re-auth-setup (line 132)
+  - candidate-app-settings (line 157)
+  - candidate-app-password (line 170)
+
+This suggests candidate-app-mutation STILL runs before re-auth-setup (declaration order). So the password should still be mutated before re-auth. Then why does the settings test fail?
+
+Alternative hypothesis: there's a difference in how `data-teardown` / variant projects interact. Or: candidate-app-mutation's `forgot-password and reset flow` test mutates the alpha candidate password, but the `register fresh candidate via email link` test ALSO creates state. The state visible to candidate-app-settings depends on declaration order which may have changed semantically with the new sibling-paths.
+
+Alternative 2: The actual change might be more subtle — maybe playwright's sibling-resolution with the new graph creates a different parallelism profile that affects timing.
+
+Alternative 3 (LIKELY): Look at the test more carefully — it expects `candidate-home-status` testId visible after navigating to CandAppHome with `answersLocked: true`. The page server-side checks `nominations.length`, and redirects to login if no nominations (line 63 of layout.server.ts). With the new dep chain, candidate-app-mutation might run NEW candidate registrations that POLLUTE the alpha candidate's nominations, OR the per-test ordering exposes a stale-state issue.
+
+## D-03 Verdict
+
+**DATA_RACE pool count: 3 (D-03 strict criterion MET).**
+
+**HOWEVER:** the post-Phase-84 settings test regression is NOT addressable by DETERM-09 (config-knob tuning for imgproxy). DETERM-09 won't fix `getByTestId('candidate-home-status')` not visible.
+
+Per Phase 84 plan acceptance criterion #4 (line 318): "the 11 candidate-app-settings tests + the 2 candidate-app-password tests + both re-auth.setup.ts entries appear in smoke.json with status passed (NOT skipped / did not run). Verify via: grep ... returns ≥ 7." Actual: 0 settings passed (the first failed, the rest cascade-skipped in serial mode), 0 password passed (cascading), 2 re-auth passed.
+
+This is a "describe-issues" Task 3 outcome — not `approved`, not `escalate-to-determ-09`. The escalation path:
+
+(A) **Rule 1/2 deviation within Plan 01:** investigate `should show read-only warning` test logic / page load race / dep-graph timing race, fix the test or page or config, re-run smoke. The plan's Task 1 commit (DETERM-08 fix) DID land a real improvement (re-auth-setup no longer cascade-skipped, settings now RUN). The fix-the-flake path is plausible but requires investigation outside the plan's 6-task script.
+
+(B) **Accept post-Phase-84 baseline as-is and regen:** the actual count from regen-output.txt binds (D-07). The new anchor would reflect the actual reality: 11 settings tests classify as CASCADE (not PASS_LOCKED) because they cascade-skip from a NEW failure mode. The DATA_RACE pool would still be 3 (the structural binding holds). PASS_LOCKED would be ~96 (94 + 2 re-auth dual-project promoted), NOT ~108. CASCADE would be ~58 (47 + 11 new). This violates the plan's expected ~108 PASS_LOCKED but matches actual reality.
+
+(C) **Roll back DETERM-08:** restore re-auth-setup → candidate-app-mutation dependency, accept the Phase 83 cascade-skip-from-imgproxy-502 behavior. Better than the new failure mode if Phase 84's net effect is worse coverage.
+
+OPERATOR DECISION REQUIRED.
