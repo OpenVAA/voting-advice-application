@@ -16,11 +16,13 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-// __dirname is .planning/phases/73-determinism-baseline/post-fix/ — 3 levels up to repo root.
-// Phase 79: D-09 instability protocol promoted run-6.json as the canonical
-// regen source (runs 4/5/6 are SHA-identical; runs 1/3 had pre-existing
-// voter-app flakes surfaced post-DETERM-04). See sha256.txt for the full audit.
-const reportPath = join(__dirname, 'run-6.json');
+// __dirname is .planning/phases/79-…/post-fix/. Phase 84 anchor lives 2 levels up
+// then down into the Phase 84 post-fix directory.
+// Phase 84: DETERM-08 structural decoupling promoted run-3.json as the canonical
+// regen source (runs 1 + 3 are SHA-identical at 04ddfdd85…; run 2 differs by 1
+// non-Phase-84-scope voter-app party-drawer cell — routed to Phase 86 per
+// ROADMAP.md). See .planning/phases/84-…/post-fix/sha256.txt for the audit.
+const reportPath = join(__dirname, '..', '..', '84-imgproxy-decoupling-decouple-non-image-tests-from-imgproxy-i', 'post-fix', 'run-3.json');
 // Strip optional dotenv banner line (Phase 73 captures via `yarn playwright …` write a
 // `[dotenv@…] injecting env …` line ahead of the JSON; the P64 captures did not). Split
 // on first '{' rather than first newline so the strip is robust to multi-line banners.

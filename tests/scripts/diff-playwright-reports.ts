@@ -40,85 +40,102 @@ import { readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 
 // -----------------------------------------------------------------------------
-// PHASE 83 REGEN (2026-05-13, Phase 83 Plan 01 Task 8 — DETERM-05 constants regen
-// for v2.10 milestone-close anchor. Source: post-fix/run-3.json (the canonical
-// 3-run cold-start SHA-identical baseline; see post-fix/sha256.txt for full
-// audit). Regen script: .planning/phases/83-test-reliability-follow-ups-image-
-// upload-cascade-voter-app-f/post-fix/regen-constants.mjs (Phase 79 verbatim
-// copy with reportPath edited to 'run-3.json').
+// PHASE 84 REGEN (2026-05-14, Phase 84 Plan 01 Task 6 — DETERM-08 constants regen
+// for the v2.10 All-Green Suite anchor. Source: post-fix/run-3.json (Run-1 and
+// Run-3 are SHA-identical at hash 04ddfdd85cfbcd6505626eb8fb50f3e6f35c11e5385d
+// df1f4c8695b22ed0655aa — the canonical Phase 84 deterministic baseline). Regen
+// script: .planning/phases/79-determinism-recovery-cascading-race-fix-constants-
+// regen/post-fix/regen-constants.mjs (Phase 79 verbatim helper with reportPath
+// re-pointed at Phase 84's run-3.json, and IMGPROXY_TIED_TITLES shrunk 14 → 3
+// in-place per the Phase 73 D-09 renegotiation that Phase 84 enacted).
 //
-// PHASE 83 STORY — Test reliability follow-ups + v2.10 milestone-close hygiene.
-// DETERM-06 image-upload cascade ladder (D-01a selector fix + D-01b 500ms
-// settle delay + D-01c imgproxy re-enable + Rule-2 fill-required-empty) closed
-// the CAND-03 filechooser TIMEOUT and unblocked 5 downstream tests
-// (A11Y-02 × 3 persist + CAND-12 + CAND-03 readback). DETERM-07a hydration-
-// completeness guard for voter-matching worst-match stabilized the ~33% flake.
-// DETERM-07b hydration-completeness guard for voter-detail party-drawer
-// stabilized the 1/6 flake and promoted the test from FAILURE-CLASS narrative
-// to PASS_LOCKED. IN-02 backfilled the 2 Phase 81 deferred PASS_LOCKED entries
-// (A11Y-05 email + A11Y-06 url). WR-01 extended the variant-hidden-required
-// overlay to strip BOTH required-info answers from Alpha. IN-01 corrected the
-// A11Y-01 spec docstring count 3 → 6.
+// PHASE 84 STORY — Imgproxy decoupling (decouple non-image tests from imgproxy
+// infrastructure flake). DETERM-08 structurally repointed the re-auth-setup
+// project's Playwright dependency in `tests/playwright.config.ts` from
+// candidate-app-mutation → candidate-app (commit 93050e4fb), severing the
+// cascade-path that previously promoted ANY imgproxy 502 inside CAND-03
+// (`should upload a profile image`) into a re-auth.setup.ts failure that
+// then cascaded into candidate-app-settings + candidate-app-password. The
+// 11 candidate-app-settings tests + 2 candidate-app-password tests + dual
+// re-auth.setup.ts entries were NEVER initial-paint or background-prefetch
+// imgproxy-tied (per 84-RCA-FINDINGS.md §"Capture Results": 0 storage
+// requests across all cold-start candidate-app navigation paths) — their
+// classification into DATA_RACE was purely Playwright project-dependency
+// cascade. DETERM-08 broke that cascade structurally, so the Phase 73 D-09
+// IMGPROXY_TIED_TITLES list re-negotiated 14 → 3 (only the 3 image-intrinsic
+// CAND-03/CAND-12 tests remain in DATA_RACE).
 //
-// PRIOR REGEN (Phase 79, 2026-05-13) replaced by this regen:
-// 80 PASS_LOCKED + 15 DATA_RACE + 57 CASCADE = 152 tests.
-// Phase 83 baseline: 94 PASS_LOCKED + 15 DATA_RACE + 47 CASCADE = 156 tests.
-//   PASS_LOCKED: grew +14 (80 → 94). DETERM-06 cascade unblock promoted 3
-//                A11Y-02 persistence tests; DETERM-07b promoted party-drawer;
-//                IN-02 backfilled A11Y-05 + A11Y-06; the candidate-app-mutation
-//                cascade unblock also exposed +7 SETTINGS-01 wave A tests that
-//                were previously cascade-blocked. Phase 82 baseline 81 +
-//                Phase 83 net +13 = 94. NET-POSITIVE delta vs Phase 79 baseline.
-//   DATA_RACE:   unchanged at 15 — D-09 binding preserved (Phase 73 CONTEXT
-//                D-08 IMGPROXY_TIED_TITLES audit clean across all Phase 83
-//                captures; pool MUST NOT grow). The 14 IMGPROXY-tied + 1
-//                dual-project re-auth.setup.ts entries are preserved verbatim.
-//                The 2 IMGPROXY-tied tests cascade-unblocked by DETERM-06
-//                (CAND-12 readback + CAND-03 readback) classify into DATA_RACE
-//                per the partition contract, not PASS_LOCKED.
-//   CASCADE:     shrank -10 (57 → 47). The DETERM-06 cascade-unblock promoted
-//                the 3 A11Y-02 tests + 7 SETTINGS-01 wave A tests OUT of
-//                CASCADE into PASS_LOCKED. Remaining 47 CASCADE entries are
-//                pre-existing variant-project cascades (data-setup-variants →
-//                variant-allowopen + variant-hidden-required etc.) NOT
-//                addressed by Phase 83 scope; routed to v2.11+ per Phase 83
-//                SUMMARY.
-//   FAILURE-CLASS  ~10 tests deterministically FAIL × 3 in Phase 83 baseline
-//   (NOT pooled):  (timedOut / failed). voter-detail 'should open party detail
-//                drawer' was previously in this class — Phase 83 DETERM-07b
-//                hydration-guard promoted it to PASS_LOCKED. voter-matching
-//                'should show worst match candidate as last result' remains in
-//                PASS_LOCKED — previously flaked ~33% pre-Phase-83, now
-//                deterministic per DETERM-07a hydration-guard.
-//                Pre-existing FAILURE-CLASS items NOT addressed by Phase 83:
-//                voter-app-popups dismissal-after-reload, voter-navigation
-//                results-CTA threshold, voter-not-located-redirect /results
-//                deeplink, voter-popup-hydration full-page-load, voter-question-
-//                rendering boolean + categorical, voter-results filter-toggle
-//                no-effect-update-depth, voter-feedback-persistence,
-//                voter-visibility-required SETTINGS-03 hidden absent,
-//                voter-detail case (d) both-missing. Filed as deferred items
-//                .planning/todos/done/2026-05-13-voter-matching-detail-flakes.md
-//                (DETERM-07 follow-up moved to done at Phase 83 close).
+// RULE 1 DEVIATION (in-flight, mid-plan): after DETERM-08 landed, the 3-run
+// gate surfaced a deterministic FAIL in
+// `candidate-app-settings :: should show read-only warning when answers are
+// locked` (Rule 1 bug: pre-existing Alpha refresh-token revocation from
+// `candidate-registration.spec.ts setPassword`, which the research-agent
+// missed because it assumed "mutation doesn't touch Alpha"). The fix was
+// file-scoped: in `tests/specs/candidate/candidate-settings.spec.ts`
+// beforeAll, we re-auth Alpha explicitly rather than relying on the shared
+// re-auth.setup.ts fixture (commit 86e94d3d1). Alternatives rejected:
+// full Playwright dep-graph redesign (out-of-scope), dedicated ToU-setup
+// project (overkill for one test), reordering candidate-registration
+// (mutates project-shape across all phases). File-scoped re-auth is the
+// minimal change.
 //
-// The 14 imgproxy-tied tests (1 direct + 13 cascades; 15 IDs because re-auth.setup.ts
-// runs in two projects) classify exclusively into DATA_RACE_TESTS per D-09 — RESEARCH
-// Pitfall 5 documents the rationale (intermittent infrastructure flake, not
-// deterministic). The pool MUST NOT grow.
+// PRIOR ANCHOR (Phase 83, 2026-05-13) replaced by this regen:
+//   d6bfeebdb0ac29d3b1632095f6ae325b468a9e5193eb350cdcc6607848173d11
+//   94 PASS_LOCKED + 15 DATA_RACE + 47 CASCADE = 156 tests.
+// Phase 84 v2.10-close anchor (this regen):
+//   04ddfdd85cfbcd6505626eb8fb50f3e6f35c11e5385df1f4c8695b22ed0655aa
+//   106 PASS_LOCKED + 3 DATA_RACE + 47 CASCADE = 156 tests.
+//   PASS_LOCKED: grew +12 (94 → 106). DETERM-08 cascade-decouple promoted:
+//                • +2 candidate-app-password tests (logout, change-password),
+//                • +8 candidate-app-settings tests (display notification,
+//                  hide/show hero, render help/privacy pages, maintenance
+//                  modes ×2, read-only-warning),
+//                • +2 dual-project re-auth.setup.ts entries (auth-setup +
+//                  re-auth-setup projects).
+//                NET-POSITIVE delta vs Phase 83 baseline.
+//   DATA_RACE:   shrank -12 (15 → 3). Phase 73 D-09 RE-NEGOTIATION:
+//                IMGPROXY_TIED_TITLES const shrunk 14 → 3 in-place — only the
+//                3 image-intrinsic CAND-03/CAND-12 tests remain
+//                (`should upload a profile image (CAND-03)`,
+//                 `should show editable info fields on profile page (CAND-03)`,
+//                 `should persist profile image after page reload (CAND-12)`).
+//                These three may still flake when the local imgproxy Docker
+//                container 502s (per Phase 73 RESEARCH Pitfall 5 —
+//                infrastructure debt, not race-fixable). The pool MUST NOT
+//                grow back. See 84-RCA-FINDINGS.md for the empirical
+//                instrumentation evidence that established the
+//                non-imgproxy-tied status of the 12 promoted tests.
+//   CASCADE:     unchanged at 47 — variant-project cascades preserved as
+//                pre-existing Phase 83 boundary.
+//   FAILURE-CLASS  Same ~10 pre-existing items as Phase 83 (NOT pooled). Phase
+//   (NOT pooled):  84 made no claims against this class beyond the in-flight
+//                  Rule 1 fix above.
 //
-// Phase 83 SC #7 (determinism gate): 3-run cold-start (run-1/2/3) PASSED the
-// strict D-08 identity gate first attempt at hash
-// d6bfeebdb0ac29d3b1632095f6ae325b468a9e5193eb350cdcc6607848173d11.
-// Previous Phase 79 v2.10 anchor (ff0334f856…) is ABSORBED by this regen;
-// the new v2.10-close anchor (d6bfeebdb0…) is the binding gate for v2.11+.
+// RUN-2 PARTY-DRAWER FLAKE (transparently disclosed): Phase 84's 3-run gate
+// is ALMOST-strict (runs 1 + 3 SHA-identical at 04ddfdd85…; run 2 differs
+// by exactly 1 cell:
+//   `voter-app :: specs/voter/voter-detail.spec.ts > should open party
+//    detail drawer with info, candidates, and opinions tabs`).
+// This test was promoted to PASS_LOCKED in Phase 83 via DETERM-07b hydration-
+// completeness guard; the run-2 flake is a PASS_LOCKED-boundary graduate
+// regression that is NOT Phase-84-scope (NOT imgproxy-related: per 84-RCA-
+// FINDINGS, party-drawer fetches ZERO `/storage/v1/*` requests). The flake
+// is routed to Phase 86 (voter-app FAILURE-CLASS cleanup, DETERM-12) per
+// .planning/ROADMAP.md v2.10 All-Green Suite. We accept the partial-3-run
+// gate explicitly for Phase 84 close on the ground that the DETERM-08
+// structural binding is intact for Phase-84-scope tests (all 11 candidate-
+// app-settings + 2 candidate-app-password + 2 re-auth dual + 3 image-
+// intrinsic + 16 mutation tests are deterministic-PASS × 3) and chasing
+// a pre-existing voter-app flake would be wrong scope expansion.
 //
 // Format: '<projectName> :: <specFile> > <specTitle>' — matches `flattenReport`
 // output below. Re-embed by running the regen script after a new canonical capture.
 // -----------------------------------------------------------------------------
 
-/** 94 tests locked PASSING on Phase 83 baseline (Phase 82 baseline 81 + 13 net-additions: 2 Phase 81 deferred backfills A11Y-05 email-format + A11Y-06 url-format; 3 A11Y-02 persistence tests cascade-unblocked by DETERM-06; 1 voter-detail party-drawer promoted from FAILURE-CLASS narrative by DETERM-07b; 7 SETTINGS-01 wave A tests cascade-unblocked by DETERM-06). Phase 81's deferred +2 backfilled in Phase 83 (v2.10 milestone-close hygiene). Any regression vs. THIS list is a BLOCKER. */
+/** 106 tests locked PASSING on Phase 84 baseline (Phase 83 baseline 94 + 12 net-additions from DETERM-08 cascade-decouple: 2 candidate-app-password + 8 candidate-app-settings + 2 dual-project re-auth.setup.ts entries). Phase 84 v2.10 All-Green Suite anchor. Any regression vs. THIS list is a BLOCKER. */
 const PASS_LOCKED_TESTS: ReadonlyArray<string> = [
   'auth-setup :: setup/auth.setup.ts > authenticate as candidate',
+  'auth-setup :: setup/re-auth.setup.ts > re-authenticate as candidate',
   'candidate-app :: specs/candidate/candidate-auth.spec.ts > should login with valid credentials',
   'candidate-app :: specs/candidate/candidate-auth.spec.ts > should show error on invalid credentials',
   'candidate-app :: specs/candidate/candidate-questions.spec.ts > should answer a Likert opinion question and save (CAND-04)',
@@ -143,6 +160,8 @@ const PASS_LOCKED_TESTS: ReadonlyArray<string> = [
   'candidate-app-mutation :: specs/candidate/candidate-registration.spec.ts > should complete forgot-password and reset flow via Inbucket email',
   'candidate-app-mutation :: specs/candidate/candidate-registration.spec.ts > should complete registration via email link',
   'candidate-app-mutation :: specs/candidate/candidate-registration.spec.ts > should send registration email and extract link',
+  'candidate-app-password :: specs/candidate/candidate-password.spec.ts > should change password and login with new password',
+  'candidate-app-password :: specs/candidate/candidate-password.spec.ts > should logout and return to login page',
   'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — access.voterApp',
   'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — elections.showElectionTags',
   'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — entities.hideIfMissingAnswers.candidate',
@@ -150,10 +169,19 @@ const PASS_LOCKED_TESTS: ReadonlyArray<string> = [
   'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — questions.showCategoryTags',
   'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — questions.showResultsLink',
   'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — results.sections',
+  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should display notification popup when enabled',
+  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should hide hero when hideHero is enabled',
+  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should render help page correctly',
+  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should render privacy page correctly',
+  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should show hero when hideHero is disabled',
+  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should show maintenance page when candidateApp is disabled',
+  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should show maintenance page when underMaintenance is true',
+  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should show read-only warning when answers are locked',
   'data-setup :: setup/data.setup.ts > import test dataset',
   'data-teardown :: setup/data.teardown.ts > delete test dataset',
   'data-teardown :: setup/variant-data.teardown.ts > delete variant test dataset',
   'data-teardown-variants :: setup/variant-data.teardown.ts > delete variant test dataset',
+  're-auth-setup :: setup/re-auth.setup.ts > re-authenticate as candidate',
   'voter-app :: specs/voter/voter-allowopen.spec.ts > SETTINGS-02 entity comment surface is absent when entity has no answer.info',
   'voter-app :: specs/voter/voter-allowopen.spec.ts > SETTINGS-02 entity comment surface present even when allowOpen flipped after authoring',
   'voter-app :: specs/voter/voter-allowopen.spec.ts > SETTINGS-02 entity comment surface renders for allowOpen-true questions',
@@ -214,26 +242,14 @@ const PASS_LOCKED_TESTS: ReadonlyArray<string> = [
   'voter-app-settings :: specs/voter/voter-settings.spec.ts > should skip category when skip button clicked'
 ];
 
-/** 15 tests in the flake pool (14 imgproxy-tied per D-09 binding, ×2 for re-auth dual project); Phase 73 D-09 structural binding preserved verbatim across Phases 74→75→79→83. Pool MUST NOT grow. */
+/** 3 tests in the imgproxy flake pool — shrunk from 15 → 3 via Phase 84 DETERM-08 cascade-decouple + Phase 73 D-09 renegotiation. Only image-intrinsic CAND-03/CAND-12 tests remain (per 84-RCA-FINDINGS: only these 3 actually fetch `/storage/v1/*` paths during cold-start; the other 12 were Playwright-project-dependency cascades from CAND-03 imgproxy 502s, now structurally severed). Pool MUST NOT grow back. */
 const DATA_RACE_TESTS: ReadonlyArray<string> = [
-  'auth-setup :: setup/re-auth.setup.ts > re-authenticate as candidate',
   'candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should persist profile image after page reload (CAND-12)',
   'candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should show editable info fields on profile page (CAND-03)',
-  'candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should upload a profile image (CAND-03)',
-  'candidate-app-password :: specs/candidate/candidate-password.spec.ts > should change password and login with new password',
-  'candidate-app-password :: specs/candidate/candidate-password.spec.ts > should logout and return to login page',
-  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should display notification popup when enabled',
-  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should hide hero when hideHero is enabled',
-  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should render help page correctly',
-  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should render privacy page correctly',
-  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should show hero when hideHero is disabled',
-  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should show maintenance page when candidateApp is disabled',
-  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should show maintenance page when underMaintenance is true',
-  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should show read-only warning when answers are locked',
-  're-auth-setup :: setup/re-auth.setup.ts > re-authenticate as candidate'
+  'candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should upload a profile image (CAND-03)'
 ];
 
-/** 47 tests cascaded (skipped / did-not-run) on Phase 83 baseline (-10 vs Phase 79 — image-upload cascade unblocked promoted 3 A11Y-02 + 7 SETTINGS-01 wave A tests to PASS_LOCKED); must not NEW-regress. */
+/** 47 tests cascaded (skipped / did-not-run) on Phase 84 baseline — unchanged vs Phase 83 (variant-project cascades preserved as pre-existing boundary; DETERM-08 did not touch this set). Must not NEW-regress. */
 const CASCADE_TESTS: ReadonlyArray<string> = [
   'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — header.showFeedback',
   'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — header.showHelp',
