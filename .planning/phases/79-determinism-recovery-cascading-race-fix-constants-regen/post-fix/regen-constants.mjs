@@ -63,22 +63,24 @@ function flattenReport(rep) {
 
 const all = flattenReport(report);
 
-// D-09 binding: imgproxy direct + 13 cascades → DATA_RACE_TESTS.
+// Phase 84 DETERM-08 + Phase 73 D-09 renegotiation (2026-05-13): pool shrunk 14 → 3.
+// Only image-intrinsic tests remain imgproxy-tied per Phase 84 close. The 11
+// candidate-app-settings tests + dual-project re-auth.setup.ts entries + 2
+// candidate-app-password tests were never initial-paint or background-prefetch
+// imgproxy-tied (per 84-RCA-FINDINGS.md §"Capture Results": 0 storage requests
+// across all cold-start candidate-app navigation paths) — their classification
+// into DATA_RACE was purely Playwright project-dependency cascade from CAND-03's
+// imgproxy 502 inside candidate-app-mutation. Phase 84 broke that cascade
+// structurally via tests/playwright.config.ts (re-auth-setup dependency
+// repointed candidate-app-mutation → candidate-app). The 3 surviving image-
+// intrinsic tests are listed below; they may still flake when the local
+// imgproxy Docker container 502s (per Phase 73 RESEARCH Pitfall 5 — infrastructure
+// debt, not race-fixable). See 84-RESEARCH.md §"Root-Cause Verdict" for the
+// empirical instrumentation evidence.
 const IMGPROXY_TIED_TITLES = [
   'should upload a profile image (CAND-03)',
   'should show editable info fields on profile page (CAND-03)',
-  'should persist profile image after page reload (CAND-12)',
-  'should show read-only warning when answers are locked',
-  'should show maintenance page when candidateApp is disabled',
-  'should show maintenance page when underMaintenance is true',
-  'should display notification popup when enabled',
-  'should render help page correctly',
-  'should render privacy page correctly',
-  'should hide hero when hideHero is enabled',
-  'should show hero when hideHero is disabled',
-  'should change password and login with new password',
-  'should logout and return to login page',
-  're-authenticate as candidate'
+  'should persist profile image after page reload (CAND-12)'
 ];
 const isImgproxyTied = (id) => IMGPROXY_TIED_TITLES.some((t) => id.endsWith('> ' + t));
 
