@@ -229,11 +229,27 @@ export default defineConfig({
     },
 
     // Variant: multi-election (CONF-01, CONF-02, CONF-04)
+    //
+    // PHASE 85 DETERM-11 STRUCTURAL DECOUPLING (2026-05-14):
+    //   `voter-app-popups` removed from dependencies. The voter-popups dismissal-
+    //   after-reload deterministic FAIL (strict-mode locator violation on the
+    //   close button — 3/3 across Phase 84 anchor `04ddfdd85cf…`) was the single
+    //   root cause of all 44 variant cascade-skips per `85-RCA-FINDINGS.md`. The
+    //   popup test itself is OUT-OF-SCOPE for Phase 85 (D-08 binding — Phase 86
+    //   retains DETERM-12 ownership). Severing the dependency structurally
+    //   collapses the 47 → ≤5 CASCADE pool without touching the popup test.
+    //
+    //   PRECEDENT: Phase 84 made the identical structural maneuver on the
+    //   re-auth-setup project's dependency at lines 148-152 (commit 93050e4fb).
+    //
+    //   The remaining `['candidate-app-password']` dependency preserves the
+    //   sequencing constraint that variants run AFTER the default candidate-app
+    //   suite completes (so auth.users state + storageState are stable).
     {
       name: 'data-setup-multi-election',
       testMatch: /variant-multi-election\.setup\.ts/,
       teardown: 'data-teardown-variants',
-      dependencies: ['candidate-app-password', 'voter-app-popups']
+      dependencies: ['candidate-app-password']
     },
     {
       name: 'variant-multi-election',
