@@ -73,7 +73,16 @@ test.describe('feedback persistence (E2E-03)', { tag: ['@voter'] }, () => {
     // reason: cancel button text is t('common.cancel'); locale-resilient
     // testid anchor is more stable per CONTEXT D-11.
     await feedbackDialog.getByTestId('feedback-cancel').click();
-    await expect(feedbackDialog).toBeHidden();
+    // Phase 86 DETERM-13 H1 fix: replace toBeHidden() with toHaveCount(0)
+    // on the dialog locator. The <dialog> element stays in the DOM after
+    // closeModal() (Modal.svelte + ModalContainer.svelte:131-144) — its
+    // `open` attribute is removed, and getByRole('dialog') only matches
+    // open dialogs in the accessibility tree, so count==0 == closed.
+    // toBeHidden() was failing because the filter({ has: feedback-form })
+    // can still resolve to an element with a stale `aria-hidden` evaluation
+    // during the close transition. Mirrors the canonical Phase 64 D-11 +
+    // D-14 + D-15 close-race pattern at voter-results.spec.ts:274 / 351.
+    await expect(feedbackDialog).toHaveCount(0, { timeout: 5000 });
 
     // Reopen — Feedback is kept mounted via bind:this in FeedbackModal:62, so
     // description $state survives the close.
@@ -89,7 +98,11 @@ test.describe('feedback persistence (E2E-03)', { tag: ['@voter'] }, () => {
     // t('feedback.sending') → t('feedback.thanks')); locale-resilient testid
     // anchor is more stable per CONTEXT D-11.
     await feedbackDialog.getByTestId('feedback-submit').click();
-    await expect(feedbackDialog).toBeHidden({ timeout: 5000 });
+    // Phase 86 DETERM-13 H1 fix: same toHaveCount(0) substitute for the
+    // post-send close. The 1500ms CLOSE_DELAY in FeedbackModal.svelte:47-52
+    // is captured by the 5s timeout; the dialog's `open` attribute is
+    // removed when closeFeedback fires inside the setTimeout.
+    await expect(feedbackDialog).toHaveCount(0, { timeout: 5000 });
 
     // Reopen post-send — feedbackRef.reset() cleared description to ''.
     await openFeedbackBtn.click();
