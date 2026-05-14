@@ -225,7 +225,9 @@ Phase 79 (DETERM-04 + DETERM-05) ✓ COMPLETE
   3. CASCADE pool: 47 → ≤5 (residual entries documented as v2.11+ deferrals if any remain).
   4. Variant spec runs surface their own deterministic verdicts (pass / fail) — any new failures join the FAILURE-CLASS cohort for Phase 86 attention.
   5. Fresh 3-run cold-start gate SHA-identical FIRST attempt; new anchor reflects the CASCADE shrinkage.
-**Plans**: TBD
+**Plans**: 2 plans
+- [ ] 85-01-PLAN.md — DETERM-10 RCA: chain-head failure capture (run-{1,2,3}.json walk) + H1 architectural disproof + 47-entry CASCADE classification + 85-RCA-FINDINGS.md verdict with Path A/B/C analysis (Path B recommended per RESEARCH)
+- [ ] 85-02-PLAN.md — DETERM-11 Path B structural decouple: 1-line playwright.config.ts:236 edit (remove voter-app-popups from data-setup-multi-election deps) + 1-run cold-start smoke + 3-run cold-start gate + atomic constants regen (Phase 79 D-10 bundle) for v2.10 All-Green Suite anchor
 **UI hint**: no
 
 ### Phase 86: Voter-App FAILURE-CLASS Cleanup
