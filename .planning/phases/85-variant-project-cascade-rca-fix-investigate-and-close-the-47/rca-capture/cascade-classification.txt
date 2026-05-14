@@ -1,0 +1,70 @@
+# 47 CASCADE_TESTS partition (source-skip vs cascade-skip)
+# Source: .planning/phases/84-…/post-fix/run-1.json annotations field
+# Partition rule: t.annotations.length > 0 ⇒ SOURCE-SKIP; otherwise CASCADE-SKIP
+# Expected: 3 SOURCE-SKIP (PRODUCT-GAP) + 44 CASCADE-SKIP (chain-head cascade)
+# Format: <KIND>\t<projectName>\t<specTitle>
+CASCADE-SKIP	voter-app-popups	should show survey popup after delay on results page
+CASCADE-SKIP	voter-app-popups	should not show any popup when disabled
+SOURCE-SKIP	candidate-app-settings	SETTINGS-01 wave A — header.showFeedback
+SOURCE-SKIP	candidate-app-settings	SETTINGS-01 wave A — header.showHelp
+SOURCE-SKIP	candidate-app-settings	SETTINGS-01 wave A — notifications.voterApp
+CASCADE-SKIP	data-setup-multi-election	import multi-election dataset
+CASCADE-SKIP	variant-multi-election	should show election selection page with 2 elections
+CASCADE-SKIP	variant-multi-election	should display questions and reach results
+CASCADE-SKIP	variant-multi-election	should show election accordion and results after selecting election
+CASCADE-SKIP	variant-multi-election	should display election-specific questions
+CASCADE-SKIP	variant-multi-election	should bypass election selection when disallowSelection is true
+CASCADE-SKIP	variant-multi-election	Ne × 1c — election selector shown; constituency auto-implied (single)
+CASCADE-SKIP	variant-results-sections	should show only candidates when sections is ["candidate"]
+CASCADE-SKIP	variant-results-sections	should show only organizations when sections is ["organization"]
+CASCADE-SKIP	variant-results-sections	should show both sections with tabs when sections is ["candidate", "organization"]
+CASCADE-SKIP	data-setup-constituency	import constituency dataset
+CASCADE-SKIP	variant-constituency	should show constituency selection page after election selection
+CASCADE-SKIP	variant-constituency	should allow constituency selection and proceed to questions
+CASCADE-SKIP	variant-constituency	should answer questions and reach results
+CASCADE-SKIP	variant-constituency	should show election accordion in multi-election results
+CASCADE-SKIP	variant-constituency	should display constituency-filtered results
+CASCADE-SKIP	variant-constituency	should show missing nominations warning for partial-coverage constituency
+CASCADE-SKIP	variant-constituency	SETTINGS-01 wave B — constituency-filter (PRODUCT-GAP / PASS-WITH-DEFERRAL)
+CASCADE-SKIP	data-setup-startfromcg	import startfromcg dataset
+CASCADE-SKIP	variant-startfromcg	should show constituency selection first (reversed flow)
+CASCADE-SKIP	variant-startfromcg	should show election selection after constituency selection
+CASCADE-SKIP	variant-startfromcg	should complete journey through questions to results
+CASCADE-SKIP	variant-startfromcg	should handle orphan municipality without error
+CASCADE-SKIP	variant-startfromcg	startFromConstituency — constituency selector shown first; elections list hidden; constituency URL segment present
+CASCADE-SKIP	data-setup-low-minimum-answers	import low-minimum-answers dataset
+CASCADE-SKIP	variant-low-minimum-answers	voter completes location, skips opinions, browses entity list without match scores
+CASCADE-SKIP	data-setup-1e-Nc	import 1e-Nc dataset
+CASCADE-SKIP	variant-1e-Nc	1e × Nc — election selection bypassed; constituency selector shown with 3 options
+CASCADE-SKIP	data-setup-Ne-Nc	import Ne-Nc dataset
+CASCADE-SKIP	variant-Ne-Nc	Ne × Nc — both selectors shown; constituency dropdown filters by selected election (no cross-bleed)
+CASCADE-SKIP	data-setup-allowopen	import allowopen dataset
+CASCADE-SKIP	variant-allowopen	SETTINGS-02 entity comment surface renders for allowOpen-true questions
+CASCADE-SKIP	variant-allowopen	SETTINGS-02 entity comment surface present even when allowOpen flipped after authoring
+CASCADE-SKIP	variant-allowopen	SETTINGS-02 entity comment surface is absent when entity has no answer.info
+CASCADE-SKIP	data-setup-hidden-required	import hidden-required dataset
+CASCADE-SKIP	variant-hidden-required-voter	SETTINGS-03 hidden question absent from voter question flow
+CASCADE-SKIP	voter-app	browser-back preserves answer state across navigation
+CASCADE-SKIP	voter-app	CLEAN-02 — multi-election multi-constituency bounces twice and resumes deferred target with query params preserved
+CASCADE-SKIP	voter-app	CLEAN-02 — election pre-selected via URL bounces only to constituency selector and resumes deferred target
+CASCADE-SKIP	voter-app	CLEAN-02 — refresh after localStorage clear mid-session resumes deferred target
+CASCADE-SKIP	voter-app	CLEAN-02 — open-redirect attempt to external URL is rejected by whitelist (defense-in-depth)
+CASCADE-SKIP	variant-hidden-required-candidate	SETTINGS-03 unanswered required info question disables profile-dependent CTAs on CandAppHome
+# === SUMMARY ===
+# SOURCE-SKIP count: 3
+# CASCADE-SKIP count: 44
+# Total: 47 (matches CASCADE_TESTS array length at tests/scripts/diff-playwright-reports.ts:253-301)
+#
+# Interpretation:
+#   - 3 SOURCE-SKIP: candidate-app-settings PRODUCT-GAP test.skip()'s with non-empty annotations.
+#     Per CONTEXT.md D-08 + RESEARCH §"Pitfall 1": OUT OF PHASE 85 SCOPE. These are intentional
+#     skips, not cascades. Phase 87 may migrate them to a new SOURCE_SKIP_TESTS partition in
+#     diff-playwright-reports.ts (hygiene).
+#   - 44 CASCADE-SKIP: 2 voter-app-popups dismissal-cascade companions + 1 chain-head data-setup-multi-election
+#     + 8 variant-multi-election + 3 variant-results-sections + 1 data-setup-constituency + 7 variant-constituency
+#     + 1 data-setup-startfromcg + 5 variant-startfromcg + 1 data-setup-low-minimum-answers
+#     + 1 variant-low-minimum-answers + 1 data-setup-1e-Nc + 1 variant-1e-Nc + 1 data-setup-Ne-Nc
+#     + 1 variant-Ne-Nc + 1 data-setup-allowopen + 3 variant-allowopen + 1 data-setup-hidden-required
+#     + 1 variant-hidden-required-voter + 5 voter-app (browser-back + CLEAN-02 quartet) + 1 variant-hidden-required-candidate
+#     = 44. All transitively rooted in the voter-app-popups :: should remember dismissal after page reload
+#     chain-head FAIL (3/3 deterministic per rca-capture/chain-head-failure.txt).
