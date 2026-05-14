@@ -85,6 +85,14 @@ test.describe('CLEAN-02 voter-not-located deferred-target redirect', { tag: ['@v
     // resolved. The (located)/+layout.ts gate fires the `?next=` redirect.
     await page.goto('/results');
 
+    // Phase 86 DETERM-12: chain-head FAIL was the first test in serial mode
+    // with cold storageState; the 307 redirect chain (/results → /elections
+    // ?next=...) needs domcontentloaded settle headroom on cold-start before
+    // toHaveURL polls. Without this, the URL assertion fires before the
+    // redirect has resolved the second hop on cold dev-server starts. See
+    // 86-RESEARCH.md §3.4 + 86-01-PLAN.md Task 4 Step-2 verdict path.
+    await page.waitForLoadState('domcontentloaded');
+
     // First bounce: /elections?next=<encoded-target>
     await expect(page).toHaveURL(/\/elections\?next=/, { timeout: 15000 });
 
