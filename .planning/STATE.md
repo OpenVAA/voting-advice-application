@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
 milestone: v2.10
-milestone_name: Test Reliability + A11y Compliance — IN PROGRESS
-status: executing
+milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
+status: completed
 stopped_at: Phases 84-87 batched context gathered
-last_updated: "2026-05-13T20:27:11.333Z"
-last_activity: 2026-05-13 -- Phase 84 planning complete
+last_updated: "2026-05-14T08:45:17.374Z"
+last_activity: 2026-05-14 -- Phase 84 marked complete
 progress:
   total_phases: 9
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 10
-  completed_plans: 8
-  percent: 80
+  completed_plans: 10
+  percent: 100
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 83 — Test Reliability Follow-ups (Image-Upload Cascade + Voter-App Flakes) + v2.10 Milestone-Close Hygiene
+**Current focus:** Phase 84 — Imgproxy Decoupling
 
 ## Current Position
 
-Phase: 83 — COMPLETE
-Plan: 1 of 1
-Status: Ready to execute
-Last activity: 2026-05-13 -- Phase 84 planning complete
+Phase: 84 — COMPLETE
+Plan: 1 of 2
+Status: Phase 84 complete
+Last activity: 2026-05-14 -- Phase 84 marked complete
 
 ## Performance Metrics
 
