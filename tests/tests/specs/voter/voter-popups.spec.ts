@@ -122,7 +122,12 @@ test.describe('feedback popup (VOTE-15)', { tag: ['@voter'] }, () => {
     // Modal/Drawer/Alert components render a btn-circle close button with sr-only
     // text from t('common.closeDialog'); getByRole + locale-resilient regex matches
     // 'Close' (en), 'Sulje' (fi), 'Stäng' (sv), 'Luk' (da) per supportedLocales.
-    await dialog.getByRole('button', { name: /close|sulje|stäng|luk/i }).click();
+    // Phase 86 DETERM-12: Phase 80 A11Y-04 Drawer aria-label landed a second
+    // element matching the regex (strict-mode collision: 2 elements). Resolve
+    // with .first() — the dialog's btn-circle close is rendered first per
+    // Modal.svelte / Drawer.svelte / Alert.svelte conventions; subsequent
+    // matches are inner-element aria-labels. See 86-RESEARCH.md §3.1.
+    await dialog.getByRole('button', { name: /close|sulje|stäng|luk/i }).first().click();
 
     // Wait for the dialog to disappear
     await expect(dialog).not.toBeVisible({ timeout: 3000 });
