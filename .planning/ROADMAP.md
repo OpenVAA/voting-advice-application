@@ -122,7 +122,7 @@ Phase 79 (DETERM-04 + DETERM-05) ✓ COMPLETE
 - [x] **Phase 82: A11Y-01 PRODUCT-GAP Cell — Required-Empty** — Phase-discussion product decision (REJECT-with-error vs SOFT-WARN-ONLY) for empty-required save behavior; spec assertions reflect chosen mechanism. Closes A11Y-07. (completed 2026-05-13)
 - [x] **Phase 83: Test Reliability Follow-ups (Image-Upload Cascade + Voter-App Flakes) + v2.10 Milestone-Close Hygiene** — Close DETERM-06 (image-upload CAND-03 cascade resolution; mitigations from todo §"Recommended approach": selector-drift fix / pre-filechooser delay / imgproxy re-enable) + DETERM-07 (voter-matching + voter-detail flakes stabilization to deterministic PASS or FAILURE-CLASS with rationale) + 3 Phase 82 advisory follow-ups folded 2026-05-13 (WR-01 variant-hidden-required hygiene comment; IN-01 docstring count fix; IN-02 Phase 81 deferred +2 PASS_LOCKED backfill for A11Y-05+A11Y-06). May trigger a fresh constants regen if PASS_LOCKED shifts. (completed 2026-05-13)
 - [x] **Phase 84: Imgproxy Decoupling** — Decouple non-image tests from the imgproxy infrastructure flake. Gate portrait rendering behind a test-fixture flag (or below-fold lazy-load) so `re-auth.setup.ts` + 11 `candidate-app-settings` pages stop awaiting imgproxy on initial paint. Parallel lever: tune `apps/supabase/supabase/config.toml [storage.image_transformation]` (worker count, timeout, connection pool). Closes the structural DATA_RACE pool from 15 → 3 (only CAND-03 image-upload + CAND-12 readback + CAND-03 readback remain). Unlock condition for Phase 85 + Phase 86. (completed 2026-05-14)
-- [ ] **Phase 85: Variant-Project Cascade RCA & Fix** — Investigate + close the 47 CASCADE entries across 9 `data-setup-*` projects + 9 paired `variant-*` spec projects. Phase entrypoint is a single RCA plan to identify the shared root cause (likely yarn-arg-forwarding LANDMINE-9-style or setup-overlay-ordering); follow-up plans implement targeted fixes. Closes CASCADE pool from 47 → 0 (or near 0). Parallel-eligible with Phase 86 after Phase 84 lands.
+- [x] **Phase 85: Variant-Project Cascade RCA & Fix** — Investigate + close the 47 CASCADE entries across 9 `data-setup-*` projects + 9 paired `variant-*` spec projects. Phase entrypoint is a single RCA plan to identify the shared root cause (likely yarn-arg-forwarding LANDMINE-9-style or setup-overlay-ordering); follow-up plans implement targeted fixes. Closes CASCADE pool from 47 → 0 (or near 0). Parallel-eligible with Phase 86 after Phase 84 lands. (completed 2026-05-14)
 - [ ] **Phase 86: Voter-App FAILURE-CLASS Cleanup** — Investigate + resolve the ~10 deterministic voter-app failures currently in the FAILURE-CLASS narrative block. Likely 3 plans grouped by surface: (1) popups + hydration cluster, (2) filter + feedback cluster, (3) visibility + edge-case cluster. Closes FAILURE-CLASS pool ~10 → 0. Parallel-eligible with Phase 85 after Phase 84 lands.
 - [ ] **Phase 87: v2.10 All-Green Milestone-Close Anchor** — Capture a fresh 3-run cold-start gate after Phases 84-86 land; confirm all-green deterministic state (target: ~150-160 PASS_LOCKED + 0 DATA_RACE + 0 CASCADE + 0 FAILURE-CLASS); produce the final v2.10-ship anchor via `regen-constants.mjs`; run `/gsd-audit-milestone` for shippability sign-off.
 
@@ -226,8 +226,8 @@ Phase 79 (DETERM-04 + DETERM-05) ✓ COMPLETE
   4. Variant spec runs surface their own deterministic verdicts (pass / fail) — any new failures join the FAILURE-CLASS cohort for Phase 86 attention.
   5. Fresh 3-run cold-start gate SHA-identical FIRST attempt; new anchor reflects the CASCADE shrinkage.
 **Plans**: 2 plans
-- [ ] 85-01-PLAN.md — DETERM-10 RCA: chain-head failure capture (run-{1,2,3}.json walk) + H1 architectural disproof + 47-entry CASCADE classification + 85-RCA-FINDINGS.md verdict with Path A/B/C analysis (Path B recommended per RESEARCH)
-- [ ] 85-02-PLAN.md — DETERM-11 Path B structural decouple: 1-line playwright.config.ts:236 edit (remove voter-app-popups from data-setup-multi-election deps) + 1-run cold-start smoke + 3-run cold-start gate + atomic constants regen (Phase 79 D-10 bundle) for v2.10 All-Green Suite anchor
+- [x] 85-01-PLAN.md — DETERM-10 RCA: chain-head failure capture (run-{1,2,3}.json walk) + H1 architectural disproof + 47-entry CASCADE classification + 85-RCA-FINDINGS.md verdict with Path A/B/C analysis (Path B recommended per RESEARCH)
+- [x] 85-02-PLAN.md — DETERM-11 Path B structural decouple: 1-line playwright.config.ts:236 edit (remove voter-app-popups from data-setup-multi-election deps) + 1-run cold-start smoke + 3-run cold-start gate + atomic constants regen (Phase 79 D-10 bundle) for v2.10 All-Green Suite anchor
 **UI hint**: no
 
 ### Phase 86: Voter-App FAILURE-CLASS Cleanup
@@ -291,6 +291,6 @@ Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82, 83 (pa
 | 82. A11Y-01 PRODUCT-GAP Cell — Required-Empty | v2.10 | 1/1 | Complete    | 2026-05-13 |
 | 83. Test Reliability Follow-ups (Image-Upload Cascade + Voter-App Flakes) | v2.10 | 1/1 | Complete   | 2026-05-13 |
 | 84. Imgproxy Decoupling | v2.10 | 2/2 | Complete   | 2026-05-14 |
-| 85. Variant-Project Cascade RCA & Fix | v2.10 | 0/TBD | Not started | - |
+| 85. Variant-Project Cascade RCA & Fix | v2.10 | 2/2 | Complete   | 2026-05-14 |
 | 86. Voter-App FAILURE-CLASS Cleanup | v2.10 | 0/TBD | Not started | - |
 | 87. v2.10 All-Green Milestone-Close Anchor | v2.10 | 0/TBD | Not started | - |

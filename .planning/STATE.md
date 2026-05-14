@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
-status: executing
+status: completed
 stopped_at: Phases 84-87 batched context gathered
-last_updated: "2026-05-14T09:53:10.407Z"
-last_activity: 2026-05-14 -- Phase 85 planning complete
+last_updated: "2026-05-14T13:05:51.949Z"
+last_activity: 2026-05-14 -- Phase 85 marked complete
 progress:
   total_phases: 9
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 12
-  completed_plans: 10
-  percent: 83
+  completed_plans: 12
+  percent: 78
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 84 — Imgproxy Decoupling
+**Current focus:** Phase 85 — Variant-Project Cascade RCA Fix
 
 ## Current Position
 
-Phase: 84 — COMPLETE
+Phase: 85 — COMPLETE
 Plan: 1 of 2
-Status: Ready to execute
-Last activity: 2026-05-14 -- Phase 85 planning complete
+Status: Phase 85 complete
+Last activity: 2026-05-14 -- Phase 85 marked complete
 
 ## Performance Metrics
 
