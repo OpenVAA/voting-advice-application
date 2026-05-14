@@ -155,7 +155,21 @@ test.describe('setTimeout popup on full page load (LAYOUT-03 regression gate)', 
     // Wait for results list to be visible — signals hydration completed and
     // the results layout $effect fired, registering the
     // startFeedbackPopupCountdown setTimeout (delay: 2s).
-    await expect(page.getByTestId(testIds.voter.results.list)).toBeVisible({ timeout: 15000 });
+    //
+    // Phase 86 DETERM-12 LAYOUT-03 settle race fix: bare toBeVisible races
+    // the addInitScript localStorage seed and the (located)/+layout.ts loader
+    // on cold-start. Replace with expect.poll() settle pattern (canonical
+    // analog: voter-browse-without-match.spec.ts:50-54; v2.6 P64 pattern) so
+    // the answerStore seed + parseParams converge before the popup assertion
+    // fires. See 86-RESEARCH.md §3.2 H1 + 86-PATTERNS.md §5.
+    const list = page.getByTestId(testIds.voter.results.list);
+    await expect
+      .poll(() => list.count(), {
+        timeout: 15000,
+        message: 'results list must render under LAYOUT-03 deeplink (Phase 86 DETERM-12)'
+      })
+      .toBeGreaterThan(0);
+    await expect(list.first()).toBeVisible();
 
     // Wait for the feedback popup dialog — this is the assertion under test.
     // The setTimeout fires ~2s post-hydration; popupQueue.push must surface
