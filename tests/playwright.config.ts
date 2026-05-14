@@ -181,7 +181,12 @@ export default defineConfig({
     {
       name: 'voter-app',
       testDir: './tests/specs/voter',
-      testIgnore: /voter-(settings|popups)\.spec\.ts/,
+      // Phase 86 DETERM-14: voter-visibility-required was authored ONLY for the
+      // `variant-hidden-required-voter` project (variant overlay required to
+      // hide `test-voter-q-8`); the spec's negative-presence assertion correctly
+      // fails when the overlay does not apply. Excluded here so the spec runs
+      // ONLY in `variant-hidden-required-voter`. See §3.7 of 86-RESEARCH.md.
+      testIgnore: /voter-(settings|popups|visibility-required)\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome']
       },
