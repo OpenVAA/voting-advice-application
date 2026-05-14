@@ -141,8 +141,15 @@ async function answerCurrentQuestion(page: Page, answerIndex: number): Promise<v
 /**
  * Drive the voter through Home → Intro → Questions, answering
  * `count` opinion questions with the given Likert index. Mirrors
- * voter.fixture.ts:52-94 but operates on the caller-supplied page so
+ * voter.fixture.ts:52-110 but operates on the caller-supplied page so
  * the `serial` describe can share state across tests.
+ *
+ * Phase 86 DETERM-12: post-loop fallback updated from a single Skip-Next
+ * click to a 3-iteration Skip-Next loop (mirrors voter.fixture.ts:96-110
+ * Phase 77 P02 fix). The e2e seed has sort-17 (categorical, 3 options)
+ * + sort-18 (boolean) optional opinion questions after the 16 Likert
+ * answers — the single Skip landed voter on sort 18 and the URL never
+ * changed to /results. See 86-RESEARCH.md §3.3 H1.
  */
 async function answerNQuestions(page: Page, count: number, answerIndex: number): Promise<void> {
   await navigateToFirstQuestion(page);
@@ -157,14 +164,20 @@ async function answerNQuestions(page: Page, count: number, answerIndex: number):
     await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 10000 });
     if (i < count - 1) await waitForNextQuestion(page, answerIndex);
   }
-  // If auto-advance from the last question didn't reach /results yet, click
-  // next explicitly (mirrors voter.fixture.ts:81-86). The conditional is in
-  // beforeAll/helper scope, NOT a test body — DETERM-03 lint compliant.
-  if (!page.url().includes('/results')) {
+  // Phase 86 DETERM-12 (mirrors voter.fixture.ts:96-110 Phase 77 P02 fix):
+  // post-loop fallback walks past optional sort-17 (categorical) + sort-18
+  // (boolean) questions via Skip-Next iteration. Without this, the single
+  // nextButton.click() lands on the boolean question and waitForURL
+  // (/\/results/) times out. The maxSteps=3 cap covers sort 17 + sort 18 +
+  // 1 headroom step. /results breaks the loop early.
+  for (let skip = 0; skip < 3; skip++) {
+    if (page.url().includes('/results')) break;
+    const urlBefore = page.url();
     // reason: next button has no stable aria-name (varies by state); testid
     // is the contract per CONTEXT D-11.
     await page.getByTestId(testIds.voter.questions.nextButton).click();
-    await page.waitForURL(/\/results/, { timeout: 30000 });
+    // 30s budget matches voter.fixture.ts:113 — SSR + reactivity settle.
+    await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 30000 });
   }
   // reason: voter-results-list testid is the canonical anchor for results
   // page readiness (used throughout voter specs); no aria/role equivalent.
