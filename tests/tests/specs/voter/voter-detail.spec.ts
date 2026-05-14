@@ -148,9 +148,27 @@ test.describe('voter entity detail', { tag: ['@voter'] }, () => {
     // elements, not 4 parties; see voter-results.spec.ts canonical pattern
     // at the "switch to organizations/parties section and back" test which
     // also asserts the heading text rather than card count).
-    await expect(partySection.getByRole('heading', { level: 3 }).first()).toContainText(
-      `${expectedPartyCount} parties`
-    );
+    //
+    // Phase 86 DETERM-12 harden: Phase 83 DETERM-07b guard exposed symmetric
+    // ~33% boundary flake across Phase 84 + Phase 85 (3/6 cold-start runs).
+    // Wrap in expect.poll() with 10s timeout extension — gives the entity-
+    // list reactivity chain time to populate the party-section heading text
+    // before the .first().click() fires. Boundary-flake hardening (NOT a
+    // fix-vs-skip per RESEARCH §3.11 Open-Q-4 — test is reliable to harden).
+    await expect
+      .poll(
+        () =>
+          partySection
+            .getByRole('heading', { level: 3 })
+            .getByText(new RegExp(`^${expectedPartyCount}`))
+            .count(),
+        {
+          timeout: 10000,
+          message:
+            'party section heading must show count before card click (Phase 86 DETERM-12 harden Phase 83 DETERM-07b)'
+        }
+      )
+      .toBeGreaterThan(0);
 
     // Click the first party card's action link to open drawer.
     // The EntityCardAction component renders as <a data-testid="entity-card-action">.
