@@ -1,10 +1,11 @@
-# Phase 84 Plan 01 Task 2 — 1-Run Cold-Start Smoke (D-03 Gate)
-# Captured: 2026-05-14T06:31:30Z (smoke ran 2026-05-14T06:13:31Z → 2026-05-14T06:31:30Z, ~18 min)
+# Phase 84 Plan 01 Task 2/3 — 1-Run Cold-Start Smoke (D-03 Gate, POST Rule-1 Fix)
+# Captured: 2026-05-14T07:04:42Z (smoke ran 2026-05-14T06:46:47Z → 2026-05-14T07:04:42Z, ~17.9 min)
+# Predecessor smoke (pre-fix, regression diagnosis below): see git blob 752967db^ / commit 752967db.
 
 ## Aggregate Stats (from smoke.json)
-- expected (passed): 88
-- unexpected (failed/timedOut): 12
-- skipped (cascade): 66
+- expected (passed): 109   (was 88 pre-fix; +21 net)
+- unexpected (failed/timedOut): 10   (was 12 pre-fix; -2 net)
+- skipped: 47   (was 66 pre-fix; -19 net)
 - flaky: 0
 - TOTAL tests: 166
 
@@ -18,139 +19,122 @@ The 3 image-intrinsic post-Phase-84 IMGPROXY_TIED_TITLES titles in smoke:
 
 Per Phase 73 D-09 structural binding contract: these 3 tests remain in DATA_RACE regardless of pass/fail status in any individual run (data-race-semantic).
 
-## re-auth-setup project (DETERM-08 core observable)
+## re-auth-setup project (DETERM-08 core observable, post-fix)
 - re-auth-setup :: setup/re-auth.setup.ts > re-authenticate as candidate  STATUS: passed  ✓
 - auth-setup :: setup/re-auth.setup.ts > re-authenticate as candidate  STATUS: passed  ✓
-DETERM-08 working: re-auth-setup now runs to completion (no longer cascade-skipped from candidate-app-mutation chain).
+DETERM-08 still working: re-auth-setup still runs to completion AND no longer cascade-skipped from candidate-app-mutation chain. The file-scoped beforeAll re-auth in candidate-settings.spec.ts (Rule 1 fix) covers the post-mutation token-revocation case.
 
 ## candidate-app-settings tests (the 11 expected to promote to PASS_LOCKED)
-- candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should show read-only warning when answers are locked  STATUS: failed   ←── NEW FAILURE (was cascade-skipped pre-Phase-84)
-- candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should show maintenance page when candidateApp is disabled  STATUS: skipped (serial-mode cascade from first failure)
-- candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should show maintenance page when underMaintenance is true  STATUS: skipped
-- candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should display notification popup when enabled  STATUS: skipped
-- candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should render help page correctly  STATUS: skipped
-- candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should render privacy page correctly  STATUS: skipped
-- candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should hide hero when hideHero is enabled  STATUS: skipped
-- candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should show hero when hideHero is disabled  STATUS: skipped
-- candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — access.voterApp  STATUS: skipped
-- candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — header.showFeedback  STATUS: skipped
-- candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — header.showHelp  STATUS: skipped
-- candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — notifications.voterApp  STATUS: skipped
-- candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — entities.showAllNominations  STATUS: skipped
-- candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — entities.hideIfMissingAnswers.candidate  STATUS: skipped
-- candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — elections.showElectionTags  STATUS: skipped
-- candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — questions.showCategoryTags  STATUS: skipped
-- candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — questions.showResultsLink  STATUS: skipped
-- candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — results.sections  STATUS: skipped
+All 15 NON-SKIP-REASON tests passed. The 3 PASS-WITH-DEFERRAL cells (skipReason set in spec source per Phase 77 product-gap deferral pattern) skip as expected (matches Phase 83 baseline behavior — these were never asserter-able; tracked in 77-01-SUMMARY.md).
 
-NOTE: `test.describe.configure({ mode: 'serial' })` at line 26 of candidate-settings.spec.ts means once the first test fails, all subsequent tests in the FILE are skipped (cascade within the spec file). This serial-mode cascade is INTERNAL to the spec; not a Playwright project-dep cascade.
+- candidate-app-settings :: > should show read-only warning when answers are locked  STATUS: passed   ← regression FIXED by Rule 1 deviation
+- candidate-app-settings :: > should show maintenance page when candidateApp is disabled  STATUS: passed
+- candidate-app-settings :: > should show maintenance page when underMaintenance is true  STATUS: passed
+- candidate-app-settings :: > should display notification popup when enabled  STATUS: passed
+- candidate-app-settings :: > should render help page correctly  STATUS: passed
+- candidate-app-settings :: > should render privacy page correctly  STATUS: passed
+- candidate-app-settings :: > should hide hero when hideHero is enabled  STATUS: passed
+- candidate-app-settings :: > should show hero when hideHero is disabled  STATUS: passed
+- candidate-app-settings :: > SETTINGS-01 wave A — access.voterApp  STATUS: passed
+- candidate-app-settings :: > SETTINGS-01 wave A — header.showFeedback  STATUS: skipped (skipReason PRODUCT-GAP, intentional per spec L424-433)
+- candidate-app-settings :: > SETTINGS-01 wave A — header.showHelp  STATUS: skipped (skipReason PRODUCT-GAP, intentional per spec L438-448)
+- candidate-app-settings :: > SETTINGS-01 wave A — notifications.voterApp  STATUS: skipped (skipReason PRODUCT-GAP, intentional per spec L467-487)
+- candidate-app-settings :: > SETTINGS-01 wave A — entities.showAllNominations  STATUS: passed
+- candidate-app-settings :: > SETTINGS-01 wave A — entities.hideIfMissingAnswers.candidate  STATUS: passed
+- candidate-app-settings :: > SETTINGS-01 wave A — elections.showElectionTags  STATUS: passed
+- candidate-app-settings :: > SETTINGS-01 wave A — questions.showCategoryTags  STATUS: passed
+- candidate-app-settings :: > SETTINGS-01 wave A — questions.showResultsLink  STATUS: passed
+- candidate-app-settings :: > SETTINGS-01 wave A — results.sections  STATUS: passed
 
 ## candidate-app-password tests (expected to promote to PASS_LOCKED)
-- candidate-app-password :: specs/candidate/candidate-password.spec.ts > should change password and login with new password  STATUS: skipped
-- candidate-app-password :: specs/candidate/candidate-password.spec.ts > should logout and return to login page  STATUS: skipped
-
-(Likely cascade-skipped due to candidate-app-password project dependency on candidate-app-settings, OR similar serial mode within candidate-password.spec.ts.)
+- candidate-app-password :: > should change password and login with new password  STATUS: passed  ✓
+- candidate-app-password :: > should logout and return to login page  STATUS: passed  ✓
 
 ## candidate-app-mutation tests (regression check — all should pass per plan)
 All 16 candidate-app-mutation tests PASSED in this smoke (including the 3 image-intrinsic tests). No imgproxy 502 surfaced in this single run.
 
-## Pre-existing FAILURE-CLASS items (per Phase 83 jsdoc lines 86-102 — out of Phase 84 scope, routed to Phase 86)
-11 voter-app deterministic fails:
+## Pre-existing FAILURE-CLASS items (per Phase 83 jsdoc — out of Phase 84 scope, routed to Phase 86)
+10 voter-app deterministic fails (1 fewer than pre-fix smoke; the "partial-answer candidate" flake passed this run):
 - voter-app-popups :: should remember dismissal after page reload  (failed)
-- voter-app :: voter-visibility-required SETTINGS-03 hidden absent  (failed)
-- voter-app :: voter-detail case (d) both missing  (failed)
-- voter-app :: voter-feedback-persistence  (failed)
-- voter-app :: voter-matching should show partial-answer candidate (timedOut)  ← was in PASS_LOCKED in Phase 83 — surfaced here as flake (pre-existing FAILURE-CLASS narrative item per Phase 83 jsdoc)
-- voter-app :: voter-navigation results-CTA threshold  (failed)
-- voter-app :: voter-not-located-redirect direct link  (failed)
-- voter-app :: voter-popup-hydration full-page-load  (failed)
-- voter-app :: voter-question-rendering-boolean  (failed)
-- voter-app :: voter-question-rendering-categorical  (failed)
-- voter-app :: voter-results filter-toggle no-effect-update-depth  (failed)
+- voter-app :: SETTINGS-03 hidden question absent from voter question flow  (failed)
+- voter-app :: case (d) — both missing: "Neither has answered" message rendered  (failed)
+- voter-app :: feedback text persists across dismiss and resets after send  (failed)
+- voter-app :: results-CTA toggles per minimumAnswers threshold  (failed)
+- voter-app :: CLEAN-02 — direct link to /results route with no election picked bounces twice and resumes /results  (failed)
+- voter-app :: popup appears on full page load to /results (LAYOUT-03 hydration path)  (failed)
+- voter-app :: boolean opinion question renders, voter answers, persists across goBack, mirrors on entity-detail  (failed)
+- voter-app :: categorical opinion question (single-choice) renders, voter answers, persists across goBack, mirrors on entity-detail  (failed)
+- voter-app :: filter toggle narrows list without effect_update_depth_exceeded (RESULTS-01 + RESULTS-02)  (failed)
 
-These 11 are all in Phase 83 jsdoc's "Pre-existing FAILURE-CLASS items NOT addressed by Phase 83" list → routed to Phase 86 per ROADMAP.md. Out of Phase 84 scope.
+These 10 are all in Phase 83 jsdoc's "Pre-existing FAILURE-CLASS items NOT addressed by Phase 83" list → routed to Phase 86 per ROADMAP.md. Out of Phase 84 scope.
 
 ## D-03 Ladder Verdict
 DATA_RACE pool count = 3 (the literal post-Phase-84 IMGPROXY_TIED_TITLES survivors). Per D-03 strict reading: "DATA_RACE pool ≤ 3 → halt escalation; proceed to Task 4."
 
-HOWEVER: the plan's acceptance criterion #4 (line 318 of 84-01-PLAN.md) requires the 11 candidate-app-settings + 2 candidate-app-password + 2 re-auth tests to appear with status "passed" (≥7 settings + ≥1 re-auth). Actual: 0 settings passed, 0 password passed, 2 re-auth passed.
+Plan's acceptance criterion #4 (84-01-PLAN.md:318) requires the 11 candidate-app-settings + 2 candidate-app-password + 2 re-auth tests to appear with status "passed" (≥7 settings + ≥1 re-auth). Actual: 15 settings passed (3 PASS-WITH-DEFERRAL intentional skips — same as Phase 83 baseline), 2 password passed, 2 re-auth passed. ✓ PASS.
 
-The 11 settings test failures-via-serial-cascade are NEW failure mode revealed by Phase 84 — they were not visible pre-Phase-84 because mutation chain cascade-skipped them entirely. The first settings test (`should show read-only warning`) fails on `getByTestId('candidate-home-status')` not visible within 15s — a NON-imgproxy timing race or test logic bug that was previously hidden.
+## Rule 1 Deviation Applied (Phase 84 Plan 01, mid-execution)
 
-The D-03 escalation decision is non-trivial:
-- DETERM-09 (config-knob tuning) addresses imgproxy infrastructure — would NOT fix the candidate-home-status timing race.
-- The `should show read-only warning` failure is not imgproxy-tied per RCA-FINDINGS — it's a downstream effect of unblocking the settings tests for the first time.
+After the initial post-fix smoke (commit 752967d, captured 2026-05-14T06:31:30Z) revealed that
+`candidate-app-settings > should show read-only warning when answers are locked` regressed from
+PASS (Phase 83 baseline) to FAIL, deeper RCA against the smoke.json timeline + the test
+trace's error-context.md identified the actual root cause:
 
-This is a checkpoint situation — Plan 02 (DETERM-09) won't help; the operator needs to decide:
-(a) Investigate and fix `should show read-only warning` flake/race as a Rule 1/2 deviation within Plan 01.
-(b) Accept it as a downstream-discovered FAILURE-CLASS item, route to a follow-up phase, and proceed to Task 4 with the 3-element DATA_RACE classification regardless.
-(c) Roll back DETERM-08 if the post-Phase-84 settings failure pattern is worse than pre-Phase-84 cascade-skip.
+### Root cause (confirmed empirically)
 
-## Cross-reference: Phase 83 baseline run-3.json (settings tests)
-(Inspected post-smoke for regression diagnosis)
+The DETERM-08 dependency repoint changed `re-auth-setup.dependencies` from
+`['candidate-app-mutation']` to `['candidate-app']`. Under `--workers=1`, sibling projects
+depending on the same parent execute in DECLARATION ORDER. Declaration order in
+playwright.config.ts: `candidate-app-mutation` (L122) BEFORE `re-auth-setup` (L149), BUT
+Playwright's actual scheduler resolved `re-auth-setup` FIRST in the smoke (06:30:32 vs.
+06:30:34) — likely because `re-auth-setup` has no `testDir` override and minimal setup
+cost compared to mutation's larger spec scan.
 
-Phase 83 baseline run-3.json — candidate-app-settings tests:
-- should show read-only warning when answers are locked:        passed  ←── PASSED in Phase 83
-- should show maintenance page when candidateApp is disabled:    passed
-- should show maintenance page when underMaintenance is true:    passed
-- should display notification popup when enabled:                passed
-- should render help page correctly:                             passed
-- should render privacy page correctly:                          passed
-- should hide hero when hideHero is enabled:                     passed
-- should show hero when hideHero is disabled:                    passed
-- SETTINGS-01 wave A — access.voterApp:                          passed
-- SETTINGS-01 wave A — header.showFeedback:                      skipped (cascade)
-- SETTINGS-01 wave A — header.showHelp:                          skipped (cascade)
-- SETTINGS-01 wave A — notifications.voterApp:                   skipped (cascade)
-- SETTINGS-01 wave A — entities.showAllNominations:              passed
-- SETTINGS-01 wave A — entities.hideIfMissingAnswers.candidate:  passed
-- SETTINGS-01 wave A — elections.showElectionTags:               passed
-- SETTINGS-01 wave A — questions.showCategoryTags:               passed
-- SETTINGS-01 wave A — questions.showResultsLink:                passed
-- SETTINGS-01 wave A — results.sections:                         passed
+Consequence: re-auth-setup wrote a fresh STORAGE_STATE at 06:30:32. Then mutation ran
+`candidate-registration.spec.ts > should complete forgot-password and reset flow via
+Inbucket email` at 06:31:06, which uses `TEST_CANDIDATE_ALPHA_EMAIL` (NOT a fresh
+candidate) and calls `client.setPassword(Alpha, originalPassword)` →
+`auth.admin.updateUserById({ password })` — which **REVOKES ALL** of Alpha's existing
+refresh tokens, including the one just written by re-auth-setup. Settings then started
+at 06:31:09 with a revoked storageState; safeGetSession() returned no session and the
+protected layout's load() 307'd to /candidate/login. The trace's error-context.md
+confirmed: the failure-time page showed the candidate-app LOGIN form (with the
+answersLocked "Registration or editing answers is no longer possible..." copy), NOT the
+protected home — proving the test was on the login page, not at a timing race.
 
-Phase 83 candidate-app-password: BOTH passed
-Phase 83 re-auth-setup: BOTH passed (dual-project)
+The research agent missed this because `candidate-profile.spec.ts` uses
+`E2E_ADDENDUM_CANDIDATES[1]` (a fresh candidate). But `candidate-registration.spec.ts`
+has TWO describes: ADDENDUM[0] for fresh-candidate registration AND Alpha for the
+password-reset block (L108-163). The research agent's "mutation does NOT touch Alpha"
+claim was based on inspecting candidate-profile.spec.ts only.
 
-CONCLUSION: `should show read-only warning when answers are locked` was PASSING in Phase 83 baseline. The Phase 84 smoke regression is REAL — DETERM-08 dependency repoint has introduced a NEW failure mode for this test.
+### Chosen fix (minimal-surface Rule 1 deviation)
 
-## Root-Cause Hypothesis (preliminary, needs operator confirmation)
+Add a file-scoped `test.beforeAll` to `candidate-settings.spec.ts` that opens a temporary
+fresh browser context, signs in via the UI as Alpha, and overwrites STORAGE_STATE. The
+per-test page fixtures then read the freshly-written storageState at context-creation
+time. The hook runs BEFORE the first test of the candidate-app-settings project, so it
+re-establishes valid Alpha auth regardless of whether mutation's password-reset ran
+before or after re-auth-setup.
 
-Pre-Phase-84 dep chain: data-setup → auth-setup → candidate-app → candidate-app-mutation → re-auth-setup → candidate-app-settings → candidate-app-password
-  (re-auth-setup ran AFTER mutation, so storageState reflects post-mutation alpha state)
+### Why this fix preserves DETERM-08 maximally
 
-Post-Phase-84 dep chain: data-setup → auth-setup → candidate-app → {candidate-app-mutation, re-auth-setup} → candidate-app-settings → candidate-app-password
-  (mutation and re-auth-setup are now SIBLINGS, both depending on candidate-app)
+The `re-auth-setup` dependency stays on `candidate-app` (NOT mutation). The imgproxy-502
+cascade-break that DETERM-08 was designed to provide is retained: if CAND-03 502s in
+mutation, settings still runs (it depends on `re-auth-setup`, not `mutation`), and its
+own beforeAll establishes fresh auth even if mutation's password-reset never ran.
 
-Playwright runs sibling projects in declaration order with --workers=1. Declaration order:
-  - candidate-app (line 109)
-  - candidate-app-mutation (line 122)
-  - re-auth-setup (line 132)
-  - candidate-app-settings (line 157)
-  - candidate-app-password (line 170)
+### Rejected alternatives
 
-This suggests candidate-app-mutation STILL runs before re-auth-setup (declaration order). So the password should still be mutated before re-auth. Then why does the settings test fail?
+- (a) Repoint re-auth-setup back to mutation: re-introduces imgproxy-502 cascade. Defeats
+  DETERM-08.
+- (b) Add candidate-app-mutation to candidate-app-settings.dependencies: same problem.
+- (c) Move ToU acceptance into setup: not the issue. Alpha is seeded with
+  `terms_of_use_accepted: '2025-01-01T00:00:00.000Z'` at packages/dev-seed/src/templates/e2e.ts:783.
+- (d) Add a retry/wait in the read-only test: masks the issue rather than fixing it.
 
-Alternative hypothesis: there's a difference in how `data-teardown` / variant projects interact. Or: candidate-app-mutation's `forgot-password and reset flow` test mutates the alpha candidate password, but the `register fresh candidate via email link` test ALSO creates state. The state visible to candidate-app-settings depends on declaration order which may have changed semantically with the new sibling-paths.
+### Cost of the fix
 
-Alternative 2: The actual change might be more subtle — maybe playwright's sibling-resolution with the new graph creates a different parallelism profile that affects timing.
-
-Alternative 3 (LIKELY): Look at the test more carefully — it expects `candidate-home-status` testId visible after navigating to CandAppHome with `answersLocked: true`. The page server-side checks `nominations.length`, and redirects to login if no nominations (line 63 of layout.server.ts). With the new dep chain, candidate-app-mutation might run NEW candidate registrations that POLLUTE the alpha candidate's nominations, OR the per-test ordering exposes a stale-state issue.
-
-## D-03 Verdict
-
-**DATA_RACE pool count: 3 (D-03 strict criterion MET).**
-
-**HOWEVER:** the post-Phase-84 settings test regression is NOT addressable by DETERM-09 (config-knob tuning for imgproxy). DETERM-09 won't fix `getByTestId('candidate-home-status')` not visible.
-
-Per Phase 84 plan acceptance criterion #4 (line 318): "the 11 candidate-app-settings tests + the 2 candidate-app-password tests + both re-auth.setup.ts entries appear in smoke.json with status passed (NOT skipped / did not run). Verify via: grep ... returns ≥ 7." Actual: 0 settings passed (the first failed, the rest cascade-skipped in serial mode), 0 password passed (cascading), 2 re-auth passed.
-
-This is a "describe-issues" Task 3 outcome — not `approved`, not `escalate-to-determ-09`. The escalation path:
-
-(A) **Rule 1/2 deviation within Plan 01:** investigate `should show read-only warning` test logic / page load race / dep-graph timing race, fix the test or page or config, re-run smoke. The plan's Task 1 commit (DETERM-08 fix) DID land a real improvement (re-auth-setup no longer cascade-skipped, settings now RUN). The fix-the-flake path is plausible but requires investigation outside the plan's 6-task script.
-
-(B) **Accept post-Phase-84 baseline as-is and regen:** the actual count from regen-output.txt binds (D-07). The new anchor would reflect the actual reality: 11 settings tests classify as CASCADE (not PASS_LOCKED) because they cascade-skip from a NEW failure mode. The DATA_RACE pool would still be 3 (the structural binding holds). PASS_LOCKED would be ~96 (94 + 2 re-auth dual-project promoted), NOT ~108. CASCADE would be ~58 (47 + 11 new). This violates the plan's expected ~108 PASS_LOCKED but matches actual reality.
-
-(C) **Roll back DETERM-08:** restore re-auth-setup → candidate-app-mutation dependency, accept the Phase 83 cascade-skip-from-imgproxy-502 behavior. Better than the new failure mode if Phase 84's net effect is worse coverage.
-
-OPERATOR DECISION REQUIRED.
+~15 lines (plus ~45 lines of documenting comments) in candidate-settings.spec.ts. Adds
+~3-4 seconds to the candidate-app-settings project setup (one UI login + storageState
+serialize). No config-graph change, no test-infrastructure change, no UI change.
