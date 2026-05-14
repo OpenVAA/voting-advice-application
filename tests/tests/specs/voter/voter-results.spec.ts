@@ -196,17 +196,44 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
       .toBeGreaterThan(0);
     await filterButton.first().click();
 
-    // Check the first available filter checkbox inside the filter modal.
-    // The EnumeratedEntityFilter renders checkboxes inside a <dialog>.
-    const firstCheckbox = page.getByRole('dialog').getByRole('checkbox').first();
+    // Phase 86 DETERM-13 H1 fix: locate the TPA party value checkbox by
+    // accessible name instead of `.first()`. The previous `.first()` matched
+    // the FIRST checkbox in the dialog — which is the Party expander's
+    // "expand or collapse this section" controlled input (Expander.svelte
+    // renders this before the inner value checkboxes), NOT a party value
+    // checkbox. Calling `.check()` on the expander either no-ops (if already
+    // expanded) or expands the section, but never narrows the filter. To
+    // actually narrow, we must UNCHECK a party value (the EnumeratedFilter
+    // starts with all values active = no narrowing). Pattern mirrors the
+    // SETTINGS-01 wave B helpers at lines 512-576 + the existing TPA-uncheck
+    // analog at lines 788-806 of this same file. RCA: Phase 86 RESEARCH §3.5
+    // H1 (HIGH confidence per analog).
+    //
+    // Step 1 of 2: expand the Party filter expander (collapsed by default since
+    // the filter starts inactive — `defaultExpanded={filter.active || _isTextFilter(filter)}`
+    // in EntityFilters.svelte:55). The expander is a controlled `<input
+    // type="checkbox" aria-label="Expand or collapse this section">` (per
+    // Expander.svelte:155); each filter renders one. The Party filter is
+    // index 0 in EntityFilters.svelte:50 `#each filterGroup.filters`.
+    const partyExpander = page
+      .getByRole('dialog')
+      .getByRole('checkbox', { name: /expand or collapse this section/i })
+      .nth(0);
+    await expect(partyExpander).toBeVisible({ timeout: 5000 });
+    await partyExpander.check();
+
+    // Step 2 of 2: uncheck the TPA party-value checkbox. Party value
+    // checkboxes have accessible names equal to party shortName + candidate
+    // count (e.g., "TPA 5"); anchor on the shortName via a prefix regex.
+    // Mirrors the existing analog at line ~794 of this same file.
+    const partyValueCheckbox = page.getByRole('dialog').getByRole('checkbox', { name: /^TPA/ });
     await expect
-      .poll(() => firstCheckbox.count(), {
+      .poll(() => partyValueCheckbox.count(), {
         timeout: 5000,
-        message:
-          'Filter dialog must contain at least one party checkbox (Phase 64 D-11 + D-12 — EnumeratedEntityFilter dynamic import settles)'
+        message: 'TPA party value checkbox must render (Phase 86 DETERM-13 H1 fix — EnumeratedEntityFilter via buildParentFilters)'
       })
       .toBeGreaterThan(0);
-    await firstCheckbox.check();
+    await partyValueCheckbox.uncheck();
 
     // Click the "Apply and close" / "Close filters" button — the modal-action
     // snippet's `variant="main"` button (EntityListWithControls.svelte:204).
@@ -218,12 +245,19 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
       .getByRole('button', { name: /close filters/i })
       .click();
 
+    // Phase 86 DETERM-13 H3 fix: wait for the filter dialog to fully unmount
+    // (the `open` attribute is removed) before polling the post-filter card
+    // count. Mirrors the canonical Phase 64 D-11 + D-14 + D-15 close-race
+    // pattern at line 274 / 351 of this same file. `getByRole('dialog')`
+    // matches only open <dialog> elements; count==0 == no open dialog.
+    await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 5000 });
+
     // Poll until the filter has propagated and the visible-card count strictly
     // narrows. Phase 78 CLEAN-05 IN-04: strengthen `toBeLessThanOrEqual` to
     // `toBeLessThan` — a filter that doesn't narrow is a regression. The e2e
     // seed has 4 parties (TPA/TPB/VPA/VPB) and 11 visible candidates spread
-    // across them; checking one party MUST exclude candidates from the other
-    // parties, so the post-filter count is strictly less than the baseline.
+    // across them; UNCHECKING one party MUST exclude its candidates from the
+    // visible list, so the post-filter count is strictly less than the baseline.
     await expect
       .poll(() => page.getByTestId(testIds.voter.results.card).count(), {
         timeout: 5000,
