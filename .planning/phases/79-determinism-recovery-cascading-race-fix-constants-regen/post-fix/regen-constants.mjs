@@ -16,13 +16,22 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-// __dirname is .planning/phases/79-…/post-fix/. Phase 84 anchor lives 2 levels up
-// then down into the Phase 84 post-fix directory.
-// Phase 84: DETERM-08 structural decoupling promoted run-3.json as the canonical
-// regen source (runs 1 + 3 are SHA-identical at 04ddfdd85…; run 2 differs by 1
-// non-Phase-84-scope voter-app party-drawer cell — routed to Phase 86 per
-// ROADMAP.md). See .planning/phases/84-…/post-fix/sha256.txt for the audit.
-const reportPath = join(__dirname, '..', '..', '84-imgproxy-decoupling-decouple-non-image-tests-from-imgproxy-i', 'post-fix', 'run-3.json');
+// __dirname is .planning/phases/79-…/post-fix/. Phase 85 anchor lives 2 levels up
+// then down into the Phase 85 post-fix directory.
+// Phase 85: DETERM-11 structural decoupling (variant-chain head
+// `data-setup-multi-election` decoupled from `voter-app-popups` in
+// tests/playwright.config.ts) promoted run-3.json as the canonical regen
+// source. Run 1 SHA ≡ Run 2 SHA (strict identity); Run 3 differs by exactly 1
+// non-Phase-85-scope voter-app party-drawer cell (same Phase-83-DETERM-07b
+// hydration-guard boundary graduate that flaked in Phase 84 run-2) —
+// symmetric flake direction confirms boundary classification; routed to
+// Phase 86 per CONTEXT.md D-08. New Phase 85 v2.10 anchor SHA:
+// 411e09f5ffb15015ca57a7405619f127f3950c402c082e2599f6782601158ac5
+// Phase 84 anchor 04ddfdd85cfbcd6505626eb8fb50f3e6f35c11e5385df1f4c8695b22ed0655aa
+// is ABSORBED by this regen. See .planning/phases/85-…/post-fix/sha256.txt
+// for the audit + WARNING-9 contingency narrative (2 new variant-multi-
+// election deterministic FAILs routed to Phase 86).
+const reportPath = join(__dirname, '..', '..', '85-variant-project-cascade-rca-fix-investigate-and-close-the-47', 'post-fix', 'run-3.json');
 // Strip optional dotenv banner line (Phase 73 captures via `yarn playwright …` write a
 // `[dotenv@…] injecting env …` line ahead of the JSON; the P64 captures did not). Split
 // on first '{' rather than first newline so the strip is robust to multi-line banners.

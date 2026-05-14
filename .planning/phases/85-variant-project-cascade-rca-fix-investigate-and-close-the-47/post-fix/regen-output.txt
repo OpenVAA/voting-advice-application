@@ -1,3 +1,4 @@
+IMGPROXY_TIED_TITLES match-count assertion: 3 titles, 3 total matches.
 
 === PASS_LOCKED_TESTS (109) ===
   'auth-setup :: setup/auth.setup.ts > authenticate as candidate',
@@ -158,3 +159,4 @@
   'voter-app :: specs/voter/voter-not-located-redirect.spec.ts > CLEAN-02 — refresh after localStorage clear mid-session resumes deferred target',
   'voter-app-popups :: specs/voter/voter-popups.spec.ts > should not show any popup when disabled',
   'voter-app-popups :: specs/voter/voter-popups.spec.ts > should show survey popup after delay on results page'
+
