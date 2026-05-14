@@ -317,6 +317,23 @@ test.describe('voter-detail answer cases (E2E-05)', { tag: ['@voter'] }, () => {
     await dialog.getByRole('tab', { name: /opinions/i }).click();
     const opinionsTab = dialog.getByTestId(testIds.voter.entityDetail.opinionsTab);
 
+    // Phase 86 DETERM-14 hydration-completeness guard (Plan 03 Task 4 H3):
+    // EntityOpinions.svelte:57-60 emits the bothHaventAnswered message via a
+    // reactive expression iterating over `nakedEntity.entity.constituency
+    // .root.opinionQuestions`. On cold-start, this list populates AFTER the
+    // opinions tab mounts — the negative-presence assertion below can fire
+    // against a partially-hydrated tab where the directional question's row
+    // hasn't been rendered yet, producing a false-negative "Neither..."
+    // mismatch. CaseD-Neither has 1 seeded opinion answer (test-question-4
+    // per e2e.ts:1213-1215), so waiting for the first opinion-question-input
+    // to render confirms the reactive chain has populated. Mirrors Phase 83
+    // DETERM-07b party-drawer hydration-completeness pattern (voter-detail.
+    // spec.ts:165-181 expect.poll guard); RESEARCH §3.8 H3 (H1 fixture-shift
+    // + H2 i18n regex were DISPROVED via fixture audit + i18n grep).
+    await expect(opinionsTab.getByTestId('opinion-question-input').first()).toBeVisible({
+      timeout: 5000
+    });
+
     // Marker question for case (d) = test-question-directional-1. Neither
     // voter nor CaseD-Neither has answered it. EntityOpinions.svelte:57-60
     // renders the i18n message `questions.answers.bothHaventAnswered`
