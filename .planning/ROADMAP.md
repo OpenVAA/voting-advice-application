@@ -256,7 +256,8 @@ Phase 79 (DETERM-04 + DETERM-05) ✓ COMPLETE
   2. Final v2.10-ship anchor: ~150-160 PASS_LOCKED + ≤3 DATA_RACE + 0 CASCADE + ≤2 FAILURE-CLASS (residual = explicit v2.11+ deferrals). Anchor SHA committed to `tests/scripts/diff-playwright-reports.ts` jsdoc.
   3. Phase 87 SUMMARY documents the all-green achievement + lists any explicit v2.11+ deferrals.
   4. `/gsd-audit-milestone v2.10` runs cleanly; status = shippable.
-**Plans**: TBD
+**Plans**: 1 plan
+- [ ] 87-01-PLAN.md — DETERM-15 final v2.10-ship anchor: fresh 3-run cold-start identity gate (strict, no D-09 fallback) + atomic constants regen (regen-constants.mjs reportPath + diff-playwright-reports.ts jsdoc + 4 const arrays) + comprehensive SUMMARY + /gsd-audit-milestone v2.10 invocation + atomic close commit
 **UI hint**: no
 
 ## Progress
@@ -297,4 +298,4 @@ Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82, 83 (pa
 | 84. Imgproxy Decoupling | v2.10 | 2/2 | Complete   | 2026-05-14 |
 | 85. Variant-Project Cascade RCA & Fix | v2.10 | 2/2 | Complete   | 2026-05-14 |
 | 86. Voter-App FAILURE-CLASS Cleanup | v2.10 | 4/4 | Complete   | 2026-05-14 |
-| 87. v2.10 All-Green Milestone-Close Anchor | v2.10 | 0/TBD | Not started | - |
+| 87. v2.10 All-Green Milestone-Close Anchor | v2.10 | 0/1 | Planned | - |
