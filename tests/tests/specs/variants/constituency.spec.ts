@@ -27,10 +27,6 @@ import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
 
-// Disable tracing for this serial spec to avoid ENOENT errors with
-// shared browser contexts in Playwright 1.58.2.
-test.use({ trace: 'off' });
-
 /**
  * Answer questions one-by-one until the results page is reached.
  *

@@ -43,10 +43,6 @@ import { expect, test } from '@playwright/test';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
 
-// Disable tracing for this serial spec to avoid ENOENT errors with
-// shared browser contexts. Mirrors voter-popup-hydration.spec.ts pattern.
-test.use({ trace: 'off' });
-
 // Ensure unauthenticated voter context for every test in this file —
 // no storageState carried over from data-setup auth fixtures.
 test.use({ storageState: { cookies: [], origins: [] } });

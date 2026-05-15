@@ -26,9 +26,7 @@ import { testIds } from '../../utils/testIds';
 test.describe.configure({ mode: 'serial', timeout: 60000 });
 
 // Ensure unauthenticated voter context.
-// Disable trace to avoid Playwright 1.58.2 ENOENT trace writer conflicts
-// when serial describe blocks share state across beforeAll/afterAll.
-test.use({ storageState: { cookies: [], origins: [] }, trace: 'off' });
+test.use({ storageState: { cookies: [], origins: [] } });
 
 /**
  * Shared settings that suppress interfering popups (notification + data consent).

@@ -21,11 +21,6 @@ import { buildRoute } from '../../utils/buildRoute';
 import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
 
-// Disable tracing for this serial spec to avoid ENOENT errors with
-// shared browser contexts. Playwright's trace writer has issues when
-// a manually created page spans multiple serial tests in one worker.
-test.use({ trace: 'off' });
-
 /**
  * Answer remaining opinion questions until the voter lands on /results,
  * returning the total questions answered (starts from `startCount`).

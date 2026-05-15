@@ -33,10 +33,6 @@ import { expect, test } from '@playwright/test';
 import { buildRoute } from '../../utils/buildRoute';
 import { testIds } from '../../utils/testIds';
 
-// Disable tracing for this serial spec to avoid ENOENT errors (canonical
-// per variant-multi-election.spec.ts:31).
-test.use({ trace: 'off' });
-
 // Ensure unauthenticated voter context.
 test.use({ storageState: { cookies: [], origins: [] } });
 

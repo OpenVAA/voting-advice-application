@@ -39,7 +39,7 @@ import { testIds } from '../../utils/testIds';
 // this is the empirical gate for LAYOUT-03.
 
 test.describe.configure({ mode: 'serial', timeout: 60000 });
-test.use({ storageState: { cookies: [], origins: [] }, trace: 'off' });
+test.use({ storageState: { cookies: [], origins: [] } });
 
 test.describe('setTimeout popup on full page load (LAYOUT-03 regression gate)', { tag: ['@voter'] }, () => {
   const client = new SupabaseAdminClient();

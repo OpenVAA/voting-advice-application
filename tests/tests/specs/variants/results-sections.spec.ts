@@ -20,10 +20,6 @@ import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
 
-// Disable tracing for this serial spec to avoid ENOENT errors with
-// shared browser contexts.
-test.use({ trace: 'off' });
-
 // Ensure unauthenticated voter context.
 test.use({ storageState: { cookies: [], origins: [] } });
 

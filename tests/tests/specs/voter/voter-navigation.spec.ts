@@ -39,11 +39,6 @@ import { testIds } from '../../utils/testIds';
 import { navigateToFirstQuestion, waitForNextQuestion } from '../../utils/voterNavigation';
 import type { Page } from '@playwright/test';
 
-// Disable tracing for this serial spec — same convention as voter-journey.spec.ts
-// (avoids Playwright 1.58.2 ENOENT trace writer conflicts when a manually-created
-// page spans multiple serial tests in one worker).
-test.use({ trace: 'off' });
-
 // Matches voter.fixture.ts defaults — 16 ≥ minimumAnswers (5 default).
 const VOTER_ANSWER_COUNT = 16;
 // "Fully agree" Likert position (4-index, 0–4 range).
