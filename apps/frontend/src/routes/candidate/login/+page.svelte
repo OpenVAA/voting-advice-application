@@ -71,8 +71,13 @@
     }
   }
 
+  // Plain `let` (not `$state`): captured once at init so reads inside `$effect`
+  // do not register a reactive dependency. Lets us focus the password field
+  // only when the email was prefilled from context, not when the user types it.
+  let emailFromContext = false;
   if (candCtx.newUserEmail != null) {
     email = candCtx.newUserEmail;
+    emailFromContext = true;
     showPasswordSetMessage = true;
     candCtx.newUserEmail = undefined;
   }
@@ -93,7 +98,7 @@
   );
 
   $effect(() => {
-    if (email) passwordFieldRef?.focus();
+    if (emailFromContext && passwordFieldRef) passwordFieldRef.focus();
   });
 
   function handleShowLogin(event: { preventDefault: () => unknown }): void {
