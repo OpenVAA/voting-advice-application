@@ -25,12 +25,12 @@ import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
 
-// Disable tracing for this serial spec to avoid ENOENT errors with
-// shared browser contexts. Playwright's trace writer has issues when
-// a manually created page spans multiple serial tests in one worker.
-test.use({ trace: 'off' });
-
-// Ensure unauthenticated voter context.
+// Ensure unauthenticated voter context. Tracing inherits from playwright.config.ts
+// (trace: 'on'); the prior `test.use({ trace: 'off' })` workaround was a side
+// effect of the sharedPage pattern in the Multi-election describe (Playwright
+// 1.58.2 ENOENT race when a manually-created `browser.newPage()` Page spanned
+// multiple serial tests in one worker). The describe was refactored to per-test
+// `page` fixtures below; that race is gone, traces are now available.
 test.use({ storageState: { cookies: [], origins: [] } });
 
 /**
@@ -167,172 +167,131 @@ async function answerAllQuestions(page: Page): Promise<number> {
 
 // ---------------------------------------------------------------------------
 // Multi-election voter journey (CONF-01 by contrast, CONF-02, CONF-04)
+//
+// Per-test `page` fixture pattern. Each test walks the full voter journey
+// (Home → Intro → Elections → Continue → Questions → Results) independently
+// — no shared browser context, no inter-test state coupling.
+//
+// History: the prior sharedPage + serial-mode pattern triggered a SvelteKit
+// silent-nav race ("freshly-newPage'd sharedPage layout-data promise not
+// settled by the time goto() fires", per Phase 78 CLEAN-05 WR-03) and forced
+// `trace: 'off'` to work around Playwright 1.58.2's trace-writer ENOENT under
+// shared-Page+serial. Per-test pages eliminate both — Playwright manages page
+// lifecycle and waits on data-promise settling before yielding the fixture,
+// so the manual URL-fallback hack is no longer needed. The matrix-cell test
+// below (line ~290) already used this pattern successfully.
 // ---------------------------------------------------------------------------
 
+/**
+ * Walk the multi-election voter journey from Home to the Results page.
+ *
+ * Returns the count of opinion questions answered. Each step is a deterministic
+ * Playwright wait; no manual URL-goto fallback (per-test `page` fixtures don't
+ * have the sharedPage layout-data race that necessitated the prior workaround).
+ */
+async function navigateMultiElectionToResults(page: Page): Promise<{ questionCount: number }> {
+  // Home → start → intro
+  await page.goto(buildRoute({ route: 'Home', locale: 'en' }));
+  await page.getByTestId(testIds.voter.home.startButton).click();
+
+  const introStart = page.getByTestId(testIds.voter.intro.startButton);
+  await introStart.waitFor({ state: 'visible', timeout: 10000 });
+  await introStart.click();
+
+  // Elections page → Continue. Both elections pre-checked by default;
+  // each has a single constituency so the constituency page auto-implies.
+  const electionsList = page.getByTestId(testIds.voter.elections.list);
+  await expect(electionsList).toBeVisible({ timeout: 10000 });
+  await page.getByTestId(testIds.voter.elections.continue).click();
+
+  // Wait for navigation off /elections (lands on /questions via auto-imply).
+  await page.waitForURL((url) => !url.toString().includes('/elections'), { timeout: 10000 });
+
+  // Dismiss "missing nominations" dialog if it appears (some multi-election
+  // overlay elections lack candidate/party responses for a given constituency).
+  const nominationsDialog = page.getByRole('dialog');
+  try {
+    await nominationsDialog.waitFor({ state: 'visible', timeout: 3000 });
+    await nominationsDialog.getByRole('button', { name: /continue/i }).click();
+    await nominationsDialog.waitFor({ state: 'hidden', timeout: 5000 });
+  } catch {
+    // No dialog appeared.
+  }
+
+  // Wait for first answer-option (questions page fully hydrated).
+  const answerOption = page.getByTestId(testIds.voter.questions.answerOption);
+  await expect(answerOption.first()).toBeVisible({ timeout: 15000 });
+
+  // Answer all questions; helper handles category intros + URL transitions.
+  const questionCount = await answerAllQuestions(page);
+
+  return { questionCount };
+}
+
 test.describe('Multi-election voter journey', { tag: ['@variant'] }, () => {
-  test.describe.configure({ mode: 'serial' });
+  test('should show election selection page with 2 elections', async ({ page }) => {
+    // Navigate Home → start → intro.
+    await page.goto(buildRoute({ route: 'Home', locale: 'en' }));
+    await page.getByTestId(testIds.voter.home.startButton).click();
 
-  let sharedPage: Page;
-  const adminClient = new SupabaseAdminClient();
-  const electionUuids: Array<string> = [];
-  const constituencyUuids: Array<string> = [];
-
-  test.beforeAll(async ({ browser }) => {
-    sharedPage = await browser.newPage();
-    // Look up election and constituency UUIDs for URL construction
-    const e1 = await adminClient.findData('elections', { externalId: { $eq: 'test-election-1' } });
-    const e2 = await adminClient.findData('elections', { externalId: { $eq: 'test-election-2' } });
-    if (e1.data?.[0]?.id) electionUuids.push(e1.data[0].id as string);
-    if (e2.data?.[0]?.id) electionUuids.push(e2.data[0].id as string);
-    const c1 = await adminClient.findData('constituencies', { externalId: { $eq: 'test-constituency-alpha' } });
-    const c2 = await adminClient.findData('constituencies', { externalId: { $eq: 'test-constituency-e2' } });
-    if (c1.data?.[0]?.id) constituencyUuids.push(c1.data[0].id as string);
-    if (c2.data?.[0]?.id) constituencyUuids.push(c2.data[0].id as string);
-
-    // Phase 78 CLEAN-05 WR-03 precondition asserts. The multi-election variant
-    // requires exactly 2 elections + 2 constituencies present in the seed; the
-    // goto-fallback path below relies on these UUIDs to bypass the SvelteKit
-    // silent-nav bug. A missing seed row would manifest downstream as a
-    // mis-encoded query string — failing fast here gives a clearer signal.
-    expect(electionUuids.length, 'multi-election variant requires 2 elections').toBe(2);
-    expect(constituencyUuids.length, 'multi-election variant requires 2 constituencies').toBe(2);
-  });
-
-  test.afterAll(async () => {
-    await sharedPage.close();
-  });
-
-  test('should show election selection page with 2 elections', async () => {
-    // Navigate Home
-    await sharedPage.goto(buildRoute({ route: 'Home', locale: 'en' }));
-    await sharedPage.getByTestId(testIds.voter.home.startButton).click();
-
-    // Intro page appears first
-    const introStart = sharedPage.getByTestId(testIds.voter.intro.startButton);
+    const introStart = page.getByTestId(testIds.voter.intro.startButton);
     await introStart.waitFor({ state: 'visible', timeout: 10000 });
     await introStart.click();
 
-    // With 2 elections, election selection page should appear (not auto-implied)
-    // This simultaneously verifies CONF-01 by contrast: single election = no selection page
-    const electionsList = sharedPage.getByTestId(testIds.voter.elections.list);
+    // With 2 elections, the election selection page appears (not auto-implied).
+    // Verifies CONF-01 by contrast: single-election seeds bypass this page.
+    const electionsList = page.getByTestId(testIds.voter.elections.list);
     await expect(electionsList).toBeVisible({ timeout: 10000 });
 
-    // Verify 2 election option elements exist
-    const electionCards = sharedPage.getByTestId(testIds.voter.elections.card);
+    const electionCards = page.getByTestId(testIds.voter.elections.card);
     await expect(electionCards).toHaveCount(2);
 
-    // CONF-04: No constituency selection page appears because each election
-    // has a single constituency (auto-implied). Verify constituency list is NOT visible.
-    const constituenciesList = sharedPage.getByTestId(testIds.voter.constituencies.list);
+    // CONF-04: constituency selection page does NOT appear because each election
+    // has exactly 1 constituency → auto-implied.
+    const constituenciesList = page.getByTestId(testIds.voter.constituencies.list);
     await expect(constituenciesList).toBeHidden();
-
-    // reason: Phase 78 CLEAN-05 WR-03 — the elections Continue button triggers
-    //   SvelteKit's client-side goto(), which silently fails in the sharedPage
-    //   serial-test context (no error thrown; URL never updates). Root cause:
-    //   the multi-election +page.svelte goto() races with the (located) layout's
-    //   data-promise resolution; in a freshly-newPage'd sharedPage the layout
-    //   data may not be ready by the time goto() fires. The full-page goto()
-    //   below is a deterministic fallback using the precondition-asserted
-    //   electionUuids + constituencyUuids (verified in beforeAll above), which
-    //   ensures the test exercises the post-elections flow even when the
-    //   client-side nav is silently dropped. SvelteKit silent-goto fix tracked
-    //   for a future workstream; the precondition asserts above guarantee the
-    //   fallback URL is well-formed.
-    await sharedPage.getByTestId(testIds.voter.elections.continue).click();
-
-    // Wait briefly for SvelteKit client-side navigation
-    try {
-      await sharedPage.waitForURL((url) => !url.toString().includes('/elections'), { timeout: 3000 });
-    } catch {
-      // Client-side SvelteKit goto() didn't navigate. Navigate directly to
-      // questions with explicit election + constituency IDs via full page load.
-      const baseUrl = sharedPage.url().replace(/\/elections.*/, '');
-      const eqs = electionUuids.map(id => `electionId=${encodeURIComponent(id)}`).join('&');
-      const cqs = constituencyUuids.map(id => `constituencyId=${encodeURIComponent(id)}`).join('&');
-      await sharedPage.goto(`${baseUrl}/questions?${eqs}&${cqs}`);
-    }
   });
 
-  test('should display questions and reach results', async () => {
-    // Increase timeout for answering 16+ questions
+  test('should display questions and reach results', async ({ page }) => {
     test.setTimeout(60000);
 
-    // After election selection + auto-implied constituency, should be on questions.
-    // The layout's $effect loads data async from Promise-streamed page data.
-    // After page.goto(), the SSR HTML shows "Loading..." and the client $effect
-    // needs to complete before questions appear. Reload once if still loading
-    // to ensure hydration completes correctly.
-    const answerOption = sharedPage.getByTestId(testIds.voter.questions.answerOption);
+    const { questionCount } = await navigateMultiElectionToResults(page);
 
-    // After page.goto() in the previous test, the SSR-rendered page shows "Loading..."
-    // and the client-side $effect must resolve promises and set ready=true.
-    // If the questions aren't visible after initial load, reload to force a clean cycle.
-    try {
-      await answerOption.first().waitFor({ state: 'visible', timeout: 8000 });
-    } catch {
-      // Phase 78 CLEAN-05 bonus CR-01 fold — replaces `waitUntil: 'networkidle'`
-      // (per playwright/no-networkidle rule; the previous wait fired on the
-      // background fetcher and could either return prematurely on a quiet
-      // network or hang on long-polling). The reload+anchor pattern targets
-      // the actual post-reload anchor element (the first answer option) so
-      // the wait is tied to the spec's next interaction.
-      await sharedPage.reload();
-      await answerOption.first().waitFor({ state: 'visible', timeout: 10000 });
-    }
-
-    // Dismiss the "missing nominations" dialog if it appears (some elections
-    // in the multi-election overlay lack candidate/party responses)
-    const nominationsDialog = sharedPage.getByRole('dialog');
-    try {
-      await nominationsDialog.waitFor({ state: 'visible', timeout: 5000 });
-      await nominationsDialog.getByRole('button', { name: /continue/i }).click();
-      await nominationsDialog.waitFor({ state: 'hidden', timeout: 5000 });
-    } catch {
-      // No dialog appeared
-    }
-
-    await expect(answerOption.first()).toBeVisible({ timeout: 15000 });
-
-    // Answer all questions dynamically until results page
-    const questionCount = await answerAllQuestions(sharedPage);
-
-    // Verify we answered a reasonable number of questions
-    // The combined dataset has 16 default questions + 2 E2-scoped questions = 18 total
+    // Post-`applyLikertOnlyFilter` (variant-multi-election.setup.ts): base e2e
+    // contributes 16 singleChoiceOrdinal opinion questions; the variant overlay
+    // adds 2 (test-e2-q-1, test-e2-q-2) → 18 ordinal opinion total.
     expect(questionCount).toBeGreaterThanOrEqual(16);
 
-    // Verify landing on results page with election accordion (multi-election shows accordion)
-    const electionAccordion = sharedPage.getByTestId(testIds.voter.results.electionAccordion);
+    // Multi-election results page shows an election accordion (CONF-02).
+    const electionAccordion = page.getByTestId(testIds.voter.results.electionAccordion);
     await expect(electionAccordion).toBeVisible({ timeout: 10000 });
   });
 
-  test('should show election accordion and results after selecting election', async () => {
-    // On results page, verify election accordion is visible (2 elections = accordion shown)
-    // This verifies per-election results display (CONF-02)
-    const electionAccordion = sharedPage.getByTestId(testIds.voter.results.electionAccordion);
-    await expect(electionAccordion).toBeVisible();
+  test('should show election accordion and results after selecting election', async ({ page }) => {
+    test.setTimeout(60000);
 
-    // Multi-election results require selecting an election with candidates.
+    await navigateMultiElectionToResults(page);
+
     // Test Election 2025 has candidates; Test Election 2026 may not have
     // respondents in the selected constituency. Hoisted helper performs the
     // atomic two-anchor probe + deterministic expand-then-click dispatch
     // (RESEARCH Pattern 4 canonical 3).
+    const electionAccordion = page.getByTestId(testIds.voter.results.electionAccordion);
     await clickAccordionOptionByName(electionAccordion, /2025/);
 
-    // Now the results list should be visible
-    const resultsList = sharedPage.getByTestId(testIds.voter.results.list);
+    const resultsList = page.getByTestId(testIds.voter.results.list);
     await expect(resultsList).toBeVisible({ timeout: 10000 });
   });
 
-  test('should display election-specific questions', async () => {
-    // Verify that at least one election-2-specific question appeared during the journey
-    // by checking the question count was higher than the base 16 questions.
-    // The multi-election overlay adds 2 scoped questions for election-2.
-    // We already verified questionCount >= 16 in the previous test.
-    // With both elections selected and their questions combined, the total should be 18.
+  test('should display election-specific questions', async ({ page }) => {
+    test.setTimeout(60000);
 
-    // Navigate to the results page and verify candidate section is visible
-    // (this confirms the full journey completed with all questions answered)
-    const candidateSection = sharedPage.getByTestId(testIds.voter.results.candidateSection);
+    await navigateMultiElectionToResults(page);
+
+    // The multi-election overlay adds 2 election-2-specific opinion questions
+    // (test-e2-q-1, test-e2-q-2). Walking the full journey confirms all
+    // questions across both elections were rendered + answered.
+    const candidateSection = page.getByTestId(testIds.voter.results.candidateSection);
     await expect(candidateSection).toBeVisible();
   });
 });
@@ -378,7 +337,6 @@ test.describe('disallowSelection mode', { tag: ['@variant'] }, () => {
       ...defaultEntitySettings,
       ...suppressInterferingPopups
     });
-
   });
 
   test('should bypass election selection when disallowSelection is true', async ({ page }) => {
