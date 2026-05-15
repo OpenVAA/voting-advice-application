@@ -1,4 +1,5 @@
 import {
+  applyLikertOnlyFilter,
   BUILT_IN_OVERRIDES,
   fanOutLocales,
   runPipeline,
@@ -34,6 +35,14 @@ setup('import multi-election dataset', async () => {
 
   const client = new SupabaseAdminClient();
   await runTeardown(PREFIX, client);
+
+  // multi-election.spec.ts:139 calls answerOption.nth(2).click() on every
+  // opinion question — assumes 5-choice Likert. Base e2e template inherits
+  // QSPEC-01 boolean ("Yes"/"No") opinion questions added by Phase 74+ which
+  // have only 2 choices, causing .nth(2) to time out. Mirror the --likert-only
+  // CLI flag programmatically: drop non-singleChoiceOrdinal opinion questions,
+  // keep all info questions.
+  applyLikertOnlyFilter(template);
 
   const rows = runPipeline(template, overrides);
   fanOutLocales(rows, template, seed);

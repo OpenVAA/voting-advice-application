@@ -47,6 +47,7 @@
 
 // Runtime exports
 export { USAGE as SEED_CLI_USAGE } from './cli/help';
+export { applyLikertOnlyFilter } from './cli/likert-only';
 export { resolveTemplate } from './cli/resolve-template';
 export { formatSummary } from './cli/summary';
 export { runTeardown } from './cli/teardown';
@@ -68,6 +69,7 @@ export {
 export { Writer } from './writer';
 
 // Type exports
+export type { LikertOnlyFilterStats } from './cli/likert-only';
 export type { SummaryInput } from './cli/summary';
 export type { TeardownResult } from './cli/teardown';
 export type { Ctx } from './ctx';
