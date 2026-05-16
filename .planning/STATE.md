@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
-status: executing
+status: Phase 86.1 closed; v2.10 milestone-close requires Phase 87 Path B operator decision
 stopped_at: Phases 84-87 batched context gathered
-last_updated: "2026-05-16T06:48:07.167Z"
-last_activity: 2026-05-16 -- Phase 86.1 planning complete
+last_updated: "2026-05-16T09:39:36.624Z"
+last_activity: "2026-05-16 -- Phase 86.1 close: anchor 8850ee9a8bbe2f11f7b23a220c5bf4b273b5ace6627ca742249822d718577980 (112 PASS_LOCKED / 3 DATA_RACE / 35 CASCADE / 5 SKIPPED)"
 progress:
   total_phases: 10
   completed_phases: 8
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 87 — Final v2.10-ship anchor capture
+**Current focus:** Phase 86.1 — Pre-Phase-87 Convergence Sweep
 
 ## Current Position
 
-Phase: 86.1 (Pre-Phase-87 Convergence Sweep) — INSERTED, awaiting plan
-Plan: 0 of TBD (planning needed)
-Status: Ready to execute
-Last activity: 2026-05-16 -- Phase 86.1 planning complete
+Phase: 86.1 (Pre-Phase-87 Convergence Sweep) — COMPLETE (PASSED-WITH-DEFERRAL; Phase 87 Task 0 pre-gate ESCALATE — Path B amend recommended)
+Plan: 4 of 4 (all plans complete)
+Status: Phase 86.1 closed; v2.10 milestone-close requires Phase 87 Path B operator decision
+Last activity: 2026-05-16 -- Phase 86.1 close: anchor 8850ee9a8bbe2f11f7b23a220c5bf4b273b5ace6627ca742249822d718577980 (112 PASS_LOCKED / 3 DATA_RACE / 35 CASCADE / 5 SKIPPED)
 
 ## Performance Metrics
 
