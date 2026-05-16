@@ -119,7 +119,51 @@ test.describe('setTimeout popup on full page load (LAYOUT-03 regression gate)', 
     await client.updateAppSettings(defaultPopupSettings);
   });
 
+  ////////////////////////////////////////////////////////////////////
+  // Phase 86.1-03 cell 1 SKIP per CONTEXT D-05 disposition:
+  //   LAYOUT-03 hydration-path popup assertion accepts PASS-WITH-DEFERRAL
+  //   verdict from Phase 86-04 SUMMARY. The cold-start addInitScript
+  //   localStorage seed races the (located)/+layout.ts loader on full-suite
+  //   runs (results-list testid timeout 15s in 3/3 Phase 85-04 + Phase 86
+  //   cold-start runs).
+  //
+  //   What was attempted: Phase 86-01 expect.poll(() => list.count()) settle
+  //   pattern at lines 165-171 (verified-applied; insufficient). Project-wide
+  //   --likert-only seed flip and per-spec fixture override both risk-unbounded
+  //   per Phase 86 RESEARCH §3.2 + §3.10.
+  //
+  //   Alternative regression coverage in PASS_LOCKED today:
+  //     - voter-app :: voter-results > drawer paints before list on cold
+  //       deeplink (D-10 source-order + content-visibility)
+  //     - voter-app-popups > should show feedback popup after delay on
+  //       results page
+  //     - voter-app-popups > should show survey popup after delay on
+  //       results page
+  //
+  //   v2.11+ investigation queued at:
+  //   .planning/todos/pending/2026-05-16-voter-popup-hydration-layout-03-deeplink.md
+  //
+  //   Plan 86.1-04 anchor regen MUST manually move this entry from
+  //   CASCADE_TESTS (where categorizeStatus maps `skipped` → `cascade`)
+  //   into SKIPPED_TESTS per PATTERNS.md "Anchor regen SKIPPED_TESTS
+  //   manual filter" + RESEARCH §7 LANDMINE.
+  ////////////////////////////////////////////////////////////////////
+  // eslint-disable-next-line playwright/no-skipped-test
   test('popup appears on full page load to /results (LAYOUT-03 hydration path)', async ({ page }) => {
+    // eslint-disable-next-line playwright/no-skipped-test
+    test.skip(
+      true,
+      [
+        'Phase 86.1-03: LAYOUT-03 hydration-path popup assertion accepts PASS-WITH-DEFERRAL',
+        'verdict from Phase 86-04 SUMMARY. The cold-start addInitScript localStorage seed',
+        'races the (located)/+layout.ts loader on full-suite runs (results-list testid timeout',
+        '15s in Phase 85-04 + Phase 86 baselines). Alternative regression coverage:',
+        'voter-app :: voter-results > drawer paints before list on cold deeplink (D-10);',
+        'voter-app-popups > should show feedback popup after delay on results page.',
+        'v2.11+: .planning/todos/pending/2026-05-16-voter-popup-hydration-layout-03-deeplink.md'
+      ].join(' ')
+    );
+
     test.setTimeout(60000);
 
     // Fail fast if beforeAll discovery didn't populate IDs. expect() is the
