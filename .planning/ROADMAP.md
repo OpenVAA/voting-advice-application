@@ -249,13 +249,16 @@ Phase 79 (DETERM-04 + DETERM-05) ✓ COMPLETE
 
 ### Phase 86.1: Pre-Phase-87 Convergence Sweep — drive v2.10 e2e suite to all-green-or-explicit-deferral so Phase 87's CASCADE ≤ 5 pre-gate fires cleanly (INSERTED)
 
-**Goal:** [Urgent work - to be planned]
-**Requirements**: TBD
+**Goal:** Drive the v2.10 e2e suite from its current post-85-04 state (`110 PASS · 13 FAIL · 6 SOURCE-SKIP · 36 CASCADE`) to an all-green-or-explicit-deferral state (`PASS_LOCKED ≥ 130`; `DATA_RACE = 3`; `CASCADE ≤ 5`; `SKIPPED_TESTS = 2 + per-cell Phase-86.1-03 deferrals`) that satisfies Phase 87 Task 0's pre-gate so the Phase 87 216-min 3-run identity gate fires cleanly without an in-flight Phase-85/86 reopen.
+**Requirements**: DETERM-12, DETERM-13, DETERM-14 (inherited from Phase 85/86)
 **Depends on:** Phase 86
-**Plans:** 0 plans
+**Plans:** 4 plans
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 86.1 to break down)
+- [ ] 86.1-01-PLAN.md — Extend `applyLikertOnlyFilter` coverage via fixture-helper bump (sub-option b2): raise `voter.fixture.ts` post-Likert Skip-Next budget from 3 → 6 iterations so the answeredVoterPage fixture walks past all 3 non-Likert opinion-question types (singleChoiceCategorical / boolean / number). Closes 85-04 cluster #2 (8 FAIL + 5 CASCADE) + likely cluster #1 (variant-constituency:226 + 22 cascades). DETERM-12/13/14.
+- [ ] 86.1-02-PLAN.md — `voter-feedback-persistence:43` second-pass RCA: apply H4 close-transition mitigation (replace dialog-wrapper `toHaveCount(0)` with direct `feedback-form` testId absence assertion per RESEARCH §5.4); 1h investigation cap; skip-fallback with 3-element protocol + v2.11+ todo if budget exceeded. DETERM-13.
+- [ ] 86.1-03-PLAN.md — Per-cell Phase-86 deferral reconciliation (3 cells, 1h budget each per CONTEXT D-04): Cell 1 voter-popup-hydration:122 LAYOUT-03 → SKIPPED (PASS-WITH-DEFERRAL inheritance per CONTEXT D-05); Cell 2 voter-not-located-redirect:75 CLEAN-02 → storage-isolation fix-attempt then SKIP-FALLBACK; Cell 3 candidate-profile-validation:178 A11Y-01 image-type → networkidle settle fix-attempt then chain-head-only SKIP-FALLBACK (preserve 5 PASS_LOCKED siblings per RESEARCH §6.3 landmine). DETERM-12 + DETERM-14.
+- [ ] 86.1-04-PLAN.md — Post-86.1 3-run cold-start identity gate + Phase 87 handoff: fork sha-identity.mjs from Phase 86; run 3-run gate (~216 min unattended); update `regen-constants.mjs` reportPath to Phase 86.1 run-3.json; emit regen-output.txt; update `tests/scripts/diff-playwright-reports.ts` PHASE 86.1 ANCHOR jsdoc + 4 const arrays with manual SKIPPED_TESTS filter (RESEARCH §7 LANDMINE); SUMMARY + STATE + ROADMAP atomic close. Phase 87 Task 0 pre-gate (CASCADE ≤ 5) satisfied. DETERM-12/13/14.
 
 ### Phase 87: v2.10 All-Green Milestone-Close Anchor
 **Goal**: Capture the final v2.10-ship anchor after Phases 84-86 land. Run a fresh 3-run cold-start gate; confirm all-green deterministic state (target: ~150-160 PASS_LOCKED + ≤3 DATA_RACE + 0 CASCADE + 0 FAILURE-CLASS); produce the binding v2.10-ship anchor via `regen-constants.mjs`; run `/gsd-audit-milestone` for shippability sign-off. The v2.10 milestone is shippable post-Phase-87.
@@ -308,4 +311,5 @@ Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82, 83 (pa
 | 84. Imgproxy Decoupling | v2.10 | 2/2 | Complete   | 2026-05-14 |
 | 85. Variant-Project Cascade RCA & Fix | v2.10 | 2/2 | Complete   | 2026-05-14 |
 | 86. Voter-App FAILURE-CLASS Cleanup | v2.10 | 4/4 | Complete   | 2026-05-14 |
+| 86.1. Pre-Phase-87 Convergence Sweep | v2.10 | 0/4 | Planned | - |
 | 87. v2.10 All-Green Milestone-Close Anchor | v2.10 | 0/1 | Planned | - |
