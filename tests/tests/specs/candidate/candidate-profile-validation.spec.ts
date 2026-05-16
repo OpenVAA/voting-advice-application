@@ -179,6 +179,13 @@ test.describe('A11Y-01 candidate profile validation', { tag: ['@candidate'] }, (
       await loginAsCandidate(page);
       await page.goto(buildRoute({ route: 'CandAppProfile', locale: 'en' }));
 
+      // Phase 86.1-03 cell 3 H1 mitigation: networkidle settle covers cold-start auth-
+      // cookie propagation + candidate-context $derived chain init under full-suite
+      // resource pressure. Mirrors Phase 83 DETERM-07b hydration-completeness guard.
+      // 1h budget per D-04; if heading still times out, escalate to expect.poll() or
+      // convert to test.skip().
+      await page.waitForLoadState('networkidle');
+
       // Anchor on the profile heading before interacting — settle gate to
       // avoid racing the candidate context's $derived chain initialization.
       await expect(page.getByRole('heading', { name: /your profile/i })).toBeVisible({
