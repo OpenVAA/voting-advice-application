@@ -1,0 +1,100 @@
+[dotenv@17.3.1] injecting env (57) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+
+Running 4 tests using 2 workers
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+
+[1A[2K[1/4] [data-setup] › tests/tests/setup/data.setup.ts:76:1 › import test dataset
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+
+[1A[2K[2/4] [voter-app] › tests/tests/specs/voter/voter-feedback-persistence.spec.ts:43:3 › feedback persistence (E2E-03) › feedback text persists across dismiss and resets after send @voter
+[1A[2K  1) [voter-app] › tests/tests/specs/voter/voter-feedback-persistence.spec.ts:43:3 › feedback persistence (E2E-03) › feedback text persists across dismiss and resets after send @voter 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveCount[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  getByTestId('feedback-form')
+    Expected: [32m0[39m
+    Received: [31m1[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveCount" with timeout 5000ms[22m
+    [2m  - waiting for getByTestId('feedback-form')[22m
+    [2m    9 × locator resolved to 1 element[22m
+    [2m      - unexpected value "1"[22m
+
+
+      90 |     // element's DOM removal is the authoritative close signal — assert on
+      91 |     // the form testId directly.
+    > 92 |     await expect(page.getByTestId('feedback-form')).toHaveCount(0, { timeout: 5000 });
+         |                                                     ^
+      93 |
+      94 |     // Reopen — Feedback is kept mounted via bind:this in FeedbackModal:62, so
+      95 |     // description $state survives the close.
+        at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application/.claude/worktrees/agent-af0317d08d973c05e/tests/tests/specs/voter/voter-feedback-persistence.spec.ts:92:53
+
+    Error Context: tests/playwright-results/voter-feedback-persistence-d3f62-smiss-and-resets-after-send-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    tests/playwright-results/voter-feedback-persistence-d3f62-smiss-and-resets-after-send-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace tests/playwright-results/voter-feedback-persistence-d3f62-smiss-and-resets-after-send-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[31mTesting stopped early after 1 maximum allowed failures.[39m
+
+[1A[2K  1 failed
+    [voter-app] › tests/tests/specs/voter/voter-feedback-persistence.spec.ts:43:3 › feedback persistence (E2E-03) › feedback text persists across dismiss and resets after send @voter 
+  2 did not run
+  1 passed (25.3s)
+  1 error was not a part of any test, see above for details
+
+
+==========================================================================
+OUTCOME: SKIP-FALLBACK
+==========================================================================
+Smoke elapsed: 26s (test run only). Total plan investigation budget consumed
+~15 min wall-clock (well within the 1h cap per CONTEXT D-04).
+
+Evidence: H4 form-element direct assertion ALSO fails with "9 × locator
+resolved to 1 element" — the <form data-testid="feedback-form"> element
+remains in the DOM throughout the close transition (NOT unmounted), so
+neither the dialog-wrapper count (H1 baseline) nor the form-element count
+(H4 mitigation) returns 0. RESEARCH §5.4's H4 hypothesis disproved
+empirically: form DOM removal is NOT the close signal — Feedback.svelte
+is kept mounted via bind:this so the form element persists across
+open/close cycles (confirmed by spec docstring lines 87-91 — "Feedback is
+kept mounted via bind:this in FeedbackModal:62").
+
+This means BOTH the dialog and the form are persistent across close; the
+true close signal must be a different mechanism (e.g. `open` attribute on
+<dialog>, or aria-hidden state on a sibling element). Further RCA exceeds
+the 1h budget; deferred to v2.11+ per CONTEXT D-06.
+
+==========================================================================
+POST-EDIT VERIFICATION SMOKE (post-test.skip insertion)
+==========================================================================
+[dotenv@17.3.1] injecting env (57) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+
+Running 4 tests using 2 workers
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+
+[1A[2K[1/4] [data-setup] › tests/tests/setup/data.setup.ts:76:1 › import test dataset
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+
+[1A[2K[2/4] [voter-app] › tests/tests/specs/voter/voter-feedback-persistence.spec.ts:59:3 › feedback persistence (E2E-03) › feedback text persists across dismiss and resets after send @voter
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+
+[1A[2K[3/4] [data-teardown] › tests/tests/setup/variant-data.teardown.ts:12:1 › delete variant test dataset
+[1A[2K[4/4] [data-teardown] › tests/tests/setup/data.teardown.ts:17:1 › delete test dataset
+[1A[2K  1 skipped
+  3 passed (23.0s)
+
+Post-edit smoke elapsed: 24s
+Expected post-edit shape: 1 skipped (the feedback-persistence test), data-setup passed.

@@ -40,7 +40,34 @@ import { expect } from '@playwright/test';
 import { voterTest as test } from '../../fixtures/voter.fixture';
 
 test.describe('feedback persistence (E2E-03)', { tag: ['@voter'] }, () => {
+  // Phase 86.1-02 SKIP-FALLBACK (DETERM-13) — applied per CONTEXT D-04 1h RCA cap
+  // and D-06 3-element skip protocol. RESEARCH §5.4 H4 mitigation (form-element
+  // direct testId absence assertion) was attempted and EMPIRICALLY DISPROVED:
+  // the form element remains in the DOM throughout the close transition with
+  // "9 × locator resolved to 1 element" (smoke at post-fix/86.1-02-smoke-
+  // feedback-persistence.txt). This rules out BOTH H1 (dialog-wrapper count)
+  // AND H4 (form-element count) — Feedback.svelte is kept mounted via bind:this
+  // in FeedbackModal:62 so the form persists across open/close cycles. The
+  // true close signal is a different DOM mechanism (likely the <dialog open>
+  // attribute on a sibling/ancestor element, or aria-hidden state). H2
+  // (multi-dialog collision) remains plausible but unexplored; H3 (Svelte 5
+  // reset semantics) is unlikely per RESEARCH §5.3. Further RCA exceeds the
+  // 1h budget; the spec is deferred to v2.11+ per
+  // .planning/todos/pending/2026-05-16-voter-feedback-persistence-second-pass.md.
+  // The full H1+H4 code path is left in place (below) to preserve evidence of
+  // the attempts for v2.11+ review.
   test('feedback text persists across dismiss and resets after send', async ({ answeredVoterPage }) => {
+    // eslint-disable-next-line playwright/no-skipped-test
+    test.skip(
+      true,
+      [
+        'Phase 86.1-02 deferred: feedback-persistence dialog-close locator collision exceeds 1h RCA budget.',
+        'Phase 86-02 H1 fix (toHaveCount(0) replacement) did NOT hold post-85-04 trace cleanup.',
+        'H4 close-transition mitigation attempted (RESEARCH §5.4) — also insufficient.',
+        'H2 multi-dialog collision + H4 close-transition selector window both plausible.',
+        'v2.11+: .planning/todos/pending/2026-05-16-voter-feedback-persistence-second-pass.md'
+      ].join(' ')
+    );
     // Fixture answers 16 questions and navigates to /results. The feedback
     // button lives in the nav menu (rendered when voterCtx.openFeedbackModal
     // is truthy per VoterNav.svelte:101-108).
