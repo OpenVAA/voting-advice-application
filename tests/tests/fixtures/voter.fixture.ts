@@ -79,9 +79,10 @@ export const voterTest = base.extend<VoterFixtures>({
 
     // After the last opinion answer, auto-advance lands either on /results
     // or on a sort-17+ unanswered optional opinion question (categorical at
-    // sort 17, boolean at sort 18 per Phase 74 P05 + Phase 75 P01). The
-    // post-loop fallback needs to Skip-Next up to 3 times to walk past those
-    // optional questions and reach /results.
+    // sort 17, boolean at sort 18, number at sort 19+ per Phase 74 P05 +
+    // Phase 75 P01 + Phase 86.1-01 RESEARCH §3.2). The post-loop fallback
+    // needs to Skip-Next up to 6 times to walk past those optional questions
+    // and reach /results.
     //
     // reason: Phase 77 P02 — bumped from a single Skip to a 3-iteration loop
     // (mirroring voter-matching.spec.ts:174 + voter-journey.spec.ts:64 Skip-Next
@@ -92,7 +93,24 @@ export const voterTest = base.extend<VoterFixtures>({
     // cells. Mirrors the existing 3-iter pattern in voter-matching.spec.ts.
     // The maxSteps cap of 3 covers sort 17 (categorical) + sort 18 (boolean)
     // + a 3rd-headroom step. /results breaks the loop early.
-    for (let skip = 0; skip < 3; skip++) {
+    //
+    // reason: Phase 86.1-01 (DETERM-12/13/14) — bumped from 3 → 6 iterations
+    // to close 85-04 cluster #2 (answeredVoterPage 8 FAIL + 5 CASCADE) +
+    // cluster #1 (variant-constituency:226 + 22 cascades). RESEARCH §3.4
+    // sub-option (b2): the prior 3-cap was sized for sort 17 + sort 18 + 1
+    // headroom but missed the sort-19+ number opinion question in
+    // packages/dev-seed/src/templates/e2e.ts:666; without that 4th step the
+    // fixture stalled on number and timed out the 30s URL-change wait.
+    // The new 6-cap covers all 3 non-Likert opinion-question types
+    // (singleChoiceCategorical sort 17, boolean sort 18, number sort 19)
+    // plus 3 steps of headroom for future non-Likert opinion questions
+    // added at sort ≤ 24 (the next info-category boundary per CLAUDE.md
+    // "Common Workflows" --likert-only chain caveat). Path b2 is preferred
+    // over path-a (in-place data.setup.ts filter) because it does NOT
+    // mutate seed shape — preserves 5 PASS_LOCKED tests asserting
+    // test-question-directional-1 per RESEARCH §3.2 (voter-detail
+    // directional-metric × 2 + voter-results SETTINGS-01 wave B × 3).
+    for (let skip = 0; skip < 6; skip++) {
       if (page.url().includes('/results')) break;
       const urlBefore = page.url();
       await page.getByTestId(testIds.voter.questions.nextButton).click();
