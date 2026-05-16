@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
-status: executing
+status: planning
 stopped_at: Phases 84-87 batched context gathered
-last_updated: "2026-05-15T06:15:11.209Z"
-last_activity: 2026-05-15 -- Phase 87 planning complete
+last_updated: "2026-05-16T05:55:22.476Z"
+last_activity: "2026-05-16 -- Phase 86.1 inserted via /gsd:phase --insert 86"
 progress:
-  total_phases: 9
+  total_phases: 10
   completed_phases: 8
-  total_plans: 17
-  completed_plans: 16
-  percent: 89
+  total_plans: 19
+  completed_plans: 18
+  percent: 80
 ---
 
 # Project State
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 
 ## Current Position
 
-Phase: 86 (Voter-App FAILURE-CLASS Cleanup) — COMPLETE (PASSED-WITH-DEFERRAL on strict-identity)
-Plan: 4 of 4 (all plans complete)
-Status: Ready to execute
-Last activity: 2026-05-15 -- Phase 87 planning complete
+Phase: 86.1 (Pre-Phase-87 Convergence Sweep) — INSERTED, awaiting plan
+Plan: 0 of TBD (planning needed)
+Status: Ready to plan
+Last activity: 2026-05-16 -- Phase 86.1 inserted via /gsd:phase --insert 86
 
 ## Performance Metrics
 
@@ -109,6 +109,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 - 2026-05-14: Phase 86 SHIPPED PASSED-WITH-DEFERRAL. DETERM-12/13/14 closed via 3-plan cluster RCA. Plan 01 (popups + hydration + navigation/redirects + party-drawer harden): 5 deterministic fixes. Plan 02 (filter + feedback): 2 deterministic fixes; CLAUDE.md Svelte 5 destructuring audit on 3 components DISPROVED. Plan 03 (visibility + edge-cases + question-rendering): 1 hydration-guard fix (voter-detail case-d) + 1 project-config testIgnore exclusion (voter-visibility-required) + 2 test.skip()+rationale entries (QSPEC-01/02 — Phase 75 inheritance, shared v2.11+ todo). 3-run cold-start SHA-identity ALMOST-STRICT verdict (run-1 invalidated by operator; run-2 vs run-3 differ by exactly 1 cell — party-drawer boundary flake per Phase 83 DETERM-07b classification; canonical regen source = run-3). **New v2.10 All-Green Suite anchor: 9a6d74a3088ec2de933cce9ff40797ec1a1cf8180923f02fbfcaf6f690a30af9** — 113 PASS_LOCKED (+4 net vs Phase 85 109) + 3 DATA_RACE (UNCHANGED per D-09) + 40 CASCADE (-2 from QSPEC source-skip migration to SKIPPED_TESTS) + 2 SKIPPED (new bucket) = 158 tracked. Phase 85 anchor `411e09f5ff…` ABSORBED. SKIPPED_TESTS const introduced in `tests/scripts/diff-playwright-reports.ts` (per CONTEXT.md D-05). 2 new v2.11+ todos filed (qspec-walkToQuestion cold-start race + party-drawer boundary flake residual). FAILURE-CLASS narrative block shrunk from ~100 lines to 40-line shrunken header. Phase 87 entry condition (strict-identity 3-run gate) is PASSED-WITH-DEFERRAL; residual party-drawer boundary flake explicitly carried forward.
 - Phase numbering continues from v2.9 (last phase: 78); v2.10 starts at 79 and extends through 87. No reset.
 - Plan count is TBD per phase (filled by `/gsd-plan-phase`).
+- Phase 86.1 inserted after Phase 86: Pre-Phase-87 Convergence Sweep — drive v2.10 e2e suite to all-green-or-explicit-deferral so Phase 87's CASCADE ≤ 5 pre-gate fires cleanly. Originally drafted as orphaned Phase 88 in commit bf286df76; renumbered to 86.1 to match execution order. (URGENT)
 
 ### Decisions
 
