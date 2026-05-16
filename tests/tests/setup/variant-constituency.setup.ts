@@ -1,4 +1,5 @@
 import {
+  applyLikertOnlyFilter,
   BUILT_IN_OVERRIDES,
   fanOutLocales,
   runPipeline,
@@ -32,6 +33,14 @@ setup('import constituency dataset', async () => {
 
   const client = new SupabaseAdminClient();
   await runTeardown(PREFIX, client);
+
+  // Phase 86.1-04 Path A1 (preemptive): constituency.spec.ts:226 answer-loop
+  // races against non-singleChoiceOrdinal opinion questions inherited from the
+  // e2e base template (boolean/categorical/number at sort 17+). Mirror Phase
+  // 85-03 commit 26c187d93's variant-multi-election maneuver: drop the non-
+  // ordinal opinion questions before pipeline so the answer-loop never stalls
+  // on a non-Likert question. Variant's own `questions.fixed[]` are preserved.
+  applyLikertOnlyFilter(template);
 
   const rows = runPipeline(template, overrides);
   fanOutLocales(rows, template, seed);
