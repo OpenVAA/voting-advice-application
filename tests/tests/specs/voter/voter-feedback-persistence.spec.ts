@@ -82,7 +82,14 @@ test.describe('feedback persistence (E2E-03)', { tag: ['@voter'] }, () => {
     // can still resolve to an element with a stale `aria-hidden` evaluation
     // during the close transition. Mirrors the canonical Phase 64 D-11 +
     // D-14 + D-15 close-race pattern at voter-results.spec.ts:274 / 351.
-    await expect(feedbackDialog).toHaveCount(0, { timeout: 5000 });
+    // Phase 86.1-02 (DETERM-13 H4 mitigation per RESEARCH §5.4): swapped
+    // dialog-wrapper locator for direct `feedback-form` testId absence
+    // assertion. The `.filter({ has: getByTestId('feedback-form') })` chain
+    // inspects the DOM, not the a11y tree, so the dialog-wrapper may linger
+    // during close-transition (close-transition selector window). The form
+    // element's DOM removal is the authoritative close signal — assert on
+    // the form testId directly.
+    await expect(page.getByTestId('feedback-form')).toHaveCount(0, { timeout: 5000 });
 
     // Reopen — Feedback is kept mounted via bind:this in FeedbackModal:62, so
     // description $state survives the close.
@@ -102,7 +109,12 @@ test.describe('feedback persistence (E2E-03)', { tag: ['@voter'] }, () => {
     // post-send close. The 1500ms CLOSE_DELAY in FeedbackModal.svelte:47-52
     // is captured by the 5s timeout; the dialog's `open` attribute is
     // removed when closeFeedback fires inside the setTimeout.
-    await expect(feedbackDialog).toHaveCount(0, { timeout: 5000 });
+    // Phase 86.1-02 (DETERM-13 H4 mitigation per RESEARCH §5.4): same
+    // dialog-wrapper → form-element testId substitution as the post-cancel
+    // site above. Form-element DOM removal is the authoritative close
+    // signal (bypasses any dialog-wrapper a11y-tree staleness during
+    // close-transition selector window).
+    await expect(page.getByTestId('feedback-form')).toHaveCount(0, { timeout: 5000 });
 
     // Reopen post-send — feedbackRef.reset() cleared description to ''.
     await openFeedbackBtn.click();
