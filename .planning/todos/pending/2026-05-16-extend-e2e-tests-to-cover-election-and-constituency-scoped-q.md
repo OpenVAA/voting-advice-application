@@ -1,13 +1,18 @@
 ---
 created: 2026-05-16T17:49:26.001Z
+updated: 2026-05-18T18:34:45.249Z
 title: Extend e2e tests to cover election- and constituency-scoped questions
 area: testing
+status: blocked-by-backend
 files:
   - tests/tests/specs/variants/constituency.spec.ts:226
   - tests/tests/specs/variants/multi-election.spec.ts
   - tests/tests/setup/templates/variant-multi-election.ts:218-244
-  - tests/tests/setup/templates/variant-constituency.ts:216-275
+  - tests/tests/setup/templates/variant-constituency.ts
   - apps/frontend/src/lib/contexts/voter/voterContext.svelte.ts
+  - packages/dev-seed/src/templates/e2e.ts
+  - packages/data/src/objects/election/election.ts
+  - packages/app-shared/src/settings/
 ---
 
 ## Problem
@@ -79,3 +84,56 @@ Surfaced during Phase 86.1 post-fix work on `constituency.spec.ts:226`
 (missing-nominations modal handling). Reviewing the test's `questionCount >= 8`
 assertion exposed that the suite knows the scoped fixtures exist but never
 checks they actually take effect through the voterContext filter chain.
+
+## Blocker (added 2026-05-18)
+
+This work is **blocked by a backend schema fix** before the assertions can be
+authored. `question_categories` (and/or `questions`) currently lacks effective
+per-scope filtering columns. The required `jsonb` columns are:
+
+- `election_ids`     — array of election external_ids the category/question applies to
+- `election_rounds`  — array of election rounds it applies to (per-election keyed)
+- `constituency_ids` — array of constituency external_ids it applies to
+- `entity_type`      — array of entity types (`candidate` / `organization` / `faction` / `alliance`)
+
+Until these are wired end-to-end:
+
+1. **Schema migration** in `apps/supabase/migrations/` adding the four `jsonb`
+   columns to `question_categories` (or `questions` if scoping is per-question
+   rather than per-category) with sensible empty defaults.
+2. **Type generation** — re-run `yarn supabase:types`; update
+   `packages/dev-seed/src/templates/e2e.ts` and the variant templates'
+   `Template` shape so `fixed[]` rows can author the new fields.
+3. **`@openvaa/data`** — extend `election.getQuestions({ constituency, entityType, type })`
+   (`packages/data/src/objects/election/election.ts`) to filter on the new
+   scoping columns rather than the implicit-all behaviour current shipping.
+4. **`@openvaa/app-shared`** — propagate any new types/utilities.
+5. **`voterContext`** — verify `opinionQuestions` / `infoQuestions` `$derived`
+   chains call the filtering path with the active election + constituency
+   tuple.
+
+Only after the above lands can the e2e assertions actually verify the
+scoping. The existing variant fixtures already carry the *intent*
+(`test-cat-const-north`, `test-cat-e2-local`, `test-e2-q-{1,2}` etc.), but
+without the runtime filter columns they are effectively visible to every
+election:constituency tuple and asserting their absence in non-target scopes
+would fail today.
+
+## Specific assertion ideas (post-unblock)
+
+Once the schema fix lands, add — at minimum — these focused assertions in
+`tests/tests/specs/variants/constituency.spec.ts` over the new disjoint-
+municipality template
+(`tests/tests/setup/templates/variant-constituency.ts`):
+
+- Add two Likert (`singleChoiceOrdinal`) opinion questions in the variant
+  template, one scoped to **SE Municipality** and one scoped to **NE
+  Municipality**.
+- When the voter selects **SE** for Election 1, assert the SE-scoped question
+  IS rendered in the `/questions` flow and the NE-scoped question is NOT.
+- Mirror with NE selection for the inverse.
+
+The disjoint-group shape introduced in Phase 86.1 (NE+SE in
+`test-cg-east-municipalities`, NW+SW in `test-cg-west-municipalities`) is the
+right substrate for this assertion — same-group different-constituency
+filtering is the most subtle case the suite must cover.
