@@ -22,8 +22,8 @@
  * See `tests/tests/helpers/README.md` for the full design rationale.
  */
 
-export { clickAndRaceSettle,expectLandedOn } from './navigation.helper';
-export { gotoAndSettle,settleNetworkIdle } from './settle.helper';
-// TODO(Task 2): export { iterateSelectOptions } from './select.helper';
-// TODO(Task 2): export { assertDbRowCount } from './db-precondition.helper';
-// TODO(Task 2): export { walkVoterIteration } from './voter-iteration.helper';
+export { assertDbRowCount } from './db-precondition.helper';
+export { clickAndRaceSettle, expectLandedOn } from './navigation.helper';
+export { iterateSelectOptions } from './select.helper';
+export { gotoAndSettle, settleNetworkIdle } from './settle.helper';
+export { walkVoterIteration } from './voter-iteration.helper';
