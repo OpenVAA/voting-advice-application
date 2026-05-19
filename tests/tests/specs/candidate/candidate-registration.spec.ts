@@ -10,6 +10,7 @@
  */
 
 import { expect,test } from '../../fixtures';
+import { expectLandedOn } from '../../helpers';
 import { E2E_ADDENDUM_CANDIDATES, TEST_CANDIDATE_ALPHA_EMAIL } from '../../utils/e2eFixtureRefs';
 import { countEmailsForRecipient, extractLinkFromHtml, getLatestEmailHtml, toCallbackUrl } from '../../utils/emailHelper';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
@@ -211,7 +212,7 @@ test.describe('candidate password reset', { tag: ['@candidate'] }, () => {
     // Step 6: After password reset with Supabase recovery flow, the user is already
     // authenticated (session established by verifyOtp). The app redirects to the
     // candidate home page, not the login page.
-    await expect(page).toHaveURL(/\/candidate(?!.*login|.*password)/, { timeout: 10000 });
+    await expectLandedOn(page, /\/candidate(?!.*login|.*password)/);
     await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible();
 
     // Step 9: RESTORE original password via API using setPassword
