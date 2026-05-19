@@ -19,6 +19,7 @@
  */
 
 import { expect,test } from '../../fixtures';
+import { expectLandedOn } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { TEST_CANDIDATE_EMAIL as CANDIDATE_EMAIL, TEST_CANDIDATE_PASSWORD as CANDIDATE_PASSWORD } from '../../utils/testCredentials';
 import { testIds } from '../../utils/testIds';
@@ -100,7 +101,7 @@ test.describe('candidate logout', { tag: ['@candidate', '@smoke'] }, () => {
 
     // Wait for navigation to the login page
     const loginUrl = buildRoute({ route: 'CandAppLogin', locale: 'en' });
-    await expect(page).toHaveURL(new RegExp(loginUrl), { timeout: 10000 });
+    await expectLandedOn(page, new RegExp(loginUrl));
 
     // Verify we are on the login page by checking for the login form
     await expect(page.getByTestId(testIds.candidate.login.email)).toBeVisible();
