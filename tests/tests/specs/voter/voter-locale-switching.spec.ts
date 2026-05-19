@@ -45,6 +45,7 @@
  */
 
 import { expect, test } from '../../fixtures';
+import { expectLandedOn } from '../../helpers';
 
 // Unauthenticated voter context (analog: voter-static-pages.spec.ts:25).
 test.use({ storageState: { cookies: [], origins: [] } });
@@ -79,7 +80,7 @@ test.describe('voter locale switching (E2E-08)', { tag: ['@voter'] }, () => {
     });
 
     // 3. URL prefix assertion: /fi navigation lands on /fi (not redirected).
-    await expect(page).toHaveURL(/\/fi\/?$/);
+    await expectLandedOn(page, /\/fi\/?$/);
   });
 
   test('locale switches via LanguageSelection widget (when present)', async ({ page }) => {
@@ -111,7 +112,7 @@ test.describe('voter locale switching (E2E-08)', { tag: ['@voter'] }, () => {
     await expect(page.getByRole('heading', { level: 1, name: /Kuinka vaalikone toimii\?/i })).toBeVisible({
       timeout: 15000
     });
-    await expect(page).toHaveURL(/\/fi\/about\/?$/);
+    await expectLandedOn(page, /\/fi\/about\/?$/);
 
     // 3. Navigate to the same page without the locale prefix (default en).
     //    This is the equivalent of the LanguageSelection widget switching
@@ -131,7 +132,8 @@ test.describe('voter locale switching (E2E-08)', { tag: ['@voter'] }, () => {
 
     // URL is no longer prefixed — default locale renders at the bare path
     // (Paraglide convention; RESEARCH Open Question A6).
-    await expect(page).toHaveURL(/\/about\/?$/);
+    await expectLandedOn(page, /\/about\/?$/);
+    // reason: negative-landing assertion (not.toHaveURL) — expectLandedOn is positive-only per helper Pitfall #1 docstring.
     await expect(page).not.toHaveURL(/\/fi\//);
   });
 });
