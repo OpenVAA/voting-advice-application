@@ -18,6 +18,7 @@
 
 import { STORAGE_STATE } from '../../../playwright.config';
 import { expect,test } from '../../fixtures';
+import { settleNetworkIdle } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { TEST_CANDIDATE_EMAIL, TEST_CANDIDATE_PASSWORD } from '../../utils/testCredentials';
@@ -704,7 +705,7 @@ const settings01WaveACells: Array<ToggleCell> = [
       // selector first; wait for either the intro start button or a
       // questions surface. The header button is the only assertion target.
       // Allow a generous timeout for the route to settle.
-      await page.waitForLoadState('domcontentloaded', { timeout: 10000 });
+      await settleNetworkIdle(page, { waitUntil: 'domcontentloaded', timeoutMs: 10_000 });
       // The Banner results link uses variant="responsive-icon" — its role is
       // 'button' (Button.svelte:180 role="button"). When showResultsLink is
       // false, the button is not rendered at all.
@@ -732,7 +733,7 @@ const settings01WaveACells: Array<ToggleCell> = [
     overlay: { results: { sections: ['candidate'] } },
     route: { route: 'Results', locale: 'en' },
     assert: async (page) => {
-      await page.waitForLoadState('domcontentloaded', { timeout: 10000 });
+      await settleNetworkIdle(page, { waitUntil: 'domcontentloaded', timeoutMs: 10_000 });
       // entity-tabs testId only present when entityTabs.length > 1. With
       // sections=['candidate'] only, length === 1 → testId absent.
       await expect(page.getByTestId(testIds.voter.results.entityTabs)).toHaveCount(0);
