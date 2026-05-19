@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
 status: executing
-stopped_at: Phase 86.2 Plan 01 complete; Plan 02 next (helper propagation across ~28 expectLandedOn + 9 settleNetworkIdle sites)
-last_updated: "2026-05-19T17:22:30.803Z"
+stopped_at: Phase 86.2 Plan 02 complete; Plan 03 next (canonical 3-run cold-start SHA-identity gate against fresh post-86.2 anchor + SUMMARY + STATE/ROADMAP close)
+last_updated: "2026-05-19T18:39:18.785Z"
 last_activity: 2026-05-19
 progress:
   total_phases: 12
   completed_phases: 8
   total_plans: 31
-  completed_plans: 22
+  completed_plans: 23
   percent: 67
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 ## Current Position
 
 Phase: 86.2 (e2e-suite-refactor-pass-extract-helpers-dedup-assertions-pro) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-05-19
 
@@ -87,6 +87,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | Phase 86 P03 | 25min | 5 tasks | 5 files |
 | Phase 86 P04 | ~190min (~162min unattended 3-run gate + ~28min orchestration) | 7 tasks | 9 files |
 | Phase 86.2 P01 | 210min | 3 tasks | 12 files |
+| Phase 86.2 P02 | 90min | 3 tasks | 23 files |
 
 ## Accumulated Context
 
@@ -141,6 +142,9 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 86]: Plan 04 (close orchestration) closed PASSED-WITH-DEFERRAL: 3-run cold-start gate ALMOST-STRICT (party-drawer boundary flake — 1 cell differs run-2 vs run-3); run-3 canonical regen source per Phase 85 precedent; new anchor `9a6d74a3088ec2de933cce9ff40797ec1a1cf8180923f02fbfcaf6f690a30af9` (113/3/40 + 2 SKIPPED); IMGPROXY_TIED_TITLES D-09 binding preserved (3 entries unchanged); SKIPPED_TESTS const introduced; FAILURE-CLASS narrative shrunk to 40-line header; 2 v2.11+ todos filed (qspec + party-drawer).
 - [Phase ?]: Phase 86.2 Plan 01: 6 helpers extracted into tests/tests/helpers/; barrel + README; voter.fixture.ts public API preserved (internal swap to walkVoterIteration)
 - [Phase ?]: Phase 86.2 Plan 01: Pitfall enforcement confirmed — #1 caller-side .catch on helper #1, internal on #3; #2 Select.svelte ARIA contract cited in helper #4 docstring; #3 default maxSteps=6 documented in helper #6 (Pitfall regression guard)
+- [Phase ?]: Helpers #3-#6 propagation explicitly deferred to v2.11+ per RESEARCH (9 sites): different pattern shape (helper #3 — no destination predicate; helper #4 — named-combobox variants; helper #5 — non-count findData; helper #6 — answer-loop not Skip-Next-only).
+- [Phase ?]: Negative-landing assertions (expect.not.toHaveURL) stay inline with // reason: comments — expectLandedOn is positive-only by design per helper Pitfall #1 docstring.
+- [Phase ?]: Single-run full-suite smoke (NOT 3-run SHA-identity gate) is Plan 86.2-02 audit charter; Plan 86.2-03 owns the canonical 3-run gate against fresh post-86.2 anchor.
 
 ### Blockers/Concerns
 
@@ -151,9 +155,9 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-05-19T17:22:15.148Z
+Last session: 2026-05-19T18:38:48.043Z
 Stopped at: Phase 86.2 Plan 01 complete; Plan 02 next (helper propagation across ~28 expectLandedOn + 9 settleNetworkIdle sites)
-Resume file: None (sequential — orchestrator continues)
+Resume file: None
 Next action: Run /gsd-discuss-phase 86.2 to scope the e2e refactor pass (helpers + dedup + Phase 86.1 post-fix propagation). Then 86.3 implements 7 source-skipped tests. Phase 87 anchor follows.
 
 ### Plan-count estimate (drafted 2026-05-12)
