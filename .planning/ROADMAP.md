@@ -247,15 +247,19 @@ Phase 79 (DETERM-04 + DETERM-05) ✓ COMPLETE
 - [x] 86-04-PLAN.md — Close: 3-run cold-start gate (ALMOST-STRICT — party-drawer boundary flake; run-3 canonical) + anchor regen at SHA `9a6d74a3088ec2de933cce9ff40797ec1a1cf8180923f02fbfcaf6f690a30af9` (113 PASS_LOCKED / 3 DATA_RACE / 40 CASCADE / 2 SKIPPED) + SKIPPED_TESTS const introduced + FAILURE-CLASS narrative shrunk + STATE/ROADMAP update + atomic close commit (completed 2026-05-14)
 **UI hint**: maybe (popup + hydration cluster may surface UI work)
 
-### Phase 86.3: Implement skipped tests — close 7 source-skipped voter-app/candidate-app/variant-project tests (SETTINGS-01 wave A/B + E2E-03 + LAYOUT-03 regression gate + QSPEC-01/02) so Phase 87 anchor captures maximum coverage (INSERTED)
+### Phase 86.3: Implement skipped tests — close 8 source-skipped voter-app/candidate-app/variant-project tests (SETTINGS-01 wave A/B + E2E-03 + LAYOUT-03 regression gate + QSPEC-01/02) so Phase 87 anchor captures maximum coverage (INSERTED)
 
-**Goal:** [Urgent work - to be planned]
-**Requirements**: TBD
-**Depends on:** Phase 86
-**Plans:** 0 plans
+**Goal:** Close all 8 currently always-skipped (`test.skip(true, '…')`) voter-app / candidate-app / variant-project tests inherited from Phases 75 / 77 / 86 / 86.1 so the Phase 87 final v2.10-ship anchor captures maximum coverage. Cells: #1/#2/#3 SETTINGS-01 wave A `(voters)/+layout.svelte` Svelte 5 reactivity (production-code fix per D-10); #4 SETTINGS-01 wave B constituency-filter PRODUCT-GAP (Path-A/B/C operator decision); #5 E2E-03 voter-feedback-persistence H2/H3 trace-driven RCA; #6 LAYOUT-03 voter-popup-hydration fixture pre-hook; #7+#8 QSPEC-01/02 walkToQuestion helper-resilience fix. Per-cell 1h cap (D-08) + skip-fallback (D-02) protocol; final 3-run cold-start SHA-identity gate satisfies Phase 87 Task 0 pre-gate (CASCADE ≤ 5).
+**Requirements**: SETTINGS-01, E2E-03, LAYOUT-03, QSPEC-01, QSPEC-02 (no new REQ-IDs)
+**Depends on:** Phase 86.2 (sequential predecessor — helper layer source; 86 → 86.1 → 86.2 → 86.3 → 87)
+**Plans:** 5 plans
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 86.3 to break down)
+- [ ] 86.3-01-PLAN.md — SETTINGS-01 wave A — fix `(voters)/+layout.svelte` reactivity for cells #1/#2/#3 (shared root cause; one atomic production-code commit) + per-cell smokes (3 tasks; Wave 1)
+- [ ] 86.3-02-PLAN.md — SETTINGS-01 wave B — cell #4 constituency-filter RCA + Path-A/B/C `checkpoint:decision` (Task 0 1h RCA + Task 1 operator decision + Task 2 execution; Wave 1)
+- [ ] 86.3-03-PLAN.md — E2E-03 cell #5 voter-feedback-persistence — trace capture + H2 testId hardening OR H3 ≤ 5 LOC ModalContainer `data-state` escape hatch OR SKIP-FALLBACK (3 tasks; Wave 1)
+- [ ] 86.3-04-PLAN.md — LAYOUT-03 cell #6 voter-popup-hydration — Path 2 `page.context().addInitScript` 1-line swap OR Path 1 fixture `storageState` OR SKIP-FALLBACK (2 tasks; Wave 1)
+- [ ] 86.3-05-PLAN.md — QSPEC-01/02 cells #7+#8 walkToQuestion helper-resilience fix + 3-run cold-start SHA-identity gate + SKIPPED_TESTS const update + 86.3-SUMMARY (8-cell disposition table + D-06 Phase 87 disposition recommendation) + STATE/ROADMAP close (5 tasks; Wave 2 — depends on 86.3-01..04)
 
 ### Phase 86.2: E2E suite refactor pass — extract helpers, dedup assertions, propagate Phase 86.1 post-fix patterns across all relevant specs (INSERTED)
 
@@ -334,4 +338,6 @@ Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82, 83 (pa
 | 85. Variant-Project Cascade RCA & Fix | v2.10 | 2/2 | Complete   | 2026-05-14 |
 | 86. Voter-App FAILURE-CLASS Cleanup | v2.10 | 4/4 | Complete   | 2026-05-14 |
 | 86.1. Pre-Phase-87 Convergence Sweep | v2.10 | 0/4 | Planned | - |
+| 86.2. E2E Suite Refactor Pass | v2.10 | 0/3 | Planned | - |
+| 86.3. Implement Skipped Tests (8 cells) | v2.10 | 0/5 | Planned | - |
 | 87. v2.10 All-Green Milestone-Close Anchor | v2.10 | 0/1 | Planned | - |
