@@ -15,6 +15,7 @@
  */
 
 import { expect, test } from '../../fixtures';
+import { assertDbRowCount } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
@@ -174,28 +175,10 @@ test.describe('Results section variants', { tag: ['@variant'] }, () => {
   test.beforeAll(async ({ browser }) => {
     sharedPage = await browser.newPage();
 
-    // Phase 86.1 post-fix: precondition assert exactly 2 elections in the DB.
-    // Field-captured failure (CONF-06 / "should show only organizations") showed
-    // the missing-nominations modal enumerating THREE elections (✓ 2025, ✓ 2025,
-    // ✗ 2026) under the multi-election dataset that should yield exactly two
-    // (test-election-1 + test-election-2). The duplicate-named row is leaking
-    // from somewhere in the variant chain — fail fast with diagnostic info so
-    // the next reproducer pinpoints the source instead of silently testing on
-    // a tainted dataset.
-    const electionsProbe = await client.findData('elections', {
-      externalId: { $like: 'test-%' }
+    // reason: 2-elections precondition extracted to helpers/db-precondition.helper.ts — see docstring for full lineage (Phase 86.1 post-fix CONF-06 field-captured failure: missing-nominations modal enumerated THREE elections under multi-election dataset; helper fails fast with diagnostic info on the actual row identifiers).
+    await assertDbRowCount(client, 'elections', { externalId: { $like: 'test-%' } }, 2, {
+      message: 'CONF-06 multi-election dataset'
     });
-    expect(
-      electionsProbe.type,
-      'precondition: elections probe failed'
-    ).toBe('success');
-    const electionRows = electionsProbe.data ?? [];
-    expect(
-      electionRows.length,
-      `precondition: expected exactly 2 test- elections under multi-election dataset; got ${electionRows.length}: ${electionRows
-        .map((r: Record<string, unknown>) => `${r.external_id}=${JSON.stringify(r.name)}`)
-        .join('; ')}`
-    ).toBe(2);
 
     // Suppress popups before navigating through the voter journey
     await client.updateAppSettings({
