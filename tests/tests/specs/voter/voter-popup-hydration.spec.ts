@@ -219,7 +219,7 @@ test.describe('setTimeout popup on full page load (LAYOUT-03 regression gate)', 
     // The setTimeout fires ~2s post-hydration; popupQueue.push must surface
     // through the root layout popup slot for this to pass.
     const dialog = page.getByRole('dialog');
-    await dialog.waitFor({ state: 'visible', timeout: 15000 });
+    await dialog.waitFor({ state: 'visible', timeout: 10000 });
     await expect(dialog).toBeVisible();
   });
 });

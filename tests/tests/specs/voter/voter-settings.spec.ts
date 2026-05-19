@@ -21,7 +21,7 @@
  * from intercepting test clicks.
  */
 
-import { expect,test } from '../../fixtures';
+import { expect, test } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
@@ -120,24 +120,36 @@ async function answerUntilCategoryIntroOrResults(
       }
     }
 
-    // Race: did we land on a category-intro page OR on /results?
-    // Use page.waitForFunction so the two anchors are evaluated atomically in
-    // a single tracking scope — settles whichever appears first within the 2s
-    // window. Replaces the prior `if (await x.isVisible().catch(false))` swallow
-    // (RESEARCH Anti-Patterns) and the prior `if (page.url().includes(...))`
+    // Race: did we land on a category-intro page, on /results, OR on the next
+    // question (answer-option already visible — no intro page to wait for)?
+    // Use page.waitForFunction so the three anchors are evaluated atomically
+    // in a single tracking scope — settles whichever appears first within the
+    // 5s window. Replaces the prior `if (await x.isVisible().catch(false))`
+    // swallow (RESEARCH Anti-Patterns) and the prior `if (page.url().includes(...))`
     // race-mask (Pitfall 8).
+    //
+    // `answer-option` short-circuits the wait: when the next question's
+    // answer options are already visible there is no category-intro to land
+    // on — falling through to the loop's next iteration immediately is
+    // strictly faster than the 5s waitForFunction timeout.
     const introTestId = testIds.voter.questions.categoryIntro;
-    const anchor = await page.waitForFunction(
-      (id) => {
-        const intro = document.querySelector(`[data-testid="${id}"]`);
-        if (intro && (intro as HTMLElement).offsetParent !== null) return 'category-intro';
-        if (location.pathname.includes('/results')) return 'results';
-        return null;
-      },
-      introTestId,
-      { timeout: 5000 }
-    ).then((handle) => handle.jsonValue() as Promise<'category-intro' | 'results'>)
-     .catch(() => null);
+    const answerTestId = testIds.voter.questions.answerOption;
+    const anchor = await page
+      .waitForFunction(
+        ([id, answerId]) => {
+          const intro = document.querySelector(`[data-testid="${id}"]`);
+          if (intro && (intro as HTMLElement).offsetParent !== null) return 'category-intro';
+          if (location.pathname.includes('/results')) return 'results';
+          const answer = document.querySelector(`[data-testid="${answerId}"]`);
+          if (answer && (answer as HTMLElement).offsetParent !== null) return 'answer-option';
+          return null;
+        },
+        [introTestId, answerTestId] as const,
+        { timeout: 5000 }
+      )
+      .then((handle) => handle.jsonValue() as Promise<'category-intro' | 'results' | 'answer-option'>)
+      .catch(() => null);
+    if (anchor === 'answer-option') continue;
     if (anchor) return anchor;
   }
   return 'limit';
@@ -211,7 +223,6 @@ test.describe('category selection (VOTE-13)', { tag: ['@voter'] }, () => {
       ...defaultQuestionSettings,
       matching: { minimumAnswers: 5 }
     });
-
   });
 
   test('should show category checkboxes when allowCategorySelection enabled', async ({ page }) => {
@@ -244,12 +255,15 @@ test.describe('category selection (VOTE-13)', { tag: ['@voter'] }, () => {
       await categoryCheckboxes.nth(i).setChecked(false);
     }
 
-    // Select 1 category checkbox
-    await categoryCheckboxes.nth(0).click();
-
-    // Verify start button exists and is enabled
+    // Verify start button exists and is not enabled when no categories are selected
     const startButton = page.getByTestId(testIds.voter.questions.startButton);
     await expect(startButton).toBeVisible();
+    await expect(startButton).toBeDisabled();
+
+    // Select 2 category checkboxes
+    await categoryCheckboxes.nth(0).click();
+    await categoryCheckboxes.nth(1).click();
+
     await expect(startButton).toBeEnabled();
 
     // Click start
@@ -317,7 +331,6 @@ test.describe('category intros (VOTE-05)', { tag: ['@voter'] }, () => {
 
   test.afterAll(async () => {
     await client.updateAppSettings(defaultQuestionSettings);
-
   });
 
   test('should show category intro page before each category', async ({ page }) => {
@@ -413,7 +426,6 @@ test.describe('question intro page (VOTE-04)', { tag: ['@voter'] }, () => {
 
   test.afterAll(async () => {
     await client.updateAppSettings(defaultQuestionSettings);
-
   });
 
   test('should show question intro page when questionsIntro.show enabled', async ({ page }) => {
@@ -463,7 +475,6 @@ test.describe('minimum answers threshold (VOTE-07)', { tag: ['@voter'] }, () => 
       ...defaultQuestionSettings,
       matching: { minimumAnswers: 5 }
     });
-
   });
 
   test('should enforce minimum answers before results available', async ({ page }) => {
@@ -532,7 +543,6 @@ test.describe('results link visibility (VOTE-17)', { tag: ['@voter'] }, () => {
 
   test.afterAll(async () => {
     await client.updateAppSettings(defaultQuestionSettings);
-
   });
 
   test('should hide results link when showResultsLink is false', async ({ page }) => {

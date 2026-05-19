@@ -30,7 +30,7 @@ async function waitForLoginForm(
     await page.goto(loginRoute, { waitUntil: 'domcontentloaded' });
 
     try {
-      await page.getByTestId(emailTestId).waitFor({ state: 'visible', timeout: 20000 });
+      await page.getByTestId(emailTestId).waitFor({ state: 'visible', timeout: 10000 });
       return; // Login form appeared
     } catch {
       if (attempt < maxAttempts - 1) {

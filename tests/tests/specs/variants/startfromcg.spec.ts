@@ -1,146 +1,160 @@
 /**
  * startFromConstituencyGroup variant E2E tests.
  *
- * Covers the reversed voter flow where constituencies are selected BEFORE
- * elections, triggered by the `elections.startFromConstituencyGroup` setting:
- * - Constituency selection appears first (not elections)
- * - Only the specified constituency group's constituencies are shown
- * - After constituency selection, election selection is shown (filtered)
- * - Orphan municipality (no parent region) does not cause runtime errors
+ * Phase 86.1 post-fix rewrite. Test contract per user spec (2026-05-17):
+ *   - 2 elections — E1 (Test Election 2025) and E2 (Test Election 2026)
+ *   - E1's only constituency group is REGIONS
+ *   - E2's only constituency group is MUNICIPALITIES
+ *   - `elections.disallowSelection = true` — election selector is skipped
+ *     entirely; elections are auto-implied from the picked constituency
+ *   - `elections.startFromConstituencyGroup = <municipalities-group-id>`
+ *     — voter picks a municipality FIRST, then is taken straight to /questions
+ *   - All municipalities except one (Orphan Municipality) are children of
+ *     regions; each region has at least one child municipality.
  *
- * Uses the startfromcg overlay dataset which creates:
- * - Same hierarchical structure as constituency overlay PLUS an orphan municipality
- * - 2 elections: election-1 (regions + municipalities), election-2 (municipalities only)
- * - 5 constituencies: region-north, region-south, muni-north-a, muni-south-a, muni-orphan
- * - The orphan municipality has no parent region
+ * Branch contract this variant proves:
+ *   (a) Voter picks ORPHAN MUNICIPALITY → no region implied for E1 → only E2
+ *       appears in the Results page election selector.
+ *   (b) Voter picks a NON-ORPHAN MUNICIPALITY → parent region implied for E1
+ *       → both E1 and E2 appear in the Results page election selector.
  *
- * The `startFromConstituencyGroup` setting is set in beforeAll after querying
- * for the municipalities constituency group's database ID (not externalId).
+ * The seed for this contract lives at
+ * `tests/tests/setup/templates/variant-startfromcg.ts`. The template was
+ * updated alongside this rewrite to drop the municipalities group from E1
+ * (E1 retains only the regions group); the orphan municipality and per-
+ * region child-municipality assignments were already in place.
+ *
+ * The `startFromConstituencyGroup` setting is set in beforeAll after
+ * querying for the municipalities constituency group's database ID
+ * (not externalId), per pre-existing pattern; the matrix-cell describe
+ * at the bottom of this file retains its own pre-existing setting overrides
+ * (disallowSelection:false) for the orthogonal E2E-04 cell-5 contract that
+ * keeps the election selector page in play.
  *
  * Runs within the `variant-startfromcg` project which depends on
  * `data-setup-startfromcg` for dataset loading.
  */
 
 import { expect, test } from '@playwright/test';
+import { answerUntilResults } from '../../utils/answerQuestion';
 import { buildRoute } from '../../utils/buildRoute';
+import { dismissMissingNominationsIfPresent } from '../../utils/missingNominations';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 /**
- * Answer questions one-by-one until the results page is reached.
+ * Pick a municipality from the constituency selector by visible name.
  *
- * Module-level helper hoisted out of test bodies (RESEARCH Pattern 4 canonical 3)
- * so playwright/no-conditional-in-test holds for the test body itself. The
- * post-await conditionals inside this helper are legitimate control-flow
- * branches on settled URL state (not race-masks): the helper deterministically
- * dispatches between (a) auto-advance ended on /results, and (b) last-question
- * needs the explicit next-button click followed by a waitForURL terminator.
- *
- * @returns The number of questions answered before reaching /results.
+ * Hoisted to module scope so the test bodies stay conditional-free. The
+ * selector renders as an autocomplete combobox under the Municipalities
+ * group label (the only group offered when `startFromConstituencyGroup` is
+ * set to the municipalities group's id — see
+ * `apps/frontend/src/routes/(voters)/constituencies/+page.svelte:51`).
  */
-async function answerUntilResults(
-  page: Page,
-  answerOption: ReturnType<Page['getByTestId']>,
-  nextButton: ReturnType<Page['getByTestId']>,
-  maxQuestions = 50
-): Promise<number> {
-  let questionCount = 0;
-  let onResultsPage = false;
-
-  while (!onResultsPage && questionCount < maxQuestions) {
-    questionCount++;
-    const urlBefore = page.url();
-
-    // Answer the current question (select the middle option)
-    await answerOption.nth(2).click();
-
-    try {
-      // Wait for auto-advance (URL change)
-      await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 3000 });
-      onResultsPage = page.url().includes('/results');
-    } catch {
-      // No auto-advance — last question; click the explicit next/results button.
-      await nextButton.waitFor({ state: 'visible' });
-      await nextButton.click();
-      await page.waitForURL(/\/results/, { timeout: 10000 });
-      onResultsPage = true;
-    }
-  }
-
-  return questionCount;
+async function pickMunicipality(page: Page, name: string): Promise<void> {
+  const constituenciesList = page.getByTestId(testIds.voter.constituencies.list);
+  await expect(constituenciesList).toBeVisible({ timeout: 10_000 });
+  const combobox = constituenciesList.getByRole('combobox', { name: /Municipalities/ });
+  await combobox.click();
+  await combobox.fill(name);
+  const listbox = page.getByRole('listbox');
+  await listbox.waitFor({ state: 'visible', timeout: 5_000 });
+  await listbox.getByRole('option', { name: new RegExp(name) }).click();
+  const continueButton = page.getByTestId(testIds.voter.constituencies.continue);
+  await expect(continueButton).toBeEnabled();
+  await continueButton.click();
 }
 
 /**
- * Iteratively answer questions and tolerate URL-not-changed via explicit next.
- *
- * Hoisted out of test bodies (RESEARCH Pattern 4 canonical 3). Used for the
- * orphan-municipality edge-case test where the question set may differ in size
- * and the next-button fallback path is more frequently exercised. The function
- * either reaches /results (caller verifies) or exhausts maxIterations.
+ * Navigate Home → Intro Start → /constituencies. Hoisted so the orphan and
+ * non-orphan tests share the same entry sequence.
  */
-async function answerOrAdvanceUntilResults(
-  page: Page,
-  answerOption: ReturnType<Page['getByTestId']>,
-  nextButton: ReturnType<Page['getByTestId']>,
-  maxIterations = 50
-): Promise<void> {
-  // Use waitForFunction to atomically check (a) the URL settled on /results.
-  // We re-evaluate after each click below; once /results is reached we exit.
-  for (let i = 0; i < maxIterations; i++) {
-    if (page.url().includes('/results')) return;
-
-    const urlBefore = page.url();
-    await answerOption.nth(2).click();
-
-    try {
-      await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 3000 });
-    } catch {
-      // URL didn't change — try the explicit next button.
-      await nextButton.waitFor({ state: 'visible', timeout: 5000 });
-      await nextButton.click();
-      await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 5000 });
-    }
-  }
+async function walkToConstituencySelection(page: Page): Promise<void> {
+  await page.goto(buildRoute({ route: 'Home', locale: 'en' }));
+  await page.getByTestId(testIds.voter.home.startButton).click();
+  const introStart = page.getByTestId(testIds.voter.intro.startButton);
+  await introStart.waitFor({ state: 'visible' });
+  await introStart.click();
 }
 
 /**
- * Open the election-accordion's first option if the accordion is rendered.
+ * Return the names of `expectedCount` election options rendered inside the
+ * Results page `voter-results-election-select` AccordionSelect.
  *
- * Hoisted out of test bodies (RESEARCH Pattern 4 canonical 3). Phase 78
- * CLEAN-05 WR-02b fix: mirrors the constituency.spec.ts WR-02a rewrite —
- * union waitFor resolves the page-level race, then a dedicated
- * `electionAccordion.waitFor()` determines the branch deterministically
- * (instead of the prior count+isVisible snapshot-of-races).
+ * The AccordionSelect collapses to a single visible option when an active
+ * election is set in URL/state (the `electionId` persistent search param is
+ * typically present on a freshly-loaded /results). To enumerate ALL options
+ * the helper clicks the visible (active) option ONCE when the rendered
+ * count is below `expectedCount` — clicking an already-active option flips
+ * `expanded = true` per `AccordionSelect.svelte:61-69 (activate)`. Clicking
+ * a NON-active option in an already-expanded accordion would schedule the
+ * counter-productive `setTimeout(() => expanded = false, DELAY.lg)` re-
+ * collapse, so the helper gates the click on "is the rendered count short?".
+ *
+ * The count then settles via `expect(options).toHaveCount(expectedCount)`
+ * — Playwright auto-retries the assertion through the slide-in transition,
+ * which avoids `page.waitForTimeout` (the lint rule
+ * `playwright/no-wait-for-timeout` forbids that).
  */
-async function selectElectionFromAccordionIfPresent(
-  electionAccordion: ReturnType<Page['getByTestId']>,
-  resultsList: ReturnType<Page['getByTestId']>
-): Promise<void> {
-  // Union waitFor resolves the page-level race between "multi-election results
-  // with accordion" and "single-election results list".
-  await electionAccordion.or(resultsList).first().waitFor({ state: 'visible', timeout: 10000 });
-
-  // Deterministic-branch dispatch: short waitFor scoped to the accordion alone.
-  const accordionResolved = await electionAccordion
-    .waitFor({ state: 'visible', timeout: 1000 })
-    .then(() => true)
-    .catch(() => false);
-  if (accordionResolved) {
-    await electionAccordion.getByRole('option').first().click();
+async function readElectionOptionNames(accordion: Locator, expectedCount: number): Promise<Array<string>> {
+  const options = accordion.getByRole('option');
+  await options.first().waitFor({ state: 'visible', timeout: 10_000 });
+  const initial = await options.count();
+  if (initial < expectedCount) {
+    await options.first().click({ timeout: 2_000 }).catch(() => null);
   }
+  await expect(options).toHaveCount(expectedCount, { timeout: 5_000 });
+  const names: Array<string> = [];
+  for (let i = 0; i < expectedCount; i++) {
+    const raw = (await options.nth(i).textContent()) ?? '';
+    names.push(raw.trim());
+  }
+  return names;
+}
+
+/**
+ * Common app_settings shape used by the main describe's beforeAll /
+ * afterAll. Lifted to a single source of truth so the restore path
+ * stays in lockstep with the initial-set path; only `disallowSelection`
+ * and `startFromConstituencyGroup` differ per call.
+ */
+function buildSettings(opts: {
+  startFromConstituencyGroup: string | null;
+  disallowSelection: boolean;
+}): Record<string, unknown> {
+  return {
+    elections: {
+      startFromConstituencyGroup: opts.startFromConstituencyGroup,
+      disallowSelection: opts.disallowSelection,
+      showElectionTags: true
+    },
+    questions: {
+      categoryIntros: { show: false },
+      questionsIntro: { allowCategorySelection: false, show: false },
+      showResultsLink: true
+    },
+    results: {
+      sections: ['candidate', 'organization'],
+      cardContents: { candidate: ['submatches'], organization: ['children'] },
+      showFeedbackPopup: 0,
+      showSurveyPopup: 0
+    },
+    entities: {
+      hideIfMissingAnswers: { candidate: false },
+      showAllNominations: true
+    },
+    notifications: { voterApp: { show: false } },
+    analytics: { trackEvents: false }
+  };
 }
 
 test.describe('startFromConstituencyGroup variant', { tag: ['@variant'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
-  let sharedPage: Page;
   let client: SupabaseAdminClient;
 
-  test.beforeAll(async ({ browser }) => {
-    sharedPage = await browser.newPage();
-
-    // Query for the municipalities constituency group to get its database ID
+  test.beforeAll(async () => {
     client = new SupabaseAdminClient();
 
     const findResult = await client.findData('constituencyGroups', {
@@ -149,258 +163,104 @@ test.describe('startFromConstituencyGroup variant', { tag: ['@variant'] }, () =>
     expect(findResult.type).toBe('success');
     expect(findResult.data).toBeDefined();
     expect(findResult.data!.length).toBeGreaterThan(0);
-
     const cgDocumentId = findResult.data![0].documentId as string;
     expect(cgDocumentId).toBeTruthy();
 
-    // Set startFromConstituencyGroup to the municipalities group database ID.
-    // This reverses the flow: Constituencies -> Elections -> Questions.
-    await client.updateAppSettings({
-      elections: {
-        startFromConstituencyGroup: cgDocumentId,
-        disallowSelection: false,
-        showElectionTags: true
-      },
-      questions: {
-        categoryIntros: { show: false },
-        questionsIntro: { allowCategorySelection: false, show: false },
-        showResultsLink: true
-      },
-      results: {
-        sections: ['candidate', 'organization'],
-        cardContents: { candidate: ['submatches'], organization: ['children'] },
-        showFeedbackPopup: 0,
-        showSurveyPopup: 0
-      },
-      entities: {
-        hideIfMissingAnswers: { candidate: false },
-        showAllNominations: true
-      },
-      notifications: { voterApp: { show: false } },
-      analytics: { trackEvents: false }
-    });
+    // disallowSelection:true skips /elections entirely (the route's load
+    // function redirects to /questions when impliedElectionId resolves —
+    // and getImpliedElectionIds always resolves when disallowSelection is
+    // truthy, per `apps/frontend/src/lib/utils/route/impliedParams.ts:38`).
+    await client.updateAppSettings(
+      buildSettings({ startFromConstituencyGroup: cgDocumentId, disallowSelection: true })
+    );
   });
 
   test.afterAll(async () => {
-    // Restore startFromConstituencyGroup to undefined (disabled)
     if (client) {
-      await client.updateAppSettings({
-        elections: {
-          startFromConstituencyGroup: null,
-          disallowSelection: false,
-          showElectionTags: true
-        },
-        questions: {
-          categoryIntros: { show: false },
-          questionsIntro: { allowCategorySelection: false, show: false },
-          showResultsLink: true
-        },
-        results: {
-          sections: ['candidate', 'organization'],
-          cardContents: { candidate: ['submatches'], organization: ['children'] },
-          showFeedbackPopup: 0,
-          showSurveyPopup: 0
-        },
-        entities: {
-          hideIfMissingAnswers: { candidate: false },
-          showAllNominations: true
-        },
-        notifications: { voterApp: { show: false } },
-        analytics: { trackEvents: false }
-      });
+      await client.updateAppSettings(
+        buildSettings({ startFromConstituencyGroup: null, disallowSelection: false })
+      );
     }
-    await sharedPage.close();
   });
 
-  test('should show constituency selection first (reversed flow)', async () => {
-    test.setTimeout(30000);
+  test('reversed flow: constituency selector first; elections page bypassed', async ({ page }) => {
+    test.setTimeout(30_000);
 
-    // Navigate Home -> Start -> Intro
-    await sharedPage.goto(buildRoute({ route: 'Home', locale: 'en' }));
-    await sharedPage.getByTestId(testIds.voter.home.startButton).click();
+    await walkToConstituencySelection(page);
 
-    const introStart = sharedPage.getByTestId(testIds.voter.intro.startButton);
-    await introStart.waitFor({ state: 'visible' });
-    await introStart.click();
+    // Constituency selector visible immediately; election selection NOT shown
+    // anywhere in the entry path.
+    const constituenciesList = page.getByTestId(testIds.voter.constituencies.list);
+    await expect(constituenciesList).toBeVisible({ timeout: 10_000 });
 
-    // With startFromConstituencyGroup set, the flow is reversed:
-    // Constituencies first, NOT elections.
-    // The (located) layout gate should redirect to constituency selection.
-    const constituenciesList = sharedPage.getByTestId(testIds.voter.constituencies.list);
-    await expect(constituenciesList).toBeVisible({ timeout: 10000 });
-
-    // Election selection should NOT be visible at this point
-    const electionsList = sharedPage.getByTestId(testIds.voter.elections.list);
+    const electionsList = page.getByTestId(testIds.voter.elections.list);
     await expect(electionsList).toBeHidden();
 
-    // The constituency selector combobox should be visible, showing only
-    // the municipalities group (the specified startFromConstituencyGroup).
-    // Note: the `constituency-selector` testId is overwritten by the parent's
-    // `voter-constituencies-list` testId due to $$restProps spread, so we
-    // check for the combobox within the list container instead.
     const municipalityCombobox = constituenciesList.getByRole('combobox', { name: /Municipalities/ });
     await expect(municipalityCombobox).toBeVisible();
+
+    // Pick a non-orphan municipality and Continue. With disallowSelection:true,
+    // the /elections load function redirects straight to /questions (the
+    // election selector page should never appear).
+    await pickMunicipality(page, 'North Municipality A');
+    await expect(page).toHaveURL(/\/questions/, { timeout: 10_000 });
+    await expect(electionsList).toBeHidden();
   });
 
-  test('should show election selection after constituency selection', async () => {
-    test.setTimeout(30000);
+  test('orphan municipality → only Election 2026 (E2) in Results election selector', async ({ page }) => {
+    test.setTimeout(90_000);
 
-    // Select a municipality from the selector.
-    // The startfromcg overlay has: muni-north-a, muni-south-a, muni-orphan
-    // Use a regular municipality (not orphan) for the main flow test.
-    // With 3+ constituencies, the selector renders as an autocomplete combobox.
-    const constituenciesList = sharedPage.getByTestId(testIds.voter.constituencies.list);
-    const combobox = constituenciesList.getByRole('combobox', { name: /Municipalities/ });
+    await walkToConstituencySelection(page);
+    await pickMunicipality(page, 'Orphan Municipality');
+    await expect(page).toHaveURL(/\/questions/, { timeout: 10_000 });
 
-    // Select "North Municipality A" via the autocomplete combobox
-    await combobox.click();
-    await combobox.fill('North Municipality A');
-    const listbox = sharedPage.getByRole('listbox');
-    await listbox.waitFor({ state: 'visible', timeout: 5000 });
-    await listbox.getByRole('option', { name: /North Municipality A/ }).click();
+    // The orphan has no parent region → E1 has no applicable constituency →
+    // selectedElections = [E2]. The (located) layout may still open the
+    // missing-nominations modal if some chosen elections lack nominations
+    // for this constituency; dismiss it transparently.
+    await dismissMissingNominationsIfPresent(page);
 
-    // Click continue
-    const continueButton = sharedPage.getByTestId(testIds.voter.constituencies.continue);
-    await expect(continueButton).toBeEnabled();
-    await continueButton.click();
+    await answerUntilResults(page);
+    await expect(page).toHaveURL(/\/results/, { timeout: 10_000 });
 
-    // After constituency selection in startFromConstituencyGroup mode,
-    // the flow goes to Elections page (filtered by applicable constituencies).
-    const electionsList = sharedPage.getByTestId(testIds.voter.elections.list);
-    await expect(electionsList).toBeVisible({ timeout: 10000 });
+    const accordion = page.getByTestId(testIds.voter.results.electionAccordion);
+    // dataRoot has 2 elections so the accordion is rendered (the wrapping
+    // `{#if $dataRoot.elections.length > 1}` is satisfied), but with only
+    // E2 in `selectedElections` it offers a single option.
+    await expect(accordion).toBeVisible({ timeout: 10_000 });
+    const names = await readElectionOptionNames(accordion, 1);
+    expect(names, 'orphan flow should leave only Election 2026 selected').toEqual(['Test Election 2026']);
 
-    // Election options should be shown. The elections filtered by the selected
-    // municipality (muni-north-a which implies region-north) should include
-    // both election-1 (has regions + municipalities) and election-2 (has municipalities).
-    const electionOptions = sharedPage.getByTestId(testIds.voter.elections.card);
-    const electionCount = await electionOptions.count();
-    expect(electionCount).toBeGreaterThanOrEqual(1);
-
-    // Select all available elections and continue
-    await sharedPage.getByTestId(testIds.voter.elections.continue).click();
-
-    // After election continue in startFromConstituencyGroup mode, the flow
-    // goes directly to questions (constituency already selected).
-    await expect(sharedPage).toHaveURL(/\/questions/, { timeout: 10000 });
+    // Defensive cross-check: even with a hidden/non-rendered option in a
+    // collapsed accordion, Playwright's role-tree would surface it — but in
+    // the orphan case the option for E1 must not exist at all because E1 is
+    // not in `selectedElections`. textContent enumeration via
+    // `readElectionOptionNames` is the load-bearing assertion; this is the
+    // shape-of-tree confirmation.
+    await expect(accordion.getByRole('option', { name: /Election 2025/ })).toHaveCount(0);
   });
 
-  test('should complete journey through questions to results', async () => {
-    test.setTimeout(60000);
+  test('non-orphan municipality → both Election 2025 (E1) + Election 2026 (E2) in Results election selector', async ({
+    page
+  }) => {
+    test.setTimeout(90_000);
 
-    // We should be on the questions page
-    await expect(sharedPage).toHaveURL(/\/questions/);
+    await walkToConstituencySelection(page);
+    await pickMunicipality(page, 'North Municipality A');
+    await expect(page).toHaveURL(/\/questions/, { timeout: 10_000 });
 
-    // Dismiss the "missing nominations" dialog if it appears
-    // getByRole('dialog') matches only open <dialog>; closed dialogs are hidden.
-    const dialog = sharedPage.getByRole('dialog');
-    try {
-      await dialog.waitFor({ state: 'visible', timeout: 3000 });
-      await dialog.getByRole('button', { name: /continue/i }).click();
-      await dialog.waitFor({ state: 'hidden', timeout: 5000 });
-    } catch {
-      // No dialog appeared
-    }
+    await dismissMissingNominationsIfPresent(page);
 
-    const answerOption = sharedPage.getByTestId(testIds.voter.questions.answerOption);
-    const nextButton = sharedPage.getByTestId(testIds.voter.questions.nextButton);
+    await answerUntilResults(page);
+    await expect(page).toHaveURL(/\/results/, { timeout: 10_000 });
 
-    // Wait for first question to load
-    await answerOption.first().waitFor({ state: 'visible', timeout: 10000 });
-
-    // Answer all questions until /results — hoisted helper keeps the in-test
-    // body conditional-free (RESEARCH Pattern 4 canonical 3).
-    const questionCount = await answerUntilResults(sharedPage, answerOption, nextButton);
-
-    // Verify results page loaded — handle multi-election accordion if present.
-    // Hoisted helper performs atomic two-anchor waitFor + deterministic dispatch.
-    const electionAccordion = sharedPage.getByTestId(testIds.voter.results.electionAccordion);
-    const resultsList = sharedPage.getByTestId(testIds.voter.results.list);
-    await selectElectionFromAccordionIfPresent(electionAccordion, resultsList);
-    await expect(resultsList).toBeVisible({ timeout: 10000 });
-
-    // Verify we answered a reasonable number of questions
-    expect(questionCount).toBeGreaterThanOrEqual(8);
-  });
-
-  test('should handle orphan municipality without error', async () => {
-    test.setTimeout(60000);
-
-    // Start a fresh navigation to test the orphan municipality edge case.
-    // The orphan municipality (test-const-muni-orphan) has no parent region,
-    // which means it won't imply a region for election-1 (which requires regions).
-    // The app should handle this gracefully.
-
-    await sharedPage.goto(buildRoute({ route: 'Home', locale: 'en' }));
-    await sharedPage.getByTestId(testIds.voter.home.startButton).click();
-
-    const introStart = sharedPage.getByTestId(testIds.voter.intro.startButton);
-    await introStart.waitFor({ state: 'visible' });
-    await introStart.click();
-
-    // Should redirect to constituency selection (startFromConstituencyGroup mode)
-    const constituenciesList = sharedPage.getByTestId(testIds.voter.constituencies.list);
-    await expect(constituenciesList).toBeVisible({ timeout: 10000 });
-
-    // Select the orphan municipality via autocomplete combobox
-    const combobox = constituenciesList.getByRole('combobox', { name: /Municipalities/ });
-    await combobox.click();
-    await combobox.fill('Orphan Municipality');
-    const listbox = sharedPage.getByRole('listbox');
-    await listbox.waitFor({ state: 'visible', timeout: 5000 });
-    await listbox.getByRole('option', { name: /Orphan Municipality/ }).click();
-
-    // Click continue
-    const continueButton = sharedPage.getByTestId(testIds.voter.constituencies.continue);
-    await expect(continueButton).toBeEnabled();
-    await continueButton.click();
-
-    // After selecting orphan municipality, the elections page should appear.
-    // The orphan has no parent region, so election-1 (which uses regions) may
-    // not have an applicable constituency. Only election-2 (municipalities only)
-    // should be applicable.
-    const electionsList = sharedPage.getByTestId(testIds.voter.elections.list);
-    await expect(electionsList).toBeVisible({ timeout: 10000 });
-
-    // Key assertion: no runtime error, no crash. The app gracefully handles
-    // the orphan municipality. There should be at least one election shown
-    // (election-2 uses municipalities which includes the orphan).
-    const electionOptions = sharedPage.getByTestId(testIds.voter.elections.card);
-    const electionCount = await electionOptions.count();
-    expect(electionCount).toBeGreaterThanOrEqual(1);
-
-    // Continue with election selection to verify the journey completes
-    await sharedPage.getByTestId(testIds.voter.elections.continue).click();
-
-    // Should proceed to questions
-    await expect(sharedPage).toHaveURL(/\/questions/, { timeout: 10000 });
-
-    // Dismiss the "missing nominations" dialog if it appears
-    // getByRole('dialog') matches only open <dialog>; closed dialogs are hidden.
-    const orphanDialog = sharedPage.getByRole('dialog');
-    try {
-      await orphanDialog.waitFor({ state: 'visible', timeout: 3000 });
-      await orphanDialog.getByRole('button', { name: /continue/i }).click();
-      await orphanDialog.waitFor({ state: 'hidden', timeout: 5000 });
-    } catch {
-      // No dialog appeared
-    }
-
-    // Answer questions and reach results to confirm full journey works.
-    // Hoisted helper keeps the in-test body conditional-free (RESEARCH Pattern 4
-    // canonical 3); the helper internally tolerates URL-not-changed via the
-    // explicit next button (orphan-municipality edge case may exercise the
-    // fallback path more frequently).
-    const answerOption = sharedPage.getByTestId(testIds.voter.questions.answerOption);
-    const nextButton = sharedPage.getByTestId(testIds.voter.questions.nextButton);
-
-    await answerOption.first().waitFor({ state: 'visible', timeout: 10000 });
-
-    await answerOrAdvanceUntilResults(sharedPage, answerOption, nextButton);
-
-    // Verify the journey completed without errors — we reached the results page.
-    // The orphan municipality may have limited nominations, so we just verify
-    // the results URL was reached and the page rendered (no crash).
-    await expect(sharedPage).toHaveURL(/\/results/, { timeout: 10000 });
+    const accordion = page.getByTestId(testIds.voter.results.electionAccordion);
+    await expect(accordion).toBeVisible({ timeout: 10_000 });
+    const names = await readElectionOptionNames(accordion, 2);
+    expect(names.sort(), 'non-orphan flow should leave BOTH elections selected').toEqual([
+      'Test Election 2025',
+      'Test Election 2026'
+    ]);
   });
 });
 

@@ -101,7 +101,7 @@ const LOCATED_ROUTES: ReadonlyArray<AxeRoute> = [
       // role="tablist" to resolve aria-required-parent + list axe violations — the
       // previous `getByRole('list').first()` settle waited on the same <ul> element's
       // implicit list role, which is now explicitly typed. Same DOM target, accurate role.
-      await page.getByRole('tablist').first().waitFor({ state: 'visible', timeout: 15000 });
+      await page.getByRole('tablist').first().waitFor({ state: 'visible', timeout: 10000 });
     }
   },
   {
@@ -112,7 +112,7 @@ const LOCATED_ROUTES: ReadonlyArray<AxeRoute> = [
       // reason: Wait for results layout tablist (Tabs.svelte). Task 5b added explicit
       // role="tablist" to resolve aria-required-parent + list axe violations. Same DOM
       // target as the pre-fix `getByRole('list').first()` settle, accurate role.
-      await page.getByRole('tablist').first().waitFor({ state: 'visible', timeout: 15000 });
+      await page.getByRole('tablist').first().waitFor({ state: 'visible', timeout: 10000 });
       // Open the drawer — click first entity card. The drawer renders as role=dialog overlay
       // intercepted by results/+layout.svelte beforeNavigate (per voter-detail.spec.ts pattern).
       await page.getByTestId('entity-card').first().waitFor({ state: 'visible', timeout: 10000 });

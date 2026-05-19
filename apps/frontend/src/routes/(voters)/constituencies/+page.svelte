@@ -12,12 +12,15 @@ See `+page.ts` for possible redirects.
 -->
 
 <script lang="ts">
+  import qs from 'qs';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import { Button } from '$lib/components/button';
   import { ConstituencySelector } from '$lib/components/constituencySelector';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getVoterContext } from '$lib/contexts/voter';
+  import { filterPersistent } from '$lib/utils/route/filterPersistent';
+  import { parseParams } from '$lib/utils/route/parseParams';
   import MainContent from '../../MainContent.svelte';
   import type { Id } from '@openvaa/core';
   
@@ -55,12 +58,36 @@ See `+page.ts` for possible redirects.
 
   let elections = $derived(useSingleGroup ? $dataRoot.elections : voterCtx.selectedElections);
 
+  // Pre-fill `selected` from the voter context's current constituency choices
+  // (e.g., on back-navigation from /questions). The previous implementation
+  // delegated to `Election.getApplicableConstituency`, which THROWS when more
+  // than one constituency in the array matches the election — a state that
+  // surfaces whenever two elections share a constituency group but the user
+  // has previously selected different members of that group for each. The
+  // resulting `DataTypeError: More than one constituency matches the
+  // election` propagated out of the $effect and broke the constituency page.
+  //
+  // Instead, iterate per-election and pick the MOST SPECIFIC applicable
+  // constituency — the one whose enclosing group has the fewest members
+  // (i.e., the leaf in the hierarchy). For a Regions-or-Municipalities
+  // election, that's the municipality the voter chose; the region implication
+  // is reconstructed from the municipality via the hierarchy at evaluation
+  // time. Ties fall back to first-match deterministically.
   $effect(() => {
-    if (voterCtx.selectedConstituencies.length) {
-      for (const election of elections) {
-        const constituency = election.getApplicableConstituency(voterCtx.selectedConstituencies);
-        if (constituency) selected[election.id] = constituency.id;
-      }
+    if (!voterCtx.selectedConstituencies.length) return;
+    for (const election of elections) {
+      const matches = voterCtx.selectedConstituencies.filter((c) =>
+        election.constituencyGroups.some((g) => g.data.constituencyIds.includes(c.id))
+      );
+      if (!matches.length) continue;
+      const best = matches.reduce((a, b) => {
+        const aSize =
+          election.constituencyGroups.find((g) => g.data.constituencyIds.includes(a.id))?.constituencies.length ?? Infinity;
+        const bSize =
+          election.constituencyGroups.find((g) => g.data.constituencyIds.includes(b.id))?.constituencies.length ?? Infinity;
+        return bSize < aSize ? b : a;
+      });
+      selected[election.id] = best.id;
     }
   });
 
@@ -75,7 +102,11 @@ See `+page.ts` for possible redirects.
 
   async function handleSubmit(): Promise<void> {
     if (!canSubmit) return;
-    const constituencyId = Object.values(selected).filter((id) => id);
+    // Dedupe: when two elections share a constituency group and the
+    // selector linked their picks (ConstituencySelector cross-section
+    // propagation), `selected` carries the same id under multiple election
+    // keys. The URL contract is a set, not a per-election map, so collapse.
+    const constituencyId = Array.from(new Set(Object.values(selected).filter((id) => id)));
     // CLEAN-02 (Phase 78 Plan 02): if a deferred-target `?next=` is set,
     // decode + re-validate against the voter-app URL whitelist regex and
     // navigate to the original destination. Whitelist re-check is a
@@ -92,7 +123,24 @@ See `+page.ts` for possible redirects.
     if (next) {
       const decoded = decodeURIComponent(next);
       if (VOTER_ROUTE_WHITELIST.test(decoded)) {
-        await goto(decoded);
+        // Append the just-picked electionId + constituencyId to the deferred
+        // target before goto. Without this, `goto(decoded)` lands on a raw
+        // `/results` URL with neither id present; (located)/+layout.ts then
+        // sees no electionId in URL OR voter-context state (the constituency
+        // page never writes back to voterCtx — the URL is the only
+        // persistence) and bounces the voter back through /elections,
+        // looping CLEAN-02 test 1. Preserve any query params the original
+        // deferred target already carried (e.g., `?entityType=candidates`
+        // in CLEAN-02 test 2 — the test asserts that param survives the
+        // round-trip).
+        const target = new URL(decoded, page.url.origin);
+        const persistent = filterPersistent(parseParams({ url: page.url }));
+        const targetParams = qs.parse(target.search.replace(/^\?/g, ''));
+        const merged = qs.stringify(
+          { ...persistent, ...targetParams, constituencyId },
+          { encodeValuesOnly: true }
+        );
+        await goto(`${target.pathname}${merged ? `?${merged}` : ''}`);
         return;
       }
       // Fall through to default navigation when whitelist rejects the value.

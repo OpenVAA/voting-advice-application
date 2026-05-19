@@ -188,8 +188,8 @@ test.describe('voter question rendering — boolean (QSPEC-01)', { tag: ['@voter
     const urlBeforeForward = page.url();
     await nextButton.waitFor({ state: 'visible', timeout: 5000 });
     await nextButton.click();
-    await page.waitForURL((url) => url.toString() !== urlBeforeForward, { timeout: 30000 });
-    await page.waitForURL(/\/results/, { timeout: 30000 });
+    await page.waitForURL((url) => url.toString() !== urlBeforeForward, { timeout: 10000 });
+    await page.waitForURL(/\/results/, { timeout: 10000 });
 
     // Open Alpha's entity-detail drawer.
     await page

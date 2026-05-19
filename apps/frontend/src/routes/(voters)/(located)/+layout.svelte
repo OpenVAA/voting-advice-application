@@ -48,6 +48,22 @@ Displays a warning if the selected constituency does not have nominations in all
   let modalRef: Modal | undefined = $state();
   let ready = $state(false);
   let hasNominations = $state<NominationStatus>('none');
+  // Suppress modal re-open for the same nomination state.
+  //
+  // The `$effect` below tracks `data.questionData` / `data.nominationData`,
+  // which are STREAMED Promises returned by `+layout.ts`. Their identity
+  // changes on every load (including sub-route navigation within `(located)`
+  // — `/questions` → `/questions/__first__`, etc.), so the effect re-fires
+  // and `updateAsync` runs again with the same underlying election +
+  // constituency selection. Without this guard, `modalRef?.openModal()`
+  // would be called on every re-fire, instantly reopening the modal a user
+  // had just dismissed.
+  //
+  // The key combines the resolved nomination-status and the
+  // election+constituency ids that produced it; if any of those change
+  // (voter picked a different constituency, etc.) the modal correctly
+  // re-shows because the key no longer matches.
+  let modalShownForKey = $state<string | null>(null);
 
   $effect(() => {
     // Read data synchronously to register as dependency
@@ -86,7 +102,19 @@ Displays a warning if the selected constituency does not have nominations in all
     // user manually navigated (variant-constituency.spec.ts:148 regression).
     const nomStatus = await awaitNominationsSettled();
     hasNominations = nomStatus;
-    if (nomStatus !== 'all') modalRef?.openModal();
+    // Compose the dataset key from the current nomination status + the
+    // selection that produced it. Open the modal only when this key differs
+    // from the one we last opened the modal for — see the
+    // `modalShownForKey` doc-comment above for the reopen-race motivation.
+    const key = JSON.stringify({
+      nomStatus,
+      e: voterCtx.selectedElections.map((el) => el.id).sort(),
+      c: voterCtx.selectedConstituencies.map((co) => co.id).sort()
+    });
+    if (nomStatus !== 'all' && modalShownForKey !== key) {
+      modalShownForKey = key;
+      modalRef?.openModal();
+    }
     ready = true;
     return undefined;
   }
@@ -158,7 +186,8 @@ Displays a warning if the selected constituency does not have nominations in all
       ? t('results.missingNominations.noNominations.title')
       : t('results.missingNominations.someNominations.title')}
     closeOnBackdropClick={false}
-    bind:this={modalRef}>
+    bind:this={modalRef}
+    data-testid="voter-missing-nominations-modal">
     <p>
       {@html sanitizeHtml(
         hasNominations === 'none'

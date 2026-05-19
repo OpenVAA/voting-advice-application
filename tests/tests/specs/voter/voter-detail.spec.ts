@@ -37,10 +37,7 @@ const alphaAnswers = alphaCandidate.answersByExternalId as Record<
 const expectedPartyCount = E2E_ORGANIZATIONS.length;
 
 test.describe('voter entity detail', { tag: ['@voter'] }, () => {
-
-  test('should open candidate detail drawer when clicking a result card', async ({
-    answeredVoterPage: page
-  }) => {
+  test('should open candidate detail drawer when clicking a result card', async ({ answeredVoterPage: page }) => {
     // Click the first entity card on the results page (VOTE-11)
     await page.getByTestId(testIds.voter.results.card).first().click();
 
@@ -76,9 +73,7 @@ test.describe('voter entity detail', { tag: ['@voter'] }, () => {
     await expect(dialog).toBeHidden();
   });
 
-  test('should display candidate answers correctly in info and opinions tabs', async ({
-    answeredVoterPage: page
-  }) => {
+  test('should display candidate answers correctly in info and opinions tabs', async ({ answeredVoterPage: page }) => {
     // Open "Test Candidate Alpha" who has:
     // - Info answers: campaign slogan "Progress for all", years of experience, etc.
     // - Opinion answers with open answers on default-dataset Q1, Q3, and Q5
@@ -233,9 +228,7 @@ test.describe('voter entity detail', { tag: ['@voter'] }, () => {
  *     has answered this question").
  */
 test.describe('voter-detail answer cases (E2E-05)', { tag: ['@voter'] }, () => {
-  test('case (a) — both answered: voter row and entity row rendered', async ({
-    answeredVoterPage: page
-  }) => {
+  test('case (a) — both answered: voter row and entity row rendered', async ({ answeredVoterPage: page }) => {
     // Card text format: "{first_name} {last_name}" → "CaseA Both" (space-joined),
     // not the external_id "test-candidate-CaseA-Both". Filter by last_name only
     // since it's unique across the 4 Case candidates.
@@ -259,9 +252,7 @@ test.describe('voter-detail answer cases (E2E-05)', { tag: ['@voter'] }, () => {
     await expect(firstInput.getByText('You')).toBeAttached();
   });
 
-  test('case (b) — voter answered, entity missing: voter row only', async ({
-    answeredVoterPage: page
-  }) => {
+  test('case (b) — voter answered, entity missing: voter row only', async ({ answeredVoterPage: page }) => {
     // Card text: "CaseB VoterOnly" — see case (a) for card text format note.
     await page.getByTestId(testIds.voter.results.card).filter({ hasText: 'CaseB VoterOnly' }).click();
 
@@ -282,9 +273,7 @@ test.describe('voter-detail answer cases (E2E-05)', { tag: ['@voter'] }, () => {
     await expect(firstInput.locator('.entitySelected')).toHaveCount(0);
   });
 
-  test('case (c) — voter missing, entity answered: entity row only', async ({
-    answeredVoterPage: page
-  }) => {
+  test('case (c) — voter missing, entity answered: entity row only', async ({ answeredVoterPage: page }) => {
     // Card text: "CaseC EntityOnly" — see case (a) for card text format note.
     await page.getByTestId(testIds.voter.results.card).filter({ hasText: 'CaseC EntityOnly' }).click();
 
@@ -307,9 +296,7 @@ test.describe('voter-detail answer cases (E2E-05)', { tag: ['@voter'] }, () => {
     await expect(lastInput.getByText('You')).toHaveCount(0);
   });
 
-  test('case (d) — both missing: "Neither has answered" message rendered', async ({
-    answeredVoterPage: page
-  }) => {
+  test('case (d) — both missing: "Neither has answered" message rendered', async ({ answeredVoterPage: page }) => {
     // Card text: "CaseD Neither" — see case (a) for card text format note.
     await page.getByTestId(testIds.voter.results.card).filter({ hasText: 'CaseD Neither' }).click();
 
@@ -344,9 +331,7 @@ test.describe('voter-detail answer cases (E2E-05)', { tag: ['@voter'] }, () => {
     // The message is interpolated with the candidate's shortName — assert
     // by matching the locale-invariant en literal prefix "Neither you nor"
     // followed by the rest of the localized template.
-    await expect(
-      opinionsTab.getByText(/Neither you nor .* has(?:n't| not)? answered/i)
-    ).toBeVisible();
+    await expect(opinionsTab.getByText(/Neither you nor .* has(?:n't| not)? answered/i).first()).toBeVisible();
   });
 });
 
@@ -416,9 +401,7 @@ test.describe('voter-detail per-category SubMatches (E2E-07)', { tag: ['@voter']
     // metric path per packages/data/src/objects/questions/variants/
     // singleChoiceCategoricalQuestion.ts:38-62 (categorical normalization
     // creates per-choice subdimensions distinct from ordinal Manhattan).
-    await expect(
-      dialog.getByRole('meter', { name: 'Test Category: Directional (E2E-07)' })
-    ).toBeVisible();
+    await expect(dialog.getByRole('meter', { name: 'Test Category: Directional (E2E-07)' })).toBeVisible();
   });
 
   test('directional-metric SubMatch row exists for a candidate who answered the categorical question', async ({

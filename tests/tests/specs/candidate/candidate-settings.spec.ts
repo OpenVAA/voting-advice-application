@@ -77,12 +77,12 @@ test.beforeAll(async ({ browser }) => {
   const page = await context.newPage();
   try {
     await page.goto(buildRoute({ route: 'CandAppHome', locale: 'en' }));
-    await page.getByTestId(testIds.candidate.login.email).waitFor({ state: 'visible', timeout: 20000 });
+    await page.getByTestId(testIds.candidate.login.email).waitFor({ state: 'visible', timeout: 10000 });
     await page.getByTestId(testIds.candidate.login.email).fill(TEST_CANDIDATE_EMAIL);
     await page.getByTestId(testIds.candidate.login.password).fill(TEST_CANDIDATE_PASSWORD);
     await page.getByTestId(testIds.candidate.login.submit).click();
     // Wait for navigation away from login (matches auth.setup.ts pattern)
-    await expect(page).not.toHaveURL(/.*login.*/, { timeout: 15000 });
+    await expect(page).not.toHaveURL(/.*login.*/, { timeout: 10000 });
     // Overwrite the shared storageState file so per-test contexts pick up
     // the fresh tokens at context-creation time.
     await context.storageState({ path: STORAGE_STATE });
@@ -134,7 +134,7 @@ test.describe('app mode: answers locked (CAND-09)', { tag: ['@candidate'] }, () 
     //   no `role="status"` annotation, no aria-live region, and no
     //   accessible name. Promoting to `role="status"` is a UI change out
     //   of scope here; the testId is the canonical anchor.
-    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({ timeout: 10000 });
 
     // The button text should change to "view" variants instead of "edit" when locked
     // The home page buttons use "candidate-home-questions" testId
@@ -147,7 +147,7 @@ test.describe('app mode: answers locked (CAND-09)', { tag: ['@candidate'] }, () 
     // When answers are locked, question cards show "view" action text
     // The questions page renders a Warning component with "editingNotAllowed" text
     // Verify the questions list is still visible (page rendered correctly)
-    await expect(page.getByTestId(testIds.candidate.questions.list).or(page.getByTestId(testIds.candidate.questions.start))).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId(testIds.candidate.questions.list).or(page.getByTestId(testIds.candidate.questions.start))).toBeVisible({ timeout: 10000 });
   });
 });
 
@@ -564,7 +564,7 @@ const settings01WaveACells: Array<ToggleCell> = [
     route: { route: 'Nominations', locale: 'en' },
     assert: async (page) => {
       // Redirect lands on voter Home → start button visible.
-      await expect(page.getByTestId(testIds.voter.home.startButton)).toBeVisible({ timeout: 15000 });
+      await expect(page.getByTestId(testIds.voter.home.startButton)).toBeVisible({ timeout: 10000 });
       // Nominations list NOT rendered.
       await expect(page.getByTestId(testIds.voter.nominations.list)).toHaveCount(0);
     }
@@ -606,7 +606,7 @@ const settings01WaveACells: Array<ToggleCell> = [
       await expect
         .poll(() => page.getByTestId(testIds.voter.results.card).count(), {
           message: 'baseline /nominations: waiting for cards to render',
-          timeout: 30000
+          timeout: 10000
         })
         .toBeGreaterThan(0);
       const baselineCount = await page.getByTestId(testIds.voter.results.card).count();
@@ -618,7 +618,7 @@ const settings01WaveACells: Array<ToggleCell> = [
       await expect
         .poll(() => page.getByTestId(testIds.voter.results.card).count(), {
           message: 'overlay /nominations: waiting for cards to render',
-          timeout: 30000
+          timeout: 10000
         })
         .toBeGreaterThanOrEqual(0);
       // After overlay applied, the filtered count must be LESS THAN OR EQUAL
@@ -652,7 +652,7 @@ const settings01WaveACells: Array<ToggleCell> = [
     assert: async (page) => {
       // Navigate to candidate question detail by clicking the first card.
       // Wait for the questions list to render, expand categories, then click.
-      await expect(page.getByTestId(testIds.candidate.questions.list)).toBeVisible({ timeout: 15000 });
+      await expect(page.getByTestId(testIds.candidate.questions.list)).toBeVisible({ timeout: 10000 });
       // Some category collapsers may need to expand. The test card surface
       // matches the existing CAND-15 pattern — first visible card is clickable.
       const firstCard = page.getByTestId(testIds.candidate.questions.card).first();
@@ -675,7 +675,7 @@ const settings01WaveACells: Array<ToggleCell> = [
     overlay: { questions: { showCategoryTags: false, showResultsLink: true } },
     route: { route: 'CandAppQuestions', locale: 'en' },
     assert: async (page) => {
-      await expect(page.getByTestId(testIds.candidate.questions.list)).toBeVisible({ timeout: 15000 });
+      await expect(page.getByTestId(testIds.candidate.questions.list)).toBeVisible({ timeout: 10000 });
       const firstCard = page.getByTestId(testIds.candidate.questions.card).first();
       await firstCard.scrollIntoViewIfNeeded();
       await firstCard.click();
@@ -704,7 +704,7 @@ const settings01WaveACells: Array<ToggleCell> = [
       // selector first; wait for either the intro start button or a
       // questions surface. The header button is the only assertion target.
       // Allow a generous timeout for the route to settle.
-      await page.waitForLoadState('domcontentloaded', { timeout: 15000 });
+      await page.waitForLoadState('domcontentloaded', { timeout: 10000 });
       // The Banner results link uses variant="responsive-icon" — its role is
       // 'button' (Button.svelte:180 role="button"). When showResultsLink is
       // false, the button is not rendered at all.
@@ -732,7 +732,7 @@ const settings01WaveACells: Array<ToggleCell> = [
     overlay: { results: { sections: ['candidate'] } },
     route: { route: 'Results', locale: 'en' },
     assert: async (page) => {
-      await page.waitForLoadState('domcontentloaded', { timeout: 15000 });
+      await page.waitForLoadState('domcontentloaded', { timeout: 10000 });
       // entity-tabs testId only present when entityTabs.length > 1. With
       // sections=['candidate'] only, length === 1 → testId absent.
       await expect(page.getByTestId(testIds.voter.results.entityTabs)).toHaveCount(0);

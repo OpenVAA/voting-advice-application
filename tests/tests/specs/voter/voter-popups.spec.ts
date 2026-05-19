@@ -99,7 +99,7 @@ test.describe('feedback popup (VOTE-15)', { tag: ['@voter'] }, () => {
 
     // Wait for the feedback popup dialog to appear (2s delay + buffer for SSR load + Supabase fetch)
     const dialog = page.getByRole('dialog');
-    await dialog.waitFor({ state: 'visible', timeout: 15000 });
+    await dialog.waitFor({ state: 'visible', timeout: 10000 });
 
     // Verify the dialog is visible and contains a heading (feedback popup has an h3 title)
     await expect(dialog).toBeVisible();

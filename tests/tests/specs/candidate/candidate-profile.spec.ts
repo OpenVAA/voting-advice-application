@@ -21,7 +21,13 @@ import { fileURLToPath } from 'url';
 import { expect, test } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
 import { E2E_ADDENDUM_CANDIDATES } from '../../utils/e2eFixtureRefs';
-import { countEmailsForRecipient, extractLinkFromHtml, getLatestEmailHtml, toCallbackUrl } from '../../utils/emailHelper';
+import {
+  clearMailboxForRecipient,
+  countEmailsForRecipient,
+  extractLinkFromHtml,
+  getLatestEmailHtml,
+  toCallbackUrl
+} from '../../utils/emailHelper';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
@@ -57,11 +63,17 @@ async function loginIfRedirectedToLoginPage(page: Page, email: string, password:
   // when the ToU checkbox didn't render. The tightened predicate below excludes the
   // /candidate/{register,auth} intermediate paths, so we wait until the deliberate
   // post-setPassword /candidate/login redirect actually lands.
+  // Strip the optional 2-letter locale prefix (paraglideHandle routes
+  // `/en`, `/fi`, `/sv`, etc.) so the predicate doesn't have to enumerate
+  // every supported locale. Without normalization, a `/en/candidate` URL
+  // fails the `pathname === '/candidate'` branch and the predicate misses
+  // the settled ToU/home target. Fix mirrored from
+  // candidate-registration.spec.ts:loginIfRedirectedToLoginPage.
   await page.waitForURL(
-    (url) =>
-      url.pathname.includes('/candidate/login') ||
-      url.pathname === '/candidate' ||
-      /\/candidate\/(?!register|auth|login)/.test(url.pathname),
+    (url) => {
+      const path = url.pathname.replace(/^\/[a-z]{2}(?=\/|$)/, '');
+      return path === '/candidate/login' || path === '/candidate' || /^\/candidate\/(?!register|auth|login)/.test(path);
+    },
     {
       timeout: 15000
     }
@@ -84,6 +96,22 @@ test.describe('candidate profile (fresh candidate)', { tag: ['@candidate'] }, ()
   const candidateEmail = E2E_ADDENDUM_CANDIDATES[1].email!;
   const candidateExternalId = E2E_ADDENDUM_CANDIDATES[1].external_id;
   const candidatePassword = 'ProfileTestPass1!';
+
+  test.beforeEach(async () => {
+    // Re-runs the data-setup auth wiring for THIS candidate only, so
+    // --repeat-each=N actually exercises the fresh-invite flow on every
+    // iteration. No-op on the very first iteration (candidate is already
+    // unregistered by data.setup.ts).
+    await client.unregisterCandidate(candidateEmail);
+    // Clear this recipient's Mailpit queue so each iteration's invite email
+    // is the only one in scope. Prevents Mailpit's 50-result search ceiling
+    // from masking new emails as the queue accumulates across iterations —
+    // observed: ~9/20 spurious "Waiting for registration email" timeouts at
+    // the email-poll step under --repeat-each=20 before this clear was added.
+    // Per-recipient (not global purge) so the call is safe under parallel
+    // workers if/when this spec ever leaves --workers=1.
+    await clearMailboxForRecipient(candidateEmail);
+  });
 
   /**
    * Log in as the freshly registered candidate.
@@ -137,16 +165,24 @@ test.describe('candidate profile (fresh candidate)', { tag: ['@candidate'] }, ()
     await confirmWrapper.getByTestId(testIds.candidate.login.password).fill(candidatePassword);
     await submitButton.click();
 
-    // Step 5: After registration, the user may land on either:
-    // a) The candidate home (if session persisted via verifyOtp cookies)
-    // b) The login page (if the browser session wasn't established)
-    // In either case, ensure password is set via admin API for reliable login.
-    await client.setPassword(candidateEmail, candidatePassword);
-
-    // Step 6: Wait for navigation to settle on either home or login, and log in
+    // Step 5: Wait for navigation to settle on either home or login, and log in
     // if redirected. Hoisted to module-level `loginIfRedirectedToLoginPage` helper
     // so the conditional dispatch lives outside the test body (Pattern 4 canonical 3
     // — the lint rule allows conditionals in helpers; only test() bodies are flagged).
+    //
+    // Do NOT call `client.setPassword` (admin auth.admin.updateUserById) here.
+    // Phase 79 RCA (mirrored from candidate-registration.spec.ts:130-143): the
+    // admin call revokes all refresh tokens for the user, leaving the browser-
+    // side Supabase client (which still holds the verifyOtp session if
+    // PasswordSetter's `goto('/candidate/login')` was short-circuited by the
+    // auto-redirect to `/candidate`) with no session GoTrue accepts. The next
+    // PostgREST call has `auth.uid() = NULL`, both `candidate_update_own` and
+    // `authenticated_select_candidates` deny the row, and the
+    // `_updateEntityProperties` UPDATE…RETURNING in ToU acceptance returns 0
+    // rows, surfacing as a 406 "Cannot coerce the result to a single JSON
+    // object". PasswordSetter's user-side `setPassword` (auth.updateUser) does
+    // NOT revoke its own session, so omitting this admin call leaves both
+    // landing-page branches with a clean, working session.
     await loginIfRedirectedToLoginPage(page, candidateEmail, candidatePassword);
 
     // Step 7: Accept Terms of Use (shown on first login after registration)
@@ -154,11 +190,21 @@ test.describe('candidate profile (fresh candidate)', { tag: ['@candidate'] }, ()
     await expect(touCheckbox).toBeVisible({ timeout: 10000 });
     await touCheckbox.check();
     const continueButton = page.getByRole('button', { name: /continue/i });
-    await expect(continueButton).toBeEnabled({ timeout: 10000 });
-    await continueButton.click();
+
+    // Click + post-condition retry. The Continue button is enabled and clickable
+    // the moment the checkbox flips, but the click can be lost in a Svelte
+    // reactive re-render around the click (the `disabled`/`loading` prop update
+    // on Button.svelte straddles the click dispatch, so the click occasionally
+    // lands on a node whose `onclick` listener was just swapped). `expect.toPass`
+    // wraps click + observable consequence; idempotent — a successful click
+    // short-circuits on the next iteration's post-condition.
+    await expect(async () => {
+      await continueButton.click();
+      await expect(touCheckbox).toBeHidden({ timeout: 1500 });
+    }).toPass({ timeout: 15000, intervals: [250, 500, 1000] });
 
     // Step 8: Verify we reach the candidate home (save may take a moment)
-    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({ timeout: 10000 });
   });
 
   test('should upload a profile image (CAND-03)', async ({ page, profilePage }) => {
@@ -168,7 +214,7 @@ test.describe('candidate profile (fresh candidate)', { tag: ['@candidate'] }, ()
     await page.goto(buildRoute({ route: 'CandAppProfile', locale: 'en' }));
 
     // Resolve the test image path (ESM-compatible)
-    const imagePath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../test_image_black.png');
+    const imagePath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../data/assets/test-poster.jpg');
 
     // Upload image via the profile page object's file chooser pattern
     await profilePage.uploadImage(imagePath);

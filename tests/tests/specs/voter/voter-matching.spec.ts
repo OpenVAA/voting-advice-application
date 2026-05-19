@@ -182,13 +182,25 @@ async function navigateToResults(page: Page): Promise<void> {
   for (let skip = 0; skip < 3; skip++) {
     if (page.url().includes('/results')) break;
     const urlBefore = page.url();
-    await page.getByTestId(testIds.voter.questions.nextButton).click();
-    await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 30000 });
+    const nextBtn = page.getByTestId(testIds.voter.questions.nextButton);
+    // Phase 86.1 post-fix: bound the click with a short timeout and race the
+    // post-click settle against a /results landing. Without these guards the
+    // raw `.click()` retries through the 90s test timeout when the button
+    // detaches mid-action — the auto-advance timer can navigate to /results
+    // between `nextBtn` resolution and the actionability check, leaving the
+    // click stuck on a detached node forever. Mirrors `advanceClick` in
+    // tests/utils/voterNavigation.ts (Phase 86.1 introStart/questionsStart
+    // race fix).
+    await nextBtn.click({ timeout: 3000 }).catch(() => null);
+    await Promise.race([
+      page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 5000 }).catch(() => null),
+      page.waitForURL(/\/results/, { timeout: 5000 }).catch(() => null)
+    ]);
   }
 
   // After answering the last question, the auto-advance timer navigates to results.
   // Wait for the results page to load.
-  await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 15000 });
+  await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 10000 });
 }
 
 // ---------------------------------------------------------------------------

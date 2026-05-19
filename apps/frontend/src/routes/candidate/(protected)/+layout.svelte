@@ -47,10 +47,15 @@
   async function handleSubmit() {
     if (!termsAcceptedLocal) return;
     status = 'loading';
-    userData.setTermsOfUseAccepted(new Date().toJSON());
-    await userData.save();
-    status = 'success';
-    termsSubmitted = true;
+    try {
+      userData.setTermsOfUseAccepted(new Date().toJSON());
+      await userData.save();
+      status = 'success';
+      termsSubmitted = true;
+    } catch (error) {
+      logDebugError(error);
+      status = 'error';
+    }
   }
 
   async function handleCancel() {
@@ -97,11 +102,7 @@
   // `$derived` (not `$state`) — recomputes automatically when `validity` or
   // `termsAcceptedLocal` changes, so `handleSubmit` has no explicit `layoutState = 'ready'` write.
   const layoutState = $derived<'loading' | 'error' | 'terms' | 'ready'>(
-    validity.state === 'error'
-      ? 'error'
-      : !validity.candidate.termsOfUseAccepted && !termsSubmitted
-        ? 'terms'
-        : 'ready'
+    validity.state === 'error' ? 'error' : !validity.candidate.termsOfUseAccepted && !termsSubmitted ? 'terms' : 'ready'
   );
 
   // Side effect — applies resolved data to `dataRoot` and initializes `userData`.
@@ -159,6 +160,11 @@
       </figure>
     {/snippet}
     <TermsOfUseForm bind:termsAccepted={termsAcceptedLocal} />
+    {#if status === 'error'}
+      <div role="alert" data-testid="tou-save-error" class="text-error my-md text-center">
+        {t('error.default')}
+      </div>
+    {/if}
     {#snippet primaryActions()}
       <Button
         text={t('common.continue')}

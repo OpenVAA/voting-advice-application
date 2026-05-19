@@ -52,6 +52,14 @@ component-local). See `EntityListWithControls.helpers.ts` for the pure
     itemsPerPage,
     itemsTolerance,
     scrollIntoView,
+    // Extract `data-testid` so it can be forwarded to the inner <EntityList>
+    // (the actual cards container) rather than landing on the filter-chrome
+    // wrapper below. The outer wrapper keeps its own `entity-list-with-controls`
+    // testId; consumers that pass `data-testid` to this component are
+    // semantically pointing at the cards list (see results layout's
+    // `voter-results-list` anchor), so routing the prop to the cards container
+    // is what they actually expect.
+    'data-testid': dataTestId,
     ...restProps
   }: EntityListWithControlsProps<TEntity> = $props();
 
@@ -229,4 +237,4 @@ component-local). See `EntityListWithControls.helpers.ts` for the pure
   {itemsTolerance}
   {scrollIntoView}
   class="mb-lg"
-  data-testid="entity-list-with-controls-list" />
+  data-testid={dataTestId ?? 'entity-list-with-controls-list'} />

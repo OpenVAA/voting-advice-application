@@ -85,6 +85,23 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     // Supabase verifies the active session via cookies automatically.
     const { error } = await this.supabase.auth.updateUser({ password });
     if (error) throw new Error(error.message);
+    // Future-reference note (Phase 86.1 ToU-406 chase): `auth.updateUser({ password })`
+    // rotates the access token. The browser-side `createBrowserClient` instance is
+    // expected to adopt the new token via its internal storage listener, but under
+    // some Playwright timings the next PostgREST call from `SupabaseDataWriter` was
+    // observed to send a stale/empty JWT, producing `auth.uid() = NULL` and a 406
+    // "Cannot coerce" on the subsequent ToU UPDATE (RLS denies, 0 rows returned).
+    // A targeted `await this.supabase.auth.refreshSession()` here would force the
+    // in-memory client to re-read the freshly-issued session before the caller
+    // proceeds, which should harmlessly close that race. NOT added now because:
+    //  (a) the live failure was not reproduced under 20× repeat-each after the
+    //      previous user-visible error surface was added — only Inbucket polling
+    //      flake remained;
+    //  (b) `refreshSession()` issues an extra network round-trip on every password
+    //      set/reset, and rare edge cases (e.g. expired refresh token, network
+    //      partition) could turn a working setPassword into a thrown error.
+    // If the 406 reappears, add `await this.supabase.auth.refreshSession()` here
+    // (and mirror in `_resetPassword` / `_register` above) and re-verify.
     return { type: 'success' as const };
   }
 

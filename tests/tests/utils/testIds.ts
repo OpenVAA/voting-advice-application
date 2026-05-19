@@ -88,6 +88,11 @@ export const testIds = {
       selector: 'constituency-selector',
       continue: 'voter-constituencies-continue'
     },
+    // Shown by (voters)/(located)/+layout.svelte when one or more selected
+    // elections lacks any nomination in the selected constituency — opens
+    // automatically on first /questions or /results entry after the layout's
+    // nomination-availability check settles.
+    missingNominationsModal: 'voter-missing-nominations-modal',
     intro: {
       startButton: 'voter-intro-start'
     },
@@ -104,6 +109,7 @@ export const testIds = {
     },
     results: {
       list: 'voter-results-list',
+      noNominationsWarning: 'voter-results-no-nominations-warning',
       card: 'entity-card',
       candidateSection: 'voter-results-candidate-section',
       partySection: 'voter-results-party-section',
@@ -133,7 +139,6 @@ export const testIds = {
       returnButton: 'voter-privacy-return'
     },
     nominations: {
-      container: 'voter-nominations-container',
       list: 'voter-nominations-list',
       controls: 'voter-nominations-controls'
     },

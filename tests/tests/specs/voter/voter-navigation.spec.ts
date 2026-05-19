@@ -172,11 +172,11 @@ async function answerNQuestions(page: Page, count: number, answerIndex: number):
     // is the contract per CONTEXT D-11.
     await page.getByTestId(testIds.voter.questions.nextButton).click();
     // 30s budget matches voter.fixture.ts:113 — SSR + reactivity settle.
-    await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 30000 });
+    await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 10000 });
   }
   // reason: voter-results-list testid is the canonical anchor for results
   // page readiness (used throughout voter specs); no aria/role equivalent.
-  await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 30000 });
+  await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 10000 });
 }
 
 test.describe('voter navigation: skip/delete/back (E2E-06)', { tag: ['@voter'] }, () => {
@@ -242,11 +242,10 @@ test.describe('voter navigation: skip/delete/back (E2E-06)', { tag: ['@voter'] }
     await expect(resultsNav).toHaveText(/browse/i);
 
     // Re-answer the current question (which is unanswered after the delete
-    // loop) and one more to cross the threshold back upward.
-    await answerCurrentQuestion(sharedPage, VOTER_ANSWER_INDEX);
+    // loop) to cross the threshold back upward.
     await answerCurrentQuestion(sharedPage, VOTER_ANSWER_INDEX);
 
-    // 6 answered ≥ minimumAnswers (5) → back to "results" state.
+    // 5 answered ≥ minimumAnswers (5) → back to "results" state.
     await expect(resultsNav).toHaveText(/results/i);
   });
 

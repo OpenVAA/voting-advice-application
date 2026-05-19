@@ -32,7 +32,7 @@ test.use({ storageState: { cookies: [], origins: [] } });
  */
 async function loginAsCandidate(page: Page, password = CANDIDATE_PASSWORD): Promise<void> {
   await page.goto(buildRoute({ route: 'CandAppHome', locale: 'en' }));
-  await page.getByTestId(testIds.candidate.login.email).waitFor({ state: 'visible', timeout: 15000 });
+  await page.getByTestId(testIds.candidate.login.email).waitFor({ state: 'visible', timeout: 10000 });
   await page.getByTestId(testIds.candidate.login.email).fill(CANDIDATE_EMAIL);
   await page.getByTestId(testIds.candidate.login.password).fill(password);
   await page.getByTestId(testIds.candidate.login.submit).click();
@@ -100,7 +100,7 @@ test.describe('candidate logout', { tag: ['@candidate', '@smoke'] }, () => {
 
     // Wait for navigation to the login page
     const loginUrl = buildRoute({ route: 'CandAppLogin', locale: 'en' });
-    await expect(page).toHaveURL(new RegExp(loginUrl), { timeout: 15000 });
+    await expect(page).toHaveURL(new RegExp(loginUrl), { timeout: 10000 });
 
     // Verify we are on the login page by checking for the login form
     await expect(page.getByTestId(testIds.candidate.login.email)).toBeVisible();

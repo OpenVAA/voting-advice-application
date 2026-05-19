@@ -251,7 +251,7 @@ test.describe('voter question rendering — categorical (QSPEC-02)', { tag: ['@v
       // advances to /results.
       await nextButton.waitFor({ state: 'visible', timeout: 5000 });
       await nextButton.click();
-      await page.waitForURL(/\/results/, { timeout: 30000 });
+      await page.waitForURL(/\/results/, { timeout: 10000 });
     }
 
     // Open Alpha's entity-detail drawer.

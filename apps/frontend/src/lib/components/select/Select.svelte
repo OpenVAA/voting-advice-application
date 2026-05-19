@@ -40,7 +40,7 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
 -->
 
 <script lang="ts">
-  import { tick } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import { getComponentContext } from '$lib/contexts/component';
   import { concatClass, getUUID } from '$lib/utils/components';
   import type { Id } from '@openvaa/core';
@@ -104,6 +104,29 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
     if (!isOptionListOpen || focusIndex > filteredOptions.length - 1) {
       focusIndex = -1;
     }
+  });
+
+  // Re-sync the visible `inputValue` whenever `selected` changes externally
+  // (e.g., a sibling Select bound to the same `selectedId` was picked, or the
+  // parent reset the binding to ''). Without this, the displayed text in
+  // siblings stays stale because `inputValue` is only updated by user-driven
+  // focus/blur handlers (`closeOptionList` / `handleFocus`). Gated on the
+  // listbox being closed so we never interrupt the user mid-type.
+  //
+  // The body reads/writes `inputValue` inside `untrack` so the effect's
+  // dependency set is ONLY {`selected`, `canonicalOptions`, `isOptionListOpen`}
+  // — without that, `handleFocus`'s `inputValue = ''` would re-trigger this
+  // effect mid-flow and instantly restore the prior label, defeating the
+  // clear-for-retyping intent.
+  $effect(() => {
+    void selected;
+    void canonicalOptions;
+    if (isOptionListOpen) return;
+    untrack(() => {
+      const match = selected ? canonicalOptions.find((o) => o.id === selected) : null;
+      const next = match ? `${selectedPrefix}${match.label}` : '';
+      if (inputValue !== next) inputValue = next;
+    });
   });
 
   ////////////////////////////////////////////////////////////////////

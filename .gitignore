@@ -26,6 +26,19 @@ node_modules
 !.yarn/versions
 test-results/
 
+# Playwright test artifacts (HTML report + outputDir + ad-hoc config dumps)
+playwright-report/
+playwright-results/
+raw.json
+# Local test-run snapshots produced by tests/scripts/diff-playwright-reports.ts
+tests/.planning/
+
+# Supabase Studio scratch (auto-named "Untitled query NNN.sql" — local dev only)
+apps/supabase/supabase/snippets/
+
+# Claude Code harness state (scheduled-task lock file)
+.claude/scheduled_tasks.lock
+
 # ── GSD baseline (auto-generated) ──
 .gsd
 .DS_Store

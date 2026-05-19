@@ -4,6 +4,14 @@ import type { AnyEntityVariant, Image, QuestionCategory } from '@openvaa/data';
 
 export {};
 
+// `qs` ships JavaScript only (no .d.ts), and `@types/qs` isn't installed in
+// this workspace. The .ts call-sites (`parseParams.ts`, `buildRoute.ts`,
+// `universalAdapter.ts`) get implicit-any without the LSP surfacing it, but
+// the Svelte language server (used by `.svelte` script blocks) treats the
+// missing declaration as a hard error. Stub the module here so all imports
+// — including the one in `(located)/results/+layout.svelte` — resolve.
+declare module 'qs';
+
 declare global {
   /**
    * A reusable type for the `fetch` function passed to load functions.

@@ -87,14 +87,23 @@ export const variantStartFromCgTemplate: Template = {
   organizations: { count: 0, fixed: baseFixed('organizations') },
 
   // Extended: 2 elections.
-  //   - test-election-1 (from base) → test-cg-regions + test-cg-municipalities.
-  //   - test-election-2 (NEW) → test-cg-municipalities.
+  //   - test-election-1 (from base) → test-cg-regions ONLY.
+  //   - test-election-2 (NEW) → test-cg-municipalities ONLY.
+  //
+  // Phase 86.1 post-fix: dropped `test-cg-municipalities` from E1 so the
+  // variant exercises the "implied region" path: when the voter picks a
+  // municipality (startFromConstituencyGroup = municipalities), the
+  // municipality applies DIRECTLY to E2 and its parent region is IMPLIED
+  // for E1 (via `getImpliedConstituency`). An orphan municipality (no
+  // parent) implies no region → E1 has no applicable constituency → only
+  // E2 appears in the results-page election selector. This is the load-
+  // bearing flow contract for startfromcg.spec.ts's two parametrised cases.
   elections: {
     count: 0,
     fixed: [
       ...baseFixed('elections').map((row) => ({
         ...row,
-        constituency_groups: [{ external_id: 'test-cg-regions' }, { external_id: 'test-cg-municipalities' }]
+        constituency_groups: [{ external_id: 'test-cg-regions' }]
       })),
       {
         external_id: 'test-election-2',

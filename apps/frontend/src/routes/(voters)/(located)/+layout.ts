@@ -32,7 +32,15 @@ export async function load({ fetch, parent, untrack, url }) {
   // values (`https://...`, `//evil.com`) fail the regex and are dropped —
   // the redirect proceeds to the selector without a `?next=` parameter.
   const isVoterRoute = /^\/[a-z]{2}\/.*|^\/(results|questions|nominations)\b/.test(url.pathname);
-  const nextParam = isVoterRoute ? `?next=${encodeURIComponent(url.pathname + url.search)}` : '';
+  const nextKv = isVoterRoute ? `next=${encodeURIComponent(url.pathname + url.search)}` : '';
+  /**
+   * Append `next=…` to a redirect target with the correct separator. `buildRoute`
+   * may emit a base URL that already carries `?electionId=…` (Constituencies branch
+   * below), in which case the next-param must join with `&`, not `?`. Concatenating
+   * a leading-`?` next directly produced `…?electionId=…?next=…` — a malformed URL
+   * that SvelteKit's URL parser 500s on (CLEAN-02 test 3 reproducer).
+   */
+  const withNext = (base: string): string => (nextKv ? `${base}${base.includes('?') ? '&' : '?'}${nextKv}` : base);
 
   // Try to imply ids if not provided
   if (!electionId || !constituencyId) {
@@ -52,10 +60,12 @@ export async function load({ fetch, parent, untrack, url }) {
       if (!electionId) {
         redirect(
           307,
-          `${buildRoute({
-            route: 'Elections',
-            locale: lang
-          })}${nextParam}`
+          withNext(
+            buildRoute({
+              route: 'Elections',
+              locale: lang
+            })
+          )
         );
       }
     }
@@ -68,11 +78,13 @@ export async function load({ fetch, parent, untrack, url }) {
       if (!constituencyId) {
         redirect(
           307,
-          `${buildRoute({
-            route: 'Constituencies',
-            electionId,
-            locale: lang
-          })}${nextParam}`
+          withNext(
+            buildRoute({
+              route: 'Constituencies',
+              electionId,
+              locale: lang
+            })
+          )
         );
       }
     }

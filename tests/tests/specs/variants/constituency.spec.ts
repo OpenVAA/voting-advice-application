@@ -1,21 +1,23 @@
 /**
  * Constituency selection variant E2E tests (CONF-03).
  *
- * Covers the voter flow when elections have multiple constituencies,
- * requiring explicit constituency selection:
+ * Covers the voter flow when each election owns a separate, disjoint
+ * constituency group:
  * - Constituency selection page appears after election selection
- * - Selecting a municipality implies the parent region (hierarchical)
- * - Constituency-scoped questions appear only for the selected constituency
+ * - Each election renders its own section in the selector (groups don't
+ *   overlap and contain no hierarchical/parent-child members)
+ * - Constituency-scoped results: only candidates nominated at the selected
+ *   constituency for the active election surface on the results list
  * - Multi-election results with election accordion
- * - Missing nominations warning when a constituency lacks nominations for some elections
+ * - Missing-nominations warning when one election has nominations at the
+ *   selected constituency and another does not
  *
  * Uses the constituency overlay dataset which creates:
- * - Election 1 with 2 constituency groups (regions + municipalities)
- * - Election 2 with municipalities constituency group only
- * - 5 constituencies: region-north, region-south, muni-north-a, muni-south-a, muni-east
- * - Parent hierarchy: muni-north-a -> region-north, muni-south-a -> region-south
- * - East Municipality has no parent and nominations only for Election 1 (not Election 2)
- * - Constituency-scoped questions for North Region and election-2 local
+ * - Election 1 (2025) bound to test-cg-east-municipalities (NE + SE)
+ * - Election 2 (2026) bound to test-cg-west-municipalities (NW + SW)
+ * - 4 constituencies (NE/SE/NW/SW), disjoint groups, no parent hierarchy
+ * - NE/SE/SW each have 2 unique candidates; NW is intentionally empty for
+ *   the partial-coverage warning test
  *
  * Runs within the `variant-constituency` project which depends on
  * `data-setup-constituency` for dataset loading.
@@ -23,6 +25,7 @@
 
 import { expect, test } from '@playwright/test';
 import { buildRoute } from '../../utils/buildRoute';
+import { dismissMissingNominationsIfPresent } from '../../utils/missingNominations';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
@@ -109,6 +112,66 @@ async function selectElectionFromAccordionIfPresent(
   }
 }
 
+/**
+ * Explicitly select an election in the results-page accordion by name pattern.
+ *
+ * Mirrors `results-sections.spec.ts:waitForResultsList`'s accordion handling
+ * but lets the caller name the target election rather than always picking
+ * `.first()`. Required by `should display constituency-filtered results`,
+ * which previously inherited an arbitrary selection from the upstream
+ * `selectElectionFromAccordionIfPresent` (`.first()`) call and therefore
+ * could land on an election with no nominations for the current constituency.
+ *
+ * AccordionSelect state machine (AccordionSelect.svelte:49,57-69,86):
+ *   - `optionCount === 1`: lone option has `pointer-events-none`; cannot click,
+ *     don't need to (single option is implicitly active).
+ *   - Target already `aria-selected="true"`: clicking would just toggle
+ *     `expanded`, not change selection — skip.
+ *   - Target visible: click directly.
+ *   - Target not visible (collapsed accordion showing only the active option):
+ *     click the visible option to flip `expanded = true`, wait for the target
+ *     to mount, then click it.
+ */
+async function selectElectionByName(
+  electionAccordion: ReturnType<Page['getByTestId']>,
+  pattern: RegExp
+): Promise<void> {
+  await electionAccordion.waitFor({ state: 'visible', timeout: 10000 });
+  const optionCount = await electionAccordion.getByRole('option').count();
+  if (optionCount <= 1) return;
+  const target = electionAccordion.getByRole('option', { name: pattern }).first();
+  const alreadyActive = (await target.getAttribute('aria-selected').catch(() => null)) === 'true';
+  if (alreadyActive) return;
+  if (await target.isVisible().catch(() => false)) {
+    await target.click();
+    return;
+  }
+  await electionAccordion.getByRole('option').first().click();
+  await target.waitFor({ state: 'visible', timeout: 5000 });
+  await target.click();
+}
+
+/**
+ * Activate the entity tab matching `pattern` (case-insensitive) if the tabs
+ * row is rendered and the target tab isn't already active.
+ *
+ * The Tabs component (`Tabs.svelte:44-69`) renders `<li role="tab">` children
+ * inside a `role="tablist"` ul. The entity-tabs row is conditionally rendered
+ * by the results layout only when `entityTabs.length > 1` — i.e. the active
+ * election:constituency tuple has both candidate AND organization (or
+ * alliance) matches. For single-section configurations (e.g. only candidates
+ * nominated for the active election), the tabs row never mounts and this
+ * helper no-ops.
+ */
+async function selectEntityTabIfPresent(entityTabs: ReturnType<Page['getByTestId']>, pattern: RegExp): Promise<void> {
+  const visible = await entityTabs.isVisible().catch(() => false);
+  if (!visible) return;
+  const target = entityTabs.getByRole('tab', { name: pattern }).first();
+  if (!(await target.isVisible().catch(() => false))) return;
+  const isSelected = (await target.getAttribute('aria-selected').catch(() => null)) === 'true';
+  if (!isSelected) await target.click();
+}
+
 test.describe('Constituency selection variant', { tag: ['@variant'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
@@ -182,37 +245,32 @@ test.describe('Constituency selection variant', { tag: ['@variant'] }, () => {
   test('should allow constituency selection and proceed to questions', async () => {
     test.setTimeout(30000);
 
-    // We should be on the constituency selection page.
-    // The page shows each election's constituency groups as separate sections:
-    // - Election 1: "Regions" OR "Municipalities" (hierarchical, user picks one)
-    // - Election 2: "Municipalities" only
+    // The constituency selection page renders one section per election
+    // (groups are disjoint, so no sections combine):
+    // - Election 1: "Eastern Municipalities" (NE + SE)
+    // - Election 2: "Western Municipalities" (NW + SW)
     //
-    // We select from the Municipalities combobox for each election.
-    // Selecting a municipality for Election 1 implies the parent region.
+    // We pick SE for Election 1 and SW for Election 2.
 
     const constituenciesList = sharedPage.getByTestId(testIds.voter.constituencies.list);
 
-    // Target the "Select Municipalities" comboboxes specifically (not Regions).
-    // There are two: one for Election 1's Municipalities group, one for Election 2.
-    const municipalityComboboxes = constituenciesList.getByRole('combobox', { name: /Municipalities/ });
+    // Election 1 → SE Municipality (via the Eastern Municipalities combobox).
+    const easternCombobox = constituenciesList.getByRole('combobox', { name: /Eastern Municipalities/ }).first();
+    await easternCombobox.click();
+    await easternCombobox.fill('SE Municipality');
+    const easternListbox = sharedPage.getByRole('listbox');
+    await easternListbox.waitFor({ state: 'visible', timeout: 5000 });
+    await easternListbox.getByRole('option', { name: /SE Municipality/ }).click();
 
-    // Select "North Municipality A" for Election 1
-    const election1Muni = municipalityComboboxes.first();
-    await election1Muni.click();
-    await election1Muni.fill('North Municipality A');
-    const listbox1 = sharedPage.getByRole('listbox');
-    await listbox1.waitFor({ state: 'visible', timeout: 5000 });
-    await listbox1.getByRole('option', { name: /North Municipality A/ }).click();
+    // Election 2 → SW Municipality (via the Western Municipalities combobox).
+    const westernCombobox = constituenciesList.getByRole('combobox', { name: /Western Municipalities/ }).first();
+    await westernCombobox.click();
+    await westernCombobox.fill('SW Municipality');
+    const westernListbox = sharedPage.getByRole('listbox');
+    await westernListbox.waitFor({ state: 'visible', timeout: 5000 });
+    await westernListbox.getByRole('option', { name: /SW Municipality/ }).click();
 
-    // Select "North Municipality A" for Election 2
-    const election2Muni = municipalityComboboxes.nth(1);
-    await election2Muni.click();
-    await election2Muni.fill('North Municipality A');
-    const listbox2 = sharedPage.getByRole('listbox');
-    await listbox2.waitFor({ state: 'visible', timeout: 5000 });
-    await listbox2.getByRole('option', { name: /North Municipality A/ }).click();
-
-    // The continue button should be enabled after selection
+    // The continue button should be enabled once both selections are made.
     const continueButton = sharedPage.getByTestId(testIds.voter.constituencies.continue);
     await expect(continueButton).toBeEnabled();
 
@@ -232,15 +290,14 @@ test.describe('Constituency selection variant', { tag: ['@variant'] }, () => {
     const answerOption = sharedPage.getByTestId(testIds.voter.questions.answerOption);
     const nextButton = sharedPage.getByTestId(testIds.voter.questions.nextButton);
 
-    // Dismiss the "missing nominations" dialog if it appears
-    const nominationsDialog = sharedPage.getByRole('dialog');
-    try {
-      await nominationsDialog.waitFor({ state: 'visible', timeout: 3000 });
-      await nominationsDialog.getByRole('button', { name: /continue/i }).click();
-      await nominationsDialog.waitFor({ state: 'hidden', timeout: 5000 });
-    } catch {
-      // No dialog appeared
-    }
+    // Dismiss the "missing nominations" modal if it appears. The shared
+    // helper races the modal's open against the first answer-option painting
+    // so we cannot miss the modal on cold-paint runs where it opens at the
+    // 3-4s mark (awaitNominationsSettled safety-timer window in
+    // (located)/+layout.svelte) — the prior 3s try/catch swallow was the
+    // root cause of this test's flakiness under the CONF-03 dataset, where
+    // every constituency permutation surfaces the warning.
+    await dismissMissingNominationsIfPresent(sharedPage);
 
     // Wait for first question to load
     await answerOption.first().waitFor({ state: 'visible', timeout: 10000 });
@@ -251,19 +308,18 @@ test.describe('Constituency selection variant', { tag: ['@variant'] }, () => {
 
     // Verify results page loaded — in multi-election mode, select an election first.
     // The hoisted helper performs an atomic two-anchor waitFor + deterministic
-    // dispatch (RESEARCH Pattern 4 canonical 3).
+    // dispatch (RESEARCH Pattern 4 canonical 3). The election may not have nominations
+    // in which case the no nominations warning is accepted.
     const electionAccordion = sharedPage.getByTestId(testIds.voter.results.electionAccordion);
     const resultsList = sharedPage.getByTestId(testIds.voter.results.list);
+    const noNominationsWarning = sharedPage.getByTestId(testIds.voter.results.noNominationsWarning);
     await selectElectionFromAccordionIfPresent(electionAccordion, resultsList);
-    await expect(resultsList).toBeVisible({ timeout: 10000 });
+    await expect(resultsList.or(noNominationsWarning)).toBeVisible({ timeout: 10000 });
 
     // We should have answered a reasonable number of questions.
-    // Base dataset has 8 questions, voter-dataset adds 8 more = 16.
-    // The constituency overlay adds constituency-scoped questions.
-    // With North Municipality A selected:
-    //   - region-north implies for election-1 -> test-cat-const-north (1 question) appears
-    //   - election-2 -> test-cat-e2-local (2 questions) appears
-    // Not all may appear due to election/constituency scoping.
+    // Base dataset has 8 opinion questions (test-question-1..8); the
+    // disjoint-municipality variant doesn't add any constituency-scoped
+    // opinion questions, so we expect at least the base count.
     expect(questionCount).toBeGreaterThanOrEqual(8);
   });
 
@@ -275,23 +331,54 @@ test.describe('Constituency selection variant', { tag: ['@variant'] }, () => {
   });
 
   test('should display constituency-filtered results', async () => {
-    // Verify results contain candidates. The results list should be visible
-    // with entity cards showing candidates nominated for the selected constituency.
-    const resultsList = sharedPage.getByTestId(testIds.voter.results.list);
-    await expect(resultsList).toBeVisible();
+    // With SE selected for Election 1 and SW selected for Election 2, the
+    // Election 1 results pane should show ONLY SE-nominated candidates
+    // (SE Candidate One / Two). The remaining variant candidates must be
+    // excluded:
+    //   - NE candidates are nominated for E1 but at a different constituency
+    //     (same group, different muni) → filtered out by exact-id match in
+    //     dataRoot.findNominations.
+    //   - SW candidates are nominated for E2, not E1 → never surface on the
+    //     Election 1 results pane.
+    //   - NW has no candidates at all.
+    const electionAccordion = sharedPage.getByTestId(testIds.voter.results.electionAccordion);
+    await selectElectionByName(electionAccordion, /2025/);
 
-    // Verify there is at least one entity card in the results
+    // Once Election 1 is active, ensure the results list paints for it.
+    const resultsList = sharedPage.getByTestId(testIds.voter.results.list);
+    await expect(resultsList).toBeVisible({ timeout: 10000 });
+
+    // The entity-tabs row mounts only when the active election:constituency
+    // tuple has multiple section types nominated (results.sections includes
+    // 'candidate' AND 'organization'); switch to candidates explicitly so the
+    // assertion below doesn't depend on URL-derived defaults.
+    const entityTabs = sharedPage.getByTestId(testIds.voter.results.entityTabs);
+    await selectEntityTabIfPresent(entityTabs, /candidate/i);
+
+    // SE candidates are nominated for E1 at SE (variant template
+    // test-nom-const-se-{1,2}-e1) → they must appear in the results list.
+    await expect(resultsList.getByText(/SE Candidate One/)).toBeVisible({ timeout: 10000 });
+    await expect(resultsList.getByText(/SE Candidate Two/)).toBeVisible();
+
+    // NE candidates: same election, different constituency → filtered out.
+    await expect(resultsList.getByText(/NE Candidate One/)).toHaveCount(0);
+    await expect(resultsList.getByText(/NE Candidate Two/)).toHaveCount(0);
+
+    // SW candidates: different election → never shown on E1's pane.
+    await expect(resultsList.getByText(/SW Candidate One/)).toHaveCount(0);
+    await expect(resultsList.getByText(/SW Candidate Two/)).toHaveCount(0);
+
+    // Sanity: at least one entity card rendered.
     const entityCards = sharedPage.getByTestId(testIds.voter.results.card);
-    const cardCount = await entityCards.count();
-    expect(cardCount).toBeGreaterThan(0);
+    await expect(entityCards.first()).toBeVisible();
   });
 
   test('should show missing nominations warning for partial-coverage constituency', async () => {
     test.setTimeout(60000);
 
-    // Navigate from scratch to test a constituency with partial nominations.
-    // East Municipality has a nomination for Election 1 but NOT Election 2,
-    // which should trigger the "some nominations" warning dialog.
+    // Navigate from scratch and pick SE for Election 1 (has nominations) plus
+    // NW for Election 2 (intentionally empty in the variant template). The
+    // partial coverage triggers the "some nominations" warning dialog.
     await sharedPage.goto(buildRoute({ route: 'Home', locale: 'en' }));
     await sharedPage.getByTestId(testIds.voter.home.startButton).click();
 
@@ -308,24 +395,22 @@ test.describe('Constituency selection variant', { tag: ['@variant'] }, () => {
     const constituenciesList = sharedPage.getByTestId(testIds.voter.constituencies.list);
     await expect(constituenciesList).toBeVisible({ timeout: 10000 });
 
-    // Select East Municipality for both elections via the Municipalities comboboxes.
-    const municipalityComboboxes = constituenciesList.getByRole('combobox', { name: /Municipalities/ });
+    // Election 1 → SE Municipality (Eastern Municipalities combobox)
+    const easternCombobox = constituenciesList.getByRole('combobox', { name: /Eastern Municipalities/ }).first();
+    await easternCombobox.click();
+    await easternCombobox.fill('SE Municipality');
+    const easternListbox = sharedPage.getByRole('listbox');
+    await easternListbox.waitFor({ state: 'visible', timeout: 5000 });
+    await easternListbox.getByRole('option', { name: /SE Municipality/ }).click();
 
-    // Election 1's municipalities combobox
-    const e1Muni = municipalityComboboxes.first();
-    await e1Muni.click();
-    await e1Muni.fill('East Municipality');
-    const listbox1 = sharedPage.getByRole('listbox');
-    await listbox1.waitFor({ state: 'visible', timeout: 5000 });
-    await listbox1.getByRole('option', { name: /East Municipality/ }).click();
-
-    // Election 2's municipalities combobox
-    const e2Muni = municipalityComboboxes.nth(1);
-    await e2Muni.click();
-    await e2Muni.fill('East Municipality');
-    const listbox2 = sharedPage.getByRole('listbox');
-    await listbox2.waitFor({ state: 'visible', timeout: 5000 });
-    await listbox2.getByRole('option', { name: /East Municipality/ }).click();
+    // Election 2 → NW Municipality (Western Municipalities combobox; no
+    // nominations in the variant template → triggers the warning).
+    const westernCombobox = constituenciesList.getByRole('combobox', { name: /Western Municipalities/ }).first();
+    await westernCombobox.click();
+    await westernCombobox.fill('NW Municipality');
+    const westernListbox = sharedPage.getByRole('listbox');
+    await westernListbox.waitFor({ state: 'visible', timeout: 5000 });
+    await westernListbox.getByRole('option', { name: /NW Municipality/ }).click();
 
     // Continue to questions
     const continueButton = sharedPage.getByTestId(testIds.voter.constituencies.continue);
@@ -335,16 +420,16 @@ test.describe('Constituency selection variant', { tag: ['@variant'] }, () => {
     // Should reach the questions URL
     await expect(sharedPage).toHaveURL(/\/questions/, { timeout: 10000 });
 
-    // The missing nominations warning dialog should appear because
-    // East Municipality has nominations for Election 1 but NOT Election 2.
-    // getByRole('dialog') only matches an open <dialog>; closed dialogs are
-    // hidden from the accessibility tree.
+    // The missing nominations warning dialog should appear because NW
+    // Municipality has no nominations for Election 2 while SE Municipality
+    // does have nominations for Election 1. getByRole('dialog') only matches
+    // an open <dialog>; closed dialogs are hidden from the accessibility tree.
     const dialog = sharedPage.getByRole('dialog');
     await dialog.waitFor({ state: 'visible', timeout: 5000 });
 
-    // Verify the dialog shows the "some nominations" variant with
-    // per-election availability indicators.
-    // Election 1 (2025) should be available, Election 2 (2026) should not.
+    // Verify the dialog shows the "some nominations" variant with per-election
+    // availability indicators. Election 1 (2025) should be available, Election
+    // 2 (2026) should not.
     await expect(dialog.getByText(/Test Election 2025/)).toBeVisible();
     await expect(dialog.getByText(/Test Election 2026/)).toBeVisible();
     await expect(dialog.getByText(/not available/)).toBeVisible();

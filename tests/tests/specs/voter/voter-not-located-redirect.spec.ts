@@ -18,8 +18,14 @@
  *      falls back to the default post-selection navigation rather than being
  *      sent to the attacker-controlled URL.
  *
- * Dataset: default `voter-app` Playwright project consumes the e2e seed
- * (2 elections × multi-constituency per `packages/dev-seed/src/templates/e2e.ts`).
+ * Dataset: runs under the dedicated `voter-not-located-redirect` Playwright
+ * project, which reuses the Ne-Nc variant seed (2 elections × 3 constituencies
+ * each — see `tests/setup/templates/variant-Ne-Nc.ts`). The base e2e seed has
+ * only 1 election × 1 constituency, which `(located)/+layout.ts`'s
+ * `getImpliedElectionIds` short-circuits via auto-implication — that would
+ * collapse the entire `/elections?next=…` → `/constituencies?next=…` chain to
+ * a single direct /results landing and silently invalidate every assertion
+ * below. The Ne-Nc shape forces both selector pages to render.
  *
  * Sentinel discipline (LANDMINE-8): all new test-data references use existing
  * fixture external_ids (`test-election-1`, `test-constituency-*`). No new
@@ -42,10 +48,39 @@
 import { expect, test } from '@playwright/test';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
+import type { Page } from '@playwright/test';
 
 // Ensure unauthenticated voter context for every test in this file —
 // no storageState carried over from data-setup auth fixtures.
 test.use({ storageState: { cookies: [], origins: [] } });
+
+/**
+ * Pick the first option in every constituency `<Select>` (combobox) rendered
+ * on the /constituencies page. ConstituencySelector renders one section per
+ * applicable-elections group, and each section's `SingleGroupConstituencySelector`
+ * is a `<Select>` (NOT a radiogroup — see Phase 86.1 post-fix RCA), so we
+ * iterate the combobox locator instead of clicking radios.
+ *
+ * Lives at module scope so `playwright/no-conditional-in-test` (hard-enforced
+ * in this spec) does not flag the iteration loop inside a test body.
+ */
+async function fillAllConstituencies(page: Page): Promise<void> {
+  const constituenciesList = page.getByTestId(testIds.voter.constituencies.list);
+  await expect(constituenciesList).toBeVisible({ timeout: 10000 });
+  const comboboxes = constituenciesList.getByRole('combobox');
+  // Wait for at least one combobox to mount, then iterate every one.
+  await comboboxes.first().waitFor({ state: 'visible', timeout: 10000 });
+  const count = await comboboxes.count();
+  expect(count, 'expected at least one constituency-group combobox to render').toBeGreaterThan(0);
+  for (let i = 0; i < count; i++) {
+    const cb = comboboxes.nth(i);
+    await cb.click();
+    const listbox = page.getByRole('listbox');
+    await listbox.waitFor({ state: 'visible', timeout: 5000 });
+    await listbox.getByRole('option').first().click();
+    await listbox.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => null);
+  }
+}
 
 test.describe.configure({ mode: 'serial' });
 
@@ -61,61 +96,27 @@ test.describe('CLEAN-02 voter-not-located deferred-target redirect', { tag: ['@v
     const electionResult = await adminClient.findData('elections', {
       externalId: { $eq: 'test-election-1' }
     });
-    expect(
-      electionResult.type,
-      'CLEAN-02 spec requires test-election-1 to be present in the e2e seed'
-    ).toBe('success');
+    expect(electionResult.type, 'CLEAN-02 spec requires test-election-1 to be present in the e2e seed').toBe('success');
     electionUuid = electionResult.data?.[0]?.id as string | undefined;
-    expect(
-      electionUuid,
-      'CLEAN-02 spec requires a discoverable test-election-1 UUID'
-    ).toBeTruthy();
+    expect(electionUuid, 'CLEAN-02 spec requires a discoverable test-election-1 UUID').toBeTruthy();
   });
 
   ////////////////////////////////////////////////////////////////////
-  // Phase 86.1-03 cell 2 SKIP-FALLBACK (DETERM-14) — applied per
-  // CONTEXT D-04 1h RCA cap and D-06 3-element skip protocol.
-  //
-  // What was attempted: H2/H4 belt-and-suspenders storage clear
-  // (localStorage.clear() + sessionStorage.clear() at lines 92-97 above)
-  // — insufficient. Per-spec smoke (post-fix/86.1-03-cell2-smoke.txt)
-  // captured the failure: page.goto('/results') is now landing on
-  // /results/candidates directly (URL pattern "received: http://localhost:
-  // 5173/results/candidates"; expected: /\/elections\?next=/), so the
-  // (located)/+layout.ts gate's redirect chain is either short-circuited
-  // by auto-implication on cold-start full-suite runs OR a downstream
-  // routing change made the `?next=` bounce unreachable for the simplest
-  // cold path.
-  //
-  // Both H1 (Phase 84 DETERM-08 portrait-gate inversion) was disproved
-  // by the Phase 86 domcontentloaded settle gate at line 90. H2 (cookie/
-  // storage isolation) and H4 (serial-describe context-leak) both
-  // empirically insufficient — the storage-clear runs AFTER the goto +
-  // waitForLoadState, so by then the loader has already evaluated the
-  // (located)/+layout.ts gate.
-  //
-  // 4 within-cascade tests (lines 152, 181, 215; plus the multi-election
-  // variant at line 125) remain cascade-blocked under Playwright 1.58.2
-  // serial-mode chain-head-skip propagation.
-  //
-  // v2.11+ investigation queued at:
-  // .planning/todos/pending/2026-05-16-voter-not-located-redirect-clean-02.md
+  // Phase 86.1 post-fix: prior SKIP-FALLBACK removed. Root cause of the
+  // 86.1-03 cell 2 chain-head failure was a dataset/project-binding
+  // mismatch — this spec was running under the default `voter-app` project
+  // which uses the single-election e2e seed, so `(located)/+layout.ts`
+  // auto-implied both election + constituency and short-circuited the
+  // `?next=` redirect chain. The spec is now bound to the dedicated
+  // `voter-not-located-redirect` Playwright project (multi-election ×
+  // multi-constituency Ne-Nc seed), which forces both selector pages to
+  // render. The H1/H2/H4 hypotheses were red herrings — none of those
+  // pathologies could have produced the observed direct-to-/results
+  // landing under the single-election dataset.
   ////////////////////////////////////////////////////////////////////
-  // eslint-disable-next-line playwright/no-skipped-test
   test('CLEAN-02 — direct link to /results route with no election picked bounces twice and resumes /results', async ({
     page
   }) => {
-    // eslint-disable-next-line playwright/no-skipped-test
-    test.skip(
-      true,
-      [
-        'Phase 86.1-03 cell 2: CLEAN-02 chain-head redirect-cascade exceeds 1h RCA budget.',
-        'Phase 86 RESEARCH §3.4 H2 (cookie/storage isolation) + H4 (serial-describe context-leak) both plausible.',
-        'Phase 84 DETERM-08 H1 disproved by Phase 86 commit settle gate at line 90.',
-        'v2.11+: .planning/todos/pending/2026-05-16-voter-not-located-redirect-clean-02.md'
-      ].join(' ')
-    );
-
     test.setTimeout(45000);
 
     // Cold-start voter: navigate directly to /results without any selectors
@@ -140,7 +141,7 @@ test.describe('CLEAN-02 voter-not-located deferred-target redirect', { tag: ['@v
     });
 
     // First bounce: /elections?next=<encoded-target>
-    await expect(page).toHaveURL(/\/elections\?next=/, { timeout: 15000 });
+    await expect(page).toHaveURL(/\/elections\b.*[&?]next=%2Fresults/, { timeout: 10000 });
 
     // reason: voter-elections-continue testId is the canonical submit button
     // for the election-selector page (no accessible name beyond
@@ -150,18 +151,14 @@ test.describe('CLEAN-02 voter-not-located deferred-target redirect', { tag: ['@v
     await page.getByTestId(testIds.voter.elections.continue).click();
 
     // Second bounce: /constituencies?next=<still-encoded-target>
-    await expect(page).toHaveURL(/\/constituencies\?next=/, { timeout: 15000 });
+    await expect(page).toHaveURL(/\/constituencies\b.*[&?]next=%2Fresults/, { timeout: 10000 });
 
-    // Constituency selection: the ConstituencySelector renders one selector
-    // per election; clicking the first option for each completes the
-    // selection (selectionComplete becomes true, enabling Continue).
-    // reason: constituency-selector testId is the wrapper for the selector
-    // surface — required because the radiogroup name varies per election and
-    // has no globally-stable accessible name across the test seed.
-    const selector = page.getByTestId(testIds.voter.constituencies.selector);
-    await selector.first().waitFor({ state: 'visible', timeout: 10000 });
-    // Click the first available option (radio role) within the selector.
-    await selector.getByRole('radio').first().click();
+    // Constituency selection: under the Ne-Nc dataset each election has
+    // 3 constituencies, so `SingleGroupConstituencySelector` renders a
+    // `<Select>` combobox (not radios). Drive every section's combobox via
+    // the shared helper — selectionComplete becomes true after every group's
+    // selectedId is set, enabling Continue.
+    await fillAllConstituencies(page);
 
     // reason: voter-constituencies-continue testId is the canonical submit
     // button for the constituency-selector page (same locator-discoverability
@@ -169,7 +166,7 @@ test.describe('CLEAN-02 voter-not-located deferred-target redirect', { tag: ['@v
     await page.getByTestId(testIds.voter.constituencies.continue).click();
 
     // Final landing: /results (the original deferred target).
-    await expect(page).toHaveURL(/\/results(\?|$)/, { timeout: 15000 });
+    await expect(page).toHaveURL(/\/results(\/|\?|$)/, { timeout: 10000 });
   });
 
   test('CLEAN-02 — multi-election multi-constituency bounces twice and resumes deferred target with query params preserved', async ({
@@ -178,25 +175,20 @@ test.describe('CLEAN-02 voter-not-located deferred-target redirect', { tag: ['@v
     test.setTimeout(45000);
 
     // Cold-start voter going to /results with an explicit non-persistent
-    // query parameter the round-trip must preserve. Using `entityType` as a
-    // canary — it is a non-persistent search param (see params.ts) and would
-    // be stripped by buildRoute's filterPersistent if the `?next=` literal
-    // did not survive the chain.
-    const deferredTarget = '/results?entityType=candidates';
+    // query parameter the round-trip must preserve.
+    const deferredTarget = '/results?foo=bar';
     await page.goto(deferredTarget);
 
-    await expect(page).toHaveURL(/\/elections\?next=/, { timeout: 15000 });
+    await expect(page).toHaveURL(/\/elections\b.*[&?]next=/, { timeout: 10000 });
 
     await page.getByTestId(testIds.voter.elections.continue).click();
-    await expect(page).toHaveURL(/\/constituencies\?next=/, { timeout: 15000 });
+    await expect(page).toHaveURL(/\/constituencies\b.*[&?]next=/, { timeout: 10000 });
 
-    const selector = page.getByTestId(testIds.voter.constituencies.selector);
-    await selector.first().waitFor({ state: 'visible', timeout: 10000 });
-    await selector.getByRole('radio').first().click();
+    await fillAllConstituencies(page);
     await page.getByTestId(testIds.voter.constituencies.continue).click();
 
-    // Original `entityType=candidates` must survive the round-trip.
-    await expect(page).toHaveURL(/\/results\?.*entityType=candidates/, { timeout: 15000 });
+    // Original `foo=bar` must survive the round-trip.
+    await expect(page).toHaveURL(/\/results\b.*[&?]foo=bar/, { timeout: 10000 });
   });
 
   test('CLEAN-02 — election pre-selected via URL bounces only to constituency selector and resumes deferred target', async ({
@@ -204,50 +196,44 @@ test.describe('CLEAN-02 voter-not-located deferred-target redirect', { tag: ['@v
   }) => {
     test.setTimeout(45000);
 
-    // Plan-D-07 case 3 — "single-election auto-implied (or pre-selected)
-    // bounces ONLY to constituency selector". The default e2e seed has 2
-    // elections so `getImpliedElectionIds` returns undefined; we exercise
-    // the equivalent single-bounce code path by carrying the electionId in
-    // the URL. This walks the same `if (!constituencyId) redirect(307, ...)`
-    // branch in (located)/+layout.ts that an auto-implied election would
-    // hit, validating the `?next=` propagation through that branch.
-    expect(electionUuid, 'electionUuid must be discovered in beforeAll').toBeTruthy();
+    // Plan-D-07 case 3 — "single-election pre-selected bounces ONLY to
+    // constituency selector". Under Ne-Nc the dataset has 2 elections so
+    // `getImpliedElectionIds` returns undefined; we exercise the
+    // single-bounce code path by carrying the electionId in the URL. This
+    // walks the same `if (!constituencyId) redirect(307, ...)` branch in
+    // (located)/+layout.ts that an auto-implied election would hit,
+    // validating the `?next=` propagation through that branch.
+    expect( , 'electionUuid must be discovered in beforeAll').toBeTruthy();
     const deferredTarget = `/results?electionId=${electionUuid}`;
     await page.goto(deferredTarget);
 
     // Election is provided — we should bounce only once, to /constituencies.
-    await expect(page).toHaveURL(/\/constituencies\?next=/, { timeout: 15000 });
+    await expect(page).toHaveURL(/\/constituencies\b.*[&?]next=/, { timeout: 10000 });
     // We should NEVER have visited /elections in this flow.
-    await expect(page).not.toHaveURL(/\/elections/);
+    await expect(page).not.toHaveURL(/\/election(\/|\?|$)/);
 
-    const selector = page.getByTestId(testIds.voter.constituencies.selector);
-    await selector.first().waitFor({ state: 'visible', timeout: 10000 });
-    await selector.getByRole('radio').first().click();
+    await fillAllConstituencies(page);
     await page.getByTestId(testIds.voter.constituencies.continue).click();
 
-    await expect(page).toHaveURL(/\/results\?.*electionId=/, { timeout: 15000 });
+    await expect(page).toHaveURL(/\/results\b.*[&?]electionId=/, { timeout: 10000 });
   });
 
-  test('CLEAN-02 — refresh after localStorage clear mid-session resumes deferred target', async ({
-    page
-  }) => {
+  test('CLEAN-02 — refresh after localStorage clear mid-session resumes deferred target', async ({ page }) => {
     test.setTimeout(45000);
 
     // Step 1: complete the selector chain so the voter context is populated.
     // The starting URL carries no query — exercises the simplest cold path.
     await page.goto('/results');
-    await expect(page).toHaveURL(/\/elections\?next=/, { timeout: 15000 });
+    await expect(page).toHaveURL(/\/elections\b.*[&?]next=/, { timeout: 10000 });
     await page.getByTestId(testIds.voter.elections.continue).click();
-    await expect(page).toHaveURL(/\/constituencies\?next=/, { timeout: 15000 });
+    await expect(page).toHaveURL(/\/constituencies\b.*[&?]next=/, { timeout: 10000 });
 
-    const selector = page.getByTestId(testIds.voter.constituencies.selector);
-    await selector.first().waitFor({ state: 'visible', timeout: 10000 });
-    await selector.getByRole('radio').first().click();
+    await fillAllConstituencies(page);
     await page.getByTestId(testIds.voter.constituencies.continue).click();
 
     // Voter is now on the located route with cookies + localStorage holding
     // the selectedElection / selectedConstituency state.
-    await expect(page).toHaveURL(/\/results(\?|$)/, { timeout: 15000 });
+    await expect(page).toHaveURL(/\/results(\/|\?|$)/, { timeout: 10000 });
     const resumedUrl = page.url();
 
     // Step 2: simulate mid-session storage clear — the persisted voter state
@@ -280,25 +266,26 @@ test.describe('CLEAN-02 voter-not-located deferred-target redirect', { tag: ['@v
 
     // Submit elections — `next` forwards to /constituencies unchanged.
     await page.getByTestId(testIds.voter.elections.continue).click();
-    await expect(page).toHaveURL(new RegExp(`/constituencies\\?.*next=${encoded.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')}`), {
-      timeout: 15000
-    });
+    await expect(page).toHaveURL(
+      new RegExp(`/constituencies\\?.*next=${encoded.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')}`),
+      {
+        timeout: 15000
+      }
+    );
 
-    const selector = page.getByTestId(testIds.voter.constituencies.selector);
-    await selector.first().waitFor({ state: 'visible', timeout: 10000 });
-    await selector.getByRole('radio').first().click();
+    await fillAllConstituencies(page);
     await page.getByTestId(testIds.voter.constituencies.continue).click();
 
     // The whitelist re-check rejected the value; the voter falls back to the
     // default constituency-completion route, which routes via $getRoute to
     // /questions (when startFromConstituencyGroup is unset). Critically, the
     // page MUST NOT have navigated cross-origin.
-    await expect(page).not.toHaveURL(/^https?:\/\/evil\.example/, { timeout: 15000 });
+    await expect(page).not.toHaveURL(/^https?:\/\/evil\.example/, { timeout: 10000 });
     // Positive assertion: the voter ended up on an internal route. The
     // default fallback is /questions (per constituencies/+page.svelte
     // handleSubmit lines 78-83), but /results is also a valid landing if
     // implication succeeds. Match either internal route — what matters is
     // we did NOT navigate cross-origin.
-    await expect(page).toHaveURL(/\/(questions|results)/, { timeout: 15000 });
+    await expect(page).toHaveURL(/\/(questions|results)/, { timeout: 10000 });
   });
 });

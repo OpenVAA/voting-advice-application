@@ -118,15 +118,64 @@ export default defineConfig({
     },
 
     // 4b. Candidate app: registration + profile (create users via invite)
+    //
+    // Phase 86.1 post-fix: `candidate-profile-validation.spec.ts` was lifted
+    // OUT of this testMatch into the dedicated `candidate-app-validation`
+    // project below. profile-validation logs in as Alpha (TEST_CANDIDATE_*)
+    // while registration + profile use fresh E2E_ADDENDUM_CANDIDATES[0]/[1].
+    // Running Alpha-login under the same project's parallel mode raced
+    // against the sibling specs' Supabase admin calls (inviteUserByEmail +
+    // forceRegister on neighbouring rows), occasionally landing the Alpha
+    // post-login redirect at `/login` again. Splitting into a sequential
+    // dependent project removes the contention entirely.
+    //
+    // Phase 86.1 post-fix #2: `fullyParallel: false` — registration and
+    // profile both perform Supabase admin mutations (inviteUserByEmail,
+    // forceRegister, ToU-flag updates) on overlapping candidate rows.
+    // Running candidate-registration.spec.ts and candidate-profile.spec.ts
+    // in parallel produced an order-of-operations race where the password-
+    // reset flow's `complete-registration` step would observe
+    // `terms_of_use_accepted IS NULL` for an addendum candidate that the
+    // profile spec had just unset (or hadn't yet set), then fail the
+    // password-reset gate. Serialising the spec files within this project
+    // eliminates the race without forcing the broader candidate chain into
+    // single-worker mode.
     {
       name: 'candidate-app-mutation',
       testDir: './tests/specs/candidate',
-      testMatch: /candidate-(registration|profile|profile-validation)\.spec\.ts/,
+      testMatch: /candidate-(registration|profile)\.spec\.ts/,
+      fullyParallel: false,
       use: {
         ...devices['Desktop Chrome'],
         storageState: STORAGE_STATE
       },
       dependencies: ['candidate-app']
+    },
+
+    // 4b.1 Candidate app: profile-validation (Alpha-login, A11Y-01 cells).
+    //      Sequential after candidate-app-mutation to avoid the Alpha-session
+    //      race documented above. fullyParallel:false so the 6 IMAGE_CELLS +
+    //      TEXT_CELLS tests within the file serialise as well — the
+    //      Playwright filechooser actor on macOS Chromium is non-deterministic
+    //      across parallel filechooser invocations (see the spec's `Phase 76
+    //      P01 Task 4 smoke discovery` doc-comment).
+    //
+    //      MUST run before `candidate-app-settings` — settings flips global
+    //      `app_settings.maintenanceMode` which disables the login form,
+    //      breaking Alpha-login inside validation. Sequencing is enforced
+    //      from the settings side (line: `candidate-app-settings.dependencies
+    //      ⊇ ['candidate-app-validation']`) so we don't have to add a
+    //      symmetric dep here.
+    {
+      name: 'candidate-app-validation',
+      testDir: './tests/specs/candidate',
+      testMatch: /candidate-profile-validation\.spec\.ts/,
+      fullyParallel: false,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: STORAGE_STATE
+      },
+      dependencies: ['candidate-app-mutation']
     },
 
     // 4b2. Re-auth: mutation tests (password reset) invalidate the alpha
@@ -153,6 +202,13 @@ export default defineConfig({
 
     // 4c. Candidate app: settings (mutates global app settings — must run alone)
     //     Runs before password tests since those revoke the session token again
+    //
+    //     Phase 86.1 post-fix: ALSO sequential after `candidate-app-validation`.
+    //     Without this dep, validation and settings ran in parallel (both
+    //     transitively depend on `candidate-app` but had no direct ordering),
+    //     so settings would flip `app_settings.maintenanceMode = true` mid-run
+    //     and disable the login submit button for validation's Alpha-login
+    //     (`<button disabled data-testid="login-submit">` in the failure trace).
     {
       name: 'candidate-app-settings',
       testDir: './tests/specs/candidate',
@@ -161,7 +217,7 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         storageState: STORAGE_STATE
       },
-      dependencies: ['re-auth-setup']
+      dependencies: ['re-auth-setup', 'candidate-app-validation']
     },
 
     // 4d. Candidate app: logout + password change (session-destructive —
@@ -186,7 +242,14 @@ export default defineConfig({
       // hide `test-voter-q-8`); the spec's negative-presence assertion correctly
       // fails when the overlay does not apply. Excluded here so the spec runs
       // ONLY in `variant-hidden-required-voter`. See §3.7 of 86-RESEARCH.md.
-      testIgnore: /voter-(settings|popups|visibility-required)\.spec\.ts/,
+      //
+      // Phase 86.1 post-fix: voter-not-located-redirect requires a 2-elections
+      // × multi-constituency seed (otherwise getImpliedElectionIds auto-implies
+      // and the spec's `/elections?next=…` → `/constituencies?next=…` bounce
+      // chain is short-circuited to a direct /results landing). Moved to the
+      // `voter-not-located-redirect` project below which reuses the Ne-Nc
+      // dataset (2 elections × 3 constituencies each).
+      testIgnore: /voter-(settings|popups|visibility-required|not-located-redirect)\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome']
       },
@@ -265,14 +328,39 @@ export default defineConfig({
       dependencies: ['data-setup-multi-election']
     },
 
-    // Variant: results sections (CONF-05, CONF-06) — uses multi-election dataset
+    // Variant: results sections (CONF-05, CONF-06) — uses the multi-election
+    // dataset.
+    //
+    // Phase 86.1 post-fix: re-seeded BEFORE running, via a dedicated data
+    // setup project (`data-setup-results-sections`) instead of re-using the
+    // already-tainted dataset that variant-multi-election leaves behind. The
+    // 3-elections-in-modal failure mode (precondition-asserted at
+    // `results-sections.spec.ts:144-157`) was reproducing intermittently even
+    // though `variant-multi-election` doesn't insert any election rows — the
+    // dedicated re-seed eliminates the ambiguity by guaranteeing exactly two
+    // elections (test-election-1 + test-election-2) at the moment
+    // variant-results-sections's beforeAll begins. Chain remains strictly
+    // sequential: data-setup-multi-election → variant-multi-election →
+    // data-setup-results-sections → variant-results-sections →
+    // data-setup-constituency (the next variant).
+    {
+      name: 'data-setup-results-sections',
+      // Re-uses the same setup test as data-setup-multi-election (matches the
+      // same file path) — each project runs the setup independently in its
+      // own worker. The setup's first action is `runTeardown('test-', client)`
+      // which atomically clears any leftover test-prefixed rows before
+      // re-seeding the canonical 2-election shape.
+      testMatch: /variant-multi-election\.setup\.ts/,
+      teardown: 'data-teardown-variants',
+      dependencies: ['variant-multi-election']
+    },
     {
       name: 'variant-results-sections',
       testDir: './tests/specs/variants',
       testMatch: /results-sections\.spec\.ts/,
       fullyParallel: false,
       use: { ...devices['Desktop Chrome'] },
-      dependencies: ['variant-multi-election'] // Runs after multi-election, reuses same data
+      dependencies: ['data-setup-results-sections']
     },
 
     // Variant: constituency (CONF-03)
@@ -357,12 +445,31 @@ export default defineConfig({
       dependencies: ['data-setup-Ne-Nc']
     },
 
+    // Phase 86.1 post-fix: voter-not-located-redirect (CLEAN-02) reuses the
+    // Ne-Nc dataset (2 elections × 3 constituencies). Inserted into the
+    // sequential variant chain BETWEEN variant-Ne-Nc and data-setup-allowopen
+    // so the next variant's teardown+seed does not clobber the Ne-Nc dataset
+    // while these tests are still running (LANDMINE-6).
+    //
+    // Was previously bound to the default `voter-app` project, which uses the
+    // base single-election e2e seed — that auto-implies election+constituency
+    // and short-circuits the spec's `?next=` bounce chain, producing direct
+    // /results landings. See the spec's doc-comment for the dataset contract.
+    {
+      name: 'voter-not-located-redirect',
+      testDir: './tests/specs/voter',
+      testMatch: /voter-not-located-redirect\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['variant-Ne-Nc']
+    },
+
     // Variant: allowopen (Phase 77 SETTINGS-02 — display-side reframing per LANDMINE-1)
     {
       name: 'data-setup-allowopen',
       testMatch: /variant-allowopen\.setup\.ts/,
       teardown: 'data-teardown-variants',
-      dependencies: ['variant-Ne-Nc'] // Sequential: wait for previous variant (LANDMINE-6)
+      dependencies: ['voter-not-located-redirect'] // Sequential: wait for previous variant (LANDMINE-6)
     },
     {
       name: 'variant-allowopen',

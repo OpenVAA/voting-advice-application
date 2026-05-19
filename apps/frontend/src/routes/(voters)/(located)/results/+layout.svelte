@@ -29,6 +29,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
 
 <script lang="ts">
   import { isMatch } from '@openvaa/matching';
+  import qs from 'qs';
   import { onMount } from 'svelte';
   import { slide } from 'svelte/transition';
   import { goto } from '$app/navigation';
@@ -101,9 +102,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
 
   const _parsedParams = $derived(parseParams(page));
   const _urlElectionIdRaw = $derived(_parsedParams.electionId);
-  const _urlElectionId = $derived(
-    Array.isArray(_urlElectionIdRaw) ? _urlElectionIdRaw[0] : _urlElectionIdRaw
-  );
+  const _urlElectionId = $derived(Array.isArray(_urlElectionIdRaw) ? _urlElectionIdRaw[0] : _urlElectionIdRaw);
 
   const activeElectionId = $derived<string | undefined>(
     _urlElectionId ?? (elections.length === 1 ? elections[0].id : undefined)
@@ -166,9 +165,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   // Drawer visibility (D-09) — drawer renders iff both singular+id present
   ////////////////////////////////////////////////////////////////////
 
-  const drawerVisible = $derived<boolean>(
-    !!(page.params.entityTypeSingular && page.params.id)
-  );
+  const drawerVisible = $derived<boolean>(!!(page.params.entityTypeSingular && page.params.id));
 
   const drawerEntity = $derived.by<MaybeWrappedEntityVariant | undefined>(() => {
     if (!drawerVisible) return undefined;
@@ -244,10 +241,25 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
    */
   function buildListRoute(plural: EntityPlural | undefined, electionId: string | undefined): string {
     const base = plural ? `/results/${plural}` : '/results';
-    const search = new URLSearchParams(page.url.searchParams);
-    if (electionId) search.set('electionId', electionId);
-    const qs = search.toString();
-    return qs ? `${base}?${qs}` : base;
+    // Round-trip through `qs` (not native URLSearchParams) so we stay aligned
+    // with how the rest of the app emits + reads search params:
+    //   - `buildRoute` / `$getRoute` uses `qs.stringify(..., { encodeValuesOnly: true })`,
+    //     which writes multi-valued params as `electionId[0]=X&electionId[1]=Y`
+    //     (qs's default `indices` arrayFormat).
+    //   - `parseParams` reads them back with `qs.parse`, which only collapses
+    //     `electionId[N]=…` back to a single `electionId` key/array.
+    // A native `URLSearchParams.set('electionId', X)` would treat `electionId[0]`
+    // and `electionId[1]` as completely different keys, leave them alone, and
+    // append a THIRD `electionId=X` bare key — which `qs.parse` then surfaces
+    // as a 3-id array, surfacing as an extra phantom election in the results
+    // page election selector + missing-nominations modal. Round-tripping
+    // through `qs` collapses any prior bracketed-or-bare electionId entries
+    // into a single field before we overwrite it.
+    const parsed = qs.parse(page.url.search.replace(/^\?/, ''));
+    if (electionId) parsed.electionId = electionId;
+    else delete parsed.electionId;
+    const query = qs.stringify(parsed, { encodeValuesOnly: true });
+    return query ? `${base}?${query}` : base;
   }
 
   function handleElectionChange(details: { option: unknown }): void {
@@ -305,10 +317,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
     in view).
   -->
   {#if drawerVisible && drawerEntity}
-    <EntityDetailsDrawer
-      entity={drawerEntity}
-      onClose={handleDrawerClose}
-      data-testid="voter-results-drawer" />
+    <EntityDetailsDrawer entity={drawerEntity} onClose={handleDrawerClose} data-testid="voter-results-drawer" />
   {/if}
 
   <MainContent title={voterCtx.resultsAvailable ? t('results.title.results') : t('results.title.browse')}>
@@ -406,7 +415,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
                 <Loading />
               {/if}
             {:else}
-              <div class="py-lg text-error text-center text-lg">
+              <div class="py-lg text-error text-center text-lg" data-testid="voter-results-no-nominations-warning">
                 {t('error.noNominations')}
               </div>
             {/if}

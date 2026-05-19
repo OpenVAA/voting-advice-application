@@ -15,9 +15,62 @@ import { countEmailsForRecipient, extractLinkFromHtml, getLatestEmailHtml, toCal
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { TEST_CANDIDATE_PASSWORD } from '../../utils/testCredentials';
 import { testIds } from '../../utils/testIds';
+import type { Page } from '@playwright/test';
 
 // Run all tests in this file without authentication
 test.use({ storageState: { cookies: [], origins: [] } });
+
+/**
+ * After the PasswordSetter form submits, the page lands on EITHER
+ *   (a) `/candidate/login` (the unconditional `goto` in PasswordSetter
+ *       +page.svelte:93), if the post-setPassword session was dropped/expired;
+ *   (b) a `/candidate(/…)` protected route directly, if the post-setPassword
+ *       session is still valid and the login page auto-redirected
+ *       authenticated users onward (the candidate context's `isAuthenticated`
+ *       guard).
+ *
+ * Hoisted out of the test body (RESEARCH Pattern 4 canonical 3) so
+ * `playwright/no-conditional-in-test` holds for the test itself. The `if`
+ * inside is a deterministic post-await dispatch on a settled URL, not a race
+ * mask — `waitForURL` resolves only after the predicate matches, so by the
+ * time we branch, the URL has settled and the path is known.
+ *
+ * Mirrors `candidate-profile.spec.ts:loginIfRedirectedToLoginPage` (with the
+ * same predicate that excludes the `/candidate/{register,auth,login}`
+ * intermediate paths per Phase 79 Plan 01 RCA: a looser predicate would exit
+ * on the in-flight `/candidate/register/password` URL and skip the form
+ * login).
+ */
+async function loginIfRedirectedToLoginPage(page: Page, email: string, password: string): Promise<void> {
+  await page.waitForURL(
+    (url) => {
+      // Strip the optional 2-letter locale prefix (paraglideHandle routes
+      // `/en`, `/fi`, `/sv`, etc.) so the predicate doesn't have to enumerate
+      // every supported locale. Without this, a `/en/candidate` URL fails
+      // the `pathname === '/candidate'` branch and the predicate misses the
+      // settled ToU/home target entirely.
+      const path = url.pathname.replace(/^\/[a-z]{2}(?=\/|$)/, '');
+      return (
+        path === '/candidate/login' ||
+        path === '/candidate' ||
+        /^\/candidate\/(?!register|auth|login)/.test(path)
+      );
+    },
+    { timeout: 15000 }
+  );
+  if (page.url().includes('/candidate/login')) {
+    // Clear browser-side auth state from the invited-flow session before the
+    // form login establishes a fresh one. Belt-and-suspenders against any
+    // stale JWT held by the singleton browser Supabase client.
+    await page.context().clearCookies();
+    const emailInput = page.getByTestId(testIds.candidate.login.email);
+    await emailInput.waitFor({ state: 'visible', timeout: 5000 });
+    await emailInput.fill(email);
+    await page.getByTestId(testIds.candidate.login.password).fill(password);
+    await page.getByTestId(testIds.candidate.login.submit).click();
+    await page.waitForURL((url) => !url.pathname.includes('/login'), { timeout: 10000 });
+  }
+}
 
 test.describe('candidate registration via email', { tag: ['@candidate'] }, () => {
   test.describe.configure({ mode: 'serial' });
@@ -63,34 +116,39 @@ test.describe('candidate registration via email', { tag: ['@candidate'] }, () =>
     // This test covers registration, login, and ToU acceptance — needs extra time
     test.setTimeout(60000);
 
+    const password = 'RegisteredPass1!';
+
     // Step 1: Navigate to the registration link extracted from the email
     await page.goto(registrationLink);
 
-    // Step 2: Set password on the register/password page
+    // Step 2: Set password on the register/password page.
+    // The PasswordSetter form submits to Supabase auth.updateUser (via the
+    // candidate context's setPassword); the page then redirects to
+    // /candidate/login. We wait for that redirect to settle *before*
+    // touching the login form so the PasswordSetter's setPassword call
+    // has fully landed in auth.users (no concurrent admin-API write to
+    // race against it — the prior `client.setPassword` admin call was
+    // removed because `auth.admin.updateUserById` revokes all refresh
+    // tokens for the user, which could leave the browser-side Supabase
+    // client holding a revoked JWT while the SSR form-action established
+    // a fresh server-side session — that mismatch surfaced as a 406
+    // "Cannot coerce" on the subsequent client-side UPDATE in
+    // _updateEntityProperties during ToU acceptance).
     const passwordWrapper = page.getByTestId(testIds.candidate.register.password);
     const confirmWrapper = page.getByTestId(testIds.candidate.register.confirmPassword);
     const submitButton = page.getByTestId(testIds.candidate.register.passwordSubmit);
 
-    await passwordWrapper.getByTestId(testIds.candidate.login.password).fill('RegisteredPass1!');
-    await confirmWrapper.getByTestId(testIds.candidate.login.password).fill('RegisteredPass1!');
+    await passwordWrapper.getByTestId(testIds.candidate.login.password).fill(password);
+    await confirmWrapper.getByTestId(testIds.candidate.login.password).fill(password);
     await submitButton.click();
 
-    // Step 3: After setting the password, the page redirects to login.
-    // Ensure password is set via admin API for reliable login.
-    await client.setPassword(candidateEmail, 'RegisteredPass1!');
-
-    // Step 4: Wait for login page, then log in
-    await page.getByTestId(testIds.candidate.login.email).waitFor({ state: 'visible', timeout: 15000 });
-    await page.getByTestId(testIds.candidate.login.email).fill(candidateEmail);
-    await page.getByTestId(testIds.candidate.login.password).fill('RegisteredPass1!');
-    await page.getByTestId(testIds.candidate.login.submit).click();
-
-    // Step 5: After login, the form action redirects to the candidate home.
-    // The protected layout's $effect uses .then() to process data, which can fail
-    // to trigger re-renders during Svelte 5 hydration. A page.goto() full page load
-    // also doesn't resolve this. This is a known Svelte 5 reactivity issue tracked
-    // in the root-layout-runes-migration todo.
-    await page.waitForURL(/\/candidate(?!.*login)/, { timeout: 15000 });
+    // Step 3: Wait for the post-password URL to settle on EITHER the login
+    // page or a protected /candidate route. PasswordSetter unconditionally
+    // navigates to /candidate/login, but if the post-setPassword session is
+    // still valid, the login page auto-redirects authenticated users to
+    // /candidate — so we can't assume we'll observe the /login URL. The
+    // helper picks the right branch deterministically once the URL settles.
+    await loginIfRedirectedToLoginPage(page, candidateEmail, password);
 
     // Step 6: Accept Terms of Use (shown on first login after registration)
     const touCheckbox = page.getByTestId(testIds.candidate.terms.checkbox);
@@ -100,8 +158,8 @@ test.describe('candidate registration via email', { tag: ['@candidate'] }, () =>
     await expect(continueButton).toBeEnabled({ timeout: 10000 });
     await continueButton.click();
 
-    // Step 6: Verify we reach the candidate home (save may take a moment)
-    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({ timeout: 15000 });
+    // Step 7: Verify we reach the candidate home (save may take a moment)
+    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({ timeout: 10000 });
   });
 });
 

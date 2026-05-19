@@ -26,6 +26,7 @@ TODO: Consider moving the tracking events away from the component and just addin
 
 <script lang="ts">
   import { TextPropertyFilter } from '@openvaa/filters';
+  import { untrack } from 'svelte';
   import { slide } from 'svelte/transition';
   import { Button } from '$lib/components/button';
   import { EntityFilters } from '$lib/components/entityFilters';
@@ -68,9 +69,15 @@ TODO: Consider moving the tracking events away from the component and just addin
     return () => searchFilter?.onChange(updateSearch, false);
   });
 
+  // Re-run when the `entities` prop reference changes. The body is wrapped in
+  // `untrack` so reactive reads inside updateFilters → updateSearch → onUpdate
+  // (notably the `onUpdate` callback prop, which the consumer re-creates on
+  // every render via inline arrow) do NOT become dependencies of this effect.
+  // Without untrack, the inline-arrow identity churn produced an
+  // effect_update_depth_exceeded loop on the nominations page.
   $effect(() => {
     void entities;
-    updateFilters();
+    untrack(() => updateFilters());
   });
 
   function updateFilters() {

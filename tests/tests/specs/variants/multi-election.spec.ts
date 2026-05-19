@@ -21,6 +21,7 @@
 
 import { expect, test } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
+import { dismissMissingNominationsIfPresent } from '../../utils/missingNominations';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
@@ -207,20 +208,14 @@ async function navigateMultiElectionToResults(page: Page): Promise<{ questionCou
   // Wait for navigation off /elections (lands on /questions via auto-imply).
   await page.waitForURL((url) => !url.toString().includes('/elections'), { timeout: 10000 });
 
-  // Dismiss "missing nominations" dialog if it appears (some multi-election
-  // overlay elections lack candidate/party responses for a given constituency).
-  const nominationsDialog = page.getByRole('dialog');
-  try {
-    await nominationsDialog.waitFor({ state: 'visible', timeout: 3000 });
-    await nominationsDialog.getByRole('button', { name: /continue/i }).click();
-    await nominationsDialog.waitFor({ state: 'hidden', timeout: 5000 });
-  } catch {
-    // No dialog appeared.
-  }
+  // Dismiss the "missing nominations" modal if it appears. Shared helper
+  // races the modal against the first-question paint so we cannot miss
+  // late-opening modals (see utils/missingNominations.ts).
+  await dismissMissingNominationsIfPresent(page);
 
   // Wait for first answer-option (questions page fully hydrated).
   const answerOption = page.getByTestId(testIds.voter.questions.answerOption);
-  await expect(answerOption.first()).toBeVisible({ timeout: 15000 });
+  await expect(answerOption.first()).toBeVisible({ timeout: 10000 });
 
   // Answer all questions; helper handles category intros + URL transitions.
   const questionCount = await answerAllQuestions(page);
@@ -360,16 +355,9 @@ test.describe('disallowSelection mode', { tag: ['@variant'] }, () => {
     // Verify election list is NOT visible
     await expect(electionsList).toBeHidden();
 
-    // Dismiss the "missing nominations" dialog if it appears
-    // getByRole('dialog') matches only open <dialog>; closed dialogs are hidden.
-    const dialog = page.getByRole('dialog');
-    try {
-      await dialog.waitFor({ state: 'visible', timeout: 3000 });
-      await dialog.getByRole('button', { name: /continue/i }).click();
-      await dialog.waitFor({ state: 'hidden', timeout: 5000 });
-    } catch {
-      // No dialog appeared
-    }
+    // Dismiss the "missing nominations" modal if it appears (shared helper —
+    // see utils/missingNominations.ts).
+    await dismissMissingNominationsIfPresent(page);
 
     // Should proceed to questions (constituency auto-implied for both elections)
     await expect(answerOption.first()).toBeVisible();

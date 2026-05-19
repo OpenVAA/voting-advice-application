@@ -16,7 +16,7 @@
  * blocks because they modify shared app settings.
  */
 
-import { expect,test } from '../../fixtures';
+import { expect, test } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
@@ -110,12 +110,6 @@ test.describe('nominations page (VOTE-19)', { tag: ['@voter'] }, () => {
       // the post-hotfix inventory (65.7s test duration — most of it data-
       // load latency).
       await page.goto(buildRoute({ route: 'Nominations', locale: 'en' }));
-
-      // Wait for nominations container. Layout loads data async (Loading → list).
-      // Budget = 90s on the attached-state wait to absorb cold-start data-fetch
-      // latency, then a final 15s budget on the visibility assertion.
-      const container = page.getByTestId(testIds.voter.nominations.container);
-      await container.waitFor({ state: 'visible', timeout: 90000 });
 
       // Verify nominations list is visible
       await expect(page.getByTestId(testIds.voter.nominations.list)).toBeVisible();

@@ -19,7 +19,7 @@ export class QuestionsPage {
     await this.page
       .getByTestId('candidate-questions-list')
       .or(this.page.getByTestId('candidate-questions-start'))
-      .waitFor({ state: 'visible', timeout: 15000 });
+      .waitFor({ state: 'visible', timeout: 10000 });
   }
 
   /**

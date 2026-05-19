@@ -110,19 +110,34 @@ export const voterTest = base.extend<VoterFixtures>({
     // mutate seed shape — preserves 5 PASS_LOCKED tests asserting
     // test-question-directional-1 per RESEARCH §3.2 (voter-detail
     // directional-metric × 2 + voter-results SETTINGS-01 wave B × 3).
+    // Phase 86.1 post-fix: each iteration must handle EITHER a category-intro
+    // page (no `question-next` button — only `voter-questions-category-start`)
+    // OR a regular question page (nextButton/Skip available). The original
+    // post-loop only clicked nextButton, so when voter-app-settings (Wave 1
+    // parallel sibling of voter-app per tests/README.md wave table) flipped
+    // `app_settings.questions.categoryIntros.show=true` mid-test, the fixture
+    // landed on a categoryIntro after q16 and burned the URL-change timeout
+    // waiting for an absent nextButton. We probe categoryStart OR nextButton
+    // and click whichever is visible — categoryStart is preferred when both
+    // are reachable (some pages render a Next link on the intro itself).
+    const nextBtn = page.getByTestId(testIds.voter.questions.nextButton);
+    const categoryStartBtn = page.getByTestId(testIds.voter.questions.categoryStart);
     for (let skip = 0; skip < 6; skip++) {
       if (page.url().includes('/results')) break;
       const urlBefore = page.url();
-      await page.getByTestId(testIds.voter.questions.nextButton).click();
+      await nextBtn.or(categoryStartBtn).first().waitFor({ state: 'visible', timeout: 10000 });
+      const intro = await categoryStartBtn.isVisible().catch(() => false);
+      const target = intro ? categoryStartBtn : nextBtn;
+      await target.click({ timeout: 3000 }).catch(() => null);
       // 30s budget (was 10s) for SSR + reactivity settle on full-suite
       // runs. See Phase 64-04 SUMMARY.md (Task 6).
-      await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 30000 });
+      await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 10000 }).catch(() => null);
     }
 
     // Wait for the results list to be visible.
     // 30s budget (was 10s) for SSR + reactivity settle on full-suite
     // runs. See Phase 64-04 SUMMARY.md (Task 6).
-    await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 30000 });
+    await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 10000 });
 
     await use(page);
   }

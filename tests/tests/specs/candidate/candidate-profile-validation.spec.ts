@@ -82,7 +82,23 @@ async function loginAsCandidate(page: Page): Promise<void> {
   await page.getByTestId(testIds.candidate.login.email).fill(TEST_CANDIDATE_EMAIL);
   await page.getByTestId(testIds.candidate.login.password).fill(TEST_CANDIDATE_PASSWORD);
   await page.getByTestId(testIds.candidate.login.submit).click();
-  await expect(page).not.toHaveURL(/login/, { timeout: 10000 });
+  // Phase 86.1 post-fix: assert we LAND on a candidate-app route, not just
+  // that we left /login. Under candidate-app-mutation's parallel mode the
+  // sibling registration/profile specs race against the dev server's auth
+  // layer, occasionally leaving the cookie unset by the time the post-login
+  // redirect completes — the prior `not.toHaveURL(/login/)` could match a
+  // transient `/?somequery` URL during the redirect chain even when the
+  // session never actually established, so the subsequent
+  // `page.goto(CandAppProfile)` would bounce back to /login and surface as
+  // a "logged out at profile" symptom. The positive landing assertion plus a
+  // networkidle settle gives the auth cookie time to be written before we
+  // navigate away.
+  await expect(page).not.toHaveURL(/\/login\b/, { timeout: 10000 });
+  await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => null);
+  // Defense: any of the candidate-app's protected route surfaces is a valid
+  // landing — typically CandAppHome (which redirects unauthenticated users to
+  // /login, so its visibility proves the session is live).
+  await expect(page).toHaveURL(/\/candidate(\/|$|\?)/, { timeout: 5000 });
 }
 
 /**

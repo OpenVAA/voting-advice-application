@@ -155,3 +155,32 @@ export async function countEmailsForRecipient(recipientEmail: string): Promise<n
 export async function purgeMailbox(_recipientEmail: string): Promise<void> {
   await fetch(`${MAILPIT_URL}/api/v1/messages`, { method: 'DELETE' });
 }
+
+/**
+ * Delete every email currently addressed to a specific recipient, without
+ * touching emails for any other recipient. Safe to call from `beforeEach`
+ * under parallel workers — only this recipient's queue is mutated.
+ *
+ * Mechanism: fetch all message IDs matching `to:<recipient>`, then
+ * `DELETE /api/v1/messages` with `{ ids: [...] }` (Mailpit ≥ v1.6).
+ *
+ * Motivation: across many `--repeat-each` iterations the Inbucket-side
+ * `to:<recipient>` query can saturate at Mailpit's default search ceiling
+ * (50 results). Once at the ceiling, `getLatestEmailHtml(email, emailsBefore)`
+ * returns `undefined` because `messages.length <= skipCount` even when a
+ * brand-new email did arrive — the newest message displaces the oldest in
+ * the 50-result window, so the count never grows. Clearing the queue
+ * before each iteration keeps `emailsBefore` at zero and removes that
+ * indexing axis entirely.
+ *
+ * @param recipientEmail - The email address whose pending mail to delete
+ */
+export async function clearMailboxForRecipient(recipientEmail: string): Promise<void> {
+  const messages = await fetchEmails(recipientEmail);
+  if (messages.length === 0) return;
+  await fetch(`${MAILPIT_URL}/api/v1/messages`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids: messages.map((m) => m.ID) })
+  });
+}
