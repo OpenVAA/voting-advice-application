@@ -30,6 +30,7 @@
 
 import { expect } from '@playwright/test';
 import { voterTest as test } from '../../fixtures/voter.fixture';
+import { settleNetworkIdle } from '../../helpers';
 import { E2E_DEFAULT_CANDIDATES, E2E_ORGANIZATIONS, E2E_VOTER_CANDIDATES } from '../../utils/e2eFixtureRefs';
 import { testIds } from '../../utils/testIds';
 import type { Locator, Page } from '@playwright/test';
@@ -407,7 +408,7 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
 
     // Cold-navigate to the full deeplink: /results/candidates/candidate/<id>?electionId=<x>
     await page.goto(`/results/candidates/candidate/${parsed!.id}${parsed!.search}`);
-    await page.waitForLoadState('domcontentloaded');
+    await settleNetworkIdle(page, { waitUntil: 'domcontentloaded' });
 
     // Drawer should be visible
     await expect(page.getByTestId(DRAWER_TESTID)).toBeVisible({ timeout: 5000 });
@@ -426,7 +427,7 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
 
     // Cold-navigate to the cross-type shape: orgs list + candidate drawer
     await page.goto(`/results/organizations/candidate/${parsed!.id}${parsed!.search}`);
-    await page.waitForLoadState('domcontentloaded');
+    await settleNetworkIdle(page, { waitUntil: 'domcontentloaded' });
 
     // Drawer renders with candidate entity
     await expect(page.getByTestId(DRAWER_TESTID)).toBeVisible({ timeout: 5000 });
@@ -476,7 +477,7 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
 
     // Cold-navigate
     await page.goto(`/results/candidates/candidate/${parsed!.id}${parsed!.search}`);
-    await page.waitForLoadState('domcontentloaded');
+    await settleNetworkIdle(page, { waitUntil: 'domcontentloaded' });
 
     // Both elements must exist before we assert order — wait for the drawer.
     await page.getByTestId(DRAWER_TESTID).waitFor({ state: 'attached', timeout: 5000 });
