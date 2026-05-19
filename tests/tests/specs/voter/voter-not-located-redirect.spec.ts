@@ -46,7 +46,7 @@
  */
 
 import { expect, test } from '@playwright/test';
-import { iterateSelectOptions, settleNetworkIdle } from '../../helpers';
+import { expectLandedOn, iterateSelectOptions, settleNetworkIdle } from '../../helpers';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
@@ -130,7 +130,7 @@ test.describe('CLEAN-02 voter-not-located deferred-target redirect', { tag: ['@v
     });
 
     // First bounce: /elections?next=<encoded-target>
-    await expect(page).toHaveURL(/\/elections\b.*[&?]next=%2Fresults/, { timeout: 10000 });
+    await expectLandedOn(page, /\/elections\b.*[&?]next=%2Fresults/);
 
     // reason: voter-elections-continue testId is the canonical submit button
     // for the election-selector page (no accessible name beyond
@@ -140,7 +140,7 @@ test.describe('CLEAN-02 voter-not-located deferred-target redirect', { tag: ['@v
     await page.getByTestId(testIds.voter.elections.continue).click();
 
     // Second bounce: /constituencies?next=<still-encoded-target>
-    await expect(page).toHaveURL(/\/constituencies\b.*[&?]next=%2Fresults/, { timeout: 10000 });
+    await expectLandedOn(page, /\/constituencies\b.*[&?]next=%2Fresults/);
 
     // Constituency selection: under the Ne-Nc dataset each election has
     // 3 constituencies, so `SingleGroupConstituencySelector` renders a
@@ -155,7 +155,7 @@ test.describe('CLEAN-02 voter-not-located deferred-target redirect', { tag: ['@v
     await page.getByTestId(testIds.voter.constituencies.continue).click();
 
     // Final landing: /results (the original deferred target).
-    await expect(page).toHaveURL(/\/results(\/|\?|$)/, { timeout: 10000 });
+    await expectLandedOn(page, /\/results(\/|\?|$)/);
   });
 
   test('CLEAN-02 — multi-election multi-constituency bounces twice and resumes deferred target with query params preserved', async ({
@@ -168,16 +168,16 @@ test.describe('CLEAN-02 voter-not-located deferred-target redirect', { tag: ['@v
     const deferredTarget = '/results?foo=bar';
     await page.goto(deferredTarget);
 
-    await expect(page).toHaveURL(/\/elections\b.*[&?]next=/, { timeout: 10000 });
+    await expectLandedOn(page, /\/elections\b.*[&?]next=/);
 
     await page.getByTestId(testIds.voter.elections.continue).click();
-    await expect(page).toHaveURL(/\/constituencies\b.*[&?]next=/, { timeout: 10000 });
+    await expectLandedOn(page, /\/constituencies\b.*[&?]next=/);
 
     await fillAllConstituencies(page);
     await page.getByTestId(testIds.voter.constituencies.continue).click();
 
     // Original `foo=bar` must survive the round-trip.
-    await expect(page).toHaveURL(/\/results\b.*[&?]foo=bar/, { timeout: 10000 });
+    await expectLandedOn(page, /\/results\b.*[&?]foo=bar/);
   });
 
   test('CLEAN-02 — election pre-selected via URL bounces only to constituency selector and resumes deferred target', async ({
@@ -197,14 +197,15 @@ test.describe('CLEAN-02 voter-not-located deferred-target redirect', { tag: ['@v
     await page.goto(deferredTarget);
 
     // Election is provided — we should bounce only once, to /constituencies.
-    await expect(page).toHaveURL(/\/constituencies\b.*[&?]next=/, { timeout: 10000 });
+    await expectLandedOn(page, /\/constituencies\b.*[&?]next=/);
     // We should NEVER have visited /elections in this flow.
+    // reason: negative-landing assertion (not.toHaveURL) — expectLandedOn is positive-only per helper Pitfall #1 docstring.
     await expect(page).not.toHaveURL(/\/election(\/|\?|$)/);
 
     await fillAllConstituencies(page);
     await page.getByTestId(testIds.voter.constituencies.continue).click();
 
-    await expect(page).toHaveURL(/\/results\b.*[&?]electionId=/, { timeout: 10000 });
+    await expectLandedOn(page, /\/results\b.*[&?]electionId=/);
   });
 
   test('CLEAN-02 — refresh after localStorage clear mid-session resumes deferred target', async ({ page }) => {
@@ -213,16 +214,16 @@ test.describe('CLEAN-02 voter-not-located deferred-target redirect', { tag: ['@v
     // Step 1: complete the selector chain so the voter context is populated.
     // The starting URL carries no query — exercises the simplest cold path.
     await page.goto('/results');
-    await expect(page).toHaveURL(/\/elections\b.*[&?]next=/, { timeout: 10000 });
+    await expectLandedOn(page, /\/elections\b.*[&?]next=/);
     await page.getByTestId(testIds.voter.elections.continue).click();
-    await expect(page).toHaveURL(/\/constituencies\b.*[&?]next=/, { timeout: 10000 });
+    await expectLandedOn(page, /\/constituencies\b.*[&?]next=/);
 
     await fillAllConstituencies(page);
     await page.getByTestId(testIds.voter.constituencies.continue).click();
 
     // Voter is now on the located route with cookies + localStorage holding
     // the selectedElection / selectedConstituency state.
-    await expect(page).toHaveURL(/\/results(\/|\?|$)/, { timeout: 10000 });
+    await expectLandedOn(page, /\/results(\/|\?|$)/);
     const resumedUrl = page.url();
 
     // Step 2: simulate mid-session storage clear — the persisted voter state
@@ -232,8 +233,8 @@ test.describe('CLEAN-02 voter-not-located deferred-target redirect', { tag: ['@v
     // Verify the page reaches /results again with the same query params.
     await page.evaluate(() => window.localStorage.clear());
     await page.reload();
-    await expect(page).toHaveURL(new RegExp(resumedUrl.replace(/^https?:\/\/[^/]+/, '').replace(/[?].*$/, '')), {
-      timeout: 15000
+    await expectLandedOn(page, new RegExp(resumedUrl.replace(/^https?:\/\/[^/]+/, '').replace(/[?].*$/, '')), {
+      timeoutMs: 15000
     });
   });
 
@@ -255,11 +256,10 @@ test.describe('CLEAN-02 voter-not-located deferred-target redirect', { tag: ['@v
 
     // Submit elections — `next` forwards to /constituencies unchanged.
     await page.getByTestId(testIds.voter.elections.continue).click();
-    await expect(page).toHaveURL(
+    await expectLandedOn(
+      page,
       new RegExp(`/constituencies\\?.*next=${encoded.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')}`),
-      {
-        timeout: 15000
-      }
+      { timeoutMs: 15000 }
     );
 
     await fillAllConstituencies(page);
@@ -269,12 +269,13 @@ test.describe('CLEAN-02 voter-not-located deferred-target redirect', { tag: ['@v
     // default constituency-completion route, which routes via $getRoute to
     // /questions (when startFromConstituencyGroup is unset). Critically, the
     // page MUST NOT have navigated cross-origin.
+    // reason: negative-landing assertion (not.toHaveURL) — expectLandedOn is positive-only per helper Pitfall #1 docstring.
     await expect(page).not.toHaveURL(/^https?:\/\/evil\.example/, { timeout: 10000 });
     // Positive assertion: the voter ended up on an internal route. The
     // default fallback is /questions (per constituencies/+page.svelte
     // handleSubmit lines 78-83), but /results is also a valid landing if
     // implication succeeds. Match either internal route — what matters is
     // we did NOT navigate cross-origin.
-    await expect(page).toHaveURL(/\/(questions|results)/, { timeout: 10000 });
+    await expectLandedOn(page, /\/(questions|results)/);
   });
 });
