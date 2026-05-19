@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
 status: Phase 86.1 closed; v2.10 milestone-close requires Phase 87 Path B operator decision
-stopped_at: Phases 84-87 batched context gathered
-last_updated: "2026-05-16T09:39:36.624Z"
-last_activity: "2026-05-16 -- Phase 86.1 close: anchor 8850ee9a8bbe2f11f7b23a220c5bf4b273b5ace6627ca742249822d718577980 (112 PASS_LOCKED / 3 DATA_RACE / 35 CASCADE / 5 SKIPPED)"
+stopped_at: Phase 86.2 + 86.3 context gathered (batched discuss-phase 2026-05-19); ready for /gsd-plan-phase 86.2
+last_updated: "2026-05-19T17:00:00.000Z"
+last_activity: "2026-05-19 -- Phase 86.2 + 86.3 CONTEXT.md drafted via batched /gsd-discuss-phase (sequential per D-01; 6 helpers + 8 source-skipped tests)"
 progress:
-  total_phases: 10
+  total_phases: 12
   completed_phases: 8
   total_plans: 23
-  completed_plans: 18
-  percent: 78
+  completed_plans: 21
+  percent: 67
 ---
 
 # Project State
@@ -25,9 +25,9 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 
 ## Current Position
 
-Phase: 86.1 (Pre-Phase-87 Convergence Sweep) — COMPLETE (PASSED-WITH-DEFERRAL; Phase 87 Task 0 pre-gate ESCALATE — Path B amend recommended)
-Plan: 4 of 4 (all plans complete)
-Status: Phase 86.1 closed; v2.10 milestone-close requires Phase 87 Path B operator decision
+Phase: 86.2 (E2E Suite Refactor Pass) + Phase 86.3 (Implement 8 Skipped Tests) — context gathered (batched discuss-phase 2026-05-19)
+Plan: 0 of 3 (86.2) + 0 of 5 (86.3) — both ready for /gsd-plan-phase
+Status: 86.1 closed (anchor 8850ee9a…); 86.2 → 86.3 sequential per joint D-01; Phase 87 re-plan deferred to end of 86.3
 Last activity: 2026-05-16 -- Phase 86.1 close: anchor 8850ee9a8bbe2f11f7b23a220c5bf4b273b5ace6627ca742249822d718577980 (112 PASS_LOCKED / 3 DATA_RACE / 35 CASCADE / 5 SKIPPED)
 
 ## Performance Metrics
@@ -110,6 +110,8 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 - Phase numbering continues from v2.9 (last phase: 78); v2.10 starts at 79 and extends through 87. No reset.
 - Plan count is TBD per phase (filled by `/gsd-plan-phase`).
 - Phase 86.1 inserted after Phase 86: Pre-Phase-87 Convergence Sweep — drive v2.10 e2e suite to all-green-or-explicit-deferral so Phase 87's CASCADE ≤ 5 pre-gate fires cleanly. Originally drafted as orphaned Phase 88 in commit bf286df76; renumbered to 86.1 to match execution order. (URGENT)
+- Phase 86.2 inserted after Phase 86: E2E suite refactor pass (extract helpers, dedup assertions, propagate Phase 86.1 post-fix patterns); inserted after green-baseline 2026-05-19 supersedes HANDOFF.json CASCADE=40 blocker; depends on Phase 86.1; gates Phase 86.3 (URGENT)
+- Phase 86.3 inserted after Phase 86: Implement 7 source-skipped tests (SETTINGS-01 wave A×3 + SETTINGS-01 wave B constituency-filter + E2E-03 feedback persistence + LAYOUT-03 popup regression gate + QSPEC-01/02 boolean+categorical); discuss-phase first answers 'is this all?' by reconciling with grep of test.skip() across tree; depends on Phase 86.2 (URGENT)
 
 ### Decisions
 
@@ -145,10 +147,10 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-05-14T17:31:55.513Z
-Stopped at: Phases 84-87 batched context gathered
-Resume file: None
-Next action: Run `/gsd-plan-phase 79` to plan the Determinism Recovery phase.
+Last session: 2026-05-19T12:09:52Z (HANDOFF.json) — resumed 2026-05-19
+Stopped at: Phase 87 paused after post-fix stabilization (commit 97f55cb41); awaiting Phase 85 cascade remediation
+Resume file: .planning/HANDOFF.json (active — delete after Phase 85 cascade plan lands)
+Next action: Run /gsd-discuss-phase 86.2 to scope the e2e refactor pass (helpers + dedup + Phase 86.1 post-fix propagation). Then 86.3 implements 7 source-skipped tests. Phase 87 anchor follows.
 
 ### Plan-count estimate (drafted 2026-05-12)
 

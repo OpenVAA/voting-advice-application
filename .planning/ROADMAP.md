@@ -247,6 +247,26 @@ Phase 79 (DETERM-04 + DETERM-05) ✓ COMPLETE
 - [x] 86-04-PLAN.md — Close: 3-run cold-start gate (ALMOST-STRICT — party-drawer boundary flake; run-3 canonical) + anchor regen at SHA `9a6d74a3088ec2de933cce9ff40797ec1a1cf8180923f02fbfcaf6f690a30af9` (113 PASS_LOCKED / 3 DATA_RACE / 40 CASCADE / 2 SKIPPED) + SKIPPED_TESTS const introduced + FAILURE-CLASS narrative shrunk + STATE/ROADMAP update + atomic close commit (completed 2026-05-14)
 **UI hint**: maybe (popup + hydration cluster may surface UI work)
 
+### Phase 86.3: Implement skipped tests — close 7 source-skipped voter-app/candidate-app/variant-project tests (SETTINGS-01 wave A/B + E2E-03 + LAYOUT-03 regression gate + QSPEC-01/02) so Phase 87 anchor captures maximum coverage (INSERTED)
+
+**Goal:** [Urgent work - to be planned]
+**Requirements**: TBD
+**Depends on:** Phase 86
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 86.3 to break down)
+
+### Phase 86.2: E2E suite refactor pass — extract helpers, dedup assertions, propagate Phase 86.1 post-fix patterns across all relevant specs (INSERTED)
+
+**Goal:** [Urgent work - to be planned]
+**Requirements**: TBD
+**Depends on:** Phase 86
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 86.2 to break down)
+
 ### Phase 86.1: Pre-Phase-87 Convergence Sweep — drive v2.10 e2e suite to all-green-or-explicit-deferral so Phase 87's CASCADE ≤ 5 pre-gate fires cleanly (INSERTED)
 
 **Goal:** Drive the v2.10 e2e suite from its current post-85-04 state (`110 PASS · 13 FAIL · 6 SOURCE-SKIP · 36 CASCADE`) to an all-green-or-explicit-deferral state (`PASS_LOCKED ≥ 130`; `DATA_RACE = 3`; `CASCADE ≤ 5`; `SKIPPED_TESTS = 2 + per-cell Phase-86.1-03 deferrals`) that satisfies Phase 87 Task 0's pre-gate so the Phase 87 216-min 3-run identity gate fires cleanly without an in-flight Phase-85/86 reopen.
