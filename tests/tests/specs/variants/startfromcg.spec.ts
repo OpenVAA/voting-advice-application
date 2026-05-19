@@ -36,6 +36,7 @@
  */
 
 import { expect, test } from '@playwright/test';
+import { expectLandedOn } from '../../helpers';
 import { answerUntilResults } from '../../utils/answerQuestion';
 import { buildRoute } from '../../utils/buildRoute';
 import { dismissMissingNominationsIfPresent } from '../../utils/missingNominations';
@@ -203,7 +204,7 @@ test.describe('startFromConstituencyGroup variant', { tag: ['@variant'] }, () =>
     // the /elections load function redirects straight to /questions (the
     // election selector page should never appear).
     await pickMunicipality(page, 'North Municipality A');
-    await expect(page).toHaveURL(/\/questions/, { timeout: 10_000 });
+    await expectLandedOn(page, /\/questions/);
     await expect(electionsList).toBeHidden();
   });
 
@@ -212,7 +213,7 @@ test.describe('startFromConstituencyGroup variant', { tag: ['@variant'] }, () =>
 
     await walkToConstituencySelection(page);
     await pickMunicipality(page, 'Orphan Municipality');
-    await expect(page).toHaveURL(/\/questions/, { timeout: 10_000 });
+    await expectLandedOn(page, /\/questions/);
 
     // The orphan has no parent region → E1 has no applicable constituency →
     // selectedElections = [E2]. The (located) layout may still open the
@@ -221,7 +222,7 @@ test.describe('startFromConstituencyGroup variant', { tag: ['@variant'] }, () =>
     await dismissMissingNominationsIfPresent(page);
 
     await answerUntilResults(page);
-    await expect(page).toHaveURL(/\/results/, { timeout: 10_000 });
+    await expectLandedOn(page, /\/results/);
 
     const accordion = page.getByTestId(testIds.voter.results.electionAccordion);
     // dataRoot has 2 elections so the accordion is rendered (the wrapping
@@ -247,12 +248,12 @@ test.describe('startFromConstituencyGroup variant', { tag: ['@variant'] }, () =>
 
     await walkToConstituencySelection(page);
     await pickMunicipality(page, 'North Municipality A');
-    await expect(page).toHaveURL(/\/questions/, { timeout: 10_000 });
+    await expectLandedOn(page, /\/questions/);
 
     await dismissMissingNominationsIfPresent(page);
 
     await answerUntilResults(page);
-    await expect(page).toHaveURL(/\/results/, { timeout: 10_000 });
+    await expectLandedOn(page, /\/results/);
 
     const accordion = page.getByTestId(testIds.voter.results.electionAccordion);
     await expect(accordion).toBeVisible({ timeout: 10_000 });
@@ -403,7 +404,7 @@ test.describe('matrix cell: startFromConstituency (E2E-04 cell 5)', { tag: ['@va
     // (3) After continue, the URL transitions to /elections (proving the
     // variant bypassed the canonical elections-first step). Mirrors the
     // assertion at startfromcg.spec.ts:265-281.
-    await expect(page).toHaveURL(/\/elections/);
+    await expectLandedOn(page, /\/elections/);
     await expect(electionsList).toBeVisible({ timeout: 10000 });
   });
 });
