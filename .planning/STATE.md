@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
 status: executing
-stopped_at: Phase 87 paused after post-fix stabilization (commit 97f55cb41); awaiting Phase 85 cascade remediation
-last_updated: "2026-05-19T15:45:22.643Z"
-last_activity: 2026-05-19 -- Phase 86.3 planning complete
+stopped_at: Phase 86.2 Plan 01 complete; Plan 02 next (helper propagation across ~28 expectLandedOn + 9 settleNetworkIdle sites)
+last_updated: "2026-05-19T17:22:30.803Z"
+last_activity: 2026-05-19
 progress:
   total_phases: 12
   completed_phases: 8
   total_plans: 31
-  completed_plans: 21
+  completed_plans: 22
   percent: 67
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 86.1 — Pre-Phase-87 Convergence Sweep
+**Current focus:** Phase 86.2 — e2e-suite-refactor-pass-extract-helpers-dedup-assertions-pro
 
 ## Current Position
 
-Phase: 86.2 (E2E Suite Refactor Pass) + Phase 86.3 (Implement 8 Skipped Tests) — context gathered (batched discuss-phase 2026-05-19)
-Plan: 0 of 3 (86.2) + 0 of 5 (86.3) — both ready for /gsd-plan-phase
+Phase: 86.2 (e2e-suite-refactor-pass-extract-helpers-dedup-assertions-pro) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-05-19 -- Phase 86.3 planning complete
+Last activity: 2026-05-19
 
 ## Performance Metrics
 
@@ -86,6 +86,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | Phase 86 P02 | 10min | 3 tasks | 2 files |
 | Phase 86 P03 | 25min | 5 tasks | 5 files |
 | Phase 86 P04 | ~190min (~162min unattended 3-run gate + ~28min orchestration) | 7 tasks | 9 files |
+| Phase 86.2 P01 | 210min | 3 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -138,18 +139,21 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 86]: Plan 02 (DETERM-13 filter+feedback cluster): 2/2 tests fixed (0 skips, 0 todos); 3-component CLAUDE.md Svelte 5 audit DISPROVED H2; Phase-64 close-race pattern toHaveCount(0) closed both surfaces
 - [Phase ?]: Phase 86 Plan 03 (DETERM-14) closed: QSPEC-01+02 skip+rationale (Phase 75 inherit), voter-visibility-required project-config exclusion, voter-detail case (d) hydration guard. 4 commits, 1 new todo.
 - [Phase 86]: Plan 04 (close orchestration) closed PASSED-WITH-DEFERRAL: 3-run cold-start gate ALMOST-STRICT (party-drawer boundary flake — 1 cell differs run-2 vs run-3); run-3 canonical regen source per Phase 85 precedent; new anchor `9a6d74a3088ec2de933cce9ff40797ec1a1cf8180923f02fbfcaf6f690a30af9` (113/3/40 + 2 SKIPPED); IMGPROXY_TIED_TITLES D-09 binding preserved (3 entries unchanged); SKIPPED_TESTS const introduced; FAILURE-CLASS narrative shrunk to 40-line header; 2 v2.11+ todos filed (qspec + party-drawer).
+- [Phase ?]: Phase 86.2 Plan 01: 6 helpers extracted into tests/tests/helpers/; barrel + README; voter.fixture.ts public API preserved (internal swap to walkVoterIteration)
+- [Phase ?]: Phase 86.2 Plan 01: Pitfall enforcement confirmed — #1 caller-side .catch on helper #1, internal on #3; #2 Select.svelte ARIA contract cited in helper #4 docstring; #3 default maxSteps=6 documented in helper #6 (Pitfall regression guard)
 
 ### Blockers/Concerns
 
 - Local imgproxy Docker container crashes intermittently (502 on image upload) — not a code issue; carry-forward infrastructure debt. May affect any image-upload-touching E2E re-runs during Phase 79 verification (cold-start full-suite gate).
 - 165 pre-existing intra-package circular deps in `@openvaa/data` / `matching` / `filters` — deferred to a dedicated structural refactor milestone.
 - The candidate-profile cascading race (DETERM-04) is the v2.10 critical path — if root-cause investigation surfaces a deeper Svelte 5 hydration OR Supabase auth-session race that needs upstream framework work, fallback is the test-restructure path (split registration assertion into a setup project so downstream tests don't depend on the redirect succeeding). Both paths are documented in `.planning/todos/pending/2026-05-12-candidate-profile-cascading-race.md` §"Recommended approach".
+- Phase 83 DETERM-06 image-upload (CAND-03) cascade blocks 3/4 Plan 86.2-01 per-spec smokes (candidate-profile-validation, voter-not-located-redirect, results-sections); refactors verified clean via grep + lint + tsc instead. Plan 86.2-03 3-run gate will surface true post-86.2 state.
 
 ## Session Continuity
 
-Last session: 2026-05-19T12:09:52Z (HANDOFF.json) — resumed 2026-05-19
-Stopped at: Phase 87 paused after post-fix stabilization (commit 97f55cb41); awaiting Phase 85 cascade remediation
-Resume file: .planning/HANDOFF.json (active — delete after Phase 85 cascade plan lands)
+Last session: 2026-05-19T17:22:15.148Z
+Stopped at: Phase 86.2 Plan 01 complete; Plan 02 next (helper propagation across ~28 expectLandedOn + 9 settleNetworkIdle sites)
+Resume file: None (sequential — orchestrator continues)
 Next action: Run /gsd-discuss-phase 86.2 to scope the e2e refactor pass (helpers + dedup + Phase 86.1 post-fix propagation). Then 86.3 implements 7 source-skipped tests. Phase 87 anchor follows.
 
 ### Plan-count estimate (drafted 2026-05-12)
