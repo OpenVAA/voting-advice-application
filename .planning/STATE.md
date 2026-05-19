@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
-status: Phase 86.1 closed; v2.10 milestone-close requires Phase 87 Path B operator decision
-stopped_at: Phase 86.2 + 86.3 context gathered (batched discuss-phase 2026-05-19); ready for /gsd-plan-phase 86.2
-last_updated: "2026-05-19T17:00:00.000Z"
-last_activity: "2026-05-19 -- Phase 86.2 + 86.3 CONTEXT.md drafted via batched /gsd-discuss-phase (sequential per D-01; 6 helpers + 8 source-skipped tests)"
+status: executing
+stopped_at: Phase 87 paused after post-fix stabilization (commit 97f55cb41); awaiting Phase 85 cascade remediation
+last_updated: "2026-05-19T14:56:39.529Z"
+last_activity: 2026-05-19 -- Phase 86.2 planning complete
 progress:
   total_phases: 12
   completed_phases: 8
-  total_plans: 23
+  total_plans: 26
   completed_plans: 21
   percent: 67
 ---
@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 
 Phase: 86.2 (E2E Suite Refactor Pass) + Phase 86.3 (Implement 8 Skipped Tests) — context gathered (batched discuss-phase 2026-05-19)
 Plan: 0 of 3 (86.2) + 0 of 5 (86.3) — both ready for /gsd-plan-phase
-Status: 86.1 closed (anchor 8850ee9a…); 86.2 → 86.3 sequential per joint D-01; Phase 87 re-plan deferred to end of 86.3
-Last activity: 2026-05-16 -- Phase 86.1 close: anchor 8850ee9a8bbe2f11f7b23a220c5bf4b273b5ace6627ca742249822d718577980 (112 PASS_LOCKED / 3 DATA_RACE / 35 CASCADE / 5 SKIPPED)
+Status: Ready to execute
+Last activity: 2026-05-19 -- Phase 86.2 planning complete
 
 ## Performance Metrics
 
