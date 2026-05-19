@@ -59,6 +59,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, test } from '../../fixtures';
+import { expectLandedOn, settleNetworkIdle } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { TEST_CANDIDATE_EMAIL, TEST_CANDIDATE_PASSWORD } from '../../utils/testCredentials';
 import { testIds } from '../../utils/testIds';
@@ -94,11 +95,12 @@ async function loginAsCandidate(page: Page): Promise<void> {
   // networkidle settle gives the auth cookie time to be written before we
   // navigate away.
   await expect(page).not.toHaveURL(/\/login\b/, { timeout: 10000 });
-  await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => null);
+  // Pitfall #1: caller-side .catch preserves defensive semantic.
+  await settleNetworkIdle(page).catch(() => null);
   // Defense: any of the candidate-app's protected route surfaces is a valid
   // landing — typically CandAppHome (which redirects unauthenticated users to
   // /login, so its visibility proves the session is live).
-  await expect(page).toHaveURL(/\/candidate(\/|$|\?)/, { timeout: 5000 });
+  await expectLandedOn(page, /\/candidate(\/|$|\?)/, { timeoutMs: 5000 });
 }
 
 /**
@@ -199,8 +201,8 @@ test.describe('A11Y-01 candidate profile validation', { tag: ['@candidate'] }, (
       // cookie propagation + candidate-context $derived chain init under full-suite
       // resource pressure. Mirrors Phase 83 DETERM-07b hydration-completeness guard.
       // 1h budget per D-04; if heading still times out, escalate to expect.poll() or
-      // convert to test.skip().
-      await page.waitForLoadState('networkidle');
+      // convert to test.skip(). NO .catch — matches original no-catch semantic.
+      await settleNetworkIdle(page);
 
       // Anchor on the profile heading before interacting — settle gate to
       // avoid racing the candidate context's $derived chain initialization.
