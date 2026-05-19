@@ -1,0 +1,26 @@
+[dotenv@17.3.1] injecting env (25) from .env -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2
+
+Running 4 tests using 2 workers
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+
+[1A[2K[1/4] [data-setup] › tests/tests/setup/data.setup.ts:76:1 › import test dataset
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+
+[1A[2K[2/4] [performance] › tests/tests/specs/perf/performance-budget.spec.ts:33:3 › Performance budgets › voter results page loads within budget @perf
+[1A[2K[performance] › tests/tests/specs/perf/performance-budget.spec.ts:33:3 › Performance budgets › voter results page loads within budget @perf
+Performance timing: {
+  domContentLoaded: [33m36[39m,
+  loadComplete: [33m38[39m,
+  domInteractive: [33m36[39m,
+  duration: [33m38[39m,
+  ttfb: [33m26[39m
+}
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+
+[1A[2K[3/4] [data-teardown] › tests/tests/setup/data.teardown.ts:17:1 › delete test dataset
+[1A[2K[4/4] [data-teardown] › tests/tests/setup/variant-data.teardown.ts:12:1 › delete variant test dataset
+[1A[2K  4 passed (12.7s)

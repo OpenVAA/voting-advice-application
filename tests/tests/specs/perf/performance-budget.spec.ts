@@ -24,6 +24,7 @@
 /* eslint-disable playwright/no-standalone-expect -- voterTest extends @playwright/test; expect is inside test body */
 import { expect } from '@playwright/test';
 import { voterTest } from '../../fixtures/voter.fixture';
+import { settleNetworkIdle } from '../../helpers';
 
 voterTest.describe('Performance budgets', { tag: ['@perf'] }, () => {
   // Generous timeout: fixture navigation (~30s) + page reload + measurement
@@ -37,7 +38,7 @@ voterTest.describe('Performance budgets', { tag: ['@perf'] }, () => {
     await page.reload({ waitUntil: 'load' });
 
     // Wait for the results list to re-render after reload
-    await page.waitForLoadState('domcontentloaded');
+    await settleNetworkIdle(page, { waitUntil: 'domcontentloaded' });
 
     // Extract Navigation Timing metrics
     const timing = await page.evaluate(() => {
