@@ -1,0 +1,72 @@
+{
+  "questions": {
+    "additionalActions": "Actions supplémentaires pour cette question",
+    "answers": {
+      "bothHaventAnswered": "Ni vous ni {entity} n’avez répondu à cette question",
+      "entityHasntAnswered": "{entity} n’a pas répondu à cette question",
+      "youHaventAnswered": "Vous n’avez pas répondu à cette question",
+      "yourAnswer": "Vous"
+    },
+    "arguments": {
+      "con": "Against",
+      "pro": "For",
+      "proCategory": "For {option}",
+      "title": "Arguments"
+    },
+    "category": {
+      "numQuestions": [
+        {
+          "declarations": ["input numQuestions", "local numQuestionsPlural = numQuestions: plural"],
+          "selectors": ["numQuestionsPlural"],
+          "match": {
+            "numQuestionsPlural=other": "{numQuestions} questions",
+            "numQuestionsPlural=one": "1 question"
+          }
+        }
+      ],
+      "skip": "Passer cette catégorie"
+    },
+    "infoDescription": "Informations de contexte sur la question",
+    "intro": {
+      "ingress": {
+        "withCategorySelection": [
+          {
+            "declarations": [
+              "input minQuestions",
+              "input numCategories",
+              "local minQuestionsPlural = minQuestions: plural"
+            ],
+            "selectors": ["minQuestionsPlural"],
+            "match": {
+              "minQuestionsPlural=zero": "Les questions sont divisées en {numCategories} catégories. Vous pouvez toutes les parcourir ou ne choisir que celles que vous souhaitez. ",
+              "minQuestionsPlural=one": "Les questions sont divisées en {numCategories} catégories. Vous pouvez toutes les parcourir ou ne choisir que celles que vous souhaitez. ",
+              "minQuestionsPlural=other": "Les questions sont divisées en {numCategories} catégories. Vous pouvez toutes les parcourir ou ne choisir que celles que vous souhaitez. Cependant, sélectionnez assez de catégories pour atteindre au moins {minQuestions} questions au total."
+            }
+          }
+        ],
+        "withoutCategorySelection": [
+          {
+            "declarations": [
+              "input numCategories",
+              "input numQuestions",
+              "local numCategoriesPlural = numCategories: plural"
+            ],
+            "selectors": ["numCategoriesPlural"],
+            "match": {
+              "numCategoriesPlural=zero": "Répondez maintenant à {numQuestions} questions sur la politique et les valeurs. ",
+              "numCategoriesPlural=one": "Répondez maintenant à {numQuestions} questions sur la politique et les valeurs. ",
+              "numCategoriesPlural=other": "Répondez maintenant à {numQuestions} questions sur la politique et les valeurs. Les questions sont divisées en {numCategories} catégories."
+            }
+          }
+        ]
+      },
+      "start": "Répondre à {numQuestions} questions"
+    },
+    "next": "Question suivante",
+    "previous": "Précédente",
+    "remove": "Supprimer la réponse",
+    "skip": "Passer",
+    "skipToResults": "Passer aux résultats",
+    "title": "Opinions"
+  }
+}

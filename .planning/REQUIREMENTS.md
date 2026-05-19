@@ -1,0 +1,114 @@
+# Milestone v2.10: Test Reliability + A11y Compliance — Requirements
+
+**Defined:** 2026-05-12 · **Last updated:** 2026-05-13 (Phase 83 added post-Phase-79-close to absorb the 2 follow-up todos)
+**Core Value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
+
+**Goal:** Restore Playwright suite parity-regen capability and reach WCAG 2.1 AA on the 2 axe-baselined routes by closing v2.9's HIGH/MEDIUM a11y + test-determinism deferrals — 3 carry-forwards from v2.9 close (candidate-profile cascading race + axe cite-and-fix + A11Y-01 PRODUCT-GAP cells closure) **+ 2 follow-up surfaces (5-item scope post-Phase-79-close)** that Phase 79's DETERM-04 fix exposed (image-upload CAND-03 cascade + voter-app flakes).
+
+**Strategy: race-first, then a11y, then test-reliability gap closure.** The HIGH candidate-profile cascading race is the unlock condition for parity-script regen; A11Y axe cite-and-fix + A11Y-01 cells are independent of the race and can run in parallel waves once DETERM is green. Phase 83 (DETERM-06 + DETERM-07) closes the 2 test-reliability surfaces that Phase 79 surfaced — the v2.10 verification anchor at SHA `ff0334f856…` is preserved through Phase 83 unless one of the closures shifts PASS_LOCKED.
+
+**Context sources:**
+
+- `.planning/todos/pending/2026-05-12-candidate-profile-cascading-race.md` — cascading-race root-cause hypothesis + Phase 76/77/78 deferred-items lineage
+- `.planning/todos/pending/2026-05-12-a11y-axe-first-run-violations.md` — 5-violation per-rule baseline + cite-and-fix scope
+- `.planning/todos/pending/2026-05-12-a11y-01-product-gap-cells.md` — schema/component/i18n gap analysis per cell (email/url/required-empty)
+- `.planning/todos/pending/2026-05-13-candidate-profile-image-upload-cascade.md` — image-upload CAND-03 filechooser TIMEOUT + 5 downstream cascade-skips surfaced by Phase 79 DETERM-04 fix
+- `.planning/todos/pending/2026-05-13-voter-matching-detail-flakes.md` — voter-matching 5-test block + voter-detail open-drawer flakes (~33% across Phase 79's 6 cold-start captures)
+- `.planning/milestones/v2.9-phases/76-profile-a11y/76-A11Y-BASELINE.md` — per-route per-rule axe baseline (single source of truth)
+- `.planning/milestones/v2.9-phases/76-profile-a11y/76-CONTEXT.md` D-03 — PRODUCT-GAP cells rationale
+- `.planning/milestones/v2.9-phases/76-profile-a11y/deferred-items.md` #2 — cascading-race recommendation
+- `.planning/milestones/v2.9-phases/77-settings-matrix-question-customization-gap-fills/77-VERIFICATION.md` §"3-Run Determinism Record" — DEFERRED-WITH-RATIONALE lineage
+- `.planning/milestones/v2.9-phases/78-cleanup-hygiene-phase/78-VERIFICATION.md` §"Out-of-Scope Items (Filed as Follow-up Todos)" — third-phase deferral lineage
+- `.planning/phases/79-determinism-recovery-cascading-race-fix-constants-regen/79-VERIFICATION.md` §`overrides:` — Phase 79 accepted both follow-ups as deferred-with-rationale at close; Phase 83 promotes them in-milestone
+- PROJECT.md "Current Milestone: v2.10 Test Reliability + A11y Compliance" — full goal + key context
+
+---
+
+## v2.10 Requirements
+
+### DETERM — Determinism recovery (gating prerequisite for parity-regen capability)
+
+- [x] **DETERM-04**: The `candidate-profile.spec.ts:85-145` registration → set-password → ToU race is resolved. After the fix, `tests/tests/specs/candidate/candidate-profile.spec.ts` runs to completion in cold-start mode without `did not run` cascade-skipping the downstream tests in the same `serial` describe block. Either the underlying frontend race is fixed (auth session propagation OR ToU hydration timing — see todo §"Root-cause hypothesis") OR the test is restructured to bypass the cascade-prone serial mode (split the registration assertion into a setup project so downstream tests no longer depend on the redirect succeeding). Post-resolution: 3 consecutive `yarn test:e2e` cold-start runs show identical pass/fail sets across the candidate-profile + all dependent projects (`auth-setup → candidate-app → candidate-app-mutation → re-auth-setup → candidate-app-settings → candidate-app-password` chain).
+
+- [ ] **DETERM-05**: The parity-script constants (47/15/33 PASS_LOCKED / SKIP / CASCADE-SKIP anchor preserved through Phases 75 → 76 → 77 → 78) are regenerated from a clean 3-run cold-start baseline. After DETERM-04 is green, capture 3 sequential cold-start full-suite runs and verify SHA-identical pass-sets across all 3; regen the parity-script constants via the v2.9 in-place path (or the archived `node .planning/milestones/v2.9-phases/73-determinism-baseline/post-fix/regen-constants.mjs <run-3.json>` script). Post-regen: the parity-script constants reflect the post-DETERM-04 baseline (expected ~63 PASS_LOCKED — 47 v2.9 anchor + ~16 cascade-unblocked tests); the regenerated baseline is committed and becomes the v2.10 verification anchor for all future phases.
+
+### A11Y — Accessibility compliance (parallel with DETERM after gating)
+
+- [x] **A11Y-04**: The 5 first-run WCAG 2.1 AA violations surfaced by the Phase 76 A11Y-03 axe smoke baseline (`76-A11Y-BASELINE.md`) are resolved: `aria-required-parent` × 4 nodes (results × 2 + voter-detail-drawer × 2), `list` × 2 nodes (results × 1 + voter-detail-drawer × 1), `button-name` × 1 node (voter-detail-drawer). Per-rule fix: `aria-required-parent` + `list` resolved together via entity-card/voter-list DOM restructure (likely same shared component); `button-name` resolved via `aria-label` addition on the drawer's icon-button(s). Post-fix: `PLAYWRIGHT_A11Y=1 yarn test:e2e --project=a11y-smoke --workers=1` reports 0 violations across all 6 baselined routes; per-rule regression assertions added to `tests/tests/specs/a11y/a11y-smoke.spec.ts`; a successor baseline artifact (or in-place update to `76-A11Y-BASELINE.md`) documents the 0-violation post-fix state.
+
+- [x] **A11Y-05**: Candidate profile rejects malformed email input via inline validation error. Schema: `customData.format?: 'email' | 'url' | 'tel' | ...` enum added to `CustomData.Question` at `packages/app-shared/src/data/customData.type.ts`. Component: `'email'` branch added to `INPUT_TYPES` in `apps/frontend/src/lib/components/input/QuestionInput.svelte` (with `customData.format → Input.type` bridge); `Input.svelte` emits `components.input.error.invalidEmail` on bad input mirroring the existing URL-validation branch at `:286-296`. i18n: `invalidEmail` key added to all 4 locales (`en`/`fi`/`sv`/`da` `components.json` under `input.error`). Seed: 1 new info question with `custom_data.format='email'` added to `packages/dev-seed/src/templates/e2e.ts` (sort 22, next available after Phase 76 sort 21 social-link) + Alpha email answer cell. Spec: A11Y-01 cell 5 added to `tests/tests/specs/candidate/candidate-profile-validation.spec.ts` — type bad email → assert error UI + input value preserved.
+
+- [x] **A11Y-06**: Candidate profile rejects malformed URL input on social-link fields via inline validation error. Schema: `Question.subtype` (or equivalent `customData.format='url'` dispatch — decision deferred to phase discussion) restored or plumbed through so the existing `QuestionInput.svelte:65` `subtype === 'link'` branch + `Input.svelte:286-296` URL-validation branch become reachable from the profile route. Seed: 1 new info question with the chosen dispatch (subtype OR `customData.format='url'`) — the Phase 76 P01 `test-question-social-1` slot (sort 21) MAY be promoted to carry the dispatch once the schema lands. Spec: A11Y-01 cell 6 added — type bad URL → assert `components.input.error.invalidUrl` + input value preserved.
+
+- [x] **A11Y-07**: Candidate profile required-empty save behavior is decided and enforced consistently. **Phase-time product decision:** should empty-required save be REJECTED with an inline error (current behavior is soft — `required` attribute renders an sr-only "Required" badge + submit-button gating via `allRequiredFilled` at `profile/+page.svelte:94`, but the empty save is not blocked). If REJECT: add save-path validation in `apps/frontend/src/routes/candidate/(protected)/profile/+page.svelte:125-143` AND `Input.svelte` emits `components.input.error.required` (or `tooShort`) on submit-time validation failure; `required` i18n key added to 4-locale `input.error` blocks. If SOFT-WARN-ONLY (no change): the cell is closed as PRODUCT-CONFIRMED with the existing badge + button-gating documented as the enforcement. Spec: A11Y-01 cell 4 added to `candidate-profile-validation.spec.ts` — empty input → click submit → assert chosen behavior (error UI rendered + value preserved IF REJECT; submit-button disabled + no error UI IF SOFT-WARN).
+
+### DETERM-2 — Test reliability follow-ups (Phase 79 close exposed; gap-closed in-milestone)
+
+- [x] **DETERM-06**: The `should upload a profile image (CAND-03)` test surface in `tests/tests/specs/candidate/candidate-profile.spec.ts:164` runs to completion in cold-start mode without cascade-skipping its 5 downstream tests (`A11Y-02 should persist {display name, bio, social link} after page reload`, `should persist profile image after page reload (CAND-12)`, `should show editable info fields on profile page (CAND-03)`). Pre-existing failure mode: `waitForEvent('filechooser')` TIMEOUT — file-chooser dialog never fires when the inner click target is engaged; previously masked by the DETERM-04 registration cascade, surfaced in Phase 79's post-fix baseline. Recommended mitigations (cheapest first per todo §"Recommended approach"): (1) fix `ProfilePage.uploadImage()` selector drift at `tests/tests/pages/candidate/ProfilePage.ts:24-37` per Phase 76 deferred-items §1 (`label[tabindex="0"]` → `getByRole('button').first()`); (2) add 500ms pre-filechooser settle delay per Phase 76 P01 mitigation pattern; (3) enable `[storage.image_transformation]` in `apps/supabase/supabase/config.toml:130-131` for imgproxy parity with Phase 73 baseline. Post-fix: cold-start full-suite cascade-skip count for candidate-profile.spec.ts describe-block-downstream tests = 0; on next constants regen, the 5 cascaded tests + the image-upload test itself promote to PASS_LOCKED (DATA_RACE pool stays at 15 per Phase 73 D-09 binding only if image-upload remains IMGPROXY-tied; otherwise the pool shrinks by 1 + the 3 CAND-03/CAND-12 IDs and PASS_LOCKED grows by ~9).
+
+- [x] **DETERM-07**: The 2 voter-app intermittent test flakes surfaced post-DETERM-04 are stabilized to deterministic PASS or moved to FAILURE-CLASS with explicit rationale: (1) `voter-app :: voter-matching.spec.ts > should show worst match candidate as last result` — failed in 1 of 6 Phase 79 cold-start captures, cascade-skipping 4 other voter-matching tests in the serial block; (2) `voter-app :: voter-detail.spec.ts > should open party detail drawer` — failed in 1 of 6 Phase 79 cold-start captures. Both are in the Phase 79 PASS_LOCKED roster (NOT IMGPROXY-tied per Phase 73 D-09 binding — cannot be classified into DATA_RACE without breaking the structural contract). Root cause hypothesis options per todo: (a) voter-app data-setup race, (b) voter results-page reactivity timing, (c) candidate-load ordering. Acceptance options (cheapest first): (1) **fix the flake** if root-cause is reachable; (2) **convert to deterministic skip** with `test.skip()` + rationale until fixed; (3) **move to FAILURE-CLASS** in `regen-constants.mjs` (rationale entry alongside Phase 75's QSPEC-01/02 precedent). Post-fix: 3 consecutive cold-start runs SHA-identical on the FIRST try (no D-09 instability protocol required); the v2.10 anchor SHA-256 hash stays at `ff0334f856…` OR a fresh regen is captured if the resolution touches the pass-set.
+
+### DETERM-3 — All-Green Suite extension (Phase 83 close exposed the remaining non-green pools; v2.10 absorbs the cleanup)
+
+- [ ] **DETERM-08**: Non-image tests are decoupled from the Supabase imgproxy infrastructure flake. Portrait rendering on `candidate-home` + `candidate-app-settings` pages is gated behind a test-fixture mechanism (e.g., `?skipImages=1` query param consumed by the portrait component, OR a settings flag, OR below-fold IntersectionObserver lazy-load) so post-login pages do NOT block on imgproxy fetches on initial paint. After fix, `re-auth.setup.ts` and the 11 `candidate-app-settings` pages no longer surface as IMGPROXY-tied. Acceptance: the dual-project `re-authenticate as candidate` entries (auth-setup + re-auth-setup) leave DATA_RACE; the 11 candidate-app-settings entries leave DATA_RACE; DATA_RACE shrinks 15 → ≤3.
+
+- [ ] **DETERM-09**: `apps/supabase/supabase/config.toml [storage.image_transformation]` config tuned for cold-start resilience. Tunable knobs documented per choice (worker count, timeout, connection pool, retry policy). Rationale committed inline. Parallel lever to DETERM-08; not a substitute for the structural decoupling.
+
+- [ ] **DETERM-10**: RCA plan identifies the shared root cause of the 9 `data-setup-*` cascade-skip chains (1e-Nc, allowopen, constituency, hidden-required, low-minimum-answers, multi-election, Ne-Nc, results-sections, startfromcg). Hypotheses to instrument: (a) yarn-arg-forwarding LANDMINE-9-style propagation through nested project dependencies; (b) fixture-overlay-ordering races in the variant-data-setup chain; (c) shared bootstrap state contamination. RCA-FINDINGS.md committed with per-project run logs + convergent failure pattern.
+
+- [ ] **DETERM-11**: Targeted fix(es) implemented for the DETERM-10-identified root cause. All 9 `data-setup-*` projects run to completion in cold-start mode; the 47 CASCADE pool entries shrink to ≤5 (residual = explicit v2.11+ deferrals with rationale). Variant spec runs surface their own deterministic verdicts; new deterministic failures (if any) join the DETERM-12/13/14 FAILURE-CLASS cohort for Phase 86 attention.
+
+- [x] **DETERM-12**: Voter-app popup + hydration FAILURE-CLASS cluster resolved: `voter-app-popups dismissal-after-reload` + `voter-popup-hydration full-page-load`. Each test either deterministically passes OR is `test.skip()`+rationale'd with a v2.11+ follow-up todo.
+
+- [x] **DETERM-13**: Voter-app filter + feedback FAILURE-CLASS cluster resolved: `voter-results filter-toggle no-effect-update-depth` + `voter-feedback-persistence`. Each test either deterministically passes OR `test.skip()`+rationale.
+
+- [x] **DETERM-14**: Voter-app visibility + edge-case + question-rendering + navigation FAILURE-CLASS cluster resolved: `voter-visibility-required SETTINGS-03 hidden absent`, `voter-detail case-d both-missing`, `voter-question-rendering boolean + categorical (QSPEC-01/02)`, `voter-navigation results-CTA threshold`, `voter-not-located-redirect /results deeplink`. Each test either deterministically passes OR `test.skip()`+rationale.
+
+- [ ] **DETERM-15**: Final v2.10-ship anchor captured. Fresh 3-run cold-start gate SHA-identical FIRST attempt against the post-84+85+86 codebase. Pool sizes: ~150-160 PASS_LOCKED + ≤3 DATA_RACE + 0 CASCADE + ≤2 FAILURE-CLASS (residual = explicit v2.11+ deferrals). Anchor SHA committed to `tests/scripts/diff-playwright-reports.ts` jsdoc. `/gsd-audit-milestone v2.10` runs cleanly; status = shippable.
+
+---
+
+## Out of Scope (re-deferred to v2.11+)
+
+| Feature | Reason |
+|---------|--------|
+| SETTINGS-02 voter-side `answer.info` authoring | PRODUCT-GAP — voter context exposes neither open-comment input nor `answerStore.setAnswer(info)` support; requires new voter-side UI affordance + answerStore schema work. Out of v2.10 scope (3-item focused milestone); routed to a future voter-app-features milestone. |
+| SETTINGS-03 voter-side `customData.required` enforcement | PRODUCT-GAP — voter context exposes neither the `requiredInfoQuestions` derivation nor the `profileComplete` symbol the candidate context exposes at `candidateContext.svelte.ts:347-368`. Requires context-API symmetry work + voter-side gating UI. Same routing as SETTINGS-02. |
+| FilterGroup OR-mode UI | PRODUCT-GAP — `FilterGroup` backend supports `LOGIC_OP.Or` setter but no `EntityFilters.svelte` UI emits it. Requires new toggle component + i18n. Routed to a future filter-features milestone. |
+| (voters)/+layout.svelte non-reactive topbar / popup | Refactor mount-time `$appSettings` reads in `apps/frontend/src/routes/(voters)/+layout.svelte` topBarSettings/popupQueue.push to reactive — ~30-60 LOC. Routed to a future Svelte 5 reactivity hardening pass (the 3 SETTINGS-01 wave A cells that surface this are PASS-WITH-DEFERRAL; non-blocker). |
+| Constituency filter UI PRODUCT-GAP | `buildParentFilters` doesn't dispatch a constituency filter shape today. LOW severity; routed to a future filter-features milestone alongside FilterGroup OR-mode. |
+| Expander state-referenced-locally / results-layout missing slot | Already resolved in v2.8 Phase 70 via accept-with-rationale (`// svelte-ignore` + `// reason:` comments). Stale pending todos moved → done at v2.10 start. |
+
+---
+
+## Traceability
+
+Which phases cover which requirements.
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| DETERM-04   | Phase 79 | Complete (passed-with-deferral 2026-05-13) |
+| DETERM-05   | Phase 79 | Complete (passed-with-deferral 2026-05-13) |
+| A11Y-04     | Phase 80 | Complete (2026-05-13) |
+| A11Y-05     | Phase 81 | Complete |
+| A11Y-06     | Phase 81 | Complete |
+| A11Y-07     | Phase 82 | Complete |
+| DETERM-06   | Phase 83 | Complete |
+| DETERM-07   | Phase 83 | Complete |
+| DETERM-08   | Phase 84 | Not started |
+| DETERM-09   | Phase 84 | Not started |
+| DETERM-10   | Phase 85 | Not started |
+| DETERM-11   | Phase 85 | Not started |
+| DETERM-12   | Phase 86 | Not started |
+| DETERM-13   | Phase 86 | Not started |
+| DETERM-14   | Phase 86 | Not started |
+| DETERM-15   | Phase 87 | Not started |
+
+**Coverage:**
+- v2.10 requirements: 16 total (8 original + 8 All-Green Suite extension)
+- Mapped to phases: 16 ✓
+- Unmapped: 0 ✓
+
+---
+*Requirements defined: 2026-05-12*
+*Last updated: 2026-05-13 after Phase 83 close — milestone extended with All-Green Suite Phases 84-87 (DETERM-08..15) to drive DATA_RACE → ≤3, CASCADE → 0, FAILURE-CLASS → 0 (9 phases / 16 REQs).*

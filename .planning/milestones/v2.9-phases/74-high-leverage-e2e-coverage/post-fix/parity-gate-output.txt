@@ -1,0 +1,48 @@
+Phase 74 Plan 07 — Task 3: Parity Gate × 3 (post-regen)
+========================================================
+
+Method: yarn tsx tests/scripts/diff-playwright-reports.ts <baseline.json> <post.json>
+Source: .planning/phases/74-high-leverage-e2e-coverage/post-fix/run-{1,2,3}-report.json
+
+Constants regen completed via:
+  node .planning/phases/73-determinism-baseline/post-fix/regen-constants.mjs
+Input: run-3-report.json (copied to post-fix/ as the regen-script's expected path)
+Output: 4 PASS_LOCKED + 15 DATA_RACE + 65 CASCADE = 84 partitioned tests
+(Phase 73 baseline: 4 + 15 + 55 = 74; Phase 74 delta: +10 in CASCADE)
+
+IMGPROXY_TIED_TITLES match-count assertion: 14 titles, 15 total matches (PASS).
+No Phase 74 new title collides with any of the 14 bound IMGPROXY suffixes.
+
+=== Pair 1: run-1 vs run-2 ===
+Baseline: 4p / 40f / 79c
+Post:     4p / 40f / 79c
+Contract: 4 pass-locked, 15 data-race pool, 65 cascade-baseline.
+PARITY GATE: PASS — no regressions detected per D-59-04.
+
+=== Pair 2: run-2 vs run-3 ===
+Baseline: 4p / 40f / 79c
+Post:     4p / 40f / 79c
+Contract: 4 pass-locked, 15 data-race pool, 65 cascade-baseline.
+PARITY GATE: PASS — no regressions detected per D-59-04.
+
+=== Pair 3: run-1 vs run-3 ===
+Baseline: 4p / 40f / 79c
+Post:     4p / 40f / 79c
+Contract: 4 pass-locked, 15 data-race pool, 65 cascade-baseline.
+PARITY GATE: PASS — no regressions detected per D-59-04.
+
+PARITY GATE: PASS × 3 — all 3 pair comparisons confirm the post-Phase-74 baseline
+is the deterministic anchor for the parity contract. CONTEXT D-09 + D-10 binding
+preserved.
+
+Verbatim from tests/scripts/diff-playwright-reports.ts post-update constants:
+- PASS_LOCKED_TESTS: 4 entries (data-setup + 3 data-teardown tests) — UNCHANGED from Phase 73.
+- DATA_RACE_TESTS: 15 entries (14 IMGPROXY-tied + 1 dual-project re-auth) — UNCHANGED from Phase 73 (D-09 binding preserved).
+- CASCADE_TESTS: 65 entries (55 Phase 73 baseline + 10 new Phase 74 tests):
+  + candidate-translation.spec.ts (E2E-01, Plan 01)
+  + data-setup-1e-Nc, data-setup-Ne-Nc, data-setup-low-minimum-answers (Plans 02 + 04)
+  + variant-1e-Nc, variant-Ne-Nc spec tests (Plan 04)
+  + variant-low-minimum-answers voter-browse-without-match.spec.ts (Plan 02)
+  + variant-multi-election Ne × 1c (Plan 04 additive matrix cell 3)
+  + variant-startfromcg startFromConstituency cell (Plan 04 additive matrix cell 5)
+  + voter-navigation.spec.ts browser-back test (Plan 03, E2E-06)

@@ -1,0 +1,21 @@
+[dotenv@17.3.1] injecting env (57) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+
+Running 4 tests using 2 workers
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+
+[1A[2K[1/4] [data-setup] › tests/tests/setup/data.setup.ts:76:1 › import test dataset
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+
+[1A[2K[2/4] [voter-app] › tests/tests/specs/voter/voter-popup-hydration.spec.ts:152:3 › setTimeout popup on full page load (LAYOUT-03 regression gate) › popup appears on full page load to /results (LAYOUT-03 hydration path) @voter
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+
+[1A[2K[3/4] [data-teardown] › tests/tests/setup/data.teardown.ts:17:1 › delete test dataset
+[1A[2K[4/4] [data-teardown] › tests/tests/setup/variant-data.teardown.ts:12:1 › delete variant test dataset
+[1A[2K  1 skipped
+  3 passed (4.0s)
+
+OUTCOME: SKIPPED
+Phase 86.1-03 cell 1 disposition (CONTEXT D-05 fixed): LAYOUT-03 deeplink converted to test.skip(true,...) — alternative regression coverage in PASS_LOCKED preserves the contract. data-setup + data-teardown projects PASSED; voter-popup-hydration.spec.ts:152 SKIPPED as designed. Plan 86.1-04 anchor regen must manually move this entry from CASCADE → SKIPPED_TESTS per PATTERNS.md + RESEARCH §7.

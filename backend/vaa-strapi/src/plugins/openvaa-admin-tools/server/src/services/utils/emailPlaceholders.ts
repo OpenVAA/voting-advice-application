@@ -1,1 +1,0 @@
-export const REGISTRATION_LINK_PLACEHOLDER = '{LINK}';

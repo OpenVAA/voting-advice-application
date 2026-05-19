@@ -1,0 +1,19 @@
+Phase 74 Plan 07 — Pre-run state capture (CONTEXT D-12)
+======================================================
+Timestamp: 2026-05-11T10:13:36Z
+HEAD SHA: 9f9e97d8cecd0040b70f4db643884aaaf72f11ae
+Node: v22.4.0
+Yarn: 4.13.0
+Playwright: Version 1.58.2
+
+Cache wipe confirmed:
+- apps/frontend/node_modules/.vite: absent (per `ls`)
+- apps/frontend/.svelte-kit: absent (per `ls`)
+
+DB reset (yarn dev:reset-with-data):
+- 327 candidates, 377 nominations, 24 questions, 4 question_categories
+- 5 constituencies, 1 election, 2 alliances, 8 organizations
+- 327 portraits uploaded
+- (Note: this is the DEFAULT template; the e2e template is loaded by Playwright's data-setup project on first run)
+
+Phase 74 plan summaries confirmed (Wave 1):

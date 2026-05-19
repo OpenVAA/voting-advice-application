@@ -1,0 +1,17 @@
+{
+  "title": "Admin Login",
+  "appTitle": "Election Compass",
+  "appSubtitle": "Administration",
+  "instructions": "Enter your login details.",
+  "email": "Email",
+  "password": "Password",
+  "button": "Login",
+  "forgotPassword": "Forgot Password?",
+  "errors": {
+    "invalidCredentials": "Invalid email or password",
+    "genericError": "An error occurred while trying to log in. Please try again.",
+    "unauthorized": "You need admin privileges to access this area",
+    "sessionExpired": "Your session has expired, please log in again",
+    "unknown": "An unknown error occurred"
+  }
+}

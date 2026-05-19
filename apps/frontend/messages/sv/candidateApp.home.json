@@ -1,0 +1,21 @@
+{
+  "candidateApp.home": {
+    "basicInfo": {
+      "edit": "Redigera din grundläggande information",
+      "enter": "Ange din grundläggande information",
+      "view": "Visa din grundläggande information"
+    },
+    "ingress": {
+      "notDone": "För att synas i valkompassen måste du ange viss grundläggande information om dig själv samt besvara påståenden om politiska frågor.",
+      "ready": "Du har fyllt i all information som behövs för valkompassen. Du kan fortfarande redigera dina svar och logga in senare för att göra det."
+    },
+    "preview": "Förhandsgranska din profil",
+    "previewTip": "Om du vill se hur väljarna kommer att se din profil kan du förhandsgranska den.",
+    "questions": {
+      "edit": "Redigera dina åsikter",
+      "enter": "Berätta dina åsikter",
+      "view": "Visa dina åsikter"
+    },
+    "ready": "Du är redo att köra!"
+  }
+}

@@ -10,7 +10,7 @@ export const staticSettings: StaticSettings = {
     source: 'https://github.com/OpenVAA/voting-advice-application'
   },
   dataAdapter: {
-    type: 'strapi',
+    type: 'supabase',
     supportsCandidateApp: true,
     supportsAdminApp: true
   },

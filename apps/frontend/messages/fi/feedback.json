@@ -1,0 +1,32 @@
+{
+  "feedback": {
+    "description": {
+      "label": "Muut kommentit",
+      "placeholder": "Muut kommentit tai ehdotukset"
+    },
+    "emailIntro": "Voit halutessasi myös lähettää meille sähköpostia osoitteeseen",
+    "error": {
+      "emailIntro": "Voisitko ystävällisesti lähettää palautteesi sähköpostilla klikkaamalla alta. Jo kirjoittamasi viesti kopioidaan automaattisesti mukaan.",
+      "emailSubject": "Palaute",
+      "message": "Anteeksi, palautteen lähettämisessä tapahtui virhe."
+    },
+    "popupTitle": "Mitä mieltä olet vaalikoneesta?",
+    "rating": {
+      "label": "Yleisarvio vaalikoneesta",
+      "valueLabel": [
+        {
+          "declarations": ["input rating", "input ratingMax", "local ratingPlural = rating: plural"],
+          "selectors": ["ratingPlural"],
+          "match": {
+            "ratingPlural=zero": "Ei arviota",
+            "ratingPlural=other": "Arvio {rating} maksimista {ratingMax}"
+          }
+        }
+      ]
+    },
+    "send": "Anna palautetta",
+    "sending": "Lähetetään…",
+    "thanks": "Kiitos palautteestasi!",
+    "title": "Palaute"
+  }
+}

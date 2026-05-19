@@ -1,0 +1,32 @@
+{
+  "_provenance": "reconstructed-from-trace-run-1.zip per RCA-FINDINGS.md §'State JSON Reconstruction Note'.",
+  "_source_trace": "trace-run-1.zip",
+  "runTag": "1",
+  "checkpoint": "after-redirect-settled",
+  "ts_estimated_wallTime": 1778616950500,
+  "ts_human_approx": "2026-05-12T20:15:50.500Z",
+  "url_at_this_moment": "http://localhost:5173/en/candidate/register/password?email=test.unregistered2%40openvaa.org",
+  "_LANDMARK": "BUG SURFACE — this checkpoint reveals the test-spec URL-predicate bug",
+  "url_predicate_evaluation": {
+    "predicate": "(url) => url.pathname.includes('/login') || url.pathname.includes('/candidate')",
+    "evaluated_against": "/en/candidate/register/password",
+    "pathname_includes_login": false,
+    "pathname_includes_candidate": true,
+    "predicate_returns": true,
+    "_conclusion": "The waitForURL predicate IMMEDIATELY returns true because '/en/candidate/register/password' contains '/candidate'. waitForURL exits before the goto-triggered navigation to /candidate/login lands. Then 'if (page.url().includes(\"login\"))' is FALSE because we are still on /register/password. Helper exits without doing manual login."
+  },
+  "test_trace_evidence": {
+    "step_at_line_51": "Wait for load state \" (helper's waitForURL at candidate-profile.spec.ts:51)",
+    "next_step_at_line_139": "Expect terms-checkbox to be visible (the failure point)",
+    "_note": "NO step at lines 54-62 (the manual login form fill/click branch). Confirmed via test.trace inspection — only 5 Frame API calls executed: goto, fill x 2, click, waitForURL. No subsequent fill/click for login form."
+  },
+  "cookies": [
+    {
+      "name": "sb-127-auth-token",
+      "value": "<REDACTED-AUTH-TOKEN>",
+      "_note": "Session cookie still valid."
+    }
+  ],
+  "hydrationMarker": null,
+  "_summary": "The helper's URL-predicate matched too early. The goto navigation to /candidate/login completes a few hundred ms LATER (asynchronously), but by then the test has already proceeded past the helper to line 138 (terms-checkbox locator) and line 139 (expect toBeVisible)."
+}

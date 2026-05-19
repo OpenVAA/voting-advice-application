@@ -1,14 +1,14 @@
 # `@openvaa/app-shared`: Common settings and utilities shared by the frontend and backend
 
-A module shared between `@openvaa/frontend` and `@openvaa/strapi`, which contains:
+A module shared between `@openvaa/frontend` and (potentially) backend consumers, which contains:
 
 - The [application settings](./src/settings/)
 - Definitions for data types extending those defined in the `@openvaa/core` and `@openvaa/data` modules, such as [`CustomData`](./src/data/customData.type.ts) and [`Localized`](./src/data/extendedData.type.ts) types
-- Utilities for [password validation](./src/utils/passwordValidation.ts)
+- Utilities for [password validation](./src/utils/passwordValidation.ts) and [deep merge of settings](./src/utils/mergeSettings.ts)
 
 ## Development
 
-In order to build ESM and CommonJS versions of the module in its directory run:
+To build the package in its directory run:
 
 ```bash
 yarn build
@@ -20,6 +20,8 @@ yarn build
 yarn workspace @openvaa/app-shared build
 ```
 
-Currently ESM version is used by `@openvaa/frontend` and CommonJS by `@openvaa/strapi` modules.
+## Build target
 
-The ideation behind this hybrid module solution, as well as different approaches which did not work, are described in [this article](https://www.sensedeep.com/blog/posts/2021/how-to-create-single-source-npm-module.html).
+ESM-only via `tsup`. All current in-repo consumers (`@openvaa/frontend`, `@openvaa/docs`, `@openvaa/dev-seed`, `@openvaa/argument-condensation`, `@openvaa/llm`) declare `"type": "module"`. No `require()` consumers exist in the workspace; Supabase Edge Functions do not import from this package. The historic dual ESM+CommonJS build was added to support `apps/strapi/`, which has been retired.
+
+If a future consumer requires CommonJS, restore `format: ['esm', 'cjs']` in `tsup.config.ts` and the corresponding `main` / `exports.require` entries in `package.json`.

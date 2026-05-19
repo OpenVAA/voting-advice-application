@@ -1,0 +1,26 @@
+=== Self-identity smoke (run-3 vs run-3) ===
+Baseline: 109p / 10f / 47c
+Post:     109p / 10f / 47c
+Contract: 94 pass-locked, 15 data-race pool, 47 cascade-baseline.
+PARITY GATE: PASS — no regressions detected per D-59-04.
+
+=== run-1 vs run-2 ===
+Baseline: 109p / 10f / 47c
+Post:     109p / 10f / 47c
+Contract: 94 pass-locked, 15 data-race pool, 47 cascade-baseline.
+PARITY GATE: PASS — no regressions detected per D-59-04.
+
+=== run-2 vs run-3 ===
+Baseline: 109p / 10f / 47c
+Post:     109p / 10f / 47c
+Contract: 94 pass-locked, 15 data-race pool, 47 cascade-baseline.
+PARITY GATE: PASS — no regressions detected per D-59-04.
+
+=== run-1 vs run-3 ===
+Baseline: 109p / 10f / 47c
+Post:     109p / 10f / 47c
+Contract: 94 pass-locked, 15 data-race pool, 47 cascade-baseline.
+PARITY GATE: PASS — no regressions detected per D-59-04.
+
+Phase 83 SC #7 (D-08 strict identity): PASS first-attempt on trio (1/2/3) at SHA d6bfeebdb0…
+Constants source: run-3.json. v2.10-close anchor: 94 PASS_LOCKED + 15 DATA_RACE + 47 CASCADE.

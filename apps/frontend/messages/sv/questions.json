@@ -1,0 +1,72 @@
+{
+  "questions": {
+    "additionalActions": "Ytterligare åtgärder för denna fråga",
+    "answers": {
+      "bothHaventAnswered": "Varken du eller {entity} har svarat på denna fråga",
+      "entityHasntAnswered": "{entity} har inte svarat på denna fråga",
+      "youHaventAnswered": "Du har inte svarat på denna fråga",
+      "yourAnswer": "Du"
+    },
+    "arguments": {
+      "con": "Emot",
+      "pro": "För",
+      "proCategory": "För {option}",
+      "title": "Argument"
+    },
+    "category": {
+      "numQuestions": [
+        {
+          "declarations": ["input numQuestions", "local numQuestionsPlural = numQuestions: plural"],
+          "selectors": ["numQuestionsPlural"],
+          "match": {
+            "numQuestionsPlural=other": "{numQuestions} frågor",
+            "numQuestionsPlural=one": "1 fråga"
+          }
+        }
+      ],
+      "skip": "Hoppa över den här kategorin"
+    },
+    "infoDescription": "Bakgrundsinformation om frågan",
+    "intro": {
+      "ingress": {
+        "withCategorySelection": [
+          {
+            "declarations": [
+              "input minQuestions",
+              "input numCategories",
+              "local minQuestionsPlural = minQuestions: plural"
+            ],
+            "selectors": ["minQuestionsPlural"],
+            "match": {
+              "minQuestionsPlural=zero": "Frågorna är indelade i {numCategories} kategorier. Du kan svarar på dem alla eller välja de du vill ha. ",
+              "minQuestionsPlural=one": "Frågorna är indelade i {numCategories} kategorier. Du kan svarar på dem alla eller välja de du vill ha. ",
+              "minQuestionsPlural=other": "Frågorna är indelade i {numCategories} kategorier. Du kan svarar på dem alla eller välja de du vill ha. Välj dock tillräckligt många kategorier för att få minst {minQuestions} frågor totalt."
+            }
+          }
+        ],
+        "withoutCategorySelection": [
+          {
+            "declarations": [
+              "input numCategories",
+              "input numQuestions",
+              "local numCategoriesPlural = numCategories: plural"
+            ],
+            "selectors": ["numCategoriesPlural"],
+            "match": {
+              "numCategoriesPlural=zero": "Svara sedan på {numQuestions} frågor om politik och värderingar. ",
+              "numCategoriesPlural=one": "Svara sedan på {numQuestions} frågor om politik och värderingar. ",
+              "numCategoriesPlural=other": "Svara sedan på {numQuestions} frågor om politik och värderingar. Frågorna är indelade i {numCategories} kategorier."
+            }
+          }
+        ]
+      },
+      "start": "Börja svara på frågor"
+    },
+    "next": "Nästa fråga",
+    "previous": "Föregående",
+    "remove": "Radera svar",
+    "skip": "Hoppa över",
+    "skipToResults": "Hoppa till resultat",
+    "title": "Yttranden"
+  }
+}

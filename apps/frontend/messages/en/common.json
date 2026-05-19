@@ -1,0 +1,93 @@
+{
+  "common": {
+    "alliance": {
+      "plural": "alliances",
+      "singular": "alliance"
+    },
+    "answer": {
+      "no": "No",
+      "yes": "Yes"
+    },
+    "back": "Back",
+    "cancel": "Cancel",
+    "candidate": {
+      "plural": "candidates",
+      "singular": "candidate"
+    },
+    "candidatePortrait": "Portrait",
+    "clear": "Clear",
+    "close": "Close",
+    "closeDialog": "Close dialog",
+    "closeMenu": "Close menu",
+    "confirmed": "Confirmed",
+    "constituency": "Constituency",
+    "continue": "Continue",
+    "election": "Election",
+    "electionList": "List",
+    "electionSymbol": {
+      "alliance": "Election Symbol",
+      "candidate": "Election Number",
+      "faction": "Election Symbol",
+      "organization": "Election Symbol"
+    },
+    "email": "Email",
+    "emailPlaceholder": "Email",
+    "expandOrCollapse": "Expand or collapse this section",
+    "faction": {
+      "plural": "factions",
+      "singular": "faction"
+    },
+    "firstName": "First Name",
+    "home": "home",
+    "info": "Info",
+    "language": {
+      "select": "Select Language"
+    },
+    "lastName": "Surname",
+    "loading": "Loading…",
+    "locked": "Locked",
+    "login": "Sign in",
+    "logout": "Log Out",
+    "madeWithPrefix": "Made with",
+    "madeWithSuffix": "",
+    "missingAnswer": "—",
+    "multipleAnswerSeparator": " • ",
+    "nomination": "Nomination",
+    "openCloseMenu": "Toggle menu",
+    "openMenu": "Open menu",
+    "openVAA": "OpenVAA",
+    "or": "Or",
+    "organization": {
+      "plural": "parties",
+      "singular": "party"
+    },
+    "password": "Password",
+    "passwordConfirmation": "Confirm password",
+    "pending": "Pending",
+    "primaryActions": "Primary actions",
+    "privacy": {
+      "dataCollection": {
+        "content": "We would like to collected usage data anonymously for research purposes and to improve the application. The data to collect includes your answers to the questions, the time spent answering the questions and in other sections and the results viewed, but the data cannot be connected to you.",
+        "title": "Collecting Usage Data"
+      }
+    },
+    "progress": "Progress",
+    "publishedBy": "Published by {publisher}",
+    "question": "Question",
+    "readMore": "Read More",
+    "required": "Required",
+    "resetAnswers": "Clear your answers",
+    "return": "Return",
+    "returnHome": "Return Home",
+    "saveAndContinue": "Save and Continue",
+    "saveAndReturn": "Save and Return",
+    "saving": "Saving…",
+    "showFullImage": "Show full image",
+    "skipToMain": "Skip to main content",
+    "state": "State",
+    "success": "Action succesful!",
+    "thanksNo": "No Thanks",
+    "unaffiliated": "Unaffiliated",
+    "website": "Website"
+  }
+}

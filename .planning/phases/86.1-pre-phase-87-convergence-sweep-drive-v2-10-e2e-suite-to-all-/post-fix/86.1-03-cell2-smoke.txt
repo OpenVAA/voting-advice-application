@@ -1,0 +1,124 @@
+[dotenv@17.3.1] injecting env (57) from .env -- tip: ⚙️  override existing env vars with { override: true }
+
+Running 8 tests using 2 workers
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+
+[1A[2K[1/8] [data-setup] › tests/tests/setup/data.setup.ts:76:1 › import test dataset
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+
+[1A[2K[2/8] [voter-app] › tests/tests/specs/voter/voter-not-located-redirect.spec.ts:75:3 › CLEAN-02 voter-not-located deferred-target redirect › CLEAN-02 — direct link to /results route with no election picked bounces twice and resumes /results @voter
+[1A[2K  1) [voter-app] › tests/tests/specs/voter/voter-not-located-redirect.spec.ts:75:3 › CLEAN-02 voter-not-located deferred-target redirect › CLEAN-02 — direct link to /results route with no election picked bounces twice and resumes /results @voter 
+
+    Error: [2mexpect([22m[31mpage[39m[2m).[22mtoHaveURL[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Expected pattern: [32m/\/elections\?next=/[39m
+    Received string:  [31m"http://localhost:5173/results/candidates"[39m
+    Timeout: 15000ms
+
+    Call log:
+    [2m  - Expect "toHaveURL" with timeout 15000ms[22m
+    [2m    19 × unexpected value "http://localhost:5173/results/candidates"[22m
+
+
+      100 |
+      101 |     // First bounce: /elections?next=<encoded-target>
+    > 102 |     await expect(page).toHaveURL(/\/elections\?next=/, { timeout: 15000 });
+          |                        ^
+      103 |
+      104 |     // reason: voter-elections-continue testId is the canonical submit button
+      105 |     // for the election-selector page (no accessible name beyond
+        at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application/.claude/worktrees/agent-a37e1f33985fba46d/tests/tests/specs/voter/voter-not-located-redirect.spec.ts:102:24
+
+    Error Context: tests/playwright-results/voter-not-located-redirect-c52b2-s-twice-and-resumes-results-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    tests/playwright-results/voter-not-located-redirect-c52b2-s-twice-and-resumes-results-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace tests/playwright-results/voter-not-located-redirect-c52b2-s-twice-and-resumes-results-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[31mTesting stopped early after 1 maximum allowed failures.[39m
+
+[1A[2K  1 failed
+    [voter-app] › tests/tests/specs/voter/voter-not-located-redirect.spec.ts:75:3 › CLEAN-02 voter-not-located deferred-target redirect › CLEAN-02 — direct link to /results route with no election picked bounces twice and resumes /results @voter 
+  6 did not run
+  1 passed (19.7s)
+  1 error was not a part of any test, see above for details
+[dotenv@17.3.1] injecting env (57) from .env -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2
+
+Running 8 tests using 2 workers
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+
+[1A[2K[1/8] [data-setup] › tests/tests/setup/data.setup.ts:76:1 › import test dataset
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+
+[1A[2K[2/8] [voter-app] › tests/tests/specs/voter/voter-not-located-redirect.spec.ts:105:3 › CLEAN-02 voter-not-located deferred-target redirect › CLEAN-02 — direct link to /results route with no election picked bounces twice and resumes /results @voter
+[1A[2K[3/8] [voter-app] › tests/tests/specs/voter/voter-not-located-redirect.spec.ts:175:3 › CLEAN-02 voter-not-located deferred-target redirect › CLEAN-02 — multi-election multi-constituency bounces twice and resumes deferred target with query params preserved @voter
+[1A[2K  1) [voter-app] › tests/tests/specs/voter/voter-not-located-redirect.spec.ts:175:3 › CLEAN-02 voter-not-located deferred-target redirect › CLEAN-02 — multi-election multi-constituency bounces twice and resumes deferred target with query params preserved @voter 
+
+    Error: [2mexpect([22m[31mpage[39m[2m).[22mtoHaveURL[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Expected pattern: [32m/\/elections\?next=/[39m
+    Received string:  [31m"http://localhost:5173/results/candidates?entityType=candidates"[39m
+    Timeout: 15000ms
+
+    Call log:
+    [2m  - Expect "toHaveURL" with timeout 15000ms[22m
+    [2m    19 × unexpected value "http://localhost:5173/results/candidates?entityType=candidates"[22m
+
+
+      186 |     await page.goto(deferredTarget);
+      187 |
+    > 188 |     await expect(page).toHaveURL(/\/elections\?next=/, { timeout: 15000 });
+          |                        ^
+      189 |
+      190 |     await page.getByTestId(testIds.voter.elections.continue).click();
+      191 |     await expect(page).toHaveURL(/\/constituencies\?next=/, { timeout: 15000 });
+        at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application/.claude/worktrees/agent-a37e1f33985fba46d/tests/tests/specs/voter/voter-not-located-redirect.spec.ts:188:24
+
+    Error Context: tests/playwright-results/voter-not-located-redirect-61985-with-query-params-preserved-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    tests/playwright-results/voter-not-located-redirect-61985-with-query-params-preserved-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace tests/playwright-results/voter-not-located-redirect-61985-with-query-params-preserved-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[4/8] [voter-app] › tests/tests/specs/voter/voter-not-located-redirect.spec.ts:202:3 › CLEAN-02 voter-not-located deferred-target redirect › CLEAN-02 — election pre-selected via URL bounces only to constituency selector and resumes deferred target @voter
+[1A[2K[5/8] [voter-app] › tests/tests/specs/voter/voter-not-located-redirect.spec.ts:231:3 › CLEAN-02 voter-not-located deferred-target redirect › CLEAN-02 — refresh after localStorage clear mid-session resumes deferred target @voter
+[1A[2K[6/8] [voter-app] › tests/tests/specs/voter/voter-not-located-redirect.spec.ts:265:3 › CLEAN-02 voter-not-located deferred-target redirect › CLEAN-02 — open-redirect attempt to external URL is rejected by whitelist (defense-in-depth) @voter
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+
+[1A[2K[7/8] [data-teardown] › tests/tests/setup/variant-data.teardown.ts:12:1 › delete variant test dataset
+[1A[2K[8/8] [data-teardown] › tests/tests/setup/data.teardown.ts:17:1 › delete test dataset
+[1A[2K  1 failed
+    [voter-app] › tests/tests/specs/voter/voter-not-located-redirect.spec.ts:175:3 › CLEAN-02 voter-not-located deferred-target redirect › CLEAN-02 — multi-election multi-constituency bounces twice and resumes deferred target with query params preserved @voter 
+  1 skipped
+  3 did not run
+  3 passed (20.0s)
+
+OUTCOME: SKIP-FALLBACK
+Phase 86.1-03 cell 2 disposition (CONTEXT D-05 FIX-ATTEMPT path empirically insufficient):
+  1) Fix-attempt smoke (first invocation): localStorage.clear() + sessionStorage.clear() defense inserted
+     between waitForLoadState('domcontentloaded') and toHaveURL assertion. EMPIRICAL RESULT: chain-head
+     FAILED with 'Received string: http://localhost:5173/results/candidates' (19 retries, 15s timeout).
+     The (located)/+layout.ts gate appears to auto-imply election+constituency on cold-start now,
+     short-circuiting the ?next= redirect chain entirely. Storage-clear runs AFTER goto+settle,
+     so it cannot influence a redirect decision that has already been made.
+  2) SKIP-FALLBACK applied: 3-element protocol (inline rationale + ≥3-line block comment + todo file
+     .planning/todos/pending/2026-05-16-voter-not-located-redirect-clean-02.md). Storage-clear LEFT IN
+     PLACE for v2.11+ evidence-of-attempt; test.skip(true,...) short-circuits before it executes.
+  3) Post-skip re-smoke confirmed: 1 skipped (chain-head) + 3 passed (late-chain tests independent of
+     chain-head's URL state) + 1 failed (line 175 multi-election variant, different failure class) +
+     3 did-not-run (cascade). Plan 86.1-04 anchor regen must manually move chain-head entry from
+     CASCADE → SKIPPED_TESTS per PATTERNS.md + RESEARCH §7. Investigation cap honored: ~3 min.

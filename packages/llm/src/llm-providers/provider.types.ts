@@ -70,8 +70,7 @@ export type LLMStreamOptions<TOOLS extends ToolSet | undefined = undefined> = Pr
   };
 
 export interface LLMStreamResult<TOOLS extends ToolSet | undefined = undefined>
-  extends StreamTextResult<NonNullable<TOOLS>, never>,
-    Omit<LLMCallMetadata, 'costs'> {
+  extends StreamTextResult<NonNullable<TOOLS>, never>, Omit<LLMCallMetadata, 'costs'> {
   // Override costs to be a Promise since stream results are immediately available
   costs: Promise<LLMCosts>;
 }

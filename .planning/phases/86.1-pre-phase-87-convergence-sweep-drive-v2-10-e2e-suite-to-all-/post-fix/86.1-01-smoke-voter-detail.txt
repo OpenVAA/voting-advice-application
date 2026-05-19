@@ -1,0 +1,120 @@
+[dotenv@17.3.1] injecting env (57) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+
+Running 13 tests using 6 workers
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+
+[1A[2K[1/13] [data-setup] › tests/tests/setup/data.setup.ts:76:1 › import test dataset
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🤖 agentic secret storage: https://dotenvx.com/as2
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+
+[1A[2K[2/13] [voter-app] › tests/tests/specs/voter/voter-detail.spec.ts:41:3 › voter entity detail › should open candidate detail drawer when clicking a result card @voter
+[1A[2K[3/13] [voter-app] › tests/tests/specs/voter/voter-detail.spec.ts:55:3 › voter entity detail › should display candidate info and opinions tabs @voter
+[1A[2K[4/13] [voter-app] › tests/tests/specs/voter/voter-detail.spec.ts:130:3 › voter entity detail › should open party detail drawer with info, candidates, and opinions tabs @voter
+[1A[2K[5/13] [voter-app] › tests/tests/specs/voter/voter-detail.spec.ts:79:3 › voter entity detail › should display candidate answers correctly in info and opinions tabs @voter
+[1A[2K[6/13] [voter-app] › tests/tests/specs/voter/voter-detail.spec.ts:236:3 › voter-detail answer cases (E2E-05) › case (a) — both answered: voter row and entity row rendered @voter
+[1A[2K[7/13] [voter-app] › tests/tests/specs/voter/voter-detail.spec.ts:262:3 › voter-detail answer cases (E2E-05) › case (b) — voter answered, entity missing: voter row only @voter
+[1A[2K[8/13] [voter-app] › tests/tests/specs/voter/voter-detail.spec.ts:285:3 › voter-detail answer cases (E2E-05) › case (c) — voter missing, entity answered: entity row only @voter
+[1A[2K[9/13] [voter-app] › tests/tests/specs/voter/voter-detail.spec.ts:310:3 › voter-detail answer cases (E2E-05) › case (d) — both missing: "Neither has answered" message rendered @voter
+[1A[2K[10/13] [voter-app] › tests/tests/specs/voter/voter-detail.spec.ts:379:3 › voter-detail per-category SubMatches (E2E-07) › per-category SubMatch grid renders Manhattan + directional metric path categories @voter
+[1A[2K[11/13] [voter-app] › tests/tests/specs/voter/voter-detail.spec.ts:424:3 › voter-detail per-category SubMatches (E2E-07) › directional-metric SubMatch row exists for a candidate who answered the categorical question @voter
+[1A[2K  1) [voter-app] › tests/tests/specs/voter/voter-detail.spec.ts:310:3 › voter-detail answer cases (E2E-05) › case (d) — both missing: "Neither has answered" message rendered @voter 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByRole('dialog').getByTestId('voter-entity-detail-opinions').getByText(/Neither you nor .* has(?:n't| not)? answered/i)
+    Expected: visible
+    Error: strict mode violation: getByRole('dialog').getByTestId('voter-entity-detail-opinions').getByText(/Neither you nor .* has(?:n't| not)? answered/i) resolved to 2 elements:
+        1) <div class="small-label mb-16 text-center">Neither you nor CN has answered this question</div> aka getByText('Neither you nor CN has').first()
+        2) <div class="small-label mb-16 text-center">Neither you nor CN has answered this question</div> aka getByText('Neither you nor CN has').nth(1)
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByRole('dialog').getByTestId('voter-entity-detail-opinions').getByText(/Neither you nor .* has(?:n't| not)? answered/i)[22m
+
+
+      347 |     await expect(
+      348 |       opinionsTab.getByText(/Neither you nor .* has(?:n't| not)? answered/i)
+    > 349 |     ).toBeVisible();
+          |       ^
+      350 |   });
+      351 | });
+      352 |
+        at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application/.claude/worktrees/agent-a5b3afe4607f057a9/tests/tests/specs/voter/voter-detail.spec.ts:349:7
+
+    Error Context: tests/playwright-results/voter-detail-voter-detail--1b060-s-answered-message-rendered-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    tests/playwright-results/voter-detail-voter-detail--1b060-s-answered-message-rendered-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace tests/playwright-results/voter-detail-voter-detail--1b060-s-answered-message-rendered-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  2) [voter-app] › tests/tests/specs/voter/voter-detail.spec.ts:130:3 › voter entity detail › should open party detail drawer with info, candidates, and opinions tabs @voter 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByRole('dialog').getByTestId('voter-entity-detail-opinions')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByRole('dialog').getByTestId('voter-entity-detail-opinions')[22m
+
+
+      192 |     // Switch to opinions tab
+      193 |     await dialog.getByRole('tab', { name: /opinions/i }).click();
+    > 194 |     await expect(dialog.getByTestId(testIds.voter.entityDetail.opinionsTab)).toBeVisible();
+          |                                                                              ^
+      195 |
+      196 |     // Close the drawer
+      197 |     await page.keyboard.press('Escape');
+        at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application/.claude/worktrees/agent-a5b3afe4607f057a9/tests/tests/specs/voter/voter-detail.spec.ts:194:78
+
+    Error Context: tests/playwright-results/voter-detail-voter-entity--2787f-andidates-and-opinions-tabs-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    tests/playwright-results/voter-detail-voter-entity--2787f-andidates-and-opinions-tabs-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace tests/playwright-results/voter-detail-voter-entity--2787f-andidates-and-opinions-tabs-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+
+[1A[2K[12/13] [data-teardown] › tests/tests/setup/variant-data.teardown.ts:12:1 › delete variant test dataset
+[1A[2K[13/13] [data-teardown] › tests/tests/setup/data.teardown.ts:17:1 › delete test dataset
+[1A[2K  2 failed
+    [voter-app] › tests/tests/specs/voter/voter-detail.spec.ts:130:3 › voter entity detail › should open party detail drawer with info, candidates, and opinions tabs @voter 
+    [voter-app] › tests/tests/specs/voter/voter-detail.spec.ts:310:3 › voter-detail answer cases (E2E-05) › case (d) — both missing: "Neither has answered" message rendered @voter 
+  11 passed (44.8s)
+
+================================================================================
+Plan 86.1-01 — voter-detail smoke verdict (Phase 86.1 path-b sub-option b2)
+================================================================================
+Smoke result: 11 passed / 2 failed (out of 13 voter-app voter-detail.spec.ts cells).
+85-04 cluster #2 baseline: 8 FAIL + 5 CASCADE (voter-detail × 6 + voter-matching:238 + voter-navigation:196 + 5 cascades).
+85-04 cluster #2 voter-detail-only baseline: 6 FAIL (cases a/b/c/d, directional-metric × 2, per-category grid).
+Post-fix: 5/6 cluster #2 voter-detail cells transition FAIL → PASS (cases a/b/c, directional-metric × 2, per-category grid).
+Residual:
+  - L310 case (d) STILL fails BUT with a DIFFERENT failure class — strict-mode locator violation ("resolved to 2 elements") at line 349. This is NOT a fixture-loop stall. The Skip-Next bump succeeded in walking the fixture past the non-Likert opinion questions; the residual failure is in the assertion locator and is out of scope for Plan 86.1-01 (no fixture relevance). Defer to 86.1-04 verifier triage.
+  - L130 (party-detail drawer opinions tab) — NOT in cluster #2 baseline; pre-existing failure on tab locator (voter-entity-detail-opinions testId not visible). Pre-existing class, NOT introduced or unmasked by the fixture bump. Defer to 86.1-04 / Phase 87 anchor triage.
+Verdict: CLOSES CLUSTER (cluster #2 fixture-loop stall class fully closed; 1 residual is a different failure class.)

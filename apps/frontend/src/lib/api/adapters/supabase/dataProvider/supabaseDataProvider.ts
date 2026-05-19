@@ -1,0 +1,550 @@
+import { ENTITY_TYPE } from '@openvaa/data';
+import { UniversalDataProvider } from '$lib/api/base/universalDataProvider';
+import { parseAnswers } from '$lib/api/utils/parseAnswers';
+import { constants } from '$lib/utils/constants';
+import { supabaseAdapterMixin } from '../supabaseAdapter';
+import { getLocalized } from '../utils/getLocalized';
+import { parseStoredImage } from '../utils/storageUrl';
+import { toDataObject } from '../utils/toDataObject';
+import type { DynamicSettings } from '@openvaa/app-shared';
+import type {
+  AnyEntityVariantData,
+  AnyNominationVariantPublicData,
+  AnyQuestionVariantData,
+  ConstituencyData,
+  ConstituencyGroupData,
+  ElectionData,
+  QuestionCategoryData
+} from '@openvaa/data';
+import type { Json } from '@openvaa/supabase-types';
+import type { DPDataType } from '$lib/api/base/dataTypes';
+import type { LocalizedAnswers } from '$lib/api/base/dataWriter.type';
+import type {
+  GetAppCustomizationOptions,
+  GetConstituenciesOptions,
+  GetDataOptionsBase,
+  GetElectionsOptions,
+  GetEntitiesOptions,
+  GetNominationsOptions,
+  GetQuestionsOptions
+} from '$lib/api/base/getDataOptions.type';
+import type { AppCustomization } from '$lib/contexts/app';
+import type { TranslationKey } from '$types';
+import type { StoredImage } from '../utils/storageUrl';
+import type { InternalFlatNomination } from './supabaseDataProvider.type';
+
+/**
+ * Supabase implementation of the DataProvider.
+ * Implements read methods that query Supabase PostgREST and transform
+ * the raw database rows into the domain types expected by DataRoot.
+ */
+export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProvider) {
+  /**
+   * Fetch application settings from the `app_settings` table.
+   * The `settings` JSONB column holds a `Partial<DynamicSettings>`.
+   * Notification title/content fields are localized before return.
+   */
+  protected async _getAppSettings(options?: GetDataOptionsBase): Promise<DPDataType['appSettings']> {
+    const { data, error } = await this.supabase.from('app_settings').select('settings').limit(1).single();
+
+    if (error) {
+      if (error.code === 'PGRST116') return {}; // No rows -- return empty settings
+      throw new Error(`getAppSettings: ${error.message}`);
+    }
+
+    const settings = (data?.settings ?? {}) as Record<string, unknown>;
+    const locale = options?.locale ?? this.locale;
+
+    // Localize notification title and content fields
+    if (settings.notifications && typeof settings.notifications === 'object') {
+      const notifications = { ...(settings.notifications as Record<string, unknown>) };
+      for (const key of ['candidateApp', 'voterApp']) {
+        const notif = notifications[key];
+        if (notif && typeof notif === 'object') {
+          const n = notif as Record<string, unknown>;
+          notifications[key] = {
+            ...n,
+            title: getLocalized(n.title as Record<string, string> | null, locale, this.defaultLocale),
+            content: getLocalized(n.content as Record<string, string> | null, locale, this.defaultLocale)
+          };
+        }
+      }
+      settings.notifications = notifications;
+    }
+
+    return settings as Partial<DynamicSettings>;
+  }
+
+  /**
+   * Fetch application customization from the `app_settings.customization` JSONB column.
+   * Localizes string fields, converts storage image paths to absolute URLs,
+   * localizes translation overrides and FAQ entries.
+   */
+  protected async _getAppCustomization(options?: GetAppCustomizationOptions): Promise<DPDataType['appCustomization']> {
+    const { data, error } = await this.supabase.from('app_settings').select('customization').limit(1).single();
+
+    if (error) {
+      if (error.code === 'PGRST116') return {} as AppCustomization;
+      throw new Error(`getAppCustomization: ${error.message}`);
+    }
+
+    const raw = (data?.customization ?? {}) as Record<string, unknown>;
+    const locale = options?.locale ?? this.locale;
+    const supabaseUrl = constants.PUBLIC_SUPABASE_URL;
+
+    const result: AppCustomization = {};
+
+    // Localize string fields
+    if (raw.publisherName) {
+      result.publisherName =
+        getLocalized(raw.publisherName as Record<string, string>, locale, this.defaultLocale) ?? undefined;
+    }
+
+    // Convert image storage paths to URLs
+    // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
+    result.publisherLogo = parseStoredImage(raw.publisherLogo as Json as unknown as StoredImage | null, supabaseUrl);
+    // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
+    result.poster = parseStoredImage(raw.poster as Json as unknown as StoredImage | null, supabaseUrl);
+    // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
+    result.candPoster = parseStoredImage(raw.candPoster as Json as unknown as StoredImage | null, supabaseUrl);
+
+    // Localize translation overrides (each value is a LocalizedString)
+    if (raw.translationOverrides && typeof raw.translationOverrides === 'object') {
+      const overrides = raw.translationOverrides as Record<string, Record<string, string>>;
+      const localized: Record<string, string> = {};
+      for (const [key, val] of Object.entries(overrides)) {
+        const resolved = getLocalized(val, locale, this.defaultLocale);
+        if (resolved != null) localized[key] = resolved;
+      }
+      result.translationOverrides = localized as Record<TranslationKey, string>;
+    }
+
+    // Localize FAQ entries
+    if (Array.isArray(raw.candidateAppFAQ)) {
+      result.candidateAppFAQ = raw.candidateAppFAQ.map((faq: Record<string, unknown>) => ({
+        question: getLocalized(faq.question as Record<string, string> | null, locale, this.defaultLocale) ?? '',
+        answer: getLocalized(faq.answer as Record<string, string> | null, locale, this.defaultLocale) ?? ''
+      }));
+    }
+
+    return result;
+  }
+
+  /**
+   * Fetch elections with their constituency group join data.
+   * Maps DB columns to ElectionData properties (date, round, subtype).
+   */
+  protected async _getElectionData(options?: GetElectionsOptions): Promise<DPDataType['elections']> {
+    let query = this.supabase
+      .from('elections')
+      .select('*, election_constituency_groups(constituency_group_id)')
+      .order('sort_order');
+
+    if (options?.id) {
+      query = Array.isArray(options.id) ? query.in('id', options.id) : query.eq('id', options.id);
+    }
+
+    const { data, error } = await query;
+    if (error) throw new Error(`getElectionData: ${error.message}`);
+
+    const locale = options?.locale ?? this.locale;
+    const supabaseUrl = constants.PUBLIC_SUPABASE_URL;
+
+    return (data ?? []).map((row) => {
+      const obj = toDataObject(row as Record<string, unknown>, locale, this.defaultLocale);
+      return {
+        ...obj,
+        date: row.election_date ? String(row.election_date) : undefined,
+        round: row.current_round ?? undefined,
+        subtype: row.election_type ?? row.subtype ?? undefined,
+        // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
+        image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl),
+        constituencyGroupIds: (
+          (row.election_constituency_groups as Array<{ constituency_group_id: string }>) ?? []
+        ).map((jt) => jt.constituency_group_id)
+      } as ElectionData;
+    });
+  }
+
+  /**
+   * Fetch constituency groups (with their member constituency IDs) and all constituencies.
+   * Keywords are localized and split by comma into string arrays.
+   */
+  protected async _getConstituencyData(options?: GetConstituenciesOptions): Promise<DPDataType['constituencies']> {
+    const locale = options?.locale ?? this.locale;
+    const supabaseUrl = constants.PUBLIC_SUPABASE_URL;
+
+    // 1. Fetch constituency groups with their constituency join rows
+    let groupQuery = this.supabase
+      .from('constituency_groups')
+      .select('*, constituency_group_constituencies(constituency_id)')
+      .order('sort_order');
+
+    if (options?.id) {
+      groupQuery = Array.isArray(options.id) ? groupQuery.in('id', options.id) : groupQuery.eq('id', options.id);
+    }
+
+    const { data: groupData, error: groupError } = await groupQuery;
+    if (groupError) throw new Error(`getConstituencyData (groups): ${groupError.message}`);
+
+    const groups = (groupData ?? []).map((row) => {
+      const obj = toDataObject(row as Record<string, unknown>, locale, this.defaultLocale);
+      return {
+        ...obj,
+        // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
+        image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl),
+        constituencyIds: ((row.constituency_group_constituencies as Array<{ constituency_id: string }>) ?? []).map(
+          (jt) => jt.constituency_id
+        )
+      } as ConstituencyGroupData;
+    });
+
+    // 2. Fetch all constituencies (not filtered by id -- may belong to groups via parent chains)
+    const { data: constData, error: constError } = await this.supabase
+      .from('constituencies')
+      .select('*')
+      .order('sort_order');
+
+    if (constError) throw new Error(`getConstituencyData (constituencies): ${constError.message}`);
+
+    const constituencies = (constData ?? []).map((row) => {
+      const obj = toDataObject(row as Record<string, unknown>, locale, this.defaultLocale);
+      // Keywords: localize then split by comma+optional whitespace
+      const rawKeywords = row.keywords as Record<string, string> | null;
+      const localizedKeywords = getLocalized(rawKeywords, locale, this.defaultLocale);
+      const keywords = localizedKeywords ? localizedKeywords.split(/,\s*/).filter(Boolean) : undefined;
+      return {
+        ...obj,
+        // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
+        image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl),
+        keywords
+      } as ConstituencyData;
+    });
+
+    return { groups, constituencies };
+  }
+
+  /**
+   * Fetch nominations via the `get_nominations` RPC which joins nominations with
+   * all 4 entity tables. Deduplicates entities client-side using a Map keyed by entity_id.
+   * Candidate entities include firstName, lastName, organizationId.
+   */
+  protected async _getNominationData(options?: GetNominationsOptions): Promise<DPDataType['nominations']> {
+    const locale = options?.locale ?? this.locale;
+    const supabaseUrl = constants.PUBLIC_SUPABASE_URL;
+
+    // The `get_nominations` RPC accepts a single uuid per election/constituency.
+    // When the caller passes arrays (multi-election voter flow — see
+    // `(voters)/(located)/+layout.ts` which threads URL `electionId` /
+    // `constituencyId` arrays through verbatim), fan out into one RPC per
+    // (election, constituency) pair and concatenate the results. Picking
+    // `[0]` only — the prior shape — silently dropped the other elections'
+    // nominations and broke the multi-election partial-coverage dialog gate
+    // (variant-constituency.spec.ts:237).
+    const electionIds: Array<string | null> = options?.electionId
+      ? Array.isArray(options.electionId)
+        ? (options.electionId as Array<string>)
+        : [options.electionId]
+      : [null];
+    const constituencyIds: Array<string | null> = options?.constituencyId
+      ? Array.isArray(options.constituencyId)
+        ? (options.constituencyId as Array<string>)
+        : [options.constituencyId]
+      : [null];
+
+    const includeUnconfirmed = options?.includeUnconfirmed ?? false;
+    const calls = electionIds.flatMap((eid) =>
+      constituencyIds.map((cid) =>
+        this.supabase.rpc('get_nominations', {
+          p_election_id: eid,
+          p_constituency_id: cid,
+          p_include_unconfirmed: includeUnconfirmed
+        })
+      )
+    );
+    const results = await Promise.all(calls);
+    const firstError = results.find((r) => r.error)?.error;
+    if (firstError) throw new Error(`getNominationData: ${firstError.message}`);
+    const data = results.flatMap((r) => r.data ?? []);
+
+    // Deduplicate entities using a Map keyed by entity_id; nominations have
+    // unique (election_id, constituency_id) keys so the fan-out cannot produce
+    // nomination duplicates, but guard with a Set to be safe.
+    const entityMap = new Map<string, AnyEntityVariantData>();
+    const nominations: Array<AnyNominationVariantPublicData> = [];
+    const seenNominationIds = new Set<string>();
+
+    // Build nomination_id → entity_type map for parent-type derivation.
+    // Phase 64 P01: the schema's `nominations` table stores `parent_nomination_id`
+    // but the parent's entity_type is not denormalized into the child row — it
+    // must be looked up from the parent. The Nomination base class
+    // (packages/data/src/objects/nominations/base/nomination.ts:38-45) throws if
+    // `parentNominationId` is set without a matching `parentNominationType`,
+    // so we must populate both. The `get_nominations` RPC returns ALL relevant
+    // nominations (parents and children) in the same fan-out, so this lookup
+    // is purely in-memory and adds no DB round-trips.
+    const nominationTypeById = new Map<string, string>();
+    for (const row of data) {
+      if (row.id != null && row.entity_type != null) {
+        nominationTypeById.set(row.id as string, row.entity_type as string);
+      }
+    }
+
+    for (const row of data) {
+      if (seenNominationIds.has(row.id as string)) continue;
+      seenNominationIds.add(row.id as string);
+      // Build nomination object from nomination-level columns
+      const parentNominationId = row.parent_nomination_id as string | null | undefined;
+      const parentNominationType =
+        parentNominationId != null ? (nominationTypeById.get(parentNominationId) ?? null) : null;
+      const nomRow = {
+        id: row.id,
+        name: row.name,
+        short_name: row.short_name,
+        info: row.info,
+        color: row.color,
+        image: row.image,
+        sort_order: row.sort_order,
+        subtype: row.subtype,
+        custom_data: row.custom_data,
+        election_id: row.election_id,
+        constituency_id: row.constituency_id,
+        election_round: row.election_round,
+        election_symbol: row.election_symbol,
+        parent_nomination_id: parentNominationId ?? null
+      };
+      const nomObj = toDataObject(nomRow as Record<string, unknown>, locale, this.defaultLocale);
+
+      // Phase 64 P01: enforce the Nomination "either both or neither"
+      // invariant (packages/data/src/objects/nominations/base/nomination.ts:38-45).
+      // mapRow() doesn't synthesize parentNominationType (no column map entry);
+      // we set it here based on the in-memory parent lookup. If the parent's
+      // entity_type can't be resolved (parent not in this fan-out's result
+      // set — e.g., a cross-constituency parent that the RPC filtered out),
+      // we DROP parentNominationId so the constructor doesn't throw.
+      const nominationOut: Record<string, unknown> = {
+        ...nomObj,
+        entityType: row.entity_type,
+        entityId: row.entity_id,
+        // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
+        image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl)
+      };
+      if (parentNominationId != null && parentNominationType != null) {
+        nominationOut.parentNominationType = parentNominationType;
+      } else {
+        // Either no parent (default) or unresolvable parent — clear the id
+        // to keep the invariant intact.
+        nominationOut.parentNominationId = null;
+      }
+      nominations.push(nominationOut as AnyNominationVariantPublicData);
+
+      // Extract and deduplicate entity
+      const entityId = row.entity_id as string;
+      if (entityId && !entityMap.has(entityId)) {
+        const entityRow = {
+          id: entityId,
+          name: row.entity_name,
+          short_name: row.entity_short_name,
+          info: row.entity_info,
+          color: row.entity_color,
+          image: row.entity_image,
+          sort_order: row.entity_sort_order,
+          subtype: row.entity_subtype,
+          custom_data: row.entity_custom_data
+        };
+        const entityObj = toDataObject(entityRow as Record<string, unknown>, locale, this.defaultLocale);
+        const entityType = row.entity_type as string;
+
+        const entity: Record<string, unknown> = {
+          ...entityObj,
+          type: entityType,
+          // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
+          image: parseStoredImage(row.entity_image as Json as unknown as StoredImage | null, supabaseUrl),
+          // reason: JSONB → LocalizedAnswers shape; structural guard applied inside parseAnswers.
+          answers: parseAnswers(row.entity_answers as Json as unknown as LocalizedAnswers | null, locale)
+        };
+
+        // Candidate-specific fields
+        if (entityType === ENTITY_TYPE.Candidate) {
+          entity.firstName = row.entity_first_name;
+          entity.lastName = row.entity_last_name;
+          entity.organizationId = row.entity_organization_id;
+        }
+
+        entityMap.set(entityId, entity as AnyEntityVariantData);
+      }
+    }
+
+    // Reverse-fill parent → children id arrays. The data layer's nomination
+    // constructors only auto-populate these when nominations arrive in the
+    // nested form (e.g. `org.data.candidates = [...]`). Our flat schema only
+    // sets the child→parent edge (`parent_nomination_id`); without the
+    // reverse fill, `OrganizationNomination.candidateNominationIds` is
+    // undefined, `hasCandidates` is false, and `nominationAndQuestionStore`
+    // filters every org out under the default `hideIfMissingAnswers.candidate`
+    // setting — surfaced as "parties tab is empty" during Phase 64 manual
+    // smoke. The full child→parent → grandparent walk also covers
+    // candidate→faction→organization→alliance and faction→organization edges.
+    const childIdsByParentAndType = new Map<string, Map<string, Array<string>>>();
+    for (const child of nominations as Array<InternalFlatNomination>) {
+      if (!child.parentNominationId) continue;
+      let typeMap = childIdsByParentAndType.get(child.parentNominationId);
+      if (!typeMap) {
+        typeMap = new Map();
+        childIdsByParentAndType.set(child.parentNominationId, typeMap);
+      }
+      let ids = typeMap.get(child.entityType);
+      if (!ids) {
+        ids = [];
+        typeMap.set(child.entityType, ids);
+      }
+      ids.push(child.id);
+    }
+    for (const parent of nominations as Array<InternalFlatNomination>) {
+      const typeMap = childIdsByParentAndType.get(parent.id);
+      if (!typeMap) continue;
+      const candIds = typeMap.get(ENTITY_TYPE.Candidate);
+      const factionIds = typeMap.get(ENTITY_TYPE.Faction);
+      const orgIds = typeMap.get(ENTITY_TYPE.Organization);
+      if (candIds && (parent.entityType === ENTITY_TYPE.Organization || parent.entityType === ENTITY_TYPE.Faction)) {
+        parent.candidateNominationIds = candIds;
+      }
+      if (factionIds && parent.entityType === ENTITY_TYPE.Organization) {
+        parent.factionNominationIds = factionIds;
+      }
+      if (orgIds && parent.entityType === ENTITY_TYPE.Alliance) {
+        parent.organizationNominationIds = orgIds;
+      }
+    }
+
+    return {
+      nominations,
+      entities: Array.from(entityMap.values())
+    };
+  }
+
+  /**
+   * Fetch entity data (candidates and/or organizations) from their respective tables.
+   * Sets the `type` field based on entity table, processes answers through parseAnswers,
+   * and converts storage image paths to absolute URLs.
+   */
+  protected async _getEntityData(options?: GetEntitiesOptions): Promise<DPDataType['entities']> {
+    const locale = options?.locale ?? this.locale;
+    const supabaseUrl = constants.PUBLIC_SUPABASE_URL;
+
+    // Determine which entity tables to query based on entityType filter
+    const types: Array<{ table: 'candidates' | 'organizations'; entityType: string }> = [];
+    if (!options?.entityType || options.entityType === ENTITY_TYPE.Candidate) {
+      types.push({ table: 'candidates', entityType: ENTITY_TYPE.Candidate });
+    }
+    if (!options?.entityType || options.entityType === ENTITY_TYPE.Organization) {
+      types.push({ table: 'organizations', entityType: ENTITY_TYPE.Organization });
+    }
+
+    const results: Array<AnyEntityVariantData> = [];
+
+    for (const { table, entityType } of types) {
+      let query = this.supabase.from(table).select('*').order('sort_order');
+      if (options?.id) {
+        query = Array.isArray(options.id) ? query.in('id', options.id) : query.eq('id', options.id);
+      }
+      const { data, error } = await query;
+      if (error) throw new Error(`getEntityData (${table}): ${error.message}`);
+
+      for (const row of data ?? []) {
+        const obj = toDataObject(row as Record<string, unknown>, locale, this.defaultLocale);
+        results.push({
+          ...obj,
+          type: entityType,
+          // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
+          image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl),
+          // reason: JSONB → LocalizedAnswers shape; structural guard applied inside parseAnswers.
+          answers: parseAnswers(row.answers as Json as unknown as LocalizedAnswers | null, locale)
+        } as AnyEntityVariantData);
+      }
+    }
+
+    return results;
+  }
+
+  /**
+   * Fetch question categories and questions. Localizes choice labels for
+   * choice-type questions, maps category_type to type on categories,
+   * and filters categories by electionId when specified.
+   */
+  protected async _getQuestionData(options?: GetQuestionsOptions): Promise<DPDataType['questions']> {
+    const locale = options?.locale ?? this.locale;
+    const supabaseUrl = constants.PUBLIC_SUPABASE_URL;
+
+    // 1. Fetch categories
+    const { data: catData, error: catError } = await this.supabase
+      .from('question_categories')
+      .select('*')
+      .order('sort_order');
+    if (catError) throw new Error(`getQuestionData (categories): ${catError.message}`);
+
+    let categories = (catData ?? []).map((row) => {
+      const obj = toDataObject(row as Record<string, unknown>, locale, this.defaultLocale);
+      return {
+        ...obj,
+        // QuestionCategoryData uses 'type' not 'categoryType'
+        type: row.category_type ?? 'opinion',
+        // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
+        image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl)
+      } as QuestionCategoryData;
+    });
+
+    // Client-side filter by electionId if specified
+    if (options?.electionId) {
+      const filterElectionId = Array.isArray(options.electionId) ? options.electionId : [options.electionId];
+      categories = categories.filter((cat) => {
+        // reason: electionIds is a runtime-only field tacked on by toDataObject; not yet in QuestionCategoryData
+        const catElectionIds = (cat as QuestionCategoryData & { electionIds?: Array<string> | null }).electionIds ?? null;
+        // Include categories with no electionIds (applicable to all) or matching
+        return (
+          !catElectionIds ||
+          catElectionIds.length === 0 ||
+          catElectionIds.some((eid: string) => filterElectionId.includes(eid))
+        );
+      });
+    }
+
+    // 2. Fetch questions belonging to the filtered categories
+    const categoryIds = categories.map((c) => c.id);
+    let qQuery = this.supabase.from('questions').select('*').order('sort_order');
+    if (categoryIds.length > 0) {
+      qQuery = qQuery.in('category_id', categoryIds);
+    }
+    const { data: qData, error: qError } = await qQuery;
+    if (qError) throw new Error(`getQuestionData (questions): ${qError.message}`);
+
+    const questions = (qData ?? []).map((row) => {
+      const obj = toDataObject(row as Record<string, unknown>, locale, this.defaultLocale);
+      // Localize choice labels for choice-type questions
+      let choices = row.choices as Array<{
+        id: number;
+        label: Record<string, string> | string;
+        [k: string]: unknown;
+      }> | null;
+      if (choices && Array.isArray(choices)) {
+        choices = choices.map((choice) => ({
+          ...choice,
+          label:
+            typeof choice.label === 'object' && choice.label !== null
+              ? (getLocalized(choice.label as Record<string, string>, locale, this.defaultLocale) ?? '')
+              : choice.label
+        }));
+      }
+
+      return {
+        ...obj,
+        type: row.type, // question_type enum passes through as-is
+        choices,
+        // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
+        image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl)
+      } as AnyQuestionVariantData;
+    });
+
+    return { categories, questions };
+  }
+}

@@ -1,0 +1,111 @@
+/**
+ * Check whether we have the necessary electionId and constituencyId parameters or if we can imply them:
+ * 1. If we don't have, them redirect to the necessary selection page.
+ * 2. If we do, download the question and nomination data.
+ *
+ * Load the data used by the located parts of the voter app, i.e. those requiring the elections and constituencies to be selected.
+ *
+ * TODO: Validate that the constituencies provided are applicable to the elections
+ */
+
+import { staticSettings } from '@openvaa/app-shared';
+import { DataRoot } from '@openvaa/data';
+import { redirect } from '@sveltejs/kit';
+import { dataProvider as dataProviderPromise } from '$lib/api/dataProvider';
+import { getLocale } from '$lib/paraglide/runtime';
+import { buildRoute, getImpliedConstituencyIds, getImpliedElectionIds, parseParams } from '$lib/utils/route';
+import { mergeAppSettings } from '$lib/utils/settings';
+import type { Id } from '@openvaa/core';
+
+export async function load({ fetch, parent, untrack, url }) {
+  const lang = getLocale();
+  let electionId: Id | Array<Id> | undefined;
+  let constituencyId: Id | Array<Id> | undefined;
+
+  // We need to be careful to not rerun the load function unnecessarily
+  untrack(() => ({ electionId, constituencyId } = parseParams({ url })));
+
+  // reason: voter-app routes allowlist for ?next= deferred target — prevents
+  // open-redirect attacks per CLEAN-02 / CONTEXT D-05. The whitelist accepts
+  // either a locale-prefixed path (`/en/...`) or one of the bare voter-app
+  // route roots (`/results`, `/questions`, `/nominations`). Cross-origin
+  // values (`https://...`, `//evil.com`) fail the regex and are dropped —
+  // the redirect proceeds to the selector without a `?next=` parameter.
+  const isVoterRoute = /^\/[a-z]{2}\/.*|^\/(results|questions|nominations)\b/.test(url.pathname);
+  const nextKv = isVoterRoute ? `next=${encodeURIComponent(url.pathname + url.search)}` : '';
+  /**
+   * Append `next=…` to a redirect target with the correct separator. `buildRoute`
+   * may emit a base URL that already carries `?electionId=…` (Constituencies branch
+   * below), in which case the next-param must join with `&`, not `?`. Concatenating
+   * a leading-`?` next directly produced `…?electionId=…?next=…` — a malformed URL
+   * that SvelteKit's URL parser 500s on (CLEAN-02 test 3 reproducer).
+   */
+  const withNext = (base: string): string => (nextKv ? `${base}${base.includes('?') ? '&' : '?'}${nextKv}` : base);
+
+  // Try to imply ids if not provided
+  if (!electionId || !constituencyId) {
+    const { appSettingsData, constituencyData, electionData } = await parent();
+    const appSettings = mergeAppSettings(staticSettings, await appSettingsData);
+
+    // Create a temporary data root we use for implication
+    const dataRoot = new DataRoot();
+    dataRoot.provideElectionData(await electionData);
+    dataRoot.provideConstituencyData(await constituencyData);
+    if (!electionId) {
+      electionId = getImpliedElectionIds({
+        appSettings,
+        dataRoot,
+        selectedConstituencyIds: constituencyId ? [constituencyId].flat() : undefined
+      });
+      if (!electionId) {
+        redirect(
+          307,
+          withNext(
+            buildRoute({
+              route: 'Elections',
+              locale: lang
+            })
+          )
+        );
+      }
+    }
+
+    if (!constituencyId) {
+      constituencyId = getImpliedConstituencyIds({
+        dataRoot,
+        selectedElectionIds: [electionId].flat()
+      });
+      if (!constituencyId) {
+        redirect(
+          307,
+          withNext(
+            buildRoute({
+              route: 'Constituencies',
+              electionId,
+              locale: lang
+            })
+          )
+        );
+      }
+    }
+  }
+
+  // Get data
+  const dataProvider = await dataProviderPromise;
+  dataProvider.init({ fetch });
+  return {
+    questionData: dataProvider
+      .getQuestionData({
+        electionId,
+        locale: lang
+      })
+      .catch((e) => e),
+    nominationData: dataProvider
+      .getNominationData({
+        electionId,
+        constituencyId,
+        locale: lang
+      })
+      .catch((e) => e)
+  };
+}

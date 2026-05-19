@@ -1,0 +1,137 @@
+Plan 86.1-01 — D-03 Side-Effect Audit
+======================================
+
+Captured: 2026-05-16
+Plan path: CONTEXT D-03 path-b sub-option (b2) — fixture-helper Skip-Next budget bump.
+This audit confirms RESEARCH §3.2's load-bearing finding (5 PASS_LOCKED tests depend
+on `test-question-directional-1`) and demonstrates why the chosen path does NOT
+mutate seed shape — therefore those 5 tests are preserved by construction.
+
+
+Section 1 — Non-Likert opinion-question inventory in `packages/dev-seed/src/templates/e2e.ts`
+---------------------------------------------------------------------------------------------
+
+VERIFIED via grep `-nE "singleChoiceCategorical|type: 'boolean'|type: 'number'"`:
+
+| Sort | Line | Type                       | Question id (per RESEARCH §3.2 + CONTEXT.md L94-100) |
+|------|------|----------------------------|------------------------------------------------------|
+| 17   | 544  | singleChoiceCategorical    | test-question-directional-1                          |
+| 18   | 576  | boolean                    | test-question-boolean-1                              |
+| 19+  | 666  | number                     | (numeric opinion question)                           |
+
+These are the 3 non-Likert (non-`singleChoiceOrdinal`) opinion-question types that
+the `answeredVoterPage` fixture stalls on after the 16-Likert main loop terminates.
+The fixture's existing Skip-Next tail (`for (let skip = 0; skip < 3; skip++)` at
+voter.fixture.ts:95) was sized for sort 17 + sort 18 + 1-step headroom — that
+budget is INSUFFICIENT when sort 19+ (number) is also unanswered.
+
+The Plan 86.1-01 fix bumps that budget 3 → 6: covers all 3 non-Likert opinion-
+question types (sorts 17/18/19) plus 3 steps of headroom for future non-Likert
+opinion questions added at sort ≤ 24 (the next info-category boundary per
+CLAUDE.md "Common Workflows" `--likert-only` chain caveat).
+
+
+Section 2 — PASS_LOCKED tests requiring `test-question-directional-1`
+----------------------------------------------------------------------
+
+Per RESEARCH §3.2 lines 137-145 (VERIFIED via grep `directional-1|SETTINGS-01 wave B`
+against the source specs), the following 5 PASS_LOCKED tests assert the presence
+of `test-question-directional-1` (the sort-17 categorical opinion question):
+
+1. `voter-app :: specs/voter/voter-detail.spec.ts > directional-metric SubMatch
+    row exists for a candidate who answered the categorical question`
+    — voter-detail.spec.ts:419-450 (test body at L424-450)
+    — PASS_LOCKED_TESTS:152 in tests/scripts/diff-playwright-reports.ts
+
+2. `voter-app :: specs/voter/voter-detail.spec.ts > per-category SubMatch grid
+    renders Manhattan + directional metric path categories`
+    — voter-detail.spec.ts:378-422
+    — PASS_LOCKED_TESTS:153
+
+3. `voter-app :: specs/voter/voter-results.spec.ts > SETTINGS-01 wave B —
+    ChoiceQuestionFilter (categorical)`
+    — voter-results.spec.ts:730-794 (uncheck Option A on directional-1)
+    — PASS_LOCKED_TESTS:174
+
+4. `voter-app :: specs/voter/voter-results.spec.ts > SETTINGS-01 wave B —
+    FilterGroup AND`
+    — voter-results.spec.ts:796+ (2-filter toggle including directional-1)
+    — PASS_LOCKED_TESTS:175
+
+5. `voter-app :: specs/voter/voter-results.spec.ts > SETTINGS-01 wave B —
+    MISSING_FILTER_VALUE`
+    — voter-results.spec.ts:888+ (excludeMissing on directional-1)
+    — PASS_LOCKED_TESTS:176
+
+
+Section 3 — Why path-b sub-option (b2) preserves these 5 tests by construction
+------------------------------------------------------------------------------
+
+The Plan 86.1-01 maneuver (sub-option b2 per RESEARCH §3.4 verdict) modifies
+ONLY `tests/tests/fixtures/voter.fixture.ts` (the post-Likert Skip-Next tail's
+iteration cap). It does NOT call `applyLikertOnlyFilter()`, does NOT modify
+`packages/dev-seed/src/templates/e2e.ts`, and does NOT alter the default
+`data.setup.ts` seed pipeline.
+
+Consequence: the seed shape consumed by the `voter-app` Playwright project
+remains identical to its pre-fix state. The sort-17 categorical question
+(`test-question-directional-1`), the sort-18 boolean, and the sort-19+ number
+are ALL still seeded into the database. The 5 PASS_LOCKED tests above continue
+to find their assertion target in the DOM exactly as before.
+
+This is the load-bearing safety property of sub-option (b2):
+  - Path (a) — in-place `data.setup.ts` filter edit — would REGRESS these 5
+    tests (RESEARCH §3.3 verdict).
+  - Path (b1) — clone setup + split project — solves the regression risk but
+    has medium project-topology blast radius (must rewire `voter-app`'s
+    `dependencies: ['data-setup']` and risks conflicting with the 5 directional-
+    asserting tests that live in the SAME `voter-app` project).
+  - Path (b2) — fixture-helper bump — contains the fix to one file (voter.fixture.ts)
+    AND does not mutate seed shape. The 5 PASS_LOCKED dependencies are
+    preserved by construction.
+
+D-09 (no PASS_LOCKED regression) satisfied a priori.
+
+
+Section 4 — 85-04 baseline FAIL+CASCADE counts (the cells this plan targets)
+-----------------------------------------------------------------------------
+
+Per `.planning/phases/85-…/85-04-SUMMARY.md` "Findings handed off" cluster table
+(lines 88-89 verified):
+
+CLUSTER #1 — variant-constituency chain blocker:
+  - 1 FAIL  : `tests/tests/specs/variants/variant-constituency.spec.ts:226`
+              answer-loop hits non-Likert opinion question
+  - 22 CASCADE : 3 within-spec cascades + 19 cross-project cascades
+                 (startfromcg / low-min / 1e-Nc / Ne-Nc / allowopen /
+                  hidden-required per CONTEXT D-02 L85)
+  - Disposition under Plan 86.1-01 (b2): fixture-helper bump may or may not
+    unblock this cluster — variant-constituency uses its OWN answer-loop
+    (not the `answeredVoterPage` fixture). If it stays FAIL after fixture bump,
+    Plan 86.1-04 will need to mirror 85-03 commit 26c187d93 into
+    `variant-constituency.setup.ts`. Documented as a residual escalation path.
+
+CLUSTER #2 — `answeredVoterPage` fixture regression:
+  - 8 FAIL  : voter-detail × 6 (cases c, d, directional-metric × 2, etc.)
+              + voter-matching:238 + voter-navigation:196
+  - 5 CASCADE : within-spec cascade-victims of the 3 FAIL spec-files
+  - Disposition under Plan 86.1-01 (b2): EXPECTED to fully close — these are
+    ALL `answeredVoterPage` consumers and the fixture-helper bump directly
+    addresses the stall on sorts 17/18/19 non-Likert opinion questions.
+
+Combined target for Plan 86.1-01 (b2): up to 36 cells transition
+(FAIL+CASCADE → PASS) — cluster #2 high-confidence + cluster #1 best-effort.
+
+
+Section 5 — Verification protocol (Task 3 smoke)
+------------------------------------------------
+
+Two per-spec smokes will be captured to disk after the Task 2 fixture-helper
+bump to verify:
+  - voter-detail smoke (cluster #2 closure proof: ≥ 6 cells transition PASS)
+  - variant-constituency smoke (cluster #1 closure or residual-cells handoff
+    note for Plan 86.1-04)
+
+
+No source code modified in this task.
+Audit complete.

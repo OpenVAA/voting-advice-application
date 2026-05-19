@@ -8,11 +8,52 @@ dotenv.config();
 export const STORAGE_STATE = path.join(TESTS_DIR, '../playwright/.auth/user.json');
 
 /**
- * See https://playwright.dev/docs/test-configuration.
+ * Playwright configuration with project dependencies pattern.
+ *
+ * Projects execute in dependency order:
+ *   data-setup -> auth-setup -> candidate-app -> candidate-app-mutation -> re-auth-setup
+ *     -> candidate-app-settings -> candidate-app-password
+ *   data-setup -> voter-app (read-only specs)
+ *   data-setup -> voter-app-settings -> voter-app-popups (settings-mutating specs)
+ *   (data-teardown runs after all projects complete)
+ *
+ * Configuration variant projects run sequentially AFTER the default suite:
+ *   [candidate-app-password, voter-app-popups] -> data-setup-multi-election -> variant-multi-election
+ *     -> variant-results-sections -> data-setup-constituency -> variant-constituency
+ *     -> data-setup-startfromcg -> variant-startfromcg
+ *   (data-teardown-variants runs after all variant setups complete)
+ *
+ * Candidate specs are split into four groups:
+ *   - candidate-app: auth + questions (sequential — fullyParallel:false prevents
+ *     concurrent server requests that race on the Supabase session layer)
+ *   - candidate-app-mutation: registration + profile (create users via invite)
+ *   - candidate-app-settings: settings (mutates global app settings like disabled/maintenance —
+ *     must run alone)
+ *   - candidate-app-password: logout + password change (session-destructive —
+ *     runs LAST because updateUser({password}) revokes refresh tokens)
+ *
+ * Voter specs are split into three groups:
+ *   - voter-app: core journey, results, detail, static-pages (parallel-safe — read-only settings)
+ *   - voter-app-settings: settings spec (mutates global app settings — must run alone)
+ *   - voter-app-popups: popups spec (mutates global app settings — must run alone, after settings)
+ *
+ * See https://playwright.dev/docs/test-global-setup-teardown
  */
 export default defineConfig({
   testDir: TESTS_DIR,
+  testIgnore: ['**/*.test.ts'],
   outputDir: path.join(TESTS_DIR, '../playwright-results'),
+
+  /* Screenshot baselines stored alongside specs in a git-trackable directory */
+  snapshotPathTemplate: '{testDir}/__screenshots__/{testFileName}/{arg}{ext}',
+
+  /* Per-test timeout — 90s ceiling required for full-suite render-pressured fixtures.
+   * Plan 64-04 Task 6 bumped voter.fixture.ts internal waitForURL budgets to 30s, but the
+   * per-test wrapper timeout was the binding constraint: under --workers=1 full-suite
+   * contention the answer-loop + post-loop waitForURL exceeded 30s and timed out at
+   * voter.fixture.ts:85. Path A continuation per .planning/phases/64-voter-results-reactivity-completion/64-03-RECAPTURE-NOTES.md. */
+  timeout: 90000,
+
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -20,70 +61,518 @@ export default defineConfig({
   /* Retry tests on CI */
   retries: process.env.CI ? 3 : 0,
   /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  workers: process.env.CI ? 1 : 6,
+
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [['html', { outputFolder: path.join(TESTS_DIR, '../playwright-report') }]],
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
-  use: {
-    /* Base URL to use in actions like `await page.goto('/')`. */
-    // baseURL: 'http://127.0.0.1:3000',
 
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on',
-
-    baseURL: process.env.FRONTEND_PORT ? `http://localhost:${process.env.FRONTEND_PORT}` : 'http://localhost:5173',
-    storageState: STORAGE_STATE
+  /* Default visual comparison thresholds for toHaveScreenshot */
+  expect: {
+    toHaveScreenshot: {
+      threshold: 0.2,
+      maxDiffPixelRatio: 0.01
+    }
   },
 
-  globalSetup: path.join(TESTS_DIR, './global-setup.ts'),
+  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+  use: {
+    /* Collect trace for all tests. See https://playwright.dev/docs/trace-viewer */
+    trace: 'on',
 
-  // Set global timeout to 100s
-  globalTimeout: 100000,
+    baseURL: process.env.FRONTEND_PORT ? `http://localhost:${process.env.FRONTEND_PORT}` : 'http://localhost:5173'
+  },
 
-  /* Configure projects for major browsers */
   projects: [
+    // 1. Data setup - imports test dataset via Supabase Admin Client
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] }
-    }
-
-    /*
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      name: 'data-setup',
+      testMatch: /data\.setup\.ts/,
+      teardown: 'data-teardown'
     },
 
+    // 2. Data teardown - cleans up after all tests complete
     {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
+      name: 'data-teardown',
+      testMatch: /data\.teardown\.ts/
     },
-    */
 
-    /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
-    // },
+    // 3. Auth setup - logs in as candidate, saves storageState (depends on data being loaded)
+    {
+      name: 'auth-setup',
+      testMatch: /auth\.setup\.ts/,
+      dependencies: ['data-setup']
+    },
 
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
+    // 4a. Candidate app: auth + questions (sequential to prevent concurrent
+    //     server requests that race on Supabase session/DataWriter singletons)
+    {
+      name: 'candidate-app',
+      testDir: './tests/specs/candidate',
+      testMatch: /candidate-(auth|questions|translation)\.spec\.ts/,
+      fullyParallel: false,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: STORAGE_STATE
+      },
+      dependencies: ['auth-setup']
+    },
+
+    // 4b. Candidate app: registration + profile (create users via invite)
+    //
+    // Phase 86.1 post-fix: `candidate-profile-validation.spec.ts` was lifted
+    // OUT of this testMatch into the dedicated `candidate-app-validation`
+    // project below. profile-validation logs in as Alpha (TEST_CANDIDATE_*)
+    // while registration + profile use fresh E2E_ADDENDUM_CANDIDATES[0]/[1].
+    // Running Alpha-login under the same project's parallel mode raced
+    // against the sibling specs' Supabase admin calls (inviteUserByEmail +
+    // forceRegister on neighbouring rows), occasionally landing the Alpha
+    // post-login redirect at `/login` again. Splitting into a sequential
+    // dependent project removes the contention entirely.
+    //
+    // Phase 86.1 post-fix #2: `fullyParallel: false` — registration and
+    // profile both perform Supabase admin mutations (inviteUserByEmail,
+    // forceRegister, ToU-flag updates) on overlapping candidate rows.
+    // Running candidate-registration.spec.ts and candidate-profile.spec.ts
+    // in parallel produced an order-of-operations race where the password-
+    // reset flow's `complete-registration` step would observe
+    // `terms_of_use_accepted IS NULL` for an addendum candidate that the
+    // profile spec had just unset (or hadn't yet set), then fail the
+    // password-reset gate. Serialising the spec files within this project
+    // eliminates the race without forcing the broader candidate chain into
+    // single-worker mode.
+    {
+      name: 'candidate-app-mutation',
+      testDir: './tests/specs/candidate',
+      testMatch: /candidate-(registration|profile)\.spec\.ts/,
+      fullyParallel: false,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: STORAGE_STATE
+      },
+      dependencies: ['candidate-app']
+    },
+
+    // 4b.1 Candidate app: profile-validation (Alpha-login, A11Y-01 cells).
+    //      Sequential after candidate-app-mutation to avoid the Alpha-session
+    //      race documented above. fullyParallel:false so the 6 IMAGE_CELLS +
+    //      TEXT_CELLS tests within the file serialise as well — the
+    //      Playwright filechooser actor on macOS Chromium is non-deterministic
+    //      across parallel filechooser invocations (see the spec's `Phase 76
+    //      P01 Task 4 smoke discovery` doc-comment).
+    //
+    //      MUST run before `candidate-app-settings` — settings flips global
+    //      `app_settings.maintenanceMode` which disables the login form,
+    //      breaking Alpha-login inside validation. Sequencing is enforced
+    //      from the settings side (line: `candidate-app-settings.dependencies
+    //      ⊇ ['candidate-app-validation']`) so we don't have to add a
+    //      symmetric dep here.
+    {
+      name: 'candidate-app-validation',
+      testDir: './tests/specs/candidate',
+      testMatch: /candidate-profile-validation\.spec\.ts/,
+      fullyParallel: false,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: STORAGE_STATE
+      },
+      dependencies: ['candidate-app-mutation']
+    },
+
+    // 4b2. Re-auth: mutation tests (password reset) invalidate the alpha
+    //      candidate's refresh token, so re-authenticate before settings/password tests.
+    //
+    //      Phase 84 DETERM-08: repointed from 'candidate-app-mutation' to
+    //      'candidate-app' to break the imgproxy-502-cascade chain. The original
+    //      'candidate-app-mutation' dependency was a SEQUENCING constraint (run
+    //      AFTER mutation), not a data-flow dependency — candidate-app-mutation
+    //      tests use the FRESH E2E_ADDENDUM_CANDIDATES[1] candidate (see
+    //      candidate-profile.spec.ts:84-86), NOT Alpha. Repointing to
+    //      'candidate-app' preserves the data-flow contract (re-auth-setup needs
+    //      data-setup + auth-setup to have run, which 'candidate-app' transitively
+    //      depends on) while breaking the cascade-skip on mutation failures.
+    //      Verified via 84-RCA-FINDINGS.md: 11 candidate-app-settings tests + the
+    //      dual-project re-auth.setup.ts entries cold-start fetch zero
+    //      /storage/v1/* URLs; their imgproxy-tie is purely cascade-chain, not
+    //      initial-paint or prefetch.
+    {
+      name: 're-auth-setup',
+      testMatch: /re-auth\.setup\.ts/,
+      dependencies: ['candidate-app']
+    },
+
+    // 4c. Candidate app: settings (mutates global app settings — must run alone)
+    //     Runs before password tests since those revoke the session token again
+    //
+    //     Phase 86.1 post-fix: ALSO sequential after `candidate-app-validation`.
+    //     Without this dep, validation and settings ran in parallel (both
+    //     transitively depend on `candidate-app` but had no direct ordering),
+    //     so settings would flip `app_settings.maintenanceMode = true` mid-run
+    //     and disable the login submit button for validation's Alpha-login
+    //     (`<button disabled data-testid="login-submit">` in the failure trace).
+    {
+      name: 'candidate-app-settings',
+      testDir: './tests/specs/candidate',
+      testMatch: /candidate-settings\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: STORAGE_STATE
+      },
+      dependencies: ['re-auth-setup', 'candidate-app-validation']
+    },
+
+    // 4d. Candidate app: logout + password change (session-destructive —
+    //     runs LAST because updateUser({password}) revokes refresh tokens)
+    {
+      name: 'candidate-app-password',
+      testDir: './tests/specs/candidate',
+      testMatch: /candidate-password\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: STORAGE_STATE
+      },
+      dependencies: ['candidate-app-settings']
+    },
+
+    // 5a. Voter app: core journey, results, detail, static-pages (parallel-safe — read-only settings)
+    {
+      name: 'voter-app',
+      testDir: './tests/specs/voter',
+      // Phase 86 DETERM-14: voter-visibility-required was authored ONLY for the
+      // `variant-hidden-required-voter` project (variant overlay required to
+      // hide `test-voter-q-8`); the spec's negative-presence assertion correctly
+      // fails when the overlay does not apply. Excluded here so the spec runs
+      // ONLY in `variant-hidden-required-voter`. See §3.7 of 86-RESEARCH.md.
+      //
+      // Phase 86.1 post-fix: voter-not-located-redirect requires a 2-elections
+      // × multi-constituency seed (otherwise getImpliedElectionIds auto-implies
+      // and the spec's `/elections?next=…` → `/constituencies?next=…` bounce
+      // chain is short-circuited to a direct /results landing). Moved to the
+      // `voter-not-located-redirect` project below which reuses the Ne-Nc
+      // dataset (2 elections × 3 constituencies each).
+      testIgnore: /voter-(settings|popups|visibility-required|not-located-redirect)\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome']
+      },
+      dependencies: ['data-setup']
+    },
+
+    // 5b. Voter app: settings (mutates global app settings — must run alone)
+    //     Depends on data-setup only (not voter-app) so that pre-existing failures
+    //     in read-only voter specs don't block settings verification.
+    {
+      name: 'voter-app-settings',
+      testDir: './tests/specs/voter',
+      testMatch: /voter-settings\.spec\.ts/,
+      fullyParallel: false,
+      use: {
+        ...devices['Desktop Chrome']
+      },
+      dependencies: ['data-setup']
+    },
+
+    // 5c. Voter app: popups (mutates global app settings — must run alone, after settings)
+    //     Depends on voter-app-settings to ensure sequential execution of
+    //     settings-mutating specs (Playwright runs files in parallel across workers
+    //     even with fullyParallel:false, so separate projects enforce ordering).
+    {
+      name: 'voter-app-popups',
+      testDir: './tests/specs/voter',
+      testMatch: /voter-popups\.spec\.ts/,
+      fullyParallel: false,
+      use: {
+        ...devices['Desktop Chrome']
+      },
+      dependencies: ['voter-app-settings']
+    },
+
+    // === Configuration Variant Projects ===
+    // Variant projects run sequentially AFTER the default suite completes.
+    // Each variant has its own dataset loaded by a dedicated setup project.
+    // All variant setups share a single teardown project.
+
+    // Shared teardown for all variant projects
+    {
+      name: 'data-teardown-variants',
+      testMatch: /variant-data\.teardown\.ts/
+    },
+
+    // Variant: multi-election (CONF-01, CONF-02, CONF-04)
+    //
+    // PHASE 85 DETERM-11 STRUCTURAL DECOUPLING (2026-05-14):
+    //   `voter-app-popups` removed from dependencies. The voter-popups dismissal-
+    //   after-reload deterministic FAIL (strict-mode locator violation on the
+    //   close button — 3/3 across Phase 84 anchor `04ddfdd85cf…`) was the single
+    //   root cause of all 44 variant cascade-skips per `85-RCA-FINDINGS.md`. The
+    //   popup test itself is OUT-OF-SCOPE for Phase 85 (D-08 binding — Phase 86
+    //   retains DETERM-12 ownership). Severing the dependency structurally
+    //   collapses the 47 → ≤5 CASCADE pool without touching the popup test.
+    //
+    //   PRECEDENT: Phase 84 made the identical structural maneuver on the
+    //   re-auth-setup project's dependency at lines 148-152 (commit 93050e4fb).
+    //
+    //   The remaining `['candidate-app-password']` dependency preserves the
+    //   sequencing constraint that variants run AFTER the default candidate-app
+    //   suite completes (so auth.users state + storageState are stable).
+    {
+      name: 'data-setup-multi-election',
+      testMatch: /variant-multi-election\.setup\.ts/,
+      teardown: 'data-teardown-variants',
+      dependencies: ['candidate-app-password']
+    },
+    {
+      name: 'variant-multi-election',
+      testDir: './tests/specs/variants',
+      testMatch: /multi-election\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-multi-election']
+    },
+
+    // Variant: results sections (CONF-05, CONF-06) — uses the multi-election
+    // dataset.
+    //
+    // Phase 86.1 post-fix: re-seeded BEFORE running, via a dedicated data
+    // setup project (`data-setup-results-sections`) instead of re-using the
+    // already-tainted dataset that variant-multi-election leaves behind. The
+    // 3-elections-in-modal failure mode (precondition-asserted at
+    // `results-sections.spec.ts:144-157`) was reproducing intermittently even
+    // though `variant-multi-election` doesn't insert any election rows — the
+    // dedicated re-seed eliminates the ambiguity by guaranteeing exactly two
+    // elections (test-election-1 + test-election-2) at the moment
+    // variant-results-sections's beforeAll begins. Chain remains strictly
+    // sequential: data-setup-multi-election → variant-multi-election →
+    // data-setup-results-sections → variant-results-sections →
+    // data-setup-constituency (the next variant).
+    {
+      name: 'data-setup-results-sections',
+      // Re-uses the same setup test as data-setup-multi-election (matches the
+      // same file path) — each project runs the setup independently in its
+      // own worker. The setup's first action is `runTeardown('test-', client)`
+      // which atomically clears any leftover test-prefixed rows before
+      // re-seeding the canonical 2-election shape.
+      testMatch: /variant-multi-election\.setup\.ts/,
+      teardown: 'data-teardown-variants',
+      dependencies: ['variant-multi-election']
+    },
+    {
+      name: 'variant-results-sections',
+      testDir: './tests/specs/variants',
+      testMatch: /results-sections\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-results-sections']
+    },
+
+    // Variant: constituency (CONF-03)
+    {
+      name: 'data-setup-constituency',
+      testMatch: /variant-constituency\.setup\.ts/,
+      teardown: 'data-teardown-variants',
+      dependencies: ['variant-results-sections'] // Sequential: wait for previous variant to finish
+    },
+    {
+      name: 'variant-constituency',
+      testDir: './tests/specs/variants',
+      testMatch: /constituency\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-constituency']
+    },
+
+    // Variant: startFromConstituencyGroup
+    {
+      name: 'data-setup-startfromcg',
+      testMatch: /variant-startfromcg\.setup\.ts/,
+      teardown: 'data-teardown-variants',
+      dependencies: ['variant-constituency'] // Sequential: wait for previous variant
+    },
+    {
+      name: 'variant-startfromcg',
+      testDir: './tests/specs/variants',
+      testMatch: /startfromcg\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-startfromcg']
+    },
+
+    // Variant: low-minimum-answers (Phase 74 E2E-02 — browse-without-match)
+    {
+      name: 'data-setup-low-minimum-answers',
+      testMatch: /variant-low-minimum-answers\.setup\.ts/,
+      teardown: 'data-teardown-variants',
+      dependencies: ['variant-startfromcg'] // Sequential: wait for previous variant (Pitfall 5)
+    },
+    {
+      name: 'variant-low-minimum-answers',
+      // E2E-02 spec lives under specs/voter/, not specs/variants/ (CONTEXT D-13)
+      testDir: './tests/specs/voter',
+      testMatch: /voter-browse-without-match\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-low-minimum-answers']
+    },
+
+    // Variant: 1e-Nc (Phase 74 E2E-04 cell 2 — 1 election × 3 constituencies)
+    {
+      name: 'data-setup-1e-Nc',
+      testMatch: /variant-1e-Nc\.setup\.ts/,
+      teardown: 'data-teardown-variants',
+      dependencies: ['variant-low-minimum-answers'] // Sequential: wait for previous variant (Pitfall 5)
+    },
+    {
+      name: 'variant-1e-Nc',
+      testDir: './tests/specs/variants',
+      testMatch: /1e-Nc\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-1e-Nc']
+    },
+
+    // Variant: Ne-Nc (Phase 74 E2E-04 cell 4 — 2 elections × 3 constituencies each;
+    // cross-bleed-free constituency dropdown filtering is the strongest matrix contract)
+    {
+      name: 'data-setup-Ne-Nc',
+      testMatch: /variant-Ne-Nc\.setup\.ts/,
+      teardown: 'data-teardown-variants',
+      dependencies: ['variant-1e-Nc'] // Sequential: wait for previous variant (Pitfall 5)
+    },
+    {
+      name: 'variant-Ne-Nc',
+      testDir: './tests/specs/variants',
+      testMatch: /Ne-Nc\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-Ne-Nc']
+    },
+
+    // Phase 86.1 post-fix: voter-not-located-redirect (CLEAN-02) reuses the
+    // Ne-Nc dataset (2 elections × 3 constituencies). Inserted into the
+    // sequential variant chain BETWEEN variant-Ne-Nc and data-setup-allowopen
+    // so the next variant's teardown+seed does not clobber the Ne-Nc dataset
+    // while these tests are still running (LANDMINE-6).
+    //
+    // Was previously bound to the default `voter-app` project, which uses the
+    // base single-election e2e seed — that auto-implies election+constituency
+    // and short-circuits the spec's `?next=` bounce chain, producing direct
+    // /results landings. See the spec's doc-comment for the dataset contract.
+    {
+      name: 'voter-not-located-redirect',
+      testDir: './tests/specs/voter',
+      testMatch: /voter-not-located-redirect\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['variant-Ne-Nc']
+    },
+
+    // Variant: allowopen (Phase 77 SETTINGS-02 — display-side reframing per LANDMINE-1)
+    {
+      name: 'data-setup-allowopen',
+      testMatch: /variant-allowopen\.setup\.ts/,
+      teardown: 'data-teardown-variants',
+      dependencies: ['voter-not-located-redirect'] // Sequential: wait for previous variant (LANDMINE-6)
+    },
+    {
+      name: 'variant-allowopen',
+      testDir: './tests/specs/voter',
+      testMatch: /voter-allowopen\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-allowopen']
+    },
+
+    // Variant: hidden+required (Phase 77 SETTINGS-03 — visibility filter + required-info enforcement;
+    // voter-required cell is PRODUCT-GAP per LANDMINE-3, captured as follow-up todo)
+    {
+      name: 'data-setup-hidden-required',
+      testMatch: /variant-hidden-required\.setup\.ts/,
+      teardown: 'data-teardown-variants',
+      dependencies: ['variant-allowopen'] // Sequential: wait for previous variant (LANDMINE-6)
+    },
+    {
+      // Voter-hidden cell — walks /questions and asserts the hidden question
+      // is absent from the DOM (voterContext filter at
+      // voterContext.svelte.ts:215-230). Voter routes only — no candidate
+      // auth dependency.
+      name: 'variant-hidden-required-voter',
+      testDir: './tests/specs/voter',
+      testMatch: /voter-visibility-required\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-hidden-required']
+    },
+    {
+      // Candidate-required cell — logs in as Alpha (reuses STORAGE_STATE from
+      // auth-setup; auth schema is NOT touched by dataset reset, so Alpha's
+      // pre-registered credentials remain valid against the variant's
+      // candidate row). Placed inside the variant project per RESEARCH OQ-3
+      // resolution (option B) to sidestep candidate-app-mutation's testMatch
+      // regex AND the upstream auth-setup race (LANDMINE-D).
+      name: 'variant-hidden-required-candidate',
+      testDir: './tests/specs/candidate',
+      testMatch: /candidate-required-info\.spec\.ts/,
+      fullyParallel: false,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: STORAGE_STATE
+      },
+      dependencies: ['variant-hidden-required-voter']
+    },
+
+    // === Opt-in Specialized Projects ===
+    // These projects are gated by environment variables and excluded from
+    // the default `yarn test:e2e` run. Enable via:
+    //   PLAYWRIGHT_VISUAL=1 npx playwright test -c tests/playwright.config.ts --project=visual-regression
+    //   PLAYWRIGHT_PERF=1 npx playwright test -c tests/playwright.config.ts --project=performance
+
+    // Visual regression: screenshot comparison for key pages
+    ...(process.env.PLAYWRIGHT_VISUAL
+      ? [
+          {
+            name: 'visual-regression',
+            testDir: './tests/specs/visual',
+            use: { ...devices['Desktop Chrome'] },
+            dependencies: ['data-setup', 'auth-setup']
+          }
+        ]
+      : []),
+
+    // Performance budgets: page load timing assertions
+    ...(process.env.PLAYWRIGHT_PERF
+      ? [
+          {
+            name: 'performance',
+            testDir: './tests/specs/perf',
+            use: { ...devices['Desktop Chrome'] },
+            dependencies: ['data-setup']
+          }
+        ]
+      : []),
+
+    // Accessibility smoke: WCAG 2.1 AA scan via @axe-core/playwright (Phase 76 A11Y-03)
+    //   PLAYWRIGHT_A11Y=1 npx playwright test -c tests/playwright.config.ts --project=a11y-smoke
+    ...(process.env.PLAYWRIGHT_A11Y
+      ? [
+          {
+            name: 'a11y-smoke',
+            testDir: './tests/specs/a11y',
+            use: { ...devices['Desktop Chrome'] },
+            dependencies: ['data-setup']
+          }
+        ]
+      : []),
+
+    // Bank auth (Idura/Signicat): identity-callback Edge Function integration
+    //   PLAYWRIGHT_BANK_AUTH=1 npx playwright test -c tests/playwright.config.ts --project=bank-auth
+    ...(process.env.PLAYWRIGHT_BANK_AUTH
+      ? [
+          {
+            name: 'bank-auth',
+            testDir: './tests/specs/candidate',
+            testMatch: /candidate-bank-auth\.spec\.ts/,
+            use: { ...devices['Desktop Chrome'] },
+            dependencies: ['data-setup']
+          }
+        ]
+      : [])
   ]
-
-  /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run start',
-  //   url: 'http://127.0.0.1:3000',
-  //   reuseExistingServer: !process.env.CI,
-  // },
 });

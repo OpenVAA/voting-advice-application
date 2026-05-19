@@ -1,0 +1,24 @@
+Phase 79 Plan 03 Task 6 — IMGPROXY_TIED_TITLES audit (LANDMINE L4; Phase 73 D-09 structural binding).
+
+Source: tests/scripts/diff-playwright-reports.ts:145 DATA_RACE_TESTS const + post-fix/regen-constants.mjs:64-78 IMGPROXY_TIED_TITLES list.
+
+Audit method: regen-constants.mjs runtime assertion verifies every IMGPROXY_TIED_TITLES entry matches at least one test in the new JSON via `endsWith('> ' + pattern)`. Fail-loud: script exits 1 if any pattern returns zero matches.
+
+Audit result (against run-6.json):
+
+  IMGPROXY_TIED_TITLES match-count assertion: 14 titles, 15 total matches.
+  PASS — zero zero-match titles; pool preserved at 15 entries (14 IMGPROXY-tied + 1 dual-project re-auth.setup.ts).
+
+Phase 79 NEW test titles enumerated:
+  - No NEW Playwright test() blocks added by Phase 79 itself. The Plan 02 fix tightened a URL-predicate in an existing helper (no new test titles); Plan 03 only added regen artifacts (no test titles). Plan 01 RCA artifacts (post-fix/rca-traces/registration-rca.spec.ts) live OUTSIDE the candidate-app-mutation testDir/testMatch (per Plan 01 §"Plan 01 Task 2 Deviation") so they were never picked up by Playwright.
+
+Pool integrity verdict: CLEAN. The 15-entry DATA_RACE pool preserved verbatim across Phase 73 → Phase 74 → Phase 75 → Phase 79.
+
+W-6 acceptance gate (runtime Bash assertion):
+  DATA_RACE_COUNT=$(awk '/const DATA_RACE_TESTS/,/^\];/' tests/scripts/diff-playwright-reports.ts | grep -v '^#' | grep -c "::")
+  → 15 ✓
+  [ "$DATA_RACE_COUNT" = "15" ] → ASSERTION PASS
+
+(Note: the original W-6 acceptance text used awk pattern `/^const /` for the range terminator,
+which truncated to the start line only because `const DATA_RACE_TESTS` itself matches `^const `.
+Corrected pattern uses `/^\];/` to terminate on the closing bracket — equivalent semantic.)

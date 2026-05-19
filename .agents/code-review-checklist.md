@@ -18,3 +18,33 @@ When performing code review, double check all of the items below:
 - [ ] The changed parts of the app are fully usable with keyboard navigation and screen-reading.
 - [ ] Documentation is added wherever necessary. This includes updating the possibly affected entries in the [Developers’](<docs/src/routes/(content)/developers-guide>) and [Publishers’ Guides](<docs/src/routes/(content)/publishers-guide>).
 - [ ] The commit history is clean and linear, and the commits follow the [commit guidelines](<docs/src/routes/(content)/developers-guide/contributing/contribute/+page.md>)
+
+### Supabase Backend
+
+_Apply when changes touch `apps/supabase/` or database-related code._
+
+- [ ] New content tables include all common columns (id, project_id, name, published, external_id, etc.) with correct types and defaults.
+- [ ] RLS is enabled on new tables with at least the standard 5-policy pattern (anon_select, authenticated_select, admin_insert, admin_update, admin_delete).
+- [ ] RLS policies use `(SELECT auth.uid())` and `(SELECT auth.jwt())` scalar subqueries — never bare function calls.
+- [ ] RLS policies specify `TO anon` or `TO authenticated` — never omit the role target.
+- [ ] New SECURITY DEFINER functions set `search_path = ''` and use schema-qualified calls.
+- [ ] New tables have B-tree indexes on `project_id` and any FK columns.
+- [ ] Triggers follow naming conventions: `set_updated_at`, `validate_{thing}`, `enforce_{constraint}`.
+- [ ] pgTAP tests follow the transaction boundary pattern (BEGIN/ROLLBACK) and use `create_test_data()` for fixtures.
+- [ ] pgTAP assertions use correct patterns: `ok()` for positive, `lives_ok()`+`is()` for silent RLS denial, `throws_ok()` for expected errors.
+
+### Supabase Adapter
+
+_Apply when changes touch `apps/frontend/src/lib/api/adapters/supabase/`._
+
+- [ ] Adapter classes use the supabaseAdapterMixin with `init({ fetch })` for SSR compatibility.
+- [ ] Row mapping uses COLUMN_MAP/PROPERTY_MAP from `@openvaa/supabase-types` for snake_case to camelCase conversion.
+- [ ] Auth operations use `safeGetSession()` (not `getSession()`) for route guards.
+
+### Edge Functions
+
+_Apply when changes touch `apps/supabase/supabase/functions/`._
+
+- [ ] Edge Functions verify caller is admin via JWT claims before performing privileged operations.
+- [ ] Edge Functions use `createClient()` with `service_role` key for privileged database operations.
+- [ ] Error responses include appropriate HTTP status codes and descriptive error messages.

@@ -1,0 +1,49 @@
+{
+  "_provenance": "reconstructed-from-trace-run-1.zip per RCA-FINDINGS.md §'State JSON Reconstruction Note'. The instrumented RCA spec at post-fix/rca-traces/registration-rca.spec.ts was not directly executable via Playwright's project-aware config (testDir/testMatch filters scope the candidate-app-mutation project to tests/specs/candidate only), so the empirical evidence comes from the candidate-profile.spec.ts run that has the SAME live-tree H1/H2 instrumentation. See RCA-FINDINGS.md §'Plan 01 Task 2 Deviation' for full rationale.",
+  "_source_trace": "trace-run-1.zip",
+  "runTag": "1",
+  "checkpoint": "after-callback-goto",
+  "ts_wallTime": 1778616949286,
+  "ts_human": "2026-05-12T20:15:49.286Z",
+  "url": "http://localhost:5173/en/candidate/auth/callback?token_hash=65b988bad6355319a67a7b18e76668e31cb77dad72a8ae9ad086841b&type=invite",
+  "url_redirected_to": "http://localhost:5173/en/candidate/register/password?email=test.unregistered2%40openvaa.org",
+  "http_status_chain": [
+    {
+      "url": "/en/candidate/auth/callback?token_hash=...&type=invite",
+      "status": 303,
+      "Set-Cookie_observed": "sb-127-auth-token (initial session cookie set by verifyOtp via @supabase/ssr cookies.setAll())",
+      "location": "/en/candidate/register/password?email=test.unregistered2%40openvaa.org"
+    }
+  ],
+  "cookies": [
+    {
+      "name": "sb-127-auth-token",
+      "value": "<REDACTED-AUTH-TOKEN>",
+      "decoded_payload_summary": {
+        "access_token_present": true,
+        "refresh_token_present": true,
+        "user_id": "eb1d35cb-7745-4531-9224-69de49d32374",
+        "email": "test.unregistered2@openvaa.org",
+        "role": "authenticated",
+        "email_verified": true,
+        "expires_at": 1778620549,
+        "expires_in": 3600,
+        "user_metadata_email_verified": true,
+        "session_id": "55df74e7-a6b3-429e-9b44-252cb8cff31c"
+      },
+      "expires": "2026-05-12T20:15:50.456Z",
+      "path": "/",
+      "sameSite": "Lax",
+      "_note": "Valid sb-127-auth-token cookie set IMMEDIATELY by the auth/callback verifyOtp response. This DISPROVES the framing that 'login never happened' — the user has a valid authenticated session at this checkpoint."
+    },
+    {
+      "name": "PARAGLIDE_LOCALE",
+      "value": "en"
+    }
+  ],
+  "localStorage": "(not captured directly in trace; trace.zip records server-set cookies. Browser-side storage state would require captureState helper run inside the spec — see provenance note.)",
+  "sessionStorage": "(see localStorage note)",
+  "hydrationMarker": null,
+  "_hydration_signal": "window.__phase79RcaHydrated NOT YET set (it is set by (protected)/+layout.svelte's $effect block, which only fires when the user reaches a /candidate/(protected)/ route. At this checkpoint we are mid-redirect at /en/candidate/register/password, which is NOT under (protected)).",
+  "bodyHtml_summary": "Mid-redirect from /en/candidate/auth/callback to /en/candidate/register/password (HTTP 303). The register/password page renders the PasswordSetter form."
+}

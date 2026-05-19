@@ -1,0 +1,14 @@
+=== RUN 1 START Wed May 13 19:29:10 EEST 2026 ===
+Frontend ready run 1 Wed May 13 19:29:51 EEST 2026
+/tmp/three-run-gate.sh: line 8: 79978 Terminated: 15          nohup yarn workspace @openvaa/frontend dev > $POSTFIX/dev-server-run-${RUN}.log 2>&1
+=== RUN 1 END Wed May 13 19:47:47 EEST 2026 exit=1 ===
+=== RUN 2 START Wed May 13 19:47:47 EEST 2026 ===
+db:reset failed run 2
+=== RUN 2 START Wed May 13 19:56:46 EEST 2026 ===
+Frontend ready run 2 Wed May 13 19:57:28 EEST 2026
+/tmp/runs-2-3.sh: line 8: 30453 Terminated: 15          nohup yarn workspace @openvaa/frontend dev > $POSTFIX/dev-server-run-${RUN}.log 2>&1
+=== RUN 2 END Wed May 13 20:15:26 EEST 2026 exit=1 ===
+=== RUN 3 START Wed May 13 20:15:26 EEST 2026 ===
+db:reset failed run 3 attempt 1 — supabase stop/start to clear imgproxy 502
+=== RUN 3 RESTART Wed May 13 20:38:15 EEST 2026 ===
+=== RUN 3 END Wed May 13 20:56:07 EEST 2026 exit=1 ===

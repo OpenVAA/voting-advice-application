@@ -1,0 +1,53 @@
+Resetting local database...
+Recreating database...
+Initialising schema...
+Seeding globals from roles.sql...
+Applying migration 00001_initial_schema.sql...
+NOTICE (00000): policy "accounts_deny_all" for relation "public.accounts" does not exist, skipping
+NOTICE (00000): policy "projects_deny_all" for relation "public.projects" does not exist, skipping
+NOTICE (00000): policy "elections_deny_all" for relation "public.elections" does not exist, skipping
+NOTICE (00000): policy "constituency_groups_deny_all" for relation "public.constituency_groups" does not exist, skipping
+NOTICE (00000): policy "constituencies_deny_all" for relation "public.constituencies" does not exist, skipping
+NOTICE (00000): policy "constituency_group_constituencies_deny_all" for relation "public.constituency_group_constituencies" does not exist, skipping
+NOTICE (00000): policy "election_constituency_groups_deny_all" for relation "public.election_constituency_groups" does not exist, skipping
+NOTICE (00000): policy "organizations_deny_all" for relation "public.organizations" does not exist, skipping
+NOTICE (00000): policy "candidates_deny_all" for relation "public.candidates" does not exist, skipping
+NOTICE (00000): policy "factions_deny_all" for relation "public.factions" does not exist, skipping
+NOTICE (00000): policy "alliances_deny_all" for relation "public.alliances" does not exist, skipping
+NOTICE (00000): policy "question_categories_deny_all" for relation "public.question_categories" does not exist, skipping
+NOTICE (00000): policy "questions_deny_all" for relation "public.questions" does not exist, skipping
+NOTICE (00000): policy "nominations_deny_all" for relation "public.nominations" does not exist, skipping
+NOTICE (00000): policy "app_settings_deny_all" for relation "public.app_settings" does not exist, skipping
+NOTICE (42710): extension "pg_net" already exists, skipping
+Seeding data from supabase/seed.sql...
+NOTICE (00000): OpenVAA seed data executed successfully
+Restarting containers...
+Creating Storage bucket: public-assets
+Creating Storage bucket: private-assets
+Finished supabase db reset on branch main.
+A new version of Supabase CLI is available: v2.98.2 (currently installed v2.83.0)
+We recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli
+[--likert-only] questions.fixed: 25 → 23 (dropped 2 non-ordinal opinion questions)
+Applied template: e2e (built-in)
+Seed: 42                                              Elapsed: 0.37s
+                                                      Portraits uploaded: 18
+
+Table                            Created
+────────────────────────────── ──────────
+accounts                               0
+alliances                              0
+app_settings                           1
+candidates                            18
+constituencies                         1
+constituency_groups                    1
+elections                              1
+factions                               0
+feedback                               0
+nominations                           22
+organizations                          4
+projects                               0
+question_categories                    7
+questions                             23
+────────────────────────────── ──────────
+Total                                 78
+FRONTEND_PID=30453 for run 2

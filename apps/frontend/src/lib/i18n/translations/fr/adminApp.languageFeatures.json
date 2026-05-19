@@ -1,0 +1,6 @@
+{
+  "targetLanguage": {
+    "label": "Target Language",
+    "help": "The language in which to generate content. Questions will be processed and results will be stored in this language."
+  }
+}

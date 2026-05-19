@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { isObjectType, isQuestion, OBJECT_TYPE } from '../internal';
+import { isBooleanQuestion, isObjectType, isQuestion, OBJECT_TYPE } from '../internal';
 import { getTestDataRoot } from '../testUtils';
 
 const dataRoot = getTestDataRoot();
@@ -79,4 +79,39 @@ test('isQuestion', () => {
   if (!questions.length) throw new Error('No questions found in test data');
   const result = questions.every((question) => isQuestion(question));
   expect(result).toBe(true);
+});
+
+describe('isBooleanQuestion', () => {
+  test('Should return true for a BooleanQuestion instance', () => {
+    const booleanQuestion = dataRoot.questions.find((q) => q.objectType === OBJECT_TYPE.BooleanQuestion);
+    if (!booleanQuestion) throw new Error('No BooleanQuestion found in test data');
+    expect(isBooleanQuestion(booleanQuestion)).toBe(true);
+  });
+
+  test('Should return false for a SingleChoiceOrdinalQuestion', () => {
+    const ordinal = dataRoot.questions.find((q) => q.objectType === OBJECT_TYPE.SingleChoiceOrdinalQuestion);
+    if (!ordinal) throw new Error('No SingleChoiceOrdinalQuestion found in test data');
+    expect(isBooleanQuestion(ordinal)).toBe(false);
+  });
+
+  test('Should return false for a SingleChoiceCategoricalQuestion', () => {
+    const categorical = dataRoot.questions.find((q) => q.objectType === OBJECT_TYPE.SingleChoiceCategoricalQuestion);
+    if (!categorical) throw new Error('No SingleChoiceCategoricalQuestion found in test data');
+    expect(isBooleanQuestion(categorical)).toBe(false);
+  });
+
+  test('Should return false for null', () => {
+    expect(isBooleanQuestion(null)).toBe(false);
+  });
+
+  test('Should return false for a primitive', () => {
+    expect(isBooleanQuestion('booleanQuestion')).toBe(false);
+    expect(isBooleanQuestion(42)).toBe(false);
+    expect(isBooleanQuestion(true)).toBe(false);
+  });
+
+  test('Should return false for an object missing objectType', () => {
+    expect(isBooleanQuestion({})).toBe(false);
+    expect(isBooleanQuestion({ id: 'question-1' })).toBe(false);
+  });
 });

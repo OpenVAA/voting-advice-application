@@ -1,0 +1,37 @@
+{
+  "candidateApp.logoutModal": {
+    "continue": "Continue entering data",
+    "ingress": "Are you sure you want to logout? You will be automatically logged out after {timeLeft} seconds.",
+    "itemsLeft": [
+      {
+        "declarations": [
+          "input infoQuestionsLeft",
+          "local infoQuestionsLeftPlural = infoQuestionsLeft: plural",
+          "input opinionQuestionsLeft",
+          "local opinionQuestionsLeftPlural = opinionQuestionsLeft: plural"
+        ],
+        "selectors": ["infoQuestionsLeftPlural", "opinionQuestionsLeftPlural"],
+        "match": {
+          "infoQuestionsLeftPlural=one opinionQuestionsLeftPlural=one": "There is still one item of basic info and one opinion to fill.",
+          "infoQuestionsLeftPlural=one opinionQuestionsLeftPlural=other": "There is still one item of basic info and {opinionQuestionsLeft} opinions to fill.",
+          "infoQuestionsLeftPlural=other opinionQuestionsLeftPlural=one": "There are still {infoQuestionsLeft} items of basic info and one opinion to fill.",
+          "infoQuestionsLeftPlural=other opinionQuestionsLeftPlural=other": "There are still {infoQuestionsLeft} items of basic info and {opinionQuestionsLeft} opinions to fill."
+        }
+      }
+    ],
+    "questionsLeft": [
+      {
+        "declarations": [
+          "input opinionQuestionsLeft",
+          "local opinionQuestionsLeftPlural = opinionQuestionsLeft: plural"
+        ],
+        "selectors": ["opinionQuestionsLeftPlural"],
+        "match": {
+          "opinionQuestionsLeftPlural=one": "There is still one opinion to fill.",
+          "opinionQuestionsLeftPlural=other": "There are still {opinionQuestionsLeft} opinions to fill."
+        }
+      }
+    ],
+    "title": "Some of Your Data Is Still Missing"
+  }
+}

@@ -1,0 +1,40 @@
+import type { Component, ComponentType, SvelteComponent } from 'svelte';
+
+/**
+ * An item that can be added to the popup queue.
+ */
+export type PopupQueueItem = {
+  /**
+   * The component to be displayed in the popup.
+   */
+  component: PopupComponent;
+  /**
+   * Optional props to be passed to the component when it is rendered.
+   */
+  props?: PopupComponentProps;
+  /**
+   * Optional callback invoked when the popup is closed (before being removed from the queue).
+   * Use this to persist dismissal state in user preferences.
+   */
+  onClose?: () => void;
+};
+
+/**
+ * A component that can be added to the popup queue.
+ * Accepts both legacy class-based components and Svelte 5 function components.
+ */
+// reason: Svelte 5 `Component<TProps>` is invariant in TProps, so a strict
+// `Component<PopupComponentProps>` rejects callers that declare narrower props
+// (the consumer-side props are still validated structurally at mount time via
+// the `props` field on PopupQueueItem). `Record<string, unknown>` would also be
+// rejected by Component for the same invariance reason — only `any` widens the
+// generic to accept all real Svelte 5 popups in the app today.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type PopupComponent = ComponentType<SvelteComponent<PopupComponentProps>> | Component<any>;
+
+export interface PopupComponentProps extends Record<string, unknown> {
+  /**
+   * The callback to be invoked when the popup is closed. This will be used internally to remove the popup from the queue.
+   */
+  onClose?: () => void;
+}

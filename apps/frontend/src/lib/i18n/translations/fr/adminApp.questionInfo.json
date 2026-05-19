@@ -1,0 +1,39 @@
+{
+  "title": "Question Info",
+  "description": "Generate contextual information for VAA questions including term definitions and informational sections to help voters better understand the questions.",
+  "selectElection": "Select Election",
+  "selectQuestions": "Select Questions",
+  "noQuestions": "No opinion questions found for this election",
+  "generate": {
+    "button": "Generate Question Info",
+    "buttonLoading": "Generating...",
+    "allQuestions": "All opinion questions",
+    "selectedQuestions": "Selected questions"
+  },
+  "options": {
+    "heading": "Generation Options",
+    "whatToGenerate": "What to generate:",
+    "terms": "Term Definitions",
+    "infoSections": "Info Sections"
+  },
+  "sectionTopics": {
+    "label": "Section Topics (optional)",
+    "help": "Comma-separated list of topics for info sections. Leave empty to use defaults.",
+    "placeholder": "Background, Current situation, Key stakeholders"
+  },
+  "customInstructions": {
+    "label": "Custom Instructions (optional)",
+    "help": "Additional guidance for the LLM about how to generate the content.",
+    "placeholder": "Focus on local governance and municipal policy aspects"
+  },
+  "questionContext": {
+    "label": "Question Context (optional)",
+    "help": "Context about the election or topic area to help the LLM generate more relevant content.",
+    "placeholder": "Finnish municipal elections 2025"
+  },
+  "validation": {
+    "noElection": "Please select an election",
+    "noQuestions": "Please select at least one question",
+    "noOperations": "Please select at least one generation option"
+  }
+}

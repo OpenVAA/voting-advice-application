@@ -1,0 +1,9 @@
+{
+  "links": "Linken",
+  "memberOfOrganization": "Member vu {organization}",
+  "tabs": {
+    "children": "Memberen",
+    "info": "Kommentaren",
+    "opinions": "Positiounen"
+  }
+}

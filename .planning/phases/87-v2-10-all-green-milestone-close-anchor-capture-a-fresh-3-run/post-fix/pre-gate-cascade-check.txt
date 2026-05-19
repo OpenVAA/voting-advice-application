@@ -1,0 +1,72 @@
+Phase 87 Pre-Gate CASCADE Tolerance Check
+==========================================
+
+Date: 2026-05-15
+Source: tests/scripts/diff-playwright-reports.ts (post-Phase-86 anchor 9a6d74a3088ec2de933cce9ff40797ec1a1cf8180923f02fbfcaf6f690a30af9)
+
+Live classification array counts:
+- PASS_LOCKED_TESTS: 113   (target per CONTEXT D-05: ~150-160 — currently below; expected to climb after Phase 87's 3-run regen against post-86 codebase)
+- DATA_RACE_TESTS:   3     (CONTEXT D-05 binding: exactly 3 imgproxy-tied — within tolerance ✓)
+- CASCADE_TESTS:     40    (CONTEXT D-05 tolerance: 0 or ≤5 — OUT OF TOLERANCE)
+- SKIPPED_TESTS:     2     (Phase 86 introduced — 2 QSPEC source-skips)
+
+PRE-GATE CASCADE: count=40 vs D-05 tolerance (0 or ≤5)
+Verdict: ESCALATE
+
+Composition of CASCADE=40 (from line 216 narrative in diff-playwright-reports.ts):
+- 3 PRODUCT-GAP source-skips (header.showFeedback / header.showHelp / notifications.voterApp)
+- 32 cascade-victims of Phase 85's variant-multi-election deterministic FAILs (Phase 85 WARNING-9 contingency — Phase 86 D-08 explicitly out-of-scope)
+- 5 other variant-spec cells
+
+Locked-decision conflict:
+- ROADMAP Phase 87 SC #2: "0 CASCADE"
+- CONTEXT D-05: "CASCADE: 0 (or ≤5 if Phase 85 left explicit deferrals)"
+- Live state: 40 CASCADE — 35 above the tolerance ceiling.
+
+Phase 85 close anchor SHOULD have driven CASCADE 47→≤5 per Phase 85's own success criteria, but the actual Phase 85 close left 32 cascade-victims of variant-multi-election failures explicitly deferred to v2.11+ per Phase 86 D-08.
+
+Operator decision required BEFORE the ~216 min 3-run cold-start gate runs (Task 1).
+Three paths per Phase 87 Plan Task 0:
+
+  PATH A — Reopen Phase 85 to drive CASCADE ≤5 before Phase 87 proceeds.
+    Phase 87 pauses. Resume after Phase 85 re-closes the variant-multi-election cascade-tail.
+    Cost: significant — re-investigate ~2 deterministic FAILs that Phase 85 deferred.
+    Outcome: aligned with locked D-05 letter; ship v2.10 with true 0-CASCADE anchor.
+
+  PATH B — Operator explicitly amends D-05 for THIS milestone-close.
+    Rationale captured here + in 87-SUMMARY's v2.11+ Deferrals section.
+    Task 1 proceeds with current 40-CASCADE state as the post-86 reality.
+    Phase 87 closes with `tech_debt + explicit operator override = shippable-with-debt`.
+    Cost: ~216 min Task 1 wall-time + audit-milestone tech_debt verdict.
+    Outcome: v2.10 ships with 32 cascade-victims as explicit v2.11+ deferrals.
+
+  PATH C — Abort Phase 87 entirely; queue for v2.11+ revisit.
+    No 3-run gate runs. v2.10 not shipped yet.
+    Cost: zero now, but v2.10 ship slips to next milestone cycle.
+    Outcome: v2.10 not shipped; revisit CASCADE remediation as new v2.10+ phase or roll into v2.11 scope.
+
+Step 2 — Operator decision
+==========================
+
+Date: 2026-05-15 (post-/clear continuation)
+Operator decision: Path A — Reopen Phase 85
+Rationale: CASCADE residual after 85-03 needs further remediation before Phase 87
+  proceeds. 85-03 (commits 94cf788, 26c187d, 0432fbf, 77187cb) already closed the
+  variant-multi-election cascade-tail (DETERM-12a/13 — 32 cascade-victims projected
+  to promote to PASS_LOCKED on next regen). REMAINING residual targeted by 85-04:
+    - 5 "other variant-spec cells" (per pre-gate composition, line 19)
+    - 3 PRODUCT-GAP source-skips (header.showFeedback / header.showHelp /
+      notifications.voterApp) — assess whether documented-deferral or fixable
+  85-04 is required to drive live-array CASCADE ≤5 before Phase 87 Task 1's
+  3-run gate measures the post-fix anchor. Phase 87 remains PAUSED until 85-04
+  closes.
+
+Status of upstream Path A work:
+- 85-03 DETERM-12a/13 fix:    SHIPPED (2026-05-15, 4 commits, 5/5 local PASS)
+- 85-04 residual remediation: NEEDED (scope TBD by /gsd-plan-phase 85)
+
+Next action: /gsd-plan-phase 85 to scope 85-04 (residual 5 + 3 cells).
+After 85-04 closes: resume Phase 87 Task 1 (3-run cold-start gate) against the
+post-85-04 codebase. Update Verdict line above to PASS at that point.
+
+Verdict: ESCALATE → Path A (85-03 partial close + 85-04 needed)

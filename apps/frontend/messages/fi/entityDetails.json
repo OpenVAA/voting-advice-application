@@ -1,0 +1,11 @@
+{
+  "entityDetails": {
+    "links": "Linkit",
+    "memberOfOrganization": "puolueen {organization} jäsen",
+    "tabs": {
+      "children": "Jäsenet",
+      "info": "Perustiedot",
+      "opinions": "Mielipiteet"
+    }
+  }
+}

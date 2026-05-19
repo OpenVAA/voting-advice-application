@@ -1,0 +1,173 @@
+# Phase 85 Plan 02 Task 2 — 1-Run Cold-Start Smoke (Post-Path-B Decouple)
+# Captured: 2026-05-14T11:08:49Z → 2026-05-14T11:29:00Z (~20.2 min wall time)
+# Predecessor: Phase 84 anchor `04ddfdd85cf…` (binding pre-Task-1 baseline)
+# Task 1 commit: `d1f8adec0` (structurally decouple `data-setup-multi-election` from `voter-app-popups`)
+
+## Note on aborted first attempt (audit transparency)
+A first smoke attempt at 13:37 UTC+3 (~30 min wall time) ran against a 500-returning Vite — the pre-flight order
+incorrectly started Vite BEFORE the `yarn dev:clean` step of the canonical reset chain wiped
+`apps/frontend/.svelte-kit/generated/`, breaking SSR. The corrupted smoke run was aborted (Playwright + Vite procs
+killed; no smoke.json was written — JSON reporter only flushes at the end). Corrected sequence: reset chain FIRST
+(which wipes .svelte-kit), then start Vite (regenerates .svelte-kit on first request), then run smoke. See
+`smoke-commands.txt` for the full audit-traceable command transcript.
+
+## Aggregate Stats (from smoke.json)
+- expected (passed): 112
+- unexpected (failed/timedOut): 12
+- skipped: 42
+- flaky: 0
+- TOTAL tests: 166
+
+## DATA_RACE Pool Count (Phase 84-renegotiated IMGPROXY_TIED_TITLES survivors; expected: 3)
+3 ✓
+- candidate-app-mutation :: should upload a profile image (CAND-03)  STATUS: passed
+- candidate-app-mutation :: should show editable info fields on profile page (CAND-03)  STATUS: passed
+- candidate-app-mutation :: should persist profile image after page reload (CAND-12)  STATUS: passed
+
+Per Phase 73 D-09 structural binding contract (renegotiated by Phase 84 to the 3 image-intrinsic CAND-03/CAND-12
+titles): these 3 tests remain in DATA_RACE regardless of pass/fail status in any individual run (data-race-semantic).
+The pre-Task-4 DATA_RACE-pool-size invariant gate (CONTEXT.md D-09) is intact for run-3.json capture in Task 3.
+
+=== SMOKE VARIANT-PROJECT VERDICT ===
+
+## Variant-Project Partition (post-Path-B-decouple verdicts)
+Total variant-project tests: 37
+  passed:  3
+  failed:  2
+  skipped: 32
+
+## Per-Project Variant Verdicts (DAG order, top-of-chain → bottom-of-chain)
+- data-setup-multi-election:    pass=1, fail=0, skip=0    ← CHAIN HEAD: decouple WORKED, setup runs to completion
+- variant-multi-election:       pass=2, fail=2, skip=2    ← FIRST chain-internal failure (2 timeouts; investigate)
+- variant-results-sections:     pass=0, fail=0, skip=3    ← cascade-skip from variant-multi-election failure
+- data-setup-constituency:      pass=0, fail=0, skip=1    ← cascade-skip from variant-results-sections SKIP
+- variant-constituency:         pass=0, fail=0, skip=7    ← cascade-skip
+- data-setup-startfromcg:       pass=0, fail=0, skip=1    ← cascade-skip
+- variant-startfromcg:          pass=0, fail=0, skip=5    ← cascade-skip
+- data-setup-low-minimum-answers: pass=0, fail=0, skip=1  ← cascade-skip
+- variant-low-minimum-answers:  pass=0, fail=0, skip=1    ← cascade-skip
+- data-setup-1e-Nc:             pass=0, fail=0, skip=1    ← cascade-skip
+- variant-1e-Nc:                pass=0, fail=0, skip=1    ← cascade-skip
+- data-setup-Ne-Nc:             pass=0, fail=0, skip=1    ← cascade-skip
+- variant-Ne-Nc:                pass=0, fail=0, skip=1    ← cascade-skip
+- data-setup-allowopen:         pass=0, fail=0, skip=1    ← cascade-skip
+- variant-allowopen:            pass=0, fail=0, skip=3    ← cascade-skip
+- data-setup-hidden-required:   pass=0, fail=0, skip=1    ← cascade-skip
+- variant-hidden-required-voter:    pass=0, fail=0, skip=1   ← cascade-skip
+- variant-hidden-required-candidate: pass=0, fail=0, skip=1  ← cascade-skip
+
+## ROOT CAUSE OF RESIDUAL CASCADE (post-decouple, pre-investigation)
+
+The Path B decouple at `playwright.config.ts:236` SUCCESSFULLY collapsed the cascade root from `voter-app-popups`.
+`data-setup-multi-election` now runs to completion (pass=1, skip=0 — first time since the Phase 84 anchor).
+
+HOWEVER, the chain-internal architecture is a LINEAR DAISY-CHAIN: each downstream `data-setup-*` project's
+`dependencies` array points to the PREVIOUS `variant-*` project (sequential lock-step per Pitfall 5 / LANDMINE-6
+in `playwright.config.ts` inline docstrings, lines 278, 294, 310, 327, 344, 360, 377). When the FIRST chain-internal
+test (`variant-multi-election`) hits 2 deterministic timeout failures, the rest of the linear chain (15+ projects)
+cascade-skips per Playwright's strict project-dependency contract.
+
+This is a SECOND-LEVEL cascade root — distinct from the Phase 85 RCA's chain-head root (`voter-app-popups`).
+Path B's 1-line decouple closed the chain-head root but cannot close this second-level chain-internal root.
+
+## NEW DETERMINISTIC VARIANT FAILURES (cause of cascade — route disposition per D-08)
+
+Both failures are in `variant-multi-election`. They are LIKELY NOT voter-app-popups regressions per Pitfall 7
+(popup settings residue); they timeout on a `question-choice` locator (DOM rendering / hydration timing,
+not popup state). The errors are consistent with deferred hypothesis H2 (fixture-overlay-ordering races
+in the variant-data-setup chain) materializing now that the chain head executes.
+
+1. **variant-multi-election :: should display questions and reach results**
+   - err: Test timeout of 60000ms exceeded. Locator: getByTestId('question-choice').nth(2)
+   - Where: variant-multi-election.spec.ts:139 — `await answerOption.nth(2).click();`
+   - Diagnosis hint: page closed mid-wait (`Target page, context or browser has been closed`); test cleanup or
+     navigation timing race in the multi-election overlay. Re-instrument H2 in Phase 85 follow-up.
+
+2. **variant-multi-election :: should bypass election selection when disallowSelection is true**
+   - err: Test timeout of 60000ms exceeded. Locator: getByTestId('question-choice').nth(2)
+   - Where: variant-multi-election.spec.ts:139 (same line as #1)
+   - Diagnosis hint: same locator + same line; either a flaky DOM render or a missing-data-setup state
+     (e.g., questions not seeded by `data-setup-multi-election`'s setup script for this election variant).
+
+Per CONTEXT.md D-08 binding: these new deterministic failures are routed to Phase 86 OR a follow-up Phase 85
+RCA round (re-instrument H2 / H3). Phase 85 Plan 02 does NOT pre-resolve these (D-08 forbids pre-resolving
+voter-FAILURE-CLASS items; the same principle applies to chain-internal variant failures discovered post-decouple).
+
+## STILL-SKIPPED VARIANT TESTS (32 — all cascade-skips from the 2 variant-multi-election failures)
+
+Per the linear-daisy-chain DAG documented in `85-01-rca-capture/dependency-dag.md`, ALL 32 skips are
+transitively rooted in the 2 `variant-multi-election` failures above. None of them are independent
+failures or independent source-skips. Once the chain-internal root cause is closed (Phase 86 or
+follow-up Plan), all 32 will surface their actual pass/fail verdicts.
+
+(Full list of 32 still-skipped variant tests captured in smoke.json `variants` partition.)
+
+## voter-app-popups status (still expected to FAIL per CONTEXT.md D-08 — Phase 86 territory)
+- voter-app-popups :: should show feedback popup after delay on results page  STATUS: passed
+- voter-app-popups :: should remember dismissal after page reload  STATUS: failed   ← chain-head root pre-decouple
+- voter-app-popups :: should show survey popup after delay on results page  STATUS: skipped (Phase 86)
+- voter-app-popups :: should not show any popup when disabled  STATUS: skipped (Phase 86)
+
+The `voter-app-popups :: should remember dismissal after page reload` test STILL fails deterministically (3/3 per
+RCA-FINDINGS H0). This is Phase 86 DETERM-12 territory; Phase 85 D-08 forbids pre-resolving. The decouple at
+Task 1 means this FAIL no longer cascades into the variant chain head — which is exactly the Path B contract.
+
+## Imgproxy 502 surface check
+Tests with imgproxy-or-502-related errors: 0
+No imgproxy 502 recovery was needed; `supabase stop && supabase start` was NOT invoked.
+
+## Pre-existing FAILURE-CLASS items (route to Phase 86 per ROADMAP.md; 10 voter-app deterministic fails)
+- voter-app-popups :: should remember dismissal after page reload  (failed)
+- voter-app :: SETTINGS-03 hidden question absent from voter question flow  (failed)
+- voter-app :: case (d) — both missing: "Neither has answered" message rendered  (failed)
+- voter-app :: feedback text persists across dismiss and resets after send  (failed)
+- voter-app :: results-CTA toggles per minimumAnswers threshold  (failed)
+- voter-app :: CLEAN-02 — direct link to /results route with no election picked bounces twice and resumes /results  (failed)
+- voter-app :: popup appears on full page load to /results (LAYOUT-03 hydration path)  (failed)
+- voter-app :: boolean opinion question renders, voter answers, persists across goBack, mirrors on entity-detail  (failed)
+- voter-app :: categorical opinion question (single-choice) renders, voter answers, persists across goBack, mirrors on entity-detail  (failed)
+- voter-app :: filter toggle narrows list without effect_update_depth_exceeded (RESULTS-01 + RESULTS-02)  (failed)
+
+These 10 are all in Phase 84's smoke FAILURE-CLASS list (carried forward unchanged); they remain Phase 86 scope.
+
+## VERDICT
+
+**INVESTIGATE** (per Plan 02 Task 2 acceptance criteria framework).
+
+Reasoning:
+- ✓ DATA_RACE pool = 3 (CONTEXT.md D-09 binding preserved)
+- ✓ Variant-project failed.length = 2 (≤ 10 threshold; PROCEED criterion met)
+- ✗ Variant-project skipped.length = 32 (> 5 threshold; INVESTIGATE criterion triggered)
+- ✓ Imgproxy 502 surface = 0 (no recovery needed)
+- ✓ Path B decouple worked at the chain HEAD (data-setup-multi-election passes)
+- ✗ A second-level chain-internal root (variant-multi-election timeouts) is now the residual cascade source
+
+**Recommended next-step disposition (operator/orchestrator decision; NOT Task 2's call):**
+
+OPTION A (recommended per D-08 minimal-scope ethos): Treat the 2 variant-multi-election timeouts as new
+DETERM-12-class failures routable to Phase 86. Phase 85 Plan 02 commits Task 2 + Task 3 captures the current
+state; Task 4 regen records 32 cascade-skips in CASCADE_TESTS as transient (pending Phase 86). The Phase 85
+anchor becomes a partial-collapse anchor (47 → 32, not 47 → ≤5).
+
+OPTION B: Re-instrument H2 (fixture-overlay-ordering races) per RCA-FINDINGS deferred hypothesis. Spawn a
+follow-up RCA plan to determine if a second 1-line structural fix (e.g., disable the linear daisy-chain
+dependencies and run variants in parallel) closes the remaining 32 cascades. Plan 02 stops here; a Plan 03
+takes the second cause.
+
+OPTION C: Pre-investigate the 2 specific timeouts inline. The locator timeout at `question-choice.nth(2)`
+suggests either data-not-seeded OR a Svelte 5 hydration race. Quick localization would unblock the chain
+without architectural refactoring. RISK: D-08 violation if the fix touches voter-app-popups or other
+FAILURE-CLASS items.
+
+The operator/Task 3 owner picks A, B, or C. Task 2 (this task) has captured the data and surfaced the
+second-level root cause. PROCEED-to-Task-3 readiness: NOT YET — Task 3 (3-run gate) should not run until
+the disposition decision is made, otherwise the 3-run anchor will lock in 32 cascade-skips as the v2.10 anchor.
+
+## Self-check (run inline before commit)
+- smoke.json size: 330769 bytes (valid Playwright JSON ✓)
+- smoke-output.txt size: this file (non-empty ✓)
+- smoke-commands.txt: contains `db:seed --template e2e --likert-only` (BLOCKER 1 audit ✓); does NOT contain
+  `db:reset-with-data --likert-only` (BLOCKER 4 LANDMINE-9 form absent ✓)
+- DATA_RACE = 3 (D-09 invariant preserved ✓)
+- Variant failed = 2 (within ≤ 10 PROCEED threshold ✓)
+- Variant skipped = 32 (exceeds ≤ 5 PROCEED threshold; INVESTIGATE ✗)

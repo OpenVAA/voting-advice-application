@@ -1,0 +1,8 @@
+{
+  "adminApp.languageFeatures": {
+    "targetLanguage": {
+      "label": "Målspråk",
+      "help": "Språket som innehållet ska genereras på. Frågor kommer att bearbetas och resultat lagras på detta språk."
+    }
+  }
+}

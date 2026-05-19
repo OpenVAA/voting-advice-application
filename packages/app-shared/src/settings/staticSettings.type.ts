@@ -31,7 +31,7 @@ export type StaticSettings = {
   /**
    * Settings defining the data adapters to use, which may be a database interface or one using local files. When using the `local` adapter, check also that the `LOCAL_DATA_DIR` environment variable is set correctly.
    */
-  readonly dataAdapter: StrapiDataAdapter | LocalDataAdapter;
+  readonly dataAdapter: LocalDataAdapter | SupabaseDataAdapter;
   /**
    * The main DaisyUI colors used by the application. These have to be defined separately for both the light (default) and dark themes. Only some of the named colors are used in the application: e.g., 'warning' is also used for 'error'.
    */
@@ -130,14 +130,14 @@ export type StaticSettings = {
   };
 };
 
-export type StrapiDataAdapter = {
-  readonly type: 'strapi';
-  readonly supportsCandidateApp: true;
-  readonly supportsAdminApp: true;
-};
-
 export type LocalDataAdapter = {
   readonly type: 'local';
   readonly supportsCandidateApp: false;
   readonly supportsAdminApp: false;
+};
+
+export type SupabaseDataAdapter = {
+  readonly type: 'supabase';
+  readonly supportsCandidateApp: true;
+  readonly supportsAdminApp: true;
 };

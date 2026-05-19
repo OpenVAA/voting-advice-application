@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/tsconfig",
+  "extends": "@openvaa/shared-config/ts",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./build",
+    "noEmit": true
+  },
+  "include": ["src/**/*"]
+}

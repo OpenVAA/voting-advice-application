@@ -1,0 +1,22 @@
+{
+  "name": "@openvaa/supabase-types",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    "import": "./src/index.ts",
+    "require": "./src/index.ts",
+    "default": "./src/index.ts"
+  },
+  "scripts": {
+    "generate": "supabase gen types typescript --local --workdir ../../apps/supabase > src/database.ts && prettier --write src/database.ts",
+    "build": "echo 'Raw .ts source — no build step needed'"
+  },
+  "devDependencies": {
+    "@openvaa/shared-config": "workspace:^",
+    "prettier": "catalog:",
+    "supabase": "catalog:"
+  }
+}

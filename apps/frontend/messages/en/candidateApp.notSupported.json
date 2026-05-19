@@ -1,0 +1,7 @@
+{
+  "candidateApp.notSupported": {
+    "content": "This Election Compass version does not support the Candidate Application.",
+    "heroEmoji": "🐣",
+    "title": "Candidate Application Not Available"
+  }
+}
