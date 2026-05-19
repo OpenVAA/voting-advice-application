@@ -4,12 +4,12 @@ milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
 status: executing
 stopped_at: Phase 87 paused after post-fix stabilization (commit 97f55cb41); awaiting Phase 85 cascade remediation
-last_updated: "2026-05-19T14:56:39.529Z"
-last_activity: 2026-05-19 -- Phase 86.2 planning complete
+last_updated: "2026-05-19T15:45:22.643Z"
+last_activity: 2026-05-19 -- Phase 86.3 planning complete
 progress:
   total_phases: 12
   completed_phases: 8
-  total_plans: 26
+  total_plans: 31
   completed_plans: 21
   percent: 67
 ---
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 Phase: 86.2 (E2E Suite Refactor Pass) + Phase 86.3 (Implement 8 Skipped Tests) — context gathered (batched discuss-phase 2026-05-19)
 Plan: 0 of 3 (86.2) + 0 of 5 (86.3) — both ready for /gsd-plan-phase
 Status: Ready to execute
-Last activity: 2026-05-19 -- Phase 86.2 planning complete
+Last activity: 2026-05-19 -- Phase 86.3 planning complete
 
 ## Performance Metrics
 
