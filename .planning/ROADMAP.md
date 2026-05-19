@@ -259,13 +259,15 @@ Plans:
 
 ### Phase 86.2: E2E suite refactor pass — extract helpers, dedup assertions, propagate Phase 86.1 post-fix patterns across all relevant specs (INSERTED)
 
-**Goal:** [Urgent work - to be planned]
-**Requirements**: TBD
-**Depends on:** Phase 86
-**Plans:** 0 plans
+**Goal:** Extract 6 reusable helpers from the 15 Phase 86.1 post-fix annotations into `tests/tests/helpers/` and propagate them across the rest of the Playwright suite so Phase 86.3 + subsequent maintenance can re-use the patterns instead of re-inventing them inline. Verified by a 3-run cold-start SHA-identity gate against the post-86.2 codebase (no test outcomes change — helper-only refactor).
+**Requirements**: none (introduces no new REQ-IDs; supports DETERM-15 Phase 87 final anchor downstream)
+**Depends on:** Phase 86 (predecessor sequential chain: 86 → 86.1 → 86.2 → 86.3 → 87)
+**Plans:** 3 plans
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 86.2 to break down)
+- [ ] 86.2-01-PLAN.md — Extract 6 helpers (settleNetworkIdle, gotoAndSettle, expectLandedOn, clickAndRaceSettle, iterateSelectOptions, assertDbRowCount, walkVoterIteration) into `tests/tests/helpers/` + refactor 4 anchor spec files + voter.fixture.ts internal refactor (3 tasks)
+- [ ] 86.2-02-PLAN.md — Propagate ~33 site replacements across ~10 spec files (helper #2 ×27 + helper #1 ×6) + per-spec smokes + disposition table + full-suite cascade-victim audit (3 tasks)
+- [ ] 86.2-03-PLAN.md — 3-run cold-start SHA-identity gate + regen-output + SUMMARY + STATE/ROADMAP close (4 tasks; Task 1 = non-autonomous operator decision on anchor-mode Option B/C/D per RESEARCH Q1)
 
 ### Phase 86.1: Pre-Phase-87 Convergence Sweep — drive v2.10 e2e suite to all-green-or-explicit-deferral so Phase 87's CASCADE ≤ 5 pre-gate fires cleanly (INSERTED)
 
