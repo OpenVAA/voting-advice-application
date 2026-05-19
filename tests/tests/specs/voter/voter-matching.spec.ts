@@ -18,6 +18,7 @@
 
 import { DISTANCE_METRIC, MatchingAlgorithm, MISSING_VALUE_METHOD, OrdinalQuestion } from '@openvaa/matching';
 import { expect, test } from '@playwright/test';
+import { clickAndRaceSettle } from '../../helpers';
 import { E2E_DEFAULT_CANDIDATES, E2E_QUESTIONS, E2E_VOTER_CANDIDATES } from '../../utils/e2eFixtureRefs';
 import { testIds } from '../../utils/testIds';
 import { navigateToFirstQuestion, waitForNextQuestion } from '../../utils/voterNavigation';
@@ -191,11 +192,11 @@ async function navigateToResults(page: Page): Promise<void> {
     // click stuck on a detached node forever. Mirrors `advanceClick` in
     // tests/utils/voterNavigation.ts (Phase 86.1 introStart/questionsStart
     // race fix).
-    await nextBtn.click({ timeout: 3000 }).catch(() => null);
-    await Promise.race([
-      page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 5000 }).catch(() => null),
-      page.waitForURL(/\/results/, { timeout: 5000 }).catch(() => null)
-    ]);
+    await clickAndRaceSettle(
+      nextBtn,
+      [(url: URL) => url.toString() !== urlBefore, /\/results/],
+      { clickTimeoutMs: 3000, settleTimeoutMs: 5000 }
+    );
   }
 
   // After answering the last question, the auto-advance timer navigates to results.
