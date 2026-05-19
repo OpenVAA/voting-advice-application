@@ -26,6 +26,7 @@
  */
 
 import { expect, test } from '@playwright/test';
+import { expectLandedOn } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { testIds } from '../../utils/testIds';
 
@@ -91,6 +92,6 @@ test.describe('1e × Nc selector matrix (E2E-04 cell 2)', { tag: ['@variant', '@
 
     // After continue, the voter is on /questions (or an interstitial)
     // — proves the constituency selection terminated the location-gate.
-    await expect(page).toHaveURL(/\/questions/, { timeout: 10000 });
+    await expectLandedOn(page, /\/questions/);
   });
 });
