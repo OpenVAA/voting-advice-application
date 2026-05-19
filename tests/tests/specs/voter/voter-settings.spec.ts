@@ -22,6 +22,7 @@
  */
 
 import { expect, test } from '../../fixtures';
+import { expectLandedOn } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
@@ -436,7 +437,7 @@ test.describe('question intro page (VOTE-04)', { tag: ['@voter'] }, () => {
     await page.getByTestId(testIds.voter.intro.startButton).click();
 
     // Should land on questions intro page (URL contains /questions)
-    await expect(page).toHaveURL(/\/questions/, { timeout: 10000 });
+    await expectLandedOn(page, /\/questions/);
 
     // Verify start button is visible (this is the questions start button, not the intro start)
     const questionsStartButton = page.getByTestId(testIds.voter.questions.startButton);
