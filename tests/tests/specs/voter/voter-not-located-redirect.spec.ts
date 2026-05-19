@@ -46,6 +46,7 @@
  */
 
 import { expect, test } from '@playwright/test';
+import { iterateSelectOptions, settleNetworkIdle } from '../../helpers';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
@@ -67,19 +68,7 @@ test.use({ storageState: { cookies: [], origins: [] } });
 async function fillAllConstituencies(page: Page): Promise<void> {
   const constituenciesList = page.getByTestId(testIds.voter.constituencies.list);
   await expect(constituenciesList).toBeVisible({ timeout: 10000 });
-  const comboboxes = constituenciesList.getByRole('combobox');
-  // Wait for at least one combobox to mount, then iterate every one.
-  await comboboxes.first().waitFor({ state: 'visible', timeout: 10000 });
-  const count = await comboboxes.count();
-  expect(count, 'expected at least one constituency-group combobox to render').toBeGreaterThan(0);
-  for (let i = 0; i < count; i++) {
-    const cb = comboboxes.nth(i);
-    await cb.click();
-    const listbox = page.getByRole('listbox');
-    await listbox.waitFor({ state: 'visible', timeout: 5000 });
-    await listbox.getByRole('option').first().click();
-    await listbox.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => null);
-  }
+  await iterateSelectOptions(page, constituenciesList.getByRole('combobox'));
 }
 
 test.describe.configure({ mode: 'serial' });
@@ -129,7 +118,7 @@ test.describe('CLEAN-02 voter-not-located deferred-target redirect', { tag: ['@v
     // toHaveURL polls. Without this, the URL assertion fires before the
     // redirect has resolved the second hop on cold dev-server starts. See
     // 86-RESEARCH.md §3.4 + 86-01-PLAN.md Task 4 Step-2 verdict path.
-    await page.waitForLoadState('domcontentloaded');
+    await settleNetworkIdle(page, { waitUntil: 'domcontentloaded' });
 
     // Phase 86.1-03 cell 2 H2/H4 defense: belt-and-suspenders storage clear in case
     // upstream serial-describe siblings (e.g., voter-popup-hydration localStorage
@@ -203,7 +192,7 @@ test.describe('CLEAN-02 voter-not-located deferred-target redirect', { tag: ['@v
     // walks the same `if (!constituencyId) redirect(307, ...)` branch in
     // (located)/+layout.ts that an auto-implied election would hit,
     // validating the `?next=` propagation through that branch.
-    expect( , 'electionUuid must be discovered in beforeAll').toBeTruthy();
+    expect(electionUuid, 'electionUuid must be discovered in beforeAll').toBeTruthy();
     const deferredTarget = `/results?electionId=${electionUuid}`;
     await page.goto(deferredTarget);
 
