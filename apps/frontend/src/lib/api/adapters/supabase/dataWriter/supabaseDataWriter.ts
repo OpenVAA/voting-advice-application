@@ -77,6 +77,8 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     // The `code` param is unused; Supabase uses the recovery session.
     const { error } = await this.supabase.auth.updateUser({ password });
     if (error) throw new Error(error.message);
+    // Mirror of _setPassword's refreshSession — see that comment for the ToU-406 JWT-rotation race.
+    await this.supabase.auth.refreshSession();
     return { type: 'success' as const };
   }
 
@@ -85,23 +87,17 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     // Supabase verifies the active session via cookies automatically.
     const { error } = await this.supabase.auth.updateUser({ password });
     if (error) throw new Error(error.message);
-    // Future-reference note (Phase 86.1 ToU-406 chase): `auth.updateUser({ password })`
-    // rotates the access token. The browser-side `createBrowserClient` instance is
-    // expected to adopt the new token via its internal storage listener, but under
-    // some Playwright timings the next PostgREST call from `SupabaseDataWriter` was
-    // observed to send a stale/empty JWT, producing `auth.uid() = NULL` and a 406
-    // "Cannot coerce" on the subsequent ToU UPDATE (RLS denies, 0 rows returned).
-    // A targeted `await this.supabase.auth.refreshSession()` here would force the
-    // in-memory client to re-read the freshly-issued session before the caller
-    // proceeds, which should harmlessly close that race. NOT added now because:
-    //  (a) the live failure was not reproduced under 20× repeat-each after the
-    //      previous user-visible error surface was added — only Inbucket polling
-    //      flake remained;
-    //  (b) `refreshSession()` issues an extra network round-trip on every password
-    //      set/reset, and rare edge cases (e.g. expired refresh token, network
-    //      partition) could turn a working setPassword into a thrown error.
-    // If the 406 reappears, add `await this.supabase.auth.refreshSession()` here
-    // (and mirror in `_resetPassword` / `_register` above) and re-verify.
+    // ToU-406 JWT-rotation race fix (Phase 86.2-03, 2026-05-19): `auth.updateUser({ password })`
+    // rotates the access token. The browser-side `createBrowserClient` instance is expected to
+    // adopt the new token via its internal storage listener, but under some Playwright timings
+    // the next PostgREST call sends a stale/empty JWT, producing `auth.uid() = NULL` and a 406
+    // "Cannot coerce" on the subsequent ToU UPDATE (RLS denies, 0 rows returned). The 86.2 all-
+    // green-suite gate hit this on candidate-app-mutation: 2 consecutive cold-starts both failed
+    // at different upstream nodes in the chain (CAND-03 image upload run 1; registration run 2),
+    // confirming the rotating-flake pattern the comment predicted. `refreshSession()` forces the
+    // in-memory client to re-read the freshly-issued session before the caller proceeds, closing
+    // the race. Mirrored in _resetPassword and _register above.
+    await this.supabase.auth.refreshSession();
     return { type: 'success' as const };
   }
 
@@ -159,6 +155,8 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     // Just set the password to complete registration.
     const { error } = await this.supabase.auth.updateUser({ password });
     if (error) throw new Error(error.message);
+    // Mirror of _setPassword's refreshSession — see that comment for the ToU-406 JWT-rotation race.
+    await this.supabase.auth.refreshSession();
     return { type: 'success' as const };
   }
 
