@@ -19,7 +19,7 @@
 -->
 
 <script lang="ts">
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount, untrack } from 'svelte';
   import { Notification } from '$lib/components/notification';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { initVoterContext } from '$lib/contexts/voter';
@@ -76,14 +76,24 @@
   // becomes load-bearing.
   const topBarBaseIdx = topBarSettings.getLength() - 1;
   $effect(() => {
-    const next = {
-      actions: {
-        feedback: $appSettings.header.showFeedback ? ('show' as const) : ('hide' as const),
-        help: $appSettings.header.showHelp ? ('show' as const) : ('hide' as const)
-      }
-    };
-    topBarSettings.revert(topBarBaseIdx);
-    topBarSettings.push(next);
+    // Reactive reads — these register the $effect's dependencies.
+    const feedback = $appSettings.header.showFeedback;
+    const help = $appSettings.header.showHelp;
+    // Mutations wrapped in untrack: StackedState.push spreads `#stack`
+    // ([...this.#stack]) and revert reads `#stack.length` + `#stack.slice(...)`.
+    // Without untrack, those reads register `#stack` as an $effect dep, and the
+    // immediate write back to `#stack` re-triggers the effect → infinite loop
+    // (effect_update_depth_exceeded). untrack confines reactivity to the
+    // $appSettings.X reads above.
+    untrack(() => {
+      topBarSettings.revert(topBarBaseIdx);
+      topBarSettings.push({
+        actions: {
+          feedback: feedback ? ('show' as const) : ('hide' as const),
+          help: help ? ('show' as const) : ('hide' as const)
+        }
+      });
+    });
   });
 
   ////////////////////////////////////////////////////////////////////
