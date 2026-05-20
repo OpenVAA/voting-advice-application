@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
 status: executing
-stopped_at: "Phase 86.3 Plan 02 complete (atomic commits 5724c62dd Task 0 + 805c6f482 Task 2; SKIP-FALLBACK on cell #4 SETTINGS-01 wave B constituency-filter PRODUCT-GAP via Path-C auto-routed from Path-B per operator pre-decision; Path-B technically feasible but rejected on reviewer-drift grounds — ObjectFilter API in isolation does not regression-gate voter-app PRODUCT-GAP; D-10 STRICT gate held — buildParentFilters.ts UNCHANGED; v2.11+ todo 2026-05-13-constituency-filter-product-gap.md augmented 67 → 161 lines with Phase 86.3-02 investigation outcome section; LANDMINE-NOTE — no within-spec cascade dependents). Wave 1 FULLY CONVERGED (Plan 01 FIX-PASS + Plans 02/03/04 SKIP-FALLBACK). Plan 05 (Wave 2 — QSPEC walkToQuestion + 3-run gate + SKIPPED_TESTS const + STATE/ROADMAP close) sequenced next."
-last_updated: "2026-05-20T15:05:00.000Z"
-last_activity: 2026-05-20 -- Phase 86.3 Plan 02 complete; cell #4 SETTINGS-01 wave B constituency-filter SKIP-FALLBACK via Path-C; THIRD consecutive Wave 1 SKIP-FALLBACK (after 86.3-03 + 86.3-04); Path-B reviewer-drift cost analysis recorded in 86.3-02-RCA.md (112 lines, 5 H2 sections); Wave 1 FULLY CONVERGED — Plan 05 (Wave 2) sequenced next
+stopped_at: "Phase 86.3 CLOSED 2026-05-20 (Plan 05 atomic close commit; 5/5 plans complete). 8-cell disposition: 3 FIX-PASS (cells #1/#2/#3 SETTINGS-01 wave A via 86.3-01 reactive $effect rewrite) + 5 SKIP-FALLBACK (cell #4 constituency-filter Path-C; cells #5/#6/#7/#8 share upstream voter-app cold-deeplink loader race). 3-run cold-start gate: ALMOST-STRICT (Phase 86 D-06 precedent; 8 diverging cells share ONE boundary-class cascade ancestor — DETERM-06 imgproxy + email-link timing); canonical run-3.json; anchor SHA bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee. walkToQuestion helper-resilience fix LANDED in voterNavigation.ts:308-329 (defensive isVisible probe) but EMPIRICALLY INSUFFICIENT — cells #7/#8 fail at upstream /intro hydration; helper fix LEFT IN PLACE as evidence-of-attempt. SKIPPED_TESTS const updated 2 → 5 entries; 3 SETTINGS-01 wave A cells moved CASCADE → PASS_LOCKED. PHASE 86.3 ANCHOR jsdoc added to diff-playwright-reports.ts. D-06 Phase 87 disposition: RE-PLAN (CASCADE >> 5; upstream cold-deeplink race materially changes anchor target; v2.11+ navigation-from-home redesign closes 4 cells in single fix)."
+last_updated: "2026-05-20T16:30:00.000Z"
+last_activity: 2026-05-20 -- Phase 86.3 CLOSED; 8-cell disposition (3 FIX-PASS + 5 SKIP-FALLBACK); cells #7/#8 QSPEC SKIP-FALLBACK after walkToQuestion helper-resilience fix EMPIRICALLY INSUFFICIENT due to upstream voter-app cold-deeplink loader race (4-cell finding shared with cells #5/#6); 3-run gate ALMOST-STRICT; anchor SHA bc1c94957b…; D-06 Phase 87 disposition recommendation: RE-PLAN
 progress:
   total_phases: 12
-  completed_phases: 9
+  completed_phases: 10
   total_plans: 31
-  completed_plans: 28
-  percent: 75
+  completed_plans: 31
+  percent: 100
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 86.3 — implement-skipped-tests-close-7-source-skipped-voter-app-can
+**Current focus:** Phase 87 — v2.10 All-Green Milestone-Close Anchor (D-06 recommendation: RE-PLAN to absorb v2.11+ voter-app cold-deeplink deferrals before firing)
 
 ## Current Position
 
-Phase: 86.3 (implement-skipped-tests-close-7-source-skipped-voter-app-can) — EXECUTING
-Plan: 5 of 5 (Plans 01 + 02 + 03 + 04 complete; Wave 1 FULLY CONVERGED; Plan 05 sequences after Wave 1)
-Status: Ready to execute Plan 05 (Wave 2)
-Last activity: 2026-05-20 -- Phase 86.3 Plan 02 SUMMARY landed (commits 5724c62dd Task 0 + 805c6f482 Task 2); cell #4 SETTINGS-01 wave B constituency-filter SKIP-FALLBACK via Path-C; THIRD consecutive Wave 1 SKIP-FALLBACK; v2.11+ todo augmented 67 → 161 lines
+Phase: 87 (v2.10 All-Green Milestone-Close Anchor) — READY (D-06 recommendation: RE-PLAN)
+Plan: 0 of 1 (Plan 87-01 — needs re-plan per Phase 86.3-05 D-06 disposition recommendation)
+Status: Phase 86.3 CLOSED; awaiting operator decision on Phase 87 disposition (delayed-firing vs re-plan per CONTEXT D-06)
+Last activity: 2026-05-20 -- Phase 86.3 CLOSED; 8-cell disposition (3 FIX-PASS + 5 SKIP-FALLBACK); 3-run gate ALMOST-STRICT; anchor SHA bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee; D-06 Phase 87 disposition recommendation: RE-PLAN
 
 ## Performance Metrics
 
@@ -118,6 +118,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 - Phase 86.1 inserted after Phase 86: Pre-Phase-87 Convergence Sweep — drive v2.10 e2e suite to all-green-or-explicit-deferral so Phase 87's CASCADE ≤ 5 pre-gate fires cleanly. Originally drafted as orphaned Phase 88 in commit bf286df76; renumbered to 86.1 to match execution order. (URGENT)
 - Phase 86.2 inserted after Phase 86: E2E suite refactor pass (extract helpers, dedup assertions, propagate Phase 86.1 post-fix patterns); inserted after green-baseline 2026-05-19 supersedes HANDOFF.json CASCADE=40 blocker; depends on Phase 86.1; gates Phase 86.3 (URGENT)
 - Phase 86.3 inserted after Phase 86: Implement 7 source-skipped tests (SETTINGS-01 wave A×3 + SETTINGS-01 wave B constituency-filter + E2E-03 feedback persistence + LAYOUT-03 popup regression gate + QSPEC-01/02 boolean+categorical); discuss-phase first answers 'is this all?' by reconciling with grep of test.skip() across tree; depends on Phase 86.2 (URGENT)
+- 2026-05-20: Phase 86.3 CLOSED. 8-cell disposition: 3 FIX-PASS (cells #1/#2/#3 SETTINGS-01 wave A via reactive $effect rewrite on (voters)/+layout.svelte) + 5 SKIP-FALLBACK (cell #4 constituency-filter Path-C; cells #5/#6/#7/#8 share upstream voter-app cold-deeplink loader race — all 4 produce `Loading…` page-snapshot on different routes). 3-run cold-start gate ALMOST-STRICT (Phase 86 D-06 precedent extension; 8 diverging cells share ONE boundary-class cascade ancestor = DETERM-06 imgproxy + candidate-registration email-link timing). Anchor SHA: bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee. SKIPPED_TESTS const 2 → 5 entries. PASS_LOCKED 113 → 116 (+3 SETTINGS-01 wave A FIX-PASS). PHASE 86.3 ANCHOR jsdoc added to diff-playwright-reports.ts. D-06 Phase 87 disposition recommendation: **RE-PLAN** (CASCADE >> 5 hard fails Phase 87 Task 0 pre-gate; upstream voter-app cold-deeplink race materially changes anchor target; v2.11+ navigation-from-home redesign closes 4 cells in single fix paired with 86.3-04 Recommendation #3). Wave 1 SKIP-FALLBACK plans (02/03/04) + Wave 2 SKIP-FALLBACK on cells #7/#8 (Plan 05) demonstrate consistent SHIP-WITH-DEFERRAL pattern preserving gap-signals for v2.11+ pickup.
 
 ### Decisions
 
@@ -153,6 +154,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 86.3 P03]: E2E-03 / DETERM-13 cell #5 voter-feedback-persistence H2/H3 trace-driven disambiguation attempted per Phase 86.1-02 recommended-next-action #1. Trace shows verdict NEITHER — upstream `answeredVoterPage` fixture race (CASCADE-class, separate from DETERM-13) blocks H2/H3 disambiguation entirely (/questions intro page stuck at `Loading…` despite seeded data + clean Supabase REST 200/304/307). SKIP-FALLBACK applied per CONTEXT D-06; test signature surgically swapped `({ answeredVoterPage })` → `({ page })` to make `test.skip(true, …)` report as `1 skipped` instead of `1 failed`. ModalContainer.svelte UNCHANGED. v2.11+ todo augmented with REVISED recommended-next-action ordering (FIRST fix fixture race, THEN re-attempt H2/H3).
 - [Phase 86.3 P04]: LAYOUT-03 / DETERM-12 cell #6 voter-popup-hydration Path 2 (`page.context().addInitScript`) attempted per RESEARCH §"Cell #6 Fix shapes §2". 1-line swap verified-applied but EMPIRICALLY DISPROVED: /results stalls at `Loading…` (15s timeout on voter-results-list testid; Supabase REST all-200; canonical /results/candidates frame URL; same upstream loader-race symptom as 86.3-03 /questions). Path 1 (`test.use({ storageState })`) abandoned at RESEARCH §"Pitfall 4" (static config vs runtime-discovered question UUIDs; alternative resolutions out of D-08 1h cap). SKIP-FALLBACK applied per CONTEXT D-06; Path 2 swap LEFT IN PLACE as evidence-of-attempt (Phase 86.1-03 cell 2 storage-clear pattern). v2.11+ todo voter-popup-hydration-layout-03-deeplink.md augmented 44 → 72 lines with Phase 86.3-04 attempt section + cross-ref to 86.3-03 trace; Recommendation #3 (navigation-from-home test) elevated to strongest v2.11+ next action. Production loader UNCHANGED per D-10 STRICT gate.
 - [Phase ?]: Phase 86.3 Plan 02: cell #4 SETTINGS-01 wave B constituency-filter SKIP-FALLBACK via Path-C; Path-B feasible but rejected on reviewer-drift (ObjectFilter in isolation does not regression-gate voter-app PRODUCT-GAP); D-10 STRICT gate held; v2.11+ todo augmented 67 → 161 lines
+- [Phase 86.3 P05]: QSPEC-01/02 cells #7+#8 SKIP-FALLBACK — walkToQuestion helper-resilience fix LANDED in voterNavigation.ts:308-329 (defensive isVisible probe + conditional intro-CTA click; +13 LOC) but EMPIRICALLY INSUFFICIENT — cells #7/#8 fail at upstream `advanceVoterFlow` line 149 (5s race-checkpoint timeout) because /intro itself never paints (page renders only `Loading…`). Same upstream voter-app cold-deeplink loader race as Phase 86.3-03 cell #5 (/questions Loading…) + Phase 86.3-04 cell #6 (/results Loading…); 4-cell finding characterizes the race as SHARED voter-app cold-deeplink (NOT route-specific). Helper fix LEFT IN PLACE as evidence-of-attempt (mirrors 86.3-04 Path-2 pattern). 3-run cold-start gate: raw FAIL (3 hashes differ); operator-approved ALMOST-STRICT per Phase 86 D-06 precedent (8 diverging cells share ONE documented boundary-class cascade ancestor — DETERM-06 imgproxy CAND-03 + candidate-registration email-link timing); canonical run-3.json; anchor SHA bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee. SKIPPED_TESTS const 2 → 5 entries (added cells #4/#5/#6; kept cells #7/#8); 3 SETTINGS-01 wave A cells moved CASCADE → PASS_LOCKED. PHASE 86.3 ANCHOR jsdoc added to diff-playwright-reports.ts. D-06 Phase 87 disposition recommendation: RE-PLAN (CASCADE >> 5 hard fails Phase 87 Task 0 pre-gate; upstream cold-deeplink race materially changes anchor target; v2.11+ navigation-from-home redesign closes 4 cells in single fix paired with 86.3-04 Recommendation #3).
 
 ### Blockers/Concerns
 
@@ -163,10 +165,13 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-05-20T11:55:42.818Z
-Stopped at: Phase 86.3 Plan 04 complete (atomic commits 1bc691aa3 Task 1 + Task 2 pending; SKIP-FALLBACK on cell #6 LAYOUT-03 / DETERM-12; Path 2 page.context().addInitScript verified-applied + empirically disproved; v2.11+ todo voter-popup-hydration-layout-03-deeplink.md augmented 44 → 72 lines with Phase 86.3-04 attempt section + cross-ref to 86.3-03 trace). Plan 02 (Wave 1 remaining) + Plan 05 (sequenced) remain.
+Last session: 2026-05-20T16:30:00.000Z
+Stopped at: Phase 86.3 CLOSED (Plan 05 atomic close commit; all 5 plans complete). 8-cell disposition: 3 FIX-PASS + 5 SKIP-FALLBACK. 4-cell upstream voter-app cold-deeplink race surfaced post-Wave-1 (cells #5/#6/#7/#8 — all produce `Loading…` page-snapshot on different routes). 3-run gate ALMOST-STRICT per Phase 86 D-06 precedent. Anchor SHA bc1c94957b…. D-06 Phase 87 disposition recommendation: RE-PLAN.
 Resume file: None
-Next action: Execute Phase 86.3 Plan 02 (SETTINGS-01 wave B constituency-filter Path A/B/C decision) — final Wave 1 plan. Plan 05 sequences after 02 + 03 + 04 converge. NOTE: Phase 86.3-04 trace confirmed the same upstream Loading… symptom on /results that 86.3-03 found on /questions — this is now characterized as a shared voter-app cold-deeplink loader race (NOT route-specific); the v2.11+ Recommendation #3 (navigation-from-home test) closes both cells with a single redesign.
+Next action: Operator decides Phase 87 disposition per Phase 86.3-05 D-06 recommendation:
+  (a) **RE-PLAN (Claude's recommendation):** Re-plan Phase 87 to absorb v2.11+ voter-app cold-deeplink deferrals (4 cells #5/#6/#7/#8 closure-paired via navigation-from-home redesign) + boundary-class flake deferrals (DETERM-06 imgproxy + email-link timing) BEFORE firing the v2.10-ship anchor capture. Plan 87-01 needs a new Plan 01a (deferral inventory) + Plan 01b (anchor capture WITH explicit deferrals documented).
+  (b) **DELAYED-FIRING (alternative):** Run Phase 87 against the ALMOST-STRICT post-86.3 anchor with explicit v2.11+ deferral documentation; accept that "all-green deterministic" is satisfied for SKIPPED + DATA_RACE pools but NOT for CASCADE pool (Phase 87 Task 0 pre-gate CASCADE ≤ 5 unsatisfied at CASCADE = 37 selective-regen-preserved OR 90 raw).
+Reference: `.planning/phases/86.3-…/86.3-SUMMARY.md` §"D-06 Phase 87 Disposition Recommendation" for full rationale + suggested re-plan shape.
 
 ### Plan-count estimate (drafted 2026-05-12)
 

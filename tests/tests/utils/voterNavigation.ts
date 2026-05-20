@@ -307,7 +307,19 @@ export async function walkToQuestionsIntro(page: Page): Promise<void> {
  */
 export async function walkToQuestion(page: Page, sortOrder: number): Promise<void> {
   await walkToQuestionsIntro(page);
-  await page.getByTestId(testIds.voter.questions.startButton).click();
+  // reason: Phase 86.3-05 QSPEC-01/02 walkToQuestion helper-resilience fix.
+  // walkToQuestionsIntro may return with the voter on EITHER the questions-intro
+  // page (start CTA visible) OR a real /questions/<id> page when the
+  // `navigateDirectlyToQuestions` fallback fires inside `advanceVoterFlow`.
+  // In the latter case, the original unconditional `startButton.click()`
+  // races a 10s timeout because the intro start CTA never renders. Probe
+  // visibility first and only click when the intro CTA is actually present;
+  // the Skip-Next loop below already handles both cases (the nextButton is
+  // visible on real /questions/<id> pages too).
+  // See PATTERNS.md "Recommended fix shape" + RESEARCH §"Cell #7".
+  const startBtn = page.getByTestId(testIds.voter.questions.startButton);
+  const onIntro = await startBtn.isVisible().catch(() => false);
+  if (onIntro) await startBtn.click();
   const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
   for (let i = 0; i < sortOrder; i++) {
     await nextButton.waitFor({ state: 'visible', timeout: 10000 });

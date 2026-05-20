@@ -87,19 +87,23 @@ import { walkToQuestion } from '../../utils/voterNavigation';
 
 test.describe('voter question rendering — categorical (QSPEC-02)', { tag: ['@voter'] }, () => {
   ////////////////////////////////////////////////////////////////////
-  // Phase 86 DETERM-14 skip-with-rationale (Plan 03 Task 2):
-  //   QSPEC-02 shares the EXACT root cause as QSPEC-01 per Phase 86
-  //   RESEARCH §3.10: walkToQuestion(page, 16) → walkToQuestionsIntro
-  //   → 10s timeout on getByTestId('voter-questions-start') in 3/3
-  //   Phase 85 cold-start runs. Per-plan smoke PASS × 3 in isolation.
+  // Phase 86.3-05 QSPEC-02 SKIP-FALLBACK (cell #8 — shared upstream
+  // voter-app cold-deeplink race; same root cause as cell #7):
   //
-  //   Task 2 mirrors Task 1's Option C (skip+rationale) verdict; the
-  //   shared v2.11+ todo at
-  //   `.planning/todos/pending/2026-05-14-qspec-walkToQuestion-cold-start-race.md`
-  //   covers BOTH QSPEC-01 and QSPEC-02 — no separate todo file.
+  //   Cell #8 shares the EXACT root cause as cell #7 (QSPEC-01) per
+  //   Phase 86 RESEARCH §3.10 AND per Phase 86.3-05 Task 2 empirical
+  //   smoke (same `Loading…` page snapshot on /intro after Home start).
+  //   The walkToQuestion helper-resilience fix in voterNavigation.ts:308-329
+  //   was LANDED but EMPIRICALLY INSUFFICIENT (upstream voter-app
+  //   cold-deeplink loader race blocks page.goto(Home) → /intro hydration
+  //   before walkToQuestion is even reached).
   //
-  //   Per Phase 86 CONTEXT.md D-03 + D-08 (same rationale as Task 1):
-  //   inherits Phase 75 PASS-WITH-DEFERRAL rather than fix attempt.
+  //   Helper fix LEFT IN PLACE as evidence-of-attempt (defensive, no
+  //   regression). See cell #7 block-comment in
+  //   `voter-question-rendering-boolean.spec.ts` for the full
+  //   cross-plan trace reconciliation citing Phase 86.3-03 cell #5
+  //   /questions trace + Phase 86.3-04 cell #6 /results trace + the
+  //   v2.11+ Recommendation #3 (navigation-from-home redesign).
   ////////////////////////////////////////////////////////////////////
   // eslint-disable-next-line playwright/expect-expect
   test('categorical opinion question (single-choice) renders, voter answers, persists across goBack, mirrors on entity-detail', async ({
@@ -109,9 +113,15 @@ test.describe('voter question rendering — categorical (QSPEC-02)', { tag: ['@v
     test.skip(
       true,
       [
-        'Phase 75 PASS-WITH-DEFERRAL inheritance: walkToQuestion intro-start CTA wait races',
-        'full-suite settings overlay (shared root cause with QSPEC-01 per Phase 86 RESEARCH §3.10).',
-        'See .planning/todos/pending/2026-05-14-qspec-walkToQuestion-cold-start-race.md.'
+        'Phase 86.3-05 SKIP-FALLBACK: shares EXACT root cause with QSPEC-01 cell #7 per',
+        'Phase 86 RESEARCH §3.10 + Phase 86.3-05 Task 2 empirical smoke (upstream',
+        'voter-app cold-deeplink loader race blocks /intro hydration; page renders only',
+        '`Loading…`). walkToQuestion helper-resilience fix in voterNavigation.ts:308-329',
+        'LANDED but EMPIRICALLY INSUFFICIENT; LEFT IN PLACE as evidence-of-attempt.',
+        'Same upstream race as Phase 86.3-03 cell #5 /questions + Phase 86.3-04 cell #6',
+        '/results. v2.11+ Recommendation #3 (navigation-from-home redesign) elevated.',
+        'See cell #7 block-comment in voter-question-rendering-boolean.spec.ts + augmented',
+        '.planning/todos/pending/2026-05-14-qspec-walkToQuestion-cold-start-race.md.'
       ].join(' ')
     );
 

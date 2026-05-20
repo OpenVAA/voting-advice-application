@@ -61,28 +61,49 @@ import { walkToQuestion } from '../../utils/voterNavigation';
 
 test.describe('voter question rendering — boolean (QSPEC-01)', { tag: ['@voter'] }, () => {
   ////////////////////////////////////////////////////////////////////
-  // Phase 86 DETERM-14 skip-with-rationale (Plan 03 Task 1):
-  //   QSPEC-01 inherits Phase 75 PASS-WITH-DEFERRAL classification.
-  //   `walkToQuestion(page, 17)` calls `walkToQuestionsIntro` which
-  //   waits up to 10s on getByTestId('voter-questions-start') (apps/
-  //   frontend/src/routes/(voters)/(located)/questions/+page.svelte:161).
-  //   Phase 85 run-3 cold-start: 10s timeout in 3/3 runs (deterministic
-  //   FAIL inheriting upstream voter-fixture race).
-  //   Per-plan smoke remains PASS × 3 in isolation (verified Phase 75).
+  // Phase 86.3-05 QSPEC-01 SKIP-FALLBACK (cell #7 — shared upstream
+  // voter-app cold-deeplink race; same root cause as cells #5/#6):
   //
-  //   Per Phase 86 CONTEXT.md D-03 (fix-preferred-skip-acceptable, 1h
-  //   investigation cap) + D-08 (no SETTINGS-03 product-fix), Phase 86
-  //   inherits Phase 75's classification rather than:
-  //     - flipping the project-wide `--likert-only` seed (regresses 60+
-  //       voter-app PASS_LOCKED cells)
-  //     - patching the shared `walkToQuestion` helper (risk-unbounded
-  //       across the voter-app cluster)
-  //     - per-spec `appSettings.questions.questionsIntro.show: true`
-  //       override (settings persistence leak across adjacent tests)
+  //   Phase 86.3-05 Task 1 landed the PATTERNS.md "Recommended fix shape"
+  //   helper-resilience fix in `tests/tests/utils/voterNavigation.ts:308-329`
+  //   (`isVisible().catch(() => false)` probe + conditional click around the
+  //   intro CTA). The helper fix is LEFT IN PLACE as evidence-of-attempt
+  //   (mirrors Phase 86.3-04 cell #6 Path 2 LEFT-IN-PLACE pattern) — it is
+  //   defensively correct and may help v2.11+ once the upstream race is
+  //   resolved.
   //
-  //   v2.11+ scope captured at:
-  //   `.planning/todos/pending/2026-05-14-qspec-walkToQuestion-cold-start-race.md`
-  //   (shared with QSPEC-02 — same root cause per RESEARCH §3.10).
+  //   However, per-cell smoke (Phase 86.3-05 Task 2) EMPIRICALLY confirmed
+  //   the helper fix alone does NOT close cells #7+#8. Failure mode:
+  //     - page.goto(Home) + Home start-button click → /intro
+  //     - /intro main panel renders only `Loading…` (page-snapshot YAML
+  //       confirmed in `error-context.md`)
+  //     - `voter-intro-start` testId never paints
+  //     - `advanceVoterFlow` 5s race-checkpoint timeout fires at
+  //       voterNavigation.ts:149
+  //
+  //   This is the EXACT same upstream voter-app cold-deeplink loader
+  //   race that:
+  //     - Phase 86.3-03 (cell #5 voter-feedback-persistence) found on
+  //       /questions via the `answeredVoterPage` fixture, AND
+  //     - Phase 86.3-04 (cell #6 voter-popup-hydration LAYOUT-03) found
+  //       on /results via direct `page.goto`.
+  //
+  //   Per Phase 86.3-04 cross-plan trace reconciliation: the race is
+  //   characterized as a SHARED voter-app cold-deeplink loader / data-
+  //   resolution issue across the voter-app surface (NOT route-specific).
+  //   The v2.11+ Recommendation #3 (navigation-from-home redesign in
+  //   `.planning/todos/pending/2026-05-16-voter-popup-hydration-layout-03-
+  //   deeplink.md` — augmented Phase 86.3-04) elevates this as the
+  //   strongest next-action.
+  //
+  //   Per CONTEXT D-08 (1h cap) + D-09 (CASCADE / did-not-run counts as
+  //   failure → SKIP preferred over FAIL): cells #7+#8 SKIP-FALLBACK
+  //   preserves the QSPEC coverage signal in SKIPPED_TESTS for v2.11+
+  //   pickup without polluting the post-86.3 anchor's CASCADE pool.
+  //   v2.11+ todo `2026-05-14-qspec-walkToQuestion-cold-start-race.md`
+  //   augmented with Phase 86.3-05 attempt section (helper fix +
+  //   cold-deeplink finding) + cross-references to 86.3-03 + 86.3-04
+  //   trace analyses. The walkToQuestion helper fix is LEFT IN PLACE.
   ////////////////////////////////////////////////////////////////////
   // eslint-disable-next-line playwright/expect-expect
   test('boolean opinion question renders, voter answers, persists across goBack, mirrors on entity-detail', async ({
@@ -92,12 +113,16 @@ test.describe('voter question rendering — boolean (QSPEC-01)', { tag: ['@voter
     test.skip(
       true,
       [
-        'Phase 75 PASS-WITH-DEFERRAL inheritance: walkToQuestion intro-start CTA wait races',
-        'full-suite settings overlay (10s timeout on voter-questions-start in 3/3 Phase 85',
-        'cold-start runs). Per-plan smoke remains PASS × 3 in isolation. Project-wide',
-        '--likert-only seed flip would regress 60+ PASS_LOCKED cells; per-spec fixture',
-        'override risk-unbounded. v2.11+:',
-        '.planning/todos/pending/2026-05-14-qspec-walkToQuestion-cold-start-race.md'
+        'Phase 86.3-05 SKIP-FALLBACK: walkToQuestion helper-resilience fix LANDED in',
+        'voterNavigation.ts:308-329 (isVisible probe + conditional intro-CTA click) but',
+        'EMPIRICALLY INSUFFICIENT — per-cell smoke confirms upstream voter-app cold-deeplink',
+        'loader race blocks page.goto(Home) → /intro hydration (page renders only `Loading…`;',
+        'voter-intro-start testId never paints). Same upstream race as Phase 86.3-03 cell #5',
+        '/questions Loading… + Phase 86.3-04 cell #6 /results Loading…; characterized as a',
+        'SHARED voter-app cold-deeplink issue (NOT route-specific). Helper fix LEFT IN PLACE',
+        'as evidence-of-attempt. v2.11+ Recommendation #3 (navigation-from-home redesign;',
+        '2026-05-16-voter-popup-hydration-layout-03-deeplink.md) elevated as strongest action.',
+        'See also augmented .planning/todos/pending/2026-05-14-qspec-walkToQuestion-cold-start-race.md.'
       ].join(' ')
     );
 
