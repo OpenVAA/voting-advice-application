@@ -65,6 +65,7 @@ test.describe('feedback persistence (E2E-03)', { tag: ['@voter'] }, () => {
         'Phase 86-02 H1 fix (toHaveCount(0) replacement) did NOT hold post-85-04 trace cleanup.',
         'H4 close-transition mitigation attempted (RESEARCH §5.4) — also insufficient.',
         'H2 multi-dialog collision + H4 close-transition selector window both plausible.',
+        'Phase 86.3-03 SKIP-FALLBACK: upstream answeredVoterPage fixture race blocks H2/H3 disambiguation (trace evidence: /questions page stuck at Loading… despite seeded data); see 86.3-03-trace-analysis.md.',
         'v2.11+: .planning/todos/pending/2026-05-16-voter-feedback-persistence-second-pass.md'
       ].join(' ')
     );
