@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
-status: ready_to_plan
-stopped_at: Phase 86.2 complete (3/3) — ready to discuss Phase 86.3
-last_updated: 2026-05-20T09:01:50.432Z
-last_activity: 2026-05-19
+status: executing
+stopped_at: Phase 86.3 Plan 01 complete (SETTINGS-01 wave A reactivity fix FIX-PASS on cells #1/#2/#3); Plan 02 next (SETTINGS-01 wave B constituency-filter Path A/B/C decision)
+last_updated: "2026-05-20T13:25:00.000Z"
+last_activity: 2026-05-20 -- Phase 86.3 Plan 01 complete; voters-layout non-reactive todo CLOSED
 progress:
   total_phases: 12
-  completed_phases: 8
+  completed_phases: 9
   total_plans: 31
-  completed_plans: 24
-  percent: 67
+  completed_plans: 25
+  percent: 80
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 86.3 — implement skipped tests close 7 source skipped voter app can
+**Current focus:** Phase 86.3 — implement-skipped-tests-close-7-source-skipped-voter-app-can
 
 ## Current Position
 
-Phase: 86.3
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-05-20
+Phase: 86.3 (implement-skipped-tests-close-7-source-skipped-voter-app-can) — EXECUTING
+Plan: 2 of 5 (Plan 01 complete — FIX-PASS on 3 SETTINGS-01 wave A cells)
+Status: Executing Phase 86.3
+Last activity: 2026-05-20 -- Phase 86.3 Plan 01 SUMMARY landed (commit 0312ae4af); voters-layout non-reactive v2.11+ todo CLOSED
 
 ## Performance Metrics
 
@@ -52,7 +52,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | todo | 2026-05-13-voter-matching-detail-flakes.md | **v2.10 Phase 83 / DETERM-07** — promoted 2026-05-13 from v2.11+ to in-milestone gap closure |
 | todo | 2026-05-12-settings-02-voter-authoring-product-gap.md | Re-deferred to v2.11+ — voter-app PRODUCT-GAP, out of v2.10 focused scope |
 | todo | 2026-05-12-settings-03-voter-required-product-gap.md | Re-deferred to v2.11+ — voter-app PRODUCT-GAP, out of v2.10 focused scope; Phase 86 Plan 03 Task 3 confirmed via testIgnore project-config exclusion (no fix) |
-| todo | 2026-05-12-voters-layout-non-reactive-appsettings.md | Re-deferred to v2.11+ — Svelte 5 reactivity hardening, out of v2.10 focused scope |
+| todo | 2026-05-12-voters-layout-non-reactive-appsettings.md | **CLOSED 2026-05-20** by Phase 86.3 Plan 01 — moved to .planning/todos/done/ |
 | todo | 2026-05-14-qspec-walkToQuestion-cold-start-race.md | **v2.11+** — Phase 86 Plan 03 Tasks 1+2 source-skip (QSPEC-01 + QSPEC-02 boolean+categorical share root cause: walkToQuestion intro-start CTA wait races full-suite settings overlay; 10s timeout on voter-questions-start) |
 | todo | 2026-05-14-party-drawer-boundary-flake-residual.md | **v2.11+** — Phase 86 Plan 04 Task 2 PASSED-WITH-DEFERRAL on strict 3-run SHA identity (Phase-83-DETERM-07b boundary graduate; Plan 01 Task 5 hardening reduced but did not eliminate boundary classification) |
 | todo | 2026-05-12-qspec-01-i18n-hardening.md | Backlog — small QSPEC follow-up; not v2.10 |
@@ -88,6 +88,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | Phase 86 P04 | ~190min (~162min unattended 3-run gate + ~28min orchestration) | 7 tasks | 9 files |
 | Phase 86.2 P01 | 210min | 3 tasks | 12 files |
 | Phase 86.2 P02 | 90min | 3 tasks | 23 files |
+| Phase 86.3 P01 | 75min | 3 tasks | 7 files (+ 1 todo rename) |
 
 ## Accumulated Context
 
@@ -145,6 +146,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Helpers #3-#6 propagation explicitly deferred to v2.11+ per RESEARCH (9 sites): different pattern shape (helper #3 — no destination predicate; helper #4 — named-combobox variants; helper #5 — non-count findData; helper #6 — answer-loop not Skip-Next-only).
 - [Phase ?]: Negative-landing assertions (expect.not.toHaveURL) stay inline with // reason: comments — expectLandedOn is positive-only by design per helper Pitfall #1 docstring.
 - [Phase ?]: Single-run full-suite smoke (NOT 3-run SHA-identity gate) is Plan 86.2-02 audit charter; Plan 86.2-03 owns the canonical 3-run gate against fresh post-86.2 anchor.
+- [Phase 86.3 P01]: SETTINGS-01 wave A cells #1/#2/#3 closed via reactive $effect-driven `topBarSettings.revert(baseIdx)+push(next)` (Pitfall 1 guard) + $effect with `notificationQueued = $state(false)` fire-once guard (Pitfall 2 guard) on (voters)/+layout.svelte. +27 LOC; mirrors canonical pattern at appContext.svelte.ts:93-100. All 3 per-cell smokes OUTCOME: FIX-PASS. v2.11+ todo `2026-05-12-voters-layout-non-reactive-appsettings.md` CLOSED (moved to .planning/todos/done/).
 
 ### Blockers/Concerns
 
@@ -155,10 +157,10 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-05-19T18:38:48.043Z
-Stopped at: Phase 86.2 Plan 01 complete; Plan 02 next (helper propagation across ~28 expectLandedOn + 9 settleNetworkIdle sites)
+Last session: 2026-05-20T13:25:00.000Z
+Stopped at: Phase 86.3 Plan 01 complete (atomic commit 0312ae4af; FIX-PASS on cells #1/#2/#3; v2.11+ todo voters-layout-non-reactive CLOSED). Plan 02 (SETTINGS-01 wave B constituency-filter) next.
 Resume file: None
-Next action: Run /gsd-discuss-phase 86.2 to scope the e2e refactor pass (helpers + dedup + Phase 86.1 post-fix propagation). Then 86.3 implements 7 source-skipped tests. Phase 87 anchor follows.
+Next action: Execute Phase 86.3 Plan 02 (constituency-filter Path A/B/C operator-decision + RCA + skip-fallback or fix). Plans 86.3-02..04 are parallel-eligible per Wave 1; Plan 05 sequences after.
 
 ### Plan-count estimate (drafted 2026-05-12)
 
