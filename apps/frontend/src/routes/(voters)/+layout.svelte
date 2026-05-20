@@ -89,6 +89,15 @@
   // first reads truthy (would otherwise re-queue on every $appSettings
   // change). The dataConsent popup branch stays in onMount per Plan 86.3-01
   // small-fix constraint (CONTEXT D-10).
+  //
+  // WR-03 (Phase 86.3 review): TRADE-OFF — "fire-once per page load" semantic.
+  // The flag is never reset, so operator-side changes to
+  // $appSettings.notifications.voterApp content/title (or show=false→true
+  // cycles) within a live voter session are NOT re-queued. To re-queue, the
+  // voter must reload the page. This matches the pre-86.3 onMount semantic
+  // (queue once at mount) and is the intentional contract. If "newest
+  // notification wins" is needed, gate the flag on a content-identity key
+  // (title + content hash) — see 86.3-REVIEW.md WR-03 for a code sketch.
   let notificationQueued = $state(false);
   $effect(() => {
     if (!$appSettings.access.voterApp) return;
