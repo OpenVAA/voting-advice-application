@@ -30,7 +30,35 @@ Two parallel investigations should be considered before re-enabling:
 
 2. **Examine whether the `(voters)/(located)/+layout.ts` loader can `await` the storage seed propagation.** A defensive `waitForLoadState('domcontentloaded')` between `addInitScript` and `page.goto` may NOT be enough — the storage write is synchronous but the user-data context's `$effect` chain is reactive.
 
-3. **Consider replacing the deeplink test with a navigation-from-home test** that walks through the selectors and lands on `/results` via in-app navigation rather than direct URL. The popup-via-root-layout-slot contract is preserved; the cold-start storage seed race is eliminated.
+3. **Consider replacing the deeplink test with a navigation-from-home test** that walks through the selectors and lands on `/results` via in-app navigation rather than direct URL. The popup-via-root-layout-slot contract is preserved; the cold-start storage seed race is eliminated. **NOTE 2026-05-20:** Phase 86.3-04 elevated this to the strongest v2.11+ recommendation — Path 2 (context-scoped addInitScript) was empirically disproved (see "Phase 86.3-04 attempt" section below), confirming that the root cause is deeper than addInitScript-vs-loader timing. The natural in-app navigation path (Home → Intro → Questions → Results) populates the answer-store, voter-context, and dataRoot through reactive `$effect` chains that the cold-deeplink path bypasses. Recommendation #3 sidesteps the entire race surface.
+
+## Phase 86.3-04 attempt (2026-05-20 — augmented)
+
+Per Phase 86.3-04 PLAN Task 1 ladder (Path 2 → Path 1 → SKIP-FALLBACK):
+
+### Path 2 (context.addInitScript) — verified-applied, empirically insufficient
+
+- **Change applied:** 1-line swap at `voter-popup-hydration.spec.ts:216` — `page.addInitScript(...)` → `page.context().addInitScript(...)`. Context-scoped init scripts fire before ANY navigation in the current context, closing the documented page-scoped-vs-loader timing window per RESEARCH §"Cell #6 Fix shapes §2".
+- **Empirical result:** Per-cell smoke `voter-popup-hydration.spec.ts:147:3 …` fails with `Expected: > 0; Received: 0` on the `expect.poll(() => list.count(), { timeout: 15000 })` settle gate. `voter-results-list` testid never paints within 15s.
+- **Trace evidence (post-fix run, 2026-05-20):**
+  - Frame URL progression: `about:blank` → `http://localhost:5173/results?electionId=…&constituencyId=…` → `http://localhost:5173/results/candidates?electionId=…&constituencyId=…` (canonical 308 redirect).
+  - Supabase REST calls (all 200): `app_settings?select=customization`, `app_settings?select=settings`, `elections`, `constituencies`, `constituency_groups`, `question_categories`, `questions`, `rpc/get_nominations`.
+  - Page snapshot at failure (from `error-context.md`): `main [ref=e30]: generic [ref=e32]: Loading…`. NO list, NO results — same symptom as Phase 86.3-03 trace finding on `/questions`.
+- **Disposition:** Path 2 swap LEFT IN PLACE in the spec body as evidence-of-attempt (mirrors Phase 86.1-03 cell 2 storage-clear LEFT IN PLACE pattern). `test.skip(true, …)` short-circuits before the executable statement; the swap is preserved purely as code-archaeology for the v2.11+ investigator.
+
+### Path 1 (test.use storageState) — abandoned at Pitfall 4
+
+- **Mechanism considered:** `test.use({ storageState: { origins: [{ origin: 'http://localhost:5173', localStorage: [{ name: 'VoterContext-answerStore', value: JSON.stringify(seed) }] }] }})`.
+- **Blocker:** The seed value requires a question-ID-keyed answer map (`{ [questionId]: { value: 3 } }`). `questionIds` are discovered in `beforeAll` via Supabase `findData({ externalId: { $like: 'test-question-%' } })` because the e2e seed assigns UUIDs randomly per run. `test.use` is STATIC — it runs before `beforeAll`, so dynamic IDs cannot inform the seed.
+- **Resolution paths considered, both out of 1h cap:**
+  - **Path 1a:** Move ID discovery to module-load IIFE (top-level `await client.findData(...)`). Touches the spec's static-config layer; high blast radius.
+  - **Path 1b:** Hard-code known external_ids from the e2e template (e.g., `'test-question-1'` through `'test-question-25'`) and bypass UUID lookup. Sacrifices the "discovered at runtime" pattern that's robust to template churn.
+
+### Cross-reference to Phase 86.3-03 trace finding
+
+Phase 86.3-03 (cell #5 voter-feedback-persistence) ALSO produced the same `Loading…` symptom but on `/questions` (via the `answeredVoterPage` fixture's `navigateToFirstQuestion` step). The trace analysis at `.planning/phases/86.3-…/86.3-03-trace-analysis.md` characterizes this as a CASCADE-class upstream loader race — Supabase REST 200s, but the SvelteKit page boundary never resolves to paint. Phase 86.3-04 cell #6 reproduces the SAME race on `/results` via direct `page.goto`, confirming the upstream loader race is shared across the voter-app deep-link surface (not specific to one route).
+
+The next v2.11+ pickup should investigate the shared upstream loader race FIRST. Once the loader race is closed, the voter-app cold-deeplink surface (both `/questions` and `/results`) should re-enable Path 2 trivially.
 
 ## Cross-refs
 

@@ -120,33 +120,51 @@ test.describe('setTimeout popup on full page load (LAYOUT-03 regression gate)', 
   });
 
   ////////////////////////////////////////////////////////////////////
-  // Phase 86.1-03 cell 1 SKIP per CONTEXT D-05 disposition:
-  //   LAYOUT-03 hydration-path popup assertion accepts PASS-WITH-DEFERRAL
-  //   verdict from Phase 86-04 SUMMARY. The cold-start addInitScript
-  //   localStorage seed races the (located)/+layout.ts loader on full-suite
-  //   runs (results-list testid timeout 15s in 3/3 Phase 85-04 + Phase 86
-  //   cold-start runs).
+  // Phase 86.3-04 SKIP-FALLBACK (LAYOUT-03 / DETERM-12):
+  //   Phase 86.1-03 PASS-WITH-DEFERRAL inheritance EXTENDED — Phase 86.3-04
+  //   attempted Path 2 (`page.context().addInitScript` swap; RESEARCH §"Cell
+  //   #6 Fix shapes §2") and EMPIRICALLY DISPROVED its sufficiency: the
+  //   context-scoped init script writes the localStorage seed before the
+  //   navigation, but `/results` still stalls at `Loading…` (15s timeout
+  //   on `voter-results-list` testid). Path 2 swap is left in the test
+  //   body BELOW (verified-applied) as evidence-of-attempt for the v2.11+
+  //   pickup.
   //
-  //   What was attempted: Phase 86-01 expect.poll(() => list.count()) settle
-  //   pattern at lines 165-171 (verified-applied; insufficient). Project-wide
-  //   --likert-only seed flip and per-spec fixture override both risk-unbounded
-  //   per Phase 86 RESEARCH §3.2 + §3.10.
+  //   Path 1 (`test.use({ storageState })`) hit the RESEARCH §"Pitfall 4"
+  //   caveat: storage state is statically applied BEFORE beforeAll, so
+  //   the runtime-discovered electionId/constituencyId/questionIds
+  //   cannot inform the seed without moving discovery to module-load
+  //   IIFE OR hard-coding known external_ids — both out of D-08 1h
+  //   scope for a 50/50-probability fix attempt.
   //
-  //   Alternative regression coverage in PASS_LOCKED today:
+  //   Trace evidence: identical `Loading…` symptom to Phase 86.3-03
+  //   cell #5 finding — Supabase REST returns 200 (app_settings /
+  //   elections / constituencies / questions / candidates / nominations),
+  //   page navigates to `/results/candidates?electionId=…&constituencyId=…`
+  //   (canonical 308 redirect), but SvelteKit page boundary never
+  //   resolves to paint. See `.planning/phases/86.3-…/86.3-03-trace-
+  //   analysis.md` for the upstream loader-race characterization.
+  //
+  //   v2.11+ todo `.planning/todos/pending/2026-05-16-voter-popup-
+  //   hydration-layout-03-deeplink.md` augmented with the Phase 86.3-04
+  //   empirical-disproof of Path 2 + cross-ref to 86.3-03 trace
+  //   analysis. The recommended v2.11+ next action is Recommendation #3
+  //   from the todo: replace deeplink with navigation-from-home test
+  //   (out of D-02 1h scope).
+  //
+  //   Production-code path (loader-ordering tweak on (located)/+layout.ts)
+  //   remains OUT OF D-10 SCOPE for cell #6.
+  //
+  //   Alternative regression coverage in PASS_LOCKED today (preserved
+  //   from Phase 86.1-03 cell 1 disposition):
   //     - voter-app :: voter-results > drawer paints before list on cold
-  //       deeplink (D-10 source-order + content-visibility)
+  //       deeplink (D-10 source-order + content-visibility) — uses
+  //       `answeredVoterPage` fixture (in-app navigation), so paints
+  //       the same /results surface without the addInitScript race
   //     - voter-app-popups > should show feedback popup after delay on
   //       results page
   //     - voter-app-popups > should show survey popup after delay on
   //       results page
-  //
-  //   v2.11+ investigation queued at:
-  //   .planning/todos/pending/2026-05-16-voter-popup-hydration-layout-03-deeplink.md
-  //
-  //   Plan 86.1-04 anchor regen MUST manually move this entry from
-  //   CASCADE_TESTS (where categorizeStatus maps `skipped` → `cascade`)
-  //   into SKIPPED_TESTS per PATTERNS.md "Anchor regen SKIPPED_TESTS
-  //   manual filter" + RESEARCH §7 LANDMINE.
   ////////////////////////////////////////////////////////////////////
   // eslint-disable-next-line playwright/no-skipped-test
   test('popup appears on full page load to /results (LAYOUT-03 hydration path)', async ({ page }) => {
@@ -154,13 +172,14 @@ test.describe('setTimeout popup on full page load (LAYOUT-03 regression gate)', 
     test.skip(
       true,
       [
-        'Phase 86.1-03: LAYOUT-03 hydration-path popup assertion accepts PASS-WITH-DEFERRAL',
-        'verdict from Phase 86-04 SUMMARY. The cold-start addInitScript localStorage seed',
-        'races the (located)/+layout.ts loader on full-suite runs (results-list testid timeout',
-        '15s in Phase 85-04 + Phase 86 baselines). Alternative regression coverage:',
-        'voter-app :: voter-results > drawer paints before list on cold deeplink (D-10);',
+        'Phase 86.3-04 deferred: Path 2 context.addInitScript and Path 1 storageState both insufficient within 1h cap.',
+        'Path 2 swap (page.context().addInitScript) applied and verified-applied below as evidence-of-attempt;',
+        'empirically disproved — /results still stalls at Loading… (same upstream loader-race symptom as',
+        'Phase 86.3-03 cell #5 trace analysis; Supabase REST 200 but SvelteKit page never paints).',
+        'Path 1 hit Pitfall 4 (storageState static; cannot consume beforeAll-discovered UUIDs).',
+        'Alternative regression coverage: voter-app :: voter-results > drawer paints before list on cold deeplink (D-10);',
         'voter-app-popups > should show feedback popup after delay on results page.',
-        'v2.11+: .planning/todos/pending/2026-05-16-voter-popup-hydration-layout-03-deeplink.md'
+        'v2.11+: .planning/todos/pending/2026-05-16-voter-popup-hydration-layout-03-deeplink.md (Phase 86.3-04 augmentation).'
       ].join(' ')
     );
 
@@ -185,7 +204,16 @@ test.describe('setTimeout popup on full page load (LAYOUT-03 regression gate)', 
       answerEntries[qid] = { value: 3 };
     }
     const storageSeed = { version: 1, data: answerEntries };
-    await page.addInitScript((seed) => {
+    // Phase 86.3-04 cell #6 Path 2 LEFT IN PLACE on SKIP-FALLBACK as
+    // evidence-of-attempt (mirrors Phase 86.1-03 cell 2 storage-clear
+    // LEFT IN PLACE pattern). The context-scoped addInitScript swap
+    // closes the page-scoped-vs-loader race per RESEARCH §"Cell #6
+    // Fix shapes §2" but is EMPIRICALLY INSUFFICIENT: /results still
+    // stalls at Loading… (same symptom as Phase 86.3-03 cell #5 trace
+    // finding). test.skip(true, …) above short-circuits before this
+    // executable statement fires; this code is preserved for the
+    // v2.11+ investigator who will pick up the deeper loader-race.
+    await page.context().addInitScript((seed) => {
       window.localStorage.setItem('VoterContext-answerStore', JSON.stringify(seed));
     }, storageSeed);
 
