@@ -252,7 +252,7 @@ Phase 79 (DETERM-04 + DETERM-05) ✓ COMPLETE
 **Goal:** Close all 8 currently always-skipped (`test.skip(true, '…')`) voter-app / candidate-app / variant-project tests inherited from Phases 75 / 77 / 86 / 86.1 so the Phase 87 final v2.10-ship anchor captures maximum coverage. Cells: #1/#2/#3 SETTINGS-01 wave A `(voters)/+layout.svelte` Svelte 5 reactivity (production-code fix per D-10); #4 SETTINGS-01 wave B constituency-filter PRODUCT-GAP (Path-A/B/C operator decision); #5 E2E-03 voter-feedback-persistence H2/H3 trace-driven RCA; #6 LAYOUT-03 voter-popup-hydration fixture pre-hook; #7+#8 QSPEC-01/02 walkToQuestion helper-resilience fix. Per-cell 1h cap (D-08) + skip-fallback (D-02) protocol; final 3-run cold-start SHA-identity gate satisfies Phase 87 Task 0 pre-gate (CASCADE ≤ 5).
 **Requirements**: SETTINGS-01, E2E-03, LAYOUT-03, QSPEC-01, QSPEC-02 (no new REQ-IDs)
 **Depends on:** Phase 86.2 (sequential predecessor — helper layer source; 86 → 86.1 → 86.2 → 86.3 → 87)
-**Plans:** 5/5 plans complete (Closed 2026-05-20). Disposition: 3 FIX-PASS + 5 SKIP-FALLBACK. Anchor SHA bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee (ALMOST-STRICT per Phase 86 D-06 precedent). D-06 Phase 87 disposition recommendation: RE-PLAN (CASCADE >> 5 hard fails Task 0 pre-gate; upstream voter-app cold-deeplink race materially changes anchor target).
+**Plans:** 5/5 plans complete
 
 Plans:
 - [x] 86.3-01-PLAN.md — SETTINGS-01 wave A — fix `(voters)/+layout.svelte` reactivity for cells #1/#2/#3 (shared root cause; one atomic production-code commit) + per-cell smokes (3 tasks; Wave 1) — FIX-PASS on all 3 cells (commit 0312ae4af)
@@ -339,5 +339,5 @@ Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82, 83 (pa
 | 86. Voter-App FAILURE-CLASS Cleanup | v2.10 | 4/4 | Complete   | 2026-05-14 |
 | 86.1. Pre-Phase-87 Convergence Sweep | v2.10 | 0/4 | Planned | - |
 | 86.2. E2E Suite Refactor Pass | v2.10 | 3/3 | Complete    | 2026-05-20 |
-| 86.3. Implement Skipped Tests (8 cells) | v2.10 | 5/5 | Complete | 2026-05-20 |
+| 86.3. Implement Skipped Tests (8 cells) | v2.10 | 5/5 | Complete    | 2026-05-20 |
 | 87. v2.10 All-Green Milestone-Close Anchor | v2.10 | 0/1 | Planned | - |

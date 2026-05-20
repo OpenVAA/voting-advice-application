@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
-status: executing
-stopped_at: "Phase 86.3 CLOSED 2026-05-20 (Plan 05 atomic close commit; 5/5 plans complete). 8-cell disposition: 3 FIX-PASS (cells #1/#2/#3 SETTINGS-01 wave A via 86.3-01 reactive $effect rewrite) + 5 SKIP-FALLBACK (cell #4 constituency-filter Path-C; cells #5/#6/#7/#8 share upstream voter-app cold-deeplink loader race). 3-run cold-start gate: ALMOST-STRICT (Phase 86 D-06 precedent; 8 diverging cells share ONE boundary-class cascade ancestor — DETERM-06 imgproxy + email-link timing); canonical run-3.json; anchor SHA bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee. walkToQuestion helper-resilience fix LANDED in voterNavigation.ts:308-329 (defensive isVisible probe) but EMPIRICALLY INSUFFICIENT — cells #7/#8 fail at upstream /intro hydration; helper fix LEFT IN PLACE as evidence-of-attempt. SKIPPED_TESTS const updated 2 → 5 entries; 3 SETTINGS-01 wave A cells moved CASCADE → PASS_LOCKED. PHASE 86.3 ANCHOR jsdoc added to diff-playwright-reports.ts. D-06 Phase 87 disposition: RE-PLAN (CASCADE >> 5; upstream cold-deeplink race materially changes anchor target; v2.11+ navigation-from-home redesign closes 4 cells in single fix)."
-last_updated: "2026-05-20T16:30:00.000Z"
+status: ready_to_plan
+stopped_at: Phase 86.3 complete (5/5) — ready to discuss Phase 87
+last_updated: 2026-05-20T13:44:47.535Z
 last_activity: 2026-05-20 -- Phase 86.3 CLOSED; 8-cell disposition (3 FIX-PASS + 5 SKIP-FALLBACK); cells #7/#8 QSPEC SKIP-FALLBACK after walkToQuestion helper-resilience fix EMPIRICALLY INSUFFICIENT due to upstream voter-app cold-deeplink loader race (4-cell finding shared with cells #5/#6); 3-run gate ALMOST-STRICT; anchor SHA bc1c94957b…; D-06 Phase 87 disposition recommendation: RE-PLAN
 progress:
   total_phases: 12
   completed_phases: 10
   total_plans: 31
-  completed_plans: 31
-  percent: 100
+  completed_plans: 29
+  percent: 83
 ---
 
 # Project State
@@ -21,21 +21,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 87 — v2.10 All-Green Milestone-Close Anchor (D-06 recommendation: RE-PLAN to absorb v2.11+ voter-app cold-deeplink deferrals before firing)
+**Current focus:** Phase 87 — v2 10 all green milestone close anchor capture a fresh 3 run
 
 ## Current Position
 
-Phase: 87 (v2.10 All-Green Milestone-Close Anchor) — READY (D-06 recommendation: RE-PLAN)
-Plan: 0 of 1 (Plan 87-01 — needs re-plan per Phase 86.3-05 D-06 disposition recommendation)
-Status: Phase 86.3 CLOSED; awaiting operator decision on Phase 87 disposition (delayed-firing vs re-plan per CONTEXT D-06)
-Last activity: 2026-05-20 -- Phase 86.3 CLOSED; 8-cell disposition (3 FIX-PASS + 5 SKIP-FALLBACK); 3-run gate ALMOST-STRICT; anchor SHA bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee; D-06 Phase 87 disposition recommendation: RE-PLAN
+Phase: 87
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-05-20
 
 ## Performance Metrics
 
 **Cumulative:**
 
 - Milestones shipped: 14 (v1.0, v1.1, v1.2, v1.3, v1.4, v2.0, v2.1, v2.3, v2.4, v2.5, v2.6, v2.7, v2.8, v2.9) + 1 paused (v2.2)
-- Total plans completed: 266 + 6 tasks (v2.9 added 32 plans)
+- Total plans completed: 271 + 6 tasks (v2.9 added 32 plans)
 - Timeline: 46 days across 7 work windows (2026-03-01 → 2026-03-28 + v2.5 2026-04-23→24 + v2.6 2026-04-24→28 + v2.7 2026-04-29→05-08 + v2.8 2026-05-08→10 + v2.9 2026-05-10→12)
 - v2.9 specifically: 6 phases (73-78), 32 plans, 89 tasks across 3 days
 
