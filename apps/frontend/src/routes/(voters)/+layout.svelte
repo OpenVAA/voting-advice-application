@@ -33,6 +33,16 @@
   // Init Voter Context
   ////////////////////////////////////////////////////////////////////
 
+  // WR-04 (Phase 86.3 review): popupQueue is a stable instance reference per
+  // CLAUDE.md "Context Destructuring Rule §1" — popupStore() returns an object
+  // literal `{ push, shift, subscribe }` (popupStore.svelte.ts:23) attached as
+  // a plain context property (appContext.svelte.ts:226), NOT a $state/$derived
+  // getter. The `push`/`shift`/`subscribe` methods are bound function
+  // references; destructuring captures the instance once at component init
+  // and subsequent `popupQueue.push(...)` calls correctly mutate the live
+  // queue. DO NOT swap popupQueue for a $derived/$state-based collection (or
+  // a getter on the context object) without migrating consumers to
+  // `ctx.popupQueue.push(...)` per the destructuring rule.
   const { appSettings, appType, popupQueue, userPreferences, t } = initVoterContext();
   $appType = 'voter';
 
