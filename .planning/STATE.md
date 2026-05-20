@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
-status: executing
-stopped_at: Phase 86.2 Plan 02 complete; Plan 03 next (canonical 3-run cold-start SHA-identity gate against fresh post-86.2 anchor + SUMMARY + STATE/ROADMAP close)
-last_updated: "2026-05-19T18:39:18.785Z"
+status: ready_to_plan
+stopped_at: Phase 86.2 complete (3/3) — ready to discuss Phase 86.3
+last_updated: 2026-05-20T09:01:50.432Z
 last_activity: 2026-05-19
 progress:
   total_phases: 12
   completed_phases: 8
   total_plans: 31
-  completed_plans: 23
+  completed_plans: 24
   percent: 67
 ---
 
@@ -21,21 +21,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 86.2 — e2e-suite-refactor-pass-extract-helpers-dedup-assertions-pro
+**Current focus:** Phase 86.3 — implement skipped tests close 7 source skipped voter app can
 
 ## Current Position
 
-Phase: 86.2 (e2e-suite-refactor-pass-extract-helpers-dedup-assertions-pro) — EXECUTING
-Plan: 3 of 3
-Status: Ready to execute
-Last activity: 2026-05-19
+Phase: 86.3
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-05-20
 
 ## Performance Metrics
 
 **Cumulative:**
 
 - Milestones shipped: 14 (v1.0, v1.1, v1.2, v1.3, v1.4, v2.0, v2.1, v2.3, v2.4, v2.5, v2.6, v2.7, v2.8, v2.9) + 1 paused (v2.2)
-- Total plans completed: 263 + 6 tasks (v2.9 added 32 plans)
+- Total plans completed: 266 + 6 tasks (v2.9 added 32 plans)
 - Timeline: 46 days across 7 work windows (2026-03-01 → 2026-03-28 + v2.5 2026-04-23→24 + v2.6 2026-04-24→28 + v2.7 2026-04-29→05-08 + v2.8 2026-05-08→10 + v2.9 2026-05-10→12)
 - v2.9 specifically: 6 phases (73-78), 32 plans, 89 tasks across 3 days
 

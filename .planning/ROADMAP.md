@@ -266,12 +266,12 @@ Plans:
 **Goal:** Extract 6 reusable helpers from the 15 Phase 86.1 post-fix annotations into `tests/tests/helpers/` and propagate them across the rest of the Playwright suite so Phase 86.3 + subsequent maintenance can re-use the patterns instead of re-inventing them inline. Verified by a 3-run cold-start SHA-identity gate against the post-86.2 codebase (no test outcomes change — helper-only refactor).
 **Requirements**: none (introduces no new REQ-IDs; supports DETERM-15 Phase 87 final anchor downstream)
 **Depends on:** Phase 86 (predecessor sequential chain: 86 → 86.1 → 86.2 → 86.3 → 87)
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [x] 86.2-01-PLAN.md — Extract 6 helpers (settleNetworkIdle, gotoAndSettle, expectLandedOn, clickAndRaceSettle, iterateSelectOptions, assertDbRowCount, walkVoterIteration) into `tests/tests/helpers/` + refactor 4 anchor spec files + voter.fixture.ts internal refactor (3 tasks)
 - [x] 86.2-02-PLAN.md — Propagate ~33 site replacements across ~10 spec files (helper #2 ×27 + helper #1 ×6) + per-spec smokes + disposition table + full-suite cascade-victim audit (3 tasks)
-- [ ] 86.2-03-PLAN.md — 3-run cold-start SHA-identity gate + regen-output + SUMMARY + STATE/ROADMAP close (4 tasks; Task 1 = non-autonomous operator decision on anchor-mode Option B/C/D per RESEARCH Q1)
+- [x] 86.2-03-PLAN.md — 3-run cold-start SHA-identity gate + regen-output + SUMMARY + STATE/ROADMAP close (4 tasks; Task 1 = non-autonomous operator decision on anchor-mode Option B/C/D per RESEARCH Q1)
 
 ### Phase 86.1: Pre-Phase-87 Convergence Sweep — drive v2.10 e2e suite to all-green-or-explicit-deferral so Phase 87's CASCADE ≤ 5 pre-gate fires cleanly (INSERTED)
 
@@ -338,6 +338,6 @@ Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82, 83 (pa
 | 85. Variant-Project Cascade RCA & Fix | v2.10 | 2/2 | Complete   | 2026-05-14 |
 | 86. Voter-App FAILURE-CLASS Cleanup | v2.10 | 4/4 | Complete   | 2026-05-14 |
 | 86.1. Pre-Phase-87 Convergence Sweep | v2.10 | 0/4 | Planned | - |
-| 86.2. E2E Suite Refactor Pass | v2.10 | 2/3 | In Progress|  |
+| 86.2. E2E Suite Refactor Pass | v2.10 | 3/3 | Complete    | 2026-05-20 |
 | 86.3. Implement Skipped Tests (8 cells) | v2.10 | 0/5 | Planned | - |
 | 87. v2.10 All-Green Milestone-Close Anchor | v2.10 | 0/1 | Planned | - |
