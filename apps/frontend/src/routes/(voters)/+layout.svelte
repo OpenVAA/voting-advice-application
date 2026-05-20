@@ -37,17 +37,57 @@
   $appType = 'voter';
 
   ////////////////////////////////////////////////////////////////////
+  // Layout
+  ////////////////////////////////////////////////////////////////////
+
+  const { navigation, topBarSettings } = getLayoutContext(onDestroy);
+
+  // Phase 86.3-01 SETTINGS-01 wave A fix (cells #1 + #2): topBarSettings.push must
+  // be reactive on $appSettings so runtime overrides via
+  // mergeAppSettings(page.data.appSettingsData) (appContext.svelte.ts:93-100)
+  // propagate to the header Banner. Mirrors the canonical $effect pattern at
+  // appContext.svelte.ts:93-100. Pitfall 1 guard: each $effect re-run reverts
+  // to a captured baseline before pushing — prevents infinite stack growth
+  // (StackedState.push/revert API at StackedState.svelte.ts:40-56).
+  const topBarBaseIdx = topBarSettings.getLength() - 1;
+  $effect(() => {
+    const next = {
+      actions: {
+        feedback: $appSettings.header.showFeedback ? ('show' as const) : ('hide' as const),
+        help: $appSettings.header.showHelp ? ('show' as const) : ('hide' as const)
+      }
+    };
+    topBarSettings.revert(topBarBaseIdx);
+    topBarSettings.push(next);
+  });
+
+  ////////////////////////////////////////////////////////////////////
   // Popup management
   ////////////////////////////////////////////////////////////////////
 
-  onMount(() => {
+  // Phase 86.3-01 SETTINGS-01 wave A fix (cell #3): the Voter App notification
+  // queueing must be reactive on $appSettings so the post-overlay runtime
+  // value of $appSettings.notifications.voterApp is observed AFTER the
+  // appContext $effect (appContext.svelte.ts:93-100) merges
+  // page.data.appSettingsData. Pitfall 2 guard: notificationQueued is a
+  // fire-once flag so the popup is queued exactly ONCE when the setting
+  // first reads truthy (would otherwise re-queue on every $appSettings
+  // change). The dataConsent popup branch stays in onMount per Plan 86.3-01
+  // small-fix constraint (CONTEXT D-10).
+  let notificationQueued = $state(false);
+  $effect(() => {
     if (!$appSettings.access.voterApp) return;
-    // Show possible notification
-    if ($appSettings.notifications.voterApp?.show)
+    if (!notificationQueued && $appSettings.notifications.voterApp?.show) {
       popupQueue.push({
         component: Notification,
         props: { data: $appSettings.notifications.voterApp }
       });
+      notificationQueued = true;
+    }
+  });
+
+  onMount(() => {
+    if (!$appSettings.access.voterApp) return;
     // Ask for event tracking consent if we have no explicit answer
     if (
       $appSettings.analytics?.platform &&
@@ -55,18 +95,6 @@
       (!$userPreferences.dataCollection?.consent || $userPreferences.dataCollection?.consent === 'indetermined')
     )
       popupQueue.push({ component: DataConsentPopup });
-  });
-
-  ////////////////////////////////////////////////////////////////////
-  // Layout
-  ////////////////////////////////////////////////////////////////////
-
-  const { navigation, topBarSettings } = getLayoutContext(onDestroy);
-  topBarSettings.push({
-    actions: {
-      feedback: $appSettings.header.showFeedback ? 'show' : 'hide',
-      help: $appSettings.header.showHelp ? 'show' : 'hide'
-    }
   });
 
   const menuId = 'voter-app-menu';

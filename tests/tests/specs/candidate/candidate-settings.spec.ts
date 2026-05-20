@@ -467,70 +467,52 @@ const settings01WaveACells: Array<ToggleCell> = [
     }
   },
 
-  // Cell 2: header.showFeedback=false — PASS-WITH-DEFERRAL (product gap).
+  // Cell 2: header.showFeedback=false — FIX-PASS (Phase 86.3-01 SETTINGS-01 wave A).
   //
-  // The voter layout pushes topBarSettings.actions.feedback in its <script>
-  // body at MOUNT TIME ((voters)/+layout.svelte:65-69 — value captured via
-  // `$appSettings.header.showFeedback ? 'show' : 'hide'`). The push fires
-  // once and is NOT reactive on $appSettings. The appSettingsValue $state
-  // is initialized in app context with the static defaults from
-  // dynamicSettings.ts (appContext.svelte.ts:74); the runtime value from
-  // page.data.appSettingsData is merged in via $effect AFTER mount
-  // (appContext.svelte.ts:94-100). Result: the topBar's feedback action is
-  // bound to the static default (showFeedback: true), regardless of any
-  // overlay applied via updateAppSettings prior to navigation. Verified
-  // by trace inspection: the dataProvider returns showFeedback:false but
-  // the Banner still renders the feedback button.
-  //
-  // Routing the deferral to a future workstream: either (a) reactive
-  // topBarSettings.push so the actions object updates when $appSettings
-  // changes, or (b) gate the Banner button on `$appSettings.header.showFeedback`
-  // directly inside Banner.svelte (bypass topBarSettings indirection).
-  // Captured as a Phase 78 follow-up.
+  // Original v2.9 Phase 77 disposition was PASS-WITH-DEFERRAL because
+  // (voters)/+layout.svelte pushed topBarSettings.actions.feedback in its
+  // <script> body at MOUNT TIME (captured via $appSettings.header.showFeedback
+  // once at mount; not reactive on later page.data merges). Phase 86.3-01
+  // fixed the root cause: the push is now wrapped in a reactive $effect with
+  // a revert-then-push idiom (mirrors appContext.svelte.ts:93-100); the
+  // pre-push stack length is captured as a baseline (topBarBaseIdx) so each
+  // $effect re-run reverts to baseline before pushing — Pitfall 1 (infinite
+  // stack growth) guard.
   {
     name: 'header.showFeedback',
     overlay: { header: { showFeedback: false, showHelp: true } },
     route: { route: 'Home', locale: 'en' },
-    skipReason:
-      'PRODUCT-GAP — (voters)/+layout.svelte topBarSettings.push captures $appSettings.header.showFeedback once at mount (not reactive); appSettingsValue is initialized to dynamicSettings defaults and only updated via $effect AFTER mount. Verified via trace: DB has showFeedback:false but Banner renders feedback button. Cell asserter-able only after a topBarSettings reactivity fix or Banner direct-gate refactor (Phase 78 candidate).',
     assert: async (page) => {
       await expect(page.getByTestId(testIds.voter.home.startButton)).toBeVisible();
       await expect(page.getByRole('button', { name: 'Send feedback' })).toHaveCount(0);
     }
   },
 
-  // Cell 3: header.showHelp=false — PASS-WITH-DEFERRAL (same product gap as
-  // header.showFeedback above; both toggles flow through the same non-reactive
-  // topBarSettings.push at (voters)/+layout.svelte:67-69).
+  // Cell 3: header.showHelp=false — FIX-PASS (Phase 86.3-01 SETTINGS-01 wave A).
+  // Shared root cause with header.showFeedback above; both toggles flow
+  // through the same $effect-driven topBarSettings.revert + push pattern at
+  // (voters)/+layout.svelte:51-63.
   {
     name: 'header.showHelp',
     overlay: { header: { showFeedback: true, showHelp: false } },
     route: { route: 'Home', locale: 'en' },
-    skipReason:
-      'PRODUCT-GAP — same root cause as header.showFeedback (topBarSettings.push is not reactive on $appSettings, and appSettingsValue starts at static dynamicSettings defaults before $effect merges page.data). Captured as a Phase 78 follow-up.',
     assert: async (page) => {
       await expect(page.getByTestId(testIds.voter.home.startButton)).toBeVisible();
       await expect(page.getByRole('button', { name: 'Help' })).toHaveCount(0);
     }
   },
 
-  // Cell 4: notifications.voterApp on — PASS-WITH-DEFERRAL (product gap).
+  // Cell 4: notifications.voterApp on — FIX-PASS (Phase 86.3-01 SETTINGS-01 wave A).
   //
-  // (voters)/+layout.svelte:43-50 — onMount() reads
-  // `$appSettings.notifications.voterApp?.show` once at component mount and
-  // pushes the Notification component into the popupQueue. Like the
-  // topBarSettings.push case above, this is non-reactive: by the time
-  // onMount fires, the appSettingsValue $state is still at its static
-  // dynamicSettings defaults (notifications.voterApp: null). The runtime
-  // value from page.data merges in via $effect AFTER onMount, so the
-  // notification popup is never queued. Verified by trace: the dialog
-  // role-element is absent from the rendered DOM even though the DB
-  // returns the Sentinel 77 title/content.
-  //
-  // Asserter-able via the candidate-side analog (CAND-13) which the
-  // existing spec already covers. Voter-side deferral routed to a future
-  // workstream (Phase 78 candidate — refactor onMount popup queueing to
-  // a reactive $effect that reads the current appSettings post-merge).
+  // Original v2.9 Phase 77 disposition was PASS-WITH-DEFERRAL because
+  // (voters)/+layout.svelte:43-50 onMount() read $appSettings.notifications.voterApp
+  // once at mount, before the appContext $effect merged page.data into
+  // appSettingsValue. Phase 86.3-01 fixed the root cause: the notification
+  // popup queueing migrated to a $effect that reads $appSettings reactively,
+  // gated by a notificationQueued = $state(false) fire-once guard
+  // (Pitfall 2 guard — prevents re-queueing on every $appSettings change).
+  // The dataConsent popup branch remains in onMount per Plan 86.3-01
+  // small-fix constraint (CONTEXT D-10).
   {
     name: 'notifications.voterApp',
     overlay: {
@@ -543,8 +525,6 @@ const settings01WaveACells: Array<ToggleCell> = [
       }
     },
     route: { route: 'Home', locale: 'en' },
-    skipReason:
-      'PRODUCT-GAP — (voters)/+layout.svelte:43-50 onMount() reads $appSettings.notifications.voterApp once at mount; appSettingsValue is still at dynamicSettings defaults (notifications.voterApp:null) until app context $effect merges page.data. The Notification popup is never queued for the post-overlay runtime value. Captured as a Phase 78 follow-up.',
     assert: async (page) => {
       const dialog = page.getByRole('dialog');
       await expect(dialog).toBeVisible();

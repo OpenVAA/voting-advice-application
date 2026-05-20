@@ -1,4 +1,9 @@
-# (voters)/+layout.svelte non-reactive topBarSettings/popupQueue.push (Phase 77 P01 deferred → v2.10+)
+# (voters)/+layout.svelte non-reactive topBarSettings/popupQueue.push (Phase 77 P01 deferred → v2.10+) — CLOSED 2026-05-20
+
+**Closed:** 2026-05-20 by Phase 86.3 Plan 01 (FIX-PASS on all 3 SETTINGS-01 wave A cells).
+**Resolution:** Reactive `$effect`-driven `topBarSettings.revert(baseIdx) + push(next)` for header.showFeedback / header.showHelp; reactive `$effect` with `notificationQueued = $state(false)` fire-once guard for notifications.voterApp. LOC delta on `apps/frontend/src/routes/(voters)/+layout.svelte`: +27 (within the 25-45 estimate, well under CONTEXT D-10's ≤ 60 LOC small-fix gate). Per-cell smokes at `.planning/phases/86.3-implement-skipped-tests-close-7-source-skipped-voter-app-can/post-fix/86.3-01-cell{1,2,3}-smoke.txt` all OUTCOME: FIX-PASS.
+
+---
 
 **Filed:** 2026-05-12 at Phase 78 close (Plan 07 Task 5)
 **Source:** Phase 77 P01 SUMMARY §"PRODUCT-GAP cells — surfaced not fixed" + Phase 78 P07 per RESEARCH Q3 + §"Phase 77 P01 Deferred-Cell Disposition Recommendation"
