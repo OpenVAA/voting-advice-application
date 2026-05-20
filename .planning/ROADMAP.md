@@ -252,12 +252,12 @@ Phase 79 (DETERM-04 + DETERM-05) ✓ COMPLETE
 **Goal:** Close all 8 currently always-skipped (`test.skip(true, '…')`) voter-app / candidate-app / variant-project tests inherited from Phases 75 / 77 / 86 / 86.1 so the Phase 87 final v2.10-ship anchor captures maximum coverage. Cells: #1/#2/#3 SETTINGS-01 wave A `(voters)/+layout.svelte` Svelte 5 reactivity (production-code fix per D-10); #4 SETTINGS-01 wave B constituency-filter PRODUCT-GAP (Path-A/B/C operator decision); #5 E2E-03 voter-feedback-persistence H2/H3 trace-driven RCA; #6 LAYOUT-03 voter-popup-hydration fixture pre-hook; #7+#8 QSPEC-01/02 walkToQuestion helper-resilience fix. Per-cell 1h cap (D-08) + skip-fallback (D-02) protocol; final 3-run cold-start SHA-identity gate satisfies Phase 87 Task 0 pre-gate (CASCADE ≤ 5).
 **Requirements**: SETTINGS-01, E2E-03, LAYOUT-03, QSPEC-01, QSPEC-02 (no new REQ-IDs)
 **Depends on:** Phase 86.2 (sequential predecessor — helper layer source; 86 → 86.1 → 86.2 → 86.3 → 87)
-**Plans:** 1/5 plans complete
+**Plans:** 2/5 plans complete
 
 Plans:
 - [x] 86.3-01-PLAN.md — SETTINGS-01 wave A — fix `(voters)/+layout.svelte` reactivity for cells #1/#2/#3 (shared root cause; one atomic production-code commit) + per-cell smokes (3 tasks; Wave 1) — FIX-PASS on all 3 cells (commit 0312ae4af)
 - [ ] 86.3-02-PLAN.md — SETTINGS-01 wave B — cell #4 constituency-filter RCA + Path-A/B/C `checkpoint:decision` (Task 0 1h RCA + Task 1 operator decision + Task 2 execution; Wave 1)
-- [ ] 86.3-03-PLAN.md — E2E-03 cell #5 voter-feedback-persistence — trace capture + H2 testId hardening OR H3 ≤ 5 LOC ModalContainer `data-state` escape hatch OR SKIP-FALLBACK (3 tasks; Wave 1)
+- [x] 86.3-03-PLAN.md — E2E-03 cell #5 voter-feedback-persistence — trace-driven H2/H3 disambiguation (3 tasks; Wave 1) — SKIP-FALLBACK (verdict: NEITHER — upstream `answeredVoterPage` fixture race blocks H2/H3 disambiguation; commits cc8b609b9 + d261fd07c + Task 3 atomic). v2.11+ todo `2026-05-16-voter-feedback-persistence-second-pass.md` augmented with REVISED next-action ordering. ModalContainer.svelte UNCHANGED.
 - [ ] 86.3-04-PLAN.md — LAYOUT-03 cell #6 voter-popup-hydration — Path 2 `page.context().addInitScript` 1-line swap OR Path 1 fixture `storageState` OR SKIP-FALLBACK (2 tasks; Wave 1)
 - [ ] 86.3-05-PLAN.md — QSPEC-01/02 cells #7+#8 walkToQuestion helper-resilience fix + 3-run cold-start SHA-identity gate + SKIPPED_TESTS const update + 86.3-SUMMARY (8-cell disposition table + D-06 Phase 87 disposition recommendation) + STATE/ROADMAP close (5 tasks; Wave 2 — depends on 86.3-01..04)
 

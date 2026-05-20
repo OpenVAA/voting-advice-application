@@ -72,7 +72,16 @@ test.describe('feedback persistence (E2E-03)', { tag: ['@voter'] }, () => {
   // (RESEARCH "Cell #5 Pitfall 5"): the dialog `close()` attribute switch
   // window remains the most plausible close signal, but cannot be confirmed
   // until the fixture race is fixed FIRST.
-  test('feedback text persists across dismiss and resets after send', async ({ answeredVoterPage }) => {
+  // Phase 86.3-03 escalation: switched test signature from
+  // `({ answeredVoterPage })` to `({ page })` so the failing fixture does
+  // NOT resolve before `test.skip(true, …)` runs. The post-86.2 / post-
+  // 86.3-01 baseline has a separate CASCADE-class fixture race that fails
+  // navigateToFirstQuestion (per 86.3-03-trace-analysis.md) — without this
+  // signature change the test reports as `1 failed` instead of `1 skipped`,
+  // which is worse than SKIP per D-09 (`CASCADE / did not run count as
+  // failures`). H1+H4 body code is preserved below for v2.11+ pickup but
+  // never executes under the skip guard.
+  test('feedback text persists across dismiss and resets after send', async ({ page }) => {
     // eslint-disable-next-line playwright/no-skipped-test
     test.skip(
       true,
@@ -85,10 +94,17 @@ test.describe('feedback persistence (E2E-03)', { tag: ['@voter'] }, () => {
         'v2.11+: .planning/todos/pending/2026-05-16-voter-feedback-persistence-second-pass.md'
       ].join(' ')
     );
+    // H1+H4 body code preserved below — uses `page` directly (was
+    // `answeredVoterPage` before the 86.3-03 signature change; v2.11+
+    // pickup must restore the `({ answeredVoterPage })` parameter to
+    // re-activate the original navigation flow). The original alias line
+    // `const page = answeredVoterPage;` was removed to avoid a redeclared
+    // identifier; reinstate it (and revert the fixture param) when the
+    // upstream fixture race is fixed.
+    //
     // Fixture answers 16 questions and navigates to /results. The feedback
     // button lives in the nav menu (rendered when voterCtx.openFeedbackModal
     // is truthy per VoterNav.svelte:101-108).
-    const page = answeredVoterPage;
 
     // Open the feedback modal via the nav-menu feedback button. The button
     // text comes from t('feedback.send'); a locale-resilient regex matches

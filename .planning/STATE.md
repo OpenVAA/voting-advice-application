@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
 status: executing
-stopped_at: Phase 86.3 Plan 01 complete (SETTINGS-01 wave A reactivity fix FIX-PASS on cells #1/#2/#3); Plan 02 next (SETTINGS-01 wave B constituency-filter Path A/B/C decision)
-last_updated: "2026-05-20T13:25:00.000Z"
-last_activity: 2026-05-20 -- Phase 86.3 Plan 01 complete; voters-layout non-reactive todo CLOSED
+stopped_at: Phase 86.3 Plan 03 complete (SKIP-FALLBACK on cell #5 voter-feedback-persistence E2E-03 / DETERM-13 — H2/H3 disambiguation blocked by upstream answeredVoterPage fixture race per trace); Plan 02 + Plan 04 next (parallel-eligible Wave 1)
+last_updated: "2026-05-20T11:15:00.000Z"
+last_activity: 2026-05-20 -- Phase 86.3 Plan 03 complete; cell #5 SKIP-FALLBACK with trace-driven empirical finding (fixture race blocks H2/H3 disambiguation); v2.11+ todo voter-feedback-persistence-second-pass.md augmented with REVISED recommended-next-action ordering
 progress:
   total_phases: 12
   completed_phases: 9
   total_plans: 31
-  completed_plans: 25
-  percent: 80
+  completed_plans: 26
+  percent: 84
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 ## Current Position
 
 Phase: 86.3 (implement-skipped-tests-close-7-source-skipped-voter-app-can) — EXECUTING
-Plan: 2 of 5 (Plan 01 complete — FIX-PASS on 3 SETTINGS-01 wave A cells)
+Plan: 3 of 5 (Plans 01 + 03 complete; Plan 02 + Plan 04 parallel-eligible next)
 Status: Executing Phase 86.3
-Last activity: 2026-05-20 -- Phase 86.3 Plan 01 SUMMARY landed (commit 0312ae4af); voters-layout non-reactive v2.11+ todo CLOSED
+Last activity: 2026-05-20 -- Phase 86.3 Plan 03 SUMMARY landed (commits cc8b609b9 + d261fd07c + pending Task 3); cell #5 E2E-03 / DETERM-13 closes as SKIP-FALLBACK with trace-driven empirical finding (upstream answeredVoterPage fixture race blocks H2/H3 disambiguation); v2.11+ todo voter-feedback-persistence-second-pass.md augmented (66 → 145 lines)
 
 ## Performance Metrics
 
@@ -89,6 +89,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | Phase 86.2 P01 | 210min | 3 tasks | 12 files |
 | Phase 86.2 P02 | 90min | 3 tasks | 23 files |
 | Phase 86.3 P01 | 75min | 3 tasks | 7 files (+ 1 todo rename) |
+| Phase 86.3 P03 | 50min | 3 tasks | 5 files (1 spec + 1 trace-analysis + 1 smoke + 1 augmented todo + 1 SUMMARY) |
 
 ## Accumulated Context
 
@@ -147,6 +148,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Negative-landing assertions (expect.not.toHaveURL) stay inline with // reason: comments — expectLandedOn is positive-only by design per helper Pitfall #1 docstring.
 - [Phase ?]: Single-run full-suite smoke (NOT 3-run SHA-identity gate) is Plan 86.2-02 audit charter; Plan 86.2-03 owns the canonical 3-run gate against fresh post-86.2 anchor.
 - [Phase 86.3 P01]: SETTINGS-01 wave A cells #1/#2/#3 closed via reactive $effect-driven `topBarSettings.revert(baseIdx)+push(next)` (Pitfall 1 guard) + $effect with `notificationQueued = $state(false)` fire-once guard (Pitfall 2 guard) on (voters)/+layout.svelte. +27 LOC; mirrors canonical pattern at appContext.svelte.ts:93-100. All 3 per-cell smokes OUTCOME: FIX-PASS. v2.11+ todo `2026-05-12-voters-layout-non-reactive-appsettings.md` CLOSED (moved to .planning/todos/done/).
+- [Phase 86.3 P03]: E2E-03 / DETERM-13 cell #5 voter-feedback-persistence H2/H3 trace-driven disambiguation attempted per Phase 86.1-02 recommended-next-action #1. Trace shows verdict NEITHER — upstream `answeredVoterPage` fixture race (CASCADE-class, separate from DETERM-13) blocks H2/H3 disambiguation entirely (/questions intro page stuck at `Loading…` despite seeded data + clean Supabase REST 200/304/307). SKIP-FALLBACK applied per CONTEXT D-06; test signature surgically swapped `({ answeredVoterPage })` → `({ page })` to make `test.skip(true, …)` report as `1 skipped` instead of `1 failed`. ModalContainer.svelte UNCHANGED. v2.11+ todo augmented with REVISED recommended-next-action ordering (FIRST fix fixture race, THEN re-attempt H2/H3).
 
 ### Blockers/Concerns
 
@@ -157,10 +159,10 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-05-20T13:25:00.000Z
-Stopped at: Phase 86.3 Plan 01 complete (atomic commit 0312ae4af; FIX-PASS on cells #1/#2/#3; v2.11+ todo voters-layout-non-reactive CLOSED). Plan 02 (SETTINGS-01 wave B constituency-filter) next.
+Last session: 2026-05-20T11:15:00.000Z
+Stopped at: Phase 86.3 Plan 03 complete (atomic commits cc8b609b9 + d261fd07c + Task 3 atomic pending; SKIP-FALLBACK on cell #5 E2E-03 / DETERM-13; v2.11+ todo voter-feedback-persistence-second-pass.md augmented with trace findings + REVISED next-action ordering). Plans 02 + 04 (parallel-eligible Wave 1) + Plan 05 (sequenced) remain.
 Resume file: None
-Next action: Execute Phase 86.3 Plan 02 (constituency-filter Path A/B/C operator-decision + RCA + skip-fallback or fix). Plans 86.3-02..04 are parallel-eligible per Wave 1; Plan 05 sequences after.
+Next action: Execute Phase 86.3 Plan 02 (SETTINGS-01 wave B constituency-filter Path A/B/C decision) OR Plan 04 (LAYOUT-03 voter-popup-hydration) — parallel-eligible per Wave 1. Plan 05 sequences after 02 + 03 + 04 converge. NOTE: Phase 86.3-03's trace finding (answeredVoterPage fixture race) may surface during Plan 04 execution — Plan 04 should cross-reference 86.3-03-trace-analysis.md if its per-cell smoke fails on the same /questions `Loading…` symptom.
 
 ### Plan-count estimate (drafted 2026-05-12)
 
