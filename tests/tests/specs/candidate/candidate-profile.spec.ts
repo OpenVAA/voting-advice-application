@@ -97,7 +97,7 @@ test.describe('candidate profile (fresh candidate)', { tag: ['@candidate'] }, ()
   const candidateExternalId = E2E_ADDENDUM_CANDIDATES[1].external_id;
   const candidatePassword = 'ProfileTestPass1!';
 
-  test.beforeEach(async () => {
+  test.beforeAll(async () => {
     // Re-runs the data-setup auth wiring for THIS candidate only, so
     // --repeat-each=N actually exercises the fresh-invite flow on every
     // iteration. No-op on the very first iteration (candidate is already
