@@ -368,7 +368,15 @@ const CASCADE_TESTS: ReadonlyArray<string> = [
  */
 const SKIPPED_TESTS: ReadonlyArray<string> = [
   'variant-constituency :: specs/variants/constituency.spec.ts > SETTINGS-01 wave B — constituency-filter (PRODUCT-GAP / PASS-WITH-DEFERRAL)',
-  'voter-app :: specs/voter/voter-feedback-persistence.spec.ts > feedback persistence (E2E-03) > feedback text persists across dismiss and resets after send @voter',
+  // WR-01 fix (Phase 86.3 review): strip the trailing ' @voter' suffix.
+  // Playwright JSON reporter `spec.title` does NOT include describe-level
+  // `tag: ['@voter']` declarations — `flattenReport()` below uses spec.title
+  // directly (line 444). All sibling voter-app entries (lines below + the
+  // PASS_LOCKED voter-app block) follow the no-tag convention; this entry
+  // was the lone outlier. Today the bug is dormant (the test is source-skipped
+  // so its ID hits the diffReports() fallthrough), but it would silently fail
+  // sourceSkip.has(b.id) once the test re-activates.
+  'voter-app :: specs/voter/voter-feedback-persistence.spec.ts > feedback persistence (E2E-03) > feedback text persists across dismiss and resets after send',
   'voter-app :: specs/voter/voter-popup-hydration.spec.ts > setTimeout popup on full page load (LAYOUT-03 regression gate) popup appears on full page load to /results (LAYOUT-03 hydration path)',
   'voter-app :: specs/voter/voter-question-rendering-boolean.spec.ts > boolean opinion question renders, voter answers, persists across goBack, mirrors on entity-detail',
   'voter-app :: specs/voter/voter-question-rendering-categorical.spec.ts > categorical opinion question (single-choice) renders, voter answers, persists across goBack, mirrors on entity-detail'
