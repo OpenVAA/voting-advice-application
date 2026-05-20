@@ -64,3 +64,82 @@ Both H1 (dialog-wrapper count == 0 via the `getByRole('dialog')` a11y-tree gate)
 - Is the persistence-via-`bind:this` design (Feedback kept mounted across modal close) actually a product-correctness invariant, or is it an implementation detail that could be redesigned in v2.11+? If the latter, an alternative fix would be to unmount Feedback when closing (which would make H4 work) — but at the cost of losing the text-persists-across-cancel contract. The test specifically asserts that contract, so the redesign would change product behaviour.
 - Are there sibling specs that ALREADY assert dialog-close on a `<dialog>` wrapper that DOES detach on close (e.g., the entity-details drawer in voter-detail.spec.ts)? If so, those specs have a clean dialog-close assertion pattern that v2.11+ can study as a positive contrast.
 - Should the Modal/ModalContainer Svelte components expose a `data-state="open" | "closed"` attribute by default for stable testid-based close-signal contracts? This would benefit not just feedback but any future modal-close E2E assertion.
+
+## Phase 86.3-03 trace findings (2026-05-20 — augmented)
+
+**Plan source:** `.planning/phases/86.3-implement-skipped-tests-close-7-source-skipped-voter-app-can/86.3-03-PLAN.md` Task 1.
+**Verdict:** NEITHER H2 nor H3 verified — **upstream fixture race blocks H2/H3 disambiguation**.
+**Trace analysis:** `.planning/phases/86.3-…/86.3-03-trace-analysis.md`.
+**Smoke evidence:** `.planning/phases/86.3-…/post-fix/86.3-03-cell5-smoke.txt`.
+**Trace artifact:** `tests/playwright-results/voter-feedback-persistence-d3f62-smiss-and-resets-after-send-voter-app/trace.zip` (720 KB).
+**Atomic commits:**
+- Task 1 trace capture + analysis: `cc8b609b9`
+- Task 2 SKIP-FALLBACK + this todo augmentation: (committed atomically with the rest of Task 2)
+
+### What was attempted
+
+1. Temporarily un-skipped cell #5 (commented out the `test.skip(true, …)` block, preserving the rationale array verbatim).
+2. Reset DB + seeded `e2e` template (and separately tried `--likert-only` per CLAUDE.md "Common Workflows" canonical chain).
+3. Restarted Vite dev server with cleared `.svelte-kit` cache.
+4. Ran `cd tests && yarn playwright test --project=voter-app --grep "feedback text persists across" --workers=1 --reporter=line` to capture a trace.
+5. Inspected `0-trace.trace` + `0-trace.network` + `error-context.md` via `grep` and `playwright show-trace` (the latter only when grep was insufficient).
+
+### Empirical finding (NEW — not predicted by Phase 86.1-02 H2/H3 framing)
+
+The trace shows the test never reaches the modal-close site:
+
+```
+TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+Call log:
+  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list'))
+      .or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start'))
+      .or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first()
+      to be visible
+  at advanceVoterFlow (tests/tests/utils/voterNavigation.ts:149)
+  at navigateToFirstQuestion (tests/tests/utils/voterNavigation.ts:263)
+  at answeredVoterPage fixture (tests/tests/fixtures/voter.fixture.ts:56)
+```
+
+Page-snapshot evidence (from `error-context.md`):
+
+```yaml
+- generic [ref=e2]:
+  - banner: button "Open menu", button "Send feedback", button "Help"
+  - main: "Loading…"
+```
+
+Frames visited (per trace): `about:blank` → `/` → `/intro` → `/questions?electionId=4e91b931-…` (last frame; main slot stuck at `Loading…`).
+
+Supabase REST status (per trace network): all 200/304/307. Tables seeded (elections=1, constituencies=1, questions=25, organizations=4, nominations=22, etc.). No 4xx/5xx errors.
+
+**Conclusion:** `answeredVoterPage` fixture fails on the post-86.2 / post-86.3-01 baseline because the /questions intro page renders `Loading…` indefinitely — none of the 6 advanceVoterFlow checkpoint testIds are present. This is a separate-from-DETERM-13 bug (CASCADE-class) that gates cell #5's H2/H3 disambiguation entirely.
+
+### Recommended next action for v2.11+ (REVISED ORDER)
+
+**FIRST:** fix the upstream `answeredVoterPage` fixture race (the /questions intro `Loading…` issue). Likely candidates:
+- `(voters)/(located)/+layout.ts` loader ordering vs client-side context initialization.
+- `voterContext` `$state` / `$derived` chain initialization race that prevents `voter-questions-start` from rendering.
+- Possible interaction with the post-86.3-01 reactive `$effect` blocks in `(voters)/+layout.svelte` (topBarSettings.push + notification popupQueue.push) — though Phase 86.3-01 SUMMARY's per-cell smokes did PASS, so unlikely root cause.
+
+**THEN re-attempt H2/H3 disambiguation:**
+1. **Capture trace artifact frame-by-frame.** Run the spec with `trace: 'on'`; use `playwright show-trace` to inspect the DOM at the failing close-assertion moment. Specifically observe:
+   - The `<dialog>` element's `open` attribute value (present? absent?)
+   - The `<dialog>` element's `aria-hidden` / `inert` attributes
+   - Whether ANY second `<dialog role="dialog">` is open simultaneously (H2 verification)
+   - The count of elements matching `getByRole('dialog')` and `getByTestId('feedback-form')` at frames 0ms, 100ms, 1500ms, 5000ms post-cancel-click
+2. **Redesign the close-signal contract.** Once the trace evidence reveals the actual close mechanism, modify the assertion to match it. Likely candidates:
+   - `await expect(feedbackDialog).toHaveAttribute('open', null, { timeout: 5000 })` — asserts on the `<dialog open>` attribute absence specifically
+   - `await expect(feedbackDialog).toBeHidden({ timeout: 5000 })` re-attempted with an explicit `aria-hidden` assertion gate
+   - A new `data-testid="feedback-modal-container"` on the Modal wrapper with `data-state="open|closed"` attribute switching, asserted via `toHaveAttribute('data-state', 'closed', { timeout: 5000 })`
+3. **Consider hardening FeedbackModal testId structure.** Add a stable testid on the `<dialog>` wrapper (e.g. `data-testid="feedback-modal-dialog"`) that toggles a `data-state="open" | "closed"` attribute. This makes the close-signal contract assertion-friendly without coupling to Modal.svelte's internal close mechanism.
+4. **Consider per-spec storageState reset.** If H2 (cross-test popup-state leak) re-surfaces in v2.11+ investigation, add `test.beforeEach(async ({ context }) => context.clearCookies())` or equivalent.
+
+### Cross-references (extended from H1+H4 lineage)
+
+- Phase 86.3-03 PLAN: `.planning/phases/86.3-…/86.3-03-PLAN.md`
+- Phase 86.3-03 trace analysis: `.planning/phases/86.3-…/86.3-03-trace-analysis.md`
+- Phase 86.3-03 smoke: `.planning/phases/86.3-…/post-fix/86.3-03-cell5-smoke.txt`
+- Phase 86.3-03 commit Task 1 (trace capture): `cc8b609b9`
+- Phase 86.3-03 commit Task 2 (SKIP-FALLBACK + this augmentation): (atomic)
+- Trace artifact: `tests/playwright-results/voter-feedback-persistence-d3f62-smiss-and-resets-after-send-voter-app/trace.zip`
+- Per-cell smoke prerequisite: NONE — cell #5 is the sole test in its `describe.serial` block per RESEARCH "Pattern 3" `LANDMINE-NOTE: cell #5 has no within-spec cascade dependents.`

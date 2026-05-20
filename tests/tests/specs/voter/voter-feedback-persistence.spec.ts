@@ -56,6 +56,22 @@ test.describe('feedback persistence (E2E-03)', { tag: ['@voter'] }, () => {
   // .planning/todos/pending/2026-05-16-voter-feedback-persistence-second-pass.md.
   // The full H1+H4 code path is left in place (below) to preserve evidence of
   // the attempts for v2.11+ review.
+  //
+  // Phase 86.3-03 SKIP-FALLBACK (extends DETERM-13 hypothesis history):
+  // H2/H3 trace-driven disambiguation per Phase 86.3-03 PLAN Task 1 was
+  // ATTEMPTED — un-skipped the test, captured trace via the already-enabled
+  // `trace: 'on'` config, ran cell-scoped smoke. The trace shows the test
+  // never reaches the close-assertion: the `answeredVoterPage` fixture itself
+  // fails at navigateToFirstQuestion (voterNavigation.ts:149 5s timeout) with
+  // the /questions page stuck at "Loading…" despite seeded Supabase data
+  // (REST returns 200/304/307; no 4xx/5xx errors). The Phase 86.1-02 baseline
+  // DID reach the test body; the post-86.2 / post-86.3-01 baseline DOES NOT.
+  // H2 + H3 both remain UNVERIFIED — the upstream fixture race blocks
+  // disambiguation entirely. Verdict captured in 86.3-03-trace-analysis.md;
+  // v2.11+ todo augmented with this finding for the next pickup. Pitfall 5
+  // (RESEARCH "Cell #5 Pitfall 5"): the dialog `close()` attribute switch
+  // window remains the most plausible close signal, but cannot be confirmed
+  // until the fixture race is fixed FIRST.
   test('feedback text persists across dismiss and resets after send', async ({ answeredVoterPage }) => {
     // eslint-disable-next-line playwright/no-skipped-test
     test.skip(
