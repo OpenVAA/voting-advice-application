@@ -49,10 +49,12 @@ import { parseArgs } from 'node:util';
 //      reactive $effect rewrite on (voters)/+layout.svelte — moved from
 //      CASCADE_TESTS to PASS_LOCKED_TESTS this regen)
 //   −3 CASCADE (same 3 cells)
-//   +3 SKIPPED_TESTS net (cell #4 constituency-filter SKIP-FALLBACK via
-//      86.3-02 Path-C; cell #5 voter-feedback-persistence SKIP-FALLBACK
+//   +2 SKIPPED_TESTS net (cell #5 voter-feedback-persistence SKIP-FALLBACK
 //      via 86.3-03 trace-driven NEITHER verdict; cell #6 voter-popup-hydration
-//      SKIP-FALLBACK via 86.3-04 Path-2 empirical disproof). Cells #7+#8 QSPEC-01/02
+//      SKIP-FALLBACK via 86.3-04 Path-2 empirical disproof). Cell #4 SETTINGS-01
+//      wave B constituency-filter was DELETED 2026-05-20 (WONT-IMPLEMENT —
+//      constituency is navigation/scope, not a filter; spec block removed).
+//      Cells #7+#8 QSPEC-01/02
 //      STAY in SKIPPED_TESTS (Phase 86.3-05 walkToQuestion helper-resilience
 //      fix LANDED but EMPIRICALLY INSUFFICIENT — upstream voter-app cold-deeplink
 //      loader race blocks /intro hydration; same race as cells #5/#6).
@@ -61,7 +63,7 @@ import { parseArgs } from 'node:util';
 //   #1 SETTINGS-01 wave A header.showFeedback     — FIX-PASS (86.3-01)
 //   #2 SETTINGS-01 wave A header.showHelp         — FIX-PASS (86.3-01)
 //   #3 SETTINGS-01 wave A notifications.voterApp  — FIX-PASS (86.3-01)
-//   #4 SETTINGS-01 wave B constituency-filter     — SKIP-FALLBACK (86.3-02 Path-C)
+//   #4 SETTINGS-01 wave B constituency-filter     — WONT-IMPLEMENT (spec block deleted 2026-05-20)
 //   #5 E2E-03 voter-feedback-persistence          — SKIP-FALLBACK (86.3-03 NEITHER)
 //   #6 LAYOUT-03 voter-popup-hydration            — SKIP-FALLBACK (86.3-04 Path-2)
 //   #7 QSPEC-01 voter-question-rendering-boolean  — SKIP-FALLBACK (86.3-05; helper fix LEFT IN PLACE)
@@ -100,7 +102,8 @@ import { parseArgs } from 'node:util';
 // Phase 86.3 anchor:
 //   bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee
 //   116 PASS_LOCKED (+3 net) + 3 DATA_RACE (UNCHANGED per D-09) +
-//   37 CASCADE (−3 SETTINGS-01 wave A migration) + 5 SKIPPED (+3 net) = 161 tracked.
+//   37 CASCADE (−3 SETTINGS-01 wave A migration) + 4 SKIPPED (+2 net) = 160 tracked.
+//   Cell #4 constituency-filter DELETED 2026-05-20 (WONT-IMPLEMENT — out of contract).
 // -----------------------------------------------------------------------------
 
 // -----------------------------------------------------------------------------
@@ -279,7 +282,7 @@ const DATA_RACE_TESTS: ReadonlyArray<string> = [
   'candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should upload a profile image (CAND-03)'
 ];
 
-/** 37 tests cascaded (did-not-run / upstream-failed) on Phase 86.3 anchor — shrank -3 vs Phase 86 (40) due to SETTINGS-01 wave A cells #1/#2/#3 (header.showFeedback / header.showHelp / notifications.voterApp) FIX-PASS via Phase 86.3-01 reactive $effect rewrite (moved to PASS_LOCKED_TESTS). Composition: 32 cascade-victims of Phase 85's variant-multi-election deterministic FAILs (Phase 85 WARNING-9 contingency — out of Phase 86 scope per CONTEXT.md D-08) + 5 other variant-spec cells. Cell #4 SETTINGS-01 wave B constituency-filter (PRODUCT-GAP) moved CASCADE → SKIPPED_TESTS via Phase 86.3-02 Path-C disposition. Pool MUST NOT grow back without explicit phase routing. */
+/** 37 tests cascaded (did-not-run / upstream-failed) on Phase 86.3 anchor — shrank -3 vs Phase 86 (40) due to SETTINGS-01 wave A cells #1/#2/#3 (header.showFeedback / header.showHelp / notifications.voterApp) FIX-PASS via Phase 86.3-01 reactive $effect rewrite (moved to PASS_LOCKED_TESTS). Composition: 32 cascade-victims of Phase 85's variant-multi-election deterministic FAILs (Phase 85 WARNING-9 contingency — out of Phase 86 scope per CONTEXT.md D-08) + 5 other variant-spec cells. Cell #4 SETTINGS-01 wave B constituency-filter was DELETED 2026-05-20 (spec block removed — WONT-IMPLEMENT; constituency is navigation/scope, not a filter). Pool MUST NOT grow back without explicit phase routing. */
 const CASCADE_TESTS: ReadonlyArray<string> = [
   'data-setup-1e-Nc :: setup/variant-1e-Nc.setup.ts > import 1e-Nc dataset',
   'data-setup-Ne-Nc :: setup/variant-Ne-Nc.setup.ts > import Ne-Nc dataset',
@@ -340,12 +343,11 @@ const CASCADE_TESTS: ReadonlyArray<string> = [
  *     elevated to strongest v2.11+ next action — closes all affected cells).
  *
  *   - constituency-filter (cell #4, SETTINGS-01 wave B):
- *     Phase 86.3-02 SKIP-FALLBACK via Path-C (auto-routed from Path-B per
- *     operator pre-decision; Path-B technically feasible but rejected on
- *     reviewer-drift grounds — ObjectFilter API in isolation does not regression-
- *     gate voter-app PRODUCT-GAP). v2.11+ todo:
- *     `.planning/todos/pending/2026-05-13-constituency-filter-product-gap.md`
- *     (augmented 67 → 161 lines with Phase 86.3-02 investigation outcome).
+ *     WONT-IMPLEMENT — spec block deleted 2026-05-20. Constituency is a
+ *     navigation/scope concern (election → constituency → results), not a
+ *     per-list filter. Phase 86.3-02 Path-C disposition superseded.
+ *     v2.11+ todo `2026-05-13-constituency-filter-product-gap.md` moved to
+ *     done/ with WONT-FIX close note.
  *
  *   - voter-question-rendering-boolean (cell #7, QSPEC-01):
  *     Phase 86.3-05 SKIP-FALLBACK — walkToQuestion helper-resilience fix LANDED
@@ -367,7 +369,10 @@ const CASCADE_TESTS: ReadonlyArray<string> = [
  * test redesign (Recommendation #3 in the LAYOUT-03 v2.11+ todo).
  */
 const SKIPPED_TESTS: ReadonlyArray<string> = [
-  'variant-constituency :: specs/variants/constituency.spec.ts > SETTINGS-01 wave B — constituency-filter (PRODUCT-GAP / PASS-WITH-DEFERRAL)',
+  // Cell #4 (SETTINGS-01 wave B — constituency-filter) removed 2026-05-20:
+  // the spec block was deleted (constituency is a navigation/scope concept,
+  // not a per-list filter — WONT-IMPLEMENT). See
+  // .planning/todos/done/2026-05-13-constituency-filter-product-gap.md.
   // WR-01 fix (Phase 86.3 review): strip the trailing ' @voter' suffix.
   // Playwright JSON reporter `spec.title` does NOT include describe-level
   // `tag: ['@voter']` declarations — `flattenReport()` below uses spec.title
