@@ -49,6 +49,21 @@
   // appContext.svelte.ts:93-100. Pitfall 1 guard: each $effect re-run reverts
   // to a captured baseline before pushing — prevents infinite stack growth
   // (StackedState.push/revert API at StackedState.svelte.ts:40-56).
+  //
+  // WR-02 (Phase 86.3 review): child-layout / +page.svelte interleave assumption.
+  // The fixed `topBarBaseIdx` captured at component init means this $effect's
+  // re-runs will `revert(topBarBaseIdx); push(next)` — DROPPING any overlays
+  // child consumers may have pushed ABOVE topBarBaseIdx. Safety relies on the
+  // SvelteKit lifecycle guarantee that child layouts / +page.svelte consumers
+  // register their `onDestroy(() => topBarSettings.revert(indexTopBar))` via
+  // `getLayoutContext` (see layoutContext.svelte.ts:169-181), so their overlays
+  // are torn down BEFORE navigation triggers an $appSettings change (the only
+  // current re-run trigger for this $effect). Future child consumers MUST NOT
+  // push inside an $effect that responds to the same $appSettings change unless
+  // they order themselves AFTER this $effect; otherwise their overlay will be
+  // silently erased on the next parent re-run. See 86.3-REVIEW.md WR-02 for
+  // the full analysis + a reactive-baseline alternative if the constraint
+  // becomes load-bearing.
   const topBarBaseIdx = topBarSettings.getLength() - 1;
   $effect(() => {
     const next = {
