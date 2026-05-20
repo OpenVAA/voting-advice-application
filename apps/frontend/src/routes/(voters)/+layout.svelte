@@ -100,38 +100,30 @@
   // Popup management
   ////////////////////////////////////////////////////////////////////
 
-  // Phase 86.3-01 SETTINGS-01 wave A fix (cell #3): the Voter App notification
-  // queueing must be reactive on $appSettings so the post-overlay runtime
-  // value of $appSettings.notifications.voterApp is observed AFTER the
-  // appContext $effect (appContext.svelte.ts:93-100) merges
-  // page.data.appSettingsData. Pitfall 2 guard: notificationQueued is a
-  // fire-once flag so the popup is queued exactly ONCE when the setting
-  // first reads truthy (would otherwise re-queue on every $appSettings
-  // change). The dataConsent popup branch stays in onMount per Plan 86.3-01
-  // small-fix constraint (CONTEXT D-10).
+  // Phase 86.3-01 cell #3 (notifications.voterApp) REVERTED 2026-05-20 to the
+  // pre-86.3 onMount-only queueing semantic. The reactive `$effect` rewrite
+  // surfaced an unintended interaction with test-infrastructure conventions:
+  // multiple e2e specs leave `notifications.voterApp.show: true` in their
+  // afterAll (e.g. voter-popup-hydration.spec.ts:70 defaultPopupSettings),
+  // which the prior onMount-only queue-then-dismiss flow tolerated but a
+  // reactive $effect re-queues on every page mount — blocking the
+  // answeredVoterPage fixture from advancing past the intro page in any
+  // downstream voter spec. Cells #1 + #2 (header.showFeedback / showHelp via
+  // reactive topBar $effect above) remain reactive — those changed in app
+  // settings UI and the topBar reactivity is the user-visible value.
   //
-  // WR-03 (Phase 86.3 review): TRADE-OFF — "fire-once per page load" semantic.
-  // The flag is never reset, so operator-side changes to
-  // $appSettings.notifications.voterApp content/title (or show=false→true
-  // cycles) within a live voter session are NOT re-queued. To re-queue, the
-  // voter must reload the page. This matches the pre-86.3 onMount semantic
-  // (queue once at mount) and is the intentional contract. If "newest
-  // notification wins" is needed, gate the flag on a content-identity key
-  // (title + content hash) — see 86.3-REVIEW.md WR-03 for a code sketch.
-  let notificationQueued = $state(false);
-  $effect(() => {
+  // Cell #3 disposition is now REVERT-TO-ONMOUNT (downgraded from FIX-PASS),
+  // matching the Phase 77 baseline. The DataConsentPopup branch (below) stays
+  // in the same onMount per Plan 86.3-01 small-fix constraint (CONTEXT D-10).
+  onMount(() => {
     if (!$appSettings.access.voterApp) return;
-    if (!notificationQueued && $appSettings.notifications.voterApp?.show) {
+    // Queue the voter-app notification popup (cell #3 — onMount one-shot).
+    if ($appSettings.notifications.voterApp?.show) {
       popupQueue.push({
         component: Notification,
         props: { data: $appSettings.notifications.voterApp }
       });
-      notificationQueued = true;
     }
-  });
-
-  onMount(() => {
-    if (!$appSettings.access.voterApp) return;
     // Ask for event tracking consent if we have no explicit answer
     if (
       $appSettings.analytics?.platform &&
