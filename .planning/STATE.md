@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
 status: executing
-stopped_at: Phase 86.3 Plan 03 complete (SKIP-FALLBACK on cell #5 voter-feedback-persistence E2E-03 / DETERM-13 — H2/H3 disambiguation blocked by upstream answeredVoterPage fixture race per trace); Plan 02 + Plan 04 next (parallel-eligible Wave 1)
-last_updated: "2026-05-20T11:15:00.000Z"
-last_activity: 2026-05-20 -- Phase 86.3 Plan 03 complete; cell #5 SKIP-FALLBACK with trace-driven empirical finding (fixture race blocks H2/H3 disambiguation); v2.11+ todo voter-feedback-persistence-second-pass.md augmented with REVISED recommended-next-action ordering
+stopped_at: Phase 86.3 Plan 04 complete (SKIP-FALLBACK on cell #6 voter-popup-hydration LAYOUT-03 / DETERM-12 — Path 2 page.context().addInitScript empirically disproved; same upstream loader-race symptom as 86.3-03 cell #5); Plan 02 next (Wave 1 remaining); Plan 05 sequences after Wave 1 convergence
+last_updated: "2026-05-20T14:35:00.000Z"
+last_activity: 2026-05-20 -- Phase 86.3 Plan 04 complete; cell #6 SKIP-FALLBACK after empirical Path 2 fix-attempt failed (page stuck at Loading… on /results — same upstream loader race as 86.3-03 /questions); Path 2 swap LEFT IN PLACE as evidence-of-attempt; v2.11+ todo voter-popup-hydration-layout-03-deeplink.md augmented 44 → 72 lines with cross-reference to 86.3-03 trace finding; production loader UNCHANGED per D-10 strict gate
 progress:
   total_phases: 12
   completed_phases: 9
   total_plans: 31
-  completed_plans: 26
-  percent: 84
+  completed_plans: 27
+  percent: 87
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 ## Current Position
 
 Phase: 86.3 (implement-skipped-tests-close-7-source-skipped-voter-app-can) — EXECUTING
-Plan: 3 of 5 (Plans 01 + 03 complete; Plan 02 + Plan 04 parallel-eligible next)
+Plan: 4 of 5 (Plans 01 + 03 + 04 complete; Plan 02 parallel-eligible next; Plan 05 sequences after Wave 1)
 Status: Executing Phase 86.3
-Last activity: 2026-05-20 -- Phase 86.3 Plan 03 SUMMARY landed (commits cc8b609b9 + d261fd07c + pending Task 3); cell #5 E2E-03 / DETERM-13 closes as SKIP-FALLBACK with trace-driven empirical finding (upstream answeredVoterPage fixture race blocks H2/H3 disambiguation); v2.11+ todo voter-feedback-persistence-second-pass.md augmented (66 → 145 lines)
+Last activity: 2026-05-20 -- Phase 86.3 Plan 04 SUMMARY landed (commits 1bc691aa3 Task 1 + Task 2 pending); cell #6 LAYOUT-03 / DETERM-12 closes as SKIP-FALLBACK after Path 2 (page.context().addInitScript) empirical disproof; trace confirms same upstream loader-race symptom on /results as 86.3-03 /questions; v2.11+ todo voter-popup-hydration-layout-03-deeplink.md augmented (44 → 72 lines)
 
 ## Performance Metrics
 
@@ -90,6 +90,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | Phase 86.2 P02 | 90min | 3 tasks | 23 files |
 | Phase 86.3 P01 | 75min | 3 tasks | 7 files (+ 1 todo rename) |
 | Phase 86.3 P03 | 50min | 3 tasks | 5 files (1 spec + 1 trace-analysis + 1 smoke + 1 augmented todo + 1 SUMMARY) |
+| Phase 86.3 P04 | ~15min | 2 tasks | 4 files (1 spec + 1 augmented todo + 1 smoke + 1 SUMMARY) |
 
 ## Accumulated Context
 
@@ -149,6 +150,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Single-run full-suite smoke (NOT 3-run SHA-identity gate) is Plan 86.2-02 audit charter; Plan 86.2-03 owns the canonical 3-run gate against fresh post-86.2 anchor.
 - [Phase 86.3 P01]: SETTINGS-01 wave A cells #1/#2/#3 closed via reactive $effect-driven `topBarSettings.revert(baseIdx)+push(next)` (Pitfall 1 guard) + $effect with `notificationQueued = $state(false)` fire-once guard (Pitfall 2 guard) on (voters)/+layout.svelte. +27 LOC; mirrors canonical pattern at appContext.svelte.ts:93-100. All 3 per-cell smokes OUTCOME: FIX-PASS. v2.11+ todo `2026-05-12-voters-layout-non-reactive-appsettings.md` CLOSED (moved to .planning/todos/done/).
 - [Phase 86.3 P03]: E2E-03 / DETERM-13 cell #5 voter-feedback-persistence H2/H3 trace-driven disambiguation attempted per Phase 86.1-02 recommended-next-action #1. Trace shows verdict NEITHER — upstream `answeredVoterPage` fixture race (CASCADE-class, separate from DETERM-13) blocks H2/H3 disambiguation entirely (/questions intro page stuck at `Loading…` despite seeded data + clean Supabase REST 200/304/307). SKIP-FALLBACK applied per CONTEXT D-06; test signature surgically swapped `({ answeredVoterPage })` → `({ page })` to make `test.skip(true, …)` report as `1 skipped` instead of `1 failed`. ModalContainer.svelte UNCHANGED. v2.11+ todo augmented with REVISED recommended-next-action ordering (FIRST fix fixture race, THEN re-attempt H2/H3).
+- [Phase 86.3 P04]: LAYOUT-03 / DETERM-12 cell #6 voter-popup-hydration Path 2 (`page.context().addInitScript`) attempted per RESEARCH §"Cell #6 Fix shapes §2". 1-line swap verified-applied but EMPIRICALLY DISPROVED: /results stalls at `Loading…` (15s timeout on voter-results-list testid; Supabase REST all-200; canonical /results/candidates frame URL; same upstream loader-race symptom as 86.3-03 /questions). Path 1 (`test.use({ storageState })`) abandoned at RESEARCH §"Pitfall 4" (static config vs runtime-discovered question UUIDs; alternative resolutions out of D-08 1h cap). SKIP-FALLBACK applied per CONTEXT D-06; Path 2 swap LEFT IN PLACE as evidence-of-attempt (Phase 86.1-03 cell 2 storage-clear pattern). v2.11+ todo voter-popup-hydration-layout-03-deeplink.md augmented 44 → 72 lines with Phase 86.3-04 attempt section + cross-ref to 86.3-03 trace; Recommendation #3 (navigation-from-home test) elevated to strongest v2.11+ next action. Production loader UNCHANGED per D-10 STRICT gate.
 
 ### Blockers/Concerns
 
@@ -159,10 +161,10 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-05-20T11:15:00.000Z
-Stopped at: Phase 86.3 Plan 03 complete (atomic commits cc8b609b9 + d261fd07c + Task 3 atomic pending; SKIP-FALLBACK on cell #5 E2E-03 / DETERM-13; v2.11+ todo voter-feedback-persistence-second-pass.md augmented with trace findings + REVISED next-action ordering). Plans 02 + 04 (parallel-eligible Wave 1) + Plan 05 (sequenced) remain.
+Last session: 2026-05-20T14:35:00.000Z
+Stopped at: Phase 86.3 Plan 04 complete (atomic commits 1bc691aa3 Task 1 + Task 2 pending; SKIP-FALLBACK on cell #6 LAYOUT-03 / DETERM-12; Path 2 page.context().addInitScript verified-applied + empirically disproved; v2.11+ todo voter-popup-hydration-layout-03-deeplink.md augmented 44 → 72 lines with Phase 86.3-04 attempt section + cross-ref to 86.3-03 trace). Plan 02 (Wave 1 remaining) + Plan 05 (sequenced) remain.
 Resume file: None
-Next action: Execute Phase 86.3 Plan 02 (SETTINGS-01 wave B constituency-filter Path A/B/C decision) OR Plan 04 (LAYOUT-03 voter-popup-hydration) — parallel-eligible per Wave 1. Plan 05 sequences after 02 + 03 + 04 converge. NOTE: Phase 86.3-03's trace finding (answeredVoterPage fixture race) may surface during Plan 04 execution — Plan 04 should cross-reference 86.3-03-trace-analysis.md if its per-cell smoke fails on the same /questions `Loading…` symptom.
+Next action: Execute Phase 86.3 Plan 02 (SETTINGS-01 wave B constituency-filter Path A/B/C decision) — final Wave 1 plan. Plan 05 sequences after 02 + 03 + 04 converge. NOTE: Phase 86.3-04 trace confirmed the same upstream Loading… symptom on /results that 86.3-03 found on /questions — this is now characterized as a shared voter-app cold-deeplink loader race (NOT route-specific); the v2.11+ Recommendation #3 (navigation-from-home test) closes both cells with a single redesign.
 
 ### Plan-count estimate (drafted 2026-05-12)
 
