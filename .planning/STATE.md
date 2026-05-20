@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
 status: executing
-stopped_at: Phase 86.3 Plan 04 complete (SKIP-FALLBACK on cell #6 voter-popup-hydration LAYOUT-03 / DETERM-12 — Path 2 page.context().addInitScript empirically disproved; same upstream loader-race symptom as 86.3-03 cell #5); Plan 02 next (Wave 1 remaining); Plan 05 sequences after Wave 1 convergence
-last_updated: "2026-05-20T14:35:00.000Z"
-last_activity: 2026-05-20 -- Phase 86.3 Plan 04 complete; cell #6 SKIP-FALLBACK after empirical Path 2 fix-attempt failed (page stuck at Loading… on /results — same upstream loader race as 86.3-03 /questions); Path 2 swap LEFT IN PLACE as evidence-of-attempt; v2.11+ todo voter-popup-hydration-layout-03-deeplink.md augmented 44 → 72 lines with cross-reference to 86.3-03 trace finding; production loader UNCHANGED per D-10 strict gate
+stopped_at: "Phase 86.3 Plan 02 complete (atomic commits 5724c62dd Task 0 + 805c6f482 Task 2; SKIP-FALLBACK on cell #4 SETTINGS-01 wave B constituency-filter PRODUCT-GAP via Path-C auto-routed from Path-B per operator pre-decision; Path-B technically feasible but rejected on reviewer-drift grounds — ObjectFilter API in isolation does not regression-gate voter-app PRODUCT-GAP; D-10 STRICT gate held — buildParentFilters.ts UNCHANGED; v2.11+ todo 2026-05-13-constituency-filter-product-gap.md augmented 67 → 161 lines with Phase 86.3-02 investigation outcome section; LANDMINE-NOTE — no within-spec cascade dependents). Wave 1 FULLY CONVERGED (Plan 01 FIX-PASS + Plans 02/03/04 SKIP-FALLBACK). Plan 05 (Wave 2 — QSPEC walkToQuestion + 3-run gate + SKIPPED_TESTS const + STATE/ROADMAP close) sequenced next."
+last_updated: "2026-05-20T15:05:00.000Z"
+last_activity: 2026-05-20 -- Phase 86.3 Plan 02 complete; cell #4 SETTINGS-01 wave B constituency-filter SKIP-FALLBACK via Path-C; THIRD consecutive Wave 1 SKIP-FALLBACK (after 86.3-03 + 86.3-04); Path-B reviewer-drift cost analysis recorded in 86.3-02-RCA.md (112 lines, 5 H2 sections); Wave 1 FULLY CONVERGED — Plan 05 (Wave 2) sequenced next
 progress:
   total_phases: 12
   completed_phases: 9
   total_plans: 31
-  completed_plans: 27
-  percent: 87
+  completed_plans: 28
+  percent: 75
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 ## Current Position
 
 Phase: 86.3 (implement-skipped-tests-close-7-source-skipped-voter-app-can) — EXECUTING
-Plan: 4 of 5 (Plans 01 + 03 + 04 complete; Plan 02 parallel-eligible next; Plan 05 sequences after Wave 1)
-Status: Executing Phase 86.3
-Last activity: 2026-05-20 -- Phase 86.3 Plan 04 SUMMARY landed (commits 1bc691aa3 Task 1 + Task 2 pending); cell #6 LAYOUT-03 / DETERM-12 closes as SKIP-FALLBACK after Path 2 (page.context().addInitScript) empirical disproof; trace confirms same upstream loader-race symptom on /results as 86.3-03 /questions; v2.11+ todo voter-popup-hydration-layout-03-deeplink.md augmented (44 → 72 lines)
+Plan: 5 of 5 (Plans 01 + 02 + 03 + 04 complete; Wave 1 FULLY CONVERGED; Plan 05 sequences after Wave 1)
+Status: Ready to execute Plan 05 (Wave 2)
+Last activity: 2026-05-20 -- Phase 86.3 Plan 02 SUMMARY landed (commits 5724c62dd Task 0 + 805c6f482 Task 2); cell #4 SETTINGS-01 wave B constituency-filter SKIP-FALLBACK via Path-C; THIRD consecutive Wave 1 SKIP-FALLBACK; v2.11+ todo augmented 67 → 161 lines
 
 ## Performance Metrics
 
@@ -91,6 +91,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | Phase 86.3 P01 | 75min | 3 tasks | 7 files (+ 1 todo rename) |
 | Phase 86.3 P03 | 50min | 3 tasks | 5 files (1 spec + 1 trace-analysis + 1 smoke + 1 augmented todo + 1 SUMMARY) |
 | Phase 86.3 P04 | ~15min | 2 tasks | 4 files (1 spec + 1 augmented todo + 1 smoke + 1 SUMMARY) |
+| Phase 86.3 P02 | 30min | 3 tasks tasks | 5 files files |
 
 ## Accumulated Context
 
@@ -151,6 +152,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 86.3 P01]: SETTINGS-01 wave A cells #1/#2/#3 closed via reactive $effect-driven `topBarSettings.revert(baseIdx)+push(next)` (Pitfall 1 guard) + $effect with `notificationQueued = $state(false)` fire-once guard (Pitfall 2 guard) on (voters)/+layout.svelte. +27 LOC; mirrors canonical pattern at appContext.svelte.ts:93-100. All 3 per-cell smokes OUTCOME: FIX-PASS. v2.11+ todo `2026-05-12-voters-layout-non-reactive-appsettings.md` CLOSED (moved to .planning/todos/done/).
 - [Phase 86.3 P03]: E2E-03 / DETERM-13 cell #5 voter-feedback-persistence H2/H3 trace-driven disambiguation attempted per Phase 86.1-02 recommended-next-action #1. Trace shows verdict NEITHER — upstream `answeredVoterPage` fixture race (CASCADE-class, separate from DETERM-13) blocks H2/H3 disambiguation entirely (/questions intro page stuck at `Loading…` despite seeded data + clean Supabase REST 200/304/307). SKIP-FALLBACK applied per CONTEXT D-06; test signature surgically swapped `({ answeredVoterPage })` → `({ page })` to make `test.skip(true, …)` report as `1 skipped` instead of `1 failed`. ModalContainer.svelte UNCHANGED. v2.11+ todo augmented with REVISED recommended-next-action ordering (FIRST fix fixture race, THEN re-attempt H2/H3).
 - [Phase 86.3 P04]: LAYOUT-03 / DETERM-12 cell #6 voter-popup-hydration Path 2 (`page.context().addInitScript`) attempted per RESEARCH §"Cell #6 Fix shapes §2". 1-line swap verified-applied but EMPIRICALLY DISPROVED: /results stalls at `Loading…` (15s timeout on voter-results-list testid; Supabase REST all-200; canonical /results/candidates frame URL; same upstream loader-race symptom as 86.3-03 /questions). Path 1 (`test.use({ storageState })`) abandoned at RESEARCH §"Pitfall 4" (static config vs runtime-discovered question UUIDs; alternative resolutions out of D-08 1h cap). SKIP-FALLBACK applied per CONTEXT D-06; Path 2 swap LEFT IN PLACE as evidence-of-attempt (Phase 86.1-03 cell 2 storage-clear pattern). v2.11+ todo voter-popup-hydration-layout-03-deeplink.md augmented 44 → 72 lines with Phase 86.3-04 attempt section + cross-ref to 86.3-03 trace; Recommendation #3 (navigation-from-home test) elevated to strongest v2.11+ next action. Production loader UNCHANGED per D-10 STRICT gate.
+- [Phase ?]: Phase 86.3 Plan 02: cell #4 SETTINGS-01 wave B constituency-filter SKIP-FALLBACK via Path-C; Path-B feasible but rejected on reviewer-drift (ObjectFilter in isolation does not regression-gate voter-app PRODUCT-GAP); D-10 STRICT gate held; v2.11+ todo augmented 67 → 161 lines
 
 ### Blockers/Concerns
 
@@ -161,7 +163,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-05-20T14:35:00.000Z
+Last session: 2026-05-20T11:55:42.818Z
 Stopped at: Phase 86.3 Plan 04 complete (atomic commits 1bc691aa3 Task 1 + Task 2 pending; SKIP-FALLBACK on cell #6 LAYOUT-03 / DETERM-12; Path 2 page.context().addInitScript verified-applied + empirically disproved; v2.11+ todo voter-popup-hydration-layout-03-deeplink.md augmented 44 → 72 lines with Phase 86.3-04 attempt section + cross-ref to 86.3-03 trace). Plan 02 (Wave 1 remaining) + Plan 05 (sequenced) remain.
 Resume file: None
 Next action: Execute Phase 86.3 Plan 02 (SETTINGS-01 wave B constituency-filter Path A/B/C decision) — final Wave 1 plan. Plan 05 sequences after 02 + 03 + 04 converge. NOTE: Phase 86.3-04 trace confirmed the same upstream Loading… symptom on /results that 86.3-03 found on /questions — this is now characterized as a shared voter-app cold-deeplink loader race (NOT route-specific); the v2.11+ Recommendation #3 (navigation-from-home test) closes both cells with a single redesign.
