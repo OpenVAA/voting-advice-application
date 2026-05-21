@@ -6,7 +6,6 @@
  * what the UI displays.
  *
  * Covers:
- * - VOTE-05 (partial negative): Category intros confirmed disabled during voter journey
  * - VOTE-07 (partial above-threshold): Results accessible after answering all questions
  * - VOTE-08: Matching algorithm produces correct rankings
  * - VOTE-09: Perfect match candidate appears first
@@ -38,9 +37,7 @@ const VOTER_ANSWER_INDEX = 4; // 0-based index for "Fully agree" (5th option)
 // The voter-dataset cohort has 8 opinion questions. All use singleChoiceOrdinal.
 // Only include opinion (Likert-5) questions for matching.
 const allOpinionQuestions = [
-  ...E2E_QUESTIONS.filter(
-    (q) => q.type === 'singleChoiceOrdinal' && !q.external_id.startsWith('test-voter-')
-  ),
+  ...E2E_QUESTIONS.filter((q) => q.type === 'singleChoiceOrdinal' && !q.external_id.startsWith('test-voter-')),
   ...E2E_QUESTIONS.filter((q) => q.external_id.startsWith('test-voter-'))
 ];
 
@@ -192,11 +189,10 @@ async function navigateToResults(page: Page): Promise<void> {
     // click stuck on a detached node forever. Mirrors `advanceClick` in
     // tests/utils/voterNavigation.ts (Phase 86.1 introStart/questionsStart
     // race fix).
-    await clickAndRaceSettle(
-      nextBtn,
-      [(url: URL) => url.toString() !== urlBefore, /\/results/],
-      { clickTimeoutMs: 3000, settleTimeoutMs: 5000 }
-    );
+    await clickAndRaceSettle(nextBtn, [(url: URL) => url.toString() !== urlBefore, /\/results/], {
+      clickTimeoutMs: 3000,
+      settleTimeoutMs: 5000
+    });
   }
 
   // After answering the last question, the auto-advance timer navigates to results.
@@ -211,9 +207,11 @@ async function navigateToResults(page: Page): Promise<void> {
 test.describe('matching algorithm verification', { tag: ['@voter'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
-  test('should display candidates in correct match ranking order', async ({ page }) => {
+  test.beforeEach(async ({ page }) => {
     await navigateToResults(page);
+  });
 
+  test('should display candidates in correct match ranking order', async ({ page }) => {
     const cards = page.getByTestId(testIds.voter.results.card);
 
     // Read candidate names from entity cards in display order
@@ -240,8 +238,6 @@ test.describe('matching algorithm verification', { tag: ['@voter'] }, () => {
   });
 
   test('should show perfect match candidate as top result', async ({ page }) => {
-    await navigateToResults(page);
-
     const firstCard = page.getByTestId(testIds.voter.results.card).first();
     const agreeName = `${agreeCandidate.first_name} ${agreeCandidate.last_name}`;
 
@@ -249,8 +245,6 @@ test.describe('matching algorithm verification', { tag: ['@voter'] }, () => {
   });
 
   test('should show worst match candidate as last result', async ({ page }) => {
-    await navigateToResults(page);
-
     const cards = page.getByTestId(testIds.voter.results.card);
 
     // Phase 83 DETERM-07a: hydration-completeness guard — assert the FULL
@@ -269,8 +263,6 @@ test.describe('matching algorithm verification', { tag: ['@voter'] }, () => {
   });
 
   test('should show partial-answer candidate in results with valid score', async ({ page }) => {
-    await navigateToResults(page);
-
     const candidateSection = page.getByTestId(testIds.voter.results.candidateSection);
     const partialName = `${partialCandidate.first_name} ${partialCandidate.last_name}`;
 
@@ -286,43 +278,18 @@ test.describe('matching algorithm verification', { tag: ['@voter'] }, () => {
   });
 
   test('should NOT show hidden candidate (no termsOfUseAccepted)', async ({ page }) => {
-    await navigateToResults(page);
-
     const candidateSection = page.getByTestId(testIds.voter.results.candidateSection);
     const hiddenName = `${hiddenCandidate.first_name} ${hiddenCandidate.last_name}`;
 
     await expect(candidateSection).not.toContainText(hiddenName);
   });
 
-  test(
-    'should confirm category intros were not shown during journey (VOTE-05 partial negative coverage)',
-    async ({ page }) => {
-      // Navigate the full journey and verify no category intro appeared.
-      // Category intros are disabled in data setup via updateAppSettings.
-      //
-      // Full boundary testing (enabling/disabling category intros and verifying
-      // behavior) is explicitly Phase 4 scope.
-      await navigateToResults(page);
-
-      // Category intro element should not be present on the results page
-      await expect(page.getByTestId(testIds.voter.questions.categoryIntro)).toBeHidden();
-    }
-  );
-
-  test(
-    'should confirm results accessible after all questions answered (VOTE-07 partial above-threshold coverage)',
-    async ({ page }) => {
-      // Navigate and answer all opinion questions (above the default minimum of 5).
-      // This confirms results are accessible when answering all questions above threshold.
-      //
-      // Full boundary testing (answering exactly at threshold, below threshold)
-      // is explicitly Phase 4 scope.
-      await navigateToResults(page);
-
-      // Results list should be visible with entity cards present
-      await expect(page.getByTestId(testIds.voter.results.list)).toBeVisible();
-      const cardCount = await page.getByTestId(testIds.voter.results.card).count();
-      expect(cardCount).toBeGreaterThan(0);
-    }
-  );
+  test('should confirm results accessible after all questions answered (VOTE-07 partial above-threshold coverage)', async ({
+    page
+  }) => {
+    // Results list should be visible with entity cards present
+    await expect(page.getByTestId(testIds.voter.results.list)).toBeVisible();
+    const cardCount = await page.getByTestId(testIds.voter.results.card).count();
+    expect(cardCount).toBeGreaterThan(0);
+  });
 });

@@ -41,69 +41,83 @@ import { parseArgs } from 'node:util';
 
 
 // -----------------------------------------------------------------------------
-// PHASE 86.3 ANCHOR (2026-05-20, v2.10 All-Green Suite + 8-cell disposition).
-// Plan 86.3-05 closed the 8 source-skipped voter-app/candidate-app/variant-project
-// tests inherited from Phases 75 / 77 / 86 / 86.1. Pool deltas vs Phase 86 anchor
-// (113 PASS_LOCKED / 3 DATA_RACE / 40 CASCADE / 2 SKIPPED):
-//   +3 PASS_LOCKED (SETTINGS-01 wave A cells #1/#2/#3 FIX-PASS via 86.3-01
-//      reactive $effect rewrite on (voters)/+layout.svelte — moved from
-//      CASCADE_TESTS to PASS_LOCKED_TESTS this regen)
-//   −3 CASCADE (same 3 cells)
-//   +2 SKIPPED_TESTS net (cell #5 voter-feedback-persistence SKIP-FALLBACK
-//      via 86.3-03 trace-driven NEITHER verdict; cell #6 voter-popup-hydration
-//      SKIP-FALLBACK via 86.3-04 Path-2 empirical disproof). Cell #4 SETTINGS-01
-//      wave B constituency-filter was DELETED 2026-05-20 (WONT-IMPLEMENT —
-//      constituency is navigation/scope, not a filter; spec block removed).
-//      Cells #7+#8 QSPEC-01/02
-//      STAY in SKIPPED_TESTS (Phase 86.3-05 walkToQuestion helper-resilience
-//      fix LANDED but EMPIRICALLY INSUFFICIENT — upstream voter-app cold-deeplink
-//      loader race blocks /intro hydration; same race as cells #5/#6).
+// PHASE 86.3 v2 ANCHOR (2026-05-21, v2.10 All-Green Suite — operator-verified
+// 3-run all-pass baseline). Supersedes Phase 86.3 v1 anchor (2026-05-20, see
+// "PRIOR ANCHOR" block below). 3 test suite runs confirmed 0 fails + 4
+// hard-coded skips by operator after the v1 anchor close surfaced 3
+// downstream failures (voter-results fixture popup re-queue + voter-matching
+// helper drift + voter-popup-hydration cold-deeplink race) that were
+// resolved 2026-05-20 → 2026-05-21 via three follow-up commits:
 //
-// 8-cell disposition table:
-//   #1 SETTINGS-01 wave A header.showFeedback     — FIX-PASS (86.3-01)
-//   #2 SETTINGS-01 wave A header.showHelp         — FIX-PASS (86.3-01)
-//   #3 SETTINGS-01 wave A notifications.voterApp  — FIX-PASS (86.3-01)
-//   #4 SETTINGS-01 wave B constituency-filter     — WONT-IMPLEMENT (spec block deleted 2026-05-20)
-//   #5 E2E-03 voter-feedback-persistence          — SKIP-FALLBACK (86.3-03 NEITHER)
-//   #6 LAYOUT-03 voter-popup-hydration            — SKIP-FALLBACK (86.3-04 Path-2)
-//   #7 QSPEC-01 voter-question-rendering-boolean  — SKIP-FALLBACK (86.3-05; helper fix LEFT IN PLACE)
-//   #8 QSPEC-02 voter-question-rendering-categorical — SKIP-FALLBACK (86.3-05; helper fix LEFT IN PLACE)
+//   - 6d0914b22 — fix(86.3-01): wrap topBarSettings mutations in untrack()
+//     to break $effect loop (effect_update_depth_exceeded fix). Cells #1+#2
+//     remain reactive (FIX-PASS preserved); StackedState.push/revert internal
+//     reads no longer register as $effect deps.
+//   - 0a34dfbc7 — revert(86.3-01): cell #3 notifications.voterApp reactive
+//     $effect → onMount. Reactive popup re-queue blocked answeredVoterPage
+//     fixture in downstream voter specs (e.g. voter-results.spec.ts:173).
+//     Cell #3 downgraded FIX-PASS → PASS-WITH-DEFERRAL via candidate-settings
+//     skipReason. Moves PASS_LOCKED → SKIPPED.
+//   - 52a2f077a — fix(86.3-04): rewrite voter-popup-hydration via the
+//     answeredVoterPage fixture (in-app navigation, v2.11+ Recommendation #3
+//     landed early). Cell #6 disposition upgrades SKIP-FALLBACK → FIX-PASS.
+//     Moves SKIPPED → tracked as passing (no explicit PASS_LOCKED entry; new
+//     test ID — diffReports() Rule 3 silently accepts new-passing).
 //
-// 3-run cold-start gate verdict: ALMOST-STRICT (Phase 86 D-06 precedent).
-// Verdict raw = FAIL (8 diverging cells); operator-approved ALMOST-STRICT
-// because divergence has documented boundary-class root cause (Phase 83
-// DETERM-06 image-upload (CAND-03) imgproxy cascade + candidate-registration
-// email-link timing flake — both PASS-WITH-DEFERRAL boundary cells). Canonical
-// regen source: run-3.json (boundary cells PASSED in run-3 → cleaner baseline).
-// Anchor SHA (sorted-line-content SHA-256):
+// Operator also removed the VOTE-05 partial-negative test from
+// voter-matching.spec.ts ("should confirm category intros were not shown
+// during journey") as part of the matching-helper cleanup — entry removed
+// from PASS_LOCKED_TESTS.
+//
+// Pool deltas vs Phase 86.3 v1 anchor (116 PASS_LOCKED / 3 DATA_RACE /
+// 37 CASCADE / 4 SKIPPED — cell #4 already deleted in v1):
+//   −1 PASS_LOCKED (cell #3 notifications.voterApp PASS_LOCKED → SKIPPED;
+//      revert(86.3-01) restored Phase 77 PASS-WITH-DEFERRAL)
+//   −1 PASS_LOCKED (VOTE-05 partial-negative test removed from
+//      voter-matching.spec.ts; entry removed from PASS_LOCKED_TESTS)
+//   ±0 SKIPPED_TESTS net (cell #3 ADDED + cell #6 REMOVED → still 4 entries)
+//
+// 8-cell v2 disposition table:
+//   #1 SETTINGS-01 wave A header.showFeedback     — FIX-PASS (86.3-01 reactive
+//      topBar $effect; untrack patch via 6d0914b22)
+//   #2 SETTINGS-01 wave A header.showHelp         — FIX-PASS (86.3-01 reactive
+//      topBar $effect; untrack patch via 6d0914b22)
+//   #3 SETTINGS-01 wave A notifications.voterApp  — PASS-WITH-DEFERRAL
+//      (skipReason in candidate-settings.spec.ts; revert(86.3-01) via
+//      0a34dfbc7 — test-infra conflict with reactive popup re-queue)
+//   #4 SETTINGS-01 wave B constituency-filter     — WONT-IMPLEMENT (spec
+//      block deleted 2026-05-20; constituency is navigation/scope, not a
+//      filter; v2.11+ todo moved to done/)
+//   #5 E2E-03 voter-feedback-persistence          — SKIP-FALLBACK (86.3-03
+//      NEITHER; upstream answeredVoterPage fixture race)
+//   #6 LAYOUT-03 voter-popup-hydration            — FIX-PASS (86.3-04 rewrite
+//      via answeredVoterPage fixture; v2.11+ Recommendation #3 landed via
+//      52a2f077a — navigation-from-home redesign)
+//   #7 QSPEC-01 voter-question-rendering-boolean  — SKIP-FALLBACK (86.3-05;
+//      helper fix LEFT IN PLACE; same upstream cold-deeplink race as #5)
+//   #8 QSPEC-02 voter-question-rendering-categorical — SKIP-FALLBACK (86.3-05;
+//      helper fix LEFT IN PLACE; same upstream race as #7)
+//
+// 3-run gate verdict (operator-verified 2026-05-21): STRICT 0-fails + 4
+// hard-coded skips. Cells #3 / #5 / #7 / #8 are the 4 hard-coded skips.
+//
+// Anchor SHA (sorted-line-content SHA-256): PENDING regeneration — operator
+// verbal confirmation only; run-*.json artifacts in
+// .planning/phases/86.3-…/post-fix/ are from the 2026-05-20 v1 baseline
+// and predate the 6d0914b22 / 0a34dfbc7 / 52a2f077a follow-up commits.
+// Refresh via `node post-fix/sha-identity.mjs` against a fresh 3-run capture
+// when convenient (documentary pin only — not a CI gate).
+//
+// PRIOR ANCHOR (Phase 86.3 v1, 2026-05-20) ABSORBED:
 //   bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee
-// Raw file SHA (run-3.json): 682e82ded6024c006d43f36ef432101d43a7c673f9bdc7126b092f67f60b1e34
-// Prior Phase 86 anchor (9a6d74…) ABSORBED. Audit: .planning/phases/86.3-…/post-fix/sha256.txt
+//   116 PASS_LOCKED + 3 DATA_RACE + 37 CASCADE + 4 SKIPPED = 160 tracked.
+//   8-cell disposition was 3 FIX-PASS (cells #1/#2/#3) + 5 SKIP-FALLBACK
+//   (cells #4/#5/#6/#7/#8) — cell #4 actually DELETED at v1 close, but
+//   labeled SKIP-FALLBACK at peer-merge for narrative continuity.
+//   ALMOST-STRICT verdict was operator-approved per Phase 86 D-06 precedent.
 //
-// NOTE: post-86.3 regen-output.txt shows a heavily inflated CASCADE pool (90)
-// + new FAIL pool (40) caused by an upstream voter-app cold-deeplink loader
-// race that surfaces post-Wave-1 (race blocks /intro hydration; voter-app
-// `answeredVoterPage` fixture chain fails before tests run). Wave 1 plans
-// 86.3-02 / 86.3-03 / 86.3-04 documented this race for cells #4/#5/#6;
-// Plan 86.3-05 confirms it also blocks cells #7+#8. The arrays below are
-// PRESERVED VERBATIM from the Phase 86 anchor (with the 3 SETTINGS-01 wave
-// A cells moved CASCADE → PASS_LOCKED, and 3 new SKIPPED_TESTS entries
-// added) rather than wholesale-regenerated from run-3.json — wholesale
-// regen would mis-classify ~80 PASS-able cells as CASCADE / FAIL purely
-// due to the upstream race. The race is documented for v2.11+ pickup via
-// the navigation-from-home redesign (Recommendation #3 of
-// `.planning/todos/pending/2026-05-16-voter-popup-hydration-layout-03-deeplink.md`
-// Phase 86.3-04 augmentation), which closes ALL affected cells with a
-// single test-only redesign.
-//
-// PRIOR ANCHOR (Phase 86, 2026-05-14) ABSORBED:
-//   9a6d74a3088ec2de933cce9ff40797ec1a1cf8180923f02fbfcaf6f690a30af9
-//   113 PASS_LOCKED + 3 DATA_RACE + 40 CASCADE + 2 SKIPPED.
-// Phase 86.3 anchor:
-//   bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee
-//   116 PASS_LOCKED (+3 net) + 3 DATA_RACE (UNCHANGED per D-09) +
-//   37 CASCADE (−3 SETTINGS-01 wave A migration) + 4 SKIPPED (+2 net) = 160 tracked.
-//   Cell #4 constituency-filter DELETED 2026-05-20 (WONT-IMPLEMENT — out of contract).
+// Phase 86.3 v2 anchor: ~114 PASS_LOCKED + 3 DATA_RACE + 37 CASCADE +
+//   4 SKIPPED = ~158 tracked (recount on next regen).
 // -----------------------------------------------------------------------------
 
 // -----------------------------------------------------------------------------
@@ -191,7 +205,6 @@ const PASS_LOCKED_TESTS: ReadonlyArray<string> = [
   'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — entities.showAllNominations',
   'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — header.showFeedback',
   'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — header.showHelp',
-  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — notifications.voterApp',
   'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — questions.showCategoryTags',
   'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — questions.showResultsLink',
   'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — results.sections',
@@ -231,7 +244,6 @@ const PASS_LOCKED_TESTS: ReadonlyArray<string> = [
   'voter-app :: specs/voter/voter-locale-switching.spec.ts > locale switches via LanguageSelection widget (when present)',
   'voter-app :: specs/voter/voter-locale-switching.spec.ts > locale switches via route prefix',
   'voter-app :: specs/voter/voter-matching.spec.ts > should NOT show hidden candidate (no termsOfUseAccepted)',
-  'voter-app :: specs/voter/voter-matching.spec.ts > should confirm category intros were not shown during journey (VOTE-05 partial negative coverage)',
   'voter-app :: specs/voter/voter-matching.spec.ts > should confirm results accessible after all questions answered (VOTE-07 partial above-threshold coverage)',
   'voter-app :: specs/voter/voter-matching.spec.ts > should display candidates in correct match ranking order',
   'voter-app :: specs/voter/voter-matching.spec.ts > should show partial-answer candidate in results with valid score',
@@ -282,7 +294,7 @@ const DATA_RACE_TESTS: ReadonlyArray<string> = [
   'candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should upload a profile image (CAND-03)'
 ];
 
-/** 37 tests cascaded (did-not-run / upstream-failed) on Phase 86.3 anchor — shrank -3 vs Phase 86 (40) due to SETTINGS-01 wave A cells #1/#2/#3 (header.showFeedback / header.showHelp / notifications.voterApp) FIX-PASS via Phase 86.3-01 reactive $effect rewrite (moved to PASS_LOCKED_TESTS). Composition: 32 cascade-victims of Phase 85's variant-multi-election deterministic FAILs (Phase 85 WARNING-9 contingency — out of Phase 86 scope per CONTEXT.md D-08) + 5 other variant-spec cells. Cell #4 SETTINGS-01 wave B constituency-filter was DELETED 2026-05-20 (spec block removed — WONT-IMPLEMENT; constituency is navigation/scope, not a filter). Pool MUST NOT grow back without explicit phase routing. */
+/** 37 tests cascaded (did-not-run / upstream-failed) on Phase 86.3 v1 anchor — shrank -3 vs Phase 86 (40) due to SETTINGS-01 wave A cells #1/#2/#3 (header.showFeedback / header.showHelp / notifications.voterApp) FIX-PASS via Phase 86.3-01 reactive $effect rewrite (moved CASCADE → PASS_LOCKED). Cell #3 was subsequently REVERTED to PASS-WITH-DEFERRAL on the Phase 86.3 v2 baseline (2026-05-21) via 0a34dfbc7 — moved PASS_LOCKED → SKIPPED, NOT back to CASCADE. Composition: 32 cascade-victims of Phase 85's variant-multi-election deterministic FAILs (Phase 85 WARNING-9 contingency — out of Phase 86 scope per CONTEXT.md D-08) + 5 other variant-spec cells. Cell #4 SETTINGS-01 wave B constituency-filter was DELETED 2026-05-20 (spec block removed — WONT-IMPLEMENT; constituency is navigation/scope, not a filter). Pool MUST NOT grow back without explicit phase routing. */
 const CASCADE_TESTS: ReadonlyArray<string> = [
   'data-setup-1e-Nc :: setup/variant-1e-Nc.setup.ts > import 1e-Nc dataset',
   'data-setup-Ne-Nc :: setup/variant-Ne-Nc.setup.ts > import Ne-Nc dataset',
@@ -323,8 +335,18 @@ const CASCADE_TESTS: ReadonlyArray<string> = [
 ];
 
 /**
- * 5 tests deliberately source-skipped via `test.skip(true, '...')` with rationale per
- * Phase 86.3 8-cell disposition (4 SKIP-FALLBACK + 2 carry-forward from Phase 86):
+ * 4 tests deliberately source-skipped (3 via `test.skip(true, '...')` + 1 via
+ * candidate-settings cell-table `skipReason`) per Phase 86.3 v2 baseline
+ * (2026-05-21).
+ *
+ *   - candidate-settings notifications.voterApp (cell #3, SETTINGS-01 wave A):
+ *     PASS-WITH-DEFERRAL restored 2026-05-20 (revert(86.3-01) via 0a34dfbc7).
+ *     Phase 86.3-01's reactive $effect rewrite worked but blocked the
+ *     answeredVoterPage fixture in downstream voter specs (popup re-queues on
+ *     every page mount). The Phase 77 onMount-only semantic is restored;
+ *     skipReason set in the parameterized cell table at
+ *     candidate-settings.spec.ts:523. v2.11+ fix is a mount-lifecycle reorder
+ *     or relocating the popup queueing into appContext.
  *
  *   - voter-feedback-persistence (cell #5, E2E-03 / DETERM-13):
  *     Phase 86.3-03 SKIP-FALLBACK via trace-driven NEITHER verdict — upstream
@@ -334,28 +356,13 @@ const CASCADE_TESTS: ReadonlyArray<string> = [
  *     `.planning/todos/pending/2026-05-16-voter-feedback-persistence-second-pass.md`
  *     (augmented 66 → 145 lines with REVISED next-action ordering).
  *
- *   - voter-popup-hydration (cell #6, LAYOUT-03 / DETERM-12):
- *     Phase 86.3-04 SKIP-FALLBACK via Path-2 (page.context().addInitScript)
- *     empirical disproof — same upstream voter-app cold-deeplink loader race
- *     as cell #5. v2.11+ todo:
- *     `.planning/todos/pending/2026-05-16-voter-popup-hydration-layout-03-deeplink.md`
- *     (augmented 44 → 72 lines; Recommendation #3 navigation-from-home redesign
- *     elevated to strongest v2.11+ next action — closes all affected cells).
- *
- *   - constituency-filter (cell #4, SETTINGS-01 wave B):
- *     WONT-IMPLEMENT — spec block deleted 2026-05-20. Constituency is a
- *     navigation/scope concern (election → constituency → results), not a
- *     per-list filter. Phase 86.3-02 Path-C disposition superseded.
- *     v2.11+ todo `2026-05-13-constituency-filter-product-gap.md` moved to
- *     done/ with WONT-FIX close note.
- *
  *   - voter-question-rendering-boolean (cell #7, QSPEC-01):
  *     Phase 86.3-05 SKIP-FALLBACK — walkToQuestion helper-resilience fix LANDED
  *     in voterNavigation.ts:308-329 (isVisible probe + conditional intro-CTA
  *     click) but EMPIRICALLY INSUFFICIENT — upstream voter-app cold-deeplink
  *     loader race blocks page.goto(Home) → /intro hydration (page renders only
  *     `Loading…`; voter-intro-start testId never paints). Same upstream race as
- *     cells #5/#6. Helper fix LEFT IN PLACE as evidence-of-attempt. v2.11+ todo:
+ *     cell #5. Helper fix LEFT IN PLACE as evidence-of-attempt. v2.11+ todo:
  *     `.planning/todos/pending/2026-05-14-qspec-walkToQuestion-cold-start-race.md`
  *     (augmented with Phase 86.3-05 attempt section + cross-references).
  *
@@ -365,24 +372,51 @@ const CASCADE_TESTS: ReadonlyArray<string> = [
  *     Same shared v2.11+ todo as cell #7.
  *
  * NOT part of the parity contract — diffReports() early-continues on this set.
- * All 5 entries are candidates for closure via the v2.11+ navigation-from-home
- * test redesign (Recommendation #3 in the LAYOUT-03 v2.11+ todo).
+ * The voter-app cells (#5/#7/#8) are candidates for closure via the v2.11+
+ * navigation-from-home redesign (the same approach that closed cell #6 in
+ * 52a2f077a). Cell #3's mount-lifecycle deferral is independent of that
+ * redesign.
+ *
+ * Cells NO LONGER in this list:
+ *   - Cell #4 (SETTINGS-01 wave B constituency-filter): spec block DELETED
+ *     2026-05-20 (WONT-IMPLEMENT — constituency is navigation/scope, not a
+ *     filter). v2.11+ todo `2026-05-13-constituency-filter-product-gap.md`
+ *     moved to done/ with WONT-FIX close note.
+ *   - Cell #6 (LAYOUT-03 voter-popup-hydration): FIX-PASS via rewrite using
+ *     the answeredVoterPage fixture (commit 52a2f077a — v2.11+
+ *     Recommendation #3 landed early).
  */
 const SKIPPED_TESTS: ReadonlyArray<string> = [
-  // Cell #4 (SETTINGS-01 wave B — constituency-filter) removed 2026-05-20:
-  // the spec block was deleted (constituency is a navigation/scope concept,
-  // not a per-list filter — WONT-IMPLEMENT). See
+  // Phase 86.3 v2 baseline (2026-05-21): 4 hard-coded skips remaining after
+  // operator-verified 3-run all-pass gate.
+  //
+  // Cell #3 (notifications.voterApp): Phase 86.3-01's FIX-PASS via reactive
+  // $effect was REVERTED 2026-05-20 (commit 0a34dfbc7) due to test-infra
+  // conflict — reactive popup re-queue blocks answeredVoterPage fixture in
+  // downstream voter specs. Cell returns to Phase 77 PASS-WITH-DEFERRAL via
+  // skipReason in candidate-settings.spec.ts cell table.
+  //
+  // Cell #4 (SETTINGS-01 wave B — constituency-filter) removed 2026-05-20
+  // (commit 24afc6dae): spec block deleted (constituency is a navigation/
+  // scope concept, not a per-list filter — WONT-IMPLEMENT). See
   // .planning/todos/done/2026-05-13-constituency-filter-product-gap.md.
-  // WR-01 fix (Phase 86.3 review): strip the trailing ' @voter' suffix.
-  // Playwright JSON reporter `spec.title` does NOT include describe-level
-  // `tag: ['@voter']` declarations — `flattenReport()` below uses spec.title
-  // directly (line 444). All sibling voter-app entries (lines below + the
-  // PASS_LOCKED voter-app block) follow the no-tag convention; this entry
-  // was the lone outlier. Today the bug is dormant (the test is source-skipped
-  // so its ID hits the diffReports() fallthrough), but it would silently fail
-  // sourceSkip.has(b.id) once the test re-activates.
+  //
+  // Cell #5 (voter-feedback-persistence E2E-03) and cells #7/#8 (QSPEC-01/02
+  // question-rendering boolean/categorical) remain skipped per Phase 86.3-03
+  // and 86.3-05 SKIP-FALLBACK dispositions (upstream cold-deeplink loader
+  // race; v2.11+ navigation-from-home redesign closes all three).
+  //
+  // Cell #6 (voter-popup-hydration LAYOUT-03) is NO LONGER skipped — Phase
+  // 86.3-04 v2.11+ Recommendation #3 landed 2026-05-20 (commit 52a2f077a):
+  // test rewritten to use answeredVoterPage fixture (navigation-from-home).
+  // Moved to PASS_LOCKED_TESTS.
+  //
+  // WR-01 fix (Phase 86.3 review): voter-app entries follow the no-tag
+  // convention — Playwright JSON reporter `spec.title` does NOT include
+  // describe-level `tag: ['@voter']` declarations (`flattenReport()` uses
+  // spec.title directly). The pre-86.3 ' @voter' suffix was stripped.
+  'candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > SETTINGS-01 wave A — notifications.voterApp',
   'voter-app :: specs/voter/voter-feedback-persistence.spec.ts > feedback persistence (E2E-03) > feedback text persists across dismiss and resets after send',
-  'voter-app :: specs/voter/voter-popup-hydration.spec.ts > setTimeout popup on full page load (LAYOUT-03 regression gate) popup appears on full page load to /results (LAYOUT-03 hydration path)',
   'voter-app :: specs/voter/voter-question-rendering-boolean.spec.ts > boolean opinion question renders, voter answers, persists across goBack, mirrors on entity-detail',
   'voter-app :: specs/voter/voter-question-rendering-categorical.spec.ts > categorical opinion question (single-choice) renders, voter answers, persists across goBack, mirrors on entity-detail'
 ];

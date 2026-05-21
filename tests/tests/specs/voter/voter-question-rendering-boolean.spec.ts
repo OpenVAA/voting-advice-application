@@ -105,7 +105,7 @@ test.describe('voter question rendering — boolean (QSPEC-01)', { tag: ['@voter
   //   cold-deeplink finding) + cross-references to 86.3-03 + 86.3-04
   //   trace analyses. The walkToQuestion helper fix is LEFT IN PLACE.
   ////////////////////////////////////////////////////////////////////
-  // eslint-disable-next-line playwright/expect-expect
+
   test('boolean opinion question renders, voter answers, persists across goBack, mirrors on entity-detail', async ({
     page
   }) => {
@@ -217,10 +217,7 @@ test.describe('voter question rendering — boolean (QSPEC-01)', { tag: ['@voter
     await page.waitForURL(/\/results/, { timeout: 10000 });
 
     // Open Alpha's entity-detail drawer.
-    await page
-      .getByTestId(testIds.voter.results.card)
-      .filter({ hasText: 'Candidate Alpha' })
-      .click();
+    await page.getByTestId(testIds.voter.results.card).filter({ hasText: 'Candidate Alpha' }).click();
 
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
