@@ -12,7 +12,7 @@ Capture the final v2.10-ship anchor after Phases 84-86 land. Run a fresh 3-run c
 
 1. **DETERM-15 — Fresh 3-run cold-start gate SHA-identical on FIRST attempt.** Against the post-84+85+86 codebase. No Phase 79 D-09 instability protocol fallback — strict SHA-identity gate.
 
-2. **Final v2.10-ship anchor committed.** Target: ~150-160 PASS_LOCKED + ≤3 DATA_RACE (Phase 84 binding renegotiation: 3 image-intrinsic tests) + 0 CASCADE (Phase 85 closure) + ≤2 FAILURE-CLASS (Phase 86 explicit v2.11+ deferrals). Anchor SHA committed to `tests/scripts/diff-playwright-reports.ts` jsdoc + the regen script's IMGPROXY_TIED_TITLES (3-title list) + DATA_RACE_TESTS (3 IDs) + CASCADE_BASELINE_TESTS (0 or ≤5) + jsdoc.
+2. **Final v2.10-ship anchor committed.** Target (original D-05): ~150-160 PASS_LOCKED + ≤3 DATA_RACE (Phase 84 binding renegotiation: 3 image-intrinsic tests) + 0 CASCADE (Phase 85 closure) + ≤2 FAILURE-CLASS (Phase 86 explicit v2.11+ deferrals). Operator-amended at 86.3 close (per 86.3-SUMMARY.md D-06 RE-PLAN recommendation): 114 PASS_LOCKED + 3 DATA_RACE + 36 CASCADE + 4 SKIPPED (v2.11+ deferrals). Anchor SHA committed to `tests/scripts/diff-playwright-reports.ts` jsdoc + the regen script's IMGPROXY_TIED_TITLES (3-title list) + DATA_RACE_TESTS (3 IDs) + CASCADE_TESTS (post-86.3-v2 baseline preserved verbatim) + SKIPPED_TESTS (4 entries) + jsdoc.
 
 3. **Phase 87 SUMMARY documents the all-green achievement.** Lists explicit v2.11+ deferrals if any (FAILURE-CLASS residuals from Phase 86, CASCADE residuals from Phase 85). Cross-references the 4-phase milestone-extension lineage (Phase 79 → 80/81/82/83 → 84/85/86/87).
 
@@ -34,7 +34,7 @@ Phase 87 is the v2.10 milestone-close phase. After Phase 87, run `/gsd-complete-
 
 - **D-01 — Single PLAN.md.** Phase 87 is pure infrastructure execution (3-run gate + regen + audit-milestone). Mirrors Phase 79 P03 long-running unattended-execution structure. Plan tasks (planner refines):
   1. Fresh 3-run cold-start gate via archived `regen-constants.mjs` (1-run prep capture + 3-run identity gate). ~216 min wall time.
-  2. Atomic constants regen commit (jsdoc + arrays + anchor SHA + IMGPROXY_TIED_TITLES + DATA_RACE_TESTS + CASCADE_BASELINE_TESTS).
+  2. Atomic constants regen commit (jsdoc + arrays + anchor SHA + IMGPROXY_TIED_TITLES + DATA_RACE_TESTS + CASCADE_TESTS + SKIPPED_TESTS).
   3. Phase 87 SUMMARY documenting all-green achievement + v2.11+ deferrals.
   4. `/gsd-audit-milestone v2.10` invocation + close on shippable status.
 
@@ -45,10 +45,12 @@ Phase 87 is the v2.10 milestone-close phase. After Phase 87, run `/gsd-complete-
 ### Anchor commit shape
 
 - **D-04 — Atomic regen commit covers ALL classification arrays + jsdoc + anchor SHA.** Single commit per Phase 79 D-10 precedent. Files touched (planner verifies):
-  - `tests/scripts/diff-playwright-reports.ts` — jsdoc count update (`94` → `~155-160`), PASS_LOCKED_TESTS (in alphabetical order), DATA_RACE_TESTS (3 IDs), CASCADE_TESTS (0 or ≤5), FAILURE-CLASS narrative block (removed or ≤2 residual entries), SKIPPED_TESTS if Phase 86 introduced this const.
-  - `.planning/phases/79-determinism-recovery-cascading-race-fix-constants-regen/post-fix/regen-constants.mjs` — IMGPROXY_TIED_TITLES (3 titles, Phase 84-renegotiated), CASCADE_BASELINE_TESTS (Phase 85-shrunken), any SKIPPED constants. Match-count assertion gates verified post-edit.
-  - `.planning/phases/87-…/post-fix/run-{1,2,3}.json` — 3-run captures archived.
+  - `tests/scripts/diff-playwright-reports.ts` — jsdoc count update (`94` → `114`), PASS_LOCKED_TESTS (in alphabetical order), DATA_RACE_TESTS (3 IDs), CASCADE_TESTS (0 or ≤5 per ORIGINAL D-05; operator-amended at 86.3 close to CASCADE=36 — see v2-reshape note below), SKIPPED_TESTS (4 entries: cells #3 / #5 / #7 / #8 — operator-locked v2 baseline).
+  - `.planning/phases/79-determinism-recovery-cascading-race-fix-constants-regen/post-fix/regen-constants.mjs` — IMGPROXY_TIED_TITLES (3 titles, Phase 84-renegotiated); reportPath repointed to Phase 87 canonical run-3.json. Match-count assertion gates verified post-edit (`3 titles, 3 total matches`).
+  - `.planning/phases/87-…/post-fix/run-{1,2,3}.json` — 3-run captures archived (Path A: copies of 86.3-v1; Path B: fresh).
   - `.planning/phases/87-…/post-fix/sha256.txt` — SHA-identity record (per Phase 79 D-12 precedent).
+
+  **v2 reshape (2026-05-21):** D-05's CASCADE/SKIPPED counts adapted to the post-86.3-v2 baseline (CASCADE=36 + 4 SKIPPED accepted as operator-approved v2.11+ deferrals per 86.3-SUMMARY.md D-06 RE-PLAN recommendation). The original D-05 strict letter (CASCADE 0 or ≤5) is preserved as the v2.11+ aspirational target. Stale const-name references corrected to live names — CASCADE\_TESTS (post-86.3-v2 baseline preserved verbatim) and SKIPPED\_TESTS (4-entry hard-coded skip list); the deprecated baseline/failure-class const names from the original plan no longer match live code.
 
 - **D-05 — Anchor target verification.** Planner verifies post-gate that the actual anchor matches target:
   - PASS_LOCKED: ~150-160 (range, planner accepts within).

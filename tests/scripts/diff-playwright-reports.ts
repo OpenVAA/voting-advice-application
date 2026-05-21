@@ -41,43 +41,61 @@ import { parseArgs } from 'node:util';
 
 
 // -----------------------------------------------------------------------------
-// PHASE 86.3 v2 ANCHOR (2026-05-21, v2.10 All-Green Suite — operator-verified
-// 3-run all-pass baseline). Supersedes Phase 86.3 v1 anchor (2026-05-20, see
-// "PRIOR ANCHOR" block below). 3 test suite runs confirmed 0 fails + 4
-// hard-coded skips by operator after the v1 anchor close surfaced 3
-// downstream failures (voter-results fixture popup re-queue + voter-matching
-// helper drift + voter-popup-hydration cold-deeplink race) that were
-// resolved 2026-05-20 → 2026-05-21 via three follow-up commits:
+// PHASE 87 v2.10 SHIP ANCHOR (2026-05-21, v2.10 All-Green Milestone-Close).
+// Source: post-fix/run-3.json (Path A: copy of 86.3-v1 run-3.json; the v2
+// classification deltas for cells #3 + #6 are encoded in the const arrays
+// below as the binding contract, not in the raw run-3.json data).
+// Run-mode: verbal-accept (per .planning/phases/87-…/post-fix/run-mode-decision.txt).
+// Verdict: ACCEPT-VERBAL-VERIFIED (Path A) — operator's 2026-05-21 verbal
+// verification at commit 9ad802ec0 (chore(86.3): mark v2 baseline — 0 fails
+// + 4 hard-coded skips, 3 runs verified) is the approved audit basis.
 //
-//   - 6d0914b22 — fix(86.3-01): wrap topBarSettings mutations in untrack()
-//     to break $effect loop (effect_update_depth_exceeded fix). Cells #1+#2
-//     remain reactive (FIX-PASS preserved); StackedState.push/revert internal
-//     reads no longer register as $effect deps.
-//   - 0a34dfbc7 — revert(86.3-01): cell #3 notifications.voterApp reactive
-//     $effect → onMount. Reactive popup re-queue blocked answeredVoterPage
-//     fixture in downstream voter specs (e.g. voter-results.spec.ts:173).
-//     Cell #3 downgraded FIX-PASS → PASS-WITH-DEFERRAL via candidate-settings
-//     skipReason. Moves PASS_LOCKED → SKIPPED.
-//   - 52a2f077a — fix(86.3-04): rewrite voter-popup-hydration via the
-//     answeredVoterPage fixture (in-app navigation, v2.11+ Recommendation #3
-//     landed early). Cell #6 disposition upgrades SKIP-FALLBACK → FIX-PASS.
-//     Moves SKIPPED → tracked as passing (no explicit PASS_LOCKED entry; new
-//     test ID — diffReports() Rule 3 silently accepts new-passing).
+// Anchor SHA (sorted-line-content SHA-256 of run-3.json):
+//   bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee
+// (re-derives 86.3-v1; Phase 87 re-binds the same raw SHA to the v2.10 ship
+// narrative — see .planning/phases/87-…/post-fix/sha256.txt for full audit.)
 //
-// Operator also removed the VOTE-05 partial-negative test from
-// voter-matching.spec.ts ("should confirm category intros were not shown
-// during journey") as part of the matching-helper cleanup — entry removed
-// from PASS_LOCKED_TESTS.
+// PHASE 87 STORY — v2.10 All-Green Milestone-Close against operator-amended D-05.
 //
-// Pool deltas vs Phase 86.3 v1 anchor (116 PASS_LOCKED / 3 DATA_RACE /
-// 37 CASCADE / 4 SKIPPED — cell #4 already deleted in v1):
-//   −1 PASS_LOCKED (cell #3 notifications.voterApp PASS_LOCKED → SKIPPED;
-//      revert(86.3-01) restored Phase 77 PASS-WITH-DEFERRAL)
-//   −1 PASS_LOCKED (VOTE-05 partial-negative test removed from
-//      voter-matching.spec.ts; entry removed from PASS_LOCKED_TESTS)
-//   ±0 SKIPPED_TESTS net (cell #3 ADDED + cell #6 REMOVED → still 4 entries)
+// Composition (DETERM-15 close, post-86.3-v2 baseline):
+//   PASS_LOCKED: 114  (operator-verified 3-run all-pass at commit 9ad802ec0)
+//   DATA_RACE:   3    (Phase 73 D-09 binding; preserved verbatim — CAND-03 / CAND-12 image-intrinsic)
+//   CASCADE:     36   (operator-accepted v2.11+ deferral per 86.3 D-06 RE-PLAN —
+//                      variant-multi-election cascade-tail + cold-deeplink race victims)
+//   SKIPPED:     4    (cells #3 / #5 / #7 / #8 — hard-coded skips with v2.11+ todos)
+//   Total tracked: 157
 //
-// 8-cell v2 disposition table:
+// 4 HARD-CODED SKIPS (v2.11+ DEFERRALS):
+//   #3 candidate-settings.spec.ts > SETTINGS-01 wave A — notifications.voterApp
+//      (PASS-WITH-DEFERRAL via skipReason; revert 0a34dfbc7 — test-infra conflict
+//      with reactive popup re-queue; v2.11+ mount-lifecycle reorder or move
+//      popup queueing into appContext)
+//   #5 voter-feedback-persistence.spec.ts > feedback persistence (E2E-03)
+//      (SKIP-FALLBACK 86.3-03; upstream answeredVoterPage fixture race; v2.11+ todo:
+//      .planning/todos/pending/2026-05-16-voter-feedback-persistence-second-pass.md)
+//   #7 voter-question-rendering-boolean.spec.ts > boolean opinion question (QSPEC-01)
+//      (SKIP-FALLBACK 86.3-05; cold-deeplink race; v2.11+ todo:
+//      .planning/todos/pending/2026-05-14-qspec-walkToQuestion-cold-start-race.md)
+//   #8 voter-question-rendering-categorical.spec.ts > categorical opinion question (QSPEC-02)
+//      (SKIP-FALLBACK 86.3-05; same race as #7; same shared v2.11+ todo)
+//
+// Cells #5 / #7 / #8 share ONE upstream voter-app cold-deeplink loader race
+// (per Phase 86.3 cross-plan finding). v2.11+ closure target: navigation-from-home
+// redesign (same approach that closed cell #6 in commit 52a2f077a).
+//
+// CASCADE=36 v2.11+ DEFERRALS (sample): variant-multi-election deterministic FAILs
+// cascade-tail (Phase 85 WARNING-9; v2.11+ root-cause investigation); party-drawer
+// boundary flake residual (.planning/todos/pending/2026-05-14-party-drawer-boundary-flake-residual.md).
+//
+// D-05 amendment (operator-accepted at Phase 86.3 close per 86.3-SUMMARY.md
+// D-06 RE-PLAN recommendation; carried forward into Phase 87 v2.10 ship):
+//   Original D-05: CASCADE 0 (or ≤5 with explicit Phase 85 deferrals).
+//   Operator-amended D-05 for v2.10 ship: CASCADE=36 + 4 SKIPPED accepted as
+//   documented v2.11+ deferrals. Pool growth without further operator sign-off
+//   is prohibited per CONTEXT.md D-08. The original D-05 strict letter is
+//   preserved as the v2.11+ aspirational target.
+//
+// 8-cell v2 disposition table (carried forward from Phase 86.3 v2 baseline):
 //   #1 SETTINGS-01 wave A header.showFeedback     — FIX-PASS (86.3-01 reactive
 //      topBar $effect; untrack patch via 6d0914b22)
 //   #2 SETTINGS-01 wave A header.showHelp         — FIX-PASS (86.3-01 reactive
@@ -98,26 +116,15 @@ import { parseArgs } from 'node:util';
 //   #8 QSPEC-02 voter-question-rendering-categorical — SKIP-FALLBACK (86.3-05;
 //      helper fix LEFT IN PLACE; same upstream race as #7)
 //
-// 3-run gate verdict (operator-verified 2026-05-21): STRICT 0-fails + 4
-// hard-coded skips. Cells #3 / #5 / #7 / #8 are the 4 hard-coded skips.
+// PRIOR ANCHORS ABSORBED:
+//   Phase 86       9a6d74a3088ec2de933cce9ff40797ec1a1cf8180923f02fbfcaf6f690a30af9
+//   Phase 86.3-v1  bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee  (116/3/37/4 = 160 tracked)
+//   Phase 86.3-v2  (intermediate; no committed SHA — operator verbal verification only at 9ad802ec0)
 //
-// Anchor SHA (sorted-line-content SHA-256): PENDING regeneration — operator
-// verbal confirmation only; run-*.json artifacts in
-// .planning/phases/86.3-…/post-fix/ are from the 2026-05-20 v1 baseline
-// and predate the 6d0914b22 / 0a34dfbc7 / 52a2f077a follow-up commits.
-// Refresh via `node post-fix/sha-identity.mjs` against a fresh 3-run capture
-// when convenient (documentary pin only — not a CI gate).
+// Phase 87 anchor: 114 PASS_LOCKED + 3 DATA_RACE + 36 CASCADE + 4 SKIPPED = 157 tracked.
 //
-// PRIOR ANCHOR (Phase 86.3 v1, 2026-05-20) ABSORBED:
-//   bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee
-//   116 PASS_LOCKED + 3 DATA_RACE + 37 CASCADE + 4 SKIPPED = 160 tracked.
-//   8-cell disposition was 3 FIX-PASS (cells #1/#2/#3) + 5 SKIP-FALLBACK
-//   (cells #4/#5/#6/#7/#8) — cell #4 actually DELETED at v1 close, but
-//   labeled SKIP-FALLBACK at peer-merge for narrative continuity.
-//   ALMOST-STRICT verdict was operator-approved per Phase 86 D-06 precedent.
-//
-// Phase 86.3 v2 anchor: ~114 PASS_LOCKED + 3 DATA_RACE + 37 CASCADE +
-//   4 SKIPPED = ~158 tracked (recount on next regen).
+// See .planning/phases/87-…/post-fix/sha256.txt for the full audit + verdict rationale.
+// See .planning/phases/87-…/post-fix/pre-gate-cascade-check.txt for the D-05 amendment lineage.
 // -----------------------------------------------------------------------------
 
 // -----------------------------------------------------------------------------
@@ -169,7 +176,7 @@ import { parseArgs } from 'node:util';
 // output below. Re-embed by running the regen script after a new canonical capture.
 // -----------------------------------------------------------------------------
 
-/** 113 tests locked PASSING on Phase 86 baseline (Phase 85 baseline 109 + 4 net-additions from DETERM-12 popups/hydration/navigation/redirect/party-drawer fixes + DETERM-13 filter-toggle/feedback fixes + DETERM-14 voter-detail case-d fix). Phase 86 v2.10 All-Green Suite anchor. Any regression vs. THIS list is a BLOCKER. */
+/** 114 tests locked PASSING on Phase 87 baseline (Phase 86.3 v2 baseline 114 carried forward — Phase 87 documents this as the v2.10 ship anchor; honest count below the original ROADMAP target ~150-160). Any regression vs. THIS list is a BLOCKER. */
 const PASS_LOCKED_TESTS: ReadonlyArray<string> = [
   'auth-setup :: setup/auth.setup.ts > authenticate as candidate',
   'auth-setup :: setup/re-auth.setup.ts > re-authenticate as candidate',
@@ -294,7 +301,7 @@ const DATA_RACE_TESTS: ReadonlyArray<string> = [
   'candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should upload a profile image (CAND-03)'
 ];
 
-/** 37 tests cascaded (did-not-run / upstream-failed) on Phase 86.3 v1 anchor — shrank -3 vs Phase 86 (40) due to SETTINGS-01 wave A cells #1/#2/#3 (header.showFeedback / header.showHelp / notifications.voterApp) FIX-PASS via Phase 86.3-01 reactive $effect rewrite (moved CASCADE → PASS_LOCKED). Cell #3 was subsequently REVERTED to PASS-WITH-DEFERRAL on the Phase 86.3 v2 baseline (2026-05-21) via 0a34dfbc7 — moved PASS_LOCKED → SKIPPED, NOT back to CASCADE. Composition: 32 cascade-victims of Phase 85's variant-multi-election deterministic FAILs (Phase 85 WARNING-9 contingency — out of Phase 86 scope per CONTEXT.md D-08) + 5 other variant-spec cells. Cell #4 SETTINGS-01 wave B constituency-filter was DELETED 2026-05-20 (spec block removed — WONT-IMPLEMENT; constituency is navigation/scope, not a filter). Pool MUST NOT grow back without explicit phase routing. */
+/** 36 tests cascaded (did-not-run / upstream-failed) on the Phase 87 v2.10 ship anchor — Phase 86.3 v2 baseline carried forward verbatim. CASCADE=36 is operator-amended D-05 (per 86.3-SUMMARY.md D-06 RE-PLAN recommendation, accepted at Phase 86.3 close) — variant-multi-election cascade-tail + cold-deeplink race victims; all entries documented as v2.11+ deferrals (none are surprise regressions). Cell #4 SETTINGS-01 wave B constituency-filter was DELETED 2026-05-20 (spec block removed — WONT-IMPLEMENT; constituency is navigation/scope, not a filter). Pool MUST NOT grow back without explicit phase routing per CONTEXT.md D-08. */
 const CASCADE_TESTS: ReadonlyArray<string> = [
   'data-setup-1e-Nc :: setup/variant-1e-Nc.setup.ts > import 1e-Nc dataset',
   'data-setup-Ne-Nc :: setup/variant-Ne-Nc.setup.ts > import Ne-Nc dataset',

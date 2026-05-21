@@ -74,3 +74,23 @@ Rationale: Operator invoked /gsd-execute-phase 87 autonomously with explicit "wo
 
   Per memory feedback_batch_discussions.md: prefer autonomous chains; operator
   will redirect if Path B was actually wanted.
+
+  KNOWN PATH A DEVIATION (parity-gate self-identity smoke):
+  Phase 87 Plan Task 2 Step B6 requires `npx tsx diff-playwright-reports.ts
+  run-3.json run-3.json` to emit `PARITY GATE: PASS`. On Path A this is
+  structurally impossible because the run-3.json is the 86.3-v1 raw capture
+  (predates v2 follow-up commits 6d0914b22 / 0a34dfbc7 / 52a2f077a) — the v2
+  classification deltas (cells #1/#2/#6 PASS_LOCKED promotions) are NOT
+  encoded in the raw JSON, only in the const arrays. Self-identity emits
+  `PARITY GATE: FAIL — 76 regression(s)` because 76 v2 PASS_LOCKED entries
+  show as fail/cascade in the 86.3-v1 raw data. The const arrays themselves
+  are correctly preserved verbatim from v2 baseline (114/3/36/4 ✓) and the
+  IMGPROXY_TIED_TITLES match-count assertion passes (3 titles, 3 total
+  matches ✓). The parity-gate smoke is only meaningful on Path B where
+  run-3.json reflects post-v2 reality; on Path A it is informational and
+  documented in SUMMARY as a known limitation of the verbal-accept audit
+  basis. The previous PHASE 86.3 v2 ANCHOR jsdoc itself noted this:
+  "Anchor SHA (sorted-line-content SHA-256): PENDING regeneration — operator
+  verbal confirmation only; run-*.json artifacts in .planning/phases/86.3-…/
+  post-fix/ are from the 2026-05-20 v1 baseline and predate the v2 follow-up
+  commits."

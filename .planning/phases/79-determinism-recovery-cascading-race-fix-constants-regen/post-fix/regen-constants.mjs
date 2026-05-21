@@ -16,25 +16,31 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-// __dirname is .planning/phases/79-…/post-fix/. Phase 86 anchor lives 2 levels up
-// then down into the Phase 86 post-fix directory.
-// Phase 86: DETERM-12 + DETERM-13 + DETERM-14 voter-app FAILURE-CLASS cleanup.
-// Plans 01-03 landed 8 deterministic fixes + 2 QSPEC test.skip()+rationale entries
-// (Phase 75 PASS-WITH-DEFERRAL inheritance) + 1 project-config testIgnore exclusion
-// (voter-visibility-required from voter-app project). 3-run cold-start gate:
-// run-1 invalidated by operator (mistake during execution); run-2 vs run-3 differ
-// by exactly 1 cell — the documented party-drawer boundary flake (same Phase-83
-// DETERM-07b boundary graduate that flaked in Phase 84 run-2 + Phase 85 run-3).
-// Plan 01 Task 5 hardening (commit 9cc115469) reduced but did not fully eliminate
-// the boundary classification; residual deferred to v2.11+ via
-// .planning/todos/pending/2026-05-14-party-drawer-boundary-flake-residual.md.
-// Per Phase 85 D-06 precedent: run-3.json is canonical regen source (party-drawer
-// PASSED in run-3). New Phase 86 v2.10 All-Green Suite anchor SHA:
-// 9a6d74a3088ec2de933cce9ff40797ec1a1cf8180923f02fbfcaf6f690a30af9
-// Phase 85 anchor 411e09f5ffb15015ca57a7405619f127f3950c402c082e2599f6782601158ac5
-// is ABSORBED by this regen. See .planning/phases/86-…/post-fix/sha256.txt
-// for the full audit + ALMOST-strict verdict rationale.
-const reportPath = join(__dirname, '..', '..', '86-voter-app-failure-class-cleanup-investigate-and-resolve-the-', 'post-fix', 'run-3.json');
+// __dirname is .planning/phases/79-…/post-fix/. Phase 87 anchor lives 2 levels up
+// then down into the Phase 87 post-fix directory.
+//
+// Phase 87: DETERM-15 v2.10 milestone-close ship anchor. Reshape: 2026-05-21.
+// Anchor SHA: bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee
+// Run-mode: verbal-accept (Path A) per .planning/phases/87-…/post-fix/run-mode-decision.txt
+// Verdict: ACCEPT-VERBAL-VERIFIED (Path A)
+//
+// Per CONTEXT.md D-02: strict SHA-identity gate (Path B) OR operator-accepted
+// verbal-verification (Path A — 2026-05-21 verified at commit 9ad802ec0:
+// chore(86.3): mark v2 baseline — 0 fails + 4 hard-coded skips, 3 runs verified).
+//
+// D-05 amendment (operator-accepted at Phase 86.3 close per 86.3-SUMMARY.md
+// D-06 RE-PLAN recommendation): CASCADE=36 + 4 SKIPPED (cells #3 / #5 / #7 / #8)
+// are documented v2.11+ deferrals. The 4 hard-coded skips share root causes:
+//   - Cell #3: PASS-WITH-DEFERRAL via candidate-settings skipReason (revert 0a34dfbc7).
+//   - Cells #5 / #7 / #8: SKIP-FALLBACK — shared voter-app cold-deeplink loader
+//     race; v2.11+ navigation-from-home redesign is the closure target (same
+//     approach that closed cell #6 in commit 52a2f077a).
+//
+// PRIOR ANCHORS ABSORBED:
+//   Phase 86 anchor   9a6d74a3088ec2de933cce9ff40797ec1a1cf8180923f02fbfcaf6f690a30af9
+//   Phase 86.3-v1     bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee
+// See .planning/phases/87-…/post-fix/sha256.txt for the full audit + verdict rationale.
+const reportPath = join(__dirname, '..', '..', '87-v2-10-all-green-milestone-close-anchor-capture-a-fresh-3-run', 'post-fix', 'run-3.json');
 // Strip optional dotenv banner line (Phase 73 captures via `yarn playwright …` write a
 // `[dotenv@…] injecting env …` line ahead of the JSON; the P64 captures did not). Split
 // on first '{' rather than first newline so the strip is robust to multi-line banners.
