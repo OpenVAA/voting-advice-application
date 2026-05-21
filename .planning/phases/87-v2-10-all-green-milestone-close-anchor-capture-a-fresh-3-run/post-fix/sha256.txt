@@ -19,6 +19,7 @@ Mechanical sha-identity verdict: FAIL (86.3-v1 ALMOST-STRICT — 8 cells diverge
 between runs 2 and 3; all share ONE documented boundary-class cascade ancestor per
 86.3 D-06; expected on Path A since the raw data is the 86.3-v1 capture verbatim).
 
+Verdict: ACCEPT-VERBAL-VERIFIED (Path A)
 Operator-approved verdict for Phase 87: ACCEPT-VERBAL-VERIFIED (Path A)
 
 Rationale:
