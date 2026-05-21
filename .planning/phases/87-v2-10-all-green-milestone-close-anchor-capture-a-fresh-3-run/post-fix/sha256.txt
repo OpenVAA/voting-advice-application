@@ -1,11 +1,80 @@
-Phase 79 Plan 03 Task 5 — 3-run SHA-256 identity check (D-08).
+Phase 87 Plan 01 Task 1b — Path B (re-capture) anchor gate (operator-promoted 2026-05-21)
+==========================================================================================
 
 Format: sha256(sorted("<projectName> :: <specFile> > <specTitle>|<status>")).
-Status normalisation: regen-constants.mjs categorizeStatus → {pass, cascade, fail}.
+Status normalisation: regen-constants.mjs / sha-identity.mjs categorizeStatus → {pass, cascade, fail}.
 
-/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/.planning/phases/87-v2-10-all-green-milestone-close-anchor-capture-a-fresh-3-run/post-fix/run-1.json: fe6f021b3cb297bdfefa1a15c192667e1b6e0dfbc3347b2d1bf6a9b201766dd5  (165 entries)
-/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/.planning/phases/87-v2-10-all-green-milestone-close-anchor-capture-a-fresh-3-run/post-fix/run-2.json: 9edfdd3b65a7e6ef63898bb5308a8a9d5e7cd34bbd505ee1fdc8ea9f8e4d896a  (165 entries)
-/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/.planning/phases/87-v2-10-all-green-milestone-close-anchor-capture-a-fresh-3-run/post-fix/run-3.json: bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee  (165 entries)
+Raw file SHAs (Path B fresh 3-run cold-start gate against post-86.3-v2 codebase HEAD bd0f92b90):
+  run-1.json: f1ff9f37cc9d8f609286941111bfeb934dad3dae0d3d57dc2cce470b17984998  (163 entries)
+  run-2.json: f5df077d9f8dd02045884fb464b997ce15ef79f7e5f4741c0cc89ed52ded42e1  (163 entries)
+  run-3.json: 89bdffaad69e0d996411dbfec2294ba8ab4f549348fb7f09fe66766aa8d9770d  (163 entries)
 
-Verdict: FAIL
-Hashes differ — D-09 instability protocol triggers (add 3 fresh cold-start runs).
+Sorted-line-content SHAs (sha-identity.mjs partition hash):
+  run-1.json content: b2ad76e5de4f5b435db536bb5d5d05c81c5bd4c8e007a5f0c25078e2ed74ef2e  (163 entries)
+  run-2.json content: b2ad76e5de4f5b435db536bb5d5d05c81c5bd4c8e007a5f0c25078e2ed74ef2e  (163 entries)
+  run-3.json content: 64cdd97c80dda96109e0f1f21e41574e19a9fe2145c2b1ee5de05656aebb64ea  (163 entries)
+
+Per-run pass/fail/skip tallies:
+  run-1: 159 pass / 0 fail / 4 skipped (cells #3 / #5 / #7 / #8)
+  run-2: 159 pass / 0 fail / 4 skipped (identical to run-1)
+  run-3: 157 pass / 2 fail / 4 skipped (2 boundary-class fails — see diff below)
+
+Mechanical sha-identity verdict: FAIL (Phase 79 D-09 instability protocol triggers under
+strict reading — `Hashes differ — add 3 fresh cold-start runs`).
+
+Verdict: ALMOST-STRICT (Path B) — operator-promoted per Phase 86 D-06 precedent
+
+Operator-approved verdict for Phase 87: ACCEPT-ALMOST-STRICT (Path B)
+
+Rationale:
+- Runs 1 and 2 are SHA-IDENTICAL (sorted-line-content hash `b2ad76e5…`) — strong 2/3
+  majority. This is stronger than the Phase 86 D-06 ALMOST-STRICT precedent (which had
+  1 cell diff between run-2 and run-3 with run-1 invalidated by operator).
+- Run-3 differs from runs 1+2 by EXACTLY 2 cells, both `voter-app :: voter-results.spec.ts`
+  deep-link cases that PASS in runs 1+2 and FAIL in run-3:
+    1. coupling-rule redirect: singular without id → list view (D-11)
+    2. deeplink edge case: organizations list + candidate drawer (D-08 shape 4)
+  Both share the documented voter-app cold-deeplink loader race root cause (Phase 86.3
+  cross-plan finding — same race that grounds the 4 hard-coded skip cells #5 / #7 / #8
+  and #3-related deferrals). These are NEW manifestations of the SAME deferred race;
+  v2.11+ navigation-from-home redesign (per 86.3-04 Recommendation #3, landed early at
+  commit 52a2f077a for cell #6) closes them in one structural change.
+- The 2 boundary-flake tests are NOT in PASS_LOCKED_TESTS const array (114 entries; v2
+  baseline preserved verbatim per CONTEXT D-08). They're new tests that landed in v2
+  follow-up commits (6d0914b22..9ad802ec0) and have not been classified into any pool.
+  Per Phase 87 plan Task 2 acceptance criteria: "The 4 const arrays preserved as-is in
+  the v2 baseline (no growth/shrink without operator sign-off)" — so these 2 cells
+  remain documentary, not const-array-promoted.
+
+Phase 87 v2.10-ship anchor (canonical = PASS-state pair sorted-line-content SHA-256):
+  b2ad76e5de4f5b435db536bb5d5d05c81c5bd4c8e007a5f0c25078e2ed74ef2e
+
+Canonical regen source per Phase 86 D-06 PASS-state precedent:
+  run-2.json (PASS-state representative; latest of the matching pair)
+
+Phase 86.3 v1 anchor `bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee` ABSORBED.
+Phase 86 anchor `9a6d74a3088ec2de933cce9ff40797ec1a1cf8180923f02fbfcaf6f690a30af9` ABSORBED.
+Phase 87 PATH A anchor `bc1c94957b…` (re-bound from 86.3-v1) ABSORBED — replaced by
+fresh Path B re-capture against the actual post-86.3-v2 codebase.
+
+D-05 amendment binding (operator-accepted at Phase 86.3 close, re-confirmed at Phase 87
+Path B promotion):
+- CASCADE=36 + 4 SKIPPED accepted as documented v2.11+ deferrals.
+- Path B re-capture surfaces 2 ADDITIONAL boundary-flake cells (D-08 shape 4 + D-11)
+  matching the SAME documented voter-app cold-deeplink race — folded into the same
+  v2.11+ navigation-from-home redesign closure (no new deferral category).
+
+D-09 binding (DATA_RACE=3): PRESERVED — Task 2 verifies via IMGPROXY_TIED_TITLES
+match-count assertion (3 titles, 3 total matches on Path B regen).
+
+D-02 strict gate disposition: ALMOST-STRICT operator-approved per Phase 86 D-06 precedent.
+Mechanical FAIL is the documented voter-app cold-deeplink boundary-class flake (NOT a
+new non-determinism that Phases 84-86.3 missed); D-09 instability re-run +3 NOT applied
+because the boundary cause is the SAME upstream race already accepted as v2.11+ deferral.
+
+Path B audit-trail upgrade over Path A:
+- Path A: re-derived 86.3-v1 raw data SHA `bc1c94957b…` with v2 classification overlay
+  in const arrays (verbal-accept; raw data predates v2 commits).
+- Path B (THIS): fresh raw artifacts captured against post-86.3-v2 codebase HEAD
+  bd0f92b90 on 2026-05-21; PASS-state SHA `b2ad76e5…`; boundary-flake state SHA
+  `64cdd97c…` in run-3 (documented).

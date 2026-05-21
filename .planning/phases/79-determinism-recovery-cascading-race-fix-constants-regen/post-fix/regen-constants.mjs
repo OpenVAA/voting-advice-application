@@ -19,14 +19,20 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // __dirname is .planning/phases/79-…/post-fix/. Phase 87 anchor lives 2 levels up
 // then down into the Phase 87 post-fix directory.
 //
-// Phase 87: DETERM-15 v2.10 milestone-close ship anchor. Reshape: 2026-05-21.
-// Anchor SHA: bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee
-// Run-mode: verbal-accept (Path A) per .planning/phases/87-…/post-fix/run-mode-decision.txt
-// Verdict: ACCEPT-VERBAL-VERIFIED (Path A)
+// Phase 87: DETERM-15 v2.10 milestone-close ship anchor. Path B promoted: 2026-05-21.
+// Anchor SHA: b2ad76e5de4f5b435db536bb5d5d05c81c5bd4c8e007a5f0c25078e2ed74ef2e
+// Run-mode: re-capture (Path B; promoted from Path A verbal-accept at operator request)
+// Verdict: ACCEPT-ALMOST-STRICT (Path B) — Phase 86 D-06 precedent extension
 //
-// Per CONTEXT.md D-02: strict SHA-identity gate (Path B) OR operator-accepted
-// verbal-verification (Path A — 2026-05-21 verified at commit 9ad802ec0:
-// chore(86.3): mark v2 baseline — 0 fails + 4 hard-coded skips, 3 runs verified).
+// Per CONTEXT.md D-02: strict SHA-identity gate. Mechanical 3-run hash verdict was FAIL
+// because run-3 differed from runs 1+2 by 2 boundary-class cells (`voter-app ::
+// voter-results.spec.ts` D-08 shape 4 + D-11 — same documented voter-app cold-deeplink
+// loader race already accepted as v2.11+ deferral for cells #3 / #5 / #7 / #8).
+// Runs 1 and 2 were SHA-IDENTICAL (sorted-line-content `b2ad76e5…`) — operator-promoted
+// to canonical PASS-state anchor per Phase 86 D-06 precedent.
+//
+// Canonical regen source: run-2.json (PASS-state representative; runs 1+2 share the
+// content SHA `b2ad76e5…`; run-3 is the boundary-flake instance preserved for audit).
 //
 // D-05 amendment (operator-accepted at Phase 86.3 close per 86.3-SUMMARY.md
 // D-06 RE-PLAN recommendation): CASCADE=36 + 4 SKIPPED (cells #3 / #5 / #7 / #8)
@@ -35,12 +41,16 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 //   - Cells #5 / #7 / #8: SKIP-FALLBACK — shared voter-app cold-deeplink loader
 //     race; v2.11+ navigation-from-home redesign is the closure target (same
 //     approach that closed cell #6 in commit 52a2f077a).
+//   - Path B run-3 boundary-flake: same race manifests on D-08 shape 4 + D-11
+//     (new tests landed in v2 follow-up commits; documentary only — NOT promoted
+//     to const arrays per CONTEXT D-08).
 //
 // PRIOR ANCHORS ABSORBED:
 //   Phase 86 anchor   9a6d74a3088ec2de933cce9ff40797ec1a1cf8180923f02fbfcaf6f690a30af9
 //   Phase 86.3-v1     bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee
+//   Phase 87 Path A   bc1c94957b… (re-bound from 86.3-v1 via verbal-accept; superseded by Path B)
 // See .planning/phases/87-…/post-fix/sha256.txt for the full audit + verdict rationale.
-const reportPath = join(__dirname, '..', '..', '87-v2-10-all-green-milestone-close-anchor-capture-a-fresh-3-run', 'post-fix', 'run-3.json');
+const reportPath = join(__dirname, '..', '..', '87-v2-10-all-green-milestone-close-anchor-capture-a-fresh-3-run', 'post-fix', 'run-2.json');
 // Strip optional dotenv banner line (Phase 73 captures via `yarn playwright …` write a
 // `[dotenv@…] injecting env …` line ahead of the JSON; the P64 captures did not). Split
 // on first '{' rather than first newline so the strip is robust to multi-line banners.

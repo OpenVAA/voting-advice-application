@@ -6,11 +6,14 @@ verdict: PASSED-WITH-DEFERRAL
 completed: 2026-05-21
 duration_min: 30
 requirements: [DETERM-15]
-anchor_sha: "bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee"
+anchor_sha: "b2ad76e5de4f5b435db536bb5d5d05c81c5bd4c8e007a5f0c25078e2ed74ef2e"
 absorbs_anchors:
   - "9a6d74a3088ec2de933cce9ff40797ec1a1cf8180923f02fbfcaf6f690a30af9"  # Phase 86
-  - "bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee"  # Phase 86.3-v1
-run_mode: verbal-accept
+  - "bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee"  # Phase 86.3-v1 (also Phase 87 Path A — same raw SHA re-bound)
+run_mode: re-capture  # Path B promoted 2026-05-21 at operator request after initial Path A close
+run_mode_history:
+  - { date: "2026-05-21", mode: "verbal-accept", anchor: "bc1c94957b…", verdict: "ACCEPT-VERBAL-VERIFIED (Path A)" }
+  - { date: "2026-05-21", mode: "re-capture",    anchor: "b2ad76e5…",    verdict: "ACCEPT-ALMOST-STRICT (Path B; Phase 86 D-06 precedent extension) — promoted" }
 subsystem: e2e-testing
 tags:
   - determinism
@@ -75,9 +78,17 @@ metrics:
 
 ## 1. Outcome
 
-Phase 87 closes DETERM-15 against the operator-amended D-05 baseline. The v2.10 milestone-close ship anchor is **`bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee`** (sorted-line-content SHA-256 of the canonical run-3.json), pinned via **Path A — verbal-accept** per [post-fix/run-mode-decision.txt](post-fix/run-mode-decision.txt). The operator's 2026-05-21 verbal verification at commit **9ad802ec0** (chore(86.3): mark v2 baseline — 0 fails + 4 hard-coded skips, 3 runs verified) is the approved audit basis; the SHA is re-derived from a copy of the 86.3-v1 raw run-3.json since the binding pool contract (PASS_LOCKED=114 / DATA_RACE=3 / CASCADE=36 / SKIPPED=4 = 157 tracked) lives in [tests/scripts/diff-playwright-reports.ts](../../../tests/scripts/diff-playwright-reports.ts) const arrays and was preserved verbatim from the v2 baseline. **Phase 87 verdict: PASSED-WITH-DEFERRAL** (operator-accepted tech_debt — CASCADE=36 + 4 SKIPPED are documented v2.11+ deferrals per 86.3-SUMMARY.md D-06 RE-PLAN recommendation).
+Phase 87 closes DETERM-15 against the operator-amended D-05 baseline. The v2.10 milestone-close ship anchor is **`b2ad76e5de4f5b435db536bb5d5d05c81c5bd4c8e007a5f0c25078e2ed74ef2e`** (sorted-line-content SHA-256 of the PASS-state pair run-1 == run-2), pinned via **Path B — re-capture** per [post-fix/sha256.txt](post-fix/sha256.txt). The phase initially closed via Path A (verbal-accept; re-derived 86.3-v1 SHA `bc1c94957b…`) and was promoted to Path B at operator request 2026-05-21 after a fresh 3-run cold-start gate executed cleanly against post-86.3-v2 codebase HEAD `bd0f92b90`.
 
-CONTEXT D-02 (strict SHA-identity) is **AMENDED** for v2.10 ship via operator-approved Path A. D-05 is **AMENDED** at Phase 86.3 close and carried forward. D-07 (shippable status) is **SATISFIED** — operator-accepted tech_debt verdict expected from /gsd-audit-milestone v2.10 (Task 4).
+**Path B 3-run gate result** (Phase 86 D-06 ALMOST-STRICT precedent extension):
+- Runs 1 + 2: SHA-IDENTICAL sorted-line content `b2ad76e5…` (159 pass / 0 fail / 4 skipped each)
+- Run-3: 157 pass / 2 fail / 4 skipped — differs from runs 1+2 by exactly 2 cells (`voter-app :: voter-results.spec.ts > D-08 shape 4` + `> D-11`), both new manifestations of the documented voter-app cold-deeplink loader race (same root cause as v2.11+-deferred cells #5 / #7 / #8)
+- Operator-promoted PASS-state pair as canonical (Phase 86 D-06 PASS-state precedent)
+- Boundary-flake state (run-3) preserved as audit evidence
+
+**Path A captures preserved** at [post-fix/path-a/](post-fix/path-a/) for audit-trail continuity. The binding pool contract (PASS_LOCKED=114 / DATA_RACE=3 / CASCADE=36 / SKIPPED=4 = 157 tracked) lives in [tests/scripts/diff-playwright-reports.ts](../../../tests/scripts/diff-playwright-reports.ts) const arrays and was preserved verbatim from the v2 baseline through both Path A and Path B. **Phase 87 verdict: PASSED-WITH-DEFERRAL** (operator-accepted tech_debt — CASCADE=36 + 4 SKIPPED are documented v2.11+ deferrals per 86.3-SUMMARY.md D-06 RE-PLAN recommendation; Path B run-3 boundary-flake D-08+D-11 folded into the same v2.11+ navigation-from-home redesign).
+
+CONTEXT D-02 (strict SHA-identity) is **AMENDED** for v2.10 ship via operator-approved ALMOST-STRICT verdict per Phase 86 D-06 precedent. D-05 is **AMENDED** at Phase 86.3 close and carried forward. D-07 (shippable status) is **SATISFIED** — operator-accepted tech_debt verdict from /gsd-audit-milestone v2.10 (Task 4).
 
 ## 2. Anchor SHA Evolution
 
@@ -92,9 +103,10 @@ CONTEXT D-02 (strict SHA-identity) is **AMENDED** for v2.10 ship via operator-ap
 | Phase 86.1 / 86.2 | (intermediate; no formal anchor) | — | superseded |
 | Phase 86.3-v1 | bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee | 116/3/37/4 = 160 tracked | **ABSORBED** |
 | Phase 86.3-v2 | (intermediate; no committed SHA — operator verbal at 9ad802ec0) | 114/3/36/4 = 157 tracked | superseded by Phase 87 |
-| **Phase 87** | **bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee** | **114/3/36/4 = 157 tracked** | **v2.10 SHIP ANCHOR** |
+| Phase 87 Path A (initial close) | bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee (re-bound from 86.3-v1) | 114/3/36/4 = 157 tracked | superseded by Path B |
+| **Phase 87 Path B** | **b2ad76e5de4f5b435db536bb5d5d05c81c5bd4c8e007a5f0c25078e2ed74ef2e** | **114/3/36/4 = 157 tracked (const binding); raw partition 156/3/4 = 163 entries** | **v2.10 SHIP ANCHOR** |
 
-Phase 87 re-binds the same raw run-3.json SHA as 86.3-v1 (since Path A re-uses 86.3-v1's raw capture) to the v2.10 ship narrative — the v2-baseline classification overlay (cells #1/#2/#6 PASS_LOCKED promotions, cell #3 → SKIPPED, VOTE-05 removal) is encoded in the const arrays of [diff-playwright-reports.ts](../../../tests/scripts/diff-playwright-reports.ts), not in the raw JSON.
+Phase 87 Path B is the v2.10 ship anchor (promoted 2026-05-21 at operator request). Fresh 3-run cold-start gate against post-86.3-v2 codebase HEAD `bd0f92b90`: runs 1+2 SHA-identical at `b2ad76e5…`, run-3 differs by 2 boundary-class cells (D-08 shape 4 + D-11 — documented voter-app cold-deeplink race). Operator-promoted PASS-state pair per Phase 86 D-06 precedent extension. Path A captures preserved at `post-fix/path-a/` for audit-trail continuity; the binding pool contract (const arrays 114/3/36/4) is preserved verbatim from v2 baseline through both paths.
 
 ## 3. Per-Task Verdict
 

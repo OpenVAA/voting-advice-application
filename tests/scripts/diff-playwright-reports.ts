@@ -41,19 +41,28 @@ import { parseArgs } from 'node:util';
 
 
 // -----------------------------------------------------------------------------
-// PHASE 87 v2.10 SHIP ANCHOR (2026-05-21, v2.10 All-Green Milestone-Close).
-// Source: post-fix/run-3.json (Path A: copy of 86.3-v1 run-3.json; the v2
-// classification deltas for cells #3 + #6 are encoded in the const arrays
-// below as the binding contract, not in the raw run-3.json data).
-// Run-mode: verbal-accept (per .planning/phases/87-…/post-fix/run-mode-decision.txt).
-// Verdict: ACCEPT-VERBAL-VERIFIED (Path A) — operator's 2026-05-21 verbal
-// verification at commit 9ad802ec0 (chore(86.3): mark v2 baseline — 0 fails
-// + 4 hard-coded skips, 3 runs verified) is the approved audit basis.
+// PHASE 87 v2.10 SHIP ANCHOR (2026-05-21, v2.10 All-Green Milestone-Close;
+// Path B promoted 2026-05-21 at operator request after the initial Path A
+// verbal-accept close — fresh raw artifacts now backstop the anchor).
 //
-// Anchor SHA (sorted-line-content SHA-256 of run-3.json):
-//   bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee
-// (re-derives 86.3-v1; Phase 87 re-binds the same raw SHA to the v2.10 ship
-// narrative — see .planning/phases/87-…/post-fix/sha256.txt for full audit.)
+// Run-mode: re-capture (Path B). Fresh 3-run cold-start gate against post-86.3-v2
+// codebase HEAD bd0f92b90, executed 2026-05-21 (~30 min wall-time per run on this
+// hardware; runs 1+2 sha-identical, run-3 differs by 2 boundary-class cells).
+//
+// Verdict: ACCEPT-ALMOST-STRICT (Path B) — Phase 86 D-06 precedent extension.
+// Runs 1+2 are SHA-IDENTICAL (sorted-line content `b2ad76e5…`); run-3 differs by
+// exactly 2 `voter-results.spec.ts` deep-link cells (D-08 shape 4 + D-11) that
+// PASS in runs 1+2 and FAIL in run-3 — same documented voter-app cold-deeplink
+// loader race as v2.11+-deferred cells #5 / #7 / #8.
+//
+// Anchor SHA (canonical = sorted-line content of PASS-state pair run-1 == run-2):
+//   b2ad76e5de4f5b435db536bb5d5d05c81c5bd4c8e007a5f0c25078e2ed74ef2e
+// Canonical regen source: post-fix/run-2.json (PASS-state representative per
+// Phase 86 D-06 precedent; regen-constants.mjs reportPath points here).
+//
+// See .planning/phases/87-…/post-fix/sha256.txt for full audit + verdict rationale,
+// and .planning/phases/87-…/post-fix/path-a/ for the prior Path A captures
+// (preserved for audit-trail continuity; superseded by Path B).
 //
 // PHASE 87 STORY — v2.10 All-Green Milestone-Close against operator-amended D-05.
 //
@@ -117,11 +126,16 @@ import { parseArgs } from 'node:util';
 //      helper fix LEFT IN PLACE; same upstream race as #7)
 //
 // PRIOR ANCHORS ABSORBED:
-//   Phase 86       9a6d74a3088ec2de933cce9ff40797ec1a1cf8180923f02fbfcaf6f690a30af9
-//   Phase 86.3-v1  bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee  (116/3/37/4 = 160 tracked)
-//   Phase 86.3-v2  (intermediate; no committed SHA — operator verbal verification only at 9ad802ec0)
+//   Phase 86         9a6d74a3088ec2de933cce9ff40797ec1a1cf8180923f02fbfcaf6f690a30af9
+//   Phase 86.3-v1    bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee  (116/3/37/4 = 160 tracked)
+//   Phase 86.3-v2    (intermediate; no committed SHA — operator verbal verification only at 9ad802ec0)
+//   Phase 87 Path A  bc1c94957b… (re-bound from 86.3-v1 via verbal-accept; superseded by Path B at operator request 2026-05-21)
 //
-// Phase 87 anchor: 114 PASS_LOCKED + 3 DATA_RACE + 36 CASCADE + 4 SKIPPED = 157 tracked.
+// Phase 87 anchor (Path B canonical): 114 PASS_LOCKED + 3 DATA_RACE + 36 CASCADE + 4 SKIPPED = 157 tracked
+// (const arrays preserved verbatim from v2 baseline per CONTEXT D-08; Path B raw partition shows
+// 156 PASS_LOCKED + 3 DATA_RACE + 4 CASCADE = 163 entries — the +6 vs the const-array contract are
+// new tests landed in v2 follow-up commits + the 2 boundary-flake voter-results.spec.ts cells from
+// run-3, documentary only, NOT promoted to CASCADE_TESTS per CONTEXT D-08).
 //
 // See .planning/phases/87-…/post-fix/sha256.txt for the full audit + verdict rationale.
 // See .planning/phases/87-…/post-fix/pre-gate-cascade-check.txt for the D-05 amendment lineage.
