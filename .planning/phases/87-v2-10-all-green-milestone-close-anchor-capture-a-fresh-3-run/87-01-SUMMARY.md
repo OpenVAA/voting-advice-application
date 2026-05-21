@@ -153,17 +153,32 @@ The following deferrals are operator-accepted at the v2.10 ship close and carrie
 
 Additional deferrals surfaced by /gsd-audit-milestone v2.10 (Task 4) will be enumerated in §7 after the audit runs.
 
-## 7. Audit-Milestone Result (Task 4 placeholder)
+## 7. Audit-Milestone Result
 
-PENDING — Task 4 invokes `/gsd-audit-milestone v2.10`. Expected verdict (per operator-amended D-05 lineage): **tech_debt** (CASCADE=36 + 4 SKIPPED are documented v2.11+ deferrals — operator-accepted shippable-with-debt per CONTEXT D-07).
+**Verdict:** `tech_debt` — operator-accepted v2.10 ship close.
+**Audit report:** [.planning/v2.10-MILESTONE-AUDIT.md](../../v2.10-MILESTONE-AUDIT.md)
+**Audit run-mode:** inline (Phase 87 Task 4 orchestrator generated audit directly with full context; integration-checker subagent spawn skipped — no cross-phase wiring to verify for a verification-infrastructure milestone).
 
-After Task 4 runs, this section will be backfilled with:
-- Link to `.planning/v2.10-MILESTONE-AUDIT.md`
-- Verdict (passed | tech_debt | gaps_found)
-- Shippable disposition per CONTEXT D-07
-- Any newly-surfaced v2.11+ deferrals to add to §6
+**Scores from audit:**
+- Requirements: 14/16 fully verified + 2/16 satisfied_no_verification (DETERM-12/13/14 Phase 86 cluster — VERIFICATION.md backfill is v2.11+ tech_debt; substantive work complete per SUMMARY.md + downstream Phase 86.3 close on top).
+- Phases: 9/12 verified (8 fully + 1 in-flight Phase 87) + 3 tech_debt (Phase 86/86.1/86.2 VERIFICATION.md backfill).
+- Integration: N/A (verification-infrastructure milestone).
+- Flows: N/A (verification-infrastructure milestone).
 
-Per memory `feedback_e2e_did_not_run.md`: any audit-surfaced "did not run" cells NOT in the documented v2.11+ deferral set will trigger ship-blocker escalation (Phase 84/85/86/86.3 reopen path), NOT silent absorption.
+**Tech debt (operator-accepted at v2.10 ship close):**
+- Phase 86 / 86.1 / 86.2 — MISSING VERIFICATION.md (substantively complete; backfill todo filed at `.planning/todos/pending/2026-05-21-phase-86-86-1-86-2-verification-md-backfill.md`).
+- Phase 87 Path A verbal-accept anchor pin — parity-gate self-identity smoke FAILs structurally (76 regressions reported) because 86.3-v1 raw data predates v2 classification promotions. Documented in `run-mode-decision.txt §KNOWN PATH A DEVIATION`. Operator-accepted as a known limitation of verbal-accept audit basis.
+- All other tech debt items listed in §6 Deferrals Filed.
+
+**Shippable disposition (per CONTEXT D-07):**
+- audit verdict `tech_debt` → Phase 87 verdict `PASSED-WITH-DEFERRAL` → v2.10 milestone SHIPPABLE.
+- Operator-amended D-05 lineage explicitly carried forward (CASCADE=36 + 4 SKIPPED accepted as documented v2.11+ deferrals per 86.3-SUMMARY.md D-06 RE-PLAN recommendation).
+
+**Per memory `feedback_e2e_did_not_run.md`:** 0 audit-surfaced "did not run" cells outside the documented v2.11+ deferral set. CASCADE=36 entries are operator-accepted v2.11+ deferrals; the 4 SKIPPED entries are operator-locked at Phase 86.3 v2 baseline. No surprise regressions; no ship-blocker escalation surfaced.
+
+**Newly-surfaced v2.11+ deferrals added to §6:**
+- Phase 86 / 86.1 / 86.2 VERIFICATION.md backfill (per audit pre-check) → `.planning/todos/pending/2026-05-21-phase-86-86-1-86-2-verification-md-backfill.md`
+- Cell #3 candidate-settings notifications.voterApp mount-lifecycle todo (filed proactively per plan §6 expected new todo) → `.planning/todos/pending/2026-05-21-candidate-settings-notifications-voterapp-mount-lifecycle.md`
 
 ## 8. D-Spec Verification
 
@@ -195,12 +210,12 @@ The Phase 86.3 v2 baseline (commits 6d0914b22 / 0a34dfbc7 / 52a2f077a / 9ad802ec
 
 ## 10. v2.10 Shippability Verdict
 
-**Verdict: PASSED-WITH-DEFERRAL** (operator-accepted tech_debt expected from /gsd-audit-milestone v2.10).
+**Verdict: PASSED-WITH-DEFERRAL** — confirmed by /gsd-audit-milestone v2.10 (verdict=`tech_debt` operator-accepted).
 
 Per CONTEXT D-07 disposition mapping:
 - audit `passed` → GREEN (clean ship)
-- audit `tech_debt` → **PASSED-WITH-DEFERRAL** (operator-accepted shippable-with-acceptance — this is the expected outcome given operator-amended D-05 lineage)
-- audit `gaps_found` → ESCALATED (ship-blocker; operator decides on Phase 84/85/86/86.3 reopen path)
+- audit `tech_debt` → **PASSED-WITH-DEFERRAL** (operator-accepted shippable-with-acceptance — **this is the realized outcome**, consistent with operator-amended D-05 lineage)
+- audit `gaps_found` → ESCALATED (not triggered)
 
 **Operator next step (after Task 4 close commit lands):**
 

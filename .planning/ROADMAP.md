@@ -79,7 +79,7 @@ Audit: `.planning/milestones/v2.9-MILESTONE-AUDIT.md` (status: tech_debt — 24/
 
 </details>
 
-### 🆕 v2.10 Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS (framed 2026-05-12; Phase 83 added 2026-05-13 post-Phase-79-close; Phases 84-87 added 2026-05-13 post-Phase-83-close as the All-Green Suite extension)
+### 🆕 v2.10 Test Reliability + A11y Compliance + All-Green Suite — SHIPPABLE (closed 2026-05-21 — Phase 87 PASSED-WITH-DEFERRAL; v2.10 ship anchor `bc1c94957b…`; audit-milestone verdict tech_debt operator-accepted; operator next step: `/gsd-complete-milestone v2.10`)
 
 **Milestone Goal (extended 2026-05-13):** Restore Playwright suite parity-regen capability, reach WCAG 2.1 AA on the 2 axe-baselined routes, AND reach an All-Green deterministic e2e suite with no DATA_RACE flakes, no CASCADE skips, no FAILURE-CLASS deterministic failures. 8-item scope: (1) HIGH candidate-profile cascading race fix + parity-script constants regen; (2) MEDIUM A11Y axe cite-and-fix; (3) MEDIUM A11Y-01 PRODUCT-GAP cells (email-format / url-format / required-empty); (4) MEDIUM image-upload cascade + (5) MEDIUM voter-app flakes; (6) Imgproxy structural decoupling (DATA_RACE 15 → 3); (7) Variant-project cascade RCA + fix (CASCADE 47 → 0); (8) Voter-app FAILURE-CLASS cleanup (~10 → 0). Final v2.10-ship anchor captured in Phase 87.
 
@@ -124,7 +124,7 @@ Phase 79 (DETERM-04 + DETERM-05) ✓ COMPLETE
 - [x] **Phase 84: Imgproxy Decoupling** — Decouple non-image tests from the imgproxy infrastructure flake. Gate portrait rendering behind a test-fixture flag (or below-fold lazy-load) so `re-auth.setup.ts` + 11 `candidate-app-settings` pages stop awaiting imgproxy on initial paint. Parallel lever: tune `apps/supabase/supabase/config.toml [storage.image_transformation]` (worker count, timeout, connection pool). Closes the structural DATA_RACE pool from 15 → 3 (only CAND-03 image-upload + CAND-12 readback + CAND-03 readback remain). Unlock condition for Phase 85 + Phase 86. (completed 2026-05-14)
 - [x] **Phase 85: Variant-Project Cascade RCA & Fix** — Investigate + close the 47 CASCADE entries across 9 `data-setup-*` projects + 9 paired `variant-*` spec projects. Phase entrypoint is a single RCA plan to identify the shared root cause (likely yarn-arg-forwarding LANDMINE-9-style or setup-overlay-ordering); follow-up plans implement targeted fixes. Closes CASCADE pool from 47 → 0 (or near 0). Parallel-eligible with Phase 86 after Phase 84 lands. (completed 2026-05-14)
 - [x] **Phase 86: Voter-App FAILURE-CLASS Cleanup** — Investigate + resolve the ~10 deterministic voter-app failures currently in the FAILURE-CLASS narrative block. Likely 3 plans grouped by surface: (1) popups + hydration cluster, (2) filter + feedback cluster, (3) visibility + edge-case cluster. Closes FAILURE-CLASS pool ~10 → 0. Parallel-eligible with Phase 85 after Phase 84 lands. (completed 2026-05-14)
-- [ ] **Phase 87: v2.10 All-Green Milestone-Close Anchor** — Capture a fresh 3-run cold-start gate after Phases 84-86 land; confirm all-green deterministic state (target: ~150-160 PASS_LOCKED + 0 DATA_RACE + 0 CASCADE + 0 FAILURE-CLASS); produce the final v2.10-ship anchor via `regen-constants.mjs`; run `/gsd-audit-milestone` for shippability sign-off.
+- [x] **Phase 87: v2.10 All-Green Milestone-Close Anchor** — Path A verbal-accept v2.10 ship-close anchor pin (operator's 2026-05-21 verbal verification at commit 9ad802ec0 as audit basis); operator-amended D-05 carried forward from 86.3 D-06 RE-PLAN recommendation. Final anchor: `bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee` (114 PASS_LOCKED + 3 DATA_RACE + 36 CASCADE + 4 SKIPPED = 157 tracked; honest post-86.3-v2 count below the original ROADMAP target ~150-160). /gsd-audit-milestone v2.10 verdict: tech_debt operator-accepted. v2.10 SHIPPABLE — operator next step: `/gsd-complete-milestone v2.10`. (completed 2026-05-21, PASSED-WITH-DEFERRAL)
 
 ## Phase Details
 
@@ -340,4 +340,4 @@ Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82, 83 (pa
 | 86.1. Pre-Phase-87 Convergence Sweep | v2.10 | 0/4 | Planned | - |
 | 86.2. E2E Suite Refactor Pass | v2.10 | 3/3 | Complete    | 2026-05-20 |
 | 86.3. Implement Skipped Tests (8 cells) | v2.10 | 5/5 | Complete    | 2026-05-20 |
-| 87. v2.10 All-Green Milestone-Close Anchor | v2.10 | 0/1 | Planned | - |
+| 87. v2.10 All-Green Milestone-Close Anchor | v2.10 | 1/1 | Complete (passed-with-deferral) | 2026-05-21 |
