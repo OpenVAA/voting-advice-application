@@ -11,8 +11,14 @@
 
   let { children } = $props();
 
+  // Spike 001
   initAppSettingsRuneContext();
+  // Spike 002
   initDataRootRuneContext();
+  // Spikes 003 + 004 + 005 don't require a context (their stores are
+  // constructed at consumer scope in +page.svelte). They use the rune-native
+  // localStorage helper directly, which is the whole point — eliminating the
+  // store/context indirection where it isn't structurally needed.
 </script>
 
 {@render children()}
