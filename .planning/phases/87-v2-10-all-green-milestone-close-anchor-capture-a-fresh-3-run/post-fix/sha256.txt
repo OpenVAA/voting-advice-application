@@ -1,59 +1,11 @@
-Phase 87 Plan 01 Task 1b — Path A (verbal-accept) anchor pin
-=============================================================
+Phase 79 Plan 03 Task 5 — 3-run SHA-256 identity check (D-08).
 
 Format: sha256(sorted("<projectName> :: <specFile> > <specTitle>|<status>")).
-Status normalisation: regen-constants.mjs / sha-identity.mjs categorizeStatus → {pass, cascade, fail}.
+Status normalisation: regen-constants.mjs categorizeStatus → {pass, cascade, fail}.
 
-Raw file SHAs (full JSON — copied verbatim from Phase 86.3-v1 captures, then re-shasum'd
-locally; original 86.3-v1 .sha256 for run-1 was stale at inheritance, run-3 was accurate):
-  run-1.json: 6ca0e949b44c2c5da73f6a38ef96491820432316f185cb4401a08f896c541a73
-  run-2.json: 499e5ffc2c2ccb349887c13c2561f9b2cff742c94fcba82e270190448c97740a
-  run-3.json: 682e82ded6024c006d43f36ef432101d43a7c673f9bdc7126b092f67f60b1e34
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/.planning/phases/87-v2-10-all-green-milestone-close-anchor-capture-a-fresh-3-run/post-fix/run-1.json: fe6f021b3cb297bdfefa1a15c192667e1b6e0dfbc3347b2d1bf6a9b201766dd5  (165 entries)
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/.planning/phases/87-v2-10-all-green-milestone-close-anchor-capture-a-fresh-3-run/post-fix/run-2.json: 9edfdd3b65a7e6ef63898bb5308a8a9d5e7cd34bbd505ee1fdc8ea9f8e4d896a  (165 entries)
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/.planning/phases/87-v2-10-all-green-milestone-close-anchor-capture-a-fresh-3-run/post-fix/run-3.json: bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee  (165 entries)
 
-Sorted-line-content SHAs (sha-identity.mjs partition hash, 165 entries each):
-  run-1.json content: fe6f021b3cb297bdfefa1a15c192667e1b6e0dfbc3347b2d1bf6a9b201766dd5
-  run-2.json content: 9edfdd3b65a7e6ef63898bb5308a8a9d5e7cd34bbd505ee1fdc8ea9f8e4d896a
-  run-3.json content: bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee
-
-Mechanical sha-identity verdict: FAIL (86.3-v1 ALMOST-STRICT — 8 cells diverge
-between runs 2 and 3; all share ONE documented boundary-class cascade ancestor per
-86.3 D-06; expected on Path A since the raw data is the 86.3-v1 capture verbatim).
-
-Verdict: ACCEPT-VERBAL-VERIFIED (Path A)
-Operator-approved verdict for Phase 87: ACCEPT-VERBAL-VERIFIED (Path A)
-
-Rationale:
-- 2026-05-21 operator verbal verification: 3 test suite runs against the post-86.3-v2
-  codebase produced 0 fails + 4 hard-coded skips. Recorded in commit 9ad802ec0
-  (chore(86.3): mark v2 baseline — 0 fails + 4 hard-coded skips, 3 runs verified).
-- The v2 follow-up commits (6d0914b22 untrack fix / 0a34dfbc7 cell-3 revert /
-  52a2f077a cell-6 fixture rewrite / 9ad802ec0 baseline mark) post-date the
-  run-1/2/3.json captures by ~24h. The classification deltas (cell #3 → SKIPPED;
-  cell #6 → PASSING) are encoded in tests/scripts/diff-playwright-reports.ts const
-  arrays as the binding contract — those arrays are preserved verbatim from the
-  v2 baseline in Task 2.
-- The 86.3-v1 ALMOST-STRICT 8-cell diff is the documented Phase-83-DETERM-07b +
-  DETERM-06 imgproxy boundary-class flake. The v2 operator manual 3-run gate on
-  2026-05-21 confirms the v2 baseline behavior is stable; the 86.3-v1 raw captures
-  are sufficient as documentary input for the Phase 87 anchor SHA pin.
-
-Phase 87 v2.10-ship anchor (sorted-line-content SHA-256 of run-3.json):
-  bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee
-
-This is the same raw SHA as the 86.3-v1 anchor — re-derived because the underlying
-raw run-3.json is the same. Phase 87 documents this SHA as the v2.10 ship anchor
-with the v2 classification narrative on top: PASS_LOCKED=114 + DATA_RACE=3 +
-CASCADE=36 + SKIPPED=4 = 157 tracked (per tests/scripts/diff-playwright-reports.ts
-post-86.3-v2 baseline; commit 9ad802ec0).
-
-Phase 86.3 v1 anchor `bc1c94957b…` ABSORBED — Phase 87 re-binds the same raw SHA
-to the v2.10 ship narrative.
-Phase 86 anchor `9a6d74a3088ec2de933cce9ff40797ec1a1cf8180923f02fbfcaf6f690a30af9` ABSORBED.
-
-D-05 amendment (operator-accepted at 86.3 close, re-cited at Phase 87 close):
-- CASCADE=36 + 4 SKIPPED accepted as documented v2.11+ deferrals.
-- Original D-05 strict letter (CASCADE ≤5) explicitly amended; rationale in
-  pre-gate-cascade-check.txt + 86.3-SUMMARY.md D-06.
-
-D-09 binding (DATA_RACE=3): PRESERVED — Task 2 verifies via IMGPROXY_TIED_TITLES
-match-count assertion (3 titles, 3 total matches).
+Verdict: FAIL
+Hashes differ — D-09 instability protocol triggers (add 3 fresh cold-start runs).

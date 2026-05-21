@@ -284,7 +284,7 @@ Plans:
 - [ ] 86.1-01-PLAN.md — Extend `applyLikertOnlyFilter` coverage via fixture-helper bump (sub-option b2): raise `voter.fixture.ts` post-Likert Skip-Next budget from 3 → 6 iterations so the answeredVoterPage fixture walks past all 3 non-Likert opinion-question types (singleChoiceCategorical / boolean / number). Closes 85-04 cluster #2 (8 FAIL + 5 CASCADE) + likely cluster #1 (variant-constituency:226 + 22 cascades). DETERM-12/13/14.
 - [ ] 86.1-02-PLAN.md — `voter-feedback-persistence:43` second-pass RCA: apply H4 close-transition mitigation (replace dialog-wrapper `toHaveCount(0)` with direct `feedback-form` testId absence assertion per RESEARCH §5.4); 1h investigation cap; skip-fallback with 3-element protocol + v2.11+ todo if budget exceeded. DETERM-13.
 - [ ] 86.1-03-PLAN.md — Per-cell Phase-86 deferral reconciliation (3 cells, 1h budget each per CONTEXT D-04): Cell 1 voter-popup-hydration:122 LAYOUT-03 → SKIPPED (PASS-WITH-DEFERRAL inheritance per CONTEXT D-05); Cell 2 voter-not-located-redirect:75 CLEAN-02 → storage-isolation fix-attempt then SKIP-FALLBACK; Cell 3 candidate-profile-validation:178 A11Y-01 image-type → networkidle settle fix-attempt then chain-head-only SKIP-FALLBACK (preserve 5 PASS_LOCKED siblings per RESEARCH §6.3 landmine). DETERM-12 + DETERM-14.
-- [ ] 86.1-04-PLAN.md — Post-86.1 3-run cold-start identity gate + Phase 87 handoff: fork sha-identity.mjs from Phase 86; run 3-run gate (~216 min unattended); update `regen-constants.mjs` reportPath to Phase 86.1 run-3.json; emit regen-output.txt; update `tests/scripts/diff-playwright-reports.ts` PHASE 86.1 ANCHOR jsdoc + 4 const arrays with manual SKIPPED_TESTS filter (RESEARCH §7 LANDMINE); SUMMARY + STATE + ROADMAP atomic close. Phase 87 Task 0 pre-gate (CASCADE ≤ 5) satisfied. DETERM-12/13/14.
+- [x] 86.1-04-PLAN.md — Post-86.1 3-run cold-start identity gate + Phase 87 handoff: fork sha-identity.mjs from Phase 86; run 3-run gate (~216 min unattended); update `regen-constants.mjs` reportPath to Phase 86.1 run-3.json; emit regen-output.txt; update `tests/scripts/diff-playwright-reports.ts` PHASE 86.1 ANCHOR jsdoc + 4 const arrays with manual SKIPPED_TESTS filter (RESEARCH §7 LANDMINE); SUMMARY + STATE + ROADMAP atomic close. Phase 87 Task 0 pre-gate (CASCADE ≤ 5) satisfied. DETERM-12/13/14. (completed 2026-05-21)
 
 ### Phase 87: v2.10 All-Green Milestone-Close Anchor
 **Goal**: Capture the final v2.10-ship anchor after Phases 84-86 land. Run a fresh 3-run cold-start gate; confirm all-green deterministic state (target: ~150-160 PASS_LOCKED + ≤3 DATA_RACE + 0 CASCADE + 0 FAILURE-CLASS); produce the binding v2.10-ship anchor via `regen-constants.mjs`; run `/gsd-audit-milestone` for shippability sign-off. The v2.10 milestone is shippable post-Phase-87.
@@ -296,7 +296,7 @@ Plans:
   3. Phase 87 SUMMARY documents the all-green achievement + lists any explicit v2.11+ deferrals.
   4. `/gsd-audit-milestone v2.10` runs cleanly; status = shippable.
 **Plans**: 1 plan
-- [ ] 87-01-PLAN.md — DETERM-15 final v2.10-ship anchor: fresh 3-run cold-start identity gate (strict, no D-09 fallback) + atomic constants regen (regen-constants.mjs reportPath + diff-playwright-reports.ts jsdoc + 4 const arrays) + comprehensive SUMMARY + /gsd-audit-milestone v2.10 invocation + atomic close commit
+- [x] 87-01-PLAN.md — DETERM-15 final v2.10-ship anchor: fresh 3-run cold-start identity gate (strict, no D-09 fallback) + atomic constants regen (regen-constants.mjs reportPath + diff-playwright-reports.ts jsdoc + 4 const arrays) + comprehensive SUMMARY + /gsd-audit-milestone v2.10 invocation + atomic close commit
 **UI hint**: no
 
 ## Progress
@@ -340,4 +340,4 @@ Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82, 83 (pa
 | 86.1. Pre-Phase-87 Convergence Sweep | v2.10 | 0/4 | Planned | - |
 | 86.2. E2E Suite Refactor Pass | v2.10 | 3/3 | Complete    | 2026-05-20 |
 | 86.3. Implement Skipped Tests (8 cells) | v2.10 | 5/5 | Complete    | 2026-05-20 |
-| 87. v2.10 All-Green Milestone-Close Anchor | v2.10 | 1/1 | Complete (passed-with-deferral) | 2026-05-21 |
+| 87. v2.10 All-Green Milestone-Close Anchor | v2.10 | 1/1 | Complete    | 2026-05-21 |
