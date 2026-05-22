@@ -285,11 +285,12 @@
 
 <div class="p-8 max-w-4xl mx-auto space-y-8 font-mono text-sm">
   <header>
-    <h1 class="text-2xl font-bold">Spike 001 + 002 — Native Svelte 5 Runes</h1>
+    <h1 class="text-2xl font-bold">Native Svelte 5 Runes — Spikes 001-005</h1>
     <p class="text-gray-600">
       Tests rune-only replacements for the `toStore` / `writable(dataRoot)` /
       `get(dataRoot)` patterns. Zero `svelte/store` imports on this page.
     </p>
+    <p class="text-sm"><a href="/runes-test/layout-overlay" class="text-blue-600 underline">→ Spike 006: layout overlay rune (separate sub-route)</a></p>
   </header>
 
   <!-- ─────────────────────────────────────────────────────────────── -->
