@@ -15,7 +15,10 @@ in `toStore()` / `writable()` for `$store.X` template auto-subscribe and
 exercises both contexts end-to-end against the real Supabase backend without
 touching production code paths.
 
-Spike sessions wrapped: 2026-05-21 (spikes 001–005), 2026-05-22 (spike 006).
+Spike sessions wrapped:
+- 2026-05-21 (spikes 001–005)
+- 2026-05-22 morning (spike 006)
+- 2026-05-22 afternoon (spikes 007–011 — orchestration, SSR gap, codemod, inventory, HMR)
 </context>
 
 <requirements>
@@ -37,6 +40,14 @@ reference honors these — and every real migration commit must honor them too.
   read-write cycle. Repeats across DataRoot producer (Spike 002) and overlay
   registry (Spike 006). Without it: `effect_update_depth_exceeded` AND silent
   breakage of the global effect scheduler.
+- **appSettings DB-override merge happens at `$state` init, NOT in `$effect`**
+  (Spike 008). `$effect` does not run on the server, so an `$effect`-only
+  merge produces SSR HTML that's missing the DB override. Read
+  `page.data.appSettingsData` synchronously at init; the `$effect` then only
+  handles navigation cases. **Same fix applies to `appCustomizationData`**.
+- **`mergeAppSettings` must be a pure function** (Spike 008). Production today
+  uses `Object.assign(target, nonNull)` which mutates the shared
+  `staticSettings` reference. Switch to `{ ...target, ...nonNull }`.
 - **appSettings merge semantics preserved** — effective settings =
   `merge(staticSettings, dynamicSettings, page.data.appSettingsData)`, reactive
   on the third input, with a reference-equality guard against redundant merges.
@@ -49,9 +60,21 @@ reference honors these — and every real migration commit must honor them too.
   route through a single `runeLocalStorage` helper that mirrors
   `localStorageWritable`'s versioned-payload format (`{ version, data }`),
   allowing direct retirement of the legacy helper once both callsites migrate.
+  Wave 2 adds a `runeSessionStorage` sibling for `voterContext`'s
+  `firstQuestionId`.
 - **Token-keyed registries replace index-based stacks** for layout overlays —
   robust against out-of-order mount/unmount; `$effect` cleanup replaces
   `onDestroy(...)` plumbing.
+- **Destructure trap is paradigm-preserving** (Spike 007). CLAUDE.md's
+  "Context Destructuring Rule" applies unchanged to migrated rune-native
+  voter/candidate contexts. Consumers must read reactive accessors via
+  `ctx.X` and never destructure them. Spread-of-context (Spike 009's
+  bonus finding) is a sibling-trap that must be audited separately.
+- **Migration order respects dependency direction** (Spike 010). Tier 1 leaf
+  contexts (appSettings, dataRoot, answer stores, popupStore, settingsOverlay)
+  ship first; Tier 2 secondary bridges (survey, tracking, voterContext,
+  candidateContext, getRoute) consume Tier 1 and ship next; consumer codemod
+  runs in Wave 3; cleanup deletes in Wave 4.
 </requirements>
 
 <findings_index>
@@ -59,10 +82,13 @@ reference honors these — and every real migration commit must honor them too.
 
 | Area | Reference | Key Finding |
 |------|-----------|-------------|
-| Reactive Contexts | references/reactive-contexts.md | Two patterns: value-replace (`$state` + getter) for appSettings, split `current`/`instance` handles for DataRoot's mutation-in-place singleton. Producers use `instance` inside `untrack()` to break the infinite-loop trap that today requires `get(store)`. |
-| Persistent Rune Stores | references/persistent-rune-stores.md | One `runeLocalStorage<T>(key, default)` helper retires the three-layer `$state → localStorageWritable → fromStore` bridge in both voter and candidate answer stores. After migration `localStorageWritable` + `persistedState.svelte.ts` become deletable. |
+| Reactive Contexts | references/reactive-contexts.md | Two patterns: SSR-aware value-replace (`$state` + getter + synchronous-init from `page.data`) for appSettings, split `current`/`instance` handles for DataRoot's mutation-in-place singleton. **Production has a real SSR gap** — the `$effect`-only merge skips the DB override on the server (Spike 008). Producers use `instance` inside `untrack()` to break the infinite-loop trap that today requires `get(store)`. |
+| Persistent Rune Stores | references/persistent-rune-stores.md | One `runeLocalStorage<T>(key, default)` helper retires the three-layer `$state → localStorageWritable → fromStore` bridge in both voter and candidate answer stores. After migration `localStorageWritable` + `persistedState.svelte.ts` become deletable. Add `runeSessionStorage` sibling in Wave 2 for `voterContext`'s `firstQuestionId`. |
 | Matching Integration | references/matching-integration.md | `matchStore.svelte.ts` and `nominationAndQuestionStore.svelte.ts` are already rune-native — zero migration work. The runtime proof: a single answer-button click recomputes all 80 matches and re-renders the top-5 table reactively. |
 | Layout Overlay Registry | references/layout-overlay-registry.md | Token-keyed registry + declarative `use*()` consumer API replaces `StackedState` (`Readable<T>` shim) + `getLayoutContext(onDestroy)` index plumbing. 28 push callsites + 14 onDestroy plumbing sites become trivially editable; robust against out-of-order unmount. |
+| Context Orchestration | references/context-orchestration.md | Rune-native `voterContext` / `candidateContext` factory that composes upstream contexts via `getXContext()` and exposes 18+/30+ reactive accessors as getters. **Destructure trap reproduces identically** in the rune-native version (Spike 007) — CLAUDE.md rule applies unchanged. **HMR DX is non-degraded** (Spike 011) but masks the destructure trap during remount — run the codemod audit pass. |
+| Consumer Migration Codemod | references/consumer-migration-codemod.md | Pure-Node, dependency-free codemod rewrites 146 `$store.X` template sites across 45 files in ~1 hour. Two passes: rewrite + destructure-trap audit. **Surfaces a real production bug** in AdminNav (destructure of `isAuthenticated`) and a related spread-of-context anti-pattern in `adminContext.svelte.ts:97`. Idempotent and dry-run by default. |
+| Migration Inventory & Order | references/migration-inventory-and-order.md | Complete Tier 1/2/3 inventory of 18 files in `lib/contexts/**` importing from `svelte/store`. 4-wave migration order respects dependencies — Wave 1 leaf contexts in parallel, Wave 2 secondary bridges, Wave 3 codemod-driven consumer migration, Wave 4 cleanup deletes. Generalized popupStore pattern shows queue-shaped stores follow [[reactive-contexts]] Pattern 1. |
 
 ## Source Files
 
@@ -76,7 +102,7 @@ verification attempts, failures, fixes, browser-verified results).
 
 | Migration target | Current legacy surface | Spike | Reference |
 |------------------|------------------------|-------|-----------|
-| `apps/frontend/src/lib/contexts/app/appContext.svelte.ts` | `toStore()` bridge for `$appSettings.X` auto-subscribe (17+ template sites) | 001 | [[reactive-contexts]] |
+| `apps/frontend/src/lib/contexts/app/appContext.svelte.ts` | `toStore()` bridge for `$appSettings.X` auto-subscribe (17+ template sites) + `$effect`-only DB merge (SSR gap) + mutative `mergeAppSettings` | 001, 008 | [[reactive-contexts]] |
 | `apps/frontend/src/lib/contexts/data/dataContext.svelte.ts` + `routes/+layout.svelte` | `writable(dataRoot)` bridge + `get(dataRootStore)` workaround for infinite-loop trap | 002 | [[reactive-contexts]] |
 | `apps/frontend/src/lib/contexts/voter/answerStore.svelte.ts` | `localStorageWritable` + `fromStore` three-layer bridge | 003 | [[persistent-rune-stores]] |
 | `apps/frontend/src/lib/contexts/voter/matchStore.svelte.ts` | (none — already rune-native) | 004 | [[matching-integration]] |
@@ -85,12 +111,37 @@ verification attempts, failures, fixes, browser-verified results).
 | `apps/frontend/src/lib/contexts/utils/persistedState.svelte.ts` (entire file) | `Writable<T>` + `toStore()` + `subscribe`-based persistence | 003+005 | [[persistent-rune-stores]] |
 | `apps/frontend/src/lib/contexts/utils/StackedState.svelte.ts` (entire file) | `implements Readable<T>` + `toStore()` + LIFO index revert | 006 | [[layout-overlay-registry]] |
 | `apps/frontend/src/lib/contexts/layout/layoutContext.svelte.ts` (`getLayoutContext(onDestroy)`) | `onDestroy`-plumbed index-revert pattern at 14+ callsites | 006 | [[layout-overlay-registry]] |
+| `apps/frontend/src/lib/contexts/app/popup/popupStore.svelte.ts` | `toStore(() => firstItem)` + `subscribe` getter | 010 | [[migration-inventory-and-order]] |
+| `apps/frontend/src/lib/contexts/voter/voterContext.svelte.ts` | `fromStore(appSettings) + fromStore(locale) + sessionStorageWritable(firstQuestionId) + fromStore(...)` (18+ reactive accessors) | 007 | [[context-orchestration]] |
+| `apps/frontend/src/lib/contexts/candidate/candidateContext.svelte.ts` | `fromStore(appSettings) + fromStore(locale) + fromStore(getRoute)` (30+ reactive accessors) | 007 | [[context-orchestration]] |
+| `apps/frontend/src/lib/contexts/app/survey.svelte.ts` | `fromStore(appSettings) + fromStore(sessionId)` + `toStore(() => linkValue)` | 010 | [[migration-inventory-and-order]] |
+| `apps/frontend/src/lib/contexts/app/tracking/trackingService.svelte.ts` | `fromStore(appSettings + userPreferences + sessionId)` + `toStore(...)` | 010 | [[migration-inventory-and-order]] |
+| `apps/frontend/src/lib/contexts/app/getRoute.svelte.ts` | `writable(routeFn)` + custom `afterNavigate` workaround (see file header) | 010 | [[migration-inventory-and-order]] (Wave 3 — careful) |
+| `apps/frontend/src/lib/contexts/utils/dataCollectionStore.ts` | Accepts `Readable<DataRoot>` + `Readable<Array<Id>>`; returns `Readable<Array<TObject>>` | 010 | [[migration-inventory-and-order]] |
+| `apps/frontend/src/lib/contexts/admin/adminContext.svelte.ts:97` | `{ ...appContext, ...authContext, ... }` spread de-reactivates the auth-context `$derived` accessors | 009 | [[consumer-migration-codemod]] (spread-of-context anti-pattern) |
+| `apps/frontend/src/lib/dynamic-components/navigation/admin/AdminNav.svelte:33` | `const { isAuthenticated, t, getRoute } = getAdminContext()` — likely production bug | 009 | [[consumer-migration-codemod]] (destructure-trap finding) |
+| All 146 `$store.X` template auto-subscribe sites in 45 `.svelte` files | mechanical search-and-replace via codemod | 009 | [[consumer-migration-codemod]] |
 
 **Net effect of full migration:** every `import { * } from 'svelte/store'` site
 in `apps/frontend/src/lib/contexts/**` and `apps/frontend/src/routes/**` can
 be deleted. Template `$store.X` auto-subscribe sites become mechanical
-search-and-replace (every one is enumerable via grep). No paradigm alteration
-required — Svelte 5 runes are a strict superset of what these stores were doing.
+search-and-replace (every one is enumerable via grep AND mechanically rewritable
+via the [[consumer-migration-codemod]]). No paradigm alteration required —
+Svelte 5 runes are a strict superset of what these stores were doing.
+
+**4-wave landing order (see [[migration-inventory-and-order]] for details):**
+
+```
+Wave 1 (parallel)  →  Tier 1 leaf contexts: appContext, dataContext, answerStore,
+                      candidateUserDataStore, settingsOverlay+layoutContext, popupStore
+Wave 2             →  Tier 2 secondary bridges + voterContext + candidateContext +
+                      add runeSessionStorage helper
+Wave 3             →  getRoute migration (careful — has documented workaround) +
+                      run consumer-migration-codemod on 179 .svelte files
+Wave 4 (cleanup)   →  Delete persistedState.svelte.ts + StackedState.svelte.ts;
+                      drop Readable<T> from .type.ts files; fix AdminNav +
+                      adminContext spread; optional ESLint rule from codemod
+```
 </production_landing_map>
 
 <metadata>
@@ -102,4 +153,9 @@ required — Svelte 5 runes are a strict superset of what these stores were doin
 - 004-matchstore-integration
 - 005-candidate-answer-store-rune
 - 006-layout-overlay-rune
+- 007-context-orchestration-end-to-end
+- 008-ssr-hydration-runes
+- 009-store-codemod-feasibility
+- 010-adjacent-store-bridges
+- 011-hmr-rune-contexts
 </metadata>

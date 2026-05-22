@@ -386,4 +386,4 @@ When performing code review or developing new features, make sure to check all t
 
 ## Skill Routing
 
-- **Spike findings for voting-advice-application-gsd** (Svelte 5 rune migration patterns from runes-test spikes 001–006: reactive context shapes, `runeLocalStorage` helper, `untrack()` write-after-read invariant, token-keyed overlay registry) → `Skill("spike-findings-voting-advice-application-gsd")`
+- **Spike findings for voting-advice-application-gsd** (Svelte 5 rune migration patterns from runes-test spikes 001–011: reactive context shapes, `runeLocalStorage` helper, `untrack()` write-after-read invariant, token-keyed overlay registry, SSR-aware synchronous-init for appSettings, voterContext/candidateContext orchestration, destructure-trap reproduction, consumer-migration codemod, 4-wave migration order, HMR DX) → `Skill("spike-findings-voting-advice-application-gsd")`

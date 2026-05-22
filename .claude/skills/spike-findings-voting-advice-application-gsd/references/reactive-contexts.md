@@ -18,6 +18,14 @@ emerged — one for **value-replace contexts** (appSettings) and one for
 - **appSettings merge semantics preserved** — effective settings =
   `merge(staticSettings, dynamicSettings, page.data.appSettingsData)`, reactive
   on the third input.
+- **appSettings DB-override merge happens at $state init, NOT in an $effect**
+  (Spike 008). `$effect` does not run on the server, so an `$effect`-only merge
+  produces SSR HTML that's missing the DB override and causes a client-side
+  re-render flash. Read `page.data.appSettingsData` synchronously at init; the
+  `$effect` then only handles navigation cases.
+- **`mergeAppSettings` must be a pure function** (Spike 008). Production today
+  uses `Object.assign(target, nonNull)` which mutates the shared
+  `staticSettings` reference. Switch to `{ ...target, ...nonNull }`.
 - **dataRoot sequential-population semantics preserved** —
   `provideElectionData → provideConstituencyData → provideQuestionData →
   provideEntityData → provideNominationData` each triggers downstream `$derived`
@@ -25,19 +33,22 @@ emerged — one for **value-replace contexts** (appSettings) and one for
 
 ## How to Build It
 
-### Pattern 1 — Value-replace context (appSettings)
+### Pattern 1 — Value-replace context (appSettings, SSR-aware)
 
-The context's value is fully replaced on each merge. One `$state`, one
-getter, one merge `$effect`. Reference-equality guard prevents redundant
-merges when SvelteKit returns the same loader payload across navigations.
+The context's value is fully replaced on each merge. The DB-override merge
+runs **synchronously at $state init** so SSR HTML reflects the merged value;
+the `$effect` then only handles navigation-changed `page.data`. Reference-
+equality guard prevents redundant merges when SvelteKit returns the same
+loader payload across navigations. **`mergeAppSettings` must be pure** —
+production's `Object.assign`-based helper mutates `staticSettings` and is
+revised here.
 
 ```ts
 // apps/frontend/src/lib/contexts/app/appContext.svelte.ts (migration shape)
-import { dynamicSettings, staticSettings } from '@openvaa/app-shared';
+import { dynamicSettings, staticSettings, mergeSettings } from '@openvaa/app-shared';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
 import { page } from '$app/state';
-import { mergeAppSettings } from '$lib/utils/settings';
 
 const CONTEXT_KEY = Symbol('appSettings');
 
@@ -45,16 +56,35 @@ export interface AppSettingsContext {
   readonly current: AppSettings;  // reactive — tracks at call site
 }
 
-export function initAppSettingsContext(): AppSettingsContext {
-  let value = $state<AppSettings>(mergeAppSettings(staticSettings, dynamicSettings));
+// Pure replacement for production `mergeAppSettings`. Production mutates the
+// target in place via Object.assign — masked today because only one appContext
+// initializes per session. Spike 008 surfaced the bug while running two
+// variants side-by-side.
+function pureMerge<T extends object, U extends object>(target: T, additional: U): T & U {
+  const nonNull = Object.fromEntries(Object.entries(additional).filter(([, v]) => v != null));
+  return { ...target, ...nonNull } as T & U;
+}
 
-  let prevData: DynamicSettings | Error | undefined;
+export function initAppSettingsContext(): AppSettingsContext {
+  // ── Synchronous init reads page.data.appSettingsData on BOTH server and client.
+  //    Without this, SSR HTML misses the DB override (effect-only merge doesn't
+  //    run on the server) and the client re-renders after $effect fires.
+  const initialDbData = page.data?.appSettingsData as DynamicSettings | Error | undefined;
+  let initial = pureMerge(staticSettings, dynamicSettings);
+  if (initialDbData && !(initialDbData instanceof Error)) {
+    initial = pureMerge(initial, initialDbData);
+  }
+  let value = $state<AppSettings>(initial);
+
+  // $effect only handles "page.data changed after navigation". Initial-merge
+  // responsibility is gone — value is already correct at first render.
+  let prevData: DynamicSettings | Error | undefined = initialDbData;
   $effect(() => {
     const data = page.data?.appSettingsData;
     if (data === prevData) return;
     prevData = data;
     if (!data || data instanceof Error) return;
-    value = mergeAppSettings(value, data);
+    value = pureMerge(value, data);
   });
 
   return setContext(CONTEXT_KEY, {
@@ -62,6 +92,9 @@ export function initAppSettingsContext(): AppSettingsContext {
   });
 }
 ```
+
+**Same pattern applies to `appCustomizationData`** at `appContext.svelte.ts:110-118` —
+it has the same `$effect`-only merge shape and the same SSR gap.
 
 **Consumer migration (mechanical search-and-replace):**
 
@@ -171,6 +204,21 @@ See CLAUDE.md "Context Destructuring Rule (Svelte 5)" for the full explanation.
    a new object on every nav, cascading filter recreation through downstream
    contexts.
 
+6. **Don't rely on `$effect` for the initial appSettings merge.** `$effect`
+   does NOT run during SSR — the server-rendered HTML will reflect only
+   `staticSettings ∪ dynamicSettings`, missing the DB override. On slow
+   connections this produces a visible "default → DB-override" flash on
+   first paint. Spike 008 verified the gap via curl on real SSR output.
+
+7. **Don't ship `mergeAppSettings` as mutative.** `apps/frontend/src/lib/utils/settings.ts:12-20`
+   uses `Object.assign(target, nonNull)` which mutates the shared
+   `staticSettings` reference. In production today this is masked because
+   only one appContext initializes per session — but the signature implies
+   purity. Spike 008 stumbled into this when two side-by-side variants
+   polluted each other's `$state` through the shared `staticSettings` object.
+   Switch to a pure `{ ...target, ...nonNull }` merge as part of the
+   migration; the diff is low-risk.
+
 5. **Don't try to make DataRoot functional/immutable** (per-provide identity
    change) just to avoid the version counter. The mutation-in-place idiom is
    the validated path — Approach B (functional updates) and Approach C
@@ -189,9 +237,18 @@ See CLAUDE.md "Context Destructuring Rule (Svelte 5)" for the full explanation.
 - **The production `appContext` reference-equality guard** at
   `appContext.svelte.ts:93-100` is reproduced verbatim in the spike; preserve it.
 
+## Related
+
+See [[context-orchestration]] for how appSettings + dataRoot compose with a
+downstream `voterRuneContext` / `candidateRuneContext` factory and how the
+destructure-trap appears across the cascade. See [[migration-inventory-and-order]]
+for the full Tier 1/2/3 list of remaining `svelte/store` bridges to migrate
+after these two contexts land.
+
 ## Origin
 
-Synthesized from spikes: 001, 002
+Synthesized from spikes: 001, 002, 008
 Source files available in:
 - `sources/001-appsettings-native-rune/appSettingsRuneContext.svelte.ts`
 - `sources/002-dataroot-native-rune/dataRootRuneContext.svelte.ts`
+- `sources/008-ssr-hydration-runes/appSettingsVariantB.svelte.ts` — the SSR-aware shape promoted here
