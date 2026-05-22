@@ -302,7 +302,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82, 83 (parallel-eligible after Phase 79 DETERM-04 green) → Phase 84 (sequential precondition for All-Green Suite) → Phases 85 + 86 (parallel-eligible after Phase 84) → Phase 87 (sequential after 85 + 86).
+Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82, 83 (parallel-eligible after Phase 79 DETERM-04 green) → Phase 84 (sequential precondition for All-Green Suite) → Phases 85 + 86 (parallel-eligible after Phase 84) → Phase 87 (sequential after 85 + 86) → Phase 88 (sequential after 87 — operator-driven catalog audit + forward-looking baseline; gates milestone close + v2.11 start).
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -341,3 +341,22 @@ Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82, 83 (pa
 | 86.2. E2E Suite Refactor Pass | v2.10 | 3/3 | Complete    | 2026-05-20 |
 | 86.3. Implement Skipped Tests (8 cells) | v2.10 | 5/5 | Complete    | 2026-05-20 |
 | 87. v2.10 All-Green Milestone-Close Anchor | v2.10 | 1/1 | Complete    | 2026-05-21 |
+| 88. E2E Test Catalog Audit + Forward-Looking Baseline | v2.10 | 0/0 | Not planned | - |
+
+### Phase 88: E2E Test Catalog Audit + Forward-Looking Baseline
+
+**Goal:** Operator-driven audit of the entire e2e test catalog — remove obsolete tests, add coverage gaps, consolidate redundant/overlapping specs — then capture a NEW v2.10-close anchor against the mutated catalog. This baseline replaces Phase 87's anchor as the gate against which ALL future development is verified (starting with v2.11 spike-tested rune migration). Phase 87's anchor becomes historical (last gate against the pre-audit catalog).
+
+**Why this is the v2.10 final phase, not v2.11 prep:** v2.10's stated milestone goal is "Test Reliability + A11y Compliance + All-Green Suite." Phase 87 captured an all-green anchor against the *existing* catalog, but the operator now wants the catalog itself audited before treating the baseline as durable. Doing the audit + re-anchor inside v2.10 means the milestone closes against the catalog the team intends to live with, not against a catalog scheduled for immediate revision.
+
+**Gating role:**
+- BLOCKS `/gsd-complete-milestone v2.10` until the new baseline is committed.
+- BLOCKS the v2.11 rune migration start (per spike-findings: Wave 1 leaf-context migrations need a deterministic baseline to regression-test against).
+
+**Depends on:** Phase 87 (final pre-audit anchor must exist as historical reference).
+**Requirements**: TBD — will be elicited during `/gsd-discuss-phase 88`. Likely surfaces include: scope of "obsolete" (which specs are coupled to deferred v2.11+ features vs genuinely dead), consolidation strategy (helper extraction vs spec merge), new-test scope (coverage gaps surfaced by 86.1/86.3 deferrals), and baseline-format decisions (anchor SHA + PASS_LOCKED const update path).
+**Plans:** TBD (run `/gsd-plan-phase 88` after `/gsd-discuss-phase 88`)
+
+Plans:
+- [ ] TBD — operator-led catalog audit pass; plan shape depends on discuss-phase outcome
+- [ ] TBD — fresh 3-run cold-start identity gate + atomic regen-constants against the audited catalog; new v2.10-close anchor committed to `tests/scripts/diff-playwright-reports.ts`

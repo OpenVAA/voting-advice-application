@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
-status: milestone_complete
-stopped_at: "Milestone complete (Phase 87 final). v2.10 ship anchor pinned at b2ad76e5de4f5b435db536bb5d5d05c81c5bd4c8e007a5f0c25078e2ed74ef2e (Path B promoted 2026-05-21; ALMOST-STRICT operator-approved per Phase 86 D-06 precedent). Operator next step: /gsd-complete-milestone v2.10"
-last_updated: 2026-05-21T08:57:51.159Z
-last_activity: "2026-05-21 -- Phase 87 Path B promoted (operator request) -- new v2.10-ship anchor b2ad76e5… replaces Path A bc1c94957b…; runs 1+2 SHA-identical, run-3 2-cell boundary-flake; ALMOST-STRICT operator-approved per Phase 86 D-06"
+status: in_progress
+stopped_at: "Phase 87 SHIPPED. Phase 88 ADDED 2026-05-22 (operator-driven e2e catalog audit + forward-looking baseline; gates both /gsd-complete-milestone v2.10 AND v2.11 rune-migration start). Phase 87 anchor (b2ad76e5…) becomes historical; Phase 88 produces the new gating anchor. Operator next step: /gsd-discuss-phase 88"
+last_updated: 2026-05-22T00:00:00.000Z
+last_activity: "2026-05-22 -- Spike 012 closed (getRoute rune-native VALIDATED, Wave 3 unblocked) + spike-wrap-up extension; Phase 88 added to v2.10 as forward-looking-baseline gate"
 progress:
-  total_phases: 12
+  total_phases: 13
   completed_phases: 11
   total_plans: 31
   completed_plans: 30
-  percent: 92
+  percent: 85
 ---
 
 # Project State
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 
 ## Current Position
 
-Phase: 87
-Plan: Not started
-Status: Milestone complete
-Last activity: 2026-05-21
+Phase: 88
+Plan: Not planned yet
+Status: Phase 88 added — operator-driven e2e catalog audit + forward-looking baseline
+Last activity: 2026-05-22
 
 ## Performance Metrics
 
@@ -120,6 +120,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 - Phase 86.2 inserted after Phase 86: E2E suite refactor pass (extract helpers, dedup assertions, propagate Phase 86.1 post-fix patterns); inserted after green-baseline 2026-05-19 supersedes HANDOFF.json CASCADE=40 blocker; depends on Phase 86.1; gates Phase 86.3 (URGENT)
 - Phase 86.3 inserted after Phase 86: Implement 7 source-skipped tests (SETTINGS-01 wave A×3 + SETTINGS-01 wave B constituency-filter + E2E-03 feedback persistence + LAYOUT-03 popup regression gate + QSPEC-01/02 boolean+categorical); discuss-phase first answers 'is this all?' by reconciling with grep of test.skip() across tree; depends on Phase 86.2 (URGENT)
 - 2026-05-21 (cont.): **Phase 87 Path B promoted** at operator request. Fresh 3-run cold-start gate executed against post-86.3-v2 codebase HEAD `bd0f92b90`: runs 1+2 SHA-identical at `b2ad76e5de4f5b435db536bb5d5d05c81c5bd4c8e007a5f0c25078e2ed74ef2e` (159 pass / 0 fail / 4 skipped); run-3 differs by exactly 2 boundary-class cells (`voter-app :: voter-results.spec.ts > coupling-rule redirect: singular without id → list view (D-11)` + `> deeplink edge case: organizations list + candidate drawer (D-08 shape 4)`) — same documented voter-app cold-deeplink loader race as v2.11+-deferred cells #5/#7/#8. Operator-promoted ALMOST-STRICT verdict per Phase 86 D-06 precedent extension (in fact stronger — runs 1+2 100% identical vs Phase 86 v1 1-cell run-2/run-3 diff). v2.10 ship anchor UPGRADED: `bc1c94957b…` (Path A re-derivation from 86.3-v1 raw) → `b2ad76e5…` (Path B PASS-state pair, fresh raw artifacts post-86.3-v2). Path A captures preserved at `.planning/phases/87-…/post-fix/path-a/` for audit-trail continuity. Const arrays preserved verbatim (114/3/36/4 = 157 tracked); the 2 boundary-flake cells are NEW tests not in PASS_LOCKED_TESTS — documentary only, NOT promoted per CONTEXT D-08 (folded into existing v2.11+ navigation-from-home redesign closure). regen-constants.mjs reportPath repointed to run-2.json (PASS-state canonical per Phase 86 D-06). IMGPROXY match-count assertion preserved 3/3 ✓. Imgproxy 502 recovery applied between run-2 and run-3 (`supabase stop && supabase start`) per Phase 79 D-14. /gsd-audit-milestone v2.10 verdict unchanged (tech_debt operator-accepted).
+- 2026-05-22: **Phase 88 added to v2.10 roadmap** as the new final phase. Scope: operator-driven audit of the entire e2e test catalog (remove obsolete tests, add coverage gaps, consolidate redundant specs) followed by a fresh 3-run cold-start baseline capture against the mutated catalog. The Phase 88 anchor REPLACES Phase 87's anchor (`b2ad76e5…`) as the gate against which all future development is verified, starting with v2.11 rune-migration Wave 1. Phase 87's anchor becomes historical (last gate against the pre-audit catalog). **Gating semantics:** Phase 88 blocks both `/gsd-complete-milestone v2.10` AND the v2.11 spike-tested rune migration kickoff — v2.10 closes against the catalog the team intends to live with, and v2.11 Wave 1 needs a deterministic post-audit baseline to regression-test against. Plan count + REQ IDs TBD via `/gsd-discuss-phase 88`. Spike findings (001-012) already provide the migration shape for v2.11; the audit-and-rebaseline phase is the bridge that makes those findings safely actionable.
 - 2026-05-21: **Phase 87 SHIPPED PASSED-WITH-DEFERRAL.** DETERM-15 closed via Path A verbal-accept v2.10 ship-close anchor pin. Operator selected Path A (verbal-accept) at execute-phase Task 1a checkpoint based on autonomous-directive + 2026-05-21 operator verbal verification at commit 9ad802ec0 (3 runs, 0 fails + 4 hard-coded skips). Phase 87 ship anchor `bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee` re-binds the same raw SHA as 86.3-v1 (Path A re-uses 86.3-v1 raw run-3.json) to the v2.10 ship narrative — v2 classification deltas (cells #1/#2/#6 PASS_LOCKED promotions + cell #3 → SKIPPED + VOTE-05 removal) live in `diff-playwright-reports.ts` const arrays as the binding contract. Pool counts: 114 PASS_LOCKED + 3 DATA_RACE + 36 CASCADE + 4 SKIPPED = 157 tracked (operator-amended D-05 carried forward from Phase 86.3 D-06 RE-PLAN). Atomic constants regen: regen-constants.mjs reportPath repointed Phase 86 → Phase 87; PHASE 87 v2.10 SHIP ANCHOR jsdoc replaces PHASE 86.3 v2 ANCHOR block; IMGPROXY_TIED_TITLES match-count assertion 3 titles, 3 total matches ✓; CONTEXT.md D-04 stale const names corrected + v2-reshape note appended. /gsd-audit-milestone v2.10 verdict: tech_debt operator-accepted (`.planning/v2.10-MILESTONE-AUDIT.md`). 5 new v2.11+ todos filed: cell #3 mount-lifecycle, Phase 86/86.1/86.2 VERIFICATION.md backfill (the other 3 — qspec / party-drawer / voter-feedback — were pre-existing). KNOWN PATH A DEVIATION: parity-gate self-identity smoke FAILs structurally because 86.3-v1 raw data predates v2 classification promotions; documented in run-mode-decision.txt + audit doc. Phase 86 anchor 9a6d74a3088e… and Phase 86.3-v1 anchor bc1c94957b… both marked ABSORBED. **v2.10 milestone is SHIPPABLE** — operator next step: `/gsd-complete-milestone v2.10`.
 - 2026-05-20 → 2026-05-21: Phase 86.3 v2 baseline reached. Original 2026-05-20 close (8-cell disposition: 3 FIX-PASS + 1 WONT-IMPLEMENT + 4 SKIP-FALLBACK) surfaced 3 downstream regressions during operator verification: voter-results fixture popup re-queue blocked by cell #3 reactive $effect; voter-matching helper drift (maxSteps:3 vs fixture's 6); voter-popup-hydration cold-deeplink race. Resolved 2026-05-20 → 2026-05-21 via four follow-up commits (`6d0914b22` untrack patch on cells #1+#2 topBar $effect; `0a34dfbc7` revert cell #3 reactive → onMount + restore skipReason; `52a2f077a` rewrite voter-popup-hydration via answeredVoterPage fixture, landing v2.11+ Recommendation #3 early; user-removed VOTE-05 partial-negative test from voter-matching helper). New 8-cell v2 disposition: 3 FIX-PASS (cells #1/#2/#6) + 1 WONT-IMPLEMENT (cell #4) + 4 PASS-WITH-DEFERRAL (cell #3 onMount-revert) + SKIP-FALLBACK (cells #5/#7/#8 — voter-app cold-deeplink race remains). Operator-verified 3 test suite runs: 0 fails + 4 hard-coded skips (cells #3, #5, #7, #8). 3-run cold-start gate ALMOST-STRICT (Phase 86 D-06 precedent extension; 8 diverging cells share ONE boundary-class cascade ancestor = DETERM-06 imgproxy + candidate-registration email-link timing). Anchor SHA: bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee. SKIPPED_TESTS const composition on v2 baseline (2026-05-21): 4 entries — cell #3 candidate-settings notifications.voterApp (ADDED post-revert), cell #5 voter-feedback-persistence (kept), cell #7/#8 QSPEC-01/02 (kept). Cell #4 entry removed alongside spec deletion 2026-05-20. Cell #6 entry removed 2026-05-21 (test rewritten to use answeredVoterPage fixture — FIX-PASS). PASS_LOCKED 113 → 116 (+3 SETTINGS-01 wave A FIX-PASS). PHASE 86.3 ANCHOR jsdoc added to diff-playwright-reports.ts. D-06 Phase 87 disposition recommendation: **RE-PLAN** (CASCADE >> 5 hard fails Phase 87 Task 0 pre-gate; upstream voter-app cold-deeplink race materially changes anchor target; v2.11+ navigation-from-home redesign closes 4 cells in single fix paired with 86.3-04 Recommendation #3). Wave 1 SKIP-FALLBACK plans (02/03/04) + Wave 2 SKIP-FALLBACK on cells #7/#8 (Plan 05) demonstrate consistent SHIP-WITH-DEFERRAL pattern preserving gap-signals for v2.11+ pickup.
 
@@ -169,8 +170,8 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-05-22T (spike 012 closed)
-Stopped at: **Spike 012 (getRoute rune-native) VALIDATED.** Approach C — `$derived.by` over per-field `$app/state.page` reads — bypasses the documented `toStore` short-circuit trap by construction. Defensive Approach D (C + afterNavigate version bump) proven redundant. Multi-step nav verified clean (`D.navCount=6`, no `effect_update_depth_exceeded` warnings, no hydration mismatches, C ≡ B on every observed step). Spike artifacts: `.planning/spikes/012-getroute-rune/README.md`, MANIFEST row 012, deletable demo at `apps/frontend/src/routes/runes-test/getroute-rune/`. Production migration plan + 4-variant comparison documented in README. v2.10 milestone close (`/gsd-complete-milestone v2.10`) remains the standing operator next step.
+Last session: 2026-05-22T (Phase 88 added)
+Stopped at: **Phase 88 added to v2.10 roadmap.** Operator request — before v2.10 milestone close + v2.11 spike-tested rune migration, audit the entire e2e test catalog (remove/add/consolidate) and capture a NEW baseline that gates all future development. Phase 87's anchor becomes historical; Phase 88's anchor is the forward-looking gate. Earlier in session: Spike 012 closed (getRoute rune-native VALIDATED — Wave 3 unblocker; spike-wrap-up extended skill to cover 001-012). Operator next step: `/gsd-discuss-phase 88` (catalog-audit scope + consolidation strategy + new-test inventory + baseline-capture mechanics).
 Resume file: None
 Next action: Operator decides Phase 87 disposition per Phase 86.3-05 D-06 recommendation:
   (a) **RE-PLAN (Claude's recommendation):** Re-plan Phase 87 to absorb v2.11+ voter-app cold-deeplink deferrals (4 cells #5/#6/#7/#8 closure-paired via navigation-from-home redesign) + boundary-class flake deferrals (DETERM-06 imgproxy + email-link timing) BEFORE firing the v2.10-ship anchor capture. Plan 87-01 needs a new Plan 01a (deferral inventory) + Plan 01b (anchor capture WITH explicit deferrals documented).
@@ -190,7 +191,11 @@ Reference: `.planning/phases/86.3-…/86.3-SUMMARY.md` §"D-06 Phase 87 Disposit
 
 ## Operator Next Steps
 
-- Phase 80 (A11Y-04) closed GREEN on 2026-05-13. v2.10 progress: 2 of 5 phases complete; 5 of 5 known plans complete.
-- Next phases parallel-eligible: Phase 81 (A11Y-05 + A11Y-06 email/URL format cells), Phase 82 (A11Y-07 required-empty cell — embedded product decision at discuss-time), Phase 83 (DETERM-06 image-upload cascade + DETERM-07 voter-app flakes). All 3 depend only on Phase 79 (already green); none depend on Phase 80 specifically.
-- Recommended next action: Run `/gsd-discuss-phase 81` (smaller A11Y phase first) OR `/gsd-discuss-phase 82` (product-decision phase — gates Phase 81 shape if it consolidates with email/url dispatch).
-- Optional UAT (operator discretion): Manual screen-reader smoke (VoiceOver / NVDA) on `/results` to confirm Tabs is announced as "tab list, N tabs"; not blocking phase close.
+- **Phase 88 just added (2026-05-22)** as v2.10's new final phase: operator-driven e2e catalog audit (remove/add/consolidate tests) + forward-looking baseline capture. Replaces Phase 87 as the gate against which all future development (starting with v2.11 rune migration) is verified.
+- **Primary next action:** `/gsd-discuss-phase 88` to elicit scope decisions before planning. Open questions to surface:
+  - Catalog-audit boundary: which specs are obsolete vs deferred-by-design (v2.11+ todos already filed by Phases 86/86.3 — should those CASCADE-skipped cells be removed, kept-as-deferred, or rewritten as part of this audit?)
+  - Consolidation strategy: helper extraction (continuation of Phase 86.2 work) vs spec-level merges
+  - New-test scope: do the 86.1/86.3 SKIP-FALLBACK cells get re-implemented here, or stay deferred to v2.11+ as today?
+  - Baseline mechanics: same `regen-constants.mjs` + `diff-playwright-reports.ts` const-array path used by Phase 87, or a new format?
+- **Standing v2.10 milestone close** (`/gsd-complete-milestone v2.10`) is now BLOCKED behind Phase 88 — milestone closes against the post-audit catalog, not the Phase 87 pre-audit anchor.
+- **v2.11 rune migration kickoff** (Wave 1 leaf-context migrations per spike-findings skill) is also BLOCKED behind Phase 88 — Wave 1 needs a deterministic post-audit baseline to regression-test against.
