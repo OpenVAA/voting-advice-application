@@ -15,9 +15,11 @@ that generalizes [[reactive-contexts]] Pattern 1 to queue-shaped stores.
 - **`runeLocalStorage` (Spike 003) needs a `runeSessionStorage` sibling** —
   required by `voterContext`'s `firstQuestionId` session-storage use case.
   Add this in Wave 2's prep step.
-- **`app/getRoute.svelte.ts` deserves separate scrutiny** — its file header
-  documents a `toStore` short-circuit workaround. Migrating without
-  understanding the workaround risks regression.
+- **`app/getRoute.svelte.ts` migration is now VALIDATED** (Spike 012). Use
+  [[reactive-contexts]] Pattern 3 — `$derived.by` over per-field reads of
+  `$app/state.page`. The file header's `toStore` short-circuit warning is
+  honored by construction (Pattern 3 never reads `page` as a single value).
+  No `afterNavigate` defensive layer required.
 - **popupStore migration follows the value-replace pattern** ([[reactive-contexts]]
   Pattern 1) generalized to push/shift queue stores.
 
@@ -41,7 +43,7 @@ that generalizes [[reactive-contexts]] Pattern 1 to queue-shaped stores.
 
 | File | Bridge mechanism | Migration shape |
 |------|------------------|-----------------|
-| `app/getRoute.svelte.ts` | `writable(routeFn)` + custom `afterNavigate` workaround | Read file header — documents the `toStore` short-circuit. Once appSettings + page are rune-native, simplify to `$derived(buildRoute(page, locale))` |
+| `app/getRoute.svelte.ts` | `writable(routeFn)` + custom `afterNavigate` workaround | **VALIDATED via Spike 012**: replace with `$derived.by` over per-field `page.{params,route,url}` reads exposed as `{ get current() }` — see [[reactive-contexts]] Pattern 3. `afterNavigate` is NOT needed in the new shape. |
 | `app/survey.svelte.ts` | `fromStore(appSettings) + fromStore(sessionId)` + `toStore(() => linkValue)` | Drop both `fromStore`s once Tier 1 done; drop `toStore` return; expose `{ get current() { return linkValue; } }` |
 | `app/tracking/trackingService.svelte.ts` | `fromStore(appSettings) + fromStore(userPreferences) + fromStore(sessionId)` + `toStore(...)` | Drop all `fromStore`; drop `toStore` wrappers; expose `.current` getters |
 | `voter/voterContext.svelte.ts` | `fromStore(appSettings) + fromStore(locale)` + `sessionStorageWritable('voterContext-firstQuestionId') + fromStore(...)` | See [[context-orchestration]]. Add `runeSessionStorage` for `firstQuestionId` |
@@ -84,9 +86,9 @@ Wave 2 (Tier 2 — consumes Wave 1):
   └─ candidate/candidateContext     (consumer of appSettings + locale + getRoute)
 
 Wave 3 (post-Tier 2 + consumer migration):
-  ├─ app/getRoute.svelte.ts         (own custom workaround — needs care)
+  ├─ app/getRoute.svelte.ts         (VALIDATED — [[reactive-contexts]] Pattern 3; Spike 012)
   ├─ utils/dataCollectionStore.ts   (generic Readable<T> consumer)
-  └─ Run [[consumer-migration-codemod]] on all 179 .svelte files (146 sites)
+  └─ Run [[consumer-migration-codemod]] on all 179 .svelte files (146 + 134 = 280 sites)
 
 Wave 4 (cleanup):
   ├─ Delete utils/persistedState.svelte.ts (zero callers)
@@ -159,9 +161,12 @@ Verified push/shift/current sequence in the browser:
    bridge with nothing to replace it.
 
 2. **Don't migrate `app/getRoute.svelte.ts` without reading its file header
-   (lines 18-30).** The author documents a Svelte-5 `toStore` short-circuit
-   they were working around. The migration must either solve the original
-   problem or document why it no longer applies.
+   (lines 18-30) AND [[reactive-contexts]] Pattern 3.** The author documents
+   a Svelte-5 `toStore` short-circuit workaround. Spike 012 proved that
+   `$derived.by` over per-field `page` reads bypasses the trap by
+   construction — but only if you read `page.params`/`page.route`/`page.url`
+   as separate fields, never `page` as a whole value. Pattern 3 honors the
+   header's warning by construction.
 
 3. **Don't forget the `runeSessionStorage` sibling.** `voterContext` uses
    `sessionStorageWritable('voterContext-firstQuestionId')`. The Spike 003
@@ -204,9 +209,10 @@ Verified push/shift/current sequence in the browser:
 
 ## Origin
 
-Synthesized from spike: 010
+Synthesized from spikes: 010, 012
 
 Source files available in:
 - `sources/010-adjacent-store-bridges/popupRuneStore.svelte.ts` — representative spike
 - `sources/010-adjacent-store-bridges/page.svelte` — browser-verified demo harness
 - `sources/010-adjacent-store-bridges/README.md` — full Tier 1/2/3 inventory + investigation trail
+- `sources/012-getroute-rune/README.md` — getRoute migration verdict (Wave 3 unblocked)

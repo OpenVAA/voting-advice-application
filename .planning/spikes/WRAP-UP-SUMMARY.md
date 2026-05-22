@@ -1,7 +1,7 @@
 # Spike Wrap-Up Summary
 
-**Date:** 2026-05-22 (incremental wrap-up — first 6 wrapped earlier today)
-**Spikes processed:** 11 total (001–011, all VALIDATED)
+**Date:** 2026-05-22 (incremental wrap-up — first 6 wrapped earlier today; 12 added in evening)
+**Spikes processed:** 12 total (001–012, all VALIDATED)
 **Feature areas:** Reactive Contexts, Persistent Rune Stores, Matching Integration, Layout Overlay Registry, Context Orchestration, Consumer Migration Codemod, Migration Inventory & Order
 **Skill output:** `./.claude/skills/spike-findings-voting-advice-application-gsd/`
 **Conventions:** `.planning/spikes/CONVENTIONS.md`
@@ -21,6 +21,7 @@
 | 009 | store-codemod-feasibility           | standard | VALIDATED | Consumer Migration Codemod|
 | 010 | adjacent-store-bridges              | standard | VALIDATED | Migration Inventory & Order|
 | 011 | hmr-rune-contexts                   | standard | VALIDATED | Context Orchestration (DX)|
+| 012 | getroute-rune                       | standard | VALIDATED | Reactive Contexts (Pattern 3)|
 
 ## Key Findings — Session 1 (001–006)
 
@@ -147,6 +148,49 @@ the next mutation, the trap appears fixed — then quietly goes stale.
 **Mitigation**: run the Spike 009 codemod audit pass as part of pre-commit
 or CI; don't rely on HMR observation to validate destructure-trap absence.
 
+## Key Findings — Spike 012 follow-on (getRoute Wave 3 unblocker)
+
+### `getRoute` migration shape resolved — Wave 3 no longer "careful"
+
+Spike 010's inventory tagged `apps/frontend/src/lib/contexts/app/getRoute.svelte.ts`
+as Tier 2 / Wave 3 "careful" because its file header documents a Svelte 5
+`toStore` short-circuit trap on the long-lived `$app/state.page` proxy.
+Spike 012 built a side-by-side 4-variant comparison and proved:
+
+- **Approach C** (`$derived.by` over per-field reads of `page.params` /
+  `page.route` / `page.url`) is the migration shape. Fine-grained per-field
+  tracking bypasses the `toStore` trap by construction — never reads
+  `page` as a whole value, so the render_effect short-circuit on
+  reference equality doesn't apply.
+- **Approach D** (`$derived.by` + `afterNavigate` defensive version bump)
+  was the open question at briefing time. It matched Approach C on every
+  observed step including query-param-only nav — **structurally
+  redundant**. Production migration drops `afterNavigate` entirely.
+- Multi-step browser-verified: 6 nav transitions across pathname,
+  query-string, and back; `D.navCount = 6`; zero `effect_update_depth_exceeded`;
+  zero hydration mismatches; `C ≡ B` on every row.
+
+This is captured as **[[reactive-contexts]] Pattern 3** — joining the
+Pattern 1 (value-replace) and Pattern 2 (mutation-in-place singleton)
+shapes already established for appSettings and dataRoot.
+
+### New CONVENTIONS entry: read reference-stable `$state` proxies field-by-field
+
+`CONVENTIONS.md` Pattern 9 generalizes the Spike 012 finding: any
+`$state` proxy whose object reference is stable but whose internal fields
+mutate (the canonical example is `$app/state.page`) must be read
+**per-field inside the tracking scope**, never as a whole value. The
+trap appears via `toStore`'s `render_effect.set` short-circuit AND via
+captured-handle `$derived` shapes; per-field reads avoid both.
+
+### `afterNavigate` is paradigm-removable
+
+Production today uses `afterNavigate(() => store.set(buildFn()))` as an
+imperative republish to dodge the trap. The rune-native migration drops
+both the `afterNavigate` callback AND the `writable<RouteBuilder>` store.
+Net diff: ~10 LOC removed, one new `$derived.by` block, signature change
+from `Readable<RouteBuilder>` to `{ readonly current: RouteBuilder }`.
+
 ## Verified Constraints for the Real Migration
 
 - DataRoot's `Updatable.subscribe()` is a **domain abstraction** (transactional
@@ -164,7 +208,8 @@ or CI; don't rely on HMR observation to validate destructure-trap absence.
 - The `runeSessionStorage` sibling of `runeLocalStorage` is a **new
   addition required for Wave 2** (`voterContext.firstQuestionId`).
 - `app/getRoute.svelte.ts` has its **own documented workaround** in its
-  file header (lines 18-30). Wave 3 migration must read it first.
+  file header (lines 18-30). Wave 3 migration follows [[reactive-contexts]]
+  Pattern 3 (Spike 012); `afterNavigate` is NOT needed in the new shape.
 
 ## Where to Go Next
 

@@ -19,6 +19,7 @@ Spike sessions wrapped:
 - 2026-05-21 (spikes 001–005)
 - 2026-05-22 morning (spike 006)
 - 2026-05-22 afternoon (spikes 007–011 — orchestration, SSR gap, codemod, inventory, HMR)
+- 2026-05-22 evening (spike 012 — getRoute rune-native; Wave 3 unblocker)
 </context>
 
 <requirements>
@@ -75,6 +76,13 @@ reference honors these — and every real migration commit must honor them too.
   ship first; Tier 2 secondary bridges (survey, tracking, voterContext,
   candidateContext, getRoute) consume Tier 1 and ship next; consumer codemod
   runs in Wave 3; cleanup deletes in Wave 4.
+- **`getRoute` over `$app/state.page` uses fine-grained per-field reads**
+  (Spike 012). Pure `$derived.by` reading `page.params` / `page.route` /
+  `page.url` as separate fields bypasses the documented `toStore`
+  short-circuit trap on the page proxy's stable object reference. Never
+  read `page` as a single value inside a tracking scope. No defensive
+  `afterNavigate` republish is needed — fine-grained tracking handles
+  every observed nav (path, query-param, locale).
 </requirements>
 
 <findings_index>
@@ -82,7 +90,7 @@ reference honors these — and every real migration commit must honor them too.
 
 | Area | Reference | Key Finding |
 |------|-----------|-------------|
-| Reactive Contexts | references/reactive-contexts.md | Two patterns: SSR-aware value-replace (`$state` + getter + synchronous-init from `page.data`) for appSettings, split `current`/`instance` handles for DataRoot's mutation-in-place singleton. **Production has a real SSR gap** — the `$effect`-only merge skips the DB override on the server (Spike 008). Producers use `instance` inside `untrack()` to break the infinite-loop trap that today requires `get(store)`. |
+| Reactive Contexts | references/reactive-contexts.md | Three patterns: SSR-aware value-replace (`$state` + getter + synchronous-init from `page.data`) for appSettings, split `current`/`instance` handles for DataRoot's mutation-in-place singleton, `$derived.by` over per-field `page` reads for getRoute (Spike 012 — Wave 3 unblocker). **Production has a real SSR gap** — the `$effect`-only merge skips the DB override on the server (Spike 008). Producers use `instance` inside `untrack()` to break the infinite-loop trap that today requires `get(store)`. |
 | Persistent Rune Stores | references/persistent-rune-stores.md | One `runeLocalStorage<T>(key, default)` helper retires the three-layer `$state → localStorageWritable → fromStore` bridge in both voter and candidate answer stores. After migration `localStorageWritable` + `persistedState.svelte.ts` become deletable. Add `runeSessionStorage` sibling in Wave 2 for `voterContext`'s `firstQuestionId`. |
 | Matching Integration | references/matching-integration.md | `matchStore.svelte.ts` and `nominationAndQuestionStore.svelte.ts` are already rune-native — zero migration work. The runtime proof: a single answer-button click recomputes all 80 matches and re-renders the top-5 table reactively. |
 | Layout Overlay Registry | references/layout-overlay-registry.md | Token-keyed registry + declarative `use*()` consumer API replaces `StackedState` (`Readable<T>` shim) + `getLayoutContext(onDestroy)` index plumbing. 28 push callsites + 14 onDestroy plumbing sites become trivially editable; robust against out-of-order unmount. |
@@ -116,7 +124,7 @@ verification attempts, failures, fixes, browser-verified results).
 | `apps/frontend/src/lib/contexts/candidate/candidateContext.svelte.ts` | `fromStore(appSettings) + fromStore(locale) + fromStore(getRoute)` (30+ reactive accessors) | 007 | [[context-orchestration]] |
 | `apps/frontend/src/lib/contexts/app/survey.svelte.ts` | `fromStore(appSettings) + fromStore(sessionId)` + `toStore(() => linkValue)` | 010 | [[migration-inventory-and-order]] |
 | `apps/frontend/src/lib/contexts/app/tracking/trackingService.svelte.ts` | `fromStore(appSettings + userPreferences + sessionId)` + `toStore(...)` | 010 | [[migration-inventory-and-order]] |
-| `apps/frontend/src/lib/contexts/app/getRoute.svelte.ts` | `writable(routeFn)` + custom `afterNavigate` workaround (see file header) | 010 | [[migration-inventory-and-order]] (Wave 3 — careful) |
+| `apps/frontend/src/lib/contexts/app/getRoute.svelte.ts` | `writable(routeFn)` + custom `afterNavigate` workaround (see file header) | 010, 012 | [[reactive-contexts]] Pattern 3 — VALIDATED Wave 3 unblocker |
 | `apps/frontend/src/lib/contexts/utils/dataCollectionStore.ts` | Accepts `Readable<DataRoot>` + `Readable<Array<Id>>`; returns `Readable<Array<TObject>>` | 010 | [[migration-inventory-and-order]] |
 | `apps/frontend/src/lib/contexts/admin/adminContext.svelte.ts:97` | `{ ...appContext, ...authContext, ... }` spread de-reactivates the auth-context `$derived` accessors | 009 | [[consumer-migration-codemod]] (spread-of-context anti-pattern) |
 | `apps/frontend/src/lib/dynamic-components/navigation/admin/AdminNav.svelte:33` | `const { isAuthenticated, t, getRoute } = getAdminContext()` — likely production bug | 009 | [[consumer-migration-codemod]] (destructure-trap finding) |
@@ -136,8 +144,9 @@ Wave 1 (parallel)  →  Tier 1 leaf contexts: appContext, dataContext, answerSto
                       candidateUserDataStore, settingsOverlay+layoutContext, popupStore
 Wave 2             →  Tier 2 secondary bridges + voterContext + candidateContext +
                       add runeSessionStorage helper
-Wave 3             →  getRoute migration (careful — has documented workaround) +
-                      run consumer-migration-codemod on 179 .svelte files
+Wave 3             →  getRoute migration ([[reactive-contexts]] Pattern 3 — Spike 012) +
+                      run consumer-migration-codemod on 179 .svelte files (146 $store.X
+                      + 134 $getRoute(opts) sites)
 Wave 4 (cleanup)   →  Delete persistedState.svelte.ts + StackedState.svelte.ts;
                       drop Readable<T> from .type.ts files; fix AdminNav +
                       adminContext spread; optional ESLint rule from codemod
@@ -158,4 +167,5 @@ Wave 4 (cleanup)   →  Delete persistedState.svelte.ts + StackedState.svelte.ts
 - 009-store-codemod-feasibility
 - 010-adjacent-store-bridges
 - 011-hmr-rune-contexts
+- 012-getroute-rune
 </metadata>

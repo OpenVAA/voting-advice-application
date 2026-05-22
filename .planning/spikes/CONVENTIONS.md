@@ -163,6 +163,43 @@ Established in Spike 008 (discovered while writing the SSR test — two
 variants polluted each other's `$state` through the shared `staticSettings`
 reference until the spike switched to a local pure merge).
 
+### 9. `$derived.by` over per-field reads for reference-stable `$state` proxies
+
+When a `$state` proxy's **object reference is stable** but its **internal
+fields mutate** (the canonical example: SvelteKit's `$app/state.page`),
+read the proxy field-by-field inside a `$derived.by` callback. Never read
+the proxy as a single value inside a tracking scope.
+
+```ts
+// WRONG — tags the dependency at the proxy-object level; ref-stability
+// short-circuits propagation.
+const builder = $derived.by(() => {
+  const p = page;
+  return (opts) => buildRoute(opts, p);
+});
+
+// CORRECT — per-field reads; one fine-grained dependency per field.
+const builder = $derived.by(() => {
+  const { params, route, url } = page;
+  return (opts) => buildRoute(opts, { params, route, url });
+});
+```
+
+The trap was originally surfaced via `derived(toStore(() => page), …)` in
+production's `getRoute.svelte.ts:18-30`: `toStore` wraps the getter in an
+internal `render_effect` whose `set(value)` short-circuits on
+`Object.is(prev, next)`, and the page-proxy reference never changes. The
+same logical hazard applies — at a different mechanism — to any
+`$derived` that captures `page` as a single value: subsequent reads
+through the captured handle may or may not establish per-field deps
+depending on usage context, and the safe default is to read fields
+explicitly inside the tracking scope.
+
+Production migration target: `apps/frontend/src/lib/contexts/app/getRoute.svelte.ts`.
+Established in Spike 012 — multi-step nav verified clean, defensive
+`afterNavigate` republish proven structurally redundant (matched the
+no-defensive variant on every observed step).
+
 ## Anti-Patterns
 
 ### Destructure trap (CLAUDE.md → Context Destructuring Rule)

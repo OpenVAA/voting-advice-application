@@ -1,10 +1,14 @@
-# Reactive Contexts (appSettings + dataRoot)
+# Reactive Contexts (appSettings + dataRoot + getRoute)
 
 Pure-rune replacements for the `toStore()` / `writable()` / `get(store)` bridges
-in `apps/frontend/src/lib/contexts/app/appContext.svelte.ts` and
-`apps/frontend/src/lib/contexts/data/dataContext.svelte.ts`. Two patterns
-emerged — one for **value-replace contexts** (appSettings) and one for
-**mutation-in-place singletons** (DataRoot).
+in `apps/frontend/src/lib/contexts/app/appContext.svelte.ts`,
+`apps/frontend/src/lib/contexts/data/dataContext.svelte.ts`, and
+`apps/frontend/src/lib/contexts/app/getRoute.svelte.ts`. Three patterns emerged:
+
+1. **Value-replace context** (appSettings) — `$state` replaced on each merge
+2. **Mutation-in-place singleton** (DataRoot) — stable identity, internal mutation
+3. **Reference-stable `$state` proxy reads** (getRoute over `$app/state.page`) —
+   dodging the `toStore` short-circuit via fine-grained per-field tracking
 
 ## Requirements
 
@@ -168,6 +172,77 @@ $effect(() => {
 The `instance` handle structurally cannot create a read-write loop because
 reading it does not touch the version counter — only `current` does.
 
+### Pattern 3 — Reference-stable `$state` proxy reads (getRoute over `$app/state.page`)
+
+`$app/state.page` is a long-lived Svelte 5 `$state` proxy whose **object
+reference never changes** across navigations — only its internal fields
+mutate. The production producer (`createGetRoute()`) historically went
+through `derived(toStore(() => page), …)` and broke: `toStore` wraps the
+getter in an internal `render_effect` whose `set(value)` short-circuits on
+`Object.is(prev, next)`. With the page proxy's stable reference, that
+short-circuit fired every time and the wrapping `derived` never re-evaluated.
+Production today works around it with `writable<RouteBuilder>` +
+`afterNavigate(() => store.set(buildFn()))` (see file header at
+`getRoute.svelte.ts:18-30`).
+
+**Rune-native shape** — use `$derived.by` over **per-field reads** of `page`.
+Fine-grained tracking establishes one dependency per field; nav mutates each
+field in place; the `$derived.by` re-evaluates and rebuilds the closure once
+per nav. Never read `page` as a whole value (which would tag the dependency
+at the proxy-object level).
+
+```ts
+// apps/frontend/src/lib/contexts/app/getRoute.svelte.ts (migration shape)
+import { page } from '$app/state';
+import { buildRoute } from '$lib/utils/route';
+import type { RouteOptions } from '$lib/utils/route';
+
+export type RouteBuilder = (options: RouteOptions) => string;
+
+export interface GetRouteContext {
+  readonly current: RouteBuilder;
+}
+
+export function createGetRoute(): GetRouteContext {
+  const builder = $derived.by<RouteBuilder>(() => {
+    const { params, route, url } = page;  // PER-FIELD reads
+    return (options) => buildRoute(options, { params, route, url });
+  });
+  return {
+    get current() {
+      return builder;
+    }
+  };
+}
+```
+
+**Spike 012 verified**: 4-variant side-by-side comparison in
+`/runes-test/getroute-rune/` proved Approach C (above) matches a per-call
+getter control on every navigation step (including query-param-only nav).
+A snapshot variant (negative control) stayed demonstrably stale across all
+6 observed nav transitions; `effect_update_depth_exceeded` count = 0;
+hydration mismatch count = 0; `afterNavigate` belt-and-suspenders variant
+proved structurally redundant (matched Approach C on every step). The
+production migration uses Pattern 3 directly — no defensive `afterNavigate`
+needed.
+
+**Consumer signature change** — production today exposes
+`Readable<RouteBuilder>`, so consumer sites read it via `$getRoute(opts)`
+template auto-subscribe or `get(getRoute)(opts)` imperative reads. After
+migration the surface becomes `{ current: RouteBuilder }`:
+
+```diff
+- {$getRoute({ route: 'Elections', electionId })}
++ {getRoute.current({ route: 'Elections', electionId })}
+
+- import { get } from 'svelte/store';
+- const url = get(getRoute)({ route: 'Elections' });
++ const url = getRoute.current({ route: 'Elections' });
+```
+
+The 134 consumer sites are covered by [[consumer-migration-codemod]]'s
+template-auto-subscribe rewrite pass.
+
 ### Context destructuring rule (CLAUDE.md)
 
 These migrated contexts inherit the same constraint as
@@ -183,6 +258,15 @@ const value = $derived(ctx.current);                    //  correct — read at 
 See CLAUDE.md "Context Destructuring Rule (Svelte 5)" for the full explanation.
 
 ## What to Avoid
+
+0. **(Pattern 3) Don't read `page` as a single value inside a tracking
+   scope.** `const p = page; return (opts) => buildRoute(opts, p)` (or
+   passing `page` whole to a `$derived(() => …)`) tags the dependency at
+   the proxy-object level. Because the proxy's reference is stable across
+   navs, downstream re-evaluation may not fire. Always read per field:
+   `const { params, route, url } = page` INSIDE the `$derived.by`
+   callback, OR drill into specific fields per call. This is the same
+   shape the `toStore` trap surfaces, just via a different mechanism.
 
 1. **Don't destructure `current` or `instance` into a local var.** Destructuring
    invokes the getter ONCE at init and binds the captured value. Subsequent
@@ -234,8 +318,16 @@ See CLAUDE.md "Context Destructuring Rule (Svelte 5)" for the full explanation.
 - **17+ `$appSettings.X` template sites** must migrate to `appSettings.current.X`
   — TypeScript catches all of them after the context API change. Mechanical diff.
 - **14+ `$dataRoot.X` template sites** likewise migrate to `dataRoot.current.X`.
+- **134 `$getRoute(opts)` consumer sites** must migrate to
+  `getRoute.current(opts)` — covered by [[consumer-migration-codemod]]'s
+  template-auto-subscribe rewrite pass.
 - **The production `appContext` reference-equality guard** at
   `appContext.svelte.ts:93-100` is reproduced verbatim in the spike; preserve it.
+- **`afterNavigate` is NOT needed for Pattern 3.** Spike 012 included a
+  belt-and-suspenders variant (`$derived.by` + `afterNavigate` version bump)
+  as the open question; it matched the no-defensive variant on every observed
+  step. Production migration drops `afterNavigate` entirely — fine-grained
+  per-field tracking on `page` is sufficient.
 
 ## Related
 
@@ -243,12 +335,15 @@ See [[context-orchestration]] for how appSettings + dataRoot compose with a
 downstream `voterRuneContext` / `candidateRuneContext` factory and how the
 destructure-trap appears across the cascade. See [[migration-inventory-and-order]]
 for the full Tier 1/2/3 list of remaining `svelte/store` bridges to migrate
-after these two contexts land.
+after these two contexts land. See [[consumer-migration-codemod]] for the
+mechanical rewrite of all 134 `$getRoute(opts)` callsites (Wave 3).
 
 ## Origin
 
-Synthesized from spikes: 001, 002, 008
+Synthesized from spikes: 001, 002, 008, 012
 Source files available in:
 - `sources/001-appsettings-native-rune/appSettingsRuneContext.svelte.ts`
 - `sources/002-dataroot-native-rune/dataRootRuneContext.svelte.ts`
 - `sources/008-ssr-hydration-runes/appSettingsVariantB.svelte.ts` — the SSR-aware shape promoted here
+- `sources/012-getroute-rune/getRouteRuneStore.svelte.ts` — Pattern 3 (4 variants); Approach C is the promoted shape
+- `sources/012-getroute-rune/README.md` — multi-step nav evidence table + answers to clarifier questions
