@@ -111,6 +111,109 @@ function use(overlay) {
 Callers do not import `onDestroy`, do not manage tokens, do not snapshot
 indexes. Established in Spike 006.
 
+### 7. Synchronous-init for SSR-aware contexts
+
+When a context's value depends on `page.data` (or any other load-driven
+input that's available during SSR), read it SYNCHRONOUSLY at `$state` init
+— do not rely on `$effect` for the initial merge, because `$effect` does
+not run on the server.
+
+```ts
+// WRONG — $effect doesn't run during SSR; HTML renders default value only
+let value = $state(mergeAppSettings(staticSettings, dynamicSettings));
+$effect(() => {
+  if (page.data?.appSettingsData) value = mergeAppSettings(value, page.data.appSettingsData);
+});
+
+// CORRECT — synchronous init reads page.data on both server and client
+const initialDb = page.data?.appSettingsData;
+let initial = pureMerge(staticSettings, dynamicSettings);
+if (initialDb && !(initialDb instanceof Error)) {
+  initial = pureMerge(initial, initialDb);
+}
+let value = $state(initial);
+// $effect now ONLY handles the page.data-changed-after-nav case
+$effect(() => { /* re-merge only if page.data changes */ });
+```
+
+Established in Spike 008. The production `appContext.svelte.ts:74-100` has
+the bug (and Spike 001's first draft inherited it).
+
+### 8. Pure merge for shared module singletons
+
+When merging settings or other objects sourced from module singletons
+(e.g. `staticSettings`, `dynamicSettings`), prefer pure spread-based
+merging over `Object.assign(target, ...)`. Mutating shared module objects
+leaks across context initializations.
+
+```ts
+// WRONG — mutates target (production mergeAppSettings does this)
+function mergeAppSettings(target, additional): AppSettings {
+  return Object.assign(target, nonNull);
+}
+
+// CORRECT — pure
+function pureMerge(target, additional) {
+  const nonNull = Object.fromEntries(Object.entries(additional).filter(([, v]) => v != null));
+  return { ...target, ...nonNull };
+}
+```
+
+Established in Spike 008 (discovered while writing the SSR test — two
+variants polluted each other's `$state` through the shared `staticSettings`
+reference until the spike switched to a local pure merge).
+
+## Anti-Patterns
+
+### Destructure trap (CLAUDE.md → Context Destructuring Rule)
+
+```ts
+// WRONG — captures init-time value, never updates
+const { selectedElections, opinionQuestions } = getVoterContext();
+
+// CORRECT — read at call site each time
+const ctx = getVoterContext();
+const elections = $derived(ctx.selectedElections);
+const questions = $derived(ctx.opinionQuestions);
+```
+
+Established by Phase 61 production fix; reproduced & verified in Spike 007.
+Spike 009's codemod has a destructure-trap audit pass that flags every
+matching callsite.
+
+### Spread-of-context (sibling of destructure trap)
+
+```ts
+// WRONG — spread invokes each getter ONCE at spread time, captures VALUES
+const adminContext = { ...appContext, ...authContext, jobs };
+
+// CORRECT — re-declare the getters in the composing context
+const adminContext = {
+  // explicit forwarding preserves the getter chain
+  get isAuthenticated() { return authContext.isAuthenticated; },
+  get t() { return authContext.t; },
+  ...
+};
+// OR — keep auth as a separate handle the caller pulls explicitly
+return { auth: authContext, jobs };
+```
+
+Discovered in Spike 009 — `apps/frontend/src/lib/contexts/admin/adminContext.svelte.ts:97`
+uses spread, which de-reactivates the auth context's `$derived` accessors.
+This is a sibling-trap that the codemod's destructure audit picks up
+indirectly (via the visible consumer-side `const { isAuthenticated } = getAdminContext()`).
+
+## HMR Considerations (Spike 011)
+
+- `$state` in `.svelte` files resets on HMR — this is correct behavior.
+- `runeLocalStorage` survives HMR cycles via storage-rehydration on remount.
+- Class-instance singletons (DataRoot) held by parent layout context
+  survive — child HMR doesn't trigger parent remount.
+- **The destructure trap is silently masked during HMR** — the trap
+  consumer re-captures at remount with current values. Do not assume
+  HMR-driven manual testing has validated destructure-trap absence; run
+  the Spike 009 codemod audit pass instead.
+
 ## Tools & Libraries
 
 - `untrack` from `svelte` — used for breaking read-write cycles in
