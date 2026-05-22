@@ -383,3 +383,7 @@ See `render.example.yaml` for Render deployment configuration:
 ## Code Review
 
 When performing code review or developing new features, make sure to check all the items in the [Code Review Checklist](/.agents/code-review-checklist.md).
+
+## Skill Routing
+
+- **Spike findings for voting-advice-application-gsd** (Svelte 5 rune migration patterns from runes-test spikes 001–006: reactive context shapes, `runeLocalStorage` helper, `untrack()` write-after-read invariant, token-keyed overlay registry) → `Skill("spike-findings-voting-advice-application-gsd")`
