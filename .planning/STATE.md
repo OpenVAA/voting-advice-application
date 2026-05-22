@@ -169,8 +169,8 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-05-20T16:30:00.000Z
-Stopped at: Phase 86.3 CLOSED (Plan 05 atomic close commit; all 5 plans complete). 8-cell disposition: 3 FIX-PASS + 5 SKIP-FALLBACK. 4-cell upstream voter-app cold-deeplink race surfaced post-Wave-1 (cells #5/#6/#7/#8 — all produce `Loading…` page-snapshot on different routes). 3-run gate ALMOST-STRICT per Phase 86 D-06 precedent. Anchor SHA bc1c94957b…. D-06 Phase 87 disposition recommendation: RE-PLAN.
+Last session: 2026-05-22T (spike 012 closed)
+Stopped at: **Spike 012 (getRoute rune-native) VALIDATED.** Approach C — `$derived.by` over per-field `$app/state.page` reads — bypasses the documented `toStore` short-circuit trap by construction. Defensive Approach D (C + afterNavigate version bump) proven redundant. Multi-step nav verified clean (`D.navCount=6`, no `effect_update_depth_exceeded` warnings, no hydration mismatches, C ≡ B on every observed step). Spike artifacts: `.planning/spikes/012-getroute-rune/README.md`, MANIFEST row 012, deletable demo at `apps/frontend/src/routes/runes-test/getroute-rune/`. Production migration plan + 4-variant comparison documented in README. v2.10 milestone close (`/gsd-complete-milestone v2.10`) remains the standing operator next step.
 Resume file: None
 Next action: Operator decides Phase 87 disposition per Phase 86.3-05 D-06 recommendation:
   (a) **RE-PLAN (Claude's recommendation):** Re-plan Phase 87 to absorb v2.11+ voter-app cold-deeplink deferrals (4 cells #5/#6/#7/#8 closure-paired via navigation-from-home redesign) + boundary-class flake deferrals (DETERM-06 imgproxy + email-link timing) BEFORE firing the v2.10-ship anchor capture. Plan 87-01 needs a new Plan 01a (deferral inventory) + Plan 01b (anchor capture WITH explicit deferrals documented).
