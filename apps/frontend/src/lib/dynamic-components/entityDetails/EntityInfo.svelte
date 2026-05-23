@@ -71,9 +71,9 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
             <a
               href={$getRoute({
                 route: 'ResultEntity',
-                entityTypePlural:
+                entityTab:
                   parentNomination.entityType === 'candidate' ? 'candidates' : 'organizations',
-                entityTypeSingular: parentNomination.entityType,
+                entity: parentNomination.entityType,
                 id: parentNomination.entity.id,
                 nominationId: parentNomination.id
               })}>

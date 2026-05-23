@@ -33,7 +33,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 ### Usage
 
 ```tsx
-<EntityCard action={$getRoute({route: 'ResultsCandidate', entityId: candidate.id})} 
+<EntityCard action={$getRoute({route: 'ResultCandidate', entityId: candidate.id})}
   content={candidate}>
 <EntityCard content={party} variant="details">
 ```
@@ -97,20 +97,21 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     const elSym = unwrapped.nomination?.electionSymbol;
 
     // The default action is a link to the entity's ResultEntity route.
-    // Phase 62 Plan 62-03: ResultEntity now resolves to the 4-segment shape
-    // `[[entityTypePlural]]/[[entityTypeSingular]]/[[id]]`. The singular is
-    // the entity's own `type` (candidate | organization); the plural is the
-    // parent list — defaulting to the same-type plural preserves the
-    // list-plus-matching-drawer shape. The filterContext auto-scopes per
-    // (electionId, entityTypePlural) so a candidate drawer under a
+    // Phase 62 Plan 62-03 + Phase 88 Plan 88-02: ResultEntity now resolves
+    // to the 4-segment shape `[[electionTab]]/[[entityTab]]/[[entity]]/[[id]]`.
+    // The `entity` (singular drawer entity-type matcher) is the entity's own
+    // `type` (candidate | organization | alliance); the `entityTab` (plural
+    // list-tab matcher) is the parent list — defaulting to the same-type
+    // plural preserves the list-plus-matching-drawer shape. The filterContext
+    // auto-scopes per (electionId, entityTab) so a candidate drawer under a
     // candidates list continues to behave as before.
     const effectiveAction =
       action ??
       $getRoute({
         route: 'ResultEntity',
-        entityTypePlural:
+        entityTab:
           type === 'candidate' ? 'candidates' : type === 'alliance' ? 'alliances' : 'organizations',
-        entityTypeSingular: type,
+        entity: type,
         id,
         nominationId: unwrapped.nomination?.id
       });
