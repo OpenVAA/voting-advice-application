@@ -27,9 +27,11 @@ export function getFilterContext(): FilterContext {
  *
  * The `entityFilters` getter closes over the `FilterTree` built by
  * `filterStore()` inside `voterContext`. Scope is derived from
- * `page.params.electionId` + `page.params.entityTypePlural` (D-14: a different
+ * `page.params.electionId` + `page.params.entityTab` (D-14: a different
  * tuple yields a different `FilterGroup` reference, implicitly resetting
- * filter state per the existing `filterStore` rebuild semantics).
+ * filter state per the existing `filterStore` rebuild semantics). The
+ * `entityTab` key was renamed from `entityTypePlural` by Phase 88 Plan
+ * 88-02; backed by the new `etPl` matcher.
  *
  * Reactivity bridge (RESEARCH.md §Pattern 1, Pitfall 1): `FilterGroup.filters[i]._rules`
  * is plain JS, not `$state`. Subscribing to `FilterGroup.onChange` and bumping
@@ -51,12 +53,13 @@ export function initFilterContext({ entityFilters }: InitFilterContextArgs): Fil
   //
   // We use `parseParams(page)` (matching the `paramStore` analog in
   // `voterContext`) instead of `page.params.X` directly, because:
-  //   1. `electionId` is a persistent search param today (URL `?electionId=...`)
-  //      and may also become a route param in Plan 62-02. `parseParams` merges
-  //      both surfaces transparently.
-  //   2. `entityTypePlural` is a future route param (added by Plan 62-02). The
-  //      `Partial<Params>` return type uses an indexed `Record<string, ...>`
-  //      fallback so accessing it before the param exists is type-safe.
+  //   1. `electionId` is a persistent search param today (URL `?electionId=...`).
+  //      `parseParams` merges route + search surfaces transparently.
+  //   2. `entityTab` is the route-side list-tab key (renamed from
+  //      `entityTypePlural` by Phase 88 Plan 88-02; backed by the new etPl
+  //      matcher). The `Partial<Params>` return type uses an indexed
+  //      `Record<string, ...>` fallback so any future key extensions stay
+  //      type-safe.
   //
   // Plural→singular mapping uses American spelling per RESEARCH Open Question 1.
   const _filterGroup = $derived.by<FilterGroup<MaybeWrappedEntityVariant> | undefined>(() => {
@@ -65,7 +68,7 @@ export function initFilterContext({ entityFilters }: InitFilterContextArgs): Fil
     const params = parseParams(page);
     const electionIdRaw = params.electionId;
     const electionId = Array.isArray(electionIdRaw) ? electionIdRaw[0] : electionIdRaw;
-    const pluralRaw = params.entityTypePlural;
+    const pluralRaw = params.entityTab;
     const plural = Array.isArray(pluralRaw) ? pluralRaw[0] : pluralRaw;
     const entityType =
       plural === 'candidates' ? 'candidate' : plural === 'organizations' ? 'organization' : undefined;

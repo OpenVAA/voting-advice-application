@@ -11,9 +11,10 @@ import type { FilterContext } from './filterContext.type';
 
 // Helper: assigns to the `mockPage.params` stub. Cast to a permissive Record
 // because SvelteKit's auto-generated `app.d.ts` constrains `page.params` to
-// the route params that exist today (no `electionId` route, no `entityTypePlural`
-// route — both arrive in Plan 62-02). filterContext reads via `parseParams`
-// which is typed `Partial<Params>` and accepts arbitrary string keys.
+// the route params that exist today (no `electionId` route — that key still
+// lives on the search side; `entityTab` is the Phase 88 Plan 88-02 route key).
+// filterContext reads via `parseParams` which is typed `Partial<Params>` and
+// accepts arbitrary string keys.
 type LooseParams = Record<string, string | undefined>;
 function setParams(params: LooseParams): void {
   (mockPage as unknown as { params: LooseParams }).params = params;
@@ -156,11 +157,11 @@ describe('filterContext', () => {
     expect(secondErr!.status).toBe(500);
   });
 
-  it('exposes the FilterGroup scoped by (electionId, entityTypePlural=candidates → candidate)', () => {
+  it('exposes the FilterGroup scoped by (electionId, entityTab=candidates → candidate)', () => {
     const candidateGroup = new FakeGroup([new FakeFilter('cand-f')]);
     const orgGroup = new FakeGroup([new FakeFilter('org-f')]);
     const tree = { e1: { candidate: candidateGroup, organization: orgGroup } } as unknown as FilterTree;
-    setParams({ electionId: 'e1', entityTypePlural: 'candidates' });
+    setParams({ electionId: 'e1', entityTab: 'candidates' });
 
     let observed: unknown;
     const target = mountTarget();
@@ -178,12 +179,12 @@ describe('filterContext', () => {
     expect(observed).toBe(candidateGroup);
   });
 
-  it('changing entityTypePlural to organizations resolves to the organization FilterGroup', () => {
+  it('changing entityTab to organizations resolves to the organization FilterGroup', () => {
     const candidateGroup = new FakeGroup([new FakeFilter('c')]);
     const orgGroup = new FakeGroup([new FakeFilter('o')]);
     const tree = { e1: { candidate: candidateGroup, organization: orgGroup } } as unknown as FilterTree;
 
-    setParams({ electionId: 'e1', entityTypePlural: 'organizations' });
+    setParams({ electionId: 'e1', entityTab: 'organizations' });
     let observed: unknown;
     const target = mountTarget();
     const component = mount(FilterContextHarness, {
@@ -204,7 +205,7 @@ describe('filterContext', () => {
     const f1 = new FakeFilter('f1');
     const group = new FakeGroup([f1]);
     const tree = { e1: { candidate: group } } as unknown as FilterTree;
-    setParams({ electionId: 'e1', entityTypePlural: 'candidates' });
+    setParams({ electionId: 'e1', entityTab: 'candidates' });
 
     let captured: FilterContext | undefined;
     const target = mountTarget();
@@ -239,7 +240,7 @@ describe('filterContext', () => {
     const group = new FakeGroup([f1]);
     const resetSpy = vi.spyOn(group, 'reset');
     const tree = { e1: { candidate: group } } as unknown as FilterTree;
-    setParams({ electionId: 'e1', entityTypePlural: 'candidates' });
+    setParams({ electionId: 'e1', entityTab: 'candidates' });
 
     let captured: FilterContext | undefined;
     const target = mountTarget();
@@ -264,7 +265,7 @@ describe('filterContext', () => {
   it('removes the onChange listener on unmount (Pitfall 2 cleanup)', () => {
     const oldGroup = new FakeGroup([new FakeFilter('old')]);
     const tree = { e1: { candidate: oldGroup } } as unknown as FilterTree;
-    setParams({ electionId: 'e1', entityTypePlural: 'candidates' });
+    setParams({ electionId: 'e1', entityTab: 'candidates' });
 
     const target = mountTarget();
     const component = mount(FilterContextHarness, {
@@ -291,7 +292,7 @@ describe('filterContext', () => {
     const tree = {
       e1: { candidate: new FakeGroup([new FakeFilter()]) }
     } as unknown as FilterTree;
-    // No electionId, no entityTypePlural
+    // No electionId, no entityTab
     setParams({});
     let observed: unknown = 'sentinel';
     const target = mountTarget();

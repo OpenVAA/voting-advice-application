@@ -3,6 +3,7 @@ import { DISTANCE_METRIC, MatchingAlgorithm, MISSING_VALUE_METHOD } from '@openv
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext, untrack } from 'svelte';
 import { fromStore } from 'svelte/store';
+import { page } from '$app/state';
 import { logDebugError } from '$lib/utils/logger';
 import { getImpliedConstituencyIds, getImpliedElectionIds } from '$lib/utils/route';
 import { answerStore } from './answerStore.svelte';
@@ -158,6 +159,48 @@ export function initVoterContext(): VoterContext {
       logDebugError(`[selectedConstituencies] Error fetching constituency: ${e}`);
       if (selectedConstituencies.length !== 0) selectedConstituencies = [];
     }
+  });
+
+  ////////////////////////////////////////////////////////////
+  // currentResultsElection (Phase 88 Plan 88-02)
+  ////////////////////////////////////////////////////////////
+  //
+  // Singular SELECTED election whose results page is being rendered,
+  // sourced from the NEW route segment `page.params.electionTab`.
+  //
+  // SEMANTIC DISSOCIATION (NAME-DISJOINT): `selectedElections` (above) is
+  // the AVAILABLE-array surface sourced from the SEARCH-side
+  // `?electionId=…` persistent search param; `currentResultsElection`
+  // (here) is the SELECTED-singular surface sourced from the ROUTE-side
+  // `page.params.electionTab` segment. The two keys
+  // (`electionId` vs `electionTab`) are literally different identifiers
+  // throughout the codebase — they never alias.
+  //
+  // Implementation choice (Decision Q3): `$derived.by` rather than the
+  // push-pattern `$state` + `$effect` mirror used by `selectedElections`.
+  // The push-pattern was needed for `selectedElections` because of the
+  // silent-fail FK-lookup race documented at voterContext.svelte.ts:120-130
+  // (a transient throw during navigation when DataRoot doesn't yet have
+  // the election). Here we just lookup against the already-resolved
+  // `selectedElections` array — no FK fetch, no race — so the cheap
+  // `$derived.by` is sufficient. Reactivity propagates correctly because
+  // `page.params.electionTab` is reactive in Svelte 5 (`$app/state`) and
+  // `selectedElections` is reactive via `$state`.
+  //
+  // Fallback chain:
+  //   1. Route segment present AND found in available array → that election.
+  //   2. Route segment absent AND exactly 1 available → that single election
+  //      (mirrors the +layout.svelte single-election fallback).
+  //   3. Otherwise (route segment present but stale, OR route segment absent
+  //      with 0/2+ available) → `undefined`. The server-side guard at
+  //      `(voters)/(located)/results/[[electionTab]]/+layout.ts` will
+  //      normally have redirected before this derivation runs in the stale
+  //      case; this just defends against late-arriving updates.
+  const currentResultsElection = $derived.by<Election | undefined>(() => {
+    const tab = page.params.electionTab;
+    if (tab) return selectedElections.find((e) => e.id === tab);
+    if (selectedElections.length === 1) return selectedElections[0];
+    return undefined;
   });
 
   ////////////////////////////////////////////////////////////
@@ -382,7 +425,7 @@ export function initVoterContext(): VoterContext {
 
   // Phase 62 D-05: initialize the dedicated filterContext using a closure over
   // the just-built FilterTree. filterContext reads page.params for its
-  // (electionId, entityTypePlural) scope key and bridges FilterGroup.onChange
+  // (electionId, entityTab) scope key and bridges FilterGroup.onChange
   // → $state version counter so $derived consumers (EntityListWithControls)
   // re-run on filter mutation. Single init per voter session — re-init is
   // guarded by initFilterContext() itself (status-500).
@@ -411,6 +454,9 @@ export function initVoterContext(): VoterContext {
     answers,
     get constituenciesSelectable() {
       return constituenciesSelectable;
+    },
+    get currentResultsElection() {
+      return currentResultsElection;
     },
     get electionsSelectable() {
       return electionsSelectable;

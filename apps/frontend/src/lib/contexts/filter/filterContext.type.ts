@@ -3,7 +3,8 @@ import type { FilterTree } from '$lib/contexts/voter/filters/filterStore.svelte'
 
 /**
  * Symbol-keyed Svelte context exposing the active `FilterGroup` for the current
- * (`electionId`, `entityTypePlural`) URL scope, plus a `$state` version counter
+ * (`electionId`, `entityTab`) URL scope (`entityTab` renamed from
+ * `entityTypePlural` by Phase 88 Plan 88-02), plus a `$state` version counter
  * that bridges `FilterGroup.onChange` imperative notifications into `$derived`
  * reactivity. See `filterContext.svelte.ts` for the implementation analog
  * (`dataContext.svelte.ts` lines 33-50).
@@ -15,8 +16,8 @@ import type { FilterTree } from '$lib/contexts/voter/filters/filterStore.svelte'
 export type FilterContext = {
   /**
    * The currently active `FilterGroup`, scoped by the URL params
-   * (`electionId`, `entityTypePlural`). `undefined` when the URL scope is
-   * incomplete (e.g. `entityTypePlural` is absent or unrecognized).
+   * (`electionId`, `entityTab`). `undefined` when the URL scope is
+   * incomplete (e.g. `entityTab` is absent or unrecognized).
    *
    * Reading this getter inside a `$derived` does NOT subscribe to filter-rule
    * mutations — read `version` for that. The reference itself only changes

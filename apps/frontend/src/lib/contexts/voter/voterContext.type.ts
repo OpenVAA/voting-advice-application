@@ -30,6 +30,33 @@ export type VoterContext = AppContext & {
    */
   selectedElections: Array<Election>;
   /**
+   * The currently-SELECTED election (singular) whose results are being rendered,
+   * derived from `page.params.electionTab` (the new route segment introduced in
+   * Phase 88 Plan 88-02). When the route param is absent AND there's exactly
+   * one available election, falls back to `selectedElections[0]`. Returns
+   * `undefined` when the route param is absent AND there are 0 or 2+ available
+   * elections (the picker shape) — OR when the route param names an election
+   * not present in `selectedElections` (a stale/invalid `electionTab`; the
+   * server-side guard at `(voters)/(located)/results/[[electionTab]]/+layout.ts`
+   * will normally have redirected before this getter is reached on the same
+   * render, so this case is a defensive fall-through).
+   *
+   * SEMANTIC DISSOCIATION (NAME-DISJOINT): `selectedElections` (existing field
+   * above) returns the AVAILABLE array (zero-or-more) sourced from the
+   * SEARCH-side `?electionId=…` / `electionId[N]=…` surface;
+   * `currentResultsElection` (this field) returns the SELECTED singular
+   * sourced from the ROUTE-side `page.params.electionTab` surface. The two
+   * keys (`electionId` vs `electionTab`) are literally different identifiers
+   * throughout the codebase — they never alias.
+   *
+   * Read via `ctx.currentResultsElection` per the CLAUDE.md
+   * Context Destructuring Rule (Svelte 5) — this is a reactive accessor and
+   * MUST NOT be destructured out of the context object (the getter would be
+   * invoked ONCE at component-init time and the captured value would not
+   * react to subsequent URL changes).
+   */
+  currentResultsElection: Election | undefined;
+  /**
    * The `Constituency`s selected by the user or automatically selected if they can be implied, e.g. when all selected elections have only one constituency.
    */
   selectedConstituencies: Array<Constituency>;
@@ -50,7 +77,7 @@ export type VoterContext = AppContext & {
    */
   entityFilters: FilterTree;
   /**
-   * The scoped `FilterContext` for the current (`electionId`, `entityTypePlural`) tuple.
+   * The scoped `FilterContext` for the current (`electionId`, `entityTab`) tuple.
    * Bundled through voterContext for ergonomic consumption from the voter flow UI;
    * also directly accessible via `getFilterContext()` for the future LLM chat
    * integration (Phase 62 D-05, D-06). Same Symbol-keyed instance both ways.
