@@ -6,15 +6,20 @@ Renders the matching results list and, when on an entity detail child route, sho
 
 Entity cards are `<a>` links — right-click opens in new tab, normal click triggers SvelteKit client-side navigation which the layout detects and renders in a Drawer.
 
-## Architecture (Phase 62 Plan 62-03 refactor)
+## Architecture (Phase 62 Plan 62-03 refactor; updated by Phase 88 Plan 88-02)
 
 - URL is the single source of truth (D-09, D-13). Tabs, drawer visibility, and
-  active entity type are pure `$derived` over `page.params.entityTypePlural` /
-  `entityTypeSingular` / `id` and the `electionId` persistent search param.
+  active entity type are pure `$derived` over `page.params.electionTab` /
+  `entityTab` / `entity` / `id`. As of Plan 88-02 the *selected* election
+  whose results are being rendered now lives in the route segment
+  `page.params.electionTab` (name-disjoint from the search-side
+  `?electionId=…` AVAILABLE-array surface, which keeps its
+  `voterContext.selectedElections` semantics — that array drives nomination
+  + question filtering and is set by the voter at `/elections`).
   No local `$state` twins for URL-derivable state; no `$effect`-based sync.
 - `<EntityListWithControls>` replaces the legacy `<EntityList>` call —
   filters are re-enabled end-to-end through the shared `filterContext`
-  (D-05), which auto-scopes per (electionId, entityTypePlural) per D-14.
+  (D-05), which auto-scopes per (electionId, entityTab) per D-14.
 - Drawer-first paint (D-10): the `{#if drawerVisible} <EntityDetailsDrawer/>`
   block is rendered BEFORE the list container in DOM source order; the list
   container carries `content-visibility: auto` so the browser defers its
@@ -29,7 +34,6 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
 
 <script lang="ts">
   import { isMatch } from '@openvaa/matching';
-  import qs from 'qs';
   import { onMount } from 'svelte';
   import { slide } from 'svelte/transition';
   import { goto } from '$app/navigation';
@@ -44,7 +48,6 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   import { EntityListWithControls } from '$lib/dynamic-components/entityList';
   import { getEntityAndTitle } from '$lib/utils/entityDetails';
   import { logDebugError } from '$lib/utils/logger';
-  import { parseParams } from '$lib/utils/route';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { ucFirst } from '$lib/utils/text/ucFirst';
   import { DELAY } from '$lib/utils/timing';
@@ -81,38 +84,44 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   const constituencies = $derived(voterCtx.selectedConstituencies);
 
   ////////////////////////////////////////////////////////////////////
-  // URL-derived state (D-09, D-13)
+  // URL-derived state (D-09, D-13) — Phase 88 Plan 88-02 refactor
   ////////////////////////////////////////////////////////////////////
   //
-  // electionId lives in the persistent search param (PERSISTENT_SEARCH_PARAMS
-  // in `$lib/utils/route/params.ts`), not in the route path. `parseParams`
-  // merges route + search params transparently, matching the paramStore +
-  // filterContext analogs.
+  // Two name-disjoint election surfaces coexist on the URL:
+  //   - ROUTE side: `page.params.electionTab` (singular) — the *selected*
+  //     election whose results-page is being rendered. New in Plan 88-02.
+  //   - SEARCH side: `?electionId=…` / `electionId[N]=…` (zero-or-more)
+  //     — the AVAILABLE elections (voter scope set at `/elections`),
+  //     surfaced via `voterContext.selectedElections`. Unchanged from prior
+  //     phases.
+  // The two share NO key name (electionTab vs electionId) — different
+  // identifiers throughout the codebase. The server-side guard at
+  // `[[electionTab]]/+layout.ts` validates that `params.electionTab`
+  // is a member of the AVAILABLE array (Task 6).
   //
-  // entityTypePlural + entityTypeSingular + id are route params introduced
-  // by Plan 62-02 via matcher-gated optional segments.
+  // entityTab + entity + id are route params (renamed in Plan 88-02 from
+  // the prior plural/singular matcher-gated segments via the new etPl /
+  // etSg short-name matchers).
   //
-  // Single-election fallback: when there is exactly one election available,
-  // auto-select it — preserves the legacy layout behaviour (line 101 of the
-  // pre-refactor file) without mutating the URL (buildRoute / $getRoute
-  // handlers continue to append electionId to the search params on the
-  // first explicit navigation).
+  // Single-election fallback: when the route segment is absent AND there's
+  // exactly one available election, auto-select it — preserves the legacy
+  // layout behaviour (line 101 of the pre-refactor file). Task 6's server
+  // guard will eventually redirect-and-canonicalize this case, so this
+  // fallback is the client-side safety net.
 
   type EntityPlural = 'candidates' | 'organizations' | 'alliances';
 
-  const _parsedParams = $derived(parseParams(page));
-  const _urlElectionIdRaw = $derived(_parsedParams.electionId);
-  const _urlElectionId = $derived(Array.isArray(_urlElectionIdRaw) ? _urlElectionIdRaw[0] : _urlElectionIdRaw);
+  const _urlElectionTab = $derived(page.params.electionTab);
 
   const activeElectionId = $derived<string | undefined>(
-    _urlElectionId ?? (elections.length === 1 ? elections[0].id : undefined)
+    _urlElectionTab ?? (elections.length === 1 ? elections[0].id : undefined)
   );
 
   const activeElection = $derived<Election | undefined>(
     activeElectionId ? elections.find((e) => e.id === activeElectionId) : undefined
   );
 
-  const _urlPluralRaw = $derived(page.params.entityTypePlural);
+  const _urlPluralRaw = $derived(page.params.entityTab);
   const _urlPlural = $derived<EntityPlural | undefined>(
     _urlPluralRaw === 'candidates' || _urlPluralRaw === 'organizations' || _urlPluralRaw === 'alliances'
       ? _urlPluralRaw
@@ -133,7 +142,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   );
 
   // Plural → singular mapping uses American spelling (RESEARCH Open Question 1
-  // RESOLVED). When the URL omits entityTypePlural — OR names a plural that
+  // RESOLVED). When the URL omits entityTab — OR names a plural that
   // isn't present in the entityTabs (e.g. URL stuck at /candidates after the
   // `results.sections` setting drops 'candidate' — variant-results-sections.spec.ts:291) —
   // fall back to the first available tab for the active election.
@@ -165,11 +174,11 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   // Drawer visibility (D-09) — drawer renders iff both singular+id present
   ////////////////////////////////////////////////////////////////////
 
-  const drawerVisible = $derived<boolean>(!!(page.params.entityTypeSingular && page.params.id));
+  const drawerVisible = $derived<boolean>(!!(page.params.entity && page.params.id));
 
   const drawerEntity = $derived.by<MaybeWrappedEntityVariant | undefined>(() => {
     if (!drawerVisible) return undefined;
-    const entityType = page.params.entityTypeSingular as EntityType;
+    const entityType = page.params.entity as EntityType;
     const entityId = page.params.id!;
     const nominationId = page.url.searchParams.get('nominationId') ?? undefined;
     try {
@@ -220,7 +229,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   // `results_browse_*` event pair).
   $effect(() => {
     if (!drawerVisible || !drawerEntity) return;
-    const entityType = page.params.entityTypeSingular as EntityType;
+    const entityType = page.params.entity as EntityType;
     const entityId = page.params.id!;
     if (isMatch(drawerEntity)) {
       startEvent(`results_ranked_${entityType}`, { id: entityId, score: drawerEntity.score });
@@ -234,55 +243,49 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   ////////////////////////////////////////////////////////////////////
 
   /**
-   * Build a path-only /results URL from a plural and append electionId as a search param.
-   * electionId is a PERSISTENT_SEARCH_PARAMS member in `$lib/utils/route/params.ts`;
-   * writing it as a route segment would contradict that contract and break the
-   * existing `$getRoute('Results', ...)` consumers across the app.
+   * Build a path-only /results URL with the SELECTED election landing on the
+   * new `electionTab` route segment (Plan 88-02 refactor) and the existing
+   * search params preserved verbatim.
+   *
+   * Name-disjoint dissociation: `electionTab` is the route-side singular
+   * (Plan 88-02 new); `electionId` is the search-side AVAILABLE-array
+   * (existing PERSISTENT_SEARCH_PARAMS member at `$lib/utils/route/params.ts`).
+   * The two never alias. The pre-88-02 qs.parse round-trip that overwrote
+   * the search-side `electionId` is GONE — the search-side AVAILABLE array
+   * is preserved as-is, and the route-side electionTab is the canonical
+   * SELECTED-singular surface.
    */
-  function buildListRoute(plural: EntityPlural | undefined, electionId: string | undefined): string {
-    const base = plural ? `/results/${plural}` : '/results';
-    // Round-trip through `qs` (not native URLSearchParams) so we stay aligned
-    // with how the rest of the app emits + reads search params:
-    //   - `buildRoute` / `$getRoute` uses `qs.stringify(..., { encodeValuesOnly: true })`,
-    //     which writes multi-valued params as `electionId[0]=X&electionId[1]=Y`
-    //     (qs's default `indices` arrayFormat).
-    //   - `parseParams` reads them back with `qs.parse`, which only collapses
-    //     `electionId[N]=…` back to a single `electionId` key/array.
-    // A native `URLSearchParams.set('electionId', X)` would treat `electionId[0]`
-    // and `electionId[1]` as completely different keys, leave them alone, and
-    // append a THIRD `electionId=X` bare key — which `qs.parse` then surfaces
-    // as a 3-id array, surfacing as an extra phantom election in the results
-    // page election selector + missing-nominations modal. Round-tripping
-    // through `qs` collapses any prior bracketed-or-bare electionId entries
-    // into a single field before we overwrite it.
-    const parsed = qs.parse(page.url.search.replace(/^\?/, ''));
-    if (electionId) parsed.electionId = electionId;
-    else delete parsed.electionId;
-    const query = qs.stringify(parsed, { encodeValuesOnly: true });
-    return query ? `${base}?${query}` : base;
+  function buildListRoute(electionTab: string | undefined, plural: EntityPlural | undefined): string {
+    const electionSegment = electionTab ? `/${electionTab}` : '';
+    const pluralSegment = plural ? `/${plural}` : electionTab ? '/candidates' : '';
+    // Preserve any persistent search params (electionId AVAILABLE array,
+    // constituencyId, etc.) on the URL verbatim. The route side now owns
+    // the SELECTED election surface; the search side keeps its existing
+    // AVAILABLE-array role.
+    return `/results${electionSegment}${pluralSegment}${page.url.search}`;
   }
 
   function handleElectionChange(details: { option: unknown }): void {
     const { id } = details.option as Election;
     const plural = _urlPlural ?? _pluralForActiveType();
-    goto(buildListRoute(plural, id));
+    goto(buildListRoute(id, plural));
     startEvent('results_changeElection', { election: id });
   }
 
   function handleEntityTabChange({ index, tab }: { index?: number; tab?: Tab }): void {
     const typed = tab as EntityTab | undefined;
     if (typed?.type === 'candidate' || index === 0) {
-      goto(buildListRoute('candidates', activeElectionId));
+      goto(buildListRoute(activeElectionId, 'candidates'));
       startEvent('results_changeTab', { section: 'candidate' });
       return;
     }
     if (typed?.type === 'organization' || index === 1) {
-      goto(buildListRoute('organizations', activeElectionId));
+      goto(buildListRoute(activeElectionId, 'organizations'));
       startEvent('results_changeTab', { section: 'organization' });
       return;
     }
     if (typed?.type === 'alliance' || index === 2) {
-      goto(buildListRoute('alliances', activeElectionId));
+      goto(buildListRoute(activeElectionId, 'alliances'));
       startEvent('results_changeTab', { section: 'alliance' });
       return;
     }
@@ -293,7 +296,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
     // uses `data-sveltekit-noscroll`). Without it, SvelteKit's default
     // scroll-on-navigation snaps the list back to the top — surfaced during
     // Phase 64 manual smoke as "page scrolls when drawer closes".
-    goto(buildListRoute(_urlPlural ?? _pluralForActiveType(), activeElectionId), { noScroll: true });
+    goto(buildListRoute(activeElectionId, _urlPlural ?? _pluralForActiveType()), { noScroll: true });
   }
 
   function _pluralForActiveType(): EntityPlural | undefined {
