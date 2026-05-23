@@ -39,7 +39,7 @@ export function getFilterContext(): FilterContext {
  * `$derived` consumer re-run on filter mutation. The `$effect` that attaches
  * the listener returns a cleanup that detaches it on scope change (Pitfall 2).
  */
-export function initFilterContext({ entityFilters }: InitFilterContextArgs): FilterContext {
+export function initFilterContext({ entityFilters, currentEntityType }: InitFilterContextArgs): FilterContext {
   if (hasContext(CONTEXT_KEY)) error(500, 'initFilterContext() called for a second time');
 
   // Version counter — incremented on every FilterGroup.onChange. Read inside
@@ -62,16 +62,34 @@ export function initFilterContext({ entityFilters }: InitFilterContextArgs): Fil
   //      type-safe.
   //
   // Plural→singular mapping uses American spelling per RESEARCH Open Question 1.
+  //
+  // Phase 88 post-88-02 follow-up: when `currentEntityType` is injected
+  // (production path), prefer its return value over the URL-derived plural.
+  // This lets the results route stop force-filling `entityTab` into the URL
+  // (which produced a redirect loop): the implied entity type lives on
+  // voterContext, filterContext reads it through the injected getter, and the
+  // URL only carries `entityTab` when the user has explicitly chosen one.
+  // When the getter is absent (existing tests, direct LLM-chat init), fall
+  // back to the legacy URL-derived scope so behavior is backward compatible.
   const _filterGroup = $derived.by<FilterGroup<MaybeWrappedEntityVariant> | undefined>(() => {
     void version;
     const tree = entityFilters();
     const params = parseParams(page);
     const electionIdRaw = params.electionId;
     const electionId = Array.isArray(electionIdRaw) ? electionIdRaw[0] : electionIdRaw;
-    const pluralRaw = params.entityTab;
-    const plural = Array.isArray(pluralRaw) ? pluralRaw[0] : pluralRaw;
-    const entityType =
-      plural === 'candidates' ? 'candidate' : plural === 'organizations' ? 'organization' : undefined;
+    let entityType = currentEntityType?.();
+    if (!entityType) {
+      const pluralRaw = params.entityTab;
+      const plural = Array.isArray(pluralRaw) ? pluralRaw[0] : pluralRaw;
+      entityType =
+        plural === 'candidates'
+          ? 'candidate'
+          : plural === 'organizations'
+            ? 'organization'
+            : plural === 'alliances'
+              ? 'alliance'
+              : undefined;
+    }
     if (!electionId || !entityType) return undefined;
     return tree?.[electionId]?.[entityType];
   });

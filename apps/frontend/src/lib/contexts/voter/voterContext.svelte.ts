@@ -423,13 +423,55 @@ export function initVoterContext(): VoterContext {
     t: () => t
   });
 
+  // currentResultsEntityType — singular EntityType implied for the active
+  // results election. URL-first: when `page.params.entityTab` names a valid
+  // plural (matched against the current election's available types) the
+  // mapped singular wins. Otherwise, default-pick the first available type
+  // for `currentResultsElection`. Returns `undefined` only when there is no
+  // active election or its matches tree hasn't been built yet.
+  //
+  // Why this lives on voterContext (not the route layout):
+  //   - Removes the need for `+layout.ts` to force-fill `entityTab` into the
+  //     URL (previous Plan 88-02 behavior auto-redirected `/results/{e}` →
+  //     `/results/{e}/candidates`, which combined with downstream consumers
+  //     emitting same-shape URLs produced a redirect loop).
+  //   - Lets `filterContext` resolve the active FilterGroup even when the URL
+  //     omits `entityTab` (Phase 62 D-14 scope tuple becomes implied, not
+  //     URL-derived).
+  //   - Mirrors `currentResultsElection`'s singular-derived-from-URL pattern.
+  //
+  // Per CLAUDE.md Context Destructuring Rule, consumers MUST read via
+  // `ctx.currentResultsEntityType` — never destructure.
+  const currentResultsEntityType = $derived.by<EntityType | undefined>(() => {
+    if (!currentResultsElection) return undefined;
+    const matchesForElection = _matches.value[currentResultsElection.id];
+    if (!matchesForElection) return undefined;
+    const availableTypes = Object.keys(matchesForElection) as Array<EntityType>;
+    if (availableTypes.length === 0) return undefined;
+    const tab = page.params.entityTab;
+    const fromUrl: EntityType | undefined =
+      tab === 'candidates'
+        ? 'candidate'
+        : tab === 'organizations'
+          ? 'organization'
+          : tab === 'alliances'
+            ? 'alliance'
+            : undefined;
+    if (fromUrl && availableTypes.includes(fromUrl)) return fromUrl;
+    return availableTypes[0];
+  });
+
   // Phase 62 D-05: initialize the dedicated filterContext using a closure over
-  // the just-built FilterTree. filterContext reads page.params for its
-  // (electionId, entityTab) scope key and bridges FilterGroup.onChange
-  // → $state version counter so $derived consumers (EntityListWithControls)
-  // re-run on filter mutation. Single init per voter session — re-init is
-  // guarded by initFilterContext() itself (status-500).
-  initFilterContext({ entityFilters: () => _entityFilters.value });
+  // the just-built FilterTree. Phase 88 follow-up: also injects
+  // `currentEntityType` so filterContext can resolve its scope tuple via the
+  // voterContext-implied entity type — no longer requires the URL to carry
+  // `entityTab` (the route load function no longer force-fills it).
+  // Single init per voter session — re-init is guarded by initFilterContext()
+  // itself (status-500).
+  initFilterContext({
+    entityFilters: () => _entityFilters.value,
+    currentEntityType: () => currentResultsEntityType
+  });
 
   ////////////////////////////////////////////////////////////
   // Resetting voter data
@@ -457,6 +499,9 @@ export function initVoterContext(): VoterContext {
     },
     get currentResultsElection() {
       return currentResultsElection;
+    },
+    get currentResultsEntityType() {
+      return currentResultsEntityType;
     },
     get electionsSelectable() {
       return electionsSelectable;

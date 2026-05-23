@@ -5,10 +5,10 @@ import type { PageLoad } from './$types';
  * Results detail route — coupling + matcher-fallthrough guard (Phase 62 D-11;
  * keys renamed for Phase 88 Plan 88-02 4-segment shape).
  *
- * Valid URL shapes (D-08, post-88-02):
- *   1. /results                                                — list only, default plural tab (+layout.ts redirects)
- *   2. /results/[electionTab]                                  — list only on the selected election, default tab
- *   3. /results/[electionTab]/[entityTab]                      — list only, explicit tab
+ * Valid URL shapes (D-08, post-88-02 + loop-fix):
+ *   1. /results                                                — picker view; +layout.ts redirects only when 1 election available
+ *   2. /results/[electionTab]                                  — list view; voterContext implies the active tab
+ *   3. /results/[electionTab]/[entityTab]                      — list view, explicit tab
  *   4. /results/[electionTab]/[entityTab]/[entity]/[id]        — list + drawer (matching entity types)
  *   5. /results/[electionTab]/organizations/candidate/[id]     — edge case: org list + candidate drawer
  *
@@ -43,7 +43,11 @@ export const load: PageLoad = async ({ params, url }) => {
 
   if ((entity && !id) || (!entity && id)) {
     const electionSegment = electionTab ? `/${electionTab}` : '';
-    const listSuffix = entityTab ? `/${entityTab}` : '/candidates';
+    // Post-88-02 loop fix: no `/candidates` fallback when entityTab is
+    // absent. `/results/{electionTab}` is a valid render shape —
+    // voterContext.currentResultsEntityType implies the active tab and the
+    // layout selector picks up the user's next interaction.
+    const listSuffix = entityTab ? `/${entityTab}` : '';
     throw redirect(307, `/results${electionSegment}${listSuffix}${url.search}`);
   }
 

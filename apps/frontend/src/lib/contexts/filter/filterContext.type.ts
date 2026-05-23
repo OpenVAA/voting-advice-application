@@ -1,3 +1,4 @@
+import type { EntityType } from '@openvaa/data';
 import type { FilterGroup } from '@openvaa/filters';
 import type { FilterTree } from '$lib/contexts/voter/filters/filterStore.svelte';
 
@@ -64,4 +65,14 @@ export type FilterContext = {
 export type InitFilterContextArgs = {
   /** Getter returning the current `FilterTree` (rebuilt reactively by `filterStore()`). */
   entityFilters: () => FilterTree;
+  /**
+   * Optional getter returning the singular `EntityType` implied for the
+   * current results election (Phase 88 post-88-02 follow-up). When provided,
+   * filterContext resolves its `(electionId, entityType)` scope tuple by
+   * reading this getter instead of `page.params.entityTab`. This lets the
+   * results route stop force-filling `entityTab` into URLs (which produced
+   * a redirect loop). When omitted, filterContext falls back to the legacy
+   * URL-derived scope so existing tests + direct entry points keep working.
+   */
+  currentEntityType?: () => EntityType | undefined;
 };

@@ -51,7 +51,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { ucFirst } from '$lib/utils/text/ucFirst';
   import { DELAY } from '$lib/utils/timing';
-  import MainContent from '../../../MainContent.svelte';
+  import MainContent from '../../../../MainContent.svelte';
   import type { Election, EntityType } from '@openvaa/data';
   import type { Snippet } from 'svelte';
   import type { Tab } from '$lib/components/tabs';
@@ -142,22 +142,12 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   );
 
   // Plural → singular mapping uses American spelling (RESEARCH Open Question 1
-  // RESOLVED). When the URL omits entityTab — OR names a plural that
-  // isn't present in the entityTabs (e.g. URL stuck at /candidates after the
-  // `results.sections` setting drops 'candidate' — variant-results-sections.spec.ts:291) —
-  // fall back to the first available tab for the active election.
-  const activeEntityType = $derived.by<EntityType | undefined>(() => {
-    const fromUrl: EntityType | undefined =
-      _urlPlural === 'candidates'
-        ? 'candidate'
-        : _urlPlural === 'organizations'
-          ? 'organization'
-          : _urlPlural === 'alliances'
-            ? 'alliance'
-            : undefined;
-    if (fromUrl && entityTabs.some((t) => t.type === fromUrl)) return fromUrl;
-    return entityTabs[0]?.type;
-  });
+  // RESOLVED). The implied entity type now lives on voterContext via
+  // `currentResultsEntityType` (Phase 88 post-88-02 loop fix): URL-first
+  // with default-pick fallback to the first available tab for the active
+  // election. Reading through `voterCtx.X` per the CLAUDE.md Context
+  // Destructuring Rule preserves reactivity (must not destructure).
+  const activeEntityType = $derived(voterCtx.currentResultsEntityType);
 
   const activeMatches = $derived<Array<MaybeWrappedEntityVariant> | undefined>(
     activeElectionId && activeEntityType ? voterCtx.matches[activeElectionId]?.[activeEntityType] : undefined
@@ -257,7 +247,14 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
    */
   function buildListRoute(electionTab: string | undefined, plural: EntityPlural | undefined): string {
     const electionSegment = electionTab ? `/${electionTab}` : '';
-    const pluralSegment = plural ? `/${plural}` : electionTab ? '/candidates' : '';
+    // Post-88-02 loop fix: no `/candidates` force-fill when plural is
+    // absent. The URL `/results/{electionTab}` is a valid render shape —
+    // voterContext.currentResultsEntityType implies the active tab and the
+    // layout renders the entity-type selector only when 2+ types exist
+    // for the election. Callers that want a specific tab in the URL
+    // (handleEntityTabChange, post-drawer-close) still pass an explicit
+    // plural.
+    const pluralSegment = plural ? `/${plural}` : '';
     // Preserve any persistent search params (electionId AVAILABLE array,
     // constituencyId, etc.) on the URL verbatim. The route side now owns
     // the SELECTED election surface; the search side keeps its existing

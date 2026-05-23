@@ -1,5 +1,5 @@
 import type { Id } from '@openvaa/core';
-import type { AnyQuestionVariant, Constituency, Election, QuestionCategory } from '@openvaa/data';
+import type { AnyQuestionVariant, Constituency, Election, EntityType, QuestionCategory } from '@openvaa/data';
 import type { MatchingAlgorithm } from '@openvaa/matching';
 import type { AppContext } from '../app';
 import type { FilterContext } from '../filter/filterContext.type';
@@ -56,6 +56,30 @@ export type VoterContext = AppContext & {
    * react to subsequent URL changes).
    */
   currentResultsElection: Election | undefined;
+  /**
+   * The singular `EntityType` implied for the currently active results
+   * election. URL-first: when `page.params.entityTab` names a plural
+   * (`candidates` / `organizations` / `alliances`) that is available for
+   * `currentResultsElection`, the mapped singular wins; otherwise this
+   * default-picks the first available entity type from the matches tree.
+   * Returns `undefined` when there is no active election OR matches haven't
+   * been built yet for that election.
+   *
+   * Added by the Phase 88 Plan 88-02 follow-up that broke the route-shape
+   * redirect loop: the previous behavior force-filled `/candidates` into the
+   * results URL whenever `entityTab` was absent (`+layout.ts` GUARD 2 / GUARD
+   * 4 + the leaf coupling-guard + `buildListRoute`), and those force-fills
+   * combined to bounce navigation when consumers re-emitted same-shape URLs
+   * without the segment. Moving the implied-tab semantics onto voterContext
+   * means the URL can carry `entityTab` ONLY when the user has explicitly
+   * selected one, and consumers (filterContext, layout.svelte's
+   * `activeEntityType`) read the implied value uniformly.
+   *
+   * Read via `ctx.currentResultsEntityType` per the CLAUDE.md Context
+   * Destructuring Rule (Svelte 5) — reactive accessor; MUST NOT be
+   * destructured.
+   */
+  currentResultsEntityType: EntityType | undefined;
   /**
    * The `Constituency`s selected by the user or automatically selected if they can be implied, e.g. when all selected elections have only one constituency.
    */
