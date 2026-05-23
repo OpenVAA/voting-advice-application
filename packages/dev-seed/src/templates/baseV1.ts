@@ -212,8 +212,10 @@ export const BASE_V1_APP_SETTINGS = {
   },
   elections: {
     disallowSelection: false,
-    showElectionTags: true,
-    startFromConstituencyGroup: undefined
+    showElectionTags: true
+    // refactor-doc:181 declares `startFromConstituencyGroup: undefined`;
+    // omitting the key is equivalent (JSONB drops `undefined` on serialize,
+    // breaking post-seed `toMatchObject` parity if the literal is included).
   },
   access: {
     candidateApp: true,

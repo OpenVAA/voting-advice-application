@@ -124,17 +124,27 @@ export async function setupFromTemplate(
   ).toBeDefined();
   const overrides = BUILT_IN_OVERRIDES[templateName] ?? {};
   const seed = template!.seed ?? 42;
+  // Writer prefix — passed to writer.write(rows, prefix). Templates that
+  // emit pre-prefixed external_ids (e2e + baseV1) declare `externalIdPrefix: ''`
+  // so the writer's `${externalIdPrefix}${fx.external_id}` pass-through is a
+  // no-op. Generated rows (Phase 56 generators) prepend the prefix.
   const prefix = template!.externalIdPrefix ?? '';
+  // Teardown prefix — runTeardown enforces a 2-char minimum to prevent
+  // mass-delete. Templates whose externalIdPrefix is empty pre-write
+  // literal `test-` external_ids; fall back to 'test-' for teardown in
+  // that case. data.setup.ts does this via a hard-coded `PREFIX = 'test-'`;
+  // the helper derives the same fallback here.
+  const teardownPrefix = prefix.length >= 2 ? prefix : 'test-';
 
   const client = new SupabaseAdminClient();
 
   // 0. Fresh-database precondition probe (warn by default; opt-in to fail
   //    via E2E_REQUIRE_FRESH_DB=true). See data.setup.ts:88-106.
-  await probeFreshDatabasePrecondition(client, prefix);
+  await probeFreshDatabasePrecondition(client, teardownPrefix);
 
   // 1. Pre-clear any stale state from a prior run. runTeardown's 2-char
   //    guard requires prefix.length >= 2; baseV1 / e2e both use 'test-'.
-  await runTeardown(prefix, client);
+  await runTeardown(teardownPrefix, client);
 
   // 2. Pipeline + writer. Writer Pass-5 applies app_settings.fixed[] via
   //    merge_jsonb_column (D-11 / Phase 63 E2E-02).
@@ -162,7 +172,7 @@ export async function setupFromTemplate(
 
   // 5. Cleanup closure — idempotent re-invocation of runTeardown.
   const cleanup = async (): Promise<void> => {
-    await runTeardown(prefix, client);
+    await runTeardown(teardownPrefix, client);
   };
 
   return { cleanup };

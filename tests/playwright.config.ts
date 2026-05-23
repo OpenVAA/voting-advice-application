@@ -249,7 +249,12 @@ export default defineConfig({
       // chain is short-circuited to a direct /results landing). Moved to the
       // `voter-not-located-redirect` project below which reuses the Ne-Nc
       // dataset (2 elections × 3 constituencies each).
-      testIgnore: /voter-(settings|popups|visibility-required|not-located-redirect)\.spec\.ts/,
+      // Phase 88 Plan 01 — `mega-journey` alternation excludes
+      // voter-mega-journey.spec.ts (runs under its own data-setup-baseV1
+      // chain). The alternation also excludes any future spec named
+      // voter-mega-*.spec.ts — keep this in mind when adding sibling
+      // mega-journey variants in 88-NN.
+      testIgnore: /voter-(settings|popups|visibility-required|not-located-redirect|mega-journey)\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome']
       },
@@ -573,6 +578,41 @@ export default defineConfig({
             dependencies: ['data-setup']
           }
         ]
-      : [])
+      : []),
+
+    // === Phase 88 Plan 01 — parallel mega-journey chain ===
+    //
+    // Appended AFTER all conditional opt-in projects (per Plan 88-01
+    // advisory A2). Runs the new baseV1 dataset + voter-mega-journey spec
+    // ALONGSIDE the existing suite. Existing project entries are untouched
+    // except for the surgical `testIgnore` extension on `voter-app` above
+    // (Risk #6 + Plan Task 5 documented exception).
+    //
+    // Project graph:
+    //   data-setup-baseV1 → voter-mega-journey
+    //   data-setup-baseV1 ↦ data-teardown-baseV1 (via teardown: key)
+    //
+    // Shared PREFIX='test-' with the existing e2e chain (Risk #4):
+    // Playwright project-graph sequencing ensures this chain's
+    // teardown→seed runs in its own dependency subgraph and the
+    // data-teardown-baseV1 fires AFTER voter-mega-journey completes —
+    // no cross-chain prefix collision during execution.
+    {
+      name: 'data-setup-baseV1',
+      testMatch: /baseV1\.setup\.ts/,
+      teardown: 'data-teardown-baseV1'
+    },
+    {
+      name: 'data-teardown-baseV1',
+      testMatch: /baseV1\.teardown\.ts/
+    },
+    {
+      name: 'voter-mega-journey',
+      testDir: './tests/specs/voter',
+      testMatch: /voter-mega-journey\.spec\.ts/,
+      fullyParallel: false, // single-test serial journey
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-baseV1']
+    }
   ]
 });
