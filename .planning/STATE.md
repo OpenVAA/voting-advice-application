@@ -5,13 +5,13 @@ milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROG
 status: in_progress
 stopped_at: "Phase 87 SHIPPED. Phase 88 ADDED 2026-05-22 (operator-driven e2e catalog audit + forward-looking baseline; gates both /gsd-complete-milestone v2.10 AND v2.11 rune-migration start). Phase 87 anchor (b2ad76e5…) becomes historical; Phase 88 produces the new gating anchor. Operator next step: /gsd-discuss-phase 88"
 last_updated: 2026-05-22T00:00:00.000Z
-last_activity: "2026-05-23 -- Plan 88-01 executed PARTIAL: scaffolding landed (baseV1 template + setupFromTemplate + voter-mega fixture + mega-journey spec + 3 playwright projects + README); 5/30 mega-journey steps execute real assertions, 25 marked [deferred-88-nn] pending UI inspection of baseV1 constituency-selection cluster"
+last_activity: "2026-05-23 -- Plan 88-02 planned: results route refactor ([[electionTab]] new route segment + entityTab/entity rename; NAME-DISJOINT from search-side electionId AVAILABLE-array surface); 8 atomic tasks; unblocks ~5 deferred-88-nn mega-journey placeholders"
 progress:
   total_phases: 13
   completed_phases: 11
-  total_plans: 32
+  total_plans: 33
   completed_plans: 30
-  percent: 82
+  percent: 79
 ---
 
 # Project State
@@ -26,8 +26,8 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 ## Current Position
 
 Phase: 88
-Plan: 88-01 (executed 2026-05-23 — status: partial; 7/7 commits landed but 25/30 mega-journey steps deferred to 88-NN)
-Status: Scaffolding green — operator decides next: (A) plan 88-02 to flesh out deferred steps, (B) inspect baseV1 UI manually then resume, (C) UAT-verify what landed first
+Plan: 88-02 (planned 2026-05-23; 88-01 executed PARTIAL earlier same day)
+Status: 88-02 ready to execute — `/gsd-execute-phase 88` will pick up 88-02; 88-01's deferred-88-nn cluster waits on the follow-on plan after 88-02 lands.
 Last activity: 2026-05-23
 
 ## Performance Metrics
@@ -197,19 +197,21 @@ Reference: `.planning/phases/86.3-…/86.3-SUMMARY.md` §"D-06 Phase 87 Disposit
 
 ## Operator Next Steps
 
-### Phase 88 status (post-88-01 execution)
+### Phase 88 status (Plan 88-02 ready)
 
-**Scaffolding landed and verified:** baseV1 template seeds cleanly (2 elections × 6 constituencies w/ per-CO parent_id × 8 categories × 20 questions × 5 orgs × 2 alliances × 29 candidates × 60 nominations); `setupFromTemplate` helper works end-to-end; new playwright project chain (`data-setup-baseV1 → voter-mega-journey → data-teardown-baseV1`) runs cleanly in isolation (97/97 pass).
+**Plan 88-02 planned 2026-05-23**: Results route refactor (operator-driven, scoped from `88-02-SCOPE.md`). Introduces:
+- New OPTIONAL route segment `[[electionTab]]` at the front of `/results/...` carrying the SELECTED singular election.
+- Rename of `entityTypePlural`/`entityTypeSingular` directory segments to `entityTab`/`entity` (backed by `etPl`/`etSg` matchers).
+- New voterContext reactive accessor `currentResultsElection` reading `page.params.electionTab` with first-available default-pick.
+- Server-side guards (invalid `electionTab` → strip+redirect; 1-available → auto-redirect deterministic URL; 2+ → render existing picker).
+- **NAME-DISJOINT dissociation** from the search-side `?electionId=…` / `electionId[]` AVAILABLE-array surface — `electionTab` (route key) and `electionId` (search key) are literally different identifiers throughout the codebase. Operator amended the original route-segment name from `electionId` to `electionTab` mid-planning to achieve structural (not just semantic) disjointness.
+- 8 atomic tasks.
 
-**Gap:** the mega-journey spec has only **5 executing test.step entries**; the remaining **25 are `[deferred-88-nn]` placeholders**. The constituency-selection cluster needs empirical UI inspection against the live baseV1 frontend before the downstream answer-loop / results / detail-drawer / filters steps can be wired with deterministic assertions. Plan Risks #2 + #7 sanctioned this fallback path, but it means Plan 88-01 delivered scaffolding + infrastructure, NOT the full catalog migration the refactor doc envisions.
+**88-01 carryover (still open):** 25 `[deferred-88-nn]` placeholders in `voter-mega-journey.spec.ts` await a follow-on plan (probably 88-03) that wires them against the NEW URL surface. Plan 88-02 unblocks ~5 of those placeholders (election-selection cluster) by making election selection URL-driven, but does NOT modify the mega-journey spec itself.
 
-### Recommended next actions (operator choice)
+### Recommended next action
 
-**Path A (recommended) — Plan 88-02 to close the deferred-88-nn cluster:** `/gsd-plan-phase 88` to author Plan 88-02 against the now-existing baseV1 frontend. Scope: empirically validate the constituency-selection contract under baseV1 (hierarchical CG combobox ordering + nomination-availability gating that triggers `voter-missing-nominations-modal`); then wire real assertions into the 25 deferred steps; then re-run Task 6 against the full mega-journey. Estimated 3-5 atomic tasks.
-
-**Path B — UAT first, then plan:** `/gsd-verify-work` against the 5 executing test.step entries + the scaffolding (templates / helper / fixture / playwright projects). Confirms what landed actually delivers value before investing in 88-02 planning.
-
-**Path C — Manual baseV1 UI inspection:** operator opens `http://localhost:5173` with baseV1 seeded, walks the constituency-selection cluster manually, documents the contract (combobox order, nomination-modal trigger conditions, intro-page text), then either resumes execution via `/gsd-execute-phase 88` (re-triggering the executor against an annotated plan) OR feeds the contract into Plan 88-02.
+`/gsd-execute-phase 88` → runs Plan 88-02. Expected duration: significant (8 tasks; full route refactor + voterContext + server-guards + spec URL audits + full-suite regression). Atomic commits per task; existing suite must stay green at every commit. The known Plan 88-01 deviation T5 (sequential baseV1 chain dep on `variant-hidden-required-candidate`) was already manually unwound by operator earlier in the session.
 
 ### Other Phase 88 backlog (after 88-02 closes)
 
