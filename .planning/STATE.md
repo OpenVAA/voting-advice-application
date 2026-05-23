@@ -5,7 +5,7 @@ milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROG
 status: in_progress
 stopped_at: "Phase 87 SHIPPED. Phase 88 ADDED 2026-05-22 (operator-driven e2e catalog audit + forward-looking baseline; gates both /gsd-complete-milestone v2.10 AND v2.11 rune-migration start). Phase 87 anchor (b2ad76e5…) becomes historical; Phase 88 produces the new gating anchor. Operator next step: /gsd-discuss-phase 88"
 last_updated: 2026-05-22T00:00:00.000Z
-last_activity: "2026-05-23 -- Plan 88-01 planned + verified (parallel landing Wave 1: baseV1 template + setupFromTemplate helper + voter-mega-journey spec; refactor-doc:1-378 in scope; 7 atomic tasks)"
+last_activity: "2026-05-23 -- Plan 88-01 executed PARTIAL: scaffolding landed (baseV1 template + setupFromTemplate + voter-mega fixture + mega-journey spec + 3 playwright projects + README); 5/30 mega-journey steps execute real assertions, 25 marked [deferred-88-nn] pending UI inspection of baseV1 constituency-selection cluster"
 progress:
   total_phases: 13
   completed_phases: 11
@@ -26,8 +26,8 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 ## Current Position
 
 Phase: 88
-Plan: 88-01 (planned 2026-05-23, plan-check PASSED with 5 advisories)
-Status: Ready to execute — `/gsd-execute-phase 88` will run 88-01 (parallel-landing Wave 1)
+Plan: 88-01 (executed 2026-05-23 — status: partial; 7/7 commits landed but 25/30 mega-journey steps deferred to 88-NN)
+Status: Scaffolding green — operator decides next: (A) plan 88-02 to flesh out deferred steps, (B) inspect baseV1 UI manually then resume, (C) UAT-verify what landed first
 Last activity: 2026-05-23
 
 ## Performance Metrics
@@ -176,8 +176,8 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-05-23T (Plan 88-01 planned + verified)
-Stopped at: **Plan 88-01 ready for execution.** 7 atomic tasks delivering parallel-landing Wave 1 of the Phase 88 catalog refactor: BUILT_IN `baseV1` template (refactor-doc:13-108 dataset) + generic `setupFromTemplate` helper (teardown→seed→seed-check→cleanup) + sibling voter fixture with `answerMode: 'min'|'max'` + voter-mega-journey spec (refactor-doc:204-378) + 3 appended playwright projects (`data-setup-baseV1 → voter-mega-journey → data-teardown-baseV1`) + full-suite regression check + optional migration map. Parallel-only landing (existing surface untouched except for ONE testIgnore extension at `playwright.config.ts:252` to prevent double-pickup of the new spec by `voter-app`). Plan-check VERIFIED with 5 non-blocking advisories (parent-CG-discovery sequencing, projects-array insertion point preference, workers-default invocation, optional task promotion, testIgnore regex specificity). Lines 379+ of refactor doc deferred to subsequent 88-NN plans. Operator next step: `/gsd-execute-phase 88` (executes 88-01).
+Last session: 2026-05-23T (Plan 88-01 executed — status: partial)
+Stopped at: **Plan 88-01 executed PARTIAL.** All 7 task commits landed (c713acf3e → 63ed2813d); scaffolding is structurally complete (baseV1 template @ 135 rows / setupFromTemplate helper / voter-mega fixture / mega-journey spec / 3 playwright projects / migration README). **BUT** the mega-journey spec has only 5 of ~30 refactor-doc:204-378 steps executing REAL assertions; 25 steps are `[deferred-88-nn]` placeholders pending empirical UI inspection of the baseV1 constituency-selection cluster (the `voter-missing-nominations-modal` intercepts naive "select first option" clicks; hierarchical-CG combobox ordering + nomination-availability gating need observation before lock-in). Plan Risks #2 + #7 sanctioned this fallback. **Parallel-only contract was breached during T5 — required a Rule-1 fix** (533c2bd42): `data-setup-baseV1` had to be chained `dependencies: ['variant-hidden-required-candidate']` because the shared `'test-'` row prefix collides with the existing chain mid-run. The fully-parallel goal moves to 88-NN via per-template prefix decoupling (`'test-baseV1-'` vs `'test-e2e-'`). Task 6 full-suite: isolated `--project=voter-mega-journey` (full graph) = **97/97 pass in 4.0 min**; full-suite `yarn test:e2e` = 87 pass / 1 fail / 3 skipped / 75 did_not_run (the 1 fail is `candidate-profile.spec.ts:130` pre-existing terms-checkbox flake, NOT caused by 88-01; per operator memory `feedback_e2e_did_not_run.md`, did_not_run counts as failure — so the cascade-skipped 75 are blocked by the pre-existing flake's cascade). 5 deviations + all 5 plan-check advisories documented in 88-01-SUMMARY.md. v2.10 milestone close + v2.11 rune migration kickoff remain BLOCKED behind Phase 88's final plan (which is now further out: 88-NN must close the deferred-88-nn cluster first).
 Resume file: None
 Next action: Operator decides Phase 87 disposition per Phase 86.3-05 D-06 recommendation:
   (a) **RE-PLAN (Claude's recommendation):** Re-plan Phase 87 to absorb v2.11+ voter-app cold-deeplink deferrals (4 cells #5/#6/#7/#8 closure-paired via navigation-from-home redesign) + boundary-class flake deferrals (DETERM-06 imgproxy + email-link timing) BEFORE firing the v2.10-ship anchor capture. Plan 87-01 needs a new Plan 01a (deferral inventory) + Plan 01b (anchor capture WITH explicit deferrals documented).
@@ -197,15 +197,33 @@ Reference: `.planning/phases/86.3-…/86.3-SUMMARY.md` §"D-06 Phase 87 Disposit
 
 ## Operator Next Steps
 
-- **Plan 88-01 ready (2026-05-23):** `/gsd-execute-phase 88` will run 88-01's 7 atomic tasks (parallel-landing Wave 1). Plan file: `.planning/phases/88-…/88-01-PLAN.md`. Plan-check verdict: VERIFIED with 5 advisories (non-blocking — see plan commit body or run `/gsd-progress 88` to surface). Expected runtime: significant (new dataset seed-check + ~80 mega-journey test.steps + full-suite regression). Executor will commit per-task atomically; existing suite must stay green at every commit.
-- **Subsequent Phase 88 plans** (88-02, 88-03, …) absorb refactor-doc lines 379+ specs into the new template/helper/mega-journey shape, retire `--likert-only` flag, retire per-variant setup files. Plan 88-LAST captures the final v2.10-close anchor against the audited catalog.
-- **Standing v2.10 milestone close** (`/gsd-complete-milestone v2.10`) remains BLOCKED behind Phase 88 final plan.
-- **v2.11 rune migration kickoff** (Wave 1 leaf-context migrations per spike-findings skill) remains BLOCKED behind Phase 88 final plan.
+### Phase 88 status (post-88-01 execution)
 
-### Plan 88-01 advisories from plan-check (read before executor dispatch)
+**Scaffolding landed and verified:** baseV1 template seeds cleanly (2 elections × 6 constituencies w/ per-CO parent_id × 8 categories × 20 questions × 5 orgs × 2 alliances × 29 candidates × 60 nominations); `setupFromTemplate` helper works end-to-end; new playwright project chain (`data-setup-baseV1 → voter-mega-journey → data-teardown-baseV1`) runs cleanly in isolation (97/97 pass).
 
-1. Task 1 — direct executor to grep `packages/dev-seed/src/pipeline/**` for `parent_constituency_group` support BEFORE authoring the baseV1 template so the discovery-blocker surfaces at execution start, not at the Verify step (Risk #5 has documented fallback but proactive grep is cheaper).
-2. Task 5 — append the 3 new playwright projects **AFTER all conditional `PLAYWRIGHT_*=1` blocks**, not before the conditional `PLAYWRIGHT_VISUAL` block. This ensures the new chain runs unconditionally regardless of opt-in env vars.
-3. Operator should invoke the canonical 88-01 verify with `yarn test:e2e` (default workers), not a high-worker override — the shared `'test-'` prefix on dataset rows can cross-subgraph race under `--workers=12`.
-4. Task 7 (developer-facing migration map) is marked optional but its cross-reference table is genuinely useful for scoping 88-02+. Consider promoting it to required at execution time.
-5. The Task 5 testIgnore regex `voter-(...|mega-journey)` would also exclude any future spec named `voter-mega-*.spec.ts`. Worth a one-line code comment in the testIgnore block flagging this for future-spec authors.
+**Gap:** the mega-journey spec has only **5 executing test.step entries**; the remaining **25 are `[deferred-88-nn]` placeholders**. The constituency-selection cluster needs empirical UI inspection against the live baseV1 frontend before the downstream answer-loop / results / detail-drawer / filters steps can be wired with deterministic assertions. Plan Risks #2 + #7 sanctioned this fallback path, but it means Plan 88-01 delivered scaffolding + infrastructure, NOT the full catalog migration the refactor doc envisions.
+
+### Recommended next actions (operator choice)
+
+**Path A (recommended) — Plan 88-02 to close the deferred-88-nn cluster:** `/gsd-plan-phase 88` to author Plan 88-02 against the now-existing baseV1 frontend. Scope: empirically validate the constituency-selection contract under baseV1 (hierarchical CG combobox ordering + nomination-availability gating that triggers `voter-missing-nominations-modal`); then wire real assertions into the 25 deferred steps; then re-run Task 6 against the full mega-journey. Estimated 3-5 atomic tasks.
+
+**Path B — UAT first, then plan:** `/gsd-verify-work` against the 5 executing test.step entries + the scaffolding (templates / helper / fixture / playwright projects). Confirms what landed actually delivers value before investing in 88-02 planning.
+
+**Path C — Manual baseV1 UI inspection:** operator opens `http://localhost:5173` with baseV1 seeded, walks the constituency-selection cluster manually, documents the contract (combobox order, nomination-modal trigger conditions, intro-page text), then either resumes execution via `/gsd-execute-phase 88` (re-triggering the executor against an annotated plan) OR feeds the contract into Plan 88-02.
+
+### Other Phase 88 backlog (after 88-02 closes)
+
+- **88-NN parallel-decoupling**: per-template prefix (`'test-baseV1-'` vs `'test-e2e-'`) so baseV1 chain can run truly in parallel without the current sequential dep on `variant-hidden-required-candidate` (Deviation T5).
+- **88-NN absorb refactor-doc lines 379+** (specs not yet organized into the mega-journey).
+- **88-NN retire `--likert-only` flag** once last consumer migrates.
+- **88-NN retire per-variant setup files** once `setupFromTemplate` consumes them all.
+- **88-LAST final v2.10-close anchor capture** against the post-audit catalog (3-run cold-start gate); replaces Phase 87 anchor.
+
+### Cross-milestone holds (unchanged)
+
+- **v2.10 milestone close** (`/gsd-complete-milestone v2.10`) remains BLOCKED behind Phase 88 final plan.
+- **v2.11 rune migration kickoff** (Wave 1 leaf-context migrations) remains BLOCKED behind Phase 88 final plan.
+
+### Pre-existing flake to surface separately
+
+`candidate-profile.spec.ts:130` (terms-checkbox visibility race) is the primary cascade driver in full-suite runs (75 did_not_run in Plan 88-01's Task 6 Run #3). NOT caused by 88-01. Operator memory `project_all_green_suite_priority.md` flags this as v2.10 priority — likely a follow-up plan within Phase 88 or a sibling phase. Consider whether 88-02 absorbs it or if it gets its own plan.

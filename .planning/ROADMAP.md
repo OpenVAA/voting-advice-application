@@ -341,7 +341,7 @@ Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82, 83 (pa
 | 86.2. E2E Suite Refactor Pass | v2.10 | 3/3 | Complete    | 2026-05-20 |
 | 86.3. Implement Skipped Tests (8 cells) | v2.10 | 5/5 | Complete    | 2026-05-20 |
 | 87. v2.10 All-Green Milestone-Close Anchor | v2.10 | 1/1 | Complete    | 2026-05-21 |
-| 88. E2E Test Catalog Audit + Forward-Looking Baseline | v2.10 | 0/1 | Plan 88-01 ready | - |
+| 88. E2E Test Catalog Audit + Forward-Looking Baseline | v2.10 | 0/1 | Plan 88-01 partial (scaffolding green; 25 mega-journey steps deferred to 88-NN) | - |
 
 ### Phase 88: E2E Test Catalog Audit + Forward-Looking Baseline
 
