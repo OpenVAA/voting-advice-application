@@ -589,18 +589,25 @@ export default defineConfig({
     // (Risk #6 + Plan Task 5 documented exception).
     //
     // Project graph:
-    //   data-setup-baseV1 → voter-mega-journey
+    //   variant-hidden-required-candidate → data-setup-baseV1 → voter-mega-journey
     //   data-setup-baseV1 ↦ data-teardown-baseV1 (via teardown: key)
     //
-    // Shared PREFIX='test-' with the existing e2e chain (Risk #4):
-    // Playwright project-graph sequencing ensures this chain's
-    // teardown→seed runs in its own dependency subgraph and the
-    // data-teardown-baseV1 fires AFTER voter-mega-journey completes —
-    // no cross-chain prefix collision during execution.
+    // Shared PREFIX='test-' with the existing e2e chain (Plan Risk #4): the
+    // mitigation requires SEQUENCING between the chains so one chain's
+    // teardown→seed does not clobber the other chain's dataset mid-run.
+    // The first verify-run of Plan 88-01 surfaced this collision empirically
+    // (the voter-journey spec saw the baseV1 multi-election dataset when
+    // run in parallel with data-setup-baseV1). Fix: chain
+    // data-setup-baseV1 AFTER the last variant in the existing chain
+    // (`variant-hidden-required-candidate`) so the entire existing chain
+    // finishes before the baseV1 chain begins. The 88-NN forward-looking
+    // mitigation per Plan Risk #4 (per-template prefix) is still on the
+    // table for a deeper decoupling.
     {
       name: 'data-setup-baseV1',
       testMatch: /baseV1\.setup\.ts/,
-      teardown: 'data-teardown-baseV1'
+      teardown: 'data-teardown-baseV1',
+      dependencies: ['variant-hidden-required-candidate']
     },
     {
       name: 'data-teardown-baseV1',
