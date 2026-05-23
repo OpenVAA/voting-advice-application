@@ -580,7 +580,7 @@ export default defineConfig({
         ]
       : []),
 
-    // === Phase 88 Plan 01 — parallel mega-journey chain ===
+    // === Phase 88 Plan 01 — mega-journey chain (ISOLATED) ===
     //
     // Appended AFTER all conditional opt-in projects (per Plan 88-01
     // advisory A2). Runs the new baseV1 dataset + voter-mega-journey spec
@@ -588,26 +588,22 @@ export default defineConfig({
     // except for the surgical `testIgnore` extension on `voter-app` above
     // (Risk #6 + Plan Task 5 documented exception).
     //
-    // Project graph:
-    //   variant-hidden-required-candidate → data-setup-baseV1 → voter-mega-journey
+    // Project graph (isolated — no cross-chain dependency):
+    //   data-setup-baseV1 → voter-mega-journey
     //   data-setup-baseV1 ↦ data-teardown-baseV1 (via teardown: key)
     //
-    // Shared PREFIX='test-' with the existing e2e chain (Plan Risk #4): the
-    // mitigation requires SEQUENCING between the chains so one chain's
-    // teardown→seed does not clobber the other chain's dataset mid-run.
-    // The first verify-run of Plan 88-01 surfaced this collision empirically
-    // (the voter-journey spec saw the baseV1 multi-election dataset when
-    // run in parallel with data-setup-baseV1). Fix: chain
-    // data-setup-baseV1 AFTER the last variant in the existing chain
-    // (`variant-hidden-required-candidate`) so the entire existing chain
-    // finishes before the baseV1 chain begins. The 88-NN forward-looking
-    // mitigation per Plan Risk #4 (per-template prefix) is still on the
-    // table for a deeper decoupling.
+    // Shared PREFIX='test-' caveat (Plan Risk #4): running the
+    // voter-mega-journey project AT THE SAME TIME as the existing e2e
+    // chain (e.g. via a no-filter `yarn test:e2e` invocation under
+    // default workers) can race on the shared row prefix. Operator
+    // intent for 88-01 is to run the mega-journey chain IN ISOLATION
+    // via `--project=voter-mega-journey`. A future 88-NN plan
+    // decouples the prefixes (`'test-baseV1-'` vs `'test-e2e-'`) so
+    // both chains can co-run safely.
     {
       name: 'data-setup-baseV1',
       testMatch: /baseV1\.setup\.ts/,
-      teardown: 'data-teardown-baseV1',
-      dependencies: ['variant-hidden-required-candidate']
+      teardown: 'data-teardown-baseV1'
     },
     {
       name: 'data-teardown-baseV1',

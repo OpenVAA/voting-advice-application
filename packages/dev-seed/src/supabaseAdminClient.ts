@@ -325,6 +325,8 @@ export class SupabaseAdminClient {
    * - `elections[].constituency_groups` -> election_constituency_groups
    * - `constituency_groups[].constituencies` -> constituency_group_constituencies
    * - `question_categories[]._elections` -> question_categories.election_ids JSONB
+   * - `question_categories[]._constituencies` -> question_categories.constituency_ids JSONB
+   * - `questions[]._constituencies` -> questions.constituency_ids JSONB
    *
    * Resolves external_ids to UUIDs and inserts into join tables.
    *
@@ -483,6 +485,57 @@ export class SupabaseAdminClient {
         }
       }
     }
+
+    // Link question_categories -> constituencies (via constituency_ids JSONB)
+    // and questions -> constituencies (via constituency_ids JSONB). Both
+    // tables carry the same `_constituencies` sentinel shape; resolution
+    // mirrors the `_elections` block above (no fanout — explicit scoping
+    // only; rows without the sentinel keep constituency_ids = null = "all").
+    const constResolve = async (
+      rows: Array<Record<string, unknown>> | undefined,
+      table: 'question_categories' | 'questions'
+    ): Promise<void> => {
+      if (!rows) return;
+      for (const row of rows) {
+        const constRefs = row._constituencies as
+          | { externalId?: Array<string>; external_id?: Array<string> }
+          | undefined;
+        const constExtIds = constRefs?.externalId ?? constRefs?.external_id;
+        if (!constExtIds?.length) continue;
+
+        const rowExtId = (row.externalId ?? row.external_id) as string;
+        if (!rowExtId) continue;
+
+        const constituencyIds: Array<string> = [];
+        for (const cExtId of constExtIds) {
+          const { data: cRow, error: cError } = await this.client
+            .from('constituencies')
+            .select('id')
+            .eq('external_id', cExtId)
+            .eq('project_id', this.projectId)
+            .single();
+          if (cError) throw new Error(`linkJoinTables: failed to find constituency ${cExtId}: ${cError.message}`);
+          constituencyIds.push(cRow.id);
+        }
+
+        const { error: updateError } = await this.client
+          .from(table)
+          .update({ constituency_ids: constituencyIds })
+          .eq('external_id', rowExtId)
+          .eq('project_id', this.projectId);
+        if (updateError) {
+          throw new Error(
+            `linkJoinTables: failed to update ${table} ${rowExtId} constituency_ids: ${updateError.message}`
+          );
+        }
+      }
+    };
+
+    await constResolve(categories, 'question_categories');
+    await constResolve(
+      (data.questions as Array<Record<string, unknown>> | undefined),
+      'questions'
+    );
   }
 
   // ---------------------------------------------------------------------------

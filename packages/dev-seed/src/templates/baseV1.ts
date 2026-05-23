@@ -57,19 +57,15 @@
  * ## Question scoping
  *
  * - QG-Opin-EL-Reg carries `_elections: { external_id: ['test-el-reg'] }`
- *   so linkJoinTables (supabaseAdminClient.ts:445-485) resolves to
+ *   so linkJoinTables (supabaseAdminClient.ts) resolves to
  *   `election_ids: [uuid(test-el-reg)]` on the question_categories row.
- * - QG-Opin-CO-Mun-SE-SW carries `constituency_ids: { external_id: [...] }`
- *   ref shape resolved similarly OR direct uuid array. Per the migration
- *   schema (line 597) `constituency_ids jsonb` is a column on the table;
- *   the question itself carries `constituency_ids` on its own row at
- *   `questions.constituency_ids` (migration line 625).
- * - Per-question constituency scoping (QG-Opin-Filt-A's QU-Open-Filt-Mun-NE
- *   and QG-Opin-Filt-B's QU-Open-Filt-Mun-SE) is set on the question row
- *   via the `customData.constituencyIds` pattern resolved by the frontend
- *   filter; for the dev-seed pipeline we declare the resolved uuids
- *   post-write (or as customData on the question row with the external_id
- *   referenced).
+ * - QG-Opin-CO-Mun-SE-SW carries `_constituencies: { external_id: [...] }`
+ *   resolved by linkJoinTables to `constituency_ids: [uuid(...)]` JSONB on
+ *   the question_categories row (column at migration line 597).
+ * - Per-question constituency scoping (QU-Open-Filt-Mun-NE under QG-Opin-Filt-A
+ *   and QU-Open-Filt-Mun-SE under QG-Opin-Filt-B) carries the same
+ *   `_constituencies: { external_id: [...] }` sentinel on the question row;
+ *   resolved to `questions.constituency_ids` JSONB (column at migration line 625).
  *
  * ## Partial-answer candidate arrangement
  *
@@ -177,7 +173,7 @@ export const BASE_V1_APP_SETTINGS = {
   },
   entities: {
     hideIfMissingAnswers: {
-      candidate: true
+      candidate: false
     },
     showAllNominations: true
   },
@@ -470,16 +466,11 @@ export const baseV1Template: Template = {
   // -------------------------------------------------------------- question_categories
   // 8 categories total: 1 info + 7 opinion (Base + Base-B + Base-C + EL-Reg
   // scoped + CO-Mun-SE-SW scoped + Filt-A + Filt-B).
-  // Scoping refs:
-  //   - QG-Opin-EL-Reg uses `_elections` sentinel → linkJoinTables resolves
-  //     to election_ids JSONB on the row.
-  //   - QG-Opin-CO-Mun-SE-SW carries `constituency_ids` as an array of
-  //     external_id stub strings; resolved post-write below by setting them
-  //     to the resolved uuid array (the pipeline does not have a dedicated
-  //     join-table linker for question_categories.constituency_ids today —
-  //     a Phase 88-NN follow-up may add one). For now we set
-  //     `customData.constituencyExternalIds` so the frontend filter can
-  //     consume the external ids and the spec exercises the scoping behaviour.
+  // Scoping refs (resolved by linkJoinTables from `_<sentinel>` shape):
+  //   - QG-Opin-EL-Reg → `_elections` sentinel → election_ids JSONB column.
+  //   - QG-Opin-CO-Mun-SE-SW → `_constituencies` sentinel → constituency_ids
+  //     JSONB column. Per-question (test-qu-open-filt-mun-ne / -se) entries
+  //     in `questions` use the same `_constituencies` sentinel.
   question_categories: {
     count: 0,
     fixed: [
@@ -525,9 +516,7 @@ export const baseV1Template: Template = {
         category_type: 'opinion',
         sort_order: 5,
         is_generated: false,
-        custom_data: {
-          constituencyExternalIds: ['test-co-mun-se', 'test-co-mun-sw']
-        }
+        _constituencies: { external_id: ['test-co-mun-se', 'test-co-mun-sw'] }
       },
       {
         external_id: 'test-qg-opin-filt-a',
@@ -762,7 +751,7 @@ export const baseV1Template: Template = {
         name: { en: 'Municipal SE/SW opinion 1 — Likert 5.' },
         choices: LIKERT_5_EN,
         category: { external_id: 'test-qg-opin-co-mun-se-sw' },
-        custom_data: { constituencyExternalIds: ['test-co-mun-se', 'test-co-mun-sw'] },
+        _constituencies: { external_id: ['test-co-mun-se', 'test-co-mun-sw'] },
         allow_open: true,
         required: true,
         sort_order: 140,
@@ -776,7 +765,7 @@ export const baseV1Template: Template = {
         name: { en: 'Filtered Mun-NE opinion — Likert 5.' },
         choices: LIKERT_5_EN,
         category: { external_id: 'test-qg-opin-filt-a' },
-        custom_data: { constituencyExternalIds: ['test-co-mun-ne'] },
+        _constituencies: { external_id: ['test-co-mun-ne'] },
         allow_open: true,
         required: true,
         sort_order: 150,
@@ -790,7 +779,7 @@ export const baseV1Template: Template = {
         name: { en: 'Filtered Mun-SE opinion — Likert 5.' },
         choices: LIKERT_5_EN,
         category: { external_id: 'test-qg-opin-filt-b' },
-        custom_data: { constituencyExternalIds: ['test-co-mun-se'] },
+        _constituencies: { external_id: ['test-co-mun-se'] },
         allow_open: true,
         required: true,
         sort_order: 160,
