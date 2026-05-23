@@ -1,6 +1,6 @@
 ---
 created: 2026-05-16T17:49:26.001Z
-updated: 2026-05-18T18:34:45.249Z
+updated: 2026-05-23T00:00:00.000Z
 title: Extend e2e tests to cover election- and constituency-scoped questions
 area: testing
 status: blocked-by-backend
@@ -13,7 +13,20 @@ files:
   - packages/dev-seed/src/templates/e2e.ts
   - packages/data/src/objects/election/election.ts
   - packages/app-shared/src/settings/
+related:
+  - 2026-05-23-remove-automatic-sentinel-fan-out-from-dev-seed-pipeline.md
 ---
+
+## Cross-reference (added 2026-05-23)
+
+The `jsonb → uuid[]` (or M:N join table) migration for the four scoping
+columns in the **Blocker** section below should be coordinated with
+[`2026-05-23-remove-automatic-sentinel-fan-out-from-dev-seed-pipeline.md`](./2026-05-23-remove-automatic-sentinel-fan-out-from-dev-seed-pipeline.md).
+Both touch the same templates (`e2e.ts`, `default.ts`, variants) and the
+same writer logic (`linkJoinTables`); landing them together amortises the
+template-overhaul cost. Plan 88-01's `baseV1.ts` is a working precedent
+for the post-migration explicit-only template shape.
+
 
 ## Problem
 
