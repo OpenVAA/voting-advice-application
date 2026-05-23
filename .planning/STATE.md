@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
-status: in_progress
-stopped_at: "Phase 87 SHIPPED. Phase 88 ADDED 2026-05-22 (operator-driven e2e catalog audit + forward-looking baseline; gates both /gsd-complete-milestone v2.10 AND v2.11 rune-migration start). Phase 87 anchor (b2ad76e5…) becomes historical; Phase 88 produces the new gating anchor. Operator next step: /gsd-discuss-phase 88"
-last_updated: 2026-05-22T00:00:00.000Z
-last_activity: "2026-05-23 -- Plan 88-02 planned: results route refactor ([[electionTab]] new route segment + entityTab/entity rename; NAME-DISJOINT from search-side electionId AVAILABLE-array surface); 8 atomic tasks; unblocks ~5 deferred-88-nn mega-journey placeholders"
+status: executing
+stopped_at: "**Plan 88-01 executed PARTIAL.** All 7 task commits landed (c713acf3e → 63ed2813d); scaffolding is structurally complete (baseV1 template @ 135 rows / setupFromTemplate helper / voter-mega fixture / mega-journey spec / 3 playwright projects / migration README). **BUT** the mega-journey spec has only 5 of ~30 refactor-doc:204-378 steps executing REAL assertions; 25 steps are `[deferred-88-nn]` placeholders pending empirical UI inspection of the baseV1 constituency-selection cluster (the `voter-missing-nominations-modal` intercepts naive "select first option" clicks; hierarchical-CG combobox ordering + nomination-availability gating need observation before lock-in). Plan Risks #2 + #7 sanctioned this fallback. **Parallel-only contract was breached during T5 — required a Rule-1 fix** (533c2bd42): `data-setup-baseV1` had to be chained `dependencies: ['variant-hidden-required-candidate']` because the shared `'test-'` row prefix collides with the existing chain mid-run. The fully-parallel goal moves to 88-NN via per-template prefix decoupling (`'test-baseV1-'` vs `'test-e2e-'`). Task 6 full-suite: isolated `--project=voter-mega-journey` (full graph) = **97/97 pass in 4.0 min**; full-suite `yarn test:e2e` = 87 pass / 1 fail / 3 skipped / 75 did_not_run (the 1 fail is `candidate-profile.spec.ts:130` pre-existing terms-checkbox flake, NOT caused by 88-01; per operator memory `feedback_e2e_did_not_run.md`, did_not_run counts as failure — so the cascade-skipped 75 are blocked by the pre-existing flake's cascade). 5 deviations + all 5 plan-check advisories documented in 88-01-SUMMARY.md. v2.10 milestone close + v2.11 rune migration kickoff remain BLOCKED behind Phase 88's final plan (which is now further out: 88-NN must close the deferred-88-nn cluster first)."
+last_updated: "2026-05-23T15:35:13.474Z"
+last_activity: 2026-05-23
 progress:
   total_phases: 13
-  completed_phases: 11
+  completed_phases: 12
   total_plans: 33
-  completed_plans: 30
-  percent: 79
+  completed_plans: 32
+  percent: 92
 ---
 
 # Project State
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Milestone complete
+**Current focus:** Phase 88 — e2e-test-catalog-audit-remove-add-consolidate-tests-fresh-ba
 
 ## Current Position
 
-Phase: 88
-Plan: 88-02 (planned 2026-05-23; 88-01 executed PARTIAL earlier same day)
-Status: 88-02 ready to execute — `/gsd-execute-phase 88` will pick up 88-02; 88-01's deferred-88-nn cluster waits on the follow-on plan after 88-02 lands.
+Phase: 88 (e2e-test-catalog-audit-remove-add-consolidate-tests-fresh-ba) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
 Last activity: 2026-05-23
 
 ## Performance Metrics
@@ -93,6 +93,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | Phase 86.3 P04 | ~15min | 2 tasks | 4 files (1 spec + 1 augmented todo + 1 smoke + 1 SUMMARY) |
 | Phase 86.3 P02 | 30min | 3 tasks tasks | 5 files files |
 | Phase 87 P01 | 30min (Path A verbal-accept; ~216 min saved vs Path B) | 5 tasks (0/1a/1b/2/3/4) | ~20 files |
+| Phase 88 P02 | 25min | 8 tasks | 20 files |
 
 ## Accumulated Context
 
@@ -160,6 +161,11 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 86.3 P02]: cell #4 SETTINGS-01 wave B constituency-filter — SUPERSEDED 2026-05-20 by operator WONT-IMPLEMENT decision. Constituency is navigation/scope, not a per-list filter. Spec block deleted from `tests/tests/specs/variants/constituency.spec.ts`; v2.11+ todo moved to `.planning/todos/done/2026-05-13-constituency-filter-product-gap.md` with WONT-FIX close note; SKIPPED_TESTS const entry removed; anchor jsdoc + cell #4 row marked WONT-IMPLEMENT in `diff-playwright-reports.ts`. (Original disposition: SKIP-FALLBACK via Path-C, Path-B rejected on reviewer-drift; that disposition is now historical.)
 - [Phase 87]: Path A verbal-accept run-mode selected at Task 1a checkpoint (autonomous directive + commit 9ad802ec0 verbal verification audit basis); saves ~216 min vs Path B fresh 3-run gate. v2.10 ship anchor pinned at `bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee` re-bound from 86.3-v1 raw data to v2.10 ship narrative. Operator-amended D-05 carried forward (CASCADE=36 + 4 SKIPPED accepted as documented v2.11+ deferrals). Audit-milestone v2.10 verdict: tech_debt operator-accepted; v2.10 SHIPPABLE; Phase 86/86.1/86.2 VERIFICATION.md backfill folded into v2.11+ tech_debt with new todo file. Cell #3 candidate-settings notifications.voterApp mount-lifecycle todo filed proactively per plan §6 expected new todo. KNOWN DEVIATION: parity-gate self-identity smoke FAILs structurally on Path A (76 regressions reported because 86.3-v1 raw data predates v2 classification promotions); const arrays correctly reflect v2 baseline (114/3/36/4 ✓); operator-accepted as known limitation of verbal-accept audit basis.
 - [Phase 86.3 P05]: QSPEC-01/02 cells #7+#8 SKIP-FALLBACK — walkToQuestion helper-resilience fix LANDED in voterNavigation.ts:308-329 (defensive isVisible probe + conditional intro-CTA click; +13 LOC) but EMPIRICALLY INSUFFICIENT — cells #7/#8 fail at upstream `advanceVoterFlow` line 149 (5s race-checkpoint timeout) because /intro itself never paints (page renders only `Loading…`). Same upstream voter-app cold-deeplink loader race as Phase 86.3-03 cell #5 (/questions Loading…) + Phase 86.3-04 cell #6 (/results Loading…); 4-cell finding characterizes the race as SHARED voter-app cold-deeplink (NOT route-specific). Helper fix LEFT IN PLACE as evidence-of-attempt (mirrors 86.3-04 Path-2 pattern). 3-run cold-start gate: raw FAIL (3 hashes differ); operator-approved ALMOST-STRICT per Phase 86 D-06 precedent (8 diverging cells share ONE documented boundary-class cascade ancestor — DETERM-06 imgproxy CAND-03 + candidate-registration email-link timing); canonical run-3.json; anchor SHA bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee. SKIPPED_TESTS const 2 → 5 entries (added cells #4/#5/#6; kept cells #7/#8); 3 SETTINGS-01 wave A cells moved CASCADE → PASS_LOCKED. PHASE 86.3 ANCHOR jsdoc added to diff-playwright-reports.ts. D-06 Phase 87 disposition recommendation: RE-PLAN (CASCADE >> 5 hard fails Phase 87 Task 0 pre-gate; upstream cold-deeplink race materially changes anchor target; v2.11+ navigation-from-home redesign closes 4 cells in single fix paired with 86.3-04 Recommendation #3).
+- [Phase ?]: Plan 88-02: Name-disjoint key dissociation between route-side electionTab (SELECTED singular) and search-side electionId (AVAILABLE-multi) yields structural rather than semantic dissociation
+- [Phase ?]: Plan 88-02 Q3: $derived.by chosen for currentResultsElection over push-pattern $state+$effect mirror; no FK fetch involved (just Array.find over already-resolved selectedElections)
+- [Phase ?]: Plan 88-02 Q4: pre-existing 'ResultsCandidate' typo fixed in EntityCard + EntityCardAction docstring examples as drive-by (docstring-only; no runtime impact)
+- [Phase ?]: Plan 88-02 Q2: extended existing +layout.ts (client+server load) rather than introducing +layout.server.ts — AVAILABLE-array is URL-supplied, no server-only data fetch required for guard validation
+- [Phase ?]: Plan 88-02 Q5: buildRoute({ electionId: [...] }) remains pure search-side write (no route-side dual-write); both-surfaces callers pass both keys explicitly; existing allowlist-driven split handles structurally — no buildRoute.ts code change needed
 
 ### Quick Tasks Completed
 
@@ -176,7 +182,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-05-23T (Plan 88-01 executed — status: partial)
+Last session: 2026-05-23T15:34:57.846Z
 Stopped at: **Plan 88-01 executed PARTIAL.** All 7 task commits landed (c713acf3e → 63ed2813d); scaffolding is structurally complete (baseV1 template @ 135 rows / setupFromTemplate helper / voter-mega fixture / mega-journey spec / 3 playwright projects / migration README). **BUT** the mega-journey spec has only 5 of ~30 refactor-doc:204-378 steps executing REAL assertions; 25 steps are `[deferred-88-nn]` placeholders pending empirical UI inspection of the baseV1 constituency-selection cluster (the `voter-missing-nominations-modal` intercepts naive "select first option" clicks; hierarchical-CG combobox ordering + nomination-availability gating need observation before lock-in). Plan Risks #2 + #7 sanctioned this fallback. **Parallel-only contract was breached during T5 — required a Rule-1 fix** (533c2bd42): `data-setup-baseV1` had to be chained `dependencies: ['variant-hidden-required-candidate']` because the shared `'test-'` row prefix collides with the existing chain mid-run. The fully-parallel goal moves to 88-NN via per-template prefix decoupling (`'test-baseV1-'` vs `'test-e2e-'`). Task 6 full-suite: isolated `--project=voter-mega-journey` (full graph) = **97/97 pass in 4.0 min**; full-suite `yarn test:e2e` = 87 pass / 1 fail / 3 skipped / 75 did_not_run (the 1 fail is `candidate-profile.spec.ts:130` pre-existing terms-checkbox flake, NOT caused by 88-01; per operator memory `feedback_e2e_did_not_run.md`, did_not_run counts as failure — so the cascade-skipped 75 are blocked by the pre-existing flake's cascade). 5 deviations + all 5 plan-check advisories documented in 88-01-SUMMARY.md. v2.10 milestone close + v2.11 rune migration kickoff remain BLOCKED behind Phase 88's final plan (which is now further out: 88-NN must close the deferred-88-nn cluster first).
 Resume file: None
 Next action: Operator decides Phase 87 disposition per Phase 86.3-05 D-06 recommendation:
@@ -200,6 +206,7 @@ Reference: `.planning/phases/86.3-…/86.3-SUMMARY.md` §"D-06 Phase 87 Disposit
 ### Phase 88 status (Plan 88-02 ready)
 
 **Plan 88-02 planned 2026-05-23**: Results route refactor (operator-driven, scoped from `88-02-SCOPE.md`). Introduces:
+
 - New OPTIONAL route segment `[[electionTab]]` at the front of `/results/...` carrying the SELECTED singular election.
 - Rename of `entityTypePlural`/`entityTypeSingular` directory segments to `entityTab`/`entity` (backed by `etPl`/`etSg` matchers).
 - New voterContext reactive accessor `currentResultsElection` reading `page.params.electionTab` with first-available default-pick.

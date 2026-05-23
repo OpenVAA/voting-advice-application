@@ -341,7 +341,7 @@ Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82, 83 (pa
 | 86.2. E2E Suite Refactor Pass | v2.10 | 3/3 | Complete    | 2026-05-20 |
 | 86.3. Implement Skipped Tests (8 cells) | v2.10 | 5/5 | Complete    | 2026-05-20 |
 | 87. v2.10 All-Green Milestone-Close Anchor | v2.10 | 1/1 | Complete    | 2026-05-21 |
-| 88. E2E Test Catalog Audit + Forward-Looking Baseline | v2.10 | 0/2 | 88-01 partial; 88-02 ready (results route refactor: [[electionTab]] segment + entityTab/entity rename) | - |
+| 88. E2E Test Catalog Audit + Forward-Looking Baseline | v2.10 | 2/2 | Complete   | 2026-05-23 |
 
 ### Phase 88: E2E Test Catalog Audit + Forward-Looking Baseline
 
@@ -355,11 +355,11 @@ Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82, 83 (pa
 
 **Depends on:** Phase 87 (final pre-audit anchor must exist as historical reference).
 **Requirements**: Operator-driven — Plan 88-01 derives its scope directly from `./TEST-INVENTORY-REFACTOR-1.md` (817 lines, of which lines 1-378 are 88-01-scoped; lines 379+ are deferred to subsequent 88-NN plans). Discuss-phase skipped because the refactor doc IS the design spec.
-**Plans:** 1 of N planned (88-01 planned 2026-05-23; further plans TBD as the catalog audit progresses)
+**Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 88-01-PLAN.md — Parallel landing Wave 1: new BUILT_IN `baseV1` template + generic `setupFromTemplate` helper + sibling voter fixture (`answerMode: 'min'|'max'`) + voter-mega-journey spec (refactor-doc:204-378) + 3 appended playwright projects (`data-setup-baseV1 → voter-mega-journey → data-teardown-baseV1`) + full-suite regression + optional migration map. Parallel-only (existing surface untouched except for ONE testIgnore extension at `playwright.config.ts:252` to prevent double-pickup of the new spec by `voter-app`). 7 atomic tasks (6 mandatory + 1 optional). **EXECUTED PARTIAL** 2026-05-23 — scaffolding green; 25 mega-journey steps deferred to 88-NN pending baseV1 UI inspection.
-- [ ] 88-02-PLAN.md — Results route refactor: rename `entityTypePlural`/`entityTypeSingular` → `entityTab`/`entity` (with `etPl`/`etSg` matchers) + introduce new `[[electionTab]]` route segment that is NAME-DISJOINT from the search-side `?electionId=…` AVAILABLE-array surface. New voterContext `currentResultsElection` reactive accessor; server-side guards (invalid→strip+redirect; 1-available→auto-redirect; 2+→render existing picker). 8 atomic tasks. Unblocks ~5 of 88-01's deferred-88-nn placeholders (election-selection cluster) for the immediate follow-on plan to wire.
+- [x] 88-01-PLAN.md — Parallel landing Wave 1: new BUILT_IN `baseV1` template + generic `setupFromTemplate` helper + sibling voter fixture (`answerMode: 'min'|'max'`) + voter-mega-journey spec (refactor-doc:204-378) + 3 appended playwright projects (`data-setup-baseV1 → voter-mega-journey → data-teardown-baseV1`) + full-suite regression + optional migration map. Parallel-only (existing surface untouched except for ONE testIgnore extension at `playwright.config.ts:252` to prevent double-pickup of the new spec by `voter-app`). 7 atomic tasks (6 mandatory + 1 optional). **EXECUTED PARTIAL** 2026-05-23 — scaffolding green; 25 mega-journey steps deferred to 88-NN pending baseV1 UI inspection.
+- [x] 88-02-PLAN.md — Results route refactor: rename `entityTypePlural`/`entityTypeSingular` → `entityTab`/`entity` (with `etPl`/`etSg` matchers) + introduce new `[[electionTab]]` route segment that is NAME-DISJOINT from the search-side `?electionId=…` AVAILABLE-array surface. New voterContext `currentResultsElection` reactive accessor; server-side guards (invalid→strip+redirect; 1-available→auto-redirect; 2+→render existing picker). 8 atomic tasks. Unblocks ~5 of 88-01's deferred-88-nn placeholders (election-selection cluster) for the immediate follow-on plan to wire.
 - [ ] 88-NN — TBD: absorb refactor-doc lines 379+ specs into the new template/helper/mega-journey shape; retire `--likert-only` flag once last consumer migrates
 - [ ] 88-NN — TBD: retire per-variant setup files once the generic helper consumes them all
 - [ ] 88-LAST — TBD: final v2.10-close anchor capture against the audited catalog (3-run cold-start gate + atomic regen-constants); replaces Phase 87 anchor `b2ad76e5…`
