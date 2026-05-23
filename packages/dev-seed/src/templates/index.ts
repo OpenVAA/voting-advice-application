@@ -14,6 +14,7 @@
  * the pipeline receives the per-template override map at `runPipeline(tpl, ov)`.
  */
 
+import { baseV1Template } from './baseV1';
 import { defaultOverrides, defaultTemplate } from './default';
 import { e2eTemplate } from './e2e';
 import type { Template } from '../template/types';
@@ -21,10 +22,13 @@ import type { Overrides } from '../types';
 
 /**
  * Built-in template name → Template. Plan 08 adds `e2e: e2eTemplate`.
+ * Phase 88 Plan 01 adds `baseV1: baseV1Template` for the new mega-journey
+ * (parallel landing alongside e2e per the parallel-setup principle).
  */
 export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   default: defaultTemplate,
-  e2e: e2eTemplate
+  e2e: e2eTemplate,
+  baseV1: baseV1Template
 };
 
 /**
@@ -45,5 +49,6 @@ export const BUILT_IN_OVERRIDES: Record<string, Overrides> = {
 };
 
 // Re-exports for explicit consumer imports.
+export { BASE_V1_APP_SETTINGS, baseV1Template } from './baseV1';
 export { defaultOverrides, defaultTemplate } from './default';
 export { E2E_BASE_APP_SETTINGS, e2eTemplate } from './e2e';

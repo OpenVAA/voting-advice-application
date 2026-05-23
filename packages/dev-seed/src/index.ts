@@ -60,6 +60,8 @@ export { runPipeline, TOPO_ORDER } from './pipeline';
 export { SupabaseAdminClient, TEST_PROJECT_ID } from './supabaseAdminClient';
 export { TemplateSchema, validateTemplate } from './template/schema';
 export {
+  BASE_V1_APP_SETTINGS,
+  baseV1Template,
   BUILT_IN_OVERRIDES,
   BUILT_IN_TEMPLATES,
   defaultOverrides,
