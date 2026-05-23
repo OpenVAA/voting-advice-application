@@ -12,6 +12,32 @@ import type { Route } from './route';
 
 /**
  * Builds a route using the current route params and those passed to it. Some `Route`s have default parameters that can be omitted.
+ *
+ * Name-disjoint dissociation rule (Phase 88 Plan 88-02):
+ * ----------------------------------------------------------------
+ * `buildRoute({ electionTab: 'X' })` routes `X` to the PATH SEGMENT via
+ * `isRouteParam('electionTab') === true` (the route-side SELECTED-singular
+ * surface; new in Plan 88-02). `buildRoute({ electionId: 'X' })` routes
+ * `X` to the SEARCH SIDE via `isPersistentSearchParam('electionId') === true`
+ * (the search-side AVAILABLE-array surface; unchanged from prior phases).
+ * The two keys never alias.
+ *
+ * A caller wanting BOTH surfaces populated (set the selected election AND
+ * scope to a specific available pool) passes BOTH keys:
+ *
+ *   buildRoute({
+ *     route: 'Results',
+ *     electionTab: 'test-el-reg',                         // → /results/test-el-reg/...
+ *     electionId: ['test-el-reg', 'test-el-mun']          // → ?electionId[0]=test-el-reg&electionId[1]=test-el-mun
+ *   });
+ *
+ * `electionTab` is NOT in `ARRAY_PARAMS` (route segment is always
+ * singular), so passing an array there would type-error at compile time.
+ * `electionId` IS in `ARRAY_PARAMS`, so the search-side AVAILABLE-array
+ * semantics are preserved end-to-end. See the block comments in
+ * `params.ts`, `parseParams.ts`, and `filterPersistent.ts` for the full
+ * dissociation contract.
+ *
  * @param options - Either the name of the `Route` or an object with the more properties.
  * @param current - The current route params and url. This is automatically appended by the `getRoute` store.
  * @returns A URL string with locale prefix added by Paraglide.

@@ -25,6 +25,24 @@ export function parseParams({
       }
     }
   }
+  // Name-disjoint dissociation rule (Phase 88 Plan 88-02):
+  // ----------------------------------------------------------------
+  // `params.electionTab` (route-side, singular SELECTED election) and
+  // `url.searchParams.electionId` / `qs.parse(...).electionId` array
+  // form (search-side, AVAILABLE-multi) live on the merged
+  // `Partial<Params>` object under TWO DISTINCT KEYS — they have
+  // different identifiers throughout the codebase (see the block
+  // comment in `params.ts`). The existing merge order below (search
+  // first, then route) is preserved verbatim because no special-case
+  // slash-guard is needed: the route side emits `electionTab` and the
+  // search side emits `electionId`, so neither surface ever overwrites
+  // the other.
+  //
+  // `isArrayParam('electionTab')` is `false` (route-side is always
+  // singular), so the branch below just passes the singular string
+  // through unchanged for the route segment. `isArrayParam('electionId')`
+  // is `true`, which keeps the AVAILABLE-array semantics on the search
+  // side intact.
   if (params) {
     for (const [key, value] of Object.entries(params)) {
       parsed[key] = (isArrayParam(key) ? value.split('/') : value) as Params[typeof key];
