@@ -23,16 +23,23 @@ export const ROUTE = {
   Question: `${VOTER_LOCATED}/questions/[questionId]`,
   QuestionCategory: `${VOTER_LOCATED}/questions/category/[categoryId]`,
   Questions: `${VOTER_LOCATED}/questions`,
-  // Results routes — 4-segment optional shape introduced in Phase 62 Plan 62-02
-  // (see `src/routes/(voters)/(located)/results/[[entityTypePlural=entityTypePlural]]/[[entityTypeSingular=entityTypeSingular]]/[[id]]`).
-  // Route params: entityTypePlural (candidates | organizations), entityTypeSingular
-  // (candidate | organization), id (entity id). electionId + constituencyId travel
-  // as persistent search params (see `params.ts`).
-  ResultCandidate: `${VOTER_LOCATED}/results/[[entityTypePlural=entityTypePlural]]/[[entityTypeSingular=entityTypeSingular]]/[[id]]`,
-  ResultEntity: `${VOTER_LOCATED}/results/[[entityTypePlural=entityTypePlural]]/[[entityTypeSingular=entityTypeSingular]]/[[id]]`,
-  ResultParty: `${VOTER_LOCATED}/results/[[entityTypePlural=entityTypePlural]]/[[entityTypeSingular=entityTypeSingular]]/[[id]]`,
+  // Results routes — 4-segment optional shape introduced in Phase 88 Plan 88-02
+  // (see `src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]`).
+  // Route params:
+  //   - electionTab   (freeform)              — SELECTED election (singular) whose results are being rendered.
+  //   - entityTab     (matcher etPl)          — `candidates` | `organizations` | `alliances` (list tab).
+  //   - entity        (matcher etSg)          — `candidate`  | `organization`  | `alliance`  (drawer entity type).
+  //   - id            (any)                   — entity id for the drawer.
+  // Name-disjoint dissociation: `electionTab` (route key, SELECTED singular) and
+  // `electionId` (search key, AVAILABLE array; PERSISTENT_SEARCH_PARAMS member at
+  // `params.ts`) are literally different identifiers throughout the codebase —
+  // they never alias. `constituencyId` continues to travel as a persistent
+  // search param.
+  ResultCandidate: `${VOTER_LOCATED}/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]`,
+  ResultEntity: `${VOTER_LOCATED}/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]`,
+  ResultParty: `${VOTER_LOCATED}/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]`,
   Results: `${VOTER_LOCATED}/results`,
-  Statistics: `${VOTER_LOCATED}/results/statistics`,
+  Statistics: `${VOTER_LOCATED}/results/[[electionTab]]/statistics`,
 
   // Candidate App
   CandAppForgotPassword: `${CANDIDATE}/forgot-password`,
@@ -80,6 +87,6 @@ export const FIRST_QUESTION_ID = '__first__';
  */
 export const DEFAULT_PARAMS: Partial<Record<Route, Record<string, string>>> = {
   Question: { questionId: FIRST_QUESTION_ID },
-  ResultCandidate: { entityTypePlural: 'candidates', entityTypeSingular: 'candidate' },
-  ResultParty: { entityTypePlural: 'organizations', entityTypeSingular: 'organization' }
+  ResultCandidate: { entityTab: 'candidates', entity: 'candidate' },
+  ResultParty: { entityTab: 'organizations', entity: 'organization' }
 };
