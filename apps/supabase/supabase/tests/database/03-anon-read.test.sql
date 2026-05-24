@@ -16,7 +16,9 @@ SET search_path = public, extensions;
 -- Reset pgTAP internal state from previous test files in same session
 DROP TABLE IF EXISTS __tcache__;
 
-SELECT plan(56);
+-- 260524-l1t D7 added 3 visibility assertions (NULL / past now() / future
+-- now()) at the end of Section 1 — plan count 56 → 59.
+SELECT plan(59);
 
 -- Create test fixture data
 -- Project A: published=true, Project B: published=false
@@ -84,6 +86,39 @@ SELECT is(
   (SELECT count(*) FROM candidates WHERE published = false)::integer,
   0,
   'anon cannot see unpublished candidates'
+);
+
+-- =====================================================================
+-- 260524-l1t D7: terms_of_use_accepted gating (migration 00002)
+-- Insert two ephemeral candidates to exercise the NULL + future-now()
+-- branches of the new anon_select_candidates policy:
+--   - candidate_no_terms:     published=true, ToU=NULL          → invisible
+--   - candidate_future_terms: published=true, ToU=now()+1 day   → invisible
+-- candidate_a (published=true, ToU=now()) covers the past-now() branch
+-- → visible. Asserts the visibility constraint added by migration 00002.
+-- =====================================================================
+SELECT reset_role();
+INSERT INTO candidates (id, project_id, auth_user_id, first_name, last_name, organization_id, published, terms_of_use_accepted) VALUES
+  ('cccccccc-cccc-cccc-cccc-00000000001a'::uuid, test_id('project_a'), NULL, 'NoTerms',     'Anon', test_id('org_a'), true, NULL),
+  ('cccccccc-cccc-cccc-cccc-00000000001b'::uuid, test_id('project_a'), NULL, 'FutureTerms', 'Anon', test_id('org_a'), true, now() + interval '1 day');
+
+SELECT set_test_user('anon');
+
+SELECT is(
+  (SELECT count(*) FROM candidates WHERE first_name = 'NoTerms' AND last_name = 'Anon')::integer,
+  0,
+  'anon cannot SELECT published candidate with terms_of_use_accepted = NULL (260524-l1t / D7)'
+);
+
+SELECT is(
+  (SELECT count(*) FROM candidates WHERE first_name = 'FutureTerms' AND last_name = 'Anon')::integer,
+  0,
+  'anon cannot SELECT published candidate with terms_of_use_accepted in the future (260524-l1t / D7)'
+);
+
+SELECT ok(
+  (SELECT count(*) FROM candidates WHERE first_name = 'Alice' AND last_name = 'Alpha')::integer = 1,
+  'anon CAN SELECT published candidate with terms_of_use_accepted in the past (candidate_a, 260524-l1t / D7)'
 );
 
 SELECT ok(

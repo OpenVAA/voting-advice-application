@@ -262,8 +262,14 @@ CREATE POLICY "admin_delete_organizations" ON public.organizations FOR DELETE TO
 ALTER TABLE public.candidates ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "candidates_deny_all" ON public.candidates;
 
+-- 260524-l1t D7: tightened anon visibility. The `terms_of_use_accepted IS
+-- NOT NULL` guard handles candidates who have never accepted (CA-AA-Hidden
+-- in baseV1.ts:836-849 — published=true but no ToU acceptance, surfaced
+-- by the 260523-u53 walkthrough as a visibility gap). The `< now()` guard
+-- handles future-dated timestamps (test-seeding edge case; defensive
+-- against client/server clock skew).
 CREATE POLICY "anon_select_candidates" ON public.candidates FOR SELECT TO anon
-  USING (published = true);
+  USING (published = true AND terms_of_use_accepted IS NOT NULL AND terms_of_use_accepted < now());
 
 -- Authenticated: project access, own record, party admin for their party's candidates, or published
 CREATE POLICY "authenticated_select_candidates" ON public.candidates FOR SELECT TO authenticated

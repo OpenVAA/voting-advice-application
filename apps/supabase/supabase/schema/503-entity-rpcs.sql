@@ -79,6 +79,13 @@ AS $$
   WHERE (p_election_id IS NULL OR n.election_id = p_election_id)
     AND (p_constituency_id IS NULL OR n.constituency_id = p_constituency_id)
     AND (p_include_unconfirmed OR NOT COALESCE(n.unconfirmed, false))
+    -- 260524-l1t D7: SECURITY INVOKER means the LEFT JOINs run with the
+    -- caller's permissions, so RLS-hidden entity rows return NULL on the
+    -- entity-side columns. The nomination row itself has no published/ToU
+    -- gate, so we'd otherwise leak nominations whose underlying entity is
+    -- hidden (CA-AA-Hidden post-anon_select_candidates tightening). Drop
+    -- rows where every entity-side join resolved to NULL.
+    AND COALESCE(c.id, o.id, f.id, a.id) IS NOT NULL
   ORDER BY n.sort_order NULLS LAST, n.id;
 $$;
 
