@@ -272,6 +272,19 @@ The same component can also be used to display the answers of the voter and anot
         bind:group={selected}
         onkeyup={(e) => handleKeyUp(e, id)} />
 
+      <!--
+        260524-l1t D6: stable testId marker for the entity's selected answer
+        in display mode. Rendered as a sr-only sibling of the radio so that
+        the existing `data-testid="question-choice"` on the input is
+        preserved (Playwright's getByTestId matches data-testid only and
+        multiple data-testid attributes on one element are invalid HTML).
+        Consumed by tests/tests/utils/testIds.ts → voter.entityDetail.
+        entitySelectedAnswer (voter-mega-journey + voter-detail specs).
+      -->
+      {#if otherSelected == id}
+        <span data-testid="entity-selected-answer" class="sr-only">entity-selected</span>
+      {/if}
+
       <!-- The text label. If we are displaying answers, we only show the label when it's in use to reduce clutter. We do show the answer also, when none are selected, because it would look weird otherwise. Due to Aria concerns we always show it to screenreaders. -->
       <div
         class:sr-only={mode === 'display' && (selectedId || otherSelected) && selectedId != id && otherSelected != id}

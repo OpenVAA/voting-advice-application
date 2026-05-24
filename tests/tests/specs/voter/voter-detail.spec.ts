@@ -243,11 +243,9 @@ test.describe('voter-detail answer cases (E2E-05)', { tag: ['@voter'] }, () => {
     // answered it = '5' → both rows render with the same selected choice.
     const firstInput = opinionsTab.getByTestId('opinion-question-input').first();
 
-    // reason: 'entitySelected' is a CSS class set by OpinionQuestionInput;
-    // no aria/role equivalent — see existing exemplar at line 98-106 for the
-    // canonical inline justification.
-    // eslint-disable-next-line playwright/no-raw-locators
-    await expect(firstInput.locator('.entitySelected')).toHaveCount(1);
+    // 260524-l1t D6: entitySelected raw-locator migrated to the new
+    // entity-selected-answer testId emitted by QuestionChoices.svelte.
+    await expect(firstInput.getByTestId(testIds.voter.entityDetail.entitySelectedAnswer)).toHaveCount(1);
     await expect(firstInput.getByRole('radio', { checked: true })).toHaveCount(1);
     await expect(firstInput.getByText('You')).toBeAttached();
   });
@@ -267,10 +265,9 @@ test.describe('voter-detail answer cases (E2E-05)', { tag: ['@voter'] }, () => {
 
     await expect(firstInput.getByRole('radio', { checked: true })).toHaveCount(1);
     await expect(firstInput.getByText('You')).toBeAttached();
-    // reason: same class-based contract as case (a); count=0 asserts entity
-    // row absent (CaseB has no answer for the marker question).
-    // eslint-disable-next-line playwright/no-raw-locators
-    await expect(firstInput.locator('.entitySelected')).toHaveCount(0);
+    // 260524-l1t D6: entitySelected raw-locator migrated to the new testId;
+    // count=0 asserts entity row absent (CaseB has no answer for the marker).
+    await expect(firstInput.getByTestId(testIds.voter.entityDetail.entitySelectedAnswer)).toHaveCount(0);
   });
 
   test('case (c) — voter missing, entity answered: entity row only', async ({ answeredVoterPage: page }) => {
@@ -288,10 +285,10 @@ test.describe('voter-detail answer cases (E2E-05)', { tag: ['@voter'] }, () => {
     // the opinions tab — locate via .last().
     const lastInput = opinionsTab.getByTestId('opinion-question-input').last();
 
-    // reason: class-based contract — entity's choice carries entitySelected;
-    // no voter selection means no checked radio and no 'You' label.
-    // eslint-disable-next-line playwright/no-raw-locators
-    await expect(lastInput.locator('.entitySelected')).toHaveCount(1);
+    // 260524-l1t D6: entitySelected raw-locator migrated to the new testId;
+    // entity's choice carries entity-selected-answer marker; no voter
+    // selection means no checked radio and no 'You' label.
+    await expect(lastInput.getByTestId(testIds.voter.entityDetail.entitySelectedAnswer)).toHaveCount(1);
     await expect(lastInput.getByRole('radio', { checked: true })).toHaveCount(0);
     await expect(lastInput.getByText('You')).toHaveCount(0);
   });

@@ -470,14 +470,12 @@ async function classifyVoterEntityRows({
   for (let i = 0; i < count; i++) {
     const row = inputs.nth(i);
     const hasChecked = await row.getByRole('radio', { checked: true }).count();
-    // svelte-warning: accepted — .entitySelected is a styling-class marker on the entity
-    // answer cell with no testId / role / accessible-name surface in the current DOM.
-    // reason: the voter-detail spec exemplar at lines 246-249 documents that the entity-
-    //   answer marker is exposed only via the .entitySelected CSS class; no testId or
-    //   semantic role attribute is rendered for this state. A future testId addition
-    //   would let us drop this suppression.
-    // eslint-disable-next-line playwright/no-raw-locators
-    const hasEntitySelected = await row.locator('.entitySelected').count();
+    // 260524-l1t D6: was `row.locator('.entitySelected').count()` with an
+    // inline suppression block. QuestionChoices.svelte now emits a sr-only
+    // sibling <span data-testid="entity-selected-answer"> when the entity
+    // has selected this choice; the testId is consumed via getByTestId,
+    // replacing the raw class-based locator.
+    const hasEntitySelected = await row.getByTestId(testIds.voter.entityDetail.entitySelectedAnswer).count();
     if (hasChecked > 0 && hasEntitySelected > 0) cases.sawCaseA = true;
     if (hasChecked > 0 && hasEntitySelected === 0) cases.sawCaseB = true;
     if (hasChecked === 0 && hasEntitySelected > 0) cases.sawCaseC = true;

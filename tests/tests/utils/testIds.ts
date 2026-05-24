@@ -80,7 +80,7 @@ export const testIds = {
     },
     elections: {
       list: 'voter-elections-list',
-      card: 'election-selector-option',
+      option: 'election-selector-option',
       continue: 'voter-elections-continue'
     },
     constituencies: {
@@ -121,7 +121,13 @@ export const testIds = {
       container: 'voter-entity-detail',
       infoTab: 'voter-entity-detail-info',
       opinionsTab: 'voter-entity-detail-opinions',
-      childrenTab: 'voter-entity-detail-children'
+      childrenTab: 'voter-entity-detail-children',
+      // 260524-l1t D6: sr-only sibling marker on QuestionChoices.svelte's
+      // radio whose `otherSelected == id` (i.e. the entity's chosen answer
+      // in display mode). Replaces the `.entitySelected` raw-locator
+      // suppression at voter-detail.spec.ts:246-249/270-273/291-294 +
+      // voter-mega-journey.spec.ts (classifyVoterEntityRows helper).
+      entitySelectedAnswer: 'entity-selected-answer'
     },
     nav: {
       resultsLink: 'voter-nav-results'
