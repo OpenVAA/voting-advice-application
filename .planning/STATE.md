@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 Phase: 88 (e2e-test-catalog-audit-remove-add-consolidate-tests-fresh-ba) — EXECUTING
 Plan: 2 of 2
 Status: Ready to execute
-Last activity: 2026-05-23 - Completed quick task 260523-u53: closed all 19 [deferred-88-nn] steps in voter-mega-journey.spec.ts (spec PASS 3/3, lint 0/0)
+Last activity: 2026-05-24 - Completed quick task 260524-l1t: voter-mega-journey refactor pass (TIMEOUT/RX consts, named args, locator hardening, entity-selected testId, D7 RLS hardening + migration 00002, baseV1 opt-a/b rename) — no tests executed per user directive
 
 ## Performance Metrics
 
@@ -173,6 +173,7 @@ Key cross-milestone reference points carried forward into v2.10:
 |---|-------------|------|--------|-----------|
 | 260522-mps | Generate e2e test catalog inventory for Phase 88 audit (38 specs, 173 tests in execution order) | 2026-05-22 | 7f11a2c25 | [260522-mps-generate-e2e-test-catalog-inventory-for-](./quick/260522-mps-generate-e2e-test-catalog-inventory-for-/) |
 | 260523-u53 | Implement 19 [deferred-88-nn] steps in voter-mega-journey.spec.ts per TEST-INVENTORY-REFACTOR-1.md; spec 3/3 PASS, lint 0/0, 3 expect.soft within budget | 2026-05-23 | f3b99905a | [260523-u53-implement-all-of-the-deferred-88-nn-test](./quick/260523-u53-implement-all-of-the-deferred-88-nn-test/) |
+| 260524-l1t | Refactor voter-mega-journey.spec.ts (TIMEOUT/RX consts, named args, locator hardening, entity-selected testId) + D7 RLS hardening (anon ToU gating, get_nominations RLS-safe, migration 00002 + pgTAP) + D8 baseV1 rename test-qg-opin-base-b/c → opt-a/b. No tests executed (user directive). Lint 0/0. | 2026-05-24 | e1bd3a43e | [260524-l1t-refactor-voter-mega-journey-spec-ts-time](./quick/260524-l1t-refactor-voter-mega-journey-spec-ts-time/) |
 
 ### Blockers/Concerns
 
