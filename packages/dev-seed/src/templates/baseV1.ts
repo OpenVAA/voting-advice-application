@@ -24,11 +24,13 @@
  *                            test-co-mun-ne, test-co-mun-nw,
  *                            test-co-mun-se, test-co-mun-sw
  *     - Question categories: test-qg-info, test-qg-opin-base,
- *                            test-qg-opin-base-b, test-qg-opin-base-c,
+ *                            test-qg-opin-opt-a (was: -base-b),
+ *                            test-qg-opin-opt-b (was: -base-c),
  *                            test-qg-opin-el-reg, test-qg-opin-co-mun-se-sw,
  *                            test-qg-opin-filt-a, test-qg-opin-filt-b
  *     - Questions:           test-qu-info-{type}, test-qu-opin-base-{i}-{type},
- *                            test-qu-opin-base-b-1, test-qu-opin-base-c-1,
+ *                            test-qu-opin-opt-a-1 (was: -base-b-1),
+ *                            test-qu-opin-opt-b-1 (was: -base-c-1),
  *                            test-qu-opin-el-reg-1, test-qu-opin-co-mun-se-sw-1,
  *                            test-qu-open-filt-mun-ne, test-qu-open-filt-mun-se
  *     - Alliances:           test-al-a, test-al-b
@@ -69,9 +71,10 @@
  *
  * ## Partial-answer candidate arrangement
  *
- * Per USER NOTE on Task 1: voter mega-journey skips QU-Opin-Base-B-1 and
- * QU-Opin-EL-Reg-1; skips QU-Open-Filt-Mun-NE; and never sees QG-Opin-Base-C
- * (unchecked) nor QG-Opin-CO-Mun-SE-SW (constituency-filtered out for
+ * Per USER NOTE on Task 1: voter mega-journey skips QU-Opin-Opt-A-1 (was
+ * Base-B-1) and QU-Opin-EL-Reg-1; skips QU-Open-Filt-Mun-NE; and never sees
+ * QG-Opin-Opt-B (was Base-C; unchecked) nor QG-Opin-CO-Mun-SE-SW (filtered
+ * out for
  * CO-Mun-NE). CA-AA-Special's answer arrangement (one of two
  * partial-answer roles) exercises the 4-case matrix in 9.6.5-8:
  *   - (a) base-1, base-3, base-4, base-5: both answered
@@ -464,8 +467,8 @@ export const baseV1Template: Template = {
   },
 
   // -------------------------------------------------------------- question_categories
-  // 8 categories total: 1 info + 7 opinion (Base + Base-B + Base-C + EL-Reg
-  // scoped + CO-Mun-SE-SW scoped + Filt-A + Filt-B).
+  // 8 categories total: 1 info + 7 opinion (Base + Opt-A (was Base-B) +
+  // Opt-B (was Base-C) + EL-Reg scoped + CO-Mun-SE-SW scoped + Filt-A + Filt-B).
   // Scoping refs (resolved by linkJoinTables from `_<sentinel>` shape):
   //   - QG-Opin-EL-Reg → `_elections` sentinel → election_ids JSONB column.
   //   - QG-Opin-CO-Mun-SE-SW → `_constituencies` sentinel → constituency_ids
@@ -489,15 +492,15 @@ export const baseV1Template: Template = {
         is_generated: false
       },
       {
-        external_id: 'test-qg-opin-base-b',
-        name: { en: 'Base Opinion Questions B' },
+        external_id: 'test-qg-opin-opt-a',
+        name: { en: 'Optional Opinion Questions A' },
         category_type: 'opinion',
         sort_order: 2,
         is_generated: false
       },
       {
-        external_id: 'test-qg-opin-base-c',
-        name: { en: 'Base Opinion Questions C' },
+        external_id: 'test-qg-opin-opt-b',
+        name: { en: 'Optional Opinion Questions B' },
         category_type: 'opinion',
         sort_order: 3,
         is_generated: false
@@ -536,10 +539,11 @@ export const baseV1Template: Template = {
   },
 
   // ------------------------------------------------------------------- questions
-  // 14 questions: 9 info + 5 opinion-base + Base-B-1 + Base-C-1 + EL-Reg-1 +
-  // CO-Mun-SE-SW-1 + Filt-Mun-NE + Filt-Mun-SE  = 9 + 5 + 1 + 1 + 1 + 1 + 1 + 1 = 20.
+  // 14 questions: 9 info + 5 opinion-base + Opt-A-1 (was Base-B-1) + Opt-B-1
+  // (was Base-C-1) + EL-Reg-1 + CO-Mun-SE-SW-1 + Filt-Mun-NE + Filt-Mun-SE
+  // = 9 + 5 + 1 + 1 + 1 + 1 + 1 + 1 = 20.
   // Refactor-doc:26-56 says "14 questions total" but the per-line enumeration
-  // adds up to 20 (9 info + 5 base + 1 B + 1 C + 1 EL-Reg + 1 CO-Mun + 2 Filt).
+  // adds up to 20 (9 info + 5 base + 1 Opt-A + 1 Opt-B + 1 EL-Reg + 1 CO-Mun + 2 Filt).
   // Following the per-line enumeration verbatim — the "14" appears to count
   // opinion questions only (5 + 1 + 1 + 1 + 1 + 2 = 11) or is approximate.
   // The dataset declares all questions the refactor doc explicitly lists.
@@ -703,26 +707,26 @@ export const baseV1Template: Template = {
         is_generated: false
       },
 
-      // QG-Opin-Base-B (used for testing category intros and selection)
+      // QG-Opin-Opt-A (formerly Base-B; used for testing category intros and selection)
       {
-        external_id: 'test-qu-opin-base-b-1',
+        external_id: 'test-qu-opin-opt-a-1',
         type: 'singleChoiceOrdinal',
-        name: { en: 'Base-B opinion 1 — Likert 5.' },
+        name: { en: 'Opt-A opinion 1 — Likert 5.' },
         choices: LIKERT_5_EN,
-        category: { external_id: 'test-qg-opin-base-b' },
+        category: { external_id: 'test-qg-opin-opt-a' },
         allow_open: true,
         required: true,
         sort_order: 110,
         is_generated: false
       },
 
-      // QG-Opin-Base-C (used for filtering out)
+      // QG-Opin-Opt-B (formerly Base-C; used for filtering out)
       {
-        external_id: 'test-qu-opin-base-c-1',
+        external_id: 'test-qu-opin-opt-b-1',
         type: 'singleChoiceOrdinal',
-        name: { en: 'Base-C opinion 1 — Likert 5.' },
+        name: { en: 'Opt-B opinion 1 — Likert 5.' },
         choices: LIKERT_5_EN,
-        category: { external_id: 'test-qg-opin-base-c' },
+        category: { external_id: 'test-qg-opin-opt-b' },
         allow_open: true,
         required: true,
         sort_order: 120,
@@ -827,7 +831,7 @@ export const baseV1Template: Template = {
           'test-qu-opin-base-4-categorical': { value: 'c' },
           'test-qu-opin-base-5-boolean': { value: true },
           // case (c) — voter skips these, entity has answers
-          'test-qu-opin-base-b-1': { value: '5' },
+          'test-qu-opin-opt-a-1': { value: '5' },
           'test-qu-opin-el-reg-1': { value: '5' }
           // test-qu-open-filt-mun-ne INTENTIONALLY missing — case (d)
         })

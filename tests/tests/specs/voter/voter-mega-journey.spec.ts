@@ -811,7 +811,7 @@ test.describe('voter mega-journey', () => {
     // QUESTIONS INTRO + CATEGORY SELECTION — refactor-doc:230-240
     // ====================================================================
 
-    await test.step('questions-intro: page renders + category list + min-answers gate + uncheck Base-C (MOVED 9.1.3 REPLACED, refactor-doc:230-240, Risk #2)', async () => {
+    await test.step('questions-intro: page renders + category list + min-answers gate + uncheck Opt-B (was: Base-C) (MOVED 9.1.3 REPLACED, refactor-doc:230-240, Risk #2)', async () => {
       // Categories visible: 7 opinion categories from baseV1, with
       // QG-Opin-CO-Mun-SE-SW filtered out (CO-Mun-NE is selected, scope
       // excludes SE+SW) and QG-Opin-Filt-B filtered out (per-question
@@ -819,7 +819,7 @@ test.describe('voter mega-journey', () => {
       const categoryList = page.getByTestId(testIds.voter.questions.categoryList);
       await expect(categoryList).toBeVisible({ timeout: TIMEOUT.slowPage });
       const categoryCheckboxes = page.getByTestId(testIds.voter.questions.categoryCheckbox);
-      await expect(categoryCheckboxes).toHaveCount(5); // Base + Base-B + Base-C minimum + scoped extras
+      await expect(categoryCheckboxes).toHaveCount(5); // Base + Opt-A + Opt-B minimum + scoped extras (was: Base-B + Base-C)
 
       const questionsStart = page.getByTestId(testIds.voter.questions.startButton);
       // Uncheck "Base Opinion Questions"
@@ -909,13 +909,13 @@ test.describe('voter mega-journey', () => {
     // CATEGORY SKIP + FILTERED CATEGORIES + REMAINING QUESTIONS — refactor-doc:271-289
     // ====================================================================
 
-    await test.step('category-skip: Base-B skip button + Base-C never visible (refactor-doc:271-274, Risk #2)', async () => {
-      // After answering QG-Opin-Base, we should hit the QG-Opin-Base-B
-      // category intro (categoryStart visible). Click Skip instead of Start.
+    await test.step('category-skip: Opt-A skip button + Opt-B never visible (was: Base-B + Base-C) (refactor-doc:271-274, Risk #2)', async () => {
+      // After answering QG-Opin-Base, we should hit the QG-Opin-Opt-A (was
+      // Base-B) category intro (categoryStart visible). Click Skip instead of Start.
       const categorySkip = page.getByTestId(testIds.voter.questions.categorySkip);
       await expect(categorySkip).toBeVisible({ timeout: TIMEOUT.element });
       await categorySkip.click();
-      // Base-C category was deselected at step 4 — it should NOT appear in the walk, instead we should see regional questions
+      // Opt-B (was Base-C) category was deselected at step 4 — it should NOT appear in the walk, instead we should see regional questions
       const categoryIntro = page.getByTestId(testIds.voter.questions.categoryIntro);
       await expect(categoryIntro).toHaveText(RX.regionalOpinionsCategory, { timeout: TIMEOUT.element });
       const categoryStart = page.getByTestId(testIds.voter.questions.categoryStart);
