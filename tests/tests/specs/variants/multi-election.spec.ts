@@ -238,7 +238,7 @@ test.describe('Multi-election voter journey', { tag: ['@variant'] }, () => {
     const electionsList = page.getByTestId(testIds.voter.elections.list);
     await expect(electionsList).toBeVisible({ timeout: 10000 });
 
-    const electionCards = page.getByTestId(testIds.voter.elections.card);
+    const electionCards = page.getByTestId(testIds.voter.elections.option);
     await expect(electionCards).toHaveCount(2);
 
     // CONF-04: constituency selection page does NOT appear because each election
@@ -407,7 +407,7 @@ test.describe('matrix cell: Ne × 1c (E2E-04 cell 3)', { tag: ['@variant', '@mat
     // (1) Election selector visible — 2 elections (not auto-implied).
     const electionsList = page.getByTestId(testIds.voter.elections.list);
     await expect(electionsList).toBeVisible({ timeout: 10000 });
-    await expect(page.getByTestId(testIds.voter.elections.card)).toHaveCount(2);
+    await expect(page.getByTestId(testIds.voter.elections.option)).toHaveCount(2);
 
     // Both elections are pre-checked by default. Continue with both selected
     // — each election has 1 constituency, so constituency auto-implies for

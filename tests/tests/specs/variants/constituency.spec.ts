@@ -223,7 +223,7 @@ test.describe('Constituency selection variant', { tag: ['@variant'] }, () => {
     await expect(electionsList).toBeVisible({ timeout: 10000 });
 
     // Verify 2 election options are shown
-    const electionOptions = sharedPage.getByTestId(testIds.voter.elections.card);
+    const electionOptions = sharedPage.getByTestId(testIds.voter.elections.option);
     await expect(electionOptions).toHaveCount(2);
 
     // Both elections should be pre-checked by default

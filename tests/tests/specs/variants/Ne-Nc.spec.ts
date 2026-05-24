@@ -53,7 +53,7 @@ test.describe('Ne × Nc selector matrix (E2E-04 cell 4)', { tag: ['@variant', '@
     // (1) Election selector visible — 2 elections (not auto-implied).
     const electionsList = page.getByTestId(testIds.voter.elections.list);
     await expect(electionsList).toBeVisible({ timeout: 10000 });
-    const electionCards = page.getByTestId(testIds.voter.elections.card);
+    const electionCards = page.getByTestId(testIds.voter.elections.option);
     await expect(electionCards).toHaveCount(2);
 
     // Both elections are pre-checked by default (ElectionSelector.svelte:42-46
