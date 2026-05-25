@@ -1,6 +1,6 @@
 ---
 name: spike-findings-voting-advice-application-gsd
-description: Implementation blueprint from spike experiments. Requirements, proven patterns, and verified knowledge for migrating OpenVAA's legacy svelte/store bridges to fully idiomatic Svelte 5 runes. Auto-loaded during implementation work.
+description: Implementation blueprint from spike experiments. Requirements, proven patterns, and verified knowledge for two domains — (1) migrating OpenVAA's legacy svelte/store bridges to fully idiomatic Svelte 5 runes (spikes 001–012), and (2) fixing the perceived "redraw on Q→Q" symptom via View Transitions + layout-as-state restructure + a11y focus management (spikes 013–016). Auto-loaded during implementation work.
 ---
 
 <context>
@@ -20,6 +20,21 @@ Spike sessions wrapped:
 - 2026-05-22 morning (spike 006)
 - 2026-05-22 afternoon (spikes 007–011 — orchestration, SSR gap, codemod, inventory, HMR)
 - 2026-05-22 evening (spike 012 — getRoute rune-native; Wave 3 unblocker)
+- 2026-05-25 (spikes 013–016 — page navigation forensics, layout-as-state structural variants, View Transitions API integration, focus + a11y under transitions)
+
+**Second-domain context (spikes 013–016):** User reported that navigating
+between questions and between results views felt like the whole page was
+redrawn with no components reused, and wanted transitions between views.
+Spike 013 (production DOM-tagging) disproved the premise: SvelteKit ALREADY
+reuses `+page.svelte` instances across param-only URL changes. The
+user-perceived "redraw" is from reactive content-node regeneration inside
+the persistent component shell (9/25 ≈ 36% of tracked elements survive a
+Q→Q hop; ~64% are freshly generated). The load-bearing fix is View
+Transitions (spike 015), additive on the existing structure. Spike 014b's
+unified-layout-with-empty-leaf shape (matching the existing production
+results pattern) is recommended for the questions branch as a follow-up
+clarity refactor; spike 016 verifies the WCAG 2.1 AA gate (focus +
+aria-live announcer + reduced-motion) on the chosen stack.
 </context>
 
 <requirements>
@@ -83,6 +98,49 @@ reference honors these — and every real migration commit must honor them too.
   read `page` as a single value inside a tracking scope. No defensive
   `afterNavigate` republish is needed — fine-grained tracking handles
   every observed nav (path, query-param, locale).
+
+### From Spikes 013–016 (page navigation + transitions + a11y):
+
+- **SvelteKit `+page.svelte` already reuses across param-only URL changes.**
+  Established via DOM `data-mount-id` identity tests (Spike 014a iteration 2)
+  and confirmed by production DOM tagging (Spike 014a iteration 3 — 9/25 ≈
+  36% of tracked elements survive a Q→Q hop). The user-perceived "redraw"
+  is from reactive content-node regeneration inside the persistent
+  component shell — NOT from component remount. Structural remounting is
+  not the problem to solve; the swap animation is.
+- **View Transitions API integration uses `onNavigate(navigation => Promise(startViewTransition))`**
+  (Spike 015). Inside the Promise, call `startViewTransition(async () => { resolve(); await navigation.complete; })`.
+  Read `navigation.to?.url`, NOT `page.url`, for destination-based decisions
+  (page.url reflects source URL during onNavigate).
+- **`prefers-reduced-motion` is honored on BOTH JS and CSS layers** —
+  `matchMedia` short-circuits `startViewTransition` in JS; CSS
+  `@media (prefers-reduced-motion: reduce)` block nulls any animations
+  that escape. **Svelte CSS parser caveat:** write
+  `@media ... { :global(...) }`, NOT `:global(@media ...)` —
+  the latter is rejected.
+- **Focus management is EXPLICIT via `afterNavigate`** (Spike 016) — because
+  the page doesn't remount, focus doesn't auto-reset. Apply inside
+  `requestAnimationFrame(() => target.focus({ preventScroll: true }))`.
+  `preventScroll: true` is MANDATORY to avoid fighting existing
+  `goto({ noScroll: true })` guards.
+- **Route-change announcement uses `aria-live="polite"` route announcer,
+  NOT `<svelte:head><title>` updates** (Spike 016) — title-change SPA
+  announcement support is inconsistent (NVDA/JAWS often don't fire). A
+  dedicated `aria-live` region whose text derives from `page.params.X`
+  is the universal fix.
+- **Unified-layout-with-empty-leaf shape** (Spike 014b) mirrors the existing
+  production results pattern at `results/[[electionTab]]/+layout.svelte`.
+  Recommended for the questions branch migration: layout owns rendering,
+  `[questionId]/+page.svelte` becomes an empty stub, `{#key question.type}`
+  (NOT `{#key question.id}`) for variant remount.
+- **`{#key question.type}` not `{#key question.id}`** (Spike 014b) — keying
+  on the variant property (Likert vs open-text vs slider) keeps the input
+  mounted within a run of same-variant questions while still remounting
+  cleanly at variant boundaries.
+- **Layout-owned `$state` survives navigation** (Spike 016) — answers
+  accumulated in the layout's `$state` survive Q→Q nav for free. UX
+  benefit: accidental nav doesn't wipe progress (additive to production
+  answer-store persistence from Spike 003).
 </requirements>
 
 <findings_index>
@@ -97,6 +155,7 @@ reference honors these — and every real migration commit must honor them too.
 | Context Orchestration | references/context-orchestration.md | Rune-native `voterContext` / `candidateContext` factory that composes upstream contexts via `getXContext()` and exposes 18+/30+ reactive accessors as getters. **Destructure trap reproduces identically** in the rune-native version (Spike 007) — CLAUDE.md rule applies unchanged. **HMR DX is non-degraded** (Spike 011) but masks the destructure trap during remount — run the codemod audit pass. |
 | Consumer Migration Codemod | references/consumer-migration-codemod.md | Pure-Node, dependency-free codemod rewrites 146 `$store.X` template sites across 45 files in ~1 hour. Two passes: rewrite + destructure-trap audit. **Surfaces a real production bug** in AdminNav (destructure of `isAuthenticated`) and a related spread-of-context anti-pattern in `adminContext.svelte.ts:97`. Idempotent and dry-run by default. |
 | Migration Inventory & Order | references/migration-inventory-and-order.md | Complete Tier 1/2/3 inventory of 18 files in `lib/contexts/**` importing from `svelte/store`. 4-wave migration order respects dependencies — Wave 1 leaf contexts in parallel, Wave 2 secondary bridges, Wave 3 codemod-driven consumer migration, Wave 4 cleanup deletes. Generalized popupStore pattern shows queue-shaped stores follow [[reactive-contexts]] Pattern 1. |
+| Page Navigation & Transitions | references/page-navigation-and-transitions.md | The user-perceived "redraw on Q→Q" is a render-cycle problem, not a remount-cycle problem — SvelteKit already reuses `+page.svelte` instances across param-only URL changes (production: 9/25 ≈ 36% of tracked elements survive a hop). Load-bearing fix is **View Transitions** via `onNavigate(navigation => Promise(startViewTransition))` — ~1 day to wire, additive on existing structure. Optional Wave B: adopt unified-layout-with-empty-leaf shape for `/questions` (matches existing results pattern; cleaner reads). WCAG 2.1 AA passes with `afterNavigate(focus({preventScroll: true}))` + `aria-live="polite"` route announcer + reduced-motion belt-and-braces. |
 
 ## Source Files
 
@@ -129,6 +188,11 @@ verification attempts, failures, fixes, browser-verified results).
 | `apps/frontend/src/lib/contexts/admin/adminContext.svelte.ts:97` | `{ ...appContext, ...authContext, ... }` spread de-reactivates the auth-context `$derived` accessors | 009 | [[consumer-migration-codemod]] (spread-of-context anti-pattern) |
 | `apps/frontend/src/lib/dynamic-components/navigation/admin/AdminNav.svelte:33` | `const { isAuthenticated, t, getRoute } = getAdminContext()` — likely production bug | 009 | [[consumer-migration-codemod]] (destructure-trap finding) |
 | All 146 `$store.X` template auto-subscribe sites in 45 `.svelte` files | mechanical search-and-replace via codemod | 009 | [[consumer-migration-codemod]] |
+| `apps/frontend/src/routes/+layout.svelte` | (no transitions / no aria-live announcer / no focus-on-nav) | 015, 016 | [[page-navigation-and-transitions]] Wave A |
+| `apps/frontend/src/routes/Header.svelte`, `Layout.svelte`, `MainContent.svelte` | (no `view-transition-name` assignments) | 015 | [[page-navigation-and-transitions]] Wave A |
+| `apps/frontend/src/routes/(voters)/(located)/questions/[questionId]/+page.svelte` | Chrome (MainContent + hero + heading + actions snippets) defined IN the page; recommended pattern hoists this into the parent `questions/+layout.svelte` matching the existing results route shape | 014a, 014b | [[page-navigation-and-transitions]] Wave B |
+| `apps/frontend/src/lib/components/questions/OpinionQuestionInput.svelte` (or surrounding wrapper) | (no `{#key question.type}` for variant remount) | 014b | [[page-navigation-and-transitions]] Wave B |
+| `apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.svelte` | (no `data-focus-on-nav` / `tabindex="-1"` for the post-navigation focus target) | 016 | [[page-navigation-and-transitions]] Wave A |
 
 **Net effect of full migration:** every `import { * } from 'svelte/store'` site
 in `apps/frontend/src/lib/contexts/**` and `apps/frontend/src/routes/**` can
@@ -151,6 +215,21 @@ Wave 4 (cleanup)   →  Delete persistedState.svelte.ts + StackedState.svelte.ts
                       drop Readable<T> from .type.ts files; fix AdminNav +
                       adminContext spread; optional ESLint rule from codemod
 ```
+
+**Page navigation & transitions (independent from the rune migration —
+spikes 013–016 are additive and can ship before/after/independently):**
+
+```
+Wave A (1d)  →  Root layout: onNavigate + startViewTransition coupling;
+                aria-live route announcer; afterNavigate(focus) hook;
+                prefers-reduced-motion belt-and-braces; view-transition-name
+                on Header/MainContent/hero/QuestionActions. No structural
+                change — standalone cosmetic + a11y improvement.
+Wave B (1d)  →  Adopt 014b shape for /questions: hoist all rendering from
+                [questionId]/+page.svelte into parent questions/+layout.svelte
+                (mirrors existing production results pattern); +page.svelte
+                becomes empty stub; {#key question.type} for variant remount.
+```
 </production_landing_map>
 
 <metadata>
@@ -168,4 +247,9 @@ Wave 4 (cleanup)   →  Delete persistedState.svelte.ts + StackedState.svelte.ts
 - 010-adjacent-store-bridges
 - 011-hmr-rune-contexts
 - 012-getroute-rune
+- 013-nav-mount-forensics
+- 014a-nested-layout-promotion
+- 014b-single-page-url-keyed
+- 015-view-transitions-api
+- 016-focus-and-a11y-during-transitions
 </metadata>
