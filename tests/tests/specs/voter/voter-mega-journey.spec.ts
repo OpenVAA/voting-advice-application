@@ -953,8 +953,8 @@ test.describe('voter mega-journey', () => {
       const infoItems = infoTab.getByTestId('info-item');
       await expect(infoItems).toHaveCount(13, { timeout: TIMEOUT.element });
       // Election number is the 4th info-item (index 3) for this nomination.
-      await expect(infoItems.nth(3)).toContainText('Election number');
-      await expect(infoItems.nth(3)).toContainText('3');
+      await expect(infoItems.nth(3)).toContainText(/Election Number/i);
+      await expect(infoItems.nth(3)).toContainText(/3/);
     });
 
     await test.step('detail: 9.6.5-8 voter-vs-entity matrix on CA-AA-Special (refactor-doc:349-355, Risk #2)', async () => {
@@ -990,46 +990,52 @@ test.describe('voter mega-journey', () => {
       await expect(infoTab).toBeVisible({ timeout: TIMEOUT.page });
       const infoItems = infoTab.getByTestId('info-item');
       await expect(infoItems).toHaveCount(13, { timeout: TIMEOUT.element });
+      // All info-item label/value assertions use case-insensitive regexes
+      // because CSS `text-transform: uppercase` on the `small-label` class
+      // does NOT alter `textContent`, but the i18n source strings mix Title
+      // Case (e.g., "Election Number", "Choice A") with sentence case (e.g.,
+      // "Info: pick multiple categories that apply.") — `/.../i` sidesteps
+      // the inconsistency.
       // (0) Election
-      await expect(infoItems.nth(0)).toContainText('Election');
-      await expect(infoItems.nth(0)).toContainText('Regional Election');
+      await expect(infoItems.nth(0)).toContainText(/Election/i);
+      await expect(infoItems.nth(0)).toContainText(/Regional Election/i);
       // (1) Constituency
-      await expect(infoItems.nth(1)).toContainText('Constituency');
-      await expect(infoItems.nth(1)).toContainText('Region North');
+      await expect(infoItems.nth(1)).toContainText(/Constituency/i);
+      await expect(infoItems.nth(1)).toContainText(/Region North/i);
       // (2) List — parent nomination (OR-AA → AL-A)
-      await expect(infoItems.nth(2)).toContainText('List');
+      await expect(infoItems.nth(2)).toContainText(/List/i);
       // (3) Election number — CA-AA-Special has no electionSymbol → "—"
-      await expect(infoItems.nth(3)).toContainText('Election number');
-      await expect(infoItems.nth(3)).toContainText('—');
+      await expect(infoItems.nth(3)).toContainText(/Election Number/i);
+      await expect(infoItems.nth(3)).toContainText(/—/);
       // (4) multipleChoiceCategorical
-      await expect(infoItems.nth(4)).toContainText('Info: pick multiple categories that apply.');
-      await expect(infoItems.nth(4)).toContainText('Choice A');
-      await expect(infoItems.nth(4)).toContainText('Choice B');
+      await expect(infoItems.nth(4)).toContainText(/Info: pick multiple categories that apply\./i);
+      await expect(infoItems.nth(4)).toContainText(/Choice A/i);
+      await expect(infoItems.nth(4)).toContainText(/Choice B/i);
       // (5) singleChoiceCategorical
-      await expect(infoItems.nth(5)).toContainText('Info: pick one category.');
-      await expect(infoItems.nth(5)).toContainText('Selection Y');
+      await expect(infoItems.nth(5)).toContainText(/Info: pick one category\./i);
+      await expect(infoItems.nth(5)).toContainText(/Selection Y/i);
       // (6) text (short bio)
-      await expect(infoItems.nth(6)).toContainText('Info: short biography.');
-      await expect(infoItems.nth(6)).toContainText('Default candidate biography text.');
+      await expect(infoItems.nth(6)).toContainText(/Info: short biography\./i);
+      await expect(infoItems.nth(6)).toContainText(/Default candidate biography text\./i);
       // (7) text-longText
-      await expect(infoItems.nth(7)).toContainText('Info: long biography.');
-      await expect(infoItems.nth(7)).toContainText('Default longer biography text');
+      await expect(infoItems.nth(7)).toContainText(/Info: long biography\./i);
+      await expect(infoItems.nth(7)).toContainText(/Default longer biography text/i);
       // (8) number
-      await expect(infoItems.nth(8)).toContainText('Info: years of experience.');
-      await expect(infoItems.nth(8)).toContainText('42');
+      await expect(infoItems.nth(8)).toContainText(/Info: years of experience\./i);
+      await expect(infoItems.nth(8)).toContainText(/42/);
       // (9) boolean
-      await expect(infoItems.nth(9)).toContainText('Info: would-you-run-again-yes-no?');
-      await expect(infoItems.nth(9)).toContainText('Yes');
+      await expect(infoItems.nth(9)).toContainText(/Info: would-you-run-again-yes-no\?/i);
+      await expect(infoItems.nth(9)).toContainText(/Yes/i);
       // (10) date — toLocaleDateString('en', {year,month,day:'numeric'}) on 1980-06-15
-      await expect(infoItems.nth(10)).toContainText('Info: date of birth.');
-      await expect(infoItems.nth(10)).toContainText('6/15/1980');
+      await expect(infoItems.nth(10)).toContainText(/Info: date of birth\./i);
+      await expect(infoItems.nth(10)).toContainText(/6\/15\/1980/);
       // (11) multipleText — keywords renders "—" per the user-supplied
       // screencap (seeded value present but rendered as missing; data-shape
       // discrepancy captured as-is for now).
-      await expect(infoItems.nth(11)).toContainText('Info: keywords.');
-      await expect(infoItems.nth(11)).toContainText('—');
+      await expect(infoItems.nth(11)).toContainText(/Info: keywords\./i);
+      await expect(infoItems.nth(11)).toContainText(/—/);
       // (12) Links — single grouped item containing the personal-link tag
-      await expect(infoItems.nth(12)).toContainText('Links');
+      await expect(infoItems.nth(12)).toContainText(/Links/i);
 
       // Switch to opinionsTab.
       await dialog.getByRole('tab', { name: TEXT_RE.opinionsTab }).click();
