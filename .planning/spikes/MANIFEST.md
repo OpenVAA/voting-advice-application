@@ -16,6 +16,12 @@ Established constraints from the user. Non-negotiable for the real migration.
 - **dataRoot sequential-population semantics preserved** — `provideElectionData → provideConstituencyData → provideQuestionData → provideEntityData → provideNominationData` each triggers downstream `$derived` re-evaluation despite stable DataRoot object identity.
 - **Persistence helper centralized** — both voter and candidate answer stores route through a single `runeLocalStorage` helper that mirrors `localStorageWritable`'s versioned-payload format, allowing direct retirement of the legacy helper once both callsites migrate.
 
+### From Spike 013-016 (nav/transitions):
+
+- **SvelteKit `+page.svelte` already reuses across param-only URL changes** — established by Spike 013 + 014a. The user-perceived "redraw" on Q→Q is NOT a mount-cycle problem; it is a reactive-render-cycle problem affecting ~64% of visible DOM content nodes inside the persistent component shell.
+- **Structural layout promotion is a code-clarity move, not a perf fix** — Spike 014a established that the mount stability the user wanted already exists. Hoisting chrome into `questions/+layout.svelte` is still worthwhile for code readability, but does NOT change Q→Q visual behavior.
+- **The transitions layer (Spike 015) is the load-bearing fix for the perceived redraw** — confirmed by 014a's findings.
+
 ## Findings Summary (post-Spike 005)
 
 The OpenVAA frontend's reactive layer is **already ~80% idiomatic Svelte 5**.
@@ -53,7 +59,7 @@ runes are a strict superset of what these stores were doing.
 | 011 | hmr-rune-contexts | standard | Vite HMR behavior on rune context edits + consumer edits; verifies $effects don't leak, state is cleanly preserved-or-reset, DX is non-degraded | VALIDATED | svelte5, runes, hmr, vite, dx |
 | 012 | getroute-rune | standard | Rune-native `getRoute` producer: `$derived.by` over per-field `$app/state.page` reads bypasses the documented `toStore` short-circuit trap on the page-proxy object reference; `afterNavigate` defensive layer proven redundant | VALIDATED | svelte5, runes, route, sveltekit, page-state, after-navigate |
 | 013 | nav-mount-forensics | standard | Given the production voter route tree, when navigating Q→Q / Q→Results / electionTab→electionTab / entityTab→entityTab, then a mount/destroy ledger proves which components re-instantiate vs persist — foundation for restructure decisions | VALIDATED | sveltekit, navigation, mount-forensics, layouts, observability |
-| 014a | nested-layout-promotion | comparison | Hoisting `MainContent` + hero + heading scaffold into `+layout.svelte` keeps shared chrome mounted across Q→Q; child `+page.svelte` renders only the question body | PENDING | sveltekit, layouts, restructure, comparison |
+| 014a | nested-layout-promotion | comparison | Hoisting `MainContent` + hero + heading scaffold into `+layout.svelte` keeps shared chrome mounted across Q→Q; child `+page.svelte` renders only the question body. **Reframe:** SvelteKit already reuses `+page.svelte` across param changes; the user-perceived "redraw" is from reactive DOM regeneration of ~64% of content nodes (proven via production-page DOM tagging), not from component remount | VALIDATED | sveltekit, layouts, restructure, comparison |
 | 014b | single-page-url-keyed | comparison | Single `+page.svelte` derives active question from `page.params.questionId`; inner content wrapped in `{#key}` block — one page-level mount across full session | PENDING | sveltekit, url-as-state, key-block, comparison |
 | 015 | view-transitions-api | standard | `onNavigate(document.startViewTransition)` integration delivers cross-fade/slide transitions on the production route tree WITHOUT structural change | PENDING | sveltekit, view-transitions, transitions, onnavigate |
 | 016 | focus-and-a11y-during-transitions | standard | Winner of 014 + 015 stack preserves keyboard focus, screen-reader title announcements, `aria-live` regions, `prefers-reduced-motion` honoring — WCAG 2.1 AA gate | PENDING | a11y, transitions, focus-management, reduced-motion, wcag |
