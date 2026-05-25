@@ -268,3 +268,157 @@ indirectly (via the visible consumer-side `const { isAuthenticated } = getAdminC
 - Runnable spike code: `apps/frontend/src/routes/runes-test/` (deletable)
 - Sub-routes for isolated context scopes: `runes-test/<spike-area>/+layout.svelte`
   (e.g. `runes-test/layout-overlay/` has its own layout context)
+- Mount/destroy forensics helper: `runes-test/nav-forensics/mountLedger.svelte.ts`
+  + `LedgerPanel.svelte` — reusable across navigation/layout spikes
+  (013-016 share it)
+
+## Navigation & Layout Patterns (Spikes 013-016)
+
+### 10. SvelteKit `+page.svelte` reuses across param-only URL changes
+
+When a navigation matches the SAME route file but with different URL
+params (e.g. `/questions/q1 → /questions/q2`), SvelteKit does NOT
+remount the component. The same `+page.svelte` instance persists; only
+reactive values derived from `page.params.X` update.
+
+**Implication for layouts:**
+- `let counter = $state(0)` inside `[id]/+page.svelte` survives a
+  `/foo/a → /foo/b` navigation
+- `onDestroy` does NOT fire on param change (only on leaving the route)
+- Focus management must be EXPLICIT — no remount-driven focus reset
+
+Established in Spike 014a iteration 2. Confirmed via DOM `data-mount-id`
+identity stability across navigation.
+
+### 11. Unified-layout-with-empty-leaf pattern (014b shape)
+
+When the rendered content varies by URL but the structural shell does
+not, prefer the production results pattern at
+`apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/+layout.svelte`:
+
+- `+layout.svelte` owns ALL rendering (chrome AND content)
+- `+page.svelte` is an empty stub (required by SvelteKit's leaf
+  contract)
+- Active content is `$derived(page.params.X)` per per-field reads
+  (Pattern §9)
+- `{#key page.params.X}` is a runtime opt-in for force-remount when
+  state-reset semantics are required (Spike 014b KEY mode)
+
+Established in Spike 014b. Recommended for the questions branch
+migration based on head-to-head with 014a.
+
+### 12. `{#key question.type}` for mixed-variant remount
+
+When a single component slot can render multiple component variants
+based on a property (e.g. Likert vs open-text vs slider opinion
+inputs), key on the VARIANT property rather than the unique ID:
+
+```svelte
+{#key question.type}
+  <DynamicQuestionInput {question} />
+{/key}
+```
+
+- Within a run of same-variant questions (Likert → Likert), the input
+  stays mounted; local `$state` persists
+- When switching variants (Likert → open-text), the input remounts
+  cleanly, dirty subscriptions teardown
+- Avoids the all-or-nothing trade-off of `{#key question.id}` (full
+  remount every Q) vs no-key (state can leak across variants)
+
+Established in Spike 014b iteration 4 (head-to-head analysis).
+
+### 13. `onNavigate` → `document.startViewTransition` coupling
+
+```ts
+import { onNavigate } from '$app/navigation';
+
+onNavigate((navigation) => {
+  if (!shouldAnimate(navigation.to?.url)) return;
+  return new Promise((resolve) => {
+    document.startViewTransition(async () => {
+      resolve();
+      await navigation.complete;
+    });
+  });
+});
+```
+
+Key invariants:
+- Read `navigation.to?.url`, NOT `page.url` — the latter still
+  reflects the source URL during onNavigate
+- Return a Promise from onNavigate to make SvelteKit wait for the
+  transition before completing nav
+- Inside startViewTransition, resolve the outer Promise to release
+  SvelteKit's swap, then await `navigation.complete` so the View
+  Transitions API sees the new DOM before snapshot-after
+
+Established in Spike 015.
+
+### 14. View Transitions reduced-motion (belt + braces)
+
+```ts
+function shouldAnimate(url: URL | undefined): boolean {
+  if (typeof document === 'undefined') return false;
+  if (!document.startViewTransition) return false;
+  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return false;
+  return true;
+}
+```
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  :global(::view-transition-group(*)),
+  :global(::view-transition-old(*)),
+  :global(::view-transition-new(*)) {
+    animation: none !important;
+  }
+}
+```
+
+**Svelte CSS parser caveat:** `:global(@media …)` is REJECTED. The
+`@media` rule must wrap `:global(…)` selectors, not the other way around.
+Established in Spike 015 iteration 2.
+
+### 15. Focus-on-nav via `afterNavigate` + `requestAnimationFrame`
+
+```ts
+afterNavigate(() => {
+  if (typeof document === 'undefined') return;
+  requestAnimationFrame(() => {
+    const target =
+      document.querySelector<HTMLElement>('[data-focus-on-nav]') ??
+      document.querySelector<HTMLElement>('h1');
+    target?.focus({ preventScroll: true });
+  });
+});
+```
+
+Key invariants:
+- `preventScroll: true` is MANDATORY — without it, focus() triggers
+  scroll-into-view that fights `goto({ noScroll: true })`
+- The `requestAnimationFrame` defer ensures the new DOM has settled
+  before focus is set
+- The focused element should have `tabindex="-1"` so it's focusable but
+  not in the tab order
+- Fires on initial cold-load (`type=enter`) too — no special casing
+  needed
+
+The captured timing for a Q→Q nav under View Transitions: focus lands
+at ~+23ms from click, ~250ms before the animation completes — feels
+deliberate. Established in Spike 016.
+
+### 16. aria-live route announcer beats svelte:head title for SR announcements
+
+```svelte
+<div aria-live="polite" aria-atomic="true" class="sr-only">
+  {page.params.questionId ? `Question ${page.params.questionId}` : 'Questions list'}
+</div>
+```
+
+Screen reader support for `<title>` change announcements on SPA route
+changes is inconsistent (VoiceOver announces; NVDA + JAWS often
+don't). A dedicated aria-live region whose text derives reactively
+from `page.params.X` is the universal fix.
+
+Established in Spike 016.
