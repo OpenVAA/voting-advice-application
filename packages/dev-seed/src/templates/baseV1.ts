@@ -264,13 +264,29 @@ function withInfoAnswers(extra: Record<string, { value: unknown }>): Record<stri
   return { ...DEFAULT_INFO_ANSWERS, ...extra };
 }
 
-// Polar answer sets for the 5 base opinion questions.
+// Opinion-answer templates. Every non-special candidate uses ONE of these
+// three templates verbatim (260525-tea); CA-AA-Special retains its asymmetric
+// partial-answer arrangement (see top-of-file docstring §"Partial-answer
+// candidate arrangement").
+//
+// Coverage: all 11 opinion questions across all categories — base 1-5,
+// opt-a/opt-b (singleChoiceOrdinal likert5), el-reg-1 (singleChoiceOrdinal),
+// co-mun-se-sw-1 (singleChoiceOrdinal), open-filt-mun-ne/se (singleChoiceOrdinal).
+// Candidates outside a given scope still carry the answer; the matching
+// algorithm picks only in-scope questions per voter, so the extra answers
+// are inert (they cost ~nothing on import).
 const POLAR_MAX: Record<string, { value: unknown }> = {
   'test-qu-opin-base-1-likert5': { value: '5' },
   'test-qu-opin-base-2-likert4': { value: '4' },
   'test-qu-opin-base-3-likert7': { value: '7' },
   'test-qu-opin-base-4-categorical': { value: 'c' },
-  'test-qu-opin-base-5-boolean': { value: true }
+  'test-qu-opin-base-5-boolean': { value: true },
+  'test-qu-opin-opt-a-1': { value: '5' },
+  'test-qu-opin-opt-b-1': { value: '5' },
+  'test-qu-opin-el-reg-1': { value: '5' },
+  'test-qu-opin-co-mun-se-sw-1': { value: '5' },
+  'test-qu-open-filt-mun-ne': { value: '5' },
+  'test-qu-open-filt-mun-se': { value: '5' }
 };
 
 const POLAR_MIN: Record<string, { value: unknown }> = {
@@ -278,7 +294,33 @@ const POLAR_MIN: Record<string, { value: unknown }> = {
   'test-qu-opin-base-2-likert4': { value: '1' },
   'test-qu-opin-base-3-likert7': { value: '1' },
   'test-qu-opin-base-4-categorical': { value: 'a' },
-  'test-qu-opin-base-5-boolean': { value: false }
+  'test-qu-opin-base-5-boolean': { value: false },
+  'test-qu-opin-opt-a-1': { value: '1' },
+  'test-qu-opin-opt-b-1': { value: '1' },
+  'test-qu-opin-el-reg-1': { value: '1' },
+  'test-qu-opin-co-mun-se-sw-1': { value: '1' },
+  'test-qu-open-filt-mun-ne': { value: '1' },
+  'test-qu-open-filt-mun-se': { value: '1' }
+};
+
+// Middle values with tiebreak-to-min:
+//   likert5 (1-5):   middle = '3'
+//   likert4 (1-4):   middle = 2.5 → tiebreak-to-min → '2'
+//   likert7 (1-7):   middle = '4'
+//   categorical a/b/c: middle = 'b'
+//   boolean:         no middle → tiebreak-to-min → false
+const GENERIC: Record<string, { value: unknown }> = {
+  'test-qu-opin-base-1-likert5': { value: '3' },
+  'test-qu-opin-base-2-likert4': { value: '2' },
+  'test-qu-opin-base-3-likert7': { value: '4' },
+  'test-qu-opin-base-4-categorical': { value: 'b' },
+  'test-qu-opin-base-5-boolean': { value: false },
+  'test-qu-opin-opt-a-1': { value: '3' },
+  'test-qu-opin-opt-b-1': { value: '3' },
+  'test-qu-opin-el-reg-1': { value: '3' },
+  'test-qu-opin-co-mun-se-sw-1': { value: '3' },
+  'test-qu-open-filt-mun-ne': { value: '3' },
+  'test-qu-open-filt-mun-se': { value: '3' }
 };
 
 // ---------------------------------------------------------------------------
@@ -844,18 +886,12 @@ export const baseV1Template: Template = {
         sort_order: 1,
         is_generated: false,
         organization: { external_id: 'test-or-aa' },
-        answersByExternalId: withInfoAnswers({
-          'test-qu-opin-base-1-likert5': { value: '5' },
-          'test-qu-opin-base-2-likert4': { value: '4' },
-          'test-qu-opin-base-3-likert7': { value: '7' },
-          'test-qu-opin-base-4-categorical': { value: 'c' },
-          'test-qu-opin-base-5-boolean': { value: true }
-        })
+        answersByExternalId: withInfoAnswers(POLAR_MAX)
       },
       // CA-AA-1 — the perfect-match candidate (POLAR_MAX → matches voter answerMode='max')
       {
         external_id: 'test-ca-aa-1',
-        first_name: 'Generic',
+        first_name: 'Polar-Max',
         last_name: 'AA One',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 2,
@@ -871,13 +907,7 @@ export const baseV1Template: Template = {
         sort_order: 3,
         is_generated: false,
         organization: { external_id: 'test-or-aa' },
-        answersByExternalId: withInfoAnswers({
-          'test-qu-opin-base-1-likert5': { value: '4' },
-          'test-qu-opin-base-2-likert4': { value: '3' },
-          'test-qu-opin-base-3-likert7': { value: '6' },
-          'test-qu-opin-base-4-categorical': { value: 'b' },
-          'test-qu-opin-base-5-boolean': { value: true }
-        })
+        answersByExternalId: withInfoAnswers(GENERIC)
       },
       {
         external_id: 'test-ca-aa-3',
@@ -887,13 +917,7 @@ export const baseV1Template: Template = {
         sort_order: 4,
         is_generated: false,
         organization: { external_id: 'test-or-aa' },
-        answersByExternalId: withInfoAnswers({
-          'test-qu-opin-base-1-likert5': { value: '4' },
-          'test-qu-opin-base-2-likert4': { value: '3' },
-          'test-qu-opin-base-3-likert7': { value: '5' },
-          'test-qu-opin-base-4-categorical': { value: 'b' },
-          'test-qu-opin-base-5-boolean': { value: false }
-        })
+        answersByExternalId: withInfoAnswers(GENERIC)
       },
       {
         external_id: 'test-ca-aa-4',
@@ -903,13 +927,7 @@ export const baseV1Template: Template = {
         sort_order: 5,
         is_generated: false,
         organization: { external_id: 'test-or-aa' },
-        answersByExternalId: withInfoAnswers({
-          'test-qu-opin-base-1-likert5': { value: '3' },
-          'test-qu-opin-base-2-likert4': { value: '2' },
-          'test-qu-opin-base-3-likert7': { value: '4' },
-          'test-qu-opin-base-4-categorical': { value: 'b' },
-          'test-qu-opin-base-5-boolean': { value: true }
-        })
+        answersByExternalId: withInfoAnswers(GENERIC)
       },
       // OR-AB — 1 candidate in CO-Reg-N
       {
@@ -920,18 +938,12 @@ export const baseV1Template: Template = {
         sort_order: 6,
         is_generated: false,
         organization: { external_id: 'test-or-ab' },
-        answersByExternalId: withInfoAnswers({
-          'test-qu-opin-base-1-likert5': { value: '4' },
-          'test-qu-opin-base-2-likert4': { value: '4' },
-          'test-qu-opin-base-3-likert7': { value: '6' },
-          'test-qu-opin-base-4-categorical': { value: 'c' },
-          'test-qu-opin-base-5-boolean': { value: true }
-        })
+        answersByExternalId: withInfoAnswers(GENERIC)
       },
       // OR-BA — 2 candidates in CO-Reg-N. CA-BA-1 = worst-match (polar min)
       {
         external_id: 'test-ca-ba-1',
-        first_name: 'Generic',
+        first_name: 'Polar-Min',
         last_name: 'BA One',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 7,
@@ -947,13 +959,7 @@ export const baseV1Template: Template = {
         sort_order: 8,
         is_generated: false,
         organization: { external_id: 'test-or-ba' },
-        answersByExternalId: withInfoAnswers({
-          'test-qu-opin-base-1-likert5': { value: '2' },
-          'test-qu-opin-base-2-likert4': { value: '2' },
-          'test-qu-opin-base-3-likert7': { value: '2' },
-          'test-qu-opin-base-4-categorical': { value: 'a' },
-          'test-qu-opin-base-5-boolean': { value: false }
-        })
+        answersByExternalId: withInfoAnswers(GENERIC)
       },
       // OR-BB — 2 candidates in CO-Reg-N
       {
@@ -964,13 +970,7 @@ export const baseV1Template: Template = {
         sort_order: 9,
         is_generated: false,
         organization: { external_id: 'test-or-bb' },
-        answersByExternalId: withInfoAnswers({
-          'test-qu-opin-base-1-likert5': { value: '2' },
-          'test-qu-opin-base-2-likert4': { value: '2' },
-          'test-qu-opin-base-3-likert7': { value: '3' },
-          'test-qu-opin-base-4-categorical': { value: 'a' },
-          'test-qu-opin-base-5-boolean': { value: false }
-        })
+        answersByExternalId: withInfoAnswers(GENERIC)
       },
       {
         external_id: 'test-ca-bb-2',
@@ -980,13 +980,7 @@ export const baseV1Template: Template = {
         sort_order: 10,
         is_generated: false,
         organization: { external_id: 'test-or-bb' },
-        answersByExternalId: withInfoAnswers({
-          'test-qu-opin-base-1-likert5': { value: '3' },
-          'test-qu-opin-base-2-likert4': { value: '3' },
-          'test-qu-opin-base-3-likert7': { value: '4' },
-          'test-qu-opin-base-4-categorical': { value: 'b' },
-          'test-qu-opin-base-5-boolean': { value: false }
-        })
+        answersByExternalId: withInfoAnswers(GENERIC)
       },
       // OR-C — 2 candidates in CO-Reg-N (unaffiliated party)
       {
@@ -997,13 +991,7 @@ export const baseV1Template: Template = {
         sort_order: 11,
         is_generated: false,
         organization: { external_id: 'test-or-c' },
-        answersByExternalId: withInfoAnswers({
-          'test-qu-opin-base-1-likert5': { value: '3' },
-          'test-qu-opin-base-2-likert4': { value: '2' },
-          'test-qu-opin-base-3-likert7': { value: '5' },
-          'test-qu-opin-base-4-categorical': { value: 'b' },
-          'test-qu-opin-base-5-boolean': { value: true }
-        })
+        answersByExternalId: withInfoAnswers(GENERIC)
       },
       {
         external_id: 'test-ca-c-2',
@@ -1013,13 +1001,7 @@ export const baseV1Template: Template = {
         sort_order: 12,
         is_generated: false,
         organization: { external_id: 'test-or-c' },
-        answersByExternalId: withInfoAnswers({
-          'test-qu-opin-base-1-likert5': { value: '4' },
-          'test-qu-opin-base-2-likert4': { value: '3' },
-          'test-qu-opin-base-3-likert7': { value: '4' },
-          'test-qu-opin-base-4-categorical': { value: 'c' },
-          'test-qu-opin-base-5-boolean': { value: true }
-        })
+        answersByExternalId: withInfoAnswers(GENERIC)
       },
       // Independent in CO-Reg-N (also the only candidate in CO-Mun-NW)
       {
@@ -1030,13 +1012,7 @@ export const baseV1Template: Template = {
         sort_order: 13,
         is_generated: false,
         // No organization — independent (refactor-doc:83)
-        answersByExternalId: withInfoAnswers({
-          'test-qu-opin-base-1-likert5': { value: '4' },
-          'test-qu-opin-base-2-likert4': { value: '3' },
-          'test-qu-opin-base-3-likert7': { value: '5' },
-          'test-qu-opin-base-4-categorical': { value: 'b' },
-          'test-qu-opin-base-5-boolean': { value: false }
-        })
+        answersByExternalId: withInfoAnswers(GENERIC)
       },
 
       // ---- CO-Reg-S — 4 candidates ("not always allied" foil) ----
@@ -1050,13 +1026,7 @@ export const baseV1Template: Template = {
         sort_order: 20,
         is_generated: false,
         organization: { external_id: 'test-or-aa' },
-        answersByExternalId: withInfoAnswers({
-          'test-qu-opin-base-1-likert5': { value: '4' },
-          'test-qu-opin-base-2-likert4': { value: '3' },
-          'test-qu-opin-base-3-likert7': { value: '5' },
-          'test-qu-opin-base-4-categorical': { value: 'b' },
-          'test-qu-opin-base-5-boolean': { value: true }
-        })
+        answersByExternalId: withInfoAnswers(GENERIC)
       },
       {
         external_id: 'test-ca-reg-s-ab-1',
@@ -1066,13 +1036,7 @@ export const baseV1Template: Template = {
         sort_order: 21,
         is_generated: false,
         organization: { external_id: 'test-or-ab' },
-        answersByExternalId: withInfoAnswers({
-          'test-qu-opin-base-1-likert5': { value: '3' },
-          'test-qu-opin-base-2-likert4': { value: '3' },
-          'test-qu-opin-base-3-likert7': { value: '4' },
-          'test-qu-opin-base-4-categorical': { value: 'b' },
-          'test-qu-opin-base-5-boolean': { value: true }
-        })
+        answersByExternalId: withInfoAnswers(GENERIC)
       },
       {
         external_id: 'test-ca-reg-s-ba-1',
@@ -1082,13 +1046,7 @@ export const baseV1Template: Template = {
         sort_order: 22,
         is_generated: false,
         organization: { external_id: 'test-or-ba' },
-        answersByExternalId: withInfoAnswers({
-          'test-qu-opin-base-1-likert5': { value: '2' },
-          'test-qu-opin-base-2-likert4': { value: '2' },
-          'test-qu-opin-base-3-likert7': { value: '3' },
-          'test-qu-opin-base-4-categorical': { value: 'a' },
-          'test-qu-opin-base-5-boolean': { value: false }
-        })
+        answersByExternalId: withInfoAnswers(GENERIC)
       },
       {
         external_id: 'test-ca-reg-s-bb-1',
@@ -1098,13 +1056,7 @@ export const baseV1Template: Template = {
         sort_order: 23,
         is_generated: false,
         organization: { external_id: 'test-or-bb' },
-        answersByExternalId: withInfoAnswers({
-          'test-qu-opin-base-1-likert5': { value: '2' },
-          'test-qu-opin-base-2-likert4': { value: '1' },
-          'test-qu-opin-base-3-likert7': { value: '3' },
-          'test-qu-opin-base-4-categorical': { value: 'a' },
-          'test-qu-opin-base-5-boolean': { value: false }
-        })
+        answersByExternalId: withInfoAnswers(GENERIC)
       },
 
       // ---- CO-Mun-NE — 6 candidates (CA-AA-Special re-nominated + 1 AA-gen + 1 per other party) ----
@@ -1117,13 +1069,7 @@ export const baseV1Template: Template = {
         sort_order: 30,
         is_generated: false,
         organization: { external_id: 'test-or-aa' },
-        answersByExternalId: withInfoAnswers({
-          'test-qu-opin-base-1-likert5': { value: '4' },
-          'test-qu-opin-base-2-likert4': { value: '3' },
-          'test-qu-opin-base-3-likert7': { value: '5' },
-          'test-qu-opin-base-4-categorical': { value: 'b' },
-          'test-qu-opin-base-5-boolean': { value: true }
-        })
+        answersByExternalId: withInfoAnswers(GENERIC)
       },
       {
         external_id: 'test-ca-mun-ne-ab-1',
@@ -1133,13 +1079,7 @@ export const baseV1Template: Template = {
         sort_order: 31,
         is_generated: false,
         organization: { external_id: 'test-or-ab' },
-        answersByExternalId: withInfoAnswers({
-          'test-qu-opin-base-1-likert5': { value: '3' },
-          'test-qu-opin-base-2-likert4': { value: '3' },
-          'test-qu-opin-base-3-likert7': { value: '4' },
-          'test-qu-opin-base-4-categorical': { value: 'b' },
-          'test-qu-opin-base-5-boolean': { value: true }
-        })
+        answersByExternalId: withInfoAnswers(GENERIC)
       },
       {
         external_id: 'test-ca-mun-ne-ba-1',
@@ -1149,13 +1089,7 @@ export const baseV1Template: Template = {
         sort_order: 32,
         is_generated: false,
         organization: { external_id: 'test-or-ba' },
-        answersByExternalId: withInfoAnswers({
-          'test-qu-opin-base-1-likert5': { value: '2' },
-          'test-qu-opin-base-2-likert4': { value: '2' },
-          'test-qu-opin-base-3-likert7': { value: '3' },
-          'test-qu-opin-base-4-categorical': { value: 'a' },
-          'test-qu-opin-base-5-boolean': { value: false }
-        })
+        answersByExternalId: withInfoAnswers(GENERIC)
       },
       {
         external_id: 'test-ca-mun-ne-bb-1',
@@ -1165,13 +1099,7 @@ export const baseV1Template: Template = {
         sort_order: 33,
         is_generated: false,
         organization: { external_id: 'test-or-bb' },
-        answersByExternalId: withInfoAnswers({
-          'test-qu-opin-base-1-likert5': { value: '2' },
-          'test-qu-opin-base-2-likert4': { value: '1' },
-          'test-qu-opin-base-3-likert7': { value: '3' },
-          'test-qu-opin-base-4-categorical': { value: 'a' },
-          'test-qu-opin-base-5-boolean': { value: false }
-        })
+        answersByExternalId: withInfoAnswers(GENERIC)
       },
       {
         external_id: 'test-ca-mun-ne-c-1',
@@ -1181,13 +1109,7 @@ export const baseV1Template: Template = {
         sort_order: 34,
         is_generated: false,
         organization: { external_id: 'test-or-c' },
-        answersByExternalId: withInfoAnswers({
-          'test-qu-opin-base-1-likert5': { value: '3' },
-          'test-qu-opin-base-2-likert4': { value: '2' },
-          'test-qu-opin-base-3-likert7': { value: '4' },
-          'test-qu-opin-base-4-categorical': { value: 'c' },
-          'test-qu-opin-base-5-boolean': { value: true }
-        })
+        answersByExternalId: withInfoAnswers(GENERIC)
       },
 
       // ---- CO-Mun-SE — 4 candidates (1 per OR-AA..BB) ----
@@ -1199,13 +1121,7 @@ export const baseV1Template: Template = {
         sort_order: 40,
         is_generated: false,
         organization: { external_id: 'test-or-aa' },
-        answersByExternalId: withInfoAnswers({
-          'test-qu-opin-base-1-likert5': { value: '4' },
-          'test-qu-opin-base-2-likert4': { value: '3' },
-          'test-qu-opin-base-3-likert7': { value: '6' },
-          'test-qu-opin-base-4-categorical': { value: 'c' },
-          'test-qu-opin-base-5-boolean': { value: true }
-        })
+        answersByExternalId: withInfoAnswers(GENERIC)
       },
       {
         external_id: 'test-ca-mun-se-ab-1',
@@ -1215,13 +1131,7 @@ export const baseV1Template: Template = {
         sort_order: 41,
         is_generated: false,
         organization: { external_id: 'test-or-ab' },
-        answersByExternalId: withInfoAnswers({
-          'test-qu-opin-base-1-likert5': { value: '4' },
-          'test-qu-opin-base-2-likert4': { value: '4' },
-          'test-qu-opin-base-3-likert7': { value: '5' },
-          'test-qu-opin-base-4-categorical': { value: 'b' },
-          'test-qu-opin-base-5-boolean': { value: true }
-        })
+        answersByExternalId: withInfoAnswers(GENERIC)
       },
       {
         external_id: 'test-ca-mun-se-ba-1',
@@ -1231,13 +1141,7 @@ export const baseV1Template: Template = {
         sort_order: 42,
         is_generated: false,
         organization: { external_id: 'test-or-ba' },
-        answersByExternalId: withInfoAnswers({
-          'test-qu-opin-base-1-likert5': { value: '2' },
-          'test-qu-opin-base-2-likert4': { value: '2' },
-          'test-qu-opin-base-3-likert7': { value: '2' },
-          'test-qu-opin-base-4-categorical': { value: 'a' },
-          'test-qu-opin-base-5-boolean': { value: false }
-        })
+        answersByExternalId: withInfoAnswers(GENERIC)
       },
       {
         external_id: 'test-ca-mun-se-bb-1',
@@ -1247,13 +1151,7 @@ export const baseV1Template: Template = {
         sort_order: 43,
         is_generated: false,
         organization: { external_id: 'test-or-bb' },
-        answersByExternalId: withInfoAnswers({
-          'test-qu-opin-base-1-likert5': { value: '2' },
-          'test-qu-opin-base-2-likert4': { value: '2' },
-          'test-qu-opin-base-3-likert7': { value: '3' },
-          'test-qu-opin-base-4-categorical': { value: 'a' },
-          'test-qu-opin-base-5-boolean': { value: false }
-        })
+        answersByExternalId: withInfoAnswers(GENERIC)
       },
 
       // ---- CO-Mun-SW — 2 candidates (OR-AA + OR-BA per refactor-doc:107) ----
@@ -1265,13 +1163,7 @@ export const baseV1Template: Template = {
         sort_order: 50,
         is_generated: false,
         organization: { external_id: 'test-or-aa' },
-        answersByExternalId: withInfoAnswers({
-          'test-qu-opin-base-1-likert5': { value: '4' },
-          'test-qu-opin-base-2-likert4': { value: '3' },
-          'test-qu-opin-base-3-likert7': { value: '5' },
-          'test-qu-opin-base-4-categorical': { value: 'c' },
-          'test-qu-opin-base-5-boolean': { value: true }
-        })
+        answersByExternalId: withInfoAnswers(GENERIC)
       },
       {
         external_id: 'test-ca-mun-sw-ba-1',
@@ -1281,13 +1173,7 @@ export const baseV1Template: Template = {
         sort_order: 51,
         is_generated: false,
         organization: { external_id: 'test-or-ba' },
-        answersByExternalId: withInfoAnswers({
-          'test-qu-opin-base-1-likert5': { value: '2' },
-          'test-qu-opin-base-2-likert4': { value: '2' },
-          'test-qu-opin-base-3-likert7': { value: '3' },
-          'test-qu-opin-base-4-categorical': { value: 'a' },
-          'test-qu-opin-base-5-boolean': { value: false }
-        })
+        answersByExternalId: withInfoAnswers(GENERIC)
       }
     ]
   },
@@ -1372,6 +1258,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-nom-reg-n-ca-aa-hidden',
+        election_symbol: '2',
         candidate: { external_id: 'test-ca-aa-hidden' },
         parent_nomination: { external_id: 'test-nom-reg-n-or-aa' },
         election: { external_id: 'test-el-reg' },
@@ -1380,6 +1267,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-nom-reg-n-ca-aa-1',
+        election_symbol: '3',
         candidate: { external_id: 'test-ca-aa-1' },
         parent_nomination: { external_id: 'test-nom-reg-n-or-aa' },
         election: { external_id: 'test-el-reg' },
@@ -1388,6 +1276,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-nom-reg-n-ca-aa-2',
+        election_symbol: '4',
         candidate: { external_id: 'test-ca-aa-2' },
         parent_nomination: { external_id: 'test-nom-reg-n-or-aa' },
         election: { external_id: 'test-el-reg' },
@@ -1396,6 +1285,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-nom-reg-n-ca-aa-3',
+        election_symbol: '5',
         candidate: { external_id: 'test-ca-aa-3' },
         parent_nomination: { external_id: 'test-nom-reg-n-or-aa' },
         election: { external_id: 'test-el-reg' },
@@ -1404,6 +1294,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-nom-reg-n-ca-aa-4',
+        election_symbol: '6',
         candidate: { external_id: 'test-ca-aa-4' },
         parent_nomination: { external_id: 'test-nom-reg-n-or-aa' },
         election: { external_id: 'test-el-reg' },
@@ -1412,6 +1303,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-nom-reg-n-ca-ab-1',
+        election_symbol: '7',
         candidate: { external_id: 'test-ca-ab-1' },
         parent_nomination: { external_id: 'test-nom-reg-n-or-ab' },
         election: { external_id: 'test-el-reg' },
@@ -1420,6 +1312,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-nom-reg-n-ca-ba-1',
+        election_symbol: '8',
         candidate: { external_id: 'test-ca-ba-1' },
         parent_nomination: { external_id: 'test-nom-reg-n-or-ba' },
         election: { external_id: 'test-el-reg' },
@@ -1428,6 +1321,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-nom-reg-n-ca-ba-2',
+        election_symbol: '9',
         candidate: { external_id: 'test-ca-ba-2' },
         parent_nomination: { external_id: 'test-nom-reg-n-or-ba' },
         election: { external_id: 'test-el-reg' },
@@ -1436,6 +1330,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-nom-reg-n-ca-bb-1',
+        election_symbol: '10',
         candidate: { external_id: 'test-ca-bb-1' },
         parent_nomination: { external_id: 'test-nom-reg-n-or-bb' },
         election: { external_id: 'test-el-reg' },
@@ -1444,6 +1339,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-nom-reg-n-ca-bb-2',
+        election_symbol: '11',
         candidate: { external_id: 'test-ca-bb-2' },
         parent_nomination: { external_id: 'test-nom-reg-n-or-bb' },
         election: { external_id: 'test-el-reg' },
@@ -1452,6 +1348,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-nom-reg-n-ca-c-1',
+        election_symbol: '12',
         candidate: { external_id: 'test-ca-c-1' },
         parent_nomination: { external_id: 'test-nom-reg-n-or-c' },
         election: { external_id: 'test-el-reg' },
@@ -1460,6 +1357,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-nom-reg-n-ca-c-2',
+        election_symbol: '13',
         candidate: { external_id: 'test-ca-c-2' },
         parent_nomination: { external_id: 'test-nom-reg-n-or-c' },
         election: { external_id: 'test-el-reg' },
@@ -1468,6 +1366,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-nom-reg-n-ca-independent',
+        election_symbol: '14',
         candidate: { external_id: 'test-ca-independent' },
         // No parent_nomination — independent (refactor-doc:83)
         election: { external_id: 'test-el-reg' },
@@ -1519,6 +1418,7 @@ export const baseV1Template: Template = {
       // CO-Reg-S candidates
       {
         external_id: 'test-nom-reg-s-ca-aa-1',
+        election_symbol: '15',
         candidate: { external_id: 'test-ca-reg-s-aa-1' },
         parent_nomination: { external_id: 'test-nom-reg-s-or-aa' },
         election: { external_id: 'test-el-reg' },
@@ -1527,6 +1427,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-nom-reg-s-ca-ab-1',
+        election_symbol: '16',
         candidate: { external_id: 'test-ca-reg-s-ab-1' },
         parent_nomination: { external_id: 'test-nom-reg-s-or-ab' },
         election: { external_id: 'test-el-reg' },
@@ -1535,6 +1436,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-nom-reg-s-ca-ba-1',
+        election_symbol: '17',
         candidate: { external_id: 'test-ca-reg-s-ba-1' },
         parent_nomination: { external_id: 'test-nom-reg-s-or-ba' },
         election: { external_id: 'test-el-reg' },
@@ -1543,6 +1445,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-nom-reg-s-ca-bb-1',
+        election_symbol: '18',
         candidate: { external_id: 'test-ca-reg-s-bb-1' },
         parent_nomination: { external_id: 'test-nom-reg-s-or-bb' },
         election: { external_id: 'test-el-reg' },
@@ -1617,6 +1520,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-nom-mun-ne-ca-aa-1',
+        election_symbol: '19',
         candidate: { external_id: 'test-ca-mun-ne-aa-1' },
         parent_nomination: { external_id: 'test-nom-mun-ne-or-aa' },
         election: { external_id: 'test-el-mun' },
@@ -1625,6 +1529,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-nom-mun-ne-ca-ab-1',
+        election_symbol: '20',
         candidate: { external_id: 'test-ca-mun-ne-ab-1' },
         parent_nomination: { external_id: 'test-nom-mun-ne-or-ab' },
         election: { external_id: 'test-el-mun' },
@@ -1633,6 +1538,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-nom-mun-ne-ca-ba-1',
+        election_symbol: '21',
         candidate: { external_id: 'test-ca-mun-ne-ba-1' },
         parent_nomination: { external_id: 'test-nom-mun-ne-or-ba' },
         election: { external_id: 'test-el-mun' },
@@ -1641,6 +1547,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-nom-mun-ne-ca-bb-1',
+        election_symbol: '22',
         candidate: { external_id: 'test-ca-mun-ne-bb-1' },
         parent_nomination: { external_id: 'test-nom-mun-ne-or-bb' },
         election: { external_id: 'test-el-mun' },
@@ -1649,6 +1556,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-nom-mun-ne-ca-c-1',
+        election_symbol: '23',
         candidate: { external_id: 'test-ca-mun-ne-c-1' },
         parent_nomination: { external_id: 'test-nom-mun-ne-or-c' },
         election: { external_id: 'test-el-mun' },
@@ -1660,6 +1568,7 @@ export const baseV1Template: Template = {
       // Only CA-Independent (refactor-doc:102-103)
       {
         external_id: 'test-nom-mun-nw-ca-independent',
+        election_symbol: '24',
         candidate: { external_id: 'test-ca-independent' },
         election: { external_id: 'test-el-mun' },
         constituency: { external_id: 'test-co-mun-nw' },
@@ -1716,6 +1625,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-nom-mun-se-ca-aa-1',
+        election_symbol: '25',
         candidate: { external_id: 'test-ca-mun-se-aa-1' },
         parent_nomination: { external_id: 'test-nom-mun-se-or-aa' },
         election: { external_id: 'test-el-mun' },
@@ -1724,6 +1634,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-nom-mun-se-ca-ab-1',
+        election_symbol: '26',
         candidate: { external_id: 'test-ca-mun-se-ab-1' },
         parent_nomination: { external_id: 'test-nom-mun-se-or-ab' },
         election: { external_id: 'test-el-mun' },
@@ -1732,6 +1643,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-nom-mun-se-ca-ba-1',
+        election_symbol: '27',
         candidate: { external_id: 'test-ca-mun-se-ba-1' },
         parent_nomination: { external_id: 'test-nom-mun-se-or-ba' },
         election: { external_id: 'test-el-mun' },
@@ -1740,6 +1652,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-nom-mun-se-ca-bb-1',
+        election_symbol: '28',
         candidate: { external_id: 'test-ca-mun-se-bb-1' },
         parent_nomination: { external_id: 'test-nom-mun-se-or-bb' },
         election: { external_id: 'test-el-mun' },
@@ -1781,6 +1694,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-nom-mun-sw-ca-aa-1',
+        election_symbol: '29',
         candidate: { external_id: 'test-ca-mun-sw-aa-1' },
         parent_nomination: { external_id: 'test-nom-mun-sw-or-aa' },
         election: { external_id: 'test-el-mun' },
@@ -1789,6 +1703,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-nom-mun-sw-ca-ba-1',
+        election_symbol: '30',
         candidate: { external_id: 'test-ca-mun-sw-ba-1' },
         parent_nomination: { external_id: 'test-nom-mun-sw-or-ba' },
         election: { external_id: 'test-el-mun' },

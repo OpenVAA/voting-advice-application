@@ -98,6 +98,7 @@ export const testIds = {
     },
     questions: {
       answerOption: 'question-choice',
+      heading: 'voter-questions-heading',
       nextButton: 'question-next',
       previousButton: 'question-previous',
       categoryIntro: 'voter-questions-category-intro',
@@ -111,6 +112,7 @@ export const testIds = {
       list: 'voter-results-list',
       noNominationsWarning: 'voter-results-no-nominations-warning',
       card: 'entity-card',
+      cardTitle: 'entity-card-title',
       candidateSection: 'voter-results-candidate-section',
       partySection: 'voter-results-party-section',
       entityTabs: 'voter-results-entity-tabs',

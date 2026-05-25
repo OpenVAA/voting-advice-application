@@ -109,8 +109,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
       action ??
       $getRoute({
         route: 'ResultEntity',
-        entityTab:
-          type === 'candidate' ? 'candidates' : type === 'alliance' ? 'alliances' : 'organizations',
+        entityTab: type === 'candidate' ? 'candidates' : type === 'alliance' ? 'alliances' : 'organizations',
         entity: type,
         id,
         nominationId: unwrapped.nomination?.id
@@ -243,7 +242,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
           style="grid-area: avatar" />
 
         <!-- Title -->
-        <div class="gap-sm grid grid-flow-col items-center" style="grid-area: title">
+        <div class="gap-sm grid grid-flow-col items-center" style="grid-area: title" data-testid="entity-card-title">
           <svelte:element this={variant === 'subcard' ? 'h4' : 'h3'} id="{baseId}_title">
             {parsed.nakedEntity.name}
           </svelte:element>
@@ -284,7 +283,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
       <!-- Alliance summary line (Phase 69 D-04): "X candidates across N parties" -->
       <!-- Composed from 3 keys to work around an inlang plugin-message-format dual-selector compile bug. -->
       {#if parsed.allianceSummary}
-        <p class="text-sm text-secondary">
+        <p class="text-secondary text-sm">
           {t('results.alliance.summary.template', {
             candidates: t('results.alliance.summary.candidates', {
               numCandidates: parsed.allianceSummary.numCandidates
