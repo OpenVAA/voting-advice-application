@@ -115,48 +115,28 @@ test.describe(
       // question, the derivation evaluates to length ≥ 1 → the button must
       // render disabled.
       //
-      // NB: the shared Button component (`Button.svelte:178-185`) renders the
-      // button as `<a role="button" disabled="true" tabindex="-1">` when
-      // disabled — `<a>` does NOT natively support the `disabled` attribute,
-      // so Playwright's `toBeDisabled` matcher does NOT recognize this
-      // as disabled (it checks native form-element `disabled`/`ariaDisabled`).
-      // The custom `disabled="true"` attribute IS observable; assert via
-      // `toHaveAttribute` + tabindex="-1" (the keyboard-navigation guard).
-      // reason: Button.svelte renders disabled state as `disabled="true"` on
-      // `<a>` (not a native form element) — Playwright's toBeDisabled matcher
-      // is form-element-only per
-      // https://playwright.dev/docs/api/class-locatorassertions#locator-assertions-to-be-disabled
+      // The shared Button component renders the `<a>` branch with
+      // `aria-disabled="true"` (not the non-standard `disabled` attribute),
+      // which Playwright's `toBeDisabled()` matcher recognizes natively.
       const questionsButton = page.getByTestId(testIds.candidate.home.questions);
       await expect(questionsButton).toBeVisible();
-      await expect(questionsButton).toHaveAttribute('disabled', 'true');
-      await expect(questionsButton).toHaveAttribute('tabindex', '-1');
+      await expect(questionsButton).toBeDisabled();
 
       // The Preview Button (line 140-146) has the SAME disabled binding.
       // No central testId map entry for it — locate via getByTestId() with
       // the literal data-testid string (matches the in-component attribute
       // at +page.svelte:146).
-      // Phase 78 CLEAN-05 IN-03 (folded from Phase 78 P03 deferred lint
-      // errors): replaced `page.locator('[data-testid="..."]')` raw-locator
-      // with `page.getByTestId(...)` to clear the playwright/no-raw-locators
-      // error. Semantically equivalent — both target the same data-testid.
       const previewButton = page.getByTestId('candidate-home-preview');
       await expect(previewButton).toBeVisible();
-      await expect(previewButton).toHaveAttribute('disabled', 'true');
-      await expect(previewButton).toHaveAttribute('tabindex', '-1');
+      await expect(previewButton).toBeDisabled();
 
       // Positive control: the Profile Button (line 113-124) is NOT
       // gated by unansweredRequiredInfoQuestions — it's the candidate's
       // navigation path to FIX the missing answer, so it MUST remain
       // enabled even when profileComplete is false.
-      // Phase 78 CLEAN-05 IN-03 (folded): same raw-locator → getByTestId
-      // rewrite as the Preview Button above.
       const profileButton = page.getByTestId('candidate-home-profile');
       await expect(profileButton).toBeVisible();
-      // Same Button-component caveat as above; assert the ABSENCE of the
-      // disabled attribute on the Profile button (it should be in its
-      // enabled, navigable state with tabindex="0" + no `disabled` attr).
-      await expect(profileButton).not.toHaveAttribute('disabled', 'true');
-      await expect(profileButton).toHaveAttribute('tabindex', '0');
+      await expect(profileButton).toBeEnabled();
     });
   }
 );

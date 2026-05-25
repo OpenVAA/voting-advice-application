@@ -492,11 +492,11 @@ test.describe('minimum answers threshold (VOTE-07)', { tag: ['@voter'] }, () => 
     await expect(page.getByTestId(testIds.voter.questions.answerOption).first()).toBeVisible({ timeout: 10000 });
 
     // Verify results link in banner exists but is disabled (0 answers, below threshold of 5).
-    // The Button component renders as an <a> with role="button" and disabled="true" attribute.
-    // Playwright's toBeDisabled() doesn't work on <a> elements, so check the attribute directly.
+    // The Button component renders the `<a>` branch with `aria-disabled="true"`,
+    // which Playwright's toBeDisabled() matcher recognizes natively.
     const resultsButton = page.getByTestId(testIds.voter.banner.results);
     await expect(resultsButton).toBeVisible();
-    await expect(resultsButton).toHaveAttribute('disabled', 'true');
+    await expect(resultsButton).toBeDisabled();
 
     // Helper: answer current question and wait for auto-advance
     async function answerAndAdvance(): Promise<void> {
@@ -510,7 +510,7 @@ test.describe('minimum answers threshold (VOTE-07)', { tag: ['@voter'] }, () => 
     await answerAndAdvance();
 
     // Check results link is still disabled (2 answers < 5 threshold)
-    await expect(resultsButton).toHaveAttribute('disabled', 'true');
+    await expect(resultsButton).toBeDisabled();
 
     // Answer 3 more questions (total 5 = at threshold)
     await answerAndAdvance();
@@ -518,8 +518,7 @@ test.describe('minimum answers threshold (VOTE-07)', { tag: ['@voter'] }, () => 
     await answerAndAdvance();
 
     // Check results link is now enabled (5 answers >= 5 threshold).
-    // When enabled, the disabled attribute is removed entirely.
-    await expect(resultsButton).not.toHaveAttribute('disabled');
+    await expect(resultsButton).toBeEnabled();
   });
 });
 

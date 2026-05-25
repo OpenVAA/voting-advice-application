@@ -102,8 +102,9 @@ Accesses `AppContext` and optionally `VoterContext`.
 
 <style lang="postcss">
   @reference "../tailwind-theme.css";
-  :global(.vaa-basicPage-actions > a:not([disabled])),
-  :global(.vaa-basicPage-actions > * > a:not([disabled])),
+  /* `<a>` uses aria-disabled (non-standard `disabled` removed for WCAG / Playwright compat); `<button>` keeps native `disabled`. */
+  :global(.vaa-basicPage-actions > a:not([aria-disabled='true'])),
+  :global(.vaa-basicPage-actions > * > a:not([aria-disabled='true'])),
   :global(.vaa-basicPage-actions > button:not([disabled])),
   :global(.vaa-basicPage-actions > * > button:not([disabled])) {
     /* !text is valid class prefix */

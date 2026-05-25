@@ -53,35 +53,23 @@ Accesses `LayoutContext`.
   });
 </script>
 
-<!-- The wrapping <div role="listitem"> is rendered ONLY when this NavItem is a child of a NavGroup (auto-detected via getContext per Phase 80 D-03). Orphan NavItems (e.g., VoterNav/CandidateNav/AdminNav close-buttons) render bare to avoid the axe aria-required-parent violation. -->
-{#if inNavGroup}
-  <div role="listitem">
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <svelte:element
-      this={href == null ? 'button' : 'a'}
-      {href}
-      onclick={() => {
-        if (autoCloseNav && navigation.close) navigation.close();
-      }}
-      disabled={disabled || undefined}
-      data-testid="nav-menu-item"
-      {...concatClass(restProps, classes)}>
-      {#if icon}
-        <Icon name={icon} />
-      {/if}
-      <span class="uc-first">{text}</span>
-      {@render children?.()}
-    </svelte:element>
-  </div>
-{:else}
+{#snippet content()}
+  <!--
+    `disabled` is non-standard on `<a>`. On the `<a>` branch we set
+    `aria-disabled="true"` and drop `href` so the link is observably
+    disabled (WCAG 2.1 AA + Playwright `toBeDisabled()`-compatible). On
+    the `<button>` branch we keep native `disabled`. CSS targets both via
+    `[disabled]` and `[aria-disabled="true"]`.
+  -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <svelte:element
     this={href == null ? 'button' : 'a'}
-    {href}
+    href={disabled ? undefined : href}
     onclick={() => {
       if (autoCloseNav && navigation.close) navigation.close();
     }}
-    disabled={disabled || undefined}
+    disabled={href == null && disabled ? true : undefined}
+    aria-disabled={href != null && disabled ? 'true' : undefined}
     data-testid="nav-menu-item"
     {...concatClass(restProps, classes)}>
     {#if icon}
@@ -90,6 +78,15 @@ Accesses `LayoutContext`.
     <span class="uc-first">{text}</span>
     {@render children?.()}
   </svelte:element>
+{/snippet}
+
+<!-- The wrapping <div role="listitem"> is rendered ONLY when this NavItem is a child of a NavGroup (auto-detected via getContext per Phase 80 D-03). Orphan NavItems (e.g., VoterNav/CandidateNav/AdminNav close-buttons) render bare to avoid the axe aria-required-parent violation. -->
+{#if inNavGroup}
+  <div role="listitem">
+    {@render content()}
+  </div>
+{:else}
+  {@render content()}
 {/if}
 
 <style lang="postcss">
@@ -97,6 +94,7 @@ Accesses `LayoutContext`.
   /* The class prefixes are valid even though linter flags them */
   .nav-item[disabled],
   .nav-item:disabled,
+  .nav-item[aria-disabled='true'],
   .nav-item.disabled {
     @apply !text-secondary pointer-events-none hover:bg-transparent;
   }

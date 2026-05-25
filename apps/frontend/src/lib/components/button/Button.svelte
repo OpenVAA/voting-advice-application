@@ -148,6 +148,11 @@ text="Add to list">
     return c;
   });
 
+  // `disabled` is non-standard on `<a>`. The `<a>` branch uses `aria-disabled`
+  // and drops `href` when disabled (WCAG 2.1 AA + `toBeDisabled()`-compatible);
+  // the `<button>` branch keeps native `disabled`. `loading` also disables.
+  const isDisabled = $derived(disabled || loading);
+
   let labelClass = $derived.by(() => {
     let lc = 'vaa-button-label first-letter:uppercase';
 
@@ -173,16 +178,16 @@ text="Add to list">
   });
 </script>
 
-<!-- Note that `disabled` is converted to `undefined` is `false` because DaisyUI's `[disabled]` selector will otherwise match it. -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <svelte:element
   this={href == null ? 'button' : 'a'}
   role="button"
-  tabindex={disabled ? -1 : 0}
-  href={disabled ? undefined : href}
+  tabindex={isDisabled ? -1 : 0}
+  href={isDisabled ? undefined : href}
   aria-label={variant === 'icon' || variant === 'floating-icon' ? effectiveText : undefined}
   title={variant === 'icon' || variant === 'responsive-icon' ? effectiveText : undefined}
-  disabled={disabled || loading || undefined}
+  disabled={href == null && isDisabled ? true : undefined}
+  aria-disabled={href != null && isDisabled ? 'true' : undefined}
   {...concatClass(restProps, classes)}>
   {#if loading || icon}
     <div class="relative">
@@ -220,6 +225,7 @@ text="Add to list">
 <style lang="postcss">
   @reference "../../../tailwind-theme.css";
   [disabled] .vaa-button-label,
+  [aria-disabled='true'] .vaa-button-label,
   .disabled .vaa-button-label {
     @apply text-neutral/20;
   }
