@@ -17,6 +17,14 @@
 import { baseV1Template } from './baseV1';
 import { defaultOverrides, defaultTemplate } from './default';
 import { e2eTemplate } from './e2e';
+import { perm1e1cg1coTemplate } from './permutations/perm-1e1cg1co';
+import { perm2eAsymmetricTemplate } from './permutations/perm-2e-asymmetric';
+import { perm2eSharedTemplate } from './permutations/perm-2e-shared';
+import { permDisableElection1coTemplate } from './permutations/perm-disable-election-1co';
+import { permDisableElection2coTemplate } from './permutations/perm-disable-election-2co';
+import { permDisjoint1coTemplate } from './permutations/perm-disjoint-1co';
+import { permNotLocated2e2cgTemplate } from './permutations/perm-not-located-2e2cg';
+import { permStartfromcgTemplate } from './permutations/perm-startfromcg';
 import type { Template } from '../template/types';
 import type { Overrides } from '../types';
 
@@ -24,11 +32,21 @@ import type { Overrides } from '../types';
  * Built-in template name → Template. Plan 08 adds `e2e: e2eTemplate`.
  * Phase 88 Plan 01 adds `baseV1: baseV1Template` for the new mega-journey
  * (parallel landing alongside e2e per the parallel-setup principle).
+ * Phase 88 Plan 03 adds 8 perm-* minimal-data templates for the new
+ * election + constituency permutations test family (88-03-SCOPE.md:104-110).
  */
 export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   default: defaultTemplate,
   e2e: e2eTemplate,
-  baseV1: baseV1Template
+  baseV1: baseV1Template,
+  'perm-1e1cg1co': perm1e1cg1coTemplate,
+  'perm-2e-shared': perm2eSharedTemplate,
+  'perm-2e-asymmetric': perm2eAsymmetricTemplate,
+  'perm-startfromcg': permStartfromcgTemplate,
+  'perm-disjoint-1co': permDisjoint1coTemplate,
+  'perm-disable-election-1co': permDisableElection1coTemplate,
+  'perm-disable-election-2co': permDisableElection2coTemplate,
+  'perm-not-located-2e2cg': permNotLocated2e2cgTemplate
 };
 
 /**
@@ -52,3 +70,11 @@ export const BUILT_IN_OVERRIDES: Record<string, Overrides> = {
 export { BASE_V1_APP_SETTINGS, baseV1Template } from './baseV1';
 export { defaultOverrides, defaultTemplate } from './default';
 export { E2E_BASE_APP_SETTINGS, e2eTemplate } from './e2e';
+export { perm1e1cg1coTemplate } from './permutations/perm-1e1cg1co';
+export { perm2eAsymmetricTemplate } from './permutations/perm-2e-asymmetric';
+export { perm2eSharedTemplate } from './permutations/perm-2e-shared';
+export { permDisableElection1coTemplate } from './permutations/perm-disable-election-1co';
+export { permDisableElection2coTemplate } from './permutations/perm-disable-election-2co';
+export { permDisjoint1coTemplate } from './permutations/perm-disjoint-1co';
+export { permNotLocated2e2cgTemplate } from './permutations/perm-not-located-2e2cg';
+export { permStartfromcgTemplate } from './permutations/perm-startfromcg';
