@@ -6,14 +6,11 @@
  *
  * Authoritative spec: TEST-INVENTORY-REFACTOR-2.md:139-144
  *
- * Prefix discipline: ROW PREFIX is `test-perm-1e1cg1co-` per
- * 88-03-SCOPE.md:104-110. The template uses `externalIdPrefix: ''` and
- * pre-prefixes all row external_ids AND nested-ref external_ids with PREFIX
- * (mirrors baseV1's empty-prefix + pre-prefixed pattern; see Risk #6 in
- * 88-03-PLAN.md for the rationale — the writer prefixes top-level external_ids
- * but passes nested-ref external_ids through verbatim). Each chain teardowns
- * ITS OWN prefix only via runTeardown(PREFIX, client); the prefix is unique
- * within the test-perm-* family.
+ * Prefix discipline: `externalIdPrefix: 'test-perm-1e1cg1co-'` — UNIQUE per
+ * 88-03-SCOPE.md:104-110. Row external_ids in fixed[] are BARE (writer
+ * prepends prefix); nested refs use FULL prefixed external_ids (writer
+ * passes refs verbatim). Each chain teardowns ITS OWN prefix via
+ * setupFromTemplate's derived `teardownPrefix = template.externalIdPrefix`.
  *
  * Settings: MINIMAL_BASE_APP_SETTINGS verbatim.
  */
@@ -32,14 +29,14 @@ const P = 'test-perm-1e1cg1co-';
 
 export const perm1e1cg1coTemplate: Template = {
   seed: 42,
-  externalIdPrefix: '',
+  externalIdPrefix: P,
   generateTranslationsForAllLocales: false,
 
   elections: {
     count: 0,
     fixed: [
       {
-        external_id: `${P}el-1`,
+        external_id: 'el-1',
         name: { en: '[EL1] Single election' },
         short_name: { en: 'EL1' },
         election_type: 'general',
@@ -57,7 +54,7 @@ export const perm1e1cg1coTemplate: Template = {
     count: 0,
     fixed: [
       {
-        external_id: `${P}cg-1`,
+        external_id: 'cg-1',
         name: { en: '[CG1] Single group' },
         sort_order: 0,
         is_generated: false,
@@ -70,7 +67,7 @@ export const perm1e1cg1coTemplate: Template = {
     count: 0,
     fixed: [
       {
-        external_id: `${P}co-1a`,
+        external_id: 'co-1a',
         name: { en: '[CO1A] Only constituency' },
         sort_order: 0,
         is_generated: false
@@ -78,8 +75,8 @@ export const perm1e1cg1coTemplate: Template = {
     ]
   },
 
-  organizations: { count: 0, fixed: buildOrganizations(P) },
-  question_categories: { count: 0, fixed: buildQuestionCategories(P) },
+  organizations: { count: 0, fixed: buildOrganizations() },
+  question_categories: { count: 0, fixed: buildQuestionCategories() },
   questions: { count: 0, fixed: buildQuestions(P) },
 
   candidates: {
@@ -97,7 +94,7 @@ export const perm1e1cg1coTemplate: Template = {
 
   app_settings: {
     count: 0,
-    fixed: [{ external_id: `${P}app-settings`, settings: MINIMAL_BASE_APP_SETTINGS }]
+    fixed: [{ external_id: 'app-settings', settings: MINIMAL_BASE_APP_SETTINGS }]
   }
 };
 

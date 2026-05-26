@@ -7,8 +7,8 @@
  *
  * Authoritative spec: TEST-INVENTORY-REFACTOR-2.md:142-145
  *
- * Prefix discipline: ROW PREFIX is `test-perm-2e-shared-` per
- * 88-03-SCOPE.md:104-110. Empty-prefix + pre-prefixed pattern (see Risk #6).
+ * Prefix discipline: `externalIdPrefix: 'test-perm-2e-shared-'` per
+ * 88-03-SCOPE.md:104-110. Row external_ids bare; refs prefixed.
  *
  * Settings: MINIMAL_BASE_APP_SETTINGS verbatim.
  */
@@ -27,14 +27,14 @@ const P = 'test-perm-2e-shared-';
 
 export const perm2eSharedTemplate: Template = {
   seed: 42,
-  externalIdPrefix: '',
+  externalIdPrefix: P,
   generateTranslationsForAllLocales: false,
 
   elections: {
     count: 0,
     fixed: [
       {
-        external_id: `${P}el-1`,
+        external_id: 'el-1',
         name: { en: '[EL1] First election' },
         short_name: { en: 'EL1' },
         election_type: 'general',
@@ -46,7 +46,7 @@ export const perm2eSharedTemplate: Template = {
         constituency_groups: [{ external_id: `${P}cg-1` }]
       },
       {
-        external_id: `${P}el-2`,
+        external_id: 'el-2',
         name: { en: '[EL2] Second election' },
         short_name: { en: 'EL2' },
         election_type: 'local',
@@ -64,7 +64,7 @@ export const perm2eSharedTemplate: Template = {
     count: 0,
     fixed: [
       {
-        external_id: `${P}cg-1`,
+        external_id: 'cg-1',
         name: { en: '[CG1] Shared group' },
         sort_order: 0,
         is_generated: false,
@@ -77,7 +77,7 @@ export const perm2eSharedTemplate: Template = {
     count: 0,
     fixed: [
       {
-        external_id: `${P}co-1a`,
+        external_id: 'co-1a',
         name: { en: '[CO1A] Only constituency' },
         sort_order: 0,
         is_generated: false
@@ -85,8 +85,8 @@ export const perm2eSharedTemplate: Template = {
     ]
   },
 
-  organizations: { count: 0, fixed: buildOrganizations(P) },
-  question_categories: { count: 0, fixed: buildQuestionCategories(P) },
+  organizations: { count: 0, fixed: buildOrganizations() },
+  question_categories: { count: 0, fixed: buildQuestionCategories() },
   questions: { count: 0, fixed: buildQuestions(P) },
 
   candidates: {
@@ -107,7 +107,7 @@ export const perm2eSharedTemplate: Template = {
 
   app_settings: {
     count: 0,
-    fixed: [{ external_id: `${P}app-settings`, settings: MINIMAL_BASE_APP_SETTINGS }]
+    fixed: [{ external_id: 'app-settings', settings: MINIMAL_BASE_APP_SETTINGS }]
   }
 };
 

@@ -16,8 +16,8 @@
  *
  * Authoritative spec: TEST-INVENTORY-REFACTOR-2.md:158-167
  *
- * Prefix discipline: ROW PREFIX is `test-perm-startfromcg-` per
- * 88-03-SCOPE.md:104-110. Empty-prefix + pre-prefixed pattern (see Risk #6).
+ * Prefix discipline: `externalIdPrefix: 'test-perm-startfromcg-'` per
+ * 88-03-SCOPE.md:104-110. Row external_ids bare; refs prefixed.
  *
  * Settings: MINIMAL_BASE_APP_SETTINGS verbatim — `elections.
  * startFromConstituencyGroup` is OMITTED entirely (HIGH-3 resolution; the CG
@@ -38,14 +38,14 @@ const P = 'test-perm-startfromcg-';
 
 export const permStartfromcgTemplate: Template = {
   seed: 42,
-  externalIdPrefix: '',
+  externalIdPrefix: P,
   generateTranslationsForAllLocales: false,
 
   elections: {
     count: 0,
     fixed: [
       {
-        external_id: `${P}el-1`,
+        external_id: 'el-1',
         name: { en: '[EL1] CG-1 parents' },
         short_name: { en: 'EL1' },
         election_type: 'general',
@@ -57,7 +57,7 @@ export const permStartfromcgTemplate: Template = {
         constituency_groups: [{ external_id: `${P}cg-1` }]
       },
       {
-        external_id: `${P}el-2`,
+        external_id: 'el-2',
         name: { en: '[EL2] CG-2 leaves' },
         short_name: { en: 'EL2' },
         election_type: 'local',
@@ -75,14 +75,14 @@ export const permStartfromcgTemplate: Template = {
     count: 0,
     fixed: [
       {
-        external_id: `${P}cg-1`,
+        external_id: 'cg-1',
         name: { en: '[CG1] Parent regions' },
         sort_order: 0,
         is_generated: false,
         constituencies: [{ external_id: `${P}co-1a` }, { external_id: `${P}co-1b` }]
       },
       {
-        external_id: `${P}cg-2`,
+        external_id: 'cg-2',
         name: { en: '[CG2] Leaf municipalities' },
         sort_order: 1,
         is_generated: false,
@@ -100,38 +100,38 @@ export const permStartfromcgTemplate: Template = {
   constituencies: {
     count: 0,
     fixed: [
-      { external_id: `${P}co-1a`, name: { en: '[CO1A] Region A' }, sort_order: 0, is_generated: false },
-      { external_id: `${P}co-1b`, name: { en: '[CO1B] Region B' }, sort_order: 1, is_generated: false },
+      { external_id: 'co-1a', name: { en: '[CO1A] Region A' }, sort_order: 0, is_generated: false },
+      { external_id: 'co-1b', name: { en: '[CO1B] Region B' }, sort_order: 1, is_generated: false },
       {
-        external_id: `${P}co-1a1`,
+        external_id: 'co-1a1',
         name: { en: '[CO1A1] Municipality A1' },
         sort_order: 2,
         is_generated: false,
         parent: { external_id: `${P}co-1a` }
       },
       {
-        external_id: `${P}co-1a2`,
+        external_id: 'co-1a2',
         name: { en: '[CO1A2] Municipality A2' },
         sort_order: 3,
         is_generated: false,
         parent: { external_id: `${P}co-1a` }
       },
       {
-        external_id: `${P}co-1b1`,
+        external_id: 'co-1b1',
         name: { en: '[CO1B1] Municipality B1' },
         sort_order: 4,
         is_generated: false,
         parent: { external_id: `${P}co-1b` }
       },
       {
-        external_id: `${P}co-1b2`,
+        external_id: 'co-1b2',
         name: { en: '[CO1B2] Municipality B2' },
         sort_order: 5,
         is_generated: false,
         parent: { external_id: `${P}co-1b` }
       },
       {
-        external_id: `${P}co-1c`,
+        external_id: 'co-1c',
         name: { en: '[CO1C] Orphan municipality' },
         sort_order: 6,
         is_generated: false
@@ -140,19 +140,17 @@ export const permStartfromcgTemplate: Template = {
     ]
   },
 
-  organizations: { count: 0, fixed: buildOrganizations(P) },
-  question_categories: { count: 0, fixed: buildQuestionCategories(P) },
+  organizations: { count: 0, fixed: buildOrganizations() },
+  question_categories: { count: 0, fixed: buildQuestionCategories() },
   questions: { count: 0, fixed: buildQuestions(P) },
 
   candidates: {
     count: 0,
     fixed: [
-      // EL-1 candidates (CG-1 parents)
       buildCandidate(P, 1, 'A', 'ca-1-1a', 0),
       buildCandidate(P, 2, 'A', 'ca-2-1a', 1),
       buildCandidate(P, 1, 'B', 'ca-1-1b', 2),
       buildCandidate(P, 2, 'B', 'ca-2-1b', 3),
-      // EL-2 leaf-only candidates
       buildCandidate(P, 1, 'E', 'ca-1-1a1', 4),
       buildCandidate(P, 2, 'E', 'ca-2-1a1', 5),
       buildCandidate(P, 1, 'F', 'ca-1-1a2', 6),
@@ -181,7 +179,7 @@ export const permStartfromcgTemplate: Template = {
 
   app_settings: {
     count: 0,
-    fixed: [{ external_id: `${P}app-settings`, settings: MINIMAL_BASE_APP_SETTINGS }]
+    fixed: [{ external_id: 'app-settings', settings: MINIMAL_BASE_APP_SETTINGS }]
   }
 };
 

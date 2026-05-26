@@ -11,8 +11,8 @@
  *
  * Authoritative spec: TEST-INVENTORY-REFACTOR-2.md:146-154
  *
- * Prefix discipline: ROW PREFIX is `test-perm-2e-asymmetric-` per
- * 88-03-SCOPE.md:104-110. Empty-prefix + pre-prefixed pattern (see Risk #6).
+ * Prefix discipline: `externalIdPrefix: 'test-perm-2e-asymmetric-'` per
+ * 88-03-SCOPE.md:104-110. Row external_ids bare; refs prefixed.
  *
  * Settings: MINIMAL_BASE_APP_SETTINGS verbatim.
  */
@@ -31,14 +31,14 @@ const P = 'test-perm-2e-asymmetric-';
 
 export const perm2eAsymmetricTemplate: Template = {
   seed: 42,
-  externalIdPrefix: '',
+  externalIdPrefix: P,
   generateTranslationsForAllLocales: false,
 
   elections: {
     count: 0,
     fixed: [
       {
-        external_id: `${P}el-1`,
+        external_id: 'el-1',
         name: { en: '[EL1] CG-1 only' },
         short_name: { en: 'EL1' },
         election_type: 'general',
@@ -50,7 +50,7 @@ export const perm2eAsymmetricTemplate: Template = {
         constituency_groups: [{ external_id: `${P}cg-1` }]
       },
       {
-        external_id: `${P}el-2`,
+        external_id: 'el-2',
         name: { en: '[EL2] CG-1 + CG-2' },
         short_name: { en: 'EL2' },
         election_type: 'local',
@@ -68,14 +68,14 @@ export const perm2eAsymmetricTemplate: Template = {
     count: 0,
     fixed: [
       {
-        external_id: `${P}cg-1`,
+        external_id: 'cg-1',
         name: { en: '[CG1] Region' },
         sort_order: 0,
         is_generated: false,
         constituencies: [{ external_id: `${P}co-1a` }]
       },
       {
-        external_id: `${P}cg-2`,
+        external_id: 'cg-2',
         name: { en: '[CG2] Municipal' },
         sort_order: 1,
         is_generated: false,
@@ -87,14 +87,14 @@ export const perm2eAsymmetricTemplate: Template = {
   constituencies: {
     count: 0,
     fixed: [
-      { external_id: `${P}co-1a`, name: { en: '[CO1A] North' }, sort_order: 0, is_generated: false },
-      { external_id: `${P}co-2a`, name: { en: '[CO2A] Municipal East' }, sort_order: 1, is_generated: false },
-      { external_id: `${P}co-2b`, name: { en: '[CO2B] Municipal West' }, sort_order: 2, is_generated: false }
+      { external_id: 'co-1a', name: { en: '[CO1A] North' }, sort_order: 0, is_generated: false },
+      { external_id: 'co-2a', name: { en: '[CO2A] Municipal East' }, sort_order: 1, is_generated: false },
+      { external_id: 'co-2b', name: { en: '[CO2B] Municipal West' }, sort_order: 2, is_generated: false }
     ]
   },
 
-  organizations: { count: 0, fixed: buildOrganizations(P) },
-  question_categories: { count: 0, fixed: buildQuestionCategories(P) },
+  organizations: { count: 0, fixed: buildOrganizations() },
+  question_categories: { count: 0, fixed: buildQuestionCategories() },
   questions: { count: 0, fixed: buildQuestions(P) },
 
   candidates: {
@@ -112,20 +112,16 @@ export const perm2eAsymmetricTemplate: Template = {
   nominations: {
     count: 0,
     fixed: [
-      // EL-1 × CO-1A
       ...buildElectionConstituencyNoms(P, 'el-1', 'co-1a', ['ca-1-1a', 'ca-2-1a'], 1),
-      // EL-2 × CO-1A (CG-1 is also in EL-2)
       ...buildElectionConstituencyNoms(P, 'el-2', 'co-1a', ['ca-1-1a', 'ca-2-1a'], 10),
-      // EL-2 × CO-2A
       ...buildElectionConstituencyNoms(P, 'el-2', 'co-2a', ['ca-1-2a', 'ca-2-2a'], 20),
-      // EL-2 × CO-2B
       ...buildElectionConstituencyNoms(P, 'el-2', 'co-2b', ['ca-1-2b', 'ca-2-2b'], 30)
     ]
   },
 
   app_settings: {
     count: 0,
-    fixed: [{ external_id: `${P}app-settings`, settings: MINIMAL_BASE_APP_SETTINGS }]
+    fixed: [{ external_id: 'app-settings', settings: MINIMAL_BASE_APP_SETTINGS }]
   }
 };
 

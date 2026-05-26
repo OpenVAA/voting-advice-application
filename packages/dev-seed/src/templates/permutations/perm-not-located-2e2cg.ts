@@ -13,8 +13,8 @@
  *
  * Authoritative spec: TEST-INVENTORY-REFACTOR-2.md:198-209
  *
- * Prefix discipline: ROW PREFIX is `test-perm-notloc-` per
- * 88-03-SCOPE.md:104-110. Empty-prefix + pre-prefixed pattern (see Risk #6).
+ * Prefix discipline: `externalIdPrefix: 'test-perm-notloc-'` per
+ * 88-03-SCOPE.md:104-110. Row external_ids bare; refs prefixed.
  *
  * Settings: MINIMAL_BASE_APP_SETTINGS verbatim.
  */
@@ -33,14 +33,14 @@ const P = 'test-perm-notloc-';
 
 export const permNotLocated2e2cgTemplate: Template = {
   seed: 42,
-  externalIdPrefix: '',
+  externalIdPrefix: P,
   generateTranslationsForAllLocales: false,
 
   elections: {
     count: 0,
     fixed: [
       {
-        external_id: `${P}el-1`,
+        external_id: 'el-1',
         name: { en: '[EL1] Region election' },
         short_name: { en: 'EL1' },
         election_type: 'general',
@@ -52,7 +52,7 @@ export const permNotLocated2e2cgTemplate: Template = {
         constituency_groups: [{ external_id: `${P}cg-1` }]
       },
       {
-        external_id: `${P}el-2`,
+        external_id: 'el-2',
         name: { en: '[EL2] Municipal election' },
         short_name: { en: 'EL2' },
         election_type: 'local',
@@ -70,14 +70,14 @@ export const permNotLocated2e2cgTemplate: Template = {
     count: 0,
     fixed: [
       {
-        external_id: `${P}cg-1`,
+        external_id: 'cg-1',
         name: { en: '[CG1] Region' },
         sort_order: 0,
         is_generated: false,
         constituencies: [{ external_id: `${P}co-1a` }, { external_id: `${P}co-1b` }]
       },
       {
-        external_id: `${P}cg-2`,
+        external_id: 'cg-2',
         name: { en: '[CG2] Municipal' },
         sort_order: 1,
         is_generated: false,
@@ -89,15 +89,15 @@ export const permNotLocated2e2cgTemplate: Template = {
   constituencies: {
     count: 0,
     fixed: [
-      { external_id: `${P}co-1a`, name: { en: '[CO1A] Region North' }, sort_order: 0, is_generated: false },
-      { external_id: `${P}co-1b`, name: { en: '[CO1B] Region South' }, sort_order: 1, is_generated: false },
-      { external_id: `${P}co-2a`, name: { en: '[CO2A] Municipal East' }, sort_order: 2, is_generated: false },
-      { external_id: `${P}co-2b`, name: { en: '[CO2B] Municipal West' }, sort_order: 3, is_generated: false }
+      { external_id: 'co-1a', name: { en: '[CO1A] Region North' }, sort_order: 0, is_generated: false },
+      { external_id: 'co-1b', name: { en: '[CO1B] Region South' }, sort_order: 1, is_generated: false },
+      { external_id: 'co-2a', name: { en: '[CO2A] Municipal East' }, sort_order: 2, is_generated: false },
+      { external_id: 'co-2b', name: { en: '[CO2B] Municipal West' }, sort_order: 3, is_generated: false }
     ]
   },
 
-  organizations: { count: 0, fixed: buildOrganizations(P) },
-  question_categories: { count: 0, fixed: buildQuestionCategories(P) },
+  organizations: { count: 0, fixed: buildOrganizations() },
+  question_categories: { count: 0, fixed: buildQuestionCategories() },
   questions: { count: 0, fixed: buildQuestions(P) },
 
   candidates: {
@@ -126,7 +126,7 @@ export const permNotLocated2e2cgTemplate: Template = {
 
   app_settings: {
     count: 0,
-    fixed: [{ external_id: `${P}app-settings`, settings: MINIMAL_BASE_APP_SETTINGS }]
+    fixed: [{ external_id: 'app-settings', settings: MINIMAL_BASE_APP_SETTINGS }]
   }
 };
 
