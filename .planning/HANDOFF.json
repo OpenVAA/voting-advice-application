@@ -1,0 +1,45 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-05-26T18:59:05.824Z",
+  "phase": "88",
+  "phase_name": "e2e-test-catalog-audit-remove-add-consolidate-tests-fresh-ba",
+  "phase_dir": ".planning/phases/88-e2e-test-catalog-audit-remove-add-consolidate-tests-fresh-ba",
+  "plan": "88-03",
+  "task": "all_done",
+  "total_tasks": 5,
+  "status": "complete_gates_green",
+  "completed_tasks": [
+    {"id": 1, "name": "voterIntro.ts helpers", "status": "done", "commit": "5d33d8279"},
+    {"id": 2, "name": "8 minimal-data perm-* templates + BUILT_IN_TEMPLATES registration", "status": "done", "commit": "ed7946a1d / 4af29412c"},
+    {"id": 3, "name": "16 perm-* setup+teardown wrappers", "status": "done", "commit": "704d06044"},
+    {"id": 4, "name": "8 perm-* spec files (15 tests in tests/specs/perm/)", "status": "done", "commit": "ef71f283e"},
+    {"id": 5, "name": "24 playwright project entries + verification matrix", "status": "done", "commit": "bc9e870d0"},
+    {"id": "post-1", "name": "Cross-chain isolation + checkbox semantics + startfromcg observed-behavior", "status": "done", "commit": "5c107773a"},
+    {"id": "post-2", "name": "perm-disjoint-1co topology expanded to 2 COs per CG", "status": "done", "commit": "b74b50d6b"},
+    {"id": "post-3", "name": "Operator amendments A1 (set-only selectElectionAndAdvance) + A2 (drop TEXT_RE, use [SYMBOL] names)", "status": "done", "commit": "8d90f35db"},
+    {"id": "post-4", "name": "Legacy chain gated behind PLAYWRIGHT_LEGACY=1 + prefix rename test-perm- → e2e-perm- + flipped chain (perm-* first, baseV1 last)", "status": "done", "commit": "468bb90da"},
+    {"id": "post-5", "name": "voter-mega-journey: role(button→option) + accordion-expand + matching tab switch + baseV1 extraTeardownPrefix='e2e-perm-'", "status": "done", "commit": "e7657e07c"}
+  ],
+  "remaining_tasks": [],
+  "blockers": [
+    {"description": "Local imgproxy Docker container intermittently returns 502 on portrait upload during seed", "type": "external", "workaround": "`yarn supabase:stop && yarn supabase:start && yarn supabase:reset` resets imgproxy; documented in CLAUDE.md"}
+  ],
+  "human_actions_pending": [
+    {"action": "When refactor of legacy chain stabilizes, decide whether to re-enable by default or retire", "context": "Default `yarn test:e2e` runs only the 34-test default mode (mega-journey + perm-*); `PLAYWRIGHT_LEGACY=1` re-enables the 197-test full suite", "blocking": false}
+  ],
+  "decisions": [
+    {"decision": "Per-template externalIdPrefix `e2e-perm-*-` (orthogonal to baseV1's `test-*`)", "rationale": "Avoids `runTeardown('test-')` cross-chain wipes; enables truly parallel-or-sequential placement in the project graph", "phase": "88-03"},
+    {"decision": "Flipped chain — perm-* runs FIRST (no upstream dep), baseV1+mega-journey runs LAST", "rationale": "Decouples perm-* from any pre-existing/refactor-in-flight failures in mega-journey while the operator refactors all legacy specs", "phase": "88-03"},
+    {"decision": "baseV1.setup.ts uses extraTeardownPrefix: 'e2e-perm-'", "rationale": "Defends against the data-setup-baseV1 vs data-teardown-perm-not-located-2e2cg race; both fire after the last perm spec finishes — baseV1 setup defensively clears any lingering perm rows", "phase": "88-03"},
+    {"decision": "Legacy chain gated behind PLAYWRIGHT_LEGACY=1", "rationale": "Operator is mid-refactor of all existing tests; default `yarn test:e2e` should only run the mega-journey chain + the new perm-* family", "phase": "88-03"},
+    {"decision": "Operator amendment A1 — selectElectionAndAdvance with set-only semantics (iterate, toggle to match)", "rationale": "Idempotent regardless of page default-selection state; reads cleanly at call site as `selectElectionAndAdvance({optionText: /\\[EL1\\]/i})` = 'make EL1 the only selected election'", "phase": "88-03"},
+    {"decision": "Operator amendment A2 — drop TEXT_RE, use `[<SYMBOL>] <description>` display-name convention", "rationale": "For minimal datasets each entity is uniquely identified by its bracketed symbol; specs match inline via `/\\[EL1\\]/i` regexes — no shared constants needed", "phase": "88-03"}
+  ],
+  "uncommitted_files": [
+    "TEST-INVENTORY.md (pre-existing dirty)",
+    "apps/frontend/tsconfig.tsbuildinfo (pre-existing dirty)",
+    "TEST-INVENTORY-REFACTOR-2.md (untracked — the design source)"
+  ],
+  "next_action": "Continue legacy-chain refactor. Re-enable individual legacy specs by moving them out of the `PLAYWRIGHT_LEGACY` block as they pass the refactor. Or, if all legacy specs are being rebuilt against the perm-*/baseV1 pattern, retire them and remove the PLAYWRIGHT_LEGACY block entirely.",
+  "context_notes": "Phase 88 Plan 03 delivered the voter election + constituency permutations family. Default-mode suite is 34/34 green in ~1.4 min. The 197-test legacy suite (PLAYWRIGHT_LEGACY=1) still has ~39 pre-existing failures in voter-app/voter-app-settings/variant-multi-election — these are the FAILURE-CLASS pool tracked by `project_all_green_suite_priority` memory and are out-of-scope for 88-03. The branch (feat-gsd-roadmap) has many commits since fork from main; whenever ready, `/gsd:ship` to PR. Local imgproxy intermittently 502s on portrait upload during seed — recovery is `yarn supabase:stop && yarn supabase:start`."
+}
