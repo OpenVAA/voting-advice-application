@@ -17,5 +17,13 @@ import { test as setup } from '@playwright/test';
 import { setupFromTemplate } from './setupFromTemplate';
 
 setup('import baseV1 dataset', async () => {
-  await setupFromTemplate('baseV1');
+  // `extraTeardownPrefix: 'e2e-perm-'` defends against the race with the
+  // perm-* family's final teardown: `data-setup-baseV1` depends on the LAST
+  // perm spec (`perm-not-located-2e2cg`) and runs in parallel with
+  // `data-teardown-perm-not-located-2e2cg`. If baseV1 setup finishes BEFORE
+  // the perm teardown, perm rows linger into voter-mega-journey runtime
+  // (same `[EL1] Region election` / `[EL2] Municipal election` names as
+  // perm-not-located-2e2cg). Wiping `e2e-perm-` defensively here makes the
+  // race outcome deterministic.
+  await setupFromTemplate('baseV1', { extraTeardownPrefix: 'e2e-perm-' });
 });

@@ -260,12 +260,29 @@ async function expectQuestionAndAdvance({
 }
 
 /**
- * Expect the election accordion to be visible, then click the button with the given text and expect the results list to be visible.
+ * Expect the election accordion to be visible, then click the option with the given text and expect the results list to be visible.
+ *
+ * The AccordionSelect component (apps/frontend/src/lib/components/accordionSelect/AccordionSelect.svelte)
+ * exposes its picks as ARIA `option` roles, not `button`s. After a selection
+ * is made it auto-collapses (after DELAY.lg), so subsequent calls observe
+ * only the currently-selected option in the DOM. To switch to a different
+ * option we first re-expand the accordion by clicking the visible (active)
+ * option — clicking the active option toggles `expanded` back on
+ * (AccordionSelect.svelte:62-64).
  */
 async function expectElectionOptionAndSelect({ page, text }: { page: Page; text: RegExp | string }): Promise<void> {
   const electionAccordion = page.getByTestId(testIds.voter.results.electionAccordion);
   await expect(electionAccordion).toBeVisible({ timeout: TIMEOUT.element });
-  const target = electionAccordion.getByRole('button').filter({ hasText: text }).first();
+  // If only one option is in the DOM, the accordion is collapsed — click the
+  // visible (active) option to toggle it expanded. When fully expanded, all
+  // options are present and the target click below selects the desired one.
+  const visibleOptions = electionAccordion.getByRole('option');
+  const visibleCount = await visibleOptions.count();
+  if (visibleCount === 1) {
+    await visibleOptions.first().click({ timeout: TIMEOUT.click });
+  }
+  const target = electionAccordion.getByRole('option', { name: text }).first();
+  await expect(target).toBeVisible({ timeout: TIMEOUT.element });
   await target.click({ timeout: TIMEOUT.click });
   const resultsList = page.getByTestId(testIds.voter.results.list);
   await expect(resultsList).toBeVisible({ timeout: TIMEOUT.page });
@@ -808,6 +825,12 @@ test.describe('voter mega-journey', () => {
     // ====================================================================
 
     await test.step('matching: ranking order / perfect-match top / worst-match last / partial-answer middle / no hidden candidate (refactor-doc:320-328, MOVED 9.4.1-9.4.4, Risk #2)', async () => {
+      // The previous step (result-card-content) left the page on the Parties
+      // tab. Switch back to Candidates so the candidate-section is visible
+      // for the ranking assertions below.
+      const entityTabs = page.getByTestId(testIds.voter.results.entityTabs);
+      await entityTabs.getByRole('tab', { name: TEXT_RE.candidateTab }).click();
+
       // BASEV1 RANKING CONTRACT REFINEMENT (260523-u53 walkthrough discovery):
       //   The original Plan inventory (step 12 row) named CA-AA-Special as
       //   the perfect-match candidate. Empirical observation against the
@@ -821,6 +844,7 @@ test.describe('voter mega-journey', () => {
       //
       // Pattern source: voter-matching.spec.ts:240-245.
       const candidateSection = page.getByTestId(testIds.voter.results.candidateSection);
+      await expect(candidateSection).toBeVisible({ timeout: TIMEOUT.slowPage });
       const cards = candidateSection.getByTestId(testIds.voter.results.card);
       // Expect to see 14 candidates minus the one who is hidden
       await expect(cards).toHaveCount(13);
