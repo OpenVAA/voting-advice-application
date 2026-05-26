@@ -9,5 +9,5 @@ import { test as setup } from '@playwright/test';
 import { setupFromTemplate } from './setupFromTemplate';
 
 setup('import perm-disable-election-1co dataset', async () => {
-  await setupFromTemplate('perm-disable-election-1co');
+  await setupFromTemplate('perm-disable-election-1co', { extraTeardownPrefix: 'test-perm-' });
 });

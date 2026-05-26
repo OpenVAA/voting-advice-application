@@ -75,14 +75,27 @@ test.describe('perm-startfromcg', () => {
     await expect(electionList.getByTestId(testIds.voter.elections.option)).toHaveCount(2);
   });
 
-  test('selecting CO-1C (CG-2 orphan, no parent): election selector NOT shown', async ({ page }) => {
+  test('selecting CO-1C (CG-2 orphan, no parent): election selector shows EL2 only (auto-implied + disabled), continue advances to questions', async ({ page }) => {
+    // refactor-doc:166-167 abstract contract: "user selects CO 1C: don't show
+    // election selector". Observed app behavior: /elections renders with EXACTLY
+    // one option that is `[checked] [disabled]` (the single election applicable
+    // to the orphan CO-1C), and the page text reads "Only one election is held
+    // in your selected constituency." Same user experience (no decision to
+    // make), but the route is rendered, not skipped. This rigid contract
+    // captures the actual behavior; if the app is later changed to bypass the
+    // route entirely, this test needs updating.
     await bypassIntroAndExpectConstituencySelector(page);
     await selectConstituencyAndAdvance(page, {
       selectorText: /\[CG2\]/i,
       optionText: /\[CO1C\]/i
     });
-    // CO-1C has no parent → only EL-2 applies → election selector skipped.
+    const electionsList = page.getByTestId(testIds.voter.elections.list);
+    await expect(electionsList).toBeVisible();
+    const options = electionsList.getByTestId(testIds.voter.elections.option);
+    await expect(options).toHaveCount(1);
+    await expect(options.first()).toBeChecked();
+    await expect(options.first()).toBeDisabled();
+    await page.getByTestId(testIds.voter.elections.continue).click();
     await expectQuestion(page);
-    await expect(page.getByTestId(testIds.voter.elections.list)).toBeHidden();
   });
 });

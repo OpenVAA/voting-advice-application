@@ -14,5 +14,5 @@ import { test as setup } from '@playwright/test';
 import { setupFromTemplate } from './setupFromTemplate';
 
 setup('import perm-startfromcg dataset', async () => {
-  await setupFromTemplate('perm-startfromcg');
+  await setupFromTemplate('perm-startfromcg', { extraTeardownPrefix: 'test-perm-' });
 });

@@ -162,21 +162,31 @@ export async function selectElectionAndAdvance(
   let matchedCount = 0;
   for (let i = 0; i < optionCount; i++) {
     const option = options.nth(i);
-    const optionName =
-      (await option.getAttribute('aria-label')) ?? (await option.textContent()) ?? '';
+    // The election-selector-option testid is on the <input type="checkbox">
+    // element. The visible/accessible name lives on the wrapping <label>
+    // (the input has no aria-label and no text content of its own). Climb
+    // up to the label element and read its textContent — picks up
+    // "[EL1] First election" verbatim from the <span> inside the label.
+    const label = option.locator('xpath=ancestor::label[1]');
+    const optionName = ((await label.textContent()) ?? '').trim();
     const matches =
       typeof optionText === 'string'
         ? optionName.includes(optionText)
         : optionText.test(optionName);
-    const isChecked = (await option.getAttribute('aria-checked')) === 'true';
+    // <input type="checkbox"> uses the `checked` IDL property, not
+    // aria-checked. Playwright's isChecked() reads the IDL property.
+    const isChecked = await option.isChecked();
     if (matches) matchedCount++;
     const shouldBeChecked = matches;
     if (shouldBeChecked !== isChecked) {
-      await option.click({ timeout: TIMEOUT.click });
-      await expect(option).toHaveAttribute(
-        'aria-checked',
-        shouldBeChecked ? 'true' : 'false'
-      );
+      // Click the wrapping <label> rather than the input — the label is
+      // pointer-friendly and toggles the checkbox via native behavior.
+      await label.click({ timeout: TIMEOUT.click });
+      const nowChecked = await option.isChecked();
+      expect(
+        nowChecked,
+        `selectElectionAndAdvance: failed to toggle option ${i} to ${shouldBeChecked ? 'checked' : 'unchecked'}`
+      ).toBe(shouldBeChecked);
     }
   }
   expect(

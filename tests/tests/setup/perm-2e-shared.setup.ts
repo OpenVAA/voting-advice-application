@@ -9,5 +9,5 @@ import { test as setup } from '@playwright/test';
 import { setupFromTemplate } from './setupFromTemplate';
 
 setup('import perm-2e-shared dataset', async () => {
-  await setupFromTemplate('perm-2e-shared');
+  await setupFromTemplate('perm-2e-shared', { extraTeardownPrefix: 'test-perm-' });
 });

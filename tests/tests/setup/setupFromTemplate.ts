@@ -52,6 +52,17 @@ export type PostSeedAssertions = (client: SupabaseAdminClient, template: Templat
 
 export interface SetupFromTemplateOptions {
   postSeedAssertions?: PostSeedAssertions;
+  /**
+   * Extra prefix to teardown before seeding this template. Useful for
+   * chain-family isolation: when chain B's setup runs immediately after chain
+   * A's spec (with chain A's teardown still running in parallel via Playwright's
+   * `teardown:` key), residual chain-A rows can be visible to chain B's spec
+   * because each per-template runTeardown only clears its own prefix. Pass
+   * `extraTeardownPrefix: 'test-perm-'` (or any family prefix ≥2 chars) to
+   * clear the entire family before seeding this template. Honored before the
+   * template's own prefix teardown so it cleans up sibling-chain residue too.
+   */
+  extraTeardownPrefix?: string;
 }
 
 export interface SetupFromTemplateResult {
@@ -142,8 +153,19 @@ export async function setupFromTemplate(
   //    via E2E_REQUIRE_FRESH_DB=true). See data.setup.ts:88-106.
   await probeFreshDatabasePrecondition(client, teardownPrefix);
 
-  // 1. Pre-clear any stale state from a prior run. runTeardown's 2-char
-  //    guard requires prefix.length >= 2; baseV1 / e2e both use 'test-'.
+  // 1a. (Optional) Pre-clear a chain-family prefix first — defends against the
+  //     case where the previous chain's per-prefix teardown is still running
+  //     in parallel with this setup (Playwright wires per-setup teardowns via
+  //     the `teardown:` key, which runs after the setup's dependents finish
+  //     but BEFORE the next chain's setup waits on it). Without this, two
+  //     templates in the same family coexist briefly. ≥2-char guard delegated
+  //     to runTeardown itself.
+  if (options?.extraTeardownPrefix) {
+    await runTeardown(options.extraTeardownPrefix, client);
+  }
+
+  // 1b. Pre-clear any stale state from a prior run. runTeardown's 2-char
+  //     guard requires prefix.length >= 2; baseV1 / e2e both use 'test-'.
   await runTeardown(teardownPrefix, client);
 
   // 2. Pipeline + writer. Writer Pass-5 applies app_settings.fixed[] via

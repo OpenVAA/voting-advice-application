@@ -9,5 +9,5 @@ import { test as setup } from '@playwright/test';
 import { setupFromTemplate } from './setupFromTemplate';
 
 setup('import perm-disjoint-1co dataset', async () => {
-  await setupFromTemplate('perm-disjoint-1co');
+  await setupFromTemplate('perm-disjoint-1co', { extraTeardownPrefix: 'test-perm-' });
 });

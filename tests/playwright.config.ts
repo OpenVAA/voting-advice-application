@@ -670,7 +670,15 @@ export default defineConfig({
       name: 'data-setup-perm-2e-shared',
       testMatch: /perm-2e-shared\.setup\.ts/,
       teardown: 'data-teardown-perm-2e-shared',
-      dependencies: ['data-setup-perm-1e1cg1co']
+      // Depends on the previous chain's SPEC project (not its setup), so the
+      // previous chain's spec finishes before this setup seeds. Playwright
+      // forbids setups depending on teardown projects directly, so this is
+      // the strictest ordering we can declare. Cross-chain row isolation is
+      // enforced inside `setupFromTemplate` via `extraTeardownPrefix:
+      // 'test-perm-'` (clears the whole family before seeding this template),
+      // so we don't depend on the previous chain's teardown actually finishing
+      // before this setup runs. Confirmed via Gate A 2026-05-26.
+      dependencies: ['perm-1e1cg1co']
     },
     {
       name: 'data-teardown-perm-2e-shared',
@@ -690,7 +698,8 @@ export default defineConfig({
       name: 'data-setup-perm-2e-asymmetric',
       testMatch: /perm-2e-asymmetric\.setup\.ts/,
       teardown: 'data-teardown-perm-2e-asymmetric',
-      dependencies: ['data-setup-perm-2e-shared']
+      // Depends on previous SPEC — see data-setup-perm-2e-shared comment above (cross-chain isolation enforced via extraTeardownPrefix in setupFromTemplate).
+      dependencies: ['perm-2e-shared']
     },
     {
       name: 'data-teardown-perm-2e-asymmetric',
@@ -710,7 +719,8 @@ export default defineConfig({
       name: 'data-setup-perm-startfromcg',
       testMatch: /perm-startfromcg\.setup\.ts/,
       teardown: 'data-teardown-perm-startfromcg',
-      dependencies: ['data-setup-perm-2e-asymmetric']
+      // Depends on previous SPEC — see data-setup-perm-2e-shared comment above (cross-chain isolation enforced via extraTeardownPrefix in setupFromTemplate).
+      dependencies: ['perm-2e-asymmetric']
     },
     {
       name: 'data-teardown-perm-startfromcg',
@@ -730,7 +740,8 @@ export default defineConfig({
       name: 'data-setup-perm-disjoint-1co',
       testMatch: /perm-disjoint-1co\.setup\.ts/,
       teardown: 'data-teardown-perm-disjoint-1co',
-      dependencies: ['data-setup-perm-startfromcg']
+      // Depends on previous SPEC — see data-setup-perm-2e-shared comment above (cross-chain isolation enforced via extraTeardownPrefix in setupFromTemplate).
+      dependencies: ['perm-startfromcg']
     },
     {
       name: 'data-teardown-perm-disjoint-1co',
@@ -750,7 +761,8 @@ export default defineConfig({
       name: 'data-setup-perm-disable-election-1co',
       testMatch: /perm-disable-election-1co\.setup\.ts/,
       teardown: 'data-teardown-perm-disable-election-1co',
-      dependencies: ['data-setup-perm-disjoint-1co']
+      // Depends on previous SPEC — see data-setup-perm-2e-shared comment above (cross-chain isolation enforced via extraTeardownPrefix in setupFromTemplate).
+      dependencies: ['perm-disjoint-1co']
     },
     {
       name: 'data-teardown-perm-disable-election-1co',
@@ -770,7 +782,8 @@ export default defineConfig({
       name: 'data-setup-perm-disable-election-2co',
       testMatch: /perm-disable-election-2co\.setup\.ts/,
       teardown: 'data-teardown-perm-disable-election-2co',
-      dependencies: ['data-setup-perm-disable-election-1co']
+      // Depends on previous SPEC — see data-setup-perm-2e-shared comment above (cross-chain isolation enforced via extraTeardownPrefix in setupFromTemplate).
+      dependencies: ['perm-disable-election-1co']
     },
     {
       name: 'data-teardown-perm-disable-election-2co',
@@ -790,7 +803,8 @@ export default defineConfig({
       name: 'data-setup-perm-not-located-2e2cg',
       testMatch: /perm-not-located-2e2cg\.setup\.ts/,
       teardown: 'data-teardown-perm-not-located-2e2cg',
-      dependencies: ['data-setup-perm-disable-election-2co']
+      // Depends on previous SPEC — see data-setup-perm-2e-shared comment above (cross-chain isolation enforced via extraTeardownPrefix in setupFromTemplate).
+      dependencies: ['perm-disable-election-2co']
     },
     {
       name: 'data-teardown-perm-not-located-2e2cg',
