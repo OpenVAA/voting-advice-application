@@ -8,7 +8,7 @@ import { runTeardown } from '@openvaa/dev-seed';
 import { expect, test as teardown } from '@playwright/test';
 import { SupabaseAdminClient } from '../utils/supabaseAdminClient';
 
-const PREFIX = 'test-perm-disable-elec-1co-';
+const PREFIX = 'e2e-perm-disable-elec-1co-';
 
 teardown('delete perm-disable-election-1co dataset', async () => {
   const client = new SupabaseAdminClient();

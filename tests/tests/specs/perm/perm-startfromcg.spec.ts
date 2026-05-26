@@ -35,11 +35,11 @@ test.describe('perm-startfromcg', () => {
   test.beforeAll(async () => {
     client = new SupabaseAdminClient();
     const findResult = await client.findData('constituencyGroups', {
-      externalId: { $eq: 'test-perm-startfromcg-cg-2' }
+      externalId: { $eq: 'e2e-perm-startfromcg-cg-2' }
     });
     expect(
       findResult.type,
-      'perm-startfromcg requires test-perm-startfromcg-cg-2 to be present in the seed'
+      'perm-startfromcg requires e2e-perm-startfromcg-cg-2 to be present in the seed'
     ).toBe('success');
     const cgDocumentId = findResult.data?.[0]?.documentId as string | undefined;
     expect(cgDocumentId, 'perm-startfromcg requires a discoverable CG-2 UUID').toBeTruthy();

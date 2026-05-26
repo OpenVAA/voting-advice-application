@@ -7,7 +7,7 @@
  *
  * Authoritative spec: TEST-INVENTORY-REFACTOR-2.md:185-188
  *
- * Prefix discipline: `externalIdPrefix: 'test-perm-disable-elec-1co-'` per
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-disable-elec-1co-'` per
  * 88-03-SCOPE.md:104-110. Row external_ids bare; refs prefixed.
  *
  * Settings: MINIMAL_BASE_APP_SETTINGS spread with elections.disallowSelection:
@@ -24,7 +24,7 @@ import {
 } from './shared';
 import type { Template } from '../../template/types';
 
-const P = 'test-perm-disable-elec-1co-';
+const P = 'e2e-perm-disable-elec-1co-';
 
 const APP_SETTINGS = {
   ...MINIMAL_BASE_APP_SETTINGS,

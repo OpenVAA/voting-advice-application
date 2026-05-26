@@ -53,16 +53,21 @@ export type PostSeedAssertions = (client: SupabaseAdminClient, template: Templat
 export interface SetupFromTemplateOptions {
   postSeedAssertions?: PostSeedAssertions;
   /**
-   * Extra prefix to teardown before seeding this template. Useful for
+   * Extra prefix(es) to teardown before seeding this template. Useful for
    * chain-family isolation: when chain B's setup runs immediately after chain
    * A's spec (with chain A's teardown still running in parallel via Playwright's
    * `teardown:` key), residual chain-A rows can be visible to chain B's spec
-   * because each per-template runTeardown only clears its own prefix. Pass
-   * `extraTeardownPrefix: 'test-perm-'` (or any family prefix ≥2 chars) to
-   * clear the entire family before seeding this template. Honored before the
-   * template's own prefix teardown so it cleans up sibling-chain residue too.
+   * because each per-template runTeardown only clears its own prefix.
+   *
+   * Accepts a single prefix or an array of prefixes — each is fed through
+   * runTeardown sequentially. Use the array form when this template needs to
+   * clean up after multiple non-related chains (e.g. perm-* setups clearing
+   * both `test-` (baseV1/mega-journey leftover) AND `e2e-perm-` (previous
+   * perm chain leftover) before seeding).
+   *
+   * All prefixes are honored BEFORE the template's own prefix teardown.
    */
-  extraTeardownPrefix?: string;
+  extraTeardownPrefix?: string | Array<string>;
 }
 
 export interface SetupFromTemplateResult {
@@ -153,15 +158,20 @@ export async function setupFromTemplate(
   //    via E2E_REQUIRE_FRESH_DB=true). See data.setup.ts:88-106.
   await probeFreshDatabasePrecondition(client, teardownPrefix);
 
-  // 1a. (Optional) Pre-clear a chain-family prefix first — defends against the
-  //     case where the previous chain's per-prefix teardown is still running
-  //     in parallel with this setup (Playwright wires per-setup teardowns via
-  //     the `teardown:` key, which runs after the setup's dependents finish
-  //     but BEFORE the next chain's setup waits on it). Without this, two
-  //     templates in the same family coexist briefly. ≥2-char guard delegated
-  //     to runTeardown itself.
+  // 1a. (Optional) Pre-clear chain-family prefix(es) first — defends against
+  //     the case where another chain's per-prefix teardown is still running in
+  //     parallel with this setup (Playwright wires per-setup teardowns via the
+  //     `teardown:` key, which runs after the setup's dependents finish but
+  //     BEFORE the next chain's setup waits on it). Without this, two
+  //     templates from different chains coexist briefly. ≥2-char guard
+  //     delegated to runTeardown itself.
   if (options?.extraTeardownPrefix) {
-    await runTeardown(options.extraTeardownPrefix, client);
+    const prefixes = Array.isArray(options.extraTeardownPrefix)
+      ? options.extraTeardownPrefix
+      : [options.extraTeardownPrefix];
+    for (const extra of prefixes) {
+      await runTeardown(extra, client);
+    }
   }
 
   // 1b. Pre-clear any stale state from a prior run. runTeardown's 2-char

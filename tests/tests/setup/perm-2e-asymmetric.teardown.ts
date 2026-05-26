@@ -8,7 +8,7 @@ import { runTeardown } from '@openvaa/dev-seed';
 import { expect, test as teardown } from '@playwright/test';
 import { SupabaseAdminClient } from '../utils/supabaseAdminClient';
 
-const PREFIX = 'test-perm-2e-asymmetric-';
+const PREFIX = 'e2e-perm-2e-asymmetric-';
 
 teardown('delete perm-2e-asymmetric dataset', async () => {
   const client = new SupabaseAdminClient();

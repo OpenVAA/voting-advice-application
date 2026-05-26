@@ -13,7 +13,7 @@ import { runTeardown } from '@openvaa/dev-seed';
 import { expect, test as teardown } from '@playwright/test';
 import { SupabaseAdminClient } from '../utils/supabaseAdminClient';
 
-const PREFIX = 'test-perm-1e1cg1co-';
+const PREFIX = 'e2e-perm-1e1cg1co-';
 
 teardown('delete perm-1e1cg1co dataset', async () => {
   const client = new SupabaseAdminClient();

@@ -11,7 +11,7 @@
  *
  * Authoritative spec: TEST-INVENTORY-REFACTOR-2.md:146-154
  *
- * Prefix discipline: `externalIdPrefix: 'test-perm-2e-asymmetric-'` per
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-2e-asymmetric-'` per
  * 88-03-SCOPE.md:104-110. Row external_ids bare; refs prefixed.
  *
  * Settings: MINIMAL_BASE_APP_SETTINGS verbatim.
@@ -27,7 +27,7 @@ import {
 } from './shared';
 import type { Template } from '../../template/types';
 
-const P = 'test-perm-2e-asymmetric-';
+const P = 'e2e-perm-2e-asymmetric-';
 
 export const perm2eAsymmetricTemplate: Template = {
   seed: 42,

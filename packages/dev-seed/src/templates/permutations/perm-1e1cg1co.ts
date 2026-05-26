@@ -6,7 +6,7 @@
  *
  * Authoritative spec: TEST-INVENTORY-REFACTOR-2.md:139-144
  *
- * Prefix discipline: `externalIdPrefix: 'test-perm-1e1cg1co-'` — UNIQUE per
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-1e1cg1co-'` — UNIQUE per
  * 88-03-SCOPE.md:104-110. Row external_ids in fixed[] are BARE (writer
  * prepends prefix); nested refs use FULL prefixed external_ids (writer
  * passes refs verbatim). Each chain teardowns ITS OWN prefix via
@@ -25,7 +25,7 @@ import {
 } from './shared';
 import type { Template } from '../../template/types';
 
-const P = 'test-perm-1e1cg1co-';
+const P = 'e2e-perm-1e1cg1co-';
 
 export const perm1e1cg1coTemplate: Template = {
   seed: 42,

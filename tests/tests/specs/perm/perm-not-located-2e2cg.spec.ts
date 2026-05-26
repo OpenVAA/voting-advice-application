@@ -47,11 +47,11 @@ test.describe('perm-not-located-2e2cg', () => {
 
   test.beforeAll(async () => {
     const electionResult = await adminClient.findData('elections', {
-      externalId: { $eq: 'test-perm-notloc-el-1' }
+      externalId: { $eq: 'e2e-perm-notloc-el-1' }
     });
     expect(
       electionResult.type,
-      'perm-not-located-2e2cg requires test-perm-notloc-el-1 to be present in the seed'
+      'perm-not-located-2e2cg requires e2e-perm-notloc-el-1 to be present in the seed'
     ).toBe('success');
     electionUuid = electionResult.data?.[0]?.id as string | undefined;
     expect(electionUuid, 'perm-not-located-2e2cg requires a discoverable EL-1 UUID').toBeTruthy();

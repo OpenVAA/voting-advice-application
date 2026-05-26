@@ -20,7 +20,7 @@
  * Authoritative spec: TEST-INVENTORY-REFACTOR-2.md:171-181 (interpretive —
  * picker contract requires ≥2 COs per CG, see note above).
  *
- * Prefix discipline: `externalIdPrefix: 'test-perm-disjoint-1co-'` per
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-disjoint-1co-'` per
  * 88-03-SCOPE.md:104-110. Row external_ids bare; refs prefixed.
  *
  * Settings: MINIMAL_BASE_APP_SETTINGS verbatim.
@@ -36,7 +36,7 @@ import {
 } from './shared';
 import type { Template } from '../../template/types';
 
-const P = 'test-perm-disjoint-1co-';
+const P = 'e2e-perm-disjoint-1co-';
 
 export const permDisjoint1coTemplate: Template = {
   seed: 42,

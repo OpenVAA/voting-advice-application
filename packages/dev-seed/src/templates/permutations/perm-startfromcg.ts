@@ -16,7 +16,7 @@
  *
  * Authoritative spec: TEST-INVENTORY-REFACTOR-2.md:158-167
  *
- * Prefix discipline: `externalIdPrefix: 'test-perm-startfromcg-'` per
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-startfromcg-'` per
  * 88-03-SCOPE.md:104-110. Row external_ids bare; refs prefixed.
  *
  * Settings: MINIMAL_BASE_APP_SETTINGS verbatim — `elections.
@@ -34,7 +34,7 @@ import {
 } from './shared';
 import type { Template } from '../../template/types';
 
-const P = 'test-perm-startfromcg-';
+const P = 'e2e-perm-startfromcg-';
 
 export const permStartfromcgTemplate: Template = {
   seed: 42,

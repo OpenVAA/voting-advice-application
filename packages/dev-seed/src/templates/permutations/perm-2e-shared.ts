@@ -7,7 +7,7 @@
  *
  * Authoritative spec: TEST-INVENTORY-REFACTOR-2.md:142-145
  *
- * Prefix discipline: `externalIdPrefix: 'test-perm-2e-shared-'` per
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-2e-shared-'` per
  * 88-03-SCOPE.md:104-110. Row external_ids bare; refs prefixed.
  *
  * Settings: MINIMAL_BASE_APP_SETTINGS verbatim.
@@ -23,7 +23,7 @@ import {
 } from './shared';
 import type { Template } from '../../template/types';
 
-const P = 'test-perm-2e-shared-';
+const P = 'e2e-perm-2e-shared-';
 
 export const perm2eSharedTemplate: Template = {
   seed: 42,

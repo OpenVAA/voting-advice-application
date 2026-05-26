@@ -8,7 +8,7 @@ import { runTeardown } from '@openvaa/dev-seed';
 import { expect, test as teardown } from '@playwright/test';
 import { SupabaseAdminClient } from '../utils/supabaseAdminClient';
 
-const PREFIX = 'test-perm-notloc-';
+const PREFIX = 'e2e-perm-notloc-';
 
 teardown('delete perm-not-located-2e2cg dataset', async () => {
   const client = new SupabaseAdminClient();

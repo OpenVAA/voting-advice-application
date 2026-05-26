@@ -13,7 +13,7 @@
  *
  * Authoritative spec: TEST-INVENTORY-REFACTOR-2.md:198-209
  *
- * Prefix discipline: `externalIdPrefix: 'test-perm-notloc-'` per
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-notloc-'` per
  * 88-03-SCOPE.md:104-110. Row external_ids bare; refs prefixed.
  *
  * Settings: MINIMAL_BASE_APP_SETTINGS verbatim.
@@ -29,7 +29,7 @@ import {
 } from './shared';
 import type { Template } from '../../template/types';
 
-const P = 'test-perm-notloc-';
+const P = 'e2e-perm-notloc-';
 
 export const permNotLocated2e2cgTemplate: Template = {
   seed: 42,

@@ -13,5 +13,5 @@ import { test as setup } from '@playwright/test';
 import { setupFromTemplate } from './setupFromTemplate';
 
 setup('import perm-1e1cg1co dataset', async () => {
-  await setupFromTemplate('perm-1e1cg1co', { extraTeardownPrefix: 'test-perm-' });
+  await setupFromTemplate('perm-1e1cg1co', { extraTeardownPrefix: ['test-', 'e2e-perm-'] });
 });

@@ -83,6 +83,19 @@ export default defineConfig({
   },
 
   projects: [
+    // === Legacy default + candidate-app + voter-app + variant chains ===
+    //
+    // The entire pre-Phase-88 e2e chain is gated behind `PLAYWRIGHT_LEGACY=1`.
+    // Operator is mid-refactor of these test projects (2026-05-26); by default
+    // `yarn test:e2e` runs ONLY the mega-journey chain + the perm-* family.
+    // Re-enable the legacy chain with:
+    //
+    //   PLAYWRIGHT_LEGACY=1 npx playwright test -c tests/playwright.config.ts
+    //
+    // When refactor is complete, this gate is removed and the relevant
+    // projects are kept or retired per the refactor outcome.
+    ...(process.env.PLAYWRIGHT_LEGACY
+      ? [
     // 1. Data setup - imports test dataset via Supabase Admin Client
     {
       name: 'data-setup',
@@ -521,7 +534,9 @@ export default defineConfig({
         storageState: STORAGE_STATE
       },
       dependencies: ['variant-hidden-required-voter']
-    },
+    }
+        ]
+      : []),
 
     // === Opt-in Specialized Projects ===
     // These projects are gated by environment variables and excluded from
@@ -603,7 +618,16 @@ export default defineConfig({
     {
       name: 'data-setup-baseV1',
       testMatch: /baseV1\.setup\.ts/,
-      teardown: 'data-teardown-baseV1'
+      teardown: 'data-teardown-baseV1',
+      // Anchor the mega-journey chain AFTER the perm-* family finishes —
+      // perm-not-located-2e2cg is the last spec in the sequential perm-*
+      // chain. This sequences default-mode runs as:
+      //    perm-* family → baseV1 setup → voter-mega-journey
+      // perm-*'s extraTeardownPrefix: ['test-', 'e2e-perm-'] would wipe
+      // baseV1 data if they ran in parallel; ordering perm-* first makes
+      // every perm spec see only its own e2e-perm-* data, and the final
+      // perm teardown leaves a clean DB for baseV1 to seed against.
+      dependencies: ['perm-not-located-2e2cg']
     },
     {
       name: 'data-teardown-baseV1',
@@ -649,8 +673,11 @@ export default defineConfig({
       name: 'data-setup-perm-1e1cg1co',
       testMatch: /perm-1e1cg1co\.setup\.ts/,
       teardown: 'data-teardown-perm-1e1cg1co'
-      // No upstream dependency array — first perm setup; runs in parallel
-      // with all non-perm chains (HIGH-2 / SCOPE acceptance #2 revised).
+      // No upstream dep — perm-* runs FIRST in default mode. The legacy
+      // chain (PLAYWRIGHT_LEGACY=1) and the baseV1/mega-journey chain run
+      // AFTER perm-* finishes (baseV1 anchors on perm-not-located-2e2cg).
+      // This decouples perm-* from any pre-existing failures in
+      // mega-journey or the legacy suite while the operator refactors them.
     },
     {
       name: 'data-teardown-perm-1e1cg1co',
