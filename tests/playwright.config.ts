@@ -616,6 +616,193 @@ export default defineConfig({
       fullyParallel: false, // single-test serial journey
       use: { ...devices['Desktop Chrome'] },
       dependencies: ['data-setup-baseV1']
+    },
+
+    // === Phase 88 Plan 03 — voter permutations chains ===
+    //
+    // Per 88-03-SCOPE.md post-plan-check resolutions (lines 8-21):
+    //   - HIGH-1: specs live under tests/tests/specs/perm/ (NEW directory);
+    //     voter-app testIgnore needs NO extension because that project's
+    //     testDir is `./tests/specs/voter` — perm specs are categorically
+    //     outside its discovery surface.
+    //   - HIGH-2: perm-* setups chain SEQUENTIALLY within the perm-* family
+    //     to prevent app_settings singleton clobbering. The FIRST perm setup
+    //     (data-setup-perm-1e1cg1co) has NO dependencies array — preserves
+    //     "no cross-chain dependency to non-perm chains" (the perm-* family
+    //     runs in parallel with the existing default + variant + mega-journey
+    //     chains).
+    //   - Each chain teardowns ITS OWN test-perm-<short>- prefix
+    //     (parallel-only contract honored within the family).
+    //
+    // Sequential chain across the family:
+    //   data-setup-perm-1e1cg1co (FIRST — no deps)
+    //   → data-setup-perm-2e-shared
+    //   → data-setup-perm-2e-asymmetric
+    //   → data-setup-perm-startfromcg
+    //   → data-setup-perm-disjoint-1co
+    //   → data-setup-perm-disable-election-1co
+    //   → data-setup-perm-disable-election-2co
+    //   → data-setup-perm-not-located-2e2cg
+
+    // Variant 1: perm-1e1cg1co (1 test) — FIRST in chain, no upstream perm dep
+    {
+      name: 'data-setup-perm-1e1cg1co',
+      testMatch: /perm-1e1cg1co\.setup\.ts/,
+      teardown: 'data-teardown-perm-1e1cg1co'
+      // No upstream dependency array — first perm setup; runs in parallel
+      // with all non-perm chains (HIGH-2 / SCOPE acceptance #2 revised).
+    },
+    {
+      name: 'data-teardown-perm-1e1cg1co',
+      testMatch: /perm-1e1cg1co\.teardown\.ts/
+    },
+    {
+      name: 'perm-1e1cg1co',
+      testDir: './tests/specs/perm',
+      testMatch: /perm-1e1cg1co\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-perm-1e1cg1co']
+    },
+
+    // Variant 2: perm-2e-shared (2 tests) — sequential after perm-1e1cg1co (HIGH-2)
+    {
+      name: 'data-setup-perm-2e-shared',
+      testMatch: /perm-2e-shared\.setup\.ts/,
+      teardown: 'data-teardown-perm-2e-shared',
+      dependencies: ['data-setup-perm-1e1cg1co']
+    },
+    {
+      name: 'data-teardown-perm-2e-shared',
+      testMatch: /perm-2e-shared\.teardown\.ts/
+    },
+    {
+      name: 'perm-2e-shared',
+      testDir: './tests/specs/perm',
+      testMatch: /perm-2e-shared\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-perm-2e-shared']
+    },
+
+    // Variant 3: perm-2e-asymmetric (1 test) — sequential after perm-2e-shared
+    {
+      name: 'data-setup-perm-2e-asymmetric',
+      testMatch: /perm-2e-asymmetric\.setup\.ts/,
+      teardown: 'data-teardown-perm-2e-asymmetric',
+      dependencies: ['data-setup-perm-2e-shared']
+    },
+    {
+      name: 'data-teardown-perm-2e-asymmetric',
+      testMatch: /perm-2e-asymmetric\.teardown\.ts/
+    },
+    {
+      name: 'perm-2e-asymmetric',
+      testDir: './tests/specs/perm',
+      testMatch: /perm-2e-asymmetric\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-perm-2e-asymmetric']
+    },
+
+    // Variant 4: perm-startfromcg (2 tests) — sequential after perm-2e-asymmetric
+    {
+      name: 'data-setup-perm-startfromcg',
+      testMatch: /perm-startfromcg\.setup\.ts/,
+      teardown: 'data-teardown-perm-startfromcg',
+      dependencies: ['data-setup-perm-2e-asymmetric']
+    },
+    {
+      name: 'data-teardown-perm-startfromcg',
+      testMatch: /perm-startfromcg\.teardown\.ts/
+    },
+    {
+      name: 'perm-startfromcg',
+      testDir: './tests/specs/perm',
+      testMatch: /perm-startfromcg\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-perm-startfromcg']
+    },
+
+    // Variant 5: perm-disjoint-1co (2 tests) — sequential after perm-startfromcg
+    {
+      name: 'data-setup-perm-disjoint-1co',
+      testMatch: /perm-disjoint-1co\.setup\.ts/,
+      teardown: 'data-teardown-perm-disjoint-1co',
+      dependencies: ['data-setup-perm-startfromcg']
+    },
+    {
+      name: 'data-teardown-perm-disjoint-1co',
+      testMatch: /perm-disjoint-1co\.teardown\.ts/
+    },
+    {
+      name: 'perm-disjoint-1co',
+      testDir: './tests/specs/perm',
+      testMatch: /perm-disjoint-1co\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-perm-disjoint-1co']
+    },
+
+    // Variant 6: perm-disable-election-1co (1 test) — sequential after perm-disjoint-1co
+    {
+      name: 'data-setup-perm-disable-election-1co',
+      testMatch: /perm-disable-election-1co\.setup\.ts/,
+      teardown: 'data-teardown-perm-disable-election-1co',
+      dependencies: ['data-setup-perm-disjoint-1co']
+    },
+    {
+      name: 'data-teardown-perm-disable-election-1co',
+      testMatch: /perm-disable-election-1co\.teardown\.ts/
+    },
+    {
+      name: 'perm-disable-election-1co',
+      testDir: './tests/specs/perm',
+      testMatch: /perm-disable-election-1co\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-perm-disable-election-1co']
+    },
+
+    // Variant 7: perm-disable-election-2co (1 test) — sequential after perm-disable-election-1co
+    {
+      name: 'data-setup-perm-disable-election-2co',
+      testMatch: /perm-disable-election-2co\.setup\.ts/,
+      teardown: 'data-teardown-perm-disable-election-2co',
+      dependencies: ['data-setup-perm-disable-election-1co']
+    },
+    {
+      name: 'data-teardown-perm-disable-election-2co',
+      testMatch: /perm-disable-election-2co\.teardown\.ts/
+    },
+    {
+      name: 'perm-disable-election-2co',
+      testDir: './tests/specs/perm',
+      testMatch: /perm-disable-election-2co\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-perm-disable-election-2co']
+    },
+
+    // Variant 8: perm-not-located-2e2cg (5 tests) — sequential after perm-disable-election-2co
+    {
+      name: 'data-setup-perm-not-located-2e2cg',
+      testMatch: /perm-not-located-2e2cg\.setup\.ts/,
+      teardown: 'data-teardown-perm-not-located-2e2cg',
+      dependencies: ['data-setup-perm-disable-election-2co']
+    },
+    {
+      name: 'data-teardown-perm-not-located-2e2cg',
+      testMatch: /perm-not-located-2e2cg\.teardown\.ts/
+    },
+    {
+      name: 'perm-not-located-2e2cg',
+      testDir: './tests/specs/perm',
+      testMatch: /perm-not-located-2e2cg\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-perm-not-located-2e2cg']
     }
   ]
 });
