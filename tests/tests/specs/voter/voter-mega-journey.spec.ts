@@ -260,57 +260,15 @@ async function expectQuestionAndAdvance({
 }
 
 /**
- * Ensure the results list lands; if a multi-election picker is shown
- * instead, pick the Regional Election option (or any option as fallback).
+ * Expect the election accordion to be visible, then click the button with the given text and expect the results list to be visible.
  */
-async function ensureResultsListVisible({ page, resultsList }: { page: Page; resultsList: Locator }): Promise<void> {
-  const listVisible = await resultsList.isVisible({ timeout: TIMEOUT.page }).catch(() => false);
-  if (!listVisible) {
-    const electionOption = page.getByRole('option', { name: TEXT_RE.regionalElection }).first();
-    const electionVisible = await electionOption.isVisible({ timeout: TIMEOUT.page }).catch(() => false);
-    if (electionVisible) {
-      await electionOption.click();
-    } else {
-      await page
-        .getByRole('option')
-        .first()
-        .click()
-        .catch(() => null);
-    }
-  }
-  await expect(resultsList).toBeVisible({ timeout: TIMEOUT.slowPage });
-}
-
-/**
- * Pattern-guarded election-accordion advance (260524-l1t D5): selects
- * the accordion button whose label matches `pattern` and asserts SOME
- * entity section remains visible after the click. No-op (returns false)
- * when the accordion or the matching button is not visible. Callers
- * MUST supply an explicit pattern — there is no implicit "click any
- * accordion" fallback.
- */
-async function maybeAdvanceElectionAccordion({
-  page: _page,
-  electionAccordion,
-  partySection,
-  candidateSection,
-  pattern
-}: {
-  page: Page;
-  electionAccordion: Locator;
-  partySection: Locator;
-  candidateSection: Locator;
-  pattern: RegExp;
-}): Promise<boolean> {
-  const accordionVisible = await electionAccordion.isVisible({ timeout: TIMEOUT.element }).catch(() => false);
-  if (!accordionVisible) return false;
-  const target = electionAccordion.getByRole('button').filter({ hasText: pattern }).first();
-  const targetVisible = await target.isVisible({ timeout: TIMEOUT.element }).catch(() => false);
-  if (!targetVisible) return false;
+async function expectElectionOptionAndSelect({ page, text }: { page: Page; text: RegExp | string }): Promise<void> {
+  const electionAccordion = page.getByTestId(testIds.voter.results.electionAccordion);
+  await expect(electionAccordion).toBeVisible({ timeout: TIMEOUT.element });
+  const target = electionAccordion.getByRole('button').filter({ hasText: text }).first();
   await target.click({ timeout: TIMEOUT.click });
-  // Assert SOME entity section remains visible (re-render gate).
-  await expect(partySection.or(candidateSection).first()).toBeVisible({ timeout: TIMEOUT.slowPage });
-  return true;
+  const resultsList = page.getByTestId(testIds.voter.results.list);
+  await expect(resultsList).toBeVisible({ timeout: TIMEOUT.page });
 }
 
 type VoterEntityCases = {
@@ -793,25 +751,20 @@ test.describe('voter mega-journey', () => {
     // RESULTS LANDING + ENTITY-TYPE TABS — refactor-doc:291-298. Absorbs 9.5.2, 9.5.3.
     // ====================================================================
 
-    await test.step('results: list + entity tabs + parties/candidates switch (MOVED 9.5.2 + 9.5.3, refactor-doc:291-298, Risk #2)', async () => {
-      // baseV1 SURPRISE: with multiple elections selected, /results lands
-      // on an election-picker (AccordionSelect listbox) and shows "Select
-      // an election first". The user must pick an election before the
-      // candidate / party section renders.
-      const resultsList = page.getByTestId(testIds.voter.results.list);
-      await ensureResultsListVisible({ page, resultsList });
-
+    await test.step('results: election selector + list + entity tabs + parties/candidates switch (MOVED 9.5.2 + 9.5.3, refactor-doc:291-298, Risk #2)', async () => {
+      // Expect the election selector and select the Regional election, then the Municipal, and again the Regional
+      await expectElectionOptionAndSelect({ page, text: TEXT_RE.regional });
+      await expectElectionOptionAndSelect({ page, text: TEXT_RE.municipal });
+      await expectElectionOptionAndSelect({ page, text: TEXT_RE.regional });
       // Pattern source: voter-results.spec.ts:102-151.
       const entityTabs = page.getByTestId(testIds.voter.results.entityTabs);
       await expect(entityTabs).toBeVisible({ timeout: TIMEOUT.slowPage });
       const candidateSection = page.getByTestId(testIds.voter.results.candidateSection);
       await expect(candidateSection).toBeVisible();
-
       // Switch to parties tab.
       await entityTabs.getByRole('tab', { name: TEXT_RE.partiesTab }).click();
       const partySection = page.getByTestId(testIds.voter.results.partySection);
       await expect(partySection).toBeVisible({ timeout: TIMEOUT.slowPage });
-
       // Switch back to candidates.
       await entityTabs.getByRole('tab', { name: TEXT_RE.candidateTab }).click();
       await expect(candidateSection).toBeVisible({ timeout: TIMEOUT.slowPage });
@@ -848,49 +801,13 @@ test.describe('voter mega-journey', () => {
       const partyCards = partySection.getByTestId(testIds.voter.results.card);
       const partyCount = await partyCards.count();
       expect(partyCount).toBeGreaterThan(0);
-
-      // Election accordion — present only when dataRoot.elections.length > 1
-      // (baseV1 has 2). Switch to the Municipal election to exercise the
-      // multi-election re-render path. Default landing was Regional (per
-      // ensureResultsListVisible above, which prefers the Regional Election
-      // option in baseV1), so the natural "switch elections" target is
-      // /municipal/i. 260524-l1t D5: pattern-guarded — required arg.
-      const electionAccordion = page.getByTestId(testIds.voter.results.electionAccordion);
-      await maybeAdvanceElectionAccordion({
-        page,
-        electionAccordion,
-        partySection,
-        candidateSection,
-        pattern: TEXT_RE.municipal
-      });
-
-      // Switch back to candidates for downstream steps.
-      await entityTabs.getByRole('tab', { name: TEXT_RE.candidateTab }).click();
-      await expect(candidateSection).toBeVisible({ timeout: TIMEOUT.slowPage });
     });
 
     // ====================================================================
-    // HIDDEN CANDIDATE NEGATIVE — refactor-doc:316-318. Absorbs 9.4.5.
+    // MATCHING ALGORITHM VERIFICATION — refactor-doc:320-328. Absorbs 9.4.1-9.4.4. Absorbs 9.4.5.
     // ====================================================================
 
-    await test.step('results: hidden candidate (no termsOfUseAccepted) NOT shown (MOVED 9.4.5, refactor-doc:316-318)', async () => {
-      // CA-AA-Hidden has first_name="Hidden", last_name="Candidate AA"
-      // (baseV1.ts:836-838). Pattern source: voter-matching.spec.ts:280-285.
-      const candidateSection = page.getByTestId(testIds.voter.results.candidateSection);
-      // 260524-l1t D9: was `await candidateSection.getByTestId(...).filter(...)`.
-      // .filter() returns a Locator (synchronous chainable) — `await` on it
-      // tripped TS80007 ('await' has no effect on the type of this expression).
-      const hiddenCandidates = candidateSection
-        .getByTestId(testIds.voter.results.card)
-        .filter({ hasText: TEXT_RE.hiddenCandidate });
-      await expect(hiddenCandidates).toHaveCount(0, { timeout: TIMEOUT.element });
-    });
-
-    // ====================================================================
-    // MATCHING ALGORITHM VERIFICATION — refactor-doc:320-328. Absorbs 9.4.1-9.4.4.
-    // ====================================================================
-
-    await test.step('matching: ranking order / perfect-match top / worst-match last / partial-answer middle (refactor-doc:320-328, MOVED 9.4.1-9.4.4, Risk #2)', async () => {
+    await test.step('matching: ranking order / perfect-match top / worst-match last / partial-answer middle / no hidden candidate (refactor-doc:320-328, MOVED 9.4.1-9.4.4, Risk #2)', async () => {
       // BASEV1 RANKING CONTRACT REFINEMENT (260523-u53 walkthrough discovery):
       //   The original Plan inventory (step 12 row) named CA-AA-Special as
       //   the perfect-match candidate. Empirical observation against the
@@ -914,6 +831,11 @@ test.describe('voter mega-journey', () => {
       await expect(lastCardTitle).toContainText(TEXT_RE.polarMin, { timeout: TIMEOUT.element });
       // The partial-answer candidate (CA-AA-Special) should be somewhere in the middle (no first or last).
       await expect(candidateSection).toContainText(TEXT_RE.specialCandidate);
+      // Expect the hidden candidate (CA-AA-Hidden) to NOT be present in the list (termsOfUseAccepted=false).
+      const hiddenCandidates = candidateSection
+        .getByTestId(testIds.voter.results.card)
+        .filter({ hasText: TEXT_RE.hiddenCandidate });
+      await expect(hiddenCandidates).toHaveCount(0, { timeout: TIMEOUT.element });
     });
 
     // ====================================================================
