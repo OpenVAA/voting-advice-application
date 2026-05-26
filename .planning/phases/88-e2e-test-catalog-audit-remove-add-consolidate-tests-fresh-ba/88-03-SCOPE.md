@@ -2,6 +2,7 @@
 
 **Drafted:** 2026-05-26
 **Revised:** 2026-05-26 (post-plan-check — 3 HIGH concern resolutions locked: spec location, concurrency topology, startFromCG mechanism)
+**Revised:** 2026-05-26 (operator amendments — A1 helper-semantic flip on `selectElectionAndAdvance`; A2 drop TEXT_RE in favor of `[<symbol>] <description>` display-name convention)
 **For:** `/gsd:plan-phase 88` (Plan 88-03)
 **Operator request:** add a NEW test project "Voter: election and constituency permutations" that exercises every election/constituency-selection topology on minimal-data datasets, modeled on the voter-mega-journey first-parts pattern.
 
@@ -13,12 +14,65 @@
 | HIGH-2 | `app_settings` is a global singleton → parallel perm-* setups would clobber each other's `disallowSelection`, `startFromConstituencyGroup` | **Chain perm-* setups sequentially within the perm-* family** (mirror existing variant-* chain pattern). Each `data-setup-perm-<N>` declares `dependencies: ['<previous-perm-setup>']` (the FIRST perm setup has no dep on any existing chain — preserving "no cross-chain dependency to existing"). Specs within each perm-* project still run `fullyParallel: false` (single-test serial) per the topology-level contract. SCOPE acceptance #2 is REVISED below. |
 | HIGH-3 | `elections.startFromConstituencyGroup` expects a UUID, not an external_id — template's `app_settings.fixed[0]` can't resolve at seed time | **Runtime set in spec beforeAll** (mirror `variant-startfromcg.setup.ts:18-23` + `startfromcg.spec.ts:23-29` precedent). `perm-startfromcg.spec.ts` beforeAll: query `constituency_groups` table for the CG-2 UUID via `SupabaseAdminClient`, then call `client.updateAppSettings({elections:{startFromConstituencyGroup: <uuid>}})`. afterAll restores. Template `perm-startfromcg.ts` OMITS the key entirely. |
 | MED-4 | voter-not-located test 5 (whitelist) landing-route ambiguity | Mirror existing `voter-not-located-redirect.spec.ts` `expectLandedOn(page, /\/(questions\|results)/)` regex pattern verbatim. |
-| MED-5 | perm-2e-shared test 1 "select first only" pattern unification | **Unify on the deselect-the-other pattern** (the elections page default-selects all elections, so "select only EL1" = "deselect EL2"). `selectElectionAndAdvance` helper is renamed to `deselectElectionAndAdvance({ optionText })` semantics — picks an option that is CURRENTLY checked and clicks to deselect, then continues. Tests that want "only EL1" call `deselectElectionAndAdvance({ optionText: /Election 2/i })`. Tests that want "both" omit the call and just hit continue (the default state is both-selected). |
+| MED-5 | perm-2e-shared test 1 "select first only" pattern unification | **Unify on the "select-only-the-matching" set-semantics pattern** (operator amendment A1, 2026-05-26). `selectElectionAndAdvance({ optionText })` KEEPS its name and gets internals that ensure ONLY the option(s) matching `optionText` are checked at continue time. The helper iterates every election option: if the option's accessible name matches `optionText` → ensure `aria-checked='true'` (click to check if currently unchecked); if it does NOT match → ensure `aria-checked='false'` (click to uncheck if currently checked). Then asserts the continue button is enabled and clicks it. This is idempotent regardless of the elections page's default state (whether all-selected, none-selected, or partial) and reads cleanly at the call site: `selectElectionAndAdvance({ optionText: /\[EL1\]/i })` means "make EL1 the only selected election and continue." For "select both" tests, callers use a regex matching multiple options (e.g. `/\[EL1\]\|\[EL2\]/i`) OR omit the call entirely if the page's default state already satisfies the test's setup. |
 | MED-6 | perm-disjoint test 2 `iterateSelectOptions` hedge | Remove hedge. `iterateSelectOptions(page, comboboxLocator)` with default `optionIndex=0` picks option 0 of each matched combobox — the hedge in the planner's notes is overcautious. Test 2 calls `iterateSelectOptions` with `.nth(0)` (single combobox), then asserts continue disabled, then `.nth(1)`, asserts continue enabled. |
 | LOW-7 | verify command workspace name | Use `cd tests && npx tsc --noEmit -p .` (no workspace name). |
 | LOW-8 | Task 1 read_first DO ADOPT / DO NOT ADOPT cleavage | Make explicit in Task 1 action block — see SCOPE memo's "Modeled on voter-mega-journey first-parts" section below (already inline). |
 
 These resolutions are BINDING — they override any conflicting prose in the original (unrevised) sections below.
+
+## Operator amendments (LOCKED 2026-05-26, second revision)
+
+### A1 — `selectElectionAndAdvance` set-only semantics (supersedes MED-5)
+
+**Operator words (verbatim):**
+
+> deselectElectionAndAdvance => keep the selectElectionAndAdvance logic and change the internals so that the election checkboxes are selected/deselected in such a manner that only the one(s) matching are selected.
+
+**Resolution:** the helper is named `selectElectionAndAdvance({ optionText })` (NOT `deselectElectionAndAdvance`). The internals iterate every election option:
+
+- If the option's accessible name matches `optionText` → ensure `aria-checked='true'` (click to check if currently unchecked).
+- If the option's name does NOT match → ensure `aria-checked='false'` (click to uncheck if currently checked).
+
+Then `expect(continueButton).toBeEnabled()` and click. The post-condition is invariant: the set of selected options equals exactly the set whose names match `optionText`.
+
+This supersedes MED-5's `deselectElectionAndAdvance` naming. All occurrences in the plan must use `selectElectionAndAdvance` with set-only semantics.
+
+### A2 — Drop TEXT_RE for minimal datasets; use `[<symbol>] <description>` display-name convention
+
+**Operator words (verbatim):**
+
+> we can get rid of the TEXT_RE for the minimal datasets by constructing the object texts always using a pattern like this: "[{externalId}] Optional info if needed". Keep the external ids short and to the point using consistent criteria, e.g. "[EL1-Single-constituency]" or even "[EL1] Single constituency" and always matching with /\[EL1\]/i
+
+**Resolution:** templates author every entity's `name` field (the user-facing display text used by the voter UI) with the format `[<SYMBOL>] <description>`, where `<SYMBOL>` is a short stable identifier unique within that entity-type AND the template. Specs match inline using `/\[<SYMBOL>\]/i` regexes — no shared `TEXT_RE` constants needed.
+
+**Canonical symbol naming convention (use consistently across all 8 templates):**
+
+| Entity type | Symbol pattern | Examples |
+|---|---|---|
+| Election | `EL<N>` | `[EL1] Single constituency`, `[EL2] Multi constituency` |
+| Constituency group | `CG<N>` | `[CG1] Region`, `[CG2] Municipal` |
+| Constituency | `CO<N>` (when one per CG) OR `CO<N><LETTER>` (when multiple per CG) | `[CO1] North`, `[CO1A] North-East`, `[CO1B] North-West` |
+| Organization | `OR<N>` | `[OR1] Party One`, `[OR2] Party Two` |
+| Candidate | `CA<ORG><CAND-LETTER>` | `[CA1A] Candidate One A`, `[CA2A] Candidate Two A` |
+| Question category | `QC-<TYPE>` | `[QC-INFO] Info questions`, `[QC-OPIN] Opinion questions` |
+| Question | `QU-<TYPE>` | `[QU-INFO] Background text`, `[QU-OPIN] Agreement Likert` |
+| Alliance | `AL<N>` | `[AL1] Alliance` (only if a template needs alliances; the 8 perm-* templates have 0 alliances per refactor-doc:14) |
+
+**Symbol uniqueness:** each symbol is unique within its entity-type-and-template scope. Two different templates may both have `[EL1]` because they ship in different seed runs (sequential chain — only one perm-* dataset is loaded at a time per HIGH-2 resolution).
+
+**External_id field (Supabase row column) keeps its full kebab-cased form** (e.g., `test-perm-1e1cg1co-el-1`) — that's the prefix-namespaced row identifier the runTeardown safety mechanism keys on. The SHORT symbol (e.g., `EL1`) lives ONLY in the bracketed prefix of the `name` field's display text.
+
+**Spec matching pattern:** inline regex, e.g. `page.getByRole('option', { name: /\[EL1\]/i })` or `selectElectionAndAdvance({ optionText: /\[EL1\]/i })`. No `TEXT_RE` constant bucket.
+
+**Why this convention:**
+
+1. Reading specs is unambiguous — `/\[EL1\]/i` clearly addresses "the election labeled EL1" without scanning a constants file.
+2. Templates are self-documenting — `name: { en: '[EL1] Single constituency' }` tells a reader both the symbol and the topology role.
+3. Locale-independence — the bracketed symbol survives every locale's translation (the template authors set the same `[<SYMBOL>]` prefix across all locales). Tests work in EN-only setups without per-locale regex maintenance.
+4. Adopts the mega-journey's stable-locator philosophy without the indirection cost — `TEXT_RE` was needed for mega-journey because the baseV1 dataset has many semantically-distinct entities; the perm-* datasets have a handful of entities each, all uniquely identified by their bracketed symbol.
+
+This supersedes the modeling cleavage's TEXT_RE adoption (LOW-8). Task 1's voterIntro.ts has NO `TEXT_RE` export; spec files use inline `/\[<SYMBOL>\]/i` regexes directly.
 
 ## Operator's words (verbatim)
 
