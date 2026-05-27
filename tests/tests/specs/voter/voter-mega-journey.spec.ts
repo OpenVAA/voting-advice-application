@@ -290,41 +290,39 @@ async function expectElectionOptionAndSelect({ page, text }: { page: Page; text:
   await expect(resultsList).toBeVisible({ timeout: TIMEOUT.page });
 }
 
-type VoterEntityCases = {
-  sawCaseA: boolean;
-  sawCaseB: boolean;
-  sawCaseC: boolean;
-};
-
 /**
- * Scan opinion-question-input rows and classify each one across the
- * voter-vs-entity matrix:
- *   case (a): voter answered + entity answered (checked radio + .entitySelected)
- *   case (b): voter only (checked radio + no .entitySelected)
- *   case (c): entity only (no checked radio + .entitySelected)
+ * Locate the opinion-question display block whose `<h3>` matches `questionText`
+ * inside an entity opinions tab and hard-assert:
+ *   - exactly one block matches,
+ *   - the union of `:checked` radios (voter's choice in display mode) and
+ *     `entity-selected-answer` sr-only markers (entity's choice) has exactly
+ *     `numSelected` elements (0 = neither, 1 = voter XOR entity, 2 = both),
+ *   - if `infoText` is supplied, the matching missing-answer message
+ *     (e.g. "Neither has answered", "You haven't answered",
+ *     "{entity} hasn't answered") is visible inside the block.
  */
-async function classifyVoterEntityRows({
-  inputs,
-  count
-}: {
-  inputs: Locator;
-  count: number;
-}): Promise<VoterEntityCases> {
-  const cases: VoterEntityCases = { sawCaseA: false, sawCaseB: false, sawCaseC: false };
-  for (let i = 0; i < count; i++) {
-    const row = inputs.nth(i);
-    const hasChecked = await row.getByRole('radio', { checked: true }).count();
-    // 260524-l1t D6: was `row.locator('.entitySelected').count()` with an
-    // inline suppression block. QuestionChoices.svelte now emits a sr-only
-    // sibling <span data-testid="entity-selected-answer"> when the entity
-    // has selected this choice; the testId is consumed via getByTestId,
-    // replacing the raw class-based locator.
-    const hasEntitySelected = await row.getByTestId(testIds.voter.entityDetail.entitySelectedAnswer).count();
-    if (hasChecked > 0 && hasEntitySelected > 0) cases.sawCaseA = true;
-    if (hasChecked > 0 && hasEntitySelected === 0) cases.sawCaseB = true;
-    if (hasChecked === 0 && hasEntitySelected > 0) cases.sawCaseC = true;
+async function expectQuestionDisplayToHave(
+  opinionsTab: Locator,
+  {
+    questionText,
+    numSelected,
+    infoText
+  }: {
+    questionText: RegExp | string;
+    numSelected: number;
+    infoText?: RegExp | string;
   }
-  return cases;
+): Promise<void> {
+  const block = opinionsTab
+    .getByTestId(testIds.voter.entityDetail.opinionQuestion)
+    .filter({ has: opinionsTab.getByRole('heading', { level: 3, name: questionText }) });
+  await expect(block).toHaveCount(1, { timeout: TIMEOUT.element });
+  const voterChecked = block.getByRole('radio', { checked: true });
+  const entitySelected = block.getByTestId(testIds.voter.entityDetail.entitySelectedAnswer);
+  await expect(voterChecked.or(entitySelected)).toHaveCount(numSelected, { timeout: TIMEOUT.element });
+  if (infoText) {
+    await expect(block.getByText(infoText)).toBeVisible({ timeout: TIMEOUT.element });
+  }
 }
 
 /**
@@ -902,7 +900,7 @@ test.describe('voter mega-journey', () => {
       await expect(infoItems).toHaveCount(13, { timeout: TIMEOUT.element });
       // Election number is the 4th info-item (index 3) for this nomination.
       await expect(infoItems.nth(3)).toContainText(/Election Number/i);
-      await expect(infoItems.nth(3)).toContainText(/3/);
+      await expect(infoItems.nth(3)).toContainText(/10/);
     });
 
     await test.step('detail: 9.6.5-8 voter-vs-entity matrix on CA-AA-Special (refactor-doc:349-355, Risk #2)', async () => {
@@ -957,8 +955,7 @@ test.describe('voter mega-journey', () => {
       await expect(infoItems.nth(3)).toContainText(/—/);
       // (4) multipleChoiceCategorical
       await expect(infoItems.nth(4)).toContainText(/Info: pick multiple categories that apply\./i);
-      await expect(infoItems.nth(4)).toContainText(/Choice A/i);
-      await expect(infoItems.nth(4)).toContainText(/Choice B/i);
+      await expect(infoItems.nth(4)).toContainText(/Choice C/i);
       // (5) singleChoiceCategorical
       await expect(infoItems.nth(5)).toContainText(/Info: pick one category\./i);
       await expect(infoItems.nth(5)).toContainText(/Selection Y/i);
@@ -970,7 +967,7 @@ test.describe('voter mega-journey', () => {
       await expect(infoItems.nth(7)).toContainText(/Default longer biography text/i);
       // (8) number
       await expect(infoItems.nth(8)).toContainText(/Info: years of experience\./i);
-      await expect(infoItems.nth(8)).toContainText(/42/);
+      await expect(infoItems.nth(8)).toContainText(/99/);
       // (9) boolean
       await expect(infoItems.nth(9)).toContainText(/Info: would-you-run-again-yes-no\?/i);
       await expect(infoItems.nth(9)).toContainText(/Yes/i);
@@ -990,41 +987,38 @@ test.describe('voter mega-journey', () => {
       const opinionsTab = dialog.getByTestId(testIds.voter.entityDetail.opinionsTab);
       await expect(opinionsTab).toBeVisible({ timeout: TIMEOUT.page });
 
-      // Wait for at least one opinion-question-input to render (hydration guard
-      // — pattern source: voter-detail.spec.ts:320-323 Phase 86 DETERM-14).
+      // Wait for at least one opinion-question-input to render.
       await opinionsTab
         .getByTestId('opinion-question-input')
         .first()
-        .waitFor({ state: 'visible', timeout: TIMEOUT.slowPage })
-        .catch(() => null);
+        .waitFor({ state: 'visible', timeout: TIMEOUT.slowPage });
 
-      // Voter-vs-entity matrix arrangement (baseV1.ts:817-832 docstring):
-      //   (a) both answered: base-1, base-3, base-4, base-5 → voter row + entity row
-      //   (b) voter only (entity missing): base-2 → voter row only
-      //   (c) entity only (voter skipped): B-1 + EL-Reg-1 → entity row only
-      //   (d) both missing: Filt-Mun-NE → "Neither has answered" message
-      const inputs = opinionsTab.getByTestId('opinion-question-input');
-      const inputCount = await inputs.count();
-      expect(inputCount).toBeGreaterThan(0);
-
-      // Classify each row across the voter-vs-entity matrix via the
-      // module-scope helper.
-      const cases = await classifyVoterEntityRows({ inputs, count: inputCount });
-      // Hard contract: case (a) — at least ONE row has BOTH a checked
-      // radio AND .entitySelected (voter + entity both answered).
-      expect(cases.sawCaseA, 'case (a) — at least one question where voter + entity both answered (base-1/3/4/5)').toBe(
-        true
-      );
-      // Cases b/c/d are diagnostic — depend on which categories were
-      // skipped during the walk + whether base-B/EL-Reg/Filt-Mun-NE
-      // questions appear on this candidate's opinionsTab.
-      console.info(`[u53-walk] voter-vs-entity matrix: a=${cases.sawCaseA} b=${cases.sawCaseB} c=${cases.sawCaseC}`);
-      // Case (d): "Neither has answered" text — best-effort probe, no soft-gate.
-      await opinionsTab
-        .getByText(TEXT_RE.neitherAnswered)
-        .first()
-        .isVisible()
-        .catch(() => false);
+      // Voter-vs-entity matrix arrangement (baseV1.ts CA-AA-Special answers
+      // lines 869-879, cross-referenced with the voter's answering flow above):
+      //   (a) both answered    → Base opinion 1  (voter+entity at polar max)
+      //   (b) voter only       → Base opinion 2  (entity skipped)
+      //   (c) entity only      → Opt-A opinion 1 (voter skipped Opt-A category)
+      //   (d) both missing     → Opt-B opinion 1 (voter de-selected Opt-B,
+      //                          entity has no answer)
+      await expectQuestionDisplayToHave(opinionsTab, {
+        questionText: /Base opinion 1 — Likert 5/i,
+        numSelected: 2
+      });
+      await expectQuestionDisplayToHave(opinionsTab, {
+        questionText: /Base opinion 2 — Likert 4/i,
+        numSelected: 1,
+        infoText: /hasn['']?t answered/i
+      });
+      await expectQuestionDisplayToHave(opinionsTab, {
+        questionText: /Opt-A opinion 1 — Likert 5/i,
+        numSelected: 1,
+        infoText: /You haven['']?t answered/i
+      });
+      await expectQuestionDisplayToHave(opinionsTab, {
+        questionText: /Opt-B opinion 1 — Likert 5/i,
+        numSelected: 0,
+        infoText: TEXT_RE.neitherAnswered
+      });
 
       // Close drawer for the next step.
       await page.keyboard.press('Escape');

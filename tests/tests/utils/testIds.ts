@@ -126,6 +126,10 @@ export const testIds = {
       infoTab: 'voter-entity-detail-info',
       opinionsTab: 'voter-entity-detail-opinions',
       childrenTab: 'voter-entity-detail-children',
+      // Wraps a single opinion-question display block inside EntityOpinions.svelte
+      // (heading + optional missing-answer message + optional OpinionQuestionInput).
+      // Consumed by voter-mega-journey.spec.ts → expectQuestionDisplayToHave.
+      opinionQuestion: 'entity-opinion-question',
       // 260524-l1t D6: sr-only sibling marker on QuestionChoices.svelte's
       // radio whose `otherSelected == id` (i.e. the entity's chosen answer
       // in display mode). Replaces the `.entitySelected` raw-locator

@@ -289,6 +289,20 @@ const POLAR_MAX: Record<string, { value: unknown }> = {
   'test-qu-open-filt-mun-se': { value: '5' }
 };
 
+const NEAR_MAX: Record<string, { value: unknown }> = {
+  'test-qu-opin-base-1-likert5': { value: '4' },
+  'test-qu-opin-base-2-likert4': { value: '3' },
+  'test-qu-opin-base-3-likert7': { value: '6' },
+  'test-qu-opin-base-4-categorical': { value: 'b' },
+  'test-qu-opin-base-5-boolean': { value: true },
+  'test-qu-opin-opt-a-1': { value: '4' },
+  'test-qu-opin-opt-b-1': { value: '4' },
+  'test-qu-opin-el-reg-1': { value: '4' },
+  'test-qu-opin-co-mun-se-sw-1': { value: '4' },
+  'test-qu-open-filt-mun-ne': { value: '4' },
+  'test-qu-open-filt-mun-se': { value: '4' }
+};
+
 const POLAR_MIN: Record<string, { value: unknown }> = {
   'test-qu-opin-base-1-likert5': { value: '1' },
   'test-qu-opin-base-2-likert4': { value: '1' },
@@ -468,7 +482,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-or-bb',
-        name: { en: 'Party BB' },
+        name: { en: 'Party BB - Best-Regional-Party' },
         short_name: { en: 'BB' },
         color: { normal: '#c24545', dark: '#dc8d8d' },
         sort_order: 3,
@@ -874,8 +888,11 @@ export const baseV1Template: Template = {
           'test-qu-opin-base-5-boolean': { value: true },
           // case (c) — voter skips these, entity has answers
           'test-qu-opin-opt-a-1': { value: '5' },
-          'test-qu-opin-el-reg-1': { value: '5' }
+          'test-qu-opin-el-reg-1': { value: '5' },
           // test-qu-open-filt-mun-ne INTENTIONALLY missing — case (d)
+          // info answers for filtering
+          'test-qu-info-multipleChoiceCategorical': { value: ['c'] },
+          'test-qu-info-number': { value: 99 }
         })
       },
       {
@@ -886,18 +903,18 @@ export const baseV1Template: Template = {
         sort_order: 1,
         is_generated: false,
         organization: { external_id: 'test-or-aa' },
-        answersByExternalId: withInfoAnswers(POLAR_MAX)
+        answersByExternalId: withInfoAnswers(GENERIC)
       },
       // CA-AA-1 — the perfect-match candidate (POLAR_MAX → matches voter answerMode='max')
       {
         external_id: 'test-ca-aa-1',
-        first_name: 'Polar-Max',
+        first_name: 'Generic',
         last_name: 'AA One',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 2,
         is_generated: false,
         organization: { external_id: 'test-or-aa' },
-        answersByExternalId: withInfoAnswers(POLAR_MAX)
+        answersByExternalId: withInfoAnswers(GENERIC)
       },
       {
         external_id: 'test-ca-aa-2',
@@ -953,24 +970,24 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-ca-ba-2',
-        first_name: 'Generic',
+        first_name: 'Near-Max',
         last_name: 'BA Two',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 8,
         is_generated: false,
         organization: { external_id: 'test-or-ba' },
-        answersByExternalId: withInfoAnswers(GENERIC)
+        answersByExternalId: withInfoAnswers(NEAR_MAX)
       },
       // OR-BB — 2 candidates in CO-Reg-N
       {
         external_id: 'test-ca-bb-1',
-        first_name: 'Generic',
+        first_name: 'Polar-Max',
         last_name: 'BB One',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 9,
         is_generated: false,
         organization: { external_id: 'test-or-bb' },
-        answersByExternalId: withInfoAnswers(GENERIC)
+        answersByExternalId: withInfoAnswers(POLAR_MAX)
       },
       {
         external_id: 'test-ca-bb-2',

@@ -40,7 +40,7 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
     {@const answer = nakedEntity.getAnswer(question)}
     {@const voterAnswer = answers?.answers?.[id]}
 
-    <div class="grid">
+    <div class="grid" data-testid="entity-opinion-question">
       <HeadingGroup class="mb-lg text-center">
         {#if $appSettings.questions.showCategoryTags && category}
           <PreHeading><CategoryTag {category} /></PreHeading>
