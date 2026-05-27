@@ -69,19 +69,19 @@ re-exports page-object classes for direct use: HomePage, LoginPage, PreviewPage,
 Extends `base` (Playwright) with `voterTest` and 3 fixtures (`voterAnswerCount` defaults to 16, `voterAnswerIndex` defaults to 4, `answeredVoterPage`).
 voterAnswerCount = [16, { option: true }] // overridable per-spec via `voterTest.use({ voterAnswerCount: N })`
 voterAnswerIndex = [4, { option: true }] // 0=Fully disagree … 4=Fully agree
-answeredVoterPage = async ({ page, voterAnswerCount, voterAnswerIndex }, use) => { ... }  // body:
-  await navigateToFirstQuestion(page) // utils/voterNavigation.ts — Home → Intro → optional pages → first question
-  for (let i = 0; i < voterAnswerCount; i++) { // answer-loop, Likert auto-advance per click (350ms)
-    const answerOption = page.getByTestId(testIds.voter.questions.answerOption).nth(voterAnswerIndex)
-    await answerOption.waitFor({ state: 'visible' })
-    const urlBefore = page.url()
-    await answerOption.click()
-    await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 10000 })
-    if (i < voterAnswerCount - 1) await waitForNextQuestion(page, voterAnswerIndex)
-  }
-  await walkVoterIteration(page, { maxSteps: 6, perStepTimeoutMs: 10_000, terminalUrlPattern: /\/results/ }) // helpers/voter-iteration.helper.ts — Skip-Next loop past sort-17 categorical + sort-18 boolean + sort-19 number
-  await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 10000 })
-  await use(page)
+answeredVoterPage = async ({ page, voterAnswerCount, voterAnswerIndex }, use) => { ... } // body:
+await navigateToFirstQuestion(page) // utils/voterNavigation.ts — Home → Intro → optional pages → first question
+for (let i = 0; i < voterAnswerCount; i++) { // answer-loop, Likert auto-advance per click (350ms)
+const answerOption = page.getByTestId(testIds.voter.questions.answerOption).nth(voterAnswerIndex)
+await answerOption.waitFor({ state: 'visible' })
+const urlBefore = page.url()
+await answerOption.click()
+await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 10000 })
+if (i < voterAnswerCount - 1) await waitForNextQuestion(page, voterAnswerIndex)
+}
+await walkVoterIteration(page, { maxSteps: 6, perStepTimeoutMs: 10_000, terminalUrlPattern: /\/results/ }) // helpers/voter-iteration.helper.ts — Skip-Next loop past sort-17 categorical + sort-18 boolean + sort-19 number
+await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 10000 })
+await use(page)
 
 Helpers consumed (referenced by name): `walkVoterIteration` (helpers/voter-iteration.helper.ts), `navigateToFirstQuestion`, `waitForNextQuestion` (utils/voterNavigation.ts), `testIds` (utils/testIds.ts).
 
@@ -134,11 +134,11 @@ setup.setTimeout(90000) // candidate-app cold-start budget
 fs.mkdirSync(path.dirname(authFile), { recursive: true })
 const candidateHome = buildRoute({ route: 'CandAppHome', locale: 'en' })
 await waitForLoginForm(page, candidateHome, testIds.candidate.login.email) // up to 3 retries
-await page.getByTestId(testIds.candidate.login.email).fill(TEST_CANDIDATE_EMAIL)
+await page.getByTestId(testIds.candidate.login.email).fill(TEST*CANDIDATE_EMAIL)
 await page.getByTestId(testIds.candidate.login.password).fill(TEST_CANDIDATE_PASSWORD)
 await page.getByTestId(testIds.candidate.login.submit).click()
-EXPECT(page).not.toHaveURL(/.*login.*/)
-await page.context().storageState({ path: authFile }) // persists Alpha auth tokens for downstream candidate-* projects
+EXPECT(page).not.toHaveURL(/.\_login.*/)
+await page.context().storageState({ path: authFile }) // persists Alpha auth tokens for downstream candidate-\* projects
 
 # 3. Project candidate-app
 
@@ -530,7 +530,7 @@ import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path'
 import { expect, test } from '../../fixtures'
 import { expectLandedOn, settleNetworkIdle } from '../../helpers'
 import { buildRoute } from '../../utils/buildRoute'
-import { TEST_CANDIDATE_EMAIL, TEST_CANDIDATE_PASSWORD } from '../../utils/testCredentials'
+import { TEST*CANDIDATE_EMAIL, TEST_CANDIDATE_PASSWORD } from '../../utils/testCredentials'
 test.use({ storageState: { cookies: [], origins: [] } })
 async function loginAsCandidate(page) { ... } // module-level: goto CandAppHome + form login + assert /candidate(\/|$|\?) + settleNetworkIdle
 const NOT_AN_IMAGE_PATH = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../data/test-not-an-image.txt')
@@ -538,7 +538,7 @@ const OVERSIZED_PNG_PATH = path.join(os.tmpdir(), 'a11y-01-oversized.png')
 const IMAGE_CELLS = [ { name: 'image-type rejection surfaces invalidFile error', filePath: NOT_AN_IMAGE_PATH, expectedErrorText: 'The file is invalid.' }, { name: 'image-size rejection surfaces oversizeFile error', filePath: OVERSIZED_PNG_PATH, expectedErrorText: /The file is too large/i } ]
 const TEXT_CELLS = [ { name: 'name-too-long caps input value at maxlength=50 on display-name', kind: 'maxlength', fieldLabel: /Display name \(Phase 76 anchor\)/i, maxlength: 50, overflow: 60 }, { name: 'A11Y-05 email-format rejection surfaces invalidEmail error', kind: 'format', fieldLabel: /Email address \(Phase 81 A11Y-05 anchor\)/i, badValue: 'not-an-email', expectedErrorText: /The email address is not valid/i }, { name: 'A11Y-06 url-format rejection surfaces invalidUrl error', kind: 'format', fieldLabel: /Social link \(Phase 76 anchor\)/i, badValue: 'not a url', expectedErrorText: /The URL is not valid/i } ]
 test.describe('A11Y-01 candidate profile validation', { tag: ['@candidate'] }, () => { ... }) // serial
-test.beforeAll(async () => { /* write 21MB PNG-signature blob to OVERSIZED_PNG_PATH */ })
+test.beforeAll(async () => { /* write 21MB PNG-signature blob to OVERSIZED*PNG_PATH */ })
 test.afterAll(async () => { fs.rmSync(OVERSIZED_PNG_PATH, { force: true }) })
 
 ### 5.1.1 [A11Y-01 image-type rejection surfaces invalidFile error](tests/tests/specs/candidate/candidate-profile-validation.spec.ts:196)
@@ -642,10 +642,10 @@ const authFile = path.join(currentDir, '../../playwright/.auth/user.json')
 fs.mkdirSync(path.dirname(authFile), { recursive: true })
 const candidateHome = buildRoute({ route: 'CandAppHome', locale: 'en' })
 await page.goto(candidateHome)
-await page.getByTestId(testIds.candidate.login.email).fill(TEST_CANDIDATE_EMAIL)
+await page.getByTestId(testIds.candidate.login.email).fill(TEST*CANDIDATE_EMAIL)
 await page.getByTestId(testIds.candidate.login.password).fill(TEST_CANDIDATE_PASSWORD)
 await page.getByTestId(testIds.candidate.login.submit).click()
-EXPECT(page).not.toHaveURL(/.*login.*/)
+EXPECT(page).not.toHaveURL(/.\_login.*/)
 await page.context().storageState({ path: authFile }) // refresh storageState after mutation tests revoked Alpha tokens
 
 # 7. Project candidate-app-settings
@@ -937,7 +937,7 @@ await sharedPage.goto(buildRoute({ route: 'Home', locale: 'en' }))
 const startButton = sharedPage.getByTestId(testIds.voter.home.startButton)
 EXPECT(startButton).toBeVisible()
 await startButton.click()
-EXPECT(sharedPage).not.toHaveURL(/^[^?]*\/en\/?$/)
+EXPECT(sharedPage).not.toHaveURL(/^[^?]\*\/en\/?$/)
 
 ### 9.1.2 [should auto-imply election and constituency](tests/tests/specs/voter/voter-journey.spec.ts:124)
 
@@ -1083,9 +1083,9 @@ for (let i = 0; i < cardCount; i++) displayedNames.push((await cards.nth(i).text
 EXPECT(cards).toHaveCount(expectedRanking.length)
 let position = 0
 for (const tier of expectedTiers) {
-  const tierCards = displayedNames.slice(position, position + tier.names.length)
-  for (const name of tier.names) EXPECT(tierCards.some((card) => card.includes(name))).toBe(true)
-  position += tier.names.length
+const tierCards = displayedNames.slice(position, position + tier.names.length)
+for (const name of tier.names) EXPECT(tierCards.some((card) => card.includes(name))).toBe(true)
+position += tier.names.length
 }
 
 ### 9.4.2 [should show perfect match candidate as top result](tests/tests/specs/voter/voter-matching.spec.ts:240)
@@ -1301,9 +1301,9 @@ const href = await firstCardLink.getAttribute('href')
 const parsed = parseResultHref(href); expect(parsed).not.toBeUndefined()
 await page.goto(`/results/candidates/candidate/${parsed!.id}${parsed!.search}`)
 await settleNetworkIdle(page, { waitUntil: 'domcontentloaded' })
-await page.getByTestId(DRAWER_TESTID).waitFor({ state: 'attached', timeout: 5000 })
+await page.getByTestId(DRAWER*TESTID).waitFor({ state: 'attached', timeout: 5000 })
 await page.getByTestId(LIST_CONTAINER_TESTID).waitFor({ state: 'attached', timeout: 5000 })
-const result = await page.evaluate(({ drawerSel, listSel }) => { /* compareDocumentPosition + getComputedStyle on listContainer */ }, { drawerSel: `[data-testid="${DRAWER_TESTID}"]`, listSel: `[data-testid="${LIST_CONTAINER_TESTID}"]` })
+const result = await page.evaluate(({ drawerSel, listSel }) => { /* compareDocumentPosition + getComputedStyle on listContainer \_/ }, { drawerSel: `[data-testid="${DRAWER_TESTID}"]`, listSel: `[data-testid="${LIST_CONTAINER_TESTID}"]` })
 expect(result).not.toBeNull()
 EXPECT(result!.drawerBeforeList).toBe(true) // document-order gate
 EXPECT(result!.listContentVisibility).toBe('auto') // content-visibility gate
@@ -1518,7 +1518,7 @@ const dialog = page.getByRole('dialog')
 await dialog.getByRole('tab', { name: /opinions/i }).click()
 const opinionsTab = dialog.getByTestId(testIds.voter.entityDetail.opinionsTab)
 await expect(opinionsTab.getByTestId('opinion-question-input').first()).toBeVisible({ timeout: 5000 }) // Phase 86 DETERM-14 H3 hydration-completeness guard
-EXPECT(opinionsTab.getByText(/Neither you nor .* has(?:n't| not)? answered/i).first()).toBeVisible()
+EXPECT(opinionsTab.getByText(/Neither you nor .\* has(?:n't| not)? answered/i).first()).toBeVisible()
 
 ### 9.6.9 [per-category SubMatch grid renders Manhattan + directional metric path categories](tests/tests/specs/voter/voter-detail.spec.ts:364)
 
@@ -2019,7 +2019,7 @@ const introStart = page.getByTestId(testIds.voter.intro.startButton)
 await introStart.waitFor({ state: 'visible', timeout: 10000 }); await introStart.click()
 const electionsList = page.getByTestId(testIds.voter.elections.list)
 EXPECT(electionsList).toBeVisible({ timeout: 10000 })
-const electionCards = page.getByTestId(testIds.voter.elections.card)
+const electionCards = page.getByTestId(testIds.voter.elections.option)
 EXPECT(electionCards).toHaveCount(2)
 const constituenciesList = page.getByTestId(testIds.voter.constituencies.list)
 EXPECT(constituenciesList).toBeHidden() // CONF-04: 1 constituency per election → auto-implied
@@ -2080,7 +2080,7 @@ const introStart = page.getByTestId(testIds.voter.intro.startButton)
 await introStart.waitFor({ state: 'visible', timeout: 10000 }); await introStart.click()
 const electionsList = page.getByTestId(testIds.voter.elections.list)
 EXPECT(electionsList).toBeVisible({ timeout: 10000 })
-EXPECT(page.getByTestId(testIds.voter.elections.card)).toHaveCount(2)
+EXPECT(page.getByTestId(testIds.voter.elections.option)).toHaveCount(2)
 await page.getByTestId(testIds.voter.elections.continue).click()
 EXPECT(page.getByTestId(testIds.voter.constituencies.list)).toBeHidden()
 
@@ -2109,7 +2109,7 @@ const defaultElectionSettings = { elections: { disallowSelection: false, showEle
 async function waitForResultsList(page) { ... } // dismiss dialogs, handle election accordion's expand-2025 dance with pointer-events-none guard
 test.describe('Results section variants', { tag: ['@variant'] }, () => { ... }) // serial; 3 tests
 let sharedPage: Page
-test.beforeAll(async ({ browser }) => { sharedPage = await browser.newPage(); /* assertDbRowCount(elections, like:'test-%', 2); updateAppSettings; walk Home→Intro→Elections continue (with goto fallback if needed)→dismiss dialogs→answer all questions→waitForResultsList */ })
+test.beforeAll(async ({ browser }) => { sharedPage = await browser.newPage(); /_ assertDbRowCount(elections, like:'test-%', 2); updateAppSettings; walk Home→Intro→Elections continue (with goto fallback if needed)→dismiss dialogs→answer all questions→waitForResultsList _/ })
 test.afterAll(async () => { await client.updateAppSettings(...); await sharedPage.close() })
 
 ### 15.1.1 [should show only candidates when sections is ["candidate"]](tests/tests/specs/variants/results-sections.spec.ts:310)
@@ -2208,7 +2208,7 @@ const introStart = sharedPage.getByTestId(testIds.voter.intro.startButton)
 await introStart.waitFor({ state: 'visible' }); await introStart.click()
 const electionsList = sharedPage.getByTestId(testIds.voter.elections.list)
 EXPECT(electionsList).toBeVisible({ timeout: 10000 })
-const electionOptions = sharedPage.getByTestId(testIds.voter.elections.card)
+const electionOptions = sharedPage.getByTestId(testIds.voter.elections.option)
 EXPECT(electionOptions).toHaveCount(2)
 EXPECT(electionOptions.nth(0)).toBeChecked()
 EXPECT(electionOptions.nth(1)).toBeChecked()
@@ -2356,10 +2356,10 @@ import { SupabaseAdminClient } from '../../utils/supabaseAdminClient'
 async function pickMunicipality(page, name) { ... } // module-level: combobox click + fill + listbox option click + Continue
 async function walkToConstituencySelection(page) { ... } // module-level: Home → start → Intro start
 async function readElectionOptionNames(accordion, expectedCount) { ... } // module-level: handles AccordionSelect's collapsed-on-active-option state via toHaveCount(expectedCount) auto-retry
-function buildSettings({ startFromConstituencyGroup, disallowSelection }) { ... } // module-level helper: returns full app_settings shape
+function buildSettings({ startFromConstituencyGroup, disallowSelection }) { ... } // module-level helper: returns full app*settings shape
 test.describe('startFromConstituencyGroup variant', { tag: ['@variant'] }, () => { ... }) // serial; 3 tests
 let client: SupabaseAdminClient
-test.beforeAll(async () => { /* discover municipalities CG documentId via client.findData; await client.updateAppSettings(buildSettings({ startFromConstituencyGroup: cgDocumentId, disallowSelection: true })) */ })
+test.beforeAll(async () => { /* discover municipalities CG documentId via client.findData; await client.updateAppSettings(buildSettings({ startFromConstituencyGroup: cgDocumentId, disallowSelection: true })) \_/ })
 test.afterAll(async () => { if (client) await client.updateAppSettings(buildSettings({ startFromConstituencyGroup: null, disallowSelection: false })) })
 test.describe('matrix cell: startFromConstituency (E2E-04 cell 5)', { tag: ['@variant', '@matrix'] }, () => { ... }) // serial; 1 additive test; own beforeAll/afterAll re-establish startFromConstituencyGroup + disallowSelection:false
 
@@ -2581,7 +2581,7 @@ const introStart = page.getByTestId(testIds.voter.intro.startButton)
 await introStart.waitFor({ state: 'visible', timeout: 10000 }); await introStart.click()
 const electionsList = page.getByTestId(testIds.voter.elections.list)
 EXPECT(electionsList).toBeVisible({ timeout: 10000 })
-const electionCards = page.getByTestId(testIds.voter.elections.card)
+const electionCards = page.getByTestId(testIds.voter.elections.option)
 EXPECT(electionCards).toHaveCount(2)
 EXPECT(electionCards.nth(0)).toBeChecked() // pre-checked default
 EXPECT(electionCards.nth(1)).toBeChecked()
@@ -2633,7 +2633,7 @@ test.describe.configure({ mode: 'serial' })
 test.describe('CLEAN-02 voter-not-located deferred-target redirect', { tag: ['@voter'] }, () => { ... }) // 5 tests
 const adminClient = new SupabaseAdminClient()
 let electionUuid: string | undefined
-test.beforeAll(async () => { /* findData('elections', externalId:'test-election-1') → electionUuid */ })
+test.beforeAll(async () => { /_ findData('elections', externalId:'test-election-1') → electionUuid _/ })
 
 ### 26.1.1 [CLEAN-02 — direct link to /results route with no election picked bounces twice and resumes /results](tests/tests/specs/voter/voter-not-located-redirect.spec.ts:106)
 
@@ -2655,12 +2655,12 @@ beforeAll: electionUuid resolved
 test.setTimeout(45000)
 const deferredTarget = '/results?foo=bar'
 await page.goto(deferredTarget)
-await expectLandedOn(page, /\/elections\b.*[&?]next=/)
+await expectLandedOn(page, /\/elections\b._[&?]next=/)
 await page.getByTestId(testIds.voter.elections.continue).click()
-await expectLandedOn(page, /\/constituencies\b.*[&?]next=/)
+await expectLandedOn(page, /\/constituencies\b._[&?]next=/)
 await fillAllConstituencies(page)
 await page.getByTestId(testIds.voter.constituencies.continue).click()
-await expectLandedOn(page, /\/results\b.*[&?]foo=bar/) // QUERY-PARAM SURVIVAL
+await expectLandedOn(page, /\/results\b.\*[&?]foo=bar/) // QUERY-PARAM SURVIVAL
 
 ### 26.1.3 [CLEAN-02 — election pre-selected via URL bounces only to constituency selector and resumes deferred target](tests/tests/specs/voter/voter-not-located-redirect.spec.ts:183)
 
@@ -2669,20 +2669,20 @@ test.setTimeout(45000)
 expect(electionUuid).toBeTruthy()
 const deferredTarget = `/results?electionId=${electionUuid}`
 await page.goto(deferredTarget)
-await expectLandedOn(page, /\/constituencies\b.*[&?]next=/) // single bounce
+await expectLandedOn(page, /\/constituencies\b._[&?]next=/) // single bounce
 EXPECT(page).not.toHaveURL(/\/election(\/|\?|$)/) // never visited /elections
 await fillAllConstituencies(page)
 await page.getByTestId(testIds.voter.constituencies.continue).click()
-await expectLandedOn(page, /\/results\b.*[&?]electionId=/)
+await expectLandedOn(page, /\/results\b._[&?]electionId=/)
 
 ### 26.1.4 [CLEAN-02 — refresh after localStorage clear mid-session resumes deferred target](tests/tests/specs/voter/voter-not-located-redirect.spec.ts:211)
 
 beforeAll: electionUuid resolved
 test.setTimeout(45000)
 await page.goto('/results')
-await expectLandedOn(page, /\/elections\b.*[&?]next=/)
+await expectLandedOn(page, /\/elections\b._[&?]next=/)
 await page.getByTestId(testIds.voter.elections.continue).click()
-await expectLandedOn(page, /\/constituencies\b.*[&?]next=/)
+await expectLandedOn(page, /\/constituencies\b._[&?]next=/)
 await fillAllConstituencies(page)
 await page.getByTestId(testIds.voter.constituencies.continue).click()
 await expectLandedOn(page, /\/results(\/|\?|$)/)
@@ -2771,7 +2771,7 @@ EXPECT(opinionsTab.getByText(ALPHA_Q3_INFO_SUBSTRING)).toBeVisible() // document
 ### 28.1.3 [SETTINGS-02 entity comment surface is absent when entity has no answer.info](tests/tests/specs/voter/voter-allowopen.spec.ts:128)
 
 fixture [answeredVoterPage](#02-teststestsfixturesvoterfixturets)
-await page.getByTestId(testIds.voter.results.card).filter({ hasText: alphaCandidate.last_name! }).click()
+await page.getByTestId(testIds.voter.results.card).filter({ hasText: alphaCandidate.last*name! }).click()
 const dialog = page.getByRole('dialog')
 EXPECT(dialog).toBeVisible()
 await dialog.getByRole('tab', { name: /opinions/i }).click()
@@ -2779,7 +2779,7 @@ const opinionsTab = dialog.getByTestId(testIds.voter.entityDetail.opinionsTab)
 EXPECT(opinionsTab).toBeVisible()
 const q7 = alphaAnswers['test-question-7']
 expect(q7.info, 'test-question-7 must have no info field in seed').toBeUndefined()
-const infoKeys = Object.keys(alphaAnswers).filter((k) => { /* keep only opinion answers with non-empty info.en */ })
+const infoKeys = Object.keys(alphaAnswers).filter((k) => { /* keep only opinion answers with non-empty info.en \_/ })
 expect(infoKeys.length).toBeGreaterThanOrEqual(3)
 const q5Info = alphaAnswers['test-question-5'].info as Record<string, string>
 EXPECT(opinionsTab.getByText(/healthcare is a fundamental right/i)).toBeVisible() // positive control
@@ -2972,7 +2972,7 @@ voterTest.setTimeout(60000) // fixture nav (~30s) + reload + measurement
 fixture [answeredVoterPage](#02-teststestsfixturesvoterfixturets)
 await page.reload({ waitUntil: 'load' }) // full reload to get clean Navigation Timing
 await settleNetworkIdle(page, { waitUntil: 'domcontentloaded' })
-const timing = await page.evaluate(() => { /* PerformanceNavigationTiming → { domContentLoaded, loadComplete, domInteractive, duration, ttfb } */ })
+const timing = await page.evaluate(() => { /_ PerformanceNavigationTiming → { domContentLoaded, loadComplete, domInteractive, duration, ttfb } _/ })
 console.log('Performance timing:', timing)
 EXPECT(timing.domContentLoaded).toBeLessThan(8000) // 8s DCL budget
 EXPECT(timing.loadComplete).toBeLessThan(15000) // 15s full load budget
@@ -2988,11 +2988,11 @@ import { expect, test } from '@playwright/test'
 import { buildRoute } from '../../utils/buildRoute'
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient'
 test.use({ storageState: { cookies: [], origins: [] } })
-const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
+const WCAG*TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
 const UNLOCATED_ROUTES = [ { name: 'home', routeId: 'Home', settle: heading-wait }, { name: 'elections-selector', routeId: 'Elections', settle: heading-wait }, { name: 'constituencies-selector', routeId: 'Constituencies', settle: heading-wait } ]
 const LOCATED_ROUTES = [ { name: 'questions', routeId: 'Questions', needsLocatedPrefill:true, settle: heading-wait }, { name: 'results', routeId: 'Results', needsLocatedPrefill:true, settle: tablist-wait }, { name: 'voter-detail-drawer', routeId: 'Results', needsLocatedPrefill:true, settle: tablist-wait + click first entity-card + wait dialog } ]
 let electionUuid: string; let constituencyUuid: string
-test.beforeAll(async () => { /* findData('elections', externalId:'test-election-1') + findData('constituencies', externalId:'test-constituency-alpha') → electionUuid + constituencyUuid */ })
+test.beforeAll(async () => { /* findData('elections', externalId:'test-election-1') + findData('constituencies', externalId:'test-constituency-alpha') → electionUuid + constituencyUuid \_/ })
 function buildLocatedUrl(routeId) { ... } // appends ?electionId=<uuid>&constituencyId=<uuid>
 for (const route of UNLOCATED_ROUTES) test(`A11Y-04 axe smoke — ${route.name}`, ...)
 for (const route of LOCATED_ROUTES) test(`A11Y-04 axe smoke — ${route.name}`, ...)
@@ -3091,7 +3091,7 @@ testDir=./tests/specs/candidate; testMatch=/candidate-bank-auth\.spec\.ts/; deps
 ## 37.1 [candidate bank authentication — candidate-bank-auth.spec.ts](tests/tests/specs/candidate/candidate-bank-auth.spec.ts)
 
 import { createClient } from '@supabase/supabase-js'
-import * as jose from 'jose'
+import _ as jose from 'jose'
 import { expect, test } from '../../fixtures'
 const SUPABASE_URL = process.env.SUPABASE_URL ?? 'http://localhost:54321'
 if (!process.env.SUPABASE_SERVICE_ROLE_KEY) throw new Error('SUPABASE_SERVICE_ROLE_KEY required for candidate-bank-auth tests (Phase 78 CLEAN-05 IN-01)')
@@ -3104,8 +3104,8 @@ type EdgeFunctionProbe = { status, body, keysConfigured, createdUserId, errorMsg
 test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => { ... }) // serial
 const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 let testKeys; let probe: EdgeFunctionProbe | null = null
-test.beforeAll(async () => { /* generateTestKeys; build id_token; fetch identity-callback edge function once; populate probe { keysConfigured, createdUserId, errorMsg } */ })
-test.afterAll(async () => { /* if probe.createdUserId: delete user_roles + candidates + auth.admin.deleteUser */ })
+test.beforeAll(async () => { /_ generateTestKeys; build id*token; fetch identity-callback edge function once; populate probe { keysConfigured, createdUserId, errorMsg } */ })
+test.afterAll(async () => { /\_ if probe.createdUserId: delete user_roles + candidates + auth.admin.deleteUser \*/ })
 
 ### 37.1.1 [should create candidate via identity-callback Edge Function (keys configured path)](tests/tests/specs/candidate/candidate-bank-auth.spec.ts:203)
 
@@ -3156,7 +3156,7 @@ EXPECT(session!.action_link).toContain('token=')
 beforeAll: probe (not gating this test)
 const response = await fetch(`${SUPABASE_URL}/functions/v1/identity-callback`, { method: 'OPTIONS', headers: { Origin: 'http://localhost:5174', 'Access-Control-Request-Method': 'POST' } })
 EXPECT(response.status).toBe(200)
-EXPECT(response.headers.get('access-control-allow-origin')).toBe('*')
+EXPECT(response.headers.get('access-control-allow-origin')).toBe('\*')
 EXPECT(response.headers.get('access-control-allow-methods')).toContain('POST')
 
 ### 37.1.5 [should reject requests without id_token](tests/tests/specs/candidate/candidate-bank-auth.spec.ts:312)
@@ -3201,7 +3201,7 @@ grep -rh "^\s*test(\.skip|\.fixme)?\(" tests/tests/specs/**/*.spec.ts | wc -l
 
 3. **Setup-file shared by two setup-projects.** `data-setup-multi-election` (§12) and `data-setup-results-sections` (§14) both have `testMatch: /variant-multi-election\.setup\.ts/` — same file, two project entries. The inventory references the file body under §12.1, and §14.1 cross-references it (rather than duplicating the body) per the operator's "spec exactly once" intent.
 
-4. **Sub-projects with shared spec testDir.** The 5 candidate-* projects (candidate-app, candidate-app-mutation, candidate-app-validation, candidate-app-settings, candidate-app-password) all share `testDir: './tests/specs/candidate'` and partition the directory via different `testMatch` regex slices. Each spec file appears under exactly one project (per testMatch). Same pattern for the 3 voter-* projects.
+4. **Sub-projects with shared spec testDir.** The 5 candidate-_ projects (candidate-app, candidate-app-mutation, candidate-app-validation, candidate-app-settings, candidate-app-password) all share `testDir: './tests/specs/candidate'` and partition the directory via different `testMatch` regex slices. Each spec file appears under exactly one project (per testMatch). Same pattern for the 3 voter-_ projects.
 
 5. **`test.skip(true, …)` SKIP-FALLBACKs.** Five test bodies are present-but-skipped under unconditional `test.skip(true, rationale)` markers: §7.1.12 (SETTINGS-01 wave A — notifications.voterApp), §9.7.1 (voter-feedback-persistence), §9.11.1 (voter-question-rendering-boolean QSPEC-01), §9.12.1 (voter-question-rendering-categorical QSPEC-02), plus §37's gated `test.skip(precondition, …)` markers (which are CONDITIONAL skips, not SKIP-FALLBACKs). The 4 unconditional SKIP-FALLBACK tests are listed in this inventory with `~~N.M.K~~` strikethrough on the header per the operator's spec, with the rationale string surfaced and the preserved body emitted for v2.11+ pickup.
 

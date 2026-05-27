@@ -52,7 +52,10 @@ If there's only one option, it is automatically selected and no interactions are
 
 <div data-testid="election-selector" {...concatClass(restProps, 'grid gap-sm')}>
   {#each elections as { id, name }}
-    <label class="label gap-sm cursor-pointer justify-start !p-0" class:pointer-events-none={elections.length === 1}>
+    <label
+      class="label gap-sm cursor-pointer justify-start !p-0"
+      class:pointer-events-none={elections.length === 1}
+      data-testid="election-selector-option-label">
       <!-- bind: keep — two-way DOM checkbox group bind:group={selected}; selected is $bindable([]) -->
       <input
         bind:group={selected}

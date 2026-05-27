@@ -11,12 +11,8 @@
  */
 
 import { expect, test } from '@playwright/test';
-import {
-  bypassIntroAndExpectElectionSelector,
-  expectQuestion,
-  selectElectionAndAdvance
-} from '../../utils/voterIntro';
 import { testIds } from '../../utils/testIds';
+import { bypassIntroAndExpectElectionSelector, expectQuestion, selectElectionAndAdvance } from '../../utils/voterIntro';
 
 test.describe('perm-2e-shared', () => {
   test('user selects EL1 only: no constituency selection, lands on questions', async ({ page }) => {

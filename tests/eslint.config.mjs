@@ -31,7 +31,10 @@ export default [
       'playwright/no-conditional-in-test': 'error',
       'playwright/no-networkidle': 'error',
       'playwright/no-conditional-expect': 'error',
-      'playwright/expect-expect': 'error',
+      // Helpers like `expectLandedOn`, `expectQuestion`, `expectConstituencySelector`
+      // wrap `expect()` assertions; whitelist any `expect[A-Z]…` identifier so the
+      // rule sees them as assertions.
+      'playwright/expect-expect': ['error', { assertFunctionPatterns: ['^expect[A-Z]'] }],
 
       // === Other plugin warning rules (aspirational; not bumped in Phase 73) ===
       // Prefer web-first assertions (toBeVisible over manual checks)

@@ -53,10 +53,7 @@ const TIMEOUT = {
  * the caller's expectation. The intermediate intro-page visibility wait is
  * the authoritative signal — no URL-pattern wait needed.
  */
-export async function bypassIntroAndExpect(
-  page: Page,
-  expectation: () => Promise<void>
-): Promise<void> {
+export async function bypassIntroThen(page: Page, expectation: () => Promise<void>): Promise<void> {
   await page.goto('/en/');
   await page.getByTestId(testIds.voter.home.startButton).click({ timeout: TIMEOUT.click });
   const introStart = page.getByTestId(testIds.voter.intro.startButton);
@@ -75,9 +72,9 @@ export async function expectQuestion(page: Page): Promise<void> {
   await expect(page.getByTestId(testIds.voter.questions.heading)).toBeVisible({
     timeout: TIMEOUT.slowPage
   });
-  await expect(
-    page.getByTestId(testIds.voter.questions.answerOption).first()
-  ).toBeVisible({ timeout: TIMEOUT.element });
+  await expect(page.getByTestId(testIds.voter.questions.answerOption).first()).toBeVisible({
+    timeout: TIMEOUT.element
+  });
 }
 
 /**
@@ -87,9 +84,7 @@ export async function expectQuestion(page: Page): Promise<void> {
 export async function expectElectionSelector(page: Page): Promise<Locator> {
   const list = page.getByTestId(testIds.voter.elections.list);
   await expect(list).toBeVisible({ timeout: TIMEOUT.slowPage });
-  await expect(
-    list.getByTestId(testIds.voter.elections.option).first()
-  ).toBeVisible({ timeout: TIMEOUT.element });
+  await expect(list.getByTestId(testIds.voter.elections.option).first()).toBeVisible({ timeout: TIMEOUT.element });
   return list;
 }
 
@@ -109,23 +104,18 @@ export async function expectConstituencySelector(page: Page): Promise<Locator> {
  * perm-disable-election-1co).
  */
 export async function bypassIntroAndExpectQuestion(page: Page): Promise<void> {
-  await bypassIntroAndExpect(page, () => expectQuestion(page));
+  await bypassIntroThen(page, () => expectQuestion(page));
 }
 
 /**
  * Walk home → intro → expect the elections list. Returns the list Locator.
  */
-export async function bypassIntroAndExpectElectionSelector(
-  page: Page
-): Promise<Locator> {
+export async function bypassIntroAndExpectElectionSelector(page: Page): Promise<Locator> {
   let listRef: Locator | undefined;
-  await bypassIntroAndExpect(page, async () => {
+  await bypassIntroThen(page, async () => {
     listRef = await expectElectionSelector(page);
   });
-  expect(
-    listRef,
-    'bypassIntroAndExpectElectionSelector: list locator was not captured'
-  ).toBeDefined();
+  expect(listRef, 'bypassIntroAndExpectElectionSelector: list locator was not captured').toBeDefined();
   return listRef!;
 }
 
@@ -150,53 +140,24 @@ export async function selectElectionAndAdvance(
   page: Page,
   { optionText }: { optionText: RegExp | string }
 ): Promise<void> {
-  const list = page.getByTestId(testIds.voter.elections.list);
-  await expect(list).toBeVisible({ timeout: TIMEOUT.slowPage });
-  const options = list.getByTestId(testIds.voter.elections.option);
-  const optionCount = await options.count();
-  expect(
-    optionCount,
-    'selectElectionAndAdvance: elections list must contain at least one option'
-  ).toBeGreaterThan(0);
-
-  let matchedCount = 0;
-  for (let i = 0; i < optionCount; i++) {
-    const option = options.nth(i);
-    // The election-selector-option testid is on the <input type="checkbox">
-    // element. The visible/accessible name lives on the wrapping <label>
-    // (the input has no aria-label and no text content of its own). Climb
-    // up to the label element and read its textContent — picks up
-    // "[EL1] First election" verbatim from the <span> inside the label.
-    const label = option.locator('xpath=ancestor::label[1]');
-    const optionName = ((await label.textContent()) ?? '').trim();
-    const matches =
-      typeof optionText === 'string'
-        ? optionName.includes(optionText)
-        : optionText.test(optionName);
-    // <input type="checkbox"> uses the `checked` IDL property, not
-    // aria-checked. Playwright's isChecked() reads the IDL property.
-    const isChecked = await option.isChecked();
-    if (matches) matchedCount++;
-    const shouldBeChecked = matches;
-    if (shouldBeChecked !== isChecked) {
-      // Click the wrapping <label> rather than the input — the label is
-      // pointer-friendly and toggles the checkbox via native behavior.
-      await label.click({ timeout: TIMEOUT.click });
-      const nowChecked = await option.isChecked();
-      expect(
-        nowChecked,
-        `selectElectionAndAdvance: failed to toggle option ${i} to ${shouldBeChecked ? 'checked' : 'unchecked'}`
-      ).toBe(shouldBeChecked);
-    }
+  const labels = page.getByTestId(testIds.voter.elections.label);
+  await expect(labels.first()).toBeVisible({ timeout: TIMEOUT.slowPage });
+  const optionCount = await labels.count();
+  expect(optionCount, 'selectElectionAndAdvance: elections list must contain at least one option').toBeGreaterThan(0);
+  const optionsToCheck = labels.filter({ hasText: optionText });
+  const checkCount = await optionsToCheck.count();
+  for (let i = 0; i < checkCount; i++) {
+    await optionsToCheck.nth(i).check({ timeout: TIMEOUT.click });
   }
-  expect(
-    matchedCount,
-    `selectElectionAndAdvance: optionText ${String(optionText)} matched zero options`
-  ).toBeGreaterThan(0);
-
+  const optionsToUncheck = labels.filter({ hasNotText: optionText });
+  const uncheckCount = await optionsToUncheck.count();
+  for (let i = 0; i < uncheckCount; i++) {
+    await optionsToUncheck.nth(i).uncheck({ timeout: TIMEOUT.click });
+  }
   const cont = page.getByTestId(testIds.voter.elections.continue);
   await expect(cont).toBeEnabled({ timeout: TIMEOUT.page });
   await cont.click();
+  const list = page.getByTestId(testIds.voter.elections.list);
   await expect(list).toBeHidden({ timeout: TIMEOUT.page });
 }
 
@@ -204,17 +165,12 @@ export async function selectElectionAndAdvance(
  * Walk home → intro → expect the constituencies list. Returns the list
  * Locator.
  */
-export async function bypassIntroAndExpectConstituencySelector(
-  page: Page
-): Promise<Locator> {
+export async function bypassIntroAndExpectConstituencySelector(page: Page): Promise<Locator> {
   let listRef: Locator | undefined;
-  await bypassIntroAndExpect(page, async () => {
+  await bypassIntroThen(page, async () => {
     listRef = await expectConstituencySelector(page);
   });
-  expect(
-    listRef,
-    'bypassIntroAndExpectConstituencySelector: list locator was not captured'
-  ).toBeDefined();
+  expect(listRef, 'bypassIntroAndExpectConstituencySelector: list locator was not captured').toBeDefined();
   return listRef!;
 }
 
@@ -237,10 +193,7 @@ export async function bypassIntroAndExpectConstituencySelector(
  */
 export async function selectConstituencyAndAdvance(
   page: Page,
-  {
-    selectorText,
-    optionText
-  }: { selectorText: RegExp | string; optionText: RegExp | string }
+  { selectorText, optionText }: { selectorText: RegExp | string; optionText: RegExp | string }
 ): Promise<void> {
   const list = page.getByTestId(testIds.voter.constituencies.list);
   await expect(list).toBeVisible({ timeout: TIMEOUT.slowPage });
@@ -251,7 +204,9 @@ export async function selectConstituencyAndAdvance(
   // (the bracketed CG symbol per A2). When only one combobox is rendered,
   // the filter is a no-op and the first (only) combobox is selected.
   const allComboboxes = list.getByRole('combobox');
-  const matchingCombobox = allComboboxes.filter({ has: page.locator('text=' + (typeof selectorText === 'string' ? selectorText : '')) });
+  const matchingCombobox = allComboboxes.filter({
+    has: page.locator('text=' + (typeof selectorText === 'string' ? selectorText : ''))
+  });
   const comboboxCount = await allComboboxes.count();
   expect(
     comboboxCount,
@@ -270,12 +225,8 @@ export async function selectConstituencyAndAdvance(
     const cb = allComboboxes.nth(i);
     // Probe the combobox's accessible name FIRST — if it matches
     // selectorText, this is the right combobox (single-pass).
-    const cbName =
-      (await cb.getAttribute('aria-label')) ?? (await cb.textContent()) ?? '';
-    const nameMatches =
-      typeof selectorText === 'string'
-        ? cbName.includes(selectorText)
-        : selectorText.test(cbName);
+    const cbName = (await cb.getAttribute('aria-label')) ?? (await cb.textContent()) ?? '';
+    const nameMatches = typeof selectorText === 'string' ? cbName.includes(selectorText) : selectorText.test(cbName);
     // If the name does not match and we have multiple comboboxes, try the
     // surrounding label. The voter-not-located-redirect spec's helper
     // (iterateSelectOptions) does NOT match by name and assumes one
@@ -295,10 +246,7 @@ export async function selectConstituencyAndAdvance(
     await option.click({ timeout: TIMEOUT.click });
     picked = true;
   }
-  expect(
-    picked,
-    `selectConstituencyAndAdvance: no combobox matched selectorText ${String(selectorText)}`
-  ).toBe(true);
+  expect(picked, `selectConstituencyAndAdvance: no combobox matched selectorText ${String(selectorText)}`).toBe(true);
 
   const cont = page.getByTestId(testIds.voter.constituencies.continue);
   await expect(cont).toBeEnabled({ timeout: TIMEOUT.page });

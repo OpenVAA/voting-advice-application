@@ -17,8 +17,8 @@
  */
 
 import { expect, test } from '@playwright/test';
-import { bypassIntroAndExpectQuestion } from '../../utils/voterIntro';
 import { testIds } from '../../utils/testIds';
+import { bypassIntroAndExpectQuestion } from '../../utils/voterIntro';
 
 test.describe('perm-1e1cg1co', () => {
   test('no election or constituency selector; lands on questions directly', async ({ page }) => {

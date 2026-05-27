@@ -80,6 +80,8 @@ export const testIds = {
     },
     elections: {
       list: 'voter-elections-list',
+      selector: 'election-selector',
+      label: 'election-selector-option-label',
       option: 'election-selector-option',
       continue: 'voter-elections-continue'
     },

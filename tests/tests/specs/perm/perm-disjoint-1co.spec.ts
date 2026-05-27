@@ -11,12 +11,12 @@
 
 import { expect, test } from '@playwright/test';
 import { iterateSelectOptions } from '../../helpers';
+import { testIds } from '../../utils/testIds';
 import {
   bypassIntroAndExpectElectionSelector,
   expectConstituencySelector,
   selectElectionAndAdvance
 } from '../../utils/voterIntro';
-import { testIds } from '../../utils/testIds';
 
 test.describe('perm-disjoint-1co', () => {
   test('user selects only EL-1: constituency selector shows only CG-1', async ({ page }) => {

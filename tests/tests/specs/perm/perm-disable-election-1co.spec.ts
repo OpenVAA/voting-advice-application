@@ -8,8 +8,8 @@
  */
 
 import { expect, test } from '@playwright/test';
-import { bypassIntroAndExpectQuestion } from '../../utils/voterIntro';
 import { testIds } from '../../utils/testIds';
+import { bypassIntroAndExpectQuestion } from '../../utils/voterIntro';
 
 test.describe('perm-disable-election-1co', () => {
   test('disallowSelection + 1 shared CO: no election OR constituency selector', async ({ page }) => {

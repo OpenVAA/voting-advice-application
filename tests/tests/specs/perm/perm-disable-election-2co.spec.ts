@@ -8,18 +8,18 @@
  */
 
 import { expect, test } from '@playwright/test';
+import { testIds } from '../../utils/testIds';
 import {
-  bypassIntroAndExpect,
+  bypassIntroThen,
   expectConstituencySelector,
   expectQuestion,
   selectConstituencyAndAdvance
 } from '../../utils/voterIntro';
-import { testIds } from '../../utils/testIds';
 
 test.describe('perm-disable-election-2co', () => {
   test('disallowSelection + 2 COs: no election selector, constituency selector shown', async ({ page }) => {
     // Intro → directly to constituency selector (election step skipped).
-    await bypassIntroAndExpect(page, async () => {
+    await bypassIntroThen(page, async () => {
       await expectConstituencySelector(page);
     });
     await expect(page.getByTestId(testIds.voter.elections.list)).toBeHidden();

@@ -284,6 +284,8 @@ async function expectElectionOptionAndSelect({ page, text }: { page: Page; text:
   const target = electionAccordion.getByRole('option', { name: text }).first();
   await expect(target).toBeVisible({ timeout: TIMEOUT.element });
   await target.click({ timeout: TIMEOUT.click });
+  // We need to wait for the accordion to collapse again to ensure the state has changed
+  await expect(visibleOptions).toHaveCount(1, { timeout: TIMEOUT.element });
   const resultsList = page.getByTestId(testIds.voter.results.list);
   await expect(resultsList).toBeVisible({ timeout: TIMEOUT.page });
 }
