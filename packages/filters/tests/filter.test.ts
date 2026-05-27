@@ -312,6 +312,46 @@ test('ChoiceQuestionFilter', () => {
   expect(filter.active, 'Not active if reset').toBe(false);
 });
 
+test('ChoiceQuestionFilter: TIR3 empty-include semantics', () => {
+  // TIR3 cluster 1: distinguish `include = undefined` (filter inactive, all
+  // pass) from `include = []` (filter ACTIVE with zero allowed → 0 results).
+  // Prior to this contract, both states collapsed to "filter inactive".
+  const choices: Array<Choice> = [
+    { id: '0', label: 'M' },
+    { id: '1', label: 'A' },
+    { id: '2', label: 'E' }
+  ];
+  const question = choiceQuestion('rightId', choices);
+  const answers = ['0', '1', '1', '2', undefined];
+  const people: Array<AnsweringEntity> = answers.map(
+    (a) =>
+      new AnsweringEntity({
+        wrongId: undefined,
+        rightId: a
+      })
+  );
+  const filter = new ChoiceQuestionFilter({ question }, 'fi');
+
+  // (c) include = undefined → all entities match (filter inactive)
+  expect(filter.active, 'undefined include → inactive').toBe(false);
+  expect(filter.apply(people), 'undefined include → all entities').toEqual(people);
+
+  // (a) include = [] → zero matches (active, empty allow-list)
+  filter.include = [];
+  expect(filter.active, 'empty include → ACTIVE').toBe(true);
+  expect(filter.apply(people), 'empty include → 0 matches').toEqual([]);
+
+  // (b) include = [MISSING_VALUE] → only entities with no answer match
+  filter.include = [MISSING_VALUE];
+  expect(filter.active, 'include=[MISSING_VALUE] → active').toBe(true);
+  expect(filter.apply(people), 'include=[MISSING_VALUE] → only missing-answer entities').toEqual([people[4]]);
+
+  // Toggle back to undefined → inactive again
+  filter.include = undefined;
+  expect(filter.active, 'undefined include after reset → inactive').toBe(false);
+  expect(filter.apply(people), 'undefined include after reset → all').toEqual(people);
+});
+
 test('ChoiceQuestionFilter: missing values', () => {
   const choices: Array<Choice> = [
     { id: '0', label: 'M' }, // 3rd in alhabetical order in the 'fi' locale
