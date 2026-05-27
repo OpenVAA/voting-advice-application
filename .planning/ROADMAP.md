@@ -341,7 +341,7 @@ Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82, 83 (pa
 | 86.2. E2E Suite Refactor Pass | v2.10 | 3/3 | Complete    | 2026-05-20 |
 | 86.3. Implement Skipped Tests (8 cells) | v2.10 | 5/5 | Complete    | 2026-05-20 |
 | 87. v2.10 All-Green Milestone-Close Anchor | v2.10 | 1/1 | Complete    | 2026-05-21 |
-| 88. E2E Test Catalog Audit + Forward-Looking Baseline | v2.10 | 2/2 | Complete   | 2026-05-23 |
+| 88. E2E Test Catalog Audit + Forward-Looking Baseline | v2.10 | 3/4 | In progress | - |
 
 ### Phase 88: E2E Test Catalog Audit + Forward-Looking Baseline
 
@@ -354,12 +354,14 @@ Phase 79 (sequential REQs DETERM-04 → DETERM-05) → Phases 80, 81, 82, 83 (pa
 - BLOCKS the v2.11 rune migration start (per spike-findings: Wave 1 leaf-context migrations need a deterministic baseline to regression-test against).
 
 **Depends on:** Phase 87 (final pre-audit anchor must exist as historical reference).
-**Requirements**: Operator-driven — Plan 88-01 derives its scope directly from `./TEST-INVENTORY-REFACTOR-1.md` (817 lines, of which lines 1-378 are 88-01-scoped; lines 379+ are deferred to subsequent 88-NN plans). Discuss-phase skipped because the refactor doc IS the design spec.
-**Plans:** 2/2 plans complete
+**Requirements**: Operator-driven — Plan 88-01 derives its scope directly from `./TEST-INVENTORY-REFACTOR-1.md` (817 lines, of which lines 1-378 are 88-01-scoped; lines 379+ are deferred to subsequent 88-NN plans); Plan 88-03 derives from `./TEST-INVENTORY-REFACTOR-2.md`; Plan 88-04 derives from `./TEST-INVENTORY-REFACTOR-3.md` lines 21–194 (T3–T9 deferred from quick task `260527-nat`; T1+T2 already shipped). Discuss-phase room is plan-by-plan: skipped for 88-01/02/03 because the refactor doc IS the design spec; REQUIRED for 88-04 because the T3 settings-resolution ADR needs explicit operator decision.
+**Plans:** 3/4 plans complete; 1 planned
 
 Plans:
 - [x] 88-01-PLAN.md — Parallel landing Wave 1: new BUILT_IN `baseV1` template + generic `setupFromTemplate` helper + sibling voter fixture (`answerMode: 'min'|'max'`) + voter-mega-journey spec (refactor-doc:204-378) + 3 appended playwright projects (`data-setup-baseV1 → voter-mega-journey → data-teardown-baseV1`) + full-suite regression + optional migration map. Parallel-only (existing surface untouched except for ONE testIgnore extension at `playwright.config.ts:252` to prevent double-pickup of the new spec by `voter-app`). 7 atomic tasks (6 mandatory + 1 optional). **EXECUTED PARTIAL** 2026-05-23 — scaffolding green; 25 mega-journey steps deferred to 88-NN pending baseV1 UI inspection.
 - [x] 88-02-PLAN.md — Results route refactor: rename `entityTypePlural`/`entityTypeSingular` → `entityTab`/`entity` (with `etPl`/`etSg` matchers) + introduce new `[[electionTab]]` route segment that is NAME-DISJOINT from the search-side `?electionId=…` AVAILABLE-array surface. New voterContext `currentResultsElection` reactive accessor; server-side guards (invalid→strip+redirect; 1-available→auto-redirect; 2+→render existing picker). 8 atomic tasks. Unblocks ~5 of 88-01's deferred-88-nn placeholders (election-selection cluster) for the immediate follow-on plan to wire.
-- [ ] 88-NN — TBD: absorb refactor-doc lines 379+ specs into the new template/helper/mega-journey shape; retire `--likert-only` flag once last consumer migrates
+- [x] 88-03-PLAN.md — Voter election + constituency permutations: 8 minimal-data templates + voterIntro shared helpers (9 exports) + 8 perm-* spec files (15 hard-asserted tests under new `tests/tests/specs/perm/` directory) + 24 appended playwright projects (8 setup + 8 spec + 8 teardown). Sequential within the perm-* family (HIGH-2 chain-not-parallel resolution); parallel with default + variant + mega-journey + baseV1 chains via per-template `externalIdPrefix` decoupling. 5 atomic tasks.
+- [ ] 88-04-PLAN.md — TIR3 fixtures-and-spec-refactor: absorbs T3–T9 deferred from quick `260527-nat` (T1+T2 already shipped via `caf6ee931`/`accfba54f`). T3 `cardContents.candidate` accepts `{question: '<external_id>'}` via load-time-vs-seed-time ADR; T4 fixtures library (`resultsPage`/`entityFilters`/`entityDetails`) consumed by ≥3 mega-journey cells; T5–T8 spec migrations (EDIT `result-card-contents`, ADD `matching: organisations`, REFACTOR `voter-vs-entity matrix` + `party-drawer → organisation details`, ADD `filters: text` + `filters: dialog`); T9 TEXT_RE cleanup. Discuss-phase REQUIRED for T3 ADR; research-phase pre-flight grep mandatory (DOM testids `score-gauge`/`election-symbol`/`entity-list-filter-badge` + baseV1 row counts) per `260527-nat-SUMMARY.md:191-195`. SCOPE memo: `88-04-SCOPE.md`.
+- [ ] 88-NN — TBD: absorb refactor-doc-1 lines 379+ specs into the new template/helper/mega-journey shape; retire `--likert-only` flag once last consumer migrates
 - [ ] 88-NN — TBD: retire per-variant setup files once the generic helper consumes them all
 - [ ] 88-LAST — TBD: final v2.10-close anchor capture against the audited catalog (3-run cold-start gate + atomic regen-constants); replaces Phase 87 anchor `b2ad76e5…`
