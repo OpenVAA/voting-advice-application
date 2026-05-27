@@ -352,7 +352,7 @@ export const baseV1Template: Template = {
     fixed: [
       {
         external_id: 'test-el-reg',
-        name: { en: 'Regional Election' },
+        name: { en: '[el-reg] Regional Election' },
         short_name: { en: 'Regional' },
         election_type: 'general',
         election_date: '2026-06-15',
@@ -364,7 +364,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-el-mun',
-        name: { en: 'Municipal Election' },
+        name: { en: '[el-mun] Municipal Election' },
         short_name: { en: 'Municipal' },
         election_type: 'local',
         election_date: '2026-06-15',
@@ -383,14 +383,14 @@ export const baseV1Template: Template = {
     fixed: [
       {
         external_id: 'test-cg-reg',
-        name: { en: 'Regions' },
+        name: { en: '[cg-reg] Regions' },
         sort_order: 0,
         is_generated: false,
         constituencies: [{ external_id: 'test-co-reg-n' }, { external_id: 'test-co-reg-s' }]
       },
       {
         external_id: 'test-cg-mun',
-        name: { en: 'Municipalities' },
+        name: { en: '[cg-mun] Municipalities' },
         sort_order: 1,
         is_generated: false,
         constituencies: [
@@ -411,40 +411,40 @@ export const baseV1Template: Template = {
     fixed: [
       {
         external_id: 'test-co-reg-n',
-        name: { en: 'Region North' },
+        name: { en: '[co-reg-n] Region North' },
         sort_order: 0,
         is_generated: false
       },
       {
         external_id: 'test-co-reg-s',
-        name: { en: 'Region South' },
+        name: { en: '[co-reg-s] Region South' },
         sort_order: 1,
         is_generated: false
       },
       {
         external_id: 'test-co-mun-ne',
-        name: { en: 'Municipality North-East' },
+        name: { en: '[co-mun-ne] Municipality North-East' },
         sort_order: 2,
         is_generated: false,
         parent: { external_id: 'test-co-reg-n' }
       },
       {
         external_id: 'test-co-mun-nw',
-        name: { en: 'Municipality North-West' },
+        name: { en: '[co-mun-nw] Municipality North-West' },
         sort_order: 3,
         is_generated: false,
         parent: { external_id: 'test-co-reg-n' }
       },
       {
         external_id: 'test-co-mun-se',
-        name: { en: 'Municipality South-East' },
+        name: { en: '[co-mun-se] Municipality South-East' },
         sort_order: 4,
         is_generated: false,
         parent: { external_id: 'test-co-reg-s' }
       },
       {
         external_id: 'test-co-mun-sw',
-        name: { en: 'Municipality South-West' },
+        name: { en: '[co-mun-sw] Municipality South-West' },
         sort_order: 5,
         is_generated: false,
         parent: { external_id: 'test-co-reg-s' }
@@ -458,7 +458,7 @@ export const baseV1Template: Template = {
     fixed: [
       {
         external_id: 'test-or-aa',
-        name: { en: 'Party AA' },
+        name: { en: '[or-aa] Party AA' },
         short_name: { en: 'AA' },
         color: { normal: '#1f4ea0', dark: '#7aa3d6' },
         sort_order: 0,
@@ -466,7 +466,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-or-ab',
-        name: { en: 'Party AB' },
+        name: { en: '[or-ab] Party AB' },
         short_name: { en: 'AB' },
         color: { normal: '#3a72c2', dark: '#8db5dc' },
         sort_order: 1,
@@ -474,7 +474,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-or-ba',
-        name: { en: 'Party BA' },
+        name: { en: '[or-ba] Party BA' },
         short_name: { en: 'BA' },
         color: { normal: '#a82525', dark: '#d67070' },
         sort_order: 2,
@@ -482,7 +482,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-or-bb',
-        name: { en: 'Party BB - Best-Regional-Party' },
+        name: { en: '[or-bb] Party BB - Best-Regional-Party' },
         short_name: { en: 'BB' },
         color: { normal: '#c24545', dark: '#dc8d8d' },
         sort_order: 3,
@@ -490,7 +490,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-or-c',
-        name: { en: 'Party C' },
+        name: { en: '[or-c] Party C' },
         short_name: { en: 'C' },
         color: { normal: '#1f8b3c', dark: '#6bdc88' },
         sort_order: 4,
@@ -505,7 +505,7 @@ export const baseV1Template: Template = {
     fixed: [
       {
         external_id: 'test-al-a',
-        name: { en: 'Alliance A' },
+        name: { en: '[al-a] Alliance A' },
         short_name: { en: 'AL-A' },
         color: { normal: '#1f4ea0', dark: '#7aa3d6' },
         sort_order: 0,
@@ -513,7 +513,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-al-b',
-        name: { en: 'Alliance B' },
+        name: { en: '[al-b] Alliance B' },
         short_name: { en: 'AL-B' },
         color: { normal: '#a82525', dark: '#d67070' },
         sort_order: 1,
@@ -535,35 +535,35 @@ export const baseV1Template: Template = {
     fixed: [
       {
         external_id: 'test-qg-info',
-        name: { en: 'Info Questions' },
+        name: { en: '[qg-info] Info Questions' },
         category_type: 'info',
         sort_order: 0,
         is_generated: false
       },
       {
         external_id: 'test-qg-opin-base',
-        name: { en: 'Base Opinion Questions' },
+        name: { en: '[qg-opin-base] Base Opinion Questions' },
         category_type: 'opinion',
         sort_order: 1,
         is_generated: false
       },
       {
         external_id: 'test-qg-opin-opt-a',
-        name: { en: 'Optional Opinion Questions A' },
+        name: { en: '[qg-opin-opt-a-NotSelected] Optional Opinion Questions A' },
         category_type: 'opinion',
         sort_order: 2,
         is_generated: false
       },
       {
         external_id: 'test-qg-opin-opt-b',
-        name: { en: 'Optional Opinion Questions B' },
+        name: { en: '[qg-opin-opt-b-Skipped] Optional Opinion Questions B' },
         category_type: 'opinion',
         sort_order: 3,
         is_generated: false
       },
       {
         external_id: 'test-qg-opin-el-reg',
-        name: { en: 'Opinion Questions for Regional Elections Only' },
+        name: { en: '[qg-opin-el-reg] Opinion Questions for Regional Elections Only' },
         category_type: 'opinion',
         sort_order: 4,
         is_generated: false,
@@ -571,7 +571,7 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-qg-opin-co-mun-se-sw',
-        name: { en: 'Opinion Questions for Municipalities SE and SW Only' },
+        name: { en: '[qg-opin-co-mun-se-sw] Opinion Questions for Municipalities SE and SW Only' },
         category_type: 'opinion',
         sort_order: 5,
         is_generated: false,
@@ -579,14 +579,14 @@ export const baseV1Template: Template = {
       },
       {
         external_id: 'test-qg-opin-filt-a',
-        name: { en: 'Opinion Questions Filtered per Question NE' },
+        name: { en: '[qg-opin-filt-a] Opinion Questions Filtered per Question NE' },
         category_type: 'opinion',
         sort_order: 6,
         is_generated: false
       },
       {
         external_id: 'test-qg-opin-filt-b',
-        name: { en: 'Opinion Questions Filtered per Question SE' },
+        name: { en: '[qg-opin-filt-b] Opinion Questions Filtered per Question SE' },
         category_type: 'opinion',
         sort_order: 7,
         is_generated: false
@@ -610,7 +610,7 @@ export const baseV1Template: Template = {
       {
         external_id: 'test-qu-info-multipleChoiceCategorical',
         type: 'multipleChoiceCategorical',
-        name: { en: 'Info: pick multiple categories that apply.' },
+        name: { en: '[qu-info-multipleChoiceCategorical] Info: pick multiple categories that apply.' },
         choices: INFO_MULTIPLE_CHOICE_EN,
         category: { external_id: 'test-qg-info' },
         custom_data: { filterable: true },
@@ -622,7 +622,7 @@ export const baseV1Template: Template = {
       {
         external_id: 'test-qu-info-singleChoiceCategorical',
         type: 'singleChoiceCategorical',
-        name: { en: 'Info: pick one category.' },
+        name: { en: '[qu-info-singleChoiceCategorical] Info: pick one category.' },
         choices: INFO_SINGLE_CATEGORICAL_EN,
         category: { external_id: 'test-qg-info' },
         // filterable:false per refactor-doc:30 (NOT filterable)
@@ -634,7 +634,7 @@ export const baseV1Template: Template = {
       {
         external_id: 'test-qu-info-text',
         type: 'text',
-        name: { en: 'Info: short biography.' },
+        name: { en: '[qu-info-text] Info: short biography.' },
         category: { external_id: 'test-qg-info' },
         allow_open: false,
         required: false,
@@ -644,7 +644,7 @@ export const baseV1Template: Template = {
       {
         external_id: 'test-qu-info-text-longText',
         type: 'text',
-        name: { en: 'Info: long biography.' },
+        name: { en: '[qu-info-text-longText] Info: long biography.' },
         category: { external_id: 'test-qg-info' },
         custom_data: { longText: true },
         allow_open: false,
@@ -656,7 +656,7 @@ export const baseV1Template: Template = {
         external_id: 'test-qu-info-text-link',
         type: 'text',
         subtype: 'link',
-        name: { en: 'Info: personal link.' },
+        name: { en: '[qu-info-text-link] Info: personal link.' },
         category: { external_id: 'test-qg-info' },
         settings: { type: 'link' },
         allow_open: false,
@@ -667,7 +667,7 @@ export const baseV1Template: Template = {
       {
         external_id: 'test-qu-info-number',
         type: 'number',
-        name: { en: 'Info: years of experience.' },
+        name: { en: '[qu-info-number] Info: years of experience.' },
         category: { external_id: 'test-qg-info' },
         custom_data: { filterable: true, min: 0, max: 80 },
         allow_open: false,
@@ -678,7 +678,7 @@ export const baseV1Template: Template = {
       {
         external_id: 'test-qu-info-boolean',
         type: 'boolean',
-        name: { en: 'Info: would-you-run-again-yes-no?' },
+        name: { en: '[qu-info-boolean] Info: would-you-run-again-yes-no?' },
         category: { external_id: 'test-qg-info' },
         custom_data: { filterable: true },
         allow_open: false,
@@ -689,7 +689,7 @@ export const baseV1Template: Template = {
       {
         external_id: 'test-qu-info-date',
         type: 'date',
-        name: { en: 'Info: date of birth.' },
+        name: { en: '[qu-info-date] Info: date of birth.' },
         category: { external_id: 'test-qg-info' },
         allow_open: false,
         required: false,
@@ -699,7 +699,7 @@ export const baseV1Template: Template = {
       {
         external_id: 'test-qu-info-multipleText',
         type: 'multipleText',
-        name: { en: 'Info: keywords.' },
+        name: { en: '[qu-info-multipleText] Info: keywords.' },
         category: { external_id: 'test-qg-info' },
         allow_open: false,
         required: false,
@@ -711,7 +711,7 @@ export const baseV1Template: Template = {
       {
         external_id: 'test-qu-opin-base-1-likert5',
         type: 'singleChoiceOrdinal',
-        name: { en: 'Base opinion 1 — Likert 5.' },
+        name: { en: '[qu-opin-base-1-likert5] Base opinion 1 — Likert 5.' },
         choices: LIKERT_5_EN,
         category: { external_id: 'test-qg-opin-base' },
         allow_open: true,
@@ -722,7 +722,7 @@ export const baseV1Template: Template = {
       {
         external_id: 'test-qu-opin-base-2-likert4',
         type: 'singleChoiceOrdinal',
-        name: { en: 'Base opinion 2 — Likert 4.' },
+        name: { en: '[qu-opin-base-2-likert4] Base opinion 2 — Likert 4.' },
         choices: LIKERT_4_EN,
         category: { external_id: 'test-qg-opin-base' },
         allow_open: true,
@@ -733,7 +733,7 @@ export const baseV1Template: Template = {
       {
         external_id: 'test-qu-opin-base-3-likert7',
         type: 'singleChoiceOrdinal',
-        name: { en: 'Base opinion 3 — Likert 7.' },
+        name: { en: '[qu-opin-base-3-likert7] Base opinion 3 — Likert 7.' },
         choices: LIKERT_7_EN,
         category: { external_id: 'test-qg-opin-base' },
         allow_open: true,
@@ -744,7 +744,7 @@ export const baseV1Template: Template = {
       {
         external_id: 'test-qu-opin-base-4-categorical',
         type: 'singleChoiceCategorical',
-        name: { en: 'Base opinion 4 — Categorical.' },
+        name: { en: '[qu-opin-base-4-categorical] Base opinion 4 — Categorical.' },
         choices: OPIN_CATEGORICAL_EN,
         category: { external_id: 'test-qg-opin-base' },
         allow_open: true,
@@ -755,7 +755,7 @@ export const baseV1Template: Template = {
       {
         external_id: 'test-qu-opin-base-5-boolean',
         type: 'boolean',
-        name: { en: 'Base opinion 5 — Boolean.' },
+        name: { en: '[qu-opin-base-5-boolean] Base opinion 5 — Boolean.' },
         category: { external_id: 'test-qg-opin-base' },
         allow_open: true,
         required: true,
@@ -767,7 +767,7 @@ export const baseV1Template: Template = {
       {
         external_id: 'test-qu-opin-opt-a-1',
         type: 'singleChoiceOrdinal',
-        name: { en: 'Opt-A opinion 1 — Likert 5.' },
+        name: { en: '[qu-opin-opt-a-1] Opt-A opinion 1 — Likert 5.' },
         choices: LIKERT_5_EN,
         category: { external_id: 'test-qg-opin-opt-a' },
         allow_open: true,
@@ -780,7 +780,7 @@ export const baseV1Template: Template = {
       {
         external_id: 'test-qu-opin-opt-b-1',
         type: 'singleChoiceOrdinal',
-        name: { en: 'Opt-B opinion 1 — Likert 5.' },
+        name: { en: '[qu-opin-opt-b-1] Opt-B opinion 1 — Likert 5.' },
         choices: LIKERT_5_EN,
         category: { external_id: 'test-qg-opin-opt-b' },
         allow_open: true,
@@ -793,7 +793,7 @@ export const baseV1Template: Template = {
       {
         external_id: 'test-qu-opin-el-reg-1',
         type: 'singleChoiceOrdinal',
-        name: { en: 'Regional-only opinion 1 — Likert 5.' },
+        name: { en: '[qu-opin-el-reg-1] Regional-only opinion 1 — Likert 5.' },
         choices: LIKERT_5_EN,
         category: { external_id: 'test-qg-opin-el-reg' },
         // The category itself carries election_ids via _elections (above);
@@ -808,7 +808,7 @@ export const baseV1Template: Template = {
       {
         external_id: 'test-qu-opin-co-mun-se-sw-1',
         type: 'singleChoiceOrdinal',
-        name: { en: 'Municipal SE/SW opinion 1 — Likert 5.' },
+        name: { en: '[qu-opin-co-mun-se-sw-1] Municipal SE/SW opinion 1 — Likert 5.' },
         choices: LIKERT_5_EN,
         category: { external_id: 'test-qg-opin-co-mun-se-sw' },
         _constituencies: { external_id: ['test-co-mun-se', 'test-co-mun-sw'] },
@@ -822,7 +822,7 @@ export const baseV1Template: Template = {
       {
         external_id: 'test-qu-open-filt-mun-ne',
         type: 'singleChoiceOrdinal',
-        name: { en: 'Filtered Mun-NE opinion — Likert 5.' },
+        name: { en: '[qu-open-filt-mun-ne] Filtered Mun-NE opinion — Likert 5.' },
         choices: LIKERT_5_EN,
         category: { external_id: 'test-qg-opin-filt-a' },
         _constituencies: { external_id: ['test-co-mun-ne'] },
@@ -836,7 +836,7 @@ export const baseV1Template: Template = {
       {
         external_id: 'test-qu-open-filt-mun-se',
         type: 'singleChoiceOrdinal',
-        name: { en: 'Filtered Mun-SE opinion — Likert 5.' },
+        name: { en: '[qu-open-filt-mun-se] Filtered Mun-SE opinion — Likert 5.' },
         choices: LIKERT_5_EN,
         category: { external_id: 'test-qg-opin-filt-b' },
         _constituencies: { external_id: ['test-co-mun-se'] },
