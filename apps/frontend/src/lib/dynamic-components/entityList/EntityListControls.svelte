@@ -127,7 +127,7 @@ TODO: Consider moving the tracking events away from the component and just addin
           class="!w-auto"
           data-testid="entity-list-filter"
           text={t('entityFilters.filterButtonLabel')}
-          >{#snippet badge()}<span data-testid="entity-list-filter-badge"><InfoBadge text={numActiveFilters} /></span>{/snippet}</Button>
+          >{#snippet badge()}<InfoBadge text={numActiveFilters} />{/snippet}</Button>
       {:else}
         <Button
           onclick={openFilters}

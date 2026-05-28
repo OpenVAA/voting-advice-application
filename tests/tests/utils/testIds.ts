@@ -134,7 +134,6 @@ export const testIds = {
       scoreGauge: 'score-gauge',
       subMatches: 'sub-matches',
       electionSymbol: 'election-symbol',
-      filterBadge: 'entity-list-filter-badge',
       filterRow: 'entity-filter-row',
       filterOption: 'entity-filter-option',
       filterNumericMin: 'entity-filter-numeric-min',

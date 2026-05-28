@@ -264,17 +264,17 @@ export function createEntityFilters(page: Page) {
      * The filter button's badge surface. Returns the filter button itself
      * so callers can `toContainText(/<count>/)` against the rendered count.
      *
-     * 88-04-fix (post-SUMMARY): The Wave 1.5 testid surgery placed
-     * `data-testid="entity-list-filter-badge"` on a `<span>` wrapping the
+     * 88-04 WR-04 (post-REVIEW): The Wave 1.5 testid surgery originally
+     * placed `data-testid="entity-list-filter-badge"` on a `<span>` wrapping
      * `<InfoBadge>` inside the badge snippet at EntityListControls.svelte:130.
-     * Empirically the wrapping `<span>` does NOT survive Svelte 5's snippet
-     * compilation — the rendered DOM contains only the InfoBadge's inner
-     * `<div class="badge ...">` between the snippet anchor comments
-     * (verified via DOM diagnostic: the span with data-testid is missing
-     * from the rendered button outerHTML). Rather than chase the Svelte 5
-     * snippet-wrapping bug, scope the assertion to the filter button itself
-     * (which has accessible name "<count> Filter" when active — the badge
-     * count is part of the button's textContent).
+     * Empirically the wrapping `<span>` did NOT survive Svelte 5's snippet
+     * compilation — the rendered DOM contained only the InfoBadge's inner
+     * `<div class="badge ...">` between the snippet anchor comments. Rather
+     * than chase the Svelte 5 snippet-wrapping bug, scope the assertion to
+     * the filter button itself (which has accessible name "<count> Filter"
+     * when active — the badge count is part of the button's textContent).
+     * The stranded `<span>` wrapper and its registry entry have since been
+     * removed (WR-04 cleanup).
      */
     getFilterButtonBadge(): Locator {
       return page.getByTestId(testIds.voter.results.filterButton).first();
