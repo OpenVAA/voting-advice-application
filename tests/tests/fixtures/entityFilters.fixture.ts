@@ -24,15 +24,6 @@ import type { Locator, Page } from '@playwright/test';
 
 type Target = RegExp | string | ((count: number) => number);
 
-function pickByTarget(loc: Locator, target: Target): Locator {
-  if (typeof target === 'function') {
-    return loc.nth(target(0)); // count unknown synchronously — caller must
-    // ensure the indexer doesn't need `count`. Use the async variants in
-    // `getFilter` / `getOption` below for count-aware indexing.
-  }
-  return loc.filter({ hasText: target as RegExp | string }).first();
-}
-
 export function createEntityFilters(page: Page) {
   /**
    * Returns the dialog-scoped + per-filter API surface, scoped to the
@@ -292,7 +283,3 @@ export function createEntityFilters(page: Page) {
 }
 
 export type EntityFiltersFixture = ReturnType<typeof createEntityFilters>;
-
-// Mark pickByTarget as referenced to satisfy `noUnusedLocals` if enabled.
-// Keep as utility for future per-filter-row indexer use.
-void pickByTarget;
