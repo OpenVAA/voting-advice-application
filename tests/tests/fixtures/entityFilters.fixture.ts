@@ -167,10 +167,25 @@ export function createEntityFilters(page: Page) {
       /**
        * Hard-assert the reset Button's disabled state.
        *
+       * 88-04-fix (post-SUMMARY): The Modal action snippet's
+       * `data-testid="entity-filter-dialog-apply"` /
+       * `data-testid="entity-filter-dialog-reset"` are wired on the
+       * `<Button>` component (which forwards via `concatClass(restProps,
+       * classes)` to a `<svelte:element this="button">`). Empirically the
+       * resulting testid-on-button lookup is unreliable inside the open
+       * `getByRole('dialog')` scope — strict-mode resolution fails to
+       * locate the button despite it being in DOM (root cause: the
+       * `<svelte:element>` + concatClass forwarding chain in Svelte 5
+       * apparently doesn't surface `data-testid` on the rendered element
+       * in all cases). Switching to `getByRole('button', { name: <i18n> })`
+       * scoped to the dialog root bypasses the testid mechanism entirely
+       * — buttons have stable accessible names ("Close filters" /
+       * "Reset filters") that are visibility-aware by default.
+       *
        * @param disabled default true (assert disabled).
        */
       async expectResetToBeDisabled({ disabled }: { disabled?: boolean } = { disabled: true }): Promise<void> {
-        const reset = dialogRoot.getByTestId(testIds.voter.results.filterDialogReset);
+        const reset = dialogRoot.getByRole('button', { name: /Reset filters/i });
         if (disabled !== false) {
           await expect(reset).toBeDisabled();
         } else {
@@ -179,19 +194,27 @@ export function createEntityFilters(page: Page) {
       },
 
       /**
-       * Click the apply Button (closes the dialog).
+       * Click the apply Button (closes the dialog). See note on
+       * `expectResetToBeDisabled` re: the role-based lookup.
        */
       async close(): Promise<void> {
-        await dialogRoot.getByTestId(testIds.voter.results.filterDialogApply).click();
+        await dialogRoot.getByRole('button', { name: /Close filters/i }).click();
         await expect(dialogRoot).toBeHidden();
       },
 
       /**
-       * Click the reset Button. Dialog STAYS OPEN; caller decides whether
-       * to close or continue asserting.
+       * Click the reset Button. NB — `resetFilters()` at
+       * EntityListControls.svelte:96-100 calls `filterGroup?.reset()` AND
+       * `filtersModalRef?.closeModal()` synchronously, so clicking reset
+       * CLOSES the dialog as a side-effect. Callers should NOT call
+       * `close()` afterwards; the dialog is already gone.
+       *
+       * Awaits the dialog being hidden before returning so subsequent
+       * `openFilterDialog()` calls observe a clean baseline.
        */
       async reset(): Promise<void> {
-        await dialogRoot.getByTestId(testIds.voter.results.filterDialogReset).click();
+        await dialogRoot.getByRole('button', { name: /Reset filters/i }).click();
+        await expect(dialogRoot).toBeHidden();
       }
     };
   }
@@ -243,12 +266,23 @@ export function createEntityFilters(page: Page) {
     },
 
     /**
-     * The `entity-list-filter-badge` wrapper (Wave 1.5 testid added at
-     * EntityListControls.svelte:130 — only present when the active-state
-     * Button variant is rendered, i.e. when numActiveFilters > 0).
+     * The filter button's badge surface. Returns the filter button itself
+     * so callers can `toContainText(/<count>/)` against the rendered count.
+     *
+     * 88-04-fix (post-SUMMARY): The Wave 1.5 testid surgery placed
+     * `data-testid="entity-list-filter-badge"` on a `<span>` wrapping the
+     * `<InfoBadge>` inside the badge snippet at EntityListControls.svelte:130.
+     * Empirically the wrapping `<span>` does NOT survive Svelte 5's snippet
+     * compilation — the rendered DOM contains only the InfoBadge's inner
+     * `<div class="badge ...">` between the snippet anchor comments
+     * (verified via DOM diagnostic: the span with data-testid is missing
+     * from the rendered button outerHTML). Rather than chase the Svelte 5
+     * snippet-wrapping bug, scope the assertion to the filter button itself
+     * (which has accessible name "<count> Filter" when active — the badge
+     * count is part of the button's textContent).
      */
     getFilterButtonBadge(): Locator {
-      return page.getByTestId(testIds.voter.results.filterBadge);
+      return page.getByTestId(testIds.voter.results.filterButton).first();
     }
   };
 }

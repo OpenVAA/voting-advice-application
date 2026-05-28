@@ -1129,10 +1129,11 @@ test.describe('voter mega-journey', () => {
       await expect(cards.first()).toContainText(/Free Independent/i);
       await expect(entityFilters.getFilterButtonBadge()).toContainText(/1/);
 
-      // STAGE 4 — reopen, reset, close → 13 cards + badge empty.
+      // STAGE 4 — reopen, reset → 13 cards + badge empty.
+      // (reset() at EntityListControls.svelte:96-100 closes the dialog as
+      // a side-effect; no separate close() call needed.)
       const d2 = await entityFilters.openFilterDialog();
       await d2.reset();
-      await d2.close();
       await expect(resultsPage.getEntityCards()).toHaveCount(13, { timeout: TIMEOUT.page });
 
       // STAGE 5a — pick-multiple: select A|B → 12 visible, CA-AA-Special excluded.
@@ -1145,10 +1146,10 @@ test.describe('voter mega-journey', () => {
         resultsPage.getEntityCards().filter({ hasText: TEXT_RE.specialCandidate })
       ).toHaveCount(0);
 
-      // STAGE 5b — reset (intermediate clean state).
+      // STAGE 5b — reset (intermediate clean state). reset() closes the
+      // dialog as a side-effect; no separate close() call needed.
       const d4 = await entityFilters.openFilterDialog();
       await d4.reset();
-      await d4.close();
       await expect(resultsPage.getEntityCards()).toHaveCount(13, { timeout: TIMEOUT.page });
 
       // STAGE 5c-d — years≥50 → 1 visible (CA-AA-Special, years=99).
@@ -1168,10 +1169,10 @@ test.describe('voter mega-journey', () => {
       await d6.close();
       await expect(resultsPage.getEntityCards()).toHaveCount(0, { timeout: TIMEOUT.page });
 
-      // STAGE 7 — cleanup: reset all filters.
+      // STAGE 7 — cleanup: reset all filters. reset() closes the dialog
+      // as a side-effect; no separate close() call needed.
       const d7 = await entityFilters.openFilterDialog();
       await d7.reset();
-      await d7.close();
       await expect(resultsPage.getEntityCards()).toHaveCount(13, { timeout: TIMEOUT.page });
     });
 
