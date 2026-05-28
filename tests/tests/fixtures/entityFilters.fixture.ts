@@ -156,8 +156,12 @@ export function createEntityFilters(page: Page) {
         }
         // Auto-expand if collapsed. Expander uses a checkbox-toggle
         // internally; check the state and click to expand if needed.
+        // 88-04 WR-02: hard-assert toggle visibility (per fixture rigidity
+        // contract) before reading state — no `.catch(() => true)` swallowing
+        // a frontend regression that would surface as zero-options downstream.
         const toggle = row.getByRole('checkbox', { name: /expand or collapse/i }).first();
-        const isExpanded = await toggle.isChecked().catch(() => true);
+        await expect(toggle).toBeVisible({ timeout: 2_000 });
+        const isExpanded = await toggle.isChecked();
         if (!isExpanded) {
           await toggle.click();
         }
