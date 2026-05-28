@@ -34,8 +34,10 @@ import {
   BUILT_IN_OVERRIDES,
   BUILT_IN_TEMPLATES,
   fanOutLocales,
+  resolveAppSettingsExternalIds,
   runPipeline,
   runTeardown,
+  settingsContainsExternalIdRefs,
   Writer
 } from '@openvaa/dev-seed';
 import { expect } from '@playwright/test';
@@ -186,15 +188,31 @@ export async function setupFromTemplate(
   await writer.write(rows, prefix);
 
   // 3. Post-seed app_settings subset-match. Mirrors data.setup.ts:121-135.
+  //    Phase 88 Plan 04 T3 (Option B — seed-time resolver): templates may
+  //    carry `{externalId}` shapes inside `results.cardContents.*[*].question`
+  //    that the Writer's Pass-5 resolver flattens to plain UUID strings
+  //    before persistence. The toMatchObject check below must compare
+  //    against the RESOLVED template (i.e. the post-Writer shape that the
+  //    DB sees), not the raw template — otherwise the {externalId} object
+  //    fails to match the persisted UUID string. Build the same
+  //    externalId → UUID map the Writer used and pre-flatten `expected`.
   {
-    const expected = template!.app_settings?.fixed?.[0]?.settings;
+    const rawExpected = template!.app_settings?.fixed?.[0]?.settings;
     expect(
-      expected,
+      rawExpected,
       `post-seed assertion: ${templateName} template missing app_settings.fixed[0].settings`
     ).toBeDefined();
     const persisted = await client.getAppSettings();
     expect(persisted, 'post-seed app_settings row should exist').toBeTruthy();
-    expect(persisted).toMatchObject(expected as Record<string, unknown>);
+    // If the template uses any {externalId} refs, build the same map the
+    // Writer used and resolve. Otherwise short-circuit (the helper is a
+    // no-op for plain payloads).
+    let expected = rawExpected as Record<string, unknown>;
+    if (settingsContainsExternalIdRefs(expected)) {
+      const externalIdToUuid = await client.selectQuestionExternalIds();
+      expected = resolveAppSettingsExternalIds(expected, externalIdToUuid);
+    }
+    expect(persisted).toMatchObject(expected);
   }
 
   // 4. Optional variant-specific assertions hook.

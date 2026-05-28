@@ -134,15 +134,14 @@ export function createEntityDetails(page: Page) {
 
     /**
      * Outer member-cards under the currently-active children/members tab
-     * container. EXCLUDES `entity-card-subcard` (R-6).
+     * container. The EntityCard.svelte conditional testid means
+     * `entity-card` is set on outer cards only — subcards carry
+     * `entity-card-subcard`. So getByTestId('entity-card') already
+     * excludes subcards. NO hasNot filter (which would also exclude outer
+     * cards that contain subcards as descendants).
      */
     getMemberCards(): Locator {
-      return page
-        .getByTestId(TAB_CONTAINER_TESTID.children)
-        .getByTestId(testIds.voter.results.card)
-        .filter({
-          hasNot: page.getByTestId(testIds.voter.results.cardSubcard)
-        });
+      return page.getByTestId(TAB_CONTAINER_TESTID.children).getByTestId(testIds.voter.results.card);
     }
   };
 }

@@ -52,14 +52,15 @@ const ENTITY_SECTION_TESTID = Object.freeze({
 
 export function createResultsPage(page: Page) {
   /**
-   * Active entity-section testid is determined by which section is
-   * currently rendered in the DOM. We probe in order: candidates → parties
-   * → alliances. The first one that is attached wins.
+   * Active entity-section locator. The frontend conditionally renders
+   * ONE of three section testids
+   * (`voter-results-{candidate,party,alliance}-section`) based on the
+   * active entity-type — only one is in DOM at a time. The OR locator
+   * resolves to whichever is currently present. Callers MUST call
+   * selectEntityTab first (or otherwise navigate so a section is rendered)
+   * before consuming `getEntityCards()`.
    */
   function activeSectionLocator(): Locator {
-    // Returned locator union; Playwright will resolve to whichever is
-    // currently present. Callers that need a specific section must call
-    // selectEntityTab first.
     const cand = page.getByTestId(ENTITY_SECTION_TESTID.cands);
     const org = page.getByTestId(ENTITY_SECTION_TESTID.orgs);
     const al = page.getByTestId(ENTITY_SECTION_TESTID.alliances);
@@ -91,11 +92,15 @@ export function createResultsPage(page: Page) {
     /**
      * Click the entity-tab matching the SETTINGS keyword. The fixture maps
      * the keyword to the visible (i18n) label internally so spec bodies
-     * stay free of i18n details.
+     * stay free of i18n details. After clicking, hard-asserts the matching
+     * entity-section is visible so subsequent `getEntityCards()` reads
+     * resolve against a populated section (not a transitioning DOM).
      */
     async selectEntityTab(entityType: 'cands' | 'orgs' | 'alliances'): Promise<void> {
       const tablist = page.getByTestId(testIds.voter.results.entityTabs);
       await tablist.getByRole('tab', { name: ENTITY_TAB_LABELS[entityType] }).click();
+      const sectionTestid = ENTITY_SECTION_TESTID[entityType];
+      await expect(page.getByTestId(sectionTestid)).toBeVisible();
     },
 
     /**
@@ -113,16 +118,17 @@ export function createResultsPage(page: Page) {
 
     /**
      * Outer entity-cards under the currently-active entity-tab section.
-     * Excludes the `entity-card-subcard` testid (Phase 88 Plan 04 R-6).
+     * After Phase 88 Plan 04 Wave 1.5 the EntityCard.svelte testid is
+     * conditional: outer cards carry `entity-card`, subcards carry
+     * `entity-card-subcard`. So `getByTestId('entity-card')` ALREADY
+     * excludes subcards — no `hasNot` filter is needed (and applying one
+     * would incorrectly exclude OUTER cards that CONTAIN subcards as
+     * descendants).
      *
      * Returns a synchronous Playwright Locator (no `await`).
      */
     getEntityCards(): Locator {
-      return activeSectionLocator()
-        .getByTestId(testIds.voter.results.card)
-        .filter({
-          hasNot: page.getByTestId(testIds.voter.results.cardSubcard)
-        });
+      return activeSectionLocator().getByTestId(testIds.voter.results.card);
     },
 
     /**

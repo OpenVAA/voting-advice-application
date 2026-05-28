@@ -57,6 +57,7 @@ export { defaultRandomValidEmit } from './emitters/answers';
 export { latentAnswerEmitter } from './emitters/latent/latentEmitter';
 export { fanOutLocales, LOCALES } from './locales';
 export { runPipeline, TOPO_ORDER } from './pipeline';
+export { resolveAppSettingsExternalIds, settingsContainsExternalIdRefs } from './resolveAppSettingsExternalIds';
 export { SupabaseAdminClient, TEST_PROJECT_ID } from './supabaseAdminClient';
 export { TemplateSchema, validateTemplate } from './template/schema';
 export {
