@@ -138,10 +138,10 @@ Five Rule 1 fixes uncovered during the cold-start `voter-mega-journey` run:
 2. **No hardcoded UUIDs in baseV1.ts:** PASS — `grep -E "candidate:\\s*\\[.*['\"][0-9a-f]{8}-[0-9a-f]{4}" packages/dev-seed/src/templates/baseV1.ts` → 0 hits. Persisted JSONB verified via psql to contain plain UUID (not `{externalId}` shape).
 3. **Fixtures exist:** PASS — 4 files at the documented paths, each exports the SCOPE T4 signatures.
 4. **≥3 fixture-consuming cells:** PASS — 6 cells, 33+ fixture-method invocations.
-5. **Cell counts match baseV1 reality:** PASS for T5 / T6 / T7-matrix / T7-org-details / T8-filters:text + T8 stages 1-3. PARTIAL for T8 stages 4+ (see Gate B in 88-04-VERIFY.txt).
+5. **Cell counts match baseV1 reality:** PASS — T5 / T6 / T7-matrix / T7-org-details / T8-filters:text + T8 all 7 stages (1–7) cold-start green after the post-SUMMARY T8 fix (commit `aaffe7d11`).
 6. **Rigidity:** PASS within 88-04's added/refactored cells. Zero `expect.soft` / zero `[*-followup]` markers / zero try/catch around expect / .catch only on best-effort cleanup helpers (which precede hard assertions). Pre-existing soft-gates / followup markers in the 88-01 elections / constituencies steps are out-of-scope per SCOPE acceptance #10.
 7. **TEXT_RE has no dead entries:** PASS — 8 DROP entries removed; for each, `grep -c "TEXT_RE\\.<entry>"` returns 0. 34 KEEP entries each have ≥1 consumer.
-8. **Cold-start green:** PARTIAL — voter-mega-journey project run passes 33 of 34 sub-tasks (data setup / 32 other-project tasks). The single mega-journey test passes T5 + T6 + matching:ranking + T7-matrix + T7-org-details + T8-filters:text + T8-filters:dialog stages 1-3, then fails at T8-filters:dialog stage 4 (d2.close() fixture modal re-open dynamics). 3-run gate explicitly deferred to 88-LAST.
+8. **Cold-start green:** PASS — voter-mega-journey project run passes 34 of 34 sub-tasks cold-start (`yarn db:reset && yarn db:seed --template baseV1 && cd tests && npx playwright test --project=voter-mega-journey` exits 0 in ~57s). The mega-journey test passes T5 + T6 + matching:ranking + T7-matrix + T7-org-details + T8-filters:text + T8-filters:dialog all 7 stages. Initial 88-04 wave landed PARTIAL (stage 4+ deferred); the post-SUMMARY fix at commit `aaffe7d11` (role-based dialog button lookups + reset() acknowledges side-effect close + filter-badge assertion scoped to button text) closed Gate B without touching Modal.svelte or any other frontend surface. 3-run consecutive cold-start gate still explicitly deferred to 88-LAST.
 9. **No regression on 88-01 baseV1 chain:** PASS — all 88-01 surface cells continue to pass (static / intro / elections / constituencies / questions-intro / questions-flow / results landing / matching ranking).
 10. **No out-of-scope touches:** PASS — only files in `must_haves.artifacts` touched. perm-* / ROADMAP.md (outside Phase 88 plans list) / STATE.md (outside Roadmap Evolution) / legacy fixtures / public types / frontend resolver — ALL UNCHANGED.
 
@@ -200,13 +200,23 @@ Five Rule 1 fixes uncovered during the cold-start `voter-mega-journey` run:
 - **Files modified:** `tests/tests/specs/voter/voter-mega-journey.spec.ts`
 - **Commit:** `94f8517a2`
 
+**8. [Rule 1 - Bug] T8 filters:dialog stage 4+ — three layered issues blocking Gate B (post-SUMMARY fix)**
+- **Found during:** post-SUMMARY operator escalation — Gate B PARTIAL is unacceptable; T8 stages 4–7 must land in 88-04 (not deferred to 88-LAST).
+- **Cold-start reproduction:** `yarn db:reset && yarn db:seed --template baseV1 && cd tests && npx playwright test --project=voter-mega-journey` failed at line 1126 (`d1.close()` at STAGE 3 — the FIRST close, not the second as the original SUMMARY hypothesised). Diagnostic via DOM inspection of the open dialog: the Modal action `<Button>` components forward `data-testid` via `concatClass(restProps, classes)` → `<svelte:element this="button">`, but the rendered DOM is `<button data-testid="entity-list-filter">` (outer filter button works) yet `dialogRoot.getByTestId('entity-filter-dialog-apply')` resolves to 0 elements — strict-mode lookup fails on the inner dialog buttons. The `<span data-testid="entity-list-filter-badge">` wrapper inside the badge snippet at EntityListControls.svelte:130 is ALSO missing from the rendered DOM (verified via `outerHTML` evaluate — only the InfoBadge's inner `<div class="badge ...">` renders between the snippet anchor comments; the wrapping `<span>` does not survive Svelte 5 snippet compilation).
+- **Three layered fixes (single commit `aaffe7d11`):**
+  - (a) `close()` / `reset()` / `expectResetToBeDisabled()` switched from testid lookup to `getByRole('button', { name: /Close filters|Reset filters/i })` scoped to the dialog root. Buttons have stable accessible names tied to the i18n strings (`entityFilters.applyAndClose` = "Close filters", `entityFilters.reset` = "Reset filters") which are visibility-aware in Playwright by default.
+  - (b) `getFilterButtonBadge()` switched from `page.getByTestId('entity-list-filter-badge')` (which the Wave 1.5 surgery placed on a `<span>` inside the badge snippet — span does not survive Svelte 5 snippet compile) to `page.getByTestId('entity-list-filter').first()` (the filter button itself, whose accessible name is `"<count> Filter"` when active — the count text is part of the button's textContent).
+  - (c) Fixture's `reset()` documented and updated to `await expect(dialogRoot).toBeHidden()`. The real `resetFilters()` at EntityListControls.svelte:96-100 calls `filterGroup?.reset()` AND `filtersModalRef?.closeModal()` synchronously, so the Reset button CLOSES the dialog as a side-effect. The original fixture's docstring claimed "Dialog STAYS OPEN" — that was wrong. Removed 3 redundant `d.close()` calls after reset in T8 STAGES 4 / 5b / 7 that were trying to close an already-closed dialog (those calls produced the original symptom that the SUMMARY misattributed to "modal re-open dynamics").
+- **Modal.svelte UNCHANGED.** No frontend changes. All adjustments are test-level (fixture + spec). No `expect.soft` introduced. Rigidity posture preserved.
+- **Files modified:** `tests/tests/fixtures/entityFilters.fixture.ts`, `tests/tests/specs/voter/voter-mega-journey.spec.ts`
+- **Commit:** `aaffe7d11`
+- **Verification:** `yarn db:reset && yarn db:seed --template baseV1 && cd tests && npx playwright test --project=voter-mega-journey` → 34 passed (56.9s); 2 consecutive runs cold-start confirmed.
+
 ## Deferred Issues (documented in deferred-items.md)
 
 1. **`packages/dev-seed/tests/templates/e2e.test.ts:431` — `questions.fixed.length === 18` expected, actual 25.** Pre-existing count drift from Phase 77/81/82 row additions; not 88-04 surface. Action: future hygiene plan (likely 88-LAST during TEST-INVENTORY.md refresh).
 
-2. **`voter-mega-journey.spec.ts` T8 filters:dialog stage 4+ — `d2.close()` modal re-open dynamics.** After the first reset+close cycle, the second `openFilterDialog` returns a dialogRoot that doesn't reliably resolve `entity-filter-dialog-apply` testid lookups on the second close. Root cause: Modal keeps the `<dialog>` in DOM with `hidden` class on close; the second open may see a stale state. Proposed fix paths (not applied in 88-04): (a) use `getByRole('button', { name: /Close filters|apply/i })` inside the dialog instead of testid lookup, (b) strip the dialog element from DOM on close, (c) re-resolve `dialogRoot` freshly per close call. Action: 88-LAST follow-up.
-
-3. **Legacy `expectQuestionDisplayToHave` helper at lines 298-326.** Worked around by refactoring the matrix step's 4 calls to the new fixture method. Helper left in place for other cells (no other 88-04 callers); should be removed or aligned with the fixture in a future hygiene plan once all consumers migrate.
+2. **Legacy `expectQuestionDisplayToHave` helper at lines 298-326.** Worked around by refactoring the matrix step's 4 calls to the new fixture method. Helper left in place for other cells (no other 88-04 callers); should be removed or aligned with the fixture in a future hygiene plan once all consumers migrate.
 
 ## Follow-up TODO surfaced (Gate A.4 binding)
 
@@ -226,7 +236,7 @@ To be appended to ROADMAP.md or STATE.md backlog at plan close.
 - `tests/tests/fixtures/entityDetails.fixture.ts` — FOUND
 - `tests/tests/fixtures/views.ts` — FOUND
 
-**Commit hashes verified (14 total):**
+**Commit hashes verified (14 plan-execution commits + 1 post-SUMMARY Gate B fix):**
 - `3c0d73292` Task 1 baseV1 filterable flip — FOUND
 - `33ab92795` Task 2 ADR — FOUND
 - `ff061f9cb` Task 3a types + resolver — FOUND
@@ -241,3 +251,4 @@ To be appended to ROADMAP.md or STATE.md backlog at plan close.
 - `83cb6f629` Task 8 T9 — FOUND
 - `8415b46b5` Task 9 Rule 1 fixes (part 1) — FOUND
 - `94f8517a2` Task 9 Rule 1 fixes (part 2) — FOUND
+- `aaffe7d11` post-SUMMARY T8 filters:dialog Gate B fix — FOUND
