@@ -40,10 +40,10 @@
  * `data-teardown-baseV1` chain (appended to tests/playwright.config.ts).
  */
 
-import { buildRoute } from '../../utils/buildRoute';
 import { expect, test } from '../../fixtures/views';
+import { buildRoute } from '../../utils/buildRoute';
 import { testIds } from '../../utils/testIds';
-import type { ConsoleMessage, Locator, Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 // ====================================================================
 // FILE-SCOPE CONSTANTS — 260524-l1t D1 + D3
@@ -291,78 +291,6 @@ async function expectElectionOptionAndSelect({ page, text }: { page: Page; text:
 }
 
 /**
- * Locate the opinion-question display block whose `<h3>` matches `questionText`
- * inside an entity opinions tab and hard-assert:
- *   - exactly one block matches,
- *   - the union of `:checked` radios (voter's choice in display mode) and
- *     `entity-selected-answer` sr-only markers (entity's choice) has exactly
- *     `numSelected` elements (0 = neither, 1 = voter XOR entity, 2 = both),
- *   - if `infoText` is supplied, the matching missing-answer message
- *     (e.g. "Neither has answered", "You haven't answered",
- *     "{entity} hasn't answered") is visible inside the block.
- */
-async function expectQuestionDisplayToHave(
-  opinionsTab: Locator,
-  {
-    questionText,
-    numSelected,
-    infoText
-  }: {
-    questionText: RegExp | string;
-    numSelected: number;
-    infoText?: RegExp | string;
-  }
-): Promise<void> {
-  const block = opinionsTab
-    .getByTestId(testIds.voter.entityDetail.opinionQuestion)
-    .filter({ has: opinionsTab.getByRole('heading', { level: 3, name: questionText }) });
-  await expect(block).toHaveCount(1, { timeout: TIMEOUT.element });
-  const voterChecked = block.getByRole('radio', { checked: true });
-  const entitySelected = block.getByTestId(testIds.voter.entityDetail.entitySelectedAnswer);
-  await expect(voterChecked.or(entitySelected)).toHaveCount(numSelected, { timeout: TIMEOUT.element });
-  if (infoText) {
-    await expect(block.getByText(infoText)).toBeVisible({ timeout: TIMEOUT.element });
-  }
-}
-
-/**
- * Close any open dialog best-effort: press Escape, then wait up to 3s
- * for the dialog to dismiss via Locator.waitFor({state:'hidden'}). If
- * still present, try an explicit close button. Final wait is tolerant —
- * subsequent steps run their own defensive cleanup via
- * `dismissLeftoverDialogsBestEffort` before interacting.
- *
- * Uses `Locator.waitFor` rather than `expect()` to avoid tripping
- * `playwright/no-conditional-expect` when wrapped with `.catch()`.
- */
-async function closeAnyOpenDialog(page: Page): Promise<void> {
-  await page.keyboard.press('Escape');
-  // First poll — Escape may need a moment to dismiss the dialog.
-  const dismissedByEscape = await page
-    .getByRole('dialog')
-    .first()
-    .waitFor({ state: 'hidden', timeout: TIMEOUT.element })
-    .then(() => true)
-    .catch(() => false);
-  if (dismissedByEscape) return;
-  // Fallback: click an explicit close button if one exists.
-  const closeBtn = page.getByRole('button', { name: TEXT_RE.closeDialog }).first();
-  // 1_000 is intentionally tighter than TIMEOUT.element — quick best-effort
-  // probe before falling through to the tolerant final wait below.
-  // reason: legacy value preserved; tighter-than-bucket on purpose.
-  const closeVisible = await closeBtn.isVisible({ timeout: 1_000 }).catch(() => false);
-  if (closeVisible) {
-    await closeBtn.click().catch(() => null);
-  }
-  // Tolerant final wait — no expect() so no conditional-expect violation.
-  await page
-    .getByRole('dialog')
-    .first()
-    .waitFor({ state: 'hidden', timeout: TIMEOUT.page })
-    .catch(() => null);
-}
-
-/**
  * Dismiss any leftover dialog without asserting (defensive cleanup).
  * Uses `Locator.waitFor({state:'hidden'})` so neither `expect()` nor
  * `waitForTimeout` is involved.
@@ -374,122 +302,6 @@ async function dismissLeftoverDialogsBestEffort(page: Page): Promise<void> {
     .first()
     .waitFor({ state: 'hidden', timeout: TIMEOUT.element })
     .catch(() => null);
-}
-
-/**
- * Toggle the first checkbox inside the filter dialog (check or uncheck
- * depending on current state). No-op if no checkbox is reachable.
- */
-async function toggleFirstFilterCheckbox(dialog: Locator): Promise<void> {
-  const firstCheckbox = dialog.getByRole('checkbox').first();
-  const checkboxCount = await firstCheckbox.count();
-  if (checkboxCount === 0) return;
-  const wasChecked = await firstCheckbox.isChecked().catch(() => false);
-  if (wasChecked) {
-    await firstCheckbox.uncheck();
-  } else {
-    await firstCheckbox.check();
-  }
-}
-
-/**
- * Click the explicit close/apply button inside the filter dialog if one
- * exists; otherwise press Escape. Waits for dialog count to drop to 0.
- */
-async function closeFilterDialog({ page, dialog }: { page: Page; dialog: Locator }): Promise<void> {
-  const closeBtn = dialog.getByRole('button', { name: TEXT_RE.closeFiltersOrApply }).first();
-  const closeVisible = await closeBtn.isVisible().catch(() => false);
-  if (closeVisible) {
-    await closeBtn.click();
-  } else {
-    await page.keyboard.press('Escape');
-  }
-  await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: TIMEOUT.page });
-}
-
-/**
- * Open the filter dialog if a filter button is visible. Returns the
- * dialog Locator on success; returns null if no filter button surfaced.
- */
-async function openFilterDialogIfAvailable(page: Page): Promise<Locator | null> {
-  const filterButton = page.getByTestId('entity-list-filter').first();
-  const filterVisible = await filterButton.isVisible({ timeout: TIMEOUT.page }).catch(() => false);
-  if (!filterVisible) return null;
-  await filterButton.click();
-  const dialog = page.getByRole('dialog');
-  await expect(dialog).toBeVisible({ timeout: TIMEOUT.page });
-  return dialog;
-}
-
-/**
- * Try opening a filter dialog, toggle one checkbox, then close. No-op if
- * the filter button never surfaces. Keeps the conditional inside a helper.
- */
-async function openAndToggleFilterIfAvailable(page: Page): Promise<void> {
-  const dlg = await openFilterDialogIfAvailable(page);
-  if (!dlg) return;
-  await toggleFirstFilterCheckbox(dlg);
-  await closeFilterDialog({ page, dialog: dlg });
-}
-
-/**
- * Try opening a filter dialog, check (only) the first checkbox to apply
- * a narrowing, then close. No-op if the filter button never surfaces.
- */
-async function openAndApplyFilterIfAvailable(page: Page): Promise<void> {
-  const dlg = await openFilterDialogIfAvailable(page);
-  if (!dlg) return;
-  const firstCheckbox = dlg.getByRole('checkbox').first();
-  await firstCheckbox.check().catch(() => null);
-  await closeFilterDialog({ page, dialog: dlg });
-}
-
-/**
- * Build the page-level console-error listener used by the filter-toggle
- * step. Keeping it at module scope sidesteps the `no-conditional-in-test`
- * fire on the inline `if (msg.type === 'error')`. Returns the listener
- * function and the live error buffer.
- */
-function createConsoleErrorWatcher(): {
-  errors: Array<string>;
-  listener: (msg: ConsoleMessage) => void;
-} {
-  const errors: Array<string> = [];
-  const listener = (msg: ConsoleMessage): void => {
-    const txt = msg.text();
-    const isError = msg.type() === 'error';
-    const isReactivityCrash = txt.includes('effect_update_depth_exceeded');
-    // Branchless: only push when one of the two predicates is true. The
-    // ternary keeps the rule happy because it's an expression, not an `if`.
-    void (isError || isReactivityCrash ? errors.push(`${msg.type()}: ${txt}`) : null);
-  };
-  return { errors, listener };
-}
-
-/**
- * Drawer-survival probe: if a party card is reachable, open + Escape +
- * probe whether the drawer dismissed. Logs the outcome instead of using
- * expect.soft so the test doesn't accumulate soft failures beyond the
- * 3-slot budget. Returns early when no card is present so the rest of
- * the step can continue.
- */
-async function probeDrawerSurvival({ page, partySection }: { page: Page; partySection: Locator }): Promise<void> {
-  const firstAction = partySection.getByTestId('entity-card-action').first();
-  const actionCount = await firstAction.count();
-  if (actionCount === 0) return;
-  await firstAction.click();
-  const dlg = page.getByRole('dialog');
-  const visible = await dlg
-    .first()
-    .isVisible({ timeout: TIMEOUT.page })
-    .catch(() => false);
-  await page.keyboard.press('Escape');
-  const hidden = await dlg
-    .first()
-    .waitFor({ state: 'hidden', timeout: TIMEOUT.page })
-    .then(() => true)
-    .catch(() => false);
-  console.info(`[u53-followup] drawer-survival probe: opened=${visible} dismissed=${hidden}`);
 }
 
 // ====================================================================
@@ -792,13 +604,13 @@ test.describe('voter mega-journey', () => {
     // ====================================================================
 
     // ====================================================================
-     // PHASE 88 PLAN 04 T5 — result-card-contents (fixture-driven).
-     // Asserts the first candidate card: test-qu-info-text answer rendered,
-     // submatches block visible, 4 score gauges inside submatches, election
-     // symbol "10" rendered. The redundant "switch to parties + ≥1 org card"
-     // block is REMOVED — that contract is covered by the new T6
-     // "matching: organisations" step below.
-     // ====================================================================
+    // PHASE 88 PLAN 04 T5 — result-card-contents (fixture-driven).
+    // Asserts the first candidate card: test-qu-info-text answer rendered,
+    // submatches block visible, 4 score gauges inside submatches, election
+    // symbol "10" rendered. The redundant "switch to parties + ≥1 org card"
+    // block is REMOVED — that contract is covered by the new T6
+    // "matching: organisations" step below.
+    // ====================================================================
 
     await test.step('result-card-contents (Phase 88 Plan 04 T5 — fixtures + test-qu-info-text + 4 score-gauges + election-symbol 10)', async () => {
       const cards = resultsPage.getEntityCards();
@@ -1138,13 +950,13 @@ test.describe('voter mega-journey', () => {
 
       // STAGE 5a — pick-multiple: select A|B → 12 visible, CA-AA-Special excluded.
       const d3 = await entityFilters.openFilterDialog();
-      const mcFilter = await d3.getFilter(/pick multiple|multipleChoiceCategorical|\[qu-info-multipleChoiceCategorical\]/i);
+      const mcFilter = await d3.getFilter(
+        /pick multiple|multipleChoiceCategorical|\[qu-info-multipleChoiceCategorical\]/i
+      );
       await mcFilter.setSelection([/Choice A/i, /Choice B/i]);
       await d3.close();
       await expect(resultsPage.getEntityCards()).toHaveCount(12, { timeout: TIMEOUT.page });
-      await expect(
-        resultsPage.getEntityCards().filter({ hasText: TEXT_RE.specialCandidate })
-      ).toHaveCount(0);
+      await expect(resultsPage.getEntityCards().filter({ hasText: TEXT_RE.specialCandidate })).toHaveCount(0);
 
       // STAGE 5b — reset (intermediate clean state). reset() closes the
       // dialog as a side-effect; no separate close() call needed.
@@ -1175,6 +987,5 @@ test.describe('voter mega-journey', () => {
       await d7.reset();
       await expect(resultsPage.getEntityCards()).toHaveCount(13, { timeout: TIMEOUT.page });
     });
-
   });
 });
