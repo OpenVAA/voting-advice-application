@@ -48,6 +48,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { resolveAppSettingsExternalIds, settingsContainsExternalIdRefs } from './resolveAppSettingsExternalIds';
 import { SupabaseAdminClient } from './supabaseAdminClient';
 
 /**
@@ -171,11 +172,20 @@ export class Writer {
     const portraits = await this.uploadPortraits(externalIdPrefix);
 
     // Pass 5: app_settings via merge_jsonb_column (Pitfall 5).
+    // Phase 88 Plan 04 T3 — resolve {externalId: '<id>'} → UUID inside
+    // cardContents BEFORE merge. The questions-table SELECT is gated on a
+    // cheap pre-walk so payloads without externalId references pay zero
+    // overhead. See 88-04-ADR-cardContents-resolver.md (Option B).
     if (appSettingsRows && appSettingsRows.length > 0) {
+      const needsResolution = appSettingsRows.some((row) => settingsContainsExternalIdRefs(row.settings));
+      const externalIdToUuid = needsResolution
+        ? await this.client.selectQuestionExternalIds()
+        : new Map<string, string>();
       for (const row of appSettingsRows) {
         const settings = row.settings;
         if (settings && typeof settings === 'object' && !Array.isArray(settings)) {
-          await this.client.updateAppSettings(settings as Record<string, unknown>);
+          const resolved = resolveAppSettingsExternalIds(settings as Record<string, unknown>, externalIdToUuid);
+          await this.client.updateAppSettings(resolved);
         }
       }
     }

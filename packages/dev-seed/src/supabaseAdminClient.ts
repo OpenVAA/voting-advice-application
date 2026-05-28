@@ -315,6 +315,36 @@ export class SupabaseAdminClient {
   }
 
   // ---------------------------------------------------------------------------
+  // Questions external_id → UUID lookup (Phase 88 Plan 04 T3 — Option B)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Build a Map<external_id, uuid> by SELECTing all questions in the bootstrap
+   * project. Used by Writer Pass-5's cardContents resolver
+   * (`resolveAppSettingsExternalIds`) to flatten {externalId} → UUID at seed
+   * time. Mirrors the importAnswers map-build at lines 243-270 in shape.
+   *
+   * Skips rows with NULL `external_id` (defensive — most seed-generated rows
+   * have one; legacy rows from bootstrap seed.sql may not).
+   *
+   * @throws Error wrapped with the underlying Supabase error message.
+   */
+  async selectQuestionExternalIds(): Promise<Map<string, string>> {
+    const { data, error } = await this.client
+      .from('questions')
+      .select('id, external_id')
+      .eq('project_id', this.projectId);
+    if (error) {
+      throw new Error(`selectQuestionExternalIds: failed to query questions: ${error.message}`);
+    }
+    const map = new Map<string, string>();
+    for (const row of data ?? []) {
+      if (row.external_id) map.set(row.external_id, row.id);
+    }
+    return map;
+  }
+
+  // ---------------------------------------------------------------------------
   // M:N join table linking
   // ---------------------------------------------------------------------------
 

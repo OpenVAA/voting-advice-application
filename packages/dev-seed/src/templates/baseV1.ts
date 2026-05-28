@@ -201,7 +201,12 @@ export const BASE_V1_APP_SETTINGS = {
   },
   results: {
     cardContents: {
-      candidate: ['submatches'],
+      // Phase 88 Plan 04 T3 (Option B — seed-time resolver): the
+      // {externalId} shape is flattened to the question's DB UUID by the
+      // Writer's Pass-5 resolver (resolveAppSettingsExternalIds) BEFORE the
+      // merge_jsonb_column RPC. The persisted JSONB contains plain UUID
+      // strings; baseV1.ts never hardcodes post-seed UUIDs.
+      candidate: ['submatches', { question: { externalId: 'test-qu-info-text' } }],
       organization: ['children'],
       alliance: ['children']
     },
