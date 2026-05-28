@@ -1075,153 +1075,104 @@ test.describe('voter mega-journey', () => {
       await expect(dialog).toBeHidden({ timeout: TIMEOUT.page });
     });
 
-    await test.step('filters: toggle without effect_update_depth_exceeded (MOVED 9.5.5 / RESULTS-01+02)', async () => {
-      // Defensive cleanup — ensure no leftover dialog is intercepting clicks.
-      await dismissLeftoverDialogsBestEffort(page);
+    // ====================================================================
+    // PHASE 88 PLAN 04 T8 — filters: text + filters: dialog.
+    // REMOVED 3 redundant test.step blocks (already moved to other phases):
+    //   - 'filters: toggle without effect_update_depth_exceeded'
+    //   - 'filters: plural tab switch reset + drawer survival + browser back'
+    //   - 'filters: SETTINGS-01 wave B Number/Text/Choice/Group/MissingValue'
+    // Replaced with 2 fixture-driven cells with HARD assertions on the
+    // RESEARCH-locked baseV1 counts (13 / 2 / 1 / 12 / 1 / 0).
+    // ====================================================================
 
-      // Switch back to candidates tab if we're on parties.
-      const entityTabs = page.getByTestId(testIds.voter.results.entityTabs);
-      await entityTabs.getByRole('tab', { name: TEXT_RE.candidateTab }).click();
-      const candidateSection = page.getByTestId(testIds.voter.results.candidateSection);
-      await expect(candidateSection).toBeVisible({ timeout: TIMEOUT.slowPage });
-
-      // Pattern source: voter-results.spec.ts:173+. Attach console-error
-      // watcher BEFORE interacting. The watcher is built at module scope
-      // (createConsoleErrorWatcher) to keep the predicate branch out of
-      // the test body.
-      const { errors: consoleErrors, listener } = createConsoleErrorWatcher();
-      page.on('console', listener);
-
-      // Find a filter button — pattern: page-level testId 'entity-list-filter'.
-      const resultsList = page.getByTestId(testIds.voter.results.list);
-      await openAndToggleFilterIfAvailable(page);
-
-      // results.list still visible.
-      await expect(resultsList).toBeVisible({ timeout: TIMEOUT.page });
-      // No effect_update_depth_exceeded errors.
-      expect(consoleErrors.filter((e) => e.includes('effect_update_depth_exceeded'))).toEqual([]);
-      page.off('console', listener);
-    });
-
-    await test.step('filters: plural tab switch reset + drawer survival + browser back (MOVED 9.5.6, 9.5.7, 9.5.10 / D-13+14+15)', async () => {
-      // Defensive cleanup — ensure no leftover dialog is intercepting clicks.
-      await dismissLeftoverDialogsBestEffort(page);
-
-      // This step has 3 sub-assertions; per the empirical-flake policy,
-      // genuinely soft assertions use expect.soft so a single sub-failure
-      // doesn't cascade-fail the test. The contract direction for
-      // "reset on tab switch" (pattern source voter-results.spec.ts:273)
-      // is "no active filters on the OTHER tab after a switch".
-      const entityTabs = page.getByTestId(testIds.voter.results.entityTabs);
-      const candidateSection = page.getByTestId(testIds.voter.results.candidateSection);
-      await entityTabs.getByRole('tab', { name: TEXT_RE.candidateTab }).click();
-      await expect(candidateSection).toBeVisible({ timeout: TIMEOUT.slowPage });
-
-      // Sub-assertion 1: tab-switch reset.
-      // Open filter on candidates and apply some narrowing (if filter UI present).
-      await openAndApplyFilterIfAvailable(page);
-
-      // Switch to parties tab; assert no warning-colored (active) filter button.
-      await entityTabs.getByRole('tab', { name: TEXT_RE.partiesTab }).click();
-      await page.waitForURL(TEXT_RE.resultsOrganizationsOrRoot, { timeout: TIMEOUT.page }).catch(() => null);
-      // The warning-colored filter button indicates active filters. Per
-      // voter-results.spec.ts:324-328, look for warning-class filter.
-      const warningFilterBtn = page.getByTestId('entity-list-filter').filter({
-        // svelte-warning: accepted — warning state is exposed only via .btn-warning /
-        // [color="warning"] DOM markers; no semantic state attribute (aria-pressed,
-        // data-state) is rendered on the filter button.
-        // reason: filter-active styling currently lives in CSS classes; a future
-        //   testId or aria-pressed addition would let this drop the suppression.
-        // eslint-disable-next-line playwright/no-raw-locators
-        has: page.locator('.btn-warning, [color="warning"]')
-      });
-      // The filter-state surface is dataset-dependent and the contract
-      // is "if filters were applied, they should reset on tab switch".
-      // If the filter dialog had no checkboxes (empty filter surface)
-      // this assertion is vacuously satisfied. Convert to a diagnostic
-      // count + log so it does not eat into the 3-slot soft budget.
-      const warningFilterCount = await warningFilterBtn.count();
-      console.info(`[u53-followup] tab-switch filter reset: warning-button count=${warningFilterCount} (expected 0)`);
-
-      // Sub-assertion 2: drawer survival — open + close drawer; filter state preserved.
-      // Already on parties tab. Helper opens + closes first party drawer if any card present.
-      const partySection = page.getByTestId(testIds.voter.results.partySection);
-      await expect(partySection).toBeVisible({ timeout: TIMEOUT.page });
-      await probeDrawerSurvival({ page, partySection });
-
-      // Sub-assertion 3: browser back returns to candidates.
-      await page.goBack();
-      await page.waitForURL(TEXT_RE.resultsCandidatesOrRoot, { timeout: TIMEOUT.page }).catch(() => null);
-      // candidateSection should be visible again. Back-navigation landing
-      // varies with the picker / accordion state at navigation time, and
-      // baseV1 empirically lands back on the election-picker rather than
-      // the candidate section (260523-u53 walkthrough). Convert to a
-      // diagnostic visibility probe + log — no expect, so the failure is
-      // genuinely informational. Contract refinement for 88-NN.
-      const candidateBackVisible = await candidateSection.isVisible({ timeout: TIMEOUT.page }).catch(() => false);
-      console.info(`[u53-followup] browser-back returned to candidate section? visible=${candidateBackVisible}`);
-    });
-
-    await test.step('filters: SETTINGS-01 wave B Number/Text/Choice/Group/MissingValue (MOVED 9.5.14-9.5.18)', async () => {
-      // Defensive cleanup: ensure no leftover dialogs are intercepting clicks.
-      // Earlier steps may have left a party drawer or filter dialog open if
-      // the close-path didn't settle deterministically. Press Escape twice +
-      // wait for all dialogs closed (via dismissLeftoverDialogsBestEffort
-      // which polls the DOM instead of using expect.catch()).
+    await test.step('filters: text (Phase 88 Plan 04 T8 — polar → 2 cards Polar-Max + Polar-Min, clear)', async () => {
+      // Defensive cleanup — earlier steps may have left dialogs open.
       await page.keyboard.press('Escape').catch(() => null);
       await dismissLeftoverDialogsBestEffort(page);
 
-      // Smoke-only: confirm the filter dialog reaches Number / Text / Choice
-      // filter types. baseV1 has 2 filterable info questions: number (years
-      // of experience, baseV1.ts:608-617) + boolean (would-you-run-again,
-      // baseV1.ts:619-628) + multipleChoiceCategorical (baseV1.ts:551-561).
-      const entityTabs = page.getByTestId(testIds.voter.results.entityTabs);
-      await entityTabs.getByRole('tab', { name: TEXT_RE.candidateTab }).click();
+      await resultsPage.selectEntityTab('cands');
       const candidateSection = page.getByTestId(testIds.voter.results.candidateSection);
       await expect(candidateSection).toBeVisible({ timeout: TIMEOUT.slowPage });
 
-      const dlg = await openFilterDialogIfAvailable(page);
-      // Hard contract: filter surface must exist for the candidate section.
-      // If it doesn't, the SETTINGS-01 wave B smoke can't run.
-      expect(dlg, 'SETTINGS-01 wave B smoke: filter dialog must be reachable for candidate section').not.toBeNull();
-      // Type-narrow for the remainder of the step.
-      const dialog = dlg!;
+      await entityFilters.setTextFilter('polar');
+      const cards = resultsPage.getEntityCards();
+      await expect(cards).toHaveCount(2, { timeout: TIMEOUT.page });
+      // first_name in baseV1 is NOT bracket-prefixed (only name display
+      // fields got the [<id>] prefix in T2 — first/last names stayed raw).
+      await expect(cards.nth(0)).toContainText(TEXT_RE.polarMax);
+      await expect(cards.nth(1)).toContainText(TEXT_RE.polarMin);
 
-      // The dialog renders filter widgets per filterable info question +
-      // implicit party / nomination filters. Numeric filter: look for any
-      // <input type="number"> or slider role. Text filter: <input
-      // type="text"> or <input type="search">. Choice filter: checkbox role.
-      // svelte-warning: accepted — input-type filters (`input[type=number]`,
-      // `input[type=text]`, `input[type=search]`, `[role="slider"]`) need attribute
-      // selectors; getByRole('spinbutton') / getByRole('textbox') /
-      // getByRole('searchbox') / getByRole('slider') would each require their own
-      // locator and union-count, which is less readable than the css-attribute scan.
-      // reason: these are filter-presence smoke counts (used purely to log the
-      //   filter widget mix); the hard contract below uses the role-based
-      //   checkbox locator. CSS-attribute locators are the most concise probe
-      //   for the smoke counts here.
-      // eslint-disable-next-line playwright/no-raw-locators
-      const numericInputs = dialog.locator('input[type="number"], [role="slider"]');
-      // eslint-disable-next-line playwright/no-raw-locators
-      const textInputs = dialog.locator('input[type="text"], input[type="search"]');
-      const checkboxes = dialog.getByRole('checkbox');
-
-      const numericCount = await numericInputs.count();
-      const textCount = await textInputs.count();
-      const checkboxCount = await checkboxes.count();
-      console.info(
-        `[u53-walk] SETTINGS-01 wave B smoke: numeric=${numericCount} text=${textCount} checkbox=${checkboxCount}`
-      );
-
-      // Hard contract: at least the choice (checkbox) family must be present
-      // — baseV1 has 4 parties + nomination filter that all render as checkboxes.
-      expect(
-        checkboxCount,
-        'SETTINGS-01 wave B smoke: at least one choice (checkbox) filter must be reachable'
-      ).toBeGreaterThan(0);
-
-      // Close dialog.
-      await closeFilterDialog({ page, dialog });
+      await entityFilters.clearTextFilter();
     });
+
+    await test.step('filters: dialog (Phase 88 Plan 04 T8 — 7-stage choreography, 3 rows / 1 NoAns / 13 / 12 / 1 / 0)', async () => {
+      // Pre-conditions: already on candidates tab from the prior step.
+      // STAGE 1 — open dialog, assert exactly 3 filter rows.
+      // Post Wave-0 baseV1 edit (filterable: false on test-qu-info-boolean),
+      // 3 rows expected: Party + pick-multiple + years-of-experience.
+      const d1 = await entityFilters.openFilterDialog();
+      await expect(d1.getFilters()).toHaveCount(3, { timeout: TIMEOUT.page });
+
+      // STAGE 2 — Party filter: 'No answer' option visible with count badge text containing '1'
+      // (RESEARCH: 1 candidate without parent_nomination → test-ca-independent).
+      const partyFilter = await d1.getFilter(/Party/i);
+      const noAnswerOption = await partyFilter.getOption(/No answer/i);
+      await expect(noAnswerOption).toBeVisible();
+      await expect(noAnswerOption).toContainText(/1/);
+
+      // STAGE 3 — select No-answer → close → 1 card 'Free Independent' + badge=1.
+      await partyFilter.setSelection([/No answer/i]);
+      await d1.close();
+      const cards = resultsPage.getEntityCards();
+      await expect(cards).toHaveCount(1, { timeout: TIMEOUT.page });
+      await expect(cards.first()).toContainText(/Free Independent/i);
+      await expect(entityFilters.getFilterButtonBadge()).toContainText(/1/);
+
+      // STAGE 4 — reopen, reset, close → 13 cards + badge empty.
+      const d2 = await entityFilters.openFilterDialog();
+      await d2.reset();
+      await d2.close();
+      await expect(resultsPage.getEntityCards()).toHaveCount(13, { timeout: TIMEOUT.page });
+
+      // STAGE 5a — pick-multiple: select A|B → 12 visible, CA-AA-Special excluded.
+      const d3 = await entityFilters.openFilterDialog();
+      const mcFilter = await d3.getFilter(/pick multiple|multipleChoiceCategorical|\[qu-info-multipleChoiceCategorical\]/i);
+      await mcFilter.setSelection([/Choice A/i, /Choice B/i]);
+      await d3.close();
+      await expect(resultsPage.getEntityCards()).toHaveCount(12, { timeout: TIMEOUT.page });
+      await expect(
+        resultsPage.getEntityCards().filter({ hasText: TEXT_RE.specialCandidate })
+      ).toHaveCount(0);
+
+      // STAGE 5b — reset (intermediate clean state).
+      const d4 = await entityFilters.openFilterDialog();
+      await d4.reset();
+      await d4.close();
+      await expect(resultsPage.getEntityCards()).toHaveCount(13, { timeout: TIMEOUT.page });
+
+      // STAGE 5c-d — years≥50 → 1 visible (CA-AA-Special, years=99).
+      const d5 = await entityFilters.openFilterDialog();
+      const numFilter = await d5.getFilter(/years of experience|\[qu-info-number\]/i);
+      await numFilter.setNumberRange(50, null);
+      await d5.close();
+      await expect(resultsPage.getEntityCards()).toHaveCount(1, { timeout: TIMEOUT.page });
+      await expect(resultsPage.getEntityCards().first()).toContainText(TEXT_RE.specialCandidate);
+
+      // STAGE 6 — intersect: years≥50 AND pick-multiple=A|B → 0 visible
+      // (CA-AA-Special is the only years≥50 candidate, and it has ['c']
+      // for pick-multiple → does NOT intersect with {A, B}).
+      const d6 = await entityFilters.openFilterDialog();
+      const mc2 = await d6.getFilter(/pick multiple|multipleChoiceCategorical|\[qu-info-multipleChoiceCategorical\]/i);
+      await mc2.setSelection([/Choice A/i, /Choice B/i]);
+      await d6.close();
+      await expect(resultsPage.getEntityCards()).toHaveCount(0, { timeout: TIMEOUT.page });
+
+      // STAGE 7 — cleanup: reset all filters.
+      const d7 = await entityFilters.openFilterDialog();
+      await d7.reset();
+      await d7.close();
+      await expect(resultsPage.getEntityCards()).toHaveCount(13, { timeout: TIMEOUT.page });
+    });
+
   });
 });
