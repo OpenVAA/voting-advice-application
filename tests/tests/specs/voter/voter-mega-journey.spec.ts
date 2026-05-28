@@ -81,21 +81,18 @@ const TEXT_RE = {
   membersTab: /members|children|candidates/i,
   // election / constituency names (baseV1 dataset)
   regional: /regional/i,
-  opinion: /opinion/i,
-  regionalElection: /Regional Election/i,
   municipal: /municipal/i,
-  munSeSw: /Municipal SE\/SW|municipalities SE/i,
-  filtMunNe: /Filtered Mun-NE/i,
-  filtPerQuestionSe: /Filtered per Question SE/i,
-  filtMunSe: /Filtered Mun-SE/i,
   regOnlyParents: /^Region North$|^Region South$/,
   munLeafNames: /North-East|North-West|South-East|South-West/,
   northEast: /North-East/i,
-  // category labels (the seed-display labels are stable across the D8 rename;
-  // only external_ids changed — see baseV1.ts:492/499 → opt-a/opt-b).
+  // category labels — Phase 88 Plan 04 T9: tightened to include the
+  // post-T2 [<id-token>] prefix per RESEARCH R-3 inventory. The substring
+  // 'Optional Opinion Questions A/B' is still matched by these tighter
+  // regexes, but only the bracket-prefixed render of the category name
+  // satisfies them — locking the contract to T2's display convention.
   baseOpinion: /Base Opinion Questions/i,
-  optionalOpinionsA: /Optional Opinion Questions A/i,
-  optionalOpinionsB: /Optional Opinion Questions B/i,
+  optionalOpinionsA: /\[qg-opin-opt-a-NotSelected\] Optional Opinion Questions A/i,
+  optionalOpinionsB: /\[qg-opin-opt-b-Skipped\] Optional Opinion Questions B/i,
   regionalOpinionsCategory: /Opinion Questions for Regional Elections Only/i,
   regionallyFilteredCategory: /Opinion Questions Filtered per Question NE/i,
   // questions / answers
@@ -108,13 +105,10 @@ const TEXT_RE = {
   polarMin: /Polar-Min/i,
   // results-page UI
   answerCount: /Answer 4/i,
-  matchPercent: /[0-9]+%\s*match/i,
-  perfectMatchTier: /100%\s*match/i,
   hiddenCandidate: /Hidden Candidate/i,
   specialCandidate: /Special Candidate AA|Candidate AA Special/i,
   neitherAnswered: /Neither.*has(?:n['']t| not)? answered/i,
   // routes / URLs
-  resultsRoute: /\/results/,
   resultsCandidatesOrRoot: /\/results\/(candidates|$)/,
   resultsOrganizationsOrRoot: /\/results\/organizations|\/results\//,
   introRoute: /\/intro/,
