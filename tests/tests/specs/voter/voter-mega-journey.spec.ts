@@ -830,6 +830,52 @@ test.describe('voter mega-journey', () => {
     });
 
     // ====================================================================
+    // PHASE 88 PLAN 04 T6 — matching: organisations.
+    // RESEARCH-verified baseV1 counts under EL-Reg / CO-Reg-N:
+    //   - 5 outer org-cards (Party AA, AB, BA, BB, C).
+    //   - Party BB has 2 members (test-ca-bb-1 + test-ca-bb-2). 2 ≤ 3
+    //     maxSubcards → NO 'Show all' button.
+    //   - Party AA has 6 nominal members; 1 hidden (test-ca-aa-hidden via
+    //     terms_of_use_accepted absent — Probe 5) → 5 visible. Default
+    //     shows 3; 'Show all 5 candidates' reveals 5; Collapse returns to
+    //     3.
+    // ====================================================================
+
+    await test.step('matching: organisations (Phase 88 Plan 04 T6 — 5 outer / Party BB 2 / Party AA 3-show-all-5-collapse)', async () => {
+      await resultsPage.selectEntityTab('orgs');
+
+      // 5 outer organisation cards under EL-Reg / CO-Reg-N.
+      const cards = resultsPage.getEntityCards();
+      await expect(cards).toHaveCount(5, { timeout: TIMEOUT.slowPage });
+
+      // Party BB — 2 subcards, no Show-all button.
+      // (Use filter().first() per RESEARCH Risk #3 — matching-algorithm
+      // ranking determinism not guaranteed for first-position; use
+      // hasText to pin the card unambiguously.)
+      const partyBB = cards.filter({ hasText: /Party BB - Best-Regional-Party/i }).first();
+      await expect(partyBB).toBeVisible();
+      await expect(partyBB.getByTestId(testIds.voter.results.cardSubcard)).toHaveCount(2);
+      await expect(partyBB.getByRole('button', { name: /Show all/i })).toHaveCount(0);
+
+      // Party AA — 3 subcards default, Show-all-5 button, expand → 5,
+      // Collapse → 3, Show-all-5 button returns.
+      const partyAA = cards.filter({ hasText: /\[or-aa\] Party AA/i }).first();
+      await expect(partyAA).toBeVisible();
+      await expect(partyAA.getByTestId(testIds.voter.results.cardSubcard)).toHaveCount(3);
+      const showAllBtn = partyAA.getByRole('button', { name: /Show all 5/i });
+      await expect(showAllBtn).toBeVisible();
+
+      await showAllBtn.click();
+      await expect(partyAA.getByTestId(testIds.voter.results.cardSubcard)).toHaveCount(5);
+      const collapseBtn = partyAA.getByRole('button', { name: /Collapse|hide/i });
+      await expect(collapseBtn).toBeVisible();
+
+      await collapseBtn.click();
+      await expect(partyAA.getByTestId(testIds.voter.results.cardSubcard)).toHaveCount(3);
+      await expect(partyAA.getByRole('button', { name: /Show all 5/i })).toBeVisible();
+    });
+
+    // ====================================================================
     // MATCHING ALGORITHM VERIFICATION — refactor-doc:320-328. Absorbs 9.4.1-9.4.4. Absorbs 9.4.5.
     // ====================================================================
 
