@@ -680,7 +680,7 @@ export const baseV1Template: Template = {
         type: 'boolean',
         name: { en: '[qu-info-boolean] Info: would-you-run-again-yes-no?' },
         category: { external_id: 'test-qg-info' },
-        custom_data: { filterable: true },
+        custom_data: { filterable: false },
         allow_open: false,
         required: false,
         sort_order: 6,
