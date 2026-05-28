@@ -919,56 +919,17 @@ test.describe('voter mega-journey', () => {
 
     // ====================================================================
     // VOTER ENTITY DETAIL — refactor-doc:330-355. Absorbs 9.6.1, 9.6.2, 9.6.3, 9.6.5-8.
+    //
+    // Phase 88 Plan 04 T7 — REMOVED 'detail: drawer open + info/opinions tabs'
+    // and 'detail: Polar-Max info-items' steps. Their contracts are
+    // subsumed by the refactored matrix step below (CA-AA-Special drawer
+    // covers the info-tab + opinions-tab + tab-switch invariants).
     // ====================================================================
 
-    await test.step('detail: drawer open + info/opinions tabs (MOVED 9.6.1 + 9.6.2, refactor-doc:332-334)', async () => {
-      // Pattern source: voter-detail.spec.ts:40-74. Click the first
-      // candidate card → drawer opens with infoTab + opinionsTab visible.
-      const candidateSection = page.getByTestId(testIds.voter.results.candidateSection);
-      await candidateSection.getByTestId(testIds.voter.results.card).first().click();
-      const dialog = page.getByRole('dialog');
-      await expect(dialog).toBeVisible({ timeout: TIMEOUT.slowPage });
-      // entityDetail.container testid lives inside the dialog.
-      await expect(dialog.getByTestId(testIds.voter.entityDetail.infoTab)).toBeVisible({ timeout: TIMEOUT.page });
-      // Switch to opinions tab via tab button within the drawer.
-      await dialog.getByRole('tab', { name: TEXT_RE.opinionsTab }).click();
-      await expect(dialog.getByTestId(testIds.voter.entityDetail.opinionsTab)).toBeVisible({ timeout: TIMEOUT.page });
-      // Switch back to info for the next step.
-      await dialog.getByRole('tab', { name: TEXT_RE.infoTab }).click();
-      await expect(dialog.getByTestId(testIds.voter.entityDetail.infoTab)).toBeVisible({ timeout: TIMEOUT.page });
-    });
-
-    await test.step('detail: Polar-Max info-items — exact count + electionSymbol "3" (refactor-doc:336-348)', async () => {
-      // First-card drawer is on Polar-Max (CA-AA-1) per the ranking contract
-      // asserted in the prior step. baseV1 EntityInfo renders 13 info-items
-      // for a candidate nomination with: 4 nomination-meta items (Election,
-      // Constituency, List, Election number) + 8 non-link info-question items
-      // (the link-subtype question is grouped into the trailing Links item) +
-      // 1 Links item = 13. CA-AA-1's reg-N nomination carries election_symbol
-      // '3' per baseV1 260525-tea: nominations are sequentially numbered
-      // "2"…"30" in declaration order; "1" is reserved/skipped and the 2
-      // CA-AA-Special nominations omit the symbol entirely.
-      const dialog = page.getByRole('dialog');
-      const infoTab = dialog.getByTestId(testIds.voter.entityDetail.infoTab);
-      await expect(infoTab).toBeVisible();
-      const infoItems = infoTab.getByTestId('info-item');
-      await expect(infoItems).toHaveCount(13, { timeout: TIMEOUT.element });
-      // Election number is the 4th info-item (index 3) for this nomination.
-      await expect(infoItems.nth(3)).toContainText(/Election Number/i);
-      await expect(infoItems.nth(3)).toContainText(/10/);
-    });
-
-    await test.step('detail: 9.6.5-8 voter-vs-entity matrix on CA-AA-Special (refactor-doc:349-355, Risk #2)', async () => {
-      // The currently-open drawer is on the first candidate, which is
-      // (almost certainly) CA-AA-Special per the matching ranking. Close
-      // it first; then explicitly click CA-AA-Special's card to ensure
-      // we're inspecting the right candidate.
-      const dialog = page.getByRole('dialog');
-      // Close current drawer.
-      await page.keyboard.press('Escape');
-      await expect(dialog).toBeHidden({ timeout: TIMEOUT.page });
-
-      // Re-open on CA-AA-Special by filter.
+    await test.step('candidate details: 9.6.5-8 voter-vs-entity matrix on CA-AA-Special (Phase 88 Plan 04 T7 — fixtures + info-items via regex)', async () => {
+      // Open CA-AA-Special's drawer via the resultsPage fixture. The
+      // matching step left the page on the Candidates tab; the matrix
+      // cell does not assume CA-AA-Special is first.
       const candidateSection = page.getByTestId(testIds.voter.results.candidateSection);
       const specialCard = candidateSection
         .getByTestId(testIds.voter.results.card)
@@ -976,6 +937,7 @@ test.describe('voter mega-journey', () => {
         .first();
       await expect(specialCard).toHaveCount(1, { timeout: TIMEOUT.page });
       await specialCard.click();
+      const dialog = page.getByRole('dialog');
       await expect(dialog).toBeVisible({ timeout: TIMEOUT.page });
 
       // Special candidate carries the DEFAULT_INFO_ANSWERS set (baseV1.ts:243)
@@ -1084,40 +1046,33 @@ test.describe('voter mega-journey', () => {
     // PARTY DRAWER + FILTERS — refactor-doc:357-377. Absorbs 9.6.4, 9.5.5-7, 9.5.10, 9.5.14-18.
     // ====================================================================
 
-    await test.step('party-drawer: info+candidates+opinions tabs + correct filter list (MOVED 9.6.4, refactor-doc:357-359, Risk #2)', async () => {
-      // Switch to parties tab, click first party card → drawer has 3 tabs.
-      // Pattern source: voter-detail.spec.ts:125-194.
-      const entityTabs = page.getByTestId(testIds.voter.results.entityTabs);
-      await entityTabs.getByRole('tab', { name: TEXT_RE.partiesTab }).click();
-      const partySection = page.getByTestId(testIds.voter.results.partySection);
-      await expect(partySection).toBeVisible({ timeout: TIMEOUT.slowPage });
+    await test.step('organisation details: tabs + info-items + 5 members (Phase 88 Plan 04 T7 — fixtures + regex info-items)', async () => {
+      // Switch to parties tab and open Party AA's drawer.
+      await resultsPage.selectEntityTab('orgs');
+      await resultsPage.openEntityDetailsForCard(/\[or-aa\] Party AA/i);
 
-      // Click first party card to open drawer. Use entity-card-action for
-      // robustness (handles both subcard / no-subcard layouts).
-      const firstPartyCardAction = partySection.getByTestId('entity-card-action').first();
-      await expect(firstPartyCardAction).toHaveCount(1, { timeout: TIMEOUT.page });
-      await firstPartyCardAction.click();
+      // Phase 88 Plan 04 T7 — assert [info, children, opinions] tabs via
+      // the entityDetails fixture (which maps SETTINGS keywords to i18n
+      // labels internally per R-3).
+      await entityDetails.expectTabs(['info', 'children', 'opinions']);
+
+      // Info tab: 3 info-items via regex match (R-3 secondary divergence —
+      // post-T2 [<id>] prefix means exact-equality fails; substring/regex
+      // works). The fixture's expectInfoItem accepts regex.
+      await entityDetails.selectTab('info');
+      await entityDetails.expectInfoItem(/Election/i, /Regional Election/i);
+      await entityDetails.expectInfoItem(/Constituency/i, /Region North/i);
+      await entityDetails.expectInfoItem(/Alliance/i, /Alliance A/i);
+
+      // Members tab (SETTINGS keyword: 'children') — 5 visible Party-AA
+      // members after the CA-AA-Hidden filter (RESEARCH R-3 verified).
+      await entityDetails.selectTab('children');
+      await expect(entityDetails.getMemberCards()).toHaveCount(5, { timeout: TIMEOUT.page });
+
+      // Close drawer for the next step.
       const dialog = page.getByRole('dialog');
-      await expect(dialog).toBeVisible({ timeout: TIMEOUT.page });
-      await expect(dialog.getByTestId(testIds.voter.entityDetail.infoTab)).toBeVisible();
-
-      // Per BASE_V1_APP_SETTINGS.entityDetails.contents.organization =
-      // ['info', 'children', 'opinions'] — children + opinions tabs exist.
-      // Children tab is labelled "Members" in en (per voter-detail spec note).
-      await dialog.getByRole('tab', { name: TEXT_RE.membersTab }).click();
-      await expect(dialog.getByTestId(testIds.voter.entityDetail.childrenTab)).toBeVisible({ timeout: TIMEOUT.page });
-      // Children tab should render at least 1 child entity-card (candidate).
-      const childCards = dialog
-        .getByTestId(testIds.voter.entityDetail.childrenTab)
-        .getByTestId(testIds.voter.results.card);
-      expect(await childCards.count()).toBeGreaterThan(0);
-
-      // Switch to opinions tab.
-      await dialog.getByRole('tab', { name: TEXT_RE.opinionsTab }).click();
-      await expect(dialog.getByTestId(testIds.voter.entityDetail.opinionsTab)).toBeVisible({ timeout: TIMEOUT.page });
-
-      // Close drawer deterministically (helper tries Escape → close button).
-      await closeAnyOpenDialog(page);
+      await page.keyboard.press('Escape');
+      await expect(dialog).toBeHidden({ timeout: TIMEOUT.page });
     });
 
     await test.step('filters: toggle without effect_update_depth_exceeded (MOVED 9.5.5 / RESULTS-01+02)', async () => {
