@@ -40,8 +40,8 @@
  * `data-teardown-baseV1` chain (appended to tests/playwright.config.ts).
  */
 
-import { expect, test } from '@playwright/test';
 import { buildRoute } from '../../utils/buildRoute';
+import { expect, test } from '../../fixtures/views';
 import { testIds } from '../../utils/testIds';
 import type { ConsoleMessage, Locator, Page } from '@playwright/test';
 
@@ -499,7 +499,7 @@ async function probeDrawerSurvival({ page, partySection }: { page: Page; partySe
 test.describe('voter mega-journey', () => {
   test.describe.configure({ mode: 'serial' });
 
-  test('full voter journey end-to-end', async ({ page }) => {
+  test('full voter journey end-to-end', async ({ page, resultsPage, entityFilters, entityDetails }) => {
     test.setTimeout(TIMEOUT.testMax); // 260524-l1t D1: was 180_000 (3 min); TIMEOUT.testMax = 50_000 is comfortably above observed runtimes (260523-u53 SUMMARY: ~17-24s).
 
     // ====================================================================
@@ -791,33 +791,42 @@ test.describe('voter mega-journey', () => {
     // RESULT CARD CONTENT + ENTITY-TYPE COUNTS — refactor-doc:300-314
     // ====================================================================
 
-    await test.step('result-card-content: portraits / submatches / independent / alliance info / 3-cand expand / election switching (refactor-doc:300-314, Risk #2)', async () => {
-      // Candidate side: at least one card visible.
-      const candidateSection = page.getByTestId(testIds.voter.results.candidateSection);
-      await expect(candidateSection).toBeVisible({ timeout: TIMEOUT.slowPage });
-      const candidateCards = candidateSection.getByTestId(testIds.voter.results.card);
-      const candidateCount = await candidateCards.count();
-      expect(candidateCount).toBeGreaterThan(0);
+    // ====================================================================
+     // PHASE 88 PLAN 04 T5 — result-card-contents (fixture-driven).
+     // Asserts the first candidate card: test-qu-info-text answer rendered,
+     // submatches block visible, 4 score gauges inside submatches, election
+     // symbol "10" rendered. The redundant "switch to parties + ≥1 org card"
+     // block is REMOVED — that contract is covered by the new T6
+     // "matching: organisations" step below.
+     // ====================================================================
 
-      // Portrait: candidate cards SHOULD render with an <img> for the
-      // candidate portrait. We don't assert exact src (template lacks
-      // portrait_image), but the <img> element should be present in
-      // SOME card. Tolerant probe — accessible image role covers <img>.
-      await candidateCards
-        .first()
-        .getByRole('img')
-        .first()
-        .isVisible({ timeout: TIMEOUT.element })
-        .catch(() => null);
+    await test.step('result-card-contents (Phase 88 Plan 04 T5 — fixtures + test-qu-info-text + 4 score-gauges + election-symbol 10)', async () => {
+      const cards = resultsPage.getEntityCards();
+      // RESEARCH A6: after POLAR_MAX answer set, top-ranked candidate is
+      // test-ca-bb-1 ('Polar-Max BB One'). Match by name regex (NOT by
+      // .first() position — leaves room for ranking determinism).
+      const firstCard = cards.filter({ hasText: TEXT_RE.polarMax }).first();
+      await expect(firstCard).toBeVisible({ timeout: TIMEOUT.slowPage });
 
-      // Switch to parties tab and assert at least 1 organization card.
-      const entityTabs = page.getByTestId(testIds.voter.results.entityTabs);
-      await entityTabs.getByRole('tab', { name: TEXT_RE.partiesTab }).click();
-      const partySection = page.getByTestId(testIds.voter.results.partySection);
-      await expect(partySection).toBeVisible({ timeout: TIMEOUT.slowPage });
-      const partyCards = partySection.getByTestId(testIds.voter.results.card);
-      const partyCount = await partyCards.count();
-      expect(partyCount).toBeGreaterThan(0);
+      // baseV1.ts:246 DEFAULT_INFO_ANSWERS — every candidate's
+      // test-qu-info-text value is "Default candidate biography text.".
+      // Phase 88 Plan 04 T3 Option B resolver wires this answer onto the
+      // card via cardContents.candidate.
+      await expect(firstCard).toContainText(/Default candidate biography text\./i);
+
+      // Sub-matches block visible inside the card.
+      const subMatches = firstCard.getByTestId(testIds.voter.results.subMatches);
+      await expect(subMatches).toBeVisible();
+
+      // Exactly 4 score-gauges inside the submatches block.
+      // baseV1 has 4 opinion-question subdimensions per the matching
+      // algorithm + base+optA+optB+regional categories.
+      await expect(subMatches.getByTestId(testIds.voter.results.scoreGauge)).toHaveCount(4);
+
+      // Election symbol "10" for test-ca-bb-1 — driven by election_symbol
+      // metadata on the nomination row.
+      const symbol = firstCard.getByTestId(testIds.voter.results.electionSymbol).first();
+      await expect(symbol).toHaveText(/^10$/);
     });
 
     // ====================================================================
