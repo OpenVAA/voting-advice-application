@@ -173,12 +173,22 @@ export function createResultsPage(page: Page) {
 
     /**
      * Open the entity-details view for the card matching `target`.
-     * After clicking, hard-asserts that the entity-details container is
-     * visible.
+     *
+     * Implementation note (EntityCardAction structure): when the card has
+     * subcards, the outer article is NOT click-navigable — only the inner
+     * header gets an EntityCardAction <a> wrap (so each subcard is
+     * independently navigable). Clicking the outer article does nothing.
+     * Robust approach: click the FIRST entity-card-action descendant —
+     * which is always the parent card's primary action (the whole-article
+     * wrap for no-subcard cards, the header wrap for subcard cards).
+     * Subcards have their own entity-card-action descendants too, but the
+     * FIRST one in DOM order is always the parent's.
+     *
+     * After click, hard-asserts entity-details container visible.
      */
     async openEntityDetailsForCard(target: Target): Promise<void> {
       const card = await this.getEntityCard(target);
-      await card.click();
+      await card.getByTestId('entity-card-action').first().click();
       await expect(page.getByTestId(testIds.voter.results.entityDetails)).toBeVisible();
     }
   };

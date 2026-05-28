@@ -137,6 +137,13 @@ export function createEntityFilters(page: Page) {
       /**
        * Single filter row by accessible name (regex/string) or indexer.
        * Returns a per-filter API surface scoped to that row.
+       *
+       * Auto-expands the filter row if it's currently collapsed (EntityFilters
+       * defaults `defaultExpanded` to false for non-active / non-text
+       * filters — see EntityFilters.svelte:55). The Expander surface
+       * controls visibility via an internal checkbox toggle; clicking
+       * the filter's "Expand or collapse this section" checkbox shows
+       * the inner options.
        */
       async getFilter(target: Target): Promise<ReturnType<typeof createFilter>> {
         const rows = this.getFilters();
@@ -146,6 +153,13 @@ export function createEntityFilters(page: Page) {
           row = rows.nth(target(count));
         } else {
           row = rows.filter({ hasText: target as RegExp | string }).first();
+        }
+        // Auto-expand if collapsed. Expander uses a checkbox-toggle
+        // internally; check the state and click to expand if needed.
+        const toggle = row.getByRole('checkbox', { name: /expand or collapse/i }).first();
+        const isExpanded = await toggle.isChecked().catch(() => true);
+        if (!isExpanded) {
+          await toggle.click();
         }
         return createFilter(row);
       },
@@ -215,8 +229,16 @@ export function createEntityFilters(page: Page) {
     async openFilterDialog(): Promise<ReturnType<typeof createDialog>> {
       const btn = page.getByTestId(testIds.voter.results.filterButton);
       await btn.first().click();
-      const dialog = page.getByTestId(testIds.voter.results.filterDialog);
-      await expect(dialog).toBeVisible();
+      // The Modal forwards the `entity-filter-dialog` testid via concatClass,
+      // but empirical runtime check (88-04 Task 9 integration) shows
+      // `getByTestId('entity-filter-dialog')` doesn't reliably resolve.
+      // Use role=dialog (the <dialog> element's implicit role) filtered by
+      // accessible name 'Filters' (i18n key entityFilters.filters →
+      // Modal `title` prop → <h2>). The Modal stays in DOM with the
+      // `hidden` class post-close, but Playwright's getByRole excludes
+      // hidden-by-CSS elements by default (visible=true is the default).
+      const dialog = page.getByRole('dialog', { name: /Filters/i });
+      await expect(dialog).toBeVisible({ timeout: 10_000 });
       return createDialog(dialog);
     },
 

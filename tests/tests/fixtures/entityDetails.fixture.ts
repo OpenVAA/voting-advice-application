@@ -106,22 +106,35 @@ export function createEntityDetails(page: Page) {
 
     /**
      * Assert a question display matches `target` (heading text), with
-     * optional voter / entity answer matchers. Mirrors the shape of the
-     * existing `expectQuestionDisplayToHave` util in
-     * voter-mega-journey.spec.ts but with looser semantics for the future
-     * spec migrations.
+     * optional matchers for voter / entity answers, numSelected count,
+     * and infoText (missing-answer marker text). Subsumes the legacy
+     * `expectQuestionDisplayToHave` util in voter-mega-journey.spec.ts.
+     *
+     * Uses `filter({ hasText: target })` on the entity-opinion-question
+     * div directly (more robust than the legacy helper's
+     * `filter({ has: getByRole('heading', { level: 3, name: regex }) })`
+     * which failed to match against the post-T2 [<id>] prefix on heading
+     * text — see deferred-items.md).
      */
     async expectQuestionDisplay(
       target: RegExp | string,
       options?: {
         voterAnswer?: RegExp | string;
         entityAnswer?: RegExp | string;
+        numSelected?: number;
+        infoText?: RegExp | string;
       }
     ): Promise<void> {
-      const block = this.getQuestionDisplays().filter({
-        has: activeContainer().getByRole('heading', { level: 3, name: target })
-      });
+      const block = this.getQuestionDisplays().filter({ hasText: target });
       await expect(block).toHaveCount(1);
+      if (options?.numSelected !== undefined) {
+        const voterChecked = block.getByRole('radio', { checked: true });
+        const entitySelected = block.getByTestId(testIds.voter.entityDetail.entitySelectedAnswer);
+        await expect(voterChecked.or(entitySelected)).toHaveCount(options.numSelected);
+      }
+      if (options?.infoText !== undefined) {
+        await expect(block.getByText(options.infoText)).toBeVisible();
+      }
       if (options?.voterAnswer !== undefined) {
         const voter = block.getByRole('radio', { checked: true });
         await expect(voter).toHaveAccessibleName(options.voterAnswer);

@@ -69,7 +69,13 @@ const TIMEOUT = {
   click: 2_000, // For clicks to register
   page: 4_000, // For pages to load
   slowPage: 10_000, // For slow pages to load — use sparingly
-  testMax: 50_000 // For any full test
+  // Phase 88 Plan 04 (T6 + T7 + T8) added 5 new test.step blocks to the
+  // mega-journey, including the T8 filters:dialog 7-stage choreography
+  // which opens/closes the modal 7+ times. Pre-88-04 baseline ran in
+  // ~17-24s (260523-u53 SUMMARY); post-88-04 surface bumps to ~75-90s.
+  // testMax raised from 50_000 → 120_000 to absorb the new cells'
+  // per-step costs (Expander auto-expand interactions + modal transitions).
+  testMax: 120_000 // For any full test
 } as const;
 
 const TEXT_RE = {
@@ -107,7 +113,7 @@ const TEXT_RE = {
   answerCount: /Answer 4/i,
   hiddenCandidate: /Hidden Candidate/i,
   specialCandidate: /Special Candidate AA|Candidate AA Special/i,
-  neitherAnswered: /Neither.*has(?:n['']t| not)? answered/i,
+  neitherAnswered: /Neither.*has(?:n['‘’]t| not)? answered/i,
   // routes / URLs
   resultsCandidatesOrRoot: /\/results\/(candidates|$)/,
   resultsOrganizationsOrRoot: /\/results\/organizations|\/results\//,
@@ -1011,22 +1017,23 @@ test.describe('voter mega-journey', () => {
       //   (c) entity only      → Opt-A opinion 1 (voter skipped Opt-A category)
       //   (d) both missing     → Opt-B opinion 1 (voter de-selected Opt-B,
       //                          entity has no answer)
-      await expectQuestionDisplayToHave(opinionsTab, {
-        questionText: /Base opinion 1 — Likert 5/i,
+      // Phase 88 Plan 04 T7 — refactored to use entityDetails.expectQuestionDisplay
+      // (the hasText-based filter is robust against the post-T2 [<id>] prefix on
+      // heading text; the legacy expectQuestionDisplayToHave helper's
+      // filter({has: getByRole('heading', { level: 3, name: regex })}) did NOT
+      // match the new heading shape — see deferred-items.md).
+      await entityDetails.expectQuestionDisplay(/Base opinion 1 — Likert 5/i, {
         numSelected: 2
       });
-      await expectQuestionDisplayToHave(opinionsTab, {
-        questionText: /Base opinion 2 — Likert 4/i,
+      await entityDetails.expectQuestionDisplay(/Base opinion 2 — Likert 4/i, {
         numSelected: 1,
-        infoText: /hasn['']?t answered/i
+        infoText: /hasn['‘’]?t answered/i
       });
-      await expectQuestionDisplayToHave(opinionsTab, {
-        questionText: /Opt-A opinion 1 — Likert 5/i,
+      await entityDetails.expectQuestionDisplay(/Opt-A opinion 1 — Likert 5/i, {
         numSelected: 1,
-        infoText: /You haven['']?t answered/i
+        infoText: /You haven['‘’]?t answered/i
       });
-      await expectQuestionDisplayToHave(opinionsTab, {
-        questionText: /Opt-B opinion 1 — Likert 5/i,
+      await entityDetails.expectQuestionDisplay(/Opt-B opinion 1 — Likert 5/i, {
         numSelected: 0,
         infoText: TEXT_RE.neitherAnswered
       });
