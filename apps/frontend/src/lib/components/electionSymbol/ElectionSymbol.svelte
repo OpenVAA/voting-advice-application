@@ -30,7 +30,7 @@ Display an entity's election symbol, which is usually a number but may also be a
   });
 </script>
 
-<span {...concatClass(restProps, classes)}>
+<span {...concatClass(restProps, classes)} data-testid="election-symbol">
   {#if image}
     <img src={image} alt={text} class="h-full w-full object-contain" />
   {:else}

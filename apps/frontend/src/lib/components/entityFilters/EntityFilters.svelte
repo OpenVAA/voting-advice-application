@@ -52,7 +52,8 @@ Show filters for entities. This component and the individual filter components o
       title={filter.name}
       variant="question"
       titleClass="!text-left"
-      defaultExpanded={filter.active || _isTextFilter(filter)}>
+      defaultExpanded={filter.active || _isTextFilter(filter)}
+      data-testid="entity-filter-row">
       {#if _isTextFilter(filter)}
         {#await import('./text') then { TextEntityFilter }}
           <TextEntityFilter {filter} />

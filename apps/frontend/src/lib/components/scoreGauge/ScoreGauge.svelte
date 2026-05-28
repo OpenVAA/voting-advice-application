@@ -59,7 +59,7 @@ Show a radial or a linear score gauge for a sub-match.
   });
 </script>
 
-<div {...concatClass(restProps, gaugeStyles.classes)} style={gaugeStyles.styles}>
+<div {...concatClass(restProps, gaugeStyles.classes)} data-testid="score-gauge" style={gaugeStyles.styles}>
   {#if variant === 'linear'}
     <progress
       role="meter"

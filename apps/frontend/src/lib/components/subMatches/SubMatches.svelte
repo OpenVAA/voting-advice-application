@@ -25,7 +25,7 @@ Display an entity's sub-matches.
   let gridStyle = $derived(`grid-template-columns: repeat(auto-fill, minmax(${variant === 'loose' ? 9 : 6}rem, 1fr));`);
 </script>
 
-<div {...concatClass(restProps, 'grid gap-x-md gap-y-sm')} style={gridStyle}>
+<div {...concatClass(restProps, 'grid gap-x-md gap-y-sm')} data-testid="sub-matches" style={gridStyle}>
   {#each matches as { score, questionGroup }}
     <ScoreGauge {score} label={questionGroup.name} color={questionGroup.color} variant="radial" {...scoreGaugeProps} />
   {/each}

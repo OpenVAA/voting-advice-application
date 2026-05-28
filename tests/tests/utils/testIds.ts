@@ -117,9 +117,32 @@ export const testIds = {
       cardTitle: 'entity-card-title',
       candidateSection: 'voter-results-candidate-section',
       partySection: 'voter-results-party-section',
+      allianceSection: 'voter-results-alliance-section',
       entityTabs: 'voter-results-entity-tabs',
       ingress: 'voter-results-ingress',
-      electionAccordion: 'voter-results-election-select'
+      electionAccordion: 'voter-results-election-select',
+      // Phase 88 Plan 04 Wave 1.5 — testids added by Task 5 for the
+      // resultsPage / entityFilters / entityDetails fixture surface.
+      // See 88-04-RESEARCH.md R-2 for placement decisions and the related
+      // 88-04-WAVE0-PROBES.txt for the Modal/Expander restProps verification.
+      listControls: 'entity-list-controls',
+      listSearch: 'entity-list-search',
+      listWithControls: 'entity-list-with-controls',
+      filterButton: 'entity-list-filter',
+      entityDetails: 'entity-details',
+      infoItem: 'info-item',
+      scoreGauge: 'score-gauge',
+      subMatches: 'sub-matches',
+      electionSymbol: 'election-symbol',
+      filterBadge: 'entity-list-filter-badge',
+      filterRow: 'entity-filter-row',
+      filterOption: 'entity-filter-option',
+      filterNumericMin: 'entity-filter-numeric-min',
+      filterNumericMax: 'entity-filter-numeric-max',
+      filterDialog: 'entity-filter-dialog',
+      filterDialogReset: 'entity-filter-dialog-reset',
+      filterDialogApply: 'entity-filter-dialog-apply',
+      cardSubcard: 'entity-card-subcard'
     },
     entityDetail: {
       container: 'voter-entity-detail',

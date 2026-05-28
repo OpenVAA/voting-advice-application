@@ -127,7 +127,7 @@ TODO: Consider moving the tracking events away from the component and just addin
           class="!w-auto"
           data-testid="entity-list-filter"
           text={t('entityFilters.filterButtonLabel')}
-          >{#snippet badge()}<InfoBadge text={numActiveFilters} />{/snippet}</Button>
+          >{#snippet badge()}<span data-testid="entity-list-filter-badge"><InfoBadge text={numActiveFilters} /></span>{/snippet}</Button>
       {:else}
         <Button
           onclick={openFilters}
@@ -164,12 +164,22 @@ TODO: Consider moving the tracking events away from the component and just addin
     bind:this={filtersModalRef}
     title={t('entityFilters.filters')}
     boxClass="sm:max-w-[calc(36rem_+_2_*_24px)]"
+    data-testid="entity-filter-dialog"
     onClose={trackActiveFilters}>
     <EntityFilters {filterGroup} targets={entities} />
     {#snippet actions()}
       <div class="flex w-full flex-col items-center">
-        <Button onclick={() => filtersModalRef?.closeModal()} text={t('entityFilters.applyAndClose')} variant="main" />
-        <Button onclick={resetFilters} color="warning" disabled={!numActiveFilters} text={t('entityFilters.reset')} />
+        <Button
+          onclick={() => filtersModalRef?.closeModal()}
+          text={t('entityFilters.applyAndClose')}
+          variant="main"
+          data-testid="entity-filter-dialog-apply" />
+        <Button
+          onclick={resetFilters}
+          color="warning"
+          disabled={!numActiveFilters}
+          text={t('entityFilters.reset')}
+          data-testid="entity-filter-dialog-reset" />
       </div>
     {/snippet}
   </Modal>

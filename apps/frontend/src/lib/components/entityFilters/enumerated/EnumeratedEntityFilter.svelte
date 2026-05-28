@@ -197,7 +197,7 @@ Render an enumerated filter for entities that displays a list of values to inclu
   {#each values as { value, object, count }}
     {@const label = getLabel(object)}
     {#if label != null}
-      <label class="label gap-sm cursor-pointer !items-start !p-0">
+      <label class="label gap-sm cursor-pointer !items-start !p-0" data-testid="entity-filter-option">
         <!-- Disable the input if there is only one value -->
         <!-- bind: keep — two-way DOM checkbox group bind:group={selected}; selected is $state -->
         <input
