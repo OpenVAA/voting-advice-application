@@ -549,6 +549,7 @@ export const baseV1Template: Template = {
         external_id: 'test-qg-opin-base',
         name: { en: '[qg-opin-base] Base Opinion Questions' },
         category_type: 'opinion',
+        custom_data: { hero: { url: '/images/test-hero-qg-base.svg', type: 'image' } },
         sort_order: 1,
         is_generated: false
       },
@@ -642,7 +643,7 @@ export const baseV1Template: Template = {
         name: { en: '[qu-info-text] Info: short biography.' },
         category: { external_id: 'test-qg-info' },
         allow_open: false,
-        required: false,
+        required: true,
         sort_order: 2,
         is_generated: false
       },
@@ -712,13 +713,54 @@ export const baseV1Template: Template = {
         is_generated: false
       },
 
+      // Phase 89 Plan 01 (TIR4:94-99): 3 filtered info questions scoped to
+      // municipal-only / north-only / south-only constituencies/elections.
+      // Voter-mega-journey's voter (CO-Reg-N + CO-Mun-NE per voter-mega
+      // fixture's first-option pick) sees ONLY the north-only filtered
+      // question on the candidate-details info tab.
+      {
+        external_id: 'test-qu-info-filt-mun-only',
+        type: 'text',
+        name: { en: '[qu-info-filt-mun-only] Info: filtered to municipal election only.' },
+        category: { external_id: 'test-qg-info' },
+        _elections: { external_id: ['test-el-mun'] },
+        allow_open: false,
+        required: false,
+        sort_order: 9,
+        is_generated: false
+      },
+      {
+        external_id: 'test-qu-info-filt-co-reg-n',
+        type: 'text',
+        name: { en: '[qu-info-filt-co-reg-n] Info: filtered to Region North constituency only.' },
+        category: { external_id: 'test-qg-info' },
+        _constituencies: { external_id: ['test-co-reg-n'] },
+        allow_open: false,
+        required: false,
+        sort_order: 10,
+        is_generated: false
+      },
+      {
+        external_id: 'test-qu-info-filt-co-reg-s',
+        type: 'text',
+        name: { en: '[qu-info-filt-co-reg-s] Info: filtered to Region South constituency only.' },
+        category: { external_id: 'test-qg-info' },
+        _constituencies: { external_id: ['test-co-reg-s'] },
+        allow_open: false,
+        required: false,
+        sort_order: 11,
+        is_generated: false
+      },
+
       // QG-Opin-Base — 5 opinion questions covering ordinal/categorical/boolean variants
       {
         external_id: 'test-qu-opin-base-1-likert5',
         type: 'singleChoiceOrdinal',
         name: { en: '[qu-opin-base-1-likert5] Base opinion 1 — Likert 5.' },
+        info: { en: '[qu-opin-base-1-info] Hero info content for Likert-5 question 1.' },
         choices: LIKERT_5_EN,
         category: { external_id: 'test-qg-opin-base' },
+        custom_data: { hero: { emoji: '🗳️' } },
         allow_open: true,
         required: true,
         sort_order: 100,
@@ -730,6 +772,7 @@ export const baseV1Template: Template = {
         name: { en: '[qu-opin-base-2-likert4] Base opinion 2 — Likert 4.' },
         choices: LIKERT_4_EN,
         category: { external_id: 'test-qg-opin-base' },
+        custom_data: { hero: { url: '/images/test-hero-q2.svg', type: 'image' } },
         allow_open: true,
         required: true,
         sort_order: 101,
@@ -1024,6 +1067,23 @@ export const baseV1Template: Template = {
         is_generated: false,
         organization: { external_id: 'test-or-c' },
         answersByExternalId: withInfoAnswers(GENERIC)
+      },
+      // Phase 89 Plan 01 (TIR4:86-90): unregistered candidate under party
+      // AA in CO-Reg-N. NO terms_of_use_accepted (registration must trigger
+      // ToU gate). NO answersByExternalId (unregistered → no answers). NO
+      // auth_user_id (sendEmail-driven invite flow creates this at runtime).
+      // candidates table has NO email column (89-01 Wave 0 R8 verdict);
+      // email lives in a sibling const file consumed by Plan 89-03.
+      // Election symbol "999" is set on the paired nomination row below.
+      {
+        external_id: 'test-ca-aa-unregistered',
+        first_name: 'Unregistered',
+        last_name: 'Candidate AA',
+        // terms_of_use_accepted DELIBERATELY absent (TIR4:86-90)
+        sort_order: 14,
+        is_generated: false,
+        organization: { external_id: 'test-or-aa' }
+        // answersByExternalId DELIBERATELY absent (unregistered → no answers)
       },
       // Independent in CO-Reg-N (also the only candidate in CO-Mun-NW)
       {
@@ -1391,6 +1451,19 @@ export const baseV1Template: Template = {
         election_symbol: '14',
         candidate: { external_id: 'test-ca-independent' },
         // No parent_nomination — independent (refactor-doc:83)
+        election: { external_id: 'test-el-reg' },
+        constituency: { external_id: 'test-co-reg-n' },
+        election_round: 1
+      },
+      // Phase 89 Plan 01 (TIR4:90): nomination for the unregistered
+      // candidate under OR-AA in CO-Reg-N. Election symbol "999" is the
+      // canonical sentinel for the unregistered-candidate fixture used
+      // by Plan 89-03 candidate-mega-journey.
+      {
+        external_id: 'test-nom-reg-n-ca-aa-unregistered',
+        election_symbol: '999',
+        candidate: { external_id: 'test-ca-aa-unregistered' },
+        parent_nomination: { external_id: 'test-nom-reg-n-or-aa' },
         election: { external_id: 'test-el-reg' },
         constituency: { external_id: 'test-co-reg-n' },
         election_round: 1
