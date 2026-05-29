@@ -196,3 +196,23 @@ PASS.
 
 Once B1 is resolved, the 4 warnings can either be addressed in revision OR explicitly accepted by the operator at the gate. The plans are structurally sound, decision-compliant, and pattern-correct — the blocker is procedural (Research Resolution gate per #1602).
 
+
+---
+
+## Re-Review 2026-05-29
+
+**Trigger:** Commits `004507ccc` (plan-checker remediation) + `eb6cbf688` (roadmap update).
+
+**B1 (CLEARED):** `90-RESEARCH.md:540` heading is `## Open Questions (RESOLVED)`. All 5 questions carry inline `RESOLVED 2026-05-29:` markers. Q5 cites Wave-0 probe P5 evidence chain (`supabaseAdminClient.ts:243-312` → `writer.ts:128, 162` → `profile/+page.svelte:222, 295`).
+
+**W4 (CLEARED):** `90-01-PLAN.md:176-184` LOCKS module-mutable + `applyDynamicOverride` path; request-scope variant explicitly rejected; `_dynamicOverride` / `applyDynamicOverride` / `getEffectiveSupportedLocales` shapes embedded; `files_modified` constraint reaffirmed (no SSR layout expansion).
+
+**W2 (CLEARED):** `90-03-PLAN.md:39, 82, 289` + `90-04-PLAN.md:337` replace "Pitfall 6 cross-perm Inbucket pollution" with "Open Question 4 RESOLVED + `candidate-mega.ts:87` recipient-filter contract". Genuine Pitfall 6 (locale-reload) citations preserved at `90-03-PLAN.md:234, 237, 246, 281` and `90-04-PLAN.md:192`.
+
+**W1 (ACCEPTED):** `90-03-PLAN.md:44` + `90-04-PLAN.md:37` carry explicit `MULTI-EDIT SEQUENCING (W1 acceptance 2026-05-29)` must_haves notes documenting 90-02 → 90-03 → 90-04 serialisation across `tests/playwright.config.ts` + `packages/dev-seed/src/templates/index.ts`.
+
+**W3 (ACCEPTED):** `90-04-PLAN.md:38` carries explicit `E2E GATE ACCEPTANCE (W3 acceptance 2026-05-29)` must_haves note citing Phase 89 cascade lineage (operator-runbook 3-run cold-start identity gate post-merge). Reinforced at `90-04-PLAN.md:315, 388` and `90-03-PLAN.md:364`.
+
+## PLANS VERIFIED
+
+Phase 90 plans cleared for execution. All B1 blocker conditions resolved; W1–W4 either remediated (W2, W4) or operator-accepted in plan frontmatter (W1, W3) with explicit citation lineage.
