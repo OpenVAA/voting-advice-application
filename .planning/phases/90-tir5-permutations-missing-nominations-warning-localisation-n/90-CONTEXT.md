@@ -23,6 +23,8 @@ Apply Phase 89's strict-fixtures + minimal-data permutation pattern (TIR4 / 89-0
 - Minimal data per permutation (no shared multi-perm datasets).
 - **Rewrite from scratch.** Old tests (if any equivalent exists) are guidance only — be sceptical of their flagged issues/solutions and inline back-and-forth comments.
 
+**Stage A wiring (D-90-10 below)** is absorbed INTO Phase 90 as Plan 90-01. The `customData.disableMultilingual` UI plumbing is already wired end-to-end per researcher (see 90-RESEARCH.md §2) — Phase 90 does NOT touch it. The PRODUCT-GAP is `supportedLocales` runtime-override only.
+
 **Out of scope:**
 - TIR6 ("STILL TO BE ADDED LATER") items — read-only-warning 7.1.1, candidate-translation 3.3.1, A11Y-02 persistence, A11Y-01 validation matrix, hero/hideHero settings, etc.
 - Hero video, extended question info, a11y assertions, visual drift, performance.
@@ -79,6 +81,18 @@ Apply Phase 89's strict-fixtures + minimal-data permutation pattern (TIR4 / 89-0
   - Existing `candidate-translation.spec.ts` (3.3.1 deferred TIR6) — may share surface with TIR5 localisation perms; do NOT carry its issue-comments or flagged solutions forward without verification against current code.
   - Any prior perm specs that reference missing-nominations behaviour.
   Old assertions are reference for "what the surface does", not for "how to test it".
+
+### Stage A: runtime supportedLocales override (PRODUCT-GAP wiring)
+
+- **D-90-10: Absorb Stage A wiring as the first plan in Phase 90 (NOT a separate phase).** Operator-confirmed 2026-05-29 after researcher surfaced PRODUCT-GAP. Background: `staticSettings.supportedLocales` (`packages/app-shared/src/settings/staticSettings.ts:46-64`) is hardcoded AND Paraglide compiles `locales` from `apps/frontend/project.inlang/settings.json` at build time — no runtime override path exists today. Phase 74 D-04 already deferred single-locale testing for this exact reason. Phase 90's localisation-NEGATIVE perm (TIR5:28-50) ASSERTS the absence of language selector + translation toggles when `supportedLanguages.length === 1` — this cannot be tested without a runtime override.
+- **Stage A scope:** Extend `app_settings.settings` JSONB column (or equivalent dynamic-settings surface) to override `supportedLocales` at runtime — bypassing the Paraglide-compile fallback when overrides are present. Touches: app-shared settings types, frontend i18n init (`apps/frontend/src/lib/i18n/init.ts`), dynamic-settings consumers, possibly `LanguageSelection.svelte` rendering branch. Researcher's grep for `supportedLocales` consumers seeds the wiring file list.
+- **Stage A does NOT mutate Paraglide compile-time `locales`.** The compile-time set stays at the full superset (en+fi+et+sv per `project.inlang/settings.json`); the runtime override DROPS unwanted locales from the user-facing surface. This preserves existing translation bundles for forward compatibility (multi-locale perms still work) while gating UI visibility.
+- **Plan partition (revises D-90-05):**
+  - **Plan 90-01: Stage A wiring** — extend `app_settings` for runtime supportedLocales override. Code-only plan (no test perms yet). Wave 1.
+  - **Plan 90-02: missing-nominations perm** — independent of Stage A. Can land in parallel with 90-01 (Wave 1).
+  - **Plan 90-03: lang-selector + multilingual-text-field function-fixtures + perm-localisation-negative perm** — depends on 90-01 (needs runtime override). Wave 2.
+  - **Plan 90-04: perm-localisation-positive perm** — depends on 90-03 (consumes the new fixtures). Wave 3.
+  - Planner may merge 90-03+90-04 if shared-fixture authoring + 2 perms fit one PR cleanly.
 
 ### Claude's Discretion
 
