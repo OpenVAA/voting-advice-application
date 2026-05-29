@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
-status: verifying
+status: executing
 stopped_at: Phase 89 Plan 01 complete
-last_updated: "2026-05-29T11:09:45.338Z"
+last_updated: "2026-05-29T18:04:04.548Z"
 last_activity: 2026-05-29
 progress:
-  total_phases: 14
+  total_phases: 15
   completed_phases: 13
-  total_plans: 40
-  completed_plans: 39
-  percent: 93
+  total_plans: 44
+  completed_plans: 40
+  percent: 87
 ---
 
 # Project State
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 89 — continuing-test-refactoring-implement-the-new-candidate-jour
+**Current focus:** Phase 90 — tir5-permutations-missing-nominations-warning-localisation-n
 
 ## Current Position
 
-Phase: 89 (continuing-test-refactoring-implement-the-new-candidate-jour) — EXECUTING
-Plan: 5 of 5
-Status: Phase complete — ready for verification
+Phase: 90 (tir5-permutations-missing-nominations-warning-localisation-n) — EXECUTING
+Plan: 2 of 4
+Status: Ready to execute
 Last activity: 2026-05-29
 
 ## Performance Metrics
@@ -100,6 +100,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | Phase 89 P03 | 40 min | 5 tasks tasks | 8 files files |
 | Phase 89-continuing-test-refactoring-implement-the-new-candidate-jour P04 | 10 min | 4 tasks | 13 files |
 | Phase 89-continuing-test-refactoring-implement-the-new-candidate-jour PLAST | 30 min | 5 tasks | 16 files |
+| Phase 90 P01 | 30min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -187,6 +188,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Plan 89-04 honored as-written: 3 perm templates + 6 setup/teardown wrappers + 3 specs + 9 playwright project entries. Each perm template uses distinct externalIdPrefix per D-89-03 parallel-safety.
 - [Phase ?]: Runtime gate deferred per environment cascade carry-forward from 89-01/02/03 (vite dev returns 500). Static verification clean across all 12 production files + 9 playwright project entries.
 - [Phase ?]: Phase 89 SHIPPED — all 5 plans complete. 89-LAST: 5 absorbed candidate specs deleted + 3 candidate-settings blocks excised (CAND-10/11/13) + 4 zero-consumer PageObject classes pruned + playwright.config.ts cleaned.
+- [Phase ?]: Plan 90-01: Stage A runtime supportedLocales override — module-level mutable + setter; live ESM let bindings for defaultLocale/locales/langNames propagate updates without consumer changes
 
 ### Quick Tasks Completed
 
@@ -209,7 +211,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-05-29T11:09:34.788Z
+Last session: 2026-05-29T18:04:04.543Z
 Stopped at: Phase 89 Plan 01 complete
 Resume file: None
 Next action: Operator decides Phase 87 disposition per Phase 86.3-05 D-06 recommendation:
