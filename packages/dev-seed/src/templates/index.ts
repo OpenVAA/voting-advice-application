@@ -20,10 +20,13 @@ import { e2eTemplate } from './e2e';
 import { perm1e1cg1coTemplate } from './permutations/perm-1e1cg1co';
 import { perm2eAsymmetricTemplate } from './permutations/perm-2e-asymmetric';
 import { perm2eSharedTemplate } from './permutations/perm-2e-shared';
+import { permDisableCandidateAppTemplate } from './permutations/perm-disable-candidate-app';
 import { permDisableElection1coTemplate } from './permutations/perm-disable-election-1co';
 import { permDisableElection2coTemplate } from './permutations/perm-disable-election-2co';
+import { permDisableVoterAppTemplate } from './permutations/perm-disable-voter-app';
 import { permDisjoint1coTemplate } from './permutations/perm-disjoint-1co';
 import { permNotLocated2e2cgTemplate } from './permutations/perm-not-located-2e2cg';
+import { permPerAppNotificationsTemplate } from './permutations/perm-per-app-notifications';
 import { permStartfromcgTemplate } from './permutations/perm-startfromcg';
 import type { Template } from '../template/types';
 import type { Overrides } from '../types';
@@ -46,7 +49,14 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   'perm-disjoint-1co': permDisjoint1coTemplate,
   'perm-disable-election-1co': permDisableElection1coTemplate,
   'perm-disable-election-2co': permDisableElection2coTemplate,
-  'perm-not-located-2e2cg': permNotLocated2e2cgTemplate
+  'perm-not-located-2e2cg': permNotLocated2e2cgTemplate,
+  // Phase 89 Plan 04 — 3 settings-permutation templates per TIR4:34-54.
+  // Each carries its own distinct externalIdPrefix ('e2e-perm-novapp-',
+  // 'e2e-perm-nocand-', 'e2e-perm-notif-') per D-89-03 for parallel safety
+  // across the wider suite.
+  'perm-disable-voter-app': permDisableVoterAppTemplate,
+  'perm-disable-candidate-app': permDisableCandidateAppTemplate,
+  'perm-per-app-notifications': permPerAppNotificationsTemplate
 };
 
 /**
@@ -73,8 +83,11 @@ export { E2E_BASE_APP_SETTINGS, e2eTemplate } from './e2e';
 export { perm1e1cg1coTemplate } from './permutations/perm-1e1cg1co';
 export { perm2eAsymmetricTemplate } from './permutations/perm-2e-asymmetric';
 export { perm2eSharedTemplate } from './permutations/perm-2e-shared';
+export { permDisableCandidateAppTemplate } from './permutations/perm-disable-candidate-app';
 export { permDisableElection1coTemplate } from './permutations/perm-disable-election-1co';
 export { permDisableElection2coTemplate } from './permutations/perm-disable-election-2co';
+export { permDisableVoterAppTemplate } from './permutations/perm-disable-voter-app';
 export { permDisjoint1coTemplate } from './permutations/perm-disjoint-1co';
 export { permNotLocated2e2cgTemplate } from './permutations/perm-not-located-2e2cg';
+export { permPerAppNotificationsTemplate } from './permutations/perm-per-app-notifications';
 export { permStartfromcgTemplate } from './permutations/perm-startfromcg';
