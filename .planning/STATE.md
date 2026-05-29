@@ -4,13 +4,13 @@ milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
 status: executing
 stopped_at: Phase 89 Plan 01 complete
-last_updated: "2026-05-29T18:12:58.800Z"
+last_updated: "2026-05-29T18:27:47.003Z"
 last_activity: 2026-05-29
 progress:
   total_phases: 15
   completed_phases: 13
   total_plans: 44
-  completed_plans: 41
+  completed_plans: 42
   percent: 87
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 ## Current Position
 
 Phase: 90 (tir5-permutations-missing-nominations-warning-localisation-n) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-05-29
 
@@ -102,6 +102,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | Phase 89-continuing-test-refactoring-implement-the-new-candidate-jour PLAST | 30 min | 5 tasks | 16 files |
 | Phase 90 P01 | 30min | 2 tasks | 5 files |
 | Phase 90 P02 | 15min | - tasks | - files |
+| Phase 90 P03 | 30 min | 3 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -191,6 +192,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Phase 89 SHIPPED — all 5 plans complete. 89-LAST: 5 absorbed candidate specs deleted + 3 candidate-settings blocks excised (CAND-10/11/13) + 4 zero-consumer PageObject classes pruned + playwright.config.ts cleaned.
 - [Phase ?]: Plan 90-01: Stage A runtime supportedLocales override — module-level mutable + setter; live ESM let bindings for defaultLocale/locales/langNames propagate updates without consumer changes
 - [Phase ?]: Plan 90-02: perm-missing-nominations template uses MINIMAL_BASE_APP_SETTINGS verbatim (no Stage A override); spec asserts modal via stable IDs [EL1]/[EL2] + the localised marker 'not available' from results.json; chain anchored to perm-per-app-notifications preserving HIGH-2 sequential perm invariant
+- [Phase ?]: Plan 90-03: chose testIds.shared namespace for langSelector + multilingualToggle — app-agnostic placement reusable by Plan 90-04 voter-side cross-check
+- [Phase ?]: Plan 90-03: +layout.ts applyDynamicOverride() wiring deferred to operator runbook — Plan 90-01 surface complete; connector glue in +layout.ts load() is operator-deferred per v2.10 cascade carry-forward
 
 ### Quick Tasks Completed
 
@@ -213,7 +216,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-05-29T18:12:40.680Z
+Last session: 2026-05-29T18:27:42.695Z
 Stopped at: Phase 89 Plan 01 complete
 Resume file: None
 Next action: Operator decides Phase 87 disposition per Phase 86.3-05 D-06 recommendation:

@@ -450,7 +450,7 @@ Apply Phase 89's strict-fixtures, [id]-desc, serial-only, minimal-data permutati
 **Goal:** Apply Phase 89-04's strict-fixtures + minimal-data perm pattern to add 3 TIR5 permutation chains (missing-nominations / localisation-negative / localisation-positive) AND close the runtime-locale-override PRODUCT-GAP (Phase 74 D-04 carry-forward) by extending DynamicSettings with an optional `i18n.supportedLocales` override threaded through the frontend i18n init. The override unblocks single-locale permutation testing (the negative perm) without mutating Paraglide compile-time bundles. Each perm gets its own dev-seed template + setup/teardown wrapper + Playwright project triplet. Adds 2 new function-fixtures (langSelector + multilingualTextField) + 1 perm-l10n composition root sibling to candidate-mega.ts + 2 new testids on LanguageSelection.svelte / Input.svelte.
 **Requirements**: I18N-RUNTIME-01 (Stage A runtime locale override, D-90-10), PERM-MN-01 (TIR5:15-26 missing-nominations modal), PERM-L10N-NEG-01..03 (TIR5:28-50 single-locale assertions), PERM-L10N-POS-01..07 (TIR5:52-95 dual-locale walk + voter-side cross-check), FIX-LANG-SEL-01 + FIX-ML-TEXT-01 (new function-fixtures per D-90-04)
 **Depends on:** Phase 89
-**Plans:** 2/4 plans executed
+**Plans:** 3/4 plans executed
 
 Plans:
 **Wave 1**
@@ -460,7 +460,7 @@ Plans:
 
 **Wave 2** *(blocked on 90-01 + 90-02)*
 
-- [ ] 90-03-PLAN.md — perm-localisation-negative: template w/ single-locale i18n override (consumes 90-01 surface) + 2 new function-fixtures (langSelectorFixture + multilingualTextFieldFixture) + perm-l10n composition root + 2 testid additions on LanguageSelection/Input + spec asserting no-langSelector + no-translation-toggles + 3 playwright project entries (chain anchor: perm-missing-nominations).
+- [x] 90-03-PLAN.md — perm-localisation-negative: template w/ single-locale i18n override (consumes 90-01 surface) + 2 new function-fixtures (langSelectorFixture + multilingualTextFieldFixture) + perm-l10n composition root + 2 testid additions on LanguageSelection/Input + spec asserting no-langSelector + no-translation-toggles + 3 playwright project entries (chain anchor: perm-missing-nominations).
 
 **Wave 3** *(blocked on 90-03)*
 
