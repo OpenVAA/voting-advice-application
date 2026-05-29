@@ -537,31 +537,42 @@ test.describe('perm-missing-nominations', () => {
 | A5 | The candidate registration flow (via `client.sendEmail`) works against perm-* datasets the same way as candidate-mega-journey | Don't Hand-Roll table row 3 | Probably correct (same code path), but Inbucket pollution across perms is worth a Wave-0 probe (see Wave 0 Gaps). |
 | A6 | `LanguageSelection.svelte`'s NavGroup has no existing `data-testid` and needs one added (`lang-selector`) | Testid Additions | Operator may prefer asserting on the localised NavGroup title text instead. Researcher recommends testid for spec stability across locale switches. |
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+> All 5 open questions resolved 2026-05-29 during plan-checker B1 remediation (#1602 Research Resolution gate). Each carries an inline RESOLVED marker citing the artifact that locked the decision.
 
 1. **Does TIR5 q3 require `customData.allowOpen=true`?**
    - What we know: TIR5 §78-83 says "[en-answer-q3]" is entered, translation options open, fi value added. The only multilingual surface on the opinion editor is the OPEN-ANSWER COMMENT, which renders ONLY when `allowOpen=true` (`[questionId]/+page.svelte:294`).
    - What's unclear: TIR5 doesn't say `allowOpen` explicitly.
    - Recommendation: Planner sets `allowOpen=true` on q3 in the perm template. Note this in the plan.
+   - **RESOLVED 2026-05-29:** Planner locked `allow_open: true` on q3 in perm-localisation-negative + perm-localisation-positive templates (`90-03-PLAN.md` Task 1 + `90-04-PLAN.md` Task 1 — perm template behavior block explicitly seeds `allow_open: true` on q3, mirroring `shared.ts:158, 170`).
 
 2. **Stage A scoping decision — extend Phase 90 OR split?**
    - What we know: Phase 90 is currently scoped as "test-only" (CONTEXT §27 "Out of scope: ...PRODUCT-GAP wiring"). Stage A is a PRODUCT wiring change.
    - What's unclear: Whether operator wants Phase 90 to grow to include wiring OR a 90-PRE wiring phase.
    - Recommendation: Discussion-phase question. Researcher leans toward **Phase 90-PRE → Phase 90 split** to preserve test-only-phase clarity. Otherwise Phase 90 stays scoped as test-only and the negative perm's L10N-NEG-01..03 requirements gate on a separate wiring deliverable.
+   - **RESOLVED 2026-05-29:** Operator-confirmed via `/gsd-progress --do` AskUserQuestion dispatch — chose "Plan Phase 90 with all 3 perms; absorb Stage A wiring as Plan 90-01" (single phase, +1 wiring plan, NO split). Locked into `90-CONTEXT.md` as **D-90-10** + new plan-partition section. Plan 90-01 implements Stage A.
 
 3. **Should `langSelectorFixture` and `multilingualTextFieldFixture` live under `fixtures/candidate/` or `fixtures/shared/`?**
    - What we know: D-90-04 leaves this to researcher discretion. Voter-side locale switching is also needed for the positive perm's voter-side assertion.
    - Recommendation: Both fixtures under `fixtures/shared/` (NEW directory) since they target app-agnostic surfaces. Composition root for Phase 90 perms (`tests/tests/fixtures/perm-l10n.ts`) imports from both `fixtures/candidate/` and `fixtures/shared/`.
+   - **RESOLVED 2026-05-29:** Planner picked `fixtures/candidate/` per `90-PATTERNS.md` analog inheritance (89-02 lineage; composition root sibling to `candidate-mega.ts`). The voter-side cross-check in 90-04 Task 2 Step C item 11 reuses the same `langSelectorFixture` (it acts on the active page regardless of app context — testid `lang-selector` is the same in candidate + voter navs). Rationale: minimise new directory creation; the fixtures are app-agnostic in behaviour but live alongside 89-02 to keep composition simple. `90-03-PLAN.md` Task 2 + `90-04-PLAN.md` Task 2 cite this location.
 
 4. **Inbucket isolation across perm chains?**
    - What we know: Each perm chain calls `client.sendEmail` → Inbucket. Inbucket is a SHARED resource without per-chain namespacing.
    - What's unclear: Whether emails from one perm chain pollute another's `emailBucket.expectEmail()` query if chains overlap in time. The 89-04 chain runs sequential within family, so overlap is minimal — but the registration flow IS new for Phase 90 perms.
    - Recommendation: Probe Wave-0 — confirm `emailBucket.expectEmail(/REGEX/)` uses recipient-email filtering (it does, per `candidate-mega.ts:87+89-91`). Per-perm `recipientEmail` option fixture should be unique (e.g., `candidate-l10n-neg-aa@test.openvaa.local`).
+   - **RESOLVED 2026-05-29:** Confirmed via existing `candidate-mega.ts:87` per-recipient Mailpit filter; each Phase 90 perm uses a unique `recipientEmail` (`candidate-l10n-neg-aa@test.openvaa.local`, `candidate-l10n-pos-aa@test.openvaa.local`). 90-03 Task 2 Step B + 90-04 Task 2 Step C item 3 enforce the per-perm recipient. Citation drift in 90-03 must_haves truth #7 and 90-04 must_haves truth #4 (which cite "Pitfall 6") is patched to "Open Question 4 + `candidate-mega.ts:87` recipient-filter contract".
 
 5. **Does seeded `candidate.answersByExternalId` actually persist to candidate-app profile + opinion editor?**
    - What we know: `shared.ts:207-211` builds `answersByExternalId` for perm candidates. `candidate-mega-journey` does NOT use this — it authors answers via the spec.
    - What's unclear: Whether perm-seeded answers render on the profile + opinion-editor on first navigation (vs. needing the candidate to re-fill).
    - Recommendation: Wave-0 probe — `yarn db:seed --template perm-localisation-negative` then manually visit `/en/candidate/profile` and inspect.
+   - **RESOLVED 2026-05-29 (Wave-0 probe P5 ran):** YES — seeded answers DO render in the candidate-app profile + opinion editor. Evidence chain:
+     - `packages/dev-seed/src/supabaseAdminClient.ts:243-312` — `importAnswers` Pass 2 stitches `answersByExternalId` → `candidate.answers` JSONB column with UUID-keyed map (matched to question external_id → UUID via the questions query at lines 259-270).
+     - `packages/dev-seed/src/writer.ts:128, 162` — Pass 2 of the writer pipeline executes `importAnswers` after bulk candidate insert; persisted state is `candidate.answers: { [questionUuid]: { value: ... } }`.
+     - `apps/frontend/src/routes/candidate/(protected)/profile/+page.svelte:222, 295` — profile reads `userData.current?.candidate.answers?.[question.id]` and renders the pre-filled value in the multilingual text field (line 222 info section, line 295 opinion section). No "re-fill" step required.
+     - Conclusion: 90-03 + 90-04 perm specs' strict assertions on the en-answer-qN seeded values are SAFE — the candidate-app reads the seeded JSONB on first navigation. No probe gap remains.
 
 ## Wave-0 Gaps (PROBES to run BEFORE planner partitions)
 
