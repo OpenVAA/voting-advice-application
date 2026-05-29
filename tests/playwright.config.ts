@@ -958,6 +958,29 @@ export default defineConfig({
       fullyParallel: false,
       use: { ...devices['Desktop Chrome'] },
       dependencies: ['data-setup-perm-per-app-notifications']
+    },
+
+    // Phase 90 Plan 02: perm-missing-nominations (1 test) — TIR5:15-26
+    // Sequential after perm-per-app-notifications per the HIGH-2 perm-*
+    // sequential invariant (lines 653-660 — app_settings singleton clobbering
+    // risk forces sequential chains within the perm family).
+    {
+      name: 'data-setup-perm-missing-nominations',
+      testMatch: /perm-missing-nominations\.setup\.ts/,
+      teardown: 'data-teardown-perm-missing-nominations',
+      dependencies: ['perm-per-app-notifications']
+    },
+    {
+      name: 'data-teardown-perm-missing-nominations',
+      testMatch: /perm-missing-nominations\.teardown\.ts/
+    },
+    {
+      name: 'perm-missing-nominations',
+      testDir: './tests/specs/perm',
+      testMatch: /perm-missing-nominations\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-perm-missing-nominations']
     }
   ]
 });
