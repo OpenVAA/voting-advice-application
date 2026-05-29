@@ -421,7 +421,7 @@ Plans:
 **Goal:** Apply Phase 88's mega-journey + parallel-landing + strict-fixtures pattern to the candidate app per TEST-INVENTORY-REFACTOR-4.md. Five deliverables: (1) baseV1 dataset extensions (hero on Q1/Q2/QG-base, info on Q1, unregistered candidate with "999" symbol, required test-qu-info-text, 3 filtered info questions); (2) voter-mega-journey absorbs hero/info/narrowed-candidate-details assertions in lockstep; (3) 12-file candidate fixture library (11 function-fixtures + composition root sibling to voter-mega.fixture.ts); (4) candidate-mega-journey spec walking TIR4:101-257 (22 steps from static-pages → registration via Inbucket → password → ToU → home → logout-with-dialog → forgot-password reset → login with submit-disabled + wrong-password + new-password branches → profile fill → opinion walk → preview → final logout-without-dialog); (5) 3 settings permutations (voterApp disabled / candidateApp disabled / per-app notifications). Phase ends with legacy retirement: delete 5 fully-absorbed specs + excise 7.1.2/3/4 from candidate-settings.spec.ts + prune unused PageObject classes.
 **Requirements**: TIR4:17-32 (baseV1 data), TIR4:25-32 + 99 (voter-mega absorption), TIR4:58-80 (fixture library surface), TIR4:101-257 (candidate-mega flow), TIR4:34-54 (3 perms), D-89-04 (legacy retirement scope)
 **Depends on:** Phase 88
-**Plans:** 3/5 plans executed
+**Plans:** 4/5 plans executed
 
 Plans:
 **Wave 1**
@@ -435,7 +435,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 89-04-PLAN.md — 3 settings permutations: 3 perm templates + 3 specs + 6 setup/teardown wrappers + 9 playwright project entries (Wave 3; depends on 89-01 + 89-03; sequenced after 89-03 to avoid playwright.config.ts merge conflict and to allow perm chains to depend on the candidate-mega-journey Playwright project entry landed by 89-03)
+- [x] 89-04-PLAN.md — 3 settings permutations: 3 perm templates + 3 specs + 6 setup/teardown wrappers + 9 playwright project entries (Wave 3; depends on 89-01 + 89-03; sequenced after 89-03 to avoid playwright.config.ts merge conflict and to allow perm chains to depend on the candidate-mega-journey Playwright project entry landed by 89-03)
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
