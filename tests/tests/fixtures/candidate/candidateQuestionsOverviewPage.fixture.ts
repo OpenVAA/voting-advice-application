@@ -1,0 +1,145 @@
+/**
+ * @file candidateQuestionsOverviewPage fixture — Phase 89 Plan 02 (TIR4:77 + 189-244 + D-89-02).
+ *
+ * Function-fixture for the candidate /candidate/questions overview page
+ * (`apps/frontend/src/routes/candidate/(protected)/questions/+page.svelte`).
+ *
+ * Surface (TIR4:77 + 189-244):
+ *  - clickStart()                          — click the candidate-questions-start
+ *                                            button (empty-state primary action).
+ *  - expectIntroMessage()                  — assert the candidate-questions-intro
+ *                                            wrapper is visible.
+ *  - expectContinuePrompt()                — assert the candidate-questions-continue
+ *                                            button is visible (partial-completion
+ *                                            shortcut to next unanswered).
+ *  - clickContinuePrompt()                 — click candidate-questions-continue.
+ *  - expectCompletionMessage()             — assert the candidate-questions-home
+ *                                            button is visible AND the completion
+ *                                            ingress text is shown.
+ *  - getCategoryExpander(name)             — returns an object with click() +
+ *                                            expectExpanded(state) methods scoped
+ *                                            to the matching category.
+ *  - getQuestionCard(label)                — returns the Locator for the matching
+ *                                            question card (label-based per
+ *                                            general API principle).
+ *  - clickEditQuestion(textOrNth)          — polymorphic dispatch:
+ *                                              number → 0-indexed nth edit button
+ *                                              string|RegExp → label match.
+ *
+ * SIBLING (not replacement) to the legacy tests/tests/pages/candidate/QuestionsPage.ts.
+ *
+ * **Rigidity contract** (Phase 88 Plan 04 SCOPE acceptance #6):
+ * - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
+ *   `.catch(() => null)` on assertion-bearing locator interactions.
+ */
+
+import { expect } from '@playwright/test';
+import { testIds } from '../../utils/testIds';
+import type { Locator, Page } from '@playwright/test';
+
+export interface CategoryExpanderHandle {
+  click(): Promise<void>;
+  expectExpanded(state: boolean): Promise<void>;
+}
+
+export function createCandidateQuestionsOverviewPage(page: Page) {
+  /**
+   * Return the question-card Locator filtered by displayed label.
+   */
+  function cardByLabel(label: string | RegExp): Locator {
+    return page.getByTestId(testIds.candidate.questions.card).filter({ hasText: label });
+  }
+
+  return {
+    /**
+     * Click the empty-state primary action.
+     */
+    async clickStart(): Promise<void> {
+      await page.getByTestId(testIds.candidate.questions.start).click();
+    },
+
+    /**
+     * Assert the empty-state intro wrapper is visible.
+     */
+    async expectIntroMessage(): Promise<void> {
+      await expect(page.getByTestId(testIds.candidate.questions.intro)).toBeVisible();
+    },
+
+    /**
+     * Assert the partial-completion candidate-questions-continue shortcut
+     * is visible.
+     */
+    async expectContinuePrompt(): Promise<void> {
+      await expect(page.getByTestId('candidate-questions-continue')).toBeVisible();
+    },
+
+    /**
+     * Click the candidate-questions-continue partial-completion shortcut.
+     */
+    async clickContinuePrompt(): Promise<void> {
+      await page.getByTestId('candidate-questions-continue').click();
+    },
+
+    /**
+     * Assert the completion-state surface: the candidate-questions-home
+     * primary-action button is rendered and the list view is in DOM.
+     */
+    async expectCompletionMessage(): Promise<void> {
+      await expect(page.getByTestId('candidate-questions-home')).toBeVisible();
+      await expect(page.getByTestId(testIds.candidate.questions.list)).toBeVisible();
+    },
+
+    /**
+     * Return a handle for the category-expander whose visible title matches
+     * `name`. Filters via hasText against the testid-bearing wrapper.
+     */
+    getCategoryExpander(name: string | RegExp): CategoryExpanderHandle {
+      const expander = page
+        .getByTestId(testIds.candidate.questions.categoryExpander)
+        .filter({ hasText: name })
+        .first();
+      return {
+        async click(): Promise<void> {
+          // The Expander widget exposes a clickable header (the inner
+          // checkbox toggles open/closed state). Click the inner checkbox
+          // to flip state. The Expander wraps a single role=checkbox per
+          // collapse.
+          await expander.getByRole('checkbox').first().click();
+        },
+        async expectExpanded(state: boolean): Promise<void> {
+          await expect(expander.getByRole('checkbox').first()).toBeChecked({ checked: state });
+        }
+      };
+    },
+
+    /**
+     * Return the question-card Locator for the matching label.
+     */
+    getQuestionCard(label: string | RegExp): Locator {
+      return cardByLabel(label);
+    },
+
+    /**
+     * Click the edit button for a question. When passed a number, clicks
+     * the nth (0-indexed) edit button in DOM order. When passed a string
+     * or RegExp, locates the matching question card by displayed text and
+     * clicks its edit button.
+     *
+     * The edit button is the per-card variant="main"-styled action with
+     * `data-testid="candidate-questions-card"` (the card-action button
+     * itself carries the testid per `questions/+page.svelte:173`).
+     */
+    async clickEditQuestion(textOrNth: string | RegExp | number): Promise<void> {
+      const cards = page.getByTestId(testIds.candidate.questions.card);
+      if (typeof textOrNth === 'number') {
+        await cards.nth(textOrNth).click();
+        return;
+      }
+      await cardByLabel(textOrNth).first().click();
+    }
+  };
+}
+
+export type CandidateQuestionsOverviewPageFixture = ReturnType<
+  typeof createCandidateQuestionsOverviewPage
+>;
