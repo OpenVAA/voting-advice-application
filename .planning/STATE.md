@@ -4,13 +4,13 @@ milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
 status: executing
 stopped_at: Phase 89 Plan 01 complete
-last_updated: "2026-05-29T10:07:36.891Z"
+last_updated: "2026-05-29T10:25:49.505Z"
 last_activity: 2026-05-29
 progress:
   total_phases: 14
   completed_phases: 12
   total_plans: 40
-  completed_plans: 35
+  completed_plans: 36
   percent: 86
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 ## Current Position
 
 Phase: 89 (continuing-test-refactoring-implement-the-new-candidate-jour) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 Status: Ready to execute
 Last activity: 2026-05-29
 
@@ -96,6 +96,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | Phase 88 P02 | 25min | 8 tasks | 20 files |
 | Phase 88 P04 | 69 min | 14 tasks | 24 files |
 | Phase 89 P01 | 70min | 4 tasks | 5 files |
+| Phase 89 P02 | 35 min | 4 tasks | 17 files |
 
 ## Accumulated Context
 
@@ -177,6 +178,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Phase 88 Plan 04 fixtures library partition: 3 fixture files + views.ts composition root sibling to legacy index.ts
 - [Phase ?]: Phase 89 Plan 01: baseV1 mutated in place per D-89-01 (hero on Q1+Q2+QG-base, info on Q1, required test-qu-info-text, 3 filtered info qs mun/north/south, unregistered candidate w/ election_symbol 999); voter-mega-journey absorbs new content via 3 testids + 4 strict assertion groups + matrix count 13→14 narrowing TIR4:99
 - [Phase ?]: Phase 89 Plan 01 R8 Wave 0 verdict: candidates table has NO email column in supabase-types — unregistered candidate row omits email; email reserved for 89-03 sibling const file (unregistered-aa@test.openvaa.local)
+- [Phase ?]: Plan 89-02: 12 candidate fixtures + composition root + 7 testids ship UNWIRED per D-89-02; legacy PageObjects untouched (parallel-landing)
 
 ### Quick Tasks Completed
 
@@ -199,9 +201,9 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-05-29T10:07:27.605Z
+Last session: 2026-05-29T10:25:32.325Z
 Stopped at: Phase 89 Plan 01 complete
-Resume file: .planning/phases/89-continuing-test-refactoring-implement-the-new-candidate-jour/89-01-SUMMARY.md
+Resume file: None
 Next action: Operator decides Phase 87 disposition per Phase 86.3-05 D-06 recommendation:
   (a) **RE-PLAN (Claude's recommendation):** Re-plan Phase 87 to absorb v2.11+ voter-app cold-deeplink deferrals (4 cells #5/#6/#7/#8 closure-paired via navigation-from-home redesign) + boundary-class flake deferrals (DETERM-06 imgproxy + email-link timing) BEFORE firing the v2.10-ship anchor capture. Plan 87-01 needs a new Plan 01a (deferral inventory) + Plan 01b (anchor capture WITH explicit deferrals documented).
   (b) **DELAYED-FIRING (alternative):** Run Phase 87 against the ALMOST-STRICT post-86.3 anchor with explicit v2.11+ deferral documentation; accept that "all-green deterministic" is satisfied for SKIPPED + DATA_RACE pools but NOT for CASCADE pool (Phase 87 Task 0 pre-gate CASCADE ≤ 5 unsatisfied at CASCADE = 37 selective-regen-preserved OR 90 raw).
