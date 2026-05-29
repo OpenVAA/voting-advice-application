@@ -86,7 +86,7 @@ Shows the opinion questions for the candidate to answer.
   {#if completion === 'empty' && !candCtx.answersLocked}
     <!-- Page content when no answers have yet been given -->
 
-    <div class="mb-lg gap-md grid justify-items-center">
+    <div class="mb-lg gap-md grid justify-items-center" data-testid="candidate-questions-intro">
       <p class="text-center">
         {t('candidateApp.questions.ingress.empty', { numQuestions: candCtx.opinionQuestions.length })}
       </p>
@@ -132,7 +132,8 @@ Shows the opinion questions for the candidate to answer.
           title={category.name}
           variant="category"
           defaultExpanded={candCtx.unansweredOpinionQuestions.some((q) => q.category.id === category.id)}
-          class="match-w-xl:rounded-md">
+          class="match-w-xl:rounded-md"
+          data-testid="candidate-questions-category-expander">
           <div class="gap-xxl p-lg grid">
             {#each questions as question}
               {@const { id, text } = question}

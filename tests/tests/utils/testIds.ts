@@ -19,7 +19,21 @@ export const testIds = {
     profile: {
       submit: 'profile-submit',
       imageUpload: 'profile-image-upload',
-      returnButton: 'profile-return'
+      returnButton: 'profile-return',
+      // Phase 89 Plan 02 (TIR4:75-76 + 166-188): testids supporting the new
+      // candidateProfilePage fixture. Placement:
+      //  - imageError: portrait-upload error message landing site (added to
+      //    profile/+page.svelte at the call-site wrapper around the image
+      //    <Input>; the underlying <Input>'s shared <ErrorMessage> at
+      //    Input.svelte:640-642 is not testid-specialised since it renders
+      //    the same way for every input type).
+      //  - nominations: <section> wrapping the immutable-nominations list.
+      //  - infoItem: per-question wrapper around each editable info question
+      //    in the candCtx.infoQuestions loop (un-keyed; fixture filters by
+      //    label text).
+      imageError: 'profile-image-error',
+      nominations: 'candidate-profile-nominations',
+      infoItem: 'candidate-profile-info-item'
     },
     home: {
       statusMessage: 'candidate-home-status',
@@ -32,7 +46,17 @@ export const testIds = {
       start: 'candidate-questions-start',
       answerInput: 'candidate-questions-answer',
       commentInput: 'candidate-questions-comment',
-      saveButton: 'candidate-questions-save'
+      saveButton: 'candidate-questions-save',
+      // Phase 89 Plan 02 (TIR4:58-80): testids added to support the new
+      // candidate fixture library's strict locator surface. Placement:
+      //  - categoryExpander: questions overview <Expander> wrapper (un-keyed,
+      //    filtered by hasText per category in fixture).
+      //  - hero: figure inside the {#snippet hero()} block on the question
+      //    page (parity with voter-questions-hero from Plan 89-01).
+      //  - intro: the empty-state intro <div> shown when no answers exist.
+      categoryExpander: 'candidate-questions-category-expander',
+      hero: 'candidate-questions-hero',
+      intro: 'candidate-questions-intro'
     },
     settings: {
       currentPassword: 'settings-current-password',
@@ -64,7 +88,14 @@ export const testIds = {
       submit: 'password-reset-submit'
     },
     terms: {
-      checkbox: 'terms-checkbox'
+      checkbox: 'terms-checkbox',
+      // Phase 89 Plan 02 (TIR4:69-70): the advance button on the candidate
+      // ToU page. The submit button lives in the consuming layout
+      // (candidate/(protected)/+layout.svelte) inside the {#snippet
+      // primaryActions()} block — NOT inside TermsOfUseForm.svelte itself
+      // (the form component renders only the checkbox; the consuming page
+      // owns the Continue button).
+      submit: 'terms-of-use-submit'
     },
     help: {
       home: 'candidate-help-home',

@@ -262,7 +262,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
       {/snippet}
 
       {#snippet hero()}
-        <figure role="presentation">
+        <figure role="presentation" data-testid="candidate-questions-hero">
           {#if !$appSettings.candidateApp.questions.hideHero && customData?.hero}
             <Hero content={customData.hero} />
           {/if}

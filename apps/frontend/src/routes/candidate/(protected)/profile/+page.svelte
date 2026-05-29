@@ -233,7 +233,7 @@ Shows the candidate's basic information, some of which is editable.
 
   <!-- Immutable nominations -->
 
-  <section>
+  <section data-testid="candidate-profile-nominations">
     <h2 class={subheadingClass}>{t('candidateApp.basicInfo.nominations.title')}</h2>
     <p class="mx-md">{t('candidateApp.basicInfo.nominations.description')}</p>
 
@@ -269,21 +269,33 @@ Shows the candidate's basic information, some of which is editable.
     <div class="gap-md flex flex-col">
       <!-- Image -->
 
-      <Input
-        type="image"
-        label={t('common.candidatePortrait')}
-        value={userData.current?.candidate.image}
-        onChange={handleImageInputChange}
-        locked={candCtx.answersLocked}
-        onShadedBg
-        containerProps={{ 'data-testid': 'profile-image-upload' }} />
+      <!--
+        Phase 89 Plan 02 (TIR4:75-76 + 166-188): wrap the image Input in a div
+        carrying `profile-image-error`. Input.svelte's <ErrorMessage> at
+        :640-642 is shared across all input types (text / email / image /
+        textarea-multilingual), so a testid added inside Input would be
+        ambiguous. Wrapping at the call site scopes the testid to image-upload
+        errors only.
+      -->
+      <div data-testid="profile-image-error">
+        <Input
+          type="image"
+          label={t('common.candidatePortrait')}
+          value={userData.current?.candidate.image}
+          onChange={handleImageInputChange}
+          locked={candCtx.answersLocked}
+          onShadedBg
+          containerProps={{ 'data-testid': 'profile-image-upload' }} />
+      </div>
 
       <!-- Editable Info questions -->
 
       <!-- {#each}: keyed — QuestionInput carries per-item interactive state (bind:value, focus, uncommitted draft); positional reuse on reorder/filter would corrupt state across questions -->
       {#each candCtx.infoQuestions.filter((q) => !getCustomData(q).locked) as question (question.id)}
         {@const answer = userData.current?.candidate.answers?.[question.id]}
-        <QuestionInput {question} {answer} onChange={handleQuestionInputChange} locked={candCtx.answersLocked} onShadedBg />
+        <div data-testid="candidate-profile-info-item">
+          <QuestionInput {question} {answer} onChange={handleQuestionInputChange} locked={candCtx.answersLocked} onShadedBg />
+        </div>
       {/each}
     </div>
   </section>

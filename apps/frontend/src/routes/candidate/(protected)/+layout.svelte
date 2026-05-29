@@ -171,7 +171,8 @@
         variant="main"
         disabled={!termsAcceptedLocal}
         loading={status === 'loading'}
-        onclick={handleSubmit} />
+        onclick={handleSubmit}
+        data-testid="terms-of-use-submit" />
       <Button color="warning" text={t('common.logout')} loading={status === 'loading'} onclick={handleCancel} />
     {/snippet}
   </MainContent>
