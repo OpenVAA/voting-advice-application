@@ -844,6 +844,47 @@ export default defineConfig({
       fullyParallel: false,
       use: { ...devices['Desktop Chrome'] },
       dependencies: ['data-setup-perm-not-located-2e2cg']
+    },
+
+    // === Phase 89 Plan 03 — candidate mega-journey chain ===
+    //
+    // Sequenced AFTER voter-mega-journey (Plan 89-03 R3 binding): both
+    // chains consume baseV1 + share the 'test-' external_id prefix, so
+    // running them in parallel would race on rowTeardown('test-', ...).
+    // Anchoring `data-setup-candidate-mega.dependencies = ['voter-mega-
+    // journey']` enforces strict ordering:
+    //   perm-* family → baseV1 setup → voter-mega-journey → baseV1
+    //   re-setup (candidate-mega) → candidate-mega-journey
+    //
+    // The candidate-mega chain re-seeds baseV1 from scratch via
+    // setupFromTemplate (idempotent — runTeardown('test-') runs BEFORE
+    // the writer). This guarantees a clean unregistered-candidate state
+    // (no leftover auth.users row from a prior cold-start run) for the
+    // registration-via-email step.
+    //
+    // Spec project sets `storageState: { cookies: [], origins: [] }` to
+    // start UNAUTHENTICATED — required for the registration-via-email
+    // flow (per R13 + candidate-registration.spec.ts:22 precedent).
+    {
+      name: 'data-setup-candidate-mega',
+      testMatch: /candidate-mega\.setup\.ts/,
+      teardown: 'data-teardown-candidate-mega',
+      dependencies: ['voter-mega-journey']
+    },
+    {
+      name: 'data-teardown-candidate-mega',
+      testMatch: /candidate-mega\.teardown\.ts/
+    },
+    {
+      name: 'candidate-mega-journey',
+      testDir: './tests/specs/candidate',
+      testMatch: /candidate-mega-journey\.spec\.ts/,
+      fullyParallel: false, // single-test serial journey
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: { cookies: [], origins: [] }
+      },
+      dependencies: ['data-setup-candidate-mega']
     }
   ]
 });
