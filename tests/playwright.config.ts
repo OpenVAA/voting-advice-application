@@ -1007,6 +1007,32 @@ export default defineConfig({
       fullyParallel: false,
       use: { ...devices['Desktop Chrome'] },
       dependencies: ['data-setup-perm-localisation-negative']
+    },
+
+    // Phase 90 Plan 04: perm-localisation-positive (1 test) — TIR5:52-95
+    // Sequential after perm-localisation-negative per the HIGH-2 perm-*
+    // sequential invariant (lines 653-660 — app_settings singleton clobbering
+    // risk forces sequential chains within the perm family). This perm's
+    // app_settings carries the Stage A i18n.supportedLocales override
+    // (Plan 90-01) with [en, fi] (vs negative's [en]); chaining ensures
+    // the override is the ONLY active mutation when the spec runs.
+    {
+      name: 'data-setup-perm-localisation-positive',
+      testMatch: /perm-localisation-positive\.setup\.ts/,
+      teardown: 'data-teardown-perm-localisation-positive',
+      dependencies: ['perm-localisation-negative']
+    },
+    {
+      name: 'data-teardown-perm-localisation-positive',
+      testMatch: /perm-localisation-positive\.teardown\.ts/
+    },
+    {
+      name: 'perm-localisation-positive',
+      testDir: './tests/specs/perm',
+      testMatch: /perm-localisation-positive\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-perm-localisation-positive']
     }
   ]
 });
