@@ -26,6 +26,7 @@ import { permDisableElection2coTemplate } from './permutations/perm-disable-elec
 import { permDisableVoterAppTemplate } from './permutations/perm-disable-voter-app';
 import { permDisjoint1coTemplate } from './permutations/perm-disjoint-1co';
 import { permLocalisationNegativeTemplate } from './permutations/perm-localisation-negative';
+import { permLocalisationPositiveTemplate } from './permutations/perm-localisation-positive';
 import { permMissingNominationsTemplate } from './permutations/perm-missing-nominations';
 import { permNotLocated2e2cgTemplate } from './permutations/perm-not-located-2e2cg';
 import { permPerAppNotificationsTemplate } from './permutations/perm-per-app-notifications';
@@ -67,7 +68,13 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   // Distinct externalIdPrefix 'e2e-perm-l10n-neg-' per D-90-01. Consumes
   // Plan 90-01's Stage A runtime supportedLocales override (D-90-10) to
   // drop the user-facing locale list to a single entry (`en`).
-  'perm-localisation-negative': permLocalisationNegativeTemplate
+  'perm-localisation-negative': permLocalisationNegativeTemplate,
+  // Phase 90 Plan 04 — localisation-positive TIR5:52-95 perm template.
+  // Distinct externalIdPrefix 'e2e-perm-l10n-pos-' per D-90-01. Sibling of
+  // perm-localisation-negative: identical dataset, supportedLocales overridden
+  // to [en, fi] (vs negative's [en]) so the spec exercises the langSelector
+  // visible-and-switching surface + Finnish-translation authoring on q1/q3.
+  'perm-localisation-positive': permLocalisationPositiveTemplate
 };
 
 /**
@@ -100,6 +107,7 @@ export { permDisableElection2coTemplate } from './permutations/perm-disable-elec
 export { permDisableVoterAppTemplate } from './permutations/perm-disable-voter-app';
 export { permDisjoint1coTemplate } from './permutations/perm-disjoint-1co';
 export { permLocalisationNegativeTemplate } from './permutations/perm-localisation-negative';
+export { permLocalisationPositiveTemplate } from './permutations/perm-localisation-positive';
 export { permMissingNominationsTemplate } from './permutations/perm-missing-nominations';
 export { permNotLocated2e2cgTemplate } from './permutations/perm-not-located-2e2cg';
 export { permPerAppNotificationsTemplate } from './permutations/perm-per-app-notifications';
