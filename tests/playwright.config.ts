@@ -12,25 +12,30 @@ export const STORAGE_STATE = path.join(TESTS_DIR, '../playwright/.auth/user.json
  *
  * Projects execute in dependency order:
  *   data-setup -> auth-setup -> candidate-app -> candidate-app-mutation -> re-auth-setup
- *     -> candidate-app-settings -> candidate-app-password
+ *     -> candidate-app-settings
  *   data-setup -> voter-app (read-only specs)
  *   data-setup -> voter-app-settings -> voter-app-popups (settings-mutating specs)
  *   (data-teardown runs after all projects complete)
  *
  * Configuration variant projects run sequentially AFTER the default suite:
- *   [candidate-app-password, voter-app-popups] -> data-setup-multi-election -> variant-multi-election
+ *   [candidate-app-settings, voter-app-popups] -> data-setup-multi-election -> variant-multi-election
  *     -> variant-results-sections -> data-setup-constituency -> variant-constituency
  *     -> data-setup-startfromcg -> variant-startfromcg
  *   (data-teardown-variants runs after all variant setups complete)
  *
- * Candidate specs are split into four groups:
- *   - candidate-app: auth + questions (sequential — fullyParallel:false prevents
+ * Phase 89 Plan LAST retired the candidate-app-password project (its lone
+ * spec candidate-password.spec.ts was deleted; coverage absorbed by
+ * candidate-mega-journey.spec.ts). The variant-multi-election chain was
+ * rerouted to anchor on candidate-app-settings — the new last surviving
+ * candidate project — preserving the sequencing constraint that variants
+ * run AFTER the default candidate-app suite completes.
+ *
+ * Candidate specs are split into three groups (post-89-LAST):
+ *   - candidate-app: translation (sequential — fullyParallel:false prevents
  *     concurrent server requests that race on the Supabase session layer)
- *   - candidate-app-mutation: registration + profile (create users via invite)
- *   - candidate-app-settings: settings (mutates global app settings like disabled/maintenance —
- *     must run alone)
- *   - candidate-app-password: logout + password change (session-destructive —
- *     runs LAST because updateUser({password}) revokes refresh tokens)
+ *   - candidate-app-mutation: profile (creates users via invite)
+ *   - candidate-app-settings: settings residual (mutates global app settings
+ *     like hideHero/answersLocked — must run alone)
  *
  * Voter specs are split into three groups:
  *   - voter-app: core journey, results, detail, static-pages (parallel-safe — read-only settings)
@@ -116,12 +121,15 @@ export default defineConfig({
       dependencies: ['data-setup']
     },
 
-    // 4a. Candidate app: auth + questions (sequential to prevent concurrent
-    //     server requests that race on Supabase session/DataWriter singletons)
+    // 4a. Candidate app: translation (sequential to prevent concurrent
+    //     server requests that race on Supabase session/DataWriter singletons).
+    //     Phase 89 Plan LAST: candidate-auth.spec.ts + candidate-questions.spec.ts
+    //     deleted (coverage absorbed by candidate-mega-journey.spec.ts).
+    //     Only candidate-translation.spec.ts remains in this project.
     {
       name: 'candidate-app',
       testDir: './tests/specs/candidate',
-      testMatch: /candidate-(auth|questions|translation)\.spec\.ts/,
+      testMatch: /candidate-translation\.spec\.ts/,
       fullyParallel: false,
       use: {
         ...devices['Desktop Chrome'],
@@ -153,10 +161,15 @@ export default defineConfig({
     // password-reset gate. Serialising the spec files within this project
     // eliminates the race without forcing the broader candidate chain into
     // single-worker mode.
+    // Phase 89 Plan LAST: candidate-registration.spec.ts deleted (coverage
+    // absorbed by candidate-mega-journey.spec.ts). Only candidate-profile.spec.ts
+    // remains in this project. The fullyParallel:false setting is preserved
+    // for future-proofing — adding a second mutation spec back to this
+    // project would re-introduce the race documented above.
     {
       name: 'candidate-app-mutation',
       testDir: './tests/specs/candidate',
-      testMatch: /candidate-(registration|profile)\.spec\.ts/,
+      testMatch: /candidate-profile\.spec\.ts/,
       fullyParallel: false,
       use: {
         ...devices['Desktop Chrome'],
@@ -233,18 +246,13 @@ export default defineConfig({
       dependencies: ['re-auth-setup', 'candidate-app-validation']
     },
 
-    // 4d. Candidate app: logout + password change (session-destructive —
-    //     runs LAST because updateUser({password}) revokes refresh tokens)
-    {
-      name: 'candidate-app-password',
-      testDir: './tests/specs/candidate',
-      testMatch: /candidate-password\.spec\.ts/,
-      use: {
-        ...devices['Desktop Chrome'],
-        storageState: STORAGE_STATE
-      },
-      dependencies: ['candidate-app-settings']
-    },
+    // 4d. RETIRED — Phase 89 Plan LAST.
+    //     The former `candidate-app-password` project ran candidate-password.spec.ts
+    //     which has been deleted (coverage absorbed by candidate-mega-journey.spec.ts
+    //     steps 7-9: forgot-password reset via Inbucket + wrong-password rejection
+    //     + new-password login). The dependency anchor for variant-multi-election
+    //     has been rerouted to `candidate-app-settings` — the new last surviving
+    //     candidate project.
 
     // 5a. Voter app: core journey, results, detail, static-pages (parallel-safe — read-only settings)
     {
@@ -328,14 +336,17 @@ export default defineConfig({
     //   PRECEDENT: Phase 84 made the identical structural maneuver on the
     //   re-auth-setup project's dependency at lines 148-152 (commit 93050e4fb).
     //
-    //   The remaining `['candidate-app-password']` dependency preserves the
-    //   sequencing constraint that variants run AFTER the default candidate-app
-    //   suite completes (so auth.users state + storageState are stable).
+    //   The remaining `['candidate-app-settings']` dependency (rerouted from
+    //   `candidate-app-password` by Phase 89 Plan LAST after that project was
+    //   retired) preserves the sequencing constraint that variants run AFTER
+    //   the default candidate-app suite completes (so auth.users state +
+    //   storageState are stable). `candidate-app-settings` is the new last
+    //   surviving candidate project.
     {
       name: 'data-setup-multi-election',
       testMatch: /variant-multi-election\.setup\.ts/,
       teardown: 'data-teardown-variants',
-      dependencies: ['candidate-app-password']
+      dependencies: ['candidate-app-settings']
     },
     {
       name: 'variant-multi-election',
@@ -517,24 +528,14 @@ export default defineConfig({
       fullyParallel: false,
       use: { ...devices['Desktop Chrome'] },
       dependencies: ['data-setup-hidden-required']
-    },
-    {
-      // Candidate-required cell — logs in as Alpha (reuses STORAGE_STATE from
-      // auth-setup; auth schema is NOT touched by dataset reset, so Alpha's
-      // pre-registered credentials remain valid against the variant's
-      // candidate row). Placed inside the variant project per RESEARCH OQ-3
-      // resolution (option B) to sidestep candidate-app-mutation's testMatch
-      // regex AND the upstream auth-setup race (LANDMINE-D).
-      name: 'variant-hidden-required-candidate',
-      testDir: './tests/specs/candidate',
-      testMatch: /candidate-required-info\.spec\.ts/,
-      fullyParallel: false,
-      use: {
-        ...devices['Desktop Chrome'],
-        storageState: STORAGE_STATE
-      },
-      dependencies: ['variant-hidden-required-voter']
     }
+    // RETIRED — Phase 89 Plan LAST. The former `variant-hidden-required-candidate`
+    // project ran candidate-required-info.spec.ts (the candidate-required cell of
+    // SETTINGS-03), which has been deleted (coverage absorbed by candidate-mega-
+    // journey.spec.ts steps 12-14: required-badge gate + partial-submit-stays-on-
+    // home + complete-fill-advances-to-questions). The remaining
+    // `variant-hidden-required-voter` project still consumes
+    // `data-setup-hidden-required`, so that setup project STAYS.
         ]
       : []),
 
