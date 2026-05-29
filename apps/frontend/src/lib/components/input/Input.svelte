@@ -652,6 +652,7 @@ Multilingual features are only available if the `locales` store contains more th
       {/if}
       {#if multilingual && locales.length > 1}
         <Button
+          data-testid="multilingual-toggle"
           text={isTranslationsVisible ? t('components.input.hideTranslations') : t('components.input.showTranslations')}
           icon={isTranslationsVisible ? 'hide' : 'language'}
           class="!w-auto"

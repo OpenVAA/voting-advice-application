@@ -25,6 +25,7 @@ import { permDisableElection1coTemplate } from './permutations/perm-disable-elec
 import { permDisableElection2coTemplate } from './permutations/perm-disable-election-2co';
 import { permDisableVoterAppTemplate } from './permutations/perm-disable-voter-app';
 import { permDisjoint1coTemplate } from './permutations/perm-disjoint-1co';
+import { permLocalisationNegativeTemplate } from './permutations/perm-localisation-negative';
 import { permMissingNominationsTemplate } from './permutations/perm-missing-nominations';
 import { permNotLocated2e2cgTemplate } from './permutations/perm-not-located-2e2cg';
 import { permPerAppNotificationsTemplate } from './permutations/perm-per-app-notifications';
@@ -61,7 +62,12 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   // Phase 90 Plan 02 — missing-nominations TIR5:15-26 perm template.
   // Distinct externalIdPrefix 'e2e-perm-missnoms-' per D-90-01 (parallel-safe
   // across the 89-04 + future 90-03/04 perm chains).
-  'perm-missing-nominations': permMissingNominationsTemplate
+  'perm-missing-nominations': permMissingNominationsTemplate,
+  // Phase 90 Plan 03 — localisation-negative TIR5:28-50 perm template.
+  // Distinct externalIdPrefix 'e2e-perm-l10n-neg-' per D-90-01. Consumes
+  // Plan 90-01's Stage A runtime supportedLocales override (D-90-10) to
+  // drop the user-facing locale list to a single entry (`en`).
+  'perm-localisation-negative': permLocalisationNegativeTemplate
 };
 
 /**
@@ -93,6 +99,7 @@ export { permDisableElection1coTemplate } from './permutations/perm-disable-elec
 export { permDisableElection2coTemplate } from './permutations/perm-disable-election-2co';
 export { permDisableVoterAppTemplate } from './permutations/perm-disable-voter-app';
 export { permDisjoint1coTemplate } from './permutations/perm-disjoint-1co';
+export { permLocalisationNegativeTemplate } from './permutations/perm-localisation-negative';
 export { permMissingNominationsTemplate } from './permutations/perm-missing-nominations';
 export { permNotLocated2e2cgTemplate } from './permutations/perm-not-located-2e2cg';
 export { permPerAppNotificationsTemplate } from './permutations/perm-per-app-notifications';

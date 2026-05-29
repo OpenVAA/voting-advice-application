@@ -226,6 +226,16 @@ export const testIds = {
     navigation: {
       menu: 'nav-menu',
       menuItem: 'nav-menu-item'
-    }
+    },
+    // Phase 90 Plan 03 (TIR5:28-50 + D-90-06): testids supporting the new
+    // langSelectorFixture + multilingualTextFieldFixture function-fixtures.
+    //  - langSelector: on the LanguageSelection.svelte NavGroup (line 33),
+    //    gates on `locales.length > 1`. Absent when single-locale (the
+    //    negative-perm assertion target).
+    //  - multilingualToggle: on the Input.svelte translation-toggle Button
+    //    (lines 653-660), gates on `multilingual && locales.length > 1`.
+    //    Absent when `customData.disableMultilingual=true` OR single-locale.
+    langSelector: 'lang-selector',
+    multilingualToggle: 'multilingual-toggle'
   }
 } as const;

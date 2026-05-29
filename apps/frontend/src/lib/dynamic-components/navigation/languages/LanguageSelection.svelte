@@ -30,7 +30,7 @@ import { localizeHref } from '$lib/paraglide/runtime';
 
 <!-- Only show the language selection if there are multiple locales to choose from -->
 {#if locales.length > 1}
-  <NavGroup title={t('common.language.select')}>
+  <NavGroup title={t('common.language.select')} data-testid="lang-selector">
     {#each locales as loc}
       <NavItem
         data-sveltekit-reload
