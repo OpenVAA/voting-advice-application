@@ -442,3 +442,15 @@ Plans:
 - [x] 89-LAST-PLAN.md — Legacy retirement: delete 5 absorbed specs + excise 7.1.2/3/4 from candidate-settings.spec.ts + prune PageObjects per audit + clean playwright.config.ts (Wave 4; depends on 89-03 + 89-04)
 
 **UI hint**: no (test-refactor + dataset mutation phase; no visual redesign)
+
+### Phase 90: TIR5 permutations — missing-nominations warning + localisation negative/positive
+
+Apply Phase 89's strict-fixtures, [id]-desc, serial-only, minimal-data permutation pattern (per TEST-INVENTORY-REFACTOR-5.md at repo root) to add 3 new candidate-app permutation specs: (1) missing-nominations warning (2 elections, shared CG with 1 CO, 1 org, 1 candidate, 1 nomination only in el-1 — both elections selected, expect warning for el-2); (2) localisation negative (1 supportedLanguage, 4 questions with disableMultilingual variants — expect no language selector, no translation-options surface); (3) localisation positive (2 supportedLanguages en+fi, same dataset — expect language selector, switch en↔fi, add Finnish answers, verify voter-side detail panel reflects per-locale answers). Adds lang-selector fixture + multilingual-text-field fixture. Depends on Phase 89. UI hint: no.
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 89
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 90 to break down)
