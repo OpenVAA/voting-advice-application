@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
-status: executing
+status: verifying
 stopped_at: Phase 89 Plan 01 complete
-last_updated: "2026-05-29T18:27:47.003Z"
+last_updated: "2026-05-29T18:40:00.456Z"
 last_activity: 2026-05-29
 progress:
   total_phases: 15
-  completed_phases: 13
+  completed_phases: 14
   total_plans: 44
-  completed_plans: 42
-  percent: 87
+  completed_plans: 43
+  percent: 93
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 
 Phase: 90 (tir5-permutations-missing-nominations-warning-localisation-n) — EXECUTING
 Plan: 4 of 4
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-05-29
 
 ## Performance Metrics
@@ -103,6 +103,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | Phase 90 P01 | 30min | 2 tasks | 5 files |
 | Phase 90 P02 | 15min | - tasks | - files |
 | Phase 90 P03 | 30 min | 3 tasks | 12 files |
+| Phase 90 P04 | 25 min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -194,6 +195,9 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Plan 90-02: perm-missing-nominations template uses MINIMAL_BASE_APP_SETTINGS verbatim (no Stage A override); spec asserts modal via stable IDs [EL1]/[EL2] + the localised marker 'not available' from results.json; chain anchored to perm-per-app-notifications preserving HIGH-2 sequential perm invariant
 - [Phase ?]: Plan 90-03: chose testIds.shared namespace for langSelector + multilingualToggle — app-agnostic placement reusable by Plan 90-04 voter-side cross-check
 - [Phase ?]: Plan 90-03: +layout.ts applyDynamicOverride() wiring deferred to operator runbook — Plan 90-01 surface complete; connector glue in +layout.ts load() is operator-deferred per v2.10 cascade carry-forward
+- [Phase ?]: Phase 90 Plan 04 — Locale-switch UI assertion uses label-diff pattern via testIds.voter.home.startButton; innerText() diff over literal-string match (robust against i18n bundle drift)
+- [Phase ?]: Phase 90 Plan 04 — Voter-side re-navigation required after langSelector.switchTo('fi') (Assumption A3 resolved: dialog state does NOT survive Paraglide data-sveltekit-reload full-reload)
+- [Phase ?]: Phase 90 Plan 04 — Per-perm recipientEmail 'candidate-l10n-pos-aa@test.openvaa.local' prevents cross-perm Inbucket pollution (distinct from 90-03 + candidate-mega per emailBucket recipient-filter)
 
 ### Quick Tasks Completed
 
@@ -216,7 +220,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-05-29T18:27:42.695Z
+Last session: 2026-05-29T18:39:41.376Z
 Stopped at: Phase 89 Plan 01 complete
 Resume file: None
 Next action: Operator decides Phase 87 disposition per Phase 86.3-05 D-06 recommendation:
