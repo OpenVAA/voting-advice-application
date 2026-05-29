@@ -421,12 +421,12 @@ Plans:
 **Goal:** Apply Phase 88's mega-journey + parallel-landing + strict-fixtures pattern to the candidate app per TEST-INVENTORY-REFACTOR-4.md. Five deliverables: (1) baseV1 dataset extensions (hero on Q1/Q2/QG-base, info on Q1, unregistered candidate with "999" symbol, required test-qu-info-text, 3 filtered info questions); (2) voter-mega-journey absorbs hero/info/narrowed-candidate-details assertions in lockstep; (3) 12-file candidate fixture library (11 function-fixtures + composition root sibling to voter-mega.fixture.ts); (4) candidate-mega-journey spec walking TIR4:101-257 (22 steps from static-pages → registration via Inbucket → password → ToU → home → logout-with-dialog → forgot-password reset → login with submit-disabled + wrong-password + new-password branches → profile fill → opinion walk → preview → final logout-without-dialog); (5) 3 settings permutations (voterApp disabled / candidateApp disabled / per-app notifications). Phase ends with legacy retirement: delete 5 fully-absorbed specs + excise 7.1.2/3/4 from candidate-settings.spec.ts + prune unused PageObject classes.
 **Requirements**: TIR4:17-32 (baseV1 data), TIR4:25-32 + 99 (voter-mega absorption), TIR4:58-80 (fixture library surface), TIR4:101-257 (candidate-mega flow), TIR4:34-54 (3 perms), D-89-04 (legacy retirement scope)
 **Depends on:** Phase 88
-**Plans:** 5 plans
+**Plans:** 1/5 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 89-01-PLAN.md — baseV1 dataset extensions + voter-mega-journey absorption (Wave 1; self-contained data PR; voter-mega absorbs hero/info/narrowed-candidate-details in lockstep)
+- [x] 89-01-PLAN.md — baseV1 dataset extensions + voter-mega-journey absorption (Wave 1; self-contained data PR; voter-mega absorbs hero/info/narrowed-candidate-details in lockstep)
 - [ ] 89-02-PLAN.md — Candidate fixture library: 11 function-fixtures + candidate-mega.ts composition root + N new testids (Wave 1; parallel-safe with 89-01)
 
 **Wave 2** *(blocked on Wave 1 completion)*

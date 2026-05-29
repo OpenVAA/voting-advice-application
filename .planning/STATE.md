@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
 status: executing
-stopped_at: Phase 89 context gathered
-last_updated: "2026-05-29T09:03:43.786Z"
-last_activity: 2026-05-29 -- Phase 89 execution started
+stopped_at: Phase 89 Plan 01 complete
+last_updated: "2026-05-29T10:07:36.891Z"
+last_activity: 2026-05-29
 progress:
   total_phases: 14
   completed_phases: 12
   total_plans: 40
-  completed_plans: 34
-  percent: 85
+  completed_plans: 35
+  percent: 86
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 89 — continuing test refactoring — implement the new candidate journey (and related edits) per TEST-INVENTORY-REFACTOR-4.md
+**Current focus:** Phase 89 — continuing-test-refactoring-implement-the-new-candidate-jour
 
 ## Current Position
 
-Phase: 89 (continuing test refactoring — implement the new candidate journey (and related edits) per TEST-INVENTORY-REFACTOR-4.md) — EXECUTING
-Plan: 1 of 5
-Status: Executing Phase 89
-Last activity: 2026-05-29 -- Phase 89 execution started
+Phase: 89 (continuing-test-refactoring-implement-the-new-candidate-jour) — EXECUTING
+Plan: 2 of 5
+Status: Ready to execute
+Last activity: 2026-05-29
 
 ## Performance Metrics
 
@@ -95,6 +95,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | Phase 87 P01 | 30min (Path A verbal-accept; ~216 min saved vs Path B) | 5 tasks (0/1a/1b/2/3/4) | ~20 files |
 | Phase 88 P02 | 25min | 8 tasks | 20 files |
 | Phase 88 P04 | 69 min | 14 tasks | 24 files |
+| Phase 89 P01 | 70min | 4 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -174,6 +175,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Plan 88-02 Q5: buildRoute({ electionId: [...] }) remains pure search-side write (no route-side dual-write); both-surfaces callers pass both keys explicitly; existing allowlist-driven split handles structurally — no buildRoute.ts code change needed
 - [Phase ?]: Option B (seed-time) for cardContents.candidate external_id resolution (88-04 ADR-88-04-01)
 - [Phase ?]: Phase 88 Plan 04 fixtures library partition: 3 fixture files + views.ts composition root sibling to legacy index.ts
+- [Phase ?]: Phase 89 Plan 01: baseV1 mutated in place per D-89-01 (hero on Q1+Q2+QG-base, info on Q1, required test-qu-info-text, 3 filtered info qs mun/north/south, unregistered candidate w/ election_symbol 999); voter-mega-journey absorbs new content via 3 testids + 4 strict assertion groups + matrix count 13→14 narrowing TIR4:99
+- [Phase ?]: Phase 89 Plan 01 R8 Wave 0 verdict: candidates table has NO email column in supabase-types — unregistered candidate row omits email; email reserved for 89-03 sibling const file (unregistered-aa@test.openvaa.local)
 
 ### Quick Tasks Completed
 
@@ -192,12 +195,13 @@ Key cross-milestone reference points carried forward into v2.10:
 - 165 pre-existing intra-package circular deps in `@openvaa/data` / `matching` / `filters` — deferred to a dedicated structural refactor milestone.
 - The candidate-profile cascading race (DETERM-04) is the v2.10 critical path — if root-cause investigation surfaces a deeper Svelte 5 hydration OR Supabase auth-session race that needs upstream framework work, fallback is the test-restructure path (split registration assertion into a setup project so downstream tests don't depend on the redirect succeeding). Both paths are documented in `.planning/todos/pending/2026-05-12-candidate-profile-cascading-race.md` §"Recommended approach".
 - Phase 83 DETERM-06 image-upload (CAND-03) cascade blocks 3/4 Plan 86.2-01 per-spec smokes (candidate-profile-validation, voter-not-located-redirect, results-sections); refactors verified clean via grep + lint + tsc instead. Plan 86.2-03 3-run gate will surface true post-86.2 state.
+- voter-mega-journey project chain blocked by pre-existing perm-1e1cg1co flake (CASCADE) — Task 2 verify deferred to clean-environment manual run; orthogonal vite-dev cache wipe race documented in deferred-items.md
 
 ## Session Continuity
 
-Last session: 2026-05-29T08:09:03.699Z
-Stopped at: Phase 89 context gathered
-Resume file: .planning/phases/89-continuing-test-refactoring-implement-the-new-candidate-jour/89-CONTEXT.md
+Last session: 2026-05-29T10:07:27.605Z
+Stopped at: Phase 89 Plan 01 complete
+Resume file: .planning/phases/89-continuing-test-refactoring-implement-the-new-candidate-jour/89-01-SUMMARY.md
 Next action: Operator decides Phase 87 disposition per Phase 86.3-05 D-06 recommendation:
   (a) **RE-PLAN (Claude's recommendation):** Re-plan Phase 87 to absorb v2.11+ voter-app cold-deeplink deferrals (4 cells #5/#6/#7/#8 closure-paired via navigation-from-home redesign) + boundary-class flake deferrals (DETERM-06 imgproxy + email-link timing) BEFORE firing the v2.10-ship anchor capture. Plan 87-01 needs a new Plan 01a (deferral inventory) + Plan 01b (anchor capture WITH explicit deferrals documented).
   (b) **DELAYED-FIRING (alternative):** Run Phase 87 against the ALMOST-STRICT post-86.3 anchor with explicit v2.11+ deferral documentation; accept that "all-green deterministic" is satisfied for SKIPPED + DATA_RACE pools but NOT for CASCADE pool (Phase 87 Task 0 pre-gate CASCADE ≤ 5 unsatisfied at CASCADE = 37 selective-regen-preserved OR 90 raw).
