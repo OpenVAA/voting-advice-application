@@ -885,6 +885,78 @@ export default defineConfig({
         storageState: { cookies: [], origins: [] }
       },
       dependencies: ['data-setup-candidate-mega']
+    },
+
+    // === Phase 89 Plan 04 — 3 settings-permutation chains (TIR4-PERM-01..03) ===
+    //
+    // Sequenced AFTER candidate-mega-journey via dependencies on the
+    // candidate-mega-journey spec project, and chained sequentially among
+    // themselves (perm-disable-voter-app → perm-disable-candidate-app →
+    // perm-per-app-notifications) per 88-03 perm-* family precedent.
+    //
+    // Parallel-safety: each perm template uses a distinct externalIdPrefix
+    // ('e2e-perm-novapp-', 'e2e-perm-nocand-', 'e2e-perm-notif-') per D-89-03,
+    // and each setup passes `extraTeardownPrefix: ['test-', 'e2e-perm-']`
+    // to pre-clear any residual rows from prior chains still mid-teardown.
+
+    // Variant 1: perm-disable-voter-app (1 test) — sequential after candidate-mega-journey
+    {
+      name: 'data-setup-perm-disable-voter-app',
+      testMatch: /perm-disable-voter-app\.setup\.ts/,
+      teardown: 'data-teardown-perm-disable-voter-app',
+      dependencies: ['candidate-mega-journey']
+    },
+    {
+      name: 'data-teardown-perm-disable-voter-app',
+      testMatch: /perm-disable-voter-app\.teardown\.ts/
+    },
+    {
+      name: 'perm-disable-voter-app',
+      testDir: './tests/specs/perm',
+      testMatch: /perm-disable-voter-app\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-perm-disable-voter-app']
+    },
+
+    // Variant 2: perm-disable-candidate-app (1 test) — sequential after perm-disable-voter-app
+    {
+      name: 'data-setup-perm-disable-candidate-app',
+      testMatch: /perm-disable-candidate-app\.setup\.ts/,
+      teardown: 'data-teardown-perm-disable-candidate-app',
+      dependencies: ['perm-disable-voter-app']
+    },
+    {
+      name: 'data-teardown-perm-disable-candidate-app',
+      testMatch: /perm-disable-candidate-app\.teardown\.ts/
+    },
+    {
+      name: 'perm-disable-candidate-app',
+      testDir: './tests/specs/perm',
+      testMatch: /perm-disable-candidate-app\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-perm-disable-candidate-app']
+    },
+
+    // Variant 3: perm-per-app-notifications (2 tests) — sequential after perm-disable-candidate-app
+    {
+      name: 'data-setup-perm-per-app-notifications',
+      testMatch: /perm-per-app-notifications\.setup\.ts/,
+      teardown: 'data-teardown-perm-per-app-notifications',
+      dependencies: ['perm-disable-candidate-app']
+    },
+    {
+      name: 'data-teardown-perm-per-app-notifications',
+      testMatch: /perm-per-app-notifications\.teardown\.ts/
+    },
+    {
+      name: 'perm-per-app-notifications',
+      testDir: './tests/specs/perm',
+      testMatch: /perm-per-app-notifications\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-perm-per-app-notifications']
     }
   ]
 });
