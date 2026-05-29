@@ -63,8 +63,15 @@
  * per R3 shared 'test-' prefix race).
  */
 
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { expect, test } from '../../fixtures/candidate/candidate-mega';
 import {
+  INFO_QUESTION_ANSWERS,
+  OPEN_ANSWER_1,
+  OPEN_ANSWER_1_EDITED,
   PASSWORD_1,
   PASSWORD_2,
   REGISTRATION_EMAIL_SUBJECT_REGEX,
@@ -91,6 +98,96 @@ const TIMEOUT = {
   slowPage: 15_000,
   testMax: 180_000
 } as const;
+
+/**
+ * Valid portrait path — reuses the existing tests/tests/data/assets/test-poster.jpg
+ * fixture (passes Input.svelte's image-type check; well under the 20MB ceiling).
+ */
+const VALID_PORTRAIT_PATH = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../../data/assets/test-poster.jpg'
+);
+
+/**
+ * Invalid portrait path — the existing tests/tests/data/test-not-an-image.txt
+ * fixture (text file, fails the image-type check). Same fixture
+ * candidate-profile-validation.spec.ts uses for the invalid-file cell.
+ */
+const INVALID_PORTRAIT_PATH = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../../data/test-not-an-image.txt'
+);
+
+/**
+ * Tmp-dir path for the runtime-generated oversized PNG. Built once per
+ * file in `test.beforeAll` to avoid committing a 21MB binary.
+ */
+const OVERSIZED_PNG_PATH = path.join(os.tmpdir(), 'candidate-mega-oversized.png');
+
+/**
+ * Subset of INFO_QUESTION_ANSWERS to fill in step 13 — excludes
+ * test-qu-info-text (the required field, deliberately left blank per
+ * TIR4:178). Pre-computed at module scope to avoid an `if` inside the
+ * test body (playwright/no-conditional-in-test).
+ */
+const STEP_13_INFO_FILL_ENTRIES: ReadonlyArray<readonly [string, string]> = Object.freeze(
+  Object.entries(INFO_QUESTION_ANSWERS).filter(
+    ([externalId]) => externalId !== 'test-qu-info-text'
+  )
+);
+
+/**
+ * Walk the per-question editor for the candidate opinion-question loop in
+ * step 19. At each /candidate/questions/{id} URL: select choice 0 +
+ * clickContinue. Loop until the URL leaves the per-question editor surface
+ * (the candidate is dispatched to /candidate or /candidate/questions when
+ * the last applicable question is answered).
+ *
+ * The loop ceiling (`MAX_STEPS`) is a defensive guard against an infinite
+ * walk if the dispatch logic regresses; baseV1 currently exposes ~8
+ * applicable opinion questions to the unregistered candidate (Base ×5 +
+ * Opt-A ×1 + Opt-B ×1 + EL-Reg ×1), so 20 is a loose ceiling.
+ *
+ * Hoisted to module scope (mirrors voter-mega-journey precedent) to
+ * satisfy `playwright/no-conditional-in-test` — the `if` inside is the
+ * walk's loop-exit condition, not a race mask.
+ */
+async function walkRemainingOpinionQuestions(
+  page: Page,
+  selectChoice: (n: number) => Promise<void>,
+  clickContinue: () => Promise<void>,
+  expectContinueEnabled: () => Promise<void>,
+  timeoutMs: number
+): Promise<void> {
+  const MAX_STEPS = 20;
+  const PER_QUESTION_URL_RE = /\/candidate\/questions\/[^/?]+/;
+  for (let i = 0; i < MAX_STEPS; i++) {
+    const url = page.url();
+    if (!PER_QUESTION_URL_RE.test(url)) return;
+    await selectChoice(0);
+    await expectContinueEnabled();
+    await clickContinue();
+    // Settle on whichever page the continue handler dispatched to.
+    await page.waitForLoadState('domcontentloaded', { timeout: timeoutMs });
+  }
+}
+
+/**
+ * Generate the oversized PNG fixture on disk. The handler at Input.svelte
+ * checks `file.type.startsWith('image/')` first (passes when the browser
+ * maps the `.png` extension to `image/png`), then checks
+ * `file.size > maxFilesize` (trips because 21MB > 20MB ceiling). A real
+ * PNG decode is NOT required — the rejection branch fires on size alone.
+ */
+function buildOversizedPng(): void {
+  const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+  const TARGET_BYTES = 21 * 1024 * 1024;
+  const buf = Buffer.concat([
+    PNG_SIGNATURE,
+    Buffer.alloc(TARGET_BYTES - PNG_SIGNATURE.length, 0)
+  ]);
+  fs.writeFileSync(OVERSIZED_PNG_PATH, buf);
+}
 
 /**
  * After the PasswordSetter form submits the page lands on EITHER
@@ -144,8 +241,16 @@ test.use({ storageState: { cookies: [], origins: [] } });
 test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
-  // Task 3b will add `test.beforeAll(buildOversizedPng)` + `test.afterAll`
-  // cleanup once the portrait-upload step (13) lands.
+  // Build the oversized PNG once per file (used by step 13's portrait
+  // upload error-path assertions). Avoids committing a 21MB binary fixture.
+  test.beforeAll(async () => {
+    buildOversizedPng();
+  });
+
+  test.afterAll(async () => {
+    // Best-effort cleanup of the tmp fixture; ignore ENOENT.
+    fs.rmSync(OVERSIZED_PNG_PATH, { force: true });
+  });
 
   test('full candidate journey end-to-end', async ({
     page,
@@ -155,6 +260,10 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
     candidateHomePage,
     candidateForgotPasswordPage,
     candidatePasswordSetter,
+    candidateProfilePage,
+    candidateQuestionsOverviewPage,
+    candidateQuestionPage,
+    candidatePreviewPage,
     candidateLogoutButton
   }) => {
     test.setTimeout(TIMEOUT.testMax);
@@ -323,8 +432,238 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
       });
     });
 
-    // ============== Steps 12-22: appended in Task 3b =====================
-    // Task 3b appends steps 12-22 (profile fill + opinion walk + preview +
-    // final logout) to this same test() block per TIR4:166-257.
+    // ============== Step 12: profile static info + filtered partition ====
+
+    await test.step('12. profile: static info + filtered questions partition + required badge', async () => {
+      await candidateHomePage.clickTask('profile');
+      await expect(page).toHaveURL(/\/candidate\/profile/, { timeout: TIMEOUT.slowPage });
+      // Static info: candidate first name visible; nomination block carries
+      // election_symbol "999" (the sentinel for the unregistered candidate
+      // per Plan 89-01 baseV1).
+      await candidateProfilePage.expectStaticInfo({
+        name: 'Unregistered',
+        nomination: { electionSymbol: '999' }
+      });
+      // Visible info questions: all of test-qg-info EXCEPT the mun-only
+      // (filtered by election) and the south-only (filtered by
+      // constituency). North-only IS visible (the candidate is in CO-Reg-N).
+      await candidateProfilePage.expectQuestionsVisible([
+        /qu-info-multipleChoiceCategorical/,
+        /qu-info-singleChoiceCategorical/,
+        /qu-info-text\]/,
+        /qu-info-text-longText/,
+        /qu-info-text-link/,
+        /qu-info-number/,
+        /qu-info-boolean/,
+        /qu-info-date/,
+        /qu-info-multipleText/,
+        /qu-info-filt-co-reg-n/
+      ]);
+      await candidateProfilePage.expectQuestionsAbsent([
+        /qu-info-filt-mun-only/,
+        /qu-info-filt-co-reg-s/
+      ]);
+      // Required badge on test-qu-info-text (only question with required:true
+      // in the info category per Plan 89-01 baseV1 mutation).
+      await candidateProfilePage.expectRequiredBadge(/qu-info-text\]/);
+    });
+
+    // ============== Step 13: portrait upload + partial profile fill ======
+
+    await test.step('13. profile: portrait errors + valid upload + fill info except required + first + submit', async () => {
+      // Invalid file format → invalidFile error.
+      await candidateProfilePage.uploadPortrait({
+        path: INVALID_PORTRAIT_PATH,
+        expectError: 'invalidFile'
+      });
+      // Oversize file → oversizeFile error.
+      await candidateProfilePage.uploadPortrait({
+        path: OVERSIZED_PNG_PATH,
+        expectError: 'oversizeFile'
+      });
+      // Valid image upload (no expectError → no assertion on error wrapper).
+      await candidateProfilePage.uploadPortrait({ path: VALID_PORTRAIT_PATH });
+      // Fill all info questions EXCEPT the required one (test-qu-info-text)
+      // AND the first one (the categorical-input questions are not in
+      // INFO_QUESTION_ANSWERS because the fillQuestion textbox helper
+      // can't fill them). Pre-filtered subset at module scope per
+      // playwright/no-conditional-in-test.
+      for (const [externalId, value] of STEP_13_INFO_FILL_ENTRIES) {
+        await candidateProfilePage.fillQuestion(new RegExp(externalId), value);
+      }
+      await candidateProfilePage.submit();
+      // Post-submit lands on home (opinions still disabled because the
+      // required field is empty).
+      await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({
+        timeout: TIMEOUT.slowPage
+      });
+      await candidateHomePage.expectTasks({
+        enabled: ['profile'],
+        disabled: ['opinions', 'preview']
+      });
+    });
+
+    // ============== Step 14: revisit profile + fill required + advance ===
+
+    await test.step('14. profile: revisit + fill required + submit → questions overview', async () => {
+      await candidateHomePage.clickTask('profile');
+      await expect(page).toHaveURL(/\/candidate\/profile/, { timeout: TIMEOUT.slowPage });
+      // Fill the required test-qu-info-text field this time.
+      await candidateProfilePage.fillQuestion(
+        /qu-info-text\]/,
+        INFO_QUESTION_ANSWERS['test-qu-info-text']
+      );
+      await candidateProfilePage.submit();
+      // Post-submit when required-empty gate is satisfied: navigation to
+      // the questions overview per profile/+page.svelte:104-116 canSubmit branch.
+      await expect(page).toHaveURL(/\/candidate\/questions/, { timeout: TIMEOUT.slowPage });
+    });
+
+    // ============== Step 15: questions overview intro + clickStart =======
+
+    await test.step('15. questions overview: intro message + clickStart → first opinion question', async () => {
+      await candidateQuestionsOverviewPage.expectIntroMessage();
+      await candidateQuestionsOverviewPage.clickStart();
+      // Land on the per-question editor (URL contains /questions/{id}).
+      await expect(page).toHaveURL(/\/candidate\/questions\/[^/]+/, {
+        timeout: TIMEOUT.slowPage
+      });
+    });
+
+    // ============== Step 16: first opinion question =====================
+
+    await test.step('16. first opinion question: hero emoji + continue gate + select + info + continue', async () => {
+      // Q1 (test-qu-opin-base-1-likert5) carries custom_data.hero =
+      // { emoji: '🗳️' } per Plan 89-01 baseV1 mutation.
+      await candidateQuestionPage.expectHeroVisible('emoji');
+      // No choice selected yet → continue disabled.
+      await candidateQuestionPage.expectContinueDisabled();
+      // Select the first choice (per TIR4:103 "Answer all opinions with
+      // first value").
+      await candidateQuestionPage.selectChoice(0);
+      // Continue is now enabled.
+      await candidateQuestionPage.expectContinueEnabled();
+      // Fill the open-answer textarea.
+      await candidateQuestionPage.enterInfo(OPEN_ANSWER_1);
+      await candidateQuestionPage.clickContinue();
+    });
+
+    // ============== Step 17: overview round-trip + expander toggle =======
+
+    await test.step('17. overview: continue prompt + Q1 round-trip + Q2 answer button + expander toggle', async () => {
+      // Navigation post-Q1 may land at next question; navigate back to
+      // overview explicitly.
+      await page.goto('/en/candidate/questions');
+      await expect(page).toHaveURL(/\/candidate\/questions(\?|$|#)/, {
+        timeout: TIMEOUT.slowPage
+      });
+      // Partial-completion shortcut is visible.
+      await candidateQuestionsOverviewPage.expectContinuePrompt();
+      // Q1 card round-trips OPEN_ANSWER_1.
+      const q1Card = candidateQuestionsOverviewPage.getQuestionCard(/qu-opin-base-1-likert5/);
+      await expect(q1Card.first()).toBeVisible();
+      await expect(q1Card.first()).toContainText(OPEN_ANSWER_1);
+      // Q2 card is visible and rendered as an answer-able question.
+      const q2Card = candidateQuestionsOverviewPage.getQuestionCard(/qu-opin-base-2-likert4/);
+      await expect(q2Card.first()).toBeVisible();
+      // Category-expander toggle: collapse + re-expand. The Base category
+      // expander matches its name.
+      const expander = candidateQuestionsOverviewPage.getCategoryExpander(/qg-opin-base/);
+      // Track initial state, click to toggle, click again to restore.
+      await expander.click();
+      await expander.click();
+    });
+
+    // ============== Step 18: edit Q1 ====================================
+
+    await test.step('18. edit Q1: change choice + change info + clickContinue → overview shows updates', async () => {
+      await candidateQuestionsOverviewPage.clickEditQuestion(/qu-opin-base-1-likert5/);
+      await expect(page).toHaveURL(/\/candidate\/questions\/[^/]+/, {
+        timeout: TIMEOUT.slowPage
+      });
+      // Change choice to the second option + replace the info text.
+      await candidateQuestionPage.selectChoice(1);
+      await candidateQuestionPage.enterInfo(OPEN_ANSWER_1_EDITED);
+      await candidateQuestionPage.clickContinue();
+      // Return to overview and confirm round-trip of the edited values.
+      await page.goto('/en/candidate/questions');
+      const q1CardEdited = candidateQuestionsOverviewPage.getQuestionCard(
+        /qu-opin-base-1-likert5/
+      );
+      await expect(q1CardEdited.first()).toContainText(OPEN_ANSWER_1_EDITED);
+    });
+
+    // ============== Step 19: walk remaining opinions ======================
+
+    await test.step('19. walk remaining opinion questions → home shows completed + preview enabled', async () => {
+      // Start from the continue-prompt shortcut.
+      await candidateQuestionsOverviewPage.clickContinuePrompt();
+      // Walk: at each /questions/{id} page, select first choice + continue.
+      // Module-scope helper hoists the loop-exit condition out of the test
+      // body per playwright/no-conditional-in-test.
+      await walkRemainingOpinionQuestions(
+        page,
+        (n) => candidateQuestionPage.selectChoice(n),
+        () => candidateQuestionPage.clickContinue(),
+        () => candidateQuestionPage.expectContinueEnabled(),
+        TIMEOUT.slowPage
+      );
+      // After the last opinion: land at home with completed state. Navigate
+      // explicitly to home to assert the completed state (the post-last
+      // question may redirect to overview or home; force the assertion at home).
+      await page.goto('/en/candidate');
+      await candidateHomePage.expectStatusMessage();
+      // Preview task is now enabled (profile + opinions complete).
+      await candidateHomePage.expectTasks({
+        enabled: ['profile', 'opinions', 'preview'],
+        disabled: []
+      });
+    });
+
+    // ============== Step 20: overview completion message =================
+
+    await test.step('20. overview: completion message + no continue prompt', async () => {
+      await page.goto('/en/candidate/questions');
+      await candidateQuestionsOverviewPage.expectCompletionMessage();
+      // No partial-completion continue prompt (all questions answered).
+      await expect(page.getByTestId('candidate-questions-continue')).toHaveCount(0);
+    });
+
+    // ============== Step 21: preview =====================================
+
+    await test.step('21. preview: info + portrait + opinion answers + NO voter-comparison', async () => {
+      await page.goto('/en/candidate/preview');
+      await expect(page.getByTestId(testIds.candidate.preview.container)).toBeVisible({
+        timeout: TIMEOUT.slowPage
+      });
+      // Portrait is rendered.
+      await candidatePreviewPage.expectPortraitVisible();
+      // Info answers round-trip (sample the required + the link + the number).
+      await candidatePreviewPage.expectInfoAnswer(
+        /qu-info-text\]/,
+        INFO_QUESTION_ANSWERS['test-qu-info-text']
+      );
+      await candidatePreviewPage.expectInfoAnswer(
+        /qu-info-number/,
+        INFO_QUESTION_ANSWERS['test-qu-info-number']
+      );
+      // Opinion answer round-trip: Q1 was edited to choice index 1 in step 18.
+      await candidatePreviewPage.expectOpinionAnswer(/qu-opin-base-1-likert5/, 1);
+      // No voter-comparison messaging — score-gauge + sub-matches absent.
+      await candidatePreviewPage.expectNoVoterComparison();
+    });
+
+    // ============== Step 22: final logout WITHOUT dialog =================
+
+    await test.step('22. final logout: no dialog → /candidate/login', async () => {
+      // Return to home for the logout button.
+      await page.goto('/en/candidate');
+      await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({
+        timeout: TIMEOUT.slowPage
+      });
+      // Profile + opinions complete → logout dispatches without a confirmation
+      // dialog. Per TIR4:253-256 + R11 LogoutButton discrimination.
+      await candidateLogoutButton.clickWithoutDialog();
+    });
   });
 });
