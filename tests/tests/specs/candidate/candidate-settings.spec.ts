@@ -153,122 +153,26 @@ test.describe('app mode: answers locked (CAND-09)', { tag: ['@candidate'] }, () 
 });
 
 // ---------------------------------------------------------------------------
-// CAND-10: App disabled mode (candidateApp = false)
+// CAND-10 / CAND-11 / CAND-13: RETIRED per Phase 89 Plan LAST D-89-04.
+//
+// The following test blocks were excised because their coverage is now owned
+// by the Phase 89 Plan 04 settings-permutation specs at
+// tests/tests/specs/perm/:
+//
+//   - CAND-10 "should show maintenance page when candidateApp is disabled"
+//     → perm-disable-candidate-app.spec.ts (perm-disable-candidate-app project)
+//   - CAND-11 "should show maintenance page when underMaintenance is true"
+//     → covered by the underMaintenance branch of the perm-* family
+//       (D-89-04 explicitly retires this case; the perm chain exercises
+//       the wider settings-flag matrix more reliably than the legacy
+//       single-flag flip-and-revert pattern used here)
+//   - CAND-13 "should display notification popup when enabled"
+//     → perm-per-app-notifications.spec.ts (perm-per-app-notifications project)
+//
+// The surrounding TIR5-deferred residual blocks (7.1.1 read-only warning,
+// 7.1.7/8 hideHero, 7.1.10-17 SETTINGS-01 wave A) STAY in this file and
+// continue to run under the candidate-app-settings project.
 // ---------------------------------------------------------------------------
-
-test.describe('app mode: disabled (CAND-10)', { tag: ['@candidate'] }, () => {
-  const client = new SupabaseAdminClient();
-
-  test.afterAll(async () => {
-    await client.updateAppSettings({ access: defaultAccess });
-  });
-
-  test('should show maintenance page when candidateApp is disabled', async ({ page }) => {
-    // Disable candidate app while keeping other access settings
-    await client.updateAppSettings({
-      access: { ...defaultAccess, candidateApp: false }
-    });
-
-    // Navigate to candidate home
-    await page.goto(buildRoute({ route: 'CandAppHome', locale: 'en' }));
-
-    // The candidate layout shows MaintenancePage when candidateApp is false.
-    // MaintenancePage renders a <main> element with a title and content.
-    // The normal candidate home content (status message) should NOT be visible.
-    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeHidden();
-
-    // The page should show a MaintenancePage with a heading
-    // MaintenancePage uses <h1> for the title
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-
-    // The page should contain a <main> element from MaintenancePage
-    await expect(page.getByRole('main')).toBeVisible();
-  });
-});
-
-// ---------------------------------------------------------------------------
-// CAND-11: Maintenance mode (underMaintenance = true)
-// ---------------------------------------------------------------------------
-
-test.describe('app mode: maintenance (CAND-11)', { tag: ['@candidate'] }, () => {
-  const client = new SupabaseAdminClient();
-
-  test.afterAll(async () => {
-    await client.updateAppSettings({ access: defaultAccess });
-  });
-
-  test('should show maintenance page when underMaintenance is true', async ({ page }) => {
-    // Enable maintenance mode
-    await client.updateAppSettings({
-      access: { ...defaultAccess, underMaintenance: true }
-    });
-
-    // Navigate to candidate home
-    await page.goto(buildRoute({ route: 'CandAppHome', locale: 'en' }));
-
-    // The root layout shows MaintenancePage when underMaintenance is true.
-    // This happens at the root level, before the candidate layout even renders.
-    // The normal candidate home content should NOT be visible.
-    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeHidden();
-
-    // The page should show a MaintenancePage <main> element
-    await expect(page.getByRole('main')).toBeVisible();
-
-    // The page should contain a heading from MaintenancePage
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-  });
-});
-
-// ---------------------------------------------------------------------------
-// CAND-13: Candidate notification display
-// ---------------------------------------------------------------------------
-
-test.describe('candidate notifications (CAND-13)', { tag: ['@candidate'] }, () => {
-  const client = new SupabaseAdminClient();
-
-  test.afterAll(async () => {
-    // Disable notification to restore defaults
-    await client.updateAppSettings({
-      notifications: {
-        candidateApp: {
-          show: false,
-          title: { en: '' },
-          content: { en: '' }
-        }
-      }
-    });
-  });
-
-  test('should display notification popup when enabled', async ({ page }) => {
-    const notificationTitle = 'Test Notification Title';
-    const notificationContent = 'This is a test notification message for candidates.';
-
-    // Enable candidate notification with title and content
-    await client.updateAppSettings({
-      notifications: {
-        candidateApp: {
-          show: true,
-          title: { en: notificationTitle },
-          content: { en: notificationContent }
-        }
-      }
-    });
-
-    // Navigate to candidate home (notification is queued on mount in the layout)
-    await page.goto(buildRoute({ route: 'CandAppHome', locale: 'en' }));
-
-    // The notification is rendered as an Alert component with role="dialog"
-    // Wait for the dialog to appear
-    const dialog = page.getByRole('dialog');
-    await expect(dialog).toBeVisible();
-
-    // Verify the notification contains the expected title text
-    await expect(dialog.getByText(notificationTitle)).toBeVisible();
-
-    // Verify the notification contains the expected content
-    await expect(dialog.getByText(notificationContent)).toBeVisible();
-  });
-});
 
 // ---------------------------------------------------------------------------
 // CAND-14: Help and privacy pages
