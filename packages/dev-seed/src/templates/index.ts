@@ -25,6 +25,7 @@ import { permDisableElection1coTemplate } from './permutations/perm-disable-elec
 import { permDisableElection2coTemplate } from './permutations/perm-disable-election-2co';
 import { permDisableVoterAppTemplate } from './permutations/perm-disable-voter-app';
 import { permDisjoint1coTemplate } from './permutations/perm-disjoint-1co';
+import { permMissingNominationsTemplate } from './permutations/perm-missing-nominations';
 import { permNotLocated2e2cgTemplate } from './permutations/perm-not-located-2e2cg';
 import { permPerAppNotificationsTemplate } from './permutations/perm-per-app-notifications';
 import { permStartfromcgTemplate } from './permutations/perm-startfromcg';
@@ -56,7 +57,11 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   // across the wider suite.
   'perm-disable-voter-app': permDisableVoterAppTemplate,
   'perm-disable-candidate-app': permDisableCandidateAppTemplate,
-  'perm-per-app-notifications': permPerAppNotificationsTemplate
+  'perm-per-app-notifications': permPerAppNotificationsTemplate,
+  // Phase 90 Plan 02 — missing-nominations TIR5:15-26 perm template.
+  // Distinct externalIdPrefix 'e2e-perm-missnoms-' per D-90-01 (parallel-safe
+  // across the 89-04 + future 90-03/04 perm chains).
+  'perm-missing-nominations': permMissingNominationsTemplate
 };
 
 /**
@@ -88,6 +93,7 @@ export { permDisableElection1coTemplate } from './permutations/perm-disable-elec
 export { permDisableElection2coTemplate } from './permutations/perm-disable-election-2co';
 export { permDisableVoterAppTemplate } from './permutations/perm-disable-voter-app';
 export { permDisjoint1coTemplate } from './permutations/perm-disjoint-1co';
+export { permMissingNominationsTemplate } from './permutations/perm-missing-nominations';
 export { permNotLocated2e2cgTemplate } from './permutations/perm-not-located-2e2cg';
 export { permPerAppNotificationsTemplate } from './permutations/perm-per-app-notifications';
 export { permStartfromcgTemplate } from './permutations/perm-startfromcg';
