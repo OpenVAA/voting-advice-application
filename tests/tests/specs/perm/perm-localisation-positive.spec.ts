@@ -1,0 +1,332 @@
+/**
+ * perm-localisation-positive — Phase 90 Plan 04 (TIR5:52-95).
+ *
+ * Topology: 1 election / 1 CG / 1 CO / 1 organisation / 1 candidate /
+ * 1 nomination + 2 question categories (qc-info + qc-opin) × 2 questions:
+ *   - q1 (text)
+ *   - q2 (text + customData.disableMultilingual)
+ *   - q3 (singleChoiceOrdinal + allow_open=true)
+ *   - q4 (singleChoiceOrdinal + allow_open=true + customData.disableMultilingual)
+ *
+ * Settings: i18n.supportedLocales overridden to two locales `[en, fi]` via
+ * Plan 90-01's Stage A runtime override.
+ *
+ * Authoritative spec: TEST-INVENTORY-REFACTOR-5.md:52-95.
+ *
+ * Walk (strict — rigidity contract per TIR5:5-13):
+ *  1. PERM-L10N-POS-01 — voter root /en: langSelector visible with [en, fi].
+ *  2. PERM-L10N-POS-02 — switchTo('fi') → URL is /fi/, voter-home start
+ *     button shows non-English text ('Aloita' for Finnish); switchTo('en')
+ *     → URL is /en/, voter-home start button shows English again ('Start').
+ *  3. Inbucket-driven candidate registration → ToU is already accepted (the
+ *     seeded candidate carries terms_of_use_accepted), so login lands on the
+ *     candidate home directly.
+ *  4. PERM-L10N-POS-03 — profile q1 ('[Q1]'): textbox value contains
+ *     '[en-answer-q1]'; expectTranslationOptions(scope, true).
+ *  5. PERM-L10N-POS-04 — openTranslations(q1) → setLocaleValue(fi,
+ *     '[fi-answer-q1]') → closeTranslations → expectLocaleHidden(fi).
+ *  6. PERM-L10N-POS-05 — profile q2 ('[Q2]'):
+ *     expectTranslationOptions(scope, false).
+ *  7. Save profile via candidateProfilePage.submit().
+ *  8. PERM-L10N-POS-06 (q3 + q4 — opinion-editor): navigate to questions
+ *     overview, start; on q3:
+ *       - assert comment textarea contains '[en-answer-q3]';
+ *       - expectTranslationOptions(commentScope, true);
+ *       - openTranslations → setLocaleValue(fi, '[fi-answer-q3]') →
+ *         closeTranslations → expectLocaleHidden(fi).
+ *     Save and continue to q4. On q4:
+ *       - expectTranslationOptions(commentScope, false).
+ *  9. Logout.
+ * 10. PERM-L10N-POS-07 — voter cross-check (D-90-07 in-perm-spec, NOT
+ *     voter-mega-journey):
+ *      - /en/results → click candidate card → assert info-tab contains
+ *        '[en-answer-q1]'; opinions-tab contains '[en-answer-q3]'.
+ *      - langSelector.switchTo('fi') → full-reload to /fi/...
+ *      - Re-open candidate details if the switch landed off the detail
+ *        dialog (Assumption A3 — switchTo preserves the path so usually
+ *        no re-navigation is needed, but the dialog state may not survive
+ *        the reload; if the dialog closed, click the card again).
+ *      - assert info-tab contains '[fi-answer-q1]'; opinions-tab contains
+ *        '[fi-answer-q3]'.
+ *
+ * Candidate login: seeded candidate has ToU pre-accepted but NO auth.users
+ * row (dev-seed excludes auth.users by design). Spec drives Inbucket
+ * registration via SupabaseAdminClient.sendEmail per Pitfall 3 — mirrors
+ * the candidate-mega-journey.spec.ts:298-310 chain.
+ *
+ * Per-perm recipientEmail: 'candidate-l10n-pos-aa@test.openvaa.local' —
+ * unique per perm prevents cross-perm Inbucket pollution (Open Question 4
+ * RESOLVED + candidate-mega.ts:87 recipient-filter contract). Distinct
+ * from Plan 90-03's 'candidate-l10n-neg-aa@test.openvaa.local'.
+ *
+ * Rigidity contract: every assertion HARD — no expect.soft, no try/catch
+ * wrapping expect(), no .catch fallbacks.
+ */
+
+import { expect, test } from '../../fixtures/candidate/perm-l10n';
+import {
+  PASSWORD_1,
+  REGISTRATION_EMAIL_SUBJECT_REGEX
+} from '../../utils/candidateMegaConstants';
+import { toCallbackUrl } from '../../utils/emailHelper';
+import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
+import { testIds } from '../../utils/testIds';
+
+const TIMEOUT = {
+  slowPage: 15_000,
+  testMax: 180_000
+} as const;
+
+// Per-perm recipient prevents Inbucket cross-perm pollution.
+const RECIPIENT_EMAIL = 'candidate-l10n-pos-aa@test.openvaa.local';
+// Candidate row external_id (BARE form) — writer prepends the perm prefix
+// at seed time so the row's actual external_id is `e2e-perm-l10n-pos-ca-1-1a`.
+const CANDIDATE_EXTERNAL_ID = 'e2e-perm-l10n-pos-ca-1-1a';
+
+test.use({
+  recipientEmail: RECIPIENT_EMAIL,
+  // Start UNAUTHENTICATED — the candidate login flow drives auth from scratch.
+  storageState: { cookies: [], origins: [] }
+});
+
+test.describe('perm-localisation-positive', () => {
+  test('locales=[en,fi]: full TIR5:52-95 walk including voter-side cross-check', async ({
+    page,
+    emailBucket,
+    candidatePasswordSetter,
+    candidateLoginPage,
+    candidateProfilePage,
+    candidateQuestionPage,
+    candidateLogoutButton,
+    langSelector,
+    multilingualTextField
+  }) => {
+    test.setTimeout(TIMEOUT.testMax);
+
+    const client = new SupabaseAdminClient();
+
+    // ============== Step 1: voter root — langSelector visible (en + fi) ===
+    // PERM-L10N-POS-01: With the Stage A override active and
+    // supportedLocales=[en,fi], the LanguageSelection NavGroup at
+    // LanguageSelection.svelte:32 renders (locales.length > 1 gate evaluates
+    // true). The selector exposes one NavItem per locale.
+
+    await page.goto('/en');
+    await langSelector.expectVisible(['en', 'fi']);
+
+    // ============== Step 2: switchTo('fi') → UI re-localises → switchTo('en')
+    // PERM-L10N-POS-02. The voter-home start button label is driven by the
+    // `dynamic.frontPage.startButton` i18n key; in English it resolves to
+    // 'Start' (or similar), in Finnish to 'Aloita'. We assert on the
+    // English-vs-Finnish word stems that are stable across Paraglide bundle
+    // updates (the source strings in
+    // apps/frontend/messages/en.json + .../fi.json).
+
+    const startButton = page.getByTestId(testIds.voter.home.startButton);
+
+    // Capture the English-locale start button text BEFORE switching, then
+    // assert it changes after the switch. This avoids hard-coding the literal
+    // English string (which can drift across i18n-bundle edits) while still
+    // proving the locale switch took effect.
+    await expect(startButton).toBeVisible();
+    const englishLabel = (await startButton.innerText()).trim();
+    expect(englishLabel.length, 'English-locale start button text must be non-empty').toBeGreaterThan(0);
+
+    await langSelector.switchTo('fi');
+    await expect(page).toHaveURL(/\/fi(\/|$)/);
+    // Post-switch the start button is in Finnish — its rendered text is
+    // different from the English label captured above.
+    const finnishStartButton = page.getByTestId(testIds.voter.home.startButton);
+    await expect(finnishStartButton).toBeVisible();
+    const finnishLabel = (await finnishStartButton.innerText()).trim();
+    expect(finnishLabel.length, 'Finnish-locale start button text must be non-empty').toBeGreaterThan(0);
+    expect(
+      finnishLabel,
+      'Finnish start button text must differ from English text (locale switch must take effect)'
+    ).not.toBe(englishLabel);
+
+    await langSelector.switchTo('en');
+    await expect(page).toHaveURL(/\/en(\/|$)/);
+    const reEnglishStartButton = page.getByTestId(testIds.voter.home.startButton);
+    await expect(reEnglishStartButton).toBeVisible();
+    const reEnglishLabel = (await reEnglishStartButton.innerText()).trim();
+    expect(
+      reEnglishLabel,
+      'Post-switch-back English label must match the originally captured English label'
+    ).toBe(englishLabel);
+
+    // ============== Step 3: candidate registration via Inbucket ===========
+    // Pitfall 3: seeded candidate has no auth.users row. Drive registration
+    // via sendEmail (which calls inviteUserByEmail under the hood).
+
+    await client.sendEmail({
+      candidateExternalId: CANDIDATE_EXTERNAL_ID,
+      email: RECIPIENT_EMAIL,
+      subject: 'Registration',
+      content: 'Click here to register: {LINK}'
+    });
+
+    await emailBucket.expectEmail(REGISTRATION_EMAIL_SUBJECT_REGEX);
+    const links = await emailBucket.getLinksInEmail(REGISTRATION_EMAIL_SUBJECT_REGEX);
+    expect(links.length, 'registration email should contain at least one link').toBeGreaterThan(0);
+    const registrationCallbackUrl = toCallbackUrl(links[0]);
+
+    // ============== Step 4: navigate callback + set initial password ======
+
+    await page.goto(registrationCallbackUrl);
+    await candidatePasswordSetter.setPassword(PASSWORD_1);
+
+    // PasswordSetter navigates to /candidate/login post-submit; perform the
+    // login (the seeded candidate has terms_of_use_accepted set, so the
+    // post-login landing is the candidate home directly — no ToU prompt).
+    await page.waitForURL(/\/candidate\/login/, { timeout: TIMEOUT.slowPage });
+    await candidateLoginPage.login(RECIPIENT_EMAIL, PASSWORD_1);
+    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({
+      timeout: TIMEOUT.slowPage
+    });
+
+    // ============== Step 5: profile q1 — English answer + Finnish authoring
+    // PERM-L10N-POS-03 + PERM-L10N-POS-04. Navigate to the EDITABLE
+    // info-question section per Pitfall 4 (NOT the locked section — that
+    // one uses a route-level disableMultilingual prop, a different
+    // mechanism).
+
+    await page.goto('/en/candidate/profile');
+    await candidateProfilePage.expectQuestionsVisible([/\[Q1\]/, /\[Q2\]/]);
+
+    const q1Scope = candidateProfilePage.getQuestion(/\[Q1\]/);
+
+    // PERM-L10N-POS-03 — assert the default-locale (English) input value
+    // shows '[en-answer-q1]'. The Input renders one editable textbox for the
+    // default locale; assert that textbox carries the seeded English answer.
+    const q1DefaultTextbox = q1Scope.getByRole('textbox').first();
+    await expect(q1DefaultTextbox).toHaveValue(/\[en-answer-q1\]/);
+    await multilingualTextField.expectTranslationOptions(q1Scope, true);
+
+    // PERM-L10N-POS-04 — Finnish authoring on q1.
+    await multilingualTextField.openTranslations(q1Scope);
+    await multilingualTextField.setLocaleValue(q1Scope, 'fi', '[fi-answer-q1]');
+    await multilingualTextField.closeTranslations(q1Scope);
+    await multilingualTextField.expectLocaleHidden(q1Scope, 'fi');
+
+    // ============== Step 6: profile q2 — no translation options ===========
+    // PERM-L10N-POS-05. q2 carries customData.disableMultilingual=true so
+    // even with locales.length > 1 the toggle is fully absent.
+
+    const q2Scope = candidateProfilePage.getQuestion(/\[Q2\]/);
+    await multilingualTextField.expectTranslationOptions(q2Scope, false);
+
+    // ============== Step 7: save profile =================================
+    // The candidate already has all required answers seeded; submitting
+    // navigates away from /profile (per profile/+page.svelte:104-116
+    // canSubmit branch).
+
+    await candidateProfilePage.submit();
+    await candidateProfilePage.expectSubmitMessage();
+
+    // ============== Step 8: opinion-editor q3 + q4 — comment multilingual
+    // PERM-L10N-POS-06. Navigate to questions overview → start → q3.
+
+    await page.goto('/en/candidate/questions');
+    await page.getByTestId(testIds.candidate.questions.start).click();
+    await candidateQuestionPage.expectQuestionText(/\[Q3\]/);
+
+    // q3 — comment carries '[en-answer-q3]' (seeded), translation-options
+    // visible. Author Finnish via setLocaleValue.
+    const q3CommentScope = page.getByTestId(testIds.candidate.questions.commentInput);
+    await expect(q3CommentScope).toBeVisible();
+    await expect(q3CommentScope.getByRole('textbox').first()).toHaveValue(/\[en-answer-q3\]/);
+    await multilingualTextField.expectTranslationOptions(q3CommentScope, true);
+    await multilingualTextField.openTranslations(q3CommentScope);
+    await multilingualTextField.setLocaleValue(q3CommentScope, 'fi', '[fi-answer-q3]');
+    await multilingualTextField.closeTranslations(q3CommentScope);
+    await multilingualTextField.expectLocaleHidden(q3CommentScope, 'fi');
+
+    // Save q3 + advance to q4.
+    await candidateQuestionPage.expectContinueEnabled();
+    await candidateQuestionPage.clickContinue();
+    await candidateQuestionPage.expectQuestionText(/\[Q4\]/);
+
+    // q4 — customData.disableMultilingual=true → comment has NO toggle.
+    const q4CommentScope = page.getByTestId(testIds.candidate.questions.commentInput);
+    await expect(q4CommentScope).toBeVisible();
+    await multilingualTextField.expectTranslationOptions(q4CommentScope, false);
+
+    // Save q4 so the answer (and its persisted state) is committed before
+    // logout — the Finnish q1 + q3 authoring saved on profile/q3 advance
+    // respectively, but q4 has no changes to persist; clicking continue
+    // simply advances away without mutation.
+    await candidateQuestionPage.expectContinueEnabled();
+    await candidateQuestionPage.clickContinue();
+
+    // ============== Step 9: logout =======================================
+    // Navigate to candidate home first; LogoutButton is in the home nav.
+    // Since all required answers are seeded + persisted, logout is direct
+    // (no confirmation dialog).
+
+    await page.goto('/en/candidate');
+    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({
+      timeout: TIMEOUT.slowPage
+    });
+    await candidateLogoutButton.clickWithoutDialog();
+
+    // ============== Step 10: voter cross-check (D-90-07) =================
+    // PERM-L10N-POS-07. Open candidate-details on results, assert English
+    // answers; switch to Finnish, assert Finnish answers reflect.
+
+    await page.goto('/en/results');
+    const candidateCard = page
+      .getByTestId(testIds.voter.results.candidateSection)
+      .getByTestId(testIds.voter.results.card)
+      .first();
+    await expect(candidateCard).toBeVisible({ timeout: TIMEOUT.slowPage });
+    await candidateCard.click();
+
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible({ timeout: TIMEOUT.slowPage });
+
+    // voter-side cross-check assertions (D-90-07): the entity-details panel
+    // testid surface is `voter-entity-detail-info` (info tab) and
+    // `voter-entity-detail-opinions` (opinions tab), as defined at
+    // apps/frontend/src/lib/dynamic-components/entityDetails/EntityDetails.svelte
+    // lines 150 + 152 and centralised in testIds.voter.entityDetail.infoTab /
+    // .opinionsTab.
+    const infoTabEn = dialog.getByTestId(testIds.voter.entityDetail.infoTab);
+    await expect(infoTabEn).toBeVisible();
+    await expect(infoTabEn).toContainText('[en-answer-q1]');
+
+    const opinionsTabEn = dialog.getByTestId(testIds.voter.entityDetail.opinionsTab);
+    await expect(opinionsTabEn).toBeVisible();
+    await expect(opinionsTabEn).toContainText('[en-answer-q3]');
+
+    // langSelector switchTo full-reload; the dialog state may not survive
+    // — re-open the candidate card if the dialog closed (Assumption A3).
+    await langSelector.switchTo('fi');
+    await expect(page).toHaveURL(/\/fi(\/|$)/);
+
+    // Re-establish the candidate-details dialog if it is no longer visible
+    // post-reload. Assumption A3: a full-page reload typically tears down
+    // the modal-driven dialog state, so re-clicking the card is the
+    // expected path. We assert the path explicitly: navigate to /fi/results
+    // (the switchTo target preserved the segment after locale, but to be
+    // robust we re-navigate) and re-open.
+    await page.goto('/fi/results');
+    const candidateCardFi = page
+      .getByTestId(testIds.voter.results.candidateSection)
+      .getByTestId(testIds.voter.results.card)
+      .first();
+    await expect(candidateCardFi).toBeVisible({ timeout: TIMEOUT.slowPage });
+    await candidateCardFi.click();
+
+    const dialogFi = page.getByRole('dialog');
+    await expect(dialogFi).toBeVisible({ timeout: TIMEOUT.slowPage });
+
+    const infoTabFi = dialogFi.getByTestId(testIds.voter.entityDetail.infoTab);
+    await expect(infoTabFi).toBeVisible();
+    await expect(infoTabFi).toContainText('[fi-answer-q1]');
+
+    const opinionsTabFi = dialogFi.getByTestId(testIds.voter.entityDetail.opinionsTab);
+    await expect(opinionsTabFi).toBeVisible();
+    await expect(opinionsTabFi).toContainText('[fi-answer-q3]');
+  });
+});
