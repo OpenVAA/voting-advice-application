@@ -9,22 +9,24 @@
  * ```typescript
  * import { test, expect } from '../fixtures';
  *
- * test('candidate can login', async ({ loginPage, page }) => {
- *   await page.goto('/en/candidate');
- *   await loginPage.login(TEST_CANDIDATE_EMAIL, TEST_CANDIDATE_PASSWORD);
+ * test('candidate translation flow', async ({ candidateQuestionsPage, questionPage, page }) => {
+ *   await page.goto('/en/candidate/questions');
+ *   await candidateQuestionsPage.expandAllCategories();
+ *   await candidateQuestionsPage.navigateToQuestion(0);
+ *   await expect(questionPage.answerInput).toBeVisible();
  * });
  * ```
  *
- * New page objects are added here as they are created in Phase 2+.
+ * Phase 89 Plan LAST: HomePage, LoginPage, PreviewPage, SettingsPage classes
+ * were pruned per the 89-LAST-AUDIT.md verdict — they had no surviving
+ * consumers after the 5 absorbed candidate specs were deleted. The new
+ * candidate function-fixtures live at `tests/tests/fixtures/candidate/`
+ * (Phase 89 Plan 02) and are consumed by `candidate-mega-journey.spec.ts`.
  */
 import { expect, test as base } from '@playwright/test';
-import { HomePage } from '../pages/candidate/HomePage';
-import { LoginPage } from '../pages/candidate/LoginPage';
-import { PreviewPage } from '../pages/candidate/PreviewPage';
 import { ProfilePage } from '../pages/candidate/ProfilePage';
 import { QuestionPage } from '../pages/candidate/QuestionPage';
 import { QuestionsPage as CandidateQuestionsPage } from '../pages/candidate/QuestionsPage';
-import { SettingsPage } from '../pages/candidate/SettingsPage';
 import { EntityDetailPage as VoterEntityDetailPage } from '../pages/voter/EntityDetailPage';
 import { HomePage as VoterHomePage } from '../pages/voter/HomePage';
 import { IntroPage as VoterIntroPage } from '../pages/voter/IntroPage';
@@ -33,13 +35,9 @@ import { ResultsPage as VoterResultsPage } from '../pages/voter/ResultsPage';
 
 // Page fixture types
 type PageFixtures = {
-  loginPage: LoginPage;
-  homePage: HomePage;
   profilePage: ProfilePage;
   candidateQuestionsPage: CandidateQuestionsPage;
   questionPage: QuestionPage;
-  settingsPage: SettingsPage;
-  previewPage: PreviewPage;
   voterQuestionsPage: VoterQuestionsPage;
   voterHomePage: VoterHomePage;
   voterIntroPage: VoterIntroPage;
@@ -49,12 +47,6 @@ type PageFixtures = {
 
 // Extend base test with page object fixtures
 export const test = base.extend<PageFixtures>({
-  loginPage: async ({ page }, use) => {
-    await use(new LoginPage(page));
-  },
-  homePage: async ({ page }, use) => {
-    await use(new HomePage(page));
-  },
   profilePage: async ({ page }, use) => {
     await use(new ProfilePage(page));
   },
@@ -63,12 +55,6 @@ export const test = base.extend<PageFixtures>({
   },
   questionPage: async ({ page }, use) => {
     await use(new QuestionPage(page));
-  },
-  settingsPage: async ({ page }, use) => {
-    await use(new SettingsPage(page));
-  },
-  previewPage: async ({ page }, use) => {
-    await use(new PreviewPage(page));
   },
   voterQuestionsPage: async ({ page }, use) => {
     await use(new VoterQuestionsPage(page));
@@ -91,13 +77,9 @@ export const test = base.extend<PageFixtures>({
 export { expect };
 
 // Re-export page objects for direct use if needed
-export { HomePage } from '../pages/candidate/HomePage';
-export { LoginPage } from '../pages/candidate/LoginPage';
-export { PreviewPage } from '../pages/candidate/PreviewPage';
 export { ProfilePage } from '../pages/candidate/ProfilePage';
 export { QuestionPage } from '../pages/candidate/QuestionPage';
 export { QuestionsPage as CandidateQuestionsPage } from '../pages/candidate/QuestionsPage';
-export { SettingsPage } from '../pages/candidate/SettingsPage';
 export { EntityDetailPage as VoterEntityDetailPage } from '../pages/voter/EntityDetailPage';
 export { HomePage as VoterHomePage } from '../pages/voter/HomePage';
 export { IntroPage as VoterIntroPage } from '../pages/voter/IntroPage';

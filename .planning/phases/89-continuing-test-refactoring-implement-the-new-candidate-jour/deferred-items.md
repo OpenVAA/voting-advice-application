@@ -203,6 +203,42 @@ template syntax + central testIds.ts type-consistency).
 
 ---
 
+## 9. Pre-existing `apps/frontend/src/routes/runes-test/*` build + lint failures
+
+**Source of deferral:** 89-LAST Task 3 verification surface; PRE-EXISTING from
+spike-016 commit `69eedf4dd` (docs(spike-016): [VALIDATED]
+focus-and-a11y-during-transitions — WCAG 2.1 AA gate passes).
+
+**Description:** `yarn build` fails at
+`apps/frontend/src/routes/runes-test/nav-a11y/+page.svelte:19:2` due to
+`<ol>` nested inside `<p>` (Svelte 5 auto-closing rule).
+`yarn lint:check` fails with 32 errors across
+`apps/frontend/src/routes/runes-test/voter-context-orchestration/+page.svelte`
++ `voterRuneContext.svelte.ts` + sibling files (simple-import-sort + 
+unused-imports + naming-convention rules). These are all SPIKE-TEST routes
+shipped by the v2.11+ rune-migration spikes (spike-001 .. spike-016) and
+have never blocked v2.10 phases. They are completely orthogonal to 89-LAST's
+test-catalog surface.
+
+**Code-level state of 89-LAST Task 3:**
+- 4 PageObject .ts files deleted: HomePage, LoginPage, PreviewPage, SettingsPage.
+- tests/tests/fixtures/index.ts: 4 imports + 4 fixture-extend blocks + 4
+  named re-exports removed; 3 surviving classes (ProfilePage, QuestionPage,
+  CandidateQuestionsPage) + 5 voter-side imports/exports preserved verbatim.
+- ESLint clean on changed files (`npx eslint tests/fixtures/index.ts
+  tests/specs/candidate/candidate-settings.spec.ts` → 0 errors).
+- Zero stray references to pruned fixture names across the spec tree
+  (`grep -rn "loginPage|homePage|previewPage|settingsPage"` returns only
+  the new candidate function-fixture filenames which are categorically
+  different).
+
+**Fix scheduled for:** v2.11+ rune-migration cleanup pass (the runes-test
+routes will be either consolidated or deleted as the migration proper
+lands). NOT blocking 89-LAST close.
+
+---
+
 *Recorded: 2026-05-29 during 89-01 Task 3.*
 *Maintained: extended by subsequent 89-02 / 89-03 / 89-04 / 89-LAST
 deferred-items as discovered.*
+*Item #9 added 2026-05-29 during 89-LAST Task 3.*
