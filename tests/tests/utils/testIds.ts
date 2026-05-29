@@ -108,7 +108,12 @@ export const testIds = {
       categoryCheckbox: 'voter-questions-category-checkbox',
       startButton: 'voter-questions-start',
       categoryStart: 'voter-questions-category-start',
-      categorySkip: 'voter-questions-category-skip'
+      categorySkip: 'voter-questions-category-skip',
+      // Phase 89 Plan 01 (TIR4:25-32 + TIR4:30): hero + info testids on
+      // the voter question page + the question-category intro page.
+      hero: 'voter-questions-hero',
+      categoryHero: 'voter-questions-category-hero',
+      infoButton: 'voter-questions-info-button'
     },
     results: {
       list: 'voter-results-list',

@@ -85,7 +85,7 @@ Display the intro to a question category and possibly a button with which to ski
 {#if category}
   <MainContent title={category.name}>
     {#snippet hero()}
-      <figure role="presentation">
+      <figure role="presentation" data-testid="voter-questions-category-hero">
         {#if customData?.hero}
           <Hero content={customData?.hero} />
         {/if}

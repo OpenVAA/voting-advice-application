@@ -168,7 +168,7 @@ Display a question for answering.
 
   <MainContent title={text}>
     {#snippet hero()}
-      <figure role="presentation">
+      <figure role="presentation" data-testid="voter-questions-hero">
         {#if customData?.hero}
           <Hero content={customData?.hero} />
         {/if}
@@ -195,7 +195,8 @@ Display a question for answering.
         <QuestionBasicInfo
           {info}
           onCollapse={() => startEvent('questionInfo_collapse')}
-          onExpand={() => startEvent('questionInfo_expand')} />
+          onExpand={() => startEvent('questionInfo_expand')}
+          data-testid="voter-questions-info-button" />
       {/if}
     {/if}
 

@@ -495,6 +495,19 @@ test.describe('voter mega-journey', () => {
     // CATEGORY INTRO + LIKERT ANSWERS — refactor-doc:242-269
     // ====================================================================
 
+    // Phase 89 Plan 01 (TIR4:25-32 + TIR4:30): hero + info assertions.
+    // The previous step ended with `questionsStart.click()` which navigates
+    // to the QG-Opin-Base category intro page — assert the category hero
+    // image BEFORE advancing into Q1.
+    await test.step('hero: QG-Opin-Base category intro renders image hero (Phase 89 Plan 01 — TIR4:32)', async () => {
+      const categoryHero = page.getByTestId(testIds.voter.questions.categoryHero);
+      await expect(categoryHero).toBeVisible({ timeout: TIMEOUT.slowPage });
+      // Image hero shape (custom_data.hero = { url, type: 'image' } per baseV1)
+      // renders an <img> via Hero.svelte → Image.svelte. Assert the <img> is
+      // present inside the testid-bearing <figure>.
+      await expect(categoryHero.locator('img')).toHaveCount(1, { timeout: TIMEOUT.element });
+    });
+
     await test.step('questions: first category intro, previous question roundtrip, delete answer only visible if question is answered', async () => {
       // First category intro
       await expectCategoryIntroAndAdvance({ page, text: TEXT_RE.baseOpinion });
@@ -504,6 +517,22 @@ test.describe('voter mega-journey', () => {
       // Delete button should be enabled only when question is answered
       const deleteButton = page.getByTestId(testIds.shared.questionDelete);
       await expect(deleteButton).toBeDisabled({ timeout: TIMEOUT.element });
+
+      // Phase 89 Plan 01 (TIR4:25-32): Q1 (Base-1 Likert5) carries a hero
+      // emoji ('🗳️') AND info content ('[qu-opin-base-1-info] ...') per the
+      // 89-01 baseV1 mutation. Assert hero visible + emoji rendered + info
+      // button visible + clicking it reveals the info content body.
+      const heroFigure = page.getByTestId(testIds.voter.questions.hero);
+      await expect(heroFigure).toBeVisible({ timeout: TIMEOUT.element });
+      await expect(heroFigure).toContainText('🗳️');
+      const infoButton = page.getByTestId(testIds.voter.questions.infoButton);
+      await expect(infoButton).toBeVisible({ timeout: TIMEOUT.element });
+      // Click the Expander to reveal the info body (Expander is a checkbox
+      // input inside the wrapper div carrying the testid; clicking the
+      // wrapper toggles the checkbox).
+      await infoButton.click({ timeout: TIMEOUT.click });
+      await expect(infoButton).toContainText(/\[qu-opin-base-1-info\]/i, { timeout: TIMEOUT.element });
+
       // Answer first question
       await expectQuestionAndAdvance({
         page,
@@ -522,6 +551,15 @@ test.describe('voter mega-journey', () => {
         optionIndex: (n) => n - 1,
         allowPreselected: true // Allow the last option to be preselected since we just went back to this question.
       });
+
+      // Phase 89 Plan 01 (TIR4:25-32): Q2 (Base-2 Likert4) carries a hero
+      // IMAGE (no emoji) AND has NO info content. Assert hero <img> visible
+      // and Info button hidden/absent.
+      const heroFigureQ2 = page.getByTestId(testIds.voter.questions.hero);
+      await expect(heroFigureQ2).toBeVisible({ timeout: TIMEOUT.element });
+      await expect(heroFigureQ2.locator('img')).toHaveCount(1, { timeout: TIMEOUT.element });
+      const infoButtonQ2 = page.getByTestId(testIds.voter.questions.infoButton);
+      await expect(infoButtonQ2).toHaveCount(0, { timeout: TIMEOUT.element });
     });
 
     await test.step('questions: answer rest of base questions at polar-MAX, delete answer, result list visiblity with min answers', async () => {
@@ -756,15 +794,19 @@ test.describe('voter mega-journey', () => {
       // for every info question + its own asymmetric opinion arrangement, and
       // its 2 candidate nominations omit `election_symbol` per 260525-tea →
       // the Election number row renders as "—" (showMissingElectionSymbol:
-      // candidate=true gates the row's existence). 13 info-items total: 4
-      // nomination meta + 8 non-link info questions + 1 Links group. Exact
-      // values per the user-supplied screencap (260525-tea PLAN.md §"Info-tab
-      // assertion"); `6/15/1980` is the en-US `toLocaleDateString` format for
-      // the seeded `1980-06-15` date answer.
+      // candidate=true gates the row's existence). Post Phase 89 Plan 01:
+      // 14 info-items total: 4 nomination meta + 8 non-link info questions
+      // + 1 Links group + 1 north-only filtered info question
+      // (test-qu-info-filt-co-reg-n, visible only because CA-AA-Special's
+      // primary nomination is in CO-Reg-N). The mun-only + south-only
+      // variants are out-of-scope and asserted absent below (TIR4:99).
+      // Exact values per the user-supplied screencap (260525-tea PLAN.md
+      // §"Info-tab assertion"); `6/15/1980` is the en-US `toLocaleDateString`
+      // format for the seeded `1980-06-15` date answer.
       const infoTab = dialog.getByTestId(testIds.voter.entityDetail.infoTab);
       await expect(infoTab).toBeVisible({ timeout: TIMEOUT.page });
       const infoItems = infoTab.getByTestId('info-item');
-      await expect(infoItems).toHaveCount(13, { timeout: TIMEOUT.element });
+      await expect(infoItems).toHaveCount(14, { timeout: TIMEOUT.element });
       // All info-item label/value assertions use case-insensitive regexes
       // because CSS `text-transform: uppercase` on the `small-label` class
       // does NOT alter `textContent`, but the i18n source strings mix Title
@@ -810,6 +852,16 @@ test.describe('voter mega-journey', () => {
       await expect(infoItems.nth(11)).toContainText(/—/);
       // (12) Links — single grouped item containing the personal-link tag
       await expect(infoItems.nth(12)).toContainText(/Links/i);
+
+      // Phase 89 Plan 01 (TIR4:99): narrowed candidate-details info-tab
+      // visibility for the 3 new filtered info questions. Voter is scoped
+      // to CO-Reg-N + CO-Mun-NE per voter-mega.fixture.ts first-option pick;
+      // CA-AA-Special's primary nomination is in CO-Reg-N. Therefore the
+      // north-only filtered info question MUST be visible, and the
+      // municipal-only + south-only variants MUST be absent.
+      await expect(infoTab).toContainText(/\[qu-info-filt-co-reg-n\]/i);
+      await expect(infoTab).not.toContainText(/\[qu-info-filt-mun-only\]/i);
+      await expect(infoTab).not.toContainText(/\[qu-info-filt-co-reg-s\]/i);
 
       // Switch to opinionsTab.
       await dialog.getByRole('tab', { name: TEXT_RE.opinionsTab }).click();
