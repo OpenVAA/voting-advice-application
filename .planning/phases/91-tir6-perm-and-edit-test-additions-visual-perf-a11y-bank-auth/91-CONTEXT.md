@@ -114,6 +114,8 @@ Implement `TEST-INVENTORY-REFACTOR-6.md` (TIR6) — closing the v2.10 TIR backlo
 
 ### Plan partition
 
+- **D-91-PD-06: candidateSessionMinter helper locks the authentication mechanism for A1/A2/A9 perm specs.** Author `tests/tests/utils/candidateSessionMinter.ts` exporting `async function mintCandidateSession({ externalId, prefix, locale? }): Promise<StorageState>` (Plan 91-01 Task 3). The helper looks up the seeded candidate via SupabaseAdminClient (composed external_id = `${prefix}${externalId}`), generates a Supabase session for that candidate (via admin auth API — magic-link redeem OR direct `auth.admin.createSession`), and returns a Playwright-storage-state-shaped object (`{ cookies: [...], origins: [...] }`). Plan 91-02 A1/A2/A9 perm setups invoke this helper AFTER `setupFromTemplate(...)` resolves and write the result to a per-perm `test-results/storage-state-perm-{name}.json` file consumed by the spec via `test.use({ storageState: <path> })`. This decision LOCKS the authentication mechanism — Plan 91-02 must NOT propose floating alternatives (e.g., "scope to login surface only" / "raw admin API in each setup") for these three perms. Closes checker BLOCKER 1 (A1 3-surface coverage) + checker WARNING 3 (A2 auth-route ambiguity).
+
 - **D-91-PARTITION: Deferred to planner.** Researcher and planner pick plan count + ordering after surveying the helper-port complexity + the refactor's new-fixture leaks. Likely shape (planner confirms):
   - Plan 91-01: Dataset-builder helper + port existing minimal perms (foundation).
   - Plan 91-02: 9 new TIR6 perm templates + 9 perm spec files + 9 project chains (consumes 91-01).

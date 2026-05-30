@@ -846,29 +846,36 @@ voterTest.describe('Voter Results - Desktop @visual', { tag: ['@visual'] }, () =
 
 **Risk-level overall:** LOW. Eight assumptions, all with mitigations identified.
 
-## Open Questions
+## Open Questions (RESOLVED — per planner revision 2026-05-30, checker WARNING 2)
 
-1. **Should `buildMinimal` accept the `terms_of_use_accepted` date as a parameter, or always seed `'2025-01-01T00:00:00.000Z'`?**
+All five Open Questions reached resolution during the planning + revision pass. Each carries an explicit RESOLVED marker with the locked decision below; the Recommendations remain for traceability.
+
+1. **(RESOLVED)** **Should `buildMinimal` accept the `terms_of_use_accepted` date as a parameter, or always seed `'2025-01-01T00:00:00.000Z'`?**
+   - **RESOLVED:** Default to the shared constant `'2025-01-01T00:00:00.000Z'`. Optional parameter `candidateToUDateByExternalId` is deferred until a future perm needs missing-ToU semantics.
    - What we know: every existing perm hardcodes the same value.
    - What's unclear: future perms may want missing ToU (untoured candidate variant).
    - Recommendation: default to the shared constant; expose as optional `candidateToUDateByExternalId` later if needed.
 
-2. **For the answers-locked perm, is the login-page assertion sufficient or must we also assert disabled inputs on /candidate/profile?**
+2. **(RESOLVED)** **For the answers-locked perm, is the login-page assertion sufficient or must we also assert disabled inputs on /candidate/profile?**
+   - **RESOLVED:** Implement FULL 3-surface coverage per CONTEXT.md Group A item 1 (login warning + profile disabled inputs + opinions disabled radios). Path (b) — author a reusable session-minting helper. The helper `mintCandidateSession` lives at `tests/tests/utils/candidateSessionMinter.ts` (Plan 91-01 Task 3, locked by D-91-PD-06). A1, A2, and A9 perm specs consume it via per-perm storageState files. NO scope reduction to the login surface (closes checker BLOCKER 1).
    - What we know: TIR6:8-14 expects 3 surfaces (login warning, profile disabled, opinions disabled).
    - What's unclear: whether a perm chain should mint an `auth.users` row to log in as the seeded candidate.
    - Recommendation: Plan 91-02 decides based on auth complexity. Researcher leans toward authoring a SupabaseAdminClient helper that mints a session for any seeded candidate (could be reusable for future perms). Cost: ~30 lines of helper + 5 lines in the perm setup. Alternative: scope assertions to the login surface only and skip the disabled-inputs cells.
 
-3. **Where should the `locatedVoterPage` fixture live — as a second option fixture on `voter-mega.fixture.ts` or as a separate file?**
+3. **(RESOLVED)** **Where should the `locatedVoterPage` fixture live — as a second option fixture on `voter-mega.fixture.ts` or as a separate file?**
+   - **RESOLVED:** Extend voter-mega.fixture.ts in-place with a second `locatedVoterPage` fixture (two-fixture split — researcher's preferred approach). Plan 91-04 Task 1 owns the extension. The Walking helper is shared between answeredVoterPage and locatedVoterPage; the only divergence is whether the walk advances past /questions or stops there.
    - What we know: voter-mega.fixture.ts already has the walking logic; sharing it is natural.
    - What's unclear: whether a11y-smoke would also benefit from sharing the answeredVoterPage variant or needs a fully independent setup.
    - Recommendation: extend `voter-mega.fixture.ts` in-place with a `locatedVoterPage` fixture that walks Home → /questions intro and stops. Single file, two fixtures.
 
-4. **Should the new `feedback-success` testid (or `data-status` attribute) be added to `Feedback.svelte` AND `FeedbackPopup.svelte`?**
+4. **(RESOLVED)** **Should the new `feedback-success` testid (or `data-status` attribute) be added to `Feedback.svelte` AND `FeedbackPopup.svelte`?**
+   - **RESOLVED:** Phase 91 adds the `data-status` attribute (not a testid) to Feedback.svelte:235 ONLY (Plan 91-03 Task 1). FeedbackPopup.svelte gets the attribute when first consumed by a future candidate-mega-journey extension — deferred to a later phase.
    - What we know: TIR6 only exercises the dialog form (`Feedback.svelte`), not the popup.
    - What's unclear: candidate-mega may later assert on feedback via popup.
    - Recommendation: Phase 91 — add to `Feedback.svelte` only. Popup gets it when consumed.
 
-5. **What happens if multiple perm chains land in parallel on the same Supabase instance during CI matrix runs?**
+5. **(RESOLVED)** **What happens if multiple perm chains land in parallel on the same Supabase instance during CI matrix runs?**
+   - **RESOLVED:** Maintain sequential dependencies in Plan 91-02 per HIGH-2 invariant. Each new perm spec project in playwright.config.ts depends on the previous spec via `dependencies: ['<previous-perm-spec>']` — chain anchored on perm-localisation-positive (the last 90-04 spec) and ending at perm-disable-allow-open. No parallel execution within the perm-* family.
    - What we know: the HIGH-2 invariant enforces sequential chains within the perm-* family.
    - What's unclear: nothing — the invariant is established.
    - Recommendation: maintain sequential chain via `dependencies` array. No change needed.
