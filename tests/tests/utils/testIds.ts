@@ -236,6 +236,10 @@ export const testIds = {
     //    (lines 653-660), gates on `multilingual && locales.length > 1`.
     //    Absent when `customData.disableMultilingual=true` OR single-locale.
     langSelector: 'lang-selector',
-    multilingualToggle: 'multilingual-toggle'
+    multilingualToggle: 'multilingual-toggle',
+    // Phase 91 Plan 03 (TIR6:16-22 — D-91-MJ-01 B1): testid on the inline
+    // ErrorMessage in Input.svelte:641. Consumed by the candidate-mega
+    // invalidUrl step + future shared input-validation assertions.
+    inputError: 'input-error'
   }
 } as const;

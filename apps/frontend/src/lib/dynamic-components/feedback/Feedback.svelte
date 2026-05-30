@@ -233,6 +233,7 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
         disabled={!canSubmit}
         variant="main"
         data-testid="feedback-submit"
+        data-status={status}
         text={status === 'sent'
           ? t('feedback.thanks')
           : status === 'sending'

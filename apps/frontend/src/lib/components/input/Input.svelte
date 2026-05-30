@@ -638,7 +638,7 @@ Multilingual features are only available if the `locales` store contains more th
   <!-- Error messages -->
 
   {#if error}
-    <ErrorMessage inline message={error} class="my-sm text-center" />
+    <ErrorMessage inline message={error} data-testid="input-error" class="my-sm text-center" />
   {/if}
 
   <!-- Optional elements below the form widgets -->
