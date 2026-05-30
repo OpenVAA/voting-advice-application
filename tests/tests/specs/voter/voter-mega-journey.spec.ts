@@ -41,6 +41,7 @@
  */
 
 import { expect, test } from '../../fixtures/views';
+import { createFeedbackDialog } from '../../fixtures/shared/feedbackDialog.fixture';
 import { buildRoute } from '../../utils/buildRoute';
 import { testIds } from '../../utils/testIds';
 import type { Locator, Page } from '@playwright/test';
@@ -1038,6 +1039,83 @@ test.describe('voter mega-journey', () => {
       const d7 = await entityFilters.openFilterDialog();
       await d7.reset();
       await expect(resultsPage.getEntityCards()).toHaveCount(13, { timeout: TIMEOUT.page });
+    });
+
+    // ====================================================================
+    // Phase 91 Plan 03 — Mega-journey absorption steps (D-91-MJ-01)
+    //
+    // Two new test.step blocks landed here per RESEARCH §"Mega-Journey
+    // Absorption Points — Voter": feedbackDialog (TIR6:34-61) absorbs the
+    // retired voter-feedback-persistence.spec.ts; all-nominations
+    // (TIR6:63-66) exercises the /nominations route via the new
+    // entities.showAllNominations default-true path.
+    // ====================================================================
+
+    await test.step('feedback dialog: open + persistence + send (TIR6:34-61, NEW Phase 91)', async () => {
+      const feedbackDialog = createFeedbackDialog(page);
+
+      // Pitfall 7 — voter nav drawer must be opened explicitly. The
+      // openMenu button lives on Header.svelte:82-93 with
+      // `aria-label={t('common.openMenu')}` ("Open menu" in en, the
+      // voter-mega default locale). No testid present; getByRole +
+      // accessible-name regex is the canonical anchor.
+      const openMenuRegex = /open menu/i;
+      const feedbackNavItem = page
+        .getByTestId(testIds.shared.navigation.menuItem)
+        .filter({ hasText: /feedback|palaute|återkoppling/i });
+
+      // ---- Cycle 1: rating + comment, cancel preserves state. -----------
+      await page.getByRole('button', { name: openMenuRegex }).click();
+      await feedbackNavItem.click();
+      await feedbackDialog.expectVisible();
+      await feedbackDialog.expectSendDisabled();
+      await feedbackDialog.setRating(3);
+      await feedbackDialog.expectSendEnabled();
+      await feedbackDialog.setComment('test feedback');
+      await feedbackDialog.cancel();
+      await feedbackDialog.expectHidden();
+
+      // ---- Cycle 2: reopen, expect preserved state, submit. -------------
+      await page.getByRole('button', { name: openMenuRegex }).click();
+      await feedbackNavItem.click();
+      await feedbackDialog.expectVisible();
+      await feedbackDialog.expectRatingValue(3);
+      await feedbackDialog.expectCommentValue('test feedback');
+      await feedbackDialog.submit();
+      await feedbackDialog.expectSuccess();
+      // FeedbackModal CLOSE_DELAY=1500ms post-onSent triggers reset() and
+      // closes the modal; wait for the form testid to leave the DOM before
+      // re-opening (mirrors the voter-feedback-persistence H4 lineage).
+      await feedbackDialog.expectHidden();
+
+      // ---- Cycle 3: reopen post-send → state cleared by reset(). --------
+      await page.getByRole('button', { name: openMenuRegex }).click();
+      await feedbackNavItem.click();
+      await feedbackDialog.expectVisible();
+      await feedbackDialog.expectRatingValue(null);
+      await feedbackDialog.expectCommentValue('');
+      // Text-only feedback (no rating) — submit enabled on description alone.
+      await feedbackDialog.setComment('text-only feedback');
+      await feedbackDialog.expectSendEnabled();
+      await feedbackDialog.submit();
+      await feedbackDialog.expectSuccess();
+      await feedbackDialog.expectHidden();
+    });
+
+    await test.step('nominations: /nominations renders candidate-nominations list (TIR6:63-66, NEW Phase 91)', async () => {
+      // entities.showAllNominations defaults to true in baseV1, so
+      // /en/nominations renders the candidate-nominations list. The voter
+      // is still located (selectedElections + selectedConstituencies
+      // populated from earlier steps), so the listing is scoped accordingly.
+      await page.goto(buildRoute({ route: 'Nominations', locale: 'en' }));
+      const list = page.getByTestId(testIds.voter.nominations.list);
+      await expect(list).toBeVisible({ timeout: TIMEOUT.slowPage });
+      // Conservative assertion: at least one entity-card visible inside the
+      // list (researcher-recommended — exact baseV1 nomination count varies
+      // by selected election + constituency scope).
+      await expect(list.getByTestId(testIds.voter.results.card).first()).toBeVisible({
+        timeout: TIMEOUT.page
+      });
     });
   });
 });
