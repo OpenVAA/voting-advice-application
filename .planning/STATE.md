@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
-status: completed
+status: executing
 stopped_at: Phase 91 planned (4 plans, 12 tasks, verified iteration 2)
-last_updated: "2026-05-30T13:27:17.879Z"
+last_updated: "2026-05-30T15:16:28.701Z"
 last_activity: 2026-05-30
 progress:
   total_phases: 16
   completed_phases: 13
   total_plans: 46
-  completed_plans: 40
+  completed_plans: 41
   percent: 81
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Milestone complete
+**Current focus:** Phase 91 — tir6-perm-and-edit-test-additions-visual-perf-a11y-bank-auth
 
 ## Current Position
 
-Phase: 90
-Plan: Not started
-Status: Milestone complete
+Phase: 91 (tir6-perm-and-edit-test-additions-visual-perf-a11y-bank-auth) — EXECUTING
+Plan: 2 of 4
+Status: Ready to execute
 Last activity: 2026-05-30
 
 ## Performance Metrics
@@ -104,6 +104,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | Phase 90 P02 | 15min | - tasks | - files |
 | Phase 90 P03 | 30 min | 3 tasks | 12 files |
 | Phase 90 P04 | 25 min | 3 tasks | 6 files |
+| Phase 91 P01 | 19 | 4 tasks | 20 files |
 
 ## Accumulated Context
 
@@ -199,6 +200,9 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Phase 90 Plan 04 — Locale-switch UI assertion uses label-diff pattern via testIds.voter.home.startButton; innerText() diff over literal-string match (robust against i18n bundle drift)
 - [Phase ?]: Phase 90 Plan 04 — Voter-side re-navigation required after langSelector.switchTo('fi') (Assumption A3 resolved: dialog state does NOT survive Paraglide data-sveltekit-reload full-reload)
 - [Phase ?]: Phase 90 Plan 04 — Per-perm recipientEmail 'candidate-l10n-pos-aa@test.openvaa.local' prevents cross-perm Inbucket pollution (distinct from 90-03 + candidate-mega per emailBucket recipient-filter)
+- [Phase ?]: D-91-PD-07 applied — named-params + answers-filled-by-default lock-in at the shared.ts + buildMinimal + candidateSessionMinter layers
+- [Phase ?]: Hybrid port discipline for perm-localisation-positive (buildMinimal for topology + hand-authored override for bespoke 4Q/answer shape)
+- [Phase ?]: buildMinimal extended with buildSingleOrgNoms branch — supports organizations=1 perms without orphan or-2 parent rows
 
 ### Quick Tasks Completed
 
@@ -221,9 +225,9 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-05-30T13:27:17.867Z
+Last session: 2026-05-30T15:16:07.455Z
 Stopped at: Phase 91 planned (4 plans, 12 tasks, verified iteration 2)
-Resume file: .planning/phases/91-tir6-perm-and-edit-test-additions-visual-perf-a11y-bank-auth/91-01-PLAN.md
+Resume file: None
 Next action: Operator decides Phase 87 disposition per Phase 86.3-05 D-06 recommendation:
   (a) **RE-PLAN (Claude's recommendation):** Re-plan Phase 87 to absorb v2.11+ voter-app cold-deeplink deferrals (4 cells #5/#6/#7/#8 closure-paired via navigation-from-home redesign) + boundary-class flake deferrals (DETERM-06 imgproxy + email-link timing) BEFORE firing the v2.10-ship anchor capture. Plan 87-01 needs a new Plan 01a (deferral inventory) + Plan 01b (anchor capture WITH explicit deferrals documented).
   (b) **DELAYED-FIRING (alternative):** Run Phase 87 against the ALMOST-STRICT post-86.3 anchor with explicit v2.11+ deferral documentation; accept that "all-green deterministic" is satisfied for SKIPPED + DATA_RACE pools but NOT for CASCADE pool (Phase 87 Task 0 pre-gate CASCADE ≤ 5 unsatisfied at CASCADE = 37 selective-regen-preserved OR 90 raw).
