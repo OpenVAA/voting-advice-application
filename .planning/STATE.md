@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
 status: executing
-stopped_at: Phase 91 planned (4 plans, 12 tasks, verified iteration 2)
-last_updated: "2026-05-30T15:16:28.701Z"
+stopped_at: Completed 91-03-PLAN.md
+last_updated: "2026-05-30T15:28:04.391Z"
 last_activity: 2026-05-30
 progress:
   total_phases: 16
   completed_phases: 13
   total_plans: 46
-  completed_plans: 41
+  completed_plans: 42
   percent: 81
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 ## Current Position
 
 Phase: 91 (tir6-perm-and-edit-test-additions-visual-perf-a11y-bank-auth) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-05-30
 
@@ -105,6 +105,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | Phase 90 P03 | 30 min | 3 tasks | 12 files |
 | Phase 90 P04 | 25 min | 3 tasks | 6 files |
 | Phase 91 P01 | 19 | 4 tasks | 20 files |
+| Phase 91 P03 | 18 | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -203,6 +204,10 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: D-91-PD-07 applied — named-params + answers-filled-by-default lock-in at the shared.ts + buildMinimal + candidateSessionMinter layers
 - [Phase ?]: Hybrid port discipline for perm-localisation-positive (buildMinimal for topology + hand-authored override for bespoke 4Q/answer shape)
 - [Phase ?]: buildMinimal extended with buildSingleOrgNoms branch — supports organizations=1 perms without orphan or-2 parent rows
+- [Phase ?]: Phase 91 Plan 03 (D-91-MJ-02): feedbackDialog shared function-fixture authored under tests/tests/fixtures/shared/ (NEW directory) with full Pattern 2 surface; standalone factory pattern, NOT extended into voter-mega.fixture.ts.
+- [Phase ?]: Phase 91 Plan 03 (Pitfall 10): data-status={status} attribute on Feedback.svelte:235 submit button + data-testid='input-error' on Input.svelte:641 inline ErrorMessage land the locale-resilient assertion targets for feedbackDialog success state + Input validation error surface.
+- [Phase ?]: Phase 91 Plan 03 (D-91-MJ-03): voter-feedback-persistence.spec.ts deleted in the SAME commit as the absorbing voter-mega feedbackDialog step. The spec had been SKIP-FALLBACK since Phase 86.1-02 (DETERM-13) due to dialog-close locator race; retirement absorbs TIR6:34-61 coverage into voter-mega.
+- [Phase ?]: Phase 91 Plan 03: baseV1 already seeds test-qu-info-text-link URL-type info question (subtype='link', settings.type='link' at baseV1.ts:662-672) — RESEARCH Assumption A1 holds; no baseV1 extension needed for the candidate invalidUrl step 13.5.
 
 ### Quick Tasks Completed
 
@@ -225,8 +230,8 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-05-30T15:16:07.455Z
-Stopped at: Phase 91 planned (4 plans, 12 tasks, verified iteration 2)
+Last session: 2026-05-30T15:28:04.386Z
+Stopped at: Completed 91-03-PLAN.md
 Resume file: None
 Next action: Operator decides Phase 87 disposition per Phase 86.3-05 D-06 recommendation:
   (a) **RE-PLAN (Claude's recommendation):** Re-plan Phase 87 to absorb v2.11+ voter-app cold-deeplink deferrals (4 cells #5/#6/#7/#8 closure-paired via navigation-from-home redesign) + boundary-class flake deferrals (DETERM-06 imgproxy + email-link timing) BEFORE firing the v2.10-ship anchor capture. Plan 87-01 needs a new Plan 01a (deferral inventory) + Plan 01b (anchor capture WITH explicit deferrals documented).
