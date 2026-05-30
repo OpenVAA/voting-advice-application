@@ -25,8 +25,8 @@
 
 import { expect, test } from '@playwright/test';
 import path from 'path';
-import { TESTS_DIR } from '../../utils/testsDir';
 import { testIds } from '../../utils/testIds';
+import { TESTS_DIR } from '../../utils/testsDir';
 
 const PREFIX = 'e2e-perm-answers-locked-';
 const STORAGE_STATE_PATH = path.join(TESTS_DIR, '../playwright/.auth/perm-answers-locked.json');

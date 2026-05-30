@@ -11,15 +11,15 @@
  */
 
 import { expect, test as setup } from '@playwright/test';
-import type { Page } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
+import { setupFromTemplate } from './setupFromTemplate';
 import { buildRoute } from '../utils/buildRoute';
 import { SupabaseAdminClient } from '../utils/supabaseAdminClient';
 import { TEST_CANDIDATE_PASSWORD } from '../utils/testCredentials';
 import { testIds } from '../utils/testIds';
 import { TESTS_DIR } from '../utils/testsDir';
-import { setupFromTemplate } from './setupFromTemplate';
+import type { Page } from '@playwright/test';
 
 const PREFIX = 'e2e-perm-no-allowopen-';
 export const STORAGE_STATE_PATH = path.join(

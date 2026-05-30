@@ -3,8 +3,17 @@
  *
  * Phase 91 Plan 05 (CR-02 closure): voter-side walk delegated to
  * voter-mega.fixture.ts answeredVoterPage. Candidate-side block unchanged
- * — storage-state minted by refactored perm-disable-allow-open.setup.ts
- * (Task 3, CR-01 closure).
+ * semantically — storage-state minted by refactored
+ * perm-disable-allow-open.setup.ts (Task 3, CR-01 closure).
+ *
+ * Both describe blocks consume `voterMegaTest as test` (Option B from
+ * Plan 91-05 §Task 6) to unify the file under a single test runner —
+ * eliminates the `playwright/no-standalone-expect` lint failure that fires
+ * when the lint rule's test-block detector does not recognise a non-`test`
+ * runner inside an `expect()` call. The candidate-side tests do NOT
+ * consume the `answeredVoterPage` fixture, so the voter walk does not run
+ * for those tests (Playwright fixtures are lazy — only created on
+ * consumption).
  *
  * Per D-91-PD-04 (TIR6:122 typo resolution): cand-1 authors info text on
  * BOTH Q1 + Q2 answers. customData.allowOpen=true on Q1 keeps the info
@@ -25,11 +34,11 @@
  * Authoritative spec: TEST-INVENTORY-REFACTOR-6.md:121-142.
  */
 
-import { expect, test } from '@playwright/test';
+import { expect } from '@playwright/test';
 import path from 'path';
-import { voterMegaTest as voterTest } from '../../fixtures/voter-mega.fixture';
-import { TESTS_DIR } from '../../utils/testsDir';
+import { voterMegaTest as test } from '../../fixtures/voter-mega.fixture';
 import { testIds } from '../../utils/testIds';
+import { TESTS_DIR } from '../../utils/testsDir';
 
 const PREFIX = 'e2e-perm-no-allowopen-';
 const STORAGE_STATE_PATH = path.join(
@@ -51,8 +60,8 @@ test.describe('perm-disable-allow-open (candidate side — authenticated)', () =
   });
 });
 
-voterTest.describe('perm-disable-allow-open (voter side — unauthenticated)', () => {
-  voterTest(
+test.describe('perm-disable-allow-open (voter side — unauthenticated)', () => {
+  test(
     'voter detail drawer: Q1 info visible (entity-opinion-open-answer) AND Q2 info hidden',
     async ({ answeredVoterPage }) => {
       // Click the only candidate card ([CA1A]) to open the detail drawer.
