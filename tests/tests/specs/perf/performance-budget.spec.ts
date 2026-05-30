@@ -12,18 +12,25 @@
  * that normal dev-mode variance does not cause flaky failures.
  *
  * How to update budgets:
- *   1. Run this test 3-5 times locally: `npx playwright test -c tests/playwright.config.ts --grep @perf`
+ *   1. Run this test 3-5 times locally: `PLAYWRIGHT_PERF=1 npx playwright test -c tests/playwright.config.ts --project=performance`
  *   2. Note the P90 value from the console output
  *   3. Add a 50% margin to the P90 value
  *   4. Update the expect() thresholds below
  *
+ * Phase 91 Plan 04 (D-91-RS-02): MIGRATED from legacy
+ *   tests/tests/fixtures/voter.fixture.ts `voterTest.answeredVoterPage`
+ * to tests/tests/fixtures/voter-mega.fixture.ts `voterMegaTest.answeredVoterPage`
+ * (baseV1 dataset). Budgets UNCHANGED (8s DCL, 15s loadComplete) — no
+ * threshold tightening per D-91-RS-02; perf is a regression gate, not an
+ * absolute target.
+ *
  * Run command:
- *   npx playwright test -c tests/playwright.config.ts --grep @perf
+ *   PLAYWRIGHT_PERF=1 npx playwright test -c tests/playwright.config.ts --project=performance
  */
 
 /* eslint-disable playwright/no-standalone-expect -- voterTest extends @playwright/test; expect is inside test body */
 import { expect } from '@playwright/test';
-import { voterTest } from '../../fixtures/voter.fixture';
+import { voterMegaTest as voterTest } from '../../fixtures/voter-mega.fixture';
 import { settleNetworkIdle } from '../../helpers';
 
 voterTest.describe('Performance budgets', { tag: ['@perf'] }, () => {
