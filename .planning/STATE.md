@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
 status: completed
-stopped_at: Phase 91 context gathered
-last_updated: "2026-05-30T12:34:42.612Z"
+stopped_at: Phase 91 planned (4 plans, 12 tasks, verified iteration 2)
+last_updated: "2026-05-30T13:27:17.879Z"
 last_activity: 2026-05-30
 progress:
   total_phases: 16
   completed_phases: 13
-  total_plans: 42
+  total_plans: 46
   completed_plans: 40
   percent: 81
 ---
@@ -221,9 +221,9 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-05-30T12:34:42.604Z
-Stopped at: Phase 91 context gathered
-Resume file: .planning/phases/91-tir6-perm-and-edit-test-additions-visual-perf-a11y-bank-auth/91-CONTEXT.md
+Last session: 2026-05-30T13:27:17.867Z
+Stopped at: Phase 91 planned (4 plans, 12 tasks, verified iteration 2)
+Resume file: .planning/phases/91-tir6-perm-and-edit-test-additions-visual-perf-a11y-bank-auth/91-01-PLAN.md
 Next action: Operator decides Phase 87 disposition per Phase 86.3-05 D-06 recommendation:
   (a) **RE-PLAN (Claude's recommendation):** Re-plan Phase 87 to absorb v2.11+ voter-app cold-deeplink deferrals (4 cells #5/#6/#7/#8 closure-paired via navigation-from-home redesign) + boundary-class flake deferrals (DETERM-06 imgproxy + email-link timing) BEFORE firing the v2.10-ship anchor capture. Plan 87-01 needs a new Plan 01a (deferral inventory) + Plan 01b (anchor capture WITH explicit deferrals documented).
   (b) **DELAYED-FIRING (alternative):** Run Phase 87 against the ALMOST-STRICT post-86.3 anchor with explicit v2.11+ deferral documentation; accept that "all-green deterministic" is satisfied for SKIPPED + DATA_RACE pools but NOT for CASCADE pool (Phase 87 Task 0 pre-gate CASCADE ≤ 5 unsatisfied at CASCADE = 37 selective-regen-preserved OR 90 raw).
