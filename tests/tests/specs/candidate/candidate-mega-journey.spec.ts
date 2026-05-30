@@ -503,6 +503,38 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
       });
     });
 
+    // ============== Step 13.5: invalid URL → invalidUrl error (Phase 91) ===
+
+    await test.step('13.5. profile: invalid URL into Link-type question surfaces invalidUrl error (TIR6:16-22)', async () => {
+      // Step 13 submitted from profile → landed on home. Re-enter profile
+      // to exercise the Link-type URL validation on test-qu-info-text-link.
+      // baseV1 already seeds this URL-type info question (subtype='link',
+      // settings.type='link') per packages/dev-seed/src/templates/baseV1.ts:662-672
+      // — no baseV1 extension needed.
+      await candidateHomePage.clickTask('profile');
+      await expect(page).toHaveURL(/\/candidate\/profile/, { timeout: TIMEOUT.slowPage });
+      // Fill the link question with a clearly invalid URL.
+      await candidateProfilePage.fillQuestion(/qu-info-text-link/, 'not-a-url');
+      // Trigger validation by blurring the field (Input.svelte's checkUrl
+      // runs on input change; tab off to force evaluation in headless mode).
+      await page.keyboard.press('Tab');
+      // Assert the inline ErrorMessage's input-error testid surfaces the
+      // invalidUrl error. Locale-resilient regex covers en + fi vocabulary
+      // for the components.input.error.invalidUrl translation key.
+      await expect(page.getByTestId(testIds.shared.inputError)).toContainText(
+        /invalidUrl|invalid url|virheellinen/i,
+        { timeout: TIMEOUT.element }
+      );
+      // Clear the field so step 14 isn't blocked by validation when it
+      // re-submits the form with the required field filled.
+      await candidateProfilePage.fillQuestion(/qu-info-text-link/, '');
+      // Return to home so step 14's clickTask('profile') re-navigates cleanly.
+      await page.getByTestId(testIds.candidate.profile.returnButton).click();
+      await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({
+        timeout: TIMEOUT.slowPage
+      });
+    });
+
     // ============== Step 14: revisit profile + fill required + advance ===
 
     await test.step('14. profile: revisit + fill required + submit → questions overview', async () => {
