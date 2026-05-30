@@ -1,5 +1,6 @@
 /**
- * perm-missing-nominations minimal-data template — Phase 90 Plan 02.
+ * perm-missing-nominations minimal-data template — Phase 90 Plan 02; ported
+ * to `buildMinimal` helper in Phase 91 Plan 91-01 Task 2.
  *
  * Topology: 2 elections sharing 1 CG with 1 CO. 1 organisation, 1 candidate.
  * 1 nomination in el-1 only — el-2 has ZERO nominations. The voter selects
@@ -14,120 +15,40 @@
  * Settings: spreads MINIMAL_BASE_APP_SETTINGS verbatim — this perm does NOT
  * require 90-01's Stage A runtime supportedLocales override (locale-count
  * irrelevant to the missing-nominations modal surface).
+ *
+ * Helper config:
+ *   - `elections: 2` produces el-1 + el-2 both linked to the single CG.
+ *   - `nominationsInElectionIndices: [0]` writes nominations ONLY for el-1
+ *     (the helper's nomination-emission loop iterates these indices); el-2
+ *     ends up with ZERO nominations — exactly the "some" missing-nominations
+ *     trigger the spec asserts on.
+ *   - `organizations: 1` truncates to a single party (matches the existing
+ *     1-org topology).
+ *   - `candidates: 1` → single candidate; spec asserts on `[EL1]` and `[EL2]`
+ *     election-name markers in the modal, not on candidate external_ids.
+ *
+ * Port discipline (Phase 91 D-91-PD-03): assertions preserved byte-for-byte.
+ * Spec asserts on `[EL1]` / `[EL2]` substrings + "not available" copy in the
+ * missing-nominations modal — does NOT depend on candidate/question
+ * external_ids. Helper-generated election names `[EL1] Election 1` and
+ * `[EL2] Election 2` both contain the substring markers verbatim.
  */
 
-import {
-  buildCandidate,
-  buildElectionConstituencyNoms,
-  buildOrganizations,
-  buildQuestionCategories,
-  buildQuestions,
-  buildStandardCandidateAnswers,
-  MINIMAL_BASE_APP_SETTINGS
-} from './shared';
+import { buildMinimal } from '../_helpers/buildMinimal';
 import type { Template } from '../../template/types';
 
 const P = 'e2e-perm-missnoms-';
 
-const APP_SETTINGS = MINIMAL_BASE_APP_SETTINGS;
-
-export const permMissingNominationsTemplate: Template = {
-  seed: 42,
+export const permMissingNominationsTemplate: Template = buildMinimal({
   externalIdPrefix: P,
-  generateTranslationsForAllLocales: false,
-
-  elections: {
-    count: 0,
-    fixed: [
-      {
-        external_id: 'el-1',
-        name: { en: '[EL1] First election' },
-        short_name: { en: 'EL1' },
-        election_type: 'general',
-        election_date: '2026-06-15',
-        sort_order: 0,
-        is_generated: false,
-        multiple_rounds: false,
-        current_round: 1,
-        constituency_groups: [{ external_id: `${P}cg-1` }]
-      },
-      {
-        external_id: 'el-2',
-        name: { en: '[EL2] Second election' },
-        short_name: { en: 'EL2' },
-        election_type: 'local',
-        election_date: '2026-06-15',
-        sort_order: 1,
-        is_generated: false,
-        multiple_rounds: false,
-        current_round: 1,
-        constituency_groups: [{ external_id: `${P}cg-1` }]
-      }
-    ]
-  },
-
-  constituency_groups: {
-    count: 0,
-    fixed: [
-      {
-        external_id: 'cg-1',
-        name: { en: '[CG1] Only group' },
-        sort_order: 0,
-        is_generated: false,
-        constituencies: [{ external_id: `${P}co-1a` }]
-      }
-    ]
-  },
-
-  constituencies: {
-    count: 0,
-    fixed: [
-      {
-        external_id: 'co-1a',
-        name: { en: '[CO1A] Only constituency' },
-        sort_order: 0,
-        is_generated: false
-      }
-    ]
-  },
-
-  organizations: { count: 0, fixed: buildOrganizations() },
-  question_categories: { count: 0, fixed: buildQuestionCategories() },
-  questions: { count: 0, fixed: buildQuestions({ prefix: P }) },
-
-  candidates: {
-    count: 0,
-    fixed: [
-      buildCandidate({
-        prefix: P,
-        orgN: 1,
-        candLetter: 'A',
-        idSuffix: 'ca-1-1a',
-        sortOrder: 0,
-        answersByExternalId: buildStandardCandidateAnswers({ prefix: P })
-      })
-    ]
-  },
-
-  nominations: {
-    count: 0,
-    fixed: [
-      // INTENTIONAL: el-2 has zero nominations to trigger the missing-nominations modal
-      // 'some' variant per TIR5:15-26. Only el-1 carries a nomination.
-      ...buildElectionConstituencyNoms({
-        prefix: P,
-        electionIdSuffix: 'el-1',
-        constituencyIdSuffix: 'co-1a',
-        candidateIdSuffixes: ['ca-1-1a'],
-        electionSymbolStart: 1
-      })
-    ]
-  },
-
-  app_settings: {
-    count: 0,
-    fixed: [{ external_id: 'app-settings', settings: APP_SETTINGS }]
-  }
-};
+  elections: 2,
+  candidates: 1,
+  organizations: 1,
+  opinionQuestions: 1,
+  infoQuestions: 0,
+  // INTENTIONAL: el-2 has zero nominations to trigger the missing-nominations
+  // modal 'some' variant per TIR5:15-26.
+  nominationsInElectionIndices: [0]
+});
 
 export default permMissingNominationsTemplate;

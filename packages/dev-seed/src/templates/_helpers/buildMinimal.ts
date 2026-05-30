@@ -336,15 +336,31 @@ export function buildMinimal(opts: BuildMinimalOptions): Template {
   const nominations: Array<Record<string, unknown>> = [];
   for (const elIdx of electionsWithNoms) {
     const electionIdSuffix = `el-${elIdx + 1}`;
-    nominations.push(
-      ...buildElectionConstituencyNoms({
-        prefix: P,
-        electionIdSuffix,
-        constituencyIdSuffix: 'co-1a',
-        candidateIdSuffixes: candIdSuffixes,
-        electionSymbolStart: (elIdx + 1) * 10
-      })
-    );
+    if (orgCount === 1) {
+      // Single-org variant — mirrors `buildElectionConstituencyNomsSingleOrg`
+      // from perm-localisation-positive.ts; emits only the or-1 parent row +
+      // candidate child rows (no or-2 parent — that row would orphan-FK since
+      // or-2 was not seeded for this perm).
+      nominations.push(
+        ...buildSingleOrgNoms({
+          prefix: P,
+          electionIdSuffix,
+          constituencyIdSuffix: 'co-1a',
+          candidateIdSuffixes: candIdSuffixes,
+          electionSymbolStart: (elIdx + 1) * 10
+        })
+      );
+    } else {
+      nominations.push(
+        ...buildElectionConstituencyNoms({
+          prefix: P,
+          electionIdSuffix,
+          constituencyIdSuffix: 'co-1a',
+          candidateIdSuffixes: candIdSuffixes,
+          electionSymbolStart: (elIdx + 1) * 10
+        })
+      );
+    }
   }
 
   // --- App settings ------------------------------------------------------
@@ -371,4 +387,47 @@ export function buildMinimal(opts: BuildMinimalOptions): Template {
   };
 
   return tpl;
+}
+
+/**
+ * Single-org variant of {@link buildElectionConstituencyNoms} — emits ONLY
+ * the or-1 parent nomination + candidate child nominations (no or-2 parent
+ * row, since the single-org perm has not seeded or-2). Mirror of the file-
+ * local helper in `perm-localisation-positive.ts` — kept here so
+ * `buildMinimal({ organizations: 1 })` can produce a coherent nomination
+ * set without orphan-FK references to a missing or-2 organisation row.
+ */
+function buildSingleOrgNoms(opts: {
+  prefix: string;
+  electionIdSuffix: string;
+  constituencyIdSuffix: string;
+  candidateIdSuffixes: Array<string>;
+  electionSymbolStart: number;
+}): Array<Record<string, unknown>> {
+  const { prefix: P, electionIdSuffix, constituencyIdSuffix, candidateIdSuffixes, electionSymbolStart } = opts;
+  const electionExtId = `${P}${electionIdSuffix}`;
+  const constituencyExtId = `${P}${constituencyIdSuffix}`;
+  const key = `${electionIdSuffix}-${constituencyIdSuffix}`;
+  const noms: Array<Record<string, unknown>> = [
+    {
+      external_id: `nom-${key}-or-1`,
+      organization: { external_id: `${P}or-1` },
+      election: { external_id: electionExtId },
+      constituency: { external_id: constituencyExtId },
+      election_round: 1
+    }
+  ];
+  for (let i = 0; i < candidateIdSuffixes.length; i++) {
+    const candIdSuffix = candidateIdSuffixes[i];
+    noms.push({
+      external_id: `nom-${key}-${candIdSuffix}`,
+      election_symbol: String(electionSymbolStart + i),
+      candidate: { external_id: `${P}${candIdSuffix}` },
+      parent_nomination: { external_id: `${P}nom-${key}-or-1` },
+      election: { external_id: electionExtId },
+      constituency: { external_id: constituencyExtId },
+      election_round: 1
+    });
+  }
+  return noms;
 }

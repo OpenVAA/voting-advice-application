@@ -1,5 +1,6 @@
 /**
- * perm-localisation-positive minimal-data template — Phase 90 Plan 04.
+ * perm-localisation-positive minimal-data template — Phase 90 Plan 04;
+ * ported to `buildMinimal` helper in Phase 91 Plan 91-01 Task 2.
  *
  * Operates against the 3-locale `staticSettings.supportedLocales` base
  * (`[en, fi, sv]`) directly — NO runtime override. The single-locale variant
@@ -26,13 +27,14 @@
  * Prefix discipline: `externalIdPrefix: 'e2e-perm-l10n-pos-'` per D-90-01
  * (distinct from the other 89-04 + 90 perm templates).
  *
- * Settings: APP_SETTINGS spreads MINIMAL_BASE_APP_SETTINGS verbatim — no
- * i18n override. The runtime `locales` export from `$lib/i18n` resolves to
- * the staticSettings list (en/fi/sv), the LanguageSelection NavGroup
- * (`locales.length > 1` gate at LanguageSelection.svelte:32) renders with
- * three locales, and the translation-options toggle stays visible on every
- * multilingual Input (`multilingual && locales.length > 1` gate at
- * Input.svelte:646,653) for q1 (text) and q3-comment (open-answer textarea).
+ * Settings: APP_SETTINGS spreads MINIMAL_BASE_APP_SETTINGS verbatim (helper
+ * default) — no i18n override. The runtime `locales` export from `$lib/i18n`
+ * resolves to the staticSettings list (en/fi/sv), the LanguageSelection
+ * NavGroup (`locales.length > 1` gate at LanguageSelection.svelte:32)
+ * renders with three locales, and the translation-options toggle stays
+ * visible on every multilingual Input (`multilingual && locales.length > 1`
+ * gate at Input.svelte:646,653) for q1 (text) and q3-comment (open-answer
+ * textarea).
  *
  * q2 + q4 carry `customData.disableMultilingual = true` as a per-question
  * opt-out: even with locales.length > 1, the multilingual toggle is
@@ -44,66 +46,46 @@
  * `routes/candidate/(protected)/questions/[questionId]/+page.svelte:294-304`)
  * — RESEARCH §"Pitfall 5". Without `allow_open=true` the comment block does
  * not render and the assertions on q3/q4 would target a missing element.
+ *
+ * Port discipline (Phase 91 D-91-PD-03): assertions preserved byte-for-byte.
+ * The L10N spec depends on:
+ *   - The candidate's BARE external_id = `ca-1-1a` (hardcoded in the spec
+ *     at perm-localisation-positive.spec.ts:88 as
+ *     `CANDIDATE_EXTERNAL_ID = 'e2e-perm-l10n-pos-ca-1-1a'`).
+ *   - 4 specific questions with bespoke `[Q1]`/`[Q2]`/`[Q3]`/`[Q4]` name
+ *     markers (asserted by the spec's `getQuestion(/\[Q1\]/)` calls).
+ *   - 2 questions carrying `customData.disableMultilingual = true`.
+ *   - 2 opinion questions carrying `allow_open: true`.
+ *   - Specific seeded English answer markers (`[en-answer-q1]` /
+ *     `[en-answer-q3]`).
+ *
+ * Build strategy: use `buildMinimal` for the topology bits the helper
+ * supports cleanly (1 election / 1 CG / 1 CO / 1 organisation / app_settings
+ * deep-merged with the empty overlay → MINIMAL_BASE_APP_SETTINGS verbatim).
+ * Override `question_categories`, `questions`, `candidates`, and
+ * `nominations` with the hand-authored bespoke shapes the spec depends on.
+ * The composed Template is structurally identical to the pre-port hand-
+ * authored template (byte-for-byte parity for the spec's selectors and
+ * assertions).
  */
 
-import { buildOrganizations, LIKERT_5_EN, MINIMAL_BASE_APP_SETTINGS } from './shared';
+import { buildMinimal } from '../_helpers/buildMinimal';
+import { LIKERT_5_EN } from './shared';
 import type { Template } from '../../template/types';
 
 const P = 'e2e-perm-l10n-pos-';
 
-const APP_SETTINGS = MINIMAL_BASE_APP_SETTINGS;
+// Compose the topology + app_settings + organisations via the helper.
+const base = buildMinimal({
+  externalIdPrefix: P,
+  candidates: 0,
+  opinionQuestions: 0,
+  infoQuestions: 0,
+  organizations: 1
+});
 
 export const permLocalisationPositiveTemplate: Template = {
-  seed: 42,
-  externalIdPrefix: P,
-  generateTranslationsForAllLocales: false,
-
-  elections: {
-    count: 0,
-    fixed: [
-      {
-        external_id: 'el-1',
-        name: { en: '[EL1] First election' },
-        short_name: { en: 'EL1' },
-        election_type: 'general',
-        election_date: '2026-06-15',
-        sort_order: 0,
-        is_generated: false,
-        multiple_rounds: false,
-        current_round: 1,
-        constituency_groups: [{ external_id: `${P}cg-1` }]
-      }
-    ]
-  },
-
-  constituency_groups: {
-    count: 0,
-    fixed: [
-      {
-        external_id: 'cg-1',
-        name: { en: '[CG1] Only group' },
-        sort_order: 0,
-        is_generated: false,
-        constituencies: [{ external_id: `${P}co-1a` }]
-      }
-    ]
-  },
-
-  constituencies: {
-    count: 0,
-    fixed: [
-      {
-        external_id: 'co-1a',
-        name: { en: '[CO1A] Only constituency' },
-        sort_order: 0,
-        is_generated: false
-      }
-    ]
-  },
-
-  // Single org per TIR5:30 (mirrors 90-03) — truncate the standard 2-org
-  // helper to its first entry (or-1 → '[OR1] Party One').
-  organizations: { count: 0, fixed: buildOrganizations().slice(0, 1) },
+  ...base,
 
   // Two categories inline (qc-info + qc-opin) — same shape as
   // buildQuestionCategories() but kept literal here to keep the question/
@@ -128,8 +110,9 @@ export const permLocalisationPositiveTemplate: Template = {
     ]
   },
 
-  // 4 questions inline — mirrors 90-03 verbatim. q2 + q4 carry
-  // customData.disableMultilingual; q3 + q4 carry allow_open=true (Pitfall 5).
+  // 4 questions inline — mirrors the pre-port hand-authored template
+  // verbatim. q2 + q4 carry customData.disableMultilingual; q3 + q4 carry
+  // allow_open=true (Pitfall 5).
   questions: {
     count: 0,
     fixed: [
@@ -210,62 +193,30 @@ export const permLocalisationPositiveTemplate: Template = {
     ]
   },
 
-  // 1 nomination via the single-org variant helper. Mirrors 90-03's helper
-  // call shape exactly — only the prefix P differs at runtime.
+  // 1 nomination via the single-org variant inlined here (mirrors the
+  // pre-port file-local `buildElectionConstituencyNomsSingleOrg` helper).
+  // Only or-1 parent + the candidate child; no or-2 row (single-org perm).
   nominations: {
     count: 0,
-    fixed: [...buildElectionConstituencyNomsSingleOrg(P, 'el-1', 'co-1a', ['ca-1-1a'], 1)]
-  },
-
-  app_settings: {
-    count: 0,
-    fixed: [{ external_id: 'app-settings', settings: APP_SETTINGS }]
+    fixed: [
+      {
+        external_id: 'nom-el-1-co-1a-or-1',
+        organization: { external_id: `${P}or-1` },
+        election: { external_id: `${P}el-1` },
+        constituency: { external_id: `${P}co-1a` },
+        election_round: 1
+      },
+      {
+        external_id: 'nom-el-1-co-1a-ca-1-1a',
+        election_symbol: '1',
+        candidate: { external_id: `${P}ca-1-1a` },
+        parent_nomination: { external_id: `${P}nom-el-1-co-1a-or-1` },
+        election: { external_id: `${P}el-1` },
+        constituency: { external_id: `${P}co-1a` },
+        election_round: 1
+      }
+    ]
   }
 };
-
-/**
- * Single-org variant of buildElectionConstituencyNoms — emits ONLY the or-1
- * parent nomination + candidate child nomination(s). Mirror of the helper
- * in perm-localisation-negative.ts (kept file-local; this is the only OTHER
- * perm with the same 1-org topology — both Plan 90-03 + 90-04 keep their
- * own copies to avoid premature promotion to shared.ts).
- *
- * Schema-equivalent to `shared.ts:buildElectionConstituencyNoms` but with the
- * or-2 parent row omitted and the org-toggle on candidate refs collapsed to
- * or-1 only.
- */
-function buildElectionConstituencyNomsSingleOrg(
-  P: string,
-  electionIdSuffix: string,
-  constituencyIdSuffix: string,
-  candidateIdSuffixes: Array<string>,
-  electionSymbolStart: number
-): Array<Record<string, unknown>> {
-  const electionExtId = `${P}${electionIdSuffix}`;
-  const constituencyExtId = `${P}${constituencyIdSuffix}`;
-  const key = `${electionIdSuffix}-${constituencyIdSuffix}`;
-  const noms: Array<Record<string, unknown>> = [
-    {
-      external_id: `nom-${key}-or-1`,
-      organization: { external_id: `${P}or-1` },
-      election: { external_id: electionExtId },
-      constituency: { external_id: constituencyExtId },
-      election_round: 1
-    }
-  ];
-  for (let i = 0; i < candidateIdSuffixes.length; i++) {
-    const candIdSuffix = candidateIdSuffixes[i];
-    noms.push({
-      external_id: `nom-${key}-${candIdSuffix}`,
-      election_symbol: String(electionSymbolStart + i),
-      candidate: { external_id: `${P}${candIdSuffix}` },
-      parent_nomination: { external_id: `${P}nom-${key}-or-1` },
-      election: { external_id: electionExtId },
-      constituency: { external_id: constituencyExtId },
-      election_round: 1
-    });
-  }
-  return noms;
-}
 
 export default permLocalisationPositiveTemplate;
