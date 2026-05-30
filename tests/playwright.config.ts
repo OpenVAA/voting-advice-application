@@ -1129,6 +1129,91 @@ export default defineConfig({
       fullyParallel: false,
       use: { ...devices['Desktop Chrome'] },
       dependencies: ['data-setup-perm-hide-all-nominations']
+    },
+
+    // A6 — perm-hide-if-missing-answers (TIR6:95-102). Voter walk asserts
+    // ONLY on candidate visibility per Pitfall 6 (no org count assertion).
+    {
+      name: 'data-setup-perm-hide-if-missing-answers',
+      testMatch: /perm-hide-if-missing-answers\.setup\.ts/,
+      teardown: 'data-teardown-perm-hide-if-missing-answers',
+      dependencies: ['perm-hide-all-nominations']
+    },
+    {
+      name: 'data-teardown-perm-hide-if-missing-answers',
+      testMatch: /perm-hide-if-missing-answers\.teardown\.ts/
+    },
+    {
+      name: 'perm-hide-if-missing-answers',
+      testDir: './tests/specs/perm',
+      testMatch: /perm-hide-if-missing-answers\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-perm-hide-if-missing-answers']
+    },
+
+    // A7 — perm-hide-election-tags (TIR6:104-108). Voter walk → /questions
+    // asserts absence of election-tag testid.
+    {
+      name: 'data-setup-perm-hide-election-tags',
+      testMatch: /perm-hide-election-tags\.setup\.ts/,
+      teardown: 'data-teardown-perm-hide-election-tags',
+      dependencies: ['perm-hide-if-missing-answers']
+    },
+    {
+      name: 'data-teardown-perm-hide-election-tags',
+      testMatch: /perm-hide-election-tags\.teardown\.ts/
+    },
+    {
+      name: 'perm-hide-election-tags',
+      testDir: './tests/specs/perm',
+      testMatch: /perm-hide-election-tags\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-perm-hide-election-tags']
+    },
+
+    // A8 — perm-hide-category-tags (TIR6:111-115). Voter walk → /questions
+    // asserts absence of category-tag testid.
+    {
+      name: 'data-setup-perm-hide-category-tags',
+      testMatch: /perm-hide-category-tags\.setup\.ts/,
+      teardown: 'data-teardown-perm-hide-category-tags',
+      dependencies: ['perm-hide-election-tags']
+    },
+    {
+      name: 'data-teardown-perm-hide-category-tags',
+      testMatch: /perm-hide-category-tags\.teardown\.ts/
+    },
+    {
+      name: 'perm-hide-category-tags',
+      testDir: './tests/specs/perm',
+      testMatch: /perm-hide-category-tags\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-perm-hide-category-tags']
+    },
+
+    // A9 — perm-disable-allow-open (TIR6:121-142). Two describe blocks per
+    // D-91-PD-04 + D-91-PD-06: candidate-side authenticated (via storage
+    // state minted in setup) + voter-side unauthenticated /results walk.
+    {
+      name: 'data-setup-perm-disable-allow-open',
+      testMatch: /perm-disable-allow-open\.setup\.ts/,
+      teardown: 'data-teardown-perm-disable-allow-open',
+      dependencies: ['perm-hide-category-tags']
+    },
+    {
+      name: 'data-teardown-perm-disable-allow-open',
+      testMatch: /perm-disable-allow-open\.teardown\.ts/
+    },
+    {
+      name: 'perm-disable-allow-open',
+      testDir: './tests/specs/perm',
+      testMatch: /perm-disable-allow-open\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-perm-disable-allow-open']
     }
   ]
 });

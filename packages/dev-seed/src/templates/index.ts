@@ -21,6 +21,7 @@ import { perm1e1cg1coTemplate } from './permutations/perm-1e1cg1co';
 import { perm2eAsymmetricTemplate } from './permutations/perm-2e-asymmetric';
 import { perm2eSharedTemplate } from './permutations/perm-2e-shared';
 import { permAnswersLockedTemplate } from './permutations/perm-answers-locked';
+import { permDisableAllowOpenTemplate } from './permutations/perm-disable-allow-open';
 import { permDisableCandidateAppTemplate } from './permutations/perm-disable-candidate-app';
 import { permDisableElection1coTemplate } from './permutations/perm-disable-election-1co';
 import { permDisableElection2coTemplate } from './permutations/perm-disable-election-2co';
@@ -29,7 +30,10 @@ import { permDisjoint1coTemplate } from './permutations/perm-disjoint-1co';
 import { permHeaderShowFeedbackTemplate } from './permutations/perm-header-show-feedback';
 import { permHeaderShowHelpTemplate } from './permutations/perm-header-show-help';
 import { permHideAllNominationsTemplate } from './permutations/perm-hide-all-nominations';
+import { permHideCategoryTagsTemplate } from './permutations/perm-hide-category-tags';
+import { permHideElectionTagsTemplate } from './permutations/perm-hide-election-tags';
 import { permHideHeroTemplate } from './permutations/perm-hide-hero';
+import { permHideIfMissingAnswersTemplate } from './permutations/perm-hide-if-missing-answers';
 import { permLocalisationPositiveTemplate } from './permutations/perm-localisation-positive';
 import { permMissingNominationsTemplate } from './permutations/perm-missing-nominations';
 import { permNotLocated2e2cgTemplate } from './permutations/perm-not-located-2e2cg';
@@ -84,7 +88,11 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   'perm-hide-hero': permHideHeroTemplate,
   'perm-header-show-feedback': permHeaderShowFeedbackTemplate,
   'perm-header-show-help': permHeaderShowHelpTemplate,
-  'perm-hide-all-nominations': permHideAllNominationsTemplate
+  'perm-hide-all-nominations': permHideAllNominationsTemplate,
+  'perm-hide-if-missing-answers': permHideIfMissingAnswersTemplate,
+  'perm-hide-election-tags': permHideElectionTagsTemplate,
+  'perm-hide-category-tags': permHideCategoryTagsTemplate,
+  'perm-disable-allow-open': permDisableAllowOpenTemplate
 };
 
 /**
@@ -112,6 +120,7 @@ export { perm1e1cg1coTemplate } from './permutations/perm-1e1cg1co';
 export { perm2eAsymmetricTemplate } from './permutations/perm-2e-asymmetric';
 export { perm2eSharedTemplate } from './permutations/perm-2e-shared';
 export { permAnswersLockedTemplate } from './permutations/perm-answers-locked';
+export { permDisableAllowOpenTemplate } from './permutations/perm-disable-allow-open';
 export { permDisableCandidateAppTemplate } from './permutations/perm-disable-candidate-app';
 export { permDisableElection1coTemplate } from './permutations/perm-disable-election-1co';
 export { permDisableElection2coTemplate } from './permutations/perm-disable-election-2co';
@@ -120,7 +129,10 @@ export { permDisjoint1coTemplate } from './permutations/perm-disjoint-1co';
 export { permHeaderShowFeedbackTemplate } from './permutations/perm-header-show-feedback';
 export { permHeaderShowHelpTemplate } from './permutations/perm-header-show-help';
 export { permHideAllNominationsTemplate } from './permutations/perm-hide-all-nominations';
+export { permHideCategoryTagsTemplate } from './permutations/perm-hide-category-tags';
+export { permHideElectionTagsTemplate } from './permutations/perm-hide-election-tags';
 export { permHideHeroTemplate } from './permutations/perm-hide-hero';
+export { permHideIfMissingAnswersTemplate } from './permutations/perm-hide-if-missing-answers';
 export { permLocalisationPositiveTemplate } from './permutations/perm-localisation-positive';
 export { permMissingNominationsTemplate } from './permutations/perm-missing-nominations';
 export { permNotLocated2e2cgTemplate } from './permutations/perm-not-located-2e2cg';
