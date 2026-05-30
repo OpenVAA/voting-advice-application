@@ -1026,8 +1026,9 @@ export default defineConfig({
 
     // A1 — perm-answers-locked (TIR6:3-14). FULL 3-surface coverage per
     // 91-CONTEXT.md Group A item 1. A1 setup mints a per-perm storage
-    // state via candidateSessionMinter (D-91-PD-06) consumed by the
-    // authenticated sub-tests in perm-answers-locked.spec.ts.
+    // state via real forceRegister + UI login (D-91-PD-06 revised; Phase
+    // 91-05 CR-01 closure) consumed by the authenticated sub-tests in
+    // perm-answers-locked.spec.ts.
     {
       name: 'data-setup-perm-answers-locked',
       testMatch: /perm-answers-locked\.setup\.ts/,
@@ -1048,7 +1049,8 @@ export default defineConfig({
     },
 
     // A2 — perm-hide-hero (TIR6:24-32). Authenticated candidate via
-    // candidateSessionMinter (D-91-PD-06).
+    // real forceRegister + UI login (D-91-PD-06 revised; Phase 91-05
+    // CR-01 closure).
     {
       name: 'data-setup-perm-hide-hero',
       testMatch: /perm-hide-hero\.setup\.ts/,

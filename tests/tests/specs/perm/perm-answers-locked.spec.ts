@@ -5,7 +5,8 @@
  * §Open Questions Q2 RESOLVED:
  *   Surface 1 (UNAUTHENTICATED): /en/candidate login page renders the
  *     read-only login info via the login-answers-locked-info testid.
- *   Surface 2 (AUTHENTICATED via candidateSessionMinter / D-91-PD-06):
+ *   Surface 2 (AUTHENTICATED via real forceRegister + UI login,
+ *     D-91-PD-06 revised — Phase 91-05 CR-01 closure):
  *     /en/candidate/profile renders the candidate-answers-locked-warning
  *     Warning + every visible <input>/<textarea>/<select> is disabled.
  *   Surface 3 (AUTHENTICATED): /en/candidate/questions/[questionId]
