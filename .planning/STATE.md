@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
-status: verifying
-stopped_at: Phase 89 Plan 01 complete
-last_updated: "2026-05-29T18:40:00.456Z"
-last_activity: 2026-05-29
+status: gap_closure_planned
+stopped_at: Phase 90 verification — 2 BLOCKER gaps planned (90-05 + 90-06)
+last_updated: "2026-05-30T00:00:00.000Z"
+last_activity: 2026-05-30
 progress:
   total_phases: 15
   completed_phases: 14
-  total_plans: 44
+  total_plans: 46
   completed_plans: 43
   percent: 93
 ---
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 
 ## Current Position
 
-Phase: 90 (tir5-permutations-missing-nominations-warning-localisation-n) — EXECUTING
-Plan: 4 of 4
-Status: Phase complete — ready for verification
-Last activity: 2026-05-29
+Phase: 90 (tir5-permutations-missing-nominations-warning-localisation-n) — GAP CLOSURE
+Plan: 4 of 6 (Plans 90-05 + 90-06 added 2026-05-30 to close VERIFICATION Gap #1 + #2)
+Status: Gap closure plans ready — execute with /gsd:execute-phase 90 --gaps-only
+Last activity: 2026-05-30
 
 ## Performance Metrics
 

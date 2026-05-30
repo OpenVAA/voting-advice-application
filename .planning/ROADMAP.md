@@ -465,3 +465,14 @@ Plans:
 **Wave 3** *(blocked on 90-03)*
 
 - [x] 90-04-PLAN.md — perm-localisation-positive: template w/ [en,fi] i18n override + spec walking TIR5:52-95 (langSelector visibility + switch en↔fi + candidate-side Finnish authoring on q1/q3 + q2/q4 no-toggle + voter-side cross-check per D-90-07) + 3 playwright project entries (chain anchor: perm-localisation-negative). Consumes 90-03 fixtures + composition root.
+
+**Gap closure (post-verify, 2026-05-30):** 90-VERIFICATION.md returned `status: gaps_found` (17/19 truths verified; 2 BLOCKER gaps). Two atomic gap-closure plans added (single wave, both independent — parallel-safe via disjoint files_modified):
+
+**Wave 4 — Gap closure** *(parallel-safe; both plans independent of each other and of Waves 1-3 ship state)*
+
+- [ ] 90-05-PLAN.md — Close Gap #1 (BLOCKER, VERIFICATION truth #4 / REVIEW CR-01): wire `applyDynamicOverride(appSettingsData)` into `apps/frontend/src/routes/+layout.ts` `load()` after the Promise.all resolves and before return (guarded with `instanceof Error` for the .catch fallback path); extend `init.override.test.ts` with ≥2 contract test cases proving the +layout.ts integration shape. Unblocks I18N-RUNTIME-01 + PERM-L10N-NEG-01..03 + PERM-L10N-POS-01 + PERM-L10N-POS-03..07 + TIR5:28-50 + TIR5:52-95.
+- [ ] 90-06-PLAN.md — Close Gap #2 (BLOCKER, VERIFICATION truth #18 / REVIEW CR-02): make `langSelectorFixture.switchTo` URL regex baseLocale-aware (baseLocale `en` served from `/` per Paraglide `localizeUrlDefaultPattern`; non-base codes still mount under `/<locale>/`). Extract a pure `buildSwitchUrlRegex(locale)` helper using imported Paraglide `baseLocale` + `locales`; new colocated regex unit test (≥10 cases covering both branches). Drive-by closes REVIEW IN-02 (dead `displayNameFor` call). Unblocks PERM-L10N-POS-02 bidirectional switch.
+
+**Deferred behind Gap #1 (DO NOT replan now; re-evaluate after 90-05 ships per verifier note):** REVIEW CR-03 (positive spec voter cross-check fragility — masked by Gap #1 hollow override path; re-assess after the runtime filter engages).
+
+**Phase 90 status row** *(append to status table)*: `| 90. TIR5 Permutations (missing-nominations + localisation neg/pos) + Stage A runtime locale override | v2.10 | 4/6 | In progress (gap closure) | - |`
