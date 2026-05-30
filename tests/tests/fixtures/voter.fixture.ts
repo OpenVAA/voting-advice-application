@@ -1,4 +1,9 @@
 /**
+ * @deprecated — Phase 91. Migrate consumers to tests/tests/fixtures/voter-mega.fixture.ts answeredVoterPage.
+ * Deletion scheduled v2.11+ legacy-retirement phase after all consumers migrate.
+ */
+
+/**
  * Voter answer fixture for E2E tests.
  *
  * Provides an `answeredVoterPage` that navigates the voter journey

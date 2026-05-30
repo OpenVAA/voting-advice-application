@@ -5,21 +5,36 @@
  *   - "Make the answering func robust so that the answer mode is 'min'
  *     or 'max' (first or last option, or min/max in numbers)"
  *
+ * Phase 91 Plan 04 extension: `locatedVoterPage` fixture variant added to
+ * support the a11y-smoke questions-route scan (D-91-RS-02b). The walk diverges
+ * from `answeredVoterPage` AT the /questions intro page — `locatedVoterPage`
+ * STOPS at the intro page (DOES NOT answer questions; DOES NOT proceed to
+ * /results), while `answeredVoterPage` continues to answer + advance to
+ * /results.
+ *
  * SIBLING (not replacement) to the existing tests/tests/fixtures/voter.fixture.ts.
- * The legacy fixture is consumed by ~30+ specs and is preserved per the
+ * The legacy fixture is consumed by ~12 specs and is preserved per the
  * parallel-landing contract in 88-CONTEXT.md §"Parallel-setup principle".
- * Future plans (88-02+) decide whether to retire the legacy fixture once
- * its consumers migrate or absorb into the mega-journey.
+ * Phase 91 Plan 04 marks the legacy fixture with a JSDoc `@deprecated` banner;
+ * deletion is deferred to v2.11+ legacy-retirement phase after all consumers
+ * migrate (D-91-RS-03 / D-91-RS-04).
  *
  * What this fixture exposes:
  *   - `answerMode: 'min' | 'max'` — which extreme to pick on each
  *     opinion question. `'min'` → first option / min value /
  *     `false`-boolean; `'max'` → last option / max value /
  *     `true`-boolean.
+ *   - `answerCount?: number` — optional cap on total answered questions
+ *     (partial-answer scenarios).
  *   - `answeredVoterPage: Page` — page navigated through the new base
  *     dataset's full intro flow (Home → Intro → election-select →
  *     constituency-select → questions-intro → category-intros +
  *     questions → results).
+ *   - `locatedVoterPage: Page` — page navigated through Home → Intro →
+ *     election-select → constituency-select and PARKED ON the /questions
+ *     intro page. Located (electionId + constituencyId resolved in voter
+ *     context) but NOT answered. Consumed by a11y-smoke's `questions`
+ *     route scan per D-91-RS-02b (Phase 91 Plan 04).
  *
  * This fixture is wired against the new BUILT_IN `baseV1` dataset
  * (multi-election + multi-constituency hierarchy). The legacy
@@ -31,6 +46,15 @@
  * intermediate checkpoints; `answeredVoterPage` is intended for tests
  * that just need a results-landing fixture and don't care about the
  * intermediate steps.
+ *
+ * Implementation note (Phase 91 Plan 04): the two-fixture split was chosen
+ * over an option-fixture `stopBeforeAnswering?: boolean` per RESEARCH
+ * §"A11Y Route Refactor + locatedVoterPage Fixture Extension" — keeps
+ * each fixture's invariant unambiguous at the call site, mirrors the
+ * existing `answeredVoterPage` declaration shape. The shared traversal
+ * code lives in `walkUntilQuestionsIntro` (Home → constituencies →
+ * /questions intro page); `answeredVoterPage` then invokes
+ * `answerAndAdvanceToResults` on top.
  */
 
 import { test as base } from '@playwright/test';
@@ -49,24 +73,26 @@ type VoterMegaFixtureOptions = {
 type VoterMegaFixtures = VoterMegaFixtureOptions & {
   /** A page on /results with all reachable opinion questions answered per answerMode. */
   answeredVoterPage: import('@playwright/test').Page;
+  /**
+   * A page parked ON the /questions intro page (located but NOT answered).
+   * Walks Home → Intro → Elections → Constituencies → /questions intro and
+   * STOPS. Consumed by a11y-smoke for the questions-route scan
+   * (Phase 91 Plan 04 / D-91-RS-02b).
+   */
+  locatedVoterPage: import('@playwright/test').Page;
 };
 
 /**
- * Walk the voter through the full new-base-template flow until the
- * /results page is reached. Each opinion question is answered per the
- * `answerMode`:
- *   - Likert (5/4/7): 'min' → first option; 'max' → last option.
- *   - singleChoiceCategorical: 'min' → first option; 'max' → last option.
- *   - Boolean: 'min' → 'No' (index 0); 'max' → 'Yes' (index 1).
- *   - Number (NOT expected in opinion questions per refactor-doc:38-44,
- *     but the helper is future-proof): 'min' → first option index 0;
- *     'max' → last option index (nth(-1)).
+ * Shared traversal: walk Home → Intro → Elections → Constituencies and
+ * land ON the /questions intro page. Used by BOTH `answeredVoterPage`
+ * (which continues to answer + advance to /results) AND `locatedVoterPage`
+ * (which stops here per D-91-RS-02b).
+ *
+ * Post-condition: page is on the /questions intro page; the
+ * `voter-questions-start` button is visible AND has NOT been clicked.
+ * Voter context has electionId + constituencyId resolved.
  */
-async function walkVoterMegaJourney(
-  page: import('@playwright/test').Page,
-  answerMode: AnswerMode,
-  answerCount?: number
-): Promise<void> {
+async function walkUntilQuestionsIntro(page: import('@playwright/test').Page): Promise<void> {
   // 1. Home page → start.
   await page.goto(buildRoute({ route: 'Home', locale: 'en' }));
   const homeStart = page.getByTestId(testIds.voter.home.startButton);
@@ -111,7 +137,33 @@ async function walkVoterMegaJourney(
     await constituenciesContinue.click();
   }
 
-  // 5. Questions intro page: continue.
+  // 5. Park on /questions intro — wait for the start button to be visible.
+  //    Do NOT click it; that's the divergence point between locatedVoterPage
+  //    (stops here) and answeredVoterPage (continues to answer-loop).
+  const questionsStart = page.getByTestId(testIds.voter.questions.startButton);
+  await questionsStart.waitFor({ state: 'visible', timeout: 10_000 });
+}
+
+/**
+ * Continuation of the walk from the /questions intro page through the
+ * answer-loop to /results. Pre-condition: page is on the /questions intro
+ * page with `voter-questions-start` visible (i.e. `walkUntilQuestionsIntro`
+ * has run).
+ *
+ * Each opinion question is answered per the `answerMode`:
+ *   - Likert (5/4/7): 'min' → first option; 'max' → last option.
+ *   - singleChoiceCategorical: 'min' → first option; 'max' → last option.
+ *   - Boolean: 'min' → 'No' (index 0); 'max' → 'Yes' (index 1).
+ *   - Number (NOT expected in opinion questions per refactor-doc:38-44,
+ *     but the helper is future-proof): 'min' → first option index 0;
+ *     'max' → last option index (nth(-1)).
+ */
+async function answerAndAdvanceToResults(
+  page: import('@playwright/test').Page,
+  answerMode: AnswerMode,
+  answerCount?: number
+): Promise<void> {
+  // 5b. Click questions-intro start.
   const questionsStart = page.getByTestId(testIds.voter.questions.startButton);
   if (await questionsStart.isVisible({ timeout: 5_000 }).catch(() => false)) {
     await questionsStart.click();
@@ -174,12 +226,37 @@ async function walkVoterMegaJourney(
   await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 15_000 });
 }
 
+/**
+ * @deprecated Use `walkUntilQuestionsIntro` + `answerAndAdvanceToResults`
+ *   directly. Retained as a thin wrapper for backward-compat with any
+ *   external consumer that imported this symbol. Internal fixtures below
+ *   call the two helpers directly.
+ */
+async function walkVoterMegaJourney(
+  page: import('@playwright/test').Page,
+  answerMode: AnswerMode,
+  answerCount?: number
+): Promise<void> {
+  await walkUntilQuestionsIntro(page);
+  await answerAndAdvanceToResults(page, answerMode, answerCount);
+}
+
 export const voterMegaTest = base.extend<VoterMegaFixtures>({
   answerMode: ['max', { option: true }],
   answerCount: [undefined, { option: true }],
 
   answeredVoterPage: async ({ page, answerMode, answerCount }, use) => {
-    await walkVoterMegaJourney(page, answerMode, answerCount);
+    await walkUntilQuestionsIntro(page);
+    await answerAndAdvanceToResults(page, answerMode, answerCount);
+    await use(page);
+  },
+
+  locatedVoterPage: async ({ page }, use) => {
+    await walkUntilQuestionsIntro(page);
     await use(page);
   }
 });
+
+// Internal helper exported for tests that need to compose the walk manually
+// (e.g. spec-level intermediate checkpoints between Home and /questions intro).
+export { walkUntilQuestionsIntro, answerAndAdvanceToResults, walkVoterMegaJourney };
