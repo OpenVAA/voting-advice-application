@@ -443,36 +443,27 @@ Plans:
 
 **UI hint**: no (test-refactor + dataset mutation phase; no visual redesign)
 
-### Phase 90: TIR5 permutations — missing-nominations warning + localisation negative/positive
+### Phase 90: TIR5 permutations — missing-nominations + localisation-positive (3-locale base)
 
-Apply Phase 89's strict-fixtures, [id]-desc, serial-only, minimal-data permutation pattern (per TEST-INVENTORY-REFACTOR-5.md at repo root) to add 3 new candidate-app permutation specs: (1) missing-nominations warning (2 elections, shared CG with 1 CO, 1 org, 1 candidate, 1 nomination only in el-1 — both elections selected, expect warning for el-2); (2) localisation negative (1 supportedLanguage, 4 questions with disableMultilingual variants — expect no language selector, no translation-options surface); (3) localisation positive (2 supportedLanguages en+fi, same dataset — expect language selector, switch en↔fi, add Finnish answers, verify voter-side detail panel reflects per-locale answers). Adds lang-selector fixture + multilingual-text-field fixture. Depends on Phase 89. UI hint: no.
+Apply Phase 89's strict-fixtures, [id]-desc, serial-only, minimal-data permutation pattern (per TEST-INVENTORY-REFACTOR-5.md at repo root) to add 2 new candidate-app permutation specs: (1) missing-nominations warning (2 elections, shared CG with 1 CO, 1 org, 1 candidate, 1 nomination only in el-1 — both elections selected, expect warning for el-2); (2) localisation positive (3 user-facing locales en/fi/sv via the reduced staticSettings base — expect language selector, switch en↔fi, add Finnish answers, verify voter-side detail panel reflects per-locale answers). Adds lang-selector fixture + multilingual-text-field fixture. Reduces `staticSettings.supportedLocales` from 4 to 3 (drop `da`). Depends on Phase 89. UI hint: no.
 
-**Goal:** Apply Phase 89-04's strict-fixtures + minimal-data perm pattern to add 3 TIR5 permutation chains (missing-nominations / localisation-negative / localisation-positive) AND close the runtime-locale-override PRODUCT-GAP (Phase 74 D-04 carry-forward) by extending DynamicSettings with an optional `i18n.supportedLocales` override threaded through the frontend i18n init. The override unblocks single-locale permutation testing (the negative perm) without mutating Paraglide compile-time bundles. Each perm gets its own dev-seed template + setup/teardown wrapper + Playwright project triplet. Adds 2 new function-fixtures (langSelector + multilingualTextField) + 1 perm-l10n composition root sibling to candidate-mega.ts + 2 new testids on LanguageSelection.svelte / Input.svelte.
-**Requirements**: I18N-RUNTIME-01 (Stage A runtime locale override, D-90-10), PERM-MN-01 (TIR5:15-26 missing-nominations modal), PERM-L10N-NEG-01..03 (TIR5:28-50 single-locale assertions), PERM-L10N-POS-01..07 (TIR5:52-95 dual-locale walk + voter-side cross-check), FIX-LANG-SEL-01 + FIX-ML-TEXT-01 (new function-fixtures per D-90-04)
+**Goal:** Apply Phase 89-04's strict-fixtures + minimal-data perm pattern to add 2 TIR5 permutation chains (missing-nominations / localisation-positive) AND retarget the canonical user-facing locale base from 4 (en/fi/sv/da) to 3 (en/fi/sv) by editing `staticSettings.supportedLocales` directly — no runtime override mechanism. Each perm gets its own dev-seed template + setup/teardown wrapper + Playwright project triplet. Adds 2 new function-fixtures (langSelector + multilingualTextField) + 1 perm-l10n composition root sibling to candidate-mega.ts + 2 new testids on LanguageSelection.svelte / Input.svelte. The single-locale variant (perm-localisation-negative) + the runtime override path are explicitly **deferred** to a future Stage B i18n phase (see `.planning/todos/pending/2026-05-11-e2e-01-single-locale-runtime-override.md`), gated on first resolving the Paraglide compile-time `baseLocale` vs runtime `defaultLocale` divergence (see `.planning/todos/pending/2026-05-30-paraglide-baselocale-vs-runtime-default-divergence.md`).
+
+**Requirements**: PERM-MN-01 (TIR5:15-26 missing-nominations modal), PERM-L10N-POS-01..07 (TIR5:52-95 multi-locale walk + voter-side cross-check, adapted: 3-locale base instead of [en, fi] override), FIX-LANG-SEL-01 + FIX-ML-TEXT-01 (new function-fixtures per D-90-04), STATIC-LOCALES-3 (reduce staticSettings.supportedLocales from 4 to 3). I18N-RUNTIME-01 + PERM-L10N-NEG-01..03 deferred to Stage B i18n phase.
+
 **Depends on:** Phase 89
-**Plans:** 4/4 plans complete
+
+**Plans:** 3/4 plans complete
 
 Plans:
 **Wave 1**
 
-- [x] 90-01-PLAN.md — Stage A: runtime supportedLocales override wiring (extend DynamicSettings.i18n.supportedLocales? + thread through i18n init.ts override-or-fallback resolution + filter exported `locales` array; preserves Paraglide compile-time bundles). Code-only plan; no test perms.
-- [x] 90-02-PLAN.md — perm-missing-nominations: 2-election asymmetric-nominations template + setup/teardown + spec + 3 playwright project entries (chain anchor: perm-per-app-notifications from 89-04). Independent of 90-01.
+- [x] 90-02-PLAN.md — perm-missing-nominations: 2-election asymmetric-nominations template + setup/teardown + spec + 3 playwright project entries (chain anchor: perm-per-app-notifications from 89-04). Independent of other plans.
 
-**Wave 2** *(blocked on 90-01 + 90-02)*
+**Wave 2** *(blocked on 90-02)*
 
-- [x] 90-03-PLAN.md — perm-localisation-negative: template w/ single-locale i18n override (consumes 90-01 surface) + 2 new function-fixtures (langSelectorFixture + multilingualTextFieldFixture) + perm-l10n composition root + 2 testid additions on LanguageSelection/Input + spec asserting no-langSelector + no-translation-toggles + 3 playwright project entries (chain anchor: perm-missing-nominations).
+- [x] 90-04-PLAN.md — perm-localisation-positive: template + spec walking TIR5:52-95 against the 3-locale staticSettings base (langSelector visibility with en/fi/sv + switch en↔fi + candidate-side Finnish authoring on q1/q3 + q2/q4 no-toggle + voter-side cross-check per D-90-07) + 3 playwright project entries (chain anchor: perm-missing-nominations). Introduces langSelector + multilingualTextField fixtures + perm-l10n composition root + 2 testids on LanguageSelection.svelte / Input.svelte. Inline fix to langSelector.switchTo URL regex (baseLocale-aware for `en` served from `/`).
 
-**Wave 3** *(blocked on 90-03)*
+**Reversal history (2026-05-30):** The original Phase 90 attempted a Stage A runtime `DynamicSettings.i18n.supportedLocales` override (Plans 90-01 + 90-05) + single-locale perm-localisation-negative (Plan 90-03) + gap-closure regex helper extraction (Plan 90-06). The runtime override surface shipped to verification, where `gaps_found (17/19)` surfaced 2 BLOCKER gaps; investigation of the deeper Paraglide compile-time `baseLocale` vs runtime `defaultLocale` divergence revealed the override approach as structurally unstable. The full runtime-override stack was reverted; the **single-locale perm requirement** + **recoverable Stage A implementation snippets** are preserved in `.planning/todos/pending/2026-05-11-e2e-01-single-locale-runtime-override.md` for the future Stage B revival.
 
-- [x] 90-04-PLAN.md — perm-localisation-positive: template w/ [en,fi] i18n override + spec walking TIR5:52-95 (langSelector visibility + switch en↔fi + candidate-side Finnish authoring on q1/q3 + q2/q4 no-toggle + voter-side cross-check per D-90-07) + 3 playwright project entries (chain anchor: perm-localisation-negative). Consumes 90-03 fixtures + composition root.
-
-**Gap closure (post-verify, 2026-05-30):** 90-VERIFICATION.md returned `status: gaps_found` (17/19 truths verified; 2 BLOCKER gaps). Two atomic gap-closure plans added (single wave, both independent — parallel-safe via disjoint files_modified):
-
-**Wave 4 — Gap closure** *(parallel-safe; both plans independent of each other and of Waves 1-3 ship state)*
-
-- [ ] 90-05-PLAN.md — Close Gap #1 (BLOCKER, VERIFICATION truth #4 / REVIEW CR-01): wire `applyDynamicOverride(appSettingsData)` into `apps/frontend/src/routes/+layout.ts` `load()` after the Promise.all resolves and before return (guarded with `instanceof Error` for the .catch fallback path); extend `init.override.test.ts` with ≥2 contract test cases proving the +layout.ts integration shape. Unblocks I18N-RUNTIME-01 + PERM-L10N-NEG-01..03 + PERM-L10N-POS-01 + PERM-L10N-POS-03..07 + TIR5:28-50 + TIR5:52-95.
-- [ ] 90-06-PLAN.md — Close Gap #2 (BLOCKER, VERIFICATION truth #18 / REVIEW CR-02): make `langSelectorFixture.switchTo` URL regex baseLocale-aware (baseLocale `en` served from `/` per Paraglide `localizeUrlDefaultPattern`; non-base codes still mount under `/<locale>/`). Extract a pure `buildSwitchUrlRegex(locale)` helper using imported Paraglide `baseLocale` + `locales`; new colocated regex unit test (≥10 cases covering both branches). Drive-by closes REVIEW IN-02 (dead `displayNameFor` call). Unblocks PERM-L10N-POS-02 bidirectional switch.
-
-**Deferred behind Gap #1 (DO NOT replan now; re-evaluate after 90-05 ships per verifier note):** REVIEW CR-03 (positive spec voter cross-check fragility — masked by Gap #1 hollow override path; re-assess after the runtime filter engages).
-
-**Phase 90 status row** *(append to status table)*: `| 90. TIR5 Permutations (missing-nominations + localisation neg/pos) + Stage A runtime locale override | v2.10 | 4/6 | In progress (gap closure) | - |`
+**Phase 90 status row** *(append to status table)*: `| 90. TIR5 Permutations (missing-nominations + localisation-positive) + 3-locale staticSettings base | v2.10 | 2/2 | Complete | 2026-05-30 |`

@@ -1,49 +1,52 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-30T10:20:49.339Z",
+  "timestamp": "2026-05-30T10:35:00.000Z",
   "phase": "90",
   "phase_name": "tir5-permutations-missing-nominations-warning-localisation-n",
   "phase_dir": ".planning/phases/90-tir5-permutations-missing-nominations-warning-localisation-n",
-  "plan": 5,
-  "task": 0,
-  "total_tasks": 6,
-  "status": "paused",
+  "plan": null,
+  "task": null,
+  "total_tasks": 0,
+  "status": "complete",
   "completed_tasks": [
-    {"id": "90-01", "name": "Stage A DynamicSettings.i18n.supportedLocales runtime override", "status": "done", "commit": "cab07b14a"},
-    {"id": "90-02", "name": "perm-missing-nominations permutation (dev-seed + setup/teardown + spec + playwright triplet)", "status": "done", "commit": "7ee5ad1d8"},
-    {"id": "90-03", "name": "perm-localisation-negative permutation (single-locale + langSelector hidden + multilingual surfaces suppressed)", "status": "done", "commit": "3881f4bee"},
-    {"id": "90-04", "name": "perm-localisation-positive permutation (dual-locale en/fi walk + voter cross-check)", "status": "done", "commit": "9b0cfb834"}
+    {"id": "90-02", "name": "perm-missing-nominations permutation", "status": "done", "commit": "7ee5ad1d8"},
+    {"id": "90-04", "name": "perm-localisation-positive (rewritten against 3-locale base)", "status": "done", "commit": "1578ce8e4"},
+    {"id": "STATIC-LOCALES-3", "name": "Drop da from staticSettings + dev-seed (en, fi, sv canonical)", "status": "done", "commit": "8faa9b08c"}
   ],
-  "remaining_tasks": [
-    {"id": "90-05", "name": "Gap #1 / CR-01: wire applyDynamicOverride(appSettingsData) into apps/frontend/src/routes/+layout.ts + add layout-wiring.integration.test.ts (true RED to GREEN)", "status": "not_started"},
-    {"id": "90-06", "name": "Gap #2 / CR-02: baseLocale-aware langSelector.switchTo regex — extract buildLocaleSwitchUrlRegex.ts helper + vitest unit tests + fixture drift-contract test", "status": "not_started"}
-  ],
+  "remaining_tasks": [],
+  "reverted": {
+    "rationale": "User-directed reversal on 2026-05-30 — i18n runtime override path is structurally unstable due to Paraglide compile-time baseLocale vs runtime defaultLocale divergence. Stage A scope collapsed; single-locale perm + override implementation preserved in i18n stage-b todo for future revival.",
+    "plans": [
+      {"id": "90-01", "name": "Stage A DynamicSettings.i18n.supportedLocales runtime override", "originally_shipped": "cab07b14a", "reverted_in": "1578ce8e4"},
+      {"id": "90-03", "name": "perm-localisation-negative (single-locale)", "originally_shipped": "3881f4bee", "reverted_in": "1578ce8e4"},
+      {"id": "90-05", "name": "Gap #1 closure (applyDynamicOverride wiring) — planned, never executed", "planned_in": "2e06027b2", "reverted_in": "(this session)"},
+      {"id": "90-06", "name": "Gap #2 closure (langSelector baseLocale-aware regex helper) — planned, never executed", "planned_in": "2e06027b2", "reverted_in": "(this session — regex fixed inline in fixture instead)"}
+    ]
+  },
   "blockers": [
     {"description": "Repo pre-commit hook is broken — references sibling voting-advice-application repo paths that don't exist here. All commits must use `git -c core.hooksPath=/dev/null commit ...` per project memory `project_gsd_repo_hook_workaround.md`.", "type": "external", "workaround": "Prepend `git -c core.hooksPath=/dev/null` to every `git commit` invocation"},
-    {"description": "Runtime E2E for perm-* projects is operator-deferred per documented v2.10 environment cascade — vite dev returns 500 in headless agent env. Phase 90 gates are static (typecheck + lint + playwright list + vitest unit). Runtime E2E confirmation requires manual operator runbook execution.", "type": "external", "workaround": "Static gates suffice for plan acceptance; surface runtime E2E status in operator handoff"}
+    {"description": "Runtime E2E for perm-* projects is operator-deferred per documented v2.10 environment cascade — vite dev returns 500 in headless agent env. Phase 90 gates are static (typecheck + lint + playwright list + vitest unit).", "type": "external", "workaround": "Static gates suffice for plan acceptance; surface runtime E2E status in operator handoff"}
   ],
   "human_actions_pending": [
-    {"action": "Run `/gsd:execute-phase 90 --gaps-only` to ship Plans 90-05 + 90-06", "context": "Both plans verified by plan-checker iteration 3; wave 1 parallel-safe (disjoint files_modified)", "blocking": false},
-    {"action": "After gap closure ships, re-run gsd-verifier on Phase 90 — expect status: passed (19/19) modulo operator-deferred runtime E2E", "context": "Verifier's iteration 1 returned gaps_found with truths 4 + 18 failing; both should flip to verified once 90-05/06 land", "blocking": false},
-    {"action": "Operator runbook for runtime perm-* E2E execution (3-run cold-start identity gate) — independent of GSD agent workflow", "context": "v2.10 environment cascade carry-forward; documented in 90-02/03/04 SUMMARYs", "blocking": false}
+    {"action": "Run operator runbook for runtime perm-* E2E execution (3-run cold-start identity gate)", "context": "Independent of GSD agent workflow; verify perm-missing-nominations + perm-localisation-positive against live vite-dev + Supabase", "blocking": false}
   ],
   "decisions": [
-    {"decision": "Stage A applyDynamicOverride wiring is the UI-gate path, not bundle tree-shaking", "rationale": "D-90-10 chose runtime override over per-tenant builds to preserve forward-compat and avoid N-build complexity. All 7 Paraglide locale variants always ship in the JS bundle — locale subset only affects what the user-facing selector shows and what multilingual authoring surfaces render. Trade-off documented in todo 2026-05-30-vite-plugin-paraglide-tree-shake-translations.md.", "phase": "90"},
-    {"decision": "Gap-closure plans 90-05 + 90-06 both at wave: 1, depends_on: []", "rationale": "Disjoint files_modified (90-05 = +layout.ts + new integration test; 90-06 = fixture + new helper + new unit test). Parallel-safe under --gaps-only execution.", "phase": "90"},
-    {"decision": "90-05 Task 1 uses Option B (vitest-only integration test) not Option A (component-render)", "rationale": "@testing-library/svelte is NOT in apps/frontend/package.json. Vi.mock + dynamic import of +layout.ts load() is a true RED test (asserts locales.length === 1 — fails today at 7, passes after Task 2 wiring lands).", "phase": "90"},
-    {"decision": "90-06 helper colocates: shared module in apps/frontend/src/lib/i18n/buildLocaleSwitchUrlRegex.ts + fixture-local copy in tests/tests/fixtures/candidate/langSelectorFixture.fixture.ts", "rationale": "tests/ workspace is Playwright-only — no vitest config, no package.json, no *.test.ts files. Drift-contract test reads fixture source via fileURLToPath(new URL(..., import.meta.url)) with 6 ../ ESM-native to assert the two copies share identical regex source strings.", "phase": "90"},
-    {"decision": "CR-03 (positive spec voter cross-check fragility) explicitly deferred behind Gap #1", "rationale": "Verifier note: 'If locales filter never engages, the Finnish-answer cross-check can't even be reached, so CR-03's save-chain risk is masked by the upstream gap. After Gap #1 closes, CR-03 should be re-evaluated.'", "phase": "90"}
+    {"decision": "Stage A runtime locale override REVERTED — i18n is unstable due to baseLocale-vs-defaultLocale divergence", "rationale": "Paraglide's URL pattern table bakes baseLocale at compile time (en → no prefix; non-base → /<locale>/). Runtime override of DynamicSettings.i18n.supportedLocales can produce silent UI/state divergence (tenant marks fi as default, English UI still served on /). Reversal trades temporary perm scope for foundational stability.", "phase": "90"},
+    {"decision": "staticSettings.supportedLocales reduced from [en, fi, sv, da] to [en, fi, sv] (canonical 3-locale base)", "rationale": "All new voter/candidate/perm tests inherit this directly — no runtime override needed. Drops the recent Danish addition; matches the original OpenVAA Finnish-Swedish-English core. Drives dev-seed LOCALES + candidate-fan-out block size (327/3=109) updates in lockstep.", "phase": "90"},
+    {"decision": "Phase 90 final scope: 2 plans (90-02 perm-missing-nominations + 90-04 perm-localisation-positive against 3-locale static base) + 1 base-config change", "rationale": "Single-locale perm + runtime override moved to future Stage B i18n phase. Reduced scope shipped and verified."},
+    {"decision": "Surviving from the reverted work: langSelectorFixture + multilingualTextFieldFixture + perm-l10n composition root + 2 testids", "rationale": "These fixtures are correct for the rewritten 90-04 spec. Reusing them avoided re-authoring infrastructure that already passed plan-checker."},
+    {"decision": "langSelector.switchTo regex fix applied INLINE to the fixture (not via helper extraction)", "rationale": "Original Plan 90-06 proposed extracting buildLocaleSwitchUrlRegex into a shared frontend module + drift-contract test. For the reduced Phase 90 scope, inline regex fix in the fixture is sufficient. Helper extraction can land in a future i18n phase if needed."}
   ],
   "uncommitted_files": [
     {"path": ".planning/phases/89-continuing-test-refactoring-implement-the-new-candidate-jour/89-02-PLAN.md", "status": "M", "scope": "PRE-EXISTING — unrelated to phase 90"},
     {"path": "apps/frontend/src/lib/components/entityFilters/enumerated/EnumeratedEntityFilter.svelte", "status": "M", "scope": "PRE-EXISTING — unrelated to phase 90"},
     {"path": "apps/frontend/tsconfig.tsbuildinfo", "status": "M", "scope": "PRE-EXISTING build artifact"},
-    {"path": "packages/dev-seed/src/templates/baseV1.ts", "status": "M", "scope": "PRE-EXISTING — uncommitted before phase 90; causes 1 dev-seed test failure (questions.fixed.length === 18 expected) that is NOT a phase-90 regression"},
+    {"path": "packages/dev-seed/src/templates/baseV1.ts", "status": "M", "scope": "PRE-EXISTING — uncommitted before phase 90; causes 1 dev-seed test failure (questions.fixed.length === 18 expected, got 25) that is NOT a phase-90 regression"},
     {"path": "tests/tests/specs/voter/voter-mega-journey.spec.ts", "status": "M", "scope": "PRE-EXISTING — unrelated to phase 90"},
     {"path": "TEST-INVENTORY-REFACTOR-{4,5,6}.md", "status": "??", "scope": "PRE-EXISTING — untracked inventory files"},
     {"path": "apps/frontend/static/images/e2e-test-image-1.jpg", "status": "??", "scope": "PRE-EXISTING — unrelated to phase 90"},
     {"path": ".planning/phases/88-*", "status": "??", "scope": "PRE-EXISTING — phase 88 deferred items / verify probes"}
   ],
-  "next_action": "/clear, then `/gsd:execute-phase 90 --gaps-only` to ship Plans 90-05 + 90-06 in parallel Wave 1",
-  "context_notes": "Phase 90 main execution shipped 4/4 plans cleanly (13 commits). Code review surfaced 3 BLOCKERs; verifier promoted 2 to gaps (Gap #1 = applyDynamicOverride has no production caller; Gap #2 = langSelector switchTo regex hangs on baseLocale). Gap closure planned through plan-checker iteration 3: PASSED. Both gap plans ready to execute. Phase will be marked complete only after 90-05/06 ship AND re-verification returns status: passed. No autonomous chain — user invokes manually."
+  "next_action": "Phase 90 complete. No autonomous chain. User may proceed to a new milestone or address the pre-existing baseV1.ts issue.",
+  "context_notes": "Phase 90 went through an unusual lifecycle: shipped 4 plans → verifier flagged 2 BLOCKER gaps → planned 2 gap-closure plans (90-05/06 through 3 plan-checker iterations) → user paused → user identified i18n unstable due to Paraglide baseLocale divergence → user directed full revert of Stage A + perm-localisation-negative + gap plans → retargeted at 3-locale staticSettings base. Final shipped scope: perm-missing-nominations (unchanged) + perm-localisation-positive (rewritten) + staticSettings reduction. Recoverable Stage A code + single-locale perm requirement preserved in i18n stage-b todo."
 }
