@@ -104,46 +104,6 @@ export type DynamicSettings = {
     imgPosition?: string;
   };
   /**
-   * Optional runtime overrides for the i18n / locale surface.
-   *
-   * Phase 90 Plan 01 (Stage A — D-90-10 / TIR5:28-50): when
-   * `i18n.supportedLocales` is present, it REPLACES
-   * `staticSettings.supportedLocales` at runtime. The Paraglide
-   * COMPILE-TIME `locales` superset (en/fi/sv/da/et/fr/lb) is preserved —
-   * translation bundles remain available for forward compatibility; the
-   * override only DROPS user-facing locales. When absent, behaviour is
-   * unchanged (baseV1 / e2e / 89-04 perm templates require no migration).
-   *
-   * Mirror of `StaticSettings.supportedLocales` shape (code / name /
-   * isDefault?), wrapped in an optional `i18n` namespace to allow future
-   * i18n subkeys without renaming.
-   */
-  readonly i18n?: {
-    /**
-     * Runtime override for the supported-locales list. When non-empty,
-     * replaces `staticSettings.supportedLocales` at app boot. Each entry
-     * must be one of the Paraglide compile-time locale codes (otherwise
-     * the locale resolves to a missing translation bundle).
-     */
-    readonly supportedLocales?: ReadonlyArray<{
-      /**
-       * The ISO 639 locale code, e.g. 'en' or 'es-CO'. MUST be present in
-       * the Paraglide compile-time locales array.
-       */
-      readonly code: string;
-      /**
-       * The name of the language in the language itself, e.g. 'English'
-       * or 'Suomi'. Mirrors `StaticSettings.supportedLocales[].name`.
-       */
-      readonly name: string;
-      /**
-       * Whether the language is the default for the application. Mark
-       * exactly one as default; if none, the first entry is used.
-       */
-      readonly isDefault?: boolean;
-    }>;
-  };
-  /**
    * Settings controlling which entities are shown in the app.
    */
   entities: {

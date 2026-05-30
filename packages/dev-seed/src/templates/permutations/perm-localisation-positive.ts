@@ -1,12 +1,10 @@
 /**
  * perm-localisation-positive minimal-data template — Phase 90 Plan 04.
  *
- * Sibling of perm-localisation-negative.ts (Plan 90-03): identical dataset
- * shape and structural decisions, differing ONLY in the
- * `i18n.supportedLocales` runtime override:
- *
- *   - Plan 90-03 (NEGATIVE) → supportedLocales = [en]      (1 entry)
- *   - Plan 90-04 (POSITIVE) → supportedLocales = [en, fi]  (2 entries) ← THIS
+ * Operates against the 3-locale `staticSettings.supportedLocales` base
+ * (`[en, fi, sv]`) directly — NO runtime override. The single-locale variant
+ * (perm-localisation-negative) was deferred to a future Stage B i18n phase
+ * (see `.planning/todos/pending/2026-05-11-e2e-01-single-locale-runtime-override.md`).
  *
  * Topology: 1 election, 1 CG with 1 CO, 1 organisation, 1 candidate, 1
  * nomination. 2 question categories (qc-info + qc-opin), each carrying 2
@@ -19,30 +17,26 @@
  *
  * The candidate has terms_of_use_accepted set + ENGLISH-ONLY seeded answers
  * to all 4 questions. Finnish answers are AUTHORED BY THE SPEC at runtime via
- * the multilingualTextField fixture's setLocaleValue('fi', ...) calls
- * (Plan 90-04 Task 2 walks PERM-L10N-POS-04 and PERM-L10N-POS-06).
+ * the multilingualTextField fixture's setLocaleValue('fi', ...) calls.
  *
- * Authoritative spec: TEST-INVENTORY-REFACTOR-5.md:52-95.
+ * Authoritative spec: TEST-INVENTORY-REFACTOR-5.md:52-95 (adapted: assertions
+ * expect 3 user-facing locales en/fi/sv instead of the original 2-locale
+ * override scenario; the en↔fi authoring walk is structurally unchanged).
  *
  * Prefix discipline: `externalIdPrefix: 'e2e-perm-l10n-pos-'` per D-90-01
- * (distinct from the other 89-04 + 90 perm templates — in particular
- * distinct from Plan 90-03's `'e2e-perm-l10n-neg-'`).
+ * (distinct from the other 89-04 + 90 perm templates).
  *
- * Settings (STAGE A DEPENDENCY — Plan 90-01): the `i18n.supportedLocales`
- * override key was added to DynamicSettings by Plan 90-01 and threaded through
- * the i18n init module via `applyDynamicOverride()`. With a 2-entry array
- * here, the runtime `locales` export filters Paraglide's compile-time
- * superset down to `[en, fi]`, showing the LanguageSelection NavGroup
- * (`locales.length > 1` gate at LanguageSelection.svelte:32) with exactly
- * two locales AND keeping the translation-options toggle visible on every
+ * Settings: APP_SETTINGS spreads MINIMAL_BASE_APP_SETTINGS verbatim — no
+ * i18n override. The runtime `locales` export from `$lib/i18n` resolves to
+ * the staticSettings list (en/fi/sv), the LanguageSelection NavGroup
+ * (`locales.length > 1` gate at LanguageSelection.svelte:32) renders with
+ * three locales, and the translation-options toggle stays visible on every
  * multilingual Input (`multilingual && locales.length > 1` gate at
  * Input.svelte:646,653) for q1 (text) and q3-comment (open-answer textarea).
  *
  * q2 + q4 carry `customData.disableMultilingual = true` as a per-question
  * opt-out: even with locales.length > 1, the multilingual toggle is
- * suppressed on those two questions (QuestionInput.svelte:72-77). This
- * exercises PERM-L10N-POS-05 (q2 no toggle) and the q4 negative branch
- * inside PERM-L10N-POS-06.
+ * suppressed on those two questions (QuestionInput.svelte:72-77).
  *
  * q3 + q4 require `allow_open: true` because the multilingual surface on the
  * opinion editor is the OPEN-ANSWER COMMENT textarea
@@ -57,20 +51,7 @@ import type { Template } from '../../template/types';
 
 const P = 'e2e-perm-l10n-pos-';
 
-const APP_SETTINGS = {
-  ...MINIMAL_BASE_APP_SETTINGS,
-  // STAGE A DEPENDENCY (Plan 90-01): the i18n.supportedLocales override key
-  // exists on the runtime DynamicSettings surface ONLY AFTER Plan 90-01 lands.
-  // The shape mirrors staticSettings.supportedLocales (code/name/isDefault).
-  // Two-entry array drops the user-facing locale list to [en, fi] at runtime,
-  // showing the language selector and translation toggles per TIR5:52-95.
-  i18n: {
-    supportedLocales: [
-      { code: 'en', name: 'English', isDefault: true },
-      { code: 'fi', name: 'Suomi' }
-    ]
-  }
-} as const;
+const APP_SETTINGS = MINIMAL_BASE_APP_SETTINGS;
 
 export const permLocalisationPositiveTemplate: Template = {
   seed: 42,

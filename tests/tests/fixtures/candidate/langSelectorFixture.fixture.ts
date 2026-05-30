@@ -88,7 +88,17 @@ export function createLangSelector(page: Page) {
      * triggered by Paraglide's `data-sveltekit-reload` attribute on the
      * NavItem anchor (LanguageSelection.svelte:36). The post-reload URL is
      * `localizeHref(currentPath, { locale })` which prepends the new locale
-     * code as the first path segment.
+     * code as the first path segment — EXCEPT for Paraglide's `baseLocale`
+     * (`en` per `apps/frontend/project.inlang/settings.json:2`), which is
+     * served from the root path with NO prefix. See
+     * `apps/frontend/src/lib/paraglide/runtime.js` urlPatterns:
+     *   - en  →  /:path(.*)?              (no prefix — baseLocale)
+     *   - fi  →  /fi/:path(.*)?
+     *   - sv  →  /sv/:path(.*)?
+     *   - ... (et/fr/lb similar)
+     * So `switchTo('en')` must wait for a URL whose first segment is NOT one
+     * of the prefixed non-base locales; `switchTo('fi')` must wait for
+     * `/fi/`-prefixed URLs as before.
      *
      * Pitfall 6: the locale switch is a full page reload, NOT a SPA
      * navigation. Use `Promise.all([waitForURL, click])` to race the click
@@ -101,10 +111,18 @@ export function createLangSelector(page: Page) {
       const item = selector
         .getByTestId(testIds.shared.navigation.menuItem)
         .filter({ hasText: new RegExp(`^${name}$`, 'i') });
-      await Promise.all([
-        page.waitForURL(new RegExp(`^https?://[^/]+/${locale}/`)),
-        item.click()
-      ]);
+      // Build a baseLocale-aware wait pattern. baseLocale ('en') is served
+      // prefix-less from `/`; non-baseLocale locales get a `/<locale>/` prefix.
+      // For baseLocale we match any URL whose first path segment is NOT one
+      // of the known non-base locale prefixes (fi/sv/da/et/fr/lb — sourced
+      // from the Paraglide compile-time superset). For non-baseLocale we
+      // match the prefixed shape directly.
+      const NON_BASE_LOCALE_PREFIXES = 'fi|sv|da|et|fr|lb';
+      const urlPattern =
+        locale === 'en'
+          ? new RegExp(`^https?://[^/]+/(?!(${NON_BASE_LOCALE_PREFIXES})(/|$))`)
+          : new RegExp(`^https?://[^/]+/${locale}(/|$)`);
+      await Promise.all([page.waitForURL(urlPattern), item.click()]);
     }
   };
 }

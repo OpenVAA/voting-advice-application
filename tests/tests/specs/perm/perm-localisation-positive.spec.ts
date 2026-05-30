@@ -1,5 +1,5 @@
 /**
- * perm-localisation-positive — Phase 90 Plan 04 (TIR5:52-95).
+ * perm-localisation-positive — Phase 90 Plan 04 (TIR5:52-95, adapted).
  *
  * Topology: 1 election / 1 CG / 1 CO / 1 organisation / 1 candidate /
  * 1 nomination + 2 question categories (qc-info + qc-opin) × 2 questions:
@@ -8,13 +8,18 @@
  *   - q3 (singleChoiceOrdinal + allow_open=true)
  *   - q4 (singleChoiceOrdinal + allow_open=true + customData.disableMultilingual)
  *
- * Settings: i18n.supportedLocales overridden to two locales `[en, fi]` via
- * Plan 90-01's Stage A runtime override.
+ * Settings: operates against the 3-locale `staticSettings.supportedLocales`
+ * base (`[en, fi, sv]`) directly — NO runtime override. The single-locale
+ * variant (perm-localisation-negative) was deferred to a future Stage B i18n
+ * phase (see `.planning/todos/pending/2026-05-11-e2e-01-single-locale-runtime-override.md`).
  *
- * Authoritative spec: TEST-INVENTORY-REFACTOR-5.md:52-95.
+ * Authoritative spec: TEST-INVENTORY-REFACTOR-5.md:52-95 (adapted: the
+ * langSelector assertion expects 3 user-facing locales — en/fi/sv — instead
+ * of the original 2-locale `[en, fi]` override scenario; the en↔fi authoring
+ * walk is structurally unchanged).
  *
  * Walk (strict — rigidity contract per TIR5:5-13):
- *  1. PERM-L10N-POS-01 — voter root /en: langSelector visible with [en, fi].
+ *  1. PERM-L10N-POS-01 — voter root /en: langSelector visible with [en, fi, sv].
  *  2. PERM-L10N-POS-02 — switchTo('fi') → URL is /fi/, voter-home start
  *     button shows non-English text ('Aloita' for Finnish); switchTo('en')
  *     → URL is /en/, voter-home start button shows English again ('Start').
@@ -56,8 +61,7 @@
  *
  * Per-perm recipientEmail: 'candidate-l10n-pos-aa@test.openvaa.local' —
  * unique per perm prevents cross-perm Inbucket pollution (Open Question 4
- * RESOLVED + candidate-mega.ts:87 recipient-filter contract). Distinct
- * from Plan 90-03's 'candidate-l10n-neg-aa@test.openvaa.local'.
+ * RESOLVED + candidate-mega.ts:87 recipient-filter contract).
  *
  * Rigidity contract: every assertion HARD — no expect.soft, no try/catch
  * wrapping expect(), no .catch fallbacks.
@@ -90,7 +94,7 @@ test.use({
 });
 
 test.describe('perm-localisation-positive', () => {
-  test('locales=[en,fi]: full TIR5:52-95 walk including voter-side cross-check', async ({
+  test('locales=[en,fi,sv]: full TIR5:52-95 walk including voter-side cross-check', async ({
     page,
     emailBucket,
     candidatePasswordSetter,
@@ -105,14 +109,14 @@ test.describe('perm-localisation-positive', () => {
 
     const client = new SupabaseAdminClient();
 
-    // ============== Step 1: voter root — langSelector visible (en + fi) ===
-    // PERM-L10N-POS-01: With the Stage A override active and
-    // supportedLocales=[en,fi], the LanguageSelection NavGroup at
-    // LanguageSelection.svelte:32 renders (locales.length > 1 gate evaluates
-    // true). The selector exposes one NavItem per locale.
+    // ============== Step 1: voter root — langSelector visible (en + fi + sv) ===
+    // PERM-L10N-POS-01: With the 3-locale staticSettings base [en, fi, sv]
+    // active, the LanguageSelection NavGroup at LanguageSelection.svelte:32
+    // renders (locales.length > 1 gate evaluates true). The selector exposes
+    // one NavItem per locale.
 
     await page.goto('/en');
-    await langSelector.expectVisible(['en', 'fi']);
+    await langSelector.expectVisible(['en', 'fi', 'sv']);
 
     // ============== Step 2: switchTo('fi') → UI re-localises → switchTo('en')
     // PERM-L10N-POS-02. The voter-home start button label is driven by the
@@ -146,7 +150,9 @@ test.describe('perm-localisation-positive', () => {
     ).not.toBe(englishLabel);
 
     await langSelector.switchTo('en');
-    await expect(page).toHaveURL(/\/en(\/|$)/);
+    // baseLocale: served from `/` with NO `/en/` prefix per Paraglide's
+    // urlPatterns table (see langSelectorFixture.fixture.ts switchTo()).
+    await expect(page).not.toHaveURL(/\/(fi|sv|da|et|fr|lb)(\/|$)/);
     const reEnglishStartButton = page.getByTestId(testIds.voter.home.startButton);
     await expect(reEnglishStartButton).toBeVisible();
     const reEnglishLabel = (await reEnglishStartButton.innerText()).trim();
