@@ -473,7 +473,7 @@ Plans:
 **Goal:** Close the v2.10 TIR backlog by landing TIR6's 9 new settings-permutation perm chains (under the 88/89/90 per-perm `externalIdPrefix` + strict-fixture discipline), 3 new edit-step blocks absorbed into the canonical mega-journey specs (invalidUrl, feedbackDialog, all-nominations), and migrating 4 existing spec families (visual, perf, a11y, bank-auth) onto the new `voter-mega.fixture.ts` `answeredVoterPage` (+ a new `locatedVoterPage` extension) — all without regressing the all-green-suite invariant.
 **Requirements**: 91-A1, 91-A2, 91-A3, 91-A4, 91-A5, 91-A6, 91-A7, 91-A8, 91-A9, 91-B1, 91-B2, 91-B3, 91-C1, 91-C2, 91-C3, 91-C4, 91-D1, 91-D2, 91-Helper, 91-Port, 91-Audit
 **Depends on:** Phase 90
-**Plans:** 4/4 plans complete
+**Plans:** 5/5 plans complete
 
 Plans:
 - [x] 91-01-PLAN.md — buildMinimal dataset-builder helper (`packages/dev-seed/src/templates/_helpers/buildMinimal.ts` + vitest) + port 6 minimal existing perms (perm-1e1cg1co, perm-disable-voter-app, perm-disable-candidate-app, perm-per-app-notifications, perm-missing-nominations, perm-localisation-positive) to consume the helper byte-for-byte. Wave 1, no depends.
