@@ -1059,13 +1059,24 @@ test.describe('voter mega-journey', () => {
       // `aria-label={t('common.openMenu')}` ("Open menu" in en, the
       // voter-mega default locale). No testid present; getByRole +
       // accessible-name regex is the canonical anchor.
+      //
+      // Phase 91 Plan 05 (CR-03 closure): feedbackNavItem scoped to the
+      // open menuDrawer (was page-rooted, raced against the cycle-2-close
+      // vs. cycle-3-open transition). Drawer open-state waitFor inserted
+      // before each menu-item click. Locale regex narrowed to EN-only
+      // per the spec's EN-exclusive walk. menuDrawer is anchored on the
+      // `<nav data-testid="nav-menu">` element rendered by
+      // Navigation.svelte:56-62 (daisyUI drawer reveals it via CSS when
+      // the drawer-toggle checkbox flips to checked).
       const openMenuRegex = /open menu/i;
-      const feedbackNavItem = page
+      const menuDrawer = page.getByTestId(testIds.shared.navigation.menu);
+      const feedbackNavItem = menuDrawer
         .getByTestId(testIds.shared.navigation.menuItem)
-        .filter({ hasText: /feedback|palaute|återkoppling/i });
+        .filter({ hasText: /feedback/i });
 
       // ---- Cycle 1: rating + comment, cancel preserves state. -----------
       await page.getByRole('button', { name: openMenuRegex }).click();
+      await menuDrawer.waitFor({ state: 'visible' });
       await feedbackNavItem.click();
       await feedbackDialog.expectVisible();
       await feedbackDialog.expectSendDisabled();
@@ -1074,9 +1085,13 @@ test.describe('voter mega-journey', () => {
       await feedbackDialog.setComment('test feedback');
       await feedbackDialog.cancel();
       await feedbackDialog.expectHidden();
+      // Wait for the drawer to fully close before re-opening on cycle 2 —
+      // eliminates the close-transition race documented in CR-03.
+      await menuDrawer.waitFor({ state: 'hidden' });
 
       // ---- Cycle 2: reopen, expect preserved state, submit. -------------
       await page.getByRole('button', { name: openMenuRegex }).click();
+      await menuDrawer.waitFor({ state: 'visible' });
       await feedbackNavItem.click();
       await feedbackDialog.expectVisible();
       await feedbackDialog.expectRatingValue(3);
@@ -1087,9 +1102,11 @@ test.describe('voter mega-journey', () => {
       // closes the modal; wait for the form testid to leave the DOM before
       // re-opening (mirrors the voter-feedback-persistence H4 lineage).
       await feedbackDialog.expectHidden();
+      await menuDrawer.waitFor({ state: 'hidden' });
 
       // ---- Cycle 3: reopen post-send → state cleared by reset(). --------
       await page.getByRole('button', { name: openMenuRegex }).click();
+      await menuDrawer.waitFor({ state: 'visible' });
       await feedbackNavItem.click();
       await feedbackDialog.expectVisible();
       await feedbackDialog.expectRatingValue(null);
