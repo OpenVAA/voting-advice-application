@@ -17,6 +17,7 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
 -->
 
 <script lang="ts">
+  import { getCustomData } from '@openvaa/app-shared';
   import { CategoryTag } from '$lib/components/categoryTag';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { OpinionQuestionInput, QuestionOpenAnswer } from '$lib/components/questions';
@@ -39,6 +40,7 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
     {@const { id, text, category } = question}
     {@const answer = nakedEntity.getAnswer(question)}
     {@const voterAnswer = answers?.answers?.[id]}
+    {@const customData = getCustomData(question)}
 
     <div class="grid" data-testid="entity-opinion-question">
       <HeadingGroup class="mb-lg text-center">
@@ -73,7 +75,7 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
           answer={voterAnswer}
           otherAnswer={answer}
           otherLabel={shortName} />
-        {#if answer?.info}
+        {#if answer?.info && customData?.allowOpen !== false}
           <QuestionOpenAnswer content={answer.info} class="mt-md" />
         {/if}
       {/if}

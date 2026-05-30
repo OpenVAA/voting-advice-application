@@ -549,7 +549,7 @@ export const baseV1Template: Template = {
         external_id: 'test-qg-opin-base',
         name: { en: '[qg-opin-base] Base Opinion Questions' },
         category_type: 'opinion',
-        custom_data: { hero: { url: '/images/test-hero-qg-base.svg', type: 'image' } },
+        custom_data: { hero: { url: '/images/e2e-test-image-1.jpg', type: 'image' } },
         sort_order: 1,
         is_generated: false
       },
@@ -772,7 +772,7 @@ export const baseV1Template: Template = {
         name: { en: '[qu-opin-base-2-likert4] Base opinion 2 — Likert 4.' },
         choices: LIKERT_4_EN,
         category: { external_id: 'test-qg-opin-base' },
-        custom_data: { hero: { url: '/images/test-hero-q2.svg', type: 'image' } },
+        custom_data: { hero: { url: '/images/e2e-test-image-1.jpg', type: 'image' } },
         allow_open: true,
         required: true,
         sort_order: 101,

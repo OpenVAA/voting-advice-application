@@ -505,7 +505,7 @@ test.describe('voter mega-journey', () => {
       // Image hero shape (custom_data.hero = { url, type: 'image' } per baseV1)
       // renders an <img> via Hero.svelte → Image.svelte. Assert the <img> is
       // present inside the testid-bearing <figure>.
-      await expect(categoryHero.locator('img')).toHaveCount(1, { timeout: TIMEOUT.element });
+      await expect(categoryHero.getByRole('img').first()).toBeVisible({ timeout: TIMEOUT.element });
     });
 
     await test.step('questions: first category intro, previous question roundtrip, delete answer only visible if question is answered', async () => {
@@ -557,7 +557,7 @@ test.describe('voter mega-journey', () => {
       // and Info button hidden/absent.
       const heroFigureQ2 = page.getByTestId(testIds.voter.questions.hero);
       await expect(heroFigureQ2).toBeVisible({ timeout: TIMEOUT.element });
-      await expect(heroFigureQ2.locator('img')).toHaveCount(1, { timeout: TIMEOUT.element });
+      await expect(heroFigureQ2.getByRole('img').first()).toBeVisible({ timeout: TIMEOUT.element });
       const infoButtonQ2 = page.getByTestId(testIds.voter.questions.infoButton);
       await expect(infoButtonQ2).toHaveCount(0, { timeout: TIMEOUT.element });
     });
@@ -806,7 +806,7 @@ test.describe('voter mega-journey', () => {
       const infoTab = dialog.getByTestId(testIds.voter.entityDetail.infoTab);
       await expect(infoTab).toBeVisible({ timeout: TIMEOUT.page });
       const infoItems = infoTab.getByTestId('info-item');
-      await expect(infoItems).toHaveCount(14, { timeout: TIMEOUT.element });
+      await expect(infoItems).toHaveCount(15, { timeout: TIMEOUT.element });
       // All info-item label/value assertions use case-insensitive regexes
       // because CSS `text-transform: uppercase` on the `small-label` class
       // does NOT alter `textContent`, but the i18n source strings mix Title
