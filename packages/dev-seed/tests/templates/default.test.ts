@@ -118,16 +118,16 @@ describe('candidatesOverride — non-uniform distribution + locale cycling', () 
     expect(JSON.stringify(rowsA)).toEqual(JSON.stringify(rowsB));
   });
 
-  it('Test 10: faker locale cycling — 82 candidates per locale block (en/fi/sv/da)', () => {
-    // Spec: indices 0-81 use en, 82-163 fi, 164-245 sv, 246-326 da. We cannot
-    // easily assert the locale packet, but we can assert that names within a
-    // block are byte-identical to a freshly-seeded per-locale Faker. The
-    // override's LOCALE_BLOCK_SIZE constant is 82. Shape-only assertion:
-    // non-empty strings.
+  it('Test 10: faker locale cycling — 109 candidates per locale block (en/fi/sv)', () => {
+    // Spec: indices 0-108 use en, 109-217 fi, 218-326 sv. We cannot easily
+    // assert the locale packet, but we can assert that names within a block
+    // are byte-identical to a freshly-seeded per-locale Faker. The override's
+    // LOCALE_BLOCK_SIZE constant is 109. Shape-only assertion: non-empty
+    // strings.
     const ctx = makeCtx({ refs: { ...makeCtx().refs, organizations: eightParties() } });
     const rows = candidatesOverride({}, ctx);
-    // Spot-check the 4 block starts have non-empty names.
-    for (const idx of [0, 82, 164, 246]) {
+    // Spot-check the 3 block starts have non-empty names.
+    for (const idx of [0, 109, 218]) {
       const r = rows[idx] as { first_name?: string; last_name?: string };
       expect(r.first_name).toBeTruthy();
       expect(r.last_name).toBeTruthy();

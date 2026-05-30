@@ -56,10 +56,6 @@ export const staticSettings: StaticSettings = {
     {
       code: 'sv',
       name: 'Svenska'
-    },
-    {
-      code: 'da',
-      name: 'Dansk'
     }
   ],
   analytics: {

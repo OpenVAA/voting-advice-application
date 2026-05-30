@@ -42,7 +42,7 @@ describe('determinism (TMPL-08)', () => {
   //
   // RESEARCH §Pitfall #1: if locale iteration order drifts, fan-out output
   // differs across runs even at the same seed. `locales.ts` locks iteration
-  // via hardcoded `LOCALES = ['en','fi','sv','da']` + hardcoded
+  // via hardcoded `LOCALES = ['en','fi','sv']` + hardcoded
   // `LOCALIZED_FIELDS` map. These cases prove byte-level determinism survives
   // the full `runPipeline` + `fanOutLocales` pipeline, AND that
   // `generateTranslationsForAllLocales` is a no-op when absent (Phase 56
@@ -78,7 +78,7 @@ describe('determinism (TMPL-08)', () => {
     expect(JSON.stringify(run1)).toEqual(JSON.stringify(run2));
   });
 
-  it('Pitfall #1: locale fan-out produces all 4 locale keys at the default template', () => {
+  it('Pitfall #1: locale fan-out produces all 3 locale keys at the default template', () => {
     const template = {
       seed: 42,
       generateTranslationsForAllLocales: true,
@@ -87,7 +87,7 @@ describe('determinism (TMPL-08)', () => {
     const rows = runPipeline(template);
     fanOutLocales(rows, template, 42);
     const election = rows.elections[0] as { name: Record<string, string> };
-    expect(Object.keys(election.name).sort()).toEqual(['da', 'en', 'fi', 'sv']);
+    expect(Object.keys(election.name).sort()).toEqual(['en', 'fi', 'sv']);
   });
 
   it('locale fan-out is a no-op when generateTranslationsForAllLocales is undefined (Phase 56 behavior preserved)', () => {

@@ -3,12 +3,12 @@
  *
  * Exercises:
  *   - Opt-out default (undefined / false → no-op).
- *   - Opt-in (true → 4-locale expansion).
+ *   - Opt-in (true → 3-locale expansion).
  *   - Per-locale faker generates distinct outputs at the same seed.
  *   - Determinism — same input + same seed across repeated calls = byte-identical.
  *   - Plain-text + non-localized fields left untouched.
  *   - Pre-existing locale keys preserved.
- *   - LOCALES constant is hardcoded in ['en', 'fi', 'sv', 'da'] order.
+ *   - LOCALES constant is hardcoded in ['en', 'fi', 'sv'] order.
  *
  * D-22 contract: pure I/O. No Supabase imports.
  */
@@ -17,8 +17,8 @@ import { describe, expect, it } from 'vitest';
 import { fanOutLocales, LOCALES } from '../src/locales';
 
 describe('fanOutLocales (TMPL-07)', () => {
-  it('LOCALES is the hardcoded array ["en", "fi", "sv", "da"] in exact order (Pitfall #1)', () => {
-    expect(LOCALES).toEqual(['en', 'fi', 'sv', 'da']);
+  it('LOCALES is the hardcoded array ["en", "fi", "sv"] in exact order (Pitfall #1)', () => {
+    expect(LOCALES).toEqual(['en', 'fi', 'sv']);
   });
 
   it('is a no-op when generateTranslationsForAllLocales is undefined', () => {
@@ -33,17 +33,15 @@ describe('fanOutLocales (TMPL-07)', () => {
     expect(result.elections[0].name).toEqual({ en: 'Demo' });
   });
 
-  it('expands { en: "X" } to { en, fi, sv, da } when flag is true', () => {
+  it('expands { en: "X" } to { en, fi, sv } when flag is true', () => {
     const rows = { elections: [{ name: { en: 'Demo Election' } }] };
     const result = fanOutLocales(rows, { generateTranslationsForAllLocales: true }, 42);
     const name = result.elections[0].name as Record<string, string>;
     expect(name.en).toBe('Demo Election'); // preserved verbatim
     expect(typeof name.fi).toBe('string');
     expect(typeof name.sv).toBe('string');
-    expect(typeof name.da).toBe('string');
     expect(name.fi.length).toBeGreaterThan(0);
     expect(name.sv.length).toBeGreaterThan(0);
-    expect(name.da.length).toBeGreaterThan(0);
   });
 
   it('preserves pre-existing non-default locale keys', () => {
@@ -53,7 +51,6 @@ describe('fanOutLocales (TMPL-07)', () => {
     expect(name.en).toBe('English');
     expect(name.fi).toBe('Finnish Override'); // not overwritten
     expect(typeof name.sv).toBe('string');
-    expect(typeof name.da).toBe('string');
   });
 
   it('does not touch plain-text columns (candidates.first_name / last_name)', () => {
@@ -111,7 +108,6 @@ describe('fanOutLocales (TMPL-07)', () => {
           const loc = val as Record<string, string>;
           expect(loc.fi).toBeDefined();
           expect(loc.sv).toBeDefined();
-          expect(loc.da).toBeDefined();
           break;
         }
       }

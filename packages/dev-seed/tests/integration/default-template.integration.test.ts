@@ -274,7 +274,7 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
         .single();
       expect(elErr).toBeNull();
       const electionName = (election as { name?: Record<string, string> } | null)?.name ?? {};
-      expect(Object.keys(electionName).sort()).toEqual(['da', 'en', 'fi', 'sv']);
+      expect(Object.keys(electionName).sort()).toEqual(['en', 'fi', 'sv']);
 
       // -----------------------------------------------------------------------
       // 8. Storage bucket has ≥327 portrait objects under

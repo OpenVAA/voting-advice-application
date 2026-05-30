@@ -11,11 +11,11 @@
  * clearly non-uniform for matching/clustering visibility.
  *
  * Per RESEARCH §Open Q 4 (resolved): cycle faker locale per candidate for
- * visual variety. 82 candidates per locale block (last block has 81) —
- * candidates 0-81 use en, 82-163 fi, 164-245 sv, 246-326 da. The locale
- * packs are fresh per-locale Faker instances seeded deterministically at
- * fixed offsets so the 4 blocks produce visibly distinct name output while
- * the overall run stays deterministic.
+ * visual variety. 109 candidates per locale block (3 × 109 = 327 exactly) —
+ * candidates 0-108 use en, 109-217 fi, 218-326 sv. The locale packs are
+ * fresh per-locale Faker instances seeded deterministically at fixed offsets
+ * so the 3 blocks produce visibly distinct name output while the overall run
+ * stays deterministic.
  *
  * THROWS if `ctx.refs.organizations.length !== 8` — the weights are tuned for
  * 8 parties. T-58-06-02 mitigation: if a future edit adds or drops a party in
@@ -31,7 +31,7 @@
  * test will exercise the full clustering path through this code path.
  */
 
-import { da, en, Faker, fi, sv } from '@faker-js/faker';
+import { en, Faker, fi, sv } from '@faker-js/faker';
 import { defaultRandomValidEmit } from '../../emitters/answers';
 import type { TablesInsert } from '@openvaa/supabase-types';
 import type { Ctx } from '../../ctx';
@@ -49,25 +49,24 @@ export const PARTY_WEIGHTS: ReadonlyArray<number> = [61, 56, 49, 43, 38, 33, 26,
 const TOTAL_CANDIDATES = PARTY_WEIGHTS.reduce((a, b) => a + b, 0);
 
 /**
- * 327 candidates / 4 locales ≈ 82 per block. The first 3 blocks have 82
- * candidates each (en, fi, sv); the last block (da) has 81. Math.floor(i / 82)
- * gives the locale index for candidate i in [0, 327).
+ * 327 candidates / 3 locales = 109 per block exactly. Candidates 0-108 use
+ * en, 109-217 fi, 218-326 sv. Math.floor(i / 109) gives the locale index for
+ * candidate i in [0, 327).
  */
-export const LOCALE_BLOCK_SIZE = 82;
+export const LOCALE_BLOCK_SIZE = 109;
 
 /**
  * Per-locale faker seed offsets. Same pattern as `locales.ts` fanOutLocales —
  * fixed offsets ensure locales produce visibly distinct output while the
  * overall run is deterministic at a given base seed.
  */
-const LOCALE_ORDER = ['en', 'fi', 'sv', 'da'] as const;
+const LOCALE_ORDER = ['en', 'fi', 'sv'] as const;
 type LocaleCode = (typeof LOCALE_ORDER)[number];
-const LOCALE_PACKS: Record<LocaleCode, typeof en> = { en, fi, sv, da };
+const LOCALE_PACKS: Record<LocaleCode, typeof en> = { en, fi, sv };
 const LOCALE_SEED_OFFSETS: Record<LocaleCode, number> = {
   en: 0,
   fi: 1000,
-  sv: 2000,
-  da: 3000
+  sv: 2000
 };
 
 /**
@@ -118,8 +117,7 @@ export function candidatesOverride(_fragment: unknown, ctx: Ctx): Array<Record<s
   const localeFakers: Record<LocaleCode, Faker> = {
     en: buildLocaleFaker('en'),
     fi: buildLocaleFaker('fi'),
-    sv: buildLocaleFaker('sv'),
-    da: buildLocaleFaker('da')
+    sv: buildLocaleFaker('sv')
   };
 
   // D-27 seam — mirrors CandidatesGenerator.ts:93. Phase 57's latent emitter

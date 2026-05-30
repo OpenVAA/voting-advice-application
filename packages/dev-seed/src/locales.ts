@@ -1,6 +1,6 @@
 /**
  * Locale fan-out — post-processing step that expands `{ en: "..." }` JSONB
- * fields to `{ en, fi, sv, da }` when `template.generateTranslationsForAllLocales`
+ * fields to `{ en, fi, sv }` when `template.generateTranslationsForAllLocales`
  * is true (TMPL-07 / D-58-04).
  *
  * Runs AFTER generators produce rows, BEFORE the writer bulk-imports them.
@@ -13,7 +13,7 @@
  * RESEARCH Pitfall #1: locale iteration order MUST be stable across runs for
  * NF-04 to hold. This module enforces two rules:
  *
- *   1. `LOCALES` is a HARDCODED array `['en', 'fi', 'sv', 'da']` — never
+ *   1. `LOCALES` is a HARDCODED array `['en', 'fi', 'sv']` — never
  *      derived from `Object.keys(supportedLocales)` or a Map. Object key
  *      order in JS is insertion-order for string keys in practice, but
  *      building the array from derived state introduces order sensitivity.
@@ -47,16 +47,16 @@
  * synthetic; the locale data isn't semantically linked across locales).
  */
 
-import { da, en, Faker, fi, sv } from '@faker-js/faker';
+import { en, Faker, fi, sv } from '@faker-js/faker';
 
 /**
  * Hardcoded locale iteration order (Pitfall #1).
  *
  * Mirrors `staticSettings.supportedLocales` in `@openvaa/app-shared` but
- * hardcoded here to lock determinism. If a future project adds a 5th locale,
+ * hardcoded here to lock determinism. If a future project adds a 4th locale,
  * update this array AND the `LOCALE_DATA` map AND the inventory list.
  */
-export const LOCALES = ['en', 'fi', 'sv', 'da'] as const;
+export const LOCALES = ['en', 'fi', 'sv'] as const;
 
 export type LocaleCode = (typeof LOCALES)[number];
 
@@ -66,8 +66,7 @@ export type LocaleCode = (typeof LOCALES)[number];
 const LOCALE_DATA: Record<LocaleCode, typeof en> = {
   en,
   fi,
-  sv,
-  da
+  sv
 };
 
 /**
@@ -146,13 +145,12 @@ export function fanOutLocales(
   if (template.generateTranslationsForAllLocales !== true) return rows;
 
   // Per-invocation Faker cache — keyed by locale. Seed differs per locale so
-  // fi/sv/da/en produce visibly different names but the run is still
+  // fi/sv/en produce visibly different names but the run is still
   // deterministic at the same `seed` argument.
   const fakers: Record<LocaleCode, Faker> = {
     en: makeLocaleFaker('en', seed),
     fi: makeLocaleFaker('fi', seed + 1),
-    sv: makeLocaleFaker('sv', seed + 2),
-    da: makeLocaleFaker('da', seed + 3)
+    sv: makeLocaleFaker('sv', seed + 2)
   };
 
   // Iterate tables in LOCALIZED_FIELDS key order (alphabetical — frozen).
