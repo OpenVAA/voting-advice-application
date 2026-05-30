@@ -18,13 +18,21 @@
  *     `parent: { external_id: ... }`) are passed VERBATIM by the writer to
  *     bulk_import — so they MUST contain the FULL prefixed external_id
  *     (e.g. `organization: { external_id: 'test-perm-1e1cg1co-or-1' }`).
- *     The shared builder functions below take a `P` (prefix) argument and
- *     emit refs with `${P}or-1` etc.
+ *     The shared builder functions below take a `prefix` argument (named-
+ *     params per D-91-PD-07) and emit refs with `${prefix}or-1` etc.
  *
  * This matches the documented behavior in Risk #6 of 88-03-PLAN.md and
  * preserves the parallel-only contract: `setupFromTemplate.ts:131-137`
  * derives the teardown prefix from `template.externalIdPrefix`, so each
  * perm-* setup teardowns ITS OWN unique prefix.
+ *
+ * **Named-params convention (Phase 91 / D-91-PD-07):** Every builder that
+ * takes more than one parameter where positional order can be confused
+ * accepts a single named-options object. Single-param builders stay
+ * parameterless. `buildCandidate.answersByExternalId` is now OPTIONAL —
+ * the leaf builder writes an empty map when omitted; the assembling layer
+ * (perm template OR `buildMinimal` helper) is responsible for populating
+ * the answer map when the candidate should carry answers.
  */
 
 /**
@@ -120,9 +128,12 @@ export const MINIMAL_BASE_APP_SETTINGS = {
 /**
  * Build the standard 2 question_categories (1 info + 1 opinion).
  *
- * Row external_ids are BARE (the writer prepends `P`). The category
- * reference IS NOT a nested ref — `question_categories` rows have no
- * cross-table refs themselves.
+ * Row external_ids are BARE (the writer prepends the template prefix). The
+ * category reference IS NOT a nested ref — `question_categories` rows have
+ * no cross-table refs themselves.
+ *
+ * Parameterless per D-91-PD-07 (single-param functions stay positional /
+ * parameterless).
  */
 export function buildQuestionCategories(): Array<Record<string, unknown>> {
   return [
@@ -144,17 +155,28 @@ export function buildQuestionCategories(): Array<Record<string, unknown>> {
 }
 
 /**
+ * Options for {@link buildQuestions} (D-91-PD-07 named-params).
+ */
+export interface BuildQuestionsOptions {
+  /** External-id prefix (e.g. `'e2e-perm-1e1cg1co-'`). Used for nested category refs. */
+  prefix: string;
+}
+
+/**
  * Build the standard 2 questions (text info + Likert5 opinion). The nested
  * `category` ref uses the FULL prefixed external_id (writer passes refs
  * verbatim).
+ *
+ * **Refactored from `buildQuestions(P: string)` to named-params per
+ * D-91-PD-07.**
  */
-export function buildQuestions(P: string): Array<Record<string, unknown>> {
+export function buildQuestions({ prefix }: BuildQuestionsOptions): Array<Record<string, unknown>> {
   return [
     {
       external_id: 'qu-info-text',
       type: 'text',
       name: { en: '[QU-INFO-TEXT] Tell us about yourself' },
-      category: { external_id: `${P}qc-info` },
+      category: { external_id: `${prefix}qc-info` },
       allow_open: false,
       required: false,
       sort_order: 0,
@@ -165,7 +187,7 @@ export function buildQuestions(P: string): Array<Record<string, unknown>> {
       type: 'singleChoiceOrdinal',
       name: { en: '[QU-OPIN-L5] I agree with this statement.' },
       choices: LIKERT_5_EN,
-      category: { external_id: `${P}qc-opin` },
+      category: { external_id: `${prefix}qc-opin` },
       allow_open: false,
       required: true,
       sort_order: 100,
@@ -176,7 +198,9 @@ export function buildQuestions(P: string): Array<Record<string, unknown>> {
 
 /**
  * Build the standard 2 organizations. Row external_ids are BARE (the writer
- * prepends `P`).
+ * prepends the template prefix).
+ *
+ * Parameterless per D-91-PD-07.
  */
 export function buildOrganizations(): Array<Record<string, unknown>> {
   return [
@@ -200,34 +224,80 @@ export function buildOrganizations(): Array<Record<string, unknown>> {
 }
 
 /**
- * Build standard candidate answers (info text + Likert5 neutral) used by
- * every perm-* candidate. Keyed by FULL prefixed question external_ids
- * (importAnswers resolves the question external_id verbatim against the DB).
+ * Options for {@link buildStandardCandidateAnswers} (D-91-PD-07 named-params).
  */
-export function buildStandardCandidateAnswers(P: string): Record<string, { value: unknown }> {
+export interface BuildStandardCandidateAnswersOptions {
+  /** External-id prefix (e.g. `'e2e-perm-1e1cg1co-'`). Used for question-ref keys. */
+  prefix: string;
+}
+
+/**
+ * Build standard candidate answers (info text + Likert5 neutral) used by
+ * every perm-* candidate that wants the legacy "always-answered" behaviour.
+ * Keyed by FULL prefixed question external_ids (importAnswers resolves the
+ * question external_id verbatim against the DB).
+ *
+ * **Refactored from `buildStandardCandidateAnswers(P: string)` to
+ * named-params per D-91-PD-07.** Callers that previously relied on
+ * `buildCandidate` calling this automatically must now pass the result
+ * explicitly via `buildCandidate({ ..., answersByExternalId:
+ * buildStandardCandidateAnswers({ prefix }) })`.
+ */
+export function buildStandardCandidateAnswers({
+  prefix
+}: BuildStandardCandidateAnswersOptions): Record<string, { value: unknown }> {
   return {
-    [`${P}qu-info-text`]: { value: { en: '(test info)' } },
-    [`${P}qu-opin-l5`]: { value: '3' }
+    [`${prefix}qu-info-text`]: { value: { en: '(test info)' } },
+    [`${prefix}qu-opin-l5`]: { value: '3' }
   };
 }
 
 /**
- * Build a candidate row. Row external_id is BARE (writer prepends `P`).
+ * Options for {@link buildCandidate} (D-91-PD-07 named-params).
+ *
+ * `answersByExternalId` is OPTIONAL — when omitted the leaf builder writes
+ * an empty answer map. The assembling layer (perm template OR `buildMinimal`
+ * helper) is responsible for populating answers when the candidate should
+ * carry them. This is the API change locked by D-91-PD-07 (enables the
+ * clean-candidate use case that Phase 91 Plan 91-02's hide-if-missing-
+ * answers perm A6 depends on).
+ */
+export interface BuildCandidateOptions {
+  /** External-id prefix (e.g. `'e2e-perm-1e1cg1co-'`). Used for nested organization ref. */
+  prefix: string;
+  /** Organization index (1 or 2) — matches `or-1` or `or-2` from {@link buildOrganizations}. */
+  orgN: 1 | 2;
+  /** Candidate letter unique within (orgN, constituency). Renders into first_name `[CA<orgN><letter>]`. */
+  candLetter: string;
+  /** Candidate's row external_id (BARE; writer prepends prefix). */
+  idSuffix: string;
+  /** Candidate row sort_order. */
+  sortOrder: number;
+  /**
+   * Per-question answer map. Optional — defaults to `{}` (clean candidate at
+   * the leaf-builder level). Keys are FULL prefixed question external_ids.
+   * For the legacy "always-answered" behaviour, pass
+   * `buildStandardCandidateAnswers({ prefix })`.
+   */
+  answersByExternalId?: Record<string, { value: unknown; info?: { en: string } }>;
+}
+
+/**
+ * Build a candidate row. Row external_id is BARE (writer prepends prefix).
  * The nested `organization` ref uses the FULL prefixed external_id.
  *
- * @param P            prefix (e.g. `'test-perm-1e1cg1co-'`) — used for refs
- * @param orgN         organization index (1 or 2, matching or-1 / or-2)
- * @param candLetter   candidate letter unique within (orgN, constituency)
- * @param idSuffix     candidate's row external_id (BARE; writer prepends P)
- * @param sortOrder    candidate row sort_order
+ * **Refactored from `buildCandidate(P, orgN, candLetter, idSuffix,
+ * sortOrder)` to named-params + optional `answersByExternalId` per
+ * D-91-PD-07.**
  */
-export function buildCandidate(
-  P: string,
-  orgN: 1 | 2,
-  candLetter: string,
-  idSuffix: string,
-  sortOrder: number
-): Record<string, unknown> {
+export function buildCandidate({
+  prefix,
+  orgN,
+  candLetter,
+  idSuffix,
+  sortOrder,
+  answersByExternalId
+}: BuildCandidateOptions): Record<string, unknown> {
   return {
     external_id: idSuffix,
     first_name: `[CA${orgN}${candLetter}]`,
@@ -235,9 +305,31 @@ export function buildCandidate(
     terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
     sort_order: sortOrder,
     is_generated: false,
-    organization: { external_id: `${P}or-${orgN}` },
-    answersByExternalId: buildStandardCandidateAnswers(P)
+    organization: { external_id: `${prefix}or-${orgN}` },
+    answersByExternalId: answersByExternalId ?? {}
   };
+}
+
+/**
+ * Options for {@link buildElectionConstituencyNoms} (D-91-PD-07 named-params).
+ */
+export interface BuildElectionConstituencyNomsOptions {
+  /** External-id prefix (e.g. `'e2e-perm-1e1cg1co-'`). */
+  prefix: string;
+  /** Election external_id suffix (BARE; writer prepends prefix on the nested election ref). */
+  electionIdSuffix: string;
+  /** Constituency external_id suffix (BARE). */
+  constituencyIdSuffix: string;
+  /** Candidate external_id suffixes (BARE). */
+  candidateIdSuffixes: Array<string>;
+  /** Symbol number for the first candidate nomination (subsequent candidates increment by 1). */
+  electionSymbolStart: number;
+  /**
+   * Optional nomination external_id sub-prefix to disambiguate when one
+   * election × constituency pair recurs across different shapes (rare).
+   * Defaults to `''` (empty — keyed by `${electionIdSuffix}-${constituencyIdSuffix}`).
+   */
+  nomKeyPrefix?: string;
 }
 
 /**
@@ -246,33 +338,31 @@ export function buildCandidate(
  *
  * Row external_ids are BARE; nested refs use the FULL prefixed external_id.
  *
- * `electionSymbolStart` is the symbol number for the first candidate
- * nomination (subsequent candidates increment by 1).
+ * **Refactored from a 6-positional signature to named-params per
+ * D-91-PD-07.**
  */
-export function buildElectionConstituencyNoms(
-  P: string,
-  electionIdSuffix: string,
-  constituencyIdSuffix: string,
-  candidateIdSuffixes: Array<string>,
-  electionSymbolStart: number,
-  /** Optional nomination external_id sub-prefix to disambiguate when one
-   *  election × constituency pair recurs across different shapes (rare). */
-  nomKeyPrefix: string = ''
-): Array<Record<string, unknown>> {
-  const electionExtId = `${P}${electionIdSuffix}`;
-  const constituencyExtId = `${P}${constituencyIdSuffix}`;
+export function buildElectionConstituencyNoms({
+  prefix,
+  electionIdSuffix,
+  constituencyIdSuffix,
+  candidateIdSuffixes,
+  electionSymbolStart,
+  nomKeyPrefix = ''
+}: BuildElectionConstituencyNomsOptions): Array<Record<string, unknown>> {
+  const electionExtId = `${prefix}${electionIdSuffix}`;
+  const constituencyExtId = `${prefix}${constituencyIdSuffix}`;
   const key = nomKeyPrefix === '' ? `${electionIdSuffix}-${constituencyIdSuffix}` : nomKeyPrefix;
   const noms: Array<Record<string, unknown>> = [
     {
       external_id: `nom-${key}-or-1`,
-      organization: { external_id: `${P}or-1` },
+      organization: { external_id: `${prefix}or-1` },
       election: { external_id: electionExtId },
       constituency: { external_id: constituencyExtId },
       election_round: 1
     },
     {
       external_id: `nom-${key}-or-2`,
-      organization: { external_id: `${P}or-2` },
+      organization: { external_id: `${prefix}or-2` },
       election: { external_id: electionExtId },
       constituency: { external_id: constituencyExtId },
       election_round: 1
@@ -284,8 +374,8 @@ export function buildElectionConstituencyNoms(
     noms.push({
       external_id: `nom-${key}-${candIdSuffix}`,
       election_symbol: String(electionSymbolStart + i),
-      candidate: { external_id: `${P}${candIdSuffix}` },
-      parent_nomination: { external_id: `${P}nom-${key}-or-${orgN}` },
+      candidate: { external_id: `${prefix}${candIdSuffix}` },
+      parent_nomination: { external_id: `${prefix}nom-${key}-or-${orgN}` },
       election: { external_id: electionExtId },
       constituency: { external_id: constituencyExtId },
       election_round: 1

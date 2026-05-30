@@ -22,6 +22,7 @@ import {
   buildOrganizations,
   buildQuestionCategories,
   buildQuestions,
+  buildStandardCandidateAnswers,
   MINIMAL_BASE_APP_SETTINGS
 } from './shared';
 import type { Template } from '../../template/types';
@@ -92,11 +93,20 @@ export const permMissingNominationsTemplate: Template = {
 
   organizations: { count: 0, fixed: buildOrganizations() },
   question_categories: { count: 0, fixed: buildQuestionCategories() },
-  questions: { count: 0, fixed: buildQuestions(P) },
+  questions: { count: 0, fixed: buildQuestions({ prefix: P }) },
 
   candidates: {
     count: 0,
-    fixed: [buildCandidate(P, 1, 'A', 'ca-1-1a', 0)]
+    fixed: [
+      buildCandidate({
+        prefix: P,
+        orgN: 1,
+        candLetter: 'A',
+        idSuffix: 'ca-1-1a',
+        sortOrder: 0,
+        answersByExternalId: buildStandardCandidateAnswers({ prefix: P })
+      })
+    ]
   },
 
   nominations: {
@@ -104,7 +114,13 @@ export const permMissingNominationsTemplate: Template = {
     fixed: [
       // INTENTIONAL: el-2 has zero nominations to trigger the missing-nominations modal
       // 'some' variant per TIR5:15-26. Only el-1 carries a nomination.
-      ...buildElectionConstituencyNoms(P, 'el-1', 'co-1a', ['ca-1-1a'], 1)
+      ...buildElectionConstituencyNoms({
+        prefix: P,
+        electionIdSuffix: 'el-1',
+        constituencyIdSuffix: 'co-1a',
+        candidateIdSuffixes: ['ca-1-1a'],
+        electionSymbolStart: 1
+      })
     ]
   },
 

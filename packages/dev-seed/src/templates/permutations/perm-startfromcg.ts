@@ -30,6 +30,7 @@ import {
   buildOrganizations,
   buildQuestionCategories,
   buildQuestions,
+  buildStandardCandidateAnswers,
   MINIMAL_BASE_APP_SETTINGS
 } from './shared';
 import type { Template } from '../../template/types';
@@ -142,38 +143,38 @@ export const permStartfromcgTemplate: Template = {
 
   organizations: { count: 0, fixed: buildOrganizations() },
   question_categories: { count: 0, fixed: buildQuestionCategories() },
-  questions: { count: 0, fixed: buildQuestions(P) },
+  questions: { count: 0, fixed: buildQuestions({ prefix: P }) },
 
   candidates: {
     count: 0,
     fixed: [
-      buildCandidate(P, 1, 'A', 'ca-1-1a', 0),
-      buildCandidate(P, 2, 'A', 'ca-2-1a', 1),
-      buildCandidate(P, 1, 'B', 'ca-1-1b', 2),
-      buildCandidate(P, 2, 'B', 'ca-2-1b', 3),
-      buildCandidate(P, 1, 'E', 'ca-1-1a1', 4),
-      buildCandidate(P, 2, 'E', 'ca-2-1a1', 5),
-      buildCandidate(P, 1, 'F', 'ca-1-1a2', 6),
-      buildCandidate(P, 2, 'F', 'ca-2-1a2', 7),
-      buildCandidate(P, 1, 'G', 'ca-1-1b1', 8),
-      buildCandidate(P, 2, 'G', 'ca-2-1b1', 9),
-      buildCandidate(P, 1, 'H', 'ca-1-1b2', 10),
-      buildCandidate(P, 2, 'H', 'ca-2-1b2', 11),
-      buildCandidate(P, 1, 'O', 'ca-1-1c', 12),
-      buildCandidate(P, 2, 'O', 'ca-2-1c', 13)
+      buildCandidate({ prefix: P, orgN: 1, candLetter: 'A', idSuffix: 'ca-1-1a', sortOrder: 0, answersByExternalId: buildStandardCandidateAnswers({ prefix: P }) }),
+      buildCandidate({ prefix: P, orgN: 2, candLetter: 'A', idSuffix: 'ca-2-1a', sortOrder: 1, answersByExternalId: buildStandardCandidateAnswers({ prefix: P }) }),
+      buildCandidate({ prefix: P, orgN: 1, candLetter: 'B', idSuffix: 'ca-1-1b', sortOrder: 2, answersByExternalId: buildStandardCandidateAnswers({ prefix: P }) }),
+      buildCandidate({ prefix: P, orgN: 2, candLetter: 'B', idSuffix: 'ca-2-1b', sortOrder: 3, answersByExternalId: buildStandardCandidateAnswers({ prefix: P }) }),
+      buildCandidate({ prefix: P, orgN: 1, candLetter: 'E', idSuffix: 'ca-1-1a1', sortOrder: 4, answersByExternalId: buildStandardCandidateAnswers({ prefix: P }) }),
+      buildCandidate({ prefix: P, orgN: 2, candLetter: 'E', idSuffix: 'ca-2-1a1', sortOrder: 5, answersByExternalId: buildStandardCandidateAnswers({ prefix: P }) }),
+      buildCandidate({ prefix: P, orgN: 1, candLetter: 'F', idSuffix: 'ca-1-1a2', sortOrder: 6, answersByExternalId: buildStandardCandidateAnswers({ prefix: P }) }),
+      buildCandidate({ prefix: P, orgN: 2, candLetter: 'F', idSuffix: 'ca-2-1a2', sortOrder: 7, answersByExternalId: buildStandardCandidateAnswers({ prefix: P }) }),
+      buildCandidate({ prefix: P, orgN: 1, candLetter: 'G', idSuffix: 'ca-1-1b1', sortOrder: 8, answersByExternalId: buildStandardCandidateAnswers({ prefix: P }) }),
+      buildCandidate({ prefix: P, orgN: 2, candLetter: 'G', idSuffix: 'ca-2-1b1', sortOrder: 9, answersByExternalId: buildStandardCandidateAnswers({ prefix: P }) }),
+      buildCandidate({ prefix: P, orgN: 1, candLetter: 'H', idSuffix: 'ca-1-1b2', sortOrder: 10, answersByExternalId: buildStandardCandidateAnswers({ prefix: P }) }),
+      buildCandidate({ prefix: P, orgN: 2, candLetter: 'H', idSuffix: 'ca-2-1b2', sortOrder: 11, answersByExternalId: buildStandardCandidateAnswers({ prefix: P }) }),
+      buildCandidate({ prefix: P, orgN: 1, candLetter: 'O', idSuffix: 'ca-1-1c', sortOrder: 12, answersByExternalId: buildStandardCandidateAnswers({ prefix: P }) }),
+      buildCandidate({ prefix: P, orgN: 2, candLetter: 'O', idSuffix: 'ca-2-1c', sortOrder: 13, answersByExternalId: buildStandardCandidateAnswers({ prefix: P }) })
     ]
   },
 
   nominations: {
     count: 0,
     fixed: [
-      ...buildElectionConstituencyNoms(P, 'el-1', 'co-1a', ['ca-1-1a', 'ca-2-1a'], 1),
-      ...buildElectionConstituencyNoms(P, 'el-1', 'co-1b', ['ca-1-1b', 'ca-2-1b'], 10),
-      ...buildElectionConstituencyNoms(P, 'el-2', 'co-1a1', ['ca-1-1a1', 'ca-2-1a1'], 20),
-      ...buildElectionConstituencyNoms(P, 'el-2', 'co-1a2', ['ca-1-1a2', 'ca-2-1a2'], 30),
-      ...buildElectionConstituencyNoms(P, 'el-2', 'co-1b1', ['ca-1-1b1', 'ca-2-1b1'], 40),
-      ...buildElectionConstituencyNoms(P, 'el-2', 'co-1b2', ['ca-1-1b2', 'ca-2-1b2'], 50),
-      ...buildElectionConstituencyNoms(P, 'el-2', 'co-1c', ['ca-1-1c', 'ca-2-1c'], 60)
+      ...buildElectionConstituencyNoms({ prefix: P, electionIdSuffix: 'el-1', constituencyIdSuffix: 'co-1a', candidateIdSuffixes: ['ca-1-1a', 'ca-2-1a'], electionSymbolStart: 1 }),
+      ...buildElectionConstituencyNoms({ prefix: P, electionIdSuffix: 'el-1', constituencyIdSuffix: 'co-1b', candidateIdSuffixes: ['ca-1-1b', 'ca-2-1b'], electionSymbolStart: 10 }),
+      ...buildElectionConstituencyNoms({ prefix: P, electionIdSuffix: 'el-2', constituencyIdSuffix: 'co-1a1', candidateIdSuffixes: ['ca-1-1a1', 'ca-2-1a1'], electionSymbolStart: 20 }),
+      ...buildElectionConstituencyNoms({ prefix: P, electionIdSuffix: 'el-2', constituencyIdSuffix: 'co-1a2', candidateIdSuffixes: ['ca-1-1a2', 'ca-2-1a2'], electionSymbolStart: 30 }),
+      ...buildElectionConstituencyNoms({ prefix: P, electionIdSuffix: 'el-2', constituencyIdSuffix: 'co-1b1', candidateIdSuffixes: ['ca-1-1b1', 'ca-2-1b1'], electionSymbolStart: 40 }),
+      ...buildElectionConstituencyNoms({ prefix: P, electionIdSuffix: 'el-2', constituencyIdSuffix: 'co-1b2', candidateIdSuffixes: ['ca-1-1b2', 'ca-2-1b2'], electionSymbolStart: 50 }),
+      ...buildElectionConstituencyNoms({ prefix: P, electionIdSuffix: 'el-2', constituencyIdSuffix: 'co-1c', candidateIdSuffixes: ['ca-1-1c', 'ca-2-1c'], electionSymbolStart: 60 })
     ]
   },
 
