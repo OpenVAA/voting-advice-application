@@ -84,7 +84,7 @@ Shows a dynamic list of the actions the candidate should take to be included in 
 <MainContent title={nextAction.title}>
   {#snippet note()}
     {#if candCtx.answersLocked}
-      <Warning>
+      <Warning data-testid="candidate-answers-locked-warning">
         {t('candidateApp.common.editingNotAllowed')}
         {#if candCtx.unansweredRequiredInfoQuestions?.length !== 0 || ($appSettings.entities?.hideIfMissingAnswers?.candidate && candCtx.unansweredOpinionQuestions?.length !== 0)}
           {t('candidateApp.common.isHiddenBecauseMissing')}

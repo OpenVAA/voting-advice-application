@@ -181,7 +181,7 @@ Shows the candidate's basic information, some of which is editable.
 <MainContent title={t('candidateApp.basicInfo.title')}>
   {#snippet note()}
     {#if candCtx.answersLocked}
-      <Warning>
+      <Warning data-testid="candidate-answers-locked-warning">
         {t('candidateApp.common.editingNotAllowed')}
         {#if candCtx.unansweredRequiredInfoQuestions?.length !== 0 || ($appSettings.entities?.hideIfMissingAnswers?.candidate && candCtx.unansweredOpinionQuestions?.length !== 0)}
           {t('candidateApp.common.isHiddenBecauseMissing')}

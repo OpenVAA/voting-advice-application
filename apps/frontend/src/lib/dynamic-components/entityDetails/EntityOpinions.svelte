@@ -76,7 +76,7 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
           otherAnswer={answer}
           otherLabel={shortName} />
         {#if answer?.info && customData?.allowOpen !== false}
-          <QuestionOpenAnswer content={answer.info} class="mt-md" />
+          <QuestionOpenAnswer content={answer.info} class="mt-md" data-testid="entity-opinion-open-answer" />
         {/if}
       {/if}
     </div>

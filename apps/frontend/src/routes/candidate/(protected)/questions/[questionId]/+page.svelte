@@ -255,7 +255,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
     <MainContent title={text}>
       {#snippet note()}
         {#if answersLocked}
-          <Warning>
+          <Warning data-testid="candidate-answers-locked-warning">
             {t('candidateApp.common.editingNotAllowed')}
           </Warning>
         {/if}

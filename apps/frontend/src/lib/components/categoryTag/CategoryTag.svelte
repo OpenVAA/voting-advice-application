@@ -39,7 +39,7 @@ Used to display a question category tag with the category's color.
   });
 </script>
 
-<span {...concatClass(restProps, tagStyles.classes)} style={tagStyles.styles}>
+<span {...concatClass(restProps, tagStyles.classes)} style={tagStyles.styles} data-testid="category-tag">
   {variant === 'full' ? category.name : category.shortName}
   {#if suffix}
     <span>{suffix}</span>

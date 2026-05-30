@@ -63,11 +63,21 @@ Accesses `AppContext` and optionally `VoterContext`.
   {/if}
 
   {#if topBarSettings.current.actions.feedback === 'show'}
-    <Button onclick={openFeedbackModal.current} variant="icon" icon="feedback" text={t('feedback.send')} />
+    <Button
+      onclick={openFeedbackModal.current}
+      variant="icon"
+      icon="feedback"
+      text={t('feedback.send')}
+      data-testid="header-feedback" />
   {/if}
 
   {#if topBarSettings.current.actions.help === 'show'}
-    <Button href={getRoute.current('Help')} variant="icon" icon="help" text={t('help.title')} />
+    <Button
+      href={getRoute.current('Help')}
+      variant="icon"
+      icon="help"
+      text={t('help.title')}
+      data-testid="header-help" />
   {/if}
 
   {#if topBarSettings.current.actions.results === 'show'}

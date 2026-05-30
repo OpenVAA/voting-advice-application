@@ -152,7 +152,7 @@
     {#if isLoginShown}
       <div transition:slide={{ duration: DELAY.sm }} class="flex w-full flex-col items-center">
         {#if !showPasswordSetMessage}
-          <p class="max-w-md text-center">
+          <p class="max-w-md text-center" data-testid={answersLocked ? 'login-answers-locked-info' : undefined}>
             {answersLocked ? t('candidateApp.login.answersLockedInfo') : t('candidateApp.login.enterEmailAndPassword')}
           </p>
         {/if}

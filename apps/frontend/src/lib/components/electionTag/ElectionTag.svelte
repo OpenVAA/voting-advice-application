@@ -40,6 +40,6 @@ Used when the application has multiple elections and question may apply to only 
   });
 </script>
 
-<span {...concatClass(restProps, tagStyles.classes)} style={tagStyles.styles}>
+<span {...concatClass(restProps, tagStyles.classes)} style={tagStyles.styles} data-testid="election-tag">
   {variant === 'full' ? election.name : election.shortName}
 </span>

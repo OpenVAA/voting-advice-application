@@ -14,7 +14,19 @@ export const testIds = {
       email: 'login-email',
       password: 'password-field',
       submit: 'login-submit',
-      errorMessage: 'login-errorMessage'
+      errorMessage: 'login-errorMessage',
+      // Phase 91 Plan 02 (TIR6:3-14 — D-91-PD-05 A1): testid on the <p>
+      // rendering t('candidateApp.login.answersLockedInfo') when
+      // answersLocked is true. Used by the perm-answers-locked spec to
+      // assert the read-only login surface (Surface 1 of the 3-surface
+      // CONTEXT contract).
+      answersLockedInfo: 'login-answers-locked-info'
+    },
+    // Phase 91 Plan 02 (TIR6:3-14 — A1 surfaces 2+3): single canonical
+    // testid on the <Warning> element rendering editingNotAllowed across
+    // /candidate, /candidate/profile, /candidate/questions/[questionId].
+    common: {
+      answersLockedWarning: 'candidate-answers-locked-warning'
     },
     profile: {
       submit: 'profile-submit',
@@ -193,7 +205,13 @@ export const testIds = {
       // in display mode). Replaces the `.entitySelected` raw-locator
       // suppression at voter-detail.spec.ts:246-249/270-273/291-294 +
       // voter-mega-journey.spec.ts (classifyVoterEntityRows helper).
-      entitySelectedAnswer: 'entity-selected-answer'
+      entitySelectedAnswer: 'entity-selected-answer',
+      // Phase 91 Plan 02 (TIR6:121-142 — D-91-PD-05 A9): testid on the
+      // QuestionOpenAnswer wrapper rendered inside EntityOpinions.svelte
+      // when the candidate has authored info AND customData.allowOpen
+      // is not false. Used by the perm-disable-allow-open voter-side
+      // assertion to verify Q1 info visible / Q2 info hidden.
+      opinionOpenAnswer: 'entity-opinion-open-answer'
     },
     nav: {
       resultsLink: 'voter-nav-results'
@@ -240,6 +258,22 @@ export const testIds = {
     // Phase 91 Plan 03 (TIR6:16-22 — D-91-MJ-01 B1): testid on the inline
     // ErrorMessage in Input.svelte:641. Consumed by the candidate-mega
     // invalidUrl step + future shared input-validation assertions.
-    inputError: 'input-error'
+    inputError: 'input-error',
+    // Phase 91 Plan 02 (TIR6:104-108 — D-91-PD-05 A7): testid on the root
+    // <span> of ElectionTag.svelte. Consumed by perm-hide-election-tags
+    // spec to assert absence when elections.showElectionTags=false.
+    electionTag: 'election-tag',
+    // Phase 91 Plan 02 (TIR6:111-115 — D-91-PD-05 A8): testid on the root
+    // <span> of CategoryTag.svelte. Consumed by perm-hide-category-tags
+    // spec to assert absence when questions.showCategoryTags=false.
+    categoryTag: 'category-tag',
+    // Phase 91 Plan 02 (TIR6:68-88 — D-91-PD-05 A3/A4): testids on the
+    // feedback + help Buttons in Banner.svelte. Consumed by perm-header-
+    // show-feedback + perm-header-show-help specs to assert visibility
+    // when header.showFeedback / header.showHelp is true.
+    header: {
+      feedback: 'header-feedback',
+      help: 'header-help'
+    }
   }
 } as const;
