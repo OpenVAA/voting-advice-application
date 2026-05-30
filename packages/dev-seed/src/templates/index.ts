@@ -20,11 +20,16 @@ import { e2eTemplate } from './e2e';
 import { perm1e1cg1coTemplate } from './permutations/perm-1e1cg1co';
 import { perm2eAsymmetricTemplate } from './permutations/perm-2e-asymmetric';
 import { perm2eSharedTemplate } from './permutations/perm-2e-shared';
+import { permAnswersLockedTemplate } from './permutations/perm-answers-locked';
 import { permDisableCandidateAppTemplate } from './permutations/perm-disable-candidate-app';
 import { permDisableElection1coTemplate } from './permutations/perm-disable-election-1co';
 import { permDisableElection2coTemplate } from './permutations/perm-disable-election-2co';
 import { permDisableVoterAppTemplate } from './permutations/perm-disable-voter-app';
 import { permDisjoint1coTemplate } from './permutations/perm-disjoint-1co';
+import { permHeaderShowFeedbackTemplate } from './permutations/perm-header-show-feedback';
+import { permHeaderShowHelpTemplate } from './permutations/perm-header-show-help';
+import { permHideAllNominationsTemplate } from './permutations/perm-hide-all-nominations';
+import { permHideHeroTemplate } from './permutations/perm-hide-hero';
 import { permLocalisationPositiveTemplate } from './permutations/perm-localisation-positive';
 import { permMissingNominationsTemplate } from './permutations/perm-missing-nominations';
 import { permNotLocated2e2cgTemplate } from './permutations/perm-not-located-2e2cg';
@@ -68,7 +73,18 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   // 3-locale staticSettings base (en/fi/sv) directly — no runtime override.
   // Spec exercises the langSelector visible-and-switching surface +
   // Finnish-translation authoring on q1/q3.
-  'perm-localisation-positive': permLocalisationPositiveTemplate
+  'perm-localisation-positive': permLocalisationPositiveTemplate,
+
+  // Phase 91 Plan 02 — 9 new TIR6 Group A settings-permutation templates.
+  // Each carries its own distinct externalIdPrefix per D-91-PD-05 +
+  // RESEARCH §"Playwright Project Chain". A1/A2/A9 specs additionally
+  // consume the candidateSessionMinter helper (Plan 91-01 Task 3) per
+  // D-91-PD-06 to author per-perm Playwright storage-state JSON files.
+  'perm-answers-locked': permAnswersLockedTemplate,
+  'perm-hide-hero': permHideHeroTemplate,
+  'perm-header-show-feedback': permHeaderShowFeedbackTemplate,
+  'perm-header-show-help': permHeaderShowHelpTemplate,
+  'perm-hide-all-nominations': permHideAllNominationsTemplate
 };
 
 /**
@@ -95,11 +111,16 @@ export { E2E_BASE_APP_SETTINGS, e2eTemplate } from './e2e';
 export { perm1e1cg1coTemplate } from './permutations/perm-1e1cg1co';
 export { perm2eAsymmetricTemplate } from './permutations/perm-2e-asymmetric';
 export { perm2eSharedTemplate } from './permutations/perm-2e-shared';
+export { permAnswersLockedTemplate } from './permutations/perm-answers-locked';
 export { permDisableCandidateAppTemplate } from './permutations/perm-disable-candidate-app';
 export { permDisableElection1coTemplate } from './permutations/perm-disable-election-1co';
 export { permDisableElection2coTemplate } from './permutations/perm-disable-election-2co';
 export { permDisableVoterAppTemplate } from './permutations/perm-disable-voter-app';
 export { permDisjoint1coTemplate } from './permutations/perm-disjoint-1co';
+export { permHeaderShowFeedbackTemplate } from './permutations/perm-header-show-feedback';
+export { permHeaderShowHelpTemplate } from './permutations/perm-header-show-help';
+export { permHideAllNominationsTemplate } from './permutations/perm-hide-all-nominations';
+export { permHideHeroTemplate } from './permutations/perm-hide-hero';
 export { permLocalisationPositiveTemplate } from './permutations/perm-localisation-positive';
 export { permMissingNominationsTemplate } from './permutations/perm-missing-nominations';
 export { permNotLocated2e2cgTemplate } from './permutations/perm-not-located-2e2cg';

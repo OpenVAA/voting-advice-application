@@ -1006,6 +1006,129 @@ export default defineConfig({
       fullyParallel: false,
       use: { ...devices['Desktop Chrome'] },
       dependencies: ['data-setup-perm-localisation-positive']
+    },
+
+    // ===================================================================
+    // Phase 91 Plan 02 — 9 new TIR6 Group A settings-permutation chains
+    // (D-91-PD-05). 27 new project entries (9 setup + 9 spec + 9 teardown)
+    // anchored on perm-localisation-positive per the HIGH-2 invariant
+    // (app_settings JSONB singleton clobbering — see RESEARCH §"Playwright
+    // Project Chain" + lines 988-991). Sequential chain — no parallel
+    // execution within the perm-* family.
+    //
+    // Chain order:
+    //   perm-localisation-positive → perm-answers-locked → perm-hide-hero
+    //     → perm-header-show-feedback → perm-header-show-help
+    //     → perm-hide-all-nominations → perm-hide-if-missing-answers
+    //     → perm-hide-election-tags → perm-hide-category-tags
+    //     → perm-disable-allow-open (END)
+    // ===================================================================
+
+    // A1 — perm-answers-locked (TIR6:3-14). FULL 3-surface coverage per
+    // 91-CONTEXT.md Group A item 1. A1 setup mints a per-perm storage
+    // state via candidateSessionMinter (D-91-PD-06) consumed by the
+    // authenticated sub-tests in perm-answers-locked.spec.ts.
+    {
+      name: 'data-setup-perm-answers-locked',
+      testMatch: /perm-answers-locked\.setup\.ts/,
+      teardown: 'data-teardown-perm-answers-locked',
+      dependencies: ['perm-localisation-positive']
+    },
+    {
+      name: 'data-teardown-perm-answers-locked',
+      testMatch: /perm-answers-locked\.teardown\.ts/
+    },
+    {
+      name: 'perm-answers-locked',
+      testDir: './tests/specs/perm',
+      testMatch: /perm-answers-locked\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-perm-answers-locked']
+    },
+
+    // A2 — perm-hide-hero (TIR6:24-32). Authenticated candidate via
+    // candidateSessionMinter (D-91-PD-06).
+    {
+      name: 'data-setup-perm-hide-hero',
+      testMatch: /perm-hide-hero\.setup\.ts/,
+      teardown: 'data-teardown-perm-hide-hero',
+      dependencies: ['perm-answers-locked']
+    },
+    {
+      name: 'data-teardown-perm-hide-hero',
+      testMatch: /perm-hide-hero\.teardown\.ts/
+    },
+    {
+      name: 'perm-hide-hero',
+      testDir: './tests/specs/perm',
+      testMatch: /perm-hide-hero\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-perm-hide-hero']
+    },
+
+    // A3 — perm-header-show-feedback (TIR6:68-77). Unauthenticated voter
+    // intro + Banner header-feedback assertion + feedback-form open.
+    {
+      name: 'data-setup-perm-header-show-feedback',
+      testMatch: /perm-header-show-feedback\.setup\.ts/,
+      teardown: 'data-teardown-perm-header-show-feedback',
+      dependencies: ['perm-hide-hero']
+    },
+    {
+      name: 'data-teardown-perm-header-show-feedback',
+      testMatch: /perm-header-show-feedback\.teardown\.ts/
+    },
+    {
+      name: 'perm-header-show-feedback',
+      testDir: './tests/specs/perm',
+      testMatch: /perm-header-show-feedback\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-perm-header-show-feedback']
+    },
+
+    // A4 — perm-header-show-help (TIR6:79-88). Unauthenticated voter
+    // intro + Banner header-help button + /en/about URL assertion.
+    {
+      name: 'data-setup-perm-header-show-help',
+      testMatch: /perm-header-show-help\.setup\.ts/,
+      teardown: 'data-teardown-perm-header-show-help',
+      dependencies: ['perm-header-show-feedback']
+    },
+    {
+      name: 'data-teardown-perm-header-show-help',
+      testMatch: /perm-header-show-help\.teardown\.ts/
+    },
+    {
+      name: 'perm-header-show-help',
+      testDir: './tests/specs/perm',
+      testMatch: /perm-header-show-help\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-perm-header-show-help']
+    },
+
+    // A5 — perm-hide-all-nominations (TIR6:90-93). Unauthenticated; spec
+    // asserts on 307 redirect from /en/nominations to /en (Pitfall 5).
+    {
+      name: 'data-setup-perm-hide-all-nominations',
+      testMatch: /perm-hide-all-nominations\.setup\.ts/,
+      teardown: 'data-teardown-perm-hide-all-nominations',
+      dependencies: ['perm-header-show-help']
+    },
+    {
+      name: 'data-teardown-perm-hide-all-nominations',
+      testMatch: /perm-hide-all-nominations\.teardown\.ts/
+    },
+    {
+      name: 'perm-hide-all-nominations',
+      testDir: './tests/specs/perm',
+      testMatch: /perm-hide-all-nominations\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-perm-hide-all-nominations']
     }
   ]
 });
