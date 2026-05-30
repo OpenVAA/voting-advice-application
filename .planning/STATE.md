@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
-status: executing
+status: verifying
 stopped_at: Completed 91-03-PLAN.md
-last_updated: "2026-05-30T15:47:21.045Z"
+last_updated: "2026-05-30T15:57:04.138Z"
 last_activity: 2026-05-30
 progress:
   total_phases: 16
-  completed_phases: 13
+  completed_phases: 14
   total_plans: 46
-  completed_plans: 43
-  percent: 81
+  completed_plans: 44
+  percent: 88
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 
 Phase: 91 (tir6-perm-and-edit-test-additions-visual-perf-a11y-bank-auth) — EXECUTING
 Plan: 4 of 4
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-05-30
 
 ## Performance Metrics
@@ -107,6 +107,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | Phase 91 P01 | 19 | 4 tasks | 20 files |
 | Phase 91 P03 | 18 | 3 tasks | 8 files |
 | Phase 91 P91-02 | 20 | 3 tasks | 47 files |
+| Phase 91 P04 | 14 | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -210,6 +211,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Phase 91 Plan 03 (D-91-MJ-03): voter-feedback-persistence.spec.ts deleted in the SAME commit as the absorbing voter-mega feedbackDialog step. The spec had been SKIP-FALLBACK since Phase 86.1-02 (DETERM-13) due to dialog-close locator race; retirement absorbs TIR6:34-61 coverage into voter-mega.
 - [Phase ?]: Phase 91 Plan 03: baseV1 already seeds test-qu-info-text-link URL-type info question (subtype='link', settings.type='link' at baseV1.ts:662-672) — RESEARCH Assumption A1 holds; no baseV1 extension needed for the candidate invalidUrl step 13.5.
 - [Phase ?]: Plan 91-02: 9 new TIR6 Group A perm chains + 7 testid additions landed; sequential chain anchored on perm-localisation-positive per HIGH-2; A1+A2+A9 setups consume candidateSessionMinter per D-91-PD-06
+- [Phase ?]: Phase 91 Plan 04 (D-91-RS-01/02/02b/04/05): TIR6 visual/perf/a11y/bank-auth migrated to voter-mega.fixture.ts; locatedVoterPage variant + @deprecated banner on voter.fixture; audit clean (0 legacy leaks); CI rebaseline deferred per D-91-RS-01
 
 ### Quick Tasks Completed
 
@@ -232,7 +234,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-05-30T15:47:06.855Z
+Last session: 2026-05-30T15:56:57.839Z
 Stopped at: Completed 91-03-PLAN.md
 Resume file: None
 Next action: Operator decides Phase 87 disposition per Phase 86.3-05 D-06 recommendation:
