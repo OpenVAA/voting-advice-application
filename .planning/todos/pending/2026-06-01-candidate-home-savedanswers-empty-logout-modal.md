@@ -25,6 +25,28 @@ Because `unansweredOpinionQuestions.length` (8) / `unansweredRequiredInfoQuestio
 logout happens. (The TimedModal renders a native `<dialog>` that isn't open/visible
 here, so the fixture's `expect(getByRole('dialog')).toHaveCount(0)` still passes.)
 
+## Deeper trace (2026-06-01)
+- `userData.savedCandidateData` is populated by `(protected)/+layout.svelte:144`
+  `userData.init(snapshot.userData)`, where `snapshot.userData` comes from
+  `(protected)/+layout.server.ts` → `dataWriter.getCandidateUserData()`.
+- `getCandidateUserData` (supabaseDataWriter) calls RPC `get_candidate_user_data`
+  and reads `entityRow.answers`. The RPC (00001_initial_schema.sql:3187) returns
+  `c.answers FROM candidates c WHERE c.auth_user_id = auth.uid()`.
+- The PREVIEW page reads answers from the ENTITY GRAPH instead
+  (`provideEntityData(getEntityData/getNominationData)`), which has NO auth.uid()
+  filter — and it shows the answers correctly (step 21 passes).
+- So: the entity-graph read has the answers, but `get_candidate_user_data`
+  (auth.uid()-scoped) returns them EMPTY — including the profile-saved required
+  info (`unansReq=1`). The RPC DID return a row (no throw, savedData=true), just
+  with empty `answers`.
+
+**Most likely:** the answers were persisted to a different `candidates` row than
+the one `auth.uid()` resolves to on the home reload — i.e. a registration /
+auth-linkage mismatch for the freshly-registered unregistered candidate. Verify
+with a DB query during a live session: compare `candidates.answers` for the row
+matched by `auth_user_id = auth.uid()` vs. the row shown in the entity graph /
+preview. (Needs the candidate's session — couldn't be done from outside.)
+
 ## The actual bug to fix
 On a full-navigation reload of `/candidate` (home), the protected layout's
 `getCandidateUserData` (apps/frontend/src/routes/candidate/(protected)/+layout.server.ts)
