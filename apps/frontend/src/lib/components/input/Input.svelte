@@ -153,11 +153,14 @@ Multilingual features are only available if the `locales` store contains more th
   let unselectedOptions = $state(new Array<AnyChoice>());
   $effect(() => {
     if (type === 'select-multiple' && options) {
-      // If the values can be ordered, we maintain their order in the options array
-      selectedOptions = ordered
+      // Compute into a local first so the effect never reads the `selectedOptions`
+      // state it also writes — reading + writing the same state inside an effect
+      // creates a self-invalidating cycle (effect_update_depth_exceeded).
+      const selected = ordered
         ? (value as Array<Id>).map((v) => options.find((o) => o.id === v)!) // We can be sure all ids are valid bc we checked it above
         : options.filter((o) => (value as Array<Id>).includes(o.id));
-      unselectedOptions = options.filter((o) => !selectedOptions.includes(o));
+      selectedOptions = selected;
+      unselectedOptions = options.filter((o) => !selected.includes(o));
     }
   });
 
