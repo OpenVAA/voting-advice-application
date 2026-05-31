@@ -17,6 +17,7 @@ import type {
   GetJobProgressOptions,
   GetPastJobsOptions,
   InsertJobResultOptions,
+  LocalizedAnswers,
   LocalizedCandidateData,
   SetAnswersOptions,
   SetPropertiesOptions,
@@ -153,11 +154,11 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
     return this._getCandidateUserData(opts);
   }
 
-  updateAnswers(opts: SetAnswersOptions): DWReturnType<LocalizedCandidateData> {
+  updateAnswers(opts: SetAnswersOptions): DWReturnType<LocalizedAnswers> {
     return this._setAnswers({ ...opts, overwrite: false });
   }
 
-  overwriteAnswers(opts: SetAnswersOptions): DWReturnType<LocalizedCandidateData> {
+  overwriteAnswers(opts: SetAnswersOptions): DWReturnType<LocalizedAnswers> {
     return this._setAnswers({ ...opts, overwrite: true });
   }
 
@@ -262,7 +263,7 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
   ): DWReturnType<CandidateUserData<TNominations>>;
   protected abstract _setAnswers(
     opts: SetAnswersOptions & { overwrite: boolean }
-  ): DWReturnType<LocalizedCandidateData>;
+  ): DWReturnType<LocalizedAnswers>;
   protected abstract _updateEntityProperties(opts: SetPropertiesOptions): DWReturnType<LocalizedCandidateData>;
   protected abstract _updateQuestion(opts: SetQuestionOptions): DWReturnType<DataApiActionResult>;
   protected abstract _insertJobResult(opts: InsertJobResultOptions): DWReturnType<DataApiActionResult>;
