@@ -460,6 +460,12 @@ CREATE POLICY "anon_insert_feedback" ON public.feedback
   FOR INSERT TO anon
   WITH CHECK (true);
 
+-- Authenticated: insert only (candidate app also submits feedback;
+-- rate-limit trigger + CHECK constraint gate the insert regardless of role)
+CREATE POLICY "authenticated_insert_feedback" ON public.feedback
+  FOR INSERT TO authenticated
+  WITH CHECK (true);
+
 -- Admin: read feedback for their project
 CREATE POLICY "admin_select_feedback" ON public.feedback
   FOR SELECT TO authenticated
