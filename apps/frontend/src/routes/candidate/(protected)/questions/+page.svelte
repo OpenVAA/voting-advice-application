@@ -140,7 +140,7 @@ Shows the opinion questions for the candidate to answer.
               {@const elections = getElectionsToShow({ question, elections: candCtx.selectedElections })}
               {@const answer = getSavedAnswer(question)}
 
-              <div class="grid-line-x gap-lg grid">
+              <div class="grid-line-x gap-lg grid" data-testid="candidate-questions-card">
                 <HeadingGroup class="text-center">
                   {#if $appSettings.elections.showElectionTags && elections.length}
                     <PreHeading>
@@ -171,7 +171,7 @@ Shows the opinion questions for the candidate to answer.
                   variant={answer == null ? 'main' : undefined}
                   iconPos="left"
                   class="!w-auto place-self-center"
-                  data-testid="candidate-questions-card" />
+                  data-testid="candidate-questions-card-action" />
               </div>
             {/each}
           </div>

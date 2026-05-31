@@ -233,9 +233,11 @@ export function candidateUserDataStore({
         properties: { image, termsOfUseAccepted }
       });
       if (!updatedCandidate) throw new Error('Failed to update image or termsOfUseAccepted');
-      // The property setter returns the whole candidate (including DB answers), so a
-      // full replace is correct here and is applied last when both branches run.
-      updateCandidateData(updatedCandidate);
+      // The property setter returns ONLY the changed properties (`termsOfUseAccepted`,
+      // `image`) — NOT the whole candidate. Merge them into the existing candidate so
+      // `id` and the other static fields (and any just-merged answers) survive; a
+      // wholesale replace here would drop `id` and break the next save's RPC call.
+      updateCandidateData({ ...savedData.candidate, ...updatedCandidate });
     }
     // Only reset the answers after successful save
     resetAnswers();

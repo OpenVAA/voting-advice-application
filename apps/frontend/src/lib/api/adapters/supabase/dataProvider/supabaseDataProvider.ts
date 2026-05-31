@@ -536,10 +536,21 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
         }));
       }
 
+      // The DB `allow_open` column maps to a top-level `allowOpen` via COLUMN_MAP, but
+      // every frontend consumer (candidate per-question editor, EntityOpinions) reads it
+      // from `customData.allowOpen` (per the CustomData type). Bridge the column into
+      // customData so the open-answer field actually renders; an explicit
+      // `custom_data.allowOpen` JSONB value takes precedence over the column.
+      const customData = {
+        allowOpen: (row.allow_open as boolean | null) ?? true,
+        ...((obj.customData as Record<string, unknown> | undefined) ?? {})
+      };
+
       return {
         ...obj,
         type: row.type, // question_type enum passes through as-is
         choices,
+        customData,
         // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
         image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl)
       } as AnyQuestionVariantData;

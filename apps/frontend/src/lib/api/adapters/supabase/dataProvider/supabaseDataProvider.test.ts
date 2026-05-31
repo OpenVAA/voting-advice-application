@@ -1191,6 +1191,35 @@ describe('SupabaseDataProvider', () => {
       expect(q.entityType).toEqual(['candidate']);
     });
 
+    it('bridges the allow_open column into customData.allowOpen (frontend consumer reads customData)', async () => {
+      mockSupabase._mockResponses['question_categories'] = {
+        data: [{ id: 'cat1', name: { en: 'C' }, category_type: 'opinion', sort_order: 1 }],
+        error: null
+      };
+      mockSupabase._mockResponses['questions'] = {
+        data: [
+          // allow_open: false → customData.allowOpen false (open-answer field hidden)
+          { id: 'q1', name: { en: 'Q1' }, type: 'singleChoiceOrdinal', category_id: 'cat1', custom_data: null, allow_open: false },
+          // allow_open: true → customData.allowOpen true (open-answer field shown)
+          { id: 'q2', name: { en: 'Q2' }, type: 'singleChoiceOrdinal', category_id: 'cat1', custom_data: { hero: { emoji: 'x' } }, allow_open: true },
+          // allow_open: null → defaults to true (schema default)
+          { id: 'q3', name: { en: 'Q3' }, type: 'singleChoiceOrdinal', category_id: 'cat1', custom_data: null, allow_open: null },
+          // explicit custom_data.allowOpen wins over the column
+          { id: 'q4', name: { en: 'Q4' }, type: 'singleChoiceOrdinal', category_id: 'cat1', custom_data: { allowOpen: false }, allow_open: true }
+        ],
+        error: null
+      };
+
+      const result = await provider.getQuestionData();
+      const cd = (q: unknown) => (q as { customData: { allowOpen?: boolean; hero?: unknown } }).customData;
+
+      expect(cd(result.questions[0]).allowOpen).toBe(false);
+      expect(cd(result.questions[1]).allowOpen).toBe(true);
+      expect(cd(result.questions[1]).hero).toEqual({ emoji: 'x' }); // existing custom_data preserved
+      expect(cd(result.questions[2]).allowOpen).toBe(true); // null → schema default true
+      expect(cd(result.questions[3]).allowOpen).toBe(false); // explicit JSONB wins over column
+    });
+
     it('filters categories by electionId (including categories with null/empty electionIds)', async () => {
       mockSupabase._mockResponses['question_categories'] = {
         data: [

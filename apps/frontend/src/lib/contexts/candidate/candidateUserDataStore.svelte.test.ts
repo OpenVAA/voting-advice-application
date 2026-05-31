@@ -40,8 +40,14 @@ function makeUserData(overrides?: Partial<LocalizedCandidateData>): CandidateUse
 
 /**
  * A minimal fake `UniversalDataWriter` exposing only the methods the store calls.
- * `updateAnswers` mimics the RPC by returning the bare merged answers map.
- * `updateEntityProperties` returns a full candidate (the property-setter contract).
+ * Both fakes MUST mimic the real adapter return SHAPES, because those shapes are
+ * what the store has to reconcile:
+ * - `updateAnswers` returns the bare merged answers map (the `upsert_answers` RPC
+ *   `RETURNS jsonb` of just the answers — NOT a candidate).
+ * - `updateEntityProperties` returns ONLY the changed properties (`termsOfUseAccepted`,
+ *   `image`) — NOT a full candidate. A fake that returned a full candidate (with `id`)
+ *   would mask the real bug where the store dropped `id` by wholesale-replacing the
+ *   candidate with this partial object.
  */
 type FakeTarget = { target: { type: string; id?: string } };
 
@@ -52,14 +58,15 @@ function makeFakeWriter() {
   const updateEntityProperties = vi.fn(
     async ({
       properties
-    }: FakeTarget & { properties: { termsOfUseAccepted?: string | null } }): Promise<LocalizedCandidateData> =>
+    }: FakeTarget & {
+      properties: { termsOfUseAccepted?: string | null; image?: unknown };
+    }): Promise<LocalizedCandidateData> =>
+      // Mirror the real `_updateEntityProperties`: returns ONLY the changed
+      // properties, with no `id` / static fields.
       ({
-        id: 'cand-1',
-        firstName: 'A',
-        lastName: 'B',
-        answers: {},
-        termsOfUseAccepted: properties.termsOfUseAccepted
-      }) as LocalizedCandidateData
+        termsOfUseAccepted: properties.termsOfUseAccepted ?? null,
+        image: properties.image ?? null
+      }) as unknown as LocalizedCandidateData
   );
   const getCandidateUserData = vi.fn();
   const init = vi.fn();
@@ -138,7 +145,7 @@ describe('candidateUserDataStore.save()', () => {
     expect(store.savedCandidateData?.answers?.q1).toEqual({ value: 3 });
   });
 
-  it('Test 3: properties-only save still replaces the candidate (id preserved)', async () => {
+  it('Test 3: properties-only save merges changed props into candidate (id + static fields preserved)', async () => {
     const { store, updateAnswers, updateEntityProperties } = setup(makeUserData());
 
     store.setTermsOfUseAccepted('2026-05-31T00:00:00Z');
@@ -149,7 +156,36 @@ describe('candidateUserDataStore.save()', () => {
     expect(updateAnswers).not.toHaveBeenCalled();
     expect(updateEntityProperties).toHaveBeenCalledTimes(1);
     expect(updateEntityProperties.mock.calls[0][0].target.id).toBe('cand-1');
+    // The property setter returns ONLY { termsOfUseAccepted, image }; the store must
+    // merge — not replace — so id + static fields survive.
     expect(store.savedCandidateData?.id).toBe('cand-1');
+    expect(store.savedCandidateData?.firstName).toBe('A');
     expect(store.savedCandidateData?.termsOfUseAccepted).toBe('2026-05-31T00:00:00Z');
+  });
+
+  it('Test 4: regression — image/properties save then a later answers save still sends target.id (candidate-mega step 13→13.5)', async () => {
+    const { store, updateAnswers, updateEntityProperties } = setup(makeUserData());
+
+    // Step-13 analogue: an answers + image save in one go. The property branch's
+    // partial return ({ image }) must NOT wipe the candidate's id.
+    store.setAnswer('q1', { value: 3 });
+    store.setImage({ file: new File(['x'], 'p.png', { type: 'image/png' }) } as never);
+    flushSync();
+    await store.save();
+    flushSync();
+
+    expect(updateEntityProperties).toHaveBeenCalledTimes(1);
+    expect(store.savedCandidateData?.id).toBe('cand-1');
+
+    // Step-13.5 analogue: a later answers-only save must still target cand-1.
+    store.setAnswer('q-link', { value: '' });
+    flushSync();
+    await store.save();
+    flushSync();
+
+    // The bug sent p_entity_id: undefined here → PostgREST 404 on upsert_answers.
+    const lastAnswersCall = updateAnswers.mock.calls.at(-1)?.[0];
+    expect(lastAnswersCall?.target.id).toBe('cand-1');
+    expect(store.savedCandidateData?.id).toBe('cand-1');
   });
 });
