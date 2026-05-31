@@ -27,6 +27,7 @@
  *   `.catch(() => null)` on assertion-bearing locator interactions.
  */
 
+import { expect } from '@playwright/test';
 import { testIds } from '../../utils/testIds';
 import type { Locator, Page } from '@playwright/test';
 
@@ -56,6 +57,13 @@ export function createCandidateTermsOfUsePage(page: Page) {
      */
     async acceptAndAdvance(): Promise<void> {
       await this.accept();
+      // Submit is `disabled` until the checkbox toggle propagates. Bare
+      // `.click()` auto-waits for actionability against the 90s per-test
+      // timeout — a stuck-disabled button produces a 346× click-retry dump.
+      // Assert enabled first so a genuine stuck-disabled state fails fast at
+      // the (bounded) expect timeout with a clear message. Mirrors the
+      // documented disabled→enabled spec flow above.
+      await expect(this.getSubmit()).toBeEnabled();
       await this.getSubmit().click();
     }
   };
