@@ -127,7 +127,6 @@
     const snapshot = {
       questionData: validity.questionData,
       entities: validity.entities,
-      nominations: validity.nominations,
       userData: validity.userData
     };
     untrack(() => {
@@ -135,7 +134,12 @@
       dr.update(() => {
         dr.provideQuestionData(snapshot.questionData);
         dr.provideEntityData(snapshot.entities);
-        dr.provideNominationData(snapshot.nominations);
+        // NB: we deliberately do NOT call dr.provideNominationData here. The
+        // candidate's own nominations are loaded as raw partial data on
+        // `userData` (no entity graph), so provideNominationData would throw
+        // `DataProvisionError: No matching entity found for nomination`. The
+        // profile page formats nominations directly from that raw data,
+        // resolving election/constituency names via dr.getElection/getConstituency.
       });
       userData.init(snapshot.userData);
     });

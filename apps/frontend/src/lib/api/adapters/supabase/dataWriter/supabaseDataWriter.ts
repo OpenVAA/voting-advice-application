@@ -240,11 +240,11 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
       if (nomError) throw new Error(`Failed to load nominations: ${nomError.message}`);
 
       const nominationsList = (nomData ?? []).map((n: Tables<'nominations'>['Row']) => ({
-        // `entityType` + `entityId` are REQUIRED by NominationData and are what
-        // DataRoot.provideNominationData filters on (it drops any nomination
-        // whose entityType !== the collection's). Omitting them left the
-        // candidate's own nominations out of the `candidateNominations`
-        // collection, so getNominationsForEntity returned [] on the profile page.
+        // `entityType` + `entityId` are part of the NominationData shape. These
+        // raw partial nominations are surfaced on `userData` (consumed directly
+        // by the candidate profile page) and are intentionally NOT fed to
+        // DataRoot.provideNominationData — they carry no entity graph, so doing
+        // so throws `No matching entity found for nomination`.
         entityType: ENTITY_TYPE.Candidate,
         entityId: candidate.id,
         electionId: n.election_id,

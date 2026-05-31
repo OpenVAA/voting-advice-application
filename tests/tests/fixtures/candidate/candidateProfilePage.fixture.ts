@@ -126,14 +126,20 @@ export function createCandidateProfilePage(page: Page) {
       if (props.nomination !== undefined) {
         const noms = page.getByTestId(testIds.candidate.profile.nominations);
         await expect.soft(noms).toBeVisible();
+        // Election name renders as the InputGroup title (plain text) → matched
+        // on text content. Constituency + election symbol render as locked
+        // <Input> values, which live in the input's `value` property (NOT text
+        // content), so they're matched via toHaveValue on their testid'd inputs.
         if (props.nomination.election !== undefined) {
           await expect.soft(noms).toContainText(props.nomination.election);
         }
         if (props.nomination.constituency !== undefined) {
-          await expect.soft(noms).toContainText(props.nomination.constituency);
+          await expect.soft(noms.getByTestId('nomination-constituency')).toHaveValue(props.nomination.constituency);
         }
         if (props.nomination.electionSymbol !== undefined) {
-          await expect.soft(noms).toContainText(props.nomination.electionSymbol);
+          await expect
+            .soft(noms.getByTestId('nomination-election-symbol'))
+            .toHaveValue(props.nomination.electionSymbol);
         }
       }
     },

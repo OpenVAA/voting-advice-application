@@ -11,7 +11,7 @@ Shows the candidate's basic information, some of which is editable.
 
 <script lang="ts">
   import { getCustomData } from '@openvaa/app-shared';
-  import { ENTITY_TYPE, isEmptyValue } from '@openvaa/data';
+  import { isEmptyValue } from '@openvaa/data';
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
@@ -26,7 +26,7 @@ Shows the candidate's basic information, some of which is editable.
   import { logDebugError } from '$lib/utils/logger';
   import MainContent from '../../../MainContent.svelte';
   import type { LocalizedAnswer } from '@openvaa/app-shared';
-  import type { AnyQuestionVariant, CandidateNomination } from '@openvaa/data';
+  import type { AnyNominationVariantPublicData, AnyQuestionVariant } from '@openvaa/data';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -48,16 +48,16 @@ Shows the candidate's basic information, some of which is editable.
   // Display immutable data
   ////////////////////////////////////////////////////////////////////
 
-  let nominations = $derived(
-    userData.current?.candidate
-      ? $dataRoot.getNominationsForEntity({ type: ENTITY_TYPE.Candidate, id: userData.current.candidate.id })
-      : []
-  );
+  // The candidate's nominations are loaded as raw partial data on `userData`
+  // (NOT provided to `dataRoot` — see the candidate protected +layout.svelte).
+  // We format them directly here, resolving election/constituency names from
+  // `dataRoot` (which DOES hold elections + constituencies via question data).
+  let nominations = $derived(userData.current?.nominations?.nominations ?? []);
 
   /**
-   * Return the data from a nomination needed for displaying it.
+   * Return the data from a raw nomination needed for displaying it.
    */
-  function parseNomination(nomination: CandidateNomination): {
+  function parseNomination(nomination: AnyNominationVariantPublicData): {
     election?: string;
     constituency?: string;
     organization?: string;
@@ -65,17 +65,17 @@ Shows the candidate's basic information, some of which is editable.
     unconfirmed?: boolean;
   } {
     try {
-      const { election, constituency, electionSymbol, parentNomination } = nomination;
-      const customData = getCustomData(nomination);
-      // Unconfirmed may be inherited from parent nomination
-      let unconfirmed = !!customData.unconfirmed;
-      if (!unconfirmed && parentNomination) unconfirmed = !!getCustomData(parentNomination).unconfirmed;
+      const election = $dataRoot.getElection(nomination.electionId);
+      const constituency = $dataRoot.getConstituency(nomination.constituencyId);
       return {
         election: election.name,
         constituency: constituency.name,
-        organization: parentNomination ? parentNomination.entity.name : undefined,
-        electionSymbol,
-        unconfirmed
+        // Raw partial nomination data carries no parent-nomination (election
+        // list / organization) nor confirmed-state info — those live only in
+        // the full nomination graph, which the candidate app does not load.
+        organization: undefined,
+        electionSymbol: nomination.electionSymbol ?? undefined,
+        unconfirmed: false
       };
     } catch (e) {
       logDebugError(`Error formatting nomination: ${e}`);
@@ -242,13 +242,25 @@ Shows the candidate's basic information, some of which is editable.
         {@const { election, constituency, organization, electionSymbol, unconfirmed } = parseNomination(nomination)}
         <InputGroup title={election}>
           {#if constituency}
-            <Input type="text" label={t('common.constituency')} value={constituency} onShadedBg locked />
+            <Input
+              type="text"
+              label={t('common.constituency')}
+              value={constituency}
+              onShadedBg
+              locked
+              data-testid="nomination-constituency" />
           {/if}
           {#if organization}
             <Input type="text" label={t('common.electionList')} value={organization} onShadedBg locked />
           {/if}
           {#if electionSymbol}
-            <Input type="text" label={t('common.electionSymbol.candidate')} value={electionSymbol} onShadedBg locked />
+            <Input
+              type="text"
+              label={t('common.electionSymbol.candidate')}
+              value={electionSymbol}
+              onShadedBg
+              locked
+              data-testid="nomination-election-symbol" />
           {/if}
           <Input
             type="text"
