@@ -180,13 +180,23 @@ export function createCandidateProfilePage(page: Page) {
     },
 
     /**
-     * Locate the question matching `label` and fill its inner input or
-     * textarea. Strict — descends to the first matching `<input>` /
-     * `<textarea>` inside the wrapper.
+     * Locate the question matching `label` and fill its inner editable
+     * control. Descends to the first `textbox` OR `spinbutton` inside the
+     * wrapper: text / longText / link / date questions render `role=textbox`,
+     * but a **number** question is `<input type="number">` → `role=spinbutton`.
+     * Matching only `textbox` made `.fill()` on a number question hang until
+     * the full per-test timeout (the locator never resolved); `.or()` covers
+     * both roles.
+     *
+     * Fail-fast: assert the control is visible (bounded by the expect timeout)
+     * BEFORE filling. A never-resolving locator would otherwise let `.fill()`
+     * burn the entire per-test timeout; the bounded assertion surfaces the
+     * real cause in seconds with a clear message.
      */
     async fillQuestion(label: string | RegExp, value: string): Promise<void> {
       const q = questionLocator(label).first();
-      const editable = q.getByRole('textbox').first();
+      const editable = q.getByRole('textbox').or(q.getByRole('spinbutton')).first();
+      await expect(editable).toBeVisible();
       await editable.fill(value);
     },
 

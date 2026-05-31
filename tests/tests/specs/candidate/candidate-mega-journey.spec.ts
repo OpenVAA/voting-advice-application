@@ -437,23 +437,26 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
       // Visible info questions: all of test-qg-info EXCEPT the mun-only
       // (filtered by election) and the south-only (filtered by
       // constituency). North-only IS visible (the candidate is in CO-Reg-N).
+      // Match the full bracketed `[id]` token (not a bare substring) so each
+      // regex resolves to exactly one rendered question — e.g. `[qu-info-text]`
+      // must not also match `[qu-info-text-longText]` / `[qu-info-text-link]`.
       await candidateProfilePage.expectQuestionsVisible([
-        /qu-info-multipleChoiceCategorical/,
-        /qu-info-singleChoiceCategorical/,
-        /qu-info-text\]/,
-        /qu-info-text-longText/,
-        /qu-info-text-link/,
-        /qu-info-number/,
-        /qu-info-boolean/,
-        /qu-info-date/,
+        /\[qu-info-multipleChoiceCategorical\]/,
+        /\[qu-info-singleChoiceCategorical\]/,
+        /\[qu-info-text\]/,
+        /\[qu-info-text-longText\]/,
+        /\[qu-info-text-link\]/,
+        /\[qu-info-number\]/,
+        /\[qu-info-boolean\]/,
+        /\[qu-info-date\]/,
         // NOTE: qu-info-multipleText omitted — multipleText input not yet
         // implemented in the frontend (see .planning/todos/pending).
-        /qu-info-filt-co-reg-n/
+        /\[qu-info-filt-co-reg-n\]/
       ]);
-      await candidateProfilePage.expectQuestionsAbsent([/qu-info-filt-mun-only/, /qu-info-filt-co-reg-s/]);
+      await candidateProfilePage.expectQuestionsAbsent([/\[qu-info-filt-mun-only\]/, /\[qu-info-filt-co-reg-s\]/]);
       // Required badge on test-qu-info-text (only question with required:true
       // in the info category per Plan 89-01 baseV1 mutation).
-      await candidateProfilePage.expectRequiredBadge(/qu-info-text\]/);
+      await candidateProfilePage.expectRequiredBadge(/\[qu-info-text\]/);
     });
 
     // ============== Step 13: portrait upload + partial profile fill ======
@@ -479,9 +482,10 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
       for (const [externalId, value] of STEP_13_INFO_FILL_ENTRIES) {
         // The rendered question label is the baseV1 `name` (`[qu-info-…]`),
         // which drops the `test-` prefix carried by the externalId. Strip it
-        // so the label regex matches — mirrors the bare `/qu-info-…/` forms
-        // used elsewhere in this spec (steps 13.5 + 14).
-        await candidateProfilePage.fillQuestion(new RegExp(externalId.replace(/^test-/, '')), value);
+        // and wrap in the full bracketed `[id]` token so the label regex
+        // resolves to exactly one question (mirrors steps 12 + 13.5 + 14).
+        const id = externalId.replace(/^test-/, '');
+        await candidateProfilePage.fillQuestion(new RegExp(`\\[${id}\\]`), value);
       }
       await candidateProfilePage.submit();
       // Post-submit lands on home (opinions still disabled because the
@@ -506,7 +510,7 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
       await candidateHomePage.clickTask('profile');
       await expect(page).toHaveURL(/\/candidate\/profile/, { timeout: TIMEOUT.slowPage });
       // Fill the link question with a clearly invalid URL.
-      await candidateProfilePage.fillQuestion(/qu-info-text-link/, 'not-a-url');
+      await candidateProfilePage.fillQuestion(/\[qu-info-text-link\]/, 'not-a-url');
       // Trigger validation by blurring the field (Input.svelte's checkUrl
       // runs on input change; tab off to force evaluation in headless mode).
       await page.keyboard.press('Tab');
@@ -518,7 +522,7 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
         .toContainText(/invalidUrl|invalid url|virheellinen/i, { timeout: TIMEOUT.element });
       // Clear the field so step 14 isn't blocked by validation when it
       // re-submits the form with the required field filled.
-      await candidateProfilePage.fillQuestion(/qu-info-text-link/, '');
+      await candidateProfilePage.fillQuestion(/\[qu-info-text-link\]/, '');
       // Return to home so step 14's clickTask('profile') re-navigates cleanly.
       await page.getByTestId(testIds.candidate.profile.returnButton).click();
       await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({
@@ -532,7 +536,7 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
       await candidateHomePage.clickTask('profile');
       await expect(page).toHaveURL(/\/candidate\/profile/, { timeout: TIMEOUT.slowPage });
       // Fill the required test-qu-info-text field this time.
-      await candidateProfilePage.fillQuestion(/qu-info-text\]/, INFO_QUESTION_ANSWERS['test-qu-info-text']);
+      await candidateProfilePage.fillQuestion(/\[qu-info-text\]/, INFO_QUESTION_ANSWERS['test-qu-info-text']);
       await candidateProfilePage.submit();
       // Post-submit when required-empty gate is satisfied: navigation to
       // the questions overview per profile/+page.svelte:104-116 canSubmit branch.
@@ -580,15 +584,15 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
       // Partial-completion shortcut is visible.
       await candidateQuestionsOverviewPage.expectContinuePrompt();
       // Q1 card round-trips OPEN_ANSWER_1.
-      const q1Card = candidateQuestionsOverviewPage.getQuestionCard(/qu-opin-base-1-likert5/);
+      const q1Card = candidateQuestionsOverviewPage.getQuestionCard(/\[qu-opin-base-1-likert5\]/);
       await expect(q1Card.first()).toBeVisible();
       await expect(q1Card.first()).toContainText(OPEN_ANSWER_1);
       // Q2 card is visible and rendered as an answer-able question.
-      const q2Card = candidateQuestionsOverviewPage.getQuestionCard(/qu-opin-base-2-likert4/);
+      const q2Card = candidateQuestionsOverviewPage.getQuestionCard(/\[qu-opin-base-2-likert4\]/);
       await expect(q2Card.first()).toBeVisible();
       // Category-expander toggle: collapse + re-expand. The Base category
       // expander matches its name.
-      const expander = candidateQuestionsOverviewPage.getCategoryExpander(/qg-opin-base/);
+      const expander = candidateQuestionsOverviewPage.getCategoryExpander(/\[qg-opin-base\]/);
       // Track initial state, click to toggle, click again to restore.
       await expander.click();
       await expander.click();
@@ -597,7 +601,7 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
     // ============== Step 18: edit Q1 ====================================
 
     await test.step('18. edit Q1: change choice + change info + clickContinue → overview shows updates', async () => {
-      await candidateQuestionsOverviewPage.clickEditQuestion(/qu-opin-base-1-likert5/);
+      await candidateQuestionsOverviewPage.clickEditQuestion(/\[qu-opin-base-1-likert5\]/);
       await expect(page).toHaveURL(/\/candidate\/questions\/[^/]+/, {
         timeout: TIMEOUT.slowPage
       });
@@ -607,7 +611,7 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
       await candidateQuestionPage.clickContinue();
       // Return to overview and confirm round-trip of the edited values.
       await page.goto('/en/candidate/questions');
-      const q1CardEdited = candidateQuestionsOverviewPage.getQuestionCard(/qu-opin-base-1-likert5/);
+      const q1CardEdited = candidateQuestionsOverviewPage.getQuestionCard(/\[qu-opin-base-1-likert5\]/);
       await expect(q1CardEdited.first()).toContainText(OPEN_ANSWER_1_EDITED);
     });
 
@@ -657,10 +661,10 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
       // Portrait is rendered.
       await candidatePreviewPage.expectPortraitVisible();
       // Info answers round-trip (sample the required + the link + the number).
-      await candidatePreviewPage.expectInfoAnswer(/qu-info-text\]/, INFO_QUESTION_ANSWERS['test-qu-info-text']);
-      await candidatePreviewPage.expectInfoAnswer(/qu-info-number/, INFO_QUESTION_ANSWERS['test-qu-info-number']);
+      await candidatePreviewPage.expectInfoAnswer(/\[qu-info-text\]/, INFO_QUESTION_ANSWERS['test-qu-info-text']);
+      await candidatePreviewPage.expectInfoAnswer(/\[qu-info-number\]/, INFO_QUESTION_ANSWERS['test-qu-info-number']);
       // Opinion answer round-trip: Q1 was edited to choice index 1 in step 18.
-      await candidatePreviewPage.expectOpinionAnswer(/qu-opin-base-1-likert5/, 1);
+      await candidatePreviewPage.expectOpinionAnswer(/\[qu-opin-base-1-likert5\]/, 1);
       // No voter-comparison messaging — score-gauge + sub-matches absent.
       await candidatePreviewPage.expectNoVoterComparison();
     });
