@@ -309,6 +309,14 @@ Multilingual features are only available if the `locales` store contains more th
         value = currentValue;
       }
 
+      // Number — coerce the DOM string value to a real JS number (or undefined when cleared).
+      // The backend `validate_answer_value` RPC requires a JSON number, so emitting the raw
+      // string would fail validation ("Answer for number question must be a number").
+    } else if (type === 'number' && currentTarget instanceof HTMLInputElement) {
+      // `valueAsNumber` is NaN for an empty or non-numeric field — map that to a cleared value.
+      const numericValue = currentTarget.valueAsNumber;
+      value = Number.isNaN(numericValue) ? undefined : numericValue;
+
       // All other types
     } else {
       value = currentTarget.value;
