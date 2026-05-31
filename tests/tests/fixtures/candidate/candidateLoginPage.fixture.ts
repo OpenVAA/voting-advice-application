@@ -38,7 +38,7 @@ export function createCandidateLoginPage(page: Page) {
     },
 
     async enterPassword(password: string): Promise<void> {
-      await page.getByTestId(testIds.candidate.login.password).fill(password);
+      await page.getByTestId(testIds.candidate.password.field).fill(password);
     },
 
     async submit(): Promise<void> {
