@@ -90,10 +90,14 @@ export function createCandidateQuestionPage(page: Page) {
      * Fill the open-answer (comment) textarea.
      */
     async enterInfo(text: string): Promise<void> {
-      const commentInput = page.getByTestId(testIds.candidate.questions.commentInput);
-      // The Input is `textarea-multilingual` which renders a <textarea>
-      // descendant; fill the first textbox in the wrapper.
-      await commentInput.getByRole('textbox').first().fill(text);
+      // For `textarea-multilingual`, the `data-testid` (passed via restProps) is
+      // spread directly onto the <textarea> element itself — which IS the textbox.
+      // So fill the testid'd element directly; `.getByRole('textbox')` would look
+      // for a (non-existent) textbox DESCENDANT of the textarea and hang. When
+      // translations are collapsed only the current-locale textarea renders, but
+      // `.first()` keeps this robust if a translations panel is open.
+      const commentInput = page.getByTestId(testIds.candidate.questions.commentInput).first();
+      await commentInput.fill(text);
     },
 
     /**

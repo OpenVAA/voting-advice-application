@@ -52,6 +52,7 @@ export const testIds = {
     },
     questions: {
       card: 'candidate-questions-card',
+      cardAction: 'candidate-questions-card-action',
       list: 'candidate-questions-list',
       start: 'candidate-questions-start',
       answerInput: 'candidate-questions-answer',

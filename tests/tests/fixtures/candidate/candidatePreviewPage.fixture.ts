@@ -68,6 +68,10 @@ export function createCandidatePreviewPage(page: Page) {
      */
     async expectOpinionAnswer(qName: string | RegExp, aNthChecked: number | null): Promise<void> {
       const c = container();
+      // EntityDetails renders Info / Opinions (/ Children) as tabs and only mounts
+      // the active tab's content (`info` is active by default). Opinion questions
+      // are therefore absent from the DOM until the Opinions tab is activated.
+      await c.getByRole('tab', { name: /opinions/i }).click();
       const question = c
         .getByTestId(testIds.voter.entityDetail.opinionQuestion)
         .filter({ hasText: qName })
@@ -85,9 +89,13 @@ export function createCandidatePreviewPage(page: Page) {
       // Assert the nth choice is the selected-answer.
       const choice = choices.nth(aNthChecked);
       await expect(choice).toBeVisible();
-      // The selected-answer marker is a sr-only sibling — assert that the
-      // nth choice contains the entity-selected-answer marker as descendant.
-      await expect(choice.getByTestId(testIds.voter.entityDetail.entitySelectedAnswer)).toHaveCount(1);
+      // The marker is a sr-only SIBLING of the choice's `<input data-testid=
+      // "question-choice">` inside their shared `<label>` (an <input> cannot have
+      // children — see QuestionChoices.svelte:284). Assert it against the choice's
+      // parent label, not the input itself.
+      await expect(
+        choice.locator('xpath=..').getByTestId(testIds.voter.entityDetail.entitySelectedAnswer)
+      ).toHaveCount(1);
     },
 
     /**

@@ -125,17 +125,17 @@ export function createCandidateQuestionsOverviewPage(page: Page) {
      * or RegExp, locates the matching question card by displayed text and
      * clicks its edit button.
      *
-     * The edit button is the per-card variant="main"-styled action with
-     * `data-testid="candidate-questions-card"` (the card-action button
-     * itself carries the testid per `questions/+page.svelte:173`).
+     * The card CONTAINER carries `candidate-questions-card` (filterable by the
+     * question label), while the per-card action button (Answer / Edit) carries
+     * `candidate-questions-card-action`. Click the action button — either the nth
+     * in DOM order, or the one inside the label-matched card.
      */
     async clickEditQuestion(textOrNth: string | RegExp | number): Promise<void> {
-      const cards = page.getByTestId(testIds.candidate.questions.card);
       if (typeof textOrNth === 'number') {
-        await cards.nth(textOrNth).click();
+        await page.getByTestId(testIds.candidate.questions.cardAction).nth(textOrNth).click();
         return;
       }
-      await cardByLabel(textOrNth).first().click();
+      await cardByLabel(textOrNth).first().getByTestId(testIds.candidate.questions.cardAction).click();
     }
   };
 }

@@ -96,7 +96,10 @@ const TIMEOUT = {
   click: 2_000,
   page: 5_000,
   slowPage: 7_500,
-  testMax: 30_000
+  // The full 22-step journey (register → password → login → profile → all
+  // opinion questions → preview → logout) does not fit in 30s once every step
+  // actually runs; use the 90s global per-test ceiling (playwright.config.ts:60).
+  testMax: 90_000
 } as const;
 
 /**
@@ -159,14 +162,22 @@ async function walkRemainingOpinionQuestions(
 ): Promise<void> {
   const MAX_STEPS = 20;
   const PER_QUESTION_URL_RE = /\/candidate\/questions\/[^/?]+/;
+  // The caller arrives here right after a SPA navigation (clickContinuePrompt's
+  // <a href> click), which is NOT reflected in page.url() synchronously. Wait for
+  // the first per-question editor to settle before reading the URL — otherwise the
+  // loop sees the stale overview URL and exits having answered nothing.
+  await page.waitForURL(PER_QUESTION_URL_RE, { timeout: timeoutMs }).catch(() => undefined);
   for (let i = 0; i < MAX_STEPS; i++) {
-    const url = page.url();
-    if (!PER_QUESTION_URL_RE.test(url)) return;
+    const current = page.url();
+    if (!PER_QUESTION_URL_RE.test(current)) return;
     await selectChoice(0);
     await expectContinueEnabled();
     await clickContinue();
-    // Settle on whichever page the continue handler dispatched to.
-    await page.waitForLoadState('domcontentloaded', { timeout: timeoutMs });
+    // `clickContinue` (Save and Continue) saves then SPA-navigates to the next
+    // question — or, after the last one, to the overview/home. Wait for the URL to
+    // actually leave the current question so the next iteration reads fresh state
+    // (and doesn't re-answer the same question on a stale URL read).
+    await page.waitForURL((u) => u.toString() !== current, { timeout: timeoutMs }).catch(() => undefined);
   }
 }
 
