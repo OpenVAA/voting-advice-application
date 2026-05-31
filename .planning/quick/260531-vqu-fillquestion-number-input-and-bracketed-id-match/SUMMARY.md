@@ -22,6 +22,8 @@ waited out the full per-test timeout. (User's numeric-input hypothesis: correct.
   - `fillQuestion` now descends to `getByRole('textbox').or(getByRole('spinbutton'))`.
   - Added `await expect(editable).toBeVisible()` before `.fill()` → fails fast
     (~5s expect timeout) instead of 180s.
+  - `submit()` now asserts `toBeEnabled()` before clicking (follow-up request) →
+    a disabled-stuck submit fails fast instead of retrying to the full timeout.
 - `tests/tests/specs/candidate/candidate-mega-journey.spec.ts`
   - All id-based `hasText` regexes wrapped in full bracketed `[id]` tokens
     (info-question visible/absent/required lists, step-13 fill loop, link +
@@ -36,7 +38,9 @@ waited out the full per-test timeout. (User's numeric-input hypothesis: correct.
 
 ## Notes
 
-- `submit()` fail-fast gating deliberately NOT added — the snapshot shows a
-  disabled "Save and Return" control and step 13 submits with the required
-  field empty, so a `toBeEnabled()` gate there risks a regression.
+- `submit()` fail-fast gating WAS added (follow-up). Initial caution about a
+  regression was unfounded: `profile-submit` is `disabled={!canSubmit}` where
+  `canSubmit = status !== 'loading'` (profile/+page.svelte:96) — it is NOT
+  gated on required-field completeness, so `toBeEnabled()` passes once the
+  page leaves the loading state and step 13's required-empty submit is safe.
 - Same fail-fast pattern as the prior ToU quick task ([[260531-vdn]]).

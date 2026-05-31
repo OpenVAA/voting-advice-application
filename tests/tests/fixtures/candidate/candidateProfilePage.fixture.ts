@@ -203,9 +203,19 @@ export function createCandidateProfilePage(page: Page) {
     /**
      * Click profile-submit (variant="main"). Caller asserts the post-submit
      * navigation target separately.
+     *
+     * Fail-fast: assert the button is enabled (bounded by the expect timeout)
+     * BEFORE clicking. profile-submit is `disabled={!canSubmit}` where
+     * `canSubmit = status !== 'loading'` (profile/+page.svelte:96) — it is NOT
+     * gated on required-field completeness, so this is safe to assert even
+     * when the required field is empty. A `status` stuck on 'loading' would
+     * otherwise let `.click()` retry the disabled button until the full
+     * per-test timeout; the bounded assertion surfaces that in seconds.
      */
     async submit(): Promise<void> {
-      await page.getByTestId(testIds.candidate.profile.submit).click();
+      const submitBtn = page.getByTestId(testIds.candidate.profile.submit);
+      await expect(submitBtn).toBeEnabled();
+      await submitBtn.click();
     },
 
     /**
