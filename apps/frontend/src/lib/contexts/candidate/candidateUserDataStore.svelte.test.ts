@@ -1,4 +1,3 @@
-import { ENTITY_TYPE } from '@openvaa/data';
 import { flushSync } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { candidateUserDataStore } from './candidateUserDataStore.svelte';
@@ -22,8 +21,6 @@ vi.mock('$lib/utils/logger', () => ({
   logError: vi.fn()
 }));
 
-const EDITED_ANSWERS_KEY = 'CandidateContext-candidateUserDataStore-editedAnswers';
-
 /**
  * Build a minimal `CandidateUserData<true>` for the store's `init`.
  */
@@ -46,12 +43,16 @@ function makeUserData(overrides?: Partial<LocalizedCandidateData>): CandidateUse
  * `updateAnswers` mimics the RPC by returning the bare merged answers map.
  * `updateEntityProperties` returns a full candidate (the property-setter contract).
  */
+type FakeTarget = { target: { type: string; id?: string } };
+
 function makeFakeWriter() {
   const updateAnswers = vi.fn(
-    async ({ answers }: { answers: LocalizedAnswers }): Promise<LocalizedAnswers> => ({ ...answers })
+    async ({ answers }: FakeTarget & { answers: LocalizedAnswers }): Promise<LocalizedAnswers> => ({ ...answers })
   );
   const updateEntityProperties = vi.fn(
-    async ({ properties }: { properties: { termsOfUseAccepted?: string | null } }): Promise<LocalizedCandidateData> =>
+    async ({
+      properties
+    }: FakeTarget & { properties: { termsOfUseAccepted?: string | null } }): Promise<LocalizedCandidateData> =>
       ({
         id: 'cand-1',
         firstName: 'A',

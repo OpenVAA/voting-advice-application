@@ -87,6 +87,27 @@ export function candidateUserDataStore({
     };
   }
 
+  /**
+   * A utility for merging updated `answers` into the existing `candidate` without
+   * replacing the whole candidate. This preserves the candidate's `id` and all
+   * static fields (`firstName`, `image`, `termsOfUseAccepted`, etc.), which the
+   * answer setters do NOT return — they return only the updated `LocalizedAnswers`.
+   */
+  function mergeCandidateAnswers(answers: LocalizedAnswers): void {
+    if (!savedData) throw new Error('Cannot update candidate data before user data is loaded');
+    const mergedAnswers = {
+      ...(savedData.candidate.answers ?? {}),
+      ...answers
+      // `LocalizedCandidateData.answers` resolves to `Answers & LocalizedAnswers`
+      // (the CandidateData/EntityData base intersected with the LocalizedAnswers
+      // override). The merge yields a valid `LocalizedAnswers`; cast to the field type.
+    } as LocalizedCandidateData['answers'];
+    updateCandidateData({
+      ...savedData.candidate,
+      answers: mergedAnswers
+    });
+  }
+
   ////////////////////////////////////////////////////////////////////
   // Exported reactive values
   ////////////////////////////////////////////////////////////////////
@@ -189,27 +210,33 @@ export function candidateUserDataStore({
 
     const dataWriter = await prepareDataWriter(dataWriterPromise);
 
-    // Updated data will be returned by the update methods
-    let updated: LocalizedCandidateData | undefined;
+    // The answer setters return only the updated `LocalizedAnswers` map, while
+    // the property setter returns the whole updated `LocalizedCandidateData`.
+    // These two shapes MUST be handled distinctly so the answers-only path does
+    // not replace the candidate (which would drop its `id` and static fields).
+    let updatedAnswers: LocalizedAnswers | undefined;
+    let updatedCandidate: LocalizedCandidateData | undefined;
 
     if (answers && Object.keys(answers).length > 0) {
-      updated = await dataWriter.updateAnswers({
+      updatedAnswers = await dataWriter.updateAnswers({
         ...updateArgs,
         answers
       });
-      if (!updated) throw new Error('Failed to update answers');
+      if (!updatedAnswers) throw new Error('Failed to update answers');
+      // Merge the updated answers into the existing candidate, preserving id + static fields.
+      mergeCandidateAnswers(updatedAnswers);
     }
 
     if (image || termsOfUseAccepted) {
-      updated = await dataWriter.updateEntityProperties({
+      updatedCandidate = await dataWriter.updateEntityProperties({
         ...updateArgs,
         properties: { image, termsOfUseAccepted }
       });
-      if (!updated) throw new Error('Failed to update image or termsOfUseAccepted');
+      if (!updatedCandidate) throw new Error('Failed to update image or termsOfUseAccepted');
+      // The property setter returns the whole candidate (including DB answers), so a
+      // full replace is correct here and is applied last when both branches run.
+      updateCandidateData(updatedCandidate);
     }
-
-    // Update the user data
-    if (updated) updateCandidateData(updated);
     // Only reset the answers after successful save
     resetAnswers();
     resetImage();
