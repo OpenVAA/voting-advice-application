@@ -12,7 +12,6 @@ export const testIds = {
   candidate: {
     login: {
       email: 'login-email',
-      password: 'password-field',
       submit: 'login-submit',
       errorMessage: 'login-errorMessage',
       // Phase 91 Plan 02 (TIR6:3-14 — D-91-PD-05 A1): testid on the <p>
@@ -31,7 +30,6 @@ export const testIds = {
     profile: {
       submit: 'profile-submit',
       imageUpload: 'profile-image-upload',
-      returnButton: 'profile-return',
       // Phase 89 Plan 02 (TIR4:75-76 + 166-188): testids supporting the new
       // candidateProfilePage fixture. Placement:
       //  - imageError: portrait-upload error message landing site (added to
@@ -91,10 +89,7 @@ export const testIds = {
       submit: 'forgot-password-submit'
     },
     register: {
-      password: 'register-password',
-      confirmPassword: 'register-confirm-password',
-      submit: 'register-submit',
-      passwordSubmit: 'register-password-submit'
+      submit: 'register-submit'
     },
     passwordReset: {
       submit: 'password-reset-submit'
@@ -115,6 +110,15 @@ export const testIds = {
     },
     privacy: {
       home: 'candidate-privacy-home'
+    },
+    password: {
+      field: 'password-field',
+      /** A shared test id for reset and register password setters */
+      submit: 'set-password-submit'
+    },
+    passwordSetter: {
+      password: 'password-setter-password',
+      confirm: 'password-setter-confirmation'
     }
   },
   voter: {
@@ -274,6 +278,8 @@ export const testIds = {
     header: {
       feedback: 'header-feedback',
       help: 'header-help'
-    }
+    },
+    // Used in image-type Hero and necessary because the img tag cannot be located by role due to empty alt text
+    image: 'image-img'
   }
 } as const;

@@ -96,7 +96,7 @@ const TIMEOUT = {
   click: 2_000,
   page: 5_000,
   slowPage: 7_500,
-  testMax: 180_000
+  testMax: 30_000
 } as const;
 
 /**
@@ -515,16 +515,18 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
       // runs on input change; tab off to force evaluation in headless mode).
       await page.keyboard.press('Tab');
       // Assert the inline ErrorMessage's input-error testid surfaces the
-      // invalidUrl error. Locale-resilient regex covers en + fi vocabulary
-      // for the components.input.error.invalidUrl translation key.
+      // invalidUrl error. The element renders the *translated value* (not the
+      // key), so the regex matches the actual en + fi strings for
+      // components.input.error.invalidUrl: en "The URL is not valid.",
+      // fi "Verkko-osoite ei ole kelvollinen."
       await expect
         .soft(page.getByTestId(testIds.shared.inputError))
-        .toContainText(/invalidUrl|invalid url|virheellinen/i, { timeout: TIMEOUT.element });
+        .toContainText(/not valid|ei ole kelvollinen/i, { timeout: TIMEOUT.element });
       // Clear the field so step 14 isn't blocked by validation when it
       // re-submits the form with the required field filled.
       await candidateProfilePage.fillQuestion(/\[qu-info-text-link\]/, '');
       // Return to home so step 14's clickTask('profile') re-navigates cleanly.
-      await page.getByTestId(testIds.candidate.profile.returnButton).click();
+      await page.getByTestId(testIds.candidate.profile.submit).click();
       await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({
         timeout: TIMEOUT.slowPage
       });

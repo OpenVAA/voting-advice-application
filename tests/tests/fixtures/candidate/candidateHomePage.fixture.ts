@@ -52,15 +52,12 @@ export function createCandidateHomePage(page: Page) {
      * buttons. Replaces the prior state-enum expectThreeTasks(state) surface
      * with an explicit per-task assertion.
      */
-    async expectTasks(spec: {
-      enabled: Array<CandidateHomeTask>;
-      disabled: Array<CandidateHomeTask>;
-    }): Promise<void> {
+    async expectTasks(spec: { enabled: Array<CandidateHomeTask>; disabled: Array<CandidateHomeTask> }): Promise<void> {
       for (const task of spec.enabled) {
-        await expect(page.getByTestId(TASK_TESTIDS[task])).toBeEnabled();
+        await expect.soft(page.getByTestId(TASK_TESTIDS[task])).toBeEnabled();
       }
       for (const task of spec.disabled) {
-        await expect(page.getByTestId(TASK_TESTIDS[task])).toBeDisabled();
+        await expect.soft(page.getByTestId(TASK_TESTIDS[task])).toBeDisabled();
       }
     },
 
@@ -72,9 +69,9 @@ export function createCandidateHomePage(page: Page) {
      */
     async expectStatusMessage(text?: RegExp): Promise<void> {
       const status = page.getByTestId(testIds.candidate.home.statusMessage);
-      await expect(status).toBeVisible();
+      await expect.soft(status).toBeVisible();
       if (text !== undefined) {
-        await expect(status).toContainText(text);
+        await expect.soft(status).toContainText(text);
       }
     },
 

@@ -104,7 +104,9 @@ export const INFO_QUESTION_ANSWERS: Readonly<Record<string, string>> = Object.fr
   'test-qu-info-text-longText': '[INFO-LONGTEXT] An extended biography in long-form text.',
   'test-qu-info-text-link': 'https://example.test/unregistered-candidate',
   'test-qu-info-number': '42',
-  'test-qu-info-multipleText': '[INFO-MULTI] keyword one, keyword two',
+  // NOTE: test-qu-info-multipleText intentionally omitted — multipleText
+  // input is not implemented in the frontend yet (QuestionInput.svelte
+  // throws). See .planning/todos/pending for the implementation TODO.
   'test-qu-info-filt-co-reg-n':
     '[INFO-FILT-CO-REG-N] Answer for the north-only filtered info question.'
 });

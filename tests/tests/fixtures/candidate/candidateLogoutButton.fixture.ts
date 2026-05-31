@@ -52,7 +52,7 @@ export function createCandidateLogoutButton(page: Page) {
       // The TimedModal's actions snippet renders two buttons: the primary
       // "continue editing" (variant=main) and the secondary "Logout"
       // (color=warning). Click the warning-colored Logout to confirm.
-      await dialog.getByRole('button', { name: /logout/i }).click();
+      await dialog.getByRole('button', { name: /log ?out/i }).click();
     },
 
     /**

@@ -620,10 +620,8 @@ export default defineConfig({
       name: 'data-setup-baseV1',
       testMatch: /baseV1\.setup\.ts/,
       teardown: 'data-teardown-baseV1',
-      // Anchor the mega-journey chain AFTER the perm-* family finishes —
-      // perm-not-located-2e2cg is the last spec in the sequential perm-*
-      // chain. This sequences default-mode runs as:
-      //    perm-* family → baseV1 setup → voter-mega-journey
+      // Anchor the mega-journey chain AFTER the 88-03 perm-* family
+      // finishes — perm-not-located-2e2cg is the last spec in that chain.
       // perm-*'s extraTeardownPrefix: ['test-', 'e2e-perm-'] would wipe
       // baseV1 data if they ran in parallel; ordering perm-* first makes
       // every perm spec see only its own e2e-perm-* data, and the final
@@ -849,19 +847,25 @@ export default defineConfig({
 
     // === Phase 89 Plan 03 — candidate mega-journey chain ===
     //
-    // Sequenced AFTER voter-mega-journey (Plan 89-03 R3 binding): both
-    // chains consume baseV1 + share the 'test-' external_id prefix, so
-    // running them in parallel would race on rowTeardown('test-', ...).
-    // Anchoring `data-setup-candidate-mega.dependencies = ['voter-mega-
-    // journey']` enforces strict ordering:
-    //   perm-* family → baseV1 setup → voter-mega-journey → baseV1
-    //   re-setup (candidate-mega) → candidate-mega-journey
+    // REFACTORED 2026-05-31 to break the voter-mega-journey cascade-skip.
     //
-    // The candidate-mega chain re-seeds baseV1 from scratch via
-    // setupFromTemplate (idempotent — runTeardown('test-') runs BEFORE
-    // the writer). This guarantees a clean unregistered-candidate state
-    // (no leftover auth.users row from a prior cold-start run) for the
-    // registration-via-email step.
+    // BEFORE: `data-setup-candidate-mega.dependencies = ['voter-mega-
+    // journey']` enforced strict ordering because the setup re-seeded
+    // baseV1 via `runTeardown('test-')` which would race with voter-mega-
+    // journey's reads. Any voter-mega-journey failure cascade-skipped
+    // candidate-mega-journey + the entire 89-04 + 91 perm-* family.
+    //
+    // AFTER: candidate-mega-setup no longer re-seeds (see
+    // tests/tests/setup/candidate-mega.setup.ts). The chain consumes the
+    // baseV1 data already seeded by `data-setup-baseV1` and runs as a
+    // PARALLEL LEAF alongside voter-mega-journey. Neither cascade-skips
+    // the other on spec failure. Their teardowns are independent:
+    // baseV1.teardown owns the 'test-' row prefix; candidate-mega.teardown
+    // owns only the auth.users row created by the spec's registration step.
+    //
+    // The setup still guarantees a clean auth.users row for
+    // UNREGISTERED_CANDIDATE_EMAIL via idempotent `unregisterCandidate`,
+    // so the registration-via-email step lands deterministically.
     //
     // Spec project sets `storageState: { cookies: [], origins: [] }` to
     // start UNAUTHENTICATED — required for the registration-via-email
@@ -870,7 +874,7 @@ export default defineConfig({
       name: 'data-setup-candidate-mega',
       testMatch: /candidate-mega\.setup\.ts/,
       teardown: 'data-teardown-candidate-mega',
-      dependencies: ['voter-mega-journey']
+      dependencies: ['data-setup-baseV1']
     },
     {
       name: 'data-teardown-candidate-mega',

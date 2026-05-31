@@ -28,8 +28,18 @@ export function createCandidateForgotPasswordPage(page: Page) {
      * appears. Strict — no try/catch / no soft assertions.
      */
     async fillEmailAndAdvance(email: string): Promise<void> {
-      await page.getByTestId('forgot-password-email').fill(email);
-      await page.getByTestId('forgot-password-submit').click();
+      const emailInput = page.getByTestId('forgot-password-email');
+      const submitBtn = page.getByTestId('forgot-password-submit');
+      // Guard the fill+submit race: Svelte 5 `bind:value` can lag a microtask
+      // behind Playwright's `fill()` on a freshly mounted form. If submit
+      // fires before the bound `email` state catches the value, the form's
+      // native `required` validation silently blocks submission and the
+      // page stays in status='idle' (no success/error/loading rendered).
+      await expect(emailInput).toBeEditable();
+      await emailInput.fill(email);
+      await expect(emailInput).toHaveValue(email);
+      await expect(submitBtn).toBeEnabled();
+      await submitBtn.click();
       await expect(page.getByTestId('forgot-password-success')).toBeVisible();
     }
   };

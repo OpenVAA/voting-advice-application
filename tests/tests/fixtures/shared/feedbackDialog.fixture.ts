@@ -10,7 +10,7 @@
  * Surface (RESEARCH §"Pattern 2"):
  *  - dialog: Locator              — testid-bound feedback-form anchor.
  *  - expectVisible()              — assert dialog visible.
- *  - expectHidden()               — assert dialog hidden (form testid count=0).
+ *  - expectHidden()               — assert dialog hidden (form not visible; may remain in DOM).
  *  - expectSendDisabled()         — assert submit button disabled.
  *  - expectSendEnabled()          — assert submit button enabled.
  *  - setRating(n)                 — click rating-N button.
@@ -94,7 +94,7 @@ export function createFeedbackDialog(page: Page): FeedbackDialogFixture {
     },
 
     async expectHidden(): Promise<void> {
-      await expect(dialog).toHaveCount(0);
+      await expect(dialog).toBeHidden();
     },
 
     async expectSendDisabled(): Promise<void> {

@@ -10,13 +10,6 @@
  *  - setPassword(password) — fill register-password + register-confirm-password
  *                            + click register-password-submit.
  *
- * Implementation note: PasswordSetter wraps each PasswordField in a `<div
- * data-testid={passwordTestId}>` (see
- * `apps/frontend/src/lib/candidate/components/passwordSetter/PasswordSetter.svelte:78,82`).
- * The actual `<input>` inside carries `data-testid="password-field"`. We
- * therefore scope each fill to the wrapper testid, then descend to the
- * password-field input.
- *
  * SIBLING (not replacement) to any legacy register-password helper.
  *
  * **Rigidity contract** (Phase 88 Plan 04 SCOPE acceptance #6):
@@ -34,14 +27,14 @@ export function createCandidatePasswordSetter(page: Page) {
      */
     async setPassword(password: string): Promise<void> {
       await page
-        .getByTestId(testIds.candidate.register.password)
-        .getByTestId('password-field')
+        .getByTestId(testIds.candidate.passwordSetter.password)
+        .getByTestId(testIds.candidate.password.field)
         .fill(password);
       await page
-        .getByTestId(testIds.candidate.register.confirmPassword)
-        .getByTestId('password-field')
+        .getByTestId(testIds.candidate.passwordSetter.confirm)
+        .getByTestId(testIds.candidate.password.field)
         .fill(password);
-      await page.getByTestId(testIds.candidate.register.passwordSubmit).click();
+      await page.getByTestId(testIds.candidate.password.submit).click();
     }
   };
 }
