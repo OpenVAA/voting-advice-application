@@ -114,30 +114,26 @@ export function createCandidateProfilePage(page: Page) {
      * Assert the immutable static-info fields render the expected values.
      * Each field is optional — only the supplied fields are checked.
      */
-    async expectStaticInfo(props: {
-      name?: string;
-      nomination?: ProfileNominationExpectations;
-    }): Promise<void> {
+    async expectStaticInfo(props: { name?: string; nomination?: ProfileNominationExpectations }): Promise<void> {
       if (props.name !== undefined) {
-        // first-name + last-name testids land on the wrapping Input. The first
-        // visible Input value matches the candidate's first name; the second,
-        // last name. We assert content on the joined-locator's accessible
-        // value via getByLabel-style scoping is brittle, so we use the
-        // explicit testid scoping per the Phase 89-01 convention.
+        // `profile-first-name` lands on the disabled <input> element itself.
+        // An <input>'s value lives in its `value` property, NOT its text
+        // content, so `toContainText` always sees "" — use `toHaveValue`,
+        // the Playwright-canonical assertion for form-control values.
         const firstName = page.getByTestId('profile-first-name');
-        await expect(firstName).toContainText(props.name);
+        await expect.soft(firstName).toHaveValue(props.name);
       }
       if (props.nomination !== undefined) {
         const noms = page.getByTestId(testIds.candidate.profile.nominations);
-        await expect(noms).toBeVisible();
+        await expect.soft(noms).toBeVisible();
         if (props.nomination.election !== undefined) {
-          await expect(noms).toContainText(props.nomination.election);
+          await expect.soft(noms).toContainText(props.nomination.election);
         }
         if (props.nomination.constituency !== undefined) {
-          await expect(noms).toContainText(props.nomination.constituency);
+          await expect.soft(noms).toContainText(props.nomination.constituency);
         }
         if (props.nomination.electionSymbol !== undefined) {
-          await expect(noms).toContainText(props.nomination.electionSymbol);
+          await expect.soft(noms).toContainText(props.nomination.electionSymbol);
         }
       }
     },
@@ -163,7 +159,7 @@ export function createCandidateProfilePage(page: Page) {
      */
     async expectQuestionsAbsent(labels: Array<string | RegExp>): Promise<void> {
       for (const label of labels) {
-        await expect(questionLocator(label)).toHaveCount(0);
+        await expect.soft(questionLocator(label)).toHaveCount(0);
       }
     },
 
@@ -174,7 +170,7 @@ export function createCandidateProfilePage(page: Page) {
      */
     async expectRequiredBadge(label: string | RegExp): Promise<void> {
       const q = questionLocator(label).first();
-      await expect(q).toContainText(/required/i);
+      await expect.soft(q).toContainText(/required/i);
     },
 
     /**
