@@ -117,12 +117,7 @@
     </HeadingGroup>
   {/snippet}
   <div class="flex-nowarp flex flex-col items-center">
-    <PasswordSetter
-      bind:valid={isPasswordValid}
-      bind:errorMessage={validationError}
-      bind:password
-      passwordTestId="register-password"
-      confirmPasswordTestId="register-confirm-password" />
+    <PasswordSetter bind:valid={isPasswordValid} bind:errorMessage={validationError} bind:password />
     {#if status === 'error'}
       <ErrorMessage
         inline
@@ -138,7 +133,7 @@
       disabled={!canSubmit}
       variant="main"
       text={submitLabel}
-      data-testid="register-password-submit" />
+      data-testid="set-password-submit" />
     <Button
       href={$getRoute('CandAppHelp')}
       text={t('candidateApp.common.contactSupport')}

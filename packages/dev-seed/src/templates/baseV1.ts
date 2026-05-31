@@ -257,12 +257,10 @@ const DEFAULT_INFO_ANSWERS: Record<string, { value: unknown }> = {
   'test-qu-info-text-link': { value: 'https://example.com/candidate-link' },
   'test-qu-info-number': { value: 42 },
   'test-qu-info-boolean': { value: true },
-  'test-qu-info-date': { value: '1980-06-15' },
-  // multipleText: top-level array per validate_answers_jsonb trigger (migration line 233-243);
-  // each item is a localized-string object.
-  'test-qu-info-multipleText': {
-    value: [{ en: 'Tag A' }, { en: 'Tag B' }, { en: 'Tag C' }]
-  }
+  'test-qu-info-date': { value: '1980-06-15' }
+  // NOTE: multipleText info question intentionally omitted — the frontend
+  // QuestionInput.svelte does not yet implement MultipleTextQuestion (it
+  // throws). See .planning/todos/pending for the implementation TODO.
 };
 
 function withInfoAnswers(extra: Record<string, { value: unknown }>): Record<string, { value: unknown }> {
@@ -702,16 +700,11 @@ export const baseV1Template: Template = {
         sort_order: 7,
         is_generated: false
       },
-      {
-        external_id: 'test-qu-info-multipleText',
-        type: 'multipleText',
-        name: { en: '[qu-info-multipleText] Info: keywords.' },
-        category: { external_id: 'test-qg-info' },
-        allow_open: false,
-        required: false,
-        sort_order: 8,
-        is_generated: false
-      },
+      // NOTE: the multipleText info question (sort_order 8) is intentionally
+      // omitted — the frontend QuestionInput.svelte does not yet implement
+      // MultipleTextQuestion (it throws). Restore this question once the
+      // input is implemented (see .planning/todos/pending). The sort_order
+      // gap at 8 is harmless for ORDER BY.
 
       // Phase 89 Plan 01 (TIR4:94-99): 3 filtered info questions scoped to
       // municipal-only / north-only / south-only constituencies/elections.
@@ -762,7 +755,6 @@ export const baseV1Template: Template = {
         category: { external_id: 'test-qg-opin-base' },
         custom_data: { hero: { emoji: '🗳️' } },
         allow_open: true,
-        required: true,
         sort_order: 100,
         is_generated: false
       },
@@ -774,7 +766,6 @@ export const baseV1Template: Template = {
         category: { external_id: 'test-qg-opin-base' },
         custom_data: { hero: { url: '/images/e2e-test-image-1.jpg', type: 'image' } },
         allow_open: true,
-        required: true,
         sort_order: 101,
         is_generated: false
       },
@@ -785,7 +776,6 @@ export const baseV1Template: Template = {
         choices: LIKERT_7_EN,
         category: { external_id: 'test-qg-opin-base' },
         allow_open: true,
-        required: true,
         sort_order: 102,
         is_generated: false
       },
@@ -796,7 +786,6 @@ export const baseV1Template: Template = {
         choices: OPIN_CATEGORICAL_EN,
         category: { external_id: 'test-qg-opin-base' },
         allow_open: true,
-        required: true,
         sort_order: 103,
         is_generated: false
       },
@@ -806,7 +795,6 @@ export const baseV1Template: Template = {
         name: { en: '[qu-opin-base-5-boolean] Base opinion 5 — Boolean.' },
         category: { external_id: 'test-qg-opin-base' },
         allow_open: true,
-        required: true,
         sort_order: 104,
         is_generated: false
       },
@@ -819,7 +807,6 @@ export const baseV1Template: Template = {
         choices: LIKERT_5_EN,
         category: { external_id: 'test-qg-opin-opt-a' },
         allow_open: true,
-        required: true,
         sort_order: 110,
         is_generated: false
       },
@@ -832,7 +819,6 @@ export const baseV1Template: Template = {
         choices: LIKERT_5_EN,
         category: { external_id: 'test-qg-opin-opt-b' },
         allow_open: true,
-        required: true,
         sort_order: 120,
         is_generated: false
       },
@@ -847,7 +833,6 @@ export const baseV1Template: Template = {
         // The category itself carries election_ids via _elections (above);
         // the question inherits scoping via its category.
         allow_open: true,
-        required: true,
         sort_order: 130,
         is_generated: false
       },
@@ -861,7 +846,6 @@ export const baseV1Template: Template = {
         category: { external_id: 'test-qg-opin-co-mun-se-sw' },
         _constituencies: { external_id: ['test-co-mun-se', 'test-co-mun-sw'] },
         allow_open: true,
-        required: true,
         sort_order: 140,
         is_generated: false
       },
@@ -875,7 +859,6 @@ export const baseV1Template: Template = {
         category: { external_id: 'test-qg-opin-filt-a' },
         _constituencies: { external_id: ['test-co-mun-ne'] },
         allow_open: true,
-        required: true,
         sort_order: 150,
         is_generated: false
       },
@@ -889,7 +872,6 @@ export const baseV1Template: Template = {
         category: { external_id: 'test-qg-opin-filt-b' },
         _constituencies: { external_id: ['test-co-mun-se'] },
         allow_open: true,
-        required: true,
         sort_order: 160,
         is_generated: false
       }

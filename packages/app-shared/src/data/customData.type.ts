@@ -57,10 +57,6 @@ export type CustomData = {
      */
     maxlength?: number;
     /**
-     * Whether the question is required for the candidate to be listed in the Voter App.
-     */
-    required?: boolean;
-    /**
      * Whether a multiple-choice question’s options should be displayed vertically instead of the default horizontal layout.
      */
     vertical?: boolean;

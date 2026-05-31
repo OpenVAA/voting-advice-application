@@ -61,7 +61,8 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
   const customData = $derived(getCustomData(question));
 
   const type = $derived.by<InputProps['type']>(() => {
-    let t = INPUT_TYPES[question.type];
+    // TODO: Remove cast when MultipleTextQuestion is implemented
+    let t = INPUT_TYPES[question.type as Exclude<QuestionType, typeof QUESTION_TYPE.MultipleText>];
     if (question.type === QUESTION_TYPE.Text && question.subtype === 'link') t = 'url';
     // reason: placed BEFORE longText + !disableMultilingual blocks so 'email' falls through unchanged (those blocks only remap 'text'/'textarea').
     if (question.type === QUESTION_TYPE.Text && question.subtype === 'email') t = 'email';
@@ -78,7 +79,7 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
 
   const inputProps = $derived.by<InputProps>(() => {
     const { id, info, name: label } = question;
-    const { fillingInfo, locked, maxlength, required } = customData;
+    const { fillingInfo, locked, maxlength } = customData;
     const baseProps = {
       type,
       id,
@@ -86,7 +87,7 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
       locked,
       maxlength,
       // Locked questions cannot be required
-      required: required == null ? undefined : !locked && required,
+      required: !locked && question.required,
       info: fillingInfo ?? info
     };
 

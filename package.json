@@ -5,7 +5,7 @@
     "release": "yarn build && changeset publish",
     "changeset": "changeset",
     "watch:shared": "turbo watch build --filter='./packages/*'",
-    "_dev:concurrent": "concurrently -n watch,frontend -c blue,green --kill-others-on-fail \"yarn watch:shared\" \"yarn workspace @openvaa/frontend dev\"",
+    "_dev:concurrent": "yarn dev:clean && concurrently -n watch,frontend -c blue,green --kill-others-on-fail \"yarn watch:shared\" \"yarn workspace @openvaa/frontend dev\"",
     "dev": "yarn supabase:start && yarn _dev:concurrent",
     "dev:clean": "rm -rf apps/frontend/.svelte-kit apps/frontend/node_modules/.vite",
     "db:start": "yarn build && yarn supabase:start && yarn workspace @openvaa/frontend dev",

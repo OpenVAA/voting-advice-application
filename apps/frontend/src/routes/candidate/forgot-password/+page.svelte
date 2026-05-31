@@ -102,6 +102,7 @@ Shows a form with which to request a password reset email.
     {:else}
       <Button
         type="submit"
+        disabled={email.trim() === '' || status === 'loading'}
         loading={status === 'loading'}
         variant="main"
         class="btn btn-primary mb-md w-full max-w-md"

@@ -70,11 +70,12 @@ export function initCandidateContext(): CandidateContext {
 
   const electionsSelectable = $derived(reactiveDataRoot.current.elections?.length !== 1);
 
-  const constituenciesSelectable = $derived(
-    reactiveDataRoot.current.elections?.some((e) => !e.singleConstituency)
-  );
+  const constituenciesSelectable = $derived(reactiveDataRoot.current.elections?.some((e) => !e.singleConstituency));
 
-  const _preregistrationElectionIds = sessionStorageWritable('candidateContext-preselectedElectionIds', new Array<Id>());
+  const _preregistrationElectionIds = sessionStorageWritable(
+    'candidateContext-preselectedElectionIds',
+    new Array<Id>()
+  );
   const preregistrationElectionIdsState = fromStore(_preregistrationElectionIds);
 
   const _preregistrationConstituencyIds = sessionStorageWritable<{
@@ -132,9 +133,7 @@ export function initCandidateContext(): CandidateContext {
       return;
     }
     try {
-      selectedElections = removeDuplicates(
-        current.nominations.nominations.map((n) => dr.getElection(n.electionId))
-      );
+      selectedElections = removeDuplicates(current.nominations.nominations.map((n) => dr.getElection(n.electionId)));
     } catch (e) {
       logDebugError(`[candidateContext selectedElections] Error fetching election: ${e}`);
       selectedElections = [];
@@ -174,11 +173,15 @@ export function initCandidateContext(): CandidateContext {
     blocks: Array<Array<AnyQuestionVariant>>;
     readonly questions: Array<AnyQuestionVariant>;
     getByCategory: (qc: { id: Id }) => { block: Array<AnyQuestionVariant>; index: number } | undefined;
-    getByQuestion: (q: { id: Id }) => { block: Array<AnyQuestionVariant>; index: number; indexInBlock: number; indexOfBlock: number } | undefined;
+    getByQuestion: (q: {
+      id: Id;
+    }) => { block: Array<AnyQuestionVariant>; index: number; indexInBlock: number; indexOfBlock: number } | undefined;
   };
   let _questionBlocks = $state<QuestionBlocksShape>({
     blocks: [],
-    get questions() { return []; },
+    get questions() {
+      return [];
+    },
     getByCategory: () => undefined,
     getByQuestion: () => undefined
   });
@@ -194,12 +197,8 @@ export function initCandidateContext(): CandidateContext {
           c.appliesTo({ elections, constituencies, entityType }) &&
           c.getApplicableQuestions({ elections, constituencies, entityType }).length > 0
       ) ?? [];
-    const nextInfoCats = nextQuestionCategories.filter(
-      (qc) => qc.type !== QUESTION_CATEGORY_TYPE.Opinion
-    );
-    const nextOpinionCats = nextQuestionCategories.filter(
-      (qc) => qc.type === QUESTION_CATEGORY_TYPE.Opinion
-    );
+    const nextInfoCats = nextQuestionCategories.filter((qc) => qc.type !== QUESTION_CATEGORY_TYPE.Opinion);
+    const nextOpinionCats = nextQuestionCategories.filter((qc) => qc.type === QUESTION_CATEGORY_TYPE.Opinion);
     const nextInfoQuestions = nextInfoCats.flatMap((c) =>
       c.getApplicableQuestions({ elections, constituencies, entityType })
     );
@@ -347,19 +346,19 @@ export function initCandidateContext(): CandidateContext {
   const requiredInfoQuestions = $derived(
     _infoQuestions.filter((q) => {
       const customData = getCustomData(q);
-      return !customData.locked && customData.required;
+      return q.required && !customData.locked;
     })
   );
 
   const unansweredRequiredInfoQuestions = $derived.by(() => {
     const savedData = userData.savedCandidateData;
-    if (!savedData) return [];
+    if (!savedData) return requiredInfoQuestions;
     return requiredInfoQuestions.filter((q) => isEmptyValue(savedData.answers?.[q.id]?.value));
   });
 
   const unansweredOpinionQuestions = $derived.by(() => {
     const savedData = userData.savedCandidateData;
-    if (!savedData) return [];
+    if (!savedData) return _opinionQuestions;
     return _opinionQuestions.filter((q) => isEmptyValue(savedData.answers?.[q.id]?.value));
   });
 

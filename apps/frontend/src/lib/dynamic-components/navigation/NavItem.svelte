@@ -32,7 +32,7 @@ Accesses `LayoutContext`.
   import { NAV_GROUP_CONTEXT_KEY } from './navGroupContext';
   import type { NavItemProps } from './NavItem.type';
 
-  let { autoCloseNav = true, disabled, href, icon, text, children, ...restProps }: NavItemProps = $props();
+  let { autoCloseNav = true, disabled, href, onclick, icon, text, children, ...restProps }: NavItemProps = $props();
 
   const { navigation } = getLayoutContext(onDestroy);
 
@@ -65,7 +65,8 @@ Accesses `LayoutContext`.
   <svelte:element
     this={href == null ? 'button' : 'a'}
     href={disabled ? undefined : href}
-    onclick={() => {
+    onclick={(e: MouseEvent) => {
+      if (onclick) onclick(e);
       if (autoCloseNav && navigation.close) navigation.close();
     }}
     disabled={href == null && disabled ? true : undefined}

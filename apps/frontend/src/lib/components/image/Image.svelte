@@ -29,4 +29,8 @@ Display an `@openvaa/data: Image` object, automatically switching between dark a
   const { darkMode } = getComponentContext();
 </script>
 
-<img {...restProps} alt={alt || (image.alt ?? '')} src={getImageUrl({ image, format, dark: darkMode })} />
+<img
+  data-testid="image-img"
+  {...restProps}
+  alt={alt || (image.alt ?? '')}
+  src={getImageUrl({ image, format, dark: darkMode })} />

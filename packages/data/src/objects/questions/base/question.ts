@@ -77,6 +77,13 @@ export abstract class Question<
     return 1;
   }
 
+  /**
+   * An optional flag indicating whether the question is required. Note that it is up to the consumer to enforce this, it has no effect within the data layer.
+   */
+  get required(): boolean {
+    return this.data.required ?? false;
+  }
+
   //////////////////////////////////////////////////////////////////////////////
   // Answer value handling
   //////////////////////////////////////////////////////////////////////////////

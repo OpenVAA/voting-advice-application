@@ -355,6 +355,7 @@ export class SupabaseAdminClient {
    * - `elections[].constituency_groups` -> election_constituency_groups
    * - `constituency_groups[].constituencies` -> constituency_group_constituencies
    * - `question_categories[]._elections` -> question_categories.election_ids JSONB
+   * - `questions[]._elections` -> questions.election_ids JSONB
    * - `question_categories[]._constituencies` -> question_categories.constituency_ids JSONB
    * - `questions[]._constituencies` -> questions.constituency_ids JSONB
    *
@@ -474,22 +475,28 @@ export class SupabaseAdminClient {
       }
     }
 
-    // Link question_categories -> elections (via election_ids JSONB column)
+    // Link question_categories -> elections AND questions -> elections (via
+    // election_ids JSONB column). Both tables carry the same `_elections`
+    // sentinel shape — explicit scoping only; rows without the sentinel keep
+    // election_ids = null = "all".
     const categories = (data.questionCategories ?? data.question_categories) as
       | Array<Record<string, unknown>>
       | undefined;
-    if (categories) {
-      for (const category of categories) {
-        const electionRefs = category._elections as
+    const electionResolve = async (
+      rows: Array<Record<string, unknown>> | undefined,
+      table: 'question_categories' | 'questions'
+    ): Promise<void> => {
+      if (!rows) return;
+      for (const row of rows) {
+        const electionRefs = row._elections as
           | { externalId?: Array<string>; external_id?: Array<string> }
           | undefined;
         const electionExtIds = electionRefs?.externalId ?? electionRefs?.external_id;
         if (!electionExtIds?.length) continue;
 
-        const catExtId = (category.externalId ?? category.external_id) as string;
-        if (!catExtId) continue;
+        const rowExtId = (row.externalId ?? row.external_id) as string;
+        if (!rowExtId) continue;
 
-        // Resolve election UUIDs
         const electionIds: Array<string> = [];
         for (const elExtId of electionExtIds) {
           const { data: elRow, error: elError } = await this.client
@@ -502,19 +509,24 @@ export class SupabaseAdminClient {
           electionIds.push(elRow.id);
         }
 
-        // Update the question_category with resolved election_ids
         const { error: updateError } = await this.client
-          .from('question_categories')
+          .from(table)
           .update({ election_ids: electionIds })
-          .eq('external_id', catExtId)
+          .eq('external_id', rowExtId)
           .eq('project_id', this.projectId);
         if (updateError) {
           throw new Error(
-            `linkJoinTables: failed to update question_category ${catExtId} election_ids: ${updateError.message}`
+            `linkJoinTables: failed to update ${table} ${rowExtId} election_ids: ${updateError.message}`
           );
         }
       }
-    }
+    };
+
+    await electionResolve(categories, 'question_categories');
+    await electionResolve(
+      data.questions as Array<Record<string, unknown>> | undefined,
+      'questions'
+    );
 
     // Link question_categories -> constituencies (via constituency_ids JSONB)
     // and questions -> constituencies (via constituency_ids JSONB). Both

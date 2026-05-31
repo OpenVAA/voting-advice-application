@@ -122,7 +122,7 @@ Shows a form with which to set a new password when it has been reset.
       disabled={!canSubmit}
       variant="main"
       text={submitLabel}
-      data-testid="password-reset-submit" />
+      data-testid="set-password-submit" />
     <Button
       href={$getRoute('CandAppHelp')}
       text={t('candidateApp.common.contactSupport')}

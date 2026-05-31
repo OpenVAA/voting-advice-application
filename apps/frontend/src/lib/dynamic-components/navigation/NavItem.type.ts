@@ -26,6 +26,10 @@ export type NavItemProps = LinkOrButtonElementProps & {
    * Whether the menu available from the page context should be closed when the item is clicked. @default true
    */
   autoCloseNav?: boolean;
+  /**
+   * Optional click event handler for the navigation item.
+   */
+  onclick?: (event: MouseEvent) => void;
 };
 
 /**

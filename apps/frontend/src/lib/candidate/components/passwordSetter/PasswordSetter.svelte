@@ -36,9 +36,7 @@ Contains the dynamic `PasswordValidator` component.
     autocomplete = 'new-password',
     errorMessage = $bindable(undefined),
     valid = $bindable(false),
-    passwordTestId = undefined,
-    confirmPasswordTestId = undefined,
-    ..._restProps
+    ...restProps
   }: PasswordSetterProps = $props();
 
   export function reset(): void {
@@ -68,18 +66,18 @@ Contains the dynamic `PasswordValidator` component.
   });
 </script>
 
-<form class="m-0 flex w-full flex-col flex-nowrap items-center">
+<form class="m-0 flex w-full flex-col flex-nowrap items-center" {...restProps}>
   <p class="mx-md my-0 self-stretch">
     {t('candidateApp.setPassword.ingress')}
   </p>
   <!-- bind: keep — Pattern 2: PasswordValidator.validPassword is $bindable(false) -->
   <PasswordValidator bind:validPassword {password} />
   <div class="mb-md mt-md flex w-full flex-col gap-6">
-    <div data-testid={passwordTestId}>
+    <div data-testid="password-setter-password">
       <!-- bind: keep — Pattern 2: PasswordField.password is $bindable('') -->
       <PasswordField bind:password id="password-{id}" label={t('common.password')} {autocomplete} />
     </div>
-    <div data-testid={confirmPasswordTestId}>
+    <div data-testid="password-setter-confirmation">
       <!-- bind: keep — Pattern 2: PasswordField.password is $bindable('') -->
       <PasswordField
         bind:password={passwordConfirmation}

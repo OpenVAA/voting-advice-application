@@ -17,12 +17,4 @@ export type PasswordSetterProps = Omit<SvelteHTMLElements['form'], 'autocomplete
    * Bindable: Whether the password is valid and the confirmation password matches.
    */
   valid?: boolean;
-  /**
-   * Optional `data-testid` for the password field wrapper. When provided, wraps the password input in a `<div>` with this value.
-   */
-  passwordTestId?: string;
-  /**
-   * Optional `data-testid` for the confirm password field wrapper. When provided, wraps the confirmation input in a `<div>` with this value.
-   */
-  confirmPasswordTestId?: string;
 };

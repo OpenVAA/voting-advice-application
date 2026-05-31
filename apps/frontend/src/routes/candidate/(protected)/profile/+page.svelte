@@ -93,14 +93,7 @@ Shows the candidate's basic information, some of which is editable.
     !candCtx.requiredInfoQuestions.some((q) => isEmptyValue(userData.current?.candidate.answers?.[q.id]?.value))
   );
 
-  // Phase 82 A11Y-07 TIGHTEN-SOFT: submit button truly disabled when any required
-  // info question is empty. The `&& allRequiredFilled` extension makes the button
-  // match the existing "Required" notice + sr-only badge per Input.svelte:135. The
-  // handleSubmit guard at :126-130 stays as defense-in-depth (programmatic clicks).
-  // NOTE: `allRequiredFilled` is declared ABOVE this line (Svelte 5 $derived is lazy
-  // at runtime so the original order worked, but svelte-check's TS strict use-before
-  // -declaration check flagged it — minimal reorder swap to keep typecheck clean).
-  let canSubmit = $derived(status !== 'loading' && allRequiredFilled);
+  let canSubmit = $derived(status !== 'loading');
 
   let submitRouting = $derived.by(() => {
     if (allRequiredFilled && candCtx.unansweredOpinionQuestions.length && !candCtx.answersLocked) {
@@ -306,7 +299,12 @@ Shows the candidate's basic information, some of which is editable.
       {#each candCtx.infoQuestions.filter((q) => !getCustomData(q).locked) as question (question.id)}
         {@const answer = userData.current?.candidate.answers?.[question.id]}
         <div data-testid="candidate-profile-info-item">
-          <QuestionInput {question} {answer} onChange={handleQuestionInputChange} locked={candCtx.answersLocked} onShadedBg />
+          <QuestionInput
+            {question}
+            {answer}
+            onChange={handleQuestionInputChange}
+            locked={candCtx.answersLocked}
+            onShadedBg />
         </div>
       {/each}
     </div>
