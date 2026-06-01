@@ -31,8 +31,8 @@
 import { expect } from '@playwright/test';
 import { createLangSelector } from './langSelectorFixture.fixture';
 import { testIds } from '../../utils/testIds';
-import type { LangSelectorFixture } from './langSelectorFixture.fixture';
 import type { Page } from '@playwright/test';
+import type { LangSelectorFixture } from './langSelectorFixture.fixture';
 
 export function createVoterNav(page: Page) {
   return {
@@ -60,6 +60,11 @@ export function createVoterNav(page: Page) {
       if (!(await menu.isVisible())) {
         return;
       }
+      // reason: the close control's accessible name (t('common.closeMenu'))
+      // is locale-dependent, so a getByRole({ name }) selector would not be
+      // locale-independent. The `#drawerCloseButton` id (VoterNav.svelte:57)
+      // is the only locale-stable anchor for this control.
+      // eslint-disable-next-line playwright/no-raw-locators
       await page.locator('#drawerCloseButton').click();
       await expect(menu).toBeHidden();
     }
