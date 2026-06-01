@@ -80,6 +80,7 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
   <div class="inner-actions-bar flex w-full items-center justify-between pr-6" style:--background-color={bgColor}>
     <!-- invertLogo ? 'text-primary-content' : 'text-neutral' -->
     <button
+      data-testid="nav-menu-toggle"
       onclick={openDrawer}
       bind:this={drawerOpenElement}
       aria-expanded={isDrawerOpen}

@@ -248,7 +248,11 @@ export const testIds = {
     questionDelete: 'question-delete',
     navigation: {
       menu: 'nav-menu',
-      menuItem: 'nav-menu-item'
+      menuItem: 'nav-menu-item',
+      // Locale-independent open-menu anchor on the Header menu-toggle button
+      // (Header.svelte). Used by the voterNav fixture to open the drawer in
+      // any UI locale (the English-only /open menu/i regex fails on /fi).
+      menuToggle: 'nav-menu-toggle'
     },
     // Phase 90 Plan 03 (TIR5:28-50 + D-90-06): testids supporting the new
     // langSelectorFixture + multilingualTextFieldFixture function-fixtures.
