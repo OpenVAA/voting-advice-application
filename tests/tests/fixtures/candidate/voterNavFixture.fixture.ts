@@ -40,13 +40,29 @@ export function createVoterNav(page: Page) {
      * Open the voter nav drawer (idempotent) and return a LangSelectorFixture
      * scoped to the now-open drawer. If the drawer is already open, the toggle
      * click is skipped.
+     *
+     * Hydration-race hardening: the menu-toggle is rendered server-side, but its
+     * Svelte `onclick={openDrawer}` handler (Layout.svelte:49) is only bound once
+     * the page hydrates. A single `.click()` fired before hydration completes is
+     * a silent no-op — the drawer never opens and the bare `expect(menu).toBeVisible()`
+     * times out (the observed flake). `openDrawer()` ONLY sets `isDrawerOpen = true`
+     * (it never toggles closed), so re-clicking is safe; retry the click via
+     * `toPass()` until the drawer nav actually becomes visible.
      */
     async open(): Promise<LangSelectorFixture> {
       const menu = page.getByTestId(testIds.shared.navigation.menu);
-      if (!(await menu.isVisible())) {
-        await page.getByTestId(testIds.shared.navigation.menuToggle).click();
-        await expect(menu).toBeVisible();
-      }
+      const toggle = page.getByTestId(testIds.shared.navigation.menuToggle);
+      // Wait for the toggle to be actionable (page chrome rendered) before
+      // attempting to interact — fail fast with a clear locator if it never shows.
+      await expect(toggle).toBeVisible();
+      await expect(async () => {
+        if (!(await menu.isVisible())) {
+          await toggle.click();
+        }
+        // Short per-attempt budget: if this click registered, the drawer opens
+        // well within 1s; if it was a pre-hydration no-op, toPass re-clicks.
+        await expect(menu).toBeVisible({ timeout: 1000 });
+      }).toPass({ timeout: 10_000 });
       return createLangSelector(page);
     },
 
