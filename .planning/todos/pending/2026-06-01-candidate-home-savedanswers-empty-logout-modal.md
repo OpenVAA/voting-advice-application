@@ -47,6 +47,63 @@ with a DB query during a live session: compare `candidates.answers` for the row
 matched by `auth_user_id = auth.uid()` vs. the row shown in the entity graph /
 preview. (Needs the candidate's session — couldn't be done from outside.)
 
+## Update 2026-06-01 (instrumented run) — primary hypothesis DISPROVEN
+
+Added temporary fire-and-forget logging to `(protected)/+layout.server.ts`
+that, on every full-navigation protected-layout load, logged the RPC's
+auth.uid()-scoped candidate row AND a direct `select id, auth_user_id,
+external_id, answers from candidates where auth_user_id = session.user.id`.
+Ran `candidate-mega-journey` twice against a freshly-restarted dev server.
+
+**Result across every load (two independent fresh registrations):**
+
+```
+path=/en/candidate     rpcCandidateId=<X> rpcAnswerKeys=0 rowsForAuthUid=[{id:<X>, ext:test-ca-aa-unregistered, answerKeys:0}]
+path=/candidate/profile rpcCandidateId=<X> rpcAnswerKeys=0 rowsForAuthUid=[{id:<X>, ...                       answerKeys:0}]
+path=/candidate        rpcCandidateId=<X> rpcAnswerKeys=4 rowsForAuthUid=[{id:<X>, ...                       answerKeys:4}]   ← after profile fill
+```
+
+Findings (hard evidence, reproduced twice):
+1. There is **exactly ONE** `candidates` row for the auth uid (ext
+   `test-ca-aa-unregistered`), and `rpcCandidateId` is **stable** across
+   every load. The RPC's `.single()` + the function's `LIMIT 1` both confirm
+   a single matched row.
+2. Answers **persist to that single row** — the profile fill (4 info
+   answers) round-trips as `answerKeys:4` read back by the auth.uid()-scoped
+   RPC on the very next full reload.
+3. The auth.uid()-scoped RPC reads the **same** row the writes target
+   (`upsert_answers` writes to `savedData.candidate.id`, which == the RPC
+   row id).
+
+**Therefore the "answers in a different candidates row than auth.uid()
+resolves to / auth-linkage mismatch" root cause (above) is DISPROVEN.** No
+trigger on `auth.users` creates a second candidate row (only the OIDC
+`identity-callback` inserts candidates, and the mega-journey is email/
+password). The data layer is sound.
+
+### Revised hypothesis (most likely)
+The step-22 `unansOpin=8 / unansReq=1` observation was a **client-side /
+stale in-memory `userData.savedCandidateData` artifact**, NOT a backend data
+bug — consistent with the in-session HMR-staleness note that prompted the
+mid-session dev-server restart. On a true full `page.goto` reload (which
+step 22 is), `+layout.server.ts` re-fetches from the RPC, which (per the
+evidence) returns the populated single row. Candidate client-state suspects
+worth checking next: preview's `userData.reloadCandidateData()` →
+`updateCandidateData(...)` clobbering `savedData.candidate` in memory, and
+whether step 22's `goto` is being served from a warm SPA cache rather than a
+fresh document in the failing session.
+
+### Reproduction blocker (separate, environmental)
+In a clean restarted env the mega-journey now fails at **step 13**, not 22:
+`userData.save()` hangs on the **portrait storage upload**
+(`updateEntityProperties` → `storage.upload`) — the submit button is stuck
+`"Saving…" [disabled]`, the 4 answers DO persist (`answerKeys:4`) but the
+image-upload leg never resolves, so `goto(home)` never fires. Storage +
+imgproxy containers report healthy; `supabase_edge_runtime` +
+`supabase_pooler` were stopped. This is the imgproxy/storage-decoupling
+flakiness already tracked — it blocks reaching step 22 in a cold env but is
+unrelated to the answers data model.
+
 ## The actual bug to fix
 On a full-navigation reload of `/candidate` (home), the protected layout's
 `getCandidateUserData` (apps/frontend/src/routes/candidate/(protected)/+layout.server.ts)
