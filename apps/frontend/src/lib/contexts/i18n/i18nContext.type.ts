@@ -14,6 +14,7 @@ import type { TranslationKey } from '$lib/types/generated/translationKey';
 export type I18nContext = {
   locale: string;
   locales: ReadonlyArray<string>;
+  localeNames: Record<string, string>;
   t: (key: TranslationKey, params?: Record<string, unknown>) => string;
   translate: (strings: LocalizedString | string | undefined | null, locale?: string | null) => string;
 };

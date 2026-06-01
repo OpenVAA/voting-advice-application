@@ -15,7 +15,6 @@
 
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import { Notification } from '$lib/components/notification';
   import { getAppContext } from '$lib/contexts/app';
   import { initCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
@@ -43,15 +42,17 @@
   // Popup management
   ////////////////////////////////////////////////////////////////////
 
-  $effect(() => {
-    if (!$appSettings.access.candidateApp || !$appSettings.dataAdapter.supportsCandidateApp) return;
-    // Show possible notification
-    if ($appSettings.notifications.candidateApp?.show)
-      popupQueue.push({
-        component: Notification,
-        props: { data: $appSettings.notifications.candidateApp }
-      });
-  });
+  // This results in effect_update_depth_exceeded error.
+  // See: apps/frontend/src/routes/(voters)/+layout.svelte
+  // $effect(() => {
+  //   if (!$appSettings.access.candidateApp || !$appSettings.dataAdapter.supportsCandidateApp) return;
+  //   // Show possible notification
+  //   if ($appSettings.notifications.candidateApp?.show)
+  //     popupQueue.push({
+  //       component: Notification,
+  //       props: { data: $appSettings.notifications.candidateApp }
+  //     });
+  // });
 
   ////////////////////////////////////////////////////////////////////
   // Layout and top bar

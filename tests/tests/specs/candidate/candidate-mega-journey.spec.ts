@@ -166,7 +166,7 @@ async function walkRemainingOpinionQuestions(
   // <a href> click), which is NOT reflected in page.url() synchronously. Wait for
   // the first per-question editor to settle before reading the URL — otherwise the
   // loop sees the stale overview URL and exits having answered nothing.
-  await page.waitForURL(PER_QUESTION_URL_RE, { timeout: timeoutMs }).catch(() => undefined);
+  await page.waitForURL(PER_QUESTION_URL_RE, { timeout: timeoutMs });
   for (let i = 0; i < MAX_STEPS; i++) {
     const current = page.url();
     if (!PER_QUESTION_URL_RE.test(current)) return;
@@ -177,7 +177,7 @@ async function walkRemainingOpinionQuestions(
     // question — or, after the last one, to the overview/home. Wait for the URL to
     // actually leave the current question so the next iteration reads fresh state
     // (and doesn't re-answer the same question on a stale URL read).
-    await page.waitForURL((u) => u.toString() !== current, { timeout: timeoutMs }).catch(() => undefined);
+    await page.waitForURL((u) => u.toString() !== current, { timeout: timeoutMs });
   }
 }
 

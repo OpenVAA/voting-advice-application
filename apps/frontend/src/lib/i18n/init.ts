@@ -10,20 +10,24 @@ export { getLocale, setLocale };
 
 const { supportedLocales } = staticSettings;
 
+export type ParaglideLocale = (typeof paraglideLocales)[number];
+
 /////////////////////////////////////////////////////
 // 1. Determine default locale and locale mappings
 /////////////////////////////////////////////////////
 
 let defaultLocale = '';
-/** Language names for translations */
-const langNames: Record<string, string> = {};
+
+export const localeNames: Partial<Record<ParaglideLocale, string>> = {};
+export const locales: Array<ParaglideLocale> = [];
 
 if (!supportedLocales?.length) error(500, 'Could not load supported locales from settings');
 
 for (const { code, name, isDefault } of supportedLocales) {
-  if (code == undefined || typeof code !== 'string')
+  if (code == undefined || typeof code !== 'string' || !isParaglideLocale(code))
     error(500, `Invalid locale code in supported locales settings: ${code}`);
-  langNames[code] = name;
+  localeNames[code] = name;
+  locales.push(code);
   if (isDefault) defaultLocale = code;
 }
 
@@ -35,11 +39,6 @@ if (!defaultLocale) {
 }
 
 export { defaultLocale };
-
-/**
- * Supported locale codes from Paraglide runtime.
- */
-export const locales = paraglideLocales;
 
 /////////////////////////////////////////////////////
 // 2. Utility function exports
@@ -70,4 +69,11 @@ export function translateObject<
   key = nonEmptyKeys.includes(targetLocale) ? targetLocale : matchLocale(targetLocale, nonEmptyKeys);
   key ??= nonEmptyKeys.includes(defaultLocale) ? defaultLocale : nonEmptyKeys[0];
   return (obj[key] ?? undefined) as TValue | undefined;
+}
+
+/**
+ * Type guard for ParaglideLocale.
+ */
+function isParaglideLocale(locale: string): locale is ParaglideLocale {
+  return paraglideLocales.includes(locale as ParaglideLocale);
 }

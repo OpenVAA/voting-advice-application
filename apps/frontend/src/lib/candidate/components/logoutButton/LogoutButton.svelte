@@ -56,7 +56,10 @@ Accesses `CandidateContext`.
   let timeLeft = $state(logoutModalTimer);
 
   async function triggerLogout() {
-    if (!candCtx.answersLocked && (candCtx.unansweredOpinionQuestions?.length !== 0 || candCtx.unansweredRequiredInfoQuestions?.length !== 0)) {
+    if (
+      !candCtx.answersLocked &&
+      (candCtx.unansweredOpinionQuestions?.length !== 0 || candCtx.unansweredRequiredInfoQuestions?.length !== 0)
+    ) {
       timedModalRef?.openModal();
     } else {
       await logout();
@@ -74,7 +77,13 @@ Accesses `CandidateContext`.
   }
 </script>
 
-<Button onclick={triggerLogout} icon="logout" text={t('common.logout')} color="warning" {...restProps} />
+<Button
+  disabled={!timedModalRef}
+  onclick={triggerLogout}
+  icon="logout"
+  text={t('common.logout')}
+  color="warning"
+  {...restProps} />
 
 <!-- bind: keep — timedModalRef is $state(); single ref read in event handlers. bind:timeLeft against TimedModal.timeLeft = $bindable(...) -->
 <TimedModal
