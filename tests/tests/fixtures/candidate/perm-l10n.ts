@@ -48,6 +48,7 @@ import { createCandidateTermsOfUsePage } from './candidateTermsOfUsePage.fixture
 import { createEmailBucket } from './emailBucket.fixture';
 import { createLangSelector } from './langSelectorFixture.fixture';
 import { createMultilingualTextField } from './multilingualTextFieldFixture.fixture';
+import { createVoterNav } from './voterNavFixture.fixture';
 import type { CandidateHomePageFixture } from './candidateHomePage.fixture';
 import type { CandidateLoginPageFixture } from './candidateLoginPage.fixture';
 import type { CandidateLogoutButtonFixture } from './candidateLogoutButton.fixture';
@@ -59,6 +60,7 @@ import type { CandidateTermsOfUsePageFixture } from './candidateTermsOfUsePage.f
 import type { EmailBucketFixture } from './emailBucket.fixture';
 import type { LangSelectorFixture } from './langSelectorFixture.fixture';
 import type { MultilingualTextFieldFixture } from './multilingualTextFieldFixture.fixture';
+import type { VoterNavFixture } from './voterNavFixture.fixture';
 
 type PermL10nFixtureOptions = {
   /**
@@ -83,6 +85,7 @@ type PermL10nFixtures = PermL10nFixtureOptions & {
   candidateLogoutButton: CandidateLogoutButtonFixture;
   langSelector: LangSelectorFixture;
   multilingualTextField: MultilingualTextFieldFixture;
+  voterNav: VoterNavFixture;
 };
 
 export const test = base.extend<PermL10nFixtures>({
@@ -120,6 +123,9 @@ export const test = base.extend<PermL10nFixtures>({
   },
   multilingualTextField: async ({ page }, use) => {
     await use(createMultilingualTextField(page));
+  },
+  voterNav: async ({ page }, use) => {
+    await use(createVoterNav(page));
   }
 });
 
