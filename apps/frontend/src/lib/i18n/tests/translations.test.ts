@@ -59,6 +59,21 @@ test.each(otherLocales)(`'%s' has same message files as '${firstLocale}'`, (loca
   expect(filenames).toEqual(firstLocaleFilenames);
 });
 
+test(`'lang.json' in '${firstLocale}' declares a display name for every locale`, () => {
+  // The `lang.*` message group (`messages/{locale}/lang.json`) supplies the
+  // language-selector display names. Assert the base-locale file carries a
+  // non-empty name for every locale that has a message directory; the
+  // 'same message keys' matching below then guarantees the other locale files
+  // declare the same set of names.
+  const lang = JSON.parse(fs.readFileSync(path.join(messagesDir, firstLocale, 'lang.json'), 'utf8')).lang as Record<
+    string,
+    string
+  >;
+  for (const locale of translationLocales) {
+    expect(lang[locale], `lang.json is missing a display name for '${locale}'`).toBeTruthy();
+  }
+});
+
 describe.each(otherLocales)(`'%s' has same message keys as '${firstLocale}'`, (locale) => {
   test.each(firstLocaleFilenames)('in %s', (filename) => {
     expect(getMessageKeys(locale, filename)).toEqual(firstLocaleFileKeys[filename]);

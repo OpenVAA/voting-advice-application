@@ -17,6 +17,7 @@ A template part that language selection options for the navigation menu if these
   import { page } from '$app/state';
   import { getAppContext } from '$lib/contexts/app';
   import { NavGroup, NavItem } from '$lib/dynamic-components/navigation';
+  import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
   import { localizeHref } from '$lib/paraglide/runtime';
   import type { locales as paraglideLocales } from '$lib/paraglide/runtime';
 
@@ -24,7 +25,7 @@ A template part that language selection options for the navigation menu if these
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { locale: currentLocale, locales, localeNames, t } = getAppContext();
+  const { locale: currentLocale, locales, t } = getAppContext();
 </script>
 
 <!-- Only show the language selection if there are multiple locales to choose from -->
@@ -35,7 +36,7 @@ A template part that language selection options for the navigation menu if these
         data-sveltekit-reload
         href={localizeHref(page.url.pathname, { locale: loc as (typeof paraglideLocales)[number] })}
         icon="language"
-        text={localeNames[loc]}
+        text={t(assertTranslationKey(`lang.${loc}`))}
         disabled={loc === $currentLocale} />
     {/each}
   </NavGroup>
