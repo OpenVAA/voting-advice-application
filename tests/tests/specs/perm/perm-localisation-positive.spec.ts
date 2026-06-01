@@ -103,7 +103,8 @@ test.describe('perm-localisation-positive', () => {
     candidateQuestionPage,
     candidateLogoutButton,
     langSelector,
-    multilingualTextField
+    multilingualTextField,
+    voterNav
   }) => {
     test.setTimeout(TIMEOUT.testMax);
 
@@ -116,7 +117,12 @@ test.describe('perm-localisation-positive', () => {
     // one NavItem per locale.
 
     await page.goto('/en');
+    // The LanguageSelection NavGroup renders only inside the voter nav drawer
+    // (closed by default) — open it before reading the selector.
+    await voterNav.open();
     await langSelector.expectVisible(['en', 'fi', 'sv']);
+    // Close the drawer — its overlay covers the home start button read below.
+    await voterNav.close();
 
     // ============== Step 2: switchTo('fi') → UI re-localises → switchTo('en')
     // PERM-L10N-POS-02. The voter-home start button label is driven by the
@@ -136,6 +142,9 @@ test.describe('perm-localisation-positive', () => {
     const englishLabel = (await startButton.innerText()).trim();
     expect(englishLabel.length, 'English-locale start button text must be non-empty').toBeGreaterThan(0);
 
+    // Re-open the drawer to reach the language selector. No close needed —
+    // switchTo triggers a full page reload that tears down the drawer.
+    await voterNav.open();
     await langSelector.switchTo('fi');
     await expect(page).toHaveURL(/\/fi(\/|$)/);
     // Post-switch the start button is in Finnish — its rendered text is
@@ -149,6 +158,9 @@ test.describe('perm-localisation-positive', () => {
       'Finnish start button text must differ from English text (locale switch must take effect)'
     ).not.toBe(englishLabel);
 
+    // Page is on /fi — the locale-independent menuToggle testid opens the
+    // drawer regardless of UI locale. No close needed — switchTo reloads.
+    await voterNav.open();
     await langSelector.switchTo('en');
     // baseLocale: served from `/` with NO `/en/` prefix per Paraglide's
     // urlPatterns table (see langSelectorFixture.fixture.ts switchTo()).
@@ -305,6 +317,14 @@ test.describe('perm-localisation-positive', () => {
     await expect(opinionsTabEn).toBeVisible();
     await expect(opinionsTabEn).toContainText('[en-answer-q3]');
 
+    // The entity-details dialog covers the header, so the menu-toggle is not
+    // clickable. Close the dialog first (Escape), then open the nav drawer to
+    // reach the language selector. The spec re-navigates to /fi/results and
+    // re-opens the card below (Assumption A3), so tearing down the dialog
+    // here is acceptable. No drawer close needed — switchTo reloads.
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await voterNav.open();
     // langSelector switchTo full-reload; the dialog state may not survive
     // — re-open the candidate card if the dialog closed (Assumption A3).
     await langSelector.switchTo('fi');
