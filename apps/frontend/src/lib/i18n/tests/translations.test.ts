@@ -47,10 +47,10 @@ test('all 7 locales have message directories', () => {
   expect(translationLocales).toEqual(['da', 'en', 'et', 'fi', 'fr', 'lb', 'sv']);
 });
 
-test('each locale has 46 message files', () => {
+test('each locale has 47 message files', () => {
   for (const locale of translationLocales) {
     const files = fs.readdirSync(path.join(messagesDir, locale));
-    expect(files.length).toBe(46);
+    expect(files.length).toBe(47);
   }
 });
 

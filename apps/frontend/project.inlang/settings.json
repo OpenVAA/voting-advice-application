@@ -47,6 +47,7 @@
       "./messages/{locale}/feedback.json",
       "./messages/{locale}/help.json",
       "./messages/{locale}/info.json",
+      "./messages/{locale}/lang.json",
       "./messages/{locale}/maintenance.json",
       "./messages/{locale}/privacy.json",
       "./messages/{locale}/questions.json",
