@@ -22,7 +22,7 @@ created: 2026-06-02
 |----------|-------|
 | **Framework** | Playwright (e2e) + tsc (typecheck) + ESLint (lint) — `tests/` workspace |
 | **Config file** | `tests/playwright.config.ts`; new `tests/tsconfig.json` (WS1); eslint config governing `tests/` |
-| **Quick run command** | `yarn workspace tests typecheck:tests` (new) + `yarn lint:check` (locator rule) |
+| **Quick run command** | `yarn typecheck:tests` (new root script — `tests/` is NOT a yarn workspace) + `yarn lint:check` (locator rule) |
 | **Full suite command** | `yarn test:e2e` (requires `yarn dev` / Supabase up) |
 | **Estimated runtime** | typecheck ~seconds; lint ~seconds; full e2e ~minutes |
 
@@ -57,7 +57,7 @@ created: 2026-06-02
 ## Wave 0 Requirements
 
 - [ ] `tests/tsconfig.json` — establishes the dedicated typecheck scope for WS1 (does not exist today).
-- [ ] `typecheck:tests` script wired into the `tests/` workspace `package.json`.
+- [ ] `typecheck:tests` script wired into the **root** `package.json` (`tests/` is not a yarn workspace, so the alias-form `yarn workspace tests …` does not apply).
 
 *Everything else uses existing infrastructure (Playwright, ESLint, the dev-seed `seed_` prefix).*
 

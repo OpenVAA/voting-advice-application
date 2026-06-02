@@ -476,6 +476,7 @@ Plans:
 **Plans:** 5/5 plans complete
 
 Plans:
+
 - [x] 91-01-PLAN.md — buildMinimal dataset-builder helper (`packages/dev-seed/src/templates/_helpers/buildMinimal.ts` + vitest) + port 6 minimal existing perms (perm-1e1cg1co, perm-disable-voter-app, perm-disable-candidate-app, perm-per-app-notifications, perm-missing-nominations, perm-localisation-positive) to consume the helper byte-for-byte. Wave 1, no depends.
 - [x] 91-02-PLAN.md — 9 new TIR6 perm chains (perm-answers-locked, perm-hide-hero, perm-header-show-feedback, perm-header-show-help, perm-hide-all-nominations, perm-hide-if-missing-answers, perm-hide-election-tags, perm-hide-category-tags, perm-disable-allow-open) — each consumes buildMinimal; 7 testid additions on Banner/ElectionTag/CategoryTag/EntityOpinions/candidate-login + 3 candidate-protected surfaces; 27 new playwright.config.ts project entries appended after perm-localisation-positive (sequential chain per HIGH-2 invariant). Wave 2, depends on 91-01.
 - [x] 91-03-PLAN.md — 3 mega-journey edit-step extensions (candidate invalidUrl into candidate-mega step 13.5; voter feedbackDialog + all-nominations into voter-mega tail) + new shared `tests/tests/fixtures/shared/feedbackDialog.fixture.ts` function-fixture + Feedback.svelte `data-status` attribute + Input.svelte `input-error` testid + DELETE `voter-feedback-persistence.spec.ts` (absorbed by voter-mega feedbackDialog step). Wave 1, no depends (parallel with 91-01).
@@ -484,6 +485,7 @@ Plans:
 ### Phase 92: E2E test infrastructure hardening
 
 **Goal:** Harden the e2e test suite's infrastructure so it is type-safe, locator-stable, and configuration-consistent. Five workstreams:
+
 1. **Typecheck + no raw locators** — typecheck all tests under `tests/`, fix all warnings/errors, and eliminate raw locators (no bare `page.locator(...)`, `getByText`, etc.); all element access goes through fixtures/testIds.
 2. **goToPage/expectPageVisible paradigm** — add `goToPage(locale?: string)` and `expectPageVisible(visible = true)` methods to every page fixture; migrate all raw `page.goto(...)` calls and URL expectations to this paradigm. Add fixtures to every page that is checked, extending their testIds so a stable element confirms page load.
 3. **Timeout consolidation** — consolidate test timeout constants into a single file and use everywhere; allow documented exceptions for single-test total timeouts.
@@ -495,8 +497,19 @@ Plans:
 **Plans:** 5 plans
 
 Plans:
+**Wave 1**
+
 - [ ] 92-01-PLAN.md — WS1: typecheck all tests/ (tsconfig + typecheck:tests script + ~5 type fixes) + locator lint rule swap to no-restricted-locators + raw-locator fixes + getByRole→testId sweep [TYPECHECK, LOCATORS] (wave 1)
 - [ ] 92-02-PLAN.md — WS4 + WS5: annotate imgproxy/pooler diagnosis as questionable + fix both freshness guards to exclude the seed_ baseline prefix [DIAGNOSIS, FRESHGUARD] (wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 92-03-PLAN.md — WS2: rebuild 5 voter page fixtures with goToPage/expectPageVisible + extend testId catalog (home/intro anchors) + migrate named-route page.goto calls in the 5 primary voter/voterNav files [FIXTURES] (wave 2, depends 92-01)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 92-05-PLAN.md — WS2 spillover: migrate named voter-route page.goto calls in 7 perm-spec gap files to goToPage; keep maintenance/redirect/candidate/bounce gotos inline; exhaustive coverage proof [FIXTURES] (wave 3, depends 92-01, 92-03)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [ ] 92-04-PLAN.md — WS3: consolidate timeout constants into tests/tests/helpers/timeouts.ts + migrate 4 local TIMEOUT objects + scattered literals; inline >90s/l10n exceptions (preserve test.setTimeout-applied 180s/120s budgets) [TIMEOUTS] (wave 4, depends 92-01, 92-03, 92-05)
