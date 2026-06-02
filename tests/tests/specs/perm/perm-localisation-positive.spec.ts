@@ -101,7 +101,9 @@ test.describe('perm-localisation-positive', () => {
     candidateLogoutButton,
     langSelector,
     multilingualTextField,
-    voterNav
+    voterNav,
+    voterHomePage,
+    resultsPage
   }) => {
     test.setTimeout(TIMEOUT.testMax);
 
@@ -113,7 +115,7 @@ test.describe('perm-localisation-positive', () => {
     // renders (locales.length > 1 gate evaluates true). The selector exposes
     // one NavItem per locale.
 
-    await page.goto('/en');
+    await voterHomePage.goToPage('en');
     // The LanguageSelection NavGroup renders only inside the voter nav drawer
     // (closed by default) — open it before reading the selector.
     await voterNav.open();
@@ -173,6 +175,12 @@ test.describe('perm-localisation-positive', () => {
     // Pitfall 3: seeded candidate has no auth.users row. Drive registration
     // via sendEmail (which calls inviteUserByEmail under the hood).
 
+    // Defensive self-heal: if a PRIOR run crashed before its teardown ran, the
+    // invited auth user leaks and inviteUserByEmail below fails with "already
+    // registered". Clear any stale row first (idempotent no-op when absent).
+    // Normal-path cleanup lives in perm-localisation-positive.teardown.ts.
+    await client.unregisterCandidate(RECIPIENT_EMAIL);
+
     await client.sendEmail({
       candidateExternalId: CANDIDATE_EXTERNAL_ID,
       email: RECIPIENT_EMAIL,
@@ -187,6 +195,8 @@ test.describe('perm-localisation-positive', () => {
 
     // ============== Step 4: navigate callback + set initial password ======
 
+    // reason: OIDC/Inbucket registration-callback URL — an external auth-callback goto,
+    // not a named voter-page navigation; no voter goToPage applies.
     await page.goto(registrationCallbackUrl);
     await candidatePasswordSetter.setPassword(PASSWORD_1);
     // The password setter automatically logins
@@ -198,6 +208,7 @@ test.describe('perm-localisation-positive', () => {
     // one uses a route-level disableMultilingual prop, a different
     // mechanism).
 
+    // reason: candidate-route navigation — out of Phase 92 voter-fixture scope.
     await page.goto('/en/candidate/profile');
     await candidateProfilePage.expectQuestionsVisible([/\[Q1\]/, /\[Q2\]/]);
 
@@ -306,6 +317,7 @@ test.describe('perm-localisation-positive', () => {
     // Since all required answers are seeded + persisted, logout is direct
     // (no confirmation dialog).
 
+    // reason: candidate-route navigation — out of Phase 92 voter-fixture scope.
     await page.goto('/en/candidate');
     await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({
       timeout: TIMEOUT.slowPage
@@ -316,7 +328,7 @@ test.describe('perm-localisation-positive', () => {
     // PERM-L10N-POS-07. Open candidate-details on results, assert English
     // answers; switch to Finnish, assert Finnish answers reflect.
 
-    await page.goto('/en/results');
+    await resultsPage.goToPage('en');
     const candidateCard = page
       .getByTestId(testIds.voter.results.candidateSection)
       .getByTestId(testIds.voter.results.card)
@@ -365,7 +377,7 @@ test.describe('perm-localisation-positive', () => {
     // expected path. We assert the path explicitly: navigate to /fi/results
     // (the switchTo target preserved the segment after locale, but to be
     // robust we re-navigate) and re-open.
-    await page.goto('/fi/results');
+    await resultsPage.goToPage('fi');
     const candidateCardFi = page
       .getByTestId(testIds.voter.results.candidateSection)
       .getByTestId(testIds.voter.results.card)

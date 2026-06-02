@@ -49,6 +49,10 @@ import { createEmailBucket } from './emailBucket.fixture';
 import { createLangSelector } from './langSelectorFixture.fixture';
 import { createMultilingualTextField } from './multilingualTextFieldFixture.fixture';
 import { createVoterNav } from './voterNavFixture.fixture';
+import { createResultsPage } from '../resultsPage.fixture';
+import { createVoterHomePage } from '../voter/voterHomePage.fixture';
+import type { ResultsPageFixture } from '../resultsPage.fixture';
+import type { VoterHomePageFixture } from '../voter/voterHomePage.fixture';
 import type { CandidateHomePageFixture } from './candidateHomePage.fixture';
 import type { CandidateLoginPageFixture } from './candidateLoginPage.fixture';
 import type { CandidateLogoutButtonFixture } from './candidateLogoutButton.fixture';
@@ -86,6 +90,10 @@ type PermL10nFixtures = PermL10nFixtureOptions & {
   langSelector: LangSelectorFixture;
   multilingualTextField: MultilingualTextFieldFixture;
   voterNav: VoterNavFixture;
+  // Phase 92 Plan 05 (D-09): voter page fixtures carrying the goToPage/expectPageVisible
+  // paradigm, registered here so perm-localisation-positive can destructure them.
+  voterHomePage: VoterHomePageFixture;
+  resultsPage: ResultsPageFixture;
 };
 
 export const test = base.extend<PermL10nFixtures>({
@@ -126,6 +134,12 @@ export const test = base.extend<PermL10nFixtures>({
   },
   voterNav: async ({ page }, use) => {
     await use(createVoterNav(page));
+  },
+  voterHomePage: async ({ page }, use) => {
+    await use(createVoterHomePage(page));
+  },
+  resultsPage: async ({ page }, use) => {
+    await use(createResultsPage(page));
   }
 });
 
