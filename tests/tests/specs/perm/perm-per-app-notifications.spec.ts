@@ -10,7 +10,7 @@
  * vice versa).
  *
  * Notifications are rendered as Alert components with `role="dialog"`
- * (precedent: candidate-settings.spec.ts:262 + CAND-13 test block).
+ * (role="dialog" Alert components).
  *
  * Authoritative spec: TEST-INVENTORY-REFACTOR-4.md:51-54.
  *
@@ -27,6 +27,9 @@ import { expect, test } from '@playwright/test';
 // `test.describe`) + popup management verified end-to-end after the migration
 // completes. Re-enable + verification tracked in:
 // .planning/todos/pending/2026-06-01-reenable-perm-per-app-notifications-after-runes-migration.md
+// reason: intentional describe-level skip pending the runes-migration popup
+// rework (see tracking todo above); bodies are intact and MUST be re-enabled.
+// eslint-disable-next-line playwright/no-skipped-test
 test.describe.skip('perm-per-app-notifications', () => {
   test('voter route shows voter notification only', async ({ page }) => {
     await page.goto('/en');

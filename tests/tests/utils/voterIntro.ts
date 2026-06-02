@@ -205,6 +205,10 @@ export async function selectConstituencyAndAdvance(
   // the filter is a no-op and the first (only) combobox is selected.
   const allComboboxes = list.getByRole('combobox');
   const matchingCombobox = allComboboxes.filter({
+    // reason: filtering a combobox by a dynamic, runtime-built CG-symbol text
+    // (the bracketed constituency-group label) has no stable testId or role
+    // handle — the text content is data-derived, not a fixed element identity.
+    // eslint-disable-next-line playwright/no-restricted-locators
     has: page.locator('text=' + (typeof selectorText === 'string' ? selectorText : ''))
   });
   const comboboxCount = await allComboboxes.count();

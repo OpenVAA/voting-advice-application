@@ -25,6 +25,29 @@ export default [
       // per CONTEXT D-07 + Plan 04 D-07 — each preceded by `// eslint-disable-next-line
       // playwright/no-skipped-test` with `// reason:` block. These per-line disables MUST
       // survive this bump.
+      // === Phase 92 WS1 D-01: forbidden-locator hardening ===
+      // `no-raw-locators` only catches string-arg `.locator()` and misses
+      // `getByText` + non-string `.locator()` args. `no-restricted-locators`
+      // matches ANY member-call whose property name is listed — catching bare
+      // `page.locator(...)`, chained `.locator(...)`, and `getByText(...)`.
+      // `getByRole`/`getByTestId` are intentionally NOT listed (D-02 keeps them
+      // allowed). Locale-stable exceptions carry an inline `// reason:` block +
+      // `// eslint-disable-next-line playwright/no-restricted-locators`.
+      'playwright/no-restricted-locators': [
+        'error',
+        [
+          {
+            type: 'getByText',
+            message: 'getByText is forbidden — use getByTestId (preferred) or getByRole. See CLAUDE.md.'
+          },
+          {
+            type: 'locator',
+            message:
+              'Raw .locator() is forbidden — use getByTestId (preferred) or getByRole. Locale-stable exceptions need an inline // reason: + eslint-disable-next-line playwright/no-restricted-locators.'
+          }
+        ]
+      ],
+      // Belt-and-braces: keep the string-arg rule too (strict superset overlap).
       'playwright/no-raw-locators': 'error',
       'playwright/no-wait-for-timeout': 'error',
       'playwright/no-skipped-test': 'error',
@@ -33,8 +56,12 @@ export default [
       'playwright/no-conditional-expect': 'error',
       // Helpers like `expectLandedOn`, `expectQuestion`, `expectConstituencySelector`
       // wrap `expect()` assertions; whitelist any `expect[A-Z]…` identifier so the
-      // rule sees them as assertions.
-      'playwright/expect-expect': ['error', { assertFunctionPatterns: ['^expect[A-Z]'] }],
+      // rule sees them as assertions. `assert[A-Z]…` helpers (e.g. `assertAxeGates`,
+      // `assertDbRowCount`) are likewise assertion wrappers — whitelist them too.
+      'playwright/expect-expect': [
+        'error',
+        { assertFunctionPatterns: ['^expect[A-Z]', '^assert[A-Z]'] }
+      ],
 
       // === Other plugin warning rules (aspirational; not bumped in Phase 73) ===
       // Prefer web-first assertions (toBeVisible over manual checks)
@@ -49,6 +76,19 @@ export default [
       'no-console': 'off',
       // Tests may use any for mocking and test utilities
       '@typescript-eslint/no-explicit-any': 'warn'
+    }
+  },
+  {
+    // === Phase 92 WS1: setup/teardown projects are not assertion tests ===
+    // Files run under Playwright `setup`/`teardown` projects seed or clean the
+    // DB; they intentionally perform side effects (and may branch on
+    // filesystem/DB state) rather than asserting. The test-assertion-semantics
+    // rules below do not apply to them. Scoped to the `setup/` directory's
+    // *.setup.ts / *.teardown.ts files only.
+    files: ['**/setup/**/*.setup.ts', '**/setup/**/*.teardown.ts'],
+    rules: {
+      'playwright/expect-expect': 'off',
+      'playwright/no-conditional-in-test': 'off'
     }
   }
 ];

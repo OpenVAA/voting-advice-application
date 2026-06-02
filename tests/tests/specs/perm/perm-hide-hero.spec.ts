@@ -61,9 +61,8 @@ test.describe('perm-hide-hero', () => {
     // The hero's <Hero> child renders the only img/span inside the figure;
     // asserting zero such descendants is the suppression check. A raw CSS
     // sub-locator scoped to the testid'd figure is intentional here (there is
-    // no role/text handle for "any img or span") — matches the hero-suppression
-    // precedent in candidate-settings.spec.ts:246.
-    // eslint-disable-next-line playwright/no-raw-locators
+    // no role/text handle for "any img or span").
+    // eslint-disable-next-line playwright/no-restricted-locators, playwright/no-raw-locators
     await expect(hero.locator('img, span')).toHaveCount(0);
   });
 });

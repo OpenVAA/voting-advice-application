@@ -39,7 +39,7 @@ import { AxeBuilder } from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import { voterMegaTest } from '../../fixtures/voter-mega.fixture';
 import { buildRoute } from '../../utils/buildRoute';
-import type { Page } from '@playwright/test';
+import type { Page, TestInfo } from '@playwright/test';
 import type { Route } from '../../../../apps/frontend/src/lib/utils/route/route';
 
 // Run unauthenticated — all routes are voter-app (public).
@@ -89,7 +89,7 @@ const UNLOCATED_ROUTES: ReadonlyArray<UnlocatedAxeRoute> = [
  */
 async function assertAxeGates(
   results: Awaited<ReturnType<AxeBuilder['analyze']>>,
-  testInfo: import('@playwright/test').TestInfo,
+  testInfo: TestInfo,
   routeName: string
 ): Promise<void> {
   await testInfo.attach(`axe-violations-${routeName}.json`, {
@@ -154,8 +154,7 @@ voterMegaTest('A11Y-04 axe smoke — voter-detail-drawer', async ({ answeredVote
   // settle, accurate role.
   await page.getByRole('tablist').first().waitFor({ state: 'visible', timeout: 10000 });
   // Open the drawer — click first entity card. The drawer renders as
-  // role=dialog overlay intercepted by results/+layout.svelte beforeNavigate
-  // (per voter-detail.spec.ts pattern).
+  // role=dialog overlay intercepted by results/+layout.svelte beforeNavigate.
   await page.getByTestId('entity-card').first().waitFor({ state: 'visible', timeout: 10000 });
   await page.getByTestId('entity-card').first().click();
   await page.getByRole('dialog').waitFor({ state: 'visible', timeout: 10000 });

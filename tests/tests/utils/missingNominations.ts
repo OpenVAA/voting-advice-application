@@ -104,9 +104,8 @@ async function waitForOpen(page: Page, timeoutMs: number): Promise<boolean> {
  * traverse /questions or /results and none of them explicitly assert the
  * modal. The handler is no-op when the modal is absent.
  *
- * Do NOT call this in a suite that also asserts the modal's contents (see
- * `constituency.spec.ts:289 — should show missing nominations warning for
- * partial-coverage constituency`) without also `removeLocatorHandler`-ing the
+ * Do NOT call this in a suite that also asserts the modal's contents
+ * without also `removeLocatorHandler`-ing the
  * locator first, otherwise the handler will dismiss the modal before the
  * assertion has a chance to read it.
  */
@@ -157,6 +156,10 @@ async function dismissModal(modal: Locator): Promise<void> {
     if (!isOpen) {
       // Closed — verify it stays closed across the stability window. If
       // something reopens it, we loop and click again.
+      // reason: this is a deliberate stability-window dwell to catch a modal
+      // that re-opens via a delayed $effect; there is no web-first signal to
+      // wait on (we are asserting the ABSENCE of a re-open over a time window).
+      // eslint-disable-next-line playwright/no-wait-for-timeout
       await page.waitForTimeout(STABILITY_WINDOW_MS);
       if (!(await probeOpen())) return;
       continue;
@@ -165,6 +168,9 @@ async function dismissModal(modal: Locator): Promise<void> {
     // Brief settle so any in-flight $effect re-runs (and their downstream
     // `modalRef?.openModal()` paths) finish before the next iteration's
     // open-state probe.
+    // reason: deliberate settle dwell for delayed $effect re-runs; no web-first
+    // signal exists to await between dismiss attempts.
+    // eslint-disable-next-line playwright/no-wait-for-timeout
     await page.waitForTimeout(STABILITY_WINDOW_MS);
   }
   // Final defensive check — if we still see `[open]` after the retry budget,
@@ -172,7 +178,7 @@ async function dismissModal(modal: Locator): Promise<void> {
   if (await probeOpen()) {
     throw new Error(
       `[dismissMissingNominationsIfPresent] modal still has [open] after ${MAX_ATTEMPTS} dismiss attempts — ` +
-        `the frontend re-open guard in (located)/+layout.svelte may have regressed.`
+        'the frontend re-open guard in (located)/+layout.svelte may have regressed.'
     );
   }
 }

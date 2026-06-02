@@ -133,6 +133,12 @@ export function createEntityDetails(page: Page) {
         await expect(voterChecked.or(entitySelected)).toHaveCount(options.numSelected);
       }
       if (options?.infoText !== undefined) {
+        // reason: infoText asserts the localized missing-answer marker message
+        // (e.g. "hasn't answered") rendered inside the question display block.
+        // The marker element carries no stable data-testid today; adding one is
+        // deferred to Plan 92-03 (frontend-testid work). Until then this stays a
+        // text-content assertion scoped to the already-resolved `block` locator.
+        // eslint-disable-next-line playwright/no-restricted-locators
         await expect(block.getByText(options.infoText)).toBeVisible();
       }
       if (options?.voterAnswer !== undefined) {

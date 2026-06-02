@@ -28,8 +28,6 @@
  * Internally delegates to the shared EntityDetails testids (candidate preview
  * reuses voter EntityDetails per 89-RESEARCH).
  *
- * SIBLING (not replacement) to the legacy tests/tests/pages/candidate/PreviewPage.ts.
- *
  * **Rigidity contract** (Phase 88 Plan 04 SCOPE acceptance #6):
  * - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
  *   `.catch(() => null)` on assertion-bearing locator interactions.
@@ -89,12 +87,16 @@ export function createCandidatePreviewPage(page: Page) {
       // Assert the nth choice is the selected-answer.
       const choice = choices.nth(aNthChecked);
       await expect(choice).toBeVisible();
-      // The marker is a sr-only SIBLING of the choice's `<input data-testid=
-      // "question-choice">` inside their shared `<label>` (an <input> cannot have
-      // children — see QuestionChoices.svelte:284). Assert it against the choice's
-      // parent label, not the input itself.
+      // reason: the marker is a sr-only SIBLING of the choice's `<input
+      // data-testid="question-choice">` inside their shared `<label>` (an
+      // <input> cannot have children — see QuestionChoices.svelte:284). The only
+      // way to reach the sibling from the input locator is an xpath parent-axis
+      // traversal; the parent <label> carries no stable testId, so there is no
+      // getByTestId/getByRole path to the parent. The chained getByTestId stays.
+      // eslint-disable-next-line playwright/no-restricted-locators, playwright/no-raw-locators
+      const choiceLabel = choice.locator('xpath=..');
       await expect(
-        choice.locator('xpath=..').getByTestId(testIds.voter.entityDetail.entitySelectedAnswer)
+        choiceLabel.getByTestId(testIds.voter.entityDetail.entitySelectedAnswer)
       ).toHaveCount(1);
     },
 
