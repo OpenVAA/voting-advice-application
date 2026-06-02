@@ -39,8 +39,10 @@ export function createVoterHomePage(page: Page) {
      * Navigate to the voter home page (locale-aware) and assert it loaded.
      */
     async goToPage(locale = 'en'): Promise<void> {
-      // ROUTE.Home → bare locale segment; buildRoute returns no leading slash.
-      await page.goto('/' + buildRoute({ route: 'Home', locale }));
+      // buildRoute({route:'Home'}) returns '' (voter ROUTE values carry no [[lang=locale]]
+      // token, and the route-group-only Home path collapses to empty). Base locale 'en' is
+      // served from '/' (Paraglide); non-base locales are prefixed '/<locale>' (e.g. '/fi').
+      await page.goto((locale === 'en' ? '' : `/${locale}`) + buildRoute({ route: 'Home', locale }) || '/');
       await expectPageVisible(true);
     },
 

@@ -43,7 +43,10 @@ export function createVoterQuestionsPage(page: Page) {
      * loaded. Requires an already-located voter session.
      */
     async goToPage(locale = 'en'): Promise<void> {
-      await page.goto('/' + buildRoute({ route: 'Questions', locale }));
+      // buildRoute already returns a leading-slash path (e.g. '/questions') with NO locale
+      // segment (voter ROUTE values carry no [[lang=locale]] token). Base locale 'en' is
+      // served from '/' (Paraglide); non-base locales are prefixed '/<locale>'.
+      await page.goto((locale === 'en' ? '' : `/${locale}`) + buildRoute({ route: 'Questions', locale }) || '/');
       await expectPageVisible(true);
     },
 

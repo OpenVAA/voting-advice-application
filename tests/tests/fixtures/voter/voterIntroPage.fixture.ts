@@ -35,7 +35,10 @@ export function createVoterIntroPage(page: Page) {
      * Navigate to the voter intro page (locale-aware) and assert it loaded.
      */
     async goToPage(locale = 'en'): Promise<void> {
-      await page.goto('/' + buildRoute({ route: 'Intro', locale }));
+      // buildRoute already returns a leading-slash path (e.g. '/intro') with NO locale
+      // segment (voter ROUTE values carry no [[lang=locale]] token). Base locale 'en' is
+      // served from '/' (Paraglide); non-base locales are prefixed '/<locale>'.
+      await page.goto((locale === 'en' ? '' : `/${locale}`) + buildRoute({ route: 'Intro', locale }) || '/');
       await expectPageVisible(true);
     },
 

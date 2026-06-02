@@ -83,7 +83,10 @@ export function createResultsPage(page: Page) {
      * (an unlocated /results bounces through the selector chain).
      */
     async goToPage(locale = 'en'): Promise<void> {
-      await page.goto('/' + buildRoute({ route: 'Results', locale }));
+      // buildRoute already returns a leading-slash path (e.g. '/results') with NO locale
+      // segment (voter ROUTE values carry no [[lang=locale]] token). Base locale 'en' is
+      // served from '/' (Paraglide); non-base locales are prefixed '/<locale>' (e.g. '/fi/results').
+      await page.goto((locale === 'en' ? '' : `/${locale}`) + buildRoute({ route: 'Results', locale }) || '/');
       await expectPageVisible(true);
     },
 
