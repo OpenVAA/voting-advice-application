@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
 status: executing
-stopped_at: Phase 92 context gathered
-last_updated: "2026-06-02T20:28:59.398Z"
+stopped_at: Completed 92-02-PLAN.md
+last_updated: "2026-06-02T20:33:17.009Z"
 last_activity: 2026-06-02
 progress:
   total_phases: 17
   completed_phases: 14
   total_plans: 52
-  completed_plans: 46
+  completed_plans: 47
   percent: 82
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 ## Current Position
 
 Phase: 92 (e2e-test-infrastructure-hardening-typecheck-all-tests-and-el) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 Status: Ready to execute
 Last activity: 2026-06-02
 
@@ -109,6 +109,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | Phase 91 P91-02 | 20 | 3 tasks | 47 files |
 | Phase 91 P04 | 14 | 3 tasks | 6 files |
 | Phase 92 P01 | 25min | 3 tasks | 12 files |
+| Phase 92 P02 | ~2min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -215,6 +216,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Plan 91-02: 9 new TIR6 Group A perm chains + 7 testid additions landed; sequential chain anchored on perm-localisation-positive per HIGH-2; A1+A2+A9 setups consume candidateSessionMinter per D-91-PD-06
 - [Phase ?]: Phase 91 Plan 04 (D-91-RS-01/02/02b/04/05): TIR6 visual/perf/a11y/bank-auth migrated to voter-mega.fixture.ts; locatedVoterPage variant + @deprecated banner on voter.fixture; audit clean (0 legacy leaks); CI rebaseline deferred per D-91-RS-01
 - [Phase ?]: [Phase 92-01]: tests/ typecheck gate wired + no-restricted-locators enforced; full tests/ lint suite greened. Task 3 testId-sweep: 0 in-scope migrations (1 candidate deferred to 92-03).
+- [Phase 92-02]: WS4 imgproxy/pooler diagnosis flagged QUESTIONABLE (D-13) at both markdown sites (quick SUMMARY + pending todo); diff-playwright-reports.ts:311 inspected + SKIPPED (encodes the imgproxy DATA_RACE flake pool / Phase 73 D-09 binding, not the questionable edge_runtime/pooler claim); STATE.md not edited (only ref is the roadmap-add narrative, already labeled "possibly unrelated"). WS5 both freshness probes (setupFromTemplate.ts + data.setup.ts) exclude the `seed_` baseline prefix (D-15) via a second `.not('external_id','like','seed_%')` on candidates + organizations; warn-only default + E2E_REQUIRE_FRESH_DB hard-fail branch byte-unchanged (D-14); duplicated-edit (no shared helper, lower-risk option). typecheck:tests green.
 
 ### Quick Tasks Completed
 
@@ -252,8 +254,8 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-02T20:28:38.834Z
-Stopped at: Phase 92 context gathered
+Last session: 2026-06-02T20:33:17.003Z
+Stopped at: Completed 92-02-PLAN.md
 Resume file: None
 Next action: Operator decides Phase 87 disposition per Phase 86.3-05 D-06 recommendation:
   (a) **RE-PLAN (Claude's recommendation):** Re-plan Phase 87 to absorb v2.11+ voter-app cold-deeplink deferrals (4 cells #5/#6/#7/#8 closure-paired via navigation-from-home redesign) + boundary-class flake deferrals (DETERM-06 imgproxy + email-link timing) BEFORE firing the v2.10-ship anchor capture. Plan 87-01 needs a new Plan 01a (deferral inventory) + Plan 01b (anchor capture WITH explicit deferrals documented).
