@@ -124,7 +124,13 @@ export const testIds = {
   },
   voter: {
     home: {
-      startButton: 'voter-home-start'
+      startButton: 'voter-home-start',
+      // Phase 92 Plan 03 (D-06/D-07): stable page-content load anchor on the
+      // home `MainContent` root <div> (apps/frontend/src/routes/(voters)/+page.svelte).
+      // Unlike `startButton` (an action that is HIDDEN under access.voterApp=false
+      // maintenance mode), this anchor confirms "the home page content loaded" so
+      // `voterHomePage.expectPageVisible()` checks page-load, not action presence.
+      page: 'voter-home'
     },
     elections: {
       list: 'voter-elections-list',
@@ -144,7 +150,11 @@ export const testIds = {
     // nomination-availability check settles.
     missingNominationsModal: 'voter-missing-nominations-modal',
     intro: {
-      startButton: 'voter-intro-start'
+      startButton: 'voter-intro-start',
+      // Phase 92 Plan 03 (D-06/D-07): stable page-content load anchor on the
+      // intro `MainContent` root <div> (apps/frontend/src/routes/(voters)/intro/+page.svelte).
+      // Confirms the intro page content loaded, independent of the action button.
+      page: 'voter-intro'
     },
     questions: {
       answerOption: 'question-choice',
@@ -208,8 +218,7 @@ export const testIds = {
       // 260524-l1t D6: sr-only sibling marker on QuestionChoices.svelte's
       // radio whose `otherSelected == id` (i.e. the entity's chosen answer
       // in display mode). Replaces the `.entitySelected` raw-locator
-      // suppression at voter-detail.spec.ts:246-249/270-273/291-294 +
-      // voter-mega-journey.spec.ts (classifyVoterEntityRows helper).
+      // suppression used by the voter-mega-journey classifyVoterEntityRows helper.
       entitySelectedAnswer: 'entity-selected-answer',
       // Phase 91 Plan 02 (TIR6:121-142 — D-91-PD-05 A9): testid on the
       // QuestionOpenAnswer wrapper rendered inside EntityOpinions.svelte

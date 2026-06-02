@@ -24,7 +24,7 @@ Shown after the front page in the voter app. Displays a list of the steps the vo
   const { appSettings, getRoute, t } = voterCtx;
 </script>
 
-<MainContent title={t('dynamic.intro.title')}>
+<MainContent title={t('dynamic.intro.title')} data-testid="voter-intro">
   {#snippet hero()}
     <figure role="presentation">
       <HeroEmoji emoji={t('dynamic.intro.heroEmoji')} />

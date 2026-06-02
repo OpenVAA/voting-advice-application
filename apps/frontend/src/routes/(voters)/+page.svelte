@@ -37,7 +37,7 @@ The frontpage of the app for voters.
   });
 </script>
 
-<MainContent title={t('dynamic.appName')}>
+<MainContent title={t('dynamic.appName')} data-testid="voter-home">
   <Button
     variant="main"
     href={$getRoute('Intro')}
