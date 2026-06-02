@@ -494,12 +494,12 @@ Plans:
 
 **Requirements**: TYPECHECK, LOCATORS, FIXTURES, TIMEOUTS, DIAGNOSIS, FRESHGUARD (workstream-mapped; no formal REQ IDs in REQUIREMENTS.md — Phase 92 is post-v2.10-close infra hardening)
 **Depends on:** Phase 91
-**Plans:** 5 plans
+**Plans:** 1/5 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 92-01-PLAN.md — WS1: typecheck all tests/ (tsconfig + typecheck:tests script + ~5 type fixes) + locator lint rule swap to no-restricted-locators + raw-locator fixes + getByRole→testId sweep [TYPECHECK, LOCATORS] (wave 1)
+- [x] 92-01-PLAN.md — WS1: typecheck all tests/ (tsconfig + typecheck:tests script + ~5 type fixes) + locator lint rule swap to no-restricted-locators + raw-locator fixes + getByRole→testId sweep [TYPECHECK, LOCATORS] (wave 1)
 - [ ] 92-02-PLAN.md — WS4 + WS5: annotate imgproxy/pooler diagnosis as questionable + fix both freshness guards to exclude the seed_ baseline prefix [DIAGNOSIS, FRESHGUARD] (wave 1)
 
 **Wave 2** *(blocked on Wave 1 completion)*

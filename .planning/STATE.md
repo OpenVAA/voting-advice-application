@@ -4,13 +4,13 @@ milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
 status: executing
 stopped_at: Phase 92 context gathered
-last_updated: "2026-06-02T20:15:52.774Z"
-last_activity: 2026-06-02 -- Phase 92 planning complete
+last_updated: "2026-06-02T20:28:59.398Z"
+last_activity: 2026-06-02
 progress:
   total_phases: 17
   completed_phases: 14
   total_plans: 52
-  completed_plans: 45
+  completed_plans: 46
   percent: 82
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 91 — tir6-perm-and-edit-test-additions-visual-perf-a11y-bank-auth
+**Current focus:** Phase 92 — e2e-test-infrastructure-hardening-typecheck-all-tests-and-el
 
 ## Current Position
 
-Phase: 91 — COMPLETE
-Plan: 5 of 5
+Phase: 92 (e2e-test-infrastructure-hardening-typecheck-all-tests-and-el) — EXECUTING
+Plan: 2 of 5
 Status: Ready to execute
-Last activity: 2026-06-02 -- Phase 92 planning complete
+Last activity: 2026-06-02
 
 ## Performance Metrics
 
@@ -108,6 +108,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | Phase 91 P03 | 18 | 3 tasks | 8 files |
 | Phase 91 P91-02 | 20 | 3 tasks | 47 files |
 | Phase 91 P04 | 14 | 3 tasks | 6 files |
+| Phase 92 P01 | 25min | 3 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -213,6 +214,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Phase 91 Plan 03: baseV1 already seeds test-qu-info-text-link URL-type info question (subtype='link', settings.type='link' at baseV1.ts:662-672) — RESEARCH Assumption A1 holds; no baseV1 extension needed for the candidate invalidUrl step 13.5.
 - [Phase ?]: Plan 91-02: 9 new TIR6 Group A perm chains + 7 testid additions landed; sequential chain anchored on perm-localisation-positive per HIGH-2; A1+A2+A9 setups consume candidateSessionMinter per D-91-PD-06
 - [Phase ?]: Phase 91 Plan 04 (D-91-RS-01/02/02b/04/05): TIR6 visual/perf/a11y/bank-auth migrated to voter-mega.fixture.ts; locatedVoterPage variant + @deprecated banner on voter.fixture; audit clean (0 legacy leaks); CI rebaseline deferred per D-91-RS-01
+- [Phase ?]: [Phase 92-01]: tests/ typecheck gate wired + no-restricted-locators enforced; full tests/ lint suite greened. Task 3 testId-sweep: 0 in-scope migrations (1 candidate deferred to 92-03).
 
 ### Quick Tasks Completed
 
@@ -250,9 +252,9 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-02T19:24:42.765Z
+Last session: 2026-06-02T20:28:38.834Z
 Stopped at: Phase 92 context gathered
-Resume file: .planning/phases/92-e2e-test-infrastructure-hardening-typecheck-all-tests-and-el/92-CONTEXT.md
+Resume file: None
 Next action: Operator decides Phase 87 disposition per Phase 86.3-05 D-06 recommendation:
   (a) **RE-PLAN (Claude's recommendation):** Re-plan Phase 87 to absorb v2.11+ voter-app cold-deeplink deferrals (4 cells #5/#6/#7/#8 closure-paired via navigation-from-home redesign) + boundary-class flake deferrals (DETERM-06 imgproxy + email-link timing) BEFORE firing the v2.10-ship anchor capture. Plan 87-01 needs a new Plan 01a (deferral inventory) + Plan 01b (anchor capture WITH explicit deferrals documented).
   (b) **DELAYED-FIRING (alternative):** Run Phase 87 against the ALMOST-STRICT post-86.3 anchor with explicit v2.11+ deferral documentation; accept that "all-green deterministic" is satisfied for SKIPPED + DATA_RACE pools but NOT for CASCADE pool (Phase 87 Task 0 pre-gate CASCADE ≤ 5 unsatisfied at CASCADE = 37 selective-regen-preserved OR 90 raw).
