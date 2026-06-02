@@ -18,7 +18,7 @@
  * no expect.soft, no try/catch wrapping expect(), no .catch fallbacks.
  */
 
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../fixtures/views';
 
 // SKIPPED pending the full Svelte runes migration: the notification popup
 // tests below are unstable because the popup-management lifecycle (queueing /
@@ -31,8 +31,8 @@ import { expect, test } from '@playwright/test';
 // rework (see tracking todo above); bodies are intact and MUST be re-enabled.
 // eslint-disable-next-line playwright/no-skipped-test
 test.describe.skip('perm-per-app-notifications', () => {
-  test('voter route shows voter notification only', async ({ page }) => {
-    await page.goto('/en');
+  test('voter route shows voter notification only', async ({ page, voterHomePage }) => {
+    await voterHomePage.goToPage('en');
     // Strict-match the voter notification dialog by its marker — defends
     // against multiple dialogs on the page (cookie banner / survey popup /
     // etc.) by filtering the role-locator to the dialog that contains
@@ -44,6 +44,7 @@ test.describe.skip('perm-per-app-notifications', () => {
   });
 
   test('candidate route shows candidate notification only', async ({ page }) => {
+    // reason: candidate-route navigation — out of Phase 92 voter-fixture scope; no voter goToPage applies.
     await page.goto('/en/candidate');
     const candidateDialog = page.getByRole('dialog').filter({ hasText: '[notif-cand]' });
     await expect(candidateDialog).toBeVisible();

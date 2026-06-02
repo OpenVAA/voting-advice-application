@@ -18,6 +18,8 @@ import { expect, test } from '@playwright/test';
 
 test.describe('perm-hide-all-nominations', () => {
   test('showAllNominations=false: nominations 307-redirects to Home', async ({ page }) => {
+    // reason: redirect-assertion test — goto must stay raw so the 307→Home bounce is
+    // observed. A nominations-anchor goToPage would fail because the page redirects away.
     await page.goto('/en/nominations');
     // Home root, optionally prefixed by a `/<locale>` segment. Base locale (en)
     // is prefixless, so this resolves to `/`.

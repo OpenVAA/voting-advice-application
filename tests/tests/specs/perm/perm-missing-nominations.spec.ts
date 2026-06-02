@@ -22,13 +22,16 @@
  * 7 — no in-and-out bouncing).
  */
 
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../fixtures/views';
 import { testIds } from '../../utils/testIds';
 
 test.describe('perm-missing-nominations', () => {
-  test('voter selects both elections → missing-nominations modal shows el-2 as not-available', async ({ page }) => {
+  test('voter selects both elections → missing-nominations modal shows el-2 as not-available', async ({
+    page,
+    voterHomePage
+  }) => {
     // 1. Voter home and intro — click start to enter the election-selector route.
-    await page.goto('/en');
+    await voterHomePage.goToPage('en');
     await page.getByTestId(testIds.voter.home.startButton).click();
     await page.getByTestId(testIds.voter.intro.startButton).click();
 

@@ -13,22 +13,27 @@
  * no expect.soft, no try/catch wrapping expect(), no .catch fallbacks.
  */
 
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../fixtures/views';
 import { testIds } from '../../utils/testIds';
 
 test.describe('perm-disable-candidate-app', () => {
-  test('candidateApp disabled: /candidate shows maintenance; / + /elections available', async ({ page }) => {
-    // GET /en/candidate — maintenance page on the candidate-app root route.
+  test('candidateApp disabled: /candidate shows maintenance; / + /elections available', async ({
+    page,
+    voterHomePage
+  }) => {
+    // reason: candidate-route navigation (maintenance assertion) — out of Phase 92 voter-fixture scope.
     await page.goto('/en/candidate');
     await expect(page.getByRole('main')).toBeVisible();
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await expect(page.getByTestId(testIds.candidate.login.email)).toBeHidden();
 
-    // GET /en — NON-maintenance: voter start button visible.
-    await page.goto('/en');
+    // GET /en — NON-maintenance: voter home renders normally (goToPage asserts the
+    // home load anchor, then the test asserts the start button is visible).
+    await voterHomePage.goToPage('en');
     await expect(page.getByTestId(testIds.voter.home.startButton)).toBeVisible();
 
-    // GET /en/elections — NON-maintenance: voter routes available.
+    // reason: /elections has no voter-page fixture in scope; assertion is the generic
+    // getByRole('main') landmark only — keep the raw goto.
     await page.goto('/en/elections');
     await expect(page.getByRole('main')).toBeVisible();
   });

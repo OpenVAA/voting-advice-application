@@ -16,12 +16,12 @@
  * Authoritative spec: TEST-INVENTORY-REFACTOR-6.md:79-88.
  */
 
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../fixtures/views';
 import { testIds } from '../../utils/testIds';
 
 test.describe('perm-header-show-help', () => {
-  test('header-help visible on voter intro; click navigates to About', async ({ page }) => {
-    await page.goto('/en');
+  test('header-help visible on voter intro; click navigates to About', async ({ page, voterHomePage }) => {
+    await voterHomePage.goToPage('en');
     const helpBtn = page.getByTestId(testIds.shared.header.help);
     await expect(helpBtn).toBeVisible();
     await helpBtn.click();

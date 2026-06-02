@@ -12,14 +12,15 @@
  * Authoritative spec: TEST-INVENTORY-REFACTOR-6.md:68-77.
  */
 
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../fixtures/views';
 import { testIds } from '../../utils/testIds';
 
 test.describe('perm-header-show-feedback', () => {
   test('header-feedback visible on voter intro; click opens feedback-form', async ({
-    page
+    page,
+    voterHomePage
   }) => {
-    await page.goto('/en');
+    await voterHomePage.goToPage('en');
     const feedbackBtn = page.getByTestId(testIds.shared.header.feedback);
     await expect(feedbackBtn).toBeVisible();
     await feedbackBtn.click();
