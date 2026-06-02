@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
 status: executing
-stopped_at: Completed 92-03-PLAN.md
-last_updated: "2026-06-02T20:45:38.430Z"
+stopped_at: Completed 92-05-PLAN.md
+last_updated: "2026-06-02T20:52:57.732Z"
 last_activity: 2026-06-02
 progress:
   total_phases: 17
   completed_phases: 14
   total_plans: 52
-  completed_plans: 48
+  completed_plans: 49
   percent: 82
 ---
 
@@ -26,8 +26,8 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 ## Current Position
 
 Phase: 92 (e2e-test-infrastructure-hardening-typecheck-all-tests-and-el) — EXECUTING
-Plan: 4 of 5
-Status: Ready to execute
+Plan: 5 of 5
+Status: 92-05 complete; plan 04 (timeout consolidation, depends on 92-05) remaining
 Last activity: 2026-06-02
 
 ## Performance Metrics
@@ -111,6 +111,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | Phase 92 P01 | 25min | 3 tasks | 12 files |
 | Phase 92 P02 | ~2min | 2 tasks | 4 files |
 | Phase Phase 92 PP03 | ~6min | 3 tasks | 13 files |
+| Phase 92 P05 | ~5min | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -184,6 +185,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 86.3 P03]: E2E-03 / DETERM-13 cell #5 voter-feedback-persistence H2/H3 trace-driven disambiguation attempted per Phase 86.1-02 recommended-next-action #1. Trace shows verdict NEITHER — upstream `answeredVoterPage` fixture race (CASCADE-class, separate from DETERM-13) blocks H2/H3 disambiguation entirely (/questions intro page stuck at `Loading…` despite seeded data + clean Supabase REST 200/304/307). SKIP-FALLBACK applied per CONTEXT D-06; test signature surgically swapped `({ answeredVoterPage })` → `({ page })` to make `test.skip(true, …)` report as `1 skipped` instead of `1 failed`. ModalContainer.svelte UNCHANGED. v2.11+ todo augmented with REVISED recommended-next-action ordering (FIRST fix fixture race, THEN re-attempt H2/H3).
 - [Phase 86.3 P04]: LAYOUT-03 / DETERM-12 cell #6 voter-popup-hydration Path 2 (`page.context().addInitScript`) attempted per RESEARCH §"Cell #6 Fix shapes §2". 1-line swap verified-applied but EMPIRICALLY DISPROVED: /results stalls at `Loading…` (15s timeout on voter-results-list testid; Supabase REST all-200; canonical /results/candidates frame URL; same upstream loader-race symptom as 86.3-03 /questions). Path 1 (`test.use({ storageState })`) abandoned at RESEARCH §"Pitfall 4" (static config vs runtime-discovered question UUIDs; alternative resolutions out of D-08 1h cap). SKIP-FALLBACK applied per CONTEXT D-06; Path 2 swap LEFT IN PLACE as evidence-of-attempt (Phase 86.1-03 cell 2 storage-clear pattern). v2.11+ todo voter-popup-hydration-layout-03-deeplink.md augmented 44 → 72 lines with Phase 86.3-04 attempt section + cross-ref to 86.3-03 trace; Recommendation #3 (navigation-from-home test) elevated to strongest v2.11+ next action. Production loader UNCHANGED per D-10 STRICT gate.
 - [Phase 86.3 P02]: cell #4 SETTINGS-01 wave B constituency-filter — SUPERSEDED 2026-05-20 by operator WONT-IMPLEMENT decision. Constituency is navigation/scope, not a per-list filter. Spec block deleted from `tests/tests/specs/variants/constituency.spec.ts`; v2.11+ todo moved to `.planning/todos/done/2026-05-13-constituency-filter-product-gap.md` with WONT-FIX close note; SKIPPED_TESTS const entry removed; anchor jsdoc + cell #4 row marked WONT-IMPLEMENT in `diff-playwright-reports.ts`. (Original disposition: SKIP-FALLBACK via Path-C, Path-B rejected on reviewer-drift; that disposition is now historical.)
+- [Phase 92 P05]: 8 named voter-route perm-spec gotos migrated to voterHomePage/resultsPage goToPage (5 simple specs re-rooted on fixtures/views; perm-localisation-positive uses perm-l10n root, so voterHomePage+resultsPage registered there). Maintenance/307-redirect/candidate/OIDC-callback gotos kept inline with // reason:. Exhaustive D-09 grep proves zero un-migrated voter-route gotos landing on a normally-rendered page in scope; voter-mega.fixture.ts:110 + utils/voterIntro.ts:57 noted as out-of-scope infrastructure follow-up. perm-localisation TIMEOUT machinery left intact for 92-04. typecheck:tests + eslint both exit 0.
 - [Phase 87]: Path A verbal-accept run-mode selected at Task 1a checkpoint (autonomous directive + commit 9ad802ec0 verbal verification audit basis); saves ~216 min vs Path B fresh 3-run gate. v2.10 ship anchor pinned at `bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee` re-bound from 86.3-v1 raw data to v2.10 ship narrative. Operator-amended D-05 carried forward (CASCADE=36 + 4 SKIPPED accepted as documented v2.11+ deferrals). Audit-milestone v2.10 verdict: tech_debt operator-accepted; v2.10 SHIPPABLE; Phase 86/86.1/86.2 VERIFICATION.md backfill folded into v2.11+ tech_debt with new todo file. Cell #3 candidate-settings notifications.voterApp mount-lifecycle todo filed proactively per plan §6 expected new todo. KNOWN DEVIATION: parity-gate self-identity smoke FAILs structurally on Path A (76 regressions reported because 86.3-v1 raw data predates v2 classification promotions); const arrays correctly reflect v2 baseline (114/3/36/4 ✓); operator-accepted as known limitation of verbal-accept audit basis.
 - [Phase 86.3 P05]: QSPEC-01/02 cells #7+#8 SKIP-FALLBACK — walkToQuestion helper-resilience fix LANDED in voterNavigation.ts:308-329 (defensive isVisible probe + conditional intro-CTA click; +13 LOC) but EMPIRICALLY INSUFFICIENT — cells #7/#8 fail at upstream `advanceVoterFlow` line 149 (5s race-checkpoint timeout) because /intro itself never paints (page renders only `Loading…`). Same upstream voter-app cold-deeplink loader race as Phase 86.3-03 cell #5 (/questions Loading…) + Phase 86.3-04 cell #6 (/results Loading…); 4-cell finding characterizes the race as SHARED voter-app cold-deeplink (NOT route-specific). Helper fix LEFT IN PLACE as evidence-of-attempt (mirrors 86.3-04 Path-2 pattern). 3-run cold-start gate: raw FAIL (3 hashes differ); operator-approved ALMOST-STRICT per Phase 86 D-06 precedent (8 diverging cells share ONE documented boundary-class cascade ancestor — DETERM-06 imgproxy CAND-03 + candidate-registration email-link timing); canonical run-3.json; anchor SHA bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee. SKIPPED_TESTS const 2 → 5 entries (added cells #4/#5/#6; kept cells #7/#8); 3 SETTINGS-01 wave A cells moved CASCADE → PASS_LOCKED. PHASE 86.3 ANCHOR jsdoc added to diff-playwright-reports.ts. D-06 Phase 87 disposition recommendation: RE-PLAN (CASCADE >> 5 hard fails Phase 87 Task 0 pre-gate; upstream cold-deeplink race materially changes anchor target; v2.11+ navigation-from-home redesign closes 4 cells in single fix paired with 86.3-04 Recommendation #3).
 - [Phase ?]: Plan 88-02: Name-disjoint key dissociation between route-side electionTab (SELECTED singular) and search-side electionId (AVAILABLE-multi) yields structural rather than semantic dissociation
@@ -256,7 +258,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-02T20:45:01.556Z
+Last session: 2026-06-02T20:52:57.727Z
 Stopped at: Completed 92-02-PLAN.md
 Resume file: None
 Next action: Operator decides Phase 87 disposition per Phase 86.3-05 D-06 recommendation:

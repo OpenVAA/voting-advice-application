@@ -494,7 +494,7 @@ Plans:
 
 **Requirements**: TYPECHECK, LOCATORS, FIXTURES, TIMEOUTS, DIAGNOSIS, FRESHGUARD (workstream-mapped; no formal REQ IDs in REQUIREMENTS.md — Phase 92 is post-v2.10-close infra hardening)
 **Depends on:** Phase 91
-**Plans:** 3/5 plans executed
+**Plans:** 4/5 plans executed
 
 Plans:
 **Wave 1**
@@ -508,7 +508,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 92-05-PLAN.md — WS2 spillover: migrate named voter-route page.goto calls in 7 perm-spec gap files to goToPage; keep maintenance/redirect/candidate/bounce gotos inline; exhaustive coverage proof [FIXTURES] (wave 3, depends 92-01, 92-03)
+- [x] 92-05-PLAN.md — WS2 spillover: migrate named voter-route page.goto calls in 7 perm-spec gap files to goToPage; keep maintenance/redirect/candidate/bounce gotos inline; exhaustive coverage proof [FIXTURES] (wave 3, depends 92-01, 92-03)
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
