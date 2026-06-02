@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@openvaa/shared-config/ts",
+  "compilerOptions": {
+    "noEmit": true,
+    "composite": false,
+    "declarationMap": false,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "target": "ES2022",
+    "types": ["node"],
+    "skipLibCheck": true
+  },
+  "include": [
+    "tests/**/*.ts",
+    "*.ts",
+    "../apps/frontend/src/lib/types/global.d.ts"
+  ],
+  "exclude": [
+    "playwright-results/**",
+    "playwright-results-cell4/**",
+    "playwright-report/**",
+    "node_modules/**",
+    "playwright/**"
+  ]
+}

@@ -91,7 +91,9 @@ async function generateTestKeys() {
  */
 async function buildTestIdToken(
   claims: Record<string, string>,
-  sigPriv: jose.KeyLike,
+  // jose v6 removed the `KeyLike` type alias; `generateKeyPair` now returns a
+  // WebCrypto `CryptoKey`. Same RS256 signing algorithm — type rename only.
+  sigPriv: CryptoKey,
   encPubJwk: jose.JWK
 ) {
   // 1. Create signed inner JWT

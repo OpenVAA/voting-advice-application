@@ -77,14 +77,13 @@ if (!template) {
  * 58-E2E-AUDIT.md §2.2 ordering invariant.
  */
 export const E2E_CANDIDATES: ReadonlyArray<TemplateCandidate> = Object.freeze(
-  (template.candidates?.fixed ?? []) as ReadonlyArray<TemplateCandidate>
+  (template.candidates?.fixed ?? []) as unknown as ReadonlyArray<TemplateCandidate>
 );
 
 /**
  * Addendum candidates — the two "unregistered" candidates whose
- * registration is exercised by candidate-registration.spec.ts and
- * candidate-profile.spec.ts. Filtered by external_id prefix per
- * 58-E2E-AUDIT.md §3.3.
+ * registration is exercised by candidate-mega-journey.spec.ts. Filtered by
+ * external_id prefix per 58-E2E-AUDIT.md §3.3.
  *
  * Order invariant: [0] is `test-candidate-unregistered`, [1] is
  * `test-candidate-unregistered-2` (both specs index by position).
@@ -118,14 +117,14 @@ export const E2E_DEFAULT_CANDIDATES: ReadonlyArray<TemplateCandidate> = Object.f
  * ALL questions in the e2e template.
  */
 export const E2E_QUESTIONS: ReadonlyArray<TemplateQuestion> = Object.freeze(
-  (template.questions?.fixed ?? []) as ReadonlyArray<TemplateQuestion>
+  (template.questions?.fixed ?? []) as unknown as ReadonlyArray<TemplateQuestion>
 );
 
 /**
  * ALL organizations (parties) in the e2e template.
  */
 export const E2E_ORGANIZATIONS: ReadonlyArray<TemplateOrganization> = Object.freeze(
-  (template.organizations?.fixed ?? []) as ReadonlyArray<TemplateOrganization>
+  (template.organizations?.fixed ?? []) as unknown as ReadonlyArray<TemplateOrganization>
 );
 
 /**
