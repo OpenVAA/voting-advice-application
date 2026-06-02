@@ -494,7 +494,7 @@ Plans:
 
 **Requirements**: TYPECHECK, LOCATORS, FIXTURES, TIMEOUTS, DIAGNOSIS, FRESHGUARD (workstream-mapped; no formal REQ IDs in REQUIREMENTS.md — Phase 92 is post-v2.10-close infra hardening)
 **Depends on:** Phase 91
-**Plans:** 2/5 plans executed
+**Plans:** 3/5 plans executed
 
 Plans:
 **Wave 1**
@@ -504,7 +504,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 92-03-PLAN.md — WS2: rebuild 5 voter page fixtures with goToPage/expectPageVisible + extend testId catalog (home/intro anchors) + migrate named-route page.goto calls in the 5 primary voter/voterNav files [FIXTURES] (wave 2, depends 92-01)
+- [x] 92-03-PLAN.md — WS2: rebuild 5 voter page fixtures with goToPage/expectPageVisible + extend testId catalog (home/intro anchors) + migrate named-route page.goto calls in the 5 primary voter/voterNav files [FIXTURES] (wave 2, depends 92-01)
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
