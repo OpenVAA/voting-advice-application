@@ -12,12 +12,9 @@
  * /results), while `answeredVoterPage` continues to answer + advance to
  * /results.
  *
- * SIBLING (not replacement) to the existing tests/tests/fixtures/voter.fixture.ts.
- * The legacy fixture is consumed by ~12 specs and is preserved per the
- * parallel-landing contract in 88-CONTEXT.md §"Parallel-setup principle".
- * Phase 91 Plan 04 marks the legacy fixture with a JSDoc `@deprecated` banner;
- * deletion is deferred to v2.11+ legacy-retirement phase after all consumers
- * migrate (D-91-RS-03 / D-91-RS-04).
+ * This is the sole voter-walk fixture (the legacy single-election
+ * voter.fixture.ts was removed in the 2026-06-02 cleanup along with its
+ * consumer specs).
  *
  * What this fixture exposes:
  *   - `answerMode: 'min' | 'max'` — which extreme to pick on each
@@ -36,10 +33,8 @@
  *     context) but NOT answered. Consumed by a11y-smoke's `questions`
  *     route scan per D-91-RS-02b (Phase 91 Plan 04).
  *
- * This fixture is wired against the new BUILT_IN `baseV1` dataset
- * (multi-election + multi-constituency hierarchy). The legacy
- * `voter.fixture.ts` assumes a single-election + single-constituency
- * auto-implied dataset and is NOT used by the mega-journey.
+ * This fixture is wired against the BUILT_IN `baseV1` dataset
+ * (multi-election + multi-constituency hierarchy).
  *
  * The mega-journey spec uses the raw `page` for the pre-results
  * walkthrough (steps 9.1.x → 9.5.x intro-flow) so it can assert at
@@ -58,8 +53,11 @@
  */
 
 import { test as base } from '@playwright/test';
+import { TIMEOUTS } from '../helpers';
 import { buildRoute } from '../utils/buildRoute';
 import { testIds } from '../utils/testIds';
+import { navigateToFirstQuestion } from '../utils/voterNavigation';
+import type { Page } from '@playwright/test';
 
 export type AnswerMode = 'min' | 'max';
 
@@ -72,14 +70,30 @@ type VoterMegaFixtureOptions = {
 
 type VoterMegaFixtures = VoterMegaFixtureOptions & {
   /** A page on /results with all reachable opinion questions answered per answerMode. */
-  answeredVoterPage: import('@playwright/test').Page;
+  answeredVoterPage: Page;
   /**
    * A page parked ON the /questions intro page (located but NOT answered).
    * Walks Home → Intro → Elections → Constituencies → /questions intro and
    * STOPS. Consumed by a11y-smoke for the questions-route scan
    * (Phase 91 Plan 04 / D-91-RS-02b).
    */
-  locatedVoterPage: import('@playwright/test').Page;
+  locatedVoterPage: Page;
+  /**
+   * A page on /results with all reachable opinion questions answered per
+   * answerMode — for the MINIMAL (single-election + single-constituency)
+   * `buildMinimal` perm datasets.
+   *
+   * Unlike `answeredVoterPage` (which hard-waits for the /questions intro
+   * `voter-questions-start` button via `walkUntilQuestionsIntro`), this
+   * fixture drives the robust race-based `navigateToFirstQuestion`
+   * (`advanceVoterFlow`) traversal. With a single election + single
+   * constituency the elections/constituencies pages auto-imply and the
+   * /questions intro page is skipped — the voter lands DIRECTLY on the
+   * first question, so the intro start button never renders. The race-based
+   * passer tolerates every missing intermediate page; the hard-wait does
+   * not. Consumed by the `buildMinimal`-backed perm specs.
+   */
+  minimalVoterResultsPage: Page;
 };
 
 /**
@@ -92,11 +106,11 @@ type VoterMegaFixtures = VoterMegaFixtureOptions & {
  * `voter-questions-start` button is visible AND has NOT been clicked.
  * Voter context has electionId + constituencyId resolved.
  */
-async function walkUntilQuestionsIntro(page: import('@playwright/test').Page): Promise<void> {
+async function walkUntilQuestionsIntro(page: Page): Promise<void> {
   // 1. Home page → start.
   await page.goto(buildRoute({ route: 'Home', locale: 'en' }));
   const homeStart = page.getByTestId(testIds.voter.home.startButton);
-  await homeStart.waitFor({ state: 'visible', timeout: 10_000 });
+  await homeStart.waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
   await homeStart.click();
 
   // 2. Intro start.
@@ -104,7 +118,7 @@ async function walkUntilQuestionsIntro(page: import('@playwright/test').Page): P
   // Intro may auto-redirect to elections/constituencies; tolerate either.
   await page
     .waitForURL((url) => !url.toString().endsWith('/en/') && !url.toString().endsWith('/en'), {
-      timeout: 10_000
+      timeout: TIMEOUTS.slowPage
     })
     .catch(() => null);
   if (await introStart.isVisible().catch(() => false)) {
@@ -114,7 +128,7 @@ async function walkUntilQuestionsIntro(page: import('@playwright/test').Page): P
   // 3. Elections page (multi-election): select all elections then continue.
   const electionsList = page.getByTestId(testIds.voter.elections.list);
   const electionsContinue = page.getByTestId(testIds.voter.elections.continue);
-  if (await electionsList.isVisible({ timeout: 5_000 }).catch(() => false)) {
+  if (await electionsList.isVisible({ timeout: TIMEOUTS.page }).catch(() => false)) {
     // Accept default (both elections selected) or click each card to ensure selection.
     await electionsContinue.waitFor({ state: 'visible' });
     await electionsContinue.click();
@@ -123,14 +137,14 @@ async function walkUntilQuestionsIntro(page: import('@playwright/test').Page): P
   // 4. Constituencies page: pick the first option in each combobox.
   const constituenciesList = page.getByTestId(testIds.voter.constituencies.list);
   const constituenciesContinue = page.getByTestId(testIds.voter.constituencies.continue);
-  if (await constituenciesList.isVisible({ timeout: 5_000 }).catch(() => false)) {
+  if (await constituenciesList.isVisible({ timeout: TIMEOUTS.page }).catch(() => false)) {
     const comboboxes = constituenciesList.getByRole('combobox');
     const count = await comboboxes.count();
     for (let i = 0; i < count; i++) {
       const combo = comboboxes.nth(i);
       await combo.click();
       const listbox = page.getByRole('listbox');
-      await listbox.waitFor({ state: 'visible', timeout: 5_000 });
+      await listbox.waitFor({ state: 'visible', timeout: TIMEOUTS.page });
       await listbox.getByRole('option').first().click();
     }
     await constituenciesContinue.waitFor({ state: 'visible' });
@@ -141,7 +155,7 @@ async function walkUntilQuestionsIntro(page: import('@playwright/test').Page): P
   //    Do NOT click it; that's the divergence point between locatedVoterPage
   //    (stops here) and answeredVoterPage (continues to answer-loop).
   const questionsStart = page.getByTestId(testIds.voter.questions.startButton);
-  await questionsStart.waitFor({ state: 'visible', timeout: 10_000 });
+  await questionsStart.waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
 }
 
 /**
@@ -159,13 +173,13 @@ async function walkUntilQuestionsIntro(page: import('@playwright/test').Page): P
  *     'max' → last option index (nth(-1)).
  */
 async function answerAndAdvanceToResults(
-  page: import('@playwright/test').Page,
+  page: Page,
   answerMode: AnswerMode,
   answerCount?: number
 ): Promise<void> {
   // 5b. Click questions-intro start.
   const questionsStart = page.getByTestId(testIds.voter.questions.startButton);
-  if (await questionsStart.isVisible({ timeout: 5_000 }).catch(() => false)) {
+  if (await questionsStart.isVisible({ timeout: TIMEOUTS.page }).catch(() => false)) {
     await questionsStart.click();
   }
 
@@ -182,14 +196,11 @@ async function answerAndAdvanceToResults(
     if (terminal.test(page.url())) break;
     const urlBefore = page.url();
     // Wait for either a category-intro or a question.
-    await categoryStart
-      .or(answerOption.first())
-      .first()
-      .waitFor({ state: 'visible', timeout: 10_000 });
+    await categoryStart.or(answerOption.first()).first().waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
 
     if (await categoryStart.isVisible().catch(() => false)) {
       await categoryStart.click();
-      await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 10_000 }).catch(() => null);
+      await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: TIMEOUTS.slowPage }).catch(() => null);
       continue;
     }
 
@@ -197,15 +208,15 @@ async function answerAndAdvanceToResults(
     if (answered >= cap) {
       // Use Skip to advance past remaining questions when answerCount is capped.
       await nextButton.click();
-      await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 10_000 }).catch(() => null);
+      await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: TIMEOUTS.slowPage }).catch(() => null);
       continue;
     }
     const choiceCount = await answerOption.count();
     if (choiceCount === 0) {
       // No selectable choices (e.g. text/number rendering) — Skip.
-      await nextButton.waitFor({ state: 'visible', timeout: 5_000 });
+      await nextButton.waitFor({ state: 'visible', timeout: TIMEOUTS.page });
       await nextButton.click();
-      await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 10_000 }).catch(() => null);
+      await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: TIMEOUTS.slowPage }).catch(() => null);
       continue;
     }
     const pickIndex = answerMode === 'min' ? 0 : choiceCount - 1;
@@ -213,32 +224,22 @@ async function answerAndAdvanceToResults(
     answered++;
     // Auto-advance OR fallback to nextButton (last-question case).
     try {
+      // reason: tight 3s auto-advance probe — deliberately below TIMEOUTS.page; on
+      // timeout the nextButton fallback fires (last-question case). Not bucket-mappable.
       await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 3_000 });
     } catch {
       if (await nextButton.isVisible().catch(() => false)) {
         await nextButton.click();
-        await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 10_000 }).catch(() => null);
+        await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: TIMEOUTS.slowPage }).catch(() => null);
       }
     }
   }
 
   // 7. Wait for the results list.
+  // reason: 15s exceeds TIMEOUTS.slowPage (10s) — the post-answer-loop /results landing
+  // is the heaviest single wait in the walk (full matching compute + entity-list render)
+  // and needs extra cold-start headroom. Kept inline as a documented exception.
   await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 15_000 });
-}
-
-/**
- * @deprecated Use `walkUntilQuestionsIntro` + `answerAndAdvanceToResults`
- *   directly. Retained as a thin wrapper for backward-compat with any
- *   external consumer that imported this symbol. Internal fixtures below
- *   call the two helpers directly.
- */
-async function walkVoterMegaJourney(
-  page: import('@playwright/test').Page,
-  answerMode: AnswerMode,
-  answerCount?: number
-): Promise<void> {
-  await walkUntilQuestionsIntro(page);
-  await answerAndAdvanceToResults(page, answerMode, answerCount);
 }
 
 export const voterMegaTest = base.extend<VoterMegaFixtures>({
@@ -254,9 +255,21 @@ export const voterMegaTest = base.extend<VoterMegaFixtures>({
   locatedVoterPage: async ({ page }, use) => {
     await walkUntilQuestionsIntro(page);
     await use(page);
+  },
+
+  minimalVoterResultsPage: async ({ page, answerMode, answerCount }, use) => {
+    // Robust traversal for the minimal (1-election + 1-constituency)
+    // perm datasets: `navigateToFirstQuestion` race-walks through whatever
+    // intermediate pages render (none, when everything auto-implies) and
+    // lands on the first question. `answerAndAdvanceToResults` then answers
+    // through to /results — its leading questions-intro start click is
+    // guarded with `isVisible`, so it no-ops when the intro page was skipped.
+    await navigateToFirstQuestion(page);
+    await answerAndAdvanceToResults(page, answerMode, answerCount);
+    await use(page);
   }
 });
 
 // Internal helper exported for tests that need to compose the walk manually
 // (e.g. spec-level intermediate checkpoints between Home and /questions intro).
-export { walkUntilQuestionsIntro, answerAndAdvanceToResults, walkVoterMegaJourney };
+export { answerAndAdvanceToResults, walkUntilQuestionsIntro };

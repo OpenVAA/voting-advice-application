@@ -68,6 +68,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, test } from '../../fixtures/candidate/candidate-mega';
+import { TIMEOUTS } from '../../helpers';
 import {
   INFO_QUESTION_ANSWERS,
   OPEN_ANSWER_1,
@@ -87,20 +88,12 @@ import type { Page } from '@playwright/test';
 // ====================================================================
 // FILE-SCOPE CONSTANTS
 //
-// TIMEOUT consolidates the previously-inline `{ timeout: <num> }`
-// literals into a semantic bucket — same pattern as voter-mega-journey.
+// Timeout buckets are imported from the central helpers/timeouts.ts
+// (Phase 92 Plan 04, D-10/D-11/D-12). This file's former local slowPage
+// (7_500) is absorbed by the central slowPage (10_000) — a widening, not a
+// tightening. testMax (90_000) equals the playwright.config global ceiling,
+// so test.setTimeout(TIMEOUTS.testMax) preserves the prior 90s budget exactly.
 // ====================================================================
-
-const TIMEOUT = {
-  element: 2_000,
-  click: 2_000,
-  page: 5_000,
-  slowPage: 7_500,
-  // The full 22-step journey (register → password → login → profile → all
-  // opinion questions → preview → logout) does not fit in 30s once every step
-  // actually runs; use the 90s global per-test ceiling (playwright.config.ts:60).
-  testMax: 90_000
-} as const;
 
 /**
  * Valid portrait path — reuses the existing tests/tests/data/assets/test-poster.jpg
@@ -208,9 +201,6 @@ function buildOversizedPng(): void {
  * the ToU acceptance form directly. Hoisted out of the test body to
  * satisfy `playwright/no-conditional-in-test` — the `if` inside is a
  * deterministic post-await dispatch on a settled URL, not a race mask.
- *
- * Mirrors the canonical pattern at
- * `candidate-registration.spec.ts:45-74`.
  */
 async function loginIfRedirectedToLoginPage(
   page: Page,
@@ -240,8 +230,7 @@ async function loginIfRedirectedToLoginPage(
   }
 }
 
-// Start every test in this file UNAUTHENTICATED per R13 +
-// candidate-registration.spec.ts:22 precedent.
+// Start every test in this file UNAUTHENTICATED per R13.
 test.use({ storageState: { cookies: [], origins: [] } });
 
 test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
@@ -272,7 +261,7 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
     candidatePreviewPage,
     candidateLogoutButton
   }) => {
-    test.setTimeout(TIMEOUT.testMax);
+    test.setTimeout(TIMEOUTS.testMax);
 
     const client = new SupabaseAdminClient();
 
@@ -284,14 +273,14 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
       // `candidate-help-home`. Visibility proves the page rendered without
       // the auth gate redirecting to /candidate/login.
       await expect.soft(page.getByTestId(testIds.candidate.help.home)).toBeVisible({
-        timeout: TIMEOUT.slowPage
+        timeout: TIMEOUTS.slowPage
       });
     });
 
     await test.step('2. static: /candidate/privacy reachable while unauthenticated', async () => {
       await page.goto('/en/candidate/privacy');
       await expect.soft(page.getByTestId(testIds.candidate.privacy.home)).toBeVisible({
-        timeout: TIMEOUT.slowPage
+        timeout: TIMEOUTS.slowPage
       });
     });
 
@@ -336,13 +325,13 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
       // The post-helper landing is the ToU form (terms_of_use_accepted is
       // null on the unregistered candidate so the protected layout shows
       // the ToU form before any other content).
-      await loginIfRedirectedToLoginPage(page, UNREGISTERED_CANDIDATE_EMAIL, PASSWORD_1, TIMEOUT.slowPage);
+      await loginIfRedirectedToLoginPage(page, UNREGISTERED_CANDIDATE_EMAIL, PASSWORD_1, TIMEOUTS.slowPage);
       const touCheckbox = page.getByTestId(testIds.candidate.terms.checkbox);
-      await touCheckbox.waitFor({ state: 'visible', timeout: TIMEOUT.slowPage });
+      await touCheckbox.waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
       await candidateTermsOfUsePage.acceptAndAdvance();
       // Settle on the candidate home (status message visible).
       await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({
-        timeout: TIMEOUT.slowPage
+        timeout: TIMEOUTS.slowPage
       });
     });
 
@@ -364,11 +353,11 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
       // logout button opens the TimedModal confirmation dialog.
       await candidateLogoutButton.clickWithDialog();
       // Post-logout lands at /candidate/login.
-      await expect(page).toHaveURL(/\/candidate\/login/, { timeout: TIMEOUT.slowPage });
+      await expect(page).toHaveURL(/\/candidate\/login/, { timeout: TIMEOUTS.slowPage });
       // Navigate directly to /candidate/profile while unauthenticated —
       // protected layout redirects back to /candidate/login.
       await page.goto('/en/candidate/profile');
-      await expect(page).toHaveURL(/\/candidate\/login/, { timeout: TIMEOUT.slowPage });
+      await expect(page).toHaveURL(/\/candidate\/login/, { timeout: TIMEOUTS.slowPage });
     });
 
     // ============== Step 8: forgot-password reset flow ====================
@@ -391,7 +380,7 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
       // session). ToU was already accepted in step 5, so we land on
       // /candidate home directly.
       await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({
-        timeout: TIMEOUT.slowPage
+        timeout: TIMEOUTS.slowPage
       });
     });
 
@@ -410,7 +399,7 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
       await candidateLoginPage.enterPassword(PASSWORD_2);
       await candidateLoginPage.submit();
       await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({
-        timeout: TIMEOUT.slowPage
+        timeout: TIMEOUTS.slowPage
       });
     });
 
@@ -420,7 +409,7 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
       await page.goto('/en/candidate/help');
       await page.getByTestId(testIds.candidate.help.home).click();
       await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({
-        timeout: TIMEOUT.slowPage
+        timeout: TIMEOUTS.slowPage
       });
     });
 
@@ -437,7 +426,7 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
 
     await test.step('12. profile: static info + filtered questions partition + required badge', async () => {
       await candidateHomePage.clickTask('profile');
-      await expect(page).toHaveURL(/\/candidate\/profile/, { timeout: TIMEOUT.slowPage });
+      await expect(page).toHaveURL(/\/candidate\/profile/, { timeout: TIMEOUTS.slowPage });
       // Static info: candidate first name visible; nomination block carries
       // election_symbol "999" (the sentinel for the unregistered candidate
       // per Plan 89-01 baseV1).
@@ -502,7 +491,7 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
       // Post-submit lands on home (opinions still disabled because the
       // required field is empty).
       await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({
-        timeout: TIMEOUT.slowPage
+        timeout: TIMEOUTS.slowPage
       });
       await candidateHomePage.expectTasks({
         enabled: ['profile'],
@@ -519,7 +508,7 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
       // settings.type='link') per packages/dev-seed/src/templates/baseV1.ts:662-672
       // — no baseV1 extension needed.
       await candidateHomePage.clickTask('profile');
-      await expect(page).toHaveURL(/\/candidate\/profile/, { timeout: TIMEOUT.slowPage });
+      await expect(page).toHaveURL(/\/candidate\/profile/, { timeout: TIMEOUTS.slowPage });
       // Fill the link question with a clearly invalid URL.
       await candidateProfilePage.fillQuestion(/\[qu-info-text-link\]/, 'not-a-url');
       // Trigger validation by blurring the field (Input.svelte's checkUrl
@@ -532,14 +521,14 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
       // fi "Verkko-osoite ei ole kelvollinen."
       await expect
         .soft(page.getByTestId(testIds.shared.inputError))
-        .toContainText(/not valid|ei ole kelvollinen/i, { timeout: TIMEOUT.element });
+        .toContainText(/not valid|ei ole kelvollinen/i, { timeout: TIMEOUTS.element });
       // Clear the field so step 14 isn't blocked by validation when it
       // re-submits the form with the required field filled.
       await candidateProfilePage.fillQuestion(/\[qu-info-text-link\]/, '');
       // Return to home so step 14's clickTask('profile') re-navigates cleanly.
       await page.getByTestId(testIds.candidate.profile.submit).click();
       await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({
-        timeout: TIMEOUT.slowPage
+        timeout: TIMEOUTS.slowPage
       });
     });
 
@@ -547,13 +536,13 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
 
     await test.step('14. profile: revisit + fill required + submit → questions overview', async () => {
       await candidateHomePage.clickTask('profile');
-      await expect(page).toHaveURL(/\/candidate\/profile/, { timeout: TIMEOUT.slowPage });
+      await expect(page).toHaveURL(/\/candidate\/profile/, { timeout: TIMEOUTS.slowPage });
       // Fill the required test-qu-info-text field this time.
       await candidateProfilePage.fillQuestion(/\[qu-info-text\]/, INFO_QUESTION_ANSWERS['test-qu-info-text']);
       await candidateProfilePage.submit();
       // Post-submit when required-empty gate is satisfied: navigation to
       // the questions overview per profile/+page.svelte:104-116 canSubmit branch.
-      await expect(page).toHaveURL(/\/candidate\/questions/, { timeout: TIMEOUT.slowPage });
+      await expect(page).toHaveURL(/\/candidate\/questions/, { timeout: TIMEOUTS.slowPage });
     });
 
     // ============== Step 15: questions overview intro + clickStart =======
@@ -563,7 +552,7 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
       await candidateQuestionsOverviewPage.clickStart();
       // Land on the per-question editor (URL contains /questions/{id}).
       await expect(page).toHaveURL(/\/candidate\/questions\/[^/]+/, {
-        timeout: TIMEOUT.slowPage
+        timeout: TIMEOUTS.slowPage
       });
     });
 
@@ -592,7 +581,7 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
       // overview explicitly.
       await page.goto('/en/candidate/questions');
       await expect(page).toHaveURL(/\/candidate\/questions(\?|$|#)/, {
-        timeout: TIMEOUT.slowPage
+        timeout: TIMEOUTS.slowPage
       });
       // Partial-completion shortcut is visible.
       await candidateQuestionsOverviewPage.expectContinuePrompt();
@@ -616,7 +605,7 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
     await test.step('18. edit Q1: change choice + change info + clickContinue → overview shows updates', async () => {
       await candidateQuestionsOverviewPage.clickEditQuestion(/\[qu-opin-base-1-likert5\]/);
       await expect(page).toHaveURL(/\/candidate\/questions\/[^/]+/, {
-        timeout: TIMEOUT.slowPage
+        timeout: TIMEOUTS.slowPage
       });
       // Change choice to the second option + replace the info text.
       await candidateQuestionPage.selectChoice(1);
@@ -641,7 +630,7 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
         (n) => candidateQuestionPage.selectChoice(n),
         () => candidateQuestionPage.clickContinue(),
         () => candidateQuestionPage.expectContinueEnabled(),
-        TIMEOUT.slowPage
+        TIMEOUTS.slowPage
       );
       // After the last opinion: land at home with completed state. Navigate
       // explicitly to home to assert the completed state (the post-last
@@ -669,7 +658,7 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
     await test.step('21. preview: info + portrait + opinion answers + NO voter-comparison', async () => {
       await page.goto('/en/candidate/preview');
       await expect(page.getByTestId(testIds.candidate.preview.container)).toBeVisible({
-        timeout: TIMEOUT.slowPage
+        timeout: TIMEOUTS.slowPage
       });
       // Portrait is rendered.
       await candidatePreviewPage.expectPortraitVisible();
@@ -688,7 +677,7 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
       // Return to home for the logout button.
       await page.goto('/en/candidate');
       await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({
-        timeout: TIMEOUT.slowPage
+        timeout: TIMEOUTS.slowPage
       });
       // Profile + opinions complete → logout dispatches without a confirmation
       // dialog. Per TIR4:253-256 + R11 LogoutButton discrimination.

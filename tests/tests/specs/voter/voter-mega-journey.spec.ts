@@ -42,6 +42,7 @@
 
 import { createFeedbackDialog } from '../../fixtures/shared/feedbackDialog.fixture';
 import { expect, test } from '../../fixtures/views';
+import { TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { testIds } from '../../utils/testIds';
 import type { Locator, Page } from '@playwright/test';
@@ -49,35 +50,26 @@ import type { Locator, Page } from '@playwright/test';
 // ====================================================================
 // FILE-SCOPE CONSTANTS — 260524-l1t D1 + D3
 //
-// TIMEOUT consolidates the previously-inline `{ timeout: <num> }`
-// literals into a semantic bucket. Categories chosen per the spec's
-// most-common waits:
-//   - element:  visibility wait after an action that doesn't change URL
-//   - click:    action-ack (click registered, modal dismissed)
-//   - page:     URL change / route transition wait
-//   - slowPage: multi-network-roundtrip + render boundary (cold deeplink,
-//               accordion re-render, /results landing after long walk)
-//   - testMax:  full-test ceiling (test.setTimeout)
+// Element/click/page/slowPage timeout buckets are imported from the central
+// helpers/timeouts.ts (Phase 92 Plan 04, D-10/D-11/D-12). This file's former
+// local page bucket (4_000) is absorbed by the central page (5_000) — a
+// widening, not a tightening.
 //
-// FILE-SCOPE for now — future plan may extract to utils/timeouts.ts.
+// reason: MEGA_TEST_MAX (120s) > TIMEOUTS.testMax (90s) and stays inline as a
+// documented D-12 exception. Phase 88 Plan 04 (T6 + T7 + T8) added 5 new
+// test.step blocks to the mega-journey, including the T8 filters:dialog
+// 7-stage choreography which opens/closes the modal 7+ times. Pre-88-04
+// baseline ran in ~17-24s (260523-u53 SUMMARY); post-88-04 surface bumps to
+// ~75-90s, so testMax was raised 50_000 → 120_000 to absorb the new cells'
+// per-step costs (Expander auto-expand interactions + modal transitions).
+// APPLIED via test.setTimeout below — it MUST keep passing this value, NOT
+// TIMEOUTS.testMax (90s), or the test would start timing out at 90s.
 //
 // TEXT_RE consolidates regex literals used 2+ times in the spec body so the
 // `playwright/no-raw-locators` audit + intent-locality both improve.
 // ====================================================================
 
-const TIMEOUT = {
-  element: 2_000, // For elements to be visible
-  click: 2_000, // For clicks to register
-  page: 4_000, // For pages to load
-  slowPage: 10_000, // For slow pages to load — use sparingly
-  // Phase 88 Plan 04 (T6 + T7 + T8) added 5 new test.step blocks to the
-  // mega-journey, including the T8 filters:dialog 7-stage choreography
-  // which opens/closes the modal 7+ times. Pre-88-04 baseline ran in
-  // ~17-24s (260523-u53 SUMMARY); post-88-04 surface bumps to ~75-90s.
-  // testMax raised from 50_000 → 120_000 to absorb the new cells'
-  // per-step costs (Expander auto-expand interactions + modal transitions).
-  testMax: 120_000 // For any full test
-} as const;
+const MEGA_TEST_MAX = 120_000;
 
 const TEXT_RE = {
   // tab labels
@@ -166,7 +158,7 @@ async function getOnlyConstituencyListbox(page: Page): Promise<Locator> {
   await expect(comboboxes).toHaveCount(1);
   await comboboxes.first().click();
   const listbox = page.getByRole('listbox');
-  await listbox.waitFor({ state: 'visible', timeout: TIMEOUT.page });
+  await listbox.waitFor({ state: 'visible', timeout: TIMEOUTS.page });
   return listbox;
 }
 
@@ -184,7 +176,7 @@ async function toggleCategoryListItem({
 }): Promise<void> {
   const categoryList = page.getByTestId(testIds.voter.questions.categoryList);
   const checkbox = categoryList.getByRole('checkbox', { name: label });
-  await expect(checkbox).toBeVisible({ timeout: TIMEOUT.element });
+  await expect(checkbox).toBeVisible({ timeout: TIMEOUTS.element });
   if (checked) await checkbox.check();
   else await checkbox.uncheck();
 }
@@ -195,7 +187,7 @@ async function toggleCategoryListItem({
 async function expectUrlChange(page: Page, action: () => Promise<void>): Promise<void> {
   const urlBefore = page.url();
   await action();
-  await page.waitForURL((u) => u.toString() !== urlBefore, { timeout: TIMEOUT.page }).catch(() => null);
+  await page.waitForURL((u) => u.toString() !== urlBefore, { timeout: TIMEOUTS.page }).catch(() => null);
 }
 
 /**
@@ -215,9 +207,9 @@ async function expectCategoryIntroAndAdvance({
     const categorySkip = page.getByTestId(testIds.voter.questions.categorySkip);
     const categoryStart = page.getByTestId(testIds.voter.questions.categoryStart);
     await Promise.all([
-      expect(categoryIntro).toHaveText(text, { timeout: TIMEOUT.element }),
-      expect(categorySkip).toBeVisible({ timeout: TIMEOUT.element }),
-      expect(categoryStart).toBeVisible({ timeout: TIMEOUT.element })
+      expect(categoryIntro).toHaveText(text, { timeout: TIMEOUTS.element }),
+      expect(categorySkip).toBeVisible({ timeout: TIMEOUTS.element }),
+      expect(categoryStart).toBeVisible({ timeout: TIMEOUTS.element })
     ]);
     if (skip) await categorySkip.click();
     else await categoryStart.click();
@@ -248,10 +240,10 @@ async function expectQuestionAndAdvance({
     const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
     await Promise.all([
       text
-        ? expect(questionHeading).toHaveText(text, { timeout: TIMEOUT.element })
-        : expect(questionHeading).toBeVisible({ timeout: TIMEOUT.element }),
-      expect(answerOption).toBeVisible({ timeout: TIMEOUT.element }),
-      expect(nextButton).toBeVisible({ timeout: TIMEOUT.element })
+        ? expect(questionHeading).toHaveText(text, { timeout: TIMEOUTS.element })
+        : expect(questionHeading).toBeVisible({ timeout: TIMEOUTS.element }),
+      expect(answerOption).toBeVisible({ timeout: TIMEOUTS.element }),
+      expect(nextButton).toBeVisible({ timeout: TIMEOUTS.element })
     ]);
     if (!allowPreselected) await expect(answerOption).not.toBeChecked();
     const isChecked = await answerOption.isChecked();
@@ -273,22 +265,22 @@ async function expectQuestionAndAdvance({
  */
 async function expectElectionOptionAndSelect({ page, text }: { page: Page; text: RegExp | string }): Promise<void> {
   const electionAccordion = page.getByTestId(testIds.voter.results.electionAccordion);
-  await expect(electionAccordion).toBeVisible({ timeout: TIMEOUT.element });
+  await expect(electionAccordion).toBeVisible({ timeout: TIMEOUTS.element });
   // If only one option is in the DOM, the accordion is collapsed — click the
   // visible (active) option to toggle it expanded. When fully expanded, all
   // options are present and the target click below selects the desired one.
   const visibleOptions = electionAccordion.getByRole('option');
   const visibleCount = await visibleOptions.count();
   if (visibleCount === 1) {
-    await visibleOptions.first().click({ timeout: TIMEOUT.click });
+    await visibleOptions.first().click({ timeout: TIMEOUTS.click });
   }
   const target = electionAccordion.getByRole('option', { name: text }).first();
-  await expect(target).toBeVisible({ timeout: TIMEOUT.element });
-  await target.click({ timeout: TIMEOUT.click });
+  await expect(target).toBeVisible({ timeout: TIMEOUTS.element });
+  await target.click({ timeout: TIMEOUTS.click });
   // We need to wait for the accordion to collapse again to ensure the state has changed
-  await expect(visibleOptions).toHaveCount(1, { timeout: TIMEOUT.element });
+  await expect(visibleOptions).toHaveCount(1, { timeout: TIMEOUTS.element });
   const resultsList = page.getByTestId(testIds.voter.results.list);
-  await expect(resultsList).toBeVisible({ timeout: TIMEOUT.page });
+  await expect(resultsList).toBeVisible({ timeout: TIMEOUTS.page });
 }
 
 /**
@@ -301,7 +293,7 @@ async function dismissLeftoverDialogsBestEffort(page: Page): Promise<void> {
   await page
     .getByRole('dialog')
     .first()
-    .waitFor({ state: 'hidden', timeout: TIMEOUT.element })
+    .waitFor({ state: 'hidden', timeout: TIMEOUTS.element })
     .catch(() => null);
 }
 
@@ -313,7 +305,7 @@ test.describe('voter mega-journey', () => {
   test.describe.configure({ mode: 'serial' });
 
   test('full voter journey end-to-end', async ({ page, resultsPage, entityFilters, entityDetails, voterHomePage }) => {
-    test.setTimeout(TIMEOUT.testMax); // 260524-l1t D1: was 180_000 (3 min); TIMEOUT.testMax = 50_000 is comfortably above observed runtimes (260523-u53 SUMMARY: ~17-24s).
+    test.setTimeout(MEGA_TEST_MAX); // reason: 120s inline exception — see MEGA_TEST_MAX rationale above (post-88-04 ~75-90s; exceeds the 90s global ceiling).
 
     // ====================================================================
     // STATIC PAGES — refactor-doc:208-216. Absorbs 9.1.1, 9.9.1, 9.9.2, 9.9.3.
@@ -331,7 +323,7 @@ test.describe('voter mega-journey', () => {
       // buildRoute goto is already locale-aware (not a raw string) and the
       // step asserts the about-content anchor immediately below.
       await page.goto(buildRoute({ route: 'About', locale: 'en' }));
-      await expect.soft(page.getByTestId(testIds.voter.about.content)).toBeVisible({ timeout: TIMEOUT.slowPage });
+      await expect.soft(page.getByTestId(testIds.voter.about.content)).toBeVisible({ timeout: TIMEOUTS.slowPage });
       await expect.soft(page.getByTestId(testIds.voter.about.returnButton)).toBeVisible();
       await expect.soft(page.getByRole('heading', { level: 1 })).toBeVisible();
     });
@@ -342,14 +334,14 @@ test.describe('voter mega-journey', () => {
       // Back-button lands on the locale-prefixed root or bare root depending
       // on the route resolver; the start button visibility is the canonical
       // home-page assertion (mirrors the same check used in 9.1.1).
-      await expect.soft(page.getByTestId(testIds.voter.home.startButton)).toBeVisible({ timeout: TIMEOUT.slowPage });
+      await expect.soft(page.getByTestId(testIds.voter.home.startButton)).toBeVisible({ timeout: TIMEOUTS.slowPage });
     });
 
     await test.step('static: info page renders correctly (MOVED 9.9.2)', async () => {
       // reason: Info has no dedicated page-fixture in Plan 92-03; locale-aware
       // buildRoute goto, info-content anchor asserted immediately below.
       await page.goto(buildRoute({ route: 'Info', locale: 'en' }));
-      await expect.soft(page.getByTestId(testIds.voter.info.content)).toBeVisible({ timeout: TIMEOUT.slowPage });
+      await expect.soft(page.getByTestId(testIds.voter.info.content)).toBeVisible({ timeout: TIMEOUTS.slowPage });
       await expect.soft(page.getByTestId(testIds.voter.info.returnButton)).toBeVisible();
       await expect.soft(page.getByRole('heading', { level: 1 })).toBeVisible();
     });
@@ -358,7 +350,7 @@ test.describe('voter mega-journey', () => {
       // reason: Privacy has no dedicated page-fixture in Plan 92-03; locale-aware
       // buildRoute goto, privacy-content anchor asserted immediately below.
       await page.goto(buildRoute({ route: 'Privacy', locale: 'en' }));
-      await expect.soft(page.getByTestId(testIds.voter.privacy.content)).toBeVisible({ timeout: TIMEOUT.slowPage });
+      await expect.soft(page.getByTestId(testIds.voter.privacy.content)).toBeVisible({ timeout: TIMEOUTS.slowPage });
       await expect.soft(page.getByTestId(testIds.voter.privacy.returnButton)).toBeVisible();
       await expect.soft(page.getByRole('heading', { level: 1 })).toBeVisible();
     });
@@ -372,18 +364,18 @@ test.describe('voter mega-journey', () => {
       // fixture (goToPage hard-asserts the voter-home anchor before clickStart).
       await voterHomePage.goToPage('en');
       await voterHomePage.clickStart();
-      await page.waitForURL(TEXT_RE.introRoute, { timeout: TIMEOUT.slowPage }).catch(() => null);
+      await page.waitForURL(TEXT_RE.introRoute, { timeout: TIMEOUTS.slowPage }).catch(() => null);
     });
 
     await test.step('intro: intro page continue (NEW/MOVE refactor-doc:220)', async () => {
       const introStart = page.getByTestId(testIds.voter.intro.startButton);
-      await expect(introStart).toBeVisible({ timeout: TIMEOUT.element });
+      await expect(introStart).toBeVisible({ timeout: TIMEOUTS.element });
       await introStart.click();
     });
 
     await test.step('elections: should show election selector (NEW/MOVE refactor-doc:222-224)', async () => {
       const electionsList = page.getByTestId(testIds.voter.elections.list);
-      await expect.soft(electionsList).toBeVisible({ timeout: TIMEOUT.slowPage });
+      await expect.soft(electionsList).toBeVisible({ timeout: TIMEOUTS.slowPage });
     });
 
     await test.step('elections: continue disabled when no election selected (Risk #2)', async () => {
@@ -416,7 +408,7 @@ test.describe('voter mega-journey', () => {
       const optionCount = await electionOptions.count();
       await ensureAllChecked({ elements: electionOptions, count: optionCount });
       const electionsContinue = page.getByTestId(testIds.voter.elections.continue);
-      await expect(electionsContinue).toBeEnabled({ timeout: TIMEOUT.page });
+      await expect(electionsContinue).toBeEnabled({ timeout: TIMEOUTS.page });
       await electionsContinue.click();
     });
 
@@ -426,7 +418,7 @@ test.describe('voter mega-journey', () => {
 
     await test.step('constituencies: list visible (NEW/MOVE refactor-doc:226)', async () => {
       const constituenciesList = page.getByTestId(testIds.voter.constituencies.list);
-      await expect.soft(constituenciesList).toBeVisible({ timeout: TIMEOUT.slowPage });
+      await expect.soft(constituenciesList).toBeVisible({ timeout: TIMEOUTS.slowPage });
     });
 
     await test.step('constituencies: only municipalities shown (Risk #7 — hierarchical CG)', async () => {
@@ -466,13 +458,13 @@ test.describe('voter mega-journey', () => {
       const neOption = listbox.getByRole('option', { name: TEXT_RE.northEast }).first();
       await neOption.click();
       const constituenciesContinue = page.getByTestId(testIds.voter.constituencies.continue);
-      await expect(constituenciesContinue).toBeEnabled({ timeout: TIMEOUT.page });
+      await expect(constituenciesContinue).toBeEnabled({ timeout: TIMEOUTS.page });
       await constituenciesContinue.click();
       // Wait for the layout's nomination-availability check to settle by
       // observing the missing-nominations modal contract directly.
       // toBeHidden waits up to its timeout for the element to be absent
       // or detached, replacing the prior page.waitForTimeout(1_500).
-      await expect(page.getByTestId(testIds.voter.missingNominationsModal)).toBeHidden({ timeout: TIMEOUT.slowPage });
+      await expect(page.getByTestId(testIds.voter.missingNominationsModal)).toBeHidden({ timeout: TIMEOUTS.slowPage });
     });
 
     // ====================================================================
@@ -485,19 +477,19 @@ test.describe('voter mega-journey', () => {
       // excludes SE+SW) and QG-Opin-Filt-B filtered out (per-question
       // constituency scope), giving 5 categories visible.
       const categoryList = page.getByTestId(testIds.voter.questions.categoryList);
-      await expect.soft(categoryList).toBeVisible({ timeout: TIMEOUT.slowPage });
+      await expect.soft(categoryList).toBeVisible({ timeout: TIMEOUTS.slowPage });
       const categoryCheckboxes = page.getByTestId(testIds.voter.questions.categoryCheckbox);
       await expect.soft(categoryCheckboxes).toHaveCount(5); // Base + Opt-A + Opt-B minimum + scoped extras (was: Base-B + Base-C)
 
       const questionsStart = page.getByTestId(testIds.voter.questions.startButton);
       // Uncheck "Base Opinion Questions"
       await toggleCategoryListItem({ page, label: TEXT_RE.baseOpinion, checked: false });
-      await expect.soft(questionsStart).toHaveText(TEXT_RE.answerCount, { timeout: TIMEOUT.element });
-      await expect.soft(questionsStart).toBeDisabled({ timeout: TIMEOUT.element });
+      await expect.soft(questionsStart).toHaveText(TEXT_RE.answerCount, { timeout: TIMEOUTS.element });
+      await expect.soft(questionsStart).toBeDisabled({ timeout: TIMEOUTS.element });
 
       // Recheck "Base Opinion Questions"
       await toggleCategoryListItem({ page, label: TEXT_RE.baseOpinion, checked: true });
-      await expect.soft(questionsStart).toBeEnabled({ timeout: TIMEOUT.element });
+      await expect.soft(questionsStart).toBeEnabled({ timeout: TIMEOUTS.element });
 
       // Uncheck QG-Opin-Opt-B (formerly QG-Opin-Base-C) for later use
       await toggleCategoryListItem({ page, label: TEXT_RE.optionalOpinionsB, checked: false });
@@ -515,13 +507,13 @@ test.describe('voter mega-journey', () => {
     // image BEFORE advancing into Q1.
     await test.step('hero: QG-Opin-Base category intro renders image hero (Phase 89 Plan 01 — TIR4:32)', async () => {
       const categoryHero = page.getByTestId(testIds.voter.questions.categoryHero);
-      await expect.soft(categoryHero).toBeVisible({ timeout: TIMEOUT.slowPage });
+      await expect.soft(categoryHero).toBeVisible({ timeout: TIMEOUTS.slowPage });
       // Image hero shape (custom_data.hero = { url, type: 'image' } per baseV1)
       // renders an <img> via Hero.svelte → Image.svelte. Assert the <img> is
       // present inside the testid-bearing <figure>.
       await expect
         .soft(categoryHero.getByTestId(testIds.shared.image).first())
-        .toBeVisible({ timeout: TIMEOUT.element });
+        .toBeVisible({ timeout: TIMEOUTS.element });
     });
 
     await test.step('questions: first category intro, previous question roundtrip, delete answer only visible if question is answered', async () => {
@@ -529,25 +521,25 @@ test.describe('voter mega-journey', () => {
       await expectCategoryIntroAndAdvance({ page, text: TEXT_RE.baseOpinion });
       // We should see the previous question and not the category intro again
       const questionHeading = page.getByTestId(testIds.voter.questions.heading);
-      await expect.soft(questionHeading).toHaveText(TEXT_RE.baseOpinion1Likert5, { timeout: TIMEOUT.element });
+      await expect.soft(questionHeading).toHaveText(TEXT_RE.baseOpinion1Likert5, { timeout: TIMEOUTS.element });
       // Delete button should be enabled only when question is answered
       const deleteButton = page.getByTestId(testIds.shared.questionDelete);
-      await expect.soft(deleteButton).toBeDisabled({ timeout: TIMEOUT.element });
+      await expect.soft(deleteButton).toBeDisabled({ timeout: TIMEOUTS.element });
 
       // Phase 89 Plan 01 (TIR4:25-32): Q1 (Base-1 Likert5) carries a hero
       // emoji ('🗳️') AND info content ('[qu-opin-base-1-info] ...') per the
       // 89-01 baseV1 mutation. Assert hero visible + emoji rendered + info
       // button visible + clicking it reveals the info content body.
       const heroFigure = page.getByTestId(testIds.voter.questions.hero);
-      await expect.soft(heroFigure).toBeVisible({ timeout: TIMEOUT.element });
+      await expect.soft(heroFigure).toBeVisible({ timeout: TIMEOUTS.element });
       await expect.soft(heroFigure).toContainText('🗳️');
       const infoButton = page.getByTestId(testIds.voter.questions.infoButton);
-      await expect(infoButton).toBeVisible({ timeout: TIMEOUT.element });
+      await expect(infoButton).toBeVisible({ timeout: TIMEOUTS.element });
       // Click the Expander to reveal the info body (Expander is a checkbox
       // input inside the wrapper div carrying the testid; clicking the
       // wrapper toggles the checkbox).
-      await infoButton.click({ timeout: TIMEOUT.click });
-      await expect.soft(infoButton).toContainText(/\[qu-opin-base-1-info\]/i, { timeout: TIMEOUT.element });
+      await infoButton.click({ timeout: TIMEOUTS.click });
+      await expect.soft(infoButton).toContainText(/\[qu-opin-base-1-info\]/i, { timeout: TIMEOUTS.element });
 
       // Answer first question
       await expectQuestionAndAdvance({
@@ -559,8 +551,8 @@ test.describe('voter mega-journey', () => {
       // Expect the last to be answered and the delete button to be visible
       const answerOptions = page.getByTestId(testIds.voter.questions.answerOption);
       const lastOption = answerOptions.last();
-      await expect.soft(lastOption).toBeChecked({ timeout: TIMEOUT.element });
-      await expect.soft(deleteButton).toBeVisible({ timeout: TIMEOUT.element });
+      await expect.soft(lastOption).toBeChecked({ timeout: TIMEOUTS.element });
+      await expect.soft(deleteButton).toBeVisible({ timeout: TIMEOUTS.element });
       // Move to the next question (2nd in the category)
       await expectQuestionAndAdvance({
         page,
@@ -572,12 +564,12 @@ test.describe('voter mega-journey', () => {
       // IMAGE (no emoji) AND has NO info content. Assert hero <img> visible
       // and Info button hidden/absent.
       const heroFigureQ2 = page.getByTestId(testIds.voter.questions.hero);
-      await expect.soft(heroFigureQ2).toBeVisible({ timeout: TIMEOUT.element });
+      await expect.soft(heroFigureQ2).toBeVisible({ timeout: TIMEOUTS.element });
       await expect
         .soft(heroFigureQ2.getByTestId(testIds.shared.image).first())
-        .toBeVisible({ timeout: TIMEOUT.element });
+        .toBeVisible({ timeout: TIMEOUTS.element });
       const infoButtonQ2 = page.getByTestId(testIds.voter.questions.infoButton);
-      await expect.soft(infoButtonQ2).toHaveCount(0, { timeout: TIMEOUT.element });
+      await expect.soft(infoButtonQ2).toHaveCount(0, { timeout: TIMEOUTS.element });
     });
 
     await test.step('questions: answer rest of base questions at polar-MAX, delete answer, result list visiblity with min answers', async () => {
@@ -592,25 +584,25 @@ test.describe('voter mega-journey', () => {
       await expectCategoryIntroAndAdvance({ page, text: TEXT_RE.optionalOpinionsA });
       // We should now see a question and the results list should be enabled
       const resultsLink = page.getByTestId(testIds.voter.banner.results);
-      await expect.soft(resultsLink).toBeEnabled({ timeout: TIMEOUT.element });
+      await expect.soft(resultsLink).toBeEnabled({ timeout: TIMEOUTS.element });
       // Then let's return to the previous question with the previous button
       const previousButton = page.getByTestId(testIds.voter.questions.previousButton);
-      await expect(previousButton).toBeVisible({ timeout: TIMEOUT.element });
+      await expect(previousButton).toBeVisible({ timeout: TIMEOUTS.element });
       await previousButton.click();
       // We should see the previous question and not the category intro again
       const questionHeading = page.getByTestId(testIds.voter.questions.heading);
-      await expect.soft(questionHeading).toHaveText(TEXT_RE.baseOpinion5Boolean, { timeout: TIMEOUT.element });
+      await expect.soft(questionHeading).toHaveText(TEXT_RE.baseOpinion5Boolean, { timeout: TIMEOUTS.element });
       // Delete the answer to the last question, which should hide the results link again
       const deleteButton = page.getByTestId(testIds.shared.questionDelete);
       await deleteButton.click();
-      await expect.soft(resultsLink).toBeDisabled({ timeout: TIMEOUT.element });
+      await expect.soft(resultsLink).toBeDisabled({ timeout: TIMEOUTS.element });
       // Re-answer the question to re-enable the results link and move forward, we also check that the option is not selected anymore
       await expectQuestionAndAdvance({
         page,
         optionIndex: (n) => n - 1,
         allowPreselected: false
       });
-      await expect.soft(resultsLink).toBeEnabled({ timeout: TIMEOUT.element });
+      await expect.soft(resultsLink).toBeEnabled({ timeout: TIMEOUTS.element });
     });
 
     // ====================================================================
@@ -642,16 +634,16 @@ test.describe('voter mega-journey', () => {
       await expectElectionOptionAndSelect({ page, text: TEXT_RE.municipal });
       await expectElectionOptionAndSelect({ page, text: TEXT_RE.regional });
       const entityTabs = page.getByTestId(testIds.voter.results.entityTabs);
-      await expect.soft(entityTabs).toBeVisible({ timeout: TIMEOUT.slowPage });
+      await expect.soft(entityTabs).toBeVisible({ timeout: TIMEOUTS.slowPage });
       const candidateSection = page.getByTestId(testIds.voter.results.candidateSection);
       await expect.soft(candidateSection).toBeVisible();
       // Switch to parties tab.
       await entityTabs.getByRole('tab', { name: TEXT_RE.partiesTab }).click();
       const partySection = page.getByTestId(testIds.voter.results.partySection);
-      await expect.soft(partySection).toBeVisible({ timeout: TIMEOUT.slowPage });
+      await expect.soft(partySection).toBeVisible({ timeout: TIMEOUTS.slowPage });
       // Switch back to candidates.
       await entityTabs.getByRole('tab', { name: TEXT_RE.candidateTab }).click();
-      await expect.soft(candidateSection).toBeVisible({ timeout: TIMEOUT.slowPage });
+      await expect.soft(candidateSection).toBeVisible({ timeout: TIMEOUTS.slowPage });
     });
 
     // ====================================================================
@@ -673,7 +665,7 @@ test.describe('voter mega-journey', () => {
       // test-ca-bb-1 ('Polar-Max BB One'). Match by name regex (NOT by
       // .first() position — leaves room for ranking determinism).
       const firstCard = cards.filter({ hasText: TEXT_RE.polarMax }).first();
-      await expect.soft(firstCard).toBeVisible({ timeout: TIMEOUT.slowPage });
+      await expect.soft(firstCard).toBeVisible({ timeout: TIMEOUTS.slowPage });
 
       // baseV1.ts:246 DEFAULT_INFO_ANSWERS — every candidate's
       // test-qu-info-text value is "Default candidate biography text.".
@@ -713,7 +705,7 @@ test.describe('voter mega-journey', () => {
 
       // 5 outer organisation cards under EL-Reg / CO-Reg-N.
       const cards = resultsPage.getEntityCards();
-      await expect.soft(cards).toHaveCount(5, { timeout: TIMEOUT.slowPage });
+      await expect.soft(cards).toHaveCount(5, { timeout: TIMEOUTS.slowPage });
 
       // Party BB — 2 subcards, no Show-all button.
       // (Use filter().first() per RESEARCH Risk #3 — matching-algorithm
@@ -765,22 +757,22 @@ test.describe('voter mega-journey', () => {
       //   match", with one of them appearing first in DOM order.
       //
       const candidateSection = page.getByTestId(testIds.voter.results.candidateSection);
-      await expect.soft(candidateSection).toBeVisible({ timeout: TIMEOUT.slowPage });
+      await expect.soft(candidateSection).toBeVisible({ timeout: TIMEOUTS.slowPage });
       const cards = candidateSection.getByTestId(testIds.voter.results.card);
       // Expect to see 14 candidates minus the one who is hidden
       await expect.soft(cards).toHaveCount(13);
       // Expect the polar max and min candidates to be first and last on the list, respectively.
       const firstCardTitle = cards.first().getByTestId(testIds.voter.results.cardTitle);
       const lastCardTitle = cards.last().getByTestId(testIds.voter.results.cardTitle);
-      await expect.soft(firstCardTitle).toContainText(TEXT_RE.polarMax, { timeout: TIMEOUT.element });
-      await expect.soft(lastCardTitle).toContainText(TEXT_RE.polarMin, { timeout: TIMEOUT.element });
+      await expect.soft(firstCardTitle).toContainText(TEXT_RE.polarMax, { timeout: TIMEOUTS.element });
+      await expect.soft(lastCardTitle).toContainText(TEXT_RE.polarMin, { timeout: TIMEOUTS.element });
       // The partial-answer candidate (CA-AA-Special) should be somewhere in the middle (no first or last).
       await expect.soft(candidateSection).toContainText(TEXT_RE.specialCandidate);
       // Expect the hidden candidate (CA-AA-Hidden) to NOT be present in the list (termsOfUseAccepted=false).
       const hiddenCandidates = candidateSection
         .getByTestId(testIds.voter.results.card)
         .filter({ hasText: TEXT_RE.hiddenCandidate });
-      await expect.soft(hiddenCandidates).toHaveCount(0, { timeout: TIMEOUT.element });
+      await expect.soft(hiddenCandidates).toHaveCount(0, { timeout: TIMEOUTS.element });
     });
 
     // ====================================================================
@@ -801,10 +793,10 @@ test.describe('voter mega-journey', () => {
         .getByTestId(testIds.voter.results.card)
         .filter({ hasText: TEXT_RE.specialCandidate })
         .first();
-      await expect.soft(specialCard).toHaveCount(1, { timeout: TIMEOUT.page });
+      await expect.soft(specialCard).toHaveCount(1, { timeout: TIMEOUTS.page });
       await specialCard.click();
       const dialog = page.getByRole('dialog');
-      await expect.soft(dialog).toBeVisible({ timeout: TIMEOUT.page });
+      await expect.soft(dialog).toBeVisible({ timeout: TIMEOUTS.page });
 
       // Special candidate carries the DEFAULT_INFO_ANSWERS set (baseV1.ts:243)
       // for every info question + its own asymmetric opinion arrangement, and
@@ -820,13 +812,13 @@ test.describe('voter mega-journey', () => {
       // §"Info-tab assertion"); `6/15/1980` is the en-US `toLocaleDateString`
       // format for the seeded `1980-06-15` date answer.
       const infoTab = dialog.getByTestId(testIds.voter.entityDetail.infoTab);
-      await expect.soft(infoTab).toBeVisible({ timeout: TIMEOUT.page });
+      await expect.soft(infoTab).toBeVisible({ timeout: TIMEOUTS.page });
       const infoItems = infoTab.getByTestId('info-item');
       // 13 = 4 nomination-derived (election/constituency/list/number) + 8
       // info questions + 1 grouped Links item. The multipleText info
       // question is intentionally omitted (frontend input not yet
       // implemented — see .planning/todos/pending).
-      await expect.soft(infoItems).toHaveCount(13, { timeout: TIMEOUT.element });
+      await expect.soft(infoItems).toHaveCount(13, { timeout: TIMEOUTS.element });
       // All info-item label/value assertions use case-insensitive regexes
       // because CSS `text-transform: uppercase` on the `small-label` class
       // does NOT alter `textContent`, but the i18n source strings mix Title
@@ -885,13 +877,13 @@ test.describe('voter mega-journey', () => {
       // Switch to opinionsTab.
       await dialog.getByRole('tab', { name: TEXT_RE.opinionsTab }).click();
       const opinionsTab = dialog.getByTestId(testIds.voter.entityDetail.opinionsTab);
-      await expect.soft(opinionsTab).toBeVisible({ timeout: TIMEOUT.page });
+      await expect.soft(opinionsTab).toBeVisible({ timeout: TIMEOUTS.page });
 
       // Wait for at least one opinion-question-input to render.
       await opinionsTab
         .getByTestId('opinion-question-input')
         .first()
-        .waitFor({ state: 'visible', timeout: TIMEOUT.slowPage });
+        .waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
 
       // Voter-vs-entity matrix arrangement (baseV1.ts CA-AA-Special answers
       // lines 869-879, cross-referenced with the voter's answering flow above):
@@ -923,7 +915,7 @@ test.describe('voter mega-journey', () => {
 
       // Close drawer for the next step.
       await page.keyboard.press('Escape');
-      await expect(dialog).toBeHidden({ timeout: TIMEOUT.page });
+      await expect(dialog).toBeHidden({ timeout: TIMEOUTS.page });
     });
 
     // ====================================================================
@@ -951,12 +943,12 @@ test.describe('voter mega-journey', () => {
       // Members tab (SETTINGS keyword: 'children') — 5 visible Party-AA
       // members after the CA-AA-Hidden filter (RESEARCH R-3 verified).
       await entityDetails.selectTab('children');
-      await expect.soft(entityDetails.getMemberCards()).toHaveCount(5, { timeout: TIMEOUT.page });
+      await expect.soft(entityDetails.getMemberCards()).toHaveCount(5, { timeout: TIMEOUTS.page });
 
       // Close drawer for the next step.
       const dialog = page.getByRole('dialog');
       await page.keyboard.press('Escape');
-      await expect.soft(dialog).toBeHidden({ timeout: TIMEOUT.page });
+      await expect.soft(dialog).toBeHidden({ timeout: TIMEOUTS.page });
     });
 
     // ====================================================================
@@ -976,11 +968,11 @@ test.describe('voter mega-journey', () => {
 
       await resultsPage.selectEntityTab('cands');
       const candidateSection = page.getByTestId(testIds.voter.results.candidateSection);
-      await expect.soft(candidateSection).toBeVisible({ timeout: TIMEOUT.slowPage });
+      await expect.soft(candidateSection).toBeVisible({ timeout: TIMEOUTS.slowPage });
 
       await entityFilters.setTextFilter('polar');
       const cards = resultsPage.getEntityCards();
-      await expect.soft(cards).toHaveCount(2, { timeout: TIMEOUT.page });
+      await expect.soft(cards).toHaveCount(2, { timeout: TIMEOUTS.page });
       // first_name in baseV1 is NOT bracket-prefixed (only name display
       // fields got the [<id>] prefix in T2 — first/last names stayed raw).
       await expect.soft(cards.nth(0)).toContainText(TEXT_RE.polarMax);
@@ -995,7 +987,7 @@ test.describe('voter mega-journey', () => {
       // Post Wave-0 baseV1 edit (filterable: false on test-qu-info-boolean),
       // 3 rows expected: Party + pick-multiple + years-of-experience.
       const d1 = await entityFilters.openFilterDialog();
-      await expect.soft(d1.getFilters()).toHaveCount(3, { timeout: TIMEOUT.page });
+      await expect.soft(d1.getFilters()).toHaveCount(3, { timeout: TIMEOUTS.page });
 
       // STAGE 2 — Party filter: 'No answer' option visible with count badge text containing '1'
       // (RESEARCH: 1 candidate without parent_nomination → test-ca-independent).
@@ -1008,7 +1000,7 @@ test.describe('voter mega-journey', () => {
       await partyFilter.setSelection([/No answer/i]);
       await d1.close();
       const cards = resultsPage.getEntityCards();
-      await expect.soft(cards).toHaveCount(1, { timeout: TIMEOUT.page });
+      await expect.soft(cards).toHaveCount(1, { timeout: TIMEOUTS.page });
       await expect.soft(cards.first()).toContainText(/Free Independent/i);
       await expect.soft(entityFilters.getFilterButtonBadge()).toContainText(/1/);
 
@@ -1017,7 +1009,7 @@ test.describe('voter mega-journey', () => {
       // a side-effect; no separate close() call needed.)
       const d2 = await entityFilters.openFilterDialog();
       await d2.reset();
-      await expect.soft(resultsPage.getEntityCards()).toHaveCount(13, { timeout: TIMEOUT.page });
+      await expect.soft(resultsPage.getEntityCards()).toHaveCount(13, { timeout: TIMEOUTS.page });
 
       // STAGE 5a — pick-multiple: select A|B → 12 visible, CA-AA-Special excluded.
       const d3 = await entityFilters.openFilterDialog();
@@ -1026,21 +1018,21 @@ test.describe('voter mega-journey', () => {
       );
       await mcFilter.setSelection([/Choice A/i, /Choice B/i]);
       await d3.close();
-      await expect.soft(resultsPage.getEntityCards()).toHaveCount(12, { timeout: TIMEOUT.page });
+      await expect.soft(resultsPage.getEntityCards()).toHaveCount(12, { timeout: TIMEOUTS.page });
       await expect.soft(resultsPage.getEntityCards().filter({ hasText: TEXT_RE.specialCandidate })).toHaveCount(0);
 
       // STAGE 5b — reset (intermediate clean state). reset() closes the
       // dialog as a side-effect; no separate close() call needed.
       const d4 = await entityFilters.openFilterDialog();
       await d4.reset();
-      await expect.soft(resultsPage.getEntityCards()).toHaveCount(13, { timeout: TIMEOUT.page });
+      await expect.soft(resultsPage.getEntityCards()).toHaveCount(13, { timeout: TIMEOUTS.page });
 
       // STAGE 5c-d — years≥50 → 1 visible (CA-AA-Special, years=99).
       const d5 = await entityFilters.openFilterDialog();
       const numFilter = await d5.getFilter(/years of experience|\[qu-info-number\]/i);
       await numFilter.setNumberRange(50, null);
       await d5.close();
-      await expect.soft(resultsPage.getEntityCards()).toHaveCount(1, { timeout: TIMEOUT.page });
+      await expect.soft(resultsPage.getEntityCards()).toHaveCount(1, { timeout: TIMEOUTS.page });
       await expect.soft(resultsPage.getEntityCards().first()).toContainText(TEXT_RE.specialCandidate);
 
       // STAGE 6 — intersect: years≥50 AND pick-multiple=A|B → 0 visible
@@ -1050,13 +1042,13 @@ test.describe('voter mega-journey', () => {
       const mc2 = await d6.getFilter(/pick multiple|multipleChoiceCategorical|\[qu-info-multipleChoiceCategorical\]/i);
       await mc2.setSelection([/Choice A/i, /Choice B/i]);
       await d6.close();
-      await expect.soft(resultsPage.getEntityCards()).toHaveCount(0, { timeout: TIMEOUT.page });
+      await expect.soft(resultsPage.getEntityCards()).toHaveCount(0, { timeout: TIMEOUTS.page });
 
       // STAGE 7 — cleanup: reset all filters. reset() closes the dialog
       // as a side-effect; no separate close() call needed.
       const d7 = await entityFilters.openFilterDialog();
       await d7.reset();
-      await expect.soft(resultsPage.getEntityCards()).toHaveCount(13, { timeout: TIMEOUT.page });
+      await expect.soft(resultsPage.getEntityCards()).toHaveCount(13, { timeout: TIMEOUTS.page });
     });
 
     // ====================================================================
@@ -1149,12 +1141,12 @@ test.describe('voter mega-journey', () => {
     //   // populated from earlier steps), so the listing is scoped accordingly.
     //   await page.goto(buildRoute({ route: 'Nominations', locale: 'en' }));
     //   const list = page.getByTestId(testIds.voter.nominations.list);
-    //   await expect.soft(list).toBeVisible({ timeout: TIMEOUT.slowPage });
+    //   await expect.soft(list).toBeVisible({ timeout: TIMEOUTS.slowPage });
     //   // Conservative assertion: at least one entity-card visible inside the
     //   // list (researcher-recommended — exact baseV1 nomination count varies
     //   // by selected election + constituency scope).
     //   await expect.soft(list.getByTestId(testIds.voter.results.card).first()).toBeVisible({
-    //     timeout: TIMEOUT.page
+    //     timeout: TIMEOUTS.page
     //   });
     // });
   });

@@ -73,10 +73,18 @@ import { toCallbackUrl } from '../../utils/emailHelper';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
 
-const TIMEOUT = {
-  slowPage: 15_000,
-  testMax: 180_000
-} as const;
+// reason: l10n positive spec runs a full multi-locale (en/fi/sv) candidate
+// register → login → profile → questions walk PLUS a voter-side cross-check.
+// Both timeouts exceed the central TIMEOUTS buckets and stay inline as
+// documented exceptions per D-12:
+//   - L10N_SLOW_PAGE (15s) > TIMEOUTS.slowPage (10s): the candidate-card /
+//     dialog l10n content waits need extra cold-start + locale-switch headroom.
+//   - L10N_TEST_MAX (180s) > TIMEOUTS.testMax (90s): the multi-locale walk does
+//     not fit in the 90s global ceiling. APPLIED via test.setTimeout below — it
+//     MUST keep passing this value, NOT TIMEOUTS.testMax, or the test would
+//     start timing out at 90s.
+const L10N_SLOW_PAGE = 15_000;
+const L10N_TEST_MAX = 180_000;
 
 // Per-perm recipient prevents Inbucket cross-perm pollution.
 const RECIPIENT_EMAIL = 'candidate-l10n-pos-aa@test.openvaa.local';
@@ -105,7 +113,7 @@ test.describe('perm-localisation-positive', () => {
     voterHomePage,
     resultsPage
   }) => {
-    test.setTimeout(TIMEOUT.testMax);
+    test.setTimeout(L10N_TEST_MAX);
 
     const client = new SupabaseAdminClient();
 
@@ -291,7 +299,7 @@ test.describe('perm-localisation-positive', () => {
     await candidateQuestionPage.expectContinueEnabled();
     await candidateQuestionPage.clickContinue();
 
-    await page.waitForURL(/\/candidate\/questions(\/?$|\?)/, { timeout: TIMEOUT.slowPage });
+    await page.waitForURL(/\/candidate\/questions(\/?$|\?)/, { timeout: L10N_SLOW_PAGE });
     const opinionCategoryQ4 = candidateQuestionsOverviewPage.getCategoryExpander(/\[QC-OPIN\]/);
     await opinionCategoryQ4.click();
     await opinionCategoryQ4.expectExpanded(true);
@@ -320,7 +328,7 @@ test.describe('perm-localisation-positive', () => {
     // reason: candidate-route navigation — out of Phase 92 voter-fixture scope.
     await page.goto('/en/candidate');
     await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({
-      timeout: TIMEOUT.slowPage
+      timeout: L10N_SLOW_PAGE
     });
     await candidateLogoutButton.clickWithoutDialog();
 
@@ -333,11 +341,11 @@ test.describe('perm-localisation-positive', () => {
       .getByTestId(testIds.voter.results.candidateSection)
       .getByTestId(testIds.voter.results.card)
       .first();
-    await expect(candidateCard).toBeVisible({ timeout: TIMEOUT.slowPage });
+    await expect(candidateCard).toBeVisible({ timeout: L10N_SLOW_PAGE });
     await candidateCard.click();
 
     const dialog = page.getByRole('dialog');
-    await expect(dialog).toBeVisible({ timeout: TIMEOUT.slowPage });
+    await expect(dialog).toBeVisible({ timeout: L10N_SLOW_PAGE });
 
     // voter-side cross-check assertions (D-90-07): the entity-details panel
     // testid surface is `voter-entity-detail-info` (info tab) and
@@ -382,11 +390,11 @@ test.describe('perm-localisation-positive', () => {
       .getByTestId(testIds.voter.results.candidateSection)
       .getByTestId(testIds.voter.results.card)
       .first();
-    await expect(candidateCardFi).toBeVisible({ timeout: TIMEOUT.slowPage });
+    await expect(candidateCardFi).toBeVisible({ timeout: L10N_SLOW_PAGE });
     await candidateCardFi.click();
 
     const dialogFi = page.getByRole('dialog');
-    await expect(dialogFi).toBeVisible({ timeout: TIMEOUT.slowPage });
+    await expect(dialogFi).toBeVisible({ timeout: L10N_SLOW_PAGE });
 
     const infoTabFi = dialogFi.getByTestId(testIds.voter.entityDetail.infoTab);
     await expect(infoTabFi).toBeVisible();

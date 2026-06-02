@@ -31,22 +31,8 @@
 
 import { expect } from '@playwright/test';
 import { testIds } from './testIds';
+import { TIMEOUTS } from '../helpers';
 import type { Locator, Page } from '@playwright/test';
-
-/**
- * Semantic timeout bucket mirroring voter-mega-journey.spec.ts:67-73.
- *
- * - element:  non-URL-changing visibility wait.
- * - click:    action-ack budget (click registered, dropdown opened).
- * - page:     URL-change / route-transition wait.
- * - slowPage: multi-network-roundtrip + render boundary (cold-start friendly).
- */
-const TIMEOUT = {
-  element: 2_000,
-  click: 2_000,
-  page: 4_000,
-  slowPage: 10_000
-} as const;
 
 /**
  * Navigate to home, click start, advance through the intro page, then await
@@ -55,10 +41,10 @@ const TIMEOUT = {
  */
 export async function bypassIntroThen(page: Page, expectation: () => Promise<void>): Promise<void> {
   await page.goto('/en/');
-  await page.getByTestId(testIds.voter.home.startButton).click({ timeout: TIMEOUT.click });
+  await page.getByTestId(testIds.voter.home.startButton).click({ timeout: TIMEOUTS.click });
   const introStart = page.getByTestId(testIds.voter.intro.startButton);
-  await expect(introStart).toBeVisible({ timeout: TIMEOUT.slowPage });
-  await introStart.click({ timeout: TIMEOUT.click });
+  await expect(introStart).toBeVisible({ timeout: TIMEOUTS.slowPage });
+  await introStart.click({ timeout: TIMEOUTS.click });
   await expectation();
 }
 
@@ -70,10 +56,10 @@ export async function bypassIntroThen(page: Page, expectation: () => Promise<voi
  */
 export async function expectQuestion(page: Page): Promise<void> {
   await expect(page.getByTestId(testIds.voter.questions.heading)).toBeVisible({
-    timeout: TIMEOUT.slowPage
+    timeout: TIMEOUTS.slowPage
   });
   await expect(page.getByTestId(testIds.voter.questions.answerOption).first()).toBeVisible({
-    timeout: TIMEOUT.element
+    timeout: TIMEOUTS.element
   });
 }
 
@@ -83,8 +69,8 @@ export async function expectQuestion(page: Page): Promise<void> {
  */
 export async function expectElectionSelector(page: Page): Promise<Locator> {
   const list = page.getByTestId(testIds.voter.elections.list);
-  await expect(list).toBeVisible({ timeout: TIMEOUT.slowPage });
-  await expect(list.getByTestId(testIds.voter.elections.option).first()).toBeVisible({ timeout: TIMEOUT.element });
+  await expect(list).toBeVisible({ timeout: TIMEOUTS.slowPage });
+  await expect(list.getByTestId(testIds.voter.elections.option).first()).toBeVisible({ timeout: TIMEOUTS.element });
   return list;
 }
 
@@ -94,7 +80,7 @@ export async function expectElectionSelector(page: Page): Promise<Locator> {
  */
 export async function expectConstituencySelector(page: Page): Promise<Locator> {
   const list = page.getByTestId(testIds.voter.constituencies.list);
-  await expect(list).toBeVisible({ timeout: TIMEOUT.slowPage });
+  await expect(list).toBeVisible({ timeout: TIMEOUTS.slowPage });
   return list;
 }
 
@@ -141,24 +127,24 @@ export async function selectElectionAndAdvance(
   { optionText }: { optionText: RegExp | string }
 ): Promise<void> {
   const labels = page.getByTestId(testIds.voter.elections.label);
-  await expect(labels.first()).toBeVisible({ timeout: TIMEOUT.slowPage });
+  await expect(labels.first()).toBeVisible({ timeout: TIMEOUTS.slowPage });
   const optionCount = await labels.count();
   expect(optionCount, 'selectElectionAndAdvance: elections list must contain at least one option').toBeGreaterThan(0);
   const optionsToCheck = labels.filter({ hasText: optionText });
   const checkCount = await optionsToCheck.count();
   for (let i = 0; i < checkCount; i++) {
-    await optionsToCheck.nth(i).check({ timeout: TIMEOUT.click });
+    await optionsToCheck.nth(i).check({ timeout: TIMEOUTS.click });
   }
   const optionsToUncheck = labels.filter({ hasNotText: optionText });
   const uncheckCount = await optionsToUncheck.count();
   for (let i = 0; i < uncheckCount; i++) {
-    await optionsToUncheck.nth(i).uncheck({ timeout: TIMEOUT.click });
+    await optionsToUncheck.nth(i).uncheck({ timeout: TIMEOUTS.click });
   }
   const cont = page.getByTestId(testIds.voter.elections.continue);
-  await expect(cont).toBeEnabled({ timeout: TIMEOUT.page });
+  await expect(cont).toBeEnabled({ timeout: TIMEOUTS.page });
   await cont.click();
   const list = page.getByTestId(testIds.voter.elections.list);
-  await expect(list).toBeHidden({ timeout: TIMEOUT.page });
+  await expect(list).toBeHidden({ timeout: TIMEOUTS.page });
 }
 
 /**
@@ -196,7 +182,7 @@ export async function selectConstituencyAndAdvance(
   { selectorText, optionText }: { selectorText: RegExp | string; optionText: RegExp | string }
 ): Promise<void> {
   const list = page.getByTestId(testIds.voter.constituencies.list);
-  await expect(list).toBeVisible({ timeout: TIMEOUT.slowPage });
+  await expect(list).toBeVisible({ timeout: TIMEOUTS.slowPage });
 
   // The constituency-selector renders one section per applicable-elections
   // group; each section contains a `<Select>` combobox. Filter the combobox
@@ -242,21 +228,21 @@ export async function selectConstituencyAndAdvance(
       void matchingCombobox;
       continue;
     }
-    await cb.click({ timeout: TIMEOUT.click });
+    await cb.click({ timeout: TIMEOUTS.click });
     const listbox = page.getByRole('listbox');
-    await expect(listbox).toBeVisible({ timeout: TIMEOUT.page });
+    await expect(listbox).toBeVisible({ timeout: TIMEOUTS.page });
     const option = listbox.getByRole('option', { name: optionText }).first();
-    await expect(option).toBeVisible({ timeout: TIMEOUT.element });
-    await option.click({ timeout: TIMEOUT.click });
+    await expect(option).toBeVisible({ timeout: TIMEOUTS.element });
+    await option.click({ timeout: TIMEOUTS.click });
     picked = true;
   }
   expect(picked, `selectConstituencyAndAdvance: no combobox matched selectorText ${String(selectorText)}`).toBe(true);
 
   const cont = page.getByTestId(testIds.voter.constituencies.continue);
-  await expect(cont).toBeEnabled({ timeout: TIMEOUT.page });
+  await expect(cont).toBeEnabled({ timeout: TIMEOUTS.page });
   await cont.click();
-  await expect(list).toBeHidden({ timeout: TIMEOUT.page });
+  await expect(list).toBeHidden({ timeout: TIMEOUTS.page });
   await expect(page.getByTestId(testIds.voter.missingNominationsModal)).toBeHidden({
-    timeout: TIMEOUT.slowPage
+    timeout: TIMEOUTS.slowPage
   });
 }

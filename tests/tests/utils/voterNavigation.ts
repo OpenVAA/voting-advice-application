@@ -13,6 +13,7 @@
 import { SupabaseAdminClient } from './supabaseAdminClient';
 import { testIds } from './testIds';
 import { createVoterHomePage } from '../fixtures/voter/voterHomePage.fixture';
+import { TIMEOUTS } from '../helpers';
 import type { Locator, Page } from '@playwright/test';
 
 /**
@@ -73,6 +74,9 @@ type StopAt = 'first-question' | 'questions-intro' | 'category-intro';
 async function advanceClick(page: Page, target: Locator): Promise<void> {
   const urlBefore = page.url();
   try {
+    // reason: deliberately TIGHTER than TIMEOUTS.click — a 3s fast-fail click so a
+    // detached/non-actionable button throws quickly instead of stalling for the
+    // full 90s test ceiling (see the failure-mode docstring above). Not bucket-mappable.
     await target.click({ timeout: 3000 });
   } catch {
     // Click failed (element detached / not actionable in 3 s). The post-click
@@ -83,6 +87,9 @@ async function advanceClick(page: Page, target: Locator): Promise<void> {
   // Settle: confirm the click took effect. Either the URL changes OR the
   // clicked target leaves the DOM. Whichever wins, the next loop iteration
   // sees a clean post-navigation page state.
+  // reason: tight 3s post-click settle race (URL-change OR target-hidden) — paired
+  // with the fast-fail click above; deliberately below TIMEOUTS.page so a no-op
+  // click short-circuits the loop iteration fast. Not bucket-mappable.
   await Promise.race([
     page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 3000 }).catch(() => null),
     target.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => null)
@@ -122,7 +129,9 @@ async function advanceVoterFlow(
   opts: { maxSteps?: number; perStepTimeout?: number } = {}
 ): Promise<void> {
   const maxSteps = opts.maxSteps ?? 10;
-  const perStepTimeout = opts.perStepTimeout ?? 5000;
+  // reason: per-race-cycle wait default; equals TIMEOUTS.page semantically (single
+  // checkpoint-transition wait). Kept as an overridable param default, not a call-site literal.
+  const perStepTimeout = opts.perStepTimeout ?? TIMEOUTS.page;
 
   const introStart = page.getByTestId(testIds.voter.intro.startButton);
   const electionsList = page.getByTestId(testIds.voter.elections.list);
@@ -173,17 +182,20 @@ async function advanceVoterFlow(
         const combo = comboboxes.nth(i);
         await combo.click();
         const listbox = page.getByRole('listbox');
-        await listbox.waitFor({ state: 'visible', timeout: 5000 });
+        await listbox.waitFor({ state: 'visible', timeout: TIMEOUTS.page });
         await listbox.getByRole('option').first().click();
       }
       await constituenciesCont.waitFor({ state: 'visible' });
       const urlBefore = page.url();
       try {
+        // reason: tight 3s fast-fail click — paired with the goto-fallback below; a
+        // stalled continue must throw fast so navigateDirectlyToQuestions can recover.
         await constituenciesCont.click({ timeout: 3000 });
       } catch {
         continue;
       }
       try {
+        // reason: tight 3s URL-change probe; on timeout the hard-nav fallback fires.
         await page.waitForURL(
           (url) => url.toString() !== urlBefore && !url.toString().includes('/constituencies'),
           { timeout: 3000 }
@@ -199,11 +211,14 @@ async function advanceVoterFlow(
       await electionsCont.waitFor({ state: 'visible' });
       const urlBefore = page.url();
       try {
+        // reason: tight 3s fast-fail click — paired with the goto-fallback below; a
+        // stalled continue must throw fast so navigateDirectlyToQuestions can recover.
         await electionsCont.click({ timeout: 3000 });
       } catch {
         continue;
       }
       try {
+        // reason: tight 3s URL-change probe; on timeout the hard-nav fallback fires.
         await page.waitForURL(
           (url) => url.toString() !== urlBefore && !url.toString().includes('/elections'),
           { timeout: 3000 }
@@ -272,7 +287,7 @@ export async function navigateToFirstQuestion(page: Page): Promise<void> {
   // Ensure the URL has settled on a real question page — the questions intro
   // page can redirect /questions → /questions/__first__ via onMount; this
   // wait prevents the caller's downstream waitForURL from racing the redirect.
-  await page.waitForURL(/\/questions\//, { timeout: 10000 });
+  await page.waitForURL(/\/questions\//, { timeout: TIMEOUTS.slowPage });
 }
 
 /**
@@ -333,7 +348,7 @@ export async function walkToQuestion(page: Page, sortOrder: number): Promise<voi
   if (onIntro) await startBtn.click();
   const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
   for (let i = 0; i < sortOrder; i++) {
-    await nextButton.waitFor({ state: 'visible', timeout: 10000 });
+    await nextButton.waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
     await nextButton.click();
   }
 }
@@ -346,10 +361,10 @@ export async function waitForNextQuestion(page: Page, answerIndex: number): Prom
   const nextAnswer = page.getByTestId(testIds.voter.questions.answerOption).nth(answerIndex);
   const categoryStart = page.getByTestId(testIds.voter.questions.categoryStart);
 
-  await nextAnswer.or(categoryStart).waitFor({ state: 'visible', timeout: 10000 });
+  await nextAnswer.or(categoryStart).waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
   if (await categoryStart.isVisible()) {
     await categoryStart.click();
-    await nextAnswer.waitFor({ state: 'visible', timeout: 10000 });
+    await nextAnswer.waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
   }
 }
 
