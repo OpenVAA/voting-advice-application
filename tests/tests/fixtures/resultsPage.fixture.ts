@@ -20,6 +20,7 @@
  */
 
 import { expect } from '@playwright/test';
+import { buildRoute } from '../utils/buildRoute';
 import { testIds } from '../utils/testIds';
 import type { Locator, Page } from '@playwright/test';
 
@@ -67,7 +68,27 @@ export function createResultsPage(page: Page) {
     return cand.or(org).or(al);
   }
 
+  /**
+   * Assert the results page is (not) visible via its results-list load anchor.
+   * Phase 92 Plan 03 (D-06/D-07): the canonical voter-page paradigm pair.
+   */
+  async function expectPageVisible(visible = true): Promise<void> {
+    await expect(page.getByTestId(testIds.voter.results.list)).toBeVisible({ visible, timeout: 5_000 });
+  }
+
   return {
+    /**
+     * Navigate to the voter results page (locale-aware) and assert it loaded.
+     * Phase 92 Plan 03 (D-06/D-08): requires an already-located voter session
+     * (an unlocated /results bounces through the selector chain).
+     */
+    async goToPage(locale = 'en'): Promise<void> {
+      await page.goto('/' + buildRoute({ route: 'Results', locale }));
+      await expectPageVisible(true);
+    },
+
+    expectPageVisible,
+
     /**
      * Click the matching election option inside the
      * `voter-results-election-select` accordion.

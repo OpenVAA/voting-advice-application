@@ -56,7 +56,25 @@ export function createEntityDetails(page: Page) {
       .or(page.getByTestId(TAB_CONTAINER_TESTID.opinions));
   }
 
+  /**
+   * Assert the entity-details drawer is (not) visible via its container load
+   * anchor. Phase 92 Plan 03 (D-06/D-07): the canonical voter-page paradigm.
+   *
+   * NOTE: no `goToPage` is exposed here. The entity-detail is a DRAWER opened
+   * from the results listing (`resultsPage.openEntityDetailsForCard`), not a
+   * standalone navigable page — a grep (2026-06-02) found ZERO deep-link
+   * `page.goto` to the `ResultEntity` route across `tests/`. A goToPage taking
+   * the runtime-discovered entity id would be a freeform-URL smell (CONTEXT
+   * Pitfall 4). Callers open the drawer via the results fixture, then assert
+   * with `expectPageVisible`.
+   */
+  async function expectPageVisible(visible = true): Promise<void> {
+    await expect(page.getByTestId(testIds.voter.entityDetail.container)).toBeVisible({ visible, timeout: 5_000 });
+  }
+
   return {
+    expectPageVisible,
+
     /**
      * Click the matching tab via role + i18n label (mapped from SETTINGS
      * keyword).
