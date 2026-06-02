@@ -593,22 +593,25 @@ const { data: nonTestCands, error: candErr } = await client.query('candidates')
 | A4 | The `tests/scripts/diff-playwright-reports.ts` imgproxy/pooler reference encodes the questionable diagnosis | WS4 | Low — needs the planner to read the exact lines before annotating; flagged as `[ASSUMED]` |
 | A5 | Reusing `seed_` (vs a new `global-seed` sentinel) is sufficient because the `default` template already emits it into TEST_PROJECT_ID | WS5 | Low — verified the `default` template prefix; if some OTHER persistent-baseline emitter uses a different prefix, that prefix must also be added to the exclusion list |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Does WS1 green the full lint suite or only locator rules?**
-   - What we know: `eslint … tests` reports 37 errors today (mostly refactor-residue: `expect-expect` ×23, import-sort ×5).
-   - What's unclear: D-05 says "fix all surfaced errors/warnings" but is framed around typecheck.
-   - Recommendation: green the full lint suite — a red `lint:check` would make the new typecheck gate unenforceable in the same pipeline. Confirm scope with the operator at planning.
+1. **Does WS1 green the full lint suite or only locator rules? (RESOLVED)**
+   - What we know: `eslint … tests` reported ~37 errors at research time (mostly refactor-residue: `expect-expect` ×23, import-sort ×5).
+   - **Resolution:** WS1 greens the full lint suite for `tests/` (Plan 92-01 Task 2). A red `lint:check` would make the new typecheck gate unenforceable in the same pipeline. Autofixable residue (`simple-import-sort`) is fixed; any genuinely out-of-scope pre-existing debt is listed as a deferred follow-up in the SUMMARY rather than absorbed unbounded. The locator rule + typecheck gate MUST be green.
 
-2. **`testMax` buckets > 90s — apply via `test.setTimeout`?**
-   - What we know: playwright.config global `timeout: 90000`; two specs declare `testMax` of 120_000/180_000.
-   - What's unclear: whether those specs already call `test.setTimeout`.
-   - Recommendation: planner verifies per-spec; keep > 90s values as inline `// reason:` exceptions (D-12).
+2. **`testMax` buckets > 90s — apply via `test.setTimeout`? (RESOLVED 2026-06-02 via grep)**
+   - **Finding (grepped `tests/tests/specs/.../*.spec.ts` for `test.setTimeout` / `test.describe.configure` / `test.slow`):**
+     - `perm-localisation-positive.spec.ts:78` declares inline `TIMEOUT.testMax = 180_000` AND **calls `test.setTimeout(TIMEOUT.testMax)` at line 106** → the 180_000 budget is **EFFECTIVE** (applied, not a no-op).
+     - `voter-mega-journey.spec.ts:79` declares inline `TIMEOUT.testMax = 120_000` AND **calls `test.setTimeout(TIMEOUT.testMax)` at line 316** (under a `test.describe.configure({ mode: 'serial' })` at line 313) → the 120_000 budget is **EFFECTIVE**.
+     - `candidate-mega-journey.spec.ts:102` declares inline `TIMEOUT.testMax = 90_000` AND **calls `test.setTimeout(TIMEOUT.testMax)` at line 271** → 90_000 equals the central bucket; maps cleanly to `TIMEOUTS.testMax` with no budget change.
+     - `perm-not-located-2e2cg.spec.ts` uses per-test `test.setTimeout(45000)` literals (no inline `TIMEOUT` object) → these map to a sub-bucket or stay inline; below the 90s ceiling so no >90s concern.
+     - No spec uses `test.slow()`.
+   - **Resolution (CRITICAL CORRECTNESS):** Because the two >90s budgets (180_000, 120_000) are applied via `test.setTimeout`, migrating their inline `testMax` to the central `TIMEOUTS.testMax = 90_000` would **silently DROP the effective budget** (the `test.setTimeout(...)` call would then pass 90_000 instead of 180_000/120_000 and the test would start timing out at 90s). Therefore these two `testMax` values stay **inline `// reason:` exceptions** and their `test.setTimeout(...)` call sites MUST continue to pass the larger inline value, NOT `TIMEOUTS.testMax`. `candidate-mega-journey`'s 90_000 testMax migrates to `TIMEOUTS.testMax` cleanly (its `test.setTimeout(TIMEOUTS.testMax)` call then passes 90_000 — unchanged). Plan 92-04 Task 2 carries an explicit task action + acceptance criterion for this: at each inline-exception site, either preserve the larger value as a documented `// reason:` inline exception OR (where the bucket value is intended) add an explicit `test.setTimeout(TIMEOUTS.testMax)` — never let a migration drop a `test.setTimeout`-applied budget.
 
-3. **Voter home/intro load-anchor testIds**
+3. **Voter home/intro load-anchor testIds (RESOLVED)**
    - What we know: catalog has `voter.home.startButton`, `voter.intro.startButton` (action elements), but no page-content anchor.
-   - What's unclear: whether to add new `data-testid`s to the frontend home/intro roots or reuse the start buttons.
-   - Recommendation: add a minimal page-root `data-testid` to the home/intro pages and register in the catalog — keeps `expectPageVisible` semantically a "page loaded" check, not an "action button present" check.
+   - **Resolution:** Add a minimal page-root `data-testid` to the home/intro pages (frontend) and register it in the catalog (Plan 92-03 Task 1) — keeps `expectPageVisible` semantically a "page loaded" check, not an "action button present" check. If a stable always-rendered content element already carries a usable testId, reuse it and document the choice.
+
 
 ## Environment Availability
 

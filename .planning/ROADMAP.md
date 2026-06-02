@@ -492,10 +492,11 @@ Plans:
 
 **Requirements**: TYPECHECK, LOCATORS, FIXTURES, TIMEOUTS, DIAGNOSIS, FRESHGUARD (workstream-mapped; no formal REQ IDs in REQUIREMENTS.md — Phase 92 is post-v2.10-close infra hardening)
 **Depends on:** Phase 91
-**Plans:** 4 plans
+**Plans:** 5 plans
 
 Plans:
 - [ ] 92-01-PLAN.md — WS1: typecheck all tests/ (tsconfig + typecheck:tests script + ~5 type fixes) + locator lint rule swap to no-restricted-locators + raw-locator fixes + getByRole→testId sweep [TYPECHECK, LOCATORS] (wave 1)
 - [ ] 92-02-PLAN.md — WS4 + WS5: annotate imgproxy/pooler diagnosis as questionable + fix both freshness guards to exclude the seed_ baseline prefix [DIAGNOSIS, FRESHGUARD] (wave 1)
-- [ ] 92-03-PLAN.md — WS2: rebuild 5 voter page fixtures with goToPage/expectPageVisible + extend testId catalog (home/intro anchors) + migrate named-route page.goto calls [FIXTURES] (wave 2, depends 92-01)
-- [ ] 92-04-PLAN.md — WS3: consolidate timeout constants into tests/tests/helpers/timeouts.ts + migrate 4 local TIMEOUT objects + scattered literals; inline >90s/l10n exceptions [TIMEOUTS] (wave 3, depends 92-01, 92-03)
+- [ ] 92-03-PLAN.md — WS2: rebuild 5 voter page fixtures with goToPage/expectPageVisible + extend testId catalog (home/intro anchors) + migrate named-route page.goto calls in the 5 primary voter/voterNav files [FIXTURES] (wave 2, depends 92-01)
+- [ ] 92-05-PLAN.md — WS2 spillover: migrate named voter-route page.goto calls in 7 perm-spec gap files to goToPage; keep maintenance/redirect/candidate/bounce gotos inline; exhaustive coverage proof [FIXTURES] (wave 3, depends 92-01, 92-03)
+- [ ] 92-04-PLAN.md — WS3: consolidate timeout constants into tests/tests/helpers/timeouts.ts + migrate 4 local TIMEOUT objects + scattered literals; inline >90s/l10n exceptions (preserve test.setTimeout-applied 180s/120s budgets) [TIMEOUTS] (wave 4, depends 92-01, 92-03, 92-05)
