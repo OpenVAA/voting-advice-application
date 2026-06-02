@@ -10,9 +10,9 @@
  * at any time. These helpers are resilient to that.
  */
 
-import { buildRoute } from './buildRoute';
 import { SupabaseAdminClient } from './supabaseAdminClient';
 import { testIds } from './testIds';
+import { createVoterHomePage } from '../fixtures/voter/voterHomePage.fixture';
 import type { Locator, Page } from '@playwright/test';
 
 /**
@@ -60,8 +60,7 @@ type StopAt = 'first-question' | 'questions-intro' | 'category-intro';
  * already-detaching button — which hangs in Playwright's actionability check
  * for the full test timeout (90 s) instead of throwing fast.
  *
- * Failure mode this fixes (observed in voter-detail.spec.ts:79 against
- * answeredVoterPage fixture, voterNavigation.ts:164 stack):
+ * Failure mode this fixes (observed against the answeredVoterPage walk, voterNavigation.ts advanceClick stack):
  *
  *     Error: locator.click: Test timeout of 90000ms exceeded.
  *     waiting for getByTestId('voter-intro-start')
@@ -245,6 +244,10 @@ async function navigateDirectlyToQuestions(page: Page): Promise<void> {
   const eqs = electionUuids.map((id) => `electionId=${encodeURIComponent(id)}`).join('&');
   const cqs = constituencyUuids.map((id) => `constituencyId=${encodeURIComponent(id)}`).join('&');
   const sep = eqs && cqs ? '&' : '';
+  // reason: dynamic-URL hard-navigation fallback (runtime-discovered seed UUIDs
+  // in the query string), NOT a named-ROUTE-key navigation — exempt from the
+  // Plan 92-03 goToPage migration (CONTEXT Pitfall 4: a goToPage taking a
+  // freeform URL string is a smell).
   await page.goto(`${baseUrl}/questions?${eqs}${sep}${cqs}`);
 }
 
@@ -258,8 +261,13 @@ async function navigateDirectlyToQuestions(page: Page): Promise<void> {
  * /questions/[id]) with answer options visible.
  */
 export async function navigateToFirstQuestion(page: Page): Promise<void> {
-  await page.goto(buildRoute({ route: 'Home', locale: 'en' }));
-  await page.getByTestId(testIds.voter.home.startButton).click();
+  // Phase 92 Plan 03 (D-09): Home-route nav + start click migrated to the
+  // voterHomePage fixture (goToPage hard-asserts the voter-home load anchor
+  // before clickStart). The fixture is instantiated directly from the raw
+  // `page` since this is a util helper, not a Playwright-fixture consumer.
+  const voterHomePage = createVoterHomePage(page);
+  await voterHomePage.goToPage('en');
+  await voterHomePage.clickStart();
   await advanceVoterFlow(page, 'first-question');
   // Ensure the URL has settled on a real question page — the questions intro
   // page can redirect /questions → /questions/__first__ via onMount; this
@@ -274,8 +282,11 @@ export async function navigateToFirstQuestion(page: Page): Promise<void> {
  * rather than the first question.
  */
 export async function walkToQuestionsIntro(page: Page): Promise<void> {
-  await page.goto(buildRoute({ route: 'Home', locale: 'en' }));
-  await page.getByTestId(testIds.voter.home.startButton).click();
+  // Phase 92 Plan 03 (D-09): Home-route nav + start click via voterHomePage
+  // fixture (goToPage hard-asserts the voter-home anchor before clickStart).
+  const voterHomePage = createVoterHomePage(page);
+  await voterHomePage.goToPage('en');
+  await voterHomePage.clickStart();
   await advanceVoterFlow(page, 'questions-intro');
 }
 

@@ -312,7 +312,7 @@ async function dismissLeftoverDialogsBestEffort(page: Page): Promise<void> {
 test.describe('voter mega-journey', () => {
   test.describe.configure({ mode: 'serial' });
 
-  test('full voter journey end-to-end', async ({ page, resultsPage, entityFilters, entityDetails }) => {
+  test('full voter journey end-to-end', async ({ page, resultsPage, entityFilters, entityDetails, voterHomePage }) => {
     test.setTimeout(TIMEOUT.testMax); // 260524-l1t D1: was 180_000 (3 min); TIMEOUT.testMax = 50_000 is comfortably above observed runtimes (260523-u53 SUMMARY: ~17-24s).
 
     // ====================================================================
@@ -320,11 +320,16 @@ test.describe('voter mega-journey', () => {
     // ====================================================================
 
     await test.step('static: home page renders + start button (MOVED 9.1.1)', async () => {
-      await page.goto(buildRoute({ route: 'Home', locale: 'en' }));
+      // Phase 92 Plan 03 (D-09): named Home-route navigation migrated to the
+      // voterHomePage fixture (goToPage hard-asserts the voter-home load anchor).
+      await voterHomePage.goToPage('en');
       await expect.soft(page.getByTestId(testIds.voter.home.startButton)).toBeVisible();
     });
 
     await test.step('static: about page renders correctly (MOVED 9.9.1)', async () => {
+      // reason: About has no dedicated page-fixture in Plan 92-03; the
+      // buildRoute goto is already locale-aware (not a raw string) and the
+      // step asserts the about-content anchor immediately below.
       await page.goto(buildRoute({ route: 'About', locale: 'en' }));
       await expect.soft(page.getByTestId(testIds.voter.about.content)).toBeVisible({ timeout: TIMEOUT.slowPage });
       await expect.soft(page.getByTestId(testIds.voter.about.returnButton)).toBeVisible();
@@ -341,6 +346,8 @@ test.describe('voter mega-journey', () => {
     });
 
     await test.step('static: info page renders correctly (MOVED 9.9.2)', async () => {
+      // reason: Info has no dedicated page-fixture in Plan 92-03; locale-aware
+      // buildRoute goto, info-content anchor asserted immediately below.
       await page.goto(buildRoute({ route: 'Info', locale: 'en' }));
       await expect.soft(page.getByTestId(testIds.voter.info.content)).toBeVisible({ timeout: TIMEOUT.slowPage });
       await expect.soft(page.getByTestId(testIds.voter.info.returnButton)).toBeVisible();
@@ -348,6 +355,8 @@ test.describe('voter mega-journey', () => {
     });
 
     await test.step('static: privacy page renders correctly (MOVED 9.9.3)', async () => {
+      // reason: Privacy has no dedicated page-fixture in Plan 92-03; locale-aware
+      // buildRoute goto, privacy-content anchor asserted immediately below.
       await page.goto(buildRoute({ route: 'Privacy', locale: 'en' }));
       await expect.soft(page.getByTestId(testIds.voter.privacy.content)).toBeVisible({ timeout: TIMEOUT.slowPage });
       await expect.soft(page.getByTestId(testIds.voter.privacy.returnButton)).toBeVisible();
@@ -359,8 +368,10 @@ test.describe('voter mega-journey', () => {
     // ====================================================================
 
     await test.step('intro: home → start → intro page (NEW/MOVE refactor-doc:218-220)', async () => {
-      await page.goto(buildRoute({ route: 'Home', locale: 'en' }));
-      await page.getByTestId(testIds.voter.home.startButton).click();
+      // Phase 92 Plan 03 (D-09): Home-route nav + start click via voterHomePage
+      // fixture (goToPage hard-asserts the voter-home anchor before clickStart).
+      await voterHomePage.goToPage('en');
+      await voterHomePage.clickStart();
       await page.waitForURL(TEXT_RE.introRoute, { timeout: TIMEOUT.slowPage }).catch(() => null);
     });
 
@@ -630,7 +641,6 @@ test.describe('voter mega-journey', () => {
       await expectElectionOptionAndSelect({ page, text: TEXT_RE.regional });
       await expectElectionOptionAndSelect({ page, text: TEXT_RE.municipal });
       await expectElectionOptionAndSelect({ page, text: TEXT_RE.regional });
-      // Pattern source: voter-results.spec.ts:102-151.
       const entityTabs = page.getByTestId(testIds.voter.results.entityTabs);
       await expect.soft(entityTabs).toBeVisible({ timeout: TIMEOUT.slowPage });
       const candidateSection = page.getByTestId(testIds.voter.results.candidateSection);
@@ -754,7 +764,6 @@ test.describe('voter mega-journey', () => {
       //   Both "Generic AA One" and "Hidden Candidate AA" rank at "100%
       //   match", with one of them appearing first in DOM order.
       //
-      // Pattern source: voter-matching.spec.ts:240-245.
       const candidateSection = page.getByTestId(testIds.voter.results.candidateSection);
       await expect.soft(candidateSection).toBeVisible({ timeout: TIMEOUT.slowPage });
       const cards = candidateSection.getByTestId(testIds.voter.results.card);
@@ -1064,27 +1073,28 @@ test.describe('voter mega-journey', () => {
       const feedbackDialog = createFeedbackDialog(page);
 
       // Pitfall 7 — voter nav drawer must be opened explicitly. The
-      // openMenu button lives on Header.svelte:82-93 with
-      // `aria-label={t('common.openMenu')}` ("Open menu" in en, the
-      // voter-mega default locale). No testid present; getByRole +
-      // accessible-name regex is the canonical anchor.
+      // openMenu button lives on Header.svelte:82-93.
+      //
+      // Phase 92 Plan 03 (92-01 deferred testId migration): the open-menu
+      // toggle now carries a locale-independent `nav-menu-toggle` testid
+      // (testIds.shared.navigation.menuToggle), replacing the EN-only
+      // `/open menu/i` accessible-name regex (×3 below).
       //
       // Phase 91 Plan 05 (CR-03 closure): feedbackNavItem scoped to the
       // open menuDrawer (was page-rooted, raced against the cycle-2-close
       // vs. cycle-3-open transition). Drawer open-state waitFor inserted
-      // before each menu-item click. Locale regex narrowed to EN-only
-      // per the spec's EN-exclusive walk. menuDrawer is anchored on the
+      // before each menu-item click. menuDrawer is anchored on the
       // `<nav data-testid="nav-menu">` element rendered by
       // Navigation.svelte:56-62 (daisyUI drawer reveals it via CSS when
       // the drawer-toggle checkbox flips to checked).
-      const openMenuRegex = /open menu/i;
+      const menuToggle = page.getByTestId(testIds.shared.navigation.menuToggle);
       const menuDrawer = page.getByTestId(testIds.shared.navigation.menu);
       const feedbackNavItem = menuDrawer
         .getByTestId(testIds.shared.navigation.menuItem)
         .filter({ hasText: /feedback/i });
 
       // ---- Cycle 1: rating + comment, cancel preserves state. -----------
-      await page.getByRole('button', { name: openMenuRegex }).click();
+      await menuToggle.click();
       await menuDrawer.waitFor({ state: 'visible' });
       await feedbackNavItem.click();
       await feedbackDialog.expectVisible();
@@ -1099,7 +1109,7 @@ test.describe('voter mega-journey', () => {
       await menuDrawer.waitFor({ state: 'hidden' });
 
       // ---- Cycle 2: reopen, expect preserved state, submit. -------------
-      await page.getByRole('button', { name: openMenuRegex }).click();
+      await menuToggle.click();
       await menuDrawer.waitFor({ state: 'visible' });
       await feedbackNavItem.click();
       await feedbackDialog.expectVisible();
@@ -1114,7 +1124,7 @@ test.describe('voter mega-journey', () => {
       await menuDrawer.waitFor({ state: 'hidden' });
 
       // ---- Cycle 3: reopen post-send → state cleared by reset(). --------
-      await page.getByRole('button', { name: openMenuRegex }).click();
+      await menuToggle.click();
       await menuDrawer.waitFor({ state: 'visible' });
       await feedbackNavItem.click();
       await feedbackDialog.expectVisible();

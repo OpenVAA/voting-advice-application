@@ -19,18 +19,25 @@ import { testIds } from '../../utils/testIds';
 test.describe('perm-disable-voter-app', () => {
   test('voterApp disabled: / + /elections show maintenance; /candidate available', async ({ page }) => {
     // GET /en — maintenance page on the voter-app root route.
+    // reason: MAINTENANCE-mode probe (access.voterApp=false) — the home page
+    // renders MaintenancePage with the start button HIDDEN, so the voterHomePage
+    // goToPage (which hard-asserts the voter-home anchor visible) would fail by
+    // design. Kept inline per Plan 92-03 acceptance.
     await page.goto('/en');
     await expect(page.getByRole('main')).toBeVisible();
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await expect(page.getByTestId(testIds.voter.home.startButton)).toBeHidden();
 
     // GET /en/elections — maintenance page on the voter-app elections route.
+    // reason: same MAINTENANCE-mode probe — asserts the maintenance surface,
+    // not a clean page load; goToPage's visibility assertion would fail.
     await page.goto('/en/elections');
     await expect(page.getByRole('main')).toBeVisible();
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await expect(page.getByTestId(testIds.voter.home.startButton)).toBeHidden();
 
     // GET /en/candidate — NON-maintenance: candidate login page renders.
+    // reason: candidate-app route — out of Phase 92 scope (voter routes only).
     await page.goto('/en/candidate');
     await expect(page.getByTestId(testIds.candidate.login.email)).toBeVisible();
   });

@@ -3,11 +3,10 @@
  *
  * Topology: 2 elections × 2 disjoint CGs × 2 COs each.
  * Authoritative spec: TEST-INVENTORY-REFACTOR-2.md:198-209
- * Memo: .planning/phases/88-.../88-03-SCOPE.md (5-cell rebuild of
- * voter-not-located-redirect.spec.ts:106/161/183/211/241; MED-4 whitelist
- * landing regex).
+ * Memo: .planning/phases/88-.../88-03-SCOPE.md (5-cell not-located-redirect
+ * rebuild; MED-4 whitelist landing regex).
  *
- * Rebuild of the 5 contracts from voter-not-located-redirect.spec.ts against
+ * Rebuild of the 5 not-located-redirect contracts against
  * the new minimal 2E×2disjointCG×2CO dataset:
  *   1. /results → bounces twice → resumes /results
  *   2. /results?foo=bar → bounces twice → resumes /results?foo=bar
@@ -60,6 +59,10 @@ test.describe('perm-not-located-2e2cg', () => {
   test('direct /results with no election picked bounces twice and resumes /results', async ({ page }) => {
     test.setTimeout(45000);
 
+    // reason: locale-less redirect-bounce probe — deliberately tests the
+    // deferred-target routing (asserts a bounce to /elections then
+    // /constituencies, NOT a clean /results load). A goToPage that asserts
+    // results visibility would defeat the bounce assertion. Inline per Plan 92-03.
     await page.goto('/results');
     await settleNetworkIdle(page, { waitUntil: 'domcontentloaded' });
 
@@ -81,6 +84,9 @@ test.describe('perm-not-located-2e2cg', () => {
     test.setTimeout(45000);
 
     const deferredTarget = '/results?foo=bar';
+    // reason: dynamic deferred-target redirect-bounce probe (freeform URL,
+    // asserts query-param preservation through the bounce) — not a named-ROUTE
+    // navigation. Inline per Plan 92-03 (CONTEXT Pitfall 4).
     await page.goto(deferredTarget);
 
     await expectLandedOn(page, /\/elections\b.*[&?]next=/);
@@ -96,6 +102,9 @@ test.describe('perm-not-located-2e2cg', () => {
 
     expect(electionUuid, 'electionUuid must be discovered in beforeAll').toBeTruthy();
     const deferredTarget = `/results?electionId=${electionUuid}`;
+    // reason: dynamic deferred-target redirect-bounce probe (runtime-discovered
+    // electionUuid in the URL, asserts single-bounce-to-constituencies) — not a
+    // named-ROUTE navigation. Inline per Plan 92-03 (CONTEXT Pitfall 4).
     await page.goto(deferredTarget);
 
     // Single-bounce to constituencies — must NOT visit /elections.
@@ -111,6 +120,9 @@ test.describe('perm-not-located-2e2cg', () => {
     test.setTimeout(45000);
 
     // Step 1: complete the selector chain.
+    // reason: locale-less redirect-bounce probe (asserts bounce through
+    // /elections + /constituencies, then deferred-target resume after a mid-
+    // session storage clear) — not a clean named-page load. Inline per Plan 92-03.
     await page.goto('/results');
     await expectLandedOn(page, /\/elections\b.*[&?]next=/);
     await page.getByTestId(testIds.voter.elections.continue).click();
@@ -135,6 +147,9 @@ test.describe('perm-not-located-2e2cg', () => {
 
     const evilTarget = 'https://evil.example/phish';
     const encoded = encodeURIComponent(evilTarget);
+    // reason: open-redirect-whitelist defense-in-depth probe — a freeform
+    // `/elections?next=<external-url>` URL testing that the whitelist rejects
+    // the evil target. Not a named-ROUTE navigation. Inline per Plan 92-03.
     await page.goto(`/elections?next=${encoded}`);
 
     await page.getByTestId(testIds.voter.elections.continue).click();
@@ -148,7 +163,7 @@ test.describe('perm-not-located-2e2cg', () => {
     await page.getByTestId(testIds.voter.constituencies.continue).click();
 
     // MED-4 — whitelist rejects external URL; voter lands on internal route
-    // (/(questions|results) per voter-not-located-redirect.spec.ts:279).
+    // (/(questions|results) — internal landing route).
     await expect(page).not.toHaveURL(/^https?:\/\/evil\.example/, { timeout: 10000 });
     await expectLandedOn(page, /\/(questions|results)/);
   });
