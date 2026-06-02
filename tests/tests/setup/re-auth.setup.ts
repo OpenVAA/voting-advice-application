@@ -32,7 +32,7 @@ setup('re-authenticate as candidate', async ({ page }) => {
 
   // Fill in login credentials
   await page.getByTestId(testIds.candidate.login.email).fill(TEST_CANDIDATE_EMAIL);
-  await page.getByTestId(testIds.candidate.login.password).fill(TEST_CANDIDATE_PASSWORD);
+  await page.getByTestId(testIds.candidate.password.field).fill(TEST_CANDIDATE_PASSWORD);
   await page.getByTestId(testIds.candidate.login.submit).click();
 
   // Wait for navigation away from login

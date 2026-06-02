@@ -50,6 +50,7 @@ PasswordField is an input box for password that comes with a button to reveal an
   let input: HTMLInputElement | undefined = $state();
   /** function that hides and reveals the password and changes the icon of the button*/
   function toggleRevealed() {
+    if (!input) return;
     passwordRevealed = !passwordRevealed;
     input.type = passwordRevealed ? 'text' : 'password';
   }

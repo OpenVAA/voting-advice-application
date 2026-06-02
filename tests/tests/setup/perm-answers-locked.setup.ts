@@ -33,10 +33,7 @@ import { TESTS_DIR } from '../utils/testsDir';
 import type { Page } from '@playwright/test';
 
 const PREFIX = 'e2e-perm-answers-locked-';
-export const STORAGE_STATE_PATH = path.join(
-  TESTS_DIR,
-  '../playwright/.auth/perm-answers-locked.json'
-);
+export const STORAGE_STATE_PATH = path.join(TESTS_DIR, '../playwright/.auth/perm-answers-locked.json');
 
 /**
  * Wait for the candidate-app login form to be visible, reloading up to
@@ -44,12 +41,7 @@ export const STORAGE_STATE_PATH = path.join(
  * canonical helper in `auth.setup.ts:23-57` (hoisted module-level so the
  * setup callback stays free of conditional control flow).
  */
-async function waitForLoginForm(
-  page: Page,
-  loginRoute: string,
-  emailTestId: string,
-  maxAttempts = 3
-): Promise<void> {
+async function waitForLoginForm(page: Page, loginRoute: string, emailTestId: string, maxAttempts = 3): Promise<void> {
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     await page.goto(loginRoute, { waitUntil: 'domcontentloaded' });
     try {
@@ -57,9 +49,7 @@ async function waitForLoginForm(
       return;
     } catch {
       if (attempt >= maxAttempts - 1) {
-        throw new Error(
-          `Login form did not appear after ${attempt + 1} attempts on ${loginRoute}.`
-        );
+        throw new Error(`Login form did not appear after ${attempt + 1} attempts on ${loginRoute}.`);
       }
       // Fall through — next iteration's goto() fully replaces page state.
     }
@@ -92,7 +82,7 @@ setup('import perm-answers-locked dataset + mint candidate session', async ({ pa
   const candidateHome = buildRoute({ route: 'CandAppHome', locale: 'en' });
   await waitForLoginForm(page, candidateHome, testIds.candidate.login.email);
   await page.getByTestId(testIds.candidate.login.email).fill(candidateEmail);
-  await page.getByTestId(testIds.candidate.login.password).fill(TEST_CANDIDATE_PASSWORD);
+  await page.getByTestId(testIds.candidate.password.field).fill(TEST_CANDIDATE_PASSWORD);
   await page.getByTestId(testIds.candidate.login.submit).click();
   await expect(page).not.toHaveURL(/.*login.*/);
   await page.context().storageState({ path: STORAGE_STATE_PATH });

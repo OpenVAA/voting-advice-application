@@ -17,7 +17,7 @@
  */
 
 import { STORAGE_STATE } from '../../../playwright.config';
-import { expect,test } from '../../fixtures';
+import { expect, test } from '../../fixtures';
 import { settleNetworkIdle } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
@@ -80,7 +80,7 @@ test.beforeAll(async ({ browser }) => {
     await page.goto(buildRoute({ route: 'CandAppHome', locale: 'en' }));
     await page.getByTestId(testIds.candidate.login.email).waitFor({ state: 'visible', timeout: 10000 });
     await page.getByTestId(testIds.candidate.login.email).fill(TEST_CANDIDATE_EMAIL);
-    await page.getByTestId(testIds.candidate.login.password).fill(TEST_CANDIDATE_PASSWORD);
+    await page.getByTestId(testIds.candidate.password.field).fill(TEST_CANDIDATE_PASSWORD);
     await page.getByTestId(testIds.candidate.login.submit).click();
     // Wait for navigation away from login (matches auth.setup.ts pattern)
     await expect(page).not.toHaveURL(/.*login.*/, { timeout: 10000 });
@@ -148,7 +148,9 @@ test.describe('app mode: answers locked (CAND-09)', { tag: ['@candidate'] }, () 
     // When answers are locked, question cards show "view" action text
     // The questions page renders a Warning component with "editingNotAllowed" text
     // Verify the questions list is still visible (page rendered correctly)
-    await expect(page.getByTestId(testIds.candidate.questions.list).or(page.getByTestId(testIds.candidate.questions.start))).toBeVisible({ timeout: 10000 });
+    await expect(
+      page.getByTestId(testIds.candidate.questions.list).or(page.getByTestId(testIds.candidate.questions.start))
+    ).toBeVisible({ timeout: 10000 });
   });
 });
 
@@ -311,7 +313,10 @@ type ToggleCell = {
    */
   overlay: Record<string, unknown>;
   /** Route target for the assertion navigation. */
-  route: { route: 'CandAppHome' | 'CandAppQuestions' | 'Home' | 'Nominations' | 'Questions' | 'Results'; locale: string };
+  route: {
+    route: 'CandAppHome' | 'CandAppQuestions' | 'Home' | 'Nominations' | 'Questions' | 'Results';
+    locale: string;
+  };
   /**
    * Pre-step run BEFORE the overlay is applied (used by the
    * hideIfMissingAnswers cell to capture a baseline card count).
@@ -633,56 +638,52 @@ const settings01WaveACells: Array<ToggleCell> = [
   }
 ];
 
-test.describe(
-  'SETTINGS-01 wave A — dynamicSettings toggle matrix',
-  { tag: ['@settings-01', '@candidate'] },
-  () => {
-    const client = new SupabaseAdminClient();
+test.describe('SETTINGS-01 wave A — dynamicSettings toggle matrix', { tag: ['@settings-01', '@candidate'] }, () => {
+  const client = new SupabaseAdminClient();
 
-    test.afterEach(async () => {
-      // Restore all wave A defaults so consecutive cells start clean.
-      await client.updateAppSettings(SETTINGS_01_WAVE_A_DEFAULTS);
+  test.afterEach(async () => {
+    // Restore all wave A defaults so consecutive cells start clean.
+    await client.updateAppSettings(SETTINGS_01_WAVE_A_DEFAULTS);
+  });
+
+  for (const cell of settings01WaveACells) {
+    // Resolve the pre-step at iteration time (outside the test body) so the
+    // test body itself contains no conditional (`playwright/no-conditional-in-test`).
+    // Cells without an explicit preStep get a no-op that resolves to undefined.
+    const preStep: (page: Page) => Promise<unknown> = cell.preStep ?? (async () => undefined);
+    // Resolve the skip-marker at iteration time. Cells without a skipReason
+    // get an empty-string sentinel that the in-test test.skip() treats as
+    // a no-op (condition: false), so the test body's runtime path is
+    // unconditional from the loop body's perspective.
+    const skipReason: string = cell.skipReason ?? '';
+
+    // The `expect-expect` lint rule does not detect assertions made inside
+    // helper functions invoked from the test body. Every cell's `assert`
+    // callback contains at least one `expect()` — see the cell definitions
+    // above. The parameterized loop body is the canonical pattern for
+    // matrix-style E2E coverage; suppressing this rule here is intentional
+    // and matches Phase 73 IN-03 / Phase 76 LANDMINE-3 inline-justification
+    // convention.
+    // eslint-disable-next-line playwright/expect-expect
+    test(`SETTINGS-01 wave A — ${cell.name}`, async ({ page }) => {
+      // PASS-WITH-DEFERRAL marker: when skipReason is set, the cell is
+      // skipped with the per-cell rationale (recorded in 77-01-SUMMARY.md).
+      // skipReason='' (the default) becomes the falsy condition → no skip.
+      // playwright/no-skipped-test: skip is conditional on a runtime
+      // value (cell.skipReason from the wave A cell table), used here as
+      // the documented PASS-WITH-DEFERRAL surface per Phase 74 D-04 /
+      // Phase 75 D-03 / Phase 76 D-09 precedent.
+      // eslint-disable-next-line playwright/no-skipped-test
+      test.skip(Boolean(skipReason), skipReason);
+      test.setTimeout(60000);
+      // Optional pre-step (e.g., capture baseline before overlay applied).
+      const ctx = await preStep(page);
+      // Apply the toggle overlay.
+      await client.updateAppSettings(cell.overlay);
+      // Navigate to the assertion target route.
+      await page.goto(buildRoute({ route: cell.route.route, locale: cell.route.locale }));
+      // Assert the binary on/off effect.
+      await cell.assert(page, ctx);
     });
-
-    for (const cell of settings01WaveACells) {
-      // Resolve the pre-step at iteration time (outside the test body) so the
-      // test body itself contains no conditional (`playwright/no-conditional-in-test`).
-      // Cells without an explicit preStep get a no-op that resolves to undefined.
-      const preStep: (page: Page) => Promise<unknown> = cell.preStep ?? (async () => undefined);
-      // Resolve the skip-marker at iteration time. Cells without a skipReason
-      // get an empty-string sentinel that the in-test test.skip() treats as
-      // a no-op (condition: false), so the test body's runtime path is
-      // unconditional from the loop body's perspective.
-      const skipReason: string = cell.skipReason ?? '';
-
-      // The `expect-expect` lint rule does not detect assertions made inside
-      // helper functions invoked from the test body. Every cell's `assert`
-      // callback contains at least one `expect()` — see the cell definitions
-      // above. The parameterized loop body is the canonical pattern for
-      // matrix-style E2E coverage; suppressing this rule here is intentional
-      // and matches Phase 73 IN-03 / Phase 76 LANDMINE-3 inline-justification
-      // convention.
-      // eslint-disable-next-line playwright/expect-expect
-      test(`SETTINGS-01 wave A — ${cell.name}`, async ({ page }) => {
-        // PASS-WITH-DEFERRAL marker: when skipReason is set, the cell is
-        // skipped with the per-cell rationale (recorded in 77-01-SUMMARY.md).
-        // skipReason='' (the default) becomes the falsy condition → no skip.
-        // playwright/no-skipped-test: skip is conditional on a runtime
-        // value (cell.skipReason from the wave A cell table), used here as
-        // the documented PASS-WITH-DEFERRAL surface per Phase 74 D-04 /
-        // Phase 75 D-03 / Phase 76 D-09 precedent.
-        // eslint-disable-next-line playwright/no-skipped-test
-        test.skip(Boolean(skipReason), skipReason);
-        test.setTimeout(60000);
-        // Optional pre-step (e.g., capture baseline before overlay applied).
-        const ctx = await preStep(page);
-        // Apply the toggle overlay.
-        await client.updateAppSettings(cell.overlay);
-        // Navigate to the assertion target route.
-        await page.goto(buildRoute({ route: cell.route.route, locale: cell.route.locale }));
-        // Assert the binary on/off effect.
-        await cell.assert(page, ctx);
-      });
-    }
   }
-);
+});

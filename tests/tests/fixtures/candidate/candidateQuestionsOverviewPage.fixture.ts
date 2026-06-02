@@ -63,14 +63,33 @@ export function createCandidateQuestionsOverviewPage(page: Page) {
    * `clickEditQuestion` and `goToQuestion`.
    */
   async function clickEdit(textOrNth: string | RegExp | number): Promise<void> {
-    if (typeof textOrNth === 'number') {
-      await page.getByTestId(testIds.candidate.questions.cardAction).nth(textOrNth).click();
-      return;
-    }
-    await cardByLabel(textOrNth).first().getByTestId(testIds.candidate.questions.cardAction).click();
+    const button =
+      typeof textOrNth === 'number'
+        ? page.getByTestId(testIds.candidate.questions.cardAction).nth(textOrNth)
+        : cardByLabel(textOrNth).first().getByTestId(testIds.candidate.questions.cardAction);
+    await expect(button).toBeVisible();
+    await button.click();
+  }
+
+  /**
+   * Expect the page to be visible.
+   */
+  async function expectPageVisible(visible = true): Promise<void> {
+    const pageLocator = page.getByTestId(testIds.candidate.questions.intro);
+    await expect(pageLocator).toBeVisible({ visible, timeout: 5_000 });
   }
 
   return {
+    /**
+     * Go to the overview page via its canonical URL and await to be visible.
+     */
+    async goToPage(): Promise<void> {
+      await page.goto('/en/candidate/questions');
+      await expectPageVisible();
+    },
+
+    expectPageVisible,
+
     /**
      * Click the empty-state primary action.
      */
@@ -171,13 +190,11 @@ export function createCandidateQuestionsOverviewPage(page: Page) {
       const expanderCount = await expanders.count();
       for (let i = 0; i < expanderCount; i++) {
         const checkbox = expanders.nth(i).getByRole('checkbox').first();
-        if (!(await checkbox.isChecked())) {
-          await checkbox.click();
-          await expect(checkbox).toBeChecked();
-        }
+        await checkbox.check();
+        await expect(checkbox).toBeChecked();
       }
       await clickEdit(textOrNth);
-      await page.waitForURL(/\/candidate\/questions\/[^/?#]+/);
+      await expectPageVisible(false);
     }
   };
 }

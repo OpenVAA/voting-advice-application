@@ -243,7 +243,7 @@ test.describe('perm-localisation-positive', () => {
     // gates on there being unanswered questions in the category — there are
     // none). Expand the category, then open q3 via its per-card edit action.
 
-    await page.goto('/en/candidate/questions');
+    await candidateQuestionsOverviewPage.goToPage();
     const opinionCategory = candidateQuestionsOverviewPage.getCategoryExpander(/\[QC-OPIN\]/);
     await opinionCategory.click();
     await opinionCategory.expectExpanded(true);

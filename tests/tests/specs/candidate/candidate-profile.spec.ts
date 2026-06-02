@@ -83,7 +83,7 @@ async function loginIfRedirectedToLoginPage(page: Page, email: string, password:
     const emailInput = page.getByTestId(testIds.candidate.login.email);
     await emailInput.waitFor({ state: 'visible', timeout: 5000 });
     await emailInput.fill(email);
-    await page.getByTestId(testIds.candidate.login.password).fill(password);
+    await page.getByTestId(testIds.candidate.password.field).fill(password);
     await page.getByTestId(testIds.candidate.login.submit).click();
     await page.waitForURL((url) => !url.pathname.includes('/login'), { timeout: 10000 });
   }
@@ -122,7 +122,7 @@ test.describe('candidate profile (fresh candidate)', { tag: ['@candidate'] }, ()
     await page.goto(buildRoute({ route: 'CandAppHome', locale: 'en' }));
     // The home page redirects to login for unauthenticated users
     await page.getByTestId(testIds.candidate.login.email).fill(candidateEmail);
-    await page.getByTestId(testIds.candidate.login.password).fill(candidatePassword);
+    await page.getByTestId(testIds.candidate.password.field).fill(candidatePassword);
     await page.getByTestId(testIds.candidate.login.submit).click();
     await expect(page).not.toHaveURL(/login/, { timeout: 10000 });
   }
@@ -161,8 +161,8 @@ test.describe('candidate profile (fresh candidate)', { tag: ['@candidate'] }, ()
     const confirmWrapper = page.getByTestId(testIds.candidate.register.confirmPassword);
     const submitButton = page.getByTestId(testIds.candidate.register.passwordSubmit);
 
-    await passwordWrapper.getByTestId(testIds.candidate.login.password).fill(candidatePassword);
-    await confirmWrapper.getByTestId(testIds.candidate.login.password).fill(candidatePassword);
+    await passwordWrapper.getByTestId(testIds.candidate.password.field).fill(candidatePassword);
+    await confirmWrapper.getByTestId(testIds.candidate.password.field).fill(candidatePassword);
     await submitButton.click();
 
     // Step 5: Wait for navigation to settle on either home or login, and log in

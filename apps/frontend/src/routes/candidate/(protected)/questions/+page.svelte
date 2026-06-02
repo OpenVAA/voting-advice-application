@@ -100,7 +100,7 @@ Shows the opinion questions for the candidate to answer.
   {:else}
     <!-- Page content when some or all answers have been given -->
 
-    <div class="mb-lg gap-md grid justify-items-center">
+    <div class="mb-lg gap-md grid justify-items-center" data-testid="candidate-questions-intro">
       <p class="text-center">
         {completion === 'partial'
           ? t('candidateApp.questions.ingress.partial')

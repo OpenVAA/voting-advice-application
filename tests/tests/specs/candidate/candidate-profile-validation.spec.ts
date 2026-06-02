@@ -81,7 +81,7 @@ async function loginAsCandidate(page: Page): Promise<void> {
   await page.goto(buildRoute({ route: 'CandAppHome', locale: 'en' }));
   // Home redirects unauthenticated traffic to /login; fill credentials there.
   await page.getByTestId(testIds.candidate.login.email).fill(TEST_CANDIDATE_EMAIL);
-  await page.getByTestId(testIds.candidate.login.password).fill(TEST_CANDIDATE_PASSWORD);
+  await page.getByTestId(testIds.candidate.password.field).fill(TEST_CANDIDATE_PASSWORD);
   await page.getByTestId(testIds.candidate.login.submit).click();
   // Phase 86.1 post-fix: assert we LAND on a candidate-app route, not just
   // that we left /login. Under candidate-app-mutation's parallel mode the
@@ -180,10 +180,7 @@ test.describe('A11Y-01 candidate profile validation', { tag: ['@candidate'] }, (
     // size alone.
     const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
     const TARGET_BYTES = 21 * 1024 * 1024;
-    const buf = Buffer.concat([
-      PNG_SIGNATURE,
-      Buffer.alloc(TARGET_BYTES - PNG_SIGNATURE.length, 0)
-    ]);
+    const buf = Buffer.concat([PNG_SIGNATURE, Buffer.alloc(TARGET_BYTES - PNG_SIGNATURE.length, 0)]);
     fs.writeFileSync(OVERSIZED_PNG_PATH, buf);
   });
 

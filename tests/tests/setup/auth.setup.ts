@@ -20,12 +20,7 @@ const authFile = path.join(currentDir, '../../playwright/.auth/user.json');
  * retry-vs-fail dispatch on settled state (the previous waitFor already
  * timed out before we reach the branch) — not a race-mask.
  */
-async function waitForLoginForm(
-  page: Page,
-  loginRoute: string,
-  emailTestId: string,
-  maxAttempts = 3
-): Promise<void> {
+async function waitForLoginForm(page: Page, loginRoute: string, emailTestId: string, maxAttempts = 3): Promise<void> {
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     await page.goto(loginRoute, { waitUntil: 'domcontentloaded' });
 
@@ -87,7 +82,7 @@ setup('authenticate as candidate', async ({ page }) => {
 
   // Login credentials matching data.setup.ts (Test Candidate Alpha from default dataset)
   await page.getByTestId(testIds.candidate.login.email).fill(TEST_CANDIDATE_EMAIL);
-  await page.getByTestId(testIds.candidate.login.password).fill(TEST_CANDIDATE_PASSWORD);
+  await page.getByTestId(testIds.candidate.password.field).fill(TEST_CANDIDATE_PASSWORD);
   await page.getByTestId(testIds.candidate.login.submit).click();
 
   // Wait for navigation away from the login page
