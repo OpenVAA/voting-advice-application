@@ -494,7 +494,7 @@ Plans:
 
 **Requirements**: TYPECHECK, LOCATORS, FIXTURES, TIMEOUTS, DIAGNOSIS, FRESHGUARD (workstream-mapped; no formal REQ IDs in REQUIREMENTS.md — Phase 92 is post-v2.10-close infra hardening)
 **Depends on:** Phase 91
-**Plans:** 4/5 plans executed
+**Plans:** 5/5 plans complete
 
 Plans:
 **Wave 1**
@@ -512,4 +512,4 @@ Plans:
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 92-04-PLAN.md — WS3: consolidate timeout constants into tests/tests/helpers/timeouts.ts + migrate 4 local TIMEOUT objects + scattered literals; inline >90s/l10n exceptions (preserve test.setTimeout-applied 180s/120s budgets) [TIMEOUTS] (wave 4, depends 92-01, 92-03, 92-05)
+- [x] 92-04-PLAN.md — WS3: consolidate timeout constants into tests/tests/helpers/timeouts.ts + migrate 4 local TIMEOUT objects + scattered literals; inline >90s/l10n exceptions (preserve test.setTimeout-applied 180s/120s budgets) [TIMEOUTS] (wave 4, depends 92-01, 92-03, 92-05)

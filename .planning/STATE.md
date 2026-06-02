@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
-status: executing
-stopped_at: Completed 92-05-PLAN.md
-last_updated: "2026-06-02T20:52:57.732Z"
+status: verifying
+stopped_at: Completed 92-02-PLAN.md
+last_updated: "2026-06-02T21:03:14.182Z"
 last_activity: 2026-06-02
 progress:
   total_phases: 17
-  completed_phases: 14
+  completed_phases: 15
   total_plans: 52
-  completed_plans: 49
-  percent: 82
+  completed_plans: 50
+  percent: 88
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 
 Phase: 92 (e2e-test-infrastructure-hardening-typecheck-all-tests-and-el) — EXECUTING
 Plan: 5 of 5
-Status: 92-05 complete; plan 04 (timeout consolidation, depends on 92-05) remaining
+Status: Phase complete — ready for verification
 Last activity: 2026-06-02
 
 ## Performance Metrics
@@ -112,6 +112,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | Phase 92 P02 | ~2min | 2 tasks | 4 files |
 | Phase Phase 92 PP03 | ~6min | 3 tasks | 13 files |
 | Phase 92 P05 | ~5min | 3 tasks | 8 files |
+| Phase 92 P04 | ~25min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -221,6 +222,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: [Phase 92-01]: tests/ typecheck gate wired + no-restricted-locators enforced; full tests/ lint suite greened. Task 3 testId-sweep: 0 in-scope migrations (1 candidate deferred to 92-03).
 - [Phase 92-02]: WS4 imgproxy/pooler diagnosis flagged QUESTIONABLE (D-13) at both markdown sites (quick SUMMARY + pending todo); diff-playwright-reports.ts:311 inspected + SKIPPED (encodes the imgproxy DATA_RACE flake pool / Phase 73 D-09 binding, not the questionable edge_runtime/pooler claim); STATE.md not edited (only ref is the roadmap-add narrative, already labeled "possibly unrelated"). WS5 both freshness probes (setupFromTemplate.ts + data.setup.ts) exclude the `seed_` baseline prefix (D-15) via a second `.not('external_id','like','seed_%')` on candidates + organizations; warn-only default + E2E_REQUIRE_FRESH_DB hard-fail branch byte-unchanged (D-14); duplicated-edit (no shared helper, lower-risk option). typecheck:tests green.
 - [Phase ?]: [Phase 92 P03]: WS2 FIXTURES — voter goToPage/expectPageVisible rollout (3 net-new + 2 extended fixtures, home/intro load anchors, named-Home-goto migration, open-menu→nav-menu-toggle testId). typecheck:tests + tests-eslint green.
+- [Phase 92]: Timeout consolidation (92-04): central tests/tests/helpers/timeouts.ts TIMEOUTS buckets (element/click/page/slowPage/testMax, MAX-merged so no budget tightened) + barrel export; all 4 local TIMEOUT objects deleted; >90s test.setTimeout budgets preserved as named inline exceptions L10N_TEST_MAX=180_000 + MEGA_TEST_MAX=120_000 (NOT collapsed to 90s); emailBucket POLL_TIMEOUT kept inline; playwright.config global timeout sourced from TIMEOUTS.testMax. D-10/D-11/D-12 satisfied.
 
 ### Quick Tasks Completed
 
@@ -258,7 +260,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-02T20:52:57.727Z
+Last session: 2026-06-02T21:02:55.437Z
 Stopped at: Completed 92-02-PLAN.md
 Resume file: None
 Next action: Operator decides Phase 87 disposition per Phase 86.3-05 D-06 recommendation:
