@@ -94,6 +94,9 @@ whether step 22's `goto` is being served from a warm SPA cache rather than a
 fresh document in the failing session.
 
 ### Reproduction blocker (separate, environmental)
+
+> ⚠️ QUESTIONABLE (Phase 92 D-13): this imgproxy/pooler diagnosis is unverified and was logged-not-fixed; the claim that it is unrelated to the answers data model has NOT been confirmed. Do not treat as settled.
+
 In a clean restarted env the mega-journey now fails at **step 13**, not 22:
 `userData.save()` hangs on the **portrait storage upload**
 (`updateEntityProperties` → `storage.upload`) — the submit button is stuck
