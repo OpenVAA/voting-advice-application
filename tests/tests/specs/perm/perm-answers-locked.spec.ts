@@ -72,14 +72,23 @@ test.describe('perm-answers-locked (surfaces 2 + 3 — authenticated)', () => {
     // onto the per-question route. Match by the question's displayed label
     // (`[QU-OPIN-L5-1]`), seeded by buildMinimal.
     const questionsOverview = createCandidateQuestionsOverviewPage(page);
-    await page.goto('/en/candidate/questions');
+    await questionsOverview.goToPage();
     await questionsOverview.goToQuestion(/\[QU-OPIN-L5-1\]/);
 
     await expect(page.getByTestId(testIds.candidate.common.answersLockedWarning)).toBeVisible();
 
-    const radios = page.getByTestId('question-choices').getByRole('radio');
+    // The candidate question page tags its OpinionQuestionInput with
+    // `candidate-questions-answer` (testIds.candidate.questions.answerInput).
+    // That prop flows through restProps onto the inner QuestionChoices
+    // <fieldset> and OVERRIDES its own `question-choices` testid (the spread
+    // sits after it). So on the candidate page the radio container is
+    // `candidate-questions-answer`, NOT `question-choices` (the latter is the
+    // voter-app fieldset testid). Scope to the registered container constant —
+    // same pattern as candidateQuestionPage.fixture's selectChoice.
+    const answerContainer = page.getByTestId(testIds.candidate.questions.answerInput);
+    const radios = answerContainer.getByRole('radio');
     const count = await radios.count();
-    expect(count, 'question-choices must render at least one radio').toBeGreaterThan(0);
+    expect(count, 'candidate-questions-answer must render at least one radio').toBeGreaterThan(0);
     for (let i = 0; i < count; i++) {
       await expect(radios.nth(i)).toBeDisabled();
     }
