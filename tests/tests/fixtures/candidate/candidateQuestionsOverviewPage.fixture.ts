@@ -25,6 +25,12 @@
  *  - clickEditQuestion(textOrNth)          — polymorphic dispatch:
  *                                              number → 0-indexed nth edit button
  *                                              string|RegExp → label match.
+ *  - goToQuestion(textOrNth)               — expand all categories, click the
+ *                                            matching question's edit action,
+ *                                            await navigation onto the
+ *                                            per-question route. Use instead of
+ *                                            page.goto() with an external_id
+ *                                            (the URL is keyed on internal id).
  *
  * SIBLING (not replacement) to the legacy tests/tests/pages/candidate/QuestionsPage.ts.
  *
@@ -48,6 +54,20 @@ export function createCandidateQuestionsOverviewPage(page: Page) {
    */
   function cardByLabel(label: string | RegExp): Locator {
     return page.getByTestId(testIds.candidate.questions.card).filter({ hasText: label });
+  }
+
+  /**
+   * Click the per-card edit/answer action. When passed a number, clicks the
+   * nth (0-indexed) action button in DOM order; when passed a string|RegExp,
+   * clicks the action inside the label-matched card. Shared by
+   * `clickEditQuestion` and `goToQuestion`.
+   */
+  async function clickEdit(textOrNth: string | RegExp | number): Promise<void> {
+    if (typeof textOrNth === 'number') {
+      await page.getByTestId(testIds.candidate.questions.cardAction).nth(textOrNth).click();
+      return;
+    }
+    await cardByLabel(textOrNth).first().getByTestId(testIds.candidate.questions.cardAction).click();
   }
 
   return {
@@ -94,10 +114,7 @@ export function createCandidateQuestionsOverviewPage(page: Page) {
      * `name`. Filters via hasText against the testid-bearing wrapper.
      */
     getCategoryExpander(name: string | RegExp): CategoryExpanderHandle {
-      const expander = page
-        .getByTestId(testIds.candidate.questions.categoryExpander)
-        .filter({ hasText: name })
-        .first();
+      const expander = page.getByTestId(testIds.candidate.questions.categoryExpander).filter({ hasText: name }).first();
       return {
         async click(): Promise<void> {
           // The Expander widget exposes a clickable header (the inner
@@ -131,15 +148,38 @@ export function createCandidateQuestionsOverviewPage(page: Page) {
      * in DOM order, or the one inside the label-matched card.
      */
     async clickEditQuestion(textOrNth: string | RegExp | number): Promise<void> {
-      if (typeof textOrNth === 'number') {
-        await page.getByTestId(testIds.candidate.questions.cardAction).nth(textOrNth).click();
-        return;
+      await clickEdit(textOrNth);
+    },
+
+    /**
+     * Navigate to a question's editor by clicking through the overview (the
+     * per-question URL is keyed on the internal question id, NOT the seed
+     * external_id, so `page.goto()` with an external_id is impossible).
+     *
+     * Steps:
+     *   1. Expand EVERY category-expander on the overview (a collapsed
+     *      category hides its question cards; defaultExpanded only fires when
+     *      a category has unanswered questions, so already-answered categories
+     *      render collapsed). Idempotent — expanders already open are skipped.
+     *   2. Click the matching question's edit/answer action (number → nth in
+     *      DOM order; string|RegExp → label match).
+     *   3. Await navigation off the overview onto the per-question route
+     *      (`/candidate/questions/<questionId>`).
+     */
+    async goToQuestion(textOrNth: string | RegExp | number): Promise<void> {
+      const expanders = page.getByTestId(testIds.candidate.questions.categoryExpander);
+      const expanderCount = await expanders.count();
+      for (let i = 0; i < expanderCount; i++) {
+        const checkbox = expanders.nth(i).getByRole('checkbox').first();
+        if (!(await checkbox.isChecked())) {
+          await checkbox.click();
+          await expect(checkbox).toBeChecked();
+        }
       }
-      await cardByLabel(textOrNth).first().getByTestId(testIds.candidate.questions.cardAction).click();
+      await clickEdit(textOrNth);
+      await page.waitForURL(/\/candidate\/questions\/[^/?#]+/);
     }
   };
 }
 
-export type CandidateQuestionsOverviewPageFixture = ReturnType<
-  typeof createCandidateQuestionsOverviewPage
->;
+export type CandidateQuestionsOverviewPageFixture = ReturnType<typeof createCandidateQuestionsOverviewPage>;
