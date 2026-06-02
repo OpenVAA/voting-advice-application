@@ -68,10 +68,7 @@
  */
 
 import { expect, test } from '../../fixtures/candidate/perm-l10n';
-import {
-  PASSWORD_1,
-  REGISTRATION_EMAIL_SUBJECT_REGEX
-} from '../../utils/candidateMegaConstants';
+import { PASSWORD_1, REGISTRATION_EMAIL_SUBJECT_REGEX } from '../../utils/candidateMegaConstants';
 import { toCallbackUrl } from '../../utils/emailHelper';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
@@ -98,8 +95,8 @@ test.describe('perm-localisation-positive', () => {
     page,
     emailBucket,
     candidatePasswordSetter,
-    candidateLoginPage,
     candidateProfilePage,
+    candidateQuestionsOverviewPage,
     candidateQuestionPage,
     candidateLogoutButton,
     langSelector,
@@ -168,10 +165,9 @@ test.describe('perm-localisation-positive', () => {
     const reEnglishStartButton = page.getByTestId(testIds.voter.home.startButton);
     await expect(reEnglishStartButton).toBeVisible();
     const reEnglishLabel = (await reEnglishStartButton.innerText()).trim();
-    expect(
-      reEnglishLabel,
-      'Post-switch-back English label must match the originally captured English label'
-    ).toBe(englishLabel);
+    expect(reEnglishLabel, 'Post-switch-back English label must match the originally captured English label').toBe(
+      englishLabel
+    );
 
     // ============== Step 3: candidate registration via Inbucket ===========
     // Pitfall 3: seeded candidate has no auth.users row. Drive registration
@@ -193,15 +189,8 @@ test.describe('perm-localisation-positive', () => {
 
     await page.goto(registrationCallbackUrl);
     await candidatePasswordSetter.setPassword(PASSWORD_1);
-
-    // PasswordSetter navigates to /candidate/login post-submit; perform the
-    // login (the seeded candidate has terms_of_use_accepted set, so the
-    // post-login landing is the candidate home directly — no ToU prompt).
-    await page.waitForURL(/\/candidate\/login/, { timeout: TIMEOUT.slowPage });
-    await candidateLoginPage.login(RECIPIENT_EMAIL, PASSWORD_1);
-    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({
-      timeout: TIMEOUT.slowPage
-    });
+    // The password setter automatically logins
+    await candidatePasswordSetter.expectNotVisible();
 
     // ============== Step 5: profile q1 — English answer + Finnish authoring
     // PERM-L10N-POS-03 + PERM-L10N-POS-04. Navigate to the EDITABLE
@@ -243,37 +232,72 @@ test.describe('perm-localisation-positive', () => {
     await candidateProfilePage.expectSubmitMessage();
 
     // ============== Step 8: opinion-editor q3 + q4 — comment multilingual
-    // PERM-L10N-POS-06. Navigate to questions overview → start → q3.
+    // PERM-L10N-POS-06. Navigate to the questions overview → open q3.
+    //
+    // The seeded candidate already carries answers to BOTH opinion questions
+    // (q3 value '3' + comment '[en-answer-q3]', q4 value '3'), so the overview
+    // renders the COMPLETED ("full") variant — NOT the empty state. The
+    // `candidate-questions-start` button only exists in the empty branch
+    // (questions/+page.svelte:86-99), so it never appears here. Instead the
+    // opinion category renders inside a collapsed Expander (defaultExpanded
+    // gates on there being unanswered questions in the category — there are
+    // none). Expand the category, then open q3 via its per-card edit action.
 
     await page.goto('/en/candidate/questions');
-    await page.getByTestId(testIds.candidate.questions.start).click();
+    const opinionCategory = candidateQuestionsOverviewPage.getCategoryExpander(/\[QC-OPIN\]/);
+    await opinionCategory.click();
+    await opinionCategory.expectExpanded(true);
+    await candidateQuestionsOverviewPage.clickEditQuestion(/\[Q3\]/);
     await candidateQuestionPage.expectQuestionText(/\[Q3\]/);
 
     // q3 — comment carries '[en-answer-q3]' (seeded), translation-options
     // visible. Author Finnish via setLocaleValue.
-    const q3CommentScope = page.getByTestId(testIds.candidate.questions.commentInput);
-    await expect(q3CommentScope).toBeVisible();
-    await expect(q3CommentScope.getByRole('textbox').first()).toHaveValue(/\[en-answer-q3\]/);
-    await multilingualTextField.expectTranslationOptions(q3CommentScope, true);
-    await multilingualTextField.openTranslations(q3CommentScope);
-    await multilingualTextField.setLocaleValue(q3CommentScope, 'fi', '[fi-answer-q3]');
-    await multilingualTextField.closeTranslations(q3CommentScope);
-    await multilingualTextField.expectLocaleHidden(q3CommentScope, 'fi');
+    //
+    // Scope note: `candidate-questions-comment` is forwarded by Input.svelte
+    // onto the open-answer <textarea> ITSELF (restProps spread, not a wrapper)
+    // — so the testid element IS the textbox, and the multilingual toggle +
+    // per-locale fields are SIBLINGS, not descendants. Assert the seeded value
+    // directly on the textarea, but scope the multilingual fixture to <main>
+    // (the only textbox inside <main> is this comment; the hidden feedback-
+    // widget textarea lives outside <main>), which contains the toggle and the
+    // per-locale fields the fixture needs.
+    const q3Comment = page.getByTestId(testIds.candidate.questions.commentInput);
+    const commentMultilingualScope = page.getByRole('main');
+    await expect(q3Comment).toBeVisible();
+    await expect(q3Comment).toHaveValue(/\[en-answer-q3\]/);
+    await multilingualTextField.expectTranslationOptions(commentMultilingualScope, true);
+    await multilingualTextField.openTranslations(commentMultilingualScope);
+    await multilingualTextField.setLocaleValue(commentMultilingualScope, 'fi', '[fi-answer-q3]');
+    await multilingualTextField.closeTranslations(commentMultilingualScope);
+    await multilingualTextField.expectLocaleHidden(commentMultilingualScope, 'fi');
 
-    // Save q3 + advance to q4.
+    // Save q3. NOTE: because the seeded candidate has ALREADY answered every
+    // opinion question, `unansweredOpinionQuestions` is empty, so the editor's
+    // save action routes back to the questions OVERVIEW (submitRoute =
+    // CandAppQuestions) rather than advancing linearly to the next question
+    // (questions/[questionId]/+page.svelte:121-136). Reach q4 the same way as
+    // q3: from the overview's expanded opinion category.
     await candidateQuestionPage.expectContinueEnabled();
     await candidateQuestionPage.clickContinue();
+
+    await page.waitForURL(/\/candidate\/questions(\/?$|\?)/, { timeout: TIMEOUT.slowPage });
+    const opinionCategoryQ4 = candidateQuestionsOverviewPage.getCategoryExpander(/\[QC-OPIN\]/);
+    await opinionCategoryQ4.click();
+    await opinionCategoryQ4.expectExpanded(true);
+    await candidateQuestionsOverviewPage.clickEditQuestion(/\[Q4\]/);
     await candidateQuestionPage.expectQuestionText(/\[Q4\]/);
 
     // q4 — customData.disableMultilingual=true → comment has NO toggle.
-    const q4CommentScope = page.getByTestId(testIds.candidate.questions.commentInput);
-    await expect(q4CommentScope).toBeVisible();
-    await multilingualTextField.expectTranslationOptions(q4CommentScope, false);
+    // Same scoping rationale as q3: assert the comment field exists, then
+    // assert NO multilingual toggle anywhere in <main> (disableMultilingual
+    // suppresses it).
+    const q4Comment = page.getByTestId(testIds.candidate.questions.commentInput);
+    await expect(q4Comment).toBeVisible();
+    await multilingualTextField.expectTranslationOptions(page.getByRole('main'), false);
 
-    // Save q4 so the answer (and its persisted state) is committed before
-    // logout — the Finnish q1 + q3 authoring saved on profile/q3 advance
-    // respectively, but q4 has no changes to persist; clicking continue
-    // simply advances away without mutation.
+    // Leave q4 — the seeded answer is already persisted and q4 has no Finnish
+    // authoring to commit (disableMultilingual). The save button routes back
+    // to the overview; clicking it simply navigates away without mutation.
     await candidateQuestionPage.expectContinueEnabled();
     await candidateQuestionPage.clickContinue();
 
@@ -313,6 +337,11 @@ test.describe('perm-localisation-positive', () => {
     await expect(infoTabEn).toBeVisible();
     await expect(infoTabEn).toContainText('[en-answer-q1]');
 
+    // Only the ACTIVE tab's panel is mounted (EntityDetails.svelte:149-153 is
+    // an {#if}/{:else if} chain), and the dialog opens on the info tab
+    // (activeIndex=0). Switch to the opinions tab (index 1 for a candidate's
+    // ['info','opinions'] tab set) before asserting on its panel.
+    await dialog.getByTestId('tab-1').click();
     const opinionsTabEn = dialog.getByTestId(testIds.voter.entityDetail.opinionsTab);
     await expect(opinionsTabEn).toBeVisible();
     await expect(opinionsTabEn).toContainText('[en-answer-q3]');
@@ -351,6 +380,9 @@ test.describe('perm-localisation-positive', () => {
     await expect(infoTabFi).toBeVisible();
     await expect(infoTabFi).toContainText('[fi-answer-q1]');
 
+    // Same tab-switch as the en block — activate the opinions tab (index 1)
+    // before asserting on its panel.
+    await dialogFi.getByTestId('tab-1').click();
     const opinionsTabFi = dialogFi.getByTestId(testIds.voter.entityDetail.opinionsTab);
     await expect(opinionsTabFi).toBeVisible();
     await expect(opinionsTabFi).toContainText('[fi-answer-q3]');

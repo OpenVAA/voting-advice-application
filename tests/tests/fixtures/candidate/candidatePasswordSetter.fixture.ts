@@ -17,6 +17,7 @@
  *   `.catch(() => null)` on assertion-bearing locator interactions.
  */
 
+import { expect } from '@playwright/test';
 import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
 
@@ -35,6 +36,12 @@ export function createCandidatePasswordSetter(page: Page) {
         .getByTestId(testIds.candidate.password.field)
         .fill(password);
       await page.getByTestId(testIds.candidate.password.submit).click();
+    },
+    /**
+     * Assert the password setter widget is NOT rendered
+     */
+    async expectNotVisible(): Promise<void> {
+      await expect(page.getByTestId(testIds.candidate.passwordSetter.password)).toHaveCount(0, { timeout: 5_000 });
     }
   };
 }

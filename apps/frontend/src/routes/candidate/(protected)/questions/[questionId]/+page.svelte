@@ -292,8 +292,13 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
           <!-- Open answer -->
 
           {#if customData.allowOpen}
+            <!-- Honor the per-question `disableMultilingual` opt-out on the
+                 open-answer comment, mirroring QuestionInput.svelte:73 (which
+                 gates info-question inputs). Without this the comment always
+                 rendered the multilingual translations toggle, ignoring the
+                 opt-out that info questions respect. -->
             <Input
-              type="textarea-multilingual"
+              type={customData.disableMultilingual ? 'textarea' : 'textarea-multilingual'}
               label={t('candidateApp.questions.openAnswerPrompt')}
               value={answer?.info}
               disabled={!canSubmit}

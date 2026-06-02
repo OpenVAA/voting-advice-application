@@ -67,7 +67,7 @@ export function createLangSelector(page: Page) {
         const name = displayNameFor(loc);
         const item = selector
           .getByTestId(testIds.shared.navigation.menuItem)
-          .filter({ hasText: new RegExp(`^${name}$`, 'i') });
+          .filter({ hasText: new RegExp(`\\b${name}\\b`, 'i') });
         await expect(item).toBeVisible();
       }
     },
@@ -110,7 +110,7 @@ export function createLangSelector(page: Page) {
       const selector = page.getByTestId(testIds.shared.langSelector);
       const item = selector
         .getByTestId(testIds.shared.navigation.menuItem)
-        .filter({ hasText: new RegExp(`^${name}$`, 'i') });
+        .filter({ hasText: new RegExp(`\\b${name}\\b`, 'i') });
       // Build a baseLocale-aware wait pattern. baseLocale ('en') is served
       // prefix-less from `/`; non-baseLocale locales get a `/<locale>/` prefix.
       // For baseLocale we match any URL whose first path segment is NOT one
