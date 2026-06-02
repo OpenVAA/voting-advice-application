@@ -45,9 +45,7 @@ import { SupabaseAdminClient } from '../utils/supabaseAdminClient';
 import type { Template } from '@openvaa/dev-seed';
 
 /**
- * Optional hook for variant-specific post-seed assertions (e.g. the
- * multi-election variant's `template.candidates?.fixed?.length > 0` check
- * at variant-multi-election.setup.ts). Receives the resolved client +
+ * Optional hook for template-specific post-seed assertions. Receives the resolved client +
  * template so callers can probe Supabase directly.
  */
 export type PostSeedAssertions = (client: SupabaseAdminClient, template: Template) => Promise<void>;
@@ -72,6 +70,13 @@ export interface SetupFromTemplateOptions {
   extraTeardownPrefix?: string | Array<string>;
 }
 
+// reason: dev-seed `default` template emits `seed_`-prefixed baseline rows into
+// TEST_PROJECT_ID (packages/dev-seed/src/ctx.ts:89 — `externalIdPrefix ?? 'seed_'`).
+// The freshness probe must NOT treat those auto-seeded baseline rows as
+// "non-test contamination" (Phase 92 D-15). Excluded alongside the per-template
+// teardown prefix; genuinely-contaminated (non-seed_, non-test) rows still warn.
+const BASELINE_SEED_PREFIX = 'seed_';
+
 export interface SetupFromTemplateResult {
   /**
    * Idempotent cleanup function — re-invokes `runTeardown(prefix, client)`
@@ -95,13 +100,17 @@ async function probeFreshDatabasePrecondition(
   prefix: string
 ): Promise<void> {
   const requireFresh = process.env.E2E_REQUIRE_FRESH_DB === 'true';
+  // Chained .not().not() → NOT LIKE ${prefix}% AND NOT LIKE seed_% (PostgREST).
+  // NULL external_id rows stay excluded by NOT LIKE semantics (seed.sql candidate).
   const candQuery = client.query('candidates');
   const { data: nonTestCands, error: candErr } = await candQuery
     .not('external_id', 'like', `${prefix}%`)
+    .not('external_id', 'like', `${BASELINE_SEED_PREFIX}%`)
     .limit(5);
   const orgQuery = client.query('organizations');
   const { data: nonTestOrgs, error: orgErr } = await orgQuery
     .not('external_id', 'like', `${prefix}%`)
+    .not('external_id', 'like', `${BASELINE_SEED_PREFIX}%`)
     .limit(5);
 
   if (candErr || orgErr) {
@@ -128,7 +137,7 @@ async function probeFreshDatabasePrecondition(
  * post-seed asserts `app_settings`, and returns a cleanup function.
  *
  * @param templateName - Key into `BUILT_IN_TEMPLATES`. Throws if not found.
- * @param options.postSeedAssertions - Optional variant-specific assertions.
+ * @param options.postSeedAssertions - Optional template-specific assertions.
  * @returns `{ cleanup }` — call from `afterAll` if needed.
  */
 export async function setupFromTemplate(
@@ -215,7 +224,7 @@ export async function setupFromTemplate(
     expect(persisted).toMatchObject(expected);
   }
 
-  // 4. Optional variant-specific assertions hook.
+  // 4. Optional template-specific assertions hook.
   if (options?.postSeedAssertions) {
     await options.postSeedAssertions(client, template!);
   }

@@ -13,6 +13,13 @@ import { TEST_CANDIDATE_EMAIL, TEST_CANDIDATE_PASSWORD } from '../utils/testCred
 
 const PREFIX = 'test-';
 
+// reason: dev-seed `default` template emits `seed_`-prefixed baseline rows into
+// TEST_PROJECT_ID (packages/dev-seed/src/ctx.ts:89 — `externalIdPrefix ?? 'seed_'`).
+// The freshness probe must NOT treat those auto-seeded baseline rows as
+// "non-test contamination" (Phase 92 D-15). Excluded alongside PREFIX;
+// genuinely-contaminated (non-seed_, non-test) rows still warn.
+const BASELINE_SEED_PREFIX = 'seed_';
+
 /**
  * Probe candidates + organizations for any row whose `external_id` is NOT
  * prefixed with `PREFIX`. By default this WARNS (so a CI run that pointed at
@@ -30,13 +37,17 @@ async function probeFreshDatabasePrecondition(
   prefix: string
 ): Promise<void> {
   const requireFresh = process.env.E2E_REQUIRE_FRESH_DB === 'true';
+  // Chained .not().not() → NOT LIKE ${prefix}% AND NOT LIKE seed_% (PostgREST).
+  // NULL external_id rows stay excluded by NOT LIKE semantics (seed.sql candidate).
   const candQuery = client.query('candidates');
   const { data: nonTestCands, error: candErr } = await candQuery
     .not('external_id', 'like', `${prefix}%`)
+    .not('external_id', 'like', `${BASELINE_SEED_PREFIX}%`)
     .limit(5);
   const orgQuery = client.query('organizations');
   const { data: nonTestOrgs, error: orgErr } = await orgQuery
     .not('external_id', 'like', `${prefix}%`)
+    .not('external_id', 'like', `${BASELINE_SEED_PREFIX}%`)
     .limit(5);
 
   if (candErr || orgErr) {
