@@ -26,4 +26,5 @@ export { assertDbRowCount } from './db-precondition.helper';
 export { clickAndRaceSettle, expectLandedOn } from './navigation.helper';
 export { iterateSelectOptions } from './select.helper';
 export { gotoAndSettle, settleNetworkIdle } from './settle.helper';
+export { TIMEOUTS } from './timeouts';
 export { walkVoterIteration } from './voter-iteration.helper';
