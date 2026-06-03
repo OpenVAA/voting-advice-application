@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
-status: executing
-stopped_at: Completed 94-02-PLAN.md
-last_updated: "2026-06-03T18:52:55.759Z"
+status: verifying
+stopped_at: Completed 94-08-PLAN.md
+last_updated: "2026-06-03T18:58:16.747Z"
 last_activity: 2026-06-03
 progress:
   total_phases: 19
-  completed_phases: 16
+  completed_phases: 17
   total_plans: 66
-  completed_plans: 63
-  percent: 84
+  completed_plans: 64
+  percent: 89
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 
 Phase: 94 (final-e2e-suite-polish-de-planning-reformat-readme-triage) — EXECUTING
 Plan: 8 of 8
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-06-03
 
 ## Performance Metrics
@@ -126,6 +126,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | Phase 94 P05 | ~18min | 2 tasks | 16 files |
 | Phase 94 P06 | ~10min | 2 tasks | 17 files |
 | Phase 94 P07 | ~25min | 2 tasks | 32 files |
+| Phase 94 P08 | ~7min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -252,6 +253,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Phase 94 Plan 05: voter + shared E2E fixtures (14) de-planned; voter-journey spec retitled to plain language; voter-journey.README.md deleted (D-04); typecheck green
 - [Phase ?]: [Phase 94-06]: De-planned 6 utils + 5 helper-source + 3 shared-setup + 3 root-config files; seed-test-data throw message de-cited (e2e/base literal kept); helper contracts (settleNetworkIdle no-swallow, Select combobox+listbox ARIA, walkToQuestion resilience) + eslint allow-list rationale preserved; typecheck green
 - [Phase 94]: [Phase 94-07]: dev-seed template layer de-planned (32 of 33 files; e2e/base.ts already clean); Plan-01 Math.floor median ordinal logic preserved; D-01 fence held (wider src/ untouched); dev-seed unit 450/450 green
+- [Phase 94]: Plan 94-08: rewrote tests/README.md (D-06) + helpers/README.md (D-05) current-state-only; phase-wide de-planning gate PASS (residual grep empty, typecheck 0, --list 84/72)
 
 ### Quick Tasks Completed
 
@@ -290,8 +292,8 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-03T18:51:26.897Z
-Stopped at: Completed 94-02-PLAN.md
+Last session: 2026-06-03T18:58:16.739Z
+Stopped at: Completed 94-08-PLAN.md
 Resume file: None
 Next action: Operator decides Phase 87 disposition per Phase 86.3-05 D-06 recommendation:
   (a) **RE-PLAN (Claude's recommendation):** Re-plan Phase 87 to absorb v2.11+ voter-app cold-deeplink deferrals (4 cells #5/#6/#7/#8 closure-paired via navigation-from-home redesign) + boundary-class flake deferrals (DETERM-06 imgproxy + email-link timing) BEFORE firing the v2.10-ship anchor capture. Plan 87-01 needs a new Plan 01a (deferral inventory) + Plan 01b (anchor capture WITH explicit deferrals documented).
