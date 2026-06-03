@@ -11,8 +11,7 @@
  * Surface (TIR4:60-63 verbatim signatures):
  *  - expectEmail(subject)              → polls Mailpit until a message with
  *                                        matching Subject arrives (15s timeout,
- *                                        [1000, 2000, 3000] retry intervals per
- *                                        candidate-registration.spec.ts:97-103).
+ *                                        [1000, 2000, 3000] retry intervals).
  *  - getEmail(subjectOrNth)            → string/RegExp → match by Subject;
  *                                        number → 0-indexed nth latest email.
  *  - getLinksInEmail(subjectOrNth)     → array of href values (cheerio-parsed
@@ -36,13 +35,12 @@ import type { Page } from '@playwright/test';
 const MAILPIT_URL = process.env.INBUCKET_URL ?? 'http://localhost:54324';
 
 /**
- * Polling timeout (ms) for expectEmail / getEmail / getLinksInEmail. Matches
- * the candidate-registration.spec.ts:97-103 precedent.
+ * Polling timeout (ms) for expectEmail / getEmail / getLinksInEmail.
  */
 const POLL_TIMEOUT = 15_000;
 
 /**
- * Polling intervals (ms) — matches candidate-registration.spec.ts:97-103.
+ * Polling intervals (ms).
  */
 const POLL_INTERVALS = [1000, 2000, 3000];
 

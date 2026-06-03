@@ -29,10 +29,10 @@
  */
 
 import { expect } from '@playwright/test';
-import { createLangSelector } from './langSelectorFixture.fixture';
 import { testIds } from '../../utils/testIds';
+import { createLangSelector } from '../shared/langSelectorFixture.fixture';
 import type { Page } from '@playwright/test';
-import type { LangSelectorFixture } from './langSelectorFixture.fixture';
+import type { LangSelectorFixture } from '../shared/langSelectorFixture.fixture';
 
 export function createVoterNav(page: Page) {
   return {

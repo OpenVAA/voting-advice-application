@@ -1,16 +1,16 @@
 /**
  * @file Composition root for Phase 90 localisation-perm function-fixtures.
  *
- * Sibling to `candidate-mega.ts`. SEPARATE root (researcher 90-RESEARCH
+ * Sibling to `candidate-journey.ts`. SEPARATE root (researcher 90-RESEARCH
  * §Pattern 4 + 90-PATTERNS §"perm-l10n.ts") to avoid bloating the
- * candidate-mega composition surface. Plans 90-03 + 90-04 both consume this
+ * candidate-journey composition surface. Plans 90-03 + 90-04 both consume this
  * root.
  *
  * Re-exports `test` (Playwright extended) + `expect`. Specs:
  *
  *   import { test, expect } from '../../fixtures/candidate/perm-l10n';
  *
- * Includes (from candidate-mega):
+ * Includes (from candidate-journey):
  *   - candidateLoginPage
  *   - candidateProfilePage
  *   - candidateQuestionPage
@@ -27,7 +27,7 @@
  *                                 multilingual surface (scoped by Locator)
  *
  * Plus the `recipientEmail` option fixture (Open Question 4 RESOLVED +
- * `candidate-mega.ts:87` recipient-filter contract). Specs override per-perm
+ * `candidate-journey.ts:87` recipient-filter contract). Specs override per-perm
  * via `test.use({ recipientEmail: 'candidate-l10n-neg-aa@test.openvaa.local' })`
  * to prevent cross-perm Inbucket pollution.
  *
@@ -45,14 +45,18 @@ import { createCandidateProfilePage } from './candidateProfilePage.fixture';
 import { createCandidateQuestionPage } from './candidateQuestionPage.fixture';
 import { createCandidateQuestionsOverviewPage } from './candidateQuestionsOverviewPage.fixture';
 import { createCandidateTermsOfUsePage } from './candidateTermsOfUsePage.fixture';
-import { createEmailBucket } from './emailBucket.fixture';
-import { createLangSelector } from './langSelectorFixture.fixture';
-import { createMultilingualTextField } from './multilingualTextFieldFixture.fixture';
-import { createVoterNav } from './voterNavFixture.fixture';
+import { createEmailBucket } from '../shared/emailBucket.fixture';
+import { createLangSelector } from '../shared/langSelectorFixture.fixture';
+import { createMultilingualTextField } from '../shared/multilingualTextFieldFixture.fixture';
 import { createResultsPage } from '../voter/resultsPage.fixture';
 import { createVoterHomePage } from '../voter/voterHomePage.fixture';
+import { createVoterNav } from '../voter/voterNavFixture.fixture';
+import type { EmailBucketFixture } from '../shared/emailBucket.fixture';
+import type { LangSelectorFixture } from '../shared/langSelectorFixture.fixture';
+import type { MultilingualTextFieldFixture } from '../shared/multilingualTextFieldFixture.fixture';
 import type { ResultsPageFixture } from '../voter/resultsPage.fixture';
 import type { VoterHomePageFixture } from '../voter/voterHomePage.fixture';
+import type { VoterNavFixture } from '../voter/voterNavFixture.fixture';
 import type { CandidateHomePageFixture } from './candidateHomePage.fixture';
 import type { CandidateLoginPageFixture } from './candidateLoginPage.fixture';
 import type { CandidateLogoutButtonFixture } from './candidateLogoutButton.fixture';
@@ -61,10 +65,6 @@ import type { CandidateProfilePageFixture } from './candidateProfilePage.fixture
 import type { CandidateQuestionPageFixture } from './candidateQuestionPage.fixture';
 import type { CandidateQuestionsOverviewPageFixture } from './candidateQuestionsOverviewPage.fixture';
 import type { CandidateTermsOfUsePageFixture } from './candidateTermsOfUsePage.fixture';
-import type { EmailBucketFixture } from './emailBucket.fixture';
-import type { LangSelectorFixture } from './langSelectorFixture.fixture';
-import type { MultilingualTextFieldFixture } from './multilingualTextFieldFixture.fixture';
-import type { VoterNavFixture } from './voterNavFixture.fixture';
 
 type PermL10nFixtureOptions = {
   /**
