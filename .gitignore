@@ -30,7 +30,6 @@ test-results/
 playwright-report/
 playwright-results/
 raw.json
-# Local test-run snapshots produced by tests/scripts/diff-playwright-reports.ts
 tests/.planning/
 
 # Supabase Studio scratch (auto-named "Untitled query NNN.sql" — local dev only)
