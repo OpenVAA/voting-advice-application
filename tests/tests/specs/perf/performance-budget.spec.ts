@@ -17,11 +17,9 @@
  *   3. Add a 50% margin to the P90 value
  *   4. Update the expect() thresholds below
  *
- * Phase 91 Plan 04 (D-91-RS-02): uses
- *   tests/tests/fixtures/voter/voter-journey.fixture.ts `voterJourneyTest.answeredVoterPage`
- * (base dataset). Budgets UNCHANGED (8s DCL, 15s loadComplete) — no
- * threshold tightening per D-91-RS-02; perf is a regression gate, not an
- * absolute target.
+ * Fixture: the voter-journey `answeredVoterPage` (base dataset). Budgets are
+ * 8s DCL / 15s loadComplete — perf is a regression gate, not an absolute
+ * target, so the thresholds stay generous.
  *
  * Run command:
  *   PLAYWRIGHT_PERF=1 npx playwright test -c tests/playwright.config.ts --project=performance

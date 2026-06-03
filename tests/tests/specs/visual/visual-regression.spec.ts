@@ -12,18 +12,15 @@
  * tracked in git. To update baselines after intentional UI changes:
  *   PLAYWRIGHT_VISUAL=1 npx playwright test --project=visual-regression --update-snapshots
  *
- * Phase 91 Plan 04 (D-91-RS-01 + D-91-RS-03):
- * - Voter-results desktop + mobile use
- *   tests/tests/fixtures/voter/voter-journey.fixture.ts `voterJourneyTest.answeredVoterPage`
- *   (base dataset; multi-election + multi-constituency walk).
- * - Candidate-preview desktop + mobile MIGRATED from raw STORAGE_STATE +
- *   page.goto to the `candidatePreviewPage` function-fixture from
- *   tests/tests/fixtures/candidate/candidate-journey.ts (Phase 89 Plan 02
- *   composition root).
- * - PNG baselines NOT regenerated in this commit — CI follow-up via
- *   --update-snapshots per D-91-RS-01 (developer machines vary in font
- *   rendering; baseline capture happens on the canonical CI runner). The
- *   visual project may fail until CI re-baselines; this is expected.
+ * Fixtures:
+ * - Voter-results desktop + mobile use the voter-journey fixture's
+ *   `answeredVoterPage` (base dataset; multi-election + multi-constituency walk).
+ * - Candidate-preview desktop + mobile use the `candidatePreviewPage`
+ *   function-fixture from the candidate-journey composition root.
+ *
+ * PNG baselines are captured on the canonical CI runner via --update-snapshots
+ * (developer machines vary in font rendering); the visual project may fail
+ * until CI re-baselines.
  */
 
 import { STORAGE_STATE } from '../../../playwright.config';
@@ -72,9 +69,9 @@ candidateTest.describe('Candidate Preview - Desktop @visual', { tag: ['@visual']
 
   candidateTest('screenshot matches baseline', async ({ candidatePreviewPage, page }) => {
     await page.goto(buildRoute({ route: 'CandAppPreview', locale: 'en' }));
-    // Use the candidatePreviewPage fixture's container-visible assertion
-    // (D-91-RS-01) — the fixture wraps the testid lookup and offers strict
-    // visibility semantics + future composition surface for follow-up assertions.
+    // Use the candidatePreviewPage fixture's container-visible assertion —
+    // the fixture wraps the testid lookup and offers strict visibility
+    // semantics + a future composition surface for follow-up assertions.
     await candidatePreviewPage.expectPortraitVisible();
 
     await expect(page).toHaveScreenshot('candidate-preview-desktop.png', {
