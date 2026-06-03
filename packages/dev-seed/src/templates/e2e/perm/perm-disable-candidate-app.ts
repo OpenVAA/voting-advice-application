@@ -20,8 +20,8 @@
  * Port discipline (Phase 91 D-91-PD-03): assertions preserved byte-for-byte.
  */
 
-import { buildMinimal } from '../_helpers/buildMinimal';
-import type { Template } from '../../template/types';
+import { buildMinimal } from '../../_helpers/buildMinimal';
+import type { Template } from '../../../template/types';
 
 const P = 'e2e-perm-nocand-';
 

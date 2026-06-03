@@ -1,26 +1,19 @@
 /**
- * perm-disjoint-1co minimal-data template — Phase 88 Plan 03.
+ * perm-not-located-2e2cg minimal-data template — Phase 88 Plan 03.
  *
- * Topology: 2 elections with DISJOINT constituency groups.
+ * Topology: 2 elections with 2 disjoint CGs × 2 COs each.
  *   - EL-1 → CG-1 → co-1a, co-1b
  *   - EL-2 → CG-2 → co-2a, co-2b
  *
- * Note on the `-1co` suffix: the original spec (refactor-doc:171-181) said
- * "1 CO per CG", but the app auto-implies a single-CO CG (no picker rendered),
- * which makes the spec's "show constituency picker for CG-1" contract
- * unobservable. To exercise the picker contract while still minimal, each CG
- * has TWO COs. The slug stays `perm-disjoint-1co` to preserve external_id
- * prefix continuity with the rest of Plan 88-03; the doc-comment is
- * authoritative on the actual shape.
+ * Dataset for the 5-test voter-not-located-redirect rebuild
+ * (perm-not-located-2e2cg.spec.ts). The shape forces both selector pages to
+ * render — getImpliedElectionIds cannot auto-imply with 2 elections having
+ * disjoint constituency groups (mirrors the existing Ne-Nc variant's role
+ * in voter-not-located-redirect.spec.ts).
  *
- * Election selector shown. When only EL-1 selected, constituency-selection
- * step shows only CG-1 picker (2 options). When both selected, both pickers
- * shown and continue is disabled until both are filled.
+ * Authoritative spec: TEST-INVENTORY-REFACTOR-2.md:198-209
  *
- * Authoritative spec: TEST-INVENTORY-REFACTOR-2.md:171-181 (interpretive —
- * picker contract requires ≥2 COs per CG, see note above).
- *
- * Prefix discipline: `externalIdPrefix: 'e2e-perm-disjoint-1co-'` per
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-notloc-'` per
  * 88-03-SCOPE.md:104-110. Row external_ids bare; refs prefixed.
  *
  * Settings: MINIMAL_BASE_APP_SETTINGS verbatim.
@@ -35,11 +28,11 @@ import {
   buildStandardCandidateAnswers,
   MINIMAL_BASE_APP_SETTINGS
 } from './shared';
-import type { Template } from '../../template/types';
+import type { Template } from '../../../template/types';
 
-const P = 'e2e-perm-disjoint-1co-';
+const P = 'e2e-perm-notloc-';
 
-export const permDisjoint1coTemplate: Template = {
+export const permNotLocated2e2cgTemplate: Template = {
   seed: 42,
   externalIdPrefix: P,
   generateTranslationsForAllLocales: false,
@@ -126,9 +119,9 @@ export const permDisjoint1coTemplate: Template = {
     count: 0,
     fixed: [
       ...buildElectionConstituencyNoms({ prefix: P, electionIdSuffix: 'el-1', constituencyIdSuffix: 'co-1a', candidateIdSuffixes: ['ca-1-1a', 'ca-2-1a'], electionSymbolStart: 1 }),
-      ...buildElectionConstituencyNoms({ prefix: P, electionIdSuffix: 'el-1', constituencyIdSuffix: 'co-1b', candidateIdSuffixes: ['ca-1-1b', 'ca-2-1b'], electionSymbolStart: 5 }),
-      ...buildElectionConstituencyNoms({ prefix: P, electionIdSuffix: 'el-2', constituencyIdSuffix: 'co-2a', candidateIdSuffixes: ['ca-1-2a', 'ca-2-2a'], electionSymbolStart: 10 }),
-      ...buildElectionConstituencyNoms({ prefix: P, electionIdSuffix: 'el-2', constituencyIdSuffix: 'co-2b', candidateIdSuffixes: ['ca-1-2b', 'ca-2-2b'], electionSymbolStart: 15 })
+      ...buildElectionConstituencyNoms({ prefix: P, electionIdSuffix: 'el-1', constituencyIdSuffix: 'co-1b', candidateIdSuffixes: ['ca-1-1b', 'ca-2-1b'], electionSymbolStart: 10 }),
+      ...buildElectionConstituencyNoms({ prefix: P, electionIdSuffix: 'el-2', constituencyIdSuffix: 'co-2a', candidateIdSuffixes: ['ca-1-2a', 'ca-2-2a'], electionSymbolStart: 20 }),
+      ...buildElectionConstituencyNoms({ prefix: P, electionIdSuffix: 'el-2', constituencyIdSuffix: 'co-2b', candidateIdSuffixes: ['ca-1-2b', 'ca-2-2b'], electionSymbolStart: 30 })
     ]
   },
 
@@ -138,4 +131,4 @@ export const permDisjoint1coTemplate: Template = {
   }
 };
 
-export default permDisjoint1coTemplate;
+export default permNotLocated2e2cgTemplate;

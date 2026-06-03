@@ -22,7 +22,7 @@ import {
   buildStandardCandidateAnswers,
   MINIMAL_BASE_APP_SETTINGS
 } from './shared';
-import type { Template } from '../../template/types';
+import type { Template } from '../../../template/types';
 
 const P = 'e2e-perm-2e-shared-';
 

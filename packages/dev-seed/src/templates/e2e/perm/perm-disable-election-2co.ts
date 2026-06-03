@@ -1,13 +1,13 @@
 /**
- * perm-disable-election-1co minimal-data template — Phase 88 Plan 03.
+ * perm-disable-election-2co minimal-data template — Phase 88 Plan 03.
  *
- * Topology: same as perm-2e-shared (2 elections share 1 CG with 1 CO), but
- * with `elections.disallowSelection: true` — no election selector AND no
- * constituency selector (1 CO is auto-implied).
+ * Topology: 2 elections share 1 CG with 2 COs; `elections.disallowSelection:
+ * true`. No election selector shown, but constituency selector IS shown (2
+ * CO options for the implied combined election scope).
  *
- * Authoritative spec: TEST-INVENTORY-REFACTOR-2.md:185-188
+ * Authoritative spec: TEST-INVENTORY-REFACTOR-2.md:189-192
  *
- * Prefix discipline: `externalIdPrefix: 'e2e-perm-disable-elec-1co-'` per
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-disable-elec-2co-'` per
  * 88-03-SCOPE.md:104-110. Row external_ids bare; refs prefixed.
  *
  * Settings: MINIMAL_BASE_APP_SETTINGS spread with elections.disallowSelection:
@@ -23,9 +23,9 @@ import {
   buildStandardCandidateAnswers,
   MINIMAL_BASE_APP_SETTINGS
 } from './shared';
-import type { Template } from '../../template/types';
+import type { Template } from '../../../template/types';
 
-const P = 'e2e-perm-disable-elec-1co-';
+const P = 'e2e-perm-disable-elec-2co-';
 
 const APP_SETTINGS = {
   ...MINIMAL_BASE_APP_SETTINGS,
@@ -35,7 +35,7 @@ const APP_SETTINGS = {
   }
 } as const;
 
-export const permDisableElection1coTemplate: Template = {
+export const permDisableElection2coTemplate: Template = {
   seed: 42,
   externalIdPrefix: P,
   generateTranslationsForAllLocales: false,
@@ -78,7 +78,7 @@ export const permDisableElection1coTemplate: Template = {
         name: { en: '[CG1] Shared group' },
         sort_order: 0,
         is_generated: false,
-        constituencies: [{ external_id: `${P}co-1a` }]
+        constituencies: [{ external_id: `${P}co-1a` }, { external_id: `${P}co-1b` }]
       }
     ]
   },
@@ -86,12 +86,8 @@ export const permDisableElection1coTemplate: Template = {
   constituencies: {
     count: 0,
     fixed: [
-      {
-        external_id: 'co-1a',
-        name: { en: '[CO1A] Only constituency' },
-        sort_order: 0,
-        is_generated: false
-      }
+      { external_id: 'co-1a', name: { en: '[CO1A] North' }, sort_order: 0, is_generated: false },
+      { external_id: 'co-1b', name: { en: '[CO1B] South' }, sort_order: 1, is_generated: false }
     ]
   },
 
@@ -103,7 +99,9 @@ export const permDisableElection1coTemplate: Template = {
     count: 0,
     fixed: [
       buildCandidate({ prefix: P, orgN: 1, candLetter: 'A', idSuffix: 'ca-1-1a', sortOrder: 0, answersByExternalId: buildStandardCandidateAnswers({ prefix: P }) }),
-      buildCandidate({ prefix: P, orgN: 2, candLetter: 'A', idSuffix: 'ca-2-1a', sortOrder: 1, answersByExternalId: buildStandardCandidateAnswers({ prefix: P }) })
+      buildCandidate({ prefix: P, orgN: 2, candLetter: 'A', idSuffix: 'ca-2-1a', sortOrder: 1, answersByExternalId: buildStandardCandidateAnswers({ prefix: P }) }),
+      buildCandidate({ prefix: P, orgN: 1, candLetter: 'B', idSuffix: 'ca-1-1b', sortOrder: 2, answersByExternalId: buildStandardCandidateAnswers({ prefix: P }) }),
+      buildCandidate({ prefix: P, orgN: 2, candLetter: 'B', idSuffix: 'ca-2-1b', sortOrder: 3, answersByExternalId: buildStandardCandidateAnswers({ prefix: P }) })
     ]
   },
 
@@ -111,7 +109,9 @@ export const permDisableElection1coTemplate: Template = {
     count: 0,
     fixed: [
       ...buildElectionConstituencyNoms({ prefix: P, electionIdSuffix: 'el-1', constituencyIdSuffix: 'co-1a', candidateIdSuffixes: ['ca-1-1a', 'ca-2-1a'], electionSymbolStart: 1 }),
-      ...buildElectionConstituencyNoms({ prefix: P, electionIdSuffix: 'el-2', constituencyIdSuffix: 'co-1a', candidateIdSuffixes: ['ca-1-1a', 'ca-2-1a'], electionSymbolStart: 10 })
+      ...buildElectionConstituencyNoms({ prefix: P, electionIdSuffix: 'el-1', constituencyIdSuffix: 'co-1b', candidateIdSuffixes: ['ca-1-1b', 'ca-2-1b'], electionSymbolStart: 10 }),
+      ...buildElectionConstituencyNoms({ prefix: P, electionIdSuffix: 'el-2', constituencyIdSuffix: 'co-1a', candidateIdSuffixes: ['ca-1-1a', 'ca-2-1a'], electionSymbolStart: 20 }),
+      ...buildElectionConstituencyNoms({ prefix: P, electionIdSuffix: 'el-2', constituencyIdSuffix: 'co-1b', candidateIdSuffixes: ['ca-1-1b', 'ca-2-1b'], electionSymbolStart: 30 })
     ]
   },
 
@@ -121,4 +121,4 @@ export const permDisableElection1coTemplate: Template = {
   }
 };
 
-export default permDisableElection1coTemplate;
+export default permDisableElection2coTemplate;

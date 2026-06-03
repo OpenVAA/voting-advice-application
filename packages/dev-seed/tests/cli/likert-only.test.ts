@@ -110,13 +110,14 @@ describe('applyLikertOnlyFilter (CLEAN-05 Path B)', () => {
     expect(ids).toContain('orphan-ordinal'); // unknown category → opinion → ordinal kept
   });
 
-  it('produces a Likert-only-compatible question set for the actual e2e template (smoke)', async () => {
-    // Smoke against the real e2e template — confirms the filter survives the
-    // Phase 76 + 77 question additions (info questions preserved; non-ordinal
-    // opinion questions dropped).
-    const { e2eTemplate } = await import('../../src/templates/e2e');
+  it('produces a Likert-only-compatible question set for the canonical base template (smoke)', async () => {
+    // Smoke against the canonical `e2e/base` template (formerly the e2e
+    // dataset, retired in Phase 93 Plan 02 / D-01) — confirms the filter
+    // preserves info questions and drops non-ordinal opinion questions
+    // against the surviving base dataset.
+    const { baseTemplate } = await import('../../src/templates/e2e/base');
     // Deep clone so the test doesn't mutate the shared exported template.
-    const tpl = JSON.parse(JSON.stringify(e2eTemplate)) as Template;
+    const tpl = JSON.parse(JSON.stringify(baseTemplate)) as Template;
     const stats = applyLikertOnlyFilter(tpl);
     expect(stats.applied).toBe(true);
 
@@ -138,9 +139,19 @@ describe('applyLikertOnlyFilter (CLEAN-05 Path B)', () => {
       }
     }
 
-    // The e2e template ships 16 singleChoiceOrdinal opinion questions at HEAD;
-    // assert we kept exactly those (no over-drop, no over-keep).
+    // Every surviving opinion question must be singleChoiceOrdinal, and the
+    // filter must have kept ALL of the base dataset's ordinal opinion
+    // questions (no over-drop / over-keep). Derive the expected count from
+    // the unfiltered base template rather than hardcoding it.
+    const baseQuestions = (baseTemplate.questions!.fixed ?? []) as Array<{
+      type?: string;
+      category?: { external_id: string };
+    }>;
+    const expectedOrdinalCount = baseQuestions.filter(
+      (q) => q.type === 'singleChoiceOrdinal' && !infoCategoryIds.has(q.category!.external_id)
+    ).length;
+    expect(expectedOrdinalCount).toBeGreaterThan(0);
     const ordinalCount = fixed.filter((q) => q.type === 'singleChoiceOrdinal').length;
-    expect(ordinalCount).toBe(16);
+    expect(ordinalCount).toBe(expectedOrdinalCount);
   });
 });

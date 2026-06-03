@@ -70,8 +70,8 @@
  */
 
 import { LIKERT_5_EN } from './shared';
-import { buildMinimal } from '../_helpers/buildMinimal';
-import type { Template } from '../../template/types';
+import { buildMinimal } from '../../_helpers/buildMinimal';
+import type { Template } from '../../../template/types';
 
 const P = 'e2e-perm-l10n-pos-';
 

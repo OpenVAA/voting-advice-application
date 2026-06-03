@@ -18,8 +18,8 @@
  * navigation completion).
  */
 
-import { buildMinimal } from '../_helpers/buildMinimal';
-import type { Template } from '../../template/types';
+import { buildMinimal } from '../../_helpers/buildMinimal';
+import type { Template } from '../../../template/types';
 
 const P = 'e2e-perm-hide-all-noms-';
 

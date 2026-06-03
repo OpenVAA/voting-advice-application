@@ -33,10 +33,10 @@ import type { Template } from '../template/types';
  * Resolve a `--template` argument to a validated Template.
  *
  * @param arg The raw string passed to `--template`. May be a built-in name
- *            (e.g. `'default'`, `'e2e'`) or a filesystem path
+ *            (e.g. `'default'`, `'e2e/base'`) or a filesystem path
  *            (`'./my.ts'`, `'/abs/path.json'`, `'../rel.js'`).
  * @param builtIns Map of built-in template name => Template. Plan 05 passes
- *            an empty map (`{}`); Plan 06 populates `{ default, e2e }`.
+ *            an empty map (`{}`); Plan 06 populates `{ default, 'e2e/base' }`.
  */
 export async function resolveTemplate(
   arg: string,

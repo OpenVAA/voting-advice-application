@@ -4,7 +4,7 @@
  * topology perms).
  *
  * Authors a fresh `Template` object from the existing
- * `permutations/shared.ts` building blocks. The helper is a thin
+ * `e2e/perm/shared.ts` building blocks. The helper is a thin
  * compositional layer — it does NOT introduce new row shapes or new
  * external_id conventions. Every row it emits flows through the same
  * writer that consumes hand-authored perm templates.
@@ -47,7 +47,7 @@ import {
   buildQuestionCategories,
   LIKERT_5_EN,
   MINIMAL_BASE_APP_SETTINGS
-} from '../permutations/shared';
+} from '../e2e/perm/shared';
 import type { Template } from '../../template/types';
 
 /**

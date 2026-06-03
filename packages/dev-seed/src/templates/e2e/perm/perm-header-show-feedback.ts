@@ -17,8 +17,8 @@
  * `header-feedback` testid in the Banner; no candidate session needed.
  */
 
-import { buildMinimal } from '../_helpers/buildMinimal';
-import type { Template } from '../../template/types';
+import { buildMinimal } from '../../_helpers/buildMinimal';
+import type { Template } from '../../../template/types';
 
 const P = 'e2e-perm-header-feedback-';
 

@@ -14,45 +14,46 @@
  * the pipeline receives the per-template override map at `runPipeline(tpl, ov)`.
  */
 
-import { baseV1Template } from './baseV1';
 import { defaultOverrides, defaultTemplate } from './default';
-import { e2eTemplate } from './e2e';
-import { perm1e1cg1coTemplate } from './permutations/perm-1e1cg1co';
-import { perm2eAsymmetricTemplate } from './permutations/perm-2e-asymmetric';
-import { perm2eSharedTemplate } from './permutations/perm-2e-shared';
-import { permAnswersLockedTemplate } from './permutations/perm-answers-locked';
-import { permDisableAllowOpenTemplate } from './permutations/perm-disable-allow-open';
-import { permDisableCandidateAppTemplate } from './permutations/perm-disable-candidate-app';
-import { permDisableElection1coTemplate } from './permutations/perm-disable-election-1co';
-import { permDisableElection2coTemplate } from './permutations/perm-disable-election-2co';
-import { permDisableVoterAppTemplate } from './permutations/perm-disable-voter-app';
-import { permDisjoint1coTemplate } from './permutations/perm-disjoint-1co';
-import { permHeaderShowFeedbackTemplate } from './permutations/perm-header-show-feedback';
-import { permHeaderShowHelpTemplate } from './permutations/perm-header-show-help';
-import { permHideAllNominationsTemplate } from './permutations/perm-hide-all-nominations';
-import { permHideCategoryTagsTemplate } from './permutations/perm-hide-category-tags';
-import { permHideElectionTagsTemplate } from './permutations/perm-hide-election-tags';
-import { permHideHeroTemplate } from './permutations/perm-hide-hero';
-import { permHideIfMissingAnswersTemplate } from './permutations/perm-hide-if-missing-answers';
-import { permLocalisationPositiveTemplate } from './permutations/perm-localisation-positive';
-import { permMissingNominationsTemplate } from './permutations/perm-missing-nominations';
-import { permNotLocated2e2cgTemplate } from './permutations/perm-not-located-2e2cg';
-import { permPerAppNotificationsTemplate } from './permutations/perm-per-app-notifications';
-import { permStartfromcgTemplate } from './permutations/perm-startfromcg';
+import { baseTemplate } from './e2e/base';
+import { perm1e1cg1coTemplate } from './e2e/perm/perm-1e1cg1co';
+import { perm2eAsymmetricTemplate } from './e2e/perm/perm-2e-asymmetric';
+import { perm2eSharedTemplate } from './e2e/perm/perm-2e-shared';
+import { permAnswersLockedTemplate } from './e2e/perm/perm-answers-locked';
+import { permDisableAllowOpenTemplate } from './e2e/perm/perm-disable-allow-open';
+import { permDisableCandidateAppTemplate } from './e2e/perm/perm-disable-candidate-app';
+import { permDisableElection1coTemplate } from './e2e/perm/perm-disable-election-1co';
+import { permDisableElection2coTemplate } from './e2e/perm/perm-disable-election-2co';
+import { permDisableVoterAppTemplate } from './e2e/perm/perm-disable-voter-app';
+import { permDisjoint1coTemplate } from './e2e/perm/perm-disjoint-1co';
+import { permHeaderShowFeedbackTemplate } from './e2e/perm/perm-header-show-feedback';
+import { permHeaderShowHelpTemplate } from './e2e/perm/perm-header-show-help';
+import { permHideAllNominationsTemplate } from './e2e/perm/perm-hide-all-nominations';
+import { permHideCategoryTagsTemplate } from './e2e/perm/perm-hide-category-tags';
+import { permHideElectionTagsTemplate } from './e2e/perm/perm-hide-election-tags';
+import { permHideHeroTemplate } from './e2e/perm/perm-hide-hero';
+import { permHideIfMissingAnswersTemplate } from './e2e/perm/perm-hide-if-missing-answers';
+import { permLocalisationPositiveTemplate } from './e2e/perm/perm-localisation-positive';
+import { permMissingNominationsTemplate } from './e2e/perm/perm-missing-nominations';
+import { permNotLocated2e2cgTemplate } from './e2e/perm/perm-not-located-2e2cg';
+import { permPerAppNotificationsTemplate } from './e2e/perm/perm-per-app-notifications';
+import { permStartfromcgTemplate } from './e2e/perm/perm-startfromcg';
 import type { Template } from '../template/types';
 import type { Overrides } from '../types';
 
 /**
- * Built-in template name → Template. Plan 08 adds `e2e: e2eTemplate`.
- * Phase 88 Plan 01 adds `baseV1: baseV1Template` for the new mega-journey
- * (parallel landing alongside e2e per the parallel-setup principle).
+ * Built-in template name → Template. The canonical e2e base dataset is
+ * registered under the `e2e/base` invocation name (Phase 93 Plan 02 / D-01;
+ * formerly `baseV1`). The old bare `e2e` template name is RETIRED — its
+ * dataset was discarded and replaced by the base dataset.
  * Phase 88 Plan 03 adds 8 perm-* minimal-data templates for the new
  * election + constituency permutations test family (88-03-SCOPE.md:104-110).
+ * Per FLAG-4, the `perm-*` invocation KEYS stay FLAT even though the perm
+ * template files now live under `e2e/perm/*`.
  */
 export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   default: defaultTemplate,
-  e2e: e2eTemplate,
-  baseV1: baseV1Template,
+  'e2e/base': baseTemplate,
   'perm-1e1cg1co': perm1e1cg1coTemplate,
   'perm-2e-shared': perm2eSharedTemplate,
   'perm-2e-asymmetric': perm2eAsymmetricTemplate,
@@ -103,38 +104,36 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
  * Templates with no overrides register an empty object (`{}`) or are omitted
  * (`loadBuiltIns` falls back to `{}` when the key is missing).
  *
- * The `e2e` template (Plan 08) ships with NO overrides — every row is
- * expressed as a `fixed[]` entry authored from 58-E2E-AUDIT.md. Phase 56's
- * generators handle the fixed[] passthrough; no content-shaping override is
- * needed.
+ * The `e2e/base` template ships with NO overrides — every row is expressed as
+ * a `fixed[]` entry. Phase 56's generators handle the fixed[] passthrough; no
+ * content-shaping override is needed.
  */
 export const BUILT_IN_OVERRIDES: Record<string, Overrides> = {
   default: defaultOverrides
 };
 
 // Re-exports for explicit consumer imports.
-export { BASE_V1_APP_SETTINGS, baseV1Template } from './baseV1';
 export { defaultOverrides, defaultTemplate } from './default';
-export { E2E_BASE_APP_SETTINGS, e2eTemplate } from './e2e';
-export { perm1e1cg1coTemplate } from './permutations/perm-1e1cg1co';
-export { perm2eAsymmetricTemplate } from './permutations/perm-2e-asymmetric';
-export { perm2eSharedTemplate } from './permutations/perm-2e-shared';
-export { permAnswersLockedTemplate } from './permutations/perm-answers-locked';
-export { permDisableAllowOpenTemplate } from './permutations/perm-disable-allow-open';
-export { permDisableCandidateAppTemplate } from './permutations/perm-disable-candidate-app';
-export { permDisableElection1coTemplate } from './permutations/perm-disable-election-1co';
-export { permDisableElection2coTemplate } from './permutations/perm-disable-election-2co';
-export { permDisableVoterAppTemplate } from './permutations/perm-disable-voter-app';
-export { permDisjoint1coTemplate } from './permutations/perm-disjoint-1co';
-export { permHeaderShowFeedbackTemplate } from './permutations/perm-header-show-feedback';
-export { permHeaderShowHelpTemplate } from './permutations/perm-header-show-help';
-export { permHideAllNominationsTemplate } from './permutations/perm-hide-all-nominations';
-export { permHideCategoryTagsTemplate } from './permutations/perm-hide-category-tags';
-export { permHideElectionTagsTemplate } from './permutations/perm-hide-election-tags';
-export { permHideHeroTemplate } from './permutations/perm-hide-hero';
-export { permHideIfMissingAnswersTemplate } from './permutations/perm-hide-if-missing-answers';
-export { permLocalisationPositiveTemplate } from './permutations/perm-localisation-positive';
-export { permMissingNominationsTemplate } from './permutations/perm-missing-nominations';
-export { permNotLocated2e2cgTemplate } from './permutations/perm-not-located-2e2cg';
-export { permPerAppNotificationsTemplate } from './permutations/perm-per-app-notifications';
-export { permStartfromcgTemplate } from './permutations/perm-startfromcg';
+export { BASE_APP_SETTINGS, baseTemplate } from './e2e/base';
+export { perm1e1cg1coTemplate } from './e2e/perm/perm-1e1cg1co';
+export { perm2eAsymmetricTemplate } from './e2e/perm/perm-2e-asymmetric';
+export { perm2eSharedTemplate } from './e2e/perm/perm-2e-shared';
+export { permAnswersLockedTemplate } from './e2e/perm/perm-answers-locked';
+export { permDisableAllowOpenTemplate } from './e2e/perm/perm-disable-allow-open';
+export { permDisableCandidateAppTemplate } from './e2e/perm/perm-disable-candidate-app';
+export { permDisableElection1coTemplate } from './e2e/perm/perm-disable-election-1co';
+export { permDisableElection2coTemplate } from './e2e/perm/perm-disable-election-2co';
+export { permDisableVoterAppTemplate } from './e2e/perm/perm-disable-voter-app';
+export { permDisjoint1coTemplate } from './e2e/perm/perm-disjoint-1co';
+export { permHeaderShowFeedbackTemplate } from './e2e/perm/perm-header-show-feedback';
+export { permHeaderShowHelpTemplate } from './e2e/perm/perm-header-show-help';
+export { permHideAllNominationsTemplate } from './e2e/perm/perm-hide-all-nominations';
+export { permHideCategoryTagsTemplate } from './e2e/perm/perm-hide-category-tags';
+export { permHideElectionTagsTemplate } from './e2e/perm/perm-hide-election-tags';
+export { permHideHeroTemplate } from './e2e/perm/perm-hide-hero';
+export { permHideIfMissingAnswersTemplate } from './e2e/perm/perm-hide-if-missing-answers';
+export { permLocalisationPositiveTemplate } from './e2e/perm/perm-localisation-positive';
+export { permMissingNominationsTemplate } from './e2e/perm/perm-missing-nominations';
+export { permNotLocated2e2cgTemplate } from './e2e/perm/perm-not-located-2e2cg';
+export { permPerAppNotificationsTemplate } from './e2e/perm/perm-per-app-notifications';
+export { permStartfromcgTemplate } from './e2e/perm/perm-startfromcg';

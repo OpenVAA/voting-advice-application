@@ -84,11 +84,11 @@
  *
  * ## Settings
  *
- * `BASE_V1_APP_SETTINGS` (exported) is the verbatim object literal from
+ * `BASE_APP_SETTINGS` (exported) is the verbatim object literal from
  * refactor-doc:109-200; future variants compose via `mergeSettings(...)`.
  */
 
-import type { Template } from '../template/types';
+import type { Template } from '../../template/types';
 
 // ---------------------------------------------------------------------------
 // Choice arrays
@@ -142,7 +142,7 @@ const INFO_SINGLE_CATEGORICAL_EN: Array<{ id: string; label: { en: string } }> =
 // Settings — refactor-doc:109-200 verbatim
 // ---------------------------------------------------------------------------
 
-export const BASE_V1_APP_SETTINGS = {
+export const BASE_APP_SETTINGS = {
   entityDetails: {
     contents: {
       candidate: ['info', 'opinions'],
@@ -344,7 +344,7 @@ const GENERIC: Record<string, { value: unknown }> = {
 // Template
 // ---------------------------------------------------------------------------
 
-export const baseV1Template: Template = {
+export const baseTemplate: Template = {
   seed: 42,
   externalIdPrefix: '',
   generateTranslationsForAllLocales: false,
@@ -1796,10 +1796,10 @@ export const baseV1Template: Template = {
     fixed: [
       {
         external_id: 'test-app-settings-baseV1',
-        settings: BASE_V1_APP_SETTINGS
+        settings: BASE_APP_SETTINGS
       }
     ]
   }
 };
 
-export default baseV1Template;
+export default baseTemplate;

@@ -34,8 +34,8 @@
  * `[EL2] Election 2` both contain the substring markers verbatim.
  */
 
-import { buildMinimal } from '../_helpers/buildMinimal';
-import type { Template } from '../../template/types';
+import { buildMinimal } from '../../_helpers/buildMinimal';
+import type { Template } from '../../../template/types';
 
 const P = 'e2e-perm-missnoms-';
 

@@ -1,10 +1,10 @@
 #!/usr/bin/env npx tsx
 /**
  * Standalone manual-dev entry to seed the local Supabase database with the
- * Phase 58 e2e built-in template.
+ * canonical `e2e/base` built-in template.
  *
- * Equivalent to `yarn dev:seed --template e2e` (from the repo root); kept as a
- * convenience wrapper because it loads the repo-root .env the same way the
+ * Equivalent to `yarn db:seed --template e2e/base` (from the repo root); kept
+ * as a convenience wrapper because it loads the repo-root .env the same way the
  * Playwright harness does (dotenv.config()) and exits with a clear message on
  * seed-path failures.
  *
@@ -19,9 +19,9 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 async function seed() {
-  const template = BUILT_IN_TEMPLATES.e2e;
-  if (!template) throw new Error('BUILT_IN_TEMPLATES.e2e is undefined — Phase 58 regression?');
-  const overrides = BUILT_IN_OVERRIDES.e2e ?? {};
+  const template = BUILT_IN_TEMPLATES['e2e/base'];
+  if (!template) throw new Error("BUILT_IN_TEMPLATES['e2e/base'] is undefined — Phase 93 regression?");
+  const overrides = BUILT_IN_OVERRIDES['e2e/base'] ?? {};
   const seed = template.seed ?? 42;
   const prefix = template.externalIdPrefix ?? '';
   const rows = runPipeline(template, overrides);
