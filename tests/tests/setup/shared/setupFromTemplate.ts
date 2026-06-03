@@ -137,7 +137,7 @@ export async function setupFromTemplate(
   const overrides = BUILT_IN_OVERRIDES[templateName] ?? {};
   const seed = template!.seed ?? 42;
   // Writer prefix — passed to writer.write(rows, prefix). Templates that
-  // emit pre-prefixed external_ids (e2e + base) declare `externalIdPrefix: ''`
+  // emit pre-prefixed external_ids (e2e/base) declare `externalIdPrefix: ''`
   // so the writer's `${externalIdPrefix}${fx.external_id}` pass-through is a
   // no-op. Generated rows prepend the prefix.
   const prefix = template!.externalIdPrefix ?? '';

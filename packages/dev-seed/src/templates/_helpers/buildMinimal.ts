@@ -149,7 +149,7 @@ function deepMerge<TRow extends Record<string, unknown>>(
 /**
  * Build the default answer entry for a question of the given shape:
  *   - info (`text`) → `{ value: { en: '[<extId>] desc' } }`
- *   - opinion (`singleChoiceOrdinal` / Likert5) → `{ value: '3' }` (neutral)
+ *   - opinion (`singleChoiceOrdinal` / Likert5) → `{ value: choices[middle].id }` (median; Likert-5 resolves to `'3'`)
  *   - opinion (`boolean`) → `{ value: true }`
  *   - opinion categorical → `{ value: <first-category-id> }`
  */
