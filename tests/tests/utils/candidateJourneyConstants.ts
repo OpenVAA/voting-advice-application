@@ -3,7 +3,7 @@
  *
  * Single source of truth for:
  *   - Unregistered candidate identity (email + external_id) — the
- *     `test-ca-aa-unregistered` row in the `e2e/base` dataset (Phase 89
+ *     `test-e2e-base-ca-aa-unregistered` row in the `e2e/base` dataset (Phase 89
  *     Plan 01) has NO `email` column (Wave 0 R8 verdict: candidates table
  *     has no email);
  *     this file is therefore the canonical home for the candidate's email
@@ -27,7 +27,7 @@
  */
 
 /**
- * Email for the unregistered candidate (`test-ca-aa-unregistered` in the
+ * Email for the unregistered candidate (`test-e2e-base-ca-aa-unregistered` in the
  * `e2e/base` dataset).
  *
  * Per Phase 89 Plan 01 Wave 0 R8 verdict, the candidates table has NO email
@@ -53,7 +53,7 @@ export const UNREGISTERED_CANDIDATE_EMAIL = 'unregistered-aa@test.openvaa.local'
  * in Phase 89 Plan 01 per TIR4:82-90; relocated e2e/base.ts→e2e/base.ts in
  * Phase 93 Plan 02).
  */
-export const UNREGISTERED_CANDIDATE_EXTERNAL_ID = 'test-ca-aa-unregistered';
+export const UNREGISTERED_CANDIDATE_EXTERNAL_ID = 'test-e2e-base-ca-aa-unregistered';
 
 /**
  * Initial password set via the registration-link PasswordSetter flow.
@@ -87,8 +87,16 @@ export const OPEN_ANSWER_1_EDITED = '[OPEN-1-EDITED] My revised take.';
  * Map of info-question externalId → value for filling the candidate
  * profile in step 13.
  *
- * Keys correspond to `test-qu-info-*` rows in the `e2e/base` dataset
- * (`packages/dev-seed/src/templates/e2e/base.ts`). Step 13 fills ALL listed
+ * IMPORTANT: these keys are deliberately `test-qu-info-*`, NOT the DB
+ * external_ids (`test-e2e-base-qu-info-*`). They are internal map keys that
+ * the spec consumes via `externalId.replace(/^test-/, '')` →
+ * `qu-info-*`, then matches the RENDERED question name label
+ * `[qu-info-*]` (base.ts question `name` tokens, e.g. `[qu-info-text] Info: …`).
+ * Rewriting them to the `test-e2e-base-` prefix would make `.replace(/^test-/)`
+ * yield `e2e-base-qu-info-*` and break the label regex — so they are EXCLUDED
+ * from the Phase 93 D-05 prefix migration on purpose.
+ *
+ * Step 13 fills ALL listed
  * answers EXCEPT
  * `test-qu-info-text` (the required one — deliberately left blank to
  * exercise the required-empty submit-disabled gate) AND the first listed

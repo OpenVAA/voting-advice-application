@@ -25,14 +25,22 @@ let uuidCache: { electionUuids: Array<string>; constituencyUuids: Array<string> 
 async function resolveSeedUuids(): Promise<{ electionUuids: Array<string>; constituencyUuids: Array<string> }> {
   if (uuidCache) return uuidCache;
   const client = new SupabaseAdminClient();
-  const e1 = await client.findData('elections', { externalId: { $eq: 'test-election-1' } });
-  const e2 = await client.findData('elections', { externalId: { $eq: 'test-election-2' } });
-  // Pick the first leaf-constituency in each group (e2 belongs to the
-  // Municipalities group; alpha is the Region for election-1). With perfect
-  // hierarchy alpha is auto-implied from e2, but providing both keeps the
-  // bypass URL valid even if a variant breaks the hierarchy.
-  const cAlpha = await client.findData('constituencies', { externalId: { $eq: 'test-constituency-alpha' } });
-  const cE2 = await client.findData('constituencies', { externalId: { $eq: 'test-constituency-e2' } });
+  // Phase 93 D-05 prefix migration: the old e2e dataset's `test-election-1` /
+  // `test-election-2` / `test-constituency-alpha` / `test-constituency-e2`
+  // external_ids were retired with the `e2e.ts` template. The merged base
+  // dataset (`e2e/base`) seeds `test-e2e-base-el-reg` (Regional) +
+  // `test-e2e-base-el-mun` (Municipal) elections, with `cg-reg`→{co-reg-n,
+  // co-reg-s} and `cg-mun`→{co-mun-ne…sw}. The fallback URL needs one
+  // constituency per election: `co-reg-n` (Regional leaf) + `co-mun-ne`
+  // (Municipal leaf, child of co-reg-n).
+  const e1 = await client.findData('elections', { externalId: { $eq: 'test-e2e-base-el-reg' } });
+  const e2 = await client.findData('elections', { externalId: { $eq: 'test-e2e-base-el-mun' } });
+  // Pick one leaf-constituency per election (Regional + Municipal). With
+  // perfect hierarchy the Regional one is auto-implied from the Municipal
+  // leaf, but providing both keeps the bypass URL valid even if a variant
+  // breaks the hierarchy.
+  const cAlpha = await client.findData('constituencies', { externalId: { $eq: 'test-e2e-base-co-reg-n' } });
+  const cE2 = await client.findData('constituencies', { externalId: { $eq: 'test-e2e-base-co-mun-ne' } });
   uuidCache = {
     electionUuids: [e1.data?.[0]?.id, e2.data?.[0]?.id].filter((id): id is string => Boolean(id)),
     constituencyUuids: [cAlpha.data?.[0]?.id, cE2.data?.[0]?.id].filter((id): id is string => Boolean(id))
