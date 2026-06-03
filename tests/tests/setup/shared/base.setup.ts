@@ -1,6 +1,5 @@
 /**
- * base data-setup project — Phase 88 Plan 01 Task 5; renamed base→base in
- * Phase 93 Plan 04 (D-10) and decoupled from the perm anchor (FLAG-6).
+ * base data-setup project, decoupled from the perm anchor.
  *
  * Invokes the generic `setupFromTemplate('e2e/base')` helper to seed the
  * canonical base dataset. Runs under the dedicated `data-setup-base`
@@ -18,13 +17,12 @@ import { setupFromTemplate } from './setupFromTemplate';
 
 setup('import base dataset', async () => {
   // `extraTeardownPrefix: 'e2e-perm-'` defensively wipes any residual perm-*
-  // family rows before seeding the base dataset. Phase 93 Plan 04 (FLAG-6)
-  // DECOUPLED `data-setup-base` from the perm anchor, so the base chain no
-  // longer waits on the perm family. This pre-clear is retained as a
-  // belt-and-braces guard: it is an idempotent wipe of a DIFFERENT prefix
-  // namespace (`e2e-perm-`, never the base `test-` rows), so it is safe and
-  // keeps the base dataset deterministic even if a perm chain ran earlier in
-  // the same DB session and left rows (same `[EL1] Region election` /
+  // family rows before seeding the base dataset. `data-setup-base` is decoupled
+  // from the perm anchor, so the base chain no longer waits on the perm family.
+  // This pre-clear is a belt-and-braces guard: it is an idempotent wipe of a
+  // DIFFERENT prefix namespace (`e2e-perm-`, never the base `test-` rows), so it
+  // is safe and keeps the base dataset deterministic even if a perm chain ran
+  // earlier in the same DB session and left rows (same `[EL1] Region election` /
   // `[EL2] Municipal election` names as perm-not-located-2e2cg).
   await setupFromTemplate('e2e/base', { extraTeardownPrefix: 'e2e-perm-' });
 });

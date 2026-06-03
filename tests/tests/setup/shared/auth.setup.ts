@@ -14,11 +14,11 @@ const authFile = path.join(currentDir, '../../../playwright/.auth/user.json');
  * Wait for the candidate-app login form to be visible, reloading up to
  * `maxAttempts - 1` times if the backend is cold-starting.
  *
- * Module-level helper hoisted out of the setup body (RESEARCH Pattern 4
- * canonical 3) so playwright/no-conditional-in-test holds for the setup
- * callback itself. The `attempt < maxAttempts - 1` branch is a legitimate
- * retry-vs-fail dispatch on settled state (the previous waitFor already
- * timed out before we reach the branch) — not a race-mask.
+ * Module-level helper hoisted out of the setup body so
+ * playwright/no-conditional-in-test holds for the setup callback itself. The
+ * `attempt < maxAttempts - 1` branch is a legitimate retry-vs-fail dispatch on
+ * settled state (the previous waitFor already timed out before we reach the
+ * branch) — not a race-mask.
  */
 async function waitForLoginForm(page: Page, loginRoute: string, emailTestId: string, maxAttempts = 3): Promise<void> {
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -29,17 +29,11 @@ async function waitForLoginForm(page: Page, loginRoute: string, emailTestId: str
       return; // Login form appeared
     } catch {
       if (attempt < maxAttempts - 1) {
-        // reason: Phase 78 CLEAN-05 WR-04 — the prior `page.reload(...)` call
-        //   here was wasted work. The next loop iteration starts with another
-        //   `page.goto(loginRoute, ...)` (line 30) which fully replaces the
-        //   page state — reloading first added an extra network round-trip
-        //   without observable effect. Fall through to the next iteration's
-        //   goto() instead.
-        //
-        //   LANDMINE-2: this fix is code-quality only. It does NOT resolve
-        //   a cascading race in the profile-load chain that Phase
-        //   76/77 deferred — the cascade is a separate concern (race in the
-        //   profile-load chain), tracked separately for v2.10+.
+        // reason: no `page.reload(...)` here — the next loop iteration starts
+        //   with another `page.goto(loginRoute, ...)` which fully replaces the
+        //   page state, so reloading first would add an extra network
+        //   round-trip without observable effect. Fall through to the next
+        //   iteration's goto() instead.
       } else {
         // Final attempt failed
         throw new Error(
@@ -76,7 +70,7 @@ setup('authenticate as candidate', async ({ page }) => {
   // especially when running parallel with voter tests.
   //
   // The retry-with-reload loop is hoisted to `waitForLoginForm` (module-level)
-  // so the setup body stays conditional-free (RESEARCH Pattern 4 canonical 3).
+  // so the setup body stays conditional-free.
   const candidateHome = buildRoute({ route: 'CandAppHome', locale: 'en' });
   await waitForLoginForm(page, candidateHome, testIds.candidate.login.email);
 

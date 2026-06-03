@@ -1,8 +1,7 @@
 /**
- * Vitest config for `tests/` test-utility unit tests (Phase 91 Plan 91-01
- * Task 3). Restricted to `tests/utils/**\/*.test.ts` so we do NOT pick up
- * the Playwright spec files in `tests/specs/**` (those are e2e tests run by
- * Playwright, NOT vitest).
+ * Vitest config for `tests/` test-utility unit tests. Restricted to
+ * `tests/utils/**\/*.test.ts` so we do NOT pick up the Playwright spec files in
+ * `tests/specs/**` (those are e2e tests run by Playwright, NOT vitest).
  *
  * Note: this config is NOT yet listed in the root `vitest.workspace.ts`
  * (which currently only includes `packages/**`). Authors who add a tests

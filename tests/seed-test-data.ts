@@ -20,7 +20,7 @@ dotenv.config();
 
 async function seed() {
   const template = BUILT_IN_TEMPLATES['e2e/base'];
-  if (!template) throw new Error("BUILT_IN_TEMPLATES['e2e/base'] is undefined — Phase 93 regression?");
+  if (!template) throw new Error("BUILT_IN_TEMPLATES['e2e/base'] is undefined — template registry corrupt");
   const overrides = BUILT_IN_OVERRIDES['e2e/base'] ?? {};
   const seed = template.seed ?? 42;
   const prefix = template.externalIdPrefix ?? '';

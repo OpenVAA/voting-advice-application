@@ -1,12 +1,10 @@
 /**
- * base data-teardown project — Phase 88 Plan 01 Task 5; renamed
- * base→base in Phase 93 Plan 04 (D-10).
+ * base data-teardown project.
  *
- * Scoped to PREFIX='test-e2e-base-' (Phase 93 D-05 canonical prefix).
- * runTeardown is idempotent so the prefix-collision risk documented in the
- * Plan 88-01 Risk #4 is mitigated by Playwright's project-graph sequencing:
- * this teardown is wired via the `teardown:` key on `data-setup-base`, so it
- * runs ONLY after the base/journey projects complete.
+ * Scoped to PREFIX='test-e2e-base-' (canonical prefix). runTeardown is
+ * idempotent so the prefix-collision risk is mitigated by Playwright's
+ * project-graph sequencing: this teardown is wired via the `teardown:` key on
+ * `data-setup-base`, so it runs ONLY after the base/journey projects complete.
  *
  * No auth unregister step — the voter-journey is voter-only and does not
  * authenticate any candidate; the base chain runs no auth setup, so cleanup

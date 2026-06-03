@@ -19,19 +19,18 @@ export default [
       // No test.only in committed code
       'playwright/no-focused-test': 'error',
 
-      // === Phase 73 lint-gate bump (was 'warn'; final-step of 2026-05-10-tests-playwright-hygiene-sweep.md) ===
-      // Phase 73 Plans 02-05 cleared all 101 warnings; Plan 06 enforces 0/0 at CI time.
-      // Bank-auth has 3 inline-justified test.skip directives in candidate-bank-auth.spec.ts
-      // per CONTEXT D-07 + Plan 04 D-07 — each preceded by `// eslint-disable-next-line
-      // playwright/no-skipped-test` with `// reason:` block. These per-line disables MUST
-      // survive this bump.
-      // === Phase 92 WS1 D-01: forbidden-locator hardening ===
+      // === Lint-gate hard enforcement (0/0 warnings at CI time) ===
+      // Bank-auth has 3 inline-justified test.skip directives in
+      // candidate-bank-auth.spec.ts — each preceded by `// eslint-disable-next-line
+      // playwright/no-skipped-test` with a `// reason:` block. These per-line
+      // disables MUST survive.
+      // === Forbidden-locator hardening ===
       // `no-raw-locators` only catches string-arg `.locator()` and misses
       // `getByText` + non-string `.locator()` args. `no-restricted-locators`
       // matches ANY member-call whose property name is listed — catching bare
       // `page.locator(...)`, chained `.locator(...)`, and `getByText(...)`.
-      // `getByRole`/`getByTestId` are intentionally NOT listed (D-02 keeps them
-      // allowed). Locale-stable exceptions carry an inline `// reason:` block +
+      // `getByRole`/`getByTestId` are intentionally NOT listed (kept allowed).
+      // Locale-stable exceptions carry an inline `// reason:` block +
       // `// eslint-disable-next-line playwright/no-restricted-locators`.
       'playwright/no-restricted-locators': [
         'error',
@@ -63,7 +62,7 @@ export default [
         { assertFunctionPatterns: ['^expect[A-Z]', '^assert[A-Z]'] }
       ],
 
-      // === Other plugin warning rules (aspirational; not bumped in Phase 73) ===
+      // === Other plugin warning rules (aspirational) ===
       // Prefer web-first assertions (toBeVisible over manual checks)
       'playwright/prefer-web-first-assertions': 'warn',
       // No page.pause() in committed code
@@ -79,7 +78,7 @@ export default [
     }
   },
   {
-    // === Phase 92 WS1: setup/teardown projects are not assertion tests ===
+    // === setup/teardown projects are not assertion tests ===
     // Files run under Playwright `setup`/`teardown` projects seed or clean the
     // DB; they intentionally perform side effects (and may branch on
     // filesystem/DB state) rather than asserting. The test-assertion-semantics
