@@ -12,22 +12,23 @@ export const STORAGE_STATE = path.join(TESTS_DIR, '../playwright/.auth/user.json
  * Playwright configuration with project dependencies pattern.
  *
  * The 2026-06-02 cleanup removed the deprecated candidate-app / voter-app /
- * variant chains and their specs. The surviving suite is:
+ * variant chains and their specs. Phase 93 Plan 04 renamed the journey chains
+ * (D-09/D-10/D-11) and merged the two base-seeding paths into one (D-06). The
+ * surviving suite is:
  *
- *   - mega-journey chain: data-setup-baseV1 -> voter-mega-journey
- *     + data-setup-candidate-mega -> candidate-mega-journey
+ *   - journey chains: data-setup-base -> voter-journey
+ *     + data-setup-candidate-journey -> candidate-journey
  *   - perm-* family: a single sequential chain anchored on
  *     data-setup-perm-1e1cg1co (HIGH-2 app_settings JSONB singleton — each
  *     perm setup clobbers the singleton, so the family runs serially).
  *   - opt-in specialized projects (env-gated, excluded from default
  *     `yarn test:e2e`): visual-regression (PLAYWRIGHT_VISUAL), performance
  *     (PLAYWRIGHT_PERF), a11y-smoke (PLAYWRIGHT_A11Y), bank-auth
- *     (PLAYWRIGHT_BANK_AUTH). These depend on the retained `data-setup`
- *     (e2e dataset) and, for visual/bank, `auth-setup` (candidate storageState).
+ *     (PLAYWRIGHT_BANK_AUTH). These depend on the merged `data-setup-base`
+ *     (e2e/base dataset) and, for visual, `auth-setup` (candidate storageState).
  *
- * `data-setup` / `data-teardown` / `auth-setup` are retained ONLY to back the
- * opt-in projects; they are dormant in the default run (no default project
- * depends on them).
+ * `auth-setup` is retained ONLY to back the visual opt-in project; it is
+ * dormant in the default run (no default project depends on it).
  *
  * See https://playwright.dev/docs/test-global-setup-teardown
  */
@@ -76,37 +77,37 @@ export default defineConfig({
   },
 
   projects: [
-    // === Shared base dataset + auth setup (opt-in only) ===
+    // === Shared base auth setup (opt-in only) ===
     //
-    // The pre-Phase-88 candidate-app / voter-app / variant chains were removed
-    // (2026-06-02 cleanup). `data-setup` / `data-teardown` / `auth-setup` are
-    // retained ONLY because the opt-in specialized projects below
-    // (visual-regression, performance, a11y-smoke, bank-auth) depend on the e2e
-    // dataset + candidate storageState. They are therefore declared ONLY when an
-    // opt-in flag is set — so the default `yarn test:e2e` (mega-journey chain +
-    // perm-* family) never seeds the e2e dataset, which would otherwise coexist
-    // with the baseV1 / perm datasets and pollute result lists.
-    ...(process.env.PLAYWRIGHT_VISUAL ||
-    process.env.PLAYWRIGHT_PERF ||
-    process.env.PLAYWRIGHT_A11Y ||
-    process.env.PLAYWRIGHT_BANK_AUTH
+    // Phase 93 Plan 04 (D-06) MERGED the old `data-setup` / `data-teardown`
+    // (bare-`e2e` dataset) into the single base chain (`data-setup-base` /
+    // `data-teardown-base`). The opt-in specialized projects
+    // below (visual-regression, performance, a11y-smoke, bank-auth) now depend
+    // on `data-setup-base` for their seed; `auth-setup` (candidate
+    // storageState) depends on it too. `auth-setup` is declared ONLY when an
+    // opt-in flag is set, so the default `yarn test:e2e` (voter/candidate
+    // journeys + perm-* family) never runs the candidate-login storageState
+    // step.
+    //
+    // NOTE (D-06 deferred): the merged base dataset (`e2e/base`) does not seed
+    // a `test-candidate-alpha` row and base candidates carry no email column,
+    // so `auth-setup`'s UI-login step has no registered base candidate to
+    // authenticate as. The dependency repoint keeps the graph resolving; a
+    // follow-up plan rewiring the opt-in/auth chain against base must establish
+    // a registered base-candidate + email (forceRegister) contract before the
+    // visual opt-in run can pass.
+    //
+    // Only `visual-regression` consumes the candidate storageState, so
+    // `auth-setup` is declared under PLAYWRIGHT_VISUAL alone (perf / a11y /
+    // bank-auth depend on `data-setup-base` directly, not on auth-setup).
+    ...(process.env.PLAYWRIGHT_VISUAL
       ? [
-          // 1. Data setup - imports test dataset via Supabase Admin Client
-          {
-            name: 'data-setup',
-            testMatch: /data\.setup\.ts/,
-            teardown: 'data-teardown'
-          },
-          // 2. Data teardown - cleans up after all tests complete
-          {
-            name: 'data-teardown',
-            testMatch: /data\.teardown\.ts/
-          },
-          // 3. Auth setup - logs in as candidate, saves storageState (depends on data being loaded)
+          // Auth setup - logs in as candidate, saves storageState (depends on
+          // the merged base dataset being seeded).
           {
             name: 'auth-setup',
             testMatch: /auth\.setup\.ts/,
-            dependencies: ['data-setup']
+            dependencies: ['data-setup-base']
           }
         ]
       : []),
@@ -124,7 +125,7 @@ export default defineConfig({
             name: 'visual-regression',
             testDir: './tests/specs/visual',
             use: { ...devices['Desktop Chrome'] },
-            dependencies: ['data-setup', 'auth-setup']
+            dependencies: ['data-setup-base', 'auth-setup']
           }
         ]
       : []),
@@ -136,7 +137,7 @@ export default defineConfig({
             name: 'performance',
             testDir: './tests/specs/perf',
             use: { ...devices['Desktop Chrome'] },
-            dependencies: ['data-setup']
+            dependencies: ['data-setup-base']
           }
         ]
       : []),
@@ -149,7 +150,7 @@ export default defineConfig({
             name: 'a11y-smoke',
             testDir: './tests/specs/a11y',
             use: { ...devices['Desktop Chrome'] },
-            dependencies: ['data-setup']
+            dependencies: ['data-setup-base']
           }
         ]
       : []),
@@ -163,54 +164,50 @@ export default defineConfig({
             testDir: './tests/specs/candidate',
             testMatch: /candidate-bank-auth\.spec\.ts/,
             use: { ...devices['Desktop Chrome'] },
-            dependencies: ['data-setup']
+            dependencies: ['data-setup-base']
           }
         ]
       : []),
 
-    // === Phase 88 Plan 01 — mega-journey chain (ISOLATED) ===
+    // === Phase 88 Plan 01 — base / voter-journey chain ===
     //
-    // Appended AFTER all conditional opt-in projects (per Plan 88-01
-    // advisory A2). Runs the new baseV1 dataset + voter-mega-journey spec
-    // ALONGSIDE the existing suite. Existing project entries are untouched
-    // except for the surgical `testIgnore` extension on `voter-app` above
-    // (Risk #6 + Plan Task 5 documented exception).
+    // Renamed to the `base` / `voter-journey` keys in Phase 93 Plan 04
+    // (D-10/D-11), and DECOUPLED from the perm anchor (FLAG-6 / operator
+    // decision 2 — the merged base seeds independently; opt-in-only runs must
+    // work standalone).
     //
-    // Project graph (isolated — no cross-chain dependency):
-    //   data-setup-baseV1 → voter-mega-journey
-    //   data-setup-baseV1 ↦ data-teardown-baseV1 (via teardown: key)
+    // Project graph (independent — no cross-chain dependency):
+    //   data-setup-base → voter-journey
+    //   data-setup-base ↦ data-teardown-base (via teardown: key)
     //
-    // Shared PREFIX='test-' caveat (Plan Risk #4): running the
-    // voter-mega-journey project AT THE SAME TIME as the existing e2e
-    // chain (e.g. via a no-filter `yarn test:e2e` invocation under
-    // default workers) can race on the shared row prefix. Operator
-    // intent for 88-01 is to run the mega-journey chain IN ISOLATION
-    // via `--project=voter-mega-journey`. A future 88-NN plan
-    // decouples the prefixes (`'test-baseV1-'` vs `'test-e2e-'`) so
-    // both chains can co-run safely.
+    // FLAG-6 reasoning: `data-setup-base` previously anchored on
+    // `perm-not-located-2e2cg` so the perm family's
+    // `extraTeardownPrefix: ['test-', 'e2e-perm-']` could not wipe base
+    // `test-` rows mid-run. That anchor is DROPPED here so the base chain
+    // seeds standalone. The base setup retains a defensive
+    // `extraTeardownPrefix: 'e2e-perm-'` pre-clear (shared/base.setup.ts) —
+    // an idempotent wipe of the SEPARATE `e2e-perm-` namespace, never the
+    // base `test-` rows — so a perm chain that ran earlier in the same DB
+    // session cannot leak rows into the base dataset regardless of ordering.
     {
-      name: 'data-setup-baseV1',
-      testMatch: /baseV1\.setup\.ts/,
-      teardown: 'data-teardown-baseV1',
-      // Anchor the mega-journey chain AFTER the 88-03 perm-* family
-      // finishes — perm-not-located-2e2cg is the last spec in that chain.
-      // perm-*'s extraTeardownPrefix: ['test-', 'e2e-perm-'] would wipe
-      // baseV1 data if they ran in parallel; ordering perm-* first makes
-      // every perm spec see only its own e2e-perm-* data, and the final
-      // perm teardown leaves a clean DB for baseV1 to seed against.
-      dependencies: ['perm-not-located-2e2cg']
+      name: 'data-setup-base',
+      testMatch: /base\.setup\.ts/,
+      teardown: 'data-teardown-base'
+      // reason: perm-anchor dependency DROPPED (FLAG-6) — base seeds
+      // independently; cross-namespace isolation is enforced by the
+      // base setup's own `extraTeardownPrefix: 'e2e-perm-'` pre-clear.
     },
     {
-      name: 'data-teardown-baseV1',
-      testMatch: /baseV1\.teardown\.ts/
+      name: 'data-teardown-base',
+      testMatch: /base\.teardown\.ts/
     },
     {
-      name: 'voter-mega-journey',
+      name: 'voter-journey',
       testDir: './tests/specs/voter',
-      testMatch: /voter-mega-journey\.spec\.ts/,
+      testMatch: /voter-journey\.spec\.ts/,
       fullyParallel: false, // single-test serial journey
       use: { ...devices['Desktop Chrome'] },
-      dependencies: ['data-setup-baseV1']
+      dependencies: ['data-setup-base']
     },
 
     // === Phase 88 Plan 03 — voter permutations chains ===
@@ -224,7 +221,7 @@ export default defineConfig({
     //     to prevent app_settings singleton clobbering. The FIRST perm setup
     //     (data-setup-perm-1e1cg1co) has NO dependencies array — preserves
     //     "no cross-chain dependency to non-perm chains" (the perm-* family
-    //     runs in parallel with the existing default + variant + mega-journey
+    //     runs in parallel with the base / voter-journey / candidate-journey
     //     chains).
     //   - Each chain teardowns ITS OWN test-perm-<short>- prefix
     //     (parallel-only contract honored within the family).
@@ -244,11 +241,11 @@ export default defineConfig({
       name: 'data-setup-perm-1e1cg1co',
       testMatch: /perm-1e1cg1co\.setup\.ts/,
       teardown: 'data-teardown-perm-1e1cg1co'
-      // No upstream dep — perm-* runs FIRST in default mode. The legacy
-      // chain (PLAYWRIGHT_LEGACY=1) and the baseV1/mega-journey chain run
-      // AFTER perm-* finishes (baseV1 anchors on perm-not-located-2e2cg).
-      // This decouples perm-* from any pre-existing failures in
-      // mega-journey or the legacy suite while the operator refactors them.
+      // No upstream dep — perm-* runs FIRST in default mode. Phase 93 Plan 04
+      // (FLAG-6) DECOUPLED the base chain from the perm anchor, so the base /
+      // voter-journey / candidate-journey chains now run independently of the
+      // perm family (the base setup's own `extraTeardownPrefix: 'e2e-perm-'`
+      // pre-clear enforces cross-namespace isolation regardless of ordering).
     },
     {
       name: 'data-teardown-perm-1e1cg1co',
@@ -417,23 +414,25 @@ export default defineConfig({
       dependencies: ['data-setup-perm-not-located-2e2cg']
     },
 
-    // === Phase 89 Plan 03 — candidate mega-journey chain ===
+    // === Phase 89 Plan 03 — candidate-journey chain ===
     //
-    // REFACTORED 2026-05-31 to break the voter-mega-journey cascade-skip.
+    // REFACTORED 2026-05-31 to break the voter-journey cascade-skip;
+    // renamed to the `candidate-journey` + `base` keys in Phase 93 Plan 04
+    // (D-09/D-10/D-11).
     //
-    // BEFORE: `data-setup-candidate-mega.dependencies = ['voter-mega-
-    // journey']` enforced strict ordering because the setup re-seeded
-    // baseV1 via `runTeardown('test-')` which would race with voter-mega-
-    // journey's reads. Any voter-mega-journey failure cascade-skipped
-    // candidate-mega-journey + the entire 89-04 + 91 perm-* family.
+    // BEFORE: `data-setup-candidate-journey.dependencies = ['voter-journey']`
+    // enforced strict ordering because the setup re-seeded base via
+    // `runTeardown('test-')` which would race with voter-journey's reads. Any
+    // voter-journey failure cascade-skipped candidate-journey + the entire
+    // 89-04 + 91 perm-* family.
     //
-    // AFTER: candidate-mega-setup no longer re-seeds (see
-    // tests/tests/setup/candidate-mega.setup.ts). The chain consumes the
-    // baseV1 data already seeded by `data-setup-baseV1` and runs as a
-    // PARALLEL LEAF alongside voter-mega-journey. Neither cascade-skips
-    // the other on spec failure. Their teardowns are independent:
-    // baseV1.teardown owns the 'test-' row prefix; candidate-mega.teardown
-    // owns only the auth.users row created by the spec's registration step.
+    // AFTER: candidate-journey setup no longer re-seeds (see
+    // tests/tests/setup/candidate/candidate-journey.setup.ts). The chain
+    // consumes the base data already seeded by `data-setup-base` and runs as a
+    // PARALLEL LEAF alongside voter-journey. Neither cascade-skips the other on
+    // spec failure. Their teardowns are independent: base.teardown owns the
+    // 'test-' row prefix; candidate-journey.teardown owns only the auth.users
+    // row created by the spec's registration step.
     //
     // The setup still guarantees a clean auth.users row for
     // UNREGISTERED_CANDIDATE_EMAIL via idempotent `unregisterCandidate`,
@@ -443,31 +442,31 @@ export default defineConfig({
     // start UNAUTHENTICATED — required for the registration-via-email
     // flow (per R13 + candidate-registration.spec.ts:22 precedent).
     {
-      name: 'data-setup-candidate-mega',
-      testMatch: /candidate-mega\.setup\.ts/,
-      teardown: 'data-teardown-candidate-mega',
-      dependencies: ['data-setup-baseV1']
+      name: 'data-setup-candidate-journey',
+      testMatch: /candidate-journey\.setup\.ts/,
+      teardown: 'data-teardown-candidate-journey',
+      dependencies: ['data-setup-base']
     },
     {
-      name: 'data-teardown-candidate-mega',
-      testMatch: /candidate-mega\.teardown\.ts/
+      name: 'data-teardown-candidate-journey',
+      testMatch: /candidate-journey\.teardown\.ts/
     },
     {
-      name: 'candidate-mega-journey',
+      name: 'candidate-journey',
       testDir: './tests/specs/candidate',
-      testMatch: /candidate-mega-journey\.spec\.ts/,
+      testMatch: /candidate-journey\.spec\.ts/,
       fullyParallel: false, // single-test serial journey
       use: {
         ...devices['Desktop Chrome'],
         storageState: { cookies: [], origins: [] }
       },
-      dependencies: ['data-setup-candidate-mega']
+      dependencies: ['data-setup-candidate-journey']
     },
 
     // === Phase 89 Plan 04 — 3 settings-permutation chains (TIR4-PERM-01..03) ===
     //
-    // Sequenced AFTER candidate-mega-journey via dependencies on the
-    // candidate-mega-journey spec project, and chained sequentially among
+    // Sequenced AFTER candidate-journey via dependencies on the
+    // candidate-journey spec project, and chained sequentially among
     // themselves (perm-disable-voter-app → perm-disable-candidate-app →
     // perm-per-app-notifications) per 88-03 perm-* family precedent.
     //
@@ -476,12 +475,12 @@ export default defineConfig({
     // and each setup passes `extraTeardownPrefix: ['test-', 'e2e-perm-']`
     // to pre-clear any residual rows from prior chains still mid-teardown.
 
-    // Variant 1: perm-disable-voter-app (1 test) — sequential after candidate-mega-journey
+    // Variant 1: perm-disable-voter-app (1 test) — sequential after candidate-journey
     {
       name: 'data-setup-perm-disable-voter-app',
       testMatch: /perm-disable-voter-app\.setup\.ts/,
       teardown: 'data-teardown-perm-disable-voter-app',
-      dependencies: ['candidate-mega-journey']
+      dependencies: ['candidate-journey']
     },
     {
       name: 'data-teardown-perm-disable-voter-app',
