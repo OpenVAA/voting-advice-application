@@ -1,14 +1,14 @@
 /**
- * @file emailBucket fixture — Phase 89 Plan 02 (TIR4:58-63 + D-89-05).
+ * @file emailBucket fixture.
  *
  * Function-fixture wrapping the existing emailHelper.ts Mailpit utilities.
  * Sibling to other candidate-fixtures (candidateLoginPage.fixture.ts, etc.);
  * composed in `candidate-journey.ts`.
  *
- * D-89-05: this fixture WRAPS emailHelper.ts — it does NOT re-author the
- * Mailpit HTTP plumbing. emailHelper.ts STAYS in place for legacy specs.
+ * This fixture WRAPS emailHelper.ts — it does NOT re-author the Mailpit HTTP
+ * plumbing. emailHelper.ts STAYS in place for legacy specs.
  *
- * Surface (TIR4:60-63 verbatim signatures):
+ * Surface:
  *  - expectEmail(subject)              → polls Mailpit until a message with
  *                                        matching Subject arrives (15s timeout,
  *                                        [1000, 2000, 3000] retry intervals).
@@ -17,12 +17,12 @@
  *  - getLinksInEmail(subjectOrNth)     → array of href values (cheerio-parsed
  *                                        anchors from the email HTML).
  *
- * **Rigidity contract** (Phase 88 Plan 04 SCOPE acceptance #6):
+ * **Rigidity contract**:
  * - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
  *   `.catch(() => null)` on assertion-bearing locator interactions.
  *
  * SIBLING (not replacement) to emailHelper.ts. The two coexist until
- * emailHelper.ts is retired post-89-LAST (v2.10 close or v2.11+).
+ * emailHelper.ts is retired.
  */
 
 import { expect } from '@playwright/test';
@@ -145,7 +145,7 @@ export function createEmailBucket(_page: Page, recipientEmail: string) {
      * 0-indexed nth latest position (number). Polls until the target email
      * exists.
      *
-     * Polymorphic-overload dispatch per TIR4:62-63 "EXACTLY these signatures":
+     * Polymorphic-overload dispatch:
      *  - string | RegExp → subject match (returns the newest matching).
      *  - number          → nth latest (Mailpit returns newest-first).
      */

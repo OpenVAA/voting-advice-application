@@ -1,9 +1,8 @@
 /**
- * @file minimalVoterResultsPage fixture — Phase 93 Plan 03 (D-16, FLAG-5).
+ * @file minimalVoterResultsPage fixture.
  *
- * Extracted from `voter-journey.fixture.ts` (formerly `voter-journey.fixture.ts`)
- * so the minimal-dataset perm specs depend on a narrow, single-purpose
- * fixture rather than the full voter-journey composition root.
+ * A narrow, single-purpose fixture (separate from the full voter-journey
+ * composition root) for the minimal-dataset perm specs.
  *
  * `minimalVoterResultsPage` drives the robust race-based
  * `navigateToFirstQuestion` (`advanceVoterFlow`) traversal for the MINIMAL
@@ -13,10 +12,6 @@
  * DIRECTLY on the first question, so the intro start button never renders.
  * The race-based passer tolerates every missing intermediate page; the
  * hard-wait `walkUntilQuestionsIntro` (used by `answeredVoterPage`) does not.
- *
- * Behaviour is identical to the pre-extraction `minimalVoterResultsPage`
- * fixture body (CLEAN CUT, no rewrite): `navigateToFirstQuestion(page)` then
- * `answerAndAdvanceToResults(page, answerMode, answerCount)` then `use(page)`.
  *
  * Consumed by `perm-hide-if-missing-answers.spec.ts` +
  * `perm-disable-allow-open.spec.ts`.

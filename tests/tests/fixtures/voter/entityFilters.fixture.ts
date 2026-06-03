@@ -1,21 +1,20 @@
 /**
- * @file entityFilters fixture — Phase 88 Plan 04 T4.
+ * @file entityFilters fixture.
  *
- * Function-fixture that bundles the SCOPE T4 `entityFilters` +
- * `entityFilterDialog` + `entityFilter` surfaces into one factory per
- * 88-04-RESEARCH.md R-4 (the dialog + per-filter shapes are tightly
- * coupled — a single `getFilter()` lookup hands the caller a per-filter
- * shape that operates inside the open dialog).
+ * Function-fixture that bundles the `entityFilters` + `entityFilterDialog` +
+ * `entityFilter` surfaces into one factory (the dialog + per-filter shapes
+ * are tightly coupled — a single `getFilter()` lookup hands the caller a
+ * per-filter shape that operates inside the open dialog).
  *
- * **Rigidity contract** (SCOPE acceptance #6, identical to resultsPage):
+ * **Rigidity contract** (identical to resultsPage):
  * - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
  *   `.catch(() => null)` on assertion-bearing locator interactions.
  *
- * **Conditional rendering invariant** (88-04-RESEARCH R-7): the
- * `entity-list-filter` testid is set on TWO Buttons inside
- * EntityListControls.svelte (one for the active-filter-state variant at
- * line 128, one for the inactive variant at line 137). Only ONE is in the
- * DOM at any time — `.first()` is safe and is the documented pattern.
+ * **Conditional rendering invariant**: the `entity-list-filter` testid is
+ * set on TWO Buttons inside EntityListControls.svelte (one for the
+ * active-filter-state variant at line 128, one for the inactive variant at
+ * line 137). Only ONE is in the DOM at any time — `.first()` is safe and is
+ * the documented pattern.
  */
 
 import { expect } from '@playwright/test';
@@ -147,9 +146,9 @@ export function createEntityFilters(page: Page) {
         }
         // Auto-expand if collapsed. Expander uses a checkbox-toggle
         // internally; check the state and click to expand if needed.
-        // 88-04 WR-02: hard-assert toggle visibility (per fixture rigidity
-        // contract) before reading state — no `.catch(() => true)` swallowing
-        // a frontend regression that would surface as zero-options downstream.
+        // Hard-assert toggle visibility (per fixture rigidity contract) before
+        // reading state — no `.catch(() => true)` swallowing a frontend
+        // regression that would surface as zero-options downstream.
         const toggle = row.getByRole('checkbox', { name: /expand or collapse/i }).first();
         await expect(toggle).toBeVisible({ timeout: 2_000 });
         const isExpanded = await toggle.isChecked();
@@ -162,9 +161,8 @@ export function createEntityFilters(page: Page) {
       /**
        * Hard-assert the reset Button's disabled state.
        *
-       * 88-04-fix (post-SUMMARY): The Modal action snippet's
-       * `data-testid="entity-filter-dialog-apply"` /
-       * `data-testid="entity-filter-dialog-reset"` are wired on the
+       * The Modal action snippet's `data-testid="entity-filter-dialog-apply"`
+       * / `data-testid="entity-filter-dialog-reset"` are wired on the
        * `<Button>` component (which forwards via `concatClass(restProps,
        * classes)` to a `<svelte:element this="button">`). Empirically the
        * resulting testid-on-button lookup is unreliable inside the open
@@ -239,17 +237,17 @@ export function createEntityFilters(page: Page) {
     },
 
     /**
-     * Click the `entity-list-filter` Button (using `.first()` per R-7 — the
-     * two conditional-render variants share the testid but only one is in
-     * the DOM at a time). After clicking, hard-asserts the dialog is
-     * visible. Returns a dialog-scoped API.
+     * Click the `entity-list-filter` Button (using `.first()` — the two
+     * conditional-render variants share the testid but only one is in the
+     * DOM at a time). After clicking, hard-asserts the dialog is visible.
+     * Returns a dialog-scoped API.
      */
     async openFilterDialog(): Promise<ReturnType<typeof createDialog>> {
       const btn = page.getByTestId(testIds.voter.results.filterButton);
       await btn.first().click();
       // The Modal forwards the `entity-filter-dialog` testid via concatClass,
-      // but empirical runtime check (88-04 Task 9 integration) shows
-      // `getByTestId('entity-filter-dialog')` doesn't reliably resolve.
+      // but empirically `getByTestId('entity-filter-dialog')` doesn't reliably
+      // resolve.
       // Use role=dialog (the <dialog> element's implicit role) filtered by
       // accessible name 'Filters' (i18n key entityFilters.filters →
       // Modal `title` prop → <h2>). The Modal stays in DOM with the
@@ -264,17 +262,12 @@ export function createEntityFilters(page: Page) {
      * The filter button's badge surface. Returns the filter button itself
      * so callers can `toContainText(/<count>/)` against the rendered count.
      *
-     * 88-04 WR-04 (post-REVIEW): The Wave 1.5 testid surgery originally
-     * placed `data-testid="entity-list-filter-badge"` on a `<span>` wrapping
-     * `<InfoBadge>` inside the badge snippet at EntityListControls.svelte:130.
-     * Empirically the wrapping `<span>` did NOT survive Svelte 5's snippet
-     * compilation — the rendered DOM contained only the InfoBadge's inner
-     * `<div class="badge ...">` between the snippet anchor comments. Rather
-     * than chase the Svelte 5 snippet-wrapping bug, scope the assertion to
-     * the filter button itself (which has accessible name "<count> Filter"
-     * when active — the badge count is part of the button's textContent).
-     * The stranded `<span>` wrapper and its registry entry have since been
-     * removed (WR-04 cleanup).
+     * A `<span>` wrapping `<InfoBadge>` does NOT survive Svelte 5's snippet
+     * compilation — the rendered DOM contains only the InfoBadge's inner
+     * `<div class="badge ...">`. Rather than chase the Svelte 5
+     * snippet-wrapping behaviour, scope the assertion to the filter button
+     * itself (which has accessible name "<count> Filter" when active — the
+     * badge count is part of the button's textContent).
      */
     getFilterButtonBadge(): Locator {
       return page.getByTestId(testIds.voter.results.filterButton).first();

@@ -1,20 +1,13 @@
 /**
- * Voter journey fixture — Phase 88 Plan 01 Task 3.
+ * Voter journey fixture. The answering function is robust: the answer mode is
+ * 'min' or 'max' (first or last option, or min/max in numbers).
  *
- * Design source: TEST-INVENTORY-REFACTOR-1.md line 10
- *   - "Make the answering func robust so that the answer mode is 'min'
- *     or 'max' (first or last option, or min/max in numbers)"
+ * The walk diverges between two exposed pages AT the /questions intro page —
+ * `locatedVoterPage` STOPS at the intro page (DOES NOT answer questions; DOES
+ * NOT proceed to /results), while `answeredVoterPage` continues to answer +
+ * advance to /results.
  *
- * Phase 91 Plan 04 extension: `locatedVoterPage` fixture variant added to
- * support the a11y-smoke questions-route scan (D-91-RS-02b). The walk diverges
- * from `answeredVoterPage` AT the /questions intro page — `locatedVoterPage`
- * STOPS at the intro page (DOES NOT answer questions; DOES NOT proceed to
- * /results), while `answeredVoterPage` continues to answer + advance to
- * /results.
- *
- * This is the sole voter-walk fixture (the legacy single-election
- * voter.fixture.ts was removed in the 2026-06-02 cleanup along with its
- * consumer specs).
+ * This is the sole voter-walk fixture.
  *
  * What this fixture exposes:
  *   - `answerMode: 'min' | 'max'` — which extreme to pick on each
@@ -31,25 +24,22 @@
  *     election-select → constituency-select and PARKED ON the /questions
  *     intro page. Located (electionId + constituencyId resolved in voter
  *     context) but NOT answered. Consumed by a11y-smoke's `questions`
- *     route scan per D-91-RS-02b (Phase 91 Plan 04).
+ *     route scan.
  *
  * This fixture is wired against the BUILT_IN `e2e/base` dataset
  * (multi-election + multi-constituency hierarchy).
  *
  * The voter-journey spec uses the raw `page` for the pre-results
- * walkthrough (steps 9.1.x → 9.5.x intro-flow) so it can assert at
- * intermediate checkpoints; `answeredVoterPage` is intended for tests
- * that just need a results-landing fixture and don't care about the
- * intermediate steps.
+ * walkthrough (intro-flow steps) so it can assert at intermediate
+ * checkpoints; `answeredVoterPage` is intended for tests that just need a
+ * results-landing fixture and don't care about the intermediate steps.
  *
- * Implementation note (Phase 91 Plan 04): the two-fixture split was chosen
- * over an option-fixture `stopBeforeAnswering?: boolean` per RESEARCH
- * §"A11Y Route Refactor + locatedVoterPage Fixture Extension" — keeps
- * each fixture's invariant unambiguous at the call site, mirrors the
- * existing `answeredVoterPage` declaration shape. The shared traversal
- * code lives in `walkUntilQuestionsIntro` (Home → constituencies →
- * /questions intro page); `answeredVoterPage` then invokes
- * `answerAndAdvanceToResults` on top.
+ * Implementation note: the two-fixture split was chosen over an
+ * option-fixture `stopBeforeAnswering?: boolean` — it keeps each fixture's
+ * invariant unambiguous at the call site and mirrors the existing
+ * `answeredVoterPage` declaration shape. The shared traversal code lives in
+ * `walkUntilQuestionsIntro` (Home → constituencies → /questions intro page);
+ * `answeredVoterPage` then invokes `answerAndAdvanceToResults` on top.
  */
 
 import { test as base } from '@playwright/test';
@@ -73,8 +63,7 @@ type VoterJourneyFixtures = VoterJourneyFixtureOptions & {
   /**
    * A page parked ON the /questions intro page (located but NOT answered).
    * Walks Home → Intro → Elections → Constituencies → /questions intro and
-   * STOPS. Consumed by a11y-smoke for the questions-route scan
-   * (Phase 91 Plan 04 / D-91-RS-02b).
+   * STOPS. Consumed by a11y-smoke for the questions-route scan.
    */
   locatedVoterPage: Page;
 };
@@ -83,7 +72,7 @@ type VoterJourneyFixtures = VoterJourneyFixtureOptions & {
  * Shared traversal: walk Home → Intro → Elections → Constituencies and
  * land ON the /questions intro page. Used by BOTH `answeredVoterPage`
  * (which continues to answer + advance to /results) AND `locatedVoterPage`
- * (which stops here per D-91-RS-02b).
+ * (which stops here).
  *
  * Post-condition: page is on the /questions intro page; the
  * `voter-questions-start` button is visible AND has NOT been clicked.
@@ -151,9 +140,9 @@ async function walkUntilQuestionsIntro(page: Page): Promise<void> {
  *   - Likert (5/4/7): 'min' → first option; 'max' → last option.
  *   - singleChoiceCategorical: 'min' → first option; 'max' → last option.
  *   - Boolean: 'min' → 'No' (index 0); 'max' → 'Yes' (index 1).
- *   - Number (NOT expected in opinion questions per refactor-doc:38-44,
- *     but the helper is future-proof): 'min' → first option index 0;
- *     'max' → last option index (nth(-1)).
+ *   - Number (NOT expected in opinion questions, but the helper is
+ *     future-proof): 'min' → first option index 0; 'max' → last option
+ *     index (nth(-1)).
  */
 async function answerAndAdvanceToResults(
   page: Page,

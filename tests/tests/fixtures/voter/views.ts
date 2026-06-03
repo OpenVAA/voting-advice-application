@@ -1,15 +1,14 @@
 /**
- * @file Composition root for the TIR3 function-fixtures (Phase 88 Plan 04).
+ * @file Composition root for the voter-view function-fixtures.
  *
- * Consumed by `voter-journey.spec.ts` (Plan 88-04 T5-T8) and any
- * future perm-* specs that need the resultsPage / entityFilters /
- * entityDetails abstractions.
+ * Consumed by `voter-journey.spec.ts` and any perm-* specs that need the
+ * resultsPage / entityFilters / entityDetails abstractions.
  *
  * Usage:
  * ```ts
  * import { test, expect } from '../../fixtures/voter/views';
  *
- * test('result-card-contents', async ({ page, resultsPage }) => {
+ * test('result card contents', async ({ page, resultsPage }) => {
  *   await resultsPage.selectElection(/Regional/i);
  *   const cards = resultsPage.getEntityCards();
  *   await expect(cards.first()).toBeVisible();
@@ -39,9 +38,9 @@ type ViewFixtures = {
   resultsPage: ResultsPageFixture;
   entityFilters: EntityFiltersFixture;
   entityDetails: EntityDetailsFixture;
-  // Phase 92 Plan 03 (D-09): the net-new voter page fixtures carrying the
-  // goToPage(locale?) + expectPageVisible paradigm. Registered here so specs
-  // importing `test` from this root receive them by destructuring.
+  // Voter page fixtures carrying the goToPage(locale?) + expectPageVisible
+  // paradigm. Registered here so specs importing `test` from this root
+  // receive them by destructuring.
   voterHomePage: VoterHomePageFixture;
   voterIntroPage: VoterIntroPageFixture;
   voterQuestionsPage: VoterQuestionsPageFixture;

@@ -1,5 +1,5 @@
 /**
- * @file multilingualTextFieldFixture — Phase 90 Plan 03 (TIR5:28-50 + D-90-04).
+ * @file multilingualTextFieldFixture.
  *
  * Function-fixture for the multilingual surface of `Input.svelte`.
  *
@@ -9,13 +9,13 @@
  *  - `Input.svelte:646-660` — translation-options toggle Button (gated on
  *    `multilingual && locales.length > 1`).
  *
- * Plan 90-03 Task 1 added `data-testid="multilingual-toggle"` to the toggle
- * Button. The fixture scopes every assertion under a caller-supplied parent
- * Locator (e.g., the `candidate-profile-info-item` wrapper from
- * candidateProfilePage, or the `candidate-questions-comment` wrapper from
- * candidateQuestionPage's open-answer block).
+ * The toggle Button carries `data-testid="multilingual-toggle"`. The fixture
+ * scopes every assertion under a caller-supplied parent Locator (e.g., the
+ * `candidate-profile-info-item` wrapper from candidateProfilePage, or the
+ * `candidate-questions-comment` wrapper from candidateQuestionPage's
+ * open-answer block).
  *
- * Surface (D-90-04):
+ * Surface:
  *  - expectTranslationOptions(scope, visible)  — toggle Button visible OR
  *                                                 absent inside the scope.
  *  - openTranslations(scope)                    — click toggle to expand;
@@ -29,7 +29,7 @@
  *  - expectLocaleHidden(scope, locale)          — assert per-locale field is
  *                                                 not in the DOM.
  *
- * **Rigidity contract** (TIR5:5-13 + Phase 88 lineage):
+ * **Rigidity contract**:
  *  - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
  *    `.catch(() => null)` on assertion-bearing locator interactions.
  */

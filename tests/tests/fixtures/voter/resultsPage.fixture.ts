@@ -1,11 +1,11 @@
 /**
- * @file resultsPage fixture — Phase 88 Plan 04 T4.
+ * @file resultsPage fixture.
  *
  * Function-fixture that exposes a narrow `ResultsPageFixture` surface for the
  * voter results listing screen. Sibling to `entityFilters.fixture.ts` and
  * `entityDetails.fixture.ts`; composed in `tests/tests/fixtures/voter/views.ts`.
  *
- * **Rigidity contract** (Phase 88 Plan 04 SCOPE acceptance #6):
+ * **Rigidity contract**:
  * - NO `expect.soft` in any helper.
  * - NO `try/catch` wrapping `expect(...)`.
  * - NO best-effort `.catch(() => null)` on assertion-bearing locator
@@ -13,10 +13,10 @@
  *   purely best-effort cleanup helper and is explicitly documented as such;
  *   callers MUST follow it with a hard assertion on the desired post-state.
  *
- * **Caller-supplied locators / regexes / indexers** (Phase 88 Plan 04 R-10 —
- * fixture coupling guard): every method that targets a specific entity / tab
- * takes a `RegExp | string | ((count: number) => number)` from the caller.
- * NO hardcoded base-specific strings (e.g. `'Party AA'`) in fixture bodies.
+ * **Caller-supplied locators / regexes / indexers** (fixture coupling guard):
+ * every method that targets a specific entity / tab takes a
+ * `RegExp | string | ((count: number) => number)` from the caller. NO
+ * hardcoded base-specific strings (e.g. `'Party AA'`) in fixture bodies.
  */
 
 import { expect } from '@playwright/test';
@@ -70,7 +70,7 @@ export function createResultsPage(page: Page) {
 
   /**
    * Assert the results page is (not) visible via its results-list load anchor.
-   * Phase 92 Plan 03 (D-06/D-07): the canonical voter-page paradigm pair.
+   * The canonical voter-page paradigm pair.
    */
   async function expectPageVisible(visible = true): Promise<void> {
     await expect(page.getByTestId(testIds.voter.results.list)).toBeVisible({ visible, timeout: 5_000 });
@@ -79,8 +79,8 @@ export function createResultsPage(page: Page) {
   return {
     /**
      * Navigate to the voter results page (locale-aware) and assert it loaded.
-     * Phase 92 Plan 03 (D-06/D-08): requires an already-located voter session
-     * (an unlocated /results bounces through the selector chain).
+     * Requires an already-located voter session (an unlocated /results
+     * bounces through the selector chain).
      */
     async goToPage(locale = 'en'): Promise<void> {
       // buildRoute already returns a leading-slash path (e.g. '/results') with NO locale
@@ -96,9 +96,8 @@ export function createResultsPage(page: Page) {
      * Click the matching election option inside the
      * `voter-results-election-select` accordion.
      *
-     * Per Wave-0 Probe 4 (88-04-WAVE0-PROBES.txt): the inner clickable is
-     * a `<button role="option">` whose accessible name comes from the
-     * election's name field (post-T2: `[el-reg] Regional Election` etc.).
+     * The inner clickable is a `<button role="option">` whose accessible name
+     * comes from the election's name field (e.g. `[el-reg] Regional Election`).
      *
      * @param target accepted as RegExp / string (text match on the option's
      *   accessible name) OR a `(count) => index` indexer.
@@ -142,12 +141,11 @@ export function createResultsPage(page: Page) {
 
     /**
      * Outer entity-cards under the currently-active entity-tab section.
-     * After Phase 88 Plan 04 Wave 1.5 the EntityCard.svelte testid is
-     * conditional: outer cards carry `entity-card`, subcards carry
-     * `entity-card-subcard`. So `getByTestId('entity-card')` ALREADY
-     * excludes subcards — no `hasNot` filter is needed (and applying one
-     * would incorrectly exclude OUTER cards that CONTAIN subcards as
-     * descendants).
+     * The EntityCard.svelte testid is conditional: outer cards carry
+     * `entity-card`, subcards carry `entity-card-subcard`. So
+     * `getByTestId('entity-card')` ALREADY excludes subcards — no `hasNot`
+     * filter is needed (and applying one would incorrectly exclude OUTER
+     * cards that CONTAIN subcards as descendants).
      *
      * Returns a synchronous Playwright Locator (no `await`).
      */
@@ -177,7 +175,7 @@ export function createResultsPage(page: Page) {
      *
      * Uses `Locator.waitFor` + `.catch(() => null)` because the helper is
      * purely best-effort; assertion-bearing locator interactions in the
-     * fixture's API surface NEVER use `.catch(() => null)` per R-6.
+     * fixture's API surface NEVER use `.catch(() => null)`.
      */
     async dismissAllDialogs(): Promise<void> {
       await page.keyboard.press('Escape').catch(() => null);

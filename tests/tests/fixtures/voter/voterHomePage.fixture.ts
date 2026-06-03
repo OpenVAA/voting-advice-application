@@ -1,22 +1,19 @@
 /**
- * @file voterHomePage fixture — Phase 92 Plan 03 (WS2 FIXTURES, D-06/D-07/D-08).
+ * @file voterHomePage fixture.
  *
  * Function-fixture for the voter app front page
- * (`apps/frontend/src/routes/(voters)/+page.svelte`). Rebuilds the deleted
- * `pages/voter/HomePage.ts` page-object as a function-fixture carrying the
- * canonical `goToPage(locale?)` + `expectPageVisible(visible?)` paradigm.
+ * (`apps/frontend/src/routes/(voters)/+page.svelte`), carrying the canonical
+ * `goToPage(locale?)` + `expectPageVisible(visible?)` paradigm.
  *
- * Reference shape: `candidateQuestionsOverviewPage.fixture.ts:75-89` — copied
- * verbatim except the hardcoded `/en/candidate/questions` URL is replaced with
- * a locale-aware `buildRoute({ route: 'Home', locale })`. Note: `ROUTE.Home`
- * resolves to just the locale segment, so `buildRoute` returns the bare locale
- * (e.g. `'en'`); prepend `/` to form `/en`.
+ * The route is locale-aware via `buildRoute({ route: 'Home', locale })`.
+ * Note: `ROUTE.Home` resolves to just the locale segment, so `buildRoute`
+ * returns the bare locale (e.g. `'en'`); prepend `/` to form `/en`.
  *
  * Load anchor: `testIds.voter.home.page` ('voter-home') — the always-rendered
  * `MainContent` root content div (NOT `startButton`, which is hidden under the
  * access.voterApp=false maintenance variant).
  *
- * **Rigidity contract** (Phase 88 Plan 04 SCOPE acceptance #6):
+ * **Rigidity contract**:
  * - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
  *   `.catch(() => null)` on assertion-bearing locator interactions.
  */

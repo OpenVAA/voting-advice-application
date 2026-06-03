@@ -1,16 +1,16 @@
 /**
- * @file langSelectorFixture — Phase 90 Plan 03 (TIR5:28-50 + D-90-04).
+ * @file langSelectorFixture.
  *
  * Function-fixture for the LanguageSelection NavGroup at
  * `apps/frontend/src/lib/dynamic-components/navigation/languages/LanguageSelection.svelte`.
  *
  * The NavGroup is gated on `locales.length > 1` (line 32). When the runtime
- * `supportedLocales` override (Plan 90-01) collapses the user-facing locale
- * list to a single entry, the NavGroup does NOT render and the
- * `lang-selector` testid is absent from the DOM. When the override list
- * contains ≥2 entries, the NavGroup renders with one `NavItem` per locale.
+ * `supportedLocales` override collapses the user-facing locale list to a
+ * single entry, the NavGroup does NOT render and the `lang-selector` testid
+ * is absent from the DOM. When the override list contains ≥2 entries, the
+ * NavGroup renders with one `NavItem` per locale.
  *
- * Surface (D-90-04):
+ * Surface:
  *  - expectVisible(locales)  — assert selector visible AND every locale name
  *                              appears as a `nav-menu-item` inside the
  *                              selector scope.
@@ -18,9 +18,9 @@
  *                              `lang-selector` testid has count 0).
  *  - switchTo(locale)        — click the locale's NavItem AND wait for the
  *                              full-reload navigation triggered by Paraglide's
- *                              `data-sveltekit-reload` attribute (Pitfall 6).
+ *                              `data-sveltekit-reload` attribute.
  *
- * **Rigidity contract** (TIR5:5-13 + Phase 88 lineage):
+ * **Rigidity contract**:
  *  - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
  *    `.catch(() => null)` on assertion-bearing locator interactions.
  */
@@ -74,10 +74,9 @@ export function createLangSelector(page: Page) {
 
     /**
      * Assert the language selector NavGroup is NOT rendered. The NavGroup
-     * carries `data-testid="lang-selector"` (Plan 90-03 Task 1) — when
-     * `locales.length === 1` the `{#if locales.length > 1}` branch at
-     * LanguageSelection.svelte:32 evaluates false and the NavGroup
-     * does not render.
+     * carries `data-testid="lang-selector"` — when `locales.length === 1` the
+     * `{#if locales.length > 1}` branch at LanguageSelection.svelte:32
+     * evaluates false and the NavGroup does not render.
      */
     async expectHidden(): Promise<void> {
       await expect(page.getByTestId(testIds.shared.langSelector)).toHaveCount(0);
@@ -100,9 +99,9 @@ export function createLangSelector(page: Page) {
      * of the prefixed non-base locales; `switchTo('fi')` must wait for
      * `/fi/`-prefixed URLs as before.
      *
-     * Pitfall 6: the locale switch is a full page reload, NOT a SPA
-     * navigation. Use `Promise.all([waitForURL, click])` to race the click
-     * against the navigation event.
+     * The locale switch is a full page reload, NOT a SPA navigation. Use
+     * `Promise.all([waitForURL, click])` to race the click against the
+     * navigation event.
      */
     async switchTo(locale: string): Promise<void> {
       displayNameFor(locale); // validate

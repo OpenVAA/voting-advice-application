@@ -1,13 +1,12 @@
 /**
- * @file feedbackDialog fixture — Phase 91 Plan 03 (TIR6:34-61 + D-91-MJ-02).
+ * @file feedbackDialog fixture.
  *
  * Shared function-fixture for the feedback dialog (Feedback.svelte +
  * FeedbackModal.svelte). Authored standalone under tests/tests/fixtures/shared/
- * per D-91-MJ-02 (NOT extended into voter-journey.fixture.ts) so the candidate
- * journey can later consume the same surface without coupling to
- * voter-journey's option chain.
+ * (NOT extended into voter-journey.fixture.ts) so the candidate journey can
+ * consume the same surface without coupling to voter-journey's option chain.
  *
- * Surface (RESEARCH §"Pattern 2"):
+ * Surface:
  *  - dialog: Locator              — testid-bound feedback-form anchor.
  *  - expectVisible()              — assert dialog visible.
  *  - expectHidden()               — assert dialog hidden (form not visible; may remain in DOM).
@@ -18,25 +17,24 @@
  *  - submit()                     — click feedback-submit.
  *  - cancel()                     — click feedback-cancel.
  *  - expectSuccess()              — assert submit button data-status='sent'
- *                                   (locale-resilient per RESEARCH Pitfall 10).
+ *                                   (locale-resilient).
  *  - expectRatingValue(n)         — assert rating N is checked (n=1..5) or
  *                                   no rating is checked (n=null).
  *  - expectCommentValue(text)     — assert description textarea has the
  *                                   given value.
  *
- * **Rigidity contract** (Phase 88 Plan 04 SCOPE acceptance #6 / 89-02 /
- * 90-D-90-06):
+ * **Rigidity contract**:
  *  - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
  *    `.catch(() => null)` on assertion-bearing locator interactions.
- *  - All locators are testid-anchored (Pitfall 3 — locale-resilient).
+ *  - All locators are testid-anchored (locale-resilient).
  *
  * Surface bound to:
  *  - apps/frontend/src/lib/dynamic-components/feedback/Feedback.svelte:158
  *    (`data-testid="feedback-form"`)
  *  - Feedback.svelte:184 (`data-testid="feedback-rating-{value}"`)
  *  - Feedback.svelte:197 (`data-testid="feedback-description"`)
- *  - Feedback.svelte:235 (`data-testid="feedback-submit"` + new Phase 91
- *    Plan 03 `data-status={status}` attribute).
+ *  - Feedback.svelte:235 (`data-testid="feedback-submit"` +
+ *    `data-status={status}` attribute).
  *  - Feedback.svelte:247 (`data-testid="feedback-cancel"`).
  */
 
@@ -76,9 +74,9 @@ const RATINGS = [1, 2, 3, 4, 5] as const;
  * Create a feedback-dialog fixture bound to `page`.
  *
  * The dialog Locator is testid-anchored to `feedback-form`; when the dialog
- * is closed the locator resolves to count=0 (see voter-feedback-persistence
- * H4 mitigation lineage: form-element DOM removal is the authoritative
- * close signal). When the dialog is open, the form testid resolves uniquely.
+ * is closed the locator resolves to count=0 (form-element DOM removal is the
+ * authoritative close signal). When the dialog is open, the form testid
+ * resolves uniquely.
  */
 export function createFeedbackDialog(page: Page): FeedbackDialogFixture {
   const dialog = page.getByTestId('feedback-form');
@@ -122,9 +120,8 @@ export function createFeedbackDialog(page: Page): FeedbackDialogFixture {
     },
 
     async expectSuccess(): Promise<void> {
-      // Pitfall 10: locale-resilient — assert on data-status attribute
-      // (added in Phase 91 Plan 03 Task 1) rather than t('feedback.thanks')
-      // submit-button text.
+      // Locale-resilient — assert on the data-status attribute rather than
+      // t('feedback.thanks') submit-button text.
       await expect(submitBtn).toHaveAttribute('data-status', 'sent');
     },
 

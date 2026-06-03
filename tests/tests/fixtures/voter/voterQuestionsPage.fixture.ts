@@ -1,17 +1,13 @@
 /**
- * @file voterQuestionsPage fixture — Phase 92 Plan 03 (WS2 FIXTURES, D-06/D-07/D-08).
+ * @file voterQuestionsPage fixture.
  *
  * Function-fixture for the voter questions (intro/listing) page
- * (`apps/frontend/src/routes/(voters)/(located)/questions/+page.svelte`).
- * Rebuilds the deleted `pages/voter/QuestionsPage.ts` page-object as a
- * function-fixture with the canonical `goToPage(locale?)` +
- * `expectPageVisible(visible?)` paradigm.
- *
- * Reference shape: `candidateQuestionsOverviewPage.fixture.ts:75-89`, locale-
- * aware via `buildRoute({ route: 'Questions', locale })`.
+ * (`apps/frontend/src/routes/(voters)/(located)/questions/+page.svelte`),
+ * carrying the canonical `goToPage(locale?)` + `expectPageVisible(visible?)`
+ * paradigm. Locale-aware via `buildRoute({ route: 'Questions', locale })`.
  *
  * Load anchor: `testIds.voter.questions.heading` ('voter-questions-heading') —
- * the pre-existing questions-page heading anchor.
+ * the questions-page heading anchor.
  *
  * NOTE: the Questions route is gated behind voter location (election +
  * constituency selection). A bare `goToPage` from an unlocated session bounces
@@ -19,7 +15,7 @@
  * `voter-journey.fixture.ts` traversal helpers. `goToPage` here is for already-
  * located sessions (or deep-link redirect-resume probes).
  *
- * **Rigidity contract** (Phase 88 Plan 04 SCOPE acceptance #6):
+ * **Rigidity contract**:
  * - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
  *   `.catch(() => null)` on assertion-bearing locator interactions.
  */

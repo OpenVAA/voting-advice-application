@@ -1,5 +1,5 @@
 /**
- * @file voterNavFixture — Phase quick-260601-iqd.
+ * @file voterNavFixture.
  *
  * Function-fixture for the voter nav drawer (Header.svelte menu-toggle +
  * VoterNav.svelte). The LanguageSelection NavGroup (consumed by
@@ -23,7 +23,7 @@
  * `/open menu/i` aria-label — on the /fi locale that regex does not match.
  * The close control uses the locale-independent `#drawerCloseButton` id.
  *
- * **Rigidity contract** (TIR5:5-13 + Phase 88 lineage):
+ * **Rigidity contract**:
  *  - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
  *    `.catch(() => null)` on assertion-bearing locator interactions.
  */

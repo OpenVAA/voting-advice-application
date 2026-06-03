@@ -1,14 +1,13 @@
 /**
- * @file entityDetails fixture — Phase 88 Plan 04 T4.
+ * @file entityDetails fixture.
  *
- * Function-fixture for the entity-details (drawer / page) view. Per
- * 88-04-RESEARCH.md R-3 secondary divergence: tab-name SETTINGS keywords
- * map to i18n display labels internally; spec bodies use the SETTINGS
- * keyword for readability. Info-item assertions accept regex/substring
- * matchers to accommodate the post-T2 `[<id-token>]` prefix on display
- * strings.
+ * Function-fixture for the entity-details (drawer / page) view. Tab-name
+ * SETTINGS keywords map to i18n display labels internally; spec bodies use
+ * the SETTINGS keyword for readability. Info-item assertions accept
+ * regex/substring matchers to accommodate the `[<id-token>]` prefix on
+ * display strings.
  *
- * **Rigidity contract** (SCOPE acceptance #6, identical to siblings):
+ * **Rigidity contract** (identical to siblings):
  * - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
  *   `.catch(() => null)` on assertion-bearing locator interactions.
  */
@@ -18,10 +17,10 @@ import { testIds } from '../../utils/testIds';
 import type { Locator, Page } from '@playwright/test';
 
 /**
- * Mapping from SETTINGS keyword to i18n-displayed tab label. Per
- * 88-04-RESEARCH.md R-3: the SETTINGS keyword `children` displays as
- * "Members"; `info` as "Basic Info"; `opinions` as "Opinions". Spec bodies
- * stay free of i18n details by passing the SETTINGS keyword.
+ * Mapping from SETTINGS keyword to i18n-displayed tab label. The SETTINGS
+ * keyword `children` displays as "Members"; `info` as "Basic Info";
+ * `opinions` as "Opinions". Spec bodies stay free of i18n details by passing
+ * the SETTINGS keyword.
  *
  * NOTE: regex anchored case-insensitive; not exact-equality. Locked
  * against apps/frontend/src/lib/i18n/messages/en/entityDetails.json.
@@ -58,15 +57,14 @@ export function createEntityDetails(page: Page) {
 
   /**
    * Assert the entity-details drawer is (not) visible via its container load
-   * anchor. Phase 92 Plan 03 (D-06/D-07): the canonical voter-page paradigm.
+   * anchor — the canonical voter-page paradigm.
    *
    * NOTE: no `goToPage` is exposed here. The entity-detail is a DRAWER opened
    * from the results listing (`resultsPage.openEntityDetailsForCard`), not a
-   * standalone navigable page — a grep (2026-06-02) found ZERO deep-link
-   * `page.goto` to the `ResultEntity` route across `tests/`. A goToPage taking
-   * the runtime-discovered entity id would be a freeform-URL smell (CONTEXT
-   * Pitfall 4). Callers open the drawer via the results fixture, then assert
-   * with `expectPageVisible`.
+   * standalone navigable page — there is no deep-link `page.goto` to the
+   * `ResultEntity` route across `tests/`. A goToPage taking the
+   * runtime-discovered entity id would be a freeform-URL smell. Callers open
+   * the drawer via the results fixture, then assert with `expectPageVisible`.
    */
   async function expectPageVisible(visible = true): Promise<void> {
     await expect(page.getByTestId(testIds.voter.entityDetail.container)).toBeVisible({ visible, timeout: 5_000 });
@@ -106,8 +104,8 @@ export function createEntityDetails(page: Page) {
 
     /**
      * Hard-assert exactly one info-item matches both label + value regex/
-     * substring matchers. Accepts regex/substring per R-3 (post-T2
-     * `[<id-token>]` prefix in displayed strings).
+     * substring matchers. Accepts regex/substring to tolerate the
+     * `[<id-token>]` prefix in displayed strings.
      */
     async expectInfoItem(label: RegExp | string, value: RegExp | string): Promise<void> {
       const item = this.getInfoItems().filter({ hasText: label }).filter({ hasText: value });
@@ -125,14 +123,11 @@ export function createEntityDetails(page: Page) {
     /**
      * Assert a question display matches `target` (heading text), with
      * optional matchers for voter / entity answers, numSelected count,
-     * and infoText (missing-answer marker text). Subsumes the legacy
-     * `expectQuestionDisplayToHave` util in voter-journey.spec.ts.
+     * and infoText (missing-answer marker text).
      *
      * Uses `filter({ hasText: target })` on the entity-opinion-question
-     * div directly (more robust than the legacy helper's
-     * `filter({ has: getByRole('heading', { level: 3, name: regex }) })`
-     * which failed to match against the post-T2 [<id>] prefix on heading
-     * text — see deferred-items.md).
+     * div directly (more robust than a heading-role filter, which fails to
+     * match against the [<id>] prefix on heading text).
      */
     async expectQuestionDisplay(
       target: RegExp | string,
@@ -153,9 +148,8 @@ export function createEntityDetails(page: Page) {
       if (options?.infoText !== undefined) {
         // reason: infoText asserts the localized missing-answer marker message
         // (e.g. "hasn't answered") rendered inside the question display block.
-        // The marker element carries no stable data-testid today; adding one is
-        // deferred to Plan 92-03 (frontend-testid work). Until then this stays a
-        // text-content assertion scoped to the already-resolved `block` locator.
+        // The marker element carries no stable data-testid today, so this stays
+        // a text-content assertion scoped to the already-resolved `block` locator.
         // eslint-disable-next-line playwright/no-restricted-locators
         await expect(block.getByText(options.infoText)).toBeVisible();
       }
