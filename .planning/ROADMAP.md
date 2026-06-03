@@ -513,3 +513,38 @@ Plans:
 **Wave 4** *(blocked on Wave 3 completion)*
 
 - [x] 92-04-PLAN.md — WS3: consolidate timeout constants into tests/tests/helpers/timeouts.ts + migrate 4 local TIMEOUT objects + scattered literals; inline >90s/l10n exceptions (preserve test.setTimeout-applied 180s/120s budgets) [TIMEOUTS] (wave 4, depends 92-01, 92-03, 92-05)
+
+### Phase 93: Clean up and reorganise E2E tests, fixtures, setup, and seed templates
+
+**Goal:** Reorganise the E2E test suite and seed templates into a clear, role-based structure (voter / candidate / shared / perm) and rename the "mega" journey tests, so the test layout is self-documenting and seed templates are consolidated under a single `e2e/` family.
+
+**Requirements**: TBD
+
+**Depends on:** Phase 92
+
+**Scope (from request):**
+
+_Fixtures_
+- Move `candidate/email`, `langSel`, `multilingualText` fixtures to `shared/`
+- Move `candidate/voterNav` fixture to `voter/`
+- Move `fixtures/` root files into `shared/` or `voter/`
+- Consolidate `views` with `voter-mega` if not used elsewhere
+- Extract `minimalVoterResultsPage` from `voter-mega` (used by perms); rewrite to support the minimal datasets only if needed
+
+_Setup_ — reorganise `tests/setup/` into `voter/*`, `candidate/*`, `shared/*`, `perm/*`
+
+_Test renames_ — remove all mentions of "mega"; rename to `voter-journey` and `candidate-journey`
+
+_A11y spec_ — rewrite the a11y spec to use `baseV1` seed instead of `e2e` data
+
+_Seed templates_ — organise into `e2e/perm/*` + `e2e/base.ts`; remove the old `e2e.ts` and replace it with `baseV1` renamed to `e2e/base`
+
+**Plans:** 6 plans
+
+Plans:
+- [ ] 93-01-PLAN.md — Wave 0: fix the 2 red dev-seed tests (FLAG-1) + capture the pre-rewrite playwright --list baseline
+- [ ] 93-02-PLAN.md — WS5 seed templates: baseV1→e2e/base, delete e2e.ts, move perms→e2e/perm/*, remap barrel/resolver, retarget dev-seed tests (D-01/02/03/10, FLAG-4/9)
+- [ ] 93-03-PLAN.md — WS1 fixtures: voter/+shared/ moves, extract minimalVoterResultsPage, rename candidate root + constants, repoint perm-l10n (D-09/11/12/13/14/15/16, FLAG-2/5)
+- [ ] 93-04-PLAN.md — WS2 setup taxonomy + base-chain merge decoupled from perm anchor + full playwright.config rewrite (D-06/07/08/10/11, FLAG-6/8)
+- [ ] 93-05-PLAN.md — WS3/WS4 specs: rename journey specs, rewire a11y to base, repoint perm/visual/perf imports, README/CLAUDE.md rewrite, zero-token proof (D-04/09/11, FLAG-3/10)
+- [ ] 93-06-PLAN.md — WS5 tail: bounded base-prefix rewrite test-e2e-base- + full yarn test:e2e phase gate (D-05/09, FLAG-7)

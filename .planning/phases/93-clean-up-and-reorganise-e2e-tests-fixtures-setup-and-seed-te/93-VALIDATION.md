@@ -1,8 +1,8 @@
 ---
 phase: 93
 slug: clean-up-and-reorganise-e2e-tests-fixtures-setup-and-seed-te
-status: draft
-nyquist_compliant: false
+status: planned
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-06-03
 ---
@@ -52,6 +52,30 @@ created: 2026-06-03
 
 ---
 
+## Per-Task Verification Map
+
+| Plan | Task | Cheap gate / Wave-0 dependency |
+|------|------|--------------------------------|
+| 01 | T1 quarantine variant-app-settings | scoped dev-seed test:unit (no FAIL) |
+| 01 | T2 quarantine e2e.test.ts | dev-seed test:unit exit 0 |
+| 01 | T3 capture playwright --list baseline | `playwright test --list` exit 0 + file non-empty |
+| 02 | T1 move templates + barrel/resolver | `yarn build --filter=@openvaa/dev-seed` + `yarn typecheck:tests` + path asserts |
+| 02 | T2 retarget dev-seed tests (TDD) | `yarn workspace @openvaa/dev-seed test:unit` exit 0 |
+| 03 | T1 move root voter fixtures | `yarn typecheck:tests` + path asserts |
+| 03 | T2 move shared/voter fixtures + perm-l10n | `yarn typecheck:tests` + path asserts |
+| 03 | T3 extract minimalVoterResultsPage + rename constants | `yarn typecheck:tests` + grep asserts |
+| 04 | T1 setup taxonomy split | `yarn typecheck:tests` + path asserts |
+| 04 | T2 merge data.setup/teardown | `yarn typecheck:tests` + delete asserts |
+| 04 | T3 playwright.config rewrite | `playwright test --list` + zero mega/baseV1 grep |
+| 05 | T1 rename journey specs + imports | `yarn typecheck:tests` + `playwright test --list` |
+| 05 | T2 rewire a11y + perm views imports | `yarn typecheck:tests` + grep asserts |
+| 05 | T3 docs + zero-token proof | `eslint tests` + zero-token grep empty |
+| 06 | T1 base prefix rewrite (template) | `dev-seed test:unit` + prefix grep |
+| 06 | T2 teardown/guard/assertion prefix | `yarn typecheck:tests` + literal-absence grep |
+| 06 | T3 full e2e phase gate (checkpoint) | `yarn test:e2e` green + zero-token grep (manual, requires yarn dev) |
+
+---
+
 ## Wave 0 Requirements
 
 - [ ] **Fix the 2 pre-existing dev-seed `test:unit` failures (FLAG-1)** so the gate is meaningful:
@@ -66,7 +90,7 @@ created: 2026-06-03
 
 | Behavior | Why Manual | Test Instructions |
 |----------|------------|-------------------|
-| Full e2e suite green | Requires `yarn dev` (local Supabase + Vite) running; not run per-commit | Start dev stack, `yarn test:e2e`, confirm no DATA_RACE / CASCADE / FAILURE-CLASS regressions vs. pre-phase baseline |
+| Full e2e suite green | Requires `yarn dev` (local Supabase + Vite) running; not run per-commit | Start dev stack, `yarn test:e2e`, confirm no DATA_RACE / CASCADE / FAILURE-CLASS regressions vs. pre-phase baseline (Plan 06 Task 3 checkpoint) |
 
 *All structural invariants (import resolution, graph validity, zero-token) have automated cheap-gate verification.*
 
@@ -74,11 +98,11 @@ created: 2026-06-03
 
 ## Validation Sign-Off
 
-- [ ] Every task has a cheap-gate `<automated>` verify (typecheck / lint / `--list` / grep) or a Wave-0 dependency
-- [ ] Sampling continuity: no 3 consecutive tasks without an automated verify
-- [ ] Wave 0 fixes the 2 dev-seed failures + captures the pre-rewrite graph baseline
-- [ ] No watch-mode flags in any command
-- [ ] Feedback latency < 60s for the quick trio
-- [ ] `nyquist_compliant: true` set in frontmatter once the planner maps each task to a signal
+- [x] Every task has a cheap-gate `<automated>` verify (typecheck / lint / `--list` / grep) or a Wave-0 dependency (Plan 06 T3 is the single expensive checkpoint gate)
+- [x] Sampling continuity: no 3 consecutive tasks without an automated verify
+- [x] Wave 0 fixes the 2 dev-seed failures + captures the pre-rewrite graph baseline (Plan 01)
+- [x] No watch-mode flags in any command
+- [x] Feedback latency < 60s for the quick trio
+- [x] `nyquist_compliant: true` set in frontmatter — each task maps to a signal (see Per-Task Verification Map)
 
-**Approval:** pending
+**Approval:** planner-approved 2026-06-03
