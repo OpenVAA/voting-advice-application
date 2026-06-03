@@ -26,19 +26,15 @@ import * as jose from 'jose';
 
 const SUPABASE_URL = process.env.SUPABASE_URL ?? 'http://localhost:54321';
 
-// Phase 78 CLEAN-05 IN-01: throw on missing keys rather than falling back to
-// hardcoded demo JWTs. The prior fallback masked misconfigured CI environments
-// — tests would run against the demo keys and produce mysterious 401s from the
-// Edge Function. Loud failure here surfaces the misconfiguration immediately.
+// Throw on missing keys rather than falling back to hardcoded demo JWTs. A
+// silent fallback masks misconfigured environments — tests would run against
+// the demo keys and produce mysterious 401s from the Edge Function. Loud
+// failure here surfaces the misconfiguration immediately.
 if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-  throw new Error(
-    'SUPABASE_SERVICE_ROLE_KEY required for candidate-bank-auth tests (Phase 78 CLEAN-05 IN-01)'
-  );
+  throw new Error('SUPABASE_SERVICE_ROLE_KEY required for candidate-bank-auth tests');
 }
 if (!process.env.SUPABASE_ANON_KEY) {
-  throw new Error(
-    'SUPABASE_ANON_KEY required for candidate-bank-auth tests (Phase 78 CLEAN-05 IN-01)'
-  );
+  throw new Error('SUPABASE_ANON_KEY required for candidate-bank-auth tests');
 }
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
@@ -148,9 +144,7 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
     // Probe the Edge Function exactly once. The single call captures BOTH the
     // keys-configured (200 + success) and keys-not-configured (401/500) cases,
     // so per-test bodies can assert each path unconditionally — gated by the
-    // probe state, not by in-test branching. This is the cardinal rewrite for
-    // 73-04 Task 1 Phase B: replaces 12 no-conditional-expect + 4 no-conditional-in-test
-    // sites in the original test 1 with one probe + two unconditional path-tests.
+    // probe state, not by in-test branching.
     //
     // For a full integration test, set these Supabase secrets:
     //   supabase secrets set IDENTITY_PROVIDER_DECRYPTION_JWKS='[{...test encPrivJwk...}]'
@@ -174,12 +168,10 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
       throw new Error(`Unexpected probe response ${status}: ${JSON.stringify(body)}`);
     }
 
-    // Phase 78 CLEAN-05 IN-02: tighten the `body.error ?? body.msg ?? body.details`
-    // precedence chain with an explicit `typeof === 'string'` guard. The prior
-    // type-cast (`as string | null`) silently accepted non-string values (e.g.,
-    // `{ error: { code: 401 } }` would have flowed through as a non-null object
-    // misrepresented as a string). The typeof check returns null when none of
-    // the candidate properties is actually a string.
+    // The `body.error ?? body.msg ?? body.details` precedence chain is guarded
+    // by an explicit `typeof === 'string'` check so non-string values (e.g.
+    // `{ error: { code: 401 } }`) are not misrepresented as a string. The
+    // typeof check returns null when none of the candidate properties is a string.
     const candidateErrorValue = body.error ?? body.msg ?? body.details;
     const errorMsg = keysConfigured ? null : (typeof candidateErrorValue === 'string' ? candidateErrorValue : null);
 

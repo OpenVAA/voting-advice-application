@@ -1,11 +1,8 @@
 /**
- * Candidate journey end-to-end spec — Phase 89 Plan 03.
- *
- * Authoritative design source: TEST-INVENTORY-REFACTOR-4.md lines 101-257.
+ * Candidate journey end-to-end spec.
  *
  * Structure: ONE serial-describe → ONE long test('full candidate journey
- * end-to-end', ...) → 22 named `test.step` segments mirroring TIR4:101-257.
- * The walk covers:
+ * end-to-end', ...) → 22 named `test.step` segments. The walk covers:
  *   1-2.  Public static pages (/candidate/help + /candidate/privacy) reachable
  *         while unauthenticated.
  *   3.    Trigger registration email via SupabaseAdminClient.sendEmail —
@@ -47,20 +44,19 @@
  *   22.   Final logout without dialog (post-completion path) →
  *         /candidate/login.
  *
- * Rigidity contract per TIR4:8-12 + Phase 88 Plan 04 SCOPE acceptance #6:
+ * Rigidity contract:
  *   - 0 expect.soft
  *   - 0 try/catch wrapping expect()
  *   - 0 .catch(() => null) on assertion-bearing locator interactions
  *
- * UNAUTHENTICATED start per R13 (test.use storageState empty-cookies).
+ * Starts UNAUTHENTICATED (test.use storageState empty-cookies).
  *
  * Running:
  *   yarn test:e2e --project=candidate-journey --reporter=list
  *
  * Runs under the `data-setup-candidate-journey → candidate-journey →
- * data-teardown-candidate-journey` chain (appended to tests/playwright.config.ts;
- * sequenced AFTER voter-journey via dependencies: ['voter-journey']
- * per R3 shared 'test-' prefix race).
+ * data-teardown-candidate-journey` chain, sequenced after voter-journey via
+ * `dependencies: ['voter-journey']` (shared 'test-' prefix race).
  */
 
 import fs from 'node:fs';
@@ -88,11 +84,9 @@ import type { Page } from '@playwright/test';
 // ====================================================================
 // FILE-SCOPE CONSTANTS
 //
-// Timeout buckets are imported from the central helpers/timeouts.ts
-// (Phase 92 Plan 04, D-10/D-11/D-12). This file's former local slowPage
-// (7_500) is absorbed by the central slowPage (10_000) — a widening, not a
-// tightening. testMax (90_000) equals the playwright.config global ceiling,
-// so test.setTimeout(TIMEOUTS.testMax) preserves the prior 90s budget exactly.
+// Timeout buckets are imported from the central helpers/timeouts.ts.
+// testMax (90_000) equals the playwright.config global ceiling, so
+// test.setTimeout(TIMEOUTS.testMax) keeps the full 90s budget for this walk.
 // ====================================================================
 
 /**
@@ -122,9 +116,9 @@ const OVERSIZED_PNG_PATH = path.join(os.tmpdir(), 'candidate-journey-oversized.p
 
 /**
  * Subset of INFO_QUESTION_ANSWERS to fill in step 13 — excludes
- * test-qu-info-text (the required field, deliberately left blank per
- * TIR4:178). Pre-computed at module scope to avoid an `if` inside the
- * test body (playwright/no-conditional-in-test).
+ * test-qu-info-text (the required field, deliberately left blank).
+ * Pre-computed at module scope to avoid an `if` inside the test body
+ * (playwright/no-conditional-in-test).
  */
 const STEP_13_INFO_FILL_ENTRIES: ReadonlyArray<readonly [string, string]> = Object.freeze(
   Object.entries(INFO_QUESTION_ANSWERS).filter(([externalId]) => externalId !== 'test-qu-info-text')
@@ -429,7 +423,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       await expect(page).toHaveURL(/\/candidate\/profile/, { timeout: TIMEOUTS.slowPage });
       // Static info: candidate first name visible; nomination block carries
       // election_symbol "999" (the sentinel for the unregistered candidate
-      // per Plan 89-01 base).
+      // in the base dataset).
       await candidateProfilePage.expectStaticInfo({
         name: 'Unregistered',
         nomination: { electionSymbol: '999' }
@@ -455,7 +449,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       ]);
       await candidateProfilePage.expectQuestionsAbsent([/\[qu-info-filt-mun-only\]/, /\[qu-info-filt-co-reg-s\]/]);
       // Required badge on test-qu-info-text (only question with required:true
-      // in the info category per Plan 89-01 base mutation).
+      // in the info category of the base dataset).
       await candidateProfilePage.expectRequiredBadge(/\[qu-info-text\]/);
     });
 
@@ -499,14 +493,13 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       });
     });
 
-    // ============== Step 13.5: invalid URL → invalidUrl error (Phase 91) ===
+    // ============== Step 13.5: invalid URL → invalidUrl error ============
 
-    await test.step('13.5. profile: invalid URL into Link-type question surfaces invalidUrl error (TIR6:16-22)', async () => {
+    await test.step('13.5. profile rejects an invalid URL in a link question with an inline error', async () => {
       // Step 13 submitted from profile → landed on home. Re-enter profile
       // to exercise the Link-type URL validation on test-qu-info-text-link.
-      // base already seeds this URL-type info question (subtype='link',
-      // settings.type='link') per packages/dev-seed/src/templates/e2e/base.ts:662-672
-      // — no base extension needed.
+      // The base dataset already seeds this URL-type info question
+      // (subtype='link', settings.type='link').
       await candidateHomePage.clickTask('profile');
       await expect(page).toHaveURL(/\/candidate\/profile/, { timeout: TIMEOUTS.slowPage });
       // Fill the link question with a clearly invalid URL.
@@ -560,12 +553,11 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
 
     await test.step('16. first opinion question: hero emoji + continue gate + select + info + continue', async () => {
       // Q1 (test-qu-opin-base-1-likert5) carries custom_data.hero =
-      // { emoji: '🗳️' } per Plan 89-01 base mutation.
+      // { emoji: '🗳️' } in the base dataset.
       await candidateQuestionPage.expectHeroVisible('emoji');
       // No choice selected yet → continue disabled.
       await candidateQuestionPage.expectContinueDisabled();
-      // Select the first choice (per TIR4:103 "Answer all opinions with
-      // first value").
+      // Select the first choice (answer all opinions with the first value).
       await candidateQuestionPage.selectChoice(0);
       // Continue is now enabled.
       await candidateQuestionPage.expectContinueEnabled();
@@ -680,7 +672,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
         timeout: TIMEOUTS.slowPage
       });
       // Profile + opinions complete → logout dispatches without a confirmation
-      // dialog. Per TIR4:253-256 + R11 LogoutButton discrimination.
+      // dialog (the post-completion LogoutButton path).
       await candidateLogoutButton.clickWithoutDialog();
     });
   });
