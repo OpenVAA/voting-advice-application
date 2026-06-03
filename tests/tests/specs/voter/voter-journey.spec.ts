@@ -1,43 +1,23 @@
 /**
- * Voter journey end-to-end spec — Phase 88 Plan 01 Task 4.
- *
- * Authoritative design source: TEST-INVENTORY-REFACTOR-1.md lines 204-378.
+ * Voter journey end-to-end spec.
  *
  * Structure: ONE serial-describe → ONE long test('full voter journey
- * end-to-end', ...) → many `test.step('<title>', ...)` segments. Per
- * operator USER NOTE on Task 4, the step structure is approximate —
- * bullets from the refactor doc are re-grouped for a smooth continuous
- * walk, preparatory boilerplate from MOVED tests is stripped, and
- * back-and-forth navigation is minimised.
+ * end-to-end', ...) → many `test.step('<title>', ...)` segments. The step
+ * structure is approximate — the walk is grouped for a smooth continuous
+ * traversal and back-and-forth navigation is minimised.
  *
- * Steps fall into two classes:
- *
- *   - MOVED: absorbed from an existing spec (cross-ref to
- *     TEST-INVENTORY.md numbering — e.g. `9.1.1`, `9.9.1`).
- *   - NEW/MOVE: NEW from refactor doc with no clean predecessor in the
- *     existing inventory.
- *
- * Closed by .planning/quick/260523-u53 on 2026-05-23 — all previously-
- * deferred Plan 88-01 step bodies now contain real assertions; the
- * deferred-step helper has been removed. A small number of
- * `[u53-followup]` console.info notes remain on empirically-brittle
- * sub-assertions (filtered via the `expect.soft` 3-slot budget) for
- * follow-up hardening in a future 88-NN plan once the base dataset's
- * UI dispatch is fully empirically confirmed.
- *
- * Lint posture (260523-u53 cleanup pass): All defensive `if (count > 0)
- * { expect(...) }` patterns have been hoisted into module-scope helper
- * functions (below). The `playwright/no-conditional-in-test` rule fires
- * only inside `test()` bodies, so helpers below are the canonical home
- * for any dataset-conditional walk logic. Genuinely soft assertions use
- * `expect.soft` (3-slot budget honored). Try/catch around `expect()` has
- * been converted to `expect.soft` in the cleanup pass.
+ * Lint posture: all defensive `if (count > 0) { expect(...) }` patterns are
+ * hoisted into module-scope helper functions (below). The
+ * `playwright/no-conditional-in-test` rule fires only inside `test()`
+ * bodies, so helpers below are the canonical home for any
+ * dataset-conditional walk logic. Genuinely soft assertions use
+ * `expect.soft` (3-slot budget honored).
  *
  * Running:
  *   yarn test:e2e --project=voter-journey --reporter=list
  *
  * Runs under the `data-setup-base` → `voter-journey` →
- * `data-teardown-base` chain (appended to tests/playwright.config.ts).
+ * `data-teardown-base` chain.
  */
 
 import { createFeedbackDialog } from '../../fixtures/shared/feedbackDialog.fixture';
@@ -48,22 +28,18 @@ import { testIds } from '../../utils/testIds';
 import type { Locator, Page } from '@playwright/test';
 
 // ====================================================================
-// FILE-SCOPE CONSTANTS — 260524-l1t D1 + D3
+// FILE-SCOPE CONSTANTS
 //
 // Element/click/page/slowPage timeout buckets are imported from the central
-// helpers/timeouts.ts (Phase 92 Plan 04, D-10/D-11/D-12). This file's former
-// local page bucket (4_000) is absorbed by the central page (5_000) — a
-// widening, not a tightening.
+// helpers/timeouts.ts.
 //
-// reason: JOURNEY_TEST_MAX (120s) > TIMEOUTS.testMax (90s) and stays inline as a
-// documented D-12 exception. Phase 88 Plan 04 (T6 + T7 + T8) added 5 new
-// test.step blocks to the journey, including the T8 filters:dialog
-// 7-stage choreography which opens/closes the modal 7+ times. Pre-88-04
-// baseline ran in ~17-24s (260523-u53 SUMMARY); post-88-04 surface bumps to
-// ~75-90s, so testMax was raised 50_000 → 120_000 to absorb the new cells'
-// per-step costs (Expander auto-expand interactions + modal transitions).
-// APPLIED via test.setTimeout below — it MUST keep passing this value, NOT
-// TIMEOUTS.testMax (90s), or the test would start timing out at 90s.
+// reason: JOURNEY_TEST_MAX (120s) exceeds TIMEOUTS.testMax (90s) and stays
+// inline as a documented exception. The journey includes the filters:dialog
+// 7-stage choreography which opens/closes the modal 7+ times; the full walk
+// runs in ~75-90s, so this ceiling absorbs the per-step costs (Expander
+// auto-expand interactions + modal transitions). APPLIED via test.setTimeout
+// below — it MUST keep passing this value, NOT TIMEOUTS.testMax (90s), or the
+// test would start timing out at 90s.
 //
 // TEXT_RE consolidates regex literals used 2+ times in the spec body so the
 // `playwright/no-raw-locators` audit + intent-locality both improve.
@@ -84,11 +60,10 @@ const TEXT_RE = {
   regOnlyParents: /^Region North$|^Region South$/,
   munLeafNames: /North-East|North-West|South-East|South-West/,
   northEast: /North-East/i,
-  // category labels — Phase 88 Plan 04 T9: tightened to include the
-  // post-T2 [<id-token>] prefix per RESEARCH R-3 inventory. The substring
-  // 'Optional Opinion Questions A/B' is still matched by these tighter
-  // regexes, but only the bracket-prefixed render of the category name
-  // satisfies them — locking the contract to T2's display convention.
+  // category labels — tightened to include the [<id-token>] prefix. The
+  // substring 'Optional Opinion Questions A/B' is still matched by these
+  // tighter regexes, but only the bracket-prefixed render of the category
+  // name satisfies them — locking the contract to the display convention.
   baseOpinion: /Base Opinion Questions/i,
   optionalOpinionsA: /\[qg-opin-opt-a-NotSelected\] Optional Opinion Questions A/i,
   optionalOpinionsB: /\[qg-opin-opt-b-Skipped\] Optional Opinion Questions B/i,
@@ -305,50 +280,50 @@ test.describe('voter journey', () => {
   test.describe.configure({ mode: 'serial' });
 
   test('full voter journey end-to-end', async ({ page, resultsPage, entityFilters, entityDetails, voterHomePage }) => {
-    test.setTimeout(JOURNEY_TEST_MAX); // reason: 120s inline exception — see JOURNEY_TEST_MAX rationale above (post-88-04 ~75-90s; exceeds the 90s global ceiling).
+    test.setTimeout(JOURNEY_TEST_MAX); // reason: 120s inline exception — see JOURNEY_TEST_MAX rationale above (full walk ~75-90s; exceeds the 90s global ceiling).
 
     // ====================================================================
-    // STATIC PAGES — refactor-doc:208-216. Absorbs 9.1.1, 9.9.1, 9.9.2, 9.9.3.
+    // STATIC PAGES
     // ====================================================================
 
-    await test.step('static: home page renders + start button (MOVED 9.1.1)', async () => {
-      // Phase 92 Plan 03 (D-09): named Home-route navigation migrated to the
-      // voterHomePage fixture (goToPage hard-asserts the voter-home load anchor).
+    await test.step('home page renders with a start button', async () => {
+      // Named Home-route navigation via the voterHomePage fixture (goToPage
+      // hard-asserts the voter-home load anchor).
       await voterHomePage.goToPage('en');
       await expect.soft(page.getByTestId(testIds.voter.home.startButton)).toBeVisible();
     });
 
-    await test.step('static: about page renders correctly (MOVED 9.9.1)', async () => {
-      // reason: About has no dedicated page-fixture in Plan 92-03; the
-      // buildRoute goto is already locale-aware (not a raw string) and the
-      // step asserts the about-content anchor immediately below.
+    await test.step('about page renders correctly', async () => {
+      // reason: About has no dedicated page-fixture; the buildRoute goto is
+      // already locale-aware (not a raw string) and the step asserts the
+      // about-content anchor immediately below.
       await page.goto(buildRoute({ route: 'About', locale: 'en' }));
       await expect.soft(page.getByTestId(testIds.voter.about.content)).toBeVisible({ timeout: TIMEOUTS.slowPage });
       await expect.soft(page.getByTestId(testIds.voter.about.returnButton)).toBeVisible();
       await expect.soft(page.getByRole('heading', { level: 1 })).toBeVisible();
     });
 
-    await test.step('static: about → back button returns to home (NEW/MOVE refactor-doc:212)', async () => {
+    await test.step('about page back button returns to home', async () => {
       const returnBtn = page.getByTestId(testIds.voter.about.returnButton);
       await returnBtn.click();
       // Back-button lands on the locale-prefixed root or bare root depending
       // on the route resolver; the start button visibility is the canonical
-      // home-page assertion (mirrors the same check used in 9.1.1).
+      // home-page assertion.
       await expect.soft(page.getByTestId(testIds.voter.home.startButton)).toBeVisible({ timeout: TIMEOUTS.slowPage });
     });
 
-    await test.step('static: info page renders correctly (MOVED 9.9.2)', async () => {
-      // reason: Info has no dedicated page-fixture in Plan 92-03; locale-aware
-      // buildRoute goto, info-content anchor asserted immediately below.
+    await test.step('info page renders correctly', async () => {
+      // reason: Info has no dedicated page-fixture; locale-aware buildRoute
+      // goto, info-content anchor asserted immediately below.
       await page.goto(buildRoute({ route: 'Info', locale: 'en' }));
       await expect.soft(page.getByTestId(testIds.voter.info.content)).toBeVisible({ timeout: TIMEOUTS.slowPage });
       await expect.soft(page.getByTestId(testIds.voter.info.returnButton)).toBeVisible();
       await expect.soft(page.getByRole('heading', { level: 1 })).toBeVisible();
     });
 
-    await test.step('static: privacy page renders correctly (MOVED 9.9.3)', async () => {
-      // reason: Privacy has no dedicated page-fixture in Plan 92-03; locale-aware
-      // buildRoute goto, privacy-content anchor asserted immediately below.
+    await test.step('privacy page renders correctly', async () => {
+      // reason: Privacy has no dedicated page-fixture; locale-aware buildRoute
+      // goto, privacy-content anchor asserted immediately below.
       await page.goto(buildRoute({ route: 'Privacy', locale: 'en' }));
       await expect.soft(page.getByTestId(testIds.voter.privacy.content)).toBeVisible({ timeout: TIMEOUTS.slowPage });
       await expect.soft(page.getByTestId(testIds.voter.privacy.returnButton)).toBeVisible();
@@ -356,52 +331,51 @@ test.describe('voter journey', () => {
     });
 
     // ====================================================================
-    // INTRO + ELECTION SELECTION — refactor-doc:218-228
+    // INTRO + ELECTION SELECTION
     // ====================================================================
 
-    await test.step('intro: home → start → intro page (NEW/MOVE refactor-doc:218-220)', async () => {
-      // Phase 92 Plan 03 (D-09): Home-route nav + start click via voterHomePage
-      // fixture (goToPage hard-asserts the voter-home anchor before clickStart).
+    await test.step('home start advances to the intro page', async () => {
+      // Home-route nav + start click via voterHomePage fixture (goToPage
+      // hard-asserts the voter-home anchor before clickStart).
       await voterHomePage.goToPage('en');
       await voterHomePage.clickStart();
       await page.waitForURL(TEXT_RE.introRoute, { timeout: TIMEOUTS.slowPage }).catch(() => null);
     });
 
-    await test.step('intro: intro page continue (NEW/MOVE refactor-doc:220)', async () => {
+    await test.step('intro page continues to election selection', async () => {
       const introStart = page.getByTestId(testIds.voter.intro.startButton);
       await expect(introStart).toBeVisible({ timeout: TIMEOUTS.element });
       await introStart.click();
     });
 
-    await test.step('elections: should show election selector (NEW/MOVE refactor-doc:222-224)', async () => {
+    await test.step('election selector is shown', async () => {
       const electionsList = page.getByTestId(testIds.voter.elections.list);
       await expect.soft(electionsList).toBeVisible({ timeout: TIMEOUTS.slowPage });
     });
 
-    await test.step('elections: continue disabled when no election selected (Risk #2)', async () => {
-      // Unselect both election cards first (base defaults to both
-      // selected per the multi-election shape). Once both are unselected,
-      // the continue button should be disabled (refactor-doc:223).
+    await test.step('continue is disabled when no election is selected', async () => {
+      // Unselect both election cards first (the dataset defaults to both
+      // selected for the multi-election shape). Once both are unselected,
+      // the continue button should be disabled.
       const electionOptions = page.getByTestId(testIds.voter.elections.option);
       const optionCount = await electionOptions.count();
       // Card may be a wrapper around a checkbox — click toggles selection.
       // Pragmatic fallback: click each card once, observe continue-disabled
       // state. If the test interface doesn't expose a true "deselect all"
-      // path we soft-gate (see [u53-followup]).
+      // path we soft-gate.
       await clickAllTolerantly({ elements: electionOptions, count: optionCount });
       const electionsContinue = page.getByTestId(testIds.voter.elections.continue);
-      // [u53-followup] elections.continue disabled-state may depend on
-      // implementation specifics: if both cards were re-selected by clicks,
-      // the contract may not be exercisable from this test. Soft-gate so the
-      // walk continues; refactor-doc:223 contract verification deferred.
+      // Disabled-state may depend on implementation specifics: if both cards
+      // were re-selected by clicks, the contract may not be exercisable from
+      // this test. Soft-gate so the walk continues.
       const isDisabled = await electionsContinue.isDisabled().catch(() => false);
       expect.soft(isDisabled, 'elections.continue should be disabled when no election selected').toBe(true);
     });
 
-    await test.step('elections: continue with default selection (NEW/MOVE refactor-doc:224)', async () => {
+    await test.step('continue with the default election selection', async () => {
       // Ensure both elections are selected before continuing: clicking each
       // card once toggles to selected (if the previous step left them in a
-      // deselected or partial state). Mirrors voter-journey.fixture.ts:91-95
+      // deselected or partial state). Mirrors the voter-journey fixture's
       // tolerant pattern (default state already selects both, click is a
       // no-op if already selected; click-toggle reselects if deselected).
       const electionOptions = page.getByTestId(testIds.voter.elections.option);
@@ -413,21 +387,20 @@ test.describe('voter journey', () => {
     });
 
     // ====================================================================
-    // CONSTITUENCY SELECTION — refactor-doc:226-228
+    // CONSTITUENCY SELECTION
     // ====================================================================
 
-    await test.step('constituencies: list visible (NEW/MOVE refactor-doc:226)', async () => {
+    await test.step('constituency list is visible', async () => {
       const constituenciesList = page.getByTestId(testIds.voter.constituencies.list);
       await expect.soft(constituenciesList).toBeVisible({ timeout: TIMEOUTS.slowPage });
     });
 
-    await test.step('constituencies: only municipalities shown (Risk #7 — hierarchical CG)', async () => {
+    await test.step('constituency selector shows only municipalities', async () => {
       // base has 2 CGs: CG-Reg (CO-Reg-N / CO-Reg-S) and CG-Mun
-      // (CO-Mun-NE/NW/SE/SW). Per refactor-doc:226 hierarchical CG flattens
-      // to municipality leaves only — the user should see CO-Mun-* options
-      // and never the CO-Reg-* parent options. Inspect each combobox in
-      // the constituencies list and assert the listbox options match Mun
-      // names only.
+      // (CO-Mun-NE/NW/SE/SW). The hierarchical CG flattens to municipality
+      // leaves only — the user should see CO-Mun-* options and never the
+      // CO-Reg-* parent options. Inspect each combobox in the constituencies
+      // list and assert the listbox options match Mun names only.
       const listbox = await getOnlyConstituencyListbox(page);
       const optionTexts = await listbox.getByRole('option').allTextContents();
       // Mun option names per e2e/base.ts:366-392.
@@ -436,8 +409,8 @@ test.describe('voter journey', () => {
         .soft(hasMunNames, `combobox options should contain Mun names; got ${JSON.stringify(optionTexts)}`)
         .toBe(true);
       // CO-Reg-* parent should NOT be in the leaf options (only municipalities flattened).
-      // [u53-followup] If Reg options DO appear, the hierarchical-flattening
-      // contract from refactor-doc:226 isn't satisfied — soft so the test continues.
+      // If Reg options DO appear, the hierarchical-flattening contract isn't
+      // satisfied — soft so the test continues.
       const hasRegOnlyNames = optionTexts.some((t) => TEXT_RE.regOnlyParents.test(t.trim()));
       expect
         .soft(
@@ -449,11 +422,11 @@ test.describe('voter journey', () => {
       await page.keyboard.press('Escape');
     });
 
-    await test.step('constituencies: hierarchical selection + continue with valid nominations (refactor-doc:228, Risk #2 + #7)', async () => {
-      // Pick CO-Mun-NE specifically by name — refactor-doc:228 calls out
-      // CO-Mun-NE because it has nominations for BOTH EL-Reg (via parent
-      // CO-Reg-N) AND EL-Mun (direct), so the voter-missing-nominations
-      // modal should NOT appear after continue. e2e/base.ts:366-371.
+    await test.step('hierarchical constituency selection continues with valid nominations', async () => {
+      // Pick CO-Mun-NE specifically by name — it has nominations for BOTH
+      // EL-Reg (via parent CO-Reg-N) AND EL-Mun (direct), so the
+      // voter-missing-nominations modal should NOT appear after continue.
+      // e2e/base.ts:366-371.
       const listbox = await getOnlyConstituencyListbox(page);
       const neOption = listbox.getByRole('option', { name: TEXT_RE.northEast }).first();
       await neOption.click();
@@ -468,10 +441,10 @@ test.describe('voter journey', () => {
     });
 
     // ====================================================================
-    // QUESTIONS INTRO + CATEGORY SELECTION — refactor-doc:230-240
+    // QUESTIONS INTRO + CATEGORY SELECTION
     // ====================================================================
 
-    await test.step('questions-intro: page renders + category list + min-answers gate + uncheck Opt-B (was: Base-C) (MOVED 9.1.3 REPLACED, refactor-doc:230-240, Risk #2)', async () => {
+    await test.step('questions intro renders the category list and enforces the min-answers gate', async () => {
       // Categories visible: 7 opinion categories from base, with
       // QG-Opin-CO-Mun-SE-SW filtered out (CO-Mun-NE is selected, scope
       // excludes SE+SW) and QG-Opin-Filt-B filtered out (per-question
@@ -479,7 +452,7 @@ test.describe('voter journey', () => {
       const categoryList = page.getByTestId(testIds.voter.questions.categoryList);
       await expect.soft(categoryList).toBeVisible({ timeout: TIMEOUTS.slowPage });
       const categoryCheckboxes = page.getByTestId(testIds.voter.questions.categoryCheckbox);
-      await expect.soft(categoryCheckboxes).toHaveCount(5); // Base + Opt-A + Opt-B minimum + scoped extras (was: Base-B + Base-C)
+      await expect.soft(categoryCheckboxes).toHaveCount(5); // Base + Opt-A + Opt-B minimum + scoped extras
 
       const questionsStart = page.getByTestId(testIds.voter.questions.startButton);
       // Uncheck "Base Opinion Questions"
@@ -491,21 +464,20 @@ test.describe('voter journey', () => {
       await toggleCategoryListItem({ page, label: TEXT_RE.baseOpinion, checked: true });
       await expect.soft(questionsStart).toBeEnabled({ timeout: TIMEOUTS.element });
 
-      // Uncheck QG-Opin-Opt-B (formerly QG-Opin-Base-C) for later use
+      // Uncheck QG-Opin-Opt-B for later use
       await toggleCategoryListItem({ page, label: TEXT_RE.optionalOpinionsB, checked: false });
 
       await questionsStart.click();
     });
 
     // ====================================================================
-    // CATEGORY INTRO + LIKERT ANSWERS — refactor-doc:242-269
+    // CATEGORY INTRO + LIKERT ANSWERS
     // ====================================================================
 
-    // Phase 89 Plan 01 (TIR4:25-32 + TIR4:30): hero + info assertions.
     // The previous step ended with `questionsStart.click()` which navigates
     // to the QG-Opin-Base category intro page — assert the category hero
     // image BEFORE advancing into Q1.
-    await test.step('hero: QG-Opin-Base category intro renders image hero (Phase 89 Plan 01 — TIR4:32)', async () => {
+    await test.step('opinion-question category intro renders the image hero', async () => {
       const categoryHero = page.getByTestId(testIds.voter.questions.categoryHero);
       await expect.soft(categoryHero).toBeVisible({ timeout: TIMEOUTS.slowPage });
       // Image hero shape (custom_data.hero = { url, type: 'image' } per base)
@@ -516,7 +488,7 @@ test.describe('voter journey', () => {
         .toBeVisible({ timeout: TIMEOUTS.element });
     });
 
-    await test.step('questions: first category intro, previous question roundtrip, delete answer only visible if question is answered', async () => {
+    await test.step('first category intro, previous-question roundtrip, delete answer only visible when answered', async () => {
       // First category intro
       await expectCategoryIntroAndAdvance({ page, text: TEXT_RE.baseOpinion });
       // We should see the previous question and not the category intro again
@@ -526,10 +498,9 @@ test.describe('voter journey', () => {
       const deleteButton = page.getByTestId(testIds.shared.questionDelete);
       await expect.soft(deleteButton).toBeDisabled({ timeout: TIMEOUTS.element });
 
-      // Phase 89 Plan 01 (TIR4:25-32): Q1 (Base-1 Likert5) carries a hero
-      // emoji ('🗳️') AND info content ('[qu-opin-base-1-info] ...') per the
-      // 89-01 base mutation. Assert hero visible + emoji rendered + info
-      // button visible + clicking it reveals the info content body.
+      // Q1 (Base-1 Likert5) carries a hero emoji ('🗳️') AND info content
+      // ('[qu-opin-base-1-info] ...'). Assert hero visible + emoji rendered +
+      // info button visible + clicking it reveals the info content body.
       const heroFigure = page.getByTestId(testIds.voter.questions.hero);
       await expect.soft(heroFigure).toBeVisible({ timeout: TIMEOUTS.element });
       await expect.soft(heroFigure).toContainText('🗳️');
@@ -560,9 +531,8 @@ test.describe('voter journey', () => {
         allowPreselected: true // Allow the last option to be preselected since we just went back to this question.
       });
 
-      // Phase 89 Plan 01 (TIR4:25-32): Q2 (Base-2 Likert4) carries a hero
-      // IMAGE (no emoji) AND has NO info content. Assert hero <img> visible
-      // and Info button hidden/absent.
+      // Q2 (Base-2 Likert4) carries a hero IMAGE (no emoji) AND has NO info
+      // content. Assert hero <img> visible and Info button hidden/absent.
       const heroFigureQ2 = page.getByTestId(testIds.voter.questions.hero);
       await expect.soft(heroFigureQ2).toBeVisible({ timeout: TIMEOUTS.element });
       await expect
@@ -572,7 +542,7 @@ test.describe('voter journey', () => {
       await expect.soft(infoButtonQ2).toHaveCount(0, { timeout: TIMEOUTS.element });
     });
 
-    await test.step('questions: answer rest of base questions at polar-MAX, delete answer, result list visiblity with min answers', async () => {
+    await test.step('answer remaining base questions at polar-MAX, delete answer, results link gated on min answers', async () => {
       // Answer and advance through the rest of the category's questions
       for (let i = 1; i <= 4; i++) {
         await expectQuestionAndAdvance({
@@ -606,17 +576,17 @@ test.describe('voter journey', () => {
     });
 
     // ====================================================================
-    // CATEGORY SKIP + FILTERED CATEGORIES + REMAINING QUESTIONS — refactor-doc:271-289
+    // CATEGORY SKIP + FILTERED CATEGORIES + REMAINING QUESTIONS
     // ====================================================================
 
-    await test.step('category-skip: Opt-A skip button + Opt-B never visible (was: Base-B + Base-C) (refactor-doc:271-274, Risk #2)', async () => {
+    await test.step('skip the Opt-A category, and the deselected Opt-B category never appears', async () => {
       // After answering QG-Opin-Base, we should hit the QG-Opin-Opt-A category intro (categoryStart visible). Click Skip instead of Start.
       await expectCategoryIntroAndAdvance({ page, text: TEXT_RE.optionalOpinionsA, skip: true });
-      // Opt-B (was Base-C) category was deselected at step 4 — it should NOT appear in the walk, instead we should see regional questions and continue
+      // Opt-B category was deselected earlier — it should NOT appear in the walk, instead we should see regional questions and continue
       await expectCategoryIntroAndAdvance({ page, text: TEXT_RE.regionalOpinionsCategory });
     });
 
-    await test.step('category-scoping: EL-Reg tag + CO-Mun-SE-SW filtered out + Filt-Mun-NE shown then skipped + Filt-B never seen (refactor-doc:276-289, Risk #2)', async () => {
+    await test.step('category scoping shows the regional question and the per-question-filtered category', async () => {
       // We should now see the only regional question
       await expectQuestionAndAdvance({ page, text: TEXT_RE.regionalOpinionsQuestion });
       // We should now see the only regional filtered category intro
@@ -625,10 +595,10 @@ test.describe('voter journey', () => {
     });
 
     // ====================================================================
-    // RESULTS LANDING + ENTITY-TYPE TABS — refactor-doc:291-298. Absorbs 9.5.2, 9.5.3.
+    // RESULTS LANDING + ENTITY-TYPE TABS
     // ====================================================================
 
-    await test.step('results: election selector + list + entity tabs + parties/candidates switch (MOVED 9.5.2 + 9.5.3, refactor-doc:291-298, Risk #2)', async () => {
+    await test.step('results page shows the election selector, list, and entity tabs with parties/candidates switching', async () => {
       // Expect the election selector and select the Regional election, then the Municipal, and again the Regional
       await expectElectionOptionAndSelect({ page, text: TEXT_RE.regional });
       await expectElectionOptionAndSelect({ page, text: TEXT_RE.municipal });
@@ -647,30 +617,25 @@ test.describe('voter journey', () => {
     });
 
     // ====================================================================
-    // RESULT CARD CONTENT + ENTITY-TYPE COUNTS — refactor-doc:300-314
-    // ====================================================================
-
-    // ====================================================================
-    // PHASE 88 PLAN 04 T5 — result-card-contents (fixture-driven).
+    // RESULT CARD CONTENT + ENTITY-TYPE COUNTS
+    //
     // Asserts the first candidate card: test-qu-info-text answer rendered,
     // submatches block visible, 4 score gauges inside submatches, election
-    // symbol "10" rendered. The redundant "switch to parties + ≥1 org card"
-    // block is REMOVED — that contract is covered by the new T6
-    // "matching: organisations" step below.
+    // symbol "10" rendered.
     // ====================================================================
 
-    await test.step('result-card-contents (Phase 88 Plan 04 T5 — fixtures + test-qu-info-text + 4 score-gauges + election-symbol 10)', async () => {
+    await test.step('result card shows info text, four score gauges, and the election symbol', async () => {
       const cards = resultsPage.getEntityCards();
-      // RESEARCH A6: after POLAR_MAX answer set, top-ranked candidate is
+      // After the POLAR_MAX answer set, the top-ranked candidate is
       // test-ca-bb-1 ('Polar-Max BB One'). Match by name regex (NOT by
       // .first() position — leaves room for ranking determinism).
       const firstCard = cards.filter({ hasText: TEXT_RE.polarMax }).first();
       await expect.soft(firstCard).toBeVisible({ timeout: TIMEOUTS.slowPage });
 
       // e2e/base.ts:246 DEFAULT_INFO_ANSWERS — every candidate's
-      // test-qu-info-text value is "Default candidate biography text.".
-      // Phase 88 Plan 04 T3 Option B resolver wires this answer onto the
-      // card via cardContents.candidate.
+      // test-qu-info-text value is "Default candidate biography text.". The
+      // seed-time resolver wires this answer onto the card via
+      // cardContents.candidate.
       await expect.soft(firstCard).toContainText(/Default candidate biography text\./i);
 
       // Sub-matches block visible inside the card.
@@ -689,18 +654,17 @@ test.describe('voter journey', () => {
     });
 
     // ====================================================================
-    // PHASE 88 PLAN 04 T6 — matching: organisations.
-    // RESEARCH-verified base counts under EL-Reg / CO-Reg-N:
+    // MATCHING: ORGANISATIONS.
+    // Base counts under EL-Reg / CO-Reg-N:
     //   - 5 outer org-cards (Party AA, AB, BA, BB, C).
     //   - Party BB has 2 members (test-ca-bb-1 + test-ca-bb-2). 2 ≤ 3
     //     maxSubcards → NO 'Show all' button.
     //   - Party AA has 6 nominal members; 1 hidden (test-ca-aa-hidden via
-    //     terms_of_use_accepted absent — Probe 5) → 5 visible. Default
-    //     shows 3; 'Show all 5 candidates' reveals 5; Collapse returns to
-    //     3.
+    //     terms_of_use_accepted absent) → 5 visible. Default shows 3;
+    //     'Show all 5 candidates' reveals 5; Collapse returns to 3.
     // ====================================================================
 
-    await test.step('matching: organisations (Phase 88 Plan 04 T6 — 5 outer / Party BB 2 / Party AA 3-show-all-5-collapse)', async () => {
+    await test.step('organisation matching shows 5 cards, Party BB members, and Party AA show-all/collapse', async () => {
       await resultsPage.selectEntityTab('orgs');
 
       // 5 outer organisation cards under EL-Reg / CO-Reg-N.
@@ -708,9 +672,9 @@ test.describe('voter journey', () => {
       await expect.soft(cards).toHaveCount(5, { timeout: TIMEOUTS.slowPage });
 
       // Party BB — 2 subcards, no Show-all button.
-      // (Use filter().first() per RESEARCH Risk #3 — matching-algorithm
-      // ranking determinism not guaranteed for first-position; use
-      // hasText to pin the card unambiguously.)
+      // (Use filter().first() — matching-algorithm ranking determinism not
+      // guaranteed for first-position; use hasText to pin the card
+      // unambiguously.)
       const partyBB = cards.filter({ hasText: /Party BB - Best-Regional-Party/i }).first();
       await expect.soft(partyBB).toBeVisible();
       await expect.soft(partyBB.getByTestId(testIds.voter.results.cardSubcard)).toHaveCount(2);
@@ -735,26 +699,24 @@ test.describe('voter journey', () => {
     });
 
     // ====================================================================
-    // MATCHING ALGORITHM VERIFICATION — refactor-doc:320-328. Absorbs 9.4.1-9.4.4. Absorbs 9.4.5.
+    // MATCHING ALGORITHM VERIFICATION
     // ====================================================================
 
-    await test.step('matching: ranking order / perfect-match top / worst-match last / partial-answer middle / no hidden candidate (refactor-doc:320-328, MOVED 9.4.1-9.4.4, Risk #2)', async () => {
-      // The previous step (result-card-content) left the page on the Parties
+    await test.step('matching ranks perfect-match first, worst-match last, partial-answer in the middle, and hides the hidden candidate', async () => {
+      // The previous step (result card content) left the page on the Parties
       // tab. Switch back to Candidates so the candidate-section is visible
       // for the ranking assertions below.
       const entityTabs = page.getByTestId(testIds.voter.results.entityTabs);
       await entityTabs.getByRole('tab', { name: TEXT_RE.candidateTab }).click();
 
-      // BASEV1 RANKING CONTRACT REFINEMENT (260523-u53 walkthrough discovery):
-      //   The original Plan inventory (step 12 row) named CA-AA-Special as
-      //   the perfect-match candidate. Empirical observation against the
-      //   live dataset disproves that: CA-AA-Special has missing answers
-      //   (base-2 case b + Filt-Mun-NE case d per e2e/base.ts:817-832), so
-      //   its match score is reduced. The TRUE perfect-match candidates
-      //   are the POLAR_MAX candidates (e2e/base.ts:265-271 + CA-AA-1 at
-      //   :851-861 + CA-AA-Hidden at :836-849 with full polar-MAX answers).
-      //   Both "Generic AA One" and "Hidden Candidate AA" rank at "100%
-      //   match", with one of them appearing first in DOM order.
+      // RANKING CONTRACT:
+      //   CA-AA-Special has missing answers (base-2 case b + Filt-Mun-NE
+      //   case d per e2e/base.ts:817-832), so its match score is reduced.
+      //   The perfect-match candidates are the POLAR_MAX candidates
+      //   (e2e/base.ts:265-271 + CA-AA-1 at :851-861 + CA-AA-Hidden at
+      //   :836-849 with full polar-MAX answers). Both "Generic AA One" and
+      //   "Hidden Candidate AA" rank at "100% match", with one of them
+      //   appearing first in DOM order.
       //
       const candidateSection = page.getByTestId(testIds.voter.results.candidateSection);
       await expect.soft(candidateSection).toBeVisible({ timeout: TIMEOUTS.slowPage });
@@ -776,15 +738,13 @@ test.describe('voter journey', () => {
     });
 
     // ====================================================================
-    // VOTER ENTITY DETAIL — refactor-doc:330-355. Absorbs 9.6.1, 9.6.2, 9.6.3, 9.6.5-8.
+    // VOTER ENTITY DETAIL
     //
-    // Phase 88 Plan 04 T7 — REMOVED 'detail: drawer open + info/opinions tabs'
-    // and 'detail: Polar-Max info-items' steps. Their contracts are
-    // subsumed by the refactored matrix step below (CA-AA-Special drawer
-    // covers the info-tab + opinions-tab + tab-switch invariants).
+    // The CA-AA-Special drawer covers the info-tab + opinions-tab +
+    // tab-switch invariants.
     // ====================================================================
 
-    await test.step('candidate details: 9.6.5-8 voter-vs-entity matrix on CA-AA-Special (Phase 88 Plan 04 T7 — fixtures + info-items via regex)', async () => {
+    await test.step('candidate details show the voter-vs-entity answer matrix on CA-AA-Special', async () => {
       // Open CA-AA-Special's drawer via the resultsPage fixture. The
       // matching step left the page on the Candidates tab; the matrix
       // cell does not assume CA-AA-Special is first.
@@ -800,17 +760,15 @@ test.describe('voter journey', () => {
 
       // Special candidate carries the DEFAULT_INFO_ANSWERS set (e2e/base.ts:243)
       // for every info question + its own asymmetric opinion arrangement, and
-      // its 2 candidate nominations omit `election_symbol` per 260525-tea →
-      // the Election number row renders as "—" (showMissingElectionSymbol:
-      // candidate=true gates the row's existence). Post Phase 89 Plan 01:
-      // 14 info-items total: 4 nomination meta + 8 non-link info questions
-      // + 1 Links group + 1 north-only filtered info question
-      // (test-qu-info-filt-co-reg-n, visible only because CA-AA-Special's
-      // primary nomination is in CO-Reg-N). The mun-only + south-only
-      // variants are out-of-scope and asserted absent below (TIR4:99).
-      // Exact values per the user-supplied screencap (260525-tea PLAN.md
-      // §"Info-tab assertion"); `6/15/1980` is the en-US `toLocaleDateString`
-      // format for the seeded `1980-06-15` date answer.
+      // its 2 candidate nominations omit `election_symbol` → the Election
+      // number row renders as "—" (showMissingElectionSymbol: candidate=true
+      // gates the row's existence). 14 info-items total: 4 nomination meta +
+      // 8 non-link info questions + 1 Links group + 1 north-only filtered info
+      // question (test-qu-info-filt-co-reg-n, visible only because
+      // CA-AA-Special's primary nomination is in CO-Reg-N). The mun-only +
+      // south-only variants are out-of-scope and asserted absent below.
+      // `6/15/1980` is the en-US `toLocaleDateString` format for the seeded
+      // `1980-06-15` date answer.
       const infoTab = dialog.getByTestId(testIds.voter.entityDetail.infoTab);
       await expect.soft(infoTab).toBeVisible({ timeout: TIMEOUTS.page });
       const infoItems = infoTab.getByTestId('info-item');
@@ -864,12 +822,12 @@ test.describe('voter journey', () => {
       // (last) Links — single grouped item containing the personal-link tag
       await expect.soft(infoItems.last()).toContainText(/Links/i);
 
-      // Phase 89 Plan 01 (TIR4:99): narrowed candidate-details info-tab
-      // visibility for the 3 new filtered info questions. Voter is scoped
-      // to CO-Reg-N + CO-Mun-NE per voter-journey.fixture.ts first-option pick;
-      // CA-AA-Special's primary nomination is in CO-Reg-N. Therefore the
-      // north-only filtered info question MUST be visible, and the
-      // municipal-only + south-only variants MUST be absent.
+      // Candidate-details info-tab visibility for the 3 filtered info
+      // questions. Voter is scoped to CO-Reg-N + CO-Mun-NE per the
+      // voter-journey fixture's first-option pick; CA-AA-Special's primary
+      // nomination is in CO-Reg-N. Therefore the north-only filtered info
+      // question MUST be visible, and the municipal-only + south-only variants
+      // MUST be absent.
       await expect.soft(infoTab).toContainText(/\[qu-info-filt-co-reg-n\]/i);
       await expect.soft(infoTab).not.toContainText(/\[qu-info-filt-mun-only\]/i);
       await expect.soft(infoTab).not.toContainText(/\[qu-info-filt-co-reg-s\]/i);
@@ -892,11 +850,9 @@ test.describe('voter journey', () => {
       //   (c) entity only      → Opt-A opinion 1 (voter skipped Opt-A category)
       //   (d) both missing     → Opt-B opinion 1 (voter de-selected Opt-B,
       //                          entity has no answer)
-      // Phase 88 Plan 04 T7 — refactored to use entityDetails.expectQuestionDisplay
-      // (the hasText-based filter is robust against the post-T2 [<id>] prefix on
-      // heading text; the legacy expectQuestionDisplayToHave helper's
-      // filter({has: getByRole('heading', { level: 3, name: regex })}) did NOT
-      // match the new heading shape — see deferred-items.md).
+      // Uses entityDetails.expectQuestionDisplay — its hasText-based filter is
+      // robust against the [<id>] prefix on heading text (a heading-role
+      // filter would NOT match the prefixed heading shape).
       await entityDetails.expectQuestionDisplay(/Base opinion 1 — Likert 5/i, {
         numSelected: 2
       });
@@ -919,29 +875,28 @@ test.describe('voter journey', () => {
     });
 
     // ====================================================================
-    // PARTY DRAWER + FILTERS — refactor-doc:357-377. Absorbs 9.6.4, 9.5.5-7, 9.5.10, 9.5.14-18.
+    // PARTY DRAWER + FILTERS
     // ====================================================================
 
-    await test.step('organisation details: tabs + info-items + 5 members (Phase 88 Plan 04 T7 — fixtures + regex info-items)', async () => {
+    await test.step('organisation details show tabs, info-items, and 5 members', async () => {
       // Switch to parties tab and open Party AA's drawer.
       await resultsPage.selectEntityTab('orgs');
       await resultsPage.openEntityDetailsForCard(/\[or-aa\] Party AA/i);
 
-      // Phase 88 Plan 04 T7 — assert [info, children, opinions] tabs via
-      // the entityDetails fixture (which maps SETTINGS keywords to i18n
-      // labels internally per R-3).
+      // Assert [info, children, opinions] tabs via the entityDetails fixture
+      // (which maps SETTINGS keywords to i18n labels internally).
       await entityDetails.expectTabs(['info', 'children', 'opinions']);
 
-      // Info tab: 3 info-items via regex match (R-3 secondary divergence —
-      // post-T2 [<id>] prefix means exact-equality fails; substring/regex
-      // works). The fixture's expectInfoItem accepts regex.
+      // Info tab: 3 info-items via regex match (the [<id>] prefix means
+      // exact-equality fails; substring/regex works). The fixture's
+      // expectInfoItem accepts regex.
       await entityDetails.selectTab('info');
       await entityDetails.expectInfoItem(/Election/i, /Regional Election/i);
       await entityDetails.expectInfoItem(/Constituency/i, /\[co-reg-n\]/i);
       await entityDetails.expectInfoItem(/Alliance/i, /Alliance A/i);
 
       // Members tab (SETTINGS keyword: 'children') — 5 visible Party-AA
-      // members after the CA-AA-Hidden filter (RESEARCH R-3 verified).
+      // members after the CA-AA-Hidden filter.
       await entityDetails.selectTab('children');
       await expect.soft(entityDetails.getMemberCards()).toHaveCount(5, { timeout: TIMEOUTS.page });
 
@@ -952,16 +907,12 @@ test.describe('voter journey', () => {
     });
 
     // ====================================================================
-    // PHASE 88 PLAN 04 T8 — filters: text + filters: dialog.
-    // REMOVED 3 redundant test.step blocks (already moved to other phases):
-    //   - 'filters: toggle without effect_update_depth_exceeded'
-    //   - 'filters: plural tab switch reset + drawer survival + browser back'
-    //   - 'filters: SETTINGS-01 wave B Number/Text/Choice/Group/MissingValue'
-    // Replaced with 2 fixture-driven cells with HARD assertions on the
-    // RESEARCH-locked base counts (13 / 2 / 1 / 12 / 1 / 0).
+    // FILTERS: TEXT + DIALOG.
+    // Two fixture-driven cells with HARD assertions on the base counts
+    // (13 / 2 / 1 / 12 / 1 / 0).
     // ====================================================================
 
-    await test.step('filters: text (Phase 88 Plan 04 T8 — polar → 2 cards Polar-Max + Polar-Min, clear)', async () => {
+    await test.step('text filter narrows the result list and clears', async () => {
       // Defensive cleanup — earlier steps may have left dialogs open.
       await page.keyboard.press('Escape').catch(() => null);
       await dismissLeftoverDialogsBestEffort(page);
@@ -973,24 +924,24 @@ test.describe('voter journey', () => {
       await entityFilters.setTextFilter('polar');
       const cards = resultsPage.getEntityCards();
       await expect.soft(cards).toHaveCount(2, { timeout: TIMEOUTS.page });
-      // first_name in base is NOT bracket-prefixed (only name display
-      // fields got the [<id>] prefix in T2 — first/last names stayed raw).
+      // first_name in base is NOT bracket-prefixed (only name display fields
+      // got the [<id>] prefix — first/last names stayed raw).
       await expect.soft(cards.nth(0)).toContainText(TEXT_RE.polarMax);
       await expect.soft(cards.nth(1)).toContainText(TEXT_RE.polarMin);
 
       await entityFilters.clearTextFilter();
     });
 
-    await test.step('filters: dialog (Phase 88 Plan 04 T8 — 7-stage choreography, 3 rows / 1 NoAns / 13 / 12 / 1 / 0)', async () => {
+    await test.step('filter dialog applies and resets Party, pick-multiple, and numeric filters', async () => {
       // Pre-conditions: already on candidates tab from the prior step.
       // STAGE 1 — open dialog, assert exactly 3 filter rows.
-      // Post Wave-0 base edit (filterable: false on test-qu-info-boolean),
-      // 3 rows expected: Party + pick-multiple + years-of-experience.
+      // With filterable: false on test-qu-info-boolean, 3 rows are expected:
+      // Party + pick-multiple + years-of-experience.
       const d1 = await entityFilters.openFilterDialog();
       await expect.soft(d1.getFilters()).toHaveCount(3, { timeout: TIMEOUTS.page });
 
       // STAGE 2 — Party filter: 'No answer' option visible with count badge text containing '1'
-      // (RESEARCH: 1 candidate without parent_nomination → test-ca-independent).
+      // (1 candidate without parent_nomination → test-ca-independent).
       const partyFilter = await d1.getFilter(/Party/i);
       const noAnswerOption = await partyFilter.getOption(/No answer/i);
       await expect.soft(noAnswerOption).toBeVisible();
@@ -1052,32 +1003,23 @@ test.describe('voter journey', () => {
     });
 
     // ====================================================================
-    // Phase 91 Plan 03 — Journey absorption steps (D-91-MJ-01)
-    //
-    // Two new test.step blocks landed here per RESEARCH §"Journey
-    // Absorption Points — Voter": feedbackDialog (TIR6:34-61) absorbs the
-    // retired voter-feedback-persistence.spec.ts; all-nominations
-    // (TIR6:63-66) exercises the /nominations route via the new
-    // entities.showAllNominations default-true path.
+    // FEEDBACK DIALOG
     // ====================================================================
 
-    await test.step('feedback dialog: open + persistence + send (TIR6:34-61, NEW Phase 91)', async () => {
+    await test.step('feedback dialog opens, persists state across cancel, and sends', async () => {
       const feedbackDialog = createFeedbackDialog(page);
 
-      // Pitfall 7 — voter nav drawer must be opened explicitly. The
-      // openMenu button lives on Header.svelte:82-93.
+      // The voter nav drawer must be opened explicitly. The openMenu button
+      // lives on Header.svelte:82-93. The open-menu toggle carries a
+      // locale-independent `nav-menu-toggle` testid
+      // (testIds.shared.navigation.menuToggle), used instead of the EN-only
+      // `/open menu/i` accessible-name regex.
       //
-      // Phase 92 Plan 03 (92-01 deferred testId migration): the open-menu
-      // toggle now carries a locale-independent `nav-menu-toggle` testid
-      // (testIds.shared.navigation.menuToggle), replacing the EN-only
-      // `/open menu/i` accessible-name regex (×3 below).
-      //
-      // Phase 91 Plan 05 (CR-03 closure): feedbackNavItem scoped to the
-      // open menuDrawer (was page-rooted, raced against the cycle-2-close
-      // vs. cycle-3-open transition). Drawer open-state waitFor inserted
-      // before each menu-item click. menuDrawer is anchored on the
-      // `<nav data-testid="nav-menu">` element rendered by
-      // Navigation.svelte:56-62 (daisyUI drawer reveals it via CSS when
+      // feedbackNavItem is scoped to the open menuDrawer (page-rooted lookup
+      // raced against the cycle-close vs. cycle-open transition). A drawer
+      // open-state waitFor is inserted before each menu-item click. menuDrawer
+      // is anchored on the `<nav data-testid="nav-menu">` element rendered by
+      // Navigation.svelte:56-62 (the daisyUI drawer reveals it via CSS when
       // the drawer-toggle checkbox flips to checked).
       const menuToggle = page.getByTestId(testIds.shared.navigation.menuToggle);
       const menuDrawer = page.getByTestId(testIds.shared.navigation.menu);
@@ -1097,7 +1039,7 @@ test.describe('voter journey', () => {
       await feedbackDialog.cancel();
       await feedbackDialog.expectHidden();
       // Wait for the drawer to fully close before re-opening on cycle 2 —
-      // eliminates the close-transition race documented in CR-03.
+      // eliminates the close-transition race.
       await menuDrawer.waitFor({ state: 'hidden' });
 
       // ---- Cycle 2: reopen, expect preserved state, submit. -------------
@@ -1111,7 +1053,7 @@ test.describe('voter journey', () => {
       await feedbackDialog.expectSuccess();
       // FeedbackModal CLOSE_DELAY=1500ms post-onSent triggers reset() and
       // closes the modal; wait for the form testid to leave the DOM before
-      // re-opening (mirrors the voter-feedback-persistence H4 lineage).
+      // re-opening.
       await feedbackDialog.expectHidden();
       await menuDrawer.waitFor({ state: 'hidden' });
 
@@ -1134,7 +1076,7 @@ test.describe('voter journey', () => {
     // questions, causing the candidate-nominations list to fail to render.
     // Re-enable once the route is fixed.
     // See: .planning/todos/pending/2026-05-31-fix-nominations-route-fetch-all-questions.md
-    // await test.step('nominations: /nominations renders candidate-nominations list (TIR6:63-66, NEW Phase 91)', async () => {
+    // await test.step('nominations route renders the candidate-nominations list', async () => {
     //   // entities.showAllNominations defaults to true in base, so
     //   // /en/nominations renders the candidate-nominations list. The voter
     //   // is still located (selectedElections + selectedConstituencies
