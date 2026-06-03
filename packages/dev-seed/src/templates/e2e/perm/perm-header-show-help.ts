@@ -1,6 +1,5 @@
 /**
- * perm-header-show-help minimal-data template — Phase 91 Plan 02
- * (TIR6:79-88).
+ * perm-header-show-help minimal-data template.
  *
  * Topology: 1 election, 1 CG with 1 CO, 2 organisations, 1 candidate, 1
  * opinion Likert-5 question. The under-test setting is
@@ -9,10 +8,7 @@
  * Clicking the button navigates to `getRoute.current('Help')` which resolves
  * to `${VOTER}/about` per apps/frontend/src/lib/utils/route/route.ts:17.
  *
- * Authoritative spec: TEST-INVENTORY-REFACTOR-6.md:79-88.
- *
- * Prefix discipline: `externalIdPrefix: 'e2e-perm-header-help-'` per
- * D-91-PD-05.
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-header-help-'`.
  *
  * UNAUTHENTICATED — the spec walks to /en (voter intro), asserts on the
  * `header-help` testid in the Banner, clicks it, and asserts the URL

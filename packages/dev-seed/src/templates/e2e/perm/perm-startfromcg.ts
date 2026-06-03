@@ -1,5 +1,5 @@
 /**
- * perm-startfromcg minimal-data template — Phase 88 Plan 03.
+ * perm-startfromcg minimal-data template.
  *
  * Topology:
  *   - EL-1 → CG-1 with 2 leaf COs: co-1a, co-1b.
@@ -11,17 +11,14 @@
  *       - co-1c no parent (orphan)
  *
  * The CG UUID is unknown at seed time; perm-startfromcg.spec.ts's beforeAll
- * resolves it via SupabaseAdminClient and writes via client.updateAppSettings
- * — mirror variant-startfromcg.setup.ts:18-23 + startfromcg.spec.ts:158-185.
+ * resolves it via SupabaseAdminClient and writes via client.updateAppSettings.
  *
- * Authoritative spec: TEST-INVENTORY-REFACTOR-2.md:158-167
- *
- * Prefix discipline: `externalIdPrefix: 'e2e-perm-startfromcg-'` per
- * 88-03-SCOPE.md:104-110. Row external_ids bare; refs prefixed.
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-startfromcg-'`. Row
+ * external_ids bare; refs prefixed.
  *
  * Settings: MINIMAL_BASE_APP_SETTINGS verbatim — `elections.
- * startFromConstituencyGroup` is OMITTED entirely (HIGH-3 resolution; the CG
- * UUID is post-seed-resolved by the spec's beforeAll).
+ * startFromConstituencyGroup` is OMITTED entirely; the CG UUID is
+ * post-seed-resolved by the spec's beforeAll.
  */
 
 import {

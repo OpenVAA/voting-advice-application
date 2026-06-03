@@ -1,5 +1,5 @@
 /**
- * perm-answers-locked minimal-data template — Phase 91 Plan 02 (TIR6:3-14).
+ * perm-answers-locked minimal-data template.
  *
  * Topology: 1 election, 1 CG with 1 CO, 2 organisations, 1 candidate, 1
  * opinion Likert-5 question. The under-test setting is
@@ -13,17 +13,13 @@
  *      disables every <input type="radio"> inside the question-choices
  *      fieldset (mode === 'display' in OpinionQuestionInput / QuestionChoices).
  *
- * Authoritative spec: TEST-INVENTORY-REFACTOR-6.md:3-14.
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-answers-locked-'` (distinct
+ * from every other perm chain).
  *
- * Prefix discipline: `externalIdPrefix: 'e2e-perm-answers-locked-'` per
- * D-91-PD-05 (distinct from every prior 88/89/90 perm chain — see RESEARCH
- * §"Playwright Project Chain").
- *
- * The A1 perm spec consumes `mintCandidateSession({ externalId: 'cand-1',
- * prefix: P })` per D-91-PD-06 to mint a Playwright storage-state JSON file
- * consumed by the AUTHENTICATED sub-tests covering surfaces 2 + 3. The
- * UNAUTHENTICATED sub-test (surface 1, /en/candidate login page) does not
- * use storage state.
+ * The spec consumes `mintCandidateSession({ externalId: 'cand-1', prefix: P })`
+ * to mint a Playwright storage-state JSON file consumed by the AUTHENTICATED
+ * sub-tests covering surfaces 2 + 3. The UNAUTHENTICATED sub-test (surface 1,
+ * /en/candidate login page) does not use storage state.
  */
 
 import { buildMinimal } from '../../_helpers/buildMinimal';

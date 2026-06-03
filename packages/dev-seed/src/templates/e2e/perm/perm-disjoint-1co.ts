@@ -1,27 +1,22 @@
 /**
- * perm-disjoint-1co minimal-data template — Phase 88 Plan 03.
+ * perm-disjoint-1co minimal-data template.
  *
  * Topology: 2 elections with DISJOINT constituency groups.
  *   - EL-1 → CG-1 → co-1a, co-1b
  *   - EL-2 → CG-2 → co-2a, co-2b
  *
- * Note on the `-1co` suffix: the original spec (refactor-doc:171-181) said
- * "1 CO per CG", but the app auto-implies a single-CO CG (no picker rendered),
- * which makes the spec's "show constituency picker for CG-1" contract
- * unobservable. To exercise the picker contract while still minimal, each CG
- * has TWO COs. The slug stays `perm-disjoint-1co` to preserve external_id
- * prefix continuity with the rest of Plan 88-03; the doc-comment is
- * authoritative on the actual shape.
+ * Note on the `-1co` suffix: a single-CO CG auto-implies (no picker rendered),
+ * which makes the "show constituency picker for CG-1" contract unobservable.
+ * To exercise the picker contract while still minimal, each CG has TWO COs.
+ * The slug stays `perm-disjoint-1co` to preserve external_id prefix
+ * continuity; this doc-comment is authoritative on the actual shape.
  *
  * Election selector shown. When only EL-1 selected, constituency-selection
  * step shows only CG-1 picker (2 options). When both selected, both pickers
  * shown and continue is disabled until both are filled.
  *
- * Authoritative spec: TEST-INVENTORY-REFACTOR-2.md:171-181 (interpretive —
- * picker contract requires ≥2 COs per CG, see note above).
- *
- * Prefix discipline: `externalIdPrefix: 'e2e-perm-disjoint-1co-'` per
- * 88-03-SCOPE.md:104-110. Row external_ids bare; refs prefixed.
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-disjoint-1co-'`. Row
+ * external_ids bare; refs prefixed.
  *
  * Settings: MINIMAL_BASE_APP_SETTINGS verbatim.
  */

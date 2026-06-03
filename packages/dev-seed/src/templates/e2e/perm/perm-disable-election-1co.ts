@@ -1,14 +1,12 @@
 /**
- * perm-disable-election-1co minimal-data template — Phase 88 Plan 03.
+ * perm-disable-election-1co minimal-data template.
  *
  * Topology: same as perm-2e-shared (2 elections share 1 CG with 1 CO), but
  * with `elections.disallowSelection: true` — no election selector AND no
  * constituency selector (1 CO is auto-implied).
  *
- * Authoritative spec: TEST-INVENTORY-REFACTOR-2.md:185-188
- *
- * Prefix discipline: `externalIdPrefix: 'e2e-perm-disable-elec-1co-'` per
- * 88-03-SCOPE.md:104-110. Row external_ids bare; refs prefixed.
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-disable-elec-1co-'`. Row
+ * external_ids bare; refs prefixed.
  *
  * Settings: MINIMAL_BASE_APP_SETTINGS spread with elections.disallowSelection:
  * true override.

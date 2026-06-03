@@ -1,5 +1,5 @@
 /**
- * perm-2e-asymmetric minimal-data template — Phase 88 Plan 03.
+ * perm-2e-asymmetric minimal-data template.
  *
  * Topology:
  *   - EL-1 attached to CG-1 (co-1a only).
@@ -9,10 +9,8 @@
  * selection step shows CG-1 prefilled (only co-1a auto-implied) and an
  * active CG-2 picker.
  *
- * Authoritative spec: TEST-INVENTORY-REFACTOR-2.md:146-154
- *
- * Prefix discipline: `externalIdPrefix: 'e2e-perm-2e-asymmetric-'` per
- * 88-03-SCOPE.md:104-110. Row external_ids bare; refs prefixed.
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-2e-asymmetric-'`. Row
+ * external_ids bare; refs prefixed.
  *
  * Settings: MINIMAL_BASE_APP_SETTINGS verbatim.
  */

@@ -1,6 +1,5 @@
 /**
- * perm-header-show-feedback minimal-data template — Phase 91 Plan 02
- * (TIR6:68-77).
+ * perm-header-show-feedback minimal-data template.
  *
  * Topology: 1 election, 1 CG with 1 CO, 2 organisations, 1 candidate, 1
  * opinion Likert-5 question. The under-test setting is
@@ -8,10 +7,7 @@
  * Banner.svelte top bar (gated on
  * `topBarSettings.current.actions.feedback === 'show'`).
  *
- * Authoritative spec: TEST-INVENTORY-REFACTOR-6.md:68-77.
- *
- * Prefix discipline: `externalIdPrefix: 'e2e-perm-header-feedback-'` per
- * D-91-PD-05.
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-header-feedback-'`.
  *
  * UNAUTHENTICATED — the spec walks to /en (voter intro) and asserts on the
  * `header-feedback` testid in the Banner; no candidate session needed.

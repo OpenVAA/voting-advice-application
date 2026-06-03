@@ -1,14 +1,11 @@
 /**
- * Shared building blocks for the 8 perm-* minimal-data templates.
+ * Shared building blocks for the perm-* minimal-data templates.
  *
- * Phase 88 Plan 03. Authored from TEST-INVENTORY-REFACTOR-2.md:7-109 (the
- * minimal-base dataset shape + base settings block).
+ * Every entity's `name` field uses the `[<SYMBOL>] <description>` display
+ * convention so specs can match inline via `/\[<SYMBOL>\]/i` regexes without
+ * a shared `TEXT_RE` bucket.
  *
- * Per 88-03-SCOPE.md "Operator amendments — A2": every entity's `name` field
- * uses the `[<SYMBOL>] <description>` display convention so specs can match
- * inline via `/\[<SYMBOL>\]/i` regexes without a shared `TEXT_RE` bucket.
- *
- * Prefix discipline (88-03-SCOPE.md:104-110 + invariant 6):
+ * Prefix discipline:
  *   - Templates declare a unique `externalIdPrefix` (e.g.
  *     `'test-perm-1e1cg1co-'`). The writer prepends this prefix to every
  *     row's top-level `external_id` AT WRITE TIME — row external_ids in
@@ -18,27 +15,26 @@
  *     `parent: { external_id: ... }`) are passed VERBATIM by the writer to
  *     bulk_import — so they MUST contain the FULL prefixed external_id
  *     (e.g. `organization: { external_id: 'test-perm-1e1cg1co-or-1' }`).
- *     The shared builder functions below take a `prefix` argument (named-
- *     params per D-91-PD-07) and emit refs with `${prefix}or-1` etc.
+ *     The shared builder functions below take a `prefix` argument (named
+ *     params) and emit refs with `${prefix}or-1` etc.
  *
- * This matches the documented behavior in Risk #6 of 88-03-PLAN.md and
- * preserves the parallel-only contract: `setupFromTemplate.ts:131-137`
+ * This preserves the parallel-only contract: `setupFromTemplate.ts:131-137`
  * derives the teardown prefix from `template.externalIdPrefix`, so each
- * perm-* setup teardowns ITS OWN unique prefix.
+ * perm-* setup tears down ITS OWN unique prefix.
  *
- * **Named-params convention (Phase 91 / D-91-PD-07):** Every builder that
- * takes more than one parameter where positional order can be confused
- * accepts a single named-options object. Single-param builders stay
- * parameterless. `buildCandidate.answersByExternalId` is now OPTIONAL —
- * the leaf builder writes an empty map when omitted; the assembling layer
- * (perm template OR `buildMinimal` helper) is responsible for populating
- * the answer map when the candidate should carry answers.
+ * Named-params convention: every builder that takes more than one parameter
+ * where positional order can be confused accepts a single named-options
+ * object. Single-param builders stay parameterless.
+ * `buildCandidate.answersByExternalId` is OPTIONAL — the leaf builder writes
+ * an empty map when omitted; the assembling layer (perm template OR
+ * `buildMinimal` helper) is responsible for populating the answer map when
+ * the candidate should carry answers.
  */
 
 /**
- * Likert-5 choices for opinion questions. Mirrors the e2e/base shape so
- * Phase 57's latent-factor emitter (ordinal dispatch) treats perm-* opinion
- * questions identically.
+ * Likert-5 choices for opinion questions. Mirrors the e2e/base shape so the
+ * latent-factor emitter (ordinal dispatch) treats perm-* opinion questions
+ * identically.
  */
 export const LIKERT_5_EN: Array<{ id: string; label: { en: string }; normalizableValue: number }> = [
   { id: '1', label: { en: 'Fully disagree' }, normalizableValue: 1 },
@@ -49,12 +45,12 @@ export const LIKERT_5_EN: Array<{ id: string; label: { en: string }; normalizabl
 ];
 
 /**
- * Minimal-base app_settings — TEST-INVENTORY-REFACTOR-2.md:19-109 verbatim.
+ * Minimal-base app_settings.
  *
- * The `elections.startFromConstituencyGroup` key is OMITTED entirely per Plan
- * 88-01 Deviation T1 (JSONB drops `undefined` keys and breaks
- * `toMatchObject` parity in setupFromTemplate's post-seed assertion). Variants
- * that override `disallowSelection` spread this base.
+ * The `elections.startFromConstituencyGroup` key is OMITTED entirely because
+ * JSONB drops `undefined` keys and breaks `toMatchObject` parity in
+ * setupFromTemplate's post-seed assertion. Variants that override
+ * `disallowSelection` spread this base.
  *
  * `matching.minimumAnswers = 1` so the perm-* specs need to answer at most
  * one opinion question.
@@ -132,8 +128,7 @@ export const MINIMAL_BASE_APP_SETTINGS = {
  * category reference IS NOT a nested ref — `question_categories` rows have
  * no cross-table refs themselves.
  *
- * Parameterless per D-91-PD-07 (single-param functions stay positional /
- * parameterless).
+ * Parameterless (single-param functions stay parameterless).
  */
 export function buildQuestionCategories(): Array<Record<string, unknown>> {
   return [
@@ -155,7 +150,7 @@ export function buildQuestionCategories(): Array<Record<string, unknown>> {
 }
 
 /**
- * Options for {@link buildQuestions} (D-91-PD-07 named-params).
+ * Options for {@link buildQuestions} (named-params).
  */
 export interface BuildQuestionsOptions {
   /** External-id prefix (e.g. `'e2e-perm-1e1cg1co-'`). Used for nested category refs. */
@@ -166,9 +161,6 @@ export interface BuildQuestionsOptions {
  * Build the standard 2 questions (text info + Likert5 opinion). The nested
  * `category` ref uses the FULL prefixed external_id (writer passes refs
  * verbatim).
- *
- * **Refactored from `buildQuestions(P: string)` to named-params per
- * D-91-PD-07.**
  */
 export function buildQuestions({ prefix }: BuildQuestionsOptions): Array<Record<string, unknown>> {
   return [
@@ -200,7 +192,7 @@ export function buildQuestions({ prefix }: BuildQuestionsOptions): Array<Record<
  * Build the standard 2 organizations. Row external_ids are BARE (the writer
  * prepends the template prefix).
  *
- * Parameterless per D-91-PD-07.
+ * Parameterless.
  */
 export function buildOrganizations(): Array<Record<string, unknown>> {
   return [
@@ -224,7 +216,7 @@ export function buildOrganizations(): Array<Record<string, unknown>> {
 }
 
 /**
- * Options for {@link buildStandardCandidateAnswers} (D-91-PD-07 named-params).
+ * Options for {@link buildStandardCandidateAnswers} (named-params).
  */
 export interface BuildStandardCandidateAnswersOptions {
   /** External-id prefix (e.g. `'e2e-perm-1e1cg1co-'`). Used for question-ref keys. */
@@ -237,11 +229,8 @@ export interface BuildStandardCandidateAnswersOptions {
  * Keyed by FULL prefixed question external_ids (importAnswers resolves the
  * question external_id verbatim against the DB).
  *
- * **Refactored from `buildStandardCandidateAnswers(P: string)` to
- * named-params per D-91-PD-07.** Callers that previously relied on
- * `buildCandidate` calling this automatically must now pass the result
- * explicitly via `buildCandidate({ ..., answersByExternalId:
- * buildStandardCandidateAnswers({ prefix }) })`.
+ * Callers pass the result explicitly via `buildCandidate({ ...,
+ * answersByExternalId: buildStandardCandidateAnswers({ prefix }) })`.
  */
 export function buildStandardCandidateAnswers({
   prefix
@@ -253,14 +242,13 @@ export function buildStandardCandidateAnswers({
 }
 
 /**
- * Options for {@link buildCandidate} (D-91-PD-07 named-params).
+ * Options for {@link buildCandidate} (named-params).
  *
  * `answersByExternalId` is OPTIONAL — when omitted the leaf builder writes
  * an empty answer map. The assembling layer (perm template OR `buildMinimal`
  * helper) is responsible for populating answers when the candidate should
- * carry them. This is the API change locked by D-91-PD-07 (enables the
- * clean-candidate use case that Phase 91 Plan 91-02's hide-if-missing-
- * answers perm A6 depends on).
+ * carry them. This enables the clean-candidate use case the
+ * hide-if-missing-answers perm depends on.
  */
 export interface BuildCandidateOptions {
   /** External-id prefix (e.g. `'e2e-perm-1e1cg1co-'`). Used for nested organization ref. */
@@ -286,9 +274,6 @@ export interface BuildCandidateOptions {
  * Build a candidate row. Row external_id is BARE (writer prepends prefix).
  * The nested `organization` ref uses the FULL prefixed external_id.
  *
- * **Refactored from `buildCandidate(P, orgN, candLetter, idSuffix,
- * sortOrder)` to named-params + optional `answersByExternalId` per
- * D-91-PD-07.**
  */
 export function buildCandidate({
   prefix,
@@ -311,7 +296,7 @@ export function buildCandidate({
 }
 
 /**
- * Options for {@link buildElectionConstituencyNoms} (D-91-PD-07 named-params).
+ * Options for {@link buildElectionConstituencyNoms} (named-params).
  */
 export interface BuildElectionConstituencyNomsOptions {
   /** External-id prefix (e.g. `'e2e-perm-1e1cg1co-'`). */
@@ -337,9 +322,6 @@ export interface BuildElectionConstituencyNomsOptions {
  * nom, ...) for the given election × constituency. Returns 2 + N rows.
  *
  * Row external_ids are BARE; nested refs use the FULL prefixed external_id.
- *
- * **Refactored from a 6-positional signature to named-params per
- * D-91-PD-07.**
  */
 export function buildElectionConstituencyNoms({
   prefix,

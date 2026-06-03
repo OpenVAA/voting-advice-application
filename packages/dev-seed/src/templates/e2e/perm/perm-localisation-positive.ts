@@ -1,11 +1,9 @@
 /**
- * perm-localisation-positive minimal-data template — Phase 90 Plan 04;
- * ported to `buildMinimal` helper in Phase 91 Plan 91-01 Task 2.
+ * perm-localisation-positive minimal-data template.
  *
  * Operates against the 3-locale `staticSettings.supportedLocales` base
  * (`[en, fi, sv]`) directly — NO runtime override. The single-locale variant
- * (perm-localisation-negative) was deferred to a future Stage B i18n phase
- * (see `.planning/todos/pending/2026-05-11-e2e-01-single-locale-runtime-override.md`).
+ * (perm-localisation-negative) is not seeded here.
  *
  * Topology: 1 election, 1 CG with 1 CO, 1 organisation, 1 candidate, 1
  * nomination. 2 question categories (qc-info + qc-opin), each carrying 2
@@ -20,12 +18,8 @@
  * to all 4 questions. Finnish answers are AUTHORED BY THE SPEC at runtime via
  * the multilingualTextField fixture's setLocaleValue('fi', ...) calls.
  *
- * Authoritative spec: TEST-INVENTORY-REFACTOR-5.md:52-95 (adapted: assertions
- * expect 3 user-facing locales en/fi/sv instead of the original 2-locale
- * override scenario; the en↔fi authoring walk is structurally unchanged).
- *
- * Prefix discipline: `externalIdPrefix: 'e2e-perm-l10n-pos-'` per D-90-01
- * (distinct from the other 89-04 + 90 perm templates).
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-l10n-pos-'` (distinct from
+ * every other perm template).
  *
  * Settings: APP_SETTINGS spreads MINIMAL_BASE_APP_SETTINGS verbatim (helper
  * default) — no i18n override. The runtime `locales` export from `$lib/i18n`
@@ -43,11 +37,10 @@
  * q3 + q4 require `allow_open: true` because the multilingual surface on the
  * opinion editor is the OPEN-ANSWER COMMENT textarea
  * (`<Input type="textarea-multilingual">` at
- * `routes/candidate/(protected)/questions/[questionId]/+page.svelte:294-304`)
- * — RESEARCH §"Pitfall 5". Without `allow_open=true` the comment block does
- * not render and the assertions on q3/q4 would target a missing element.
+ * `routes/candidate/(protected)/questions/[questionId]/+page.svelte:294-304`).
+ * Without `allow_open=true` the comment block does not render and the
+ * assertions on q3/q4 would target a missing element.
  *
- * Port discipline (Phase 91 D-91-PD-03): assertions preserved byte-for-byte.
  * The L10N spec depends on:
  *   - The candidate's BARE external_id = `ca-1-1a` (hardcoded in the spec
  *     at perm-localisation-positive.spec.ts:88 as
@@ -65,8 +58,7 @@
  * Override `question_categories`, `questions`, `candidates`, and
  * `nominations` with the hand-authored bespoke shapes the spec depends on.
  * The composed Template is structurally identical to the pre-port hand-
- * authored template (byte-for-byte parity for the spec's selectors and
- * assertions).
+ * authored template (parity for the spec's selectors and assertions).
  */
 
 import { LIKERT_5_EN } from './shared';
@@ -110,9 +102,8 @@ export const permLocalisationPositiveTemplate: Template = {
     ]
   },
 
-  // 4 questions inline — mirrors the pre-port hand-authored template
-  // verbatim. q2 + q4 carry customData.disableMultilingual; q3 + q4 carry
-  // allow_open=true (Pitfall 5).
+  // 4 questions inline. q2 + q4 carry customData.disableMultilingual; q3 + q4
+  // carry allow_open=true.
   questions: {
     count: 0,
     fixed: [
@@ -143,7 +134,7 @@ export const permLocalisationPositiveTemplate: Template = {
         name: { en: '[Q3] First opinion question' },
         choices: LIKERT_5_EN,
         category: { external_id: `${P}qc-opin` },
-        // allow_open=true gates the OPEN-ANSWER COMMENT textarea per Pitfall 5
+        // allow_open=true gates the OPEN-ANSWER COMMENT textarea
         allow_open: true,
         required: true,
         sort_order: 100,
@@ -166,12 +157,11 @@ export const permLocalisationPositiveTemplate: Template = {
 
   // 1 candidate (`ca-1-1a`) with ToU accepted and ENGLISH-ONLY answers to
   // all 4 questions. Finnish answers are AUTHORED at runtime by the spec
-  // via multilingualTextField.setLocaleValue('fi', '[fi-answer-qN]') —
-  // NOT seeded here (D-90-07 / TIR5:69-81). Per Pitfall 3: the candidate
-  // has NO auth.users row — the spec drives Inbucket registration to
-  // obtain an auth identity. The seeded English answers persist to
-  // `candidate.answers` via importAnswers and are the baseline for the
-  // PERM-L10N-POS-03 / PERM-L10N-POS-06 "English visible" assertions.
+  // via multilingualTextField.setLocaleValue('fi', '[fi-answer-qN]') — NOT
+  // seeded here. The candidate has NO auth.users row — the spec drives
+  // Inbucket registration to obtain an auth identity. The seeded English
+  // answers persist to `candidate.answers` via importAnswers and are the
+  // baseline for the "English visible" assertions.
   candidates: {
     count: 0,
     fixed: [

@@ -1,6 +1,5 @@
 /**
- * perm-hide-if-missing-answers minimal-data template — Phase 91 Plan 02
- * (TIR6:95-102, A6).
+ * perm-hide-if-missing-answers minimal-data template.
  *
  * Topology: 1 election, 1 CG with 1 CO, 2 organisations, 2 candidates, 2
  * opinion Likert-5 questions. Cand-1 (`[CA1A]`) answers BOTH questions;
@@ -9,14 +8,12 @@
  * gate in `apps/frontend/src/lib/api/adapters/supabase/
  * supabaseDataProvider.ts:384`).
  *
- * Pitfall 6 — the same gate also filters orgs from voter results when
- * EVERY candidate in that org is filtered. With cand-1 visible in or-1,
- * or-1 still appears. The spec asserts on candidate visibility ONLY (cand-1
- * visible / cand-2 hidden), NOT on org count.
+ * The same gate also filters orgs from voter results when EVERY candidate in
+ * that org is filtered. With cand-1 visible in or-1, or-1 still appears. The
+ * spec asserts on candidate visibility ONLY (cand-1 visible / cand-2 hidden),
+ * NOT on org count.
  *
- * Authoritative spec: TEST-INVENTORY-REFACTOR-6.md:95-102.
- *
- * Prefix: 'e2e-perm-hide-missing-' per D-91-PD-05.
+ * Prefix: 'e2e-perm-hide-missing-'.
  */
 
 import { buildMinimal } from '../../_helpers/buildMinimal';

@@ -1,14 +1,12 @@
 /**
- * perm-2e-shared minimal-data template — Phase 88 Plan 03.
+ * perm-2e-shared minimal-data template.
  *
  * Topology: 2 elections sharing 1 constituency group with 1 constituency.
  * Election selector shown (2 elections); no constituency selector after
  * election selection (single shared CG/CO is auto-implied).
  *
- * Authoritative spec: TEST-INVENTORY-REFACTOR-2.md:142-145
- *
- * Prefix discipline: `externalIdPrefix: 'e2e-perm-2e-shared-'` per
- * 88-03-SCOPE.md:104-110. Row external_ids bare; refs prefixed.
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-2e-shared-'`. Row
+ * external_ids bare; refs prefixed.
  *
  * Settings: MINIMAL_BASE_APP_SETTINGS verbatim.
  */
