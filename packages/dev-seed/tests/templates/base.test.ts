@@ -62,44 +62,44 @@ function allExternalIds(): Array<string> {
 
 const REQUIRED_EXTERNAL_IDS: Array<{ table: string; id: string }> = [
   // 2-election base (regional + municipal)
-  { table: 'elections', id: 'test-el-reg' },
-  { table: 'elections', id: 'test-el-mun' },
+  { table: 'elections', id: 'test-e2e-base-el-reg' },
+  { table: 'elections', id: 'test-e2e-base-el-mun' },
 
   // 2 constituency groups
-  { table: 'constituency_groups', id: 'test-cg-reg' },
-  { table: 'constituency_groups', id: 'test-cg-mun' },
+  { table: 'constituency_groups', id: 'test-e2e-base-cg-reg' },
+  { table: 'constituency_groups', id: 'test-e2e-base-cg-mun' },
 
   // 6 constituencies (2 regional + 4 municipal, hierarchical)
-  { table: 'constituencies', id: 'test-co-reg-n' },
-  { table: 'constituencies', id: 'test-co-reg-s' },
-  { table: 'constituencies', id: 'test-co-mun-ne' },
-  { table: 'constituencies', id: 'test-co-mun-sw' },
+  { table: 'constituencies', id: 'test-e2e-base-co-reg-n' },
+  { table: 'constituencies', id: 'test-e2e-base-co-reg-s' },
+  { table: 'constituencies', id: 'test-e2e-base-co-mun-ne' },
+  { table: 'constituencies', id: 'test-e2e-base-co-mun-sw' },
 
   // 5 organizations
-  { table: 'organizations', id: 'test-or-aa' },
-  { table: 'organizations', id: 'test-or-c' },
+  { table: 'organizations', id: 'test-e2e-base-or-aa' },
+  { table: 'organizations', id: 'test-e2e-base-or-c' },
 
   // 2 alliances
-  { table: 'alliances', id: 'test-al-a' },
-  { table: 'alliances', id: 'test-al-b' },
+  { table: 'alliances', id: 'test-e2e-base-al-a' },
+  { table: 'alliances', id: 'test-e2e-base-al-b' },
 
   // question categories (1 info + 7 opinion)
-  { table: 'question_categories', id: 'test-qg-info' },
-  { table: 'question_categories', id: 'test-qg-opin-base' },
-  { table: 'question_categories', id: 'test-qg-opin-el-reg' },
-  { table: 'question_categories', id: 'test-qg-opin-co-mun-se-sw' },
+  { table: 'question_categories', id: 'test-e2e-base-qg-info' },
+  { table: 'question_categories', id: 'test-e2e-base-qg-opin-base' },
+  { table: 'question_categories', id: 'test-e2e-base-qg-opin-el-reg' },
+  { table: 'question_categories', id: 'test-e2e-base-qg-opin-co-mun-se-sw' },
 
   // key questions (info text consumed by results cardContents; opinion base)
-  { table: 'questions', id: 'test-qu-info-text' },
-  { table: 'questions', id: 'test-qu-info-text-link' },
-  { table: 'questions', id: 'test-qu-opin-base-1-likert5' },
+  { table: 'questions', id: 'test-e2e-base-qu-info-text' },
+  { table: 'questions', id: 'test-e2e-base-qu-info-text-link' },
+  { table: 'questions', id: 'test-e2e-base-qu-opin-base-1-likert5' },
 
   // key candidates (perfect/worst/partial/independent + unregistered)
-  { table: 'candidates', id: 'test-ca-aa-special' },
-  { table: 'candidates', id: 'test-ca-aa-hidden' },
-  { table: 'candidates', id: 'test-ca-ba-1' },
-  { table: 'candidates', id: 'test-ca-independent' },
-  { table: 'candidates', id: 'test-ca-aa-unregistered' }
+  { table: 'candidates', id: 'test-e2e-base-ca-aa-special' },
+  { table: 'candidates', id: 'test-e2e-base-ca-aa-hidden' },
+  { table: 'candidates', id: 'test-e2e-base-ca-ba-1' },
+  { table: 'candidates', id: 'test-e2e-base-ca-independent' },
+  { table: 'candidates', id: 'test-e2e-base-ca-aa-unregistered' }
 ];
 
 // ---------------------------------------------------------------------------
@@ -170,40 +170,40 @@ describe('baseTemplate — multi-election row-count shape (derived from e2e/base
 });
 
 describe('baseTemplate — display-text contracts (bracketed [id] desc naming)', () => {
-  it('test-el-reg name is "[el-reg] Regional Election"', () => {
-    const e = fixedOf('elections').find((r) => r.external_id === 'test-el-reg') as
+  it('test-e2e-base-el-reg name is "[el-reg] Regional Election"', () => {
+    const e = fixedOf('elections').find((r) => r.external_id === 'test-e2e-base-el-reg') as
       | { name?: { en?: string } }
       | undefined;
     expect(e?.name?.en).toBe('[el-reg] Regional Election');
   });
 
-  it('test-el-mun name is "[el-mun] Municipal Election"', () => {
-    const e = fixedOf('elections').find((r) => r.external_id === 'test-el-mun') as
+  it('test-e2e-base-el-mun name is "[el-mun] Municipal Election"', () => {
+    const e = fixedOf('elections').find((r) => r.external_id === 'test-e2e-base-el-mun') as
       | { name?: { en?: string } }
       | undefined;
     expect(e?.name?.en).toBe('[el-mun] Municipal Election');
   });
 
-  it('test-ca-aa-special is the partial-answer "Special" candidate under party AA', () => {
-    const c = fixedOf('candidates').find((r) => r.external_id === 'test-ca-aa-special') as
+  it('test-e2e-base-ca-aa-special is the partial-answer "Special" candidate under party AA', () => {
+    const c = fixedOf('candidates').find((r) => r.external_id === 'test-e2e-base-ca-aa-special') as
       | { first_name?: string; organization?: { external_id?: string } }
       | undefined;
     expect(c?.first_name).toBe('Special');
-    expect(c?.organization?.external_id).toBe('test-or-aa');
+    expect(c?.organization?.external_id).toBe('test-e2e-base-or-aa');
   });
 });
 
 describe('baseTemplate — registration + hierarchy invariants', () => {
-  it('test-ca-aa-hidden has NO terms_of_use_accepted (candidate-level hidden)', () => {
-    const c = fixedOf('candidates').find((r) => r.external_id === 'test-ca-aa-hidden') as
+  it('test-e2e-base-ca-aa-hidden has NO terms_of_use_accepted (candidate-level hidden)', () => {
+    const c = fixedOf('candidates').find((r) => r.external_id === 'test-e2e-base-ca-aa-hidden') as
       | { terms_of_use_accepted?: string }
       | undefined;
     expect(c).toBeDefined();
     expect(c?.terms_of_use_accepted).toBeUndefined();
   });
 
-  it('test-ca-aa-unregistered has NO terms_of_use_accepted and NO answers', () => {
-    const c = fixedOf('candidates').find((r) => r.external_id === 'test-ca-aa-unregistered') as
+  it('test-e2e-base-ca-aa-unregistered has NO terms_of_use_accepted and NO answers', () => {
+    const c = fixedOf('candidates').find((r) => r.external_id === 'test-e2e-base-ca-aa-unregistered') as
       | { terms_of_use_accepted?: string; answersByExternalId?: unknown }
       | undefined;
     expect(c).toBeDefined();
@@ -211,8 +211,8 @@ describe('baseTemplate — registration + hierarchy invariants', () => {
     expect(c?.answersByExternalId).toBeUndefined();
   });
 
-  it('test-ca-independent has no organization ref (independent candidate)', () => {
-    const c = fixedOf('candidates').find((r) => r.external_id === 'test-ca-independent') as
+  it('test-e2e-base-ca-independent has no organization ref (independent candidate)', () => {
+    const c = fixedOf('candidates').find((r) => r.external_id === 'test-e2e-base-ca-independent') as
       | { organization?: unknown }
       | undefined;
     expect(c).toBeDefined();
@@ -220,7 +220,7 @@ describe('baseTemplate — registration + hierarchy invariants', () => {
   });
 
   it('every municipal constituency carries a parent ref to its regional constituency', () => {
-    const munIds = ['test-co-mun-ne', 'test-co-mun-nw', 'test-co-mun-se', 'test-co-mun-sw'];
+    const munIds = ['test-e2e-base-co-mun-ne', 'test-e2e-base-co-mun-nw', 'test-e2e-base-co-mun-se', 'test-e2e-base-co-mun-sw'];
     const cos = fixedOf('constituencies') as Array<{
       external_id?: string;
       parent?: { external_id?: string };
@@ -228,25 +228,25 @@ describe('baseTemplate — registration + hierarchy invariants', () => {
     for (const id of munIds) {
       const co = cos.find((c) => c.external_id === id);
       expect(co, `missing constituency ${id}`).toBeDefined();
-      expect(co?.parent?.external_id, `${id} missing parent ref`).toMatch(/^test-co-reg-[ns]$/);
+      expect(co?.parent?.external_id, `${id} missing parent ref`).toMatch(/^test-e2e-base-co-reg-[ns]$/);
     }
   });
 });
 
 describe('baseTemplate — question scoping sentinels', () => {
-  it('test-qg-opin-el-reg carries an _elections scoping sentinel for test-el-reg', () => {
+  it('test-e2e-base-qg-opin-el-reg carries an _elections scoping sentinel for test-e2e-base-el-reg', () => {
     const cat = fixedOf('question_categories').find(
-      (r) => r.external_id === 'test-qg-opin-el-reg'
+      (r) => r.external_id === 'test-e2e-base-qg-opin-el-reg'
     ) as { _elections?: { external_id?: Array<string> } } | undefined;
-    expect(cat?._elections?.external_id).toContain('test-el-reg');
+    expect(cat?._elections?.external_id).toContain('test-e2e-base-el-reg');
   });
 
-  it('test-qg-opin-co-mun-se-sw carries a _constituencies sentinel for the SE/SW municipalities', () => {
+  it('test-e2e-base-qg-opin-co-mun-se-sw carries a _constituencies sentinel for the SE/SW municipalities', () => {
     const cat = fixedOf('question_categories').find(
-      (r) => r.external_id === 'test-qg-opin-co-mun-se-sw'
+      (r) => r.external_id === 'test-e2e-base-qg-opin-co-mun-se-sw'
     ) as { _constituencies?: { external_id?: Array<string> } } | undefined;
     expect(cat?._constituencies?.external_id).toEqual(
-      expect.arrayContaining(['test-co-mun-se', 'test-co-mun-sw'])
+      expect.arrayContaining(['test-e2e-base-co-mun-se', 'test-e2e-base-co-mun-sw'])
     );
   });
 });

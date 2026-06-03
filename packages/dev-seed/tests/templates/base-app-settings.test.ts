@@ -5,7 +5,7 @@
  * dataset (formerly `baseV1`). Locks:
  *
  *   - `app_settings.fixed[0]` exists with a single fixed row whose
- *     external_id starts with `test-` (so `runTeardown('test-', ...)` matches).
+ *     external_id starts with `test-e2e-base-` (so `runTeardown('test-e2e-base-', ...)` matches).
  *   - `app_settings.fixed[0].settings` deep-equals `BASE_APP_SETTINGS`
  *     (formerly `BASE_V1_APP_SETTINGS` / `E2E_BASE_APP_SETTINGS`).
  *   - the writer reads `row.settings` (NOT `row.value`) so Pass-5
@@ -41,10 +41,10 @@ describe('baseTemplate.app_settings — fixed-row shape contract', () => {
     expect(frag?.fixed).toHaveLength(1);
   });
 
-  it('fixed[0].external_id starts with "test-" so runTeardown("test-", ...) matches (Pitfall 6)', () => {
+  it('fixed[0].external_id starts with "test-e2e-base-" so runTeardown("test-e2e-base-", ...) matches (Pitfall 6)', () => {
     const row = fragmentOf('app_settings')?.fixed?.[0];
     expect(typeof row?.external_id).toBe('string');
-    expect((row?.external_id as string).startsWith('test-')).toBe(true);
+    expect((row?.external_id as string).startsWith('test-e2e-base-')).toBe(true);
   });
 
   it('fixed[0] uses `settings` field (NOT `value`) so writer Pass-5 fires (Pitfall 2)', () => {
@@ -125,7 +125,7 @@ describe('BASE_APP_SETTINGS — base dataset settings contract', () => {
     expect(BASE_APP_SETTINGS.results.sections).toEqual(['candidate', 'organization']);
     expect(BASE_APP_SETTINGS.results.cardContents.candidate).toEqual([
       'submatches',
-      { question: { externalId: 'test-qu-info-text' } }
+      { question: { externalId: 'test-e2e-base-qu-info-text' } }
     ]);
   });
 });
@@ -136,7 +136,7 @@ describe("BUILT_IN_TEMPLATES['e2e/base'].app_settings — registry visibility", 
       BUILT_IN_TEMPLATES['e2e/base'] as unknown as Record<string, unknown>
     ).app_settings as FragmentView | undefined;
     const row = registryFrag?.fixed?.[0];
-    expect((row?.external_id as string).startsWith('test-')).toBe(true);
+    expect((row?.external_id as string).startsWith('test-e2e-base-')).toBe(true);
     expect(row?.settings).toEqual(BASE_APP_SETTINGS);
   });
 });
