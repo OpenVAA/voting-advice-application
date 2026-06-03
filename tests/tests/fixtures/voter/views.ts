@@ -1,7 +1,7 @@
 /**
  * @file Composition root for the TIR3 function-fixtures (Phase 88 Plan 04).
  *
- * Consumed by `voter-mega-journey.spec.ts` (Plan 88-04 T5-T8) and any
+ * Consumed by `voter-journey.spec.ts` (Plan 88-04 T5-T8) and any
  * future perm-* specs that need the resultsPage / entityFilters /
  * entityDetails abstractions.
  *

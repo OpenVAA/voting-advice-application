@@ -4,7 +4,7 @@
  * Sibling to `tests/tests/fixtures/voter/views.ts` (the voter / results
  * composition root) and `tests/tests/fixtures/voter/voter-journey.fixture.ts`.
  *
- * Consumed by the candidate-journey spec (`candidate-mega-journey.spec.ts`,
+ * Consumed by the candidate-journey spec (`candidate-journey.spec.ts`,
  * renamed to `candidate-journey.spec.ts` in Plan 05) in Plan 89-03.
  *
  * Surface:
@@ -55,17 +55,17 @@ import type { CandidateQuestionPageFixture } from './candidateQuestionPage.fixtu
 import type { CandidateQuestionsOverviewPageFixture } from './candidateQuestionsOverviewPage.fixture';
 import type { CandidateTermsOfUsePageFixture } from './candidateTermsOfUsePage.fixture';
 
-type CandidateMegaFixtureOptions = {
+type CandidateJourneyFixtureOptions = {
   /**
    * The Mailpit recipient address for the emailBucket fixture. Spec sets
    * this via `test.use({ recipientEmail: '...' })` at file scope. Default:
    * `'unregistered-aa@test.openvaa.local'` — matches the unregistered
-   * candidate added to baseV1 in Plan 89-01 per Wave-0 R8.
+   * candidate added to base in Plan 89-01 per Wave-0 R8.
    */
   recipientEmail: string;
 };
 
-type CandidateMegaFixtures = CandidateMegaFixtureOptions & {
+type CandidateJourneyFixtures = CandidateJourneyFixtureOptions & {
   emailBucket: EmailBucketFixture;
   candidateLoginPage: CandidateLoginPageFixture;
   candidateTermsOfUsePage: CandidateTermsOfUsePageFixture;
@@ -79,7 +79,7 @@ type CandidateMegaFixtures = CandidateMegaFixtureOptions & {
   candidateLogoutButton: CandidateLogoutButtonFixture;
 };
 
-export const test = base.extend<CandidateMegaFixtures>({
+export const test = base.extend<CandidateJourneyFixtures>({
   recipientEmail: ['unregistered-aa@test.openvaa.local', { option: true }],
 
   emailBucket: async ({ page, recipientEmail }, use) => {

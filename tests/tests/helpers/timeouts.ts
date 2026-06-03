@@ -3,8 +3,8 @@
  *
  * Phase 92 Plan 04 (WS3 TIMEOUTS — CONTEXT decisions D-10/D-11/D-12).
  * Single source of truth: this module replaces the 4 near-duplicate local
- * `TIMEOUT` objects that previously lived in candidate-mega-journey.spec.ts,
- * voter-mega-journey.spec.ts, utils/voterIntro.ts and
+ * `TIMEOUT` objects that previously lived in candidate-journey.spec.ts,
+ * voter-journey.spec.ts, utils/voterIntro.ts and
  * perm-localisation-positive.spec.ts. Bucket values are the MAX observed
  * across those sources so consolidation never tightens an existing budget.
  *
@@ -22,7 +22,7 @@
  *               value is a NO-OP unless the spec calls `test.setTimeout(...)`,
  *               and any value above 90s must stay inline at the call site as a
  *               named `// reason:` exception (see perm-localisation-positive
- *               180s and voter-mega-journey 120s). Do NOT raise this default.
+ *               180s and voter-journey 120s). Do NOT raise this default.
  *
  * @see tests/playwright.config.ts (global `timeout: 90000` — same ceiling as testMax)
  */

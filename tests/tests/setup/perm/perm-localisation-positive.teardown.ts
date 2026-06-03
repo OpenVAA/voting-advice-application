@@ -12,7 +12,7 @@
  * Without this cleanup the user leaks and the next run's `inviteUserByEmail`
  * fails with "A user with this email address has already been registered",
  * breaking the whole downstream perm chain (this spec is its anchor).
- * Mirrors the candidate-mega.teardown.ts pattern; `unregisterCandidate` is
+ * Mirrors the candidate-journey.teardown.ts pattern; `unregisterCandidate` is
  * idempotent (no-op when no matching auth.users row exists).
  */
 

@@ -2,7 +2,7 @@
  * @file candidateLoginPage fixture — Phase 89 Plan 02 (TIR4:64-68 + D-89-02).
  *
  * Function-fixture for the candidate /login page. Sibling to other
- * candidate-fixtures; composed in `candidate-mega.ts`.
+ * candidate-fixtures; composed in `candidate-journey.ts`.
  *
  * Surface (TIR4:64-68):
  *  - enterEmail(email)             — fill the login-email field.
@@ -17,10 +17,6 @@
  * Disabled-state assertions are performed at the SPEC site via
  * `expect(loginPage.getSubmitButton()).toBeDisabled()` — the fixture does
  * NOT expose a state-baked `expectSubmitDisabled()`.
- *
- * SIBLING (not replacement) to the legacy tests/tests/pages/candidate/LoginPage.ts.
- * Both coexist until 89-LAST retires the legacy specs that consume the
- * PageObject class.
  *
  * **Rigidity contract** (Phase 88 Plan 04 SCOPE acceptance #6):
  * - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO

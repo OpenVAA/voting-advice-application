@@ -3,7 +3,7 @@
  *
  * Phase 88 Plan 03 (test catalog audit). Authored from:
  *   - Design source: TEST-INVENTORY-REFACTOR-2.md:113-136 (helper signatures).
- *   - Behavioral model: tests/tests/specs/voter/voter-mega-journey.spec.ts:492-633
+ *   - Behavioral model: tests/tests/specs/voter/voter-journey.spec.ts:492-633
  *     (home → intro → elections → constituencies walk pattern).
  *   - Binding spec: .planning/phases/88-e2e-test-catalog-audit-remove-add-
  *     consolidate-tests-fresh-ba/88-03-SCOPE.md (read "Post-plan-check
@@ -25,7 +25,7 @@
  * `[<SYMBOL>] <description>` convention. Specs match inline using
  * `/\[<SYMBOL>\]/i` regexes — this module exports NO TEXT_RE constant.
  *
- * Modeled on the mega-journey first-parts pattern but applied to minimal-data
+ * Modeled on the journey first-parts pattern but applied to minimal-data
  * datasets — every contract is enforceable on the minimal seed.
  */
 

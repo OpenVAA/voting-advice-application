@@ -1052,9 +1052,9 @@ test.describe('voter journey', () => {
     });
 
     // ====================================================================
-    // Phase 91 Plan 03 — Mega-journey absorption steps (D-91-MJ-01)
+    // Phase 91 Plan 03 — Journey absorption steps (D-91-MJ-01)
     //
-    // Two new test.step blocks landed here per RESEARCH §"Mega-Journey
+    // Two new test.step blocks landed here per RESEARCH §"Journey
     // Absorption Points — Voter": feedbackDialog (TIR6:34-61) absorbs the
     // retired voter-feedback-persistence.spec.ts; all-nominations
     // (TIR6:63-66) exercises the /nominations route via the new

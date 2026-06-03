@@ -1,5 +1,5 @@
 /**
- * base data-setup project — Phase 88 Plan 01 Task 5; renamed baseV1→base in
+ * base data-setup project — Phase 88 Plan 01 Task 5; renamed base→base in
  * Phase 93 Plan 04 (D-10) and decoupled from the perm anchor (FLAG-6).
  *
  * Invokes the generic `setupFromTemplate('e2e/base')` helper to seed the

@@ -1,6 +1,6 @@
 /**
  * base data-teardown project — Phase 88 Plan 01 Task 5; renamed
- * baseV1→base in Phase 93 Plan 04 (D-10).
+ * base→base in Phase 93 Plan 04 (D-10).
  *
  * Scoped to PREFIX='test-'. runTeardown is idempotent so the
  * prefix-collision risk documented in the Plan 88-01 Risk #4 is mitigated

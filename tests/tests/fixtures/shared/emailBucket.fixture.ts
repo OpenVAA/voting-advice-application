@@ -3,7 +3,7 @@
  *
  * Function-fixture wrapping the existing emailHelper.ts Mailpit utilities.
  * Sibling to other candidate-fixtures (candidateLoginPage.fixture.ts, etc.);
- * composed in `candidate-mega.ts`.
+ * composed in `candidate-journey.ts`.
  *
  * D-89-05: this fixture WRAPS emailHelper.ts — it does NOT re-author the
  * Mailpit HTTP plumbing. emailHelper.ts STAYS in place for legacy specs.

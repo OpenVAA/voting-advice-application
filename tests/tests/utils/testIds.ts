@@ -213,12 +213,12 @@ export const testIds = {
       childrenTab: 'voter-entity-detail-children',
       // Wraps a single opinion-question display block inside EntityOpinions.svelte
       // (heading + optional missing-answer message + optional OpinionQuestionInput).
-      // Consumed by voter-mega-journey.spec.ts → expectQuestionDisplayToHave.
+      // Consumed by voter-journey.spec.ts → expectQuestionDisplayToHave.
       opinionQuestion: 'entity-opinion-question',
       // 260524-l1t D6: sr-only sibling marker on QuestionChoices.svelte's
       // radio whose `otherSelected == id` (i.e. the entity's chosen answer
       // in display mode). Replaces the `.entitySelected` raw-locator
-      // suppression used by the voter-mega-journey classifyVoterEntityRows helper.
+      // suppression used by the voter-journey classifyVoterEntityRows helper.
       entitySelectedAnswer: 'entity-selected-answer',
       // Phase 91 Plan 02 (TIR6:121-142 — D-91-PD-05 A9): testid on the
       // QuestionOpenAnswer wrapper rendered inside EntityOpinions.svelte
@@ -274,7 +274,7 @@ export const testIds = {
     langSelector: 'lang-selector',
     multilingualToggle: 'multilingual-toggle',
     // Phase 91 Plan 03 (TIR6:16-22 — D-91-MJ-01 B1): testid on the inline
-    // ErrorMessage in Input.svelte:641. Consumed by the candidate-mega
+    // ErrorMessage in Input.svelte:641. Consumed by the candidate-journey
     // invalidUrl step + future shared input-validation assertions.
     inputError: 'input-error',
     // Phase 91 Plan 02 (TIR6:104-108 — D-91-PD-05 A7): testid on the root

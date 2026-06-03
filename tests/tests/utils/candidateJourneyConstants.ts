@@ -50,7 +50,7 @@ export const UNREGISTERED_CANDIDATE_EMAIL = 'unregistered-aa@test.openvaa.local'
  * External ID of the unregistered candidate row in the `e2e/base` dataset.
  *
  * Source of truth: packages/dev-seed/src/templates/e2e/base.ts (added
- * in Phase 89 Plan 01 per TIR4:82-90; relocated baseV1.ts→e2e/base.ts in
+ * in Phase 89 Plan 01 per TIR4:82-90; relocated e2e/base.ts→e2e/base.ts in
  * Phase 93 Plan 02).
  */
 export const UNREGISTERED_CANDIDATE_EXTERNAL_ID = 'test-ca-aa-unregistered';

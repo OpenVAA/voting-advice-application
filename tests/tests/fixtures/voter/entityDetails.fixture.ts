@@ -126,7 +126,7 @@ export function createEntityDetails(page: Page) {
      * Assert a question display matches `target` (heading text), with
      * optional matchers for voter / entity answers, numSelected count,
      * and infoText (missing-answer marker text). Subsumes the legacy
-     * `expectQuestionDisplayToHave` util in voter-mega-journey.spec.ts.
+     * `expectQuestionDisplayToHave` util in voter-journey.spec.ts.
      *
      * Uses `filter({ hasText: target })` on the entity-opinion-question
      * div directly (more robust than the legacy helper's

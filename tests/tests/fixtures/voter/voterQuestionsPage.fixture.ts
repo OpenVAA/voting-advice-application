@@ -16,7 +16,7 @@
  * NOTE: the Questions route is gated behind voter location (election +
  * constituency selection). A bare `goToPage` from an unlocated session bounces
  * through the selector chain; callers that need a located walk should use the
- * `voter-mega.fixture.ts` traversal helpers. `goToPage` here is for already-
+ * `voter-journey.fixture.ts` traversal helpers. `goToPage` here is for already-
  * located sessions (or deep-link redirect-resume probes).
  *
  * **Rigidity contract** (Phase 88 Plan 04 SCOPE acceptance #6):

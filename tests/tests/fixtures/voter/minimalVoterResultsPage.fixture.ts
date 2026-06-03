@@ -1,7 +1,7 @@
 /**
  * @file minimalVoterResultsPage fixture — Phase 93 Plan 03 (D-16, FLAG-5).
  *
- * Extracted from `voter-journey.fixture.ts` (formerly `voter-mega.fixture.ts`)
+ * Extracted from `voter-journey.fixture.ts` (formerly `voter-journey.fixture.ts`)
  * so the minimal-dataset perm specs depend on a narrow, single-purpose
  * fixture rather than the full voter-journey composition root.
  *

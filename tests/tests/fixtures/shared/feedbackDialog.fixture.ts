@@ -3,9 +3,9 @@
  *
  * Shared function-fixture for the feedback dialog (Feedback.svelte +
  * FeedbackModal.svelte). Authored standalone under tests/tests/fixtures/shared/
- * per D-91-MJ-02 (NOT extended into voter-mega.fixture.ts) so the candidate
- * mega-journey can later consume the same surface without coupling to
- * voter-mega's option chain.
+ * per D-91-MJ-02 (NOT extended into voter-journey.fixture.ts) so the candidate
+ * journey can later consume the same surface without coupling to
+ * voter-journey's option chain.
  *
  * Surface (RESEARCH §"Pattern 2"):
  *  - dialog: Locator              — testid-bound feedback-form anchor.

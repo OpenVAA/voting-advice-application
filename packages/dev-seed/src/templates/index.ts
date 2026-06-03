@@ -44,7 +44,7 @@ import type { Overrides } from '../types';
 /**
  * Built-in template name → Template. The canonical e2e base dataset is
  * registered under the `e2e/base` invocation name (Phase 93 Plan 02 / D-01;
- * formerly `baseV1`). The old bare `e2e` template name is RETIRED — its
+ * formerly `base`). The old bare `e2e` template name is RETIRED — its
  * dataset was discarded and replaced by the base dataset.
  * Phase 88 Plan 03 adds 8 perm-* minimal-data templates for the new
  * election + constituency permutations test family (88-03-SCOPE.md:104-110).

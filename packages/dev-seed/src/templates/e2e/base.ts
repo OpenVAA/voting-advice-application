@@ -1,15 +1,15 @@
 /**
- * `baseV1` built-in template — Phase 88 mega-journey scaffolding (Plan 88-01).
+ * `base` built-in template — Phase 88 journey scaffolding (Plan 88-01).
  *
  * Authored from TEST-INVENTORY-REFACTOR-1.md:13-200 (verbatim spec); this is
- * the canonical dataset for the new voter mega-journey at
- * tests/tests/specs/voter/voter-mega-journey.spec.ts.
+ * the canonical dataset for the new voter journey at
+ * tests/tests/specs/voter/voter-journey.spec.ts.
  *
  * Lands ALONGSIDE the existing `e2e` template (single-election shape); both
  * share `externalIdPrefix: ''` + write `test-`-prefixed external_ids verbatim,
- * cleared by `runTeardown('test-', client)`. Phase 88-01 runs the baseV1
- * chain as a NEW set of playwright projects (data-setup-baseV1 →
- * voter-mega-journey → data-teardown-baseV1) parallel to the existing chain.
+ * cleared by `runTeardown('test-', client)`. Phase 88-01 runs the base
+ * chain as a NEW set of playwright projects (data-setup-base →
+ * voter-journey → data-teardown-base) parallel to the existing chain.
  *
  * ## Convention (top-of-file invariants)
  *
@@ -71,7 +71,7 @@
  *
  * ## Partial-answer candidate arrangement
  *
- * Per USER NOTE on Task 1: voter mega-journey skips QU-Opin-Opt-A-1 (was
+ * Per USER NOTE on Task 1: voter journey skips QU-Opin-Opt-A-1 (was
  * Base-B-1) and QU-Opin-EL-Reg-1; skips QU-Open-Filt-Mun-NE; and never sees
  * QG-Opin-Opt-B (was Base-C; unchecked) nor QG-Opin-CO-Mun-SE-SW (filtered
  * out for
@@ -205,7 +205,7 @@ export const BASE_APP_SETTINGS = {
       // {externalId} shape is flattened to the question's DB UUID by the
       // Writer's Pass-5 resolver (resolveAppSettingsExternalIds) BEFORE the
       // merge_jsonb_column RPC. The persisted JSONB contains plain UUID
-      // strings; baseV1.ts never hardcodes post-seed UUIDs.
+      // strings; e2e/base.ts never hardcodes post-seed UUIDs.
       candidate: ['submatches', { question: { externalId: 'test-qu-info-text' } }],
       organization: ['children'],
       alliance: ['children']
@@ -708,7 +708,7 @@ export const baseTemplate: Template = {
 
       // Phase 89 Plan 01 (TIR4:94-99): 3 filtered info questions scoped to
       // municipal-only / north-only / south-only constituencies/elections.
-      // Voter-mega-journey's voter (CO-Reg-N + CO-Mun-NE per voter-mega
+      // Voter-journey's voter (CO-Reg-N + CO-Mun-NE per voter-journey
       // fixture's first-option pick) sees ONLY the north-only filtered
       // question on the candidate-details info tab.
       {
@@ -1440,7 +1440,7 @@ export const baseTemplate: Template = {
       // Phase 89 Plan 01 (TIR4:90): nomination for the unregistered
       // candidate under OR-AA in CO-Reg-N. Election symbol "999" is the
       // canonical sentinel for the unregistered-candidate fixture used
-      // by Plan 89-03 candidate-mega-journey.
+      // by Plan 89-03 candidate-journey.
       {
         external_id: 'test-nom-reg-n-ca-aa-unregistered',
         election_symbol: '999',
@@ -1795,7 +1795,7 @@ export const baseTemplate: Template = {
     count: 0,
     fixed: [
       {
-        external_id: 'test-app-settings-baseV1',
+        external_id: 'test-app-settings-base',
         settings: BASE_APP_SETTINGS
       }
     ]

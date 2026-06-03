@@ -38,9 +38,7 @@
  *
  * **General API principle** (per plan): question methods take the DISPLAYED
  * label (string | RegExp). Specs holding externalIds resolve to labels via
- * baseV1 at the call site.
- *
- * SIBLING (not replacement) to the legacy tests/tests/pages/candidate/ProfilePage.ts.
+ * base at the call site.
  *
  * **Rigidity contract** (Phase 88 Plan 04 SCOPE acceptance #6):
  * - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO

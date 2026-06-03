@@ -10,7 +10,7 @@
  * Canonical-shape precedent: tests/tests/setup/data.setup.ts:76-154.
  * The body below mirrors data.setup.ts's setup() callback verbatim minus
  * the auth-wiring step (auth is the consumer's responsibility — the
- * mega-journey is voter-only; future plans compose this helper with
+ * journey is voter-only; future plans compose this helper with
  * explicit auth setup if needed).
  *
  * Resolution: looks `templateName` up in `BUILT_IN_TEMPLATES`. Filesystem
@@ -25,7 +25,7 @@
  *
  * Notes on the operator USER NOTE on Task 2: `likertOnly` is NOT
  * supported. All tests must respect the question set declared by the
- * template — the new baseV1 dataset is authored to not need the
+ * template — the new base dataset is authored to not need the
  * likert-only filter, and adding it here would block the deprecation
  * direction documented at TEST-INVENTORY-REFACTOR-1.md:3.
  */
@@ -62,7 +62,7 @@ export interface SetupFromTemplateOptions {
    * Accepts a single prefix or an array of prefixes — each is fed through
    * runTeardown sequentially. Use the array form when this template needs to
    * clean up after multiple non-related chains (e.g. perm-* setups clearing
-   * both `test-` (baseV1/mega-journey leftover) AND `e2e-perm-` (previous
+   * both `test-` (base/journey leftover) AND `e2e-perm-` (previous
    * perm chain leftover) before seeding).
    *
    * All prefixes are honored BEFORE the template's own prefix teardown.
@@ -152,7 +152,7 @@ export async function setupFromTemplate(
   const overrides = BUILT_IN_OVERRIDES[templateName] ?? {};
   const seed = template!.seed ?? 42;
   // Writer prefix — passed to writer.write(rows, prefix). Templates that
-  // emit pre-prefixed external_ids (e2e + baseV1) declare `externalIdPrefix: ''`
+  // emit pre-prefixed external_ids (e2e + base) declare `externalIdPrefix: ''`
   // so the writer's `${externalIdPrefix}${fx.external_id}` pass-through is a
   // no-op. Generated rows (Phase 56 generators) prepend the prefix.
   const prefix = template!.externalIdPrefix ?? '';
@@ -186,7 +186,7 @@ export async function setupFromTemplate(
   }
 
   // 1b. Pre-clear any stale state from a prior run. runTeardown's 2-char
-  //     guard requires prefix.length >= 2; baseV1 / e2e both use 'test-'.
+  //     guard requires prefix.length >= 2; base / e2e both use 'test-'.
   await runTeardown(teardownPrefix, client);
 
   // 2. Pipeline + writer. Writer Pass-5 applies app_settings.fixed[] via

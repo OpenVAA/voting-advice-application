@@ -16,7 +16,7 @@
  * **Caller-supplied locators / regexes / indexers** (Phase 88 Plan 04 R-10 —
  * fixture coupling guard): every method that targets a specific entity / tab
  * takes a `RegExp | string | ((count: number) => number)` from the caller.
- * NO hardcoded baseV1-specific strings (e.g. `'Party AA'`) in fixture bodies.
+ * NO hardcoded base-specific strings (e.g. `'Party AA'`) in fixture bodies.
  */
 
 import { expect } from '@playwright/test';

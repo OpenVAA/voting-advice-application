@@ -1,7 +1,7 @@
 /**
  * candidate-journey data-setup project — Phase 89 Plan 03 Task 1
  *   ↪ refactored 2026-05-31 to break the voter-journey cascade-skip;
- *   ↪ renamed candidate-mega→candidate-journey in Phase 93 Plan 04 (D-09/D-11).
+ *   ↪ renamed candidate-journey→candidate-journey in Phase 93 Plan 04 (D-09/D-11).
  *
  * BEFORE: this setup called `setupFromTemplate('e2e/base')`, which runs
  * `runTeardown('test-')` before re-seeding. That forced the chain to be
