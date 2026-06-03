@@ -5,6 +5,7 @@
 -->
 <script lang="ts">
   import { trackMount } from '../mountLedger.svelte';
+
   const ledger = trackMount('QuestionsIndex');
 </script>
 

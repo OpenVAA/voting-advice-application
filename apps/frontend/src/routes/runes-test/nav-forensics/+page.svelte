@@ -3,6 +3,7 @@
 -->
 <script lang="ts">
   import { trackMount } from './mountLedger.svelte';
+
   const ledger = trackMount('NavForensicsIndex');
 </script>
 

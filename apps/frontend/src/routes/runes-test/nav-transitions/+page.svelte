@@ -1,5 +1,6 @@
 <script lang="ts">
   import { trackMount } from '../nav-forensics/mountLedger.svelte';
+
   const ledger = trackMount('TransitionsIndex');
   const supported = $derived(typeof document !== 'undefined' && 'startViewTransition' in document);
   const prefersReduce = $derived(typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);

@@ -2,8 +2,8 @@
   Spike 014b — Outer layout
 -->
 <script lang="ts">
-  import { trackMount } from '../nav-forensics/mountLedger.svelte';
   import LedgerPanel from '../nav-forensics/LedgerPanel.svelte';
+  import { trackMount } from '../nav-forensics/mountLedger.svelte';
 
   let { children } = $props();
   const ledger = trackMount('KeyedOuter');

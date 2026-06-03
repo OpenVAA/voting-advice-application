@@ -18,7 +18,7 @@
   <div class="title">Keyed: {electionTab}:{entityTab}</div>
   <div>Counter: <strong>{counter}</strong></div>
   <button onclick={() => counter++}>Increment</button>
-  <div class="muted">Switching tab resets this counter — proves the <code>{`{#key}`}</code> block remounts.</div>
+  <div class="muted">Switching tab resets this counter — proves the <code>{'{#key}'}</code> block remounts.</div>
 </div>
 
 <style>

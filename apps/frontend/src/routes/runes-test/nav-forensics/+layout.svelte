@@ -5,8 +5,9 @@
   layouts produce (Header + nav placeholder + popup queue placeholder).
 -->
 <script lang="ts">
-  import { trackMount } from './mountLedger.svelte';
   import LedgerPanel from './LedgerPanel.svelte';
+  import { trackMount } from './mountLedger.svelte';
+
   let { children } = $props();
 
   const ledger = trackMount('NavForensicsOuterLayout');

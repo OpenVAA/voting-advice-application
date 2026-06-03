@@ -20,10 +20,10 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { dataProvider as dataProviderPromise } from '$lib/api/dataProvider';
-  import { getDataRootRuneContext } from '../contexts/dataRootRuneContext.svelte';
-  import { getVoterRuneContext } from './voterRuneContext.svelte';
   import CanonicalConsumer from './CanonicalConsumer.svelte';
   import DestructureTrapConsumer from './DestructureTrapConsumer.svelte';
+  import { getVoterRuneContext } from './voterRuneContext.svelte';
+  import { getDataRootRuneContext } from '../contexts/dataRootRuneContext.svelte';
 
   const dataRoot = getDataRootRuneContext();
   const ctx = getVoterRuneContext();

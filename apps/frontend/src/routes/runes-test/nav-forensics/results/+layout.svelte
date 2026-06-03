@@ -6,6 +6,7 @@
 -->
 <script lang="ts">
   import { trackMount } from '../mountLedger.svelte';
+
   let { children } = $props();
   const ledger = trackMount('ResultsParentLayout');
 </script>

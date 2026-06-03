@@ -2,8 +2,8 @@
   Spike 014a — Outer layout (same shell as 013 for comparison parity)
 -->
 <script lang="ts">
-  import { trackMount } from '../nav-forensics/mountLedger.svelte';
   import LedgerPanel from '../nav-forensics/LedgerPanel.svelte';
+  import { trackMount } from '../nav-forensics/mountLedger.svelte';
 
   let { children } = $props();
   const ledger = trackMount('PromotedOuter');

@@ -8,7 +8,7 @@
   import { trackMount } from '../../mountLedger.svelte';
 
   const questionId = $derived(page.params.questionId);
-  const ledger = trackMount(`QuestionPage`);
+  const ledger = trackMount('QuestionPage');
 
   // Local $state to demonstrate state loss across Q→Q nav.
   let localCounter = $state(0);

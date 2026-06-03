@@ -6,8 +6,8 @@
 -->
 <script lang="ts">
   import { page } from '$app/state';
-  import { trackMount } from '../../mountLedger.svelte';
   import KeyedInner from './KeyedInner.svelte';
+  import { trackMount } from '../../mountLedger.svelte';
 
   let { children } = $props();
   const ledger = trackMount('ResultsElectionLayout');

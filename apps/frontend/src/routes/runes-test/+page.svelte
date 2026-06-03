@@ -16,7 +16,7 @@
     - toStore / fromStore / writable / readable / derived (the store-derived, not the rune)
 -->
 <script lang="ts">
-  import { ENTITY_TYPE, QUESTION_CATEGORY_TYPE } from '@openvaa/data';
+  import { ENTITY_TYPE } from '@openvaa/data';
   import { DISTANCE_METRIC, MatchingAlgorithm, MISSING_VALUE_METHOD } from '@openvaa/matching';
   import { untrack } from 'svelte';
   import { page } from '$app/state';

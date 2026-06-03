@@ -1211,7 +1211,9 @@ describe('SupabaseDataProvider', () => {
       };
 
       const result = await provider.getQuestionData();
-      const cd = (q: unknown) => (q as { customData: { allowOpen?: boolean; hero?: unknown } }).customData;
+      function cd(q: unknown) {
+        return (q as { customData: { allowOpen?: boolean; hero?: unknown } }).customData;
+      }
 
       expect(cd(result.questions[0]).allowOpen).toBe(false);
       expect(cd(result.questions[1]).allowOpen).toBe(true);

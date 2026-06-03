@@ -6,6 +6,7 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { trackMount } from '../../../mountLedger.svelte';
+
   const ledger = trackMount('ResultsEntityTabPage');
   const entityTab = $derived(page.params.entityTab);
 </script>

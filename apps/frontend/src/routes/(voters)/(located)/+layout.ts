@@ -40,7 +40,9 @@ export async function load({ fetch, parent, untrack, url }) {
    * a leading-`?` next directly produced `…?electionId=…?next=…` — a malformed URL
    * that SvelteKit's URL parser 500s on (CLEAN-02 test 3 reproducer).
    */
-  const withNext = (base: string): string => (nextKv ? `${base}${base.includes('?') ? '&' : '?'}${nextKv}` : base);
+  function withNext(base: string): string {
+    return nextKv ? `${base}${base.includes('?') ? '&' : '?'}${nextKv}` : base;
+  }
 
   // Try to imply ids if not provided
   if (!electionId || !constituencyId) {

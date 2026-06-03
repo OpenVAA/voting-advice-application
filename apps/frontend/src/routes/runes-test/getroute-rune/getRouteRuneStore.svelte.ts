@@ -40,7 +40,9 @@ export type RouteBuilder = (options: RouteOptions) => string;
 // Used in the demo to PROVE that other variants are tracking by contrast.
 export function getRouteVariantA_snapshot(): { readonly current: RouteBuilder } {
   const { params, route, url } = page;
-  const fn: RouteBuilder = (options) => buildRoute(options, { params, route, url });
+  function fn(options: RouteOptions): string {
+    return buildRoute(options, { params, route, url });
+  }
   return {
     get current() {
       return fn;

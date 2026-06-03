@@ -6,8 +6,8 @@
 -->
 <script lang="ts">
   import { onNavigate } from '$app/navigation';
-  import { trackMount } from '../nav-forensics/mountLedger.svelte';
   import LedgerPanel from '../nav-forensics/LedgerPanel.svelte';
+  import { trackMount } from '../nav-forensics/mountLedger.svelte';
 
   let { children } = $props();
   const ledger = trackMount('TransitionOuter');

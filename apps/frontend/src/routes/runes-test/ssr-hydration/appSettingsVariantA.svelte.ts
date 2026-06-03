@@ -23,9 +23,9 @@ import type { DynamicSettings } from '@openvaa/app-shared';
 // fragility risk — confirmed by initial verification where Variant B's
 // page.data merge polluted Variant A's $state through the shared staticSettings
 // reference. Migration phase should consider tightening this helper.
-function pureMerge<T extends object, U extends object>(target: T, additional: U): T & U {
+function pureMerge<TTarget extends object, TAdditional extends object>(target: TTarget, additional: TAdditional): TTarget & TAdditional {
   const nonNull = Object.fromEntries(Object.entries(additional).filter(([, v]) => v != null));
-  return { ...target, ...nonNull } as T & U;
+  return { ...target, ...nonNull } as TTarget & TAdditional;
 }
 
 const CONTEXT_KEY = Symbol('appSettingsVariantA');

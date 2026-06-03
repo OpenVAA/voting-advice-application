@@ -1,5 +1,6 @@
 <script lang="ts">
   import { trackMount } from '../../../nav-forensics/mountLedger.svelte';
+
   const ledger = trackMount('A11yLeaf');
 </script>
 

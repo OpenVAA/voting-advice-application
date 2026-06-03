@@ -4,6 +4,7 @@
 -->
 <script lang="ts">
   import { trackMount } from '../../../nav-forensics/mountLedger.svelte';
+
   const ledger = trackMount('KeyedQuestionsLeafPage');
 </script>
 

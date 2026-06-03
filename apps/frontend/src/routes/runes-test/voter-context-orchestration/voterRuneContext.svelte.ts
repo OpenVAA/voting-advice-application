@@ -26,7 +26,6 @@
  * `voterAnswerRuneStore` to validate the full cascade.
  */
 
-import { ENTITY_TYPE } from '@openvaa/data';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
 import { getDataRootRuneContext } from '../contexts/dataRootRuneContext.svelte';

@@ -21,9 +21,9 @@ import { page } from '$app/state';
 import type { DynamicSettings } from '@openvaa/app-shared';
 
 // PURE merge — see Variant A for the rationale.
-function pureMerge<T extends object, U extends object>(target: T, additional: U): T & U {
+function pureMerge<TTarget extends object, TAdditional extends object>(target: TTarget, additional: TAdditional): TTarget & TAdditional {
   const nonNull = Object.fromEntries(Object.entries(additional).filter(([, v]) => v != null));
-  return { ...target, ...nonNull } as T & U;
+  return { ...target, ...nonNull } as TTarget & TAdditional;
 }
 
 const CONTEXT_KEY = Symbol('appSettingsVariantB');

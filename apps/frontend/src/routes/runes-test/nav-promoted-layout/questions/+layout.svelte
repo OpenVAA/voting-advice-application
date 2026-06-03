@@ -9,9 +9,9 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
-  import { trackMount } from '../../nav-forensics/mountLedger.svelte';
   import MainContentMock from './MainContentMock.svelte';
   import QuestionActionsMock from './QuestionActionsMock.svelte';
+  import { trackMount } from '../../nav-forensics/mountLedger.svelte';
 
   let { children } = $props();
   const ledger = trackMount('PromotedQuestionsLayout');
