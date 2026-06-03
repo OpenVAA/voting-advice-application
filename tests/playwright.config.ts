@@ -230,15 +230,17 @@ export default defineConfig({
     //     outside its discovery surface.
     //   - HIGH-2: perm-* setups chain SEQUENTIALLY within the perm-* family
     //     to prevent app_settings singleton clobbering. The FIRST perm setup
-    //     (data-setup-perm-1e1cg1co) has NO dependencies array — preserves
-    //     "no cross-chain dependency to non-perm chains" (the perm-* family
-    //     runs in parallel with the base / voter-journey / candidate-journey
-    //     chains).
+    //     (data-setup-perm-1e1cg1co) depends on the journey LEAF specs
+    //     [voter-journey, candidate-journey] so the whole perm family runs
+    //     strictly AFTER base + both journeys complete (Phase 93 Plan 06
+    //     Cluster B isolation fix — see the detailed note on that project
+    //     below). This is the perm→journey direction, NOT base→perm, so it
+    //     preserves FLAG-6: opt-in `--project` runs never pull the perm family.
     //   - Each chain teardowns ITS OWN test-perm-<short>- prefix
     //     (parallel-only contract honored within the family).
     //
     // Sequential chain across the family:
-    //   data-setup-perm-1e1cg1co (FIRST — no deps)
+    //   data-setup-perm-1e1cg1co (FIRST — after journey leaves)
     //   → data-setup-perm-2e-shared
     //   → data-setup-perm-2e-asymmetric
     //   → data-setup-perm-startfromcg
