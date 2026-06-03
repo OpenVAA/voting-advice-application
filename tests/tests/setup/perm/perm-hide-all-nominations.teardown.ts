@@ -1,8 +1,7 @@
 /**
- * perm-hide-all-nominations data-teardown project — Phase 91 Plan 02
- * (TIR6:90-93).
+ * perm-hide-all-nominations data-teardown project.
  *
- * Scoped to PREFIX='e2e-perm-hide-all-noms-' per D-91-PD-05.
+ * Scoped to PREFIX='e2e-perm-hide-all-noms-'.
  */
 
 import { runTeardown } from '@openvaa/dev-seed';

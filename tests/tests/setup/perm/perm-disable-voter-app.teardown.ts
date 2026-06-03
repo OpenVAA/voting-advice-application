@@ -1,8 +1,7 @@
 /**
- * perm-disable-voter-app data-teardown project — Phase 89 Plan 04.
+ * perm-disable-voter-app data-teardown project.
  *
- * Scoped to PREFIX='e2e-perm-novapp-' per D-89-03 (matches the template's
- * own externalIdPrefix).
+ * Scoped to PREFIX='e2e-perm-novapp-' (matches the template's own externalIdPrefix).
  */
 
 import { runTeardown } from '@openvaa/dev-seed';

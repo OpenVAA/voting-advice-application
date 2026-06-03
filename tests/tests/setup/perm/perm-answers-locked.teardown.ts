@@ -1,9 +1,7 @@
 /**
- * perm-answers-locked data-teardown project — Phase 91 Plan 02 (TIR6:3-14).
+ * perm-answers-locked data-teardown project.
  *
- * Scoped to PREFIX='e2e-perm-answers-locked-' per D-91-PD-05. Also deletes
- * the per-perm Playwright storage-state JSON file produced by the
- * setup phase.
+ * Scoped to PREFIX='e2e-perm-answers-locked-'. Also deletes the per-perm Playwright storage-state JSON file produced by the setup phase.
  */
 
 import { runTeardown } from '@openvaa/dev-seed';

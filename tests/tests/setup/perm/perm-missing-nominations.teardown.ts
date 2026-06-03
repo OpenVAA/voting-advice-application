@@ -1,8 +1,7 @@
 /**
- * perm-missing-nominations data-teardown project — Phase 90 Plan 02 (TIR5:15-26).
+ * perm-missing-nominations data-teardown project.
  *
- * Scoped to PREFIX='e2e-perm-missnoms-' per D-90-01 (matches the template's
- * own externalIdPrefix).
+ * Scoped to PREFIX='e2e-perm-missnoms-' (matches the template's own externalIdPrefix).
  */
 
 import { runTeardown } from '@openvaa/dev-seed';

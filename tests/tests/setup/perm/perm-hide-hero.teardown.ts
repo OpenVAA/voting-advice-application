@@ -1,7 +1,7 @@
 /**
- * perm-hide-hero data-teardown project — Phase 91 Plan 02 (TIR6:24-32).
+ * perm-hide-hero data-teardown project.
  *
- * Scoped to PREFIX='e2e-perm-hide-hero-' per D-91-PD-05.
+ * Scoped to PREFIX='e2e-perm-hide-hero-'.
  */
 
 import { runTeardown } from '@openvaa/dev-seed';

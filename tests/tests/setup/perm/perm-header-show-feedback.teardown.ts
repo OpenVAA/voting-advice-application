@@ -1,8 +1,7 @@
 /**
- * perm-header-show-feedback data-teardown project — Phase 91 Plan 02
- * (TIR6:68-77).
+ * perm-header-show-feedback data-teardown project.
  *
- * Scoped to PREFIX='e2e-perm-header-feedback-' per D-91-PD-05.
+ * Scoped to PREFIX='e2e-perm-header-feedback-'.
  */
 
 import { runTeardown } from '@openvaa/dev-seed';

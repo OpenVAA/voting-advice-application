@@ -1,8 +1,7 @@
 /**
- * perm-disable-candidate-app data-teardown project — Phase 89 Plan 04.
+ * perm-disable-candidate-app data-teardown project.
  *
- * Scoped to PREFIX='e2e-perm-nocand-' per D-89-03 (matches the template's
- * own externalIdPrefix).
+ * Scoped to PREFIX='e2e-perm-nocand-' (matches the template's own externalIdPrefix).
  */
 
 import { runTeardown } from '@openvaa/dev-seed';

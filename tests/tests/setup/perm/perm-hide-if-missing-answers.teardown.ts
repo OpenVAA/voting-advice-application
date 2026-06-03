@@ -1,8 +1,7 @@
 /**
- * perm-hide-if-missing-answers data-teardown project — Phase 91 Plan 02
- * (TIR6:95-102).
+ * perm-hide-if-missing-answers data-teardown project.
  *
- * Scoped to PREFIX='e2e-perm-hide-missing-' per D-91-PD-05.
+ * Scoped to PREFIX='e2e-perm-hide-missing-'.
  */
 
 import { runTeardown } from '@openvaa/dev-seed';

@@ -1,9 +1,7 @@
 /**
- * perm-disable-allow-open data-teardown project — Phase 91 Plan 02
- * (TIR6:121-142).
+ * perm-disable-allow-open data-teardown project.
  *
- * Scoped to PREFIX='e2e-perm-no-allowopen-' per D-91-PD-05. Also deletes
- * the per-perm Playwright storage-state JSON file produced by the setup.
+ * Scoped to PREFIX='e2e-perm-no-allowopen-'. Also deletes the per-perm Playwright storage-state JSON file produced by the setup.
  */
 
 import { runTeardown } from '@openvaa/dev-seed';

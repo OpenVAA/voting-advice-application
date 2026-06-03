@@ -1,7 +1,7 @@
 /**
- * perm-not-located-2e2cg data-teardown project — Phase 88 Plan 03.
+ * perm-not-located-2e2cg data-teardown project.
  *
- * Scoped to PREFIX='test-perm-notloc-' per 88-03-SCOPE.md:104-110.
+ * Scoped to PREFIX='e2e-perm-notloc-'.
  */
 
 import { runTeardown } from '@openvaa/dev-seed';

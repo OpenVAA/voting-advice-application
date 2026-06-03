@@ -1,7 +1,7 @@
 /**
- * perm-disable-election-1co data-teardown project — Phase 88 Plan 03.
+ * perm-disable-election-1co data-teardown project.
  *
- * Scoped to PREFIX='test-perm-disable-elec-1co-' per 88-03-SCOPE.md:104-110.
+ * Scoped to PREFIX='e2e-perm-disable-elec-1co-'.
  */
 
 import { runTeardown } from '@openvaa/dev-seed';

@@ -1,7 +1,7 @@
 /**
- * perm-disjoint-1co data-teardown project — Phase 88 Plan 03.
+ * perm-disjoint-1co data-teardown project.
  *
- * Scoped to PREFIX='test-perm-disjoint-1co-' per 88-03-SCOPE.md:104-110.
+ * Scoped to PREFIX='e2e-perm-disjoint-1co-'.
  */
 
 import { runTeardown } from '@openvaa/dev-seed';

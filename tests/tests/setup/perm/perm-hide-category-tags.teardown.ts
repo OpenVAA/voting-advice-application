@@ -1,8 +1,7 @@
 /**
- * perm-hide-category-tags data-teardown project — Phase 91 Plan 02
- * (TIR6:111-115).
+ * perm-hide-category-tags data-teardown project.
  *
- * Scoped to PREFIX='e2e-perm-hide-cattags-' per D-91-PD-05.
+ * Scoped to PREFIX='e2e-perm-hide-cattags-'.
  */
 
 import { runTeardown } from '@openvaa/dev-seed';

@@ -1,7 +1,7 @@
 /**
- * perm-2e-shared data-teardown project — Phase 88 Plan 03.
+ * perm-2e-shared data-teardown project.
  *
- * Scoped to PREFIX='test-perm-2e-shared-' per 88-03-SCOPE.md:104-110.
+ * Scoped to PREFIX='e2e-perm-2e-shared-'.
  */
 
 import { runTeardown } from '@openvaa/dev-seed';

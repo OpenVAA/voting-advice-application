@@ -1,8 +1,7 @@
 /**
- * perm-hide-election-tags data-teardown project — Phase 91 Plan 02
- * (TIR6:104-108).
+ * perm-hide-election-tags data-teardown project.
  *
- * Scoped to PREFIX='e2e-perm-hide-eltags-' per D-91-PD-05.
+ * Scoped to PREFIX='e2e-perm-hide-eltags-'.
  */
 
 import { runTeardown } from '@openvaa/dev-seed';
