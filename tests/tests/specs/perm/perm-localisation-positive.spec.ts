@@ -43,7 +43,7 @@
  *       - expectTranslationOptions(commentScope, false).
  *  9. Logout.
  * 10. PERM-L10N-POS-07 — voter cross-check (D-90-07 in-perm-spec, NOT
- *     voter-mega-journey):
+ *     voter-journey):
  *      - /en/results → click candidate card → assert info-tab contains
  *        '[en-answer-q1]'; opinions-tab contains '[en-answer-q3]'.
  *      - langSelector.switchTo('fi') → full-reload to /fi/...
@@ -57,11 +57,11 @@
  * Candidate login: seeded candidate has ToU pre-accepted but NO auth.users
  * row (dev-seed excludes auth.users by design). Spec drives Inbucket
  * registration via SupabaseAdminClient.sendEmail per Pitfall 3 — mirrors
- * the candidate-mega-journey.spec.ts:298-310 chain.
+ * the candidate-journey.spec.ts:298-310 chain.
  *
  * Per-perm recipientEmail: 'candidate-l10n-pos-aa@test.openvaa.local' —
  * unique per perm prevents cross-perm Inbucket pollution (Open Question 4
- * RESOLVED + candidate-mega.ts:87 recipient-filter contract).
+ * RESOLVED + candidate-journey.ts:87 recipient-filter contract).
  *
  * Rigidity contract: every assertion HARD — no expect.soft, no try/catch
  * wrapping expect(), no .catch fallbacks.

@@ -1,7 +1,7 @@
 /**
  * perm-hide-if-missing-answers — Phase 91 Plan 02 (TIR6:95-102, A6).
  *
- * Voter walks the located + answered flow via the voter-mega fixture's
+ * Voter walks the located + answered flow via the voter-journey fixture's
  * `minimalVoterResultsPage`, landing on /results with all opinion
  * questions answered. With `entities.hideIfMissingAnswers.candidate=true`
  * AND cand-2 missing an answer to Q2, cand-2 is filtered out — only cand-1

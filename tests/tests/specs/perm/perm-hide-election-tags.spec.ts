@@ -13,20 +13,17 @@
 
 import { expect, test } from '@playwright/test';
 import { testIds } from '../../utils/testIds';
+import { navigateToFirstQuestion } from '../../utils/voterNavigation';
 
 test.describe('perm-hide-election-tags', () => {
   test('showElectionTags=false: election-tag absent on /questions', async ({ page }) => {
-    // Voter walk: home → elections-selector → constituencies-selector → /questions.
-    await page.goto('/en');
-    await page.getByTestId(testIds.voter.home.startButton).click();
-    await expect(page.getByTestId(testIds.voter.elections.continue)).toBeVisible();
-    await page.getByTestId(testIds.voter.elections.continue).click();
-    await expect(page.getByTestId(testIds.voter.constituencies.continue)).toBeVisible();
-    await page.getByTestId(testIds.voter.constituencies.continue).click();
-
-    // Land explicitly on /questions (rather than /results) — the question
-    // heading is where ElectionTag would otherwise render.
-    await page.goto('/en/questions');
+    // Voter walk: home → (intro) → elections → constituencies → first question.
+    // Uses the robust race-based `navigateToFirstQuestion` (the same passer the
+    // voter-journey fixture uses) instead of a hand-rolled home→elections-continue
+    // walk: the hand-roll skipped the intro page ("Let's start!") and timed out
+    // waiting for voter-elections-continue (Pitfall 6). The helper lands on a
+    // real /questions/<id> page — the heading is where ElectionTag would render.
+    await navigateToFirstQuestion(page);
     await expect(page.getByTestId(testIds.shared.electionTag)).toHaveCount(0);
   });
 });

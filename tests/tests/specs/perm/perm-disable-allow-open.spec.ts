@@ -2,7 +2,7 @@
  * perm-disable-allow-open — Phase 91 Plan 02 (TIR6:121-142, A9).
  *
  * Phase 91 Plan 05 (CR-02 closure): voter-side walk delegated to
- * voter-mega.fixture.ts. Candidate-side block unchanged semantically —
+ * voter-journey.fixture.ts. Candidate-side block unchanged semantically —
  * storage-state minted by refactored perm-disable-allow-open.setup.ts
  * (Task 3, CR-01 closure).
  *
@@ -13,7 +13,7 @@
  * `navigateToFirstQuestion` traversal) rather than `answeredVoterPage`
  * (which hard-waits for the skipped intro start button and would time out).
  *
- * Both describe blocks consume `voterMegaTest as test` (Option B from
+ * Both describe blocks consume `minimalVoterResultsTest as test` (Option B from
  * Plan 91-05 §Task 6) to unify the file under a single test runner —
  * eliminates the `playwright/no-standalone-expect` lint failure that fires
  * when the lint rule's test-block detector does not recognise a non-`test`

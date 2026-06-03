@@ -19,7 +19,7 @@
  * → assert per-rule 0-violation gate + global 0-violation gate.
  *
  * Phase 91 Plan 04 (D-91-RS-02b) — Located routes now consume the
- * voter-mega.fixture.ts fixtures:
+ * voter-journey.fixture.ts fixtures:
  *   - `questions` route → `locatedVoterPage` (walks Home → Elections →
  *     Constituencies → /questions intro and STOPS).
  *   - `results` + `voter-detail-drawer` routes → `answeredVoterPage`
@@ -124,7 +124,7 @@ for (const route of UNLOCATED_ROUTES) {
   });
 }
 
-// ── Located routes — voter-mega fixture consumes (D-91-RS-02b) ──────────
+// ── Located routes — voter-journey fixture consumes (D-91-RS-02b) ──────────
 
 voterJourneyTest('A11Y-04 axe smoke — questions', async ({ locatedVoterPage: page }, testInfo) => {
   // locatedVoterPage walks Home → Elections → Constituencies → /questions
