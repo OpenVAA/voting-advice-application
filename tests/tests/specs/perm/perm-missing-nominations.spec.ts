@@ -1,15 +1,11 @@
 /**
- * perm-missing-nominations — Phase 90 Plan 02 (TIR5:15-26).
- *
  * Topology: 2 elections, 1 shared CG/CO, 1 candidate, 1 candidate nomination
  * in el-1 only. The voter selects both elections → the missing-nominations
  * modal surfaces the 'some' variant with el-2 marked (no nominations for
  * this election).
  *
- * Authoritative spec: TEST-INVENTORY-REFACTOR-5.md:15-26.
- *
- * Rigidity contract (TIR5:5-13 + Phase 88 lineage): every assertion HARD —
- * no expect.soft, no try/catch wrapping expect(), no .catch fallbacks.
+ * Rigidity contract: every assertion is HARD — no expect.soft, no try/catch
+ * wrapping expect(), no .catch fallbacks.
  *
  * Navigation shape: the voter app's election-selector page auto-populates
  * `selected` with every election in the dataset via a `$effect` (see
@@ -18,8 +14,8 @@
  * el-2 selected. With one shared CG carrying one CO, the constituency
  * selector either auto-advances (single-CG/single-CO collapse) or accepts
  * a single continue click. The missing-nominations modal opens on FIRST
- * entry to `/results` per the layout's `modalShownForKey` debounce (Pitfall
- * 7 — no in-and-out bouncing).
+ * entry to `/results` per the layout's `modalShownForKey` debounce (no
+ * in-and-out bouncing).
  */
 
 import { expect, test } from '../../fixtures/voter/views';
@@ -45,7 +41,7 @@ test.describe('perm-missing-nominations', () => {
     const modal = page.getByTestId(testIds.voter.missingNominationsModal);
     await expect(modal).toBeVisible();
 
-    // 4. Stable-ID assertions per D-90-03 + D-90-06: assert on the seeded
+    // 4. Stable-ID assertions: assert on the seeded
     //    `[EL1]` / `[EL2]` prefixes in election names rendered inside the
     //    modal's per-election rows (apps/frontend/src/routes/(voters)/
     //    (located)/+layout.svelte:200-209).

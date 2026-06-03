@@ -1,5 +1,6 @@
 /**
- * perm-localisation-positive — Phase 90 Plan 04 (TIR5:52-95, adapted).
+ * Multi-locale (en/fi/sv) candidate authoring walk plus a voter-side
+ * cross-check.
  *
  * Topology: 1 election / 1 CG / 1 CO / 1 organisation / 1 candidate /
  * 1 nomination + 2 question categories (qc-info + qc-opin) × 2 questions:
@@ -9,32 +10,25 @@
  *   - q4 (singleChoiceOrdinal + allow_open=true + customData.disableMultilingual)
  *
  * Settings: operates against the 3-locale `staticSettings.supportedLocales`
- * base (`[en, fi, sv]`) directly — NO runtime override. The single-locale
- * variant (perm-localisation-negative) was deferred to a future Stage B i18n
- * phase (see `.planning/todos/pending/2026-05-11-e2e-01-single-locale-runtime-override.md`).
+ * base (`[en, fi, sv]`) directly — NO runtime override. The langSelector
+ * assertion expects 3 user-facing locales (en/fi/sv); the en↔fi authoring walk
+ * is structurally the same regardless.
  *
- * Authoritative spec: TEST-INVENTORY-REFACTOR-5.md:52-95 (adapted: the
- * langSelector assertion expects 3 user-facing locales — en/fi/sv — instead
- * of the original 2-locale `[en, fi]` override scenario; the en↔fi authoring
- * walk is structurally unchanged).
- *
- * Walk (strict — rigidity contract per TIR5:5-13):
- *  1. PERM-L10N-POS-01 — voter root /en: langSelector visible with [en, fi, sv].
- *  2. PERM-L10N-POS-02 — switchTo('fi') → URL is /fi/, voter-home start
- *     button shows non-English text ('Aloita' for Finnish); switchTo('en')
- *     → URL is /en/, voter-home start button shows English again ('Start').
+ * Walk (strict):
+ *  1. Voter root /en: langSelector visible with [en, fi, sv].
+ *  2. switchTo('fi') → URL is /fi/, voter-home start button shows non-English
+ *     text ('Aloita' for Finnish); switchTo('en') → URL is /en/, voter-home
+ *     start button shows English again ('Start').
  *  3. Inbucket-driven candidate registration → ToU is already accepted (the
  *     seeded candidate carries terms_of_use_accepted), so login lands on the
  *     candidate home directly.
- *  4. PERM-L10N-POS-03 — profile q1 ('[Q1]'): textbox value contains
- *     '[en-answer-q1]'; expectTranslationOptions(scope, true).
- *  5. PERM-L10N-POS-04 — openTranslations(q1) → setLocaleValue(fi,
- *     '[fi-answer-q1]') → closeTranslations → expectLocaleHidden(fi).
- *  6. PERM-L10N-POS-05 — profile q2 ('[Q2]'):
- *     expectTranslationOptions(scope, false).
+ *  4. Profile q1 ('[Q1]'): textbox value contains '[en-answer-q1]';
+ *     expectTranslationOptions(scope, true).
+ *  5. openTranslations(q1) → setLocaleValue(fi, '[fi-answer-q1]') →
+ *     closeTranslations → expectLocaleHidden(fi).
+ *  6. Profile q2 ('[Q2]'): expectTranslationOptions(scope, false).
  *  7. Save profile via candidateProfilePage.submit().
- *  8. PERM-L10N-POS-06 (q3 + q4 — opinion-editor): navigate to questions
- *     overview, start; on q3:
+ *  8. q3 + q4 opinion-editor: navigate to questions overview, start; on q3:
  *       - assert comment textarea contains '[en-answer-q3]';
  *       - expectTranslationOptions(commentScope, true);
  *       - openTranslations → setLocaleValue(fi, '[fi-answer-q3]') →
@@ -42,28 +36,26 @@
  *     Save and continue to q4. On q4:
  *       - expectTranslationOptions(commentScope, false).
  *  9. Logout.
- * 10. PERM-L10N-POS-07 — voter cross-check (D-90-07 in-perm-spec, NOT
- *     voter-journey):
+ * 10. Voter cross-check:
  *      - /en/results → click candidate card → assert info-tab contains
  *        '[en-answer-q1]'; opinions-tab contains '[en-answer-q3]'.
  *      - langSelector.switchTo('fi') → full-reload to /fi/...
  *      - Re-open candidate details if the switch landed off the detail
- *        dialog (Assumption A3 — switchTo preserves the path so usually
- *        no re-navigation is needed, but the dialog state may not survive
- *        the reload; if the dialog closed, click the card again).
+ *        dialog (switchTo preserves the path so usually no re-navigation is
+ *        needed, but the dialog state may not survive the reload; if the
+ *        dialog closed, click the card again).
  *      - assert info-tab contains '[fi-answer-q1]'; opinions-tab contains
  *        '[fi-answer-q3]'.
  *
  * Candidate login: seeded candidate has ToU pre-accepted but NO auth.users
  * row (dev-seed excludes auth.users by design). Spec drives Inbucket
- * registration via SupabaseAdminClient.sendEmail per Pitfall 3 — mirrors
- * the candidate-journey.spec.ts:298-310 chain.
+ * registration via SupabaseAdminClient.sendEmail — mirrors the
+ * candidate-journey registration chain.
  *
  * Per-perm recipientEmail: 'candidate-l10n-pos-aa@test.openvaa.local' —
- * unique per perm prevents cross-perm Inbucket pollution (Open Question 4
- * RESOLVED + candidate-journey.ts:87 recipient-filter contract).
+ * unique per perm prevents cross-perm Inbucket pollution.
  *
- * Rigidity contract: every assertion HARD — no expect.soft, no try/catch
+ * Rigidity contract: every assertion is HARD — no expect.soft, no try/catch
  * wrapping expect(), no .catch fallbacks.
  */
 
@@ -76,7 +68,7 @@ import { testIds } from '../../utils/testIds';
 // reason: l10n positive spec runs a full multi-locale (en/fi/sv) candidate
 // register → login → profile → questions walk PLUS a voter-side cross-check.
 // Both timeouts exceed the central TIMEOUTS buckets and stay inline as
-// documented exceptions per D-12:
+// documented exceptions:
 //   - L10N_SLOW_PAGE (15s) > TIMEOUTS.slowPage (10s): the candidate-card /
 //     dialog l10n content waits need extra cold-start + locale-switch headroom.
 //   - L10N_TEST_MAX (180s) > TIMEOUTS.testMax (90s): the multi-locale walk does
@@ -99,7 +91,7 @@ test.use({
 });
 
 test.describe('perm-localisation-positive', () => {
-  test('locales=[en,fi,sv]: full TIR5:52-95 walk including voter-side cross-check', async ({
+  test('localisation walk across en/fi/sv with voter-side cross-check', async ({
     page,
     emailBucket,
     candidatePasswordSetter,
@@ -118,8 +110,8 @@ test.describe('perm-localisation-positive', () => {
     const client = new SupabaseAdminClient();
 
     // ============== Step 1: voter root — langSelector visible (en + fi + sv) ===
-    // PERM-L10N-POS-01: With the 3-locale staticSettings base [en, fi, sv]
-    // active, the LanguageSelection NavGroup at LanguageSelection.svelte:32
+    // With the 3-locale staticSettings base [en, fi, sv] active, the
+    // LanguageSelection NavGroup at LanguageSelection.svelte:32
     // renders (locales.length > 1 gate evaluates true). The selector exposes
     // one NavItem per locale.
 
@@ -132,7 +124,7 @@ test.describe('perm-localisation-positive', () => {
     await voterNav.close();
 
     // ============== Step 2: switchTo('fi') → UI re-localises → switchTo('en')
-    // PERM-L10N-POS-02. The voter-home start button label is driven by the
+    // The voter-home start button label is driven by the
     // `dynamic.frontPage.startButton` i18n key; in English it resolves to
     // 'Start' (or similar), in Finnish to 'Aloita'. We assert on the
     // English-vs-Finnish word stems that are stable across Paraglide bundle
@@ -180,8 +172,8 @@ test.describe('perm-localisation-positive', () => {
     );
 
     // ============== Step 3: candidate registration via Inbucket ===========
-    // Pitfall 3: seeded candidate has no auth.users row. Drive registration
-    // via sendEmail (which calls inviteUserByEmail under the hood).
+    // The seeded candidate has no auth.users row. Drive registration via
+    // sendEmail (which calls inviteUserByEmail under the hood).
 
     // Defensive self-heal: if a PRIOR run crashed before its teardown ran, the
     // invited auth user leaks and inviteUserByEmail below fails with "already
@@ -211,33 +203,32 @@ test.describe('perm-localisation-positive', () => {
     await candidatePasswordSetter.expectNotVisible();
 
     // ============== Step 5: profile q1 — English answer + Finnish authoring
-    // PERM-L10N-POS-03 + PERM-L10N-POS-04. Navigate to the EDITABLE
-    // info-question section per Pitfall 4 (NOT the locked section — that
-    // one uses a route-level disableMultilingual prop, a different
+    // Navigate to the EDITABLE info-question section (NOT the locked section —
+    // that one uses a route-level disableMultilingual prop, a different
     // mechanism).
 
-    // reason: candidate-route navigation — out of Phase 92 voter-fixture scope.
+    // reason: candidate-route navigation — out of voter-fixture scope.
     await page.goto('/en/candidate/profile');
     await candidateProfilePage.expectQuestionsVisible([/\[Q1\]/, /\[Q2\]/]);
 
     const q1Scope = candidateProfilePage.getQuestion(/\[Q1\]/);
 
-    // PERM-L10N-POS-03 — assert the default-locale (English) input value
-    // shows '[en-answer-q1]'. The Input renders one editable textbox for the
-    // default locale; assert that textbox carries the seeded English answer.
+    // Assert the default-locale (English) input value shows '[en-answer-q1]'.
+    // The Input renders one editable textbox for the default locale; assert
+    // that textbox carries the seeded English answer.
     const q1DefaultTextbox = q1Scope.getByRole('textbox').first();
     await expect(q1DefaultTextbox).toHaveValue(/\[en-answer-q1\]/);
     await multilingualTextField.expectTranslationOptions(q1Scope, true);
 
-    // PERM-L10N-POS-04 — Finnish authoring on q1.
+    // Finnish authoring on q1.
     await multilingualTextField.openTranslations(q1Scope);
     await multilingualTextField.setLocaleValue(q1Scope, 'fi', '[fi-answer-q1]');
     await multilingualTextField.closeTranslations(q1Scope);
     await multilingualTextField.expectLocaleHidden(q1Scope, 'fi');
 
     // ============== Step 6: profile q2 — no translation options ===========
-    // PERM-L10N-POS-05. q2 carries customData.disableMultilingual=true so
-    // even with locales.length > 1 the toggle is fully absent.
+    // q2 carries customData.disableMultilingual=true so even with
+    // locales.length > 1 the toggle is fully absent.
 
     const q2Scope = candidateProfilePage.getQuestion(/\[Q2\]/);
     await multilingualTextField.expectTranslationOptions(q2Scope, false);
@@ -251,7 +242,7 @@ test.describe('perm-localisation-positive', () => {
     await candidateProfilePage.expectSubmitMessage();
 
     // ============== Step 8: opinion-editor q3 + q4 — comment multilingual
-    // PERM-L10N-POS-06. Navigate to the questions overview → open q3.
+    // Navigate to the questions overview → open q3.
     //
     // The seeded candidate already carries answers to BOTH opinion questions
     // (q3 value '3' + comment '[en-answer-q3]', q4 value '3'), so the overview
@@ -325,16 +316,16 @@ test.describe('perm-localisation-positive', () => {
     // Since all required answers are seeded + persisted, logout is direct
     // (no confirmation dialog).
 
-    // reason: candidate-route navigation — out of Phase 92 voter-fixture scope.
+    // reason: candidate-route navigation — out of voter-fixture scope.
     await page.goto('/en/candidate');
     await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({
       timeout: L10N_SLOW_PAGE
     });
     await candidateLogoutButton.clickWithoutDialog();
 
-    // ============== Step 10: voter cross-check (D-90-07) =================
-    // PERM-L10N-POS-07. Open candidate-details on results, assert English
-    // answers; switch to Finnish, assert Finnish answers reflect.
+    // ============== Step 10: voter cross-check =================
+    // Open candidate-details on results, assert English answers; switch to
+    // Finnish, assert Finnish answers reflect.
 
     await resultsPage.goToPage('en');
     const candidateCard = page
@@ -347,8 +338,8 @@ test.describe('perm-localisation-positive', () => {
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible({ timeout: L10N_SLOW_PAGE });
 
-    // voter-side cross-check assertions (D-90-07): the entity-details panel
-    // testid surface is `voter-entity-detail-info` (info tab) and
+    // voter-side cross-check assertions: the entity-details panel testid
+    // surface is `voter-entity-detail-info` (info tab) and
     // `voter-entity-detail-opinions` (opinions tab), as defined at
     // apps/frontend/src/lib/dynamic-components/entityDetails/EntityDetails.svelte
     // lines 150 + 152 and centralised in testIds.voter.entityDetail.infoTab /
@@ -369,20 +360,20 @@ test.describe('perm-localisation-positive', () => {
     // The entity-details dialog covers the header, so the menu-toggle is not
     // clickable. Close the dialog first (Escape), then open the nav drawer to
     // reach the language selector. The spec re-navigates to /fi/results and
-    // re-opens the card below (Assumption A3), so tearing down the dialog
-    // here is acceptable. No drawer close needed — switchTo reloads.
+    // re-opens the card below, so tearing down the dialog here is acceptable.
+    // No drawer close needed — switchTo reloads.
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();
     await voterNav.open();
     // langSelector switchTo full-reload; the dialog state may not survive
-    // — re-open the candidate card if the dialog closed (Assumption A3).
+    // — re-open the candidate card if the dialog closed.
     await langSelector.switchTo('fi');
     await expect(page).toHaveURL(/\/fi(\/|$)/);
 
     // Re-establish the candidate-details dialog if it is no longer visible
-    // post-reload. Assumption A3: a full-page reload typically tears down
-    // the modal-driven dialog state, so re-clicking the card is the
-    // expected path. We assert the path explicitly: navigate to /fi/results
+    // post-reload. A full-page reload typically tears down the modal-driven
+    // dialog state, so re-clicking the card is the expected path. We assert
+    // the path explicitly: navigate to /fi/results
     // (the switchTo target preserved the segment after locale, but to be
     // robust we re-navigate) and re-open.
     await resultsPage.goToPage('fi');

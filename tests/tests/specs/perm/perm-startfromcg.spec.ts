@@ -1,18 +1,12 @@
 /**
- * perm-startfromcg — Phase 88 Plan 03 (test catalog audit).
- *
  * Topology: EL-1=CG-1(2 parent COs); EL-2=CG-2(5 COs with parent refs to CG-1
  * + 1 orphan); `elections.startFromConstituencyGroup: CG-2` set at runtime.
  *
- * Authoritative spec: TEST-INVENTORY-REFACTOR-2.md:158-167
- * Memo: .planning/phases/88-.../88-03-SCOPE.md (HIGH-3 runtime-set
- * resolution).
+ * Runtime-set mechanism: the template OMITS
+ * elections.startFromConstituencyGroup; this spec's beforeAll resolves the
+ * CG-2 UUID via SupabaseAdminClient + client.updateAppSettings.
  *
- * HIGH-3 mechanism: template OMITS elections.startFromConstituencyGroup;
- * this spec's beforeAll resolves CG-2 UUID via SupabaseAdminClient +
- * client.updateAppSettings.
- *
- * Rigidity contract: every assertion HARD.
+ * Rigidity contract: every assertion is HARD.
  */
 
 import { expect, test } from '@playwright/test';
@@ -75,8 +69,8 @@ test.describe('perm-startfromcg', () => {
   });
 
   test('selecting CO-1C (CG-2 orphan, no parent): election selector shows EL2 only (auto-implied + disabled), continue advances to questions', async ({ page }) => {
-    // refactor-doc:166-167 abstract contract: "user selects CO 1C: don't show
-    // election selector". Observed app behavior: /elections renders with EXACTLY
+    // Abstract contract: "user selects CO 1C: don't show election selector".
+    // Observed app behavior: /elections renders with EXACTLY
     // one option that is `[checked] [disabled]` (the single election applicable
     // to the orphan CO-1C), and the page text reads "Only one election is held
     // in your selected constituency." Same user experience (no decision to

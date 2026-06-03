@@ -1,6 +1,4 @@
 /**
- * perm-header-show-feedback — Phase 91 Plan 02 (TIR6:68-77, A3).
- *
  * `header.showFeedback=true` surfaces the feedback Button in Banner.svelte's
  * top-bar action group (gated on
  * `topBarSettings.current.actions.feedback === 'show'`). The voter intro
@@ -8,8 +6,6 @@
  * is visible AND clicking it opens the feedback-form dialog.
  *
  * Rigidity contract: no soft assertions, no .catch fallbacks, testid-only.
- *
- * Authoritative spec: TEST-INVENTORY-REFACTOR-6.md:68-77.
  */
 
 import { expect, test } from '../../fixtures/voter/views';

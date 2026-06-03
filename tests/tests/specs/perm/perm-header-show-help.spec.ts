@@ -1,19 +1,15 @@
 /**
- * perm-header-show-help — Phase 91 Plan 02 (TIR6:79-88, A4).
- *
  * `header.showHelp=true` surfaces the help Button in Banner.svelte's top-bar
  * action group (gated on `topBarSettings.current.actions.help === 'show'`).
  * The button's href resolves to `getRoute.current('Help')` which aliases to
  * `${VOTER}/about` per apps/frontend/src/lib/utils/route/route.ts:17.
  *
  * URL assertion is locale-agnostic: the base locale (`en`) is served WITHOUT a
- * `/en/` prefix (Paraglide urlPatterns — see perm-localisation-positive:162-164),
- * so navigation lands on `/about`, not `/en/about`. The matcher tolerates an
- * optional locale segment so it holds for both base- and prefixed-locale runs.
+ * `/en/` prefix (Paraglide urlPatterns), so navigation lands on `/about`, not
+ * `/en/about`. The matcher tolerates an optional locale segment so it holds for
+ * both base- and prefixed-locale runs.
  *
  * Rigidity contract: no soft assertions, no .catch fallbacks, testid-only.
- *
- * Authoritative spec: TEST-INVENTORY-REFACTOR-6.md:79-88.
  */
 
 import { expect, test } from '../../fixtures/voter/views';

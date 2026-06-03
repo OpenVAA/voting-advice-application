@@ -1,26 +1,19 @@
 /**
- * perm-answers-locked — Phase 91 Plan 02 (TIR6:3-14, A1).
- *
- * FULL 3-SURFACE COVERAGE per 91-CONTEXT.md Group A item 1 + RESEARCH
- * §Open Questions Q2 RESOLVED:
+ * answersLocked read-only behaviour across three surfaces:
  *   Surface 1 (UNAUTHENTICATED): /en/candidate login page renders the
  *     read-only login info via the login-answers-locked-info testid.
- *   Surface 2 (AUTHENTICATED via real forceRegister + UI login,
- *     D-91-PD-06 revised — Phase 91-05 CR-01 closure):
- *     /en/candidate/profile renders the candidate-answers-locked-warning
- *     Warning + every visible <input>/<textarea>/<select> is disabled.
+ *   Surface 2 (AUTHENTICATED): /en/candidate/profile renders the
+ *     candidate-answers-locked-warning Warning + every visible
+ *     <input>/<textarea>/<select> is disabled.
  *   Surface 3 (AUTHENTICATED): /en/candidate/questions/[questionId]
  *     renders the same warning + the question-choices radios are
  *     disabled (OpinionQuestionInput display-mode → mode !== 'answer').
  *
- * Rigidity contract (88-04 / 89-02 / 90-D-90-06): every assertion HARD —
- * no soft assertions, no try/catch around assertion calls, no `.catch`
- * fallbacks on assertion-bearing locators.
+ * Rigidity contract: every assertion is HARD — no soft assertions, no
+ * try/catch around assertion calls, no `.catch` fallbacks on
+ * assertion-bearing locators.
  *
- * Selector discipline (Pitfall 3): testid-driven only. NO `t('...')`
- * locale-text matching.
- *
- * Authoritative spec: TEST-INVENTORY-REFACTOR-6.md:3-14.
+ * Selector discipline: testid-driven only. No `t('...')` locale-text matching.
  */
 
 import { expect, test } from '@playwright/test';

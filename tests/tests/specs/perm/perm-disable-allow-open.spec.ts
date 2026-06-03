@@ -1,10 +1,6 @@
 /**
- * perm-disable-allow-open — Phase 91 Plan 02 (TIR6:121-142, A9).
- *
- * Phase 91 Plan 05 (CR-02 closure): voter-side walk delegated to
- * voter-journey.fixture.ts. Candidate-side block unchanged semantically —
- * storage-state minted by refactored perm-disable-allow-open.setup.ts
- * (Task 3, CR-01 closure).
+ * customData.allowOpen toggle controls the open-answer surfaces on both the
+ * candidate and voter sides.
  *
  * Voter-side fixture: this perm uses the `buildMinimal` (1-election +
  * 1-constituency) dataset, so the elections/constituencies pages
@@ -13,20 +9,18 @@
  * `navigateToFirstQuestion` traversal) rather than `answeredVoterPage`
  * (which hard-waits for the skipped intro start button and would time out).
  *
- * Both describe blocks consume `minimalVoterResultsTest as test` (Option B from
- * Plan 91-05 §Task 6) to unify the file under a single test runner —
- * eliminates the `playwright/no-standalone-expect` lint failure that fires
- * when the lint rule's test-block detector does not recognise a non-`test`
- * runner inside an `expect()` call. The candidate-side tests do NOT
- * consume the `minimalVoterResultsPage` fixture, so the voter walk does
- * not run for those tests (Playwright fixtures are lazy — only created on
- * consumption).
+ * Both describe blocks consume `minimalVoterResultsTest as test` to unify the
+ * file under a single test runner — eliminates the
+ * `playwright/no-standalone-expect` lint failure that fires when the lint
+ * rule's test-block detector does not recognise a non-`test` runner inside an
+ * `expect()` call. The candidate-side tests do NOT consume the
+ * `minimalVoterResultsPage` fixture, so the voter walk does not run for those
+ * tests (Playwright fixtures are lazy — only created on consumption).
  *
- * Per D-91-PD-04 (TIR6:122 typo resolution): cand-1 authors info text on
- * BOTH Q1 + Q2 answers. customData.allowOpen=true on Q1 keeps the info
- * surfaces visible (candidate-side comment input + voter-side
- * QuestionOpenAnswer wrapper). customData.allowOpen=false on Q2 SUPPRESSES
- * rendering on BOTH surfaces:
+ * cand-1 authors info text on BOTH Q1 + Q2 answers. customData.allowOpen=true
+ * on Q1 keeps the info surfaces visible (candidate-side comment input +
+ * voter-side QuestionOpenAnswer wrapper). customData.allowOpen=false on Q2
+ * SUPPRESSES rendering on BOTH surfaces:
  *
  *   Candidate side: gate at +page.svelte:294 is `{#if customData.allowOpen}`
  *     → Q2's `false` skips the <Input data-testid="candidate-questions-
@@ -37,8 +31,6 @@
  *     for that question).
  *
  * Rigidity contract: no soft assertions, no .catch fallbacks, testid-only.
- *
- * Authoritative spec: TEST-INVENTORY-REFACTOR-6.md:121-142.
  */
 
 import { expect } from '@playwright/test';

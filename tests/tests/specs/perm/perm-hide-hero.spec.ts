@@ -1,8 +1,5 @@
 /**
- * perm-hide-hero — Phase 91 Plan 02 (TIR6:24-32, A2).
- *
- * Authoritative spec: TEST-INVENTORY-REFACTOR-6.md:24-32 —
- *   Login → Go to opinions → Open 1st question → Expect hero hidden.
+ * Login → Go to opinions → Open 1st question → Expect hero hidden.
  *
  * The candidate navigates through the questions OVERVIEW (not a raw deep
  * link) before opening the first opinion question. This is load-bearing:
@@ -15,8 +12,8 @@
  * ("element(s) not found"). The layout cannot tell "still loading" from
  * "genuinely empty", which is why the symptom surfaces transiently in other
  * tests. Routing via the overview (which itself gates on opinionQuestions
- * being populated) warms the context first, matching the TIR6 walk and the
- * canonical perm-answers-locked navigation pattern. The per-question URL is
+ * being populated) warms the context first, matching the canonical
+ * perm-answers-locked navigation pattern. The per-question URL is
  * also keyed on the INTERNAL question id, not the seed external_id, so a
  * direct goto() with an external_id is impossible regardless of timing.
  *
