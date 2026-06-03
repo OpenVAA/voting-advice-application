@@ -17,10 +17,15 @@ export const STORAGE_STATE = path.join(TESTS_DIR, '../playwright/.auth/user.json
  * surviving suite is:
  *
  *   - journey chains: data-setup-base -> voter-journey
- *     + data-setup-candidate-journey -> candidate-journey
- *   - perm-* family: a single sequential chain anchored on
- *     data-setup-perm-1e1cg1co (HIGH-2 app_settings JSONB singleton — each
- *     perm setup clobbers the singleton, so the family runs serially).
+ *     + data-setup-base -> data-setup-candidate-journey -> candidate-journey
+ *   - perm-* family: a single sequential chain that runs strictly AFTER the
+ *     journey leaves — its first setup (data-setup-perm-1e1cg1co) depends on
+ *     [voter-journey, candidate-journey], and every later perm setup chains
+ *     off the previous perm spec (HIGH-2 app_settings JSONB singleton — each
+ *     perm setup clobbers the singleton, so the family runs serially AND must
+ *     not interleave with the base/journey chains on the shared single DB).
+ *     The perm→journey dependency direction preserves FLAG-6: opt-in
+ *     --project runs pull only base, never the perm family.
  *   - opt-in specialized projects (env-gated, excluded from default
  *     `yarn test:e2e`): visual-regression (PLAYWRIGHT_VISUAL), performance
  *     (PLAYWRIGHT_PERF), a11y-smoke (PLAYWRIGHT_A11Y), bank-auth
@@ -193,9 +198,15 @@ export default defineConfig({
       name: 'data-setup-base',
       testMatch: /base\.setup\.ts/,
       teardown: 'data-teardown-base'
-      // reason: perm-anchor dependency DROPPED (FLAG-6) — base seeds
-      // independently; cross-namespace isolation is enforced by the
-      // base setup's own `extraTeardownPrefix: 'e2e-perm-'` pre-clear.
+      // reason: base seeds with NO perm dependency (FLAG-6) so opt-in
+      // `--project` runs (visual/perf/a11y/bank-auth) pull only base + auth and
+      // work standalone. Cross-namespace isolation for the DEFAULT full-suite run
+      // is enforced in the OPPOSITE direction: the perm family depends on the
+      // journey leaves (see `data-setup-perm-1e1cg1co` below), so perm runs
+      // strictly AFTER base + journeys and never interleaves with base on the
+      // shared single DB / `app_settings` singleton. The base setup's
+      // `extraTeardownPrefix: 'e2e-perm-'` pre-clear is a belt-and-braces guard
+      // for any residual perm rows from a prior DB session.
     },
     {
       name: 'data-teardown-base',
@@ -236,16 +247,30 @@ export default defineConfig({
     //   → data-setup-perm-disable-election-2co
     //   → data-setup-perm-not-located-2e2cg
 
-    // Variant 1: perm-1e1cg1co (1 test) — FIRST in chain, no upstream perm dep
+    // Variant 1: perm-1e1cg1co (1 test) — FIRST in the perm family, serialized
+    // AFTER the journey leaves (voter-journey + candidate-journey).
+    //
+    // Phase 93 Plan 06 gap-closure (Cluster B isolation fix): Plan 04's FLAG-6
+    // decoupling left this setup with NO dependency, so it ran CONCURRENTLY with
+    // `data-setup-base` on the shared single DB. base + perm share the
+    // `app_settings` JSONB singleton AND have mutually-destructive preclears
+    // (this setup's `extraTeardownPrefix: 'test-'` deletes base `test-e2e-base-%`
+    // rows; base setup's `e2e-perm-` preclear deletes perm rows). With no
+    // serialization edge the two interleaved, leaking base's 2 elections into
+    // the perm dataset (and vice-versa) → specs saw 3 elections.
+    //
+    // FIX: depend on the journey LEAF specs so the entire perm family runs
+    // strictly AFTER base + both journeys have completed. This is the
+    // perm→journey direction (NOT base→perm), so it PRESERVES FLAG-6: opt-in
+    // `--project` runs (visual/perf/a11y/bank-auth) pull only `data-setup-base`
+    // (+ auth-setup), NEVER the perm family — base still seeds standalone.
+    // Mirrors the existing 89-04 perm family which already chains after
+    // `candidate-journey` (see `data-setup-perm-disable-voter-app` below).
     {
       name: 'data-setup-perm-1e1cg1co',
       testMatch: /perm-1e1cg1co\.setup\.ts/,
-      teardown: 'data-teardown-perm-1e1cg1co'
-      // No upstream dep — perm-* runs FIRST in default mode. Phase 93 Plan 04
-      // (FLAG-6) DECOUPLED the base chain from the perm anchor, so the base /
-      // voter-journey / candidate-journey chains now run independently of the
-      // perm family (the base setup's own `extraTeardownPrefix: 'e2e-perm-'`
-      // pre-clear enforces cross-namespace isolation regardless of ordering).
+      teardown: 'data-teardown-perm-1e1cg1co',
+      dependencies: ['voter-journey', 'candidate-journey']
     },
     {
       name: 'data-teardown-perm-1e1cg1co',
@@ -475,12 +500,21 @@ export default defineConfig({
     // and each setup passes `extraTeardownPrefix: ['test-', 'e2e-perm-']`
     // to pre-clear any residual rows from prior chains still mid-teardown.
 
-    // Variant 1: perm-disable-voter-app (1 test) — sequential after candidate-journey
+    // Variant 1: perm-disable-voter-app (1 test) — sequential after
+    // perm-not-located-2e2cg (the LAST spec of the 88-03 perm chain).
+    //
+    // Phase 93 Plan 06 gap-closure: re-anchored from `candidate-journey` to
+    // `perm-not-located-2e2cg` so the ENTIRE perm family (88-03 chain → 89-04
+    // chain → 90/91 chains) is ONE linear sequence running strictly after the
+    // journeys. Previously this chain anchored on `candidate-journey` directly,
+    // running in PARALLEL with the (then-unanchored) 88-03 chain — both perm
+    // chains plus base could interleave. Single linear ordering eliminates all
+    // cross-chain coexistence on the shared single DB + app_settings singleton.
     {
       name: 'data-setup-perm-disable-voter-app',
       testMatch: /perm-disable-voter-app\.setup\.ts/,
       teardown: 'data-teardown-perm-disable-voter-app',
-      dependencies: ['candidate-journey']
+      dependencies: ['perm-not-located-2e2cg']
     },
     {
       name: 'data-teardown-perm-disable-voter-app',
