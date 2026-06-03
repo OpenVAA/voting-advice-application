@@ -15,7 +15,7 @@ Usually accessed by direct link only and not meant for the wide public.
   import { getVoterContext } from '$lib/contexts/voter';
   import { unwrapEntity } from '$lib/utils/entities';
   import { removeDuplicates } from '$lib/utils/removeDuplicates';
-  import MainContent from '../../../../MainContent.svelte';
+  import MainContent from '../../../../../MainContent.svelte';
   import type { Id, MaybeWrappedEntity } from '@openvaa/core';
   import type {
     Candidate,
