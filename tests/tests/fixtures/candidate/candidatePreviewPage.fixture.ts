@@ -1,12 +1,12 @@
 /**
- * @file candidatePreviewPage fixture — Phase 89 Plan 02 (TIR4:79 + 245-252 + D-89-02).
+ * @file candidatePreviewPage fixture.
  *
  * Function-fixture for the candidate /candidate/preview page
  * (`apps/frontend/src/routes/candidate/(protected)/preview/+page.svelte`)
  * which renders the candidate's own profile via the shared EntityDetails
  * component.
  *
- * Surface (TIR4:79 + 245-252):
+ * Surface:
  *  - expectInfoAnswer(qName, aValue)              — assert the named info
  *                                                    question is rendered AND
  *                                                    its answer value matches.
@@ -26,11 +26,10 @@
  *                                                    text must not appear).
  *
  * Internally delegates to the shared EntityDetails testids (candidate preview
- * reuses voter EntityDetails per 89-RESEARCH).
+ * reuses voter EntityDetails).
  *
- * **Rigidity contract** (Phase 88 Plan 04 SCOPE acceptance #6):
- * - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
- *   `.catch(() => null)` on assertion-bearing locator interactions.
+ * **Rigidity contract:** NO `expect.soft`, NO `try/catch` wrapping `expect(...)`,
+ * NO `.catch(() => null)` on assertion-bearing locator interactions.
  */
 
 import { expect } from '@playwright/test';
@@ -79,8 +78,7 @@ export function createCandidatePreviewPage(page: Page) {
       if (aNthChecked === null) {
         // Assert NO choice has the checked-state indicator. The checked-
         // indicator is the entity-selected-answer sr-only sibling marker
-        // added on QuestionChoices.svelte (per Phase 89-01 testid catalog
-        // + Phase 86 chain). Absence means rendered-but-unanswered.
+        // on QuestionChoices.svelte. Absence means rendered-but-unanswered.
         await expect(question.getByTestId(testIds.voter.entityDetail.entitySelectedAnswer)).toHaveCount(0);
         return;
       }
@@ -111,8 +109,7 @@ export function createCandidatePreviewPage(page: Page) {
      * Assert no voter-comparison messaging is rendered. The candidate's
      * own preview surfaces the candidate's answers but MUST NOT compare
      * against a hypothetical voter (score-gauge, sub-matches, "you and X
-     * agree/disagree" copy). Per TIR4:251-252 this is a hard absence
-     * assertion.
+     * agree/disagree" copy). This is a hard absence assertion.
      */
     async expectNoVoterComparison(): Promise<void> {
       const c = container();

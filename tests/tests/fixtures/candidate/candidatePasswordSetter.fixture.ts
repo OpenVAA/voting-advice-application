@@ -1,20 +1,17 @@
 /**
- * @file candidatePasswordSetter fixture — Phase 89 Plan 02 (TIR4:74 + D-89-02).
+ * @file candidatePasswordSetter fixture.
  *
  * Function-fixture for the PasswordSetter widget rendered by the
  * /candidate/register/password route (and the password-reset flow). The
  * widget contains two PasswordField inputs (new + confirm) and is paired
  * with an external submit button.
  *
- * Surface (TIR4:74):
+ * Surface:
  *  - setPassword(password) — fill register-password + register-confirm-password
- *                            + click register-password-submit.
+ *    + click register-password-submit.
  *
- * SIBLING (not replacement) to any legacy register-password helper.
- *
- * **Rigidity contract** (Phase 88 Plan 04 SCOPE acceptance #6):
- * - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
- *   `.catch(() => null)` on assertion-bearing locator interactions.
+ * **Rigidity contract:** NO `expect.soft`, NO `try/catch` wrapping `expect(...)`,
+ * NO `.catch(() => null)` on assertion-bearing locator interactions.
  */
 
 import { expect } from '@playwright/test';

@@ -1,10 +1,10 @@
 /**
- * @file candidateQuestionPage fixture — Phase 89 Plan 02 (TIR4:78 + 196-226 + D-89-02).
+ * @file candidateQuestionPage fixture.
  *
  * Function-fixture for the candidate per-question editor page
  * (`apps/frontend/src/routes/candidate/(protected)/questions/[questionId]/+page.svelte`).
  *
- * Surface (TIR4:78 + 196-226):
+ * Surface:
  *  - expectHeroVisible('emoji' | 'image') — assert the candidate-questions-hero
  *                                            figure contains an emoji glyph or
  *                                            an `<img>` descendant.
@@ -20,9 +20,8 @@
  *  - clickContinue()                       — click candidate-questions-save.
  *  - expectQuestionText(textOrRegex)       — assert the page heading matches.
  *
- * **Rigidity contract** (Phase 88 Plan 04 SCOPE acceptance #6):
- * - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
- *   `.catch(() => null)` on assertion-bearing locator interactions.
+ * **Rigidity contract:** NO `expect.soft`, NO `try/catch` wrapping `expect(...)`,
+ * NO `.catch(() => null)` on assertion-bearing locator interactions.
  */
 
 import { expect } from '@playwright/test';

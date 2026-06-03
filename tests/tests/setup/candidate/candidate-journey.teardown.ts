@@ -1,10 +1,8 @@
 /**
- * candidate-journey data-teardown project — Phase 89 Plan 03 Task 1
- *   ↪ refactored 2026-05-31 to align with cascade-decoupled setup;
- *   ↪ renamed candidate-journey→candidate-journey in Phase 93 Plan 04 (D-09/D-11).
+ * candidate-journey data-teardown project.
  *
  * Only owns the auth.users row created by the registration-via-email step
- * in candidate-journey.spec.ts. The `test-` row prefix is owned by
+ * in the candidate-journey spec. The `test-` row prefix is owned by
  * `data-teardown-base`, which runs once at the end of the wider chain.
  *
  * Idempotent: `unregisterCandidate` is a no-op when no auth.users row

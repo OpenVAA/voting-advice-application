@@ -1,10 +1,10 @@
 /**
- * @file candidateLoginPage fixture — Phase 89 Plan 02 (TIR4:64-68 + D-89-02).
+ * @file candidateLoginPage fixture.
  *
  * Function-fixture for the candidate /login page. Sibling to other
  * candidate-fixtures; composed in `candidate-journey.ts`.
  *
- * Surface (TIR4:64-68):
+ * Surface:
  *  - enterEmail(email)             — fill the login-email field.
  *  - enterPassword(password)       — fill the password-field input.
  *  - submit()                      — click the login-submit button.
@@ -18,9 +18,8 @@
  * `expect(loginPage.getSubmitButton()).toBeDisabled()` — the fixture does
  * NOT expose a state-baked `expectSubmitDisabled()`.
  *
- * **Rigidity contract** (Phase 88 Plan 04 SCOPE acceptance #6):
- * - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
- *   `.catch(() => null)` on assertion-bearing locator interactions.
+ * **Rigidity contract:** NO `expect.soft`, NO `try/catch` wrapping `expect(...)`,
+ * NO `.catch(() => null)` on assertion-bearing locator interactions.
  */
 
 import { expect } from '@playwright/test';

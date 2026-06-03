@@ -1,10 +1,10 @@
 /**
- * @file candidateHomePage fixture — Phase 89 Plan 02 (TIR4:71 + D-89-02).
+ * @file candidateHomePage fixture.
  *
  * Function-fixture for the candidate /candidate home page (the three-task
  * dashboard: profile / opinions / preview).
  *
- * Surface (TIR4:71):
+ * Surface:
  *  - expectTasks({ enabled, disabled }) — partitioned enabled/disabled
  *                                          assertion across the three task
  *                                          buttons. Replaces the prior
@@ -20,9 +20,8 @@
  *  - clickContinue()                    — click candidate-home-continue
  *                                          (variant="main" primary action).
  *
- * **Rigidity contract** (Phase 88 Plan 04 SCOPE acceptance #6):
- * - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
- *   `.catch(() => null)` on assertion-bearing locator interactions.
+ * **Rigidity contract:** NO `expect.soft`, NO `try/catch` wrapping `expect(...)`,
+ * NO `.catch(() => null)` on assertion-bearing locator interactions.
  */
 
 import { expect } from '@playwright/test';
@@ -33,7 +32,7 @@ export type CandidateHomeTask = 'profile' | 'opinions' | 'preview';
 
 /**
  * Maps the SETTINGS-keyword task identifiers to the underlying testids on
- * `candidate/(protected)/+page.svelte` (Plan 89-RESEARCH §"Plan 89-02").
+ * `candidate/(protected)/+page.svelte`.
  * 'opinions' → candidate-home-questions per the source-of-truth attribute
  * at `apps/frontend/src/routes/candidate/(protected)/+page.svelte:131`.
  */

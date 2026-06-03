@@ -1,10 +1,10 @@
 /**
- * @file candidateQuestionsOverviewPage fixture — Phase 89 Plan 02 (TIR4:77 + 189-244 + D-89-02).
+ * @file candidateQuestionsOverviewPage fixture.
  *
  * Function-fixture for the candidate /candidate/questions overview page
  * (`apps/frontend/src/routes/candidate/(protected)/questions/+page.svelte`).
  *
- * Surface (TIR4:77 + 189-244):
+ * Surface:
  *  - clickStart()                          — click the candidate-questions-start
  *                                            button (empty-state primary action).
  *  - expectIntroMessage()                  — assert the candidate-questions-intro
@@ -32,9 +32,8 @@
  *                                            page.goto() with an external_id
  *                                            (the URL is keyed on internal id).
  *
- * **Rigidity contract** (Phase 88 Plan 04 SCOPE acceptance #6):
- * - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
- *   `.catch(() => null)` on assertion-bearing locator interactions.
+ * **Rigidity contract:** NO `expect.soft`, NO `try/catch` wrapping `expect(...)`,
+ * NO `.catch(() => null)` on assertion-bearing locator interactions.
  */
 
 import { expect } from '@playwright/test';

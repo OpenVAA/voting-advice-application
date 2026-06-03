@@ -1,11 +1,11 @@
 /**
- * @file candidateTermsOfUsePage fixture — Phase 89 Plan 02 (TIR4:69-70 + D-89-02).
+ * @file candidateTermsOfUsePage fixture.
  *
  * Function-fixture for the candidate Terms-of-Use acceptance form
  * (rendered by `apps/frontend/src/routes/candidate/(protected)/+layout.svelte`
  * when `candidate.termsOfUseAccepted == null`).
  *
- * Surface (TIR4:69-70):
+ * Surface:
  *  - accept()                — toggle the terms-checkbox (no submit click).
  *  - getSubmit(): Locator    — return the terms-of-use-submit Locator.
  *  - acceptAndAdvance()      — composed: accept() + getSubmit().click().
@@ -19,12 +19,8 @@
  * `acceptAndAdvance()` is for specs that don't need the disabled-state
  * transition check.
  *
- * SIBLING (not replacement) to the legacy fixture surface — there is no
- * dedicated PageObject class for ToU in the legacy tree.
- *
- * **Rigidity contract** (Phase 88 Plan 04 SCOPE acceptance #6):
- * - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
- *   `.catch(() => null)` on assertion-bearing locator interactions.
+ * **Rigidity contract:** NO `expect.soft`, NO `try/catch` wrapping `expect(...)`,
+ * NO `.catch(() => null)` on assertion-bearing locator interactions.
  */
 
 import { expect } from '@playwright/test';

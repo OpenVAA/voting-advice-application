@@ -1,10 +1,10 @@
 /**
- * @file candidateProfilePage fixture — Phase 89 Plan 02 (TIR4:75-76 + 166-188 + D-89-02).
+ * @file candidateProfilePage fixture.
  *
  * Function-fixture for the candidate profile (basic-info) page at
  * `apps/frontend/src/routes/candidate/(protected)/profile/+page.svelte`.
  *
- * Surface (TIR4:75-76 + 166-188):
+ * Surface:
  *  - uploadPortrait({ path, expectError? })       — upload an image file via
  *                                                    the file chooser on the
  *                                                    profile-image-upload
@@ -36,13 +36,12 @@
  *                                                    by waiting for navigation
  *                                                    away from /profile.
  *
- * **General API principle** (per plan): question methods take the DISPLAYED
- * label (string | RegExp). Specs holding externalIds resolve to labels via
- * base at the call site.
+ * **General API principle:** question methods take the DISPLAYED label
+ * (string | RegExp). Specs holding externalIds resolve to labels via base at
+ * the call site.
  *
- * **Rigidity contract** (Phase 88 Plan 04 SCOPE acceptance #6):
- * - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
- *   `.catch(() => null)` on assertion-bearing locator interactions.
+ * **Rigidity contract:** NO `expect.soft`, NO `try/catch` wrapping `expect(...)`,
+ * NO `.catch(() => null)` on assertion-bearing locator interactions.
  */
 
 import { expect } from '@playwright/test';
@@ -86,15 +85,13 @@ export function createCandidateProfilePage(page: Page) {
      * button. When `expectError` is supplied, additionally assert the matching
      * error message is rendered inside the profile-image-error wrapper.
      *
-     * The pre-filechooser 500ms settle delay mirrors the Phase 83 DETERM-06
-     * pattern from the legacy ProfilePage.ts:38-52 — the underlying click
-     * target's onclick handler needs to hydrate before Playwright registers
-     * the filechooser listener.
+     * The pre-filechooser 500ms settle delay exists because the underlying
+     * click target's onclick handler needs to hydrate before Playwright
+     * registers the filechooser listener.
      */
     async uploadPortrait(opts: { path: string; expectError?: 'invalidFile' | 'oversizeFile' }): Promise<void> {
       // reason: there is no public hydration signal on the image-upload button;
-      // a small timeout is the canonical pattern per Phase 76 P01 for
-      // filechooser-trigger races. Mirrors the legacy ProfilePage.ts pattern.
+      // a small timeout is the canonical pattern for filechooser-trigger races.
       // eslint-disable-next-line playwright/no-wait-for-timeout
       await page.waitForTimeout(500);
       const fileChooserPromise = page.waitForEvent('filechooser');

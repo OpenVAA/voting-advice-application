@@ -1,10 +1,9 @@
 /**
- * @file Composition root for Phase 90 localisation-perm function-fixtures.
+ * @file Composition root for the localisation-perm function-fixtures.
  *
- * Sibling to `candidate-journey.ts`. SEPARATE root (researcher 90-RESEARCH
- * §Pattern 4 + 90-PATTERNS §"perm-l10n.ts") to avoid bloating the
- * candidate-journey composition surface. Plans 90-03 + 90-04 both consume this
- * root.
+ * Sibling to `candidate-journey.ts`. SEPARATE root to avoid bloating the
+ * candidate-journey composition surface. Consumed by the localisation-perm
+ * specs (negative + positive).
  *
  * Re-exports `test` (Playwright extended) + `expect`. Specs:
  *
@@ -21,19 +20,17 @@
  *   - candidateQuestionsOverviewPage
  *   - emailBucket  (for the Inbucket registration flow — see Pitfall 3)
  *
- * Plus 2 NEW fixtures (Plan 90-03 Task 2):
+ * Plus 2 extra fixtures:
  *   - langSelector             — function-fixture for LanguageSelection NavGroup
  *   - multilingualTextField    — function-fixture for Input.svelte
- *                                 multilingual surface (scoped by Locator)
+ *                                multilingual surface (scoped by Locator)
  *
- * Plus the `recipientEmail` option fixture (Open Question 4 RESOLVED +
- * `candidate-journey.ts:87` recipient-filter contract). Specs override per-perm
- * via `test.use({ recipientEmail: 'candidate-l10n-neg-aa@test.openvaa.local' })`
+ * Plus the `recipientEmail` option fixture. Specs override per-perm via
+ * `test.use({ recipientEmail: 'candidate-l10n-neg-aa@test.openvaa.local' })`
  * to prevent cross-perm Inbucket pollution.
  *
- * **Rigidity contract** (TIR5:5-13 + Phase 88 lineage):
- *  - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
- *    `.catch(() => null)` on assertion-bearing locator interactions.
+ * **Rigidity contract:** NO `expect.soft`, NO `try/catch` wrapping `expect(...)`,
+ * NO `.catch(() => null)` on assertion-bearing locator interactions.
  */
 
 import { expect, test as base } from '@playwright/test';
@@ -70,8 +67,8 @@ type PermL10nFixtureOptions = {
   /**
    * Mailpit recipient address for the emailBucket fixture. Specs set this
    * via `test.use({ recipientEmail: '...' })` at file scope. Default points
-   * at a placeholder that should be overridden per-perm — Plan 90-03 sets
-   * `'candidate-l10n-neg-aa@test.openvaa.local'`, Plan 90-04 sets
+   * at a placeholder that should be overridden per-perm — the negative spec
+   * sets `'candidate-l10n-neg-aa@test.openvaa.local'`, the positive spec sets
    * `'candidate-l10n-pos-aa@test.openvaa.local'`.
    */
   recipientEmail: string;
@@ -90,8 +87,8 @@ type PermL10nFixtures = PermL10nFixtureOptions & {
   langSelector: LangSelectorFixture;
   multilingualTextField: MultilingualTextFieldFixture;
   voterNav: VoterNavFixture;
-  // Phase 92 Plan 05 (D-09): voter page fixtures carrying the goToPage/expectPageVisible
-  // paradigm, registered here so perm-localisation-positive can destructure them.
+  // voter page fixtures carrying the goToPage/expectPageVisible paradigm,
+  // registered here so perm-localisation-positive can destructure them.
   voterHomePage: VoterHomePageFixture;
   resultsPage: ResultsPageFixture;
 };

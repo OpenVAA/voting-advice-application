@@ -1,21 +1,14 @@
 /**
- * @file candidateForgotPasswordPage fixture — Phase 89 Plan 02 (TIR4:72-73 + D-89-02).
+ * @file candidateForgotPasswordPage fixture.
  *
  * Function-fixture for the candidate /forgot-password page.
  *
- * Surface (TIR4:72-73):
- *  - fillEmailAndAdvance(email)  — fill forgot-password-email + click
- *                                   forgot-password-submit + assert the
- *                                   forgot-password-success message is
- *                                   visible.
+ * Surface:
+ *  - fillEmailAndAdvance(email) — fill forgot-password-email + click
+ *    forgot-password-submit + assert the forgot-password-success message is visible.
  *
- * SIBLING (not replacement) to any legacy forgot-password helper. There is
- * no dedicated PageObject class for the forgot-password page in the legacy
- * tree.
- *
- * **Rigidity contract** (Phase 88 Plan 04 SCOPE acceptance #6):
- * - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
- *   `.catch(() => null)` on assertion-bearing locator interactions.
+ * **Rigidity contract:** NO `expect.soft`, NO `try/catch` wrapping `expect(...)`,
+ * NO `.catch(() => null)` on assertion-bearing locator interactions.
  */
 
 import { expect } from '@playwright/test';

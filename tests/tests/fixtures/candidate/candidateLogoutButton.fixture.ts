@@ -1,5 +1,5 @@
 /**
- * @file candidateLogoutButton fixture — Phase 89 Plan 02 (TIR4:80 + 124-126 + 253-256 + D-89-02).
+ * @file candidateLogoutButton fixture.
  *
  * Function-fixture for the candidate LogoutButton widget
  * (`apps/frontend/src/lib/candidate/components/logoutButton/LogoutButton.svelte`).
@@ -11,25 +11,17 @@
  *  - Without dialog: when all answers are complete (or answers are locked),
  *    clicking logs out directly.
  *
- * Surface (TIR4:80 + 124-126 + 253-256):
+ * Surface:
  *  - clickWithDialog()    — click logout, wait for the role="dialog" modal,
- *                            click the in-modal confirm button.
+ *    click the in-modal confirm button.
  *  - clickWithoutDialog() — click logout and assert direct logout (no modal,
- *                            URL changes away from the candidate-protected
- *                            area).
+ *    URL changes away from the candidate-protected area).
  *
- * Two SEPARATE methods (NOT a single method with a boolean param) per
- * 89-PATTERNS.md "No Analog Found" edge case — keeps the rigidity contract
- * clean and the spec call-sites self-documenting.
+ * Two SEPARATE methods (NOT a single method with a boolean param) — keeps the
+ * rigidity contract clean and the spec call-sites self-documenting.
  *
- * SIBLING (not replacement) to any legacy logout helper. There is no
- * dedicated PageObject class for the logout button in the legacy tree;
- * legacy specs call `page.getByTestId('candidate-home-logout').click()`
- * directly.
- *
- * **Rigidity contract** (Phase 88 Plan 04 SCOPE acceptance #6):
- * - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
- *   `.catch(() => null)` on assertion-bearing locator interactions.
+ * **Rigidity contract:** NO `expect.soft`, NO `try/catch` wrapping `expect(...)`,
+ * NO `.catch(() => null)` on assertion-bearing locator interactions.
  */
 
 import { expect } from '@playwright/test';
@@ -43,7 +35,7 @@ export function createCandidateLogoutButton(page: Page) {
      * confirmation modal, and click the in-modal logout button to confirm.
      *
      * Used when the candidate has unanswered questions (the early-flow
-     * logout case per TIR4:124-126).
+     * logout case).
      */
     async clickWithDialog(): Promise<void> {
       await page.getByTestId(testIds.candidate.home.logout).click();
@@ -58,7 +50,7 @@ export function createCandidateLogoutButton(page: Page) {
     /**
      * Click the logout button and assert direct logout (no confirmation
      * dialog). Used when all required answers are complete OR answers
-     * are locked (the final-logout case per TIR4:253-256).
+     * are locked (the final-logout case).
      */
     async clickWithoutDialog(): Promise<void> {
       await page.getByTestId(testIds.candidate.home.logout).click();
