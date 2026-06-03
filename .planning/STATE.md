@@ -4,13 +4,13 @@ milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
 status: executing
 stopped_at: Phase 93 context gathered
-last_updated: "2026-06-03T11:26:13.676Z"
+last_updated: "2026-06-03T11:38:26.542Z"
 last_activity: 2026-06-03
 progress:
   total_phases: 18
   completed_phases: 15
   total_plans: 58
-  completed_plans: 51
+  completed_plans: 52
   percent: 83
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 ## Current Position
 
 Phase: 93 (clean-up-and-reorganise-e2e-tests-fixtures-setup-and-seed-te) — EXECUTING
-Plan: 2 of 6
+Plan: 3 of 6
 Status: Ready to execute
 Last activity: 2026-06-03
 
@@ -114,6 +114,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | Phase 92 P05 | ~5min | 3 tasks | 8 files |
 | Phase 92 P04 | ~25min | 2 tasks | 9 files |
 | Phase 93 P01 | 3min | 3 tasks | 3 files |
+| Phase 93 P02 | ~30min | 2 tasks | 30 files |
 
 ## Accumulated Context
 
@@ -227,6 +228,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: [Phase 92 P03]: WS2 FIXTURES — voter goToPage/expectPageVisible rollout (3 net-new + 2 extended fixtures, home/intro load anchors, named-Home-goto migration, open-menu→nav-menu-toggle testId). typecheck:tests + tests-eslint green.
 - [Phase 92]: Timeout consolidation (92-04): central tests/tests/helpers/timeouts.ts TIMEOUTS buckets (element/click/page/slowPage/testMax, MAX-merged so no budget tightened) + barrel export; all 4 local TIMEOUT objects deleted; >90s test.setTimeout budgets preserved as named inline exceptions L10N_TEST_MAX=180_000 + MEGA_TEST_MAX=120_000 (NOT collapsed to 90s); emailBucket POLL_TIMEOUT kept inline; playwright.config global timeout sourced from TIMEOUTS.testMax. D-10/D-11/D-12 satisfied.
 - [Phase ?]: Phase 93 P01: Wave-0 dev-seed gate restored to exit 0 via describe.skip quarantine of variant-app-settings (deleted variant-* imports) + e2e.test.ts drifted row-count assertion; pre-rewrite Playwright baseline (84 tests/72 files) captured for Plan 05 attribution
+- [Phase ?]: Phase 93 Plan 02: e2e/base + e2e/perm/* seed family established; bare e2e template retired (D-01); baseTemplate/BASE_APP_SETTINGS renames (FLAG-9); dev-seed template tests retargeted to base dataset (D-03), test:unit green
 
 ### Quick Tasks Completed
 
@@ -265,7 +267,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-03T11:26:08.145Z
+Last session: 2026-06-03T11:38:13.245Z
 Stopped at: Phase 93 context gathered
 Resume file: None
 Next action: Operator decides Phase 87 disposition per Phase 86.3-05 D-06 recommendation:

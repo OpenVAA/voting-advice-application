@@ -539,11 +539,11 @@ _A11y spec_ — rewrite the a11y spec to use `baseV1` seed instead of `e2e` data
 
 _Seed templates_ — organise into `e2e/perm/*` + `e2e/base.ts`; remove the old `e2e.ts` and replace it with `baseV1` renamed to `e2e/base`
 
-**Plans:** 1/6 plans executed
+**Plans:** 2/6 plans executed
 
 Plans:
 - [x] 93-01-PLAN.md — Wave 0: fix the 2 red dev-seed tests (FLAG-1) + capture the pre-rewrite playwright --list baseline
-- [ ] 93-02-PLAN.md — WS5 seed templates: baseV1→e2e/base, delete e2e.ts, move perms→e2e/perm/*, remap barrel/resolver, retarget dev-seed tests (D-01/02/03/10, FLAG-4/9)
+- [x] 93-02-PLAN.md — WS5 seed templates: baseV1→e2e/base, delete e2e.ts, move perms→e2e/perm/*, remap barrel/resolver, retarget dev-seed tests (D-01/02/03/10, FLAG-4/9)
 - [ ] 93-03-PLAN.md — WS1 fixtures: voter/+shared/ moves, extract minimalVoterResultsPage, rename candidate root + constants, repoint perm-l10n (D-09/11/12/13/14/15/16, FLAG-2/5)
 - [ ] 93-04-PLAN.md — WS2 setup taxonomy + base-chain merge decoupled from perm anchor + full playwright.config rewrite (D-06/07/08/10/11, FLAG-6/8)
 - [ ] 93-05-PLAN.md — WS3/WS4 specs: rename journey specs, rewire a11y to base, repoint perm/visual/perf imports, README/CLAUDE.md rewrite, zero-token proof (D-04/09/11, FLAG-3/10)
