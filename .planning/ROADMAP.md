@@ -578,10 +578,10 @@ _READMEs_
 
 **Verification gates:** `yarn typecheck:tests` (exit 0) · `npx playwright test --list` (84 tests/72 files, no dropped specs) · residual-planning-token grep (`Phase|Plan|D-[0-9]|FLAG-|TIR|baseV1|mega`) empty in `tests/` + `packages/dev-seed/src` · full `yarn test:e2e` green.
 
-**Plans:** 8 plans
+**Plans:** 1/8 plans executed
 
 **Wave 1:**
-- [ ] 94-01-PLAN.md — WR-01/02/03/04 + D-02: delete husk + retired diff tool, add fail-loud teardown guard, data-driven ordinal default, perm-notifications re-enable TODO; de-plan the 2 edited infra files; pin --list baseline 84/72 (wave 1)
+- [x] 94-01-PLAN.md — WR-01/02/03/04 + D-02: delete husk + retired diff tool, add fail-loud teardown guard, data-driven ordinal default, perm-notifications re-enable TODO; de-plan the 2 edited infra files; pin --list baseline 84/72 (wave 1)
 
 **Wave 2** *(parallel sweeps, blocked on 94-01):*
 - [ ] 94-02-PLAN.md — de-plan 44 perm setup/teardown files (wave 2, depends 94-01)
