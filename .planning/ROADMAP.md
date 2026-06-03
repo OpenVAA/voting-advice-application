@@ -548,3 +548,37 @@ Plans:
 - [x] 93-04-PLAN.md — WS2 setup taxonomy + base-chain merge decoupled from perm anchor + full playwright.config rewrite (D-06/07/08/10/11, FLAG-6/8)
 - [x] 93-05-PLAN.md — WS3/WS4 specs: rename journey specs, rewire a11y to base, repoint perm/visual/perf imports, README/CLAUDE.md rewrite, zero-token proof (D-04/09/11, FLAG-3/10)
 - [x] 93-06-PLAN.md — WS5 tail: bounded base-prefix rewrite test-e2e-base- + full yarn test:e2e phase gate (D-05/09, FLAG-7)
+
+### Phase 94: Final E2E suite polish — de-planning + reformat + README triage
+
+**Goal:** Strip all planning/phase/history references from the E2E test suite and dev-seed templates so the suite reads as a clean, self-documenting product artifact with no project-archaeology, and resolve the 4 advisory code-review follow-ups from Phase 93. After this phase, tests describe WHAT they verify in plain language, comments explain intent (not change history), and the READMEs reflect only the current state.
+
+**Requirements**: TBD
+
+**Depends on:** Phase 93
+
+**Scope (from Phase 93 code review + user wrap-up directives):**
+
+_Code-review follow-ups (Phase 93 REVIEW.md)_
+- WR-01 — delete the always-green skipped husk `packages/dev-seed/tests/templates/variant-app-settings.test.ts`
+- WR-02 — remove the fully-skipped `perm-per-app-notifications` 3 playwright projects + the downstream dependency on its skipped spec (pre-93 quarantine; default to removing the dead projects from the serial perm chain)
+- WR-03 — add an explicit template-name guard in `tests/tests/setup/shared/setupFromTemplate.ts` so only `e2e/base` maps onto the `test-e2e-base-` teardown fallback (fail loudly for any other empty-prefix template)
+- WR-04 — make `buildMinimal`'s ordinal default answer data-driven instead of hardcoded `value:'3'` (mirror the categorical branch)
+
+_De-planning the suite_
+- Reformat every `test()` / `describe()` title across `tests/` to a simple meaningful human description of the behaviour under test — no Phase/Plan/D-*/FLAG-*/TIR/SCOPE references, no ticket numbers
+- Remove every comment in test files (specs, fixtures, helpers, setup, utils) referencing planning phases, plan IDs, decision/flag tags, or the history of changes to the tests; keep comments explaining current intent/rationale. Sweep `packages/dev-seed/src/templates` comments too
+- Remove manual line-wrapping from comments (let the IDE soft-wrap) — collapse wrapped comment prose into single logical lines
+
+_READMEs_
+- Triage `tests/tests/helpers/README.md` — update if it adds value, delete if not informative
+- Rewrite `tests/README.md` to reflect current suite status with zero mentions of planning, phases, or past versions of the tests
+
+**Constraints:** Scope is `tests/` and `packages/dev-seed/src/templates` only (~152 files carry planning references). Mechanical/parallelizable — no architecture changes.
+
+**Verification gates:** `yarn typecheck:tests` (exit 0) · `npx playwright test --list` (84 tests/72 files, no dropped specs) · residual-planning-token grep (`Phase|Plan|D-[0-9]|FLAG-|TIR|baseV1|mega`) empty in `tests/` + `packages/dev-seed/src` · full `yarn test:e2e` green.
+
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 94 to break down)

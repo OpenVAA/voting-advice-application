@@ -124,6 +124,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 
 ### Roadmap Evolution
 
+- 2026-06-03: Phase 94 added (v2.10 closing cleanup) — Final E2E suite polish: de-planning comments/titles, line-unwrap, README triage, + 4 Phase-93 code-review follow-ups (WR-01..04). Reopens v2.10 milestone scope (was milestone_complete after Phase 93).
 - 2026-04-28: v2.6 Svelte 5 Migration Cleanup shipped. 5 phases (60-64), 18 plans, 48 tasks, 4 days.
 - 2026-05-08: v2.7 shipped. 4 phases (65-68), 9 plans, 28 tasks, 9 days. `tech_debt` verdict (8/8 reqs wired; 3 documented deferrals).
 - 2026-05-10: v2.8 shipped. 4 phases (69-72), 13 plans, ~37 tasks, 3 days. Bundled parity gate PASSED.
