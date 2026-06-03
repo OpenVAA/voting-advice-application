@@ -1,43 +1,19 @@
 /**
  * Voter Skip-Next iteration walker (category-intro + question-next aware).
  *
- * Extracted from the inline Skip-Next loop in `voter.fixture.ts:123-135`
- * (Phase 86.1-01 + post-fix). Walks the voter through up to `maxSteps`
- * Skip-Next iterations, auto-detecting EITHER a category-intro page
- * (only `voter-questions-category-start` rendered) OR a regular
- * question page (Skip / `question-next` available). Breaks early on
- * landing on the terminal URL pattern (default `/results`).
+ * Walks the voter through up to `maxSteps` Skip-Next iterations,
+ * auto-detecting EITHER a category-intro page (only
+ * `voter-questions-category-start` rendered) OR a regular question page
+ * (Skip / `question-next` available). Breaks early on landing on the
+ * terminal URL pattern (default `/results`).
  *
- * Lineage (per 86.2-PATTERNS.md §"voter-iteration.helper.ts — Lineage block"):
- *   - Phase 77 P02 — bumped Skip-Next from 1 → 3 iterations
- *     (sort-17/18 coverage; matches voter-matching.spec.ts:174 +
- *     voter-journey.spec.ts:64 Skip-Next fallback pattern).
- *   - Phase 86.1-01 (DETERM-12/13/14) — bumped 3 → 6 iterations to
- *     accommodate sort-19 number question + 3 steps of headroom for
- *     future non-Likert opinion questions added at sort ≤ 24.
- *   - Phase 86.1 post-fix — added category-intro branch
- *     (`categoryStart` vs `nextButton` race) for parallel
- *     `voter-app-settings` `categoryIntros.show=true` mid-test
- *     mutation defense.
- *   - Sort-17/18/19 source:
- *     `packages/dev-seed/src/templates/e2e.ts:666` (number question).
+ * The default `maxSteps` of 6 walks past the non-Likert opinion questions
+ * in the e2e dataset (singleChoiceCategorical at sort 17, boolean at sort
+ * 18, number at sort 19; source
+ * `packages/dev-seed/src/templates/e2e.ts:666`) plus headroom; reducing it
+ * risks stalling on the first non-Likert opinion question.
  *
- * Pitfall #3 — Changing the default `maxSteps` from 6 silently
- *   regresses `tests/tests/fixtures/voter.fixture.ts:answeredVoterPage`.
- *   The fixture relies on the 6-cap to walk past:
- *     - sort 17 singleChoiceCategorical (test-question-directional-1)
- *     - sort 18 boolean (test-question-boolean-1)
- *     - sort 19 number (test-question-number-1)
- *     - 3 steps of headroom for future non-Likert opinion questions.
- *   If you reduce the default, the fixture stalls on the first non-
- *   Likert opinion question and times out the 30s URL-change wait.
- *
- * Scope (per 86.2-RESEARCH.md §"Helper #6"):
- *   Skip-Next-only. The helper does NOT take an `answer` callback —
- *   extending to answer-mode (the mid-fixture answer loop at
- *   `voter.fixture.ts:59-78`) is v2.11+ hygiene. The
- *   `results-sections.spec.ts:263-298` answer-loop is its OWN inline
- *   pattern and stays inline in 86.2.
+ * Scope: Skip-Next-only — the helper does NOT take an `answer` callback.
  */
 
 import { testIds } from '../utils/testIds';
@@ -48,7 +24,7 @@ import type { Page } from '@playwright/test';
  * auto-detecting category-intro vs regular-question pages each step.
  * Breaks early on landing on the terminal URL pattern.
  *
- * Body mirrors voter.fixture.ts:123-135 verbatim:
+ * Implementation:
  *   1. Locate `nextButton` + `categoryStart` test-ids.
  *   2. For each step (up to `maxSteps`):
  *      a. Break if URL matches `terminalUrlPattern`.

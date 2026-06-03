@@ -4,12 +4,6 @@
  * Thin wrappers around `expect(page).toHaveURL(...)` and the
  * `click + race-against-URL-change` pattern.
  *
- * Source: distilled from
- *   - tests/tests/specs/candidate/candidate-profile-validation.spec.ts:101
- *     (Phase 86.1 post-fix — `expectLandedOn` anchor).
- *   - tests/tests/specs/voter/voter-matching.spec.ts:186-198
- *     (Phase 86.1 post-fix — `clickAndRaceSettle` anchor).
- *
  * Existing in-tree analog for `clickAndRaceSettle`:
  *   `tests/tests/utils/voterNavigation.ts:74-91 advanceClick` — NOT being
  *   refactored to call this helper (per 86.2-RESEARCH.md §"Helper #3
@@ -65,15 +59,14 @@ type UrlPredicate = string | RegExp | ((url: URL) => boolean);
  * Click a locator and race the click against a destination URL settle.
  *
  * Pattern: bound the click with a short timeout (default 3_000ms) and
- * INTERNALLY swallow click-timeout failures (matches all 3 anchor sites:
- * `voter-matching.spec.ts:194`, `voter.fixture.ts:131`, and
- * `voterNavigation.ts:advanceClick`). Then race `Promise.race(...)` against
- * one or more URL predicates with a `settleTimeoutMs` budget (default
+ * INTERNALLY swallow click-timeout failures (matches the
+ * `voterNavigation.ts:advanceClick` pattern). Then race `Promise.race(...)`
+ * against one or more URL predicates with a `settleTimeoutMs` budget (default
  * 5_000ms). Each predicate is wrapped in `.catch(() => null)` so the race
  * resolves on first settle (not first throw).
  *
- * Pitfall #1 note — Internal `.catch(() => null)` matches all 3 anchor
- * patterns (voter-matching, voter.fixture, voterNavigation.advanceClick)
+ * Pitfall #1 note — Internal `.catch(() => null)` matches the
+ * `voterNavigation.advanceClick` pattern
  * — distinct from helper #1 `settleNetworkIdle` which does NOT swallow.
  * The asymmetry is intentional: helper #1 is a hard wait helper, this is
  * a defensive click+race helper. Read 86.2-RESEARCH.md §"Common Pitfalls"

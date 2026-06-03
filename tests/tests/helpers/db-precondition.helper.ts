@@ -6,10 +6,6 @@
  * Produces a rich diagnostic message that interpolates the actual row
  * shapes (external_id + name) so the failure surface is debuggable.
  *
- * Source: distilled from
- *   - tests/tests/specs/variants/results-sections.spec.ts:177-198
- *     (Phase 86.1 post-fix — the 2-elections precondition).
- *
  * Propagation surface (per 86.2-RESEARCH.md §"Helper #5 propagation"):
  *   ZERO propagation candidates beyond the anchor at extraction time.
  *   The helper is extracted ahead of Phase 86.3+ test-authoring leverage
@@ -31,7 +27,7 @@ import type { SupabaseAdminClient } from '../utils/supabaseAdminClient';
  * includes the table, filter, expected vs actual count, and a sampling
  * of row identifiers + names (matches anchor's diagnostic shape).
  *
- * Diagnostic format (matches `results-sections.spec.ts:191-196`):
+ * Diagnostic format:
  *   `<message-prefix>: expected exactly <N> rows under filter <JSON>; got <actual>: <external_id=name>; <external_id=name>; ...`
  *
  * @param client - SupabaseAdminClient instance (test-layer subclass).

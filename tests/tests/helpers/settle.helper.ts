@@ -4,10 +4,7 @@
  * Thin wrappers around `page.waitForLoadState(...)`. Use to bridge
  * cold-start hydration races between `page.goto(url)` and assertions.
  *
- * Source: distilled from
- *   - tests/tests/specs/candidate/candidate-profile-validation.spec.ts:97,203 (Phase 86.1 post-fix)
- *   - tests/tests/specs/voter/voter-not-located-redirect.spec.ts:132 (Phase 86 DETERM-12)
- * Inherits Phase 83 DETERM-07b hydration-completeness guard pattern.
+ * Inherits the Phase 83 DETERM-07b hydration-completeness guard pattern.
  *
  * helpers/ vs utils/ boundary (per 86.2-RESEARCH.md §"Open Questions (RESOLVED)" Q5):
  *   - `tests/tests/helpers/` = thin generic Playwright wrappers (no domain

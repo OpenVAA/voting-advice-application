@@ -7,17 +7,11 @@
  * group; the helper iterates all sections and picks the first option in
  * each).
  *
- * Source: distilled from
- *   - tests/tests/specs/voter/voter-not-located-redirect.spec.ts:67-83
- *     `fillAllConstituencies` (Phase 86.1 post-fix).
- *
  * Pitfall #2 — Select.svelte ARIA contract:
  *   `<Select>` renders as `role="combobox"` (NOT `role="radiogroup"`).
  *   The opened menu is `role="listbox"`; each item is `role="option"`.
- *   The Phase 86.1 RCA at
- *   `tests/tests/specs/voter/voter-not-located-redirect.spec.ts:57-66`
- *   ("NOT a radiogroup" RCA block) is the canonical lineage citation —
- *   read it before re-extending this helper. Using `radio` /
+ *   This "NOT a radiogroup" contract (Phase 86.1 RCA) is the canonical
+ *   lineage — keep it in mind before re-extending this helper. Using `radio` /
  *   `radiogroup` roles against `<Select>` silently does nothing.
  *
  * Scope (per 86.2-RESEARCH.md §"Helper #4 propagation"):
@@ -49,8 +43,7 @@ import type { Locator, Page } from '@playwright/test';
  *   `role="combobox"` elements (e.g.
  *   `page.getByTestId(testIds.voter.constituencies.list).getByRole('combobox')`).
  * @param opts.optionIndex - index of the option to pick in each listbox;
- *   default `0` (matches anchor at
- *   `voter-not-located-redirect.spec.ts:80`).
+ *   default `0` (pick the first option).
  * @param opts.listboxRole - ARIA role of the listbox overlay; default
  *   `'listbox'`. Override only if Select.svelte's contract changes.
  * @param opts.perComboboxTimeoutMs - per-combobox listbox-visible budget

@@ -10,8 +10,7 @@
  *
  * HIGH-3 mechanism: template OMITS elections.startFromConstituencyGroup;
  * this spec's beforeAll resolves CG-2 UUID via SupabaseAdminClient +
- * client.updateAppSettings — mirror variant-startfromcg.setup.ts:18-23 +
- * startfromcg.spec.ts:158-185.
+ * client.updateAppSettings.
  *
  * Rigidity contract: every assertion HARD.
  */

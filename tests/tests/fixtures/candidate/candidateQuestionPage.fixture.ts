@@ -20,8 +20,6 @@
  *  - clickContinue()                       — click candidate-questions-save.
  *  - expectQuestionText(textOrRegex)       — assert the page heading matches.
  *
- * SIBLING (not replacement) to the legacy tests/tests/pages/candidate/QuestionPage.ts.
- *
  * **Rigidity contract** (Phase 88 Plan 04 SCOPE acceptance #6):
  * - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
  *   `.catch(() => null)` on assertion-bearing locator interactions.

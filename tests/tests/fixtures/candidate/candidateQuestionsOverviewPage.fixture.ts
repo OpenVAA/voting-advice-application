@@ -32,8 +32,6 @@
  *                                            page.goto() with an external_id
  *                                            (the URL is keyed on internal id).
  *
- * SIBLING (not replacement) to the legacy tests/tests/pages/candidate/QuestionsPage.ts.
- *
  * **Rigidity contract** (Phase 88 Plan 04 SCOPE acceptance #6):
  * - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
  *   `.catch(() => null)` on assertion-bearing locator interactions.

@@ -9,18 +9,14 @@
  *
  * D-11 (Phase 63 E2E-02) — `updateAppSettings` (inherited) usage policy:
  *   Baseline test-setup usage of `updateAppSettings` has migrated to the
- *   `@openvaa/dev-seed` e2e template's `app_settings.fixed[]` block (and to
- *   the variant templates at `tests/tests/setup/templates/variant-*.ts`).
+ *   `@openvaa/dev-seed` e2e template's `app_settings.fixed[]` block.
  *   The 4 setup-file `updateAppSettings({ ... })` blocks were deleted in
  *   Plan 63-02 Task 3.
  *
  *   `updateAppSettings` is RETAINED for per-test scenario mutations:
- *   spec files (e.g. `candidate-settings.spec.ts`,
- *   `voter-popup-hydration.spec.ts`, `results-sections.spec.ts`,
- *   `startfromcg.spec.ts`, `voter-popups.spec.ts`,
- *   `voter-settings.spec.ts`, `voter-static-pages.spec.ts`,
- *   `multi-election.spec.ts`, `constituency.spec.ts`) call it inside
- *   `beforeAll` / `afterAll` to test behavior-under-different-settings.
+ *   specs may call it inside `beforeAll` / `afterAll` to test
+ *   behavior-under-different-settings (e.g. perm-startfromcg.spec.ts
+ *   resolves + writes startFromConstituencyGroup at runtime).
  *
  *   Do NOT use `updateAppSettings` from a `*.setup.ts` file for baseline
  *   settings — extend the appropriate template instead (D-04, D-09, D-10).
@@ -237,9 +233,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
    * Returns the current persisted `app_settings.settings` JSONB for this
    * client's project, or `null` if the bootstrap row is missing.
    *
-   * Consumed by the 4 setup files (`data.setup.ts`,
-   * `variant-constituency.setup.ts`, `variant-multi-election.setup.ts`,
-   * `variant-startfromcg.setup.ts`) immediately after `writer.write(...)` to
+   * Consumed by `data.setup.ts` immediately after `writer.write(...)` to
    * verify the dev-seed e2e template's `app_settings.fixed[]` block actually
    * persisted via Pass-5 (`merge_jsonb_column`). Subset match per RESOLVED Q2
    * (`expect(...).toMatchObject(expected)`) — `merge_jsonb_column` is

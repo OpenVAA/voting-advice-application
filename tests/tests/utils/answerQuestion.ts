@@ -15,15 +15,12 @@
  *
  * If the spec DOES depend on a specific answer value (matching ordering,
  * directional vs Manhattan distance, etc.), DO NOT use these helpers — use
- * the voter.fixture.ts `voterAnswerIndex` pattern instead so the chosen Likert
+ * an explicit per-step Likert index instead so the chosen Likert
  * value is explicit and reviewable.
  *
  * Cross-references:
  *   - tests/utils/missingNominations.ts — for dismissing the located-layout
  *     missing-nominations modal that may open mid-flow.
- *   - tests/fixtures/voter.fixture.ts — the matching-aware fixture whose
- *     per-step Likert-index pattern these helpers are deliberately NOT a
- *     replacement for.
  */
 import { testIds } from './testIds';
 import type { Page } from '@playwright/test';
