@@ -4,13 +4,13 @@ milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
 status: executing
 stopped_at: Phase 93 context gathered
-last_updated: "2026-06-03T11:50:28.707Z"
+last_updated: "2026-06-03T12:14:55.949Z"
 last_activity: 2026-06-03
 progress:
   total_phases: 18
   completed_phases: 15
   total_plans: 58
-  completed_plans: 53
+  completed_plans: 54
   percent: 83
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 ## Current Position
 
 Phase: 93 (clean-up-and-reorganise-e2e-tests-fixtures-setup-and-seed-te) — EXECUTING
-Plan: 4 of 6
+Plan: 5 of 6
 Status: Ready to execute
 Last activity: 2026-06-03
 
@@ -116,6 +116,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | Phase 93 P01 | 3min | 3 tasks | 3 files |
 | Phase 93 P02 | ~30min | 2 tasks | 30 files |
 | Phase 93 P03 | ~35min | 3 tasks | 28 files |
+| Phase 93 P04 | ~50min | 3 tasks | 64 files |
 
 ## Accumulated Context
 
@@ -231,6 +232,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Phase 93 P01: Wave-0 dev-seed gate restored to exit 0 via describe.skip quarantine of variant-app-settings (deleted variant-* imports) + e2e.test.ts drifted row-count assertion; pre-rewrite Playwright baseline (84 tests/72 files) captured for Plan 05 attribution
 - [Phase ?]: Phase 93 Plan 02: e2e/base + e2e/perm/* seed family established; bare e2e template retired (D-01); baseTemplate/BASE_APP_SETTINGS renames (FLAG-9); dev-seed template tests retargeted to base dataset (D-03), test:unit green
 - [Phase ?]: Phase 93 Plan 03 (WS1): role-based fixture taxonomy complete — voter-app fixtures -> fixtures/voter/, cross-app -> fixtures/shared/, voterNav -> voter/, minimalVoterResultsPage extracted (minimalVoterResultsTest), voterMegaTest -> voterJourneyTest, candidate-mega -> candidate-journey, candidateMegaConstants -> candidateJourneyConstants; typecheck + lint green at every commit
+- [Phase ?]: Plan 93-04: merged two base-seeding paths into one (data-setup-base); deleted data-setup/data-teardown + dead e2eFixtureRefs.ts; decoupled base from perm anchor (FLAG-6)
+- [Phase ?]: Plan 93-04: voter-journey/candidate-journey testMatch set to no-mega regex now (D-09 gate); spec FILES still mega-named -> transient 2-spec orphan until Plan 05/06
 
 ### Quick Tasks Completed
 
@@ -269,7 +272,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-03T11:49:48.592Z
+Last session: 2026-06-03T12:14:43.777Z
 Stopped at: Phase 93 context gathered
 Resume file: None
 Next action: Operator decides Phase 87 disposition per Phase 86.3-05 D-06 recommendation:
