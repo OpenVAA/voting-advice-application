@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
-status: completed
+status: executing
 stopped_at: Phase 93 context gathered
-last_updated: "2026-06-03T09:21:39.840Z"
-last_activity: "2026-06-03 - Completed quick task 260603-c0g: dev-seed lint + runes-test/statistics build + 33 frontend lint errors → yarn lint:check + yarn build both green"
+last_updated: "2026-06-03T11:26:13.676Z"
+last_activity: 2026-06-03
 progress:
   total_phases: 18
   completed_phases: 15
-  total_plans: 52
-  completed_plans: 50
+  total_plans: 58
+  completed_plans: 51
   percent: 83
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Milestone complete
+**Current focus:** Phase 93 — clean-up-and-reorganise-e2e-tests-fixtures-setup-and-seed-te
 
 ## Current Position
 
-Phase: 92
-Plan: Not started
-Status: Milestone complete
-Last activity: 2026-06-03 - Completed quick task 260603-c0g: dev-seed lint + runes-test/statistics build + 33 frontend lint errors → yarn lint:check + yarn build both green
+Phase: 93 (clean-up-and-reorganise-e2e-tests-fixtures-setup-and-seed-te) — EXECUTING
+Plan: 2 of 6
+Status: Ready to execute
+Last activity: 2026-06-03
 
 ## Performance Metrics
 
@@ -113,6 +113,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | Phase Phase 92 PP03 | ~6min | 3 tasks | 13 files |
 | Phase 92 P05 | ~5min | 3 tasks | 8 files |
 | Phase 92 P04 | ~25min | 2 tasks | 9 files |
+| Phase 93 P01 | 3min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -225,6 +226,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 92-02]: WS4 imgproxy/pooler diagnosis flagged QUESTIONABLE (D-13) at both markdown sites (quick SUMMARY + pending todo); diff-playwright-reports.ts:311 inspected + SKIPPED (encodes the imgproxy DATA_RACE flake pool / Phase 73 D-09 binding, not the questionable edge_runtime/pooler claim); STATE.md not edited (only ref is the roadmap-add narrative, already labeled "possibly unrelated"). WS5 both freshness probes (setupFromTemplate.ts + data.setup.ts) exclude the `seed_` baseline prefix (D-15) via a second `.not('external_id','like','seed_%')` on candidates + organizations; warn-only default + E2E_REQUIRE_FRESH_DB hard-fail branch byte-unchanged (D-14); duplicated-edit (no shared helper, lower-risk option). typecheck:tests green.
 - [Phase ?]: [Phase 92 P03]: WS2 FIXTURES — voter goToPage/expectPageVisible rollout (3 net-new + 2 extended fixtures, home/intro load anchors, named-Home-goto migration, open-menu→nav-menu-toggle testId). typecheck:tests + tests-eslint green.
 - [Phase 92]: Timeout consolidation (92-04): central tests/tests/helpers/timeouts.ts TIMEOUTS buckets (element/click/page/slowPage/testMax, MAX-merged so no budget tightened) + barrel export; all 4 local TIMEOUT objects deleted; >90s test.setTimeout budgets preserved as named inline exceptions L10N_TEST_MAX=180_000 + MEGA_TEST_MAX=120_000 (NOT collapsed to 90s); emailBucket POLL_TIMEOUT kept inline; playwright.config global timeout sourced from TIMEOUTS.testMax. D-10/D-11/D-12 satisfied.
+- [Phase ?]: Phase 93 P01: Wave-0 dev-seed gate restored to exit 0 via describe.skip quarantine of variant-app-settings (deleted variant-* imports) + e2e.test.ts drifted row-count assertion; pre-rewrite Playwright baseline (84 tests/72 files) captured for Plan 05 attribution
 
 ### Quick Tasks Completed
 
@@ -263,9 +265,9 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-03T09:21:39.834Z
+Last session: 2026-06-03T11:26:08.145Z
 Stopped at: Phase 93 context gathered
-Resume file: .planning/phases/93-clean-up-and-reorganise-e2e-tests-fixtures-setup-and-seed-te/93-CONTEXT.md
+Resume file: None
 Next action: Operator decides Phase 87 disposition per Phase 86.3-05 D-06 recommendation:
   (a) **RE-PLAN (Claude's recommendation):** Re-plan Phase 87 to absorb v2.11+ voter-app cold-deeplink deferrals (4 cells #5/#6/#7/#8 closure-paired via navigation-from-home redesign) + boundary-class flake deferrals (DETERM-06 imgproxy + email-link timing) BEFORE firing the v2.10-ship anchor capture. Plan 87-01 needs a new Plan 01a (deferral inventory) + Plan 01b (anchor capture WITH explicit deferrals documented).
   (b) **DELAYED-FIRING (alternative):** Run Phase 87 against the ALMOST-STRICT post-86.3 anchor with explicit v2.11+ deferral documentation; accept that "all-green deterministic" is satisfied for SKIPPED + DATA_RACE pools but NOT for CASCADE pool (Phase 87 Task 0 pre-gate CASCADE ≤ 5 unsatisfied at CASCADE = 37 selective-regen-preserved OR 90 raw).
