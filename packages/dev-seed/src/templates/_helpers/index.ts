@@ -5,5 +5,5 @@
  * Authoritative source: Plan 91-01-PLAN.md `<tasks>` / Task 1.
  */
 
-export { buildMinimal } from './buildMinimal';
 export type { BuildMinimalOptions } from './buildMinimal';
+export { buildMinimal } from './buildMinimal';

@@ -45,7 +45,6 @@ import {
   buildElectionConstituencyNoms,
   buildOrganizations,
   buildQuestionCategories,
-  buildQuestions,
   LIKERT_5_EN,
   MINIMAL_BASE_APP_SETTINGS
 } from '../permutations/shared';
@@ -122,11 +121,11 @@ export interface BuildMinimalOptions {
  *
  * Returns a fresh object — does not mutate either argument.
  */
-function deepMerge<T extends Record<string, unknown>>(
-  base: T,
+function deepMerge<TRow extends Record<string, unknown>>(
+  base: TRow,
   overlay: Record<string, unknown> | undefined
-): T {
-  if (overlay == null) return JSON.parse(JSON.stringify(base)) as T;
+): TRow {
+  if (overlay == null) return JSON.parse(JSON.stringify(base)) as TRow;
   const out: Record<string, unknown> = JSON.parse(JSON.stringify(base));
   for (const key of Object.keys(overlay)) {
     const overlayVal = overlay[key];
@@ -145,7 +144,7 @@ function deepMerge<T extends Record<string, unknown>>(
       out[key] = overlayVal;
     }
   }
-  return out as T;
+  return out as TRow;
 }
 
 /**
