@@ -23,11 +23,23 @@
  */
 
 import { describe, expect, test } from 'vitest';
-import { E2E_BASE_APP_SETTINGS } from '../../src';
-import { mergeSettings } from '@openvaa/app-shared';
-import variantConstituencyTemplate from '../../../../tests/tests/setup/templates/variant-constituency';
-import variantMultiElectionTemplate from '../../../../tests/tests/setup/templates/variant-multi-election';
-import variantStartFromCgTemplate from '../../../../tests/tests/setup/templates/variant-startfromcg';
+// reason: variant-constituency template (and the whole setup/templates/variant-* family)
+// deleted pre-Phase-93; suite obsolete pending variant-template removal — quarantined to
+// restore dev-seed gate (Phase 93 Wave 0 / FLAG-1). The imports below resolve to git-deleted
+// modules and fail at module-load, so they are commented out alongside the describe.skip wraps.
+// import { E2E_BASE_APP_SETTINGS } from '../../src';
+// import { mergeSettings } from '@openvaa/app-shared';
+// import variantConstituencyTemplate from '../../../../tests/tests/setup/templates/variant-constituency';
+// import variantMultiElectionTemplate from '../../../../tests/tests/setup/templates/variant-multi-election';
+// import variantStartFromCgTemplate from '../../../../tests/tests/setup/templates/variant-startfromcg';
+
+// Stand-ins so the (skipped) suite bodies still parse after the imports above are removed.
+// reason: see module-load quarantine note above — these are unreachable under describe.skip.
+const E2E_BASE_APP_SETTINGS = {} as Record<string, unknown>;
+const mergeSettings = (..._args: Array<unknown>): unknown => ({});
+const variantConstituencyTemplate = {} as unknown;
+const variantMultiElectionTemplate = {} as unknown;
+const variantStartFromCgTemplate = {} as unknown;
 
 type FragmentView = { fixed?: Array<Record<string, unknown>>; count?: number };
 
@@ -39,7 +51,8 @@ function appSettingsFragment(tpl: unknown): FragmentView | undefined {
   return undefined;
 }
 
-describe('variant-constituency — app_settings overlay (empty; inherits base)', () => {
+// reason: variant-constituency template deleted pre-Phase-93; suite obsolete — quarantined (Phase 93 Wave 0 / FLAG-1).
+describe.skip('variant-constituency — app_settings overlay (empty; inherits base)', () => {
   test('declares app_settings.fixed[] with one row', () => {
     const frag = appSettingsFragment(variantConstituencyTemplate);
     expect(frag).toBeDefined();
@@ -87,7 +100,8 @@ describe('variant-constituency — app_settings overlay (empty; inherits base)',
   });
 });
 
-describe('variant-multi-election — app_settings overlay (adds popup suppression)', () => {
+// reason: variant-multi-election template deleted pre-Phase-93; suite obsolete — quarantined (Phase 93 Wave 0 / FLAG-1).
+describe.skip('variant-multi-election — app_settings overlay (adds popup suppression)', () => {
   test('declares app_settings.fixed[] with one row', () => {
     const frag = appSettingsFragment(variantMultiElectionTemplate);
     expect(frag).toBeDefined();
@@ -140,7 +154,8 @@ describe('variant-multi-election — app_settings overlay (adds popup suppressio
   });
 });
 
-describe('variant-startfromcg — app_settings overlay (empty; sfcg stays spec-owned)', () => {
+// reason: variant-startfromcg template deleted pre-Phase-93; suite obsolete — quarantined (Phase 93 Wave 0 / FLAG-1).
+describe.skip('variant-startfromcg — app_settings overlay (empty; sfcg stays spec-owned)', () => {
   test('declares app_settings.fixed[] with one row', () => {
     const frag = appSettingsFragment(variantStartFromCgTemplate);
     expect(frag).toBeDefined();
