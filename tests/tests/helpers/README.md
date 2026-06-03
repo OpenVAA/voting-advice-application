@@ -2,31 +2,23 @@
 
 ## Intent
 
-Thin generic Playwright wrappers extracted from Phase 86.1 post-fix inline
-patterns. The goal is to reduce the maintenance surface of the 15
-`// Phase 86.1 post-fix:` inline workarounds before Phase 86.3 authors
-8 new tests against the same patterns.
-
-Each helper distils a recurring Playwright API shape (settle / navigation
-/ select / DB-precondition / fixture-iteration) into a small documented
-function that takes raw Playwright primitives (`Page`, `Locator`) — no
-domain knowledge.
+Thin generic Playwright wrappers around recurring API shapes (settle /
+navigation / select / DB-precondition / fixture-iteration). Each helper
+distils one recurring Playwright shape into a small documented function
+that takes raw Playwright primitives (`Page`, `Locator`,
+`SupabaseAdminClient`) — no domain knowledge. The goal is to keep the
+suite's repeated wait/race/probe patterns in one place so they can be
+fixed once rather than copy-pasted inline.
 
 ## When to add a new helper
 
 Add a `*.helper.ts` file here when ALL of the following hold:
 
-1. ≥2 inline sites in the suite already share the same Playwright-API
-   shape (settle, navigation race, combobox iteration, DB count probe,
-   voter-iteration walk).
-2. The shape is generic enough to live without domain knowledge
-   (operates on `Page` / `Locator` / `SupabaseAdminClient`, not on
-   page-object instances or `testIds` lookups specific to one route).
-3. The lineage of the inline pattern is documented (Phase N post-fix RCA
-   citation) so the helper's docstring can cite it.
+1. ≥2 inline sites in the suite already share the same Playwright-API shape (settle, navigation race, combobox iteration, DB count probe, voter-iteration walk).
+2. The shape is generic enough to live without domain knowledge (operates on `Page` / `Locator` / `SupabaseAdminClient`, not on page-object instances or `testIds` lookups specific to one route).
+3. The contract the wrapper guarantees is documented in the helper's docstring (what it waits for, what it swallows, what it does NOT swallow) so callers can rely on it without re-reading the body.
 
-Otherwise, leave the pattern inline with a `// reason:` block (per the
-Phase 86.1 inline-workaround convention).
+Otherwise, leave the pattern inline with a `// reason:` block explaining why.
 
 ## helpers/ vs utils/ boundary
 
@@ -45,36 +37,20 @@ helper that bakes in a domain assumption is hard to undo.
 
 ## Page-object boundary
 
-Helpers do NOT call page-object methods (per
-`86.2-RESEARCH.md §"Page-Object Boundary (Question 5 answer)"`).
-Helpers take `Page` / `Locator`, not `QuestionsPage` instances. This
-keeps helpers reusable across page-object hierarchies (voter, candidate,
-admin) and across non-page-object test code.
+Helpers do NOT call page-object methods. Helpers take `Page` / `Locator`,
+not `QuestionsPage` instances. This keeps helpers reusable across
+page-object hierarchies (voter, candidate, admin) and across non-page-object
+test code.
 
 If a helper would benefit from a page-object's encapsulated state, the
-right move is usually to make the page-object's method richer (or to
-add a new page-object method), not to import a page-object into the
-helper layer.
+right move is usually to make the page-object's method richer (or to add a
+new page-object method), not to import a page-object into the helper layer.
 
-## Pitfall references
+## Helper contracts
 
-Three Pitfalls govern helper authoring; each helper file's docstring
-cites the relevant one(s):
+Three contracts are load-bearing; each helper file's docstring documents
+the one(s) it implements:
 
-- **Pitfall #1 — Helper #1 (`settleNetworkIdle`) does NOT swallow timeouts.**
-  Callers add `.catch(() => null)` post-call where the original semantic
-  was defensive. Helper #3 (`clickAndRaceSettle`) DOES internally swallow
-  on click — distinct contract.
-- **Pitfall #2 — Helper #4 (`iterateSelectOptions`) docstring cites the
-  `Select.svelte` `combobox + listbox` ARIA contract.** The original
-  Phase 86.1 RCA mis-identified the role as `radiogroup`; the helper's
-  docstring exists to prevent the same regression.
-- **Pitfall #3 — Helper #6 (`walkVoterIteration`) default `maxSteps`
-  is 6.** Changing the default silently regresses the
-  `answeredVoterPage` fixture (which relies on 6 to walk past the
-  sort-19 number opinion question).
-
-## Cite
-
-See `86.2-RESEARCH.md §"Open Questions (RESOLVED)" Q3` for the resolution
-record establishing this README + the per-helper docstring conventions.
+- **`settleNetworkIdle` does NOT swallow timeouts.** It surfaces a timeout to the caller so a genuinely stuck page fails loudly. Callers that intentionally want a best-effort settle add `.catch(() => null)` at the call site. `clickAndRaceSettle` is the distinct contract that DOES internally swallow on click.
+- **`iterateSelectOptions` targets the `combobox + listbox` ARIA contract.** The OpenVAA `Select.svelte` exposes its options as a `combobox` opening a `listbox` (NOT a `radiogroup`). The helper's docstring records this so a future change to `Select.svelte`'s role does not silently break option iteration.
+- **`walkVoterIteration` defaults `maxSteps` to 6.** Lowering the default silently regresses the `answeredVoterPage` fixture, which relies on 6 steps to walk past the number opinion question. Keep the default at 6 unless the voter question flow length changes.
