@@ -1,17 +1,16 @@
 /**
- * Default-template alliances override — D-25 Overrides signature.
+ * Default-template alliances override.
  *
- * Phase 67: hand-authored 2 alliances grouping 6 of 8 parties into ideological
- * blocs (D-01). Standalone parties (party_people, party_coast) exercise the
- * no-alliance UI path. Empirically exercises the v2.6 P64 supabase-adapter
- * reverse-fill of `organizationNominationIds` on Alliance parents
- * (supabaseDataProvider.ts:391-405) which had shipped without seed data.
+ * Hand-authored 2 alliances grouping 6 of 8 parties into ideological blocs.
+ * Standalone parties (party_people, party_coast) exercise the no-alliance UI
+ * path. Exercises the supabase-adapter reverse-fill of
+ * `organizationNominationIds` on Alliance parents
+ * (supabaseDataProvider.ts:391-405).
  *
- * Scope split (after fallback applied during Plan 67-01 Task 5 integration
- * test): this override emits the 2 ALLIANCE ENTITY rows only (output.alliances
- * → bulk_import → alliances table). The 10 AllianceNomination rows live in
- * `nominations-override.ts` so they land in output.nominations → the
- * nominations table. Without this split, bulk_import routes all rows under
+ * Scope split: this override emits the 2 ALLIANCE ENTITY rows only
+ * (output.alliances → bulk_import → alliances table). The 10 AllianceNomination
+ * rows live in `nominations-override.ts` so they land in output.nominations →
+ * the nominations table. Without this split, bulk_import routes all rows under
  * the override key to the same table and the polymorphic `alliance: { ... }`
  * ref on nomination rows is misinterpreted as a column on the alliances table.
  *
@@ -20,8 +19,8 @@
  * specific external_ids and (b) wire org-nom parent_nomination to the
  * matching alliance nom in the same constituency.
  *
- * No real Finnish coalition names (D-58-01); invented neutral names per D-04.
- * EN-only authoring + 4-locale auto-fan-out via
+ * No real Finnish coalition names; invented neutral names. EN-only authoring +
+ * 4-locale auto-fan-out via
  * `defaultTemplate.generateTranslationsForAllLocales: true`.
  */
 
@@ -32,7 +31,6 @@ type AllianceEntityRow = Partial<TablesInsert<'alliances'>> & { external_id: str
 
 /**
  * Alliance → member-party external_ids (without the externalIdPrefix).
- * Locked by Phase 67 CONTEXT D-01:
  *   Alliance L: SDU, RF, GW (party_social, party_red, party_green) — Left bloc.
  *   Alliance R: BC, VC, RA (party_blue, party_values, party_rural) — Right bloc.
  *   Standalone (no alliance): party_people (PM), party_coast (CP) — exercises
@@ -60,9 +58,9 @@ export function findAllianceForParty(partyExtId: string): 'L' | 'R' | undefined 
 
 /**
  * Hand-authored alliance entity literals. Mirrors the 8-party shape in
- * `default.ts:88-152`. Names are invented + neutral per D-04 + D-58-01 — no
- * real Finnish coalition names. Colors are dark/neutral hues distinct from
- * member-party hues so the alliance entity is visually distinguishable.
+ * `default.ts:88-152`. Names are invented + neutral — no real Finnish
+ * coalition names. Colors are dark/neutral hues distinct from member-party
+ * hues so the alliance entity is visually distinguishable.
  */
 const ALLIANCE_ENTITY_ROWS: ReadonlyArray<{
   external_id: 'alliance_L' | 'alliance_R';
@@ -90,8 +88,8 @@ const ALLIANCE_ENTITY_ROWS: ReadonlyArray<{
 ] as const;
 
 /**
- * Locked alliance keys per D-01. Exported so `nominations-override.ts` can
- * iterate the alliance noms without duplicating the literal.
+ * Alliance keys. Exported so `nominations-override.ts` can iterate the
+ * alliance noms without duplicating the literal.
  */
 export const ALLIANCE_KEYS: ReadonlyArray<'L' | 'R'> = ['L', 'R'];
 

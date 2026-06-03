@@ -1,8 +1,7 @@
 /**
- * Barrel for `templates/_helpers/` — Phase 91 Plan 91-01 Task 1.
+ * Barrel for `templates/_helpers/`.
  *
- * Re-exports the Phase-91 dataset-builder helpers + their option types.
- * Authoritative source: Plan 91-01-PLAN.md `<tasks>` / Task 1.
+ * Re-exports the dataset-builder helpers + their option types.
  */
 
 export type { BuildMinimalOptions } from './buildMinimal';

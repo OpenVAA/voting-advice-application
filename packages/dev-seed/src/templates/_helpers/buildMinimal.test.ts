@@ -1,8 +1,7 @@
 /**
- * Vitest coverage for {@link buildMinimal} (Phase 91 Plan 91-01 Task 1).
+ * Vitest coverage for {@link buildMinimal}.
  *
- * Covers the 8 RED-phase test cases enumerated in the plan's `<behavior>`
- * block:
+ * Covers the 8 core behaviours:
  *
  *  1. Default 1c/1opin/0info — single candidate carries answer for the 1
  *     seeded opinion question (default candidateAnswersDefault='all').

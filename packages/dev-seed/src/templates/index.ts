@@ -1,15 +1,14 @@
 /**
- * Built-in template registry. Plan 05 CLI's `loadBuiltIns` dynamically imports
+ * Built-in template registry. The CLI's `loadBuiltIns` dynamically imports
  * this module (via `../templates/index.js`) and reads both `BUILT_IN_TEMPLATES`
- * and `BUILT_IN_OVERRIDES`. Plan 06 (this plan) populates the maps with the
- * `default` entry; Plan 08 extends with `e2e`.
+ * and `BUILT_IN_OVERRIDES`.
  *
  * The map-based design means a new built-in template ships in two edits:
  *   1. Add the template declaration under `packages/dev-seed/src/templates/`.
  *   2. Register the name in both maps below (and matching overrides if any).
  *
  * The CLI resolves a `--template <name>` arg by looking up `BUILT_IN_TEMPLATES`
- * first; a miss falls through to filesystem-path resolution (D-58-09).
+ * first; a miss falls through to filesystem-path resolution.
  * `BUILT_IN_OVERRIDES` is consulted only after a successful built-in match so
  * the pipeline receives the per-template override map at `runPipeline(tpl, ov)`.
  */
@@ -43,13 +42,10 @@ import type { Overrides } from '../types';
 
 /**
  * Built-in template name → Template. The canonical e2e base dataset is
- * registered under the `e2e/base` invocation name (Phase 93 Plan 02 / D-01;
- * formerly `base`). The old bare `e2e` template name is RETIRED — its
- * dataset was discarded and replaced by the base dataset.
- * Phase 88 Plan 03 adds 8 perm-* minimal-data templates for the new
- * election + constituency permutations test family (88-03-SCOPE.md:104-110).
- * Per FLAG-4, the `perm-*` invocation KEYS stay FLAT even though the perm
- * template files now live under `e2e/perm/*`.
+ * registered under the `e2e/base` invocation name. The perm-* minimal-data
+ * templates cover the election + constituency permutations test family. The
+ * `perm-*` invocation KEYS stay FLAT even though the perm template files live
+ * under `e2e/perm/*`.
  */
 export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   default: defaultTemplate,
@@ -62,29 +58,25 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   'perm-disable-election-1co': permDisableElection1coTemplate,
   'perm-disable-election-2co': permDisableElection2coTemplate,
   'perm-not-located-2e2cg': permNotLocated2e2cgTemplate,
-  // Phase 89 Plan 04 — 3 settings-permutation templates per TIR4:34-54.
-  // Each carries its own distinct externalIdPrefix ('e2e-perm-novapp-',
-  // 'e2e-perm-nocand-', 'e2e-perm-notif-') per D-89-03 for parallel safety
-  // across the wider suite.
+  // 3 settings-permutation templates. Each carries its own distinct
+  // externalIdPrefix ('e2e-perm-novapp-', 'e2e-perm-nocand-',
+  // 'e2e-perm-notif-') for parallel safety across the wider suite.
   'perm-disable-voter-app': permDisableVoterAppTemplate,
   'perm-disable-candidate-app': permDisableCandidateAppTemplate,
   'perm-per-app-notifications': permPerAppNotificationsTemplate,
-  // Phase 90 Plan 02 — missing-nominations TIR5:15-26 perm template.
-  // Distinct externalIdPrefix 'e2e-perm-missnoms-' per D-90-01 (parallel-safe
-  // across the 89-04 + future 90-03/04 perm chains).
+  // missing-nominations perm template. Distinct externalIdPrefix
+  // 'e2e-perm-missnoms-' (parallel-safe across the perm chains).
   'perm-missing-nominations': permMissingNominationsTemplate,
-  // Phase 90 Plan 04 — localisation-positive TIR5:52-95 perm template.
-  // Distinct externalIdPrefix 'e2e-perm-l10n-pos-' per D-90-01. Uses the
-  // 3-locale staticSettings base (en/fi/sv) directly — no runtime override.
-  // Spec exercises the langSelector visible-and-switching surface +
-  // Finnish-translation authoring on q1/q3.
+  // localisation-positive perm template. Distinct externalIdPrefix
+  // 'e2e-perm-l10n-pos-'. Uses the 3-locale staticSettings base (en/fi/sv)
+  // directly — no runtime override. Spec exercises the langSelector
+  // visible-and-switching surface + Finnish-translation authoring on q1/q3.
   'perm-localisation-positive': permLocalisationPositiveTemplate,
 
-  // Phase 91 Plan 02 — 9 new TIR6 Group A settings-permutation templates.
-  // Each carries its own distinct externalIdPrefix per D-91-PD-05 +
-  // RESEARCH §"Playwright Project Chain". A1/A2/A9 specs additionally
-  // consume the candidateSessionMinter helper (Plan 91-01 Task 3) per
-  // D-91-PD-06 to author per-perm Playwright storage-state JSON files.
+  // 9 settings-permutation templates. Each carries its own distinct
+  // externalIdPrefix. Some specs additionally consume the
+  // candidateSessionMinter helper to author per-perm Playwright storage-state
+  // JSON files.
   'perm-answers-locked': permAnswersLockedTemplate,
   'perm-hide-hero': permHideHeroTemplate,
   'perm-header-show-feedback': permHeaderShowFeedbackTemplate,
@@ -97,15 +89,15 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
 };
 
 /**
- * Built-in template name → D-25 Overrides. Paired 1:1 with
- * `BUILT_IN_TEMPLATES` entries. When the CLI resolves a built-in name it
- * ALSO looks up this map and passes the overrides to `runPipeline`.
+ * Built-in template name → Overrides. Paired 1:1 with `BUILT_IN_TEMPLATES`
+ * entries. When the CLI resolves a built-in name it ALSO looks up this map and
+ * passes the overrides to `runPipeline`.
  *
  * Templates with no overrides register an empty object (`{}`) or are omitted
  * (`loadBuiltIns` falls back to `{}` when the key is missing).
  *
  * The `e2e/base` template ships with NO overrides — every row is expressed as
- * a `fixed[]` entry. Phase 56's generators handle the fixed[] passthrough; no
+ * a `fixed[]` entry. The generators handle the fixed[] passthrough; no
  * content-shaping override is needed.
  */
 export const BUILT_IN_OVERRIDES: Record<string, Overrides> = {

@@ -1,8 +1,8 @@
 /**
- * Default-template candidates override — D-25 Overrides signature.
+ * Default-template candidates override.
  *
- * Replaces Phase 56 CandidatesGenerator's round-robin `i % orgCount` party
- * assignment with a sorted-descending non-uniform distribution per D-58-02.
+ * Replaces the CandidatesGenerator's round-robin `i % orgCount` party
+ * assignment with a sorted-descending non-uniform distribution.
  *
  * Weights: [61, 56, 49, 43, 38, 33, 26, 21] → sum 327, 8 parties. These are
  * the row sums of `nominations-override.ts`'s `PARTY_CONSTITUENCY_MATRIX`.
@@ -10,25 +10,23 @@
  * ensures the 8th party is not invisibly small while keeping the profile
  * clearly non-uniform for matching/clustering visibility.
  *
- * Per RESEARCH §Open Q 4 (resolved): cycle faker locale per candidate for
- * visual variety. 109 candidates per locale block (3 × 109 = 327 exactly) —
- * candidates 0-108 use en, 109-217 fi, 218-326 sv. The locale packs are
- * fresh per-locale Faker instances seeded deterministically at fixed offsets
- * so the 3 blocks produce visibly distinct name output while the overall run
- * stays deterministic.
+ * Faker locale cycles per candidate for visual variety. 109 candidates per
+ * locale block (3 × 109 = 327 exactly) — candidates 0-108 use en, 109-217 fi,
+ * 218-326 sv. The locale packs are fresh per-locale Faker instances seeded
+ * deterministically at fixed offsets so the 3 blocks produce visibly distinct
+ * name output while the overall run stays deterministic.
  *
  * THROWS if `ctx.refs.organizations.length !== 8` — the weights are tuned for
- * 8 parties. T-58-06-02 mitigation: if a future edit adds or drops a party in
- * defaultTemplate without updating this override, runtime fails loudly here
- * rather than silently mis-distributing candidates. Ship a new override (or
- * generalize this one) if a template legitimately needs different weights.
+ * 8 parties. If a future edit adds or drops a party in defaultTemplate without
+ * updating this override, runtime fails loudly here rather than silently
+ * mis-distributing candidates. Ship a new override (or generalize this one) if
+ * a template legitimately needs different weights.
  *
  * Answer emission: the override calls `ctx.answerEmitter ?? defaultRandomValidEmit`
- * exactly as Phase 56's CandidatesGenerator does (CandidatesGenerator.ts:93).
- * Phase 57's latent emitter is auto-installed by pipeline.ts:177
+ * exactly as the CandidatesGenerator does (CandidatesGenerator.ts:93). The
+ * latent emitter is auto-installed by pipeline.ts:177
  * (`ctx.answerEmitter ??= latentAnswerEmitter(template)`) before this override
- * runs, so candidates get clustered answers "for free" — Plan 09's integration
- * test will exercise the full clustering path through this code path.
+ * runs, so candidates get clustered answers "for free".
  */
 
 import { en, Faker, fi, sv } from '@faker-js/faker';
@@ -41,7 +39,6 @@ import type { Ctx } from '../../ctx';
  * Row sums of `nominations-override.ts`'s `PARTY_CONSTITUENCY_MATRIX`:
  * each party's row in that matrix sums to its weight here.
  *   [61, 56, 49, 43, 38, 33, 26, 21] = 327 candidates.
- * D-58-02 + Phase 64 manual-smoke densification.
  */
 export const PARTY_WEIGHTS: ReadonlyArray<number> = [61, 56, 49, 43, 38, 33, 26, 21];
 
@@ -78,8 +75,8 @@ const LOCALE_SEED_OFFSETS: Record<LocaleCode, number> = {
  * from `ctx.faker` once draws have occurred (faker.seed() without args
  * returns the MUTATED internal state, not the input seed). We therefore fall
  * back to a canonical `42` base. Tests in `default.test.ts` verify byte-level
- * determinism at this base; the Phase 58 contract is that the default
- * template uses `seed: 42` (see defaultTemplate.seed).
+ * determinism at this base; the default template uses `seed: 42` (see
+ * defaultTemplate.seed).
  */
 function buildLocaleFaker(locale: LocaleCode): Faker {
   const f = new Faker({ locale: [LOCALE_PACKS[locale], en] });
@@ -88,12 +85,11 @@ function buildLocaleFaker(locale: LocaleCode): Faker {
 }
 
 /**
- * D-25 candidates override. Replaces the class-based CandidatesGenerator's
- * output wholesale (GEN-03). Mirrors the row shape the generator emits with
- * three differences:
+ * Candidates override. Replaces the class-based CandidatesGenerator's output
+ * wholesale. Mirrors the row shape the generator emits with three differences:
  *   1. Party assignment is PARTY_WEIGHTS-driven, not `i % orgCount`.
- *   2. Names are drawn from per-locale Faker instances (25-per-locale cycling).
- *   3. Answer emission goes through the same D-27 seam the generator uses.
+ *   2. Names are drawn from per-locale Faker instances (per-locale cycling).
+ *   3. Answer emission goes through the same emitter seam the generator uses.
  */
 export function candidatesOverride(_fragment: unknown, ctx: Ctx): Array<Record<string, unknown>> {
   const orgs = ctx.refs.organizations;
@@ -120,16 +116,16 @@ export function candidatesOverride(_fragment: unknown, ctx: Ctx): Array<Record<s
     sv: buildLocaleFaker('sv')
   };
 
-  // D-27 seam — mirrors CandidatesGenerator.ts:93. Phase 57's latent emitter
-  // is auto-installed by pipeline.ts:177 (`ctx.answerEmitter ??=
+  // Emitter seam — mirrors CandidatesGenerator.ts:93. The latent emitter is
+  // auto-installed by pipeline.ts:177 (`ctx.answerEmitter ??=
   // latentAnswerEmitter(template)`), so by the time this override runs the
   // field is populated when the template has a latent block (or non-empty
   // organizations).
   const emit = ctx.answerEmitter ?? defaultRandomValidEmit;
 
-  // Pipeline contract (Plan 56-07): ctx.refs.questions carries the FULL
-  // question rows after QuestionsGenerator runs, so the emitter can read
-  // q.type + q.choices. The cast matches CandidatesGenerator's pattern.
+  // Pipeline contract: ctx.refs.questions carries the FULL question rows after
+  // QuestionsGenerator runs, so the emitter can read q.type + q.choices. The
+  // cast matches CandidatesGenerator's pattern.
   const questionRows = ctx.refs.questions as unknown as Array<TablesInsert<'questions'>>;
 
   const rows: Array<Record<string, unknown>> = [];
@@ -148,7 +144,7 @@ export function candidatesOverride(_fragment: unknown, ctx: Ctx): Array<Record<s
       organization: partyByIndex[i]
     };
 
-    // Answer emission via the D-27 seam (mirrors CandidatesGenerator.ts:141-149).
+    // Answer emission via the emitter seam (mirrors CandidatesGenerator.ts:141-149).
     // Skipped when no questions exist — nothing to stitch.
     if (questionRows.length > 0) {
       const candidateForEmit: TablesInsert<'candidates'> = {

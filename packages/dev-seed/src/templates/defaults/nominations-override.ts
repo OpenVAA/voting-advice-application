@@ -1,12 +1,12 @@
 /**
- * Default-template nominations override — D-25 Overrides signature.
+ * Default-template nominations override.
  *
- * Replaces Phase 56 NominationsGenerator's "all-on-constituency-0" emission
- * with a per-(party × constituency) matrix distribution. Every (party,
- * constituency) cell carries ≥1 candidate, so every constituency has the full
- * 8-party slate and every party fields candidates in every constituency.
+ * Replaces the NominationsGenerator's "all-on-constituency-0" emission with a
+ * per-(party × constituency) matrix distribution. Every (party, constituency)
+ * cell carries ≥1 candidate, so every constituency has the full 8-party slate
+ * and every party fields candidates in every constituency.
  *
- * Distribution shape (Phase 64 manual-smoke densification):
+ * Distribution shape:
  *   PARTY_CONSTITUENCY_MATRIX[p][c] = candidate count for party p in constituency c.
  *   Linear interpolation between four corners:
  *     largest party  × largest constituency  = 15
@@ -32,14 +32,13 @@
  * Party clustering for matching/compass purposes is unaffected — that's
  * driven by the latent-factor answer model, not by geographic wiring.
  *
- * Phase 58 UAT follow-up (2026-04-23); Phase 64 manual-smoke densification +
- * parent_nomination wiring (2026-04-28); Phase 67 extends parent_nomination
- * to wire org-noms whose party belongs to an alliance (per ALLIANCE_MEMBERSHIP)
- * up to the alliance nom in the same constituency. This is what makes the v2.6
- * P64 supabase-adapter reverse-fill of `organizationNominationIds` on Alliance
- * parents (supabaseDataProvider.ts:391-405) populate non-empty arrays at
- * runtime — without this wiring, the reverse-fill stays dev-blind even with
- * alliance entities + alliance noms in the DB.
+ * parent_nomination also wires org-noms whose party belongs to an alliance
+ * (per ALLIANCE_MEMBERSHIP) up to the alliance nom in the same constituency.
+ * This is what makes the supabase-adapter reverse-fill of
+ * `organizationNominationIds` on Alliance parents
+ * (supabaseDataProvider.ts:391-405) populate non-empty arrays at runtime —
+ * without this wiring, the reverse-fill stays dev-blind even with alliance
+ * entities + alliance noms in the DB.
  */
 
 import { ALLIANCE_KEYS, allianceExtId, allianceNomExtId, findAllianceForParty } from './alliances-override';
@@ -120,7 +119,7 @@ export function nominationsOverride(_fragment: unknown, ctx: Ctx): Array<Record<
   ) {
     throw new Error(
       '[dev-seed] nominationsOverride: ctx.refs is empty for candidates / constituencies / elections / organizations. ' +
-        'Ensure the pipeline runs in D-06 topo order and that the template requests non-zero counts.'
+        'Ensure the pipeline runs in topological order and that the template requests non-zero counts.'
     );
   }
 
@@ -164,15 +163,14 @@ export function nominationsOverride(_fragment: unknown, ctx: Ctx): Array<Record<
 
   const rows: Array<NominationRow> = [];
 
-  // Phase 67: emit 10 alliance-type nominations FIRST — 2 alliances ×
-  // 5 constituencies (D-02). These have NO parent_nomination per
-  // 011-validation-functions.sql:265 (validate_nomination trigger raises if
-  // an alliance nom has a parent). External_id is constituency-specific so
-  // org-noms in c_03 reference the alliance nom in c_03, not c_01
-  // (RESEARCH Pitfall 3). The alliance entity rows themselves are emitted
-  // upstream at TOPO_ORDER index 6 by `alliancesOverride` in
-  // `defaults/alliances-override.ts` (output.alliances → alliances table);
-  // the 10 nomination rows go to output.nominations → nominations table.
+  // Emit 10 alliance-type nominations FIRST — 2 alliances × 5 constituencies.
+  // These have NO parent_nomination per 011-validation-functions.sql:265
+  // (validate_nomination trigger raises if an alliance nom has a parent).
+  // External_id is constituency-specific so org-noms in c_03 reference the
+  // alliance nom in c_03, not c_01. The alliance entity rows themselves are
+  // emitted upstream by `alliancesOverride` in `defaults/alliances-override.ts`
+  // (output.alliances → alliances table); the 10 nomination rows go to
+  // output.nominations → nominations table.
   for (const allianceKey of ALLIANCE_KEYS) {
     for (const constituency of constituencies) {
       rows.push({
@@ -195,7 +193,7 @@ export function nominationsOverride(_fragment: unknown, ctx: Ctx): Array<Record<
   for (let p = 0; p < PARTY_CONSTITUENCY_MATRIX.length; p++) {
     for (let c = 0; c < PARTY_CONSTITUENCY_MATRIX[p].length; c++) {
       if (PARTY_CONSTITUENCY_MATRIX[p][c] === 0) continue;
-      // Phase 67: organizations[p].external_id is the PREFIXED id (e.g.
+      // organizations[p].external_id is the PREFIXED id (e.g.
       // 'seed_party_social') because the per-table generator at
       // OrganizationsGenerator runs before this override and prefixes it.
       // findAllianceForParty expects the UNPREFIXED form, so strip the prefix
@@ -214,11 +212,11 @@ export function nominationsOverride(_fragment: unknown, ctx: Ctx): Array<Record<
         election: { external_id: electionExtId },
         constituency: { external_id: constituencyExtId },
         election_round: 1,
-        // Phase 67: wire alliance parent if this party belongs to an alliance.
+        // Wire alliance parent if this party belongs to an alliance.
         // Standalone parties (party_people, party_coast) get no parent and
         // exercise the no-alliance UI path. The alliance nom external_id format
-        // MUST be constituency-specific (Pitfall 3) — alliance nom in c_03 is
-        // the parent of org-noms in c_03, NOT alliance nom in c_01.
+        // MUST be constituency-specific — alliance nom in c_03 is the parent of
+        // org-noms in c_03, NOT alliance nom in c_01.
         ...(allianceKey
           ? {
               parent_nomination: {

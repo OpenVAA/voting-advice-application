@@ -1,33 +1,29 @@
 /**
- * Default-template questions override — enforces D-58-03 type mix.
+ * Default-template questions override — enforces the type mix: majority Likert
+ * (ordinal), some categorical, exactly 1 boolean. NO
+ * number/text/date/image/multipleText.
  *
- * D-58-03: majority Likert (ordinal), some categorical, exactly 1 boolean.
- * NO number/text/date/image/multipleText.
- *
- * Split (Claude's Discretion, respecting "majority Likert"):
+ * Split:
  *   - 18 singleChoiceOrdinal (5-point Likert)
  *   - 5  singleChoiceCategorical (3-5 choices each)
  *   - 1  boolean
  *   Total: 24
  *
- * `multipleChoiceCategorical` was in this mix earlier but was dropped at
- * user request — the default template is now single-choice only. The latent
- * emitter still supports `multipleChoiceCategorical` for custom templates
- * that want it (emitters/latent/project.ts).
+ * `multipleChoiceCategorical` was in this mix earlier but was dropped — the
+ * default template is now single-choice only. The latent emitter still
+ * supports `multipleChoiceCategorical` for custom templates that want it
+ * (emitters/latent/project.ts).
  *
  * Questions are distributed across the 4 categories from
  * `ctx.refs.question_categories` in round-robin so every category receives
- * questions (Phase 58 D-58-02 + tests 13/14).
+ * questions.
  *
- * Phase 57's latent emitter (installed in pipeline.ts:177) exercises the
- * latent model for ordinal + categorical types. Boolean falls back to
- * `defaultRandomValidEmit` per D-57-10 — same behavior as the Phase 56
- * default generator.
+ * The latent emitter (installed in pipeline.ts:177) exercises the latent model
+ * for ordinal + categorical types. Boolean falls back to
+ * `defaultRandomValidEmit` — same behavior as the default generator.
  *
- * T-58-06-04 mitigation: `TYPE_PLAN` contains ONLY the three allowed enum
- * values; no `number/text/date/image/multipleText` path is possible. The
- * plan's acceptance criteria greps for forbidden types and would fail the
- * plan if any appear in this file.
+ * `TYPE_PLAN` contains ONLY the three allowed enum values; no
+ * `number/text/date/image/multipleText` path is possible.
  */
 
 import type { Faker } from '@faker-js/faker';
@@ -37,7 +33,7 @@ import type { Ctx } from '../../types';
 type QuestionType = Enums<'question_type'>;
 
 /**
- * Per-index type plan. Length is exactly 24 (D-58-02 questions count).
+ * Per-index type plan. Length is exactly 24 (questions count).
  *
  *   Indices  0..17 → 18 × singleChoiceOrdinal
  *   Indices 18..22 →  5 × singleChoiceCategorical
@@ -55,9 +51,9 @@ const TYPE_PLAN: ReadonlyArray<QuestionType> = [
 
 /**
  * Standard 5-point Likert choices. Mirrors QuestionsGenerator.LIKERT_5 exactly
- * (including `normalizableValue` on every entry) so the Phase 57 latent
- * emitter's ordinal dispatch (project.ts:10-13 COORDINATE inverse-normalize)
- * works without special-casing.
+ * (including `normalizableValue` on every entry) so the latent emitter's
+ * ordinal dispatch (project.ts:10-13 COORDINATE inverse-normalize) works
+ * without special-casing.
  */
 const LIKERT_5 = [
   { id: '1', label: { en: 'Strongly disagree' }, normalizableValue: 1 },
@@ -69,8 +65,8 @@ const LIKERT_5 = [
 
 /**
  * Build categorical choices for a given category question. Count varies 3-5
- * (faker-driven per index for visual variety). Labels are faker nouns —
- * Phase 58 fan-out expands `label.en` across locales if the template sets
+ * (faker-driven per index for visual variety). Labels are faker nouns — the
+ * locale fan-out expands `label.en` across locales if the template sets
  * `generateTranslationsForAllLocales: true`.
  *
  * Note: fanOutLocales (locales.ts) does not currently expand nested
@@ -90,8 +86,8 @@ function capitalize(s: string): string {
 }
 
 /**
- * D-25 questions override. Replaces QuestionsGenerator's type rotation with
- * the D-58-03 split. Row shape matches QuestionsGenerator output (external_id,
+ * Questions override. Replaces QuestionsGenerator's type rotation with the
+ * fixed split. Row shape matches QuestionsGenerator output (external_id,
  * project_id, type, name, choices[?], category ref, is_generated, sort_order,
  * required, allow_open) so bulk_import + the writer's localization fan-out
  * process these rows identically to generator output.

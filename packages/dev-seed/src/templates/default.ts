@@ -1,27 +1,27 @@
 /**
- * `default` built-in template — TMPL-04.
+ * `default` built-in template.
  *
  * Finnish-flavored election with:
- *   - 1 election, 1 constituency_group, 13 constituencies (D-58-02)
- *   - 8 invented parties with Finnish-cultural flavor (D-58-01)
+ *   - 1 election, 1 constituency_group, 13 constituencies
+ *   - 8 invented parties with Finnish-cultural flavor
  *   - 100 candidates non-uniformly distributed via `defaultOverrides.candidates`
  *   - 24 questions (18 ordinal + 5 categorical + 1 boolean) via
- *     `defaultOverrides.questions` (D-58-03)
+ *     `defaultOverrides.questions`
  *   - 4 categories
- *   - generateTranslationsForAllLocales: true (D-58-04)
+ *   - generateTranslationsForAllLocales: true
  *   - seed: 42 (determinism)
  *
- * No real party names, no encoded political positions (D-58-01). Party colors
+ * No real party names, no encoded political positions. Party colors are
  * visually distinct hues for political-compass 2D scatter plots. Constituency
  * names are invented Finnish-flavored labels — NOT real Finnish electoral
  * districts.
  *
- * Phase 57 latent emitter auto-wires via `ctx.answerEmitter ??=
+ * The latent emitter auto-wires via `ctx.answerEmitter ??=
  * latentAnswerEmitter(template)` in pipeline.ts — candidates get clustered
- * answers "for free" without explicit override. `latent` block omitted →
- * Phase 57 uses built-in defaults (defaultDimensions, defaultCentroids, etc.).
+ * answers "for free" without explicit override. The `latent` block is omitted,
+ * so built-in defaults (defaultDimensions, defaultCentroids, etc.) apply.
  *
- * `nominations.count: 327` pairs with `candidates.count: 327` so Phase 56's
+ * `nominations.count: 327` pairs with `candidates.count: 327` so the
  * NominationsGenerator emits one candidate-type nomination per candidate
  * wired to the single election × first constituency.
  */
@@ -81,8 +81,8 @@ export const defaultTemplate: Template = {
     ]
   },
 
-  // 8 invented parties per D-58-01 — Finnish-cultural flavor, NO real names,
-  // NO encoded real political positions. Colors span distinct hues (blues,
+  // 8 invented parties — Finnish-cultural flavor, NO real names, NO encoded
+  // real political positions. Colors span distinct hues (blues,
   // greens, reds, orange, purple) for visible separation in 2D compass plots.
   organizations: {
     count: 0,
@@ -155,8 +155,8 @@ export const defaultTemplate: Template = {
   },
 
   // 4 opinion categories covering standard policy axes. `category_type:
-  // 'opinion'` matches Phase 56's QuestionCategoriesGenerator default and
-  // signals "these questions drive matching" to the frontend.
+  // 'opinion'` matches the QuestionCategoriesGenerator default and signals
+  // "these questions drive matching" to the frontend.
   question_categories: {
     count: 0,
     fixed: [
@@ -220,8 +220,7 @@ export const defaultTemplate: Template = {
   // `/nominations` route (and any other consumer) sees a populated
   // `appSettings.entities` tree. Without this, route loaders that merge
   // `staticSettings` + `appSettingsData` end up with `entities === undefined`
-  // and throw `Cannot read properties of undefined (reading 'showAllNominations')`
-  // — surfaced by Phase 58 UAT Gap #2.
+  // and throw `Cannot read properties of undefined (reading 'showAllNominations')`.
   //
   // Writer routes this through `updateAppSettings` (merge_jsonb_column RPC),
   // which deep-merges into seed.sql's bootstrap row.
@@ -235,7 +234,7 @@ export const defaultTemplate: Template = {
             showAllNominations: true,
             hideIfMissingAnswers: { candidate: true }
           },
-          // Phase 67: surface the Alliance entity tab in voter results.
+          // Surface the Alliance entity tab in voter results.
           // The frontend's `mergeAppSettings` (apps/frontend/src/lib/utils/settings.ts)
           // shallow-merges by root key, so any value we write here REPLACES
           // the whole `results` object from the TS defaults — we MUST mirror
@@ -259,9 +258,9 @@ export const defaultTemplate: Template = {
 };
 
 /**
- * Default-template overrides — wired by the CLI in Plan 05's `seed.ts` via
- * `BUILT_IN_OVERRIDES` (see `./index.ts` + Task 3). Paired 1:1 with
- * `defaultTemplate` in `BUILT_IN_TEMPLATES`.
+ * Default-template overrides — wired by the CLI in `seed.ts` via
+ * `BUILT_IN_OVERRIDES` (see `./index.ts`). Paired 1:1 with `defaultTemplate`
+ * in `BUILT_IN_TEMPLATES`.
  */
 export const defaultOverrides: Overrides = {
   alliances: alliancesOverride,
