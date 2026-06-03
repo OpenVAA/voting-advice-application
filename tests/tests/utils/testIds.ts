@@ -14,29 +14,25 @@ export const testIds = {
       email: 'login-email',
       submit: 'login-submit',
       errorMessage: 'login-errorMessage',
-      // Phase 91 Plan 02 (TIR6:3-14 — D-91-PD-05 A1): testid on the <p>
-      // rendering t('candidateApp.login.answersLockedInfo') when
-      // answersLocked is true. Used by the perm-answers-locked spec to
-      // assert the read-only login surface (Surface 1 of the 3-surface
-      // CONTEXT contract).
+      // testid on the <p> rendering t('candidateApp.login.answersLockedInfo')
+      // when answersLocked is true. Used by the perm-answers-locked spec to
+      // assert the read-only login surface (surface 1 of 3).
       answersLockedInfo: 'login-answers-locked-info'
     },
-    // Phase 91 Plan 02 (TIR6:3-14 — A1 surfaces 2+3): single canonical
-    // testid on the <Warning> element rendering editingNotAllowed across
-    // /candidate, /candidate/profile, /candidate/questions/[questionId].
+    // single canonical testid on the <Warning> element rendering
+    // editingNotAllowed across /candidate, /candidate/profile,
+    // /candidate/questions/[questionId].
     common: {
       answersLockedWarning: 'candidate-answers-locked-warning'
     },
     profile: {
       submit: 'profile-submit',
       imageUpload: 'profile-image-upload',
-      // Phase 89 Plan 02 (TIR4:75-76 + 166-188): testids supporting the new
-      // candidateProfilePage fixture. Placement:
+      // testids supporting the candidateProfilePage fixture. Placement:
       //  - imageError: portrait-upload error message landing site (added to
       //    profile/+page.svelte at the call-site wrapper around the image
-      //    <Input>; the underlying <Input>'s shared <ErrorMessage> at
-      //    Input.svelte:640-642 is not testid-specialised since it renders
-      //    the same way for every input type).
+      //    <Input>; the underlying <Input>'s shared <ErrorMessage> is not
+      //    testid-specialised since it renders the same way for every input type).
       //  - nominations: <section> wrapping the immutable-nominations list.
       //  - infoItem: per-question wrapper around each editable info question
       //    in the candCtx.infoQuestions loop (un-keyed; fixture filters by
@@ -58,12 +54,12 @@ export const testIds = {
       answerInput: 'candidate-questions-answer',
       commentInput: 'candidate-questions-comment',
       saveButton: 'candidate-questions-save',
-      // Phase 89 Plan 02 (TIR4:58-80): testids added to support the new
-      // candidate fixture library's strict locator surface. Placement:
+      // testids supporting the candidate fixture library's strict locator
+      // surface. Placement:
       //  - categoryExpander: questions overview <Expander> wrapper (un-keyed,
       //    filtered by hasText per category in fixture).
       //  - hero: figure inside the {#snippet hero()} block on the question
-      //    page (parity with voter-questions-hero from Plan 89-01).
+      //    page (parity with voter-questions-hero).
       //  - intro: the empty-state intro <div> shown when no answers exist.
       categoryExpander: 'candidate-questions-category-expander',
       hero: 'candidate-questions-hero',
@@ -97,11 +93,10 @@ export const testIds = {
     },
     terms: {
       checkbox: 'terms-checkbox',
-      // Phase 89 Plan 02 (TIR4:69-70): the advance button on the candidate
-      // ToU page. The submit button lives in the consuming layout
-      // (candidate/(protected)/+layout.svelte) inside the {#snippet
-      // primaryActions()} block — NOT inside TermsOfUseForm.svelte itself
-      // (the form component renders only the checkbox; the consuming page
+      // the advance button on the candidate ToU page. The submit button lives
+      // in the consuming layout (candidate/(protected)/+layout.svelte) inside
+      // the {#snippet primaryActions()} block — NOT inside TermsOfUseForm.svelte
+      // itself (the form component renders only the checkbox; the consuming page
       // owns the Continue button).
       submit: 'terms-of-use-submit'
     },
@@ -125,10 +120,10 @@ export const testIds = {
   voter: {
     home: {
       startButton: 'voter-home-start',
-      // Phase 92 Plan 03 (D-06/D-07): stable page-content load anchor on the
-      // home `MainContent` root <div> (apps/frontend/src/routes/(voters)/+page.svelte).
-      // Unlike `startButton` (an action that is HIDDEN under access.voterApp=false
-      // maintenance mode), this anchor confirms "the home page content loaded" so
+      // stable page-content load anchor on the home `MainContent` root <div>
+      // (apps/frontend/src/routes/(voters)/+page.svelte). Unlike `startButton`
+      // (an action that is HIDDEN under access.voterApp=false maintenance mode),
+      // this anchor confirms "the home page content loaded" so
       // `voterHomePage.expectPageVisible()` checks page-load, not action presence.
       page: 'voter-home'
     },
@@ -151,9 +146,9 @@ export const testIds = {
     missingNominationsModal: 'voter-missing-nominations-modal',
     intro: {
       startButton: 'voter-intro-start',
-      // Phase 92 Plan 03 (D-06/D-07): stable page-content load anchor on the
-      // intro `MainContent` root <div> (apps/frontend/src/routes/(voters)/intro/+page.svelte).
-      // Confirms the intro page content loaded, independent of the action button.
+      // stable page-content load anchor on the intro `MainContent` root <div>
+      // (apps/frontend/src/routes/(voters)/intro/+page.svelte). Confirms the
+      // intro page content loaded, independent of the action button.
       page: 'voter-intro'
     },
     questions: {
@@ -167,8 +162,8 @@ export const testIds = {
       startButton: 'voter-questions-start',
       categoryStart: 'voter-questions-category-start',
       categorySkip: 'voter-questions-category-skip',
-      // Phase 89 Plan 01 (TIR4:25-32 + TIR4:30): hero + info testids on
-      // the voter question page + the question-category intro page.
+      // hero + info testids on the voter question page + the question-category
+      // intro page.
       hero: 'voter-questions-hero',
       categoryHero: 'voter-questions-category-hero',
       infoButton: 'voter-questions-info-button'
@@ -184,10 +179,8 @@ export const testIds = {
       entityTabs: 'voter-results-entity-tabs',
       ingress: 'voter-results-ingress',
       electionAccordion: 'voter-results-election-select',
-      // Phase 88 Plan 04 Wave 1.5 — testids added by Task 5 for the
-      // resultsPage / entityFilters / entityDetails fixture surface.
-      // See 88-04-RESEARCH.md R-2 for placement decisions and the related
-      // 88-04-WAVE0-PROBES.txt for the Modal/Expander restProps verification.
+      // testids for the resultsPage / entityFilters / entityDetails fixture
+      // surface.
       listControls: 'entity-list-controls',
       listSearch: 'entity-list-search',
       listWithControls: 'entity-list-with-controls',
@@ -215,16 +208,15 @@ export const testIds = {
       // (heading + optional missing-answer message + optional OpinionQuestionInput).
       // Consumed by voter-journey.spec.ts → expectQuestionDisplayToHave.
       opinionQuestion: 'entity-opinion-question',
-      // 260524-l1t D6: sr-only sibling marker on QuestionChoices.svelte's
-      // radio whose `otherSelected == id` (i.e. the entity's chosen answer
-      // in display mode). Replaces the `.entitySelected` raw-locator
-      // suppression used by the voter-journey classifyVoterEntityRows helper.
+      // sr-only sibling marker on QuestionChoices.svelte's radio whose
+      // `otherSelected == id` (i.e. the entity's chosen answer in display mode).
+      // Used by the voter-journey classifyVoterEntityRows helper instead of a
+      // raw `.entitySelected` locator.
       entitySelectedAnswer: 'entity-selected-answer',
-      // Phase 91 Plan 02 (TIR6:121-142 — D-91-PD-05 A9): testid on the
-      // QuestionOpenAnswer wrapper rendered inside EntityOpinions.svelte
-      // when the candidate has authored info AND customData.allowOpen
-      // is not false. Used by the perm-disable-allow-open voter-side
-      // assertion to verify Q1 info visible / Q2 info hidden.
+      // testid on the QuestionOpenAnswer wrapper rendered inside
+      // EntityOpinions.svelte when the candidate has authored info AND
+      // customData.allowOpen is not false. Used by the perm-disable-allow-open
+      // voter-side assertion to verify Q1 info visible / Q2 info hidden.
       opinionOpenAnswer: 'entity-opinion-open-answer'
     },
     nav: {
@@ -263,32 +255,31 @@ export const testIds = {
       // any UI locale (the English-only /open menu/i regex fails on /fi).
       menuToggle: 'nav-menu-toggle'
     },
-    // Phase 90 Plan 03 (TIR5:28-50 + D-90-06): testids supporting the new
-    // langSelectorFixture + multilingualTextFieldFixture function-fixtures.
-    //  - langSelector: on the LanguageSelection.svelte NavGroup (line 33),
-    //    gates on `locales.length > 1`. Absent when single-locale (the
-    //    negative-perm assertion target).
-    //  - multilingualToggle: on the Input.svelte translation-toggle Button
-    //    (lines 653-660), gates on `multilingual && locales.length > 1`.
-    //    Absent when `customData.disableMultilingual=true` OR single-locale.
+    // testids supporting the langSelectorFixture + multilingualTextFieldFixture
+    // function-fixtures.
+    //  - langSelector: on the LanguageSelection.svelte NavGroup, gates on
+    //    `locales.length > 1`. Absent when single-locale (the negative-perm
+    //    assertion target).
+    //  - multilingualToggle: on the Input.svelte translation-toggle Button,
+    //    gates on `multilingual && locales.length > 1`. Absent when
+    //    `customData.disableMultilingual=true` OR single-locale.
     langSelector: 'lang-selector',
     multilingualToggle: 'multilingual-toggle',
-    // Phase 91 Plan 03 (TIR6:16-22 — D-91-MJ-01 B1): testid on the inline
-    // ErrorMessage in Input.svelte:641. Consumed by the candidate-journey
-    // invalidUrl step + future shared input-validation assertions.
+    // testid on the inline ErrorMessage in Input.svelte. Consumed by the
+    // candidate-journey invalidUrl step + future shared input-validation
+    // assertions.
     inputError: 'input-error',
-    // Phase 91 Plan 02 (TIR6:104-108 — D-91-PD-05 A7): testid on the root
-    // <span> of ElectionTag.svelte. Consumed by perm-hide-election-tags
-    // spec to assert absence when elections.showElectionTags=false.
+    // testid on the root <span> of ElectionTag.svelte. Consumed by
+    // perm-hide-election-tags spec to assert absence when
+    // elections.showElectionTags=false.
     electionTag: 'election-tag',
-    // Phase 91 Plan 02 (TIR6:111-115 — D-91-PD-05 A8): testid on the root
-    // <span> of CategoryTag.svelte. Consumed by perm-hide-category-tags
-    // spec to assert absence when questions.showCategoryTags=false.
+    // testid on the root <span> of CategoryTag.svelte. Consumed by
+    // perm-hide-category-tags spec to assert absence when
+    // questions.showCategoryTags=false.
     categoryTag: 'category-tag',
-    // Phase 91 Plan 02 (TIR6:68-88 — D-91-PD-05 A3/A4): testids on the
-    // feedback + help Buttons in Banner.svelte. Consumed by perm-header-
-    // show-feedback + perm-header-show-help specs to assert visibility
-    // when header.showFeedback / header.showHelp is true.
+    // testids on the feedback + help Buttons in Banner.svelte. Consumed by
+    // perm-header-show-feedback + perm-header-show-help specs to assert
+    // visibility when header.showFeedback / header.showHelp is true.
     header: {
       feedback: 'header-feedback',
       help: 'header-help'

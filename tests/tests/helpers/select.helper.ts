@@ -7,18 +7,18 @@
  * group; the helper iterates all sections and picks the first option in
  * each).
  *
- * Pitfall #2 — Select.svelte ARIA contract:
+ * Select.svelte ARIA contract:
  *   `<Select>` renders as `role="combobox"` (NOT `role="radiogroup"`).
  *   The opened menu is `role="listbox"`; each item is `role="option"`.
- *   This "NOT a radiogroup" contract (Phase 86.1 RCA) is the canonical
- *   lineage — keep it in mind before re-extending this helper. Using `radio` /
- *   `radiogroup` roles against `<Select>` silently does nothing.
+ *   Keep this "NOT a radiogroup" contract in mind before re-extending this
+ *   helper — using `radio` / `radiogroup` roles against `<Select>` silently
+ *   does nothing.
  *
- * Scope (per 86.2-RESEARCH.md §"Helper #4 propagation"):
+ * Scope:
  *   This helper is narrow — it iterates EVERY combobox in the locator
  *   and clicks the same `optionIndex` in each. Named-combobox variants
  *   (e.g. picking a SPECIFIC option text in a SPECIFIC combobox among
- *   many) are v2.11+ work and intentionally NOT supported by this helper.
+ *   many) are intentionally NOT supported by this helper.
  */
 
 import { expect } from '@playwright/test';
@@ -34,8 +34,8 @@ import type { Locator, Page } from '@playwright/test';
  *   - Each combobox opens a `role="listbox"` overlay (configurable via
  *     `opts.listboxRole`, default `'listbox'`) when clicked.
  *
- * Pitfall #2 — see module docstring; the option role is `'option'` by
- * Select.svelte contract, NOT `'radio'`.
+ * See module docstring; the option role is `'option'` by Select.svelte
+ * contract, NOT `'radio'`.
  *
  * @param page - Playwright Page (needed to locate the listbox overlay,
  *   which is rendered at page-root via Portal in Select.svelte).

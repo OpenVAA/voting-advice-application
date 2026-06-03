@@ -1,32 +1,13 @@
 /**
  * voterIntro — Shared voter intro / election / constituency selector helpers.
  *
- * Phase 88 Plan 03 (test catalog audit). Authored from:
- *   - Design source: TEST-INVENTORY-REFACTOR-2.md:113-136 (helper signatures).
- *   - Behavioral model: tests/tests/specs/voter/voter-journey.spec.ts:492-633
- *     (home → intro → elections → constituencies walk pattern).
- *   - Binding spec: .planning/phases/88-e2e-test-catalog-audit-remove-add-
- *     consolidate-tests-fresh-ba/88-03-SCOPE.md (read "Post-plan-check
- *     resolutions" lines 8-21 AND "Operator amendments" A1/A2 — both
- *     override conflicting prose elsewhere).
+ * Behavioral model mirrors the voter-journey home → intro → elections → constituencies walk pattern, applied to minimal-data datasets so every contract is enforceable on the minimal seed.
  *
- * Rigidity contract (88-03-SCOPE.md lines 66-73): NO expect.soft, NO try/catch
- * around expect, NO best-effort .catch(() => null) on assertion-bearing
- * locator interactions, NO [xxx-followup] markers — every helper assertion is
- * HARD.
+ * Rigidity contract: NO expect.soft, NO try/catch around expect, NO best-effort .catch(() => null) on assertion-bearing locator interactions, NO [xxx-followup] markers — every helper assertion is HARD.
  *
- * Operator amendment A1 (helper 7): the helper is `selectElectionAndAdvance`
- * (NOT `deselectElectionAndAdvance`) with set-only iteration semantics —
- * matching options end aria-checked='true', non-matching end aria-checked=
- * 'false', regardless of the page's default-selection state.
+ * Helper `selectElectionAndAdvance` has set-only iteration semantics — matching options end aria-checked='true', non-matching end aria-checked='false', regardless of the page's default-selection state.
  *
- * Operator amendment A2 (display-name convention): the perm-* templates
- * encode each entity's role into its display name via the
- * `[<SYMBOL>] <description>` convention. Specs match inline using
- * `/\[<SYMBOL>\]/i` regexes — this module exports NO TEXT_RE constant.
- *
- * Modeled on the journey first-parts pattern but applied to minimal-data
- * datasets — every contract is enforceable on the minimal seed.
+ * Display-name convention: the perm-* templates encode each entity's role into its display name via the `[<SYMBOL>] <description>` convention. Specs match inline using `/\[<SYMBOL>\]/i` regexes — this module exports NO TEXT_RE constant.
  */
 
 import { expect } from '@playwright/test';
@@ -112,15 +93,9 @@ export async function bypassIntroAndExpectElectionSelector(page: Page): Promise<
  * enabled and clicks it. Idempotent regardless of the page's default-
  * selection state.
  *
- * Operator amendment A1 (88-03-SCOPE.md "Operator amendments — A1"):
- * supersedes the rejected MED-5 `deselectElectionAndAdvance` name; the helper
- * KEEPS the `selectElectionAndAdvance` name and enforces a SET POST-CONDITION:
- * the set of aria-checked='true' options equals exactly the set whose
- * accessible name matches `optionText`.
+ * Enforces a SET POST-CONDITION: the set of aria-checked='true' options equals exactly the set whose accessible name matches `optionText`.
  *
- * The `[<SYMBOL>] <description>` display-name convention (A2) guarantees the
- * bracketed symbol is a substring of every option's accessible name, so
- * `optionText: /\[EL1\]/i` unambiguously addresses "election EL1".
+ * The `[<SYMBOL>] <description>` display-name convention guarantees the bracketed symbol is a substring of every option's accessible name, so `optionText: /\[EL1\]/i` unambiguously addresses "election EL1".
  */
 export async function selectElectionAndAdvance(
   page: Page,
@@ -173,9 +148,8 @@ export async function bypassIntroAndExpectConstituencySelector(page: Page): Prom
  *   2. Multiple comboboxes (multi-CG topology) — filter by the group's
  *      surrounding section / label text.
  *
- * Per operator amendment A2 the `selectorText` regex matches the
- * `[<SYMBOL>]` bracketed CG name; the helper uses Playwright's role/name
- * filtering to find the matching combobox.
+ * The `selectorText` regex matches the `[<SYMBOL>]` bracketed CG name; the
+ * helper uses Playwright's role/name filtering to find the matching combobox.
  */
 export async function selectConstituencyAndAdvance(
   page: Page,
@@ -187,7 +161,7 @@ export async function selectConstituencyAndAdvance(
   // The constituency-selector renders one section per applicable-elections
   // group; each section contains a `<Select>` combobox. Filter the combobox
   // by an ancestor / sibling whose accessible name matches `selectorText`
-  // (the bracketed CG symbol per A2). When only one combobox is rendered,
+  // (the bracketed CG symbol). When only one combobox is rendered,
   // the filter is a no-op and the first (only) combobox is selected.
   const allComboboxes = list.getByRole('combobox');
   const matchingCombobox = allComboboxes.filter({
@@ -220,7 +194,7 @@ export async function selectConstituencyAndAdvance(
     // If the name does not match and we have multiple comboboxes, try the
     // surrounding label. The voter-not-located-redirect spec's helper
     // (iterateSelectOptions) does NOT match by name and assumes one
-    // combobox per group; we are stricter to honor A2's bracketed-CG
+    // combobox per group; we are stricter to honor the bracketed-CG
     // contract.
     if (!nameMatches && comboboxCount > 1) {
       // Continue to next combobox; this one is not the target.

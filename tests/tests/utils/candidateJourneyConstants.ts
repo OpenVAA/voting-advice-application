@@ -1,57 +1,30 @@
 /**
- * Test constants for the candidate journey spec — Phase 89 Plan 03.
+ * Test constants for the candidate journey spec.
  *
  * Single source of truth for:
- *   - Unregistered candidate identity (email + external_id) — the
- *     `test-e2e-base-ca-aa-unregistered` row in the `e2e/base` dataset (Phase 89
- *     Plan 01) has NO `email` column (Wave 0 R8 verdict: candidates table
- *     has no email);
- *     this file is therefore the canonical home for the candidate's email
- *     string that the registration-via-email flow targets.
- *   - Passwords used by the registration → forgot-password → login flow.
- *     PASSWORD_1 is the initial password set via the registration link;
- *     PASSWORD_2 is the new password set via the forgot-password reset
- *     flow. Both meet the candidate password complexity gates (≥8 chars
- *     with mixed-case + number + special char per the PasswordValidator
- *     component).
- *   - OPEN_ANSWER_1 — the open-answer (info) text submitted on the first
- *     opinion question in the candidate-journey.
- *   - INFO_QUESTION_ANSWERS — externalId → value map for filling the
- *     editable info questions on the candidate profile page.
- *   - REGISTRATION_EMAIL_SUBJECT_REGEX / RESET_EMAIL_SUBJECT_REGEX —
- *     loose subject regexes for Mailpit polling (per Wave 0 R14:
- *     Supabase email subjects can drift across upgrades; match a wide
- *     family of plausible subjects rather than pin to one literal).
+ *   - Unregistered candidate identity (email + external_id) — the `test-e2e-base-ca-aa-unregistered` row in the `e2e/base` dataset has NO `email` column (the candidates table has no email), so this file is the canonical home for the candidate's email string that the registration-via-email flow targets.
+ *   - Passwords used by the registration → forgot-password → login flow. PASSWORD_1 is the initial password set via the registration link; PASSWORD_2 is the new password set via the forgot-password reset flow. Both meet the candidate password complexity gates (≥8 chars with mixed-case + number + special char per the PasswordValidator component).
+ *   - OPEN_ANSWER_1 — the open-answer (info) text submitted on the first opinion question in the candidate journey.
+ *   - INFO_QUESTION_ANSWERS — externalId → value map for filling the editable info questions on the candidate profile page.
+ *   - REGISTRATION_EMAIL_SUBJECT_REGEX / RESET_EMAIL_SUBJECT_REGEX — loose subject regexes for Mailpit polling (Supabase email subjects can drift across upgrades; match a wide family of plausible subjects rather than pin to one literal).
  *
  * Naming follows the UPPER_SNAKE convention for constants.
  */
 
 /**
- * Email for the unregistered candidate (`test-e2e-base-ca-aa-unregistered` in the
- * `e2e/base` dataset).
+ * Email for the unregistered candidate (`test-e2e-base-ca-aa-unregistered` in the `e2e/base` dataset).
  *
- * Per Phase 89 Plan 01 Wave 0 R8 verdict, the candidates table has NO email
- * column in the schema (verified verbatim from
- * packages/supabase-types/src/database.ts) — so the email string lives
- * exclusively here (not on the seeded row). The registration flow:
- *   1. Plan 89-03 spec calls `client.sendEmail({ candidateExternalId:
- *      UNREGISTERED_CANDIDATE_EXTERNAL_ID, email: UNREGISTERED_CANDIDATE_EMAIL,
- *      ... })`.
- *   2. SupabaseAdminClient.sendEmail (since the candidate has no
- *      auth_user_id yet) invokes `inviteUserByEmail(email)` to create the
- *      auth user and email the candidate.
- *   3. The teardown calls `unregisterCandidate(UNREGISTERED_CANDIDATE_EMAIL)`
- *      to remove the auth.users row created by step 2 so the next cold-start
- *      run is clean.
+ * The candidates table has NO email column in the schema, so the email string lives exclusively here (not on the seeded row). The registration flow:
+ *   1. The spec calls `client.sendEmail({ candidateExternalId: UNREGISTERED_CANDIDATE_EXTERNAL_ID, email: UNREGISTERED_CANDIDATE_EMAIL, ... })`.
+ *   2. SupabaseAdminClient.sendEmail (since the candidate has no auth_user_id yet) invokes `inviteUserByEmail(email)` to create the auth user and email the candidate.
+ *   3. The teardown calls `unregisterCandidate(UNREGISTERED_CANDIDATE_EMAIL)` to remove the auth.users row created by step 2 so the next cold-start run is clean.
  */
 export const UNREGISTERED_CANDIDATE_EMAIL = 'unregistered-aa@test.openvaa.local';
 
 /**
  * External ID of the unregistered candidate row in the `e2e/base` dataset.
  *
- * Source of truth: packages/dev-seed/src/templates/e2e/base.ts (added
- * in Phase 89 Plan 01 per TIR4:82-90; relocated e2e/base.ts→e2e/base.ts in
- * Phase 93 Plan 02).
+ * Source of truth: packages/dev-seed/src/templates/e2e/base.ts.
  */
 export const UNREGISTERED_CANDIDATE_EXTERNAL_ID = 'test-e2e-base-ca-aa-unregistered';
 
@@ -87,22 +60,9 @@ export const OPEN_ANSWER_1_EDITED = '[OPEN-1-EDITED] My revised take.';
  * Map of info-question externalId → value for filling the candidate
  * profile in step 13.
  *
- * IMPORTANT: these keys are deliberately `test-qu-info-*`, NOT the DB
- * external_ids (`test-e2e-base-qu-info-*`). They are internal map keys that
- * the spec consumes via `externalId.replace(/^test-/, '')` →
- * `qu-info-*`, then matches the RENDERED question name label
- * `[qu-info-*]` (base.ts question `name` tokens, e.g. `[qu-info-text] Info: …`).
- * Rewriting them to the `test-e2e-base-` prefix would make `.replace(/^test-/)`
- * yield `e2e-base-qu-info-*` and break the label regex — so they are EXCLUDED
- * from the Phase 93 D-05 prefix migration on purpose.
+ * IMPORTANT: these keys are deliberately `test-qu-info-*`, NOT the DB external_ids (`test-e2e-base-qu-info-*`). They are internal map keys that the spec consumes via `externalId.replace(/^test-/, '')` → `qu-info-*`, then matches the RENDERED question name label `[qu-info-*]` (base.ts question `name` tokens, e.g. `[qu-info-text] Info: …`). Rewriting them to the `test-e2e-base-` prefix would make `.replace(/^test-/)` yield `e2e-base-qu-info-*` and break the label regex — so they keep the `test-qu-info-` prefix on purpose.
  *
- * Step 13 fills ALL listed
- * answers EXCEPT
- * `test-qu-info-text` (the required one — deliberately left blank to
- * exercise the required-empty submit-disabled gate) AND the first listed
- * info question (per TIR4:178-179 "fill all other questions except the
- * required one and the first one"). Step 14 then revisits the profile,
- * fills the required field, and submits.
+ * Step 13 fills ALL listed answers EXCEPT `test-qu-info-text` (the required one — deliberately left blank to exercise the required-empty submit-disabled gate) AND the first listed info question (fill all other questions except the required one and the first one). Step 14 then revisits the profile, fills the required field, and submits.
  *
  * The mun-only + south-only filtered info questions are NOT included —
  * the unregistered candidate is in CO-Reg-N (north), so those questions
@@ -123,20 +83,13 @@ export const INFO_QUESTION_ANSWERS: Readonly<Record<string, string>> = Object.fr
 });
 
 /**
- * Loose RegExp for matching the registration / invite email subject in
- * Mailpit. Wave 0 R14 binding: Supabase / GoTrue email subject strings
- * can change across upgrades, so we match a family of plausible subjects
- * rather than pin to one literal.
+ * Loose RegExp for matching the registration / invite email subject in Mailpit. Supabase / GoTrue email subject strings can change across upgrades, so we match a family of plausible subjects rather than pin to one literal.
  *
- * Default Supabase invite subject: "You have been invited" (variations:
- * "Confirm your signup", "Verify Your Email", "Welcome", etc.). The
- * regex matches any of the canonical keywords case-insensitively.
+ * Default Supabase invite subject: "You have been invited" (variations: "Confirm your signup", "Verify Your Email", "Welcome", etc.). The regex matches any of the canonical keywords case-insensitively.
  */
 export const REGISTRATION_EMAIL_SUBJECT_REGEX = /invite|invited|registration|confirm|signup|welcome|verify/i;
 
 /**
- * Loose RegExp for matching the password-reset / recovery email subject.
- * Default Supabase recovery subject: "Reset Your Password". Regex matches
- * canonical keywords case-insensitively per R14.
+ * Loose RegExp for matching the password-reset / recovery email subject. Default Supabase recovery subject: "Reset Your Password". Regex matches canonical keywords case-insensitively.
  */
 export const RESET_EMAIL_SUBJECT_REGEX = /reset|recovery|recover|password/i;

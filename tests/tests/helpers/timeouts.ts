@@ -1,14 +1,10 @@
 /**
  * Central semantic timeout buckets for the e2e suite.
  *
- * Phase 92 Plan 04 (WS3 TIMEOUTS — CONTEXT decisions D-10/D-11/D-12).
- * Single source of truth: this module replaces the 4 near-duplicate local
- * `TIMEOUT` objects that previously lived in candidate-journey.spec.ts,
- * voter-journey.spec.ts, utils/voterIntro.ts and
- * perm-localisation-positive.spec.ts. Bucket values are the MAX observed
- * across those sources so consolidation never tightens an existing budget.
+ * Single source of truth for spec timeouts: bucket values are the MAX observed
+ * across the suite's specs so consolidation never tightens an existing budget.
  *
- * Bucket semantics (generalized from the voterIntro.ts shape-donor JSDoc):
+ * Bucket semantics:
  *   - element:  per-element visibility / enabled budget — a wait that does
  *               NOT change the URL (e.g. an option mounts, a button enables).
  *   - click:    action-ack budget — the click registered, a dropdown opened,

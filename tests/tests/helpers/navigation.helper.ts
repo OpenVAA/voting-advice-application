@@ -5,13 +5,12 @@
  * `click + race-against-URL-change` pattern.
  *
  * Existing in-tree analog for `clickAndRaceSettle`:
- *   `tests/tests/utils/voterNavigation.ts:74-91 advanceClick` — NOT being
- *   refactored to call this helper (per 86.2-RESEARCH.md §"Helper #3
- *   propagation"). The two co-exist intentionally; `voterNavigation.ts` is
+ *   `tests/tests/utils/voterNavigation.ts` `advanceClick` — NOT refactored to
+ *   call this helper. The two co-exist intentionally; `voterNavigation.ts` is
  *   the domain-specific voter-journey assembler, this helper is its
  *   generic counterpart for non-voter-journey call sites.
  *
- * Phase 86.1 RCA "stuck click" defense rationale:
+ * "Stuck click" defense rationale:
  *   Without the click-timeout + post-click URL-change race, a raw
  *   `.click()` against a button that detaches mid-action (because the
  *   SvelteKit route transition began before the actionability check
@@ -33,7 +32,7 @@ import type { Locator, Page } from '@playwright/test';
  * Positive-only semantic: this helper does NOT wrap `not.toHaveURL(...)`.
  * Negative-landing assertions (e.g. `expect(page).not.toHaveURL(/\/login\b/)`)
  * stay inline because they are rarer + the inline form already reads
- * clearly. See 86.2-RESEARCH.md §"Helper #2 / Example 1".
+ * clearly.
  *
  * @param page - Playwright Page.
  * @param pattern - URL pattern (RegExp or string substring).
@@ -65,12 +64,10 @@ type UrlPredicate = string | RegExp | ((url: URL) => boolean);
  * 5_000ms). Each predicate is wrapped in `.catch(() => null)` so the race
  * resolves on first settle (not first throw).
  *
- * Pitfall #1 note — Internal `.catch(() => null)` matches the
- * `voterNavigation.advanceClick` pattern
- * — distinct from helper #1 `settleNetworkIdle` which does NOT swallow.
- * The asymmetry is intentional: helper #1 is a hard wait helper, this is
- * a defensive click+race helper. Read 86.2-RESEARCH.md §"Common Pitfalls"
- * Pitfall #1 for the full rationale.
+ * Internal `.catch(() => null)` matches the `voterNavigation.advanceClick`
+ * pattern — distinct from `settleNetworkIdle` which does NOT swallow. The
+ * asymmetry is intentional: `settleNetworkIdle` is a hard wait helper, this is
+ * a defensive click+race helper.
  *
  * @param locator - the element to click (extracts its Page via `locator.page()`).
  * @param destinationPredicate - one or more URL predicates to race against.

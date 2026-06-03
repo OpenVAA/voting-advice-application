@@ -6,12 +6,6 @@
  * Produces a rich diagnostic message that interpolates the actual row
  * shapes (external_id + name) so the failure surface is debuggable.
  *
- * Propagation surface (per 86.2-RESEARCH.md §"Helper #5 propagation"):
- *   ZERO propagation candidates beyond the anchor at extraction time.
- *   The helper is extracted ahead of Phase 86.3+ test-authoring leverage
- *   (the 8 source-skipped tests in 86.3 are likely to add fresh DB
- *   preconditions), NOT for current dedup.
- *
  * Generic over the SupabaseAdminClient instance (test-layer subclass that
  * adds `findData` / `query` / `update` on top of the dev-seed bulk-write
  * base). The helper takes the client instance — it does not construct
@@ -25,7 +19,7 @@ import type { SupabaseAdminClient } from '../utils/supabaseAdminClient';
  * Assert that a `findData(table, filter)` query returns exactly
  * `expectedCount` rows. Fails-fast with a diagnostic message that
  * includes the table, filter, expected vs actual count, and a sampling
- * of row identifiers + names (matches anchor's diagnostic shape).
+ * of row identifiers + names.
  *
  * Diagnostic format:
  *   `<message-prefix>: expected exactly <N> rows under filter <JSON>; got <actual>: <external_id=name>; <external_id=name>; ...`
@@ -36,7 +30,7 @@ import type { SupabaseAdminClient } from '../utils/supabaseAdminClient';
  *   or `{ field: { $like: 'test-%' } }` etc.).
  * @param expectedCount - exact row count to assert.
  * @param opts.message - optional message prefix for the diagnostic
- *   output (e.g. `'CONF-06 multi-election dataset'`).
+ *   output (e.g. `'multi-election dataset'`).
  */
 export async function assertDbRowCount<TTable extends string>(
   client: SupabaseAdminClient,

@@ -1,25 +1,14 @@
 /**
  * Supabase Admin Client for E2E test data management.
  *
- * Subclasses the bulk-write base from `@openvaa/dev-seed` (per D-24 split, Phase 56).
- * The base owns the bulk-write surface (bulkImport, bulkDelete, importAnswers,
- * linkJoinTables, updateAppSettings). This subclass adds the auth/email +
- * legacy E2E query helpers that tests/ needs but dev-seed does not — keeping
- * the dev-seed surface narrow.
+ * Subclasses the bulk-write base from `@openvaa/dev-seed`. The base owns the bulk-write surface (bulkImport, bulkDelete, importAnswers, linkJoinTables, updateAppSettings). This subclass adds the auth/email + legacy E2E query helpers that tests/ needs but dev-seed does not — keeping the dev-seed surface narrow.
  *
- * D-11 (Phase 63 E2E-02) — `updateAppSettings` (inherited) usage policy:
- *   Baseline test-setup usage of `updateAppSettings` has migrated to the
- *   `@openvaa/dev-seed` e2e template's `app_settings.fixed[]` block.
- *   The 4 setup-file `updateAppSettings({ ... })` blocks were deleted in
- *   Plan 63-02 Task 3.
+ * `updateAppSettings` (inherited) usage policy:
+ *   Baseline test-setup usage of `updateAppSettings` has migrated to the `@openvaa/dev-seed` e2e template's `app_settings.fixed[]` block.
  *
- *   `updateAppSettings` is RETAINED for per-test scenario mutations:
- *   specs may call it inside `beforeAll` / `afterAll` to test
- *   behavior-under-different-settings (e.g. perm-startfromcg.spec.ts
- *   resolves + writes startFromConstituencyGroup at runtime).
+ *   `updateAppSettings` is RETAINED for per-test scenario mutations: specs may call it inside `beforeAll` / `afterAll` to test behavior-under-different-settings (e.g. perm-startfromcg.spec.ts resolves + writes startFromConstituencyGroup at runtime).
  *
- *   Do NOT use `updateAppSettings` from a `*.setup.ts` file for baseline
- *   settings — extend the appropriate template instead (D-04, D-09, D-10).
+ *   Do NOT use `updateAppSettings` from a `*.setup.ts` file for baseline settings — extend the appropriate template instead.
  *
  * Inherited from `DevSeedAdminClient`:
  *   - `constructor(url?, serviceRoleKey?, projectId?)`
@@ -29,7 +18,7 @@
  *   - `public bulkDelete(collections)`
  *   - `public importAnswers(data)`
  *   - `public linkJoinTables(data)`
- *   - `public updateAppSettings(partialSettings)` — see D-11 note above
+ *   - `public updateAppSettings(partialSettings)` — see usage-policy note above
  *
  * Added by this subclass:
  *   - Auth helpers (private): `safeListUsers`
@@ -110,12 +99,6 @@ function resolveFieldName(field: string): string {
 }
 
 export class SupabaseAdminClient extends DevSeedAdminClient {
-  // Phase 78 CLEAN-05 WR-07: the prior `fixGoTrueNulls` method had ZERO callers
-  // anywhere in tests/, apps/, or packages/ (verified via repo-wide grep). It
-  // was a leftover from a since-removed workaround for the GoTrue NULL column
-  // bug; the `safeListUsers` method below now handles that bug independently
-  // by short-circuiting on listUsers failure. Removed as dead code.
-
   /**
    * Safely list all auth users, working around the GoTrue NULL column bug.
    * If listUsers fails, returns an empty array instead of throwing.
@@ -228,21 +211,13 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
   }
 
   /**
-   * Post-seed read helper (Phase 63 E2E-02 / D-10).
+   * Post-seed read helper.
    *
-   * Returns the current persisted `app_settings.settings` JSONB for this
-   * client's project, or `null` if the bootstrap row is missing.
+   * Returns the current persisted `app_settings.settings` JSONB for this client's project, or `null` if the bootstrap row is missing.
    *
-   * Consumed by `data.setup.ts` immediately after `writer.write(...)` to
-   * verify the dev-seed e2e template's `app_settings.fixed[]` block actually
-   * persisted via Pass-5 (`merge_jsonb_column`). Subset match per RESOLVED Q2
-   * (`expect(...).toMatchObject(expected)`) — `merge_jsonb_column` is
-   * additive (Pitfall 3), so stale keys from a prior run do not fail the
-   * assertion.
+   * Consumed by `data.setup.ts` immediately after `writer.write(...)` to verify the dev-seed e2e template's `app_settings.fixed[]` block actually persisted via Pass-5 (`merge_jsonb_column`). Subset match (`expect(...).toMatchObject(expected)`) — `merge_jsonb_column` is additive, so stale keys from a prior run do not fail the assertion.
    *
-   * Mirrors the read shape of the inherited `updateAppSettings` method
-   * (`packages/dev-seed/src/supabaseAdminClient.ts:488-495`) but selects
-   * `settings` instead of `id`.
+   * Mirrors the read shape of the inherited `updateAppSettings` method (`packages/dev-seed/src/supabaseAdminClient.ts`) but selects `settings` instead of `id`.
    *
    * @returns the persisted settings object, or `null` when no row exists.
    * @throws Error if the underlying fetch fails.
@@ -306,11 +281,10 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
     if (createError) throw new Error(`forceRegister: createUser failed: ${createError.message}`);
     const user = createData.user;
 
-    // Phase 78 CLEAN-05 WR-05: wrap the 4-step mutation chain in try/catch with
-    // a compensating `auth.admin.deleteUser` rollback on partial failure. The
-    // prior implementation could leave orphan auth users when step 2/3/4 failed
-    // — those orphans then surfaced as "User already exists" errors on
-    // subsequent test runs, requiring manual cleanup.
+    // Wrap the 4-step mutation chain in try/catch with a compensating
+    // `auth.admin.deleteUser` rollback on partial failure. Without it, a failure
+    // in step 2/3/4 leaves orphan auth users that surface as "User already
+    // exists" errors on subsequent test runs, requiring manual cleanup.
     try {
       // 2. Look up candidate ID by external_id
       const { data: candidate, error: cError } = await this.client
@@ -340,11 +314,11 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
         .eq('id', candidate.id);
       if (linkError) throw new Error(`forceRegister: link auth user failed: ${linkError.message}`);
     } catch (mutationErr) {
-      // reason: WR-05 — compensating rollback on partial failure prevents
-      // orphan auth users that cascade as "User already exists" errors across
-      // subsequent test runs. The rollback failure (if any) is logged but not
-      // re-thrown — we always re-throw the original mutationErr so the caller
-      // sees the real cause.
+      // reason: compensating rollback on partial failure prevents orphan auth
+      // users that cascade as "User already exists" errors across subsequent
+      // test runs. The rollback failure (if any) is logged but not re-thrown —
+      // we always re-throw the original mutationErr so the caller sees the real
+      // cause.
       await this.client.auth.admin.deleteUser(user.id).then(
         () => {},
         (rollbackErr) => {
@@ -513,12 +487,11 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
 
     const testUsers = users.filter((u) => u.email && (u.email.includes('openvaa.org') || u.email.includes('test')));
 
-    // Phase 78 CLEAN-05 WR-06: propagate per-user step errors instead of
-    // silently swallowing them. The prior implementation discarded
-    // PostgREST/admin-API errors on every step — when a teardown failed
-    // mid-loop the test suite would proceed against a corrupted state and
-    // produce confusing downstream failures. Collect errors and throw at the
-    // end with an aggregated message so partial deletions complete first.
+    // Propagate per-user step errors instead of silently swallowing them.
+    // Discarding PostgREST/admin-API errors on every step lets a teardown that
+    // fails mid-loop proceed against a corrupted state and produce confusing
+    // downstream failures. Collect errors and throw at the end with an
+    // aggregated message so partial deletions complete first.
     const errors: Array<{ user: string; step: string; error: unknown }> = [];
 
     for (const user of testUsers) {
@@ -539,9 +512,9 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
     }
 
     if (errors.length > 0) {
-      // reason: WR-06 — collect-and-throw at end so partial deletions complete
-      // first AND the caller sees the failures (matches `unregisterCandidate`'s
-      // throw-on-error pattern at lines 386-413 of this file).
+      // reason: collect-and-throw at end so partial deletions complete first AND
+      // the caller sees the failures (matches `unregisterCandidate`'s
+      // throw-on-error pattern in this file).
       throw new Error(
         `deleteAllTestUsers: ${errors.length} failure(s) — ${JSON.stringify(errors)}`
       );

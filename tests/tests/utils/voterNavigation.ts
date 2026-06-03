@@ -25,10 +25,7 @@ let uuidCache: { electionUuids: Array<string>; constituencyUuids: Array<string> 
 async function resolveSeedUuids(): Promise<{ electionUuids: Array<string>; constituencyUuids: Array<string> }> {
   if (uuidCache) return uuidCache;
   const client = new SupabaseAdminClient();
-  // Phase 93 D-05 prefix migration: the old e2e dataset's `test-election-1` /
-  // `test-election-2` / `test-constituency-alpha` / `test-constituency-e2`
-  // external_ids were retired with the `e2e.ts` template. The merged base
-  // dataset (`e2e/base`) seeds `test-e2e-base-el-reg` (Regional) +
+  // The base dataset (`e2e/base`) seeds `test-e2e-base-el-reg` (Regional) +
   // `test-e2e-base-el-mun` (Municipal) elections, with `cg-reg`→{co-reg-n,
   // co-reg-s} and `cg-mun`→{co-mun-ne…sw}. The fallback URL needs one
   // constituency per election: `co-reg-n` (Regional leaf) + `co-mun-ne`
@@ -269,8 +266,7 @@ async function navigateDirectlyToQuestions(page: Page): Promise<void> {
   const sep = eqs && cqs ? '&' : '';
   // reason: dynamic-URL hard-navigation fallback (runtime-discovered seed UUIDs
   // in the query string), NOT a named-ROUTE-key navigation — exempt from the
-  // Plan 92-03 goToPage migration (CONTEXT Pitfall 4: a goToPage taking a
-  // freeform URL string is a smell).
+  // goToPage migration (a goToPage taking a freeform URL string is a smell).
   await page.goto(`${baseUrl}/questions?${eqs}${sep}${cqs}`);
 }
 
@@ -284,10 +280,10 @@ async function navigateDirectlyToQuestions(page: Page): Promise<void> {
  * /questions/[id]) with answer options visible.
  */
 export async function navigateToFirstQuestion(page: Page): Promise<void> {
-  // Phase 92 Plan 03 (D-09): Home-route nav + start click migrated to the
-  // voterHomePage fixture (goToPage hard-asserts the voter-home load anchor
-  // before clickStart). The fixture is instantiated directly from the raw
-  // `page` since this is a util helper, not a Playwright-fixture consumer.
+  // Home-route nav + start click go through the voterHomePage fixture
+  // (goToPage hard-asserts the voter-home load anchor before clickStart). The
+  // fixture is instantiated directly from the raw `page` since this is a util
+  // helper, not a Playwright-fixture consumer.
   const voterHomePage = createVoterHomePage(page);
   await voterHomePage.goToPage('en');
   await voterHomePage.clickStart();
@@ -305,8 +301,8 @@ export async function navigateToFirstQuestion(page: Page): Promise<void> {
  * rather than the first question.
  */
 export async function walkToQuestionsIntro(page: Page): Promise<void> {
-  // Phase 92 Plan 03 (D-09): Home-route nav + start click via voterHomePage
-  // fixture (goToPage hard-asserts the voter-home anchor before clickStart).
+  // Home-route nav + start click via voterHomePage fixture (goToPage
+  // hard-asserts the voter-home anchor before clickStart).
   const voterHomePage = createVoterHomePage(page);
   await voterHomePage.goToPage('en');
   await voterHomePage.clickStart();
@@ -322,17 +318,13 @@ export async function walkToQuestionsIntro(page: Page): Promise<void> {
  * lands on the question at the given sort_order without answering any
  * previous question.
  *
- * Used by Phase 75 Plan 01 (`voter-question-rendering-boolean.spec.ts`,
- * QSPEC-01) and Plan 02a (`voter-question-rendering-categorical.spec.ts`,
- * QSPEC-02) to reach the categorical question at sort 17 and the boolean
- * question at sort 18 without relying on the `answeredVoterPage` fixture.
- * The fixture's Likert `.nth(4)` click pattern is out of range for the
- * boolean (2 choices) and the categorical (3 choices) per Phase 75
- * RESEARCH Pitfall 6.
+ * Used by the boolean + categorical question-rendering specs to reach the
+ * categorical question at sort 17 and the boolean question at sort 18 without
+ * relying on the `answeredVoterPage` fixture. The fixture's Likert `.nth(4)`
+ * click pattern is out of range for the boolean (2 choices) and the
+ * categorical (3 choices).
  *
- * NOTE: a future Phase 78 / CLEAN-05 follow-up (operator-locked Path B in
- * `.planning/todos/pending/2026-05-11-voter-fixture-heterogeneous-question-types.md`)
- * will introduce a `--likert-only` seed modifier that deprecates this
+ * NOTE: a `--likert-only` seed modifier is planned that would deprecate this
  * manual walk.
  *
  * @param page - Playwright Page
@@ -341,16 +333,14 @@ export async function walkToQuestionsIntro(page: Page): Promise<void> {
  */
 export async function walkToQuestion(page: Page, sortOrder: number): Promise<void> {
   await walkToQuestionsIntro(page);
-  // reason: Phase 86.3-05 QSPEC-01/02 walkToQuestion helper-resilience fix.
-  // walkToQuestionsIntro may return with the voter on EITHER the questions-intro
-  // page (start CTA visible) OR a real /questions/<id> page when the
-  // `navigateDirectlyToQuestions` fallback fires inside `advanceVoterFlow`.
-  // In the latter case, the original unconditional `startButton.click()`
-  // races a 10s timeout because the intro start CTA never renders. Probe
-  // visibility first and only click when the intro CTA is actually present;
-  // the Skip-Next loop below already handles both cases (the nextButton is
-  // visible on real /questions/<id> pages too).
-  // See PATTERNS.md "Recommended fix shape" + RESEARCH §"Cell #7".
+  // reason: walkToQuestionsIntro may return with the voter on EITHER the
+  // questions-intro page (start CTA visible) OR a real /questions/<id> page when
+  // the `navigateDirectlyToQuestions` fallback fires inside `advanceVoterFlow`.
+  // In the latter case, an unconditional `startButton.click()` races a 10s
+  // timeout because the intro start CTA never renders. Probe visibility first
+  // and only click when the intro CTA is actually present; the Skip-Next loop
+  // below already handles both cases (the nextButton is visible on real
+  // /questions/<id> pages too).
   const startBtn = page.getByTestId(testIds.voter.questions.startButton);
   const onIntro = await startBtn.isVisible().catch(() => false);
   if (onIntro) await startBtn.click();
