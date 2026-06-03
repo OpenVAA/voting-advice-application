@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.10
 milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
-status: milestone_complete
-stopped_at: Milestone complete (Phase 92 was final phase)
-last_updated: 2026-06-03T05:27:51.324Z
-last_activity: 2026-06-02
+status: completed
+stopped_at: Phase 93 context gathered
+last_updated: "2026-06-03T09:21:39.840Z"
+last_activity: "2026-06-03 - Completed quick task 260603-c0g: dev-seed lint + runes-test/statistics build + 33 frontend lint errors → yarn lint:check + yarn build both green"
 progress:
-  total_phases: 17
+  total_phases: 18
   completed_phases: 15
   total_plans: 52
   completed_plans: 50
-  percent: 88
+  percent: 83
 ---
 
 # Project State
@@ -152,6 +152,8 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 - 2026-05-29: **Phase 89 added** to v2.10 roadmap — continuing test refactoring; implements the new candidate journey (and related edits) per TEST-INVENTORY-REFACTOR-4.md. Scope mirrors voter-journey conventions (strict, no fallbacks, fixtures, `[id] desc` format, serial-only, minimal data); also extends baseV1 hero/info content + adds settings-based permutations (maintenance/voterApp/candidateApp variants). Plan count + REQ IDs TBD via `/gsd-discuss-phase 89`.
 - 2026-05-28 (later, post-SUMMARY): **Plan 88-04 Gate B PARTIAL → PASS (operator-driven, post-SUMMARY).** Operator rejected the self-deferral of T8 filters:dialog stage 4+ to 88-LAST. Three layered Rule 1 fixes landed in one commit (`aaffe7d11`): (a) `entityFilters.fixture.ts` `close()`/`reset()`/`expectResetToBeDisabled()` switched from `getByTestId(filter-dialog-{apply,reset})` to `getByRole('button', { name: /Close filters|Reset filters/i })` scoped to dialog root — testid lookup on Modal action `<Button>` components (Button → `<svelte:element>` + `concatClass(restProps, classes)`) was empirically unreliable under strict-mode resolution; (b) `getFilterButtonBadge()` switched from `getByTestId(entity-list-filter-badge)` (Wave 1.5 span wrapper that does NOT survive Svelte 5 snippet compilation) to `getByTestId(entity-list-filter).first()` (the filter button itself, whose accessible name `"<count> Filter"` includes the badge text); (c) `reset()` fixture method documented + updated to await dialog hidden — `resetFilters()` at EntityListControls.svelte:96-100 calls `closeModal()` synchronously after `filterGroup?.reset()`, so the Reset button CLOSES the dialog as a side-effect (original fixture docstring "Dialog STAYS OPEN" was wrong), and removed 3 redundant `d.close()` calls after reset in T8 STAGES 4/5b/7. **Modal.svelte UNCHANGED.** No frontend changes; all adjustments are test-level (fixture + spec). Verification: `yarn db:reset && yarn db:seed --template baseV1 && cd tests && npx playwright test --project=voter-mega-journey` → 34 passed cold-start in ~57s, 2 consecutive runs confirmed. 88-04-SUMMARY.md + ROADMAP.md updated to PASS; T8 stage 4+ item moved from "Deferred Issues" to Deviation #8 in SUMMARY.md. 88-LAST follow-up for T8 cleared; the only 88-04 deferred items remaining are pre-existing dev-seed e2e.test.ts count drift and legacy `expectQuestionDisplayToHave` helper (out of 88-04 scope; tracked in deferred-items.md).
 
+- 2026-06-03: **Phase 93 added** — Clean up and reorganise E2E tests, fixtures, setup, and seed templates (operator `--do` directive routed via /gsd-progress). Scope: role-based fixture reorg (candidate `email`/`langSel`/`multilingualText` → `shared/`; `voterNav` → `voter/`; `fixtures/` root files → `shared/`|`voter/`; consolidate `views` with `voter-mega`; extract `minimalVoterResultsPage` from `voter-mega` for perms — rewrite for minimal datasets if needed); `tests/setup/` reorg into `voter/*`+`candidate/*`+`shared/*`+`perm/*`; rename all "mega" tests → `voter-journey`/`candidate-journey`; rewrite a11y spec to use `baseV1` seed instead of `e2e` data; seed-template reorg into `e2e/perm/*`+`e2e/base.ts` with old `e2e.ts` removed and `baseV1` renamed to `e2e/base`. Depends on Phase 92. Plan count + REQ IDs TBD via `/gsd-discuss-phase 93`.
+
 ### Decisions
 
 Full decision log in PROJECT.md Key Decisions table.
@@ -261,9 +263,9 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-02T21:02:55.437Z
-Stopped at: Completed 92-02-PLAN.md
-Resume file: None
+Last session: 2026-06-03T09:21:39.834Z
+Stopped at: Phase 93 context gathered
+Resume file: .planning/phases/93-clean-up-and-reorganise-e2e-tests-fixtures-setup-and-seed-te/93-CONTEXT.md
 Next action: Operator decides Phase 87 disposition per Phase 86.3-05 D-06 recommendation:
   (a) **RE-PLAN (Claude's recommendation):** Re-plan Phase 87 to absorb v2.11+ voter-app cold-deeplink deferrals (4 cells #5/#6/#7/#8 closure-paired via navigation-from-home redesign) + boundary-class flake deferrals (DETERM-06 imgproxy + email-link timing) BEFORE firing the v2.10-ship anchor capture. Plan 87-01 needs a new Plan 01a (deferral inventory) + Plan 01b (anchor capture WITH explicit deferrals documented).
   (b) **DELAYED-FIRING (alternative):** Run Phase 87 against the ALMOST-STRICT post-86.3 anchor with explicit v2.11+ deferral documentation; accept that "all-green deterministic" is satisfied for SKIPPED + DATA_RACE pools but NOT for CASCADE pool (Phase 87 Task 0 pre-gate CASCADE ≤ 5 unsatisfied at CASCADE = 37 selective-regen-preserved OR 90 raw).
