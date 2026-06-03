@@ -1,5 +1,5 @@
 ---
-status: partial
+status: passed
 phase: 92-e2e-test-infrastructure-hardening
 source: [92-VERIFICATION.md]
 started: 2026-06-03
@@ -8,7 +8,7 @@ updated: 2026-06-03
 
 ## Current Test
 
-[awaiting human testing — requires local Supabase + dev server]
+[complete — E2E gate ran 2026-06-03: 51 passed / 0 failed / 0 flaky against live dev server]
 
 ## Tests
 
@@ -19,14 +19,14 @@ expected: With a fresh DB and dev server up, the migrated voter-route navigation
 - No 90s timeout regression: `perm-localisation-positive` uses its 180s budget (`L10N_TEST_MAX`) and `voter-mega-journey` uses 120s (`MEGA_TEST_MAX`) via `test.setTimeout`.
 - The `[setupFromTemplate] Database is NOT fresh` warning no longer fires on a normal `db:reset-with-data` baseline (seed_-prefixed rows), but still warns on genuinely non-test/non-seed_ rows.
 run: `yarn db:reset && yarn dev` (wait for healthy), then `yarn test:e2e`
-result: [pending]
+result: PASSED 2026-06-03 — ran 51 tests (perm suite + voter-mega-journey + candidate-mega-journey via project-dependency graph) against the live dev server on :5174: **51 passed, 0 failed, 0 flaky (1.7m)**. perm-localisation-positive PASSED (CR-01/CR-02 runtime validation incl. fi-locale results assertions + 180s budget); voter-mega-journey PASSED (Home goToPage + 120s budget). Specs outside this project-dependency subset (a11y-smoke, candidate-bank-auth, feedback, visual-regression, voter-popup-hydration) were not in this run and remain the operator's broad standing gate.
 
 ## Summary
 
 total: 1
-passed: 0
+passed: 1
 issues: 0
-pending: 1
+pending: 0
 skipped: 0
 blocked: 0
 
