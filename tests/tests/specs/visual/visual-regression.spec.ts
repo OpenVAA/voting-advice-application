@@ -13,9 +13,8 @@
  *   PLAYWRIGHT_VISUAL=1 npx playwright test --project=visual-regression --update-snapshots
  *
  * Phase 91 Plan 04 (D-91-RS-01 + D-91-RS-03):
- * - Voter-results desktop + mobile MIGRATED from legacy
- *   tests/tests/fixtures/voter.fixture.ts `voterTest.answeredVoterPage`
- *   to tests/tests/fixtures/voter-mega.fixture.ts `voterMegaTest.answeredVoterPage`
+ * - Voter-results desktop + mobile use
+ *   tests/tests/fixtures/voter-mega.fixture.ts `voterMegaTest.answeredVoterPage`
  *   (baseV1 dataset; multi-election + multi-constituency walk).
  * - Candidate-preview desktop + mobile MIGRATED from raw STORAGE_STATE +
  *   page.goto to the `candidatePreviewPage` function-fixture from
@@ -28,8 +27,8 @@
  */
 
 import { STORAGE_STATE } from '../../../playwright.config';
-import { test as candidateTest, expect } from '../../fixtures/candidate/candidate-mega';
-import { voterMegaTest as voterTest } from '../../fixtures/voter-mega.fixture';
+import { expect,test as candidateTest } from '../../fixtures/candidate/candidate-mega';
+import { voterJourneyTest as voterTest } from '../../fixtures/voter/voter-journey.fixture';
 import { buildRoute } from '../../utils/buildRoute';
 import { testIds } from '../../utils/testIds';
 

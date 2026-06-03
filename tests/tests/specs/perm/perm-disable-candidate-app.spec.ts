@@ -13,7 +13,7 @@
  * no expect.soft, no try/catch wrapping expect(), no .catch fallbacks.
  */
 
-import { expect, test } from '../../fixtures/views';
+import { expect, test } from '../../fixtures/voter/views';
 import { testIds } from '../../utils/testIds';
 
 test.describe('perm-disable-candidate-app', () => {

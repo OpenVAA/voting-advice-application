@@ -3,7 +3,7 @@
  *
  * Function-fixture that exposes a narrow `ResultsPageFixture` surface for the
  * voter results listing screen. Sibling to `entityFilters.fixture.ts` and
- * `entityDetails.fixture.ts`; composed in `tests/tests/fixtures/views.ts`.
+ * `entityDetails.fixture.ts`; composed in `tests/tests/fixtures/voter/views.ts`.
  *
  * **Rigidity contract** (Phase 88 Plan 04 SCOPE acceptance #6):
  * - NO `expect.soft` in any helper.
@@ -20,8 +20,8 @@
  */
 
 import { expect } from '@playwright/test';
-import { buildRoute } from '../utils/buildRoute';
-import { testIds } from '../utils/testIds';
+import { buildRoute } from '../../utils/buildRoute';
+import { testIds } from '../../utils/testIds';
 import type { Locator, Page } from '@playwright/test';
 
 /**

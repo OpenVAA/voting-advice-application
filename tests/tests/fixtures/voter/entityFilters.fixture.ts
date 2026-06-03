@@ -19,7 +19,7 @@
  */
 
 import { expect } from '@playwright/test';
-import { testIds } from '../utils/testIds';
+import { testIds } from '../../utils/testIds';
 import type { Locator, Page } from '@playwright/test';
 
 type Target = RegExp | string | ((count: number) => number);

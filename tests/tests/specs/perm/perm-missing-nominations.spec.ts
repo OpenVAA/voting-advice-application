@@ -22,7 +22,7 @@
  * 7 — no in-and-out bouncing).
  */
 
-import { expect, test } from '../../fixtures/views';
+import { expect, test } from '../../fixtures/voter/views';
 import { testIds } from '../../utils/testIds';
 
 test.describe('perm-missing-nominations', () => {

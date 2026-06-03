@@ -37,14 +37,14 @@
 
 import { AxeBuilder } from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
-import { voterMegaTest } from '../../fixtures/voter-mega.fixture';
+import { voterJourneyTest } from '../../fixtures/voter/voter-journey.fixture';
 import { buildRoute } from '../../utils/buildRoute';
 import type { Page, TestInfo } from '@playwright/test';
 import type { Route } from '../../../../apps/frontend/src/lib/utils/route/route';
 
 // Run unauthenticated — all routes are voter-app (public).
 test.use({ storageState: { cookies: [], origins: [] } });
-voterMegaTest.use({ storageState: { cookies: [], origins: [] } });
+voterJourneyTest.use({ storageState: { cookies: [], origins: [] } });
 
 // WCAG 2.1 AA superset per RESEARCH §Open-Question-3 — captures the maximum surface so
 // Plan 04's first-run baseline reflects the full WCAG 2.1 AA contract from ROADMAP A11Y-03
@@ -126,7 +126,7 @@ for (const route of UNLOCATED_ROUTES) {
 
 // ── Located routes — voter-mega fixture consumes (D-91-RS-02b) ──────────
 
-voterMegaTest('A11Y-04 axe smoke — questions', async ({ locatedVoterPage: page }, testInfo) => {
+voterJourneyTest('A11Y-04 axe smoke — questions', async ({ locatedVoterPage: page }, testInfo) => {
   // locatedVoterPage walks Home → Elections → Constituencies → /questions
   // intro and STOPS. The voter-questions-start button is visible at this
   // point — the intro page is the route under axe scan (matches Phase 76
@@ -137,7 +137,7 @@ voterMegaTest('A11Y-04 axe smoke — questions', async ({ locatedVoterPage: page
   await assertAxeGates(results, testInfo, 'questions');
 });
 
-voterMegaTest('A11Y-04 axe smoke — results', async ({ answeredVoterPage: page }, testInfo) => {
+voterJourneyTest('A11Y-04 axe smoke — results', async ({ answeredVoterPage: page }, testInfo) => {
   // answeredVoterPage walks the full flow + lands on /results. Wait for the
   // results layout tablist (Tabs.svelte) — Phase 80 Task 5b added explicit
   // role="tablist" to resolve aria-required-parent + list axe violations.
@@ -147,7 +147,7 @@ voterMegaTest('A11Y-04 axe smoke — results', async ({ answeredVoterPage: page 
   await assertAxeGates(results, testInfo, 'results');
 });
 
-voterMegaTest('A11Y-04 axe smoke — voter-detail-drawer', async ({ answeredVoterPage: page }, testInfo) => {
+voterJourneyTest('A11Y-04 axe smoke — voter-detail-drawer', async ({ answeredVoterPage: page }, testInfo) => {
   // Wait for the results layout tablist (Tabs.svelte) — Task 5b added
   // explicit role="tablist" to resolve aria-required-parent + list axe
   // violations. Same DOM target as the pre-fix `getByRole('list').first()`

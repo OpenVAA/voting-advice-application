@@ -18,7 +18,7 @@
  * no expect.soft, no try/catch wrapping expect(), no .catch fallbacks.
  */
 
-import { expect, test } from '../../fixtures/views';
+import { expect, test } from '../../fixtures/voter/views';
 
 // SKIPPED pending the full Svelte runes migration: the notification popup
 // tests below are unstable because the popup-management lifecycle (queueing /

@@ -16,7 +16,7 @@
  * Authoritative spec: TEST-INVENTORY-REFACTOR-6.md:79-88.
  */
 
-import { expect, test } from '../../fixtures/views';
+import { expect, test } from '../../fixtures/voter/views';
 import { testIds } from '../../utils/testIds';
 
 test.describe('perm-header-show-help', () => {

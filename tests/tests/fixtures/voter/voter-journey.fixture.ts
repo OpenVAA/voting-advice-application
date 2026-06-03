@@ -1,5 +1,5 @@
 /**
- * Voter mega-journey fixture — Phase 88 Plan 01 Task 3.
+ * Voter journey fixture — Phase 88 Plan 01 Task 3.
  *
  * Design source: TEST-INVENTORY-REFACTOR-1.md line 10
  *   - "Make the answering func robust so that the answer mode is 'min'
@@ -33,10 +33,10 @@
  *     context) but NOT answered. Consumed by a11y-smoke's `questions`
  *     route scan per D-91-RS-02b (Phase 91 Plan 04).
  *
- * This fixture is wired against the BUILT_IN `baseV1` dataset
+ * This fixture is wired against the BUILT_IN `e2e/base` dataset
  * (multi-election + multi-constituency hierarchy).
  *
- * The mega-journey spec uses the raw `page` for the pre-results
+ * The voter-journey spec uses the raw `page` for the pre-results
  * walkthrough (steps 9.1.x → 9.5.x intro-flow) so it can assert at
  * intermediate checkpoints; `answeredVoterPage` is intended for tests
  * that just need a results-landing fixture and don't care about the
@@ -53,22 +53,22 @@
  */
 
 import { test as base } from '@playwright/test';
-import { TIMEOUTS } from '../helpers';
-import { buildRoute } from '../utils/buildRoute';
-import { testIds } from '../utils/testIds';
-import { navigateToFirstQuestion } from '../utils/voterNavigation';
+import { TIMEOUTS } from '../../helpers';
+import { buildRoute } from '../../utils/buildRoute';
+import { testIds } from '../../utils/testIds';
+import { navigateToFirstQuestion } from '../../utils/voterNavigation';
 import type { Page } from '@playwright/test';
 
 export type AnswerMode = 'min' | 'max';
 
-type VoterMegaFixtureOptions = {
+type VoterJourneyFixtureOptions = {
   /** Which extreme to pick on each opinion question. Default: 'max'. */
   answerMode: AnswerMode;
   /** Optional: cap total answers (for partial-answer scenarios). Default: undefined (answer all). */
   answerCount?: number;
 };
 
-type VoterMegaFixtures = VoterMegaFixtureOptions & {
+type VoterJourneyFixtures = VoterJourneyFixtureOptions & {
   /** A page on /results with all reachable opinion questions answered per answerMode. */
   answeredVoterPage: Page;
   /**
@@ -242,7 +242,7 @@ async function answerAndAdvanceToResults(
   await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 15_000 });
 }
 
-export const voterMegaTest = base.extend<VoterMegaFixtures>({
+export const voterJourneyTest = base.extend<VoterJourneyFixtures>({
   answerMode: ['max', { option: true }],
   answerCount: [undefined, { option: true }],
 

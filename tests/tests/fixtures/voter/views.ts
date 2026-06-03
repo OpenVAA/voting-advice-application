@@ -7,7 +7,7 @@
  *
  * Usage:
  * ```ts
- * import { test, expect } from '../../fixtures/views';
+ * import { test, expect } from '../../fixtures/voter/views';
  *
  * test('result-card-contents', async ({ page, resultsPage }) => {
  *   await resultsPage.selectElection(/Regional/i);
@@ -25,15 +25,15 @@ import { expect, test as base } from '@playwright/test';
 import { createEntityDetails } from './entityDetails.fixture';
 import { createEntityFilters } from './entityFilters.fixture';
 import { createResultsPage } from './resultsPage.fixture';
-import { createVoterHomePage } from './voter/voterHomePage.fixture';
-import { createVoterIntroPage } from './voter/voterIntroPage.fixture';
-import { createVoterQuestionsPage } from './voter/voterQuestionsPage.fixture';
+import { createVoterHomePage } from './voterHomePage.fixture';
+import { createVoterIntroPage } from './voterIntroPage.fixture';
+import { createVoterQuestionsPage } from './voterQuestionsPage.fixture';
 import type { EntityDetailsFixture } from './entityDetails.fixture';
 import type { EntityFiltersFixture } from './entityFilters.fixture';
 import type { ResultsPageFixture } from './resultsPage.fixture';
-import type { VoterHomePageFixture } from './voter/voterHomePage.fixture';
-import type { VoterIntroPageFixture } from './voter/voterIntroPage.fixture';
-import type { VoterQuestionsPageFixture } from './voter/voterQuestionsPage.fixture';
+import type { VoterHomePageFixture } from './voterHomePage.fixture';
+import type { VoterIntroPageFixture } from './voterIntroPage.fixture';
+import type { VoterQuestionsPageFixture } from './voterQuestionsPage.fixture';
 
 type ViewFixtures = {
   resultsPage: ResultsPageFixture;

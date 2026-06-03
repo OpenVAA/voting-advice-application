@@ -41,7 +41,7 @@
  */
 
 import { createFeedbackDialog } from '../../fixtures/shared/feedbackDialog.fixture';
-import { expect, test } from '../../fixtures/views';
+import { expect, test } from '../../fixtures/voter/views';
 import { TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { testIds } from '../../utils/testIds';
