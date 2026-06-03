@@ -1,12 +1,9 @@
 /**
- * perm-startfromcg data-setup project — Phase 88 Plan 03.
+ * perm-startfromcg data-setup project.
  *
- * Invokes setupFromTemplate('perm-startfromcg'). The template OMITS
- * elections.startFromConstituencyGroup; the perm-startfromcg.spec.ts
- * beforeAll resolves the CG-2 UUID via SupabaseAdminClient and writes it
- * at runtime (HIGH-3 resolution).
+ * Invokes setupFromTemplate('perm-startfromcg'). The template OMITS elections.startFromConstituencyGroup; the perm-startfromcg.spec.ts beforeAll resolves the CG-2 UUID via SupabaseAdminClient and writes it at runtime.
  *
- * Prefix: 'test-perm-startfromcg-' per 88-03-SCOPE.md:104-110.
+ * Prefix: 'test-perm-startfromcg-'.
  */
 
 import { test as setup } from '@playwright/test';

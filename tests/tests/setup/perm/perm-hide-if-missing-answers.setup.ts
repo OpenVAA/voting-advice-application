@@ -1,9 +1,9 @@
 /**
- * perm-hide-if-missing-answers data-setup project — Phase 91 Plan 02
- * (TIR6:95-102, A6). UNAUTHENTICATED — voter walk to /results asserting on
- * candidate-card filtering.
+ * perm-hide-if-missing-answers data-setup project.
  *
- * Prefix: 'e2e-perm-hide-missing-' per D-91-PD-05.
+ * UNAUTHENTICATED — voter walk to /results asserting on candidate-card filtering.
+ *
+ * Prefix: 'e2e-perm-hide-missing-'.
  */
 
 import { test as setup } from '@playwright/test';

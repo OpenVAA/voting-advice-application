@@ -1,13 +1,9 @@
 /**
- * perm-disable-allow-open data-setup project — Phase 91 Plan 02
- * (TIR6:121-142, A9). Mints a per-perm Playwright storage state via real
- * `forceRegister` + real UI login through the candidate-app login form
- * (D-91-PD-06 REVISED — CR-01 BLOCKER closure; synth tokens fail server-
- * side JWT validation). Consumed by the candidate-side describe block in
- * perm-disable-allow-open.spec.ts. The voter-side describe block does not
- * use storage state.
+ * perm-disable-allow-open data-setup project.
  *
- * Prefix: 'e2e-perm-no-allowopen-' per D-91-PD-05.
+ * Mints a per-perm Playwright storage state via real `forceRegister` + real UI login through the candidate-app login form (synthetic tokens fail server-side JWT validation). Consumed by the candidate-side describe block in perm-disable-allow-open.spec.ts. The voter-side describe block does not use storage state.
+ *
+ * Prefix: 'e2e-perm-no-allowopen-'.
  */
 
 import { expect, test as setup } from '@playwright/test';

@@ -1,21 +1,14 @@
 /**
- * perm-answers-locked data-setup project — Phase 91 Plan 02 (TIR6:3-14, A1).
+ * perm-answers-locked data-setup project.
  *
- * Invokes setupFromTemplate('perm-answers-locked') then mints a per-perm
- * Playwright storage-state JSON via real `forceRegister` + real UI login
- * through the candidate-app login form. This MIRRORS the canonical pattern
- * in `auth.setup.ts` + `data.setup.ts` (D-91-PD-06 REVISED: the prior
- * synthetic session helper was DELETED per 91-VERIFICATION.md CR-01
- * BLOCKER closure — synth base64 tokens fail server-side `safeGetSession()`
- * JWT validation; only real Supabase-minted sessions survive the protected
- * candidate layout).
+ * Invokes setupFromTemplate('perm-answers-locked') then mints a per-perm Playwright storage-state JSON via real `forceRegister` + real UI login through the candidate-app login form. This MIRRORS the canonical pattern in `auth.setup.ts` + `data.setup.ts`: synthetic base64 tokens fail server-side `safeGetSession()` JWT validation, so only real Supabase-minted sessions survive the protected candidate layout.
  *
  * The storage-state file is consumed by the AUTHENTICATED sub-tests in
  * perm-answers-locked.spec.ts (surfaces 2 + 3: /candidate/profile +
  * /candidate/questions/[questionId]); the UNAUTH sub-test (surface 1,
  * /candidate login) does not use storage state.
  *
- * Prefix: 'e2e-perm-answers-locked-' per D-91-PD-05.
+ * Prefix: 'e2e-perm-answers-locked-'.
  *
  * `extraTeardownPrefix: ['test-', 'e2e-perm-']` defends against cross-chain
  * leakage from prior perm chains still mid-teardown when this setup starts.
@@ -66,9 +59,9 @@ setup('import perm-answers-locked dataset + mint candidate session', async ({ pa
   });
 
   // 2. Provision a real auth user for the seeded candidate. Deterministic
-  //    email per D-91-PD-06 fallback contract (dev-seed perm templates do
-  //    not populate candidates.email). Defensive unregister keeps reruns
-  //    idempotent (mirrors data.setup.ts:142-143).
+  //    email via the fallback contract (dev-seed perm templates do not
+  //    populate candidates.email). Defensive unregister keeps reruns
+  //    idempotent (mirrors data.setup.ts).
   const fullExternalId = `${PREFIX}cand-1`;
   const candidateEmail = `${fullExternalId}@test.openvaa.local`;
   const client = new SupabaseAdminClient();

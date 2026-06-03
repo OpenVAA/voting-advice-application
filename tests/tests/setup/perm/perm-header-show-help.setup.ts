@@ -1,9 +1,9 @@
 /**
- * perm-header-show-help data-setup project — Phase 91 Plan 02
- * (TIR6:79-88, A4). UNAUTHENTICATED — the A4 spec asserts on the voter
- * intro Banner help-button + Help URL.
+ * perm-header-show-help data-setup project.
  *
- * Prefix: 'e2e-perm-header-help-' per D-91-PD-05.
+ * UNAUTHENTICATED — the spec asserts on the voter intro Banner help-button + Help URL.
+ *
+ * Prefix: 'e2e-perm-header-help-'.
  */
 
 import { test as setup } from '@playwright/test';

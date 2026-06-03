@@ -1,12 +1,9 @@
 /**
- * perm-header-show-feedback data-setup project — Phase 91 Plan 02
- * (TIR6:68-77, A3).
+ * perm-header-show-feedback data-setup project.
  *
- * Invokes setupFromTemplate('perm-header-show-feedback'). UNAUTHENTICATED —
- * the A3 spec asserts on the voter intro (Banner.svelte header-feedback
- * testid) and does not need a candidate session.
+ * Invokes setupFromTemplate('perm-header-show-feedback'). UNAUTHENTICATED — the spec asserts on the voter intro (Banner.svelte header-feedback testid) and does not need a candidate session.
  *
- * Prefix: 'e2e-perm-header-feedback-' per D-91-PD-05.
+ * Prefix: 'e2e-perm-header-feedback-'.
  */
 
 import { test as setup } from '@playwright/test';

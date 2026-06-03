@@ -1,16 +1,11 @@
 /**
- * perm-hide-hero data-setup project — Phase 91 Plan 02 (TIR6:24-32, A2).
+ * perm-hide-hero data-setup project.
  *
- * Invokes setupFromTemplate('perm-hide-hero') then mints a per-perm
- * Playwright storage-state JSON via real `forceRegister` + real UI login
- * through the candidate-app login form (D-91-PD-06 REVISED — CR-01
- * BLOCKER closure; synth tokens fail server-side JWT validation).
+ * Invokes setupFromTemplate('perm-hide-hero') then mints a per-perm Playwright storage-state JSON via real `forceRegister` + real UI login through the candidate-app login form (synthetic tokens fail server-side JWT validation).
  *
- * The spec consumes the storage state to navigate to
- * /en/candidate/questions/[questionId] as an authenticated candidate and
- * assert hideHero=true suppresses hero rendering.
+ * The spec consumes the storage state to navigate to /en/candidate/questions/[questionId] as an authenticated candidate and assert hideHero=true suppresses hero rendering.
  *
- * Prefix: 'e2e-perm-hide-hero-' per D-91-PD-05.
+ * Prefix: 'e2e-perm-hide-hero-'.
  */
 
 import { expect, test as setup } from '@playwright/test';

@@ -1,8 +1,8 @@
 /**
- * perm-disable-election-2co data-setup project — Phase 88 Plan 03.
+ * perm-disable-election-2co data-setup project.
  *
  * Invokes setupFromTemplate('perm-disable-election-2co').
- * Prefix: 'test-perm-disable-elec-2co-' per 88-03-SCOPE.md:104-110.
+ * Prefix: 'test-perm-disable-elec-2co-'.
  */
 
 import { test as setup } from '@playwright/test';

@@ -1,12 +1,10 @@
 /**
- * perm-missing-nominations data-setup project — Phase 90 Plan 02 (TIR5:15-26).
+ * perm-missing-nominations data-setup project.
  *
  * Invokes setupFromTemplate('perm-missing-nominations').
- * Prefix: 'e2e-perm-missnoms-' per D-90-01.
+ * Prefix: 'e2e-perm-missnoms-'.
  *
- * `extraTeardownPrefix: ['test-', 'e2e-perm-']` defends against cross-chain
- * leakage from base / candidate-journey / prior perm chains still
- * mid-teardown when this setup starts.
+ * `extraTeardownPrefix: ['test-', 'e2e-perm-']` defends against cross-chain leakage from base / candidate-journey / prior perm chains still mid-teardown when this setup starts.
  */
 
 import { test as setup } from '@playwright/test';

@@ -1,12 +1,10 @@
 /**
- * perm-localisation-positive data-setup project — Phase 90 Plan 04 (TIR5:52-95).
+ * perm-localisation-positive data-setup project.
  *
  * Invokes setupFromTemplate('perm-localisation-positive').
- * Prefix: 'e2e-perm-l10n-pos-' per D-90-01.
+ * Prefix: 'e2e-perm-l10n-pos-'.
  *
- * `extraTeardownPrefix: ['test-', 'e2e-perm-']` defends against cross-chain
- * leakage from base / candidate-journey / prior perm chains still
- * mid-teardown when this setup starts.
+ * `extraTeardownPrefix: ['test-', 'e2e-perm-']` defends against cross-chain leakage from base / candidate-journey / prior perm chains still mid-teardown when this setup starts.
  */
 
 import { test as setup } from '@playwright/test';

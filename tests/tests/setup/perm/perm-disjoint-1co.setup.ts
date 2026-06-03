@@ -1,8 +1,8 @@
 /**
- * perm-disjoint-1co data-setup project — Phase 88 Plan 03.
+ * perm-disjoint-1co data-setup project.
  *
  * Invokes setupFromTemplate('perm-disjoint-1co').
- * Prefix: 'test-perm-disjoint-1co-' per 88-03-SCOPE.md:104-110.
+ * Prefix: 'test-perm-disjoint-1co-'.
  */
 
 import { test as setup } from '@playwright/test';

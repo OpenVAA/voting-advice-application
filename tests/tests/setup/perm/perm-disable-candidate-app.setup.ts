@@ -1,12 +1,10 @@
 /**
- * perm-disable-candidate-app data-setup project — Phase 89 Plan 04.
+ * perm-disable-candidate-app data-setup project.
  *
  * Invokes setupFromTemplate('perm-disable-candidate-app').
- * Prefix: 'e2e-perm-nocand-' per D-89-03 (89-04-PLAN.md).
+ * Prefix: 'e2e-perm-nocand-'.
  *
- * `extraTeardownPrefix: ['test-', 'e2e-perm-']` defends against cross-chain
- * leakage from base / candidate-journey / prior perm chains still
- * mid-teardown when this setup starts.
+ * `extraTeardownPrefix: ['test-', 'e2e-perm-']` defends against cross-chain leakage from base / candidate-journey / prior perm chains still mid-teardown when this setup starts.
  */
 
 import { test as setup } from '@playwright/test';
