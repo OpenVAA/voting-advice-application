@@ -262,24 +262,24 @@ Not applicable — no library/framework currency question. This is a one-time hy
 | A4 | The 2 spec READMEs (`voter-journey.README.md`, `candidate-journey.README.md`) are intended to fall under this phase's README workstream | README State / Open Q#3 | If excluded, the `tests/`-wide residual grep stays non-empty and the gate fails |
 | A5 | WR-04 median formula `floor((len-1)/2)` preserves current Likert-5 behaviour (yields id `'3'`) | WR-04 | Verified by arithmetic; if `choices` ids aren't `'1'..'5'` the median-by-index still picks the middle id, which is the intended generalization |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Post-WR-02 `--list` baseline — what is the binding "no dropped specs" number?**
+1. **Post-WR-02 `--list` baseline — what is the binding "no dropped specs" number?** — RESOLVED per D-03: nothing removed, baseline stays 84 tests / 72 files.
    - What we know: current baseline is **84 tests / 72 files** `[VERIFIED]`. WR-02 removes 3 projects whose spec is fully `describe.skip`ped (contributes step-titles to `--list` but 0 runnable tests).
    - What's unclear: the exact post-WR-02 `Total:` line. The ROADMAP cites "84 tests/72 files" as the gate, but that's the *pre*-WR-02 number.
    - Recommendation: have Wave 0 re-capture `npx playwright test --list` after WR-02 lands and pin THAT as the gate baseline (store alongside `93-PLAYWRIGHT-LIST-BASELINE.txt`). The gate is "no *unintended* drop", reconciled against WR-02's known removal.
 
-2. **`tests/scripts/diff-playwright-reports.ts` (107 tokens) — clean, carve-out, or leave?**
+2. **`tests/scripts/diff-playwright-reports.ts` (107 tokens) — clean, carve-out, or leave?** — RESOLVED per D-02: DELETE the file entirely + all references; no carve-out.
    - What we know: it lives in `tests/` (so the literal `tests/`-wide grep would flag it), but it is a *functional* parity/determinism tool whose PASS_LOCKED/CASCADE/DATA_RACE/SKIPPED arrays + anchor SHAs + Phase narrative are its working content. No active CI reference found `[VERIFIED: grep]`.
    - What's unclear: whether the ROADMAP author intends the de-planning sweep to touch it. Gutting it would destroy a working artifact; leaving it makes the `tests/`-wide grep non-empty.
    - Recommendation: **carve it out of the residual-grep gate explicitly** (the gate becomes "empty in `tests/` excluding `tests/scripts/diff-playwright-reports.ts`"), OR scope-confirm at discuss-phase that this file is out of scope. Do NOT clean it blindly. **Lock at planning time.**
 
-3. **Scope boundary: `packages/dev-seed/src/templates` only vs whole `packages/dev-seed/src`?**
+3. **Scope boundary: `packages/dev-seed/src/templates` only vs whole `packages/dev-seed/src`?** — RESOLVED per D-01: scope is `packages/dev-seed/src/templates` only.
    - What we know: the **scope statement** says "`packages/dev-seed/src/templates` *only* (~152 files)"; the **verification gate** says "grep empty in `packages/dev-seed/src`". The wider `packages/dev-seed/src` tree has **75 files** with gate-pattern matches vs **33** in `templates/` `[VERIFIED]` — i.e. ~42 additional files (generators, emitters, writer, pipeline, CLI) carry `D-XX`/`Phase 56/58` *design docstrings* (e.g. `writer.ts` D-11 write-sequence doc).
    - What's unclear: whether the gate's "`packages/dev-seed/src`" is a typo for "`…/src/templates`", or an intentional wider sweep.
    - Recommendation: **lock to `packages/dev-seed/src/templates` only** (matches the scope statement + the "~152 files" count) and **scope the verification grep to `packages/dev-seed/src/templates`** accordingly — OR expand the phase to the whole `src/` tree if the operator wants it (adds ~42 files, ~1 more wave). The two statements are contradictory; the planner/operator must pick one. **Lock at planning time.**
 
-4. **WR-02 file disposition** (see A1): keep orphaned spec/template files (recommended) or delete them now? Lock at discuss-phase.
+4. **WR-02 file disposition** (see A1): keep orphaned spec/template files (recommended) or delete them now? Lock at discuss-phase. — RESOLVED per D-03: keep all perm-per-app-notifications files; add re-enable TODO marker only.
 
 ## Environment Availability
 
