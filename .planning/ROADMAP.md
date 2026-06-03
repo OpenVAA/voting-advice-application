@@ -578,7 +578,7 @@ _READMEs_
 
 **Verification gates:** `yarn typecheck:tests` (exit 0) · `npx playwright test --list` (84 tests/72 files, no dropped specs) · residual-planning-token grep (`Phase|Plan|D-[0-9]|FLAG-|TIR|baseV1|mega`) empty in `tests/` + `packages/dev-seed/src` · full `yarn test:e2e` green.
 
-**Plans:** 6/8 plans executed
+**Plans:** 7/8 plans executed
 
 **Wave 1:**
 - [x] 94-01-PLAN.md — WR-01/02/03/04 + D-02: delete husk + retired diff tool, add fail-loud teardown guard, data-driven ordinal default, perm-notifications re-enable TODO; de-plan the 2 edited infra files; pin --list baseline 84/72 (wave 1)
@@ -589,7 +589,7 @@ _READMEs_
 - [x] 94-04-PLAN.md — de-plan candidate fixtures/setup/specs; delete candidate-journey README (D-04) (wave 2, depends 94-01)
 - [x] 94-05-PLAN.md — de-plan voter + shared fixtures + voter-journey spec; delete voter-journey README (D-04) (wave 2, depends 94-01)
 - [x] 94-06-PLAN.md — de-plan utils + helper-source + shared setup + root configs (contracts preserved) (wave 2, depends 94-01)
-- [ ] 94-07-PLAN.md — de-plan 33 dev-seed templates (D-01 templates-only fence) (wave 2, depends 94-01)
+- [x] 94-07-PLAN.md — de-plan 33 dev-seed templates (D-01 templates-only fence) (wave 2, depends 94-01)
 
 **Wave 3** *(final, blocked on all sweeps):*
 - [ ] 94-08-PLAN.md — rewrite tests/README.md (D-06) + helpers/README.md (D-05); phase-wide residual-grep gate + --list 84/72 + typecheck (wave 3, depends 94-01..07)
