@@ -3,8 +3,9 @@
  *
  * Single source of truth for:
  *   - Unregistered candidate identity (email + external_id) — the
- *     `test-ca-aa-unregistered` row in baseV1 (Phase 89 Plan 01) has NO
- *     `email` column (Wave 0 R8 verdict: candidates table has no email);
+ *     `test-ca-aa-unregistered` row in the `e2e/base` dataset (Phase 89
+ *     Plan 01) has NO `email` column (Wave 0 R8 verdict: candidates table
+ *     has no email);
  *     this file is therefore the canonical home for the candidate's email
  *     string that the registration-via-email flow targets.
  *   - Passwords used by the registration → forgot-password → login flow.
@@ -22,12 +23,12 @@
  *     Supabase email subjects can drift across upgrades; match a wide
  *     family of plausible subjects rather than pin to one literal).
  *
- * Naming follows the `e2eFixtureRefs.ts` sibling convention (UPPER_SNAKE
- * for constants).
+ * Naming follows the UPPER_SNAKE convention for constants.
  */
 
 /**
- * Email for the unregistered candidate (`test-ca-aa-unregistered` in baseV1).
+ * Email for the unregistered candidate (`test-ca-aa-unregistered` in the
+ * `e2e/base` dataset).
  *
  * Per Phase 89 Plan 01 Wave 0 R8 verdict, the candidates table has NO email
  * column in the schema (verified verbatim from
@@ -46,10 +47,11 @@
 export const UNREGISTERED_CANDIDATE_EMAIL = 'unregistered-aa@test.openvaa.local';
 
 /**
- * External ID of the unregistered candidate row in baseV1.
+ * External ID of the unregistered candidate row in the `e2e/base` dataset.
  *
- * Source of truth: packages/dev-seed/src/templates/baseV1.ts:1079 (added
- * in Phase 89 Plan 01 per TIR4:82-90).
+ * Source of truth: packages/dev-seed/src/templates/e2e/base.ts (added
+ * in Phase 89 Plan 01 per TIR4:82-90; relocated baseV1.ts→e2e/base.ts in
+ * Phase 93 Plan 02).
  */
 export const UNREGISTERED_CANDIDATE_EXTERNAL_ID = 'test-ca-aa-unregistered';
 
@@ -85,8 +87,9 @@ export const OPEN_ANSWER_1_EDITED = '[OPEN-1-EDITED] My revised take.';
  * Map of info-question externalId → value for filling the candidate
  * profile in step 13.
  *
- * Keys correspond to `test-qu-info-*` rows in baseV1 (`packages/dev-seed/
- * src/templates/baseV1.ts`). Step 13 fills ALL listed answers EXCEPT
+ * Keys correspond to `test-qu-info-*` rows in the `e2e/base` dataset
+ * (`packages/dev-seed/src/templates/e2e/base.ts`). Step 13 fills ALL listed
+ * answers EXCEPT
  * `test-qu-info-text` (the required one — deliberately left blank to
  * exercise the required-empty submit-disabled gate) AND the first listed
  * info question (per TIR4:178-179 "fill all other questions except the

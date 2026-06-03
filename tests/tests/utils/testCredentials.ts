@@ -1,13 +1,29 @@
 /**
  * Shared credentials for the primary test candidate (Test Candidate Alpha).
  *
- * Used by auth.setup.ts, data.setup.ts, and individual test files. The email
- * is sourced from the Phase 58 `e2e` template (via e2eFixtureRefs). The
- * password is a tests/-only constant set by data.setup.ts's forceRegister
- * call — it lives here because @openvaa/dev-seed (per D-24 split) does not
- * own auth concerns.
+ * Used by the opt-in auth-setup project (tests/tests/setup/shared/auth.setup.ts)
+ * and the perm-* setups (TEST_CANDIDATE_PASSWORD only).
+ *
+ * Phase 93 Plan 04 (D-06) decoupling: the email used to be derived at module
+ * load from the `e2e` dev-seed template via `e2eFixtureRefs.ts`. Plan 02 (D-01)
+ * RETIRED that template (`BUILT_IN_TEMPLATES.e2e` is now `undefined`), so the
+ * derivation IIFE threw at import time — crashing every consumer, including the
+ * default-suite perm-* setups that only need the password literal. The email is
+ * now a self-contained literal (its previously-resolved value), removing the
+ * throwing dependency.
+ *
+ * NOTE (deferred architectural item — see 93-04-SUMMARY.md "Deferred"): the
+ * merged base dataset (`e2e/base`) does NOT seed a `test-candidate-alpha` row
+ * and the base candidates carry no email column, so the opt-in `auth-setup`
+ * project (visual/bank chain) has no registered candidate to log in as against
+ * base. Repointing auth-setup to `data-setup-base` (D-06) keeps the project
+ * graph resolving, but a follow-up plan that rewrites the opt-in/auth chain
+ * against the base dataset must establish a registered base-candidate + email
+ * contract (forceRegister) before the visual/bank opt-in runs can pass.
  */
-import { TEST_CANDIDATE_ALPHA_EMAIL } from './e2eFixtureRefs';
 
-export const TEST_CANDIDATE_EMAIL = TEST_CANDIDATE_ALPHA_EMAIL;
+/** Email for the primary registered test candidate (Test Candidate Alpha). */
+export const TEST_CANDIDATE_EMAIL = 'mock.candidate.2@openvaa.org';
+
+/** tests/-only password constant used by forceRegister + UI login flows. */
 export const TEST_CANDIDATE_PASSWORD = 'Password1!';
