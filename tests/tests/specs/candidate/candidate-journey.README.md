@@ -1,6 +1,6 @@
-# Candidate mega-journey — Phase 89 Plan 03
+# Candidate journey — Phase 89 Plan 03
 
-> The candidate-app mirror of `voter-mega-journey.spec.ts`. Walks the
+> The candidate-app mirror of `voter-journey.spec.ts`. Walks the
 > complete candidate flow per TEST-INVENTORY-REFACTOR-4.md:101-257 in a
 > single long serial test composed of 22 named `test.step` segments.
 
@@ -15,9 +15,9 @@ playwright project entries. Plan 89-LAST will retire the legacy specs
 once their coverage is fully absorbed here.
 
 This is the parallel-landing pattern established by Phase 88 Plan 04
-(voter-mega-journey shipped sibling-to-legacy-specs) and continued
+(voter-journey shipped sibling-to-legacy-specs) and continued
 through Plan 89-02 (candidate fixture library shipped sibling-to-legacy
-PageObject classes). See `tests/tests/fixtures/candidate/candidate-mega.ts`
+PageObject classes). See `tests/tests/fixtures/candidate/candidate-journey.ts`
 file-level docstring for the fixture-side parallel-landing contract.
 
 ## Authoritative design source
@@ -27,7 +27,7 @@ lines 101-257.
 
 ## Structure
 
-- ONE `test.describe('candidate mega-journey', ...)` block configured
+- ONE `test.describe('candidate journey', ...)` block configured
   `mode: 'serial'`.
 - ONE long `test('full candidate journey end-to-end', ...)` body.
 - 22 named `test.step('<NN. title>', ...)` segments mirroring TIR4:101-257.
@@ -35,7 +35,7 @@ lines 101-257.
   starts every run UNAUTHENTICATED (R13 binding +
   `candidate-registration.spec.ts:22` precedent).
 - Fixture imports come from
-  `tests/tests/fixtures/candidate/candidate-mega.ts` (the Plan 89-02
+  `tests/tests/fixtures/candidate/candidate-journey.ts` (the Plan 89-02
   composition root).
 
 ## 22-step outline
@@ -73,25 +73,25 @@ Per TIR4:8-12 + Phase 88 Plan 04 SCOPE acceptance #6:
 - 0 `try/catch` wrapping `expect(...)`.
 - 0 `.catch(() => null)` on assertion-bearing locator interactions.
 
-All assertions are strict — discrepancies between the seeded baseV1 data
+All assertions are strict — discrepancies between the seeded base data
 and the rendered UI surface as hard test failures.
 
 ## Unregistered candidate data dependencies
 
 The spec walks the registration flow for the
-`test-ca-aa-unregistered` candidate row added to baseV1 in Plan 89-01:
+`test-ca-aa-unregistered` candidate row added to base in Plan 89-01:
 
 - **External ID:** `test-ca-aa-unregistered`
 - **Email:** `unregistered-aa@test.openvaa.local` (per Wave 0 R8 verdict
   the candidates table has no email column, so the email string lives in
-  `tests/tests/utils/candidateMegaConstants.ts` and is supplied to
+  `tests/tests/utils/candidateJourneyConstants.ts` and is supplied to
   `sendEmail({ email })` at the call site).
 - **Constituency:** `test-co-reg-n` (Region North in EL-Reg).
 - **Organization:** `test-or-aa`.
 - **No `terms_of_use_accepted`** — forces the ToU acceptance step
   post-registration.
 - **No `answersByExternalId`** — fresh candidate with zero answers; the
-  mega-journey is the only way to land any answers for this row.
+  journey is the only way to land any answers for this row.
 - **Paired nomination:** `test-nom-reg-n-ca-aa-unregistered` with
   `election_symbol: '999'` (sentinel for the unregistered candidate).
 
@@ -122,23 +122,23 @@ is being tested.
 
 ## Playwright project chain
 
-Runs under the `data-setup-candidate-mega → candidate-mega-journey →
-data-teardown-candidate-mega` triple appended to
+Runs under the `data-setup-candidate-journey → candidate-journey →
+data-teardown-candidate-journey` triple appended to
 `tests/playwright.config.ts`:
 
 ```text
-voter-mega-journey
-  → data-setup-candidate-mega
-    → candidate-mega-journey
-  ↦ data-teardown-candidate-mega  (via teardown: key)
+voter-journey
+  → data-setup-candidate-journey
+    → candidate-journey
+  ↦ data-teardown-candidate-journey  (via teardown: key)
 ```
 
-Sequenced AFTER `voter-mega-journey` via
-`dependencies: ['voter-mega-journey']` per R3 binding — both chains share
+Sequenced AFTER `voter-journey` via
+`dependencies: ['voter-journey']` per R3 binding — both chains share
 the `'test-'` external_id prefix; running them in parallel would race on
 `runTeardown('test-', ...)`.
 
-The `candidate-mega-journey` spec project sets
+The `candidate-journey` spec project sets
 `use: { storageState: { cookies: [], origins: [] } }` to start
 UNAUTHENTICATED — required for the registration-via-email flow (per R13
 + `candidate-registration.spec.ts:22` precedent).
@@ -147,8 +147,8 @@ UNAUTHENTICATED — required for the registration-via-email flow (per R13
 
 ```bash
 # Cold-start full chain:
-yarn db:reset && cd tests && npx playwright test --project=candidate-mega-journey --reporter=list
+yarn db:reset && cd tests && npx playwright test --project=candidate-journey --reporter=list
 
 # Iterating mid-development (skip the db reset between runs):
-cd tests && npx playwright test --project=candidate-mega-journey --reporter=list
+cd tests && npx playwright test --project=candidate-journey --reporter=list
 ```

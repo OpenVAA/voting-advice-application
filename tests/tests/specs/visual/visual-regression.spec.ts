@@ -14,11 +14,11 @@
  *
  * Phase 91 Plan 04 (D-91-RS-01 + D-91-RS-03):
  * - Voter-results desktop + mobile use
- *   tests/tests/fixtures/voter-mega.fixture.ts `voterMegaTest.answeredVoterPage`
- *   (baseV1 dataset; multi-election + multi-constituency walk).
+ *   tests/tests/fixtures/voter/voter-journey.fixture.ts `voterJourneyTest.answeredVoterPage`
+ *   (base dataset; multi-election + multi-constituency walk).
  * - Candidate-preview desktop + mobile MIGRATED from raw STORAGE_STATE +
  *   page.goto to the `candidatePreviewPage` function-fixture from
- *   tests/tests/fixtures/candidate/candidate-mega.ts (Phase 89 Plan 02
+ *   tests/tests/fixtures/candidate/candidate-journey.ts (Phase 89 Plan 02
  *   composition root).
  * - PNG baselines NOT regenerated in this commit — CI follow-up via
  *   --update-snapshots per D-91-RS-01 (developer machines vary in font

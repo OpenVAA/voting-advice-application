@@ -18,8 +18,8 @@
  *   4. Update the expect() thresholds below
  *
  * Phase 91 Plan 04 (D-91-RS-02): uses
- *   tests/tests/fixtures/voter-mega.fixture.ts `voterMegaTest.answeredVoterPage`
- * (baseV1 dataset). Budgets UNCHANGED (8s DCL, 15s loadComplete) — no
+ *   tests/tests/fixtures/voter/voter-journey.fixture.ts `voterJourneyTest.answeredVoterPage`
+ * (base dataset). Budgets UNCHANGED (8s DCL, 15s loadComplete) — no
  * threshold tightening per D-91-RS-02; perf is a regression gate, not an
  * absolute target.
  *

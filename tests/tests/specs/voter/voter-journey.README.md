@@ -1,18 +1,18 @@
-# Voter mega-journey — absorbed-tests migration map
+# Voter journey — absorbed-tests migration map
 
 > Phase 88 Plan 01 Task 7. Developer-facing cross-reference between the new
-> `voter-mega-journey.spec.ts` and the existing pre-Phase-88 voter test
+> `voter-journey.spec.ts` and the existing pre-Phase-88 voter test
 > inventory.
 
 ## Context
 
-The voter mega-journey absorbs ~15 existing voter-app spec entries plus
+The voter journey absorbs ~15 existing voter-app spec entries plus
 introduces ~25 NEW/MOVE steps from `TEST-INVENTORY-REFACTOR-1.md:204-378`.
 This README maps every absorbed test in `TEST-INVENTORY.md` sections 9.1,
 9.4, 9.5, 9.6, 9.9 against its position in the new spec, so 88-02+
 migration plans can pick up the migration cleanly.
 
-- Mega-journey spec: `tests/tests/specs/voter/voter-mega-journey.spec.ts`
+- Journey spec: `tests/tests/specs/voter/voter-journey.spec.ts`
 - Authoritative design source:
   [`TEST-INVENTORY-REFACTOR-1.md`](../../../../TEST-INVENTORY-REFACTOR-1.md)
   lines 1-378 (lines 379+ deferred to 88-NN).
@@ -23,11 +23,11 @@ Step status legend:
 - **executes**: spec runs real assertions against the live frontend.
 - **deferred-88-nn**: spec step exists as a placeholder with a
   `console.log` note; assertions land in 88-02+ once empirically
-  validated against baseV1. Driven by Plan 88-01 Risk #2 + #7.
+  validated against base. Driven by Plan 88-01 Risk #2 + #7.
 
 ## Migration table
 
-| Refactor-doc step                                                                                          | Source (TEST-INVENTORY.md)         | Marker      | Mega-journey location                                            | Status         |
+| Refactor-doc step                                                                                          | Source (TEST-INVENTORY.md)         | Marker      | Journey location                                            | Status         |
 | ---------------------------------------------------------------------------------------------------------- | ---------------------------------- | ----------- | ---------------------------------------------------------------- | -------------- |
 | 9.1.1 should load home page and display start button (refactor-doc:208)                                    | voter-journey.spec.ts:110          | MOVED       | `static: home page renders + start button`                       | executes       |
 | 9.9.1 about page renders correctly (refactor-doc:210)                                                      | voter-static-pages.spec.ts:32      | MOVED       | `static: about page renders correctly`                           | executes       |
@@ -126,13 +126,13 @@ project entries.
 2. **Locate the source test** in the existing inventory column to copy
    the assertion shape.
 3. **Replace** the relevant `[deferred-88-nn]` test.step body in
-   `voter-mega-journey.spec.ts` with real assertions against the baseV1
+   `voter-journey.spec.ts` with real assertions against the base
    dataset.
 4. **Confirm** the source test can be removed from its existing project
    (or marked `test.skip` if it's worth keeping under the e2e dataset
    as a regression fallback). Document the removal in the 88-NN plan's
    "Files retired" section.
-5. **Verify** the mega-journey + the remaining suite stays green per
+5. **Verify** the journey + the remaining suite stays green per
    the standard 3-cold-start gating constraint.
 
 ## Constituency-selection landmine (cross-ref)
@@ -142,8 +142,8 @@ cluster. During Plan 88-01 Task 5 verification, the naive
 "select first option per combobox" approach triggered the
 `voter-missing-nominations-modal` because one of the selected
 constituencies had no nominations for one of the selected elections.
-The baseV1 template DOES declare nominations across all 6 constituencies
+The base template DOES declare nominations across all 6 constituencies
 for both elections — but the UI's hierarchical CG resolution + combobox
 ordering doesn't trivially match the dataset. This needs empirical
-inspection of the live frontend's constituency-selector under baseV1
+inspection of the live frontend's constituency-selector under base
 before any downstream answer-loop step can run.

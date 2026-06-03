@@ -1,5 +1,5 @@
 /**
- * Candidate mega-journey end-to-end spec — Phase 89 Plan 03.
+ * Candidate journey end-to-end spec — Phase 89 Plan 03.
  *
  * Authoritative design source: TEST-INVENTORY-REFACTOR-4.md lines 101-257.
  *
@@ -55,11 +55,11 @@
  * UNAUTHENTICATED start per R13 (test.use storageState empty-cookies).
  *
  * Running:
- *   yarn test:e2e --project=candidate-mega-journey --reporter=list
+ *   yarn test:e2e --project=candidate-journey --reporter=list
  *
- * Runs under the `data-setup-candidate-mega → candidate-mega-journey →
- * data-teardown-candidate-mega` chain (appended to tests/playwright.config.ts;
- * sequenced AFTER voter-mega-journey via dependencies: ['voter-mega-journey']
+ * Runs under the `data-setup-candidate-journey → candidate-journey →
+ * data-teardown-candidate-journey` chain (appended to tests/playwright.config.ts;
+ * sequenced AFTER voter-journey via dependencies: ['voter-journey']
  * per R3 shared 'test-' prefix race).
  */
 
@@ -118,7 +118,7 @@ const INVALID_PORTRAIT_PATH = path.resolve(
  * Tmp-dir path for the runtime-generated oversized PNG. Built once per
  * file in `test.beforeAll` to avoid committing a 21MB binary.
  */
-const OVERSIZED_PNG_PATH = path.join(os.tmpdir(), 'candidate-mega-oversized.png');
+const OVERSIZED_PNG_PATH = path.join(os.tmpdir(), 'candidate-journey-oversized.png');
 
 /**
  * Subset of INFO_QUESTION_ANSWERS to fill in step 13 — excludes
@@ -138,11 +138,11 @@ const STEP_13_INFO_FILL_ENTRIES: ReadonlyArray<readonly [string, string]> = Obje
  * the last applicable question is answered).
  *
  * The loop ceiling (`MAX_STEPS`) is a defensive guard against an infinite
- * walk if the dispatch logic regresses; baseV1 currently exposes ~8
+ * walk if the dispatch logic regresses; base currently exposes ~8
  * applicable opinion questions to the unregistered candidate (Base ×5 +
  * Opt-A ×1 + Opt-B ×1 + EL-Reg ×1), so 20 is a loose ceiling.
  *
- * Hoisted to module scope (mirrors voter-mega-journey precedent) to
+ * Hoisted to module scope (mirrors voter-journey precedent) to
  * satisfy `playwright/no-conditional-in-test` — the `if` inside is the
  * walk's loop-exit condition, not a race mask.
  */
@@ -233,7 +233,7 @@ async function loginIfRedirectedToLoginPage(
 // Start every test in this file UNAUTHENTICATED per R13.
 test.use({ storageState: { cookies: [], origins: [] } });
 
-test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
+test.describe('candidate journey', { tag: ['@candidate'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
   // Build the oversized PNG once per file (used by step 13's portrait
@@ -429,7 +429,7 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
       await expect(page).toHaveURL(/\/candidate\/profile/, { timeout: TIMEOUTS.slowPage });
       // Static info: candidate first name visible; nomination block carries
       // election_symbol "999" (the sentinel for the unregistered candidate
-      // per Plan 89-01 baseV1).
+      // per Plan 89-01 base).
       await candidateProfilePage.expectStaticInfo({
         name: 'Unregistered',
         nomination: { electionSymbol: '999' }
@@ -455,7 +455,7 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
       ]);
       await candidateProfilePage.expectQuestionsAbsent([/\[qu-info-filt-mun-only\]/, /\[qu-info-filt-co-reg-s\]/]);
       // Required badge on test-qu-info-text (only question with required:true
-      // in the info category per Plan 89-01 baseV1 mutation).
+      // in the info category per Plan 89-01 base mutation).
       await candidateProfilePage.expectRequiredBadge(/\[qu-info-text\]/);
     });
 
@@ -480,7 +480,7 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
       // can't fill them). Pre-filtered subset at module scope per
       // playwright/no-conditional-in-test.
       for (const [externalId, value] of STEP_13_INFO_FILL_ENTRIES) {
-        // The rendered question label is the baseV1 `name` (`[qu-info-…]`),
+        // The rendered question label is the base `name` (`[qu-info-…]`),
         // which drops the `test-` prefix carried by the externalId. Strip it
         // and wrap in the full bracketed `[id]` token so the label regex
         // resolves to exactly one question (mirrors steps 12 + 13.5 + 14).
@@ -504,9 +504,9 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
     await test.step('13.5. profile: invalid URL into Link-type question surfaces invalidUrl error (TIR6:16-22)', async () => {
       // Step 13 submitted from profile → landed on home. Re-enter profile
       // to exercise the Link-type URL validation on test-qu-info-text-link.
-      // baseV1 already seeds this URL-type info question (subtype='link',
-      // settings.type='link') per packages/dev-seed/src/templates/baseV1.ts:662-672
-      // — no baseV1 extension needed.
+      // base already seeds this URL-type info question (subtype='link',
+      // settings.type='link') per packages/dev-seed/src/templates/e2e/base.ts:662-672
+      // — no base extension needed.
       await candidateHomePage.clickTask('profile');
       await expect(page).toHaveURL(/\/candidate\/profile/, { timeout: TIMEOUTS.slowPage });
       // Fill the link question with a clearly invalid URL.
@@ -560,7 +560,7 @@ test.describe('candidate mega-journey', { tag: ['@candidate'] }, () => {
 
     await test.step('16. first opinion question: hero emoji + continue gate + select + info + continue', async () => {
       // Q1 (test-qu-opin-base-1-likert5) carries custom_data.hero =
-      // { emoji: '🗳️' } per Plan 89-01 baseV1 mutation.
+      // { emoji: '🗳️' } per Plan 89-01 base mutation.
       await candidateQuestionPage.expectHeroVisible('emoji');
       // No choice selected yet → continue disabled.
       await candidateQuestionPage.expectContinueDisabled();
