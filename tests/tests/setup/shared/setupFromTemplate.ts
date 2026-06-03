@@ -157,11 +157,13 @@ export async function setupFromTemplate(
   // no-op. Generated rows (Phase 56 generators) prepend the prefix.
   const prefix = template!.externalIdPrefix ?? '';
   // Teardown prefix — runTeardown enforces a 2-char minimum to prevent
-  // mass-delete. Templates whose externalIdPrefix is empty pre-write
-  // literal `test-` external_ids; fall back to 'test-' for teardown in
-  // that case. data.setup.ts does this via a hard-coded `PREFIX = 'test-'`;
-  // the helper derives the same fallback here.
-  const teardownPrefix = prefix.length >= 2 ? prefix : 'test-';
+  // mass-delete. Templates whose externalIdPrefix is empty (the base
+  // dataset, e2e/base) pre-write literal `test-e2e-base-` external_ids
+  // (Phase 93 D-05 canonical prefix); fall back to 'test-e2e-base-' for
+  // teardown + freshness-probe allowlist in that case. The fallback only
+  // fires for empty-prefix templates — perm-* templates carry their own
+  // `e2e-perm-*` prefix (>=2 chars) and never hit it.
+  const teardownPrefix = prefix.length >= 2 ? prefix : 'test-e2e-base-';
 
   const client = new SupabaseAdminClient();
 
@@ -186,7 +188,8 @@ export async function setupFromTemplate(
   }
 
   // 1b. Pre-clear any stale state from a prior run. runTeardown's 2-char
-  //     guard requires prefix.length >= 2; base / e2e both use 'test-'.
+  //     guard requires prefix.length >= 2; the base dataset uses
+  //     'test-e2e-base-' (empty-prefix fallback above).
   await runTeardown(teardownPrefix, client);
 
   // 2. Pipeline + writer. Writer Pass-5 applies app_settings.fixed[] via
