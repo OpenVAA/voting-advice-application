@@ -44,7 +44,7 @@
 import { expect } from '@playwright/test';
 import path from 'path';
 import { createCandidateQuestionsOverviewPage } from '../../fixtures/candidate/candidateQuestionsOverviewPage.fixture';
-import { voterJourneyTest as test } from '../../fixtures/voter/voter-journey.fixture';
+import { minimalVoterResultsTest as test } from '../../fixtures/voter/minimalVoterResultsPage.fixture';
 import { testIds } from '../../utils/testIds';
 import { TESTS_DIR } from '../../utils/testsDir';
 

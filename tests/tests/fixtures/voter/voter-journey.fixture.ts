@@ -56,7 +56,6 @@ import { test as base } from '@playwright/test';
 import { TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { testIds } from '../../utils/testIds';
-import { navigateToFirstQuestion } from '../../utils/voterNavigation';
 import type { Page } from '@playwright/test';
 
 export type AnswerMode = 'min' | 'max';
@@ -78,22 +77,6 @@ type VoterJourneyFixtures = VoterJourneyFixtureOptions & {
    * (Phase 91 Plan 04 / D-91-RS-02b).
    */
   locatedVoterPage: Page;
-  /**
-   * A page on /results with all reachable opinion questions answered per
-   * answerMode — for the MINIMAL (single-election + single-constituency)
-   * `buildMinimal` perm datasets.
-   *
-   * Unlike `answeredVoterPage` (which hard-waits for the /questions intro
-   * `voter-questions-start` button via `walkUntilQuestionsIntro`), this
-   * fixture drives the robust race-based `navigateToFirstQuestion`
-   * (`advanceVoterFlow`) traversal. With a single election + single
-   * constituency the elections/constituencies pages auto-imply and the
-   * /questions intro page is skipped — the voter lands DIRECTLY on the
-   * first question, so the intro start button never renders. The race-based
-   * passer tolerates every missing intermediate page; the hard-wait does
-   * not. Consumed by the `buildMinimal`-backed perm specs.
-   */
-  minimalVoterResultsPage: Page;
 };
 
 /**
@@ -254,18 +237,6 @@ export const voterJourneyTest = base.extend<VoterJourneyFixtures>({
 
   locatedVoterPage: async ({ page }, use) => {
     await walkUntilQuestionsIntro(page);
-    await use(page);
-  },
-
-  minimalVoterResultsPage: async ({ page, answerMode, answerCount }, use) => {
-    // Robust traversal for the minimal (1-election + 1-constituency)
-    // perm datasets: `navigateToFirstQuestion` race-walks through whatever
-    // intermediate pages render (none, when everything auto-implies) and
-    // lands on the first question. `answerAndAdvanceToResults` then answers
-    // through to /results — its leading questions-intro start click is
-    // guarded with `isVisible`, so it no-ops when the intro page was skipped.
-    await navigateToFirstQuestion(page);
-    await answerAndAdvanceToResults(page, answerMode, answerCount);
     await use(page);
   }
 });

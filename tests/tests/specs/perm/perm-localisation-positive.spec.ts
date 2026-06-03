@@ -68,7 +68,7 @@
  */
 
 import { expect, test } from '../../fixtures/candidate/perm-l10n';
-import { PASSWORD_1, REGISTRATION_EMAIL_SUBJECT_REGEX } from '../../utils/candidateMegaConstants';
+import { PASSWORD_1, REGISTRATION_EMAIL_SUBJECT_REGEX } from '../../utils/candidateJourneyConstants';
 import { toCallbackUrl } from '../../utils/emailHelper';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';

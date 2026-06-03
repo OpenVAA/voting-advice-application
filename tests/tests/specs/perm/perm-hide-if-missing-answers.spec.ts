@@ -32,7 +32,7 @@
  */
 
 import { expect } from '@playwright/test';
-import { voterJourneyTest as test } from '../../fixtures/voter/voter-journey.fixture';
+import { minimalVoterResultsTest as test } from '../../fixtures/voter/minimalVoterResultsPage.fixture';
 import { testIds } from '../../utils/testIds';
 
 test.describe('perm-hide-if-missing-answers', () => {

@@ -24,7 +24,7 @@
  */
 
 import { test as setup } from '@playwright/test';
-import { UNREGISTERED_CANDIDATE_EMAIL } from '../utils/candidateMegaConstants';
+import { UNREGISTERED_CANDIDATE_EMAIL } from '../utils/candidateJourneyConstants';
 import { SupabaseAdminClient } from '../utils/supabaseAdminClient';
 
 setup('prepare candidate-mega auth state (unregister, idempotent)', async () => {

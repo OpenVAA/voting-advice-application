@@ -79,7 +79,7 @@ import {
   RESET_EMAIL_SUBJECT_REGEX,
   UNREGISTERED_CANDIDATE_EMAIL,
   UNREGISTERED_CANDIDATE_EXTERNAL_ID
-} from '../../utils/candidateMegaConstants';
+} from '../../utils/candidateJourneyConstants';
 import { toCallbackUrl } from '../../utils/emailHelper';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';

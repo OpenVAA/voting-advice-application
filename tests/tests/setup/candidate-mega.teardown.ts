@@ -12,8 +12,8 @@
  */
 
 import { test as teardown } from '@playwright/test';
+import { UNREGISTERED_CANDIDATE_EMAIL } from '../utils/candidateJourneyConstants';
 import { SupabaseAdminClient } from '../utils/supabaseAdminClient';
-import { UNREGISTERED_CANDIDATE_EMAIL } from '../utils/candidateMegaConstants';
 
 teardown('unregister candidate-mega auth user', async () => {
   const client = new SupabaseAdminClient();

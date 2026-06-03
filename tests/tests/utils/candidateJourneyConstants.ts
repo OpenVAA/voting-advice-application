@@ -1,5 +1,5 @@
 /**
- * Test constants for the candidate mega-journey spec — Phase 89 Plan 03.
+ * Test constants for the candidate journey spec — Phase 89 Plan 03.
  *
  * Single source of truth for:
  *   - Unregistered candidate identity (email + external_id) — the
@@ -14,7 +14,7 @@
  *     with mixed-case + number + special char per the PasswordValidator
  *     component).
  *   - OPEN_ANSWER_1 — the open-answer (info) text submitted on the first
- *     opinion question in the mega-journey.
+ *     opinion question in the candidate-journey.
  *   - INFO_QUESTION_ANSWERS — externalId → value map for filling the
  *     editable info questions on the candidate profile page.
  *   - REGISTRATION_EMAIL_SUBJECT_REGEX / RESET_EMAIL_SUBJECT_REGEX —
