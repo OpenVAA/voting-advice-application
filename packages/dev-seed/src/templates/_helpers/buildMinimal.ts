@@ -161,8 +161,12 @@ function defaultAnswerForQuestion(question: Record<string, unknown>, fullExtId: 
     return { value: { en: `[${fullExtId}] desc` } };
   }
   if (type === 'singleChoiceOrdinal') {
-    // Likert5 neutral by id-convention; helper uses LIKERT_5_EN where the
-    // neutral choice is id '3'.
+    // Pick the median (middle) ordinal choice so the default lands on the
+    // neutral option regardless of the scale length; Likert-5 resolves to id '3'.
+    const choices = question.choices as Array<{ id: string }> | undefined;
+    if (Array.isArray(choices) && choices.length > 0) {
+      return { value: choices[Math.floor((choices.length - 1) / 2)].id };
+    }
     return { value: '3' };
   }
   if (type === 'boolean') {

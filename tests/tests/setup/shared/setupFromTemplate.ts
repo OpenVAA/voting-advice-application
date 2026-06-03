@@ -1,33 +1,18 @@
 /**
- * Generic template-driven setup helper — Phase 88 Plan 01 Task 2.
- *
- * Design source: TEST-INVENTORY-REFACTOR-1.md lines 4-8
- *   - teardown
- *   - seed
- *   - seed check
- *   - returns a cleanup function to be run afterAll if necessary
- *
- * Canonical-shape precedent: tests/tests/setup/data.setup.ts:76-154.
- * The body below mirrors data.setup.ts's setup() callback verbatim minus
- * the auth-wiring step (auth is the consumer's responsibility — the
- * journey is voter-only; future plans compose this helper with
- * explicit auth setup if needed).
+ * Generic template-driven setup helper: teardown, seed, post-seed check, and
+ * a returned cleanup function to run from `afterAll` if needed.
  *
  * Resolution: looks `templateName` up in `BUILT_IN_TEMPLATES`. Filesystem
- * template paths are NOT supported in Plan 88-01 (the BUILT_IN-only
- * surface is sufficient — variant migrations are deferred to 88-NN).
+ * template paths are not supported — the BUILT_IN-only surface is sufficient.
  *
- * The returned `cleanup` function re-invokes `runTeardown(prefix, client)`
- * — idempotent and safe to call from `afterAll`. The dedicated
- * `data-teardown-base` playwright project at
- * tests/tests/setup/shared/base.teardown.ts also invokes runTeardown, so
- * calling cleanup() is optional for the base-journey chain.
+ * The returned `cleanup` function re-invokes `runTeardown(prefix, client)` —
+ * idempotent and safe to call from `afterAll`. The dedicated
+ * `data-teardown-base` playwright project (base.teardown.ts) also invokes
+ * runTeardown, so calling cleanup() is optional for the base-journey chain.
  *
- * Notes on the operator USER NOTE on Task 2: `likertOnly` is NOT
- * supported. All tests must respect the question set declared by the
- * template — the new base dataset is authored to not need the
- * likert-only filter, and adding it here would block the deprecation
- * direction documented at TEST-INVENTORY-REFACTOR-1.md:3.
+ * `likertOnly` is not supported: all tests must respect the question set
+ * declared by the template; the base dataset is authored to not need the
+ * likert-only filter.
  */
 
 import {
@@ -73,8 +58,8 @@ export interface SetupFromTemplateOptions {
 // reason: dev-seed `default` template emits `seed_`-prefixed baseline rows into
 // TEST_PROJECT_ID (packages/dev-seed/src/ctx.ts:89 — `externalIdPrefix ?? 'seed_'`).
 // The freshness probe must NOT treat those auto-seeded baseline rows as
-// "non-test contamination" (Phase 92 D-15). Excluded alongside the per-template
-// teardown prefix; genuinely-contaminated (non-seed_, non-test) rows still warn.
+// "non-test contamination". Excluded alongside the per-template teardown prefix;
+// genuinely-contaminated (non-seed_, non-test) rows still warn.
 const BASELINE_SEED_PREFIX = 'seed_';
 
 export interface SetupFromTemplateResult {
@@ -154,16 +139,21 @@ export async function setupFromTemplate(
   // Writer prefix — passed to writer.write(rows, prefix). Templates that
   // emit pre-prefixed external_ids (e2e + base) declare `externalIdPrefix: ''`
   // so the writer's `${externalIdPrefix}${fx.external_id}` pass-through is a
-  // no-op. Generated rows (Phase 56 generators) prepend the prefix.
+  // no-op. Generated rows prepend the prefix.
   const prefix = template!.externalIdPrefix ?? '';
   // Teardown prefix — runTeardown enforces a 2-char minimum to prevent
-  // mass-delete. Templates whose externalIdPrefix is empty (the base
-  // dataset, e2e/base) pre-write literal `test-e2e-base-` external_ids
-  // (Phase 93 D-05 canonical prefix); fall back to 'test-e2e-base-' for
-  // teardown + freshness-probe allowlist in that case. The fallback only
-  // fires for empty-prefix templates — perm-* templates carry their own
-  // `e2e-perm-*` prefix (>=2 chars) and never hit it.
-  const teardownPrefix = prefix.length >= 2 ? prefix : 'test-e2e-base-';
+  // mass-delete. The only template with an empty externalIdPrefix is the base
+  // dataset (e2e/base), which pre-writes literal `test-e2e-base-` external_ids;
+  // map that one explicitly onto the `test-e2e-base-` teardown fallback. Any
+  // other empty-prefix template would silently reuse the base teardown prefix
+  // and wipe the base dataset, so fail loudly instead. perm-* templates carry
+  // their own `e2e-perm-*` prefix (>=2 chars) and take the first branch.
+  const teardownPrefix =
+    prefix.length >= 2 ? prefix
+    : templateName === 'e2e/base' ? 'test-e2e-base-'
+    : (() => {
+        throw new Error(`Empty externalIdPrefix for '${templateName}' has no teardown-prefix fallback`);
+      })();
 
   const client = new SupabaseAdminClient();
 
@@ -193,21 +183,20 @@ export async function setupFromTemplate(
   await runTeardown(teardownPrefix, client);
 
   // 2. Pipeline + writer. Writer Pass-5 applies app_settings.fixed[] via
-  //    merge_jsonb_column (D-11 / Phase 63 E2E-02).
+  //    merge_jsonb_column.
   const rows = runPipeline(template!, overrides);
   fanOutLocales(rows, template!, seed);
   const writer = new Writer();
   await writer.write(rows, prefix);
 
-  // 3. Post-seed app_settings subset-match. Mirrors data.setup.ts:121-135.
-  //    Phase 88 Plan 04 T3 (Option B — seed-time resolver): templates may
-  //    carry `{externalId}` shapes inside `results.cardContents.*[*].question`
-  //    that the Writer's Pass-5 resolver flattens to plain UUID strings
-  //    before persistence. The toMatchObject check below must compare
-  //    against the RESOLVED template (i.e. the post-Writer shape that the
-  //    DB sees), not the raw template — otherwise the {externalId} object
-  //    fails to match the persisted UUID string. Build the same
-  //    externalId → UUID map the Writer used and pre-flatten `expected`.
+  // 3. Post-seed app_settings subset-match. Templates may carry `{externalId}`
+  //    shapes inside `results.cardContents.*[*].question` that the Writer's
+  //    Pass-5 seed-time resolver flattens to plain UUID strings before
+  //    persistence. The toMatchObject check below must compare against the
+  //    RESOLVED template (the post-Writer shape the DB sees), not the raw
+  //    template — otherwise the {externalId} object fails to match the
+  //    persisted UUID string. Build the same externalId → UUID map the Writer
+  //    used and pre-flatten `expected`.
   {
     const rawExpected = template!.app_settings?.fixed?.[0]?.settings;
     expect(
