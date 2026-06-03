@@ -36,7 +36,7 @@
  */
 
 /**
- * Likert-5 choices for opinion questions. Mirrors baseV1 / e2e shape so
+ * Likert-5 choices for opinion questions. Mirrors the e2e/base shape so
  * Phase 57's latent-factor emitter (ordinal dispatch) treats perm-* opinion
  * questions identically.
  */
