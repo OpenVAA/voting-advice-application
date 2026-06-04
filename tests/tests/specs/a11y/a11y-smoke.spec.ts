@@ -196,10 +196,18 @@ voterJourneyTest('axe accessibility scan — voter-detail-drawer', async ({ answ
 
 /**
  * Assert the `#route-announcer` aria-live region is present, polite, and that
- * its text is route-derived: non-empty on the questions list AND different once
- * a questionId param is in the route (D-03). Lives at module scope (mirrors
- * `assertAxeGates`) so the `expect()` calls are assertion-helper bodies, not
- * inline test-block expects (playwright/no-standalone-expect).
+ * its text is the active route's already-localized page title (the value fed to
+ * the document `<title>`, minus the constant app-name/maintenance suffix),
+ * surfaced via the layout-context `routeTitle` signal that MainContent /
+ * SingleCardContent register their localized `title` into (CR-01 / NAVA11Y-01).
+ *
+ * On the question route this proves the announcer speaks the localized question
+ * heading text rather than the opaque DB `questionId` slug: the announcer text
+ * MUST NOT contain the raw slug from the URL AND MUST equal the visible question
+ * heading textContent. The label also still differs between the /questions intro
+ * and the entered question (the localized titles differ). Lives at module scope
+ * (mirrors `assertAxeGates`) so the `expect()` calls are assertion-helper bodies,
+ * not inline test-block expects (playwright/no-standalone-expect).
  */
 async function assertRouteDerivedAnnouncer(page: Page): Promise<void> {
   // reason: the announcer has no role and no testId — its stable contract IS the
@@ -209,9 +217,10 @@ async function assertRouteDerivedAnnouncer(page: Page): Promise<void> {
   const announcer = page.locator('#route-announcer');
   await announcer.waitFor({ state: 'attached', timeout: TIMEOUTS.slowPage });
 
-  // The announcer is always present + aria-live="polite" (NAVA11Y-01).
+  // The announcer is always present + aria-live="polite" + aria-atomic (NAVA11Y-01).
   await expect(announcer).toHaveAttribute('aria-live', 'polite');
-  // Route-derived label on the questions list (no questionId param yet).
+  await expect(announcer).toHaveAttribute('aria-atomic', 'true');
+  // Localized title on the questions intro (no questionId param yet).
   await expect(announcer).not.toBeEmpty();
   const introLabel = (await announcer.textContent())?.trim() ?? '';
   expect(introLabel.length).toBeGreaterThan(0);
@@ -224,11 +233,26 @@ async function assertRouteDerivedAnnouncer(page: Page): Promise<void> {
   await page.goto(withNoTransition(page.url()));
   await page.getByTestId(testIds.voter.questions.heading).waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
 
-  // The announcer text is derived from the route — it differs from the
-  // questions-list label once a questionId param is present (D-03).
+  // The announcer now carries the localized question title — it differs from the
+  // intro label once a questionId param is present (the localized titles differ).
   const questionLabel = (await announcer.textContent())?.trim() ?? '';
   expect(questionLabel.length).toBeGreaterThan(0);
   expect(questionLabel).not.toBe(introLabel);
+
+  // CR-01: the announcer must NOT leak the opaque DB questionId slug. Extract the
+  // slug from the question route URL (last path segment, query/hash stripped) and
+  // assert it is absent from the spoken label.
+  const slug = decodeURIComponent(
+    new URL(page.url()).pathname.replace(/\/+$/, '').split('/').filter(Boolean).pop() ?? ''
+  );
+  expect(slug.length).toBeGreaterThan(0);
+  expect(questionLabel).not.toContain(slug);
+
+  // CR-01: the announcer speaks the localized title — it equals the visible
+  // question heading textContent (the localized question text), not the slug.
+  const headingText = (await page.getByTestId(testIds.voter.questions.heading).textContent())?.trim() ?? '';
+  expect(headingText.length).toBeGreaterThan(0);
+  expect(questionLabel).toBe(headingText);
 }
 
 /**
@@ -247,11 +271,14 @@ async function assertFocusOnHeading(page: Page): Promise<void> {
 }
 
 /**
- * NAVA11Y-01 — the always-present `#route-announcer` aria-live region exists,
- * is `aria-live="polite"`, and carries route-derived text (D-03: a generic
- * `page.params`-derived label). The label is non-empty on the /questions intro
- * AND changes to the question-derived label after navigating into a question —
- * proving the text is route-derived, not static.
+ * NAVA11Y-01 / CR-01 — the always-present `#route-announcer` aria-live region
+ * exists, is `aria-live="polite"` + `aria-atomic="true"`, and carries the active
+ * route's already-localized page title (title-minus-constants, sourced from the
+ * layout-context `routeTitle` signal). The label is non-empty on the /questions
+ * intro AND changes after navigating into a question; on the question route it
+ * does NOT contain the opaque DB `questionId` slug and equals the visible
+ * localized question heading text — proving the announcer speaks the localized
+ * title rather than the raw slug.
  */
 voterJourneyTest('navigation-a11y — route announcer is route-derived', async ({ locatedVoterPage: page }) => {
   // locatedVoterPage parks on the /questions intro (located, not answered).
