@@ -19,6 +19,7 @@ Defines the layout of the content of the `main` element (following the possible 
 
 <script lang="ts">
   import { getComponentContext } from '$lib/contexts/component';
+  import { getLayoutContext } from '$lib/contexts/layout';
   import { concatClass } from '$lib/utils/components';
   import type { Snippet } from 'svelte';
   import type { MainContentProps } from './MainContent.type';
@@ -38,6 +39,15 @@ Defines the layout of the content of the `main` element (following the possible 
   }: SingleCardContentProps = $props();
 
   const { t } = getComponentContext();
+  // `setRouteTitle` is a stable function reference — safe to destructure per the CLAUDE.md
+  // Context Destructuring Rule.
+  const { setRouteTitle } = getLayoutContext();
+
+  // Surface this route's already-localized `title` to the root #route-announcer (NAVA11Y-01 /
+  // CR-01); the registrar's $effect cleanup resets the announcer on unmount.
+  $effect(() => {
+    setRouteTitle(title);
+  });
 </script>
 
 <svelte:head>

@@ -49,7 +49,16 @@ The layout varies slightly based on the presence of a video player.
   }: MainContentProps = $props();
 
   const { t } = getComponentContext();
-  const { video } = getLayoutContext();
+  // `video` is a stable controller reference; `setRouteTitle` is a stable function reference —
+  // both safe to destructure per the CLAUDE.md Context Destructuring Rule.
+  const { video, setRouteTitle } = getLayoutContext();
+
+  // Surface this route's already-localized `title` to the root #route-announcer (NAVA11Y-01 /
+  // CR-01). Reading the reactive `title` prop inside this $effect re-runs the registrar when the
+  // title changes; the registrar's own $effect cleanup resets the announcer on unmount.
+  $effect(() => {
+    setRouteTitle(title);
+  });
 </script>
 
 <svelte:head>

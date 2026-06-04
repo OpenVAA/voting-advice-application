@@ -19,7 +19,7 @@
   import { onDestroy, untrack } from 'svelte';
   import { fromStore, get } from 'svelte/store';
   import { afterNavigate, beforeNavigate, onNavigate } from '$app/navigation';
-  import { page, updated } from '$app/state';
+  import { updated } from '$app/state';
   import { isValidResult } from '$lib/api/utils/isValidResult';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Loading } from '$lib/components/loading';
@@ -56,9 +56,14 @@
     submitAllEvents,
     t
   } = initAppContext();
-  initLayoutContext();
+  const layoutCtx = initLayoutContext();
   // TODO: Consider moving the candidate and admin apps to a (auth) folder with the AuthContext initialized there
   initAuthContext();
+
+  // Localized route-announcer title (NAVA11Y-01 / CR-01). Read via property access on the context
+  // object (NOT destructured) per the CLAUDE.md Context Destructuring Rule — `routeTitle.current`
+  // is a reactive accessor backed by $state, registered by MainContent / SingleCardContent.
+  const routeTitle = $derived(layoutCtx.routeTitle.current);
 
   // Bridge stores to runes reactivity
   const appSettings = fromStore(appSettingsStore);
@@ -226,11 +231,14 @@
   <link href={fontUrl} rel="stylesheet" />
 </svelte:head>
 
-<!-- Route announcer (NAVA11Y-01): always-present aria-live region, placed OUTSIDE the
+<!-- Route announcer (NAVA11Y-01 / CR-01): always-present aria-live region, placed OUTSIDE the
      error/loading/maintenance branches so screen readers reliably announce route changes.
-     Text derives a generic param-based label from `page.params` (D-03 — no new i18n strings). -->
+     Text is the active route's already-localized page title (the value fed to the document
+     `<title>`, minus the constant app-name/maintenance suffix), surfaced via the layout-context
+     `routeTitle` signal that MainContent / SingleCardContent register their localized `title` into
+     (D-03 honored — no new i18n strings; the existing localized title is reused on ALL routes). -->
 <div aria-live="polite" aria-atomic="true" class="sr-only" id="route-announcer">
-  {page.params.questionId ? `Question ${page.params.questionId}` : 'Questions list'}
+  {routeTitle}
 </div>
 
 {#if error}
