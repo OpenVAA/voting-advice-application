@@ -79,7 +79,10 @@ The layout varies slightly based on the presence of a video player.
       {#if heading}
         {@render heading()}
       {:else}
-        <h1>{title}</h1>
+        <!-- tabindex="-1" makes this default heading the programmatic focus target for the
+             root afterNavigate focus-reset fallback (document.querySelector('h1')) on routes
+             that do not supply a custom [data-focus-on-nav] heading — NAVA11Y-02 app-wide. -->
+        <h1 tabindex="-1">{title}</h1>
       {/if}
     </div>
 
