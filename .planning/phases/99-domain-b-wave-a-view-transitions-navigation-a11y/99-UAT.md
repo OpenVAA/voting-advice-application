@@ -32,8 +32,8 @@ expected: |
   visible heading), and the focus-on-heading block. The blocker is environmental and
   pre-existing — NOT caused by Phase 99 code.
 result: issue
-reported: "Auto-run 2026-06-04: PLAYWRIGHT_A11Y=1 a11y-smoke = 5 passed / 5 FAILED. The 3 pre-location axe routes (home/elections/constituencies) PASS. All 5 located tests (axe questions/results/voter-detail-drawer + route-announcer + focus-on-heading) FAIL at the shared fixture walkUntilQuestionsIntro (voter-journey.fixture.ts:130) — getByTestId('voter-questions-start') never visible; the walk stalls on the 'Select an election' page (both elections checked, Continue present). NOT phase-99 code: the announcer/focus assertions are never reached. Distinct from the voter-journey spec timing bug fixed in 302fcb19a — that spec walks elections with its own helpers and passes. Per operator: data seeding and component prop handling did NOT change this milestone, so the testid-forwarding theory is rejected (concatClass forwards data-testid); culprit is likely Phase 95 context reactivity (e.g. selectedElections destructure-trap / rune-state timing) or Phase 99 VT + navigation — under investigation."
-severity: major
+reported: "Auto-run 2026-06-04 (after fix b801cfa6e): PLAYWRIGHT_A11Y=1 a11y-smoke = 7/8 spec tests GREEN. The located-fixture stall is RESOLVED — root cause was a test artifact (Playwright locator.isVisible({timeout}) is a non-waiting one-shot, exposed by Phase 95's post-hydration $dataRoot $effect populating the list a beat after navigation), NOT an app bug; elections page navigates correctly for real users (operator steer confirmed — seeding/props were not the culprit). Fix: polling waits in voter-journey.fixture.ts + a11y-smoke.spec.ts, plus a bonus app-side WCAG fix (AccordionSelect role=listbox + localized aria-label so option children satisfy axe aria-required-parent). The route-announcer (NAVA11Y-01) and focus-on-heading (NAVA11Y-02) blocks now PASS green. voter-journey re-run GREEN (no regression). REMAINING: the 8th test (voter-detail-drawer axe scan) fails on a SEPARATE, pre-existing color-contrast WCAG 2.1 AA violation in the entity-details drawer (#b1b1b1/#c5c5c5 muted-gray on white: candidate <h3> title, alliance/faction tag spans, match label, small-info/small-label) — this route was never axe-scanned before because the elections stall always blocked it. Distinct design/theme debt, NOT the elections-stall regression and NOT phase-99 code; needs theme remediation + visual-regression sign-off."
+severity: minor
 
 ### 2. Visual VT cross-fades + reduced-motion (SC-1 / SC-2 / VT-03)
 expected: |
@@ -56,11 +56,19 @@ blocked: 0
 
 ## Gaps
 
-- truth: "The live a11y-smoke gate runs green (located + unlocated axe routes + route-announcer + focus-on-heading blocks all pass under PLAYWRIGHT_A11Y=1)"
-  status: failed
-  reason: "5 located a11y-smoke tests fail at the shared fixture walkUntilQuestionsIntro (voter-journey.fixture.ts:130) — the walk stalls on the 'Select an election' page; voter-questions-start never becomes visible. Unlocated axe routes (home/elections/constituencies) pass. Phase-99 announcer/focus code is correct (4/4 verified) but the gate cannot run because the located fixture cannot reach /questions."
-  severity: major
+- truth: "The located a11y-smoke walk reaches /questions so the route-announcer (NAVA11Y-01) + focus-on-heading (NAVA11Y-02) blocks run green"
+  status: resolved
+  reason: "RESOLVED in b801cfa6e. Root cause: test artifact — Playwright locator.isVisible({timeout}) is a non-waiting one-shot, and Phase 95's post-hydration $dataRoot $effect mounts the elections list a beat after navigation, so the probe skipped the Continue click. Fixed with polling waits (voter-journey.fixture.ts + a11y-smoke.spec.ts) + a bonus app-side AccordionSelect role=listbox/aria-label WCAG fix. a11y-smoke now 7/8 green; the announcer + focus blocks pass; voter-journey green (no regression). NOT an app bug — elections navigates correctly for real users."
+  severity: resolved
   test: 1
-  artifacts: ["tests/tests/fixtures/voter/voter-journey.fixture.ts"]
+  artifacts: ["tests/tests/fixtures/voter/voter-journey.fixture.ts", "tests/tests/specs/a11y/a11y-smoke.spec.ts", "apps/frontend/src/lib/components/accordionSelect/AccordionSelect.svelte"]
   missing: []
-  scope_note: "Distinct from the voter-journey spec bug fixed in 302fcb19a. Per operator: seeding + prop handling unchanged this milestone → rule out testid-forwarding/seed; focus on Phase 95 context reactivity (selectedElections destructure-trap / rune timing) or Phase 99 VT+navigation."
+
+- truth: "The entity-details (voter-detail-drawer) route passes the axe color-contrast WCAG 2.1 AA gate"
+  status: failed
+  reason: "NEWLY SURFACED (b801cfa6e unblocked this route — it was never axe-scanned before because the elections stall always blocked it). The entity-details drawer has a pre-existing color-contrast violation: #b1b1b1/#c5c5c5 muted-gray on white across the candidate <h3> title, alliance/faction tag spans, the match label, and small-info/small-label labels. Distinct design/theme debt, NOT the elections-stall regression and NOT phase-99 code."
+  severity: minor
+  test: 1
+  artifacts: ["apps/frontend (theme muted-gray tokens + entityDetails components)"]
+  missing: []
+  scope_note: "Needs theme/token remediation to meet 4.5:1 + visual-regression sign-off. Candidate for a dedicated debug/plan session or Phase 101 (Suite Re-enable + Milestone-Close Green Gate). Operator decision required — broad visual impact."
