@@ -1,6 +1,6 @@
 import { mergeSettings } from '@openvaa/app-shared';
 import { error } from '@sveltejs/kit';
-import { getContext, hasContext, setContext } from 'svelte';
+import { getContext, hasContext, setContext, untrack } from 'svelte';
 import { cubicOut } from 'svelte/easing';
 import { Tween } from 'svelte/motion';
 import { afterNavigate, beforeNavigate } from '$app/navigation';
@@ -14,6 +14,7 @@ import type {
   NavigationSettings,
   PageStyles,
   Progress,
+  RouteTitle,
   TopBarSettings,
   VideoController
 } from './layoutContext.type';
@@ -78,6 +79,16 @@ export function initLayoutContext(): LayoutContext {
       progressMax = v;
     },
     current: progressTween
+  };
+
+  // Route-announcer title signal (NAVA11Y-01 / CR-01): carries the active route's already-localized
+  // page title (the value fed to the document `<title>`, minus the constant app-name suffix) up to
+  // the root `#route-announcer`. Empty string when no title-bearing layout component is mounted.
+  let routeTitleValue = $state('');
+  const routeTitle: RouteTitle = {
+    get current() {
+      return routeTitleValue;
+    }
   };
 
   const navigation: Navigation = {};
@@ -156,6 +167,25 @@ export function initLayoutContext(): LayoutContext {
     navigation,
     navigationSettings,
     video,
+    routeTitle,
+    setRouteTitle(title) {
+      // Declarative, $effect-scoped registrar: the mounted title component calls this with its
+      // already-localized `title`. We assign the signal on mount/update of the calling component
+      // and reset it to '' on teardown via the $effect cleanup (last-writer-wins; only one
+      // title-bearing layout component is mounted per page). The writes are wrapped in `untrack`
+      // to avoid the write-after-read hazard SettingsOverlay documents (a write inside an $effect
+      // that the effect also reads would otherwise loop / disable the scheduler).
+      $effect(() => {
+        untrack(() => {
+          routeTitleValue = title;
+        });
+        return () => {
+          untrack(() => {
+            routeTitleValue = '';
+          });
+        };
+      });
+    },
     useTopBar(overlay) {
       topBarSettings.use(overlay);
     },

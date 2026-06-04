@@ -30,6 +30,14 @@ export type LayoutContext = {
    */
   video: VideoController;
   /**
+   * The active route's already-localized page title (the value the route feeds to its document `<title>`, MINUS the constant app-name/maintenance suffix), surfaced for the root `#route-announcer`. Read the current value via `.current`; it is empty when no title-bearing layout component is mounted. Register a route's title declaratively via `setRouteTitle(...)`.
+   */
+  routeTitle: RouteTitle;
+  /**
+   * Declarative, `$effect`-scoped registrar for the route announcer's title — see `useTopBar`. The mounted title component (e.g. `MainContent` / `SingleCardContent`) calls it with its already-localized `title` prop; it writes the `routeTitle` signal and, on component teardown via `$effect` cleanup, resets the signal to the empty string so a route without a title-bearing component does not announce a stale title. No new i18n string is authored — the value carried is the one passed in.
+   */
+  setRouteTitle: (title: string) => void;
+  /**
    * Declarative scoped overlay for the top bar — pushes the overlay and auto-reverts via `$effect` cleanup when the calling component is destroyed. Replaces the old imperative `topBarSettings.push(...)` + `onDestroy` index-revert.
    */
   useTopBar: (overlay: DeepPartial<TopBarSettings>) => void;
@@ -69,6 +77,18 @@ export interface TopBarSettings {
 export interface Progress {
   current: Tween<number>;
   max: number;
+}
+
+/**
+ * A reactive signal carrying the active route's already-localized page title for the root
+ * `#route-announcer`. Empty string when no title-bearing layout component is mounted.
+ */
+export interface RouteTitle {
+  /**
+   * The active route's localized title (minus the constant app-name/maintenance suffix), or the
+   * empty string when no title-bearing layout component is currently mounted.
+   */
+  readonly current: string;
 }
 
 export interface Navigation {
