@@ -1,22 +1,14 @@
 ---
-status: testing
+status: partial
 phase: 99-domain-b-wave-a-view-transitions-navigation-a11y
 source: [99-VERIFICATION.md]
 started: 2026-06-04T15:35:00Z
-updated: 2026-06-04T15:35:00Z
+updated: 2026-06-04T18:45:00Z
 ---
 
 ## Current Test
 
-number: 1
-name: Live a11y-smoke gate (NAVA11Y-01/02/03) runs green
-expected: |
-  After resolving the pre-existing located-voter-journey fixture/seed blocker,
-  `PLAYWRIGHT_A11Y=1 yarn test:e2e --project=a11y-smoke` exits 0 — all tests pass
-  (6 original axe routes + the NAVA11Y-01 route-announcer block + the NAVA11Y-02
-  focus-on-heading block). The announcer assertion now uses containment
-  (`headingText.toContain(questionLabel)`), which holds under the `e2e/base` seed.
-awaiting: user response
+[testing complete — a11y gate 7/8 green; color-contrast tracked to Phase 101; visual VT deferred to operator]
 
 ## Tests
 
@@ -43,16 +35,18 @@ expected: |
   on — and equivalently with `?notr=1` appended — no view-transition animation runs
   (the `shouldAnimate` short-circuit), while navigation, focus reset, and route
   announcement still work.
-result: [pending]
+result: skipped
+reason: Deferred per operator (2026-06-04) — VT cross-fade quality + reduced-motion are perceptual checks requiring a browser; not auto-verifiable. The shouldAnimate reduced-motion/notr short-circuit is verified in code (viewTransition.ts:40) and reduced-motion was exercised during the elections-stall debug. Non-blocking; operator to eyeball later. Does not gate Phase 100.
 
 ## Summary
 
 total: 2
 passed: 0
 issues: 1
-pending: 1
-skipped: 0
+pending: 0
+skipped: 1
 blocked: 0
+note: Item 1 (a11y-smoke gate) is now 7/8 green; its sole remaining red is the entity-details color-contrast, deferred to Phase 101 (tracked in ROADMAP + Gaps). Item 2 (visual VT) deferred to operator. No pending items remain; phase 99 carries one tracked gap (color-contrast → 101).
 
 ## Gaps
 
