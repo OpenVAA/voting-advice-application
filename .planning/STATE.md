@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v2.11
 milestone_name: Svelte 5 Runes Migration + View Transitions
 status: planning
-last_updated: "2026-06-04T08:41:05.950Z"
+last_updated: "2026-06-04T12:30:00.000Z"
 last_activity: 2026-06-04
 progress:
   total_phases: 7
   completed_phases: 0
-  total_plans: 0
+  total_plans: 8
   completed_plans: 0
   percent: 0
 ---
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** v2.11 Svelte 5 Runes Migration + View Transitions — roadmap created (7 phases, 95-101); ready to plan Phase 95 (backed by the `spike-findings-voting-advice-application-gsd` skill; Domain A rune migration + Domain B navigation/transitions/a11y)
+**Current focus:** v2.11 Svelte 5 Runes Migration + View Transitions — roadmap created (7 phases, 95-101) AND **batch discussion complete**: all 7 phases now have `CONTEXT.md`. Ready to plan (Domain A + Domain B as parallel workstreams per decision DX-1). Backed by the `spike-findings-voting-advice-application-gsd` skill.
 
 ## Current Position
 
-Phase: 95 — Domain A Wave 1 (Tier-1 Leaf Contexts) — not started
-Plan: —
-Status: Roadmap created (7 phases, 22 requirements mapped 1:1) — ready to plan Phase 95
-Last activity: 2026-06-04 — v2.11 roadmap created (Phases 95-101)
+Phase: 95 — Domain A Wave 1 (Tier-1 Leaf Contexts) — **PLANNED** (5 plans, 2 waves; verification PASSED). 99 — Domain B Wave A — **PLANNED** (3 plans, 3 waves; verification PASSED).
+Plan: 95 → 95-01..05 · 99 → 99-01..03 (research + pattern-map + plan + plan-check all complete for both)
+Status: **Phases 95 + 99 fully planned in parallel** (DX-1 parallel workstreams). Both passed gsd-plan-checker (0 blockers / 0 warnings, 12/12 dimensions). Batch discussion for all 7 phases captured in `v2.11-DISCUSSION-POINTS.md` → `v2.11-DECISIONS.md` + per-phase CONTEXT.md. Contract reflects K1 no-back-compat + `localStorageState`/`sessionStorageState` renames + VT-02 99-1 scope expansion. **Ready to execute 95 and/or 99** (run `/clear` first for a fresh context window per phase). Remaining queued: 96→97→98 (Domain A chain, plan after 95), 100 (after 99), 101 (final gate).
+Last activity: 2026-06-04 — planned Phases 95 + 99 (parallel: research→pattern-map→plan→plan-check); both verification PASSED
 
 ## Performance Metrics
 
