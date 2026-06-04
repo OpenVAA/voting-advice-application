@@ -153,7 +153,7 @@ Audit: `.planning/milestones/v2.10-MILESTONE-AUDIT.md` (status: tech_debt — no
   - [x] 95-01-PLAN.md — appContext SSR-gap fix + pure mergeAppSettings (CTX-01)
   - [x] 95-02-PLAN.md — dataContext current/instance split, drop writable bridge (CTX-02)
   - [x] 95-03-PLAN.md — answer stores + new localStorageState helper (CTX-03)
-  - [ ] 95-04-PLAN.md — popupStore queue-shaped Pattern-1 + consumer (CTX-05)
+  - [x] 95-04-PLAN.md — popupStore queue-shaped Pattern-1 + consumer (CTX-05)
   - [ ] 95-05-PLAN.md — layout overlay registry + use*() callsite migration, isolated wave 2 (CTX-04)
 
 ### Phase 96: Domain A Wave 2 — Tier-2 Bridges
@@ -254,7 +254,7 @@ Domain A is a strict chain: 95 → 96 → 97 → 98. Domain B is a chain: 99 →
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 95. Domain A Wave 1 — Tier-1 Leaf Contexts | v2.11 | 3/5 | In Progress|  |
+| 95. Domain A Wave 1 — Tier-1 Leaf Contexts | v2.11 | 4/5 | In Progress|  |
 | 96. Domain A Wave 2 — Tier-2 Bridges | v2.11 | 0/TBD | Not started | - |
 | 97. Domain A Wave 3 — getRoute + Consumer Codemod | v2.11 | 0/TBD | Not started | - |
 | 98. Domain A Wave 4 — Cleanup | v2.11 | 0/TBD | Not started | - |
