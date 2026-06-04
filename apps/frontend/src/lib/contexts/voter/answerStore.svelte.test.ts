@@ -1,8 +1,8 @@
 import { flushSync } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { answerStore } from './answerStore.svelte';
-import type { AnswerStore } from './answerStore.type';
 import type { TrackingService } from '../app/tracking';
+import type { AnswerStore } from './answerStore.type';
 
 // `localStorageState` only persists when `browser` is `true`. The default
 // app-environment stub sets `browser = false`, so override it here.
