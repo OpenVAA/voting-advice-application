@@ -1,52 +1,35 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-30T10:35:00.000Z",
-  "phase": "90",
-  "phase_name": "tir5-permutations-missing-nominations-warning-localisation-n",
-  "phase_dir": ".planning/phases/90-tir5-permutations-missing-nominations-warning-localisation-n",
-  "plan": null,
+  "timestamp": "2026-06-04T05:53:30.351Z",
+  "phase": "94",
+  "phase_name": "final-e2e-suite-polish-de-planning-reformat-readme-triage",
+  "phase_dir": ".planning/phases/94-final-e2e-suite-polish-de-planning-reformat-readme-triage",
+  "plan": 8,
   "task": null,
-  "total_tasks": 0,
-  "status": "complete",
+  "total_tasks": 8,
+  "status": "milestone_complete",
   "completed_tasks": [
-    {"id": "90-02", "name": "perm-missing-nominations permutation", "status": "done", "commit": "7ee5ad1d8"},
-    {"id": "90-04", "name": "perm-localisation-positive (rewritten against 3-locale base)", "status": "done", "commit": "1578ce8e4"},
-    {"id": "STATIC-LOCALES-3", "name": "Drop da from staticSettings + dev-seed (en, fi, sv canonical)", "status": "done", "commit": "8faa9b08c"}
+    {"id": "94-01..94-08", "name": "Phase 94 — de-planning sweep (~150 files) + WR-01..04 fixes + README rewrites", "status": "done"},
+    {"id": "verify+uat", "name": "Phase 94 verification + UAT", "status": "done", "note": "VERIFICATION.md passed; full e2e 82 passed / 2 skipped (the 2 = intentional perm-per-app-notifications quarantine, D-03); phase.complete marked ROADMAP/STATE/REQUIREMENTS, is_last_phase=true"}
   ],
-  "remaining_tasks": [],
-  "reverted": {
-    "rationale": "User-directed reversal on 2026-05-30 — i18n runtime override path is structurally unstable due to Paraglide compile-time baseLocale vs runtime defaultLocale divergence. Stage A scope collapsed; single-locale perm + override implementation preserved in i18n stage-b todo for future revival.",
-    "plans": [
-      {"id": "90-01", "name": "Stage A DynamicSettings.i18n.supportedLocales runtime override", "originally_shipped": "cab07b14a", "reverted_in": "1578ce8e4"},
-      {"id": "90-03", "name": "perm-localisation-negative (single-locale)", "originally_shipped": "3881f4bee", "reverted_in": "1578ce8e4"},
-      {"id": "90-05", "name": "Gap #1 closure (applyDynamicOverride wiring) — planned, never executed", "planned_in": "2e06027b2", "reverted_in": "(this session)"},
-      {"id": "90-06", "name": "Gap #2 closure (langSelector baseLocale-aware regex helper) — planned, never executed", "planned_in": "2e06027b2", "reverted_in": "(this session — regex fixed inline in fixture instead)"}
-    ]
-  },
-  "blockers": [
-    {"description": "Repo pre-commit hook is broken — references sibling voting-advice-application repo paths that don't exist here. All commits must use `git -c core.hooksPath=/dev/null commit ...` per project memory `project_gsd_repo_hook_workaround.md`.", "type": "external", "workaround": "Prepend `git -c core.hooksPath=/dev/null` to every `git commit` invocation"},
-    {"description": "Runtime E2E for perm-* projects is operator-deferred per documented v2.10 environment cascade — vite dev returns 500 in headless agent env. Phase 90 gates are static (typecheck + lint + playwright list + vitest unit).", "type": "external", "workaround": "Static gates suffice for plan acceptance; surface runtime E2E status in operator handoff"}
+  "remaining_tasks": [
+    {"id": "milestone-close", "name": "Audit and/or complete milestone v2.10", "status": "not_started"},
+    {"id": "next-milestone", "name": "Start next milestone — Svelte 5 runes migration is the obvious theme (spike-findings-voting-advice-application-gsd skill)", "status": "not_started"}
   ],
+  "blockers": [],
   "human_actions_pending": [
-    {"action": "Run operator runbook for runtime perm-* E2E execution (3-run cold-start identity gate)", "context": "Independent of GSD agent workflow; verify perm-missing-nominations + perm-localisation-positive against live vite-dev + Supabase", "blocking": false}
+    {"action": "Decide next step: /gsd:audit-milestone then /gsd:complete-milestone, or go straight to a new milestone", "context": "v2.10 is the last roadmap phase (is_last_phase: true). Nothing blocks; this is a planning decision.", "blocking": false}
   ],
   "decisions": [
-    {"decision": "Stage A runtime locale override REVERTED — i18n is unstable due to baseLocale-vs-defaultLocale divergence", "rationale": "Paraglide's URL pattern table bakes baseLocale at compile time (en → no prefix; non-base → /<locale>/). Runtime override of DynamicSettings.i18n.supportedLocales can produce silent UI/state divergence (tenant marks fi as default, English UI still served on /). Reversal trades temporary perm scope for foundational stability.", "phase": "90"},
-    {"decision": "staticSettings.supportedLocales reduced from [en, fi, sv, da] to [en, fi, sv] (canonical 3-locale base)", "rationale": "All new voter/candidate/perm tests inherit this directly — no runtime override needed. Drops the recent Danish addition; matches the original OpenVAA Finnish-Swedish-English core. Drives dev-seed LOCALES + candidate-fan-out block size (327/3=109) updates in lockstep.", "phase": "90"},
-    {"decision": "Phase 90 final scope: 2 plans (90-02 perm-missing-nominations + 90-04 perm-localisation-positive against 3-locale static base) + 1 base-config change", "rationale": "Single-locale perm + runtime override moved to future Stage B i18n phase. Reduced scope shipped and verified."},
-    {"decision": "Surviving from the reverted work: langSelectorFixture + multilingualTextFieldFixture + perm-l10n composition root + 2 testids", "rationale": "These fixtures are correct for the rewritten 90-04 spec. Reusing them avoided re-authoring infrastructure that already passed plan-checker."},
-    {"decision": "langSelector.switchTo regex fix applied INLINE to the fixture (not via helper extraction)", "rationale": "Original Plan 90-06 proposed extracting buildLocaleSwitchUrlRegex into a shared frontend module + drift-contract test. For the reduced Phase 90 scope, inline regex fix in the fixture is sufficient. Helper extraction can land in a future i18n phase if needed."}
+    {"decision": "Phase 94 locked decisions D-01..D-06 (see 94-CONTEXT.md)", "rationale": "Resolved ROADMAP scope contradictions surfaced by research", "phase": "94"},
+    {"decision": "WR-02 REVERSED (D-03): perm-per-app-notifications projects KEPT (quarantined describe.skip) + re-enable TODO instead of removed", "rationale": "User will re-enable after the Svelte 5 runes migration", "phase": "94"},
+    {"decision": "diff-playwright-reports.ts DELETED (D-02)", "rationale": "Parity-diff tool retired; any test failure is now itself the regression signal", "phase": "94"},
+    {"decision": "Worktree-local core.hooksPath=/dev/null override now SET (persistent)", "rationale": "-gsd is a linked git worktree sharing the main repo's broken hook path; the worktree-isolated override lets plain git commit work here without leaking into the main repo. Memory updated.", "phase": "94"}
   ],
   "uncommitted_files": [
-    {"path": ".planning/phases/89-continuing-test-refactoring-implement-the-new-candidate-jour/89-02-PLAN.md", "status": "M", "scope": "PRE-EXISTING — unrelated to phase 90"},
-    {"path": "apps/frontend/src/lib/components/entityFilters/enumerated/EnumeratedEntityFilter.svelte", "status": "M", "scope": "PRE-EXISTING — unrelated to phase 90"},
-    {"path": "apps/frontend/tsconfig.tsbuildinfo", "status": "M", "scope": "PRE-EXISTING build artifact"},
-    {"path": "packages/dev-seed/src/templates/baseV1.ts", "status": "M", "scope": "PRE-EXISTING — uncommitted before phase 90; causes 1 dev-seed test failure (questions.fixed.length === 18 expected, got 25) that is NOT a phase-90 regression"},
-    {"path": "tests/tests/specs/voter/voter-mega-journey.spec.ts", "status": "M", "scope": "PRE-EXISTING — unrelated to phase 90"},
-    {"path": "TEST-INVENTORY-REFACTOR-{4,5,6}.md", "status": "??", "scope": "PRE-EXISTING — untracked inventory files"},
-    {"path": "apps/frontend/static/images/e2e-test-image-1.jpg", "status": "??", "scope": "PRE-EXISTING — unrelated to phase 90"},
-    {"path": ".planning/phases/88-*", "status": "??", "scope": "PRE-EXISTING — phase 88 deferred items / verify probes"}
+    {"path": ".planning/config.json", "status": "M", "scope": "workflow._auto_chain_active toggled during the plan->execute chain; not behaviorally significant"},
+    {"path": "TEMP.md / IDURA-TEST-RUNBOOK.md / .planning/debug/", "status": "??", "scope": "PRE-EXISTING untracked scratch — left untouched"}
   ],
-  "next_action": "Phase 90 complete. No autonomous chain. User may proceed to a new milestone or address the pre-existing baseV1.ts issue.",
-  "context_notes": "Phase 90 went through an unusual lifecycle: shipped 4 plans → verifier flagged 2 BLOCKER gaps → planned 2 gap-closure plans (90-05/06 through 3 plan-checker iterations) → user paused → user identified i18n unstable due to Paraglide baseLocale divergence → user directed full revert of Stage A + perm-localisation-negative + gap plans → retargeted at 3-locale staticSettings base. Final shipped scope: perm-missing-nominations (unchanged) + perm-localisation-positive (rewritten) + staticSettings reduction. Recoverable Stage A code + single-locale perm requirement preserved in i18n stage-b todo."
+  "next_action": "Run /gsd:audit-milestone to audit v2.10 against original intent, then /gsd:complete-milestone to archive it and start the next version. Or start shaping the next milestone (runes migration) directly.",
+  "context_notes": "Milestone v2.10 (Test Reliability + A11y + All-Green Suite) is fully executed and verified — Phase 94 was the final phase. The full e2e suite is GREEN (82 passed / 2 skipped). 3 todos captured this session for next-milestone shaping: (1) full bank-auth e2e spec, (2) post-runes UI recheck of header/banner/candidate-nav, (3) navigation-menu tests across settings permutations. The dev stack (yarn dev + local Supabase) was UP at pause time. The Svelte 5 runes migration is the natural next milestone (see the spike-findings skill)."
 }
