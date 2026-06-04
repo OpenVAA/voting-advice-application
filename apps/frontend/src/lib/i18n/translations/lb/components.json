@@ -1,6 +1,7 @@
 {
   "accordionSelect": {
-    "collapsedAriaInfo": "Tippt fir all Optiounen ze weisen"
+    "collapsedAriaInfo": "Tippt fir all Optiounen ze weisen",
+    "listboxAriaLabel": "Wielt eng Optioun"
   },
   "constituencySelector": {
     "selectPrompt": "Wielt {constituencyGroup} aus"

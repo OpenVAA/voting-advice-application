@@ -63,9 +63,21 @@ function withNoTransition(url: string): string {
  */
 async function advancePastCategoryIntro(page: Page): Promise<void> {
   const categoryStart = page.getByTestId(testIds.voter.questions.categoryStart);
-  if (await categoryStart.isVisible({ timeout: TIMEOUTS.page }).catch(() => false)) {
-    await categoryStart.click();
-  }
+  // Poll for presence (NOT `isVisible({ timeout })`, which is a one-shot snapshot
+  // that ignores its timeout — see voter-journey.fixture.ts:waitForVisible).
+  const present = await categoryStart
+    .waitFor({ state: 'visible', timeout: TIMEOUTS.page })
+    .then(() => true)
+    .catch(() => false);
+  if (!present) return;
+  // The category-start link's `href` resolves post-hydration from the v2.11
+  // reactive `selectedQuestionBlocks` ($state); a plain click races the reactive
+  // re-render AND is intercepted by the navigating document root ("<html>
+  // intercepts pointer events"). Wait for the href to point at a question route,
+  // then NAVIGATE to it deterministically.
+  await expect(categoryStart).toHaveAttribute('href', /\/questions\//, { timeout: TIMEOUTS.slowPage });
+  const href = await categoryStart.getAttribute('href');
+  if (href) await page.goto(href);
 }
 
 // Run unauthenticated — all routes are voter-app (public).
@@ -229,6 +241,10 @@ async function assertRouteDerivedAnnouncer(page: Page): Promise<void> {
   // ?notr=1). The auto-advance goto strips the query, so drive the entry as an
   // explicit no-transition navigation into the question route.
   await page.getByTestId(testIds.voter.questions.startButton).click();
+  // Clicking start lands on the first category's intro page before the first
+  // question (categoryIntros.show is on for the base dataset) — advance through
+  // it so we settle on an actual question route with the per-question heading.
+  await advancePastCategoryIntro(page);
   await page.getByTestId(testIds.voter.questions.heading).waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
   await page.goto(withNoTransition(page.url()));
   await page.getByTestId(testIds.voter.questions.heading).waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
@@ -298,6 +314,10 @@ voterJourneyTest('navigation-a11y — focus lands on heading after Q→Q nav', a
   // Walk to the /questions intro, then enter the first question.
   await walkUntilQuestionsIntro(page);
   await page.getByTestId(testIds.voter.questions.startButton).click();
+  // Clicking start lands on the first category's intro before the first question
+  // (categoryIntros.show is on for the base dataset) — advance through it so we
+  // settle on an actual question route with the per-question heading.
+  await advancePastCategoryIntro(page);
   await page.getByTestId(testIds.voter.questions.heading).waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
 
   const firstQuestionUrl = page.url();

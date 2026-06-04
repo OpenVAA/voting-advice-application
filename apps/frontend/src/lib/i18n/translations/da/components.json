@@ -1,6 +1,7 @@
 {
   "accordionSelect": {
-    "collapsedAriaInfo": "Tryk for at vise alle valgmuligheder"
+    "collapsedAriaInfo": "Tryk for at vise alle valgmuligheder",
+    "listboxAriaLabel": "Vælg en mulighed"
   },
   "constituencySelector": {
     "selectPrompt": "Vælg {constituencyGroup}"

@@ -42,13 +42,56 @@
  * `answeredVoterPage` then invokes `answerAndAdvanceToResults` on top.
  */
 
-import { test as base } from '@playwright/test';
+import { expect, test as base } from '@playwright/test';
 import { TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { testIds } from '../../utils/testIds';
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 export type AnswerMode = 'min' | 'max';
+
+/**
+ * Polling visibility probe. Unlike `locator.isVisible({ timeout })` — which is
+ * a one-shot snapshot that silently ignores its `timeout` option — this WAITS
+ * up to `timeout` ms for `locator` to become visible, resolving `true` if it
+ * does and `false` on timeout. Used for "did we land on this optional page?"
+ * branches where the page's content may mount a beat after navigation (e.g.
+ * the v2.11 post-hydration `$dataRoot` provide window on the elections /
+ * constituencies selectors — the elections-continue-stall regression).
+ */
+async function waitForVisible(locator: Locator, timeout: number): Promise<boolean> {
+  return locator
+    .waitFor({ state: 'visible', timeout })
+    .then(() => true)
+    .catch(() => false);
+}
+
+/**
+ * Follow an `<a>` link by navigating directly to its resolved `href`, once that
+ * href has settled to match `hrefPattern`.
+ *
+ * Guards against two v2.11 hazards that make a plain `.click()` on these links
+ * flake until the 90s ceiling:
+ *   1. Reactive-render churn — the link's `href` is bound to a post-hydration
+ *      `$derived` value (the category-intro start button's `questionId` resolves
+ *      from `voterCtx.selectedQuestionBlocks`, a Phase 95 `$state`); clicking
+ *      before it settles detaches the element mid-click.
+ *   2. Pointer interception — during the Phase 99 navigation the document root
+ *      ("<html> intercepts pointer events") sits over the link, so the click
+ *      never lands.
+ * Navigating to the resolved href sidesteps both: it waits for the href to be
+ * real, then drives a deterministic navigation instead of a racy pointer click.
+ */
+async function followLinkWhenHrefResolved(
+  page: Page,
+  link: Locator,
+  hrefPattern: RegExp,
+  timeout: number
+): Promise<void> {
+  await expect(link).toHaveAttribute('href', hrefPattern, { timeout });
+  const href = await link.getAttribute('href');
+  if (href) await page.goto(href);
+}
 
 type VoterJourneyFixtureOptions = {
   /** Which extreme to pick on each opinion question. Default: 'max'. */
@@ -100,7 +143,17 @@ async function walkUntilQuestionsIntro(page: Page): Promise<void> {
   // 3. Elections page (multi-election): select all elections then continue.
   const electionsList = page.getByTestId(testIds.voter.elections.list);
   const electionsContinue = page.getByTestId(testIds.voter.elections.continue);
-  if (await electionsList.isVisible({ timeout: TIMEOUTS.page }).catch(() => false)) {
+  // NB. `locator.isVisible({ timeout })` does NOT wait — Playwright's
+  // `isVisible` is a one-shot snapshot and silently ignores the `timeout`
+  // option (playwright-core/client/frame.ts). Under the v2.11 rune migration
+  // (Phase 95) the elections list mounts a beat AFTER navigation — `$dataRoot`
+  // is populated by a post-hydration `$effect` in routes/+layout.svelte rather
+  // than synchronously at first paint as in the Svelte-4 store era — so a
+  // non-waiting probe lands in that sub-second window, returns false, and skips
+  // the Continue click, stalling the located walk at /elections (the
+  // elections-continue-stall regression). Use a polling `waitForVisible`
+  // helper so the conditional "did we land on this page?" check actually waits.
+  if (await waitForVisible(electionsList, TIMEOUTS.page)) {
     // Accept default (both elections selected) or click each card to ensure selection.
     await electionsContinue.waitFor({ state: 'visible' });
     await electionsContinue.click();
@@ -109,7 +162,9 @@ async function walkUntilQuestionsIntro(page: Page): Promise<void> {
   // 4. Constituencies page: pick the first option in each combobox.
   const constituenciesList = page.getByTestId(testIds.voter.constituencies.list);
   const constituenciesContinue = page.getByTestId(testIds.voter.constituencies.continue);
-  if (await constituenciesList.isVisible({ timeout: TIMEOUTS.page }).catch(() => false)) {
+  // Same non-waiting-`isVisible` hazard as the elections step above — use the
+  // polling helper so the post-hydration render window can't skip this page.
+  if (await waitForVisible(constituenciesList, TIMEOUTS.page)) {
     const comboboxes = constituenciesList.getByRole('combobox');
     const count = await comboboxes.count();
     for (let i = 0; i < count; i++) {
@@ -161,17 +216,34 @@ async function answerAndAdvanceToResults(
   const answerOption = page.getByTestId(testIds.voter.questions.answerOption);
   const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
   const terminal = /\/results/;
+  // A category-intro route is `/questions/category/<id>`; a question route is
+  // `/questions/<id>` (no `/category/` segment). Branch on the URL — which is
+  // authoritative and immune to the v2.11 page-reuse DOM lag — rather than a
+  // racy `isVisible()` snapshot against a page whose OUTGOING content is still
+  // mounted mid-navigation (specs/voter/voter-journey.spec.ts SETTLE-BEFORE-
+  // COUNT rationale).
+  const categoryIntro = /\/questions\/category\//;
   let answered = 0;
   const cap = answerCount ?? Number.POSITIVE_INFINITY;
   const maxIterations = 50; // generous ceiling — base dataset has ≤9 reachable opinion questions
   for (let iter = 0; iter < maxIterations; iter++) {
     if (terminal.test(page.url())) break;
     const urlBefore = page.url();
-    // Wait for either a category-intro or a question.
+    // Wait for either a category-intro or a question to be present.
     await categoryStart.or(answerOption.first()).first().waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
 
-    if (await categoryStart.isVisible().catch(() => false)) {
-      await categoryStart.click();
+    if (categoryIntro.test(page.url())) {
+      // The category-intro start button is an `<a href={getRoute('Question',
+      // questionId)}>` whose `questionId` is `$derived` from
+      // `voterCtx.selectedQuestionBlocks` (a post-hydration reactive `$state`
+      // under the v2.11 rune migration, Phase 95). On first paint the href is
+      // unresolved; when the block populates the link re-renders and a plain
+      // click both detaches mid-click AND is intercepted by the navigating
+      // document root ("<html> intercepts pointer events") until the 90s ceiling.
+      // Wait for the href to resolve to a real question route, then NAVIGATE to
+      // it. See category/[categoryId]/+page.svelte:52,113 (the
+      // elections-continue-stall sibling render-timing class).
+      await followLinkWhenHrefResolved(page, categoryStart, /\/questions\//, TIMEOUTS.slowPage);
       await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: TIMEOUTS.slowPage }).catch(() => null);
       continue;
     }
@@ -183,7 +255,39 @@ async function answerAndAdvanceToResults(
       await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: TIMEOUTS.slowPage }).catch(() => null);
       continue;
     }
-    const choiceCount = await answerOption.count();
+    // SETTLE-BEFORE-COUNT (v2.11 regression). On a Q→Q param-only nav SvelteKit
+    // REUSES questions/[questionId]/+page.svelte (the page derives `question`
+    // via `$derived` rather than remounting), so the OUTGOING question's
+    // `[data-testid=question-choice]` options stay mounted until the PREVIOUS
+    // click's deferred `goto` resolves and the incoming options swap in. A bare
+    // `answerOption.count()` therefore captures the OUTGOING question's option
+    // count, and `.nth(count-1)` points at a stale index that the INCOMING
+    // question (fewer options — e.g. Likert4 after Likert5) never has → 90s
+    // timeout.
+    //
+    // Anchor to the CURRENT question deterministically: each choice's `name` is
+    // `questionChoices-<questionId>` and the questionId is the last `/questions/`
+    // path segment. Scope the option locator to that questionId so the count +
+    // `.nth()` only ever see the INCOMING question's options. Mirrors the passing
+    // voter-journey spec's SETTLE-BEFORE-COUNT rationale (specs/voter/
+    // voter-journey.spec.ts:211-257) — a deterministic settle, NOT a
+    // View-Transition workaround (reduced-motion does not fix this and the
+    // Playwright option does not reach the app's matchMedia anyway).
+    const questionId = new URL(page.url()).pathname.replace(/\/+$/, '').split('/').filter(Boolean).pop() ?? '';
+    // reason: locale-stable composite selector — the `question-choice` testid is
+    // ambiguous across the outgoing+incoming questions mounted simultaneously
+    // during a v2.11 param-only Q→Q nav; scoping by the `questionChoices-<id>`
+    // name attribute disambiguates to the CURRENT question. No getByTestId/
+    // getByRole form expresses a testid+attribute conjunction.
+    // eslint-disable-next-line playwright/no-restricted-locators
+    const currentChoices = page.locator(`[data-testid="question-choice"][name="questionChoices-${questionId}"]`);
+    // Wait until the incoming question's own options are present (not the stale
+    // outgoing set), then read a stable count.
+    await currentChoices
+      .first()
+      .waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage })
+      .catch(() => null);
+    const choiceCount = await currentChoices.count();
     if (choiceCount === 0) {
       // No selectable choices (e.g. text/number rendering) — Skip.
       await nextButton.waitFor({ state: 'visible', timeout: TIMEOUTS.page });
@@ -192,9 +296,11 @@ async function answerAndAdvanceToResults(
       continue;
     }
     const pickIndex = answerMode === 'min' ? 0 : choiceCount - 1;
-    await answerOption.nth(pickIndex).click();
+    await currentChoices.nth(pickIndex).click();
     answered++;
-    // Auto-advance OR fallback to nextButton (last-question case).
+    // Auto-advance OR fallback to nextButton (last-question case). The deferred
+    // auto-advance `goto` fires after a ~350ms debounce, so allow a beat before
+    // falling back to the explicit Next button.
     try {
       // reason: tight 3s auto-advance probe — deliberately below TIMEOUTS.page; on
       // timeout the nextButton fallback fires (last-question case). Not bucket-mappable.
@@ -205,9 +311,29 @@ async function answerAndAdvanceToResults(
         await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: TIMEOUTS.slowPage }).catch(() => null);
       }
     }
+    // Settle the param-only Q→Q nav: wait until the URL leaves the just-answered
+    // question route before the next iteration counts options, so the stale
+    // outgoing option set can't be captured (the SETTLE-BEFORE-COUNT contract).
+    await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: TIMEOUTS.slowPage }).catch(() => null);
   }
 
-  // 7. Wait for the results list.
+  // 7. Multi-election results landing: with 2+ elections and no `electionTab`
+  //    in the URL the results page renders the election picker ("Select an
+  //    election first") instead of the list — case 3 of
+  //    results/[[electionTab]]/+layout.ts. Select the first election so the
+  //    candidate/party list renders. The picker is an AccordionSelect exposing
+  //    ARIA `option` roles (mirrors voter-journey.spec.ts:expectElectionOptionAndSelect).
+  const electionAccordion = page.getByTestId(testIds.voter.results.electionAccordion);
+  if (await waitForVisible(electionAccordion, TIMEOUTS.slowPage)) {
+    const options = electionAccordion.getByRole('option');
+    await options.first().waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
+    // Collapsed accordion shows only the active option; expand it first, then
+    // pick the first election to load its results.
+    if ((await options.count()) === 1) await options.first().click({ timeout: TIMEOUTS.click });
+    await options.first().click({ timeout: TIMEOUTS.click });
+  }
+
+  // 8. Wait for the results list.
   // reason: 15s exceeds TIMEOUTS.slowPage (10s) — the post-answer-loop /results landing
   // is the heaviest single wait in the walk (full matching compute + entity-list render)
   // and needs extra cold-start headroom. Kept inline as a documented exception.

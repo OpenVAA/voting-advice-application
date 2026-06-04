@@ -363,6 +363,7 @@ export type TranslationKey =
   | 'common.unaffiliated'
   | 'common.website'
   | 'components.accordionSelect.collapsedAriaInfo'
+  | 'components.accordionSelect.listboxAriaLabel'
   | 'components.constituencySelector.selectPrompt'
   | 'components.headingGroup.roleDescription'
   | 'components.input.addImage'

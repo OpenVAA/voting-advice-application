@@ -1,6 +1,7 @@
 {
   "accordionSelect": {
-    "collapsedAriaInfo": "Tryck för att visa alla alternativ"
+    "collapsedAriaInfo": "Tryck för att visa alla alternativ",
+    "listboxAriaLabel": "Välj ett alternativ"
   },
   "constituencySelector": {
     "selectPrompt": "Välj {constituencyGroup}"

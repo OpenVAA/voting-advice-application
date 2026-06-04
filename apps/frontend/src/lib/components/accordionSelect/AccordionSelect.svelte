@@ -74,7 +74,15 @@ If there's only one option, it is automatically selected and no interactions are
   }
 </script>
 
-<div {...concatClass(restProps, 'grid pl-0 gap-xs min-w-xs !max-w-full items-stretch join join-vertical')}>
+<!-- role=listbox: the children carry role=option, which axe's aria-required-parent
+  rule (WCAG 2.1 AA, critical) requires to be contained by a listbox/group — most
+  visibly in the collapsed state where only the selected option button is in the
+  DOM with no wrapping role. aria-label gives the listbox an accessible name;
+  callers may override it via restProps. -->
+<div
+  role="listbox"
+  aria-label={restProps['aria-label'] ?? t('components.accordionSelect.listboxAriaLabel')}
+  {...concatClass(restProps, 'grid pl-0 gap-xs min-w-xs !max-w-full items-stretch join join-vertical')}>
   {#each options as option, index}
     {#if expanded || activeIndex === index}
       <button

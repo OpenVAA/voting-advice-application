@@ -1,6 +1,7 @@
 {
   "accordionSelect": {
-    "collapsedAriaInfo": "Puudutage kõigi valikute kuvamiseks"
+    "collapsedAriaInfo": "Puudutage kõigi valikute kuvamiseks",
+    "listboxAriaLabel": "Valige suvand"
   },
   "constituencySelector": {
     "selectPrompt": "Vali {constituencyGroup}"

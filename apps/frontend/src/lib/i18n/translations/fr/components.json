@@ -1,6 +1,7 @@
 {
   "accordionSelect": {
-    "collapsedAriaInfo": "Appuyez pour afficher toutes les options"
+    "collapsedAriaInfo": "Appuyez pour afficher toutes les options",
+    "listboxAriaLabel": "Sélectionner une option"
   },
   "constituencySelector": {
     "selectPrompt": "Sélectionnez {constituencyGroup}"
