@@ -616,6 +616,50 @@ test.describe('voter journey', () => {
       await expect.soft(resultsLink).toBeEnabled({ timeout: TIMEOUTS.element });
     });
 
+    // reason: D-03 QLAYOUT-02 answer-survival gate — Wave 0 regression gate for
+    // the Phase 100 questions-layout restructure. After answering a multi-step
+    // Q→Q run that CROSSES a question.type boundary (Base-5 Boolean ← Base-4
+    // Likert4), navigate BACK across that boundary and assert the earlier
+    // (Likert) question's option is STILL checked. This crossing is what
+    // exercises the `{#key question.type}` remount path: it proves answers
+    // survive a Q→Q hop even when the variant component is torn down and
+    // remounted, not merely when the same variant is reused. The behavior
+    // passes today (SvelteKit reuses `questions/[questionId]/+page.svelte` per
+    // the SETTLE-BEFORE-COUNT comment on expectQuestionAndAdvance); once Plan 02
+    // hoists rendering into the layout, this SAME assertion proves no regression.
+    await test.step('D-03 answer survives a multi-step Q→Q run across a question-type boundary', async () => {
+      // We are currently ON Base-5 (Boolean) with its last option answered (the
+      // preceding step re-answered it). All of Base-1..5 were answered at the
+      // last option via optionIndex: (n) => n - 1. Base-5 is Boolean; Base-4 is
+      // Likert4 — so a single back-navigation crosses the Boolean→Likert type
+      // boundary to an EARLIER answered question.
+      const questionHeading = page.getByTestId(testIds.voter.questions.heading);
+      // Confirm we start on the post-boundary (Boolean) question.
+      await expect.soft(questionHeading).toHaveText(TEXT_RE.baseOpinion5Boolean, { timeout: TIMEOUTS.element });
+
+      // Navigate BACK across the type boundary to Base-4 (Likert) using the
+      // in-app previousButton — match the previous-button navigation the
+      // surrounding base-category steps use (lines 599-602) for determinism.
+      const previousButton = page.getByTestId(testIds.voter.questions.previousButton);
+      await expect(previousButton).toBeVisible({ timeout: TIMEOUTS.element });
+      await previousButton.click();
+
+      // The earlier (Likert, pre-boundary) question's previously-selected option
+      // — the LAST option, matching the optionIndex: (n) => n - 1 used to answer
+      // it — must STILL be checked. This is the D-03 answer-survival contract.
+      const answerOptions = page.getByTestId(testIds.voter.questions.answerOption);
+      const lastOption = answerOptions.last();
+      await expect(lastOption).toBeChecked({ timeout: TIMEOUTS.element });
+      // Sanity: this back-target is NOT the Boolean question we came from — the
+      // round-trip genuinely crossed the type boundary.
+      await expect.soft(questionHeading).not.toHaveText(TEXT_RE.baseOpinion5Boolean, { timeout: TIMEOUTS.element });
+
+      // Advance forward again to confirm the round-trip left answers intact and
+      // we land back on the (already-answered) Boolean question without losing
+      // state. allowPreselected: true because the option is already checked.
+      await expectQuestionAndAdvance({ page, allowPreselected: true });
+    });
+
     // ====================================================================
     // CATEGORY SKIP + FILTERED CATEGORIES + REMAINING QUESTIONS
     // ====================================================================
