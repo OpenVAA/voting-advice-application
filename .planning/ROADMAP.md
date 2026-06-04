@@ -125,7 +125,7 @@ Audit: `.planning/milestones/v2.10-MILESTONE-AUDIT.md` (status: tech_debt — no
 **Parallel-execution map (for autonomy):** Domain A and Domain B are independent and can be planned/executed together. Within Domain A, the 4 waves are strictly sequential (each consumes the prior). Within Phase 95, the 5 Tier-1 leaf contexts are internally parallel (6 separate-PR-eligible migrations per the spike inventory — they touch different files). Domain B Wave A (Phase 99) and the whole of Domain A's Wave 1 can run concurrently.
 
 - [x] **Phase 95: Domain A Wave 1 — Tier-1 Leaf Contexts** - appContext (+SSR-gap fix), dataContext, answer stores (+`localStorageState`), overlay registry, popupStore migrated to pure runes (completed 2026-06-04)
-- [ ] **Phase 96: Domain A Wave 2 — Tier-2 Bridges** - survey + tracking + voterContext + candidateContext rune-native factories (+`runeSessionStorage`), composing Wave 1
+- [x] **Phase 96: Domain A Wave 2 — Tier-2 Bridges** - survey + tracking + voterContext + candidateContext rune-native factories (+`runeSessionStorage`), composing Wave 1 (completed 2026-06-04)
 - [ ] **Phase 97: Domain A Wave 3 — getRoute + Consumer Codemod** - rune-native `getRoute` + mechanical rewrite of 280 consumer sites + destructure-trap/AdminNav production-bug fix
 - [ ] **Phase 98: Domain A Wave 4 — Cleanup** - delete `persistedState`/`StackedState`, drop `Readable<T>`, zero `svelte/store` imports, ESLint guard
 - [x] **Phase 99: Domain B Wave A — View Transitions + Navigation a11y** - `onNavigate` + `startViewTransition` cross-fade, `aria-live` route announcer, `afterNavigate` focus reset, reduced-motion belt-and-braces (completed 2026-06-04)
@@ -173,7 +173,7 @@ Audit: `.planning/milestones/v2.10-MILESTONE-AUDIT.md` (status: tech_debt — no
 Plans:
 
 - [x] 96-01-PLAN.md — sessionStorageState helper + pure-rune survey/trackingService + appContext reactiveAppSettings/reactiveLocale getters + bridge seam (Wave 1)
-- [ ] 96-02-PLAN.md — voterContext + candidateContext rune-native factories (firstQuestionId/prereg ids via session/localStorageState; getRoute bridge kept for Phase 97) (Wave 2)
+- [x] 96-02-PLAN.md — voterContext + candidateContext rune-native factories (firstQuestionId/prereg ids via session/localStorageState; getRoute bridge kept for Phase 97) (Wave 2)
 
 ### Phase 97: Domain A Wave 3 — getRoute + Consumer Codemod
 
@@ -271,7 +271,7 @@ Domain A is a strict chain: 95 → 96 → 97 → 98. Domain B is a chain: 99 →
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 95. Domain A Wave 1 — Tier-1 Leaf Contexts | v2.11 | 5/5 | Complete   | 2026-06-04 |
-| 96. Domain A Wave 2 — Tier-2 Bridges | v2.11 | 1/2 | In Progress|  |
+| 96. Domain A Wave 2 — Tier-2 Bridges | v2.11 | 2/2 | Complete   | 2026-06-04 |
 | 97. Domain A Wave 3 — getRoute + Consumer Codemod | v2.11 | 0/TBD | Not started | - |
 | 98. Domain A Wave 4 — Cleanup | v2.11 | 0/TBD | Not started | - |
 | 99. Domain B Wave A — View Transitions + Navigation a11y | v2.11 | 3/3 | Complete   | 2026-06-04 |
