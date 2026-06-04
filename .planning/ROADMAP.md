@@ -124,7 +124,7 @@ Audit: `.planning/milestones/v2.10-MILESTONE-AUDIT.md` (status: tech_debt — no
 
 **Parallel-execution map (for autonomy):** Domain A and Domain B are independent and can be planned/executed together. Within Domain A, the 4 waves are strictly sequential (each consumes the prior). Within Phase 95, the 5 Tier-1 leaf contexts are internally parallel (6 separate-PR-eligible migrations per the spike inventory — they touch different files). Domain B Wave A (Phase 99) and the whole of Domain A's Wave 1 can run concurrently.
 
-- [ ] **Phase 95: Domain A Wave 1 — Tier-1 Leaf Contexts** - appContext (+SSR-gap fix), dataContext, answer stores (+`localStorageState`), overlay registry, popupStore migrated to pure runes
+- [x] **Phase 95: Domain A Wave 1 — Tier-1 Leaf Contexts** - appContext (+SSR-gap fix), dataContext, answer stores (+`localStorageState`), overlay registry, popupStore migrated to pure runes (completed 2026-06-04)
 - [ ] **Phase 96: Domain A Wave 2 — Tier-2 Bridges** - survey + tracking + voterContext + candidateContext rune-native factories (+`runeSessionStorage`), composing Wave 1
 - [ ] **Phase 97: Domain A Wave 3 — getRoute + Consumer Codemod** - rune-native `getRoute` + mechanical rewrite of 280 consumer sites + destructure-trap/AdminNav production-bug fix
 - [ ] **Phase 98: Domain A Wave 4 — Cleanup** - delete `persistedState`/`StackedState`, drop `Readable<T>`, zero `svelte/store` imports, ESLint guard
@@ -154,7 +154,7 @@ Audit: `.planning/milestones/v2.10-MILESTONE-AUDIT.md` (status: tech_debt — no
   - [x] 95-02-PLAN.md — dataContext current/instance split, drop writable bridge (CTX-02)
   - [x] 95-03-PLAN.md — answer stores + new localStorageState helper (CTX-03)
   - [x] 95-04-PLAN.md — popupStore queue-shaped Pattern-1 + consumer (CTX-05)
-  - [ ] 95-05-PLAN.md — layout overlay registry + use*() callsite migration, isolated wave 2 (CTX-04)
+  - [x] 95-05-PLAN.md — layout overlay registry + use*() callsite migration, isolated wave 2 (CTX-04)
 
 ### Phase 96: Domain A Wave 2 — Tier-2 Bridges
 
@@ -254,7 +254,7 @@ Domain A is a strict chain: 95 → 96 → 97 → 98. Domain B is a chain: 99 →
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 95. Domain A Wave 1 — Tier-1 Leaf Contexts | v2.11 | 4/5 | In Progress|  |
+| 95. Domain A Wave 1 — Tier-1 Leaf Contexts | v2.11 | 5/5 | Complete   | 2026-06-04 |
 | 96. Domain A Wave 2 — Tier-2 Bridges | v2.11 | 0/TBD | Not started | - |
 | 97. Domain A Wave 3 — getRoute + Consumer Codemod | v2.11 | 0/TBD | Not started | - |
 | 98. Domain A Wave 4 — Cleanup | v2.11 | 0/TBD | Not started | - |

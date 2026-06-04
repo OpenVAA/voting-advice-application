@@ -18,7 +18,7 @@ Requirements for this milestone. Each maps to exactly one roadmap phase.
 - [x] **CTX-01**: `appContext` is pure runes — no `svelte/store` import; reactive values exposed via getters; `appSettings` + `appCustomization` DB-override merge happens at `$state` init (closes the real SSR gap where the `$effect`-only merge skipped the override on the server); `mergeAppSettings` is pure (`{ ...target, ...nonNull }`, no shared-ref mutation); effective-settings merge `merge(staticSettings, dynamicSettings, page.data.appSettingsData)` reactive on the third input with a reference-equality guard. _(spikes 001, 008)_
 - [x] **CTX-02**: `dataContext` is pure runes — `writable(dataRoot)` bridge and `get(dataRootStore)` infinite-loop workaround removed; `current`/`instance` handle split with `untrack()` around write-after-read; sequential-population semantics (`provideElectionData → … → provideNominationData`) still trigger downstream `$derived` re-evaluation via the version counter. _(spike 002)_
 - [x] **CTX-03**: voter `answerStore` + candidate `candidateUserDataStore` persist through a single shared `localStorageState<T>(key, default)` helper (the spike-scratch `runeLocalStorage` renamed per the no-migration-era-prefix constraint) mirroring `localStorageWritable`'s versioned-payload format (`{ version, data }`); the three-layer `$state → localStorageWritable → fromStore` bridge is gone at both callsites. **No format-migration shim** — the format may change freely and stale old-format payloads are ignored/overwritten. _(spikes 003, 005)_
-- [ ] **CTX-04**: layout overlay system uses a token-keyed registry + declarative `use*()` consumer API; `StackedState` (`implements Readable<T>`) and the `getLayoutContext(onDestroy)` index-revert plumbing are removed; `$effect` cleanup replaces `onDestroy`; robust against out-of-order mount/unmount. _(spike 006)_
+- [x] **CTX-04**: layout overlay system uses a token-keyed registry + declarative `use*()` consumer API; `StackedState` (`implements Readable<T>`) and the `getLayoutContext(onDestroy)` index-revert plumbing are removed; `$effect` cleanup replaces `onDestroy`; robust against out-of-order mount/unmount. _(spike 006)_
 - [x] **CTX-05**: `popupStore` is pure runes following the queue-shaped Pattern-1 shape (no `toStore(() => firstItem)` + `subscribe` getter). _(spike 010)_
 - [ ] **CTX-06**: `survey` + `trackingService` secondary bridges are pure runes (no `fromStore`/`toStore` over appSettings / sessionId / userPreferences). _(spike 010)_
 - [ ] **CTX-07**: `voterContext` + `candidateContext` are rune-native factories composing Tier-1 contexts via `getXContext()` and exposing their 18+/30+ reactive accessors as getters; a `sessionStorageState` sibling helper (spike-scratch `runeSessionStorage`, renamed) backs `voterContext`'s `firstQuestionId`; the destructure-trap reproduces identically and is preserved per the CLAUDE.md rule. _(spikes 007, 010)_
@@ -83,7 +83,7 @@ Which phases cover which requirements. Populated during roadmap creation.
 | CTX-01 | Phase 95 | Complete |
 | CTX-02 | Phase 95 | Complete |
 | CTX-03 | Phase 95 | Complete |
-| CTX-04 | Phase 95 | Pending |
+| CTX-04 | Phase 95 | Complete |
 | CTX-05 | Phase 95 | Complete |
 | CTX-06 | Phase 96 | Pending |
 | CTX-07 | Phase 96 | Pending |
