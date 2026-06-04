@@ -2,7 +2,7 @@
 
 **Filed:** 2026-06-01
 **Source:** quick task `260601-hn9` (skip notification popup permutation tests + record todos)
-**Home phase:** v2.11+ (target phase TBD — gated on the full Svelte runes migration)
+**Home phase:** v2.11 Phase 101 — Suite Re-enable + Milestone-Close Green Gate (SUITE-01). `resolves_phase: 101`. (Gated on the full Svelte runes migration, Phases 95-100; popup-queueing settles via Phase 95 CTX-05 popupStore + the context migrations.)
 **Effort:** ~0.5 phase (un-skip + end-to-end popup-management audit; larger if the audit surfaces a queueing redesign)
 
 ## Why deferred
