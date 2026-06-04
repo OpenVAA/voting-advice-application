@@ -275,7 +275,7 @@ Domain A is a strict chain: 95 → 96 → 97 → 98. Domain B is a chain: 99 →
 | 97. Domain A Wave 3 — getRoute + Consumer Codemod | v2.11 | 0/TBD | Not started | - |
 | 98. Domain A Wave 4 — Cleanup | v2.11 | 0/TBD | Not started | - |
 | 99. Domain B Wave A — View Transitions + Navigation a11y | v2.11 | 3/3 | Complete   | 2026-06-04 |
-| 100. Domain B Wave B — Questions Layout Restructure | v2.11 | 2/2 | Complete   | 2026-06-04 |
+| 100. Domain B Wave B — Questions Layout Restructure | v2.11 | 2/2 | Complete    | 2026-06-04 |
 | 101. Suite Re-enable + Milestone-Close Green Gate | v2.11 | 0/TBD | Not started | - |
 
 See `.planning/MILESTONES.md` for cumulative history and `.planning/milestones/` for per-milestone roadmaps + requirements + audits.
