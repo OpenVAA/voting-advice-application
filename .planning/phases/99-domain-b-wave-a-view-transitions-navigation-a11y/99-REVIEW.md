@@ -15,7 +15,12 @@ findings:
   warning: 3
   info: 2
   total: 6
-status: issues_found
+status: resolved
+resolution:
+  resolved: [CR-01, WR-02, IN-01, IN-02]
+  advisory_deferred: [WR-01, WR-03]
+  fix_commit: 59293ad7e
+  resolved_at: 2026-06-04T14:59:00Z
 ---
 
 # Phase 99: Code Review Report (gaps-only re-execution — plan 99-04)
@@ -152,6 +157,24 @@ The helper doc-comment (lines 204-210) and the inline comment at 251-252 state t
 
 ---
 
+## Resolution (gap-closure execute — 2026-06-04, commit `59293ad7e`)
+
+Findings dispositioned during the `--gaps-only` execution of plan 99-04:
+
+| ID | Severity | Disposition | Notes |
+|----|----------|-------------|-------|
+| CR-01 | Critical (BLOCKER) | **Fixed** | `a11y-smoke.spec.ts:255` now asserts `headingText.toContain(questionLabel)` instead of strict equality — the announcer carries only the question title while the heading hgroup also renders the PreHeading (category tag + `N/M` counter + election tags), so containment is the correct contract under the `e2e/base` seed (`showCategoryTags: true`). The CR-01 proof can now hold. |
+| WR-02 | Warning | **Fixed** | `setRouteTitle` cleanup now guards `if (routeTitleValue === title)` before clearing, so a stale outgoing teardown on a `MainContent ↔ SingleCardContent` route swap cannot blank the announcer a newer writer already populated. |
+| IN-01 | Info | **Fixed** | Stale "equals the heading" comments reworded to "appears within / is a substring of" the heading text. |
+| IN-02 | Info | **Fixed** | Import-spacing nit in `layoutContext.svelte.ts:10` corrected (prettier-clean). |
+| WR-01 | Warning | **Deferred (advisory)** | The redundant `$effect`-inside-`$effect` registrar still stands. Svelte batches the cleanup + re-set within one flush so the transient `''` does not reach the DOM, and the WR-02 guard removes the cross-component blank — so there is no observed runtime defect. The structural fix (collapse to a single effect via a returned revert) is the WR-03 refactor below. |
+| WR-03 | Warning | **Deferred (advisory)** | Aligning `setRouteTitle` with the `settingsOverlay.use()` return-a-revert contract (so all four registrars are structurally identical) is a code-quality refactor that changes the `LayoutContext.setRouteTitle` type signature and both consumer callsites. Out of scope for CR-01 gap closure; recommend as a follow-up (`/gsd-code-review 99 --fix --all` or a dedicated cleanup task). |
+
+Validation after fix: `yarn build` (14/14 ✓), `yarn test:unit` (frontend 706 + dev-seed 450 ✓), `yarn typecheck:tests` (✓), eslint + prettier clean on both touched files. The live `PLAYWRIGHT_A11Y=1` a11y-smoke green gate remains an operator/UAT item (pre-existing `voter-journey.fixture.ts:130` located-fixture seed blocker, out of scope per 99-VERIFICATION.md).
+
+---
+
 _Reviewed: 2026-06-04T14:49:18Z_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
+_Resolution appended by gsd-execute-phase orchestrator (2026-06-04)_
