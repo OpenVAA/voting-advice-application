@@ -3,7 +3,7 @@
  * live local Supabase and asserts end-to-end correctness.
  *
  * D-58-21 gating: `describe.skipIf(!process.env.SUPABASE_URL)` — the test
- * skips in envs without `supabase start`. Developers run `yarn dev:start`
+ * skips in envs without `supabase start`. Developers run `yarn db:start`
  * (or `supabase start` directly) before `yarn test:unit` to exercise it.
  *
  * Covers (D-58-20):

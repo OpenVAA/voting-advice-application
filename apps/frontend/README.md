@@ -6,7 +6,7 @@ SvelteKit 2 frontend for OpenVAA Voting Advice Applications.
 
 `yarn dev` (from repo root) starts three processes concurrently via `concurrently`:
 
-1. **Local Supabase** (`yarn supabase:start`) — Postgres, Auth, Storage, Edge Functions, Inbucket
+1. **Local Supabase** (`yarn db:start`) — Postgres, Auth, Storage, Edge Functions, Inbucket
 2. **Package watcher** (`yarn watch:shared`, which runs `turbo watch build --filter='./packages/*'`) — rebuilds shared `@openvaa/*` packages' `dist/` outputs whenever their source changes
 3. **Frontend dev server** (`yarn workspace @openvaa/frontend dev`, which runs `vite dev`) — serves the SvelteKit app with HMR
 
@@ -27,8 +27,8 @@ When you edit the root `.env`:
 
 If you see stale module errors after a fresh clone or after a long-running dev session:
 
-- `yarn dev:reset` performs a clean Supabase reset and dev-server restart
-- `yarn dev:start` runs `yarn build` first (cold `dist/` recovery), then starts Supabase + Vite
+- `yarn dev:reset` resets the database, then relaunches the full stack (Supabase + watcher + Vite, with the vite cache wiped on startup)
+- For a cold `dist/` recovery, run `yarn build` first, then `yarn dev`
 
 ### Path aliases
 

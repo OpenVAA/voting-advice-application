@@ -39,7 +39,7 @@ Environment:
   SUPABASE_URL                      Supabase instance URL (e.g. http://127.0.0.1:54321)
                                     Falls back to PUBLIC_SUPABASE_URL when unset.
   SUPABASE_SERVICE_ROLE_KEY         Service-role key for bypassing RLS
-                                    (from \`yarn supabase:status\`, never committed).
+                                    (from \`yarn db:status\`, never committed).
   The repo-root \`.env\` file is auto-loaded at startup, so variables defined there
   (PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY) take effect without \`export\`.
 `;

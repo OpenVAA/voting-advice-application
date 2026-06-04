@@ -18,7 +18,7 @@
  *   1 - At least one ERROR-level issue found (or WARNING in --strict mode)
  */
 
-import {execSync} from 'node:child_process';
+import { execSync } from 'node:child_process';
 
 // ---------------------------------------------------------------------------
 // Config
@@ -88,10 +88,11 @@ GROUP BY c.conrelid, c.conname;
  * special characters in the query text.
  */
 function runQuery(sql) {
-  const stdout = execSync(
-    `psql ${DB_URL} --tuples-only --no-align --field-separator='|'`,
-    {encoding: 'utf-8', input: sql.trim(), stdio: ['pipe', 'pipe', 'pipe']}
-  );
+  const stdout = execSync(`psql ${DB_URL} --tuples-only --no-align --field-separator='|'`, {
+    encoding: 'utf-8',
+    input: sql.trim(),
+    stdio: ['pipe', 'pipe', 'pipe']
+  });
   return stdout
     .split('\n')
     .map((line) => line.trim())
@@ -110,9 +111,11 @@ function ensurePostgresAvailable() {
     });
   } catch {
     console.error(
-      'ERROR: Cannot connect to local Supabase Postgres at ' + DB_URL + '.\n' +
-      'Make sure the Supabase local dev stack is running:\n' +
-      '  yarn supabase:start\n'
+      'ERROR: Cannot connect to local Supabase Postgres at ' +
+        DB_URL +
+        '.\n' +
+        'Make sure the Supabase local dev stack is running:\n' +
+        '  yarn db:start\n'
     );
     process.exit(1);
   }

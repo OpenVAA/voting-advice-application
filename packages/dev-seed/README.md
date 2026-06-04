@@ -12,26 +12,28 @@ VAA demo across four locales.
 
 ```bash
 # From repo root
-yarn dev:reset-with-data        # supabase db reset + default template
-yarn dev:seed --template e2e    # E2E test data for manual Playwright runs
-yarn dev:seed:teardown          # remove all seed_-prefixed rows + portraits
+yarn db:reset-with-data            # db reset + default template (DB only)
+yarn db:seed --template e2e/base   # E2E test data for manual Playwright runs
+yarn db:seed:teardown              # remove all seed_-prefixed rows + portraits
 ```
 
-`yarn dev:reset-with-data` is the fast path for a fresh local dev state — it
-composes `yarn supabase:reset` (runs migrations + `seed.sql` bootstrap) with
-`yarn dev:seed --template default` in one step (D-58-11).
+`yarn db:reset-with-data` is the fast path for a fresh local DB state — it
+composes `yarn db:reset` (runs migrations + `seed.sql` bootstrap) with
+`yarn db:seed --template default` in one step (D-58-11). It touches the
+database only; for a full-stack reset that also wipes the vite cache and
+relaunches, use `yarn dev:reset-with-data`.
 
 ## Commands
 
 | Command                                                 | What it does                                                                          |
 | ------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `yarn dev:reset-with-data`                              | `yarn supabase:reset && yarn dev:seed --template default` (composed)                  |
-| `yarn dev:seed --template <name-or-path>`               | Seed a local Supabase with the named built-in or the filesystem template              |
-| `yarn dev:seed:teardown`                                | Delete every generator-produced row (prefix `seed_`) + clean portrait Storage objects |
+| `yarn db:reset-with-data`                               | `yarn db:reset && yarn db:seed --template default` (composed; DB only)                |
+| `yarn db:seed --template <name-or-path>`                | Seed a local Supabase with the named built-in or the filesystem template              |
+| `yarn db:seed:teardown`                                 | Delete every generator-produced row (prefix `seed_`) + clean portrait Storage objects |
 | `yarn workspace @openvaa/dev-seed seed --help`          | Full flag reference                                                                   |
 | `yarn workspace @openvaa/dev-seed seed:teardown --help` | Teardown flag reference                                                               |
 
-The three `dev:*` aliases bubble up from root `package.json` so contributors
+The `db:seed*` scripts bubble up from root `package.json` so contributors
 never have to type `yarn workspace @openvaa/dev-seed ...` for common operations
 (D-58-08).
 
@@ -171,7 +173,7 @@ export default template;
 Run it:
 
 ```bash
-yarn dev:seed --template ./my-template.ts
+yarn db:seed --template ./my-template.ts
 ```
 
 Check the terminal summary for the rows-per-table breakdown and elapsed time.
@@ -248,7 +250,7 @@ Requires:
 - `SUPABASE_URL` (e.g. `http://127.0.0.1:54321`) — set automatically by
   `supabase start`.
 - `SUPABASE_SERVICE_ROLE_KEY` — set automatically by `supabase start`;
-  readable via `yarn supabase:status`.
+  readable via `yarn db:status`.
 
 Missing env → the CLI exits 1 with an actionable message (D-58-12). The
 writer enforces both at construction time (D-15 / NF-02).
@@ -269,10 +271,10 @@ it is not intended to run against production.
 ## Troubleshooting
 
 **`Error: SUPABASE_URL env var is required but not set.`**
-Run `yarn supabase:start` first.
+Run `yarn db:start` first.
 
 **`Error: Cannot reach Supabase at http://127.0.0.1:54321. Is 'supabase start' running?`**
-Check `yarn supabase:status`. If services are down, run `yarn supabase:start`.
+Check `yarn db:status`. If services are down, run `yarn db:start`.
 
 **`Unknown template: 'foo'. Built-in templates: default, e2e.`**
 Either use a known built-in name or pass a filesystem path starting with
@@ -291,7 +293,7 @@ single-character prefix.
 **Portrait upload fails mid-run.**
 Storage upload failure is a seed-blocking error (not a warning) — the run
 aborts (exit 1). Re-run after fixing the Storage bucket state
-(`yarn supabase:reset` is the safest way to return to a clean slate).
+(`yarn db:reset` is the safest way to return to a clean slate).
 
 ## Related Docs
 

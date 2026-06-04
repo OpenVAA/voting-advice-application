@@ -55,7 +55,7 @@ import { SupabaseAdminClient } from './supabaseAdminClient';
  * Absolute path to the committed portrait assets directory.
  *
  * Resolved once at module load time from `import.meta.url` so the path is
- * stable whether the package is invoked via `yarn dev:seed` (root) or
+ * stable whether the package is invoked via `yarn db:seed` (root) or
  * `yarn workspace @openvaa/dev-seed seed` (workspace). Plan 02 commits 30
  * `portrait-NN.jpg` files at this location.
  */

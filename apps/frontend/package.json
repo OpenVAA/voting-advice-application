@@ -14,7 +14,8 @@
     "algorithm-example": "tsx src/matching/examples/example.ts",
     "generate:translation-key-type": "tsx tools/translationKey/generateTranslationKeyType.ts && prettier --write src/lib/types/generated/translationKey.ts",
     "test:unit": "vitest run",
-    "test:unit:watch": "vitest"
+    "test:unit:watch": "vitest",
+    "clean": "rm -rf .svelte-kit node_modules/.vite"
   },
   "devDependencies": {
     "@eslint/eslintrc": "catalog:",

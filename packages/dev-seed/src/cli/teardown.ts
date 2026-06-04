@@ -26,7 +26,7 @@
  * `feedback` are NOT in schema's `allowed_collections` (raises
  * `Unknown collection for deletion: %`). `app_settings` is in
  * `allowed_collections` but the writer merges-upserts it (not inserts) —
- * resetting app_settings is `supabase:reset`'s job, not teardown's.
+ * resetting app_settings is `db:reset`'s job, not teardown's.
  *
  * D-58-17: permissive prefix. Trust GEN-04 contract — no shape verification.
  *
@@ -57,7 +57,7 @@ if (!process.env.SUPABASE_URL && process.env.PUBLIC_SUPABASE_URL) {
  *
  * NOT `accounts` / `projects` / `feedback` — not in schema's
  * `allowed_collections` (Pitfall #6). NOT `app_settings` — writer merges
- * it, doesn't insert; `supabase:reset` handles that path.
+ * it, doesn't insert; `db:reset` handles that path.
  *
  * Order listed here doesn't matter — the RPC re-orders server-side per
  * schema line 2845-2849.

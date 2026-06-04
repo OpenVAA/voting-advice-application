@@ -488,9 +488,7 @@ export class SupabaseAdminClient {
     ): Promise<void> => {
       if (!rows) return;
       for (const row of rows) {
-        const electionRefs = row._elections as
-          | { externalId?: Array<string>; external_id?: Array<string> }
-          | undefined;
+        const electionRefs = row._elections as { externalId?: Array<string>; external_id?: Array<string> } | undefined;
         const electionExtIds = electionRefs?.externalId ?? electionRefs?.external_id;
         if (!electionExtIds?.length) continue;
 
@@ -515,18 +513,13 @@ export class SupabaseAdminClient {
           .eq('external_id', rowExtId)
           .eq('project_id', this.projectId);
         if (updateError) {
-          throw new Error(
-            `linkJoinTables: failed to update ${table} ${rowExtId} election_ids: ${updateError.message}`
-          );
+          throw new Error(`linkJoinTables: failed to update ${table} ${rowExtId} election_ids: ${updateError.message}`);
         }
       }
     };
 
     await electionResolve(categories, 'question_categories');
-    await electionResolve(
-      data.questions as Array<Record<string, unknown>> | undefined,
-      'questions'
-    );
+    await electionResolve(data.questions as Array<Record<string, unknown>> | undefined, 'questions');
 
     // Link question_categories -> constituencies (via constituency_ids JSONB)
     // and questions -> constituencies (via constituency_ids JSONB). Both
@@ -574,10 +567,7 @@ export class SupabaseAdminClient {
     };
 
     await constResolve(categories, 'question_categories');
-    await constResolve(
-      (data.questions as Array<Record<string, unknown>> | undefined),
-      'questions'
-    );
+    await constResolve(data.questions as Array<Record<string, unknown>> | undefined, 'questions');
   }
 
   // ---------------------------------------------------------------------------
@@ -731,7 +721,7 @@ export class SupabaseAdminClient {
    * PRIMARY path; the trigger is a nice-to-have async fallback.
    *
    * Missing bucket / missing path is treated as empty (initial state after
-   * `supabase:reset` with no seed data yet) — only non-"not found" list
+   * `db:reset` with no seed data yet) — only non-"not found" list
    * errors throw.
    */
   async listCandidatePortraitPaths(candidateIds?: Array<string>): Promise<Array<string>> {

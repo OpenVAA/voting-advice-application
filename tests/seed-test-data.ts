@@ -9,7 +9,7 @@
  * seed-path failures.
  *
  * Usage:   cd tests && npx tsx seed-test-data.ts
- * Prereqs: Supabase running (`yarn supabase:start`); env vars SUPABASE_URL +
+ * Prereqs: Supabase running (`yarn db:start`); env vars SUPABASE_URL +
  *          SUPABASE_SERVICE_ROLE_KEY set (via root .env).
  */
 

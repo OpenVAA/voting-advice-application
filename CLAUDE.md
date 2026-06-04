@@ -12,10 +12,9 @@ OpenVAA is a framework for building Voting Advice Applications (VAAs). It's a mo
 
 ```bash
 yarn install                    # Install all workspace dependencies
-yarn dev                        # Start Supabase + Vite dev server
-yarn db:down                    # Stop Supabase services
-yarn db:stop                    # Stop Supabase services
-yarn db:reset                   # Reset database (drops and recreates) + wipe vite cache
+yarn dev                        # Full stack: start local Supabase + package watcher + Vite dev server
+yarn db:stop                    # Stop local Supabase
+yarn db:reset                   # Reset the database only (drops + recreates from migrations + seed.sql)
 yarn db:status                  # Show Supabase service status
 ```
 
@@ -52,23 +51,29 @@ yarn format                   # Format all files with Prettier
 yarn workspace @openvaa/frontend dev
 ```
 
-### Supabase Commands
+### Database & Stack Commands
+
+**Harmonised naming:** `db:*` scripts touch **only the database/Supabase**; `dev:*` scripts drive the **full stack** (DB + shared-package watcher + frontend). There are no `supabase:*` scripts and no deprecated `dev:*` aliases — those were removed at v2.10 close.
 
 ```bash
-yarn db:start                 # Build packages, start local Supabase, launch frontend dev server
-yarn db:stop                  # Stop local Supabase instance (alias for db:down)
-yarn db:down                  # Stop local Supabase instance
-yarn db:reset                 # Reset database (drops + recreates) + wipe vite cache (supabase:reset && dev:clean)
-yarn db:reset-with-data       # supabase:reset + db:seed --template default + dev:clean
-yarn db:seed                  # Run @openvaa/dev-seed (accepts --template <name>, --likert-only, --seed <int>, --external-id-prefix <str>)
-yarn db:seed:teardown         # Remove all seed_-prefixed rows + portraits
+# --- Database only (Supabase + dev-seed; never touches the vite cache or frontend) ---
+yarn db:start                 # Start local Supabase (Postgres, Auth, Storage, Edge Functions, Inbucket)
+yarn db:stop                  # Stop local Supabase
 yarn db:status                # Show Supabase service status
-yarn dev:clean                # Wipe apps/frontend/.svelte-kit + apps/frontend/node_modules/.vite (vite-cache reset)
-yarn supabase:types           # Regenerate TypeScript types from schema
-yarn supabase:lint:sql        # Run SQL linter on all migrations (sqlfluff + Splinter advisors)
-```
+yarn db:reset                 # Reset the DB only: ensure Supabase is up, then `supabase db reset` (migrations + seed.sql)
+yarn db:reset-with-data       # db:reset, then db:seed --template default
+yarn db:seed                  # Run @openvaa/dev-seed (accepts --template <name>, --likert-only, --seed <int>, --external-id-prefix <str>)
+yarn db:seed:default          # db:seed --template default
+yarn db:seed:teardown         # Remove all seed_-prefixed rows + portraits
+yarn db:types                 # Regenerate TypeScript types from schema
+yarn db:lint:sql              # Run SQL linter on all migrations (sqlfluff + Splinter advisors)
 
-**Deprecated aliases** (preserved through v2.10; each emits a `[deprecated]` warning on stderr then forwards to the canonical `db:*`): `dev:start`, `dev:down`, `dev:stop`, `dev:reset`, `dev:reset-with-data`, `dev:seed`, `dev:seed:teardown`, `dev:status`. Use the new `db:*` names in all new scripts and docs.
+# --- Full stack (DB + watcher + frontend) ---
+yarn dev                      # Start Supabase + package watcher + Vite dev server
+yarn dev:clean                # Wipe apps/frontend/.svelte-kit + apps/frontend/node_modules/.vite (vite-cache reset)
+yarn dev:reset                # db:reset, then launch the full stack (yarn dev)
+yarn dev:reset-with-data      # db:reset-with-data, then launch the full stack (yarn dev)
+```
 
 ### Single Test Development
 
@@ -239,7 +244,7 @@ The development stack uses Supabase CLI for backend services:
 
 **Tests**: pgTAP tests in `apps/supabase/tests/`
 
-**Type generation**: Run `yarn supabase:types` after schema changes to update `packages/supabase-types/`
+**Type generation**: Run `yarn db:types` after schema changes to update `packages/supabase-types/`
 
 ## Common Workflows
 
@@ -281,7 +286,7 @@ yarn build             # Rebuilds all packages (cached -- only changed packages 
 ### Seeding local data
 
 ```bash
-yarn db:reset-with-data                        # supabase db reset + default template (Finnish demo, 4 locales) + vite-cache wipe
+yarn db:reset-with-data                        # db:reset + default template (Finnish demo, 4 locales); DB only — does not touch the vite cache
 yarn db:seed --template e2e/base               # E2E test data for manual Playwright runs (canonical base dataset; bare `e2e` retired in Phase 93)
 yarn db:seed --template e2e/base --likert-only # E2E voter-fixture-compatible seed: restricts opinion questions to singleChoiceOrdinal, keeps all info questions
 yarn db:seed --template ./my-template.ts       # custom templates from filesystem
@@ -290,7 +295,7 @@ yarn db:seed:teardown                          # remove all seed_-prefixed rows 
 
 **Note on `--likert-only`:** the voter-fixture `answeredVoterPage` (`tests/tests/fixtures/voter.fixture.ts`) iterates Likert-only opinion questions and races against non-ordinal opinion questions (boolean / categorical / number) introduced by Phase 74+. Pass `--likert-only` to drop those non-ordinal opinion questions before running voter-app E2E specs. The flag is a no-op for templates without a `questions.fixed[]` array.
 
-**Yarn arg-forwarding caveat:** `yarn db:reset-with-data --likert-only` does NOT forward `--likert-only` through the `&&`-chain (yarn appends trailing args to the LAST command, which is `dev:clean`). Canonical invocation for a fully Likert-only reset is the manual chain: `yarn db:reset && yarn db:seed --template e2e/base --likert-only && yarn dev:clean`.
+**Yarn arg-forwarding caveat:** `yarn db:reset-with-data` seeds the **`default`** template, not the e2e dataset — it is not the e2e path. Passing `--likert-only` to it (`yarn db:reset-with-data --likert-only`) attaches the flag to the trailing `default`-template seed, not to `e2e/base`. For a Likert-only e2e seed, use the explicit chain so the flag lands on the `db:seed` invocation: `yarn db:reset && yarn db:seed --template e2e/base --likert-only`. (`db:reset` no longer touches the vite cache; if you need a clean Vite cache too, `yarn dev` wipes it on startup, or run `yarn dev:clean`.)
 
 See `packages/dev-seed/README.md` for authoring custom templates (mixing
 `fixed[]` hand-authored rows with synthetic `count`, 4-locale expansion,
@@ -366,7 +371,7 @@ See `render.example.yaml` for Render deployment configuration:
 
 ## Troubleshooting
 
-**Database issues**: Run `yarn db:reset` to reset the database (drops and recreates all tables with fresh seed data; also wipes the vite cache).
+**Database issues**: Run `yarn db:reset` to reset the database only (drops and recreates all tables from migrations + `seed.sql`). For a full-stack reset that also wipes the vite cache and relaunches, use `yarn dev:reset`.
 
 **Port conflicts**: Check ports 54321 (Supabase API), 54323 (Supabase Studio), 5173 (frontend) are free.
 
