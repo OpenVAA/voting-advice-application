@@ -38,7 +38,7 @@ Requirements for this milestone. Each maps to exactly one roadmap phase.
 ### Domain B — View Transitions (VT) — Wave A
 
 - [x] **VT-01**: the root layout couples navigation to the View Transitions API via `onNavigate(navigation => new Promise(resolve => startViewTransition(async () => { resolve(); await navigation.complete; })))`, reading `navigation.to?.url` (NOT `page.url`) for destination-based decisions. _(spike 015)_
-- [ ] **VT-02**: `view-transition-name`s are assigned so element-stable cross-fades replace the perceived full-page redraw. **Scope expanded per user decision 99-1 (2026-06-04)** beyond the 4 spike-proven elements (Header / MainContent / hero / QuestionActions) to also cover, where applicable: **results election-switching, entity tabs in results, tabs in entity details, `QuestionHeading`, and the candidate-app `/questions` route.** _(spike 015 + user 99-1)_
+- [x] **VT-02**: `view-transition-name`s are assigned so element-stable cross-fades replace the perceived full-page redraw. **Scope expanded per user decision 99-1 (2026-06-04)** beyond the 4 spike-proven elements (Header / MainContent / hero / QuestionActions) to also cover, where applicable: **results election-switching, entity tabs in results, tabs in entity details, `QuestionHeading`, and the candidate-app `/questions` route.** _(spike 015 + user 99-1)_
 - [x] **VT-03**: `prefers-reduced-motion` is honored on BOTH layers — `matchMedia` short-circuits `startViewTransition` in JS, and a CSS `@media (prefers-reduced-motion: reduce) { :global(...) }` block (correct Svelte-parser form) nulls any escaping animation. _(spike 015)_
 
 ### Domain B — Navigation a11y (NAVA11Y) — Wave A
@@ -94,7 +94,7 @@ Which phases cover which requirements. Populated during roadmap creation.
 | CLEAN-01 | Phase 98 | Pending |
 | CLEAN-02 | Phase 98 | Pending |
 | VT-01 | Phase 99 | Complete |
-| VT-02 | Phase 99 | Pending |
+| VT-02 | Phase 99 | Complete |
 | VT-03 | Phase 99 | Complete |
 | NAVA11Y-01 | Phase 99 | Complete |
 | NAVA11Y-02 | Phase 99 | Complete |

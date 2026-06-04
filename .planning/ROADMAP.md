@@ -215,7 +215,7 @@ Audit: `.planning/milestones/v2.10-MILESTONE-AUDIT.md` (status: tech_debt — no
 **Plans**: 3 plans (3 waves — strictly sequential; no file overlap)
 
   - [x] 99-01-PLAN.md — VT mechanism: shared `viewTransition.ts` helper (`shouldAnimate`/`startViewTransition`) + root-layout merge (onNavigate VT coupling, afterNavigate focus reset, aria-live announcer, reduced-motion both layers, `?notr=1`) — VT-01/VT-03/NAVA11Y-01/NAVA11Y-02 _(wave 1)_
-  - [ ] 99-02-PLAN.md — `view-transition-name` surface assignment across the expanded set (Header/MainContent/Hero/QuestionActions/QuestionHeading, voter+candidate `/questions`, results election-switch + entity tabs, entity-detail tabs via a minimal local Tabs wrapper) + heading focus markers — VT-02/NAVA11Y-02 _(wave 2)_
+  - [x] 99-02-PLAN.md — `view-transition-name` surface assignment across the expanded set (Header/MainContent/Hero/QuestionActions/QuestionHeading, voter+candidate `/questions`, results election-switch + entity tabs, entity-detail tabs via a minimal local Tabs wrapper) + heading focus markers — VT-02/NAVA11Y-02 _(wave 2)_
   - [ ] 99-03-PLAN.md — extend the existing `a11y-smoke.spec.ts` (announcer + focus-on-nav assertions, `?notr=1` determinism) + full-suite parity check — NAVA11Y-03/NAVA11Y-01/NAVA11Y-02 _(wave 3)_
 
 **UI hint**: yes
@@ -258,7 +258,7 @@ Domain A is a strict chain: 95 → 96 → 97 → 98. Domain B is a chain: 99 →
 | 96. Domain A Wave 2 — Tier-2 Bridges | v2.11 | 0/TBD | Not started | - |
 | 97. Domain A Wave 3 — getRoute + Consumer Codemod | v2.11 | 0/TBD | Not started | - |
 | 98. Domain A Wave 4 — Cleanup | v2.11 | 0/TBD | Not started | - |
-| 99. Domain B Wave A — View Transitions + Navigation a11y | v2.11 | 1/3 | In Progress|  |
+| 99. Domain B Wave A — View Transitions + Navigation a11y | v2.11 | 2/3 | In Progress|  |
 | 100. Domain B Wave B — Questions Layout Restructure | v2.11 | 0/TBD | Not started | - |
 | 101. Suite Re-enable + Milestone-Close Green Gate | v2.11 | 0/TBD | Not started | - |
 

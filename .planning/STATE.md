@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.11
 milestone_name: Svelte 5 Runes Migration + View Transitions
 status: executing
-stopped_at: v2.10 milestone audit COMPLETE (verdict tech_debt, no blockers) + Option-B tidy-ups + package-script harmonisation done. Ready for /gsd-complete-milestone v2.10.
-last_updated: "2026-06-04T12:58:40.550Z"
+stopped_at: Completed 99-02-PLAN.md
+last_updated: "2026-06-04T13:05:43.986Z"
 last_activity: 2026-06-04 -- Phase 99 execution started
 progress:
   total_phases: 7
   completed_phases: 1
   total_plans: 8
-  completed_plans: 6
+  completed_plans: 7
   percent: 14
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 ## Current Position
 
 Phase: 99 (domain-b-wave-a-view-transitions-navigation-a11y) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-06-04 -- Phase 99 execution started
 
@@ -151,6 +151,7 @@ The pre-close artifact audit surfaced 15 open items. All v2.10-internal artifact
 | Phase 95 P04 | 3min | 2 tasks | 4 files |
 | Phase 95 P05 | 22min | 3 tasks | 37 files |
 | Phase 99 P01 | 12min | 2 tasks | 2 files |
+| Phase 99 P02 | ~9min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -285,6 +286,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: 95-04: popupStore migrated to pure-rune Pattern-1 get current() (CTX-05); Readable dropped from PopupStore type; the single fromStore(popupQueue) consumer in +layout.svelte migrated to popupQueue.current
 - [Phase ?]: 95-05 (CTX-04): StackedState LIFO stack replaced by token-keyed settingsOverlay registry + declarative use*() API; getLayoutContext() takes no onDestroy arg; all ~33 callsites migrated; StackedState retained for Phase 98.
 - [Phase ?]: Phase 99 Plan 01: View-Transitions coupling + nav-a11y hooks landed in root +layout.svelte via shared viewTransition.ts helper (typed guard, no any); analytics hooks merged not replaced; reduced-motion both layers + ?notr=1 escape hatch shipped.
+- [Phase 99]: Header named via style:view-transition-name (Pitfall-7: stops ::view-transition(root) sliding chrome)
+- [Phase 99]: O-1 honored not deferred: opt-in transitionOnChange Tabs prop wraps local activeIndex mutation in startViewTransition; bind:activeIndex preserved
 
 ### Quick Tasks Completed
 
@@ -323,9 +326,9 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-04T12:58:19.918Z
-Stopped at: v2.10 milestone audit COMPLETE (verdict tech_debt, no blockers) + Option-B tidy-ups + package-script harmonisation done. Ready for /gsd-complete-milestone v2.10.
-Resume file: None (clean milestone-boundary pause)
+Last session: 2026-06-04T13:05:43.979Z
+Stopped at: Completed 99-02-PLAN.md
+Resume file: None
 Work done this session:
 
 - Fresh full-milestone audit (79-94) written to .planning/v2.10-MILESTONE-AUDIT.md (prior Phase-87 partial audit preserved as Appendix A). Verdict: tech_debt — 13 satisfied + 3 partial (86/86.1/86.2 missing VERIFICATION.md, documentary debt) + 0 unsatisfied; final e2e suite GREEN (82/2). Integration-checker skipped (test-infra milestone; composition proven by Phase 94 --list 84/72 + green run).
