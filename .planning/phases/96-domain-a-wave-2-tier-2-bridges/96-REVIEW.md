@@ -56,6 +56,8 @@ CTX-08 boundary) was treated as out of scope and not flagged.
 
 ### CR-01: tracking `sessionId` default UUID is never persisted to sessionStorage (cross-reload session correlation broken)
 
+**✓ RESOLVED** — Phase 96 gap-closure, commit `2e12ebec0`. Root cause fixed in the shared `storageState` core: it now persists the freshly-defaulted value on init when nothing valid was stored (`if (stored === null) saveItemToStorage(...)`), browser-gated (SSR no-op) — restoring the old `storageWritable` subscribe-on-init persistence. Regression tests added for both `sessionStorageState` (the `sessionId` case) and `localStorageState`, plus an SSR no-persist assertion. Frontend unit suite 725/725.
+
 **File:** `apps/frontend/src/lib/contexts/app/tracking/trackingService.svelte.ts:74`
 (helper: `apps/frontend/src/lib/contexts/utils/persistedState.svelte.ts:112-129`)
 
