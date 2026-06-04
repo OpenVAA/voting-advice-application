@@ -10,7 +10,7 @@ progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 8
-  completed_plans: 2
+  completed_plans: 3
   percent: 0
 ---
 
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 ## Current Position
 
 Phase: 95 (domain-a-wave-1-tier-1-leaf-contexts) — EXECUTING
-Plan: 3 of 5
+Plan: 4 of 5
 Status: Ready to execute
-Last activity: 2026-06-04 -- Phase 95 execution started
+Last activity: 2026-06-04 -- Completed 95-03 (localStorageState helper + voter/candidate answer-store rune migration; CTX-03)
 
 ## Performance Metrics
 
@@ -147,6 +147,7 @@ The pre-close artifact audit surfaced 15 open items. All v2.10-internal artifact
 | Phase 94 P08 | ~7min | 2 tasks | 3 files |
 | Phase 95 P01 | 4min | 3 tasks | 3 files |
 | Phase 95 P02 | 8min | 2 tasks | 2 files |
+| Phase 95 P03 | 12min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -250,6 +251,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Phase 90 Plan 04 — Per-perm recipientEmail 'candidate-l10n-pos-aa@test.openvaa.local' prevents cross-perm Inbucket pollution (distinct from 90-03 + candidate-mega per emailBucket recipient-filter)
 - [Phase ?]: D-91-PD-07 applied — named-params + answers-filled-by-default lock-in at the shared.ts + buildMinimal + candidateSessionMinter layers
 - [Phase ?]: Hybrid port discipline for perm-localisation-positive (buildMinimal for topology + hand-authored override for bespoke 4Q/answer shape)
+- [Phase 95 P03]: CTX-03 closed — new `localStorageState<T>(key, default)` helper (the only new symbol in Phase 95, K1) added to persistedState.svelte.ts via a private StorageType-parametrized `storageState` core that REUSES production `getItemFromStorage`/`saveItemToStorage` (no inline readVersioned/writeVersioned, NO format-migration shim per D-03 — stale payload → default). Both voter `answerStore` + candidate `candidateUserDataStore` migrated off the `$state → localStorageWritable → fromStore` 3-layer bridge to a single handle; `svelte/store` import fully removed at BOTH leaves (getter-shaped public surfaces → no consumer bridge). JSON-clone (L-4) + deepFreeze + `startEvent` hooks preserved. `localStorageWritable`/`sessionStorageWritable` KEPT (Phase 98 deletes). Core shaped for Phase 96 `sessionStorageState` reuse. Unit: 697/697; `yarn check` baseline-identical (0 new type errors). Task 3 resumed mid-flight after API socket drop — uncommitted candidate-store change reviewed correct, committed atomically, no rework.
 - [Phase ?]: buildMinimal extended with buildSingleOrgNoms branch — supports organizations=1 perms without orphan or-2 parent rows
 - [Phase ?]: Phase 91 Plan 03 (D-91-MJ-02): feedbackDialog shared function-fixture authored under tests/tests/fixtures/shared/ (NEW directory) with full Pattern 2 surface; standalone factory pattern, NOT extended into voter-mega.fixture.ts.
 - [Phase ?]: Phase 91 Plan 03 (Pitfall 10): data-status={status} attribute on Feedback.svelte:235 submit button + data-testid='input-error' on Input.svelte:641 inline ErrorMessage land the locale-resilient assertion targets for feedbackDialog success state + Input validation error surface.
