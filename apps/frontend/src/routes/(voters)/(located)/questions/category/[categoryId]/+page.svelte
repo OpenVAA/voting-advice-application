@@ -16,7 +16,7 @@ Display the intro to a question category and possibly a button with which to ski
 
 <script lang="ts">
   import { getCustomData } from '@openvaa/app-shared';
-  import { onDestroy, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import { Button } from '$lib/components/button';
@@ -38,7 +38,7 @@ Display the intro to a question category and possibly a button with which to ski
   // context getter; access via voterCtx.X (live $state).
   const voterCtx = getVoterContext();
   const { appSettings, getRoute, dataRoot, t } = voterCtx;
-  const { pageStyles, video } = getLayoutContext(onDestroy);
+  const { pageStyles, video } = getLayoutContext();
 
   ////////////////////////////////////////////////////////////////////
   // Get the current category and first question id
@@ -79,7 +79,7 @@ Display the intro to a question category and possibly a button with which to ski
   // Edit layout
   ////////////////////////////////////////////////////////////////////
 
-  pageStyles.push({ drawer: { background: 'bg-base-300' } });
+  pageStyles.use({ drawer: { background: 'bg-base-300' } });
 </script>
 
 {#if category}

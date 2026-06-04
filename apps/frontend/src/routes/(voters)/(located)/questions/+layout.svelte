@@ -7,7 +7,6 @@
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getLayoutContext } from '$lib/contexts/layout';
@@ -23,7 +22,7 @@
   // are reactive context getters; access via voterCtx.X (live $state).
   const voterCtx = getVoterContext();
   const { appSettings, getRoute, t } = voterCtx;
-  const { topBarSettings, progress } = getLayoutContext(onDestroy);
+  const { topBarSettings, progress } = getLayoutContext();
 
   let { children }: { children: Snippet } = $props();
 
@@ -31,7 +30,7 @@
   // Edit layout and set progress max
   ////////////////////////////////////////////////////////////////////
 
-  topBarSettings.push({
+  topBarSettings.use({
     progress: 'show',
     actions: {
       results: $appSettings.questions.showResultsLink ? 'show' : 'hide'

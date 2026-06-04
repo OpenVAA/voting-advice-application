@@ -10,7 +10,6 @@ Shows the candidate's user settings.
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { PasswordSetter } from '$candidate/components/passwordSetter';
   import { PasswordField } from '$lib/candidate/components/passwordField';
   import { Button } from '$lib/components/button';
@@ -27,7 +26,7 @@ Shows the candidate's user settings.
   ////////////////////////////////////////////////////////////////////
 
   const { getRoute, setPassword, t, userData } = getCandidateContext();
-  const { pageStyles } = getLayoutContext(onDestroy);
+  const { pageStyles } = getLayoutContext();
 
   ////////////////////////////////////////////////////////////////////
   // Handle password change
@@ -70,7 +69,7 @@ Shows the candidate's user settings.
   // Top bar and styling
   ////////////////////////////////////////////////////////////////////
 
-  pageStyles.push({ drawer: { background: 'bg-base-200' } });
+  pageStyles.use({ drawer: { background: 'bg-base-200' } });
   const subheadingClass = 'text-lg mt-lg mb-md mx-md';
 </script>
 

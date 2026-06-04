@@ -6,8 +6,9 @@ import { untrack } from 'svelte';
  *
  * `StackedState` (still present at `./StackedState.svelte.ts`; deleted in Phase 98)
  * implements a strict-LIFO stack with index-based revert. The consumer-side
- * bookkeeping (`getLayoutContext(onDestroy)`) snapshots stack lengths at call time,
- * then registers an `onDestroy` callback to revert each stack to that index. The
+ * bookkeeping (the old `getLayoutContext` taking an `onDestroy` argument) snapshots
+ * stack lengths at call time, then registers an `onDestroy` callback to revert each
+ * stack to that index. The
  * caller MUST pass `onDestroy` — silent breakage if forgotten — and out-of-order
  * mount/unmount corrupts the merged result (a parent destroyed before its child
  * re-uses the child's slot incorrectly).

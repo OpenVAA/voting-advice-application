@@ -10,7 +10,6 @@ Shows a form with which to set a new password when it has been reset.
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import { PasswordSetter } from '$lib/candidate/components/passwordSetter';
@@ -32,7 +31,7 @@ Shows a form with which to set a new password when it has been reset.
   // any later code that re-reads isSessionFlow inside an effect/derived.)
   const candCtx = getCandidateContext();
   const { getRoute, resetPassword, setPassword, t } = candCtx;
-  const { pageStyles } = getLayoutContext(onDestroy);
+  const { pageStyles } = getLayoutContext();
 
   ////////////////////////////////////////////////////////////////////
   // Handle form
@@ -98,7 +97,7 @@ Shows a form with which to set a new password when it has been reset.
   // Top bar and styling
   ////////////////////////////////////////////////////////////////////
 
-  pageStyles.push({ drawer: { background: 'bg-base-300' } });
+  pageStyles.use({ drawer: { background: 'bg-base-300' } });
 </script>
 
 <MainContent title={t('candidateApp.resetPassword.createNewPassword')}>

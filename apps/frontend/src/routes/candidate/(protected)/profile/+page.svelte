@@ -12,7 +12,6 @@ Shows the candidate's basic information, some of which is editable.
 <script lang="ts">
   import { getCustomData } from '@openvaa/app-shared';
   import { isEmptyValue } from '@openvaa/data';
-  import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
@@ -35,7 +34,7 @@ Shows the candidate's basic information, some of which is editable.
   // Phase 61-03 follow-up: read reactive context getters via candCtx.X.
   const candCtx = getCandidateContext();
   const { appSettings, dataRoot, getRoute, t, userData } = candCtx;
-  const { pageStyles } = getLayoutContext(onDestroy);
+  const { pageStyles } = getLayoutContext();
 
   ////////////////////////////////////////////////////////////////////
   // State variables
@@ -162,7 +161,7 @@ Shows the candidate's basic information, some of which is editable.
   // Styling
   ////////////////////////////////////////////////////////////////////
 
-  pageStyles.push({ drawer: { background: 'bg-base-200' } });
+  pageStyles.use({ drawer: { background: 'bg-base-200' } });
 
   const subheadingClass = 'text-lg mt-lg mb-md mx-md';
 </script>

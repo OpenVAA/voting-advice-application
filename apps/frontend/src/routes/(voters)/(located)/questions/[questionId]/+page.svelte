@@ -17,7 +17,7 @@ Display a question for answering.
 <script lang="ts">
   import { getCustomData } from '@openvaa/app-shared';
   import { error } from '@sveltejs/kit';
-  import { onDestroy, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import { Hero } from '$lib/components/hero';
@@ -46,7 +46,7 @@ Display a question for answering.
   // accessed via voterCtx.X (live $state).
   const voterCtx = getVoterContext();
   const { answers, appSettings, dataRoot, getRoute, startEvent, t } = voterCtx;
-  const { progress, video } = getLayoutContext(onDestroy);
+  const { progress, video } = getLayoutContext();
 
   ////////////////////////////////////////////////////////////////////
   // Get the current question and update related variables

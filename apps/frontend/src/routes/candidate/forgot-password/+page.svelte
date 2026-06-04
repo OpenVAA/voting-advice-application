@@ -6,7 +6,6 @@ Shows a form with which to request a password reset email.
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
@@ -21,7 +20,7 @@ Shows a form with which to request a password reset email.
   ////////////////////////////////////////////////////////////////////
 
   const { getRoute, requestForgotPasswordEmail, t } = getCandidateContext();
-  const { pageStyles } = getLayoutContext(onDestroy);
+  const { pageStyles } = getLayoutContext();
 
   ////////////////////////////////////////////////////////////////////
   // Handle form
@@ -51,7 +50,7 @@ Shows a form with which to request a password reset email.
   // Top bar and styling
   ////////////////////////////////////////////////////////////////////
 
-  pageStyles.push({ drawer: { background: 'bg-base-300' } });
+  pageStyles.use({ drawer: { background: 'bg-base-300' } });
 </script>
 
 <MainContent title={t('candidateApp.resetPassword.title')}>

@@ -12,7 +12,6 @@ Displays information about the privacy policy of the app as well as the possible
 
 <script lang="ts">
   import { staticSettings } from '@openvaa/app-shared';
-  import { onDestroy } from 'svelte';
   import { Button } from '$lib/components/button';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { HeroEmoji } from '$lib/components/heroEmoji';
@@ -32,8 +31,8 @@ Displays information about the privacy policy of the app as well as the possible
       }</a>`
     : '';
 
-  const { topBarSettings } = getLayoutContext(onDestroy);
-  topBarSettings.push({
+  const { topBarSettings } = getLayoutContext();
+  topBarSettings.use({
     actions: {
       return: 'show',
       returnButtonLabel: t('common.returnHome')

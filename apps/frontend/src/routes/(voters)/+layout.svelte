@@ -19,7 +19,7 @@
 -->
 
 <script lang="ts">
-  import { onDestroy, onMount, untrack } from 'svelte';
+  import { onMount } from 'svelte';
   import { Notification } from '$lib/components/notification';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { initVoterContext } from '$lib/contexts/voter';
@@ -50,49 +50,34 @@
   // Layout
   ////////////////////////////////////////////////////////////////////
 
-  const { navigation, topBarSettings } = getLayoutContext(onDestroy);
+  const { navigation, useTopBar } = getLayoutContext();
 
-  // Phase 86.3-01 SETTINGS-01 wave A fix (cells #1 + #2): topBarSettings.push must
+  // Phase 86.3-01 SETTINGS-01 wave A fix (cells #1 + #2): the top-bar overlay must
   // be reactive on $appSettings so runtime overrides via
   // mergeAppSettings(page.data.appSettingsData) (appContext.svelte.ts:93-100)
   // propagate to the header Banner. Mirrors the canonical $effect pattern at
-  // appContext.svelte.ts:93-100. Pitfall 1 guard: each $effect re-run reverts
-  // to a captured baseline before pushing — prevents infinite stack growth
-  // (StackedState.push/revert API at StackedState.svelte.ts:40-56).
+  // appContext.svelte.ts:93-100.
   //
-  // WR-02 (Phase 86.3 review): child-layout / +page.svelte interleave assumption.
-  // The fixed `topBarBaseIdx` captured at component init means this $effect's
-  // re-runs will `revert(topBarBaseIdx); push(next)` — DROPPING any overlays
-  // child consumers may have pushed ABOVE topBarBaseIdx. Safety relies on the
-  // SvelteKit lifecycle guarantee that child layouts / +page.svelte consumers
-  // register their `onDestroy(() => topBarSettings.revert(indexTopBar))` via
-  // `getLayoutContext` (see layoutContext.svelte.ts:169-181), so their overlays
-  // are torn down BEFORE navigation triggers an $appSettings change (the only
-  // current re-run trigger for this $effect). Future child consumers MUST NOT
-  // push inside an $effect that responds to the same $appSettings change unless
-  // they order themselves AFTER this $effect; otherwise their overlay will be
-  // silently erased on the next parent re-run. See 86.3-REVIEW.md WR-02 for
-  // the full analysis + a reactive-baseline alternative if the constraint
-  // becomes load-bearing.
-  const topBarBaseIdx = topBarSettings.getLength() - 1;
+  // CTX-04 (Phase 95-05): migrated off the StackedState revert/push-baseline
+  // pattern to the token-keyed settingsOverlay registry. `useTopBar(...)` is
+  // `$effect(() => topBar.push(overlay))` — a NESTED effect. When this OUTER
+  // $effect re-runs on an $appSettings change, Svelte tears down the nested
+  // `use()` effect first (its cleanup reverts the prior overlay) and then
+  // re-creates it (pushing the fresh overlay). This is structurally robust to
+  // out-of-order child mount/unmount: each overlay is token-keyed, so a child
+  // consumer's overlay is never silently erased by this parent re-run (the
+  // WR-02 interleave hazard the index-based stack carried is gone). No
+  // `untrack` is required here — the push/revert write-after-read is already
+  // untrack-guarded inside settingsOverlay (SettingsOverlay.svelte.ts).
   $effect(() => {
-    // Reactive reads — these register the $effect's dependencies.
+    // Reactive reads — these register the OUTER $effect's dependencies.
     const feedback = $appSettings.header.showFeedback;
     const help = $appSettings.header.showHelp;
-    // Mutations wrapped in untrack: StackedState.push spreads `#stack`
-    // ([...this.#stack]) and revert reads `#stack.length` + `#stack.slice(...)`.
-    // Without untrack, those reads register `#stack` as an $effect dep, and the
-    // immediate write back to `#stack` re-triggers the effect → infinite loop
-    // (effect_update_depth_exceeded). untrack confines reactivity to the
-    // $appSettings.X reads above.
-    untrack(() => {
-      topBarSettings.revert(topBarBaseIdx);
-      topBarSettings.push({
-        actions: {
-          feedback: feedback ? ('show' as const) : ('hide' as const),
-          help: help ? ('show' as const) : ('hide' as const)
-        }
-      });
+    useTopBar({
+      actions: {
+        feedback: feedback ? ('show' as const) : ('hide' as const),
+        help: help ? ('show' as const) : ('hide' as const)
+      }
     });
   });
 

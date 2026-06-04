@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
   import { getCandidateContext } from '$lib/contexts/candidate';
@@ -17,14 +16,14 @@
   // Phase 61-03 follow-up: read reactive context getters via candCtx.X.
   const candCtx = getCandidateContext();
   const { getRoute, t, userData, clearIdToken } = candCtx;
-  const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
+  const { pageStyles, topBarSettings } = getLayoutContext();
 
   ///////////////////////////////////////////////////////////////////
   // Top bar and styling
   ////////////////////////////////////////////////////////////////////
 
-  pageStyles.push({ drawer: { background: 'bg-base-300' } });
-  topBarSettings.push({
+  pageStyles.use({ drawer: { background: 'bg-base-300' } });
+  topBarSettings.use({
     actions: {
       cancel: candCtx.idTokenClaims ? 'show' : 'hide',
       cancelButtonLabel: t('common.cancel'),

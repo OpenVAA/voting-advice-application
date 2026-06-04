@@ -20,7 +20,7 @@
 -->
 
 <script lang="ts">
-  import { onDestroy, tick } from 'svelte';
+  import { tick } from 'svelte';
   import { slide } from 'svelte/transition';
   import { applyAction, enhance } from '$app/forms';
   import { goto } from '$app/navigation';
@@ -46,7 +46,7 @@
   const candCtx = getCandidateContext();
   const { appCustomization, appSettings, darkMode, getRoute, t } = candCtx;
   const answersLocked = $derived(candCtx.answersLocked);
-  const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
+  const { pageStyles, topBarSettings } = getLayoutContext();
 
   ////////////////////////////////////////////////////////////////////
   // Handle form and error messages
@@ -111,8 +111,8 @@
   // Top bar and styling
   ////////////////////////////////////////////////////////////////////
 
-  pageStyles.push({ drawer: { background: 'bg-base-300' } });
-  topBarSettings.push({
+  pageStyles.use({ drawer: { background: 'bg-base-300' } });
+  topBarSettings.use({
     imageSrc: $darkMode
       ? ($appCustomization.candPoster?.urlDark ?? $appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
       : ($appCustomization.candPoster?.url ?? '/images/hero-candidate.png')

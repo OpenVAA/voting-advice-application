@@ -6,7 +6,6 @@ Displays information about the elections in the VAA.
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getAppContext } from '$lib/contexts/app';
@@ -16,8 +15,8 @@ Displays information about the elections in the VAA.
 
   const { dataRoot, getRoute, t } = getAppContext();
 
-  const { topBarSettings } = getLayoutContext(onDestroy);
-  topBarSettings.push({
+  const { topBarSettings } = getLayoutContext();
+  topBarSettings.use({
     actions: {
       return: 'show',
       returnButtonLabel: t('common.returnHome')

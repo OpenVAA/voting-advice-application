@@ -10,7 +10,6 @@ Used to show a preview of the candidate's own profile using the `EntityDetails` 
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { translateLocalizedCandidate } from '$lib/api/utils/translateLocalizedCandidate';
   import { ErrorMessage } from '$lib/components/errorMessage';
@@ -28,7 +27,7 @@ Used to show a preview of the candidate's own profile using the `EntityDetails` 
   ////////////////////////////////////////////////////////////////////
 
   const { dataRoot, getRoute, locale, t, userData } = getCandidateContext();
-  const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
+  const { pageStyles, topBarSettings } = getLayoutContext();
 
   ////////////////////////////////////////////////////////////////////
   // Get the candidate object
@@ -74,8 +73,8 @@ Used to show a preview of the candidate's own profile using the `EntityDetails` 
   // Styling
   ////////////////////////////////////////////////////////////////////
 
-  pageStyles.push({ drawer: { background: 'bg-base-300' } });
-  topBarSettings.push({
+  pageStyles.use({ drawer: { background: 'bg-base-300' } });
+  topBarSettings.use({
     actions: {
       return: 'show',
       returnButtonLabel: t('candidateApp.preview.close'),

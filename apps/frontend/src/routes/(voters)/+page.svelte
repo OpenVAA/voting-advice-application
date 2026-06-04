@@ -10,7 +10,6 @@ The frontpage of the app for voters.
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { Button } from '$lib/components/button';
   import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
@@ -23,14 +22,14 @@ The frontpage of the app for voters.
   ////////////////////////////////////////////////////////////////////
 
   const { appCustomization, appSettings, darkMode, getRoute, t } = getAppContext();
-  const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
+  const { pageStyles, topBarSettings } = getLayoutContext();
 
   ////////////////////////////////////////////////////////////////////
   // Edit layout
   ////////////////////////////////////////////////////////////////////
 
-  pageStyles.push({ drawer: { background: 'bg-base-300' } });
-  topBarSettings.push({
+  pageStyles.use({ drawer: { background: 'bg-base-300' } });
+  topBarSettings.use({
     imageSrc: $darkMode
       ? ($appCustomization.poster?.urlDark ?? $appCustomization.poster?.url ?? '/images/hero.png')
       : ($appCustomization.poster?.url ?? '/images/hero.png')

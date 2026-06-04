@@ -19,7 +19,6 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   import { getCustomData } from '@openvaa/app-shared';
   import { isEmptyValue } from '@openvaa/data';
   import { error } from '@sveltejs/kit';
-  import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import { Button } from '$lib/components/button';
@@ -52,7 +51,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   const answersLocked = $derived(candCtx.answersLocked);
   const questionBlocks = $derived(candCtx.questionBlocks);
   const unansweredOpinionQuestions = $derived(candCtx.unansweredOpinionQuestions);
-  const { pageStyles, video } = getLayoutContext(onDestroy);
+  const { pageStyles, video } = getLayoutContext();
 
   ////////////////////////////////////////////////////////////////////
   // State variables
@@ -238,7 +237,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   // Styling
   ////////////////////////////////////////////////////////////////////
 
-  pageStyles.push({ drawer: { background: 'bg-base-200' } });
+  pageStyles.use({ drawer: { background: 'bg-base-200' } });
 </script>
 
 {#if question}

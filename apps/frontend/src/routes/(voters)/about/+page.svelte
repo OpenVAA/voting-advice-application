@@ -11,7 +11,6 @@ Displays information about the application.
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { Button } from '$lib/components/button';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { HeroEmoji } from '$lib/components/heroEmoji';
@@ -22,8 +21,8 @@ Displays information about the application.
 
   const { appSettings, getRoute, t } = getAppContext();
 
-  const { topBarSettings } = getLayoutContext(onDestroy);
-  topBarSettings.push({
+  const { topBarSettings } = getLayoutContext();
+  topBarSettings.use({
     actions: {
       return: 'show',
       returnButtonLabel: t('common.returnHome')

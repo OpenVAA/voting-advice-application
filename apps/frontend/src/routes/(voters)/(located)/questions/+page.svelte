@@ -12,7 +12,7 @@ Display a general intro before starting answering the questions and possibly all
 
 <script lang="ts">
   import { error } from '@sveltejs/kit';
-  import { onDestroy, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
   import { CategoryTag } from '$lib/components/categoryTag';
@@ -36,7 +36,7 @@ Display a general intro before starting answering the questions and possibly all
   const elections = $derived(voterCtx.selectedElections);
   const constituencies = $derived(voterCtx.selectedConstituencies);
 
-  const { progress } = getLayoutContext(onDestroy);
+  const { progress } = getLayoutContext();
   progress.current.set(0);
 
   ////////////////////////////////////////////////////////////////////

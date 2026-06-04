@@ -7,7 +7,6 @@
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { fromStore } from 'svelte/store';
   import { initAdminContext } from '$lib/contexts/admin';
   import { getLayoutContext } from '$lib/contexts/layout';
@@ -30,8 +29,8 @@
   // Layout and top bar
   ////////////////////////////////////////////////////////////////////
 
-  const { navigation, topBarSettings } = getLayoutContext(onDestroy);
-  topBarSettings.push({
+  const { navigation, topBarSettings } = getLayoutContext();
+  topBarSettings.use({
     actions: {
       logout: 'show'
     }

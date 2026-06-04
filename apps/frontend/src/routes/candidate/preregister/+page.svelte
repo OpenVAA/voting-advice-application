@@ -8,7 +8,6 @@
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { PreregisteredNotification } from '$candidate/components/preregisteredNotification';
@@ -30,7 +29,7 @@
   // isPreregistered) read via candCtx.X — see CLAUDE.md §Context Destructuring Rule.
   const candCtx = getCandidateContext();
   const { getRoute, popupQueue, t } = candCtx;
-  const { navigationSettings } = getLayoutContext(onDestroy);
+  const { navigationSettings } = getLayoutContext();
 
   ////////////////////////////////////////////////////////////////////
   // Popup management
@@ -119,7 +118,7 @@
   // Top bar
   ////////////////////////////////////////////////////////////////////
 
-  if (candCtx.idTokenClaims) navigationSettings.push({ hide: true });
+  if (candCtx.idTokenClaims) navigationSettings.use({ hide: true });
 </script>
 
 {#if candCtx.idTokenClaims}

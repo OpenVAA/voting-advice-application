@@ -8,7 +8,6 @@
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
@@ -25,7 +24,7 @@
 
   const ctx = getCandidateContext();
   const { getRoute, t } = ctx;
-  const { progress, topBarSettings } = getLayoutContext(onDestroy);
+  const { progress, topBarSettings } = getLayoutContext();
 
   ////////////////////////////////////////////////////////////////////
   // Redirect if basic info has not been filled out
@@ -41,7 +40,7 @@
   // Set progress
   ////////////////////////////////////////////////////////////////////
 
-  topBarSettings.push({
+  topBarSettings.use({
     progress: 'show'
   });
 

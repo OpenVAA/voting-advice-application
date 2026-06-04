@@ -14,7 +14,6 @@
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { fromStore } from 'svelte/store';
   import { applyAction, enhance } from '$app/forms';
   import { goto } from '$app/navigation';
@@ -38,7 +37,7 @@
   const appSettingsState = fromStore(appSettings);
   const darkModeState = fromStore(darkMode);
   const getRouteState = fromStore(getRoute);
-  const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
+  const { pageStyles, topBarSettings } = getLayoutContext();
 
   ////////////////////////////////////////////////////////////////////
   // Handle form and error messages
@@ -68,8 +67,8 @@
   // Top bar and styling
   ////////////////////////////////////////////////////////////////////
 
-  pageStyles.push({ drawer: { background: 'bg-base-300' } });
-  topBarSettings.push({
+  pageStyles.use({ drawer: { background: 'bg-base-300' } });
+  topBarSettings.use({
     imageSrc: darkModeState.current ? '/images/hero-admin.png' : '/images/hero-admin.png'
   });
 </script>
