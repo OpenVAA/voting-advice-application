@@ -2,14 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.11
 milestone_name: Svelte 5 Runes Migration + View Transitions
-status: planning
-last_updated: "2026-06-04T12:30:00.000Z"
-last_activity: 2026-06-04
+status: executing
+stopped_at: v2.10 milestone audit COMPLETE (verdict tech_debt, no blockers) + Option-B tidy-ups + package-script harmonisation done. Ready for /gsd-complete-milestone v2.10.
+last_updated: "2026-06-04T11:44:03.202Z"
+last_activity: 2026-06-04 -- Phase 95 execution started
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 8
-  completed_plans: 0
+  completed_plans: 1
   percent: 0
 ---
 
@@ -20,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** v2.11 Svelte 5 Runes Migration + View Transitions — roadmap created (7 phases, 95-101) AND **batch discussion complete**: all 7 phases now have `CONTEXT.md`. Ready to plan (Domain A + Domain B as parallel workstreams per decision DX-1). Backed by the `spike-findings-voting-advice-application-gsd` skill.
+**Current focus:** Phase 95 — domain-a-wave-1-tier-1-leaf-contexts
 
 ## Current Position
 
-Phase: 95 — Domain A Wave 1 (Tier-1 Leaf Contexts) — **PLANNED** (5 plans, 2 waves; verification PASSED). 99 — Domain B Wave A — **PLANNED** (3 plans, 3 waves; verification PASSED).
-Plan: 95 → 95-01..05 · 99 → 99-01..03 (research + pattern-map + plan + plan-check all complete for both)
-Status: **Phases 95 + 99 fully planned in parallel** (DX-1 parallel workstreams). Both passed gsd-plan-checker (0 blockers / 0 warnings, 12/12 dimensions). Batch discussion for all 7 phases captured in `v2.11-DISCUSSION-POINTS.md` → `v2.11-DECISIONS.md` + per-phase CONTEXT.md. Contract reflects K1 no-back-compat + `localStorageState`/`sessionStorageState` renames + VT-02 99-1 scope expansion. **Ready to execute 95 and/or 99** (run `/clear` first for a fresh context window per phase). Remaining queued: 96→97→98 (Domain A chain, plan after 95), 100 (after 99), 101 (final gate).
-Last activity: 2026-06-04 — planned Phases 95 + 99 (parallel: research→pattern-map→plan→plan-check); both verification PASSED
+Phase: 95 (domain-a-wave-1-tier-1-leaf-contexts) — EXECUTING
+Plan: 2 of 5
+Status: Ready to execute
+Last activity: 2026-06-04 -- Phase 95 execution started
 
 ## Performance Metrics
 
@@ -144,6 +145,7 @@ The pre-close artifact audit surfaced 15 open items. All v2.10-internal artifact
 | Phase 94 P06 | ~10min | 2 tasks | 17 files |
 | Phase 94 P07 | ~25min | 2 tasks | 32 files |
 | Phase 94 P08 | ~7min | 2 tasks | 3 files |
+| Phase 95 P01 | 4min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -272,6 +274,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: [Phase 94-06]: De-planned 6 utils + 5 helper-source + 3 shared-setup + 3 root-config files; seed-test-data throw message de-cited (e2e/base literal kept); helper contracts (settleNetworkIdle no-swallow, Select combobox+listbox ARIA, walkToQuestion resilience) + eslint allow-list rationale preserved; typecheck green
 - [Phase 94]: [Phase 94-07]: dev-seed template layer de-planned (32 of 33 files; e2e/base.ts already clean); Plan-01 Math.floor median ordinal logic preserved; D-01 fence held (wider src/ untouched); dev-seed unit 450/450 green
 - [Phase 94]: Plan 94-08: rewrote tests/README.md (D-06) + helpers/README.md (D-05) current-state-only; phase-wide de-planning gate PASS (residual grep empty, typecheck 0, --list 84/72)
+- [Phase ?]: 95-01: appContext appSettings+appCustomization DB override folded into $state init (SSR no-flash, D-04); mergeAppSettings pure spread (D-05, no shared staticSettings mutation); internal pure mergeInitialAppSettings helper added; Wave-1 toStore bridges + userPreferences Writable kept
 
 ### Quick Tasks Completed
 
@@ -310,7 +313,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-04 (resumed via /gsd-resume-work)
+Last session: 2026-06-04T11:43:58.142Z
 Stopped at: v2.10 milestone audit COMPLETE (verdict tech_debt, no blockers) + Option-B tidy-ups + package-script harmonisation done. Ready for /gsd-complete-milestone v2.10.
 Resume file: None (clean milestone-boundary pause)
 Work done this session:
