@@ -147,4 +147,73 @@ describe('persistedState helpers', () => {
     expect(value).toBe('ssr-default');
     unsub();
   });
+
+  describe('localStorageState (rune-native helper)', () => {
+    it('returns defaultValue when nothing is stored', async () => {
+      const { localStorageState } = await importWithBrowser(true);
+      const cleanup = $effect.root(() => {
+        const store = localStorageState('ls-empty', 'default');
+        expect(store.current).toBe('default');
+      });
+      cleanup();
+    });
+
+    it('returns defaultValue under the SSR (browser=false) path', async () => {
+      const { localStorageState } = await importWithBrowser(false);
+      const cleanup = $effect.root(() => {
+        const store = localStorageState('ls-ssr', 'ssr-default');
+        expect(store.current).toBe('ssr-default');
+      });
+      cleanup();
+    });
+
+    it('set(v) updates current AND writes the versioned { version, data } payload', async () => {
+      const { localStorageState } = await importWithBrowser(true);
+      const cleanup = $effect.root(() => {
+        const store = localStorageState('ls-set', 'initial');
+        store.set('next');
+        expect(store.current).toBe('next');
+        const saved = mockStorageData['ls-set'];
+        expect(saved).toBeDefined();
+        const parsed = JSON.parse(saved);
+        expect(parsed).toHaveProperty('version', 2);
+        expect(parsed).toHaveProperty('data', 'next');
+      });
+      cleanup();
+    });
+
+    it('update(fn) applies fn(current) and persists', async () => {
+      const { localStorageState } = await importWithBrowser(true);
+      const cleanup = $effect.root(() => {
+        const store = localStorageState<number>('ls-update', 1);
+        store.update((cur) => cur + 4);
+        expect(store.current).toBe(5);
+        const parsed = JSON.parse(mockStorageData['ls-update']);
+        expect(parsed).toHaveProperty('data', 5);
+      });
+      cleanup();
+    });
+
+    it('round-trips a previously-written value via a fresh localStorageState', async () => {
+      const { localStorageState } = await importWithBrowser(true);
+      const cleanup = $effect.root(() => {
+        const a = localStorageState('ls-roundtrip', 'default');
+        a.set('persisted');
+        const b = localStorageState('ls-roundtrip', 'default');
+        expect(b.current).toBe('persisted');
+      });
+      cleanup();
+    });
+
+    it('discards a stale/wrong-version payload and falls back to default (no migration shim)', async () => {
+      mockStorageData['ls-stale'] = JSON.stringify({ version: 0, data: 'old-value' });
+      const { localStorageState } = await importWithBrowser(true);
+      const cleanup = $effect.root(() => {
+        const store = localStorageState('ls-stale', 'default');
+        expect(store.current).toBe('default');
+        expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('ls-stale');
+      });
+      cleanup();
+    });
+  });
 });
