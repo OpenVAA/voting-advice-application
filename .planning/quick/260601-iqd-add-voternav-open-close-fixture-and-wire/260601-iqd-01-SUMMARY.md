@@ -1,4 +1,6 @@
 ---
+status: complete
+status_note: "Stamped complete at v2.10 milestone audit (2026-06-04). All 4 PLAN must-haves verified present: createVoterNav open()/close() in tests/tests/fixtures/voter/voterNavFixture.fixture.ts, menuToggle 'nav-menu-toggle' testid, perm-localisation-positive wiring. 4 commits landed (dcafe9f1d/b8554ccb6/590bbb402/ab195a328); perm-localisation-positive green in the Phase 94 suite."
 phase: quick-260601-iqd
 plan: 01
 subsystem: e2e-tests

@@ -1,9 +1,10 @@
 ---
-status: passed
+status: complete
 phase: 92-e2e-test-infrastructure-hardening
 source: [92-VERIFICATION.md]
 started: 2026-06-03
-updated: 2026-06-03
+updated: 2026-06-04
+note: "Re-stamped passed → complete at v2.10 milestone audit (terminal-status convention). E2E gate ran 2026-06-03: 51 passed / 0 failed / 0 flaky; 0 pending scenarios."
 ---
 
 ## Current Test

@@ -1,4 +1,6 @@
 ---
+status: complete
+status_note: "Stamped complete at v2.10 milestone audit (2026-06-04). localeNames→paraglide + LanguageSelection rendering committed; the verification-time Vite HMR-staleness noise is resolved downstream — perm-localisation-positive (and the full suite) are green in the Phase 94 run."
 phase: quick-260601-iqd
 plan: 02
 subsystem: frontend-i18n + e2e-tests

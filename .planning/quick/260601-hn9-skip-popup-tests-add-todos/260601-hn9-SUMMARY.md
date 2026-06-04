@@ -1,4 +1,5 @@
 ---
+status: complete
 quick_task: 260601-hn9
 title: Skip notification popup permutation tests + record two pending todos
 subsystem: tests / planning-todos

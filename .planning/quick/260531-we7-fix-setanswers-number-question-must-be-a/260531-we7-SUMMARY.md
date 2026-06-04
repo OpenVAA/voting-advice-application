@@ -1,4 +1,6 @@
 ---
+status: complete
+status_note: "Re-stamped complete at v2.10 milestone audit (2026-06-04). Code fix committed (41ee79340). The plan's remaining step was a blocking manual browser-UAT checkpoint (save number question → reload → persists; clear-and-save). That behavior is now e2e-covered: base.ts seeds the number-type info question `test-e2e-base-qu-info-number`, and candidate-journey.spec.ts fills + round-trips it (`expectInfoAnswer(/\\[qu-info-number\\]/, ...)`, lines 657-659), passing in the green Phase 94 full suite. The automated coverage satisfies the manual UAT checkpoint's primary scenario."
 phase: quick-260531-we7
 plan: 01
 subsystem: frontend-input

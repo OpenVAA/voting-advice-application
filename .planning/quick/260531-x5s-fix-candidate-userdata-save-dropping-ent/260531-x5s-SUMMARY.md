@@ -1,4 +1,5 @@
 ---
+status: complete
 phase: 260531-x5s
 plan: 01
 subsystem: frontend-candidate-data

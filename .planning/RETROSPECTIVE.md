@@ -629,6 +629,42 @@
 
 ---
 
+## Milestone: v2.10 — Test Reliability + A11y Compliance + All-Green Suite
+
+**Shipped:** 2026-06-04
+**Phases:** 19 (79-94, incl. 86.1/86.2/86.3) | **Plans:** 66 | **Tasks:** 140 | **Audit:** `tech_debt` (no blockers)
+
+### What Was Built
+- Determinism recovery (DETERM-04..15): candidate-profile cascading-race fix (a spec-side URL-predicate bug, not the hypothesized frontend race); imgproxy decouple (DATA_RACE 15 → 3); variant-project cascade proven single-source + decoupled; parity-script regen + ship anchor.
+- WCAG 2.1 AA (A11Y-04..07): 5 first-run axe violations fixed at root (`Tabs.svelte role=tablist` + Drawer/Button aria-label i18n); email/url/required-empty candidate-profile validation cells; per-rule + global-zero a11y regression gate.
+- A full E2E catalog overhaul (88-94): mega-journey pattern + parallel-landing; 22-step candidate-journey reimplementation; 12-file candidate fixture library; TIR5/TIR6 permutation specs; `typecheck:tests` gate + `no-restricted-locators`; results-route 4-segment refactor; role-based fixture/setup reorg + `e2e/base` seed consolidation; final de-planning polish. Final suite: **82 passed / 2 skipped**, human-verified.
+
+### What Worked
+- **In-milestone expansion over re-deferral.** The milestone grew from 9 phases (79-87) to 19 (through 94) by absorbing the E2E overhaul rather than spinning it into v2.11 — the suite reached a genuinely clean, typechecked, deterministic state in one continuous push.
+- **Skip-fallback protocol (per-cell 1h cap + `test.skip(true, rationale)` + v2.11 todo).** Kept the all-green ship honest without rabbit-holing on a handful of cold-deeplink races.
+- **Downstream resolution of deferred dynamic gates.** Phase 89's 5 deferred runtime gates + Phase 93's debug session were closed by Phase 94's green run — verified at the milestone audit rather than blocking each phase.
+
+### What Was Inefficient
+- **Verification bookkeeping drift.** 86/86.1/86.2 shipped without VERIFICATION.md; Phase 89 sat at `human_needed` and several quick-task PLANs/UATs kept non-terminal statuses long after the work landed — the close had to reconcile 15 stale-flagged audit artifacts (all resolved, but avoidable with stamp-on-completion discipline).
+- **Anchor/SHA ceremony churn.** Phases 79-87 spent significant effort on parity-anchor capture (Path A/B verbal-accept, CASCADE-pool accounting) that the 88-94 catalog overhaul largely superseded — the green suite became the real gate.
+- **REQUIREMENTS.md never tracked the 88-94 expansion** (informal TIR4/5/6, WR-*, DEPLAN-* IDs lived in SUMMARY frontmatter) — reconciled retroactively at close.
+
+### Patterns Established
+- **Mega-journey specs + role-based function-fixtures** as the candidate/voter E2E shape (one serial journey per app + a fixture library) — cuts setup duplication and cascade surface.
+- **`db:*` (DB-only) vs `dev:*` (full-stack) script split** — harmonised at close; `supabase:*` + deprecated `dev:*` aliases removed.
+- **`tech_debt` verdict = shippable** when the suite is green and no requirement is unsatisfied (operator-accepted documented deferrals don't block close).
+
+### Key Lessons
+1. **Stamp terminal status on completion, not at the milestone audit.** Non-terminal SUMMARY/UAT/PLAN/debug statuses accumulate into a noisy pre-close audit; the work was done, the bookkeeping lagged.
+2. **The green suite is the real gate — anchor SHAs are a means, not the end.** Once the catalog overhaul landed a deterministically-green suite, the elaborate parity-anchor machinery from 79-87 was superseded.
+3. **Track in-milestone expansion in REQUIREMENTS.md as it happens.** A milestone that doubles in scope mid-flight needs its requirements doc to grow with it, or the audit inherits the reconciliation.
+
+### Cost Observations
+- ~23 days (2026-05-12 → 2026-06-04); the milestone's back half (88-94) was the larger, more productive push.
+- Notable: the close itself surfaced + resolved 7 stale artifacts + harmonised the package scripts — milestone-close as a forcing function for accumulated hygiene debt.
+
+---
+
 ## Cross-Milestone Trends
 
 *Note: Parallel branch milestones (sb-v2.0, sb-v3.0) are documented above but not included in cumulative quality metrics — those milestones will be re-executed on this branch during v2.0 integration.*

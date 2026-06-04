@@ -10,6 +10,12 @@ A reliable, well-tested VAA framework that developers can confidently extend, cu
 
 ## Current State
 
+**v2.10 Test Reliability + A11y Compliance + All-Green Suite shipped 2026-06-04.** 19 phases (79-94), 66 plans, 140 tasks across ~23 days. Audit verdict `tech_debt` (no blockers). Delivered: determinism recovery (candidate-profile cascading-race fix; imgproxy decouple DATA_RACE 15→3; variant-cascade RCA), WCAG 2.1 AA compliance (5 first-run axe violations fixed at root + email/url/required-empty validation cells), and a complete E2E catalog overhaul (mega-journey pattern, 22-step candidate-journey, 12-file candidate fixture library, TIR5/TIR6 permutation specs, `typecheck:tests` gate + `no-restricted-locators` guard, role-based fixture/setup reorg + `e2e/base` seed consolidation, final de-planning polish). **Final suite human-verified 82 passed / 2 skipped** (the 2 = intentional `perm-per-app-notifications` quarantine, re-enable after the Svelte 5 runes migration). Package scripts harmonised at close: `db:*` = DB-only, `dev:*` = full-stack, `supabase:*` + deprecated `dev:*` aliases removed. Next milestone: **Svelte 5 runes migration** (see the `spike-findings-voting-advice-application-gsd` skill).
+
+---
+
+_Earlier milestone detail (retained for history):_
+
 **v2.6 Svelte 5 Migration Cleanup shipped 2026-04-28.** 5 phases (60-64), 18 plans, 48 tasks across 4 days (137 commits). Delivered:
 
 - Runes-mode migration of the last two legacy layouts: root `+layout.svelte` and `candidate/(protected)/+layout.svelte` — both refactored from the hydration-unsafe `$effect + Promise.all(...).then()` pattern to a pure `$derived.by` discriminated-union validity check + a dedicated `$effect` for `$dataRoot` / `userData.init` batching. SSR microtask race eliminated; protected-layout stuck-at-`<Loading />` fixed.
@@ -25,7 +31,7 @@ A reliable, well-tested VAA framework that developers can confidently extend, cu
 
 Known infrastructure issue: local imgproxy Docker container crashes intermittently (502 on image upload) — not a code issue, fix with `supabase stop && supabase start`.
 
-## Last Shipped: v2.9 E2E Coverage + Suite Determinism (2026-05-12)
+## Previous: v2.9 E2E Coverage + Suite Determinism (2026-05-12)
 
 **Delivered:** 6 phases (73-78), 32 plans, 89 tasks across 3 days. Audit verdict: `tech_debt` — 24/24 requirements satisfied (12 PASS + 12 PASS-WITH-DEFERRAL); 8 v2.10+ candidate todos filed for routed deferrals.
 
@@ -54,9 +60,11 @@ Known infrastructure issue: local imgproxy Docker container crashes intermittent
 
 **Out of scope (deferred to v2.9+):** E2E coverage workstream (now the v2.9 anchor — see Current Milestone above). Sharable URLs + multi-tenant pair (`results-url-refactor-followups` + `frontend-project-id-scoping`) deferred to v2.10. Luxembourg + Danish VAA reconciliation (`2026-05-10-incorporate-luxembourg-and-danish-vaa-changes`) deferred to a separate milestone; deltas unscoped.
 
-## Current Milestone: v2.10 Test Reliability + A11y Compliance
+## Last Shipped: v2.10 Test Reliability + A11y Compliance + All-Green Suite (2026-06-04)
 
-**Goal:** Restore Playwright suite parity-regen capability and reach WCAG 2.1 AA on the 2 axe-baselined routes by closing v2.9's HIGH/MEDIUM a11y + test-determinism deferrals **+ close the 2 test-reliability surfaces that Phase 79's DETERM-04 fix exposed (image-upload cascade + voter-app flakes)**.
+**SHIPPED** — verdict `tech_debt` (no blockers). The milestone began as a 9-phase / 16-REQ effort (79-87: parity-regen + WCAG 2.1 AA + all-green pools) and was then **extended in-milestone through Phases 88-94** (E2E catalog audit → mega-journey refactor → candidate-journey reimplementation → TIR5/TIR6 permutations → infra hardening → fixture/setup/seed reorg → final de-planning polish). Final suite: **82 passed / 2 skipped**, human-verified 2026-06-04. Full record: `.planning/MILESTONES.md` + `.planning/milestones/v2.10-MILESTONE-AUDIT.md` (fresh 79-94 re-audit). The detailed original scope below is retained for history.
+
+**Original goal (as framed 2026-05-12):** Restore Playwright suite parity-regen capability and reach WCAG 2.1 AA on the 2 axe-baselined routes by closing v2.9's HIGH/MEDIUM a11y + test-determinism deferrals **+ close the 2 test-reliability surfaces that Phase 79's DETERM-04 fix exposed (image-upload cascade + voter-app flakes)**.
 
 **Target features (5-item scope; original 3 carry-forwards from v2.9 + 2 follow-ups added 2026-05-13 post-Phase-79-close):**
 
@@ -174,9 +182,14 @@ Known infrastructure issue: local imgproxy Docker container crashes intermittent
 - ✓ `appSettings` / `appCustomization` per-toggle matrix — 10 wave-A cells + 6 wave-B filter-type cells folding the filter-type-coverage source todo; `customData.allowOpen` display-side coverage (LANDMINE-1 reframing — voter-authoring PRODUCT-GAP routed to v2.10+); per-question visibility + must-answer (voter-hidden + candidate-required cells; voter-required PRODUCT-GAP routed to v2.10+) — v2.9 (Phase 77 / SETTINGS-01..03)
 - ✓ Cleanup hygiene bundle — `dev:* → db:*` rename + new `dev:clean` cache wipe + `db:reset`/`db:reset-with-data` chain (8 deprecated aliases preserved through v2.10); voter-not-located `?next=` redirect with URL-whitelist guard + 5-cell E2E spec; 13 per-cast `// reason:` blocks + `setStore` cast elimination + CLAUDE.md Svelte warning-accepted format anchor; i18n wrapper tightened to `TranslationKey` union; `--likert-only` CLI flag added to `@openvaa/dev-seed` (Path B voter-fixture race resolution); 14 Phase 73 review findings closed — v2.9 (Phase 78 / CLEAN-01..05)
 
+- ✓ Determinism recovery (DETERM-04..15) — candidate-profile cascading-race fix; imgproxy decouple (DATA_RACE 15 → 3); variant-project cascade RCA + decouple; parity-script regen; v2.10 ship anchor — v2.10 (Phases 79/83/84/85/86/87)
+- ✓ WCAG 2.1 AA compliance (A11Y-04..07) — 5 first-run axe violations fixed at root (Tabs `role=tablist` + Drawer/Button aria-labels); email/url/required-empty candidate-profile validation cells; per-rule + global-zero a11y regression gate — v2.10 (Phases 80/81/82)
+- ✓ All-green E2E suite + catalog overhaul — mega-journey pattern; 22-step candidate-journey; 12-file candidate fixture library; TIR5/TIR6 permutation specs; `typecheck:tests` + `no-restricted-locators`; results-route 4-segment refactor; role-based fixture/setup reorg + `e2e/base` seed consolidation; final de-planning (82 passed / 2 skipped, human-verified 2026-06-04) — v2.10 (Phases 88-94)
+- ✓ Package-script harmonisation — `db:*` = DB-only, `dev:*` = full-stack; `supabase:*` + deprecated `dev:*` aliases removed — v2.10 (close)
+
 ### Active
 
-**v2.10 (Test Reliability + A11y Compliance) — in progress.** Phase 79 SHIPPED 2026-05-13 (DETERM-04 + DETERM-05 passed-with-deferral; v2.10 anchor locked at SHA `ff0334f856…`). 4 phases remaining: Phase 80 A11Y-04 axe cite-and-fix; Phase 81 A11Y-05+06 email+url cells; Phase 82 A11Y-07 required-empty cell; Phase 83 DETERM-06+07 test-reliability follow-ups (image-upload cascade + voter-app flakes, added 2026-05-13). See "Current Milestone" above for the 5-item scope. REQ-IDs land via REQUIREMENTS.md.
+**Next milestone (planning): Svelte 5 runes migration.** Migrate OpenVAA's remaining legacy svelte/store bridges to fully idiomatic Svelte 5 runes, plus the perceived "redraw on Q→Q" fix via View Transitions + layout-as-state restructure + a11y focus management. Backed by the `spike-findings-voting-advice-application-gsd` skill (16 spikes of proven patterns + requirements). Run `/gsd-new-milestone` to shape it; a fresh `REQUIREMENTS.md` lands then. v2.10 (Test Reliability + A11y Compliance + All-Green Suite) shipped 2026-06-04 — all REQs moved to Validated above.
 
 **Pending todos** (carried forward, lower priority — not yet on a milestone roadmap):
 - Generalize candidate app to support parties as first-class registrants
@@ -359,6 +372,11 @@ Each major initiative is a separate milestone, executed in order:
 | Hoist `mergeSettings` from frontend `utils/merge.ts` to `@openvaa/app-shared` | Single source of truth — both `@openvaa/dev-seed` (e2e template overlays) and frontend share the same deep-merge contract; vitest 6-case coverage in package | ✓ Good (v2.6) |
 | Densify default seed mid-milestone when smoke surfaces dead UI | Parties tab + categorical filter axes need ≥2 parties × ≥3 candidates per axis to be realistically exercisable in dev; densified to 5 constituencies × 8 parties × 327 candidates | ✓ Good (v2.6) |
 
+| Skip-fallback protocol for unfixable-in-budget deterministic tests | Per-cell 1h cap + `test.skip(true, rationale)` + v2.11 todo preserves the coverage signal without blocking the all-green ship | ✓ Good (v2.10) |
+| Mega-journey specs + role-based function-fixtures | Consolidate many small specs into one serial journey per app + a function-fixture library; cuts setup duplication and cascade surface | ✓ Good (v2.10) |
+| `tech_debt` verdict maps to shippable (PASSED-WITH-DEFERRAL) | Operator-accepted, documented deferrals don't block milestone close when the suite is green and no requirement is unsatisfied | ✓ Good (v2.10) |
+| `db:*` DB-only vs `dev:*` full-stack script split | Harmonised at v2.10 close — db scripts touch only Supabase, dev scripts drive the full stack; `supabase:*` + deprecated `dev:*` aliases removed | ✓ Good (v2.10) |
+
 ## Evolution
 
 This document evolves at phase transitions and milestone boundaries.
@@ -378,4 +396,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-_Last updated: 2026-05-13 after Phase 79 close + Phase 83 added to v2.10. Phase 79 (DETERM-04 + DETERM-05) shipped passed-with-deferral; v2.10 anchor locked at SHA `ff0334f856…` (80 PASS_LOCKED + 15 DATA_RACE + 57 CASCADE). Scope expanded from 3-item to 5-item: Phase 83 (DETERM-06 image-upload cascade + DETERM-07 voter-app flakes) absorbs the 2 follow-up todos surfaced by Phase 79's DETERM-04 fix, as in-milestone gap closure rather than re-deferring to v2.11+. 4 phases remaining (80, 81, 82, 83). Stale Svelte 5 todos (Expander + results-layout) cleared pending → done — both already resolved in v2.8 Phase 70 via accept-with-rationale._
+_Last updated: 2026-06-04 after v2.10 milestone close. v2.10 (Test Reliability + A11y Compliance + All-Green Suite) shipped — 19 phases (79-94), 66 plans, 140 tasks; audit verdict `tech_debt` (no blockers); final suite 82 passed / 2 skipped. The milestone grew from its original 9-phase / 16-REQ scope (79-87) to absorb a full E2E-catalog overhaul (88-94). All v2.10 requirements moved to Validated; v2.10 phase/quick/debug/UAT artifacts resolved at close; 49 standing backlog todos carried forward to v2.11+. Next milestone: Svelte 5 runes migration (see the `spike-findings-voting-advice-application-gsd` skill)._

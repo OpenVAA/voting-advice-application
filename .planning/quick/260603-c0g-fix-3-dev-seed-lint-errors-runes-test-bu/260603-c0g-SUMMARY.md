@@ -1,4 +1,5 @@
 ---
+status: complete
 phase: quick-260603-c0g
 plan: 01
 subsystem: dev-seed + frontend-spike-routes

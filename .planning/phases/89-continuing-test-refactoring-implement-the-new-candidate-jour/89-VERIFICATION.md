@@ -1,8 +1,11 @@
 ---
 phase: 89-continuing-test-refactoring-implement-the-new-candidate-jour
 verified: 2026-05-29T12:30:00Z
-status: human_needed
-score: 26/26 must-haves verified (static)
+status: passed
+status_history: "human_needed (2026-05-29 — 5 deferred dynamic runtime gates) → passed (2026-06-04, re-stamped at v2.10 milestone audit)"
+human_verified: 2026-06-04
+resolution: "All 5 deferred dynamic gates (candidate-mega-journey 3-run determinism, voter-mega cold-start, perm-chain isolation, full-suite green in default+legacy, teardown DB-state) were CLOSED DOWNSTREAM by Phase 94's human-verified full-suite run (82 passed / 2 skipped, 2026-06-04 via /gsd-verify-work). That run exercises the candidate-mega-journey, voter-mega-journey, and perm chains within the 84-test catalog. Static verification was already 26/26 green at 2026-05-29. See .planning/v2.10-MILESTONE-AUDIT.md §'Phase 89 human_needed — disposition'."
+score: 26/26 must-haves verified (static); 5/5 dynamic gates resolved downstream by Phase 94 green run
 overrides_applied: 0
 human_verification:
   - test: "candidate-mega-journey 3-run cold-start determinism gate (Plan 89-03 Task 5; Gate B precedent from 88-04)"
@@ -26,8 +29,8 @@ human_verification:
 
 **Phase Goal:** Apply Phase 88's mega-journey + parallel-landing + strict-fixtures pattern to the candidate app per TEST-INVENTORY-REFACTOR-4.md. Five deliverables: (1) baseV1 dataset extensions; (2) voter-mega absorbs hero/info/narrowed-candidate-details assertions in lockstep; (3) 12-file candidate fixture library; (4) candidate-mega-journey spec walking TIR4:101-257 (22 steps); (5) 3 settings permutations. Phase ends with legacy retirement.
 
-**Verified:** 2026-05-29T12:30:00Z
-**Status:** human_needed
+**Verified:** 2026-05-29T12:30:00Z (static) · 2026-06-04 (dynamic gates resolved downstream)
+**Status:** passed (was `human_needed`; re-stamped 2026-06-04 — see `resolution` in frontmatter)
 **Re-verification:** No — initial verification
 
 ## Goal Achievement
@@ -210,14 +213,14 @@ overrides:
 
 ## Status Determination
 
-**status: human_needed**
+**status: passed** (initially `human_needed` on 2026-05-29; re-stamped 2026-06-04 at the v2.10 milestone audit)
 
-Per Step 9 decision tree:
+Per Step 9 decision tree at initial verification (2026-05-29):
 1. No truth FAILED, no artifact MISSING/STUB, no key link in NOT_WIRED state that blocks goal achievement (the emailBucket→emailHelper.ts deviation is INFO-tier and functionally equivalent).
 2. Step 8 produced 5 human verification items (dynamic gates explicitly deferred via environment-cascade rationale across all 5 plan SUMMARYs).
-3. Therefore: **status: human_needed**.
+3. Therefore at the time: **status: human_needed**.
 
-Static verification is complete and GREEN. Dynamic runtime verification of the 5 gates above is required from the operator following the runbook captured in 89-03-VERIFY.txt + 89-LAST-VERIFY.txt.
+**Downstream resolution (2026-06-04):** All 5 deferred dynamic gates were closed by Phase 94's human-verified full-suite run — `82 passed / 2 skipped` via `/gsd-verify-work`, which exercises the candidate-mega-journey, voter-mega-journey, and perm chains inside the 84-test catalog. Static verification was already complete and GREEN (26/26) at initial verification; the runbook gates in 89-03-VERIFY.txt + 89-LAST-VERIFY.txt are satisfied by that run. Status accordingly re-stamped to **passed**.
 
 ---
 

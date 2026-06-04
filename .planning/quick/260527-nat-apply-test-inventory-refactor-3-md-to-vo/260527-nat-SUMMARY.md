@@ -3,10 +3,12 @@ quick_id: 260527-nat
 description: apply TEST-INVENTORY-REFACTOR-3.md to voter-mega-journey + associated files
 date_started: 2026-05-27
 date_completed: 2026-05-27
-status: partial
-tasks_completed: 2 of 9
-deferred_tasks: 7
-final_verification: T1 filter unit tests 22/22 green + T2 baseV1 seed 135 rows OK; full voter-mega-journey deferred to phase
+status: complete
+original_status: partial
+status_note: "Re-stamped complete at v2.10 milestone audit (2026-06-04). T1+T2 shipped here; T3-T9 (the phase-sized voter-mega-journey REFACTOR/EDIT/ADD + fixtures + settings work) were deferred-to-phase and then SUPERSEDED by Phase 89's TIR4 refactor (TEST-INVENTORY-REFACTOR-4 replaced TIR3 — proper candidate fixture library + mega-journey + voter-mega lockstep). TIR3's remaining scope is obsolete, not outstanding. The resulting suite is green through Phase 94."
+tasks_completed: 2 of 9 (T1+T2; T3-T9 superseded by Phase 89 TIR4)
+deferred_tasks: 0 (7 original deferrals re-scoped into Phase 89)
+final_verification: T1 filter unit tests 22/22 green + T2 baseV1 seed 135 rows OK; T3-T9 superseded by Phase 89 TIR4 (voter-mega-journey green through Phase 94)
 ---
 
 # Quick task 260527-nat: TEST-INVENTORY-REFACTOR-3 (Path A — T1+T2 only)

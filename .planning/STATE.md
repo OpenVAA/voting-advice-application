@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
 milestone: v2.10
-milestone_name: Test Reliability + A11y Compliance + All-Green Suite — IN PROGRESS
-status: milestone_complete
-stopped_at: Milestone complete (Phase 94 was final phase)
-last_updated: 2026-06-04T05:49:15.222Z
-last_activity: 2026-06-03
+milestone_name: "Test Reliability + A11y Compliance + All-Green Suite (SHIPPED 2026-06-04)"
+status: Awaiting next milestone
+stopped_at: Milestone v2.10 completed and archived (verdict tech_debt, no blockers; all phase/quick/debug/UAT artifacts resolved). Ready for /gsd-new-milestone.
+last_updated: "2026-06-04T07:43:03.305Z"
+last_activity: 2026-06-04 — Milestone v2.10 completed and archived
 progress:
   total_phases: 19
-  completed_phases: 17
+  completed_phases: 19
   total_plans: 66
-  completed_plans: 64
-  percent: 89
+  completed_plans: 66
+  percent: 100
 ---
 
 # Project State
@@ -21,20 +21,20 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Milestone complete
+**Current focus:** v2.10 shipped — planning next milestone (Svelte 5 runes migration is the natural theme; see the `spike-findings-voting-advice-application-gsd` skill)
 
 ## Current Position
 
-Phase: 94
-Plan: Not started
-Status: Milestone complete
-Last activity: 2026-06-04
+Phase: Milestone v2.10 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-06-04 — Milestone v2.10 completed and archived
 
 ## Performance Metrics
 
 **Cumulative:**
 
-- Milestones shipped: 14 (v1.0, v1.1, v1.2, v1.3, v1.4, v2.0, v2.1, v2.3, v2.4, v2.5, v2.6, v2.7, v2.8, v2.9) + 1 paused (v2.2)
+- Milestones shipped: 15 (v1.0, v1.1, v1.2, v1.3, v1.4, v2.0, v2.1, v2.3, v2.4, v2.5, v2.6, v2.7, v2.8, v2.9, v2.10) + 1 paused (v2.2)
 - Total plans completed: 294 + 6 tasks (v2.9 added 32 plans)
 - Timeline: 46 days across 7 work windows (2026-03-01 → 2026-03-28 + v2.5 2026-04-23→24 + v2.6 2026-04-24→28 + v2.7 2026-04-29→05-08 + v2.8 2026-05-08→10 + v2.9 2026-05-10→12)
 - v2.9 specifically: 6 phases (73-78), 32 plans, 89 tasks across 3 days
@@ -42,6 +42,24 @@ Last activity: 2026-06-04
 ## Deferred Items
 
 Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79 close added Phase 83 + 2 follow-up todos, updated 2026-05-20 after constituency-filter WONT-IMPLEMENT decision. v2.10 now consumes 5 in-milestone candidates (3 v2.9-routed originals + 2 Phase-79-surfaced follow-ups absorbed in-milestone rather than re-deferred). 4 other v2.9-routed v2.10+ candidates remain re-deferred to v2.11+ (SETTINGS-02 / SETTINGS-03 / FilterGroup OR-mode / voters-layout non-reactive topbar). Constituency-filter PRODUCT-GAP has since been CLOSED as WONT-IMPLEMENT (out of contract — constituency is a navigation/scope concept, not a filter).
+
+### Acknowledged at v2.10 close (2026-06-04)
+
+The pre-close artifact audit surfaced 15 open items. All v2.10-internal artifacts were **resolved** before close; the standing todo backlog is **carried forward** to v2.11+.
+
+**Resolved this session (7 artifacts):**
+
+| Artifact | Resolution |
+|----------|------------|
+| debug `phase93-e2e-regression-clusters` | Both clusters fixed + committed (1e7d8842f / efd7cbe11); final gate satisfied by Phase 94 green run. Status → resolved. |
+| Phase 89 HUMAN-UAT (was partial, 5 pending) | All 5 dynamic gates closed by Phase 94 green run. Status → complete. |
+| Phase 92 HUMAN-UAT (was passed) | 51/0/0; re-stamped to terminal `complete`. |
+| quick `260603-c0g` (dev-seed lint) | Done — lint + build green. Status → complete. |
+| quick `260531-x5s` (candidate userData save) | Done — 3 commits, unit 34/34. Status → complete. |
+| quick `260601-hn9` (skip popup tests) | Done — commits + todos filed. Status → complete. |
+| quick `260523-u53` / `260527-nat` / `260531-we7` / `260601-iqd` | Done/superseded/e2e-covered/backfilled — see each SUMMARY's `status_note`. |
+
+**Carried forward (deferred to v2.11+):** 49 standing backlog todos in `.planning/todos/pending/` (most predate v2.10). These include the documented v2.11+ deferrals (cold-deeplink races, perm-per-app-notifications re-enable, 86/86.1/86.2 VERIFICATION backfill) plus older backlog (party-app generalization, app-shared normalisation, mergeSettings re-export removal, alliance-tab rendering, etc.). Triage via `/gsd-review-backlog` when shaping v2.11.
 
 | Category | Item | Status / Notes |
 |----------|------|----------------|
@@ -292,13 +310,17 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-03T18:58:16.739Z
-Stopped at: Completed 94-08-PLAN.md
-Resume file: None
-Next action: Operator decides Phase 87 disposition per Phase 86.3-05 D-06 recommendation:
-  (a) **RE-PLAN (Claude's recommendation):** Re-plan Phase 87 to absorb v2.11+ voter-app cold-deeplink deferrals (4 cells #5/#6/#7/#8 closure-paired via navigation-from-home redesign) + boundary-class flake deferrals (DETERM-06 imgproxy + email-link timing) BEFORE firing the v2.10-ship anchor capture. Plan 87-01 needs a new Plan 01a (deferral inventory) + Plan 01b (anchor capture WITH explicit deferrals documented).
-  (b) **DELAYED-FIRING (alternative):** Run Phase 87 against the ALMOST-STRICT post-86.3 anchor with explicit v2.11+ deferral documentation; accept that "all-green deterministic" is satisfied for SKIPPED + DATA_RACE pools but NOT for CASCADE pool (Phase 87 Task 0 pre-gate CASCADE ≤ 5 unsatisfied at CASCADE = 37 selective-regen-preserved OR 90 raw).
-Reference: `.planning/phases/86.3-…/86.3-SUMMARY.md` §"D-06 Phase 87 Disposition Recommendation" for full rationale + suggested re-plan shape.
+Last session: 2026-06-04 (resumed via /gsd-resume-work)
+Stopped at: v2.10 milestone audit COMPLETE (verdict tech_debt, no blockers) + Option-B tidy-ups + package-script harmonisation done. Ready for /gsd-complete-milestone v2.10.
+Resume file: None (clean milestone-boundary pause)
+Work done this session:
+
+- Fresh full-milestone audit (79-94) written to .planning/v2.10-MILESTONE-AUDIT.md (prior Phase-87 partial audit preserved as Appendix A). Verdict: tech_debt — 13 satisfied + 3 partial (86/86.1/86.2 missing VERIFICATION.md, documentary debt) + 0 unsatisfied; final e2e suite GREEN (82/2). Integration-checker skipped (test-infra milestone; composition proven by Phase 94 --list 84/72 + green run).
+- B-1: 89-VERIFICATION.md re-stamped human_needed → passed (5 dynamic gates closed downstream by Phase 94 green run).
+- B-2: REQUIREMENTS.md traceability + checkboxes reconciled to verified state; 88-94 in-milestone expansion noted.
+- Package-script harmonisation: supabase:*→db:*, db:* = DB-only, dev:* = full-stack, deprecated dev:* aliases removed. Fixed user's WIP bugs (yarn-yarn ×4, accidental removal of test:e2e/test:unit/test:unit:watch/watch:shared/prepare:husky, dev:reset missing-yarn, dev:reset-with-data seed-after-blocking-dev). Updated CLAUDE.md + apps/frontend/README.md + packages/dev-seed/README.md + 2 active code comments. apps/docs site pages left (legacy Strapi-era, pending rewrite).
+
+Next action: /gsd-complete-milestone v2.10 to archive. Open flag for operator: confirm `prepare: "husky"` restoration was wanted (interacts with the worktree core.hooksPath=/dev/null workaround). Pre-existing (untouched) issue noted: root docs:* scripts reference @openvaa/docs script names that no longer match (generate vs generate:docs). After archive: shape next milestone (Svelte 5 runes migration).
 
 ### Plan-count estimate (drafted 2026-05-12)
 
@@ -313,18 +335,7 @@ Reference: `.planning/phases/86.3-…/86.3-SUMMARY.md` §"D-06 Phase 87 Disposit
 
 ## Operator Next Steps
 
-### Phase 88 status (Plan 88-02 ready)
-
-**Plan 88-02 planned 2026-05-23**: Results route refactor (operator-driven, scoped from `88-02-SCOPE.md`). Introduces:
-
-- New OPTIONAL route segment `[[electionTab]]` at the front of `/results/...` carrying the SELECTED singular election.
-- Rename of `entityTypePlural`/`entityTypeSingular` directory segments to `entityTab`/`entity` (backed by `etPl`/`etSg` matchers).
-- New voterContext reactive accessor `currentResultsElection` reading `page.params.electionTab` with first-available default-pick.
-- Server-side guards (invalid `electionTab` → strip+redirect; 1-available → auto-redirect deterministic URL; 2+ → render existing picker).
-- **NAME-DISJOINT dissociation** from the search-side `?electionId=…` / `electionId[]` AVAILABLE-array surface — `electionTab` (route key) and `electionId` (search key) are literally different identifiers throughout the codebase. Operator amended the original route-segment name from `electionId` to `electionTab` mid-planning to achieve structural (not just semantic) disjointness.
-- 8 atomic tasks.
-
-**88-01 carryover (still open):** 25 `[deferred-88-nn]` placeholders in `voter-mega-journey.spec.ts` await a follow-on plan (probably 88-03) that wires them against the NEW URL surface. Plan 88-02 unblocks ~5 of those placeholders (election-selection cluster) by making election selection URL-driven, but does NOT modify the mega-journey spec itself.
+- Start the next milestone with /gsd-new-milestone
 
 ### Recommended next action
 
