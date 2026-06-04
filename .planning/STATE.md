@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.11
 milestone_name: Svelte 5 Runes Migration + View Transitions
-status: verifying
+status: executing
 stopped_at: v2.10 milestone audit COMPLETE (verdict tech_debt, no blockers) + Option-B tidy-ups + package-script harmonisation done. Ready for /gsd-complete-milestone v2.10.
-last_updated: "2026-06-04T12:37:23.914Z"
-last_activity: 2026-06-04 -- Completed 95-03 (localStorageState helper + voter/candidate answer-store rune migration; CTX-03)
+last_updated: "2026-06-04T12:58:40.550Z"
+last_activity: 2026-06-04 -- Phase 99 execution started
 progress:
   total_phases: 7
   completed_phases: 1
   total_plans: 8
-  completed_plans: 5
+  completed_plans: 6
   percent: 14
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 95 — domain-a-wave-1-tier-1-leaf-contexts
+**Current focus:** Phase 99 — domain-b-wave-a-view-transitions-navigation-a11y
 
 ## Current Position
 
-Phase: 95 (domain-a-wave-1-tier-1-leaf-contexts) — EXECUTING
-Plan: 5 of 5
-Status: Phase complete — ready for verification
-Last activity: 2026-06-04 -- Completed 95-03 (localStorageState helper + voter/candidate answer-store rune migration; CTX-03)
+Phase: 99 (domain-b-wave-a-view-transitions-navigation-a11y) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
+Last activity: 2026-06-04 -- Phase 99 execution started
 
 ## Performance Metrics
 
@@ -150,6 +150,7 @@ The pre-close artifact audit surfaced 15 open items. All v2.10-internal artifact
 | Phase 95 P03 | 12min | 3 tasks | 5 files |
 | Phase 95 P04 | 3min | 2 tasks | 4 files |
 | Phase 95 P05 | 22min | 3 tasks | 37 files |
+| Phase 99 P01 | 12min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -283,6 +284,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: dataContext (CTX-02): replaced writable() bridge with a hand-rolled Readable subscriber-set + current/instance Pattern-2 split + untrack(); temporary $dataRoot bridge retained until Phase 98
 - [Phase ?]: 95-04: popupStore migrated to pure-rune Pattern-1 get current() (CTX-05); Readable dropped from PopupStore type; the single fromStore(popupQueue) consumer in +layout.svelte migrated to popupQueue.current
 - [Phase ?]: 95-05 (CTX-04): StackedState LIFO stack replaced by token-keyed settingsOverlay registry + declarative use*() API; getLayoutContext() takes no onDestroy arg; all ~33 callsites migrated; StackedState retained for Phase 98.
+- [Phase ?]: Phase 99 Plan 01: View-Transitions coupling + nav-a11y hooks landed in root +layout.svelte via shared viewTransition.ts helper (typed guard, no any); analytics hooks merged not replaced; reduced-motion both layers + ?notr=1 escape hatch shipped.
 
 ### Quick Tasks Completed
 
@@ -321,7 +323,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-04T12:37:19.144Z
+Last session: 2026-06-04T12:58:19.918Z
 Stopped at: v2.10 milestone audit COMPLETE (verdict tech_debt, no blockers) + Option-B tidy-ups + package-script harmonisation done. Ready for /gsd-complete-milestone v2.10.
 Resume file: None (clean milestone-boundary pause)
 Work done this session:

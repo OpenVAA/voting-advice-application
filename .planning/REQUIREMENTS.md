@@ -37,14 +37,14 @@ Requirements for this milestone. Each maps to exactly one roadmap phase.
 
 ### Domain B — View Transitions (VT) — Wave A
 
-- [ ] **VT-01**: the root layout couples navigation to the View Transitions API via `onNavigate(navigation => new Promise(resolve => startViewTransition(async () => { resolve(); await navigation.complete; })))`, reading `navigation.to?.url` (NOT `page.url`) for destination-based decisions. _(spike 015)_
+- [x] **VT-01**: the root layout couples navigation to the View Transitions API via `onNavigate(navigation => new Promise(resolve => startViewTransition(async () => { resolve(); await navigation.complete; })))`, reading `navigation.to?.url` (NOT `page.url`) for destination-based decisions. _(spike 015)_
 - [ ] **VT-02**: `view-transition-name`s are assigned so element-stable cross-fades replace the perceived full-page redraw. **Scope expanded per user decision 99-1 (2026-06-04)** beyond the 4 spike-proven elements (Header / MainContent / hero / QuestionActions) to also cover, where applicable: **results election-switching, entity tabs in results, tabs in entity details, `QuestionHeading`, and the candidate-app `/questions` route.** _(spike 015 + user 99-1)_
-- [ ] **VT-03**: `prefers-reduced-motion` is honored on BOTH layers — `matchMedia` short-circuits `startViewTransition` in JS, and a CSS `@media (prefers-reduced-motion: reduce) { :global(...) }` block (correct Svelte-parser form) nulls any escaping animation. _(spike 015)_
+- [x] **VT-03**: `prefers-reduced-motion` is honored on BOTH layers — `matchMedia` short-circuits `startViewTransition` in JS, and a CSS `@media (prefers-reduced-motion: reduce) { :global(...) }` block (correct Svelte-parser form) nulls any escaping animation. _(spike 015)_
 
 ### Domain B — Navigation a11y (NAVA11Y) — Wave A
 
-- [ ] **NAVA11Y-01**: a dedicated `aria-live="polite"` route announcer whose text derives from `page.params.X` announces route changes (NOT `<svelte:head><title>` updates — SPA title-change announcement is unreliable on NVDA/JAWS). _(spike 016)_
-- [ ] **NAVA11Y-02**: focus is reset explicitly on navigation — `afterNavigate` → `requestAnimationFrame(() => target.focus({ preventScroll: true }))` (preventScroll MANDATORY to not fight `goto({ noScroll: true })`); the question heading carries `data-focus-on-nav` / `tabindex="-1"`. _(spike 016)_
+- [x] **NAVA11Y-01**: a dedicated `aria-live="polite"` route announcer whose text derives from `page.params.X` announces route changes (NOT `<svelte:head><title>` updates — SPA title-change announcement is unreliable on NVDA/JAWS). _(spike 016)_
+- [x] **NAVA11Y-02**: focus is reset explicitly on navigation — `afterNavigate` → `requestAnimationFrame(() => target.focus({ preventScroll: true }))` (preventScroll MANDATORY to not fight `goto({ noScroll: true })`); the question heading carries `data-focus-on-nav` / `tabindex="-1"`. _(spike 016)_
 - [ ] **NAVA11Y-03**: the transition stack passes the WCAG 2.1 AA gate (focus management + aria-live announcer + reduced-motion) under the existing `@axe-core/playwright` env-gated smoke. _(spike 016)_
 
 ### Domain B — Questions Layout Restructure (QLAYOUT) — Wave B
@@ -93,11 +93,11 @@ Which phases cover which requirements. Populated during roadmap creation.
 | CONS-03 | Phase 97 | Pending |
 | CLEAN-01 | Phase 98 | Pending |
 | CLEAN-02 | Phase 98 | Pending |
-| VT-01 | Phase 99 | Pending |
+| VT-01 | Phase 99 | Complete |
 | VT-02 | Phase 99 | Pending |
-| VT-03 | Phase 99 | Pending |
-| NAVA11Y-01 | Phase 99 | Pending |
-| NAVA11Y-02 | Phase 99 | Pending |
+| VT-03 | Phase 99 | Complete |
+| NAVA11Y-01 | Phase 99 | Complete |
+| NAVA11Y-02 | Phase 99 | Complete |
 | NAVA11Y-03 | Phase 99 | Pending |
 | QLAYOUT-01 | Phase 100 | Pending |
 | QLAYOUT-02 | Phase 100 | Pending |
