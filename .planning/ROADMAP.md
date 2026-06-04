@@ -123,7 +123,7 @@ Audit: `.planning/milestones/v2.10-MILESTONE-AUDIT.md` (status: tech_debt — no
 
 **Parallel-execution map (for autonomy):** Domain A and Domain B are independent and can be planned/executed together. Within Domain A, the 4 waves are strictly sequential (each consumes the prior). Within Phase 95, the 5 Tier-1 leaf contexts are internally parallel (6 separate-PR-eligible migrations per the spike inventory — they touch different files). Domain B Wave A (Phase 99) and the whole of Domain A's Wave 1 can run concurrently.
 
-- [ ] **Phase 95: Domain A Wave 1 — Tier-1 Leaf Contexts** - appContext (+SSR-gap fix), dataContext, answer stores (+`runeLocalStorage`), overlay registry, popupStore migrated to pure runes
+- [ ] **Phase 95: Domain A Wave 1 — Tier-1 Leaf Contexts** - appContext (+SSR-gap fix), dataContext, answer stores (+`localStorageState`), overlay registry, popupStore migrated to pure runes
 - [ ] **Phase 96: Domain A Wave 2 — Tier-2 Bridges** - survey + tracking + voterContext + candidateContext rune-native factories (+`runeSessionStorage`), composing Wave 1
 - [ ] **Phase 97: Domain A Wave 3 — getRoute + Consumer Codemod** - rune-native `getRoute` + mechanical rewrite of 280 consumer sites + destructure-trap/AdminNav production-bug fix
 - [ ] **Phase 98: Domain A Wave 4 — Cleanup** - delete `persistedState`/`StackedState`, drop `Readable<T>`, zero `svelte/store` imports, ESLint guard
@@ -141,10 +141,15 @@ Audit: `.planning/milestones/v2.10-MILESTONE-AUDIT.md` (status: tech_debt — no
 **Success Criteria** (what must be TRUE):
   1. `appContext` has zero `svelte/store` imports; `appSettings`/`appCustomization` DB-override merge happens at `$state` init (server-rendered HTML now carries the override — the SSR gap is closed); `mergeAppSettings` is pure (`{ ...target, ...nonNull }`, no shared-ref mutation) and the effective-settings merge stays reactive on `page.data.appSettingsData` with a reference-equality guard.
   2. `dataContext` has zero `svelte/store` imports; the `writable(dataRoot)` bridge and `get(dataRootStore)` infinite-loop workaround are gone; sequential population (`provideElectionData → … → provideNominationData`) still triggers downstream `$derived` re-evaluation via the version counter, with `untrack()` isolating the write-after-read cycle.
-  3. The voter `answerStore` and candidate `candidateUserDataStore` both persist through a single shared `runeLocalStorage<T>(key, default)` helper (versioned `{ version, data }` payload); the three-layer `$state → localStorageWritable → fromStore` bridge is gone at both callsites.
+  3. The voter `answerStore` and candidate `candidateUserDataStore` both persist through a single shared `localStorageState<T>(key, default)` helper (versioned `{ version, data }` payload); the three-layer `$state → localStorageWritable → fromStore` bridge is gone at both callsites.
   4. The layout overlay system uses a token-keyed registry + declarative `use*()` consumer API; `StackedState` and the `getLayoutContext(onDestroy)` index-revert plumbing are removed; `$effect` cleanup replaces `onDestroy`; out-of-order mount/unmount no longer corrupts the stack.
   5. `popupStore` is pure runes (queue-shaped Pattern-1 with a `get current()` getter, no `toStore(() => firstItem)` + `subscribe`); the existing E2E suite stays green with no behavior regression.
-**Plans**: TBD
+**Plans**: 5 plans (2 waves)
+  - [ ] 95-01-PLAN.md — appContext SSR-gap fix + pure mergeAppSettings (CTX-01)
+  - [ ] 95-02-PLAN.md — dataContext current/instance split, drop writable bridge (CTX-02)
+  - [ ] 95-03-PLAN.md — answer stores + new localStorageState helper (CTX-03)
+  - [ ] 95-04-PLAN.md — popupStore queue-shaped Pattern-1 + consumer (CTX-05)
+  - [ ] 95-05-PLAN.md — layout overlay registry + use*() callsite migration, isolated wave 2 (CTX-04)
 
 ### Phase 96: Domain A Wave 2 — Tier-2 Bridges
 **Goal**: The Tier-2 secondary bridges (survey, trackingService) and the two orchestrating contexts (voterContext, candidateContext) are rune-native factories that compose the Wave-1 Tier-1 contexts via `getXContext()` and expose their reactive accessors as getters — with a new `runeSessionStorage` helper backing `voterContext`'s `firstQuestionId`.
