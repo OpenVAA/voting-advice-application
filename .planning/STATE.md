@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.11
 milestone_name: Svelte 5 Runes Migration + View Transitions
 status: executing
-stopped_at: Completed 99-04-PLAN.md
-last_updated: "2026-06-04T15:30:00.000Z"
-last_activity: 2026-06-04 -- Completed 99-04 (localize route announcer, CR-01/NAVA11Y-01)
+stopped_at: Completed 99-02-PLAN.md
+last_updated: "2026-06-04T20:45:41.509Z"
+last_activity: 2026-06-04 -- Phase 96 execution started
 progress:
   total_phases: 7
-  completed_phases: 1
-  total_plans: 9
-  completed_plans: 9
-  percent: 14
+  completed_phases: 2
+  total_plans: 13
+  completed_plans: 10
+  percent: 29
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 99 — domain-b-wave-a-view-transitions-navigation-a11y
+**Current focus:** Phase 96 — domain-a-wave-2-tier-2-bridges
 
 ## Current Position
 
-Phase: 99 (domain-b-wave-a-view-transitions-navigation-a11y) — EXECUTING
-Plan: 4 of 4
-Status: Executing Phase 99
-Last activity: 2026-06-04 -- Completed 99-04 (localize route announcer, CR-01/NAVA11Y-01)
+Phase: 96 (domain-a-wave-2-tier-2-bridges) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
+Last activity: 2026-06-04 -- Phase 96 execution started
 
 ## Performance Metrics
 
@@ -154,6 +154,7 @@ The pre-close artifact audit surfaced 15 open items. All v2.10-internal artifact
 | Phase 99 P02 | ~9min | 2 tasks | 9 files |
 | Phase 99 P03 | 55min | 2 tasks | 1 files |
 | Phase 99 P04 | ~12min | 3 tasks | 6 files |
+| Phase 96 P01 | 8min | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -291,6 +292,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 99]: Header named via style:view-transition-name (Pitfall-7: stops ::view-transition(root) sliding chrome)
 - [Phase 99]: O-1 honored not deferred: opt-in transitionOnChange Tabs prop wraps local activeIndex mutation in startViewTransition; bind:activeIndex preserved
 - [Phase ?]: Phase 99 Plan 03: extended a11y-smoke (NAVA11Y-01/02/03) via ?notr=1; live located-route run deferred to operator (pre-existing shared-fixture/seed issue).
+- [Phase ?]: Phase 96 Plan A: added reactiveAppSettings/reactiveLocale .current getters to appContext (additive, mirrors reactiveDataRoot) so Plan B can drop fromStore(appSettings)/fromStore(locale)
+- [Phase ?]: Phase 96 Plan A: survey/tracking producers made fully store-free (CTX-06); appContext seam owns the store-shaped surveyLink/sendTrackingEvent/sessionId/shouldTrack bridges (Q3 option b)
 
 ### Quick Tasks Completed
 
@@ -329,7 +332,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-04T13:19:11.580Z
+Last session: 2026-06-04T20:45:24.897Z
 Stopped at: Completed 99-02-PLAN.md
 Resume file: None
 Work done this session:

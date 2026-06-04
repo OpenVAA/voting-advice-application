@@ -171,9 +171,9 @@ Audit: `.planning/milestones/v2.10-MILESTONE-AUDIT.md` (status: tech_debt — no
 **Plans**: 2 plans (2 waves)
 
 Plans:
-- [ ] 96-01-PLAN.md — sessionStorageState helper + pure-rune survey/trackingService + appContext reactiveAppSettings/reactiveLocale getters + bridge seam (Wave 1)
-- [ ] 96-02-PLAN.md — voterContext + candidateContext rune-native factories (firstQuestionId/prereg ids via session/localStorageState; getRoute bridge kept for Phase 97) (Wave 2)
 
+- [x] 96-01-PLAN.md — sessionStorageState helper + pure-rune survey/trackingService + appContext reactiveAppSettings/reactiveLocale getters + bridge seam (Wave 1)
+- [ ] 96-02-PLAN.md — voterContext + candidateContext rune-native factories (firstQuestionId/prereg ids via session/localStorageState; getRoute bridge kept for Phase 97) (Wave 2)
 
 ### Phase 97: Domain A Wave 3 — getRoute + Consumer Codemod
 
@@ -240,6 +240,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
+
 - [ ] 100-01-PLAN.md — Wave 0 regression gate: append the D-03 multi-step Q→Q answer-survival assertion (crossing a question-type boundary) to the existing voter-journey spec — QLAYOUT-02
 - [ ] 100-02-PLAN.md — Hoist `/questions` rendering from `[questionId]/+page.svelte` into `questions/+layout.svelte` (unified-layout-with-empty-leaf, results-pattern parity) + new `questions/+layout.ts` load returning `{}` + collapse the leaf to an empty stub; `{#key question.type}` variant remount; sibling-route guard (no `error(500)` on intro/category); all four Phase 99 markers preserved verbatim — QLAYOUT-01, QLAYOUT-02
 
@@ -257,6 +258,7 @@ Plans:
   2. The full E2E suite and the unit suites are green with no behavior regression versus the v2.10 ship baseline (`yarn test:unit` + the Playwright suite both pass; prior PASS_LOCKED tests stay passing).
 
 **Carried-in gaps** (deferred here from earlier phases):
+
   - **a11y-smoke `voter-detail-drawer` color-contrast (from Phase 99 UAT, 2026-06-04).** The entity-details drawer fails the axe color-contrast WCAG 2.1 AA gate: muted-gray `#b1b1b1`/`#c5c5c5` on white across the candidate `<h3>` title, alliance/faction tag spans, the `match` label, and `small-info`/`small-label` labels. Pre-existing theme debt, newly surfaced when Phase 99's fix `b801cfa6e` unblocked the located a11y walk (the route had never been axe-scanned before). The `a11y-smoke` gate is otherwise 7/8 green; this is the one known-red assertion (NOT quarantined). Needs theme/token remediation to meet 4.5:1 + visual-regression sign-off. See `99-UAT.md` Gaps + `.planning/debug/elections-continue-stall.md`.
 
 **Plans**: TBD
@@ -269,7 +271,7 @@ Domain A is a strict chain: 95 → 96 → 97 → 98. Domain B is a chain: 99 →
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 95. Domain A Wave 1 — Tier-1 Leaf Contexts | v2.11 | 5/5 | Complete   | 2026-06-04 |
-| 96. Domain A Wave 2 — Tier-2 Bridges | v2.11 | 0/TBD | Not started | - |
+| 96. Domain A Wave 2 — Tier-2 Bridges | v2.11 | 1/2 | In Progress|  |
 | 97. Domain A Wave 3 — getRoute + Consumer Codemod | v2.11 | 0/TBD | Not started | - |
 | 98. Domain A Wave 4 — Cleanup | v2.11 | 0/TBD | Not started | - |
 | 99. Domain B Wave A — View Transitions + Navigation a11y | v2.11 | 3/3 | Complete   | 2026-06-04 |

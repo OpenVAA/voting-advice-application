@@ -20,8 +20,8 @@ Requirements for this milestone. Each maps to exactly one roadmap phase.
 - [x] **CTX-03**: voter `answerStore` + candidate `candidateUserDataStore` persist through a single shared `localStorageState<T>(key, default)` helper (the spike-scratch `runeLocalStorage` renamed per the no-migration-era-prefix constraint) mirroring `localStorageWritable`'s versioned-payload format (`{ version, data }`); the three-layer `$state → localStorageWritable → fromStore` bridge is gone at both callsites. **No format-migration shim** — the format may change freely and stale old-format payloads are ignored/overwritten. _(spikes 003, 005)_
 - [x] **CTX-04**: layout overlay system uses a token-keyed registry + declarative `use*()` consumer API; `StackedState` (`implements Readable<T>`) and the `getLayoutContext(onDestroy)` index-revert plumbing are removed; `$effect` cleanup replaces `onDestroy`; robust against out-of-order mount/unmount. _(spike 006)_
 - [x] **CTX-05**: `popupStore` is pure runes following the queue-shaped Pattern-1 shape (no `toStore(() => firstItem)` + `subscribe` getter). _(spike 010)_
-- [ ] **CTX-06**: `survey` + `trackingService` secondary bridges are pure runes (no `fromStore`/`toStore` over appSettings / sessionId / userPreferences). _(spike 010)_
-- [ ] **CTX-07**: `voterContext` + `candidateContext` are rune-native factories composing Tier-1 contexts via `getXContext()` and exposing their 18+/30+ reactive accessors as getters; a `sessionStorageState` sibling helper (spike-scratch `runeSessionStorage`, renamed) backs `voterContext`'s `firstQuestionId`; the destructure-trap reproduces identically and is preserved per the CLAUDE.md rule. _(spikes 007, 010)_
+- [x] **CTX-06**: `survey` + `trackingService` secondary bridges are pure runes (no `fromStore`/`toStore` over appSettings / sessionId / userPreferences). _(spike 010)_
+- [x] **CTX-07**: `voterContext` + `candidateContext` are rune-native factories composing Tier-1 contexts via `getXContext()` and exposing their 18+/30+ reactive accessors as getters; a `sessionStorageState` sibling helper (spike-scratch `runeSessionStorage`, renamed) backs `voterContext`'s `firstQuestionId`; the destructure-trap reproduces identically and is preserved per the CLAUDE.md rule. _(spikes 007, 010)_
 - [ ] **CTX-08**: `getRoute` is rune-native — pure `$derived.by` reading `page.params` / `page.route` / `page.url` as separate fields (never `page` as a single value inside a tracking scope), bypassing the `toStore` short-circuit trap; the custom `afterNavigate` republish workaround is removed. _(spike 012 — Wave 3 unblocker)_
 
 ### Domain A — Consumer Migration (CONS) — Wave 3
@@ -85,8 +85,8 @@ Which phases cover which requirements. Populated during roadmap creation.
 | CTX-03 | Phase 95 | Complete |
 | CTX-04 | Phase 95 | Complete |
 | CTX-05 | Phase 95 | Complete |
-| CTX-06 | Phase 96 | Pending |
-| CTX-07 | Phase 96 | Pending |
+| CTX-06 | Phase 96 | Complete |
+| CTX-07 | Phase 96 | Complete |
 | CTX-08 | Phase 97 | Pending |
 | CONS-01 | Phase 97 | Pending |
 | CONS-02 | Phase 97 | Pending |
