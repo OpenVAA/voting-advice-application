@@ -1,6 +1,5 @@
 import { ENTITY_TYPE } from '@openvaa/data';
-import { fromStore } from 'svelte/store';
-import { localStorageWritable } from '../utils/persistedState.svelte';
+import { localStorageState } from '../utils/persistedState.svelte';
 import { prepareDataWriter } from '../utils/prepareDataWriter';
 import type { LocalizedAnswer } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
@@ -35,11 +34,10 @@ export function candidateUserDataStore({
   let savedData = $state<CandidateUserData<true> | undefined>(undefined);
 
   // An internal persisted store for holding edited answers
-  const _editedAnswersStore = localStorageWritable(
+  const _editedAnswersStore = localStorageState(
     'CandidateContext-candidateUserDataStore-editedAnswers',
     {} as LocalizedAnswers
   );
-  const editedAnswersState = fromStore(_editedAnswersStore);
 
   // An internal $state for holding the edited image
   let editedImage = $state<ImageWithFile | undefined>(undefined);
@@ -54,7 +52,7 @@ export function candidateUserDataStore({
 
   // A derived value holding the effective user data, including unsaved data
   const _current = $derived.by(() => {
-    const editedAnswers = editedAnswersState.current;
+    const editedAnswers = _editedAnswersStore.current;
     if (!savedData) return undefined;
     const {
       user,
@@ -115,7 +113,7 @@ export function candidateUserDataStore({
   const _savedCandidateData = $derived(savedData?.candidate);
 
   const _unsavedQuestionIds = $derived.by(() => {
-    const editedAnswers = editedAnswersState.current;
+    const editedAnswers = _editedAnswersStore.current;
     return editedAnswers ? Object.keys(editedAnswers) : [];
   });
 
@@ -197,7 +195,7 @@ export function candidateUserDataStore({
     // Get the initial data to get target entity
     if (!savedData) throw new Error('Save called before user data loaded');
 
-    const answers = editedAnswersState.current;
+    const answers = _editedAnswersStore.current;
     const image = editedImage;
     const termsOfUseAccepted = editedTermsOfUseAccepted;
     const updateArgs = {
