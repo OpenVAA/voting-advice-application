@@ -45,7 +45,7 @@ Requirements for this milestone. Each maps to exactly one roadmap phase.
 
 - [x] **NAVA11Y-01**: a dedicated `aria-live="polite"` route announcer whose text derives from `page.params.X` announces route changes (NOT `<svelte:head><title>` updates — SPA title-change announcement is unreliable on NVDA/JAWS). _(spike 016)_
 - [x] **NAVA11Y-02**: focus is reset explicitly on navigation — `afterNavigate` → `requestAnimationFrame(() => target.focus({ preventScroll: true }))` (preventScroll MANDATORY to not fight `goto({ noScroll: true })`); the question heading carries `data-focus-on-nav` / `tabindex="-1"`. _(spike 016)_
-- [ ] **NAVA11Y-03**: the transition stack passes the WCAG 2.1 AA gate (focus management + aria-live announcer + reduced-motion) under the existing `@axe-core/playwright` env-gated smoke. _(spike 016)_
+- [x] **NAVA11Y-03**: the transition stack passes the WCAG 2.1 AA gate (focus management + aria-live announcer + reduced-motion) under the existing `@axe-core/playwright` env-gated smoke. _(spike 016)_
 
 ### Domain B — Questions Layout Restructure (QLAYOUT) — Wave B
 
@@ -98,7 +98,7 @@ Which phases cover which requirements. Populated during roadmap creation.
 | VT-03 | Phase 99 | Complete |
 | NAVA11Y-01 | Phase 99 | Complete |
 | NAVA11Y-02 | Phase 99 | Complete |
-| NAVA11Y-03 | Phase 99 | Pending |
+| NAVA11Y-03 | Phase 99 | Complete |
 | QLAYOUT-01 | Phase 100 | Pending |
 | QLAYOUT-02 | Phase 100 | Pending |
 | SUITE-01 | Phase 101 | Pending |
