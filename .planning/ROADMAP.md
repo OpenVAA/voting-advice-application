@@ -237,7 +237,12 @@ Plans:
   1. `/questions` rendering is hoisted from `[questionId]/+page.svelte` into the parent `questions/+layout.svelte` (matching the production `results/[[electionTab]]/+layout.svelte` pattern); `[questionId]/+page.svelte` is an empty stub.
   2. Variant remount uses `{#key question.type}` (not `{#key question.id}`) — the input stays mounted across a run of same-variant questions and remounts cleanly only at Likert↔open-text↔slider boundaries; layout-owned `$state` answers survive Q→Q navigation.
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 100-01-PLAN.md — Wave 0 regression gate: append the D-03 multi-step Q→Q answer-survival assertion (crossing a question-type boundary) to the existing voter-journey spec — QLAYOUT-02
+- [ ] 100-02-PLAN.md — Hoist `/questions` rendering from `[questionId]/+page.svelte` into `questions/+layout.svelte` (unified-layout-with-empty-leaf, results-pattern parity) + new `questions/+layout.ts` load returning `{}` + collapse the leaf to an empty stub; `{#key question.type}` variant remount; sibling-route guard (no `error(500)` on intro/category); all four Phase 99 markers preserved verbatim — QLAYOUT-01, QLAYOUT-02
+
 **UI hint**: yes
 
 ### Phase 101: Suite Re-enable + Milestone-Close Green Gate
@@ -268,7 +273,7 @@ Domain A is a strict chain: 95 → 96 → 97 → 98. Domain B is a chain: 99 →
 | 97. Domain A Wave 3 — getRoute + Consumer Codemod | v2.11 | 0/TBD | Not started | - |
 | 98. Domain A Wave 4 — Cleanup | v2.11 | 0/TBD | Not started | - |
 | 99. Domain B Wave A — View Transitions + Navigation a11y | v2.11 | 3/3 | Complete   | 2026-06-04 |
-| 100. Domain B Wave B — Questions Layout Restructure | v2.11 | 0/TBD | Not started | - |
+| 100. Domain B Wave B — Questions Layout Restructure | v2.11 | 0/2 | Planned     | - |
 | 101. Suite Re-enable + Milestone-Close Green Gate | v2.11 | 0/TBD | Not started | - |
 
 See `.planning/MILESTONES.md` for cumulative history and `.planning/milestones/` for per-milestone roadmaps + requirements + audits.
