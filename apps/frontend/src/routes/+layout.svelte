@@ -19,7 +19,7 @@
   import { onDestroy, untrack } from 'svelte';
   import { fromStore, get } from 'svelte/store';
   import { afterNavigate, beforeNavigate, onNavigate } from '$app/navigation';
-  import { updated } from '$app/state';
+  import { page, updated } from '$app/state';
   import { isValidResult } from '$lib/api/utils/isValidResult';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Loading } from '$lib/components/loading';
@@ -31,6 +31,7 @@
   import { initLayoutContext } from '$lib/contexts/layout';
   import { FeedbackModal } from '$lib/dynamic-components/feedback/modal';
   import { logDebugError } from '$lib/utils/logger';
+  import { shouldAnimate, startViewTransition } from '$lib/utils/viewTransition';
   import MaintenancePage from './MaintenancePage.svelte';
   import type { Snippet } from 'svelte';
   import type { DPDataType } from '$lib/api/base/dataTypes';
@@ -153,10 +154,32 @@
   beforeNavigate(({ willUnload, to }) => {
     if (updated.current && !willUnload && to?.url) location.href = to.url.href;
   });
-  onNavigate(() => submitAllEvents());
+  // MERGE — analytics flush THEN View-Transitions coupling (VT-01). Single merged hook
+  // guarantees flush ordering and avoids two-promise ambiguity (resolved Open Question O-2).
+  onNavigate((navigation) => {
+    submitAllEvents(); // preserve existing analytics flush
+    // LANDMINE: read `navigation.to?.url` — NOT `page.url` (which is the SOURCE url during
+    // onNavigate per spike-015). `shouldAnimate` also gates reduced-motion (VT-03) + ?notr=1 (D-02).
+    if (!shouldAnimate(navigation.to?.url)) return;
+    return new Promise<void>((resolve) => {
+      startViewTransition(async () => {
+        resolve(); // tells SvelteKit to apply the new DOM
+        await navigation.complete; // SvelteKit swaps the DOM here
+      });
+    });
+  });
   onDestroy(() => submitAllEvents());
+  // MERGE — analytics pageview THEN focus reset (NAVA11Y-02, global half).
   afterNavigate(({ from, to }) => {
-    startPageview(to?.url?.href ?? '', from?.url?.href);
+    startPageview(to?.url?.href ?? '', from?.url?.href); // preserve existing analytics pageview
+    if (typeof document === 'undefined') return;
+    requestAnimationFrame(() => {
+      const target =
+        document.querySelector<HTMLElement>('[data-focus-on-nav]') ?? document.querySelector<HTMLElement>('h1');
+      // LANDMINE: `preventScroll: true` is MANDATORY — real `goto({ noScroll })` callsites exist;
+      // omitting it fights them.
+      target?.focus({ preventScroll: true });
+    });
   });
 
   // Submit any possible event data if the window is closed or refreshed
@@ -203,6 +226,13 @@
   <link href={fontUrl} rel="stylesheet" />
 </svelte:head>
 
+<!-- Route announcer (NAVA11Y-01): always-present aria-live region, placed OUTSIDE the
+     error/loading/maintenance branches so screen readers reliably announce route changes.
+     Text derives a generic param-based label from `page.params` (D-03 — no new i18n strings). -->
+<div aria-live="polite" aria-atomic="true" class="sr-only" id="route-announcer">
+  {page.params.questionId ? `Question ${page.params.questionId}` : 'Questions list'}
+</div>
+
 {#if error}
   <ErrorMessage class="bg-base-300 h-dvh" />
 {:else if !ready}
@@ -236,3 +266,17 @@
       popupQueue.shift();
     }} />
 {/if}
+
+<style>
+  /* Reduced-motion (VT-03 CSS layer): null any escaping ::view-transition animation.
+     LANDMINE: the @media query WRAPS the :global selector — never the reverse form (the
+     Svelte CSS parser rejects an at-rule nested inside :global with "Expected a valid CSS
+     identifier"). */
+  @media (prefers-reduced-motion: reduce) {
+    :global(::view-transition-group(*)),
+    :global(::view-transition-old(*)),
+    :global(::view-transition-new(*)) {
+      animation: none !important;
+    }
+  }
+</style>
