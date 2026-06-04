@@ -1,21 +1,49 @@
-import { fromStore, toStore } from 'svelte/store';
 import { browser } from '$app/environment';
 import { getUUID } from '$lib/utils/components';
 import { logDebugError } from '$lib/utils/logger';
 import { purgeNullish } from '../../../utils/purgeNullish';
-import { sessionStorageWritable } from '../../utils/persistedState.svelte';
-import type { Readable } from 'svelte/store';
+import { sessionStorageState } from '../../utils/persistedState.svelte';
 import type { UserPreferences } from '../userPreferences.type';
 import type { TrackingEvent } from './trackingEvent.type';
 import type { TrackingHandler, TrackingService } from './trackingService.type';
 
+/**
+ * A rune-shaped read handle: a value exposed via a `current` getter so the
+ * producer can take a reactive read-dependency without a store bridge.
+ */
+type ReactiveHandle<TValue> = { readonly current: TValue };
+
+/**
+ * A rune-shaped read+write handle (the producer's `sendTrackingEvent` surface).
+ */
+type WritableHandle<TValue> = { current: TValue; set: (v: TValue) => void };
+
+/**
+ * The pure-rune internal shape of the tracking service. The `appContext` seam
+ * owns the store conversion of the store-shaped properties (`sendTrackingEvent`,
+ * `sessionId`, `shouldTrack`) declared on the exported `TrackingService` type —
+ * this producer exposes them as rune handles.
+ */
+export type RuneTrackingService = Omit<TrackingService, 'sendTrackingEvent' | 'sessionId' | 'shouldTrack'> & {
+  sendTrackingEvent: WritableHandle<TrackingHandler | null | undefined>;
+  sessionId: ReactiveHandle<string>;
+  shouldTrack: ReactiveHandle<boolean>;
+};
+
+/**
+ * Pure-rune tracking-service producer (CTX-06): reads its `appSettings` /
+ * `userPreferences` inputs via `.current` getters and exposes its outputs as
+ * rune handles — no store bridge over the inputs nor the outputs. The
+ * store-shaped exported surface (`sendTrackingEvent`/`sessionId`/`shouldTrack`
+ * per `trackingService.type.ts`) is reconstructed by the `appContext` seam.
+ */
 export function trackingService({
   appSettings,
   userPreferences
 }: {
-  appSettings: Readable<AppSettings>;
-  userPreferences: Readable<UserPreferences>;
-}): TrackingService {
+  appSettings: ReactiveHandle<AppSettings>;
+  userPreferences: ReactiveHandle<UserPreferences>;
+}): RuneTrackingService {
   ////////////////////////////////////////////////////////////////////
   // Internal state variables
   ////////////////////////////////////////////////////////////////////
@@ -40,26 +68,31 @@ export function trackingService({
   // Reactive state
   ////////////////////////////////////////////////////////////////////
 
-  const sessionId = sessionStorageWritable('appContext-sessionId', getUUID());
+  // Persistent session id, read as a rune handle (`.current`) so this producer
+  // stays store-free. The seam wraps it back to a `Readable<string>` for the
+  // exported `sessionId` surface (trackingService.type.ts).
+  const sessionId = sessionStorageState('appContext-sessionId', getUUID());
 
   let sendTrackingEventValue = $state<TrackingHandler | null | undefined>(undefined);
-  const sendTrackingEvent = toStore(
-    () => sendTrackingEventValue,
-    (v) => {
+  const sendTrackingEvent: WritableHandle<TrackingHandler | null | undefined> = {
+    get current() {
+      return sendTrackingEventValue;
+    },
+    set(v) {
       sendTrackingEventValue = v;
     }
-  );
+  };
 
-  const appSettingsReactive = fromStore(appSettings);
-  const userPrefsReactive = fromStore(userPreferences);
   const shouldTrackValue = $derived(
     browser &&
-      appSettingsReactive.current.analytics.trackEvents &&
-      userPrefsReactive.current.dataCollection?.consent === 'granted'
+      appSettings.current.analytics.trackEvents &&
+      userPreferences.current.dataCollection?.consent === 'granted'
   );
-  const shouldTrack = toStore(() => shouldTrackValue);
-
-  const sessionIdReactive = fromStore(sessionId);
+  const shouldTrack: ReactiveHandle<boolean> = {
+    get current() {
+      return shouldTrackValue;
+    }
+  };
 
   ////////////////////////////////////////////////////////////////////
   // Tracking functions
@@ -109,7 +142,7 @@ export function trackingService({
     if (!shouldTrackValue) return;
     const send = sendTrackingEventValue;
     if (!send) return;
-    const dataToSend = purgeNullish({ vaaSessionId: sessionIdReactive.current, ...data });
+    const dataToSend = purgeNullish({ vaaSessionId: sessionId.current, ...data });
     logDebugError({ name, data: dataToSend });
     send({ name, data: dataToSend });
   }
