@@ -45,6 +45,69 @@ export function sessionStorageWritable<TValue>(key: string, defaultValue: TValue
 }
 
 /**
+ * A rune-native persisted state handle. Reactive reads happen via the `current`
+ * getter (which tracks the underlying `$state` dependency); `set`/`update`
+ * write the value through to the backing storage.
+ */
+export interface PersistedState<TValue> {
+  /** Reactive read — invocation tracks the `$state` dependency. */
+  readonly current: TValue;
+  /** Replace the value (and persist). */
+  set: (v: TValue) => void;
+  /** Functional update (and persist). */
+  update: (fn: (cur: TValue) => TValue) => void;
+}
+
+/**
+ * Create a rune-native state handle persisted in `localStorage`, replacing the
+ * three-layer `$state → localStorageWritable → fromStore` bridge with a single
+ * `{ current, set, update }` handle. Reads the initial value via the versioned
+ * `getItemFromStorage` helper (so a stale/wrong-version or old-format payload is
+ * discarded and `defaultValue` is returned — there is NO format-migration shim,
+ * per D-03) and persists every `set`/`update` via `saveItemToStorage`.
+ *
+ * NB. The type of `defaultValue` should be one that can be serialized to JSON.
+ * See: https://github.com/microsoft/TypeScript/issues/1897#issuecomment-1415776159
+ *
+ * @param key - The key to store the value under.
+ * @param defaultValue - The default value used when nothing valid is stored.
+ */
+export function localStorageState<TValue>(key: string, defaultValue: TValue): PersistedState<TValue> {
+  return storageState('localStorage', key, defaultValue);
+}
+
+/**
+ * Shared versioned-payload core backing `localStorageState` (and, in a later
+ * phase, `sessionStorageState`). Parametrized on `StorageType` so the versioned
+ * storage helpers (`getItemFromStorage`/`saveItemToStorage`) are reused — no
+ * re-implementation of the `{ version, data }` payload, `requireUserDataVersion`
+ * expiry, or `browser` gate.
+ *
+ * Uses a `$state` value + a `get current()` getter (reactive read) and writes
+ * through imperatively on `set`/`update`. Persistence is imperative (not via
+ * `$effect`), so the helper can be called outside component-init context (e.g.
+ * inside `initXxxContext()` factories).
+ */
+function storageState<TValue>(type: StorageType, key: string, defaultValue: TValue): PersistedState<TValue> {
+  const initial = getItemFromStorage<TValue>(type, key) ?? defaultValue;
+  let value = $state<TValue>(initial);
+
+  return {
+    get current() {
+      return value;
+    },
+    set(v: TValue) {
+      value = v;
+      saveItemToStorage(type, key, v);
+    },
+    update(fn: (cur: TValue) => TValue) {
+      value = fn(value);
+      saveItemToStorage(type, key, value);
+    }
+  };
+}
+
+/**
  * Create a store backed by `$state` that is persisted in `localStorage` or `sessionStorage`.
  * Reads initial value from storage; subscribes to changes to write them back.
  * Returns a backward-compatible `Writable<T>` via `toStore()` for existing `$store` consumers.
