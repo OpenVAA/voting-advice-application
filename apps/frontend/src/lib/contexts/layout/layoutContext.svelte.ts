@@ -5,7 +5,7 @@ import { cubicOut } from 'svelte/easing';
 import { Tween } from 'svelte/motion';
 import { afterNavigate, beforeNavigate } from '$app/navigation';
 import { DELAY } from '$lib/utils/timing';
-import { StackedState } from '../utils/StackedState.svelte';
+import { settingsOverlay } from '../utils/SettingsOverlay.svelte';
 import type { DeepPartial, VideoContent } from '@openvaa/app-shared';
 import type { OptionalVideoProps,Video, VideoMode  } from '$lib/components/video';
 import type {
@@ -51,19 +51,17 @@ export const DEFAULT_NAVIGATION_SETTINGS: NavigationSettings = {
 export function initLayoutContext(): LayoutContext {
   if (hasContext(CONTEXT_KEY)) error(500, 'InitLayoutContext() called for a second time');
 
-  const pageStyles = new StackedState<PageStyles, DeepPartial<PageStyles>>(DEFAULT_PAGE_STYLES, (current, value) => [
-    ...current,
-    mergeSettings(current[current.length - 1], value)
-  ]);
-
-  const topBarSettings = new StackedState<TopBarSettings, DeepPartial<TopBarSettings>>(
-    DEFAULT_TOP_BAR_SETTINGS,
-    (current, value) => [...current, mergeSettings(current[current.length - 1], value)]
+  const pageStyles = settingsOverlay<PageStyles, DeepPartial<PageStyles>>(DEFAULT_PAGE_STYLES, (acc, ov) =>
+    mergeSettings(acc, ov)
   );
 
-  const navigationSettings = new StackedState<NavigationSettings, DeepPartial<NavigationSettings>>(
+  const topBarSettings = settingsOverlay<TopBarSettings, DeepPartial<TopBarSettings>>(DEFAULT_TOP_BAR_SETTINGS, (acc, ov) =>
+    mergeSettings(acc, ov)
+  );
+
+  const navigationSettings = settingsOverlay<NavigationSettings, DeepPartial<NavigationSettings>>(
     DEFAULT_NAVIGATION_SETTINGS,
-    (current, value) => [...current, mergeSettings(current[current.length - 1], value)]
+    (acc, ov) => mergeSettings(acc, ov)
   );
 
   let progressMax = $state(0);
@@ -157,25 +155,30 @@ export function initLayoutContext(): LayoutContext {
     progress,
     navigation,
     navigationSettings,
-    video
+    video,
+    useTopBar(overlay) {
+      topBarSettings.use(overlay);
+    },
+    usePageStyles(overlay) {
+      pageStyles.use(overlay);
+    },
+    useNavigation(overlay) {
+      navigationSettings.use(overlay);
+    }
   });
 }
 
 /**
  * Get the `LayoutContext` object.
- * @param onDestroy - The `onDestroy` callback for the component using the context. This is needed for automatic rolling back of any changes made to page styles or other context properties affecting layout.
+ *
+ * Consumers register layout overlays declaratively via `useTopBar` / `usePageStyles` /
+ * `useNavigation` (or `topBarSettings.use(...)` etc.), whose cleanup is `$effect`-scoped —
+ * the overlay is auto-reverted when the calling component is destroyed. No `onDestroy`
+ * plumbing is required (the old index-revert bookkeeping is gone, and out-of-order
+ * mount/unmount no longer corrupts the merged overlay).
  * @returns The `LayoutContext` object
  */
-export function getLayoutContext(onDestroy: (fn: () => unknown) => void) {
+export function getLayoutContext() {
   if (!hasContext(CONTEXT_KEY)) error(500, 'GetLayoutContext() called before initLayoutContext()');
-  const ctx = getContext<LayoutContext>(CONTEXT_KEY);
-  const indexPageStyle = ctx.pageStyles.getLength() - 1;
-  const indexTopBar = ctx.topBarSettings.getLength() - 1;
-  const indexNavigation = ctx.navigationSettings.getLength() - 1;
-  onDestroy(() => {
-    ctx.pageStyles.revert(indexPageStyle);
-    ctx.topBarSettings.revert(indexTopBar);
-    ctx.navigationSettings.revert(indexNavigation);
-  });
-  return ctx;
+  return getContext<LayoutContext>(CONTEXT_KEY);
 }

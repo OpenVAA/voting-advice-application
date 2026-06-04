@@ -1,18 +1,17 @@
 import type { DeepPartial, VideoContent } from '@openvaa/app-shared';
 import type { Tween } from 'svelte/motion';
 import type { OptionalVideoProps, Video, VideoMode } from '$lib/components/video';
-import type { StackedState } from '../utils/StackedState.svelte';
+import type { SettingsOverlayApi } from '../utils/SettingsOverlay.svelte';
 
 export type LayoutContext = {
   /**
-   * A store containing top bar actions settings. When showing some buttons, make sure to provide a callback if they define one.
+   * A token-keyed overlay registry containing top bar actions settings. When showing some buttons, make sure to provide a callback if they define one. Read the merged settings via `.current`; register an overlay declaratively via `useTopBar(...)` (or `.use(...)`), whose cleanup is `$effect`-scoped.
    */
-  topBarSettings: StackedState<TopBarSettings, DeepPartial<TopBarSettings>>;
+  topBarSettings: SettingsOverlayApi<TopBarSettings, DeepPartial<TopBarSettings>>;
   /**
-   * A store containing CSS classes used to customize different parts of the layout.
-   * NB. You should set any changes to the styles during component initialization, because if changes are pushed to the `pageStyles` stack later they may be overwritten when another component initialized after the currrent one is destroyed.
+   * A token-keyed overlay registry containing CSS classes used to customize different parts of the layout. Register overlays via `usePageStyles(...)` (or `.use(...)`); the overlay is auto-reverted on component destroy via `$effect` cleanup (token-keyed, so out-of-order mount/unmount no longer corrupts the merged result).
    */
-  pageStyles: StackedState<PageStyles, DeepPartial<PageStyles>>;
+  pageStyles: SettingsOverlayApi<PageStyles, DeepPartial<PageStyles>>;
   /**
    * Progress bar status stores.
    */
@@ -22,14 +21,26 @@ export type LayoutContext = {
    */
   navigation: Navigation;
   /**
-   * A store containing navigation settings.
-   * NB. This is not contained under `navigation` for easier store access.
+   * A token-keyed overlay registry containing navigation settings.
+   * NB. This is not contained under `navigation` for easier access. Register overlays via `useNavigation(...)` (or `.use(...)`).
    */
-  navigationSettings: StackedState<NavigationSettings, DeepPartial<NavigationSettings>>;
+  navigationSettings: SettingsOverlayApi<NavigationSettings, DeepPartial<NavigationSettings>>;
   /**
    * Settings related to the video player.
    */
   video: VideoController;
+  /**
+   * Declarative scoped overlay for the top bar — pushes the overlay and auto-reverts via `$effect` cleanup when the calling component is destroyed. Replaces the old imperative `topBarSettings.push(...)` + `onDestroy` index-revert.
+   */
+  useTopBar: (overlay: DeepPartial<TopBarSettings>) => void;
+  /**
+   * Declarative scoped overlay for page styles — see `useTopBar`.
+   */
+  usePageStyles: (overlay: DeepPartial<PageStyles>) => void;
+  /**
+   * Declarative scoped overlay for navigation settings — see `useTopBar`.
+   */
+  useNavigation: (overlay: DeepPartial<NavigationSettings>) => void;
 };
 
 export interface PageStyles {
