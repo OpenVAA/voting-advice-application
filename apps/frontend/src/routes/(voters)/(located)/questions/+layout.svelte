@@ -29,6 +29,7 @@
   import { Button } from '$lib/components/button';
   import { Hero } from '$lib/components/hero';
   import { HeroEmoji } from '$lib/components/heroEmoji';
+  import { Loading } from '$lib/components/loading';
   import {
     OpinionQuestionInput,
     QuestionActions,
@@ -282,6 +283,13 @@
           }} />
       {/snippet}
     </MainContent>
+  {:else if parseParams(page).questionId}
+    <!-- A real [questionId] route whose `question`/`questionBlock` is still
+         resolving (or is being redirected away by the side-effect $effect).
+         Match the old leaf's <Loading> fallback rather than the empty leaf stub
+         (which would flash a blank screen). Sibling routes (intro/category —
+         no `questionId`) render their own page via {@render children}. -->
+    <Loading class="mt-lg" />
   {:else}
     {@render children?.()}
   {/if}
