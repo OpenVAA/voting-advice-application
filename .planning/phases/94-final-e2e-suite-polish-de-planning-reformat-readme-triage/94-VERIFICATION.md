@@ -1,23 +1,26 @@
 ---
 phase: 94-final-e2e-suite-polish-de-planning-reformat-readme-triage
 verified: 2026-06-03T22:00:00Z
-status: human_needed
+status: passed
+human_verified: 2026-06-04
 score: 9/9
 overrides_applied: 0
 human_verification:
   - test: "Run the full E2E test suite: `yarn dev` (in one terminal) then `yarn test:e2e` (in another)"
     expected: "All tests pass green with no regressions from the de-planning sweep or WR fixes"
     why_human: "Requires a running local Supabase + yarn dev stack which is not available in the automated verification environment. Documented in 94-VALIDATION.md as the operator's final manual gate."
+    result: "PASS (2026-06-04, via /gsd:verify-work) — `82 passed, 2 skipped (2.3m)` against the live stack; 84 total matches the --list baseline; the 2 skipped are the intentional perm-per-app-notifications quarantine (D-03)."
   - test: "Read tests/README.md and tests/tests/helpers/README.md as a maintainer would"
     expected: "Both files read as current-state-only documentation with zero planning archaeology. Prose is clean and self-documenting."
     why_human: "Prose quality and readability cannot be machine-verified beyond the token grep gate — a human must judge whether the rewritten docs are genuinely clear and useful, not just token-clean."
+    result: "PASS (2026-06-04, via /gsd:verify-work) — both READMEs are clean current-state docs; 3 minor accuracy nits fixed during review (Fixture boundary section, worker-count wording, missingNominations path)."
 ---
 
 # Phase 94: Final E2E Suite Polish Verification Report
 
 **Phase Goal:** Strip all planning/phase/history references from the E2E test suite and dev-seed templates so the suite reads as a clean, self-documenting product artifact with no project-archaeology, and resolve the 4 advisory code-review follow-ups from Phase 93 (WR-01..WR-04). After this phase, tests describe WHAT they verify in plain language, comments explain intent (not change history), and the READMEs reflect only current state.
-**Verified:** 2026-06-03T22:00:00Z
-**Status:** human_needed
+**Verified:** 2026-06-03T22:00:00Z (automated) · 2026-06-04 (human gates cleared via /gsd:verify-work)
+**Status:** passed
 **Re-verification:** No — initial verification
 
 ## Goal Achievement
