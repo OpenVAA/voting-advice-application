@@ -2,7 +2,6 @@ import { QUESTION_CATEGORY_TYPE } from '@openvaa/data';
 import { DISTANCE_METRIC, MatchingAlgorithm, MISSING_VALUE_METHOD } from '@openvaa/matching';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext, untrack } from 'svelte';
-import { fromStore } from 'svelte/store';
 import { page } from '$app/state';
 import { logDebugError } from '$lib/utils/logger';
 import { getImpliedConstituencyIds, getImpliedElectionIds } from '$lib/utils/route';
@@ -14,7 +13,7 @@ import { nominationAndQuestionStore } from './nominationAndQuestionStore.svelte'
 import { getAppContext } from '../../contexts/app';
 import { getFilterContext, initFilterContext } from '../filter';
 import { paramStore } from '../utils/paramStore.svelte';
-import { sessionStorageWritable } from '../utils/persistedState.svelte';
+import { sessionStorageState } from '../utils/persistedState.svelte';
 import type { CustomData } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
 import type { AnyQuestionVariant, Constituency, Election, EntityType, QuestionCategory } from '@openvaa/data';
@@ -40,11 +39,7 @@ export function initVoterContext(): VoterContext {
   ////////////////////////////////////////////////////////////
 
   const appContext = getAppContext();
-  const { appSettings, locale, reactiveDataRoot, startEvent, t } = appContext;
-
-  // Bridge store values to rune-compatible access
-  const appSettingsState = fromStore(appSettings);
-  const localeState = fromStore(locale);
+  const { reactiveAppSettings, reactiveLocale, reactiveDataRoot, startEvent, t } = appContext;
 
   ////////////////////////////////////////////////////////////
   // Elections and Constituencies
@@ -53,7 +48,7 @@ export function initVoterContext(): VoterContext {
   // Stores related to selection pages
 
   const electionsSelectable = $derived(
-    !appSettingsState.current.elections?.disallowSelection && reactiveDataRoot.current.elections?.length !== 1
+    !reactiveAppSettings.current.elections?.disallowSelection && reactiveDataRoot.current.elections?.length !== 1
   );
 
   const constituenciesSelectable = $derived(
@@ -96,7 +91,7 @@ export function initVoterContext(): VoterContext {
 
   $effect(() => {
     const dr = reactiveDataRoot.current;
-    const settings = appSettingsState.current;
+    const settings = reactiveAppSettings.current;
     const electionId = _electionId.value;
     const constituencyId = _constituencyId.value;
     if (!dr.elections.length) {
@@ -238,8 +233,7 @@ export function initVoterContext(): VoterContext {
   let _selectedQuestionCategoryIds = $state<Array<Id>>([]);
   let hasSeededCategorySelection = $state(false);
 
-  const _firstQuestionId = sessionStorageWritable('voterContext-firstQuestionId', null as Id | null);
-  const firstQuestionIdState = fromStore(_firstQuestionId);
+  const _firstQuestionId = sessionStorageState('voterContext-firstQuestionId', null as Id | null);
 
   // Single $effect computes the entire question chain whenever upstream
   // state (selectedElections / selectedConstituencies / dataRoot) changes.
@@ -297,7 +291,7 @@ export function initVoterContext(): VoterContext {
   // optionally by `firstQuestionId`. Mirrors the original `questionBlockStore`
   // logic verbatim; written into a `$state` for consumer reactivity.
   $effect(() => {
-    const firstId = firstQuestionIdState.current;
+    const firstId = _firstQuestionId.current;
     const allOpinionCats = _opinionQuestionCategories;
     const categoryIds = _selectedQuestionCategoryIds;
     const elections = selectedElections;
@@ -353,7 +347,7 @@ export function initVoterContext(): VoterContext {
   const answers = answerStore({ startEvent });
 
   const resultsAvailable = $derived.by(() => {
-    const settings = appSettingsState.current;
+    const settings = reactiveAppSettings.current;
     const questions = _opinionQuestions;
     const currentAnswers = answers.answers;
     // For results to be available, we need at least the specified number of answers for each election
@@ -365,10 +359,10 @@ export function initVoterContext(): VoterContext {
   });
 
   /** The types of entities we show in results */
-  const entityTypes = $derived(appSettingsState.current.results?.sections ?? []);
+  const entityTypes = $derived(reactiveAppSettings.current.results?.sections ?? []);
 
   /** The entity types to hide if missing opinion answers */
-  const hideIfMissingAnswers = $derived(appSettingsState.current.entities?.hideIfMissingAnswers || {});
+  const hideIfMissingAnswers = $derived(reactiveAppSettings.current.entities?.hideIfMissingAnswers || {});
 
   // Matching and filtering depend on the available nominations and questions, for which we use a utility store
   const _nominationsAndQuestions = nominationAndQuestionStore({
@@ -396,17 +390,17 @@ export function initVoterContext(): VoterContext {
     }
   });
 
-  const minAnswers = $derived(appSettingsState.current.matching.minimumAnswers);
+  const minAnswers = $derived(reactiveAppSettings.current.matching.minimumAnswers);
 
   /** Get the entityTypes whose cardContents include `submatches` */
   const calcSubmatches = $derived.by(() =>
-    Object.entries(appSettingsState.current.results?.cardContents ?? {})
+    Object.entries(reactiveAppSettings.current.results?.cardContents ?? {})
       .filter(([, value]) => value?.includes('submatches'))
       .map(([type]) => type as EntityType)
   );
 
   /** The parent entity matching method */
-  const parentMatchingMethod = $derived(appSettingsState.current.matching?.organizationMatching || 'none');
+  const parentMatchingMethod = $derived(reactiveAppSettings.current.matching?.organizationMatching || 'none');
 
   const _matches = matchStore({
     algorithm,
@@ -419,7 +413,7 @@ export function initVoterContext(): VoterContext {
 
   const _entityFilters = filterStore({
     nominationsAndQuestions: () => _nominationsAndQuestions.value,
-    locale: () => localeState.current,
+    locale: () => reactiveLocale.current,
     t: () => t
   });
 
@@ -519,7 +513,7 @@ export function initVoterContext(): VoterContext {
       return getFilterContext();
     },
     get firstQuestionId() {
-      return firstQuestionIdState.current;
+      return _firstQuestionId.current;
     },
     set firstQuestionId(v) {
       _firstQuestionId.set(v);
