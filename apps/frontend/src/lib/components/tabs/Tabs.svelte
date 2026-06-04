@@ -25,12 +25,31 @@ Show a tab title bar that can be used to switch between different tabs.
 
 <script lang="ts">
   import { concatClass } from '$lib/utils/components';
+  import { shouldAnimate, startViewTransition } from '$lib/utils/viewTransition';
   import type { TabsProps } from './Tabs.type';
 
-  let { tabs = [], activeIndex = $bindable(0), onChange, ...restProps }: TabsProps = $props();
+  let {
+    tabs = [],
+    activeIndex = $bindable(0),
+    onChange,
+    transitionOnChange = false,
+    ...restProps
+  }: TabsProps = $props();
 
   function activate(index: number): void {
-    activeIndex = index;
+    // For LOCAL-state tab switches (not navigation-driven), optionally cross-fade
+    // the activeIndex mutation. Pass `undefined` as the destination URL — there is
+    // no navigation target for a local tab switch, so the `?notr=1` check is
+    // naturally skipped while the SSR / feature-detect / reduced-motion gates still
+    // apply. Falls through to a plain assignment when animation is disabled or
+    // unsupported (graceful degradation lives in viewTransition.ts).
+    if (transitionOnChange && shouldAnimate(undefined)) {
+      startViewTransition(() => {
+        activeIndex = index;
+      });
+    } else {
+      activeIndex = index;
+    }
     onChange?.({ index, tab: tabs[index] });
   }
 </script>

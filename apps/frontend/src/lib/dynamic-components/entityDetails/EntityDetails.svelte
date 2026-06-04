@@ -144,7 +144,17 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   </header>
   {#if contentTabs.length > 1}
     <!-- bind: keep — Pattern 2: Tabs.activeIndex is $bindable(0) -->
-    <Tabs tabs={contentTabs} bind:activeIndex onChange={handleContentTabChange} class="px-10" />
+    <!-- transitionOnChange (O-1): the drawer tabs switch via LOCAL state (not a
+         navigation), so the global root-layout onNavigate VT hook never fires for
+         them. Opt into the minimal local startViewTransition wrapper so the tab
+         content cross-fades (same shouldAnimate gate, no bespoke choreography). -->
+    <Tabs
+      tabs={contentTabs}
+      bind:activeIndex
+      onChange={handleContentTabChange}
+      transitionOnChange
+      class="px-10"
+      style="view-transition-name: entity-detail-tabs" />
   {/if}
   {#if contentTabs[activeIndex]?.content === 'info'}
     <div data-testid="voter-entity-detail-info"><EntityInfo {entity} questions={infoQuestions} /></div>

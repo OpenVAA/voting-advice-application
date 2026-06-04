@@ -354,6 +354,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
         labelGetter={getName}
         onChange={handleElectionChange}
         class="-mt-md mb-lg"
+        style="view-transition-name: results-election-select"
         data-testid="voter-results-election-select" />
 
       {#if activeElection?.info}
@@ -381,6 +382,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
                 tabs={entityTabs}
                 activeIndex={activeTabIndex}
                 onChange={handleEntityTabChange}
+                style="view-transition-name: results-entity-tabs"
                 data-testid="voter-results-entity-tabs" />
             {/if}
 
