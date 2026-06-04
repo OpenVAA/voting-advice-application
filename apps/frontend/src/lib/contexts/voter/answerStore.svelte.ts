@@ -1,7 +1,6 @@
-import { fromStore } from 'svelte/store';
 import { deepFreeze } from '$lib/utils/freeze';
 import { logDebugError } from '$lib/utils/logger';
-import { localStorageWritable } from '../utils/persistedState.svelte';
+import { localStorageState } from '../utils/persistedState.svelte';
 import type { Answer, Answers } from '@openvaa/data';
 import type { Frozen } from '$lib/utils/freeze';
 import type { TrackingService } from '../app/tracking';
@@ -13,8 +12,7 @@ import type { AnswerStore } from './answerStore.type';
  */
 export function answerStore({ startEvent }: { startEvent: TrackingService['startEvent'] }): AnswerStore {
   // Create the internal store for holding the answers
-  const store = localStorageWritable('VoterContext-answerStore', Object.freeze({}) as Frozen<Answers>);
-  const storeState = fromStore(store);
+  const store = localStorageState('VoterContext-answerStore', Object.freeze({}) as Frozen<Answers>);
 
   function setAnswer(questionId: string, value?: Answer['value']): void {
     store.update((answers) => {
@@ -48,7 +46,7 @@ export function answerStore({ startEvent }: { startEvent: TrackingService['start
 
   return {
     get answers() {
-      return storeState.current;
+      return store.current;
     },
     deleteAnswer,
     reset,
