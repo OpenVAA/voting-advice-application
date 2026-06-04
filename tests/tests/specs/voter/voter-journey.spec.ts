@@ -208,15 +208,56 @@ async function expectQuestionAndAdvance({
   optionIndex?: (nOptions: number) => number;
   allowPreselected?: boolean;
 }): Promise<void> {
+  // SETTLE-BEFORE-COUNT (v2.11 regression fix). On a Q→Q param-only nav,
+  // SvelteKit reuses `questions/[questionId]/+page.svelte` (the page derives
+  // `question` via `$derived` rather than remounting — see that file), so the
+  // OUTGOING question's `[data-testid=question-choice]` options stay mounted
+  // until the navigation triggered by the PREVIOUS step's click resolves and
+  // the incoming options swap in. The previous helper fires `goto` after a
+  // `DELAY.md` (350ms) debounce, so on entry here the URL + option DOM still
+  // belong to the OUTGOING question. Reading `answerOptions.count()`
+  // synchronously at entry therefore captured the previous question's option
+  // count (e.g. 7 from the Likert7 base-3), making `optionIndex(7) → .nth(6)`
+  // resolve against the new 3-option categorical base-4 → element-not-found.
+  //
+  // Fix: capture the entry URL, then wait for the navigation to land on a NEW
+  // questions route (the questionId path segment changes) BEFORE reading the
+  // option count. `text` callers additionally gate on the heading. This is a
+  // deterministic settle — no fixed waits, no reliance on View Transitions
+  // (disproven as the cause: `reducedMotion: 'reduce'` did not fix it).
+  const urlAtEntry = page.url();
+  await page
+    .waitForURL((u) => u.pathname.includes('/questions/') && u.toString() !== urlAtEntry, {
+      timeout: TIMEOUTS.page
+    })
+    .catch(() => null);
+
   await expectUrlChange(page, async () => {
     const questionHeading = page.getByTestId(testIds.voter.questions.heading);
     const answerOptions = page.getByTestId(testIds.voter.questions.answerOption);
-    const answerOption = answerOptions.nth(optionIndex(await answerOptions.count()));
     const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
+
+    await (text
+      ? expect(questionHeading).toHaveText(text, { timeout: TIMEOUTS.element })
+      : expect(questionHeading).toBeVisible({ timeout: TIMEOUTS.element }));
+    await expect(answerOptions.first()).toBeVisible({ timeout: TIMEOUTS.element });
+    // Poll until the option count is stable across two consecutive reads, so a
+    // mid-swap transient (incoming options still mounting) can't be captured.
+    let stableCount = await answerOptions.count();
+    await expect
+      .poll(
+        async () => {
+          const current = await answerOptions.count();
+          const settled = current > 0 && current === stableCount;
+          stableCount = current;
+          return settled;
+        },
+        { timeout: TIMEOUTS.element }
+      )
+      .toBe(true);
+
+    const answerOption = answerOptions.nth(optionIndex(stableCount));
     await Promise.all([
-      text
-        ? expect(questionHeading).toHaveText(text, { timeout: TIMEOUTS.element })
-        : expect(questionHeading).toBeVisible({ timeout: TIMEOUTS.element }),
       expect(answerOption).toBeVisible({ timeout: TIMEOUTS.element }),
       expect(nextButton).toBeVisible({ timeout: TIMEOUTS.element })
     ]);
