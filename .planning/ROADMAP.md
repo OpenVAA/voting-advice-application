@@ -246,6 +246,9 @@ Audit: `.planning/milestones/v2.10-MILESTONE-AUDIT.md` (status: tech_debt — no
   1. The 2 `perm-per-app-notifications` tests are un-quarantined (no `test.skip`) and pass deterministically.
   2. The full E2E suite and the unit suites are green with no behavior regression versus the v2.10 ship baseline (`yarn test:unit` + the Playwright suite both pass; prior PASS_LOCKED tests stay passing).
 
+**Carried-in gaps** (deferred here from earlier phases):
+  - **a11y-smoke `voter-detail-drawer` color-contrast (from Phase 99 UAT, 2026-06-04).** The entity-details drawer fails the axe color-contrast WCAG 2.1 AA gate: muted-gray `#b1b1b1`/`#c5c5c5` on white across the candidate `<h3>` title, alliance/faction tag spans, the `match` label, and `small-info`/`small-label` labels. Pre-existing theme debt, newly surfaced when Phase 99's fix `b801cfa6e` unblocked the located a11y walk (the route had never been axe-scanned before). The `a11y-smoke` gate is otherwise 7/8 green; this is the one known-red assertion (NOT quarantined). Needs theme/token remediation to meet 4.5:1 + visual-regression sign-off. See `99-UAT.md` Gaps + `.planning/debug/elections-continue-stall.md`.
+
 **Plans**: TBD
 
 ## Progress
