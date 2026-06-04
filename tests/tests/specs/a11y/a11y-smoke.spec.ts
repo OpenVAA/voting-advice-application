@@ -13,8 +13,9 @@
  *   5. Results list (/en/results)                     [located — answeredVoterPage fixture]
  *   6. Voter-detail drawer (opened from Results)      [located — answeredVoterPage fixture]
  *
- * Each route: navigate → settle via role-based content wait (NEVER networkidle)
- * → run AxeBuilder.withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze()
+ * Each route: navigate → settle via role-based content wait (NEVER a
+ * network-idle settle) → run
+ * AxeBuilder.withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze()
  * → assert per-rule 0-violation gate + global 0-violation gate.
  *
  * Located routes consume the voter-journey fixtures:
@@ -33,10 +34,39 @@
 
 import { AxeBuilder } from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
-import { voterJourneyTest } from '../../fixtures/voter/voter-journey.fixture';
+import { voterJourneyTest, walkUntilQuestionsIntro } from '../../fixtures/voter/voter-journey.fixture';
+import { TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
+import { testIds } from '../../utils/testIds';
 import type { Page, TestInfo } from '@playwright/test';
 import type { Route } from '../../../../apps/frontend/src/lib/utils/route/route';
+
+/**
+ * Append the `?notr=1` escape hatch (decision D-02 / Plan 99-01) to a URL so the
+ * View-Transition layer is deterministically disabled for E2E — `shouldAnimate`
+ * short-circuits on `notr=1` (apps/frontend/src/lib/utils/viewTransition.ts), so
+ * the navigation completes WITHOUT racing the ~272ms cross-fade against
+ * `document.activeElement`. The focus reset (afterNavigate rAF) still runs; only
+ * the animation is suppressed.
+ */
+function withNoTransition(url: string): string {
+  const u = new URL(url);
+  u.searchParams.set('notr', '1');
+  return u.toString();
+}
+
+/**
+ * If the post-answer Q→Q auto-advance landed on a category-intro page (the
+ * first question of a new category renders the category-intro first), click
+ * through it so we settle on an actual question route. Lives at module scope so
+ * the branch does not sit inside the test body (playwright/no-conditional-in-test).
+ */
+async function advancePastCategoryIntro(page: Page): Promise<void> {
+  const categoryStart = page.getByTestId(testIds.voter.questions.categoryStart);
+  if (await categoryStart.isVisible({ timeout: TIMEOUTS.page }).catch(() => false)) {
+    await categoryStart.click();
+  }
+}
 
 // Run unauthenticated — all routes are voter-app (public).
 test.use({ storageState: { cookies: [], origins: [] } });
@@ -50,7 +80,7 @@ const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
 interface UnlocatedAxeRoute {
   name: string;
   routeId: Route;
-  /** Role-based content settle BEFORE axe scan (never networkidle) */
+  /** Role-based content settle BEFORE axe scan (never a network-idle settle) */
   settle: (page: Page) => Promise<void>;
 }
 
@@ -154,4 +184,116 @@ voterJourneyTest('axe accessibility scan — voter-detail-drawer', async ({ answ
 
   const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
   await assertAxeGates(results, testInfo, 'voter-detail-drawer');
+});
+
+// ── Navigation-a11y assertions (transition stack active) ───────────────────
+//
+// These prove the navigation-a11y stack (Plan 99-01 mechanism + Plan 99-02
+// surfaces) behaves correctly WITH the View-Transition layer active. They run
+// under the same `a11y-smoke` project (PLAYWRIGHT_A11Y=1, depends:
+// data-setup-base) and drive the transition deterministically via the `?notr=1`
+// escape hatch (D-02) so assertions never race the cross-fade animation.
+
+/**
+ * Assert the `#route-announcer` aria-live region is present, polite, and that
+ * its text is route-derived: non-empty on the questions list AND different once
+ * a questionId param is in the route (D-03). Lives at module scope (mirrors
+ * `assertAxeGates`) so the `expect()` calls are assertion-helper bodies, not
+ * inline test-block expects (playwright/no-standalone-expect).
+ */
+async function assertRouteDerivedAnnouncer(page: Page): Promise<void> {
+  // reason: the announcer has no role and no testId — its stable contract IS the
+  // `#route-announcer` id (Plan 99-01). An id selector is locale-stable and is the
+  // canonical hook for this element, so the raw .locator() is justified here.
+  // eslint-disable-next-line playwright/no-restricted-locators, playwright/no-raw-locators
+  const announcer = page.locator('#route-announcer');
+  await announcer.waitFor({ state: 'attached', timeout: TIMEOUTS.slowPage });
+
+  // The announcer is always present + aria-live="polite" (NAVA11Y-01).
+  await expect(announcer).toHaveAttribute('aria-live', 'polite');
+  // Route-derived label on the questions list (no questionId param yet).
+  await expect(announcer).not.toBeEmpty();
+  const introLabel = (await announcer.textContent())?.trim() ?? '';
+  expect(introLabel.length).toBeGreaterThan(0);
+
+  // Enter the first question (deterministic — disable the transition via
+  // ?notr=1). The auto-advance goto strips the query, so drive the entry as an
+  // explicit no-transition navigation into the question route.
+  await page.getByTestId(testIds.voter.questions.startButton).click();
+  await page.getByTestId(testIds.voter.questions.heading).waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
+  await page.goto(withNoTransition(page.url()));
+  await page.getByTestId(testIds.voter.questions.heading).waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
+
+  // The announcer text is derived from the route — it differs from the
+  // questions-list label once a questionId param is present (D-03).
+  const questionLabel = (await announcer.textContent())?.trim() ?? '';
+  expect(questionLabel.length).toBeGreaterThan(0);
+  expect(questionLabel).not.toBe(introLabel);
+}
+
+/**
+ * Assert focus landed on the question heading after a Q→Q navigation: the
+ * active element carries `data-focus-on-nav` (the QuestionHeading callsite
+ * marker, Plan 99-02) or is the first `<h1>` fallback. Module-scope helper so
+ * the `expect()` is not an inline test-block expect.
+ */
+async function assertFocusOnHeading(page: Page): Promise<void> {
+  const focusedHeading = await page.evaluate(
+    () =>
+      document.activeElement?.hasAttribute('data-focus-on-nav') === true ||
+      document.activeElement?.tagName === 'H1'
+  );
+  expect(focusedHeading).toBe(true);
+}
+
+/**
+ * NAVA11Y-01 — the always-present `#route-announcer` aria-live region exists,
+ * is `aria-live="polite"`, and carries route-derived text (D-03: a generic
+ * `page.params`-derived label). The label is non-empty on the /questions intro
+ * AND changes to the question-derived label after navigating into a question —
+ * proving the text is route-derived, not static.
+ */
+voterJourneyTest('navigation-a11y — route announcer is route-derived', async ({ locatedVoterPage: page }) => {
+  // locatedVoterPage parks on the /questions intro (located, not answered).
+  await assertRouteDerivedAnnouncer(page);
+});
+
+/**
+ * NAVA11Y-02 — focus lands on the question heading after a Q→Q navigation. The
+ * root-layout `afterNavigate` rAF focus reset targets `[data-focus-on-nav]`
+ * (fallback first `<h1>`), placed on the QuestionHeading callsite (Plan 99-02).
+ * The Q→Q hop is driven with `?notr=1` so the cross-fade is disabled and
+ * `document.activeElement` is asserted against the settled DOM, not the
+ * `::view-transition` pseudo-tree (D-02 determinism).
+ */
+voterJourneyTest('navigation-a11y — focus lands on heading after Q→Q nav', async ({ page }) => {
+  // Walk to the /questions intro, then enter the first question.
+  await walkUntilQuestionsIntro(page);
+  await page.getByTestId(testIds.voter.questions.startButton).click();
+  await page.getByTestId(testIds.voter.questions.heading).waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
+
+  const firstQuestionUrl = page.url();
+
+  // Answer the first question to trigger the real Q→Q auto-advance navigation.
+  const answerOption = page.getByTestId(testIds.voter.questions.answerOption);
+  await answerOption.first().waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
+  await answerOption.first().click();
+
+  // Wait for the Q→Q navigation to settle on a NEW question route (URL changed,
+  // heading re-rendered). The auto-advance may land on a category-intro for the
+  // first question of a new category; tolerate that by advancing if needed.
+  await page
+    .waitForURL((url) => url.toString() !== firstQuestionUrl, { timeout: TIMEOUTS.slowPage })
+    .catch(() => null);
+  await advancePastCategoryIntro(page);
+  await page.getByTestId(testIds.voter.questions.heading).waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
+
+  // Re-enter the settled question route deterministically (transition disabled)
+  // so the afterNavigate focus reset runs against a non-animating DOM — this is
+  // the binding Q→Q focus assertion (NAVA11Y-02).
+  const settledUrl = page.url();
+  await page.goto(withNoTransition(settledUrl));
+  await page.getByTestId(testIds.voter.questions.heading).waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
+
+  await assertFocusOnHeading(page);
 });
