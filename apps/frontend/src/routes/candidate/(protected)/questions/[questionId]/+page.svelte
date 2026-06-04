@@ -261,7 +261,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
       {/snippet}
 
       {#snippet hero()}
-        <figure role="presentation" data-testid="candidate-questions-hero">
+        <figure role="presentation" data-testid="candidate-questions-hero" style="view-transition-name: question-hero">
           {#if !$appSettings.candidateApp.questions.hideHero && customData?.hero}
             <Hero content={customData.hero} />
           {/if}
@@ -269,7 +269,13 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
       {/snippet}
 
       {#snippet heading()}
-        <QuestionHeading {question} {questionBlocks} onShadedBg />
+        <QuestionHeading
+          {question}
+          {questionBlocks}
+          onShadedBg
+          data-focus-on-nav
+          tabindex="-1"
+          style="view-transition-name: question-heading" />
       {/snippet}
 
       {#if !($appSettings.candidateApp.questions.hideVideo && customData.video) && info && info !== ''}

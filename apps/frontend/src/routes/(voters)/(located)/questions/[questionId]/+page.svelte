@@ -168,7 +168,7 @@ Display a question for answering.
 
   <MainContent title={text}>
     {#snippet hero()}
-      <figure role="presentation" data-testid="voter-questions-hero">
+      <figure role="presentation" data-testid="voter-questions-hero" style="view-transition-name: question-hero">
         {#if customData?.hero}
           <Hero content={customData?.hero} />
         {/if}
@@ -179,6 +179,9 @@ Display a question for answering.
       <QuestionHeading
         question={question!}
         questionBlocks={voterCtx.selectedQuestionBlocks}
+        data-focus-on-nav
+        tabindex="-1"
+        style="view-transition-name: question-heading"
         data-testid="voter-questions-heading" />
     {/snippet}
 

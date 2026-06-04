@@ -57,6 +57,7 @@ The layout varies slightly based on the presence of a video player.
 </svelte:head>
 
 <div
+  style:view-transition-name="main-content"
   {...concatClass(restProps, 'flex flex-grow flex-col items-center gap-y-lg pb-safelgb pl-safelgl pr-safelgr pt-lg')}>
   <!-- Note -->
   {#if note}

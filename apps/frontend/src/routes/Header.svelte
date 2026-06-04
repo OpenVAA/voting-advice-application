@@ -66,6 +66,7 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
   class="pt-safet relative flex max-h-fit"
   class:prominent-top-bar-with-background={topBarSettings.current.imageSrc}
   class:top-bar={!topBarSettings.current.imageSrc}
+  style:view-transition-name="persistent-header"
   style:--image={topBarSettings.current.imageSrc && `url(${topBarSettings.current.imageSrc})`}
   style:--background-size={topBarSettings.current.imageSrc && appSettings.current.headerStyle.imgSize}
   style:--background-position={topBarSettings.current.imageSrc && appSettings.current.headerStyle.imgPosition}>

@@ -82,6 +82,7 @@ If `separateSkip` is set to `true`, the `onNext` callback is switched to a `onSk
   role="group"
   aria-label={t('questions.additionalActions')}
   data-testid="question-actions"
+  style:view-transition-name="question-actions"
   {...concatClass(restProps, 'mt-lg grid w-full grid-cols-3 items-stretch gap-md')}>
   <Button
     onclick={handleNext}
