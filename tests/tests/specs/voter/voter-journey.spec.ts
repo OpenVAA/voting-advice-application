@@ -631,20 +631,21 @@ test.describe('voter journey', () => {
       // We are currently ON Base-5 (Boolean) with its last option answered (the
       // preceding step re-answered it). All of Base-1..5 were answered at the
       // last option via optionIndex: (n) => n - 1. Base-5 is Boolean; Base-4 is
-      // Likert4 — so a single back-navigation crosses the Boolean→Likert type
-      // boundary to an EARLIER answered question.
+      // Categorical (singleChoiceCategorical, per the e2e/base seed) — so a
+      // single back-navigation crosses the Boolean→Categorical type boundary to
+      // an EARLIER answered question.
       const questionHeading = page.getByTestId(testIds.voter.questions.heading);
       // Confirm we start on the post-boundary (Boolean) question.
       await expect.soft(questionHeading).toHaveText(TEXT_RE.baseOpinion5Boolean, { timeout: TIMEOUTS.element });
 
-      // Navigate BACK across the type boundary to Base-4 (Likert) using the
+      // Navigate BACK across the type boundary to Base-4 (Categorical) using the
       // in-app previousButton — match the previous-button navigation the
       // surrounding base-category steps use (lines 599-602) for determinism.
       const previousButton = page.getByTestId(testIds.voter.questions.previousButton);
       await expect(previousButton).toBeVisible({ timeout: TIMEOUTS.element });
       await previousButton.click();
 
-      // The earlier (Likert, pre-boundary) question's previously-selected option
+      // The earlier (Categorical, pre-boundary) question's previously-selected option
       // — the LAST option, matching the optionIndex: (n) => n - 1 used to answer
       // it — must STILL be checked. This is the D-03 answer-survival contract.
       const answerOptions = page.getByTestId(testIds.voter.questions.answerOption);
