@@ -7,7 +7,7 @@ import { page } from '$app/state';
 import { feedbackWriter as feedbackWriterPromise } from '$lib/api/feedbackWriter';
 import { FeedbackPopup } from '$lib/dynamic-components/feedback/popup';
 import { SurveyPopup } from '$lib/dynamic-components/survey/popup';
-import { mergeAppSettings } from '$lib/utils/settings';
+import { mergeAppSettings, mergeInitialAppSettings } from '$lib/utils/settings';
 import { createGetRoute } from './getRoute.svelte';
 import { popupStore } from './popup';
 import { surveyLink } from './survey.svelte';
@@ -70,8 +70,18 @@ export function initAppContext(): AppContext {
   /**
    * NB! Settings are overwritten by root key.
    * TODO: Handle merging so that empty objects do not overwrite defaults
+   *
+   * D-04 (CTX-01): the DB override is folded into the INITIAL `$state` value,
+   * read synchronously from `page.data.appSettingsData`. This runs both
+   * server-side AND client-side, so the server-rendered HTML already carries
+   * the DB override — no post-hydration default→override flash (the real
+   * production bug spike 008 surfaced; `$effect` does not run on the server).
+   * The `$effect` below now handles only post-navigation `page.data` changes.
    */
-  let appSettingsValue = $state<AppSettings>(mergeAppSettings(staticSettings, dynamicSettings));
+  const initialAppSettingsData = page.data?.appSettingsData as DynamicSettings | Error | undefined;
+  let appSettingsValue = $state<AppSettings>(
+    mergeInitialAppSettings(staticSettings, dynamicSettings, initialAppSettingsData)
+  );
   const appSettings = toStore(
     () => appSettingsValue,
     (v) => {
@@ -90,7 +100,10 @@ export function initAppContext(): AppContext {
   // `FilterGroup` on every navigation. Surfaced during Phase 64 manual smoke
   // as "filter badge disappears on drawer open / portraits reload on close".
   // Svelte 4 stores absorbed this via `safe_not_equal`; raw `$state =` doesn't.
-  let prevAppSettingsData: DynamicSettings | Error | undefined;
+  //
+  // Initialized to the init-time DB value (D-04) so the first post-init run
+  // does not re-merge the identical payload already folded into `$state` above.
+  let prevAppSettingsData: DynamicSettings | Error | undefined = initialAppSettingsData;
   $effect(() => {
     const data = page.data?.appSettingsData as DynamicSettings | Error | undefined;
     if (data === prevAppSettingsData) return;
@@ -99,7 +112,14 @@ export function initAppContext(): AppContext {
     appSettingsValue = mergeAppSettings(appSettingsValue, data);
   });
 
-  let appCustomizationValue = $state<AppCustomization>({});
+  // Same D-04 synchronous-init treatment for appCustomization: fold the DB
+  // override into the initial `$state` value (SSR-correct, no flash).
+  const initialAppCustomizationData = page.data?.appCustomizationData as AppCustomization | Error | undefined;
+  let appCustomizationValue = $state<AppCustomization>(
+    initialAppCustomizationData && !(initialAppCustomizationData instanceof Error)
+      ? initialAppCustomizationData
+      : {}
+  );
   const appCustomization = toStore(
     () => appCustomizationValue,
     (v) => {
@@ -107,8 +127,9 @@ export function initAppContext(): AppContext {
     }
   );
 
-  // Same reference-equality guard as appSettingsData above.
-  let prevAppCustomizationData: AppCustomization | Error | undefined;
+  // Same reference-equality guard as appSettingsData above; initialized to the
+  // init-time DB value so the first post-init run skips the identical payload.
+  let prevAppCustomizationData: AppCustomization | Error | undefined = initialAppCustomizationData;
   $effect(() => {
     const data = page.data?.appCustomizationData as AppCustomization | Error | undefined;
     if (data === prevAppCustomizationData) return;
