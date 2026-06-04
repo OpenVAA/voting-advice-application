@@ -96,9 +96,9 @@ Which phases cover which requirements. Populated during roadmap creation.
 | VT-01 | Phase 99 | Complete |
 | VT-02 | Phase 99 | Complete |
 | VT-03 | Phase 99 | Complete |
-| NAVA11Y-01 | Phase 99 | Complete |
-| NAVA11Y-02 | Phase 99 | Complete |
-| NAVA11Y-03 | Phase 99 | Complete |
+| NAVA11Y-01 | Phase 99 | Gap — announcer implemented but text needs localized page-title (CR-01); close via `/gsd-plan-phase 99 --gaps` |
+| NAVA11Y-02 | Phase 99 | Complete (focus markers + app-wide `<h1 tabindex="-1">` fallback, CR-02 fixed `71399cc9e`) |
+| NAVA11Y-03 | Phase 99 | Pending — spec extended + typechecks; live axe gate blocked by pre-existing `voter-journey.fixture.ts:130` fixture issue (operator/UAT) |
 | QLAYOUT-01 | Phase 100 | Pending |
 | QLAYOUT-02 | Phase 100 | Pending |
 | SUITE-01 | Phase 101 | Pending |
