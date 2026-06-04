@@ -66,7 +66,6 @@
   // Direct reads/writes use `sendTrackingEventStore` (lines 148, 178). Renamed `_`-prefixed to
   // satisfy unused-vars while preserving the type bridge.
   const _sendTrackingEvent = fromStore(sendTrackingEventStore);
-  const popupQueueState = fromStore(popupQueue);
 
   ////////////////////////////////////////////////////////////////////
   // Provide globally used data and check all loaded data
@@ -181,7 +180,7 @@
   });
 
   // popupItem reactivity is handled inline at the template tail via
-  // popupQueueState + {@const Component = item.component}
+  // popupQueue.current + {@const Component = item.component}
 
   const fontUrl =
     staticSettings.font?.url ?? 'https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap';
@@ -227,8 +226,8 @@
 {/if}
 
 <!-- Popup service: inline renderer (runes-idiomatic; replaces the v2.1 popup-renderer wrapper per Phase 60 LAYOUT-03) -->
-{#if popupQueueState.current}
-  {@const item = popupQueueState.current}
+{#if popupQueue.current}
+  {@const item = popupQueue.current}
   {@const Component = item.component}
   <Component
     {...item.props ?? {}}
