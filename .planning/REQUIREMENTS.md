@@ -78,33 +78,33 @@ Which phases cover which requirements. Populated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CTX-01 | TBD | Pending |
-| CTX-02 | TBD | Pending |
-| CTX-03 | TBD | Pending |
-| CTX-04 | TBD | Pending |
-| CTX-05 | TBD | Pending |
-| CTX-06 | TBD | Pending |
-| CTX-07 | TBD | Pending |
-| CTX-08 | TBD | Pending |
-| CONS-01 | TBD | Pending |
-| CONS-02 | TBD | Pending |
-| CONS-03 | TBD | Pending |
-| CLEAN-01 | TBD | Pending |
-| CLEAN-02 | TBD | Pending |
-| VT-01 | TBD | Pending |
-| VT-02 | TBD | Pending |
-| VT-03 | TBD | Pending |
-| NAVA11Y-01 | TBD | Pending |
-| NAVA11Y-02 | TBD | Pending |
-| NAVA11Y-03 | TBD | Pending |
-| QLAYOUT-01 | TBD | Pending |
-| QLAYOUT-02 | TBD | Pending |
-| SUITE-01 | TBD | Pending |
+| CTX-01 | Phase 95 | Pending |
+| CTX-02 | Phase 95 | Pending |
+| CTX-03 | Phase 95 | Pending |
+| CTX-04 | Phase 95 | Pending |
+| CTX-05 | Phase 95 | Pending |
+| CTX-06 | Phase 96 | Pending |
+| CTX-07 | Phase 96 | Pending |
+| CTX-08 | Phase 97 | Pending |
+| CONS-01 | Phase 97 | Pending |
+| CONS-02 | Phase 97 | Pending |
+| CONS-03 | Phase 97 | Pending |
+| CLEAN-01 | Phase 98 | Pending |
+| CLEAN-02 | Phase 98 | Pending |
+| VT-01 | Phase 99 | Pending |
+| VT-02 | Phase 99 | Pending |
+| VT-03 | Phase 99 | Pending |
+| NAVA11Y-01 | Phase 99 | Pending |
+| NAVA11Y-02 | Phase 99 | Pending |
+| NAVA11Y-03 | Phase 99 | Pending |
+| QLAYOUT-01 | Phase 100 | Pending |
+| QLAYOUT-02 | Phase 100 | Pending |
+| SUITE-01 | Phase 101 | Pending |
 
 **Coverage:**
 - v2.11 requirements: 22 total
-- Mapped to phases: 0 (set during roadmap)
-- Unmapped: 22 ⚠️ (resolved at roadmap)
+- Mapped to phases: 22 ✓
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-06-04*
