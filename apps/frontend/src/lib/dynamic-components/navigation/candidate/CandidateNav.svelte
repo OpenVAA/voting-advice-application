@@ -20,7 +20,6 @@ A template part that outputs the navigation menu for the Candidate App for use i
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { InfoBadge } from '$lib/components/infoBadge';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
@@ -30,7 +29,7 @@ A template part that outputs the navigation menu for the Candidate App for use i
 
   let { onKeyboardFocusOut, ...restProps }: CandidateNavProps = $props();
 
-  const { navigation } = getLayoutContext(onDestroy);
+  const { navigation } = getLayoutContext();
   // Phase 61-03 follow-up: read reactive context getters via candCtx.X.
   const candCtx = getCandidateContext();
   const { appSettings, getRoute, openFeedbackModal, t } = candCtx;

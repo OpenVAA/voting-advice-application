@@ -16,7 +16,6 @@ Defines the outer layout for the application, including the header and menu.
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { Video } from '$lib/components/video';
   import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
@@ -37,7 +36,7 @@ Defines the outer layout for the application, including the header and menu.
   ////////////////////////////////////////////////////////////////////
 
   const { startEvent, t, track } = getAppContext();
-  const { pageStyles, navigation, navigationSettings, video } = getLayoutContext(onDestroy);
+  const { pageStyles, navigation, navigationSettings, video } = getLayoutContext();
   navigation.close = closeDrawer;
 
   let drawerOpenElement: HTMLButtonElement | undefined;

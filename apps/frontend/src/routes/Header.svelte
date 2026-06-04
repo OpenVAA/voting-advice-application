@@ -14,7 +14,6 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { fromStore } from 'svelte/store';
   import { Icon } from '$lib/components/icon';
   import { getAppContext } from '$lib/contexts/app';
@@ -38,7 +37,7 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
   const appSettings = fromStore(appSettingsStore);
   const darkMode = fromStore(darkModeStore);
 
-  const { navigationSettings, progress, topBarSettings } = getLayoutContext(onDestroy);
+  const { navigationSettings, progress, topBarSettings } = getLayoutContext();
 
   const bgColor = $derived.by(() => {
     const mode = darkMode.current ? appSettings.current.headerStyle.dark : appSettings.current.headerStyle.light;

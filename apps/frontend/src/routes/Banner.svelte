@@ -14,7 +14,6 @@ Accesses `AppContext` and optionally `VoterContext`.
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { fromStore } from 'svelte/store';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
@@ -39,7 +38,7 @@ Accesses `AppContext` and optionally `VoterContext`.
   const getRoute = fromStore(getRouteStore);
   const openFeedbackModal = fromStore(openFeedbackModalStore);
   const voterCtx = appType.current === 'voter' ? getVoterContext() : undefined;
-  const { topBarSettings, video } = getLayoutContext(onDestroy);
+  const { topBarSettings, video } = getLayoutContext();
 </script>
 
 <!-- style:--headerIcon-color={hasVideo && screenWidth < Breakpoints.sm

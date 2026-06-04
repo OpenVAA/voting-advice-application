@@ -25,7 +25,7 @@ Accesses `LayoutContext`.
 -->
 
 <script lang="ts">
-  import { getContext, onDestroy } from 'svelte';
+  import { getContext } from 'svelte';
   import { Icon } from '$lib/components/icon';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { concatClass } from '$lib/utils/components';
@@ -34,7 +34,7 @@ Accesses `LayoutContext`.
 
   let { autoCloseNav = true, disabled, href, onclick, icon, text, children, ...restProps }: NavItemProps = $props();
 
-  const { navigation } = getLayoutContext(onDestroy);
+  const { navigation } = getLayoutContext();
 
   // reason: Top-level getContext read — NOT inside an element attribute
   // (Svelte issue #7549; RESEARCH §Pitfall 2). Static structural detection:

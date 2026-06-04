@@ -26,7 +26,6 @@ A template part that outputs the navigation menu for the Voter App for use in `L
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
   import { NavGroup, Navigation, NavItem } from '$lib/dynamic-components/navigation';
@@ -35,7 +34,7 @@ A template part that outputs the navigation menu for the Voter App for use in `L
 
   let { onKeyboardFocusOut, ...restProps }: VoterNavProps = $props();
 
-  const { navigation } = getLayoutContext(onDestroy);
+  const { navigation } = getLayoutContext();
 
   // Phase 61-03 voter-side parallel fix: reactive context getters
   // (constituenciesSelectable, electionsSelectable, resultsAvailable,

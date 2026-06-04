@@ -20,7 +20,6 @@ A template part that outputs the navigation menu for the Admin App for use in `L
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { getAdminContext } from '$lib/contexts/admin';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { NavGroup, Navigation, NavItem } from '$lib/dynamic-components/navigation';
@@ -29,7 +28,7 @@ A template part that outputs the navigation menu for the Admin App for use in `L
 
   let { onKeyboardFocusOut, ...restProps }: AdminNavProps = $props();
 
-  const { navigation } = getLayoutContext(onDestroy);
+  const { navigation } = getLayoutContext();
   const { isAuthenticated, t, getRoute } = getAdminContext();
 </script>
 

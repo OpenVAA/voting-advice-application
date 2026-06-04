@@ -27,7 +27,6 @@ The layout varies slightly based on the presence of a video player.
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { getComponentContext } from '$lib/contexts/component';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { concatClass } from '$lib/utils/components';
@@ -50,7 +49,7 @@ The layout varies slightly based on the presence of a video player.
   }: MainContentProps = $props();
 
   const { t } = getComponentContext();
-  const { video } = getLayoutContext(onDestroy);
+  const { video } = getLayoutContext();
 </script>
 
 <svelte:head>
