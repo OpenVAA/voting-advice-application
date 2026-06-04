@@ -7,7 +7,7 @@ import { afterNavigate, beforeNavigate } from '$app/navigation';
 import { DELAY } from '$lib/utils/timing';
 import { settingsOverlay } from '../utils/SettingsOverlay.svelte';
 import type { DeepPartial, VideoContent } from '@openvaa/app-shared';
-import type { OptionalVideoProps,Video, VideoMode  } from '$lib/components/video';
+import type { OptionalVideoProps, Video, VideoMode } from '$lib/components/video';
 import type {
   LayoutContext,
   Navigation,
@@ -56,8 +56,9 @@ export function initLayoutContext(): LayoutContext {
     mergeSettings(acc, ov)
   );
 
-  const topBarSettings = settingsOverlay<TopBarSettings, DeepPartial<TopBarSettings>>(DEFAULT_TOP_BAR_SETTINGS, (acc, ov) =>
-    mergeSettings(acc, ov)
+  const topBarSettings = settingsOverlay<TopBarSettings, DeepPartial<TopBarSettings>>(
+    DEFAULT_TOP_BAR_SETTINGS,
+    (acc, ov) => mergeSettings(acc, ov)
   );
 
   const navigationSettings = settingsOverlay<NavigationSettings, DeepPartial<NavigationSettings>>(
@@ -171,17 +172,22 @@ export function initLayoutContext(): LayoutContext {
     setRouteTitle(title) {
       // Declarative, $effect-scoped registrar: the mounted title component calls this with its
       // already-localized `title`. We assign the signal on mount/update of the calling component
-      // and reset it to '' on teardown via the $effect cleanup (last-writer-wins; only one
-      // title-bearing layout component is mounted per page). The writes are wrapped in `untrack`
-      // to avoid the write-after-read hazard SettingsOverlay documents (a write inside an $effect
-      // that the effect also reads would otherwise loop / disable the scheduler).
+      // and reset it on teardown via the $effect cleanup (last-writer-wins). The writes are
+      // wrapped in `untrack` to avoid the write-after-read hazard SettingsOverlay documents (a
+      // write inside an $effect that the effect also reads would otherwise loop / disable the
+      // scheduler).
       $effect(() => {
         untrack(() => {
           routeTitleValue = title;
         });
         return () => {
           untrack(() => {
-            routeTitleValue = '';
+            // Guard the cleanup: on a route swap between two title-bearing layout components
+            // (e.g. MainContent ↔ SingleCardContent) the incoming component can register its
+            // title before the outgoing component's teardown runs. Clear only if the signal
+            // still holds the value THIS registrar set, so a stale teardown can't blank the
+            // announcer that a newer writer already populated.
+            if (routeTitleValue === title) routeTitleValue = '';
           });
         };
       });

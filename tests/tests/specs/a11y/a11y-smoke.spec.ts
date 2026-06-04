@@ -248,11 +248,14 @@ async function assertRouteDerivedAnnouncer(page: Page): Promise<void> {
   expect(slug.length).toBeGreaterThan(0);
   expect(questionLabel).not.toContain(slug);
 
-  // CR-01: the announcer speaks the localized title — it equals the visible
-  // question heading textContent (the localized question text), not the slug.
+  // CR-01: the announcer speaks the localized question title — the same text the
+  // route feeds to the document <title>. The visible heading testId wraps a
+  // PreHeading (category tag + N/M counter + election tags) ABOVE the <h1>, so its
+  // textContent is a superset of the announced title; assert containment (not
+  // equality) to prove the announcer carries the localized title, not the slug.
   const headingText = (await page.getByTestId(testIds.voter.questions.heading).textContent())?.trim() ?? '';
   expect(headingText.length).toBeGreaterThan(0);
-  expect(questionLabel).toBe(headingText);
+  expect(headingText).toContain(questionLabel);
 }
 
 /**
@@ -263,9 +266,7 @@ async function assertRouteDerivedAnnouncer(page: Page): Promise<void> {
  */
 async function assertFocusOnHeading(page: Page): Promise<void> {
   const focusedHeading = await page.evaluate(
-    () =>
-      document.activeElement?.hasAttribute('data-focus-on-nav') === true ||
-      document.activeElement?.tagName === 'H1'
+    () => document.activeElement?.hasAttribute('data-focus-on-nav') === true || document.activeElement?.tagName === 'H1'
   );
   expect(focusedHeading).toBe(true);
 }
@@ -276,7 +277,7 @@ async function assertFocusOnHeading(page: Page): Promise<void> {
  * route's already-localized page title (title-minus-constants, sourced from the
  * layout-context `routeTitle` signal). The label is non-empty on the /questions
  * intro AND changes after navigating into a question; on the question route it
- * does NOT contain the opaque DB `questionId` slug and equals the visible
+ * does NOT contain the opaque DB `questionId` slug and appears within the visible
  * localized question heading text — proving the announcer speaks the localized
  * title rather than the raw slug.
  */
@@ -309,9 +310,7 @@ voterJourneyTest('navigation-a11y — focus lands on heading after Q→Q nav', a
   // Wait for the Q→Q navigation to settle on a NEW question route (URL changed,
   // heading re-rendered). The auto-advance may land on a category-intro for the
   // first question of a new category; tolerate that by advancing if needed.
-  await page
-    .waitForURL((url) => url.toString() !== firstQuestionUrl, { timeout: TIMEOUTS.slowPage })
-    .catch(() => null);
+  await page.waitForURL((url) => url.toString() !== firstQuestionUrl, { timeout: TIMEOUTS.slowPage }).catch(() => null);
   await advancePastCategoryIntro(page);
   await page.getByTestId(testIds.voter.questions.heading).waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
 
