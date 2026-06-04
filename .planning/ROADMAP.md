@@ -217,7 +217,7 @@ Audit: `.planning/milestones/v2.10-MILESTONE-AUDIT.md` (status: tech_debt — no
   - [x] 99-01-PLAN.md — VT mechanism: shared `viewTransition.ts` helper (`shouldAnimate`/`startViewTransition`) + root-layout merge (onNavigate VT coupling, afterNavigate focus reset, aria-live announcer, reduced-motion both layers, `?notr=1`) — VT-01/VT-03/NAVA11Y-01/NAVA11Y-02 _(wave 1)_
   - [x] 99-02-PLAN.md — `view-transition-name` surface assignment across the expanded set (Header/MainContent/Hero/QuestionActions/QuestionHeading, voter+candidate `/questions`, results election-switch + entity tabs, entity-detail tabs via a minimal local Tabs wrapper) + heading focus markers — VT-02/NAVA11Y-02 _(wave 2)_
   - [x] 99-03-PLAN.md — extend the existing `a11y-smoke.spec.ts` (announcer + focus-on-nav assertions, `?notr=1` determinism) + full-suite parity check — NAVA11Y-03/NAVA11Y-01/NAVA11Y-02 _(wave 3)_
-  - [ ] 99-04-PLAN.md — **gap-closure (CR-01):** route announcer speaks the localized per-route page title (minus the app-name/maintenance suffix) via a new `routeTitle` layout-context rune signal registered by MainContent/SingleCardContent, replacing the hardcoded-English `Question ${questionId}` slug; a11y-smoke NAVA11Y-01 assertion updated — NAVA11Y-01 _(wave 4)_
+  - [x] 99-04-PLAN.md — **gap-closure (CR-01):** route announcer speaks the localized per-route page title (minus the app-name/maintenance suffix) via a new `routeTitle` layout-context rune signal registered by MainContent/SingleCardContent, replacing the hardcoded-English `Question ${questionId}` slug; a11y-smoke NAVA11Y-01 assertion updated — NAVA11Y-01 _(wave 4)_
 
 **UI hint**: yes
 

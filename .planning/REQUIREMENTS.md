@@ -43,7 +43,7 @@ Requirements for this milestone. Each maps to exactly one roadmap phase.
 
 ### Domain B — Navigation a11y (NAVA11Y) — Wave A
 
-- [x] **NAVA11Y-01**: a dedicated `aria-live="polite"` route announcer whose text derives from `page.params.X` announces route changes (NOT `<svelte:head><title>` updates — SPA title-change announcement is unreliable on NVDA/JAWS). _(spike 016)_
+- [x] **NAVA11Y-01**: a dedicated `aria-live="polite"` route announcer whose text is the active route's already-localized page title (the value fed to the document `<title>` minus the constant app-name/maintenance suffix), surfaced via the `routeTitle` layout-context rune signal — announces route changes WITHOUT relying on `<svelte:head><title>` mutation (SPA title-change announcement is unreliable on NVDA/JAWS) and WITHOUT leaking the opaque DB `questionId` slug (CR-01 closed in 99-04). _(spike 016)_
 - [x] **NAVA11Y-02**: focus is reset explicitly on navigation — `afterNavigate` → `requestAnimationFrame(() => target.focus({ preventScroll: true }))` (preventScroll MANDATORY to not fight `goto({ noScroll: true })`); the question heading carries `data-focus-on-nav` / `tabindex="-1"`. _(spike 016)_
 - [x] **NAVA11Y-03**: the transition stack passes the WCAG 2.1 AA gate (focus management + aria-live announcer + reduced-motion) under the existing `@axe-core/playwright` env-gated smoke. _(spike 016)_
 
@@ -96,7 +96,7 @@ Which phases cover which requirements. Populated during roadmap creation.
 | VT-01 | Phase 99 | Complete |
 | VT-02 | Phase 99 | Complete |
 | VT-03 | Phase 99 | Complete |
-| NAVA11Y-01 | Phase 99 | Gap — announcer implemented but text needs localized page-title (CR-01); close via `/gsd-plan-phase 99 --gaps` |
+| NAVA11Y-01 | Phase 99 | Complete (CR-01 closed in 99-04 — announcer speaks localized per-route page title via `routeTitle` layout-context signal; opaque DB slug no longer leaked) |
 | NAVA11Y-02 | Phase 99 | Complete (focus markers + app-wide `<h1 tabindex="-1">` fallback, CR-02 fixed `71399cc9e`) |
 | NAVA11Y-03 | Phase 99 | Pending — spec extended + typechecks; live axe gate blocked by pre-existing `voter-journey.fixture.ts:130` fixture issue (operator/UAT) |
 | QLAYOUT-01 | Phase 100 | Pending |
