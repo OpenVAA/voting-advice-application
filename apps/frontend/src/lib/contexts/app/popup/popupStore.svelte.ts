@@ -1,4 +1,3 @@
-import { toStore } from 'svelte/store';
 import type { PopupQueueItem } from './popupComponent.type';
 import type { PopupStore } from './popupStore.type';
 
@@ -17,8 +16,11 @@ export function popupStore(): PopupStore {
     queue = queue.slice(1);
   }
 
-  // Expose subscribe via toStore for backward compat with PopupStore type
-  const store = toStore(() => firstItem as PopupQueueItem | undefined);
-
-  return { push, shift, subscribe: store.subscribe };
+  return {
+    push,
+    shift,
+    get current() {
+      return firstItem;
+    }
+  };
 }

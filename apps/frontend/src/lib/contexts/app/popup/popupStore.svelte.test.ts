@@ -4,10 +4,15 @@ import { popupStore } from './popupStore.svelte';
 import type { PopupStore } from './popupStore.type';
 import type { PopupQueueItem } from './popupComponent.type';
 
-// A minimal `PopupQueueItem` stub — the queue is component-agnostic; the head
-// item is identified by reference only, so a typed-but-empty object suffices.
-function makeItem(): PopupQueueItem {
-  return { component: (() => undefined) as unknown as PopupQueueItem['component'] };
+// A minimal `PopupQueueItem` stub carrying a unique `props.marker` so queue
+// items can be distinguished by content. Identity comparison via `toBe` is not
+// usable: `.current` reads through the `$state` array proxy, which wraps each
+// item in a reactive proxy distinct from the original object reference.
+function makeItem(marker: string): PopupQueueItem {
+  return {
+    component: (() => undefined) as unknown as PopupQueueItem['component'],
+    props: { marker }
+  };
 }
 
 describe('popupStore', () => {
@@ -38,23 +43,21 @@ describe('popupStore', () => {
 
   it('push(item) makes .current the first enqueued item', () => {
     const store = setup();
-    const item = makeItem();
+    const item = makeItem('only');
     store.push(item);
     flushSync();
-    expect(store.current).toBe(item);
+    expect(store.current?.props?.marker).toBe('only');
   });
 
   it('push(a); push(b) keeps .current === a (FIFO head); after shift(), .current === b', () => {
     const store = setup();
-    const a = makeItem();
-    const b = makeItem();
-    store.push(a);
-    store.push(b);
+    store.push(makeItem('a'));
+    store.push(makeItem('b'));
     flushSync();
-    expect(store.current).toBe(a);
+    expect(store.current?.props?.marker).toBe('a');
     store.shift();
     flushSync();
-    expect(store.current).toBe(b);
+    expect(store.current?.props?.marker).toBe('b');
   });
 
   it('shift() on an empty queue is safe and leaves .current === undefined', () => {
