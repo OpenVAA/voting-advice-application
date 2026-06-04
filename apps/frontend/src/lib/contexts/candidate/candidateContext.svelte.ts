@@ -12,7 +12,7 @@ import { getImpliedElectionIds } from '$lib/utils/route';
 import { candidateUserDataStore } from './candidateUserDataStore.svelte';
 import { getAppContext } from '../app';
 import { getAuthContext } from '../auth';
-import { localStorageWritable, sessionStorageWritable } from '../utils/persistedState.svelte';
+import { localStorageState, sessionStorageState } from '../utils/persistedState.svelte';
 import { prepareDataWriter } from '../utils/prepareDataWriter';
 import type { Id } from '@openvaa/core';
 import type { AnyQuestionVariant, Constituency, Election, QuestionCategory } from '@openvaa/data';
@@ -38,28 +38,27 @@ export function initCandidateContext(): CandidateContext {
   ////////////////////////////////////////////////////////////
 
   const appContext = getAppContext();
-  const { appSettings, getRoute, locale, reactiveDataRoot } = appContext;
+  const { getRoute, reactiveAppSettings, reactiveLocale, reactiveDataRoot } = appContext;
 
   const authContext = getAuthContext();
   const { logout: _logout } = authContext;
 
-  // Bridge store values to rune-compatible access
-  const appSettingsState = fromStore(appSettings);
+  // getRoute is a `Readable<RouteBuilder>` until Phase 97 (CTX-08); keep the
+  // one tolerated svelte/store bridge. appSettings/locale read via reactive getters.
   const getRouteState = fromStore(getRoute);
-  const localeState = fromStore(locale);
 
   ////////////////////////////////////////////////////////////////////
   // User data, authentication and answersLocked
   ////////////////////////////////////////////////////////////////////
 
-  const answersLocked = $derived(!!appSettingsState.current.access.answersLocked);
+  const answersLocked = $derived(!!reactiveAppSettings.current.access.answersLocked);
 
   const idTokenClaims = $derived(page.data.claims ?? undefined);
 
   const userData = candidateUserDataStore({
     answersLocked: () => answersLocked,
     dataWriterPromise,
-    locale: () => localeState.current
+    locale: () => reactiveLocale.current
   });
 
   let newUserEmail = $state<string | undefined>(undefined);
@@ -72,27 +71,22 @@ export function initCandidateContext(): CandidateContext {
 
   const constituenciesSelectable = $derived(reactiveDataRoot.current.elections?.some((e) => !e.singleConstituency));
 
-  const _preregistrationElectionIds = sessionStorageWritable(
-    'candidateContext-preselectedElectionIds',
-    new Array<Id>()
-  );
-  const preregistrationElectionIdsState = fromStore(_preregistrationElectionIds);
+  const _preregistrationElectionIds = sessionStorageState('candidateContext-preselectedElectionIds', new Array<Id>());
 
-  const _preregistrationConstituencyIds = sessionStorageWritable<{
+  const _preregistrationConstituencyIds = sessionStorageState<{
     [electionId: Id]: Id;
   }>('candidateContext-preselectedConstituencyIds', {});
-  const preregistrationConstituencyIdsState = fromStore(_preregistrationConstituencyIds);
 
   const preregistrationElections = $derived.by(() => {
-    const settings = appSettingsState.current;
+    const settings = reactiveAppSettings.current;
     const dr = reactiveDataRoot.current;
-    const preregIds = preregistrationElectionIdsState.current;
+    const preregIds = _preregistrationElectionIds.current;
     const ids = getImpliedElectionIds({ appSettings: settings, dataRoot: dr }) ?? preregIds;
     return ids.map((id) => dr.getElection(id));
   });
 
   const preregistrationNominations = $derived.by(() => {
-    const constIds = preregistrationConstituencyIdsState.current;
+    const constIds = _preregistrationConstituencyIds.current;
     return preregistrationElections
       .map((e) => ({
         constituencyId: constIds[e.id] || e.singleConstituency?.id,
@@ -284,8 +278,7 @@ export function initCandidateContext(): CandidateContext {
     );
   }
 
-  const _isPreregistered = localStorageWritable('candidateContext-isPreregistered', false);
-  const isPreregisteredState = fromStore(_isPreregistered);
+  const _isPreregistered = localStorageState('candidateContext-isPreregistered', false);
 
   async function preregister(opts: {
     email: string;
@@ -397,7 +390,7 @@ export function initCandidateContext(): CandidateContext {
       return _infoQuestions;
     },
     get isPreregistered() {
-      return isPreregisteredState.current;
+      return _isPreregistered.current;
     },
     set isPreregistered(v) {
       _isPreregistered.set(v);
@@ -434,13 +427,13 @@ export function initCandidateContext(): CandidateContext {
     userData,
     exchangeCodeForIdToken,
     get preregistrationElectionIds() {
-      return preregistrationElectionIdsState.current;
+      return _preregistrationElectionIds.current;
     },
     set preregistrationElectionIds(v) {
       _preregistrationElectionIds.set(v);
     },
     get preregistrationConstituencyIds() {
-      return preregistrationConstituencyIdsState.current;
+      return _preregistrationConstituencyIds.current;
     },
     set preregistrationConstituencyIds(v) {
       _preregistrationConstituencyIds.set(v);
