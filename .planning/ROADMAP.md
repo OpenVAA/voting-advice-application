@@ -190,7 +190,10 @@ Audit: `.planning/milestones/v2.10-MILESTONE-AUDIT.md` (status: tech_debt — no
   2. `prefers-reduced-motion: reduce` is honored on both layers — `matchMedia` short-circuits `startViewTransition` in JS, and a CSS `@media (prefers-reduced-motion: reduce) { :global(...) }` block (correct Svelte-parser form) nulls any escaping animation.
   3. A dedicated `aria-live="polite"` route announcer (text derived from `page.params.X`, not `<svelte:head><title>`) announces route changes; focus is reset on navigation via `afterNavigate` → `requestAnimationFrame(() => target.focus({ preventScroll: true }))` with the question heading carrying `data-focus-on-nav` / `tabindex="-1"`.
   4. The full transition stack passes the WCAG 2.1 AA gate (focus management + aria-live announcer + reduced-motion) under the existing `@axe-core/playwright` env-gated smoke.
-**Plans**: TBD
+**Plans**: 3 plans (3 waves — strictly sequential; no file overlap)
+  - [ ] 99-01-PLAN.md — VT mechanism: shared `viewTransition.ts` helper (`shouldAnimate`/`startViewTransition`) + root-layout merge (onNavigate VT coupling, afterNavigate focus reset, aria-live announcer, reduced-motion both layers, `?notr=1`) — VT-01/VT-03/NAVA11Y-01/NAVA11Y-02 _(wave 1)_
+  - [ ] 99-02-PLAN.md — `view-transition-name` surface assignment across the expanded set (Header/MainContent/Hero/QuestionActions/QuestionHeading, voter+candidate `/questions`, results election-switch + entity tabs, entity-detail tabs via a minimal local Tabs wrapper) + heading focus markers — VT-02/NAVA11Y-02 _(wave 2)_
+  - [ ] 99-03-PLAN.md — extend the existing `a11y-smoke.spec.ts` (announcer + focus-on-nav assertions, `?notr=1` determinism) + full-suite parity check — NAVA11Y-03/NAVA11Y-01/NAVA11Y-02 _(wave 3)_
 **UI hint**: yes
 
 ### Phase 100: Domain B Wave B — Questions Layout Restructure
