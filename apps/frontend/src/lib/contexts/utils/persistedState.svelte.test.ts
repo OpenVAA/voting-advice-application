@@ -216,4 +216,75 @@ describe('persistedState helpers', () => {
       cleanup();
     });
   });
+
+  describe('sessionStorageState (rune-native helper)', () => {
+    it('returns defaultValue when nothing is stored', async () => {
+      const { sessionStorageState } = await importWithBrowser(true);
+      const cleanup = $effect.root(() => {
+        const store = sessionStorageState('ss-empty', 'default');
+        expect(store.current).toBe('default');
+      });
+      cleanup();
+    });
+
+    it('returns defaultValue under the SSR (browser=false) path', async () => {
+      const { sessionStorageState } = await importWithBrowser(false);
+      const cleanup = $effect.root(() => {
+        const store = sessionStorageState('ss-ssr', 'ssr-default');
+        expect(store.current).toBe('ssr-default');
+      });
+      cleanup();
+    });
+
+    it('set(v) updates current AND writes the RAW (non-versioned) payload', async () => {
+      const { sessionStorageState } = await importWithBrowser(true);
+      const cleanup = $effect.root(() => {
+        const store = sessionStorageState('ss-set', 'initial');
+        store.set('next');
+        expect(store.current).toBe('next');
+        const saved = mockSessionStorage.setItem;
+        expect(saved).toHaveBeenCalled();
+        const raw = mockStorageData['ss-set'];
+        expect(raw).toBeDefined();
+        // Session payload is the RAW JSON value — NO { version, data } wrapper.
+        const parsed = JSON.parse(raw);
+        expect(parsed).toBe('next');
+        expect(parsed).not.toHaveProperty('version');
+        expect(parsed).not.toHaveProperty('data');
+      });
+      cleanup();
+    });
+
+    it('update(fn) applies fn(current) and persists the raw value', async () => {
+      const { sessionStorageState } = await importWithBrowser(true);
+      const cleanup = $effect.root(() => {
+        const store = sessionStorageState<number>('ss-update', 1);
+        store.update((cur) => cur + 4);
+        expect(store.current).toBe(5);
+        expect(JSON.parse(mockStorageData['ss-update'])).toBe(5);
+      });
+      cleanup();
+    });
+
+    it('round-trips a previously-written value via a fresh sessionStorageState', async () => {
+      const { sessionStorageState } = await importWithBrowser(true);
+      const cleanup = $effect.root(() => {
+        const a = sessionStorageState('ss-roundtrip', 'default');
+        a.set('persisted');
+        const b = sessionStorageState('ss-roundtrip', 'default');
+        expect(b.current).toBe('persisted');
+      });
+      cleanup();
+    });
+
+    it('reads a pre-existing raw (non-versioned) sessionStorage payload', async () => {
+      mockStorageData['ss-preexisting'] = JSON.stringify('session-data');
+      const { sessionStorageState } = await importWithBrowser(true);
+      const cleanup = $effect.root(() => {
+        const store = sessionStorageState('ss-preexisting', 'default');
+        expect(store.current).toBe('session-data');
+      });
+      cleanup();
+    });
+  });
 });
