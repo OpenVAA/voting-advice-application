@@ -139,7 +139,7 @@ $effect(() => {
 
 ### WR-03: D-03 test comment mislabels the crossed question type ("Base-4 is Likert4") — the contract is documented against a wrong fact
 
-**✓ RESOLVED** — commit `a6531407d`. Verified against the seed (`packages/dev-seed/src/templates/e2e/base.ts`): Base-4 is `singleChoiceCategorical` (`test-e2e-base-qu-opin-base-4-categorical`), Base-5 is `boolean`. The three comments now read Boolean→Categorical (not Boolean→Likert). The assertion itself was already correct (a real type boundary either way); only the rationale text was wrong. tsc + eslint clean.
+**✓ RESOLVED** — commits `a6531407d` (in-step comments) + `1fe9d6020` (residual outer `// reason:` mention caught by the verifier). Verified against the seed (`packages/dev-seed/src/templates/e2e/base.ts`): Base-4 is `singleChoiceCategorical` (`test-e2e-base-qu-opin-base-4-categorical`), Base-5 is `boolean`. All four comment mentions now read Boolean→Categorical (not Boolean→Likert). The assertion itself was already correct (a real type boundary either way); only the rationale text was wrong. tsc + eslint clean.
 
 **File:** `tests/tests/specs/voter/voter-journey.spec.ts:632-635, 640-642`
 **Issue:** The D-03 answer-survival step comments assert: "Base-5 is Boolean;
