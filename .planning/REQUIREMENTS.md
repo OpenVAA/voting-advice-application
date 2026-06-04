@@ -49,7 +49,7 @@ Requirements for this milestone. Each maps to exactly one roadmap phase.
 
 ### Domain B — Questions Layout Restructure (QLAYOUT) — Wave B
 
-- [ ] **QLAYOUT-01**: `/questions` rendering is hoisted from `[questionId]/+page.svelte` into the parent `questions/+layout.svelte` (unified-layout-with-empty-leaf, mirroring the existing production `results/[[electionTab]]/+layout.svelte` pattern); `[questionId]/+page.svelte` becomes an empty stub. _(spikes 014a, 014b)_
+- [x] **QLAYOUT-01**: `/questions` rendering is hoisted from `[questionId]/+page.svelte` into the parent `questions/+layout.svelte` (unified-layout-with-empty-leaf, mirroring the existing production `results/[[electionTab]]/+layout.svelte` pattern); `[questionId]/+page.svelte` becomes an empty stub. _(spikes 014a, 014b)_
 - [x] **QLAYOUT-02**: variant remount uses `{#key question.type}` (NOT `{#key question.id}`) — the input stays mounted within a run of same-variant questions and remounts cleanly only at Likert↔open-text↔slider boundaries; layout-owned `$state` answers survive Q→Q nav. _(spike 014b, 016)_
 
 ### Suite (SUITE)
@@ -99,7 +99,7 @@ Which phases cover which requirements. Populated during roadmap creation.
 | NAVA11Y-01 | Phase 99 | Complete (CR-01 closed in 99-04 — announcer speaks localized per-route page title via `routeTitle` layout-context signal; opaque DB slug no longer leaked) |
 | NAVA11Y-02 | Phase 99 | Complete (focus markers + app-wide `<h1 tabindex="-1">` fallback, CR-02 fixed `71399cc9e`) |
 | NAVA11Y-03 | Phase 99 | Pending — spec extended + typechecks; live axe gate blocked by pre-existing `voter-journey.fixture.ts:130` fixture issue (operator/UAT) |
-| QLAYOUT-01 | Phase 100 | Pending |
+| QLAYOUT-01 | Phase 100 | Complete |
 | QLAYOUT-02 | Phase 100 | Complete |
 | SUITE-01 | Phase 101 | Pending |
 
