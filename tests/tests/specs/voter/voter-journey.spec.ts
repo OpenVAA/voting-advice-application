@@ -619,8 +619,8 @@ test.describe('voter journey', () => {
     // reason: D-03 QLAYOUT-02 answer-survival gate — Wave 0 regression gate for
     // the Phase 100 questions-layout restructure. After answering a multi-step
     // Q→Q run that CROSSES a question.type boundary (Base-5 Boolean ← Base-4
-    // Likert4), navigate BACK across that boundary and assert the earlier
-    // (Likert) question's option is STILL checked. This crossing is what
+    // Categorical), navigate BACK across that boundary and assert the earlier
+    // (Categorical) question's option is STILL checked. This crossing is what
     // exercises the `{#key question.type}` remount path: it proves answers
     // survive a Q→Q hop even when the variant component is torn down and
     // remounted, not merely when the same variant is reused. The behavior
