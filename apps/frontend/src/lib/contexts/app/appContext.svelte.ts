@@ -142,12 +142,51 @@ export function initAppContext(): AppContext {
   const userPreferences = localStorageWritable('appContext-userPreferences', {} as UserPreferences);
 
   ////////////////////////////////////////////////////////////////////
+  // Rune-input handles for the pure-rune survey/tracking producers
+  ////////////////////////////////////////////////////////////////////
+
+  // The survey/tracking producers are now pure-rune (CTX-06): they read their
+  // inputs via `.current` getters, not `fromStore`. The seam owns the store↔rune
+  // conversion, so wrap the relevant inputs as `{ current }` handles here. These
+  // read the SAME `$state` / store the `toStore` exports wrap — no second source
+  // of truth.
+  const appSettingsHandle = {
+    get current() {
+      return appSettingsValue;
+    }
+  };
+  const userPreferencesReactive = fromStore(userPreferences);
+  const userPreferencesHandle = {
+    get current() {
+      return userPreferencesReactive.current;
+    }
+  };
+
+  ////////////////////////////////////////////////////////////////////
   // Tracking, survey and popups
   ////////////////////////////////////////////////////////////////////
 
-  const tracking = trackingService({ appSettings, userPreferences });
+  // Producers return rune handles; the seam owns the store-shaped bridges so
+  // un-migrated consumers (`$surveyLink`, `sendTrackingEventStore.set`,
+  // `$shouldTrack`) keep working until Phase 98 removes them.
+  const tracking = trackingService({
+    appSettings: appSettingsHandle,
+    userPreferences: userPreferencesHandle
+  });
 
-  const survey = surveyLink({ appSettings, sessionId: tracking.sessionId });
+  // Store-shaped tracking bridges matching `trackingService.type.ts`.
+  const trackingSessionIdStore = toStore(() => tracking.sessionId.current);
+  const trackingShouldTrackStore = toStore(() => tracking.shouldTrack.current);
+  const trackingSendEventStore = toStore(
+    () => tracking.sendTrackingEvent.current,
+    (v) => {
+      tracking.sendTrackingEvent.set(v);
+    }
+  );
+
+  const survey = surveyLink({ appSettings: appSettingsHandle, sessionId: tracking.sessionId });
+  // Store-shaped survey bridge for `$surveyLink` consumers (SurveyButton/VoterNav).
+  const surveyLinkStore = toStore(() => survey.current);
 
   const popupQueue = popupStore();
 
@@ -175,7 +214,9 @@ export function initAppContext(): AppContext {
   // Utility methods for popups and setting user preferences
   ////////////////////////////////////////////////////////////////////
 
-  const userPrefsReactive = fromStore(userPreferences);
+  // Reuses the `userPreferencesReactive` handle created above for the tracking
+  // producer (single `fromStore` over `userPreferences` at the seam).
+  const userPrefsReactive = userPreferencesReactive;
 
   let feedbackTimeout: NodeJS.Timeout | undefined;
 
@@ -230,15 +271,38 @@ export function initAppContext(): AppContext {
     }));
   }
 
+  // `.current`-getter accessors over the SAME `$state` the `appSettings` /
+  // `locale` `toStore` exports wrap (single source of truth — additive,
+  // mirroring the shipped `reactiveDataRoot` precedent). Plan B (96-02) reads
+  // these to drop `fromStore(appSettings)` / `fromStore(locale)`.
+  const reactiveAppSettings = {
+    get current() {
+      return appSettingsValue;
+    }
+  };
+  const reactiveLocale = {
+    get current() {
+      return componentCtx.locale;
+    }
+  };
+
   return setContext<AppContext>(CONTEXT_KEY, {
     ...componentCtx,
     ...dataCtx,
     ...tracking,
+    // The producers expose rune handles; re-shape the tracking surface back to
+    // the store types declared on `TrackingService` (the `...tracking` spread
+    // above carries the rune handles, so these overrides are required).
+    sendTrackingEvent: trackingSendEventStore,
+    sessionId: trackingSessionIdStore,
+    shouldTrack: trackingShouldTrackStore,
     // Override plain ComponentContext values with store-wrapped versions
     // for backward compat with downstream Phase-52 contexts
     locale: localeStore,
     locales: localesStore,
     darkMode: darkModeStore,
+    reactiveAppSettings,
+    reactiveLocale,
     appCustomization,
     appSettings,
     appType,
@@ -251,7 +315,7 @@ export function initAppContext(): AppContext {
     setSurveyStatus,
     startFeedbackPopupCountdown,
     startSurveyPopupCountdown,
-    surveyLink: survey,
+    surveyLink: surveyLinkStore,
     userPreferences
   });
 }

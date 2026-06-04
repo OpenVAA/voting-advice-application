@@ -47,6 +47,19 @@ export type AppContext = Omit<ComponentContext, 'locale' | 'locales' | 'darkMode
      */
     appSettings: Writable<AppSettings>;
     /**
+     * Rune-native read handle over the SAME app-settings `$state` the `appSettings`
+     * store wraps. Reactive reads happen via `.current` (no `fromStore` needed).
+     * Mirrors the `reactiveDataRoot` precedent; consumed by downstream contexts
+     * migrating off `fromStore(appSettings)`.
+     */
+    reactiveAppSettings: { readonly current: AppSettings };
+    /**
+     * Rune-native read handle over the SAME locale value the `locale` store wraps.
+     * Reactive reads happen via `.current` (no `fromStore` needed). Consumed by
+     * downstream contexts migrating off `fromStore(locale)`.
+     */
+    reactiveLocale: { readonly current: string };
+    /**
      * A store for building routes.
      */
     getRoute: Readable<RouteBuilder>;
