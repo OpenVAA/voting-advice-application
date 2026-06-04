@@ -77,6 +77,27 @@ export function localStorageState<TValue>(key: string, defaultValue: TValue): Pe
 }
 
 /**
+ * Create a rune-native state handle persisted in `sessionStorage` — the
+ * `sessionStorage` sibling of `localStorageState`, sharing the SAME
+ * `StorageType`-parametrized `storageState` core. The only behavioural
+ * difference comes from that shared core's session branch:
+ *   - reads/writes are NOT version-wrapped (the persisted payload is the RAW
+ *     JSON value, not a `{ version, data }` envelope — see `saveItemToStorage`),
+ *     so there is no version-expiry check; a malformed/unparseable payload
+ *     simply falls back to `defaultValue`, and
+ *   - both reads and writes are `browser`-gated (SSR → `defaultValue`).
+ *
+ * NB. The type of `defaultValue` should be one that can be serialized to JSON.
+ * See: https://github.com/microsoft/TypeScript/issues/1897#issuecomment-1415776159
+ *
+ * @param key - The key to store the value under.
+ * @param defaultValue - The default value used when nothing valid is stored.
+ */
+export function sessionStorageState<TValue>(key: string, defaultValue: TValue): PersistedState<TValue> {
+  return storageState('sessionStorage', key, defaultValue);
+}
+
+/**
  * Shared versioned-payload core backing `localStorageState` (and, in a later
  * phase, `sessionStorageState`). Parametrized on `StorageType` so the versioned
  * storage helpers (`getItemFromStorage`/`saveItemToStorage`) are reused — no
