@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v2.11
 milestone_name: Svelte 5 Runes Migration + View Transitions
-status: verifying
-stopped_at: Completed 100-01-PLAN.md
-last_updated: "2026-06-04T21:40:35.335Z"
-last_activity: 2026-06-04
+status: executing
+stopped_at: Completed phases 96 + 100 (E2E deferred to Phase 101)
+last_updated: "2026-06-05T00:00:00.000Z"
+last_activity: 2026-06-05 -- Completed Phase 96 (CTX-06/07, +CR-01 fix) and Phase 100 (QLAYOUT-01/02)
 progress:
   total_phases: 7
   completed_phases: 4
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 100 — domain-b-wave-b-questions-layout-restructure
+**Current focus:** Phases 96 + 100 complete — Domain A Wave 3/4 (97, 98) and the milestone-close gate (101) remain
 
 ## Current Position
 
-Phase: 101
-Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-06-04
+Phase: 96 + 100 complete (4/7 milestone phases done: 95, 96, 99, 100)
+Plan: All plans in 96 + 100 shipped (2/2 each)
+Status: Phases 96 + 100 verified (7/7 + 3/3 must-haves); E2E deferred to Phase 101. Remaining: 97, 98, 101.
+Last activity: 2026-06-05 -- Completed Phase 96 + Phase 100
 
 ## Performance Metrics
 
