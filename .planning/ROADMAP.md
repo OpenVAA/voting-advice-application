@@ -158,17 +158,22 @@ Audit: `.planning/milestones/v2.10-MILESTONE-AUDIT.md` (status: tech_debt — no
 
 ### Phase 96: Domain A Wave 2 — Tier-2 Bridges
 
-**Goal**: The Tier-2 secondary bridges (survey, trackingService) and the two orchestrating contexts (voterContext, candidateContext) are rune-native factories that compose the Wave-1 Tier-1 contexts via `getXContext()` and expose their reactive accessors as getters — with a new `runeSessionStorage` helper backing `voterContext`'s `firstQuestionId`.
+**Goal**: The Tier-2 secondary bridges (survey, trackingService) and the two orchestrating contexts (voterContext, candidateContext) are rune-native factories that compose the Wave-1 Tier-1 contexts via `getXContext()` and expose their reactive accessors as getters — with a new `sessionStorageState` helper (the spike-scratch `runeSessionStorage`, renamed per K1/D-05) backing `voterContext`'s `firstQuestionId`.
 **Depends on**: Phase 95 (Tier-2 contexts consume Tier-1 outputs — `fromStore(appSettings)`, `fromStore(locale)`, etc.; migrating them before Wave 1 would remove a working bridge with nothing to replace it).
 **Parallel-eligible**: No within Domain A (strictly after Wave 1). Independent of Domain B — can run concurrently with Phases 99-100.
 **Requirements**: CTX-06, CTX-07
 **Success Criteria** (what must be TRUE):
 
   1. `survey` and `trackingService` have zero `svelte/store` imports — no `fromStore`/`toStore` over appSettings / sessionId / userPreferences; their values are exposed via `.current` getters.
-  2. `voterContext` and `candidateContext` are rune-native factories composing Tier-1 contexts via `getXContext()` and exposing all 18+/30+ reactive accessors as getters; a new `runeSessionStorage` sibling helper backs `voterContext`'s `firstQuestionId`.
+  2. `voterContext` and `candidateContext` are rune-native factories composing Tier-1 contexts via `getXContext()` and exposing all 18+/30+ reactive accessors as getters; a new `sessionStorageState` sibling helper backs `voterContext`'s `firstQuestionId`.
   3. The destructure-trap reproduces identically in the rune-native contexts and is preserved per the CLAUDE.md "Context Destructuring Rule" (consumers read reactive accessors via `ctx.X`, never destructured); the existing E2E suite stays green.
 
-**Plans**: TBD
+**Plans**: 2 plans (2 waves)
+
+Plans:
+- [ ] 96-01-PLAN.md — sessionStorageState helper + pure-rune survey/trackingService + appContext reactiveAppSettings/reactiveLocale getters + bridge seam (Wave 1)
+- [ ] 96-02-PLAN.md — voterContext + candidateContext rune-native factories (firstQuestionId/prereg ids via session/localStorageState; getRoute bridge kept for Phase 97) (Wave 2)
+
 
 ### Phase 97: Domain A Wave 3 — getRoute + Consumer Codemod
 
