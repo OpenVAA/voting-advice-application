@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.10
-milestone_name: "Test Reliability + A11y Compliance + All-Green Suite (SHIPPED 2026-06-04)"
-status: Awaiting next milestone
-stopped_at: Milestone v2.10 completed and archived (verdict tech_debt, no blockers; all phase/quick/debug/UAT artifacts resolved). Ready for /gsd-new-milestone.
-last_updated: "2026-06-04T07:43:03.305Z"
-last_activity: 2026-06-04 — Milestone v2.10 completed and archived
+milestone: v2.11
+milestone_name: Svelte 5 Runes Migration + View Transitions
+status: planning
+last_updated: "2026-06-04T08:41:05.950Z"
+last_activity: 2026-06-04
 progress:
-  total_phases: 19
-  completed_phases: 19
-  total_plans: 66
-  completed_plans: 66
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** v2.10 shipped — planning next milestone (Svelte 5 runes migration is the natural theme; see the `spike-findings-voting-advice-application-gsd` skill)
+**Current focus:** v2.11 Svelte 5 Runes Migration + View Transitions — defining requirements (backed by the `spike-findings-voting-advice-application-gsd` skill; Domain A rune migration + Domain B navigation/transitions/a11y)
 
 ## Current Position
 
-Phase: Milestone v2.10 complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-06-04 — Milestone v2.10 completed and archived
+Status: Defining requirements
+Last activity: 2026-06-04 — Milestone v2.11 started
 
 ## Performance Metrics
 
