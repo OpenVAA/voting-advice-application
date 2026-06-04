@@ -4,13 +4,13 @@ milestone: v2.11
 milestone_name: Svelte 5 Runes Migration + View Transitions
 status: executing
 stopped_at: v2.10 milestone audit COMPLETE (verdict tech_debt, no blockers) + Option-B tidy-ups + package-script harmonisation done. Ready for /gsd-complete-milestone v2.10.
-last_updated: "2026-06-04T11:44:03.202Z"
+last_updated: "2026-06-04T11:49:48.707Z"
 last_activity: 2026-06-04 -- Phase 95 execution started
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 8
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 ## Current Position
 
 Phase: 95 (domain-a-wave-1-tier-1-leaf-contexts) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 Status: Ready to execute
 Last activity: 2026-06-04 -- Phase 95 execution started
 
@@ -146,6 +146,7 @@ The pre-close artifact audit surfaced 15 open items. All v2.10-internal artifact
 | Phase 94 P07 | ~25min | 2 tasks | 32 files |
 | Phase 94 P08 | ~7min | 2 tasks | 3 files |
 | Phase 95 P01 | 4min | 3 tasks | 3 files |
+| Phase 95 P02 | 8min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -275,6 +276,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 94]: [Phase 94-07]: dev-seed template layer de-planned (32 of 33 files; e2e/base.ts already clean); Plan-01 Math.floor median ordinal logic preserved; D-01 fence held (wider src/ untouched); dev-seed unit 450/450 green
 - [Phase 94]: Plan 94-08: rewrote tests/README.md (D-06) + helpers/README.md (D-05) current-state-only; phase-wide de-planning gate PASS (residual grep empty, typecheck 0, --list 84/72)
 - [Phase ?]: 95-01: appContext appSettings+appCustomization DB override folded into $state init (SSR no-flash, D-04); mergeAppSettings pure spread (D-05, no shared staticSettings mutation); internal pure mergeInitialAppSettings helper added; Wave-1 toStore bridges + userPreferences Writable kept
+- [Phase ?]: dataContext (CTX-02): replaced writable() bridge with a hand-rolled Readable subscriber-set + current/instance Pattern-2 split + untrack(); temporary $dataRoot bridge retained until Phase 98
 
 ### Quick Tasks Completed
 
@@ -313,7 +315,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-04T11:43:58.142Z
+Last session: 2026-06-04T11:49:44.376Z
 Stopped at: v2.10 milestone audit COMPLETE (verdict tech_debt, no blockers) + Option-B tidy-ups + package-script harmonisation done. Ready for /gsd-complete-milestone v2.10.
 Resume file: None (clean milestone-boundary pause)
 Work done this session:
