@@ -35,16 +35,16 @@ When in doubt, prefer `utils/` — domain assemblers can always be
 de-duplicated later by extracting a generic helper, but a premature
 helper that bakes in a domain assumption is hard to undo.
 
-## Page-object boundary
+## Fixture boundary
 
-Helpers do NOT call page-object methods. Helpers take `Page` / `Locator`,
-not `QuestionsPage` instances. This keeps helpers reusable across
-page-object hierarchies (voter, candidate, admin) and across non-page-object
-test code.
+Helpers do NOT call fixture methods. Helpers take raw `Page` / `Locator`,
+never a fixture instance. This keeps them reusable across every spec
+regardless of which fixtures it composes. (The suite models page surfaces
+as Playwright fixtures under `tests/tests/fixtures/`, not classic page
+objects.)
 
-If a helper would benefit from a page-object's encapsulated state, the
-right move is usually to make the page-object's method richer (or to add a
-new page-object method), not to import a page-object into the helper layer.
+If a helper would benefit from a fixture's encapsulated state, the right
+move is to enrich the fixture, not to import it into the helper layer.
 
 ## Helper contracts
 
