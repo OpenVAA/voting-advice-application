@@ -108,10 +108,24 @@ export function sessionStorageState<TValue>(key: string, defaultValue: TValue): 
  * through imperatively on `set`/`update`. Persistence is imperative (not via
  * `$effect`), so the helper can be called outside component-init context (e.g.
  * inside `initXxxContext()` factories).
+ *
+ * When nothing valid is stored, the freshly-defaulted value is persisted on
+ * init. The superseded `storageWritable` bridge persisted on subscribe (which
+ * fires synchronously on creation); dropping to `set`/`update`-only persistence
+ * silently regressed any consumer whose default is non-deterministic and is
+ * never explicitly `set` — notably the tracking `sessionId`, whose generated
+ * UUID was regenerated on every fresh load instead of surviving the reload it
+ * lives in `sessionStorage` to survive. The write is `browser`-gated via
+ * `saveItemToStorage` (SSR → no-op). (CR-01, Phase 96)
  */
 function storageState<TValue>(type: StorageType, key: string, defaultValue: TValue): PersistedState<TValue> {
-  const initial = getItemFromStorage<TValue>(type, key) ?? defaultValue;
-  let value = $state<TValue>(initial);
+  const stored = getItemFromStorage<TValue>(type, key);
+  let value = $state<TValue>(stored ?? defaultValue);
+
+  // Persist the default on init when nothing valid was stored (CR-01) so a
+  // non-deterministic default round-trips a reload, matching the old
+  // subscribe-on-init persistence.
+  if (stored === null) saveItemToStorage(type, key, defaultValue);
 
   return {
     get current() {

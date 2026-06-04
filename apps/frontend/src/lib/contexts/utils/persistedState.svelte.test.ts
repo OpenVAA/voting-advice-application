@@ -286,5 +286,48 @@ describe('persistedState helpers', () => {
       });
       cleanup();
     });
+
+    // CR-01 regression: the default must be persisted on init (not only on
+    // set/update) so a non-deterministic default — e.g. a generated session
+    // UUID that is never explicitly `set` — survives a reload. A fresh handle
+    // created with a DIFFERENT default must read the FIRST handle's value.
+    it('persists the default on init so a never-set value survives a fresh handle (reload)', async () => {
+      const { sessionStorageState } = await importWithBrowser(true);
+      const cleanup = $effect.root(() => {
+        // First load: nothing stored, default is "generated" once. Never `set`.
+        const first = sessionStorageState('ss-sessionid', 'uuid-first');
+        expect(first.current).toBe('uuid-first');
+        expect(mockStorageData['ss-sessionid']).toBeDefined();
+        // Reload: a fresh handle with a *different* default must NOT regenerate.
+        const second = sessionStorageState('ss-sessionid', 'uuid-second');
+        expect(second.current).toBe('uuid-first');
+      });
+      cleanup();
+    });
+
+    it('does NOT persist on init under the SSR (browser=false) path', async () => {
+      const { sessionStorageState } = await importWithBrowser(false);
+      const cleanup = $effect.root(() => {
+        sessionStorageState('ss-ssr-noinit', 'default');
+        expect(mockStorageData['ss-ssr-noinit']).toBeUndefined();
+      });
+      cleanup();
+    });
+  });
+
+  describe('storageState init persistence (CR-01)', () => {
+    it('localStorageState persists the default on init so a never-set value survives a fresh handle', async () => {
+      const { localStorageState } = await importWithBrowser(true);
+      const cleanup = $effect.root(() => {
+        const first = localStorageState('ls-initpersist', 'uuid-first');
+        expect(first.current).toBe('uuid-first');
+        const saved = mockStorageData['ls-initpersist'];
+        expect(saved).toBeDefined();
+        expect(JSON.parse(saved)).toHaveProperty('data', 'uuid-first');
+        const second = localStorageState('ls-initpersist', 'uuid-second');
+        expect(second.current).toBe('uuid-first');
+      });
+      cleanup();
+    });
   });
 });
