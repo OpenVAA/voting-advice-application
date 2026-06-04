@@ -31,7 +31,9 @@ expected: |
   navigation, never contains the DB slug, and the localized title appears within the
   visible heading), and the focus-on-heading block. The blocker is environmental and
   pre-existing — NOT caused by Phase 99 code.
-result: [pending]
+result: issue
+reported: "Auto-run 2026-06-04: PLAYWRIGHT_A11Y=1 a11y-smoke = 5 passed / 5 FAILED. The 3 pre-location axe routes (home/elections/constituencies) PASS. All 5 located tests (axe questions/results/voter-detail-drawer + route-announcer + focus-on-heading) FAIL at the shared fixture walkUntilQuestionsIntro (voter-journey.fixture.ts:130) — getByTestId('voter-questions-start') never visible; the walk stalls on the 'Select an election' page (both elections checked, Continue present). NOT phase-99 code: the announcer/focus assertions are never reached. Distinct from the voter-journey spec timing bug fixed in 302fcb19a — that spec walks elections with its own helpers and passes. Per operator: data seeding and component prop handling did NOT change this milestone, so the testid-forwarding theory is rejected (concatClass forwards data-testid); culprit is likely Phase 95 context reactivity (e.g. selectedElections destructure-trap / rune-state timing) or Phase 99 VT + navigation — under investigation."
+severity: major
 
 ### 2. Visual VT cross-fades + reduced-motion (SC-1 / SC-2 / VT-03)
 expected: |
@@ -47,9 +49,18 @@ result: [pending]
 
 total: 2
 passed: 0
-issues: 0
-pending: 2
+issues: 1
+pending: 1
 skipped: 0
 blocked: 0
 
 ## Gaps
+
+- truth: "The live a11y-smoke gate runs green (located + unlocated axe routes + route-announcer + focus-on-heading blocks all pass under PLAYWRIGHT_A11Y=1)"
+  status: failed
+  reason: "5 located a11y-smoke tests fail at the shared fixture walkUntilQuestionsIntro (voter-journey.fixture.ts:130) — the walk stalls on the 'Select an election' page; voter-questions-start never becomes visible. Unlocated axe routes (home/elections/constituencies) pass. Phase-99 announcer/focus code is correct (4/4 verified) but the gate cannot run because the located fixture cannot reach /questions."
+  severity: major
+  test: 1
+  artifacts: ["tests/tests/fixtures/voter/voter-journey.fixture.ts"]
+  missing: []
+  scope_note: "Distinct from the voter-journey spec bug fixed in 302fcb19a. Per operator: seeding + prop handling unchanged this milestone → rule out testid-forwarding/seed; focus on Phase 95 context reactivity (selectedElections destructure-trap / rune timing) or Phase 99 VT+navigation."
