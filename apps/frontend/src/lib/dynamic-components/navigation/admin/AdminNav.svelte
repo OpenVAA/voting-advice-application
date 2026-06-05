@@ -29,7 +29,13 @@ A template part that outputs the navigation menu for the Admin App for use in `L
   let { onKeyboardFocusOut, ...restProps }: AdminNavProps = $props();
 
   const { navigation } = getLayoutContext();
-  const { isAuthenticated, t, getRoute } = getAdminContext();
+  const ctx = getAdminContext();
+  // `t` and `getRoute` are stable refs (getRoute is still a store in this plan, so its
+  // template auto-subscribe reads build green; rewritten by the codemod in Plan 02).
+  const { t, getRoute } = ctx;
+  // `isAuthenticated` is a reactive accessor (REACTIVE_ACCESSORS / Context-Destructuring-Rule);
+  // it MUST be read via ctx.X aliased through $derived, never destructured.
+  const isAuthenticated = $derived(ctx.isAuthenticated);
 </script>
 
 <Navigation {onKeyboardFocusOut} {...restProps}>
