@@ -2,7 +2,6 @@ import { DataRoot } from '@openvaa/data';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext, untrack } from 'svelte';
 import { getI18nContext } from '../i18n';
-import type { Readable, Subscriber, Unsubscriber } from 'svelte/store';
 import type { DataContext } from './dataContext.type';
 
 const CONTEXT_KEY = Symbol();
@@ -10,42 +9,6 @@ const CONTEXT_KEY = Symbol();
 export function getDataContext(): DataContext {
   if (!hasContext(CONTEXT_KEY)) error(500, 'getDataContext() called before initDataContext()');
   return getContext<DataContext>(CONTEXT_KEY);
-}
-
-/**
- * Minimal hand-rolled `Readable<DataRoot>` bridge.
- *
- * Wave-1 obligation: `dataRoot` is consumed as `$dataRoot` (auto-subscribe) and
- * via a synchronous `get(store)` read in ~23 un-migrated `.svelte` callsites.
- * Those keep a store contract until the Wave 3/4 consumer codemod, so we expose a `Readable`
- * surface here — but WITHOUT the old store-constructor / store-derive helpers:
- *   - The old internal store-constructor workaround is gone; the rune-native
- *     context no longer needs it for its own reactivity (the `version` $state
- *     counter does that job).
- *   - A getter-derived store also short-circuits because DataRoot is a
- *     long-lived singleton — every update returns the SAME object reference with
- *     mutated internal state, which Svelte 5's getter-derive render-effect treats
- *     as "no change" and never re-emits. That was the documented infinite-loop /
- *     stale-bridge trap.
- *
- * This bridge is a plain subscriber set fed by an imperative `set` from
- * DataRoot's own `subscribe()` notification. It is deleted in Wave 3/4 once the
- * last `$dataRoot` consumer migrates to `reactiveDataRoot.current`.
- */
-function createDataRootBridge(initial: DataRoot): Readable<DataRoot> & { set: (value: DataRoot) => void } {
-  let value = initial;
-  const subscribers = new Set<Subscriber<DataRoot>>();
-  return {
-    set(next: DataRoot): void {
-      value = next;
-      for (const run of subscribers) run(value);
-    },
-    subscribe(run: Subscriber<DataRoot>): Unsubscriber {
-      subscribers.add(run);
-      run(value);
-      return () => subscribers.delete(run);
-    }
-  };
 }
 
 /**
@@ -68,24 +31,19 @@ export function initDataContext(): DataContext {
   // This bridges DataRoot's imperative subscribe() notifications to $derived reactivity.
   let version = $state(0);
 
-  // Temporary `Readable<DataRoot>` surface for un-migrated `$dataRoot` consumers
-  // (removed in Wave 3/4). Fed imperatively from the subscribe callback below.
-  const dataRootStore = createDataRootBridge(dataRoot);
-
   // Subscribe to DataRoot's imperative change notifications. DataRoot's
   // `Updatable.subscribe()` is the domain abstraction (transactional mutation
   // batching across nested `provide*`) and must stay intact.
   //
-  // The callback both writes a $state (`version++`) and the bridge (`set`). It
-  // runs from DataRoot's notification, not from inside a reactive read scope, so
-  // it does not itself form a read-then-write cycle. We still wrap the write in
-  // `untrack()` defensively (Pattern 3 / L-2): should this callback ever fire
-  // synchronously within a producer effect's tracked scope, `untrack` isolates
-  // the write so it cannot retrigger that effect (`effect_update_depth_exceeded`).
+  // The callback writes a $state (`version++`). It runs from DataRoot's
+  // notification, not from inside a reactive read scope, so it does not itself
+  // form a read-then-write cycle. We still wrap the write in `untrack()`
+  // defensively (Pattern 3 / L-2): should this callback ever fire synchronously
+  // within a producer effect's tracked scope, `untrack` isolates the write so it
+  // cannot retrigger that effect (`effect_update_depth_exceeded`).
   dataRoot.subscribe(() => {
     untrack(() => {
       version++;
-      dataRootStore.set(dataRoot);
     });
   });
 
@@ -106,15 +64,12 @@ export function initDataContext(): DataContext {
     }
   };
 
-  // D-08 / Option A: additive `.current` getter on the EXPORTED `dataRoot` so the
-  // Wave-3 codemod target (`dataRoot.current`) resolves while the legacy
-  // `Readable<DataRoot>` bridge SURVIVES for same-commit-unmigrated `$dataRoot`
-  // consumers + out-of-scope sites that live to Phase 98. Built via
-  // `{ ...store, get current() }` spread (the bridge returns own-enumerable
-  // subscribe/set), reusing the reactiveDataRoot.current getter body (reads the
-  // SAME `version` $state — single source of truth).
+  // Exported `dataRoot` is now a plain rune handle exposing a reactive `.current`
+  // getter (the Wave-3 codemod target). The legacy `Readable<DataRoot>` store
+  // bridge was removed in Wave 4 (Phase 98) once the last `$dataRoot` / `get(store)`
+  // consumers migrated to `reactiveDataRoot.instance`. The getter body reuses the
+  // SAME `version` $state as `reactiveDataRoot.current` — single source of truth.
   const dataRootExport = {
-    ...dataRootStore,
     get current() {
       void version;
       return dataRoot;

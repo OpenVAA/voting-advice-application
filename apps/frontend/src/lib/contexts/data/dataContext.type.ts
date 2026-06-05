@@ -1,13 +1,13 @@
 import type { DataRoot } from '@openvaa/data';
-import type { Readable } from 'svelte/store';
 
 export type DataContext = {
   /**
-   * Temporary `Readable<DataRoot>` bridge for un-migrated `$dataRoot` consumers.
-   * Retained until Wave 3/4 (Phase 98); the `Readable` import stays for it.
-   * Additive `.current` is the D-08/Option A bring-forward (legacy store survives to Phase 98).
+   * Rune-native DataRoot handle exposing a reactive `.current` getter (tracks the
+   * version counter). The legacy svelte/store DataRoot bridge was removed in
+   * Wave 4 (Phase 98) once the last `$dataRoot` / `get(store)` consumers migrated
+   * to `reactiveDataRoot.instance`.
    */
-  dataRoot: Readable<DataRoot> & { readonly current: DataRoot };
+  dataRoot: { readonly current: DataRoot };
   /**
    * Rune-native DataRoot handle split (Pattern 2):
    * - `current` — reactive read (tracks the version counter); use in $derived/$effect/templates.
