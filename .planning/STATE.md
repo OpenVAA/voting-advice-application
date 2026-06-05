@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.11
 milestone_name: Svelte 5 Runes Migration + View Transitions
 status: executing
-stopped_at: Completed 100-01-PLAN.md
-last_updated: "2026-06-05T12:31:36.768Z"
+stopped_at: Completed 98-02-PLAN.md
+last_updated: "2026-06-05T12:48:58.558Z"
 last_activity: 2026-06-05 -- Phase 98 execution started
 progress:
   total_phases: 7
   completed_phases: 5
   total_plans: 19
-  completed_plans: 16
+  completed_plans: 17
   percent: 71
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 ## Current Position
 
 Phase: 98 (domain-a-wave-4-cleanup) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-06-05 -- Phase 98 execution started
 
@@ -160,6 +160,7 @@ The pre-close artifact audit surfaced 15 open items. All v2.10-internal artifact
 | Phase 100 P02 | 12min | 3 tasks | 3 files |
 | Phase 97 P01 | 2min | 3 tasks | 2 files |
 | Phase 98 P01 | 10m | 2 tasks | 4 files |
+| Phase 98 P02 | ~15min | 2 tasks | 26 files |
 
 ## Accumulated Context
 
@@ -303,6 +304,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Phase 100 Plan 01: D-03 answer-survival gate placed after the base-category loop, crossing the Boolean<-Likert type boundary via previousButton; reuses expectQuestionAndAdvance, no new spec, no frontend change
 - [Phase 97]: CONS-03 admin auth-reactivity fixed: adminContext uses explicit delegating getter for isAuthenticated (no authContext spread); AdminNav reads via $derived(ctx.isAuthenticated) — Object spread captured the isAuthenticated $derived by value, de-reactivating admin auth gating. O-2 spread audit confirmed no other top-level reactive getter is captured by a spread.
 - [Phase ?]: Phase 98-01: removed the Readable<DataRoot> store bridge from dataContext; two layouts now read DataRoot via reactiveDataRoot.instance (data-layer half of CLEAN-01)
+- [Phase ?]: 98-02: appContext store-exports reshaped to pure { current, set?, update? } rune handles; ~17 latent store consumers migrated to .current (Phase 97 codemod covered only appSettings/darkMode/locale/dataRoot/getRoute)
+- [Phase ?]: 98-02: widened FeedbackStatus to include 'dismissed' (Rule 1 bugfix surfaced by localStorageState strict typing)
 
 ### Quick Tasks Completed
 
@@ -341,8 +344,8 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-05T12:31:25.563Z
-Stopped at: Completed 100-01-PLAN.md
+Last session: 2026-06-05T12:48:58.547Z
+Stopped at: Completed 98-02-PLAN.md
 Resume file: None
 Work done this session:
 

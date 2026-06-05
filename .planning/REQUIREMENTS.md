@@ -91,7 +91,7 @@ Which phases cover which requirements. Populated during roadmap creation.
 | CONS-01 | Phase 97 | Complete |
 | CONS-02 | Phase 97 | Complete |
 | CONS-03 | Phase 97 | Complete |
-| CLEAN-01 | Phase 98 | Pending |
+| CLEAN-01 | Phase 98 | In Progress (Plans 01-02 done; Plan 03 deletions pending) |
 | CLEAN-02 | Phase 98 | Pending |
 | VT-01 | Phase 99 | Complete |
 | VT-02 | Phase 99 | Complete |
