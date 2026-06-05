@@ -58,7 +58,7 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
   {#if nomination}
     {@const { election, electionSymbol, constituency, parentNomination } = nomination}
     <div class="infoGroup" role="group">
-      {#if $dataRoot.elections.length > 1}
+      {#if dataRoot.current.elections.length > 1}
         <InfoItem label={t('common.election')}>{election.name}</InfoItem>
       {/if}
       {#if !election.singleConstituency}
@@ -67,9 +67,9 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
       {#if parentNomination}
         <InfoItem
           label={entityType === ENTITY_TYPE.Organization ? t('common.alliance.singular') : t('common.electionList')}>
-          {#if $appSettings.results.sections?.includes(ENTITY_TYPE.Organization) && parentNomination.entityType === ENTITY_TYPE.Organization}
+          {#if appSettings.current.results.sections?.includes(ENTITY_TYPE.Organization) && parentNomination.entityType === ENTITY_TYPE.Organization}
             <a
-              href={$getRoute({
+              href={getRoute.current({
                 route: 'ResultEntity',
                 entityTab:
                   parentNomination.entityType === 'candidate' ? 'candidates' : 'organizations',
@@ -87,7 +87,7 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
           {/if}
         </InfoItem>
       {/if}
-      {#if electionSymbol || $appSettings.entityDetails.showMissingElectionSymbol[entityType]}
+      {#if electionSymbol || appSettings.current.entityDetails.showMissingElectionSymbol[entityType]}
         <InfoItem label={t(`common.electionSymbol.${entityType}`)}>
           {#if electionSymbol}<ElectionSymbol text={electionSymbol} />{:else}{t('common.missingAnswer')}{/if}
         </InfoItem>
@@ -103,7 +103,7 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
         {#each nonLinkQuestions as question}
           {@const answer = nakedEntity.getAnswer(question)}
           {@const { longText } = getCustomData(question)}
-          {#if answer || $appSettings.entityDetails.showMissingAnswers[entityType]}
+          {#if answer || appSettings.current.entityDetails.showMissingAnswers[entityType]}
             <InfoItem label={question.text} vertical={longText}><InfoAnswer {answer} {question} /></InfoItem>
           {/if}
         {/each}
@@ -119,7 +119,7 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
     </div>
   {/if}
 
-  {#if $appSettings.survey?.showIn?.includes('entityDetails')}
+  {#if appSettings.current.survey?.showIn?.includes('entityDetails')}
     <SurveyBanner class="mt-lg" />
   {/if}
 </div>

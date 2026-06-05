@@ -94,7 +94,7 @@ Shows a form with which to request a password reset email.
 
     {#if status === 'success'}
       <Button
-        href={$getRoute('CandAppLogin')}
+        href={getRoute.current('CandAppLogin')}
         variant="main"
         text={t('common.home')}
         data-testid="forgot-password-home" />
@@ -107,7 +107,7 @@ Shows a form with which to request a password reset email.
         class="btn btn-primary mb-md w-full max-w-md"
         text={t('candidateApp.resetPassword.sendLink')}
         data-testid="forgot-password-submit" />
-      <Button href={$getRoute('CandAppLogin')} text={t('common.return')} data-testid="forgot-password-return" />
+      <Button href={getRoute.current('CandAppLogin')} text={t('common.return')} data-testid="forgot-password-return" />
     {/if}
   </form>
 </MainContent>

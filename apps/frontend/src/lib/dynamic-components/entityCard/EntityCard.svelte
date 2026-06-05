@@ -33,7 +33,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 ### Usage
 
 ```tsx
-<EntityCard action={$getRoute({route: 'ResultCandidate', entityId: candidate.id})}
+<EntityCard action={getRoute.current({route: 'ResultCandidate', entityId: candidate.id})}
   content={candidate}>
 <EntityCard content={party} variant="details">
 ```
@@ -107,7 +107,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     // candidates list continues to behave as before.
     const effectiveAction =
       action ??
-      $getRoute({
+      getRoute.current({
         route: 'ResultEntity',
         entityTab: type === 'candidate' ? 'candidates' : type === 'alliance' ? 'alliances' : 'organizations',
         entity: type,
@@ -120,12 +120,12 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     let qs: CardQuestions | undefined;
     let showSM = false;
     if (type === ENTITY_TYPE.Candidate || type === ENTITY_TYPE.Organization) {
-      showSM = $appSettings.results?.cardContents?.[type]?.includes('submatches') ?? false;
+      showSM = appSettings.current.results?.cardContents?.[type]?.includes('submatches') ?? false;
       if (variant !== 'details') {
         qs = getCardQuestions({
           type,
-          appSettings: $appSettings,
-          dataRoot: $dataRoot
+          appSettings: appSettings.current,
+          dataRoot: dataRoot.current
         });
       }
     }
@@ -137,7 +137,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
       variant === 'list' &&
       unwrapped.nomination &&
       isObjectType(unwrapped.nomination, OBJECT_TYPE.OrganizationNomination) &&
-      $appSettings.results?.cardContents?.organization?.includes('children')
+      appSettings.current.results?.cardContents?.organization?.includes('children')
     ) {
       scs = findCandidateNominations({ matches: voterContext?.matches, nomination: unwrapped.nomination }).map((e) => ({
         entity: e
@@ -146,7 +146,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
       variant === 'list' &&
       unwrapped.nomination &&
       isObjectType(unwrapped.nomination, OBJECT_TYPE.AllianceNomination) &&
-      $appSettings.results?.cardContents?.alliance?.includes('children')
+      appSettings.current.results?.cardContents?.alliance?.includes('children')
     ) {
       scs = findOrganizationNominations({ matches: voterContext?.matches, nomination: unwrapped.nomination }).map(
         (e) => ({

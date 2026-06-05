@@ -40,7 +40,7 @@ Used to show a preview of the candidate's own profile using the `EntityDetails` 
     // Read locale via store subscription to create reactive dependency.
     // Locale is constant within a page lifecycle (changes trigger full page reload),
     // so this effect runs loadCandidate() once on mount.
-    void $locale;
+    void locale.current;
     loadCandidate();
   });
 
@@ -58,9 +58,9 @@ Used to show a preview of the candidate's own profile using the `EntityDetails` 
       return;
     }
     try {
-      // Use $locale (store subscription) to get the string value
-      $dataRoot.provideEntityData([translateLocalizedCandidate(result, $locale)]);
-      entity = $dataRoot.getCandidate(result.id);
+      // Use locale.current (store subscription) to get the string value
+      dataRoot.current.provideEntityData([translateLocalizedCandidate(result, locale.current)]);
+      entity = dataRoot.current.getCandidate(result.id);
       status = 'success';
     } catch (e) {
       logDebugError(`Error providing candidate data to dataRoot or  getting the object: ${e}`);
@@ -78,7 +78,7 @@ Used to show a preview of the candidate's own profile using the `EntityDetails` 
     actions: {
       return: 'show',
       returnButtonLabel: t('candidateApp.preview.close'),
-      returnButtonCallback: () => goto($getRoute('CandAppHome'))
+      returnButtonCallback: () => goto(getRoute.current('CandAppHome'))
     }
   });
 </script>

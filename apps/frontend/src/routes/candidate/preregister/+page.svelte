@@ -70,7 +70,7 @@
   async function redirectToIdentityProvider() {
     if (!browser) return;
 
-    const redirectUri = `${window.location.origin}${$getRoute('CandAppPreregisterIdentityProviderCallback')}`;
+    const redirectUri = `${window.location.origin}${getRoute.current('CandAppPreregisterIdentityProviderCallback')}`;
 
     if (constants.PUBLIC_IDENTITY_PROVIDER_TYPE === 'idura') {
       // Idura: call server-side authorize endpoint for JAR construction
@@ -136,7 +136,7 @@
         type="submit"
         text={t('common.continue')}
         variant="main"
-        onclick={() => goto($getRoute(nextRoute))}
+        onclick={() => goto(getRoute.current(nextRoute))}
         data-testid="preregister-continue" />
     {/snippet}
   </MainContent>
@@ -164,7 +164,7 @@
       <p class="small-info my-md text-center">
         {t('candidateApp.preregister.identification.identifyYourselHelpText')}
       </p>
-      <Button href={$getRoute('CandAppLogin')} text={t('common.return')} data-testid="preregister-return" />
+      <Button href={getRoute.current('CandAppLogin')} text={t('common.return')} data-testid="preregister-return" />
     {/snippet}
   </MainContent>
 {/if}

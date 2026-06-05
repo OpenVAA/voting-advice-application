@@ -44,12 +44,12 @@
   // This results in effect_update_depth_exceeded error.
   // See: apps/frontend/src/routes/(voters)/+layout.svelte
   // $effect(() => {
-  //   if (!$appSettings.access.candidateApp || !$appSettings.dataAdapter.supportsCandidateApp) return;
+  //   if (!appSettings.current.access.candidateApp || !appSettings.current.dataAdapter.supportsCandidateApp) return;
   //   // Show possible notification
-  //   if ($appSettings.notifications.candidateApp?.show)
+  //   if (appSettings.current.notifications.candidateApp?.show)
   //     popupQueue.push({
   //       component: Notification,
-  //       props: { data: $appSettings.notifications.candidateApp }
+  //       props: { data: appSettings.current.notifications.candidateApp }
   //     });
   // });
 
@@ -68,12 +68,12 @@
   let isDrawerOpen = $state(false);
 </script>
 
-{#if !$appSettings.dataAdapter.supportsCandidateApp}
+{#if !appSettings.current.dataAdapter.supportsCandidateApp}
   <MaintenancePage
     title={t('candidateApp.notSupported.title')}
     content={t('candidateApp.notSupported.content')}
     emoji={t('candidateApp.notSupported.heroEmoji')} />
-{:else if !$appSettings.access.candidateApp}
+{:else if !appSettings.current.access.candidateApp}
   <MaintenancePage
     title={t('dynamic.candidateAppNotAccessible.title')}
     content={t('dynamic.candidateAppNotAccessible.content')} />

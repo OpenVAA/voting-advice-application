@@ -74,7 +74,7 @@ Shows the opinion questions for the candidate to answer.
     {#if candCtx.answersLocked}
       <Warning>
         {t('candidateApp.common.editingNotAllowed')}
-        {#if candCtx.unansweredRequiredInfoQuestions?.length !== 0 || ($appSettings.entities?.hideIfMissingAnswers?.candidate && candCtx.unansweredOpinionQuestions?.length !== 0)}
+        {#if candCtx.unansweredRequiredInfoQuestions?.length !== 0 || (appSettings.current.entities?.hideIfMissingAnswers?.candidate && candCtx.unansweredOpinionQuestions?.length !== 0)}
           {t('candidateApp.common.isHiddenBecauseMissing')}
         {/if}
       </Warning>
@@ -91,7 +91,7 @@ Shows the opinion questions for the candidate to answer.
         {t('candidateApp.questions.ingress.empty', { numQuestions: candCtx.opinionQuestions.length })}
       </p>
       <Button
-        href={$getRoute({ route: 'CandAppQuestion', questionId: candCtx.unansweredOpinionQuestions[0]?.id })}
+        href={getRoute.current({ route: 'CandAppQuestion', questionId: candCtx.unansweredOpinionQuestions[0]?.id })}
         variant="main"
         icon="next"
         text={t('common.continue')}
@@ -111,13 +111,13 @@ Shows the opinion questions for the candidate to answer.
           {t('candidateApp.questions.unansweredWarning', {
             numUnansweredQuestions: candCtx.unansweredOpinionQuestions?.length
           })}
-          {#if $appSettings.entities?.hideIfMissingAnswers?.candidate}
+          {#if appSettings.current.entities?.hideIfMissingAnswers?.candidate}
             {t('candidateApp.common.willBeHiddenIfMissing')}
           {/if}
         </div>
         <!-- Shortcut to the next unanswered question -->
         <Button
-          href={$getRoute({ route: 'CandAppQuestion', questionId: candCtx.unansweredOpinionQuestions[0]?.id })}
+          href={getRoute.current({ route: 'CandAppQuestion', questionId: candCtx.unansweredOpinionQuestions[0]?.id })}
           text={t('candidateApp.questions.enterMissingAnswers')}
           variant="main"
           icon="next"
@@ -142,7 +142,7 @@ Shows the opinion questions for the candidate to answer.
 
               <div class="grid-line-x gap-lg grid" data-testid="candidate-questions-card">
                 <HeadingGroup class="text-center">
-                  {#if $appSettings.elections.showElectionTags && elections.length}
+                  {#if appSettings.current.elections.showElectionTags && elections.length}
                     <PreHeading>
                       {#each elections as election}
                         <ElectionTag {election} />
@@ -166,7 +166,7 @@ Shows the opinion questions for the candidate to answer.
                     : answer == null
                       ? t('candidateApp.questions.answerQuestion')
                       : t('candidateApp.questions.editAnswer')}
-                  href={$getRoute({ route: 'CandAppQuestion', questionId: id })}
+                  href={getRoute.current({ route: 'CandAppQuestion', questionId: id })}
                   icon={candCtx.answersLocked ? 'show' : 'create'}
                   variant={answer == null ? 'main' : undefined}
                   iconPos="left"
@@ -185,7 +185,7 @@ Shows the opinion questions for the candidate to answer.
         variant={completion === 'full' ? 'main' : 'prominent'}
         icon="previous"
         iconPos="left"
-        href={$getRoute('CandAppHome')}
+        href={getRoute.current('CandAppHome')}
         data-testid="candidate-questions-home" />
     </div>
   {/if}

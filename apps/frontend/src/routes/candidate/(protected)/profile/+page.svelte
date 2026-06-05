@@ -64,8 +64,8 @@ Shows the candidate's basic information, some of which is editable.
     unconfirmed?: boolean;
   } {
     try {
-      const election = $dataRoot.getElection(nomination.electionId);
-      const constituency = $dataRoot.getConstituency(nomination.constituencyId);
+      const election = dataRoot.current.getElection(nomination.electionId);
+      const constituency = dataRoot.current.getConstituency(nomination.constituencyId);
       return {
         election: election.name,
         constituency: constituency.name,
@@ -97,12 +97,12 @@ Shows the candidate's basic information, some of which is editable.
   let submitRouting = $derived.by(() => {
     if (allRequiredFilled && candCtx.unansweredOpinionQuestions.length && !candCtx.answersLocked) {
       return {
-        submitRoute: $getRoute('CandAppQuestions'),
+        submitRoute: getRoute.current('CandAppQuestions'),
         submitLabel: userData.hasUnsaved ? t('common.saveAndContinue') : t('common.continue')
       };
     }
     return {
-      submitRoute: $getRoute('CandAppHome'),
+      submitRoute: getRoute.current('CandAppHome'),
       submitLabel: candCtx.answersLocked || !userData.hasUnsaved ? t('common.return') : t('common.saveAndReturn')
     };
   });
@@ -147,7 +147,7 @@ Shows the candidate's basic information, some of which is editable.
   function handleCancel(): void {
     bypassPreventNavigation = true;
     userData.resetUnsaved();
-    goto($getRoute('CandAppHome')).then(() => (bypassPreventNavigation = false));
+    goto(getRoute.current('CandAppHome')).then(() => (bypassPreventNavigation = false));
   }
 
   /**
@@ -175,7 +175,7 @@ Shows the candidate's basic information, some of which is editable.
     {#if candCtx.answersLocked}
       <Warning data-testid="candidate-answers-locked-warning">
         {t('candidateApp.common.editingNotAllowed')}
-        {#if candCtx.unansweredRequiredInfoQuestions?.length !== 0 || ($appSettings.entities?.hideIfMissingAnswers?.candidate && candCtx.unansweredOpinionQuestions?.length !== 0)}
+        {#if candCtx.unansweredRequiredInfoQuestions?.length !== 0 || (appSettings.current.entities?.hideIfMissingAnswers?.candidate && candCtx.unansweredOpinionQuestions?.length !== 0)}
           {t('candidateApp.common.isHiddenBecauseMissing')}
         {/if}
       </Warning>
@@ -343,7 +343,7 @@ Shows the candidate's basic information, some of which is editable.
           color="warning"
           data-testid="profile-cancel" />
       {:else}
-        <Button text={t('common.return')} href={$getRoute('CandAppHome')} variant="main" data-testid="profile-return" />
+        <Button text={t('common.return')} href={getRoute.current('CandAppHome')} variant="main" data-testid="profile-return" />
       {/if}
     </div>
   {/snippet}

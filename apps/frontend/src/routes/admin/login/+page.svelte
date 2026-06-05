@@ -36,7 +36,9 @@
   const { appSettings, darkMode, getRoute, t } = getAdminContext();
   const appSettingsState = fromStore(appSettings);
   const darkModeState = fromStore(darkMode);
-  const getRouteState = fromStore(getRoute);
+  // getRoute is a rune-native `{ readonly current }` handle (CTX-08); read via
+  // `getRoute.current(...)`. The store-to-rune bridges above stay for the
+  // out-of-scope appSettings/darkMode usages (Phase 98).
   const { pageStyles, topBarSettings } = getLayoutContext();
 
   ////////////////////////////////////////////////////////////////////
@@ -136,7 +138,7 @@
       {#if appSettingsState.current.access.voterApp}
         <!-- We call invalidateAll when navigation to the Voter App to remove the Nominations we have added when loading User data -->
         <Button
-          onclick={() => goto(getRouteState.current('Home'), { invalidateAll: true })}
+          onclick={() => goto(getRoute.current('Home'), { invalidateAll: true })}
           text={t('candidateApp.common.voterApp')} />
       {/if}
     </div>

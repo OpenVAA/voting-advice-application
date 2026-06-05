@@ -111,7 +111,7 @@
   // a defensive v2.1 artifact with no remaining purpose — RESEARCH Assumption A2.
   //
   // IMPORTANT: access the DataRoot instance via `get(dataRoot)` rather than the
-  // `$dataRoot` auto-subscription form. `$dataRoot.update(() => provide*(...))`
+  // `dataRoot.current` auto-subscription form. `dataRoot.current.update(() => provide*(...))`
   // inside a `$effect` creates an infinite reactive loop in Svelte 5: the
   // auto-subscription registers the store as a dependency of this effect, and
   // the `DataRoot.update()` call notifies subscribers — retriggering the effect.

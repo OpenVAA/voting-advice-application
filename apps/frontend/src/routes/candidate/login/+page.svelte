@@ -94,7 +94,7 @@
   // If preregistration is possible, login details will be collapsed by default. They will be shown, however, if the email is defined, the show login button has been clicked or there was a login error
   /** Whether to show the login details */
   let isLoginShown = $derived(
-    !!(email || showLogin || answersLocked || !$appSettings.preRegistration?.enabled || status === 'error')
+    !!(email || showLogin || answersLocked || !appSettings.current.preRegistration?.enabled || status === 'error')
   );
 
   $effect(() => {
@@ -113,7 +113,7 @@
 
   pageStyles.use({ drawer: { background: 'bg-base-300' } });
   topBarSettings.use({
-    imageSrc: $darkMode
+    imageSrc: darkMode.current
       ? ($appCustomization.candPoster?.urlDark ?? $appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
       : ($appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
   });
@@ -189,10 +189,10 @@
       </div>
     {/if}
 
-    {#if !answersLocked && $appSettings.preRegistration?.enabled}
+    {#if !answersLocked && appSettings.current.preRegistration?.enabled}
       <div class="divider">{t('common.or')}</div>
       <Button
-        href={$getRoute('CandAppPreregister')}
+        href={getRoute.current('CandAppPreregister')}
         text={t('candidateApp.preregister.identification.start.title')}
         class="transition-opacity {isLoginShown || status === 'loading' ? 'opacity-30' : ''}"
         variant="main"
@@ -201,18 +201,18 @@
 
     <div class="mt-lg">
       <Button
-        href={$getRoute('CandAppRegister')}
+        href={getRoute.current('CandAppRegister')}
         text={t('candidateApp.login.haveRegistrationCode')}
         data-testid="login-register-link" />
       <Button
-        href={$getRoute('CandAppForgotPassword')}
+        href={getRoute.current('CandAppForgotPassword')}
         text={t('candidateApp.login.forgotPassword')}
         data-testid="login-forgot-password-link" />
-      <Button href={$getRoute('CandAppHelp')} text={t('candidateApp.help.title')} data-testid="login-help-link" />
-      {#if $appSettings.access.voterApp}
+      <Button href={getRoute.current('CandAppHelp')} text={t('candidateApp.help.title')} data-testid="login-help-link" />
+      {#if appSettings.current.access.voterApp}
         <!-- We call invalidateAll when navigation to the Voter App to remove the Nominations we have added when loading User data -->
         <Button
-          onclick={() => goto($getRoute('Home'), { invalidateAll: true })}
+          onclick={() => goto(getRoute.current('Home'), { invalidateAll: true })}
           text={t('candidateApp.common.voterApp')}
           data-testid="login-voter-app-link" />
       {/if}

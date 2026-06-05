@@ -52,7 +52,7 @@ Logo files for use on a light and a dark background can be defined. If the latte
     if (logoSrc) {
       if (inverseSrc) {
         // If we have both the normal and inverseSrc defined, select one of them
-        return ($darkMode && !inverse) || (!$darkMode && inverse) ? inverseSrc : logoSrc;
+        return (darkMode.current && !inverse) || (!darkMode.current && inverse) ? inverseSrc : logoSrc;
       } else {
         // If we only have the normalSrc defined, we'll later add a filter
         return logoSrc;

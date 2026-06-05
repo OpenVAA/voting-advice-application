@@ -134,7 +134,7 @@ Shows the candidate's user settings.
           data-testid="settings-update-password" />
 
         <Button
-          href={$getRoute('CandAppHelp')}
+          href={getRoute.current('CandAppHelp')}
           text={t('candidateApp.common.contactSupport')}
           disabled={status === 'success'}
           data-testid="settings-contact-support" />
@@ -148,7 +148,7 @@ Shows the candidate's user settings.
     <div class="grid w-full justify-items-center">
       <Button
         text={t('common.return')}
-        href={$getRoute('CandAppHome')}
+        href={getRoute.current('CandAppHome')}
         icon="previous"
         iconPos="left"
         variant="prominent"

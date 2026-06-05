@@ -2,7 +2,6 @@ import { getCustomData } from '@openvaa/app-shared';
 import { ENTITY_TYPE, isEmptyValue, QUESTION_CATEGORY_TYPE } from '@openvaa/data';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
-import { fromStore } from 'svelte/store';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
@@ -43,9 +42,9 @@ export function initCandidateContext(): CandidateContext {
   const authContext = getAuthContext();
   const { logout: _logout } = authContext;
 
-  // getRoute is a `Readable<RouteBuilder>` until Phase 97 (CTX-08); keep the
-  // one tolerated svelte/store bridge. appSettings/locale read via reactive getters.
-  const getRouteState = fromStore(getRoute);
+  // getRoute is a rune-native `{ readonly current }` handle (CTX-08); read
+  // directly via `getRoute.current(...)`. appSettings/locale read via reactive
+  // getters. This drops candidateContext's last `svelte/store` import.
 
   ////////////////////////////////////////////////////////////////////
   // User data, authentication and answersLocked
@@ -252,7 +251,7 @@ export function initCandidateContext(): CandidateContext {
 
   async function logout(): Promise<void> {
     await _logout();
-    return goto(getRouteState.current('CandAppLogin'), { invalidateAll: true }).then(_reset);
+    return goto(getRoute.current('CandAppLogin'), { invalidateAll: true }).then(_reset);
   }
 
   async function exchangeCodeForIdToken(opts: {
@@ -264,13 +263,13 @@ export function initCandidateContext(): CandidateContext {
     try {
       const result = await dataWriter.exchangeCodeForIdToken(opts);
       if (result.type === 'success') {
-        return await goto(getRouteState.current('CandAppPreregister'), { invalidateAll: true });
+        return await goto(getRoute.current('CandAppPreregister'), { invalidateAll: true });
       }
     } catch (e) {
       logDebugError(`Error exchanging authorization code for ID token: ${e ?? '-'}`);
     }
     return await goto(
-      getRouteState.current({
+      getRoute.current({
         route: 'CandAppPreregisterStatus',
         code: 'strongIdentificationError'
       }),
@@ -303,7 +302,7 @@ export function initCandidateContext(): CandidateContext {
         code = errorMap[result.response.status] ?? 'unknownError';
       }
       return await goto(
-        getRouteState.current({
+        getRoute.current({
           route: 'CandAppPreregisterStatus',
           code
         }),
@@ -312,7 +311,7 @@ export function initCandidateContext(): CandidateContext {
     } catch (e) {
       logDebugError(`Error preregistering a candidate: ${e ?? '-'}`);
     }
-    return await goto(getRouteState.current({ route: 'CandAppPreregisterStatus', code: 'unknownError' }), {
+    return await goto(getRoute.current({ route: 'CandAppPreregisterStatus', code: 'unknownError' }), {
       invalidateAll: true
     });
   }

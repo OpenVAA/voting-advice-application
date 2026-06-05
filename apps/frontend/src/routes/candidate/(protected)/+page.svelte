@@ -45,7 +45,7 @@ Shows a dynamic list of the actions the candidate should take to be included in 
           ? t('candidateApp.home.questions.edit')
           : t('candidateApp.home.questions.view'),
         buttonTextPrimaryActions: t('candidateApp.home.preview'),
-        href: $getRoute('CandAppPreview')
+        href: getRoute.current('CandAppPreview')
       };
     } else if (candCtx.unansweredRequiredInfoQuestions?.length === 0 && candCtx.unansweredOpinionQuestions?.length !== 0) {
       return {
@@ -60,7 +60,7 @@ Shows a dynamic list of the actions the candidate should take to be included in 
         buttonTextPrimaryActions: !candCtx.answersLocked
           ? t('candidateApp.home.questions.enter')
           : t('candidateApp.home.questions.view'),
-        href: $getRoute('CandAppQuestions')
+        href: getRoute.current('CandAppQuestions')
       };
     } else {
       return {
@@ -75,7 +75,7 @@ Shows a dynamic list of the actions the candidate should take to be included in 
         buttonTextPrimaryActions: !candCtx.answersLocked
           ? t('candidateApp.home.basicInfo.enter')
           : t('candidateApp.home.basicInfo.view'),
-        href: $getRoute('CandAppProfile')
+        href: getRoute.current('CandAppProfile')
       };
     }
   });
@@ -86,7 +86,7 @@ Shows a dynamic list of the actions the candidate should take to be included in 
     {#if candCtx.answersLocked}
       <Warning data-testid="candidate-answers-locked-warning">
         {t('candidateApp.common.editingNotAllowed')}
-        {#if candCtx.unansweredRequiredInfoQuestions?.length !== 0 || ($appSettings.entities?.hideIfMissingAnswers?.candidate && candCtx.unansweredOpinionQuestions?.length !== 0)}
+        {#if candCtx.unansweredRequiredInfoQuestions?.length !== 0 || (appSettings.current.entities?.hideIfMissingAnswers?.candidate && candCtx.unansweredOpinionQuestions?.length !== 0)}
           {t('candidateApp.common.isHiddenBecauseMissing')}
         {/if}
       </Warning>
@@ -114,7 +114,7 @@ Shows a dynamic list of the actions the candidate should take to be included in 
       text={nextAction.buttonTextBasicInfo}
       icon="profile"
       iconPos="left"
-      href={$getRoute('CandAppProfile')}
+      href={getRoute.current('CandAppProfile')}
       data-testid="candidate-home-profile">
       {#snippet badge()}
         {#if candCtx.unansweredRequiredInfoQuestions && candCtx.unansweredRequiredInfoQuestions.length > 0}
@@ -127,7 +127,7 @@ Shows a dynamic list of the actions the candidate should take to be included in 
       icon="opinion"
       iconPos="left"
       disabled={candCtx.unansweredRequiredInfoQuestions?.length !== 0}
-      href={$getRoute('CandAppQuestions')}
+      href={getRoute.current('CandAppQuestions')}
       data-testid="candidate-home-questions">
       {#snippet badge()}
         {#if candCtx.unansweredOpinionQuestions && candCtx.unansweredOpinionQuestions?.length > 0}
@@ -142,7 +142,7 @@ Shows a dynamic list of the actions the candidate should take to be included in 
       icon="previewProfile"
       iconPos="left"
       disabled={candCtx.unansweredRequiredInfoQuestions?.length !== 0}
-      href={$getRoute('CandAppPreview')}
+      href={getRoute.current('CandAppPreview')}
       data-testid="candidate-home-preview" />
   </div>
 

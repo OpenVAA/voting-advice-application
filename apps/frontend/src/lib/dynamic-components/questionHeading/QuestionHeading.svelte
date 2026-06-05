@@ -48,7 +48,7 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
   const voterCtx = $appType === 'voter' ? getVoterContext() : undefined;
   const candidateCtx = $appType === 'candidate' ? getCandidateContext() : undefined;
   let elections = $derived(
-    voterCtx ? voterCtx.selectedElections : candidateCtx ? candidateCtx.selectedElections : $dataRoot.elections
+    voterCtx ? voterCtx.selectedElections : candidateCtx ? candidateCtx.selectedElections : dataRoot.current.elections
   );
 
   let customData = $derived(getCustomData(question));
@@ -71,12 +71,12 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
 
 <HeadingGroup {...concatClass(restProps, 'relative')}>
   <PreHeading class="gap-sm flex flex-row flex-wrap items-center justify-center">
-    {#if $appSettings.elections.showElectionTags}
+    {#if appSettings.current.elections.showElectionTags}
       {#each getElectionsToShow({ question, elections }) as election}
         <ElectionTag {election} {onShadedBg} />
       {/each}
     {/if}
-    {#if $appSettings.questions.showCategoryTags}
+    {#if appSettings.current.questions.showCategoryTags}
       <CategoryTag
         category={question.category}
         suffix={blockWithStats ? `${blockWithStats.indexInBlock + 1}/${blockWithStats.block.length}` : undefined}

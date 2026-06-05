@@ -32,7 +32,7 @@ Accesses `AuthContext` and `AppContext`.
 
   async function handleLogout() {
     await logout();
-    await goto($getRoute(redirectTo!), { invalidateAll: true });
+    await goto(getRoute.current(redirectTo!), { invalidateAll: true });
   }
 </script>
 

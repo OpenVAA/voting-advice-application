@@ -58,11 +58,11 @@ Displays information about the privacy policy of the app as well as the possible
     <div>
       {@html sanitizeHtml(t('dynamic.privacy.content'))}
     </div>
-    {#if $appSettings.analytics?.platform}
+    {#if appSettings.current.analytics?.platform}
       <h2>{t('privacy.analytics.title')}</h2>
       <div>
         {@html sanitizeHtml(
-          t(assertTranslationKey(`privacy.analytics.content.${$appSettings.analytics.platform.name}`), {
+          t(assertTranslationKey(`privacy.analytics.content.${appSettings.current.analytics.platform.name}`), {
             analyticsLink
           })
         )}
@@ -72,14 +72,14 @@ Displays information about the privacy policy of the app as well as the possible
     <div>
       {@html sanitizeHtml(t('privacy.cookies.content'))}
     </div>
-    {#if $appSettings.analytics.trackEvents}
+    {#if appSettings.current.analytics.trackEvents}
       <h2>{t('common.privacy.dataCollection.title')}</h2>
       <DataConsent description="inline" class="bg-base-300 p-lg rounded-lg" />
     {/if}
   </div>
 
   {#snippet primaryActions()}
-    <Button variant="main" href={$getRoute('Home')} text={t('common.returnHome')} data-testid="voter-privacy-return" />
+    <Button variant="main" href={getRoute.current('Home')} text={t('common.returnHome')} data-testid="voter-privacy-return" />
   {/snippet}
 </MainContent>
 

@@ -26,8 +26,8 @@ Entity cards are `<a>` links — right-click opens in new tab, normal click trig
   layout/paint until it scrolls into view.
 
 Sibling tracking concerns (Pitfall 6) preserved verbatim:
-- `startFeedbackPopupCountdown` via `$appSettings.results.showFeedbackPopup`
-- `startSurveyPopupCountdown` via `$appSettings.survey.showIn`
+- `startFeedbackPopupCountdown` via `appSettings.current.results.showFeedbackPopup`
+- `startSurveyPopupCountdown` via `appSettings.current.survey.showIn`
 - `onMount` `results_ranked`/`results_browse` page-entry event
 - `$effect` drawer-viewed tracking event
 -->
@@ -173,7 +173,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
     const nominationId = page.url.searchParams.get('nominationId') ?? undefined;
     try {
       const { entity } = getEntityAndTitle({
-        dataRoot: $dataRoot,
+        dataRoot: dataRoot.current,
         matches: voterCtx.matches,
         entityType,
         entityId,
@@ -205,13 +205,13 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   // The settings store may update after the component mounts (async data load),
   // and the countdown functions handle repeated calls by clearing prior timeouts.
   $effect(() => {
-    if ($appSettings.results.showFeedbackPopup != null)
-      startFeedbackPopupCountdown($appSettings.results.showFeedbackPopup);
+    if (appSettings.current.results.showFeedbackPopup != null)
+      startFeedbackPopupCountdown(appSettings.current.results.showFeedbackPopup);
   });
 
   $effect(() => {
-    if ($appSettings.survey?.showIn && $appSettings.survey.showIn.includes('resultsPopup'))
-      startSurveyPopupCountdown($appSettings.results.showSurveyPopup);
+    if (appSettings.current.survey?.showIn && appSettings.current.survey.showIn.includes('resultsPopup'))
+      startSurveyPopupCountdown(appSettings.current.results.showSurveyPopup);
   });
 
   // Drawer-view tracking — fires on drawer open transitions (covers both
@@ -334,8 +334,8 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
         <p>
           {@html sanitizeHtml(
             t('dynamic.results.ingress.browse', {
-              questionsLink: `<a href="${$getRoute('Questions')}">${t('results.ingress.questionsLinkText', {
-                numQuestions: $appSettings.matching.minimumAnswers
+              questionsLink: `<a href="${getRoute.current('Questions')}">${t('results.ingress.questionsLinkText', {
+                numQuestions: appSettings.current.matching.minimumAnswers
               })}</a>`
             })
           )}
@@ -346,7 +346,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
       {/if}
     </div>
 
-    {#if $dataRoot.elections.length > 1}
+    {#if dataRoot.current.elections.length > 1}
       {@const activeIndex = elections.findIndex((e) => e.id === activeElectionId)}
       <AccordionSelect
         options={elections}
@@ -439,8 +439,8 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
     {/snippet}
 
     {#snippet primaryActions()}
-      <Button href={$getRoute('Questions')} text={t('questions.title')} variant="main" icon="next" />
-      <Button href={$getRoute('Home')} text={t('common.returnHome')} />
+      <Button href={getRoute.current('Questions')} text={t('questions.title')} variant="main" icon="next" />
+      <Button href={getRoute.current('Home')} text={t('common.returnHome')} />
     {/snippet}
   </MainContent>
 {/if}

@@ -11,6 +11,12 @@
  *     $darkMode       →  darkMode.current
  *     $locale         →  locale.current
  *
+ *   PASS 1b (rewrite — Wave-3 getRoute extension, CONS-02):
+ *     $getRoute(      →  getRoute.current(
+ *   A dedicated open-paren-guarded pass (NOT in STORE_REWRITES — the store
+ *   form's `(?!\w)` guard mis-handles the call form). Counted separately as
+ *   `$getRoute:` in the summary (NOT folded into `by store:` / totalHits-by-store).
+ *
  *   PASS 2 (lint / warn — does not rewrite):
  *     const { selectedElections, opinionQuestions, matches, ... } = getVoterContext();
  *     const { unsavedQuestionIds, hasUnsavedAnswers, ... } = getCandidateContext();
@@ -117,6 +123,25 @@ function rewriteFile(filepath) {
     });
   }
 
+  // ── Dedicated getRoute pass — `$getRoute(` → `getRoute.current(` ──────────
+  // `getRoute` is ALWAYS a call (`$getRoute(opts)`), so it needs a distinct
+  // open-paren guard rather than the store form's `(?!\w)`:
+  //   - `(?<![\w$_])` rejects `obj.$getRoute` / `_$getRoute` / `$$getRoute`
+  //   - `(?=\()`       matches only the CALL form, so it rejects `$getRouteFoo(`
+  //                    (the trailing `Foo` makes the lookahead fail at `$getRoute`)
+  // Idempotent: `getRoute.current(` has no leading `$` → never re-matches.
+  // Tracked in its OWN `getRouteHits` (NOT folded into STORE_REWRITES/byStore).
+  const getRouteRe = /(?<![\w$_])\$getRoute(?=\()/g;
+  changed = changed.replace(getRouteRe, (match, offset) => {
+    const lineStart = changed.lastIndexOf('\n', offset) + 1;
+    const lineEnd = changed.indexOf('\n', offset);
+    const line = changed.slice(lineStart, lineEnd === -1 ? changed.length : lineEnd);
+    const lineNo = changed.slice(0, offset).split('\n').length;
+    const replacement = 'getRoute.current';
+    hits.push({ line: lineNo, before: line.trim(), match, replacement, isGetRoute: true });
+    return replacement;
+  });
+
   return { original, changed, hits };
 }
 
@@ -162,7 +187,10 @@ const summary = {
   totalHits: 0,
   filesWithTraps: 0,
   totalTraps: 0,
-  byStore: Object.fromEntries(STORE_REWRITES.map((s) => [s.store, 0]))
+  byStore: Object.fromEntries(STORE_REWRITES.map((s) => [s.store, 0])),
+  // Separate counter for the dedicated `$getRoute(` pass — NOT captured by
+  // `byStore` (the STORE_REWRITES.find(...) returns undefined for `$getRoute`).
+  getRouteHits: 0
 };
 
 const fileResults = [];
@@ -180,6 +208,10 @@ for (const filepath of files) {
     summary.filesChanged++;
     summary.totalHits += hits.length;
     for (const h of hits) {
+      if (h.isGetRoute) {
+        summary.getRouteHits++;
+        continue;
+      }
       const store = STORE_REWRITES.find((s) => h.match === `$${s.store}`)?.store;
       if (store) summary.byStore[store]++;
     }
@@ -219,6 +251,8 @@ console.log(`    by store:`);
 for (const [s, c] of Object.entries(summary.byStore)) {
   if (c > 0) console.log(`      $${s}: ${c}`);
 }
+// Dedicated getRoute counter (NOT part of `by store:` — its own pass).
+console.log(`    $getRoute: ${summary.getRouteHits}`);
 console.log(`  Files with destructure traps: ${summary.filesWithTraps}`);
 console.log(`  Total traps flagged:          ${summary.totalTraps}`);
 console.log(`\n${APPLY ? '✓ Changes written.' : 'Dry-run only. Re-run with --apply to write.'}`);

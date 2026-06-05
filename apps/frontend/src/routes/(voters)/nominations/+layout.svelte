@@ -38,14 +38,14 @@ Provides the data used by the nominations route.
   });
 
   /**
-   * Handle the update inside a function so that we don't track $dataRoot, which would result in an infinite loop.
+   * Handle the update inside a function so that we don't track dataRoot.current, which would result in an infinite loop.
    * @returns `Error` if the data is invalid, `undefined` otherwise.
    */
   async function update([nominationData]: [DPDataType['nominations'] | Error]): Promise<Error | undefined> {
     if (!isValidResult(nominationData, { allowEmpty: true })) return new Error('Error loading nomination data');
-    $dataRoot.update(() => {
-      $dataRoot.provideEntityData(nominationData.entities);
-      $dataRoot.provideNominationData(nominationData.nominations);
+    dataRoot.current.update(() => {
+      dataRoot.current.provideEntityData(nominationData.entities);
+      dataRoot.current.provideNominationData(nominationData.nominations);
     });
     await tick();
     ready = true;

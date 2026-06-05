@@ -20,7 +20,7 @@ A template part that outputs the navigation menu for the Voter App for use in `L
 
 ```tsx
 <VoterNav>
-  <NavItem href={$getRoute('Home')} icon="home" text={t('common.home')} />
+  <NavItem href={getRoute.current('Home')} icon="home" text={t('common.home')} />
 </VoterNav>
 ```
 -->
@@ -55,33 +55,33 @@ A template part that outputs the navigation menu for the Voter App for use in `L
 <Navigation {onKeyboardFocusOut} {...restProps}>
   <NavItem onclick={navigation.close} icon="close" text={t('common.closeMenu')} class="pt-16" id="drawerCloseButton" />
   <NavGroup>
-    <NavItem href={$getRoute('Home')} icon="home" text={t('common.home')} />
+    <NavItem href={getRoute.current('Home')} icon="home" text={t('common.home')} />
     <!-- Elections are selected either before or after constituencies depending on `startFromConstituencyGroup` -->
-    {#if voterCtx.electionsSelectable && !$appSettings.elections?.startFromConstituencyGroup}
-      <NavItem href={$getRoute('Elections')} icon="election" text={t('elections.title')} />
+    {#if voterCtx.electionsSelectable && !appSettings.current.elections?.startFromConstituencyGroup}
+      <NavItem href={getRoute.current('Elections')} icon="election" text={t('elections.title')} />
     {/if}
     {#if voterCtx.constituenciesSelectable}
       <NavItem
-        disabled={!$appSettings.elections?.startFromConstituencyGroup && !elections.length}
-        href={$getRoute('Constituencies')}
+        disabled={!appSettings.current.elections?.startFromConstituencyGroup && !elections.length}
+        href={getRoute.current('Constituencies')}
         icon="constituency"
         text={t('constituencies.title')} />
     {/if}
-    {#if voterCtx.electionsSelectable && $appSettings.elections?.startFromConstituencyGroup}
+    {#if voterCtx.electionsSelectable && appSettings.current.elections?.startFromConstituencyGroup}
       <NavItem
         disabled={!constituencies.length}
-        href={$getRoute('Elections')}
+        href={getRoute.current('Elections')}
         icon="election"
         text={t('elections.title')} />
     {/if}
     <NavItem
       disabled={!(elections.length && constituencies.length)}
-      href={$getRoute('Questions')}
+      href={getRoute.current('Questions')}
       icon="opinion"
       text={t('questions.title')} />
     <NavItem
       disabled={!(elections.length && constituencies.length)}
-      href={$getRoute('Results')}
+      href={getRoute.current('Results')}
       icon="results"
       text={voterCtx.resultsAvailable ? t('results.title.results') : t('results.title.browse')}
       data-testid="voter-nav-results" />
@@ -90,16 +90,16 @@ A template part that outputs the navigation menu for the Voter App for use in `L
     <NavItem onclick={() => resetVoterData()} icon="close" text={t('common.resetAnswers')} />
   </NavGroup>
   <NavGroup>
-    <NavItem href={$getRoute('Info')} icon="election" text={t('info.title')} />
-    <NavItem href={$getRoute('About')} icon="info" text={t('about.title')} />
-    {#if $appSettings.entities.showAllNominations}
-      <NavItem href={$getRoute('Nominations')} icon="search" text={t('dynamic.nominations.title')} />
+    <NavItem href={getRoute.current('Info')} icon="election" text={t('info.title')} />
+    <NavItem href={getRoute.current('About')} icon="info" text={t('about.title')} />
+    {#if appSettings.current.entities.showAllNominations}
+      <NavItem href={getRoute.current('Nominations')} icon="search" text={t('dynamic.nominations.title')} />
     {/if}
-    <NavItem href={$getRoute('Privacy')} icon="privacy" text={t('privacy.title')} />
+    <NavItem href={getRoute.current('Privacy')} icon="privacy" text={t('privacy.title')} />
   </NavGroup>
-  {#if $appSettings.survey?.showIn?.includes('navigation') || $openFeedbackModal}
+  {#if appSettings.current.survey?.showIn?.includes('navigation') || $openFeedbackModal}
     <NavGroup>
-      {#if $appSettings.survey?.showIn?.includes('navigation')}
+      {#if appSettings.current.survey?.showIn?.includes('navigation')}
         <NavItem href={$surveyLink} target="_blank" icon="research" text={t('dynamic.survey.button')} />
       {/if}
       {#if $openFeedbackModal}

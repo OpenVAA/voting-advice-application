@@ -35,7 +35,7 @@ popupQueue.push({
 
   function handleClick(route: Route): void {
     alertRef?.closeAlert();
-    goto($getRoute(route));
+    goto(getRoute.current(route));
   }
 </script>
 

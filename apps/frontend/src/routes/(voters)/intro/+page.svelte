@@ -36,13 +36,13 @@ Shown after the front page in the voter app. Displays a list of the steps the vo
   </p>
   <ol class="list-circled w-fit" data-testid="voter-intro-steps">
     <!-- Elections are selected either before or after constituencies depending on `startFromConstituencyGroup` -->
-    {#if voterCtx.electionsSelectable && !$appSettings.elections?.startFromConstituencyGroup}
+    {#if voterCtx.electionsSelectable && !appSettings.current.elections?.startFromConstituencyGroup}
       <li>{t('dynamic.intro.list.elections')}</li>
     {/if}
     {#if voterCtx.constituenciesSelectable}
       <li>{t('dynamic.intro.list.constituencies')}</li>
     {/if}
-    {#if voterCtx.electionsSelectable && $appSettings.elections?.startFromConstituencyGroup}
+    {#if voterCtx.electionsSelectable && appSettings.current.elections?.startFromConstituencyGroup}
       <li>{t('dynamic.intro.list.elections')}</li>
     {/if}
     <li>{t('dynamic.intro.list.opinions')}</li>
@@ -52,7 +52,7 @@ Shown after the front page in the voter app. Displays a list of the steps the vo
 
   {#snippet primaryActions()}
     <Button
-      href={$appSettings.elections?.startFromConstituencyGroup ? $getRoute('Constituencies') : $getRoute('Elections')}
+      href={appSettings.current.elections?.startFromConstituencyGroup ? getRoute.current('Constituencies') : getRoute.current('Elections')}
       variant="main"
       icon="next"
       text={t('dynamic.intro.continue')}

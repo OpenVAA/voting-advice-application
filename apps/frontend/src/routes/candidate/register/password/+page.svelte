@@ -47,11 +47,11 @@
   if (!isInviteFlow) {
     // Registration key flow: both registrationKey and email are required
     if (registrationKey === '' || email === '') {
-      goto($getRoute('CandAppRegister'));
+      goto(getRoute.current('CandAppRegister'));
     }
 
     // Redirect if logged in (only for registration key flow), that page will prompt the user to logout
-    if (userData.current) goto($getRoute('CandAppRegister'));
+    if (userData.current) goto(getRoute.current('CandAppRegister'));
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -90,7 +90,7 @@
 
       candCtx.newUserEmail = email;
       status = 'success';
-      await goto($getRoute('CandAppLogin'));
+      await goto(getRoute.current('CandAppLogin'));
     } else {
       // Registration key flow: activate the user with the key and password
       const result = await register({ registrationKey, password }).catch((e) => {
@@ -105,7 +105,7 @@
 
       candCtx.newUserEmail = email;
       status = 'success';
-      await goto($getRoute('CandAppLogin'));
+      await goto(getRoute.current('CandAppLogin'));
     }
   }
 </script>
@@ -135,7 +135,7 @@
       text={submitLabel}
       data-testid="set-password-submit" />
     <Button
-      href={$getRoute('CandAppHelp')}
+      href={getRoute.current('CandAppHelp')}
       text={t('candidateApp.common.contactSupport')}
       data-testid="register-password-help-link" />
   {/snippet}

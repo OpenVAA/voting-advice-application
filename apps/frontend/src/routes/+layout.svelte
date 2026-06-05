@@ -106,7 +106,7 @@
     !('error' in validity) && (validity.appSettingsData.access?.underMaintenance ?? false)
   );
 
-  // Side effect — applies resolved data to `$dataRoot`. Reads `$derived` validity;
+  // Side effect — applies resolved data to `dataRoot.current`. Reads `$derived` validity;
   // NEVER calls `.then()` or `await`. Runs after the first `$derived` evaluation
   // on mount and re-runs on any `data` prop change (client-side navigation).
   // We don't do anything else with the data if it's valid, because the relevant

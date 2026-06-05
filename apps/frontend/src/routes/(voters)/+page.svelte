@@ -30,7 +30,7 @@ The frontpage of the app for voters.
 
   pageStyles.use({ drawer: { background: 'bg-base-300' } });
   topBarSettings.use({
-    imageSrc: $darkMode
+    imageSrc: darkMode.current
       ? ($appCustomization.poster?.urlDark ?? $appCustomization.poster?.url ?? '/images/hero.png')
       : ($appCustomization.poster?.url ?? '/images/hero.png')
   });
@@ -39,7 +39,7 @@ The frontpage of the app for voters.
 <MainContent title={t('dynamic.appName')} data-testid="voter-home">
   <Button
     variant="main"
-    href={$getRoute('Intro')}
+    href={getRoute.current('Intro')}
     text={t('dynamic.frontPage.startButton')}
     data-testid="voter-home-start" />
 
@@ -49,12 +49,12 @@ The frontpage of the app for voters.
     })}
   </p>
 
-  <a href={$getRoute('Info')} class="btn btn-ghost w-full max-w-md" data-testid="voter-home-info-link"
+  <a href={getRoute.current('Info')} class="btn btn-ghost w-full max-w-md" data-testid="voter-home-info-link"
     >{t('info.title')}</a>
-  <a href={$getRoute('About')} class="btn btn-ghost w-full max-w-md" data-testid="voter-home-about-link"
+  <a href={getRoute.current('About')} class="btn btn-ghost w-full max-w-md" data-testid="voter-home-about-link"
     >{t('about.title')}</a>
 
-  {#if $appSettings.survey?.showIn?.includes('frontpage')}
+  {#if appSettings.current.survey?.showIn?.includes('frontpage')}
     <SurveyBanner class="mt-lg" />
   {/if}
 

@@ -19,7 +19,7 @@ Accesses `LayoutContext`.
 ### Usage
 
 ```tsx
-<NavItem href={$getRoute(ROUTE.Info)} icon="info" text="Show info"/>
+<NavItem href={getRoute.current(ROUTE.Info)} icon="info" text="Show info"/>
 <NavItem onclick={(e) => foo(e)} text="Do foo"/>
 ```
 -->

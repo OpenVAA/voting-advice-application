@@ -72,7 +72,7 @@ Accesses `CandidateContext`.
     });
     timedModalRef?.closeModal();
     if (!stayOnPage) {
-      await goto($getRoute('CandAppLogin'), { invalidateAll: true });
+      await goto(getRoute.current('CandAppLogin'), { invalidateAll: true });
     }
   }
 </script>
@@ -106,7 +106,7 @@ Accesses `CandidateContext`.
         opinionQuestionsLeft: candCtx.unansweredOpinionQuestions?.length ?? 0
       })}
     </p>
-    {#if candCtx.unansweredRequiredInfoQuestions?.length !== 0 || ($appSettings.entities?.hideIfMissingAnswers?.candidate && candCtx.unansweredOpinionQuestions?.length !== 0)}
+    {#if candCtx.unansweredRequiredInfoQuestions?.length !== 0 || (appSettings.current.entities?.hideIfMissingAnswers?.candidate && candCtx.unansweredOpinionQuestions?.length !== 0)}
       <p>{t('candidateApp.common.willBeHiddenIfMissing')}</p>
     {/if}
   {/if}

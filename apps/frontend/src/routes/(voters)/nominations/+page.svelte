@@ -25,7 +25,7 @@ List all nominations in the application.
   // Entities
   ////////////////////////////////////////////////////////////////////
 
-  const nominations = $dataRoot.candidateNominations;
+  const nominations = dataRoot.current.candidateNominations;
 
   ////////////////////////////////////////////////////////////////////
   // Filters
@@ -42,7 +42,7 @@ List all nominations in the application.
         faction: ucFirst(t('common.faction.singular')),
         organization: ucFirst(t('common.organization.singular'))
       },
-      locale: $locale
+      locale: locale.current
     })
   );
 </script>

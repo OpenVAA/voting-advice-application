@@ -28,7 +28,7 @@
     if (!form?.reportValidity() || !termsAccepted) return;
     status = 'loading';
     const templatePayload = {
-      registrationUrl: `${window.location.origin}${$getRoute('CandAppRegister')}?registrationKey=<%= candidate.registrationKey %>`,
+      registrationUrl: `${window.location.origin}${getRoute.current('CandAppRegister')}?registrationKey=<%= candidate.registrationKey %>`,
       firstName: candCtx.idTokenClaims?.firstName
     };
     await preregister({

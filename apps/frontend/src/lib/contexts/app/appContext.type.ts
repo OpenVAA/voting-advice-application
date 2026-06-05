@@ -22,16 +22,18 @@ export type AppContext = Omit<ComponentContext, 'locale' | 'locales' | 'darkMode
   TrackingService & {
     /**
      * The current locale as a readable store (store-wrapped for downstream context compat).
+     * Additive `.current` is the D-08/Option A bring-forward (legacy store survives to Phase 98).
      */
-    locale: Readable<string>;
+    locale: Readable<string> & { readonly current: string };
     /**
      * Available locales as a readable store (store-wrapped for downstream context compat).
      */
     locales: Readable<ReadonlyArray<string>>;
     /**
      * Dark mode state as a readable store (store-wrapped for downstream context compat).
+     * Additive `.current` is the D-08/Option A bring-forward (legacy store survives to Phase 98).
      */
-    darkMode: Readable<boolean>;
+    darkMode: Readable<boolean> & { readonly current: boolean };
     /**
      * The application type we're using. Set this to the current type in the layout containing the app.
      */
@@ -44,8 +46,9 @@ export type AppContext = Omit<ComponentContext, 'locale' | 'locales' | 'darkMode
     /**
      * A store for currently effective app settings.
      * NB. The store is `Writable`, but it should not be written to under normal circumstances.
+     * Additive `.current` is the D-08/Option A bring-forward (legacy store survives to Phase 98).
      */
-    appSettings: Writable<AppSettings>;
+    appSettings: Writable<AppSettings> & { readonly current: AppSettings };
     /**
      * Rune-native read handle over the SAME app-settings `$state` the `appSettings`
      * store wraps. Reactive reads happen via `.current` (no `fromStore` needed).
@@ -60,9 +63,9 @@ export type AppContext = Omit<ComponentContext, 'locale' | 'locales' | 'darkMode
      */
     reactiveLocale: { readonly current: string };
     /**
-     * A store for building routes.
+     * Rune-native route-builder handle (CTX-08). Read via `getRoute.current(opts)`.
      */
-    getRoute: Readable<RouteBuilder>;
+    getRoute: { readonly current: RouteBuilder };
     /**
      * A store containing the possible survey link.
      */

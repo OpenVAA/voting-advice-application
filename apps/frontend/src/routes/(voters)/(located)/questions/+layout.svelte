@@ -65,7 +65,7 @@
   topBarSettings.use({
     progress: 'show',
     actions: {
-      results: $appSettings.questions.showResultsLink ? 'show' : 'hide'
+      results: appSettings.current.questions.showResultsLink ? 'show' : 'hide'
     }
   });
 
@@ -96,7 +96,7 @@
     try {
       return questionId === FIRST_QUESTION_ID
         ? voterCtx.selectedQuestionBlocks.blocks[0]?.[0]
-        : $dataRoot.getQuestion(questionId);
+        : dataRoot.current.getQuestion(questionId);
     } catch {
       error(404, `Question with id ${questionId} not found.`);
     }
@@ -112,7 +112,7 @@
         logDebugError(
           `Question with id ${questionId} not found in voterCtx.selectedQuestionBlocks. Rerouting to category selection.`
         );
-        goto($getRoute('Questions'));
+        goto(getRoute.current('Questions'));
       }
     } else {
       progress.current.set(questionBlock.index + 1);
@@ -176,24 +176,24 @@
     let noScroll = false;
     // Go back to the questions are main intro if moving back from the first question
     if (newIndex < 0) {
-      url = $getRoute($appSettings.questions.questionsIntro.show ? 'Questions' : 'Intro');
+      url = getRoute.current(appSettings.current.questions.questionsIntro.show ? 'Questions' : 'Intro');
       // Go to results if moving forward from the last question
     } else if (newIndex >= voterCtx.selectedQuestionBlocks.questions.length) {
-      url = $getRoute('Results');
+      url = getRoute.current('Results');
       // Show category intro if moving forward from the first question in a category
     } else {
       const newQuestion = voterCtx.selectedQuestionBlocks.questions[newIndex];
       // Show the next category intro if the next question is the first question in a new category and we're not moving backwards
       // TODO: Handle category showing more centrally, e.g. during onMount of this page, so that sources linking here need to concern themselves with choosing whether to show the category intro. In that case, though, another search param will be necessary that can be used to suppress category intro display.
       if (
-        $appSettings.questions.categoryIntros?.show &&
+        appSettings.current.questions.categoryIntros?.show &&
         steps > 0 &&
         voterCtx.selectedQuestionBlocks.getByQuestion(newQuestion)?.indexInBlock === 0
       ) {
-        url = $getRoute({ route: 'QuestionCategory', categoryId: newQuestion.category.id });
+        url = getRoute.current({ route: 'QuestionCategory', categoryId: newQuestion.category.id });
         // Othwerwise, just go to the new question
       } else {
-        url = $getRoute({ route: 'Question', questionId: newQuestion.id });
+        url = getRoute.current({ route: 'Question', questionId: newQuestion.id });
         // Disable scrolling when moving between questions for a smoother experience
         noScroll = true;
       }
@@ -229,7 +229,7 @@
       {/snippet}
 
       {#if !customData.video}
-        {#if $appSettings.questions.interactiveInfo?.enabled && (info || customData.infoSections?.length)}
+        {#if appSettings.current.questions.interactiveInfo?.enabled && (info || customData.infoSections?.length)}
           <div class="flex items-center justify-center">
             <QuestionExtendedInfoButton
               {question}
@@ -302,8 +302,8 @@
     {/snippet}
 
     {#snippet primaryActions()}
-      <Button href={$getRoute('Results')} text={t('results.title.browse')} variant="main" icon="next" />
-      <Button href={$getRoute('Home')} text={t('common.returnHome')} />
+      <Button href={getRoute.current('Results')} text={t('results.title.browse')} variant="main" icon="next" />
+      <Button href={getRoute.current('Home')} text={t('common.returnHome')} />
     {/snippet}
   </MainContent>
 {/if}

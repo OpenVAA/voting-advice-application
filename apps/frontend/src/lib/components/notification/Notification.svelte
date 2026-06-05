@@ -10,7 +10,7 @@ Show a notification popup to the user.
 ### Usage
 
 ```tsx
-<Notification data={$appSettings.notifications.voterApp}/>
+<Notification data={appSettings.current.notifications.voterApp}/>
 ```
 -->
 

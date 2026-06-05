@@ -11,7 +11,7 @@
 
   Banned idioms (must not appear anywhere on this page or in the contexts):
     - import from 'svelte/store'
-    - $appSettings / $dataRoot template auto-subscribe
+    - appSettings.current / dataRoot.current template auto-subscribe
     - get(appSettings) / get(dataRoot)
     - toStore / fromStore / writable / readable / derived (the store-derived, not the rune)
 -->
@@ -48,7 +48,7 @@
 
   // Pattern: .ts $derived alias for ergonomic re-use in templates / handlers.
   // Establishes a dependency on the rune-context's `current` getter, which
-  // internally tracks the underlying $state. No svelte/store, no $appSettings.
+  // internally tracks the underlying $state. No svelte/store, no appSettings.current.
   const adminEmail = $derived(appSettingsCtx.current.admin?.email);
   const fontName = $derived(appSettingsCtx.current.font?.name);
   const analyticsPlatform = $derived(appSettingsCtx.current.analytics?.platform?.name);
@@ -299,7 +299,7 @@
   <section class="border rounded p-4 space-y-2">
     <h2 class="text-lg font-bold">Spike 001 — `appSettings` rune</h2>
     <p class="text-gray-600 text-xs">
-      Reads via `appSettingsCtx.current.X` (no `$appSettings`). The effective
+      Reads via `appSettingsCtx.current.X` (no `appSettings.current`). The effective
       merge (staticSettings ∪ dynamicSettings ∪ page.data.appSettingsData) lives
       inside the context's `$effect` and is invisible to consumers.
     </p>
@@ -323,7 +323,7 @@
   <section class="border rounded p-4 space-y-3">
     <h2 class="text-lg font-bold">Spike 002 — `dataRoot` rune (live counts)</h2>
     <p class="text-gray-600 text-xs">
-      Reads via `dataRootCtx.current.X` (no `$dataRoot`). Writes via
+      Reads via `dataRootCtx.current.X` (no `dataRoot.current`). Writes via
       `dataRootCtx.instance.provide*` (no `get(dataRoot)`). The version-counter
       $state inside the context bridges DataRoot's `Updatable.subscribe()` to
       Svelte's reactivity graph.

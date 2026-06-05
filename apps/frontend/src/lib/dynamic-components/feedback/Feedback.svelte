@@ -149,7 +149,7 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
   function getErrorEmail() {
     return getEmailUrl({
       subject: `${t('feedback.error.emailSubject')}: ${t('dynamic.appName')}`,
-      to: $appSettings.admin.email,
+      to: appSettings.current.admin.email,
       body: description ?? ''
     });
   }
@@ -202,25 +202,25 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
 
   <!-- Email info and error -->
   {#if status !== 'error'}
-    {#if variant !== 'compact' && $appSettings.admin.email}
+    {#if variant !== 'compact' && appSettings.current.admin.email}
       {@const mailto = getErrorEmail()}
       <p class="text-center">
         {t('feedback.emailIntro')}
-        <a href={mailto} target="_blank">{$appSettings.admin.email}</a>.
+        <a href={mailto} target="_blank">{appSettings.current.admin.email}</a>.
       </p>
     {/if}
   {:else}
     <div class="gap-md grid">
       <p class="text-warning mb-0 text-center">
         {t('feedback.error.message')}
-        {#if $appSettings.admin.email}
+        {#if appSettings.current.admin.email}
           {t('feedback.error.emailIntro')}
         {/if}
       </p>
-      {#if $appSettings.admin.email}
+      {#if appSettings.current.admin.email}
         {@const mailto = getErrorEmail()}
         <a href={mailto} target="_blank" class="bg-base-300 px-lg py-md justify-self-center rounded-full"
-          >{$appSettings.admin.email}</a>
+          >{appSettings.current.admin.email}</a>
       {/if}
     </div>
   {/if}

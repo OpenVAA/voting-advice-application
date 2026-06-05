@@ -67,7 +67,7 @@
     }
     const { firstName, email } = result;
     await goto(
-      $getRoute({
+      getRoute.current({
         route: 'CandAppSetPassword',
         registrationKey,
         username: firstName,
@@ -83,7 +83,7 @@
 </script>
 
 <MainContent
-  title={$appSettings.preRegistration?.enabled
+  title={appSettings.current.preRegistration?.enabled
     ? t('candidateApp.register.titleWithPreregistration')
     : t('candidateApp.register.title')}>
   {#snippet heading()}
@@ -122,7 +122,7 @@
             {t('candidateApp.register.didYouAlreadyRegister')}
           </h3>
           <Button
-            href={$getRoute('CandAppLogin')}
+            href={getRoute.current('CandAppLogin')}
             text={t('candidateApp.register.goToLoginLabel')}
             variant="main"
             data-testid="register-go-to-login" />
@@ -138,9 +138,9 @@
       onclick={handleSubmit}
       data-testid="register-submit" />
     <Button
-      href={$getRoute('CandAppLogin')}
+      href={getRoute.current('CandAppLogin')}
       text={t('candidateApp.register.didYouAlreadyRegister')}
       data-testid="register-login-link" />
-    <Button href={$getRoute('CandAppHelp')} text={t('candidateApp.help.title')} data-testid="register-help-link" />
+    <Button href={getRoute.current('CandAppHelp')} text={t('candidateApp.help.title')} data-testid="register-help-link" />
   {/snippet}
 </MainContent>

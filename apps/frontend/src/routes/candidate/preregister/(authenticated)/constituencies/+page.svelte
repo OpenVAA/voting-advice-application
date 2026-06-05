@@ -34,7 +34,7 @@
       type="submit"
       text={t('common.continue')}
       variant="main"
-      onclick={() => goto($getRoute('CandAppPreregisterEmail'))}
+      onclick={() => goto(getRoute.current('CandAppPreregisterEmail'))}
       disabled={!selectionComplete}
       data-testid="preregister-constituencies-submit" />
   {/snippet}

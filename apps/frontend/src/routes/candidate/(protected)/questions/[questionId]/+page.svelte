@@ -69,7 +69,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
     const questionId = parseParams(page).questionId;
     if (!questionId) error(500, 'No questionId provided.');
     try {
-      const q = $dataRoot.getQuestion(questionId);
+      const q = dataRoot.current.getQuestion(questionId);
       const cd = getCustomData(q);
       const nextId = getNextQuestionId(q);
       const lastUnanswered = getIsLastUnanswered();
@@ -87,7 +87,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   $effect(() => {
     const cd = questionData!.customData;
     status = 'idle';
-    if (!$appSettings.candidateApp.questions.hideVideo && cd?.video) {
+    if (!appSettings.current.candidateApp.questions.hideVideo && cd?.video) {
       video.load(cd.video);
     }
   });
@@ -120,17 +120,17 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   let submitRouting = $derived.by(() => {
     if (nextQuestionId) {
       return {
-        submitRoute: $getRoute({ route: 'CandAppQuestion', questionId: nextQuestionId }),
+        submitRoute: getRoute.current({ route: 'CandAppQuestion', questionId: nextQuestionId }),
         submitLabel: t('common.saveAndContinue')
       };
     } else if (isLastUnanswered) {
       return {
-        submitRoute: $getRoute('CandAppHome'),
+        submitRoute: getRoute.current('CandAppHome'),
         submitLabel: t('common.saveAndContinue')
       };
     }
     return {
-      submitRoute: $getRoute('CandAppQuestions'),
+      submitRoute: getRoute.current('CandAppQuestions'),
       submitLabel: userData.hasUnsaved ? t('common.saveAndReturn') : t('common.return')
     };
   });
@@ -223,7 +223,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   function handleCancel(): void {
     bypassPreventNavigation = true;
     userData.resetUnsaved();
-    goto($getRoute('CandAppQuestions')).then(() => (bypassPreventNavigation = false));
+    goto(getRoute.current('CandAppQuestions')).then(() => (bypassPreventNavigation = false));
   }
 
   /**
@@ -262,7 +262,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
 
       {#snippet hero()}
         <figure role="presentation" data-testid="candidate-questions-hero" style="view-transition-name: question-hero">
-          {#if !$appSettings.candidateApp.questions.hideHero && customData?.hero}
+          {#if !appSettings.current.candidateApp.questions.hideHero && customData?.hero}
             <Hero content={customData.hero} />
           {/if}
         </figure>
@@ -278,7 +278,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
           style="view-transition-name: question-heading" />
       {/snippet}
 
-      {#if !($appSettings.candidateApp.questions.hideVideo && customData.video) && info && info !== ''}
+      {#if !(appSettings.current.candidateApp.questions.hideVideo && customData.video) && info && info !== ''}
         <QuestionBasicInfo {info} />
       {/if}
 
@@ -343,7 +343,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
             {:else}
               <Button
                 text={t('common.return')}
-                href={$getRoute('CandAppQuestions')}
+                href={getRoute.current('CandAppQuestions')}
                 variant="main"
                 data-testid="candidate-questions-return" />
             {/if}

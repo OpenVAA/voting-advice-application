@@ -29,7 +29,7 @@
     <Button
       text={t('common.return')}
       variant="main"
-      onclick={() => goto($getRoute('CandAppHome'), { invalidateAll: true })} />
+      onclick={() => goto(getRoute.current('CandAppHome'), { invalidateAll: true })} />
   </MainContent>
 {:else}
   {@render children?.()}

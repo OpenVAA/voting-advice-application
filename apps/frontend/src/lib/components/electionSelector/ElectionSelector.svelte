@@ -17,7 +17,7 @@ If there's only one option, it is automatically selected and no interactions are
 
 ```tsx
 <ElectionSelector
-  elections={$dataRoot.elections}
+  elections={dataRoot.current.elections}
   bind:selected={$selectedElectionIds}
   onChange={(ids) => console.info('Selected', ids)} />
 ```

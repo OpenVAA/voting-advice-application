@@ -23,7 +23,7 @@
   </div>
   <ElectionSelector
     class="mb-md"
-    elections={$dataRoot.elections}
+    elections={dataRoot.current.elections}
     bind:selected={candCtx.preregistrationElectionIds}
     data-testid="preregister-elections-list" />
   {#snippet primaryActions()}
@@ -32,7 +32,7 @@
       text={t('common.continue')}
       variant="main"
       disabled={candCtx.preregistrationElectionIds.length === 0}
-      onclick={() => goto($getRoute(nextRoute))}
+      onclick={() => goto(getRoute.current(nextRoute))}
       data-testid="preregister-elections-submit" />
   {/snippet}
 </MainContent>

@@ -29,7 +29,7 @@
       cancelButtonLabel: t('common.cancel'),
       cancelButtonCallback: async () => {
         await clearIdToken();
-        await goto($getRoute('CandAppLogin'), { invalidateAll: true });
+        await goto(getRoute.current('CandAppLogin'), { invalidateAll: true });
       }
     }
   });
@@ -43,14 +43,14 @@
     <Button
       text={t('common.continue')}
       variant="main"
-      onclick={() => goto($getRoute('CandAppHome'), { invalidateAll: true })} />
+      onclick={() => goto(getRoute.current('CandAppHome'), { invalidateAll: true })} />
   </MainContent>
 {:else if candCtx.answersLocked}
   <MainContent title={t('candidateApp.error.registrationLocked')}>
     <Button
       text={t('common.return')}
       variant="main"
-      onclick={() => goto($getRoute('CandAppHome'), { invalidateAll: true })} />
+      onclick={() => goto(getRoute.current('CandAppHome'), { invalidateAll: true })} />
   </MainContent>
 {:else}
   {@render children?.()}

@@ -43,10 +43,10 @@ export function initAppContext(): AppContext {
   const componentCtx = getComponentContext();
   const dataCtx = getDataContext();
 
-  // `getRoute` is a Readable<RouteBuilder>. It must be created here (not at
-  // module load) because `createGetRoute` registers an `afterNavigate`
-  // callback that requires component-init context. See `getRoute.svelte.ts`
-  // header for the toStore + $app/state.page short-circuit rationale.
+  // `getRoute` is a rune-native `{ readonly current: RouteBuilder }` handle
+  // (CTX-08). It must be created here (not at module load) because
+  // `createGetRoute` uses `$derived.by`, which requires component-init context.
+  // See `getRoute.svelte.ts` header for the per-field `page` read rationale.
   const getRoute = createGetRoute();
 
   // Wrap plain ComponentContext values as stores for downstream context backward compat
@@ -286,6 +286,34 @@ export function initAppContext(): AppContext {
     }
   };
 
+  // D-08 / Option A: bring the `.current` rune-handle FORWARD onto the EXPORTED
+  // store names so the Wave-3 codemod target (`appSettings.current.X`,
+  // `locale.current`, `darkMode.current`) resolves while the legacy store shape
+  // SURVIVES for same-commit-unmigrated consumers + the out-of-scope
+  // `fromStore(appSettings)` / `fromStore(darkMode)` sites that live to Phase 98.
+  // Built via `{ ...store, get current() }` spread — `toStore(...)` returns
+  // own-enumerable subscribe/set/update, so the spread preserves the store
+  // contract; the `get current()` reads the SAME `$state` the store wraps (single
+  // source of truth, reusing the reactiveAppSettings/reactiveLocale getter body).
+  const appSettingsExport = {
+    ...appSettings,
+    get current() {
+      return appSettingsValue;
+    }
+  };
+  const localeExport = {
+    ...localeStore,
+    get current() {
+      return componentCtx.locale;
+    }
+  };
+  const darkModeExport = {
+    ...darkModeStore,
+    get current() {
+      return componentCtx.darkMode;
+    }
+  };
+
   return setContext<AppContext>(CONTEXT_KEY, {
     ...componentCtx,
     ...dataCtx,
@@ -297,14 +325,15 @@ export function initAppContext(): AppContext {
     sessionId: trackingSessionIdStore,
     shouldTrack: trackingShouldTrackStore,
     // Override plain ComponentContext values with store-wrapped versions
-    // for backward compat with downstream Phase-52 contexts
-    locale: localeStore,
+    // for backward compat with downstream Phase-52 contexts.
+    // locale/darkMode/appSettings carry an additive `.current` getter (D-08).
+    locale: localeExport,
     locales: localesStore,
-    darkMode: darkModeStore,
+    darkMode: darkModeExport,
     reactiveAppSettings,
     reactiveLocale,
     appCustomization,
-    appSettings,
+    appSettings: appSettingsExport,
     appType,
     getRoute,
     openFeedbackModal,

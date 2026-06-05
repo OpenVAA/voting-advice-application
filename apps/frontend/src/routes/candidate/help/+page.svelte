@@ -28,7 +28,7 @@ Shows a FAQ and other support content for the candidate application.
 
   const supportMailto = getEmailUrl({
     subject: `${t('candidateApp.help.supportEmailSubject')}: ${t('dynamic.candidateAppName')}`,
-    to: $appSettings.admin.email
+    to: appSettings.current.admin.email
   });
 </script>
 
@@ -61,7 +61,7 @@ Shows a FAQ and other support content for the candidate application.
       icon="next"
       variant="main"
       text={t('common.home')}
-      href={userData.current ? $getRoute('CandAppHome') : $getRoute('CandAppLogin')}
+      href={userData.current ? getRoute.current('CandAppHome') : getRoute.current('CandAppLogin')}
       data-testid="candidate-help-home" />
   {/snippet}
 </MainContent>

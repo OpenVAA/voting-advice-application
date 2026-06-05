@@ -39,8 +39,8 @@ See `+page.ts` for possible redirects.
   let selected: Array<Id> = $state([]);
 
   let elections = $derived.by(() => {
-    let result = $dataRoot.elections;
-    if ($appSettings.elections?.startFromConstituencyGroup) {
+    let result = dataRoot.current.elections;
+    if (appSettings.current.elections?.startFromConstituencyGroup) {
       // Only show elections for which a Constituency is available.
       // `getApplicableConstituency` throws when more than one of the passed
       // constituencies maps to one of the election's groups (e.g. a municipality
@@ -91,10 +91,10 @@ See `+page.ts` for possible redirects.
     const next = page.url.searchParams.get('next');
     const nextForward: { next?: string } = next ? { next } : {};
     await goto(
-      $appSettings.elections?.startFromConstituencyGroup
-        ? $getRoute({ route: 'Questions', electionId, ...nextForward })
+      appSettings.current.elections?.startFromConstituencyGroup
+        ? getRoute.current({ route: 'Questions', electionId, ...nextForward })
         : // Reset any lingering electionIds which may have been left in the search param if a different constituency was seleced before
-          $getRoute({ route: 'Constituencies', electionId, constituencyId: undefined, ...nextForward })
+          getRoute.current({ route: 'Constituencies', electionId, constituencyId: undefined, ...nextForward })
     );
   }
 </script>

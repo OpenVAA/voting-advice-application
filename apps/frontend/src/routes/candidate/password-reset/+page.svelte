@@ -42,7 +42,7 @@ Shows a form with which to set a new password when it has been reset.
   const isSessionFlow = candCtx.isAuthenticated && !code;
 
   // Redirect to login only if neither code nor session is available
-  if (!code && !isSessionFlow) goto($getRoute('CandAppLogin'));
+  if (!code && !isSessionFlow) goto(getRoute.current('CandAppLogin'));
 
   let isPasswordValid = $state(false);
   let password = $state('');
@@ -75,7 +75,7 @@ Shows a form with which to set a new password when it has been reset.
       status = 'success';
       // User is already authenticated — navigate to candidate home via full page load
       // to ensure session cookies are sent to the server-side loader.
-      window.location.href = $getRoute('CandAppHome');
+      window.location.href = getRoute.current('CandAppHome');
     } else {
       // Code-based flow: use resetPassword with the code
       const result = await resetPassword({ code: code!, password }).catch((e) => {
@@ -89,7 +89,7 @@ Shows a form with which to set a new password when it has been reset.
       }
 
       status = 'success';
-      await goto($getRoute('CandAppLogin'));
+      await goto(getRoute.current('CandAppLogin'));
     }
   }
 
@@ -123,7 +123,7 @@ Shows a form with which to set a new password when it has been reset.
       text={submitLabel}
       data-testid="set-password-submit" />
     <Button
-      href={$getRoute('CandAppHelp')}
+      href={getRoute.current('CandAppHelp')}
       text={t('candidateApp.common.contactSupport')}
       data-testid="password-reset-help-link" />
   </div>

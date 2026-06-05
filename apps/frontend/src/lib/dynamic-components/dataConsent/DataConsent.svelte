@@ -55,12 +55,12 @@ Accesses `AppContext` to set and read `userPreferences`.
 </script>
 
 <div {...concatClass(restProps, 'grid justify-items-center')}>
-  {#if description === 'inline' && $appSettings.analytics.platform}
+  {#if description === 'inline' && appSettings.current.analytics.platform}
     <div>
       <p>{@html sanitizeHtml(t('common.privacy.dataCollection.content'))}</p>
       <p>
         {@html sanitizeHtml(
-          t(assertTranslationKey(`privacy.dataCollection.platform.${$appSettings.analytics.platform.name}`), {
+          t(assertTranslationKey(`privacy.dataCollection.platform.${appSettings.current.analytics.platform.name}`), {
             analyticsLink
           })
         )}

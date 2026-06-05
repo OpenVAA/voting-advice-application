@@ -32,7 +32,7 @@
 
   $effect(() => {
     if (ctx.unansweredRequiredInfoQuestions.length) {
-      goto($getRoute('CandAppProfile'));
+      goto(getRoute.current('CandAppProfile'));
     }
   });
 
@@ -64,7 +64,7 @@
     {/snippet}
 
     {#snippet primaryActions()}
-      <Button href={$getRoute('CandAppHome')} text={t('common.return')} variant="main" />
+      <Button href={getRoute.current('CandAppHome')} text={t('common.return')} variant="main" />
     {/snippet}
   </MainContent>
 {/if}

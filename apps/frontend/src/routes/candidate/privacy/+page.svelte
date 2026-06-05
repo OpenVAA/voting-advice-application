@@ -35,7 +35,7 @@ Shows a registry and privacy statement
       icon="next"
       variant="main"
       text={t('common.home')}
-      href={userData.current ? $getRoute('CandAppHome') : $getRoute('CandAppLogin')}
+      href={userData.current ? getRoute.current('CandAppHome') : getRoute.current('CandAppLogin')}
       data-testid="candidate-privacy-home" />
   {/snippet}
 </MainContent>

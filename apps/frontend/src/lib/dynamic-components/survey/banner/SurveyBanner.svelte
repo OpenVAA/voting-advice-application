@@ -31,7 +31,7 @@ Accesses `AppContext` to get `appSettings` and `userPreferences`.
   let clicked: boolean = $state(false);
 </script>
 
-{#if clicked || ($appSettings.survey && $userPreferences.survey?.status !== 'received')}
+{#if clicked || (appSettings.current.survey && $userPreferences.survey?.status !== 'received')}
   <div
     data-testid="survey-banner"
     {...concatClass(

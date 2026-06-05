@@ -31,7 +31,7 @@
     {#snippet primaryActions()}
       <Button
         text={t('common.return')}
-        href={$getRoute('CandAppLogin')}
+        href={getRoute.current('CandAppLogin')}
         variant="main"
         data-testid="preregister-status-return" />
     {/snippet}
@@ -52,10 +52,10 @@
         class="mb-md"
         text={t('common.return')}
         variant="main"
-        onclick={() => goto($getRoute('CandAppPreregister'), { invalidateAll: true })}
+        onclick={() => goto(getRoute.current('CandAppPreregister'), { invalidateAll: true })}
         data-testid="preregister-status-retry" />
       <Button
-        href={$getRoute('CandAppHelp')}
+        href={getRoute.current('CandAppHelp')}
         text={t('candidateApp.help.title')}
         data-testid="preregister-status-help-link" />
     {/snippet}

@@ -72,7 +72,7 @@ Displays jobs for a specific admin feature, showing active and past job details.
           <Button
             text="Go to Feature"
             variant="secondary"
-            href={$getRoute(ADMIN_FEATURE[feature].route)}
+            href={getRoute.current(ADMIN_FEATURE[feature].route)}
             icon="create"
             iconPos="right"
             class="btn-sm" />

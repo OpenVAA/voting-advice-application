@@ -23,7 +23,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
 ```tsx
 <EntityDetails entity={matchedCandidate}/>
-<EntityDetails entity={matchedOrganization} tabs={$appSettings.entityDetails.contents.organization}/>
+<EntityDetails entity={matchedOrganization} tabs={appSettings.current.entityDetails.contents.organization}/>
 ```
 -->
 
@@ -71,7 +71,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     // `undefined` when the alliance entry is missing from the active settings.
     // The `!tabs?.length` guard already handles undefined at runtime.
     let tabs: Array<EntityDetailsContent | ParentEntityDetailsContent> | undefined =
-      $appSettings.entityDetails.contents[nakedEntity.type as keyof AppSettings['entityDetails']['contents']];
+      appSettings.current.entityDetails.contents[nakedEntity.type as keyof AppSettings['entityDetails']['contents']];
     if (!tabs?.length)
       tabs =
         nakedEntity.type === 'alliance'

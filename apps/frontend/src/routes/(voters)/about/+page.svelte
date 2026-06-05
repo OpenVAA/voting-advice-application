@@ -48,19 +48,19 @@ Displays information about the application.
     {@html sanitizeHtml(t('about.content'))}
   </div>
 
-  {#if $appSettings.matching.organizationMatching !== 'none'}
+  {#if appSettings.current.matching.organizationMatching !== 'none'}
     <h2 class="mb-md mt-xl">{t('about.organizationMatching.title')}</h2>
     {@html sanitizeHtml(
-      t('about.organizationMatching.content', { partyMatchingMethod: $appSettings.matching.organizationMatching })
+      t('about.organizationMatching.content', { partyMatchingMethod: appSettings.current.matching.organizationMatching })
     )}
   {/if}
 
-  {#if $appSettings.appVersion.source}
+  {#if appSettings.current.appVersion.source}
     <h2 class="mb-md mt-lg">{t('about.source.title')}</h2>
     <p>
       {t('about.source.content')}
       <a
-        href={$appSettings.appVersion.source}
+        href={appSettings.current.appVersion.source}
         target="_blank"
         class="small-label me-md bg-base-300 px-md py-sm inline-block rounded-[1rem]"
         data-testid="voter-about-source-link">{t('about.source.sitename')}</a>
@@ -68,6 +68,6 @@ Displays information about the application.
   {/if}
 
   {#snippet primaryActions()}
-    <Button variant="main" href={$getRoute('Home')} text={t('common.returnHome')} data-testid="voter-about-return" />
+    <Button variant="main" href={getRoute.current('Home')} text={t('common.returnHome')} data-testid="voter-about-return" />
   {/snippet}
 </MainContent>

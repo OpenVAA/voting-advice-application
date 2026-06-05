@@ -15,7 +15,7 @@ Use to group `NavItem` components. Displays a faint line above the group.
 
 ```tsx
 <NavGroup>
-  <NavItem href={$getRoute(ROUTE.Info)} icon="info" text="Show info"/>
+  <NavItem href={getRoute.current(ROUTE.Info)} icon="info" text="Show info"/>
   <NavItem onclick={(e) => foo(e)} text="Do foo"/>
   <div>Some other content</div>
 </NavGroup>

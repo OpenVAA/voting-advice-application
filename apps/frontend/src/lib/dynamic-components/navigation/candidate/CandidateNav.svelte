@@ -40,17 +40,17 @@ A template part that outputs the navigation menu for the Candidate App for use i
   {#if candCtx.isAuthenticated}
     <NavGroup>
       <NavItem
-        href={$getRoute('CandAppHome')}
+        href={getRoute.current('CandAppHome')}
         icon="home"
         text={t('candidateApp.common.home')}
         data-testid="candidate-nav-home" />
       <NavItem
-        href={$getRoute('CandAppProfile')}
+        href={getRoute.current('CandAppProfile')}
         icon="profile"
         text={t('candidateApp.basicInfo.title')}
         data-testid="candidate-nav-profile" />
       <NavItem
-        href={$getRoute('CandAppQuestions')}
+        href={getRoute.current('CandAppQuestions')}
         icon="opinion"
         text={t('candidateApp.questions.title')}
         disabled={candCtx.unansweredRequiredInfoQuestions?.length !== 0}
@@ -63,42 +63,42 @@ A template part that outputs the navigation menu for the Candidate App for use i
         {/if}
       </NavItem>
       <NavItem
-        href={$getRoute('CandAppPreview')}
+        href={getRoute.current('CandAppPreview')}
         icon="previewProfile"
         text={t('candidateApp.preview.title')}
         data-testid="candidate-nav-preview" />
       <NavItem
-        href={$getRoute('CandAppSettings')}
+        href={getRoute.current('CandAppSettings')}
         icon="settings"
         text={t('candidateApp.settings.title')}
         data-testid="candidate-nav-settings" />
     </NavGroup>
     <NavGroup>
-      <NavItem href={$getRoute('CandAppHelp')} icon="help" text={t('candidateApp.help.title')} />
-      <NavItem href={$getRoute('CandAppPrivacy')} icon="privacy" text={t('candidateApp.privacy.shortTitle')} />
+      <NavItem href={getRoute.current('CandAppHelp')} icon="help" text={t('candidateApp.help.title')} />
+      <NavItem href={getRoute.current('CandAppPrivacy')} icon="privacy" text={t('candidateApp.privacy.shortTitle')} />
     </NavGroup>
   {:else}
     <NavGroup>
-      <NavItem href={$getRoute('CandAppLogin')} icon="login" text={t('common.login')} />
+      <NavItem href={getRoute.current('CandAppLogin')} icon="login" text={t('common.login')} />
       {#if !candCtx.answersLocked}
-        {#if $appSettings.preRegistration?.enabled}
+        {#if appSettings.current.preRegistration?.enabled}
           <NavItem
-            href={$getRoute('CandAppPreregister')}
+            href={getRoute.current('CandAppPreregister')}
             icon="create"
             text={t('candidateApp.preregister.identification.start.title')} />
         {/if}
         <NavItem
-          href={$getRoute('CandAppRegister')}
+          href={getRoute.current('CandAppRegister')}
           icon="check"
-          text={$appSettings.preRegistration?.enabled
+          text={appSettings.current.preRegistration?.enabled
             ? t('candidateApp.register.titleWithPreregistration')
             : t('candidateApp.register.title')} />
       {/if}
     </NavGroup>
     <NavGroup>
-      <NavItem href={$getRoute('CandAppForgotPassword')} icon="help" text={t('candidateApp.login.forgotPassword')} />
-      <NavItem href={$getRoute('CandAppHelp')} icon="help" text={t('candidateApp.help.title')} />
-      <NavItem href={$getRoute('CandAppPrivacy')} icon="privacy" text={t('candidateApp.privacy.shortTitle')} />
+      <NavItem href={getRoute.current('CandAppForgotPassword')} icon="help" text={t('candidateApp.login.forgotPassword')} />
+      <NavItem href={getRoute.current('CandAppHelp')} icon="help" text={t('candidateApp.help.title')} />
+      <NavItem href={getRoute.current('CandAppPrivacy')} icon="privacy" text={t('candidateApp.privacy.shortTitle')} />
     </NavGroup>
   {/if}
   {#if $openFeedbackModal}

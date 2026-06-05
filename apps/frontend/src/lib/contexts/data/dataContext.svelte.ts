@@ -106,5 +106,20 @@ export function initDataContext(): DataContext {
     }
   };
 
-  return setContext<DataContext>(CONTEXT_KEY, { dataRoot: dataRootStore, reactiveDataRoot });
+  // D-08 / Option A: additive `.current` getter on the EXPORTED `dataRoot` so the
+  // Wave-3 codemod target (`dataRoot.current`) resolves while the legacy
+  // `Readable<DataRoot>` bridge SURVIVES for same-commit-unmigrated `$dataRoot`
+  // consumers + out-of-scope sites that live to Phase 98. Built via
+  // `{ ...store, get current() }` spread (the bridge returns own-enumerable
+  // subscribe/set), reusing the reactiveDataRoot.current getter body (reads the
+  // SAME `version` $state — single source of truth).
+  const dataRootExport = {
+    ...dataRootStore,
+    get current() {
+      void version;
+      return dataRoot;
+    }
+  };
+
+  return setContext<DataContext>(CONTEXT_KEY, { dataRoot: dataRootExport, reactiveDataRoot });
 }
