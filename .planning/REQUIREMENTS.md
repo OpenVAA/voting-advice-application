@@ -33,7 +33,7 @@ Requirements for this milestone. Each maps to exactly one roadmap phase.
 ### Domain A — Cleanup (CLEAN) — Wave 4
 
 - [x] **CLEAN-01**: `persistedState.svelte.ts` and `StackedState.svelte.ts` are deleted; `Readable<T>` is dropped from the relevant `.type.ts` files; zero `svelte/store` imports remain anywhere in `lib/contexts/**` and `routes/**`. _(spikes 003, 005, 006, 010)_
-- [ ] **CLEAN-02**: an ESLint guard rule prevents reintroducing `svelte/store` imports in migrated context files. _(optional, derived from the codemod — spike 009)_
+- [x] **CLEAN-02**: an ESLint guard rule prevents reintroducing `svelte/store` imports in migrated context files. _(optional, derived from the codemod — spike 009)_
 
 ### Domain B — View Transitions (VT) — Wave A
 
@@ -92,7 +92,7 @@ Which phases cover which requirements. Populated during roadmap creation.
 | CONS-02 | Phase 97 | Complete |
 | CONS-03 | Phase 97 | Complete |
 | CLEAN-01 | Phase 98 | In Progress (Plans 01-02 done; Plan 03 deletions pending) |
-| CLEAN-02 | Phase 98 | Pending |
+| CLEAN-02 | Phase 98 | Complete |
 | VT-01 | Phase 99 | Complete |
 | VT-02 | Phase 99 | Complete |
 | VT-03 | Phase 99 | Complete |

@@ -127,7 +127,7 @@ Audit: `.planning/milestones/v2.10-MILESTONE-AUDIT.md` (status: tech_debt — no
 - [x] **Phase 95: Domain A Wave 1 — Tier-1 Leaf Contexts** - appContext (+SSR-gap fix), dataContext, answer stores (+`localStorageState`), overlay registry, popupStore migrated to pure runes (completed 2026-06-04)
 - [x] **Phase 96: Domain A Wave 2 — Tier-2 Bridges** - survey + tracking + voterContext + candidateContext rune-native factories (+`runeSessionStorage`), composing Wave 1 (completed 2026-06-04)
 - [x] **Phase 97: Domain A Wave 3 — getRoute + Consumer Codemod** - rune-native `getRoute` + mechanical rewrite of 280 consumer sites + destructure-trap/AdminNav production-bug fix (completed 2026-06-05)
-- [ ] **Phase 98: Domain A Wave 4 — Cleanup** - delete `persistedState`/`StackedState`, drop `Readable<T>`, zero `svelte/store` imports, ESLint guard
+- [x] **Phase 98: Domain A Wave 4 — Cleanup** - delete `persistedState`/`StackedState`, drop `Readable<T>`, zero `svelte/store` imports, ESLint guard (completed 2026-06-05)
 - [x] **Phase 99: Domain B Wave A — View Transitions + Navigation a11y** - `onNavigate` + `startViewTransition` cross-fade, `aria-live` route announcer, `afterNavigate` focus reset, reduced-motion belt-and-braces (completed 2026-06-04)
 - [x] **Phase 100: Domain B Wave B — Questions Layout Restructure** - `/questions` unified-layout-with-empty-leaf + `{#key question.type}` variant remount (completed 2026-06-04)
 - [ ] **Phase 101: Suite Re-enable + Milestone-Close Green Gate** - un-quarantine the 2 `perm-per-app-notifications` tests + full E2E + unit suites green vs v2.10 baseline
@@ -226,7 +226,7 @@ Plans:
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-  - [ ] 98-04-PLAN.md — CLEAN-02 ESLint guard: scoped `no-restricted-imports` override banning `svelte/store` in `lib/contexts/**`+`routes/**` (re-includes the inherited deep-relative-`lib` ban); negative-test verifies reintroduction fails lint — CLEAN-02 _(wave 4)_
+  - [x] 98-04-PLAN.md — CLEAN-02 ESLint guard: scoped `no-restricted-imports` override banning `svelte/store` in `lib/contexts/**`+`routes/**` (re-includes the inherited deep-relative-`lib` ban); negative-test verifies reintroduction fails lint — CLEAN-02 _(wave 4)_
 
 ### Phase 99: Domain B Wave A — View Transitions + Navigation a11y
 
@@ -297,7 +297,7 @@ Domain A is a strict chain: 95 → 96 → 97 → 98. Domain B is a chain: 99 →
 | 95. Domain A Wave 1 — Tier-1 Leaf Contexts | v2.11 | 5/5 | Complete   | 2026-06-04 |
 | 96. Domain A Wave 2 — Tier-2 Bridges | v2.11 | 2/2 | Complete    | 2026-06-04 |
 | 97. Domain A Wave 3 — getRoute + Consumer Codemod | v2.11 | 2/2 | Complete    | 2026-06-05 |
-| 98. Domain A Wave 4 — Cleanup | v2.11 | 3/4 | In Progress|  |
+| 98. Domain A Wave 4 — Cleanup | v2.11 | 4/4 | Complete   | 2026-06-05 |
 | 99. Domain B Wave A — View Transitions + Navigation a11y | v2.11 | 3/3 | Complete   | 2026-06-04 |
 | 100. Domain B Wave B — Questions Layout Restructure | v2.11 | 2/2 | Complete    | 2026-06-04 |
 | 101. Suite Re-enable + Milestone-Close Green Gate | v2.11 | 0/TBD | Not started | - |
