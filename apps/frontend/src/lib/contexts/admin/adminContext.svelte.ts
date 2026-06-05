@@ -96,7 +96,19 @@ export function initAdminContext(): AdminContext {
 
   const adminContext: AdminContext = {
     ...appContext,
-    ...authContext,
+    // CONS-03 / Pitfall 2: do NOT spread the auth context here. Object spread invokes
+    // the source's isAuthenticated $derived getter exactly once at init time and captures
+    // the boolean by value, de-reactivating admin auth gating (the nav would show
+    // authenticated links to a logged-out user until a hard refresh). An explicit
+    // delegating getter re-reads the live $derived on every access instead.
+    get isAuthenticated() {
+      return authContext.isAuthenticated;
+    },
+    // The four auth functions are plain (non-reactive) fns — forwarding by reference is correct.
+    logout: authContext.logout,
+    requestForgotPasswordEmail: authContext.requestForgotPasswordEmail,
+    resetPassword: authContext.resetPassword,
+    setPassword: authContext.setPassword,
     get userData() {
       return _userData;
     },
