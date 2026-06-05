@@ -1,20 +1,22 @@
 ---
 phase: 97-domain-a-wave-3-getroute-consumer-codemod
 verified: 2026-06-05T09:20:34Z
-status: human_needed
-score: 9/10 must-haves verified
+human_verified: 2026-06-05T11:45:00Z
+status: verified
+score: 10/10 must-haves verified
 overrides_applied: 0
 human_verification:
   - test: "Admin nav auth-reactivity UAT (CONS-03)"
     expected: "While logged out the admin nav shows the login link (AdminAppLogin) only. After logging in the nav switches to the authenticated group (AdminAppHome / Jobs / FactorAnalysis / QuestionInfo / ArgumentCondensation) WITHOUT a hard refresh. Each getRoute.current('AdminApp*') nav link resolves to the correct route URL."
     why_human: "No automated admin E2E spec exists in tests/tests/specs/ (only voter/candidate/perm/a11y/visual/perf). The CONS-03 code fix is delivered (adminContext spread->getter + AdminNav destructure->$derived + codemod-rewritten getRoute.current('AdminApp*') nav links), but its runtime reactive behaviour can only be confirmed by a human operating the live stack."
+    result: "PASS (2026-06-05, operator-driven browser UAT on live yarn dev stack). Logged-out nav = AdminAppLogin only; after form login (use:enhance/SPA) the nav reactively switched to the authenticated group with NO hard reload (no-reload sentinel survived) and NO remount (nav-instance tag preserved); all 5 getRoute.current('AdminApp*') links resolved. Prerequisite: a pre-existing admin-login cookie bug (login went through nested /api/auth/login plain client → no session cookie) was fixed to mirror candidate login (commit 041df3c7f). See 97-UAT.md."
 ---
 
 # Phase 97: Domain A Wave 3 — getRoute + Consumer Codemod Verification Report
 
 **Phase Goal:** `getRoute` is rune-native (pure `$derived.by` reading page.params/page.route/page.url as separate fields, bypassing the toStore short-circuit trap; afterNavigate republish removed), and every consumer site across the frontend (~146 `$store.X` template auto-subscribe sites + ~134 `$getRoute(opts)` call sites) is mechanically migrated off the store bridges — fixing the AdminNav destructure production bug and the adminContext spread-of-context anti-pattern.
-**Verified:** 2026-06-05T09:20:34Z
-**Status:** human_needed
+**Verified:** 2026-06-05T09:20:34Z (codebase) + 2026-06-05T11:45:00Z (human UAT)
+**Status:** verified
 **Re-verification:** No — initial verification
 
 ## Goal Achievement
@@ -32,9 +34,9 @@ human_verification:
 | 7  | The codemod Pass-2 destructure-trap count is 1 (only the intentional DestructureTrapConsumer demo remains) | VERIFIED | Dry-run output: "Files with destructure traps: 1 / Total traps flagged: 1" pointing to `routes/runes-test/voter-context-orchestration/DestructureTrapConsumer.svelte` |
 | 8  | candidateContext.svelte.ts no longer imports from svelte/store (its last fromStore import drops — completes the CTX-07 tail) | VERIFIED | `grep -n 'svelte/store' candidateContext.svelte.ts` returns only a code comment at line 47, no actual import statement; 6 `getRoute.current(` calls confirmed |
 | 9  | adminContext.isAuthenticated is a live getter delegating to authContext (not a value captured at spread time); AdminNav reads isAuthenticated via `$derived(ctx.isAuthenticated)`, not via destructure; trap count drops 2->1 | VERIFIED | `...authContext`=0, `get isAuthenticated`=1, `...appContext`=1 in adminContext.svelte.ts; `$derived(ctx.isAuthenticated)`=1, destructure of isAuthenticated=0 in AdminNav; codemod confirms trap count=1 |
-| 10 | Admin nav reacts to login without a hard refresh (manual UAT recorded in 97-UAT.md) | PENDING HUMAN | Code fix delivered; UAT result=pending in 97-UAT.md; no automated admin E2E spec exists |
+| 10 | Admin nav reacts to login without a hard refresh (manual UAT recorded in 97-UAT.md) | VERIFIED | Operator browser UAT 2026-06-05: nav flipped to authenticated group reactively, no hard reload (sentinel survived) + no remount (nav-instance tag preserved); 97-UAT.md result=pass. (Required a prerequisite admin-login cookie fix, commit 041df3c7f — pre-existing, out of Phase 97 scope.) |
 
-**Score:** 9/10 truths verified (1 pending human UAT)
+**Score:** 10/10 truths verified
 
 ### Required Artifacts
 

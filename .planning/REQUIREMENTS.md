@@ -22,12 +22,12 @@ Requirements for this milestone. Each maps to exactly one roadmap phase.
 - [x] **CTX-05**: `popupStore` is pure runes following the queue-shaped Pattern-1 shape (no `toStore(() => firstItem)` + `subscribe` getter). _(spike 010)_
 - [x] **CTX-06**: `survey` + `trackingService` secondary bridges are pure runes (no `fromStore`/`toStore` over appSettings / sessionId / userPreferences). _(spike 010)_
 - [x] **CTX-07**: `voterContext` + `candidateContext` are rune-native factories composing Tier-1 contexts via `getXContext()` and exposing their 18+/30+ reactive accessors as getters; a `sessionStorageState` sibling helper (spike-scratch `runeSessionStorage`, renamed) backs `voterContext`'s `firstQuestionId`; the destructure-trap reproduces identically and is preserved per the CLAUDE.md rule. _(spikes 007, 010)_
-- [ ] **CTX-08**: `getRoute` is rune-native — pure `$derived.by` reading `page.params` / `page.route` / `page.url` as separate fields (never `page` as a single value inside a tracking scope), bypassing the `toStore` short-circuit trap; the custom `afterNavigate` republish workaround is removed. _(spike 012 — Wave 3 unblocker)_
+- [x] **CTX-08**: `getRoute` is rune-native — pure `$derived.by` reading `page.params` / `page.route` / `page.url` as separate fields (never `page` as a single value inside a tracking scope), bypassing the `toStore` short-circuit trap; the custom `afterNavigate` republish workaround is removed. _(spike 012 — Wave 3 unblocker)_
 
 ### Domain A — Consumer Migration (CONS) — Wave 3
 
-- [ ] **CONS-01**: all 146 `$store.X` template auto-subscribe sites across 45 `.svelte` files are rewritten to `ctx.current.X` / local `$derived` aliases via the pure-Node codemod (idempotent, dry-run by default). _(spike 009)_
-- [ ] **CONS-02**: all 134 `$getRoute(opts)` call sites are migrated to the rune-native `getRoute`. _(spikes 009, 012)_
+- [x] **CONS-01**: all 146 `$store.X` template auto-subscribe sites across 45 `.svelte` files are rewritten to `ctx.current.X` / local `$derived` aliases via the pure-Node codemod (idempotent, dry-run by default). _(spike 009)_
+- [x] **CONS-02**: all 134 `$getRoute(opts)` call sites are migrated to the rune-native `getRoute`. _(spikes 009, 012)_
 - [x] **CONS-03**: the destructure-trap audit pass fixes the `AdminNav.svelte:33` `isAuthenticated` destructure production bug and the `adminContext.svelte.ts:97` spread-of-context anti-pattern that de-reactivates auth-context `$derived` accessors. _(spike 009)_
 
 ### Domain A — Cleanup (CLEAN) — Wave 4
@@ -87,9 +87,9 @@ Which phases cover which requirements. Populated during roadmap creation.
 | CTX-05 | Phase 95 | Complete |
 | CTX-06 | Phase 96 | Complete |
 | CTX-07 | Phase 96 | Complete |
-| CTX-08 | Phase 97 | Pending |
-| CONS-01 | Phase 97 | Pending |
-| CONS-02 | Phase 97 | Pending |
+| CTX-08 | Phase 97 | Complete |
+| CONS-01 | Phase 97 | Complete |
+| CONS-02 | Phase 97 | Complete |
 | CONS-03 | Phase 97 | Complete |
 | CLEAN-01 | Phase 98 | Pending |
 | CLEAN-02 | Phase 98 | Pending |
