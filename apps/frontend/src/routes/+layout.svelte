@@ -17,7 +17,7 @@
   import '../app.css';
   import { staticSettings } from '@openvaa/app-shared';
   import { onDestroy, untrack } from 'svelte';
-  import { fromStore, get } from 'svelte/store';
+  import { fromStore } from 'svelte/store';
   import { afterNavigate, beforeNavigate, onNavigate } from '$app/navigation';
   import { updated } from '$app/state';
   import { isValidResult } from '$lib/api/utils/isValidResult';
@@ -48,7 +48,7 @@
   initDataContext();
   const {
     appSettings: appSettingsStore,
-    dataRoot: dataRootStore,
+    reactiveDataRoot,
     openFeedbackModal: openFeedbackModalStore,
     popupQueue,
     sendTrackingEvent: sendTrackingEventStore,
@@ -112,14 +112,15 @@
   // We don't do anything else with the data if it's valid, because the relevant
   // stores will pick it up from `$page.data`.
   //
-  // IMPORTANT: access the DataRoot instance via `get(dataRootStore)` rather than
-  // the `dataRoot.current` auto-subscription form. `dataRoot.current.update(() => provide*(...))`
-  // inside a `$effect` creates an infinite reactive loop in Svelte 5: the
-  // `fromStore()` bridge tracks `dataRoot.current` as a dependency, and
-  // `DataRoot.update()` notifies subscribers (via the dataContext `version++`
-  // $state) — retriggering the effect. `get()` reads the store without
-  // establishing a reactive dependency. This mirrors the fix applied in Plan
-  // 60-03 to the candidate `(protected)/+layout.svelte`.
+  // IMPORTANT: access the DataRoot instance via `reactiveDataRoot.instance`
+  // (the non-reactive rune handle) rather than the `dataRoot.current` reactive
+  // form. `dataRoot.current.update(() => provide*(...))` inside a `$effect`
+  // creates an infinite reactive loop in Svelte 5: reading `.current` takes a
+  // dependency on the dataContext `version++` $state, and `DataRoot.update()`
+  // notifies subscribers (bumping `version`) — retriggering the effect.
+  // `reactiveDataRoot.instance` returns the SAME object WITHOUT reading `version`,
+  // so no reactive dependency is established (Spike 002 pattern). This is the
+  // rune-native replacement for the former svelte/store `get()` workaround.
   $effect(() => {
     if ('error' in validity) return;
     // Snapshot validity fields inside the effect's tracked scope, then apply
@@ -131,7 +132,7 @@
       constituencyData: validity.constituencyData
     };
     untrack(() => {
-      const dr = get(dataRootStore);
+      const dr = reactiveDataRoot.instance;
       dr.update(() => {
         dr.provideElectionData(snapshot.electionData);
         dr.provideConstituencyData(snapshot.constituencyData);

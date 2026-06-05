@@ -10,7 +10,6 @@
 
 <script lang="ts">
   import { untrack } from 'svelte';
-  import { get } from 'svelte/store';
   import { TermsOfUseForm } from '$candidate/components/termsOfUse';
   import { isValidResult } from '$lib/api/utils/isValidResult';
   import { Button } from '$lib/components/button';
@@ -30,7 +29,7 @@
   // Get context
   ////////////////////////////////////////////////////////////////////
 
-  const { dataRoot, logout, t, userData } = getCandidateContext();
+  const { reactiveDataRoot, logout, t, userData } = getCandidateContext();
 
   ////////////////////////////////////////////////////////////////////
   // Accept terms of use
@@ -110,14 +109,17 @@
   // is a synchronous `savedData = data` assignment; the previous `tick`-wait was
   // a defensive v2.1 artifact with no remaining purpose — RESEARCH Assumption A2.
   //
-  // IMPORTANT: access the DataRoot instance via `get(dataRoot)` rather than the
-  // `dataRoot.current` auto-subscription form. `dataRoot.current.update(() => provide*(...))`
-  // inside a `$effect` creates an infinite reactive loop in Svelte 5: the
-  // auto-subscription registers the store as a dependency of this effect, and
-  // the `DataRoot.update()` call notifies subscribers — retriggering the effect.
-  // `get()` reads the current value without establishing a reactive dependency.
-  // Wrapped in `.update(() => ...)` for batched subscriber notification (canonical
-  // form — see apps/frontend/src/lib/admin/utils/loadElectionData.ts).
+  // IMPORTANT: access the DataRoot instance via `reactiveDataRoot.instance` (the
+  // non-reactive rune handle) rather than the `dataRoot.current` reactive form.
+  // `dataRoot.current.update(() => provide*(...))` inside a `$effect` creates an
+  // infinite reactive loop in Svelte 5: reading `.current` registers the version
+  // counter as a dependency of this effect, and the `DataRoot.update()` call
+  // notifies subscribers (bumping `version`) — retriggering the effect.
+  // `reactiveDataRoot.instance` returns the SAME object WITHOUT reading `version`,
+  // so no reactive dependency is established (Spike 002 pattern; rune-native
+  // replacement for the former svelte/store `get()` workaround). Wrapped in
+  // `.update(() => ...)` for batched subscriber notification (canonical form —
+  // see apps/frontend/src/lib/admin/utils/loadElectionData.ts).
   $effect(() => {
     if (validity.state !== 'resolved') return;
     // Snapshot validity fields inside the effect's tracked scope, then apply
@@ -130,7 +132,7 @@
       userData: validity.userData
     };
     untrack(() => {
-      const dr = get(dataRoot);
+      const dr = reactiveDataRoot.instance;
       dr.update(() => {
         dr.provideQuestionData(snapshot.questionData);
         dr.provideEntityData(snapshot.entities);
