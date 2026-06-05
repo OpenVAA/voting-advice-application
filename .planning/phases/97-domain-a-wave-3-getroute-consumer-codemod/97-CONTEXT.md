@@ -34,6 +34,9 @@ Requirements: **CTX-08, CONS-01, CONS-02, CONS-03**. **UI hint: yes.**
 ### Naming (K1)
 - **D-07:** No migration-era names introduced; `getRoute` keeps its name in place.
 
+### Pitfall-1 `.current` resolution gap (from RESEARCH O-1 — confirmed by user 2026-06-05)
+- **D-08 (Option A):** Resolve the codemod's `appSettings.current.X` / `dataRoot.current` target gap by giving the exported `appSettings` / `dataRoot` / `locale` / `darkMode` an **additive `.current` getter on their original names** (the legacy store shape stays for the same-commit-rewritten consumers). This change lands **atomic with the mechanical codemod commit** so the tree never has a broken intermediate state. **No migration-era `reactive*` names reach shipped consumers** (honors D-07). Phase 98 (Wave 4) then only deletes the now-unused store bridges — it does NOT need a second rename sweep. Rejected Option B (retarget codemod to `reactiveAppSettings.current`) because it ships migration-era names into ~145 consumer sites and forces a redundant 145-site rename in Phase 98.
+
 ### Claude's Discretion
 - Exact archive path under `.planning/` for the codemod script.
 - Batching of the manual-fix review (single pass vs file-group passes) as long as D-02's review-before-commit holds.
