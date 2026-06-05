@@ -192,7 +192,7 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 97-01-PLAN.md — CONS-03 fixes FIRST (D-01): adminContext spread→explicit delegating getters + AdminNav destructure→$derived; O-2 top-level-getter spread audit (Wave 1)
+- [x] 97-01-PLAN.md — CONS-03 fixes FIRST (D-01): adminContext spread→explicit delegating getters + AdminNav destructure→$derived; O-2 top-level-getter spread audit (Wave 1)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -281,7 +281,7 @@ Domain A is a strict chain: 95 → 96 → 97 → 98. Domain B is a chain: 99 →
 |-------|-----------|----------------|--------|-----------|
 | 95. Domain A Wave 1 — Tier-1 Leaf Contexts | v2.11 | 5/5 | Complete   | 2026-06-04 |
 | 96. Domain A Wave 2 — Tier-2 Bridges | v2.11 | 2/2 | Complete    | 2026-06-04 |
-| 97. Domain A Wave 3 — getRoute + Consumer Codemod | v2.11 | 0/2 | Not started | - |
+| 97. Domain A Wave 3 — getRoute + Consumer Codemod | v2.11 | 1/2 | In Progress|  |
 | 98. Domain A Wave 4 — Cleanup | v2.11 | 0/TBD | Not started | - |
 | 99. Domain B Wave A — View Transitions + Navigation a11y | v2.11 | 3/3 | Complete   | 2026-06-04 |
 | 100. Domain B Wave B — Questions Layout Restructure | v2.11 | 2/2 | Complete    | 2026-06-04 |

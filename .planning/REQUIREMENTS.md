@@ -28,7 +28,7 @@ Requirements for this milestone. Each maps to exactly one roadmap phase.
 
 - [ ] **CONS-01**: all 146 `$store.X` template auto-subscribe sites across 45 `.svelte` files are rewritten to `ctx.current.X` / local `$derived` aliases via the pure-Node codemod (idempotent, dry-run by default). _(spike 009)_
 - [ ] **CONS-02**: all 134 `$getRoute(opts)` call sites are migrated to the rune-native `getRoute`. _(spikes 009, 012)_
-- [ ] **CONS-03**: the destructure-trap audit pass fixes the `AdminNav.svelte:33` `isAuthenticated` destructure production bug and the `adminContext.svelte.ts:97` spread-of-context anti-pattern that de-reactivates auth-context `$derived` accessors. _(spike 009)_
+- [x] **CONS-03**: the destructure-trap audit pass fixes the `AdminNav.svelte:33` `isAuthenticated` destructure production bug and the `adminContext.svelte.ts:97` spread-of-context anti-pattern that de-reactivates auth-context `$derived` accessors. _(spike 009)_
 
 ### Domain A — Cleanup (CLEAN) — Wave 4
 
@@ -90,7 +90,7 @@ Which phases cover which requirements. Populated during roadmap creation.
 | CTX-08 | Phase 97 | Pending |
 | CONS-01 | Phase 97 | Pending |
 | CONS-02 | Phase 97 | Pending |
-| CONS-03 | Phase 97 | Pending |
+| CONS-03 | Phase 97 | Complete |
 | CLEAN-01 | Phase 98 | Pending |
 | CLEAN-02 | Phase 98 | Pending |
 | VT-01 | Phase 99 | Complete |
