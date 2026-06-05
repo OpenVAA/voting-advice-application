@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 
 Phase: 97 (domain-a-wave-3-getroute-consumer-codemod) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
-Last activity: 2026-06-05 -- Phase 97 execution started
+Status: Both plans executed; awaiting admin auth-reactivity UAT (deferred to /gsd-verify-work 97) before phase completion
+Last activity: 2026-06-05 -- Phase 97 Plan 02 atomic getRoute+codemod commit landed (35c68e85c); admin UAT pending in 97-UAT.md
 
 ## Performance Metrics
 
