@@ -45,8 +45,8 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
 
   const { appSettings, appType, dataRoot, t } = getAppContext();
   // Get the elections source based on app type; reading happens in reactive contexts below
-  const voterCtx = $appType === 'voter' ? getVoterContext() : undefined;
-  const candidateCtx = $appType === 'candidate' ? getCandidateContext() : undefined;
+  const voterCtx = appType.current === 'voter' ? getVoterContext() : undefined;
+  const candidateCtx = appType.current === 'candidate' ? getCandidateContext() : undefined;
   let elections = $derived(
     voterCtx ? voterCtx.selectedElections : candidateCtx ? candidateCtx.selectedElections : dataRoot.current.elections
   );

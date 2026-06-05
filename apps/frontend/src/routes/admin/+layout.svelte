@@ -7,7 +7,6 @@
 -->
 
 <script lang="ts">
-  import { fromStore } from 'svelte/store';
   import { initAdminContext } from '$lib/contexts/admin';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { AdminNav } from '$lib/dynamic-components/navigation/admin';
@@ -21,8 +20,10 @@
   // Init Admin Context
   ////////////////////////////////////////////////////////////////////
 
+  // `appSettings` / `appType` are rune handles from AdminContext (inherited from
+  // AppContext); read `.current` directly (no store bridge). `appType.set(...)`
+  // is unchanged — the handle exposes `.set`.
   const { appSettings, appType, t } = initAdminContext();
-  const appSettingsState = fromStore(appSettings);
   appType.set('admin');
 
   ////////////////////////////////////////////////////////////////////
@@ -40,12 +41,12 @@
   let isDrawerOpen = $state(false);
 </script>
 
-{#if !appSettingsState.current.dataAdapter.supportsAdminApp}
+{#if !appSettings.current.dataAdapter.supportsAdminApp}
   <MaintenancePage
     title={t('adminApp.notSupported.title')}
     content={t('adminApp.notSupported.content')}
     emoji={t('adminApp.notSupported.heroEmoji')} />
-{:else if !appSettingsState.current.access.adminApp}
+{:else if !appSettings.current.access.adminApp}
   <MaintenancePage
     title={t('adminApp.common.notAccessible.title')}
     content={t('adminApp.common.notAccessible.content')} />

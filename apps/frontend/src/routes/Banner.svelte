@@ -14,7 +14,6 @@ Accesses `AppContext` and optionally `VoterContext`.
 -->
 
 <script lang="ts">
-  import { fromStore } from 'svelte/store';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import { LogoutButton as CandidateLogoutButton } from '$candidate/components/logoutButton';
@@ -28,15 +27,10 @@ Accesses `AppContext` and optionally `VoterContext`.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const {
-    appType: appTypeStore,
-    getRoute: getRouteStore,
-    openFeedbackModal: openFeedbackModalStore,
-    t
-  } = getAppContext();
-  const appType = fromStore(appTypeStore);
-  const getRoute = fromStore(getRouteStore);
-  const openFeedbackModal = fromStore(openFeedbackModalStore);
+  // `appType` / `getRoute` / `openFeedbackModal` are stable rune handles from
+  // AppContext; read `.current` directly (no store bridge). `getRoute` was
+  // already rune-native — `getRoute.current(...)` is unchanged.
+  const { appType, getRoute, openFeedbackModal, t } = getAppContext();
   const voterCtx = appType.current === 'voter' ? getVoterContext() : undefined;
   const { topBarSettings, video } = getLayoutContext();
 </script>

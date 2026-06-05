@@ -44,7 +44,7 @@
   // a getter on the context object) without migrating consumers to
   // `ctx.popupQueue.push(...)` per the destructuring rule.
   const { appSettings, appType, popupQueue, userPreferences, t } = initVoterContext();
-  $appType = 'voter';
+  appType.set('voter');
 
   ////////////////////////////////////////////////////////////////////
   // Layout
@@ -113,7 +113,7 @@
     if (
       appSettings.current.analytics?.platform &&
       appSettings.current.analytics?.trackEvents &&
-      (!$userPreferences.dataCollection?.consent || $userPreferences.dataCollection?.consent === 'indetermined')
+      (!userPreferences.current.dataCollection?.consent || userPreferences.current.dataCollection?.consent === 'indetermined')
     )
       popupQueue.push({ component: DataConsentPopup });
   });

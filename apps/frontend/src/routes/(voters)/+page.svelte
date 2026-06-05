@@ -31,8 +31,8 @@ The frontpage of the app for voters.
   pageStyles.use({ drawer: { background: 'bg-base-300' } });
   topBarSettings.use({
     imageSrc: darkMode.current
-      ? ($appCustomization.poster?.urlDark ?? $appCustomization.poster?.url ?? '/images/hero.png')
-      : ($appCustomization.poster?.url ?? '/images/hero.png')
+      ? (appCustomization.current.poster?.urlDark ?? appCustomization.current.poster?.url ?? '/images/hero.png')
+      : (appCustomization.current.poster?.url ?? '/images/hero.png')
   });
 </script>
 

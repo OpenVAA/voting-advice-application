@@ -49,7 +49,7 @@ Accesses `AppContext` to set and read `userPreferences`.
     : '';
 
   function handleChange(consent: ConsentStatus) {
-    if (consent !== $userPreferences.dataCollection?.consent) setDataConsent(consent);
+    if (consent !== userPreferences.current.dataCollection?.consent) setDataConsent(consent);
     onChange?.(consent);
   }
 </script>
@@ -68,8 +68,8 @@ Accesses `AppContext` to set and read `userPreferences`.
     </div>
     <p class="mt-md text-center font-bold">
       {t(
-        assertTranslationKey(`privacy.dataConsentIntro.${$userPreferences.dataCollection?.consent ?? 'indetermined'}`),
-        { consentDate: new Date($userPreferences.dataCollection?.date ?? '') }
+        assertTranslationKey(`privacy.dataConsentIntro.${userPreferences.current.dataCollection?.consent ?? 'indetermined'}`),
+        { consentDate: new Date(userPreferences.current.dataCollection?.date ?? '') }
       )}
     </p>
   {/if}
@@ -77,15 +77,15 @@ Accesses `AppContext` to set and read `userPreferences`.
     onclick={() => handleChange('granted')}
     variant="main"
     iconPos="left"
-    disabled={$userPreferences.dataCollection?.consent === 'granted'}
-    icon={$userPreferences.dataCollection?.consent === 'granted' ? 'check' : undefined}
+    disabled={userPreferences.current.dataCollection?.consent === 'granted'}
+    icon={userPreferences.current.dataCollection?.consent === 'granted' ? 'check' : undefined}
     text={t('privacy.dataConsentLabel.granted')} />
   <Button
     onclick={() => handleChange('denied')}
     color="warning"
     iconPos="left"
-    disabled={$userPreferences.dataCollection?.consent === 'denied'}
-    icon={$userPreferences.dataCollection?.consent === 'denied' ? 'check' : undefined}
+    disabled={userPreferences.current.dataCollection?.consent === 'denied'}
+    icon={userPreferences.current.dataCollection?.consent === 'denied' ? 'check' : undefined}
     text={t('privacy.dataConsentLabel.denied')} />
   {#if description === 'modal'}
     <DataConsentInfoButton color="neutral" variant="normal" />

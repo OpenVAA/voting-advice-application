@@ -50,7 +50,7 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
         <h3>{text}</h3>
       </HeadingGroup>
 
-      {#if $appType === 'candidate'}
+      {#if appType.current === 'candidate'}
         {#if answer == null}
           <div class="small-label mb-16 text-center">
             {t('questions.answers.entityHasntAnswered', { entity: shortName })}

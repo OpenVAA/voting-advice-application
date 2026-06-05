@@ -114,8 +114,8 @@
   pageStyles.use({ drawer: { background: 'bg-base-300' } });
   topBarSettings.use({
     imageSrc: darkMode.current
-      ? ($appCustomization.candPoster?.urlDark ?? $appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
-      : ($appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
+      ? (appCustomization.current.candPoster?.urlDark ?? appCustomization.current.candPoster?.url ?? '/images/hero-candidate.png')
+      : (appCustomization.current.candPoster?.url ?? '/images/hero-candidate.png')
   });
 </script>
 

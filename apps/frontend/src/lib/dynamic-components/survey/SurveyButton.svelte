@@ -50,7 +50,7 @@ Accesses `AppContext` to set and read the current survey status and link.
 </script>
 
 <Button
-  href={$surveyLink}
+  href={surveyLink.current}
   target="_blank"
   onclick={handleClick}
   variant="normal"

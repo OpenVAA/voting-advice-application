@@ -76,7 +76,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   ////////////////////////////////////////////////////////////////////
 
   const { appSettings, appType, dataRoot, getRoute, startEvent, t } = getAppContext();
-  const voterContext = $appType === 'voter' ? getVoterContext() : undefined;
+  const voterContext = appType.current === 'voter' ? getVoterContext() : undefined;
 
   ////////////////////////////////////////////////////////////////////
   // Parse components, actions, subcards and questions

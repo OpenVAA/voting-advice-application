@@ -97,13 +97,13 @@ A template part that outputs the navigation menu for the Voter App for use in `L
     {/if}
     <NavItem href={getRoute.current('Privacy')} icon="privacy" text={t('privacy.title')} />
   </NavGroup>
-  {#if appSettings.current.survey?.showIn?.includes('navigation') || $openFeedbackModal}
+  {#if appSettings.current.survey?.showIn?.includes('navigation') || openFeedbackModal.current}
     <NavGroup>
       {#if appSettings.current.survey?.showIn?.includes('navigation')}
-        <NavItem href={$surveyLink} target="_blank" icon="research" text={t('dynamic.survey.button')} />
+        <NavItem href={surveyLink.current} target="_blank" icon="research" text={t('dynamic.survey.button')} />
       {/if}
-      {#if $openFeedbackModal}
-        <NavItem onclick={$openFeedbackModal} icon="feedback" text={t('feedback.send')} />
+      {#if openFeedbackModal.current}
+        <NavItem onclick={openFeedbackModal.current} icon="feedback" text={t('feedback.send')} />
       {/if}
     </NavGroup>
   {/if}

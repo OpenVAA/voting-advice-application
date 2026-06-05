@@ -101,9 +101,9 @@ A template part that outputs the navigation menu for the Candidate App for use i
       <NavItem href={getRoute.current('CandAppPrivacy')} icon="privacy" text={t('candidateApp.privacy.shortTitle')} />
     </NavGroup>
   {/if}
-  {#if $openFeedbackModal}
+  {#if openFeedbackModal.current}
     <NavGroup>
-      <NavItem onclick={$openFeedbackModal} icon="feedback" text={t('feedback.send')} />
+      <NavItem onclick={openFeedbackModal.current} icon="feedback" text={t('feedback.send')} />
     </NavGroup>
   {/if}
   <LanguageSelection />

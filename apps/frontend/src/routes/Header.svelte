@@ -14,7 +14,6 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
 -->
 
 <script lang="ts">
-  import { fromStore } from 'svelte/store';
   import { Icon } from '$lib/components/icon';
   import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
@@ -33,9 +32,10 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
     drawerOpenElement?: HTMLButtonElement;
   } = $props();
 
-  const { appSettings: appSettingsStore, darkMode: darkModeStore, t } = getAppContext();
-  const appSettings = fromStore(appSettingsStore);
-  const darkMode = fromStore(darkModeStore);
+  // `appSettings` / `darkMode` are stable `{ readonly current }` rune handles
+  // from AppContext; read `.current` directly inside the `$derived.by` tracking
+  // scope below (no store bridge, no intermediate `$derived` alias).
+  const { appSettings, darkMode, t } = getAppContext();
 
   const { navigationSettings, progress, topBarSettings } = getLayoutContext();
 

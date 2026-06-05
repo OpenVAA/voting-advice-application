@@ -14,7 +14,6 @@
 -->
 
 <script lang="ts">
-  import { fromStore } from 'svelte/store';
   import { applyAction, enhance } from '$app/forms';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
@@ -33,12 +32,10 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
+  // `appSettings` / `darkMode` / `getRoute` are rune-native `{ readonly current }`
+  // handles from AdminContext (inherited from AppContext); read `.current`
+  // directly (no store bridge).
   const { appSettings, darkMode, getRoute, t } = getAdminContext();
-  const appSettingsState = fromStore(appSettings);
-  const darkModeState = fromStore(darkMode);
-  // getRoute is a rune-native `{ readonly current }` handle (CTX-08); read via
-  // `getRoute.current(...)`. The store-to-rune bridges above stay for the
-  // out-of-scope appSettings/darkMode usages (Phase 98).
   const { pageStyles, topBarSettings } = getLayoutContext();
 
   ////////////////////////////////////////////////////////////////////
@@ -71,7 +68,7 @@
 
   pageStyles.use({ drawer: { background: 'bg-base-300' } });
   topBarSettings.use({
-    imageSrc: darkModeState.current ? '/images/hero-admin.png' : '/images/hero-admin.png'
+    imageSrc: darkMode.current ? '/images/hero-admin.png' : '/images/hero-admin.png'
   });
 </script>
 
@@ -135,7 +132,7 @@
     </div>
 
     <div class="mt-lg">
-      {#if appSettingsState.current.access.voterApp}
+      {#if appSettings.current.access.voterApp}
         <!-- We call invalidateAll when navigation to the Voter App to remove the Nominations we have added when loading User data -->
         <Button
           onclick={() => goto(getRoute.current('Home'), { invalidateAll: true })}

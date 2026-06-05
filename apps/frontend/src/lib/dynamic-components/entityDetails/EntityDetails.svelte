@@ -55,7 +55,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   // graph — declare with $state.
   let voterContext: VoterContext | undefined;
   let answers: AnswerStore | undefined = $state(undefined);
-  if ($appType === 'voter') {
+  if (appType.current === 'voter') {
     voterContext = getVoterContext();
     answers = voterContext.answers;
   }

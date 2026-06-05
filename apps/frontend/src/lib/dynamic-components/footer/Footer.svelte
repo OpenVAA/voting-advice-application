@@ -29,8 +29,8 @@ A template part that is used to show the application's common footer, shown on s
 </script>
 
 <footer {...concatClass(restProps, 'mt-lg pl-safelgl pr-safelgr pb-safelgb text-center small-info')}>
-  {#if $appCustomization.publisherName}
-    {t('common.publishedBy', { publisher: $appCustomization.publisherName })} &bull;
+  {#if appCustomization.current.publisherName}
+    {t('common.publishedBy', { publisher: appCustomization.current.publisherName })} &bull;
   {/if}
   {t('common.madeWithPrefix')}
   <a href="https://github.com/OpenVAA/voting-advice-application/" target="_blank"

@@ -37,7 +37,7 @@ Shows a FAQ and other support content for the candidate application.
     {t('candidateApp.help.ingress')}
   </div>
 
-  {#each $appCustomization.candidateAppFAQ ?? [] as faq}
+  {#each appCustomization.current.candidateAppFAQ ?? [] as faq}
     <Expander title={faq.question} variant="question-help">
       {faq.answer}
     </Expander>

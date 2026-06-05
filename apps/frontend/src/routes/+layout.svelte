@@ -17,7 +17,6 @@
   import '../app.css';
   import { staticSettings } from '@openvaa/app-shared';
   import { onDestroy, untrack } from 'svelte';
-  import { fromStore } from 'svelte/store';
   import { afterNavigate, beforeNavigate, onNavigate } from '$app/navigation';
   import { updated } from '$app/state';
   import { isValidResult } from '$lib/api/utils/isValidResult';
@@ -47,11 +46,11 @@
   initComponentContext();
   initDataContext();
   const {
-    appSettings: appSettingsStore,
+    appSettings,
     reactiveDataRoot,
-    openFeedbackModal: openFeedbackModalStore,
+    openFeedbackModal,
     popupQueue,
-    sendTrackingEvent: sendTrackingEventStore,
+    sendTrackingEvent,
     startPageview,
     submitAllEvents,
     t
@@ -64,14 +63,6 @@
   // object (NOT destructured) per the CLAUDE.md Context Destructuring Rule — `routeTitle.current`
   // is a reactive accessor backed by $state, registered by MainContent / SingleCardContent.
   const routeTitle = $derived(layoutCtx.routeTitle.current);
-
-  // Bridge stores to runes reactivity
-  const appSettings = fromStore(appSettingsStore);
-  // reason: `_sendTrackingEvent` is a value-position type carrier — the bridge instance is
-  // referenced only via `typeof _sendTrackingEvent.current` below to type `umamiRef.trackEvent`.
-  // Direct reads/writes use `sendTrackingEventStore` (lines 148, 178). Renamed `_`-prefixed to
-  // satisfy unused-vars while preserving the type bridge.
-  const _sendTrackingEvent = fromStore(sendTrackingEventStore);
 
   ////////////////////////////////////////////////////////////////////
   // Provide globally used data and check all loaded data
@@ -149,11 +140,13 @@
   // Tracking
   ////////////////////////////////////////////////////////////////////
 
-  // Reference to UmamiAnalytics component to access its trackEvent export
-  let umamiRef = $state<{ trackEvent?: typeof _sendTrackingEvent.current }>();
+  // Reference to UmamiAnalytics component to access its trackEvent export.
+  // `sendTrackingEvent` is the rune handle from AppContext; `.current` is read
+  // here in value position only to type `trackEvent`.
+  let umamiRef = $state<{ trackEvent?: typeof sendTrackingEvent.current }>();
 
   $effect(() => {
-    if (umamiRef?.trackEvent) sendTrackingEventStore.set(umamiRef.trackEvent);
+    if (umamiRef?.trackEvent) sendTrackingEvent.set(umamiRef.trackEvent);
   });
 
   // Check if the app has been updated and if so, reload the app. The version is checked based on `pollInterval` in frontend/svelte.config.js
@@ -205,7 +198,7 @@
   let feedbackModalRef = $state<{ openFeedback: () => void }>();
 
   $effect(() => {
-    if (feedbackModalRef) openFeedbackModalStore.set(() => feedbackModalRef?.openFeedback());
+    if (feedbackModalRef) openFeedbackModal.set(() => feedbackModalRef?.openFeedback());
   });
 
   // popupItem reactivity is handled inline at the template tail via

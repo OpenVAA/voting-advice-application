@@ -29,15 +29,15 @@ A template part that language selection options for the navigation menu if these
 </script>
 
 <!-- Only show the language selection if there are multiple locales to choose from -->
-{#if $locales.length > 1}
+{#if locales.current.length > 1}
   <NavGroup title={t('common.language.select')} data-testid="lang-selector">
-    {#each $locales as loc}
+    {#each locales.current as loc}
       <NavItem
         data-sveltekit-reload
         href={localizeHref(page.url.pathname, { locale: loc as (typeof paraglideLocales)[number] })}
         icon="language"
         text={t(assertTranslationKey(`lang.${loc}`))}
-        disabled={loc === $currentLocale} />
+        disabled={loc === currentLocale.current} />
     {/each}
   </NavGroup>
 {/if}

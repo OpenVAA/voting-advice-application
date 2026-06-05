@@ -43,9 +43,9 @@ Logo files for use on a light and a dark background can be defined. If the latte
   ////////////////////////////////////////////////////////////////////
 
   // Retrieve app logo from settings
-  const logoSrc = $derived($appCustomization.publisherLogo?.url);
-  const inverseSrc = $derived($appCustomization.publisherLogo?.urlDark ?? $appCustomization.publisherLogo?.url);
-  const effectiveAlt = $derived(alt ?? $appCustomization.publisherName);
+  const logoSrc = $derived(appCustomization.current.publisherLogo?.url);
+  const inverseSrc = $derived(appCustomization.current.publisherLogo?.urlDark ?? appCustomization.current.publisherLogo?.url);
+  const effectiveAlt = $derived(alt ?? appCustomization.current.publisherName);
 
   // Check dark mode and select logo file
   const src = $derived.by(() => {
