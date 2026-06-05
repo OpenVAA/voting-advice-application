@@ -211,7 +211,12 @@ Plans:
   1. `persistedState.svelte.ts` and `StackedState.svelte.ts` are deleted; `Readable<T>` is dropped from the relevant `.type.ts` files; a repo-wide grep for `svelte/store` imports across `lib/contexts/**` and `routes/**` returns zero matches.
   2. An ESLint guard rule fails the lint gate if a `svelte/store` import is reintroduced into a migrated context file; `yarn lint:check` exits 0 on the cleaned tree.
 
-**Plans**: TBD
+**Plans**: 4 plans (4 waves — strictly sequential; shared `+layout.svelte` + symbol dependencies force the chain; the ESLint guard is last so the green-tree invariant holds)
+
+  - [ ] 98-01-PLAN.md — data-seam removal: delete the `Readable<DataRoot>` bridge from `dataContext` + drop `Readable` from `dataContext.type.ts`; migrate the 2 `get(dataRoot)` layout consumers to `reactiveDataRoot.instance` — CLEAN-01 _(wave 1)_
+  - [ ] 98-02-PLAN.md — app-seam removal: reshape `appContext` `toStore`/`fromStore` exports to pure rune handles + rewrite `appContext.type.ts`/`trackingService.type.ts` (drop `Readable`/`Writable`); migrate the 5 app-seam consumers (Header/Banner/+layout/admin-layout/admin-login) off `fromStore` — CLEAN-01 _(wave 2)_
+  - [ ] 98-03-PLAN.md — deletions: delete `StackedState.svelte.ts`(+test)/`dataCollectionStore.ts`/`routes/runes-test/`; slim `persistedState.svelte.ts` (drop `*Writable` exports + `svelte/store` import, keep `localStorageState`/`sessionStorageState`); fix the `SettingsOverlay` test oracle → CLEAN-01 acceptance grep zero — CLEAN-01 _(wave 3)_
+  - [ ] 98-04-PLAN.md — CLEAN-02 ESLint guard: scoped `no-restricted-imports` override banning `svelte/store` in `lib/contexts/**`+`routes/**` (re-includes the inherited deep-relative-`lib` ban); negative-test verifies reintroduction fails lint — CLEAN-02 _(wave 4)_
 
 ### Phase 99: Domain B Wave A — View Transitions + Navigation a11y
 
