@@ -4,13 +4,13 @@ milestone: v2.11
 milestone_name: Svelte 5 Runes Migration + View Transitions
 status: executing
 stopped_at: Completed 98-02-PLAN.md
-last_updated: "2026-06-05T12:48:58.558Z"
+last_updated: "2026-06-05T12:58:50.526Z"
 last_activity: 2026-06-05 -- Phase 98 execution started
 progress:
   total_phases: 7
   completed_phases: 5
   total_plans: 19
-  completed_plans: 17
+  completed_plans: 18
   percent: 71
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-12)
 ## Current Position
 
 Phase: 98 (domain-a-wave-4-cleanup) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-06-05 -- Phase 98 execution started
 
@@ -161,6 +161,7 @@ The pre-close artifact audit surfaced 15 open items. All v2.10-internal artifact
 | Phase 97 P01 | 2min | 3 tasks | 2 files |
 | Phase 98 P01 | 10m | 2 tasks | 4 files |
 | Phase 98 P02 | ~15min | 2 tasks | 26 files |
+| Phase 98 P03 | ~10min | 2 tasks | 66 files |
 
 ## Accumulated Context
 
@@ -306,6 +307,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Phase 98-01: removed the Readable<DataRoot> store bridge from dataContext; two layouts now read DataRoot via reactiveDataRoot.instance (data-layer half of CLEAN-01)
 - [Phase ?]: 98-02: appContext store-exports reshaped to pure { current, set?, update? } rune handles; ~17 latent store consumers migrated to .current (Phase 97 codemod covered only appSettings/darkMode/locale/dataRoot/getRoute)
 - [Phase ?]: 98-02: widened FeedbackStatus to include 'dismissed' (Rule 1 bugfix surfaced by localStorageState strict typing)
+- [Phase ?]: Phase 98-03: kept persistedState.svelte.ts filename (K1-compliant), slimmed in place — dropped svelte/store import + *Writable exports, kept localStorageState/sessionStorageState/storageState
+- [Phase ?]: Phase 98-03: CLEAN-01 deletion half complete — StackedState/dataCollectionStore/runes-test deleted; zero svelte/store imports remain in lib/contexts + routes (D-04/K1 enforced)
 
 ### Quick Tasks Completed
 
@@ -344,7 +347,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-05T12:48:58.547Z
+Last session: 2026-06-05T12:58:27.868Z
 Stopped at: Completed 98-02-PLAN.md
 Resume file: None
 Work done this session:

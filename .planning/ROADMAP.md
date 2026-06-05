@@ -222,7 +222,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-  - [ ] 98-03-PLAN.md — deletions: delete `StackedState.svelte.ts`(+test)/`dataCollectionStore.ts`/`routes/runes-test/`; slim `persistedState.svelte.ts` (drop `*Writable` exports + `svelte/store` import, keep `localStorageState`/`sessionStorageState`); fix the `SettingsOverlay` test oracle → CLEAN-01 acceptance grep zero — CLEAN-01 _(wave 3)_
+  - [x] 98-03-PLAN.md — deletions: delete `StackedState.svelte.ts`(+test)/`dataCollectionStore.ts`/`routes/runes-test/`; slim `persistedState.svelte.ts` (drop `*Writable` exports + `svelte/store` import, keep `localStorageState`/`sessionStorageState`); fix the `SettingsOverlay` test oracle → CLEAN-01 acceptance grep zero — CLEAN-01 _(wave 3)_
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
@@ -297,7 +297,7 @@ Domain A is a strict chain: 95 → 96 → 97 → 98. Domain B is a chain: 99 →
 | 95. Domain A Wave 1 — Tier-1 Leaf Contexts | v2.11 | 5/5 | Complete   | 2026-06-04 |
 | 96. Domain A Wave 2 — Tier-2 Bridges | v2.11 | 2/2 | Complete    | 2026-06-04 |
 | 97. Domain A Wave 3 — getRoute + Consumer Codemod | v2.11 | 2/2 | Complete    | 2026-06-05 |
-| 98. Domain A Wave 4 — Cleanup | v2.11 | 2/4 | In Progress|  |
+| 98. Domain A Wave 4 — Cleanup | v2.11 | 3/4 | In Progress|  |
 | 99. Domain B Wave A — View Transitions + Navigation a11y | v2.11 | 3/3 | Complete   | 2026-06-04 |
 | 100. Domain B Wave B — Questions Layout Restructure | v2.11 | 2/2 | Complete    | 2026-06-04 |
 | 101. Suite Re-enable + Milestone-Close Green Gate | v2.11 | 0/TBD | Not started | - |
