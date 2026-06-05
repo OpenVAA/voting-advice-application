@@ -4,8 +4,8 @@ import { untrack } from 'svelte';
  * Native Svelte 5 rune replacement for the index-based `StackedState` LIFO stack
  * used by the layout-overlay system (CTX-04 / D-07).
  *
- * `StackedState` (still present at `./StackedState.svelte.ts`; deleted in Phase 98)
- * implements a strict-LIFO stack with index-based revert. The consumer-side
+ * The superseded `StackedState` (deleted in Phase 98) implemented a strict-LIFO
+ * stack with index-based revert. The consumer-side
  * bookkeeping (the old `getLayoutContext` taking an `onDestroy` argument) snapshots
  * stack lengths at call time, then registers an `onDestroy` callback to revert each
  * stack to that index. The

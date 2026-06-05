@@ -2,16 +2,16 @@ import { mergeSettings } from '@openvaa/app-shared';
 import { flushSync } from 'svelte';
 import { afterEach, describe, expect, it } from 'vitest';
 import { settingsOverlay } from './SettingsOverlay.svelte';
-import { StackedState } from './StackedState.svelte';
 import type { SettingsOverlayApi } from './SettingsOverlay.svelte';
 
 /**
  * Registry tests for the token-keyed `settingsOverlay` (CTX-04 / D-07).
  *
- * The cases that the old index-based `StackedState` could NOT satisfy —
+ * The cases that the old index-based LIFO stack could NOT satisfy —
  * out-of-order revert + idempotent cleanup — are the emphasis here. The
  * LIFO-equivalence case proves `mergeSettings` associativity makes the
- * token-keyed `reduce` result identical to the strict-LIFO stack.
+ * token-keyed `reduce` result identical to a strict-LIFO stack (asserted
+ * against the hardcoded expected merge).
  */
 
 interface Settings {
@@ -109,41 +109,23 @@ describe('settingsOverlay', () => {
     expect(overlay.size).toBe(0);
   });
 
-  it('LIFO-equivalence: strictly-nested push/revert matches the old StackedState result (associativity)', () => {
+  it('LIFO-equivalence: strictly-nested push matches the strict-LIFO merge result (associativity)', () => {
     const base: Settings = { a: 'base', b: 'base', c: 'base' };
     const ov1: Settings = { a: 'one' };
     const ov2: Settings = { b: 'two' };
     const ov3: Settings = { c: 'three' };
 
-    // Reference result via the legacy StackedState (strict-LIFO), exercised in
-    // the same nested push/revert order.
-    let stackResult!: Settings;
-    const stackCleanup = $effect.root(() => {
-      const stack = new StackedState<Settings, Settings>(base, (current, value) => [
-        ...current,
-        mergeSettings(current[current.length - 1], value)
-      ]);
-      stack.push(ov1);
-      stack.push(ov2);
-      stack.push(ov3);
-      stackResult = stack.current;
-    });
-    flushSync();
-
-    // Token-keyed registry, same strictly-nested order.
+    // Token-keyed registry, strictly-nested order. `mergeSettings` associativity
+    // makes the token-keyed `reduce` identical to a strict-LIFO stack, which for
+    // these disjoint overlays is the per-key last-write merge below.
     const overlay = setup(base);
     overlay.push(ov1);
     overlay.push(ov2);
     overlay.push(ov3);
     flushSync();
 
-    expect(overlay.current.a).toBe(stackResult.a);
-    expect(overlay.current.b).toBe(stackResult.b);
-    expect(overlay.current.c).toBe(stackResult.c);
     expect(overlay.current.a).toBe('one');
     expect(overlay.current.b).toBe('two');
     expect(overlay.current.c).toBe('three');
-
-    stackCleanup();
   });
 });
