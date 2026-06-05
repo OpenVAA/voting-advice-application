@@ -272,17 +272,19 @@ const appSettingsExport = {
 
 **Note:** A1-A3 are dispositions the planner should surface; none block planning. No external/compliance assumptions exist in this phase.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Rename the slimmed `persistedState.svelte.ts`?**
    - What we know: It keeps live rune helpers; `persistedState` is not a migration-era prefix.
    - What's unclear: Whether the user wants a "clean permanent name" rename for aesthetic K1 alignment.
    - Recommendation: Keep the filename (K1-compliant as-is); only rename if the planner adds an explicit task. Low value, 8-file churn.
+   - **Disposition (adopted by Plan 03):** Keep the filename, slim in place. No rename task added.
 
 2. **Should the ESLint guard also ban `svelte/store` in `lib/components/**` / `lib/utils/**` now?**
    - What we know: D-03 explicitly files a backlog todo to extend app-wide LATER; D-02 scopes THIS phase to `contexts/**` + `routes/**`.
    - What's unclear: Nothing — this is locked.
    - Recommendation: Scope strictly to `contexts/**` + `routes/**`. Do NOT widen (honors D-02/D-03).
+   - **Disposition (adopted by Plan 04):** Guard scoped to `contexts/**` + `routes/**` only; app-wide extension stays deferred to the D-03 backlog todo.
 
 ## Environment Availability
 
