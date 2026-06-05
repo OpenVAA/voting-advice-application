@@ -188,7 +188,13 @@ Plans:
   3. All 134 `$getRoute(opts)` call sites are migrated to the rune-native `getRoute`.
   4. The destructure-trap audit pass fixes the `AdminNav.svelte:33` `isAuthenticated` destructure production bug and the `adminContext.svelte.ts:97` spread-of-context anti-pattern; admin auth-context `$derived` accessors react correctly; the existing E2E suite stays green.
 
-**Plans**: TBD
+**Plans**: 3 plans (3 waves)
+
+Plans:
+
+- [ ] 97-01-PLAN.md — CONS-03 fixes FIRST (D-01): adminContext spread→explicit delegating getters + AdminNav destructure→$derived; O-2 spread audit (Wave 1)
+- [ ] 97-02-PLAN.md — CTX-08 getRoute rune-native producer ($derived.by, { readonly current }) + appContext.type update + 13 script-block getRouteState→getRoute.current migration (drops candidateContext's last svelte/store import) (Wave 2)
+- [ ] 97-03-PLAN.md — codemod $getRoute( pass + D-08 additive .current getters (Option A, atomic) + run→review→ONE mechanical commit (~278 sites) + admin UAT + delete/archive codemod (Wave 3)
 **UI hint**: yes
 
 ### Phase 98: Domain A Wave 4 — Cleanup
