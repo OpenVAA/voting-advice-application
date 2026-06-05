@@ -285,7 +285,10 @@ Plans:
 
   - **a11y-smoke `voter-detail-drawer` color-contrast (from Phase 99 UAT, 2026-06-04).** The entity-details drawer fails the axe color-contrast WCAG 2.1 AA gate: muted-gray `#b1b1b1`/`#c5c5c5` on white across the candidate `<h3>` title, alliance/faction tag spans, the `match` label, and `small-info`/`small-label` labels. Pre-existing theme debt, newly surfaced when Phase 99's fix `b801cfa6e` unblocked the located a11y walk (the route had never been axe-scanned before). The `a11y-smoke` gate is otherwise 7/8 green; this is the one known-red assertion (NOT quarantined). Needs theme/token remediation to meet 4.5:1 + visual-regression sign-off. See `99-UAT.md` Gaps + `.planning/debug/elections-continue-stall.md`.
 
-**Plans**: TBD
+**Plans**: 3 plans
+- [ ] 101-01-PLAN.md — Un-quarantine the 2 perm-per-app-notifications E2E tests (D-04) + remove stale config/spec comments
+- [ ] 101-02-PLAN.md — A11y color-contrast verify-then-fix: entity-details / voter-detail-drawer to ≥4.5:1 WCAG 2.1 AA (carried-in gap; D-04)
+- [ ] 101-03-PLAN.md — 3× determinism gate (D-01) + full E2E 84/0 (D-03) + full unit + /gsd-complete-milestone v2.11 handoff
 
 ## Progress
 
