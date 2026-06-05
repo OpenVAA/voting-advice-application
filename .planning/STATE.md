@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.11
 milestone_name: Svelte 5 Runes Migration + View Transitions
-status: planning
+status: executing
 stopped_at: Completed 100-01-PLAN.md
-last_updated: "2026-06-05T12:22:38.793Z"
-last_activity: 2026-06-05 -- Phase 97 complete; admin auth-reactivity UAT (CONS-03) PASSED via /gsd-verify-work 97 (admin login fixed to mirror candidate login)
+last_updated: "2026-06-05T12:31:36.768Z"
+last_activity: 2026-06-05 -- Phase 98 execution started
 progress:
   total_phases: 7
   completed_phases: 5
-  total_plans: 15
-  completed_plans: 15
+  total_plans: 19
+  completed_plans: 16
   percent: 71
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 97 — domain-a-wave-3-getroute-consumer-codemod
+**Current focus:** Phase 98 — domain-a-wave-4-cleanup
 
 ## Current Position
 
-Phase: 98 (domain-a-wave-4-cleanup) — READY TO PLAN
-Plan: Not started
-Status: Ready to plan Phase 98
-Last activity: 2026-06-05 -- Phase 97 complete; admin auth-reactivity UAT (CONS-03) PASSED via /gsd-verify-work 97 (admin login fixed to mirror candidate login)
+Phase: 98 (domain-a-wave-4-cleanup) — EXECUTING
+Plan: 2 of 4
+Status: Ready to execute
+Last activity: 2026-06-05 -- Phase 98 execution started
 
 ## Performance Metrics
 
@@ -159,6 +159,7 @@ The pre-close artifact audit surfaced 15 open items. All v2.10-internal artifact
 | Phase 100 P01 | 2min | 1 tasks | 1 files |
 | Phase 100 P02 | 12min | 3 tasks | 3 files |
 | Phase 97 P01 | 2min | 3 tasks | 2 files |
+| Phase 98 P01 | 10m | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -301,6 +302,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Phase 96 Plan 02: both orchestrators read appContext.reactiveAppSettings.current/reactiveLocale.current and drop fromStore(appSettings)/fromStore(locale); candidateContext keeps only fromStore(getRoute) (Phase 97); voterContext fully svelte/store-free; candidate prereg ids migrated to sessionStorageState/localStorageState (CTX-07)
 - [Phase ?]: Phase 100 Plan 01: D-03 answer-survival gate placed after the base-category loop, crossing the Boolean<-Likert type boundary via previousButton; reuses expectQuestionAndAdvance, no new spec, no frontend change
 - [Phase 97]: CONS-03 admin auth-reactivity fixed: adminContext uses explicit delegating getter for isAuthenticated (no authContext spread); AdminNav reads via $derived(ctx.isAuthenticated) — Object spread captured the isAuthenticated $derived by value, de-reactivating admin auth gating. O-2 spread audit confirmed no other top-level reactive getter is captured by a spread.
+- [Phase ?]: Phase 98-01: removed the Readable<DataRoot> store bridge from dataContext; two layouts now read DataRoot via reactiveDataRoot.instance (data-layer half of CLEAN-01)
 
 ### Quick Tasks Completed
 
@@ -339,7 +341,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-05T08:08:10.215Z
+Last session: 2026-06-05T12:31:25.563Z
 Stopped at: Completed 100-01-PLAN.md
 Resume file: None
 Work done this session:

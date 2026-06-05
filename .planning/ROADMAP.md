@@ -214,7 +214,7 @@ Plans:
 **Plans**: 4 plans (4 waves — strictly sequential; shared `+layout.svelte` + symbol dependencies force the chain; the ESLint guard is last so the green-tree invariant holds)
 **Wave 1**
 
-  - [ ] 98-01-PLAN.md — data-seam removal: delete the `Readable<DataRoot>` bridge from `dataContext` + drop `Readable` from `dataContext.type.ts`; migrate the 2 `get(dataRoot)` layout consumers to `reactiveDataRoot.instance` — CLEAN-01 _(wave 1)_
+  - [x] 98-01-PLAN.md — data-seam removal: delete the `Readable<DataRoot>` bridge from `dataContext` + drop `Readable` from `dataContext.type.ts`; migrate the 2 `get(dataRoot)` layout consumers to `reactiveDataRoot.instance` — CLEAN-01 _(wave 1)_
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -297,7 +297,7 @@ Domain A is a strict chain: 95 → 96 → 97 → 98. Domain B is a chain: 99 →
 | 95. Domain A Wave 1 — Tier-1 Leaf Contexts | v2.11 | 5/5 | Complete   | 2026-06-04 |
 | 96. Domain A Wave 2 — Tier-2 Bridges | v2.11 | 2/2 | Complete    | 2026-06-04 |
 | 97. Domain A Wave 3 — getRoute + Consumer Codemod | v2.11 | 2/2 | Complete    | 2026-06-05 |
-| 98. Domain A Wave 4 — Cleanup | v2.11 | 0/TBD | Not started | - |
+| 98. Domain A Wave 4 — Cleanup | v2.11 | 1/4 | In Progress|  |
 | 99. Domain B Wave A — View Transitions + Navigation a11y | v2.11 | 3/3 | Complete   | 2026-06-04 |
 | 100. Domain B Wave B — Questions Layout Restructure | v2.11 | 2/2 | Complete    | 2026-06-04 |
 | 101. Suite Re-enable + Milestone-Close Green Gate | v2.11 | 0/TBD | Not started | - |
