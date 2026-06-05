@@ -1,7 +1,6 @@
 import { dynamicSettings, staticSettings } from '@openvaa/app-shared';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
-import { fromStore, toStore } from 'svelte/store';
 import { browser } from '$app/environment';
 import { page } from '$app/state';
 import { feedbackWriter as feedbackWriterPromise } from '$lib/api/feedbackWriter';
@@ -14,7 +13,7 @@ import { surveyLink } from './survey.svelte';
 import { trackingService } from './tracking';
 import { getComponentContext } from '../component';
 import { getDataContext } from '../data';
-import { localStorageWritable } from '../utils/persistedState.svelte';
+import { localStorageState } from '../utils/persistedState.svelte';
 import type { DynamicSettings } from '@openvaa/app-shared';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { FeedbackData } from '$lib/api/base/feedbackWriter.type';
@@ -49,23 +48,30 @@ export function initAppContext(): AppContext {
   // See `getRoute.svelte.ts` header for the per-field `page` read rationale.
   const getRoute = createGetRoute();
 
-  // Wrap plain ComponentContext values as stores for downstream context backward compat
-  // (VoterContext uses derived([locale, ...]), filterStore expects Readable<string>, etc.)
-  const localeStore = toStore(() => componentCtx.locale);
-  const localesStore = toStore(() => componentCtx.locales);
-  const darkModeStore = toStore(() => componentCtx.darkMode);
+  // Re-expose the plain ComponentContext values as pure `{ current }` rune
+  // handles. Downstream contexts read these via `.current` (no store bridge).
+  const localesExport = {
+    get current() {
+      return componentCtx.locales;
+    }
+  };
 
   ////////////////////////////////////////////////////////////////////
   // App settings, customization and user preferences
   ////////////////////////////////////////////////////////////////////
 
   let appTypeValue = $state<AppType>(undefined);
-  const appType = toStore(
-    () => appTypeValue,
-    (v) => {
+  const appType = {
+    get current() {
+      return appTypeValue;
+    },
+    set(v: AppType) {
       appTypeValue = v;
+    },
+    update(fn: (v: AppType) => AppType) {
+      appTypeValue = fn(appTypeValue);
     }
-  );
+  };
 
   /**
    * NB! Settings are overwritten by root key.
@@ -82,12 +88,17 @@ export function initAppContext(): AppContext {
   let appSettingsValue = $state<AppSettings>(
     mergeInitialAppSettings(staticSettings, dynamicSettings, initialAppSettingsData)
   );
-  const appSettings = toStore(
-    () => appSettingsValue,
-    (v) => {
+  const appSettings = {
+    get current() {
+      return appSettingsValue;
+    },
+    set(v: AppSettings) {
       appSettingsValue = v;
+    },
+    update(fn: (v: AppSettings) => AppSettings) {
+      appSettingsValue = fn(appSettingsValue);
     }
-  );
+  };
 
   // Read appSettingsData directly from page.data (replaces pageDatumStore per D-02)
   //
@@ -120,12 +131,17 @@ export function initAppContext(): AppContext {
       ? initialAppCustomizationData
       : {}
   );
-  const appCustomization = toStore(
-    () => appCustomizationValue,
-    (v) => {
+  const appCustomization = {
+    get current() {
+      return appCustomizationValue;
+    },
+    set(v: AppCustomization) {
       appCustomizationValue = v;
+    },
+    update(fn: (v: AppCustomization) => AppCustomization) {
+      appCustomizationValue = fn(appCustomizationValue);
     }
-  );
+  };
 
   // Same reference-equality guard as appSettingsData above; initialized to the
   // init-time DB value so the first post-init run skips the identical payload.
@@ -138,66 +154,43 @@ export function initAppContext(): AppContext {
     appCustomizationValue = data;
   });
 
-  // See also utility methods below
-  const userPreferences = localStorageWritable('appContext-userPreferences', {} as UserPreferences);
+  // See also utility methods below. `localStorageState` is a rune-native
+  // `{ current, set, update }` persisted handle (no store-bridge wrapper needed).
+  const userPreferences = localStorageState('appContext-userPreferences', {} as UserPreferences);
 
   ////////////////////////////////////////////////////////////////////
   // Rune-input handles for the pure-rune survey/tracking producers
   ////////////////////////////////////////////////////////////////////
 
-  // The survey/tracking producers are now pure-rune (CTX-06): they read their
-  // inputs via `.current` getters, not `fromStore`. The seam owns the store↔rune
-  // conversion, so wrap the relevant inputs as `{ current }` handles here. These
-  // read the SAME `$state` / store the `toStore` exports wrap — no second source
-  // of truth.
-  const appSettingsHandle = {
-    get current() {
-      return appSettingsValue;
-    }
-  };
-  const userPreferencesReactive = fromStore(userPreferences);
-  const userPreferencesHandle = {
-    get current() {
-      return userPreferencesReactive.current;
-    }
-  };
+  // The survey/tracking producers are pure-rune (CTX-06): they read their
+  // inputs via `.current` getters. `appSettings` and `userPreferences` are
+  // already `{ current }` rune handles, so pass them directly — no second
+  // source of truth, no store bridge.
 
   ////////////////////////////////////////////////////////////////////
   // Tracking, survey and popups
   ////////////////////////////////////////////////////////////////////
 
-  // Producers return rune handles; the seam owns the store-shaped bridges so
-  // un-migrated consumers (`$surveyLink`, `sendTrackingEventStore.set`,
-  // `$shouldTrack`) keep working until Phase 98 removes them.
+  // Producers return rune handles; consumers read `.current` directly.
   const tracking = trackingService({
-    appSettings: appSettingsHandle,
-    userPreferences: userPreferencesHandle
+    appSettings,
+    userPreferences
   });
 
-  // Store-shaped tracking bridges matching `trackingService.type.ts`.
-  const trackingSessionIdStore = toStore(() => tracking.sessionId.current);
-  const trackingShouldTrackStore = toStore(() => tracking.shouldTrack.current);
-  const trackingSendEventStore = toStore(
-    () => tracking.sendTrackingEvent.current,
-    (v) => {
-      tracking.sendTrackingEvent.set(v);
-    }
-  );
-
-  const survey = surveyLink({ appSettings: appSettingsHandle, sessionId: tracking.sessionId });
-  // Store-shaped survey bridge for `$surveyLink` consumers (SurveyButton/VoterNav).
-  const surveyLinkStore = toStore(() => survey.current);
+  const survey = surveyLink({ appSettings, sessionId: tracking.sessionId });
 
   const popupQueue = popupStore();
 
   // TODO: Refactor when Cand App is refactored
   let openFeedbackModalValue = $state<(() => void) | undefined>(undefined);
-  const openFeedbackModal = toStore(
-    () => openFeedbackModalValue,
-    (v) => {
+  const openFeedbackModal = {
+    get current() {
+      return openFeedbackModalValue;
+    },
+    set(v: (() => void) | undefined) {
       openFeedbackModalValue = v;
     }
-  );
+  };
 
   ////////////////////////////////////////////////////////////////////
   // Sending feedback
@@ -214,9 +207,9 @@ export function initAppContext(): AppContext {
   // Utility methods for popups and setting user preferences
   ////////////////////////////////////////////////////////////////////
 
-  // Reuses the `userPreferencesReactive` handle created above for the tracking
-  // producer (single `fromStore` over `userPreferences` at the seam).
-  const userPrefsReactive = userPreferencesReactive;
+  // `userPreferences` is a `localStorageState` rune handle; its `.current`
+  // getter is the reactive read used by the popup-countdown predicates below.
+  const userPrefsReactive = userPreferences;
 
   let feedbackTimeout: NodeJS.Timeout | undefined;
 
@@ -272,9 +265,9 @@ export function initAppContext(): AppContext {
   }
 
   // `.current`-getter accessors over the SAME `$state` the `appSettings` /
-  // `locale` `toStore` exports wrap (single source of truth — additive,
-  // mirroring the shipped `reactiveDataRoot` precedent). Plan B (96-02) reads
-  // these to drop `fromStore(appSettings)` / `fromStore(locale)`.
+  // `locale` rune handles read (single source of truth — mirroring the shipped
+  // `reactiveDataRoot` precedent). Consumed by downstream voter/candidate
+  // contexts via `.current`.
   const reactiveAppSettings = {
     get current() {
       return appSettingsValue;
@@ -286,29 +279,15 @@ export function initAppContext(): AppContext {
     }
   };
 
-  // D-08 / Option A: bring the `.current` rune-handle FORWARD onto the EXPORTED
-  // store names so the Wave-3 codemod target (`appSettings.current.X`,
-  // `locale.current`, `darkMode.current`) resolves while the legacy store shape
-  // SURVIVES for same-commit-unmigrated consumers + the out-of-scope
-  // `fromStore(appSettings)` / `fromStore(darkMode)` sites that live to Phase 98.
-  // Built via `{ ...store, get current() }` spread — `toStore(...)` returns
-  // own-enumerable subscribe/set/update, so the spread preserves the store
-  // contract; the `get current()` reads the SAME `$state` the store wraps (single
-  // source of truth, reusing the reactiveAppSettings/reactiveLocale getter body).
-  const appSettingsExport = {
-    ...appSettings,
-    get current() {
-      return appSettingsValue;
-    }
-  };
+  // Pure `{ current }` rune handles for the exported `locale` / `darkMode`
+  // values. The `current` getter reads the SAME ComponentContext value (single
+  // source of truth). Consumers read `.current` directly — no store bridge.
   const localeExport = {
-    ...localeStore,
     get current() {
       return componentCtx.locale;
     }
   };
   const darkModeExport = {
-    ...darkModeStore,
     get current() {
       return componentCtx.darkMode;
     }
@@ -318,22 +297,18 @@ export function initAppContext(): AppContext {
     ...componentCtx,
     ...dataCtx,
     ...tracking,
-    // The producers expose rune handles; re-shape the tracking surface back to
-    // the store types declared on `TrackingService` (the `...tracking` spread
-    // above carries the rune handles, so these overrides are required).
-    sendTrackingEvent: trackingSendEventStore,
-    sessionId: trackingSessionIdStore,
-    shouldTrack: trackingShouldTrackStore,
-    // Override plain ComponentContext values with store-wrapped versions
-    // for backward compat with downstream Phase-52 contexts.
-    // locale/darkMode/appSettings carry an additive `.current` getter (D-08).
+    // The producers expose rune handles directly; the `...tracking` spread
+    // already carries `sendTrackingEvent`/`sessionId`/`shouldTrack` as pure
+    // `{ current, set? }` rune handles matching `TrackingService`.
+    // Override plain ComponentContext values with the `{ current }` rune
+    // handles for downstream Phase-52 contexts (read via `.current`).
     locale: localeExport,
-    locales: localesStore,
+    locales: localesExport,
     darkMode: darkModeExport,
     reactiveAppSettings,
     reactiveLocale,
     appCustomization,
-    appSettings: appSettingsExport,
+    appSettings,
     appType,
     getRoute,
     openFeedbackModal,
@@ -344,7 +319,7 @@ export function initAppContext(): AppContext {
     setSurveyStatus,
     startFeedbackPopupCountdown,
     startSurveyPopupCountdown,
-    surveyLink: surveyLinkStore,
+    surveyLink: survey,
     userPreferences
   });
 }

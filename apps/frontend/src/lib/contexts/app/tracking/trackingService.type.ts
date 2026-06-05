@@ -1,4 +1,3 @@
-import type { Readable, Writable } from 'svelte/store';
 import type { TrackingEvent } from './trackingEvent.type';
 
 /**
@@ -34,17 +33,20 @@ export type TrackingService = {
    */
   resetAllEvents: () => void;
   /**
-   * A writable store, which contains the function that will send the events. In order for tracking to do anything, this value must be set.
+   * A writable rune handle containing the function that will send the events. In order for tracking to do anything, this value must be set via `.set(...)`.
    */
-  sendTrackingEvent: Writable<TrackingHandler | null | undefined>;
+  sendTrackingEvent: {
+    readonly current: TrackingHandler | null | undefined;
+    set(v: TrackingHandler | null | undefined): void;
+  };
   /**
-   * A store containing the persistent sessionId.
+   * A `{ readonly current }` rune handle containing the persistent sessionId.
    */
-  sessionId: Readable<string>;
+  sessionId: { readonly current: string };
   /**
-   * A store resolving to `true` if we should track events.
+   * A `{ readonly current }` rune handle resolving to `true` if we should track events.
    */
-  shouldTrack: Readable<boolean>;
+  shouldTrack: { readonly current: boolean };
 };
 
 export type TrackingHandler = (event: TrackingEvent<Record<string, JSONData>>) => void;

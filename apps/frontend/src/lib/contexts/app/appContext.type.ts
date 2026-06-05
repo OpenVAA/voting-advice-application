@@ -1,4 +1,3 @@
-import type { Readable, Writable } from 'svelte/store';
 import type { FeedbackWriter } from '$lib/api/base/feedbackWriter.type';
 import type { ComponentContext } from '../component';
 import type { DataContext } from '../data';
@@ -12,8 +11,8 @@ import type { UserPreferences } from './userPreferences.type';
  * The AppContext type.
  *
  * ComponentContext properties (`locale`, `locales`, `darkMode`) are overridden with
- * store-wrapped versions for backward compat with downstream Phase-52 contexts
- * (VoterContext, CandidateContext, AdminContext) which use `derived([locale, ...])`.
+ * `{ readonly current }` rune-handle versions for downstream Phase-52 contexts
+ * (VoterContext, CandidateContext, AdminContext) which read them via `.current`.
  *
  * Plain function properties (`t`, `translate`) are kept as-is from ComponentContext.
  */
@@ -21,45 +20,52 @@ export type AppContext = Omit<ComponentContext, 'locale' | 'locales' | 'darkMode
   DataContext &
   TrackingService & {
     /**
-     * The current locale as a readable store (store-wrapped for downstream context compat).
-     * Additive `.current` is the D-08/Option A bring-forward (legacy store survives to Phase 98).
+     * The current locale, exposed as a `{ readonly current }` rune handle. Read via `.current`.
      */
-    locale: Readable<string> & { readonly current: string };
+    locale: { readonly current: string };
     /**
-     * Available locales as a readable store (store-wrapped for downstream context compat).
+     * Available locales, exposed as a `{ readonly current }` rune handle. Read via `.current`.
      */
-    locales: Readable<ReadonlyArray<string>>;
+    locales: { readonly current: ReadonlyArray<string> };
     /**
-     * Dark mode state as a readable store (store-wrapped for downstream context compat).
-     * Additive `.current` is the D-08/Option A bring-forward (legacy store survives to Phase 98).
+     * Dark mode state, exposed as a `{ readonly current }` rune handle. Read via `.current`.
      */
-    darkMode: Readable<boolean> & { readonly current: boolean };
+    darkMode: { readonly current: boolean };
     /**
      * The application type we're using. Set this to the current type in the layout containing the app.
      */
-    appType: Writable<AppType>;
+    appType: {
+      readonly current: AppType;
+      set(v: AppType): void;
+      update(fn: (v: AppType) => AppType): void;
+    };
     /**
-     * A store for app customization from `DataProvider`.
-     * NB. The store is `Writable`, but it should not be written to under normal circumstances.
+     * App customization from `DataProvider`, exposed as a writable rune handle.
+     * NB. It is writable, but it should not be written to under normal circumstances.
      */
-    appCustomization: Writable<AppCustomization>;
+    appCustomization: {
+      readonly current: AppCustomization;
+      set(v: AppCustomization): void;
+      update(fn: (v: AppCustomization) => AppCustomization): void;
+    };
     /**
-     * A store for currently effective app settings.
-     * NB. The store is `Writable`, but it should not be written to under normal circumstances.
-     * Additive `.current` is the D-08/Option A bring-forward (legacy store survives to Phase 98).
+     * Currently effective app settings, exposed as a writable rune handle. Read via `.current`.
+     * NB. It is writable, but it should not be written to under normal circumstances.
      */
-    appSettings: Writable<AppSettings> & { readonly current: AppSettings };
+    appSettings: {
+      readonly current: AppSettings;
+      set(v: AppSettings): void;
+      update(fn: (v: AppSettings) => AppSettings): void;
+    };
     /**
      * Rune-native read handle over the SAME app-settings `$state` the `appSettings`
-     * store wraps. Reactive reads happen via `.current` (no `fromStore` needed).
-     * Mirrors the `reactiveDataRoot` precedent; consumed by downstream contexts
-     * migrating off `fromStore(appSettings)`.
+     * handle reads. Reactive reads happen via `.current`. Mirrors the
+     * `reactiveDataRoot` precedent; consumed by downstream voter/candidate contexts.
      */
     reactiveAppSettings: { readonly current: AppSettings };
     /**
-     * Rune-native read handle over the SAME locale value the `locale` store wraps.
-     * Reactive reads happen via `.current` (no `fromStore` needed). Consumed by
-     * downstream contexts migrating off `fromStore(locale)`.
+     * Rune-native read handle over the SAME locale value the `locale` handle reads.
+     * Reactive reads happen via `.current`. Consumed by downstream voter/candidate contexts.
      */
     reactiveLocale: { readonly current: string };
     /**
@@ -67,22 +73,30 @@ export type AppContext = Omit<ComponentContext, 'locale' | 'locales' | 'darkMode
      */
     getRoute: { readonly current: RouteBuilder };
     /**
-     * A store containing the possible survey link.
+     * The possible survey link, exposed as a `{ readonly current }` rune handle. Read via `.current`.
      */
-    surveyLink: Readable<string | undefined>;
+    surveyLink: { readonly current: string | undefined };
     /**
-     * A store for user (not necessarily a voter) preferences which is maintained in local storage.
+     * User (not necessarily a voter) preferences maintained in local storage,
+     * exposed as a writable rune handle backed by `localStorageState`.
      */
-    userPreferences: Writable<UserPreferences>;
+    userPreferences: {
+      readonly current: UserPreferences;
+      set(v: UserPreferences): void;
+      update(fn: (v: UserPreferences) => UserPreferences): void;
+    };
     /**
      * A store that manages a queue of popup components and resolves to the first component in the queue.
      */
     popupQueue: PopupStore;
     /**
-     * A store that holds the function for opening the feedback modal.
+     * Holds the function for opening the feedback modal, exposed as a writable rune handle.
      * TODO: Refactor when Cand App is refactored.
      */
-    openFeedbackModal: Writable<() => void | undefined>;
+    openFeedbackModal: {
+      readonly current: (() => void) | undefined;
+      set(v: (() => void) | undefined): void;
+    };
     /**
      * Send feedback using the `FeedbackWriter` api.
      */
