@@ -6,7 +6,7 @@ import type { UserPreferences } from '../userPreferences.type';
 vi.mock('$lib/utils/logger', () => ({ logDebugError: vi.fn() }));
 
 /** Minimal rune-shaped `{ current }` handle for a producer input. */
-function handle<T>(value: T): { current: T } {
+function handle<TValue>(value: TValue): { current: TValue } {
   return { current: value };
 }
 

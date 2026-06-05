@@ -70,5 +70,34 @@ export default [
         parser: '@typescript-eslint/parser'
       }
     }
+  },
+  // CLEAN-02 (v2.11 K1 guard): ban `svelte/store` in migrated contexts/routes so any
+  // reintroduction of the store seam fails `yarn lint:check`. Scoped to D-02's globs only
+  // (lib/contexts/** + routes/**); D-03 backlogs widening to lib/components/** + lib/utils/**.
+  // Flat config REPLACES (does not merge) the `no-restricted-imports` array for in-scope files,
+  // so the inherited deep-relative-`lib` `patterns` ban (shared-config/eslint.config.mjs:147-152)
+  // is re-included VERBATIM here, or it would silently drop for these files (RESEARCH Pitfall 3).
+  {
+    files: ['src/lib/contexts/**/*.{ts,svelte}', 'src/routes/**/*.{ts,svelte}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'svelte/store',
+              message:
+                'svelte/store is banned in migrated contexts/routes (v2.11 K1). Use $state/$derived rune handles exposing `current`. See .planning/v2.11-DECISIONS.md K1.'
+            }
+          ],
+          patterns: [
+            {
+              regex: '^(\\.\\./){2,}lib(/|$)',
+              message: 'Use the $lib alias instead of deep relative imports. Example: import X from "$lib/components/Foo".'
+            }
+          ]
+        }
+      ]
+    }
   }
 ];

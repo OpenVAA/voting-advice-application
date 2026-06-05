@@ -6,7 +6,7 @@ import { surveyLink } from './survey.svelte';
  * its inputs. The producer reads `appSettings.current` / `sessionId.current`
  * directly (no `fromStore`), so the tests construct `{ current }` handles.
  */
-function handle<T>(value: T): { current: T } {
+function handle<TValue>(value: TValue): { current: TValue } {
   return { current: value };
 }
 
