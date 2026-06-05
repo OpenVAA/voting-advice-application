@@ -188,19 +188,15 @@ Plans:
   3. All 134 `$getRoute(opts)` call sites are migrated to the rune-native `getRoute`.
   4. The destructure-trap audit pass fixes the `AdminNav.svelte:33` `isAuthenticated` destructure production bug and the `adminContext.svelte.ts:97` spread-of-context anti-pattern; admin auth-context `$derived` accessors react correctly; the existing E2E suite stays green.
 
-**Plans**: 3 plans (3 waves)
+**Plans**: 2 plans (2 waves) — reduced from 3 during the `--reviews` revision (D-09: the getRoute producer rewrite folds into the atomic codemod commit; see 97-CONTEXT.md)
 Plans:
 **Wave 1**
 
-- [ ] 97-01-PLAN.md — CONS-03 fixes FIRST (D-01): adminContext spread→explicit delegating getters + AdminNav destructure→$derived; O-2 spread audit (Wave 1)
+- [ ] 97-01-PLAN.md — CONS-03 fixes FIRST (D-01): adminContext spread→explicit delegating getters + AdminNav destructure→$derived; O-2 top-level-getter spread audit (Wave 1)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 97-02-PLAN.md — CTX-08 getRoute rune-native producer ($derived.by, { readonly current }) + appContext.type update + 13 script-block getRouteState→getRoute.current migration (drops candidateContext's last svelte/store import) (Wave 2)
-
-**Wave 3** *(blocked on Wave 2 completion)*
-
-- [ ] 97-03-PLAN.md — codemod $getRoute( pass + D-08 additive .current getters (Option A, atomic) + run→review→ONE mechanical commit (~278 sites) + admin UAT + delete/archive codemod (Wave 3)
+- [ ] 97-02-PLAN.md — atomic mechanical commit (D-08/D-09): CTX-08 getRoute rune-native producer ($derived.by, { readonly current }) + appContext.type update + 13 script-block getRouteState→getRoute.current migration + codemod $getRoute( pass + additive .current getters + run→review→ONE atomic commit (~278 sites) + admin UAT + delete/archive codemod (Wave 2)
 
 **UI hint**: yes
 
@@ -285,7 +281,7 @@ Domain A is a strict chain: 95 → 96 → 97 → 98. Domain B is a chain: 99 →
 |-------|-----------|----------------|--------|-----------|
 | 95. Domain A Wave 1 — Tier-1 Leaf Contexts | v2.11 | 5/5 | Complete   | 2026-06-04 |
 | 96. Domain A Wave 2 — Tier-2 Bridges | v2.11 | 2/2 | Complete    | 2026-06-04 |
-| 97. Domain A Wave 3 — getRoute + Consumer Codemod | v2.11 | 0/TBD | Not started | - |
+| 97. Domain A Wave 3 — getRoute + Consumer Codemod | v2.11 | 0/2 | Not started | - |
 | 98. Domain A Wave 4 — Cleanup | v2.11 | 0/TBD | Not started | - |
 | 99. Domain B Wave A — View Transitions + Navigation a11y | v2.11 | 3/3 | Complete   | 2026-06-04 |
 | 100. Domain B Wave B — Questions Layout Restructure | v2.11 | 2/2 | Complete    | 2026-06-04 |
