@@ -202,18 +202,19 @@ async function expectCategoryIntroAndAdvance({
  *
  * `text` is required: the e2e/base dataset is stable, so every question heading is
  * known in advance (see the `baseOpinion*` / `*Question` entries in TEXT_RE). Gating
- * on the exact heading IS the deterministic settle — once the heading shows the
- * expected text, the reused `questions/[questionId]/+page.svelte` has swapped its
- * `$derived` `question` (and therefore its options) to THIS question, so the option
- * count read below is the new question's, not the outgoing one's.
+ * on the exact heading IS the deterministic settle for WHICH question we are on; the
+ * option count is then read from a locator SCOPED to that question's id (see body),
+ * because the `{#key question.type}` variant remount can leave the outgoing options
+ * mounted for a frame after the heading has updated — a page-wide count would be
+ * stale and `optionIndex` would pick the wrong option.
  *
  * This replaces the v2.11 SETTLE-BEFORE-COUNT approach (an entry `waitForURL` guess
  * + a count-stability poll). That guess assumed a Q→Q navigation was always pending
  * on entry and stalled a full `TIMEOUTS.page` on every call already sitting on its
  * target question (after categoryStart / goBack / previousButton), which is what
- * pushed the journey past `JOURNEY_TEST_MAX`. `toHaveText(text)` already retries
- * until the incoming question's heading lands, so no separate URL wait or poll is
- * needed — the count is read only after the correct heading is asserted.
+ * pushed the journey past `JOURNEY_TEST_MAX`. The required `text` + the questionId-
+ * scoped option locator together give a deterministic settle with no entry stall and
+ * no stability poll.
  */
 async function expectQuestionAndAdvance({
   page,
@@ -230,13 +231,25 @@ async function expectQuestionAndAdvance({
 }): Promise<void> {
   await expectUrlChange(page, async () => {
     const questionHeading = page.getByTestId(testIds.voter.questions.heading);
-    const answerOptions = page.getByTestId(testIds.voter.questions.answerOption);
     const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
 
-    // Deterministic settle: wait for the heading to show THIS question's known
-    // text. `toHaveText` retries until the incoming question lands, so a still
-    // mid-swap transient resolves here before the option count is read.
+    // Deterministic settle: wait for the heading to show THIS question's known text.
     await expect(questionHeading).toHaveText(text, { timeout: TIMEOUTS.element });
+
+    // Scope the answer options to the CURRENT question id. On a Q→Q nav the page
+    // reuses questions/[questionId]/+page.svelte and the variant remounts via
+    // `{#key question.type}`, so the OUTGOING question's [data-testid=question-choice]
+    // options can linger in the DOM for a frame AFTER the heading has already updated.
+    // A bare page-wide `getByTestId('question-choice').count()` then captures the
+    // stale/combined set, making `optionIndex(n) = nth(n-1)` resolve to a NON-last
+    // option for some questions — which silently corrupted the polar-MAX voter profile
+    // so Polar-Min out-ranked the partial-answer Special candidate (results ranking
+    // flip). Anchor to `questionChoices-<id>` (the option `name`,
+    // QuestionChoices.svelte:267; mirrors voter-journey.fixture) so count()/nth() only
+    // ever see THIS question's options.
+    const questionId = new URL(page.url()).pathname.replace(/\/+$/, '').split('/').filter(Boolean).pop() ?? '';
+    // eslint-disable-next-line playwright/no-restricted-locators -- testid+name conjunction not expressible via getByTestId/getByRole
+    const answerOptions = page.locator(`[data-testid="question-choice"][name="questionChoices-${questionId}"]`);
     await expect(answerOptions.first()).toBeVisible({ timeout: TIMEOUTS.element });
 
     const nOptions = await answerOptions.count();
