@@ -69,8 +69,12 @@ const TEXT_RE = {
   optionalOpinionsB: /\[qg-opin-opt-b-Skipped\] Optional Opinion Questions B/i,
   regionalOpinionsCategory: /Opinion Questions for Regional Elections Only/i,
   regionallyFilteredCategory: /Opinion Questions Filtered per Question NE/i,
-  // questions / answers
+  // questions / answers — base-category opinion question headings, in walk
+  // order (the e2e/base seed is stable, so every heading is known in advance).
   baseOpinion1Likert5: /Base opinion 1 — Likert 5/i,
+  baseOpinion2Likert4: /Base opinion 2 — Likert 4/i,
+  baseOpinion3Likert7: /Base opinion 3 — Likert 7/i,
+  baseOpinion4Categorical: /Base opinion 4 — Categorical/i,
   baseOpinion5Boolean: /Base opinion 5 — Boolean/i,
   regionalOpinionsQuestion: /Regional-only opinion 1/i,
   filtMunNeOpinion: /Filtered Mun-NE opinion/i,
@@ -192,8 +196,24 @@ async function expectCategoryIntroAndAdvance({
 }
 
 /**
- * Expect the question with the given text or any text if not given, then either answer the option given by `optionIndex(nOptions)` or skip if `skip` is true.
+ * Expect the question with the given (REQUIRED) heading `text`, then either answer the
+ * option given by `optionIndex(nOptions)` or skip if `skip` is true.
  * Unless `allowPreselected` is true, will fail if the option is already selected.
+ *
+ * `text` is required: the e2e/base dataset is stable, so every question heading is
+ * known in advance (see the `baseOpinion*` / `*Question` entries in TEXT_RE). Gating
+ * on the exact heading IS the deterministic settle — once the heading shows the
+ * expected text, the reused `questions/[questionId]/+page.svelte` has swapped its
+ * `$derived` `question` (and therefore its options) to THIS question, so the option
+ * count read below is the new question's, not the outgoing one's.
+ *
+ * This replaces the v2.11 SETTLE-BEFORE-COUNT approach (an entry `waitForURL` guess
+ * + a count-stability poll). That guess assumed a Q→Q navigation was always pending
+ * on entry and stalled a full `TIMEOUTS.page` on every call already sitting on its
+ * target question (after categoryStart / goBack / previousButton), which is what
+ * pushed the journey past `JOURNEY_TEST_MAX`. `toHaveText(text)` already retries
+ * until the incoming question's heading lands, so no separate URL wait or poll is
+ * needed — the count is read only after the correct heading is asserted.
  */
 async function expectQuestionAndAdvance({
   page,
@@ -203,60 +223,24 @@ async function expectQuestionAndAdvance({
   allowPreselected = false
 }: {
   page: Page;
-  text?: RegExp | string;
+  text: RegExp | string;
   skip?: boolean;
   optionIndex?: (nOptions: number) => number;
   allowPreselected?: boolean;
 }): Promise<void> {
-  // SETTLE-BEFORE-COUNT (v2.11 regression fix). On a Q→Q param-only nav,
-  // SvelteKit reuses `questions/[questionId]/+page.svelte` (the page derives
-  // `question` via `$derived` rather than remounting — see that file), so the
-  // OUTGOING question's `[data-testid=question-choice]` options stay mounted
-  // until the navigation triggered by the PREVIOUS step's click resolves and
-  // the incoming options swap in. The previous helper fires `goto` after a
-  // `DELAY.md` (350ms) debounce, so on entry here the URL + option DOM still
-  // belong to the OUTGOING question. Reading `answerOptions.count()`
-  // synchronously at entry therefore captured the previous question's option
-  // count (e.g. 7 from the Likert7 base-3), making `optionIndex(7) → .nth(6)`
-  // resolve against the new 3-option categorical base-4 → element-not-found.
-  //
-  // Fix: capture the entry URL, then wait for the navigation to land on a NEW
-  // questions route (the questionId path segment changes) BEFORE reading the
-  // option count. `text` callers additionally gate on the heading. This is a
-  // deterministic settle — no fixed waits, no reliance on View Transitions
-  // (disproven as the cause: `reducedMotion: 'reduce'` did not fix it).
-  const urlAtEntry = page.url();
-  await page
-    .waitForURL((u) => u.pathname.includes('/questions/') && u.toString() !== urlAtEntry, {
-      timeout: TIMEOUTS.page
-    })
-    .catch(() => null);
-
   await expectUrlChange(page, async () => {
     const questionHeading = page.getByTestId(testIds.voter.questions.heading);
     const answerOptions = page.getByTestId(testIds.voter.questions.answerOption);
     const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
 
-    await (text
-      ? expect(questionHeading).toHaveText(text, { timeout: TIMEOUTS.element })
-      : expect(questionHeading).toBeVisible({ timeout: TIMEOUTS.element }));
+    // Deterministic settle: wait for the heading to show THIS question's known
+    // text. `toHaveText` retries until the incoming question lands, so a still
+    // mid-swap transient resolves here before the option count is read.
+    await expect(questionHeading).toHaveText(text, { timeout: TIMEOUTS.element });
     await expect(answerOptions.first()).toBeVisible({ timeout: TIMEOUTS.element });
-    // Poll until the option count is stable across two consecutive reads, so a
-    // mid-swap transient (incoming options still mounting) can't be captured.
-    let stableCount = await answerOptions.count();
-    await expect
-      .poll(
-        async () => {
-          const current = await answerOptions.count();
-          const settled = current > 0 && current === stableCount;
-          stableCount = current;
-          return settled;
-        },
-        { timeout: TIMEOUTS.element }
-      )
-      .toBe(true);
 
-    const answerOption = answerOptions.nth(optionIndex(stableCount));
+    const nOptions = await answerOptions.count();
+    const answerOption = answerOptions.nth(optionIndex(nOptions));
     await Promise.all([
       expect(answerOption).toBeVisible({ timeout: TIMEOUTS.element }),
       expect(nextButton).toBeVisible({ timeout: TIMEOUTS.element })
@@ -556,6 +540,7 @@ test.describe('voter journey', () => {
       // Answer first question
       await expectQuestionAndAdvance({
         page,
+        text: TEXT_RE.baseOpinion1Likert5,
         optionIndex: (n) => n - 1 // Answer last option for matching test
       });
       // Browser-back to the first (now-answered) question.
@@ -565,9 +550,11 @@ test.describe('voter journey', () => {
       const lastOption = answerOptions.last();
       await expect.soft(lastOption).toBeChecked({ timeout: TIMEOUTS.element });
       await expect.soft(deleteButton).toBeVisible({ timeout: TIMEOUTS.element });
-      // Move to the next question (2nd in the category)
+      // Move to the next question (2nd in the category). We are back on Base-1
+      // (just navigated back), so gate on its heading; advancing lands on Base-2.
       await expectQuestionAndAdvance({
         page,
+        text: TEXT_RE.baseOpinion1Likert5,
         optionIndex: (n) => n - 1,
         allowPreselected: true // Allow the last option to be preselected since we just went back to this question.
       });
@@ -584,10 +571,18 @@ test.describe('voter journey', () => {
     });
 
     await test.step('answer remaining base questions at polar-MAX, delete answer, results link gated on min answers', async () => {
-      // Answer and advance through the rest of the category's questions
-      for (let i = 1; i <= 4; i++) {
+      // Answer and advance through the rest of the category's questions. We are
+      // on Base-2 here (Base-1 was answered above); the dataset is stable, so the
+      // remaining base questions are known in walk order: Base-2 → 3 → 4 → 5.
+      for (const text of [
+        TEXT_RE.baseOpinion2Likert4,
+        TEXT_RE.baseOpinion3Likert7,
+        TEXT_RE.baseOpinion4Categorical,
+        TEXT_RE.baseOpinion5Boolean
+      ]) {
         await expectQuestionAndAdvance({
           page,
+          text,
           optionIndex: (n) => n - 1 // Answer last option for matching test
         });
       }
@@ -610,6 +605,7 @@ test.describe('voter journey', () => {
       // Re-answer the question to re-enable the results link and move forward, we also check that the option is not selected anymore
       await expectQuestionAndAdvance({
         page,
+        text: TEXT_RE.baseOpinion5Boolean,
         optionIndex: (n) => n - 1,
         allowPreselected: false
       });
@@ -658,7 +654,8 @@ test.describe('voter journey', () => {
       // Advance forward again to confirm the round-trip left answers intact and
       // we land back on the (already-answered) Boolean question without losing
       // state. allowPreselected: true because the option is already checked.
-      await expectQuestionAndAdvance({ page, allowPreselected: true });
+      // We are on Base-4 (Categorical) after the back-nav; gate on its heading.
+      await expectQuestionAndAdvance({ page, text: TEXT_RE.baseOpinion4Categorical, allowPreselected: true });
     });
 
     // ====================================================================
