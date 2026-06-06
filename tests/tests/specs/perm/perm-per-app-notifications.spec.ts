@@ -15,16 +15,7 @@
 
 import { expect, test } from '../../fixtures/voter/views';
 
-// TODO: re-enable perm-per-app-notifications projects + spec after the
-// Svelte 5 runes migration. The notification popup tests below are unstable
-// because the popup-management lifecycle (queueing / mount timing / cross-route
-// isolation of voter vs candidate notifications) is still in flux. The test
-// bodies are intact and MUST be re-enabled (back to `test.describe`) + popup
-// management verified end-to-end once the migration completes.
-// reason: intentional describe-level skip pending the runes-migration popup
-// rework; bodies are intact and MUST be re-enabled.
-// eslint-disable-next-line playwright/no-skipped-test
-test.describe.skip('perm-per-app-notifications', () => {
+test.describe('perm-per-app-notifications', () => {
   test('voter route shows voter notification only', async ({ page, voterHomePage }) => {
     await voterHomePage.goToPage('en');
     // Strict-match the voter notification dialog by its marker — defends
