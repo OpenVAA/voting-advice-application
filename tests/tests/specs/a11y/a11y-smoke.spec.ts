@@ -193,6 +193,19 @@ voterJourneyTest('axe accessibility scan — voter-detail-drawer', async ({ answ
   await page.getByTestId('entity-card').first().waitFor({ state: 'visible', timeout: 10000 });
   await page.getByTestId('entity-card').first().click();
   await page.getByRole('dialog').waitFor({ state: 'visible', timeout: 10000 });
+  // Wait for the drawer's ENTRANCE TRANSITION to finish before scanning. The Drawer
+  // content flies in via Svelte `transition:fly` (Drawer.svelte:82), which animates
+  // opacity 0->1. axe composites text colour through any in-flight ancestor opacity,
+  // so scanning mid-fly produced phantom `color-contrast` failures — e.g.
+  // `text-secondary` #666666 rendered ~#969696 (2.95:1) and `primary` #2546a8 rendered
+  // ~#6a80c3 (3.82:1), both exactly the token at ~0.69 opacity. At FULL opacity the
+  // tokens pass (≈5.7:1 / ≈8.6:1 on white), so this is a scan-timing fix, NOT a theme
+  // change. Svelte transitions run as CSS animations, so await every running animation
+  // on the dialog subtree (rAF first so the fly has registered).
+  await page.getByRole('dialog').evaluate(async (el) => {
+    await new Promise((resolve) => requestAnimationFrame(() => resolve(undefined)));
+    await Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => undefined)));
+  });
 
   const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
   await assertAxeGates(results, testInfo, 'voter-detail-drawer');
