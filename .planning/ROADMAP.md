@@ -288,8 +288,8 @@ Plans:
 **Plans**: 3 plans
 **Wave 1**
 
-- [ ] 101-01-PLAN.md — Un-quarantine the 2 perm-per-app-notifications E2E tests (D-04) + remove stale config/spec comments
-- [ ] 101-02-PLAN.md — A11y color-contrast verify-then-fix: entity-details / voter-detail-drawer to ≥4.5:1 WCAG 2.1 AA (carried-in gap; D-04)
+- [x] 101-01-PLAN.md — Un-quarantine the 2 perm-per-app-notifications E2E tests (D-04) + remove stale config/spec comments
+- [x] 101-02-PLAN.md — A11y color-contrast verify-then-fix: entity-details / voter-detail-drawer to ≥4.5:1 WCAG 2.1 AA (carried-in gap; D-04)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -308,7 +308,7 @@ Domain A is a strict chain: 95 → 96 → 97 → 98. Domain B is a chain: 99 →
 | 98. Domain A Wave 4 — Cleanup | v2.11 | 4/4 | Complete    | 2026-06-05 |
 | 99. Domain B Wave A — View Transitions + Navigation a11y | v2.11 | 3/3 | Complete   | 2026-06-04 |
 | 100. Domain B Wave B — Questions Layout Restructure | v2.11 | 2/2 | Complete    | 2026-06-04 |
-| 101. Suite Re-enable + Milestone-Close Green Gate | v2.11 | 0/TBD | Not started | - |
+| 101. Suite Re-enable + Milestone-Close Green Gate | v2.11 | 2/3 | In Progress|  |
 
 See `.planning/MILESTONES.md` for cumulative history and `.planning/milestones/` for per-milestone roadmaps + requirements + audits.
 </content>
