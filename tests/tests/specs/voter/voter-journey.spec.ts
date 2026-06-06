@@ -624,38 +624,22 @@ test.describe('voter journey', () => {
     // the SETTLE-BEFORE-COUNT comment on expectQuestionAndAdvance); once Plan 02
     // hoists rendering into the layout, this SAME assertion proves no regression.
     await test.step('D-03 answer survives a multi-step Q→Q run across a question-type boundary', async () => {
-      // We are currently ON Base-5 (Boolean) with its last option answered (the
-      // preceding step re-answered it). All of Base-1..5 were answered at the
-      // last option via optionIndex: (n) => n - 1. Base-5 is Boolean; Base-4 is
-      // Categorical (singleChoiceCategorical, per the e2e/base seed) — so a
-      // single back-navigation crosses the Boolean→Categorical type boundary to
-      // an EARLIER answered question.
-      const questionHeading = page.getByTestId(testIds.voter.questions.heading);
-      // Confirm we start on the post-boundary (Boolean) question.
-      await expect.soft(questionHeading).toHaveText(TEXT_RE.baseOpinion5Boolean, { timeout: TIMEOUTS.element });
-
-      // Navigate BACK across the type boundary to Base-4 (Categorical) using the
-      // in-app previousButton — match the previous-button navigation the
-      // surrounding base-category steps use (lines 599-602) for determinism.
+      // We were at the category boundary
+      await expectCategoryIntroAndAdvance({ page, text: TEXT_RE.optionalOpinionsA });
       const previousButton = page.getByTestId(testIds.voter.questions.previousButton);
-      await expect(previousButton).toBeVisible({ timeout: TIMEOUTS.element });
+      const questionHeading = page.getByTestId(testIds.voter.questions.heading);
+      // Go back two quetsions to the Base-4 Categorical question
       await previousButton.click();
-
-      // The earlier (Categorical, pre-boundary) question's previously-selected option
-      // — the LAST option, matching the optionIndex: (n) => n - 1 used to answer
-      // it — must STILL be checked. This is the D-03 answer-survival contract.
+      await expect.soft(questionHeading).toHaveText(TEXT_RE.baseOpinion5Boolean, { timeout: TIMEOUTS.element });
+      await previousButton.click();
+      await expect.soft(questionHeading).toHaveText(TEXT_RE.baseOpinion4Categorical, { timeout: TIMEOUTS.element });
+      // The earlier answer must still be checked
       const answerOptions = page.getByTestId(testIds.voter.questions.answerOption);
       const lastOption = answerOptions.last();
       await expect(lastOption).toBeChecked({ timeout: TIMEOUTS.element });
-      // Sanity: this back-target is NOT the Boolean question we came from — the
-      // round-trip genuinely crossed the type boundary.
-      await expect.soft(questionHeading).not.toHaveText(TEXT_RE.baseOpinion5Boolean, { timeout: TIMEOUTS.element });
-
-      // Advance forward again to confirm the round-trip left answers intact and
-      // we land back on the (already-answered) Boolean question without losing
-      // state. allowPreselected: true because the option is already checked.
-      // We are on Base-4 (Categorical) after the back-nav; gate on its heading.
+      // Advance forward again to confirm the round-trip left answers intact
       await expectQuestionAndAdvance({ page, text: TEXT_RE.baseOpinion4Categorical, allowPreselected: true });
+      await expectQuestionAndAdvance({ page, text: TEXT_RE.baseOpinion5Boolean, allowPreselected: true });
     });
 
     // ====================================================================
