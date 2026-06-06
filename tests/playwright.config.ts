@@ -504,6 +504,20 @@ export default defineConfig({
     },
 
     // perm-per-app-notifications (2 tests) — sequential after perm-disable-candidate-app.
+    //
+    // The chain (and the perm family's anchor on the journey leaves) is
+    // load-bearing for the FULL `yarn test:e2e` run: every perm setup overwrites
+    // the single global `app_settings` row (setupFromTemplate → Writer Pass-5), so
+    // a perm setup must never run while a journey or another perm spec is reading
+    // it. That ordering is what makes `--project=perm-per-app-notifications` pull in
+    // voter-journey + the whole perm chain.
+    //
+    // To verify just these 2 tests in isolation (skips the journeys + perm chain),
+    // run the REAL setup project then the spec, both with --no-deps:
+    //   yarn test:e2e --project=data-setup-perm-per-app-notifications --no-deps
+    //   yarn test:e2e --project=perm-per-app-notifications --no-deps
+    // (--no-deps reproduces the exact full-suite setup state without the chain; run
+    // `yarn db:reset` afterwards to drop the standalone seed.)
     {
       name: 'data-setup-perm-per-app-notifications',
       testMatch: /perm-per-app-notifications\.setup\.ts/,
