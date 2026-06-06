@@ -54,7 +54,7 @@ Requirements for this milestone. Each maps to exactly one roadmap phase.
 
 ### Suite (SUITE)
 
-- [ ] **SUITE-01**: the 2 quarantined `perm-per-app-notifications` E2E tests are re-enabled (the quarantine was explicitly gated on this migration), and the full E2E + unit suites are green with no behavior regression vs the v2.10 ship baseline.
+- [x] **SUITE-01**: the 2 quarantined `perm-per-app-notifications` E2E tests are re-enabled (the quarantine was explicitly gated on this migration), and the full E2E + unit suites are green with no behavior regression vs the v2.10 ship baseline.
 
 ## Future Requirements
 
@@ -101,7 +101,7 @@ Which phases cover which requirements. Populated during roadmap creation.
 | NAVA11Y-03 | Phase 99 | Pending — spec extended + typechecks; live axe gate blocked by pre-existing `voter-journey.fixture.ts:130` fixture issue (operator/UAT) |
 | QLAYOUT-01 | Phase 100 | Complete |
 | QLAYOUT-02 | Phase 100 | Complete |
-| SUITE-01 | Phase 101 | Pending |
+| SUITE-01 | Phase 101 | Complete |
 
 **Coverage:**
 

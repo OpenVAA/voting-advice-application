@@ -130,7 +130,7 @@ Audit: `.planning/milestones/v2.10-MILESTONE-AUDIT.md` (status: tech_debt — no
 - [x] **Phase 98: Domain A Wave 4 — Cleanup** - delete `persistedState`/`StackedState`, drop `Readable<T>`, zero `svelte/store` imports, ESLint guard (completed 2026-06-05)
 - [x] **Phase 99: Domain B Wave A — View Transitions + Navigation a11y** - `onNavigate` + `startViewTransition` cross-fade, `aria-live` route announcer, `afterNavigate` focus reset, reduced-motion belt-and-braces (completed 2026-06-04)
 - [x] **Phase 100: Domain B Wave B — Questions Layout Restructure** - `/questions` unified-layout-with-empty-leaf + `{#key question.type}` variant remount (completed 2026-06-04)
-- [ ] **Phase 101: Suite Re-enable + Milestone-Close Green Gate** - un-quarantine the 2 `perm-per-app-notifications` tests + full E2E + unit suites green vs v2.10 baseline
+- [x] **Phase 101: Suite Re-enable + Milestone-Close Green Gate** - un-quarantine the 2 `perm-per-app-notifications` tests + full E2E + unit suites green vs v2.10 baseline (completed 2026-06-06)
 
 ## Phase Details
 
@@ -293,7 +293,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 101-03-PLAN.md — 3× determinism gate (D-01) + full E2E 84/0 (D-03) + full unit + /gsd-complete-milestone v2.11 handoff
+- [x] 101-03-PLAN.md — 3× determinism gate (D-01) + full E2E 84/0 (D-03) + full unit + /gsd-complete-milestone v2.11 handoff
 
 ## Progress
 
@@ -308,7 +308,7 @@ Domain A is a strict chain: 95 → 96 → 97 → 98. Domain B is a chain: 99 →
 | 98. Domain A Wave 4 — Cleanup | v2.11 | 4/4 | Complete    | 2026-06-05 |
 | 99. Domain B Wave A — View Transitions + Navigation a11y | v2.11 | 3/3 | Complete   | 2026-06-04 |
 | 100. Domain B Wave B — Questions Layout Restructure | v2.11 | 2/2 | Complete    | 2026-06-04 |
-| 101. Suite Re-enable + Milestone-Close Green Gate | v2.11 | 2/3 | In Progress|  |
+| 101. Suite Re-enable + Milestone-Close Green Gate | v2.11 | 3/3 | Complete    | 2026-06-06 |
 
 See `.planning/MILESTONES.md` for cumulative history and `.planning/milestones/` for per-milestone roadmaps + requirements + audits.
 </content>
