@@ -14,6 +14,7 @@
 -->
 
 <script lang="ts">
+  import { Notification } from '$lib/components/notification';
   import { getAppContext } from '$lib/contexts/app';
   import { initCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
@@ -28,7 +29,7 @@
   // Get app context
   ////////////////////////////////////////////////////////////////////
 
-  const { appSettings, appType, t } = getAppContext();
+  const { appSettings, appType, popupQueue, t } = getAppContext();
 
   ////////////////////////////////////////////////////////////////////
   // Init Candidate Context
@@ -41,17 +42,15 @@
   // Popup management
   ////////////////////////////////////////////////////////////////////
 
-  // This results in effect_update_depth_exceeded error.
-  // See: apps/frontend/src/routes/(voters)/+layout.svelte
-  // $effect(() => {
-  //   if (!appSettings.current.access.candidateApp || !appSettings.current.dataAdapter.supportsCandidateApp) return;
-  //   // Show possible notification
-  //   if (appSettings.current.notifications.candidateApp?.show)
-  //     popupQueue.push({
-  //       component: Notification,
-  //       props: { data: appSettings.current.notifications.candidateApp }
-  //     });
-  // });
+  $effect(() => {
+    if (!appSettings.current.access.candidateApp || !appSettings.current.dataAdapter.supportsCandidateApp) return;
+    // Show possible notification
+    if (appSettings.current.notifications.candidateApp?.show)
+      popupQueue.push({
+        component: Notification,
+        props: { data: appSettings.current.notifications.candidateApp }
+      });
+  });
 
   ////////////////////////////////////////////////////////////////////
   // Layout and top bar
