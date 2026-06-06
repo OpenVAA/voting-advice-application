@@ -504,8 +504,6 @@ export default defineConfig({
     },
 
     // perm-per-app-notifications (2 tests) — sequential after perm-disable-candidate-app.
-    // The spec is currently quarantined (describe.skip).
-    // TODO: re-enable perm-per-app-notifications projects + spec after the Svelte 5 runes migration
     {
       name: 'data-setup-perm-per-app-notifications',
       testMatch: /perm-per-app-notifications\.setup\.ts/,
