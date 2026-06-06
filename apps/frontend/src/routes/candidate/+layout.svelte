@@ -14,6 +14,7 @@
 -->
 
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { Notification } from '$lib/components/notification';
   import { getAppContext } from '$lib/contexts/app';
   import { initCandidateContext } from '$lib/contexts/candidate';
@@ -42,7 +43,14 @@
   // Popup management
   ////////////////////////////////////////////////////////////////////
 
-  $effect(() => {
+  // onMount one-shot queue (NOT a reactive $effect) — mirrors the voters layout's
+  // REVERT-TO-ONMOUNT decision (apps/frontend/src/routes/(voters)/+layout.svelte:100-119).
+  // A reactive $effect re-queues on every appSettings.current change and, on a busy
+  // page, its repeated re-runs keep resetting downstream debounced effects — observed
+  // on /candidate/register/password where PasswordValidator's 200ms debounce
+  // (clearTimeout on each re-run) never settled, so validPassword stayed false and the
+  // set-password submit button stayed disabled (perm-localisation-positive hang).
+  onMount(() => {
     if (!appSettings.current.access.candidateApp || !appSettings.current.dataAdapter.supportsCandidateApp) return;
     // Show possible notification
     if (appSettings.current.notifications.candidateApp?.show)
