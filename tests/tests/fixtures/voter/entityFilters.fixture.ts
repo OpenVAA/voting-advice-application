@@ -66,6 +66,14 @@ export function createEntityFilters(page: Page) {
           values: Array<RegExp | string> | ((count: number) => Array<number>) | undefined
         ): Promise<void> {
           const options = this.getOptions();
+          // Settle: getFilter() auto-expands the row and reveals these options
+          // REACTIVELY (Expander toggle), but returns without waiting. Reading
+          // count() before the options mount makes the check/uncheck loop below a
+          // silent no-op (total === 0 → nothing selected), so the filter never
+          // applies — the intermittent voter-journey STAGE-5a flake (13 cards
+          // instead of 12, "9× resolved to 13"). Wait for the first option to
+          // render before counting.
+          await expect(options.first()).toBeVisible({ timeout: 5_000 });
           const total = await options.count();
           // Compute target index set.
           let targetIndices: Set<number>;
