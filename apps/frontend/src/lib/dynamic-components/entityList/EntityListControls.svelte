@@ -52,7 +52,9 @@ TODO: Consider moving the tracking events away from the component and just addin
     searchProperty
       ? new TextPropertyFilter<MaybeWrappedEntityVariant>(
           { property: searchProperty as keyof MaybeWrappedEntityVariant },
-          locale
+          // `locale` is a rune handle (`{ readonly current: string }`) post Phase
+          // 97/98 store→rune migration; TextPropertyFilter wants the string.
+          locale.current
         )
       : undefined
   );

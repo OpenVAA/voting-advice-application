@@ -29,7 +29,6 @@ component-local). See `EntityListWithControls.helpers.ts` for the pure
 -->
 <script lang="ts" generics="TEntity extends MaybeWrappedEntityVariant = MaybeWrappedEntityVariant">
   import { TextPropertyFilter } from '@openvaa/filters';
-  import { fromStore } from 'svelte/store';
   import { slide } from 'svelte/transition';
   import { Button } from '$lib/components/button';
   import { EntityFilters } from '$lib/components/entityFilters';
@@ -65,9 +64,11 @@ component-local). See `EntityListWithControls.helpers.ts` for the pure
 
   const { locale, startEvent, t } = getAppContext();
   const fctx = getFilterContext();
-  // appContext exposes locale as a Readable<string> (store-wrapped per
-  // appContext.type.ts line 26). Bridge to a rune-friendly value via fromStore.
-  const localeState = fromStore(locale);
+  // appContext exposes `locale` as a rune handle (`{ readonly current: string }`,
+  // appContext.type.ts) since the Phase 97/98 store→rune migration. Read it
+  // directly via `locale.current` — the legacy store shape (and `fromStore`
+  // bridge) is gone, so `fromStore(locale)` would throw `store.subscribe is not
+  // a function`.
 
   // Active FilterGroup: prop override wins over context (D-02 additive contract
   // for off-context use such as tests and the candidate-app migration).
@@ -85,7 +86,7 @@ component-local). See `EntityListWithControls.helpers.ts` for the pure
     searchProperty
       ? new TextPropertyFilter<MaybeWrappedEntityVariant>(
           { property: searchProperty as keyof MaybeWrappedEntityVariant },
-          localeState.current
+          locale.current
         )
       : undefined
   );
