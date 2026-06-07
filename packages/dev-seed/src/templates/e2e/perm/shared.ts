@@ -117,7 +117,14 @@ export const MINIMAL_BASE_APP_SETTINGS = {
     underMaintenance: false,
     answersLocked: false
   },
-  notifications: { voterApp: { show: false } },
+  // Both notifications explicitly OFF. app_settings is applied via merge_jsonb_column
+  // (deep merge), and the perm family is one sequential chain sharing the app_settings
+  // singleton — so without an explicit `candidateApp: { show: false }` here, the
+  // `candidateApp.show: true` set by perm-per-app-notifications BLEEDS into every
+  // downstream perm that spreads this base (e.g. perm-localisation-positive), where the
+  // modal notification then intercepts clicks on the candidate register flow. Only
+  // perm-per-app-notifications overrides this to `show: true`.
+  notifications: { voterApp: { show: false }, candidateApp: { show: false } },
   analytics: { trackEvents: false }
 } as const;
 
