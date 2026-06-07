@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v2.11
 milestone_name: Svelte 5 Runes Migration + View Transitions
-status: executing
+status: Awaiting next milestone
 stopped_at: Completed 98-02-PLAN.md
-last_updated: "2026-06-06T21:37:32.485Z"
-last_activity: 2026-06-06
+last_updated: "2026-06-07T19:04:15.967Z"
+last_activity: 2026-06-07 — Milestone v2.11 completed and archived
 progress:
   total_phases: 7
   completed_phases: 7
@@ -18,17 +18,17 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-12)
+See: .planning/PROJECT.md (updated 2026-06-07 after v2.11 close)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 101 — suite-re-enable-milestone-close-green-gate
+**Current focus:** Planning next milestone — v2.11 (Svelte 5 Runes Migration + View Transitions) shipped 2026-06-07. Run `/gsd-new-milestone` to scope the next initiative.
 
 ## Current Position
 
-Phase: 101
-Plan: Not started
-Status: Executing Phase 101
-Last activity: 2026-06-07 - Stripped phase/change-history pointer comments from e2e test files (260607-j0y, 5 files, comment-only; user WIP in voter-journey.spec.ts preserved)
+Phase: Milestone v2.11 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-06-07 — Milestone v2.11 completed and archived
 
 ## Performance Metrics
 
@@ -40,6 +40,24 @@ Last activity: 2026-06-07 - Stripped phase/change-history pointer comments from 
 - v2.9 specifically: 6 phases (73-78), 32 plans, 89 tasks across 3 days
 
 ## Deferred Items
+
+### Acknowledged at v2.11 close (2026-06-07)
+
+Pre-close artifact audit surfaced 11 open items, all assessed as **non-blockers** during the v2.11 milestone audit (`.planning/milestones/v2.11-MILESTONE-AUDIT.md`) and acknowledged/deferred at close. The substantive close gate (22/22 requirements, 18/18 integration seams, full E2E 84/0 + unit green + a11y 10/10 + 3× determinism) was satisfied.
+
+| Category | Item | Status | Disposition |
+|----------|------|--------|-------------|
+| verification | Phase 95 95-VERIFICATION.md | human_needed | Closed-by-design: live E2E gate deferred to Phase 101; satisfied by the 101 green gate (see 101-VERIFICATION.md). Marker is accurate phase history. |
+| verification | Phase 96 96-VERIFICATION.md | human_needed | Closed-by-design: deferred to Phase 101; satisfied by the 101 green gate. |
+| verification | Phase 99 99-VERIFICATION.md | human_needed | Closed-by-design: NAVA11Y-03 live axe gate deferred to Phase 101; closed by a11y-smoke 10/10. |
+| verification | Phase 100 100-VERIFICATION.md | human_needed | Closed-by-design: 2 live E2E runs deferred to Phase 101; satisfied by the 101 green gate. |
+| uat | Phase 99 99-UAT.md | partial (0 pending scenarios) | CR-01/CR-02 resolved in 99-04; live axe gate closed by Phase 101. 0 pending scenarios. |
+| quick_task | 260607-cd0-clean-up-e2e-test-folder-catalogue | unknown (status flag) | Verified-done — STATE.md records the entire cleanup follow-up as closed (dead-code sweep + .helper rename + IDURA + emailHelper consolidation, live-green). Only the SUMMARY terminal-status flag was left unflipped. |
+| todos | 5 counted + ~51 more standing backlog | pending | Carried-forward backlog (pre-dates v2.11 + 3 v2.11-captured). Triage via `/gsd-review-backlog` when shaping the next milestone. |
+
+Resolved this session before close (not deferred): debug `elections-continue-stall` (was `root_cause_found`; disproven as a user-facing bug — test-fixture timing artifact fixed via `waitForVisible`, confirmed by Phase 101 a11y 10/10 → status `resolved`); v2.11 doc-hygiene (authored 101-VERIFICATION.md, flipped stale NAVA11Y-03 traceability note, backfilled 4 SUMMARY frontmatter REQ-IDs).
+
+---
 
 Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79 close added Phase 83 + 2 follow-up todos, updated 2026-05-20 after constituency-filter WONT-IMPLEMENT decision. v2.10 now consumes 5 in-milestone candidates (3 v2.9-routed originals + 2 Phase-79-surfaced follow-ups absorbed in-milestone rather than re-deferred). 4 other v2.9-routed v2.10+ candidates remain re-deferred to v2.11+ (SETTINGS-02 / SETTINGS-03 / FilterGroup OR-mode / voters-layout non-reactive topbar). Constituency-filter PRODUCT-GAP has since been CLOSED as WONT-IMPLEMENT (out of contract — constituency is a navigation/scope concept, not a filter).
 

@@ -665,6 +665,41 @@
 
 ---
 
+## Milestone: v2.11 — Svelte 5 Runes Migration + View Transitions
+
+**Shipped:** 2026-06-07
+**Phases:** 7 (95-101) | **Plans:** 22 | **Tasks:** 42 | **Audit:** `tech_debt` (no blockers)
+
+### What Was Built
+The final Svelte 5 migration: every remaining legacy `svelte/store` bridge in the frontend retired for idiomatic runes (Domain A, 4 strict waves — Tier-1 leaf contexts → Tier-2 bridges → rune-native `getRoute` + a ~278-site consumer codemod in one atomic commit → cleanup deletes + an ESLint guard), plus the View Transitions cross-fade + WCAG 2.1 AA navigation-a11y that closes the perceived "redraw on Q→Q" (Domain B — `onNavigate`/`startViewTransition`, `aria-live` route announcer via a `routeTitle` signal, `afterNavigate` focus reset, dual-layer reduced-motion, `/questions` unified-layout-with-empty-leaf + `{#key question.type}` remount). Closed with the 2 quarantined `perm-per-app-notifications` tests re-enabled and the suite green vs the v2.10 baseline (84/0 E2E + unit green + a11y-smoke 10/10 + 3× determinism). The Wave-3 codemod also surfaced + fixed two real production bugs (AdminNav `isAuthenticated` destructure, adminContext spread-of-context).
+
+### What Worked
+- **Spikes-as-research.** 16 browser-verified spikes (the `spike-findings` skill) meant the research phase was skipped entirely — proven patterns + non-negotiable requirements were in hand before planning. The migration was mechanical, not exploratory, exactly as predicted.
+- **Strict 4-wave dependency chain.** Tier-1 → Tier-2 → consumers → cleanup kept each commit green; the codemod only ran once every context exposed getters, so no consumer was ever broken mid-flight.
+- **One atomic codemod commit.** ~278 sites rewritten with an idempotent, dry-run-by-default codemod — no red build at any boundary.
+- **Domain A / Domain B independence** let the View-Transitions work proceed in parallel with the rune migration.
+
+### What Was Inefficient
+- **Deferring every live E2E gate to the terminal Phase 101.** Phases 95/96/99/100 all marked `human_needed` and pushed their live gates downstream, so 7 genuine rune-migration regressions (EntityList `fromStore(locale)` crash that broke the whole results render; a `{#key question.type}` remount race that flipped a ranking; a candidate-notification `$effect` re-queue loop) surfaced only at the very end, in one debugging cluster.
+- **Stale close-out paperwork.** The audit found a never-closed debug record (a fixture-timing artifact long since fixed), 4 SUMMARY frontmatters missing their REQ-IDs, a "Pending" traceability note for an already-closed gate, and 6/7 Nyquist VALIDATION drafts unflipped — all cleaned up at close, but they'd accumulated silently.
+
+### Patterns Established
+- `localStorageState`/`sessionStorageState` rune helpers (clean names, no migration-era prefix; no persistence-format shim) as the single persistence path.
+- `getRoute` as `$derived.by` reading `page.params`/`route`/`url` as **separate** fields to dodge the `toStore` short-circuit trap.
+- Route announcement via a dedicated `aria-live` region fed a `routeTitle` layout-context signal (not `<svelte:head><title>` mutation, which is unreliable on NVDA/JAWS).
+- Unified-layout-with-empty-leaf + `{#key question.type}` for variant remount (mirrors the production results route).
+
+### Key Lessons
+1. **For migration-style milestones, run live gates per-phase, not all at the end.** A single terminal gate concentrates regression discovery and makes attribution harder.
+2. **A verification-gate phase still deserves a VERIFICATION.md.** Phase 101's proof lived only in its SUMMARY until the audit backfilled the artifact — the convention exists so the archive is self-describing.
+3. **Spikes genuinely substitute for a research phase** when they're browser-verified and carry explicit requirements — this milestone proved the model.
+
+### Cost Observations
+- ~135 commits over 4 days (2026-06-04 → 2026-06-07); 22 plans, mostly short (2-30 min each).
+- Notable: the milestone-close audit itself was a forcing function — it disproved a "user-facing bug" debug record (test-fixture timing artifact), closed it, and tidied four other paperwork gaps before archiving.
+
+---
+
 ## Cross-Milestone Trends
 
 *Note: Parallel branch milestones (sb-v2.0, sb-v3.0) are documented above but not included in cumulative quality metrics — those milestones will be re-executed on this branch during v2.0 integration.*
@@ -682,6 +717,7 @@
 | v2.5      | 28      | 4      | 34    | ~3min    | Toolkit milestone — generators + parity-gate baseline-as-contract |
 | v2.6      | 137     | 5      | 18    | ~32min   | Largest plan size to date — reactivity cascades + manual-smoke fix-as-you-go cadence |
 | v2.7      | 30      | 4      | 9     | ~25min   | Cluster-coherence milestone — SVELTE5 → ADAPTER → SEED clustered for one integration cycle; first audit-as-gate close (`tech_debt`) |
+| v2.11     | ~135    | 7      | 22    | ~12min   | Spikes-as-research migration — strict 4-wave rune chain + atomic ~278-site codemod + View Transitions; all live gates deferred to a terminal green-gate phase (concentrated regression discovery) |
 
 ### Cumulative Quality
 

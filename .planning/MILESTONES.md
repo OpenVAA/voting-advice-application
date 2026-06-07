@@ -1,5 +1,40 @@
 # Milestones
 
+## v2.11 Svelte 5 Runes Migration + View Transitions (Shipped: 2026-06-07)
+
+**Phases completed:** 7 phases (95-101), 22 plans, 42 tasks
+
+**Delivered:** Retired every remaining legacy `svelte/store` bridge in the frontend for idiomatic Svelte 5 runes (Domain A, 4 waves: contexts → bridges → consumer codemod → cleanup), shipped the View Transitions cross-fade + WCAG 2.1 AA navigation-a11y that closes the perceived "redraw on Q→Q" (Domain B, 2 waves), and re-enabled the 2 quarantined `perm-per-app-notifications` E2E tests. Milestone-close green gate: full E2E **84/0**, full unit green, a11y-smoke 10/10, 3× targeted determinism clean.
+
+**Audit:** `tech_debt` — no blockers. **22/22 requirements satisfied + 18/18 cross-phase integration seams wired + 3/3 E2E flows complete.** tech_debt reflects close-out paperwork only — resolved before close (authored 101-VERIFICATION.md, flipped the stale NAVA11Y-03 traceability note, backfilled 4 SUMMARY frontmatter REQ-IDs, closed the elections-continue-stall debug record); carried (6/7 Nyquist VALIDATION draft flags — coverage proven by the green suite). Full audit: `milestones/v2.11-MILESTONE-AUDIT.md`.
+
+**Timeline:** 4 days (2026-06-04 → 2026-06-07).
+
+**Known deferred at close:** 11 non-blocker items acknowledged — 4 deferred-to-Phase-101 verification markers (closed by the green gate) + 1 Phase-99 UAT (0 pending scenarios) + 1 done-but-unflagged quick task + 5 counted backlog todos (~51 more standing). See STATE.md → Deferred Items; triage via `/gsd-review-backlog`.
+
+**Key accomplishments:**
+
+- new typed `export const load: LayoutLoad = async () => ({})` mirroring `results/[[electionTab]]/+layout.ts`'s const-form + return-`{}` shape, with the `// eslint-disable-next-line func-style` reason and a doc-comment noting data flows via `voterCtx` (load is a parity stub establishing the unified-layout pattern; no server guard). Ran `yarn build` so `.svelte-kit` regenerates `./$types` with the new `LayoutLoad`.
+- Re-enabled the 2 quarantined perm-per-app-notifications cross-route isolation tests (the load-bearing one-line change of SUITE-01) and verified they pass 2/0; fixed two D-02 regressions surfaced during verification.
+- Resolved the carried-in voter-detail-drawer color-contrast failure as a scan-timing false positive — axe was scanning mid drawer fly-in; the fix is a transition-settle wait, with NO theme change — and fixed an EntityList rune-migration crash that blocked the results render entirely.
+- v2.11 milestone-close green gate PASSED — full E2E 84/0, full unit green, a11y-smoke 10/10, and a 3x targeted determinism pass — after fixing several rune-migration regressions and one test-fixture flake the gate surfaced.
+- appContext's appSettings + appCustomization DB override now merges at `$state` init (SSR-correct, no post-hydration flash) and `mergeAppSettings` is a pure spread that no longer mutates the shared `staticSettings` module reference.
+- Rune-native dataContext — dropped the internal `writable(dataRoot)` + `get(dataRootStore)` infinite-loop workaround, added a `current`/`instance` Pattern-2 handle split with `untrack()`, and kept a hand-rolled Readable bridge for the 23 un-migrated `$dataRoot` consumers.
+- Introduced the shared rune-native `localStorageState<T>(key, default)` helper (versioned-payload core reusing `getItemFromStorage`/`saveItemToStorage`, no migration shim) and migrated BOTH the voter `answerStore` and the candidate `candidateUserDataStore` off the three-layer `$state → localStorageWritable → fromStore` bridge onto a single handle — zero `svelte/store` import at either callsite.
+- popupStore migrated to the pure-rune queue-shaped Pattern-1 (`get current()` getter, zero `svelte/store` imports); the single `fromStore(popupQueue)` consumer in `routes/+layout.svelte` migrated to `popupQueue.current` and the `Readable<T>` surface dropped from the type.
+- sessionStorageState rune helper + pure-rune survey/trackingService producers with the appContext seam owning their store-shaped bridges and exposing new reactiveAppSettings/reactiveLocale .current getters that unblock Plan B.
+- voterContext is now a fully `svelte/store`-free rune-native factory and candidateContext is rune-native except the one tolerated `fromStore(getRoute)` bridge — both compose Tier-1 via `getAppContext()`'s `reactiveAppSettings.current`/`reactiveLocale.current` getters, with `firstQuestionId` + candidate preregistration ids on the rune-native `sessionStorageState`/`localStorageState` helpers; all 18+/30+ reactive accessors and the destructure-trap preserved.
+- Removed the `...authContext` spread from the `adminContext` object literal. Replaced it with an explicit `get isAuthenticated() { return authContext.isAuthenticated; }` (re-reads the live $derived on every access) plus direct reference forwards of the four stable auth functions (`logout`, `requestForgotPasswordEmail`, `resetPassword`, `setPassword`). The `...appContext` spread was PRESERVED (its surface has no top-level reactive getter — see audit). A code comment above the getter explains the de-reactivation rationale (CONS-03 / Pitfall 2).
+- `getRoute` is now a pure rune-native `$derived.by` producer and the entire frontend (~278 sites) is migrated off the legacy store bridges in a single atomic commit — with no red build at any commit boundary.
+- Phase 98 Wave-4 cleanup: drove the `svelte/store` mechanical-acceptance grep to zero across `lib/contexts/**` + `routes/**` and added the ESLint guard (CLEAN-02) blocking reintroduction.
+- Reshaped every store-shaped `appContext` export (appType/appSettings/appCustomization/openFeedbackModal/locale/locales/darkMode/userPreferences/surveyLink + tracking handles) from `toStore`/`fromStore` wrappers to pure `{ current, set?, update? }` rune handles, and migrated all 22 consumers (the 5 named `fromStore` route consumers plus ~17 latent `$store` auto-subscribe components) to direct `.current` reads — closing the app-layer half of CLEAN-01 with zero `svelte/store` in `lib/contexts/app/
+- Completed CLEAN-01's deletion half: removed `StackedState.svelte.ts` (+test), `dataCollectionStore.ts`, and the entire 60-file `routes/runes-test/` spike tree, then slimmed `persistedState.svelte.ts` to its rune-only core (dropping the `svelte/store` import + the legacy `localStorageWritable`/`sessionStorageWritable`/`storageWritable` helpers while keeping `localStorageState`/`sessionStorageState`/`storageState` verbatim) — driving the CLEAN-01 acceptance grep (`from 'svelte/store'` across `lib/contexts/
+- Landed the View-Transitions cross-fade coupling + WCAG-compliant navigation a11y (aria-live route announcer, focus reset, dual-layer reduced-motion) in the real SvelteKit root layout, backed by a shared, `any`-free `viewTransition.ts` helper.
+- Assigned `view-transition-name`s across the expanded VT-02 surface set (chrome, question hero/heading/actions on both apps, results election-switch + entity tabs, entity-detail drawer tabs) so Plan 01's onNavigate coupling produces element-stable cross-fades instead of a perceived full-page redraw, added the `data-focus-on-nav`/`tabindex=-1` heading markers that the root focus hook lands on (NAVA11Y-02 per-route half), and gave the shared `Tabs` an opt-in local-state cross-fade wrapper for the drawer tabs (O-1).
+- Extended the existing `a11y-smoke` Playwright spec with a route-announcer assertion (NAVA11Y-01) and a focus-on-nav assertion (NAVA11Y-02), both driven deterministically via the `?notr=1` escape hatch, while preserving the per-rule + global axe 0-violation gate verbatim (NAVA11Y-03). The spec typechecks and lints clean and the unit suite is green; the live a11y-smoke located-route run is currently blocked by a pre-existing, out-of-scope shared-fixture/seed issue that fails the baseline located axe tests identically — recorded honestly as a human-verification item, NOT a fabricated green run.
+
+---
+
 ## v2.10 Test Reliability + A11y Compliance + All-Green Suite (Shipped: 2026-06-04)
 
 **Phases completed:** 19 phases (79-94, incl. 86.1/86.2/86.3), 66 plans, 140 tasks

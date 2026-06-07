@@ -8,11 +8,13 @@ OpenVAA is an open-source framework for building Voting Advice Applications (VAA
 
 A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
 
-## Current Milestone: v2.11 Svelte 5 Runes Migration + View Transitions
+## Last Shipped: v2.11 Svelte 5 Runes Migration + View Transitions
 
-**Status:** Planning (started 2026-06-04). Phase numbering continues from v2.10's last phase (94) → v2.11 starts at **Phase 95** (no reset).
+**Status:** ✅ SHIPPED 2026-06-07. 7 phases (95-101), 22 plans, 42 tasks across 4 days. Audit verdict `tech_debt` (no blockers): **22/22 requirements satisfied + 18/18 cross-phase integration seams wired + 3/3 E2E flows complete.** Milestone-close green gate PASSED — full E2E **84/0** + full unit green + a11y-smoke 10/10 + 3× targeted determinism. Phase numbering continued from v2.10's last phase (94); started at Phase 95 (no reset). Full record: `.planning/MILESTONES.md` + `.planning/milestones/v2.11-MILESTONE-AUDIT.md`.
 
-**Goal:** Retire every remaining legacy `svelte/store` bridge in the frontend in favor of idiomatic Svelte 5 runes, and ship the View Transitions + a11y navigation fix — closing the last store-bridge debt and the perceived "redraw on Q→Q".
+**Delivered:** Every legacy `svelte/store` bridge in the frontend is retired for idiomatic Svelte 5 runes (zero runtime `svelte/store` imports in `lib/contexts/**` + `routes/**`, ESLint-guarded), plus the View Transitions cross-fade + WCAG 2.1 AA navigation-a11y that closes the perceived "redraw on Q→Q", and the 2 quarantined `perm-per-app-notifications` E2E tests re-enabled. The Phase 101 gate surfaced + fixed 7 rune-migration regressions before going green. No active milestone — next is `/gsd-new-milestone`.
+
+**Original goal (as framed 2026-06-04):** Retire every remaining legacy `svelte/store` bridge in the frontend in favor of idiomatic Svelte 5 runes, and ship the View Transitions + a11y navigation fix — closing the last store-bridge debt and the perceived "redraw on Q→Q".
 
 **Target features:**
 
@@ -28,6 +30,8 @@ A reliable, well-tested VAA framework that developers can confidently extend, cu
 - Domain B is additive/independent of Domain A — sequencing is flexible (can ship before, after, or alongside).
 
 ## Current State
+
+**v2.11 Svelte 5 Runes Migration + View Transitions shipped 2026-06-07.** 7 phases (95-101), 22 plans, 42 tasks across 4 days. Audit `tech_debt` (no blockers); 22/22 reqs + 18/18 integration seams + 3/3 flows; milestone-close green gate 84/0 E2E + unit green + a11y-smoke 10/10 + 3× determinism. Retired every legacy `svelte/store` bridge for idiomatic Svelte 5 runes (Domain A, 4 waves: Tier-1 contexts → Tier-2 bridges → ~278-site consumer codemod → cleanup deletes + ESLint guard), shipped the View Transitions cross-fade + WCAG 2.1 AA navigation-a11y (Domain B: `onNavigate`/`startViewTransition` + `aria-live` route announcer via `routeTitle` signal + `afterNavigate` focus reset + dual-layer reduced-motion + `/questions` unified-layout-with-empty-leaf + `{#key question.type}` remount), and re-enabled the 2 `perm-per-app-notifications` tests. Surfaced the real AdminNav destructure + adminContext spread production bugs and fixed them. **No active milestone — next is `/gsd-new-milestone`** (49+ standing backlog todos carried forward; triage via `/gsd-review-backlog`).
 
 **v2.10 Test Reliability + A11y Compliance + All-Green Suite shipped 2026-06-04.** 19 phases (79-94), 66 plans, 140 tasks across ~23 days. Audit verdict `tech_debt` (no blockers). Delivered: determinism recovery (candidate-profile cascading-race fix; imgproxy decouple DATA_RACE 15→3; variant-cascade RCA), WCAG 2.1 AA compliance (5 first-run axe violations fixed at root + email/url/required-empty validation cells), and a complete E2E catalog overhaul (mega-journey pattern, 22-step candidate-journey, 12-file candidate fixture library, TIR5/TIR6 permutation specs, `typecheck:tests` gate + `no-restricted-locators` guard, role-based fixture/setup reorg + `e2e/base` seed consolidation, final de-planning polish). **Final suite human-verified 82 passed / 2 skipped** (the 2 = intentional `perm-per-app-notifications` quarantine, re-enable after the Svelte 5 runes migration). Package scripts harmonised at close: `db:*` = DB-only, `dev:*` = full-stack, `supabase:*` + deprecated `dev:*` aliases removed. Next milestone: **Svelte 5 runes migration** (see the `spike-findings-voting-advice-application-gsd` skill).
 
@@ -206,9 +210,17 @@ Known infrastructure issue: local imgproxy Docker container crashes intermittent
 - ✓ All-green E2E suite + catalog overhaul — mega-journey pattern; 22-step candidate-journey; 12-file candidate fixture library; TIR5/TIR6 permutation specs; `typecheck:tests` + `no-restricted-locators`; results-route 4-segment refactor; role-based fixture/setup reorg + `e2e/base` seed consolidation; final de-planning (82 passed / 2 skipped, human-verified 2026-06-04) — v2.10 (Phases 88-94)
 - ✓ Package-script harmonisation — `db:*` = DB-only, `dev:*` = full-stack; `supabase:*` + deprecated `dev:*` aliases removed — v2.10 (close)
 
+- ✓ Context rune migration (CTX-01..08) — appContext SSR-correct `$state`-init DB-override merge + pure `mergeAppSettings`; dataContext `current`/`instance` split (dropped `writable`+`get()` infinite-loop workaround); shared `localStorageState`/`sessionStorageState` helpers; popupStore + survey + trackingService pure-rune; rune-native `getRoute` (`$derived.by`); voterContext + candidateContext rune-native factories — v2.11 (Phases 95-97)
+- ✓ Consumer migration (CONS-01..03) — ~278 consumer sites (146 `$store.X` + 134 `$getRoute(opts)`) mechanically rewritten via idempotent codemod in one atomic commit; AdminNav destructure + adminContext spread-of-context production bugs fixed — v2.11 (Phase 97)
+- ✓ Store-bridge cleanup (CLEAN-01/02) — `StackedState` deleted, `persistedState` slimmed to rune-only core, `Readable<T>` dropped from type files, zero runtime `svelte/store` imports in `lib/contexts/**`+`routes/**`, ESLint guard blocks reintroduction — v2.11 (Phase 98)
+- ✓ View Transitions (VT-01/02/03) — root-layout `onNavigate`→`startViewTransition` cross-fade across the expanded surface set; `view-transition-name`s; reduced-motion honored on both JS + CSS layers — v2.11 (Phase 99)
+- ✓ Navigation a11y (NAVA11Y-01/02/03) — `aria-live` route announcer via `routeTitle` layout-context signal (localized per-route title, no opaque slug); `afterNavigate` focus reset with `preventScroll`; full WCAG 2.1 AA axe gate green (a11y-smoke 10/10) — v2.11 (Phase 99)
+- ✓ Questions layout restructure (QLAYOUT-01/02) — `/questions` hoisted to unified-layout-with-empty-leaf (results-pattern parity); `{#key question.type}` variant remount; layout-owned answers survive Q→Q nav — v2.11 (Phase 100)
+- ✓ Suite re-enable (SUITE-01) — 2 quarantined `perm-per-app-notifications` E2E tests un-quarantined + passing; full E2E 84/0 + unit green vs the v2.10 baseline — v2.11 (Phase 101)
+
 ### Active
 
-**Current milestone: v2.11 Svelte 5 Runes Migration + View Transitions** — see the `## Current Milestone` section near the top for the full scope (both Domain A rune migration and Domain B navigation/transitions/a11y). Requirements are being defined now; the per-requirement list lands in `.planning/REQUIREMENTS.md` and the phase breakdown in `.planning/ROADMAP.md`. Backed by the `spike-findings-voting-advice-application-gsd` skill (16 browser-verified spikes of proven patterns + non-negotiable requirements). v2.10 (Test Reliability + A11y Compliance + All-Green Suite) shipped 2026-06-04 — all its REQs are in Validated above.
+**No active milestone.** v2.11 (Svelte 5 Runes Migration + View Transitions) shipped 2026-06-07 — all 22 of its REQs are in Validated above. The Svelte 5 runes migration is now complete (zero legacy `svelte/store` bridges remain in the frontend). Next: run `/gsd-new-milestone` to scope the next initiative. Candidate themes from the backlog and the Future list below: sharable-URLs + multi-tenant pair, party-app generalization, Settings & configuration paradigm reorg, the 165 intra-package circular-deps structural refactor, and the standing 49+ backlog todos (triage via `/gsd-review-backlog`).
 
 **Pending todos** (carried forward, lower priority — not yet on a milestone roadmap):
 - Generalize candidate app to support parties as first-class registrants
@@ -396,6 +408,16 @@ Each major initiative is a separate milestone, executed in order:
 | `tech_debt` verdict maps to shippable (PASSED-WITH-DEFERRAL) | Operator-accepted, documented deferrals don't block milestone close when the suite is green and no requirement is unsatisfied | ✓ Good (v2.10) |
 | `db:*` DB-only vs `dev:*` full-stack script split | Harmonised at v2.10 close — db scripts touch only Supabase, dev scripts drive the full stack; `supabase:*` + deprecated `dev:*` aliases removed | ✓ Good (v2.10) |
 
+| Spikes-are-the-research (skip research phase) | 16 browser-verified spikes in the `spike-findings` skill provided proven patterns + non-negotiable requirements up front — the rune migration was mechanical, not exploratory | ✓ Good (v2.11) |
+| appSettings/appCustomization merge at `$state` init (not `$effect`) | `$effect` doesn't run on the server — merging in `$effect` skipped the DB override on SSR; init-time merge closes the real SSR gap | ✓ Good (v2.11) |
+| `localStorageState`/`sessionStorageState` clean names (no `rune`/`-native` prefix) | No migration-era prefixes lingering in shipped code; no persistence-format migration shim — stale old-format payloads are ignored/overwritten | ✓ Good (v2.11) |
+| `getRoute` as `$derived.by` reading `page.params`/`route`/`url` as separate fields | Reading `page` as a single value inside a tracking scope hits the `toStore` short-circuit trap; per-field reads + removing the custom `afterNavigate` republish workaround fixed it | ✓ Good (v2.11) |
+| One atomic ~278-site consumer codemod commit | Idempotent dry-run-by-default codemod rewrote all `$store.X` + `$getRoute(opts)` sites at once with no red build at any commit boundary | ✓ Good (v2.11) |
+| Destructure-trap preserved (not "fixed") per the CLAUDE.md rule | The reactive-accessor destructure hazard reproduces identically under runes; consumers must read `ctx.X`, never destructure — codified, not papered over | ✓ Good (v2.11) |
+| View Transitions = swap animation, NOT remount | SvelteKit already reuses `+page.svelte` across param-only nav (spike 013); the "redraw on Q→Q" fix is the `startViewTransition` cross-fade + `{#key question.type}`, not a structural remount | ✓ Good (v2.11) |
+| Route announcer speaks the localized page title via `routeTitle` signal | SPA `<title>` mutation is unreliable on NVDA/JAWS; a dedicated `aria-live` region fed the already-localized per-route title avoids leaking the opaque DB `questionId` slug | ✓ Good (v2.11) |
+| Defer all live E2E gates to the terminal Phase 101 | Kept Waves 1-3 fast (unit + grep gates only); but concentrated regression discovery at the end — 7 rune-migration regressions surfaced only at the gate. Revisit per-phase live gates for future migration milestones | ⚠️ Revisit (v2.11) |
+
 ## Evolution
 
 This document evolves at phase transitions and milestone boundaries.
@@ -415,4 +437,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-_Last updated: 2026-06-04 after starting milestone v2.11 (Svelte 5 Runes Migration + View Transitions). Added the `## Current Milestone` section (Domain A rune migration spikes 001–012 + Domain B navigation/transitions/a11y spikes 013–016, both in scope; phase numbering continues at 95) and refreshed the Active block. Previous: v2.10 (Test Reliability + A11y Compliance + All-Green Suite) shipped 2026-06-04 — 19 phases (79-94), 66 plans, 140 tasks; verdict `tech_debt`; final suite 82 passed / 2 skipped; 49 standing backlog todos carried forward to v2.11+._
+_Last updated: 2026-06-07 after completing milestone v2.11 (Svelte 5 Runes Migration + View Transitions). Full evolution review: reframed v2.11 from current/planning → SHIPPED; refreshed Current State; moved all 22 v2.11 REQs (CTX/CONS/CLEAN/VT/NAVA11Y/QLAYOUT/SUITE) to Validated; cleared the Active block to "no active milestone"; added 9 v2.11 Key Decisions. v2.11 verdict `tech_debt` (no blockers) — 7 phases (95-101), 22 plans, 42 tasks across 4 days; 22/22 reqs + 18/18 integration seams + 3/3 flows; milestone-close green gate 84/0 E2E + unit green + a11y-smoke 10/10 + 3× determinism. The Svelte 5 runes migration is complete. Next: `/gsd-new-milestone`. 49+ standing backlog todos carried forward; triage via `/gsd-review-backlog`._

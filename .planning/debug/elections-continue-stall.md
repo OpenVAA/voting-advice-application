@@ -1,8 +1,9 @@
 ---
-status: root_cause_found
+status: resolved
 trigger: "v2.11 regression — the a11y-smoke located tests (and the locatedVoterPage/answeredVoterPage fixtures) stall on the 'Select an election' page: clicking Continue with the DEFAULT election selection does not navigate to constituencies. Operator constraint: data seeding and component PROP handling did NOT change this milestone, so rule those out (the ElectionSelector testid-forwarding theory is rejected — concatClass forwards data-testid, and Continue renders). Culprit is within v2.11: Phase 95 rune migration (appContext/dataContext/answer stores/overlay registry) reactivity, or Phase 99 View Transitions + navigation. Distinct from the already-fixed voter-journey spec timing bug (302fcb19a)."
 created: 2026-06-04T16:30:00Z
-updated: 2026-06-04T18:30:00Z
+updated: 2026-06-07T17:30:00Z
+resolution: "DISPROVEN as a user-facing app bug — the Phase-95-rune-reactivity / Phase-99-VT hypotheses were both wrong. Actual root cause: a TEST-FIXTURE timing artifact. voter-journey.fixture.ts used a non-waiting one-shot `isVisible()` probe on the elections list, which races the post-hydration `$dataRoot` `$effect` population in routes/+layout.svelte (list mounts a beat after navigation), returns false, and skips the Continue click — stalling the located walk. Fix: switch the page-presence probe to a polling `waitForVisible` helper (see the explanatory NB comment at voter-journey.fixture.ts:144-156). The default-path Continue works correctly for real users; elections/+page.svelte was untouched in v2.11 except by the Phase-97 codemod. Confirmed resolved at the Phase 101 milestone-close gate: a11y-smoke 10/10 (all located fixtures traverse Home→Intro→Elections→Constituencies→/questions) + full E2E 84/0. Record was left open at root_cause_found; closed during the v2.11 milestone audit 2026-06-07."
 ---
 
 ## Current Focus
