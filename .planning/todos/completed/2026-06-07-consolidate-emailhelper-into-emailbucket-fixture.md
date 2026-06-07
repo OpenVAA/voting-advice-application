@@ -1,5 +1,7 @@
 ---
 created: 2026-06-07T06:30:00.000Z
+resolved: 2026-06-07
+status: completed
 title: Confirm emailHelper→emailBucket internalisation green on live stack
 area: testing
 files:
@@ -36,3 +38,11 @@ yarn test:e2e --no-deps --project=data-teardown-perm-localisation-positive --rep
 If both pass → **close this todo** (item 6 fully done). If a registration step
 fails with "already registered", reset auth users first (`yarn db:reset`), per
 the known perm-teardown auth-user leak.
+
+## Resolution (2026-06-07)
+
+**DONE.** User confirmed all tests pass on a live stack. The emailHelper→emailBucket
+internalisation (commit `2764a79a9`) is verified green; `utils/emailHelper.ts` is
+fully retired. Item 6 of report `260607-cd0-E2E-CLEANUP-REPORT.md` is complete —
+the entire e2e cleanup follow-up (dead-code sweep, `.helper` rename, IDURA, and
+emailHelper consolidation) is now closed.

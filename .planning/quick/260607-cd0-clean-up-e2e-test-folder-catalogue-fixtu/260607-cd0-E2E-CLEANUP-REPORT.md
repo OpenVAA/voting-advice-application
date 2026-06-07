@@ -224,7 +224,7 @@ Ordered **dead-code-first** (lowest risk leads). Each item gives three executabl
 - **Import sites to rewrite:** none (zero spec importers of either, once both go). Note `paths.ts` imports `testsDir.ts` (which has other live importers — leave `testsDir.ts` alone).
 - **Caveat:** `paths.ts` is dead **only conditionally on** deleting `translations.ts`. If the pre-step re-grep shows a new `paths.ts` consumer, keep `paths.ts` and delete `translations.ts` alone.
 
-### Item 6 — `utils/emailHelper.ts` → `fixtures/shared/emailBucket.fixture.ts` — ✅ DONE (code), live-green pending
+### Item 6 — `utils/emailHelper.ts` → `fixtures/shared/emailBucket.fixture.ts` — ✅ DONE (verified green 2026-06-07)
 
 > **EXECUTED 2026-06-07 (commit `2764a79a9`).** The deferral's premise was itself
 > corrected on closer read: `emailBucket.fixture.ts` does **NOT** import
@@ -237,6 +237,9 @@ Ordered **dead-code-first** (lowest risk leads). Each item gives three executabl
 > byte-identical. **Static gates green:** `tsc -p tests/tsconfig.json` 0, eslint 0,
 > `playwright --list` 84/72. **Remaining:** run the 2 specs on a live stack to
 > confirm green (commands handed to user). Do NOT re-add emailHelper.ts.
+>
+> **UPDATE 2026-06-07: live-green CONFIRMED** — user ran the specs, all pass.
+> Item 6 closed; the entire e2e cleanup follow-up is complete.
 - **Canonical target:** `tests/tests/fixtures/shared/emailBucket.fixture.ts` (the surviving Mailpit surface).
 - **Files to delete:** `tests/tests/utils/emailHelper.ts` — **only after** the migration below lands green.
 - **Import sites to rewrite (the gate):**
