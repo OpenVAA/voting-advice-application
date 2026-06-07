@@ -188,7 +188,11 @@ The split is a **real semantic axis**, not redundancy: helpers operate on raw Pl
 
 ---
 
-## 3. Proposed deprecation plan (FOLLOW-UP — do not execute now)
+## 3. Proposed deprecation plan
+
+> **EXECUTION STATUS (follow-up run, 2026-06-07 — user-approved "1"):**
+> Items **1, 2, 3, 4, 5 EXECUTED** ✅ (commits `6edeb9fa2` utils dead code, `fc08e10f3` helpers dead code) plus the user-requested **`.helper`→`.ts` rename** of the 3 surviving helpers (in `fc08e10f3`) and **IDURA kept + tracked** (`1d90db68c`, §4). Verified green: `playwright --list` 84/72, eslint 0, `tsc -p tests/tsconfig.json` 0.
+> Item **6 (emailHelper) DEFERRED** — see its annotation below; new finding makes the original sub-plan inaccurate.
 
 Ordered **dead-code-first** (lowest risk leads). Each item gives three executable fields: **Canonical target**, **Files to delete**, **Import sites to rewrite**.
 
@@ -220,7 +224,10 @@ Ordered **dead-code-first** (lowest risk leads). Each item gives three executabl
 - **Import sites to rewrite:** none (zero spec importers of either, once both go). Note `paths.ts` imports `testsDir.ts` (which has other live importers — leave `testsDir.ts` alone).
 - **Caveat:** `paths.ts` is dead **only conditionally on** deleting `translations.ts`. If the pre-step re-grep shows a new `paths.ts` consumer, keep `paths.ts` and delete `translations.ts` alone.
 
-### Item 6 — `utils/emailHelper.ts` → `fixtures/shared/emailBucket.fixture.ts` (D3-superseded, MEDIUM-EFFORT, GATED)
+### Item 6 — `utils/emailHelper.ts` → `fixtures/shared/emailBucket.fixture.ts` (D3-superseded, MEDIUM-EFFORT, GATED) — ⏸ DEFERRED (follow-up)
+
+> **DEFERRED in the 2026-06-07 follow-up. New finding corrects the sub-plan below:**
+> `emailBucket.fixture.ts` **imports from / wraps** `emailHelper.ts` (its own docstring: "this fixture WRAPS emailHelper.ts"), so `emailHelper.ts` is **load-bearing for the fixture itself** — not just the 2 specs. Deleting it therefore requires **relocating the Mailpit plumbing into the fixture first**, not merely migrating the specs. Also, the 2 specs only import `toCallbackUrl` (a pure URL-string transform, arguably util-shaped, not fixture-shaped) — `getRegistrationLink`/`getLatestEmailHtml`/etc. are reached only **through** the fixture. Net: this is a fixture-internalisation + spec-migration, still **gated on a live-stack green run** of the 2 specs. Tracked as a todo. Do NOT delete `emailHelper.ts` until that lands.
 - **Canonical target:** `tests/tests/fixtures/shared/emailBucket.fixture.ts` (the surviving Mailpit surface).
 - **Files to delete:** `tests/tests/utils/emailHelper.ts` — **only after** the migration below lands green.
 - **Import sites to rewrite (the gate):**
@@ -277,7 +284,7 @@ Result (verified this session):
 ```
 Both entries are **pre-existing** (present in the run-start git snapshot): the `voter-journey.spec.ts` modification and the untracked IDURA runbook predate this analysis and were **not** touched by it. No tracked file was changed by this run; gitignored output dirs are excluded by the filter. ✅ PASS — zero source/test files deleted, moved, rewritten, or @deprecated.
 
-**Next step:** the user reviews this report and approves a separate FOLLOW-UP consolidation run, which would execute §3 in order (dead-code items 1–5 are free; item 6 emailHelper is gated on the 2-spec fixture migration) and resolve the IDURA disposition in §4.
+**Next step:** ~~the user reviews this report and approves a separate FOLLOW-UP consolidation run~~ — **DONE 2026-06-07.** Follow-up executed §3 items 1–5 (dead-code sweep) + the user-requested `.helper`→`.ts` rename + IDURA keep/track. Commits `6edeb9fa2`, `fc08e10f3`, `1d90db68c`. All gates green (`playwright --list` 84/72, eslint 0, tsc tests 0). **Only item 6 (emailHelper) remains**, deferred to a live-stack run (todo filed) because the emailBucket fixture wraps emailHelper.
 
 **Summary of the real wins** (refuting the duplication-by-name premise):
 - **5 dead-code removals** lead the cleanup: `answerQuestion.ts`, `db-precondition.helper.ts`, `voter-iteration.helper.ts`, the cascade `translations.ts`+`paths.ts`, and the dead `gotoAndSettle` export. (3 of these — the two helper files + `gotoAndSettle` — are NEW finds beyond the scouted/RESEARCH set.)
