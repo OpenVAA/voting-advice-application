@@ -62,23 +62,3 @@ export async function settleNetworkIdle(
     timeout: opts.timeoutMs ?? 10_000
   });
 }
-
-/**
- * Navigate and then settle to a load state in a single paired call.
- *
- * Equivalent to `await page.goto(url); await settleNetworkIdle(page, opts);`.
- * Same no-swallow contract as `settleNetworkIdle` — does NOT internally
- * swallow timeouts.
- *
- * @param page - Playwright Page.
- * @param url - target URL (relative or absolute).
- * @param opts - forwarded to `settleNetworkIdle` (same defaults).
- */
-export async function gotoAndSettle(
-  page: Page,
-  url: string,
-  opts: { waitUntil?: WaitUntil; timeoutMs?: number } = {}
-): Promise<void> {
-  await page.goto(url);
-  await settleNetworkIdle(page, opts);
-}

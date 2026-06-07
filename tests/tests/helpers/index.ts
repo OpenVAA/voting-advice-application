@@ -6,8 +6,7 @@
  *   - `tests/tests/helpers/` (this directory) — thin generic Playwright
  *     wrappers with NO domain knowledge. Operate on raw Playwright types
  *     (`Page`, `Locator`) and the generic `SupabaseAdminClient`. Naming
- *     convention: `<concern>.helper.ts`. Examples: settle, navigation,
- *     select, db-precondition, voter-iteration.
+ *     convention: `<concern>.ts`. Examples: settle, navigation, select.
  *
  *   - `tests/tests/utils/` — domain-specific assemblers + catalogs.
  *     Examples: `voterNavigation.ts` (the full voter journey),
@@ -22,9 +21,7 @@
  * See `tests/tests/helpers/README.md` for the full design rationale.
  */
 
-export { assertDbRowCount } from './db-precondition.helper';
-export { clickAndRaceSettle, expectLandedOn } from './navigation.helper';
-export { iterateSelectOptions } from './select.helper';
-export { gotoAndSettle, settleNetworkIdle } from './settle.helper';
+export { clickAndRaceSettle, expectLandedOn } from './navigation';
+export { iterateSelectOptions } from './select';
+export { settleNetworkIdle } from './settle';
 export { TIMEOUTS } from './timeouts';
-export { walkVoterIteration } from './voter-iteration.helper';
