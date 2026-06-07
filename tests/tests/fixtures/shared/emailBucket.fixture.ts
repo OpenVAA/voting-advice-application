@@ -1,12 +1,11 @@
 /**
  * @file emailBucket fixture.
  *
- * Function-fixture wrapping the existing emailHelper.ts Mailpit utilities.
- * Sibling to other candidate-fixtures (candidateLoginPage.fixture.ts, etc.);
- * composed in `candidate-journey.ts`.
- *
- * This fixture WRAPS emailHelper.ts — it does NOT re-author the Mailpit HTTP
- * plumbing. emailHelper.ts STAYS in place for legacy specs.
+ * Self-contained Mailpit (Inbucket) access for E2E tests. Talks directly to the
+ * Mailpit REST API (port 54324, started by `supabase start`) — it owns its own
+ * HTTP plumbing and does not depend on any other email module. Sibling to the
+ * other candidate fixtures (candidateLoginPage.fixture.ts, etc.); composed in
+ * `candidate-journey.ts`.
  *
  * Surface:
  *  - expectEmail(subject)              → polls Mailpit until a message with
@@ -17,12 +16,14 @@
  *  - getLinksInEmail(subjectOrNth)     → array of href values (cheerio-parsed
  *                                        anchors from the email HTML).
  *
+ * Also exports `toCallbackUrl(verifyLink)` — a pure transform that rewrites a
+ * Supabase Auth verify link (extracted from an email via `getLinksInEmail`) into
+ * a direct frontend auth-callback URL. Absorbed here when the legacy
+ * `utils/emailHelper.ts` was retired (its only remaining consumer).
+ *
  * **Rigidity contract**:
  * - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
  *   `.catch(() => null)` on assertion-bearing locator interactions.
- *
- * SIBLING (not replacement) to emailHelper.ts. The two coexist until
- * emailHelper.ts is retired.
  */
 
 import { expect } from '@playwright/test';
@@ -30,7 +31,7 @@ import { load } from 'cheerio';
 import type { Page } from '@playwright/test';
 
 /**
- * URL of the Mailpit REST API. Mirrors emailHelper.ts:15.
+ * URL of the Mailpit REST API (Inbucket), started by `supabase start`.
  */
 const MAILPIT_URL = process.env.INBUCKET_URL ?? 'http://localhost:54324';
 
@@ -199,3 +200,27 @@ export function createEmailBucket(_page: Page, recipientEmail: string) {
 }
 
 export type EmailBucketFixture = ReturnType<typeof createEmailBucket>;
+
+/**
+ * Transform a Supabase Auth verify link into a direct auth callback URL.
+ *
+ * The Supabase invite/recovery email contains a link to the Auth verify endpoint
+ * which then redirects to the frontend. This extracts the token from the verify
+ * link and constructs a direct URL to the frontend's auth callback, bypassing the
+ * Supabase redirect (which may not carry the correct redirect_to).
+ *
+ * Pure function (no Mailpit/Page dependency); colocated here because its sole
+ * input is a link returned by `getLinksInEmail`.
+ *
+ * @param verifyLink - The link from the Supabase email (e.g. http://...54321/auth/v1/verify?token=...&type=invite)
+ * @param callbackPath - The frontend auth callback path (default: /en/candidate/auth/callback)
+ * @returns A URL pointing directly to the frontend callback with token_hash and type params
+ */
+export function toCallbackUrl(verifyLink: string, callbackPath = '/en/candidate/auth/callback'): string {
+  const url = new URL(verifyLink.replace(/&amp;/g, '&'));
+  const token = url.searchParams.get('token');
+  const type = url.searchParams.get('type') ?? 'invite';
+  const frontendPort = process.env.FRONTEND_PORT ?? '5173';
+  const frontendUrl = `http://localhost:${frontendPort}`;
+  return `${frontendUrl}${callbackPath}?token_hash=${token}&type=${type}`;
+}

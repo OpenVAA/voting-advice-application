@@ -64,6 +64,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, test } from '../../fixtures/candidate/candidate-journey';
+import { toCallbackUrl } from '../../fixtures/shared/emailBucket.fixture';
 import { TIMEOUTS } from '../../helpers';
 import {
   INFO_QUESTION_ANSWERS,
@@ -76,7 +77,6 @@ import {
   UNREGISTERED_CANDIDATE_EMAIL,
   UNREGISTERED_CANDIDATE_EXTERNAL_ID
 } from '../../utils/candidateJourneyConstants';
-import { toCallbackUrl } from '../../utils/emailHelper';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
