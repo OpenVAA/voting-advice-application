@@ -643,8 +643,18 @@ test.describe('voter journey', () => {
       const lastOption = answerOptions.last();
       await expect(lastOption).toBeChecked({ timeout: TIMEOUTS.element });
       // Advance forward again to confirm the round-trip left answers intact
-      await expectQuestionAndAdvance({ page, text: TEXT_RE.baseOpinion4Categorical, allowPreselected: true });
-      await expectQuestionAndAdvance({ page, text: TEXT_RE.baseOpinion5Boolean, allowPreselected: true });
+      await expectQuestionAndAdvance({
+        page,
+        text: TEXT_RE.baseOpinion4Categorical,
+        optionIndex: (n) => n - 1,
+        allowPreselected: true
+      });
+      await expectQuestionAndAdvance({
+        page,
+        text: TEXT_RE.baseOpinion5Boolean,
+        optionIndex: (n) => n - 1,
+        allowPreselected: true
+      });
     });
 
     // ====================================================================
@@ -660,10 +670,10 @@ test.describe('voter journey', () => {
 
     await test.step('category scoping shows the regional question and the per-question-filtered category', async () => {
       // We should now see the only regional question
-      await expectQuestionAndAdvance({ page, text: TEXT_RE.regionalOpinionsQuestion });
+      await expectQuestionAndAdvance({ page, text: TEXT_RE.regionalOpinionsQuestion, optionIndex: (n) => n - 1 });
       // We should now see the only regional filtered category intro
       await expectCategoryIntroAndAdvance({ page, text: TEXT_RE.regionallyFilteredCategory });
-      await expectQuestionAndAdvance({ page, text: TEXT_RE.filtMunNeOpinion });
+      await expectQuestionAndAdvance({ page, text: TEXT_RE.filtMunNeOpinion, optionIndex: (n) => n - 1 });
     });
 
     // ====================================================================
