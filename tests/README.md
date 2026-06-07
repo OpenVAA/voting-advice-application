@@ -24,13 +24,23 @@ List the discovered tests without a running dev server (useful as a "no dropped 
 cd tests && npx playwright test --list
 ```
 
-Opt-in specialised projects (default-off, env-gated):
+Specialised projects:
+
+`performance` and `a11y-smoke` run **by default** in `yarn test:e2e`. Opt OUT
+of either with the matching `PLAYWRIGHT_NO_*` env:
+
+```bash
+PLAYWRIGHT_NO_PERF=1   yarn test:e2e   # skip performance
+PLAYWRIGHT_NO_A11Y=1   yarn test:e2e   # skip a11y-smoke
+```
+
+`visual-regression` and `bank-auth` stay **opt-in** (each has a hard blocker —
+see the project table below). Enable explicitly:
 
 ```bash
 PLAYWRIGHT_VISUAL=1     yarn test:e2e --project=visual-regression
-PLAYWRIGHT_PERF=1       yarn test:e2e --project=performance
-PLAYWRIGHT_A11Y=1       yarn test:e2e --project=a11y-smoke
-PLAYWRIGHT_BANK_AUTH=1  yarn test:e2e --project=bank-auth
+PLAYWRIGHT_BANK_AUTH=1  SUPABASE_SERVICE_ROLE_KEY=… SUPABASE_ANON_KEY=… \
+  yarn test:e2e --project=bank-auth
 ```
 
 Per-spec smokes (skip the rest of the chain — dramatically faster):
@@ -133,14 +143,21 @@ data-setup-perm-1e1cg1co (FIRST — no deps)
 
 Each `perm-<short>` spec project depends on its own `data-setup-perm-<short>` and runs **serial**. The full set of permutation specs lives under [`tests/specs/perm/`](./tests/specs/perm/).
 
-### Opt-in projects (env-gated, default-off)
+### Specialised projects
 
-| Project | Env var | Spec dir | Depends on | Notes |
-|---------|---------|----------|------------|-------|
-| `visual-regression` | `PLAYWRIGHT_VISUAL=1` | `tests/specs/visual/` | `data-setup-base` + `auth-setup` | Screenshot baselines under `tests/specs/__screenshots__/`. `auth-setup` is declared only under `PLAYWRIGHT_VISUAL`. |
-| `performance` | `PLAYWRIGHT_PERF=1` | `tests/specs/perf/` | `data-setup-base` | Page-load timing assertions. |
-| `a11y-smoke` | `PLAYWRIGHT_A11Y=1` | `tests/specs/a11y/` | `data-setup-base` | `@axe-core/playwright` WCAG 2.1 AA scan; consumes the base fixture. |
-| `bank-auth` | `PLAYWRIGHT_BANK_AUTH=1` | `tests/specs/candidate/candidate-bank-auth.spec.ts` | `data-setup-base` | Idura/Signicat OIDC integration test. |
+**Default-on** (part of `yarn test:e2e`; opt OUT via the `PLAYWRIGHT_NO_*` env):
+
+| Project | Disable with | Spec dir | Depends on | Notes |
+|---------|--------------|----------|------------|-------|
+| `performance` | `PLAYWRIGHT_NO_PERF=1` | `tests/specs/perf/` | `data-setup-base` | Page-load timing assertions. |
+| `a11y-smoke` | `PLAYWRIGHT_NO_A11Y=1` | `tests/specs/a11y/` | `data-setup-base` | `@axe-core/playwright` WCAG 2.1 AA scan; consumes the base fixture. |
+
+**Opt-in** (excluded from the default run — each has a hard blocker):
+
+| Project | Enable with | Spec dir | Depends on | Why opt-in |
+|---------|-------------|----------|------------|------------|
+| `visual-regression` | `PLAYWRIGHT_VISUAL=1` | `tests/specs/visual/` | `data-setup-base` + `auth-setup` | `auth-setup` can't authenticate against the base dataset yet (no registered base candidate / email). Screenshot baselines under `tests/specs/__screenshots__/`; `auth-setup` is declared only under `PLAYWRIGHT_VISUAL`. |
+| `bank-auth` | `PLAYWRIGHT_BANK_AUTH=1` | `tests/specs/candidate/candidate-bank-auth.spec.ts` | `data-setup-base` | Spec throws at module load without `SUPABASE_SERVICE_ROLE_KEY`/`SUPABASE_ANON_KEY`, and 3 tests need the `identity-callback` Edge Function served (`--no-verify-jwt`). Idura/Signicat OIDC integration test. |
 
 ---
 

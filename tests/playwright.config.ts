@@ -23,11 +23,15 @@ export const STORAGE_STATE = path.join(TESTS_DIR, '../playwright/.auth/user.json
  *     with the base/journey chains on the shared single DB. The perm→journey
  *     dependency direction keeps opt-in --project runs pulling only base,
  *     never the perm family.
- *   - opt-in specialized projects (env-gated, excluded from default
- *     `yarn test:e2e`): visual-regression (PLAYWRIGHT_VISUAL), performance
- *     (PLAYWRIGHT_PERF), a11y-smoke (PLAYWRIGHT_A11Y), bank-auth
- *     (PLAYWRIGHT_BANK_AUTH). These depend on `data-setup-base` (e2e/base
- *     dataset) and, for visual, `auth-setup` (candidate storageState).
+ *   - specialized projects that run BY DEFAULT and are opt-OUT via env:
+ *     performance (disable with PLAYWRIGHT_NO_PERF) and a11y-smoke (disable with
+ *     PLAYWRIGHT_NO_A11Y). Each depends on `data-setup-base` (e2e/base dataset).
+ *   - OPT-IN projects (excluded from the default run, each with a hard blocker):
+ *       · visual-regression (PLAYWRIGHT_VISUAL) — `auth-setup` cannot
+ *         authenticate against the base dataset yet (see KNOWN GAP below).
+ *       · bank-auth (PLAYWRIGHT_BANK_AUTH) — the spec throws at module load
+ *         without SUPABASE_SERVICE_ROLE_KEY/ANON_KEY and needs the
+ *         identity-callback Edge Function served.
  *
  * `auth-setup` is retained ONLY to back the visual opt-in project; it is
  * dormant in the default run (no default project depends on it).
@@ -77,21 +81,23 @@ export default defineConfig({
   },
 
   projects: [
-    // === Shared base auth setup (opt-in only) ===
+    // === Shared base auth setup (visual opt-in only) ===
     //
-    // The opt-in specialized projects below (visual-regression, performance,
-    // a11y-smoke, bank-auth) depend on `data-setup-base` for their seed;
-    // `auth-setup` (candidate storageState) depends on it too. `auth-setup` is
-    // declared ONLY when an opt-in flag is set, so the default `yarn test:e2e`
-    // (voter/candidate journeys + perm-* family) never runs the candidate-login
-    // storageState step.
+    // The specialized projects below depend on `data-setup-base` for their seed.
+    // performance / a11y-smoke / bank-auth run by default (opt-OUT via
+    // PLAYWRIGHT_NO_*); visual-regression is opt-IN (PLAYWRIGHT_VISUAL).
+    // `auth-setup` (candidate storageState) also depends on `data-setup-base`
+    // but is declared ONLY when PLAYWRIGHT_VISUAL is set, so the default
+    // `yarn test:e2e` (journeys + perm-* family + perf/a11y/bank-auth) never
+    // runs the candidate-login storageState step.
     //
-    // KNOWN GAP: the base dataset (`e2e/base`) does not seed a
-    // `test-candidate-alpha` row and base candidates carry no email column, so
-    // `auth-setup`'s UI-login step has no registered base candidate to
-    // authenticate as. The dependency keeps the graph resolving; rewiring the
-    // opt-in/auth chain against base must establish a registered base-candidate
-    // + email (forceRegister) contract before the visual opt-in run can pass.
+    // KNOWN GAP (this is WHY visual stays opt-in): the base dataset (`e2e/base`)
+    // does not seed a `test-candidate-alpha` row and base candidates carry no
+    // email column, so `auth-setup`'s UI-login step has no registered base
+    // candidate to authenticate as. The dependency keeps the graph resolving;
+    // rewiring the auth chain against base must establish a registered
+    // base-candidate + email (forceRegister) contract before visual-regression
+    // can be promoted to default-on.
     //
     // Only `visual-regression` consumes the candidate storageState, so
     // `auth-setup` is declared under PLAYWRIGHT_VISUAL alone (perf / a11y /
@@ -108,13 +114,17 @@ export default defineConfig({
         ]
       : []),
 
-    // === Opt-in Specialized Projects ===
-    // These projects are gated by environment variables and excluded from
-    // the default `yarn test:e2e` run. Enable via:
+    // === Specialized Projects ===
+    // performance / a11y-smoke run BY DEFAULT in `yarn test:e2e`.
+    // Opt OUT of either with the matching PLAYWRIGHT_NO_* env, e.g.:
+    //   PLAYWRIGHT_NO_PERF=1 yarn test:e2e
+    //   PLAYWRIGHT_NO_A11Y=1 yarn test:e2e
+    // visual-regression and bank-auth stay OPT-IN (each has a hard blocker — see above):
     //   PLAYWRIGHT_VISUAL=1 npx playwright test -c tests/playwright.config.ts --project=visual-regression
-    //   PLAYWRIGHT_PERF=1 npx playwright test -c tests/playwright.config.ts --project=performance
+    //   PLAYWRIGHT_BANK_AUTH=1 npx playwright test -c tests/playwright.config.ts --project=bank-auth
 
-    // Visual regression: screenshot comparison for key pages
+    // Visual regression: screenshot comparison for key pages (OPT-IN — blocked
+    // on auth-setup vs base-dataset gap above).
     ...(process.env.PLAYWRIGHT_VISUAL
       ? [
           {
@@ -126,33 +136,37 @@ export default defineConfig({
         ]
       : []),
 
-    // Performance budgets: page load timing assertions
-    ...(process.env.PLAYWRIGHT_PERF
-      ? [
+    // Performance budgets: page load timing assertions (default-on; disable with PLAYWRIGHT_NO_PERF).
+    ...(process.env.PLAYWRIGHT_NO_PERF
+      ? []
+      : [
           {
             name: 'performance',
             testDir: './tests/specs/perf',
             use: { ...devices['Desktop Chrome'] },
             dependencies: ['data-setup-base']
           }
-        ]
-      : []),
+        ]),
 
-    // Accessibility smoke: WCAG 2.1 AA scan via @axe-core/playwright
-    //   PLAYWRIGHT_A11Y=1 npx playwright test -c tests/playwright.config.ts --project=a11y-smoke
-    ...(process.env.PLAYWRIGHT_A11Y
-      ? [
+    // Accessibility smoke: WCAG 2.1 AA scan via @axe-core/playwright (default-on; disable with PLAYWRIGHT_NO_A11Y).
+    ...(process.env.PLAYWRIGHT_NO_A11Y
+      ? []
+      : [
           {
             name: 'a11y-smoke',
             testDir: './tests/specs/a11y',
             use: { ...devices['Desktop Chrome'] },
             dependencies: ['data-setup-base']
           }
-        ]
-      : []),
+        ]),
 
-    // Bank auth (Idura/Signicat): identity-callback Edge Function integration
-    //   PLAYWRIGHT_BANK_AUTH=1 npx playwright test -c tests/playwright.config.ts --project=bank-auth
+    // Bank auth (Idura/Signicat): identity-callback Edge Function integration.
+    // OPT-IN (PLAYWRIGHT_BANK_AUTH) — NOT default-on: the spec throws at module
+    // load without SUPABASE_SERVICE_ROLE_KEY/ANON_KEY, and 3 of its tests have no
+    // precondition skip and require the identity-callback Edge Function to be
+    // served (`supabase functions serve --no-verify-jwt`). Promoting it to
+    // default-on needs an infra-probe gate on all tests + non-throwing key
+    // handling first.
     ...(process.env.PLAYWRIGHT_BANK_AUTH
       ? [
           {

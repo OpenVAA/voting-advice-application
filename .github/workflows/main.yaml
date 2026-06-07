@@ -173,7 +173,11 @@ jobs:
         working-directory: apps/supabase
         run: supabase stop
 
-  e2e-visual-perf:
+  # Visual regression is opt-in (PLAYWRIGHT_VISUAL) and currently expected to
+  # fail (auth-setup vs base-dataset gap), so it runs in its own advisory job.
+  # performance + a11y-smoke now run by default in the blocking `e2e-tests` job
+  # above (opt out with PLAYWRIGHT_NO_PERF / PLAYWRIGHT_NO_A11Y).
+  e2e-visual:
     runs-on: ubuntu-latest
     continue-on-error: true
 
@@ -222,14 +226,14 @@ jobs:
             sleep 2
           done
 
-      - name: "Run visual and performance tests"
-        run: PLAYWRIGHT_VISUAL=1 PLAYWRIGHT_PERF=1 npx playwright test -c ./tests/playwright.config.ts --grep "@visual|@perf"
+      - name: "Run visual regression tests (opt-in, advisory)"
+        run: PLAYWRIGHT_VISUAL=1 npx playwright test -c ./tests/playwright.config.ts --grep "@visual"
 
       - name: "Upload playwright report"
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report-visual-perf
+          name: playwright-report-visual
           path: tests/playwright-report/
           retention-days: 30
 
