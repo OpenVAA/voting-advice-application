@@ -98,7 +98,7 @@ Which phases cover which requirements. Populated during roadmap creation.
 | VT-03 | Phase 99 | Complete |
 | NAVA11Y-01 | Phase 99 | Complete (CR-01 closed in 99-04 — announcer speaks localized per-route page title via `routeTitle` layout-context signal; opaque DB slug no longer leaked) |
 | NAVA11Y-02 | Phase 99 | Complete (focus markers + app-wide `<h1 tabindex="-1">` fallback, CR-02 fixed `71399cc9e`) |
-| NAVA11Y-03 | Phase 99 | Pending — spec extended + typechecks; live axe gate blocked by pre-existing `voter-journey.fixture.ts:130` fixture issue (operator/UAT) |
+| NAVA11Y-03 | Phase 99 | Complete (spec assertion landed in 99-03; the deferred live axe gate — blocked at Phase 99 by the pre-existing `voter-journey.fixture.ts:130` fixture issue — was closed at the Phase 101 milestone-close run: a11y-smoke 10/10) |
 | QLAYOUT-01 | Phase 100 | Complete |
 | QLAYOUT-02 | Phase 100 | Complete |
 | SUITE-01 | Phase 101 | Complete |

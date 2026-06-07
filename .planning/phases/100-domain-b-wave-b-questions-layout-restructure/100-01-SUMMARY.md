@@ -27,6 +27,7 @@ metrics:
   completed: 2026-06-04
   tasks: 1
   files: 1
+requirements-completed: [QLAYOUT-02]
 ---
 
 # Phase 100 Plan 01: Questions Layout Restructure — D-03 Answer-Survival Gate Summary

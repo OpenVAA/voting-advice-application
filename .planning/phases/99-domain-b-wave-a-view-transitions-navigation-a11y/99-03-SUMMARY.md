@@ -33,8 +33,9 @@ key-decisions:
   - "Announcer (no role, no testId) accessed via page.locator('#route-announcer') with an inline // reason: + eslint-disable for playwright/no-restricted-locators+no-raw-locators — its id IS the stable, locale-stable contract (Plan 99-01)."
   - "networkidle removed from the two pre-existing prohibition comments (reworded to 'network-idle settle') so grep -c networkidle == 0 holds; intent preserved."
 
-requirements-completed: []
-requirements-partial: [NAVA11Y-01, NAVA11Y-02, NAVA11Y-03]
+requirements-completed: [NAVA11Y-03]
+requirements-partial: [NAVA11Y-01, NAVA11Y-02]
+# NAVA11Y-03 spec assertion landed here; its live axe gate closed at the Phase 101 milestone-close run (a11y-smoke 10/10). Promoted from partial→completed during the v2.11 milestone audit (2026-06-07).
 
 # Metrics
 duration: ~55min
