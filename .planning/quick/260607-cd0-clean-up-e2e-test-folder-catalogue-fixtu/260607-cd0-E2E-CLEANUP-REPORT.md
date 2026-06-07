@@ -224,10 +224,19 @@ Ordered **dead-code-first** (lowest risk leads). Each item gives three executabl
 - **Import sites to rewrite:** none (zero spec importers of either, once both go). Note `paths.ts` imports `testsDir.ts` (which has other live importers — leave `testsDir.ts` alone).
 - **Caveat:** `paths.ts` is dead **only conditionally on** deleting `translations.ts`. If the pre-step re-grep shows a new `paths.ts` consumer, keep `paths.ts` and delete `translations.ts` alone.
 
-### Item 6 — `utils/emailHelper.ts` → `fixtures/shared/emailBucket.fixture.ts` (D3-superseded, MEDIUM-EFFORT, GATED) — ⏸ DEFERRED (follow-up)
+### Item 6 — `utils/emailHelper.ts` → `fixtures/shared/emailBucket.fixture.ts` — ✅ DONE (code), live-green pending
 
-> **DEFERRED in the 2026-06-07 follow-up. New finding corrects the sub-plan below:**
-> `emailBucket.fixture.ts` **imports from / wraps** `emailHelper.ts` (its own docstring: "this fixture WRAPS emailHelper.ts"), so `emailHelper.ts` is **load-bearing for the fixture itself** — not just the 2 specs. Deleting it therefore requires **relocating the Mailpit plumbing into the fixture first**, not merely migrating the specs. Also, the 2 specs only import `toCallbackUrl` (a pure URL-string transform, arguably util-shaped, not fixture-shaped) — `getRegistrationLink`/`getLatestEmailHtml`/etc. are reached only **through** the fixture. Net: this is a fixture-internalisation + spec-migration, still **gated on a live-stack green run** of the 2 specs. Tracked as a todo. Do NOT delete `emailHelper.ts` until that lands.
+> **EXECUTED 2026-06-07 (commit `2764a79a9`).** The deferral's premise was itself
+> corrected on closer read: `emailBucket.fixture.ts` does **NOT** import
+> `emailHelper.ts` — its "wraps emailHelper.ts" docstring was inaccurate; the
+> fixture already owns its full Mailpit plumbing. So the *entire* `emailHelper.ts`
+> was dead **except `toCallbackUrl`** (a pure verify-link→callback-URL transform
+> used by the 2 specs). Action taken: moved `toCallbackUrl` into
+> `emailBucket.fixture.ts` as a module-level export, repointed both spec imports,
+> deleted `utils/emailHelper.ts`, fixed the misleading docstring. Logic
+> byte-identical. **Static gates green:** `tsc -p tests/tsconfig.json` 0, eslint 0,
+> `playwright --list` 84/72. **Remaining:** run the 2 specs on a live stack to
+> confirm green (commands handed to user). Do NOT re-add emailHelper.ts.
 - **Canonical target:** `tests/tests/fixtures/shared/emailBucket.fixture.ts` (the surviving Mailpit surface).
 - **Files to delete:** `tests/tests/utils/emailHelper.ts` — **only after** the migration below lands green.
 - **Import sites to rewrite (the gate):**
