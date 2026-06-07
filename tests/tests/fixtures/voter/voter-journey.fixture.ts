@@ -56,8 +56,8 @@ export type AnswerMode = 'min' | 'max';
  * up to `timeout` ms for `locator` to become visible, resolving `true` if it
  * does and `false` on timeout. Used for "did we land on this optional page?"
  * branches where the page's content may mount a beat after navigation (e.g.
- * the v2.11 post-hydration `$dataRoot` provide window on the elections /
- * constituencies selectors — the elections-continue-stall regression).
+ * the post-hydration `$dataRoot` provide window on the elections /
+ * constituencies selectors — the elections-continue-stall hazard).
  */
 async function waitForVisible(locator: Locator, timeout: number): Promise<boolean> {
   return locator
@@ -70,13 +70,13 @@ async function waitForVisible(locator: Locator, timeout: number): Promise<boolea
  * Follow an `<a>` link by navigating directly to its resolved `href`, once that
  * href has settled to match `hrefPattern`.
  *
- * Guards against two v2.11 hazards that make a plain `.click()` on these links
+ * Guards against two hazards that make a plain `.click()` on these links
  * flake until the 90s ceiling:
  *   1. Reactive-render churn — the link's `href` is bound to a post-hydration
  *      `$derived` value (the category-intro start button's `questionId` resolves
- *      from `voterCtx.selectedQuestionBlocks`, a Phase 95 `$state`); clicking
+ *      from `voterCtx.selectedQuestionBlocks`, a reactive `$state`); clicking
  *      before it settles detaches the element mid-click.
- *   2. Pointer interception — during the Phase 99 navigation the document root
+ *   2. Pointer interception — during navigation the document root
  *      ("<html> intercepts pointer events") sits over the link, so the click
  *      never lands.
  * Navigating to the resolved href sidesteps both: it waits for the href to be
@@ -145,10 +145,9 @@ async function walkUntilQuestionsIntro(page: Page): Promise<void> {
   const electionsContinue = page.getByTestId(testIds.voter.elections.continue);
   // NB. `locator.isVisible({ timeout })` does NOT wait — Playwright's
   // `isVisible` is a one-shot snapshot and silently ignores the `timeout`
-  // option (playwright-core/client/frame.ts). Under the v2.11 rune migration
-  // (Phase 95) the elections list mounts a beat AFTER navigation — `$dataRoot`
-  // is populated by a post-hydration `$effect` in routes/+layout.svelte rather
-  // than synchronously at first paint as in the Svelte-4 store era — so a
+  // option (playwright-core/client/frame.ts). The elections list mounts a beat
+  // AFTER navigation — `$dataRoot` is populated by a post-hydration `$effect` in
+  // routes/+layout.svelte rather than synchronously at first paint — so a
   // non-waiting probe lands in that sub-second window, returns false, and skips
   // the Continue click, stalling the located walk at /elections (the
   // elections-continue-stall regression). Use a polling `waitForVisible`
@@ -218,7 +217,7 @@ async function answerAndAdvanceToResults(
   const terminal = /\/results/;
   // A category-intro route is `/questions/category/<id>`; a question route is
   // `/questions/<id>` (no `/category/` segment). Branch on the URL — which is
-  // authoritative and immune to the v2.11 page-reuse DOM lag — rather than a
+  // authoritative and immune to the page-reuse DOM lag — rather than a
   // racy `isVisible()` snapshot against a page whose OUTGOING content is still
   // mounted mid-navigation (specs/voter/voter-journey.spec.ts SETTLE-BEFORE-
   // COUNT rationale).
@@ -235,8 +234,8 @@ async function answerAndAdvanceToResults(
     if (categoryIntro.test(page.url())) {
       // The category-intro start button is an `<a href={getRoute('Question',
       // questionId)}>` whose `questionId` is `$derived` from
-      // `voterCtx.selectedQuestionBlocks` (a post-hydration reactive `$state`
-      // under the v2.11 rune migration, Phase 95). On first paint the href is
+      // `voterCtx.selectedQuestionBlocks` (a post-hydration reactive `$state`).
+      // On first paint the href is
       // unresolved; when the block populates the link re-renders and a plain
       // click both detaches mid-click AND is intercepted by the navigating
       // document root ("<html> intercepts pointer events") until the 90s ceiling.
@@ -255,7 +254,7 @@ async function answerAndAdvanceToResults(
       await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: TIMEOUTS.slowPage }).catch(() => null);
       continue;
     }
-    // SETTLE-BEFORE-COUNT (v2.11 regression). On a Q→Q param-only nav SvelteKit
+    // SETTLE-BEFORE-COUNT. On a Q→Q param-only nav SvelteKit
     // REUSES questions/[questionId]/+page.svelte (the page derives `question`
     // via `$derived` rather than remounting), so the OUTGOING question's
     // `[data-testid=question-choice]` options stay mounted until the PREVIOUS
@@ -268,15 +267,15 @@ async function answerAndAdvanceToResults(
     // Anchor to the CURRENT question deterministically: each choice's `name` is
     // `questionChoices-<questionId>` and the questionId is the last `/questions/`
     // path segment. Scope the option locator to that questionId so the count +
-    // `.nth()` only ever see the INCOMING question's options. Mirrors the passing
-    // voter-journey spec's SETTLE-BEFORE-COUNT rationale (specs/voter/
-    // voter-journey.spec.ts:211-257) — a deterministic settle, NOT a
+    // `.nth()` only ever see the INCOMING question's options. Mirrors the
+    // voter-journey spec's SETTLE-BEFORE-COUNT rationale
+    // (specs/voter/voter-journey.spec.ts) — a deterministic settle, NOT a
     // View-Transition workaround (reduced-motion does not fix this and the
     // Playwright option does not reach the app's matchMedia anyway).
     const questionId = new URL(page.url()).pathname.replace(/\/+$/, '').split('/').filter(Boolean).pop() ?? '';
     // reason: locale-stable composite selector — the `question-choice` testid is
     // ambiguous across the outgoing+incoming questions mounted simultaneously
-    // during a v2.11 param-only Q→Q nav; scoping by the `questionChoices-<id>`
+    // during a param-only Q→Q nav; scoping by the `questionChoices-<id>`
     // name attribute disambiguates to the CURRENT question. No getByTestId/
     // getByRole form expresses a testid+attribute conjunction.
     // eslint-disable-next-line playwright/no-restricted-locators

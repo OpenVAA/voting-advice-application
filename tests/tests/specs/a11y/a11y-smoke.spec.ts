@@ -70,7 +70,7 @@ async function advancePastCategoryIntro(page: Page): Promise<void> {
     .then(() => true)
     .catch(() => false);
   if (!present) return;
-  // The category-start link's `href` resolves post-hydration from the v2.11
+  // The category-start link's `href` resolves post-hydration from the
   // reactive `selectedQuestionBlocks` ($state); a plain click races the reactive
   // re-render AND is intercepted by the navigating document root ("<html>
   // intercepts pointer events"). Wait for the href to point at a question route,

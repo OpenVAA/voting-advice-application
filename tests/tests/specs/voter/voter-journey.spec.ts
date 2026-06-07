@@ -208,13 +208,8 @@ async function expectCategoryIntroAndAdvance({
  * mounted for a frame after the heading has updated — a page-wide count would be
  * stale and `optionIndex` would pick the wrong option.
  *
- * This replaces the v2.11 SETTLE-BEFORE-COUNT approach (an entry `waitForURL` guess
- * + a count-stability poll). That guess assumed a Q→Q navigation was always pending
- * on entry and stalled a full `TIMEOUTS.page` on every call already sitting on its
- * target question (after categoryStart / goBack / previousButton), which is what
- * pushed the journey past `JOURNEY_TEST_MAX`. The required `text` + the questionId-
- * scoped option locator together give a deterministic settle with no entry stall and
- * no stability poll.
+ * The required `text` plus the questionId-scoped option locator together give a
+ * deterministic settle with no entry stall and no stability poll.
  */
 async function expectQuestionAndAdvance({
   page,
@@ -625,18 +620,15 @@ test.describe('voter journey', () => {
       await expect.soft(resultsLink).toBeEnabled({ timeout: TIMEOUTS.element });
     });
 
-    // reason: D-03 QLAYOUT-02 answer-survival gate — Wave 0 regression gate for
-    // the Phase 100 questions-layout restructure. After answering a multi-step
-    // Q→Q run that CROSSES a question.type boundary (Base-5 Boolean ← Base-4
-    // Categorical), navigate BACK across that boundary and assert the earlier
-    // (Categorical) question's option is STILL checked. This crossing is what
-    // exercises the `{#key question.type}` remount path: it proves answers
-    // survive a Q→Q hop even when the variant component is torn down and
-    // remounted, not merely when the same variant is reused. The behavior
-    // passes today (SvelteKit reuses `questions/[questionId]/+page.svelte` per
-    // the SETTLE-BEFORE-COUNT comment on expectQuestionAndAdvance); once Plan 02
-    // hoists rendering into the layout, this SAME assertion proves no regression.
-    await test.step('D-03 answer survives a multi-step Q→Q run across a question-type boundary', async () => {
+    // Answer-survival gate: after answering a multi-step Q→Q run that CROSSES a
+    // question.type boundary (Base-5 Boolean ← Base-4 Categorical), navigate BACK
+    // across that boundary and assert the earlier (Categorical) question's option
+    // is STILL checked. This crossing exercises the `{#key question.type}` remount
+    // path: it proves answers survive a Q→Q hop even when the variant component is
+    // torn down and remounted, not merely when the same variant is reused.
+    // SvelteKit reuses `questions/[questionId]/+page.svelte` (see the
+    // SETTLE-BEFORE-COUNT comment on expectQuestionAndAdvance).
+    await test.step('answer survives a multi-step Q→Q run across a question-type boundary', async () => {
       // We were at the category boundary
       await expectCategoryIntroAndAdvance({ page, text: TEXT_RE.optionalOpinionsA });
       const previousButton = page.getByTestId(testIds.voter.questions.previousButton);

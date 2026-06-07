@@ -115,10 +115,8 @@ async function buildTestIdToken(
  * env-gated (PLAYWRIGHT_BANK_AUTH=1 selects the project per playwright.config.ts).
  * When the project runs, the Edge Function may or may not have decryption keys
  * configured (IDENTITY_PROVIDER_DECRYPTION_JWKS). The probe captures both modes
- * so per-test gating is precondition-not-met (not a race) — the Type A pattern
- * defined in 73-04-PLAN.md uses `test.skip(precondition, …)` with inline
- * `// reason:` justification matching the v2.8 P70 Cat A "Option A inline
- * ignore-with-rationale preamble" pattern.
+ * so per-test gating is precondition-not-met (not a race): each test uses
+ * `test.skip(precondition, …)` with an inline `// reason:` justification.
  */
 type EdgeFunctionProbe = {
   status: number;
@@ -282,8 +280,7 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
     // Verify session data is returned with a magic-link action_link containing a token.
     // Both `session` and `session.action_link` are part of the Supabase magic-link contract
     // (admin.generateLink response shape) — they MUST be present together when keys are
-    // configured. The original `if (body.session?.action_link) { expect(...) }` guard masked
-    // that contract; replaced with unconditional path-asserts.
+    // configured, so the test asserts them unconditionally.
     const session = body.session as { action_link?: string } | null;
     expect(session).toBeTruthy();
     expect(session?.action_link).toBeTruthy();

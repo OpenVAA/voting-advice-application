@@ -1,7 +1,7 @@
 /**
  * Barrel re-export for the `tests/tests/helpers/` layer.
  *
- * helpers/ vs utils/ boundary (per 86.2-RESEARCH.md §"Open Questions (RESOLVED)" Q5):
+ * helpers/ vs utils/ boundary:
  *
  *   - `tests/tests/helpers/` (this directory) — thin generic Playwright
  *     wrappers with NO domain knowledge. Operate on raw Playwright types
