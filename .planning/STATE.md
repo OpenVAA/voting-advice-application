@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.11
-milestone_name: Svelte 5 Runes Migration + View Transitions
-status: Awaiting next milestone
-stopped_at: Completed 98-02-PLAN.md
-last_updated: "2026-06-07T19:04:15.967Z"
-last_activity: 2026-06-07 — Milestone v2.11 completed and archived
+milestone: v2.12
+milestone_name: Runes-Native Cleanup
+status: planning
+last_updated: "2026-06-08T11:54:55.384Z"
+last_activity: 2026-06-08
 progress:
-  total_phases: 7
-  completed_phases: 7
-  total_plans: 22
-  completed_plans: 22
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -25,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-06-07 after v2.11 close)
 
 ## Current Position
 
-Phase: Milestone v2.11 complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-06-07 — Milestone v2.11 completed and archived
+Status: Defining requirements
+Last activity: 2026-06-08 — Milestone v2.12 started
 
 ## Performance Metrics
 

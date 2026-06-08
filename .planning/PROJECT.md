@@ -8,6 +8,26 @@ OpenVAA is an open-source framework for building Voting Advice Applications (VAA
 
 A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
 
+## Current Milestone: v2.12 Runes-Native Cleanup
+
+**Goal:** Finish the Svelte 5 runes transition — pick and apply the cleanest native idiom for context handles, rename now-misleading "Store" symbols to "State", and clear the last non-runes stragglers.
+
+**Target features:**
+
+- **Handle-idiom spike** — classify the 40 `{ readonly current }` context handles (read-only vs read-write), pick the most runes-native idiom (plain reactive getters vs get/set pairs vs keep-as-is), prove it on a slice. Gates the codemod.
+- **`.current` codemod** — apply the chosen idiom across the ~524 `.current` read sites (exact scope finalized by the spike), preserving the CLAUDE.md destructure-trap contract.
+- **"Store" → "State" rename** — rename the rune-native stores (`answerStore`→`answerState`, plus `filterStore` / `popupStore` / `matchStore` / `candidateUserDataStore` / `questionBlockStore` / `nominationAndQuestionStore` / `question*` / `paramStore` / `editedAnswersStore` / `pageDatumStore`) + their files, types, and tests. The server-side `jobStore` (a genuine in-memory data registry) and the `cookieStore` test mock are left untouched.
+- **Straggler clearance** — convert the last real `svelte/store` (`videoPreferences` writable in `lib/components/video/component-stores.ts`) to a rune, remove the stray `$: console.info` debug line in `TermsOfUseForm.svelte`, and extend the `svelte/store` ESLint guard from `lib/contexts/**`+`routes/**` to the whole `apps/frontend/src/**` tree.
+- **Green gate** — full E2E suite (now includes the a11y-smoke) + unit + typecheck/lint; frontend-only scope.
+
+**Key context:**
+
+- The frontend is already ~99% runes-native after v2.4 + v2.11: zero `export let` / `createEventDispatcher` / `on:` / `<slot>` / `$$Props`, and only ONE genuine `svelte/store` left (`videoPreferences`). This milestone is naming + the handle-idiom decision + straggler cleanup, not a broad migration.
+- The `{ readonly current }` handle is NOT vestigial — it survives the context-boundary destructure trap (CLAUDE.md "Context Destructuring Rule"). User chose **spike-first** because read-write handles can't all collapse to plain getters; the spike decides the idiom per class.
+- "Store→State" deliberately excludes the server `jobStore` (real data store, not a Svelte rune) and `cookieStore` (a `Map`-based test mock mirroring the browser API name).
+- Phase numbering continues from v2.11 (last phase 101) → starts at **Phase 102** (no reset).
+- Backed by the existing `spike-findings-voting-advice-application-gsd` skill (16 browser-verified spikes from the v2.11 migration).
+
 ## Last Shipped: v2.11 Svelte 5 Runes Migration + View Transitions
 
 **Status:** ✅ SHIPPED 2026-06-07. 7 phases (95-101), 22 plans, 42 tasks across 4 days. Audit verdict `tech_debt` (no blockers): **22/22 requirements satisfied + 18/18 cross-phase integration seams wired + 3/3 E2E flows complete.** Milestone-close green gate PASSED — full E2E **84/0** + full unit green + a11y-smoke 10/10 + 3× targeted determinism. Phase numbering continued from v2.10's last phase (94); started at Phase 95 (no reset). Full record: `.planning/MILESTONES.md` + `.planning/milestones/v2.11-MILESTONE-AUDIT.md`.
@@ -220,7 +240,7 @@ Known infrastructure issue: local imgproxy Docker container crashes intermittent
 
 ### Active
 
-**No active milestone.** v2.11 (Svelte 5 Runes Migration + View Transitions) shipped 2026-06-07 — all 22 of its REQs are in Validated above. The Svelte 5 runes migration is now complete (zero legacy `svelte/store` bridges remain in the frontend). Next: run `/gsd-new-milestone` to scope the next initiative. Candidate themes from the backlog and the Future list below: sharable-URLs + multi-tenant pair, party-app generalization, Settings & configuration paradigm reorg, the 165 intra-package circular-deps structural refactor, and the standing 49+ backlog todos (triage via `/gsd-review-backlog`).
+**v2.12 Runes-Native Cleanup — in progress (started 2026-06-08).** See the "Current Milestone" section above for goal + target features. Requirements live in `.planning/REQUIREMENTS.md`; phases in `.planning/ROADMAP.md` (Phase 102+). The milestone finishes the Svelte 5 runes transition: a spike-gated `.current` handle-idiom decision + codemod, a rune-store "Store→State" rename, and straggler cleanup (last `svelte/store`, the `$:` debug line, app-wide ESLint guard). All 22 v2.11 REQs remain in Validated above.
 
 **Pending todos** (carried forward, lower priority — not yet on a milestone roadmap):
 - Generalize candidate app to support parties as first-class registrants
@@ -437,4 +457,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-_Last updated: 2026-06-07 after completing milestone v2.11 (Svelte 5 Runes Migration + View Transitions). Full evolution review: reframed v2.11 from current/planning → SHIPPED; refreshed Current State; moved all 22 v2.11 REQs (CTX/CONS/CLEAN/VT/NAVA11Y/QLAYOUT/SUITE) to Validated; cleared the Active block to "no active milestone"; added 9 v2.11 Key Decisions. v2.11 verdict `tech_debt` (no blockers) — 7 phases (95-101), 22 plans, 42 tasks across 4 days; 22/22 reqs + 18/18 integration seams + 3/3 flows; milestone-close green gate 84/0 E2E + unit green + a11y-smoke 10/10 + 3× determinism. The Svelte 5 runes migration is complete. Next: `/gsd-new-milestone`. 49+ standing backlog todos carried forward; triage via `/gsd-review-backlog`._
+_Last updated: 2026-06-08 after starting milestone v2.12 (Runes-Native Cleanup). Added the Current Milestone section (handle-idiom spike → `.current` codemod, rune-store "Store→State" rename, straggler clearance — last `svelte/store`, `$:` debug line, app-wide ESLint guard); flipped Active from "no active milestone" → v2.12 in-progress. Frontend-only scope; phase numbering continues from v2.11 (last phase 101) → Phase 102+ (no reset). Requirements + roadmap generated this session. Previous: 2026-06-07 after completing v2.11 (Svelte 5 Runes Migration + View Transitions, verdict `tech_debt`, 22/22 REQs)._
