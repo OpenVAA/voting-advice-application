@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v2.12
 milestone_name: Runes-Native Cleanup
-status: planning
+status: in_progress
 last_updated: "2026-06-08T11:54:55.384Z"
 last_activity: 2026-06-08
 progress:
-  total_phases: 0
+  total_phases: 4
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-07 after v2.11 close)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Planning next milestone — v2.11 (Svelte 5 Runes Migration + View Transitions) shipped 2026-06-07. Run `/gsd-new-milestone` to scope the next initiative.
+**Current focus:** v2.12 Runes-Native Cleanup — roadmap created (Phases 102-105). Next: `/gsd-plan-phase 102` (Handle-Idiom Spike). Frontend-only runes-transition finish: spike-gated `.current` handle codemod + Store→State rename + straggler clearance + green gate.
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 102 — Handle-Idiom Spike (not started)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-06-08 — Milestone v2.12 started
+Status: Roadmap created — ready to plan Phase 102
+Last activity: 2026-06-08 — v2.12 roadmap created (4 phases 102-105, 9 reqs mapped 1:1)
 
 ## Performance Metrics
 
@@ -185,6 +185,7 @@ The pre-close artifact audit surfaced 15 open items. All v2.10-internal artifact
 
 ### Roadmap Evolution
 
+- 2026-06-08: **v2.12 Runes-Native Cleanup** milestone roadmap created. **4 phases (102-105), 9 requirements mapped 1:1, 0 unmapped.** Phase numbering continues from v2.11 (last phase 101); no reset. Granularity `fine`; frontend-only scope (`apps/frontend/src/**`), backed by the `spike-findings-voting-advice-application-gsd` skill. Effectively a single serial chain — **102 → 103 → 104 → 105** — driven by two hard constraints: (1) **spike-first** — Phase 102 (HANDLE-01) classifies the 40 `{ readonly current }` handles + picks the canonical idiom per class and GATES the codemod; (2) **codemod collision** — Phase 103 (HANDLE-02/03, the ~524-site `.current` codemod) and Phase 104 (RENAME-01/02, the Store→State rename) touch many of the same files, so they are serialized, not parallel. Within Phase 105, SWEEP-03 (widen the `svelte/store` ESLint guard app-wide) lands AFTER SWEEP-01 (convert the last `svelte/store`) so the widened guard doesn't flag existing code; GATE-01 is the terminal milestone-close green gate (full E2E incl. a11y-smoke + unit + typecheck + lint). The only safe parallelism is intra-phase (independent SWEEP-01/SWEEP-02 fixes before the SWEEP-03 guard + close).
 - 2026-06-04: **v2.11 Svelte 5 Runes Migration + View Transitions** milestone started + roadmap created. **7 phases (95-101), 22 requirements mapped 1:1.** Phase numbering continues from v2.10 (last phase 94); no reset. Backed by the `spike-findings-voting-advice-application-gsd` skill (16 browser-verified spikes). Two independent domains: **Domain A** rune migration (Phases 95-98, strict 4-wave chain 95→96→97→98) and **Domain B** View Transitions + nav-a11y (Phases 99-100, chain 99→100) — A and B are independent and parallel-eligible; within Phase 95 the 5 Tier-1 leaf-context migrations are internally parallel. **Phase 101** is the milestone-close green gate (depends on all of 95-100). Research skipped (spikes ARE the research). At start, the 19 v2.10 phase directories (still in `.planning/phases/` — complete-milestone had archived only the metadata) were moved to `.planning/milestones/v2.10-phases/`. NOTE: the gsd-roadmapper subagent hit an API socket drop after writing ROADMAP.md fully; the orchestrator finished REQUIREMENTS.md traceability + STATE.md frontmatter/Current Position by hand.
 - 2026-06-03: Phase 94 added (v2.10 closing cleanup) — Final E2E suite polish: de-planning comments/titles, line-unwrap, README triage, + 4 Phase-93 code-review follow-ups (WR-01..04). Reopens v2.10 milestone scope (was milestone_complete after Phase 93).
 - 2026-04-28: v2.6 Svelte 5 Migration Cleanup shipped. 5 phases (60-64), 18 plans, 48 tasks, 4 days.

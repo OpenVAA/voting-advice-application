@@ -63,21 +63,21 @@ Which phases cover which requirements. Populated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| HANDLE-01 | TBD | Pending |
-| HANDLE-02 | TBD | Pending |
-| HANDLE-03 | TBD | Pending |
-| RENAME-01 | TBD | Pending |
-| RENAME-02 | TBD | Pending |
-| SWEEP-01 | TBD | Pending |
-| SWEEP-02 | TBD | Pending |
-| SWEEP-03 | TBD | Pending |
-| GATE-01 | TBD | Pending |
+| HANDLE-01 | Phase 102 | Pending |
+| HANDLE-02 | Phase 103 | Pending |
+| HANDLE-03 | Phase 103 | Pending |
+| RENAME-01 | Phase 104 | Pending |
+| RENAME-02 | Phase 104 | Pending |
+| SWEEP-01 | Phase 105 | Pending |
+| SWEEP-02 | Phase 105 | Pending |
+| SWEEP-03 | Phase 105 | Pending |
+| GATE-01 | Phase 105 | Pending |
 
 **Coverage:**
 - v1 requirements: 9 total
-- Mapped to phases: 0 (roadmap pending)
-- Unmapped: 9 ⚠️ (resolved at roadmap creation)
+- Mapped to phases: 9 (Phases 102-105)
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-06-08*
-*Last updated: 2026-06-08 after initial definition (milestone v2.12 Runes-Native Cleanup)*
+*Last updated: 2026-06-08 after roadmap creation — 9/9 requirements mapped 1:1 across Phases 102-105 (milestone v2.12 Runes-Native Cleanup)*
