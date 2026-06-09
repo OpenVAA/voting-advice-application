@@ -126,6 +126,28 @@ export type AppContext = Omit<ComponentContext, 'locale' | 'locales' | 'darkMode
      * @param status - The value for the status
      */
     setSurveyStatus: (status: UserFeedbackStatus) => void;
+
+    ////////////////////////////////////////////////////////////////////
+    // Phase 102 handle-idiom PoC (Plan 02) — ADDITIVE, atomic-landing.
+    //
+    // These three properties prove the locked Phase-103 target idioms
+    // (102-DECISION-RECORD.md) on the REAL appContext surface, alongside the
+    // existing `darkMode`/`appType`/`getRoute` handle members (which stay
+    // `{ readonly current }` so destructuring consumers keep working). Phase
+    // 103 codemods consumers onto the canonical names and removes these
+    // `_poc*` surfaces together with the old `.current` handles.
+    //
+    // The flattened target shapes proven here:
+    //  - `_pocDarkMode`: value `boolean` (read-only handle folded to a plain getter)
+    //  - `_pocAppType`:  `AppType` get/set accessor pair (read-write handle)
+    //  - `_pocGetRoute`: `RouteBuilder` (derived handle folded to a plain getter)
+    ////////////////////////////////////////////////////////////////////
+    /** PoC (Phase 102): read-only `darkMode` folded to a plain getter. Read via `ctx._pocDarkMode`. */
+    readonly _pocDarkMode: boolean;
+    /** PoC (Phase 102): read-write `appType` as a get/set accessor pair. Read via `ctx._pocAppType`, write via `ctx._pocAppType = v`. */
+    _pocAppType: AppType;
+    /** PoC (Phase 102): derived `getRoute` folded to a plain getter. Call via `ctx._pocGetRoute(opts)`. */
+    readonly _pocGetRoute: RouteBuilder;
   };
 
 /**
