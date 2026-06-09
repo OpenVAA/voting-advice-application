@@ -2,9 +2,10 @@
 gsd_state_version: 1.0
 milestone: v2.12
 milestone_name: Runes-Native Cleanup
-status: in_progress
-last_updated: "2026-06-08T11:54:55.384Z"
-last_activity: 2026-06-08
+status: planning
+stopped_at: Completed 98-02-PLAN.md
+last_updated: "2026-06-09T06:34:59.726Z"
+last_activity: "2026-06-08 — v2.12 roadmap created (4 phases 102-105, 9 reqs mapped 1:1)"
 progress:
   total_phases: 4
   completed_phases: 0

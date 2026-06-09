@@ -164,9 +164,13 @@ Audit: `.planning/milestones/v2.11-MILESTONE-AUDIT.md` (status: tech_debt — no
   4. The decision record finalizes the exact per-handle transformation scope that Phase 103's codemod will apply (which handles change, which keep a handle shape).
 
 **Plans**: 2 plans
-
 Plans:
+**Wave 1**
+
 - [ ] 102-01-PLAN.md — Decision record: enumerate + classify all `{ readonly current }` context handles (read-only / read-write / retained-exception) with per-handle target shape + retained-exception rationale = the finalized Phase-103 codemod scope (DX-5 human-review gate)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 102-02-PLAN.md — Working PoC proving the idiom on a representative appContext slice (read-only `darkMode` fold + read-write `appType` get/set accessor pair + `getRoute` fold), green build + destructure-trap contract preserved
 
 ### Phase 103: `.current` Handle Codemod (HANDLE-02 + HANDLE-03)
