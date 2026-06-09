@@ -167,7 +167,7 @@ Audit: `.planning/milestones/v2.11-MILESTONE-AUDIT.md` (status: tech_debt — no
 Plans:
 **Wave 1**
 
-- [ ] 102-01-PLAN.md — Decision record: enumerate + classify all `{ readonly current }` context handles (read-only / read-write / retained-exception) with per-handle target shape + retained-exception rationale = the finalized Phase-103 codemod scope (DX-5 human-review gate)
+- [x] 102-01-PLAN.md — Decision record: enumerate + classify all `{ readonly current }` context handles (read-only / read-write / retained-exception) with per-handle target shape + retained-exception rationale = the finalized Phase-103 codemod scope (DX-5 human-review gate)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -226,7 +226,7 @@ A single serial chain: 102 → 103 → 104 → 105. The spike (102) gates the ha
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 102. Handle-Idiom Spike | v2.12 | 0/TBD | Not started | - |
+| 102. Handle-Idiom Spike | v2.12 | 1/2 | In Progress|  |
 | 103. `.current` Handle Codemod | v2.12 | 0/TBD | Not started | - |
 | 104. Store → State Rename | v2.12 | 0/TBD | Not started | - |
 | 105. Straggler Clearance + Green Gate | v2.12 | 0/TBD | Not started | - |
