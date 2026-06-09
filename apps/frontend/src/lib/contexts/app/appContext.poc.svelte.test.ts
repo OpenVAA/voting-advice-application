@@ -1,6 +1,7 @@
 import { flushSync } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { AppType } from './appContext.type';
+import type { RouteBuilder } from './getRoute.svelte';
 
 // `createDarkMode()` reads `browser` from `$app/environment`; keep it `false`
 // (SSR path) so the test is deterministic — `dark` stays at its `$state(false)`
@@ -50,7 +51,7 @@ vi.mock('$lib/utils/route', () => ({
  * shapes. Returns the slice object plus a `cleanup` to tear down the `$effect.root`.
  */
 async function setupPocSlice(): Promise<{
-  ctx: { readonly darkMode: boolean; appType: AppType; readonly getRoute: (opts: unknown) => string };
+  ctx: { readonly darkMode: boolean; appType: AppType; readonly getRoute: RouteBuilder };
   cleanup: () => void;
 }> {
   const { createDarkMode } = await import('../component/darkMode.svelte');
@@ -59,7 +60,7 @@ async function setupPocSlice(): Promise<{
   let ctx!: {
     readonly darkMode: boolean;
     appType: AppType;
-    readonly getRoute: (opts: unknown) => string;
+    readonly getRoute: RouteBuilder;
   };
 
   const cleanup = $effect.root(() => {
