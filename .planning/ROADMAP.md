@@ -143,7 +143,7 @@ Audit: `.planning/milestones/v2.11-MILESTONE-AUDIT.md` (status: tech_debt — no
 
 **Parallel-execution map (for autonomy):** This milestone is effectively a serial chain — 102 → 103 → 104 → 105 — because of the spike-gate (102 → 103) and the two codemod-collision constraints (103 ⊥ 104 file overlap; 105's gate depends on all). RENAME and SWEEP are *logically* independent of the HANDLE workstream, but RENAME-01 collides with HANDLE-03 on shared files, so it is scheduled after 103 rather than alongside it. The only safe intra-milestone parallelism is *within* a phase (e.g. independent SWEEP-01/SWEEP-02 fixes in Phase 105 before the SWEEP-03 guard + GATE-01 close).
 
-- [ ] **Phase 102: Handle-Idiom Spike (HANDLE-01)** - classify the 40 `{ readonly current }` handles read-only vs read-write, pick the canonical runes-native idiom per class, prove it on a representative slice; output a decision record + working PoC that gates Phase 103
+- [ ] **Phase 102: Handle-Idiom Spike (HANDLE-01)** (2 plans) - classify the 40 `{ readonly current }` handles read-only vs read-write, pick the canonical runes-native idiom per class, prove it on a representative slice; output a decision record + working PoC that gates Phase 103
 - [ ] **Phase 103: `.current` Handle Codemod (HANDLE-02 + HANDLE-03)** - conform every handle to the chosen idiom + idempotent codemod across the ~524 consumer read/write sites, green at every commit boundary, destructure-trap contract preserved
 - [ ] **Phase 104: Store → State Rename (RENAME-01 + RENAME-02)** - rename all rune-native `*Store` symbols/files/types/tests to `*State`; document the `jobStore` + `cookieStore` exclusions as intentional exceptions
 - [ ] **Phase 105: Straggler Clearance + Milestone-Close Green Gate (SWEEP-01/02/03 + GATE-01)** - convert the last `svelte/store` to a rune, remove the stray `$:` debug line, widen the ESLint guard app-wide, then prove full E2E (incl. a11y-smoke) + unit + typecheck + lint all green
@@ -163,7 +163,11 @@ Audit: `.planning/milestones/v2.11-MILESTONE-AUDIT.md` (status: tech_debt — no
   3. The chosen idiom is proven on a representative slice (at least one read-only and one read-write handle) with a working proof-of-concept that builds green and preserves the CLAUDE.md destructure-trap contract.
   4. The decision record finalizes the exact per-handle transformation scope that Phase 103's codemod will apply (which handles change, which keep a handle shape).
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 102-01-PLAN.md — Decision record: enumerate + classify all `{ readonly current }` context handles (read-only / read-write / retained-exception) with per-handle target shape + retained-exception rationale = the finalized Phase-103 codemod scope (DX-5 human-review gate)
+- [ ] 102-02-PLAN.md — Working PoC proving the idiom on a representative appContext slice (read-only `darkMode` fold + read-write `appType` get/set accessor pair + `getRoute` fold), green build + destructure-trap contract preserved
 
 ### Phase 103: `.current` Handle Codemod (HANDLE-02 + HANDLE-03)
 
