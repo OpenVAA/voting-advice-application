@@ -190,11 +190,12 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 103-A-PLAN.md — Author the idempotent named-handle codemod (extend spike-009) + retarget the PoC unit test off `_poc*` onto canonical names (Wave-0 prerequisites; production tree unchanged)
+- [x] 103-A-PLAN.md — Author the idempotent named-handle codemod (extend spike-009) + retarget the PoC unit test off `_poc*` onto canonical names (Wave-0 prerequisites; production tree unchanged)
 
 **Wave 2** *(blocked on Wave 1 — atomic Sequence-1 landing)*
 
 - [ ] 103-B-PLAN.md — Atomic mechanical commit: flip handle declarations to the context-property idiom + apply the codemod across ~423 consumer sites; validate zero-residual + idempotency + destructure-trap audit; K3 mid-chain E2E; sync CLAUDE.md reactive-accessor list; archive the script
+
 **UI hint**: yes
 
 ### Phase 104: Store → State Rename (RENAME-01 + RENAME-02)
@@ -235,7 +236,7 @@ A single serial chain: 102 → 103 → 104 → 105. The spike (102) gates the ha
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 102. Handle-Idiom Spike | v2.12 | 2/2 | Complete    | 2026-06-09 |
-| 103. `.current` Handle Codemod | v2.12 | 0/2   | Not started | - |
+| 103. `.current` Handle Codemod | v2.12 | 1/2 | In Progress|  |
 | 104. Store → State Rename | v2.12 | 0/TBD | Not started | - |
 | 105. Straggler Clearance + Green Gate | v2.12 | 0/TBD | Not started | - |
 

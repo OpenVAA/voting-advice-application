@@ -14,8 +14,8 @@ Requirements for this milestone. Each maps to a roadmap phase.
 The `{ readonly current }` context handle is the v2.11 rune-handle pattern (40 declarations, ~524 `.current` read sites). It survives the context-boundary destructure trap (CLAUDE.md "Context Destructuring Rule"), so it is **not** vestigial — the spike decides the cleanest idiom per class before any codemod runs.
 
 - [x] **HANDLE-01**: The 40 `{ readonly current }` context handles are classified read-only vs read-write, a single canonical runes-native idiom is chosen per class, and the choice is proven on a representative slice. Output: a decision record + a working proof-of-concept. _(Spike — gates HANDLE-02/03.)_
-- [ ] **HANDLE-02**: Every context handle conforms to the chosen idiom — read-only handles expose a plain reactive getter (read `ctx.x`, not `ctx.x.current`); read-write handles expose the chosen runes-native read/write surface (get/set accessor pair or equivalent), with no residual `svelte/store` shape. _(Exact per-handle transformation finalized by HANDLE-01; handles the spike deems must keep a handle shape are documented, not forced.)_
-- [ ] **HANDLE-03**: All consumer read/write sites for the migrated handles are converted to the chosen idiom via an idempotent codemod, the build is green at every commit boundary, and the CLAUDE.md destructure-trap contract is preserved (consumers read `ctx.X`, never destructure reactive accessors).
+- [x] **HANDLE-02**: Every context handle conforms to the chosen idiom — read-only handles expose a plain reactive getter (read `ctx.x`, not `ctx.x.current`); read-write handles expose the chosen runes-native read/write surface (get/set accessor pair or equivalent), with no residual `svelte/store` shape. _(Exact per-handle transformation finalized by HANDLE-01; handles the spike deems must keep a handle shape are documented, not forced.)_
+- [x] **HANDLE-03**: All consumer read/write sites for the migrated handles are converted to the chosen idiom via an idempotent codemod, the build is green at every commit boundary, and the CLAUDE.md destructure-trap contract is preserved (consumers read `ctx.X`, never destructure reactive accessors).
 
 ### Store → State Rename (RENAME)
 
@@ -64,8 +64,8 @@ Which phases cover which requirements. Populated during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | HANDLE-01 | Phase 102 | Complete |
-| HANDLE-02 | Phase 103 | Pending |
-| HANDLE-03 | Phase 103 | Pending |
+| HANDLE-02 | Phase 103 | Complete |
+| HANDLE-03 | Phase 103 | Complete |
 | RENAME-01 | Phase 104 | Pending |
 | RENAME-02 | Phase 104 | Pending |
 | SWEEP-01 | Phase 105 | Pending |
