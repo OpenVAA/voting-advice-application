@@ -1,7 +1,7 @@
 # Phase 102 Decision Record — Context-Handle Idiom Classification (HANDLE-01)
 
 **Authored:** 2026-06-09
-**Status:** Awaiting DX-5 human review (gates Phase 103)
+**Status:** ✅ APPROVED at the DX-5 gate (2026-06-09) — E4 `topBarSettings` retention explicitly confirmed by the user after reviewing the `SettingsOverlay` push/use write-surface. This is now the locked Phase-103 codemod scope.
 **Scope authority:** This document IS the finalized Phase-103 codemod scope. Phase 103 rewrites ONLY the named handles enumerated in the inventory tables below — a **named-handle allowlist**, NOT a blanket `.current` regex.
 
 > Verification basis: every `file:line` below was audited against the live tree on 2026-06-09 via `grep -rn "readonly current" apps/frontend/src/lib/contexts/` plus a direct read of each handle's `.type.ts` declaration. Classification is an **audit of the existing type-declaration shape**, not a re-derivation from call sites. The RESEARCH.md draft inventory (tables A/B/C/D) was confirmed against the tree; the deltas found during verification are noted inline.
