@@ -63,6 +63,28 @@ Consumers use `current`. Producers (effects that mutate) use `instance`
 to avoid establishing a read dependency on the version counter. Pattern
 established in Spike 002.
 
+**Refinement (Spike 017): collapse `{ current, instance }` to a read/write
+split.** The `instance` handle exists ONLY to give producers a non-reactive
+read. If the mutation is exposed as a `setX(updater)` method that internalizes
+the `untrack`, the public `instance` handle becomes dead:
+
+```ts
+return {
+  get dataRoot() { void version; return root; },         // READ  — reactive, bare
+  setDataRoot(updater) { untrack(() => updater(root)); }  // WRITE — non-reactive path, encapsulated
+};
+```
+
+Producers call `ctx.setDataRoot(dr => dr.update(() => dr.provide*(...)))` — no
+`.instance`, and the hand-written `untrack` at the call site
+(`+layout.svelte:115-132`, currently belt-AND-braces with `.instance`)
+disappears. Verified in Spike 017: reactivity survives the bare getter, the
+producer effect runs once (no loop), and the reactive-read contrast still throws
+`effect_update_depth_exceeded` — proving the setter's internal `untrack` is what
+removes the hazard. **Caveat:** this wins on the WRITE side only. Dropping
+`.current` for a bare read getter re-exposes the destructure trap (see
+Anti-Patterns → "Bare getter is the trap-prone shape", Spike 019).
+
 ### 3. `untrack()` around write-after-read in $effect-scoped helpers
 
 When a rune-wrapped collection is mutated by an `$effect`-scoped helper
@@ -240,6 +262,28 @@ uses spread, which de-reactivates the auth context's `$derived` accessors.
 This is a sibling-trap that the codemod's destructure audit picks up
 indirectly (via the visible consumer-side `const { isAuthenticated } = getAdminContext()`).
 
+### Bare getter is the trap-PRONE shape; `{ current }` was a firewall (Spike 019)
+
+The destructure trap is a property of **getter-based reads + JS destructuring**,
+orthogonal to any read/write split. Flattening `{ current }` to a bare getter is
+the move that re-exposes it:
+
+```ts
+// FIREWALL — destructures the stable handle OBJECT; foo.current stays reactive
+const { foo } = ctx; //  foo = { get current() }
+$effect(() => use(foo.current)); //  reactive through the destructure
+
+// TRAP — destructures a bare getter; binds a frozen value
+const { foo } = ctx; //  foo = ctx.foo invoked ONCE
+$effect(() => use(foo)); //  stale forever
+```
+
+Consequence for the `.current`-fold codemod (Phase 103): PASS 1 (fold `.current`)
+MUST be paired with PASS 3 (`const { foo } = ctx` → `const foo = $derived(ctx.foo)`)
+and PASS 4 (audit). A read/write split cannot shortcut this — it makes PASS 3 more
+essential, not less. A `setFoo(updater)` write side does nothing for the trap
+(Spike 019 proves the write fires while the destructured read stays stale).
+
 ## HMR Considerations (Spike 011)
 
 - `$state` in `.svelte` files resets on HMR — this is correct behavior.
@@ -271,6 +315,21 @@ indirectly (via the visible consumer-side `const { isAuthenticated } = getAdminC
 - Mount/destroy forensics helper: `runes-test/nav-forensics/mountLedger.svelte.ts`
   + `LedgerPanel.svelte` — reusable across navigation/layout spikes
   (013-016 share it)
+
+### Medium shift for reactive-graph FACT spikes (017+)
+
+The `/runes-test` route was deleted once the runes migration shipped, so the
+"build a demo route" convention no longer has a home. For spikes whose question
+is a reactive-graph **fact** ("does propagation survive this seam? does this loop?
+does destructure snapshot?") rather than a **feeling**, the better medium —
+established by Phase 103's own `appContext.poc.svelte.test.ts` — is a headless
+`*.svelte.test.ts` using `$effect.root(() => …)` + `flushSync()` (+ `vi.mock` for
+`$app/*` deps as needed). Runnable via `yarn vitest run <file>`, deterministic,
+and discovered by vitest's default glob (the svelte plugin compiles `.svelte.test.ts`
+runes). Spikes 017-019 live as a deletable unit at
+`apps/frontend/src/lib/contexts/_spikes-017-019/*.spike.svelte.test.ts`. Per the
+spike-workflow's own rule, stdout/test verification is the correct fallback for
+binary yes/no questions; these three are exactly that.
 
 ## Navigation & Layout Patterns (Spikes 013-016)
 
