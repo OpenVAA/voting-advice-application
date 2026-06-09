@@ -47,6 +47,24 @@ optionally alias via `const x = $derived(ctx.current.X)` for ergonomics.
 The destructure trap (CLAUDE.md "Context Destructuring Rule") still
 applies — never destructure reactive accessors.
 
+**Why a getter at all (Spike 018b):** reactivity is *re-executing a read
+inside a tracking scope* — never a property of the value. Every `$state`
+read is a dead snapshot at the instant it runs; liveness comes from the
+reading code (template / `$derived` / `$effect`) being re-run. A read
+survives a producer/consumer boundary by one of two means:
+
+1. **Pass the stable `$state` proxy**, read its properties lazily in the
+   consumer's tracking scope — works ONLY for **mutate-in-place** state
+   (the per-property proxy signal is what gets tracked).
+2. **Pass a thunk/getter** (`get current()`, `() => T`, `{ get value() }`)
+   that re-reads the source *binding* — REQUIRED when the source is a
+   **reassigned variable** (`x = pureMerge(...)`) or a `$derived` primitive
+   (a primitive carries no per-property signal to defer-read off).
+
+The getter idiom is mechanism 2. `.current` / `() => T` / `{ get value() }`
+are interchangeable spellings of it; they differ only in which one collides
+with the Phase-103 `.current`-fold regex (Spike 018).
+
 ### 2. Split read/write handles for mutation-stable singletons
 
 When a singleton's identity is stable but its internal state mutates

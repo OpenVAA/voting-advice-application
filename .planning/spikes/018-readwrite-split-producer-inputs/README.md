@@ -74,16 +74,46 @@ yarn vitest run src/lib/contexts/_spikes-017-019/018-readwrite-split-producer-in
    and 3 both reactive and equivalent. The discriminator between 2 and 3 is purely
    the source spelling vs. the codemod regex.
 
+## Refinement — what actually "snapshots" (companion: 018b-snapshot-mechanism)
+
+The first cut of this spike concluded "a reactive value cannot cross a function
+boundary." That is imprecise — the boundary is not the cause. `018b-snapshot-mechanism.spike.svelte.test.ts`
+(3/3 green) isolates the real mechanism:
+
+- **Reactivity is re-executing a read inside a tracking scope — never a property
+  of the value.** Every `$state`/`$derived` read returns a dead snapshot at the
+  instant it runs; "liveness" comes from the *reading code* (template / `$derived`
+  / `$effect`) being re-run by Svelte.
+- **CASE 1 — eager primitive read → dead.** Approach 1 failed not because it
+  crossed a boundary but because it read the *primitive* `settings.analytics.trackEvents`
+  eagerly at the call site. Nothing re-executes that read.
+- **CASE 2 — pass the `$state` PROXY, read lazily → REACTIVE, no accessor needed.**
+  Handing the proxy object across the boundary and reading `s.analytics.trackEvents`
+  inside the producer's own `$derived` IS reactive (per-property proxy signal is
+  tracked). Valid for **mutate-in-place** state.
+- **CASE 3 — reassigned variable → the proxy ref goes stale; a getter is required.**
+  When the source is reassigned wholesale (`appSettingsValue = pureMerge(...)` in
+  appContext), a held proxy reference misses it; a thunk `() => settings` re-reads
+  the *binding* and stays reactive.
+
+**Corrected principle:** a read survives the boundary either by (1) passing the
+stable reactive proxy and reading properties lazily (mutate-in-place only), or
+(2) passing a thunk/getter that re-reads the source binding (required for
+reassigned variables and derived primitives). Production's producer inputs are
+reassigned bindings / derived primitives → bucket 2. `.current`, `() => T`, and
+`{ get value() }` are the SAME deferred-read mechanism in three spellings.
+
 ## Results
 
 **VERDICT: PARTIAL.**
 
 The read/write split does **NOT** eliminate the producer-internal input read:
 
-- **A reactive value cannot cross a function-call boundary "bare."** Reading it
-  eagerly snapshots (Approach 1). The producer must read through *some* accessor —
-  a getter function `input()`, a `{ current }` handle, or any getter object. There
-  is no shape where the producer holds a bare reactive value and stays reactive.
+- **The producer inputs need a DEFERRED read** (they are reassigned bindings /
+  derived primitives — bucket 2 above), so they must be read through *some*
+  accessor: a getter function `input()`, a `{ current }` handle, or any getter
+  object. (A bare `$state` proxy read lazily would also work — but only for
+  mutate-in-place sources, which these are not.)
 
 But it **CAN** dissolve Phase-103 finding #2 — by *spelling*, not by removal:
 
