@@ -226,7 +226,7 @@ A single serial chain: 102 → 103 → 104 → 105. The spike (102) gates the ha
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 102. Handle-Idiom Spike | v2.12 | 2/2 | Complete   | 2026-06-09 |
+| 102. Handle-Idiom Spike | v2.12 | 2/2 | Complete    | 2026-06-09 |
 | 103. `.current` Handle Codemod | v2.12 | 0/TBD | Not started | - |
 | 104. Store → State Rename | v2.12 | 0/TBD | Not started | - |
 | 105. Straggler Clearance + Green Gate | v2.12 | 0/TBD | Not started | - |
