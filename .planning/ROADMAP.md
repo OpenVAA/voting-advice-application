@@ -184,7 +184,7 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
 
 - [x] **Phase 106: Group F Helper Classes** — formalize the already-class-shaped helper factories (PopupStore, VideoController, SettingsOverlay, persistedState) as real Svelte 5 classes (completed 2026-06-12)
 - [x] **Phase 107: Leaf Contexts + Proof Reconciliation** — convert authContext + componentContext to classes; reconcile darkMode/dataContext/filterContext to the final idiom (completed 2026-06-12)
-- [ ] **Phase 108: App-Layer Producer Contexts** — convert getRoute, survey, trackingService, popupStore to classes
+- [x] **Phase 108: App-Layer Producer Contexts** — convert getRoute, survey, trackingService, popupStore to classes (completed 2026-06-12)
 - [ ] **Phase 109: appContext Orchestrator + Spread Fix + PoC Removal** — convert appContext to a class; explicit getter forwarding; remove the Phase-102 `_poc*` scaffolding
 - [ ] **Phase 110: voterContext Orchestrator + Voter Sub-Stores** — convert voterContext + answer/match/nomination/filter/utils sub-stores to classes
 - [ ] **Phase 111: candidateContext Orchestrator + UserData Store** — convert candidateContext + candidateUserDataStore to classes
@@ -252,7 +252,7 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
 
 - [x] 108-01-PLAN.md — convert getRoute + survey (surveyLink) to classes (direct-access; spike-012 per-field page read preserved)
 - [x] 108-02-PLAN.md — convert trackingService to a class (spread-consumed; own-enumerable handle members + arrow-field methods + spread-safety test)
-- [ ] 108-03-PLAN.md — verify/formalize popupStore class + run the phase gate (build + vitest contexts + svelte-check zero-new-errors)
+- [x] 108-03-PLAN.md — verify/formalize popupStore class + run the phase gate (build + vitest contexts + svelte-check zero-new-errors)
 
 ### Phase 109: appContext Orchestrator + Spread Fix + PoC Removal
 
@@ -382,7 +382,7 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
 |-------|----------------|--------|-----------|
 | 106. Group F Helper Classes | 4/4 | Complete   | 2026-06-12 |
 | 107. Leaf Contexts + Proof Reconciliation | 3/3 | Complete   | 2026-06-12 |
-| 108. App-Layer Producer Contexts | 2/3 | In Progress|  |
+| 108. App-Layer Producer Contexts | 3/3 | Complete   | 2026-06-12 |
 | 109. appContext Orchestrator + Spread Fix + PoC Removal | 0/TBD | Not started | - |
 | 110. voterContext Orchestrator + Voter Sub-Stores | 0/TBD | Not started | - |
 | 111. candidateContext Orchestrator + UserData Store | 0/TBD | Not started | - |
