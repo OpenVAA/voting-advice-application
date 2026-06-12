@@ -185,7 +185,7 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
 - [x] **Phase 106: Group F Helper Classes** — formalize the already-class-shaped helper factories (PopupStore, VideoController, SettingsOverlay, persistedState) as real Svelte 5 classes (completed 2026-06-12)
 - [x] **Phase 107: Leaf Contexts + Proof Reconciliation** — convert authContext + componentContext to classes; reconcile darkMode/dataContext/filterContext to the final idiom (completed 2026-06-12)
 - [x] **Phase 108: App-Layer Producer Contexts** — convert getRoute, survey, trackingService, popupStore to classes (completed 2026-06-12)
-- [ ] **Phase 109: appContext Orchestrator + Spread Fix + PoC Removal** — convert appContext to a class; explicit getter forwarding; remove the Phase-102 `_poc*` scaffolding
+- [x] **Phase 109: appContext Orchestrator + Spread Fix + PoC Removal** — convert appContext to a class; explicit getter forwarding; remove the Phase-102 `_poc*` scaffolding (completed 2026-06-12)
 - [ ] **Phase 110: voterContext Orchestrator + Voter Sub-Stores** — convert voterContext + answer/match/nomination/filter/utils sub-stores to classes
 - [ ] **Phase 111: candidateContext Orchestrator + UserData Store** — convert candidateContext + candidateUserDataStore to classes
 - [ ] **Phase 112: adminContext + Job Stores** — convert adminContext + jobStores to classes; preserve the v2.11 explicit auth-forwarding fix
@@ -273,7 +273,7 @@ Plans:
 
 - [x] 109-01-PLAN.md — Remove Phase-102 `_poc*` scaffolding (appContext surface + type + darkMode factory + delete PoC test)
 - [x] 109-02-PLAN.md — Convert appContext to `class AppContextProvider` with explicit own-enumerable getter forwarding + SSR merge preserved
-- [ ] 109-03-PLAN.md — Own-enumerability spread regression test + full green gate (build + vitest + svelte-check; downstream consumers unbroken)
+- [x] 109-03-PLAN.md — Own-enumerability spread regression test + full green gate (build + vitest + svelte-check; downstream consumers unbroken)
 
 ### Phase 110: voterContext Orchestrator + Voter Sub-Stores
 
@@ -389,7 +389,7 @@ Plans:
 | 106. Group F Helper Classes | 4/4 | Complete   | 2026-06-12 |
 | 107. Leaf Contexts + Proof Reconciliation | 3/3 | Complete   | 2026-06-12 |
 | 108. App-Layer Producer Contexts | 3/3 | Complete   | 2026-06-12 |
-| 109. appContext Orchestrator + Spread Fix + PoC Removal | 2/3 | In Progress|  |
+| 109. appContext Orchestrator + Spread Fix + PoC Removal | 3/3 | Complete   | 2026-06-12 |
 | 110. voterContext Orchestrator + Voter Sub-Stores | 0/TBD | Not started | - |
 | 111. candidateContext Orchestrator + UserData Store | 0/TBD | Not started | - |
 | 112. adminContext + Job Stores | 0/TBD | Not started | - |
