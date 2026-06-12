@@ -13,43 +13,47 @@ export function getDataContext(): DataContext {
 
 /**
  * DataContext re-expressed as a Svelte 5 CLASS (class-conversion proof, Spikes
- * 020-023; see `.planning/spikes/CONTEXT-MEMBER-AUDIT.md`). The documented Svelte 5
- * idiom is "use classes with `$state` fields to share reactivity between components,
- * instead of using stores" — here the reactive core is the private `#version`
- * `$state` FIELD.
+ * 020-023; see `.planning/spikes/CONTEXT-MEMBER-AUDIT.md` + CONVENTIONS §17-22).
+ * The documented Svelte 5 idiom is "use classes with `$state` fields to share
+ * reactivity between components, instead of using stores" — here the reactive core
+ * is the private `#version` `$state` FIELD.
  *
- * This is the Group-C "version-bridge" pattern (the dataRoot pattern, NOT wholesale
+ * This is the Group-C §22 "version-bridge" class (the dataRoot pattern, NOT wholesale
  * replacement): `DataRoot` has a STABLE identity and is mutated in place; `#version`
  * is bumped (untracked) on every `DataRoot.update()` notification, bridging
- * `Updatable.subscribe()` to `$derived` reactivity. Spike 022 confirmed this group
- * does not simplify away — the bridge is intrinsic to wrapping a non-rune object.
+ * `Updatable.subscribe()` to `$derived` reactivity. Per §22 this version-bridge is
+ * KEPT verbatim — it does NOT simplify away (Spike 022; the bridge is intrinsic to
+ * wrapping a non-rune object).
  *
  * Two deliberate shape choices, both spike-derived:
  *
- * 1. Public handles (`dataRoot`, `reactiveDataRoot`) and the `setDataRoot` writer are
- *    exposed as OWN properties (instance fields), NOT prototype getters. appContext
- *    re-exposes this context via `{ ...dataCtx }`, and spreading a class INSTANCE
- *    copies only own-enumerable properties — prototype accessors would be silently
- *    dropped (Spike 020 finding; CONVENTIONS "Spread-of-context"). Own-property
- *    handles keep the existing consumer API (`reactiveDataRoot.current`) byte-identical,
- *    so NO consumer changes.
+ * 1. Own-property handles — spread-safe (appContext `{ ...dataCtx }`). The public
+ *    handles (`dataRoot`, `reactiveDataRoot`) and the `setDataRoot` writer are exposed
+ *    as OWN properties (instance fields), NOT prototype getters. appContext re-exposes
+ *    this context via `{ ...dataCtx }`, and spreading a class INSTANCE copies only
+ *    own-enumerable properties — prototype accessors would be silently dropped (Spike
+ *    020 finding; CONVENTIONS "Spread-of-context"). Own-property handles keep the
+ *    existing consumer API (`reactiveDataRoot.current`) byte-identical, so NO consumer
+ *    changes.
  *
- * 2. `setDataRoot` is an ARROW-FUNCTION field, not a method, so it survives being
- *    destructured/detached (`const { setDataRoot } = ctx`) with `this` intact — the
- *    `$state#Classes` caveat (Spike 020 Group E). It internalizes the `untrack` that
- *    producers previously hand-wrote at the call site, so the old `.instance` handle +
- *    hand-written `untrack` collapse to a single write path (Spike 017/022).
+ * 2. §18 arrow-function field — survives detach. `setDataRoot` is an ARROW-FUNCTION
+ *    field, not a method, so it survives being destructured/detached
+ *    (`const { setDataRoot } = ctx`) with `this` intact (CONVENTIONS §18; Spike 020
+ *    Group E). It internalizes the `untrack` that producers previously hand-wrote at
+ *    the call site, so the old `.instance` handle + hand-written `untrack` collapse to
+ *    a single write path (Spike 017/022).
  *
- * NB. With a class private `#version`, a producer that reads the REACTIVE getter then
- * mutates self-perpetuates SILENTLY (no `effect_update_depth_exceeded` throw, unlike
- * the plain-`let` version — Spike 022). Producers MUST go through `setDataRoot`.
+ * NB (§22 silent-loop caveat). With a class private `#version`, a producer that reads
+ * the REACTIVE getter then mutates self-perpetuates SILENTLY (no
+ * `effect_update_depth_exceeded` throw, unlike the plain-`let` version — Spike 022).
+ * Producers MUST go through `setDataRoot`.
  */
 class DataContextProvider implements DataContext {
   readonly #dataRoot: DataRoot;
   #version = $state(0);
 
-  // Own-property handles (spread-safe). Assigned in the constructor so their getters
-  // can close over `this` for the private `#version` read.
+  // Own-property handles — spread-safe (appContext `{ ...dataCtx }`). Assigned in the
+  // constructor so their getters can close over `this` for the private `#version` read.
   readonly dataRoot: { readonly current: DataRoot };
   readonly reactiveDataRoot: { readonly current: DataRoot; readonly instance: DataRoot };
 
@@ -80,6 +84,13 @@ class DataContextProvider implements DataContext {
         void self.#version; // reactive read — use in $derived/$effect/templates
         return dataRoot;
       },
+      // Back-compat non-reactive read; same object, no `#version` dependency.
+      // RETAINED until Phase 113 FLATTEN drops the duplicate `reactiveFoo` handles +
+      // runs the `.current` codemod. Live consumer: candidate/(protected)/+layout.svelte
+      // producer-write path (`reactiveDataRoot.instance` inside an `untrack`ed
+      // `$effect` — reads the SAME object WITHOUT registering `#version`, so the
+      // `DataRoot.update()` notification cannot retrigger the effect). Intentional
+      // back-compat — NOT orphaned / NOT dead code.
       get instance(): DataRoot {
         return dataRoot; // non-reactive read — same object, no version dependency
       }
