@@ -12,6 +12,33 @@ type ReactiveHandle<TValue> = { readonly current: TValue };
  * store-shaped exported surface (`$surveyLink` consumers) is owned by the
  * `appContext` seam, which wraps this handle back to a readable store.
  */
+class Survey {
+  readonly #appSettings: ReactiveHandle<AppSettings>;
+  readonly #sessionId: ReactiveHandle<string | undefined>;
+
+  #linkValue = $derived.by(() => {
+    const linkTemplate = this.#appSettings.current.survey?.linkTemplate;
+    return linkTemplate ? linkTemplate.replace(/\{\s*sessionId\s*\}/, this.#sessionId.current ?? '') : undefined;
+  });
+
+  constructor({
+    appSettings,
+    sessionId
+  }: {
+    appSettings: ReactiveHandle<AppSettings>;
+    sessionId: ReactiveHandle<string | undefined>;
+  }) {
+    this.#appSettings = appSettings;
+    this.#sessionId = sessionId;
+  }
+
+  // Prototype getter is SAFE here: surveyLink is consumed via DIRECT property
+  // access at appContext (`surveyLink: survey`), never spread.
+  get current(): string | undefined {
+    return this.#linkValue;
+  }
+}
+
 export function surveyLink({
   appSettings,
   sessionId
@@ -19,14 +46,5 @@ export function surveyLink({
   appSettings: ReactiveHandle<AppSettings>;
   sessionId: ReactiveHandle<string | undefined>;
 }): ReactiveHandle<string | undefined> {
-  const linkValue = $derived.by(() => {
-    const linkTemplate = appSettings.current.survey?.linkTemplate;
-    return linkTemplate ? linkTemplate.replace(/\{\s*sessionId\s*\}/, sessionId.current ?? '') : undefined;
-  });
-
-  return {
-    get current() {
-      return linkValue;
-    }
-  };
+  return new Survey({ appSettings, sessionId });
 }
