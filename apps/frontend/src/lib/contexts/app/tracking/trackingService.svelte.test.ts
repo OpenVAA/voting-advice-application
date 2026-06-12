@@ -139,4 +139,28 @@ describe('trackingService (pure-rune producer)', () => {
       cleanup();
     });
   });
+
+  describe('spread-safety (Phase 107 gate regression guard)', () => {
+    // `trackingService` is the ONLY app-layer producer consumed via `...tracking`
+    // spread (appContext.svelte.ts:299). Svelte 5 compiles bare `$state`/`$derived`
+    // CLASS fields to PROTOTYPE accessors that are NOT own-enumerable and are
+    // DROPPED by `{ ...instance }`. This case FAILS if any spread-consumed member
+    // was implemented as a bare `$derived`/`$state` public class field.
+    it('reactive members + methods survive `{ ...svc }` spread', async () => {
+      const { trackingService } = await importTracking(true);
+      const cleanup = $effect.root(() => {
+        const svc = trackingService({
+          appSettings: appSettingsHandle(true),
+          userPreferences: userPrefsHandle('granted')
+        });
+        const spread = { ...svc };
+        expect(spread.shouldTrack?.current).toBe(true);
+        expect(typeof spread.sendTrackingEvent?.set).toBe('function');
+        expect(typeof spread.sessionId?.current).toBe('string');
+        expect(typeof spread.startEvent).toBe('function');
+        expect(typeof spread.submitAllEvents).toBe('function');
+      });
+      cleanup();
+    });
+  });
 });
