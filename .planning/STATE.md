@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.13
 milestone_name: Context-as-Class Migration
 status: executing
-stopped_at: Phase 107 complete (verification passed 9/9)
-last_updated: "2026-06-13T00:00:00.000Z"
-last_activity: 2026-06-13 -- Phase 107 verified passed; starting Phase 108
+stopped_at: Completed 106-04-PLAN.md
+last_updated: "2026-06-12T22:26:52.161Z"
+last_activity: 2026-06-12 -- Phase 108 execution started
 progress:
   total_phases: 11
   completed_phases: 2
-  total_plans: 7
-  completed_plans: 7
+  total_plans: 10
+  completed_plans: 8
   percent: 18
 ---
 
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-06-12 starting v2.13 Context-as-Class Mi
 
 ## Current Position
 
-Phase: 108 (app-layer-producer-contexts) — NEXT
-Plan: —
-Status: Phase 107 complete (verification passed 9/9; review clean)
-Last activity: 2026-06-13 -- Phase 107 verified passed; starting Phase 108
+Phase: 108 (app-layer-producer-contexts) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
+Last activity: 2026-06-12 -- Phase 108 execution started
 
 ## Performance Metrics
 
@@ -67,6 +67,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | Phase 107 P01 | 8min | 2 tasks | 2 files |
 | Phase 107 P02 | 3min | 2 tasks | 3 files |
 | Phase 107 P03 | 3min | 2 tasks | 2 files |
+| Phase 108 P01 | 1min | 2 tasks | 2 files |
 
 ### Acknowledged at v2.10 close (2026-06-04)
 
@@ -345,6 +346,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Phase 107: authContext isAuthenticated must be a private #$derived + own-enumerable constructor accessor (NOT a bare $derived class field) — Svelte 5 compiles $state/$derived class fields to prototype accessors that object spread drops; verified headlessly. Spread-safety gate applies to all context-as-class members an orchestrator spreads.
 - [Phase ?]: 107-02: componentContext converted to class ComponentContextProvider; i18n surface as OWN properties (Object.assign) for spread-safety; darkMode delegation getter over directly-composed new DarkMode() (no { current } re-export); DarkMode exported, createDarkMode kept until Phase 109
 - [Phase ?]: 107-03: dataContext/filterContext doc-reconciled to §17/§18/§20/§22 idiom; reactiveDataRoot.instance documented as intentional-until-Phase-113 back-compat (live consumer named); executable code byte-identical (comment-only diffs)
+- [Phase ?]: Phase 108-01: getRoute + survey converted to Svelte 5 classes (GetRoute/Survey); prototype get current() (direct-access, no own-enumerable accessor); factory signatures + spike-012 per-field page read byte-identical
 
 ### Quick Tasks Completed
 
@@ -389,7 +391,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-12T21:57:04.635Z
+Last session: 2026-06-12T22:26:46.640Z
 Stopped at: Completed 106-04-PLAN.md
 Resume file: None
 Work done this session:

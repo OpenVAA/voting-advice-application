@@ -250,7 +250,7 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
 
 **Plans**: 3 plans (Wave 1: 108-01 + 108-02 parallel, disjoint files; Wave 2: 108-03 gate, depends on 01+02)
 
-- [ ] 108-01-PLAN.md — convert getRoute + survey (surveyLink) to classes (direct-access; spike-012 per-field page read preserved)
+- [x] 108-01-PLAN.md — convert getRoute + survey (surveyLink) to classes (direct-access; spike-012 per-field page read preserved)
 - [ ] 108-02-PLAN.md — convert trackingService to a class (spread-consumed; own-enumerable handle members + arrow-field methods + spread-safety test)
 - [ ] 108-03-PLAN.md — verify/formalize popupStore class + run the phase gate (build + vitest contexts + svelte-check zero-new-errors)
 
@@ -382,7 +382,7 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
 |-------|----------------|--------|-----------|
 | 106. Group F Helper Classes | 4/4 | Complete   | 2026-06-12 |
 | 107. Leaf Contexts + Proof Reconciliation | 3/3 | Complete   | 2026-06-12 |
-| 108. App-Layer Producer Contexts | 0/TBD | Not started | - |
+| 108. App-Layer Producer Contexts | 1/3 | In Progress|  |
 | 109. appContext Orchestrator + Spread Fix + PoC Removal | 0/TBD | Not started | - |
 | 110. voterContext Orchestrator + Voter Sub-Stores | 0/TBD | Not started | - |
 | 111. candidateContext Orchestrator + UserData Store | 0/TBD | Not started | - |

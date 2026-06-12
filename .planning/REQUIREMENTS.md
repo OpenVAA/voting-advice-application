@@ -56,7 +56,7 @@ flatten (FLATTEN) sweep removes them.
   three already-landed proof conversions (`darkMode`, `dataContext`, `filterContext`) are reconciled to the
   final class idiom (consistent field/method shape, no spike-era residue). Build + unit + svelte-check green.
 
-- [ ] **CLASS-03**: The app-layer producer contexts `getRoute`, `survey` (`surveyLink`), `trackingService`,
+- [x] **CLASS-03**: The app-layer producer contexts `getRoute`, `survey` (`surveyLink`), `trackingService`,
   and `popupStore` are converted to classes (`$derived` fields for projections, arrow methods for detachable
   callbacks), preserving the spike-012 per-field `page` read for `getRoute`. Build + unit + svelte-check green.
 
@@ -156,7 +156,7 @@ Which phases cover which requirements. Populated during roadmap creation.
 |-------------|-------|--------|
 | CLASS-01 | Phase 106 | Complete |
 | CLASS-02 | Phase 107 | Complete |
-| CLASS-03 | Phase 108 | Pending |
+| CLASS-03 | Phase 108 | Complete |
 | CLASS-04 | Phase 109 | Pending |
 | CLASS-05 | Phase 110 | Pending |
 | CLASS-06 | Phase 111 | Pending |
