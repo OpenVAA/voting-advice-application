@@ -52,6 +52,9 @@ describe('ComponentContextProvider', () => {
     expect(spread.locales).toEqual(['en', 'fi']);
     expect(typeof spread.t).toBe('function');
     expect(typeof spread.translate).toBe('function');
+    // darkMode is a prototype delegation getter — must NOT survive the spread
+    // so appContext's post-spread override is the sole source.
+    expect('darkMode' in spread).toBe(false); // prototype getter — must not survive the spread
   });
 
   // Behavior 2 — `instance.darkMode` is a delegation getter forwarding the
