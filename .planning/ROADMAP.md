@@ -248,7 +248,11 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
   3. No `$effect` is used for initial-value derivation in these producers (synchronous field initializers / `$derived` fields only — spike 023); `survey`'s `$derived.by` over `appSettings.current` + `sessionId.current` recomputes reactively.
   4. `yarn build` (client + SSR) + `yarn vitest run src/lib/contexts/` + `yarn svelte-check` are all green with zero new errors; consumers byte-identical.
 
-**Plans**: TBD
+**Plans**: 3 plans (Wave 1: 108-01 + 108-02 parallel, disjoint files; Wave 2: 108-03 gate, depends on 01+02)
+
+- [ ] 108-01-PLAN.md — convert getRoute + survey (surveyLink) to classes (direct-access; spike-012 per-field page read preserved)
+- [ ] 108-02-PLAN.md — convert trackingService to a class (spread-consumed; own-enumerable handle members + arrow-field methods + spread-safety test)
+- [ ] 108-03-PLAN.md — verify/formalize popupStore class + run the phase gate (build + vitest contexts + svelte-check zero-new-errors)
 
 ### Phase 109: appContext Orchestrator + Spread Fix + PoC Removal
 
