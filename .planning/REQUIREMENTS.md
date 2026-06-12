@@ -60,7 +60,7 @@ flatten (FLATTEN) sweep removes them.
   and `popupStore` are converted to classes (`$derived` fields for projections, arrow methods for detachable
   callbacks), preserving the spike-012 per-field `page` read for `getRoute`. Build + unit + svelte-check green.
 
-- [ ] **CLASS-04**: The `appContext` orchestrator is converted to a class — including the `{ ...dataCtx }` /
+- [x] **CLASS-04**: The `appContext` orchestrator is converted to a class — including the `{ ...dataCtx }` /
   `{ ...componentCtx }` spread-of-context fix (explicit getter forwarding) and **removal of the Phase-102
   `_poc*` scaffolding** (`_pocDarkMode`/`_pocAppType`/`_pocGetRoute` surfaces + the `_poc*` PoC test objects).
   Build + unit + svelte-check green; SSR-correct appSettings/appCustomization merge preserved.
@@ -157,7 +157,7 @@ Which phases cover which requirements. Populated during roadmap creation.
 | CLASS-01 | Phase 106 | Complete |
 | CLASS-02 | Phase 107 | Complete |
 | CLASS-03 | Phase 108 | Complete |
-| CLASS-04 | Phase 109 | Pending |
+| CLASS-04 | Phase 109 | Complete |
 | CLASS-05 | Phase 110 | Pending |
 | CLASS-06 | Phase 111 | Pending |
 | CLASS-07 | Phase 112 | Pending |
