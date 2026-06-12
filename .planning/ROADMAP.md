@@ -272,7 +272,7 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
 Plans:
 
 - [x] 109-01-PLAN.md — Remove Phase-102 `_poc*` scaffolding (appContext surface + type + darkMode factory + delete PoC test)
-- [ ] 109-02-PLAN.md — Convert appContext to `class AppContextProvider` with explicit own-enumerable getter forwarding + SSR merge preserved
+- [x] 109-02-PLAN.md — Convert appContext to `class AppContextProvider` with explicit own-enumerable getter forwarding + SSR merge preserved
 - [ ] 109-03-PLAN.md — Own-enumerability spread regression test + full green gate (build + vitest + svelte-check; downstream consumers unbroken)
 
 ### Phase 110: voterContext Orchestrator + Voter Sub-Stores
@@ -389,7 +389,7 @@ Plans:
 | 106. Group F Helper Classes | 4/4 | Complete   | 2026-06-12 |
 | 107. Leaf Contexts + Proof Reconciliation | 3/3 | Complete   | 2026-06-12 |
 | 108. App-Layer Producer Contexts | 3/3 | Complete   | 2026-06-12 |
-| 109. appContext Orchestrator + Spread Fix + PoC Removal | 1/3 | In Progress|  |
+| 109. appContext Orchestrator + Spread Fix + PoC Removal | 2/3 | In Progress|  |
 | 110. voterContext Orchestrator + Voter Sub-Stores | 0/TBD | Not started | - |
 | 111. candidateContext Orchestrator + UserData Store | 0/TBD | Not started | - |
 | 112. adminContext + Job Stores | 0/TBD | Not started | - |
