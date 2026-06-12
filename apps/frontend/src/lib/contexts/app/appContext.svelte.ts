@@ -253,57 +253,40 @@ export class AppContextProvider implements AppContext {
 
     // Read-only `{ current }` rune handles over the SAME `$state` / SAME
     // ComponentContext value the writable handles read (single source of truth —
-    // mirroring the shipped `reactiveDataRoot` precedent). Installed via
-    // `Object.defineProperty(this, …)` as OWN-ENUMERABLE accessors (the
-    // authContext spread-safety mechanic) so the `{ ...appContext }` downstream
-    // spreads copy them; reading them re-invokes the getter in the tracking scope
-    // so the read stays reactive. Each handle is itself an own-enumerable VALUE
-    // (a `{ get current }` object), so the spread carries the handle intact.
-    Object.defineProperty(this, 'reactiveAppSettings', {
-      enumerable: true,
-      configurable: true,
-      get: () => ({
-        get current() {
-          return self.#appSettingsValue;
-        }
-      })
-    });
-    Object.defineProperty(this, 'reactiveLocale', {
-      enumerable: true,
-      configurable: true,
-      get: () => ({
-        get current() {
-          return self.#componentCtx.locale;
-        }
-      })
-    });
-    Object.defineProperty(this, 'locale', {
-      enumerable: true,
-      configurable: true,
-      get: () => ({
-        get current() {
-          return self.#componentCtx.locale;
-        }
-      })
-    });
-    Object.defineProperty(this, 'locales', {
-      enumerable: true,
-      configurable: true,
-      get: () => ({
-        get current() {
-          return self.#componentCtx.locales;
-        }
-      })
-    });
-    Object.defineProperty(this, 'darkMode', {
-      enumerable: true,
-      configurable: true,
-      get: () => ({
-        get current() {
-          return self.#componentCtx.darkMode;
-        }
-      })
-    });
+    // mirroring the shipped `reactiveDataRoot` precedent). Each handle is a STABLE
+    // own-enumerable VALUE field assigned once here (same approach as the writable
+    // handles above and the held handles `getRoute` / `userPreferences` /
+    // `popupQueue`), so the handle reference is reference-equal across reads
+    // (`ctx.locale === ctx.locale`) AND identical to the spread copy
+    // (`{ ...appContext }.locale === appContext.locale`). The inner `get current()`
+    // re-reads the backing `$derived`/`$state` per access, so reads stay live and
+    // reactive in the tracking scope. The `{ ...appContext }` downstream spreads
+    // copy these own-enumerable values intact.
+    this.reactiveAppSettings = {
+      get current() {
+        return self.#appSettingsValue;
+      }
+    };
+    this.reactiveLocale = {
+      get current() {
+        return self.#componentCtx.locale;
+      }
+    };
+    this.locale = {
+      get current() {
+        return self.#componentCtx.locale;
+      }
+    };
+    this.locales = {
+      get current() {
+        return self.#componentCtx.locales;
+      }
+    };
+    this.darkMode = {
+      get current() {
+        return self.#componentCtx.darkMode;
+      }
+    };
 
     // The route-builder + userPreferences + popupQueue handles are held directly.
     this.getRoute = this.#getRoute;

@@ -58,8 +58,9 @@ const { stubs } = vi.hoisted(() => {
       },
       // survey producer: `{ readonly current }` handle.
       survey: handle('https://example.invalid/survey' as string | undefined),
-      // popup queue producer.
-      popup: { push: (_item: unknown) => {}, subscribe: () => () => {} },
+      // popup queue producer — matches the real `PopupStore` surface
+      // (`current` getter + `push`/`shift` arrow fields; no store-style `subscribe`).
+      popup: { current: undefined, push: (_item: unknown) => {}, shift: () => {} },
       // getRoute producer: `{ readonly current: RouteBuilder }` handle.
       getRoute: handle((() => '/') as unknown),
       // localStorageState persisted handle.
@@ -97,13 +98,8 @@ vi.mock('../utils/persistedState.svelte', () => ({
   localStorageState: () => stubs.userPreferences
 }));
 
-// `AppContextProvider` is not exported (only the factory wrappers are). Import the
-// module and pull the class off it via a non-public seam is not available, so we
-// import the factory and reach the instance through it — but the factory calls
-// `setContext`, which requires a component-init context. Simpler: import the
-// module after mocks and access the class through the factory under `$effect.root`.
-// We import the factory `initAppContext` and call it inside `$effect.root` +
-// `setContext` is available there; the returned value IS the instance.
+// `AppContextProvider` is exported as a documented test seam (109-03).
+// Production code must use the `initAppContext()` / `getAppContext()` factory wrappers.
 const { AppContextProvider } = await import('./appContext.svelte');
 
 describe('AppContextProvider — own-enumerability spread guard', () => {
@@ -182,15 +178,16 @@ describe('AppContextProvider — own-enumerability spread guard', () => {
     }
   });
 
-  // Test 2 — snapshot semantics: a representative reactive member read through the
-  // spread snapshot reflects the value at spread time (the downstream orchestrators
-  // spread at init time and rely on this).
-  it('a reactive member read through the spread snapshot reflects the value at spread time', () => {
+  // Test 2 — handle integrity: reactive members remain readable through the spread.
+  // The spread is NOT a snapshot — `{ ...instance }` copies the stable handle
+  // REFERENCE, and the handle's inner `get current()` reads live state, so
+  // `spread.X.current` returns the live value at read time (not at spread time).
+  it('reactive member handles remain readable and live after the spread', () => {
     const instance = setup();
     const spread = { ...instance };
     expect(spread.appSettings).toBeDefined();
     expect(spread.appSettings.current).toBeDefined();
-    // The locale handle reads through to the (mocked) componentCtx locale.
+    // locale.current reads through the inner getter → live (mocked) componentCtx locale.
     expect(spread.locale.current).toBe('en');
   });
 
