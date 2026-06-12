@@ -206,7 +206,11 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
   2. Persistence in the `persistedState` class is imperative (never `$effect`), so the class constructs outside any effect context (SSR/factory-safe) per spike 021/023.
   3. Detachable methods on these helpers are arrow-function fields, surviving `const { m } = instance` detach (spike 020 Group E).
   4. `yarn build` (client + SSR) + `yarn vitest run src/lib/contexts/` + `yarn svelte-check` are all green with zero new errors; consumers of these helpers are byte-identical.
-**Plans**: TBD
+**Plans**: 4 plans (all Wave 1, parallel — disjoint files)
+  - [ ] 106-01-PLAN.md — popupStore() → class PopupStore (queue $state + $derived head + arrow push/shift)
+  - [ ] 106-02-PLAN.md — settingsOverlay() → class SettingsOverlay (preserve untrack + associative-merge registry verbatim)
+  - [ ] 106-03-PLAN.md — persistedState handle → class (imperative arrow set/update, never $effect; versioned payload + D-03 no-shim + CR-01 init-persist)
+  - [ ] 106-04-PLAN.md — extract VideoController from layoutContext into class VideoController (+ new regression test; initLayoutContext() orchestrator-class conversion deferred, recorded for the checker)
 
 ### Phase 107: Leaf Contexts + Proof Reconciliation
 **Goal**: The leaf contexts `authContext` and `componentContext` are classes, and the three already-landed proof conversions are reconciled to one consistent final class idiom.
