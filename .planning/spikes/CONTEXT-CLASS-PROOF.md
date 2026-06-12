@@ -124,3 +124,50 @@ first production `$effect`-in-constructor. The disciplines hold against real cod
 own-property handles where spread (dataContext), prototype getters where not
 (filter/darkMode), arrow-field writers throughout, and no `$effect` for
 initialization/merge (only for post-construction bridges, in an effect context).
+
+## Decision — LOCKED (2026-06-12)
+
+**Contexts become Svelte 5 classes with `$state`/`$derived` fields. DataRoot and
+Filters stay classes (version-bridge), NOT svelte/store.** The spike line (audit →
+020-023 → three production conversions) is closed; the direction is committed.
+
+### Stores were explicitly considered for DataRoot/Filters and rejected
+
+The Svelte docs note stores remain good for "complex asynchronous data streams" or
+"more manual control over … listening to changes," and `writable.set(sameRef)` fires on
+identical object refs (via `safe_not_equal`), which would let a producer ping consumers
+after an in-place mutation and drop the `#version` counter. Real and elegant — but for
+this codebase it loses:
+
+- **Consumers are `.svelte.ts` rune modules**, where `$store.X` auto-subscribe is
+  unavailable; reactive consumption requires `fromStore(store).current`, which is the
+  `subscribe → $state` version-bridge in a costume — the same bridge plus a **redundant
+  second observable** (DataRoot is already observable via `Updatable.subscribe`).
+- **`set(sameRef)` is `version++` with implicit semantics**, riding `safe_not_equal`'s
+  object-always-fires quirk — the exact over-fire footgun the team already removed in
+  Phase 64 (`appContext.svelte.ts:108-113`: "filter badge disappears on drawer open /
+  portraits reload on close").
+- It would **reverse the shipped MANIFEST requirement** (no `svelte/store` in migrated
+  contexts) and split the paradigm for two contexts only.
+
+The store wins exactly one cell — producer ergonomics — and `setDataRoot` already
+captured most of that. **Revisit only if** DataRoot/Filters become genuinely streaming
+(incremental/paginated arrival, backpressure, cancellation); today `provide*`/`setRule`
+are synchronous, so "async data streams" does not apply.
+
+### Status / handoff to the real migration
+
+This is spike-proven on three contexts, not a completed migration. The full conversion is
+a future phase (not yet planned). Carry-over for that phase:
+
+- Convert remaining contexts tier by tier: Group-F factories (`PopupStore`,
+  `VideoController`, `SettingsOverlay`, persistence helper) → leaf contexts
+  (`component`, `auth`) → orchestrators (`app`, `voter`, `candidate`).
+- Where a context is spread into a parent (the `appContext` `{ ...dataCtx }` pattern),
+  either keep own-property handles or fix the parent to explicit getter forwarding
+  (CONVENTIONS "Spread-of-context").
+- Optional cleanups deferred from the proof: flatten the `reactiveDataRoot.current`
+  consumer read API to bare (Phase-103 codemod territory); migrate the candidate
+  producer from `.instance` to `setDataRoot`.
+- Disciplines are codified in CONVENTIONS §17-22; the destructure rule (CLAUDE.md +
+  Phase-103 PASS 3/4) survives class conversion unchanged.

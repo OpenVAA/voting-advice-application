@@ -42,6 +42,18 @@ Template `$store.X` auto-subscribe sites become mechanical search-and-replace
 (every one is enumerable via grep). No paradigm alteration required — Svelte 5
 runes are a strict superset of what these stores were doing.
 
+## Outcome — context-as-class decision LOCKED (2026-06-12)
+
+Spikes 020-023 + the audit (`CONTEXT-MEMBER-AUDIT.md`) answered "turn each context into
+a class?" → **yes**. Proven on three real production contexts (`CONTEXT-CLASS-PROOF.md`):
+`dataContext` + `filterContext` (Group C version-bridge) and `darkMode` (Group B
+primitive) — all green on svelte-check (151/0, zero new), unit (85/85), and SSR build,
+with zero consumer churn. **DataRoot/Filters stay classes, not svelte/store** (stores
+considered and rejected — see the proof doc's "Decision — LOCKED": `.svelte.ts` consumers
+would need a `fromStore` re-bridge + a redundant second observable, and `set(sameRef)`
+reinvites the Phase-64 `safe_not_equal` over-fire footgun). Disciplines codified in
+CONVENTIONS §17-22. The full tier-by-tier migration is a future phase, not yet planned.
+
 ## Spikes
 
 | # | Name | Type | Validates | Verdict | Tags |
