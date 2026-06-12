@@ -320,49 +320,6 @@ export function initAppContext(): AppContext {
     startFeedbackPopupCountdown,
     startSurveyPopupCountdown,
     surveyLink: survey,
-    userPreferences,
-
-    ////////////////////////////////////////////////////////////////////
-    // Phase 102 handle-idiom PoC (Plan 02) — ADDITIVE, atomic-landing.
-    //
-    // These three properties prove the locked Phase-103 target idioms
-    // (102-DECISION-RECORD.md) compile green inside the REAL appContext
-    // factory, without touching the existing `.current` handle members
-    // (`darkMode`/`appType`/`getRoute`) — so every current consumer keeps
-    // working and the build stays green at this commit boundary (Phase-97
-    // additive-getter technique).
-    //
-    // They are deliberately ADDITIVE under `_poc*` names rather than a fold
-    // of the canonical properties because the spike empirically confirmed
-    // that ALL THREE canonical handles are DESTRUCTURED by consumers
-    // (`const { darkMode, appType, getRoute } = getAppContext()`, 6 / 8 / many
-    // sites). Folding the canonical property to a context-property getter
-    // would invoke the getter once at destructure time and capture a stale
-    // snapshot — the CLAUDE.md "Context Destructuring Rule" trap. Migrating
-    // those destructuring consumers to `ctx.x` / `$derived(ctx.x)` reads IS
-    // the Phase-103 codemod, which is out of this spike's scope. Phase 103
-    // codemods consumers onto the canonical names and removes both these
-    // `_poc*` surfaces and the old `.current` handles.
-    //
-    // - read-only fold:  `_pocDarkMode` — plain getter (was `darkMode.current`)
-    // - read-write pair: `_pocAppType` — get/set accessor over the SAME
-    //                    `appTypeValue` $state the `appType` handle uses
-    //                    (round-trips `ctx._pocAppType = v` → `ctx._pocAppType === v`)
-    // - getRoute fold:   `_pocGetRoute` — plain getter returning the callable
-    //                    RouteBuilder (was `getRoute.current(opts)`); the
-    //                    producer `createGetRoute()` `$derived.by` is untouched.
-    ////////////////////////////////////////////////////////////////////
-    get _pocDarkMode() {
-      return componentCtx.darkMode;
-    },
-    get _pocAppType() {
-      return appTypeValue;
-    },
-    set _pocAppType(v: AppType) {
-      appTypeValue = v;
-    },
-    get _pocGetRoute() {
-      return getRoute.current;
-    }
+    userPreferences
   });
 }
