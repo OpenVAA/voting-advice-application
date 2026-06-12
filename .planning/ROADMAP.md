@@ -182,7 +182,7 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
 
 **Phase checklist:**
 
-- [ ] **Phase 106: Group F Helper Classes** — formalize the already-class-shaped helper factories (PopupStore, VideoController, SettingsOverlay, persistedState) as real Svelte 5 classes
+- [x] **Phase 106: Group F Helper Classes** — formalize the already-class-shaped helper factories (PopupStore, VideoController, SettingsOverlay, persistedState) as real Svelte 5 classes (completed 2026-06-12)
 - [ ] **Phase 107: Leaf Contexts + Proof Reconciliation** — convert authContext + componentContext to classes; reconcile darkMode/dataContext/filterContext to the final idiom
 - [ ] **Phase 108: App-Layer Producer Contexts** — convert getRoute, survey, trackingService, popupStore to classes
 - [ ] **Phase 109: appContext Orchestrator + Spread Fix + PoC Removal** — convert appContext to a class; explicit getter forwarding; remove the Phase-102 `_poc*` scaffolding
@@ -214,7 +214,7 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
   - [x] 106-01-PLAN.md — popupStore() → class PopupStore (queue $state + $derived head + arrow push/shift)
   - [x] 106-02-PLAN.md — settingsOverlay() → class SettingsOverlay (preserve untrack + associative-merge registry verbatim)
   - [x] 106-03-PLAN.md — persistedState handle → class (imperative arrow set/update, never $effect; versioned payload + D-03 no-shim + CR-01 init-persist)
-  - [ ] 106-04-PLAN.md — extract VideoController from layoutContext into class VideoController (+ new regression test; initLayoutContext() orchestrator-class conversion deferred, recorded for the checker)
+  - [x] 106-04-PLAN.md — extract VideoController from layoutContext into class VideoController (+ new regression test; initLayoutContext() orchestrator-class conversion deferred, recorded for the checker)
 
 ### Phase 107: Leaf Contexts + Proof Reconciliation
 
@@ -372,7 +372,7 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 106. Group F Helper Classes | 3/4 | In Progress|  |
+| 106. Group F Helper Classes | 4/4 | Complete   | 2026-06-12 |
 | 107. Leaf Contexts + Proof Reconciliation | 0/TBD | Not started | - |
 | 108. App-Layer Producer Contexts | 0/TBD | Not started | - |
 | 109. appContext Orchestrator + Spread Fix + PoC Removal | 0/TBD | Not started | - |
