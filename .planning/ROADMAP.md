@@ -230,7 +230,8 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
   4. `yarn build` (client + SSR) + `yarn vitest run src/lib/contexts/` + `yarn svelte-check` are all green with zero new errors; consumers untouched.
 
 **Plans**: 3 plans (all Wave 1 — disjoint files, fully parallel)
-- [ ] 107-01-PLAN.md — convert authContext to class AuthContextProvider ($derived isAuthenticated + arrow-field DataWriter wrappers) + headless test
+
+- [x] 107-01-PLAN.md — convert authContext to class AuthContextProvider ($derived isAuthenticated + arrow-field DataWriter wrappers) + headless test
 - [ ] 107-02-PLAN.md — convert componentContext to class (own-property i18n surface + get darkMode() over composed DarkMode class); export DarkMode, keep createDarkMode back-compat for the Phase-109 PoC + headless test
 - [ ] 107-03-PLAN.md — reconcile dataContext + filterContext doc-comments to the §17/§18/§20/§22 final idiom (intentional-until-Phase-113 note on reactiveDataRoot.instance); executable code byte-identical
 
@@ -376,7 +377,7 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 106. Group F Helper Classes | 4/4 | Complete   | 2026-06-12 |
-| 107. Leaf Contexts + Proof Reconciliation | 0/TBD | Not started | - |
+| 107. Leaf Contexts + Proof Reconciliation | 1/3 | In Progress|  |
 | 108. App-Layer Producer Contexts | 0/TBD | Not started | - |
 | 109. appContext Orchestrator + Spread Fix + PoC Removal | 0/TBD | Not started | - |
 | 110. voterContext Orchestrator + Voter Sub-Stores | 0/TBD | Not started | - |

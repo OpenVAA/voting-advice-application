@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.13
 milestone_name: Context-as-Class Migration
-status: verifying
+status: executing
 stopped_at: Completed 106-04-PLAN.md
-last_updated: "2026-06-12T20:49:41.932Z"
-last_activity: 2026-06-12 -- Phase 106 execution started
+last_updated: "2026-06-12T21:44:57.682Z"
+last_activity: 2026-06-12 -- Phase 107 execution started
 progress:
   total_phases: 11
   completed_phases: 1
-  total_plans: 4
-  completed_plans: 4
+  total_plans: 7
+  completed_plans: 5
   percent: 9
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-12 starting v2.13 Context-as-Class Migration)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 106 — group-f-helper-classes
+**Current focus:** Phase 107 — leaf-contexts-proof-reconciliation
 
 ## Current Position
 
-Phase: 106 (group-f-helper-classes) — EXECUTING
-Plan: 4 of 4
-Status: Phase complete — ready for verification
-Last activity: 2026-06-12 -- Phase 106 execution started
+Phase: 107 (leaf-contexts-proof-reconciliation) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
+Last activity: 2026-06-12 -- Phase 107 execution started
 
 ## Performance Metrics
 
@@ -64,6 +64,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | Phase 106 P02 | 3min | 2 tasks | 1 files |
 | Phase 106 P03 | 2min | 2 tasks | 1 files |
 | Phase 106 P04 | 4min | 2 tasks | 3 files |
+| Phase 107 P01 | 8min | 2 tasks | 2 files |
 
 ### Acknowledged at v2.10 close (2026-06-04)
 
@@ -339,6 +340,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: persistedState handle converted to class PersistedStateImpl<TValue> (106-03); imperative arrow set/update, CR-01 init-persist in constructor body, consumers byte-identical
 - [Phase ?]: 106-04: VideoController extracted from layoutContext as a standalone Svelte 5 class; initLayoutContext() stays a factory (orchestrator-class conversion deferred to P107 per A1/A10)
 - [Phase ?]: 106-04: shouldClearContent kept a public class field; host nav hooks toggle it across the boundary, off the typed VideoController interface
+- [Phase ?]: Phase 107: authContext isAuthenticated must be a private #$derived + own-enumerable constructor accessor (NOT a bare $derived class field) — Svelte 5 compiles $state/$derived class fields to prototype accessors that object spread drops; verified headlessly. Spread-safety gate applies to all context-as-class members an orchestrator spreads.
 
 ### Quick Tasks Completed
 
@@ -383,7 +385,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-12T20:49:41.925Z
+Last session: 2026-06-12T21:44:42.597Z
 Stopped at: Completed 106-04-PLAN.md
 Resume file: None
 Work done this session:

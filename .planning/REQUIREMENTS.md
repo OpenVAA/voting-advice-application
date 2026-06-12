@@ -52,7 +52,7 @@ flatten (FLATTEN) sweep removes them.
   (`utils/persistedState`, underlying `userPreferences`/`answers`) — are formalized as real Svelte 5 classes
   with `$state`/`$derived` fields + arrow/bound methods. Build + unit + svelte-check stay green.
 
-- [ ] **CLASS-02**: The leaf contexts `authContext` and `componentContext` are converted to classes, and the
+- [x] **CLASS-02**: The leaf contexts `authContext` and `componentContext` are converted to classes, and the
   three already-landed proof conversions (`darkMode`, `dataContext`, `filterContext`) are reconciled to the
   final class idiom (consistent field/method shape, no spike-era residue). Build + unit + svelte-check green.
 
@@ -155,7 +155,7 @@ Which phases cover which requirements. Populated during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | CLASS-01 | Phase 106 | Complete |
-| CLASS-02 | Phase 107 | Pending |
+| CLASS-02 | Phase 107 | Complete |
 | CLASS-03 | Phase 108 | Pending |
 | CLASS-04 | Phase 109 | Pending |
 | CLASS-05 | Phase 110 | Pending |
