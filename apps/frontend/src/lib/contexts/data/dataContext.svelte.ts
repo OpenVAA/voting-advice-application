@@ -12,6 +12,92 @@ export function getDataContext(): DataContext {
 }
 
 /**
+ * DataContext re-expressed as a Svelte 5 CLASS (class-conversion proof, Spikes
+ * 020-023; see `.planning/spikes/CONTEXT-MEMBER-AUDIT.md`). The documented Svelte 5
+ * idiom is "use classes with `$state` fields to share reactivity between components,
+ * instead of using stores" — here the reactive core is the private `#version`
+ * `$state` FIELD.
+ *
+ * This is the Group-C "version-bridge" pattern (the dataRoot pattern, NOT wholesale
+ * replacement): `DataRoot` has a STABLE identity and is mutated in place; `#version`
+ * is bumped (untracked) on every `DataRoot.update()` notification, bridging
+ * `Updatable.subscribe()` to `$derived` reactivity. Spike 022 confirmed this group
+ * does not simplify away — the bridge is intrinsic to wrapping a non-rune object.
+ *
+ * Two deliberate shape choices, both spike-derived:
+ *
+ * 1. Public handles (`dataRoot`, `reactiveDataRoot`) and the `setDataRoot` writer are
+ *    exposed as OWN properties (instance fields), NOT prototype getters. appContext
+ *    re-exposes this context via `{ ...dataCtx }`, and spreading a class INSTANCE
+ *    copies only own-enumerable properties — prototype accessors would be silently
+ *    dropped (Spike 020 finding; CONVENTIONS "Spread-of-context"). Own-property
+ *    handles keep the existing consumer API (`reactiveDataRoot.current`) byte-identical,
+ *    so NO consumer changes.
+ *
+ * 2. `setDataRoot` is an ARROW-FUNCTION field, not a method, so it survives being
+ *    destructured/detached (`const { setDataRoot } = ctx`) with `this` intact — the
+ *    `$state#Classes` caveat (Spike 020 Group E). It internalizes the `untrack` that
+ *    producers previously hand-wrote at the call site, so the old `.instance` handle +
+ *    hand-written `untrack` collapse to a single write path (Spike 017/022).
+ *
+ * NB. With a class private `#version`, a producer that reads the REACTIVE getter then
+ * mutates self-perpetuates SILENTLY (no `effect_update_depth_exceeded` throw, unlike
+ * the plain-`let` version — Spike 022). Producers MUST go through `setDataRoot`.
+ */
+class DataContextProvider implements DataContext {
+  readonly #dataRoot: DataRoot;
+  #version = $state(0);
+
+  // Own-property handles (spread-safe). Assigned in the constructor so their getters
+  // can close over `this` for the private `#version` read.
+  readonly dataRoot: { readonly current: DataRoot };
+  readonly reactiveDataRoot: { readonly current: DataRoot; readonly instance: DataRoot };
+
+  constructor(dataRoot: DataRoot) {
+    this.#dataRoot = dataRoot;
+
+    // Subscribe to DataRoot's imperative change notifications and bump `#version`.
+    // The write is wrapped in `untrack()` (Pattern 3 / L-2): should this callback
+    // ever fire synchronously within a producer effect's tracked scope, `untrack`
+    // isolates the write so it cannot retrigger that effect.
+    dataRoot.subscribe(() => {
+      untrack(() => {
+        this.#version++;
+      });
+    });
+
+    // `self` lets the object-literal getters reach the class-private `#version`
+    // (private-field access is legal anywhere lexically inside the class body).
+    const self = this;
+    this.dataRoot = {
+      get current(): DataRoot {
+        void self.#version; // reactive: re-evaluates on every DataRoot update
+        return dataRoot;
+      }
+    };
+    this.reactiveDataRoot = {
+      get current(): DataRoot {
+        void self.#version; // reactive read — use in $derived/$effect/templates
+        return dataRoot;
+      },
+      get instance(): DataRoot {
+        return dataRoot; // non-reactive read — same object, no version dependency
+      }
+    };
+  }
+
+  /**
+   * Mutate the DataRoot. Pass an `updater` that calls `dr.update(() => dr.provide*(...))`.
+   * The write runs inside `untrack`, so a producer `$effect` calling this takes NO
+   * dependency on `#version` and cannot self-loop. Replaces the previous
+   * `reactiveDataRoot.instance` + hand-written `untrack` idiom (Spike 017/022).
+   */
+  setDataRoot = (updater: (dataRoot: DataRoot) => void): void => {
+    untrack(() => updater(this.#dataRoot));
+  };
+}
+
+/**
  * Initialize and return the context. This must be called before `getDataContext()` and cannot be called twice.
  * @returns The context object
  */
@@ -27,54 +113,5 @@ export function initDataContext(): DataContext {
   );
   dataRoot.setFormatter('missingAnswer', () => t('common.missingAnswer'));
 
-  // Version counter: $state incremented on every DataRoot update.
-  // This bridges DataRoot's imperative subscribe() notifications to $derived reactivity.
-  let version = $state(0);
-
-  // Subscribe to DataRoot's imperative change notifications. DataRoot's
-  // `Updatable.subscribe()` is the domain abstraction (transactional mutation
-  // batching across nested `provide*`) and must stay intact.
-  //
-  // The callback writes a $state (`version++`). It runs from DataRoot's
-  // notification, not from inside a reactive read scope, so it does not itself
-  // form a read-then-write cycle. We still wrap the write in `untrack()`
-  // defensively (Pattern 3 / L-2): should this callback ever fire synchronously
-  // within a producer effect's tracked scope, `untrack` isolates the write so it
-  // cannot retrigger that effect (`effect_update_depth_exceeded`).
-  dataRoot.subscribe(() => {
-    untrack(() => {
-      version++;
-    });
-  });
-
-  // Rune-native handle split (Pattern 2):
-  //   - `current`  → reactive. Reads `version`, so $derived/$effect/template
-  //                  consumers re-evaluate on every DataRoot update.
-  //   - `instance` → non-reactive. Same object, but does NOT read `version`, so
-  //                  producers/effects can mutate DataRoot without taking a
-  //                  read-dependency on the counter (avoids the write-after-read
-  //                  loop trap).
-  const reactiveDataRoot = {
-    get current() {
-      void version;
-      return dataRoot;
-    },
-    get instance() {
-      return dataRoot;
-    }
-  };
-
-  // Exported `dataRoot` is now a plain rune handle exposing a reactive `.current`
-  // getter (the Wave-3 codemod target). The legacy `Readable<DataRoot>` store
-  // bridge was removed in Wave 4 (Phase 98) once the last `$dataRoot` / `get(store)`
-  // consumers migrated to `reactiveDataRoot.instance`. The getter body reuses the
-  // SAME `version` $state as `reactiveDataRoot.current` — single source of truth.
-  const dataRootExport = {
-    get current() {
-      void version;
-      return dataRoot;
-    }
-  };
-
-  return setContext<DataContext>(CONTEXT_KEY, { dataRoot: dataRootExport, reactiveDataRoot });
+  return setContext<DataContext>(CONTEXT_KEY, new DataContextProvider(dataRoot));
 }

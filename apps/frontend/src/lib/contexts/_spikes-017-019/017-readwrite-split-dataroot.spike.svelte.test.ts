@@ -132,22 +132,33 @@ describe('Spike 017 — read/write split eliminates { current, instance }', () =
     expect(producerRuns).toBe(1); // ran once; the setter's mutation did not retrigger it
   });
 
-  it('contrast: the SAME producer reading the reactive getter (no split) DOES loop — proving why .instance/untrack was required', () => {
-    const run = () => {
-      const cleanup = $effect.root(() => {
-        const ctx = makeReactiveOnlyDataContext();
-        $effect(() => {
-          // Reads the reactive `.current` (→ version) THEN mutates → version++ →
-          // re-runs → … This is exactly the trap `.instance` (or the producer's
-          // hand-written untrack) was introduced to avoid.
-          const dr = ctx.current;
-          dr.update(() => dr.provideElectionData([1]));
-        });
+  it('contrast: the SAME producer reading the reactive getter (no split) SELF-PERPETUATES (unbounded re-runs) — proving why .instance/untrack was required', () => {
+    // The producer reads reactive `.current` (→ version) THEN mutates → version++ →
+    // re-runs → … exactly the trap `.instance` (or the producer's hand-written
+    // untrack) was introduced to avoid.
+    //
+    // NOTE: in some environments this loop trips Svelte's synchronous
+    // `effect_update_depth_exceeded` guard; in others (and under full-suite load) the
+    // version++ invalidation reschedules across flush cycles and the guard does NOT
+    // fire — the effect just spins (the original `toThrow` assertion timed out under
+    // load). Spike 022 documents the same guard-vs-spin nondeterminism with a class
+    // private `#version`. We make the hazard deterministic by capping the mutation and
+    // asserting the effect re-ran far more than the split path's once.
+    const CAP = 30;
+    let runs = 0;
+    const cleanup = $effect.root(() => {
+      const ctx = makeReactiveOnlyDataContext();
+      $effect(() => {
+        const dr = ctx.current; // reads reactive getter → dep on version
+        runs++;
+        if (runs <= CAP) {
+          dr.update(() => dr.provideElectionData([runs]));
+        }
       });
-      flushSync();
-      cleanup();
-    };
+    });
+    flushSync();
+    cleanup();
 
-    expect(run).toThrow(/effect_update_depth_exceeded/);
+    expect(runs).toBeGreaterThan(CAP);
   });
 });

@@ -16,7 +16,7 @@
 <script lang="ts">
   import '../app.css';
   import { staticSettings } from '@openvaa/app-shared';
-  import { onDestroy, untrack } from 'svelte';
+  import { onDestroy } from 'svelte';
   import { afterNavigate, beforeNavigate, onNavigate } from '$app/navigation';
   import { updated } from '$app/state';
   import { isValidResult } from '$lib/api/utils/isValidResult';
@@ -47,7 +47,7 @@
   initDataContext();
   const {
     appSettings,
-    reactiveDataRoot,
+    setDataRoot,
     openFeedbackModal,
     popupQueue,
     sendTrackingEvent,
@@ -103,27 +103,24 @@
   // We don't do anything else with the data if it's valid, because the relevant
   // stores will pick it up from `$page.data`.
   //
-  // IMPORTANT: access the DataRoot instance via `reactiveDataRoot.instance`
-  // (the non-reactive rune handle) rather than the `dataRoot.current` reactive
-  // form. `dataRoot.current.update(() => provide*(...))` inside a `$effect`
-  // creates an infinite reactive loop in Svelte 5: reading `.current` takes a
-  // dependency on the dataContext `version++` $state, and `DataRoot.update()`
-  // notifies subscribers (bumping `version`) — retriggering the effect.
-  // `reactiveDataRoot.instance` returns the SAME object WITHOUT reading `version`,
-  // so no reactive dependency is established (Spike 002 pattern). This is the
-  // rune-native replacement for the former svelte/store `get()` workaround.
+  // IMPORTANT: mutate the DataRoot via `setDataRoot(updater)` (the encapsulated
+  // non-reactive write path on the rune-native DataContext class) rather than the
+  // `dataRoot.current` reactive form. `dataRoot.current.update(() => provide*(...))`
+  // inside a `$effect` creates an infinite reactive loop in Svelte 5: reading
+  // `.current` takes a dependency on the dataContext `version` $state, and
+  // `DataRoot.update()` notifies subscribers (bumping `version`) — retriggering the
+  // effect. `setDataRoot` runs the mutation inside `untrack`, so this effect takes no
+  // dependency on the version counter (Spike 017/022 read/write split — it replaces
+  // the former `reactiveDataRoot.instance` + hand-written `untrack` idiom).
   $effect(() => {
     if ('error' in validity) return;
-    // Snapshot validity fields inside the effect's tracked scope, then apply
-    // side-effects inside `untrack` to prevent the DataRoot subscriber
-    // `version++` from retriggering this effect (Svelte 5
-    // `effect_update_depth_exceeded`).
+    // Snapshot validity fields inside the effect's tracked scope (so the effect
+    // re-runs when they change); the write itself is untracked inside setDataRoot.
     const snapshot = {
       electionData: validity.electionData,
       constituencyData: validity.constituencyData
     };
-    untrack(() => {
-      const dr = reactiveDataRoot.instance;
+    setDataRoot((dr) => {
       dr.update(() => {
         dr.provideElectionData(snapshot.electionData);
         dr.provideConstituencyData(snapshot.constituencyData);

@@ -14,4 +14,13 @@ export type DataContext = {
    * - `instance` — non-reactive read (same object, no version dependency); use from producer effects.
    */
   reactiveDataRoot: { readonly current: DataRoot; readonly instance: DataRoot };
+  /**
+   * Mutate the DataRoot through the encapsulated non-reactive write path. Pass an
+   * `updater` that calls `dr.update(() => dr.provide*(...))`. The write runs inside
+   * `untrack`, so a producer `$effect` calling this takes no dependency on the version
+   * counter and cannot self-loop — replacing the `reactiveDataRoot.instance` +
+   * hand-written `untrack` producer idiom (Spike 017/022). An arrow-function field, so
+   * it survives being destructured (`const { setDataRoot } = ctx`).
+   */
+  setDataRoot: (updater: (dataRoot: DataRoot) => void) => void;
 };

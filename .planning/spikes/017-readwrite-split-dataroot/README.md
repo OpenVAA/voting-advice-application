@@ -100,6 +100,15 @@ before throwing — the stack-trace dump in the output is that expected throw).
    without ever evaluating the version-gated getter → the read never happens →
    no loop, regardless of DataRoot's internal complexity.
 
+> **Test hardening (added during the Spike 022 / class-conversion proof):** the
+> contrast test originally asserted `toThrow(/effect_update_depth_exceeded/)`. That is
+> brittle — under full-suite load the loop reschedules across flush cycles and the
+> synchronous depth-guard does NOT fire, so the test timed out instead of throwing (the
+> same guard-vs-spin nondeterminism Spike 022 documents for a class private `#version`).
+> The test now caps the mutation and asserts unbounded re-runs (`runs > CAP`) —
+> deterministic, and a stronger statement of the same hazard. The VALIDATED verdict is
+> unchanged; only the assertion's robustness improved.
+
 ## Results
 
 **VERDICT: VALIDATED.**
