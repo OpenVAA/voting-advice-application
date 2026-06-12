@@ -4,7 +4,7 @@ title: Extend the svelte/store ESLint guard frontend-wide
 area: frontend
 files: []
 source: v2.11 Phase 98 decision 98-2 (batch discussion v2.11-DISCUSSION-POINTS.md)
-resolves_phase: 105
+resolves_phase: 115
 ---
 
 ## Problem
