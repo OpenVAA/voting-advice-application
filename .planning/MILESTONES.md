@@ -1,5 +1,15 @@
 # Milestones
 
+## v2.12 Runes-Native Cleanup (⊘ SUPERSEDED: 2026-06-12)
+
+**Status:** Superseded mid-flight by **v2.13 Context-as-Class Migration** — not shipped. Started 2026-06-08, halted 2026-06-09 (~25%: 1 of 4 phases complete).
+
+**What happened:** Phase 102 (Handle-Idiom Spike) locked a get/set-accessor + plain-getter idiom for the 40 `{ readonly current }` context handles, and Phase 103 began the `.current` codemod. A follow-on spike line (017–023) + `CONTEXT-MEMBER-AUDIT.md` then proved the deeper move — **turn each context into a Svelte 5 class** — and LOCKED it 2026-06-12 (validated on 3 real production contexts, zero consumer churn, full green). The class field subsumes the handle idiom, so the Phase 103 codemod was abandoned and the migration restarted as v2.13. The still-valid Store→State rename (Phase 104) + straggler clearance + green gate (Phase 105) carried forward into v2.13.
+
+**Phases:** 102 ✅ (spike, decision later superseded) · 103 ~ (1/2 plans, codemod authored but never applied) · 104 ⬜ → v2.13 · 105 ⬜ → v2.13. Full disposition: `milestones/v2.12-MILESTONE-AUDIT.md`. Artifacts: `milestones/v2.12-phases/`, `milestones/v2.12-ROADMAP.md`, `milestones/v2.12-REQUIREMENTS.md`.
+
+---
+
 ## v2.11 Svelte 5 Runes Migration + View Transitions (Shipped: 2026-06-07)
 
 **Phases completed:** 7 phases (95-101), 22 plans, 42 tasks

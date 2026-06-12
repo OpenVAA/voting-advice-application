@@ -1,34 +1,33 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.12
-milestone_name: Runes-Native Cleanup
-status: executing
-stopped_at: Completed 98-02-PLAN.md
-last_updated: "2026-06-09T08:34:32.239Z"
-last_activity: 2026-06-09 -- Phase 103 execution started
+milestone: v2.13
+milestone_name: Context-as-Class Migration
+status: planning
+last_updated: "2026-06-12T19:12:36.590Z"
+last_activity: 2026-06-12
 progress:
-  total_phases: 4
-  completed_phases: 1
-  total_plans: 4
-  completed_plans: 3
-  percent: 25
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-07 after v2.11 close)
+See: .planning/PROJECT.md (updated 2026-06-12 starting v2.13 Context-as-Class Migration)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 103 — current-handle-codemod
+**Current focus:** v2.13 Context-as-Class Migration — defining requirements (phases start at 106)
 
 ## Current Position
 
-Phase: 103 (current-handle-codemod) — EXECUTING
-Plan: 2 of 2
-Status: Ready to execute
-Last activity: 2026-06-09 -- Phase 103 execution started
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-06-12 — Milestone v2.13 started
 
 ## Performance Metrics
 
