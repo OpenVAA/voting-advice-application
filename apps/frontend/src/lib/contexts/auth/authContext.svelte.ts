@@ -15,14 +15,23 @@ const CONTEXT_KEY = Symbol();
  * migration, CLASS-02). CONVERTED from the factory closure that returned a
  * `setContext` object literal inside `initAuthContext()`.
  *
- * `isAuthenticated` is a PUBLIC `$derived` FIELD reading `page.data.session`
- * (§17: a `$derived` field read as `instance.isAuthenticated` stays reactive —
- * "public $derived field — spread-safe own property"). It is deliberately a
- * public field, NOT a private `#field` + prototype getter: candidateContext
- * spreads the instance via `{ ...authContext }` and a prototype getter would be
- * dropped by the spread (spread copies only own-enumerable properties). A public
- * `$derived` field is an own-enumerable property, so it survives the spread AND
- * satisfies the `readonly boolean` interface member structurally.
+ * `isAuthenticated` is backed by a private `#isAuthenticated = $derived(...)`
+ * field reading `page.data.session`, exposed as an OWN-ENUMERABLE accessor
+ * assigned in the constructor (the canonical spread-safety shape from
+ * `dataContext`'s constructor-assigned own-property handles). Read as
+ * `instance.isAuthenticated` it is fully reactive (the getter re-invokes the
+ * `$derived` inside the tracking scope).
+ *
+ * NB. A bare public `$derived` class field would NOT survive the
+ * `{ ...authContext }` spread in candidateContext: Svelte 5 compiles `$state`/
+ * `$derived` class fields to PRIVATE backing fields + PROTOTYPE accessors, which
+ * are NOT own-enumerable and are therefore dropped by object spread (verified
+ * headlessly). The original object-literal `get isAuthenticated()` WAS an
+ * own-enumerable accessor, so the spread copied it (as a snapshot — the
+ * documented spread-of-context trap, CONVENTIONS Spike 009/019). To stay
+ * byte-identical at the consumer until the Phase 109 spread-of-context fix,
+ * `isAuthenticated` MUST remain own-enumerable. Hence the constructor-assigned
+ * accessor rather than a bare `$derived` field.
  *
  * The four DataWriter wrappers (`logout` / `requestForgotPasswordEmail` /
  * `resetPassword` / `setPassword`) are ARROW-FUNCTION FIELDS (§18 — they survive
@@ -34,9 +43,29 @@ const CONTEXT_KEY = Symbol();
  * There is NO init/post-mount effect (§20): the `page.data.session` read is
  * synchronous via `$derived`.
  */
-class AuthContextProvider implements AuthContext {
-  // §17 — public $derived field — spread-safe own property (candidateContext `{ ...authContext }`).
-  isAuthenticated = $derived(!!page.data.session);
+export class AuthContextProvider implements AuthContext {
+  // §17/§D — private $derived backing field; exposed as an OWN-ENUMERABLE accessor
+  // (assigned in the constructor) so it survives the candidateContext spread.
+  #isAuthenticated = $derived(!!page.data.session);
+
+  // Own-enumerable `isAuthenticated` accessor (spread-safe). Declared here so the
+  // type is `readonly boolean`; the actual getter is installed in the constructor.
+  readonly isAuthenticated!: boolean;
+
+  constructor() {
+    // Define `isAuthenticated` as an OWN-ENUMERABLE getter (not a prototype
+    // accessor) so `{ ...authContext }` copies it (dataContext spread-safety
+    // precedent). Reading `instance.isAuthenticated` re-invokes `#isAuthenticated`
+    // in the tracking scope, so the read stays reactive.
+    const self = this;
+    Object.defineProperty(this, 'isAuthenticated', {
+      enumerable: true,
+      configurable: true,
+      get(): boolean {
+        return self.#isAuthenticated;
+      }
+    });
+  }
 
   ////////////////////////////////////////////////////////////////////
   // Wrappers for DataWriter methods (§18 arrow fields — survive detach)
