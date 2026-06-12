@@ -50,7 +50,7 @@ export class ComponentContextProvider implements ComponentContext {
 }
 
 export function getComponentContext() {
-  if (!hasContext(CONTEXT_KEY)) error(500, 'GetComponentsContext() called before initComponentContext()');
+  if (!hasContext(CONTEXT_KEY)) error(500, 'getComponentContext() called before initComponentContext()');
   return getContext<ComponentContext>(CONTEXT_KEY);
 }
 
@@ -59,7 +59,7 @@ export function getComponentContext() {
  * @returns The context object
  */
 export function initComponentContext(): ComponentContext {
-  if (hasContext(CONTEXT_KEY)) error(500, 'InitComponentsContext() called for a second time');
+  if (hasContext(CONTEXT_KEY)) error(500, 'initComponentContext() called for a second time');
 
   return setContext<ComponentContext>(CONTEXT_KEY, new ComponentContextProvider());
 }
