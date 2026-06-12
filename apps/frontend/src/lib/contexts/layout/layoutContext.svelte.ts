@@ -6,8 +6,8 @@ import { Tween } from 'svelte/motion';
 import { afterNavigate, beforeNavigate } from '$app/navigation';
 import { DELAY } from '$lib/utils/timing';
 import { settingsOverlay } from '../utils/SettingsOverlay.svelte';
-import type { DeepPartial, VideoContent } from '@openvaa/app-shared';
-import type { OptionalVideoProps, Video, VideoMode } from '$lib/components/video';
+import { VideoController } from './VideoController.svelte';
+import type { DeepPartial } from '@openvaa/app-shared';
 import type {
   LayoutContext,
   Navigation,
@@ -15,8 +15,7 @@ import type {
   PageStyles,
   Progress,
   RouteTitle,
-  TopBarSettings,
-  VideoController
+  TopBarSettings
 } from './layoutContext.type';
 
 const CONTEXT_KEY = Symbol();
@@ -94,69 +93,25 @@ export function initLayoutContext(): LayoutContext {
 
   const navigation: Navigation = {};
 
-  let videoShow = $state(false);
-  let videoHasContent = $state(false);
-  let videoMode = $state<VideoMode>('video');
-  let videoPlayer = $state<Video | undefined>(undefined);
+  // The video player controller is now a standalone `class VideoController`
+  // (extracted from the formerly-embedded `video` const-ref — v2.13 CLASS-01).
+  // Its public read/write surface (`show`/`hasContent`/`mode`/`player`/`load`) is
+  // byte-identical, so the 34 `getLayoutContext()` consumers are unchanged.
+  const video = new VideoController();
 
-  const video: VideoController = {
-    load,
-    get show() {
-      return videoShow;
-    },
-    set show(v) {
-      videoShow = v;
-    },
-    get hasContent() {
-      return videoHasContent;
-    },
-    set hasContent(v) {
-      videoHasContent = v;
-    },
-    get mode() {
-      return videoMode;
-    },
-    set mode(v) {
-      videoMode = v;
-    },
-    get player() {
-      return videoPlayer;
-    },
-    set player(v) {
-      videoPlayer = v;
-    }
-  };
-
-  /**
-   * Used in connection with the timeout delay to allow for the next page to load possible video content before hiding it and setting `video.hasContent` to `false`, which triggers layout changes as well.
-   */
-  let shouldClearContent = false;
-
-  async function load(
-    props: VideoContent & OptionalVideoProps,
-    { autoshow = true }: { autoshow?: boolean } = {}
-  ): Promise<boolean> {
-    const player = video.player;
-    if (!player) return false;
-    const result = await player.load(props);
-    if (!result) return false;
-    shouldClearContent = false;
-    video.hasContent = true;
-    if (autoshow) video.show = true;
-    return true;
-  }
-
-  // Setup video player auto-hiding
+  // Setup video player auto-hiding. The navigation-driven auto-hide stays here in
+  // the host's beforeNavigate/afterNavigate hooks (NOT an `$effect` on the class —
+  // §20); they toggle the instance's `shouldClearContent` flag and drive it.
   let timeout: NodeJS.Timeout | undefined;
   beforeNavigate(() => {
-    shouldClearContent = true;
+    video.shouldClearContent = true;
     video.player?.togglePlay('pause');
   });
   afterNavigate(() => {
     // Give a little timeout for the new page to load possible video content, but if no content is forthcoming, hide the video player. The wait prevents unnecessary minimizing and maximizing of the player between two consequtive pages with video content
     clearTimeout(timeout);
     timeout = setTimeout(() => {
-      if (shouldClearContent) video.hasContent = false;
+      if (video.shouldClearContent) video.hasContent = false;
       if (!video.hasContent) video.show = false;
     }, DELAY.sm);
   });
