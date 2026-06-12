@@ -288,7 +288,12 @@ Plans:
   3. The `answerStore` Group-C version-bridge (localStorageState, frozen payload) keeps its `setX`/`untrack` encapsulation; its `#version` private `$state` does not silently spin (spike 022).
   4. `yarn build` + `yarn vitest run` + the voter-app E2E suite (incl. a11y-smoke) are green — the voter app behaves identically.
 
-**Plans**: TBD
+**Plans**: 4 plans (Wave 1: 110-01 + 110-02 parallel, disjoint files; Wave 2: 110-03 orchestrator, depends on 01+02; Wave 3: 110-04 phase gate, depends on 03)
+
+  - [ ] 110-01-PLAN.md — answerStore() + paramStore() → classes; DELETE the 3 dead-code projection factories (questionCategoryStore/questionStore/questionBlockStore .svelte.ts — zero live importers, inlined into voterContext at Phase 61; SC-1 satisfied-by-deletion per 110-PATTERNS §3). Keeps questionBlockStore.type.ts (live).
+  - [ ] 110-02-PLAN.md — matchStore() + nominationAndQuestionStore() + filterStore() → classes ($derived.by value fields; MatchTree/NominationAndQuestionTree/FilterTree type exports unchanged)
+  - [ ] 110-03-PLAN.md — voterContext → class VoterContextProvider (prototype-getter reactive accessors — not spread; Object.assign(this, appContext) reproduces the L488 spread; arrow-field resetVoterData; 5 $effects + 4 $derived + 4 producers in D1 constructor order)
+  - [ ] 110-04-PLAN.md — phase gate: yarn build + full vitest + svelte-check (151 baseline) + voter-app E2E (voter-journey) + a11y-smoke (runs once at phase end)
 **UI hint**: yes
 
 ### Phase 111: candidateContext Orchestrator + UserData Store
