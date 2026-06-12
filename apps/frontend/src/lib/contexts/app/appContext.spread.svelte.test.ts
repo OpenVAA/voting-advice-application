@@ -119,8 +119,8 @@ describe('AppContextProvider — own-enumerability spread guard', () => {
    * Construct the provider inside `$effect.root` so its constructor `$effect`s
    * settle, then `flushSync`. Returns the instance.
    */
-  function setup(): AppContextProvider {
-    let instance!: AppContextProvider;
+  function setup(): InstanceType<typeof AppContextProvider> {
+    let instance!: InstanceType<typeof AppContextProvider>;
     cleanup = $effect.root(() => {
       instance = new AppContextProvider();
     });
