@@ -229,7 +229,10 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
   3. `darkMode`, `dataContext`, and `filterContext` are reconciled to the final idiom — consistent field/method shape, no spike-era residue (e.g. the `reactiveDataRoot.instance` back-compat read is documented as intentional-until-flatten, not orphaned).
   4. `yarn build` (client + SSR) + `yarn vitest run src/lib/contexts/` + `yarn svelte-check` are all green with zero new errors; consumers untouched.
 
-**Plans**: TBD
+**Plans**: 3 plans (all Wave 1 — disjoint files, fully parallel)
+- [ ] 107-01-PLAN.md — convert authContext to class AuthContextProvider ($derived isAuthenticated + arrow-field DataWriter wrappers) + headless test
+- [ ] 107-02-PLAN.md — convert componentContext to class (own-property i18n surface + get darkMode() over composed DarkMode class); export DarkMode, keep createDarkMode back-compat for the Phase-109 PoC + headless test
+- [ ] 107-03-PLAN.md — reconcile dataContext + filterContext doc-comments to the §17/§18/§20/§22 final idiom (intentional-until-Phase-113 note on reactiveDataRoot.instance); executable code byte-identical
 
 ### Phase 108: App-Layer Producer Contexts
 
