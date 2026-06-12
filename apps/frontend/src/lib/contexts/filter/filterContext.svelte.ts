@@ -22,32 +22,39 @@ export function getFilterContext(): FilterContext {
 
 /**
  * `FilterContext` re-expressed as a Svelte 5 CLASS (class-conversion proof, Spikes
- * 020-023; Group C — version-bridge over a non-rune `FilterGroup`). The reactive
- * core is the private `#version` `$state` field, bumped on every
- * `FilterGroup.onChange` — `FilterGroup.filters[i]._rules` is plain JS, not `$state`,
- * so the version counter is the minimum-ceremony bridge into `$derived` reactivity
- * (RESEARCH.md §Pattern 1, Pitfall 1; the same bridge as `dataContext`).
+ * 020-023; CONVENTIONS §17-22, Group C — §22 version-bridge over a non-rune
+ * `FilterGroup`). The reactive core is the private `#version` `$state` field, bumped
+ * on every `FilterGroup.onChange` — `FilterGroup.filters[i]._rules` is plain JS, not
+ * `$state`, so the version counter is the minimum-ceremony bridge into `$derived`
+ * reactivity (RESEARCH.md §Pattern 1, Pitfall 1; the same §22 bridge as `dataContext`).
+ * Per §22 the version-bridge is KEPT verbatim — it does NOT simplify away.
  *
  * Class-shape choices (Spike 020/022/023):
- *  - `#filterGroup` is a `$derived` FIELD; its `void this.#version` read is the
- *    defensive dependency edge so a consumer `$derived` that reads only
- *    `filterGroup` still re-runs on a filter mutation.
- *  - The `onChange` bridge lives in an `$effect` in the CONSTRUCTOR. This is legal
- *    because the class is instantiated by `initVoterContext()` during component init
- *    (an effect context); the `$effect`'s cleanup detaches the handler on scope
+ *  - §20 reactive projection in `$derived` field: `#filterGroup` is a `$derived`
+ *    FIELD (init/projection goes in a `$derived`, never an init `$effect`); its
+ *    `void this.#version` read is the defensive dependency edge so a consumer
+ *    `$derived` that reads only `filterGroup` still re-runs on a filter mutation.
+ *  - §20 sanctioned exception — constructor `$effect`. The `onChange` bridge lives in
+ *    an `$effect` in the CONSTRUCTOR. This is legal ONLY because the class is
+ *    instantiated by `initFilterContext()` / `initVoterContext()` during component
+ *    init (an effect context); the `$effect`'s cleanup detaches the handler on scope
  *    change (Pitfall 2). NB (Spike 023): a class with `$effect` in its constructor
  *    can only be constructed inside an effect context — which is exactly the case.
- *  - Mutators are ARROW FIELDS so they survive being destructured (Spike 020 Group E).
- *  - Handles are NOT spread by any consumer (read via `fctx.version` /
- *    `fctx.filterGroup`), so prototype getters are safe here.
+ *  - §18 arrow fields — survive detach. Mutators are ARROW FIELDS so they survive
+ *    being destructured (CONVENTIONS §18; Spike 020 Group E).
+ *  - Prototype getters are spread-safe here: the handles are NOT spread by any
+ *    consumer (read via `fctx.version` / `fctx.filterGroup`, never `{ ...fctx }`), so
+ *    a prototype accessor is not dropped — unlike dataContext's appContext spread.
  */
 class FilterContextProvider implements FilterContext {
   #version = $state(0);
   readonly #entityFilters: InitFilterContextArgs['entityFilters'];
   readonly #currentEntityType: InitFilterContextArgs['currentEntityType'];
 
-  // The active FilterGroup, derived from the URL scope tuple. `void this.#version`
-  // ensures a $derived that reads ONLY filterGroup still re-runs on filter mutation.
+  // The active FilterGroup, derived from the URL scope tuple (§20 reactive projection
+  // in a `$derived` field). `void this.#version` is the §22 version-bridge defensive
+  // edge: it ensures a $derived that reads ONLY filterGroup still re-runs on filter
+  // mutation.
   // We use `parseParams(page)` (matching the voterContext paramStore analog) so the
   // persistent `?electionId=` search param and the route-side `entityTab` key are
   // merged transparently. When `currentEntityType` is injected (production path),
@@ -80,9 +87,11 @@ class FilterContextProvider implements FilterContext {
     this.#entityFilters = entityFilters;
     this.#currentEntityType = currentEntityType;
 
-    // Bridge: attach an onChange handler to the active FilterGroup. The $effect
-    // re-runs when #filterGroup changes (scope change), so the cleanup detaches the
-    // handler from the old group before the new one is attached (RESEARCH §Pitfall 2).
+    // §20 sanctioned exception — constructor `$effect` is legal ONLY because
+    // `initFilterContext()` runs during component init (an effect context). Bridge:
+    // attach an onChange handler to the active FilterGroup. The $effect re-runs when
+    // #filterGroup changes (scope change), so the cleanup detaches the handler from
+    // the old group before the new one is attached (Pitfall 2 cleanup; RESEARCH).
     $effect(() => {
       const fg = this.#filterGroup;
       if (!fg) return;
@@ -102,6 +111,7 @@ class FilterContextProvider implements FilterContext {
     return this.#version;
   }
 
+  // §18 arrow field — survives detach (`const { setFilter } = fctx`).
   setFilter = (id: string, value: unknown): void => {
     const f = this.#filterGroup?.filters.find((x) => x.name === id);
     // Filter.setRule expects Partial<FilterRule<T>>; the consumer passes a pre-shaped
@@ -111,10 +121,12 @@ class FilterContextProvider implements FilterContext {
     (f as unknown as { setRule?: (v: unknown) => void } | undefined)?.setRule?.(value);
   };
 
+  // §18 arrow field — survives detach.
   resetFilters = (): void => {
     this.#filterGroup?.reset();
   };
 
+  // §18 arrow field — survives detach. Intentional Phase-62 no-op stub (see D-06).
   addFilter = (_spec: unknown): void => {
 
     console.warn(
@@ -122,6 +134,7 @@ class FilterContextProvider implements FilterContext {
     );
   };
 
+  // §18 arrow field — survives detach. Intentional Phase-62 no-op stub (see D-06).
   removeFilter = (_id: string): void => {
 
     console.warn(
