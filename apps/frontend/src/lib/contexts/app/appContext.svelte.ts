@@ -19,9 +19,434 @@ import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { FeedbackData } from '$lib/api/base/feedbackWriter.type';
 import type { AppContext, AppType } from './appContext.type';
 import type { AppCustomization } from './appCustomization.type';
+import type { RouteBuilder } from './getRoute.svelte';
+import type { PopupStore } from './popup';
 import type { UserPreferences } from './userPreferences.type';
 
 const CONTEXT_KEY = Symbol();
+
+/**
+ * The app context (orchestrator) re-expressed as a Svelte 5 CLASS
+ * (`AppContextProvider`; v2.13 context-as-class migration, CLASS-04). CONVERTED
+ * from the 368-line object-literal factory that `initAppContext()` returned.
+ * Constructed via `new AppContextProvider()` inside `initAppContext()`, at
+ * component-init time exactly as the former factory ran.
+ *
+ * ── Spread-of-context fix (success criterion 1) ──────────────────────────────
+ * The former factory built its return object by spreading the three upstream
+ * contexts (the componentCtx / dataCtx / tracking instance-spreads) and then
+ * overriding a handful of members. Those THREE internal instance-spreads are
+ * GONE. Every forwarded member is now an EXPLICIT OWN-ENUMERABLE instance
+ * property assigned in the constructor (CONVENTIONS §17 "explicit getter
+ * forwarding, never instance spread") — the canonical
+ * `Object.assign(this, getX())` composing-leaf copy for the stable members and
+ * `Object.defineProperty(this, …)` / handle-object fields for the reactive ones.
+ *
+ * ── The DECISIVE downstream-spread constraint ────────────────────────────────
+ * `candidateContext.svelte.ts:366`, `adminContext.svelte.ts:98`, and
+ * `voterContext.svelte.ts:488` ALL do `{ ...appContext }` and are NOT touched in
+ * Phase 109. `{ ...instance }` copies only OWN-ENUMERABLE properties; Svelte 5
+ * compiles bare `$state`/`$derived` class fields AND prototype `get` accessors to
+ * PRIVATE backing + PROTOTYPE accessors, which object spread silently drops
+ * (Phase 107/108 spread-safety gate, headlessly verified). Therefore EVERY member
+ * this context exposes is installed as an OWN-ENUMERABLE instance property — never
+ * a bare `$state`/`$derived` field, never a prototype getter. This is the
+ * load-bearing discipline of the whole phase: a prototype getter here would
+ * silently drop the member from the three downstream spreads.
+ *
+ * ── SSR-correct appSettings / appCustomization merge (success criterion 3) ───
+ * The v2.11 DB-override merge stays a SYNCHRONOUS FIELD INITIALIZER
+ * (`#appSettingsValue = $state(mergeInitialAppSettings(...))`) — it runs on the
+ * server AND the client, so the server-rendered HTML already carries the DB
+ * override (no post-hydration default→override flash; spike 008). It is NEVER an
+ * `$effect` for the INITIAL value (§20 — `$effect` does not run on the server).
+ * The prev-ref-guarded RE-MERGE `$effect`s (the Phase-64 over-fire fix) live in
+ * the CONSTRUCTOR — legal because the class is constructed during component init,
+ * an effect context (filterContext precedent, 109-PATTERNS finding 4).
+ *
+ * Detachable methods (`sendFeedback`, `setDataConsent`, `setFeedbackStatus`,
+ * `setSurveyStatus`, `startFeedbackPopupCountdown`, `startSurveyPopupCountdown`)
+ * are ARROW-FUNCTION FIELDS (§18) so they survive detach after the downstream
+ * spread + consumer destructure, with their bodies preserved verbatim.
+ */
+class AppContextProvider implements AppContext {
+  ////////////////////////////////////////////////////////////////////
+  // Private helper contexts (the upstream contexts being forwarded)
+  ////////////////////////////////////////////////////////////////////
+
+  #componentCtx = getComponentContext();
+  #dataCtx = getDataContext();
+
+  // `getRoute` is a rune-native `{ readonly current: RouteBuilder }` handle
+  // (CTX-08). It must be created here (not at module load) because
+  // `createGetRoute` uses `$derived.by`, which requires component-init context.
+  // The class is constructed during initAppContext at component init, so this is
+  // exactly the same call site as before. See `getRoute.svelte.ts` header.
+  #getRoute = createGetRoute();
+
+  ////////////////////////////////////////////////////////////////////
+  // Private $state backings + persisted handles
+  ////////////////////////////////////////////////////////////////////
+
+  #appTypeValue = $state<AppType>(undefined);
+
+  /**
+   * NB! Settings are overwritten by root key.
+   * TODO: Handle merging so that empty objects do not overwrite defaults
+   *
+   * D-04 (CTX-01): the DB override is folded into the INITIAL `$state` value,
+   * read synchronously from `page.data.appSettingsData`. This SYNCHRONOUS FIELD
+   * INITIALIZER runs both server-side AND client-side, so the server-rendered
+   * HTML already carries the DB override — no post-hydration default→override
+   * flash (the real production bug spike 008 surfaced; `$effect` does not run on
+   * the server). The constructor `$effect` below handles only post-navigation
+   * `page.data` changes. NEVER move this initial derivation into an `$effect`.
+   */
+  #appSettingsValue = $state<AppSettings>(
+    mergeInitialAppSettings(
+      staticSettings,
+      dynamicSettings,
+      page.data?.appSettingsData as DynamicSettings | Error | undefined
+    )
+  );
+
+  // Same D-04 synchronous-init treatment for appCustomization: fold the DB
+  // override into the initial `$state` value (SSR-correct, no flash).
+  #appCustomizationValue = $state<AppCustomization>(
+    page.data?.appCustomizationData &&
+      !((page.data?.appCustomizationData as AppCustomization | Error) instanceof Error)
+      ? (page.data.appCustomizationData as AppCustomization)
+      : {}
+  );
+
+  // TODO: Refactor when Cand App is refactored
+  #openFeedbackModalValue = $state<(() => void) | undefined>(undefined);
+
+  // See also the utility methods below. `localStorageState` is a rune-native
+  // `{ current, set, update }` persisted handle (no store-bridge wrapper needed).
+  #userPreferences = localStorageState('appContext-userPreferences', {} as UserPreferences);
+
+  ////////////////////////////////////////////////////////////////////
+  // Producer instances (installed in the constructor — D1 field-init order)
+  // The producers read their inputs via `.current`; the input handles
+  // (`appSettings`, `userPreferences`) must exist first, so the producers are
+  // created in the constructor AFTER the handle objects are installed.
+  ////////////////////////////////////////////////////////////////////
+
+  #tracking!: ReturnType<typeof trackingService>;
+  #survey!: ReturnType<typeof surveyLink>;
+  #popupQueue: PopupStore = popupStore();
+
+  // Track the previous `data` reference to skip merges when SvelteKit hands us
+  // the same loader result on a URL change (the Phase-64 over-fire fix).
+  // Initialized to the init-time DB value (D-04) so the first post-init run does
+  // not re-merge the identical payload already folded into `$state` above.
+  #prevAppSettingsData: DynamicSettings | Error | undefined = page.data?.appSettingsData as
+    | DynamicSettings
+    | Error
+    | undefined;
+  #prevAppCustomizationData: AppCustomization | Error | undefined = page.data?.appCustomizationData as
+    | AppCustomization
+    | Error
+    | undefined;
+
+  // Module-local timeouts become private fields.
+  #feedbackTimeout: NodeJS.Timeout | undefined;
+  #surveyTimeout: NodeJS.Timeout | undefined;
+
+  ////////////////////////////////////////////////////////////////////
+  // OWN-ENUMERABLE members (declared here for typing; INSTALLED in the
+  // constructor so the spreads downstream copy them). Definite-assignment `!`.
+  ////////////////////////////////////////////////////////////////////
+
+  // Reactive `{ current, set?, update? }` handles installed via `const self = this`.
+  readonly appType!: AppContext['appType'];
+  readonly appSettings!: AppContext['appSettings'];
+  readonly appCustomization!: AppContext['appCustomization'];
+  readonly openFeedbackModal!: AppContext['openFeedbackModal'];
+  readonly reactiveAppSettings!: AppContext['reactiveAppSettings'];
+  readonly reactiveLocale!: AppContext['reactiveLocale'];
+  readonly locale!: AppContext['locale'];
+  readonly locales!: AppContext['locales'];
+  readonly darkMode!: AppContext['darkMode'];
+  readonly getRoute!: { readonly current: RouteBuilder };
+  readonly surveyLink!: AppContext['surveyLink'];
+  readonly userPreferences!: AppContext['userPreferences'];
+  readonly popupQueue!: PopupStore;
+
+  // Forwarded STABLE componentCtx members (own props copied via Object.assign).
+  readonly t!: AppContext['t'];
+  readonly translate!: AppContext['translate'];
+
+  // Forwarded dataCtx members (own-prop handles + arrow field — references copied).
+  readonly dataRoot!: AppContext['dataRoot'];
+  readonly reactiveDataRoot!: AppContext['reactiveDataRoot'];
+  readonly setDataRoot!: AppContext['setDataRoot'];
+
+  // Forwarded tracking members (own-prop handles + arrow fields — references copied).
+  readonly sendTrackingEvent!: AppContext['sendTrackingEvent'];
+  readonly sessionId!: AppContext['sessionId'];
+  readonly shouldTrack!: AppContext['shouldTrack'];
+  readonly startPageview!: AppContext['startPageview'];
+  readonly startEvent!: AppContext['startEvent'];
+  readonly track!: AppContext['track'];
+  readonly submitAllEvents!: AppContext['submitAllEvents'];
+  readonly resetAllEvents!: AppContext['resetAllEvents'];
+
+  constructor() {
+    const self = this;
+
+    ////////////////////////////////////////////////////////////////////
+    // Install the OWN-ENUMERABLE reactive handle objects (spread-safe). Their
+    // getters/setters close over `this` to reach the private `$state` backings.
+    ////////////////////////////////////////////////////////////////////
+
+    this.appType = {
+      get current() {
+        return self.#appTypeValue;
+      },
+      set(v: AppType) {
+        self.#appTypeValue = v;
+      },
+      update(fn: (v: AppType) => AppType) {
+        self.#appTypeValue = fn(self.#appTypeValue);
+      }
+    };
+
+    this.appSettings = {
+      get current() {
+        return self.#appSettingsValue;
+      },
+      set(v: AppSettings) {
+        self.#appSettingsValue = v;
+      },
+      update(fn: (v: AppSettings) => AppSettings) {
+        self.#appSettingsValue = fn(self.#appSettingsValue);
+      }
+    };
+
+    this.appCustomization = {
+      get current() {
+        return self.#appCustomizationValue;
+      },
+      set(v: AppCustomization) {
+        self.#appCustomizationValue = v;
+      },
+      update(fn: (v: AppCustomization) => AppCustomization) {
+        self.#appCustomizationValue = fn(self.#appCustomizationValue);
+      }
+    };
+
+    this.openFeedbackModal = {
+      get current() {
+        return self.#openFeedbackModalValue;
+      },
+      set(v: (() => void) | undefined) {
+        self.#openFeedbackModalValue = v;
+      }
+    };
+
+    // Read-only `{ current }` rune handles over the SAME `$state` / SAME
+    // ComponentContext value the writable handles read (single source of truth —
+    // mirroring the shipped `reactiveDataRoot` precedent). Installed via
+    // `Object.defineProperty(this, …)` as OWN-ENUMERABLE accessors (the
+    // authContext spread-safety mechanic) so the `{ ...appContext }` downstream
+    // spreads copy them; reading them re-invokes the getter in the tracking scope
+    // so the read stays reactive. Each handle is itself an own-enumerable VALUE
+    // (a `{ get current }` object), so the spread carries the handle intact.
+    Object.defineProperty(this, 'reactiveAppSettings', {
+      enumerable: true,
+      configurable: true,
+      get: () => ({
+        get current() {
+          return self.#appSettingsValue;
+        }
+      })
+    });
+    Object.defineProperty(this, 'reactiveLocale', {
+      enumerable: true,
+      configurable: true,
+      get: () => ({
+        get current() {
+          return self.#componentCtx.locale;
+        }
+      })
+    });
+    Object.defineProperty(this, 'locale', {
+      enumerable: true,
+      configurable: true,
+      get: () => ({
+        get current() {
+          return self.#componentCtx.locale;
+        }
+      })
+    });
+    Object.defineProperty(this, 'locales', {
+      enumerable: true,
+      configurable: true,
+      get: () => ({
+        get current() {
+          return self.#componentCtx.locales;
+        }
+      })
+    });
+    Object.defineProperty(this, 'darkMode', {
+      enumerable: true,
+      configurable: true,
+      get: () => ({
+        get current() {
+          return self.#componentCtx.darkMode;
+        }
+      })
+    });
+
+    // The route-builder + userPreferences + popupQueue handles are held directly.
+    this.getRoute = this.#getRoute;
+    this.userPreferences = this.#userPreferences;
+    this.popupQueue = this.#popupQueue;
+
+    ////////////////////////////////////////////////////////////////////
+    // Producers (D1 field-init order): create AFTER the input handles exist.
+    // They read `appSettings` / `userPreferences` via `.current`.
+    ////////////////////////////////////////////////////////////////////
+
+    this.#tracking = trackingService({
+      appSettings: this.appSettings,
+      userPreferences: this.#userPreferences
+    });
+    this.#survey = surveyLink({ appSettings: this.appSettings, sessionId: this.#tracking.sessionId });
+    this.surveyLink = this.#survey;
+
+    ////////////////////////////////////////////////////////////////////
+    // EXPLICIT FORWARDING of the upstream contexts as OWN properties — this
+    // REPLACES the former componentCtx / dataCtx / tracking instance-spreads
+    // (success criterion 1). Stable plain members are copied by reference;
+    // reactive members are the own-enumerable handle objects exposed by the
+    // producers/contexts.
+    ////////////////////////////////////////////////////////////////////
+
+    Object.assign(this, {
+      // componentCtx — only the STABLE members not overridden above
+      // (`locale`/`locales`/`darkMode` are replaced by the `{ current }` handles).
+      t: this.#componentCtx.t,
+      translate: this.#componentCtx.translate,
+      // dataCtx — own-prop handles + arrow-field writer (references copied).
+      dataRoot: this.#dataCtx.dataRoot,
+      reactiveDataRoot: this.#dataCtx.reactiveDataRoot,
+      setDataRoot: this.#dataCtx.setDataRoot,
+      // tracking — own-enumerable handle objects + arrow-field methods.
+      sendTrackingEvent: this.#tracking.sendTrackingEvent,
+      sessionId: this.#tracking.sessionId,
+      shouldTrack: this.#tracking.shouldTrack,
+      startPageview: this.#tracking.startPageview,
+      startEvent: this.#tracking.startEvent,
+      track: this.#tracking.track,
+      submitAllEvents: this.#tracking.submitAllEvents,
+      resetAllEvents: this.#tracking.resetAllEvents
+    });
+
+    ////////////////////////////////////////////////////////////////////
+    // Prev-ref-guarded $effect RE-MERGE (success criterion 3). Legal in the
+    // constructor — the class is constructed during component init, an effect
+    // context (filterContext precedent). The INITIAL merge stays a field
+    // initializer above; these effects handle only post-navigation page.data
+    // changes. Bodies preserved verbatim from the former factory.
+    ////////////////////////////////////////////////////////////////////
+
+    // Read appSettingsData directly from page.data (replaces pageDatumStore per
+    // D-02). Track the previous `data` reference to skip merges when SvelteKit
+    // hands us the same loader result on a URL change (e.g., drawer open/close —
+    // root layout loader has no URL deps so its data is cached). Without this
+    // guard `mergeAppSettings` always produces a new AppSettings object, which
+    // Svelte 5 propagates as a state change, cascading through `entityTypes` →
+    // `nominationAndQuestionStore` → `filterStore` and recreating every
+    // `FilterGroup` on every navigation. Surfaced during Phase 64 manual smoke
+    // as "filter badge disappears on drawer open / portraits reload on close".
+    // Svelte 4 stores absorbed this via `safe_not_equal`; raw `$state =` doesn't.
+    $effect(() => {
+      const data = page.data?.appSettingsData as DynamicSettings | Error | undefined;
+      if (data === this.#prevAppSettingsData) return;
+      this.#prevAppSettingsData = data;
+      if (!data || data instanceof Error) return;
+      this.#appSettingsValue = mergeAppSettings(this.#appSettingsValue, data);
+    });
+
+    // Same reference-equality guard as appSettingsData above.
+    $effect(() => {
+      const data = page.data?.appCustomizationData as AppCustomization | Error | undefined;
+      if (data === this.#prevAppCustomizationData) return;
+      this.#prevAppCustomizationData = data;
+      if (!data || data instanceof Error) return;
+      this.#appCustomizationValue = data;
+    });
+  }
+
+  ////////////////////////////////////////////////////////////////////
+  // Sending feedback (§18 arrow field — survives detach)
+  ////////////////////////////////////////////////////////////////////
+
+  sendFeedback = async (feedback: FeedbackData): Promise<DataApiActionResult> => {
+    if (!browser) error(500, 'sendFeedback() called in a non-browser environment');
+    const feedbackWriter = await feedbackWriterPromise;
+    feedbackWriter.init({ fetch });
+    return feedbackWriter.postFeedback(feedback);
+  };
+
+  ////////////////////////////////////////////////////////////////////
+  // Utility methods for popups and setting user preferences
+  // (§18 arrow fields — survive detach after the downstream spread)
+  ////////////////////////////////////////////////////////////////////
+
+  startFeedbackPopupCountdown = (delay = 3 * 60): void => {
+    if (this.#feedbackTimeout) clearTimeout(this.#feedbackTimeout);
+    if (delay <= 0) return;
+    this.#feedbackTimeout = setTimeout(() => {
+      const feedbackStatus = this.#userPreferences.current.feedback?.status;
+      if (feedbackStatus !== 'received' && feedbackStatus !== 'dismissed')
+        this.#popupQueue.push({
+          component: FeedbackPopup,
+          onClose: () => {
+            // Persist dismissal so the popup doesn't reappear after reload
+            if (this.#userPreferences.current.feedback?.status !== 'received')
+              this.setFeedbackStatus('dismissed');
+          }
+        });
+    }, delay * 1000);
+  };
+
+  startSurveyPopupCountdown = (delay = 5 * 60): void => {
+    if (this.#surveyTimeout) clearTimeout(this.#surveyTimeout);
+    if (delay <= 0) return;
+    this.#surveyTimeout = setTimeout(() => {
+      if (this.#userPreferences.current.survey?.status !== 'received')
+        this.#popupQueue.push({ component: SurveyPopup });
+    }, delay * 1000);
+  };
+
+  setDataConsent = (consent: UserDataCollectionConsent): void => {
+    this.#userPreferences.update((d) => ({
+      ...d,
+      dataCollection: { consent, date: new Date().toISOString() }
+    }));
+    if (consent === 'granted') {
+      this.#tracking.startEvent('dataConsent_granted');
+    }
+  };
+
+  setFeedbackStatus = (status: UserFeedbackStatus): void => {
+    this.#userPreferences.update((d) => ({
+      ...d,
+      feedback: { status, date: new Date().toISOString() }
+    }));
+  };
+
+  setSurveyStatus = (status: UserFeedbackStatus): void => {
+    this.#userPreferences.update((d) => ({
+      ...d,
+      survey: { status, date: new Date().toISOString() }
+    }));
+  };
+}
 
 export function getAppContext() {
   if (!hasContext(CONTEXT_KEY)) error(500, 'GetAppContext() called before initAppContext()');
@@ -35,291 +460,5 @@ export function getAppContext() {
 export function initAppContext(): AppContext {
   if (hasContext(CONTEXT_KEY)) error(500, 'InitAppContext() called for a second time');
 
-  ////////////////////////////////////////////////////////////////////
-  // Spread contexts from ComponentContext and DataContext
-  ////////////////////////////////////////////////////////////////////
-
-  const componentCtx = getComponentContext();
-  const dataCtx = getDataContext();
-
-  // `getRoute` is a rune-native `{ readonly current: RouteBuilder }` handle
-  // (CTX-08). It must be created here (not at module load) because
-  // `createGetRoute` uses `$derived.by`, which requires component-init context.
-  // See `getRoute.svelte.ts` header for the per-field `page` read rationale.
-  const getRoute = createGetRoute();
-
-  // Re-expose the plain ComponentContext values as pure `{ current }` rune
-  // handles. Downstream contexts read these via `.current` (no store bridge).
-  const localesExport = {
-    get current() {
-      return componentCtx.locales;
-    }
-  };
-
-  ////////////////////////////////////////////////////////////////////
-  // App settings, customization and user preferences
-  ////////////////////////////////////////////////////////////////////
-
-  let appTypeValue = $state<AppType>(undefined);
-  const appType = {
-    get current() {
-      return appTypeValue;
-    },
-    set(v: AppType) {
-      appTypeValue = v;
-    },
-    update(fn: (v: AppType) => AppType) {
-      appTypeValue = fn(appTypeValue);
-    }
-  };
-
-  /**
-   * NB! Settings are overwritten by root key.
-   * TODO: Handle merging so that empty objects do not overwrite defaults
-   *
-   * D-04 (CTX-01): the DB override is folded into the INITIAL `$state` value,
-   * read synchronously from `page.data.appSettingsData`. This runs both
-   * server-side AND client-side, so the server-rendered HTML already carries
-   * the DB override — no post-hydration default→override flash (the real
-   * production bug spike 008 surfaced; `$effect` does not run on the server).
-   * The `$effect` below now handles only post-navigation `page.data` changes.
-   */
-  const initialAppSettingsData = page.data?.appSettingsData as DynamicSettings | Error | undefined;
-  let appSettingsValue = $state<AppSettings>(
-    mergeInitialAppSettings(staticSettings, dynamicSettings, initialAppSettingsData)
-  );
-  const appSettings = {
-    get current() {
-      return appSettingsValue;
-    },
-    set(v: AppSettings) {
-      appSettingsValue = v;
-    },
-    update(fn: (v: AppSettings) => AppSettings) {
-      appSettingsValue = fn(appSettingsValue);
-    }
-  };
-
-  // Read appSettingsData directly from page.data (replaces pageDatumStore per D-02)
-  //
-  // Track the previous `data` reference to skip merges when SvelteKit hands us
-  // the same loader result on a URL change (e.g., drawer open/close — root
-  // layout loader has no URL deps so its data is cached). Without this guard
-  // `mergeAppSettings` always produces a new AppSettings object, which Svelte
-  // 5 propagates as a state change, cascading through `entityTypes` →
-  // `nominationAndQuestionStore` → `filterStore` and recreating every
-  // `FilterGroup` on every navigation. Surfaced during Phase 64 manual smoke
-  // as "filter badge disappears on drawer open / portraits reload on close".
-  // Svelte 4 stores absorbed this via `safe_not_equal`; raw `$state =` doesn't.
-  //
-  // Initialized to the init-time DB value (D-04) so the first post-init run
-  // does not re-merge the identical payload already folded into `$state` above.
-  let prevAppSettingsData: DynamicSettings | Error | undefined = initialAppSettingsData;
-  $effect(() => {
-    const data = page.data?.appSettingsData as DynamicSettings | Error | undefined;
-    if (data === prevAppSettingsData) return;
-    prevAppSettingsData = data;
-    if (!data || data instanceof Error) return;
-    appSettingsValue = mergeAppSettings(appSettingsValue, data);
-  });
-
-  // Same D-04 synchronous-init treatment for appCustomization: fold the DB
-  // override into the initial `$state` value (SSR-correct, no flash).
-  const initialAppCustomizationData = page.data?.appCustomizationData as AppCustomization | Error | undefined;
-  let appCustomizationValue = $state<AppCustomization>(
-    initialAppCustomizationData && !(initialAppCustomizationData instanceof Error)
-      ? initialAppCustomizationData
-      : {}
-  );
-  const appCustomization = {
-    get current() {
-      return appCustomizationValue;
-    },
-    set(v: AppCustomization) {
-      appCustomizationValue = v;
-    },
-    update(fn: (v: AppCustomization) => AppCustomization) {
-      appCustomizationValue = fn(appCustomizationValue);
-    }
-  };
-
-  // Same reference-equality guard as appSettingsData above; initialized to the
-  // init-time DB value so the first post-init run skips the identical payload.
-  let prevAppCustomizationData: AppCustomization | Error | undefined = initialAppCustomizationData;
-  $effect(() => {
-    const data = page.data?.appCustomizationData as AppCustomization | Error | undefined;
-    if (data === prevAppCustomizationData) return;
-    prevAppCustomizationData = data;
-    if (!data || data instanceof Error) return;
-    appCustomizationValue = data;
-  });
-
-  // See also utility methods below. `localStorageState` is a rune-native
-  // `{ current, set, update }` persisted handle (no store-bridge wrapper needed).
-  const userPreferences = localStorageState('appContext-userPreferences', {} as UserPreferences);
-
-  ////////////////////////////////////////////////////////////////////
-  // Rune-input handles for the pure-rune survey/tracking producers
-  ////////////////////////////////////////////////////////////////////
-
-  // The survey/tracking producers are pure-rune (CTX-06): they read their
-  // inputs via `.current` getters. `appSettings` and `userPreferences` are
-  // already `{ current }` rune handles, so pass them directly — no second
-  // source of truth, no store bridge.
-
-  ////////////////////////////////////////////////////////////////////
-  // Tracking, survey and popups
-  ////////////////////////////////////////////////////////////////////
-
-  // Producers return rune handles; consumers read `.current` directly.
-  const tracking = trackingService({
-    appSettings,
-    userPreferences
-  });
-
-  const survey = surveyLink({ appSettings, sessionId: tracking.sessionId });
-
-  const popupQueue = popupStore();
-
-  // TODO: Refactor when Cand App is refactored
-  let openFeedbackModalValue = $state<(() => void) | undefined>(undefined);
-  const openFeedbackModal = {
-    get current() {
-      return openFeedbackModalValue;
-    },
-    set(v: (() => void) | undefined) {
-      openFeedbackModalValue = v;
-    }
-  };
-
-  ////////////////////////////////////////////////////////////////////
-  // Sending feedback
-  ////////////////////////////////////////////////////////////////////
-
-  async function sendFeedback(feedback: FeedbackData): Promise<DataApiActionResult> {
-    if (!browser) error(500, 'sendFeedback() called in a non-browser environment');
-    const feedbackWriter = await feedbackWriterPromise;
-    feedbackWriter.init({ fetch });
-    return feedbackWriter.postFeedback(feedback);
-  }
-
-  ////////////////////////////////////////////////////////////////////
-  // Utility methods for popups and setting user preferences
-  ////////////////////////////////////////////////////////////////////
-
-  // `userPreferences` is a `localStorageState` rune handle; its `.current`
-  // getter is the reactive read used by the popup-countdown predicates below.
-  const userPrefsReactive = userPreferences;
-
-  let feedbackTimeout: NodeJS.Timeout | undefined;
-
-  function startFeedbackPopupCountdown(delay = 3 * 60): void {
-    if (feedbackTimeout) clearTimeout(feedbackTimeout);
-    if (delay <= 0) return;
-    feedbackTimeout = setTimeout(() => {
-      const feedbackStatus = userPrefsReactive.current.feedback?.status;
-      if (feedbackStatus !== 'received' && feedbackStatus !== 'dismissed')
-        popupQueue.push({
-          component: FeedbackPopup,
-          onClose: () => {
-            // Persist dismissal so the popup doesn't reappear after reload
-            if (userPrefsReactive.current.feedback?.status !== 'received')
-              setFeedbackStatus('dismissed');
-          }
-        });
-    }, delay * 1000);
-  }
-
-  let surveyTimeout: NodeJS.Timeout | undefined;
-
-  function startSurveyPopupCountdown(delay = 5 * 60): void {
-    if (surveyTimeout) clearTimeout(surveyTimeout);
-    if (delay <= 0) return;
-    surveyTimeout = setTimeout(() => {
-      if (userPrefsReactive.current.survey?.status !== 'received') popupQueue.push({ component: SurveyPopup });
-    }, delay * 1000);
-  }
-
-  function setDataConsent(consent: UserDataCollectionConsent): void {
-    userPreferences.update((d) => ({
-      ...d,
-      dataCollection: { consent, date: new Date().toISOString() }
-    }));
-    if (consent === 'granted') {
-      tracking.startEvent('dataConsent_granted');
-    }
-  }
-
-  function setFeedbackStatus(status: UserFeedbackStatus): void {
-    userPreferences.update((d) => ({
-      ...d,
-      feedback: { status, date: new Date().toISOString() }
-    }));
-  }
-
-  function setSurveyStatus(status: UserFeedbackStatus): void {
-    userPreferences.update((d) => ({
-      ...d,
-      survey: { status, date: new Date().toISOString() }
-    }));
-  }
-
-  // `.current`-getter accessors over the SAME `$state` the `appSettings` /
-  // `locale` rune handles read (single source of truth — mirroring the shipped
-  // `reactiveDataRoot` precedent). Consumed by downstream voter/candidate
-  // contexts via `.current`.
-  const reactiveAppSettings = {
-    get current() {
-      return appSettingsValue;
-    }
-  };
-  const reactiveLocale = {
-    get current() {
-      return componentCtx.locale;
-    }
-  };
-
-  // Pure `{ current }` rune handles for the exported `locale` / `darkMode`
-  // values. The `current` getter reads the SAME ComponentContext value (single
-  // source of truth). Consumers read `.current` directly — no store bridge.
-  const localeExport = {
-    get current() {
-      return componentCtx.locale;
-    }
-  };
-  const darkModeExport = {
-    get current() {
-      return componentCtx.darkMode;
-    }
-  };
-
-  return setContext<AppContext>(CONTEXT_KEY, {
-    ...componentCtx,
-    ...dataCtx,
-    ...tracking,
-    // The producers expose rune handles directly; the `...tracking` spread
-    // already carries `sendTrackingEvent`/`sessionId`/`shouldTrack` as pure
-    // `{ current, set? }` rune handles matching `TrackingService`.
-    // Override plain ComponentContext values with the `{ current }` rune
-    // handles for downstream Phase-52 contexts (read via `.current`).
-    locale: localeExport,
-    locales: localesExport,
-    darkMode: darkModeExport,
-    reactiveAppSettings,
-    reactiveLocale,
-    appCustomization,
-    appSettings,
-    appType,
-    getRoute,
-    openFeedbackModal,
-    popupQueue,
-    sendFeedback,
-    setDataConsent,
-    setFeedbackStatus,
-    setSurveyStatus,
-    startFeedbackPopupCountdown,
-    startSurveyPopupCountdown,
-    surveyLink: survey,
-    userPreferences
-  });
+  return setContext<AppContext>(CONTEXT_KEY, new AppContextProvider());
 }
