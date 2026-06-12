@@ -16,17 +16,22 @@
 - **DataRoot/FilterGroup stay classes, NOT `svelte/store`** — stores considered + rejected (`.svelte.ts`
   consumers would need a `fromStore` re-bridge + a redundant second observable; `set(sameRef)` reinvites the
   Phase-64 `safe_not_equal` over-fire).
+
 - **The destructure trap survives the class conversion unchanged** (spike 019/020) — the CLAUDE.md "Context
   Destructuring Rule" stays in force; consumers read `ctx.X`, never destructure reactive accessors. Flattening
   to public fields *raises* trap exposure, so the audit pass (spike-009 codemod PASS 4) is mandatory.
+
 - **Methods become arrow-function fields when detachable** (`const { m } = ctx`) — a regular method loses
   `this` on detach (spike 020 Group E).
+
 - **Initial values come from synchronous field initializers / `$derived` fields, never `$effect`** — `$effect`
   never runs during SSR (spike 023; `effect_orphan` throws if a class calls `$effect` in its constructor at
   module/factory scope). Preserves the v2.11 SSR-correct appSettings merge.
+
 - **Version-bridge encapsulation (Group C) is MORE load-bearing as a class** — a class private `#version`
   loop self-perpetuates *without* tripping Svelte's synchronous `effect_update_depth_exceeded` guard (spike
   022; 017 threw, the class silently spins). Keep `setX`/`untrack` discipline.
+
 - **`{ ...dataCtx }` spread-of-context is broken for class instances** — spreading a class instance copies
   only own-enumerable props and silently drops prototype getters / `$state` accessors. Re-expose via explicit
   getter forwarding (CONVENTIONS anti-pattern).
@@ -42,26 +47,32 @@ lowest-blast-radius-first order (Group F helpers → leaf contexts → app produ
 proof template, a conversion may temporarily retain back-compat handles to keep consumers byte-identical; the
 flatten (FLATTEN) sweep removes them.
 
-- [ ] **CLASS-01**: The already-class-shaped helper factories — `PopupStore` (`app/popup/popupStore`),
+- [x] **CLASS-01**: The already-class-shaped helper factories — `PopupStore` (`app/popup/popupStore`),
   `VideoController` (layout `video`), `SettingsOverlay` (`utils/SettingsOverlay`), and `persistedState`
   (`utils/persistedState`, underlying `userPreferences`/`answers`) — are formalized as real Svelte 5 classes
   with `$state`/`$derived` fields + arrow/bound methods. Build + unit + svelte-check stay green.
+
 - [ ] **CLASS-02**: The leaf contexts `authContext` and `componentContext` are converted to classes, and the
   three already-landed proof conversions (`darkMode`, `dataContext`, `filterContext`) are reconciled to the
   final class idiom (consistent field/method shape, no spike-era residue). Build + unit + svelte-check green.
+
 - [ ] **CLASS-03**: The app-layer producer contexts `getRoute`, `survey` (`surveyLink`), `trackingService`,
   and `popupStore` are converted to classes (`$derived` fields for projections, arrow methods for detachable
   callbacks), preserving the spike-012 per-field `page` read for `getRoute`. Build + unit + svelte-check green.
+
 - [ ] **CLASS-04**: The `appContext` orchestrator is converted to a class — including the `{ ...dataCtx }` /
   `{ ...componentCtx }` spread-of-context fix (explicit getter forwarding) and **removal of the Phase-102
   `_poc*` scaffolding** (`_pocDarkMode`/`_pocAppType`/`_pocGetRoute` surfaces + the `_poc*` PoC test objects).
   Build + unit + svelte-check green; SSR-correct appSettings/appCustomization merge preserved.
+
 - [ ] **CLASS-05**: The `voterContext` orchestrator and its voter sub-stores (`answerStore`, `matchStore`,
   `nominationAndQuestionStore`, `filters/filterStore`, and the `utils/*Store` derived projections —
   `paramStore`/`questionBlockStore`/`questionCategoryStore`/`questionStore`) are converted to classes. All
   reactive accessors and the destructure-trap contract preserved; build + unit + E2E (voter app) green.
+
 - [ ] **CLASS-06**: The `candidateContext` orchestrator and `candidateUserDataStore` (Group-C composite
   bridge) are converted to classes. All reactive accessors preserved; build + unit + E2E (candidate app) green.
+
 - [ ] **CLASS-07**: The `adminContext` and `jobStores` contexts are converted to classes, preserving the
   v2.11 explicit auth-forwarding fix (no `{ ...authContext }` spread regression). Build + unit + svelte-check
   green.
@@ -76,6 +87,7 @@ Once contexts are classes, a reactive `$state`/`$derived` **field** is read dire
   `reactiveLocale`+`locale` → `locale`, and the `{ current, instance }` dataRoot split (spike 017) → a single
   reactive `dataRoot` field. Consumers read the canonical name; a grep gate confirms zero `reactive*` duplicate
   handles remain.
+
 - [ ] **FLATTEN-02**: All consumer `.current` reads on migrated handles are flattened to bare class-field reads
   via an idempotent codemod (re-running is a no-op), the back-compat handles are removed from the producers,
   the build is green at every commit boundary, and the CLAUDE.md destructure-trap contract is preserved
@@ -90,6 +102,7 @@ The rune-native "Store" identifiers are misnamed — there are no Svelte stores 
   `popupStore`, `matchStore`, `candidateUserDataStore`, `questionBlockStore`, `questionCategoryStore`,
   `questionStore`, `nominationAndQuestionStore`, `paramStore`, and `pageDatumStore`. A grep gate confirms zero
   remaining rune-context `*Store` identifiers (excluding the documented exclusions).
+
 - [ ] **RENAME-02**: The server-side `jobStore` (`lib/server/admin/jobs/jobStore.ts` — a genuine in-memory
   data registry, not a Svelte rune) and the `cookieStore` test mock are explicitly excluded from the rename and
   documented as intentional exceptions. (The client `admin/jobStores` context is in scope; the server
@@ -100,8 +113,10 @@ The rune-native "Store" identifiers are misnamed — there are no Svelte stores 
 - [ ] **SWEEP-01**: The last real `svelte/store` usage (`videoPreferences` writable in
   `lib/components/video/component-stores.ts`) is converted to a rune; zero `svelte/store` imports remain
   anywhere in `apps/frontend/src/**` (test mocks excluded and documented).
+
 - [ ] **SWEEP-02**: The stray `$: console.info(...)` Svelte-4 reactive statement in `TermsOfUseForm.svelte` is
   removed; zero `$:` reactive statements remain frontend-wide.
+
 - [ ] **SWEEP-03**: The `svelte/store` ESLint guard is extended from `lib/contexts/**`+`routes/**` to the whole
   `apps/frontend/src/**` tree, so reintroducing a `svelte/store` import anywhere in the frontend fails lint.
 
@@ -139,7 +154,7 @@ Which phases cover which requirements. Populated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CLASS-01 | Phase 106 | Pending |
+| CLASS-01 | Phase 106 | Complete |
 | CLASS-02 | Phase 107 | Pending |
 | CLASS-03 | Phase 108 | Pending |
 | CLASS-04 | Phase 109 | Pending |

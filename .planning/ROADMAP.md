@@ -197,148 +197,182 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
 ## Phase Details
 
 ### Phase 106: Group F Helper Classes
+
 **Goal**: The already-class-shaped helper factories are real Svelte 5 classes, establishing the lowest-blast-radius foundation the rest of the migration builds on.
 **Depends on**: Nothing (first phase of the milestone)
 **Parallel-eligible**: No (foundation; 107 + 108 depend on it)
 **Requirements**: CLASS-01
 **Success Criteria** (what must be TRUE):
+
   1. `PopupStore` (`app/popup/popupStore`), `VideoController` (layout `video`), `SettingsOverlay` (`utils/SettingsOverlay`), and `persistedState` (`utils/persistedState`, underlying `userPreferences`/`answers`) are each a Svelte 5 `class` with `$state`/`$derived` fields and arrow/bound methods — no factory-closure return objects.
   2. Persistence in the `persistedState` class is imperative (never `$effect`), so the class constructs outside any effect context (SSR/factory-safe) per spike 021/023.
   3. Detachable methods on these helpers are arrow-function fields, surviving `const { m } = instance` detach (spike 020 Group E).
   4. `yarn build` (client + SSR) + `yarn vitest run src/lib/contexts/` + `yarn svelte-check` are all green with zero new errors; consumers of these helpers are byte-identical.
+
 **Plans**: 4 plans (all Wave 1, parallel — disjoint files)
-  - [ ] 106-01-PLAN.md — popupStore() → class PopupStore (queue $state + $derived head + arrow push/shift)
+
+  - [x] 106-01-PLAN.md — popupStore() → class PopupStore (queue $state + $derived head + arrow push/shift)
   - [ ] 106-02-PLAN.md — settingsOverlay() → class SettingsOverlay (preserve untrack + associative-merge registry verbatim)
   - [ ] 106-03-PLAN.md — persistedState handle → class (imperative arrow set/update, never $effect; versioned payload + D-03 no-shim + CR-01 init-persist)
   - [ ] 106-04-PLAN.md — extract VideoController from layoutContext into class VideoController (+ new regression test; initLayoutContext() orchestrator-class conversion deferred, recorded for the checker)
 
 ### Phase 107: Leaf Contexts + Proof Reconciliation
+
 **Goal**: The leaf contexts `authContext` and `componentContext` are classes, and the three already-landed proof conversions are reconciled to one consistent final class idiom.
 **Depends on**: Phase 106 (componentContext composes the darkMode helper class)
 **Parallel-eligible**: Yes (with Phase 108)
 **Requirements**: CLASS-02
 **Success Criteria** (what must be TRUE):
+
   1. `authContext` is a class — `isAuthenticated` is a `$derived` field (read off `page.data.session`); the four DataWriter wrappers (`logout`/`requestForgotPasswordEmail`/`resetPassword`/`setPassword`) are arrow-function fields (they are detached by consumers).
   2. `componentContext` is a class exposing the i18n surface + a `get darkMode()` that reads the `DarkMode` helper class — no `{ current }` handle re-export.
   3. `darkMode`, `dataContext`, and `filterContext` are reconciled to the final idiom — consistent field/method shape, no spike-era residue (e.g. the `reactiveDataRoot.instance` back-compat read is documented as intentional-until-flatten, not orphaned).
   4. `yarn build` (client + SSR) + `yarn vitest run src/lib/contexts/` + `yarn svelte-check` are all green with zero new errors; consumers untouched.
+
 **Plans**: TBD
 
 ### Phase 108: App-Layer Producer Contexts
+
 **Goal**: The app-layer producer contexts that feed `appContext` are classes, so the orchestrator can compose them in the next phase.
 **Depends on**: Phase 106 (popupStore uses the PopupStore helper class)
 **Parallel-eligible**: Yes (with Phase 107)
 **Requirements**: CLASS-03
 **Success Criteria** (what must be TRUE):
+
   1. `getRoute`, `survey` (`surveyLink`), `trackingService`, and `popupStore` are each a Svelte 5 class — projections are `$derived` fields, detachable callbacks are arrow-function fields.
   2. `getRoute` preserves the spike-012 per-field `page` read (`$derived.by` over individual `$app/state.page` fields) — it does NOT read the page proxy as a single object (which would short-circuit reactivity).
   3. No `$effect` is used for initial-value derivation in these producers (synchronous field initializers / `$derived` fields only — spike 023); `survey`'s `$derived.by` over `appSettings.current` + `sessionId.current` recomputes reactively.
   4. `yarn build` (client + SSR) + `yarn vitest run src/lib/contexts/` + `yarn svelte-check` are all green with zero new errors; consumers byte-identical.
+
 **Plans**: TBD
 
 ### Phase 109: appContext Orchestrator + Spread Fix + PoC Removal
+
 **Goal**: The `appContext` orchestrator is a class that composes the converted leaf + producer contexts via explicit getter forwarding, with the Phase-102 PoC scaffolding removed.
 **Depends on**: Phase 107 + Phase 108 (composes componentContext + the app producers)
 **Parallel-eligible**: No (single orchestrator; gates 110/111/112)
 **Requirements**: CLASS-04
 **Success Criteria** (what must be TRUE):
+
   1. `appContext` is a class; the `{ ...dataCtx }` / `{ ...componentCtx }` instance-spread is replaced with **explicit getter forwarding** (spreading a class instance silently drops prototype getters / `$state` accessors — spike finding A in CONTEXT-CLASS-PROOF).
   2. The Phase-102 `_poc*` scaffolding is gone — `_pocDarkMode`/`_pocAppType`/`_pocGetRoute` surfaces removed AND the `_poc*` PoC test objects deleted; a grep confirms zero `_poc` references remain in contexts.
   3. The SSR-correct `appSettings`/`appCustomization` merge is preserved — effective settings are derived at `$state` field init / via a `$derived` field (never `$effect`), so server-rendered HTML reflects the DB-override merge with no post-hydration flash (spike 008/023; the v2.11 fix holds).
   4. `yarn build` (client + SSR) + `yarn vitest run src/lib/contexts/` + `yarn svelte-check` are all green with zero new errors; downstream consumers of `appContext` surfaces are unbroken.
+
 **Plans**: TBD
 
 ### Phase 110: voterContext Orchestrator + Voter Sub-Stores
+
 **Goal**: The `voterContext` orchestrator and its voter sub-stores are classes, with every reactive accessor and the destructure-trap contract preserved, and the voter app green.
 **Depends on**: Phase 109 (voterContext composes appContext Tier-1 getters)
 **Parallel-eligible**: Yes (with Phase 111 + Phase 112)
 **Requirements**: CLASS-05
 **Success Criteria** (what must be TRUE):
+
   1. `voterContext` is a class, and its sub-stores `answerStore`, `matchStore`, `nominationAndQuestionStore`, `filters/filterStore`, and the `utils/*` derived projections (`paramStore`/`questionBlockStore`/`questionCategoryStore`/`questionStore`) are classes.
   2. Every reactive accessor (`selectedElections`, `selectedConstituencies`, `opinionQuestions`, `infoQuestions`, `matches`, `resultsAvailable`, `nominationsAvailable`, etc.) stays reactive when read via `ctx.X`; the destructure-trap contract is preserved (consumers do NOT destructure reactive accessors).
   3. The `answerStore` Group-C version-bridge (localStorageState, frozen payload) keeps its `setX`/`untrack` encapsulation; its `#version` private `$state` does not silently spin (spike 022).
   4. `yarn build` + `yarn vitest run` + the voter-app E2E suite (incl. a11y-smoke) are green — the voter app behaves identically.
+
 **Plans**: TBD
 **UI hint**: yes
 
 ### Phase 111: candidateContext Orchestrator + UserData Store
+
 **Goal**: The `candidateContext` orchestrator and `candidateUserDataStore` composite bridge are classes, with all reactive accessors preserved and the candidate app green.
 **Depends on**: Phase 109 (candidateContext composes appContext Tier-1 getters)
 **Parallel-eligible**: Yes (with Phase 110 + Phase 112)
 **Requirements**: CLASS-06
 **Success Criteria** (what must be TRUE):
+
   1. `candidateContext` is a class, and `candidateUserDataStore` (the Group-C composite of `savedData` + `edited*`) is a class with its `$derived.by` composite merge preserved.
   2. Every reactive accessor (`answersLocked`, `profileComplete`, `selectedElections`, `opinionQuestions`, `questionBlocks`, `requiredInfoQuestions`, `unanswered*`, `idTokenClaims`, `isPreregistered`, `preregistration*`, etc.) stays reactive when read via `ctx.X`; the destructure-trap contract is preserved.
   3. Persisted fields (`isPreregistered`, `preregistration*Ids`, `firstQuestionId`) round-trip through their `localStorageState`/`sessionStorageState` class without `$effect`-driven init (spike 021/023).
   4. `yarn build` + `yarn vitest run` + the candidate-app E2E suite (incl. a11y-smoke) are green — the candidate app behaves identically.
+
 **Plans**: TBD
 **UI hint**: yes
 
 ### Phase 112: adminContext + Job Stores
+
 **Goal**: The `adminContext` and client `jobStores` contexts are classes, preserving the v2.11 explicit auth-forwarding fix.
 **Depends on**: Phase 109 (adminContext composes appContext + delegates authContext)
 **Parallel-eligible**: Yes (with Phase 110 + Phase 111)
 **Requirements**: CLASS-07
 **Success Criteria** (what must be TRUE):
+
   1. `adminContext` is a class, and the client `admin/jobStores` context (the `$state` Map registry + its `$derived` projections) is a class.
   2. The v2.11 explicit auth-forwarding fix is preserved — `isAuthenticated` is a getter that re-reads the live `authContext.isAuthenticated` `$derived`, and the four auth functions are direct reference forwards; there is NO `{ ...authContext }` spread regression (which would drop the reactive getter and re-introduce the AdminNav production bug).
   3. The `appContext` composition uses explicit getter forwarding consistent with Phase 109 (no instance-spread of the class).
   4. `yarn build` + `yarn vitest run src/lib/contexts/` + `yarn svelte-check` are all green with zero new errors; the admin surface is unbroken.
+
 **Plans**: TBD
 
 ### Phase 113: Handle Flatten + De-duplication
+
 **Goal**: With every context now a class, the redundant `{ current }` handles and `reactiveFoo` mirrors are gone — consumers read bare class fields, and the destructure-trap contract is verified intact.
 **Depends on**: Phase 110 + Phase 111 + Phase 112 (the flatten only makes sense once all producers are classes)
 **Parallel-eligible**: No — **runs alone**; FLATTEN-02 is the large mechanical codemod (~524 `.current` sites) and must NOT run concurrently with any other large rewrite (the v2.12 collision lesson)
 **Requirements**: FLATTEN-01, FLATTEN-02
 **Success Criteria** (what must be TRUE):
+
   1. Every `reactiveFoo`/`Foo` duplicate handle pair is collapsed to a single reactive class field — `reactiveDataRoot`+`dataRoot` → `dataRoot`, `reactiveAppSettings`+`appSettings` → `appSettings`, `reactiveLocale`+`locale` → `locale`, and the spike-017 `{ current, instance }` dataRoot split → a single reactive `dataRoot` field. A grep gate confirms zero `reactive*` duplicate handles remain.
   2. All consumer `.current` reads on migrated handles are flattened to bare class-field reads via an idempotent codemod (re-running is a no-op), and the back-compat handles are removed from the producers.
   3. The build is green at every commit boundary (no red build at any step of the codemod), and the CLAUDE.md destructure-trap contract is preserved — consumers read `ctx.X`, never destructure reactive accessors — verified by the spike-009 audit pass (PASS 4).
   4. `yarn build` (client + SSR) + `yarn vitest run` + `yarn svelte-check` are green; the full E2E suite (incl. a11y-smoke) regresses cleanly.
+
 **Plans**: TBD
 
 ### Phase 114: Store → State Rename
+
 **Goal**: The rune-native `*Store` identifiers are renamed to `*State` — there are no Svelte stores behind them — with the genuine exceptions documented.
 **Depends on**: Phase 113 (rename touches the same `*Store` files the class conversion + flatten just rewrote)
 **Parallel-eligible**: No (serial tail; mechanical rename touching many files)
 **Requirements**: RENAME-01, RENAME-02
 **Success Criteria** (what must be TRUE):
+
   1. Every rune-native `*Store` symbol is renamed to `*State` — identifiers, file names, type names, and test names — covering `answerStore`→`answerState`, `editedAnswersStore`, `filterStore`, `popupStore`, `matchStore`, `candidateUserDataStore`, `questionBlockStore`, `questionCategoryStore`, `questionStore`, `nominationAndQuestionStore`, `paramStore`, and `pageDatumStore`.
   2. A grep gate confirms zero remaining rune-context `*Store` identifiers (excluding the documented exclusions).
   3. The server-side `jobStore` (`lib/server/admin/jobs/jobStore.ts`) and the `cookieStore` test mock are explicitly excluded and documented as intentional exceptions; the client `admin/jobStores` context IS renamed.
   4. `yarn build` + `yarn vitest run` + `yarn svelte-check` are green; the rename is purely mechanical (no behavior change).
+
 **Plans**: TBD
 
 ### Phase 115: Straggler Clearance
+
 **Goal**: The last real `svelte/store` usage and the stray Svelte-4 reactive statement are gone, and the `svelte/store` ESLint guard covers the whole frontend tree.
 **Depends on**: Phase 114 (clears the renamed tree before widening the guard)
 **Parallel-eligible**: No (serial tail); within the phase, SWEEP-03 (widen guard) must land AFTER SWEEP-01 (convert the last `svelte/store`)
 **Requirements**: SWEEP-01, SWEEP-02, SWEEP-03
 **Success Criteria** (what must be TRUE):
+
   1. The `videoPreferences` writable in `lib/components/video/component-stores.ts` is converted to a rune; zero `svelte/store` imports remain anywhere in `apps/frontend/src/**` (test mocks excluded and documented).
   2. The stray `$: console.info(...)` Svelte-4 reactive statement in `TermsOfUseForm.svelte` is removed; zero `$:` reactive statements remain frontend-wide.
   3. The `svelte/store` ESLint guard is extended from `lib/contexts/**`+`routes/**` to the whole `apps/frontend/src/**` tree, so reintroducing a `svelte/store` import anywhere in the frontend fails lint — and the existing tree passes lint under the widened guard (because SWEEP-01 landed first).
   4. `yarn lint:check` + `yarn build` + `yarn vitest run` are green.
+
 **Plans**: TBD
 
 ### Phase 116: Milestone-Close Green Gate
+
 **Goal**: The full milestone-close green gate passes, proving the context-as-class migration landed without regression.
 **Depends on**: Everything (Phases 106-115)
 **Parallel-eligible**: No (terminal verification)
 **Requirements**: GATE-01
 **Success Criteria** (what must be TRUE):
+
   1. The full E2E suite — which now includes the a11y-smoke — passes green after the migration lands.
   2. The full unit suite passes green.
   3. `typecheck` and `lint` both pass green (the widened `svelte/store` guard included).
   4. The result is recorded as the milestone-close anchor; no `svelte/store` import remains in `apps/frontend/src/**` (test mocks excepted), every context is a class, and zero `reactiveFoo` duplicate handles or rune-context `*Store` identifiers remain.
+
 **Plans**: TBD
 
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 106. Group F Helper Classes | 0/TBD | Not started | - |
+| 106. Group F Helper Classes | 1/4 | In Progress|  |
 | 107. Leaf Contexts + Proof Reconciliation | 0/TBD | Not started | - |
 | 108. App-Layer Producer Contexts | 0/TBD | Not started | - |
 | 109. appContext Orchestrator + Spread Fix + PoC Removal | 0/TBD | Not started | - |

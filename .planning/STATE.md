@@ -2,14 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.13
 milestone_name: Context-as-Class Migration
-status: planning
-last_updated: "2026-06-12T20:00:00.000Z"
-last_activity: 2026-06-12
+status: executing
+stopped_at: Completed 98-02-PLAN.md
+last_updated: "2026-06-12T20:35:21.839Z"
+last_activity: 2026-06-12 -- Phase 106 execution started
 progress:
   total_phases: 11
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 4
+  completed_plans: 1
   percent: 0
 ---
 
@@ -20,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-12 starting v2.13 Context-as-Class Migration)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** v2.13 Context-as-Class Migration — roadmap created (11 phases, 106-116); ready to plan Phase 106
+**Current focus:** Phase 106 — group-f-helper-classes
 
 ## Current Position
 
-Phase: Not started (Phase 106 next)
-Plan: —
-Status: Roadmap created — 11 phases (106-116), 15/15 requirements mapped, 0 unmapped
-Last activity: 2026-06-12 — v2.13 roadmap created (Phases 106-116)
+Phase: 106 (group-f-helper-classes) — EXECUTING
+Plan: 2 of 4
+Status: Ready to execute
+Last activity: 2026-06-12 -- Phase 106 execution started
 
 ## Performance Metrics
 
@@ -59,6 +60,7 @@ Resolved this session before close (not deferred): debug `elections-continue-sta
 ---
 
 Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79 close added Phase 83 + 2 follow-up todos, updated 2026-05-20 after constituency-filter WONT-IMPLEMENT decision. v2.10 now consumes 5 in-milestone candidates (3 v2.9-routed originals + 2 Phase-79-surfaced follow-ups absorbed in-milestone rather than re-deferred). 4 other v2.9-routed v2.10+ candidates remain re-deferred to v2.11+ (SETTINGS-02 / SETTINGS-03 / FilterGroup OR-mode / voters-layout non-reactive topbar). Constituency-filter PRODUCT-GAP has since been CLOSED as WONT-IMPLEMENT (out of contract — constituency is a navigation/scope concept, not a filter).
+| Phase 106 P01 | 6min | 2 tasks | 1 files |
 
 ### Acknowledged at v2.10 close (2026-06-04)
 
@@ -329,6 +331,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: 98-02: widened FeedbackStatus to include 'dismissed' (Rule 1 bugfix surfaced by localStorageState strict typing)
 - [Phase ?]: Phase 98-03: kept persistedState.svelte.ts filename (K1-compliant), slimmed in place — dropped svelte/store import + *Writable exports, kept localStorageState/sessionStorageState/storageState
 - [Phase ?]: Phase 98-03: CLEAN-01 deletion half complete — StackedState/dataCollectionStore/runes-test deleted; zero svelte/store imports remain in lib/contexts + routes (D-04/K1 enforced)
+- [Phase ?]: Phase 106-01: PopupStore class/type name clash resolved via aliased type import (PopupStore as PopupStoreApi) + implements; public PopupStore type unchanged
 
 ### Quick Tasks Completed
 
@@ -373,7 +376,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-05T13:06:55.316Z
+Last session: 2026-06-12T20:35:08.230Z
 Stopped at: Completed 98-02-PLAN.md
 Resume file: None
 Work done this session:
