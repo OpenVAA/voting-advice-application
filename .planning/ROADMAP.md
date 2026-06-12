@@ -267,7 +267,12 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
   3. The SSR-correct `appSettings`/`appCustomization` merge is preserved — effective settings are derived at `$state` field init / via a `$derived` field (never `$effect`), so server-rendered HTML reflects the DB-override merge with no post-hydration flash (spike 008/023; the v2.11 fix holds).
   4. `yarn build` (client + SSR) + `yarn vitest run src/lib/contexts/` + `yarn svelte-check` are all green with zero new errors; downstream consumers of `appContext` surfaces are unbroken.
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 109-01-PLAN.md — Remove Phase-102 `_poc*` scaffolding (appContext surface + type + darkMode factory + delete PoC test)
+- [ ] 109-02-PLAN.md — Convert appContext to `class AppContextProvider` with explicit own-enumerable getter forwarding + SSR merge preserved
+- [ ] 109-03-PLAN.md — Own-enumerability spread regression test + full green gate (build + vitest + svelte-check; downstream consumers unbroken)
 
 ### Phase 110: voterContext Orchestrator + Voter Sub-Stores
 
