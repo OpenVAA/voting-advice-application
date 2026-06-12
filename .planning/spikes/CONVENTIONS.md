@@ -302,6 +302,74 @@ and PASS 4 (audit). A read/write split cannot shortcut this — it makes PASS 3 
 essential, not less. A `setFoo(updater)` write side does nothing for the trap
 (Spike 019 proves the write fires while the destructured read stays stale).
 
+## Class-as-Context (Spikes 020-023)
+
+The documented Svelte 5 idiom — *"use classes with `$state` fields to share reactivity
+between components, instead of using stores"* — applies to OpenVAA's context factories.
+Spikes 020-023 mapped the audit groups (see `CONTEXT-MEMBER-AUDIT.md`) onto a class
+shape. Rules for the migration:
+
+### 17. Reassigned object/array fields need NO `{ current }` handle
+A `$state` **field** reassigned wholesale (`this.settings = {...}`) stays reactive when
+read as `instance.settings` — the prototype getter/setter tracks. This is the core win
+over the factory shape, where a reassigned **`let`** went stale and forced a getter
+handle. Groups A (objects/arrays), B (primitives), D (`$derived` fields), G (delegation
+getters) all collapse to plain fields/getters. (Spike 020.)
+
+### 18. Methods that cross the context boundary MUST be arrow-function fields
+A regular class method loses `this` when detached (`const { logout } = ctx`,
+`onclick={ctx.logout}`) and throws. Per Svelte docs ($state#Classes), use arrow-function
+fields for anything destructured/passed:
+
+```ts
+class VoterContext {
+  reset = () => { this.answers = {}; };   //  survives detach
+  // reset() { this.answers = {}; }        //  `this` lost on detach
+}
+```
+
+This is a NET NEW discipline the class shape introduces (factories closed over methods,
+so detach was a non-issue). Context methods are routinely destructured → apply
+universally. (Spike 020.)
+
+### 19. The destructure trap survives unchanged
+`const { x } = ctx` snapshots a class `$state`/`$derived`/`get` field exactly as it
+snapshots today's bare getter. The CLAUDE.md Context Destructuring Rule + Phase-103
+PASS 3/PASS 4 remain mandatory. Classes neither fix nor worsen it. (Spike 020 confirms
+019 holds.)
+
+### 20. Initialization/merge goes in field initializers or `$derived` — NEVER `$effect`
+`$effect` does not run during SSR (CONVENTIONS §7), and a class calling `$effect` in its
+constructor throws `effect_orphan` when constructed outside an effect context (module
+scope / `initXxxContext()` factory). So:
+- Initial values depending on `page.data`/`load()` → synchronous field initializer.
+- Reactive projections → `$derived` field.
+- `$effect` is reserved for post-construction reactions, and only when the class is
+  instantiated inside a component (`setContext(KEY, new Ctx())` in `<script>` is fine;
+  a bare module/factory singleton is not).
+(Spikes 021, 023.)
+
+### 21. localStorage/persistence stays imperative (arrow `set`/`update`), not `$effect`
+Persisted fields persist inside arrow `set`/`update` methods (Spike 021), preserving
+both SSR-safety and factory-constructability. Mirrors the production `persistedState`
+imperative-persist decision.
+
+### 22. Version-bridge classes keep the bridge — and the `untrack` guards a SILENT loop
+Foreign mutable singletons (DataRoot, FilterGroup) become a class with private `#root` +
+private `#version` `$state` + reactive `get` + arrow `setX(updater)` that internalizes
+`untrack` (Spike 017 split, class-shaped — Spike 022). This group does NOT simplify away.
+**Caveat:** with a class private `#version`, a producer that reads the reactive getter
+then mutates self-perpetuates *without* tripping Svelte's `effect_update_depth_exceeded`
+guard (017 threw loudly; the class spins silently). The `setX`/`untrack` encapsulation is
+therefore even more load-bearing — there is no loud failure to catch a misuse.
+
+### Suggested migration order (low → high blast radius)
+1. Formalize already-class-shaped factories (Group F): `PopupStore`, `VideoController`,
+   `SettingsOverlay`, persistence helper.
+2. Leaf contexts: `darkMode`, `component`, `auth`, `data`, `filter`.
+3. Orchestrators last: `app`, `voter`, `candidate`.
+Re-confirm SSR (Spike 008) and HMR (Spike 011) at each tier under the class shape.
+
 ## HMR Considerations (Spike 011)
 
 - `$state` in `.svelte` files resets on HMR — this is correct behavior.
