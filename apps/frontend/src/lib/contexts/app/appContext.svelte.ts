@@ -69,7 +69,15 @@ const CONTEXT_KEY = Symbol();
  * are ARROW-FUNCTION FIELDS (§18) so they survive detach after the downstream
  * spread + consumer destructure, with their bodies preserved verbatim.
  */
-class AppContextProvider implements AppContext {
+/**
+ * Exported as a test seam (109-03): the own-enumerability spread regression guard
+ * (`appContext.spread.svelte.test.ts`) constructs `new AppContextProvider()`
+ * headlessly to assert every member survives the downstream `{ ...appContext }`
+ * spreads as an own-enumerable property. Production code MUST keep using the
+ * `initAppContext()` / `getAppContext()` factory wrappers — never construct the
+ * class directly outside the factory.
+ */
+export class AppContextProvider implements AppContext {
   ////////////////////////////////////////////////////////////////////
   // Private helper contexts (the upstream contexts being forwarded)
   ////////////////////////////////////////////////////////////////////
