@@ -4,13 +4,13 @@ milestone: v2.13
 milestone_name: Context-as-Class Migration
 status: executing
 stopped_at: Completed 106-04-PLAN.md
-last_updated: "2026-06-12T21:44:57.682Z"
+last_updated: "2026-06-12T21:50:52.478Z"
 last_activity: 2026-06-12 -- Phase 107 execution started
 progress:
   total_phases: 11
   completed_phases: 1
   total_plans: 7
-  completed_plans: 5
+  completed_plans: 6
   percent: 9
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-06-12 starting v2.13 Context-as-Class Mi
 ## Current Position
 
 Phase: 107 (leaf-contexts-proof-reconciliation) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-06-12 -- Phase 107 execution started
 
@@ -65,6 +65,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | Phase 106 P03 | 2min | 2 tasks | 1 files |
 | Phase 106 P04 | 4min | 2 tasks | 3 files |
 | Phase 107 P01 | 8min | 2 tasks | 2 files |
+| Phase 107 P02 | 3min | 2 tasks | 3 files |
 
 ### Acknowledged at v2.10 close (2026-06-04)
 
@@ -341,6 +342,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: 106-04: VideoController extracted from layoutContext as a standalone Svelte 5 class; initLayoutContext() stays a factory (orchestrator-class conversion deferred to P107 per A1/A10)
 - [Phase ?]: 106-04: shouldClearContent kept a public class field; host nav hooks toggle it across the boundary, off the typed VideoController interface
 - [Phase ?]: Phase 107: authContext isAuthenticated must be a private #$derived + own-enumerable constructor accessor (NOT a bare $derived class field) — Svelte 5 compiles $state/$derived class fields to prototype accessors that object spread drops; verified headlessly. Spread-safety gate applies to all context-as-class members an orchestrator spreads.
+- [Phase ?]: 107-02: componentContext converted to class ComponentContextProvider; i18n surface as OWN properties (Object.assign) for spread-safety; darkMode delegation getter over directly-composed new DarkMode() (no { current } re-export); DarkMode exported, createDarkMode kept until Phase 109
 
 ### Quick Tasks Completed
 
@@ -385,7 +387,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-12T21:44:42.597Z
+Last session: 2026-06-12T21:50:47.736Z
 Stopped at: Completed 106-04-PLAN.md
 Resume file: None
 Work done this session:
