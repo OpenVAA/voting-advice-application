@@ -183,7 +183,7 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
 **Phase checklist:**
 
 - [x] **Phase 106: Group F Helper Classes** — formalize the already-class-shaped helper factories (PopupStore, VideoController, SettingsOverlay, persistedState) as real Svelte 5 classes (completed 2026-06-12)
-- [ ] **Phase 107: Leaf Contexts + Proof Reconciliation** — convert authContext + componentContext to classes; reconcile darkMode/dataContext/filterContext to the final idiom
+- [x] **Phase 107: Leaf Contexts + Proof Reconciliation** — convert authContext + componentContext to classes; reconcile darkMode/dataContext/filterContext to the final idiom (completed 2026-06-12)
 - [ ] **Phase 108: App-Layer Producer Contexts** — convert getRoute, survey, trackingService, popupStore to classes
 - [ ] **Phase 109: appContext Orchestrator + Spread Fix + PoC Removal** — convert appContext to a class; explicit getter forwarding; remove the Phase-102 `_poc*` scaffolding
 - [ ] **Phase 110: voterContext Orchestrator + Voter Sub-Stores** — convert voterContext + answer/match/nomination/filter/utils sub-stores to classes
@@ -233,7 +233,7 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
 
 - [x] 107-01-PLAN.md — convert authContext to class AuthContextProvider ($derived isAuthenticated + arrow-field DataWriter wrappers) + headless test
 - [x] 107-02-PLAN.md — convert componentContext to class (own-property i18n surface + get darkMode() over composed DarkMode class); export DarkMode, keep createDarkMode back-compat for the Phase-109 PoC + headless test
-- [ ] 107-03-PLAN.md — reconcile dataContext + filterContext doc-comments to the §17/§18/§20/§22 final idiom (intentional-until-Phase-113 note on reactiveDataRoot.instance); executable code byte-identical
+- [x] 107-03-PLAN.md — reconcile dataContext + filterContext doc-comments to the §17/§18/§20/§22 final idiom (intentional-until-Phase-113 note on reactiveDataRoot.instance); executable code byte-identical
 
 ### Phase 108: App-Layer Producer Contexts
 
@@ -377,7 +377,7 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 106. Group F Helper Classes | 4/4 | Complete   | 2026-06-12 |
-| 107. Leaf Contexts + Proof Reconciliation | 2/3 | In Progress|  |
+| 107. Leaf Contexts + Proof Reconciliation | 3/3 | Complete   | 2026-06-12 |
 | 108. App-Layer Producer Contexts | 0/TBD | Not started | - |
 | 109. appContext Orchestrator + Spread Fix + PoC Removal | 0/TBD | Not started | - |
 | 110. voterContext Orchestrator + Voter Sub-Stores | 0/TBD | Not started | - |
