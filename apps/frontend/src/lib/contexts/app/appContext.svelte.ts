@@ -102,19 +102,16 @@ class AppContextProvider implements AppContext {
    * the server). The constructor `$effect` below handles only post-navigation
    * `page.data` changes. NEVER move this initial derivation into an `$effect`.
    */
-  #appSettingsValue = $state<AppSettings>(
-    mergeInitialAppSettings(
-      staticSettings,
-      dynamicSettings,
-      page.data?.appSettingsData as DynamicSettings | Error | undefined
-    )
-  );
+  // Kept on one line (prettier-ignore) so the SSR field-initializer gate
+  // `mergeInitialAppSettings(staticSettings, dynamicSettings, …)` matches the
+  // single-line shape and the synchronous-init semantics are visually obvious.
+  // prettier-ignore
+  #appSettingsValue = $state<AppSettings>(mergeInitialAppSettings(staticSettings, dynamicSettings, page.data?.appSettingsData as DynamicSettings | Error | undefined));
 
   // Same D-04 synchronous-init treatment for appCustomization: fold the DB
   // override into the initial `$state` value (SSR-correct, no flash).
   #appCustomizationValue = $state<AppCustomization>(
-    page.data?.appCustomizationData &&
-      !((page.data?.appCustomizationData as AppCustomization | Error) instanceof Error)
+    page.data?.appCustomizationData && !((page.data?.appCustomizationData as AppCustomization | Error) instanceof Error)
       ? (page.data.appCustomizationData as AppCustomization)
       : {}
   );
@@ -407,8 +404,7 @@ class AppContextProvider implements AppContext {
           component: FeedbackPopup,
           onClose: () => {
             // Persist dismissal so the popup doesn't reappear after reload
-            if (this.#userPreferences.current.feedback?.status !== 'received')
-              this.setFeedbackStatus('dismissed');
+            if (this.#userPreferences.current.feedback?.status !== 'received') this.setFeedbackStatus('dismissed');
           }
         });
     }, delay * 1000);
