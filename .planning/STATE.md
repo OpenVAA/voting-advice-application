@@ -4,13 +4,13 @@ milestone: v2.13
 milestone_name: Context-as-Class Migration
 status: executing
 stopped_at: Completed 98-02-PLAN.md
-last_updated: "2026-06-12T20:35:21.839Z"
+last_updated: "2026-06-12T20:40:02.742Z"
 last_activity: 2026-06-12 -- Phase 106 execution started
 progress:
   total_phases: 11
   completed_phases: 0
   total_plans: 4
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-06-12 starting v2.13 Context-as-Class Mi
 ## Current Position
 
 Phase: 106 (group-f-helper-classes) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-06-12 -- Phase 106 execution started
 
@@ -61,6 +61,7 @@ Resolved this session before close (not deferred): debug `elections-continue-sta
 
 Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79 close added Phase 83 + 2 follow-up todos, updated 2026-05-20 after constituency-filter WONT-IMPLEMENT decision. v2.10 now consumes 5 in-milestone candidates (3 v2.9-routed originals + 2 Phase-79-surfaced follow-ups absorbed in-milestone rather than re-deferred). 4 other v2.9-routed v2.10+ candidates remain re-deferred to v2.11+ (SETTINGS-02 / SETTINGS-03 / FilterGroup OR-mode / voters-layout non-reactive topbar). Constituency-filter PRODUCT-GAP has since been CLOSED as WONT-IMPLEMENT (out of contract — constituency is a navigation/scope concept, not a filter).
 | Phase 106 P01 | 6min | 2 tasks | 1 files |
+| Phase 106 P02 | 3min | 2 tasks | 1 files |
 
 ### Acknowledged at v2.10 close (2026-06-04)
 
@@ -332,6 +333,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Phase 98-03: kept persistedState.svelte.ts filename (K1-compliant), slimmed in place — dropped svelte/store import + *Writable exports, kept localStorageState/sessionStorageState/storageState
 - [Phase ?]: Phase 98-03: CLEAN-01 deletion half complete — StackedState/dataCollectionStore/runes-test deleted; zero svelte/store imports remain in lib/contexts + routes (D-04/K1 enforced)
 - [Phase ?]: Phase 106-01: PopupStore class/type name clash resolved via aliased type import (PopupStore as PopupStoreApi) + implements; public PopupStore type unchanged
+- [Phase ?]: 106-02: SettingsOverlay class — #current $derived initialized in constructor (not field initializer); field-init would read #base before ctor assignment
 
 ### Quick Tasks Completed
 
@@ -376,7 +378,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-12T20:35:08.230Z
+Last session: 2026-06-12T20:39:58.910Z
 Stopped at: Completed 98-02-PLAN.md
 Resume file: None
 Work done this session:

@@ -212,7 +212,7 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
 **Plans**: 4 plans (all Wave 1, parallel — disjoint files)
 
   - [x] 106-01-PLAN.md — popupStore() → class PopupStore (queue $state + $derived head + arrow push/shift)
-  - [ ] 106-02-PLAN.md — settingsOverlay() → class SettingsOverlay (preserve untrack + associative-merge registry verbatim)
+  - [x] 106-02-PLAN.md — settingsOverlay() → class SettingsOverlay (preserve untrack + associative-merge registry verbatim)
   - [ ] 106-03-PLAN.md — persistedState handle → class (imperative arrow set/update, never $effect; versioned payload + D-03 no-shim + CR-01 init-persist)
   - [ ] 106-04-PLAN.md — extract VideoController from layoutContext into class VideoController (+ new regression test; initLayoutContext() orchestrator-class conversion deferred, recorded for the checker)
 
@@ -372,7 +372,7 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 106. Group F Helper Classes | 1/4 | In Progress|  |
+| 106. Group F Helper Classes | 2/4 | In Progress|  |
 | 107. Leaf Contexts + Proof Reconciliation | 0/TBD | Not started | - |
 | 108. App-Layer Producer Contexts | 0/TBD | Not started | - |
 | 109. appContext Orchestrator + Spread Fix + PoC Removal | 0/TBD | Not started | - |
