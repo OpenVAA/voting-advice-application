@@ -21,63 +21,45 @@ export function getFilterContext(): FilterContext {
 }
 
 /**
- * Initialise the `FilterContext`. Must be called exactly once per voter session
- * (typically from `initVoterContext()` per D-05). Throws status-500 on a
- * second invocation.
+ * `FilterContext` re-expressed as a Svelte 5 CLASS (class-conversion proof, Spikes
+ * 020-023; Group C — version-bridge over a non-rune `FilterGroup`). The reactive
+ * core is the private `#version` `$state` field, bumped on every
+ * `FilterGroup.onChange` — `FilterGroup.filters[i]._rules` is plain JS, not `$state`,
+ * so the version counter is the minimum-ceremony bridge into `$derived` reactivity
+ * (RESEARCH.md §Pattern 1, Pitfall 1; the same bridge as `dataContext`).
  *
- * The `entityFilters` getter closes over the `FilterTree` built by
- * `filterStore()` inside `voterContext`. Scope is derived from
- * `page.params.electionId` + `page.params.entityTab` (D-14: a different
- * tuple yields a different `FilterGroup` reference, implicitly resetting
- * filter state per the existing `filterStore` rebuild semantics). The
- * `entityTab` key was renamed from `entityTypePlural` by Phase 88 Plan
- * 88-02; backed by the new `etPl` matcher.
- *
- * Reactivity bridge (RESEARCH.md §Pattern 1, Pitfall 1): `FilterGroup.filters[i]._rules`
- * is plain JS, not `$state`. Subscribing to `FilterGroup.onChange` and bumping
- * a `$state` version counter is the minimum-ceremony bridge that lets any
- * `$derived` consumer re-run on filter mutation. The `$effect` that attaches
- * the listener returns a cleanup that detaches it on scope change (Pitfall 2).
+ * Class-shape choices (Spike 020/022/023):
+ *  - `#filterGroup` is a `$derived` FIELD; its `void this.#version` read is the
+ *    defensive dependency edge so a consumer `$derived` that reads only
+ *    `filterGroup` still re-runs on a filter mutation.
+ *  - The `onChange` bridge lives in an `$effect` in the CONSTRUCTOR. This is legal
+ *    because the class is instantiated by `initVoterContext()` during component init
+ *    (an effect context); the `$effect`'s cleanup detaches the handler on scope
+ *    change (Pitfall 2). NB (Spike 023): a class with `$effect` in its constructor
+ *    can only be constructed inside an effect context — which is exactly the case.
+ *  - Mutators are ARROW FIELDS so they survive being destructured (Spike 020 Group E).
+ *  - Handles are NOT spread by any consumer (read via `fctx.version` /
+ *    `fctx.filterGroup`), so prototype getters are safe here.
  */
-export function initFilterContext({ entityFilters, currentEntityType }: InitFilterContextArgs): FilterContext {
-  if (hasContext(CONTEXT_KEY)) error(500, 'initFilterContext() called for a second time');
+class FilterContextProvider implements FilterContext {
+  #version = $state(0);
+  readonly #entityFilters: InitFilterContextArgs['entityFilters'];
+  readonly #currentEntityType: InitFilterContextArgs['currentEntityType'];
 
-  // Version counter — incremented on every FilterGroup.onChange. Read inside
-  // any consumer $derived (or via fctx.version) to subscribe.
-  let version = $state(0);
-
-  // The active FilterGroup, derived from the URL scope tuple. The `void version`
-  // read here is a defensive dependency edge — it ensures a $derived that ONLY
-  // reads filterGroup (not version) still re-runs when a filter mutation bumps
-  // version, which is the contract the EntityListWithControls $derived relies on.
-  //
-  // We use `parseParams(page)` (matching the `paramStore` analog in
-  // `voterContext`) instead of `page.params.X` directly, because:
-  //   1. `electionId` is a persistent search param today (URL `?electionId=...`).
-  //      `parseParams` merges route + search surfaces transparently.
-  //   2. `entityTab` is the route-side list-tab key (renamed from
-  //      `entityTypePlural` by Phase 88 Plan 88-02; backed by the new etPl
-  //      matcher). The `Partial<Params>` return type uses an indexed
-  //      `Record<string, ...>` fallback so any future key extensions stay
-  //      type-safe.
-  //
-  // Plural→singular mapping uses American spelling per RESEARCH Open Question 1.
-  //
-  // Phase 88 post-88-02 follow-up: when `currentEntityType` is injected
-  // (production path), prefer its return value over the URL-derived plural.
-  // This lets the results route stop force-filling `entityTab` into the URL
-  // (which produced a redirect loop): the implied entity type lives on
-  // voterContext, filterContext reads it through the injected getter, and the
-  // URL only carries `entityTab` when the user has explicitly chosen one.
-  // When the getter is absent (existing tests, direct LLM-chat init), fall
-  // back to the legacy URL-derived scope so behavior is backward compatible.
-  const _filterGroup = $derived.by<FilterGroup<MaybeWrappedEntityVariant> | undefined>(() => {
-    void version;
-    const tree = entityFilters();
+  // The active FilterGroup, derived from the URL scope tuple. `void this.#version`
+  // ensures a $derived that reads ONLY filterGroup still re-runs on filter mutation.
+  // We use `parseParams(page)` (matching the voterContext paramStore analog) so the
+  // persistent `?electionId=` search param and the route-side `entityTab` key are
+  // merged transparently. When `currentEntityType` is injected (production path),
+  // prefer it over the URL-derived plural so the results route need not force-fill
+  // `entityTab` into the URL; fall back to the URL scope when absent.
+  readonly #filterGroup = $derived.by<FilterGroup<MaybeWrappedEntityVariant> | undefined>(() => {
+    void this.#version;
+    const tree = this.#entityFilters();
     const params = parseParams(page);
     const electionIdRaw = params.electionId;
     const electionId = Array.isArray(electionIdRaw) ? electionIdRaw[0] : electionIdRaw;
-    let entityType = currentEntityType?.();
+    let entityType = this.#currentEntityType?.();
     if (!entityType) {
       const pluralRaw = params.entityTab;
       const plural = Array.isArray(pluralRaw) ? pluralRaw[0] : pluralRaw;
@@ -94,51 +76,66 @@ export function initFilterContext({ entityFilters, currentEntityType }: InitFilt
     return tree?.[electionId]?.[entityType];
   });
 
-  // Bridge: attach onChange handler to the active FilterGroup. The $effect
-  // re-runs when _filterGroup changes (scope change), so the cleanup return
-  // detaches the handler from the old group before the new one is attached
-  // (RESEARCH.md §Pitfall 2 — leaked handlers without cleanup).
-  $effect(() => {
-    const fg = _filterGroup;
-    if (!fg) return;
-    function handler() {
-      version++;
-    }
-    fg.onChange(handler, true);
-    return () => fg.onChange(handler, false);
-  });
+  constructor({ entityFilters, currentEntityType }: InitFilterContextArgs) {
+    this.#entityFilters = entityFilters;
+    this.#currentEntityType = currentEntityType;
 
-  const ctx: FilterContext = {
-    get filterGroup() {
-      return _filterGroup;
-    },
-    get version() {
-      return version;
-    },
-    setFilter(id, value) {
-      const f = _filterGroup?.filters.find((x) => x.name === id);
-      // Filter.setRule expects Partial<FilterRule<T>>; the consumer passes a
-      // pre-shaped rule. Per D-06 this is a thin pass-through — UI flows still
-      // call filter.setRule() directly via the EntityFilters component; this
-      // surface is primarily for the future LLM chat integration.
-      (f as unknown as { setRule?: (v: unknown) => void } | undefined)?.setRule?.(value);
-    },
-    resetFilters() {
-      _filterGroup?.reset();
-    },
-    addFilter(_spec) {
-       
-      console.warn(
-        'filterContext.addFilter() is not implemented in Phase 62 — see D-06 (future LLM chat follow-up).'
-      );
-    },
-    removeFilter(_id) {
-       
-      console.warn(
-        'filterContext.removeFilter() is not implemented in Phase 62 — see D-06 (future LLM chat follow-up).'
-      );
-    }
+    // Bridge: attach an onChange handler to the active FilterGroup. The $effect
+    // re-runs when #filterGroup changes (scope change), so the cleanup detaches the
+    // handler from the old group before the new one is attached (RESEARCH §Pitfall 2).
+    $effect(() => {
+      const fg = this.#filterGroup;
+      if (!fg) return;
+      const handler = () => {
+        this.#version++;
+      };
+      fg.onChange(handler, true);
+      return () => fg.onChange(handler, false);
+    });
+  }
+
+  get filterGroup(): FilterGroup<MaybeWrappedEntityVariant> | undefined {
+    return this.#filterGroup;
+  }
+
+  get version(): number {
+    return this.#version;
+  }
+
+  setFilter = (id: string, value: unknown): void => {
+    const f = this.#filterGroup?.filters.find((x) => x.name === id);
+    // Filter.setRule expects Partial<FilterRule<T>>; the consumer passes a pre-shaped
+    // rule. Per D-06 this is a thin pass-through — UI flows still call filter.setRule()
+    // directly via the EntityFilters component; this surface is primarily for the
+    // future LLM chat integration.
+    (f as unknown as { setRule?: (v: unknown) => void } | undefined)?.setRule?.(value);
   };
 
-  return setContext<FilterContext>(CONTEXT_KEY, ctx);
+  resetFilters = (): void => {
+    this.#filterGroup?.reset();
+  };
+
+  addFilter = (_spec: unknown): void => {
+
+    console.warn(
+      'filterContext.addFilter() is not implemented in Phase 62 — see D-06 (future LLM chat follow-up).'
+    );
+  };
+
+  removeFilter = (_id: string): void => {
+
+    console.warn(
+      'filterContext.removeFilter() is not implemented in Phase 62 — see D-06 (future LLM chat follow-up).'
+    );
+  };
+}
+
+/**
+ * Initialise the `FilterContext`. Must be called exactly once per voter session
+ * (typically from `initVoterContext()` per D-05). Throws status-500 on a
+ * second invocation.
+ */
+export function initFilterContext(args: InitFilterContextArgs): FilterContext {
+  if (hasContext(CONTEXT_KEY)) error(500, 'initFilterContext() called for a second time');
+  return setContext<FilterContext>(CONTEXT_KEY, new FilterContextProvider(args));
 }

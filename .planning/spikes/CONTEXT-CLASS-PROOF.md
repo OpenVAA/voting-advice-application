@@ -80,9 +80,47 @@ corroboration of the 022 finding, not a regression from the conversion.
   as-is to demonstrate the class is a drop-in for existing `.instance` consumers; it can
   move to `setDataRoot` whenever convenient.
 
+## Trial-set expansion — `filterContext` + `darkMode` (2026-06-12)
+
+Two more leaf contexts converted, widening the proof across the remaining groups.
+
+### `darkMode` (Group B — primitive)
+`component/darkMode.svelte.ts` — `createDarkMode()` now returns a `class DarkMode`
+instance. Reactive core is a private `#dark` `$state` field; `matchMedia` read + the
+`change` listener (an **arrow function**, capturing `this`) are set up in the constructor
+behind a `browser` guard. **No `$effect`** → SSR-safe and constructable anywhere.
+`current` is a **prototype getter** (safe — `componentContext` reads it via its own
+`get darkMode()`; the handle is NOT spread).
+
+### `filterContext` (Group C — version-bridge over `FilterGroup`)
+`filter/filterContext.svelte.ts` — `initFilterContext()` now returns a class. `#version`
+`$state` field is the bridge counter; `#filterGroup` is a `$derived` field; mutators are
+**arrow fields**; getters are prototype getters (not spread — consumed via `fctx.version`
+/ `fctx.filterGroup`).
+
+**New production finding — `$effect` in a class constructor works.** The `onChange`
+bridge lives in an `$effect` **in the constructor**. This is the first production use of
+that shape, and it confirms Spike 023's distinction precisely: `$effect`-in-constructor
+throws `effect_orphan` only when constructed *outside* an effect context — but
+`filterContext` is constructed by `initVoterContext()` during component init (an effect
+context), so it runs cleanly, and its cleanup still detaches the handler on scope change.
+
+### Verification (both)
+- `svelte-check`: **151/0, identical to baseline** — zero new errors, none in the
+  converted files.
+- `yarn vitest run src/lib/contexts/filter/`: **8/8** (harness-backed); full context
+  suite **85/85**.
+- `yarn build`: **✓** (client + SSR).
+- Consumers (`componentContext`, `voterContext` delegation, `EntityListWithControls`)
+  untouched — both factory APIs are byte-identical.
+
 ## Verdict
 
-A real OpenVAA context is now a Svelte 5 class with a `$state` field, verified across
-typecheck + unit + SSR build, with the producer-side `untrack` payoff realized and zero
-consumer churn. The migration order and the two new disciplines (own-property handles for
-spread-safety; arrow-field writers) are confirmed against production code.
+Three real OpenVAA contexts are now Svelte 5 classes with `$state` fields — covering
+Group C version-bridge (`dataContext`, `filterContext`) and Group B primitive
+(`darkMode`) — each verified across typecheck + unit + SSR build with zero consumer churn.
+The `dataContext` producer-side `untrack` payoff is realized; `filterContext` adds the
+first production `$effect`-in-constructor. The disciplines hold against real code:
+own-property handles where spread (dataContext), prototype getters where not
+(filter/darkMode), arrow-field writers throughout, and no `$effect` for
+initialization/merge (only for post-construction bridges, in an effect context).
