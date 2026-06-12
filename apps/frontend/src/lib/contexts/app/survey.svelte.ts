@@ -1,8 +1,4 @@
-/**
- * A rune-shaped read handle: a value exposed via a `current` getter so the
- * producer can take a reactive read-dependency without a store bridge.
- */
-type ReactiveHandle<TValue> = { readonly current: TValue };
+import type { ReactiveHandle } from './reactiveHandle.type';
 
 /**
  * A link to the user survey, including the session ID, or `undefined` if the survey is not configured.
@@ -18,7 +14,7 @@ class Survey {
 
   #linkValue = $derived.by(() => {
     const linkTemplate = this.#appSettings.current.survey?.linkTemplate;
-    return linkTemplate ? linkTemplate.replace(/\{\s*sessionId\s*\}/, this.#sessionId.current ?? '') : undefined;
+    return linkTemplate ? linkTemplate.replace(/\{\s*sessionId\s*\}/g, this.#sessionId.current ?? '') : undefined;
   });
 
   constructor({

@@ -7,16 +7,7 @@ import type { UserPreferences } from '../userPreferences.type';
 import type { TrackingEvent } from './trackingEvent.type';
 import type { TrackingHandler, TrackingService } from './trackingService.type';
 
-/**
- * A rune-shaped read handle: a value exposed via a `current` getter so the
- * producer can take a reactive read-dependency without a store bridge.
- */
-type ReactiveHandle<TValue> = { readonly current: TValue };
-
-/**
- * A rune-shaped read+write handle (the producer's `sendTrackingEvent` surface).
- */
-type WritableHandle<TValue> = { current: TValue; set: (v: TValue) => void };
+import type { ReactiveHandle, WritableHandle } from '../reactiveHandle.type';
 
 /**
  * The pure-rune internal shape of the tracking service. The `appContext` seam
@@ -173,7 +164,7 @@ class TrackingServiceImpl implements RuneTrackingService {
   };
 
   submitAllEvents = () => {
-    if (this.#shouldTrackValue && (this.#pageviewEvent || this.#unsubmittedEvents?.length)) {
+    if (this.#shouldTrackValue && (this.#pageviewEvent || this.#unsubmittedEvents.length)) {
       const events: Record<string, TrackingEvent['data']> = {};
       // This shouldn't happen
       if (!this.#pageviewEvent) {
