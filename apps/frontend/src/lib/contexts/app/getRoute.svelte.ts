@@ -37,14 +37,20 @@ export type RouteBuilder = (options: RouteOptions) => string;
  *
  * Mirrors the same per-field-read rune pattern applied to `dataContext.dataRoot`.
  */
-export function createGetRoute(): { readonly current: RouteBuilder } {
-  const builder = $derived.by<RouteBuilder>(() => {
+class GetRoute {
+  #builder = $derived.by<RouteBuilder>(() => {
     const { params, route, url } = page;
     return (options: RouteOptions) => buildRoute(options, { params, route, url });
   });
-  return {
-    get current() {
-      return builder;
-    }
-  };
+
+  // Prototype getter is SAFE here: getRoute is consumed via DIRECT property
+  // access at appContext (`getRoute` own key), never spread — so no
+  // own-enumerable accessor dance is required.
+  get current(): RouteBuilder {
+    return this.#builder;
+  }
+}
+
+export function createGetRoute(): { readonly current: RouteBuilder } {
+  return new GetRoute();
 }
