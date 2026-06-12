@@ -3,10 +3,10 @@ gsd_state_version: 1.0
 milestone: v2.13
 milestone_name: Context-as-Class Migration
 status: planning
-last_updated: "2026-06-12T19:12:36.590Z"
+last_updated: "2026-06-12T20:00:00.000Z"
 last_activity: 2026-06-12
 progress:
-  total_phases: 0
+  total_phases: 11
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-12 starting v2.13 Context-as-Class Migration)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** v2.13 Context-as-Class Migration — defining requirements (phases start at 106)
+**Current focus:** v2.13 Context-as-Class Migration — roadmap created (11 phases, 106-116); ready to plan Phase 106
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: Not started (Phase 106 next)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-06-12 — Milestone v2.13 started
+Status: Roadmap created — 11 phases (106-116), 15/15 requirements mapped, 0 unmapped
+Last activity: 2026-06-12 — v2.13 roadmap created (Phases 106-116)
 
 ## Performance Metrics
 
@@ -185,6 +185,7 @@ The pre-close artifact audit surfaced 15 open items. All v2.10-internal artifact
 
 ### Roadmap Evolution
 
+- 2026-06-12: **v2.13 Context-as-Class Migration** milestone roadmap created. **11 phases (106-116), 15 requirements mapped, 0 unmapped.** Phase numbering continues from v2.12 (last phase 105); no reset. Granularity `fine`; parallelization on; frontend-only scope (`apps/frontend/src/**`), backed by spikes 017–023 + `CONTEXT-MEMBER-AUDIT.md` + `CONTEXT-CLASS-PROOF.md` + CONVENTIONS §17–22 (3 contexts already converted as the migration template). Conversion follows the audit's low-blast-radius-first order: **106 (Group F helpers) → 107 (leaf auth/component + proof reconcile) / 108 (app producers getRoute/survey/tracking/popup) [107 ∥ 108] → 109 (appContext orchestrator + spread-of-context fix + `_poc*` removal) → 110 voter / 111 candidate / 112 admin [all three ∥, sibling orchestrators on the appContext base] → 113 FLATTEN (drop reactiveFoo dupes + ~524-site `.current` codemod — **runs ALONE**, the v2.12 collision lesson) → 114 RENAME (Store→State) → 115 SWEEP (last svelte/store + `$:` strip + widen ESLint guard; SWEEP-03 after SWEEP-01) → 116 GATE (terminal green gate).** End-loading per the user's explicit instruction: RENAME/SWEEP/GATE (the v2.12 Phases 104/105) sit at the tail, after all CLASS conversions + the flatten, because RENAME touches the same `*Store` files. Within-milestone parallelism: 107∥108, and 110∥111∥112 (each a distinct context dir; back-compat handles keep consumers byte-identical until the flatten, so file-overlap risk is low — serialize only if a planner finds a shared producer file). FLATTEN-02 is the one large mechanical codemod that must never run concurrently with another large rewrite.
 - 2026-06-08: **v2.12 Runes-Native Cleanup** milestone roadmap created. **4 phases (102-105), 9 requirements mapped 1:1, 0 unmapped.** Phase numbering continues from v2.11 (last phase 101); no reset. Granularity `fine`; frontend-only scope (`apps/frontend/src/**`), backed by the `spike-findings-voting-advice-application-gsd` skill. Effectively a single serial chain — **102 → 103 → 104 → 105** — driven by two hard constraints: (1) **spike-first** — Phase 102 (HANDLE-01) classifies the 40 `{ readonly current }` handles + picks the canonical idiom per class and GATES the codemod; (2) **codemod collision** — Phase 103 (HANDLE-02/03, the ~524-site `.current` codemod) and Phase 104 (RENAME-01/02, the Store→State rename) touch many of the same files, so they are serialized, not parallel. Within Phase 105, SWEEP-03 (widen the `svelte/store` ESLint guard app-wide) lands AFTER SWEEP-01 (convert the last `svelte/store`) so the widened guard doesn't flag existing code; GATE-01 is the terminal milestone-close green gate (full E2E incl. a11y-smoke + unit + typecheck + lint). The only safe parallelism is intra-phase (independent SWEEP-01/SWEEP-02 fixes before the SWEEP-03 guard + close).
 - 2026-06-04: **v2.11 Svelte 5 Runes Migration + View Transitions** milestone started + roadmap created. **7 phases (95-101), 22 requirements mapped 1:1.** Phase numbering continues from v2.10 (last phase 94); no reset. Backed by the `spike-findings-voting-advice-application-gsd` skill (16 browser-verified spikes). Two independent domains: **Domain A** rune migration (Phases 95-98, strict 4-wave chain 95→96→97→98) and **Domain B** View Transitions + nav-a11y (Phases 99-100, chain 99→100) — A and B are independent and parallel-eligible; within Phase 95 the 5 Tier-1 leaf-context migrations are internally parallel. **Phase 101** is the milestone-close green gate (depends on all of 95-100). Research skipped (spikes ARE the research). At start, the 19 v2.10 phase directories (still in `.planning/phases/` — complete-milestone had archived only the metadata) were moved to `.planning/milestones/v2.10-phases/`. NOTE: the gsd-roadmapper subagent hit an API socket drop after writing ROADMAP.md fully; the orchestrator finished REQUIREMENTS.md traceability + STATE.md frontmatter/Current Position by hand.
 - 2026-06-03: Phase 94 added (v2.10 closing cleanup) — Final E2E suite polish: de-planning comments/titles, line-unwrap, README triage, + 4 Phase-93 code-review follow-ups (WR-01..04). Reopens v2.10 milestone scope (was milestone_complete after Phase 93).

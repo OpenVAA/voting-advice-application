@@ -139,28 +139,28 @@ Which phases cover which requirements. Populated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CLASS-01 | TBD | Pending |
-| CLASS-02 | TBD | Pending |
-| CLASS-03 | TBD | Pending |
-| CLASS-04 | TBD | Pending |
-| CLASS-05 | TBD | Pending |
-| CLASS-06 | TBD | Pending |
-| CLASS-07 | TBD | Pending |
-| FLATTEN-01 | TBD | Pending |
-| FLATTEN-02 | TBD | Pending |
-| RENAME-01 | TBD | Pending |
-| RENAME-02 | TBD | Pending |
-| SWEEP-01 | TBD | Pending |
-| SWEEP-02 | TBD | Pending |
-| SWEEP-03 | TBD | Pending |
-| GATE-01 | TBD | Pending |
+| CLASS-01 | Phase 106 | Pending |
+| CLASS-02 | Phase 107 | Pending |
+| CLASS-03 | Phase 108 | Pending |
+| CLASS-04 | Phase 109 | Pending |
+| CLASS-05 | Phase 110 | Pending |
+| CLASS-06 | Phase 111 | Pending |
+| CLASS-07 | Phase 112 | Pending |
+| FLATTEN-01 | Phase 113 | Pending |
+| FLATTEN-02 | Phase 113 | Pending |
+| RENAME-01 | Phase 114 | Pending |
+| RENAME-02 | Phase 114 | Pending |
+| SWEEP-01 | Phase 115 | Pending |
+| SWEEP-02 | Phase 115 | Pending |
+| SWEEP-03 | Phase 115 | Pending |
+| GATE-01 | Phase 116 | Pending |
 
 **Coverage:**
 
 - v1 requirements: 15 total
-- Mapped to phases: 0 (populated by roadmapper)
-- Unmapped: 15 ⚠️ (until roadmap created)
+- Mapped to phases: 15 ✓
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-06-12*
-*Last updated: 2026-06-12 after v2.13 milestone start (context-as-class migration; supersedes v2.12)*
+*Last updated: 2026-06-12 after v2.13 roadmap creation (15/15 requirements mapped to Phases 106-116; 0 unmapped)*
