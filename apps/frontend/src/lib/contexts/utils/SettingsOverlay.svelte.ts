@@ -53,11 +53,90 @@ export interface SettingsOverlayApi<TMerged, TOverlay = TMerged> {
 }
 
 /**
- * Creates a settings overlay registry with the supplied merge strategy.
+ * Token-keyed settings overlay registry as a Svelte 5 CLASS (Group F helper;
+ * v2.13 context-as-class migration, CLASS-01).
+ *
+ * The reactive core is the private `#slots` `$state` array field, reassigned
+ * wholesale on push/revert (CONVENTIONS §17 — a reassigned array field needs no
+ * `{current}` handle; the `#current` `$derived` reduce tracks the reassignment).
+ * `current`/`size` are prototype getters (this handle is NOT spread — consumers
+ * read `.current` / `.push` / `.use` / `.size` directly, so prototype accessors
+ * are safe — Spike 020 finding A).
+ *
+ * `push`/`use` are ARROW-FUNCTION FIELDS (§18): `push` is destructured / called
+ * from inside `$effect` bodies (via `use`) and from layout consumers, so it must
+ * capture `this` on detach. `use` is the ONE permitted `$effect` — it is a
+ * post-construction reaction at the component call site (auto-revert on destroy),
+ * not an initialization effect (§20). No `$effect` runs in the constructor; the
+ * class is SSR-safe and constructable in any context.
  *
  * The merge runs on every `$derived` re-evaluation, NOT incrementally on push.
  * This is the right trade-off for layout settings (small N, complex merges, rare
  * changes): re-merging is O(N · mergeCost), negligible for typical N=2-3 overlays.
+ */
+class SettingsOverlay<TMerged, TOverlay = TMerged> implements SettingsOverlayApi<TMerged, TOverlay> {
+  #base: TMerged;
+  #merge: (acc: TMerged, overlay: TOverlay) => TMerged;
+  #nextId = 0;
+  // Immutable updates (replace whole array on push/revert) to match the
+  // production StackedState's discipline. Cost is O(N) per mutation but N is
+  // small (1-3 in practice).
+  #slots = $state<Array<{ id: number; overlay: TOverlay }>>([]);
+  // The `$derived` reduce is initialized in the constructor (NOT a field
+  // initializer) because it reads `#base`/`#merge`, which are assigned from the
+  // constructor params — field initializers run before the constructor body, so
+  // a `#current = $derived(...this.#base...)` field would read `#base` before it
+  // is initialized.
+  #current: TMerged;
+
+  /**
+   * @param base - The base (default) merged value when no overlays are present.
+   * @param merge - Associative merge strategy folding an overlay onto the accumulator.
+   */
+  constructor(base: TMerged, merge: (acc: TMerged, overlay: TOverlay) => TMerged) {
+    this.#base = base;
+    this.#merge = merge;
+    this.#current = $derived(this.#slots.reduce<TMerged>((acc, slot) => this.#merge(acc, slot.overlay), this.#base));
+  }
+
+  push = (overlay: TOverlay): (() => void) => {
+    const id = ++this.#nextId;
+    // CRITICAL (Pattern 3 / L-2): push() is typically called from inside a
+    // $effect body (via use()). The spread `[...slots, ...]` READS `#slots`,
+    // which would establish a reactive dependency, and the assignment WRITES
+    // `#slots`, creating an immediate effect_update_depth_exceeded loop AND
+    // silently disabling the global effect scheduler. `untrack` breaks the
+    // read-side of the cycle.
+    untrack(() => {
+      this.#slots = [...this.#slots, { id, overlay }];
+    });
+    let alreadyReverted = false;
+    return () => {
+      if (alreadyReverted) return;
+      alreadyReverted = true;
+      // Same write-after-read hazard as push — the filter reads `#slots`.
+      untrack(() => {
+        this.#slots = this.#slots.filter((s) => s.id !== id);
+      });
+    };
+  };
+
+  use = (overlay: TOverlay): void => {
+    $effect(() => this.push(overlay));
+  };
+
+  get current(): TMerged {
+    return this.#current;
+  }
+
+  /** Number of live overlays (excluding the base). For testing/debugging. */
+  get size(): number {
+    return this.#slots.length;
+  }
+}
+
+/**
+ * Creates a settings overlay registry with the supplied merge strategy.
  * @param base - The base (default) merged value when no overlays are present.
  * @param merge - Associative merge strategy folding an overlay onto the accumulator.
  * @returns The `SettingsOverlayApi` (current / push / use / size).
@@ -66,49 +145,5 @@ export function settingsOverlay<TMerged, TOverlay = TMerged>(
   base: TMerged,
   merge: (acc: TMerged, overlay: TOverlay) => TMerged
 ): SettingsOverlayApi<TMerged, TOverlay> {
-  type Slot = { id: number; overlay: TOverlay };
-  let nextId = 0;
-  // Immutable updates (replace whole array on push/revert) to match the
-  // production StackedState's discipline. Cost is O(N) per mutation but N is
-  // small (1-3 in practice).
-  let slots = $state<Array<Slot>>([]);
-
-  const current = $derived(slots.reduce<TMerged>((acc, slot) => merge(acc, slot.overlay), base));
-
-  function push(overlay: TOverlay): () => void {
-    const id = ++nextId;
-    // CRITICAL (Pattern 3 / L-2): push() is typically called from inside a
-    // $effect body (via use()). The spread `[...slots, ...]` READS `slots`,
-    // which would establish a reactive dependency, and the assignment WRITES
-    // `slots`, creating an immediate effect_update_depth_exceeded loop AND
-    // silently disabling the global effect scheduler. `untrack` breaks the
-    // read-side of the cycle.
-    untrack(() => {
-      slots = [...slots, { id, overlay }];
-    });
-    let alreadyReverted = false;
-    return () => {
-      if (alreadyReverted) return;
-      alreadyReverted = true;
-      // Same write-after-read hazard as push — the filter reads `slots`.
-      untrack(() => {
-        slots = slots.filter((s) => s.id !== id);
-      });
-    };
-  }
-
-  function use(overlay: TOverlay): void {
-    $effect(() => push(overlay));
-  }
-
-  return {
-    get current() {
-      return current;
-    },
-    push,
-    use,
-    get size() {
-      return slots.length;
-    }
-  };
+  return new SettingsOverlay(base, merge);
 }
