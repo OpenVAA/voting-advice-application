@@ -67,18 +67,24 @@ export function sessionStorageState<TValue>(key: string, defaultValue: TValue): 
 
 /**
  * Shared versioned-payload core backing `localStorageState` and
- * `sessionStorageState`. Parametrized on `StorageType` so the versioned
- * storage helpers (`getItemFromStorage`/`saveItemToStorage`) are reused — no
- * re-implementation of the `{ version, data }` payload, `requireUserDataVersion`
- * expiry, or `browser` gate.
+ * `sessionStorageState` as a Svelte 5 CLASS (Group F helper; v2.13
+ * context-as-class migration, CLASS-01). Parametrized on `StorageType` so the
+ * versioned storage helpers (`getItemFromStorage`/`saveItemToStorage`) are
+ * reused — no re-implementation of the `{ version, data }` payload,
+ * `requireUserDataVersion` expiry, or `browser` gate.
  *
- * Uses a `$state` value + a `get current()` getter (reactive read) and writes
- * through imperatively on `set`/`update`. Persistence is imperative (not via
- * `$effect`), so the helper can be called outside component-init context (e.g.
- * inside `initXxxContext()` factories).
+ * The reactive core is the private `#value` `$state` field; the public
+ * `current` getter reads it (reactive read tracks the `$state` dependency).
+ * `set`/`update` are ARROW-FUNCTION FIELDS (§18) so they survive
+ * `const { set } = handle` detach (the candidate stores destructure them) —
+ * they capture `this` on detach. Each mutates `#value` then persists
+ * IMPERATIVELY via `saveItemToStorage` (NEVER `$effect` — A7/§21); this is what
+ * keeps the class constructable OUTSIDE any effect context (e.g. inside
+ * `initXxxContext()` factories / module scope) without `effect_orphan` (§23).
  *
  * When nothing valid is stored, the freshly-defaulted value is persisted on
- * init. The superseded store-shaped bridge persisted on subscribe (which
+ * init in the CONSTRUCTOR BODY (a synchronous side-effect, NOT an `$effect` —
+ * §20). The superseded store-shaped bridge persisted on subscribe (which
  * fires synchronously on creation); dropping to `set`/`update`-only persistence
  * silently regressed any consumer whose default is non-deterministic and is
  * never explicitly `set` — notably the tracking `sessionId`, whose generated
@@ -86,28 +92,51 @@ export function sessionStorageState<TValue>(key: string, defaultValue: TValue): 
  * lives in `sessionStorage` to survive. The write is `browser`-gated via
  * `saveItemToStorage` (SSR → no-op). (CR-01, Phase 96)
  */
-function storageState<TValue>(type: StorageType, key: string, defaultValue: TValue): PersistedState<TValue> {
-  const stored = getItemFromStorage<TValue>(type, key);
-  let value = $state<TValue>(stored ?? defaultValue);
+class PersistedStateImpl<TValue> implements PersistedState<TValue> {
+  #type: StorageType;
+  #key: string;
+  #value: TValue;
 
-  // Persist the default on init when nothing valid was stored (CR-01) so a
-  // non-deterministic default round-trips a reload, matching the old
-  // subscribe-on-init persistence.
-  if (stored === null) saveItemToStorage(type, key, defaultValue);
+  /**
+   * @param type - The storage backend (`localStorage` versioned / `sessionStorage` raw).
+   * @param key - The key to store the value under.
+   * @param defaultValue - The default value used when nothing valid is stored.
+   */
+  constructor(type: StorageType, key: string, defaultValue: TValue) {
+    this.#type = type;
+    this.#key = key;
+    const stored = getItemFromStorage<TValue>(type, key);
+    this.#value = $state<TValue>(stored ?? defaultValue) as TValue;
 
-  return {
-    get current() {
-      return value;
-    },
-    set(v: TValue) {
-      value = v;
-      saveItemToStorage(type, key, v);
-    },
-    update(fn: (cur: TValue) => TValue) {
-      value = fn(value);
-      saveItemToStorage(type, key, value);
-    }
+    // Persist the default on init when nothing valid was stored (CR-01) so a
+    // non-deterministic default round-trips a reload, matching the old
+    // subscribe-on-init persistence. This is a synchronous constructor
+    // side-effect (NOT an `$effect` — §20/§21); the write is `browser`-gated
+    // inside `saveItemToStorage`, so SSR is a no-op.
+    if (stored === null) saveItemToStorage(type, key, defaultValue);
+  }
+
+  get current(): TValue {
+    return this.#value;
+  }
+
+  set = (v: TValue): void => {
+    this.#value = v;
+    saveItemToStorage(this.#type, this.#key, v);
   };
+
+  update = (fn: (cur: TValue) => TValue): void => {
+    this.#value = fn(this.#value);
+    saveItemToStorage(this.#type, this.#key, this.#value);
+  };
+}
+
+/**
+ * Shared versioned-payload core backing `localStorageState` and
+ * `sessionStorageState`. Returns a `PersistedStateImpl` instance.
+ */
+function storageState<TValue>(type: StorageType, key: string, defaultValue: TValue): PersistedState<TValue> {
+  return new PersistedStateImpl(type, key, defaultValue);
 }
 
 /**
