@@ -331,7 +331,12 @@ Plans:
   3. The `appContext` composition uses explicit getter forwarding consistent with Phase 109 (no instance-spread of the class).
   4. `yarn build` + `yarn vitest run src/lib/contexts/` + `yarn svelte-check` are all green with zero new errors; the admin surface is unbroken.
 
-**Plans**: TBD
+**Plans**: 2 plans (Wave 1: 112-01 jobStores conversion; Wave 2: 112-02 adminContext conversion + phase gate, depends_on 112-01)
+
+Plans:
+
+- [ ] 112-01-PLAN.md — jobStores() → class JobStoresProvider ($state Map registry + 3 $derived projections; arrow-field polling; back-compat factory wrapper; new headless smoke test)
+- [ ] 112-02-PLAN.md — adminContext → class AdminContextProvider (v2.11 auth-forwarding fix preserved verbatim: live-delegating isAuthenticated getter + 4 arrow forwards, no authContext spread; Object.assign(this, appContext); type-only barrel narrowing) + phase gate (build + vitest contexts + svelte-check)
 
 ### Phase 113: Handle Flatten + De-duplication
 
@@ -403,7 +408,7 @@ Plans:
 | 109. appContext Orchestrator + Spread Fix + PoC Removal | 3/3 | Complete   | 2026-06-12 |
 | 110. voterContext Orchestrator + Voter Sub-Stores | 4/4 | Complete   | 2026-06-13 |
 | 111. candidateContext Orchestrator + UserData Store | 3/3 | Complete   | 2026-06-13 |
-| 112. adminContext + Job Stores | 0/TBD | Not started | - |
+| 112. adminContext + Job Stores | 0/2 | Not started | - |
 | 113. Handle Flatten + De-duplication | 0/TBD | Not started | - |
 | 114. Store → State Rename | 0/TBD | Not started | - |
 | 115. Straggler Clearance | 0/TBD | Not started | - |
