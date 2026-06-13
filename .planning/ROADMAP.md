@@ -427,7 +427,11 @@ Plans:
   3. New E2E coverage asserts cold/direct-URL entry (hard navigation, no intro→Continue) to `/elections` (+ `/constituencies`, `/info`) renders populated data (`elections.length > 0`) — locking the regression that previously failed only on the cold path.
   4. The full E2E suite (incl. a11y-smoke) + unit + `typecheck` + `lint` are all green — satisfying the Phase 116 GATE-01 this phase unblocks (per the project E2E hard rule: failing E2E is a cardinal failure; no flaky exemptions).
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 117-01-PLAN.md — Narrow dataRoot alias->direct codemod (12 sites; 2 writers left) + CLAUDE.md carve-out + cold-entry E2E spec/project/testid + negative control (COLD-01, COLD-02, COLD-03 authoring) [wave 1]
+- [ ] 117-02-PLAN.md — Full-suite green gate: E2E (incl. a11y-smoke + cold-entry-dataroot) + unit + lint = Phase 116 GATE-01 (COLD-03 full-suite half) [wave 2]
 
 ## Progress
 
