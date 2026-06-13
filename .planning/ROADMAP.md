@@ -351,7 +351,13 @@ Plans:
   3. The build is green at every commit boundary (no red build at any step of the codemod), and the CLAUDE.md destructure-trap contract is preserved — consumers read `ctx.X`, never destructure reactive accessors — verified by the spike-009 audit pass (PASS 4).
   4. `yarn build` (client + SSR) + `yarn vitest run` + `yarn svelte-check` are green; the full E2E suite (incl. a11y-smoke) regresses cleanly.
 
-**Plans**: TBD
+**Plans**: 4 plans (Wave 1: 113-01 codemod tooling + audit-set, autonomous; Wave 2: 113-02 FLATTEN-01 producer collapse + setDataRoot reroute, depends_on 113-01; Wave 3: 113-03 destructure-trap repair + CLAUDE.md contract, depends_on 113-02; Wave 4: 113-04 FLATTEN-02 bare-accessor conversion + consumer codemod + E2E gate, depends_on 113-03). Strictly sequential by `depends_on` — overlapping context files + runs-alone codemod forbid parallelism.
+
+Plans:
+- [ ] 113-01-PLAN.md — Build idempotent inverse `.current`→bare codemod + extend spike-009 audit accessor set (FLATTEN-02 tooling, no behavior change)
+- [ ] 113-02-PLAN.md — FLATTEN-01: delete `reactive*` mirrors + `instance` split; reroute orchestrators + candidate-protected write to `setDataRoot`; grep gate zero
+- [ ] 113-03-PLAN.md — FLATTEN-02 (correctness): repair ~29 `appSettings`/`dataRoot`/`locale` destructure sites; move them stable→reactive in CLAUDE.md
+- [ ] 113-04-PLAN.md — FLATTEN-02 (mechanical): producers→bare own-enumerable reactive accessors + consumer `.current`→bare codemod (~189 reads) + full E2E gate
 
 ### Phase 114: Store → State Rename
 
