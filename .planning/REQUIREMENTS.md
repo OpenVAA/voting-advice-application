@@ -65,7 +65,7 @@ flatten (FLATTEN) sweep removes them.
   `_poc*` scaffolding** (`_pocDarkMode`/`_pocAppType`/`_pocGetRoute` surfaces + the `_poc*` PoC test objects).
   Build + unit + svelte-check green; SSR-correct appSettings/appCustomization merge preserved.
 
-- [ ] **CLASS-05**: The `voterContext` orchestrator and its voter sub-stores (`answerStore`, `matchStore`,
+- [x] **CLASS-05**: The `voterContext` orchestrator and its voter sub-stores (`answerStore`, `matchStore`,
   `nominationAndQuestionStore`, `filters/filterStore`, and the `utils/*Store` derived projections —
   `paramStore`/`questionBlockStore`/`questionCategoryStore`/`questionStore`) are converted to classes. All
   reactive accessors and the destructure-trap contract preserved; build + unit + E2E (voter app) green.
@@ -158,7 +158,7 @@ Which phases cover which requirements. Populated during roadmap creation.
 | CLASS-02 | Phase 107 | Complete |
 | CLASS-03 | Phase 108 | Complete |
 | CLASS-04 | Phase 109 | Complete |
-| CLASS-05 | Phase 110 | Pending |
+| CLASS-05 | Phase 110 | Complete |
 | CLASS-06 | Phase 111 | Pending |
 | CLASS-07 | Phase 112 | Pending |
 | FLATTEN-01 | Phase 113 | Pending |
