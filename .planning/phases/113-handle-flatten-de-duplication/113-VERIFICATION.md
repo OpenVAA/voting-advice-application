@@ -2,7 +2,8 @@
 phase: 113-handle-flatten-de-duplication
 verified: 2026-06-13T13:10:00Z
 reverified: 2026-06-13T13:14:00Z
-status: human_needed
+status: resolved
+resolution: "Closed at v2.13 milestone close 2026-06-13. The single human-verification item (run the full E2E gate after a mandatory dev-server restart, explicitly deferred to the Phase 116 Milestone-Close Green Gate) is now satisfied: Phase 116 ran the full suite to the 3× determinism standard on a fresh server with a clean DB — E2E 95/95, 0 failed, 0 did-not-run, incl. voter-journey + candidate-journey + a11y-smoke. The appSettings/dataRoot reactivity-on-navigation concern is further covered by Phase 117's cold-entry-dataroot fix + E2E project. 10/10 must-haves were already verified statically."
 score: 10/10 must-haves verified
 overrides_applied: 0
 gaps_closed:
@@ -19,7 +20,7 @@ human_verification:
 
 **Phase Goal:** With every context now a class, the redundant `{ current }` handles and `reactiveFoo` mirrors are gone — consumers read bare class fields, and the destructure-trap contract is verified intact.
 **Verified:** 2026-06-13T13:10:00Z
-**Status:** human_needed (10/10 must-haves; live E2E deferred to Phase 116 by design)
+**Status:** resolved (10/10 must-haves; the deferred live E2E was satisfied by the Phase 116 green gate — 95/95 ×3, see resolution in frontmatter)
 **Re-verification:** No — initial verification
 
 ## Goal Achievement

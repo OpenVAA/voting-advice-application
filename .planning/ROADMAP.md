@@ -10,7 +10,7 @@
 - ✅ **v2.10 Test Reliability + A11y Compliance + All-Green Suite** — Phases 79-94 (shipped 2026-06-04)
 - ✅ **v2.11 Svelte 5 Runes Migration + View Transitions** — Phases 95-101 (shipped 2026-06-07)
 - ⊘ **v2.12 Runes-Native Cleanup** — Phases 102-105 (SUPERSEDED 2026-06-12 by v2.13)
-- 🚧 **v2.13 Context-as-Class Migration** — Phases 106+ (in progress)
+- ✅ **v2.13 Context-as-Class Migration** — Phases 106-117 (shipped 2026-06-13)
 
 See `.planning/MILESTONES.md` for cumulative history and `.planning/milestones/` for archived roadmaps + requirements.
 
@@ -149,7 +149,7 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
 
 </details>
 
-### 🚧 v2.13 Context-as-Class Migration (Phases 106-116) — IN PROGRESS
+### ✅ v2.13 Context-as-Class Migration (Phases 106-117) — SHIPPED 2026-06-13
 
 **Milestone goal:** Convert OpenVAA's remaining Svelte 5 reactive contexts in `apps/frontend/src/lib/contexts/` from the factory + `{ readonly current }` handle shape into idiomatic Svelte 5 **classes** (`$state`/`$derived` fields, arrow-function methods), flatten consumer reads to bare class fields + drop the `reactiveFoo`/`Foo` duplicates, then finish the absorbed-from-v2.12 Store→State rename + straggler clearance + milestone-close green gate. Frontend-only scope (`apps/frontend/src/**`); packages untouched. Backed by spikes 017–023 + `CONTEXT-MEMBER-AUDIT.md` + `CONTEXT-CLASS-PROOF.md` + CONVENTIONS §17–22; decision **LOCKED 2026-06-12**. Three contexts (`dataContext`, `filterContext`, `darkMode`) are already converted & green as the migration template.
 
@@ -192,7 +192,7 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
 - [x] **Phase 113: Handle Flatten + De-duplication** — drop `reactiveFoo`/`Foo` duplicates; codemod `.current` reads to bare class fields; remove back-compat handles
 - [x] **Phase 114: Store → State Rename** — rename all rune-native `*Store` symbols/files/types/tests to `*State`; document the jobStore + cookieStore exclusions
 - [x] **Phase 115: Straggler Clearance** — convert the last `svelte/store` (videoPreferences); remove the stray `$:` debug line; widen the ESLint guard app-wide
-- [ ] **Phase 116: Milestone-Close Green Gate** — full E2E (incl. a11y-smoke) + unit + typecheck + lint all green _(gate RE-OPENED 2026-06-13: the blocking E2E failure was root-caused as a real bug, not a test artifact — see Phase 117; 116 gate re-runs after 117 lands)_
+- [x] **Phase 116: Milestone-Close Green Gate** (1/1 plan) — full E2E (incl. a11y-smoke) + unit + typecheck + lint all green; **E2E 95/95 to the 3× determinism standard** (completed 2026-06-13) _(gate had been RE-OPENED 2026-06-13: the blocking E2E failure was root-caused as a real bug, not a test artifact — fixed in Phase 117 — then re-ran green)_
 - [x] **Phase 117: dataRoot Cold-Entry Reactivity Fix** (2/2 plans) — completed 2026-06-13 — eliminated the `$derived(ctx.dataRoot)` alias staleness on direct-URL (cold) entry (12-site direct-read codemod + CLAUDE.md carve-out + new `cold-entry-dataroot` E2E project + negative control); full suite green (E2E 95/95 fresh-server, unit 766+450, lint+types) — Phase 116 GATE-01 unblocked
 
 ## Phase Details
@@ -356,10 +356,10 @@ Plans:
 
 Plans:
 
-- [ ] 113-01-PLAN.md — Build idempotent inverse `.current`→bare codemod + extend spike-009 audit accessor set (FLATTEN-02 tooling, no behavior change)
-- [ ] 113-02-PLAN.md — FLATTEN-01: delete `reactive*` mirrors + `instance` split; reroute orchestrators + candidate-protected write to `setDataRoot`; grep gate zero
-- [ ] 113-03-PLAN.md — FLATTEN-02 (correctness): repair ~29 `appSettings`/`dataRoot`/`locale` destructure sites; move them stable→reactive in CLAUDE.md
-- [ ] 113-04-PLAN.md — FLATTEN-02 (mechanical): producers→bare own-enumerable reactive accessors + consumer `.current`→bare codemod (~189 reads) + full E2E gate
+- [x] 113-01-PLAN.md — Build idempotent inverse `.current`→bare codemod + extend spike-009 audit accessor set (FLATTEN-02 tooling, no behavior change)
+- [x] 113-02-PLAN.md — FLATTEN-01: delete `reactive*` mirrors + `instance` split; reroute orchestrators + candidate-protected write to `setDataRoot`; grep gate zero
+- [x] 113-03-PLAN.md — FLATTEN-02 (correctness): repair ~29 `appSettings`/`dataRoot`/`locale` destructure sites; move them stable→reactive in CLAUDE.md
+- [x] 113-04-PLAN.md — FLATTEN-02 (mechanical): producers→bare own-enumerable reactive accessors + consumer `.current`→bare codemod (~189 reads) + full E2E gate
 
 ### Phase 114: Store → State Rename
 
@@ -376,10 +376,10 @@ Plans:
 
 **Plans**: 4 plans
 
-  - [ ] 114-01-PLAN.md — codemod + rename voter/utils cluster (answerStore, matchStore, filterStore, nominationAndQuestionStore, paramStore, questionBlockStore)
-  - [ ] 114-02-PLAN.md — rename popup + candidate cluster (popupStore, candidateUserDataStore, #editedAnswersStore field)
-  - [ ] 114-03-PLAN.md — rename client admin jobStores → jobStates; keep server jobStore + cookieStore exclusions (RENAME-02)
-  - [ ] 114-04-PLAN.md — comment-only cleanup + whole-tree grep gate + build/svelte-check/vitest baselines
+  - [x] 114-01-PLAN.md — codemod + rename voter/utils cluster (answerStore, matchStore, filterStore, nominationAndQuestionStore, paramStore, questionBlockStore)
+  - [x] 114-02-PLAN.md — rename popup + candidate cluster (popupStore, candidateUserDataStore, #editedAnswersStore field)
+  - [x] 114-03-PLAN.md — rename client admin jobStores → jobStates; keep server jobStore + cookieStore exclusions (RENAME-02)
+  - [x] 114-04-PLAN.md — comment-only cleanup + whole-tree grep gate + build/svelte-check/vitest baselines
 
 ### Phase 115: Straggler Clearance
 
@@ -396,8 +396,8 @@ Plans:
 
 **Plans**: 2 plans, 2 waves (SWEEP-03 strictly after SWEEP-01)
 
-  - [ ] 115-01-PLAN.md — SWEEP-01 + SWEEP-02: convert videoPreferences writable → $state rune handle (git mv to component-stores.svelte.ts) + rewrite Video.svelte consumers; delete the stray $: debug line in TermsOfUseForm JSDoc (Wave 1)
-  - [ ] 115-02-PLAN.md — SWEEP-03: widen the svelte/store ESLint guard files glob to src/**/*.{ts,svelte} (both ban blocks preserved); prove the guard fires + clean tree passes (Wave 2, after 115-01)
+  - [x] 115-01-PLAN.md — SWEEP-01 + SWEEP-02: convert videoPreferences writable → $state rune handle (git mv to component-stores.svelte.ts) + rewrite Video.svelte consumers; delete the stray $: debug line in TermsOfUseForm JSDoc (Wave 1)
+  - [x] 115-02-PLAN.md — SWEEP-03: widen the svelte/store ESLint guard files glob to src/**/*.{ts,svelte} (both ban blocks preserved); prove the guard fires + clean tree passes (Wave 2, after 115-01)
 
 ### Phase 116: Milestone-Close Green Gate
 
@@ -413,7 +413,9 @@ Plans:
   3. `typecheck` and `lint` both pass green (the widened `svelte/store` guard included).
   4. The result is recorded as the milestone-close anchor; no `svelte/store` import remains in `apps/frontend/src/**` (test mocks excepted), every context is a class, and zero `reactiveFoo` duplicate handles or rune-context `*Store` identifiers remain.
 
-**Plans**: TBD
+**Plans**: 1 plan
+
+  - [x] 116-01: Milestone-close green gate — full E2E (incl. a11y-smoke) + unit + typecheck + lint; recorded as `116-MILESTONE-CLOSE-ANCHOR.md`. E2E **95/95 to the 3× determinism standard** (fresh server, clean DB), completed 2026-06-13.
 
 ### Phase 117: dataRoot Cold-Entry Reactivity Fix
 
@@ -433,11 +435,11 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 117-01-PLAN.md — Narrow dataRoot alias->direct codemod (12 sites; 2 writers left) + CLAUDE.md carve-out + cold-entry E2E spec/project/testid + negative control (COLD-01, COLD-02, COLD-03 authoring) [wave 1]
+- [x] 117-01-PLAN.md — Narrow dataRoot alias->direct codemod (12 sites; 2 writers left) + CLAUDE.md carve-out + cold-entry E2E spec/project/testid + negative control (COLD-01, COLD-02, COLD-03 authoring) [wave 1]
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 117-02-PLAN.md — Full-suite green gate: E2E (incl. a11y-smoke + cold-entry-dataroot) + unit + lint = Phase 116 GATE-01 (COLD-03 full-suite half) [wave 2]
+- [x] 117-02-PLAN.md — Full-suite green gate: E2E (incl. a11y-smoke + cold-entry-dataroot) + unit + lint = Phase 116 GATE-01 (COLD-03 full-suite half) [wave 2]
 
 ## Progress
 
@@ -450,8 +452,8 @@ Plans:
 | 110. voterContext Orchestrator + Voter Sub-Stores | 4/4 | Complete   | 2026-06-13 |
 | 111. candidateContext Orchestrator + UserData Store | 3/3 | Complete   | 2026-06-13 |
 | 112. adminContext + Job Stores | 2/2 | Complete   | 2026-06-13 |
-| 113. Handle Flatten + De-duplication | 0/TBD | Not started | - |
-| 114. Store → State Rename | 0/TBD | Not started | - |
-| 115. Straggler Clearance | 0/TBD | Not started | - |
-| 116. Milestone-Close Green Gate | 0/TBD | Gate unblocked (re-run to close) | - |
+| 113. Handle Flatten + De-duplication | 4/4 | Complete | 2026-06-13 |
+| 114. Store → State Rename | 4/4 | Complete | 2026-06-13 |
+| 115. Straggler Clearance | 2/2 | Complete | 2026-06-13 |
+| 116. Milestone-Close Green Gate | 1/1 | Complete (E2E 95/95, 3× determinism) | 2026-06-13 |
 | 117. dataRoot Cold-Entry Reactivity Fix | 2/2 | Complete | 2026-06-13 |

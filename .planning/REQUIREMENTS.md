@@ -82,13 +82,13 @@ flatten (FLATTEN) sweep removes them.
 Once contexts are classes, a reactive `$state`/`$derived` **field** is read directly as `instance.x` — the
 `{ current }` handle and the `reactiveFoo` mirror are redundant.
 
-- [ ] **FLATTEN-01**: All `reactiveFoo`/`Foo` duplicate handle pairs are collapsed to a single reactive class
+- [x] **FLATTEN-01**: All `reactiveFoo`/`Foo` duplicate handle pairs are collapsed to a single reactive class
   field — `reactiveDataRoot`+`dataRoot` → `dataRoot`, `reactiveAppSettings`+`appSettings` → `appSettings`,
   `reactiveLocale`+`locale` → `locale`, and the `{ current, instance }` dataRoot split (spike 017) → a single
   reactive `dataRoot` field. Consumers read the canonical name; a grep gate confirms zero `reactive*` duplicate
   handles remain.
 
-- [ ] **FLATTEN-02**: All consumer `.current` reads on migrated handles are flattened to bare class-field reads
+- [x] **FLATTEN-02**: All consumer `.current` reads on migrated handles are flattened to bare class-field reads
   via an idempotent codemod (re-running is a no-op), the back-compat handles are removed from the producers,
   the build is green at every commit boundary, and the CLAUDE.md destructure-trap contract is preserved
   (consumers read `ctx.X`, never destructure reactive accessors — verified by the spike-009 audit pass).
@@ -97,32 +97,32 @@ Once contexts are classes, a reactive `$state`/`$derived` **field** is read dire
 
 The rune-native "Store" identifiers are misnamed — there are no Svelte stores behind them (now classes).
 
-- [ ] **RENAME-01**: All rune-native `*Store` symbols are renamed to `*State` — identifiers, file names, type
+- [x] **RENAME-01**: All rune-native `*Store` symbols are renamed to `*State` — identifiers, file names, type
   names, and test names — covering `answerStore`→`answerState`, `editedAnswersStore`, `filterStore`,
   `popupStore`, `matchStore`, `candidateUserDataStore`, `questionBlockStore`, `questionCategoryStore`,
   `questionStore`, `nominationAndQuestionStore`, `paramStore`, and `pageDatumStore`. A grep gate confirms zero
   remaining rune-context `*Store` identifiers (excluding the documented exclusions).
 
-- [ ] **RENAME-02**: The server-side `jobStore` (`lib/server/admin/jobs/jobStore.ts` — a genuine in-memory
+- [x] **RENAME-02**: The server-side `jobStore` (`lib/server/admin/jobs/jobStore.ts` — a genuine in-memory
   data registry, not a Svelte rune) and the `cookieStore` test mock are explicitly excluded from the rename and
   documented as intentional exceptions. (The client `admin/jobStores` context is in scope; the server
   `jobStore` is not.)
 
 ### Straggler Clearance (SWEEP) — *absorbed from v2.12, end-loaded*
 
-- [ ] **SWEEP-01**: The last real `svelte/store` usage (`videoPreferences` writable in
+- [x] **SWEEP-01**: The last real `svelte/store` usage (`videoPreferences` writable in
   `lib/components/video/component-stores.ts`) is converted to a rune; zero `svelte/store` imports remain
   anywhere in `apps/frontend/src/**` (test mocks excluded and documented).
 
-- [ ] **SWEEP-02**: The stray `$: console.info(...)` Svelte-4 reactive statement in `TermsOfUseForm.svelte` is
+- [x] **SWEEP-02**: The stray `$: console.info(...)` Svelte-4 reactive statement in `TermsOfUseForm.svelte` is
   removed; zero `$:` reactive statements remain frontend-wide.
 
-- [ ] **SWEEP-03**: The `svelte/store` ESLint guard is extended from `lib/contexts/**`+`routes/**` to the whole
+- [x] **SWEEP-03**: The `svelte/store` ESLint guard is extended from `lib/contexts/**`+`routes/**` to the whole
   `apps/frontend/src/**` tree, so reintroducing a `svelte/store` import anywhere in the frontend fails lint.
 
 ### Milestone Gate (GATE)
 
-- [ ] **GATE-01**: The milestone-close green gate passes — the full E2E suite (which now includes the
+- [x] **GATE-01**: The milestone-close green gate passes — the full E2E suite (which now includes the
   a11y-smoke) + the full unit suite + `typecheck` + `lint` are all green after the migration lands.
 
 ## v2 Requirements
@@ -161,14 +161,14 @@ Which phases cover which requirements. Populated during roadmap creation.
 | CLASS-05 | Phase 110 | Complete |
 | CLASS-06 | Phase 111 | Complete |
 | CLASS-07 | Phase 112 | Complete |
-| FLATTEN-01 | Phase 113 | Pending |
-| FLATTEN-02 | Phase 113 | Pending |
-| RENAME-01 | Phase 114 | Pending |
-| RENAME-02 | Phase 114 | Pending |
-| SWEEP-01 | Phase 115 | Pending |
-| SWEEP-02 | Phase 115 | Pending |
-| SWEEP-03 | Phase 115 | Pending |
-| GATE-01 | Phase 116 | Pending |
+| FLATTEN-01 | Phase 113 | Complete |
+| FLATTEN-02 | Phase 113 | Complete |
+| RENAME-01 | Phase 114 | Complete |
+| RENAME-02 | Phase 114 | Complete |
+| SWEEP-01 | Phase 115 | Complete |
+| SWEEP-02 | Phase 115 | Complete |
+| SWEEP-03 | Phase 115 | Complete |
+| GATE-01 | Phase 116 | Complete |
 
 **Coverage:**
 
@@ -178,4 +178,4 @@ Which phases cover which requirements. Populated during roadmap creation.
 
 ---
 *Requirements defined: 2026-06-12*
-*Last updated: 2026-06-12 after v2.13 roadmap creation (15/15 requirements mapped to Phases 106-116; 0 unmapped)*
+*Last updated: 2026-06-13 at v2.13 milestone close — **15/15 v1 requirements satisfied** (CLASS-01..07, FLATTEN-01/02, RENAME-01/02, SWEEP-01/02/03, GATE-01). GATE-01 closed by the milestone-close green gate: full E2E 95/95 to the 3× determinism standard + unit + typecheck + lint green. The FLATTEN/RENAME/SWEEP anchor grep-gate invariants are all verified zero. CAND-STORE-01 deferred to a future milestone (v2).*
