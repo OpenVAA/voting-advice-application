@@ -310,7 +310,12 @@ Plans:
   3. Persisted fields (`isPreregistered`, `preregistration*Ids`, `firstQuestionId`) round-trip through their `localStorageState`/`sessionStorageState` class without `$effect`-driven init (spike 021/023).
   4. `yarn build` + `yarn vitest run` + the candidate-app E2E suite (incl. a11y-smoke) are green — the candidate app behaves identically.
 
-**Plans**: TBD
+**Plans**: 3 plans (Wave 1: 111-01; Wave 2: 111-02 depends on 01; Wave 3: 111-03 phase gate depends on 02). Sequential by `depends_on` — no same-wave file overlap.
+
+  - [ ] 111-01-PLAN.md — candidateUserDataStore → class CandidateUserDataStoreImpl behind a byte-identical factory (Group-C composite `$derived.by` merge + JSON round-trip clone preserved verbatim; 12 arrow-field methods; constructor answersLocked `$effect`; D2 type-name-clash avoided; 4-case unit test green unchanged)
+  - [ ] 111-02-PLAN.md — candidateContext → class CandidateContextProvider (two-base inheritance via Object.assign(this, #appContext) + Object.assign(this, #authContext); logout override as a prototype getter that survives Object.assign; 3 persisted fields imperative no-`$effect`; userData composite + 3 `$effect`s in D1 order; prototype-getter reactive accessors; barrel narrowed to type-only class export)
+  - [ ] 111-03-PLAN.md — phase gate: yarn build + full vitest + svelte-check (151 baseline, zero new) + candidate-app E2E (candidate-journey) + a11y-smoke (runs once at phase end)
+
 **UI hint**: yes
 
 ### Phase 112: adminContext + Job Stores
