@@ -312,7 +312,7 @@ Plans:
 
 **Plans**: 3 plans (Wave 1: 111-01; Wave 2: 111-02 depends on 01; Wave 3: 111-03 phase gate depends on 02). Sequential by `depends_on` — no same-wave file overlap.
 
-  - [ ] 111-01-PLAN.md — candidateUserDataStore → class CandidateUserDataStoreImpl behind a byte-identical factory (Group-C composite `$derived.by` merge + JSON round-trip clone preserved verbatim; 12 arrow-field methods; constructor answersLocked `$effect`; D2 type-name-clash avoided; 4-case unit test green unchanged)
+  - [x] 111-01-PLAN.md — candidateUserDataStore → class CandidateUserDataStoreImpl behind a byte-identical factory (Group-C composite `$derived.by` merge + JSON round-trip clone preserved verbatim; 12 arrow-field methods; constructor answersLocked `$effect`; D2 type-name-clash avoided; 4-case unit test green unchanged)
   - [ ] 111-02-PLAN.md — candidateContext → class CandidateContextProvider (two-base inheritance via Object.assign(this, #appContext) + Object.assign(this, #authContext); logout override as a prototype getter that survives Object.assign; 3 persisted fields imperative no-`$effect`; userData composite + 3 `$effect`s in D1 order; prototype-getter reactive accessors; barrel narrowed to type-only class export)
   - [ ] 111-03-PLAN.md — phase gate: yarn build + full vitest + svelte-check (151 baseline, zero new) + candidate-app E2E (candidate-journey) + a11y-smoke (runs once at phase end)
 
@@ -402,7 +402,7 @@ Plans:
 | 108. App-Layer Producer Contexts | 3/3 | Complete   | 2026-06-12 |
 | 109. appContext Orchestrator + Spread Fix + PoC Removal | 3/3 | Complete   | 2026-06-12 |
 | 110. voterContext Orchestrator + Voter Sub-Stores | 4/4 | Complete   | 2026-06-13 |
-| 111. candidateContext Orchestrator + UserData Store | 0/TBD | Not started | - |
+| 111. candidateContext Orchestrator + UserData Store | 1/3 | In Progress|  |
 | 112. adminContext + Job Stores | 0/TBD | Not started | - |
 | 113. Handle Flatten + De-duplication | 0/TBD | Not started | - |
 | 114. Store → State Rename | 0/TBD | Not started | - |

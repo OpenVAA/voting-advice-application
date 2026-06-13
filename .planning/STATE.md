@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.13
 milestone_name: Context-as-Class Migration
 status: executing
-stopped_at: Phase 110 complete (verification passed 4/4; E2E green incl. a11y-smoke 8/8)
-last_updated: "2026-06-13T03:00:00.000Z"
-last_activity: 2026-06-13 -- Phase 110 verified passed; starting Phase 111
+stopped_at: Completed 111-01-PLAN.md
+last_updated: "2026-06-13T01:07:07.909Z"
+last_activity: 2026-06-13 -- Phase 111 execution started
 progress:
   total_phases: 11
   completed_phases: 5
-  total_plans: 17
-  completed_plans: 17
+  total_plans: 20
+  completed_plans: 18
   percent: 45
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-12 starting v2.13 Context-as-Class Migration)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 111 — candidateContext orchestrator + userData store
+**Current focus:** Phase 111 — candidatecontext-orchestrator-userdata-store
 
 ## Current Position
 
-Phase: 111 (candidatecontext-orchestrator-userdata-store) — NEXT
-Plan: —
-Status: Phase 110 complete (verification passed 4/4; review clean; E2E green)
-Last activity: 2026-06-13 -- Phase 110 verified passed; starting Phase 111
+Phase: 111 (candidatecontext-orchestrator-userdata-store) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
+Last activity: 2026-06-13 -- Phase 111 execution started
 
 ## Performance Metrics
 
@@ -77,6 +77,7 @@ Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79
 | Phase 110 P02 | 2min | 2 tasks | 3 files |
 | Phase 110 P03 | 18min | 2 tasks | 1 files |
 | Phase 110 P04 | 6min | 2 tasks | 1 files |
+| Phase 111 P01 | 3min | 1 tasks | 1 files |
 
 ### Acknowledged at v2.10 close (2026-06-04)
 
@@ -365,6 +366,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: 109-03: Exported AppContextProvider as a documented non-behavioral test seam; production still constructs only via initAppContext()/getAppContext()
 - [Phase ?]: Derived-projection voter sub-stores (match/nominationAndQuestion/filter) converted to classes: single #deps field + private #value=$derived.by read via get value() prototype getter; factory signatures + { readonly value } surfaces byte-identical (110-02)
 - [Phase ?]: voterContext converted to VoterContextProvider class: stable refs + producers + $derived as lazy field initializers (D1 order), $effect blocks + initFilterContext in constructor, inherited appContext spread via Object.assign + readonly x! declarations for implements
+- [Phase ?]: Phase 111 P01: candidateUserDataStore -> CandidateUserDataStoreImpl class behind byte-identical factory (D2 clash avoided; composite $derived.by merge + JSON round-trip clone preserved)
 
 ### Quick Tasks Completed
 
@@ -409,8 +411,8 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-13T00:30:12.521Z
-Stopped at: Completed 110-03-PLAN.md
+Last session: 2026-06-13T01:07:07.902Z
+Stopped at: Completed 111-01-PLAN.md
 Resume file: None
 Work done this session:
 
