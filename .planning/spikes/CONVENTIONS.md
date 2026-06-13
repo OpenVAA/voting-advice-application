@@ -302,6 +302,32 @@ and PASS 4 (audit). A read/write split cannot shortcut this — it makes PASS 3 
 essential, not less. A `setFoo(updater)` write side does nothing for the trap
 (Spike 019 proves the write fires while the destructured read stays stale).
 
+### Intermediate `$derived` alias over a stable-ref accessor → downstream-skip (Spike 024)
+
+Distinct from the destructure trap (which captures an init-time value): this trap
+fires on an alias that DOES recompute but yields a referentially-identical value,
+so Svelte 5 skips downstream notification.
+
+```ts
+// TRAP — alias over the identity-stable, #version-backed dataRoot
+const dataRoot = $derived(ctx.dataRoot);                  // recomputes, SAME object ref
+const elections = $derived.by(() => dataRoot.elections);  // downstream SKIPPED on version bump
+// → stale on cold direct-URL entry (data provided after mount); masked when data
+//   is already present before first compute (intro→Continue path).
+
+// SAFE — read the accessor DIRECTLY inside the consuming thunk; re-tracks #version
+const elections = $derived.by(() => ctx.dataRoot.elections);
+```
+
+**Bounded scope (Spike 024, 4/4 tests):** the hazard applies ONLY when the accessor
+is an **identity-stable, mutated-in-place** source (the `#version`-bridge shape —
+`dataRoot` is the prime instance; `answers`/sub-store version-bridge handles share
+it). Accessors whose value's reference is **replaced** (`appSettings`, scalar
+`locale`, array `selectedElections`/`opinionQuestions`/`matches`) propagate through
+the alias normally — for those, `const X = $derived(ctx.X)` stays correct. This is
+CONVENTIONS §9 (page-proxy) recurring at the alias layer; a `$derived(ctx.dataRoot)`-
+targeted fix is sufficient — do NOT codemod all `$derived(ctx.X)` sites.
+
 ## Class-as-Context (Spikes 020-023)
 
 The documented Svelte 5 idiom — *"use classes with `$state` fields to share reactivity
