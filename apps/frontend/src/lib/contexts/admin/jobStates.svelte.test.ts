@@ -1,9 +1,9 @@
 import { flushSync } from 'svelte';
 import { afterEach, describe, expect, it } from 'vitest';
 import { ADMIN_FEATURES } from '$lib/admin/features';
-import { JobStoresProvider } from './jobStores.svelte';
+import { JobStatesProvider } from './jobStates.svelte';
 
-describe('JobStoresProvider', () => {
+describe('JobStatesProvider', () => {
   let cleanup: (() => void) | undefined;
 
   afterEach(() => {
@@ -13,19 +13,19 @@ describe('JobStoresProvider', () => {
 
   /**
    * Construct the provider inside an `$effect.root` so its `$state`/`$derived`
-   * fields settle (mirrors VideoController.svelte.test.ts). jobStores has no
+   * fields settle (mirrors VideoController.svelte.test.ts). jobStates has no
    * `$effect`, so the root is for consistency + predictable `$derived` settling.
    */
-  function setup(): JobStoresProvider {
-    let instance!: JobStoresProvider;
+  function setup(): JobStatesProvider {
+    let instance!: JobStatesProvider;
     cleanup = $effect.root(() => {
-      instance = new JobStoresProvider();
+      instance = new JobStatesProvider();
     });
     flushSync();
     return instance;
   }
 
-  it('a fresh JobStoresProvider exposes empty projections', () => {
+  it('a fresh JobStatesProvider exposes empty projections', () => {
     const jobs = setup();
     expect(jobs.pastJobs).toEqual([]);
     // No jobs → no active job recorded per feature, so the active map is empty.

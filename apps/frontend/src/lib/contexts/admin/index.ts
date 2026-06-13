@@ -3,4 +3,4 @@
 export type { AdminContextProvider } from './adminContext.svelte';
 export { getAdminContext, initAdminContext } from './adminContext.svelte';
 export * from './adminContext.type';
-export * from './jobStores.type';
+export * from './jobStates.type';

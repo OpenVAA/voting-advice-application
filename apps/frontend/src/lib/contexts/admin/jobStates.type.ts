@@ -1,7 +1,7 @@
 import type { AdminFeature } from '$lib/admin/features';
 import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
 
-export type JobStores = {
+export type JobStates = {
   /**
    * Active jobs by feature (one active job per feature)
    */

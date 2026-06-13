@@ -4,12 +4,12 @@ import { logDebugError } from '$lib/utils/logger';
 import { compareDates } from '$lib/utils/sorting';
 import type { AdminFeature } from '$lib/admin/features';
 import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
-import type { JobStores } from './jobStores.type';
+import type { JobStates } from './jobStates.type';
 
 /**
- * The job-polling store re-expressed as a Svelte 5 CLASS (`JobStoresProvider`;
- * v2.13 context-as-class migration, CLASS-07 jobStores half). CONVERTED from the
- * `jobStores()` closure-factory that returned a `{ readonly ... }` object literal.
+ * The job-polling store re-expressed as a Svelte 5 CLASS (`JobStatesProvider`;
+ * v2.13 context-as-class migration, CLASS-07 jobStates half). CONVERTED from the
+ * `jobStates()` closure-factory that returned a `{ readonly ... }` object literal.
  *
  * The reactive core is the private `#jobs` `$state` Map registry + the three
  * private `$derived` projections (`#pastJobs` / `#activeJobsByFeature` /
@@ -20,7 +20,7 @@ import type { JobStores } from './jobStores.type';
  * `startPolling` / `stopPolling` are ARROW-FUNCTION FIELDS (§18) so they survive
  * `const { startPolling } = instance` detach (they capture `this`) — both are
  * returned to and called by consumers (`WithPolling.svelte`). `#fetchAndUpdateJobs`
- * is a PRIVATE arrow field (read only by `startPolling`; not on the `JobStores`
+ * is a PRIVATE arrow field (read only by `startPolling`; not on the `JobStates`
  * surface).
  *
  * Self-contained; no `$effect` → constructible outside any effect context, unlike
@@ -30,9 +30,9 @@ import type { JobStores } from './jobStores.type';
  * D1 field-init order: `#pastJobs` is declared BEFORE `#pastJobsByFeature` because
  * the latter reads the former.
  *
- * @internal — do not construct directly; use the `jobStores()` factory.
+ * @internal — do not construct directly; use the `jobStates()` factory.
  */
-export class JobStoresProvider implements JobStores {
+export class JobStatesProvider implements JobStates {
   /////////////////////////////////////////////////
   // Polling
   /////////////////////////////////////////////////
@@ -155,13 +155,12 @@ export class JobStoresProvider implements JobStores {
 }
 
 /**
- * Initialize the `JobStores` object.
+ * Initialize the `JobStates` object.
  *
- * Back-compat factory wrapper kept so `adminContext`'s `const jobs = jobStores()`
- * call site stays byte-identical until Phase 114 RENAME.
+ * Factory wrapper for `adminContext`'s `const jobs = jobStates()` call site.
  */
-export function jobStores(): JobStores {
-  return new JobStoresProvider();
+export function jobStates(): JobStates {
+  return new JobStatesProvider();
 }
 
 function isActive(job: JobInfo): boolean {

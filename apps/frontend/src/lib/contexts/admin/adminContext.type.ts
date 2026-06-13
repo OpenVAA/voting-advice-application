@@ -1,7 +1,7 @@
 import type { BasicUserData, DataWriter } from '$lib/api/base/dataWriter.type';
 import type { AppContext } from '../app';
 import type { AuthContext } from '../auth';
-import type { JobStores } from './jobStores.type';
+import type { JobStates } from './jobStates.type';
 
 export type AdminContext = AppContext &
   AuthContext & {
@@ -12,7 +12,7 @@ export type AdminContext = AppContext &
     /**
      * Stores and utilities for handling admin jobs.
      */
-    jobs: JobStores;
+    jobs: JobStates;
 
     ////////////////////////////////////////////////////////////////////
     // Wrappers for DataWriter methods

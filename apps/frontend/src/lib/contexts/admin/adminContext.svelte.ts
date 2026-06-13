@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
-import { jobStores } from './jobStores.svelte';
+import { jobStates } from './jobStates.svelte';
 import { getAppContext } from '../app';
 import { getAuthContext } from '../auth';
 import { inheritContextMembers } from '../utils/inheritContextMembers';
@@ -140,7 +140,7 @@ export class AdminContextProvider implements AdminContext {
   // Admin functions
   ////////////////////////////////////////////////////////////////////
 
-  jobs = jobStores();
+  jobs = jobStates();
 
   ////////////////////////////////////////////////////////////////////
   // Wrappers for DataWriter methods
