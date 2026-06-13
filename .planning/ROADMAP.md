@@ -372,7 +372,11 @@ Plans:
   3. The server-side `jobStore` (`lib/server/admin/jobs/jobStore.ts`) and the `cookieStore` test mock are explicitly excluded and documented as intentional exceptions; the client `admin/jobStores` context IS renamed.
   4. `yarn build` + `yarn vitest run` + `yarn svelte-check` are green; the rename is purely mechanical (no behavior change).
 
-**Plans**: TBD
+**Plans**: 4 plans
+  - [ ] 114-01-PLAN.md — codemod + rename voter/utils cluster (answerStore, matchStore, filterStore, nominationAndQuestionStore, paramStore, questionBlockStore)
+  - [ ] 114-02-PLAN.md — rename popup + candidate cluster (popupStore, candidateUserDataStore, #editedAnswersStore field)
+  - [ ] 114-03-PLAN.md — rename client admin jobStores → jobStates; keep server jobStore + cookieStore exclusions (RENAME-02)
+  - [ ] 114-04-PLAN.md — comment-only cleanup + whole-tree grep gate + build/svelte-check/vitest baselines
 
 ### Phase 115: Straggler Clearance
 
