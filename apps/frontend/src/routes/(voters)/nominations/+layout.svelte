@@ -21,9 +21,9 @@ Provides the data used by the nominations route.
 
   let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
-  // dataRoot is a reactive accessor (Phase 113 flatten) — read via ctx.dataRoot.current,
+  // dataRoot is a reactive accessor (Phase 113 flatten) — read via ctx.dataRoot,
   // never destructure. The reads below are deliberately INSIDE the non-reactive `update()`
-  // function so dataRoot.current is not tracked (tracking it would cause an infinite loop).
+  // function so dataRoot is not tracked (tracking it would cause an infinite loop).
   const ctx = getVoterContext();
 
   let error = $state<Error | undefined>(undefined);
@@ -41,14 +41,14 @@ Provides the data used by the nominations route.
   });
 
   /**
-   * Handle the update inside a function so that we don't track dataRoot.current, which would result in an infinite loop.
+   * Handle the update inside a function so that we don't track dataRoot, which would result in an infinite loop.
    * @returns `Error` if the data is invalid, `undefined` otherwise.
    */
   async function update([nominationData]: [DPDataType['nominations'] | Error]): Promise<Error | undefined> {
     if (!isValidResult(nominationData, { allowEmpty: true })) return new Error('Error loading nomination data');
-    ctx.dataRoot.current.update(() => {
-      ctx.dataRoot.current.provideEntityData(nominationData.entities);
-      ctx.dataRoot.current.provideNominationData(nominationData.nominations);
+    ctx.dataRoot.update(() => {
+      ctx.dataRoot.provideEntityData(nominationData.entities);
+      ctx.dataRoot.provideNominationData(nominationData.nominations);
     });
     await tick();
     ready = true;

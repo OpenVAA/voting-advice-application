@@ -81,7 +81,7 @@ Displays a warning if the selected constituency does not have nominations in all
   });
 
   /**
-   * Handle the update inside a function so that we don't track dataRoot.current, which would result in an infinite loop.
+   * Handle the update inside a function so that we don't track dataRoot, which would result in an infinite loop.
    * @returns `Error` if the data is invalid, `undefined` otherwise.
    */
   async function updateAsync([questionData, nominationData]: [
@@ -90,10 +90,10 @@ Displays a warning if the selected constituency does not have nominations in all
   ]): Promise<Error | undefined> {
     if (!isValidResult(questionData, { allowEmpty: true })) return new Error('Error loading question data');
     if (!isValidResult(nominationData, { allowEmpty: true })) return new Error('Error loading nomination data');
-    dataRoot.current.update(() => {
-      dataRoot.current.provideQuestionData(questionData);
-      dataRoot.current.provideEntityData(nominationData.entities);
-      dataRoot.current.provideNominationData(nominationData.nominations);
+    dataRoot.update(() => {
+      dataRoot.provideQuestionData(questionData);
+      dataRoot.provideEntityData(nominationData.entities);
+      dataRoot.provideNominationData(nominationData.nominations);
     });
     // Wait for the reactive chain (VoterContext.selectedElections +
     // nominationsAvailable, both $derived/$effect over dataRoot + URL params)

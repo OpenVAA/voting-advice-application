@@ -38,10 +38,10 @@ Displays information about the elections in the VAA.
     {@html sanitizeHtml(t('dynamic.info.content'))}
   </div>
 
-  {#if dataRoot.current.elections}
+  {#if dataRoot.elections}
     <div class="items-stretch">
-      {#each dataRoot.current.elections ?? [] as { name, date, info }}
-        {#if dataRoot.current.elections.length > 1}
+      {#each dataRoot.elections ?? [] as { name, date, info }}
+        {#if dataRoot.elections.length > 1}
           <h2 class="mb-md mt-lg">{name}</h2>
         {/if}
         <p>{info}</p>
@@ -53,6 +53,10 @@ Displays information about the elections in the VAA.
   {/if}
 
   {#snippet primaryActions()}
-    <Button variant="main" href={getRoute.current('Home')} text={t('common.returnHome')} data-testid="voter-info-return" />
+    <Button
+      variant="main"
+      href={getRoute.current('Home')}
+      text={t('common.returnHome')}
+      data-testid="voter-info-return" />
   {/snippet}
 </MainContent>

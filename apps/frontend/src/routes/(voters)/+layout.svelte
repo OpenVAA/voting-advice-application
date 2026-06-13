@@ -44,7 +44,7 @@
   // a getter on the context object) without migrating consumers to
   // `ctx.popupQueue.push(...)` per the destructuring rule.
   // appSettings is a reactive accessor (Phase 113 flatten) — read via
-  // `ctx.appSettings.current`, never destructure (the alias below tracks it).
+  // `ctx.appSettings`, never destructure (the alias below tracks it).
   const ctx = initVoterContext();
   const { appType, popupQueue, userPreferences, t } = ctx;
   const appSettings = $derived(ctx.appSettings);
@@ -57,7 +57,7 @@
   const { navigation, useTopBar } = getLayoutContext();
 
   // Phase 86.3-01 SETTINGS-01 wave A fix (cells #1 + #2): the top-bar overlay must
-  // be reactive on appSettings.current so runtime overrides via
+  // be reactive on appSettings so runtime overrides via
   // mergeAppSettings(page.data.appSettingsData) (appContext.svelte.ts:93-100)
   // propagate to the header Banner. Mirrors the canonical $effect pattern at
   // appContext.svelte.ts:93-100.
@@ -65,7 +65,7 @@
   // CTX-04 (Phase 95-05): migrated off the StackedState revert/push-baseline
   // pattern to the token-keyed settingsOverlay registry. `useTopBar(...)` is
   // `$effect(() => topBar.push(overlay))` — a NESTED effect. When this OUTER
-  // $effect re-runs on an appSettings.current change, Svelte tears down the nested
+  // $effect re-runs on an appSettings change, Svelte tears down the nested
   // `use()` effect first (its cleanup reverts the prior overlay) and then
   // re-creates it (pushing the fresh overlay). This is structurally robust to
   // out-of-order child mount/unmount: each overlay is token-keyed, so a child
@@ -75,8 +75,8 @@
   // untrack-guarded inside settingsOverlay (SettingsOverlay.svelte.ts).
   $effect(() => {
     // Reactive reads — these register the OUTER $effect's dependencies.
-    const feedback = appSettings.current.header.showFeedback;
-    const help = appSettings.current.header.showHelp;
+    const feedback = appSettings.header.showFeedback;
+    const help = appSettings.header.showHelp;
     useTopBar({
       actions: {
         feedback: feedback ? ('show' as const) : ('hide' as const),
@@ -105,19 +105,20 @@
   // matching the Phase 77 baseline. The DataConsentPopup branch (below) stays
   // in the same onMount per Plan 86.3-01 small-fix constraint (CONTEXT D-10).
   onMount(() => {
-    if (!appSettings.current.access.voterApp) return;
+    if (!appSettings.access.voterApp) return;
     // Queue the voter-app notification popup (cell #3 — onMount one-shot).
-    if (appSettings.current.notifications.voterApp?.show) {
+    if (appSettings.notifications.voterApp?.show) {
       popupQueue.push({
         component: Notification,
-        props: { data: appSettings.current.notifications.voterApp }
+        props: { data: appSettings.notifications.voterApp }
       });
     }
     // Ask for event tracking consent if we have no explicit answer
     if (
-      appSettings.current.analytics?.platform &&
-      appSettings.current.analytics?.trackEvents &&
-      (!userPreferences.current.dataCollection?.consent || userPreferences.current.dataCollection?.consent === 'indetermined')
+      appSettings.analytics?.platform &&
+      appSettings.analytics?.trackEvents &&
+      (!userPreferences.current.dataCollection?.consent ||
+        userPreferences.current.dataCollection?.consent === 'indetermined')
     )
       popupQueue.push({ component: DataConsentPopup });
   });
@@ -127,7 +128,7 @@
   let isDrawerOpen = $state(false);
 </script>
 
-{#if appSettings.current.access.voterApp}
+{#if appSettings.access.voterApp}
   <Layout {menuId} bind:isDrawerOpen>
     {#snippet menu()}
       <VoterNav onKeyboardFocusOut={() => navigation.close?.()} id={menuId} hidden={!isDrawerOpen} />

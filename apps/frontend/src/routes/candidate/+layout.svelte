@@ -48,18 +48,18 @@
 
   // onMount one-shot queue (NOT a reactive $effect) — mirrors the voters layout's
   // REVERT-TO-ONMOUNT decision (apps/frontend/src/routes/(voters)/+layout.svelte:100-119).
-  // A reactive $effect re-queues on every appSettings.current change and, on a busy
+  // A reactive $effect re-queues on every appSettings change and, on a busy
   // page, its repeated re-runs keep resetting downstream debounced effects — observed
   // on /candidate/register/password where PasswordValidator's 200ms debounce
   // (clearTimeout on each re-run) never settled, so validPassword stayed false and the
   // set-password submit button stayed disabled (perm-localisation-positive hang).
   onMount(() => {
-    if (!appSettings.current.access.candidateApp || !appSettings.current.dataAdapter.supportsCandidateApp) return;
+    if (!appSettings.access.candidateApp || !appSettings.dataAdapter.supportsCandidateApp) return;
     // Show possible notification
-    if (appSettings.current.notifications.candidateApp?.show)
+    if (appSettings.notifications.candidateApp?.show)
       popupQueue.push({
         component: Notification,
-        props: { data: appSettings.current.notifications.candidateApp }
+        props: { data: appSettings.notifications.candidateApp }
       });
   });
 
@@ -78,12 +78,12 @@
   let isDrawerOpen = $state(false);
 </script>
 
-{#if !appSettings.current.dataAdapter.supportsCandidateApp}
+{#if !appSettings.dataAdapter.supportsCandidateApp}
   <MaintenancePage
     title={t('candidateApp.notSupported.title')}
     content={t('candidateApp.notSupported.content')}
     emoji={t('candidateApp.notSupported.heroEmoji')} />
-{:else if !appSettings.current.access.candidateApp}
+{:else if !appSettings.access.candidateApp}
   <MaintenancePage
     title={t('dynamic.candidateAppNotAccessible.title')}
     content={t('dynamic.candidateAppNotAccessible.content')} />

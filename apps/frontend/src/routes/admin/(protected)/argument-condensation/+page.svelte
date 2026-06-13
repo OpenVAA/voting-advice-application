@@ -19,7 +19,7 @@ Page for controlling the argument condensation feature.
   // Get contexts
   ////////////////////////////////////////////////////////////////////////
 
-  // dataRoot is a reactive accessor (Phase 113 flatten) — read via ctx.dataRoot.current, never destructure.
+  // dataRoot is a reactive accessor (Phase 113 flatten) — read via ctx.dataRoot, never destructure.
   const ctx = getAdminContext();
   const {
     t,
@@ -63,8 +63,8 @@ Page for controlling the argument condensation feature.
   $effect(() => {
     if (selectedElectionId) {
       try {
-        const election = dataRoot.current.getElection(selectedElectionId);
-        availableQuestions = dataRoot.current.findQuestions({ type: 'opinion', elections: election });
+        const election = dataRoot.getElection(selectedElectionId);
+        availableQuestions = dataRoot.findQuestions({ type: 'opinion', elections: election });
         questionError = null;
       } catch (err) {
         questionError = err instanceof Error ? err.message : 'Unknown error';
@@ -133,7 +133,7 @@ Page for controlling the argument condensation feature.
             onchange={() => (selectedIds = [])}
             required>
             <option value="">{t('adminApp.argumentCondensation.generate.selectElectionPlaceholder')}</option>
-            {#each dataRoot.current.elections as election}
+            {#each dataRoot.elections as election}
               <option value={election.id}>{election.name}</option>
             {/each}
           </select>

@@ -22,7 +22,7 @@
 
   // `appType` is a rune handle from AdminContext (inherited from AppContext);
   // `appType.set(...)` is unchanged — the handle exposes `.set`. `appSettings` is
-  // a reactive accessor (Phase 113 flatten) — read via `ctx.appSettings.current`,
+  // a reactive accessor (Phase 113 flatten) — read via `ctx.appSettings`,
   // never destructure (the alias below tracks it).
   const ctx = initAdminContext();
   const { appType, t } = ctx;
@@ -44,12 +44,12 @@
   let isDrawerOpen = $state(false);
 </script>
 
-{#if !appSettings.current.dataAdapter.supportsAdminApp}
+{#if !appSettings.dataAdapter.supportsAdminApp}
   <MaintenancePage
     title={t('adminApp.notSupported.title')}
     content={t('adminApp.notSupported.content')}
     emoji={t('adminApp.notSupported.heroEmoji')} />
-{:else if !appSettings.current.access.adminApp}
+{:else if !appSettings.access.adminApp}
   <MaintenancePage
     title={t('adminApp.common.notAccessible.title')}
     content={t('adminApp.common.notAccessible.content')} />

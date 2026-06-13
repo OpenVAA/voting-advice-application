@@ -39,9 +39,10 @@ const { stubs } = vi.hoisted(() => {
         locales: ['en', 'fi'],
         darkMode: false
       },
-      // dataCtx: own-prop handles + arrow-field writer.
+      // dataCtx: bare own-enumerable reactive accessor (Phase 113 FLATTEN-02) +
+      // arrow-field writer. `dataRoot` is now a bare value, not a `{ current }` handle.
       data: {
-        dataRoot: handle({} as unknown),
+        dataRoot: {} as unknown,
         setDataRoot: (_v: unknown) => {}
       },
       // tracking producer: own-enumerable handle objects + arrow-field methods.
@@ -174,17 +175,25 @@ describe('AppContextProvider — own-enumerability spread guard', () => {
     }
   });
 
-  // Test 2 — handle integrity: reactive members remain readable through the spread.
-  // The spread is NOT a snapshot — `{ ...instance }` copies the stable handle
-  // REFERENCE, and the handle's inner `get current()` reads live state, so
-  // `spread.X.current` returns the live value at read time (not at spread time).
-  it('reactive member handles remain readable and live after the spread', () => {
+  // Test 2 — bare reactive-accessor integrity: appSettings/dataRoot/locale are now
+  // BARE own-enumerable reactive accessors (Phase 113 FLATTEN-02), installed via
+  // `Object.defineProperty(this, …, { enumerable: true })`. `{ ...instance }` copies
+  // a defineProperty enumerable getter as a VALUE (the getter is invoked once at
+  // spread time), so the bare members are present and readable on the spread copy.
+  // The Pitfall-3 guard: a PROTOTYPE getter would be DROPPED by the spread — the
+  // own-enumerable defineProperty is what makes "bare field" + "spread-safe" coexist.
+  it('bare reactive members survive the spread as own-enumerable values', () => {
     const instance = setup();
     const spread = { ...instance };
+    // Bare reads — no `.current` wrapper.
     expect(spread.appSettings).toBeDefined();
-    expect(spread.appSettings.current).toBeDefined();
-    // locale.current reads through the inner getter → live (mocked) componentCtx locale.
-    expect(spread.locale.current).toBe('en');
+    // locale reads through the defineProperty getter → live (mocked) componentCtx locale.
+    expect(spread.locale).toBe('en');
+    // Pitfall-3 guard: the defineProperty enumerable accessors must STILL appear in
+    // Object.keys(spread) (a prototype getter would silently vanish from the spread).
+    expect(Object.keys(spread)).toContain('appSettings');
+    expect(Object.keys(spread)).toContain('dataRoot');
+    expect(Object.keys(spread)).toContain('locale');
   });
 
   // Edge case — the read-write `appType` handle survives the spread intact so

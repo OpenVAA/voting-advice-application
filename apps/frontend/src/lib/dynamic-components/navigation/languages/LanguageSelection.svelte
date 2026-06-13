@@ -27,7 +27,7 @@ A template part that language selection options for the navigation menu if these
 
   const ctx = getAppContext();
   const { locales, t } = ctx;
-  // locale is a reactive accessor (Phase 113 flatten) — read via ctx.locale.current, never destructure.
+  // locale is a reactive accessor (Phase 113 flatten) — read via ctx.locale, never destructure.
   const currentLocale = $derived(ctx.locale);
 </script>
 
@@ -40,7 +40,7 @@ A template part that language selection options for the navigation menu if these
         href={localizeHref(page.url.pathname, { locale: loc as (typeof paraglideLocales)[number] })}
         icon="language"
         text={t(assertTranslationKey(`lang.${loc}`))}
-        disabled={loc === currentLocale.current} />
+        disabled={loc === currentLocale} />
     {/each}
   </NavGroup>
 {/if}

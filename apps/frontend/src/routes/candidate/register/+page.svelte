@@ -86,7 +86,7 @@
 </script>
 
 <MainContent
-  title={appSettings.current.preRegistration?.enabled
+  title={appSettings.preRegistration?.enabled
     ? t('candidateApp.register.titleWithPreregistration')
     : t('candidateApp.register.title')}>
   {#snippet heading()}
@@ -144,6 +144,9 @@
       href={getRoute.current('CandAppLogin')}
       text={t('candidateApp.register.didYouAlreadyRegister')}
       data-testid="register-login-link" />
-    <Button href={getRoute.current('CandAppHelp')} text={t('candidateApp.help.title')} data-testid="register-help-link" />
+    <Button
+      href={getRoute.current('CandAppHelp')}
+      text={t('candidateApp.help.title')}
+      data-testid="register-help-link" />
   {/snippet}
 </MainContent>

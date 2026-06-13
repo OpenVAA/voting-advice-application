@@ -77,7 +77,13 @@
   // removes the Svelte 5 SSR+hydration reactivity race that stuck the
   // previous `$effect` + promise-chain pattern at <Loading /> on full page
   // loads. Ref: 60-RESEARCH §Pattern 1, D-01 + D-03 + D-05.
-  const validity: { error: Error } | { appSettingsData: DPDataType['appSettings']; electionData: DPDataType['elections']; constituencyData: DPDataType['constituencies'] } = $derived.by(() => {
+  const validity:
+    | { error: Error }
+    | {
+        appSettingsData: DPDataType['appSettings'];
+        electionData: DPDataType['elections'];
+        constituencyData: DPDataType['constituencies'];
+      } = $derived.by(() => {
     if (!isValidResult(data.appSettingsData, { allowEmpty: true }))
       return { error: new Error('Error loading app settings data') };
     if (!isValidResult(data.appCustomizationData, { allowEmpty: true }))
@@ -97,7 +103,7 @@
     !('error' in validity) && (validity.appSettingsData.access?.underMaintenance ?? false)
   );
 
-  // Side effect — applies resolved data to `dataRoot.current`. Reads `$derived` validity;
+  // Side effect — applies resolved data to `dataRoot`. Reads `$derived` validity;
   // NEVER calls `.then()` or `await`. Runs after the first `$derived` evaluation
   // on mount and re-runs on any `data` prop change (client-side navigation).
   // We don't do anything else with the data if it's valid, because the relevant
@@ -105,7 +111,7 @@
   //
   // IMPORTANT: mutate the DataRoot via `setDataRoot(updater)` (the encapsulated
   // non-reactive write path on the rune-native DataContext class) rather than the
-  // `dataRoot.current` reactive form. `dataRoot.current.update(() => provide*(...))`
+  // `dataRoot` reactive form. `dataRoot.update(() => provide*(...))`
   // inside a `$effect` creates an infinite reactive loop in Svelte 5: reading
   // `.current` takes a dependency on the dataContext `version` $state, and
   // `DataRoot.update()` notifies subscribers (bumping `version`) — retriggering the
@@ -180,7 +186,7 @@
 
   // Submit any possible event data if the window is closed or refreshed
   $effect(() => {
-    if (!appSettings.current.analytics?.platform) return;
+    if (!appSettings.analytics?.platform) return;
     function handler() {
       if (document.visibilityState === 'hidden') submitAllEvents();
     }
@@ -245,10 +251,10 @@
   <FeedbackModal bind:this={feedbackModalRef} />
 
   <!-- Handle analytics loading -->
-  {#if appSettings.current.analytics?.platform}
-    {#if appSettings.current.analytics?.platform?.name === 'umami'}
+  {#if appSettings.analytics?.platform}
+    {#if appSettings.analytics?.platform?.name === 'umami'}
       {#await import('$lib/components/analytics/umami/UmamiAnalytics.svelte') then UmamiAnalytics}
-        <UmamiAnalytics.default websiteId={appSettings.current.analytics.platform.code} bind:this={umamiRef} />
+        <UmamiAnalytics.default websiteId={appSettings.analytics.platform.code} bind:this={umamiRef} />
       {/await}
     {/if}
   {/if}

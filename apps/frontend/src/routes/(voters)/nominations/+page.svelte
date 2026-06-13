@@ -27,7 +27,7 @@ List all nominations in the application.
   // Entities
   ////////////////////////////////////////////////////////////////////
 
-  const nominations = ctx.dataRoot.current.candidateNominations;
+  const nominations = ctx.dataRoot.candidateNominations;
 
   ////////////////////////////////////////////////////////////////////
   // Filters
@@ -44,7 +44,7 @@ List all nominations in the application.
         faction: ucFirst(t('common.faction.singular')),
         organization: ucFirst(t('common.organization.singular'))
       },
-      locale: ctx.locale.current
+      locale: ctx.locale
     })
   );
 </script>

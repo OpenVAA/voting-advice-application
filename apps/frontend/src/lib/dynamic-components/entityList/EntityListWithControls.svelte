@@ -66,7 +66,7 @@ component-local). See `EntityListWithControls.helpers.ts` for the pure
   const { startEvent, t } = ctx;
   const fctx = getFilterContext();
   // appContext exposes `locale` as a reactive accessor (Phase 113 flatten) — read
-  // via `ctx.locale.current`, never destructure it (destructuring would capture
+  // via `ctx.locale`, never destructure it (destructuring would capture
   // the value once at init and stop updating). The legacy store shape (and
   // `fromStore` bridge) is gone, so `fromStore(ctx.locale)` would throw
   // `store.subscribe is not a function`.
@@ -88,7 +88,7 @@ component-local). See `EntityListWithControls.helpers.ts` for the pure
     searchProperty
       ? new TextPropertyFilter<MaybeWrappedEntityVariant>(
           { property: searchProperty as keyof MaybeWrappedEntityVariant },
-          locale.current
+          locale
         )
       : undefined
   );

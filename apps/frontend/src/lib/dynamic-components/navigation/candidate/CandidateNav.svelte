@@ -83,7 +83,7 @@ A template part that outputs the navigation menu for the Candidate App for use i
     <NavGroup>
       <NavItem href={getRoute.current('CandAppLogin')} icon="login" text={t('common.login')} />
       {#if !candCtx.answersLocked}
-        {#if appSettings.current.preRegistration?.enabled}
+        {#if appSettings.preRegistration?.enabled}
           <NavItem
             href={getRoute.current('CandAppPreregister')}
             icon="create"
@@ -92,13 +92,16 @@ A template part that outputs the navigation menu for the Candidate App for use i
         <NavItem
           href={getRoute.current('CandAppRegister')}
           icon="check"
-          text={appSettings.current.preRegistration?.enabled
+          text={appSettings.preRegistration?.enabled
             ? t('candidateApp.register.titleWithPreregistration')
             : t('candidateApp.register.title')} />
       {/if}
     </NavGroup>
     <NavGroup>
-      <NavItem href={getRoute.current('CandAppForgotPassword')} icon="help" text={t('candidateApp.login.forgotPassword')} />
+      <NavItem
+        href={getRoute.current('CandAppForgotPassword')}
+        icon="help"
+        text={t('candidateApp.login.forgotPassword')} />
       <NavItem href={getRoute.current('CandAppHelp')} icon="help" text={t('candidateApp.help.title')} />
       <NavItem href={getRoute.current('CandAppPrivacy')} icon="privacy" text={t('candidateApp.privacy.shortTitle')} />
     </NavGroup>

@@ -111,7 +111,7 @@
   //
   // IMPORTANT: mutate the DataRoot via `setDataRoot(updater)` (the encapsulated
   // non-reactive write path on the rune-native DataContext class) rather than the
-  // `dataRoot.current` reactive form. `dataRoot.current.update(() => provide*(...))`
+  // `dataRoot` reactive form. `dataRoot.update(() => provide*(...))`
   // inside a `$effect` creates an infinite reactive loop in Svelte 5: reading
   // `.current` registers the version counter as a dependency of this effect, and the
   // `DataRoot.update()` call notifies subscribers (bumping `version`) — retriggering

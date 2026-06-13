@@ -42,7 +42,7 @@ TODO: Consider moving the tracking events away from the component and just addin
 
   const ctx = getAppContext();
   const { startEvent, t } = ctx;
-  // locale is a reactive accessor (Phase 113 flatten) — read via ctx.locale.current, never destructure.
+  // locale is a reactive accessor (Phase 113 flatten) — read via ctx.locale, never destructure.
   const locale = $derived(ctx.locale);
   let filtersModalRef: Modal | undefined = $state();
   let filteredContents: EntityListControlsProps['entities'] = $state([]);
@@ -57,7 +57,7 @@ TODO: Consider moving the tracking events away from the component and just addin
           { property: searchProperty as keyof MaybeWrappedEntityVariant },
           // `locale` is a rune handle (`{ readonly current: string }`) post Phase
           // 97/98 store→rune migration; TextPropertyFilter wants the string.
-          locale.current
+          locale
         )
       : undefined
   );

@@ -147,14 +147,22 @@ export class VoterContextProvider implements VoterContext {
 
   #appContext = getAppContext();
 
-  // The canonical `{ current }` handles from appContext, held as private fields so
-  // the producers + effects + $derived fields close over them. (Phase 113 FLATTEN-01
-  // dropped the redundant `reactive*` mirrors these previously aliased; reads now go
-  // straight to the canonical `appSettings` / `locale` / `dataRoot` handles, which
-  // remain `{ current }` at this boundary — the `.current` → bare codemod is FLATTEN-02.)
-  #appSettings = this.#appContext.appSettings;
-  #locale = this.#appContext.locale;
-  #dataRoot = this.#appContext.dataRoot;
+  // The canonical reactive accessors from appContext. (Phase 113 FLATTEN-02: these
+  // are now BARE reactive accessors — `this.#appContext.appSettings` etc. read the
+  // live value directly, no `.current`. They MUST be re-read each access to stay
+  // reactive, so they are private GETTERS, not value-captured fields: a field
+  // initializer `#appSettings = this.#appContext.appSettings` would snapshot the
+  // value once at construction and lose reactivity. The getters re-invoke
+  // `this.#appContext.X` inside the tracking scope on every read.)
+  get #appSettings(): AppContext['appSettings'] {
+    return this.#appContext.appSettings;
+  }
+  get #locale(): AppContext['locale'] {
+    return this.#appContext.locale;
+  }
+  get #dataRoot(): AppContext['dataRoot'] {
+    return this.#appContext.dataRoot;
+  }
   #t = this.#appContext.t;
 
   ////////////////////////////////////////////////////////////
@@ -170,7 +178,7 @@ export class VoterContextProvider implements VoterContext {
   // Matching and filtering depend on the available nominations and questions, for which we use a utility store
   #nominationsAndQuestions = nominationAndQuestionStore({
     constituencies: () => this.#selectedConstituencies,
-    dataRoot: () => this.#dataRoot.current,
+    dataRoot: () => this.#dataRoot,
     elections: () => this.#selectedElections,
     entityTypes: () => this.#entityTypes,
     hideIfMissingAnswers: () => this.#hideIfMissingAnswers
@@ -187,7 +195,7 @@ export class VoterContextProvider implements VoterContext {
 
   #entityFilters = filterStore({
     nominationsAndQuestions: () => this.#nominationsAndQuestions.value,
-    locale: () => this.#locale.current,
+    locale: () => this.#locale,
     t: () => this.#t
   });
 
@@ -200,13 +208,10 @@ export class VoterContextProvider implements VoterContext {
 
   // Stores related to selection pages
   #electionsSelectable = $derived(
-    !this.#appSettings.current.elections?.disallowSelection &&
-      this.#dataRoot.current.elections?.length !== 1
+    !this.#appSettings.elections?.disallowSelection && this.#dataRoot.elections?.length !== 1
   );
 
-  #constituenciesSelectable = $derived(
-    this.#dataRoot.current.elections?.some((e) => !e.singleConstituency)
-  );
+  #constituenciesSelectable = $derived(this.#dataRoot.elections?.some((e) => !e.singleConstituency));
 
   ////////////////////////////////////////////////////////////
   // currentResultsElection (Phase 88 Plan 88-02)
@@ -249,22 +254,24 @@ export class VoterContextProvider implements VoterContext {
   });
 
   #resultsAvailable = $derived.by(() => {
-    const settings = this.#appSettings.current;
+    const settings = this.#appSettings;
     const questions = this.#opinionQuestions;
     const currentAnswers = this.#answers.answers;
     // For results to be available, we need at least the specified number of answers for each election
     if (this.#selectedElections.length === 0) return false;
     return this.#selectedElections.every((e) => {
       const applicableQuestions = questions.filter((q) => q.appliesTo({ elections: e }));
-      return countAnswers({ answers: currentAnswers, questions: applicableQuestions }) >= settings.matching.minimumAnswers;
+      return (
+        countAnswers({ answers: currentAnswers, questions: applicableQuestions }) >= settings.matching.minimumAnswers
+      );
     });
   });
 
   /** The types of entities we show in results */
-  #entityTypes = $derived(this.#appSettings.current.results?.sections ?? []);
+  #entityTypes = $derived(this.#appSettings.results?.sections ?? []);
 
   /** The entity types to hide if missing opinion answers */
-  #hideIfMissingAnswers = $derived(this.#appSettings.current.entities?.hideIfMissingAnswers || {});
+  #hideIfMissingAnswers = $derived(this.#appSettings.entities?.hideIfMissingAnswers || {});
 
   #nominationsAvailable = $derived.by(() => {
     const nq = this.#nominationsAndQuestions.value;
@@ -276,17 +283,17 @@ export class VoterContextProvider implements VoterContext {
     );
   });
 
-  #minAnswers = $derived(this.#appSettings.current.matching.minimumAnswers);
+  #minAnswers = $derived(this.#appSettings.matching.minimumAnswers);
 
   /** Get the entityTypes whose cardContents include `submatches` */
   #calcSubmatches = $derived.by(() =>
-    Object.entries(this.#appSettings.current.results?.cardContents ?? {})
+    Object.entries(this.#appSettings.results?.cardContents ?? {})
       .filter(([, value]) => value?.includes('submatches'))
       .map(([type]) => type as EntityType)
   );
 
   /** The parent entity matching method */
-  #parentMatchingMethod = $derived(this.#appSettings.current.matching?.organizationMatching || 'none');
+  #parentMatchingMethod = $derived(this.#appSettings.matching?.organizationMatching || 'none');
 
   // currentResultsEntityType — singular EntityType implied for the active
   // results election. URL-first: when `page.params.entityTab` names a valid
@@ -381,8 +388,8 @@ export class VoterContextProvider implements VoterContext {
     ////////////////////////////////////////////////////////////
 
     $effect(() => {
-      const dr = this.#dataRoot.current;
-      const settings = this.#appSettings.current;
+      const dr = this.#dataRoot;
+      const settings = this.#appSettings;
       const electionId = this.#electionId.value;
       const constituencyId = this.#constituencyId.value;
       if (!dr.elections.length) {
@@ -418,7 +425,7 @@ export class VoterContextProvider implements VoterContext {
     });
 
     $effect(() => {
-      const dr = this.#dataRoot.current;
+      const dr = this.#dataRoot;
       const constituencyId = this.#constituencyId.value;
       const electionId = this.#electionId.value;
       if (!dr.constituencies.length) {
@@ -454,7 +461,7 @@ export class VoterContextProvider implements VoterContext {
     // Single $effect computes the entire question chain whenever upstream
     // state (selectedElections / selectedConstituencies / dataRoot) changes.
     $effect(() => {
-      const dr = this.#dataRoot.current;
+      const dr = this.#dataRoot;
       const elections = this.#selectedElections;
       const constituencies = this.#selectedConstituencies;
       const nextQuestionCategories =

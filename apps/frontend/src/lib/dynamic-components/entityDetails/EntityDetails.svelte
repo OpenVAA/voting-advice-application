@@ -23,7 +23,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
 ```tsx
 <EntityDetails entity={matchedCandidate}/>
-<EntityDetails entity={matchedOrganization} tabs={appSettings.current.entityDetails.contents.organization}/>
+<EntityDetails entity={matchedOrganization} tabs={appSettings.entityDetails.contents.organization}/>
 ```
 -->
 
@@ -74,7 +74,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     // `undefined` when the alliance entry is missing from the active settings.
     // The `!tabs?.length` guard already handles undefined at runtime.
     let tabs: Array<EntityDetailsContent | ParentEntityDetailsContent> | undefined =
-      appSettings.current.entityDetails.contents[nakedEntity.type as keyof AppSettings['entityDetails']['contents']];
+      appSettings.entityDetails.contents[nakedEntity.type as keyof AppSettings['entityDetails']['contents']];
     if (!tabs?.length)
       tabs =
         nakedEntity.type === 'alliance'
@@ -137,7 +137,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   <header class:bottomBorder={contentTabs.length === 1}>
     <EntityCard {entity} variant="details" class="!p-lg" />
     {#if allianceSummary}
-      <p class="text-sm text-secondary mx-md mt-sm">
+      <p class="text-secondary mx-md mt-sm text-sm">
         {t('results.alliance.summary.template', {
           candidates: t('results.alliance.summary.candidates', { numCandidates: allianceSummary.numCandidates }),
           parties: t('results.alliance.summary.parties', { numParties: allianceSummary.numParties })

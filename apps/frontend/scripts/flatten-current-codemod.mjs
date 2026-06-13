@@ -28,9 +28,17 @@
  * `appCustomization`, `appType`, `darkMode`, `openFeedbackModal`, …) likewise
  * stay untouched. A broad `\w+\.current` regex is FORBIDDEN (research Pitfall 1)
  * — it would corrupt those reads into bare names that do not exist as fields.
- * The negative lookbehind on `[\w$.]` additionally rejects member-of-something
+ * The negative lookbehind on `[\w$.#]` additionally rejects member-of-something
  * reads (`foo.appSettings.current`, `reactiveAppSettings.current`,
- * `myAppSettings.current`).
+ * `myAppSettings.current`) AND private-field reads (`this.#appSettings.current`).
+ * The `#` exclusion is load-bearing for FLATTEN-02: the trackingService / surveyLink
+ * producers hold their input as a PRIVATE `#appSettings: ReactiveHandle<AppSettings>`
+ * field and read `this.#appSettings.current`. That `ReactiveHandle` input contract is
+ * KEPT (only the consumer-facing `ctx.appSettings` surface goes bare; the appContext
+ * call site wraps the bare field back into a `{ current }` handle for the producers).
+ * Without `#` in the lookbehind the codemod would corrupt those producer-internal
+ * reads and would NOT be idempotent on the `.ts` glob (it would re-flatten them on
+ * every run).
  *
  * ── Idempotency guarantee ───────────────────────────────────────────────────
  * Structural: after PASS 1 there is no `<handle>.current` left to match, so a
@@ -78,11 +86,13 @@ const REPO_ROOT = resolve(process.cwd());
 
 // ── Pass 1: <handle>.current → <handle> rewrite ─────────────────────────
 
-// Negative lookbehind on `[\w$.]` rejects member-of-something-else reads
-// (`foo.appSettings.current`, `reactiveAppSettings.current`,
-// `myAppSettings.current`). `\b...\b` bounds the handle + `current` tokens.
+// Negative lookbehind on `[\w$.#]` rejects member-of-something-else reads
+// (`foo.appSettings.current`, `reactiveAppSettings.current`, `myAppSettings.current`)
+// AND private-field reads (`this.#appSettings.current` — the producers'
+// `ReactiveHandle<AppSettings>` input contract, which is KEPT). `\b...\b` bounds the
+// handle + `current` tokens.
 const FLATTEN_RE = new RegExp(
-  `(?<![\\w$.])\\b(${HANDLE_FLATTENS.join('|')})\\.current\\b`,
+  `(?<![\\w$.#])\\b(${HANDLE_FLATTENS.join('|')})\\.current\\b`,
   'g'
 );
 
@@ -138,7 +148,15 @@ function detectDestructureTraps(content) {
 
 // ── Main ────────────────────────────────────────────────────────────────
 
-const files = globSync(FILES_GLOB, { cwd: REPO_ROOT });
+// Frozen spike-design fixtures (`_spikes-*`) document the ORIGINAL proposed
+// handle shapes (`ReactiveHandle<AppSettings>.current`, `.instance`, `reactive*`)
+// and are git-tracked design artifacts, NOT production consumers (research
+// Assumption A3). They must NEVER be rewritten — their `appSettings.current` reads
+// are producer-input `ReactiveHandle` reads, not the consumer-facing bare accessor.
+// Skipping them keeps the codemod idempotent on the `.ts` glob (Total rewrites: 0).
+const SKIP_PATH_RE = /(^|\/)_spikes[\w-]*\//;
+
+const files = globSync(FILES_GLOB, { cwd: REPO_ROOT }).filter((f) => !SKIP_PATH_RE.test(f));
 if (files.length === 0) {
   console.error(`No files matched: ${FILES_GLOB}`);
   process.exit(1);

@@ -91,14 +91,22 @@ export class CandidateContextProvider implements CandidateContext {
   #authContext = getAuthContext();
 
   // getRoute is a rune-native `{ readonly current }` handle (CTX-08); read
-  // directly via `#getRoute.current(...)`. appSettings/locale/dataRoot read via the
-  // canonical `{ current }` handles held as private fields. (Phase 113 FLATTEN-01
-  // dropped the redundant `reactive*` mirrors these previously aliased; the handles
-  // stay `{ current }` at this boundary — the `.current` → bare codemod is FLATTEN-02.)
+  // directly via `#getRoute.current(...)`. appSettings/locale/dataRoot are now BARE
+  // reactive accessors (Phase 113 FLATTEN-02) — read `this.#appContext.X` directly.
+  // They are exposed here as private GETTERS (not value-captured fields): a field
+  // initializer would snapshot the bare value once at construction and lose
+  // reactivity; the getters re-invoke `this.#appContext.X` inside the tracking scope
+  // on every read.
   #getRoute = this.#appContext.getRoute;
-  #appSettings = this.#appContext.appSettings;
-  #locale = this.#appContext.locale;
-  #dataRoot = this.#appContext.dataRoot;
+  get #appSettings(): AppContext['appSettings'] {
+    return this.#appContext.appSettings;
+  }
+  get #locale(): AppContext['locale'] {
+    return this.#appContext.locale;
+  }
+  get #dataRoot(): AppContext['dataRoot'] {
+    return this.#appContext.dataRoot;
+  }
   // The private handle the logout override delegates to (replaces the former
   // `const { logout: _logout } = authContext`).
   #authLogout = this.#authContext.logout;
@@ -107,7 +115,7 @@ export class CandidateContextProvider implements CandidateContext {
   // User data, authentication and answersLocked
   ////////////////////////////////////////////////////////////////////
 
-  #answersLocked = $derived(!!this.#appSettings.current.access.answersLocked);
+  #answersLocked = $derived(!!this.#appSettings.access.answersLocked);
 
   #idTokenClaims = $derived(page.data.claims ?? undefined);
 
@@ -116,7 +124,7 @@ export class CandidateContextProvider implements CandidateContext {
   #userData = candidateUserDataStore({
     answersLocked: () => this.#answersLocked,
     dataWriterPromise,
-    locale: () => this.#locale.current
+    locale: () => this.#locale
   });
 
   #newUserEmail = $state<string | undefined>(undefined);
@@ -125,9 +133,9 @@ export class CandidateContextProvider implements CandidateContext {
   // Properties matching those in the VoterContext
   ////////////////////////////////////////////////////////////////////
 
-  #electionsSelectable = $derived(this.#dataRoot.current.elections?.length !== 1);
+  #electionsSelectable = $derived(this.#dataRoot.elections?.length !== 1);
 
-  #constituenciesSelectable = $derived(this.#dataRoot.current.elections?.some((e) => !e.singleConstituency));
+  #constituenciesSelectable = $derived(this.#dataRoot.elections?.some((e) => !e.singleConstituency));
 
   // Persisted handles — imperative round-trip via .current/.set() (spike 021/023);
   // NO $effect-driven init.
@@ -140,8 +148,8 @@ export class CandidateContextProvider implements CandidateContext {
   #isPreregistered = localStorageState('candidateContext-isPreregistered', false);
 
   #preregistrationElections = $derived.by(() => {
-    const settings = this.#appSettings.current;
-    const dr = this.#dataRoot.current;
+    const settings = this.#appSettings;
+    const dr = this.#dataRoot;
     const preregIds = this.#preregistrationElectionIds.current;
     const ids = getImpliedElectionIds({ appSettings: settings, dataRoot: dr }) ?? preregIds;
     return ids.map((id) => dr.getElection(id));
@@ -308,7 +316,7 @@ export class CandidateContextProvider implements CandidateContext {
     ////////////////////////////////////////////////////////////////////
 
     $effect(() => {
-      const dr = this.#dataRoot.current;
+      const dr = this.#dataRoot;
       const current = this.#userData.current;
       if (!current || !dr.elections?.length) {
         this.#selectedElections = [];
@@ -325,7 +333,7 @@ export class CandidateContextProvider implements CandidateContext {
     });
 
     $effect(() => {
-      const dr = this.#dataRoot.current;
+      const dr = this.#dataRoot;
       const current = this.#userData.current;
       if (!current || !dr.constituencies?.length) {
         this.#selectedConstituencies = [];
@@ -342,7 +350,7 @@ export class CandidateContextProvider implements CandidateContext {
     });
 
     $effect(() => {
-      const dr = this.#dataRoot.current;
+      const dr = this.#dataRoot;
       const elections = this.#selectedElections;
       const constituencies = this.#selectedConstituencies;
       const entityType = ENTITY_TYPE.Candidate;

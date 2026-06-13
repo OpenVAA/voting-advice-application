@@ -34,7 +34,7 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
 
   // `darkMode` is a stable `{ readonly current }` rune handle from AppContext.
   // `appSettings` is a reactive accessor (Phase 113 flatten) — read via
-  // `ctx.appSettings.current`, never destructure (the alias below tracks it).
+  // `ctx.appSettings`, never destructure (the alias below tracks it).
   const ctx = getAppContext();
   const { darkMode, t } = ctx;
   const appSettings = $derived(ctx.appSettings);
@@ -42,7 +42,7 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
   const { navigationSettings, progress, topBarSettings } = getLayoutContext();
 
   const bgColor = $derived.by(() => {
-    const mode = darkMode.current ? appSettings.current.headerStyle.dark : appSettings.current.headerStyle.light;
+    const mode = darkMode.current ? appSettings.headerStyle.dark : appSettings.headerStyle.light;
     return topBarSettings.current.imageSrc ? mode.overImgBgColor : mode.bgColor;
   });
 
@@ -70,8 +70,8 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
   class:top-bar={!topBarSettings.current.imageSrc}
   style:view-transition-name="persistent-header"
   style:--image={topBarSettings.current.imageSrc && `url(${topBarSettings.current.imageSrc})`}
-  style:--background-size={topBarSettings.current.imageSrc && appSettings.current.headerStyle.imgSize}
-  style:--background-position={topBarSettings.current.imageSrc && appSettings.current.headerStyle.imgPosition}>
+  style:--background-size={topBarSettings.current.imageSrc && appSettings.headerStyle.imgSize}
+  style:--background-position={topBarSettings.current.imageSrc && appSettings.headerStyle.imgPosition}>
   {#if topBarSettings.current.progress === 'show'}
     <progress
       class="progress progress-primary absolute top-0 left-0 h-2"

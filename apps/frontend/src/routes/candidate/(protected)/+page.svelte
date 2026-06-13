@@ -49,7 +49,10 @@ Shows a dynamic list of the actions the candidate should take to be included in 
         buttonTextPrimaryActions: t('candidateApp.home.preview'),
         href: getRoute.current('CandAppPreview')
       };
-    } else if (candCtx.unansweredRequiredInfoQuestions?.length === 0 && candCtx.unansweredOpinionQuestions?.length !== 0) {
+    } else if (
+      candCtx.unansweredRequiredInfoQuestions?.length === 0 &&
+      candCtx.unansweredOpinionQuestions?.length !== 0
+    ) {
       return {
         title: t('candidateApp.common.greeting', { username }),
         explanation: t('candidateApp.home.ingress.notDone'),
@@ -88,7 +91,7 @@ Shows a dynamic list of the actions the candidate should take to be included in 
     {#if candCtx.answersLocked}
       <Warning data-testid="candidate-answers-locked-warning">
         {t('candidateApp.common.editingNotAllowed')}
-        {#if candCtx.unansweredRequiredInfoQuestions?.length !== 0 || (appSettings.current.entities?.hideIfMissingAnswers?.candidate && candCtx.unansweredOpinionQuestions?.length !== 0)}
+        {#if candCtx.unansweredRequiredInfoQuestions?.length !== 0 || (appSettings.entities?.hideIfMissingAnswers?.candidate && candCtx.unansweredOpinionQuestions?.length !== 0)}
           {t('candidateApp.common.isHiddenBecauseMissing')}
         {/if}
       </Warning>

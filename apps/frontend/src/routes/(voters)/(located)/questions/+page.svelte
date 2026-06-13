@@ -58,11 +58,11 @@ Display a general intro before starting answering the questions and possibly all
       voterCtx.selectedQuestionCategoryIds = filtered;
     }
     // Redirect: unchanged behavior — preserve the existing logic exactly.
-    if (!appSettings.current.questions.questionsIntro.show) {
+    if (!appSettings.questions.questionsIntro.show) {
       const categoryId = voterCtx.selectedQuestionBlocks.blocks[0]?.[0]?.category.id;
       return goto(
         getRoute.current(
-          appSettings.current.questions.categoryIntros?.show && categoryId
+          appSettings.questions.categoryIntros?.show && categoryId
             ? { route: 'QuestionCategory', categoryId }
             : { route: 'Question' }
         ),
@@ -78,7 +78,8 @@ Display a general intro before starting answering the questions and possibly all
   // To submit, there number of questions in the selected categories must be at least the minimum number set in the app settings or all questions if there are less than the minimum number
   let canSubmit = $derived(
     voterCtx.selectedQuestionCategoryIds.length > 0 &&
-      voterCtx.selectedQuestionBlocks.questions.length >= Math.min(voterCtx.opinionQuestions.length, appSettings.current.matching.minimumAnswers)
+      voterCtx.selectedQuestionBlocks.questions.length >=
+        Math.min(voterCtx.opinionQuestions.length, appSettings.matching.minimumAnswers)
   );
 
   function handleSubmit(): void {
@@ -87,7 +88,7 @@ Display a general intro before starting answering the questions and possibly all
     if (!categoryId) error(500, 'No question categories selected even though canSubmit is true');
     goto(
       getRoute.current(
-        appSettings.current.questions.categoryIntros?.show ? { route: 'QuestionCategory', categoryId } : { route: 'Question' }
+        appSettings.questions.categoryIntros?.show ? { route: 'QuestionCategory', categoryId } : { route: 'Question' }
       )
     );
   }
@@ -111,11 +112,11 @@ Display a general intro before starting answering the questions and possibly all
     </figure>
   {/snippet}
 
-  {#if appSettings.current.questions.questionsIntro.allowCategorySelection}
+  {#if appSettings.questions.questionsIntro.allowCategorySelection}
     <p class="text-center">
       {t('questions.intro.ingress.withCategorySelection', {
         numCategories: voterCtx.opinionQuestionCategories.length,
-        minQuestions: appSettings.current.matching.minimumAnswers
+        minQuestions: appSettings.matching.minimumAnswers
       })}
     </p>
     <div class="gap-sm grid" data-testid="voter-questions-category-list">
@@ -158,7 +159,8 @@ Display a general intro before starting answering the questions and possibly all
       variant="main"
       icon="next"
       text={t('questions.intro.start', {
-        numQuestions: voterCtx.selectedQuestionCategoryIds.length > 0 ? voterCtx.selectedQuestionBlocks.questions.length : 0
+        numQuestions:
+          voterCtx.selectedQuestionCategoryIds.length > 0 ? voterCtx.selectedQuestionBlocks.questions.length : 0
       })}
       data-testid="voter-questions-start" />
   {/snippet}

@@ -40,14 +40,7 @@ A template part that outputs the navigation menu for the Voter App for use in `L
   // (constituenciesSelectable, electionsSelectable, resultsAvailable,
   // selectedElections, selectedConstituencies) are read via voterCtx.X.
   const voterCtx = getVoterContext();
-  const {
-    appSettings,
-    getRoute,
-    openFeedbackModal,
-    resetVoterData,
-    surveyLink,
-    t
-  } = voterCtx;
+  const { appSettings, getRoute, openFeedbackModal, resetVoterData, surveyLink, t } = voterCtx;
   const elections = $derived(voterCtx.selectedElections);
   const constituencies = $derived(voterCtx.selectedConstituencies);
 </script>
@@ -57,17 +50,17 @@ A template part that outputs the navigation menu for the Voter App for use in `L
   <NavGroup>
     <NavItem href={getRoute.current('Home')} icon="home" text={t('common.home')} />
     <!-- Elections are selected either before or after constituencies depending on `startFromConstituencyGroup` -->
-    {#if voterCtx.electionsSelectable && !appSettings.current.elections?.startFromConstituencyGroup}
+    {#if voterCtx.electionsSelectable && !appSettings.elections?.startFromConstituencyGroup}
       <NavItem href={getRoute.current('Elections')} icon="election" text={t('elections.title')} />
     {/if}
     {#if voterCtx.constituenciesSelectable}
       <NavItem
-        disabled={!appSettings.current.elections?.startFromConstituencyGroup && !elections.length}
+        disabled={!appSettings.elections?.startFromConstituencyGroup && !elections.length}
         href={getRoute.current('Constituencies')}
         icon="constituency"
         text={t('constituencies.title')} />
     {/if}
-    {#if voterCtx.electionsSelectable && appSettings.current.elections?.startFromConstituencyGroup}
+    {#if voterCtx.electionsSelectable && appSettings.elections?.startFromConstituencyGroup}
       <NavItem
         disabled={!constituencies.length}
         href={getRoute.current('Elections')}
@@ -92,14 +85,14 @@ A template part that outputs the navigation menu for the Voter App for use in `L
   <NavGroup>
     <NavItem href={getRoute.current('Info')} icon="election" text={t('info.title')} />
     <NavItem href={getRoute.current('About')} icon="info" text={t('about.title')} />
-    {#if appSettings.current.entities.showAllNominations}
+    {#if appSettings.entities.showAllNominations}
       <NavItem href={getRoute.current('Nominations')} icon="search" text={t('dynamic.nominations.title')} />
     {/if}
     <NavItem href={getRoute.current('Privacy')} icon="privacy" text={t('privacy.title')} />
   </NavGroup>
-  {#if appSettings.current.survey?.showIn?.includes('navigation') || openFeedbackModal.current}
+  {#if appSettings.survey?.showIn?.includes('navigation') || openFeedbackModal.current}
     <NavGroup>
-      {#if appSettings.current.survey?.showIn?.includes('navigation')}
+      {#if appSettings.survey?.showIn?.includes('navigation')}
         <NavItem href={surveyLink.current} target="_blank" icon="research" text={t('dynamic.survey.button')} />
       {/if}
       {#if openFeedbackModal.current}

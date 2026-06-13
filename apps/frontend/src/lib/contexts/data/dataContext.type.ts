@@ -2,13 +2,15 @@ import type { DataRoot } from '@openvaa/data';
 
 export type DataContext = {
   /**
-   * Rune-native DataRoot handle exposing a reactive `.current` getter (tracks the
-   * version counter). The legacy svelte/store DataRoot bridge was removed in
-   * Wave 4 (Phase 98); the duplicate read-only mirror + its non-reactive
-   * producer-read split were collapsed into this single handle in Phase 113
-   * (FLATTEN-01) — producer writes go through `setDataRoot`.
+   * Rune-native DataRoot, exposed as a BARE own-enumerable reactive accessor
+   * (tracks the version counter). The legacy svelte/store DataRoot bridge was
+   * removed in Wave 4 (Phase 98); the duplicate read-only mirror + its
+   * non-reactive producer-read split were collapsed into this single handle in
+   * Phase 113 (FLATTEN-01), and the `{ current }` wrapper was flattened to a bare
+   * field in Phase 113 (FLATTEN-02) — read `ctx.dataRoot` directly. Producer
+   * writes go through `setDataRoot`.
    */
-  dataRoot: { readonly current: DataRoot };
+  readonly dataRoot: DataRoot;
   /**
    * Mutate the DataRoot through the encapsulated non-reactive write path. Pass an
    * `updater` that calls `dr.update(() => dr.provide*(...))`. The write runs inside

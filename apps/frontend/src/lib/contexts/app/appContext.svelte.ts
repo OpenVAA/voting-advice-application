@@ -166,6 +166,9 @@ export class AppContextProvider implements AppContext {
 
   // Reactive `{ current, set?, update? }` handles installed via `const self = this`.
   readonly appType!: AppContext['appType'];
+  // appSettings/locale are BARE own-enumerable reactive accessors (Phase 113
+  // FLATTEN-02), installed via Object.defineProperty(this, …, { enumerable: true })
+  // so they survive the downstream `{ ...appContext }` spreads.
   readonly appSettings!: AppContext['appSettings'];
   readonly appCustomization!: AppContext['appCustomization'];
   readonly openFeedbackModal!: AppContext['openFeedbackModal'];
@@ -181,7 +184,9 @@ export class AppContextProvider implements AppContext {
   readonly t!: AppContext['t'];
   readonly translate!: AppContext['translate'];
 
-  // Forwarded dataCtx members (own-prop handles + arrow field — references copied).
+  // Forwarded dataCtx members. `dataRoot` is a BARE own-enumerable reactive accessor
+  // (Phase 113 FLATTEN-02) installed via Object.defineProperty so it survives the
+  // downstream spreads; `setDataRoot` is an arrow field — reference copied.
   readonly dataRoot!: AppContext['dataRoot'];
   readonly setDataRoot!: AppContext['setDataRoot'];
 
@@ -215,17 +220,19 @@ export class AppContextProvider implements AppContext {
       }
     };
 
-    this.appSettings = {
-      get current() {
+    // BARE own-enumerable reactive accessor (Phase 113 FLATTEN-02). The former
+    // writable `{ current, set, update }` handle had NO external writer (internal
+    // writes go through `#appSettingsValue` directly — the re-merge `$effect`s
+    // below + the field initializer), so the public surface is read-only bare.
+    // Installed via Object.defineProperty(enumerable:true) so it survives the three
+    // downstream `{ ...appContext }` spreads (a prototype getter would be dropped).
+    Object.defineProperty(this, 'appSettings', {
+      get() {
         return self.#appSettingsValue;
       },
-      set(v: AppSettings) {
-        self.#appSettingsValue = v;
-      },
-      update(fn: (v: AppSettings) => AppSettings) {
-        self.#appSettingsValue = fn(self.#appSettingsValue);
-      }
-    };
+      enumerable: true,
+      configurable: true
+    });
 
     this.appCustomization = {
       get current() {
@@ -259,11 +266,16 @@ export class AppContextProvider implements AppContext {
     // spreads copy these own-enumerable values intact. (Phase 113 FLATTEN-01 deleted
     // the redundant read-only app-settings / locale mirrors that read these same
     // backings — internal consumers now read the canonical handles directly.)
-    this.locale = {
-      get current() {
+    // BARE own-enumerable reactive accessor (Phase 113 FLATTEN-02): read `ctx.locale`
+    // directly. Installed via Object.defineProperty(enumerable:true) so it survives
+    // the downstream spreads. `locales`/`darkMode` stay `{ current }` (out of scope).
+    Object.defineProperty(this, 'locale', {
+      get() {
         return self.#componentCtx.locale;
-      }
-    };
+      },
+      enumerable: true,
+      configurable: true
+    });
     this.locales = {
       get current() {
         return self.#componentCtx.locales;
@@ -285,11 +297,24 @@ export class AppContextProvider implements AppContext {
     // They read `appSettings` / `userPreferences` via `.current`.
     ////////////////////////////////////////////////////////////////////
 
+    // The trackingService + surveyLink producers consume `appSettings` as a
+    // `ReactiveHandle<AppSettings>` and read `.current`. The consumer-facing
+    // `this.appSettings` surface is now BARE (Phase 113 FLATTEN-02), so we wrap
+    // `#appSettingsValue` back into a `{ get current() }` handle for the producer
+    // INPUTS only — keeping the producers' `ReactiveHandle` input contract unchanged
+    // (research Open Question #2: keep blast radius minimal; only the consumer-facing
+    // surface goes bare). The getter re-reads `#appSettingsValue` so the producers
+    // stay reactive.
+    const appSettingsHandle = {
+      get current() {
+        return self.#appSettingsValue;
+      }
+    };
     this.#tracking = trackingService({
-      appSettings: this.appSettings,
+      appSettings: appSettingsHandle,
       userPreferences: this.#userPreferences
     });
-    this.#survey = surveyLink({ appSettings: this.appSettings, sessionId: this.#tracking.sessionId });
+    this.#survey = surveyLink({ appSettings: appSettingsHandle, sessionId: this.#tracking.sessionId });
     this.surveyLink = this.#survey;
 
     ////////////////////////////////////////////////////////////////////
@@ -300,13 +325,27 @@ export class AppContextProvider implements AppContext {
     // producers/contexts.
     ////////////////////////////////////////////////////////////////////
 
+    // Forward dataCtx.dataRoot as a BARE own-enumerable reactive accessor (Phase 113
+    // FLATTEN-02): read the now-bare `dataContext.dataRoot` accessor each access so the
+    // `#version` reactive re-read inside it stays live, and install via
+    // Object.defineProperty(enumerable:true) so it survives the downstream
+    // `{ ...appContext }` spreads. (Cannot go through the plain `Object.assign` value
+    // copy below — that would snapshot the DataRoot once, losing reactivity.)
+    Object.defineProperty(this, 'dataRoot', {
+      get() {
+        return self.#dataCtx.dataRoot;
+      },
+      enumerable: true,
+      configurable: true
+    });
+
     Object.assign(this, {
       // componentCtx — only the STABLE members not overridden above
       // (`locale`/`locales`/`darkMode` are replaced by the `{ current }` handles).
       t: this.#componentCtx.t,
       translate: this.#componentCtx.translate,
-      // dataCtx — own-prop handles + arrow-field writer (references copied).
-      dataRoot: this.#dataCtx.dataRoot,
+      // dataCtx — arrow-field writer (reference copied); `dataRoot` is installed
+      // above as a bare own-enumerable accessor.
       setDataRoot: this.#dataCtx.setDataRoot,
       // tracking — own-enumerable handle objects + arrow-field methods.
       sendTrackingEvent: this.#tracking.sendTrackingEvent,

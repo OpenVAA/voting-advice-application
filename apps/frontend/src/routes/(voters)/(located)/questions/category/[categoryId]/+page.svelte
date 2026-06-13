@@ -50,7 +50,7 @@ Display the intro to a question category and possibly a button with which to ski
   ////////////////////////////////////////////////////////////////////
 
   let categoryId = $derived(parseParams(page).categoryId);
-  let category = $derived(categoryId ? dataRoot.current.getQuestionCategory(categoryId) : undefined);
+  let category = $derived(categoryId ? dataRoot.getQuestionCategory(categoryId) : undefined);
   let block = $derived(category ? voterCtx.selectedQuestionBlocks.getByCategory(category) : undefined);
   let questionId = $derived<Id | undefined>(block?.block[0]?.id);
   let customData = $derived(category ? getCustomData(category) : undefined);
@@ -73,7 +73,7 @@ Display the intro to a question category and possibly a button with which to ski
 
   // On mount possibly redirect
   onMount(() => {
-    if (!appSettings.current.questions.categoryIntros?.show) {
+    if (!appSettings.questions.categoryIntros?.show) {
       return goto(getRoute.current({ route: 'Question', questionId }), { replaceState: true });
     }
   });
@@ -116,7 +116,7 @@ Display the intro to a question category and possibly a button with which to ski
         href={getRoute.current({ route: 'Question', questionId })}
         text={t('common.continue')}
         data-testid="voter-questions-category-start" />
-      {#if appSettings.current.questions.categoryIntros?.allowSkip}
+      {#if appSettings.questions.categoryIntros?.allowSkip}
         <Button
           icon="skip"
           color="secondary"

@@ -57,7 +57,7 @@ The frontpage of the app for voters.
   <a href={getRoute.current('About')} class="btn btn-ghost w-full max-w-md" data-testid="voter-home-about-link"
     >{t('about.title')}</a>
 
-  {#if appSettings.current.survey?.showIn?.includes('frontpage')}
+  {#if appSettings.survey?.showIn?.includes('frontpage')}
     <SurveyBanner class="mt-lg" />
   {/if}
 

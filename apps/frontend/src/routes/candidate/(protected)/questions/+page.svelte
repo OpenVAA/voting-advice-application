@@ -76,7 +76,7 @@ Shows the opinion questions for the candidate to answer.
     {#if candCtx.answersLocked}
       <Warning>
         {t('candidateApp.common.editingNotAllowed')}
-        {#if candCtx.unansweredRequiredInfoQuestions?.length !== 0 || (appSettings.current.entities?.hideIfMissingAnswers?.candidate && candCtx.unansweredOpinionQuestions?.length !== 0)}
+        {#if candCtx.unansweredRequiredInfoQuestions?.length !== 0 || (appSettings.entities?.hideIfMissingAnswers?.candidate && candCtx.unansweredOpinionQuestions?.length !== 0)}
           {t('candidateApp.common.isHiddenBecauseMissing')}
         {/if}
       </Warning>
@@ -113,7 +113,7 @@ Shows the opinion questions for the candidate to answer.
           {t('candidateApp.questions.unansweredWarning', {
             numUnansweredQuestions: candCtx.unansweredOpinionQuestions?.length
           })}
-          {#if appSettings.current.entities?.hideIfMissingAnswers?.candidate}
+          {#if appSettings.entities?.hideIfMissingAnswers?.candidate}
             {t('candidateApp.common.willBeHiddenIfMissing')}
           {/if}
         </div>
@@ -144,7 +144,7 @@ Shows the opinion questions for the candidate to answer.
 
               <div class="grid-line-x gap-lg grid" data-testid="candidate-questions-card">
                 <HeadingGroup class="text-center">
-                  {#if appSettings.current.elections.showElectionTags && elections.length}
+                  {#if appSettings.elections.showElectionTags && elections.length}
                     <PreHeading>
                       {#each elections as election}
                         <ElectionTag {election} />

@@ -35,7 +35,7 @@
   // `darkMode` / `getRoute` are stable rune-native `{ readonly current }` handles
   // from AdminContext (inherited from AppContext); read `.current` directly.
   // `appSettings` is a reactive accessor (Phase 113 flatten) — read via
-  // `ctx.appSettings.current`, never destructure (the alias below tracks it).
+  // `ctx.appSettings`, never destructure (the alias below tracks it).
   const ctx = getAdminContext();
   const { darkMode, getRoute, t } = ctx;
   const appSettings = $derived(ctx.appSettings);
@@ -135,7 +135,7 @@
     </div>
 
     <div class="mt-lg">
-      {#if appSettings.current.access.voterApp}
+      {#if appSettings.access.voterApp}
         <!-- We call invalidateAll when navigation to the Voter App to remove the Nominations we have added when loading User data -->
         <Button
           onclick={() => goto(getRoute.current('Home'), { invalidateAll: true })}

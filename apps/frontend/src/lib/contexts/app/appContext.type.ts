@@ -10,9 +10,10 @@ import type { UserPreferences } from './userPreferences.type';
 /**
  * The AppContext type.
  *
- * ComponentContext properties (`locale`, `locales`, `darkMode`) are overridden with
- * `{ readonly current }` rune-handle versions for downstream Phase-52 contexts
- * (VoterContext, CandidateContext, AdminContext) which read them via `.current`.
+ * ComponentContext properties are overridden: `locale` is a BARE reactive accessor
+ * (Phase 113 FLATTEN-02, read `ctx.locale`); `locales`/`darkMode` remain
+ * `{ readonly current }` rune handles for downstream Phase-52 contexts (VoterContext,
+ * CandidateContext, AdminContext) which read them via `.current`.
  *
  * Plain function properties (`t`, `translate`) are kept as-is from ComponentContext.
  */
@@ -20,9 +21,11 @@ export type AppContext = Omit<ComponentContext, 'locale' | 'locales' | 'darkMode
   DataContext &
   TrackingService & {
     /**
-     * The current locale, exposed as a `{ readonly current }` rune handle. Read via `.current`.
+     * The current locale, exposed as a BARE reactive accessor (Phase 113 FLATTEN-02).
+     * Read directly via `ctx.locale`. MUST be read off `ctx` (never destructured) —
+     * it is a reactive accessor per CLAUDE.md's Context Destructuring Rule.
      */
-    locale: { readonly current: string };
+    readonly locale: string;
     /**
      * Available locales, exposed as a `{ readonly current }` rune handle. Read via `.current`.
      */
@@ -49,14 +52,13 @@ export type AppContext = Omit<ComponentContext, 'locale' | 'locales' | 'darkMode
       update(fn: (v: AppCustomization) => AppCustomization): void;
     };
     /**
-     * Currently effective app settings, exposed as a writable rune handle. Read via `.current`.
-     * NB. It is writable, but it should not be written to under normal circumstances.
+     * Currently effective app settings, exposed as a BARE reactive accessor (Phase 113
+     * FLATTEN-02). Read directly via `ctx.appSettings`. MUST be read off `ctx` (never
+     * destructured) — it is a reactive accessor per CLAUDE.md's Context Destructuring
+     * Rule. The former writable `set`/`update` surface had no external callers; internal
+     * writes go through the private `#appSettingsValue` $state (re-merge `$effect`s).
      */
-    appSettings: {
-      readonly current: AppSettings;
-      set(v: AppSettings): void;
-      update(fn: (v: AppSettings) => AppSettings): void;
-    };
+    readonly appSettings: AppSettings;
     /**
      * Rune-native route-builder handle (CTX-08). Read via `getRoute.current(opts)`.
      */

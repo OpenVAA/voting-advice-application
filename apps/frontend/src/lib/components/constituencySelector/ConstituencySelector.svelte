@@ -19,7 +19,7 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
 
 ```tsx
 <ConstituencySelector
-  elections={dataRoot.current.elections}
+  elections={dataRoot.elections}
   bind:selected={$selectedConstituencies}
   onChange={(sel) => console.info('Selected', sel)} />
 ```
@@ -189,9 +189,7 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
     if (!changed?.selectedId) return;
     const root = elections[0].root;
     const constituency = root.getConstituency(changed.selectedId);
-    const pickedGroup = changed.groups.find((g) =>
-      g.constituencies.some((c) => c.id === constituency.id)
-    );
+    const pickedGroup = changed.groups.find((g) => g.constituencies.some((c) => c.id === constituency.id));
     if (!pickedGroup) return;
     for (let j = 0; j < sections.length; j++) {
       if (j === changedIndex) continue;

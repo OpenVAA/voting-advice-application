@@ -20,7 +20,7 @@ Page for controlling the question info generation feature.
   // Get contexts
   ////////////////////////////////////////////////////////////////////////
 
-  // dataRoot is a reactive accessor (Phase 113 flatten) — read via ctx.dataRoot.current, never destructure.
+  // dataRoot is a reactive accessor (Phase 113 flatten) — read via ctx.dataRoot, never destructure.
   const ctx = getAdminContext();
   const {
     t,
@@ -79,8 +79,8 @@ Page for controlling the question info generation feature.
   $effect(() => {
     if (selectedElectionId) {
       try {
-        const election = dataRoot.current.getElection(selectedElectionId);
-        availableQuestions = dataRoot.current.findQuestions({ type: 'opinion', elections: election });
+        const election = dataRoot.getElection(selectedElectionId);
+        availableQuestions = dataRoot.findQuestions({ type: 'opinion', elections: election });
         questionError = null;
       } catch (err) {
         questionError = err instanceof Error ? err.message : 'Unknown error';
@@ -153,7 +153,7 @@ Page for controlling the question info generation feature.
         </label>
         <select id="electionId" name="electionId" class="select w-full" bind:value={selectedElectionId}>
           <option value="" disabled selected>{t('adminApp.questionInfo.selectElection')}</option>
-          {#each dataRoot.current.elections as election}
+          {#each dataRoot.elections as election}
             <option value={election.id}>{election.name}</option>
           {/each}
         </select>

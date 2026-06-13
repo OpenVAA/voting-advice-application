@@ -53,9 +53,13 @@ class DataContextProvider implements DataContext {
   readonly #dataRoot: DataRoot;
   #version = $state(0);
 
-  // Own-property handle — spread-safe (appContext `{ ...dataCtx }`). Assigned in the
-  // constructor so its getter can close over `this` for the private `#version` read.
-  readonly dataRoot: { readonly current: DataRoot };
+  // Bare own-enumerable reactive accessor — spread-safe (appContext `{ ...dataCtx }`).
+  // Installed via `Object.defineProperty(this, 'dataRoot', { enumerable: true })` in
+  // the constructor so the accessor survives the spread (own-enumerable, unlike a
+  // prototype getter) AND its getter can close over `this` for the private `#version`
+  // read. (Phase 113 FLATTEN-02: dropped the `.current` wrapper — consumers read
+  // `ctx.dataRoot` bare; the `void #version` reactive re-read is preserved inside.)
+  readonly dataRoot!: DataRoot;
 
   constructor(dataRoot: DataRoot) {
     this.#dataRoot = dataRoot;
@@ -70,15 +74,17 @@ class DataContextProvider implements DataContext {
       });
     });
 
-    // `self` lets the object-literal getters reach the class-private `#version`
+    // `self` lets the accessor reach the class-private `#version`
     // (private-field access is legal anywhere lexically inside the class body).
     const self = this;
-    this.dataRoot = {
-      get current(): DataRoot {
+    Object.defineProperty(this, 'dataRoot', {
+      get(): DataRoot {
         void self.#version; // reactive: re-evaluates on every DataRoot update
         return dataRoot;
-      }
-    };
+      },
+      enumerable: true,
+      configurable: true
+    });
   }
 
   /**
@@ -103,9 +109,7 @@ export function initDataContext(): DataContext {
   const dataRoot = new DataRoot({ locale });
 
   // Override some dataRoot formatters
-  dataRoot.setFormatter('booleanAnswer', ({ value }) =>
-    t(value ? 'common.answer.yes' : 'common.answer.no')
-  );
+  dataRoot.setFormatter('booleanAnswer', ({ value }) => t(value ? 'common.answer.yes' : 'common.answer.no'));
   dataRoot.setFormatter('missingAnswer', () => t('common.missingAnswer'));
 
   return setContext<DataContext>(CONTEXT_KEY, new DataContextProvider(dataRoot));

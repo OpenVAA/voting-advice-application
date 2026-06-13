@@ -3,8 +3,10 @@ import { surveyLink } from './survey.svelte';
 
 /**
  * Minimal rune-shaped handle used to feed the pure-rune `surveyLink` producer
- * its inputs. The producer reads `appSettings.current` / `sessionId.current`
- * directly (no `fromStore`), so the tests construct `{ current }` handles.
+ * its inputs. The producer reads its `ReactiveHandle` inputs via their `current`
+ * getter directly (no `fromStore`), so the tests construct `{ current }` handles.
+ * (NB: these are producer-INPUT handles — the consumer-facing `ctx.appSettings`
+ * surface went bare in Phase 113 FLATTEN-02, but the producer input contract is kept.)
  */
 function handle<TValue>(value: TValue): { current: TValue } {
   return { current: value };

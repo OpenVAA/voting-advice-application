@@ -54,11 +54,11 @@ Accesses `AppContext` to read `appSettings`.
 
 <!-- bind: keep — modalRef is plain let Modal; single ref read in onclick -->
 <Modal bind:this={modalRef} title={t('common.privacy.dataCollection.title')}>
-  {#if appSettings.current.analytics?.platform?.name}
+  {#if appSettings.analytics?.platform?.name}
     <p>{@html sanitizeHtml(t('common.privacy.dataCollection.content'))}</p>
     <p>
       {@html sanitizeHtml(
-        t(assertTranslationKey(`privacy.dataCollection.platform.${appSettings.current.analytics.platform.name}`), {
+        t(assertTranslationKey(`privacy.dataCollection.platform.${appSettings.analytics.platform.name}`), {
           analyticsLink
         })
       )}

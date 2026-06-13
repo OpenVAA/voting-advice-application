@@ -58,12 +58,12 @@ Accesses `AppContext` to set and read `userPreferences`.
 </script>
 
 <div {...concatClass(restProps, 'grid justify-items-center')}>
-  {#if description === 'inline' && appSettings.current.analytics.platform}
+  {#if description === 'inline' && appSettings.analytics.platform}
     <div>
       <p>{@html sanitizeHtml(t('common.privacy.dataCollection.content'))}</p>
       <p>
         {@html sanitizeHtml(
-          t(assertTranslationKey(`privacy.dataCollection.platform.${appSettings.current.analytics.platform.name}`), {
+          t(assertTranslationKey(`privacy.dataCollection.platform.${appSettings.analytics.platform.name}`), {
             analyticsLink
           })
         )}
@@ -71,7 +71,9 @@ Accesses `AppContext` to set and read `userPreferences`.
     </div>
     <p class="mt-md text-center font-bold">
       {t(
-        assertTranslationKey(`privacy.dataConsentIntro.${userPreferences.current.dataCollection?.consent ?? 'indetermined'}`),
+        assertTranslationKey(
+          `privacy.dataConsentIntro.${userPreferences.current.dataCollection?.consent ?? 'indetermined'}`
+        ),
         { consentDate: new Date(userPreferences.current.dataCollection?.date ?? '') }
       )}
     </p>

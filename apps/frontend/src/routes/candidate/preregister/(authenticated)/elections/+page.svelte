@@ -16,7 +16,9 @@
   const { getRoute, t } = candCtx;
   // dataRoot is a reactive accessor (Phase 113 flatten) — read via candCtx.X, never destructure.
   const dataRoot = $derived(candCtx.dataRoot);
-  const nextRoute = $derived(candCtx.constituenciesSelectable ? 'CandAppPreregisterConstituency' : 'CandAppPreregisterEmail');
+  const nextRoute = $derived(
+    candCtx.constituenciesSelectable ? 'CandAppPreregisterConstituency' : 'CandAppPreregisterEmail'
+  );
 </script>
 
 <MainContent title={t('candidateApp.preregister.electionSelect.title')}>
@@ -25,7 +27,7 @@
   </div>
   <ElectionSelector
     class="mb-md"
-    elections={dataRoot.current.elections}
+    elections={dataRoot.elections}
     bind:selected={candCtx.preregistrationElectionIds}
     data-testid="preregister-elections-list" />
   {#snippet primaryActions()}

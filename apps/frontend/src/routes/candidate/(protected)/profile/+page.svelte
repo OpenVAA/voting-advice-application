@@ -67,8 +67,8 @@ Shows the candidate's basic information, some of which is editable.
     unconfirmed?: boolean;
   } {
     try {
-      const election = dataRoot.current.getElection(nomination.electionId);
-      const constituency = dataRoot.current.getConstituency(nomination.constituencyId);
+      const election = dataRoot.getElection(nomination.electionId);
+      const constituency = dataRoot.getConstituency(nomination.constituencyId);
       return {
         election: election.name,
         constituency: constituency.name,
@@ -178,7 +178,7 @@ Shows the candidate's basic information, some of which is editable.
     {#if candCtx.answersLocked}
       <Warning data-testid="candidate-answers-locked-warning">
         {t('candidateApp.common.editingNotAllowed')}
-        {#if candCtx.unansweredRequiredInfoQuestions?.length !== 0 || (appSettings.current.entities?.hideIfMissingAnswers?.candidate && candCtx.unansweredOpinionQuestions?.length !== 0)}
+        {#if candCtx.unansweredRequiredInfoQuestions?.length !== 0 || (appSettings.entities?.hideIfMissingAnswers?.candidate && candCtx.unansweredOpinionQuestions?.length !== 0)}
           {t('candidateApp.common.isHiddenBecauseMissing')}
         {/if}
       </Warning>
@@ -346,7 +346,11 @@ Shows the candidate's basic information, some of which is editable.
           color="warning"
           data-testid="profile-cancel" />
       {:else}
-        <Button text={t('common.return')} href={getRoute.current('CandAppHome')} variant="main" data-testid="profile-return" />
+        <Button
+          text={t('common.return')}
+          href={getRoute.current('CandAppHome')}
+          variant="main"
+          data-testid="profile-return" />
       {/if}
     </div>
   {/snippet}

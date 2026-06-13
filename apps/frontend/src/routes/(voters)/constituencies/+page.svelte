@@ -23,8 +23,8 @@ See `+page.ts` for possible redirects.
   import { parseParams } from '$lib/utils/route/parseParams';
   import MainContent from '../../MainContent.svelte';
   import type { Id } from '@openvaa/core';
-  
-////////////////////////////////////////////////////////////////////
+
+  ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
@@ -54,12 +54,12 @@ See `+page.ts` for possible redirects.
   // surfaces as a page error and freezes the page on its initial empty
   // template (variant-startfromcg.spec.ts:115 hydration race).
   const useSingleGroup = $derived.by(() => {
-    const id = appSettings.current.elections?.startFromConstituencyGroup;
+    const id = appSettings.elections?.startFromConstituencyGroup;
     if (!id) return undefined;
-    return dataRoot.current.constituencyGroups.find((g) => g.id === id);
+    return dataRoot.constituencyGroups.find((g) => g.id === id);
   });
 
-  let elections = $derived(useSingleGroup ? dataRoot.current.elections : voterCtx.selectedElections);
+  let elections = $derived(useSingleGroup ? dataRoot.elections : voterCtx.selectedElections);
 
   // Pre-fill `selected` from the voter context's current constituency choices
   // (e.g., on back-navigation from /questions). The previous implementation
@@ -85,9 +85,11 @@ See `+page.ts` for possible redirects.
       if (!matches.length) continue;
       const best = matches.reduce((a, b) => {
         const aSize =
-          election.constituencyGroups.find((g) => g.data.constituencyIds.includes(a.id))?.constituencies.length ?? Infinity;
+          election.constituencyGroups.find((g) => g.data.constituencyIds.includes(a.id))?.constituencies.length ??
+          Infinity;
         const bSize =
-          election.constituencyGroups.find((g) => g.data.constituencyIds.includes(b.id))?.constituencies.length ?? Infinity;
+          election.constituencyGroups.find((g) => g.data.constituencyIds.includes(b.id))?.constituencies.length ??
+          Infinity;
         return bSize < aSize ? b : a;
       });
       selected[election.id] = best.id;
@@ -139,17 +141,14 @@ See `+page.ts` for possible redirects.
         const target = new URL(decoded, page.url.origin);
         const persistent = filterPersistent(parseParams({ url: page.url }));
         const targetParams = qs.parse(target.search.replace(/^\?/g, ''));
-        const merged = qs.stringify(
-          { ...persistent, ...targetParams, constituencyId },
-          { encodeValuesOnly: true }
-        );
+        const merged = qs.stringify({ ...persistent, ...targetParams, constituencyId }, { encodeValuesOnly: true });
         await goto(`${target.pathname}${merged ? `?${merged}` : ''}`);
         return;
       }
       // Fall through to default navigation when whitelist rejects the value.
     }
     await goto(
-      appSettings.current.elections?.startFromConstituencyGroup
+      appSettings.elections?.startFromConstituencyGroup
         ? // Reset any lingering electionIds which may have been left in the search param if a different constituency was seleced before
           getRoute.current({ route: 'Elections', constituencyId, electionId: undefined })
         : getRoute.current({ route: 'Questions', constituencyId })
