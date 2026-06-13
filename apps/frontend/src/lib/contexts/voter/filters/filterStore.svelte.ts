@@ -17,19 +17,23 @@ import type { SelectionTree } from '../selectionTree.type';
  * @param t - A getter returning the translation function.
  * @returns A reactive filter tree value.
  */
-export function filterStore({
-  nominationsAndQuestions,
-  locale,
-  t
-}: {
+type FilterStoreDeps = {
   nominationsAndQuestions: () => NominationAndQuestionTree;
   locale: () => string;
   t: () => (key: TranslationKey) => string;
-}): { readonly value: FilterTree } {
-  const _value = $derived.by(() => {
-    const nq = nominationsAndQuestions();
-    const currentLocale = locale();
-    const currentT = t();
+};
+
+class FilterStoreImpl {
+  #deps: FilterStoreDeps;
+
+  constructor(deps: FilterStoreDeps) {
+    this.#deps = deps;
+  }
+
+  #value = $derived.by(() => {
+    const nq = this.#deps.nominationsAndQuestions();
+    const currentLocale = this.#deps.locale();
+    const currentT = this.#deps.t();
     if (!nq || !currentLocale || !currentT) return {} as FilterTree;
     const tree: Partial<FilterTree> = {};
     for (const [electionId, electionContent] of Object.entries(nq)) {
@@ -71,11 +75,13 @@ export function filterStore({
     return tree as FilterTree;
   });
 
-  return {
-    get value() {
-      return _value;
-    }
-  };
+  get value(): FilterTree {
+    return this.#value;
+  }
+}
+
+export function filterStore(deps: FilterStoreDeps): { readonly value: FilterTree } {
+  return new FilterStoreImpl(deps);
 }
 
 /**
