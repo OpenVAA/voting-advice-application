@@ -189,7 +189,7 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
 - [x] **Phase 110: voterContext Orchestrator + Voter Sub-Stores** — convert voterContext + answer/match/nomination/filter/utils sub-stores to classes (completed 2026-06-13)
 - [x] **Phase 111: candidateContext Orchestrator + UserData Store** — convert candidateContext + candidateUserDataStore to classes (completed 2026-06-13)
 - [x] **Phase 112: adminContext + Job Stores** — convert adminContext + jobStores to classes; preserve the v2.11 explicit auth-forwarding fix (completed 2026-06-13)
-- [ ] **Phase 113: Handle Flatten + De-duplication** — drop `reactiveFoo`/`Foo` duplicates; codemod `.current` reads to bare class fields; remove back-compat handles
+- [x] **Phase 113: Handle Flatten + De-duplication** — drop `reactiveFoo`/`Foo` duplicates; codemod `.current` reads to bare class fields; remove back-compat handles
 - [ ] **Phase 114: Store → State Rename** — rename all rune-native `*Store` symbols/files/types/tests to `*State`; document the jobStore + cookieStore exclusions
 - [ ] **Phase 115: Straggler Clearance** — convert the last `svelte/store` (videoPreferences); remove the stray `$:` debug line; widen the ESLint guard app-wide
 - [ ] **Phase 116: Milestone-Close Green Gate** — full E2E (incl. a11y-smoke) + unit + typecheck + lint all green
