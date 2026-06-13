@@ -169,8 +169,6 @@ export class AppContextProvider implements AppContext {
   readonly appSettings!: AppContext['appSettings'];
   readonly appCustomization!: AppContext['appCustomization'];
   readonly openFeedbackModal!: AppContext['openFeedbackModal'];
-  readonly reactiveAppSettings!: AppContext['reactiveAppSettings'];
-  readonly reactiveLocale!: AppContext['reactiveLocale'];
   readonly locale!: AppContext['locale'];
   readonly locales!: AppContext['locales'];
   readonly darkMode!: AppContext['darkMode'];
@@ -185,7 +183,6 @@ export class AppContextProvider implements AppContext {
 
   // Forwarded dataCtx members (own-prop handles + arrow field — references copied).
   readonly dataRoot!: AppContext['dataRoot'];
-  readonly reactiveDataRoot!: AppContext['reactiveDataRoot'];
   readonly setDataRoot!: AppContext['setDataRoot'];
 
   // Forwarded tracking members (own-prop handles + arrow fields — references copied).
@@ -251,27 +248,17 @@ export class AppContextProvider implements AppContext {
       }
     };
 
-    // Read-only `{ current }` rune handles over the SAME `$state` / SAME
-    // ComponentContext value the writable handles read (single source of truth —
-    // mirroring the shipped `reactiveDataRoot` precedent). Each handle is a STABLE
-    // own-enumerable VALUE field assigned once here (same approach as the writable
-    // handles above and the held handles `getRoute` / `userPreferences` /
-    // `popupQueue`), so the handle reference is reference-equal across reads
-    // (`ctx.locale === ctx.locale`) AND identical to the spread copy
-    // (`{ ...appContext }.locale === appContext.locale`). The inner `get current()`
-    // re-reads the backing `$derived`/`$state` per access, so reads stay live and
-    // reactive in the tracking scope. The `{ ...appContext }` downstream spreads
-    // copy these own-enumerable values intact.
-    this.reactiveAppSettings = {
-      get current() {
-        return self.#appSettingsValue;
-      }
-    };
-    this.reactiveLocale = {
-      get current() {
-        return self.#componentCtx.locale;
-      }
-    };
+    // Read-only `{ current }` rune handles over the SAME ComponentContext value
+    // (single source of truth). Each handle is a STABLE own-enumerable VALUE field
+    // assigned once here (same approach as the writable handles above and the held
+    // handles `getRoute` / `userPreferences` / `popupQueue`), so the handle reference
+    // is reference-equal across reads (`ctx.locale === ctx.locale`) AND identical to
+    // the spread copy (`{ ...appContext }.locale === appContext.locale`). The inner
+    // `get current()` re-reads the backing `$derived`/`$state` per access, so reads
+    // stay live and reactive in the tracking scope. The `{ ...appContext }` downstream
+    // spreads copy these own-enumerable values intact. (Phase 113 FLATTEN-01 deleted
+    // the redundant read-only app-settings / locale mirrors that read these same
+    // backings — internal consumers now read the canonical handles directly.)
     this.locale = {
       get current() {
         return self.#componentCtx.locale;
@@ -320,7 +307,6 @@ export class AppContextProvider implements AppContext {
       translate: this.#componentCtx.translate,
       // dataCtx — own-prop handles + arrow-field writer (references copied).
       dataRoot: this.#dataCtx.dataRoot,
-      reactiveDataRoot: this.#dataCtx.reactiveDataRoot,
       setDataRoot: this.#dataCtx.setDataRoot,
       // tracking — own-enumerable handle objects + arrow-field methods.
       sendTrackingEvent: this.#tracking.sendTrackingEvent,

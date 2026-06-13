@@ -29,7 +29,7 @@
   // Get context
   ////////////////////////////////////////////////////////////////////
 
-  const { reactiveDataRoot, logout, t, userData } = getCandidateContext();
+  const { setDataRoot, logout, t, userData } = getCandidateContext();
 
   ////////////////////////////////////////////////////////////////////
   // Accept terms of use
@@ -109,30 +109,30 @@
   // is a synchronous `savedData = data` assignment; the previous `tick`-wait was
   // a defensive v2.1 artifact with no remaining purpose — RESEARCH Assumption A2.
   //
-  // IMPORTANT: access the DataRoot instance via `reactiveDataRoot.instance` (the
-  // non-reactive rune handle) rather than the `dataRoot.current` reactive form.
-  // `dataRoot.current.update(() => provide*(...))` inside a `$effect` creates an
-  // infinite reactive loop in Svelte 5: reading `.current` registers the version
-  // counter as a dependency of this effect, and the `DataRoot.update()` call
-  // notifies subscribers (bumping `version`) — retriggering the effect.
-  // `reactiveDataRoot.instance` returns the SAME object WITHOUT reading `version`,
-  // so no reactive dependency is established (Spike 002 pattern; rune-native
-  // replacement for the former svelte/store `get()` workaround). Wrapped in
-  // `.update(() => ...)` for batched subscriber notification (canonical form —
-  // see apps/frontend/src/lib/admin/utils/loadElectionData.ts).
+  // IMPORTANT: mutate the DataRoot via `setDataRoot(updater)` (the encapsulated
+  // non-reactive write path on the rune-native DataContext class) rather than the
+  // `dataRoot.current` reactive form. `dataRoot.current.update(() => provide*(...))`
+  // inside a `$effect` creates an infinite reactive loop in Svelte 5: reading
+  // `.current` registers the version counter as a dependency of this effect, and the
+  // `DataRoot.update()` call notifies subscribers (bumping `version`) — retriggering
+  // the effect. `setDataRoot` runs the mutation inside `untrack`, so this effect takes
+  // no dependency on the version counter (Spike 017/022 read/write split — it replaces
+  // the former non-reactive producer-read + hand-written `untrack` idiom; matches the
+  // root layout). Wrapped in `.update(() => ...)` for batched subscriber notification
+  // (canonical form — see apps/frontend/src/lib/admin/utils/loadElectionData.ts).
   $effect(() => {
     if (validity.state !== 'resolved') return;
     // Snapshot validity fields inside the effect's tracked scope, then apply
-    // side-effects inside `untrack` to prevent any subscriber re-notification
-    // (from DataRoot.subscribe / candidateUserDataStore.savedData writes) from
-    // retriggering this effect (Svelte 5 `effect_update_depth_exceeded`).
+    // side-effects via `setDataRoot` (its internal `untrack` covers the dr-mutation)
+    // and a wrapping `untrack` for `userData.init` to prevent any subscriber
+    // re-notification (from DataRoot.subscribe / candidateUserDataStore.savedData
+    // writes) from retriggering this effect (Svelte 5 `effect_update_depth_exceeded`).
     const snapshot = {
       questionData: validity.questionData,
       entities: validity.entities,
       userData: validity.userData
     };
-    untrack(() => {
-      const dr = reactiveDataRoot.instance;
+    setDataRoot((dr) => {
       dr.update(() => {
         dr.provideQuestionData(snapshot.questionData);
         dr.provideEntityData(snapshot.entities);
@@ -143,8 +143,8 @@
         // profile page formats nominations directly from that raw data,
         // resolving election/constituency names via dr.getElection/getConstituency.
       });
-      userData.init(snapshot.userData);
     });
+    untrack(() => userData.init(snapshot.userData));
   });
 
   // Error logging side-effect — parity with pre-refactor `logDebugError` calls

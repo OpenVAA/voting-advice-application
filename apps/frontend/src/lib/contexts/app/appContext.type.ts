@@ -58,17 +58,6 @@ export type AppContext = Omit<ComponentContext, 'locale' | 'locales' | 'darkMode
       update(fn: (v: AppSettings) => AppSettings): void;
     };
     /**
-     * Rune-native read handle over the SAME app-settings `$state` the `appSettings`
-     * handle reads. Reactive reads happen via `.current`. Mirrors the
-     * `reactiveDataRoot` precedent; consumed by downstream voter/candidate contexts.
-     */
-    reactiveAppSettings: { readonly current: AppSettings };
-    /**
-     * Rune-native read handle over the SAME locale value the `locale` handle reads.
-     * Reactive reads happen via `.current`. Consumed by downstream voter/candidate contexts.
-     */
-    reactiveLocale: { readonly current: string };
-    /**
      * Rune-native route-builder handle (CTX-08). Read via `getRoute.current(opts)`.
      */
     getRoute: { readonly current: RouteBuilder };

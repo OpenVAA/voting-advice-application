@@ -4,22 +4,17 @@ export type DataContext = {
   /**
    * Rune-native DataRoot handle exposing a reactive `.current` getter (tracks the
    * version counter). The legacy svelte/store DataRoot bridge was removed in
-   * Wave 4 (Phase 98) once the last `$dataRoot` / `get(store)` consumers migrated
-   * to `reactiveDataRoot.instance`.
+   * Wave 4 (Phase 98); the duplicate read-only mirror + its non-reactive
+   * producer-read split were collapsed into this single handle in Phase 113
+   * (FLATTEN-01) — producer writes go through `setDataRoot`.
    */
   dataRoot: { readonly current: DataRoot };
-  /**
-   * Rune-native DataRoot handle split (Pattern 2):
-   * - `current` — reactive read (tracks the version counter); use in $derived/$effect/templates.
-   * - `instance` — non-reactive read (same object, no version dependency); use from producer effects.
-   */
-  reactiveDataRoot: { readonly current: DataRoot; readonly instance: DataRoot };
   /**
    * Mutate the DataRoot through the encapsulated non-reactive write path. Pass an
    * `updater` that calls `dr.update(() => dr.provide*(...))`. The write runs inside
    * `untrack`, so a producer `$effect` calling this takes no dependency on the version
-   * counter and cannot self-loop — replacing the `reactiveDataRoot.instance` +
-   * hand-written `untrack` producer idiom (Spike 017/022). An arrow-function field, so
+   * counter and cannot self-loop — replacing the former non-reactive producer
+   * read + hand-written `untrack` idiom (Spike 017/022). An arrow-function field, so
    * it survives being destructured (`const { setDataRoot } = ctx`).
    */
   setDataRoot: (updater: (dataRoot: DataRoot) => void) => void;

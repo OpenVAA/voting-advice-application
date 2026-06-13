@@ -28,13 +28,14 @@ export function getDataContext(): DataContext {
  * Two deliberate shape choices, both spike-derived:
  *
  * 1. Own-property handles — spread-safe (appContext `{ ...dataCtx }`). The public
- *    handles (`dataRoot`, `reactiveDataRoot`) and the `setDataRoot` writer are exposed
- *    as OWN properties (instance fields), NOT prototype getters. appContext re-exposes
- *    this context via `{ ...dataCtx }`, and spreading a class INSTANCE copies only
- *    own-enumerable properties — prototype accessors would be silently dropped (Spike
- *    020 finding; CONVENTIONS "Spread-of-context"). Own-property handles keep the
- *    existing consumer API (`reactiveDataRoot.current`) byte-identical, so NO consumer
- *    changes.
+ *    `dataRoot` handle and the `setDataRoot` writer are exposed as OWN properties
+ *    (instance fields), NOT prototype getters. appContext re-exposes this context via
+ *    `{ ...dataCtx }`, and spreading a class INSTANCE copies only own-enumerable
+ *    properties — prototype accessors would be silently dropped (Spike 020 finding;
+ *    CONVENTIONS "Spread-of-context"). (Phase 113 FLATTEN-01 collapsed the duplicate
+ *    read-only mirror + its non-reactive producer-read split into this single
+ *    reactive `dataRoot` handle; the one producer-write consumer moved to
+ *    `setDataRoot`.)
  *
  * 2. §18 arrow-function field — survives detach. `setDataRoot` is an ARROW-FUNCTION
  *    field, not a method, so it survives being destructured/detached
@@ -52,10 +53,9 @@ class DataContextProvider implements DataContext {
   readonly #dataRoot: DataRoot;
   #version = $state(0);
 
-  // Own-property handles — spread-safe (appContext `{ ...dataCtx }`). Assigned in the
-  // constructor so their getters can close over `this` for the private `#version` read.
+  // Own-property handle — spread-safe (appContext `{ ...dataCtx }`). Assigned in the
+  // constructor so its getter can close over `this` for the private `#version` read.
   readonly dataRoot: { readonly current: DataRoot };
-  readonly reactiveDataRoot: { readonly current: DataRoot; readonly instance: DataRoot };
 
   constructor(dataRoot: DataRoot) {
     this.#dataRoot = dataRoot;
@@ -79,29 +79,13 @@ class DataContextProvider implements DataContext {
         return dataRoot;
       }
     };
-    this.reactiveDataRoot = {
-      get current(): DataRoot {
-        void self.#version; // reactive read — use in $derived/$effect/templates
-        return dataRoot;
-      },
-      // Back-compat non-reactive read; same object, no `#version` dependency.
-      // RETAINED until Phase 113 FLATTEN drops the duplicate `reactiveFoo` handles +
-      // runs the `.current` codemod. Live consumer: candidate/(protected)/+layout.svelte
-      // producer-write path (`reactiveDataRoot.instance` inside an `untrack`ed
-      // `$effect` — reads the SAME object WITHOUT registering `#version`, so the
-      // `DataRoot.update()` notification cannot retrigger the effect). Intentional
-      // back-compat — NOT orphaned / NOT dead code.
-      get instance(): DataRoot {
-        return dataRoot; // non-reactive read — same object, no version dependency
-      }
-    };
   }
 
   /**
    * Mutate the DataRoot. Pass an `updater` that calls `dr.update(() => dr.provide*(...))`.
    * The write runs inside `untrack`, so a producer `$effect` calling this takes NO
    * dependency on `#version` and cannot self-loop. Replaces the previous
-   * `reactiveDataRoot.instance` + hand-written `untrack` idiom (Spike 017/022).
+   * former non-reactive producer-read + hand-written `untrack` idiom (Spike 017/022).
    */
   setDataRoot = (updater: (dataRoot: DataRoot) => void): void => {
     untrack(() => updater(this.#dataRoot));
