@@ -11,6 +11,7 @@ import { getImpliedElectionIds } from '$lib/utils/route';
 import { candidateUserDataStore } from './candidateUserDataStore.svelte';
 import { getAppContext } from '../app';
 import { getAuthContext } from '../auth';
+import { inheritContextMembers } from '../utils/inheritContextMembers';
 import { localStorageState, sessionStorageState } from '../utils/persistedState.svelte';
 import { prepareDataWriter } from '../utils/prepareDataWriter';
 import type { Id } from '@openvaa/core';
@@ -307,7 +308,10 @@ export class CandidateContextProvider implements CandidateContext {
     // authContext member EXCEPT `logout`; the inherited logout is already captured in
     // `#authLogout` and wrapped by the prototype getter.
 
-    Object.assign(this, this.#appContext);
+    // Phase 113 CR-01: inheritContextMembers (NOT Object.assign) forwards the bare
+    // reactive accessors (appSettings / dataRoot / locale) as LIVE accessors;
+    // Object.assign would snapshot and freeze their reactivity for consumers.
+    inheritContextMembers(this, this.#appContext);
     const { logout: _inheritedLogout, ...authContextRest } = this.#authContext;
     Object.assign(this, authContextRest);
 

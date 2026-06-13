@@ -4,6 +4,7 @@ import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { jobStores } from './jobStores.svelte';
 import { getAppContext } from '../app';
 import { getAuthContext } from '../auth';
+import { inheritContextMembers } from '../utils/inheritContextMembers';
 import { prepareDataWriter } from '../utils/prepareDataWriter';
 import type { BasicUserData, DataWriter, WithAuth } from '$lib/api/base/dataWriter.type';
 import type { AppContext } from '../app';
@@ -214,7 +215,11 @@ export class AdminContextProvider implements AdminContext {
     // forwarded individually above (the v2.11 auth-forwarding fix). appContext
     // carries NO auth key, so this assign cannot overwrite isAuthenticated (a
     // getter-only accessor) or the auth arrow fields — no exclusion needed.
-    Object.assign(this, this.#appContext);
+    //
+    // Phase 113 CR-01: inheritContextMembers (NOT Object.assign) forwards the bare
+    // reactive accessors (appSettings / dataRoot / locale) as LIVE accessors;
+    // Object.assign would snapshot and freeze their reactivity for consumers.
+    inheritContextMembers(this, this.#appContext);
   }
 }
 

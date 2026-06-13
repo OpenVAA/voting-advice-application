@@ -12,6 +12,7 @@ import { matchStore } from './matchStore.svelte';
 import { nominationAndQuestionStore } from './nominationAndQuestionStore.svelte';
 import { getAppContext } from '../../contexts/app';
 import { getFilterContext, initFilterContext } from '../filter';
+import { inheritContextMembers } from '../utils/inheritContextMembers';
 import { paramStore } from '../utils/paramStore.svelte';
 import { sessionStorageState } from '../utils/persistedState.svelte';
 import type { CustomData } from '@openvaa/app-shared';
@@ -380,8 +381,12 @@ export class VoterContextProvider implements VoterContext {
     // Object.assign copies them correctly onto this instance. (The stable refs +
     // sub-store producers + $derived projections are field initializers above,
     // which run in declaration order BEFORE this constructor body — D1.)
-
-    Object.assign(this, this.#appContext);
+    //
+    // Phase 113 CR-01: use inheritContextMembers (NOT Object.assign) so the bare
+    // reactive accessors (appSettings / dataRoot / locale) are forwarded as LIVE
+    // accessors. Object.assign would snapshot their construction-time value and
+    // freeze reactivity for every consumer reading them off this orchestrator.
+    inheritContextMembers(this, this.#appContext);
 
     ////////////////////////////////////////////////////////////
     // Elections and Constituencies push-based $state mirrors
