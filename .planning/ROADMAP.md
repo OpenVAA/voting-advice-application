@@ -186,7 +186,7 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
 - [x] **Phase 107: Leaf Contexts + Proof Reconciliation** — convert authContext + componentContext to classes; reconcile darkMode/dataContext/filterContext to the final idiom (completed 2026-06-12)
 - [x] **Phase 108: App-Layer Producer Contexts** — convert getRoute, survey, trackingService, popupStore to classes (completed 2026-06-12)
 - [x] **Phase 109: appContext Orchestrator + Spread Fix + PoC Removal** — convert appContext to a class; explicit getter forwarding; remove the Phase-102 `_poc*` scaffolding (completed 2026-06-12)
-- [ ] **Phase 110: voterContext Orchestrator + Voter Sub-Stores** — convert voterContext + answer/match/nomination/filter/utils sub-stores to classes
+- [x] **Phase 110: voterContext Orchestrator + Voter Sub-Stores** — convert voterContext + answer/match/nomination/filter/utils sub-stores to classes (completed 2026-06-13)
 - [ ] **Phase 111: candidateContext Orchestrator + UserData Store** — convert candidateContext + candidateUserDataStore to classes
 - [ ] **Phase 112: adminContext + Job Stores** — convert adminContext + jobStores to classes; preserve the v2.11 explicit auth-forwarding fix
 - [ ] **Phase 113: Handle Flatten + De-duplication** — drop `reactiveFoo`/`Foo` duplicates; codemod `.current` reads to bare class fields; remove back-compat handles
@@ -293,7 +293,7 @@ Plans:
   - [x] 110-01-PLAN.md — answerStore() + paramStore() → classes; DELETE the 3 dead-code projection factories (questionCategoryStore/questionStore/questionBlockStore .svelte.ts — zero live importers, inlined into voterContext at Phase 61; SC-1 satisfied-by-deletion per 110-PATTERNS §3). Keeps questionBlockStore.type.ts (live).
   - [x] 110-02-PLAN.md — matchStore() + nominationAndQuestionStore() + filterStore() → classes ($derived.by value fields; MatchTree/NominationAndQuestionTree/FilterTree type exports unchanged)
   - [x] 110-03-PLAN.md — voterContext → class VoterContextProvider (prototype-getter reactive accessors — not spread; Object.assign(this, appContext) reproduces the L488 spread; arrow-field resetVoterData; 5 $effects + 4 $derived + 4 producers in D1 constructor order)
-  - [ ] 110-04-PLAN.md — phase gate: yarn build + full vitest + svelte-check (151 baseline) + voter-app E2E (voter-journey) + a11y-smoke (runs once at phase end)
+  - [x] 110-04-PLAN.md — phase gate: yarn build + full vitest + svelte-check (151 baseline) + voter-app E2E (voter-journey) + a11y-smoke (runs once at phase end)
 
 **UI hint**: yes
 
@@ -396,7 +396,7 @@ Plans:
 | 107. Leaf Contexts + Proof Reconciliation | 3/3 | Complete   | 2026-06-12 |
 | 108. App-Layer Producer Contexts | 3/3 | Complete   | 2026-06-12 |
 | 109. appContext Orchestrator + Spread Fix + PoC Removal | 3/3 | Complete   | 2026-06-12 |
-| 110. voterContext Orchestrator + Voter Sub-Stores | 3/4 | In Progress|  |
+| 110. voterContext Orchestrator + Voter Sub-Stores | 4/4 | Complete   | 2026-06-13 |
 | 111. candidateContext Orchestrator + UserData Store | 0/TBD | Not started | - |
 | 112. adminContext + Job Stores | 0/TBD | Not started | - |
 | 113. Handle Flatten + De-duplication | 0/TBD | Not started | - |
