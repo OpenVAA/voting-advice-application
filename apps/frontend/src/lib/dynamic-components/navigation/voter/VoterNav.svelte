@@ -40,7 +40,12 @@ A template part that outputs the navigation menu for the Voter App for use in `L
   // (constituenciesSelectable, electionsSelectable, resultsAvailable,
   // selectedElections, selectedConstituencies) are read via voterCtx.X.
   const voterCtx = getVoterContext();
-  const { appSettings, getRoute, openFeedbackModal, resetVoterData, surveyLink, t } = voterCtx;
+  // `appSettings` is a bare reactive accessor (Phase 113 FLATTEN-02) — read via
+  // voterCtx.X / $derived, never destructure (destructuring captures the mount-time
+  // snapshot and freezes when mergeAppSettings returns a new object). Stable members
+  // (getRoute, openFeedbackModal, resetVoterData, surveyLink, t) destructure safely.
+  const { getRoute, openFeedbackModal, resetVoterData, surveyLink, t } = voterCtx;
+  const appSettings = $derived(voterCtx.appSettings);
   const elections = $derived(voterCtx.selectedElections);
   const constituencies = $derived(voterCtx.selectedConstituencies);
 </script>
