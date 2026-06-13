@@ -360,6 +360,14 @@ For a one-time, non-reactive init read (e.g. building a `const mailto` or a `top
 
 **Caveat — genuinely store-shaped stable members:** A few context members are still `{ current }` rune handles (e.g. `getRoute`) and are STABLE — they remain safe to destructure. NOTE: as of v2.13 Phase 113, `appSettings`/`dataRoot`/`locale` are NO LONGER stores nor `{ current }` handles — they are bare reactive fields and **must NOT be destructured** (destructuring captures the value once at init and stops updating on navigation — the Phase-61 destructure-trap). Read them via `ctx.appSettings` (bare, no `.current` — the FLATTEN-02 codemod removed every `.current` read on these three). Only the genuinely-handle-shaped stable members (like `getRoute`) stay destructurable.
 
+**Carve-out — the `dataRoot` `#version`-bridge alias-indirection hole (v2.13 Phase 117):** The canonical `const X = $derived(ctx.X)` read pattern (above) is correct for **value-replacing** accessors — `appSettings` (its reference is replaced on update), `locale` (a scalar), and the array accessors `selectedElections` / `opinionQuestions` / `matches` (their array reference is replaced). For those the existing destructure-trap guidance fully applies and the `$derived` read alias is safe.
+
+It has a HOLE for `dataRoot` — and any same-shape **identity-stable** `#version`-bridge accessor (an object whose reference never changes and whose only reactive signal is a private `#version` `$state` counter bumped on `DataRoot.update()`). Binding `dataRoot` to an intermediate read alias and reading `aliasedDataRoot.<prop>` downstream goes **STALE on cold / direct-URL entry**: the alias recomputes on each `#version` bump but yields the SAME `DataRoot` reference every time, and Svelte 5's referential-equality rule SKIPS downstream notification — so the consumer keeps the empty pre-mount snapshot. (Warm `intro → Continue` entry masks it because the data is already present before the alias first computes; cold entry exposes it because the data arrives after mount.)
+
+**Safe consumption for `dataRoot`:** read `ctx.dataRoot.<prop>` **DIRECTLY** inside the consuming tracking scope (`$derived.by` thunk / template `{#if}`/`{#each}`/`{@const}` / `$effect`) so the consumer itself takes the `#version` dependency — never bind it to an intermediate read alias. Canonical analog: `apps/frontend/src/routes/(voters)/elections/+page.svelte:43-44`.
+
+Mechanism explanation is NOT duplicated here — see `.planning/spikes/024-derived-alias-stable-ref-skip/README.md` (4/4 validated affected-vs-not classification), `.planning/spikes/CONVENTIONS.md` §9 + the Spike-024 anti-pattern entry, and `.planning/debug/dataroot-stale-direct-nav.md` (root cause + 14-site consumer map).
+
 **Lint enforcement** is currently a guideline, not an automated rule. A future phase may add a custom svelte-eslint rule if violations recur.
 
 ### Svelte Warning-Accepted Format
