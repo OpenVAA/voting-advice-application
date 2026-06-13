@@ -299,14 +299,16 @@ content = content.replace(re, '$1');   // idempotent: no `.current` left after p
 | A3 | The `_spikes-017-019` / `_spikes-020` test files are frozen design fixtures, not files to update during the flatten. | Runtime State Inventory | If they're live regression tests, deleting the `instance`/`reactive*` shape could fail them. Mitigated by confirming disposition in the plan (they test the spike-era proposed shape, likely independent of production handles). |
 | A4 | Flattening to bare fields requires solving spread-safety in `appContext` (getter-forwarding), since `{ ...appContext }` drops prototype getters. | Architecture Patterns | If a value-field approach is chosen instead, reactivity could be lost. Mitigated by the `appContext.spread.svelte.test.ts` guard. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Full `.current` removal vs. reactive-mirror-only collapse?**
+   - **RESOLVED: full-bare as the target, staged FLATTEN-01 (producer collapse, green) then FLATTEN-02 (consumer codemod, green)** — implemented by the 4-plan staging (113-02 producer collapse → 113-04 bare conversion + consumer codemod).
    - What we know: SC #2 says "bare class-field reads"; that's full removal. SC #1 lists only the `reactive*` duplicates + the `instance` split for FLATTEN-01.
    - What's unclear: whether `appSettings`/`dataRoot`/`locale` should retain `.current` (collapse only the duplicates) or go fully bare. Full-bare requires the spread-safety + producer-input-contract rework.
    - Recommendation: Plan should treat full-bare as the target (per SC #2) but stage it so the `reactive*`-deletion + producer-write migration (FLATTEN-01) lands and is green FIRST, then the `.current` codemod (FLATTEN-02) as a second, independently-green sub-phase. If full-bare's spread/producer rework proves large, the `.current`-retain fallback still satisfies SC #1's grep gate (zero `reactive*`).
 
 2. **`ReactiveHandle<AppSettings>` producer-input contract.**
+   - **RESOLVED: keep producers' handle-input contract unchanged; wrap the field at the appContext call site (per 113-04 Task 1) — only the consumer-facing surface goes bare.**
    - What we know: `trackingService`/`surveyLink` take `appSettings: ReactiveHandle<AppSettings>` and read `.current`.
    - What's unclear: whether to change those producers to take a getter/`() => AppSettings`, or keep wrapping the field in a handle at the `appContext` call site.
    - Recommendation: Keep the producers' handle-input contract unchanged (wrap the field at the boundary) to minimize blast radius; only the consumer-facing surface goes bare.
