@@ -192,7 +192,8 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
 - [x] **Phase 113: Handle Flatten + De-duplication** — drop `reactiveFoo`/`Foo` duplicates; codemod `.current` reads to bare class fields; remove back-compat handles
 - [x] **Phase 114: Store → State Rename** — rename all rune-native `*Store` symbols/files/types/tests to `*State`; document the jobStore + cookieStore exclusions
 - [x] **Phase 115: Straggler Clearance** — convert the last `svelte/store` (videoPreferences); remove the stray `$:` debug line; widen the ESLint guard app-wide
-- [ ] **Phase 116: Milestone-Close Green Gate** — full E2E (incl. a11y-smoke) + unit + typecheck + lint all green
+- [ ] **Phase 116: Milestone-Close Green Gate** — full E2E (incl. a11y-smoke) + unit + typecheck + lint all green _(gate RE-OPENED 2026-06-13: the blocking E2E failure was root-caused as a real bug, not a test artifact — see Phase 117; 116 gate re-runs after 117 lands)_
+- [ ] **Phase 117: dataRoot Cold-Entry Reactivity Fix** — eliminate the `$derived(ctx.dataRoot)` alias staleness on direct-URL (cold) entry; add cold-entry E2E coverage; unblock the Phase 116 gate
 
 ## Phase Details
 
@@ -399,15 +400,32 @@ Plans:
 ### Phase 116: Milestone-Close Green Gate
 
 **Goal**: The full milestone-close green gate passes, proving the context-as-class migration landed without regression.
-**Depends on**: Everything (Phases 106-115)
+**Depends on**: Everything (Phases 106-115) **+ Phase 117** (the cold-entry reactivity fix that unblocks the full-E2E half of this gate — gate re-runs after 117 lands)
 **Parallel-eligible**: No (terminal verification)
 **Requirements**: GATE-01
+**Status note (2026-06-13)**: RE-OPENED. The static + anchor gates were green, but the full-E2E gate was left OPEN on a `voter-journey` failure (`elections.length === 0`) provisionally filed as a test-harness artifact. Debug session `dataroot-stale-direct-nav` + Spike 024 **disproved** that: it is a real user-facing reactivity bug on direct-URL (cold) entry. Phase 117 fixes it; this gate then re-runs to green.
 **Success Criteria** (what must be TRUE):
 
   1. The full E2E suite — which now includes the a11y-smoke — passes green after the migration lands.
   2. The full unit suite passes green.
   3. `typecheck` and `lint` both pass green (the widened `svelte/store` guard included).
   4. The result is recorded as the milestone-close anchor; no `svelte/store` import remains in `apps/frontend/src/**` (test mocks excepted), every context is a class, and zero `reactiveFoo` duplicate handles or rune-context `*Store` identifiers remain.
+
+**Plans**: TBD
+
+### Phase 117: dataRoot Cold-Entry Reactivity Fix
+
+**Goal**: Direct-URL (cold) entry to data-dependent voter routes renders fully-populated data — the `$derived(ctx.dataRoot)` intermediate-alias staleness is eliminated — so the full E2E suite (including the `voter-journey` `elections.length` path that blocks Phase 116) passes green under the Playwright dev-server harness.
+**Depends on**: Phase 113 (the handle-flatten that established the bare `dataRoot` reactive accessor + this alias-consumption pattern) — practically, the whole migration (106-115). Precedes the Phase 116 gate re-run.
+**Parallel-eligible**: No (serial; precedes the 116 gate)
+**Requirements**: COLD-01, COLD-02, COLD-03
+**Root cause (locked — debug `dataroot-stale-direct-nav` + Spike 024)**: `const X = $derived(ctx.dataRoot)` over the identity-stable, `#version`-bridge `dataRoot` accessor yields a referentially-identical object on each version bump, so Svelte 5 skips downstream notification — the consumer keeps the empty pre-mount snapshot. Cold/direct-URL entry exposes it (data provided after mount); intro→Continue masks it. The defect is bounded to identity-stable mutated-in-place accessors; `appSettings` (ref-replaced), `locale` (scalar), and value-replacing arrays (`selectedElections`/`opinionQuestions`/`matches`) are NOT affected (Spike 024, 4/4). Distinct from the Spike-019 destructure trap.
+**Success Criteria** (what must be TRUE):
+
+  1. Every `const X = $derived(ctx.dataRoot)`-shape alias consumer (and any same-shape identity-stable `#version`-bridge accessor) is rewritten to read `ctx.dataRoot.<prop>` directly inside the consuming tracking scope — across the sites in the debug scope map (elections is already fixed; constituencies + info + the rest). Reference-replaced / scalar / array accessors are deliberately left unchanged (codemod is NARROW, not all `$derived(ctx.X)`).
+  2. CLAUDE.md's "Context Destructuring Rule" gains a carve-out documenting the `dataRoot` alias-indirection hole and the safe direct-read shape.
+  3. New E2E coverage asserts cold/direct-URL entry (hard navigation, no intro→Continue) to `/elections` (+ `/constituencies`, `/info`) renders populated data (`elections.length > 0`) — locking the regression that previously failed only on the cold path.
+  4. The full E2E suite (incl. a11y-smoke) + unit + `typecheck` + `lint` are all green — satisfying the Phase 116 GATE-01 this phase unblocks (per the project E2E hard rule: failing E2E is a cardinal failure; no flaky exemptions).
 
 **Plans**: TBD
 
@@ -425,4 +443,5 @@ Plans:
 | 113. Handle Flatten + De-duplication | 0/TBD | Not started | - |
 | 114. Store → State Rename | 0/TBD | Not started | - |
 | 115. Straggler Clearance | 0/TBD | Not started | - |
-| 116. Milestone-Close Green Gate | 0/TBD | Not started | - |
+| 116. Milestone-Close Green Gate | 0/TBD | Re-opened (awaits 117) | - |
+| 117. dataRoot Cold-Entry Reactivity Fix | 0/TBD | Not started | - |
