@@ -700,6 +700,41 @@ The final Svelte 5 migration: every remaining legacy `svelte/store` bridge in th
 
 ---
 
+## Milestone: v2.13 — Context-as-Class Migration
+
+**Shipped:** 2026-06-13
+**Phases:** 12 (106-117) | **Plans:** 35 | **Tasks:** 50 | **Gate:** E2E 95/95 (3× determinism) + unit + types + lint green
+
+### What Was Built
+Every remaining Svelte 5 reactive context in `apps/frontend/src/lib/contexts/` converted from the factory + `{ readonly current }` handle shape into idiomatic Svelte 5 **classes** — completing the runes transition v2.11 began and superseding v2.12's abandoned handle-idiom approach. Converted lowest-blast-radius-first (Group F helpers → leaf contexts → app producers → orchestrators), then flattened the `reactiveFoo`/`Foo` duplicate handles + ~189 consumer `.current` reads to bare reactive class fields (FLATTEN), renamed the rune-native `*Store` identifiers to `*State` (RENAME), cleared the last `svelte/store` straggler + widened the ESLint guard tree-wide (SWEEP), and closed with the milestone green gate (GATE). Phase 117 was inserted mid-milestone to root-cause + fix a real `$derived(ctx.dataRoot)` cold-entry reactivity bug the gate surfaced.
+
+### What Worked
+- **Spikes-as-research again.** Spikes 017–023 + `CONTEXT-MEMBER-AUDIT.md` + 3 already-landed production proofs (`dataContext`/`filterContext`/`darkMode`) meant the class idiom, the spread-of-context hazard, the SSR `$effect`-orphan constraint, and the destructure-trap survival were all known before planning — the conversion was mechanical.
+- **Byte-identical factory wrappers behind each class.** Keeping the old factory signature as a thin wrapper around `new XProvider()` let every consumer stay untouched through the conversion phases; the flatten came later as its own isolated phase.
+- **Parallel sibling orchestrators.** voter/candidate/admin (110/111/112) each owned a distinct context directory and ran concurrently after appContext landed.
+- **The gate did its job.** It surfaced a genuine user-facing reactivity bug (cold-entry dataRoot staleness) that all the static + grep gates missed — vindicating the "real E2E is the contract" stance.
+
+### What Was Inefficient
+- **The gate-as-late-discovery pattern repeated from v2.11.** The dataRoot cold-entry bug only appeared at the terminal E2E gate (initially misfiled as a "test-harness artifact"), forcing a whole extra phase (117) + a debug session + Spike 024 to root-cause it after the migration was "done."
+- **Heavy close-out paperwork drift.** At close the ROADMAP progress table still showed Phases 113/114/115 as "Not started 0/TBD" and the REQUIREMENTS checkboxes for FLATTEN/RENAME/SWEEP/GATE were all unticked, despite the work being complete — the bookkeeping lagged the code by several phases and had to be reconciled at close.
+- **The milestone.complete CLI corrupted STATE.md frontmatter** (set `milestone: v2.5`, `milestone_name: milestone`) and leaked 3 code-review finding headers into the MILESTONES accomplishments — both hand-fixed (a known project quirk).
+
+### Patterns Established
+- **Context-as-class** with `$state`/`$derived` fields + arrow-function detachable methods; orchestrators compose sub-contexts via **explicit own-enumerable getter forwarding**, never `{ ...ctx }` spread (drops prototype getters on a class instance).
+- **Read `ctx.dataRoot.<prop>` directly**, never via a `const x = $derived(ctx.dataRoot)` alias — an identity-stable `#version`-bridge accessor returns a referentially-identical object on update, so Svelte 5 skips downstream notification (the cold-entry staleness hole; CLAUDE.md carve-out + Spike 024).
+- **3× determinism gate needs a clean DB + a fresh server per run** — default-template DB pollution stalls voter-journey at constituency selection; cumulative dev-server pressure surfaces the `elections-continue-stall` deep in long runs.
+
+### Key Lessons
+1. **Static + grep gates can't replace a live E2E gate.** All the FLATTEN/RENAME/SWEEP invariants were grep-green while a real reactivity regression sat undetected until the browser ran the cold-entry path.
+2. **Identity-stable reactive accessors are a distinct hazard from the destructure trap.** The `$derived(ctx.X)` alias is safe for ref-replaced/scalar/array accessors but stale for mutated-in-place `#version`-bridge ones — the codemod had to be narrow, not blanket.
+3. **Reconcile ROADMAP/REQUIREMENTS bookkeeping at phase close, not milestone close.** Letting it drift across 5 phases turned the milestone close into a doc-archaeology exercise.
+
+### Cost Observations
+- 12 phases / 35 plans / 50 tasks; the conversion phases were short and mechanical, but Phase 117 (the cold-entry fix) + the gate determinism re-runs absorbed disproportionate effort.
+- Notable: the milestone-close gate re-run to the 3× determinism standard itself caught two *environmental* false-reds (DB pollution + dev-server pressure), both root-caused rather than waved as flaky — reinforcing the project's no-flaky-exemption E2E rule.
+
+---
+
 ## Cross-Milestone Trends
 
 *Note: Parallel branch milestones (sb-v2.0, sb-v3.0) are documented above but not included in cumulative quality metrics — those milestones will be re-executed on this branch during v2.0 integration.*
