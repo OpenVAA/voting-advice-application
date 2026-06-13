@@ -10,7 +10,7 @@ You can hide some of the controls using the `hideControls` property, in which ca
 
 The player will try to unmute the video when the user first interacts with it. You can disable this by setting `autoUnmute` to `false`.
 
-User choices are stored in the `videoPreferences` store so that they persist across page loads. The preferences included are `muted`, `textTracksHidden` and `transcriptVisible`.
+User choices are held in the in-memory `videoPreferences` rune handle for the lifetime of the session; they are not persisted, so they do not survive a page reload. The preferences included are `muted`, `textTracksHidden` and `transcriptVisible`.
 
 ### Content properties
 
@@ -83,7 +83,7 @@ If not provided, the `video` element will be hidden until these properties are p
   import { getComponentContext } from '$lib/contexts/component';
   import { concatClass } from '$lib/utils/components';
   import { sanitizeHtml } from '$lib/utils/sanitize';
-  import { videoPreferences } from './component-stores';
+  import { videoPreferences } from './component-stores.svelte';
   import type { VideoContent } from '@openvaa/app-shared';
   import type { TrackingEvent } from '$lib/contexts/app/tracking';
   import type { OptionalVideoProps, PlayButtonAction, VideoProps, VideoTrackingEventData } from './Video.type';
@@ -158,7 +158,7 @@ If not provided, the `video` element will be hidden until these properties are p
   /**
    * Whether text tracks are shown
    */
-  let textTracksHidden = $state($videoPreferences.textTracksHidden ?? !showCaptions);
+  let textTracksHidden = $state(videoPreferences.current.textTracksHidden ?? !showCaptions);
 
   ////////////////////////////////////////////////////////////////////////////////
   // BOUND PROPS OF <video>
@@ -282,7 +282,7 @@ If not provided, the `video` element will be hidden until these properties are p
   // TRANSCRIPT
   ////////////////////////////////////////////////////////////////////////////////
 
-  let transcriptVisible = $state($videoPreferences.transcriptVisible ?? showTranscript);
+  let transcriptVisible = $state(videoPreferences.current.transcriptVisible ?? showTranscript);
   $effect(() => {
     mode = transcriptVisible ? 'text' : 'video';
   });
@@ -390,7 +390,7 @@ If not provided, the `video` element will be hidden until these properties are p
    * On the first interaction, try to unmute the video
    */
   function tryUnmute(): void {
-    if (!muted || !autoUnmute || $videoPreferences.muted) return;
+    if (!muted || !autoUnmute || videoPreferences.current.muted) return;
     muted = false;
   }
 
@@ -437,7 +437,7 @@ If not provided, the `video` element will be hidden until these properties are p
   export function toggleSound(unmute?: boolean): void {
     unmute ??= muted;
     muted = !unmute;
-    $videoPreferences = { ...$videoPreferences, muted };
+    videoPreferences.update((p) => ({ ...p, muted }));
   }
 
   /**
@@ -450,7 +450,7 @@ If not provided, the `video` element will be hidden until these properties are p
     if (show == null) show = track.mode !== 'showing';
     track.mode = show ? 'showing' : 'hidden';
     textTracksHidden = track.mode === 'hidden';
-    $videoPreferences = { ...$videoPreferences, textTracksHidden };
+    videoPreferences.update((p) => ({ ...p, textTracksHidden }));
   }
 
   /**
@@ -467,7 +467,7 @@ If not provided, the `video` element will be hidden until these properties are p
     addToEvent((data) => ({
       toggleTranscript: `${data.toggleTranscript ?? ''}${show ? 'true' : 'false'},`
     }));
-    $videoPreferences = { ...$videoPreferences, transcriptVisible };
+    videoPreferences.update((p) => ({ ...p, transcriptVisible }));
   }
 
   let seekTarget = $state<number | undefined>(undefined);
