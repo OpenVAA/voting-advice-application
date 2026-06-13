@@ -355,6 +355,7 @@ Plans:
 **Plans**: 4 plans (Wave 1: 113-01 codemod tooling + audit-set, autonomous; Wave 2: 113-02 FLATTEN-01 producer collapse + setDataRoot reroute, depends_on 113-01; Wave 3: 113-03 destructure-trap repair + CLAUDE.md contract, depends_on 113-02; Wave 4: 113-04 FLATTEN-02 bare-accessor conversion + consumer codemod + E2E gate, depends_on 113-03). Strictly sequential by `depends_on` — overlapping context files + runs-alone codemod forbid parallelism.
 
 Plans:
+
 - [ ] 113-01-PLAN.md — Build idempotent inverse `.current`→bare codemod + extend spike-009 audit accessor set (FLATTEN-02 tooling, no behavior change)
 - [ ] 113-02-PLAN.md — FLATTEN-01: delete `reactive*` mirrors + `instance` split; reroute orchestrators + candidate-protected write to `setDataRoot`; grep gate zero
 - [ ] 113-03-PLAN.md — FLATTEN-02 (correctness): repair ~29 `appSettings`/`dataRoot`/`locale` destructure sites; move them stable→reactive in CLAUDE.md
@@ -374,6 +375,7 @@ Plans:
   4. `yarn build` + `yarn vitest run` + `yarn svelte-check` are green; the rename is purely mechanical (no behavior change).
 
 **Plans**: 4 plans
+
   - [ ] 114-01-PLAN.md — codemod + rename voter/utils cluster (answerStore, matchStore, filterStore, nominationAndQuestionStore, paramStore, questionBlockStore)
   - [ ] 114-02-PLAN.md — rename popup + candidate cluster (popupStore, candidateUserDataStore, #editedAnswersStore field)
   - [ ] 114-03-PLAN.md — rename client admin jobStores → jobStates; keep server jobStore + cookieStore exclusions (RENAME-02)
@@ -424,13 +426,17 @@ Plans:
 
   1. Every `const X = $derived(ctx.dataRoot)`-shape alias consumer (and any same-shape identity-stable `#version`-bridge accessor) is rewritten to read `ctx.dataRoot.<prop>` directly inside the consuming tracking scope — across the sites in the debug scope map (elections is already fixed; constituencies + info + the rest). Reference-replaced / scalar / array accessors are deliberately left unchanged (codemod is NARROW, not all `$derived(ctx.X)`).
   2. CLAUDE.md's "Context Destructuring Rule" gains a carve-out documenting the `dataRoot` alias-indirection hole and the safe direct-read shape.
-  3. New E2E coverage asserts cold/direct-URL entry (hard navigation, no intro→Continue) to `/elections` (+ `/constituencies`, `/info`) renders populated data (`elections.length > 0`) — locking the regression that previously failed only on the cold path.
+  3. New E2E coverage asserts cold/direct-URL entry (hard navigation, no intro→Continue) to `/elections` and `/info` renders populated data (`elections.length > 0` / data-dependent region visible) — locking the regression that previously failed only on the cold path. (`/constituencies` cold entry redirects without a selected election — RESEARCH Open-Q1 — so it is NOT a cold-E2E target; its consumer code is still fixed under criterion 1 and verified by the static grep gate + build.)
   4. The full E2E suite (incl. a11y-smoke) + unit + `typecheck` + `lint` are all green — satisfying the Phase 116 GATE-01 this phase unblocks (per the project E2E hard rule: failing E2E is a cardinal failure; no flaky exemptions).
 
 **Plans**: 2 plans
-
 Plans:
+**Wave 1**
+
 - [ ] 117-01-PLAN.md — Narrow dataRoot alias->direct codemod (12 sites; 2 writers left) + CLAUDE.md carve-out + cold-entry E2E spec/project/testid + negative control (COLD-01, COLD-02, COLD-03 authoring) [wave 1]
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 117-02-PLAN.md — Full-suite green gate: E2E (incl. a11y-smoke + cold-entry-dataroot) + unit + lint = Phase 116 GATE-01 (COLD-03 full-suite half) [wave 2]
 
 ## Progress

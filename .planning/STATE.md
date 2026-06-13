@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v2.13
 milestone_name: Context-as-Class Migration
-status: paused
-stopped_at: Phase 116 open — full E2E gate pending CI/preview run
-last_updated: "2026-06-13T18:10:00.000Z"
-last_activity: 2026-06-13 -- Phase 116 static+anchor gates green; full E2E left OPEN for CI (user paused)
+status: planning
+stopped_at: Completed 112-02-PLAN.md
+last_updated: "2026-06-13T17:02:58.566Z"
+last_activity: 2026-06-13 -- Phase 116 static gates green; E2E left open; user paused milestone
 progress:
   total_phases: 11
   completed_phases: 10
