@@ -13,8 +13,8 @@ import type {
 } from '@openvaa/data';
 import type { Match, MatchingAlgorithm } from '@openvaa/matching';
 import type { MatchingProxy } from '$lib/utils/matching';
-import type { AnswerStore } from './answerStore.type';
-import type { NominationAndQuestionTree } from './nominationAndQuestionStore.svelte';
+import type { AnswerStore } from './answerState.type';
+import type { NominationAndQuestionTree } from './nominationAndQuestionState.svelte';
 import type { SelectionTree } from './selectionTree.type';
 
 /**
@@ -149,7 +149,7 @@ class MatchStoreImpl {
   }
 }
 
-export function matchStore(deps: MatchStoreDeps): { readonly value: MatchTree } {
+export function matchState(deps: MatchStoreDeps): { readonly value: MatchTree } {
   return new MatchStoreImpl(deps);
 }
 

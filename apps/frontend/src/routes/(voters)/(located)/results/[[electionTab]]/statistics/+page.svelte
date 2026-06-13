@@ -24,7 +24,7 @@ Usually accessed by direct link only and not meant for the wide public.
     SingleChoiceCategoricalQuestion,
     SingleChoiceOrdinalQuestion
   } from '@openvaa/data';
-  import type { MatchTree } from '$lib/contexts/voter/matchStore.svelte';
+  import type { MatchTree } from '$lib/contexts/voter/matchState.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts

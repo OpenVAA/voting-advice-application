@@ -5,21 +5,21 @@ import { getContext, hasContext, setContext, untrack } from 'svelte';
 import { page } from '$app/state';
 import { logDebugError } from '$lib/utils/logger';
 import { getImpliedConstituencyIds, getImpliedElectionIds } from '$lib/utils/route';
-import { answerStore } from './answerStore.svelte';
+import { answerState } from './answerState.svelte';
 import { countAnswers } from './countAnswers';
-import { filterStore } from './filters/filterStore.svelte';
-import { matchStore } from './matchStore.svelte';
-import { nominationAndQuestionStore } from './nominationAndQuestionStore.svelte';
+import { filterState } from './filters/filterState.svelte';
+import { matchState } from './matchState.svelte';
+import { nominationAndQuestionState } from './nominationAndQuestionState.svelte';
 import { getAppContext } from '../../contexts/app';
 import { getFilterContext, initFilterContext } from '../filter';
 import { inheritContextMembers } from '../utils/inheritContextMembers';
-import { paramStore } from '../utils/paramStore.svelte';
+import { paramState } from '../utils/paramState.svelte';
 import { sessionStorageState } from '../utils/persistedState.svelte';
 import type { CustomData } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
 import type { AnyQuestionVariant, Constituency, Election, EntityType, QuestionCategory } from '@openvaa/data';
 import type { AppContext } from '../app';
-import type { QuestionBlocks } from '../utils/questionBlockStore.type';
+import type { QuestionBlocks } from '../utils/questionBlockState.type';
 import type { VoterContext } from './voterContext.type';
 
 const CONTEXT_KEY = Symbol();
@@ -28,8 +28,8 @@ const CONTEXT_KEY = Symbol();
 // which produces fresh query-param arrays even when content is unchanged
 // (e.g., drawer open/close adds /candidate/[id] route segments while
 // electionId search param is identical). Without this guard, every
-// navigation cascaded selectedElections → nominationAndQuestionStore →
-// filterStore, rebuilding FilterGroup instances and dropping any active
+// navigation cascaded selectedElections → nominationAndQuestionState →
+// filterState, rebuilding FilterGroup instances and dropping any active
 // filter rules — surfaced during Phase 64 manual smoke as "filter badge
 // disappears after closing candidate drawer". Svelte 4 stores absorbed this
 // via `writable.set()`'s no-op-write skip; Svelte 5 raw `$state` writes
@@ -91,7 +91,7 @@ export class VoterContextProvider implements VoterContext {
 
   // QUESTION-04 follow-up (Phase 61-03 voter-side parallel fix):
   // Inlined the previous helper-store pull-chain (`questionCategoryStore` /
-  // `questionStore` / `questionBlockStore`) into a single push-based `$effect`
+  // `questionStore` / `questionBlockState`) into a single push-based `$effect`
   // that writes `$state` mirrors. The helper-store derivations were declared
   // in another module's scope and did not propagate invalidation across the
   // function-accessor boundary on the voter side (same root-cause class as
@@ -124,8 +124,8 @@ export class VoterContextProvider implements VoterContext {
 
   // Param-based collection stores (now class instances from Plan 01; `.value`
   // reads unchanged).
-  #electionId = paramStore('electionId');
-  #constituencyId = paramStore('constituencyId');
+  #electionId = paramState('electionId');
+  #constituencyId = paramState('constituencyId');
 
   /**
    * The matching algorithm object used for matching. Stable plain field (it is
@@ -174,10 +174,10 @@ export class VoterContextProvider implements VoterContext {
   // #currentResultsEntityType) — those bodies are lazy too.
   ////////////////////////////////////////////////////////////
 
-  #answers = answerStore({ startEvent: this.#appContext.startEvent });
+  #answers = answerState({ startEvent: this.#appContext.startEvent });
 
   // Matching and filtering depend on the available nominations and questions, for which we use a utility store
-  #nominationsAndQuestions = nominationAndQuestionStore({
+  #nominationsAndQuestions = nominationAndQuestionState({
     constituencies: () => this.#selectedConstituencies,
     dataRoot: () => this.#dataRoot,
     elections: () => this.#selectedElections,
@@ -185,7 +185,7 @@ export class VoterContextProvider implements VoterContext {
     hideIfMissingAnswers: () => this.#hideIfMissingAnswers
   });
 
-  #matches = matchStore({
+  #matches = matchState({
     algorithm: this.algorithm,
     answers: this.#answers,
     nominationsAndQuestions: () => this.#nominationsAndQuestions.value,
@@ -194,7 +194,7 @@ export class VoterContextProvider implements VoterContext {
     parentMatchingMethod: () => this.#parentMatchingMethod
   });
 
-  #entityFilters = filterStore({
+  #entityFilters = filterState({
     nominationsAndQuestions: () => this.#nominationsAndQuestions.value,
     locale: () => this.#locale,
     t: () => this.#t
@@ -516,7 +516,7 @@ export class VoterContextProvider implements VoterContext {
     });
 
     // QuestionBlocks: filtered by the user's selected category ids and ordered
-    // optionally by `firstQuestionId`. Mirrors the original `questionBlockStore`
+    // optionally by `firstQuestionId`. Mirrors the original `questionBlockState`
     // logic verbatim; written into a `$state` for consumer reactivity.
     $effect(() => {
       const firstId = this.#firstQuestionId.current;

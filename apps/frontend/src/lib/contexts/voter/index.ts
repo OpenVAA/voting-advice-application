@@ -1,4 +1,4 @@
-export * from './answerStore.type';
+export * from './answerState.type';
 export * from './selectionTree.type';
 export * from './voter';
 // Class is type-only to prevent accidental direct construction (WR-01);

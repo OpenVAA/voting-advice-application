@@ -6,7 +6,7 @@ import { buildParentFilters } from './buildParentFilters';
 import { buildQuestionFilter } from './buildQuestionFilter';
 import type { Filter } from '@openvaa/filters';
 import type { TranslationKey } from '$types';
-import type { NominationAndQuestionTree } from '../nominationAndQuestionStore.svelte';
+import type { NominationAndQuestionTree } from '../nominationAndQuestionState.svelte';
 import type { SelectionTree } from '../selectionTree.type';
 
 /**
@@ -80,7 +80,7 @@ class FilterStoreImpl {
   }
 }
 
-export function filterStore(deps: FilterStoreDeps): { readonly value: FilterTree } {
+export function filterState(deps: FilterStoreDeps): { readonly value: FilterTree } {
   return new FilterStoreImpl(deps);
 }
 

@@ -1,8 +1,8 @@
 import { flushSync } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { answerStore } from './answerStore.svelte';
+import { answerState } from './answerState.svelte';
 import type { TrackingService } from '../app/tracking';
-import type { AnswerStore } from './answerStore.type';
+import type { AnswerStore } from './answerState.type';
 
 // `localStorageState` only persists when `browser` is `true`. The default
 // app-environment stub sets `browser = false`, so override it here.
@@ -19,7 +19,7 @@ vi.mock('$lib/utils/logger', () => ({
   logError: vi.fn()
 }));
 
-describe('answerStore', () => {
+describe('answerState', () => {
   let cleanup: (() => void) | undefined;
   let startEvent: ReturnType<typeof vi.fn>;
 
@@ -42,7 +42,7 @@ describe('answerStore', () => {
   function setup(): AnswerStore {
     let store!: AnswerStore;
     cleanup = $effect.root(() => {
-      store = answerStore({ startEvent: startEvent as unknown as TrackingService['startEvent'] });
+      store = answerState({ startEvent: startEvent as unknown as TrackingService['startEvent'] });
     });
     flushSync();
     return store;

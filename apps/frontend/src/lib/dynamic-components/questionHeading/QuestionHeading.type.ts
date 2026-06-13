@@ -1,6 +1,6 @@
 import type { AnyQuestionVariant } from '@openvaa/data';
 import type { HeadingGroupProps } from '$lib/components/headingGroup';
-import type { QuestionBlocks } from '$lib/contexts/utils/questionBlockStore.type';
+import type { QuestionBlocks } from '$lib/contexts/utils/questionBlockState.type';
 
 export type QuestionHeadingProps = HeadingGroupProps & {
   /**

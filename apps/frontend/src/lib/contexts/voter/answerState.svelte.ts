@@ -4,7 +4,7 @@ import { localStorageState } from '../utils/persistedState.svelte';
 import type { Answer, Answers } from '@openvaa/data';
 import type { Frozen } from '$lib/utils/freeze';
 import type { TrackingService } from '../app/tracking';
-import type { AnswerStore } from './answerStore.type';
+import type { AnswerStore } from './answerState.type';
 
 /**
  * A Svelte 5 class implementation of the voter's `Answer` store (v2.13
@@ -21,7 +21,7 @@ import type { AnswerStore } from './answerStore.type';
  * `setAnswer`/`deleteAnswer`/`reset` are ARROW-FUNCTION FIELDS (§18) so they
  * survive being destructured/passed by consumers as detached callbacks (they
  * cross the context boundary). `answers` is a prototype getter read in-place
- * (§17 — answerStore is NOT spread by any consumer, so a prototype getter is
+ * (§17 — answerState is NOT spread by any consumer, so a prototype getter is
  * safe).
  */
 class AnswerStoreImpl implements AnswerStore {
@@ -54,7 +54,7 @@ class AnswerStoreImpl implements AnswerStore {
           value: typeof value === 'number' || typeof value === 'boolean' ? value : `${value}`
         });
       }
-      logDebugError(`answerStore.setAnswer(${questionId}, ${value})`);
+      logDebugError(`answerState.setAnswer(${questionId}, ${value})`);
       return deepFreeze(updated);
     });
   };
@@ -64,7 +64,7 @@ class AnswerStoreImpl implements AnswerStore {
   reset = (): void => {
     this.#store.set(Object.freeze({}));
     this.#startEvent('answer_resetAll');
-    logDebugError('answerStore.reset()');
+    logDebugError('answerState.reset()');
   };
 }
 
@@ -72,6 +72,6 @@ class AnswerStoreImpl implements AnswerStore {
  * Create an extended reactive store saved in `localStorage` for holding the voter's `Answer`s. The answers can be read via the `answers` getter, but setting and deleting them can only be done using the dedicated methods.
  * The returned `Answers` are frozen to prevent accidental modifications.
  */
-export function answerStore({ startEvent }: { startEvent: TrackingService['startEvent'] }): AnswerStore {
+export function answerState({ startEvent }: { startEvent: TrackingService['startEvent'] }): AnswerStore {
   return new AnswerStoreImpl(startEvent);
 }

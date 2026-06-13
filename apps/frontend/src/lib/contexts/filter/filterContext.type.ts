@@ -1,6 +1,6 @@
 import type { EntityType } from '@openvaa/data';
 import type { FilterGroup } from '@openvaa/filters';
-import type { FilterTree } from '$lib/contexts/voter/filters/filterStore.svelte';
+import type { FilterTree } from '$lib/contexts/voter/filters/filterState.svelte';
 
 /**
  * Symbol-keyed Svelte context exposing the active `FilterGroup` for the current
@@ -59,11 +59,11 @@ export type FilterContext = {
 
 /**
  * Arguments for `initFilterContext`. The `entityFilters` getter closes over the
- * `FilterTree` built by `filterStore()` inside `voterContext`. Filter context
+ * `FilterTree` built by `filterState()` inside `voterContext`. Filter context
  * does NOT rebuild the tree; it only selects the active `FilterGroup` slice.
  */
 export type InitFilterContextArgs = {
-  /** Getter returning the current `FilterTree` (rebuilt reactively by `filterStore()`). */
+  /** Getter returning the current `FilterTree` (rebuilt reactively by `filterState()`). */
   entityFilters: () => FilterTree;
   /**
    * Optional getter returning the singular `EntityType` implied for the

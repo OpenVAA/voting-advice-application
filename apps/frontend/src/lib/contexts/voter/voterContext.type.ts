@@ -3,10 +3,10 @@ import type { AnyQuestionVariant, Constituency, Election, EntityType, QuestionCa
 import type { MatchingAlgorithm } from '@openvaa/matching';
 import type { AppContext } from '../app';
 import type { FilterContext } from '../filter/filterContext.type';
-import type { QuestionBlocks } from '../utils/questionBlockStore.type';
-import type { AnswerStore } from './answerStore.type';
-import type { FilterTree } from './filters/filterStore.svelte';
-import type { MatchTree } from './matchStore.svelte';
+import type { QuestionBlocks } from '../utils/questionBlockState.type';
+import type { AnswerStore } from './answerState.type';
+import type { FilterTree } from './filters/filterState.svelte';
+import type { MatchTree } from './matchState.svelte';
 
 export type VoterContext = AppContext & {
   /**

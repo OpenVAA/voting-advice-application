@@ -10,7 +10,7 @@ import type {
   QuestionCategory
 } from '@openvaa/data';
 import type { Match } from '@openvaa/matching';
-import type { MatchTree } from '$lib/contexts/voter/matchStore.svelte';
+import type { MatchTree } from '$lib/contexts/voter/matchState.svelte';
 
 /**
  * Find a `Nomination` by its id in the match tree.
