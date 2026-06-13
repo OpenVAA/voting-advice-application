@@ -132,6 +132,10 @@ None - no external service configuration required.
 - The `store-to-state-codemod.mjs` allowlist already includes the popup (`PopupStore*`), candidate (`CandidateUserDataStore*`, `editedAnswersStore`), and admin (`JobStores*`/`jobStores`) tokens, so plans 02 and 03 can reuse it directly with their own `--files` globs (just `git mv` the remaining triplets first, as done here).
 - Out-of-scope tokens intentionally untouched in plan 01: server `jobStore` (singular), `cookieStore` mock, `StoredValue`/`LocallyStoredValue`, and the candidate/popup/admin decl files.
 
+## Self-Check: PASSED
+
+All claimed artifacts verified on disk (codemod script, renamed answerState/matchState/questionBlockState files, SUMMARY) and all 4 commits present in git history (`986acdaa1`, `0766e1720`, `78727b3ce`, `34063abf3`).
+
 ---
 *Phase: 114-store-state-rename*
 *Completed: 2026-06-13*
