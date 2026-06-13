@@ -14,7 +14,13 @@ import type { ArrayParam, Param } from '$lib/utils/route';
  * (§17 — paramStore is NOT spread by any consumer, so a prototype getter is safe).
  */
 class ParamStoreImpl<TParam extends Param> {
-  #param: TParam;
+  // Definite-assignment assertion: `#param` is assigned in the constructor before
+  // any read. The `#value` `$derived` field initializer below references `#param`,
+  // but its lazy body (§20) only runs on the first `get value()` call — long after
+  // construction — so the read is safe at runtime. The `!` suppresses TS's static
+  // "used before initialization" diagnostic that the field-initializer ordering
+  // (`#value` declared before the constructor assigns `#param`) would otherwise raise.
+  #param!: TParam;
   #value = $derived(
     parseParams(page)[this.#param] as TParam extends ArrayParam ? Array<string> : string | undefined
   );
