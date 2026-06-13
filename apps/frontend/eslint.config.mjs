@@ -71,14 +71,16 @@ export default [
       }
     }
   },
-  // CLEAN-02 (v2.11 K1 guard): ban `svelte/store` in migrated contexts/routes so any
-  // reintroduction of the store seam fails `yarn lint:check`. Scoped to D-02's globs only
-  // (lib/contexts/** + routes/**); D-03 backlogs widening to lib/components/** + lib/utils/**.
+  // CLEAN-02 (v2.11 K1 guard): ban `svelte/store` so any reintroduction of the store seam
+  // fails `yarn lint:check`. D-03's widening to the whole `src/**` tree is now DONE in
+  // Phase 115 (SWEEP-03): the glob covers `src/**/*.{ts,svelte}` (was D-02's narrower
+  // lib/contexts/** + routes/**), enforcing the rune-only invariant frontend-wide now that
+  // SWEEP-01 removed the last real `svelte/store` import.
   // Flat config REPLACES (does not merge) the `no-restricted-imports` array for in-scope files,
   // so the inherited deep-relative-`lib` `patterns` ban (shared-config/eslint.config.mjs:147-152)
   // is re-included VERBATIM here, or it would silently drop for these files (RESEARCH Pitfall 3).
   {
-    files: ['src/lib/contexts/**/*.{ts,svelte}', 'src/routes/**/*.{ts,svelte}'],
+    files: ['src/**/*.{ts,svelte}'],
     rules: {
       'no-restricted-imports': [
         'error',
