@@ -289,9 +289,20 @@ export class CandidateContextProvider implements CandidateContext {
     // their members correctly onto this instance. (The stable refs, persisted
     // handles, $state, $derived, and #userData are field initializers above, which
     // run in declaration order BEFORE this constructor body — D1.)
+    //
+    // LANDMINE FIX (111-03): `logout` is overridden by a getter-ONLY prototype
+    // accessor (no setter — see the `get logout()` block below). Under SSR the
+    // server renderer executes in strict-mode ESM, where `Object.assign` ATTEMPTING
+    // to write the authContext's own-enumerable `logout` arrow onto a getter-only
+    // accessor throws `TypeError: Cannot set property logout ... which has only a
+    // getter`. The Plan-02 reasoning ("prototype getter is not clobbered") was only
+    // half-right: the getter survives, but the WRITE itself throws. So we copy every
+    // authContext member EXCEPT `logout`; the inherited logout is already captured in
+    // `#authLogout` and wrapped by the prototype getter.
 
     Object.assign(this, this.#appContext);
-    Object.assign(this, this.#authContext);
+    const { logout: _inheritedLogout, ...authContextRest } = this.#authContext;
+    Object.assign(this, authContextRest);
 
     ////////////////////////////////////////////////////////////////////
     // Elections and Constituencies push-based $state mirrors
