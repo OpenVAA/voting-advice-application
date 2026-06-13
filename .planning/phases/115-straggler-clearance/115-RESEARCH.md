@@ -226,9 +226,10 @@ Keep the entire `rules` body unchanged (both the `svelte/store` `paths` ban AND 
 
 **If this table is empty:** All claims in this research were verified — no user confirmation needed except the deliberate Option A vs B judgment call (Open Question 1), which is Claude's discretion per CONTEXT.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Persist video preferences, or reproduce today's non-persistence? (Option A vs B)**
+   - **RESOLVED: Option A (bare `$state`, strictly behavior-preserving) chosen per 115-01-PLAN.md objective; docstring corrected to stop claiming persistence. Option B (localStorageState) deferred as a follow-up todo.**
    - What we know: The current `writable` does NOT persist; docs claim it does.
    - What's unclear: Whether "behavior-preserving" means "reproduce actual runtime behavior" (Option A, bare `$state`) or "honour documented intent" (Option B, `localStorageState('video-preferences', ...)`).
    - Recommendation: Default to **Option A (bare `$state`)** to keep the phase strictly behavior-preserving and risk-free (no new localStorage key, no SSR concerns, no E2E surprise), and update the docstring to stop claiming persistence. Note Option B as a one-line follow-up todo if the team wants real persistence. Both are within Claude's discretion; the planner should pick A and state it explicitly in the plan. (Picking B is also acceptable but introduces a new persisted key — slightly larger blast radius.)
