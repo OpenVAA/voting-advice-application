@@ -391,7 +391,10 @@ Plans:
   3. The `svelte/store` ESLint guard is extended from `lib/contexts/**`+`routes/**` to the whole `apps/frontend/src/**` tree, so reintroducing a `svelte/store` import anywhere in the frontend fails lint — and the existing tree passes lint under the widened guard (because SWEEP-01 landed first).
   4. `yarn lint:check` + `yarn build` + `yarn vitest run` are green.
 
-**Plans**: TBD
+**Plans**: 2 plans, 2 waves (SWEEP-03 strictly after SWEEP-01)
+
+  - [ ] 115-01-PLAN.md — SWEEP-01 + SWEEP-02: convert videoPreferences writable → $state rune handle (git mv to component-stores.svelte.ts) + rewrite Video.svelte consumers; delete the stray $: debug line in TermsOfUseForm JSDoc (Wave 1)
+  - [ ] 115-02-PLAN.md — SWEEP-03: widen the svelte/store ESLint guard files glob to src/**/*.{ts,svelte} (both ban blocks preserved); prove the guard fires + clean tree passes (Wave 2, after 115-01)
 
 ### Phase 116: Milestone-Close Green Gate
 
