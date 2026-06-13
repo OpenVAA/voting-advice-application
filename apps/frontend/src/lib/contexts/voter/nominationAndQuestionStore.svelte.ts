@@ -21,25 +21,27 @@ import type { SelectionTree } from './selectionTree.type';
  * @param hideIfMissingAnswers - A getter defining which `EntityType`s to hide if any of their opinion question answers are missing.
  * @returns A reactive nomination and question tree value.
  */
-export function nominationAndQuestionStore({
-  dataRoot,
-  constituencies,
-  elections,
-  entityTypes,
-  hideIfMissingAnswers
-}: {
+type NominationAndQuestionStoreDeps = {
   dataRoot: () => DataRoot;
   constituencies: () => Array<Constituency> | undefined;
   elections: () => Array<Election> | undefined;
   entityTypes: () => Array<EntityType>;
   hideIfMissingAnswers: () => AppSettings['entities']['hideIfMissingAnswers'];
-}): { readonly value: NominationAndQuestionTree } {
-  const _value = $derived.by(() => {
-    const dr = dataRoot();
-    const constits = constituencies();
-    const elecs = elections();
-    let types = entityTypes();
-    const hideIfMissing = hideIfMissingAnswers();
+};
+
+class NominationAndQuestionStoreImpl {
+  #deps: NominationAndQuestionStoreDeps;
+
+  constructor(deps: NominationAndQuestionStoreDeps) {
+    this.#deps = deps;
+  }
+
+  #value = $derived.by(() => {
+    const dr = this.#deps.dataRoot();
+    const constits = this.#deps.constituencies();
+    const elecs = this.#deps.elections();
+    let types = this.#deps.entityTypes();
+    const hideIfMissing = this.#deps.hideIfMissingAnswers();
 
     if (!dr || !elecs || !constits) return {} as NominationAndQuestionTree;
     if (!types?.length) types = Object.values(ENTITY_TYPE);
@@ -114,11 +116,15 @@ export function nominationAndQuestionStore({
     return tree as NominationAndQuestionTree;
   });
 
-  return {
-    get value() {
-      return _value;
-    }
-  };
+  get value(): NominationAndQuestionTree {
+    return this.#value;
+  }
+}
+
+export function nominationAndQuestionStore(
+  deps: NominationAndQuestionStoreDeps
+): { readonly value: NominationAndQuestionTree } {
+  return new NominationAndQuestionStoreImpl(deps);
 }
 
 /**

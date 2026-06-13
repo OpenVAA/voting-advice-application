@@ -27,27 +27,28 @@ import type { SelectionTree } from './selectionTree.type';
  * @param parentMatchingMethod - A getter returning the parent matching method. This is used to preimpute answers for `Nomination`s with children.
  * @returns A reactive match tree value.
  */
-export function matchStore({
-  answers,
-  nominationsAndQuestions,
-  algorithm,
-  minAnswers,
-  calcSubmatches,
-  parentMatchingMethod
-}: {
+type MatchStoreDeps = {
   answers: AnswerStore;
   nominationsAndQuestions: () => NominationAndQuestionTree;
   algorithm: MatchingAlgorithm;
   minAnswers: () => number;
   calcSubmatches: () => Array<EntityType>;
   parentMatchingMethod: () => AppSettings['matching']['organizationMatching'];
-}): { readonly value: MatchTree } {
-  const _value = $derived.by(() => {
-    const currentAnswers = answers.answers;
-    const nq = nominationsAndQuestions();
-    const minAns = minAnswers() ?? 1;
-    const submatches = calcSubmatches() ?? [];
-    const parentMethod = parentMatchingMethod();
+};
+
+class MatchStoreImpl {
+  #deps: MatchStoreDeps;
+
+  constructor(deps: MatchStoreDeps) {
+    this.#deps = deps;
+  }
+
+  #value = $derived.by(() => {
+    const currentAnswers = this.#deps.answers.answers;
+    const nq = this.#deps.nominationsAndQuestions();
+    const minAns = this.#deps.minAnswers() ?? 1;
+    const submatches = this.#deps.calcSubmatches() ?? [];
+    const parentMethod = this.#deps.parentMatchingMethod();
 
     const voter = new Voter(currentAnswers);
     const tree: Partial<MatchTree> = {};
@@ -123,7 +124,7 @@ export function matchStore({
           }
         }
 
-        const matches = algorithm.match<AnyNominationVariant | MatchingProxy<AnyNominationVariant>>({
+        const matches = this.#deps.algorithm.match<AnyNominationVariant | MatchingProxy<AnyNominationVariant>>({
           questions,
           reference: voter,
           // Use proxies in matching if available
@@ -143,11 +144,13 @@ export function matchStore({
     return tree as MatchTree;
   });
 
-  return {
-    get value() {
-      return _value;
-    }
-  };
+  get value(): MatchTree {
+    return this.#value;
+  }
+}
+
+export function matchStore(deps: MatchStoreDeps): { readonly value: MatchTree } {
+  return new MatchStoreImpl(deps);
 }
 
 /**
