@@ -228,7 +228,13 @@ export const testIds = {
     },
     info: {
       content: 'voter-info-content',
-      returnButton: 'voter-info-return'
+      returnButton: 'voter-info-return',
+      // Data-dependent anchor on the info page's `{#each ctx.dataRoot.elections}`
+      // election region (apps/frontend/src/routes/(voters)/info/+page.svelte).
+      // Distinct from the static `voter-info-content` {@html} div — this region is
+      // EMPTY when dataRoot.elections is stale, so it is the correct cold-entry
+      // regression anchor (Phase 117 COLD-03).
+      electionList: 'voter-info-election-list'
     },
     privacy: {
       content: 'voter-privacy-content',

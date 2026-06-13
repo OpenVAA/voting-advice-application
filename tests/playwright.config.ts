@@ -217,6 +217,20 @@ export default defineConfig({
       dependencies: ['data-setup-base']
     },
 
+    // cold-entry-dataroot (Phase 117 COLD-03) — LEAF. Read-only cold/direct-URL
+    // entry regression for the dataRoot #version-bridge alias-indirection
+    // staleness (Spike 024). Reads the base dataset read-only (no teardown of its
+    // own). `testMatch` is scoped to the cold-entry spec; `voter-journey`'s
+    // `testMatch` (/voter-journey\.spec\.ts/) excludes this file, so neither
+    // project picks up the other's specs.
+    {
+      name: 'cold-entry-dataroot',
+      testDir: './tests/specs/voter',
+      testMatch: /cold-entry-dataroot\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-base']
+    },
+
     // === voter permutations chains ===
     //
     //   - perm specs live under tests/tests/specs/perm/; the voter-app project's
