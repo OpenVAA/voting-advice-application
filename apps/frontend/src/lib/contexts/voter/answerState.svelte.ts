@@ -4,7 +4,7 @@ import { localStorageState } from '../utils/persistedState.svelte';
 import type { Answer, Answers } from '@openvaa/data';
 import type { Frozen } from '$lib/utils/freeze';
 import type { TrackingService } from '../app/tracking';
-import type { AnswerStore } from './answerState.type';
+import type { AnswerState } from './answerState.type';
 
 /**
  * A Svelte 5 class implementation of the voter's `Answer` store (v2.13
@@ -24,7 +24,7 @@ import type { AnswerStore } from './answerState.type';
  * (§17 — answerState is NOT spread by any consumer, so a prototype getter is
  * safe).
  */
-class AnswerStoreImpl implements AnswerStore {
+class AnswerStateImpl implements AnswerState {
   // The persistence + version bridge is inherited from `localStorageState`
   // unchanged (§22): the `{ version, data }` payload + expiry live in
   // `persistedState.svelte.ts`, not here.
@@ -72,6 +72,6 @@ class AnswerStoreImpl implements AnswerStore {
  * Create an extended reactive store saved in `localStorage` for holding the voter's `Answer`s. The answers can be read via the `answers` getter, but setting and deleting them can only be done using the dedicated methods.
  * The returned `Answers` are frozen to prevent accidental modifications.
  */
-export function answerState({ startEvent }: { startEvent: TrackingService['startEvent'] }): AnswerStore {
-  return new AnswerStoreImpl(startEvent);
+export function answerState({ startEvent }: { startEvent: TrackingService['startEvent'] }): AnswerState {
+  return new AnswerStateImpl(startEvent);
 }

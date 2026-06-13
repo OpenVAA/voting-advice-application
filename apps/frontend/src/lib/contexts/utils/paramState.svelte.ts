@@ -11,9 +11,9 @@ import type { ArrayParam, Param } from '$lib/utils/route';
  * (§20), so it is constructor-legal and reads `#param` only when `get value()`
  * is first called — after the constructor has assigned `#param` (mirrors the
  * `FilterContextProvider.#filterGroup` precedent). `value` is a prototype getter
- * (§17 — paramStore is NOT spread by any consumer, so a prototype getter is safe).
+ * (§17 — paramState is NOT spread by any consumer, so a prototype getter is safe).
  */
-class ParamStoreImpl<TParam extends Param> {
+class ParamStateImpl<TParam extends Param> {
   // Definite-assignment assertion: `#param` is assigned in the constructor before
   // any read. The `#value` `$derived` field initializer below references `#param`,
   // but its lazy body (§20) only runs on the first `get value()` call — long after
@@ -39,8 +39,8 @@ class ParamStoreImpl<TParam extends Param> {
  * @param param - The name of the parameter.
  * @returns An object with a reactive `value` getter.
  */
-export function paramStore<TParam extends Param>(
+export function paramState<TParam extends Param>(
   param: TParam
 ): { readonly value: TParam extends ArrayParam ? Array<string> : string | undefined } {
-  return new ParamStoreImpl(param);
+  return new ParamStateImpl(param);
 }

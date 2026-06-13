@@ -17,16 +17,16 @@ import type { SelectionTree } from '../selectionTree.type';
  * @param t - A getter returning the translation function.
  * @returns A reactive filter tree value.
  */
-type FilterStoreDeps = {
+type FilterStateDeps = {
   nominationsAndQuestions: () => NominationAndQuestionTree;
   locale: () => string;
   t: () => (key: TranslationKey) => string;
 };
 
-class FilterStoreImpl {
-  #deps: FilterStoreDeps;
+class FilterStateImpl {
+  #deps: FilterStateDeps;
 
-  constructor(deps: FilterStoreDeps) {
+  constructor(deps: FilterStateDeps) {
     this.#deps = deps;
   }
 
@@ -80,8 +80,8 @@ class FilterStoreImpl {
   }
 }
 
-export function filterState(deps: FilterStoreDeps): { readonly value: FilterTree } {
-  return new FilterStoreImpl(deps);
+export function filterState(deps: FilterStateDeps): { readonly value: FilterTree } {
+  return new FilterStateImpl(deps);
 }
 
 /**

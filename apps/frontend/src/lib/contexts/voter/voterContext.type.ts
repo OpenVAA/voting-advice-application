@@ -4,7 +4,7 @@ import type { MatchingAlgorithm } from '@openvaa/matching';
 import type { AppContext } from '../app';
 import type { FilterContext } from '../filter/filterContext.type';
 import type { QuestionBlocks } from '../utils/questionBlockState.type';
-import type { AnswerStore } from './answerState.type';
+import type { AnswerState } from './answerState.type';
 import type { FilterTree } from './filters/filterState.svelte';
 import type { MatchTree } from './matchState.svelte';
 
@@ -16,7 +16,7 @@ export type VoterContext = AppContext & {
   /**
    * The voters `Answer`s to the `Question`s.
    */
-  answers: AnswerStore;
+  answers: AnswerState;
   /**
    * Whether `Election`s can be selected.
    */

@@ -5,7 +5,7 @@ import type { Frozen } from '$lib/utils/freeze';
  * An extended reactive object for holding the voter's `Answer`s. The answers can be read via the `answers` getter, but setting and deleting them can only be done using the dedicated methods.
  * The returned `Answers` are frozen to prevent accidental modifications.
  */
-export type AnswerStore = {
+export type AnswerState = {
   /**
    * The current frozen answers.
    */

@@ -2,7 +2,7 @@ import { flushSync } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { answerState } from './answerState.svelte';
 import type { TrackingService } from '../app/tracking';
-import type { AnswerStore } from './answerState.type';
+import type { AnswerState } from './answerState.type';
 
 // `localStorageState` only persists when `browser` is `true`. The default
 // app-environment stub sets `browser = false`, so override it here.
@@ -39,8 +39,8 @@ describe('answerState', () => {
    * Create the store inside an `$effect.root` so its `$state` settles, returning
    * the store handle.
    */
-  function setup(): AnswerStore {
-    let store!: AnswerStore;
+  function setup(): AnswerState {
+    let store!: AnswerState;
     cleanup = $effect.root(() => {
       store = answerState({ startEvent: startEvent as unknown as TrackingService['startEvent'] });
     });

@@ -42,7 +42,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   import type { CustomData, EntityDetailsContent, ParentEntityDetailsContent } from '@openvaa/app-shared';
   import type { AnyQuestionVariant } from '@openvaa/data';
   import type { Tab } from '$lib/components/tabs';
-  import type { AnswerStore } from '$lib/contexts/voter';
+  import type { AnswerState } from '$lib/contexts/voter';
   import type { VoterContext } from '$lib/contexts/voter/voterContext.type';
   import type { EntityDetailsProps } from './EntityDetails.type';
 
@@ -57,7 +57,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   // `answers` is consumed in the template so it must be in the reactive
   // graph — declare with $state.
   let voterContext: VoterContext | undefined;
-  let answers: AnswerStore | undefined = $state(undefined);
+  let answers: AnswerState | undefined = $state(undefined);
   if (appType.current === 'voter') {
     voterContext = getVoterContext();
     answers = voterContext.answers;

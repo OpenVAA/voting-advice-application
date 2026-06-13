@@ -21,7 +21,7 @@ import type { SelectionTree } from './selectionTree.type';
  * @param hideIfMissingAnswers - A getter defining which `EntityType`s to hide if any of their opinion question answers are missing.
  * @returns A reactive nomination and question tree value.
  */
-type NominationAndQuestionStoreDeps = {
+type NominationAndQuestionStateDeps = {
   dataRoot: () => DataRoot;
   constituencies: () => Array<Constituency> | undefined;
   elections: () => Array<Election> | undefined;
@@ -29,10 +29,10 @@ type NominationAndQuestionStoreDeps = {
   hideIfMissingAnswers: () => AppSettings['entities']['hideIfMissingAnswers'];
 };
 
-class NominationAndQuestionStoreImpl {
-  #deps: NominationAndQuestionStoreDeps;
+class NominationAndQuestionStateImpl {
+  #deps: NominationAndQuestionStateDeps;
 
-  constructor(deps: NominationAndQuestionStoreDeps) {
+  constructor(deps: NominationAndQuestionStateDeps) {
     this.#deps = deps;
   }
 
@@ -121,10 +121,10 @@ class NominationAndQuestionStoreImpl {
   }
 }
 
-export function nominationAndQuestionStore(
-  deps: NominationAndQuestionStoreDeps
+export function nominationAndQuestionState(
+  deps: NominationAndQuestionStateDeps
 ): { readonly value: NominationAndQuestionTree } {
-  return new NominationAndQuestionStoreImpl(deps);
+  return new NominationAndQuestionStateImpl(deps);
 }
 
 /**

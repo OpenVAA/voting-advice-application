@@ -13,7 +13,7 @@ import type {
 } from '@openvaa/data';
 import type { Match, MatchingAlgorithm } from '@openvaa/matching';
 import type { MatchingProxy } from '$lib/utils/matching';
-import type { AnswerStore } from './answerState.type';
+import type { AnswerState } from './answerState.type';
 import type { NominationAndQuestionTree } from './nominationAndQuestionState.svelte';
 import type { SelectionTree } from './selectionTree.type';
 
@@ -27,8 +27,8 @@ import type { SelectionTree } from './selectionTree.type';
  * @param parentMatchingMethod - A getter returning the parent matching method. This is used to preimpute answers for `Nomination`s with children.
  * @returns A reactive match tree value.
  */
-type MatchStoreDeps = {
-  answers: AnswerStore;
+type MatchStateDeps = {
+  answers: AnswerState;
   nominationsAndQuestions: () => NominationAndQuestionTree;
   algorithm: MatchingAlgorithm;
   minAnswers: () => number;
@@ -36,10 +36,10 @@ type MatchStoreDeps = {
   parentMatchingMethod: () => AppSettings['matching']['organizationMatching'];
 };
 
-class MatchStoreImpl {
-  #deps: MatchStoreDeps;
+class MatchStateImpl {
+  #deps: MatchStateDeps;
 
-  constructor(deps: MatchStoreDeps) {
+  constructor(deps: MatchStateDeps) {
     this.#deps = deps;
   }
 
@@ -149,8 +149,8 @@ class MatchStoreImpl {
   }
 }
 
-export function matchState(deps: MatchStoreDeps): { readonly value: MatchTree } {
-  return new MatchStoreImpl(deps);
+export function matchState(deps: MatchStateDeps): { readonly value: MatchTree } {
+  return new MatchStateImpl(deps);
 }
 
 /**

@@ -55,7 +55,7 @@ class FilterContextProvider implements FilterContext {
   // in a `$derived` field). `void this.#version` is the §22 version-bridge defensive
   // edge: it ensures a $derived that reads ONLY filterGroup still re-runs on filter
   // mutation.
-  // We use `parseParams(page)` (matching the voterContext paramStore analog) so the
+  // We use `parseParams(page)` (matching the voterContext paramState analog) so the
   // persistent `?electionId=` search param and the route-side `entityTab` key are
   // merged transparently. When `currentEntityType` is injected (production path),
   // prefer it over the URL-derived plural so the results route need not force-fill
