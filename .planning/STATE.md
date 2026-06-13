@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.13
 milestone_name: Context-as-Class Migration
-status: planning
-stopped_at: Completed 112-02-PLAN.md
-last_updated: "2026-06-13T17:02:58.566Z"
-last_activity: 2026-06-13 -- Phase 116 static gates green; E2E left open; user paused milestone
+status: executing
+stopped_at: Phase 117 complete — full E2E gate GREEN (95/95 fresh-server); Phase 116 gate unblocked
+last_updated: "2026-06-13T20:45:00.000Z"
+last_activity: 2026-06-13 -- Phase 117 landed (dataRoot cold-entry fix); full suite 95/95 + unit green; 116 GATE-01 unblocked
 progress:
-  total_phases: 11
-  completed_phases: 10
-  total_plans: 32
-  completed_plans: 32
-  percent: 91
+  total_phases: 12
+  completed_phases: 11
+  total_plans: 34
+  completed_plans: 34
+  percent: 92
 ---
 
 # Project State
@@ -21,14 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-12 starting v2.13 Context-as-Class Migration)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 116 — Milestone-Close Green Gate (OPEN: full E2E pending CI/preview)
+**Current focus:** Phase 116 — Milestone-Close Green Gate (gate UNBLOCKED by Phase 117; re-run to close the milestone)
 
 ## Current Position
 
-Phase: 116 — OPEN (paused by user 2026-06-13)
-Status: Static + anchor gates GREEN (build 14/14, vitest 766, svelte-check 151 baseline, lint green, all grep anchors clean, manual in-browser reactivity walk green). Full automated E2E NOT green locally — voter-journey fails at `elections.length === 0` in the Playwright dev-server harness (manual walk of same path works; assessed as test-harness artifact, not migration regression, but NOT root-caused). See .planning/phases/116-milestone-close-green-gate/116-MILESTONE-CLOSE-ANCHOR.md.
-Next: run full E2E in CI / production-preview to close GATE-01, then `/gsd-progress --next` to resume (audit → complete → cleanup). If E2E fails in CI too, `/gsd-debug` the elections.length=0 regression.
-Last activity: 2026-06-13 -- Phase 116 static gates green; E2E left open; user paused milestone
+Phase: 117 — COMPLETE (2026-06-13); Phase 116 gate UNBLOCKED, ready to close v2.13
+Status: The Phase 116 blocker (`voter-journey` failing at `elections.length === 0` on the Playwright dev-server harness — previously filed as a "test-harness artifact, NOT root-caused") was ROOT-CAUSED and FIXED. Debug `dataroot-stale-direct-nav` + Spike 024 proved it a real user-facing bug: `const X = $derived(ctx.dataRoot)` intermediate-alias over the identity-stable `#version`-bridge dataRoot returns a referentially-identical object on version bump → Svelte 5 skips downstream notification → stale-empty on cold/direct-URL entry. Phase 117 fixed it: 12-site direct-read codemod (`ctx.dataRoot.<prop>`), CLAUDE.md carve-out, new `cold-entry-dataroot` E2E project + negative control. **Full E2E 95/95 (fresh-server, deterministic; one run-1 stale-HMR false failure root-caused & disproven by clean re-run), unit 766+450 green, lint+typecheck green.**
+Next: close the v2.13 milestone. Recommended: `/gsd-verify-work 117` (optional UAT) then run the Phase 116 anchor gate to its 3× determinism standard, then `/gsd-complete-milestone`. NOTE per project memory: prefer hand-editing milestone close over `state.complete-phase` (frontmatter-corruption quirk).
+Env caveat: operator's full-stack `yarn dev` was replaced with a background frontend-only `yarn workspace @openvaa/frontend dev` to get a clean Vite restart for the gate; restart `yarn dev` to restore the watcher.
+Last activity: 2026-06-13 -- Phase 117 landed (dataRoot cold-entry fix); full suite 95/95 + unit green; 116 GATE-01 unblocked
 
 ## Performance Metrics
 

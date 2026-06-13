@@ -193,7 +193,7 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
 - [x] **Phase 114: Store → State Rename** — rename all rune-native `*Store` symbols/files/types/tests to `*State`; document the jobStore + cookieStore exclusions
 - [x] **Phase 115: Straggler Clearance** — convert the last `svelte/store` (videoPreferences); remove the stray `$:` debug line; widen the ESLint guard app-wide
 - [ ] **Phase 116: Milestone-Close Green Gate** — full E2E (incl. a11y-smoke) + unit + typecheck + lint all green _(gate RE-OPENED 2026-06-13: the blocking E2E failure was root-caused as a real bug, not a test artifact — see Phase 117; 116 gate re-runs after 117 lands)_
-- [ ] **Phase 117: dataRoot Cold-Entry Reactivity Fix** — eliminate the `$derived(ctx.dataRoot)` alias staleness on direct-URL (cold) entry; add cold-entry E2E coverage; unblock the Phase 116 gate
+- [x] **Phase 117: dataRoot Cold-Entry Reactivity Fix** (2/2 plans) — completed 2026-06-13 — eliminated the `$derived(ctx.dataRoot)` alias staleness on direct-URL (cold) entry (12-site direct-read codemod + CLAUDE.md carve-out + new `cold-entry-dataroot` E2E project + negative control); full suite green (E2E 95/95 fresh-server, unit 766+450, lint+types) — Phase 116 GATE-01 unblocked
 
 ## Phase Details
 
@@ -453,5 +453,5 @@ Plans:
 | 113. Handle Flatten + De-duplication | 0/TBD | Not started | - |
 | 114. Store → State Rename | 0/TBD | Not started | - |
 | 115. Straggler Clearance | 0/TBD | Not started | - |
-| 116. Milestone-Close Green Gate | 0/TBD | Re-opened (awaits 117) | - |
-| 117. dataRoot Cold-Entry Reactivity Fix | 0/TBD | Not started | - |
+| 116. Milestone-Close Green Gate | 0/TBD | Gate unblocked (re-run to close) | - |
+| 117. dataRoot Cold-Entry Reactivity Fix | 2/2 | Complete | 2026-06-13 |
