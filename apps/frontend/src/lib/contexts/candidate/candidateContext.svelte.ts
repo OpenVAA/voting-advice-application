@@ -194,7 +194,7 @@ export class CandidateContextProvider implements CandidateContext {
    * All applicable, non-empty question categories to be used as a base for the other stores.
    * QUESTION-04 (Phase 61 Plan 03): inlined the pull-chain helper-store derivations
    * into a single push-based `$effect` that writes `$state` mirrors. Behavior is
-   * equivalent to `questionCategoryStore`/`questionStore`/`questionBlockStore` but
+   * equivalent to `questionCategoryState`/`questionState`/`questionBlockState` but
    * the consumer-facing reactivity works via context getters.
    */
   #questionCategories = $state<Array<QuestionCategory>>([]);

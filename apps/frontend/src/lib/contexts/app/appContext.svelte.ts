@@ -366,7 +366,7 @@ export class AppContextProvider implements AppContext {
     // changes. Bodies preserved verbatim from the former factory.
     ////////////////////////////////////////////////////////////////////
 
-    // Read appSettingsData directly from page.data (replaces pageDatumStore per
+    // Read appSettingsData directly from page.data (replaces pageDatumState per
     // D-02). Track the previous `data` reference to skip merges when SvelteKit
     // hands us the same loader result on a URL change (e.g., drawer open/close —
     // root layout loader has no URL deps so its data is cached). Without this

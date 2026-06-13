@@ -90,8 +90,8 @@ export class VoterContextProvider implements VoterContext {
   #selectedConstituencies = $state<Array<Constituency>>([]);
 
   // QUESTION-04 follow-up (Phase 61-03 voter-side parallel fix):
-  // Inlined the previous helper-store pull-chain (`questionCategoryStore` /
-  // `questionStore` / `questionBlockState`) into a single push-based `$effect`
+  // Inlined the previous helper-store pull-chain (`questionCategoryState` /
+  // `questionState` / `questionBlockState`) into a single push-based `$effect`
   // that writes `$state` mirrors. The helper-store derivations were declared
   // in another module's scope and did not propagate invalidation across the
   // function-accessor boundary on the voter side (same root-cause class as
@@ -477,7 +477,7 @@ export class VoterContextProvider implements VoterContext {
         ) ?? [];
       const nextInfoCats = nextQuestionCategories.filter((qc) => qc.type !== QUESTION_CATEGORY_TYPE.Opinion);
       const nextOpinionCats = nextQuestionCategories.filter((qc) => qc.type === QUESTION_CATEGORY_TYPE.Opinion);
-      // Voter-app filters out hidden questions (per `questionStore` original
+      // Voter-app filters out hidden questions (per `questionState` original
       // behavior with appType: 'voter'). The opinion-question matchability check
       // mirrors the helper's invariant.
       const nextInfoQuestions = nextInfoCats.flatMap((c) =>
