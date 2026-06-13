@@ -292,7 +292,7 @@ Plans:
 
   - [x] 110-01-PLAN.md — answerStore() + paramStore() → classes; DELETE the 3 dead-code projection factories (questionCategoryStore/questionStore/questionBlockStore .svelte.ts — zero live importers, inlined into voterContext at Phase 61; SC-1 satisfied-by-deletion per 110-PATTERNS §3). Keeps questionBlockStore.type.ts (live).
   - [x] 110-02-PLAN.md — matchStore() + nominationAndQuestionStore() + filterStore() → classes ($derived.by value fields; MatchTree/NominationAndQuestionTree/FilterTree type exports unchanged)
-  - [ ] 110-03-PLAN.md — voterContext → class VoterContextProvider (prototype-getter reactive accessors — not spread; Object.assign(this, appContext) reproduces the L488 spread; arrow-field resetVoterData; 5 $effects + 4 $derived + 4 producers in D1 constructor order)
+  - [x] 110-03-PLAN.md — voterContext → class VoterContextProvider (prototype-getter reactive accessors — not spread; Object.assign(this, appContext) reproduces the L488 spread; arrow-field resetVoterData; 5 $effects + 4 $derived + 4 producers in D1 constructor order)
   - [ ] 110-04-PLAN.md — phase gate: yarn build + full vitest + svelte-check (151 baseline) + voter-app E2E (voter-journey) + a11y-smoke (runs once at phase end)
 
 **UI hint**: yes
@@ -396,7 +396,7 @@ Plans:
 | 107. Leaf Contexts + Proof Reconciliation | 3/3 | Complete   | 2026-06-12 |
 | 108. App-Layer Producer Contexts | 3/3 | Complete   | 2026-06-12 |
 | 109. appContext Orchestrator + Spread Fix + PoC Removal | 3/3 | Complete   | 2026-06-12 |
-| 110. voterContext Orchestrator + Voter Sub-Stores | 2/4 | In Progress|  |
+| 110. voterContext Orchestrator + Voter Sub-Stores | 3/4 | In Progress|  |
 | 111. candidateContext Orchestrator + UserData Store | 0/TBD | Not started | - |
 | 112. adminContext + Job Stores | 0/TBD | Not started | - |
 | 113. Handle Flatten + De-duplication | 0/TBD | Not started | - |
