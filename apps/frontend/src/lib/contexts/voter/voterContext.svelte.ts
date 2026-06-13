@@ -62,6 +62,14 @@ function sameRefs<TItem>(a: ReadonlyArray<TItem>, b: ReadonlyArray<TItem>): bool
  * handle / producer fields they read are assigned (D1 order — appContext +
  * filterContext precedent). They are legal in-constructor because voterContext is
  * constructed during component init, an effect context.
+ *
+ * @internal — test seam — do not construct directly; requires effect context;
+ * use `initVoterContext()`. Calling `new VoterContextProvider()` outside
+ * `initVoterContext()` bypasses the `CONTEXT_KEY` double-init guard, will throw
+ * `effect_orphan` outside a component `<script>` or `$effect.root`, and installs
+ * `initFilterContext` side effects without the single-init protection.
+ * @throws When constructed outside a Svelte effect context (effect_orphan).
+ * @throws When `initFilterContext` has already been called (double-init guard).
  */
 export class VoterContextProvider implements VoterContext {
   ////////////////////////////////////////////////////////////
