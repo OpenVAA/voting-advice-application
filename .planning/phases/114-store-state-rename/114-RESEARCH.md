@@ -305,15 +305,15 @@ camelCase subset is 97 sites, PascalCase 47 sites. After rename, the gated count
 These are all LOW-risk naming-convention choices for a mechanical phase, not verified facts requiring
 external confirmation. All file/identifier/site facts in the Rename Map are `[VERIFIED: codebase grep]`.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should the two localStorage key string literals be renamed (with migration) or kept?**
+   - **RESOLVED: KEEP the literals (rename code identifiers only)** — adopted by all plans; renaming orphans persisted user data.
    - What we know: keeping them is zero-risk and matches "no behavior change"; renaming orphans data unless migrated.
-   - Recommendation: KEEP the literals (rename code only). Flag for the planner as the one non-mechanical decision.
 2. **`jobStores` target form — `jobStates` vs `jobState`?**
-   - Recommendation: `jobStates` (it is plural — holds active + past job collections).
+   - **RESOLVED: `jobStates` (plural — holds active + past job collections)** — adopted by Plans 03/04.
 3. **Comment-only `*Store` refs — update or leave?**
-   - Recommendation: update for a clean grep gate.
+   - **RESOLVED: update for a clean grep gate** — adopted by Plan 04 Task 1.
 
 ## Environment Availability
 
