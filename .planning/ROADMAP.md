@@ -188,7 +188,7 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
 - [x] **Phase 109: appContext Orchestrator + Spread Fix + PoC Removal** — convert appContext to a class; explicit getter forwarding; remove the Phase-102 `_poc*` scaffolding (completed 2026-06-12)
 - [x] **Phase 110: voterContext Orchestrator + Voter Sub-Stores** — convert voterContext + answer/match/nomination/filter/utils sub-stores to classes (completed 2026-06-13)
 - [x] **Phase 111: candidateContext Orchestrator + UserData Store** — convert candidateContext + candidateUserDataStore to classes (completed 2026-06-13)
-- [ ] **Phase 112: adminContext + Job Stores** — convert adminContext + jobStores to classes; preserve the v2.11 explicit auth-forwarding fix
+- [x] **Phase 112: adminContext + Job Stores** — convert adminContext + jobStores to classes; preserve the v2.11 explicit auth-forwarding fix (completed 2026-06-13)
 - [ ] **Phase 113: Handle Flatten + De-duplication** — drop `reactiveFoo`/`Foo` duplicates; codemod `.current` reads to bare class fields; remove back-compat handles
 - [ ] **Phase 114: Store → State Rename** — rename all rune-native `*Store` symbols/files/types/tests to `*State`; document the jobStore + cookieStore exclusions
 - [ ] **Phase 115: Straggler Clearance** — convert the last `svelte/store` (videoPreferences); remove the stray `$:` debug line; widen the ESLint guard app-wide
@@ -336,7 +336,7 @@ Plans:
 Plans:
 
 - [x] 112-01-PLAN.md — jobStores() → class JobStoresProvider ($state Map registry + 3 $derived projections; arrow-field polling; back-compat factory wrapper; new headless smoke test)
-- [ ] 112-02-PLAN.md — adminContext → class AdminContextProvider (v2.11 auth-forwarding fix preserved verbatim: live-delegating isAuthenticated getter + 4 arrow forwards, no authContext spread; Object.assign(this, appContext); type-only barrel narrowing) + phase gate (build + vitest contexts + svelte-check)
+- [x] 112-02-PLAN.md — adminContext → class AdminContextProvider (v2.11 auth-forwarding fix preserved verbatim: live-delegating isAuthenticated getter + 4 arrow forwards, no authContext spread; Object.assign(this, appContext); type-only barrel narrowing) + phase gate (build + vitest contexts + svelte-check)
 
 ### Phase 113: Handle Flatten + De-duplication
 
@@ -408,7 +408,7 @@ Plans:
 | 109. appContext Orchestrator + Spread Fix + PoC Removal | 3/3 | Complete   | 2026-06-12 |
 | 110. voterContext Orchestrator + Voter Sub-Stores | 4/4 | Complete   | 2026-06-13 |
 | 111. candidateContext Orchestrator + UserData Store | 3/3 | Complete   | 2026-06-13 |
-| 112. adminContext + Job Stores | 1/2 | In Progress|  |
+| 112. adminContext + Job Stores | 2/2 | Complete   | 2026-06-13 |
 | 113. Handle Flatten + De-duplication | 0/TBD | Not started | - |
 | 114. Store → State Rename | 0/TBD | Not started | - |
 | 115. Straggler Clearance | 0/TBD | Not started | - |
