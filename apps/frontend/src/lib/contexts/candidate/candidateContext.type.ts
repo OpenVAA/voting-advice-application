@@ -4,7 +4,7 @@ import type { DataWriter } from '$lib/api/base/dataWriter.type';
 import type { AppContext } from '../app';
 import type { AuthContext } from '../auth';
 import type { QuestionBlocks } from '../utils/questionBlockState.type';
-import type { CandidateUserDataStore } from './candidateUserDataState.type';
+import type { CandidateUserDataState } from './candidateUserDataState.type';
 
 export type CandidateContext = AppContext &
   AuthContext & {
@@ -137,7 +137,7 @@ export type CandidateContext = AppContext &
      *
      * NB. Before using the object, its `init` method must be called with the initial `CandidateUserData`.
      */
-    userData: CandidateUserDataStore;
+    userData: CandidateUserDataState;
     /**
      * Holds the ID token claims.
      */

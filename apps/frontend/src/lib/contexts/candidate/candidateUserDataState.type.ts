@@ -8,7 +8,7 @@ import type { CandidateUserData, LocalizedCandidateData } from '$lib/api/base/da
  *
  * NB. Before using the object, its `init` method must be called with the initial `CandidateUserData`.
  */
-export type CandidateUserDataStore = {
+export type CandidateUserDataState = {
   /**
    * The effective user data, including any unsaved edits.
    */

@@ -4,7 +4,7 @@ import type { PopupQueueItem } from './popupComponent.type';
  * A store that manages a queue of popup components and resolves to the first component in the queue.
  * The popups are displayed by the layout initiating `AppContext` one at a time.
  */
-export type PopupStore = {
+export type PopupState = {
   /**
    * The first popup component in the queue (the head), or `undefined` when the queue is empty.
    * Read reactively via `popupQueue.current` (rune-native getter; no store bridge).

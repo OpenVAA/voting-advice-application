@@ -8,7 +8,7 @@ import { FeedbackPopup } from '$lib/dynamic-components/feedback/popup';
 import { SurveyPopup } from '$lib/dynamic-components/survey/popup';
 import { mergeAppSettings, mergeInitialAppSettings } from '$lib/utils/settings';
 import { createGetRoute } from './getRoute.svelte';
-import { popupStore } from './popup';
+import { popupState } from './popup';
 import { surveyLink } from './survey.svelte';
 import { trackingService } from './tracking';
 import { getComponentContext } from '../component';
@@ -20,7 +20,7 @@ import type { FeedbackData } from '$lib/api/base/feedbackWriter.type';
 import type { AppContext, AppType } from './appContext.type';
 import type { AppCustomization } from './appCustomization.type';
 import type { RouteBuilder } from './getRoute.svelte';
-import type { PopupStore } from './popup';
+import type { PopupState } from './popup';
 import type { UserPreferences } from './userPreferences.type';
 
 const CONTEXT_KEY = Symbol();
@@ -140,7 +140,7 @@ export class AppContextProvider implements AppContext {
 
   #tracking!: ReturnType<typeof trackingService>;
   #survey!: ReturnType<typeof surveyLink>;
-  #popupQueue: PopupStore = popupStore();
+  #popupQueue: PopupState = popupState();
 
   // Track the previous `data` reference to skip merges when SvelteKit hands us
   // the same loader result on a URL change (the Phase-64 over-fire fix).
@@ -178,7 +178,7 @@ export class AppContextProvider implements AppContext {
   readonly getRoute!: { readonly current: RouteBuilder };
   readonly surveyLink!: AppContext['surveyLink'];
   readonly userPreferences!: AppContext['userPreferences'];
-  readonly popupQueue!: PopupStore;
+  readonly popupQueue!: PopupState;
 
   // Forwarded STABLE componentCtx members (own props copied via Object.assign).
   readonly t!: AppContext['t'];

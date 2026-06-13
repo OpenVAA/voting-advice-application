@@ -7,7 +7,7 @@ import type { Image } from '@openvaa/data';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { CandidateUserData, LocalizedAnswers, LocalizedCandidateData } from '$lib/api/base/dataWriter.type';
 import type { UniversalDataWriter } from '$lib/api/base/universalDataWriter';
-import type { CandidateUserDataStore } from './candidateUserDataState.type';
+import type { CandidateUserDataState } from './candidateUserDataState.type';
 
 /**
  * A Svelte 5 class implementation of the candidate's composite user-data store
@@ -20,9 +20,9 @@ import type { CandidateUserDataStore } from './candidateUserDataState.type';
  * `persistedState.svelte.ts`).
  *
  * Per the D2 type-name-clash landmine, the public surface is the TYPE
- * `CandidateUserDataStore` that this class `implements`, so the class is named
- * `CandidateUserDataStoreImpl` (Phase-110 `AnswerStoreImpl` precedent) and the
- * factory `candidateUserDataStore(...)` stays byte-identical.
+ * `CandidateUserDataState` that this class `implements`, so the class is named
+ * `CandidateUserDataStateImpl` (Phase-110 `AnswerStateImpl` precedent) and the
+ * factory `candidateUserDataState(...)` stays byte-identical.
  *
  * The 12 public methods are ARROW-FUNCTION FIELDS (§18) so they survive being
  * held as `userData.X` on the candidate context and called detached. The
@@ -30,12 +30,12 @@ import type { CandidateUserDataStore } from './candidateUserDataState.type';
  * `unsavedProperties`) are prototype getters read in-place (§17 — this store is
  * NOT spread by any consumer, so prototype getters are safe).
  *
- * @internal Construct via the `candidateUserDataStore(...)` factory at component
+ * @internal Construct via the `candidateUserDataState(...)` factory at component
  * init. The constructor installs an `$effect` (reacting to `answersLocked` to
  * clear unsaved edits), so constructing outside an effect context throws
  * `effect_orphan`.
  */
-class CandidateUserDataStoreImpl implements CandidateUserDataStore {
+class CandidateUserDataStateImpl implements CandidateUserDataState {
   #answersLocked: () => boolean;
   #dataWriterPromise: Promise<UniversalDataWriter>;
   #locale: () => string;
@@ -48,7 +48,7 @@ class CandidateUserDataStoreImpl implements CandidateUserDataStore {
   #savedData = $state<CandidateUserData<true> | undefined>(undefined);
 
   // An internal persisted store for holding edited answers
-  #editedAnswersStore = localStorageState(
+  #editedAnswersState = localStorageState(
     'CandidateContext-candidateUserDataStore-editedAnswers',
     {} as LocalizedAnswers
   );
@@ -61,7 +61,7 @@ class CandidateUserDataStoreImpl implements CandidateUserDataStore {
 
   // A derived value holding the effective user data, including unsaved data
   #current = $derived.by(() => {
-    const editedAnswers = this.#editedAnswersStore.current;
+    const editedAnswers = this.#editedAnswersState.current;
     if (!this.#savedData) return undefined;
     const {
       user,
@@ -141,7 +141,7 @@ class CandidateUserDataStoreImpl implements CandidateUserDataStore {
   #savedCandidateData = $derived(this.#savedData?.candidate);
 
   #unsavedQuestionIds = $derived.by(() => {
-    const editedAnswers = this.#editedAnswersStore.current;
+    const editedAnswers = this.#editedAnswersState.current;
     return editedAnswers ? Object.keys(editedAnswers) : [];
   });
 
@@ -194,21 +194,21 @@ class CandidateUserDataStoreImpl implements CandidateUserDataStore {
   };
 
   setAnswer = (questionId: Id, answer: LocalizedAnswer | null): void => {
-    this.#editedAnswersStore.update(({ ...answers }) => {
+    this.#editedAnswersState.update(({ ...answers }) => {
       answers[questionId] = answer;
       return answers;
     });
   };
 
   resetAnswer = (questionId: Id): void => {
-    this.#editedAnswersStore.update(({ ...answers }) => {
+    this.#editedAnswersState.update(({ ...answers }) => {
       delete answers[questionId];
       return answers;
     });
   };
 
   resetAnswers = (): void => {
-    this.#editedAnswersStore.set({});
+    this.#editedAnswersState.set({});
   };
 
   setImage = (image: Image): void => {
@@ -243,7 +243,7 @@ class CandidateUserDataStoreImpl implements CandidateUserDataStore {
     // Get the initial data to get target entity
     if (!this.#savedData) throw new Error('Save called before user data loaded');
 
-    const answers = this.#editedAnswersStore.current;
+    const answers = this.#editedAnswersState.current;
     const image = this.#editedImage;
     const termsOfUseAccepted = this.#editedTermsOfUseAccepted;
     const updateArgs = {
@@ -302,7 +302,7 @@ class CandidateUserDataStoreImpl implements CandidateUserDataStore {
  * @param dataWriterPromise - A `Promise` resolving to `UniversalDataWriter` for saving data.
  * @param locale - The current locale string, used for translating some data when it's fetched.
  */
-export function candidateUserDataStore({
+export function candidateUserDataState({
   answersLocked,
   dataWriterPromise,
   locale
@@ -310,6 +310,6 @@ export function candidateUserDataStore({
   answersLocked: () => boolean;
   dataWriterPromise: Promise<UniversalDataWriter>;
   locale: () => string;
-}): CandidateUserDataStore {
-  return new CandidateUserDataStoreImpl({ answersLocked, dataWriterPromise, locale });
+}): CandidateUserDataState {
+  return new CandidateUserDataStateImpl({ answersLocked, dataWriterPromise, locale });
 }

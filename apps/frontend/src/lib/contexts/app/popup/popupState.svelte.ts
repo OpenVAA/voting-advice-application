@@ -1,5 +1,5 @@
 import type { PopupQueueItem } from './popupComponent.type';
-import type { PopupStore as PopupStoreApi } from './popupState.type';
+import type { PopupState as PopupStateApi } from './popupState.type';
 
 /**
  * Manages a queue of popup components and resolves to the first component in the
@@ -16,7 +16,7 @@ import type { PopupStore as PopupStoreApi } from './popupState.type';
  * `this` on detach. No `$effect` is used — the class is SSR-safe and
  * constructable in any context (§20).
  */
-class PopupStore implements PopupStoreApi {
+class PopupState implements PopupStateApi {
   #queue = $state<Array<PopupQueueItem>>([]);
   #current = $derived(this.#queue[0]);
 
@@ -36,6 +36,6 @@ class PopupStore implements PopupStoreApi {
 /**
  * Create a store that manages a queue of popup components and resolves to the first component in the queue.
  */
-export function popupStore(): PopupStoreApi {
-  return new PopupStore();
+export function popupState(): PopupStateApi {
+  return new PopupState();
 }

@@ -8,7 +8,7 @@ import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { logDebugError } from '$lib/utils/logger';
 import { removeDuplicates } from '$lib/utils/removeDuplicates';
 import { getImpliedElectionIds } from '$lib/utils/route';
-import { candidateUserDataStore } from './candidateUserDataState.svelte';
+import { candidateUserDataState } from './candidateUserDataState.svelte';
 import { getAppContext } from '../app';
 import { getAuthContext } from '../auth';
 import { inheritContextMembers } from '../utils/inheritContextMembers';
@@ -122,7 +122,7 @@ export class CandidateContextProvider implements CandidateContext {
 
   // userData composite producer — declared AFTER #answersLocked + #locale
   // (D1): the getter-thunks read them. The thunks are lazy, so this is safe.
-  #userData = candidateUserDataStore({
+  #userData = candidateUserDataState({
     answersLocked: () => this.#answersLocked,
     dataWriterPromise,
     locale: () => this.#locale

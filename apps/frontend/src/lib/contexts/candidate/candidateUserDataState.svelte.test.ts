@@ -1,9 +1,9 @@
 import { flushSync } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { candidateUserDataStore } from './candidateUserDataState.svelte';
+import { candidateUserDataState } from './candidateUserDataState.svelte';
 import type { CandidateUserData, LocalizedAnswers, LocalizedCandidateData } from '$lib/api/base/dataWriter.type';
 import type { UniversalDataWriter } from '$lib/api/base/universalDataWriter';
-import type { CandidateUserDataStore } from './candidateUserDataState.type';
+import type { CandidateUserDataState } from './candidateUserDataState.type';
 
 // The store calls `prepareDataWriter`, which throws unless `browser` is `true`,
 // and `localStorageWritable`, which only persists when `browser` is `true`.
@@ -79,7 +79,7 @@ function makeFakeWriter() {
   return { writer, updateAnswers, updateEntityProperties };
 }
 
-describe('candidateUserDataStore.save()', () => {
+describe('candidateUserDataState.save()', () => {
   let cleanup: (() => void) | undefined;
 
   beforeEach(() => {
@@ -99,9 +99,9 @@ describe('candidateUserDataStore.save()', () => {
    */
   function setup(userData: CandidateUserData<true>) {
     const fake = makeFakeWriter();
-    let store!: CandidateUserDataStore;
+    let store!: CandidateUserDataState;
     cleanup = $effect.root(() => {
-      store = candidateUserDataStore({
+      store = candidateUserDataState({
         answersLocked: () => false,
         dataWriterPromise: Promise.resolve(fake.writer),
         locale: () => 'en'

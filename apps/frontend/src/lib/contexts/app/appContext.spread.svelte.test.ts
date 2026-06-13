@@ -58,7 +58,7 @@ const { stubs } = vi.hoisted(() => {
       },
       // survey producer: `{ readonly current }` handle.
       survey: handle('https://example.invalid/survey' as string | undefined),
-      // popup queue producer — matches the real `PopupStore` surface
+      // popup queue producer — matches the real `PopupState` surface
       // (`current` getter + `push`/`shift` arrow fields; no store-style `subscribe`).
       popup: { current: undefined, push: (_item: unknown) => {}, shift: () => {} },
       // getRoute producer: `{ readonly current: RouteBuilder }` handle.
@@ -92,7 +92,7 @@ vi.mock('../data', () => ({ getDataContext: () => stubs.data }));
 // App producers — minimal own-enumerable handle stubs so construction runs.
 vi.mock('./tracking', () => ({ trackingService: () => stubs.tracking }));
 vi.mock('./survey.svelte', () => ({ surveyLink: () => stubs.survey }));
-vi.mock('./popup', () => ({ popupStore: () => stubs.popup }));
+vi.mock('./popup', () => ({ popupState: () => stubs.popup }));
 vi.mock('./getRoute.svelte', () => ({ createGetRoute: () => stubs.getRoute }));
 vi.mock('../utils/persistedState.svelte', () => ({
   localStorageState: () => stubs.userPreferences

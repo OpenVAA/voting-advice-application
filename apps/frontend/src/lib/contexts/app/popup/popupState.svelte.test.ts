@@ -1,8 +1,8 @@
 import { flushSync } from 'svelte';
 import { afterEach, describe, expect, it } from 'vitest';
-import { popupStore } from './popupState.svelte';
+import { popupState } from './popupState.svelte';
 import type { PopupQueueItem } from './popupComponent.type';
-import type { PopupStore } from './popupState.type';
+import type { PopupState } from './popupState.type';
 
 // A minimal `PopupQueueItem` stub carrying a unique `props.marker` so queue
 // items can be distinguished by content. Identity comparison via `toBe` is not
@@ -15,7 +15,7 @@ function makeItem(marker: string): PopupQueueItem {
   };
 }
 
-describe('popupStore', () => {
+describe('popupState', () => {
   let cleanup: (() => void) | undefined;
 
   afterEach(() => {
@@ -27,16 +27,16 @@ describe('popupStore', () => {
    * Create the store inside an `$effect.root` so its `$state`/`$derived` settle,
    * returning the store handle.
    */
-  function setup(): PopupStore {
-    let store!: PopupStore;
+  function setup(): PopupState {
+    let store!: PopupState;
     cleanup = $effect.root(() => {
-      store = popupStore();
+      store = popupState();
     });
     flushSync();
     return store;
   }
 
-  it('a fresh popupStore has .current === undefined', () => {
+  it('a fresh popupState has .current === undefined', () => {
     const store = setup();
     expect(store.current).toBeUndefined();
   });
