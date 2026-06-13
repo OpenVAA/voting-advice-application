@@ -73,7 +73,7 @@ flatten (FLATTEN) sweep removes them.
 - [x] **CLASS-06**: The `candidateContext` orchestrator and `candidateUserDataStore` (Group-C composite
   bridge) are converted to classes. All reactive accessors preserved; build + unit + E2E (candidate app) green.
 
-- [ ] **CLASS-07**: The `adminContext` and `jobStores` contexts are converted to classes, preserving the
+- [x] **CLASS-07**: The `adminContext` and `jobStores` contexts are converted to classes, preserving the
   v2.11 explicit auth-forwarding fix (no `{ ...authContext }` spread regression). Build + unit + svelte-check
   green.
 
@@ -160,7 +160,7 @@ Which phases cover which requirements. Populated during roadmap creation.
 | CLASS-04 | Phase 109 | Complete |
 | CLASS-05 | Phase 110 | Complete |
 | CLASS-06 | Phase 111 | Complete |
-| CLASS-07 | Phase 112 | Pending |
+| CLASS-07 | Phase 112 | Complete |
 | FLATTEN-01 | Phase 113 | Pending |
 | FLATTEN-02 | Phase 113 | Pending |
 | RENAME-01 | Phase 114 | Pending |
