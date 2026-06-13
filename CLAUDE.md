@@ -344,13 +344,13 @@ const elections = $derived(ctx.selectedElections);
 const constituencies = $derived(ctx.selectedConstituencies);
 ```
 
-<!-- Updated v2.13 Phase 113: appSettings/dataRoot/locale flattened from { current } handles to bare reactive fields; reclassified stable→reactive. -->
+<!-- Updated v2.13 Phase 113 (FLATTEN-02 complete): appSettings/dataRoot/locale flattened from { current } handles to bare reactive fields (read ctx.X, no .current); reclassified stable→reactive. -->
 
-For a one-time, non-reactive init read (e.g. building a `const mailto` or a `topBarSettings.use({...})` call at component setup), read the value off `ctx` directly (`ctx.appSettings.current` — or post-plan-04 `ctx.appSettings`) rather than aliasing through `$derived`; the `$derived` alias is for values consumed reactively in the template / `$derived` / `$effect`, and aliasing it for a one-shot init read triggers a `state_referenced_locally` warning.
+For a one-time, non-reactive init read (e.g. building a `const mailto` or a `topBarSettings.use({...})` call at component setup), read the value off `ctx` directly (`ctx.appSettings`) rather than aliasing through `$derived`; the `$derived` alias is for values consumed reactively in the template / `$derived` / `$effect`, and aliasing it for a one-shot init read triggers a `state_referenced_locally` warning.
 
 **Diagnostic origin:** v2.6 Phase 61 Plan 03 — see `.planning/milestones/v2.6-phases/61-voter-app-question-flow/61-03-DIAGNOSIS.md`. The `candidateContext` `$derived` chain captured initial empty arrays at component init and never re-evaluated after the data layer populated, because consumers destructured reactive properties out of the context object. The fix landed by switching consumers to `ctx.X` reads. The in-tree explanation lives at `apps/frontend/src/lib/contexts/candidate/candidateContext.svelte.ts:106-123`.
 
-**Caveat — genuinely store-shaped stable members:** A few context members are still `{ current }` rune handles (e.g. `getRoute`) and are STABLE — they remain safe to destructure. NOTE: as of v2.13 Phase 113, `appSettings`/`dataRoot`/`locale` are NO LONGER stores nor `{ current }` handles — they are bare reactive fields and **must NOT be destructured** (destructuring captures the value once at init and stops updating on navigation — the Phase-61 destructure-trap). Read them via `ctx.appSettings` (and during the Phase-113 transition window, `ctx.appSettings.current`). Only the genuinely-handle-shaped stable members (like `getRoute`) stay destructurable.
+**Caveat — genuinely store-shaped stable members:** A few context members are still `{ current }` rune handles (e.g. `getRoute`) and are STABLE — they remain safe to destructure. NOTE: as of v2.13 Phase 113, `appSettings`/`dataRoot`/`locale` are NO LONGER stores nor `{ current }` handles — they are bare reactive fields and **must NOT be destructured** (destructuring captures the value once at init and stops updating on navigation — the Phase-61 destructure-trap). Read them via `ctx.appSettings` (bare, no `.current` — the FLATTEN-02 codemod removed every `.current` read on these three). Only the genuinely-handle-shaped stable members (like `getRoute`) stay destructurable.
 
 **Lint enforcement** is currently a guideline, not an automated rule. A future phase may add a custom svelte-eslint rule if violations recur.
 
