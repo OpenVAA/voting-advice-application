@@ -97,7 +97,6 @@ export class VoterContextProvider implements VoterContext {
   // function-accessor boundary on the voter side (same root-cause class as
   // the candidate-side fix in 61-03-DIAGNOSIS.md). The behavior is
   // equivalent; helpers remain available for any non-context consumers.
-  #questionCategories = $state<Array<QuestionCategory>>([]);
   #infoQuestionCategories = $state<Array<QuestionCategory>>([]);
   #opinionQuestionCategories = $state<Array<QuestionCategory>>([]);
   #infoQuestions = $state<Array<AnyQuestionVariant>>([]);
@@ -494,7 +493,6 @@ export class VoterContextProvider implements VoterContext {
         return questions;
       });
 
-      this.#questionCategories = nextQuestionCategories;
       this.#infoQuestionCategories = nextInfoCats;
       this.#opinionQuestionCategories = nextOpinionCats;
       this.#infoQuestions = nextInfoQuestions;

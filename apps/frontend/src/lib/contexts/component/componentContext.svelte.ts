@@ -2,8 +2,8 @@ import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
 import { DarkMode } from './darkMode.svelte';
 import { getI18nContext } from '../i18n';
-import type { ComponentContext } from './componentContext.type';
 import type { I18nContext } from '../i18n';
+import type { ComponentContext } from './componentContext.type';
 
 const CONTEXT_KEY = Symbol();
 

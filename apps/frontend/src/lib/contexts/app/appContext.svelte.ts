@@ -201,6 +201,7 @@ export class AppContextProvider implements AppContext {
   readonly resetAllEvents!: AppContext['resetAllEvents'];
 
   constructor() {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias -- the own-enumerable reactive handle getters below use `get current()` / defineProperty getters with their own `this`; `self` captures the instance so they reach the private `$state` backings (spread-safe class-conversion pattern, v2.13 Phase 109).
     const self = this;
 
     ////////////////////////////////////////////////////////////////////

@@ -1,10 +1,34 @@
 # Phase 115 — Deferred Items (out-of-scope discoveries)
 
-## Pre-existing `yarn lint:check` failures in `apps/frontend/src/lib/contexts/**` (logged during 115-02)
+## ✅ RESOLVED — `yarn lint:check` failures in `apps/frontend/src/lib/contexts/**` (logged during 115-02, fixed in 115-03)
 
 **Discovered:** 2026-06-13, during Plan 115-02 Task 2 (clean-tree lint gate).
 
-**Status:** OUT OF SCOPE for Phase 115 (straggler-clearance) — not introduced by the
+**Status:** RESOLVED 2026-06-13 in commit `fix(115): clear milestone lint debt in lib/contexts`.
+The widened `svelte/store` guard (SWEEP-03) surfaced 16 base-rule lint errors that the
+112/113/114 context-as-class migration had introduced. Since SWEEP-03 made the lint guard
+the gate it is, these were fixed as part of leaving Phase 115 lint-green (rather than carried
+to the Phase 116 close gate). Resolution:
+- `simple-import-sort` ×3 (trackingService, componentContext, layoutContext) — `eslint --fix`.
+- `@typescript-eslint/no-this-alias` ×4 (appContext, trackingService, authContext, dataContext) —
+  scoped `eslint-disable-next-line` with rationale; these are the deliberate `const self = this`
+  spread-safe getter pattern from the class conversion (object-literal / defineProperty getters
+  with their own `this`).
+- `no-unused-private-class-members` ×2 (`#questionCategories` in voter/candidate contexts) —
+  removed the write-only dead `$state` field + its assignment (the local `nextQuestionCategories`
+  that derives the info/opinion categories is retained; no behavior change).
+- `func-style` ×1 (appContext.spread test) — converted the generic arrow to a function declaration.
+- The 6 errors in frozen `_spikes-*` experimental fixtures — added `**/_spikes-*/**` to ESLint
+  ignores (kept as regression tests but not held to production lint standards; files left untouched).
+
+Gates after fix: `yarn lint:check` green (11/11 tasks), `yarn build` 14/14, `yarn svelte-check`
+151 (baseline), `yarn vitest run` 766 passed.
+
+---
+
+### Original log (out-of-scope at 115-02 time)
+
+**Status (at 115-02):** OUT OF SCOPE for Plan 115-02 — not introduced by the
 `svelte/store` guard widening (SWEEP-03). Logged, NOT fixed, per the executor SCOPE BOUNDARY rule.
 
 ### Why out of scope

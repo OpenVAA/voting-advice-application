@@ -197,7 +197,6 @@ export class CandidateContextProvider implements CandidateContext {
    * equivalent to `questionCategoryState`/`questionState`/`questionBlockState` but
    * the consumer-facing reactivity works via context getters.
    */
-  #questionCategories = $state<Array<QuestionCategory>>([]);
   #infoQuestionCategories = $state<Array<QuestionCategory>>([]);
   #opinionQuestionCategories = $state<Array<QuestionCategory>>([]);
   #infoQuestions = $state<Array<AnyQuestionVariant>>([]);
@@ -379,7 +378,6 @@ export class CandidateContextProvider implements CandidateContext {
         .map((c) => c.getApplicableQuestions({ elections, constituencies }))
         .filter((b) => b.length > 0);
 
-      this.#questionCategories = nextQuestionCategories;
       this.#infoQuestionCategories = nextInfoCats;
       this.#opinionQuestionCategories = nextOpinionCats;
       this.#infoQuestions = nextInfoQuestions;

@@ -5,8 +5,8 @@ import { cubicOut } from 'svelte/easing';
 import { Tween } from 'svelte/motion';
 import { afterNavigate, beforeNavigate } from '$app/navigation';
 import { DELAY } from '$lib/utils/timing';
-import { settingsOverlay } from '../utils/SettingsOverlay.svelte';
 import { VideoController } from './VideoController.svelte';
+import { settingsOverlay } from '../utils/SettingsOverlay.svelte';
 import type { DeepPartial } from '@openvaa/app-shared';
 import type {
   LayoutContext,

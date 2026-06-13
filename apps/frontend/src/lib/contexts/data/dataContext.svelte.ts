@@ -76,6 +76,7 @@ class DataContextProvider implements DataContext {
 
     // `self` lets the accessor reach the class-private `#version`
     // (private-field access is legal anywhere lexically inside the class body).
+    // eslint-disable-next-line @typescript-eslint/no-this-alias -- the defineProperty getter below has its own `this`; `self` captures the instance to reach the private `#version` reactive backing (spread-safe class-conversion pattern).
     const self = this;
     Object.defineProperty(this, 'dataRoot', {
       get(): DataRoot {

@@ -27,7 +27,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 // `vi.mock` factories are hoisted; mutable holders they reference are created via
 // `vi.hoisted` (also hoisted, evaluated first).
 const { stubs } = vi.hoisted(() => {
-  const handle = <TValue>(value: TValue): { current: TValue } => ({ current: value });
+  function handle<TValue>(value: TValue): { current: TValue } {
+    return { current: value };
+  }
   return {
     stubs: {
       // componentCtx: STABLE members (t/translate) + reactive reads

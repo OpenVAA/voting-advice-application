@@ -3,11 +3,10 @@ import { getUUID } from '$lib/utils/components';
 import { logDebugError } from '$lib/utils/logger';
 import { purgeNullish } from '../../../utils/purgeNullish';
 import { sessionStorageState } from '../../utils/persistedState.svelte';
+import type { ReactiveHandle, WritableHandle } from '../reactiveHandle.type';
 import type { UserPreferences } from '../userPreferences.type';
 import type { TrackingEvent } from './trackingEvent.type';
 import type { TrackingHandler, TrackingService } from './trackingService.type';
-
-import type { ReactiveHandle, WritableHandle } from '../reactiveHandle.type';
 
 /**
  * The pure-rune internal shape of the tracking service. The `appContext` seam
@@ -128,6 +127,7 @@ class TrackingServiceImpl implements RuneTrackingService {
     // Capture `this` so the handle-object getters/setters reach the private
     // backing fields. The handle objects are OWN-ENUMERABLE field VALUES, so the
     // `{ ...instance }` spread copies them intact (the spread-safety gate).
+    // eslint-disable-next-line @typescript-eslint/no-this-alias -- handle-object `get current()`/`set()` methods have their own `this`; `self` captures the instance to reach the private backings (spread-safe class-conversion pattern).
     const self = this;
     this.sendTrackingEvent = {
       get current() {

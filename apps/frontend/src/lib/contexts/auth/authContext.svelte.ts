@@ -57,6 +57,7 @@ export class AuthContextProvider implements AuthContext {
     // accessor) so `{ ...authContext }` copies it (dataContext spread-safety
     // precedent). Reading `instance.isAuthenticated` re-invokes `#isAuthenticated`
     // in the tracking scope, so the read stays reactive.
+    // eslint-disable-next-line @typescript-eslint/no-this-alias -- the defineProperty getter below has its own `this`; `self` captures the instance to reach the private `#isAuthenticated` backing (spread-safe class-conversion pattern).
     const self = this;
     Object.defineProperty(this, 'isAuthenticated', {
       enumerable: true,
