@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v2.13
 milestone_name: Context-as-Class Migration
-status: completed
-stopped_at: Completed 112-02-PLAN.md
-last_updated: "2026-06-13T12:21:24.308Z"
-last_activity: 2026-06-13 -- Phase 115 marked complete
+status: paused
+stopped_at: Phase 116 open — full E2E gate pending CI/preview run
+last_updated: "2026-06-13T18:10:00.000Z"
+last_activity: 2026-06-13 -- Phase 116 static+anchor gates green; full E2E left OPEN for CI (user paused)
 progress:
   total_phases: 11
   completed_phases: 10
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-12 starting v2.13 Context-as-Class Migration)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 112 — admincontext-job-stores
+**Current focus:** Phase 116 — Milestone-Close Green Gate (OPEN: full E2E pending CI/preview)
 
 ## Current Position
 
-Phase: 115 — COMPLETE
-Plan: 2 of 2
-Status: Phase 115 complete
-Last activity: 2026-06-13 -- Phase 115 marked complete
+Phase: 116 — OPEN (paused by user 2026-06-13)
+Status: Static + anchor gates GREEN (build 14/14, vitest 766, svelte-check 151 baseline, lint green, all grep anchors clean, manual in-browser reactivity walk green). Full automated E2E NOT green locally — voter-journey fails at `elections.length === 0` in the Playwright dev-server harness (manual walk of same path works; assessed as test-harness artifact, not migration regression, but NOT root-caused). See .planning/phases/116-milestone-close-green-gate/116-MILESTONE-CLOSE-ANCHOR.md.
+Next: run full E2E in CI / production-preview to close GATE-01, then `/gsd-progress --next` to resume (audit → complete → cleanup). If E2E fails in CI too, `/gsd-debug` the elections.length=0 regression.
+Last activity: 2026-06-13 -- Phase 116 static gates green; E2E left open; user paused milestone
 
 ## Performance Metrics
 
