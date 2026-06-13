@@ -187,7 +187,7 @@ Full record: `.planning/milestones/v2.12-ROADMAP.md` · `.planning/milestones/v2
 - [x] **Phase 108: App-Layer Producer Contexts** — convert getRoute, survey, trackingService, popupStore to classes (completed 2026-06-12)
 - [x] **Phase 109: appContext Orchestrator + Spread Fix + PoC Removal** — convert appContext to a class; explicit getter forwarding; remove the Phase-102 `_poc*` scaffolding (completed 2026-06-12)
 - [x] **Phase 110: voterContext Orchestrator + Voter Sub-Stores** — convert voterContext + answer/match/nomination/filter/utils sub-stores to classes (completed 2026-06-13)
-- [ ] **Phase 111: candidateContext Orchestrator + UserData Store** — convert candidateContext + candidateUserDataStore to classes
+- [x] **Phase 111: candidateContext Orchestrator + UserData Store** — convert candidateContext + candidateUserDataStore to classes (completed 2026-06-13)
 - [ ] **Phase 112: adminContext + Job Stores** — convert adminContext + jobStores to classes; preserve the v2.11 explicit auth-forwarding fix
 - [ ] **Phase 113: Handle Flatten + De-duplication** — drop `reactiveFoo`/`Foo` duplicates; codemod `.current` reads to bare class fields; remove back-compat handles
 - [ ] **Phase 114: Store → State Rename** — rename all rune-native `*Store` symbols/files/types/tests to `*State`; document the jobStore + cookieStore exclusions
@@ -314,7 +314,7 @@ Plans:
 
   - [x] 111-01-PLAN.md — candidateUserDataStore → class CandidateUserDataStoreImpl behind a byte-identical factory (Group-C composite `$derived.by` merge + JSON round-trip clone preserved verbatim; 12 arrow-field methods; constructor answersLocked `$effect`; D2 type-name-clash avoided; 4-case unit test green unchanged)
   - [x] 111-02-PLAN.md — candidateContext → class CandidateContextProvider (two-base inheritance via Object.assign(this, #appContext) + Object.assign(this, #authContext); logout override as a prototype getter that survives Object.assign; 3 persisted fields imperative no-`$effect`; userData composite + 3 `$effect`s in D1 order; prototype-getter reactive accessors; barrel narrowed to type-only class export)
-  - [ ] 111-03-PLAN.md — phase gate: yarn build + full vitest + svelte-check (151 baseline, zero new) + candidate-app E2E (candidate-journey) + a11y-smoke (runs once at phase end)
+  - [x] 111-03-PLAN.md — phase gate: yarn build + full vitest + svelte-check (151 baseline, zero new) + candidate-app E2E (candidate-journey) + a11y-smoke (runs once at phase end)
 
 **UI hint**: yes
 
@@ -402,7 +402,7 @@ Plans:
 | 108. App-Layer Producer Contexts | 3/3 | Complete   | 2026-06-12 |
 | 109. appContext Orchestrator + Spread Fix + PoC Removal | 3/3 | Complete   | 2026-06-12 |
 | 110. voterContext Orchestrator + Voter Sub-Stores | 4/4 | Complete   | 2026-06-13 |
-| 111. candidateContext Orchestrator + UserData Store | 2/3 | In Progress|  |
+| 111. candidateContext Orchestrator + UserData Store | 3/3 | Complete   | 2026-06-13 |
 | 112. adminContext + Job Stores | 0/TBD | Not started | - |
 | 113. Handle Flatten + De-duplication | 0/TBD | Not started | - |
 | 114. Store → State Rename | 0/TBD | Not started | - |
