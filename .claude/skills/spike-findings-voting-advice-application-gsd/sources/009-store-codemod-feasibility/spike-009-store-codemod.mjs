@@ -70,7 +70,14 @@ const REACTIVE_ACCESSORS = new Set([
   'isAuthenticated',
   'preregistrationElections',
   'preregistrationNominations',
-  'newUserEmail'
+  'newUserEmail',
+  // flattened in Phase 113 — now reactive accessors, MUST NOT destructure.
+  // Before FLATTEN-02 these were stable `{ current }` handle objects (safe to
+  // destructure); after the `.current` flatten they are bare reactive fields,
+  // so destructuring them from a get*Context() call is a live destructure-trap.
+  'appSettings',
+  'dataRoot',
+  'locale'
 ]);
 
 // ── CLI args ────────────────────────────────────────────────────────────
