@@ -7,37 +7,41 @@ import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
 import type { JobStores } from './jobStores.type';
 
 /**
- * Initialize the `JobStores` object.
+ * The job-polling store re-expressed as a Svelte 5 CLASS (`JobStoresProvider`;
+ * v2.13 context-as-class migration, CLASS-07 jobStores half). CONVERTED from the
+ * `jobStores()` closure-factory that returned a `{ readonly ... }` object literal.
+ *
+ * The reactive core is the private `#jobs` `$state` Map registry + the three
+ * private `$derived` projections (`#pastJobs` / `#activeJobsByFeature` /
+ * `#pastJobsByFeature`), exposed as READ-ONLY PROTOTYPE GETTERS (CONVENTIONS §17)
+ * so reads via `instance.X` re-invoke the getter in the tracking scope and keep
+ * the projections reactive.
+ *
+ * `startPolling` / `stopPolling` are ARROW-FUNCTION FIELDS (§18) so they survive
+ * `const { startPolling } = instance` detach (they capture `this`) — both are
+ * returned to and called by consumers (`WithPolling.svelte`). `#fetchAndUpdateJobs`
+ * is a PRIVATE arrow field (read only by `startPolling`; not on the `JobStores`
+ * surface).
+ *
+ * Self-contained; no `$effect` → constructible outside any effect context, unlike
+ * the orchestrator providers (adminContext / candidateContext). It polls its own
+ * URLs and takes no constructor deps.
+ *
+ * D1 field-init order: `#pastJobs` is declared BEFORE `#pastJobsByFeature` because
+ * the latter reads the former.
+ *
+ * @internal — do not construct directly; use the `jobStores()` factory.
  */
-export function jobStores(): JobStores {
+export class JobStoresProvider implements JobStores {
   /////////////////////////////////////////////////
   // Polling
   /////////////////////////////////////////////////
 
-  let pollInterval: NodeJS.Timeout | undefined;
+  #pollInterval: NodeJS.Timeout | undefined;
   /**
    * Keep track of the last update for past jobs with an ISO timestamp. Works as a delta cursor, so we don't fetch the same data again.
    */
-  let lastPastJobsUpdate: string | undefined;
-
-  function startPolling() {
-    if (pollInterval) return;
-    logDebugError('[JobPollingService] Starting polling...');
-    // Poll every 2 seconds
-    pollInterval = setInterval(async () => {
-      await fetchAndUpdateJobs();
-    }, 2000);
-
-    // Fetch immediately on start
-    fetchAndUpdateJobs();
-  }
-
-  function stopPolling() {
-    if (!pollInterval) return;
-    logDebugError('[JobPollingService] Stopping polling service...');
-    clearInterval(pollInterval);
-    pollInterval = undefined;
-  }
+  #lastPastJobsUpdate: string | undefined;
 
   /////////////////////////////////////////////////
   // Jobs state
@@ -46,35 +50,54 @@ export function jobStores(): JobStores {
   /**
    * This internal $state holds all job information.
    */
-  let jobs = $state<Map<string, JobInfo>>(new Map());
+  #jobs = $state<Map<string, JobInfo>>(new Map());
 
-  const _pastJobs = $derived(
-    [...jobs.values().filter((j) => !isActive(j))].sort((a, b) => compareDates(a.startTime, b.startTime))
+  #pastJobs = $derived(
+    [...this.#jobs.values().filter((j) => !isActive(j))].sort((a, b) => compareDates(a.startTime, b.startTime))
   );
 
-  const _activeJobsByFeature = $derived.by(() => {
+  #activeJobsByFeature = $derived.by(() => {
     const map = new Map<AdminFeature, JobInfo | undefined>();
     for (const feat of ADMIN_FEATURES) {
-      const job = jobs.values().find((j) => j.jobType === feat && isActive(j));
+      const job = this.#jobs.values().find((j) => j.jobType === feat && isActive(j));
       if (job) map.set(feat, job);
     }
     return map;
   });
 
-  const _pastJobsByFeature = $derived.by(() => {
+  #pastJobsByFeature = $derived.by(() => {
     const map = new Map<AdminFeature, Array<JobInfo>>();
     for (const feat of ADMIN_FEATURES) {
-      map.set(feat, [..._pastJobs.filter((j) => j.jobType === feat)]);
+      map.set(feat, [...this.#pastJobs.filter((j) => j.jobType === feat)]);
     }
     return map;
   });
+
+  startPolling = () => {
+    if (this.#pollInterval) return;
+    logDebugError('[JobPollingService] Starting polling...');
+    // Poll every 2 seconds
+    this.#pollInterval = setInterval(async () => {
+      await this.#fetchAndUpdateJobs();
+    }, 2000);
+
+    // Fetch immediately on start
+    this.#fetchAndUpdateJobs();
+  };
+
+  stopPolling = () => {
+    if (!this.#pollInterval) return;
+    logDebugError('[JobPollingService] Stopping polling service...');
+    clearInterval(this.#pollInterval);
+    this.#pollInterval = undefined;
+  };
 
   /////////////////////////////////////////////////
   // Update jobs
   /////////////////////////////////////////////////
 
   // Fetch jobs from API and update state
-  async function fetchAndUpdateJobs() {
+  #fetchAndUpdateJobs = async () => {
     try {
       logDebugError('[JobPollingService] Fetching jobs...');
 
@@ -83,8 +106,8 @@ export function jobStores(): JobStores {
 
       // Use delta updates for past jobs
       const pastUrl = new URL(UNIVERSAL_API_ROUTES.jobsPast, window.location.origin);
-      if (lastPastJobsUpdate) {
-        pastUrl.searchParams.set('startFrom', lastPastJobsUpdate);
+      if (this.#lastPastJobsUpdate) {
+        pastUrl.searchParams.set('startFrom', this.#lastPastJobsUpdate);
       }
 
       // Fetch both in parallel
@@ -94,7 +117,7 @@ export function jobStores(): JobStores {
       if (!pastRes.ok) throw new Error('Failed to fetch past jobs');
 
       // Update the delta cursor for past jobs
-      lastPastJobsUpdate = new Date().toISOString();
+      this.#lastPastJobsUpdate = new Date().toISOString();
 
       let [activeJobs, pastJobsData] = (await Promise.all([activeRes.json(), pastRes.json()])) as [
         Array<JobInfo>,
@@ -110,28 +133,34 @@ export function jobStores(): JobStores {
       activeJobs = activeJobs.filter((j) => !pastIds.has(j.id));
 
       // Update the jobs state by creating a new Map
-      const newJobs = new Map(jobs);
+      const newJobs = new Map(this.#jobs);
       pastJobsData.forEach((job) => newJobs.set(job.id, job));
       activeJobs.forEach((job) => newJobs.set(job.id, job));
-      jobs = newJobs;
+      this.#jobs = newJobs;
     } catch (error) {
       console.error('[JobPollingService] Error fetching jobs:', error);
     }
-  }
-
-  return {
-    get activeJobsByFeature() {
-      return _activeJobsByFeature;
-    },
-    get pastJobs() {
-      return _pastJobs;
-    },
-    get pastJobsByFeature() {
-      return _pastJobsByFeature;
-    },
-    startPolling,
-    stopPolling
   };
+
+  get activeJobsByFeature() {
+    return this.#activeJobsByFeature;
+  }
+  get pastJobs() {
+    return this.#pastJobs;
+  }
+  get pastJobsByFeature() {
+    return this.#pastJobsByFeature;
+  }
+}
+
+/**
+ * Initialize the `JobStores` object.
+ *
+ * Back-compat factory wrapper kept so `adminContext`'s `const jobs = jobStores()`
+ * call site stays byte-identical until Phase 114 RENAME.
+ */
+export function jobStores(): JobStores {
+  return new JobStoresProvider();
 }
 
 function isActive(job: JobInfo): boolean {
