@@ -16,7 +16,6 @@ Accesses `CandidateContext`.
 ```tsx
 <script lang="ts">
   let termsAccepted: boolean;
-  $: console.info('termsAccepted:', termsAccepted);
 </script>
 <TermsOfUseForm bind:termsAccepted/>
 ```
