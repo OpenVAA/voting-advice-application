@@ -17,49 +17,56 @@ import { sessionStorageState } from '../utils/persistedState.svelte';
 import type { CustomData } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
 import type { AnyQuestionVariant, Constituency, Election, EntityType, QuestionCategory } from '@openvaa/data';
+import type { AppContext } from '../app';
 import type { QuestionBlocks } from '../utils/questionBlockStore.type';
 import type { VoterContext } from './voterContext.type';
 
 const CONTEXT_KEY = Symbol();
 
-export function getVoterContext(): VoterContext {
-  if (!hasContext(CONTEXT_KEY)) error(500, 'getVoterContext() called before initVoterContext()');
-  return getContext<VoterContext>(CONTEXT_KEY);
+// Content-equality short-circuit: every URL change runs `parseParams(page)`
+// which produces fresh query-param arrays even when content is unchanged
+// (e.g., drawer open/close adds /candidate/[id] route segments while
+// electionId search param is identical). Without this guard, every
+// navigation cascaded selectedElections → nominationAndQuestionStore →
+// filterStore, rebuilding FilterGroup instances and dropping any active
+// filter rules — surfaced during Phase 64 manual smoke as "filter badge
+// disappears after closing candidate drawer". Svelte 4 stores absorbed this
+// via `writable.set()`'s no-op-write skip; Svelte 5 raw `$state` writes
+// need an explicit equality check.
+function sameRefs<TItem>(a: ReadonlyArray<TItem>, b: ReadonlyArray<TItem>): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+  return true;
 }
 
 /**
- * Initialize and return the context. This must be called before `getGlobalContext()` and cannot be called twice.
- * @returns The context object
+ * The voter context (orchestrator) re-expressed as a Svelte 5 CLASS
+ * (`VoterContextProvider`; v2.13 context-as-class migration, CLASS-05).
+ * CONVERTED from the 559-line object-literal factory that `initVoterContext()`
+ * returned. Constructed via `new VoterContextProvider()` inside
+ * `initVoterContext()`, at component-init time exactly as the former factory ran.
+ *
+ * ── Shape decision (110-PATTERNS §1) ─────────────────────────────────────────
+ * NO consumer spreads `voterContext` (`{ ...voterContext }` → zero hits). So its
+ * OWN members are exposed as plain PROTOTYPE GETTERS (the natural class shape;
+ * CONVENTIONS §17) — voterContext does NOT need the Phase-109 own-enumerable
+ * discipline that AppContextProvider required. The own-enumerable concern applies
+ * ONLY to the INHERITED appContext members, which arrive already own-enumerable
+ * from the Phase-109 AppContextProvider instance and are reproduced via
+ * `Object.assign(this, appContext)` (replacing the former `...appContext` spread).
+ *
+ * ── D1 field-init order ──────────────────────────────────────────────────────
+ * The 4 sub-store producers (#answers / #nominationsAndQuestions / #matches /
+ * #entityFilters), the 5 `$effect` blocks, and the `$derived.by` projections that
+ * read a producer instance are installed in the CONSTRUCTOR, AFTER the `$state` /
+ * handle / producer fields they read are assigned (D1 order — appContext +
+ * filterContext precedent). They are legal in-constructor because voterContext is
+ * constructed during component init, an effect context.
  */
-export function initVoterContext(): VoterContext {
-  if (hasContext(CONTEXT_KEY)) error(500, 'initVoterContext() called for a second time');
-
+export class VoterContextProvider implements VoterContext {
   ////////////////////////////////////////////////////////////
-  // Inheritance from other Contexts
+  // Private $state backings + persisted/param handles
   ////////////////////////////////////////////////////////////
-
-  const appContext = getAppContext();
-  const { reactiveAppSettings, reactiveLocale, reactiveDataRoot, startEvent, t } = appContext;
-
-  ////////////////////////////////////////////////////////////
-  // Elections and Constituencies
-  ////////////////////////////////////////////////////////////
-
-  // Stores related to selection pages
-
-  const electionsSelectable = $derived(
-    !reactiveAppSettings.current.elections?.disallowSelection && reactiveDataRoot.current.elections?.length !== 1
-  );
-
-  const constituenciesSelectable = $derived(
-    reactiveDataRoot.current.elections?.some((e) => !e.singleConstituency)
-  );
-
-  // Param-based collection stores
-
-  const _electionId = paramStore('electionId');
-
-  const _constituencyId = paramStore('constituencyId');
 
   // QUESTION-04 follow-up (Phase 61-03 voter-side parallel fix):
   // Push-based `$state` + `$effect` mirror, mirroring the candidateContext fix
@@ -70,137 +77,8 @@ export function initVoterContext(): VoterContext {
   // load did not propagate. `$state` reads through context getters propagate
   // correctly. Side effects (goto on stale id) live naturally inside `$effect`,
   // not inside a derivation.
-  let selectedElections = $state<Array<Election>>([]);
-  let selectedConstituencies = $state<Array<Constituency>>([]);
-
-  // Content-equality short-circuit: every URL change runs `parseParams(page)`
-  // which produces fresh query-param arrays even when content is unchanged
-  // (e.g., drawer open/close adds /candidate/[id] route segments while
-  // electionId search param is identical). Without this guard, every
-  // navigation cascaded selectedElections → nominationAndQuestionStore →
-  // filterStore, rebuilding FilterGroup instances and dropping any active
-  // filter rules — surfaced during Phase 64 manual smoke as "filter badge
-  // disappears after closing candidate drawer". Svelte 4 stores absorbed this
-  // via `writable.set()`'s no-op-write skip; Svelte 5 raw `$state` writes
-  // need an explicit equality check.
-  function sameRefs<TItem>(a: ReadonlyArray<TItem>, b: ReadonlyArray<TItem>): boolean {
-    if (a.length !== b.length) return false;
-    for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
-    return true;
-  }
-
-  $effect(() => {
-    const dr = reactiveDataRoot.current;
-    const settings = reactiveAppSettings.current;
-    const electionId = _electionId.value;
-    const constituencyId = _constituencyId.value;
-    if (!dr.elections.length) {
-      if (selectedElections.length !== 0) selectedElections = [];
-      return;
-    }
-    const ids = electionId?.length
-      ? electionId
-      : getImpliedElectionIds({
-          appSettings: settings,
-          dataRoot: dr,
-          selectedConstituencyIds: constituencyId
-        });
-    if (!ids?.length) {
-      if (selectedElections.length !== 0) selectedElections = [];
-      return;
-    }
-    try {
-      const next = ids.map((id) => dr.getElection(id));
-      if (!sameRefs(next, selectedElections)) selectedElections = next;
-    } catch (e) {
-      // DataRoot lookup throws transiently during navigation: when the URL
-      // changes the page params arrive on the new route before the loader
-      // has finished re-providing the corresponding data. Falling back to a
-      // `goto('Elections')` here races with the in-flight navigation and
-      // boomerangs the user back to /elections — the silent-fail flake
-      // documented at multi-election.spec.ts:173. Clear the local mirror
-      // and let the route's `+page.ts` / `+layout.ts` `redirect()` decide
-      // whether a redirect is actually needed.
-      logDebugError(`[selectedElections] Error fetching election: ${e}`);
-      if (selectedElections.length !== 0) selectedElections = [];
-    }
-  });
-
-  $effect(() => {
-    const dr = reactiveDataRoot.current;
-    const constituencyId = _constituencyId.value;
-    const electionId = _electionId.value;
-    if (!dr.constituencies.length) {
-      if (selectedConstituencies.length !== 0) selectedConstituencies = [];
-      return;
-    }
-    const ids = constituencyId?.length
-      ? constituencyId
-      : getImpliedConstituencyIds({
-          dataRoot: dr,
-          selectedElectionIds: electionId
-        });
-    if (!ids?.length) {
-      if (selectedConstituencies.length !== 0) selectedConstituencies = [];
-      return;
-    }
-    try {
-      const next = ids.map((id) => dr.getConstituency(id));
-      if (!sameRefs(next, selectedConstituencies)) selectedConstituencies = next;
-    } catch (e) {
-      // See parallel selectedElections catch above — clear the local mirror
-      // and let the route loader handle redirects so we don't race the
-      // in-flight navigation.
-      logDebugError(`[selectedConstituencies] Error fetching constituency: ${e}`);
-      if (selectedConstituencies.length !== 0) selectedConstituencies = [];
-    }
-  });
-
-  ////////////////////////////////////////////////////////////
-  // currentResultsElection (Phase 88 Plan 88-02)
-  ////////////////////////////////////////////////////////////
-  //
-  // Singular SELECTED election whose results page is being rendered,
-  // sourced from the NEW route segment `page.params.electionTab`.
-  //
-  // SEMANTIC DISSOCIATION (NAME-DISJOINT): `selectedElections` (above) is
-  // the AVAILABLE-array surface sourced from the SEARCH-side
-  // `?electionId=…` persistent search param; `currentResultsElection`
-  // (here) is the SELECTED-singular surface sourced from the ROUTE-side
-  // `page.params.electionTab` segment. The two keys
-  // (`electionId` vs `electionTab`) are literally different identifiers
-  // throughout the codebase — they never alias.
-  //
-  // Implementation choice (Decision Q3): `$derived.by` rather than the
-  // push-pattern `$state` + `$effect` mirror used by `selectedElections`.
-  // The push-pattern was needed for `selectedElections` because of the
-  // silent-fail FK-lookup race documented at voterContext.svelte.ts:120-130
-  // (a transient throw during navigation when DataRoot doesn't yet have
-  // the election). Here we just lookup against the already-resolved
-  // `selectedElections` array — no FK fetch, no race — so the cheap
-  // `$derived.by` is sufficient. Reactivity propagates correctly because
-  // `page.params.electionTab` is reactive in Svelte 5 (`$app/state`) and
-  // `selectedElections` is reactive via `$state`.
-  //
-  // Fallback chain:
-  //   1. Route segment present AND found in available array → that election.
-  //   2. Route segment absent AND exactly 1 available → that single election
-  //      (mirrors the +layout.svelte single-election fallback).
-  //   3. Otherwise (route segment present but stale, OR route segment absent
-  //      with 0/2+ available) → `undefined`. The server-side guard at
-  //      `(voters)/(located)/results/[[electionTab]]/+layout.ts` will
-  //      normally have redirected before this derivation runs in the stale
-  //      case; this just defends against late-arriving updates.
-  const currentResultsElection = $derived.by<Election | undefined>(() => {
-    const tab = page.params.electionTab;
-    if (tab) return selectedElections.find((e) => e.id === tab);
-    if (selectedElections.length === 1) return selectedElections[0];
-    return undefined;
-  });
-
-  ////////////////////////////////////////////////////////////
-  // Questions and QuestionCategories
-  ////////////////////////////////////////////////////////////
+  #selectedElections = $state<Array<Election>>([]);
+  #selectedConstituencies = $state<Array<Constituency>>([]);
 
   // QUESTION-04 follow-up (Phase 61-03 voter-side parallel fix):
   // Inlined the previous helper-store pull-chain (`questionCategoryStore` /
@@ -210,12 +88,12 @@ export function initVoterContext(): VoterContext {
   // function-accessor boundary on the voter side (same root-cause class as
   // the candidate-side fix in 61-03-DIAGNOSIS.md). The behavior is
   // equivalent; helpers remain available for any non-context consumers.
-  let _questionCategories = $state<Array<QuestionCategory>>([]);
-  let _infoQuestionCategories = $state<Array<QuestionCategory>>([]);
-  let _opinionQuestionCategories = $state<Array<QuestionCategory>>([]);
-  let _infoQuestions = $state<Array<AnyQuestionVariant>>([]);
-  let _opinionQuestions = $state<Array<AnyQuestionVariant>>([]);
-  let _selectedQuestionBlocks = $state<QuestionBlocks>({
+  #questionCategories = $state<Array<QuestionCategory>>([]);
+  #infoQuestionCategories = $state<Array<QuestionCategory>>([]);
+  #opinionQuestionCategories = $state<Array<QuestionCategory>>([]);
+  #infoQuestions = $state<Array<AnyQuestionVariant>>([]);
+  #opinionQuestions = $state<Array<AnyQuestionVariant>>([]);
+  #selectedQuestionBlocks = $state<QuestionBlocks>({
     blocks: [],
     get questions() {
       return [];
@@ -230,151 +108,155 @@ export function initVoterContext(): VoterContext {
   // (known Svelte 5 binding pitfall — see RESEARCH §Pitfall 1). Migrated to pure
   // $state; session-only per D-11; default-all-checked seeded here rather than
   // in the page's onMount so the counter never renders the transient 0 state.
-  let _selectedQuestionCategoryIds = $state<Array<Id>>([]);
-  let hasSeededCategorySelection = $state(false);
+  #selectedQuestionCategoryIds = $state<Array<Id>>([]);
+  #hasSeededCategorySelection = $state(false);
 
-  const _firstQuestionId = sessionStorageState('voterContext-firstQuestionId', null as Id | null);
+  #firstQuestionId = sessionStorageState('voterContext-firstQuestionId', null as Id | null);
 
-  // Single $effect computes the entire question chain whenever upstream
-  // state (selectedElections / selectedConstituencies / dataRoot) changes.
-  $effect(() => {
-    const dr = reactiveDataRoot.current;
-    const elections = selectedElections;
-    const constituencies = selectedConstituencies;
-    const nextQuestionCategories =
-      dr.questionCategories?.filter(
-        (c) =>
-          c.appliesTo({ elections, constituencies }) &&
-          c.getApplicableQuestions({ elections, constituencies }).length > 0
-      ) ?? [];
-    const nextInfoCats = nextQuestionCategories.filter((qc) => qc.type !== QUESTION_CATEGORY_TYPE.Opinion);
-    const nextOpinionCats = nextQuestionCategories.filter((qc) => qc.type === QUESTION_CATEGORY_TYPE.Opinion);
-    // Voter-app filters out hidden questions (per `questionStore` original
-    // behavior with appType: 'voter'). The opinion-question matchability check
-    // mirrors the helper's invariant.
-    const nextInfoQuestions = nextInfoCats.flatMap((c) =>
-      c
-        .getApplicableQuestions({ elections, constituencies })
-        .filter((q) => !(q.customData as CustomData['Question'])?.hidden)
-    );
-    const nextOpinionQuestions = nextOpinionCats.flatMap((c) => {
-      const questions = c
-        .getApplicableQuestions({ elections, constituencies })
-        .filter((q) => !(q.customData as CustomData['Question'])?.hidden);
-      if (c.type === QUESTION_CATEGORY_TYPE.Opinion && questions.some((q) => !q.isMatchable))
-        error(500, `Some opinion questions in category ${c.id} is not matchable.`);
-      return questions;
-    });
+  // Param-based collection stores (now class instances from Plan 01; `.value`
+  // reads unchanged).
+  #electionId = paramStore('electionId');
+  #constituencyId = paramStore('constituencyId');
 
-    _questionCategories = nextQuestionCategories;
-    _infoQuestionCategories = nextInfoCats;
-    _opinionQuestionCategories = nextOpinionCats;
-    _infoQuestions = nextInfoQuestions;
-    _opinionQuestions = nextOpinionQuestions;
-  });
-
-  // Seed default-all-checked once opinion categories are available.
-  // Guarded with `hasSeededCategorySelection` so voter de-selects are preserved
-  // when `_opinionQuestionCategories` later reacts to election/constituency
-  // changes (would otherwise clobber the voter's deliberate selection).
-  $effect(() => {
-    if (hasSeededCategorySelection) return;
-    const cats = _opinionQuestionCategories;
-    if (cats.length === 0) return;
-    untrack(() => {
-      _selectedQuestionCategoryIds = cats.map((c) => c.id);
-      hasSeededCategorySelection = true;
-    });
-  });
-
-  // QuestionBlocks: filtered by the user's selected category ids and ordered
-  // optionally by `firstQuestionId`. Mirrors the original `questionBlockStore`
-  // logic verbatim; written into a `$state` for consumer reactivity.
-  $effect(() => {
-    const firstId = _firstQuestionId.current;
-    const allOpinionCats = _opinionQuestionCategories;
-    const categoryIds = _selectedQuestionCategoryIds;
-    const elections = selectedElections;
-    const constituencies = selectedConstituencies;
-
-    const filteredCats = categoryIds.length
-      ? allOpinionCats.filter((c) => categoryIds.includes(c.id))
-      : allOpinionCats;
-    let blocks = filteredCats
-      .map((c) => c.getApplicableQuestions({ elections, constituencies }))
-      .filter((b) => b.length > 0);
-
-    if (firstId) {
-      const indexOfBlock = blocks.findIndex((b) => b.find((q) => q.id === firstId));
-      if (indexOfBlock === -1) {
-        logDebugError(`Bypassing invalid first question id: ${firstId}.`);
-      } else {
-        const block = blocks[indexOfBlock];
-        const indexInBlock = block.findIndex((q) => q.id === firstId);
-        const newFirstBlock = [block.splice(indexInBlock, 1)[0], ...block];
-        blocks.splice(indexOfBlock, 1);
-        blocks = [newFirstBlock, ...blocks];
-      }
+  /**
+   * The matching algorithm object used for matching. Stable plain field (it is
+   * exposed on the surface as the `algorithm` member; not spread, so a plain
+   * field is fine).
+   */
+  algorithm = new MatchingAlgorithm({
+    distanceMetric: DISTANCE_METRIC.Manhattan,
+    missingValueOptions: {
+      method: MISSING_VALUE_METHOD.RelativeMaximum
     }
-
-    const finalBlocks = blocks;
-    _selectedQuestionBlocks = {
-      blocks: finalBlocks,
-      get questions() {
-        return finalBlocks.flat();
-      },
-      getByCategory: ({ id }) => {
-        const block = finalBlocks.find((b) => b[0]?.category.id === id);
-        if (!block) return undefined;
-        return { block, index: finalBlocks.indexOf(block) };
-      },
-      getByQuestion: ({ id }) => {
-        const indexOfBlock = finalBlocks.findIndex((b) => b.find((q) => q.id === id));
-        if (indexOfBlock === -1) return undefined;
-        const block = finalBlocks[indexOfBlock];
-        const index = finalBlocks.flat().findIndex((q) => q.id === id);
-        const indexInBlock = block.findIndex((q) => q.id === id);
-        if (index === -1 || indexInBlock === -1) return undefined;
-        return { block, index, indexInBlock, indexOfBlock };
-      }
-    };
   });
 
   ////////////////////////////////////////////////////////////
-  // Matching, Voter Answers and Filters
-  ///////////////////////////////////////////////////////////
+  // Inherited appContext + STABLE refs (field initializers — they run BEFORE the
+  // $derived/producer field initializers below in declaration order, so those
+  // can read them; the appContext members are reproduced via
+  // `Object.assign(this, this.#appContext)` in the constructor — see §below).
+  ////////////////////////////////////////////////////////////
 
-  const answers = answerStore({ startEvent });
+  #appContext = getAppContext();
 
-  const resultsAvailable = $derived.by(() => {
-    const settings = reactiveAppSettings.current;
-    const questions = _opinionQuestions;
-    const currentAnswers = answers.answers;
+  // These are STABLE refs per CLAUDE.md, safe to destructure; held as private
+  // fields so the producers + effects + $derived fields close over them.
+  #reactiveAppSettings = this.#appContext.reactiveAppSettings;
+  #reactiveLocale = this.#appContext.reactiveLocale;
+  #reactiveDataRoot = this.#appContext.reactiveDataRoot;
+  #t = this.#appContext.t;
+
+  ////////////////////////////////////////////////////////////
+  // Sub-store PRODUCER instances (field initializers in D1 order — they read
+  // #reactiveAppSettings/#reactiveDataRoot/#answers above; the getter-args are
+  // lazy thunks, so producer ordering is safe). Declared before the $derived
+  // fields that read them (#resultsAvailable/#nominationsAvailable/
+  // #currentResultsEntityType) — those bodies are lazy too.
+  ////////////////////////////////////////////////////////////
+
+  #answers = answerStore({ startEvent: this.#appContext.startEvent });
+
+  // Matching and filtering depend on the available nominations and questions, for which we use a utility store
+  #nominationsAndQuestions = nominationAndQuestionStore({
+    constituencies: () => this.#selectedConstituencies,
+    dataRoot: () => this.#reactiveDataRoot.current,
+    elections: () => this.#selectedElections,
+    entityTypes: () => this.#entityTypes,
+    hideIfMissingAnswers: () => this.#hideIfMissingAnswers
+  });
+
+  #matches = matchStore({
+    algorithm: this.algorithm,
+    answers: this.#answers,
+    nominationsAndQuestions: () => this.#nominationsAndQuestions.value,
+    minAnswers: () => this.#minAnswers,
+    calcSubmatches: () => this.#calcSubmatches,
+    parentMatchingMethod: () => this.#parentMatchingMethod
+  });
+
+  #entityFilters = filterStore({
+    nominationsAndQuestions: () => this.#nominationsAndQuestions.value,
+    locale: () => this.#reactiveLocale.current,
+    t: () => this.#t
+  });
+
+  ////////////////////////////////////////////////////////////
+  // $derived projections (field initializers — bodies are lazy thunks evaluated
+  // on first read, so they may reference fields assigned later (e.g. #matches);
+  // CONVENTIONS §20 reactive-projection-in-$derived + FilterContextProvider
+  // #filterGroup precedent). Read through the prototype getters below.
+  ////////////////////////////////////////////////////////////
+
+  // Stores related to selection pages
+  #electionsSelectable = $derived(
+    !this.#reactiveAppSettings.current.elections?.disallowSelection &&
+      this.#reactiveDataRoot.current.elections?.length !== 1
+  );
+
+  #constituenciesSelectable = $derived(
+    this.#reactiveDataRoot.current.elections?.some((e) => !e.singleConstituency)
+  );
+
+  ////////////////////////////////////////////////////////////
+  // currentResultsElection (Phase 88 Plan 88-02)
+  ////////////////////////////////////////////////////////////
+  //
+  // Singular SELECTED election whose results page is being rendered, sourced
+  // from the NEW route segment `page.params.electionTab`.
+  //
+  // SEMANTIC DISSOCIATION (NAME-DISJOINT): `selectedElections` is the
+  // AVAILABLE-array surface sourced from the SEARCH-side `?electionId=…`
+  // persistent search param; `currentResultsElection` is the SELECTED-singular
+  // surface sourced from the ROUTE-side `page.params.electionTab` segment. The
+  // two keys (`electionId` vs `electionTab`) are literally different identifiers
+  // throughout the codebase — they never alias.
+  //
+  // Implementation choice (Decision Q3): `$derived.by` rather than the
+  // push-pattern `$state` + `$effect` mirror used by `selectedElections`. The
+  // push-pattern was needed for `selectedElections` because of the silent-fail
+  // FK-lookup race (a transient throw during navigation when DataRoot doesn't
+  // yet have the election). Here we just lookup against the already-resolved
+  // `selectedElections` array — no FK fetch, no race — so the cheap
+  // `$derived.by` is sufficient. Reactivity propagates correctly because
+  // `page.params.electionTab` is reactive in Svelte 5 (`$app/state`) and
+  // `selectedElections` is reactive via `$state`.
+  //
+  // Fallback chain:
+  //   1. Route segment present AND found in available array → that election.
+  //   2. Route segment absent AND exactly 1 available → that single election
+  //      (mirrors the +layout.svelte single-election fallback).
+  //   3. Otherwise (route segment present but stale, OR route segment absent
+  //      with 0/2+ available) → `undefined`. The server-side guard at
+  //      `(voters)/(located)/results/[[electionTab]]/+layout.ts` will normally
+  //      have redirected before this derivation runs in the stale case; this
+  //      just defends against late-arriving updates.
+  #currentResultsElection = $derived.by<Election | undefined>(() => {
+    const tab = page.params.electionTab;
+    if (tab) return this.#selectedElections.find((e) => e.id === tab);
+    if (this.#selectedElections.length === 1) return this.#selectedElections[0];
+    return undefined;
+  });
+
+  #resultsAvailable = $derived.by(() => {
+    const settings = this.#reactiveAppSettings.current;
+    const questions = this.#opinionQuestions;
+    const currentAnswers = this.#answers.answers;
     // For results to be available, we need at least the specified number of answers for each election
-    if (selectedElections.length === 0) return false;
-    return selectedElections.every((e) => {
+    if (this.#selectedElections.length === 0) return false;
+    return this.#selectedElections.every((e) => {
       const applicableQuestions = questions.filter((q) => q.appliesTo({ elections: e }));
       return countAnswers({ answers: currentAnswers, questions: applicableQuestions }) >= settings.matching.minimumAnswers;
     });
   });
 
   /** The types of entities we show in results */
-  const entityTypes = $derived(reactiveAppSettings.current.results?.sections ?? []);
+  #entityTypes = $derived(this.#reactiveAppSettings.current.results?.sections ?? []);
 
   /** The entity types to hide if missing opinion answers */
-  const hideIfMissingAnswers = $derived(reactiveAppSettings.current.entities?.hideIfMissingAnswers || {});
+  #hideIfMissingAnswers = $derived(this.#reactiveAppSettings.current.entities?.hideIfMissingAnswers || {});
 
-  // Matching and filtering depend on the available nominations and questions, for which we use a utility store
-  const _nominationsAndQuestions = nominationAndQuestionStore({
-    constituencies: () => selectedConstituencies,
-    dataRoot: () => reactiveDataRoot.current,
-    elections: () => selectedElections,
-    entityTypes: () => entityTypes,
-    hideIfMissingAnswers: () => hideIfMissingAnswers
-  });
-
-  const nominationsAvailable = $derived.by(() => {
-    const nq = _nominationsAndQuestions.value;
+  #nominationsAvailable = $derived.by(() => {
+    const nq = this.#nominationsAndQuestions.value;
     return Object.fromEntries(
       Object.entries(nq).map(([id, contents]) => [
         id,
@@ -383,46 +265,24 @@ export function initVoterContext(): VoterContext {
     );
   });
 
-  const algorithm = new MatchingAlgorithm({
-    distanceMetric: DISTANCE_METRIC.Manhattan,
-    missingValueOptions: {
-      method: MISSING_VALUE_METHOD.RelativeMaximum
-    }
-  });
-
-  const minAnswers = $derived(reactiveAppSettings.current.matching.minimumAnswers);
+  #minAnswers = $derived(this.#reactiveAppSettings.current.matching.minimumAnswers);
 
   /** Get the entityTypes whose cardContents include `submatches` */
-  const calcSubmatches = $derived.by(() =>
-    Object.entries(reactiveAppSettings.current.results?.cardContents ?? {})
+  #calcSubmatches = $derived.by(() =>
+    Object.entries(this.#reactiveAppSettings.current.results?.cardContents ?? {})
       .filter(([, value]) => value?.includes('submatches'))
       .map(([type]) => type as EntityType)
   );
 
   /** The parent entity matching method */
-  const parentMatchingMethod = $derived(reactiveAppSettings.current.matching?.organizationMatching || 'none');
-
-  const _matches = matchStore({
-    algorithm,
-    answers,
-    nominationsAndQuestions: () => _nominationsAndQuestions.value,
-    minAnswers: () => minAnswers,
-    calcSubmatches: () => calcSubmatches,
-    parentMatchingMethod: () => parentMatchingMethod
-  });
-
-  const _entityFilters = filterStore({
-    nominationsAndQuestions: () => _nominationsAndQuestions.value,
-    locale: () => reactiveLocale.current,
-    t: () => t
-  });
+  #parentMatchingMethod = $derived(this.#reactiveAppSettings.current.matching?.organizationMatching || 'none');
 
   // currentResultsEntityType — singular EntityType implied for the active
   // results election. URL-first: when `page.params.entityTab` names a valid
-  // plural (matched against the current election's available types) the
-  // mapped singular wins. Otherwise, default-pick the first available type
-  // for `currentResultsElection`. Returns `undefined` only when there is no
-  // active election or its matches tree hasn't been built yet.
+  // plural (matched against the current election's available types) the mapped
+  // singular wins. Otherwise, default-pick the first available type for
+  // `currentResultsElection`. Returns `undefined` only when there is no active
+  // election or its matches tree hasn't been built yet.
   //
   // Why this lives on voterContext (not the route layout):
   //   - Removes the need for `+layout.ts` to force-fill `entityTab` into the
@@ -436,9 +296,9 @@ export function initVoterContext(): VoterContext {
   //
   // Per CLAUDE.md Context Destructuring Rule, consumers MUST read via
   // `ctx.currentResultsEntityType` — never destructure.
-  const currentResultsEntityType = $derived.by<EntityType | undefined>(() => {
-    if (!currentResultsElection) return undefined;
-    const matchesForElection = _matches.value[currentResultsElection.id];
+  #currentResultsEntityType = $derived.by<EntityType | undefined>(() => {
+    if (!this.#currentResultsElection) return undefined;
+    const matchesForElection = this.#matches.value[this.#currentResultsElection.id];
     if (!matchesForElection) return undefined;
     const availableTypes = Object.keys(matchesForElection) as Array<EntityType>;
     if (availableTypes.length === 0) return undefined;
@@ -455,105 +315,354 @@ export function initVoterContext(): VoterContext {
     return availableTypes[0];
   });
 
-  // Phase 62 D-05: initialize the dedicated filterContext using a closure over
-  // the just-built FilterTree. Phase 88 follow-up: also injects
-  // `currentEntityType` so filterContext can resolve its scope tuple via the
-  // voterContext-implied entity type — no longer requires the URL to carry
-  // `entityTab` (the route load function no longer force-fills it).
-  // Single init per voter session — re-init is guarded by initFilterContext()
-  // itself (status-500).
-  initFilterContext({
-    entityFilters: () => _entityFilters.value,
-    currentEntityType: () => currentResultsEntityType
-  });
-
   ////////////////////////////////////////////////////////////
-  // Resetting voter data
-  ///////////////////////////////////////////////////////////
+  // Inherited appContext members (declared for `implements VoterContext`;
+  // INSTALLED via `Object.assign(this, this.#appContext)` in the constructor
+  // from the own-enumerable Phase-109 AppContextProvider instance).
+  // Definite-assignment `!`.
+  ////////////////////////////////////////////////////////////
 
-  function resetVoterData(): void {
-    answers.reset();
-    _firstQuestionId.set(null);
-    // QUESTION-03: pure $state assignment + reset the seed-guard so the next
-    // render re-seeds default-all-checked via the $effect above.
-    _selectedQuestionCategoryIds = [];
-    hasSeededCategorySelection = false;
+  readonly appType!: AppContext['appType'];
+  readonly appSettings!: AppContext['appSettings'];
+  readonly appCustomization!: AppContext['appCustomization'];
+  readonly openFeedbackModal!: AppContext['openFeedbackModal'];
+  readonly reactiveAppSettings!: AppContext['reactiveAppSettings'];
+  readonly reactiveLocale!: AppContext['reactiveLocale'];
+  readonly locale!: AppContext['locale'];
+  readonly locales!: AppContext['locales'];
+  readonly darkMode!: AppContext['darkMode'];
+  readonly getRoute!: AppContext['getRoute'];
+  readonly surveyLink!: AppContext['surveyLink'];
+  readonly userPreferences!: AppContext['userPreferences'];
+  readonly t!: AppContext['t'];
+  readonly translate!: AppContext['translate'];
+  readonly dataRoot!: AppContext['dataRoot'];
+  readonly reactiveDataRoot!: AppContext['reactiveDataRoot'];
+  readonly setDataRoot!: AppContext['setDataRoot'];
+  readonly sendTrackingEvent!: AppContext['sendTrackingEvent'];
+  readonly sessionId!: AppContext['sessionId'];
+  readonly shouldTrack!: AppContext['shouldTrack'];
+  readonly startPageview!: AppContext['startPageview'];
+  readonly startEvent!: AppContext['startEvent'];
+  readonly track!: AppContext['track'];
+  readonly submitAllEvents!: AppContext['submitAllEvents'];
+  readonly resetAllEvents!: AppContext['resetAllEvents'];
+  readonly sendFeedback!: AppContext['sendFeedback'];
+  readonly setDataConsent!: AppContext['setDataConsent'];
+  readonly setFeedbackStatus!: AppContext['setFeedbackStatus'];
+  readonly setSurveyStatus!: AppContext['setSurveyStatus'];
+  readonly startFeedbackPopupCountdown!: AppContext['startFeedbackPopupCountdown'];
+  readonly startSurveyPopupCountdown!: AppContext['startSurveyPopupCountdown'];
+  readonly popupQueue!: AppContext['popupQueue'];
+
+  constructor() {
+    ////////////////////////////////////////////////////////////
+    // Inheritance from other Contexts
+    ////////////////////////////////////////////////////////////
+    //
+    // Reproduce the former `...appContext` spread (L488): appContext members are
+    // own-enumerable from the Phase-109 AppContextProvider instance, so
+    // Object.assign copies them correctly onto this instance. (The stable refs +
+    // sub-store producers + $derived projections are field initializers above,
+    // which run in declaration order BEFORE this constructor body — D1.)
+
+    Object.assign(this, this.#appContext);
+
+    ////////////////////////////////////////////////////////////
+    // Elections and Constituencies push-based $state mirrors
+    ////////////////////////////////////////////////////////////
+
+    $effect(() => {
+      const dr = this.#reactiveDataRoot.current;
+      const settings = this.#reactiveAppSettings.current;
+      const electionId = this.#electionId.value;
+      const constituencyId = this.#constituencyId.value;
+      if (!dr.elections.length) {
+        if (this.#selectedElections.length !== 0) this.#selectedElections = [];
+        return;
+      }
+      const ids = electionId?.length
+        ? electionId
+        : getImpliedElectionIds({
+            appSettings: settings,
+            dataRoot: dr,
+            selectedConstituencyIds: constituencyId
+          });
+      if (!ids?.length) {
+        if (this.#selectedElections.length !== 0) this.#selectedElections = [];
+        return;
+      }
+      try {
+        const next = ids.map((id) => dr.getElection(id));
+        if (!sameRefs(next, this.#selectedElections)) this.#selectedElections = next;
+      } catch (e) {
+        // DataRoot lookup throws transiently during navigation: when the URL
+        // changes the page params arrive on the new route before the loader
+        // has finished re-providing the corresponding data. Falling back to a
+        // `goto('Elections')` here races with the in-flight navigation and
+        // boomerangs the user back to /elections — the silent-fail flake
+        // documented at multi-election.spec.ts:173. Clear the local mirror
+        // and let the route's `+page.ts` / `+layout.ts` `redirect()` decide
+        // whether a redirect is actually needed.
+        logDebugError(`[selectedElections] Error fetching election: ${e}`);
+        if (this.#selectedElections.length !== 0) this.#selectedElections = [];
+      }
+    });
+
+    $effect(() => {
+      const dr = this.#reactiveDataRoot.current;
+      const constituencyId = this.#constituencyId.value;
+      const electionId = this.#electionId.value;
+      if (!dr.constituencies.length) {
+        if (this.#selectedConstituencies.length !== 0) this.#selectedConstituencies = [];
+        return;
+      }
+      const ids = constituencyId?.length
+        ? constituencyId
+        : getImpliedConstituencyIds({
+            dataRoot: dr,
+            selectedElectionIds: electionId
+          });
+      if (!ids?.length) {
+        if (this.#selectedConstituencies.length !== 0) this.#selectedConstituencies = [];
+        return;
+      }
+      try {
+        const next = ids.map((id) => dr.getConstituency(id));
+        if (!sameRefs(next, this.#selectedConstituencies)) this.#selectedConstituencies = next;
+      } catch (e) {
+        // See parallel selectedElections catch above — clear the local mirror
+        // and let the route loader handle redirects so we don't race the
+        // in-flight navigation.
+        logDebugError(`[selectedConstituencies] Error fetching constituency: ${e}`);
+        if (this.#selectedConstituencies.length !== 0) this.#selectedConstituencies = [];
+      }
+    });
+
+    ////////////////////////////////////////////////////////////
+    // Questions and QuestionCategories
+    ////////////////////////////////////////////////////////////
+
+    // Single $effect computes the entire question chain whenever upstream
+    // state (selectedElections / selectedConstituencies / dataRoot) changes.
+    $effect(() => {
+      const dr = this.#reactiveDataRoot.current;
+      const elections = this.#selectedElections;
+      const constituencies = this.#selectedConstituencies;
+      const nextQuestionCategories =
+        dr.questionCategories?.filter(
+          (c) =>
+            c.appliesTo({ elections, constituencies }) &&
+            c.getApplicableQuestions({ elections, constituencies }).length > 0
+        ) ?? [];
+      const nextInfoCats = nextQuestionCategories.filter((qc) => qc.type !== QUESTION_CATEGORY_TYPE.Opinion);
+      const nextOpinionCats = nextQuestionCategories.filter((qc) => qc.type === QUESTION_CATEGORY_TYPE.Opinion);
+      // Voter-app filters out hidden questions (per `questionStore` original
+      // behavior with appType: 'voter'). The opinion-question matchability check
+      // mirrors the helper's invariant.
+      const nextInfoQuestions = nextInfoCats.flatMap((c) =>
+        c
+          .getApplicableQuestions({ elections, constituencies })
+          .filter((q) => !(q.customData as CustomData['Question'])?.hidden)
+      );
+      const nextOpinionQuestions = nextOpinionCats.flatMap((c) => {
+        const questions = c
+          .getApplicableQuestions({ elections, constituencies })
+          .filter((q) => !(q.customData as CustomData['Question'])?.hidden);
+        if (c.type === QUESTION_CATEGORY_TYPE.Opinion && questions.some((q) => !q.isMatchable))
+          error(500, `Some opinion questions in category ${c.id} is not matchable.`);
+        return questions;
+      });
+
+      this.#questionCategories = nextQuestionCategories;
+      this.#infoQuestionCategories = nextInfoCats;
+      this.#opinionQuestionCategories = nextOpinionCats;
+      this.#infoQuestions = nextInfoQuestions;
+      this.#opinionQuestions = nextOpinionQuestions;
+    });
+
+    // Seed default-all-checked once opinion categories are available.
+    // Guarded with `hasSeededCategorySelection` so voter de-selects are preserved
+    // when `_opinionQuestionCategories` later reacts to election/constituency
+    // changes (would otherwise clobber the voter's deliberate selection).
+    $effect(() => {
+      if (this.#hasSeededCategorySelection) return;
+      const cats = this.#opinionQuestionCategories;
+      if (cats.length === 0) return;
+      untrack(() => {
+        this.#selectedQuestionCategoryIds = cats.map((c) => c.id);
+        this.#hasSeededCategorySelection = true;
+      });
+    });
+
+    // QuestionBlocks: filtered by the user's selected category ids and ordered
+    // optionally by `firstQuestionId`. Mirrors the original `questionBlockStore`
+    // logic verbatim; written into a `$state` for consumer reactivity.
+    $effect(() => {
+      const firstId = this.#firstQuestionId.current;
+      const allOpinionCats = this.#opinionQuestionCategories;
+      const categoryIds = this.#selectedQuestionCategoryIds;
+      const elections = this.#selectedElections;
+      const constituencies = this.#selectedConstituencies;
+
+      const filteredCats = categoryIds.length
+        ? allOpinionCats.filter((c) => categoryIds.includes(c.id))
+        : allOpinionCats;
+      let blocks = filteredCats
+        .map((c) => c.getApplicableQuestions({ elections, constituencies }))
+        .filter((b) => b.length > 0);
+
+      if (firstId) {
+        const indexOfBlock = blocks.findIndex((b) => b.find((q) => q.id === firstId));
+        if (indexOfBlock === -1) {
+          logDebugError(`Bypassing invalid first question id: ${firstId}.`);
+        } else {
+          const block = blocks[indexOfBlock];
+          const indexInBlock = block.findIndex((q) => q.id === firstId);
+          const newFirstBlock = [block.splice(indexInBlock, 1)[0], ...block];
+          blocks.splice(indexOfBlock, 1);
+          blocks = [newFirstBlock, ...blocks];
+        }
+      }
+
+      const finalBlocks = blocks;
+      this.#selectedQuestionBlocks = {
+        blocks: finalBlocks,
+        get questions() {
+          return finalBlocks.flat();
+        },
+        getByCategory: ({ id }) => {
+          const block = finalBlocks.find((b) => b[0]?.category.id === id);
+          if (!block) return undefined;
+          return { block, index: finalBlocks.indexOf(block) };
+        },
+        getByQuestion: ({ id }) => {
+          const indexOfBlock = finalBlocks.findIndex((b) => b.find((q) => q.id === id));
+          if (indexOfBlock === -1) return undefined;
+          const block = finalBlocks[indexOfBlock];
+          const index = finalBlocks.flat().findIndex((q) => q.id === id);
+          const indexInBlock = block.findIndex((q) => q.id === id);
+          if (index === -1 || indexInBlock === -1) return undefined;
+          return { block, index, indexInBlock, indexOfBlock };
+        }
+      };
+    });
+
+    ////////////////////////////////////////////////////////////
+    // Initialize the dedicated filterContext
+    ////////////////////////////////////////////////////////////
+
+    // Phase 62 D-05: initialize the dedicated filterContext using a closure over
+    // the just-built FilterTree. Phase 88 follow-up: also injects
+    // `currentEntityType` so filterContext can resolve its scope tuple via the
+    // voterContext-implied entity type — no longer requires the URL to carry
+    // `entityTab` (the route load function no longer force-fills it).
+    // Single init per voter session — re-init is guarded by initFilterContext()
+    // itself (status-500).
+    initFilterContext({
+      entityFilters: () => this.#entityFilters.value,
+      currentEntityType: () => this.#currentResultsEntityType
+    });
   }
 
   ////////////////////////////////////////////////////////////
-  // Build context
+  // Resetting voter data (§18 arrow field — survives detach as onclick)
   ////////////////////////////////////////////////////////////
 
-  return setContext<VoterContext>(CONTEXT_KEY, {
-    ...appContext,
-    algorithm,
-    answers,
-    get constituenciesSelectable() {
-      return constituenciesSelectable;
-    },
-    get currentResultsElection() {
-      return currentResultsElection;
-    },
-    get currentResultsEntityType() {
-      return currentResultsEntityType;
-    },
-    get electionsSelectable() {
-      return electionsSelectable;
-    },
-    get entityFilters() {
-      return _entityFilters.value;
-    },
-    /**
-     * D-05 bundled accessor — delegates to `getFilterContext()` so the same
-     * Symbol-keyed context instance is exposed both directly (future LLM chat)
-     * and via the voter context (voter-flow UI). Getter delegation avoids
-     * capturing a stale reference at construction time.
-     */
-    get filterContext() {
-      return getFilterContext();
-    },
-    get firstQuestionId() {
-      return _firstQuestionId.current;
-    },
-    set firstQuestionId(v) {
-      _firstQuestionId.set(v);
-    },
-    get infoQuestionCategories() {
-      return _infoQuestionCategories;
-    },
-    get infoQuestions() {
-      return _infoQuestions;
-    },
-    get matches() {
-      return _matches.value;
-    },
-    get nominationsAvailable() {
-      return nominationsAvailable;
-    },
-    get opinionQuestionCategories() {
-      return _opinionQuestionCategories;
-    },
-    get opinionQuestions() {
-      return _opinionQuestions;
-    },
-    resetVoterData,
-    get resultsAvailable() {
-      return resultsAvailable;
-    },
-    get selectedConstituencies() {
-      return selectedConstituencies;
-    },
-    get selectedElections() {
-      return selectedElections;
-    },
-    get selectedQuestionBlocks() {
-      return _selectedQuestionBlocks;
-    },
-    get selectedQuestionCategoryIds() {
-      return _selectedQuestionCategoryIds;
-    },
-    set selectedQuestionCategoryIds(v) {
-      _selectedQuestionCategoryIds = v;
-    }
-  });
+  resetVoterData = (): void => {
+    this.#answers.reset();
+    this.#firstQuestionId.set(null);
+    // QUESTION-03: pure $state assignment + reset the seed-guard so the next
+    // render re-seeds default-all-checked via the $effect above.
+    this.#selectedQuestionCategoryIds = [];
+    this.#hasSeededCategorySelection = false;
+  };
+
+  ////////////////////////////////////////////////////////////
+  // Surface members (prototype get/set accessors — spread-safe; §17)
+  ////////////////////////////////////////////////////////////
+
+  get answers() {
+    return this.#answers;
+  }
+  get constituenciesSelectable() {
+    return this.#constituenciesSelectable;
+  }
+  get currentResultsElection() {
+    return this.#currentResultsElection;
+  }
+  get currentResultsEntityType() {
+    return this.#currentResultsEntityType;
+  }
+  get electionsSelectable() {
+    return this.#electionsSelectable;
+  }
+  get entityFilters() {
+    return this.#entityFilters.value;
+  }
+  /**
+   * D-05 bundled accessor — delegates to `getFilterContext()` so the same
+   * Symbol-keyed context instance is exposed both directly (future LLM chat)
+   * and via the voter context (voter-flow UI). Getter delegation avoids
+   * capturing a stale reference at construction time.
+   */
+  get filterContext() {
+    return getFilterContext();
+  }
+  get firstQuestionId() {
+    return this.#firstQuestionId.current;
+  }
+  set firstQuestionId(v) {
+    this.#firstQuestionId.set(v);
+  }
+  get infoQuestionCategories() {
+    return this.#infoQuestionCategories;
+  }
+  get infoQuestions() {
+    return this.#infoQuestions;
+  }
+  get matches() {
+    return this.#matches.value;
+  }
+  get nominationsAvailable() {
+    return this.#nominationsAvailable;
+  }
+  get opinionQuestionCategories() {
+    return this.#opinionQuestionCategories;
+  }
+  get opinionQuestions() {
+    return this.#opinionQuestions;
+  }
+  get resultsAvailable() {
+    return this.#resultsAvailable;
+  }
+  get selectedConstituencies() {
+    return this.#selectedConstituencies;
+  }
+  get selectedElections() {
+    return this.#selectedElections;
+  }
+  get selectedQuestionBlocks() {
+    return this.#selectedQuestionBlocks;
+  }
+  get selectedQuestionCategoryIds() {
+    return this.#selectedQuestionCategoryIds;
+  }
+  set selectedQuestionCategoryIds(v) {
+    this.#selectedQuestionCategoryIds = v;
+  }
+}
+
+export function getVoterContext(): VoterContext {
+  if (!hasContext(CONTEXT_KEY)) error(500, 'getVoterContext() called before initVoterContext()');
+  return getContext<VoterContext>(CONTEXT_KEY);
+}
+
+/**
+ * Initialize and return the context. This must be called before `getGlobalContext()` and cannot be called twice.
+ * @returns The context object
+ */
+export function initVoterContext(): VoterContext {
+  if (hasContext(CONTEXT_KEY)) error(500, 'initVoterContext() called for a second time');
+  return setContext<VoterContext>(CONTEXT_KEY, new VoterContextProvider());
 }
