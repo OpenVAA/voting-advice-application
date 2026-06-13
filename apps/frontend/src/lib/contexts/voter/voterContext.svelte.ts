@@ -147,16 +147,19 @@ export class VoterContextProvider implements VoterContext {
 
   #appContext = getAppContext();
 
-  // These are STABLE refs per CLAUDE.md, safe to destructure; held as private
-  // fields so the producers + effects + $derived fields close over them.
-  #reactiveAppSettings = this.#appContext.reactiveAppSettings;
-  #reactiveLocale = this.#appContext.reactiveLocale;
-  #reactiveDataRoot = this.#appContext.reactiveDataRoot;
+  // The canonical `{ current }` handles from appContext, held as private fields so
+  // the producers + effects + $derived fields close over them. (Phase 113 FLATTEN-01
+  // dropped the redundant `reactive*` mirrors these previously aliased; reads now go
+  // straight to the canonical `appSettings` / `locale` / `dataRoot` handles, which
+  // remain `{ current }` at this boundary — the `.current` → bare codemod is FLATTEN-02.)
+  #appSettings = this.#appContext.appSettings;
+  #locale = this.#appContext.locale;
+  #dataRoot = this.#appContext.dataRoot;
   #t = this.#appContext.t;
 
   ////////////////////////////////////////////////////////////
   // Sub-store PRODUCER instances (field initializers in D1 order — they read
-  // #reactiveAppSettings/#reactiveDataRoot/#answers above; the getter-args are
+  // #appSettings/#dataRoot/#answers above; the getter-args are
   // lazy thunks, so producer ordering is safe). Declared before the $derived
   // fields that read them (#resultsAvailable/#nominationsAvailable/
   // #currentResultsEntityType) — those bodies are lazy too.
@@ -167,7 +170,7 @@ export class VoterContextProvider implements VoterContext {
   // Matching and filtering depend on the available nominations and questions, for which we use a utility store
   #nominationsAndQuestions = nominationAndQuestionStore({
     constituencies: () => this.#selectedConstituencies,
-    dataRoot: () => this.#reactiveDataRoot.current,
+    dataRoot: () => this.#dataRoot.current,
     elections: () => this.#selectedElections,
     entityTypes: () => this.#entityTypes,
     hideIfMissingAnswers: () => this.#hideIfMissingAnswers
@@ -184,7 +187,7 @@ export class VoterContextProvider implements VoterContext {
 
   #entityFilters = filterStore({
     nominationsAndQuestions: () => this.#nominationsAndQuestions.value,
-    locale: () => this.#reactiveLocale.current,
+    locale: () => this.#locale.current,
     t: () => this.#t
   });
 
@@ -197,12 +200,12 @@ export class VoterContextProvider implements VoterContext {
 
   // Stores related to selection pages
   #electionsSelectable = $derived(
-    !this.#reactiveAppSettings.current.elections?.disallowSelection &&
-      this.#reactiveDataRoot.current.elections?.length !== 1
+    !this.#appSettings.current.elections?.disallowSelection &&
+      this.#dataRoot.current.elections?.length !== 1
   );
 
   #constituenciesSelectable = $derived(
-    this.#reactiveDataRoot.current.elections?.some((e) => !e.singleConstituency)
+    this.#dataRoot.current.elections?.some((e) => !e.singleConstituency)
   );
 
   ////////////////////////////////////////////////////////////
@@ -246,7 +249,7 @@ export class VoterContextProvider implements VoterContext {
   });
 
   #resultsAvailable = $derived.by(() => {
-    const settings = this.#reactiveAppSettings.current;
+    const settings = this.#appSettings.current;
     const questions = this.#opinionQuestions;
     const currentAnswers = this.#answers.answers;
     // For results to be available, we need at least the specified number of answers for each election
@@ -258,10 +261,10 @@ export class VoterContextProvider implements VoterContext {
   });
 
   /** The types of entities we show in results */
-  #entityTypes = $derived(this.#reactiveAppSettings.current.results?.sections ?? []);
+  #entityTypes = $derived(this.#appSettings.current.results?.sections ?? []);
 
   /** The entity types to hide if missing opinion answers */
-  #hideIfMissingAnswers = $derived(this.#reactiveAppSettings.current.entities?.hideIfMissingAnswers || {});
+  #hideIfMissingAnswers = $derived(this.#appSettings.current.entities?.hideIfMissingAnswers || {});
 
   #nominationsAvailable = $derived.by(() => {
     const nq = this.#nominationsAndQuestions.value;
@@ -273,17 +276,17 @@ export class VoterContextProvider implements VoterContext {
     );
   });
 
-  #minAnswers = $derived(this.#reactiveAppSettings.current.matching.minimumAnswers);
+  #minAnswers = $derived(this.#appSettings.current.matching.minimumAnswers);
 
   /** Get the entityTypes whose cardContents include `submatches` */
   #calcSubmatches = $derived.by(() =>
-    Object.entries(this.#reactiveAppSettings.current.results?.cardContents ?? {})
+    Object.entries(this.#appSettings.current.results?.cardContents ?? {})
       .filter(([, value]) => value?.includes('submatches'))
       .map(([type]) => type as EntityType)
   );
 
   /** The parent entity matching method */
-  #parentMatchingMethod = $derived(this.#reactiveAppSettings.current.matching?.organizationMatching || 'none');
+  #parentMatchingMethod = $derived(this.#appSettings.current.matching?.organizationMatching || 'none');
 
   // currentResultsEntityType — singular EntityType implied for the active
   // results election. URL-first: when `page.params.entityTab` names a valid
@@ -334,8 +337,6 @@ export class VoterContextProvider implements VoterContext {
   readonly appSettings!: AppContext['appSettings'];
   readonly appCustomization!: AppContext['appCustomization'];
   readonly openFeedbackModal!: AppContext['openFeedbackModal'];
-  readonly reactiveAppSettings!: AppContext['reactiveAppSettings'];
-  readonly reactiveLocale!: AppContext['reactiveLocale'];
   readonly locale!: AppContext['locale'];
   readonly locales!: AppContext['locales'];
   readonly darkMode!: AppContext['darkMode'];
@@ -345,7 +346,6 @@ export class VoterContextProvider implements VoterContext {
   readonly t!: AppContext['t'];
   readonly translate!: AppContext['translate'];
   readonly dataRoot!: AppContext['dataRoot'];
-  readonly reactiveDataRoot!: AppContext['reactiveDataRoot'];
   readonly setDataRoot!: AppContext['setDataRoot'];
   readonly sendTrackingEvent!: AppContext['sendTrackingEvent'];
   readonly sessionId!: AppContext['sessionId'];
@@ -381,8 +381,8 @@ export class VoterContextProvider implements VoterContext {
     ////////////////////////////////////////////////////////////
 
     $effect(() => {
-      const dr = this.#reactiveDataRoot.current;
-      const settings = this.#reactiveAppSettings.current;
+      const dr = this.#dataRoot.current;
+      const settings = this.#appSettings.current;
       const electionId = this.#electionId.value;
       const constituencyId = this.#constituencyId.value;
       if (!dr.elections.length) {
@@ -418,7 +418,7 @@ export class VoterContextProvider implements VoterContext {
     });
 
     $effect(() => {
-      const dr = this.#reactiveDataRoot.current;
+      const dr = this.#dataRoot.current;
       const constituencyId = this.#constituencyId.value;
       const electionId = this.#electionId.value;
       if (!dr.constituencies.length) {
@@ -454,7 +454,7 @@ export class VoterContextProvider implements VoterContext {
     // Single $effect computes the entire question chain whenever upstream
     // state (selectedElections / selectedConstituencies / dataRoot) changes.
     $effect(() => {
-      const dr = this.#reactiveDataRoot.current;
+      const dr = this.#dataRoot.current;
       const elections = this.#selectedElections;
       const constituencies = this.#selectedConstituencies;
       const nextQuestionCategories =

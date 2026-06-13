@@ -111,7 +111,7 @@
   // `DataRoot.update()` notifies subscribers (bumping `version`) — retriggering the
   // effect. `setDataRoot` runs the mutation inside `untrack`, so this effect takes no
   // dependency on the version counter (Spike 017/022 read/write split — it replaces
-  // the former `reactiveDataRoot.instance` + hand-written `untrack` idiom).
+  // the former non-reactive producer-read + hand-written `untrack` idiom).
   $effect(() => {
     if ('error' in validity) return;
     // Snapshot validity fields inside the effect's tracked scope (so the effect

@@ -78,8 +78,6 @@ export class AdminContextProvider implements AdminContext {
   readonly appSettings!: AppContext['appSettings'];
   readonly appCustomization!: AppContext['appCustomization'];
   readonly openFeedbackModal!: AppContext['openFeedbackModal'];
-  readonly reactiveAppSettings!: AppContext['reactiveAppSettings'];
-  readonly reactiveLocale!: AppContext['reactiveLocale'];
   readonly locale!: AppContext['locale'];
   readonly locales!: AppContext['locales'];
   readonly darkMode!: AppContext['darkMode'];
@@ -89,7 +87,6 @@ export class AdminContextProvider implements AdminContext {
   readonly t!: AppContext['t'];
   readonly translate!: AppContext['translate'];
   readonly dataRoot!: AppContext['dataRoot'];
-  readonly reactiveDataRoot!: AppContext['reactiveDataRoot'];
   readonly setDataRoot!: AppContext['setDataRoot'];
   readonly sendTrackingEvent!: AppContext['sendTrackingEvent'];
   readonly sessionId!: AppContext['sessionId'];

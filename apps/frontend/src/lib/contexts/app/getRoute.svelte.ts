@@ -6,8 +6,8 @@ export type RouteBuilder = (options: RouteOptions) => string;
 
 /**
  * Build a rune-native route builder seeded against the CURRENT `$app/state`
- * page. Returns a `{ readonly current: RouteBuilder }` handle (mirrors the
- * `reactiveDataRoot` shape); consumers read `getRoute.current(opts)`.
+ * page. Returns a `{ readonly current: RouteBuilder }` handle (the canonical
+ * rune-handle shape); consumers read `getRoute.current(opts)`.
  *
  * COMPONENT-INIT-CONTEXT REQUIREMENT: the rune-derived below (like the old
  * navigation-callback workaround it replaces) requires a runes/component-init

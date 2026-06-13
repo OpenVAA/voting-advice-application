@@ -24,7 +24,7 @@
   // Get context
   ////////////////////////////////////////////////////////////////////
 
-  const { reactiveDataRoot } = getAdminContext();
+  const { setDataRoot } = getAdminContext();
 
   ////////////////////////////////////////////////////////////////////
   // Provide data
@@ -48,11 +48,12 @@
 
   /**
    * Handle the update inside a function so that we don't track dataRoot, which would result in an infinite loop.
+   * The producer write goes through `setDataRoot` (internalizes `untrack`; Spike 017/022).
    * @returns `Error` if the data is invalid, `undefined` otherwise.
    */
   function update([questionData]: [DPDataType['questions'] | Error]): Error | undefined {
     if (!isValidResult(questionData, { allowEmpty: true })) return new Error('Error loading question data');
-    reactiveDataRoot.current.provideQuestionData(questionData);
+    setDataRoot((dr) => dr.provideQuestionData(questionData));
     ready = true;
   }
 </script>

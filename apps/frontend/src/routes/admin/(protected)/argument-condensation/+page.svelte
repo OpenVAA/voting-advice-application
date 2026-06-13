@@ -20,7 +20,7 @@ Page for controlling the argument condensation feature.
   ////////////////////////////////////////////////////////////////////////
 
   const {
-    reactiveDataRoot,
+    dataRoot,
     t,
     jobs: { activeJobsByFeature }
   } = getAdminContext();
@@ -61,8 +61,8 @@ Page for controlling the argument condensation feature.
   $effect(() => {
     if (selectedElectionId) {
       try {
-        const election = reactiveDataRoot.current.getElection(selectedElectionId);
-        availableQuestions = reactiveDataRoot.current.findQuestions({ type: 'opinion', elections: election });
+        const election = dataRoot.current.getElection(selectedElectionId);
+        availableQuestions = dataRoot.current.findQuestions({ type: 'opinion', elections: election });
         questionError = null;
       } catch (err) {
         questionError = err instanceof Error ? err.message : 'Unknown error';
@@ -131,7 +131,7 @@ Page for controlling the argument condensation feature.
             onchange={() => (selectedIds = [])}
             required>
             <option value="">{t('adminApp.argumentCondensation.generate.selectElectionPlaceholder')}</option>
-            {#each reactiveDataRoot.current.elections as election}
+            {#each dataRoot.current.elections as election}
               <option value={election.id}>{election.name}</option>
             {/each}
           </select>

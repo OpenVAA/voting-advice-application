@@ -42,7 +42,6 @@ const { stubs } = vi.hoisted(() => {
       // dataCtx: own-prop handles + arrow-field writer.
       data: {
         dataRoot: handle({} as unknown),
-        reactiveDataRoot: handle({} as unknown),
         setDataRoot: (_v: unknown) => {}
       },
       // tracking producer: own-enumerable handle objects + arrow-field methods.
@@ -134,9 +133,6 @@ describe('AppContextProvider — own-enumerability spread guard', () => {
     'appType',
     'appCustomization',
     'appSettings',
-    // Phase 113 FLATTEN-01 will drop reactiveAppSettings/reactiveLocale/reactiveDataRoot from this list
-    'reactiveAppSettings',
-    'reactiveLocale',
     'getRoute',
     'surveyLink',
     'userPreferences',
@@ -153,8 +149,6 @@ describe('AppContextProvider — own-enumerability spread guard', () => {
     'translate',
     // forwarded dataCtx members
     'dataRoot',
-    // Phase 113 FLATTEN-01 will drop reactiveAppSettings/reactiveLocale/reactiveDataRoot from this list
-    'reactiveDataRoot',
     'setDataRoot',
     // forwarded tracking members
     'sendTrackingEvent',
