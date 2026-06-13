@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v2.13
 milestone_name: Context-as-Class Migration
-status: completed
-stopped_at: Completed 110-03-PLAN.md
-last_updated: "2026-06-13T00:30:16.859Z"
-last_activity: 2026-06-13 -- Completed Phase 110 Plan 01 (answerStore + paramStore to classes; 3 dead factories deleted)
+status: executing
+stopped_at: Phase 110 complete (verification passed 4/4; E2E green incl. a11y-smoke 8/8)
+last_updated: "2026-06-13T03:00:00.000Z"
+last_activity: 2026-06-13 -- Phase 110 verified passed; starting Phase 111
 progress:
   total_phases: 11
   completed_phases: 5
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-12 starting v2.13 Context-as-Class Migration)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 110 — votercontext-orchestrator-voter-sub-stores
+**Current focus:** Phase 111 — candidateContext orchestrator + userData store
 
 ## Current Position
 
-Phase: 110 (votercontext-orchestrator-voter-sub-stores) — EXECUTING
-Plan: 4 of 4
-Status: Plan 01 complete; ready for Plan 02
-Last activity: 2026-06-13 -- Completed Phase 110 Plan 01 (answerStore + paramStore to classes; 3 dead factories deleted)
+Phase: 111 (candidatecontext-orchestrator-userdata-store) — NEXT
+Plan: —
+Status: Phase 110 complete (verification passed 4/4; review clean; E2E green)
+Last activity: 2026-06-13 -- Phase 110 verified passed; starting Phase 111
 
 ## Performance Metrics
 
