@@ -56,7 +56,9 @@
   const { answers, getRoute, startEvent, t } = voterCtx;
   // appSettings/dataRoot are reactive accessors (Phase 113 flatten) — read via voterCtx.X, never destructure.
   const appSettings = $derived(voterCtx.appSettings);
-  const dataRoot = $derived(voterCtx.dataRoot);
+  // dataRoot is identity-stable (#version-bridge): read `voterCtx.dataRoot.<prop>` directly in the tracking scope,
+  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md §Context Destructuring Rule +
+  // .planning/spikes/CONVENTIONS.md §9 (Spike-024). Phase 117 COLD-01.
   const { topBarSettings, progress, video } = getLayoutContext();
 
   let { children }: { children: Snippet } = $props();
@@ -100,7 +102,7 @@
     try {
       return questionId === FIRST_QUESTION_ID
         ? voterCtx.selectedQuestionBlocks.blocks[0]?.[0]
-        : dataRoot.getQuestion(questionId);
+        : voterCtx.dataRoot.getQuestion(questionId);
     } catch {
       error(404, `Question with id ${questionId} not found.`);
     }

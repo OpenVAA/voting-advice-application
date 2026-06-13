@@ -47,12 +47,14 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
   const { appType, t } = ctx;
   // appSettings/dataRoot are reactive accessors (Phase 113 flatten) — read via ctx.X, never destructure.
   const appSettings = $derived(ctx.appSettings);
-  const dataRoot = $derived(ctx.dataRoot);
+  // dataRoot is identity-stable (#version-bridge): read `ctx.dataRoot.<prop>` directly in the tracking scope,
+  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md §Context Destructuring Rule +
+  // .planning/spikes/CONVENTIONS.md §9 (Spike-024). Phase 117 COLD-01.
   // Get the elections source based on app type; reading happens in reactive contexts below
   const voterCtx = appType.current === 'voter' ? getVoterContext() : undefined;
   const candidateCtx = appType.current === 'candidate' ? getCandidateContext() : undefined;
   let elections = $derived(
-    voterCtx ? voterCtx.selectedElections : candidateCtx ? candidateCtx.selectedElections : dataRoot.elections
+    voterCtx ? voterCtx.selectedElections : candidateCtx ? candidateCtx.selectedElections : ctx.dataRoot.elections
   );
 
   let customData = $derived(getCustomData(question));

@@ -20,13 +20,14 @@ Page for controlling the question info generation feature.
   // Get contexts
   ////////////////////////////////////////////////////////////////////////
 
-  // dataRoot is a reactive accessor (Phase 113 flatten) — read via ctx.dataRoot, never destructure.
+  // dataRoot is identity-stable (#version-bridge): read `ctx.dataRoot.<prop>` directly in the tracking scope,
+  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md §Context Destructuring Rule +
+  // .planning/spikes/CONVENTIONS.md §9 (Spike-024). Phase 117 COLD-01.
   const ctx = getAdminContext();
   const {
     t,
     jobs: { activeJobsByFeature }
   } = ctx;
-  const dataRoot = $derived(ctx.dataRoot);
 
   ////////////////////////////////////////////////////////////////////////
   // Get active job
@@ -79,8 +80,8 @@ Page for controlling the question info generation feature.
   $effect(() => {
     if (selectedElectionId) {
       try {
-        const election = dataRoot.getElection(selectedElectionId);
-        availableQuestions = dataRoot.findQuestions({ type: 'opinion', elections: election });
+        const election = ctx.dataRoot.getElection(selectedElectionId);
+        availableQuestions = ctx.dataRoot.findQuestions({ type: 'opinion', elections: election });
         questionError = null;
       } catch (err) {
         questionError = err instanceof Error ? err.message : 'Unknown error';
@@ -153,7 +154,7 @@ Page for controlling the question info generation feature.
         </label>
         <select id="electionId" name="electionId" class="select w-full" bind:value={selectedElectionId}>
           <option value="" disabled selected>{t('adminApp.questionInfo.selectElection')}</option>
-          {#each dataRoot.elections as election}
+          {#each ctx.dataRoot.elections as election}
             <option value={election.id}>{election.name}</option>
           {/each}
         </select>

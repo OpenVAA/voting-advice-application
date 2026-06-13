@@ -40,7 +40,9 @@ Display the intro to a question category and possibly a button with which to ski
   const { getRoute, t } = voterCtx;
   // appSettings/dataRoot are reactive accessors (Phase 113 flatten) — read via voterCtx.X, never destructure.
   const appSettings = $derived(voterCtx.appSettings);
-  const dataRoot = $derived(voterCtx.dataRoot);
+  // dataRoot is identity-stable (#version-bridge): read `voterCtx.dataRoot.<prop>` directly in the tracking scope,
+  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md §Context Destructuring Rule +
+  // .planning/spikes/CONVENTIONS.md §9 (Spike-024). Phase 117 COLD-01.
   const { pageStyles, video } = getLayoutContext();
 
   ////////////////////////////////////////////////////////////////////
@@ -50,7 +52,7 @@ Display the intro to a question category and possibly a button with which to ski
   ////////////////////////////////////////////////////////////////////
 
   let categoryId = $derived(parseParams(page).categoryId);
-  let category = $derived(categoryId ? dataRoot.getQuestionCategory(categoryId) : undefined);
+  let category = $derived(categoryId ? voterCtx.dataRoot.getQuestionCategory(categoryId) : undefined);
   let block = $derived(category ? voterCtx.selectedQuestionBlocks.getByCategory(category) : undefined);
   let questionId = $derived<Id | undefined>(block?.block[0]?.id);
   let customData = $derived(category ? getCustomData(category) : undefined);

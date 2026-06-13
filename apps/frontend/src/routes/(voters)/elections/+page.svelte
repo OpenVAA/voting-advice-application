@@ -33,7 +33,6 @@ See `+page.ts` for possible redirects.
   const { getRoute, t } = voterCtx;
   // appSettings/dataRoot are reactive accessors (Phase 113 flatten) — read via voterCtx.X, never destructure.
   const appSettings = $derived(voterCtx.appSettings);
-  const dataRoot = $derived(voterCtx.dataRoot);
 
   ////////////////////////////////////////////////////////////////////
   // Initialize elections and possible implied constituencies
@@ -42,7 +41,7 @@ See `+page.ts` for possible redirects.
   let selected: Array<Id> = $state([]);
 
   let elections = $derived.by(() => {
-    let result = dataRoot.elections;
+    let result = voterCtx.dataRoot.elections;
     if (appSettings.elections?.startFromConstituencyGroup) {
       // Only show elections for which a Constituency is available.
       // `getApplicableConstituency` throws when more than one of the passed

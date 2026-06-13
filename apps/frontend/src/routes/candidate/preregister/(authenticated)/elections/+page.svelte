@@ -14,8 +14,9 @@
   // Reactive accessors (constituenciesSelectable) read via candCtx.X — see CLAUDE.md §Context Destructuring Rule.
   const candCtx = getCandidateContext();
   const { getRoute, t } = candCtx;
-  // dataRoot is a reactive accessor (Phase 113 flatten) — read via candCtx.X, never destructure.
-  const dataRoot = $derived(candCtx.dataRoot);
+  // dataRoot is identity-stable (#version-bridge): read `candCtx.dataRoot.<prop>` directly in the tracking scope,
+  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md §Context Destructuring Rule +
+  // .planning/spikes/CONVENTIONS.md §9 (Spike-024). Phase 117 COLD-01.
   const nextRoute = $derived(
     candCtx.constituenciesSelectable ? 'CandAppPreregisterConstituency' : 'CandAppPreregisterEmail'
   );
@@ -27,7 +28,7 @@
   </div>
   <ElectionSelector
     class="mb-md"
-    elections={dataRoot.elections}
+    elections={candCtx.dataRoot.elections}
     bind:selected={candCtx.preregistrationElectionIds}
     data-testid="preregister-elections-list" />
   {#snippet primaryActions()}

@@ -36,7 +36,11 @@ See `+page.ts` for possible redirects.
   const { getRoute, t } = voterCtx;
   // appSettings/dataRoot are reactive accessors (Phase 113 flatten) — read via voterCtx.X, never destructure.
   const appSettings = $derived(voterCtx.appSettings);
-  const dataRoot = $derived(voterCtx.dataRoot);
+  // dataRoot is identity-stable (#version-bridge): NEVER bind it to an intermediate $derived alias and read through
+  // the alias — the alias yields the same DataRoot ref on each #version bump, so Svelte 5 skips downstream
+  // notification and the cold/direct-URL snapshot stays empty. Read `voterCtx.dataRoot.<prop>` directly inside each
+  // consuming tracking scope. See CLAUDE.md §Context Destructuring Rule + .planning/spikes/CONVENTIONS.md §9
+  // (Spike-024 anti-pattern entry). Phase 117 COLD-01.
 
   ////////////////////////////////////////////////////////////////////
   // Set initial values
@@ -56,10 +60,10 @@ See `+page.ts` for possible redirects.
   const useSingleGroup = $derived.by(() => {
     const id = appSettings.elections?.startFromConstituencyGroup;
     if (!id) return undefined;
-    return dataRoot.constituencyGroups.find((g) => g.id === id);
+    return voterCtx.dataRoot.constituencyGroups.find((g) => g.id === id);
   });
 
-  let elections = $derived(useSingleGroup ? dataRoot.elections : voterCtx.selectedElections);
+  let elections = $derived(useSingleGroup ? voterCtx.dataRoot.elections : voterCtx.selectedElections);
 
   // Pre-fill `selected` from the voter context's current constituency choices
   // (e.g., on back-navigation from /questions). The previous implementation
