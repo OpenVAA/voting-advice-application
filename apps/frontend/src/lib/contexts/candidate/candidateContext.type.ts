@@ -4,7 +4,7 @@ import type { DataWriter } from '$lib/api/base/dataWriter.type';
 import type { AppContext } from '../app';
 import type { AuthContext } from '../auth';
 import type { QuestionBlocks } from '../utils/questionBlockState.type';
-import type { CandidateUserDataStore } from './candidateUserDataStore.type';
+import type { CandidateUserDataStore } from './candidateUserDataState.type';
 
 export type CandidateContext = AppContext &
   AuthContext & {

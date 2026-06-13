@@ -1,5 +1,5 @@
 import type { PopupQueueItem } from './popupComponent.type';
-import type { PopupStore as PopupStoreApi } from './popupStore.type';
+import type { PopupStore as PopupStoreApi } from './popupState.type';
 
 /**
  * Manages a queue of popup components and resolves to the first component in the

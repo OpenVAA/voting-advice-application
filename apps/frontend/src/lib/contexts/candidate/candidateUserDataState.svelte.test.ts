@@ -1,9 +1,9 @@
 import { flushSync } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { candidateUserDataStore } from './candidateUserDataStore.svelte';
+import { candidateUserDataStore } from './candidateUserDataState.svelte';
 import type { CandidateUserData, LocalizedAnswers, LocalizedCandidateData } from '$lib/api/base/dataWriter.type';
 import type { UniversalDataWriter } from '$lib/api/base/universalDataWriter';
-import type { CandidateUserDataStore } from './candidateUserDataStore.type';
+import type { CandidateUserDataStore } from './candidateUserDataState.type';
 
 // The store calls `prepareDataWriter`, which throws unless `browser` is `true`,
 // and `localStorageWritable`, which only persists when `browser` is `true`.

@@ -1,8 +1,8 @@
 import { flushSync } from 'svelte';
 import { afterEach, describe, expect, it } from 'vitest';
-import { popupStore } from './popupStore.svelte';
+import { popupStore } from './popupState.svelte';
 import type { PopupQueueItem } from './popupComponent.type';
-import type { PopupStore } from './popupStore.type';
+import type { PopupStore } from './popupState.type';
 
 // A minimal `PopupQueueItem` stub carrying a unique `props.marker` so queue
 // items can be distinguished by content. Identity comparison via `toBe` is not

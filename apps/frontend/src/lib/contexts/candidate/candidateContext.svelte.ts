@@ -8,7 +8,7 @@ import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { logDebugError } from '$lib/utils/logger';
 import { removeDuplicates } from '$lib/utils/removeDuplicates';
 import { getImpliedElectionIds } from '$lib/utils/route';
-import { candidateUserDataStore } from './candidateUserDataStore.svelte';
+import { candidateUserDataStore } from './candidateUserDataState.svelte';
 import { getAppContext } from '../app';
 import { getAuthContext } from '../auth';
 import { inheritContextMembers } from '../utils/inheritContextMembers';

@@ -7,7 +7,7 @@ import type { Image } from '@openvaa/data';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { CandidateUserData, LocalizedAnswers, LocalizedCandidateData } from '$lib/api/base/dataWriter.type';
 import type { UniversalDataWriter } from '$lib/api/base/universalDataWriter';
-import type { CandidateUserDataStore } from './candidateUserDataStore.type';
+import type { CandidateUserDataStore } from './candidateUserDataState.type';
 
 /**
  * A Svelte 5 class implementation of the candidate's composite user-data store
