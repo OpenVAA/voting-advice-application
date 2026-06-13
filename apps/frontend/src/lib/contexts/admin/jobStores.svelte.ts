@@ -53,13 +53,13 @@ export class JobStoresProvider implements JobStores {
   #jobs = $state<Map<string, JobInfo>>(new Map());
 
   #pastJobs = $derived(
-    [...this.#jobs.values().filter((j) => !isActive(j))].sort((a, b) => compareDates(a.startTime, b.startTime))
+    [...this.#jobs.values()].filter((j) => !isActive(j)).sort((a, b) => compareDates(a.startTime, b.startTime))
   );
 
   #activeJobsByFeature = $derived.by(() => {
     const map = new Map<AdminFeature, JobInfo | undefined>();
     for (const feat of ADMIN_FEATURES) {
-      const job = this.#jobs.values().find((j) => j.jobType === feat && isActive(j));
+      const job = [...this.#jobs.values()].find((j) => j.jobType === feat && isActive(j));
       if (job) map.set(feat, job);
     }
     return map;
@@ -116,13 +116,14 @@ export class JobStoresProvider implements JobStores {
       if (!activeRes.ok) throw new Error('Failed to fetch active jobs');
       if (!pastRes.ok) throw new Error('Failed to fetch past jobs');
 
-      // Update the delta cursor for past jobs
-      this.#lastPastJobsUpdate = new Date().toISOString();
-
       let [activeJobs, pastJobsData] = (await Promise.all([activeRes.json(), pastRes.json()])) as [
         Array<JobInfo>,
         Array<JobInfo>
       ];
+
+      // Update the delta cursor for past jobs only after a successful parse, so a JSON
+      // parse failure does not advance the cursor past jobs we never managed to read.
+      this.#lastPastJobsUpdate = new Date().toISOString();
 
       // Filter by known job names
       activeJobs = activeJobs.filter(filterByKnownNames);
