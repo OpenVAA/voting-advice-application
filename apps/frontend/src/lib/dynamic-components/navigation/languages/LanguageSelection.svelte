@@ -25,7 +25,10 @@ A template part that language selection options for the navigation menu if these
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { locale: currentLocale, locales, t } = getAppContext();
+  const ctx = getAppContext();
+  const { locales, t } = ctx;
+  // locale is a reactive accessor (Phase 113 flatten) — read via ctx.locale.current, never destructure.
+  const currentLocale = $derived(ctx.locale);
 </script>
 
 <!-- Only show the language selection if there are multiple locales to choose from -->

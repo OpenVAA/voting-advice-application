@@ -30,7 +30,10 @@
   // Get app context
   ////////////////////////////////////////////////////////////////////
 
-  const { appSettings, appType, popupQueue, t } = getAppContext();
+  const ctx = getAppContext();
+  const { appType, popupQueue, t } = ctx;
+  // appSettings is a reactive accessor (Phase 113 flatten) — read via ctx.X, never destructure.
+  const appSettings = $derived(ctx.appSettings);
 
   ////////////////////////////////////////////////////////////////////
   // Init Candidate Context

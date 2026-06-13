@@ -43,7 +43,11 @@
   // queue. DO NOT swap popupQueue for a $derived/$state-based collection (or
   // a getter on the context object) without migrating consumers to
   // `ctx.popupQueue.push(...)` per the destructuring rule.
-  const { appSettings, appType, popupQueue, userPreferences, t } = initVoterContext();
+  // appSettings is a reactive accessor (Phase 113 flatten) — read via
+  // `ctx.appSettings.current`, never destructure (the alias below tracks it).
+  const ctx = initVoterContext();
+  const { appType, popupQueue, userPreferences, t } = ctx;
+  const appSettings = $derived(ctx.appSettings);
   appType.set('voter');
 
   ////////////////////////////////////////////////////////////////////

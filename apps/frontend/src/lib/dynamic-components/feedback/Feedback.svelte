@@ -76,7 +76,10 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appSettings, sendFeedback, setFeedbackStatus, t, startEvent } = getAppContext();
+  const ctx = getAppContext();
+  const { sendFeedback, setFeedbackStatus, t, startEvent } = ctx;
+  // appSettings is a reactive accessor (Phase 113 flatten) — read via ctx.X, never destructure.
+  const appSettings = $derived(ctx.appSettings);
 
   ////////////////////////////////////////////////////////////////////
   // Handle feedback submission

@@ -37,7 +37,10 @@ Display the intro to a question category and possibly a button with which to ski
   // Phase 61-03 voter-side parallel fix: selectedQuestionBlocks is a reactive
   // context getter; access via voterCtx.X (live $state).
   const voterCtx = getVoterContext();
-  const { appSettings, getRoute, dataRoot, t } = voterCtx;
+  const { getRoute, t } = voterCtx;
+  // appSettings/dataRoot are reactive accessors (Phase 113 flatten) — read via voterCtx.X, never destructure.
+  const appSettings = $derived(voterCtx.appSettings);
+  const dataRoot = $derived(voterCtx.dataRoot);
   const { pageStyles, video } = getLayoutContext();
 
   ////////////////////////////////////////////////////////////////////

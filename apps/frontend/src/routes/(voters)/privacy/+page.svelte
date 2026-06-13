@@ -22,7 +22,10 @@ Displays information about the privacy policy of the app as well as the possible
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import MainContent from '../../MainContent.svelte';
 
-  const { appSettings, getRoute, t } = getAppContext();
+  const ctx = getAppContext();
+  const { getRoute, t } = ctx;
+  // appSettings is a reactive accessor (Phase 113 flatten) — read via ctx.X, never destructure.
+  const appSettings = $derived(ctx.appSettings);
 
   // Construct the analytics link for privacy translations
   const analyticsLink = staticSettings.analytics?.platform?.infoUrl

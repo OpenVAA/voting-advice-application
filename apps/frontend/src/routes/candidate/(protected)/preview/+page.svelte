@@ -26,7 +26,11 @@ Used to show a preview of the candidate's own profile using the `EntityDetails` 
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { dataRoot, getRoute, locale, t, userData } = getCandidateContext();
+  const ctx = getCandidateContext();
+  const { getRoute, t, userData } = ctx;
+  // dataRoot/locale are reactive accessors (Phase 113 flatten) — read via ctx.X, never destructure.
+  const dataRoot = $derived(ctx.dataRoot);
+  const locale = $derived(ctx.locale);
   const { pageStyles, topBarSettings } = getLayoutContext();
 
   ////////////////////////////////////////////////////////////////////

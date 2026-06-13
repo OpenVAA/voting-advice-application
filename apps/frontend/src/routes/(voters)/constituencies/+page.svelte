@@ -33,7 +33,10 @@ See `+page.ts` for possible redirects.
   // snapshots. This was the originating bug per the user investigation —
   // destructuring captured an empty `selectedElections` on cold deeplink.
   const voterCtx = getVoterContext();
-  const { appSettings, dataRoot, getRoute, t } = voterCtx;
+  const { getRoute, t } = voterCtx;
+  // appSettings/dataRoot are reactive accessors (Phase 113 flatten) — read via voterCtx.X, never destructure.
+  const appSettings = $derived(voterCtx.appSettings);
+  const dataRoot = $derived(voterCtx.dataRoot);
 
   ////////////////////////////////////////////////////////////////////
   // Set initial values

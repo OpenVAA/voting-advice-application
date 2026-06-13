@@ -62,13 +62,15 @@ component-local). See `EntityListWithControls.helpers.ts` for the pure
     ...restProps
   }: EntityListWithControlsProps<TEntity> = $props();
 
-  const { locale, startEvent, t } = getAppContext();
+  const ctx = getAppContext();
+  const { startEvent, t } = ctx;
   const fctx = getFilterContext();
-  // appContext exposes `locale` as a rune handle (`{ readonly current: string }`,
-  // appContext.type.ts) since the Phase 97/98 store→rune migration. Read it
-  // directly via `locale.current` — the legacy store shape (and `fromStore`
-  // bridge) is gone, so `fromStore(locale)` would throw `store.subscribe is not
-  // a function`.
+  // appContext exposes `locale` as a reactive accessor (Phase 113 flatten) — read
+  // via `ctx.locale.current`, never destructure it (destructuring would capture
+  // the value once at init and stop updating). The legacy store shape (and
+  // `fromStore` bridge) is gone, so `fromStore(ctx.locale)` would throw
+  // `store.subscribe is not a function`.
+  const locale = $derived(ctx.locale);
 
   // Active FilterGroup: prop override wins over context (D-02 additive contract
   // for off-context use such as tests and the candidate-app migration).

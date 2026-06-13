@@ -32,7 +32,9 @@ A template part that outputs the navigation menu for the Candidate App for use i
   const { navigation } = getLayoutContext();
   // Phase 61-03 follow-up: read reactive context getters via candCtx.X.
   const candCtx = getCandidateContext();
-  const { appSettings, getRoute, openFeedbackModal, t } = candCtx;
+  const { getRoute, openFeedbackModal, t } = candCtx;
+  // appSettings is a reactive accessor (Phase 113 flatten) — read via candCtx.X, never destructure.
+  const appSettings = $derived(candCtx.appSettings);
 </script>
 
 <Navigation {onKeyboardFocusOut} {...restProps}>

@@ -75,7 +75,11 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appSettings, appType, dataRoot, getRoute, startEvent, t } = getAppContext();
+  const ctx = getAppContext();
+  const { appType, getRoute, startEvent, t } = ctx;
+  // appSettings/dataRoot are reactive accessors (Phase 113 flatten) — read via ctx.X, never destructure.
+  const appSettings = $derived(ctx.appSettings);
+  const dataRoot = $derived(ctx.dataRoot);
   const voterContext = appType.current === 'voter' ? getVoterContext() : undefined;
 
   ////////////////////////////////////////////////////////////////////

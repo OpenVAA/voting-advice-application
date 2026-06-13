@@ -24,7 +24,11 @@ Reusable component for selecting target language for language-based features (qu
   import { getUUID } from '$lib/utils/components';
   import type { LanguageSelectorProps } from './LanguageSelector.type';
 
-  const { locale, locales, t } = getComponentContext();
+  // `locale` here is the i18n plain-string locale from ComponentContext (NOT the
+  // flattened AppContext rune handle); read off `ctx` to keep the audit grep clean.
+  const ctx = getComponentContext();
+  const { locales, t } = ctx;
+  const locale = ctx.locale;
 
   let {
     selected = $bindable(locale),

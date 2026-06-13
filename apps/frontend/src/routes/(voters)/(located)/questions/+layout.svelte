@@ -53,7 +53,10 @@
   // Phase 61-03 voter-side parallel fix: opinionQuestions + selectedQuestionBlocks
   // are reactive context getters; access via voterCtx.X (live $state).
   const voterCtx = getVoterContext();
-  const { answers, appSettings, dataRoot, getRoute, startEvent, t } = voterCtx;
+  const { answers, getRoute, startEvent, t } = voterCtx;
+  // appSettings/dataRoot are reactive accessors (Phase 113 flatten) — read via voterCtx.X, never destructure.
+  const appSettings = $derived(voterCtx.appSettings);
+  const dataRoot = $derived(voterCtx.dataRoot);
   const { topBarSettings, progress, video } = getLayoutContext();
 
   let { children }: { children: Snippet } = $props();
@@ -65,7 +68,8 @@
   topBarSettings.use({
     progress: 'show',
     actions: {
-      results: appSettings.current.questions.showResultsLink ? 'show' : 'hide'
+      // One-time init read — read off voterCtx directly to avoid a reactive-rune init-capture warning.
+      results: voterCtx.appSettings.current.questions.showResultsLink ? 'show' : 'hide'
     }
   });
 

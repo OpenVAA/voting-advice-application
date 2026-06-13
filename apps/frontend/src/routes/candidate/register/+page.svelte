@@ -25,7 +25,10 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appSettings, checkRegistrationKey, getRoute, t, userData } = getCandidateContext();
+  const ctx = getCandidateContext();
+  const { checkRegistrationKey, getRoute, t, userData } = ctx;
+  // appSettings is a reactive accessor (Phase 113 flatten) — read via ctx.X, never destructure.
+  const appSettings = $derived(ctx.appSettings);
 
   ////////////////////////////////////////////////////////////////////
   // Handle checking registration key

@@ -41,7 +41,9 @@ Accesses `CandidateContext`.
   // updates after data load propagate (the same destructure-snapshot bug class
   // that 61-03 fixed for candidate-questions).
   const candCtx = getCandidateContext();
-  const { appSettings, getRoute, logout, t } = candCtx;
+  const { getRoute, logout, t } = candCtx;
+  // appSettings is a reactive accessor (Phase 113 flatten) — read via candCtx.X, never destructure.
+  const appSettings = $derived(candCtx.appSettings);
 
   ////////////////////////////////////////////////////////////////////
   // Handle logout and the modal

@@ -32,7 +32,9 @@ Display a general intro before starting answering the questions and possibly all
   // previously destructured into local consts and snapshot the empty initial
   // state — the originating QUESTION-03 symptom.
   const voterCtx = getVoterContext();
-  const { appSettings, getRoute, t } = voterCtx;
+  const { getRoute, t } = voterCtx;
+  // appSettings is a reactive accessor (Phase 113 flatten) — read via voterCtx.X, never destructure.
+  const appSettings = $derived(voterCtx.appSettings);
   const elections = $derived(voterCtx.selectedElections);
   const constituencies = $derived(voterCtx.selectedConstituencies);
 

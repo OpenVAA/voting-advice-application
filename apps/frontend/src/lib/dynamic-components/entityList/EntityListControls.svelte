@@ -40,7 +40,10 @@ TODO: Consider moving the tracking events away from the component and just addin
 
   let { entities, filterGroup, searchProperty = 'name', onUpdate, ...restProps }: EntityListControlsProps = $props();
 
-  const { locale, startEvent, t } = getAppContext();
+  const ctx = getAppContext();
+  const { startEvent, t } = ctx;
+  // locale is a reactive accessor (Phase 113 flatten) — read via ctx.locale.current, never destructure.
+  const locale = $derived(ctx.locale);
   let filtersModalRef: Modal | undefined = $state();
   let filteredContents: EntityListControlsProps['entities'] = $state([]);
   let output: EntityListControlsProps['entities'] = $state([]);

@@ -30,7 +30,10 @@ See `+page.ts` for possible redirects.
   // snapshots. Stable stores/functions (appSettings, dataRoot, getRoute, t)
   // remain destructured.
   const voterCtx = getVoterContext();
-  const { appSettings, dataRoot, getRoute, t } = voterCtx;
+  const { getRoute, t } = voterCtx;
+  // appSettings/dataRoot are reactive accessors (Phase 113 flatten) — read via voterCtx.X, never destructure.
+  const appSettings = $derived(voterCtx.appSettings);
+  const dataRoot = $derived(voterCtx.dataRoot);
 
   ////////////////////////////////////////////////////////////////////
   // Initialize elections and possible implied constituencies

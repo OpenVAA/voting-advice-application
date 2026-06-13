@@ -19,7 +19,10 @@ Displays information about the application.
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import MainContent from '../../MainContent.svelte';
 
-  const { appSettings, getRoute, t } = getAppContext();
+  const ctx = getAppContext();
+  const { getRoute, t } = ctx;
+  // appSettings is a reactive accessor (Phase 113 flatten) — read via ctx.X, never destructure.
+  const appSettings = $derived(ctx.appSettings);
 
   const { topBarSettings } = getLayoutContext();
   topBarSettings.use({

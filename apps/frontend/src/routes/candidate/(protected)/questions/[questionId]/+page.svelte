@@ -45,7 +45,10 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
 
   // Stable references (functions, stores, objects with internal getters): destructure-safe.
   const candCtx = getCandidateContext();
-  const { appSettings, dataRoot, getRoute, t, userData } = candCtx;
+  const { getRoute, t, userData } = candCtx;
+  // appSettings/dataRoot are reactive accessors (Phase 113 flatten) — read via candCtx.X, never destructure.
+  const appSettings = $derived(candCtx.appSettings);
+  const dataRoot = $derived(candCtx.dataRoot);
   // Reactive accessors ($state / $derived backed): read via candCtx.X. Aliased
   // through $derived for template readability — see CLAUDE.md §Context Destructuring Rule.
   const answersLocked = $derived(candCtx.answersLocked);

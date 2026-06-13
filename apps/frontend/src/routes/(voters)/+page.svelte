@@ -21,7 +21,10 @@ The frontpage of the app for voters.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appCustomization, appSettings, darkMode, getRoute, t } = getAppContext();
+  const ctx = getAppContext();
+  const { appCustomization, darkMode, getRoute, t } = ctx;
+  // appSettings is a reactive accessor (Phase 113 flatten) — read via ctx.X, never destructure.
+  const appSettings = $derived(ctx.appSettings);
   const { pageStyles, topBarSettings } = getLayoutContext();
 
   ////////////////////////////////////////////////////////////////////

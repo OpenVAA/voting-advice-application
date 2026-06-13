@@ -27,7 +27,10 @@ Accesses `AppContext` to get `appSettings` and `userPreferences`.
 
   let { variant = 'default', ...restProps }: SurveyBannerProps = $props();
 
-  const { appSettings, userPreferences, t } = getAppContext();
+  const ctx = getAppContext();
+  const { userPreferences, t } = ctx;
+  // appSettings is a reactive accessor (Phase 113 flatten) — read via ctx.X, never destructure.
+  const appSettings = $derived(ctx.appSettings);
   let clicked: boolean = $state(false);
 </script>
 

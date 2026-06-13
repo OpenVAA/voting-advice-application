@@ -48,7 +48,10 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
   let { entity, ...restProps }: EntityDetailsProps = $props();
 
-  const { appSettings, appType, startEvent, t } = getAppContext();
+  const ctx = getAppContext();
+  const { appType, startEvent, t } = ctx;
+  // appSettings is a reactive accessor (Phase 113 flatten) — read via ctx.X, never destructure.
+  const appSettings = $derived(ctx.appSettings);
   // appType is determined at app boot and does not change at runtime; we
   // read it once at init to decide whether voter context is available.
   // `answers` is consumed in the template so it must be in the reactive

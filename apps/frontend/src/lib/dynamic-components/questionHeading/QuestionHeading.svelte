@@ -43,7 +43,11 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
 
   let { question, questionBlocks, onShadedBg, ...restProps }: QuestionHeadingProps = $props();
 
-  const { appSettings, appType, dataRoot, t } = getAppContext();
+  const ctx = getAppContext();
+  const { appType, t } = ctx;
+  // appSettings/dataRoot are reactive accessors (Phase 113 flatten) — read via ctx.X, never destructure.
+  const appSettings = $derived(ctx.appSettings);
+  const dataRoot = $derived(ctx.dataRoot);
   // Get the elections source based on app type; reading happens in reactive contexts below
   const voterCtx = appType.current === 'voter' ? getVoterContext() : undefined;
   const candidateCtx = appType.current === 'candidate' ? getCandidateContext() : undefined;

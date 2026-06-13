@@ -33,7 +33,10 @@ Shows the candidate's basic information, some of which is editable.
 
   // Phase 61-03 follow-up: read reactive context getters via candCtx.X.
   const candCtx = getCandidateContext();
-  const { appSettings, dataRoot, getRoute, t, userData } = candCtx;
+  const { getRoute, t, userData } = candCtx;
+  // appSettings/dataRoot are reactive accessors (Phase 113 flatten) — read via candCtx.X, never destructure.
+  const appSettings = $derived(candCtx.appSettings);
+  const dataRoot = $derived(candCtx.dataRoot);
   const { pageStyles } = getLayoutContext();
 
   ////////////////////////////////////////////////////////////////////

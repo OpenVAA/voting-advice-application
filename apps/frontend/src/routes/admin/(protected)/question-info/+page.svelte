@@ -20,11 +20,13 @@ Page for controlling the question info generation feature.
   // Get contexts
   ////////////////////////////////////////////////////////////////////////
 
+  // dataRoot is a reactive accessor (Phase 113 flatten) — read via ctx.dataRoot.current, never destructure.
+  const ctx = getAdminContext();
   const {
-    dataRoot,
     t,
     jobs: { activeJobsByFeature }
-  } = getAdminContext();
+  } = ctx;
+  const dataRoot = $derived(ctx.dataRoot);
 
   ////////////////////////////////////////////////////////////////////////
   // Get active job

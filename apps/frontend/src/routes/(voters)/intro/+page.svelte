@@ -19,9 +19,11 @@ Shown after the front page in the voter app. Displays a list of the steps the vo
   // Phase 61-03 voter-side parallel fix: destructuring reactive context
   // getters (electionsSelectable, constituenciesSelectable) captures the
   // initial empty/false snapshot. Read via `voterCtx.X` instead. Stable
-  // stores (appSettings) and functions (getRoute, t) remain destructured.
+  // functions (getRoute, t) remain destructured.
   const voterCtx = getVoterContext();
-  const { appSettings, getRoute, t } = voterCtx;
+  const { getRoute, t } = voterCtx;
+  // appSettings is a reactive accessor (Phase 113 flatten) — read via voterCtx.X, never destructure.
+  const appSettings = $derived(voterCtx.appSettings);
 </script>
 
 <MainContent title={t('dynamic.intro.title')} data-testid="voter-intro">

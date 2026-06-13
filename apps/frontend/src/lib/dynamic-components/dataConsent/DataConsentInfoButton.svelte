@@ -30,7 +30,10 @@ Accesses `AppContext` to read `appSettings`.
 
   let { ...restProps }: DataConsentInfoButtonProps = $props();
 
-  const { appSettings, t } = getAppContext();
+  const ctx = getAppContext();
+  const { t } = ctx;
+  // appSettings is a reactive accessor (Phase 113 flatten) — read via ctx.X, never destructure.
+  const appSettings = $derived(ctx.appSettings);
 
   const analyticsLink = staticSettings.analytics?.platform?.infoUrl
     ? `<a href="${staticSettings.analytics.platform.infoUrl}" target="_blank">${

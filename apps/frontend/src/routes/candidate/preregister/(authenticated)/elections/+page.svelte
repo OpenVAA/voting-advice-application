@@ -13,7 +13,9 @@
   // Stable references (functions, stores, objects with internal getters): destructure-safe.
   // Reactive accessors (constituenciesSelectable) read via candCtx.X — see CLAUDE.md §Context Destructuring Rule.
   const candCtx = getCandidateContext();
-  const { dataRoot, getRoute, t } = candCtx;
+  const { getRoute, t } = candCtx;
+  // dataRoot is a reactive accessor (Phase 113 flatten) — read via candCtx.X, never destructure.
+  const dataRoot = $derived(candCtx.dataRoot);
   const nextRoute = $derived(candCtx.constituenciesSelectable ? 'CandAppPreregisterConstituency' : 'CandAppPreregisterEmail');
 </script>
 

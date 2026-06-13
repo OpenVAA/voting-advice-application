@@ -13,7 +13,10 @@ Displays information about the elections in the VAA.
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import MainContent from '../../MainContent.svelte';
 
-  const { dataRoot, getRoute, t } = getAppContext();
+  const ctx = getAppContext();
+  const { getRoute, t } = ctx;
+  // dataRoot is a reactive accessor (Phase 113 flatten) — read via ctx.X, never destructure.
+  const dataRoot = $derived(ctx.dataRoot);
 
   const { topBarSettings } = getLayoutContext();
   topBarSettings.use({

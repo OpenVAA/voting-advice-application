@@ -20,7 +20,10 @@ Shows a FAQ and other support content for the candidate application.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appSettings, appCustomization, getRoute, t, userData } = getCandidateContext();
+  const ctx = getCandidateContext();
+  const { appCustomization, getRoute, t, userData } = ctx;
+  // appSettings is a reactive accessor (Phase 113 flatten) — read via ctx.appSettings.current,
+  // never destructure. This is a one-time init read, so read off ctx directly (no $derived alias).
 
   ////////////////////////////////////////////////////////////////////
   // Build support email link
@@ -28,7 +31,7 @@ Shows a FAQ and other support content for the candidate application.
 
   const supportMailto = getEmailUrl({
     subject: `${t('candidateApp.help.supportEmailSubject')}: ${t('dynamic.candidateAppName')}`,
-    to: appSettings.current.admin.email
+    to: ctx.appSettings.current.admin.email
   });
 </script>
 

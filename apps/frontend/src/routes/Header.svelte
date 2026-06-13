@@ -32,10 +32,12 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
     drawerOpenElement?: HTMLButtonElement;
   } = $props();
 
-  // `appSettings` / `darkMode` are stable `{ readonly current }` rune handles
-  // from AppContext; read `.current` directly inside the `$derived.by` tracking
-  // scope below (no store bridge, no intermediate `$derived` alias).
-  const { appSettings, darkMode, t } = getAppContext();
+  // `darkMode` is a stable `{ readonly current }` rune handle from AppContext.
+  // `appSettings` is a reactive accessor (Phase 113 flatten) — read via
+  // `ctx.appSettings.current`, never destructure (the alias below tracks it).
+  const ctx = getAppContext();
+  const { darkMode, t } = ctx;
+  const appSettings = $derived(ctx.appSettings);
 
   const { navigationSettings, progress, topBarSettings } = getLayoutContext();
 

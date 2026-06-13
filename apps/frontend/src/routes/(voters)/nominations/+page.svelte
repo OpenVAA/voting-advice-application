@@ -19,13 +19,15 @@ List all nominations in the application.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { dataRoot, locale, t } = getVoterContext();
+  // dataRoot/locale are reactive accessors (Phase 113 flatten) — read via ctx.X, never destructure.
+  const ctx = getVoterContext();
+  const { t } = ctx;
 
   ////////////////////////////////////////////////////////////////////
   // Entities
   ////////////////////////////////////////////////////////////////////
 
-  const nominations = dataRoot.current.candidateNominations;
+  const nominations = ctx.dataRoot.current.candidateNominations;
 
   ////////////////////////////////////////////////////////////////////
   // Filters
@@ -42,7 +44,7 @@ List all nominations in the application.
         faction: ucFirst(t('common.faction.singular')),
         organization: ucFirst(t('common.organization.singular'))
       },
-      locale: locale.current
+      locale: ctx.locale.current
     })
   );
 </script>

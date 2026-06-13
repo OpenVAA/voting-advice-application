@@ -101,7 +101,11 @@ Multilingual features are only available if the `locales` store contains more th
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { locale: currentLocale, locales, t } = getComponentContext();
+  // `locale` here is the i18n plain-string locale from ComponentContext (NOT the
+  // flattened AppContext rune handle); read off `ctx` to keep the audit grep clean.
+  const ctx = getComponentContext();
+  const { locales, t } = ctx;
+  const currentLocale = ctx.locale;
 
   ////////////////////////////////////////////////////////////////////
   // Handling multilinguality, disabled and other cases

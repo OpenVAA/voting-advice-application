@@ -32,10 +32,13 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // `appSettings` / `darkMode` / `getRoute` are rune-native `{ readonly current }`
-  // handles from AdminContext (inherited from AppContext); read `.current`
-  // directly (no store bridge).
-  const { appSettings, darkMode, getRoute, t } = getAdminContext();
+  // `darkMode` / `getRoute` are stable rune-native `{ readonly current }` handles
+  // from AdminContext (inherited from AppContext); read `.current` directly.
+  // `appSettings` is a reactive accessor (Phase 113 flatten) — read via
+  // `ctx.appSettings.current`, never destructure (the alias below tracks it).
+  const ctx = getAdminContext();
+  const { darkMode, getRoute, t } = ctx;
+  const appSettings = $derived(ctx.appSettings);
   const { pageStyles, topBarSettings } = getLayoutContext();
 
   ////////////////////////////////////////////////////////////////////

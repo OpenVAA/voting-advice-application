@@ -40,7 +40,11 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
 
   let { entity, questions }: EntityInfoProps = $props();
 
-  const { appSettings, dataRoot, getRoute, t } = getAppContext();
+  const ctx = getAppContext();
+  const { getRoute, t } = ctx;
+  // appSettings/dataRoot are reactive accessors (Phase 113 flatten) — read via ctx.X, never destructure.
+  const appSettings = $derived(ctx.appSettings);
+  const dataRoot = $derived(ctx.dataRoot);
 
   const unwrapped = $derived(unwrapEntity(entity));
   let nakedEntity: AnyEntityVariant = $derived(unwrapped.entity);
