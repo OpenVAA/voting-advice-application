@@ -36,6 +36,14 @@ yarn test:e2e                 # Run Playwright E2E tests (requires yarn dev runn
 yarn playwright install       # Install Playwright browsers
 ```
 
+#### E2E Hard Rule (cardinal failure)
+
+> **Failing E2E tests are a CARDINAL FAILURE. No task may proceed, complete, or be marked done while any E2E test is failing — the tests must pass first, full stop.**
+
+- **No "known-flaky" exemptions.** There is no such thing as an acceptable flaky test in this project. A test that fails intermittently is a real defect (in the test or the code) and MUST be ironed out — not skipped, retried-until-green, or annotated as flaky. Diagnose the root cause and fix it.
+- **Prefer E2E for interim verification.** When checking work-in-progress results, prefer running the E2E suite over ad-hoc manual checks. The recommended method is to **run the whole suite** (`yarn test:e2e`) — it does not take long, and a full-suite run is the trusted signal.
+- A "did not run" E2E test counts as a failure (e.g. cascade failures from an upstream dependency), not a pass.
+
 ### Linting & Formatting
 
 ```bash
