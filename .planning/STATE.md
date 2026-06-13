@@ -2,34 +2,33 @@
 gsd_state_version: 1.0
 milestone: v2.13
 milestone_name: Context-as-Class Migration
-status: executing
-stopped_at: Phase 117 complete — full E2E gate GREEN (95/95 fresh-server); Phase 116 gate unblocked
-last_updated: "2026-06-13T20:45:00.000Z"
-last_activity: 2026-06-13 -- Phase 117 landed (dataRoot cold-entry fix); full suite 95/95 + unit green; 116 GATE-01 unblocked
+status: Awaiting next milestone
+stopped_at: Milestone v2.13 complete — archived 2026-06-13 (E2E 95/95 ×3, 15/15 reqs)
+last_updated: "2026-06-13T18:59:52.392Z"
+last_activity: 2026-06-13 — Milestone v2.13 completed and archived
 progress:
   total_phases: 12
-  completed_phases: 11
-  total_plans: 34
-  completed_plans: 34
-  percent: 92
+  completed_phases: 12
+  total_plans: 35
+  completed_plans: 35
+  percent: 100
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-12 starting v2.13 Context-as-Class Migration)
+See: .planning/PROJECT.md (updated 2026-06-13 after shipping v2.13 Context-as-Class Migration)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 116 — Milestone-Close Green Gate (gate UNBLOCKED by Phase 117; re-run to close the milestone)
+**Current focus:** Planning next milestone — v2.13 shipped 2026-06-13; run `/gsd-new-milestone`
 
 ## Current Position
 
-Phase: 117 — COMPLETE (2026-06-13); Phase 116 gate UNBLOCKED, ready to close v2.13
-Status: The Phase 116 blocker (`voter-journey` failing at `elections.length === 0` on the Playwright dev-server harness — previously filed as a "test-harness artifact, NOT root-caused") was ROOT-CAUSED and FIXED. Debug `dataroot-stale-direct-nav` + Spike 024 proved it a real user-facing bug: `const X = $derived(ctx.dataRoot)` intermediate-alias over the identity-stable `#version`-bridge dataRoot returns a referentially-identical object on version bump → Svelte 5 skips downstream notification → stale-empty on cold/direct-URL entry. Phase 117 fixed it: 12-site direct-read codemod (`ctx.dataRoot.<prop>`), CLAUDE.md carve-out, new `cold-entry-dataroot` E2E project + negative control. **Full E2E 95/95 (fresh-server, deterministic; one run-1 stale-HMR false failure root-caused & disproven by clean re-run), unit 766+450 green, lint+typecheck green.**
-Next: close the v2.13 milestone. Recommended: `/gsd-verify-work 117` (optional UAT) then run the Phase 116 anchor gate to its 3× determinism standard, then `/gsd-complete-milestone`. NOTE per project memory: prefer hand-editing milestone close over `state.complete-phase` (frontmatter-corruption quirk).
-Env caveat: operator's full-stack `yarn dev` was replaced with a background frontend-only `yarn workspace @openvaa/frontend dev` to get a clean Vite restart for the gate; restart `yarn dev` to restore the watcher.
-Last activity: 2026-06-13 -- Phase 117 landed (dataRoot cold-entry fix); full suite 95/95 + unit green; 116 GATE-01 unblocked
+Phase: Milestone v2.13 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-06-13 — Milestone v2.13 completed and archived
 
 ## Performance Metrics
 
@@ -41,6 +40,15 @@ Last activity: 2026-06-13 -- Phase 117 landed (dataRoot cold-entry fix); full su
 - v2.9 specifically: 6 phases (73-78), 32 plans, 89 tasks across 3 days
 
 ## Deferred Items
+
+### Acknowledged at v2.13 close (2026-06-13)
+
+Pre-close artifact audit surfaced 8 open items. The 2 🔴 items were **resolved at close** (not deferred): debug `dataroot-stale-direct-nav` (fixed by Phase 117 — 12-site codemod + E2E 95/95; status → resolved) and the Phase 113 `human_needed` verification gap (the deferred live-E2E was satisfied by the Phase 116 green gate; status → resolved). The 6 🟡 items are **non-blockers, deferred** — the substantive close gate (15/15 requirements, E2E 95/95 to the 3× determinism standard + unit 766+450 + typecheck 0-net-new + lint) was satisfied.
+
+| Category | Item | Status | Disposition |
+|----------|------|--------|-------------|
+| quick_task | 260607-cd0-clean-up-e2e-test-folder-catalogue | unknown (status flag) | Verified-done since v2.11 (cleanup follow-up closed; only the SUMMARY terminal-status flag is unflipped). Carried forward. |
+| todos | ~52 standing backlog todos | pending | Carried-forward backlog (pre-dates v2.13). Triage via `/gsd-review-backlog` when shaping the next milestone. Includes CAND-STORE-01 (v2 deferral). |
 
 ### Acknowledged at v2.11 close (2026-06-07)
 

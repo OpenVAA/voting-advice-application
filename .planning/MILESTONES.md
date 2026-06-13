@@ -1,5 +1,27 @@
 # Milestones
 
+## v2.13 Context-as-Class Migration (Shipped: 2026-06-13)
+
+**Phases completed:** 12 phases (106-117), 35 plans, 50 tasks
+**Requirements:** 15/15 v1 satisfied (CLASS-01..07, FLATTEN-01/02, RENAME-01/02, SWEEP-01/02/03, GATE-01)
+**Milestone-close gate:** full E2E **95/95 to the 3× determinism standard** (fresh server, clean DB) + unit (frontend 766 + dev-seed 450) + typecheck (0 net-new over the 151 baseline) + lint — all green
+**Branch:** feat-gsd-roadmap. Phase numbering continued from the superseded v2.12 (last phase 105) → started at Phase 106 (no reset).
+
+**Delivered:** Every remaining Svelte 5 reactive context in `apps/frontend/src/lib/contexts/` is now an idiomatic class — completing the runes transition that v2.11 began and superseding v2.12's handle-idiom approach.
+
+**Key accomplishments:**
+
+- **Context-as-class conversion (CLASS-01..07, Phases 106-112)** — converted every remaining context to a Svelte 5 class lowest-blast-radius-first: Group F helpers (`PopupStore`/`VideoController`/`SettingsOverlay`/`persistedState`) → leaf contexts (`authContext`/`componentContext` + reconciled the 3 landed `darkMode`/`dataContext`/`filterContext` proofs) → app producers (`getRoute`/`survey`/`trackingService`/`popupStore`) → the `appContext` orchestrator (with the `{ ...ctx }` spread-of-context fix → explicit own-enumerable getter forwarding + Phase-102 `_poc*` removal) → the `voterContext`/`candidateContext`/`adminContext` orchestrators. Destructure-trap contract preserved; SSR-correct appSettings/appCustomization synchronous-init merge intact; v2.11 admin auth-forwarding fix preserved.
+- **Handle flatten + de-duplication (FLATTEN-01/02, Phase 113)** — collapsed every `reactiveFoo`/`Foo` duplicate handle pair to a single reactive class field, removed the spike-017 `{ current, instance }` dataRoot split, and flattened ~189 consumer `.current` reads to bare class-field reads via an idempotent codemod; `appSettings`/`dataRoot`/`locale` are now bare reactive accessors. Grep gate: zero `reactive*` duplicate handles.
+- **Store → State rename (RENAME-01/02, Phase 114)** — renamed all rune-native `*Store` symbols/files/types/tests to `*State` (`answerState`, `filterState`, `matchState`, `popupState`, `candidateUserDataState`, `question*`/`param`/`nomination` clusters, client admin `jobStores`→`jobStates`); the server `jobStore` + `cookieStore` test mock documented as intentional exclusions. Grep gate: zero rune-context `*Store` identifiers.
+- **Straggler clearance (SWEEP-01/02/03, Phase 115)** — converted the last real `svelte/store` (`videoPreferences`) to a `$state` rune, removed the stray `$: console.info` Svelte-4 reactive statement, and widened the `svelte/store` ESLint guard from `lib/contexts/**`+`routes/**` to the whole `apps/frontend/src/**` tree.
+- **dataRoot cold-entry reactivity fix (Phase 117)** — root-caused + fixed a real `$derived(ctx.dataRoot)` intermediate-alias staleness on direct-URL (cold) entry (Svelte 5 referential-equality downstream-skip over the identity-stable `#version`-bridge accessor): 12-site direct-read codemod, CLAUDE.md carve-out, new `cold-entry-dataroot` E2E project + negative control; validated by Spike 024 (4/4). This unblocked the full-E2E half of the gate.
+- **Milestone-close green gate (GATE-01, Phase 116)** — full E2E 95/95 to the 3× determinism standard + unit + typecheck + lint green; recorded as `116-MILESTONE-CLOSE-ANCHOR.md`. Two environmental preconditions documented (clean DB + fresh server per run).
+
+**Known deferred items at close:** 6 (see STATE.md "Deferred Items" → Acknowledged at v2.13 close) — 1 verified-done quick-task with an unflipped status flag + ~52 standing-backlog todos (incl. CAND-STORE-01, deferred to v2). The 2 🔴 audit items (debug `dataroot-stale-direct-nav` + Phase 113 verification gap) were **resolved** at close, not deferred.
+
+---
+
 ## v2.12 Runes-Native Cleanup (⊘ SUPERSEDED: 2026-06-12)
 
 **Status:** Superseded mid-flight by **v2.13 Context-as-Class Migration** — not shipped. Started 2026-06-08, halted 2026-06-09 (~25%: 1 of 4 phases complete).
