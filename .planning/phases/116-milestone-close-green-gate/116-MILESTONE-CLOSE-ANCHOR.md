@@ -46,7 +46,26 @@ voter orchestrator reactively.
 retries: 3`) — v2.10: 82/0, v2.11: 84/0. It was run against the local Vite **dev** server here,
 which is NOT the CI E2E environment.
 
-**Status: ⏳ OPEN — automated full-E2E green must be obtained in CI / a production-preview environment.**
+**Status: ✅ CLOSED — `yarn test:e2e` 95/95 green to the 3× determinism standard (fresh server, clean DB), 2026-06-13.** The Phase 116 `elections.length === 0` blocker was root-caused and fixed in Phase 117 (the `dataRoot` `#version`-bridge cold-entry reactivity hole — see `117-dataroot-cold-entry-reactivity-fix/`). The "did not run" residual-uncertainty caveats below are retained for history; they are superseded by the 3× green run.
+
+### Milestone-close 3× determinism re-run (2026-06-13, full `yarn test:e2e`)
+
+| Run | Server / DB | Result |
+|-----|-------------|--------|
+| 1 | fresh Vite dev server, **clean DB** (`yarn db:reset`) | **95 passed / 0 failed / 0 did-not-run** (3.8m) |
+| 2 | same server, suite self-reseed (`data-setup-base` → `data-teardown-base`) | **95 passed** (3.7m) |
+| 3 | **fresh** Vite dev server + clean DB | **95 passed** (3.4m) |
+
+**Verdict: 3× green → GATE-01 closed.** Two environmental preconditions were discovered during the re-run and are required for deterministic green:
+
+1. **Clean DB (no `default`-template pollution).** A pre-run DB still holding `default`-template rows (the *"OpenVAA Demo Parliamentary Election 2026"* election + its "Parliamentary Districts" constituency group) makes `voter-journey` stall at **constituency selection**: a 3rd election renders whose constituency the voter fixture never selects, so Continue stays disabled. `data-setup-base` seeds the `e2e/base` `seed_`-rows but does **not** evict pre-existing non-`seed_` data — so the gate must start from `yarn db:reset` (migrations + `seed.sql`, which carries **0** elections). This was the cause of the first attempted run-1 failure and is **not** a code regression (election selection itself renders correctly — the Phase 117 fix holds).
+2. **Fresh server per run (cumulative dev-server pressure).** Running three full suites back-to-back against **one** dev server produced an intermittent `perm-hide-election-tags` failure deep in run 3 (test ~65/95): a 90s timeout in `voterNavigation.advanceVoterFlow` waiting for `voter-elections-continue` to be visible — the documented `elections-continue-stall` known issue surfacing under accumulated dev-server load (~16 min uptime, sustained on-demand SSR compilation). Restarting the Vite server fresh and re-running → **95/95**. This is the same fresh-server lesson Phase 117 recorded (there it was HMR-drift from mid-codemod hot-patching; here it is sustained-load degradation — same remedy). For a clean 3× standard, restart the dev server between runs.
+
+---
+
+### Historical record (pre-Phase-117) — the original RED runs
+
+**Status at milestone-close (pre-117): ⏳ OPEN — automated full-E2E green must be obtained in CI / a production-preview environment.**
 
 ### Local headless dev-server runs (all RED at the same step)
 
