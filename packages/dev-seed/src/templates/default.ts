@@ -2,9 +2,10 @@
  * `default` built-in template.
  *
  * Finnish-flavored election with:
- *   - 1 election, 1 constituency_group, 13 constituencies
+ *   - 1 election, 1 constituency_group, 5 constituencies
  *   - 8 invented parties with Finnish-cultural flavor
- *   - 100 candidates non-uniformly distributed via `defaultOverrides.candidates`
+ *   - 327 candidates non-uniformly distributed via `defaultOverrides.candidates`
+ *     (`PARTY_WEIGHTS` sum 327; pairs with `candidates.count: 327`)
  *   - 24 questions (18 ordinal + 5 categorical + 1 boolean) via
  *     `defaultOverrides.questions`
  *   - 4 categories
@@ -230,9 +231,15 @@ export const defaultTemplate: Template = {
       {
         external_id: 'appsettings_default',
         settings: {
+          // `hideIfMissingAnswers.candidate: false` matches the known-good
+          // `e2e/base` posture (packages/dev-seed/src/templates/e2e/base.ts).
+          // Defensive: removes the symptom class where an under-answered
+          // candidate empties the candidates tab. All 327 default candidates
+          // are fully answered today, so this is a no-op for the current
+          // dataset but guards against future under-answered seeds (UNBLK-03).
           entities: {
             showAllNominations: true,
-            hideIfMissingAnswers: { candidate: true }
+            hideIfMissingAnswers: { candidate: false }
           },
           // Surface the Alliance entity tab in voter results.
           // The frontend's `mergeAppSettings` (apps/frontend/src/lib/utils/settings.ts)
