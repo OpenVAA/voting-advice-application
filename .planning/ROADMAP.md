@@ -226,7 +226,16 @@ Plans:
   2. Each new fixture is exercised by at least one smoke/probe so its preparatory steps and view manipulation are proven before specs rely on it.
   3. `yarn db:seed:default` produces a valid dataset — parties present, the candidates tab populated, naming consistent — verifiable in the running app (UNBLK-03).
   4. Any required `e2e/base` / perm-template seed-data changes are landed and the dev-seed unit suite stays green.
-**Plans**: TBD
+**Plans**: 8 plans
+Plans:
+- [ ] 119-01-PLAN.md — Remove --likert-only completely + delete the 4 dead voterNavigation helpers (dev-seed-green gate)
+- [ ] 119-02-PLAN.md — UNBLK-03: reconcile default.ts docstrings + defensive hideIfMissingAnswers, verified in the running app (SC3)
+- [ ] 119-03-PLAN.md — Hand-author perm-question-video / perm-interactive-info / perm-org-matching + register (EPERM-06/07/10)
+- [ ] 119-04-PLAN.md — Rename+extend show-feedback-survey, consolidate perm-access-disable, add e2e/base customData.terms + registry (EPERM-09/11/07)
+- [ ] 119-05-PLAN.md — Production data-testid additions (Video, popups, arguments, infoSections, terms, filter toggle, About) + testIds registry
+- [ ] 119-06-PLAN.md — EPERM fixtures: expectVideo / expectInfoMode|Sections|Arguments / popupNotice / org-match + About readers
+- [ ] 119-07-PLAN.md — EFLOW fixtures: entityFilters select-all/none, expectSubMatch, trackingIntercept, expectTheme (emulateMedia), nav readers
+- [ ] 119-08-PLAN.md — One smoke/probe per new fixture (SC2), run once against the running app
 **UI hint**: no
 
 #### Phase 120: E2E Specs — Settings-Permutation Matrix
