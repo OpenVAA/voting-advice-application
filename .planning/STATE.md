@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
 status: planning
-stopped_at: Completed 118-01-PLAN.md
+stopped_at: Completed 118-02-PLAN.md
 last_updated: "2026-06-14T13:30:00.000Z"
 last_activity: "2026-06-14 — v2.14 roadmap revised: new-feature work + dependent E2E moved to the end cluster (Phases 129-130); UNBLK-03 folded into the front fixtures phase (119); renumbered 118-132; 48/48 requirements mapped"
 progress:
@@ -384,6 +384,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Phase 111 P01: candidateUserDataStore -> CandidateUserDataStoreImpl class behind byte-identical factory (D2 clash avoided; composite $derived.by merge + JSON round-trip clone preserved)
 - [Phase ?]: 111-03: getter-only override + Object.assign inheritance must OMIT the overridden key from the assign source — writing to a getter-only accessor throws TypeError in strict-mode SSR (caught by candidate-journey E2E, invisible to unit/build/svelte-check)
 - [Phase ?]: adminContext → AdminContextProvider class; v2.11 auth-forwarding fix preserved verbatim (isAuthenticated delegating getter + 4 arrow forwards, no authContext spread); appContext via single Object.assign
+- [Phase 118 P02]: EFLOW-01..11 + EQTYP-01..03 coverage maps appended to `.planning/v2.14-E2E-COVERAGE-PLAN.md` against READ spec evidence (A5). EFLOW: 03 (4-case voter-vs-entity matrix, voter-journey:938-952) + 05 (skip/delete/back+CTA, voter-journey:602-668) confirmed covered no-new-code; 01 (filters — apply/reset/badge/2-filter-intersection covered, categorical select-all-none + text×filter gap) + 04 (subMatches 4-gauge count covered, correct-values gap) + 06 + 09 PARTIAL→extend; 07 (dark-mode) + 08 (tracking payloads, needs intercept fixture) + 11 (mobile interactive) confirmed MISSING; 02 (alliance card/drawer, UNBLK-06) DEFERRED→130; 10 PARTIAL→Idura-only retarget. **Open Question 1 RESOLVED:** perm-localisation-positive switches locale on voter home pre-answer + does a persisted-answer results cross-check — covers UI/content re-localisation but NOT mid-flow voter answer/selection-state preservation → net-new in 121. **EFLOW-10 (122.2):** retarget existing `candidate-bank-auth.spec.ts` to Idura `sub`-based identity + hetu/country claims, drop Signicat, keep direct-Edge-Function synthetic-JWE stub (no live IdP); Open Question 2 flagged — configure test decryption JWKS in beforeAll so the A6 green gate runs the keys-configured path deterministically (else "did not run" = cardinal failure). **EQTYP:** all 3 DEFERRED→130 — 01 single-choice categorical opinion covered (voter); candidate opinion answering generic (Base×5 walked incl categorical Base-4/boolean Base-5 via `selectChoice(0)` loop, type-specific variant checks only on candidate INFO questions), multiple-choice variant blocked on UNBLK-02; 02 MISSING (no number opinion in seed) blocked on UNBLK-05; 03 text covered, MultipleText round-trip blocked on UNBLK-01. NO test/fixture/seed code written.
 - [Phase 118 P01]: E2E coverage audit deliverable seeded at `.planning/v2.14-E2E-COVERAGE-PLAN.md`. EPERM-01..11 classified against READ spec evidence (A5): EPERM-01/02/08 confirmed covered no-new-code; EPERM-03/04 candidate/org covered with alliance slice DEFERRED→130; EPERM-05/06/07/09/11 PARTIAL (extend); EPERM-10 confirmed MISSING (zero `organizationMatching` refs in `tests/`). Refuted the RESEARCH starting hypothesis on EPERM-11 — the GLOBAL `access.underMaintenance` flag is untested (only per-app voterApp/candidateApp gating is covered). `--likert-only` cross-cutting verdict: COMPLETE removal, NO shim, NO fixture change (fixtures already answer non-Likert opinion types natively via per-question scoped choiceCount), pure deletion + doc-scrub landing Phase 119; unused `voterNavigation.ts` helpers (walkToQuestion/waitForNextQuestion/clickThroughIntroPages/walkToQuestionsIntro) flagged as a separate hygiene call (navigateToFirstQuestion KEPT — it is used). NO test/fixture/seed code written.
 
 ### Quick Tasks Completed
@@ -429,13 +430,15 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-14T13:30:00.000Z
-Stopped at: Completed 118-01-PLAN.md
+Last session: 2026-06-14T14:00:00.000Z
+Stopped at: Completed 118-02-PLAN.md
 Resume file: None
-Work done this session (118-01):
+Work done this session (118-02):
 
-- Created `.planning/v2.14-E2E-COVERAGE-PLAN.md` (Phase 118 operator approval gate): header (4 success criteria + repo-root `tests/` path correction + serial project-DAG note), grounded catalog inventory, EPERM-01..11 coverage map (all verified against real specs per A5), `--likert-only` complete-removal cross-cutting finding (A1), and labelled placeholder anchors for Plans 02-04.
-- Next: Plans 02-04 append the EFLOW/EQTYP maps, the build list + extension-scope pins, and the deferred-build markers.
+- Appended EFLOW-01..11 + EQTYP-01..03 coverage maps to `.planning/v2.14-E2E-COVERAGE-PLAN.md` (replacing the Plan-01 placeholder anchors), all verdicts grounded against real `tests/` specs per A5. EFLOW: 03/05 confirmed-covered-no-new-code; 01/04/06/09 PARTIAL→extend; 07/08/11 MISSING→new; 02 DEFERRED→130; 10 PARTIAL→Idura-only retarget. EQTYP: all 3 DEFERRED→130 (UNBLK-02/05/01 blockers). EFLOW-10 note records the Idura `sub`-based identity + hetu/country retarget, drops Signicat, keeps the direct-Edge-Function synthetic-JWE stub (no live IdP), and flags the deterministic-green-gate decision (test JWKS in beforeAll) for the 122 plan.
+- Open Question 1 resolved (EFLOW-06): perm-localisation-positive covers UI/content re-localisation but NOT mid-flow voter answer-state preservation → net-new in Phase 121.
+- NO test/fixture/seed code written. Three atomic commits (7bddd3135, 0776a6dfb, 8d89e6ee8).
+- Next: Plan 03 (build list + extension-scope pins) and Plan 04 (deferred-build markers + cross-cutting findings + operator approval gate).
 
 (Prior session — v2.10 close, retained below:)
 

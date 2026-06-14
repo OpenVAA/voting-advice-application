@@ -213,7 +213,7 @@ Full details: `.planning/milestones/v2.13-ROADMAP.md`
 **Plans**: 4 plans
 Plans:
 - [x] 118-01-PLAN.md — Create the deliverable; ground the catalog inventory; audit + classify EPERM-01..11 (verify all); record the --likert-only removal finding (A1)
-- [ ] 118-02-PLAN.md — Audit + classify EFLOW-01..11 (incl. the EFLOW-10 Idura-only bank-auth retarget) and EQTYP-01..03 with deferred-build marking
+- [x] 118-02-PLAN.md — Audit + classify EFLOW-01..11 (incl. the EFLOW-10 Idura-only bank-auth retarget) and EQTYP-01..03 with deferred-build marking
 - [ ] 118-03-PLAN.md — Build list (new + extended specs at semantic-step depth with project wiring/seed/fixtures) + extension-scope pins (EPERM-06/07/09, EFLOW-01/04/08/09)
 - [ ] 118-04-PLAN.md — Deferred-build markers (EQTYP, EFLOW-02, nominations, EPERM-03 alliance slice → 129-130) + cross-cutting findings + operator approval gate
 
@@ -386,7 +386,7 @@ The three workstreams are largely independent and may be planned/executed concur
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 118. E2E Coverage Audit + Coverage Plan | v2.14 | 0/TBD | Not started | - |
+| 118. E2E Coverage Audit + Coverage Plan | v2.14 | 2/4 | In progress | - |
 | 119. E2E Fixtures & Helpers + Seed | v2.14 | 0/TBD | Not started | - |
 | 120. E2E Specs — Settings-Permutation Matrix | v2.14 | 0/TBD | Not started | - |
 | 121. E2E Specs — Flow Coverage | v2.14 | 0/TBD | Not started | - |
