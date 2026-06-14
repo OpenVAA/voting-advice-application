@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
 status: planning
-stopped_at: Completed 118-02-PLAN.md
-last_updated: "2026-06-14T13:30:00.000Z"
+stopped_at: Completed 118-03-PLAN.md
+last_updated: "2026-06-14T11:45:00.000Z"
 last_activity: "2026-06-14 — v2.14 roadmap revised: new-feature work + dependent E2E moved to the end cluster (Phases 129-130); UNBLK-03 folded into the front fixtures phase (119); renumbered 118-132; 48/48 requirements mapped"
 progress:
   total_phases: 15
   completed_phases: 0
   total_plans: 4
-  completed_plans: 1
+  completed_plans: 3
   percent: 0
 ---
 
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 ## Current Position
 
 Phase: 118 of 132 (E2E Coverage Audit + Coverage Plan) — first of 15 v2.14 phases (118-132)
-Plan: 01 complete (EPERM map + --likert-only cross-cutting finding); Plans 02-04 pending (EFLOW/EQTYP maps, build list, deferred markers)
-Status: Executing Phase 118 — Plan 01 deliverable seeded
-Last activity: 2026-06-14 — Executed Phase 118 Plan 01: created .planning/v2.14-E2E-COVERAGE-PLAN.md with grounded catalog inventory, EPERM-01..11 coverage map (all verified against real tests/ specs, A5), and the --likert-only complete-removal cross-cutting finding (A1, lands Phase 119)
+Plan: 01-03 complete (EPERM map + --likert-only finding; EFLOW/EQTYP maps; build list + extension-scope pins); Plan 04 pending (deferred-build markers + remaining cross-cutting findings)
+Status: Executing Phase 118 — Plan 03 deliverable appended (build list + 118.4 pins)
+Last activity: 2026-06-14 — Executed Phase 118 Plan 03: appended the BUILD LIST (EPERM Phase 120 + EFLOW Phase 121 + Bank-Auth Phase 122) at semantic-step depth (per-spec path + Playwright project/setup/teardown/dependencies wiring + seed additive/non-additive + fixtures-first + behaviour steps) and the Extension-Scope Pins (118.4) for EPERM-06/07/09 + EFLOW-01/04/08/09 to .planning/v2.14-E2E-COVERAGE-PLAN.md; A4 extensions extend named existing specs (perm-header-show-feedback, voter-journey, perm-localisation-positive, candidate-journey); no test code written
 
 Progress: [░░░░░░░░░░] 0%
 
