@@ -9,10 +9,6 @@
  * idempotent and safe to call from `afterAll`. The dedicated
  * `data-teardown-base` playwright project (base.teardown.ts) also invokes
  * runTeardown, so calling cleanup() is optional for the base-journey chain.
- *
- * `likertOnly` is not supported: all tests must respect the question set
- * declared by the template; the base dataset is authored to not need the
- * likert-only filter.
  */
 
 import {

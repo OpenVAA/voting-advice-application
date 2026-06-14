@@ -50,17 +50,17 @@ npx playwright test -c tests/playwright.config.ts \
   --project=voter-journey --reporter=line
 ```
 
-For a fully Likert-only manual reseed (drops non-ordinal opinion questions for voter-fixture compatibility, per the CLAUDE.md `--likert-only` caveat), use the manual chain:
+For a manual reseed of the base dataset before running voter specs, use the manual chain:
 
 ```bash
-yarn db:reset && yarn db:seed --template e2e/base --likert-only && yarn dev:clean
+yarn db:reset && yarn db:seed --template e2e/base && yarn dev:clean
 # then in another terminal:
 yarn dev
 # then in a third terminal:
 npx playwright test -c tests/playwright.config.ts --project=voter-journey
 ```
 
-> The default base dataset (`e2e/base`) is authored to need no Likert-only filter for the journey specs; `--likert-only` is only relevant when manually reseeding for voter fixtures that iterate Likert-only opinion questions.
+> The base dataset (`e2e/base`) is authored so the voter fixtures answer every opinion type natively; no question-set filtering is required.
 
 ---
 
@@ -176,9 +176,9 @@ Lives in [`packages/dev-seed/src/templates/e2e/base.ts`](../packages/dev-seed/sr
 
 Lives under [`packages/dev-seed/src/templates/e2e/perm/`](../packages/dev-seed/src/templates/e2e/perm/). Each permutation template overlays the base shape for a specific settings/data configuration. Their setup projects use `test-perm-<short>-` (voter perms) or `e2e-perm-*` (candidate settings perms) external-id prefixes for parallel-safe row scoping.
 
-### Modifiers — `--likert-only`, `--external-id-prefix`, `--seed`
+### Modifiers — `--external-id-prefix`, `--seed`
 
-Available on `yarn db:seed` invocations. `--likert-only` drops non-`singleChoiceOrdinal` opinion questions (relevant for manual voter-fixture reseeds). `--external-id-prefix` / `--seed` control namespace + deterministic randomisation. See [`packages/dev-seed/README.md`](../packages/dev-seed/README.md).
+Available on `yarn db:seed` invocations. `--external-id-prefix` / `--seed` control namespace + deterministic randomisation. See [`packages/dev-seed/README.md`](../packages/dev-seed/README.md).
 
 ---
 

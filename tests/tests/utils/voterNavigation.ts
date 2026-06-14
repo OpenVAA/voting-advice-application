@@ -106,7 +106,7 @@ async function advanceClick(page: Page, target: Locator): Promise<void> {
  * possible next checkpoint and acting on whichever appears first.
  *
  * Replaces the sequential `passThroughElections → passThroughConstituencies
- * → clickThroughIntroPages` chain so missing intermediate pages don't each
+ * → intro-page click-through` chain so missing intermediate pages don't each
  * cost a 4 s individual wait — a single race-wait surfaces whichever
  * checkpoint is actually present and the loop dispatches the right action
  * for it.
@@ -292,89 +292,4 @@ export async function navigateToFirstQuestion(page: Page): Promise<void> {
   // page can redirect /questions → /questions/__first__ via onMount; this
   // wait prevents the caller's downstream waitForURL from racing the redirect.
   await page.waitForURL(/\/questions\//, { timeout: TIMEOUTS.slowPage });
-}
-
-/**
- * Walk Home → Intro → /elections → /constituencies and stop on the questions
- * intro page (the page with the category checkboxes + "Answer N Questions"
- * counter). Use this when the test wants to inspect the intro page itself
- * rather than the first question.
- */
-export async function walkToQuestionsIntro(page: Page): Promise<void> {
-  // Home-route nav + start click via voterHomePage fixture (goToPage
-  // hard-asserts the voter-home anchor before clickStart).
-  const voterHomePage = createVoterHomePage(page);
-  await voterHomePage.goToPage('en');
-  await voterHomePage.clickStart();
-  await advanceVoterFlow(page, 'questions-intro');
-}
-
-/**
- * Walk from Home all the way to a specific question by sort_order, skipping
- * every preceding question via the nextButton (Skip CTA). Composes
- * `walkToQuestionsIntro(page)` + clicks `voter.questions.startButton` (to
- * advance from the intro to the first question at sort 0) + loops
- * `voter.questions.nextButton.click()` × `sortOrder` times so the voter
- * lands on the question at the given sort_order without answering any
- * previous question.
- *
- * Used by the boolean + categorical question-rendering specs to reach the
- * categorical question at sort 17 and the boolean question at sort 18 without
- * relying on the `answeredVoterPage` fixture. The fixture's Likert `.nth(4)`
- * click pattern is out of range for the boolean (2 choices) and the
- * categorical (3 choices).
- *
- * NOTE: a `--likert-only` seed modifier is planned that would deprecate this
- * manual walk.
- *
- * @param page - Playwright Page
- * @param sortOrder - the number of Skip-Next clicks to perform after the
- *   start CTA.
- */
-export async function walkToQuestion(page: Page, sortOrder: number): Promise<void> {
-  await walkToQuestionsIntro(page);
-  // reason: walkToQuestionsIntro may return with the voter on EITHER the
-  // questions-intro page (start CTA visible) OR a real /questions/<id> page when
-  // the `navigateDirectlyToQuestions` fallback fires inside `advanceVoterFlow`.
-  // In the latter case, an unconditional `startButton.click()` races a 10s
-  // timeout because the intro start CTA never renders. Probe visibility first
-  // and only click when the intro CTA is actually present; the Skip-Next loop
-  // below already handles both cases (the nextButton is visible on real
-  // /questions/<id> pages too).
-  const startBtn = page.getByTestId(testIds.voter.questions.startButton);
-  const onIntro = await startBtn.isVisible().catch(() => false);
-  if (onIntro) await startBtn.click();
-  const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
-  for (let i = 0; i < sortOrder; i++) {
-    await nextButton.waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
-    await nextButton.click();
-  }
-}
-
-/**
- * Wait for the next question's answer options, clicking through any
- * category intro page that may appear between questions.
- */
-export async function waitForNextQuestion(page: Page, answerIndex: number): Promise<void> {
-  const nextAnswer = page.getByTestId(testIds.voter.questions.answerOption).nth(answerIndex);
-  const categoryStart = page.getByTestId(testIds.voter.questions.categoryStart);
-
-  await nextAnswer.or(categoryStart).waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
-  if (await categoryStart.isVisible()) {
-    await categoryStart.click();
-    await nextAnswer.waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
-  }
-}
-
-/**
- * Click through any intermediate pages (questions intro, category intro)
- * until the first question's answer options are visible.
- *
- * Retained for callers that already passed elections + constituencies on
- * their own and only need the tail of the journey (Q-intro / category-intro
- * → first answer). New code should prefer `navigateToFirstQuestion` which
- * runs the unified flow end-to-end via `advanceVoterFlow`.
- */
-export async function clickThroughIntroPages(page: Page): Promise<void> {
-  await advanceVoterFlow(page, 'first-question');
 }

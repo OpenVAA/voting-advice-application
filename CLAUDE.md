@@ -70,7 +70,7 @@ yarn db:stop                  # Stop local Supabase
 yarn db:status                # Show Supabase service status
 yarn db:reset                 # Reset the DB only: ensure Supabase is up, then `supabase db reset` (migrations + seed.sql)
 yarn db:reset-with-data       # db:reset, then db:seed --template default
-yarn db:seed                  # Run @openvaa/dev-seed (accepts --template <name>, --likert-only, --seed <int>, --external-id-prefix <str>)
+yarn db:seed                  # Run @openvaa/dev-seed (accepts --template <name>, --seed <int>, --external-id-prefix <str>)
 yarn db:seed:default          # db:seed --template default
 yarn db:seed:teardown         # Remove all seed_-prefixed rows + portraits
 yarn db:types                 # Regenerate TypeScript types from schema
@@ -296,14 +296,9 @@ yarn build             # Rebuilds all packages (cached -- only changed packages 
 ```bash
 yarn db:reset-with-data                        # db:reset + default template (Finnish demo, 4 locales); DB only — does not touch the vite cache
 yarn db:seed --template e2e/base               # E2E test data for manual Playwright runs (canonical base dataset; bare `e2e` retired in Phase 93)
-yarn db:seed --template e2e/base --likert-only # E2E voter-fixture-compatible seed: restricts opinion questions to singleChoiceOrdinal, keeps all info questions
 yarn db:seed --template ./my-template.ts       # custom templates from filesystem
 yarn db:seed:teardown                          # remove all seed_-prefixed rows + portraits
 ```
-
-**Note on `--likert-only`:** the voter-fixture `answeredVoterPage` (`tests/tests/fixtures/voter.fixture.ts`) iterates Likert-only opinion questions and races against non-ordinal opinion questions (boolean / categorical / number) introduced by Phase 74+. Pass `--likert-only` to drop those non-ordinal opinion questions before running voter-app E2E specs. The flag is a no-op for templates without a `questions.fixed[]` array.
-
-**Yarn arg-forwarding caveat:** `yarn db:reset-with-data` seeds the **`default`** template, not the e2e dataset — it is not the e2e path. Passing `--likert-only` to it (`yarn db:reset-with-data --likert-only`) attaches the flag to the trailing `default`-template seed, not to `e2e/base`. For a Likert-only e2e seed, use the explicit chain so the flag lands on the `db:seed` invocation: `yarn db:reset && yarn db:seed --template e2e/base --likert-only`. (`db:reset` no longer touches the vite cache; if you need a clean Vite cache too, `yarn dev` wipes it on startup, or run `yarn dev:clean`.)
 
 See `packages/dev-seed/README.md` for authoring custom templates (mixing
 `fixed[]` hand-authored rows with synthetic `count`, 4-locale expansion,
