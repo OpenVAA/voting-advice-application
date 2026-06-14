@@ -1,3 +1,7 @@
+---
+resolves_phase: 131
+---
+
 # Cell #3 candidate-settings notifications.voterApp — mount-lifecycle / appContext queueing redesign
 
 **Filed:** 2026-05-21

@@ -1,3 +1,7 @@
+---
+resolves_phase: 131
+---
+
 # voter-feedback-persistence dialog-close locator collision — v2.11+ hardening
 
 **Filed:** 2026-05-16

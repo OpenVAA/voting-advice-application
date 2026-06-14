@@ -8,6 +8,7 @@ files:
   - tests/tests/utils/candidateMegaConstants.ts
   - tests/tests/specs/candidate/candidate-mega-journey.spec.ts
   - tests/tests/specs/voter/voter-mega-journey.spec.ts
+resolves_phase: 129
 ---
 
 ## Problem

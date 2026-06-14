@@ -4,6 +4,7 @@ title: Test and create E2E spec for full bank authentication flow
 area: testing
 files:
   - tests/tests/specs/candidate/candidate-bank-auth.spec.ts
+resolves_phase: 122
 ---
 
 ## Problem

@@ -6,6 +6,7 @@ priority: medium
 files:
   - apps/frontend/src/lib/contexts/candidate/candidateContext.svelte.ts
 source: Phase 111 code review (WR-02) — pre-existing bug confirmed via git show 0e6f39f5a, deferred to preserve behaves-identically contract
+resolves_phase: 123
 ---
 
 ## Problem

@@ -9,6 +9,7 @@ related:
   - .planning/phases/86-voter-app-failure-class-cleanup-investigate-and-resolve-the-/86-RESEARCH.md (§3.11 + Open-Q-6)
   - .planning/phases/86-voter-app-failure-class-cleanup-investigate-and-resolve-the-/86-01-SUMMARY.md (Task 5 — Plan 01's hardening attempt, commit 9cc115469)
 priority: medium
+resolves_phase: 131
 ---
 
 # Party-drawer boundary flake — residual after Phase 86 hardening

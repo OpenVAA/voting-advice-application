@@ -5,6 +5,7 @@ area: testing
 files:
   - tests/tests/specs/
   - apps/frontend/src/lib/dynamic-components/
+resolves_phase: 121
 ---
 
 ## Problem

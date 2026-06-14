@@ -1,3 +1,7 @@
+---
+resolves_phase: 131
+---
+
 # Voter-popup-hydration LAYOUT-03 deeplink — v2.11+ deferral
 
 **Phase 86.1-03 cell 1 disposition:** SKIPPED per CONTEXT D-05 (no fix attempt). Inherits Phase 86-04 PASS-WITH-DEFERRAL verdict.

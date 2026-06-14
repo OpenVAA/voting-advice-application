@@ -1,3 +1,7 @@
+---
+resolves_phase: 129
+---
+
 # QSPEC-02 multi-choice categorical opinion-question variant
 
 **Date:** 2026-05-12

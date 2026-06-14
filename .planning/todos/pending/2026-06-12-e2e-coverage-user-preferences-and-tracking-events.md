@@ -5,6 +5,7 @@ area: frontend
 priority: medium
 files: []
 source: v2.13 discussion points C4 (.planning/v2.13-DISCUSSION-POINTS.md)
+resolves_phase: 121
 ---
 
 ## Problem

@@ -7,6 +7,7 @@ files:
   - apps/frontend/src/routes/(voters)/nominations/+layout.svelte
   - apps/frontend/src/routes/(voters)/nominations/+page.svelte
   - tests/tests/specs/voter/voter-mega-journey.spec.ts:1128
+resolves_phase: 129
 ---
 
 ## Problem

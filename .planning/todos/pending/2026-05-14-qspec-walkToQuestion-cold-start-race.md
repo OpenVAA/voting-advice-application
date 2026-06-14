@@ -1,3 +1,7 @@
+---
+resolves_phase: 131
+---
+
 # QSPEC-01/02 walkToQuestion cold-start race — v2.11+ hardening
 
 **Filed:** 2026-05-14

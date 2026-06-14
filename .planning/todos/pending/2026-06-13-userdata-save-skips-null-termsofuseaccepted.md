@@ -6,6 +6,7 @@ priority: medium
 files:
   - apps/frontend/src/lib/contexts/candidate/candidateUserDataStore.svelte.ts
 source: Phase 111 code review (WR-01) — pre-existing bug surfaced by CLASS-06 refactor, deferred to preserve behaves-identically contract
+resolves_phase: 123
 ---
 
 ## Problem

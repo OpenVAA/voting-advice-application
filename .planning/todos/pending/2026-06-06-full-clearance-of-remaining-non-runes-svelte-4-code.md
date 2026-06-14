@@ -5,7 +5,7 @@ area: frontend
 priority: medium
 milestone: next (v2.12+)
 files: []
-resolves_phase: 115
+resolves_phase: 123
 ---
 
 ## Problem

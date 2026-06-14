@@ -1,3 +1,7 @@
+---
+resolves_phase: 131
+---
+
 # voter-not-located-redirect CLEAN-02 chain-head — v2.11+ deferral
 
 **Phase 86.1-03 cell 2 disposition:** SKIP-FALLBACK per CONTEXT D-04 (1h RCA budget exceeded) + D-05 (FIX-ATTEMPT first; skip-fallback if no fix found).

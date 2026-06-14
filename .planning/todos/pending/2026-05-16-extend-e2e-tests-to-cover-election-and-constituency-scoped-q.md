@@ -15,6 +15,7 @@ files:
   - packages/app-shared/src/settings/
 related:
   - 2026-05-23-remove-automatic-sentinel-fan-out-from-dev-seed-pipeline.md
+resolves_phase: 120
 ---
 
 ## Cross-reference (added 2026-05-23)

@@ -4,6 +4,7 @@ title: After runes update, recheck app header styling, banner images, and post-l
 area: ui
 files:
   - apps/frontend/src/lib/components/
+resolves_phase: 124
 ---
 
 ## Problem
