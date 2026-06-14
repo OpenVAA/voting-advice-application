@@ -3,13 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
 status: planning
-last_updated: "2026-06-14T13:00:00.000Z"
-last_activity: 2026-06-14
+stopped_at: Completed 118-01-PLAN.md
+last_updated: "2026-06-14T13:30:00.000Z"
+last_activity: "2026-06-14 — v2.14 roadmap revised: new-feature work + dependent E2E moved to the end cluster (Phases 129-130); UNBLK-03 folded into the front fixtures phase (119); renumbered 118-132; 48/48 requirements mapped"
 progress:
   total_phases: 15
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 4
+  completed_plans: 1
   percent: 0
 ---
 
@@ -25,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 ## Current Position
 
 Phase: 118 of 132 (E2E Coverage Audit + Coverage Plan) — first of 15 v2.14 phases (118-132)
-Plan: — (ready to plan)
-Status: Roadmap revised — ready to plan Phase 118
-Last activity: 2026-06-14 — v2.14 roadmap revised: new-feature work + dependent E2E moved to the end cluster (Phases 129-130); UNBLK-03 folded into the front fixtures phase (119); renumbered 118-132; 48/48 requirements mapped
+Plan: 01 complete (EPERM map + --likert-only cross-cutting finding); Plans 02-04 pending (EFLOW/EQTYP maps, build list, deferred markers)
+Status: Executing Phase 118 — Plan 01 deliverable seeded
+Last activity: 2026-06-14 — Executed Phase 118 Plan 01: created .planning/v2.14-E2E-COVERAGE-PLAN.md with grounded catalog inventory, EPERM-01..11 coverage map (all verified against real tests/ specs, A5), and the --likert-only complete-removal cross-cutting finding (A1, lands Phase 119)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -383,6 +384,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Phase 111 P01: candidateUserDataStore -> CandidateUserDataStoreImpl class behind byte-identical factory (D2 clash avoided; composite $derived.by merge + JSON round-trip clone preserved)
 - [Phase ?]: 111-03: getter-only override + Object.assign inheritance must OMIT the overridden key from the assign source — writing to a getter-only accessor throws TypeError in strict-mode SSR (caught by candidate-journey E2E, invisible to unit/build/svelte-check)
 - [Phase ?]: adminContext → AdminContextProvider class; v2.11 auth-forwarding fix preserved verbatim (isAuthenticated delegating getter + 4 arrow forwards, no authContext spread); appContext via single Object.assign
+- [Phase 118 P01]: E2E coverage audit deliverable seeded at `.planning/v2.14-E2E-COVERAGE-PLAN.md`. EPERM-01..11 classified against READ spec evidence (A5): EPERM-01/02/08 confirmed covered no-new-code; EPERM-03/04 candidate/org covered with alliance slice DEFERRED→130; EPERM-05/06/07/09/11 PARTIAL (extend); EPERM-10 confirmed MISSING (zero `organizationMatching` refs in `tests/`). Refuted the RESEARCH starting hypothesis on EPERM-11 — the GLOBAL `access.underMaintenance` flag is untested (only per-app voterApp/candidateApp gating is covered). `--likert-only` cross-cutting verdict: COMPLETE removal, NO shim, NO fixture change (fixtures already answer non-Likert opinion types natively via per-question scoped choiceCount), pure deletion + doc-scrub landing Phase 119; unused `voterNavigation.ts` helpers (walkToQuestion/waitForNextQuestion/clickThroughIntroPages/walkToQuestionsIntro) flagged as a separate hygiene call (navigateToFirstQuestion KEPT — it is used). NO test/fixture/seed code written.
 
 ### Quick Tasks Completed
 
@@ -427,10 +429,15 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-13T01:55:29.257Z
-Stopped at: Completed 112-02-PLAN.md
+Last session: 2026-06-14T13:30:00.000Z
+Stopped at: Completed 118-01-PLAN.md
 Resume file: None
-Work done this session:
+Work done this session (118-01):
+
+- Created `.planning/v2.14-E2E-COVERAGE-PLAN.md` (Phase 118 operator approval gate): header (4 success criteria + repo-root `tests/` path correction + serial project-DAG note), grounded catalog inventory, EPERM-01..11 coverage map (all verified against real specs per A5), `--likert-only` complete-removal cross-cutting finding (A1), and labelled placeholder anchors for Plans 02-04.
+- Next: Plans 02-04 append the EFLOW/EQTYP maps, the build list + extension-scope pins, and the deferred-build markers.
+
+(Prior session — v2.10 close, retained below:)
 
 - Fresh full-milestone audit (79-94) written to .planning/v2.10-MILESTONE-AUDIT.md (prior Phase-87 partial audit preserved as Appendix A). Verdict: tech_debt — 13 satisfied + 3 partial (86/86.1/86.2 missing VERIFICATION.md, documentary debt) + 0 unsatisfied; final e2e suite GREEN (82/2). Integration-checker skipped (test-infra milestone; composition proven by Phase 94 --list 84/72 + green run).
 - B-1: 89-VERIFICATION.md re-stamped human_needed → passed (5 dynamic gates closed downstream by Phase 94 green run).
