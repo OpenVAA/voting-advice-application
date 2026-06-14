@@ -210,7 +210,12 @@ Full details: `.planning/milestones/v2.13-ROADMAP.md`
   2. An explicit list names every new spec file to add and every existing spec to extend (preferring extension of an existing perm over a new one where the NOTEs direct it), the `e2e/base` / perm-template seed-data changes each spec needs, every new spec & edit at the semantic-step level (behaviour, not selectors), and the new/edited fixtures & helpers.
   3. The plan explicitly marks EQTYP-01/02/03, EFLOW-02 (alliance card + member-orgs drawer), the nominations-route spec, and the EPERM-03 alliance-presence slice as **deferred-build → end cluster (Phases 129-130)** — planned now, built after the new features land.
   4. The plan is reviewed and approved before any fixture or spec code is written (the operator approval gate).
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [ ] 118-01-PLAN.md — Create the deliverable; ground the catalog inventory; audit + classify EPERM-01..11 (verify all); record the --likert-only removal finding (A1)
+- [ ] 118-02-PLAN.md — Audit + classify EFLOW-01..11 (incl. the EFLOW-10 Idura-only bank-auth retarget) and EQTYP-01..03 with deferred-build marking
+- [ ] 118-03-PLAN.md — Build list (new + extended specs at semantic-step depth with project wiring/seed/fixtures) + extension-scope pins (EPERM-06/07/09, EFLOW-01/04/08/09)
+- [ ] 118-04-PLAN.md — Deferred-build markers (EQTYP, EFLOW-02, nominations, EPERM-03 alliance slice → 129-130) + cross-cutting findings + operator approval gate
 
 #### Phase 119: E2E Fixtures & Helpers + Seed
 **Goal**: The fixtures and helpers that the existing-feature specs depend on are built and self-tested before any spec consumes them (fixtures-first), and the default-seed tooling bug is fixed alongside the seed-data changes those specs need.
