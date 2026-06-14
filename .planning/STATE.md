@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
-status: in-progress
-stopped_at: Phase 118 operator approval gate CLOSED (approved 2026-06-14) — Phase 119 (fixtures + seed) unblocked, not yet started
-last_updated: "2026-06-14T15:00:00.000Z"
-last_activity: "2026-06-14 — Operator approved .planning/v2.14-E2E-COVERAGE-PLAN.md, closing the Phase 118 gate. Approval covers the post-Plan-04 operator-note incorporation (commit f2d28e1e8): EPERM-06 video-semantics rewrite (video = per-question INFO media), advanced interactive-info content (infoSections/arguments/terms), survey/feedback split + survey.showIn sweep, organizationMatching exact-score rule, the main-category (non-additive) placement decision for new question types, and the new EFLOW-10b full-browser bank-auth journey spec with Option B (local mock OIDC issuer) LOCKED. Phase 118 marked complete; gate-close recorded in plan-doc status, ROADMAP, and 118-04-SUMMARY. Next: Phase 119 (E2E Fixtures & Helpers + Seed)."
+status: completed
+stopped_at: Completed 118-02-PLAN.md
+last_updated: "2026-06-14T20:02:20.945Z"
+last_activity: 2026-06-14 — Operator closed the Phase 118 approval gate. Recorded approval in plan-doc status line, ROADMAP (Phase 118 + 118-04 checkboxes flipped to [x]), STATE, and 118-04-SUMMARY. No test code written in Phase 118 (correct — it is the no-code approval gate). Ready to begin Phase 119.
 progress:
   total_phases: 15
   completed_phases: 1

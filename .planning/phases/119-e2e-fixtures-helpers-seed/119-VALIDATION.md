@@ -1,8 +1,8 @@
 ---
 phase: 119
 slug: e2e-fixtures-helpers-seed
-status: draft
-nyquist_compliant: false
+status: approved
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-06-14
 ---
