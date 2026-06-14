@@ -53,9 +53,11 @@ Displays information about the application.
 
   {#if appSettings.matching.organizationMatching !== 'none'}
     <h2 class="mb-md mt-xl">{t('about.organizationMatching.title')}</h2>
-    {@html sanitizeHtml(
-      t('about.organizationMatching.content', { partyMatchingMethod: appSettings.matching.organizationMatching })
-    )}
+    <div data-testid="voter-about-organization-matching">
+      {@html sanitizeHtml(
+        t('about.organizationMatching.content', { partyMatchingMethod: appSettings.matching.organizationMatching })
+      )}
+    </div>
   {/if}
 
   {#if appSettings.appVersion.source}

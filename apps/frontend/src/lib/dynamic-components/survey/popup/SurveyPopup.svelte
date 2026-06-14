@@ -40,7 +40,7 @@ Show a popup asking for user feedback.
 </script>
 
 <!-- bind: keep — alertRef is plain let Alert; single ref read in onClick callback -->
-<Alert bind:this={alertRef} title={t('dynamic.survey.title')} {...restProps}>
+<Alert bind:this={alertRef} title={t('dynamic.survey.title')} data-testid="survey-popup" {...restProps}>
   <div class="justify-self-stretch">
     <h3 class="mb-sm mt-0 text-center">{t('dynamic.survey.popupTitle')}</h3>
   </div>

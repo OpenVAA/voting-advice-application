@@ -218,7 +218,10 @@ Render an enumerated filter for entities that displays a list of values to inclu
   {/each}
   {#if values.length > 3}
     <div class="mt-md col-span-full">
-      <button onclick={() => toggleSelectAll()} class="label gap-sm text-primary cursor-pointer !items-start !p-0">
+      <button
+        onclick={() => toggleSelectAll()}
+        data-testid="entity-filter-select-all-toggle"
+        class="label gap-sm text-primary cursor-pointer !items-start !p-0">
         <div class="w-[1.5rem]">
           <Icon name={allSelected ? 'uncheckAll' : 'checkAll'} />
         </div>
