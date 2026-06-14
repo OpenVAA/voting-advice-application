@@ -57,7 +57,11 @@ Display the pros and cons arguments related to a question.
     {#each sortArguments(args) as argument}
       {#if argument.arguments?.length}
         {@const { choiceId } = argument}
-        <div>
+        <!-- Per-argument-group testid. For categorical questions the group is keyed
+             by choiceId; otherwise it falls back to the argument `type` (mirrors the
+             keyed feedback-rating-{value} pattern) so the Phase-120
+             expectArguments(q,type) reader can target a group. -->
+        <div data-testid="voter-questions-argument-group-{choiceId ?? argument.type}">
           <h5 class="font-bold">
             {t(TITLE_KEYS[argument.type], {
               option: choiceId && isChoiceQuestion(question) ? question.getChoice(choiceId)?.label : ''

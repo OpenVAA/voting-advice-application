@@ -166,7 +166,29 @@ export const testIds = {
       // intro page.
       hero: 'voter-questions-hero',
       categoryHero: 'voter-questions-category-hero',
-      infoButton: 'voter-questions-info-button'
+      infoButton: 'voter-questions-info-button',
+      // Phase-119 extended-info / arguments / terms surface (consumed by the
+      // Phase-120 expectInfoMode / expectInfoSections / expectArguments readers).
+      //  - popupInfoButton: the <Button> on QuestionExtendedInfoButton.svelte that
+      //    opens the interactiveInfo modal/drawer (popup mode). Renders only when
+      //    appSettings.questions.interactiveInfo.enabled && !customData.video.
+      //  - popupInfoModal: the modal/drawer body (QuestionExtendedInfo root rendered
+      //    inside the Drawer) so expectInfoMode(q,'popup') can assert the open modal.
+      //  - infoSection: per-customData.infoSections section (keyed by index) on
+      //    QuestionExtendedInfo.svelte so expectInfoSections([...]) can enumerate.
+      //  - argumentGroup: per-argument group on QuestionArguments.svelte. For
+      //    categorical questions the group is keyed by choiceId (mirrors the keyed
+      //    feedback-rating-{value} pattern); non-categorical groups fall back to the
+      //    argument type. So expectArguments(q,type) can target a group.
+      //  - termTrigger: the in-text <Term> trigger span (QuestionHeading.svelte) and
+      //  - termPopup: its definition popup (Term.svelte) — so the Phase-120 voter
+      //    journey can hover/read the term affordance + definition.
+      popupInfoButton: 'voter-questions-popup-info-button',
+      popupInfoModal: 'voter-questions-popup-info-modal',
+      infoSection: 'voter-questions-info-section',
+      argumentGroup: 'voter-questions-argument-group',
+      termTrigger: 'voter-questions-term-trigger',
+      termPopup: 'voter-questions-term-popup'
     },
     results: {
       list: 'voter-results-list',
@@ -197,7 +219,13 @@ export const testIds = {
       filterDialog: 'entity-filter-dialog',
       filterDialogReset: 'entity-filter-dialog-reset',
       filterDialogApply: 'entity-filter-dialog-apply',
-      cardSubcard: 'entity-card-subcard'
+      cardSubcard: 'entity-card-subcard',
+      // The single select-all/none toggle button on EnumeratedEntityFilter.svelte.
+      // Renders only `{#if values.length > 3}` (threshold > 3 confirmed) and its
+      // label flips selectAll/unselectAll via `allSelected` — it is ONE toggle, not
+      // two buttons. The entityFilters fixture (Plan 07) clicks it to select-all when
+      // not-all-selected and to select-none when all-selected. EFLOW-01.
+      filterSelectAllToggle: 'entity-filter-select-all-toggle'
     },
     entityDetail: {
       container: 'voter-entity-detail',
@@ -224,7 +252,12 @@ export const testIds = {
     },
     about: {
       content: 'voter-about-content',
-      returnButton: 'voter-about-return'
+      returnButton: 'voter-about-return',
+      // Dedicated testid on the about.organizationMatching disclosure block on the
+      // About page (rendered only when matching.organizationMatching !== 'none').
+      // Tighter than the coarse voter-about-content anchor so EPERM-10 can assert the
+      // org-matching disclosure specifically. EPERM-10.
+      organizationMatching: 'voter-about-organization-matching'
     },
     info: {
       content: 'voter-info-content',
@@ -291,6 +324,16 @@ export const testIds = {
       help: 'header-help'
     },
     // Used in image-type Hero and necessary because the img tag cannot be located by role due to empty alt text
-    image: 'image-img'
+    image: 'image-img',
+    // Generic Video component root <div> testid (Video.svelte). Shared between the
+    // voter + candidate apps. The element is class:hidden-not-destroyed (hidden when
+    // !hasContent), so expectVideo(true) asserts toBeVisible() and expectVideo(false)
+    // asserts not.toBeVisible() — NOT mount/unmount churn. EPERM-06.
+    video: 'video',
+    // Distinct root testids on the results feedback + survey popups (FeedbackPopup /
+    // SurveyPopup Alert roots). Distinct so the dismiss-and-reload helper can assert
+    // each popup's dismiss-persistence independently. EPERM-09.
+    feedbackPopup: 'feedback-popup',
+    surveyPopup: 'survey-popup'
   }
 } as const;

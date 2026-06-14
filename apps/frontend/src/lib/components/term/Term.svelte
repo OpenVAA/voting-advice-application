@@ -67,7 +67,11 @@ Uses the `term` and `definition` roles.
 <svelte:window onresize={() => calculatePosition()} />
 
 <!-- bind: keep — triggerElement is plain let; read in calculatePosition (onMount + onresize) -->
-<span class="group relative" bind:this={triggerElement} role="term">
+<span
+  class="group relative"
+  bind:this={triggerElement}
+  role="term"
+  data-testid="voter-questions-term-trigger">
   <span
     {...concatClass(
       restProps,
@@ -78,6 +82,7 @@ Uses the `term` and `definition` roles.
   <div
     bind:this={definitionDiv}
     id={definitionId}
+    data-testid="voter-questions-term-popup"
     class="bg-base-200 text-md text-neutral pointer-events-none absolute right-auto bottom-auto left-1/2 z-10 w-max rounded-md p-10 font-normal opacity-0 shadow-md transition-opacity duration-200 ease-in-out {forceShow
       ? 'opacity-100'
       : 'opacity-0 group-hover:opacity-100'}"

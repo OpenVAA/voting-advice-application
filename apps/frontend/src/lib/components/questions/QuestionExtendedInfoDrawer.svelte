@@ -33,5 +33,11 @@ A `Drawer` that displays the question's extended information.
 </script>
 
 <Drawer title={question.text} autofocusId={false} {...restProps}>
-  <QuestionExtendedInfo {question} title={question.text} {onSectionCollapse} {onSectionExpand} class="p-lg" />
+  <QuestionExtendedInfo
+    {question}
+    title={question.text}
+    {onSectionCollapse}
+    {onSectionExpand}
+    class="p-lg"
+    data-testid="voter-questions-popup-info-modal" />
 </Drawer>

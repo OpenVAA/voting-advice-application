@@ -51,16 +51,20 @@ Display the question's expandable information content.
   </div>
   {#if infoSections?.length}
     <div class="prose">
-      {#each infoSections as { title, content }}
+      {#each infoSections as { title, content }, index}
         {#if title}
-          <Expander
-            {title}
-            titleClass="flex justify-between font-bold"
-            contentClass="!text-left"
-            onCollapse={() => onSectionCollapse?.(title)}
-            onExpand={() => onSectionExpand?.(title)}>
-            {@html sanitizeHtml(content)}
-          </Expander>
+          <!-- Per-infoSection testid (keyed by index) so the Phase-120
+               expectInfoSections([...]) reader can enumerate sections. -->
+          <div data-testid="voter-questions-info-section-{index}">
+            <Expander
+              {title}
+              titleClass="flex justify-between font-bold"
+              contentClass="!text-left"
+              onCollapse={() => onSectionCollapse?.(title)}
+              onExpand={() => onSectionExpand?.(title)}>
+              {@html sanitizeHtml(content)}
+            </Expander>
+          </div>
         {/if}
       {/each}
       {#if args}

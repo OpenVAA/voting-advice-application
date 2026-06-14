@@ -53,4 +53,5 @@ A button that will display the question's extended information content in a `Dra
   icon="info"
   iconPos="left"
   onclick={handleClick}
+  data-testid="voter-questions-popup-info-button"
   {...restProps} />

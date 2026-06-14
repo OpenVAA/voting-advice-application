@@ -653,6 +653,7 @@ If not provided, the `video` element will be hidden until these properties are p
 
 <!-- NB. We need select-none and touch-manipulation to avoid distracting functions touch devices -->
 <div
+  data-testid="video"
   {...concatClass(
     restProps,
     'relative select-none touch-manipulation aspect-[var(--video-aspectRatio)] overflow-hidden rounded-b-md sm:rounded-t-md bg-accent'
