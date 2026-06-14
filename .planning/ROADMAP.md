@@ -183,7 +183,7 @@ Full details: `.planning/milestones/v2.13-ROADMAP.md`
 - **New-feature cluster (Phases 129-130)** — moved out of the front per operator directive. Phase 129 BUILDS the new features (question inputs, alliance render, nominations fetch); Phase 130 lands their dependent E2E. The earlier phases never depend on these.
 - **Reliability hardening + close (Phases 131-132)** — HARDN-01 flake triage (after ALL specs — existing + new-feature — exist so the suite is in final shape), then the milestone-close green gate + the svelte-check 0/0 absolute-gate flip.
 
-- [ ] **Phase 118: E2E Coverage Audit + Coverage Plan** — Approval-gate deliverable: per-requirement coverage map + full spec/seed/semantic-step/fixture plan (including the deferred-build end-cluster specs); no test code.
+- [x] **Phase 118: E2E Coverage Audit + Coverage Plan** — Approval-gate deliverable: per-requirement coverage map + full spec/seed/semantic-step/fixture plan (including the deferred-build end-cluster specs); no test code. **✅ APPROVED by operator 2026-06-14** (incl. post-Plan-04 note incorporation + EFLOW-10b bank-auth Option B).
 - [ ] **Phase 119: E2E Fixtures & Helpers + Seed** — Fixtures-first build for the existing-feature specs + the UNBLK-03 default-seed tooling fix + any e2e/base / perm-template seed-data changes.
 - [ ] **Phase 120: E2E Specs — Settings-Permutation Matrix** — EPERM-01..11 settings-driven branches exercised/asserted (alliance-presence sub-assertion of EPERM-03 lands with Phase 130).
 - [ ] **Phase 121: E2E Specs — Flow Coverage** — EFLOW filters, comparison, category breakdown, navigation, locale/theme/preferences, nav menus, mobile (minus alliance EFLOW-02 and minus bank-auth EFLOW-10).
@@ -215,7 +215,7 @@ Plans:
 - [x] 118-01-PLAN.md — Create the deliverable; ground the catalog inventory; audit + classify EPERM-01..11 (verify all); record the --likert-only removal finding (A1)
 - [x] 118-02-PLAN.md — Audit + classify EFLOW-01..11 (incl. the EFLOW-10 Idura-only bank-auth retarget) and EQTYP-01..03 with deferred-build marking
 - [x] 118-03-PLAN.md — Build list (new + extended specs at semantic-step depth with project wiring/seed/fixtures) + extension-scope pins (EPERM-06/07/09, EFLOW-01/04/08/09)
-- [~] 118-04-PLAN.md — Deferred-build markers (EQTYP, EFLOW-02, nominations, EPERM-03 alliance slice → 129-130) + cross-cutting findings DONE; **operator approval gate PENDING** (blocking — phase not complete until operator approves the coverage plan before Phase 119)
+- [x] 118-04-PLAN.md — Deferred-build markers (EQTYP, EFLOW-02, nominations, EPERM-03 alliance slice → 129-130) + cross-cutting findings DONE; **operator approval gate CLOSED ✅ (approved 2026-06-14)** — operator notes incorporated (commit `f2d28e1e8`: video semantics, advanced interactive-info, survey/feedback split, org-matching exact scores, main-category placement decision, EFLOW-10b bank-auth full-journey Option B). Phase 119 unblocked.
 
 #### Phase 119: E2E Fixtures & Helpers + Seed
 **Goal**: The fixtures and helpers that the existing-feature specs depend on are built and self-tested before any spec consumes them (fixtures-first), and the default-seed tooling bug is fixed alongside the seed-data changes those specs need.

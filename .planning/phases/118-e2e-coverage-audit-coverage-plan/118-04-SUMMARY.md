@@ -104,10 +104,11 @@ None - no external service configuration required.
 
 ## Next Phase Readiness
 
-- **The v2.14 E2E coverage plan is COMPLETE in content** — all four ROADMAP Phase 118 success criteria are satisfied in the document (criteria 1-3 written; criterion 4 is the gate itself).
-- **BLOCKED on the operator approval gate (Task 3, Success Criterion 4 / 118.1).** Phase 119 (fixtures + seed) MUST NOT begin and no fixture/spec/seed code may be written until the operator reviews `.planning/v2.14-E2E-COVERAGE-PLAN.md` end-to-end and approves.
-- **What the operator must verify:** SC1 (every EPERM/EFLOW/EQTYP verdict grounded in a real spec path; 6 already-covered carry "confirmed covered, no new code"; extension scopes pinned); SC2 (build list deep enough that 120-122/130 need no discovery); SC3 (the four deferred items + EPERM-03 alliance slice tagged -> 129-130); the A1 override (`--likert-only` complete removal, no shim, Phase 119); the 122.2 override (bank-auth Idura only, Signicat dropped). Flag any reclassification disagreement (C1) or new-vs-extend preference (C2).
-- **Resume signal:** operator types "approved" to unblock Phase 119, or describes changes to apply to the coverage plan before resuming.
+- **The v2.14 E2E coverage plan is COMPLETE and APPROVED** — all four ROADMAP Phase 118 success criteria are satisfied (criteria 1-3 written; criterion 4 = the operator approval gate, now CLOSED).
+- **✅ OPERATOR APPROVAL GATE CLOSED (2026-06-14).** Phase 119 (fixtures + seed) is UNBLOCKED. The operator reviewed `.planning/v2.14-E2E-COVERAGE-PLAN.md` (having authored the inline coverage NOTES that were incorporated) and approved.
+- **What the approval covers (incl. post-Plan-04 changes, commit `f2d28e1e8`):** SC1-3 as written, the A1 override (`--likert-only` complete removal, Phase 119), the 122.2 override (bank-auth Idura only); PLUS the operator-note incorporation — EPERM-06 video-semantics rewrite (video = per-question INFO media, own `Video` component test-id), advanced interactive-info content (`infoSections`/`arguments` for Likert+Boolean+Categorical/`terms`), survey/feedback split + `survey.showIn` placement sweep, `organizationMatching` exact-score rule (answersOnly missing-answer penalty), the **main-category (NON-ADDITIVE) placement decision** for the new question types (re-baselines planned up-front, 119.3), and the new **EFLOW-10b full-browser bank-auth self-registration journey** spec with **Option B (local mock OIDC issuer) LOCKED**.
+- **Gate-close recorded in:** plan-doc status line, ROADMAP (Phase 118 + 118-04 checkboxes → [x]), STATE.md (status → in-progress, completed_phases 0 → 1).
+- **Resume signal:** Phase 119 may begin — `/gsd-plan-phase 119` (or `/gsd-progress --next`).
 
 ## Self-Check: PASSED
 
