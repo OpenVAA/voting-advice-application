@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.13
-milestone_name: Context-as-Class Migration
-status: Awaiting next milestone
-stopped_at: Milestone v2.13 complete — archived 2026-06-13 (E2E 95/95 ×3, 15/15 reqs)
-last_updated: "2026-06-13T18:59:52.392Z"
-last_activity: 2026-06-13 — Milestone v2.13 completed and archived
+milestone: v2.14
+milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
+status: planning
+last_updated: "2026-06-14T08:14:59.205Z"
+last_activity: 2026-06-14
 progress:
-  total_phases: 12
-  completed_phases: 12
-  total_plans: 35
-  completed_plans: 35
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -25,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-06-13 after shipping v2.13 Context-as-Cl
 
 ## Current Position
 
-Phase: Milestone v2.13 complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-06-13 — Milestone v2.13 completed and archived
+Status: Defining requirements
+Last activity: 2026-06-14 — Milestone v2.14 started
 
 ## Performance Metrics
 
