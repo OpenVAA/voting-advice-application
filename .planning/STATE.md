@@ -3,10 +3,10 @@ gsd_state_version: 1.0
 milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
 status: planning
-last_updated: "2026-06-14T08:14:59.205Z"
+last_updated: "2026-06-14T13:00:00.000Z"
 last_activity: 2026-06-14
 progress:
-  total_phases: 0
+  total_phases: 15
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -17,17 +17,19 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-13 after shipping v2.13 Context-as-Class Migration)
+See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Planning next milestone — v2.13 shipped 2026-06-13; run `/gsd-new-milestone`
+**Current focus:** v2.14 Phase 118 — E2E Coverage Audit + Coverage Plan (approval gate, no test code)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-06-14 — Milestone v2.14 started
+Phase: 118 of 132 (E2E Coverage Audit + Coverage Plan) — first of 15 v2.14 phases (118-132)
+Plan: — (ready to plan)
+Status: Roadmap revised — ready to plan Phase 118
+Last activity: 2026-06-14 — v2.14 roadmap revised: new-feature work + dependent E2E moved to the end cluster (Phases 129-130); UNBLK-03 folded into the front fixtures phase (119); renumbered 118-132; 48/48 requirements mapped
+
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 

@@ -138,17 +138,77 @@ Explicitly excluded. Documented to prevent scope creep.
 
 ## Traceability
 
-Populated during roadmap creation (each requirement → exactly one phase).
+Each requirement maps to exactly one roadmap phase (see `.planning/ROADMAP.md` v2.14 section, Phases 118-132). New-feature work (UNBLK question inputs + alliance render + nominations fetch) and its dependent E2E are clustered at the end (Phases 129-130) per the operator directive; only UNBLK-03 (a default-seed tooling fix, not a new feature) stays in the front fixtures phase.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| _to be filled by roadmapper_ | — | Pending |
+| EPERM-01 | Phase 120 | Pending |
+| EPERM-02 | Phase 120 | Pending |
+| EPERM-03 | Phase 120 | Pending |
+| EPERM-04 | Phase 120 | Pending |
+| EPERM-05 | Phase 120 | Pending |
+| EPERM-06 | Phase 120 | Pending |
+| EPERM-07 | Phase 120 | Pending |
+| EPERM-08 | Phase 120 | Pending |
+| EPERM-09 | Phase 120 | Pending |
+| EPERM-10 | Phase 120 | Pending |
+| EPERM-11 | Phase 120 | Pending |
+| EFLOW-01 | Phase 121 | Pending |
+| EFLOW-03 | Phase 121 | Pending |
+| EFLOW-04 | Phase 121 | Pending |
+| EFLOW-05 | Phase 121 | Pending |
+| EFLOW-06 | Phase 121 | Pending |
+| EFLOW-07 | Phase 121 | Pending |
+| EFLOW-08 | Phase 121 | Pending |
+| EFLOW-09 | Phase 121 | Pending |
+| EFLOW-11 | Phase 121 | Pending |
+| EFLOW-10 | Phase 122 | Pending |
+| RUNES-01 | Phase 123 | Pending |
+| RUNES-02 | Phase 123 | Pending |
+| RUNES-05 | Phase 123 | Pending |
+| RUNES-03 | Phase 124 | Pending |
+| RUNES-04 | Phase 124 | Pending |
+| TYPE-01 | Phase 125 | Pending |
+| TYPE-02 | Phase 125 | Pending |
+| TYPE-03 | Phase 125 | Pending |
+| TYPE-04 | Phase 126 | Pending |
+| TYPE-05 | Phase 127 | Pending |
+| TYPE-06 | Phase 127 | Pending |
+| TYPE-07 | Phase 128 | Pending |
+| TYPE-08 | Phase 128 | Pending |
+| TYPE-09 | Phase 128 | Pending |
+| UNBLK-03 | Phase 119 | Pending |
+| UNBLK-01 | Phase 129 | Pending |
+| UNBLK-02 | Phase 129 | Pending |
+| UNBLK-04 | Phase 129 | Pending |
+| UNBLK-05 | Phase 129 | Pending |
+| UNBLK-06 | Phase 129 | Pending |
+| EQTYP-01 | Phase 130 | Pending |
+| EQTYP-02 | Phase 130 | Pending |
+| EQTYP-03 | Phase 130 | Pending |
+| EFLOW-02 | Phase 130 | Pending |
+| HARDN-01 | Phase 131 | Pending |
+| HARDN-02 | Phase 132 | Pending |
+| TYPE-10 | Phase 132 | Pending |
+
+**Structural phase (no requirement ownership — operator-mandated E2E audit-first ordering):**
+
+| Phase | Role |
+|-------|------|
+| Phase 118 — E2E Coverage Audit + Coverage Plan | Approval-gate deliverable (no test code); produces the coverage map + full spec/seed/semantic-step/fixture plan — including the deferred-build end-cluster specs (EQTYP-01/02/03, EFLOW-02, the nominations spec, the EPERM-03 alliance-presence slice) — that Phases 120-122 and 130 execute. |
+
+**Cross-phase notes (criteria, not REQ-ID ownership — no double-mapping):**
+
+- The **EPERM-03 alliance-presence sub-assertion** is built in Phase 130 (its REQ-ID maps to Phase 120 for the candidate/org bulk).
+- The **`/nominations`-route E2E assertion** lands in Phase 130 as a success criterion tied to the UNBLK-04 feature (the UNBLK-04 REQ-ID maps to Phase 129, the build phase).
 
 **Coverage:**
 - v1 requirements: 48 total (EPERM 11 · EFLOW 11 · EQTYP 3 · UNBLK 6 · HARDN 2 · RUNES 5 · TYPE 10)
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 48 ⚠️
+- Mapped to phases: 48 (100%) ✓
+- Unmapped: 0 ✓
+- No requirement maps to more than one phase ✓
+- Per-phase REQ counts: 119 → 1 (UNBLK-03) · 120 → 11 (EPERM) · 121 → 9 (EFLOW) · 122 → 1 (EFLOW-10) · 123 → 3 (RUNES) · 124 → 2 (RUNES) · 125 → 3 (TYPE) · 126 → 1 (TYPE-04) · 127 → 2 (TYPE) · 128 → 3 (TYPE) · 129 → 5 (UNBLK) · 130 → 4 (EQTYP 3 + EFLOW-02) · 131 → 1 (HARDN-01) · 132 → 2 (HARDN-02 + TYPE-10). Sum = 1+11+9+1+3+2+3+1+2+3+5+4+1+2 = 48 ✓
 
 ---
 *Requirements defined: 2026-06-14*
-*Last updated: 2026-06-14 after initial definition (v2.14 milestone start)*
+*Last updated: 2026-06-14 after roadmap revision (new-feature work + dependent E2E moved to the end cluster, Phases 129-130; UNBLK-03 folded into the front fixtures phase 119; renumbered 118-132; 48/48 requirements covered)*
