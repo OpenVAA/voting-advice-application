@@ -244,6 +244,12 @@ export default defineConfig({
     // chain would clobber app_settings between probes. The isolation contract
     // lives in the RUN discipline, not in a setup project.
     //
+    // Because they need out-of-band per-probe seeding, these probes are EXCLUDED
+    // from the default green-suite / CI gate: the root `test:e2e` script runs
+    // `--grep-invert @probe`. Run them via `yarn test:e2e:probes <probe-file>`
+    // (one at a time, after `yarn db:seed --template <perm>`). Every probe test
+    // is tagged `@probe` for this filter.
+    //
     // `testMatch` is scoped to the 4 DEFERRED probe files only. The 4
     // already-green probes (entityFilters/navMenu/theme/trackingIntercept) share
     // the `*.probe.spec.ts` glob but are excluded here so a project run never
