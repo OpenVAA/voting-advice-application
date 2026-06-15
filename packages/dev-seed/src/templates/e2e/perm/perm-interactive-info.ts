@@ -32,6 +32,7 @@
  * touch `e2e/base`.
  */
 
+import { ARGUMENT_TYPE } from '@openvaa/app-shared';
 import {
   buildCandidate,
   buildElectionConstituencyNoms,
@@ -39,7 +40,6 @@ import {
   LIKERT_5_EN,
   MINIMAL_BASE_APP_SETTINGS
 } from './shared';
-import { ARGUMENT_TYPE } from '@openvaa/app-shared';
 import type { QuestionArguments } from '@openvaa/app-shared';
 import type { Template } from '../../../template/types';
 

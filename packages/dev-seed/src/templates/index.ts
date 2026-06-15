@@ -32,10 +32,13 @@ import { permHideCategoryTagsTemplate } from './e2e/perm/perm-hide-category-tags
 import { permHideElectionTagsTemplate } from './e2e/perm/perm-hide-election-tags';
 import { permHideHeroTemplate } from './e2e/perm/perm-hide-hero';
 import { permHideIfMissingAnswersTemplate } from './e2e/perm/perm-hide-if-missing-answers';
+import { permInteractiveInfoTemplate } from './e2e/perm/perm-interactive-info';
 import { permLocalisationPositiveTemplate } from './e2e/perm/perm-localisation-positive';
 import { permMissingNominationsTemplate } from './e2e/perm/perm-missing-nominations';
 import { permNotLocated2e2cgTemplate } from './e2e/perm/perm-not-located-2e2cg';
+import { permOrgMatchingTemplate } from './e2e/perm/perm-org-matching';
 import { permPerAppNotificationsTemplate } from './e2e/perm/perm-per-app-notifications';
+import { permQuestionVideoTemplate } from './e2e/perm/perm-question-video';
 import { permStartfromcgTemplate } from './e2e/perm/perm-startfromcg';
 import type { Template } from '../template/types';
 import type { Overrides } from '../types';
@@ -85,7 +88,16 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   'perm-hide-if-missing-answers': permHideIfMissingAnswersTemplate,
   'perm-hide-election-tags': permHideElectionTagsTemplate,
   'perm-hide-category-tags': permHideCategoryTagsTemplate,
-  'perm-disable-allow-open': permDisableAllowOpenTemplate
+  'perm-disable-allow-open': permDisableAllowOpenTemplate,
+
+  // Phase 119 Plan 03 — 3 hand-authored perm templates whose layouts
+  // buildMinimal cannot express (multi-category video / multi-type opinion /
+  // org-own-answers). Each carries its own distinct externalIdPrefix
+  // ('e2e-perm-qvid-', 'e2e-perm-iinfo-', 'e2e-perm-orgmatch-') for parallel
+  // safety. Keys stay FLAT even though files live under e2e/perm/.
+  'perm-question-video': permQuestionVideoTemplate,
+  'perm-interactive-info': permInteractiveInfoTemplate,
+  'perm-org-matching': permOrgMatchingTemplate
 };
 
 /**
@@ -124,8 +136,11 @@ export { permHideCategoryTagsTemplate } from './e2e/perm/perm-hide-category-tags
 export { permHideElectionTagsTemplate } from './e2e/perm/perm-hide-election-tags';
 export { permHideHeroTemplate } from './e2e/perm/perm-hide-hero';
 export { permHideIfMissingAnswersTemplate } from './e2e/perm/perm-hide-if-missing-answers';
+export { permInteractiveInfoTemplate } from './e2e/perm/perm-interactive-info';
 export { permLocalisationPositiveTemplate } from './e2e/perm/perm-localisation-positive';
 export { permMissingNominationsTemplate } from './e2e/perm/perm-missing-nominations';
 export { permNotLocated2e2cgTemplate } from './e2e/perm/perm-not-located-2e2cg';
+export { permOrgMatchingTemplate } from './e2e/perm/perm-org-matching';
 export { permPerAppNotificationsTemplate } from './e2e/perm/perm-per-app-notifications';
+export { permQuestionVideoTemplate } from './e2e/perm/perm-question-video';
 export { permStartfromcgTemplate } from './e2e/perm/perm-startfromcg';

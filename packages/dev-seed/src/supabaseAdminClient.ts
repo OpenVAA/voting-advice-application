@@ -233,26 +233,42 @@ export class SupabaseAdminClient {
   /**
    * Import answers from dataset entries that use `answersByExternalId`.
    *
-   * After bulk_import creates questions and candidates, this method resolves
-   * question external_ids to UUIDs, builds the `answers` JSONB, and updates
-   * each candidate record.
+   * After bulk_import creates questions, candidates, and organizations, this
+   * method resolves question external_ids to UUIDs, builds the `answers`
+   * JSONB, and updates each answer-bearing entity record. BOTH candidates AND
+   * organizations carry an `answers` JSONB column and may declare
+   * `answersByExternalId` (the org path backs
+   * `matching.organizationMatching=answersOnly` — EPERM-10).
    *
    * @param data - The same dataset passed to bulkImport, containing candidates
-   *   with `answersByExternalId` fields
+   *   and/or organizations with `answersByExternalId` fields
    */
   async importAnswers(data: Record<string, Array<unknown>>): Promise<void> {
+    // Both `candidates` AND `organizations` carry an `answers` JSONB column
+    // (apps/supabase/.../schema/105-answers.sql) and can declare
+    // `answersByExternalId` in a template. The org path matters for
+    // `matching.organizationMatching=answersOnly` where an organization is
+    // matched on its OWN answers (EPERM-10). The two tables share the same
+    // (external_id, answers, project_id) shape, so we generalise over both.
+    const answerSources: Array<{ table: 'candidates' | 'organizations'; rows: Array<Record<string, unknown>> }> = [];
     const candidates = data.candidates as Array<Record<string, unknown>> | undefined;
-    if (!candidates) return;
+    if (candidates) answerSources.push({ table: 'candidates', rows: candidates });
+    const organizations = data.organizations as Array<Record<string, unknown>> | undefined;
+    if (organizations) answerSources.push({ table: 'organizations', rows: organizations });
 
-    // Collect all question external_ids referenced across all candidates
+    if (answerSources.length === 0) return;
+
+    // Collect all question external_ids referenced across all answer-bearing rows
     const questionExtIds = new Set<string>();
-    for (const candidate of candidates) {
-      const answersByExtId = (candidate.answersByExternalId ?? candidate.answers_by_external_id) as
-        | Record<string, unknown>
-        | undefined;
-      if (!answersByExtId) continue;
-      for (const extId of Object.keys(answersByExtId)) {
-        questionExtIds.add(extId);
+    for (const { rows } of answerSources) {
+      for (const row of rows) {
+        const answersByExtId = (row.answersByExternalId ?? row.answers_by_external_id) as
+          | Record<string, unknown>
+          | undefined;
+        if (!answersByExtId) continue;
+        for (const extId of Object.keys(answersByExtId)) {
+          questionExtIds.add(extId);
+        }
       }
     }
 
@@ -276,40 +292,45 @@ export class SupabaseAdminClient {
       extIdToUuid.set(q.external_id, q.id);
     }
 
-    // For each candidate with answersByExternalId, build UUID-keyed answers and update
-    for (const candidate of candidates) {
-      const answersByExtId = (candidate.answersByExternalId ?? candidate.answers_by_external_id) as
-        | Record<string, unknown>
-        | undefined;
-      if (!answersByExtId) continue;
+    // For each answer-bearing row (candidate or organization), build the
+    // UUID-keyed answers JSONB and update the matching entity row.
+    for (const { table, rows } of answerSources) {
+      for (const row of rows) {
+        const answersByExtId = (row.answersByExternalId ?? row.answers_by_external_id) as
+          | Record<string, unknown>
+          | undefined;
+        if (!answersByExtId) continue;
 
-      const candidateExtId = (candidate.externalId ?? candidate.external_id) as string;
-      if (!candidateExtId) continue;
+        const entityExtId = (row.externalId ?? row.external_id) as string;
+        if (!entityExtId) continue;
 
-      // Build answers JSONB keyed by question UUID
-      const answers: Record<string, unknown> = {};
-      for (const [extId, answer] of Object.entries(answersByExtId)) {
-        const uuid = extIdToUuid.get(extId);
-        if (uuid) {
-          answers[uuid] = answer;
+        // Build answers JSONB keyed by question UUID
+        const answers: Record<string, unknown> = {};
+        for (const [extId, answer] of Object.entries(answersByExtId)) {
+          const uuid = extIdToUuid.get(extId);
+          if (uuid) {
+            answers[uuid] = answer;
+          }
         }
-      }
 
-      // Look up candidate id by external_id
-      const { data: candidateRow, error: cError } = await this.client
-        .from('candidates')
-        .select('id')
-        .eq('external_id', candidateExtId)
-        .eq('project_id', this.projectId)
-        .single();
+        // Look up the entity id by external_id
+        const { data: entityRow, error: eError } = await this.client
+          .from(table)
+          .select('id')
+          .eq('external_id', entityExtId)
+          .eq('project_id', this.projectId)
+          .single();
 
-      if (cError) throw new Error(`importAnswers: failed to find candidate ${candidateExtId}: ${cError.message}`);
+        if (eError) {
+          throw new Error(`importAnswers: failed to find ${table} row ${entityExtId}: ${eError.message}`);
+        }
 
-      // Update candidate answers
-      const { error: uError } = await this.client.from('candidates').update({ answers }).eq('id', candidateRow.id);
+        // Update the entity's answers
+        const { error: uError } = await this.client.from(table).update({ answers }).eq('id', entityRow.id);
 
-      if (uError) {
-        throw new Error(`importAnswers: failed to update candidate ${candidateExtId} answers: ${uError.message}`);
+        if (uError) {
+          throw new Error(`importAnswers: failed to update ${table} row ${entityExtId} answers: ${uError.message}`);
+        }
       }
     }
   }
