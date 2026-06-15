@@ -24,9 +24,12 @@ Options:
   -h, --help                        Show this help and exit.
 
 Built-in templates:
-  default   Finnish-flavored election, 13 constituencies / 8 parties /
-            100 candidates / 24 questions, 4-locale (en/fi/sv/da).
-  e2e       Matches Playwright spec assertions, single-locale.
+  default              Finnish-flavored election, 13 constituencies / 8 parties /
+                       100 candidates / 24 questions, 4-locale (en/fi/sv/da).
+  e2e/base             Canonical Playwright base dataset, single-locale.
+  perm-*               Settings/topology-permutation fixtures
+                       (see packages/dev-seed/src/templates/index.ts).
+  show-feedback-survey Results feedback + survey popup permutation.
 
 Custom templates:
   See packages/dev-seed/README.md for a worked authoring example

@@ -30,8 +30,8 @@ describe('USAGE (CLI-04 / D-58-13)', () => {
     expect(USAGE).toMatch(/^\s+default\s+/m);
   });
 
-  it('lists the `e2e` built-in template', () => {
-    expect(USAGE).toMatch(/^\s+e2e\s+/m);
+  it('lists the `e2e/base` built-in template', () => {
+    expect(USAGE).toMatch(/^\s+e2e\/base\s+/m);
   });
 
   it('points to packages/dev-seed/README.md for custom-template authoring', () => {
