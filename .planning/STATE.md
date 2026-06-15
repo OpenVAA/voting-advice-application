@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
-status: executing
-stopped_at: Completed 118-02-PLAN.md
-last_updated: "2026-06-14T20:51:31.472Z"
-last_activity: 2026-06-15 -- Phase 119 all plans complete; held pending UAT
+status: verifying
+stopped_at: Phase 120 context gathered
+last_updated: "2026-06-15T10:56:20.739Z"
+last_activity: 2026-06-15 -- Phase 119 all plans complete; held pending UAT (see 119-UAT.md)
 progress:
   total_phases: 15
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 12
-  completed_plans: 4
-  percent: 7
+  completed_plans: 12
+  percent: 13
 ---
 
 # Project State
@@ -430,9 +430,9 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-14T14:00:00.000Z
-Stopped at: Completed 118-02-PLAN.md
-Resume file: None
+Last session: 2026-06-15T10:56:20.731Z
+Stopped at: Phase 120 context gathered
+Resume file: .planning/phases/120-e2e-specs-settings-permutation-matrix/120-CONTEXT.md
 Work done this session (118-02):
 
 - Appended EFLOW-01..11 + EQTYP-01..03 coverage maps to `.planning/v2.14-E2E-COVERAGE-PLAN.md` (replacing the Plan-01 placeholder anchors), all verdicts grounded against real `tests/` specs per A5. EFLOW: 03/05 confirmed-covered-no-new-code; 01/04/06/09 PARTIAL→extend; 07/08/11 MISSING→new; 02 DEFERRED→130; 10 PARTIAL→Idura-only retarget. EQTYP: all 3 DEFERRED→130 (UNBLK-02/05/01 blockers). EFLOW-10 note records the Idura `sub`-based identity + hetu/country retarget, drops Signicat, keeps the direct-Edge-Function synthetic-JWE stub (no live IdP), and flags the deterministic-green-gate decision (test JWKS in beforeAll) for the 122 plan.
