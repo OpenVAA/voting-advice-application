@@ -64,8 +64,18 @@ export function createNavMenu(page: Page): NavMenuFixture {
       // visible before clicking, then hard-assert the menu opened — per the
       // fixture rigidity contract (no best-effort swallowing).
       await expect(toggle).toBeVisible();
-      await toggle.click();
-      await expect(menu).toBeVisible();
+      // Hydration-race guard: the toggle renders via SSR before its Svelte
+      // `onclick={openDrawer}` handler is hydrated. A click in the
+      // SSR→hydration gap is a no-op (the drawer never opens, the `nav-menu`
+      // keeps its `hidden` class). `toPass` retries the click+open-assert so a
+      // pre-hydration no-op click is retried once the handler is bound. Each
+      // inner step is still a HARD assertion (no swallowing) — `toPass` only
+      // governs the retry, and a genuine never-opening drawer still fails at the
+      // outer timeout.
+      await expect(async () => {
+        await toggle.click();
+        await expect(menu).toBeVisible({ timeout: 2_000 });
+      }).toPass({ timeout: 15_000 });
     },
 
     async expectNavMenuItems(expected: Array<RegExp | string>): Promise<void> {

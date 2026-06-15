@@ -16,20 +16,26 @@
  *      with other tests.
  *   2. Imports `test`/`expect` from the voter `views.ts` composition root so the
  *      view fixtures are available, and reuses the exported voter-journey walk
- *      helpers (`walkUntilQuestionsIntro` / `answerAndAdvanceToResults`) for
- *      navigation.
+ *      helper (`walkUntilQuestionsIntro`) for the located walk.
  *   3. Drives the running app and asserts the fixture's observable effect.
  *
- * Probes need not meet the spec phases' 3x-determinism bar — they must pass
- * cleanly once.
+ * ## Navigation note (perm-question-video reactive-churn)
+ *
+ * The questions-intro start `<Button>` and the category-intro start `<a>` both
+ * re-render reactively from `voterCtx.selectedQuestionBlocks` (a post-hydration
+ * `$state`), so a plain `.click()` detaches mid-click (the documented
+ * voter-journey churn hazard). This probe sidesteps both:
+ *   - the intro `<Button>` is fired via `dispatchEvent('click')` (bypasses the
+ *     actionability/stability wait that detaches on the re-render), and
+ *   - the category-intro `<a>` is followed by navigating to its resolved `href`
+ *     (the `followLinkWhenHrefResolved` pattern), landing on the first question.
+ * perm-question-video seeds `customData.video` on QUESTIONS (q1/q3/q5), NONE on
+ * the category intros — so the Video element is VISIBLE on the first question
+ * and HIDDEN on the category intro.
  *
  * ## SEED (out-of-band pre-step, run ONCE before this probe)
  *
  *   yarn db:seed --template perm-question-video
- *
- * The `perm-question-video` template seeds video `customData` on questions
- * (q1/q3/q5) and NONE on the category intros, so a video question shows the
- * Video element and a no-video question hides it.
  *
  * ## RUN (single-file, isolated)
  *
@@ -39,32 +45,40 @@
 
 import { createVideoReader } from '../../fixtures/shared/video.fixture';
 import { expect, test } from '../../fixtures/voter/views';
-import { answerAndAdvanceToResults, walkUntilQuestionsIntro } from '../../fixtures/voter/voter-journey.fixture';
+import { walkUntilQuestionsIntro } from '../../fixtures/voter/voter-journey.fixture';
 import { testIds } from '../../utils/testIds';
 
 test.describe('@probe video fixture (EPERM-06)', () => {
-  test('expectVideo(true) on a video question', async ({ page, voterQuestionsPage }) => {
+  test('expectVideo(false) on a category intro; expectVideo(true) on a video question', async ({ page }) => {
     const video = createVideoReader(page);
 
-    // Walk the located voter chain and start the question flow.
+    // Located walk to the /questions intro page.
     await walkUntilQuestionsIntro(page);
-    await voterQuestionsPage.clickStart();
 
-    // The first question in perm-question-video carries customData.video, so the
-    // Video element renders (visible). The reader asserts visibility-not-churn
-    // (the element is hidden-not-destroyed; here it is visible).
-    await expect(page.getByTestId(testIds.voter.questions.answerOption).first()).toBeVisible();
-    await video.expectVideo(true);
-  });
+    // Fire the intro start via dispatchEvent (churn-robust) → category intro.
+    const start = page.getByTestId(testIds.voter.questions.startButton);
+    await expect(start).toBeEnabled();
+    await start.dispatchEvent('click');
 
-  test('expectVideo(false) on a surface with no question video (results)', async ({ page }) => {
-    const video = createVideoReader(page);
-
-    // Answer through to /results — a no-video surface. The Video element is
-    // hidden-not-destroyed; here it must read as HIDDEN, proving the
-    // present=false branch of the reader.
-    await walkUntilQuestionsIntro(page);
-    await answerAndAdvanceToResults(page, 'max');
+    // On the category intro: NO question video here (seeded on questions only).
+    const categoryStart = page.getByTestId(testIds.voter.questions.categoryStart);
+    await expect(categoryStart).toHaveAttribute('href', /\/questions\//, { timeout: 15_000 });
     await video.expectVideo(false);
+
+    // Advance to the first question via a CLIENT-SIDE nav (dispatchEvent click,
+    // churn-robust) — NOT page.goto. A full page.goto is a COLD/direct entry
+    // that races the dataRoot #version-bridge repopulation (CLAUDE.md cold
+    // direct-nav staleness), so the questions +layout's `video.load(customData
+    // .video)` runs before the question's customData is present and the Video
+    // never gains content. A client-side nav preserves the warm voter context,
+    // so the customData is present when the layout loads the video. The first
+    // question carries customData.video.
+    await categoryStart.dispatchEvent('click');
+    await expect(page).toHaveURL(/\/questions\/[^/]+(\?|$)/, { timeout: 15_000 });
+
+    // On the first question the Video element gains content and becomes VISIBLE.
+    // The reader asserts visibility-not-churn (the element is hidden-not-destroyed).
+    await expect(page.getByTestId(testIds.voter.questions.answerOption).first()).toBeVisible({ timeout: 15_000 });
+    await video.expectVideo(true);
   });
 });
