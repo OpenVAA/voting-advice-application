@@ -230,6 +230,46 @@ export function createResultsPage(page: Page) {
       const gauge = card.getByTestId(testIds.voter.results.scoreGauge).first();
       await expect(gauge).toBeVisible();
       return gauge;
+    },
+
+    /**
+     * Per-category sub-match reader (EFLOW-04, optional encapsulation).
+     *
+     * Opening an entity-details view renders a `sub-matches`
+     * (`testIds.voter.results.subMatches`) container holding one
+     * `score-gauge` (`testIds.voter.results.scoreGauge`) per VOTER-ANSWERED
+     * category. This reader scopes to the sub-matches container, finds the
+     * row matching `category` (text match on the category name), asserts its
+     * score gauge is visible, and returns the gauge Locator so the spec can
+     * read its rendered value/attribute and assert the expected `score` —
+     * the spec asserts only the voter-answered categories appear with their
+     * expected scores.
+     *
+     * Caller-supplied `category` matcher keeps base-specific names out of the
+     * fixture (the resultsPage caller-locator coupling guard). The optional
+     * `score` argument is accepted for call-site symmetry with the spec's
+     * intent; the gauge value comparison is performed by the caller against
+     * the returned Locator (the rendered representation — text / aria — is
+     * settings-driven and owned by the spec).
+     *
+     * Reuses sub-matches + score-gauge testids; adds no new id.
+     */
+    async expectSubMatch(category: Target, score?: number): Promise<Locator> {
+      void score;
+      const subMatches = page.getByTestId(testIds.voter.results.subMatches);
+      const gauges = subMatches.getByTestId(testIds.voter.results.scoreGauge);
+      let gauge: Locator;
+      if (typeof category === 'function') {
+        const count = await gauges.count();
+        gauge = gauges.nth(category(count));
+      } else {
+        gauge = subMatches
+          .filter({ hasText: category as RegExp | string })
+          .getByTestId(testIds.voter.results.scoreGauge)
+          .first();
+      }
+      await expect(gauge).toBeVisible();
+      return gauge;
     }
   };
 }

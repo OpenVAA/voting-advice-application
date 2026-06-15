@@ -105,6 +105,76 @@ export function createEntityFilters(page: Page) {
         },
 
         /**
+         * The single select-all/none toggle button on
+         * EnumeratedEntityFilter.svelte. Renders ONLY `{#if values.length > 3}`
+         * (threshold > 3 confirmed) — a categorical filter with ≤4 options never
+         * surfaces it. Its label + icon flip `selectAll`/`unselectAll` via the
+         * component's `allSelected` derived. It is ONE toggle, not two buttons.
+         */
+        getSelectAllToggle(): Locator {
+          return filterRow.getByTestId(testIds.voter.results.filterSelectAllToggle);
+        },
+
+        /**
+         * True when every option in this filter is currently checked. Reads the
+         * checked-state of each option after settling on the first option's
+         * render (the same reactive-mount race `setSelection` guards against —
+         * options mount after the Expander auto-expand, so a pre-mount count is
+         * a silent no-op). Used by `selectAll`/`selectNone` to decide whether
+         * the single toggle is currently in the all-selected state.
+         */
+        async isAllSelected(): Promise<boolean> {
+          const options = this.getOptions();
+          await expect(options.first()).toBeVisible({ timeout: 5_000 });
+          const total = await options.count();
+          for (let i = 0; i < total; i++) {
+            const checked = await options.nth(i).getByRole('checkbox').isChecked();
+            if (!checked) return false;
+          }
+          return true;
+        },
+
+        /**
+         * Select ALL options by clicking the single toggle. Because the toggle
+         * FLIPS state (selectAll ↔ unselectAll keyed on `allSelected`), this
+         * clicks it only when not-all-selected — clicking an already-all-selected
+         * toggle would unselect everything. After clicking, hard-asserts the
+         * post-state (all checked) per the fixture rigidity contract.
+         *
+         * Requires a categorical filter with > 3 options (else the toggle does
+         * not render and `getSelectAllToggle()` resolves to nothing).
+         */
+        async selectAll(): Promise<void> {
+          const toggle = this.getSelectAllToggle();
+          await expect(toggle).toBeVisible({ timeout: 5_000 });
+          if (!(await this.isAllSelected())) {
+            await toggle.click();
+          }
+          await expect(await this.isAllSelected()).toBe(true);
+        },
+
+        /**
+         * Deselect ALL options by clicking the single toggle. Mirror of
+         * `selectAll`: clicks the flip-toggle only when currently all-selected,
+         * then hard-asserts no option remains checked.
+         *
+         * Requires a categorical filter with > 3 options (else the toggle does
+         * not render).
+         */
+        async selectNone(): Promise<void> {
+          const toggle = this.getSelectAllToggle();
+          await expect(toggle).toBeVisible({ timeout: 5_000 });
+          if (await this.isAllSelected()) {
+            await toggle.click();
+          }
+          const options = this.getOptions();
+          const total = await options.count();
+          for (let i = 0; i < total; i++) {
+            await expect(options.nth(i).getByRole('checkbox')).not.toBeChecked();
+          }
+        },
+
+        /**
          * Drive the numeric filter sliders. `null` leaves the bound
          * untouched. Per Wave-1.5 testids `entity-filter-numeric-min` /
          * `-max` on the <input type="range"> elements.
