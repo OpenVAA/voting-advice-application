@@ -20,7 +20,16 @@
  * **Rigidity contract**:
  *  - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
  *    `.catch(() => null)` on assertion-bearing locator interactions.
- *  - All locators are testid-anchored via `testIds` (locale-resilient).
+ *  - The popup ROOT locators are testid-anchored via `testIds` (locale-resilient).
+ *
+ * **Locale caveat (WR-05)**: the `dismiss()` close-button lookup is NOT fully
+ * locale-resilient. The Alert "✕" control's only accessible name is the
+ * translated `t('common.close')` (Alert.svelte), so the role-name regex below
+ * matches the ENGLISH "Close"/"Dismiss"/"Cancel" labels only. Under non-English
+ * UI locales (`/fi`, `/sv`, …) the accessible name changes and the match would
+ * miss. The E2E suite runs the default English locale, so this holds today; a
+ * follow-up should add a stable `data-testid` to the Alert close control (a
+ * production change, out of scope for this fix pass) and anchor `dismiss()` to it.
  *
  * Surface bound to:
  *  - FeedbackPopup.svelte Alert root (`testIds.shared.feedbackPopup`).
