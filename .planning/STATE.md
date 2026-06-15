@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
-status: verifying
+status: executing
 stopped_at: Phase 120 context gathered
-last_updated: "2026-06-15T11:25:13.452Z"
-last_activity: 2026-06-15 -- Phase 119 all plans complete; held pending UAT (see 119-UAT.md)
+last_updated: "2026-06-15T15:33:37.831Z"
+last_activity: 2026-06-15 -- Phase 120 execution started
 progress:
   total_phases: 15
   completed_phases: 2
-  total_plans: 12
+  total_plans: 20
   completed_plans: 12
   percent: 13
 ---
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 119 — e2e-fixtures-helpers-seed
+**Current focus:** Phase 120 — e2e-specs-settings-permutation-matrix
 
 ## Current Position
 
-Phase: 119 (e2e-fixtures-helpers-seed) — PENDING UAT (all 8 plans complete)
-Plan: 8 of 8 complete
-Status: Phase 119 held pending UAT — goal verification returned human_needed; all in-scope criteria (SC1/SC3/SC4 + SC2-as-sanctioned-partial) verified. Closure gated on the 4 deferred probes (video/questionInfo/popupNotice/orgMatching) running green in isolation — carried to Phase 120 per DEF-119-08-01. Run /gsd-verify-work 119 when ready.
-Last activity: 2026-06-15 -- Phase 119 all plans complete; held pending UAT (see 119-UAT.md)
+Phase: 120 (e2e-specs-settings-permutation-matrix) — EXECUTING
+Plan: 1 of 8 — AT CHECKPOINT (Task 3 human-verify, blocking)
+Status: Plan 120-01 Tasks 1-2 done + committed; PAUSED at Task 3 human-verify gate (4 probes green-in-isolation, awaiting approval)
+Last activity: 2026-06-15 -- 120-01 _probes project wired + 4 deferred probes re-diagnosed GREEN in isolation; 119-08 churn verdict REFUTED (settings-driven bypass)
 
 Progress: [█░░░░░░░░░] 7%
 
