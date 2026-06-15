@@ -774,6 +774,20 @@ export const baseTemplate: Template = {
         name: { en: '[qu-opin-base-3-likert7] Base opinion 3 — Likert 7.' },
         choices: LIKERT_7_EN,
         category: { external_id: 'test-e2e-base-qg-opin-base' },
+        // EPERM-07 NOTE: additive customData.terms so the Phase-120 voter-journey
+        // extension can assert the in-text term-trigger affordance + definition
+        // popup. The trigger 'Likert' appears verbatim in this question's title
+        // text above, so the in-text term affordance renders. customData (not a
+        // new row) — additive, alters no rigid base count.
+        custom_data: {
+          terms: [
+            {
+              triggers: ['Likert'],
+              title: 'Likert scale',
+              content: 'An ordered rating scale measuring agreement, from strong disagreement to strong agreement.'
+            }
+          ]
+        },
         allow_open: true,
         sort_order: 102,
         is_generated: false

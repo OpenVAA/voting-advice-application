@@ -19,13 +19,13 @@ import { perm1e1cg1coTemplate } from './e2e/perm/perm-1e1cg1co';
 import { perm2eAsymmetricTemplate } from './e2e/perm/perm-2e-asymmetric';
 import { perm2eSharedTemplate } from './e2e/perm/perm-2e-shared';
 import { permAnswersLockedTemplate } from './e2e/perm/perm-answers-locked';
+import { permAccessDisableTemplate } from './e2e/perm/perm-access-disable';
 import { permDisableAllowOpenTemplate } from './e2e/perm/perm-disable-allow-open';
 import { permDisableCandidateAppTemplate } from './e2e/perm/perm-disable-candidate-app';
 import { permDisableElection1coTemplate } from './e2e/perm/perm-disable-election-1co';
 import { permDisableElection2coTemplate } from './e2e/perm/perm-disable-election-2co';
 import { permDisableVoterAppTemplate } from './e2e/perm/perm-disable-voter-app';
 import { permDisjoint1coTemplate } from './e2e/perm/perm-disjoint-1co';
-import { permHeaderShowFeedbackTemplate } from './e2e/perm/perm-header-show-feedback';
 import { permHeaderShowHelpTemplate } from './e2e/perm/perm-header-show-help';
 import { permHideAllNominationsTemplate } from './e2e/perm/perm-hide-all-nominations';
 import { permHideCategoryTagsTemplate } from './e2e/perm/perm-hide-category-tags';
@@ -40,6 +40,7 @@ import { permOrgMatchingTemplate } from './e2e/perm/perm-org-matching';
 import { permPerAppNotificationsTemplate } from './e2e/perm/perm-per-app-notifications';
 import { permQuestionVideoTemplate } from './e2e/perm/perm-question-video';
 import { permStartfromcgTemplate } from './e2e/perm/perm-startfromcg';
+import { showFeedbackSurveyTemplate } from './e2e/perm/show-feedback-survey';
 import type { Template } from '../template/types';
 import type { Overrides } from '../types';
 
@@ -82,7 +83,10 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   // JSON files.
   'perm-answers-locked': permAnswersLockedTemplate,
   'perm-hide-hero': permHideHeroTemplate,
-  'perm-header-show-feedback': permHeaderShowFeedbackTemplate,
+  // EPERM-09: renamed from the former perm-header-show-feedback key. Keeps
+  // header.showFeedback and extends with the survey/feedback-popup result-view
+  // surfaces.
+  'show-feedback-survey': showFeedbackSurveyTemplate,
   'perm-header-show-help': permHeaderShowHelpTemplate,
   'perm-hide-all-nominations': permHideAllNominationsTemplate,
   'perm-hide-if-missing-answers': permHideIfMissingAnswersTemplate,
@@ -97,7 +101,14 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   // safety. Keys stay FLAT even though files live under e2e/perm/.
   'perm-question-video': permQuestionVideoTemplate,
   'perm-interactive-info': permInteractiveInfoTemplate,
-  'perm-org-matching': permOrgMatchingTemplate
+  'perm-org-matching': permOrgMatchingTemplate,
+
+  // Phase 119 Plan 04 — EPERM-11 consolidated access-gating perm. Covers
+  // access.voterApp/candidateApp/underMaintenance via per-mode singleton
+  // re-seed. Distinct externalIdPrefix 'e2e-perm-access-disable-'. The old
+  // perm-disable-voter-app/candidate-app keys are RETAINED above because their
+  // Phase-120-owned setup consumers still resolve them (Pitfall 3).
+  'perm-access-disable': permAccessDisableTemplate
 };
 
 /**
@@ -122,6 +133,7 @@ export { BASE_APP_SETTINGS, baseTemplate } from './e2e/base';
 export { perm1e1cg1coTemplate } from './e2e/perm/perm-1e1cg1co';
 export { perm2eAsymmetricTemplate } from './e2e/perm/perm-2e-asymmetric';
 export { perm2eSharedTemplate } from './e2e/perm/perm-2e-shared';
+export { permAccessDisableTemplate } from './e2e/perm/perm-access-disable';
 export { permAnswersLockedTemplate } from './e2e/perm/perm-answers-locked';
 export { permDisableAllowOpenTemplate } from './e2e/perm/perm-disable-allow-open';
 export { permDisableCandidateAppTemplate } from './e2e/perm/perm-disable-candidate-app';
@@ -129,7 +141,6 @@ export { permDisableElection1coTemplate } from './e2e/perm/perm-disable-election
 export { permDisableElection2coTemplate } from './e2e/perm/perm-disable-election-2co';
 export { permDisableVoterAppTemplate } from './e2e/perm/perm-disable-voter-app';
 export { permDisjoint1coTemplate } from './e2e/perm/perm-disjoint-1co';
-export { permHeaderShowFeedbackTemplate } from './e2e/perm/perm-header-show-feedback';
 export { permHeaderShowHelpTemplate } from './e2e/perm/perm-header-show-help';
 export { permHideAllNominationsTemplate } from './e2e/perm/perm-hide-all-nominations';
 export { permHideCategoryTagsTemplate } from './e2e/perm/perm-hide-category-tags';
@@ -144,3 +155,4 @@ export { permOrgMatchingTemplate } from './e2e/perm/perm-org-matching';
 export { permPerAppNotificationsTemplate } from './e2e/perm/perm-per-app-notifications';
 export { permQuestionVideoTemplate } from './e2e/perm/perm-question-video';
 export { permStartfromcgTemplate } from './e2e/perm/perm-startfromcg';
+export { showFeedbackSurveyTemplate } from './e2e/perm/show-feedback-survey';
