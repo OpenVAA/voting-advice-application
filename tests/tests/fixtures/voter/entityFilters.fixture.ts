@@ -150,7 +150,7 @@ export function createEntityFilters(page: Page) {
           if (!(await this.isAllSelected())) {
             await toggle.click();
           }
-          await expect(await this.isAllSelected()).toBe(true);
+          expect(await this.isAllSelected()).toBe(true);
         },
 
         /**
