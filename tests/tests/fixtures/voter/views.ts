@@ -21,14 +21,18 @@
  */
 
 import { expect, test as base } from '@playwright/test';
+import { createAboutPage } from './aboutPage.fixture';
 import { createEntityDetails } from './entityDetails.fixture';
 import { createEntityFilters } from './entityFilters.fixture';
+import { createQuestionInfo } from './questionInfo.fixture';
 import { createResultsPage } from './resultsPage.fixture';
 import { createVoterHomePage } from './voterHomePage.fixture';
 import { createVoterIntroPage } from './voterIntroPage.fixture';
 import { createVoterQuestionsPage } from './voterQuestionsPage.fixture';
+import type { AboutPageFixture } from './aboutPage.fixture';
 import type { EntityDetailsFixture } from './entityDetails.fixture';
 import type { EntityFiltersFixture } from './entityFilters.fixture';
+import type { QuestionInfoFixture } from './questionInfo.fixture';
 import type { ResultsPageFixture } from './resultsPage.fixture';
 import type { VoterHomePageFixture } from './voterHomePage.fixture';
 import type { VoterIntroPageFixture } from './voterIntroPage.fixture';
@@ -44,6 +48,9 @@ type ViewFixtures = {
   voterHomePage: VoterHomePageFixture;
   voterIntroPage: VoterIntroPageFixture;
   voterQuestionsPage: VoterQuestionsPageFixture;
+  // Phase-119 EPERM voter-scoped readers (Plan 06).
+  aboutPage: AboutPageFixture;
+  questionInfo: QuestionInfoFixture;
 };
 
 export const test = base.extend<ViewFixtures>({
@@ -64,6 +71,12 @@ export const test = base.extend<ViewFixtures>({
   },
   voterQuestionsPage: async ({ page }, use) => {
     await use(createVoterQuestionsPage(page));
+  },
+  aboutPage: async ({ page }, use) => {
+    await use(createAboutPage(page));
+  },
+  questionInfo: async ({ page }, use) => {
+    await use(createQuestionInfo(page));
   }
 });
 

@@ -212,6 +212,24 @@ export function createResultsPage(page: Page) {
       const card = await this.getEntityCard(target);
       await card.getByTestId('entity-card-action').first().click();
       await expect(page.getByTestId(testIds.voter.results.entityDetails)).toBeVisible();
+    },
+
+    /**
+     * Org-match-score readout (EPERM-10). Asserts the score gauge for the
+     * organization/party card matching `target` is visible (the org-matching
+     * mode produces a distinguishable score per mode — the spec re-seeds the
+     * singleton per mode and compares the read-out value).
+     *
+     * Reuses the existing `score-gauge` testid (`testIds.voter.results.scoreGauge`)
+     * scoped to the matched card — no org-scoped disambiguation id is needed
+     * because the target card scopes the gauge. Returns the gauge Locator so the
+     * caller can read its value/attribute for per-mode comparison.
+     */
+    async expectOrgMatchScore(target: Target): Promise<Locator> {
+      const card = await this.getEntityCard(target);
+      const gauge = card.getByTestId(testIds.voter.results.scoreGauge).first();
+      await expect(gauge).toBeVisible();
+      return gauge;
     }
   };
 }
