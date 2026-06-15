@@ -1,0 +1,91 @@
+{
+  "alliance": {
+    "plural": "تحالفات",
+    "singular": "تحالف"
+  },
+  "answer": {
+    "no": "لا",
+    "yes": "نعم"
+  },
+  "back": "رجوع",
+  "cancel": "إلغاء",
+  "candidate": {
+    "plural": "مرشحون",
+    "singular": "مرشح"
+  },
+  "candidatePortrait": "صورة شخصية",
+  "clear": "مسح",
+  "close": "إغلاق",
+  "closeDialog": "إغلاق مربع الحوار",
+  "closeMenu": "إغلاق القائمة",
+  "confirmed": "مؤكَّد",
+  "constituency": "دائرة انتخابية",
+  "continue": "متابعة",
+  "election": "انتخابات",
+  "electionList": "قائمة",
+  "electionSymbol": {
+    "alliance": "رمز انتخابي",
+    "candidate": "رقم انتخابي",
+    "faction": "رمز انتخابي",
+    "organization": "رمز انتخابي"
+  },
+  "email": "البريد الإلكتروني",
+  "emailPlaceholder": "البريد الإلكتروني",
+  "expandOrCollapse": "توسيع أو طي هذا القسم",
+  "faction": {
+    "plural": "كتل",
+    "singular": "كتلة"
+  },
+  "firstName": "الاسم الأول",
+  "home": "الرئيسية",
+  "info": "معلومات",
+  "language": {
+    "select": "اختر اللغة"
+  },
+  "lastName": "اسم العائلة",
+  "loading": "جارٍ التحميل…",
+  "locked": "مُقفَل",
+  "login": "تسجيل الدخول",
+  "logout": "تسجيل الخروج",
+  "madeWithPrefix": "صُنع بـ",
+  "madeWithSuffix": "",
+  "missingAnswer": "—",
+  "multipleAnswerSeparator": " • ",
+  "nomination": "ترشيح",
+  "openCloseMenu": "تبديل القائمة",
+  "openMenu": "فتح القائمة",
+  "openVAA": "OpenVAA",
+  "or": "أو",
+  "organization": {
+    "plural": "أحزاب",
+    "singular": "حزب"
+  },
+  "password": "كلمة المرور",
+  "passwordConfirmation": "تأكيد كلمة المرور",
+  "pending": "قيد الانتظار",
+  "primaryActions": "الإجراءات الأساسية",
+  "privacy": {
+    "dataCollection": {
+      "content": "نودّ جمع بيانات الاستخدام بصورة مجهولة لأغراض البحث العلمي ولتحسين التطبيق. تشمل البيانات التي نجمعها إجاباتك على الأسئلة، والوقت الذي أمضيته في الإجابة عليها وفي الأقسام الأخرى، والنتائج التي اطلعت عليها، غير أن هذه البيانات لا يمكن ربطها بك شخصيًا.",
+      "title": "جمع بيانات الاستخدام"
+    }
+  },
+  "progress": "التقدم",
+  "publishedBy": "نشر بواسطة {publisher}",
+  "question": "سؤال",
+  "readMore": "اقرأ المزيد",
+  "required": "مطلوب",
+  "resetAnswers": "مسح إجاباتك",
+  "return": "العودة",
+  "returnHome": "العودة إلى الصفحة الرئيسية",
+  "saveAndContinue": "حفظ ومتابعة",
+  "saveAndReturn": "حفظ والعودة",
+  "saving": "جارٍ الحفظ…",
+  "showFullImage": "عرض الصورة كاملة",
+  "skipToMain": "انتقل إلى المحتوى الرئيسي",
+  "state": "الحالة",
+  "success": "تمت العملية بنجاح!",
+  "thanksNo": "لا، شكرًا",
+  "unaffiliated": "مستقل",
+  "website": "الموقع الإلكتروني"
+}
