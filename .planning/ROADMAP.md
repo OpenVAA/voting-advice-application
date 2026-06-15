@@ -237,23 +237,23 @@ Plans:
 **Plans**: 8 plansPlans:
 **Wave 1**
 
-- [ ] 119-01-PLAN.md — Remove --likert-only completely + delete the 4 dead voterNavigation helpers (dev-seed-green gate)
+- [x] 119-01-PLAN.md — Remove --likert-only completely + delete the 4 dead voterNavigation helpers (dev-seed-green gate)
 - [ ] 119-02-PLAN.md — UNBLK-03: reconcile default.ts docstrings + defensive hideIfMissingAnswers, verified in the running app (SC3)
-- [ ] 119-05-PLAN.md — Production data-testid additions (Video, popups, arguments, infoSections, terms, filter toggle, About) + testIds registry
+- [x] 119-05-PLAN.md — Production data-testid additions (Video, popups, arguments, infoSections, terms, filter toggle, About) + testIds registry
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 119-03-PLAN.md — Hand-author perm-question-video / perm-interactive-info / perm-org-matching + register (EPERM-06/07/10)
-- [ ] 119-06-PLAN.md — EPERM fixtures: expectVideo / expectInfoMode|Sections|Arguments / popupNotice / org-match + About readers
+- [x] 119-03-PLAN.md — Hand-author perm-question-video / perm-interactive-info / perm-org-matching + register (EPERM-06/07/10)
+- [x] 119-06-PLAN.md — EPERM fixtures: expectVideo / expectInfoMode|Sections|Arguments / popupNotice / org-match + About readers
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 119-04-PLAN.md — Rename+extend show-feedback-survey, consolidate perm-access-disable, add e2e/base customData.terms + registry (EPERM-09/11/07)
-- [ ] 119-07-PLAN.md — EFLOW fixtures: entityFilters select-all/none, expectSubMatch, trackingIntercept, expectTheme (emulateMedia), nav readers
+- [x] 119-04-PLAN.md — Rename+extend show-feedback-survey, consolidate perm-access-disable, add e2e/base customData.terms + registry (EPERM-09/11/07)
+- [x] 119-07-PLAN.md — EFLOW fixtures: entityFilters select-all/none, expectSubMatch, trackingIntercept, expectTheme (emulateMedia), nav readers
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 119-08-PLAN.md — One smoke/probe per new fixture (SC2), run once against the running app
+- [x] 119-08-PLAN.md — One smoke/probe per new fixture (SC2), run once against the running app
 
 **UI hint**: no
 
@@ -455,7 +455,7 @@ The three workstreams are largely independent and may be planned/executed concur
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 118. E2E Coverage Audit + Coverage Plan | v2.14 | 3/4 | In progress | - |
-| 119. E2E Fixtures & Helpers + Seed | v2.14 | 0/TBD | Not started | - |
+| 119. E2E Fixtures & Helpers + Seed | v2.14 | 7/8 | In Progress|  |
 | 120. E2E Specs — Settings-Permutation Matrix | v2.14 | 0/TBD | Not started | - |
 | 121. E2E Specs — Flow Coverage | v2.14 | 0/TBD | Not started | - |
 | 122. E2E Specs — Bank-Auth Round-Trip | v2.14 | 0/TBD | Not started | - |
