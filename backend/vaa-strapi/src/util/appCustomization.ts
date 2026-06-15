@@ -1,5 +1,8 @@
 import { staticSettings } from '@openvaa/app-shared';
+import ar from './translations/ar/dynamic.json';
+import da from './translations/da/dynamic.json';
 import en from './translations/en/dynamic.json';
+import et from './translations/et/dynamic.json';
 import fi from './translations/fi/dynamic.json';
 import sv from './translations/sv/dynamic.json';
 
@@ -11,7 +14,10 @@ export function getDynamicTranslations(): Array<TranslationOverride> {
 
   // TODO: Move translations from frontend to @openvaa/app-shared and use those instead of hardcoding these copied files
   const translationsFromFiles = {
+    ar: flattenKeys(ar),
+    da: flattenKeys(da),
     en: flattenKeys(en),
+    et: flattenKeys(et),
     fi: flattenKeys(fi),
     sv: flattenKeys(sv)
   };
