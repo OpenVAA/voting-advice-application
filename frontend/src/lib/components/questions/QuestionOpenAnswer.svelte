@@ -61,7 +61,8 @@ Display an `Entity`’s open answer to a question. If the content is empty, noth
         <span class="opacity-0">{$t('common.expandOrCollapse')}</span>
       </button>
     {/if}
-    <span class="col-start-1 row-start-1 m-md before:content-[open-quote] after:content-[close-quote]">
+    <!-- Free-text answers are user-supplied; auto-detect direction so mixed/RTL content is not corrupted. -->
+    <span dir="auto" class="col-start-1 row-start-1 m-md before:content-[open-quote] after:content-[close-quote]">
       {content}
     </span>
   </div>
