@@ -93,7 +93,6 @@ export function createQuestionInfo(page: Page): QuestionInfoFixture {
   const popupButton = page.getByTestId(testIds.voter.questions.popupInfoButton);
   const popupModal = page.getByTestId(testIds.voter.questions.popupInfoModal);
   const expanderButton = page.getByTestId(testIds.voter.questions.infoButton);
-  const infoSection = page.getByTestId(testIds.voter.questions.infoSection);
   const argumentGroup = page.getByTestId(testIds.voter.questions.argumentGroup);
 
   return {
@@ -112,8 +111,15 @@ export function createQuestionInfo(page: Page): QuestionInfoFixture {
     },
 
     async expectInfoSections(sections: ReadonlyArray<number>): Promise<void> {
+      // QuestionExtendedInfo.svelte bakes the section index INTO the testid
+      // (`data-testid="voter-questions-info-section-{index}"`,
+      // QuestionExtendedInfo.svelte:58), so each section is an exact-match
+      // distinct testid — NOT a `.nth(index)` slice of a shared base testid.
+      // Playwright's `getByTestId` is an exact match, so the base
+      // `voter-questions-info-section` never matches `…-section-0` (Phase 120-01
+      // trace-confirmed fixture/component mismatch; see 120-01-PROBE-DIAGNOSIS.md).
       for (const index of sections) {
-        await expect(infoSection.nth(index)).toBeVisible();
+        await expect(page.getByTestId(`${testIds.voter.questions.infoSection}-${index}`)).toBeVisible();
       }
     },
 

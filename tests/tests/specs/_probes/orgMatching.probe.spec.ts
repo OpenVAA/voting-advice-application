@@ -35,18 +35,30 @@ import { expect, test } from '../../fixtures/voter/views';
 import { answerAndAdvanceToResults, walkUntilQuestionsIntro } from '../../fixtures/voter/voter-journey.fixture';
 
 test.describe('@probe org-matching readers (EPERM-10)', () => {
-  test('results org-match score gauge renders on the parties tab', async ({ page, resultsPage }) => {
+  test('org card with a match score renders on the parties tab', async ({ page, resultsPage }) => {
     // Answer at max through to /results so org match scores compute.
     await walkUntilQuestionsIntro(page);
     await answerAndAdvanceToResults(page, 'max');
 
-    // Switch to the parties/orgs tab and assert the org card's score gauge
-    // reads out. The first org card scopes the gauge (no org-scoped id needed).
+    // Switch to the parties/orgs tab and assert the first org card renders with
+    // its match callout (the org-matching mode produces a computed score — here
+    // [OR1] Party One reads out a non-empty match).
     await resultsPage.selectEntityTab('orgs');
-    // Indexer target: the FIRST org card scopes the gauge (the org-matching
-    // mode produces a distinguishable score; the probe only proves the readout).
-    const gauge = await resultsPage.expectOrgMatchScore(() => 0);
-    await expect(gauge).toBeVisible();
+    const firstOrgCard = resultsPage.getEntityCards().first();
+    await expect(firstOrgCard).toBeVisible();
+    // The match callout text carries the score readout (MatchScore renders the
+    // "<n>% match" string in the card header).
+    await expect(firstOrgCard).toContainText('%');
+
+    // NOTE (Phase 120-01): the strict score-GAUGE reader
+    // (`resultsPage.expectOrgMatchScore`) targets `testIds.voter.results.scoreGauge`
+    // (`score-gauge`), but the RESULTS-LIST card renders its callout via
+    // MatchScore.svelte (a `<span>` with the "% match" text), NOT ScoreGauge.svelte
+    // (`score-gauge` is only emitted inside the entity-details SubMatches drawer).
+    // Wiring expectOrgMatchScore to the list-card score (add a stable testid to
+    // MatchScore, or re-point the reader) is an EPERM-10 SPEC concern (Plan 06) —
+    // trace-confirmed in 120-01-PROBE-DIAGNOSIS.md. The probe proves the org card
+    // + computed match readout against the active org-matching seed.
   });
 
   test('About-page org-matching disclosure renders for an active mode', async ({ aboutPage }) => {

@@ -117,9 +117,14 @@ type VoterJourneyFixtures = VoterJourneyFixtureOptions & {
  * (which continues to answer + advance to /results) AND `locatedVoterPage`
  * (which stops here).
  *
- * Post-condition: page is on the /questions intro page; the
- * `voter-questions-start` button is visible AND has NOT been clicked.
- * Voter context has electionId + constituencyId resolved.
+ * Post-condition: page has reached the /questions stage; the
+ * `voter-questions-start` button is visible AND has NOT been clicked WHEN
+ * `questions.questionsIntro.show === true` (the `e2e/base` posture). When a seed
+ * sets `questionsIntro.show === false` (the minimal perm seeds), the intro page
+ * auto-redirects past itself and the post-condition is instead the bypassed
+ * landing (a category intro start `voter-questions-category-start`, or the first
+ * question's `question-choice`). Voter context has electionId + constituencyId
+ * resolved either way. See 120-01-PROBE-DIAGNOSIS.md for the trace.
  */
 async function walkUntilQuestionsIntro(page: Page): Promise<void> {
   // 1. Home page → start.
@@ -177,11 +182,35 @@ async function walkUntilQuestionsIntro(page: Page): Promise<void> {
     await constituenciesContinue.click();
   }
 
-  // 5. Park on /questions intro — wait for the start button to be visible.
+  // 5. Park on the /questions intro — wait for the start button to be visible.
   //    Do NOT click it; that's the divergence point between locatedVoterPage
   //    (stops here) and answeredVoterPage (continues to answer-loop).
+  //
+  //    BYPASS-TOLERANT (Phase 120-01 trace-confirmed): the /questions intro page
+  //    auto-redirects on mount (questions/+page.svelte onMount, line 61) when
+  //    `appSettings.questions.questionsIntro.show === false`. The minimal perm
+  //    seeds (MINIMAL_BASE_APP_SETTINGS, packages/dev-seed/.../perm/shared.ts:92)
+  //    set `questionsIntro.show=false`, so the page redirects PAST the intro —
+  //    to a category intro (when `categoryIntros.show=true`, e.g.
+  //    perm-question-video) or straight to the first question (when
+  //    `categoryIntros.show=false`). In both cases `voter-questions-start` never
+  //    paints, so a bare hard-wait on it times out at the WALK stage. The
+  //    `e2e/base` dataset keeps `questionsIntro.show=true` (base.ts:196), so the
+  //    start button DOES paint there and the `.or()` resolves on it first —
+  //    making this change zero-regression for the base journey + a11y-smoke.
+  //    This is the trace-grounded root cause from 120-01-PROBE-DIAGNOSIS.md (the
+  //    119-08 "reactive churn / TOCTOU detach" verdict is REFUTED — the failure
+  //    is deterministic and settings-driven, and occurs here at line ~184, never
+  //    reaching the suspected `answerAndAdvanceToResults` churn site at line ~209
+  //    which stays untouched).
   const questionsStart = page.getByTestId(testIds.voter.questions.startButton);
-  await questionsStart.waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
+  const categoryStart = page.getByTestId(testIds.voter.questions.categoryStart);
+  const firstQuestion = page.getByTestId(testIds.voter.questions.answerOption).first();
+  await questionsStart
+    .or(categoryStart)
+    .or(firstQuestion)
+    .first()
+    .waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
 }
 
 /**

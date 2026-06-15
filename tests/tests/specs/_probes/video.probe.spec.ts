@@ -52,16 +52,21 @@ test.describe('@probe video fixture (EPERM-06)', () => {
   test('expectVideo(false) on a category intro; expectVideo(true) on a video question', async ({ page }) => {
     const video = createVideoReader(page);
 
-    // Located walk to the /questions intro page.
+    // Located walk to the /questions stage. With perm-question-video the seed
+    // sets `questions.questionsIntro.show=false` (MINIMAL_BASE_APP_SETTINGS), so
+    // the intro page auto-redirects on mount PAST the `voter-questions-start`
+    // button straight to the category intro (`categoryIntros.show=true` here).
+    // walkUntilQuestionsIntro is bypass-tolerant (Phase 120-01) and lands on the
+    // category intro directly. See 120-01-PROBE-DIAGNOSIS.md.
     await walkUntilQuestionsIntro(page);
 
-    // Fire the intro start via dispatchEvent (churn-robust) → category intro.
-    const start = page.getByTestId(testIds.voter.questions.startButton);
-    await expect(start).toBeEnabled();
-    await start.dispatchEvent('click');
+    // Under perm-question-video the questions-intro is bypassed (show=false) and
+    // walkUntilQuestionsIntro deterministically lands on the category intro
+    // (categoryIntros.show=true). No questions-start dispatch is needed — the
+    // page is already on the category intro. See 120-01-PROBE-DIAGNOSIS.md.
+    const categoryStart = page.getByTestId(testIds.voter.questions.categoryStart);
 
     // On the category intro: NO question video here (seeded on questions only).
-    const categoryStart = page.getByTestId(testIds.voter.questions.categoryStart);
     await expect(categoryStart).toHaveAttribute('href', /\/questions\//, { timeout: 15_000 });
     await video.expectVideo(false);
 

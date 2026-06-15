@@ -44,6 +44,16 @@ test.describe('@probe popupNotice fixture (EPERM-09)', () => {
     await walkUntilQuestionsIntro(page);
     await answerAndAdvanceToResults(page, 'max');
 
+    // The popup queue is FIFO and shows ONE popup at a time
+    // (popupState.svelte.ts: `#current = $derived(#queue[0])`). With both the
+    // feedback (delay 1s) AND survey (delay 1s) countdowns active on /results,
+    // the feedback popup occupies the queue head and the survey popup is queued
+    // BEHIND it — so the survey only surfaces once the feedback popup is
+    // dismissed (Phase 120-01 trace-confirmed; see 120-01-PROBE-DIAGNOSIS.md).
+    // Dismiss the leading feedback popup first, then assert the survey popup.
+    await popups.expectVisible('feedback');
+    await popups.dismiss('feedback');
+
     await popups.expectVisible('survey');
     await popups.dismissAndReload('survey');
   });
