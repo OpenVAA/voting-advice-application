@@ -62,9 +62,11 @@ completed: 2026-06-15
 
 **Eight smoke/probes (one per new Phase-119 fixture) establishing the `tests/tests/specs/_probes/` convention; typecheck:tests + the locator guard stay green with the probes present (SC1); 4/8 confirmed green against the live app, 4 blocked at the running-app checkpoint by perm-seed voter-journey reactive-churn instability + local-env degradation (honest partial — NOT fabricated).**
 
-## Status: PAUSED AT RUNNING-APP CHECKPOINT (Task 3)
+## Status: COMPLETE (operator-deferred Task-3 live-greens to Phase 120)
 
-Tasks 1 & 2 (author + statically verify all 8 probes) are COMPLETE and committed. Task 3 (run each probe green against the running app — `checkpoint:human-verify`) is PARTIALLY complete: 4 of 8 probes were run green against a live Vite frontend + local Supabase this session; 4 are blocked by environment/fixture instability that requires shared-fixture hardening beyond this plan's scope (Rule 4) and/or a clean environment. Per the plan's non-autonomous contract, probe results are reported honestly — no green run is fabricated.
+**SC1 GREEN; SC2 PARTIAL** (4/8 live-proven; 4/8 deferred to Phase 120 pending an isolation-first re-diagnosis). Tasks 1 & 2 (author + statically verify all 8 probes) are COMPLETE and committed. Task 3 (run each probe green against the running app — `checkpoint:human-verify`) reached the running-app checkpoint with 4 of 8 probes proven green against a live Vite frontend + local Supabase; the remaining 4 (video, popupNotice, orgMatching, questionInfo) were blocked at the checkpoint.
+
+**Operator resolution (2026-06-15):** the operator DEFERRED the 4 not-yet-live-green probes to **Phase 120**. Plan 119-08 closes now on the basis of: all 8 probes authored + statically verified (SC1 green) + 4/8 live-proven. SC2 is recorded as PARTIAL with an explicit Phase-120 carry-forward (see Next Phase Readiness + `deferred-items.md` → `DEF-119-08-01`). The operator attached two binding conditions to the deferral — (1) the 4 probes must first be re-tested in TRUE ISOLATION before any fix, and (2) the current root-cause diagnosis is to be treated as UNCONFIRMED and independently re-diagnosed. Both conditions are recorded below and in the deferred-items log. Per the plan's non-autonomous contract, probe results are reported honestly — no green run is fabricated; the 4 deferred probes remain NOT live-proven.
 
 ## Performance
 
@@ -136,13 +138,39 @@ Tasks 1 & 2 (author + statically verify all 8 probes) are COMPLETE and committed
 
 ## Issues Encountered
 
+> ### ⚠ UNCONFIRMED DIAGNOSIS (operator-flagged)
+>
+> The root-cause verdict below — that the minimal perm seeds make `voterCtx.selectedQuestionBlocks`
+> churn enough to (a) detach the `voter-questions-start` `<Button>` mid-click (TOCTOU) and (b)
+> intermittently never mount it, while the full `e2e/base` seed "doesn't churn this way" — is to be
+> treated as an **UNVERIFIED HYPOTHESIS, NOT an established conclusion.** Phase 120 must independently
+> RE-DIAGNOSE before any fix; this explanation must NOT be carried forward as if proven. The operator's
+> three specific objections, to be recorded and answered in Phase 120:
+>
+> 1. **Counterintuitive seed-size inversion:** it is counterintuitive that a SMALLER seed (1–5
+>    questions) would churn MORE than the larger `e2e/base` seed — naively, less data should be MORE
+>    stable, not less. The claimed direction of the effect is unexplained.
+> 2. **Two failure modes conflated under one banner:** the verdict lumps two DISTINCT failures —
+>    mid-click detach (TOCTOU) vs. never-mounts — under a single "reactive churn" label WITHOUT an
+>    actual trace or measurement separating them. They may have different (or unrelated) causes.
+> 3. **Unaddressed env confound:** the degraded Vite session (stale modules, /results cold-start
+>    timeouts) is an unaddressed CONFOUND that could ITSELF produce intermittent mount failures
+>    independent of seed size — the evidence was gathered in a contaminated, multi-run, degraded-env
+>    session and cannot distinguish seed-churn from env-staleness.
+>
+> Phase 120 MUST first re-test the 4 deferred probes in TRUE ISOLATION (fresh/clean env, minimal
+> mixing with other tests/seeds) to obtain a trusted signal before accepting or rejecting the
+> hypothesis below. See `deferred-items.md` → `DEF-119-08-01`.
+
 - **Port 5173 occupied by the broken Docker production build** (the known env blocker: monorepo Tailwind v3/v4 hoist conflict; the served HTML carries no `data-testid`s). Worked around by starting a Vite dev server on 5174 and pointing Playwright at it via `FRONTEND_PORT=5174`.
-- **Perm-seed voter-journey reactive-churn instability (the primary blocker):** the minimal perm templates (1–5 questions) make `voterCtx.selectedQuestionBlocks` churn enough that the `voter-questions-start` `<Button>` (a) detaches mid-`.click()` in `answerAndAdvanceToResults:209` and (b) intermittently never appears for `walkUntilQuestionsIntro:184`. This is a shared-fixture robustness gap, not a probe/fixture-under-test defect, and a safe fix is not available without a Rule-4 change to the broadly-used journey fixture (the one-line `dispatchEvent` attempt regressed base).
-- **Local-env degradation across the session:** after many runs + repeated perm re-seeds, the long-lived Vite dev server began missing the /results 15s cold-start budget (matches the MEMORY note "Vite HMR serves stale SSR/large modules mid-e2e-debug; restart dev server to trust results"). The trusted signals are the earlier clean runs.
+- **[UNVERIFIED HYPOTHESIS — re-diagnose in Phase 120] Perm-seed voter-journey reactive-churn instability (the original suspected blocker):** the minimal perm templates (1–5 questions) *appeared* to make `voterCtx.selectedQuestionBlocks` churn enough that the `voter-questions-start` `<Button>` (a) detaches mid-`.click()` in `answerAndAdvanceToResults:209` and (b) intermittently never appears for `walkUntilQuestionsIntro:184`. This was *read* as a shared-fixture robustness gap rather than a probe/fixture-under-test defect, and a safe fix was deemed unavailable without a Rule-4 change to the broadly-used journey fixture (the one-line `dispatchEvent` attempt regressed base). **This observation is retained as the raw symptom, but its causal explanation is the operator-flagged UNCONFIRMED diagnosis above — it must NOT be treated as fact and must be independently re-diagnosed in isolation in Phase 120.**
+- **Local-env degradation across the session (a CONFOUND on the diagnosis above):** after many runs + repeated perm re-seeds, the long-lived Vite dev server began missing the /results 15s cold-start budget (matches the MEMORY note "Vite HMR serves stale SSR/large modules mid-e2e-debug; restart dev server to trust results"). The trusted signals are the earlier clean runs. Because this degradation could itself produce the intermittent mount failures, the perm-seed evidence is contaminated and cannot be trusted as a clean signal (operator objection 3).
 
-## CHECKPOINT (Task 3 — human-verify): operator action required
+## CHECKPOINT (Task 3 — human-verify): RESOLVED — operator deferred 4 probes to Phase 120
 
-**To complete SC2, run the remaining/blocked probes once green against a CLEAN running app.** Claude can run the seeding + Playwright; the operator confirms the result and/or sanctions the shared-fixture hardening.
+**Resolution (2026-06-15):** the operator chose option (b) below — defer the 4 perm-seeded probes' live-green to the Phase-120 spec wiring — with the two binding conditions recorded in Next Phase Readiness + `deferred-items.md` (`DEF-119-08-01`). The verification recipe below is retained as the reproducible setup Phase 120 inherits (to be run in TRUE ISOLATION per CONDITION 1).
+
+**To complete SC2 in Phase 120, run the remaining/blocked probes once green against a CLEAN running app.** Claude can run the seeding + Playwright; the operator confirms the result and/or sanctions the shared-fixture hardening.
 
 **Environment setup (sidesteps the broken Docker stack):**
 1. Local Supabase already running (`yarn db:status` to confirm).
@@ -173,8 +201,16 @@ Tasks 1 & 2 (author + statically verify all 8 probes) are COMPLETE and committed
 ## Next Phase Readiness
 
 - **SC1: GREEN** — all 8 probes typecheck + pass the locator guard with the probes present.
-- **SC2: PARTIAL** — 4/8 probes proven green live (theme, trackingIntercept, navMenu, entityFilters); 4/8 await the running-app checkpoint (perm-seed journey hardening + clean env).
+- **SC2: PARTIAL** — 4/8 probes proven green live (theme, trackingIntercept, navMenu, entityFilters); 4/8 (video, popupNotice, orgMatching, questionInfo) **operator-deferred to Phase 120** (NOT live-proven). Plan 119-08 closes on SC1-green + 4/8-live; the remaining live-greens carry forward.
 - The probe convention + the documented arming/navigation patterns are ready for the Phase-120/121 spec phases to reuse (and those phases add the proper `_probes` project wiring anyway).
+
+### Operator deferral (2026-06-15) — Phase 120 carry-forward
+
+The operator deferred the 4 not-yet-live-green probes to Phase 120 with **two binding conditions** that shape how Phase 120 must handle them. Both are recorded in `deferred-items.md` → `DEF-119-08-01`:
+
+- **CONDITION 1 — Isolation-first diagnosis:** in Phase 120 the 4 deferred probes (video, popupNotice, orgMatching, questionInfo) MUST first be re-tested in TRUE ISOLATION — minimal mixing with other tests/seeds, a fresh/clean env — to diagnose the failures correctly. The current evidence came from a contaminated, multi-run, degraded-env session (stale long-lived Vite server, /results cold-start timeouts, repeated perm re-seeds) and must NOT be trusted as a clean signal.
+- **CONDITION 2 — Diagnosis flagged UNCONFIRMED:** the recorded root-cause verdict (perm-seed `selectedQuestionBlocks` reactive churn → start-Button detach + never-mounts; `e2e/base` "doesn't churn this way") is UNCONFIRMED / SUSPICIOUS, NOT fact. Phase 120 must independently RE-DIAGNOSE before any fix. The operator's three objections (seed-size inversion is counterintuitive; mid-click-detach vs. never-mounts are conflated without a trace; the degraded Vite env is an unaddressed confound) are recorded in the ⚠ UNCONFIRMED DIAGNOSIS caveat above.
+- **Suspected-but-unconfirmed work item:** the shared `voter-journey.fixture.ts` intro-start hardening is the *suspected* fix, but is NOT to be applied until the isolation-first re-diagnosis confirms it; it should be done with the proper `_probes` setup-project wiring that Phase 120 adds (which keeps perm seeds out of the shared serial chain).
 
 ## Self-Check: PASSED
 
@@ -186,4 +222,4 @@ Tasks 1 & 2 (author + statically verify all 8 probes) are COMPLETE and committed
 
 ---
 *Phase: 119-e2e-fixtures-helpers-seed*
-*Completed (Tasks 1-2; Task 3 paused at checkpoint): 2026-06-15*
+*Completed: 2026-06-15 (Tasks 1-2 done; Task 3 checkpoint RESOLVED — operator deferred 4 probes' live-green to Phase 120 with isolation-first + UNCONFIRMED-diagnosis conditions).*
