@@ -270,7 +270,23 @@ Plans:
   4. The survey/feedback popup-coordination perm is extended (not duplicated) to verify placement, timing, no double-pop, and dismiss persistence, and `organizationMatching` disclosure text on the About page is asserted across none/answersOnly/impute (EPERM-09/10).
   5. Every EPERM spec passes 3× deterministically (fresh server, clean DB).
 
-**Plans**: TBD
+**Plans**: 8 plans
+Plans:
+
+**Part 1 — close Phase 119 (probe gate, D-01/D-03)**
+
+- [ ] 120-01-PLAN.md — Wire the committed `_probes` Playwright project + trace-first re-diagnosis of the 4 deferred probes in true isolation (CONDITION 1/2) [EPERM-06/07/09/10 de-risk]
+- [ ] 120-02-PLAN.md — Run `/gsd-verify-work 119` to formally close Phase 119 (UAT test #1) — the gate before Part 2
+
+**Part 2 — author the EPERM specs**
+
+- [ ] 120-03-PLAN.md — EPERM-04/05 voter-journey extensions (candidate+org tab control, org-typed missing markers) + re-confirm EPERM-01/02/03/08 [EPERM-01/02/03/04/05/08]
+- [ ] 120-04-PLAN.md — NEW `perm-question-video` perm node (voter visibility matrix + candidate hideVideo) [EPERM-06]
+- [ ] 120-05-PLAN.md — NEW `perm-interactive-info` perm node (popup+expander+infoSections+per-type arguments) + customData.terms voter-journey extension [EPERM-07]
+- [ ] 120-06-PLAN.md — NEW `perm-org-matching` perm node (3-mode exact-score matrix + About disclosure) [EPERM-10]
+- [ ] 120-07-PLAN.md — EPERM-09 git mv rename + extend `perm-show-feedback-survey` (feedback+survey popup coordination) [EPERM-09]
+- [ ] 120-08-PLAN.md — EPERM-11 consolidate 2→1 `perm-access-disable` (voterApp/candidateApp/underMaintenance) [EPERM-11]
+
 **UI hint**: yes
 
 #### Phase 121: E2E Specs — Flow Coverage
@@ -456,7 +472,7 @@ The three workstreams are largely independent and may be planned/executed concur
 |-------|-----------|----------------|--------|-----------|
 | 118. E2E Coverage Audit + Coverage Plan | v2.14 | 3/4 | In progress | - |
 | 119. E2E Fixtures & Helpers + Seed | v2.14 | 8/8 | Pending verify | - |
-| 120. E2E Specs — Settings-Permutation Matrix | v2.14 | 0/TBD | Not started | - |
+| 120. E2E Specs — Settings-Permutation Matrix | v2.14 | 0/8 | Not started | - |
 | 121. E2E Specs — Flow Coverage | v2.14 | 0/TBD | Not started | - |
 | 122. E2E Specs — Bank-Auth Round-Trip | v2.14 | 0/TBD | Not started | - |
 | 123. Svelte 5 Idiom Polish — Lifecycle & Reactive-State | v2.14 | 0/TBD | Not started | - |
