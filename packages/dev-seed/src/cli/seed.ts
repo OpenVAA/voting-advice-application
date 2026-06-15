@@ -80,13 +80,16 @@ try {
   const builtIns = await loadBuiltIns();
   const template = await resolveTemplate(templateArg, builtIns.templates);
 
-  // Apply --seed override (parse string to int; reject non-numeric).
+  // Apply --seed override (parse string to int; reject non-integer). Validate
+  // the FULL token first — `Number.parseInt('12abc', 10)` returns 12, silently
+  // accepting a typo'd seed as a different-but-valid deterministic dataset.
+  // A strict integer-only regex rejects partial-numeric/garbage input loudly.
   if (values.seed !== undefined) {
-    const parsed = Number.parseInt(values.seed, 10);
-    if (!Number.isFinite(parsed)) {
+    if (!/^-?\d+$/.test(values.seed)) {
       process.stderr.write(`Error: --seed must be an integer (got '${values.seed}').\n`);
       process.exit(1);
     }
+    const parsed = Number.parseInt(values.seed, 10);
     (template as Template & { seed?: number }).seed = parsed;
   }
 
