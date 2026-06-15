@@ -4,7 +4,7 @@ milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
 status: verifying
 stopped_at: Phase 120 context gathered
-last_updated: "2026-06-15T10:56:20.739Z"
+last_updated: "2026-06-15T11:25:13.452Z"
 last_activity: 2026-06-15 -- Phase 119 all plans complete; held pending UAT (see 119-UAT.md)
 progress:
   total_phases: 15
