@@ -336,7 +336,7 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   const inputContainerClass =
     'flex min-h-touch items-center justify-between gap-2 overflow-hidden rounded-lg bg-[var(--inputBgColor)]';
   const inputLabelClass = 'label-sm label pointer-events-none min-w-[4rem] mx-md my-2 px-0 text-secondary';
-  const inputAndIconContainerClass = 'flex grow justify-end items-center pr-8';
+  const inputAndIconContainerClass = 'flex grow justify-end items-center pe-8';
   const inputClass =
     'input input-sm input-ghost grow justify-end px-0 text-end w-full disabled:border-none disabled:bg-[var(--inputBgColor)] disabled:text-neutral';
   const selectClass =
@@ -512,8 +512,8 @@ The input itself is wrapped in multiple container elements, the outermost of whi
           {#if isLoading}
             <Loading inline />
           {:else if url}
-            <div class="flex w-60 items-center justify-center overflow-hidden {locked ? 'mr-8' : '-mr-8'}">
-              <img src={url} alt={label} class="h-full w-full object-cover" class:rounded-r-lg={!locked} />
+            <div class="flex w-60 items-center justify-center overflow-hidden {locked ? 'me-8' : '-me-8'}">
+              <img src={url} alt={label} class="h-full w-full object-cover" class:rounded-e-lg={!locked} />
             </div>
             <span class="sr-only">{$t('components.input.changeImage')}</span>
           {:else if !isDisabled}
@@ -561,7 +561,7 @@ The input itself is wrapped in multiple container elements, the outermost of whi
             {id}
             disabled={isDisabled}
             {placeholder}
-            {...concatClass($$restProps, 'toggle toggle-primary mr-md')}
+            {...concatClass($$restProps, 'toggle toggle-primary me-md')}
             checked={!!value}
             on:change={handleChange} />
 

@@ -66,12 +66,12 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
   style:--background-position={$topBarSettings.imageSrc && $appSettings.headerStyle.imgPosition}>
   {#if $topBarSettings.progress === 'show'}
     <progress
-      class="progress progress-primary absolute left-0 top-0 h-2"
+      class="progress progress-primary absolute start-0 top-0 h-2"
       value={$currentProgress}
       max={$maxProgress}
       title={$t('common.progress')} />
   {/if}
-  <div class="inner-actions-bar flex w-full items-center justify-between pr-6" style:--background-color={bgColor}>
+  <div class="inner-actions-bar flex w-full items-center justify-between pe-6" style:--background-color={bgColor}>
     <!-- invertLogo ? 'text-primary-content' : 'text-neutral' -->
     <button
       on:click={openDrawer}

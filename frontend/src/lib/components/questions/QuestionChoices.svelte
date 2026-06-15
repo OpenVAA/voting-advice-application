@@ -219,7 +219,7 @@ The same component can also be used to display the answers of the voter and anot
     {#if vertical}
       <div
         aria-hidden="true"
-        class="absolute left-16 w-4 -translate-x-1/2 bg-[oklch(var(--line-bg))]"
+        class="absolute start-16 w-4 -translate-x-1/2 bg-[oklch(var(--line-bg))]"
         style="grid-column: 2; height: calc(100% / {choices?.length} * {(choices?.length ?? 0) -
           1}); top: calc(50% / {choices?.length})" />
     {:else}

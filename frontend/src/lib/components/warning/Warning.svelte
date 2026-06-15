@@ -28,7 +28,7 @@ A simple warning component to be used with BasicPage
   <div>
     <Icon name="warning" />
   </div>
-  <div class="flex-grow text-left">
+  <div class="flex-grow text-start">
     <slot />
   </div>
 </div>
