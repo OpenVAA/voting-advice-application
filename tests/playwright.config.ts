@@ -231,6 +231,31 @@ export default defineConfig({
       dependencies: ['data-setup-base']
     },
 
+    // === _probes (fixtures-first isolation probes) — LEAF, no data-setup ===
+    //
+    // The 4 deferred perm-seeded probes (video→EPERM-06, questionInfo→EPERM-07,
+    // popupNotice→EPERM-09, orgMatching→EPERM-10) live under
+    // ./tests/specs/_probes. They are DELIBERATELY OUTSIDE the perm serial-DAG
+    // chain: each clobbers the shared `app_settings` JSONB singleton, so they
+    // MUST run ONE-AT-A-TIME in true isolation, seeded OUT-OF-BAND per the probe
+    // header (`yarn db:seed --template <perm>`) and invoked as a single-file run
+    // (`npx playwright test <probe> --project=_probes`). There is intentionally
+    // NO data-setup dependency — folding the perm seeds into the shared serial
+    // chain would clobber app_settings between probes. The isolation contract
+    // lives in the RUN discipline, not in a setup project.
+    //
+    // `testMatch` is scoped to the 4 DEFERRED probe files only. The 4
+    // already-green probes (entityFilters/navMenu/theme/trackingIntercept) share
+    // the `*.probe.spec.ts` glob but are excluded here so a project run never
+    // serially clobbers the singleton across all 8.
+    {
+      name: '_probes',
+      testDir: './tests/specs/_probes',
+      testMatch: /(video|questionInfo|popupNotice|orgMatching)\.probe\.spec\.ts$/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] }
+    },
+
     // === voter permutations chains ===
     //
     //   - perm specs live under tests/tests/specs/perm/; the voter-app project's
