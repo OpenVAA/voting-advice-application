@@ -20,5 +20,6 @@ Discoveries logged during execution that are OUT OF SCOPE for the plan that foun
   intent for THIS plan's deliverables is satisfied.
 - **Fix:** trivial one-line autofix — `cd packages/dev-seed && yarn lint:fix` (or
   reorder the `permAccessDisableTemplate` import above `permAnswersLockedTemplate`).
-- **Disposition:** deferred to the 119-04 owner / the phase registry-cleanup pass.
-  Not fixed here per SCOPE BOUNDARY (unrelated pre-existing failure in a non-owned file).
+- **Disposition:** ✅ RESOLVED by the execute-phase orchestrator at the post-Wave-3
+  integration gate (`yarn workspace @openvaa/dev-seed lint:fix` — 1-line import reorder).
+  Cross-plan gate failures are orchestrator-owned; `dev-seed lint:check` now exits 0 (errors).
