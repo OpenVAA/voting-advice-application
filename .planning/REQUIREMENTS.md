@@ -44,7 +44,7 @@ New settings-driven branches not yet covered by the existing 19 perm specs.
 - [x] **EPERM-03**: E2E covers results-display permutations — `results.sections[]` (candidate/org/alliance presence) × `results.cardContents[type][]` (submatches/children/answer snippets) — verifying tabs and card content. **NOTE**: Already covered.
 - [x] **EPERM-04**: E2E covers `entityDetails.contents[type][]` tab control per entity type (candidate / organization / alliance) — verifying tab presence/absence and layout stability.
 - [x] **EPERM-05**: E2E covers missing-data markers — `entityDetails.showMissingElectionSymbol[type]` and `entityDetails.showMissingAnswers[type]` per entity type.
-- [ ] **EPERM-06**: E2E covers candidate-app question media toggles — `candidateApp.questions.hideVideo` and `hideHero` combinations. **NOTE**: HideHero covered, video not tested at all. => We need a dedicated Video test.
+- [x] **EPERM-06**: E2E covers candidate-app question media toggles — `candidateApp.questions.hideVideo` and `hideHero` combinations. **NOTE**: HideHero covered, video not tested at all. => We need a dedicated Video test.
 - [ ] **EPERM-07**: E2E covers `questions.interactiveInfo.enabled` — interactive info popup modal vs static expander. **NOTE**: This test should test the interactive info functionality in full.
 - [x] **EPERM-08**: E2E covers `matching.minimumAnswers` gating results availability (located voter with too few answers). **NOTE**: Already covered.
 - [ ] **EPERM-09**: E2E covers survey/feedback popup coordination — `survey.showIn[]` + `results.showSurveyPopup` + `results.showFeedbackPopup` + `header.showFeedback` — verifying placement, timing, no double-pop, and dismiss persistence. **NOTE**: Should be partly covered, extend the current perm, don't introduce a new one.
@@ -147,7 +147,7 @@ Each requirement maps to exactly one roadmap phase (see `.planning/ROADMAP.md` v
 | EPERM-03 | Phase 120 | Complete |
 | EPERM-04 | Phase 120 | Complete |
 | EPERM-05 | Phase 120 | Complete |
-| EPERM-06 | Phase 120 | Pending |
+| EPERM-06 | Phase 120 | Complete |
 | EPERM-07 | Phase 120 | Pending |
 | EPERM-08 | Phase 120 | Complete |
 | EPERM-09 | Phase 120 | Pending |

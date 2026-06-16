@@ -281,7 +281,7 @@ Plans:
 **Part 2 — author the EPERM specs**
 
 - [x] 120-03-PLAN.md — EPERM-04/05 voter-journey extensions (candidate+org tab control, org-typed missing markers) + re-confirm EPERM-01/02/03/08 [EPERM-01/02/03/04/05/08]
-- [ ] 120-04-PLAN.md — NEW `perm-question-video` perm node (voter visibility matrix + candidate hideVideo) [EPERM-06]
+- [x] 120-04-PLAN.md — NEW `perm-question-video` perm node (voter visibility matrix + candidate hideVideo) [EPERM-06]
 - [ ] 120-05-PLAN.md — NEW `perm-interactive-info` perm node (popup+expander+infoSections+per-type arguments) + customData.terms voter-journey extension [EPERM-07]
 - [ ] 120-06-PLAN.md — NEW `perm-org-matching` perm node (3-mode exact-score matrix + About disclosure) [EPERM-10]
 - [ ] 120-07-PLAN.md — EPERM-09 git mv rename + extend `perm-show-feedback-survey` (feedback+survey popup coordination) [EPERM-09]
@@ -472,7 +472,7 @@ The three workstreams are largely independent and may be planned/executed concur
 |-------|-----------|----------------|--------|-----------|
 | 118. E2E Coverage Audit + Coverage Plan | v2.14 | 3/4 | In progress | - |
 | 119. E2E Fixtures & Helpers + Seed | v2.14 | 8/8 | Pending verify | - |
-| 120. E2E Specs — Settings-Permutation Matrix | v2.14 | 3/8 | In Progress|  |
+| 120. E2E Specs — Settings-Permutation Matrix | v2.14 | 4/8 | In Progress|  |
 | 121. E2E Specs — Flow Coverage | v2.14 | 0/TBD | Not started | - |
 | 122. E2E Specs — Bank-Auth Round-Trip | v2.14 | 0/TBD | Not started | - |
 | 123. Svelte 5 Idiom Polish — Lifecycle & Reactive-State | v2.14 | 0/TBD | Not started | - |
