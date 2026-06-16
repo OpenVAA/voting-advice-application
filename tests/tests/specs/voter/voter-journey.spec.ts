@@ -1172,6 +1172,70 @@ test.describe('voter journey', () => {
       const d7 = await entityFilters.openFilterDialog();
       await d7.reset();
       await expect.soft(resultsPage.getEntityCards()).toHaveCount(13, { timeout: TIMEOUTS.page });
+
+    });
+
+    // ====================================================================
+    // EFLOW-01 — categorical select-all/none + text×filter intersection + reset
+    //
+    // Three net-new cells on TOP of the existing per-filter coverage above.
+    // Derived facts (e2e/base, confirmed at build by reading the rendered
+    // dialog):
+    //   - Party filter has 6 options (AA, AB, BA, BB, C, "No answer") → > 3 →
+    //     the single select-all/none flip-toggle RENDERS on it
+    //     (EnumeratedEntityFilter `{#if values.length > 3}`,
+    //     entityFilters.fixture.ts:108-116). The pick-multiple filter has only
+    //     3 options → the toggle is ABSENT there.
+    //   - Text 'polar' narrows the candidate list to exactly 2 (Polar-Max BB
+    //     One in Party BB, Polar-Min BA One in Party BA). Intersecting with
+    //     Party=BB leaves exactly 1 (Polar-Max) — strictly narrower than either
+    //     constraint alone (text=2, BB-party=2). [base.ts:1004-1033]
+    // ====================================================================
+    await test.step('EFLOW-01: select-all/none control, text×filter intersection, reset restores full list', async () => {
+      // (1) SELECT-ALL / SELECT-NONE on the >3-option Party filter.
+      const dSel = await entityFilters.openFilterDialog();
+      const partySel = await dSel.getFilter(/Party/i);
+      // The select-all/none flip-toggle renders only for > 3 options.
+      await expect.soft(partySel.getSelectAllToggle()).toBeVisible({ timeout: TIMEOUTS.element });
+      await partySel.selectAll(); // hard-asserts isAllSelected() === true post-state
+      // All parties selected → the full candidate list shows (every candidate
+      // belongs to one of the selected parties or matches "No answer").
+      await dSel.close();
+      await expect.soft(resultsPage.getEntityCards()).toHaveCount(13, { timeout: TIMEOUTS.page });
+      // Reopen and select NONE → zero cards (no party matches).
+      const dNone = await entityFilters.openFilterDialog();
+      const partyNone = await dNone.getFilter(/Party/i);
+      await partyNone.selectNone(); // hard-asserts no option checked post-state
+      await dNone.close();
+      await expect.soft(resultsPage.getEntityCards()).toHaveCount(0, { timeout: TIMEOUTS.page });
+      // The select-all/none toggle is ABSENT on the ≤3-option pick-multiple
+      // filter (threshold > 3) — assert it does not render there.
+      const dAbsent = await entityFilters.openFilterDialog();
+      const mcAbsent = await dAbsent.getFilter(
+        /pick multiple|multipleChoiceCategorical|\[qu-info-multipleChoiceCategorical\]/i
+      );
+      await expect.soft(mcAbsent.getSelectAllToggle()).toHaveCount(0);
+      await dAbsent.reset();
+      await expect.soft(resultsPage.getEntityCards()).toHaveCount(13, { timeout: TIMEOUTS.page });
+
+      // (2) TEXT × DIALOG-FILTER INTERSECTION. text 'polar' (2 cards) ∩
+      // Party=BB → exactly 1 (Polar-Max BB One) — narrower than either alone.
+      await entityFilters.setTextFilter('polar');
+      await expect.soft(resultsPage.getEntityCards()).toHaveCount(2, { timeout: TIMEOUTS.page });
+      const dInt = await entityFilters.openFilterDialog();
+      const partyInt = await dInt.getFilter(/Party/i);
+      await partyInt.setSelection([/^BB/i]);
+      await dInt.close();
+      const intersect = resultsPage.getEntityCards();
+      await expect.soft(intersect).toHaveCount(1, { timeout: TIMEOUTS.page });
+      await expect.soft(intersect.first()).toContainText(TEXT_RE.polarMax);
+
+      // (3) RESET restores the full 13-card list. Clear text AND reset the
+      // dialog filter; the full list returns.
+      await entityFilters.clearTextFilter();
+      const dReset = await entityFilters.openFilterDialog();
+      await dReset.reset();
+      await expect.soft(resultsPage.getEntityCards()).toHaveCount(13, { timeout: TIMEOUTS.page });
     });
 
     // ====================================================================
