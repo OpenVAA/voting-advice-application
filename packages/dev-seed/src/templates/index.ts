@@ -19,6 +19,7 @@ import { perm1e1cg1coTemplate } from './e2e/perm/perm-1e1cg1co';
 import { perm2eAsymmetricTemplate } from './e2e/perm/perm-2e-asymmetric';
 import { perm2eSharedTemplate } from './e2e/perm/perm-2e-shared';
 import { permAccessDisableTemplate } from './e2e/perm/perm-access-disable';
+import { permAnalyticsTrackingTemplate } from './e2e/perm/perm-analytics-tracking';
 import { permAnswersLockedTemplate } from './e2e/perm/perm-answers-locked';
 import { permDisableAllowOpenTemplate } from './e2e/perm/perm-disable-allow-open';
 import { permDisableCandidateAppTemplate } from './e2e/perm/perm-disable-candidate-app';
@@ -108,7 +109,14 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   // re-seed. Distinct externalIdPrefix 'e2e-perm-access-disable-'. The old
   // perm-disable-voter-app/candidate-app keys are RETAINED above because their
   // Phase-120-owned setup consumers still resolve them (Pitfall 3).
-  'perm-access-disable': permAccessDisableTemplate
+  'perm-access-disable': permAccessDisableTemplate,
+
+  // Phase 121 Plan 04 — EFLOW-08 D-01 analytics overlay perm. Seeds the
+  // app_settings analytics platform object (dummy umami code) + trackEvents:true
+  // so the voter-prefs-tracking spec (Plan 06) can arm trackingIntercept.
+  // Distinct externalIdPrefix 'e2e-perm-analytics-'. Consent NOT seeded —
+  // toggled at runtime by the spec.
+  'perm-analytics-tracking': permAnalyticsTrackingTemplate
 };
 
 /**
@@ -134,6 +142,7 @@ export { perm1e1cg1coTemplate } from './e2e/perm/perm-1e1cg1co';
 export { perm2eAsymmetricTemplate } from './e2e/perm/perm-2e-asymmetric';
 export { perm2eSharedTemplate } from './e2e/perm/perm-2e-shared';
 export { permAccessDisableTemplate } from './e2e/perm/perm-access-disable';
+export { permAnalyticsTrackingTemplate } from './e2e/perm/perm-analytics-tracking';
 export { permAnswersLockedTemplate } from './e2e/perm/perm-answers-locked';
 export { permDisableAllowOpenTemplate } from './e2e/perm/perm-disable-allow-open';
 export { permDisableCandidateAppTemplate } from './e2e/perm/perm-disable-candidate-app';
