@@ -231,6 +231,38 @@ export default defineConfig({
       dependencies: ['data-setup-base']
     },
 
+    // voter-dark-mode (Phase 121 EFLOW-07) — LEAF. Read-only dark-scheme
+    // regression on the base dataset. Theme is driven via emulateMedia
+    // (prefers-color-scheme) — there is NO toggle and NO localStorage write
+    // (darkMode.svelte.ts derives from matchMedia only). `testMatch` is scoped to
+    // the dark-mode spec; sibling voter-* projects' exact testMatch excludes it.
+    {
+      name: 'voter-dark-mode',
+      testDir: './tests/specs/voter',
+      testMatch: /voter-dark-mode\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-base']
+    },
+
+    // voter-journey-mobile (Phase 121 EFLOW-08) — LEAF. The viewport-agnostic
+    // 'max' voter walk under a mobile descriptor. The descriptor lives here at
+    // project scope (explicit 390×844 isMobile/hasTouch, matching
+    // visual-regression — NOT devices['Pixel 5']); the walk itself is unchanged.
+    // Read-only on the base dataset.
+    {
+      name: 'voter-journey-mobile',
+      testDir: './tests/specs/voter',
+      testMatch: /voter-journey-mobile\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 390, height: 844 },
+        isMobile: true,
+        hasTouch: true
+      },
+      fullyParallel: false,
+      dependencies: ['data-setup-base']
+    },
+
     // === _probes (fixtures-first isolation probes) — LEAF, no data-setup ===
     //
     // The 4 deferred perm-seeded probes (video→EPERM-06, questionInfo→EPERM-07,
@@ -905,6 +937,34 @@ export default defineConfig({
       fullyParallel: false,
       use: { ...devices['Desktop Chrome'] },
       dependencies: ['data-setup-perm-org-matching']
+    },
+
+    // D-01 — perm-analytics-tracking (EFLOW-11). Voter analytics-tracking emission
+    // matrix: the analytics overlay (analytics.platform.name='umami',
+    // trackEvents=true) is a singleton-clobbering app_settings node, so the
+    // tracking-payload spec (voter-prefs-tracking) is hosted HERE under its own
+    // armed singleton rather than as a base leaf. Setup depends on the previous
+    // perm SPEC (perm-org-matching, the verified tail) to preserve the strict
+    // serial chain over the shared app_settings singleton. Unauthenticated voter
+    // slice → no minted storage state. Appended to the perm tail after
+    // perm-org-matching.
+    {
+      name: 'data-setup-perm-analytics-tracking',
+      testMatch: /perm-analytics-tracking\.setup\.ts/,
+      teardown: 'data-teardown-perm-analytics-tracking',
+      dependencies: ['perm-org-matching']
+    },
+    {
+      name: 'data-teardown-perm-analytics-tracking',
+      testMatch: /perm-analytics-tracking\.teardown\.ts/
+    },
+    {
+      name: 'voter-prefs-tracking',
+      testDir: './tests/specs/voter',
+      testMatch: /voter-prefs-tracking\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-perm-analytics-tracking']
     }
   ]
 });
