@@ -578,12 +578,48 @@ test.describe('voter journey', () => {
       await expect.soft(infoButtonQ2).toHaveCount(0, { timeout: TIMEOUTS.element });
     });
 
+    // EPERM-07 customData.terms extension (additive, against e2e/base; the
+    // `terms` block was seeded on Base-3 / qu-opin-base-3-likert7 in Phase 119,
+    // base.ts:782-790). The trigger 'Likert' appears verbatim in the Base-3 title
+    // ("Base opinion 3 — Likert 7"), so QuestionHeading renders it as an in-text
+    // <Term> affordance; hovering/focusing the trigger reveals the definition
+    // popup. We are on Base-2 here (Base-1 answered above) — advance to Base-3
+    // WITHOUT answering, assert the term affordance + popup, then resume the
+    // polar-MAX answer walk from Base-3.
+    await test.step('EPERM-07 customData.terms: in-text affordance + definition popup on Base-3', async () => {
+      // Advance Base-2 → Base-3 (answer Base-2 at polar-MAX as the walk requires).
+      await expectQuestionAndAdvance({
+        page,
+        text: TEXT_RE.baseOpinion2Likert4,
+        optionIndex: (n) => n - 1
+      });
+      // Settle on Base-3 by its heading.
+      const questionHeading = page.getByTestId(testIds.voter.questions.heading);
+      await expect.soft(questionHeading).toHaveText(TEXT_RE.baseOpinion3Likert7, { timeout: TIMEOUTS.element });
+
+      // The in-text term trigger renders inside the heading (the 'Likert' token).
+      const termTrigger = page.getByTestId(testIds.voter.questions.termTrigger);
+      await expect(termTrigger.first()).toBeVisible({ timeout: TIMEOUTS.element });
+      await expect.soft(termTrigger.first()).toHaveText(/Likert/i, { timeout: TIMEOUTS.element });
+
+      // The definition popup is mounted only while the trigger is hovered/focused
+      // (Term.svelte W3C APG tooltip pattern). Focus reveals it; assert the
+      // definition content (seeded title + content joined as "title: content").
+      await termTrigger.first().focus();
+      const termPopup = page.getByTestId(testIds.voter.questions.termPopup);
+      await expect(termPopup.first()).toBeVisible({ timeout: TIMEOUTS.element });
+      await expect(termPopup.first()).toContainText(/Likert scale/i, { timeout: TIMEOUTS.element });
+      await expect(termPopup.first()).toContainText(/ordered rating scale/i, { timeout: TIMEOUTS.element });
+      // Blur to dismiss the popup before resuming the answer walk.
+      await termTrigger.first().blur();
+    });
+
     await test.step('answer remaining base questions at polar-MAX, delete answer, results link gated on min answers', async () => {
       // Answer and advance through the rest of the category's questions. We are
-      // on Base-2 here (Base-1 was answered above); the dataset is stable, so the
-      // remaining base questions are known in walk order: Base-2 → 3 → 4 → 5.
+      // on Base-3 here (Base-1/Base-2 answered above; Base-3 reached for the terms
+      // assertion); the dataset is stable, so the remaining base questions are
+      // known in walk order: Base-3 → 4 → 5.
       for (const text of [
-        TEXT_RE.baseOpinion2Likert4,
         TEXT_RE.baseOpinion3Likert7,
         TEXT_RE.baseOpinion4Categorical,
         TEXT_RE.baseOpinion5Boolean
