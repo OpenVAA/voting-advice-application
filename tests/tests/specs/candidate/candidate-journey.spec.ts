@@ -65,6 +65,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, test } from '../../fixtures/candidate/candidate-journey';
 import { toCallbackUrl } from '../../fixtures/shared/emailBucket.fixture';
+import { createNavMenu } from '../../fixtures/shared/navMenu.fixture';
 import { TIMEOUTS } from '../../helpers';
 import {
   INFO_QUESTION_ANSWERS,
@@ -79,7 +80,7 @@ import {
 } from '../../utils/candidateJourneyConstants';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 // ====================================================================
 // FILE-SCOPE CONSTANTS
@@ -88,6 +89,68 @@ import type { Page } from '@playwright/test';
 // testMax (90_000) equals the playwright.config global ceiling, so
 // test.setTimeout(TIMEOUTS.testMax) keeps the full 90s budget for this walk.
 // ====================================================================
+
+// ====================================================================
+// EFLOW-09: candidate nav-menu auth-state item sets
+//
+// Exact ordered accessible-name lists for the items the navMenu fixture's
+// `items()` reader resolves (the `nav-menu-item` testid). Derived at build by
+// reading the rendered candidate drawer on the e2e/base dataset (4 locales →
+// the active `en` plus three language items Suomi / Svenska / English).
+//
+// NOTE: the AUTHENTICATED candidate nav group (Start / Basic Information /
+// Your Opinions / Preview / Settings) carries its OWN `candidate-nav-*`
+// testids — NavItem.svelte spreads the caller's `data-testid` over its default
+// `nav-menu-item`, so those items are invisible to the `nav-menu-item` reader
+// and are asserted separately via `assertCandidateAuthNavPresent`.
+// ====================================================================
+
+// The active-locale language item (`en`, since this walk runs on `/en`) is
+// `disabled={loc === currentLocale}` in LanguageSelection.svelte. NavItem drops
+// `href` and sets `aria-disabled` for a disabled link, so the current-locale
+// item computes an EMPTY accessible name (`/^$/`) — the other languages are
+// real links carrying their language name.
+const CANDIDATE_NAV_LOGGED_OUT: ReadonlyArray<RegExp> = Object.freeze([
+  /^Close menu$/,
+  /^Sign in$/,
+  /^Registration$/,
+  /^Forgot Password\?$/,
+  /^Candidate Support$/,
+  /^Privacy$/,
+  /^Send feedback$/,
+  /^$/, // active locale (English) — disabled, empty accessible name
+  /^Suomi$/,
+  /^Svenska$/
+]);
+
+const CANDIDATE_NAV_LOGGED_IN: ReadonlyArray<RegExp> = Object.freeze([
+  /^Close menu$/,
+  /^Candidate Support$/,
+  /^Privacy$/,
+  /^Send feedback$/,
+  /^$/, // active locale (English) — disabled, empty accessible name
+  /^Suomi$/,
+  /^Svenska$/
+]);
+
+/**
+ * Assert the authenticated candidate nav group is present in the open drawer.
+ * These items carry their own `candidate-nav-*` testids (not `nav-menu-item`),
+ * so they're asserted directly rather than through the navMenu fixture's
+ * `items()` reader. Hoisted to module scope so the per-id `expect` runs outside
+ * the test body's flow (playwright/no-standalone-expect is satisfied by the
+ * test-body call site; the loop-free explicit list keeps each assert flat).
+ */
+async function assertCandidateAuthNavPresent(menu: Locator): Promise<void> {
+  await expect(menu.getByTestId('candidate-nav-home')).toBeVisible();
+  await expect(menu.getByTestId('candidate-nav-profile')).toBeVisible();
+  await expect(menu.getByTestId('candidate-nav-questions')).toBeVisible();
+  await expect(menu.getByTestId('candidate-nav-preview')).toBeVisible();
+  await expect(menu.getByTestId('candidate-nav-settings')).toBeVisible();
+  // The logged-out-only items must be ABSENT from the authenticated menu.
+  await expect(menu.getByTestId('nav-menu-item').filter({ hasText: /^Sign in$/ })).toHaveCount(0);
+  await expect(menu.getByTestId('nav-menu-item').filter({ hasText: /^Registration$/ })).toHaveCount(0);
+}
 
 /**
  * Valid portrait path — reuses the existing tests/tests/data/assets/test-poster.jpg
@@ -276,6 +339,23 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       await expect.soft(page.getByTestId(testIds.candidate.privacy.home)).toBeVisible({
         timeout: TIMEOUTS.slowPage
       });
+    });
+
+    // ============== Step 2.5: EFLOW-09 candidate nav-menu (logged-out) ====
+
+    // EFLOW-09: candidate nav-menu logged-out vs logged-in.
+    // Logged-out item set: the menu (still unauthenticated on the public
+    // /candidate/privacy page) renders the EXACT ordered list below. All ten
+    // are anchored on the `nav-menu-item` testid the navMenu fixture reads.
+    // Labels derived at build by reading the rendered drawer on the e2e/base
+    // dataset (4 locales → 3 extra language items beyond the active `en`).
+    await test.step('2.5. EFLOW-09: candidate nav-menu logged-out item set', async () => {
+      await page.goto('/en/candidate/privacy');
+      const navMenu = createNavMenu(page);
+      await navMenu.openMobileNav();
+      await navMenu.expectNavMenuItems([...CANDIDATE_NAV_LOGGED_OUT]);
+      // Close the drawer so the subsequent registration flow starts clean.
+      await page.keyboard.press('Escape');
     });
 
     // ============== Step 3: send registration email + extract link ========
@@ -634,6 +714,38 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
         enabled: ['profile', 'opinions', 'preview'],
         disabled: []
       });
+    });
+
+    // ============== Step 19.5: EFLOW-09 candidate nav-menu (logged-in) ===
+
+    // EFLOW-09: candidate nav-menu logged-in item set, asserted to DIFFER from
+    // the logged-out set.
+    //
+    // Fixture-visibility note (build finding): the authenticated candidate nav
+    // group (Start / Basic Information / Your Opinions / Preview / Settings)
+    // carries its OWN `candidate-nav-*` testids — `NavItem.svelte` spreads the
+    // caller's `data-testid` over its default `nav-menu-item`, so those items
+    // are NOT visible to the navMenu fixture's `items()` (`nav-menu-item`)
+    // reader. So the logged-in assertion has two halves:
+    //   (a) the `nav-menu-item`-anchored set the fixture sees (the auth group
+    //       has DROPPED login/register/forgot-password vs logged-out), and
+    //   (b) the authenticated group is PRESENT via its `candidate-nav-*` ids.
+    // login/register being gone (a) AND the candidate-nav-* group appearing (b)
+    // is the auth-state difference.
+    await test.step('19.5. EFLOW-09: candidate nav-menu logged-in item set (differs from logged-out)', async () => {
+      const navMenu = createNavMenu(page);
+      await navMenu.openMobileNav();
+      // (a) The `nav-menu-item` set: login / register / forgot-password GONE.
+      await navMenu.expectNavMenuItems([...CANDIDATE_NAV_LOGGED_IN]);
+      // (b) The authenticated nav group is present (own testids).
+      await assertCandidateAuthNavPresent(navMenu.menu);
+      // The two `nav-menu-item` sets differ (logged-out had Sign in / Registration
+      // / Forgot Password? which the authenticated menu drops). Compare by regex
+      // source so the inequality is a content check, not a reference check.
+      expect(CANDIDATE_NAV_LOGGED_IN.map((r) => r.source)).not.toEqual(
+        CANDIDATE_NAV_LOGGED_OUT.map((r) => r.source)
+      );
+      await page.keyboard.press('Escape');
     });
 
     // ============== Step 20: overview completion message =================
