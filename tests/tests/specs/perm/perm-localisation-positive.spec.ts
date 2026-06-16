@@ -61,9 +61,11 @@
 
 import { expect, test } from '../../fixtures/candidate/perm-l10n';
 import { toCallbackUrl } from '../../fixtures/shared/emailBucket.fixture';
+import { answerAndAdvanceToResults, walkUntilQuestionsIntro } from '../../fixtures/voter/voter-journey.fixture';
 import { PASSWORD_1, REGISTRATION_EMAIL_SUBJECT_REGEX } from '../../utils/candidateJourneyConstants';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
+import type { Page } from '@playwright/test';
 
 // reason: l10n positive spec runs a full multi-locale (en/fi/sv) candidate
 // register → login → profile → questions walk PLUS a voter-side cross-check.
@@ -89,6 +91,58 @@ test.use({
   // Start UNAUTHENTICATED — the candidate login flow drives auth from scratch.
   storageState: { cookies: [], origins: [] }
 });
+
+// EFLOW-06: in-flight answer/selection-state preserved across fi→en→fi.
+//
+// Module-scope helper so the per-switch assertions live OUTSIDE the test body's
+// loop (playwright/no-standalone-expect + no-conditional-in-test): asserts the
+// voter is STILL in the in-flight located+answered state after a full-reload
+// locale switch. Two independent persistence channels are proven:
+//   (1) SELECTIONS — the located layout resolves the selected election from the
+//       URL (routes/(voters)/(located)/+layout.ts); the constituency is IMPLIED
+//       for this single-election/single-CG dataset (getImpliedConstituencyIds).
+//       The resolved electionId may be carried EITHER as a `?electionId=…` query
+//       param (pre-switch shape) OR as the `[[electionTab]]` path segment
+//       (`/results/<electionId>`, the canonical shape SvelteKit re-resolves to
+//       after the full-reload re-navigation). Paraglide's switchTo preserves the
+//       selection across the reload, so the SAME electionId MUST appear somewhere
+//       in the post-switch URL AND the located guard MUST resolve a constituency
+//       (else it redirects to the selector and the results list never renders).
+//       The rendered results list is therefore the constituency-resolution proof.
+//   (2) ANSWERS — the given opinion answer persists in versioned localStorage
+//       (`VoterContext-answerStore`, contexts/voter/answerState.svelte.ts) and
+//       survives the reload. The candidate card's MatchScore (`match-score`,
+//       EntityCard.svelte:280-286) only renders when a match exists, and its
+//       value is a pure function of the persisted answer set. Asserting the
+//       SAME score readout after the switch proves the answer carried through —
+//       not merely that the UI re-localised.
+async function expectInFlightStatePreserved(
+  page: Page,
+  expectedLocale: string,
+  expectedElectionId: string,
+  expectedMatchScore: string
+): Promise<void> {
+  // URL re-localised to the target locale AND still carrying the selected
+  // election (query-param OR path-segment form) — proves selection survived.
+  const localePrefix = expectedLocale === 'en' ? '(?!(fi|sv|da|et|fr|lb)(/|$))' : `${expectedLocale}(/|$)`;
+  await expect(page).toHaveURL(new RegExp(`^https?://[^/]+/${localePrefix}`));
+  await expect(page).toHaveURL(new RegExp(expectedElectionId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+
+  // Results list rendered (not the selector / no-answers gate) → located+answered
+  // (the located guard resolved BOTH the URL election AND the implied constituency).
+  await expect(page.getByTestId(testIds.voter.results.list)).toBeVisible({ timeout: L10N_SLOW_PAGE });
+
+  // The candidate card + its match score survive (proves the persisted answer
+  // still drives the computed match identically post-reload).
+  const card = page
+    .getByTestId(testIds.voter.results.candidateSection)
+    .getByTestId(testIds.voter.results.card)
+    .first();
+  await expect(card).toBeVisible({ timeout: L10N_SLOW_PAGE });
+  const matchScore = card.getByTestId(testIds.voter.results.matchScore);
+  await expect(matchScore).toBeVisible();
+  await expect(matchScore).toHaveText(expectedMatchScore);
+}
 
 test.describe('perm-localisation-positive', () => {
   test('localisation walk across en/fi/sv with voter-side cross-check', async ({
@@ -397,5 +451,73 @@ test.describe('perm-localisation-positive', () => {
     const opinionsTabFi = dialogFi.getByTestId(testIds.voter.entityDetail.opinionsTab);
     await expect(opinionsTabFi).toBeVisible();
     await expect(opinionsTabFi).toContainText('[fi-answer-q3]');
+  });
+
+  // EFLOW-06: in-flight answer/selection-state preserved across fi→en→fi.
+  //
+  // The pre-answer home-page locale switch above (Step 2) only proves UI
+  // STRINGS re-localise. The net-new coverage here is the IN-FLIGHT
+  // state-preservation slice: reach a located+answered voter state (election +
+  // constituency selected AND ≥1 opinion question answered), then round-trip the
+  // locale fi→en→fi and assert the SELECTIONS and ANSWERS survive each
+  // full-reload switch (not just the displayed strings). See
+  // expectInFlightStatePreserved (module scope) for the two persistence channels.
+  //
+  // Runs UNAUTHENTICATED (file-scope storageState) — a pure voter walk; no
+  // candidate auth needed. Composes the in-flight state via the exported
+  // voter-journey walk helpers (walkUntilQuestionsIntro + a capped
+  // answerAndAdvanceToResults(page,'max',1)) so it reaches a deterministic
+  // single-answer in-flight state regardless of viewport.
+  test('in-flight selections + answers survive fi→en→fi locale switch (EFLOW-06)', async ({
+    page,
+    voterNav,
+    langSelector
+  }) => {
+    test.setTimeout(L10N_TEST_MAX);
+
+    // 1. Reach an in-flight located+answered state: Home → Intro → Elections →
+    //    Constituencies → /questions, then answer EXACTLY ONE opinion question
+    //    and advance to /results. Answering ≥1 question satisfies the perm
+    //    seed's matching.minimumAnswers=1, so /results renders the candidate
+    //    list with a computed match. This walk starts on the base locale (en).
+    await walkUntilQuestionsIntro(page);
+    await answerAndAdvanceToResults(page, 'max', 1);
+
+    // 2. Capture the in-flight baseline ON the en results page: the candidate
+    //    card's match score (a pure function of the single persisted answer).
+    //    This is the value that MUST stay identical across every locale switch —
+    //    if the answer were dropped on reload the match would change/vanish.
+    await expect(page.getByTestId(testIds.voter.results.list)).toBeVisible({ timeout: L10N_SLOW_PAGE });
+    await expect(page).toHaveURL(/[?&]electionId=/);
+    // Extract the resolved electionId — it is the value the post-switch URL must
+    // still carry (in query OR path form) to prove the selection persisted.
+    const expectedElectionId = new URL(page.url()).searchParams.get('electionId') ?? '';
+    expect(expectedElectionId.length, 'in-flight baseline electionId must be non-empty').toBeGreaterThan(0);
+    const baselineCard = page
+      .getByTestId(testIds.voter.results.candidateSection)
+      .getByTestId(testIds.voter.results.card)
+      .first();
+    await expect(baselineCard).toBeVisible({ timeout: L10N_SLOW_PAGE });
+    const baselineMatchScore = baselineCard.getByTestId(testIds.voter.results.matchScore);
+    await expect(baselineMatchScore).toBeVisible();
+    const expectedMatchScore = (await baselineMatchScore.innerText()).trim();
+    expect(expectedMatchScore.length, 'in-flight baseline match score must be non-empty').toBeGreaterThan(0);
+
+    // 3. fi: switch to Finnish (full reload) and assert the in-flight selection
+    //    + answer survived (election in URL + identical match score).
+    await voterNav.open();
+    await langSelector.switchTo('fi');
+    await expectInFlightStatePreserved(page, 'fi', expectedElectionId, expectedMatchScore);
+
+    // 4. en: switch back to English (full reload) — state still preserved.
+    await voterNav.open();
+    await langSelector.switchTo('en');
+    await expectInFlightStatePreserved(page, 'en', expectedElectionId, expectedMatchScore);
+
+    // 5. fi: switch to Finnish once more — completing the fi→en→fi round trip;
+    //    state still preserved AND the answers carry through to /results.
+    await voterNav.open();
+    await langSelector.switchTo('fi');
+    await expectInFlightStatePreserved(page, 'fi', expectedElectionId, expectedMatchScore);
   });
 });
