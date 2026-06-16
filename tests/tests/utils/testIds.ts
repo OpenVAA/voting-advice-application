@@ -344,6 +344,10 @@ export const testIds = {
     // SurveyPopup Alert roots). Distinct so the dismiss-and-reload helper can assert
     // each popup's dismiss-persistence independently. EPERM-09.
     feedbackPopup: 'feedback-popup',
-    surveyPopup: 'survey-popup'
+    surveyPopup: 'survey-popup',
+    // Root <div> testid on SurveyBanner.svelte — the survey prompt rendered on the
+    // frontpage / entityDetails surfaces when survey.showIn includes that surface.
+    // Consumed by the perm-show-feedback-survey showIn-surface audit. EPERM-09.
+    surveyBanner: 'survey-banner'
   }
 } as const;
