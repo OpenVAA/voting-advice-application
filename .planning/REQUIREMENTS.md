@@ -53,11 +53,11 @@ New settings-driven branches not yet covered by the existing 19 perm specs.
 
 ### E2E — Flow Coverage (EFLOW)
 
-- [ ] **EFLOW-01**: E2E exercises voter-results entity filters — applying a filter updates the results list; reset and persistence behave correctly (the `entityFilters` fixture is wired into a journey). **NOTE**: Already partly covered by voter journey, but let's extend the filter coverage to: multiple filters' intersection; select all/none in categorical filter behaviour; text search; text search intersection with filters.
+- [x] **EFLOW-01**: E2E exercises voter-results entity filters — applying a filter updates the results list; reset and persistence behave correctly (the `entityFilters` fixture is wired into a journey). **NOTE**: Already partly covered by voter journey, but let's extend the filter coverage to: multiple filters' intersection; select all/none in categorical filter behaviour; text search; text search intersection with filters.
 - [ ] **EFLOW-02**: E2E asserts alliance-card rendering and the alliance member-orgs drawer in voter results. **NOTE**: Alliances currently not rendered but should be easy to implement => move to gap filling.
-- [ ] **EFLOW-03**: E2E asserts voter-answer-vs-entity answer comparison for all four cases (agree / disagree / voter-missing / entity-missing) in entity details. **NOTE**: Should be already covered.
-- [ ] **EFLOW-04**: E2E asserts per-category match breakdown (subMatches) rendering on results. **NOTE**: Partly covered, but let's extend the test to test that correct values (only voter-answered categories, correct scores) are displayed for one candidate (as part of voter flow).
-- [ ] **EFLOW-05**: E2E covers skip / delete / back navigation in the question flow and the resulting answer-count + results-CTA impact. **NOTE**: Should be already covered.
+- [x] **EFLOW-03**: E2E asserts voter-answer-vs-entity answer comparison for all four cases (agree / disagree / voter-missing / entity-missing) in entity details. **NOTE**: Should be already covered.
+- [x] **EFLOW-04**: E2E asserts per-category match breakdown (subMatches) rendering on results. **NOTE**: Partly covered, but let's extend the test to test that correct values (only voter-answered categories, correct scores) are displayed for one candidate (as part of voter flow).
+- [x] **EFLOW-05**: E2E covers skip / delete / back navigation in the question flow and the resulting answer-count + results-CTA impact. **NOTE**: Should be already covered.
 - [ ] **EFLOW-06**: E2E covers mid-session locale switching (e.g. fi → en → fi) with UI translation and answer/selection state preserved.
 - [ ] **EFLOW-07**: E2E covers the dark-mode toggle — theme applied and persisted across reload.
 - [ ] **EFLOW-08**: E2E covers user-preferences round-trip (every persisted preference field) and tracking-event emission under consent / suppression without consent. **NOTE**: We also need a test for checking correct payloads are emitted by the tracking service by both `track` and `startEvent` methods.
@@ -153,10 +153,10 @@ Each requirement maps to exactly one roadmap phase (see `.planning/ROADMAP.md` v
 | EPERM-09 | Phase 120 | Complete |
 | EPERM-10 | Phase 120 | Complete |
 | EPERM-11 | Phase 120 | Complete |
-| EFLOW-01 | Phase 121 | Pending |
-| EFLOW-03 | Phase 121 | Pending |
-| EFLOW-04 | Phase 121 | Pending |
-| EFLOW-05 | Phase 121 | Pending |
+| EFLOW-01 | Phase 121 | Complete |
+| EFLOW-03 | Phase 121 | Complete |
+| EFLOW-04 | Phase 121 | Complete |
+| EFLOW-05 | Phase 121 | Complete |
 | EFLOW-06 | Phase 121 | Pending |
 | EFLOW-07 | Phase 121 | Pending |
 | EFLOW-08 | Phase 121 | Pending |

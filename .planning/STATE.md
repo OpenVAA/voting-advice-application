@@ -4,13 +4,13 @@ milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
 status: executing
 stopped_at: Phases 121+122 context gathered (batched)
-last_updated: "2026-06-16T14:22:17.663Z"
-last_activity: 2026-06-16 -- Phase 120 marked complete
+last_updated: "2026-06-16T16:25:43.343Z"
+last_activity: 2026-06-16 -- Phase 121 execution started
 progress:
   total_phases: 15
   completed_phases: 3
-  total_plans: 20
-  completed_plans: 20
+  total_plans: 28
+  completed_plans: 21
   percent: 20
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 120 — e2e-specs-settings-permutation-matrix
+**Current focus:** Phase 121 — e2e-specs-flow-coverage
 
 ## Current Position
 
-Phase: 120 — COMPLETE
-Plan: 7 of 8
+Phase: 121 (e2e-specs-flow-coverage) — EXECUTING
+Plan: 2 of 8
 Status: Ready to execute
-Last activity: 2026-06-16 -- Phase 120 marked complete
+Last activity: 2026-06-16 -- Phase 121 execution started
 
 Progress: [██████████] 100%
 
@@ -57,6 +57,7 @@ Pre-close artifact audit surfaced 8 open items. The 2 🔴 items were **resolved
 | Phase 120 P06 | ~55min | 3 tasks | 7 files |
 | Phase 120 P07 | 95min | 3 tasks | 5 files |
 | Phase 120 P08 | ~50min | 3 tasks | 10 files |
+| Phase 121 P01 | 75min | 3 tasks | 1 files |
 
 ### Acknowledged at v2.11 close (2026-06-07)
 
@@ -397,6 +398,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Added voter-questions-arguments testid to the QuestionExtendedInfo Arguments Expander (Rule 2 — sibling infoSection blocks already had testids)
 - [Phase ?]: EPERM-09: renamed perm-header-show-feedback to perm-show-feedback-survey in place (extend-not-duplicate); showIn audit covers frontpage+entityDetails, navigation deferred (no stable testid)
 - [Phase ?]: EPERM-11: consolidated 2 per-app maintenance specs into one perm-access-disable spec (3 access modes), re-pointed per-app-notifications, retained dev-seed templates
+- [Phase ?]: EFLOW-01 select-all/none surfaced on the Party filter (6 options > 3 threshold); pick-multiple (3 options) asserts the toggle ABSENT
+- [Phase ?]: EFLOW-04 subMatch gauge values derived at build (Base=100/Opt-A=50/Opt-B=50/Regional=100) — not the uniform ~100% the research assumed
 
 ### Quick Tasks Completed
 
@@ -441,7 +444,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-16T13:43:03.459Z
+Last session: 2026-06-16T16:25:26.264Z
 Stopped at: Phases 121+122 context gathered (batched)
 Resume file: .planning/phases/121-e2e-specs-flow-coverage/121-CONTEXT.md
 Work done this session (118-02):
