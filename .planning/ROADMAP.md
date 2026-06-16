@@ -185,7 +185,7 @@ Full details: `.planning/milestones/v2.13-ROADMAP.md`
 - **Reliability hardening + close (Phases 131-132)** — HARDN-01 flake triage (after ALL specs — existing + new-feature — exist so the suite is in final shape), then the milestone-close green gate + the svelte-check 0/0 absolute-gate flip.
 
 - [x] **Phase 118: E2E Coverage Audit + Coverage Plan** — Approval-gate deliverable: per-requirement coverage map + full spec/seed/semantic-step/fixture plan (including the deferred-build end-cluster specs); no test code. **✅ APPROVED by operator 2026-06-14** (incl. post-Plan-04 note incorporation + EFLOW-10b bank-auth Option B).
-- [ ] **Phase 119: E2E Fixtures & Helpers + Seed** — Fixtures-first build for the existing-feature specs + the UNBLK-03 default-seed tooling fix + any e2e/base / perm-template seed-data changes. (all 8 plans complete; held pending UAT — 4 deferred probes carry to Phase 120 per DEF-119-08-01)
+- [x] **Phase 119: E2E Fixtures & Helpers + Seed** — Fixtures-first build for the existing-feature specs + the UNBLK-03 default-seed tooling fix + any e2e/base / perm-template seed-data changes. (all 8 plans complete; UAT closed 2026-06-16 via /gsd-verify-work 119 — 4 deferred probes verified green in isolation in Phase 120-01 per DEF-119-08-01; full suite 95/0/0)
 - [ ] **Phase 120: E2E Specs — Settings-Permutation Matrix** — EPERM-01..11 settings-driven branches exercised/asserted (alliance-presence sub-assertion of EPERM-03 lands with Phase 130).
 - [ ] **Phase 121: E2E Specs — Flow Coverage** — EFLOW filters, comparison, category breakdown, navigation, locale/theme/preferences, nav menus, mobile (minus alliance EFLOW-02 and minus bank-auth EFLOW-10).
 - [ ] **Phase 122: E2E Specs — Bank-Auth Round-Trip** — EFLOW-10 full Signicat/Idura OIDC round-trip, deterministically.
@@ -275,7 +275,7 @@ Plans:
 
 **Part 1 — close Phase 119 (probe gate, D-01/D-03)**
 
-- [ ] 120-01-PLAN.md — Wire the committed `_probes` Playwright project + trace-first re-diagnosis of the 4 deferred probes in true isolation (CONDITION 1/2) [EPERM-06/07/09/10 de-risk]
+- [x] 120-01-PLAN.md — Wire the committed `_probes` Playwright project + trace-first re-diagnosis of the 4 deferred probes in true isolation (CONDITION 1/2) [EPERM-06/07/09/10 de-risk]
 - [ ] 120-02-PLAN.md — Run `/gsd-verify-work 119` to formally close Phase 119 (UAT test #1) — the gate before Part 2
 
 **Part 2 — author the EPERM specs**
@@ -472,7 +472,7 @@ The three workstreams are largely independent and may be planned/executed concur
 |-------|-----------|----------------|--------|-----------|
 | 118. E2E Coverage Audit + Coverage Plan | v2.14 | 3/4 | In progress | - |
 | 119. E2E Fixtures & Helpers + Seed | v2.14 | 8/8 | Pending verify | - |
-| 120. E2E Specs — Settings-Permutation Matrix | v2.14 | 0/8 | Not started | - |
+| 120. E2E Specs — Settings-Permutation Matrix | v2.14 | 1/8 | In Progress|  |
 | 121. E2E Specs — Flow Coverage | v2.14 | 0/TBD | Not started | - |
 | 122. E2E Specs — Bank-Auth Round-Trip | v2.14 | 0/TBD | Not started | - |
 | 123. Svelte 5 Idiom Polish — Lifecycle & Reactive-State | v2.14 | 0/TBD | Not started | - |
