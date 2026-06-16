@@ -144,3 +144,47 @@ test.describe('perm-interactive-info (EPERM-07)', () => {
     });
   });
 });
+
+// EFLOW-11 D-03: interactive-info works on mobile.
+//
+// A SCOPED mobile-viewport sub-test — `test.use` is INSIDE its own describe so
+// the 390×844 isMobile/hasTouch descriptor NEVER leaks to the EPERM-07 slices
+// above (a file-scope test.use would flip the whole spec to mobile). Asserts the
+// popup-modal info disclosure (the shipped interactiveInfo.enabled=true default)
+// opens on mobile, reusing the EPERM-07 popup assertion adapted to mobile.
+test.describe('mobile viewport smoke', () => {
+  test.describe.configure({ mode: 'serial' });
+  test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+
+  test('popup info disclosure opens on mobile', async ({ page, questionInfo }) => {
+    // The mobile voter layout auto-opens the DataConsentPopup when consent is
+    // indetermined; at 390×844 it is full-width bottom-anchored and intercepts
+    // the bottom-of-viewport question controls. Auto-grant it via the real
+    // in-app control so the walk + popup interaction proceed unobstructed. The
+    // desktop slices above never need this (the popup positions clear there).
+    const grantButton = page.getByRole('dialog').getByRole('button', { name: /agree to share my data/i });
+    await page.addLocatorHandler(grantButton, async () => {
+      await grantButton.click();
+    });
+    const consentDialog = page.getByRole('dialog');
+
+    // questionsIntro.show=false + categoryIntros.show=false → walkUntilQuestionsIntro
+    // lands directly on the first question (qu-popup, sort_order 0).
+    await walkUntilQuestionsIntro(page);
+    await expect(page.getByTestId(testIds.voter.questions.answerOption).first()).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId(testIds.voter.questions.heading)).toHaveText(HEADINGS.popup, { timeout: 15_000 });
+
+    // Deterministically settle the consent popup before driving the in-question
+    // popup-info button so the consent modal scrim cannot intercept the click.
+    if (await grantButton.isVisible().catch(() => false)) {
+      await grantButton.click();
+      await expect(consentDialog).toBeHidden({ timeout: 15_000 });
+    }
+
+    // POPUP mode (interactiveInfo.enabled=true): the info affordance opens the
+    // MODAL dialog body on mobile. expectInfoMode clicks the popup info button
+    // and hard-asserts the modal body is visible.
+    await questionInfo.expectInfoMode(undefined, 'popup');
+    await expect(page.getByTestId(testIds.voter.questions.popupInfoModal)).toBeVisible({ timeout: 15_000 });
+  });
+});
