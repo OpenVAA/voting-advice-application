@@ -865,6 +865,31 @@ export default defineConfig({
       fullyParallel: false,
       use: { ...devices['Desktop Chrome'] },
       dependencies: ['data-setup-perm-question-video']
+    },
+
+    // A11 — perm-interactive-info (EPERM-07). Voter questions-flow info matrix:
+    // popup-modal mode (interactiveInfo.enabled=true, shipped default) vs the
+    // static-expander mode (per-question re-seed), plus customData.infoSections
+    // and per-type arguments (Likert/Boolean/Categorical). Unauthenticated voter
+    // slice → no storage state. Appended to the perm tail after
+    // perm-question-video.
+    {
+      name: 'data-setup-perm-interactive-info',
+      testMatch: /perm-interactive-info\.setup\.ts/,
+      teardown: 'data-teardown-perm-interactive-info',
+      dependencies: ['perm-question-video']
+    },
+    {
+      name: 'data-teardown-perm-interactive-info',
+      testMatch: /perm-interactive-info\.teardown\.ts/
+    },
+    {
+      name: 'perm-interactive-info',
+      testDir: './tests/specs/perm',
+      testMatch: /perm-interactive-info\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-perm-interactive-info']
     }
   ]
 });
