@@ -39,14 +39,14 @@ Requirements for this milestone. Each maps to exactly one roadmap phase.
 
 New settings-driven branches not yet covered by the existing 19 perm specs.
 
-- [ ] **EPERM-01**: E2E covers the question-flow path matrix — combinations of `questions.questionsIntro.show` × `questions.categoryIntros.show` × `questions.categoryIntros.allowSkip` — verifying correct routing and answer-count tracking per path. **NOTE**: Already covered.
-- [ ] **EPERM-02**: E2E covers election/constituency sequencing variants — `elections.disallowSelection` (all-selected bypass) and `elections.startFromConstituencyGroup` (constituency-first), single- vs multi-election — verifying initial routing. **NOTE**: Re-audit, should be covered.
-- [ ] **EPERM-03**: E2E covers results-display permutations — `results.sections[]` (candidate/org/alliance presence) × `results.cardContents[type][]` (submatches/children/answer snippets) — verifying tabs and card content. **NOTE**: Already covered.
-- [ ] **EPERM-04**: E2E covers `entityDetails.contents[type][]` tab control per entity type (candidate / organization / alliance) — verifying tab presence/absence and layout stability.
-- [ ] **EPERM-05**: E2E covers missing-data markers — `entityDetails.showMissingElectionSymbol[type]` and `entityDetails.showMissingAnswers[type]` per entity type.
+- [x] **EPERM-01**: E2E covers the question-flow path matrix — combinations of `questions.questionsIntro.show` × `questions.categoryIntros.show` × `questions.categoryIntros.allowSkip` — verifying correct routing and answer-count tracking per path. **NOTE**: Already covered.
+- [x] **EPERM-02**: E2E covers election/constituency sequencing variants — `elections.disallowSelection` (all-selected bypass) and `elections.startFromConstituencyGroup` (constituency-first), single- vs multi-election — verifying initial routing. **NOTE**: Re-audit, should be covered.
+- [x] **EPERM-03**: E2E covers results-display permutations — `results.sections[]` (candidate/org/alliance presence) × `results.cardContents[type][]` (submatches/children/answer snippets) — verifying tabs and card content. **NOTE**: Already covered.
+- [x] **EPERM-04**: E2E covers `entityDetails.contents[type][]` tab control per entity type (candidate / organization / alliance) — verifying tab presence/absence and layout stability.
+- [x] **EPERM-05**: E2E covers missing-data markers — `entityDetails.showMissingElectionSymbol[type]` and `entityDetails.showMissingAnswers[type]` per entity type.
 - [ ] **EPERM-06**: E2E covers candidate-app question media toggles — `candidateApp.questions.hideVideo` and `hideHero` combinations. **NOTE**: HideHero covered, video not tested at all. => We need a dedicated Video test.
 - [ ] **EPERM-07**: E2E covers `questions.interactiveInfo.enabled` — interactive info popup modal vs static expander. **NOTE**: This test should test the interactive info functionality in full.
-- [ ] **EPERM-08**: E2E covers `matching.minimumAnswers` gating results availability (located voter with too few answers). **NOTE**: Already covered.
+- [x] **EPERM-08**: E2E covers `matching.minimumAnswers` gating results availability (located voter with too few answers). **NOTE**: Already covered.
 - [ ] **EPERM-09**: E2E covers survey/feedback popup coordination — `survey.showIn[]` + `results.showSurveyPopup` + `results.showFeedbackPopup` + `header.showFeedback` — verifying placement, timing, no double-pop, and dismiss persistence. **NOTE**: Should be partly covered, extend the current perm, don't introduce a new one.
 - [ ] **EPERM-10**: E2E covers `matching.organizationMatching` (none / answersOnly / impute) disclosure text on the About page.
 - [ ] **EPERM-11**: E2E covers `access.underMaintenance` and `access.voterApp` / `access.candidateApp` gating (maintenance page / redirects). **NOTE**: Should be already covered.
@@ -142,14 +142,14 @@ Each requirement maps to exactly one roadmap phase (see `.planning/ROADMAP.md` v
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| EPERM-01 | Phase 120 | Pending |
-| EPERM-02 | Phase 120 | Pending |
-| EPERM-03 | Phase 120 | Pending |
-| EPERM-04 | Phase 120 | Pending |
-| EPERM-05 | Phase 120 | Pending |
+| EPERM-01 | Phase 120 | Complete |
+| EPERM-02 | Phase 120 | Complete |
+| EPERM-03 | Phase 120 | Complete |
+| EPERM-04 | Phase 120 | Complete |
+| EPERM-05 | Phase 120 | Complete |
 | EPERM-06 | Phase 120 | Pending |
 | EPERM-07 | Phase 120 | Pending |
-| EPERM-08 | Phase 120 | Pending |
+| EPERM-08 | Phase 120 | Complete |
 | EPERM-09 | Phase 120 | Pending |
 | EPERM-10 | Phase 120 | Pending |
 | EPERM-11 | Phase 120 | Pending |
@@ -203,6 +203,7 @@ Each requirement maps to exactly one roadmap phase (see `.planning/ROADMAP.md` v
 - The **`/nominations`-route E2E assertion** lands in Phase 130 as a success criterion tied to the UNBLK-04 feature (the UNBLK-04 REQ-ID maps to Phase 129, the build phase).
 
 **Coverage:**
+
 - v1 requirements: 48 total (EPERM 11 · EFLOW 11 · EQTYP 3 · UNBLK 6 · HARDN 2 · RUNES 5 · TYPE 10)
 - Mapped to phases: 48 (100%) ✓
 - Unmapped: 0 ✓

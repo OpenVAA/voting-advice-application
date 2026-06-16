@@ -4,13 +4,13 @@ milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
 status: executing
 stopped_at: Phase 120 context gathered
-last_updated: "2026-06-15T15:33:37.831Z"
-last_activity: 2026-06-15 -- Phase 120 execution started
+last_updated: "2026-06-16T08:57:47.427Z"
+last_activity: 2026-06-16 -- Phase 120 execution started
 progress:
   total_phases: 15
   completed_phases: 2
   total_plans: 20
-  completed_plans: 12
+  completed_plans: 15
   percent: 13
 ---
 
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 ## Current Position
 
 Phase: 120 (e2e-specs-settings-permutation-matrix) — EXECUTING
-Plan: 1 of 8 — AT CHECKPOINT (Task 3 human-verify, blocking)
-Status: Plan 120-01 Tasks 1-2 done + committed; PAUSED at Task 3 human-verify gate (4 probes green-in-isolation, awaiting approval)
-Last activity: 2026-06-15 -- 120-01 _probes project wired + 4 deferred probes re-diagnosed GREEN in isolation; 119-08 churn verdict REFUTED (settings-driven bypass)
+Plan: 2 of 8
+Status: Ready to execute
+Last activity: 2026-06-16 -- Phase 120 execution started
 
 Progress: [█░░░░░░░░░] 7%
 
@@ -51,6 +51,7 @@ Pre-close artifact audit surfaced 8 open items. The 2 🔴 items were **resolved
 |----------|------|--------|-------------|
 | quick_task | 260607-cd0-clean-up-e2e-test-folder-catalogue | unknown (status flag) | Verified-done since v2.11 (cleanup follow-up closed; only the SUMMARY terminal-status flag is unflipped). Carried forward. |
 | todos | ~52 standing backlog todos | pending | Carried-forward backlog (pre-dates v2.13). Triage via `/gsd-review-backlog` when shaping the next milestone. Includes CAND-STORE-01 (v2 deferral). |
+| Phase 120 P03 | 35min | 3 tasks | 1 files |
 
 ### Acknowledged at v2.11 close (2026-06-07)
 
@@ -386,6 +387,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: adminContext → AdminContextProvider class; v2.11 auth-forwarding fix preserved verbatim (isAuthenticated delegating getter + 4 arrow forwards, no authContext spread); appContext via single Object.assign
 - [Phase 118 P02]: EFLOW-01..11 + EQTYP-01..03 coverage maps appended to `.planning/v2.14-E2E-COVERAGE-PLAN.md` against READ spec evidence (A5). EFLOW: 03 (4-case voter-vs-entity matrix, voter-journey:938-952) + 05 (skip/delete/back+CTA, voter-journey:602-668) confirmed covered no-new-code; 01 (filters — apply/reset/badge/2-filter-intersection covered, categorical select-all-none + text×filter gap) + 04 (subMatches 4-gauge count covered, correct-values gap) + 06 + 09 PARTIAL→extend; 07 (dark-mode) + 08 (tracking payloads, needs intercept fixture) + 11 (mobile interactive) confirmed MISSING; 02 (alliance card/drawer, UNBLK-06) DEFERRED→130; 10 PARTIAL→Idura-only retarget. **Open Question 1 RESOLVED:** perm-localisation-positive switches locale on voter home pre-answer + does a persisted-answer results cross-check — covers UI/content re-localisation but NOT mid-flow voter answer/selection-state preservation → net-new in 121. **EFLOW-10 (122.2):** retarget existing `candidate-bank-auth.spec.ts` to Idura `sub`-based identity + hetu/country claims, drop Signicat, keep direct-Edge-Function synthetic-JWE stub (no live IdP); Open Question 2 flagged — configure test decryption JWKS in beforeAll so the A6 green gate runs the keys-configured path deterministically (else "did not run" = cardinal failure). **EQTYP:** all 3 DEFERRED→130 — 01 single-choice categorical opinion covered (voter); candidate opinion answering generic (Base×5 walked incl categorical Base-4/boolean Base-5 via `selectChoice(0)` loop, type-specific variant checks only on candidate INFO questions), multiple-choice variant blocked on UNBLK-02; 02 MISSING (no number opinion in seed) blocked on UNBLK-05; 03 text covered, MultipleText round-trip blocked on UNBLK-01. NO test/fixture/seed code written.
 - [Phase 118 P01]: E2E coverage audit deliverable seeded at `.planning/v2.14-E2E-COVERAGE-PLAN.md`. EPERM-01..11 classified against READ spec evidence (A5): EPERM-01/02/08 confirmed covered no-new-code; EPERM-03/04 candidate/org covered with alliance slice DEFERRED→130; EPERM-05/06/07/09/11 PARTIAL (extend); EPERM-10 confirmed MISSING (zero `organizationMatching` refs in `tests/`). Refuted the RESEARCH starting hypothesis on EPERM-11 — the GLOBAL `access.underMaintenance` flag is untested (only per-app voterApp/candidateApp gating is covered). `--likert-only` cross-cutting verdict: COMPLETE removal, NO shim, NO fixture change (fixtures already answer non-Likert opinion types natively via per-question scoped choiceCount), pure deletion + doc-scrub landing Phase 119; unused `voterNavigation.ts` helpers (walkToQuestion/waitForNextQuestion/clickThroughIntroPages/walkToQuestionsIntro) flagged as a separate hygiene call (navigateToFirstQuestion KEPT — it is used). NO test/fixture/seed code written.
+- [Phase ?]: EPERM-05 org slice asserted ADDITIVELY: showMissingElectionSymbol.organization=false yields ABSENT Election Number row (not a '—' placeholder); showMissingAnswers.organization=true markers asserted; zero seed change (120-03)
 
 ### Quick Tasks Completed
 
@@ -430,7 +432,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-15T10:56:20.731Z
+Last session: 2026-06-16T08:57:32.189Z
 Stopped at: Phase 120 context gathered
 Resume file: .planning/phases/120-e2e-specs-settings-permutation-matrix/120-CONTEXT.md
 Work done this session (118-02):
