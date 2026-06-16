@@ -302,7 +302,18 @@ Plans:
   4. The user-preferences round-trip covers every persisted field, and tracking-event emission is asserted under consent / suppression-without-consent including correct payloads for both `track` and `startEvent` (EFLOW-08).
   5. Navigation-menu contents are asserted for both apps across the relevant settings permutations including candidate nav logged-in vs logged-out (EFLOW-09), an interactive voter journey runs at a mobile viewport (EFLOW-11), and all specs pass 3×.
 
-**Plans**: TBD
+**Plans**: 8 plans
+
+Plans:
+- [ ] 121-01-PLAN.md — EFLOW-01/04 voter-journey filter select-all/none + text×filter intersection + correct subMatch values (+ EFLOW-03/05 re-confirm)
+- [ ] 121-02-PLAN.md — EFLOW-06 in-flight fi→en→fi answer/selection-state-preserved slice (extend perm-localisation-positive)
+- [ ] 121-03-PLAN.md — EFLOW-09 candidate nav-menu logged-in/out (candidate-journey) + voter conditional-nav-item omission on EPERM-02 perms (D-02)
+- [ ] 121-04-PLAN.md — D-01 perm-analytics-tracking dev-seed template + registry + setup/teardown (EFLOW-08 arming)
+- [ ] 121-05-PLAN.md — playwright.config: voter-dark-mode + voter-journey-mobile leaf projects + perm-analytics-tracking triad (voter-prefs-tracking)
+- [ ] 121-06-PLAN.md — EFLOW-07 NEW voter-dark-mode spec (emulateMedia persist) + a11y-smoke dark-contrast scan
+- [ ] 121-07-PLAN.md — EFLOW-08 NEW voter-prefs-tracking spec (consent emit vs suppress + prefs round-trip)
+- [ ] 121-08-PLAN.md — EFLOW-11 NEW voter-journey-mobile spec + D-03 mobile sub-tests on perm-question-video + perm-interactive-info
+
 **UI hint**: yes
 
 #### Phase 122: E2E Specs — Bank-Auth Round-Trip
