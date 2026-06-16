@@ -4,13 +4,13 @@ milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
 status: executing
 stopped_at: Completed 121-05-PLAN.md
-last_updated: "2026-06-16T18:06:17.162Z"
+last_updated: "2026-06-16T18:35:41.053Z"
 last_activity: 2026-06-16
 progress:
   total_phases: 15
   completed_phases: 3
   total_plans: 28
-  completed_plans: 26
+  completed_plans: 27
   percent: 20
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 ## Current Position
 
 Phase: 121 (e2e-specs-flow-coverage) — EXECUTING
-Plan: 7 of 8
+Plan: 8 of 8
 Status: Ready to execute
 Last activity: 2026-06-16
 
@@ -63,6 +63,7 @@ Pre-close artifact audit surfaced 8 open items. The 2 🔴 items were **resolved
 | Phase 121 P121-04 | ~25min | 1 tasks | 4 files |
 | Phase 121 P121-05 | 10m | 1 tasks | 1 files |
 | Phase 121 P121-06 | ~18min | 2 tasks | 2 files |
+| Phase 121-e2e-specs-flow-coverage P07 | 35min | 1 tasks | 1 files |
 
 ### Acknowledged at v2.11 close (2026-06-07)
 
@@ -409,6 +410,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: EFLOW-09 logged-in candidate nav group asserted via candidate-nav-* testids (NavItem spreads custom data-testid over nav-menu-item, hiding it from the navMenu items() reader)
 - [Phase 121]: 121-05: mobile project uses explicit 390x844 isMobile/hasTouch (visual-regression analog) over devices['Pixel 5']
 - [Phase 121]: 121-05: voter-prefs-tracking hosted under perm-analytics-tracking triad (not base leaf) — analytics overlay clobbers app_settings singleton
+- [Phase 121]: EFLOW-08 tracking emission captured via a forced same-window visibilitychange flush (submitAllEvents), not a hard nav — page.goto tears down the __trackCalls capture array. — Keeps the capture array alive for getTrackCalls(); the layout's visibilitychange handler calls submitAllEvents in place.
+- [Phase 121]: Runtime consent granted via the DataConsentPopup dialog (scoped getByRole('dialog')) to avoid the strict-mode clash with the inline privacy-page DataConsent. — The popup auto-opens when consent is indetermined and overlays the inline control; it is the canonical voter consent surface.
 
 ### Quick Tasks Completed
 
@@ -453,7 +456,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-16T18:06:17.157Z
+Last session: 2026-06-16T18:34:36.571Z
 Stopped at: Completed 121-05-PLAN.md
 Resume file: None
 Work done this session (118-02):
