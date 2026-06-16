@@ -27,7 +27,7 @@ Display an entity's match score.
 </script>
 
 <div {...concatClass(restProps, 'flex min-w-[3.125rem] flex-col items-center')}>
-  <span class="text-lg font-bold">{t('components.matchScore.score', { score })}</span>
+  <span class="text-lg font-bold" data-testid="match-score">{t('components.matchScore.score', { score })}</span>
   {#if showLabel && label !== ''}
     <span class="text-secondary text-center text-xs">{label ?? t('components.matchScore.label')}</span>
   {/if}

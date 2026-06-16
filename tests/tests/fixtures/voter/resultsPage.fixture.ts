@@ -238,17 +238,6 @@ export function createResultsPage(page: Page) {
     },
 
     /**
-     * Assert the organization/party card matching `target` shows NO match-score
-     * callout (EPERM-10 `organizationMatching='none'` posture — the org renders
-     * but carries no computed match readout). Scoped to the matched card so a
-     * sibling candidate score cannot satisfy it.
-     */
-    async expectNoOrgMatchScore(target: Target): Promise<void> {
-      const card = await this.getEntityCard(target);
-      await expect(card.getByTestId(testIds.voter.results.matchScore)).toHaveCount(0);
-    },
-
-    /**
      * Per-category sub-match reader (EFLOW-04, optional encapsulation).
      *
      * Opening an entity-details view renders a `sub-matches`
