@@ -853,6 +853,17 @@ test.describe('voter journey', () => {
       // `1980-06-15` date answer.
       const infoTab = dialog.getByTestId(testIds.voter.entityDetail.infoTab);
       await expect.soft(infoTab).toBeVisible({ timeout: TIMEOUTS.page });
+
+      // EPERM-04 — candidate tab control. `entityDetails.contents.candidate`
+      // is ['info','opinions'] (e2e/base.ts:147), so the candidate drawer must
+      // expose EXACTLY [info, opinions] tabs — and CRUCIALLY the org-only
+      // 'children'/Members tab must be ABSENT (tab control is per-type, not a
+      // fixed set). `expectTabs` hard-asserts both the exact count+order and the
+      // accessible-name of each tab; the explicit Members-absent check below
+      // makes the per-type contract unmistakable. HARD assertions (no soft).
+      await entityDetails.expectTabs(['info', 'opinions']);
+      await expect(dialog.getByRole('tab', { name: TEXT_RE.membersTab })).toHaveCount(0);
+
       const infoItems = infoTab.getByTestId('info-item');
       // 13 = 4 nomination-derived (election/constituency/list/number) + 8
       // info questions + 1 grouped Links item. The multipleText info
@@ -960,14 +971,22 @@ test.describe('voter journey', () => {
     // PARTY DRAWER + FILTERS
     // ====================================================================
 
-    await test.step('organisation details show tabs, info-items, and 5 members', async () => {
+    await test.step('organisation details show tabs, info-items, 5 members, and org-typed missing markers', async () => {
       // Switch to parties tab and open Party AA's drawer.
       await resultsPage.selectEntityTab('orgs');
       await resultsPage.openEntityDetailsForCard(/\[or-aa\] Party AA/i);
 
-      // Assert [info, children, opinions] tabs via the entityDetails fixture
-      // (which maps SETTINGS keywords to i18n labels internally).
+      // EPERM-04 — organization tab control. `entityDetails.contents.organization`
+      // is ['info','children','opinions'] (e2e/base.ts:148), so the org drawer
+      // exposes EXACTLY [info, children, opinions] — and CRUCIALLY it INCLUDES
+      // the 'children'/Members tab that the candidate drawer (above) does NOT.
+      // This per-type contrast (candidate=[info,opinions] vs org=[info,children,
+      // opinions]) is the EPERM-04 organization slice. `expectTabs` hard-asserts
+      // exact count+order+accessible-name; the explicit Members-PRESENT check
+      // pins the contrast with the candidate Members-ABSENT assertion above.
+      const orgDialog = page.getByRole('dialog');
       await entityDetails.expectTabs(['info', 'children', 'opinions']);
+      await expect(orgDialog.getByRole('tab', { name: TEXT_RE.membersTab })).toHaveCount(1);
 
       // Info tab: 3 info-items via regex match (the [<id>] prefix means
       // exact-equality fails; substring/regex works). The fixture's
@@ -977,10 +996,45 @@ test.describe('voter journey', () => {
       await entityDetails.expectInfoItem(/Constituency/i, /\[co-reg-n\]/i);
       await entityDetails.expectInfoItem(/Alliance/i, /Alliance A/i);
 
+      // EPERM-05 (org slice) — `showMissingElectionSymbol.organization` is FALSE
+      // (e2e/base.ts:153) and the org nominations carry NO election_symbol
+      // (e2e/base.ts:1287-1325). Per EntityInfo.svelte:95 the election-symbol
+      // row renders ONLY when `electionSymbol || showMissingElectionSymbol[type]`
+      // — so for an org with neither, the "Election Number" row is ABSENT.
+      // Asserting the row's ABSENCE (rather than a "—" placeholder) is the
+      // ADDITIVE/assert-only reading of the org-typed `showMissingElectionSymbol`
+      // contract under the base settings (zero seed change). HARD assertion.
+      await expect(
+        entityDetails.getInfoItems().filter({ hasText: /Election Number|Election Symbol/i })
+      ).toHaveCount(0);
+
       // Members tab (SETTINGS keyword: 'children') — 5 visible Party-AA
       // members after the CA-AA-Hidden filter.
       await entityDetails.selectTab('children');
       await expect.soft(entityDetails.getMemberCards()).toHaveCount(5, { timeout: TIMEOUTS.page });
+
+      // EPERM-05 (org slice, opinions) — `showMissingAnswers.organization` is
+      // TRUE (e2e/base.ts:157) and Party AA (like every org in base) has NO
+      // opinion answers, so EVERY opinion question on the org opinions tab
+      // renders an org-typed missing-answer marker (EntityOpinions.svelte:62-72):
+      //   - voter ANSWERED + org missing  → "AA hasn't answered" (numSelected:1)
+      //   - voter SKIPPED  + org missing  → "Neither has answered" (numSelected:0)
+      // The voter (max walk above) ANSWERED Base opinion 1 and SKIPPED Opt-A
+      // opinion 1 (Opt-A category skipped at line ~666). HARD assertions via the
+      // entityDetails fixture (no soft).
+      await entityDetails.selectTab('opinions');
+      await orgDialog
+        .getByTestId('opinion-question-input')
+        .first()
+        .waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
+      await entityDetails.expectQuestionDisplay(/Base opinion 1 — Likert 5/i, {
+        numSelected: 1,
+        infoText: /hasn['‘’]?t answered/i
+      });
+      await entityDetails.expectQuestionDisplay(/Opt-A opinion 1 — Likert 5/i, {
+        numSelected: 0,
+        infoText: TEXT_RE.neitherAnswered
+      });
 
       // Close drawer for the next step.
       const dialog = page.getByRole('dialog');
