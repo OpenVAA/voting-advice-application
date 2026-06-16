@@ -186,7 +186,7 @@ Full details: `.planning/milestones/v2.13-ROADMAP.md`
 
 - [x] **Phase 118: E2E Coverage Audit + Coverage Plan** — Approval-gate deliverable: per-requirement coverage map + full spec/seed/semantic-step/fixture plan (including the deferred-build end-cluster specs); no test code. **✅ APPROVED by operator 2026-06-14** (incl. post-Plan-04 note incorporation + EFLOW-10b bank-auth Option B).
 - [x] **Phase 119: E2E Fixtures & Helpers + Seed** — Fixtures-first build for the existing-feature specs + the UNBLK-03 default-seed tooling fix + any e2e/base / perm-template seed-data changes. (all 8 plans complete; UAT closed 2026-06-16 via /gsd-verify-work 119 — 4 deferred probes verified green in isolation in Phase 120-01 per DEF-119-08-01; full suite 95/0/0)
-- [ ] **Phase 120: E2E Specs — Settings-Permutation Matrix** — EPERM-01..11 settings-driven branches exercised/asserted (alliance-presence sub-assertion of EPERM-03 lands with Phase 130).
+- [x] **Phase 120: E2E Specs — Settings-Permutation Matrix** — EPERM-01..11 settings-driven branches exercised/asserted (alliance-presence sub-assertion of EPERM-03 lands with Phase 130). (completed 2026-06-16)
 - [ ] **Phase 121: E2E Specs — Flow Coverage** — EFLOW filters, comparison, category breakdown, navigation, locale/theme/preferences, nav menus, mobile (minus alliance EFLOW-02 and minus bank-auth EFLOW-10).
 - [ ] **Phase 122: E2E Specs — Bank-Auth Round-Trip** — EFLOW-10 full Signicat/Idura OIDC round-trip, deterministically.
 - [ ] **Phase 123: Svelte 5 Idiom Polish — Lifecycle & Reactive-State** — RUNES-01/02/05: onMount/onDestroy→$effect, reactive let→$state, 2 context bugs.
@@ -285,7 +285,7 @@ Plans:
 - [x] 120-05-PLAN.md — NEW `perm-interactive-info` perm node (popup+expander+infoSections+per-type arguments) + customData.terms voter-journey extension [EPERM-07]
 - [x] 120-06-PLAN.md — NEW `perm-org-matching` perm node (3-mode exact-score matrix + About disclosure) [EPERM-10]
 - [x] 120-07-PLAN.md — EPERM-09 git mv rename + extend `perm-show-feedback-survey` (feedback+survey popup coordination) [EPERM-09]
-- [ ] 120-08-PLAN.md — EPERM-11 consolidate 2→1 `perm-access-disable` (voterApp/candidateApp/underMaintenance) [EPERM-11]
+- [x] 120-08-PLAN.md — EPERM-11 consolidate 2→1 `perm-access-disable` (voterApp/candidateApp/underMaintenance) [EPERM-11]
 
 **UI hint**: yes
 
@@ -472,7 +472,7 @@ The three workstreams are largely independent and may be planned/executed concur
 |-------|-----------|----------------|--------|-----------|
 | 118. E2E Coverage Audit + Coverage Plan | v2.14 | 3/4 | In progress | - |
 | 119. E2E Fixtures & Helpers + Seed | v2.14 | 8/8 | Pending verify | - |
-| 120. E2E Specs — Settings-Permutation Matrix | v2.14 | 7/8 | In Progress|  |
+| 120. E2E Specs — Settings-Permutation Matrix | v2.14 | 8/8 | Complete   | 2026-06-16 |
 | 121. E2E Specs — Flow Coverage | v2.14 | 0/TBD | Not started | - |
 | 122. E2E Specs — Bank-Auth Round-Trip | v2.14 | 0/TBD | Not started | - |
 | 123. Svelte 5 Idiom Polish — Lifecycle & Reactive-State | v2.14 | 0/TBD | Not started | - |

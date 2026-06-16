@@ -4,14 +4,14 @@ milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
 status: executing
 stopped_at: Completed 120-07-PLAN.md
-last_updated: "2026-06-16T12:06:42.656Z"
-last_activity: 2026-06-16 -- Phase 120 execution started
+last_updated: "2026-06-16T12:23:02.237Z"
+last_activity: 2026-06-16
 progress:
   total_phases: 15
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 20
-  completed_plans: 19
-  percent: 13
+  completed_plans: 20
+  percent: 20
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 ## Current Position
 
 Phase: 120 (e2e-specs-settings-permutation-matrix) — EXECUTING
-Plan: 6 of 8
+Plan: 7 of 8
 Status: Ready to execute
-Last activity: 2026-06-16 -- Phase 120 execution started
+Last activity: 2026-06-16
 
-Progress: [█░░░░░░░░░] 7%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -56,6 +56,7 @@ Pre-close artifact audit surfaced 8 open items. The 2 🔴 items were **resolved
 | Phase 120 P05 | 75min | 3 tasks | 6 files |
 | Phase 120 P06 | ~55min | 3 tasks | 7 files |
 | Phase 120 P07 | 95min | 3 tasks | 5 files |
+| Phase 120 P08 | ~50min | 3 tasks | 10 files |
 
 ### Acknowledged at v2.11 close (2026-06-07)
 
@@ -395,6 +396,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: EPERM-07 arguments render-gating resolved by co-seeding infoSections on the argument carriers (additive seed change, production gate untouched)
 - [Phase ?]: Added voter-questions-arguments testid to the QuestionExtendedInfo Arguments Expander (Rule 2 — sibling infoSection blocks already had testids)
 - [Phase ?]: EPERM-09: renamed perm-header-show-feedback to perm-show-feedback-survey in place (extend-not-duplicate); showIn audit covers frontpage+entityDetails, navigation deferred (no stable testid)
+- [Phase ?]: EPERM-11: consolidated 2 per-app maintenance specs into one perm-access-disable spec (3 access modes), re-pointed per-app-notifications, retained dev-seed templates
 
 ### Quick Tasks Completed
 
@@ -439,7 +441,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-16T12:06:38.050Z
+Last session: 2026-06-16T12:22:41.654Z
 Stopped at: Completed 120-07-PLAN.md
 Resume file: None
 Work done this session (118-02):
