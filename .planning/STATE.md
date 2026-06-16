@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
 status: executing
-stopped_at: Phases 121+122 context gathered (batched)
-last_updated: "2026-06-16T16:47:25.275Z"
+stopped_at: Completed 121-03-PLAN.md
+last_updated: "2026-06-16T17:33:07.343Z"
 last_activity: 2026-06-16 -- Phase 121 execution started
 progress:
   total_phases: 15
   completed_phases: 3
   total_plans: 28
-  completed_plans: 22
+  completed_plans: 23
   percent: 20
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 ## Current Position
 
 Phase: 121 (e2e-specs-flow-coverage) — EXECUTING
-Plan: 3 of 8
+Plan: 4 of 8
 Status: Ready to execute
 Last activity: 2026-06-16 -- Phase 121 execution started
 
@@ -59,6 +59,7 @@ Pre-close artifact audit surfaced 8 open items. The 2 🔴 items were **resolved
 | Phase 120 P08 | ~50min | 3 tasks | 10 files |
 | Phase 121 P01 | 75min | 3 tasks | 1 files |
 | Phase 121 P02 | 35min | 1 tasks | 1 files |
+| Phase 121 P03 | 75min | 2 tasks | 3 files |
 
 ### Acknowledged at v2.11 close (2026-06-07)
 
@@ -402,6 +403,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: EFLOW-01 select-all/none surfaced on the Party filter (6 options > 3 threshold); pick-multiple (3 options) asserts the toggle ABSENT
 - [Phase ?]: EFLOW-04 subMatch gauge values derived at build (Base=100/Opt-A=50/Opt-B=50/Regional=100) — not the uniform ~100% the research assumed
 - [Phase ?]: EFLOW-06: locale-switch state-preservation asserted via resolved electionId in URL (query OR path) + identical candidate MatchScore across each full-reload switch
+- [Phase ?]: EFLOW-09 logged-in candidate nav group asserted via candidate-nav-* testids (NavItem spreads custom data-testid over nav-menu-item, hiding it from the navMenu items() reader)
 
 ### Quick Tasks Completed
 
@@ -446,8 +448,8 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-16T16:47:16.917Z
-Stopped at: Phases 121+122 context gathered (batched)
+Last session: 2026-06-16T17:33:07.337Z
+Stopped at: Completed 121-03-PLAN.md
 Resume file: .planning/phases/121-e2e-specs-flow-coverage/121-CONTEXT.md
 Work done this session (118-02):
 
