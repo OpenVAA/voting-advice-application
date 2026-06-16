@@ -648,7 +648,7 @@ export default defineConfig({
     //
     // Chain order:
     //   perm-localisation-positive → perm-answers-locked → perm-hide-hero
-    //     → perm-header-show-feedback → perm-header-show-help
+    //     → perm-show-feedback-survey → perm-header-show-help
     //     → perm-hide-all-nominations → perm-hide-if-missing-answers
     //     → perm-hide-election-tags → perm-hide-category-tags
     //     → perm-disable-allow-open (END)
@@ -696,25 +696,29 @@ export default defineConfig({
       dependencies: ['data-setup-perm-hide-hero']
     },
 
-    // A3 — perm-header-show-feedback. Unauthenticated voter intro + Banner
-    // header-feedback assertion + feedback-form open.
+    // A3 — perm-show-feedback-survey (EPERM-09). Unauthenticated voter intro +
+    // Banner header-feedback assertion + feedback-form open, EXTENDED with the
+    // results-view feedback/survey popup-coordination assertions (placement,
+    // timing/once, no-double-pop, dismiss-persistence) + the survey.showIn[]
+    // per-surface audit. Renamed in place from the former header-show-feedback
+    // node (Phase 120-07) — KEEPS its position after perm-hide-hero.
     {
-      name: 'data-setup-perm-header-show-feedback',
-      testMatch: /perm-header-show-feedback\.setup\.ts/,
-      teardown: 'data-teardown-perm-header-show-feedback',
+      name: 'data-setup-perm-show-feedback-survey',
+      testMatch: /perm-show-feedback-survey\.setup\.ts/,
+      teardown: 'data-teardown-perm-show-feedback-survey',
       dependencies: ['perm-hide-hero']
     },
     {
-      name: 'data-teardown-perm-header-show-feedback',
-      testMatch: /perm-header-show-feedback\.teardown\.ts/
+      name: 'data-teardown-perm-show-feedback-survey',
+      testMatch: /perm-show-feedback-survey\.teardown\.ts/
     },
     {
-      name: 'perm-header-show-feedback',
+      name: 'perm-show-feedback-survey',
       testDir: './tests/specs/perm',
-      testMatch: /perm-header-show-feedback\.spec\.ts/,
+      testMatch: /perm-show-feedback-survey\.spec\.ts/,
       fullyParallel: false,
       use: { ...devices['Desktop Chrome'] },
-      dependencies: ['data-setup-perm-header-show-feedback']
+      dependencies: ['data-setup-perm-show-feedback-survey']
     },
 
     // A4 — perm-header-show-help. Unauthenticated voter intro + Banner
@@ -723,7 +727,7 @@ export default defineConfig({
       name: 'data-setup-perm-header-show-help',
       testMatch: /perm-header-show-help\.setup\.ts/,
       teardown: 'data-teardown-perm-header-show-help',
-      dependencies: ['perm-header-show-feedback']
+      dependencies: ['perm-show-feedback-survey']
     },
     {
       name: 'data-teardown-perm-header-show-help',
