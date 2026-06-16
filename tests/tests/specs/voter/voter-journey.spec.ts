@@ -104,6 +104,17 @@ const TEXT_RE = {
 // are exempt.
 // ====================================================================
 
+/**
+ * Resolve the `role=meter` inside the score-gauge whose label matches `label`.
+ * EFLOW-04 helper: pins a per-category subMatch gauge by its question-group
+ * label (the stable `[<id>]` prefix) so its `aria-valuenow` can be asserted.
+ * Module-scope (not an in-test arrow) to satisfy `func-style` + keep the
+ * gauge-by-label lookup reusable.
+ */
+function gaugeMeterByLabel(gauges: Locator, label: RegExp): Locator {
+  return gauges.filter({ hasText: label }).getByRole('meter');
+}
+
 /** Best-effort click on each element; tolerates click failures (the rule allows). */
 async function clickAllTolerantly({ elements, count }: { elements: Locator; count: number }): Promise<void> {
   for (let i = 0; i < count; i++) {
@@ -760,10 +771,41 @@ test.describe('voter journey', () => {
       const subMatches = firstCard.getByTestId(testIds.voter.results.subMatches);
       await expect.soft(subMatches).toBeVisible();
 
-      // Exactly 4 score-gauges inside the submatches block.
-      // base has 4 opinion-question subdimensions per the matching
-      // algorithm + base+optA+optB+regional categories.
-      await expect.soft(subMatches.getByTestId(testIds.voter.results.scoreGauge)).toHaveCount(4);
+      // EFLOW-04: per-category subMatch CORRECT values for the pinned
+      // polar-MAX candidate test-ca-bb-1 (NOT count-only). The voter answered
+      // every reachable opinion question at polar-MAX; test-ca-bb-1 is itself
+      // polar-MAX, so the categories the voter ANSWERED (Base + Regional)
+      // score the full 100, while the two OPTIONAL categories the voter
+      // skipped/de-selected (Opt-A NotSelected, Opt-B Skipped) score the
+      // neutral 50 (no overlapping voter answer in those groups → the
+      // matching algorithm's no-information midpoint). Exactly FOUR gauges
+      // render — one per question group that is in scope for test-ca-bb-1's
+      // nominations (Base, Opt-A, Opt-B, Regional); the per-question-filtered
+      // Mun-NE group is NOT a gauge here (out of this candidate's scope).
+      //
+      // Values DERIVED at build by reading the rendered aria-valuenow off each
+      // gauge's role=meter (ScoreGauge.svelte:64-79) — not guessed. The
+      // deterministic 'max' walk + name-pinned candidate make these exact.
+      const gauges = subMatches.getByTestId(testIds.voter.results.scoreGauge);
+      await expect.soft(gauges).toHaveCount(4);
+
+      // (b) Each gauge reads its expected per-category score. Pin each gauge by
+      // its question-group label (stable [<id>] prefix) and assert the
+      // aria-valuenow on its meter (gaugeMeterByLabel module helper). Only
+      // voter-reachable categories surface a gauge; the values are the
+      // rendered, deterministic per-category scores.
+      await expect
+        .soft(gaugeMeterByLabel(gauges, TEXT_RE.baseOpinion))
+        .toHaveAttribute('aria-valuenow', '100');
+      await expect
+        .soft(gaugeMeterByLabel(gauges, TEXT_RE.optionalOpinionsA))
+        .toHaveAttribute('aria-valuenow', '50');
+      await expect
+        .soft(gaugeMeterByLabel(gauges, TEXT_RE.optionalOpinionsB))
+        .toHaveAttribute('aria-valuenow', '50');
+      await expect
+        .soft(gaugeMeterByLabel(gauges, TEXT_RE.regionalOpinionsCategory))
+        .toHaveAttribute('aria-valuenow', '100');
 
       // Election symbol "10" for test-ca-bb-1 — driven by election_symbol
       // metadata on the nomination row.
