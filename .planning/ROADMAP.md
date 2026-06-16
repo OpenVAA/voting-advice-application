@@ -276,7 +276,7 @@ Plans:
 **Part 1 — close Phase 119 (probe gate, D-01/D-03)**
 
 - [x] 120-01-PLAN.md — Wire the committed `_probes` Playwright project + trace-first re-diagnosis of the 4 deferred probes in true isolation (CONDITION 1/2) [EPERM-06/07/09/10 de-risk]
-- [ ] 120-02-PLAN.md — Run `/gsd-verify-work 119` to formally close Phase 119 (UAT test #1) — the gate before Part 2
+- [x] 120-02-PLAN.md — Run `/gsd-verify-work 119` to formally close Phase 119 (UAT test #1) — the gate before Part 2
 
 **Part 2 — author the EPERM specs**
 
@@ -472,7 +472,7 @@ The three workstreams are largely independent and may be planned/executed concur
 |-------|-----------|----------------|--------|-----------|
 | 118. E2E Coverage Audit + Coverage Plan | v2.14 | 3/4 | In progress | - |
 | 119. E2E Fixtures & Helpers + Seed | v2.14 | 8/8 | Pending verify | - |
-| 120. E2E Specs — Settings-Permutation Matrix | v2.14 | 1/8 | In Progress|  |
+| 120. E2E Specs — Settings-Permutation Matrix | v2.14 | 2/8 | In Progress|  |
 | 121. E2E Specs — Flow Coverage | v2.14 | 0/TBD | Not started | - |
 | 122. E2E Specs — Bank-Auth Round-Trip | v2.14 | 0/TBD | Not started | - |
 | 123. Svelte 5 Idiom Polish — Lifecycle & Reactive-State | v2.14 | 0/TBD | Not started | - |
