@@ -48,7 +48,7 @@ New settings-driven branches not yet covered by the existing 19 perm specs.
 - [x] **EPERM-07**: E2E covers `questions.interactiveInfo.enabled` — interactive info popup modal vs static expander. **NOTE**: This test should test the interactive info functionality in full.
 - [x] **EPERM-08**: E2E covers `matching.minimumAnswers` gating results availability (located voter with too few answers). **NOTE**: Already covered.
 - [ ] **EPERM-09**: E2E covers survey/feedback popup coordination — `survey.showIn[]` + `results.showSurveyPopup` + `results.showFeedbackPopup` + `header.showFeedback` — verifying placement, timing, no double-pop, and dismiss persistence. **NOTE**: Should be partly covered, extend the current perm, don't introduce a new one.
-- [ ] **EPERM-10**: E2E covers `matching.organizationMatching` (none / answersOnly / impute) disclosure text on the About page.
+- [x] **EPERM-10**: E2E covers `matching.organizationMatching` (none / answersOnly / impute) disclosure text on the About page.
 - [ ] **EPERM-11**: E2E covers `access.underMaintenance` and `access.voterApp` / `access.candidateApp` gating (maintenance page / redirects). **NOTE**: Should be already covered.
 
 ### E2E — Flow Coverage (EFLOW)
@@ -151,7 +151,7 @@ Each requirement maps to exactly one roadmap phase (see `.planning/ROADMAP.md` v
 | EPERM-07 | Phase 120 | Complete |
 | EPERM-08 | Phase 120 | Complete |
 | EPERM-09 | Phase 120 | Pending |
-| EPERM-10 | Phase 120 | Pending |
+| EPERM-10 | Phase 120 | Complete |
 | EPERM-11 | Phase 120 | Pending |
 | EFLOW-01 | Phase 121 | Pending |
 | EFLOW-03 | Phase 121 | Pending |
