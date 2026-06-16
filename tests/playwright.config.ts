@@ -890,6 +890,33 @@ export default defineConfig({
       fullyParallel: false,
       use: { ...devices['Desktop Chrome'] },
       dependencies: ['data-setup-perm-interactive-info']
+    },
+
+    // A12 — perm-org-matching (EPERM-10). Voter results-flow organization-match
+    // matrix: matching.organizationMatching none / answersOnly / impute, re-seeded
+    // per mode. PRIMARY: exact per-mode org match scores (none → no score;
+    // answersOnly → org's own answers only, blanks penalised polar-opposite;
+    // impute → member-imputed, differs from answersOnly). SECONDARY: About-page
+    // org-matching disclosure per mode. Unauthenticated voter slice → no storage
+    // state (the results path answers in-test). Appended to the perm tail after
+    // perm-interactive-info.
+    {
+      name: 'data-setup-perm-org-matching',
+      testMatch: /perm-org-matching\.setup\.ts/,
+      teardown: 'data-teardown-perm-org-matching',
+      dependencies: ['perm-interactive-info']
+    },
+    {
+      name: 'data-teardown-perm-org-matching',
+      testMatch: /perm-org-matching\.teardown\.ts/
+    },
+    {
+      name: 'perm-org-matching',
+      testDir: './tests/specs/perm',
+      testMatch: /perm-org-matching\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-perm-org-matching']
     }
   ]
 });
