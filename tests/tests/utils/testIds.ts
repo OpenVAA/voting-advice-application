@@ -214,6 +214,11 @@ export const testIds = {
       filterButton: 'entity-list-filter',
       entityDetails: 'entity-details',
       infoItem: 'info-item',
+      // MatchScore.svelte list-card callout (the "<n>%" readout in the card
+      // header). Distinct from `scoreGauge` (`score-gauge`), which only renders
+      // inside the entity-details SubMatches drawer. EPERM-10 reads this scoped
+      // to a single org card to assert the exact per-mode organization score.
+      matchScore: 'match-score',
       scoreGauge: 'score-gauge',
       subMatches: 'sub-matches',
       electionSymbol: 'election-symbol',

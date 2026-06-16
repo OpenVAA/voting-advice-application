@@ -215,21 +215,37 @@ export function createResultsPage(page: Page) {
     },
 
     /**
-     * Org-match-score readout (EPERM-10). Asserts the score gauge for the
-     * organization/party card matching `target` is visible (the org-matching
-     * mode produces a distinguishable score per mode — the spec re-seeds the
-     * singleton per mode and compares the read-out value).
+     * Org-match-score readout (EPERM-10). Asserts the match-score callout for
+     * the organization/party card matching `target` is visible, and returns its
+     * value as an integer percentage so the spec can assert the EXACT per-mode
+     * score (the org-matching mode produces a distinguishable score per mode —
+     * the spec re-seeds the singleton per mode and compares the read-out value).
      *
-     * Reuses the existing `score-gauge` testid (`testIds.voter.results.scoreGauge`)
-     * scoped to the matched card — no org-scoped disambiguation id is needed
-     * because the target card scopes the gauge. Returns the gauge Locator so the
-     * caller can read its value/attribute for per-mode comparison.
+     * Reads the RESULTS-LIST card callout (`testIds.voter.results.matchScore`,
+     * rendered by MatchScore.svelte as the "<n>%" header readout) scoped to the
+     * matched card — NOT the `score-gauge` testid, which only renders inside the
+     * entity-details SubMatches drawer (trace-confirmed in 120-01-PROBE-DIAGNOSIS.md).
+     * The target card scopes the callout; no org-scoped disambiguation id is needed.
      */
-    async expectOrgMatchScore(target: Target): Promise<Locator> {
+    async expectOrgMatchScore(target: Target): Promise<number> {
       const card = await this.getEntityCard(target);
-      const gauge = card.getByTestId(testIds.voter.results.scoreGauge).first();
-      await expect(gauge).toBeVisible();
-      return gauge;
+      const callout = card.getByTestId(testIds.voter.results.matchScore).first();
+      await expect(callout).toBeVisible();
+      const text = (await callout.textContent()) ?? '';
+      const match = text.match(/(\d+)\s*%/);
+      expect(match, `match-score callout "${text}" did not contain an <n>% readout`).not.toBeNull();
+      return Number((match as RegExpMatchArray)[1]);
+    },
+
+    /**
+     * Assert the organization/party card matching `target` shows NO match-score
+     * callout (EPERM-10 `organizationMatching='none'` posture — the org renders
+     * but carries no computed match readout). Scoped to the matched card so a
+     * sibling candidate score cannot satisfy it.
+     */
+    async expectNoOrgMatchScore(target: Target): Promise<void> {
+      const card = await this.getEntityCard(target);
+      await expect(card.getByTestId(testIds.voter.results.matchScore)).toHaveCount(0);
     },
 
     /**
