@@ -160,6 +160,21 @@ for (const route of UNLOCATED_ROUTES) {
     const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
     await assertAxeGates(results, testInfo, route.name);
   });
+
+  // EFLOW-07: dark-mode colour-contrast (WCAG 2.1 AA gated in both themes).
+  // Re-run the SAME axe scan under emulated `prefers-color-scheme: dark` — there
+  // is no toggle/storage; the OS-media emulation IS the dark-theme source
+  // (`darkMode.svelte.ts` reads matchMedia only). The dark token palette must
+  // clear contrast just like light, so the global 0-violation gate (via
+  // assertAxeGates, `-dark` label) catches any dark-only contrast regression.
+  test(`axe accessibility scan — ${route.name} (dark)`, async ({ page }, testInfo) => {
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.goto(buildRoute({ route: route.routeId, locale: 'en' }));
+    await route.settle(page);
+
+    const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
+    await assertAxeGates(results, testInfo, `${route.name}-dark`);
+  });
 }
 
 // ── Located routes — voter-journey fixture consumes ────────────────────────
