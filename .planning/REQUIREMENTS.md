@@ -58,7 +58,7 @@ New settings-driven branches not yet covered by the existing 19 perm specs.
 - [x] **EFLOW-03**: E2E asserts voter-answer-vs-entity answer comparison for all four cases (agree / disagree / voter-missing / entity-missing) in entity details. **NOTE**: Should be already covered.
 - [x] **EFLOW-04**: E2E asserts per-category match breakdown (subMatches) rendering on results. **NOTE**: Partly covered, but let's extend the test to test that correct values (only voter-answered categories, correct scores) are displayed for one candidate (as part of voter flow).
 - [x] **EFLOW-05**: E2E covers skip / delete / back navigation in the question flow and the resulting answer-count + results-CTA impact. **NOTE**: Should be already covered.
-- [ ] **EFLOW-06**: E2E covers mid-session locale switching (e.g. fi → en → fi) with UI translation and answer/selection state preserved.
+- [x] **EFLOW-06**: E2E covers mid-session locale switching (e.g. fi → en → fi) with UI translation and answer/selection state preserved.
 - [ ] **EFLOW-07**: E2E covers the dark-mode toggle — theme applied and persisted across reload.
 - [ ] **EFLOW-08**: E2E covers user-preferences round-trip (every persisted preference field) and tracking-event emission under consent / suppression without consent. **NOTE**: We also need a test for checking correct payloads are emitted by the tracking service by both `track` and `startEvent` methods.
 - [ ] **EFLOW-09**: E2E asserts navigation-menu contents for both voter and candidate apps across the relevant settings permutations. **NOTE**: And also candidate nav when logged in/out.
@@ -157,7 +157,7 @@ Each requirement maps to exactly one roadmap phase (see `.planning/ROADMAP.md` v
 | EFLOW-03 | Phase 121 | Complete |
 | EFLOW-04 | Phase 121 | Complete |
 | EFLOW-05 | Phase 121 | Complete |
-| EFLOW-06 | Phase 121 | Pending |
+| EFLOW-06 | Phase 121 | Complete |
 | EFLOW-07 | Phase 121 | Pending |
 | EFLOW-08 | Phase 121 | Pending |
 | EFLOW-09 | Phase 121 | Pending |
