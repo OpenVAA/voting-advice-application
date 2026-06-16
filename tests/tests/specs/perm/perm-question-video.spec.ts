@@ -103,6 +103,59 @@ test.describe('perm-question-video (voter visibility matrix — unauthenticated)
   });
 });
 
+// EFLOW-11 D-03: video renders on mobile.
+//
+// A SCOPED mobile-viewport sub-test — `test.use` is INSIDE its own describe so
+// the 390×844 isMobile/hasTouch descriptor NEVER leaks to the sibling
+// unauthenticated/authenticated slices above (a file-scope test.use would flip
+// the whole spec to mobile). Asserts the per-question Video media still renders
+// on the q1 question at the mobile viewport, reusing the EPERM-06 voter
+// visibility assertion adapted to mobile.
+test.describe('mobile viewport smoke', () => {
+  test.describe.configure({ mode: 'serial' });
+  test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+
+  test('q1 question video renders on mobile', async ({ page }) => {
+    // The mobile voter layout auto-opens the DataConsentPopup when consent is
+    // indetermined; at 390×844 it is full-width bottom-anchored and intercepts
+    // the bottom-of-viewport question-nav controls. Auto-grant it via the real
+    // in-app control so the walk proceeds. Desktop slices above never need this
+    // (the popup positions clear of the controls there).
+    const grantButton = page.getByRole('dialog').getByRole('button', { name: /agree to share my data/i });
+    await page.addLocatorHandler(grantButton, async () => {
+      await grantButton.click();
+    });
+
+    const video = createVideoReader(page);
+    const consentDialog = page.getByRole('dialog');
+    const categoryStart = page.getByTestId(testIds.voter.questions.categoryStart);
+    const answerOption = page.getByTestId(testIds.voter.questions.answerOption).first();
+
+    // walkUntilQuestionsIntro is bypass-tolerant; with questionsIntro.show=false
+    // it auto-redirects to the first category intro (categoryIntros.show=true).
+    await walkUntilQuestionsIntro(page);
+
+    // Deterministically settle the consent popup BEFORE the churn-robust
+    // dispatchEvent nav below. `dispatchEvent('click')` bypasses Playwright
+    // actionability (so it does NOT trigger addLocatorHandler), so an open
+    // consent modal lingering over the category-intro link is a real race source
+    // — grant it explicitly and wait for it to close so the nav is unobstructed.
+    if (await grantButton.isVisible().catch(() => false)) {
+      await grantButton.click();
+      await expect(consentDialog).toBeHidden({ timeout: 15_000 });
+    }
+
+    // Advance from the q-cat 1 intro to q1 via churn-robust client-side nav.
+    await expect(categoryStart).toHaveAttribute('href', /\/questions\//, { timeout: 15_000 });
+    await categoryStart.dispatchEvent('click');
+    await expect(page).toHaveURL(/\/questions\/[^/]+(\?|$)/, { timeout: 15_000 });
+
+    // q1 carries customData.video — the Video element renders at mobile.
+    await expect(answerOption).toBeVisible({ timeout: 15_000 });
+    await video.expectVideo(true);
+  });
+});
+
 test.describe('perm-question-video (candidate hideVideo slice — authenticated)', () => {
   test.describe.configure({ mode: 'serial' });
   test.use({ storageState: STORAGE_STATE_PATH });
