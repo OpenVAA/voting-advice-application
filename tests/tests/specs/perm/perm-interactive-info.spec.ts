@@ -36,6 +36,17 @@ import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
 
 /**
+ * Dismiss the open popup-info modal (Drawer) so it stops intercepting pointer
+ * events on the page-level controls (the `question-next` button sits behind the
+ * modal scrim while it is open). Escape closes the Drawer; the assertion settles
+ * on the modal body being hidden.
+ */
+async function dismissInfoModal(page: Page): Promise<void> {
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId(testIds.voter.questions.popupInfoModal)).toBeHidden({ timeout: 15_000 });
+}
+
+/**
  * Advance from the current question to the next via the stable `question-next`
  * button, anchoring on the next question's heading text to settle the nav.
  */
@@ -71,23 +82,31 @@ test.describe('perm-interactive-info (EPERM-07)', () => {
 
     // The customData.infoSections render inside the modal (two sections seeded).
     await questionInfo.expectInfoSections([0, 1]);
+    // Close the modal before navigating — the open Drawer scrim intercepts the
+    // page-level question-next pointer events.
+    await dismissInfoModal(page);
 
     // ARGUMENTS render per-type. Each carrier (qu-likert/boolean/categorical) is
     // a SEPARATE question because argument rendering is type-dependent and the
     // categorical layout groups by choiceId. Reach each via question-next, open
-    // its popup-info disclosure, and assert its argument group renders.
+    // its popup-info disclosure (the carrier co-seeds an infoSection so the popup
+    // disclosure renders — QuestionArguments is gated inside it), assert its
+    // argument group, then dismiss the modal before the next nav.
     await advanceToQuestion(page, HEADINGS.default);
     await advanceToQuestion(page, HEADINGS.likert);
     await questionInfo.expectInfoMode(undefined, 'popup');
     await questionInfo.expectArguments(undefined, 'ordinal');
+    await dismissInfoModal(page);
 
     await advanceToQuestion(page, HEADINGS.boolean);
     await questionInfo.expectInfoMode(undefined, 'popup');
     await questionInfo.expectArguments(undefined, 'boolean');
+    await dismissInfoModal(page);
 
     await advanceToQuestion(page, HEADINGS.categorical);
     await questionInfo.expectInfoMode(undefined, 'popup');
     await questionInfo.expectArguments(undefined, 'categorical');
+    await dismissInfoModal(page);
   });
 
   test.describe('expander mode (interactiveInfo.enabled=false re-seed)', () => {

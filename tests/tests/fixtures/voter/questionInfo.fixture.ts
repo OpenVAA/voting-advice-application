@@ -89,11 +89,28 @@ function nthOrFirst(locator: Locator, index: QuestionRef): Locator {
 /**
  * Create a question-info reader bound to `page`.
  */
+/**
+ * Per-type argument-group testid suffix. `QuestionArguments.svelte` bakes the
+ * suffix INTO the testid (`voter-questions-argument-group-{choiceId ?? type}`,
+ * QuestionArguments.svelte:64), so — like the `infoSection` per-index testid —
+ * the base `voter-questions-argument-group` is an exact-match miss and never
+ * resolves. The reader must target the suffixed testid.
+ *
+ * Non-categorical carriers key by the ARGUMENT_TYPE string (`likertPros` /
+ * `booleanPros`); the categorical carrier keys by `choiceId` ('a' is the first
+ * seeded choice group). Each carrier seeds at least the "pros" group, so the
+ * reader asserts that group renders.
+ */
+const ARGUMENT_GROUP_SUFFIX: Record<'ordinal' | 'boolean' | 'categorical', string> = {
+  ordinal: 'likertPros',
+  boolean: 'booleanPros',
+  categorical: 'a'
+};
+
 export function createQuestionInfo(page: Page): QuestionInfoFixture {
   const popupButton = page.getByTestId(testIds.voter.questions.popupInfoButton);
   const popupModal = page.getByTestId(testIds.voter.questions.popupInfoModal);
   const expanderButton = page.getByTestId(testIds.voter.questions.infoButton);
-  const argumentGroup = page.getByTestId(testIds.voter.questions.argumentGroup);
 
   return {
     async expectInfoMode(question: QuestionRef, mode: InfoMode): Promise<void> {
@@ -124,16 +141,22 @@ export function createQuestionInfo(page: Page): QuestionInfoFixture {
     },
 
     async expectArguments(question: QuestionRef, type: 'ordinal' | 'boolean' | 'categorical'): Promise<void> {
-      // For every supported type the type-appropriate layout renders ≥1 argument
-      // group. Categorical groups are keyed by choiceId; non-categorical groups
-      // fall back to the argument type. The reader asserts the grouped block is
-      // present (the per-type seed in perm-interactive-info supplies the carrier).
-      if (type === 'categorical') {
-        // Categorical: at least one choiceId-keyed group renders.
-        await expect(nthOrFirst(argumentGroup, question)).toBeVisible();
-      } else {
-        await expect(nthOrFirst(argumentGroup, question)).toBeVisible();
-      }
+      // The arguments live in a collapsible Expander (QuestionExtendedInfo.svelte)
+      // whose content mounts ONLY when expanded (Expander.svelte:162 `{#if
+      // expanded}`). Expand it first by clicking its toggle checkbox (the
+      // Expander starts collapsed; expectArguments is called against a freshly
+      // opened modal, so a single click reveals it deterministically).
+      const argumentsExpander = page.getByTestId(testIds.voter.questions.argumentsExpander);
+      await expect(argumentsExpander).toBeVisible();
+      await argumentsExpander.getByRole('checkbox').click();
+
+      // The type-appropriate layout renders a grouped argument block keyed by
+      // choiceId (categorical) or the ARGUMENT_TYPE string (ordinal/boolean).
+      // `QuestionArguments.svelte:64` bakes the suffix into the testid, so the
+      // reader targets `voter-questions-argument-group-{suffix}` (an exact-match
+      // distinct testid) — NOT the bare base, which never resolves.
+      const suffixed = page.getByTestId(`${testIds.voter.questions.argumentGroup}-${ARGUMENT_GROUP_SUFFIX[type]}`);
+      await expect(nthOrFirst(suffixed, question)).toBeVisible();
     }
   };
 }

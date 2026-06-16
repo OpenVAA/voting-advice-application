@@ -176,6 +176,10 @@ export const testIds = {
       //    inside the Drawer) so expectInfoMode(q,'popup') can assert the open modal.
       //  - infoSection: per-customData.infoSections section (keyed by index) on
       //    QuestionExtendedInfo.svelte so expectInfoSections([...]) can enumerate.
+      //  - argumentsExpander: the collapsible Arguments block wrapper on
+      //    QuestionExtendedInfo.svelte (sibling to the per-index infoSection
+      //    blocks). Its content (the per-group blocks) mounts only when expanded,
+      //    so expectArguments expands it before reading the group.
       //  - argumentGroup: per-argument group on QuestionArguments.svelte. For
       //    categorical questions the group is keyed by choiceId (mirrors the keyed
       //    feedback-rating-{value} pattern); non-categorical groups fall back to the
@@ -186,6 +190,7 @@ export const testIds = {
       popupInfoButton: 'voter-questions-popup-info-button',
       popupInfoModal: 'voter-questions-popup-info-modal',
       infoSection: 'voter-questions-info-section',
+      argumentsExpander: 'voter-questions-arguments',
       argumentGroup: 'voter-questions-argument-group',
       termTrigger: 'voter-questions-term-trigger',
       termPopup: 'voter-questions-term-popup'

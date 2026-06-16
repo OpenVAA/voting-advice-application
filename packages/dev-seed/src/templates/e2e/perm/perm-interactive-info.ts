@@ -209,39 +209,68 @@ export const permInteractiveInfoTemplate: Template = {
         sort_order: 1,
         is_generated: false
       },
-      // Likert argument carrier.
+      // Likert argument carrier. Co-seeds a single infoSection alongside the
+      // arguments: the voter questions layout only mounts the interactiveInfo
+      // popup button when `(info || infoSections?.length)` is truthy
+      // (questions/+layout.svelte:238), and QuestionArguments renders ONLY inside
+      // QuestionExtendedInfo's `{#if infoSections?.length}` block
+      // (QuestionExtendedInfo.svelte:52,70). Argument carriers carry no `info`,
+      // so a co-seeded infoSection is what makes the popup disclosure (and hence
+      // the type-dependent argument layout) reachable. Decided at the EPERM-07
+      // spec build per 120-01-PROBE-DIAGNOSIS.md (co-seed infoSections vs. moving
+      // the production `{#if args}` gate — the additive seed choice keeps the
+      // production component untouched).
       {
         external_id: 'qu-likert',
         type: 'singleChoiceOrdinal',
         name: { en: '[QU-LIKERT] Opinion Likert — carries arguments.' },
         choices: LIKERT_5_EN,
         category: { external_id: `${P}qc-opin` },
-        custom_data: { arguments: LIKERT_ARGUMENTS },
+        custom_data: {
+          infoSections: [
+            { title: '[QU-LIKERT-INFOSEC] Likert background', content: '<p>[QU-LIKERT-INFOSEC-BODY] Likert info.</p>' }
+          ],
+          arguments: LIKERT_ARGUMENTS
+        },
         allow_open: false,
         required: false,
         sort_order: 2,
         is_generated: false
       },
-      // Boolean argument carrier.
+      // Boolean argument carrier (co-seeds an infoSection — see qu-likert note).
       {
         external_id: 'qu-boolean',
         type: 'boolean',
         name: { en: '[QU-BOOLEAN] Opinion Boolean — carries arguments.' },
         category: { external_id: `${P}qc-opin` },
-        custom_data: { arguments: BOOLEAN_ARGUMENTS },
+        custom_data: {
+          infoSections: [
+            { title: '[QU-BOOLEAN-INFOSEC] Boolean background', content: '<p>[QU-BOOLEAN-INFOSEC-BODY] Boolean info.</p>' }
+          ],
+          arguments: BOOLEAN_ARGUMENTS
+        },
         allow_open: false,
         required: false,
         sort_order: 3,
         is_generated: false
       },
-      // Categorical argument carrier (arguments grouped per choiceId).
+      // Categorical argument carrier (arguments grouped per choiceId; co-seeds an
+      // infoSection — see qu-likert note).
       {
         external_id: 'qu-categorical',
         type: 'singleChoiceCategorical',
         name: { en: '[QU-CATEGORICAL] Opinion Categorical — carries per-choice arguments.' },
         choices: CATEGORICAL_EN,
         category: { external_id: `${P}qc-opin` },
-        custom_data: { arguments: CATEGORICAL_ARGUMENTS },
+        custom_data: {
+          infoSections: [
+            {
+              title: '[QU-CATEGORICAL-INFOSEC] Categorical background',
+              content: '<p>[QU-CATEGORICAL-INFOSEC-BODY] Categorical info.</p>'
+            }
+          ],
+          arguments: CATEGORICAL_ARGUMENTS
+        },
         allow_open: false,
         required: false,
         sort_order: 4,

@@ -69,10 +69,14 @@ Display the question's expandable information content.
       {/each}
       {#if args}
         {@const title = t('questions.arguments.title')}
+        <!-- Arguments-block testid (sibling to the per-section infoSection
+             testids above) so the Phase-120 expectArguments reader can expand the
+             arguments Expander and read its per-group blocks. -->
         <Expander
           {title}
           titleClass="flex justify-between font-bold"
           contentClass="!text-left"
+          data-testid="voter-questions-arguments"
           onCollapse={() => onSectionCollapse?.(title)}
           onExpand={() => onSectionExpand?.(title)}>
           <QuestionArguments {question} />
