@@ -842,6 +842,29 @@ export default defineConfig({
       fullyParallel: false,
       use: { ...devices['Desktop Chrome'] },
       dependencies: ['data-setup-perm-disable-allow-open']
+    },
+
+    // A10 — perm-question-video (EPERM-06). Voter visibility matrix (video on
+    // q1/q3/q5 only, none on q2/q4 or any category intro) + candidate hideVideo
+    // slice (authenticated via a storage state minted in setup). Appended to the
+    // perm tail after perm-disable-allow-open.
+    {
+      name: 'data-setup-perm-question-video',
+      testMatch: /perm-question-video\.setup\.ts/,
+      teardown: 'data-teardown-perm-question-video',
+      dependencies: ['perm-disable-allow-open']
+    },
+    {
+      name: 'data-teardown-perm-question-video',
+      testMatch: /perm-question-video\.teardown\.ts/
+    },
+    {
+      name: 'perm-question-video',
+      testDir: './tests/specs/perm',
+      testMatch: /perm-question-video\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-perm-question-video']
     }
   ]
 });
