@@ -508,61 +508,45 @@ export default defineConfig({
       dependencies: ['data-setup-candidate-journey']
     },
 
-    // === 3 settings-permutation chains ===
+    // === settings-permutation chains ===
     //
-    // Chained sequentially among themselves (perm-disable-voter-app →
-    // perm-disable-candidate-app → perm-per-app-notifications) per the perm-*
-    // family precedent.
+    // Chained sequentially among themselves (perm-access-disable →
+    // perm-per-app-notifications) per the perm-* family precedent. The former
+    // per-app maintenance pair (voter-app + candidate-app disable) was
+    // CONSOLIDATED (EPERM-11) into the single perm-access-disable node, which
+    // re-seeds the app_settings singleton per access mode in-spec.
     //
     // Parallel-safety: each perm template uses a distinct externalIdPrefix
-    // ('e2e-perm-novapp-', 'e2e-perm-nocand-', 'e2e-perm-notif-'), and each setup
-    // passes `extraTeardownPrefix: ['test-', 'e2e-perm-']` to pre-clear any
-    // residual rows from prior chains still mid-teardown.
+    // ('e2e-perm-access-disable-', 'e2e-perm-notif-'), and each setup passes
+    // `extraTeardownPrefix: ['test-', 'e2e-perm-']` to pre-clear any residual
+    // rows from prior chains still mid-teardown.
 
-    // Variant 1: perm-disable-voter-app (1 test) — anchored on
-    // perm-not-located-2e2cg so the whole perm family is one linear sequence
-    // running strictly after the journeys. Single linear ordering eliminates all
-    // cross-chain coexistence on the shared single DB + app_settings singleton.
+    // perm-access-disable (3 tests: voterApp / candidateApp / underMaintenance) —
+    // anchored on perm-not-located-2e2cg so the whole perm family is one linear
+    // sequence running strictly after the journeys. Single linear ordering
+    // eliminates all cross-chain coexistence on the shared single DB +
+    // app_settings singleton. (Takes the chain position the former
+    // voter-app-disable node occupied.)
     {
-      name: 'data-setup-perm-disable-voter-app',
-      testMatch: /perm-disable-voter-app\.setup\.ts/,
-      teardown: 'data-teardown-perm-disable-voter-app',
+      name: 'data-setup-perm-access-disable',
+      testMatch: /perm-access-disable\.setup\.ts/,
+      teardown: 'data-teardown-perm-access-disable',
       dependencies: ['perm-not-located-2e2cg']
     },
     {
-      name: 'data-teardown-perm-disable-voter-app',
-      testMatch: /perm-disable-voter-app\.teardown\.ts/
+      name: 'data-teardown-perm-access-disable',
+      testMatch: /perm-access-disable\.teardown\.ts/
     },
     {
-      name: 'perm-disable-voter-app',
+      name: 'perm-access-disable',
       testDir: './tests/specs/perm',
-      testMatch: /perm-disable-voter-app\.spec\.ts/,
+      testMatch: /perm-access-disable\.spec\.ts/,
       fullyParallel: false,
       use: { ...devices['Desktop Chrome'] },
-      dependencies: ['data-setup-perm-disable-voter-app']
+      dependencies: ['data-setup-perm-access-disable']
     },
 
-    // Variant 2: perm-disable-candidate-app (1 test) — sequential after perm-disable-voter-app
-    {
-      name: 'data-setup-perm-disable-candidate-app',
-      testMatch: /perm-disable-candidate-app\.setup\.ts/,
-      teardown: 'data-teardown-perm-disable-candidate-app',
-      dependencies: ['perm-disable-voter-app']
-    },
-    {
-      name: 'data-teardown-perm-disable-candidate-app',
-      testMatch: /perm-disable-candidate-app\.teardown\.ts/
-    },
-    {
-      name: 'perm-disable-candidate-app',
-      testDir: './tests/specs/perm',
-      testMatch: /perm-disable-candidate-app\.spec\.ts/,
-      fullyParallel: false,
-      use: { ...devices['Desktop Chrome'] },
-      dependencies: ['data-setup-perm-disable-candidate-app']
-    },
-
-    // perm-per-app-notifications (2 tests) — sequential after perm-disable-candidate-app.
+    // perm-per-app-notifications (2 tests) — sequential after perm-access-disable.
     //
     // The chain (and the perm family's anchor on the journey leaves) is
     // load-bearing for the FULL `yarn test:e2e` run: every perm setup overwrites
@@ -581,7 +565,7 @@ export default defineConfig({
       name: 'data-setup-perm-per-app-notifications',
       testMatch: /perm-per-app-notifications\.setup\.ts/,
       teardown: 'data-teardown-perm-per-app-notifications',
-      dependencies: ['perm-disable-candidate-app']
+      dependencies: ['perm-access-disable']
     },
     {
       name: 'data-teardown-perm-per-app-notifications',
