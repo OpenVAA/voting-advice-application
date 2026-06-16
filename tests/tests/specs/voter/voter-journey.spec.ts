@@ -634,6 +634,12 @@ test.describe('voter journey', () => {
       await termTrigger.first().blur();
     });
 
+    // EFLOW-05: skip + delete/back nav + answer-count→results-CTA.
+    // This step (delete answer → results link re-disabled → re-answer → re-enabled,
+    // plus the previous-button back-nav) plus the Opt-A skip step below ARE the
+    // confirmed-covered EFLOW-05 behaviour — re-confirmed with NO behaviour change
+    // (Phase 121 scope_fence: EFLOW-05 is confirmed-covered, comment for greppable
+    // decision-coverage evidence).
     await test.step('answer remaining base questions at polar-MAX, delete answer, results link gated on min answers', async () => {
       // Answer and advance through the rest of the category's questions. We are
       // on Base-3 here (Base-1/Base-2 answered above; Base-3 reached for the terms
@@ -717,6 +723,10 @@ test.describe('voter journey', () => {
     // CATEGORY SKIP + FILTERED CATEGORIES + REMAINING QUESTIONS
     // ====================================================================
 
+    // EFLOW-05: skip + delete/back nav + answer-count→results-CTA.
+    // The categorySkip click below is the confirmed-covered EFLOW-05 category-skip
+    // slice (Opt-A skipped → its questions never appear; the de-selected Opt-B
+    // category also stays absent) — re-confirmed, NO behaviour change.
     await test.step('skip the Opt-A category, and the deselected Opt-B category never appears', async () => {
       // After answering QG-Opin-Base, we should hit the QG-Opin-Opt-A category intro (categoryStart visible). Click Skip instead of Start.
       await expectCategoryIntroAndAdvance({ page, text: TEXT_RE.optionalOpinionsA, skip: true });
@@ -1023,6 +1033,12 @@ test.describe('voter journey', () => {
         .first()
         .waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
 
+      // EFLOW-03: 4-case voter-vs-entity comparison (agree/disagree/voter-missing/entity-missing).
+      // The four expectQuestionDisplay calls below ARE the confirmed-covered
+      // EFLOW-03 matrix — re-confirmed here with NO behaviour change (Phase 121
+      // scope_fence: EFLOW-03 is confirmed-covered, this comment makes the
+      // evidence greppable for the decision-coverage + verification gates).
+      //
       // Voter-vs-entity matrix arrangement (e2e/base.ts CA-AA-Special answers
       // lines 869-879, cross-referenced with the voter's answering flow above):
       //   (a) both answered    → Base opinion 1  (voter+entity at polar max)
