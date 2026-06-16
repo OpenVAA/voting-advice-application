@@ -313,7 +313,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 121-05-PLAN.md — playwright.config: voter-dark-mode + voter-journey-mobile leaf projects + perm-analytics-tracking triad (voter-prefs-tracking)
+- [x] 121-05-PLAN.md — playwright.config: voter-dark-mode + voter-journey-mobile leaf projects + perm-analytics-tracking triad (voter-prefs-tracking)
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -491,7 +491,7 @@ The three workstreams are largely independent and may be planned/executed concur
 | 118. E2E Coverage Audit + Coverage Plan | v2.14 | 3/4 | In progress | - |
 | 119. E2E Fixtures & Helpers + Seed | v2.14 | 8/8 | Pending verify | - |
 | 120. E2E Specs — Settings-Permutation Matrix | v2.14 | 8/8 | Complete   | 2026-06-16 |
-| 121. E2E Specs — Flow Coverage | v2.14 | 4/8 | In Progress|  |
+| 121. E2E Specs — Flow Coverage | v2.14 | 5/8 | In Progress|  |
 | 122. E2E Specs — Bank-Auth Round-Trip | v2.14 | 0/TBD | Not started | - |
 | 123. Svelte 5 Idiom Polish — Lifecycle & Reactive-State | v2.14 | 0/TBD | Not started | - |
 | 124. Svelte 5 Idiom Polish — Lock-in & Visual Verification | v2.14 | 0/TBD | Not started | - |
