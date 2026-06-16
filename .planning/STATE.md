@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
 status: executing
-stopped_at: Phase 120 context gathered
-last_updated: "2026-06-16T11:03:06.675Z"
+stopped_at: Completed 120-07-PLAN.md
+last_updated: "2026-06-16T12:06:42.656Z"
 last_activity: 2026-06-16 -- Phase 120 execution started
 progress:
   total_phases: 15
   completed_phases: 2
   total_plans: 20
-  completed_plans: 18
+  completed_plans: 19
   percent: 13
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 ## Current Position
 
 Phase: 120 (e2e-specs-settings-permutation-matrix) — EXECUTING
-Plan: 5 of 8
+Plan: 6 of 8
 Status: Ready to execute
 Last activity: 2026-06-16 -- Phase 120 execution started
 
@@ -55,6 +55,7 @@ Pre-close artifact audit surfaced 8 open items. The 2 🔴 items were **resolved
 | Phase 120 P04 | ~45min | 3 tasks | 4 files |
 | Phase 120 P05 | 75min | 3 tasks | 6 files |
 | Phase 120 P06 | ~55min | 3 tasks | 7 files |
+| Phase 120 P07 | 95min | 3 tasks | 5 files |
 
 ### Acknowledged at v2.11 close (2026-06-07)
 
@@ -393,6 +394,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: EPERM-05 org slice asserted ADDITIVELY: showMissingElectionSymbol.organization=false yields ABSENT Election Number row (not a '—' placeholder); showMissingAnswers.organization=true markers asserted; zero seed change (120-03)
 - [Phase ?]: EPERM-07 arguments render-gating resolved by co-seeding infoSections on the argument carriers (additive seed change, production gate untouched)
 - [Phase ?]: Added voter-questions-arguments testid to the QuestionExtendedInfo Arguments Expander (Rule 2 — sibling infoSection blocks already had testids)
+- [Phase ?]: EPERM-09: renamed perm-header-show-feedback to perm-show-feedback-survey in place (extend-not-duplicate); showIn audit covers frontpage+entityDetails, navigation deferred (no stable testid)
 
 ### Quick Tasks Completed
 
@@ -437,9 +439,9 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-16T11:03:01.254Z
-Stopped at: Phase 120 context gathered
-Resume file: .planning/phases/120-e2e-specs-settings-permutation-matrix/120-CONTEXT.md
+Last session: 2026-06-16T12:06:38.050Z
+Stopped at: Completed 120-07-PLAN.md
+Resume file: None
 Work done this session (118-02):
 
 - Appended EFLOW-01..11 + EQTYP-01..03 coverage maps to `.planning/v2.14-E2E-COVERAGE-PLAN.md` (replacing the Plan-01 placeholder anchors), all verdicts grounded against real `tests/` specs per A5. EFLOW: 03/05 confirmed-covered-no-new-code; 01/04/06/09 PARTIAL→extend; 07/08/11 MISSING→new; 02 DEFERRED→130; 10 PARTIAL→Idura-only retarget. EQTYP: all 3 DEFERRED→130 (UNBLK-02/05/01 blockers). EFLOW-10 note records the Idura `sub`-based identity + hetu/country retarget, drops Signicat, keeps the direct-Edge-Function synthetic-JWE stub (no live IdP), and flags the deterministic-green-gate decision (test JWKS in beforeAll) for the 122 plan.
