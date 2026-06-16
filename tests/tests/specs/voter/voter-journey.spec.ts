@@ -564,10 +564,19 @@ test.describe('voter journey', () => {
       });
       // Browser-back to the first (now-answered) question.
       await page.goBack();
-      // Expect the last to be answered and the delete button to be visible
+      // Expect the last to be answered and the delete button to be visible.
+      //
+      // `page.goBack()` is a FULL browser navigation (not an in-app prev-button
+      // hop): SvelteKit re-runs load + the question variant remounts via
+      // `{#key question.type}`, and the persisted answer is re-hydrated onto the
+      // radio's checked state only AFTER that round-trip settles. The 2s element
+      // budget occasionally loses that race (intermittent "unchecked" at this
+      // line) — use the navigation budget (TIMEOUTS.page, 5s) for this
+      // post-goBack answer-restore assertion, matching the single-navigation
+      // round-trip it actually waits on.
       const answerOptions = page.getByTestId(testIds.voter.questions.answerOption);
       const lastOption = answerOptions.last();
-      await expect.soft(lastOption).toBeChecked({ timeout: TIMEOUTS.element });
+      await expect.soft(lastOption).toBeChecked({ timeout: TIMEOUTS.page });
       await expect.soft(deleteButton).toBeVisible({ timeout: TIMEOUTS.element });
       // Move to the next question (2nd in the category). We are back on Base-1
       // (just navigated back), so gate on its heading; advancing lands on Base-2.
