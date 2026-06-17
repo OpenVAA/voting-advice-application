@@ -179,6 +179,43 @@ export default defineConfig({
         ]
       : []),
 
+    // Bank-auth full-browser journey (EFLOW-10b) — the Option-B mock-OIDC-issuer
+    // round-trip: /candidate/preregister → mock IdP 302 → server exchange+decrypt
+    // → authenticated → election/constituency → email+ToU → preregister() →
+    // registration-key → set password → logged-in.
+    //
+    // OPT-IN (PLAYWRIGHT_BANK_AUTH) and STANDS ALONE — it pulls ONLY its own
+    // data-setup, NOT the perm serial chain (RESEARCH A4/Pitfall 3; mirrors the
+    // sibling `bank-auth` project's standalone wiring). The setup/teardown FILES
+    // these entries point at land in 122-04; the journey SPEC matched by the
+    // `bank-auth-journey` project lands in 122-05. Until then this block is
+    // gated-off in the default run and dormant in the opt-in run.
+    //
+    // The mock OIDC issuer is spawned via the `webServer` entry below (also
+    // PLAYWRIGHT_BANK_AUTH-gated). It binds 127.0.0.1-only and serves over HTTPS
+    // with a committed self-signed localhost cert — never reachable in the default
+    // suite (threat T-122-08).
+    ...(process.env.PLAYWRIGHT_BANK_AUTH
+      ? [
+          {
+            name: 'data-setup-bank-auth-journey',
+            testMatch: /bank-auth-journey\.setup\.ts/,
+            teardown: 'data-teardown-bank-auth-journey'
+          },
+          {
+            name: 'data-teardown-bank-auth-journey',
+            testMatch: /bank-auth-journey\.teardown\.ts/
+          },
+          {
+            name: 'bank-auth-journey',
+            testDir: './tests/specs/candidate',
+            testMatch: /candidate-bank-auth-journey\.spec\.ts/,
+            use: { ...devices['Desktop Chrome'], storageState: { cookies: [], origins: [] } },
+            dependencies: ['data-setup-bank-auth-journey']
+          }
+        ]
+      : []),
+
     // === base / voter-journey chain ===
     //
     // Project graph (independent — no cross-chain dependency):
@@ -966,5 +1003,26 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
       dependencies: ['data-setup-perm-analytics-tracking']
     }
-  ]
+  ],
+
+  // Mock OIDC issuer for the bank-auth-journey (EFLOW-10b). PLAYWRIGHT_BANK_AUTH-
+  // gated so it NEVER spawns in the default suite. Playwright manages its lifecycle
+  // (start → wait-for-port → teardown). The readiness probe hits the issuer's HTTPS
+  // JWKS endpoint; `ignoreHTTPSErrors: true` is required because the issuer's cert is
+  // self-signed (CN=127.0.0.1). The issuer is self-contained (needs no app env), so
+  // spawning it from the Playwright worker is clean — the SvelteKit frontend server's
+  // IdP-pointing env is a SEPARATE operator responsibility (Pitfall 1; documented in
+  // IDURA-TEST-RUNBOOK.md, EFLOW-10b). `reuseExistingServer` outside CI lets a hand-
+  // started issuer be reused during local iteration.
+  ...(process.env.PLAYWRIGHT_BANK_AUTH
+    ? {
+        webServer: {
+          command: 'npx tsx tests/tests/support/mockOidcIssuerEntry.ts',
+          url: 'https://127.0.0.1:9443/.well-known/openid-configuration/jwks',
+          ignoreHTTPSErrors: true,
+          reuseExistingServer: !process.env.CI,
+          timeout: 30_000
+        }
+      }
+    : {})
 });
