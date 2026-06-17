@@ -188,4 +188,31 @@ describe('candidateUserDataState.save()', () => {
     expect(lastAnswersCall?.target.id).toBe('cand-1');
     expect(store.savedCandidateData?.id).toBe('cand-1');
   });
+
+  it('Test 5: explicit termsOfUseAccepted: null is sent to updateEntityProperties (tri-state null persists)', async () => {
+    const { store, updateAnswers, updateEntityProperties } = setup(makeUserData());
+
+    // The tri-state contract: null is an EDITED value (not "unedited"). The old truthy
+    // guard (`termsOfUseAccepted ?`) silently dropped it; the `!== undefined` guard sends it.
+    store.setTermsOfUseAccepted(null);
+    flushSync();
+    await store.save();
+    flushSync();
+
+    expect(updateAnswers).not.toHaveBeenCalled();
+    expect(updateEntityProperties).toHaveBeenCalledTimes(1);
+    expect(updateEntityProperties.mock.calls[0][0].properties.termsOfUseAccepted).toBeNull();
+  });
+
+  it('Test 6: unedited termsOfUseAccepted (undefined) is NOT sent (behavior-neutrality guard)', async () => {
+    const { store, updateAnswers, updateEntityProperties } = setup(makeUserData());
+
+    // No setter call → #editedTermsOfUseAccepted stays undefined (unedited) → no property save.
+    flushSync();
+    await store.save();
+    flushSync();
+
+    expect(updateAnswers).not.toHaveBeenCalled();
+    expect(updateEntityProperties).not.toHaveBeenCalled();
+  });
 });

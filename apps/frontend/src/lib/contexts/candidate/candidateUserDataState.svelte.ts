@@ -147,7 +147,10 @@ class CandidateUserDataStateImpl implements CandidateUserDataState {
 
   #unsavedProperties = $derived.by(
     () =>
-      [this.#editedImage ? 'image' : undefined, this.#editedTermsOfUseAccepted ? 'termsOfUseAccepted' : undefined].filter(
+      [
+        this.#editedImage ? 'image' : undefined,
+        this.#editedTermsOfUseAccepted !== undefined ? 'termsOfUseAccepted' : undefined
+      ].filter(
         (p) => p !== undefined
       ) as Array<keyof LocalizedCandidateData>
   );
@@ -273,7 +276,7 @@ class CandidateUserDataStateImpl implements CandidateUserDataState {
       this.#mergeCandidateAnswers(updatedAnswers);
     }
 
-    if (image || termsOfUseAccepted) {
+    if (image || termsOfUseAccepted !== undefined) {
       updatedCandidate = await dataWriter.updateEntityProperties({
         ...updateArgs,
         properties: { image, termsOfUseAccepted }
