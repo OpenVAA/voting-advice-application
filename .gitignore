@@ -9,6 +9,12 @@ node_modules
 *.key
 *.p12
 *.pfx
+# TEST-ONLY self-signed localhost cert/key for the bank-auth-journey mock OIDC
+# issuer (EFLOW-10b). CN=127.0.0.1, never installed into a trust store, never used
+# by production (threat T-122-09, accepted). Intentionally tracked so the SAME cert
+# is shared across machines/CI for the opt-in PLAYWRIGHT_BANK_AUTH journey run.
+!tests/tests/support/mock-oidc-cert.pem
+!tests/tests/support/mock-oidc-key.pem
 
 # Claude Code local settings
 .claude/*.local.json
