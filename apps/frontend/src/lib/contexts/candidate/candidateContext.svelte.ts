@@ -375,7 +375,7 @@ export class CandidateContextProvider implements CandidateContext {
         return questions;
       });
       const nextBlocks = nextOpinionCats
-        .map((c) => c.getApplicableQuestions({ elections, constituencies }))
+        .map((c) => c.getApplicableQuestions({ elections, constituencies, entityType }))
         .filter((b) => b.length > 0);
 
       this.#infoQuestionCategories = nextInfoCats;
