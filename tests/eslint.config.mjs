@@ -78,6 +78,23 @@ export default [
     }
   },
   {
+    // === vitest util unit tests are NOT Playwright specs ===
+    // `tests/utils/**/*.test.ts` are vitest unit tests (run via
+    // `vitest --config tests/vitest.config.ts`, NOT Playwright). They use
+    // vitest's `describe`/`it`/`expect`, which the Playwright plugin's
+    // test-structure rules (no-standalone-expect, expect-expect,
+    // no-conditional-in-test) misclassify because they only recognise
+    // Playwright `test()` blocks. Disable those structure rules here; the
+    // forbidden-locator / await rules remain irrelevant (no Page in unit tests).
+    files: ['**/utils/**/*.test.ts'],
+    rules: {
+      'playwright/no-standalone-expect': 'off',
+      'playwright/expect-expect': 'off',
+      'playwright/no-conditional-in-test': 'off',
+      'playwright/no-conditional-expect': 'off'
+    }
+  },
+  {
     // === setup/teardown projects are not assertion tests ===
     // Files run under Playwright `setup`/`teardown` projects seed or clean the
     // DB; they intentionally perform side effects (and may branch on
