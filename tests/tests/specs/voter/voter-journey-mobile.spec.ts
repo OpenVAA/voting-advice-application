@@ -35,47 +35,17 @@ import { createFeedbackDialog } from '../../fixtures/shared/feedbackDialog.fixtu
 import { createNavMenu } from '../../fixtures/shared/navMenu.fixture';
 import { createEntityFilters } from '../../fixtures/voter/entityFilters.fixture';
 import { createResultsPage } from '../../fixtures/voter/resultsPage.fixture';
-import { voterJourneyTest } from '../../fixtures/voter/voter-journey.fixture';
+import { voterJourneyTest as test } from '../../fixtures/voter/voter-journey.fixture';
 import { TIMEOUTS } from '../../helpers';
 import { testIds } from '../../utils/testIds';
 
-/**
- * The in-app DataConsent "granted" button accessible name (DataConsent.svelte),
- * scoped via the auto-opened popup dialog. Locked against
- * apps/frontend/.../dataConsent (mirrors voter-prefs-tracking.spec.ts:62).
- */
-const GRANTED_BUTTON = /agree to share my data/i;
-
-/**
- * Mobile-only fixture pre-step: auto-dismiss the DataConsentPopup whenever it
- * appears, by granting consent through its in-app control.
- *
- * Why this is mobile-specific (and absent from the desktop voter-journey
- * project): when consent is `indetermined` the voter layout auto-opens the
- * DataConsentPopup — a modal `Alert`. On DESKTOP the alert positions
- * bottom-right (`sm:bottom-safelgb sm:left-safelgl`) clear of the centered
- * elections/constituencies "Continue" button, so the shared walk's clicks land.
- * On MOBILE the SAME alert is full-width bottom-anchored (`w-full bottom-0`), so
- * it INTERCEPTS the bottom-of-viewport Continue button — the walk's
- * `electionsContinue.click()` then retries against the overlay until it times
- * out.
- *
- * `addLocatorHandler` registers a Playwright-driven handler that fires the grant
- * click the moment the popup obstructs an actionability check, then continues —
- * so the VIEWPORT-AGNOSTIC shared walk runs unchanged at 390×844 (the descriptor
- * is project config; the walk is reused — Phase 121 Don't-Hand-Roll). Driving
- * the real in-app control keeps the app state coherent (no fabricated
- * localStorage envelope).
- */
-const test = voterJourneyTest.extend({
-  page: async ({ page }, use) => {
-    const grantButton = page.getByRole('dialog').getByRole('button', { name: GRANTED_BUTTON });
-    await page.addLocatorHandler(grantButton, async () => {
-      await grantButton.click();
-    });
-    await use(page);
-  }
-});
+// NOTE on the consent popup: at the 390×844 mobile viewport the auto-opened
+// DataConsentPopup (`Collecting Usage Data`) is full-width bottom-anchored and
+// would intercept the bottom-of-viewport "Continue" button on the
+// elections/constituencies pages. The shared walk (`walkUntilQuestionsIntro`)
+// installs an `addLocatorHandler` that grants consent the moment the popup
+// obstructs an actionability check, so this leaf reuses the VIEWPORT-AGNOSTIC
+// walk unchanged (the descriptor is project config — Phase 121 Don't-Hand-Roll).
 
 // EFLOW-11: interactive voter journey at mobile viewport.
 test.describe('voter-journey-mobile (EFLOW-11)', () => {
