@@ -284,3 +284,137 @@ path did not run, the spec FAILS loudly (it points back here) rather than skippi
 
 > The plan 122-03 (EFLOW-10b full-browser journey via the mock OIDC issuer) will append a
 > separate **EFLOW-10b** section below this one — do not merge the two.
+
+---
+
+## EFLOW-10b — full-browser journey (mock OIDC issuer, no live IdP)
+
+This is the **automated, deterministic** full-browser counterpart to the manual full-flow
+run at the top of this runbook. It drives the `bank-auth-journey` Playwright project (the
+NEW journey spec lands in plan 122-05), walking the REAL
+`/candidate/preregister → /api/oidc/authorize → (mock IdP) 302 → /api/oidc/callback
+(server-side exchange + decrypt) → authenticated → election/constituency → email + ToU →
+preregister() → registration-key → set password → logged-in` chain. The **only** thing faked
+is the IdP at the env-pointed network seam — the real authorize→callback→exchange→decrypt→
+claims chain runs **UNMODIFIED** (D-01 Option B; Option C — a test-only branch in production
+auth code — was rejected + operator-LOCKED).
+
+### The mock OIDC issuer
+
+`tests/tests/support/mockOidcIssuer.ts` (+ `mockOidcIssuerEntry.ts`) is a self-contained
+Node `https` server serving exactly three routes:
+
+- `GET  /oauth2/authorize` — decodes the signed JAR `request` param (decode, NOT verify) and
+  302-redirects to `${redirect_uri}?code=test-code&state=${state}` (echoes `state` so the
+  callback's `returnedState === oidc_state cookie` check passes).
+- `POST /oauth2/token` — returns `{ id_token }` built by the shared `buildTestIdToken`
+  (`tests/tests/utils/buildTestIdToken.ts`) using the fixed committed test key pair
+  (`tests/tests/utils/testKeys.ts`), with `iss`/`aud` aligned to the server's verify (below).
+- `GET  /.well-known/openid-configuration/jwks` — returns `{ keys: [sigPubJwk] }`
+  (kid `test-sig-1`) so the server's `createRemoteJWKSet` verifies the inner JWT signature.
+
+It is spawned **automatically** by the Playwright `webServer` entry in
+`tests/playwright.config.ts` for the opt-in `PLAYWRIGHT_BANK_AUTH` run only — you do **not**
+start it by hand. It binds **`127.0.0.1` only**, on **port 9443**, over **HTTPS** with a
+committed self-signed localhost cert (`tests/tests/support/mock-oidc-cert.pem`, CN=127.0.0.1).
+
+> **HTTPS is mandatory (A3 / Pitfall 2).** `idura.ts` hard-codes the `https://` prefix for
+> BOTH the browser authorize leg AND the server `fetch` token/JWKS leg. A plain-HTTP mock is
+> therefore unreachable; the issuer serves HTTPS, and because the cert is self-signed, the
+> SvelteKit-server process must run with `NODE_TLS_REJECT_UNAUTHORIZED=0` (Step B-2 below).
+
+### Step B-1 — IDP env the SvelteKit server must be started with (Pitfall 1)
+
+There is **NO frontend Playwright `webServer` and NO `globalSetup`** — the SvelteKit Node
+server reads the IdP env at **ITS OWN process startup**, in a SEPARATE process from the
+Playwright worker. You MUST therefore start `yarn dev` (or the SvelteKit Node server) with the
+following env in **its** environment, or the server will try to reach the real Idura domain
+(or throw on a missing signing key) and the journey lands on
+`/candidate/preregister?error=token_exchange_failed|invalid_token`.
+
+Derive the JWK-bearing values from `tests/tests/utils/testKeys.ts` (single source of truth —
+no hand-copied keys → no drift). The mock issuer at `127.0.0.1:9443` is the host all the
+`https://${IDURA_DOMAIN}/...` URLs resolve to:
+
+| Env var | EFLOW-10b value | Read by | Note |
+| --- | --- | --- | --- |
+| `PUBLIC_IDENTITY_PROVIDER_TYPE` | `idura` | `+page.svelte` | selects the Idura server-JAR branch (NOT the Signicat client-PKCE path) |
+| `IDURA_DOMAIN` | `127.0.0.1:9443` | `idura.ts` | the server builds `https://127.0.0.1:9443/oauth2/authorize|token` |
+| `IDURA_SIGNING_JWKS` | `<JSON array containing sigPrivJwk from testKeys.ts>` | `idura.ts` `getSigningKey()` | the mock does NOT validate it, but `getSigningKey()` THROWS if the kid is absent/mismatched |
+| `IDURA_SIGNING_KEY_KID` | `test-sig-1` | `idura.ts` `getSigningKey()` | must equal the `kid` in `IDURA_SIGNING_JWKS` |
+| `IDENTITY_PROVIDER_DECRYPTION_JWKS` | `<decryptionJwks ([encPrivJwk]) from testKeys.ts>` | `getIdTokenClaims.ts` | the private enc JWK the server JWE-decrypts the id_token with |
+| `IDENTITY_PROVIDER_JWKS_URI` | `https://127.0.0.1:9443/.well-known/openid-configuration/jwks` | `getIdTokenClaims.ts` | the mock's JWKS endpoint (serves `sigPubJwk`) |
+| `IDENTITY_PROVIDER_ISSUER` | `https://127.0.0.1:9443` | `getIdTokenClaims.ts` `jwtVerify` | MUST equal the synthetic token's `iss` — the mock reads this same env when minting the token (Pitfall 4) |
+| `PUBLIC_IDENTITY_PROVIDER_CLIENT_ID` | `test-client-id` | `idura.ts` + `getIdTokenClaims.ts` `jwtVerify` | MUST equal the synthetic token's `aud` — the mock reads this same env when minting the token (Pitfall 4) |
+
+> **iss/aud alignment (Pitfall 4):** the mock issuer's token endpoint reads
+> `IDENTITY_PROVIDER_ISSUER` / `PUBLIC_IDENTITY_PROVIDER_CLIENT_ID` from its OWN process env
+> and stamps them onto the synthetic id_token. Because the `webServer` spawns the issuer from
+> the same shell that runs Playwright, set those two vars in **both** the frontend-server env
+> AND the Playwright-run env so the minted token's `iss`/`aud` match the server's `jwtVerify`.
+
+Concrete derive-and-export helper (run from the repo root; writes a sourceable env file):
+
+```bash
+npx tsx -e '
+import { sigPrivJwk, decryptionJwks } from "./tests/tests/utils/testKeys";
+const lines = [
+  "export PUBLIC_IDENTITY_PROVIDER_TYPE=idura",
+  "export IDURA_DOMAIN=127.0.0.1:9443",
+  "export IDURA_SIGNING_JWKS=" + JSON.stringify(JSON.stringify([sigPrivJwk])),
+  "export IDURA_SIGNING_KEY_KID=test-sig-1",
+  "export IDENTITY_PROVIDER_DECRYPTION_JWKS=" + JSON.stringify(JSON.stringify(decryptionJwks)),
+  "export IDENTITY_PROVIDER_JWKS_URI=https://127.0.0.1:9443/.well-known/openid-configuration/jwks",
+  "export IDENTITY_PROVIDER_ISSUER=https://127.0.0.1:9443",
+  "export PUBLIC_IDENTITY_PROVIDER_CLIENT_ID=test-client-id",
+  "export NODE_TLS_REJECT_UNAUTHORIZED=0",
+].join("\n") + "\n";
+require("node:fs").writeFileSync("/tmp/eflow10b.env", lines);
+console.log("wrote /tmp/eflow10b.env");
+'
+```
+
+### Step B-2 — the scoped TLS bypass (Pitfall 2 — TEST-ONLY, never leak to prod)
+
+The mock issuer's cert is self-signed, so the SvelteKit server's token/JWKS `fetch` legs would
+otherwise fail Node's cert check. Set `NODE_TLS_REJECT_UNAUTHORIZED=0` **only** in the
+frontend-server process for this opt-in run (it is included in `/tmp/eflow10b.env` above).
+
+> **TEST-ONLY — never leak to a default run / prod / CI (threat T-122-07).** This entire env
+> set — the test JWKs, the `127.0.0.1:9443` domain, and especially `NODE_TLS_REJECT_UNAUTHORIZED=0`
+> — is for the opt-in `bank-auth-journey` run **only**. It MUST NOT be placed in the root
+> `.env`, in `functions/.env`, or in any non-test environment, and MUST NOT leak into a default
+> `yarn dev` or a CI default run. Write it to a gitignored scratch path (`/tmp`) and `source`
+> it in the dedicated terminal only. The committed test cert/key (CN=127.0.0.1) are never
+> installed into a trust store and are never used by production.
+
+### Step B-3 — run procedure (two terminals; the mock issuer auto-spawns)
+
+The project-memory E2E prereq still applies: **one fresh dev server on `:5173`** (no stale
+server stealing the port) + a **clean DB** (`yarn db:reset`) before the run.
+
+**Terminal 1 — SvelteKit server with the IDP env in its OWN environment:**
+
+```bash
+yarn db:reset                              # clean DB first (project-memory prereq)
+source /tmp/eflow10b.env                   # the EFLOW-10b IdP env + scoped TLS bypass (Step B-1/B-2)
+yarn dev                                   # SvelteKit on :5173 inherits the IdP env from this shell
+# (also serve the identity-callback Edge Function with the test decryption JWKS — reuse the
+#  EFLOW-10 Step E-1/E-2/E-3 procedure above; the journey's preregister() invokes it.)
+```
+
+**Terminal 2 — the Playwright bank-auth-journey run (the mock issuer auto-spawns via webServer):**
+
+```bash
+source /tmp/eflow10b.env                   # so the webServer-spawned mock issuer mints iss/aud-aligned tokens
+PLAYWRIGHT_BANK_AUTH=1 \
+  npx playwright test --project=bank-auth-journey -c tests/playwright.config.ts
+```
+
+Playwright starts the mock OIDC issuer (`webServer` entry → `tsx mockOidcIssuerEntry.ts`),
+waits for `https://127.0.0.1:9443/.well-known/openid-configuration/jwks` (with
+`ignoreHTTPSErrors`), then runs the journey, then tears the issuer down.
+
+> **Cardinal rule (CLAUDE.md):** the journey must pass — a "did not run" counts as a failure.
+> Run the gate **3×** on a fresh dev server + clean DB, and confirm the DEFAULT suite
+> (`yarn test:e2e`) stays green afterwards (the opt-in project must not perturb it).
