@@ -391,14 +391,14 @@ if (image || termsOfUseAccepted !== undefined) {
 | A2 | The candidateContext Bug-1 test can be driven via `$effect.root` with stubbed upstream contexts OR a behavior-neutral pure-helper extract | RUNES-05 Test B | MEDIUM — if neither seam is clean, the test may need a heavier harness; the *assertion* (entityType passed) is fixed regardless. |
 | A3 | Bug-1 fix is behavior-neutral on the default (single-entity-type) seed | RUNES-05 / Pitfall 4 | MEDIUM — verify via candidate questions E2E flow; for multi-type configs it correctly removes non-applicable questions (correctness-restoring, not neutral). |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **candidateContext test seam (A2)**
+1. **candidateContext test seam (A2)** — RESOLVED in plan **123-01 (T2)**: Wave 0 confirms the lightest seam before writing the test and records which seam was used. The assertion (`getApplicableQuestions` called with `entityType`) is invariant either way, so this is a construction-detail decision, not a blocking unknown.
    - What we know: `initCandidateContext` composes `getAppContext()`+`getAuthContext()`, reads `page`/`dataWriter`.
    - What's unclear: whether it constructs cleanly under `$effect.root` with stubs, or needs a small pure-helper extract for the blocks computation.
    - Recommendation: Planner spikes the lightest seam in Wave 0; the assertion (`getApplicableQuestions` called with `entityType`) is invariant either way.
 
-2. **Borderline lifecycle sites (WithPolling:27, PreventNavigation:43+49)**
+2. **Borderline lifecycle sites (WithPolling:27, PreventNavigation:43+49)** — RESOLVED in plan **123-03 (T3)**: handled as an OPTIONAL executor-discretion task with **default LEAVE** per D-04; migrate only if the executor wants a demonstrative example and verifies the relevant spec green.
    - What we know: These are legal `$effect`-with-cleanup 1:1 conversions.
    - What's unclear: whether migrating them adds enough value to justify the per-site E2E re-verification.
    - Recommendation: Default LEAVE (conservative D-04); migrate only if the executor wants a demonstrative example and verifies the relevant spec green.
