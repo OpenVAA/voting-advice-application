@@ -4,13 +4,13 @@ milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
 status: executing
 stopped_at: Phase 123 context gathered
-last_updated: "2026-06-17T17:47:22.862Z"
-last_activity: 2026-06-17 -- Phase 122 marked complete
+last_updated: "2026-06-17T20:02:04.509Z"
+last_activity: 2026-06-17 -- Phase 123 execution started
 progress:
   total_phases: 15
   completed_phases: 5
-  total_plans: 33
-  completed_plans: 33
+  total_plans: 37
+  completed_plans: 34
   percent: 33
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 122 — e2e-specs-bank-auth-round-trip
+**Current focus:** Phase 123 — svelte-5-idiom-polish-lifecycle-reactive-state
 
 ## Current Position
 
-Phase: 122 — COMPLETE
-Plan: 5 of 5
+Phase: 123 (svelte-5-idiom-polish-lifecycle-reactive-state) — EXECUTING
+Plan: 2 of 4
 Status: Ready to execute
-Last activity: 2026-06-17 -- Phase 122 marked complete
+Last activity: 2026-06-17 -- Phase 123 execution started
 
 Progress: [█████████░] 93%
 
@@ -69,6 +69,7 @@ Pre-close artifact audit surfaced 8 open items. The 2 🔴 items were **resolved
 | Phase 122 P02 | 15min | 3 tasks | 2 files |
 | Phase 122 P03 | 5min | 3 tasks | 7 files |
 | Phase 122 P04 | 9min | 3 tasks | 5 files |
+| Phase 123 P01 | 12min | 2 tasks | 4 files |
 
 ### Acknowledged at v2.11 close (2026-06-07)
 
@@ -420,6 +421,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Plan 121-08 (EFLOW-11): shared walkUntilQuestionsIntro auto-grants the DataConsentPopup (addLocatorHandler) — fixed the mobile journey AND a latent full-suite flake (voter-journey/a11y/perf); full yarn test:e2e now 125/125. Mobile sub-tests are describe-scoped (no viewport leak); filter assertions are seed/constituency-agnostic.
 - [Phase ?]: 122-01: Fixed committed test JWK pair (test-enc-1/test-sig-1) is the single source of truth for the bank-auth test worker, served Edge Function, and mock issuer — determinism over per-run generateKeyPair (D-03/RESEARCH A2)
 - [Phase ?]: 122-02: Asserted Idura flow-through as the real extractClaims set ['birthdate','hetu'] (not 'country', which the Edge Function does not extract); converted env-gated test.skip into a loud D-02 keysConfigured gate + mismatched-key negative-path test. — Match real production behavior + cardinal-rule (no silent did-not-run).
+- [Phase ?]: Phase 123-01: A2 test seam resolved = spy-on-collaborator under $effect.root driving the real CandidateContextProvider (no pure-helper extract)
 
 ### Quick Tasks Completed
 
@@ -464,7 +466,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-17T15:47:51.767Z
+Last session: 2026-06-17T20:01:41.636Z
 Stopped at: Phase 123 context gathered
 Resume file: .planning/phases/123-svelte-5-idiom-polish-lifecycle-reactive-state/123-CONTEXT.md
 Work done this session (122-05 Task 2):

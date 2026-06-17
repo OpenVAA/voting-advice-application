@@ -366,7 +366,7 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 123-01-PLAN.md — Wave 0: pin svelte-check baseline (criterion 4) + create candidateContext.svelte.test.ts (Bug 1 RED test, confirm A2 seam)
+- [x] 123-01-PLAN.md — Wave 0: pin svelte-check baseline (criterion 4) + create candidateContext.svelte.test.ts (Bug 1 RED test, confirm A2 seam)
 - [ ] 123-02-PLAN.md — Wave 1: RUNES-05 two bug fixes (entityType at :378; tri-state !== undefined guards) + Bug 2 Tests 5+6
 - [ ] 123-03-PLAN.md — Wave 1: RUNES-01 + RUNES-02 audit-and-document (per-site disposition record; reactive-let enumeration; optional borderline migration)
 
@@ -518,7 +518,7 @@ The three workstreams are largely independent and may be planned/executed concur
 | 120. E2E Specs — Settings-Permutation Matrix | v2.14 | 8/8 | Complete   | 2026-06-16 |
 | 121. E2E Specs — Flow Coverage | v2.14 | 8/8 | Complete    | 2026-06-17 |
 | 122. E2E Specs — Bank-Auth Round-Trip | v2.14 | 4/5 | In Progress|  |
-| 123. Svelte 5 Idiom Polish — Lifecycle & Reactive-State | v2.14 | 0/TBD | Not started | - |
+| 123. Svelte 5 Idiom Polish — Lifecycle & Reactive-State | v2.14 | 1/4 | In Progress|  |
 | 124. Svelte 5 Idiom Polish — Lock-in & Visual Verification | v2.14 | 0/TBD | Not started | - |
 | 125. svelte-check → 0 — Trivial Tier | v2.14 | 0/TBD | Not started | - |
 | 126. svelte-check → 0 — supabaseDataProvider | v2.14 | 0/TBD | Not started | - |
