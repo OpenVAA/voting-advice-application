@@ -363,11 +363,15 @@ Plans:
   4. The frontend builds, unit tests pass, and svelte-check shows no net-new errors over the working baseline.
 
 **Plans**: 4 plans
-
 Plans:
+**Wave 1**
+
 - [ ] 123-01-PLAN.md — Wave 0: pin svelte-check baseline (criterion 4) + create candidateContext.svelte.test.ts (Bug 1 RED test, confirm A2 seam)
 - [ ] 123-02-PLAN.md — Wave 1: RUNES-05 two bug fixes (entityType at :378; tri-state !== undefined guards) + Bug 2 Tests 5+6
 - [ ] 123-03-PLAN.md — Wave 1: RUNES-01 + RUNES-02 audit-and-document (per-site disposition record; reactive-let enumeration; optional borderline migration)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 123-04-PLAN.md — Wave 2: D-03 acceptance gate (build + full unit + svelte-check <= baseline + one full E2E run)
 
 **UI hint**: yes
