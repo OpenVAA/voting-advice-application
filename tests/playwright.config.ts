@@ -1017,7 +1017,13 @@ export default defineConfig({
   ...(process.env.PLAYWRIGHT_BANK_AUTH
     ? {
         webServer: {
-          command: 'npx tsx tests/tests/support/mockOidcIssuerEntry.ts',
+          // Absolute path derived from TESTS_DIR (the `tests/tests` dir). The
+          // Playwright `webServer.command` is resolved relative to the config
+          // file's directory (`tests/`), so a bare `tests/tests/support/...`
+          // relative path doubled into `tests/tests/tests/...` and failed to
+          // resolve (ERR_MODULE_NOT_FOUND). Using the absolute entry path makes
+          // the spawn cwd-independent.
+          command: `npx tsx ${path.join(TESTS_DIR, 'support/mockOidcIssuerEntry.ts')}`,
           url: 'https://127.0.0.1:9443/.well-known/openid-configuration/jwks',
           ignoreHTTPSErrors: true,
           reuseExistingServer: !process.env.CI,
