@@ -129,5 +129,22 @@ None new. The journey drives the existing (unmodified) production auth chain (D-
 ## Self-Check: PASSED
 
 ---
+
+## Task 3 — Determinism Gate + Default-Suite Regression (orchestrator-run, 2026-06-17)
+
+**Result: PASSED.**
+
+- **3× determinism (both bank-auth projects):** `bank-auth` (EFLOW-10) + `bank-auth-journey` (EFLOW-10b) ran **3/3 consecutive clean — `11 passed` each run** (8 EFLOW-10 + 3 journey/setup/teardown), off a clean `db:reset` baseline (buckets created, storage healthy). No skip / did-not-run / flaky. EFLOW-10 was independently confirmed green 3× during 122-02; the journey green during Task 2.
+- **Default-suite regression:** `yarn test:e2e` (no `PLAYWRIGHT_BANK_AUTH`) = **`125 passed (9.1m)`**, 0 failed/skipped, on a clean dev server (no IdP env) + clean DB. Confirms (a) the opt-in bank-auth projects + mock-issuer webServer are excluded from the default suite (isolation), and (b) the preRegistration static→dynamic refactor + the `setupFromTemplate({ appSettingsOverride })` param did not perturb existing tests.
+
+**Environment note (learning):** local Supabase Storage 502-wedges under *repeated rapid* `db:reset` container bounces (the bucket-creation/storage service races the container restart). The determinism gate was therefore run as **one clean `db:reset` baseline + 3× consecutive** (each project's own setup/teardown provides clean per-run data) rather than reset-per-iteration — equivalent determinism evidence without re-triggering the local-stack flakiness. Does not affect the specs (deterministic whenever storage is ready) nor the normal single-reset `yarn test:e2e` flow.
+
+**Production deviations landed this phase (both operator-approved):**
+1. `8a167e9af` — fix(122-02): `identity-callback` Edge Function created the auth user with no email (GoTrue rejects) → derived a stable placeholder email from the `sub` for both `createUser` and `generateLink`. Surfaced by the EFLOW-10 deterministic gate.
+2. `fca08cb52` — refactor(122): moved `preRegistration.enabled` from StaticSettings → DynamicSettings (guard reads `app_settings` via `locals.supabase`), so the bank-auth preregistration journey is testable/per-instance-controllable.
+
+## Self-Check: PASSED
+
+---
 *Phase: 122-e2e-specs-bank-auth-round-trip*
 *Completed (Task 1 prior session; Task 2 single-pass green this session; Task 3 orchestrator-run): 2026-06-17*
