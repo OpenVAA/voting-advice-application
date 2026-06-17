@@ -186,3 +186,101 @@ yarn dev                       # Supabase + frontend on :5173
 | Identity-callback Edge Function | `apps/supabase/supabase/functions/identity-callback/index.ts` |
 | Callback route mapping | `apps/frontend/src/lib/utils/route/route.ts` |
 | Key generation | `docs/key-generation.md` |
+
+---
+
+## EFLOW-10 — deterministic E2E run (synthetic JWE → Edge Function, no live IdP)
+
+This section is the **automated, deterministic** counterpart to the manual full-flow run
+above. It drives `tests/tests/specs/candidate/candidate-bank-auth.spec.ts` (the `bank-auth`
+Playwright project), which POSTs a **synthetic** Idura JWE id_token built from the **fixed
+committed test key pair** (`tests/tests/utils/testKeys.ts`, kids `test-enc-1` / `test-sig-1`)
+directly to the `identity-callback` Edge Function. There is **no browser and no real
+provider** — only the Edge-Function decrypt → verify → match → create path runs.
+
+> **D-02 (deterministic-green gate):** the spec asserts the keys-configured create path
+> ran on EVERY run (it does **not** `test.skip`). A "did not run" is a **CARDINAL failure**
+> (CLAUDE.md E2E Hard Rule). The gate holds only if the served Edge Function is wired with
+> the **fixed test decryption JWK** AND a reachable JWKS endpoint serving the **test signing
+> public key** (so `verifyJwt` succeeds). Both are produced below from `testKeys.ts` — the
+> single source of truth — so there is no key drift.
+
+> **TEST-ONLY keys — never replace the production secret.** The env file written below
+> contains the committed *test* private decryption JWK. It is for the opt-in `bank-auth`
+> run **only**; it MUST NOT be placed in the root `.env`, in `functions/.env`, or in any
+> non-test environment (threat T-122-01 / T-122-04). Write it to a gitignored scratch path
+> (e.g. `/tmp`) and pass it via `--env-file`.
+
+### Step E-1 — Generate the test env file + the test JWKS from `testKeys.ts`
+
+Run from the repo root. This derives both artifacts from `tests/tests/utils/testKeys.ts`
+(no hand-copied keys → no drift):
+
+```bash
+# (a) The Edge-Function env file (decryption JWK + Idura type + audience + JWKS URI).
+#     IDENTITY_PROVIDER_JWKS_URI points at the static test-JWKS server started in Step E-2.
+npx tsx -e '
+import { decryptionJwks } from "./tests/tests/utils/testKeys";
+const lines = [
+  "IDENTITY_PROVIDER_TYPE=idura",
+  "IDENTITY_PROVIDER_DECRYPTION_JWKS=" + JSON.stringify(decryptionJwks),
+  "IDENTITY_PROVIDER_JWKS_URI=http://host.docker.internal:8777/jwks",
+  "IDENTITY_PROVIDER_CLIENT_ID=test-client-id",
+].join("\n") + "\n";
+require("node:fs").writeFileSync("/tmp/eflow10.env", lines);
+console.log("wrote /tmp/eflow10.env");
+'
+
+# (b) The static JWKS document serving the TEST signing public key (kid test-sig-1).
+npx tsx -e '
+import { sigPubJwk } from "./tests/tests/utils/testKeys";
+require("node:fs").mkdirSync("/tmp/eflow10-jwks", { recursive: true });
+require("node:fs").writeFileSync("/tmp/eflow10-jwks/jwks", JSON.stringify({ keys: [sigPubJwk] }));
+console.log("wrote /tmp/eflow10-jwks/jwks");
+'
+```
+
+> **JWKS URI host note.** The local Supabase Edge runtime runs inside Docker, so a JWKS
+> server bound to the host is reached as `host.docker.internal` (not `localhost`) from
+> inside the function. If your Edge runtime runs natively, use `http://localhost:8777/jwks`
+> in `/tmp/eflow10.env` instead. `IDENTITY_PROVIDER_CLIENT_ID=test-client-id` matches the
+> synthetic token's default `aud` (set by `buildTestIdToken`).
+
+### Step E-2 — Serve the static test JWKS (Terminal A)
+
+The Edge Function's `verifyJwt` fetches `IDENTITY_PROVIDER_JWKS_URI` to verify the inner
+RS256 signature. Serve the JWKS document from Step E-1 with any zero-dependency static
+server on port `8777`:
+
+```bash
+cd /tmp/eflow10-jwks
+python3 -m http.server 8777          # serves /tmp/eflow10-jwks/jwks at http://<host>:8777/jwks
+```
+
+### Step E-3 — Serve the Edge Function with the test env file (Terminal B)
+
+```bash
+cd apps/supabase/supabase
+npx supabase functions serve identity-callback --no-verify-jwt --env-file /tmp/eflow10.env
+```
+
+`--no-verify-jwt` is required when serving standalone (the spec passes the anon key, but
+standalone serving otherwise requires a platform JWT — see Troubleshooting above).
+
+### Step E-4 — Run the `bank-auth` project (Terminal C)
+
+```bash
+# SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY must be in the environment
+# (the spec throws if absent). Get them from `yarn db:status` / supabase output.
+PLAYWRIGHT_BANK_AUTH=1 FRONTEND_PORT=5174 \
+  npx playwright test --project=bank-auth -c tests/playwright.config.ts
+```
+
+**Expected:** all `bank-auth` tests pass with the keys-configured create path **TAKEN**
+(no skipped / did-not-run). The spec asserts `identity_provider='idura'`,
+`identity_match_prop='sub'`, `identity_match_value=<sub>`, the `hetu`/`birthdate` claim
+flow-through, and a magic-link `action_link` containing `token=`. If the keys-configured
+path did not run, the spec FAILS loudly (it points back here) rather than skipping.
+
+> The plan 122-03 (EFLOW-10b full-browser journey via the mock OIDC issuer) will append a
+> separate **EFLOW-10b** section below this one — do not merge the two.
