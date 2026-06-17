@@ -36,6 +36,7 @@
 import { expect, test as base } from '@playwright/test';
 import { createCandidatePasswordSetter } from './candidatePasswordSetter.fixture';
 import { createCandidatePreregisterPage } from './candidatePreregisterPage.fixture';
+import { BANK_AUTH_JOURNEY_EMAIL } from '../../utils/bankAuthJourneyConstants';
 import { createEmailBucket } from '../shared/emailBucket.fixture';
 import type { EmailBucketFixture } from '../shared/emailBucket.fixture';
 import type { CandidatePasswordSetterFixture } from './candidatePasswordSetter.fixture';
@@ -60,7 +61,7 @@ type BankAuthJourneyFixtures = BankAuthJourneyFixtureOptions & {
 };
 
 export const test = base.extend<BankAuthJourneyFixtures>({
-  recipientEmail: ['bank-auth-journey@test.openvaa.local', { option: true }],
+  recipientEmail: [BANK_AUTH_JOURNEY_EMAIL, { option: true }],
 
   emailBucket: async ({ page, recipientEmail }, use) => {
     await use(createEmailBucket(page, recipientEmail));
