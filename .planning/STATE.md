@@ -4,13 +4,13 @@ milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
 status: executing
 stopped_at: Completed 121-05-PLAN.md
-last_updated: "2026-06-17T09:54:16.131Z"
+last_updated: "2026-06-17T10:04:17.461Z"
 last_activity: 2026-06-17 -- Phase 122 execution started
 progress:
   total_phases: 15
   completed_phases: 4
   total_plans: 33
-  completed_plans: 29
+  completed_plans: 30
   percent: 27
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 ## Current Position
 
 Phase: 122 (e2e-specs-bank-auth-round-trip) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 Status: Ready to execute
 Last activity: 2026-06-17 -- Phase 122 execution started
 
@@ -66,6 +66,7 @@ Pre-close artifact audit surfaced 8 open items. The 2 🔴 items were **resolved
 | Phase 121-e2e-specs-flow-coverage P07 | 35min | 1 tasks | 1 files |
 | Phase 121 P121-08 | 150min | 3 tasks | 4 files |
 | Phase 122 P01 | 5min | 3 tasks | 6 files |
+| Phase 122 P02 | 15min | 3 tasks | 2 files |
 
 ### Acknowledged at v2.11 close (2026-06-07)
 
@@ -416,6 +417,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 121]: Runtime consent granted via the DataConsentPopup dialog (scoped getByRole('dialog')) to avoid the strict-mode clash with the inline privacy-page DataConsent. — The popup auto-opens when consent is indetermined and overlays the inline control; it is the canonical voter consent surface.
 - [Phase ?]: Plan 121-08 (EFLOW-11): shared walkUntilQuestionsIntro auto-grants the DataConsentPopup (addLocatorHandler) — fixed the mobile journey AND a latent full-suite flake (voter-journey/a11y/perf); full yarn test:e2e now 125/125. Mobile sub-tests are describe-scoped (no viewport leak); filter assertions are seed/constituency-agnostic.
 - [Phase ?]: 122-01: Fixed committed test JWK pair (test-enc-1/test-sig-1) is the single source of truth for the bank-auth test worker, served Edge Function, and mock issuer — determinism over per-run generateKeyPair (D-03/RESEARCH A2)
+- [Phase ?]: 122-02: Asserted Idura flow-through as the real extractClaims set ['birthdate','hetu'] (not 'country', which the Edge Function does not extract); converted env-gated test.skip into a loud D-02 keysConfigured gate + mismatched-key negative-path test. — Match real production behavior + cardinal-rule (no silent did-not-run).
 
 ### Quick Tasks Completed
 
@@ -454,13 +456,13 @@ Key cross-milestone reference points carried forward into v2.10:
 
 - Local imgproxy Docker container crashes intermittently (502 on image upload) — not a code issue; carry-forward infrastructure debt. May affect any image-upload-touching E2E re-runs during Phase 79 verification (cold-start full-suite gate).
 - 165 pre-existing intra-package circular deps in `@openvaa/data` / `matching` / `filters` — deferred to a dedicated structural refactor milestone.
-- The candidate-profile cascading race (DETERM-04) is the v2.10 critical path — if root-cause investigation surfaces a deeper Svelte 5 hydration OR Supabase auth-session race that needs upstream framework work, fallback is the test-restructure path (split registration assertion into a setup project so downstream tests don't depend on the redirect succeeding). Both paths are documented in `.planning/todos/pending/2026-05-12-candidate-profile-cascading-race.md` §"Recommended approach".
 - Phase 83 DETERM-06 image-upload (CAND-03) cascade blocks 3/4 Plan 86.2-01 per-spec smokes (candidate-profile-validation, voter-not-located-redirect, results-sections); refactors verified clean via grep + lint + tsc instead. Plan 86.2-03 3-run gate will surface true post-86.2 state.
 - voter-mega-journey project chain blocked by pre-existing perm-1e1cg1co flake (CASCADE) — Task 2 verify deferred to clean-environment manual run; orthogonal vite-dev cache wipe race documented in deferred-items.md
+- 122-02 EFLOW-10 deterministic-green BLOCKED: production identity-callback Edge Function createUser() omits email; local GoTrue (edge-runtime 1.71.0) rejects emailless user -> 500. Decrypt/verify/claim-extraction all succeed. Operator/Rule 4 fix (gated by T-122-03 'runs UNMODIFIED'): add email=${userId}@bank-auth.placeholder at createUser. Until then the keys-configured create path cannot be observed green; EFLOW-10 left unmarked.
 
 ## Session Continuity
 
-Last session: 2026-06-17T09:54:00.074Z
+Last session: 2026-06-17T10:03:44.712Z
 Stopped at: Completed 121-05-PLAN.md
 Resume file: None
 Work done this session (118-02):
