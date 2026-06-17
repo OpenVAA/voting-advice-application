@@ -362,7 +362,14 @@ Plans:
   3. The two known context bugs are fixed — `candidateContext.questionBlocks` `getApplicableQuestions` now passes `entityType`, and `userData.save()` no longer silently skips `termsOfUseAccepted: null` — each verified by a targeted test or observable behaviour.
   4. The frontend builds, unit tests pass, and svelte-check shows no net-new errors over the working baseline.
 
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 123-01-PLAN.md — Wave 0: pin svelte-check baseline (criterion 4) + create candidateContext.svelte.test.ts (Bug 1 RED test, confirm A2 seam)
+- [ ] 123-02-PLAN.md — Wave 1: RUNES-05 two bug fixes (entityType at :378; tri-state !== undefined guards) + Bug 2 Tests 5+6
+- [ ] 123-03-PLAN.md — Wave 1: RUNES-01 + RUNES-02 audit-and-document (per-site disposition record; reactive-let enumeration; optional borderline migration)
+- [ ] 123-04-PLAN.md — Wave 2: D-03 acceptance gate (build + full unit + svelte-check <= baseline + one full E2E run)
+
 **UI hint**: yes
 
 #### Phase 124: Svelte 5 Idiom Polish — Lock-in & Visual Verification
