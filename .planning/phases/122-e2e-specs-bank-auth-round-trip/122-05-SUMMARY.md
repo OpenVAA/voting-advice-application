@@ -13,7 +13,8 @@ requires:
   - phase: 122-04
     provides: candidate-bank-auth-journey composition root + candidatePreregisterPage page-object + setup/teardown + BANK_AUTH_JOURNEY_EMAIL
 provides:
-  - candidate-bank-auth-journey.spec.ts — EFLOW-10b full-browser bank-auth self-registration journey (authored; single-pass green BLOCKED by a hardcoded static setting — see Blockers)
+  - candidate-bank-auth-journey.spec.ts — EFLOW-10b full-browser bank-auth self-registration journey (single-pass GREEN)
+  - setupFromTemplate appSettingsOverride param — scenario-scoped app_settings overlay (preregistration enablement) reusing a shared template
 affects: []
 
 # Tech tracking
@@ -21,96 +22,112 @@ tech-stack:
   added: []
   patterns:
     - "EFLOW-10b journey spec mirrors candidate-journey.spec.ts SHAPE: one serial describe, one long test, named test.step segments, empty-storageState unauthenticated start"
-    - "registrationKey extracted directly from the preregistration email link (frontend registration URL, NOT a Supabase verify link → navigated directly, no toCallbackUrl)"
+    - "Scenario-scoped app_settings enablement via setupFromTemplate({ appSettingsOverride }) — additive merge_jsonb_column AFTER the template's post-seed subset-match, restored by the paired teardown; reuses a SHARED template without perturbing its other consumer"
+    - "Supabase bank-auth flow establishes the session INLINE (Edge Function create + route verifyOtp) — no confirmation-email / registration-key / set-password leg; authenticated end state proven by the success status page + a DB assertion of the created auth.users(idura claims)+candidates+user_roles cascade"
+    - "Bank-auth user lives under the identity-derived placeholder email (${sub}@bank-auth.placeholder), not the typed address — setup/teardown clean by the placeholder + delete the orphan candidate row"
 
 key-files:
-  created:
-    - tests/tests/specs/candidate/candidate-bank-auth-journey.spec.ts
+  created: []
   modified:
+    - tests/tests/specs/candidate/candidate-bank-auth-journey.spec.ts
     - tests/playwright.config.ts
+    - tests/tests/setup/shared/setupFromTemplate.ts
+    - tests/tests/setup/candidate/bank-auth-journey.setup.ts
+    - tests/tests/setup/candidate/bank-auth-journey.teardown.ts
+    - tests/tests/utils/supabaseAdminClient.ts
+    - tests/tests/utils/bankAuthJourneyConstants.ts
+    - tests/tests/utils/testIds.ts
 
 key-decisions:
-  - "End-state proof is candidate-home-status visibility — reaching the protected candidate home is itself the end-to-end proof (register() activated the user + login established a session). Dropped a DB-row verification because SupabaseAdminClient exposes no public findCandidateByEmail and `client` is protected."
-  - "Email registrationKey link is navigated DIRECTLY (it is the frontend registration URL `${origin}${CandAppRegister}?registrationKey=…`, not a Supabase verify link), so toCallbackUrl is intentionally NOT used."
-  - "webServer command path made absolute via TESTS_DIR (Rule 3 fix — the relative path doubled to tests/tests/tests/... and failed ERR_MODULE_NOT_FOUND)."
+  - "Preregistration enabled SCOPED to the bank-auth-journey run via a new setupFromTemplate `appSettingsOverride` param (additive merge_jsonb_column applied AFTER the post-seed subset-match), NOT in the shared perm-not-located-2e2cg template nor MINIMAL_BASE_APP_SETTINGS. Teardown resets {enabled:false} so the other template consumer + the default suite stay unperturbed. Honors the no-updateAppSettings-in-setup-for-BASELINE policy (this is a per-run scenario mutation)."
+  - "Rewrote journey steps 5-6 to the ACTUAL Supabase bank-auth architecture: preregister() invokes the identity-callback Edge Function (decrypt→verify→claims→create user+candidate+role→magic link), and the /api/candidate/preregister route verifyOtp's the magic link to ESTABLISH THE SESSION INLINE, landing on /candidate/preregister/status?code=success. There is NO confirmation-email/registration-key/set-password leg (that is the legacy adapter's flow). The authenticated end state is proven by the success status page (`preregister-status-return`) + a DB assertion that the auth.users (idura/identity_match_value claims) + linked candidates + candidate user_roles cascade was created — the only way those exist is if the unmodified authorize→callback→exchange→decrypt→claims→create chain ran end to end (D-01)."
+  - "Added `ignoreHTTPSErrors: true` to the bank-auth-journey project BROWSER context (the webServer-level ignoreHTTPSErrors only covered Playwright's JWKS readiness probe, not the browser). Without it Chrome rejected the mock issuer's self-signed cert and the authorize-leg 302 back to /api/oidc/callback never reached the browser."
+  - "Bank-auth user is created under the identity-derived placeholder email (${sub}@bank-auth.placeholder), not BANK_AUTH_JOURNEY_EMAIL — added BANK_AUTH_JOURNEY_SUB/_PLACEHOLDER_EMAIL constants and clean by the placeholder in setup+teardown, plus an explicit orphan-candidate delete (deleteBankAuthCandidateBySub) so rows do not accumulate across the 3× gate."
 
-requirements-completed: []
+requirements-completed: [EFLOW-10]
 
 # Metrics
-duration: ~40min
+duration: ~55min
 completed: 2026-06-17
 ---
 
 # Phase 122 Plan 05: Bank-Auth Journey Spec (EFLOW-10b) Summary
 
-**Authored the EFLOW-10b full-browser bank-auth self-registration journey spec (`candidate-bank-auth-journey.spec.ts`): one serial unauthenticated test with 7 named `test.step` segments driving preregister-start → mock-IdP 302 → callback (server exchange + JWE decrypt + verify) → authenticated → election → constituency → email+ToU → preregister() → registration-key email → set password → log in → logged-in candidate home, via the 122-04 composition root + page-object + emailBucket. The spec compiles, lints clean, and honors the rigidity + localization contracts. Driving it to single-pass green is BLOCKED by a hardcoded production static setting (`preRegistration.enabled: false`) that makes the entire preregister flow unreachable — a precondition no prior plan resolved and which is outside the executor's no-production-edit / orchestrator-owns-servers scope. Task 3 (the 3× determinism gate + default-suite regression) is the orchestrator's to run.**
+**Drove the EFLOW-10b full-browser bank-auth self-registration journey to SINGLE-PASS GREEN (`1 passed`, no skip/did-not-run) against the orchestrator-owned live environment. Enabled `preRegistration.enabled` SCOPED to the bank-auth-journey run only (a new `setupFromTemplate({ appSettingsOverride })` param applied additively after the template's post-seed subset-match; the paired teardown restores `{enabled:false}`), so the shared `perm-not-located-2e2cg` template + the default suite stay untouched. Resolved two real defects discovered during execution: the browser context was missing `ignoreHTTPSErrors` (the OIDC authorize-leg 302 to the self-signed mock issuer failed silently), and the spec assumed a confirmation-email / registration-key / set-password flow that does not exist in the Supabase adapter — the id_token-callback path establishes the session inline. Rewrote steps 5-6 to assert the real authenticated end state (success status page + a DB proof of the created auth.users/candidates/user_roles cascade) and fixed a teardown leak (the bank-auth user is created under the identity-derived placeholder email, not the typed address). Task 3's 3× determinism gate is orchestrator-run.**
 
 ## Task Status
 
-- **Task 1 — Author the spec: DONE.** `candidate-bank-auth-journey.spec.ts` written, imports the composition root, runs ONE serial unauthenticated test with named `test.step` segments covering the full chain through to the logged-in candidate end state, honors the rigidity contract (0 soft assertions, 0 try/catch around assertions, 0 swallowed rejections) + localization rule (testId selectors only), compiles under strict TS (`tsc -p tests/tsconfig.json` exit 0), lints clean (`eslint` exit 0). The plan's structural verify grep returns `JOURNEY_SPEC_OK`.
-- **Task 2 — Single-pass green: BLOCKED (not a spec bug).** The journey cannot reach the preregister flow: `/candidate/preregister` `+layout.server.ts:7` redirects to `/candidate/login` when `!staticSettings.preRegistration.enabled`, and `packages/app-shared/src/settings/staticSettings.ts:64-66` hardcodes `preRegistration: { enabled: false }`. This is a build-time STATIC setting (not DynamicSettings / DB-seeded), so no test setup or env can toggle it. See Blockers.
-- **Task 3 — 3× determinism gate + default-suite regression: ORCHESTRATOR-RUN.** Per the execution mandate, the orchestrator (which owns the long-lived servers) runs the 3× gate and the default-suite regression itself. Not run here.
+- **Task 1 — Author the spec: DONE (prior session).** The journey spec was authored and committed earlier (cecdb97e5).
+- **Task 2 — Single-pass green: DONE.** `--project=bank-auth-journey` passes single-pass: `3 passed` (data-setup + journey + data-teardown), the journey test itself `1 passed`, no skip / did-not-run / failed. The keys-configured OIDC create path is taken (the DB assertion confirms the idura identity + candidate + role were created). `tsc -p tests/tsconfig.json --noEmit` exit 0; the project lint (`eslint --flag v10_config_lookup_from_file`) is clean on all touched files.
+- **Task 3 — 3× determinism gate + default-suite regression: ORCHESTRATOR-RUN.** Per the execution mandate the orchestrator (which owns the long-lived servers + runs `yarn db:reset` between iterations) runs the 3× gate and the default-suite regression. Not run here.
+
+## What unblocked Task 2
+
+The prior session's blocker was a build-time `staticSettings.preRegistration.enabled: false` that made `/candidate/preregister` unreachable. The orchestrator resolved it BEFORE this session by MOVING `preRegistration.enabled` from `StaticSettings` to `DynamicSettings`: the route guard `apps/frontend/src/routes/candidate/preregister/+layout.server.ts` now reads the flag from the `app_settings` JSONB row server-side (via `locals.supabase`, RLS `anon_select_app_settings`), `@openvaa/app-shared` was rebuilt, and the :5173 dev server was restarted with the IdP env. So `/candidate/preregister` renders when DB `app_settings.settings.preRegistration.enabled` is truthy — which this plan's setup now arranges, scoped to the run.
 
 ## Accomplishments
 
-- Authored the EFLOW-10b journey spec mirroring `candidate-journey.spec.ts` exactly: `test.describe.configure({ mode: 'serial' })`, `test.use({ storageState: { cookies: [], origins: [] } })` (unauthenticated start), `test.use({ recipientEmail: BANK_AUTH_JOURNEY_EMAIL })`, one long `test(...)` with `test.setTimeout(TIMEOUTS.testMax)` and 7 named `test.step` segments.
-- Wired the email round-trip: `emailBucket.expectEmail(/confirm your email/i)` → `getLinksInEmail` → a module-scope `registrationUrlFromLinks` helper extracts the `registrationKey`-bearing link and the spec navigates it directly (the register page auto-validates the key on mount and redirects to set-password).
-- Resolved a blocking `webServer` config bug (Rule 3): the mock-issuer spawn path `tests/tests/support/mockOidcIssuerEntry.ts` was resolved relative to the config dir (`tests/`), doubling to `tests/tests/tests/support/...` → `ERR_MODULE_NOT_FOUND`. Switched to an absolute path derived from `TESTS_DIR`. After the fix the mock issuer spawns, the data-setup/teardown run (both `2 passed` outside the journey test), and the journey reaches the browser.
+- **Scoped preregistration enablement (no shared-template contamination).** Added an optional `appSettingsOverride` param to `setupFromTemplate(...)`. It deep-merges (additive `merge_jsonb_column` via `updateAppSettings`) onto the persisted `app_settings` AFTER the template's `app_settings.fixed[]` seed + the post-seed `toMatchObject` subset-match, so the assertion still holds and the SHARED `perm-not-located-2e2cg` template (+ `MINIMAL_BASE_APP_SETTINGS`) are never edited. `bank-auth-journey.setup.ts` passes `{ preRegistration: { enabled: true } }`; `bank-auth-journey.teardown.ts` resets `{ enabled: false }`. Verified against the DB: `settings->'preRegistration'` shows `{"enabled": true}` during the run and `{"enabled": false}` after.
+- **Browser-context HTTPS fix.** Added `ignoreHTTPSErrors: true` to the `bank-auth-journey` project `use` block. Trace evidence: the browser issued `GET https://127.0.0.1:9443/oauth2/authorize` but recorded no response and no subsequent `/api/oidc/callback` — Chrome was rejecting the self-signed cert. After the fix the full authorize → 302 → callback → exchange → decrypt → claims → session chain completes.
+- **Architecture-correct end state.** Confirmed from the production sources that the Supabase bank-auth flow establishes the session inline (identity-callback creates the user/candidate/role + a magic link, and `/api/candidate/preregister` verifyOtp's it), landing on `/candidate/preregister/status?code=success`. Rewrote steps 5-6 to assert the success status page (`preregister-status-return`) + a `SupabaseAdminClient` DB proof of the created `auth.users` (`identity_provider='idura'`, `identity_match_value=<sub>`) + linked `candidates` row + candidate `user_roles` assignment.
+- **Teardown leak fix.** The Edge Function creates the bank-auth user under the identity-derived placeholder email (`${sub}@bank-auth.placeholder`), not the typed `BANK_AUTH_JOURNEY_EMAIL`, so the original teardown's `unregisterCandidate(BANK_AUTH_JOURNEY_EMAIL)` never matched it → leak across runs. Added `BANK_AUTH_JOURNEY_SUB` / `BANK_AUTH_JOURNEY_PLACEHOLDER_EMAIL` constants, clean by the placeholder in setup + teardown, and a new `deleteBankAuthCandidateBySub` to remove the orphan candidate row (no `external_id` prefix → `runTeardown` would miss it). Verified: zero `%bank-auth.placeholder` users remain after a run.
+- **New SupabaseAdminClient helpers:** `getAuthUserByEmail` (reads `auth.users` via the GoTrue admin API — that schema is not PostgREST-exposed) and `deleteBankAuthCandidateBySub`.
 
 ## Task Commits
 
-1. **candidate-bank-auth-journey.spec.ts (EFLOW-10b journey) + webServer path fix** — see final commit hash below.
+1. **daab88f06** — `test(122-05): drive EFLOW-10b bank-auth journey to single-pass green` (the scoped enablement + HTTPS fix + steps-5-6 rewrite + teardown leak fix + helpers/constants/testId).
 
 ## Files Created/Modified
 
-- `tests/tests/specs/candidate/candidate-bank-auth-journey.spec.ts` (created) — the EFLOW-10b journey spec.
-- `tests/playwright.config.ts` (modified) — `webServer.command` path made absolute via `TESTS_DIR` (Rule 3 blocking fix).
+- `tests/tests/specs/candidate/candidate-bank-auth-journey.spec.ts` (modified) — steps 5-6 rewritten to the Supabase bank-auth architecture (success status page + DB cascade proof); removed the email round-trip / set-password / login steps + their helpers/imports.
+- `tests/playwright.config.ts` (modified) — `ignoreHTTPSErrors: true` on the bank-auth-journey browser context.
+- `tests/tests/setup/shared/setupFromTemplate.ts` (modified) — new `appSettingsOverride` option (additive overlay after post-seed assertion).
+- `tests/tests/setup/candidate/bank-auth-journey.setup.ts` (modified) — pass `appSettingsOverride: { preRegistration: { enabled: true } }`; pre-clean by the placeholder email.
+- `tests/tests/setup/candidate/bank-auth-journey.teardown.ts` (modified) — reset `{enabled:false}`; clean by placeholder + delete the orphan candidate.
+- `tests/tests/utils/supabaseAdminClient.ts` (modified) — `getAuthUserByEmail` + `deleteBankAuthCandidateBySub`.
+- `tests/tests/utils/bankAuthJourneyConstants.ts` (modified) — `BANK_AUTH_JOURNEY_SUB` + `BANK_AUTH_JOURNEY_PLACEHOLDER_EMAIL`.
+- `tests/tests/utils/testIds.ts` (modified) — `candidate.preregister.statusReturn`.
 
 ## Deviations from Plan
 
 ### Auto-fixed Issues
 
-**1. [Rule 3 - Blocking] `webServer` mock-issuer command path doubled and failed to resolve**
-- **Found during:** Task 2 (first journey run).
-- **Issue:** `webServer.command = 'npx tsx tests/tests/support/mockOidcIssuerEntry.ts'` (from plan 122-03) is resolved by Playwright relative to the config file's dir (`tests/`), producing `tests/tests/tests/support/mockOidcIssuerEntry.ts` → `ERR_MODULE_NOT_FOUND`, so the mock issuer never started.
-- **Fix:** Built the command path absolutely from `TESTS_DIR` (`path.join(TESTS_DIR, 'support/mockOidcIssuerEntry.ts')`), making the spawn cwd-independent. The entry file genuinely lives at `tests/tests/support/mockOidcIssuerEntry.ts`.
-- **Files modified:** `tests/playwright.config.ts`.
+**1. [Rule 1 - Bug] Browser context missing `ignoreHTTPSErrors`**
+- **Found during:** Task 2 (first run — step 1 failed: `preregister-continue` never rendered).
+- **Issue:** The `bank-auth-journey` project `use` block lacked `ignoreHTTPSErrors`. The mock OIDC issuer serves HTTPS with a self-signed localhost cert; the browser's `GET https://127.0.0.1:9443/oauth2/authorize` was rejected by Chrome's cert check (trace: no response recorded, no callback request). The webServer-level `ignoreHTTPSErrors` only covers Playwright's JWKS readiness probe.
+- **Fix:** Added `ignoreHTTPSErrors: true` to the project's `use`.
+- **Commit:** daab88f06.
 
-**2. [Rule 3 - Blocking] Rigidity-contract doc-block reworded to satisfy the plan's own negative grep**
-- **Found during:** Task 1 (verify).
-- **Issue:** The plan's verify runs `! grep -q "expect.soft\|\.catch(() => null)"`. The canonical rigidity doc-block contains those literals as prose, false-tripping the grep (same false-positive 122-04 hit).
-- **Fix:** Reworded the doc-block to state the contract without the forbidden literals. Zero actual usage in the code; contract fully honored.
-- **Files modified:** `candidate-bank-auth-journey.spec.ts`.
+**2. [Rule 1 - Bug] Spec assumed a non-existent email/registration-key/set-password flow**
+- **Found during:** Task 2 (second run — step 5 failed: no "confirm your email" message arrived in Mailpit).
+- **Issue:** The Supabase adapter's bank-auth flow does NOT send a confirmation email with a `registrationKey` link, nor route through a set-password page. `preregister()` → `/api/candidate/preregister` → identity-callback Edge Function (create user+candidate+role+magic link) → the route verifyOtp's the magic link to establish the session INLINE → `/candidate/preregister/status?code=success`. No email is ever emitted. The user types an email into the form but the id_token-callback path does not persist it as the auth user's address.
+- **Fix:** Rewrote steps 5-6 to assert the success status page + a DB proof of the created auth.users(idura claims)+candidates+user_roles cascade. Removed the email-round-trip / set-password / login steps and their helpers, the `emailBucket`/`candidatePasswordSetter` fixture params, the `JOURNEY_PASSWORD`/`CONFIRM_EMAIL_SUBJECT_REGEX`/`registrationUrlFromLinks` constants, and added the `SupabaseAdminClient` import.
+- **Commit:** daab88f06.
 
-**3. [Rule 1 - Adjust] Dropped a non-existent DB-row verification**
-- **Found during:** Task 1.
-- **Issue:** First draft called `client.findCandidateByEmail(...)` — no such method exists on `SupabaseAdminClient`, and its `client` field is `protected` (not reachable from the spec).
-- **Fix:** Removed the row lookup + the `SupabaseAdminClient` import. The `candidate-home-status` visibility is itself the authenticated/logged-in end-state proof (the protected home is reachable only after `register()` + a successful login).
-- **Files modified:** `candidate-bank-auth-journey.spec.ts`.
+**3. [Rule 1 - Bug] Teardown could not clean the created bank-auth user (leak)**
+- **Found during:** Task 2 (architecture trace of the Edge Function).
+- **Issue:** identity-callback creates the auth user under `${identityMatchValue}@bank-auth.placeholder` (= `${sub}@bank-auth.placeholder`), but setup/teardown only cleaned `BANK_AUTH_JOURNEY_EMAIL` → the created user + its fresh candidate row (no `external_id` prefix) leaked across runs, breaking the 3× determinism gate.
+- **Fix:** Added `BANK_AUTH_JOURNEY_SUB`/`_PLACEHOLDER_EMAIL` constants; clean by the placeholder in setup + teardown; `deleteBankAuthCandidateBySub` removes the orphan candidate + its role. Verified zero `%bank-auth.placeholder` users remain after a run.
+- **Commit:** daab88f06.
 
-**4. [Lint] simple-import-sort autofix** — the spec tripped `simple-import-sort/imports`; resolved via `eslint --fix`, no behavior change.
+**Total deviations:** 3 Rule-1 bug fixes (all in `tests/`; no production-code change). The scoped-enablement mechanism is the plan's own Task-1 directive (option a — the `setupFromTemplate` override param).
 
-**Total deviations:** 4 (3 Rule-3/Rule-1, 1 lint). The spec is exactly as specified; the config fix is a necessary precondition for the journey to spawn its mock issuer.
+## Deferred Issues
 
-## Blockers
-
-**BLOCKER (Task 2 — single-pass green): preregistration is disabled by a hardcoded static setting.**
-
-- **Symptom:** `page.goto('/en/candidate/preregister')` lands on `/candidate/login` (DOM snapshot shows the login form, not `preregister-start`). The spec fails at step 1 (`getByTestId('preregister-start')` not found). The data-setup + teardown + mock-issuer spawn all succeed (`2 passed`); only the journey test fails, and it fails because the route redirects away before any bank-auth interaction.
-- **Root cause (confirmed, not assumed):** `apps/frontend/src/routes/candidate/preregister/+layout.server.ts:7` — `if (!staticSettings.preRegistration.enabled) return redirect(303, CandAppLogin)`. `packages/app-shared/src/settings/staticSettings.ts:64-66` hardcodes `preRegistration: { enabled: false }`. This is a **build-time `staticSettings`** value (NOT `appSettings`/DynamicSettings/DB), so no Playwright setup, seed template, or env var can toggle it. There is no test-side or runtime override anywhere in `tests/`, `packages/dev-seed/`, or the frontend (grep-confirmed).
-- **Why this is not a spec bug + not auto-fixable here:** Enabling it requires (a) editing `packages/app-shared/src/settings/staticSettings.ts` — a PRODUCTION-code change, explicitly out of this executor's scope (no production-code edits), AND (b) rebuilding `@openvaa/app-shared` and RESTARTING the orchestrator-owned frontend dev server so it serves the new build. Servers/DB are orchestrator-owned (do-not-touch). This is precisely the STOP-and-checkpoint case in the execution mandate.
-- **What unblocks it:** the operator/orchestrator sets `preRegistration.enabled: true` in `staticSettings.ts` (test-scoped or for the duration of the bank-auth-journey run), rebuilds `@openvaa/app-shared`, and restarts the :5173 frontend server. Then `--project=bank-auth-journey` should drive the spec straight through (the rest of the chain — mock issuer, callback, decrypt, email round-trip, set-password, login — is wired and the spec is written against it). NOTE: this precondition was not surfaced by prior plans (122-01..122-04 confirmed the seed shape forces the selectors to RENDER, but did not check that the preregister ROUTE is reachable at all under the default static setting).
+- **`func-style` lint on `tests/tests/setup/shared/setupFromTemplate.ts:248`** (the pre-existing `const cleanup = async () => {...}` closure I did not author or modify). It surfaces only under a bare `npx eslint <file>` invocation; under the project's real lint command (`eslint --flag v10_config_lookup_from_file tests`, which resolves the tests-local config/overrides) the file lints CLEAN. Out of scope (pre-existing, not touched by this plan) — logged, not fixed.
 
 ## Threat Flags
 
-None new. The spec adds no new security surface — it drives the existing (unmodified) auth chain. The `webServer` path fix is a test-config-only change.
+None new. The journey drives the existing (unmodified) production auth chain (D-01) and adds no new security surface. The scoped TLS/preregistration enablement is test-only, opt-in (`PLAYWRIGHT_BANK_AUTH`), and restored by the teardown.
 
 ## Self-Check
 
 - File: FOUND `tests/tests/specs/candidate/candidate-bank-auth-journey.spec.ts`.
-- Verify grep: `JOURNEY_SPEC_OK`. `tsc -p tests/tsconfig.json` exit 0; `eslint` exit 0 on the spec + the config.
-- Journey run: mock issuer spawned, data-setup + teardown `2 passed`, journey test FAILED at step 1 (precondition blocker, root-caused above — NOT a spec defect).
+- Commit: FOUND daab88f06 (`git log --oneline | grep daab88f06`).
+- Journey run: `3 passed` (setup + journey + teardown); journey test `1 passed`, no skip/did-not-run. `tsc -p tests/tsconfig.json` exit 0; project lint clean on all touched files. DB verified: `preRegistration` `{"enabled": true}` during the run, `{"enabled": false}` after; zero `%bank-auth.placeholder` users remain.
+
+## Self-Check: PASSED
 
 ---
 *Phase: 122-e2e-specs-bank-auth-round-trip*
-*Completed (Task 1; Task 2 blocked; Task 3 orchestrator-run): 2026-06-17*
+*Completed (Task 1 prior session; Task 2 single-pass green this session; Task 3 orchestrator-run): 2026-06-17*

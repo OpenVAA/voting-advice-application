@@ -464,10 +464,17 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-17T11:40:44.315Z
-Stopped at: Completed 121-05-PLAN.md
+Last session: 2026-06-17T14:35:00.000Z
+Stopped at: Completed 122-05-PLAN.md Task 2 (EFLOW-10b single-pass green); Task 3 3× gate is orchestrator-run
 Resume file: None
-Work done this session (118-02):
+Work done this session (122-05 Task 2):
+
+- Drove the EFLOW-10b bank-auth full-browser journey (`candidate-bank-auth-journey.spec.ts`) to SINGLE-PASS GREEN (`1 passed`, no skip/did-not-run) against the orchestrator-owned live env. Commit daab88f06 (tests/ only).
+- Enabled `preRegistration.enabled` SCOPED to the bank-auth-journey run: new `setupFromTemplate({ appSettingsOverride })` param (additive `merge_jsonb_column` AFTER the post-seed subset-match); paired teardown resets `{enabled:false}`. Shared `perm-not-located-2e2cg` template + `MINIMAL_BASE_APP_SETTINGS` + default suite untouched. DB-verified `{enabled:true}` during / `{enabled:false}` after.
+- Fixed 3 Rule-1 bugs (all tests/): (1) browser-context `ignoreHTTPSErrors` missing → authorize-leg 302 to the self-signed mock issuer failed silently; (2) spec assumed a non-existent confirmation-email/registration-key/set-password leg — the Supabase id_token-callback path establishes the session INLINE (Edge Function create + route verifyOtp) and lands on the success status page, so steps 5-6 now assert the success status page + a DB proof of the created auth.users(idura claims)+candidates+user_roles cascade; (3) teardown leak — the bank-auth user is created under `${sub}@bank-auth.placeholder`, not the typed address, so clean by the placeholder + delete the orphan candidate (new `getAuthUserByEmail`/`deleteBankAuthCandidateBySub` helpers).
+- NOTE the prior-session blocker (build-time `staticSettings.preRegistration.enabled:false`) was resolved by the orchestrator moving the flag to DynamicSettings (route guard now reads it from the `app_settings` row server-side); `@openvaa/app-shared` rebuilt + :5173 restarted. That production-code change is the orchestrator's (uncommitted here).
+
+Work done in an earlier session (118-02):
 
 - Appended EFLOW-01..11 + EQTYP-01..03 coverage maps to `.planning/v2.14-E2E-COVERAGE-PLAN.md` (replacing the Plan-01 placeholder anchors), all verdicts grounded against real `tests/` specs per A5. EFLOW: 03/05 confirmed-covered-no-new-code; 01/04/06/09 PARTIAL→extend; 07/08/11 MISSING→new; 02 DEFERRED→130; 10 PARTIAL→Idura-only retarget. EQTYP: all 3 DEFERRED→130 (UNBLK-02/05/01 blockers). EFLOW-10 note records the Idura `sub`-based identity + hetu/country retarget, drops Signicat, keeps the direct-Edge-Function synthetic-JWE stub (no live IdP), and flags the deterministic-green-gate decision (test JWKS in beforeAll) for the 122 plan.
 - Open Question 1 resolved (EFLOW-06): perm-localisation-positive covers UI/content re-localisation but NOT mid-flow voter answer-state preservation → net-new in Phase 121.

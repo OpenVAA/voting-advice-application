@@ -346,7 +346,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 122-05-PLAN.md — Wave 3: EFLOW-10b full-browser journey spec + 3×-green determinism gate (both specs) + default-suite regression check
+- [~] 122-05-PLAN.md — Wave 3: EFLOW-10b full-browser journey spec landed SINGLE-PASS GREEN (Task 2, commit daab88f06). Task 3 (3×-green determinism gate both specs + default-suite regression) is orchestrator-run — pending.
 
 **UI hint**: no
 
