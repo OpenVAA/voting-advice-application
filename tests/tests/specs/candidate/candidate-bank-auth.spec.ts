@@ -22,7 +22,8 @@
 
 import { expect, test } from '@playwright/test';
 import { createClient } from '@supabase/supabase-js';
-import * as jose from 'jose';
+import { buildTestIdToken } from '../../utils/buildTestIdToken';
+import { getTestKeys } from '../../utils/testKeys';
 
 const SUPABASE_URL = process.env.SUPABASE_URL ?? 'http://localhost:54321';
 
@@ -54,61 +55,12 @@ const TEST_IDENTITY = {
 test.use({ storageState: { cookies: [], origins: [] } });
 
 /**
- * Generate RSA key pairs for test JWE/JWT token construction.
- * Creates encryption (RSA-OAEP-256) and signing (RS256) key pairs.
+ * The token builder + fixed test key pair are now shared utils (D-03):
+ *   - `buildTestIdToken` — tests/tests/utils/buildTestIdToken.ts
+ *   - `getTestKeys`      — tests/tests/utils/testKeys.ts (fixed committed pair)
+ * The EFLOW-10 retarget + deterministic-green gate (D-02) lands in plan 122-02;
+ * this plan only de-duplicates so the spec compiles against the shared util.
  */
-async function generateTestKeys() {
-  const { publicKey: encPub, privateKey: encPriv } = await jose.generateKeyPair('RSA-OAEP-256', {
-    extractable: true
-  });
-  const encPubJwk = await jose.exportJWK(encPub);
-  const encPrivJwk = await jose.exportJWK(encPriv);
-  encPubJwk.kid = 'test-enc-1';
-  encPubJwk.use = 'enc';
-  encPubJwk.alg = 'RSA-OAEP-256';
-  encPrivJwk.kid = 'test-enc-1';
-  encPrivJwk.use = 'enc';
-  encPrivJwk.alg = 'RSA-OAEP-256';
-
-  const { publicKey: sigPub, privateKey: sigPriv } = await jose.generateKeyPair('RS256', {
-    extractable: true
-  });
-  const sigPubJwk = await jose.exportJWK(sigPub);
-  sigPubJwk.kid = 'test-sig-1';
-  sigPubJwk.use = 'sig';
-  sigPubJwk.alg = 'RS256';
-
-  return { encPubJwk, encPrivJwk, sigPub, sigPriv, sigPubJwk };
-}
-
-/**
- * Build a JWE-encrypted id_token containing the test identity claims.
- * Mirrors the format that Idura (or Signicat) would return.
- */
-async function buildTestIdToken(
-  claims: Record<string, string>,
-  // jose v6 removed the `KeyLike` type alias; `generateKeyPair` now returns a
-  // WebCrypto `CryptoKey`. Same RS256 signing algorithm — type rename only.
-  sigPriv: CryptoKey,
-  encPubJwk: jose.JWK
-) {
-  // 1. Create signed inner JWT
-  const innerJwt = await new jose.SignJWT(claims)
-    .setProtectedHeader({ alg: 'RS256', kid: 'test-sig-1' })
-    .setIssuer('https://test-idp.example.com')
-    .setAudience('test-client-id')
-    .setExpirationTime('5m')
-    .setIssuedAt()
-    .sign(sigPriv);
-
-  // 2. Encrypt as JWE
-  const encKey = await jose.importJWK(encPubJwk, 'RSA-OAEP-256');
-  const jwe = await new jose.CompactEncrypt(new TextEncoder().encode(innerJwt))
-    .setProtectedHeader({ alg: 'RSA-OAEP-256', enc: 'A256GCM', kid: 'test-enc-1' })
-    .encrypt(encKey);
-
-  return jwe;
-}
 
 /**
  * Edge Function probe result captured once in beforeAll. The bank-auth project is
@@ -133,11 +85,11 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
   const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-  let testKeys: Awaited<ReturnType<typeof generateTestKeys>>;
+  let testKeys: Awaited<ReturnType<typeof getTestKeys>>;
   let probe: EdgeFunctionProbe | null = null;
 
   test.beforeAll(async () => {
-    testKeys = await generateTestKeys();
+    testKeys = await getTestKeys();
 
     // Probe the Edge Function exactly once. The single call captures BOTH the
     // keys-configured (200 + success) and keys-not-configured (401/500) cases,

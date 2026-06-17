@@ -88,6 +88,23 @@ export const testIds = {
     register: {
       submit: 'register-submit'
     },
+    // The candidate /preregister bank-auth walk: entry button + the
+    // post-auth election -> constituency -> email/ToU selection steps. Raw
+    // strings verified in apps/frontend/src/routes/candidate/preregister/
+    // (+page.svelte:140,163,167; (authenticated)/{elections,constituencies,email}/+page.svelte).
+    // Driven by the EFLOW-10b candidate-preregister page-object (122-04/122-05).
+    preregister: {
+      start: 'preregister-start',
+      continue: 'preregister-continue',
+      return: 'preregister-return',
+      electionsList: 'preregister-elections-list',
+      electionsSubmit: 'preregister-elections-submit',
+      constituenciesList: 'preregister-constituencies-list',
+      constituenciesSubmit: 'preregister-constituencies-submit',
+      emailInput: 'preregister-email-input',
+      emailConfirm: 'preregister-email-confirm',
+      emailSubmit: 'preregister-email-submit'
+    },
     passwordReset: {
       submit: 'password-reset-submit'
     },
