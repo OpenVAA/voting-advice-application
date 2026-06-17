@@ -245,9 +245,18 @@ Deno.serve(async (req: Request) => {
     let userId = await findUserByIdentityMatch(supabaseAdmin, identityMatchValue);
     let isNewUser = false;
 
+    // Bank-auth identities carry no real email at sign-in (the candidate is prompted to
+    // add one after login). GoTrue still requires an email or phone, so derive a stable
+    // placeholder from the persistent identity match value (`sub` for Idura). The same
+    // value is reused for the magic-link generation below so user creation and login
+    // resolve to a single user record.
+    const placeholderEmail = `${identityMatchValue}@bank-auth.placeholder`;
+
     if (!userId) {
-      // Create new auth user (no email -- candidate will be prompted to add one after login)
+      // Create new auth user with the identity-derived placeholder email
+      // (candidate will be prompted to add a real one after login).
       const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+        email: placeholderEmail,
         email_confirm: true,
         app_metadata: {
           identity_provider: providerType,
@@ -313,15 +322,14 @@ Deno.serve(async (req: Request) => {
     }
 
     // 8. Generate session for immediate login
-    // Use generateLink with magiclink type to create a login URL.
-    // Since the user may not have an email yet, we use the user's ID-based
-    // placeholder email. The admin generateLink API works with any email
-    // that matches the user record.
+    // Use generateLink with magiclink type to create a login URL, addressed to the same
+    // identity-derived placeholder email the user record was created with above so the
+    // admin generateLink API resolves to the existing user.
     const siteUrl = Deno.env.get('SUPABASE_URL')!.replace(/\/+$/, '');
 
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
       type: 'magiclink',
-      email: `${userId}@bank-auth.placeholder`,
+      email: placeholderEmail,
       options: {
         redirectTo: `${Deno.env.get('SITE_URL') || 'http://127.0.0.1:5173'}/candidate`
       }
