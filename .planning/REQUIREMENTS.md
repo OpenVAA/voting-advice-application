@@ -87,8 +87,8 @@ New settings-driven branches not yet covered by the existing 19 perm specs.
 
 ### Svelte 5 — Idiom Polish (RUNES)
 
-- [ ] **RUNES-01**: `onMount` / `onDestroy` are migrated to `$effect` where semantically equivalent (~24 files), behavior-neutral and verified. **NOTE**: See https://svelte.dev/docs/svelte/lifecycle-hooks for recommendations.
-- [ ] **RUNES-02**: Reactive `let` declarations (locals mutated for reactive effect) are migrated to `$state`, per-site verified (non-reactive locals left as `let`).
+- [x] **RUNES-01**: `onMount` / `onDestroy` are migrated to `$effect` where semantically equivalent (~24 files), behavior-neutral and verified. **NOTE**: See https://svelte.dev/docs/svelte/lifecycle-hooks for recommendations.
+- [x] **RUNES-02**: Reactive `let` declarations (locals mutated for reactive effect) are migrated to `$state`, per-site verified (non-reactive locals left as `let`).
 - [ ] **RUNES-03**: The `svelte/store` ESLint guard is extended to the entire `apps/frontend/src/**` tree (lock-in against regressions).
 - [ ] **RUNES-04**: A post-runes visual verification pass confirms no regressions in app-header styling, banner images, and post-login candidate navigation.
 - [x] **RUNES-05**: The two known context bugs are fixed — `candidateContext.questionBlocks` `getApplicableQuestions` missing `entityType`; `userData.save()` silently skipping `termsOfUseAccepted: null`.
@@ -163,8 +163,8 @@ Each requirement maps to exactly one roadmap phase (see `.planning/ROADMAP.md` v
 | EFLOW-09 | Phase 121 | Complete |
 | EFLOW-11 | Phase 121 | Complete |
 | EFLOW-10 | Phase 122 | Complete |
-| RUNES-01 | Phase 123 | Pending |
-| RUNES-02 | Phase 123 | Pending |
+| RUNES-01 | Phase 123 | Complete |
+| RUNES-02 | Phase 123 | Complete |
 | RUNES-05 | Phase 123 | Complete |
 | RUNES-03 | Phase 124 | Pending |
 | RUNES-04 | Phase 124 | Pending |

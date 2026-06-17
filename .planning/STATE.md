@@ -4,13 +4,13 @@ milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
 status: executing
 stopped_at: Completed 123-02-PLAN.md
-last_updated: "2026-06-17T20:06:52.677Z"
+last_updated: "2026-06-17T20:13:11.297Z"
 last_activity: 2026-06-17 -- Phase 123 execution started
 progress:
   total_phases: 15
   completed_phases: 5
   total_plans: 37
-  completed_plans: 35
+  completed_plans: 36
   percent: 33
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 ## Current Position
 
 Phase: 123 (svelte-5-idiom-polish-lifecycle-reactive-state) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-06-17 -- Phase 123 execution started
 
@@ -71,6 +71,7 @@ Pre-close artifact audit surfaced 8 open items. The 2 🔴 items were **resolved
 | Phase 122 P04 | 9min | 3 tasks | 5 files |
 | Phase 123 P01 | 12min | 2 tasks | 4 files |
 | Phase 123 P02 | ~6min | 3 tasks | 3 files |
+| Phase 123 P03 | 3min | 3 tasks | 1 files |
 
 ### Acknowledged at v2.11 close (2026-06-07)
 
@@ -423,6 +424,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: 122-01: Fixed committed test JWK pair (test-enc-1/test-sig-1) is the single source of truth for the bank-auth test worker, served Edge Function, and mock issuer — determinism over per-run generateKeyPair (D-03/RESEARCH A2)
 - [Phase ?]: 122-02: Asserted Idura flow-through as the real extractClaims set ['birthdate','hetu'] (not 'country', which the Edge Function does not extract); converted env-gated test.skip into a loud D-02 keysConfigured gate + mismatched-key negative-path test. — Match real production behavior + cardinal-rule (no silent did-not-run).
 - [Phase ?]: Phase 123-01: A2 test seam resolved = spy-on-collaborator under $effect.root driving the real CandidateContextProvider (no pure-helper extract)
+- [Phase ?]: Phase 123-03: RUNES-01 lifecycle audit — 0 MIGRATE / 25 LEAVE (4 hard-LEAVE); genuine-lifecycle-dominant surface per D-04
+- [Phase ?]: Phase 123-03: RUNES-02 reactive-let MIGRATE set EMPTY — v2.13 already converted reactive locals; survivors are bind:this refs/timers/handles/intentional non-reactive (confirms A1)
 
 ### Quick Tasks Completed
 
@@ -467,7 +470,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-17T20:06:52.670Z
+Last session: 2026-06-17T20:12:47.636Z
 Stopped at: Completed 123-02-PLAN.md
 Resume file: .planning/phases/123-svelte-5-idiom-polish-lifecycle-reactive-state/123-CONTEXT.md
 Work done this session (122-05 Task 2):
