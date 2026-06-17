@@ -210,7 +210,21 @@ export default defineConfig({
             name: 'bank-auth-journey',
             testDir: './tests/specs/candidate',
             testMatch: /candidate-bank-auth-journey\.spec\.ts/,
-            use: { ...devices['Desktop Chrome'], storageState: { cookies: [], origins: [] } },
+            // `ignoreHTTPSErrors: true` is REQUIRED on the BROWSER context: the
+            // journey's OIDC authorize leg navigates the browser to the mock
+            // issuer at `https://127.0.0.1:9443/oauth2/authorize`, served with a
+            // committed self-signed localhost cert. Without this, Chrome rejects
+            // the cert and the navigation fails silently — the issuer's 302 back
+            // to `/api/oidc/callback` never reaches the browser, so the
+            // authenticated `preregister-continue` state never renders. (The
+            // matching `ignoreHTTPSErrors` on the `webServer` readiness probe
+            // below only covers Playwright's own JWKS health check, not the
+            // browser context.) TEST-ONLY, opt-in `PLAYWRIGHT_BANK_AUTH` run.
+            use: {
+              ...devices['Desktop Chrome'],
+              storageState: { cookies: [], origins: [] },
+              ignoreHTTPSErrors: true
+            },
             dependencies: ['data-setup-bank-auth-journey']
           }
         ]

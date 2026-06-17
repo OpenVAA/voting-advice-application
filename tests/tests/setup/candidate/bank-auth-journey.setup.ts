@@ -26,17 +26,42 @@
  */
 
 import { test as setup } from '@playwright/test';
-import { BANK_AUTH_JOURNEY_EMAIL } from '../../utils/bankAuthJourneyConstants';
+import {
+  BANK_AUTH_JOURNEY_EMAIL,
+  BANK_AUTH_JOURNEY_PLACEHOLDER_EMAIL
+} from '../../utils/bankAuthJourneyConstants';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { setupFromTemplate } from '../shared/setupFromTemplate';
 
 setup('seed perm-not-located-2e2cg + pre-clean bank-auth-journey identity', async () => {
   // D-04: reuse the perm-not-located-2e2cg TEMPLATE (not the perm chain).
-  await setupFromTemplate('perm-not-located-2e2cg', { extraTeardownPrefix: ['test-', 'e2e-perm-'] });
+  //
+  // Scoped preregistration enablement (EFLOW-10b): the candidate-preregister
+  // route guard (`/candidate/preregister/+layout.server.ts`) reads
+  // `app_settings.settings.preRegistration.enabled` server-side and renders the
+  // preregister flow ONLY when it is truthy. `perm-not-located-2e2cg` is a
+  // SHARED template (its other consumer, `perm-not-located-2e2cg.spec.ts`, must
+  // keep preregistration DISABLED), so we do NOT enable it in the template nor
+  // in `MINIMAL_BASE_APP_SETTINGS`. Instead we overlay the scoped flag onto the
+  // runtime DB row AFTER seeding via `appSettingsOverride` (additive
+  // merge_jsonb_column); the paired teardown resets it to `{ enabled: false }`
+  // so a later default-suite run is NOT left with preregistration enabled.
+  await setupFromTemplate('perm-not-located-2e2cg', {
+    extraTeardownPrefix: ['test-', 'e2e-perm-'],
+    appSettingsOverride: { preRegistration: { enabled: true } }
+  });
 
   // Idempotent auth pre-clean: remove any auth.users + user_roles + ToU state
-  // for the journey's recipient address left behind by an aborted prior run.
-  // `unregisterCandidate` is a no-op when no user matches the email.
+  // left behind by an aborted prior run. `unregisterCandidate` is a no-op when
+  // no user matches the email.
+  //
+  // TWO addresses are cleaned: the PLACEHOLDER email the identity-callback Edge
+  // Function actually creates the bank-auth user with
+  // (`${sub}@bank-auth.placeholder`) — this is the one that leaks across runs —
+  // and the typed `BANK_AUTH_JOURNEY_EMAIL` (defensive; the Supabase id_token
+  // path does not persist it, but a future flow change or a partial prior run
+  // could have left a row).
   const client = new SupabaseAdminClient();
+  await client.unregisterCandidate(BANK_AUTH_JOURNEY_PLACEHOLDER_EMAIL);
   await client.unregisterCandidate(BANK_AUTH_JOURNEY_EMAIL);
 });

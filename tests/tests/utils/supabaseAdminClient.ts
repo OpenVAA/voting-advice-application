@@ -330,6 +330,95 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
   }
 
   /**
+   * Delete the bank-auth candidate row + its role assignment created by the
+   * identity-callback Edge Function for a given placeholder email.
+   *
+   * The bank-auth self-registration flow (EFLOW-10b) creates a FRESH
+   * `candidates` row (no `external_id`, so `runTeardown` prefix-deletes miss it)
+   * linked via `auth_user_id` to the auth user the Edge Function created under
+   * the identity-derived placeholder email (`${sub}@bank-auth.placeholder`).
+   * Without this explicit delete the orphan candidate rows accumulate across the
+   * 3× determinism gate (each run creates a new candidate, and the prior run's
+   * `unregisterCandidate` only nulls `auth_user_id` + deletes the auth user).
+   *
+   * Deletes the candidate row(s) AND their `user_roles` before
+   * `unregisterCandidate` removes the auth user. Idempotent — a no-op when no
+   * user or candidate matches.
+   *
+   * @param placeholderEmail - The `${sub}@bank-auth.placeholder` address the
+   *   bank-auth auth user was created with.
+   */
+  /**
+   * Look up a bank-auth `auth.users` row by email via the admin list API,
+   * returning the narrowed fields the EFLOW-10b journey end-state assertion
+   * reads: `id` + the bank-auth identity `app_metadata` claims the
+   * identity-callback Edge Function stamped at create time.
+   *
+   * `auth.users` lives in the `auth` schema, NOT the `public` schema that
+   * `findData`/`query` target via PostgREST — so it must be read through the
+   * GoTrue admin API. Returns `undefined` when no user matches (idempotent).
+   *
+   * @param email - The auth user's email (for bank-auth: the identity-derived
+   *   placeholder `${sub}@bank-auth.placeholder`).
+   */
+  async getAuthUserByEmail(email: string): Promise<
+    | {
+        id: string;
+        email?: string;
+        app_metadata?: {
+          identity_provider?: string;
+          identity_match_prop?: string;
+          identity_match_value?: string;
+        };
+      }
+    | undefined
+  > {
+    const users = await this.safeListUsers();
+    const user = users.find((u) => u.email === email);
+    if (!user) return undefined;
+    return {
+      id: user.id,
+      email: user.email,
+      app_metadata: (user.app_metadata ?? {}) as {
+        identity_provider?: string;
+        identity_match_prop?: string;
+        identity_match_value?: string;
+      }
+    };
+  }
+
+  async deleteBankAuthCandidateBySub(placeholderEmail: string): Promise<void> {
+    const users = await this.safeListUsers();
+    const user = users.find((u) => u.email === placeholderEmail);
+    if (!user) return; // Nothing created yet (or listUsers failed — safe to skip).
+
+    // Find candidate row(s) linked to this auth user.
+    const { data: candidates, error: findError } = await this.client
+      .from('candidates')
+      .select('id')
+      .eq('auth_user_id', user.id);
+    if (findError) {
+      throw new Error(`deleteBankAuthCandidateBySub: find candidates failed: ${findError.message}`);
+    }
+    for (const candidate of candidates ?? []) {
+      // Delete the candidate's role assignment (scope_id = candidate id).
+      const { error: roleError } = await this.client
+        .from('user_roles')
+        .delete()
+        .eq('scope_type', 'candidate')
+        .eq('scope_id', candidate.id);
+      if (roleError) {
+        throw new Error(`deleteBankAuthCandidateBySub: delete user_roles failed: ${roleError.message}`);
+      }
+      // Delete the candidate row itself.
+      const { error: candError } = await this.client.from('candidates').delete().eq('id', candidate.id);
+      if (candError) {
+        throw new Error(`deleteBankAuthCandidateBySub: delete candidate failed: ${candError.message}`);
+      }
+    }
+  }
+
+  /**
    * Unregister a candidate: remove auth user, role assignment, and candidate link.
    *
    * If the user doesn't exist (already unregistered), this is a no-op.

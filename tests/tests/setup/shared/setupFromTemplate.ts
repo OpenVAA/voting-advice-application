@@ -49,6 +49,24 @@ export interface SetupFromTemplateOptions {
    * All prefixes are honored BEFORE the template's own prefix teardown.
    */
   extraTeardownPrefix?: string | Array<string>;
+  /**
+   * Optional `app_settings` overlay deep-merged onto the persisted settings
+   * AFTER the template's `app_settings.fixed[]` block has seeded + the post-seed
+   * subset-match assertion has run.
+   *
+   * This is a SCENARIO mutation, not a baseline-settings change: it mutates the
+   * runtime DB `app_settings` row for the duration of a single opt-in run
+   * (the caller's paired teardown is responsible for restoring it), and it does
+   * NOT touch the shared template nor `MINIMAL_BASE_APP_SETTINGS`. The bank-auth
+   * journey uses it to flip `preRegistration.enabled = true` while reusing the
+   * SHARED `perm-not-located-2e2cg` template (whose other consumer must keep
+   * preregistration disabled).
+   *
+   * Applied via the additive `merge_jsonb_column` RPC (`updateAppSettings`), so
+   * the post-seed `toMatchObject` assertion on the template's settings still
+   * holds (the overlay only ADDS the scoped key).
+   */
+  appSettingsOverride?: Record<string, unknown>;
 }
 
 // reason: dev-seed `default` template emits `seed_`-prefixed baseline rows into
@@ -210,6 +228,15 @@ export async function setupFromTemplate(
       expected = resolveAppSettingsExternalIds(expected, externalIdToUuid);
     }
     expect(persisted).toMatchObject(expected);
+  }
+
+  // 3b. (Optional) Scenario-scoped app_settings overlay. Applied AFTER the
+  //     post-seed subset-match so the assertion compares the seeded template
+  //     shape, not the overlaid shape. Additive merge_jsonb_column — the
+  //     overlay only ADDS the scoped key (e.g. preRegistration.enabled) on top
+  //     of the template's baseline. The caller's paired teardown restores it.
+  if (options?.appSettingsOverride) {
+    await client.updateAppSettings(options.appSettingsOverride);
   }
 
   // 4. Optional template-specific assertions hook.

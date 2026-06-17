@@ -23,19 +23,24 @@
  *   3. constituency selector → submitConstituency().
  *   4. email + ToU → fillEmailAndAcceptToU(recipientEmail) → triggers
  *      preregister() → POST /api/candidate/preregister → identity-callback Edge
- *      Function creates the candidate + emits the preregistration email.
- *   5. Mailpit round-trip: expectEmail(<confirm-subject>) → getLinksInEmail →
- *      the email embeds the frontend registration URL carrying
- *      ?registrationKey=… (NOT a Supabase verify link → navigate it directly,
- *      no toCallbackUrl transform). The register page auto-validates the key on
- *      mount and redirects to the set-password page.
- *   6. candidatePasswordSetter.setPassword(<password>) → register() activates
- *      the user with the key + password → redirects to /candidate/login with the
- *      email pre-filled (newUserEmail).
- *   7. Log in (fill password + submit) → assert the logged-in candidate end
- *      state (candidate-home-status). Reaching the protected candidate home is
- *      itself the end-to-end proof: it is reachable only if register() activated
- *      the user and the login established an authenticated session.
+ *      Function (JWE-decrypt → verify → extract claims → create auth user +
+ *      candidate + role → generate magic link) → the server route verifyOtp's
+ *      the magic link to ESTABLISH THE SESSION INLINE, then redirects to
+ *      /candidate/preregister/status?code=success.
+ *   5. Assert the success status page (`preregister-status-return`). For the
+ *      Supabase bank-auth adapter this IS the authenticated end state: the
+ *      candidate's `auth.users` + `candidates` + `user_roles` cascade was created
+ *      server-side by the Edge Function and the session was established by the
+ *      route's verifyOtp — there is NO confirmation-email / registration-key /
+ *      set-password leg (that is the legacy adapter's flow; the Supabase
+ *      id_token-callback path creates the user under an identity-derived
+ *      placeholder email and logs in immediately).
+ *   6. End-to-end DB proof: assert via SupabaseAdminClient that the bank-auth
+ *      identity now resolves to a real `auth.users` row carrying the expected
+ *      `identity_provider='idura'` + `identity_match_value=<sub>` app_metadata
+ *      AND a linked `candidates` row + candidate `user_roles` assignment — the
+ *      only way these exist is if the REAL authorize→callback→exchange→decrypt→
+ *      claims→create chain ran end to end (D-01, unmodified production auth code).
  *
  * Rigidity contract: no soft assertions, no try/catch wrapping assertions, and
  * no swallowed-rejection fallbacks on assertion-bearing locator interactions —
@@ -64,7 +69,12 @@
 
 import { expect, test } from '../../fixtures/candidate/candidate-bank-auth-journey';
 import { TIMEOUTS } from '../../helpers';
-import { BANK_AUTH_JOURNEY_EMAIL } from '../../utils/bankAuthJourneyConstants';
+import {
+  BANK_AUTH_JOURNEY_EMAIL,
+  BANK_AUTH_JOURNEY_PLACEHOLDER_EMAIL,
+  BANK_AUTH_JOURNEY_SUB
+} from '../../utils/bankAuthJourneyConstants';
+import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
 
 // ====================================================================
@@ -72,38 +82,18 @@ import { testIds } from '../../utils/testIds';
 // ====================================================================
 
 /**
- * The password the journey sets for the freshly-created candidate. Meets the
- * candidate password policy (length + mixed character classes) so the
- * PasswordSetter validates and `register()` activates.
+ * Shape of an auth user as returned by the admin list API, narrowed to the
+ * fields the end-state DB assertion reads. `app_metadata` carries the bank-auth
+ * identity claims the identity-callback Edge Function stamped at create time.
  */
-const JOURNEY_PASSWORD = 'BankAuthJourney!2026';
-
-/**
- * Loose subject match for the preregistration confirmation email (R14 — match
- * loosely on the subject, never assert exact localized copy). The en subject is
- * "Please confirm your email address".
- */
-const CONFIRM_EMAIL_SUBJECT_REGEX = /confirm your email/i;
-
-/**
- * Extract the `registrationKey` query param from the first link in the
- * preregistration email. The email template embeds the frontend registration
- * URL `${origin}${CandAppRegister}?registrationKey=<key>` (email/+page.svelte) —
- * this is a frontend URL, NOT a Supabase verify link, so it is navigated
- * directly (no `toCallbackUrl` transform).
- *
- * Hoisted to module scope so the (defensive) presence assertion runs outside the
- * test body's flow per playwright/no-conditional-in-test — the throw-on-absent
- * is a deterministic parse guard on a settled value, not a race mask.
- */
-function registrationUrlFromLinks(links: ReadonlyArray<string>): string {
-  const match = links.find((href) => href.includes('registrationKey='));
-  if (match === undefined) {
-    throw new Error(
-      `preregistration email contained no registrationKey link (links: ${JSON.stringify(links)})`
-    );
-  }
-  return match;
+interface BankAuthUserRow {
+  id: string;
+  email?: string;
+  app_metadata?: {
+    identity_provider?: string;
+    identity_match_prop?: string;
+    identity_match_value?: string;
+  };
 }
 
 // Start UNAUTHENTICATED — the bank-auth flow mints its own session.
@@ -113,11 +103,9 @@ test.use({ recipientEmail: BANK_AUTH_JOURNEY_EMAIL });
 test.describe('candidate bank-auth journey', { tag: ['@bank-auth'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
-  test('full bank-auth self-registration journey through to logged-in candidate', async ({
+  test('full bank-auth self-registration journey through to authenticated candidate', async ({
     page,
-    candidatePreregisterPage,
-    emailBucket,
-    candidatePasswordSetter
+    candidatePreregisterPage
   }) => {
     test.setTimeout(TIMEOUTS.testMax);
 
@@ -170,49 +158,72 @@ test.describe('candidate bank-auth journey', { tag: ['@bank-auth'] }, () => {
       await candidatePreregisterPage.fillEmailAndAcceptToU(BANK_AUTH_JOURNEY_EMAIL);
     });
 
-    // ============== Step 5: registration email → navigate registration URL ==
+    // ============== Step 5: preregister() success status page ==============
 
-    await test.step('5. preregistration email → extract registrationKey → register page', async () => {
-      await emailBucket.expectEmail(CONFIRM_EMAIL_SUBJECT_REGEX);
-      const links = await emailBucket.getLinksInEmail(CONFIRM_EMAIL_SUBJECT_REGEX);
-      expect(links.length, 'preregistration email should contain at least one link').toBeGreaterThan(0);
-      // The link is the frontend registration URL carrying ?registrationKey=… —
-      // navigate it directly (NOT a Supabase verify link → no toCallbackUrl).
-      const registrationUrl = registrationUrlFromLinks(links);
-      await page.goto(registrationUrl);
-      // The register page auto-validates the key on mount and redirects to the
-      // set-password page; the PasswordSetter renders there.
-      await expect(page.getByTestId(testIds.candidate.passwordSetter.password)).toBeVisible({
+    await test.step('5. preregister() establishes session → success status page', async () => {
+      // The Supabase bank-auth flow: preregister() POSTs /api/candidate/preregister,
+      // which invokes the identity-callback Edge Function (decrypt → verify →
+      // claims → create auth user + candidate + role → magic link), then the
+      // route verifyOtp's the magic link to ESTABLISH THE SESSION INLINE and
+      // redirects to /candidate/preregister/status?code=success. There is NO
+      // confirmation-email / registration-key / set-password leg in this adapter.
+      await page.waitForURL(/\/candidate\/preregister\/status/, { timeout: TIMEOUTS.slowPage });
+      // The success status page renders the Return CTA ONLY for code=success —
+      // its visibility proves the full chain ran end to end (any failure code
+      // renders the retry/help variant instead).
+      await expect(page.getByTestId(testIds.candidate.preregister.statusReturn)).toBeVisible({
         timeout: TIMEOUTS.slowPage
       });
     });
 
-    // ============== Step 6: set password → register() → login page =========
+    // ============== Step 6: end-to-end DB proof of the created identity =====
 
-    await test.step('6. set password → register() activates user → /candidate/login', async () => {
-      await candidatePasswordSetter.setPassword(JOURNEY_PASSWORD);
-      // register() activates the candidate then redirects to /candidate/login
-      // with the email pre-filled (newUserEmail). Wait for the login form.
-      await page.waitForURL(/\/candidate\/login/, { timeout: TIMEOUTS.slowPage });
-      await expect(page.getByTestId(testIds.candidate.login.email)).toBeVisible({
-        timeout: TIMEOUTS.slowPage
-      });
-    });
+    await test.step('6. assert the bank-auth identity + candidate + role were created', async () => {
+      // The ONLY way these rows exist is if the REAL authorize→callback→
+      // exchange→decrypt→claims→create chain ran UNMODIFIED end to end (D-01):
+      // the Edge Function created the auth user under the identity-derived
+      // placeholder email, stamped the idura identity claims into app_metadata,
+      // and created the linked candidate + role.
+      const client = new SupabaseAdminClient();
 
-    // ============== Step 7: log in → logged-in candidate end state ==========
+      // 6a. The auth user exists under the placeholder email with the expected
+      //     bank-auth identity app_metadata (read via the admin API — auth.users
+      //     lives in the `auth` schema, not the PostgREST-exposed `public` one).
+      const authUser: BankAuthUserRow | undefined = await client.getAuthUserByEmail(
+        BANK_AUTH_JOURNEY_PLACEHOLDER_EMAIL
+      );
+      expect(authUser, `bank-auth auth user (${BANK_AUTH_JOURNEY_PLACEHOLDER_EMAIL}) should exist`).toBeTruthy();
+      const authUserId = authUserIdOrThrow(authUser);
+      expect(authUser!.app_metadata?.identity_provider, 'identity_provider claim').toBe('idura');
+      expect(authUser!.app_metadata?.identity_match_value, 'identity_match_value claim').toBe(
+        BANK_AUTH_JOURNEY_SUB
+      );
 
-    await test.step('7. log in → logged-in candidate home (authenticated end state)', async () => {
-      // The email is pre-filled from newUserEmail; fill it explicitly for
-      // robustness, then fill the password and submit.
-      await page.getByTestId(testIds.candidate.login.email).fill(BANK_AUTH_JOURNEY_EMAIL);
-      await page.getByTestId(testIds.candidate.password.field).fill(JOURNEY_PASSWORD);
-      await page.getByTestId(testIds.candidate.login.submit).click();
-      // Logged-in end state: the candidate home status message renders. The
-      // protected home is reachable ONLY if register() activated the user and
-      // the login established an authenticated session — the end-to-end proof.
-      await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({
-        timeout: TIMEOUTS.slowPage
-      });
+      // 6b. The linked candidate row exists (public.candidates via PostgREST).
+      const candidateResult = await client.findData('candidates', { auth_user_id: authUserId });
+      expect(candidateResult.type, 'candidate lookup should succeed').toBe('success');
+      const candidateRows = (candidateResult.type === 'success' ? candidateResult.data : undefined) ?? [];
+      expect(candidateRows.length, 'a candidate row should be linked to the bank-auth user').toBe(1);
+
+      // 6c. The candidate role assignment exists (public.user_roles via PostgREST).
+      const roleResult = await client.findData('user_roles', { user_id: authUserId, role: 'candidate' });
+      expect(roleResult.type, 'user_roles lookup should succeed').toBe('success');
+      const roleRows = (roleResult.type === 'success' ? roleResult.data : undefined) ?? [];
+      expect(roleRows.length, 'a candidate role should be assigned to the bank-auth user').toBeGreaterThan(0);
     });
   });
 });
+
+/**
+ * Narrow `authUser` to a guaranteed non-empty id, throwing a clear error when
+ * absent. Hoisted to module scope so the presence guard runs as a plain helper
+ * (not inline conditional flow) per playwright/no-conditional-in-test — the
+ * companion `toBeTruthy()` assertion already fails the test first; this only
+ * narrows the type for the subsequent `findData` calls.
+ */
+function authUserIdOrThrow(authUser: BankAuthUserRow | undefined): string {
+  if (!authUser) {
+    throw new Error('bank-auth auth user was not created — the OIDC create chain did not complete');
+  }
+  return authUser.id;
+}

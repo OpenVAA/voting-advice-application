@@ -103,7 +103,13 @@ export const testIds = {
       constituenciesSubmit: 'preregister-constituencies-submit',
       emailInput: 'preregister-email-input',
       emailConfirm: 'preregister-email-confirm',
-      emailSubmit: 'preregister-email-submit'
+      emailSubmit: 'preregister-email-submit',
+      // Success status page (preregister/status?code=success) — the
+      // "Return" CTA that links to the candidate login. Its visibility is the
+      // authenticated end-state proof for the Supabase bank-auth flow: it
+      // renders only after preregister() returned `code=success`, i.e. the full
+      // authorize→callback→exchange→decrypt→claims→create→session chain ran.
+      statusReturn: 'preregister-status-return'
     },
     passwordReset: {
       submit: 'password-reset-submit'
