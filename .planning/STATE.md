@@ -4,13 +4,13 @@ milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
 status: executing
 stopped_at: Completed 121-05-PLAN.md
-last_updated: "2026-06-17T08:37:49.998Z"
-last_activity: 2026-06-17 -- Phase 122 planning complete
+last_updated: "2026-06-17T09:54:16.131Z"
+last_activity: 2026-06-17 -- Phase 122 execution started
 progress:
   total_phases: 15
   completed_phases: 4
-  total_plans: 28
-  completed_plans: 28
+  total_plans: 33
+  completed_plans: 29
   percent: 27
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 121 — e2e-specs-flow-coverage
+**Current focus:** Phase 122 — e2e-specs-bank-auth-round-trip
 
 ## Current Position
 
-Phase: 122
-Plan: Not started
+Phase: 122 (e2e-specs-bank-auth-round-trip) — EXECUTING
+Plan: 2 of 5
 Status: Ready to execute
-Last activity: 2026-06-17 -- Phase 122 planning complete
+Last activity: 2026-06-17 -- Phase 122 execution started
 
 Progress: [█████████░] 93%
 
@@ -65,6 +65,7 @@ Pre-close artifact audit surfaced 8 open items. The 2 🔴 items were **resolved
 | Phase 121 P121-06 | ~18min | 2 tasks | 2 files |
 | Phase 121-e2e-specs-flow-coverage P07 | 35min | 1 tasks | 1 files |
 | Phase 121 P121-08 | 150min | 3 tasks | 4 files |
+| Phase 122 P01 | 5min | 3 tasks | 6 files |
 
 ### Acknowledged at v2.11 close (2026-06-07)
 
@@ -414,6 +415,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 121]: EFLOW-08 tracking emission captured via a forced same-window visibilitychange flush (submitAllEvents), not a hard nav — page.goto tears down the __trackCalls capture array. — Keeps the capture array alive for getTrackCalls(); the layout's visibilitychange handler calls submitAllEvents in place.
 - [Phase 121]: Runtime consent granted via the DataConsentPopup dialog (scoped getByRole('dialog')) to avoid the strict-mode clash with the inline privacy-page DataConsent. — The popup auto-opens when consent is indetermined and overlays the inline control; it is the canonical voter consent surface.
 - [Phase ?]: Plan 121-08 (EFLOW-11): shared walkUntilQuestionsIntro auto-grants the DataConsentPopup (addLocatorHandler) — fixed the mobile journey AND a latent full-suite flake (voter-journey/a11y/perf); full yarn test:e2e now 125/125. Mobile sub-tests are describe-scoped (no viewport leak); filter assertions are seed/constituency-agnostic.
+- [Phase ?]: 122-01: Fixed committed test JWK pair (test-enc-1/test-sig-1) is the single source of truth for the bank-auth test worker, served Edge Function, and mock issuer — determinism over per-run generateKeyPair (D-03/RESEARCH A2)
 
 ### Quick Tasks Completed
 
@@ -458,7 +460,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-17T07:12:57.770Z
+Last session: 2026-06-17T09:54:00.074Z
 Stopped at: Completed 121-05-PLAN.md
 Resume file: None
 Work done this session (118-02):

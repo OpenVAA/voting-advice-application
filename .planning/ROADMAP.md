@@ -336,7 +336,7 @@ Plans:
 **Plans**: 5 plansPlans:
 **Wave 1**
 
-- [ ] 122-01-PLAN.md — Wave 1: extract shared buildTestIdToken util (D-03) + fixed committed test key pair + candidate.preregister testIds
+- [x] 122-01-PLAN.md — Wave 1: extract shared buildTestIdToken util (D-03) + fixed committed test key pair + candidate.preregister testIds
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -506,7 +506,7 @@ The three workstreams are largely independent and may be planned/executed concur
 | 119. E2E Fixtures & Helpers + Seed | v2.14 | 8/8 | Pending verify | - |
 | 120. E2E Specs — Settings-Permutation Matrix | v2.14 | 8/8 | Complete   | 2026-06-16 |
 | 121. E2E Specs — Flow Coverage | v2.14 | 8/8 | Complete    | 2026-06-17 |
-| 122. E2E Specs — Bank-Auth Round-Trip | v2.14 | 0/TBD | Not started | - |
+| 122. E2E Specs — Bank-Auth Round-Trip | v2.14 | 1/5 | In Progress|  |
 | 123. Svelte 5 Idiom Polish — Lifecycle & Reactive-State | v2.14 | 0/TBD | Not started | - |
 | 124. Svelte 5 Idiom Polish — Lock-in & Visual Verification | v2.14 | 0/TBD | Not started | - |
 | 125. svelte-check → 0 — Trivial Tier | v2.14 | 0/TBD | Not started | - |
