@@ -518,7 +518,7 @@ The three workstreams are largely independent and may be planned/executed concur
 | 120. E2E Specs — Settings-Permutation Matrix | v2.14 | 8/8 | Complete   | 2026-06-16 |
 | 121. E2E Specs — Flow Coverage | v2.14 | 8/8 | Complete    | 2026-06-17 |
 | 122. E2E Specs — Bank-Auth Round-Trip | v2.14 | 4/5 | In Progress|  |
-| 123. Svelte 5 Idiom Polish — Lifecycle & Reactive-State | v2.14 | 4/4 | Complete   | 2026-06-17 |
+| 123. Svelte 5 Idiom Polish — Lifecycle & Reactive-State | v2.14 | 4/4 | Complete    | 2026-06-17 |
 | 124. Svelte 5 Idiom Polish — Lock-in & Visual Verification | v2.14 | 0/TBD | Not started | - |
 | 125. svelte-check → 0 — Trivial Tier | v2.14 | 0/TBD | Not started | - |
 | 126. svelte-check → 0 — supabaseDataProvider | v2.14 | 0/TBD | Not started | - |
