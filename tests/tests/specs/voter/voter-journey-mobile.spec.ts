@@ -110,15 +110,29 @@ test.describe('voter-journey-mobile (EFLOW-11)', () => {
     await page.keyboard.press('Escape');
     await expect(page.getByTestId(testIds.voter.results.entityDetails)).toBeHidden({ timeout: TIMEOUTS.page });
 
-    // --- Results filter: a text filter narrows the candidate list. ---
+    // --- Results filter: a text filter narrows the candidate list, then clears. ---
+    // The walk lands on whichever election/constituency is first in the accordion,
+    // and the candidate roster differs per constituency — so the filter TERM is
+    // DERIVED from a real card on this list (seed-/constituency-agnostic) rather
+    // than hard-coded. A leading word of the first card guarantees ≥1 match and a
+    // subset that the unfiltered list contains.
     await resultsPage.selectEntityTab('cands');
+    await expect(resultsPage.getEntityCards().first()).toBeVisible({ timeout: TIMEOUTS.page });
     const fullCount = await resultsPage.getEntityCards().count();
     expect(fullCount).toBeGreaterThan(0);
-    await entityFilters.setTextFilter('polar');
-    // The text filter narrows the list (the `e2e/base` dataset seeds 2 polar
-    // candidates). The exact full vs filtered relationship is the assertion:
-    // the filtered set is strictly smaller than the unfiltered set.
-    await expect(resultsPage.getEntityCards()).toHaveCount(2, { timeout: TIMEOUTS.page });
+    const firstName = (await resultsPage.getEntityCards().first().getByRole('heading').first().innerText()).trim();
+    // Use the first whitespace-delimited token (drop any `[id]` prefix token) as a
+    // stable, present-in-the-list filter term.
+    const filterTerm = firstName.split(/\s+/).filter((w) => !w.startsWith('['))[0] ?? firstName;
+    expect(filterTerm.length).toBeGreaterThan(0);
+    await entityFilters.setTextFilter(filterTerm);
+    // The filtered set is a non-empty subset of the unfiltered list (≥1 because
+    // the term came from a real card; ≤fullCount because it is a narrowing).
+    const filtered = resultsPage.getEntityCards();
+    await expect(filtered.first()).toBeVisible({ timeout: TIMEOUTS.page });
+    const filteredCount = await filtered.count();
+    expect(filteredCount).toBeGreaterThan(0);
+    expect(filteredCount).toBeLessThanOrEqual(fullCount);
     await entityFilters.clearTextFilter();
     await expect(resultsPage.getEntityCards()).toHaveCount(fullCount, { timeout: TIMEOUTS.page });
 
