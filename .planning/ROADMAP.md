@@ -333,7 +333,14 @@ Plans:
   1. An E2E test drives the bank-auth flow from initiate through the OIDC exchange to an authenticated session, asserting the authenticated state.
   2. The test is deterministic — it passes 3× (fresh server, clean DB) without flakes, with the OIDC dependency stubbed/controlled rather than hitting a live IdP.
 
-**Plans**: TBD
+**Plans**: 5 plans
+Plans:
+
+- [ ] 122-01-PLAN.md — Wave 1: extract shared buildTestIdToken util (D-03) + fixed committed test key pair + candidate.preregister testIds
+- [ ] 122-02-PLAN.md — Wave 2: retarget candidate-bank-auth.spec.ts to Idura-only sub-match + deterministic-green gate (D-02, no skip)
+- [ ] 122-03-PLAN.md — Wave 2: Option-B mock OIDC issuer (HTTPS, D-01) + bank-auth-journey project/webServer wiring + frontend IDP env+TLS runbook
+- [ ] 122-04-PLAN.md — Wave 2: candidate-preregister page-object + composition root + bank-auth-journey setup/teardown (perm-not-located-2e2cg reuse, D-04)
+- [ ] 122-05-PLAN.md — Wave 3: EFLOW-10b full-browser journey spec + 3×-green determinism gate (both specs) + default-suite regression check
 **UI hint**: no
 
 #### Phase 123: Svelte 5 Idiom Polish — Lifecycle & Reactive-State
