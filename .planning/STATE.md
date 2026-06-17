@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
-status: executing
+status: verifying
 stopped_at: Completed 121-05-PLAN.md
-last_updated: "2026-06-16T18:35:41.053Z"
-last_activity: 2026-06-16
+last_updated: "2026-06-17T07:13:50.267Z"
+last_activity: 2026-06-17
 progress:
   total_phases: 15
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 28
-  completed_plans: 27
-  percent: 20
+  completed_plans: 28
+  percent: 27
 ---
 
 # Project State
@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 
 Phase: 121 (e2e-specs-flow-coverage) — EXECUTING
 Plan: 8 of 8
-Status: Ready to execute
-Last activity: 2026-06-16
+Status: Phase complete — ready for verification
+Last activity: 2026-06-17
 
 Progress: [█████████░] 93%
 
@@ -64,6 +64,7 @@ Pre-close artifact audit surfaced 8 open items. The 2 🔴 items were **resolved
 | Phase 121 P121-05 | 10m | 1 tasks | 1 files |
 | Phase 121 P121-06 | ~18min | 2 tasks | 2 files |
 | Phase 121-e2e-specs-flow-coverage P07 | 35min | 1 tasks | 1 files |
+| Phase 121 P121-08 | 150min | 3 tasks | 4 files |
 
 ### Acknowledged at v2.11 close (2026-06-07)
 
@@ -412,6 +413,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 121]: 121-05: voter-prefs-tracking hosted under perm-analytics-tracking triad (not base leaf) — analytics overlay clobbers app_settings singleton
 - [Phase 121]: EFLOW-08 tracking emission captured via a forced same-window visibilitychange flush (submitAllEvents), not a hard nav — page.goto tears down the __trackCalls capture array. — Keeps the capture array alive for getTrackCalls(); the layout's visibilitychange handler calls submitAllEvents in place.
 - [Phase 121]: Runtime consent granted via the DataConsentPopup dialog (scoped getByRole('dialog')) to avoid the strict-mode clash with the inline privacy-page DataConsent. — The popup auto-opens when consent is indetermined and overlays the inline control; it is the canonical voter consent surface.
+- [Phase ?]: Plan 121-08 (EFLOW-11): shared walkUntilQuestionsIntro auto-grants the DataConsentPopup (addLocatorHandler) — fixed the mobile journey AND a latent full-suite flake (voter-journey/a11y/perf); full yarn test:e2e now 125/125. Mobile sub-tests are describe-scoped (no viewport leak); filter assertions are seed/constituency-agnostic.
 
 ### Quick Tasks Completed
 
@@ -456,7 +458,7 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-16T18:34:36.571Z
+Last session: 2026-06-17T07:12:57.770Z
 Stopped at: Completed 121-05-PLAN.md
 Resume file: None
 Work done this session (118-02):
