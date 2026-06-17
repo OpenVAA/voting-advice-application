@@ -42,6 +42,10 @@ export default defineConfig({
       {
         find: '$app/state',
         replacement: path.resolve(__dirname, 'src/lib/i18n/tests/__mocks__/app-state.ts')
+      },
+      {
+        find: '$app/navigation',
+        replacement: path.resolve(__dirname, 'src/lib/i18n/tests/__mocks__/app-navigation.ts')
       }
     ]
   },
