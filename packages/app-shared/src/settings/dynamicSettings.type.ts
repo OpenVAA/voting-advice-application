@@ -328,6 +328,15 @@ export type DynamicSettings = {
       hideHero: boolean;
     };
   };
+  /**
+   * Settings related to Candidate App pre-registration. If enabled, make sure to set the relevant env variables as well. Backend/per-instance controlled (moved from `StaticSettings` to `DynamicSettings`).
+   */
+  preRegistration?: {
+    /**
+     * Whether pre-registration is enabled for the Candidate App.
+     */
+    enabled?: boolean;
+  };
 };
 
 export type OrganizationMatchingMethod =
