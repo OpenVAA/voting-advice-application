@@ -189,7 +189,7 @@ Full details: `.planning/milestones/v2.13-ROADMAP.md`
 - [x] **Phase 120: E2E Specs — Settings-Permutation Matrix** — EPERM-01..11 settings-driven branches exercised/asserted (alliance-presence sub-assertion of EPERM-03 lands with Phase 130). (completed 2026-06-16)
 - [x] **Phase 121: E2E Specs — Flow Coverage** — EFLOW filters, comparison, category breakdown, navigation, locale/theme/preferences, nav menus, mobile (minus alliance EFLOW-02 and minus bank-auth EFLOW-10). (completed 2026-06-17)
 - [ ] **Phase 122: E2E Specs — Bank-Auth Round-Trip** — EFLOW-10 full Signicat/Idura OIDC round-trip, deterministically.
-- [ ] **Phase 123: Svelte 5 Idiom Polish — Lifecycle & Reactive-State** — RUNES-01/02/05: onMount/onDestroy→$effect, reactive let→$state, 2 context bugs.
+- [x] **Phase 123: Svelte 5 Idiom Polish — Lifecycle & Reactive-State** — RUNES-01/02/05: onMount/onDestroy→$effect, reactive let→$state, 2 context bugs. (completed 2026-06-17)
 - [ ] **Phase 124: Svelte 5 Idiom Polish — Lock-in & Visual Verification** — RUNES-03/04: app-wide store ESLint guard + post-runes visual verification.
 - [ ] **Phase 125: svelte-check → 0 — Trivial Tier** — TYPE-01/02/03: qs ambient types, admin-jobs cookies cluster, _spikes-017-019 scaffolding.
 - [ ] **Phase 126: svelte-check → 0 — supabaseDataProvider** — TYPE-04: type supabaseDataProvider.ts against generated Supabase types (79 errors, 52% of baseline).
@@ -372,7 +372,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 123-04-PLAN.md — Wave 2: D-03 acceptance gate (build + full unit + svelte-check <= baseline + one full E2E run)
+- [x] 123-04-PLAN.md — Wave 2: D-03 acceptance gate (build + full unit + svelte-check <= baseline + one full E2E run)
 
 **UI hint**: yes
 
@@ -518,7 +518,7 @@ The three workstreams are largely independent and may be planned/executed concur
 | 120. E2E Specs — Settings-Permutation Matrix | v2.14 | 8/8 | Complete   | 2026-06-16 |
 | 121. E2E Specs — Flow Coverage | v2.14 | 8/8 | Complete    | 2026-06-17 |
 | 122. E2E Specs — Bank-Auth Round-Trip | v2.14 | 4/5 | In Progress|  |
-| 123. Svelte 5 Idiom Polish — Lifecycle & Reactive-State | v2.14 | 3/4 | In Progress|  |
+| 123. Svelte 5 Idiom Polish — Lifecycle & Reactive-State | v2.14 | 4/4 | Complete   | 2026-06-17 |
 | 124. Svelte 5 Idiom Polish — Lock-in & Visual Verification | v2.14 | 0/TBD | Not started | - |
 | 125. svelte-check → 0 — Trivial Tier | v2.14 | 0/TBD | Not started | - |
 | 126. svelte-check → 0 — supabaseDataProvider | v2.14 | 0/TBD | Not started | - |

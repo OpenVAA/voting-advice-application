@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
-status: executing
-stopped_at: Completed 123-02-PLAN.md
-last_updated: "2026-06-17T20:13:11.297Z"
+status: verifying
+stopped_at: Completed 123-04-PLAN.md (D-03 acceptance gate — all four gates pass; phase ready for verification)
+last_updated: "2026-06-17T21:01:33.442Z"
 last_activity: 2026-06-17 -- Phase 123 execution started
 progress:
   total_phases: 15
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 37
-  completed_plans: 36
-  percent: 33
+  completed_plans: 37
+  percent: 40
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 
 Phase: 123 (svelte-5-idiom-polish-lifecycle-reactive-state) — EXECUTING
 Plan: 4 of 4
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-06-17 -- Phase 123 execution started
 
 Progress: [█████████░] 93%
@@ -72,6 +72,7 @@ Pre-close artifact audit surfaced 8 open items. The 2 🔴 items were **resolved
 | Phase 123 P01 | 12min | 2 tasks | 4 files |
 | Phase 123 P02 | ~6min | 3 tasks | 3 files |
 | Phase 123 P03 | 3min | 3 tasks | 1 files |
+| Phase 123 P04 | 44min | 2 tasks | 1 files |
 
 ### Acknowledged at v2.11 close (2026-06-07)
 
@@ -426,6 +427,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Phase 123-01: A2 test seam resolved = spy-on-collaborator under $effect.root driving the real CandidateContextProvider (no pure-helper extract)
 - [Phase ?]: Phase 123-03: RUNES-01 lifecycle audit — 0 MIGRATE / 25 LEAVE (4 hard-LEAVE); genuine-lifecycle-dominant surface per D-04
 - [Phase ?]: Phase 123-03: RUNES-02 reactive-let MIGRATE set EMPTY — v2.13 already converted reactive locals; survivors are bind:this refs/timers/handles/intentional non-reactive (confirms A1)
+- [Phase ?]: Phase 123 D-03 gate: build 14/14 + unit 769/769 + svelte-check 151 ERR/1 WARN (=baseline) + full E2E 125/125 green — all four gates pass — Behavior-neutrality of the idiom polish + 2 RUNES-05 bug fixes proven; criterion 4 holds (delta 0)
+- [Phase ?]: Two full-suite E2E flakes (EFLOW-06, EFLOW-11) classified as env non-determinism, not regression — Different spec each run, both passed in isolation; trusted fresh-server+clean-DB run was 125/125
 
 ### Quick Tasks Completed
 
@@ -470,8 +473,8 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-17T20:12:47.636Z
-Stopped at: Completed 123-02-PLAN.md
+Last session: 2026-06-17T21:01:33.435Z
+Stopped at: Completed 123-04-PLAN.md (D-03 acceptance gate — all four gates pass; phase ready for verification)
 Resume file: .planning/phases/123-svelte-5-idiom-polish-lifecycle-reactive-state/123-CONTEXT.md
 Work done this session (122-05 Task 2):
 
