@@ -45,7 +45,26 @@ COMPLETED 2672 FILES 151 ERRORS 1 WARNINGS 30 FILES_WITH_PROBLEMS
 
 ## Gate 4 — Full E2E suite (`yarn test:e2e`) — cardinal final trust signal
 
-_Pending — recorded by Task 2._
+**Run command:** `yarn test:e2e` (root → `playwright test -c ./tests/playwright.config.ts ./tests --grep-invert @probe`)
+**Environment:** host Vite dev server on :5173 (fresh restart) + local Supabase (clean `yarn db:reset`, storage settled to HTTP 200). No Docker. No Playwright `webServer` (the suite assumes one externally-managed dev server).
+
+**Result (trusted-config run):** ✅ GREEN — **`125 passed (9.0m)`** — zero failed, zero did-not-run/cascade-failed.
+
+Bug-1 behavior-neutrality (Pitfall 4) confirmed: the `candidate-journey` full end-to-end spec (exercises the candidate questions flow on the default single-entity-type seed) plus the candidate-questions perm specs (`perm-hide-hero`, `perm-disable-allow-open`) are all within the 125-passed suite — no opinion questions disappear from the addition of `entityType` to the blocks-path `getApplicableQuestions`. Per `123-LIFECYCLE-DISPOSITIONS.md` there were **0 source `.svelte` lifecycle/reactive-`let` migrations** in Waves 0-1, so NO borderline lifecycle site required a flagged-spec re-verification beyond the full green suite.
+
+### Determinism note (two non-deterministic full-suite flakes before the trusted run)
+
+Two earlier full-suite attempts each surfaced a single failure on a **different** spec, both of which **passed in isolation** — confirming environment non-determinism, NOT a Phase-123 code regression:
+
+| Attempt | Outcome | Failing spec | Isolated re-run |
+|---------|---------|--------------|-----------------|
+| 1 | 81 passed / 1 failed / 43 did-not-run (cascade) | `perm-localisation-positive` EFLOW-06 | ✅ PASS (52/52) — setup logged "Database is NOT fresh" (residual non-test data) |
+| 2 | 124 passed / 1 failed | `voter-journey-mobile` EFLOW-11 | ✅ PASS (3/3) — long-lived dev server (HMR staleness over a ~9m run) |
+| 3 (trusted) | **125 passed / 0 failed / 0 did-not-run** | — | — |
+
+Root cause (per project memory `project_e2e_hmr_staleness_restart` + `project_bank_auth_e2e_env_and_determinism`): a long-lived Vite dev server serves stale large/SSR modules mid-run, and a `db:reset` immediately followed by `yarn dev`'s own `seed.sql` left the DB "not fresh." The documented remedy — restart the dev server fresh + re-`db:reset` (letting the known storage-502 wedge settle to 200) + re-run the FULL suite — produced the clean 125/125 trusted-config run above. Each failing spec was a different one, none reproduced, both passed in isolation → flake, not regression. No flaky-skip, no retry-until-green: the FULL suite is green on the trusted configuration, satisfying the cardinal rule.
+
+**Gate 4:** ✅ PASS — one full `yarn test:e2e` run is fully green (125/125, zero did-not-run).
 
 ---
 
@@ -56,4 +75,6 @@ _Pending — recorded by Task 2._
 | 1 | Build (`yarn build`) | ✅ GREEN (14/14) |
 | 2 | Full unit suite | ✅ GREEN (60 files / 769 tests) |
 | 3 | svelte-check ≤ pinned baseline | ✅ PASS (151 ERR / 1 WARN, delta 0) |
-| 4 | One full `yarn test:e2e` run | _pending (Task 2)_ |
+| 4 | One full `yarn test:e2e` run | ✅ GREEN (125/125, 0 did-not-run) |
+
+**All four D-03 acceptance gates PASS.** Phase 123 criterion 3 (both RUNES-05 bug fixes verified by targeted unit tests + the green E2E suite), criterion 4 (no net-new svelte-check errors, 151/1 = baseline), and the behavior-neutrality of RUNES-01/02 (0 source migrations + green E2E) are all satisfied.
