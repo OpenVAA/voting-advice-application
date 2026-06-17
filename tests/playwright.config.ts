@@ -244,7 +244,7 @@ export default defineConfig({
       dependencies: ['data-setup-base']
     },
 
-    // voter-journey-mobile (Phase 121 EFLOW-08) — LEAF. The viewport-agnostic
+    // voter-journey-mobile (Phase 121 EFLOW-11) — LEAF. The viewport-agnostic
     // 'max' voter walk under a mobile descriptor. The descriptor lives here at
     // project scope (explicit 390×844 isMobile/hasTouch, matching
     // visual-regression — NOT devices['Pixel 5']); the walk itself is unchanged.
@@ -939,7 +939,7 @@ export default defineConfig({
       dependencies: ['data-setup-perm-org-matching']
     },
 
-    // D-01 — perm-analytics-tracking (EFLOW-11). Voter analytics-tracking emission
+    // D-01 — perm-analytics-tracking (EFLOW-08). Voter analytics-tracking emission
     // matrix: the analytics overlay (analytics.platform.name='umami',
     // trackEvents=true) is a singleton-clobbering app_settings node, so the
     // tracking-payload spec (voter-prefs-tracking) is hosted HERE under its own
