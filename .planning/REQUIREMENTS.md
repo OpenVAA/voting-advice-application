@@ -89,7 +89,7 @@ New settings-driven branches not yet covered by the existing 19 perm specs.
 
 - [x] **RUNES-01**: `onMount` / `onDestroy` are migrated to `$effect` where semantically equivalent (~24 files), behavior-neutral and verified. **NOTE**: See https://svelte.dev/docs/svelte/lifecycle-hooks for recommendations.
 - [x] **RUNES-02**: Reactive `let` declarations (locals mutated for reactive effect) are migrated to `$state`, per-site verified (non-reactive locals left as `let`).
-- [ ] **RUNES-03**: The `svelte/store` ESLint guard is extended to the entire `apps/frontend/src/**` tree (lock-in against regressions).
+- [x] **RUNES-03**: The `svelte/store` ESLint guard is extended to the entire `apps/frontend/src/**` tree (lock-in against regressions). **Met-via-Phase-115-SWEEP-03**: the guard glob was already widened to `apps/frontend/src/**/*.{ts,svelte}` in Phase 115 SWEEP-03 (see the in-file comment at `apps/frontend/eslint.config.mjs` lines 77-84); `yarn workspace @openvaa/frontend lint` reports zero `no-restricted-imports`/`svelte/store` violations across `src/**`. Phase 124 adds the permanent regression self-test `apps/frontend/src/lib/_guards/eslint-store-guard.test.ts` (positive + negative control) proving the guard FIRES, not merely lints clean by accident.
 - [ ] **RUNES-04**: A post-runes visual verification pass confirms no regressions in app-header styling, banner images, and post-login candidate navigation.
 - [x] **RUNES-05**: The two known context bugs are fixed — `candidateContext.questionBlocks` `getApplicableQuestions` missing `entityType`; `userData.save()` silently skipping `termsOfUseAccepted: null`.
 
@@ -166,7 +166,7 @@ Each requirement maps to exactly one roadmap phase (see `.planning/ROADMAP.md` v
 | RUNES-01 | Phase 123 | Complete |
 | RUNES-02 | Phase 123 | Complete |
 | RUNES-05 | Phase 123 | Complete |
-| RUNES-03 | Phase 124 | Pending |
+| RUNES-03 | Phase 124 | Complete |
 | RUNES-04 | Phase 124 | Pending |
 | TYPE-01 | Phase 125 | Pending |
 | TYPE-02 | Phase 125 | Pending |
