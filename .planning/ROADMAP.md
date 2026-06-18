@@ -390,7 +390,7 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 124-01-PLAN.md — RUNES-03: guard regression self-test (ESLint Node-API positive/negative control) + zero-violation lint assertion + traceability flip (met-via-Phase-115-SWEEP-03)
+- [x] 124-01-PLAN.md — RUNES-03: guard regression self-test (ESLint Node-API positive/negative control) + zero-violation lint assertion + traceability flip (met-via-Phase-115-SWEEP-03)
 
 **Wave 2** *(blocked on Wave 1 — shared REQUIREMENTS.md edit; atomic-commit bisect isolation)*
 
