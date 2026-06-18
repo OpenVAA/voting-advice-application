@@ -322,17 +322,21 @@ const appSettings = $derived(candCtx.appSettings);    // reactive accessor — r
 
 **All other claims** were verified live this session (ESLint version, vitest version, zero `svelte/store` imports, guard-fires behavior, the three surface files' read patterns, dark-mode matchMedia mechanism) or cited directly from in-tree files.
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+Both items below are discretion-area choices (D-06 / D-07), not unresolved architecture decisions. Both are resolved by the planner and handled in `124-02-PLAN.md`.
 
 1. **Exact screenshot storage location for `124-VISUAL-VERIFICATION.md`.**
    - What we know: D-07 leaves filename/format/storage to Claude's discretion; report lives in the phase dir.
    - What's unclear: whether screenshots are committed as files (e.g. a `124-screenshots/` dir) or linked.
    - Recommendation: commit a small set of PNGs under the phase dir (or embed as relative links) — keeps the evidence auditable in-repo without external dependencies. Planner decides depth per D-06.
+   - **RESOLVED:** Plan 02 Task 2 stores screenshots under a `124-screenshots/` subdir (or relative-linked), with the no-PII/secrets guardrail. Discretion item — no execution blocker.
 
 2. **Which exact voter routes to screenshot for the banner/hero surface.**
    - What we know: Hero appears on `(voters)/+page`, `(voters)/intro`, `(voters)/about`, `(voters)/nominations`, results/questions layouts; the header `--image` prominent background is the other banner expression.
    - What's unclear: the minimal representative set.
    - Recommendation: voter `intro` + voter home (`(voters)/+page`) for the hero, plus any route where `topBarSettings.imageSrc` is set for the prominent header background, in default locale + `en`. Planner refines per D-06.
+   - **RESOLVED:** Plan 02 Task 1 fixes the minimal set as voter `intro` + voter home for the hero, plus a header `--image` background route, in the default locale + one other locale (`en`). Discretion item — no execution blocker.
 
 ## Environment Availability
 
