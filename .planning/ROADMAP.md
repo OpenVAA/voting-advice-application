@@ -386,7 +386,16 @@ Plans:
   1. The `svelte/store` ESLint guard is extended to the entire `apps/frontend/src/**` tree and reports zero violations (lock-in against regressions).
   2. A post-runes visual verification pass confirms no regressions in app-header styling, banner images, and post-login candidate navigation.
 
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+**Wave 1**
+
+- [ ] 124-01-PLAN.md — RUNES-03: guard regression self-test (ESLint Node-API positive/negative control) + zero-violation lint assertion + traceability flip (met-via-Phase-115-SWEEP-03)
+
+**Wave 2** *(blocked on Wave 1 — shared REQUIREMENTS.md edit; atomic-commit bisect isolation)*
+
+- [ ] 124-02-PLAN.md — RUNES-04: manual visual-verification pass (app-header light/dark · banner · post-login candidate-nav) + 124-VISUAL-VERIFICATION.md + conditional surgical fix (D-05)
+
 **UI hint**: yes
 
 #### Phase 125: svelte-check → 0 — Trivial Tier
