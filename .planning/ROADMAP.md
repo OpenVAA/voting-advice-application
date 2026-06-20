@@ -190,7 +190,7 @@ Full details: `.planning/milestones/v2.13-ROADMAP.md`
 - [x] **Phase 121: E2E Specs — Flow Coverage** — EFLOW filters, comparison, category breakdown, navigation, locale/theme/preferences, nav menus, mobile (minus alliance EFLOW-02 and minus bank-auth EFLOW-10). (completed 2026-06-17)
 - [ ] **Phase 122: E2E Specs — Bank-Auth Round-Trip** — EFLOW-10 full Signicat/Idura OIDC round-trip, deterministically.
 - [x] **Phase 123: Svelte 5 Idiom Polish — Lifecycle & Reactive-State** — RUNES-01/02/05: onMount/onDestroy→$effect, reactive let→$state, 2 context bugs. (completed 2026-06-17)
-- [ ] **Phase 124: Svelte 5 Idiom Polish — Lock-in & Visual Verification** — RUNES-03/04: app-wide store ESLint guard + post-runes visual verification.
+- [x] **Phase 124: Svelte 5 Idiom Polish — Lock-in & Visual Verification** — RUNES-03/04: app-wide store ESLint guard + post-runes visual verification. (completed 2026-06-21)
 - [ ] **Phase 125: svelte-check → 0 — Trivial Tier** — TYPE-01/02/03: qs ambient types, admin-jobs cookies cluster, _spikes-017-019 scaffolding.
 - [ ] **Phase 126: svelte-check → 0 — supabaseDataProvider** — TYPE-04: type supabaseDataProvider.ts against generated Supabase types (79 errors, 52% of baseline).
 - [ ] **Phase 127: svelte-check → 0 — Adapter Layer & Contexts** — TYPE-05/06: supabaseDataWriter + adapter remainder + context-layer type errors.
