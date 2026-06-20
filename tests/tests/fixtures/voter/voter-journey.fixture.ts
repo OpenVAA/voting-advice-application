@@ -153,13 +153,40 @@ async function walkUntilQuestionsIntro(page: Page): Promise<void> {
 
   // 2. Intro start.
   const introStart = page.getByTestId(testIds.voter.intro.startButton);
+  const electionsListProbe = page.getByTestId(testIds.voter.elections.list);
   // Intro may auto-redirect to elections/constituencies; tolerate either.
   await page
     .waitForURL((url) => !url.toString().endsWith('/en/') && !url.toString().endsWith('/en'), {
       timeout: TIMEOUTS.slowPage
     })
     .catch(() => null);
-  if (await introStart.isVisible().catch(() => false)) {
+  // NB. Same non-waiting-`isVisible` hazard as the Elections/Constituencies
+  // steps below — `locator.isVisible()` is a one-shot snapshot, so on a parked
+  // Intro page whose "Continue" button mounts a beat AFTER navigation (the
+  // post-hydration `$dataRoot` `$effect` render window), it returns false, the
+  // Continue click is skipped, and the walk falls through still ON /intro —
+  // stalling every downstream step and failing at fixture line ~231
+  // (questions-start/category-start/question-choice never visible). This was a
+  // latent full-suite flake (perm-question-video desktop + mobile,
+  // voter-journey-mobile) — worse at the mobile viewport where the slower render
+  // widens the window.
+  //
+  // Wait for the page to RESOLVE to one of two states, whichever comes first:
+  //   (a) the Intro "Continue" button paints (questionsIntro.show=true, the
+  //       e2e/base posture) → click it; OR
+  //   (b) the page has already advanced PAST the intro to the elections
+  //       selector (auto-redirect seeds, questionsIntro.show=false) → the
+  //       elections list is present, so skip the click and let step 3 proceed.
+  // Racing the two locators (vs. a bare polling waitForVisible on introStart)
+  // means the auto-redirect path resolves the instant the elections list mounts
+  // — no fixed 5s penalty — while the base path still waits deterministically
+  // for the Continue button to paint instead of one-shot-missing it.
+  await introStart
+    .or(electionsListProbe)
+    .first()
+    .waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage })
+    .catch(() => null);
+  if (await waitForVisible(introStart, TIMEOUTS.element)) {
     await introStart.click();
   }
 
@@ -245,11 +272,7 @@ async function walkUntilQuestionsIntro(page: Page): Promise<void> {
  *     future-proof): 'min' → first option index 0; 'max' → last option
  *     index (nth(-1)).
  */
-async function answerAndAdvanceToResults(
-  page: Page,
-  answerMode: AnswerMode,
-  answerCount?: number
-): Promise<void> {
+async function answerAndAdvanceToResults(page: Page, answerMode: AnswerMode, answerCount?: number): Promise<void> {
   // 5b. Click questions-intro start.
   const questionsStart = page.getByTestId(testIds.voter.questions.startButton);
   if (await questionsStart.isVisible({ timeout: TIMEOUTS.page }).catch(() => false)) {
