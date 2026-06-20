@@ -56,6 +56,49 @@ function withNoTransition(url: string): string {
 }
 
 /**
+ * Wait until every running CSS/Web animation on the document has finished
+ * BEFORE an axe scan.
+ *
+ * ## Why
+ * axe composites an element's text colour through any in-flight ancestor
+ * opacity. The voter routes fade their content in on entry (an entrance
+ * animation animating opacity 0→1 / a View-Transition cross-fade), so a scan
+ * that fires as soon as a heading is visible — but before the fade settles —
+ * reads label/body text at PARTIAL opacity and reports phantom `color-contrast`
+ * failures: e.g. a `#666`-class token rendered ~`#858585` (≈3.69:1) at ~0.2-0.3
+ * opacity. At FULL opacity the same tokens pass (isolated, pressure-free scans
+ * are 0-violation), so this is a SCAN-TIMING readiness gate, NOT a theme change
+ * and NOT a timeout bump. Svelte transitions + View Transitions both run as
+ * Web Animations, so awaiting `getAnimations({ subtree: true }).finished` on the
+ * document is the real "page has stopped animating" signal. The leading rAF
+ * lets a just-started fly/fade register its animation before we collect it.
+ *
+ * INFINITE animations are EXCLUDED. Some surfaces carry looping CSS animations
+ * (e.g. the `infinite` progress/match bar on the results + entity-details
+ * surfaces), whose `.finished` promise NEVER resolves — awaiting it would hang
+ * the scan until the 90s test timeout. Those loops don't gate text opacity, so
+ * we await ONLY the FINITE (entrance) animations: an animation is finite when
+ * its effect's computed `endTime` is not Infinity. This exclusion is also why
+ * the document-wide settle is now safe on the drawer route, where the looping
+ * bar previously forced a dialog-subtree-only settle.
+ */
+async function awaitAnimationsSettled(page: Page): Promise<void> {
+  await page.evaluate(async () => {
+    await new Promise((resolve) => requestAnimationFrame(() => resolve(undefined)));
+    // `Element.getAnimations({ subtree: true })` on the document root collects
+    // every running animation in the document (the `Document.getAnimations()`
+    // overload takes no options arg, so go through `documentElement`).
+    const finite = document.documentElement.getAnimations({ subtree: true }).filter((a) => {
+      const endTime = a.effect?.getComputedTiming().endTime;
+      // endTime is a CSSNumberish (number | CSSNumericValue); only a finite
+      // numeric endTime is an entrance (non-looping) animation we should await.
+      return typeof endTime === 'number' && Number.isFinite(endTime);
+    });
+    await Promise.all(finite.map((a) => a.finished.catch(() => undefined)));
+  });
+}
+
+/**
  * If the post-answer Q→Q auto-advance landed on a category-intro page (the
  * first question of a new category renders the category-intro first), click
  * through it so we settle on an actual question route. Lives at module scope so
@@ -156,6 +199,10 @@ for (const route of UNLOCATED_ROUTES) {
   test(`axe accessibility scan — ${route.name}`, async ({ page }, testInfo) => {
     await page.goto(buildRoute({ route: route.routeId, locale: 'en' }));
     await route.settle(page);
+    // Gate the scan on the entrance fade/animation finishing — otherwise axe
+    // composites text colour through in-flight opacity and reports phantom
+    // color-contrast failures (see awaitAnimationsSettled).
+    await awaitAnimationsSettled(page);
 
     const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
     await assertAxeGates(results, testInfo, route.name);
@@ -171,6 +218,8 @@ for (const route of UNLOCATED_ROUTES) {
     await page.emulateMedia({ colorScheme: 'dark' });
     await page.goto(buildRoute({ route: route.routeId, locale: 'en' }));
     await route.settle(page);
+    // See the light-variant scan above — gate on the entrance fade settling.
+    await awaitAnimationsSettled(page);
 
     const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
     await assertAxeGates(results, testInfo, `${route.name}-dark`);
@@ -184,6 +233,8 @@ voterJourneyTest('axe accessibility scan — questions', async ({ locatedVoterPa
   // intro and STOPS. The voter-questions-start button is visible at this
   // point — the intro page is the route under axe scan.
   await page.getByRole('heading').first().waitFor({ state: 'visible', timeout: 10000 });
+  // Gate on the entrance fade settling — see awaitAnimationsSettled.
+  await awaitAnimationsSettled(page);
 
   const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
   await assertAxeGates(results, testInfo, 'questions');
@@ -194,6 +245,8 @@ voterJourneyTest('axe accessibility scan — results', async ({ answeredVoterPag
   // results layout tablist (Tabs.svelte) — its explicit role="tablist"
   // resolves the aria-required-parent + list axe violations.
   await page.getByRole('tablist').first().waitFor({ state: 'visible', timeout: 10000 });
+  // Gate on the entrance fade settling — see awaitAnimationsSettled.
+  await awaitAnimationsSettled(page);
 
   const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
   await assertAxeGates(results, testInfo, 'results');
@@ -215,12 +268,10 @@ voterJourneyTest('axe accessibility scan — voter-detail-drawer', async ({ answ
   // `text-secondary` #666666 rendered ~#969696 (2.95:1) and `primary` #2546a8 rendered
   // ~#6a80c3 (3.82:1), both exactly the token at ~0.69 opacity. At FULL opacity the
   // tokens pass (≈5.7:1 / ≈8.6:1 on white), so this is a scan-timing fix, NOT a theme
-  // change. Svelte transitions run as CSS animations, so await every running animation
-  // on the dialog subtree (rAF first so the fly has registered).
-  await page.getByRole('dialog').evaluate(async (el) => {
-    await new Promise((resolve) => requestAnimationFrame(() => resolve(undefined)));
-    await Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => undefined)));
-  });
+  // change. The shared awaitAnimationsSettled gate settles the WHOLE document (drawer
+  // fly + any page-level entrance fade), so it backstops both the drawer transition
+  // and the same scan-timing class fixed on the other routes.
+  await awaitAnimationsSettled(page);
 
   const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
   await assertAxeGates(results, testInfo, 'voter-detail-drawer');
