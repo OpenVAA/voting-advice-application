@@ -41,6 +41,43 @@
 import { expect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 
+/**
+ * Give every `POST /rest/v1/feedback` from this page its OWN feedback
+ * rate-limit bucket by injecting a unique `x-forwarded-for` header per request.
+ *
+ * ## Why
+ * The DB feedback insert is gated by a per-client-IP rate-limit trigger — 5
+ * inserts per 5-minute window — keyed on the first `x-forwarded-for` IP, which
+ * defaults to the literal `'unknown'` in local dev (no proxy header). Under the
+ * single-worker full suite EVERY feedback-submitting spec (voter-journey ×2,
+ * voter-journey-mobile ×1) POSTs from that SAME `'unknown'` bucket, and a
+ * retried test re-submits — so the SHARED budget is exhausted and a genuine
+ * submit is rejected 400 `P0001 "Rate limit exceeded"`. The app's catch-less
+ * `submit().then()` then leaves the button stuck in `'sending'` until its 5s
+ * error-timeout, past the test's `expectSuccess` window → a residual flake.
+ *
+ * Stamping a unique IP per request lands each genuine submission in its own
+ * rate-limit bucket — exactly how distinct real users behave — so the real
+ * rate-limit logic still runs (nothing is masked or disabled), it just no longer
+ * collides across tests/retries. PostgREST forwards request headers into
+ * `current_setting('request.headers')`, so the injected `x-forwarded-for`
+ * reaches the trigger.
+ *
+ * Install ONCE per page before any feedback submission (idempotent — the route
+ * handler is additive and only touches the feedback endpoint).
+ */
+export async function isolateFeedbackRateLimit(page: Page): Promise<void> {
+  await page.route('**/rest/v1/feedback', async (route) => {
+    // A fresh RFC-5737 TEST-NET-3 (203.0.113.0/24) address per request — a
+    // reserved documentation range, guaranteed never a real client, and unique
+    // enough across a suite to keep each submission in its own bucket.
+    const ip = `203.0.113.${Math.floor(Math.random() * 254) + 1}`;
+    await route.continue({
+      headers: { ...route.request().headers(), 'x-forwarded-for': ip }
+    });
+  });
+}
+
 export interface FeedbackDialogFixture {
   /** Locator for the feedback dialog form (testid-anchored). */
   readonly dialog: Locator;

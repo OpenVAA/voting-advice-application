@@ -20,7 +20,7 @@
  * `data-teardown-base` chain.
  */
 
-import { createFeedbackDialog } from '../../fixtures/shared/feedbackDialog.fixture';
+import { createFeedbackDialog, isolateFeedbackRateLimit } from '../../fixtures/shared/feedbackDialog.fixture';
 import { expect, test } from '../../fixtures/voter/views';
 import { TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
@@ -645,11 +645,7 @@ test.describe('voter journey', () => {
       // on Base-3 here (Base-1/Base-2 answered above; Base-3 reached for the terms
       // assertion); the dataset is stable, so the remaining base questions are
       // known in walk order: Base-3 → 4 → 5.
-      for (const text of [
-        TEXT_RE.baseOpinion3Likert7,
-        TEXT_RE.baseOpinion4Categorical,
-        TEXT_RE.baseOpinion5Boolean
-      ]) {
+      for (const text of [TEXT_RE.baseOpinion3Likert7, TEXT_RE.baseOpinion4Categorical, TEXT_RE.baseOpinion5Boolean]) {
         await expectQuestionAndAdvance({
           page,
           text,
@@ -813,15 +809,9 @@ test.describe('voter journey', () => {
       // aria-valuenow on its meter (gaugeMeterByLabel module helper). Only
       // voter-reachable categories surface a gauge; the values are the
       // rendered, deterministic per-category scores.
-      await expect
-        .soft(gaugeMeterByLabel(gauges, TEXT_RE.baseOpinion))
-        .toHaveAttribute('aria-valuenow', '100');
-      await expect
-        .soft(gaugeMeterByLabel(gauges, TEXT_RE.optionalOpinionsA))
-        .toHaveAttribute('aria-valuenow', '50');
-      await expect
-        .soft(gaugeMeterByLabel(gauges, TEXT_RE.optionalOpinionsB))
-        .toHaveAttribute('aria-valuenow', '50');
+      await expect.soft(gaugeMeterByLabel(gauges, TEXT_RE.baseOpinion)).toHaveAttribute('aria-valuenow', '100');
+      await expect.soft(gaugeMeterByLabel(gauges, TEXT_RE.optionalOpinionsA)).toHaveAttribute('aria-valuenow', '50');
+      await expect.soft(gaugeMeterByLabel(gauges, TEXT_RE.optionalOpinionsB)).toHaveAttribute('aria-valuenow', '50');
       await expect
         .soft(gaugeMeterByLabel(gauges, TEXT_RE.regionalOpinionsCategory))
         .toHaveAttribute('aria-valuenow', '100');
@@ -1107,9 +1097,7 @@ test.describe('voter journey', () => {
       // Asserting the row's ABSENCE (rather than a "—" placeholder) is the
       // ADDITIVE/assert-only reading of the org-typed `showMissingElectionSymbol`
       // contract under the base settings (zero seed change). HARD assertion.
-      await expect(
-        entityDetails.getInfoItems().filter({ hasText: /Election Number|Election Symbol/i })
-      ).toHaveCount(0);
+      await expect(entityDetails.getInfoItems().filter({ hasText: /Election Number|Election Symbol/i })).toHaveCount(0);
 
       // Members tab (SETTINGS keyword: 'children') — 5 visible Party-AA
       // members after the CA-AA-Hidden filter.
@@ -1239,7 +1227,6 @@ test.describe('voter journey', () => {
       const d7 = await entityFilters.openFilterDialog();
       await d7.reset();
       await expect.soft(resultsPage.getEntityCards()).toHaveCount(13, { timeout: TIMEOUTS.page });
-
     });
 
     // ====================================================================
@@ -1311,6 +1298,11 @@ test.describe('voter journey', () => {
 
     await test.step('feedback dialog opens, persists state across cancel, and sends', async () => {
       const feedbackDialog = createFeedbackDialog(page);
+      // Isolate this page's feedback POSTs into their own rate-limit bucket so
+      // the two genuine submits below can't be rejected by the 5/5min/IP budget
+      // shared across every feedback-submitting spec + retries (see
+      // isolateFeedbackRateLimit).
+      await isolateFeedbackRateLimit(page);
 
       // The voter nav drawer must be opened explicitly. The openMenu button
       // lives on Header.svelte:82-93. The open-menu toggle carries a

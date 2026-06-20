@@ -31,7 +31,7 @@
  */
 
 import { expect } from '@playwright/test';
-import { createFeedbackDialog } from '../../fixtures/shared/feedbackDialog.fixture';
+import { createFeedbackDialog, isolateFeedbackRateLimit } from '../../fixtures/shared/feedbackDialog.fixture';
 import { createNavMenu } from '../../fixtures/shared/navMenu.fixture';
 import { createEntityFilters } from '../../fixtures/voter/entityFilters.fixture';
 import { createResultsPage } from '../../fixtures/voter/resultsPage.fixture';
@@ -117,6 +117,10 @@ test.describe('voter-journey-mobile (EFLOW-11)', () => {
     await expect(feedbackNavItem).toHaveCount(1);
 
     // --- Feedback dialog reached through the mobile nav drawer: open + submit. ---
+    // Isolate this page's feedback POST into its own rate-limit bucket so the
+    // genuine submit can't be rejected by the 5/5min/IP budget shared across
+    // every feedback-submitting spec + retries (see isolateFeedbackRateLimit).
+    await isolateFeedbackRateLimit(page);
     await feedbackNavItem.click();
     await feedbackDialog.expectVisible();
     await feedbackDialog.expectSendDisabled();
