@@ -94,10 +94,7 @@ export interface SetupFromTemplateResult {
  * Set `E2E_REQUIRE_FRESH_DB=true` to escalate to a hard failure; the
  * default is a console.warn.
  */
-async function probeFreshDatabasePrecondition(
-  client: SupabaseAdminClient,
-  prefix: string
-): Promise<void> {
+async function probeFreshDatabasePrecondition(client: SupabaseAdminClient, prefix: string): Promise<void> {
   const requireFresh = process.env.E2E_REQUIRE_FRESH_DB === 'true';
   // Chained .not().not() → NOT LIKE ${prefix}% AND NOT LIKE seed_% (PostgREST).
   // NULL external_id rows stay excluded by NOT LIKE semantics (seed.sql candidate).
@@ -163,11 +160,13 @@ export async function setupFromTemplate(
   // and wipe the base dataset, so fail loudly instead. perm-* templates carry
   // their own `e2e-perm-*` prefix (>=2 chars) and take the first branch.
   const teardownPrefix =
-    prefix.length >= 2 ? prefix
-    : templateName === 'e2e/base' ? 'test-e2e-base-'
-    : (() => {
-        throw new Error(`Empty externalIdPrefix for '${templateName}' has no teardown-prefix fallback`);
-      })();
+    prefix.length >= 2
+      ? prefix
+      : templateName === 'e2e/base'
+        ? 'test-e2e-base-'
+        : (() => {
+            throw new Error(`Empty externalIdPrefix for '${templateName}' has no teardown-prefix fallback`);
+          })();
 
   const client = new SupabaseAdminClient();
 
@@ -203,22 +202,44 @@ export async function setupFromTemplate(
   const writer = new Writer();
   await writer.write(rows, prefix);
 
-  // 3. Post-seed app_settings subset-match. Templates may carry `{externalId}`
-  //    shapes inside `results.cardContents.*[*].question` that the Writer's
-  //    Pass-5 seed-time resolver flattens to plain UUID strings before
-  //    persistence. The toMatchObject check below must compare against the
-  //    RESOLVED template (the post-Writer shape the DB sees), not the raw
-  //    template — otherwise the {externalId} object fails to match the
-  //    persisted UUID string. Build the same externalId → UUID map the Writer
-  //    used and pre-flatten `expected`.
+  // 3. Authoritative app_settings REPLACE + EXACT post-seed assertion.
+  //
+  //    ROOT-CAUSE FIX (perm-* singleton-merge contamination): the local test DB
+  //    has a SINGLE `app_settings` row that EVERY perm setup mutates, and entity
+  //    teardown deliberately EXCLUDES `app_settings` (resetting it is
+  //    `db:reset`'s job). The Writer's Pass-5 applies `app_settings.fixed[]` via
+  //    the ADDITIVE `merge_jsonb_column` RPC, so any key a PRIOR perm set but
+  //    THIS perm's settings object omits LEAKS forward — the singleton becomes a
+  //    deep-merge of every perm's settings, and each perm's voter/candidate walk
+  //    runs against that contaminated blend (e.g. perm-localisation-positive
+  //    stalling on the voter Intro because an upstream perm's
+  //    `elections.startFromConstituencyGroup` / access flag bled in).
+  //
+  //    Every E2E/perm template emits a COMPLETE settings object in
+  //    `app_settings.fixed[0].settings` (MINIMAL_BASE_APP_SETTINGS or a
+  //    deep-merge of it), so we REPLACE the entire `settings` JSONB with THIS
+  //    template's own resolved settings — a destructive full-set write that
+  //    WIPES any accumulated foreign keys. The frontend fills any omitted keys
+  //    from the TS/staticSettings defaults (the bootstrap row seeds `{}`), so a
+  //    full overwrite is self-contained.
+  //
+  //    Templates may carry `{externalId}` shapes inside
+  //    `results.cardContents.*[*].question` that the Writer's Pass-5 seed-time
+  //    resolver flattens to plain UUID strings before persistence. We resolve
+  //    `expected` the SAME way the Writer did so the REPLACE writes (and the
+  //    EXACT assertion compares against) the post-Writer shape the DB sees.
+  //
+  //    The assertion is `toEqual` (EXACT), NOT `toMatchObject` (SUBSET): after a
+  //    REPLACE the persisted row MUST equal the template's settings exactly. An
+  //    exact match is the anti-flake guard — it makes any future contamination
+  //    (a stray foreign key surviving the REPLACE) fail LOUDLY at setup time
+  //    instead of silently corrupting a downstream walk.
   {
     const rawExpected = template!.app_settings?.fixed?.[0]?.settings;
     expect(
       rawExpected,
       `post-seed assertion: ${templateName} template missing app_settings.fixed[0].settings`
     ).toBeDefined();
-    const persisted = await client.getAppSettings();
-    expect(persisted, 'post-seed app_settings row should exist').toBeTruthy();
     // If the template uses any {externalId} refs, build the same map the
     // Writer used and resolve. Otherwise short-circuit (the helper is a
     // no-op for plain payloads).
@@ -227,7 +248,16 @@ export async function setupFromTemplate(
       const externalIdToUuid = await client.selectQuestionExternalIds();
       expected = resolveAppSettingsExternalIds(expected, externalIdToUuid);
     }
-    expect(persisted).toMatchObject(expected);
+    // REPLACE (full overwrite) — defeats the singleton-merge contamination.
+    // `expected` is deep-cloned through JSON so a readonly `as const` template
+    // (e.g. MINIMAL_BASE_APP_SETTINGS) is sent as a plain mutable JSON payload.
+    await client.replaceAppSettings(JSON.parse(JSON.stringify(expected)) as Record<string, unknown>);
+    const persisted = await client.getAppSettings();
+    expect(persisted, 'post-seed app_settings row should exist').toBeTruthy();
+    // EXACT equality (round-trip through JSON to normalise readonly/undefined
+    // drops the way the persisted JSONB does) — proves the singleton holds
+    // EXACTLY this perm's settings with zero contamination carried forward.
+    expect(persisted).toEqual(JSON.parse(JSON.stringify(expected)));
   }
 
   // 3b. (Optional) Scenario-scoped app_settings overlay. Applied AFTER the

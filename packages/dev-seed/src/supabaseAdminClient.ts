@@ -645,6 +645,45 @@ export class SupabaseAdminClient {
     if (error) throw new Error(`updateAppSettings: merge failed: ${error.message}`);
   }
 
+  /**
+   * REPLACE (full overwrite) the entire `app_settings.settings` JSONB column
+   * for this client's project with the given settings object.
+   *
+   * Unlike {@link updateAppSettings} (additive `merge_jsonb_column` deep-merge),
+   * this is a destructive full-set write: any key NOT present in `settings` is
+   * DROPPED from the persisted row. It is the authoritative-write primitive used
+   * to defeat the perm-* singleton-merge contamination class (see
+   * `tests/tests/setup/shared/setupFromTemplate.ts`): the local test DB has a
+   * SINGLE `app_settings` row that every perm setup mutates, and entity teardown
+   * deliberately excludes `app_settings` (resetting it is `db:reset`'s job), so
+   * additive merges accumulate foreign keys from prior perms. A REPLACE with a
+   * perm's OWN complete settings object wipes that accumulation deterministically.
+   *
+   * SAFE because every E2E/perm template emits a COMPLETE settings object in
+   * `app_settings.fixed[0].settings` (MINIMAL_BASE_APP_SETTINGS or a deep-merge
+   * of it), and the frontend fills any omitted keys from the TS/staticSettings
+   * defaults (the bootstrap DB row is seeded `'{}'::jsonb`). Do NOT use this for
+   * templates that intend a PARTIAL settings merge into the bootstrap row (e.g.
+   * the `default` dev-seed template) — those must keep the additive
+   * {@link updateAppSettings} path.
+   *
+   * @param settings - Complete settings object to persist verbatim (full overwrite)
+   * @throws Error if the app_settings row is not found or the update fails
+   */
+  async replaceAppSettings(settings: Record<string, unknown>): Promise<void> {
+    const { data: row, error: fetchError } = await this.client
+      .from('app_settings')
+      .select('id')
+      .eq('project_id', this.projectId)
+      .single();
+
+    if (fetchError) throw new Error(`replaceAppSettings: failed to fetch app_settings: ${fetchError.message}`);
+
+    const { error } = await this.client.from('app_settings').update({ settings }).eq('id', row.id);
+
+    if (error) throw new Error(`replaceAppSettings: update failed: ${error.message}`);
+  }
+
   // ---------------------------------------------------------------------------
   // Portrait upload surface (Phase 58 Plan 04 — GEN-09)
   // ---------------------------------------------------------------------------
