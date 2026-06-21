@@ -16,6 +16,7 @@
     "db:status": "yarn workspace @openvaa/supabase status",
     "db:reset": "yarn db:start && yarn workspace @openvaa/supabase reset",
     "db:reset-with-data": "yarn db:reset && yarn db:seed:default",
+    "db:reset-with-e2e-data": "yarn db:reset-with-data --template e2e/base",
     "db:seed": "yarn workspace @openvaa/dev-seed seed",
     "db:seed:default": "yarn db:seed --template default",
     "db:seed:teardown": "yarn workspace @openvaa/dev-seed seed:teardown",
