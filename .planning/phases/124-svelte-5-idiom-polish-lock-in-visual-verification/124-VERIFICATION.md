@@ -1,20 +1,21 @@
 ---
 phase: 124-svelte-5-idiom-polish-lock-in-visual-verification
 verified: 2026-06-21T00:55:00Z
-status: human_needed
+status: passed
 score: 2/2 must-haves verified
 overrides_applied: 0
 human_verification:
   - test: "Dark-mode app header visual confirmation"
     expected: "Header background colour changes visibly when browser prefers-color-scheme switches dark/light"
     why_human: "Dark mode is CSS prefers-color-scheme media-driven with no in-app toggle; JS automation cannot reliably emulate the media query mid-session. The Phase 124 report accepted a code-level verification instead of a pixel-verified pass. The wiring is demonstrably correct in code, but a human with DevTools Rendering panel toggling prefers-color-scheme must confirm the header background colour actually changes at the rendered pixel level."
+    resolved: "DONE 2026-06-21 — operator performed the DevTools pixel check and it FOUND A REAL REGRESSION the code-level pass missed: headerStyle.dark.bgColor was stale `oklch(var(--b3))` (unresolved under the current theme system), so the dark header rendered wrong despite correct reactive wiring. Fixed in commit 66f76b45e (oklch(var(--b3)) -> var(--color-base-300) in app-shared dynamicSettings + e2e/base seed). Operator re-confirmed the dark header now renders correctly. NOTE: the color fix post-dates the E2E gate run (125/0) — re-run the trusted gate (db:reset + CI=true yarn test:e2e) to keep that claim current vs the new header colors / a11y contrast."
 ---
 
 # Phase 124: Svelte 5 Idiom Polish — Lock-in & Visual Verification
 
 **Phase Goal:** The runes idiom is locked against regression and confirmed visually regression-free.
 **Verified:** 2026-06-21T00:55:00Z
-**Status:** human_needed
+**Status:** passed (dark-mode human item resolved — a real regression was found by the pixel check and fixed; see Human Verification + Gaps sections)
 **Re-verification:** No — initial verification
 
 ---
@@ -96,9 +97,11 @@ No TBD/FIXME/XXX debt markers in Phase 124-introduced files.
 
 ### Gaps Summary
 
-No gaps found. All must-haves are verified at the code level.
+**Resolved.** All must-haves are verified, and the single human-verification item (dark-mode pixel confirmation) has been performed — it was NOT a belt-and-braces formality. It surfaced a real regression: the reactive *wiring* was correct (`darkMode.current ? appSettings.headerStyle.dark : light`, non-destructured), but the bound *value* `headerStyle.dark.bgColor` was stale `oklch(var(--b3))` that no longer resolves under the current theme system, so the dark header rendered wrong. Fixed in commit `66f76b45e` and operator-re-confirmed.
 
-The single human verification item (dark-mode pixel confirmation) is a completeness check on a sub-dimension of RUNES-04 whose code-level evidence is strong: `Header.svelte` computes `bgColor` via `darkMode.current` (stable `{ readonly current }` handle) and `$derived(ctx.appSettings)` (non-destructured reactive accessor), and the `--background-color` CSS custom property is applied to `.inner-actions-bar`. The wiring is demonstrably correct. The human check is a belt-and-braces pixel-level audit of an already-sound implementation, not a gap closure.
+**Lesson recorded:** this verification (and the Phase 124 visual pass) initially over-trusted "reactive wiring is correct ⇒ surface is sound." A correctly-wired accessor can still bind a broken value; pixel-level confirmation of theme/visual surfaces is load-bearing and cannot be fully substituted by code-pattern checks. The `human_needed` gate did its job.
+
+**Outstanding:** the color fix post-dates the E2E gate run (125/0) — re-run the trusted gate (`db:reset` + `CI=true yarn test:e2e`) to re-confirm a11y color-contrast on the new header colors before treating the cardinal-clean claim as current.
 
 ---
 
