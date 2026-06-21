@@ -163,11 +163,11 @@ export const BASE_APP_SETTINGS = {
   },
   headerStyle: {
     dark: {
-      bgColor: 'oklch(var(--b3))',
+      bgColor: 'var(--color-base-300)',
       overImgBgColor: 'transparent'
     },
     light: {
-      bgColor: 'oklch(var(--b3))',
+      bgColor: 'var(--color-base-300)',
       overImgBgColor: 'transparent'
     },
     imgSize: 'cover',
