@@ -86,3 +86,49 @@ files_changed:
   - tests/tests/specs/voter/voter-journey-mobile.spec.ts
   - tests/tests/specs/voter/voter-journey.spec.ts
   - tests/tests/specs/a11y/a11y-smoke.spec.ts
+
+## 2026-06-22 FOLLOW-UP — Class B (a11y color-contrast) was MISDIAGNOSED; it is a REAL app contrast bug, not a scan-timing phantom
+
+A residual a11y-smoke `color-contrast` failure on the elections-selector
+`[el-reg]`/`[el-mun]` option labels (fg #858585 / #fff / 3.69:1) kept recurring
+after the Class-B `awaitAnimationsSettled` fix. A fresh investigation
+(`.planning/debug/a11y-entrance-fade-opacity-scan-timing.md`) DISPROVED the
+original Class-B root cause for this specific signature:
+
+- **The original Class-B diagnosis ("scan fires before the entrance fade settles;
+  text composited through partial ANCESTOR opacity ~0.2–0.3") is WRONG for the
+  elections/constituencies option labels.** Ground-truth capture (dumping the
+  offending span's computed style the instant axe reports #858585) shows:
+  `color = oklab(0.32109 … / 0.6)`, `opacity = 1`, **0 animations**,
+  **0 ancestor opacity**, **startViewTransition count = 0** (the unlocated a11y
+  scans use a raw `page.goto`, a full navigation that never triggers the app's
+  client-side View-Transition cross-fade). The only Web Animation on the route is
+  an irrelevant `scrollbar-color` CSSTransition.
+
+- **Why every opacity/animation-settling approach is structurally insufficient
+  here:** the transparency is in the text's **`color` channel (60% alpha)**, NOT
+  in `opacity`. `awaitAnimationsSettled` (await finite getAnimations .finished),
+  the quiescence-loop variant, AND a new `forceSettledOpacityForScan` injection
+  (`transition/animation:none` + `opacity:1 !important` on non-intentional-fade
+  content) ALL fail to touch a semi-transparent `color`. Proven: injecting
+  `opacity:1 !important` leaves the span color `/0.6` and the scan still FAILS;
+  a hard-settled scan (networkidle + 1.5s) FAILS 12/12.
+
+- **Real root cause:** DaisyUI 5.5.13 `.label { color: color-mix(in oklab,
+  currentcolor 60%, transparent) }`. `ElectionSelector.svelte:56` wraps each
+  option in `<label class="label …">` and the option `<span>` (line 69) inherits
+  the muted color → base-content #333 at 60% alpha = effective #858585 on white =
+  3.69:1 < 4.5:1 AA. A genuine, PERSISTENT WCAG 2.1 AA violation. The suite is
+  mostly green only because the option-label spans intermittently miss the axe
+  scan window (a render-PRESENCE race), not because the contrast is ever adequate.
+
+- **Outcome: CHECKPOINT (no test-infra fix applied).** Fixing it correctly needs
+  an APP CSS change (give the option `<span>` an explicit full-opacity text color,
+  or drop the `.label` wrapper class for primary selectable content), which is out
+  of the test-infra-only scope. The Class-B `awaitAnimationsSettled` gate is LEFT
+  IN PLACE for the OTHER routes (drawer fly-in etc. where an actual opacity fade
+  exists) — it is not wrong there, just irrelevant to this color-alpha bug. The
+  constituencies-selector likely shares the same `.label` pattern; audit both in
+  the app-scope follow-up. NOTE: prior memory `feedback_flag_unverified_root_cause`
+  — this is exactly that lesson: the inherited Class-B root cause was accepted for a
+  signature it did not actually explain.
