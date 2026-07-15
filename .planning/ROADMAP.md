@@ -410,7 +410,17 @@ Plans:
   3. The `_spikes-017-019` leftover spike scaffolding (4 errors) is deleted (TYPE-03).
   4. The svelte-check error count drops by the corresponding ~18 errors with no behavior change.
 
-**Plans**: TBD
+**Plans**: 4 plans
+
+Wave 1:
+- [ ] 125-01-PLAN.md — TYPE-01: add @types/qs devDependency + fix the one predicted fallout cast at data/[collection]/+server.ts (qs cluster → 0)
+
+Wave 2 *(after the Wave-1 `yarn add` settles node_modules; both plans have zero file overlap)*:
+- [ ] 125-02-PLAN.md — TYPE-02: drop the dead `cookies` arg from both the destructure and the getUserData call in all 6 admin-jobs routes (cookies cluster → 0)
+- [ ] 125-03-PLAN.md — TYPE-03: delete the leftover _spikes-017-019 scaffolding directory (spike cluster → 0; _spikes-020 untouched)
+
+Wave 3:
+- [ ] 125-04-PLAN.md — D-04 full acceptance gate: build + unit + exact svelte-check accounting (151 → ≤133, three clusters at zero, no net-new) + one full E2E suite run (behavior-neutrality trust signal)
 
 #### Phase 126: svelte-check → 0 — supabaseDataProvider
 
