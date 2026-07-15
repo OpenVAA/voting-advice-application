@@ -1803,6 +1803,7 @@ __metadata:
     "@tailwindcss/vite": "catalog:"
     "@testing-library/jest-dom": "npm:^6.6.3"
     "@types/node": "catalog:"
+    "@types/qs": "npm:^6.15.0"
     "@typescript-eslint/eslint-plugin": "catalog:"
     "@typescript-eslint/parser": "catalog:"
     "@vitest/coverage-v8": "npm:^3.2.4"
@@ -2954,6 +2955,13 @@ __metadata:
   version: 1.6.7
   resolution: "@types/phoenix@npm:1.6.7"
   checksum: 10c0/0ff8b6dc7d3d8d4a94d5b6bb4f7792db0d40ddef0dd722651929925663bd6aade2a0d41453dbcf4a31bb65471a2c982b17ba3e43eb7abc31b50c20cc489364a4
+  languageName: node
+  linkType: hard
+
+"@types/qs@npm:^6.15.0":
+  version: 6.15.1
+  resolution: "@types/qs@npm:6.15.1"
+  checksum: 10c0/1dfdbcb4cf2a8f66d57f0b9a9fe6b1c7091cb816687b6698c1351eaf31f62e412cea9b7453a9637b570cd5fad8dced527e5a9e69b4fcc6e318daacd8b749f094
   languageName: node
   linkType: hard
 
