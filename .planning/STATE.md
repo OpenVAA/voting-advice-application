@@ -2,17 +2,18 @@
 gsd_state_version: 1.0
 milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
-current_phase: 124
+current_phase: 125
+current_phase_name: svelte-check → 0 — Trivial Tier
 status: executing
-stopped_at: Phase 125 context gathered
-last_updated: "2026-07-15T19:31:08.519Z"
-last_activity: 2026-06-20
-last_activity_desc: Phase 124 marked complete
+stopped_at: Completed 125-01-PLAN.md
+last_updated: "2026-07-15T19:36:29.682Z"
+last_activity: 2026-07-15
+last_activity_desc: Phase 125 execution started
 progress:
   total_phases: 15
   completed_phases: 7
-  total_plans: 39
-  completed_plans: 39
+  total_plans: 43
+  completed_plans: 40
   percent: 47
 ---
 
@@ -23,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 124 — svelte-5-idiom-polish-lock-in-visual-verification
+**Current focus:** Phase 125 — svelte-check → 0 — Trivial Tier
 
 ## Current Position
 
-Phase: 124 — COMPLETE
-Plan: 2 of 2
+Phase: 125 (svelte-check → 0 — Trivial Tier) — EXECUTING
+Plan: 2 of 4
 Status: Ready to execute
-Last activity: 2026-06-20 -- Phase 124 marked complete
+Last activity: 2026-07-15 — Phase 125 execution started
 
 Progress: [█████████░] 93%
 
@@ -42,6 +43,12 @@ Progress: [█████████░] 93%
 - Total plans completed: 321 + 6 tasks (v2.9 added 32 plans)
 - Timeline: 46 days across 7 work windows (2026-03-01 → 2026-03-28 + v2.5 2026-04-23→24 + v2.6 2026-04-24→28 + v2.7 2026-04-29→05-08 + v2.8 2026-05-08→10 + v2.9 2026-05-10→12)
 - v2.9 specifically: 6 phases (73-78), 32 plans, 89 tasks across 3 days
+
+**Per-Plan Metrics:**
+
+| Plan | Duration | Tasks | Files |
+|------|----------|-------|-------|
+| Phase 125 P01 | 4min | 2 tasks | 2 files |
 
 ## Deferred Items
 
@@ -432,6 +439,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Phase 123-03: RUNES-02 reactive-let MIGRATE set EMPTY — v2.13 already converted reactive locals; survivors are bind:this refs/timers/handles/intentional non-reactive (confirms A1)
 - [Phase ?]: Phase 123 D-03 gate: build 14/14 + unit 769/769 + svelte-check 151 ERR/1 WARN (=baseline) + full E2E 125/125 green — all four gates pass — Behavior-neutrality of the idiom polish + 2 RUNES-05 bug fixes proven; criterion 4 holds (delta 0)
 - [Phase ?]: Two full-suite E2E flakes (EFLOW-06, EFLOW-11) classified as env non-determinism, not regression — Different spec each run, both passed in isolation; trusted fresh-server+clean-DB run was 125/125
+- [Phase ?]: 125-01: Added @types/qs per-workspace resolving all 8 qs ambient-declaration errors; predicted data/[collection] fallout did not materialize (GetDataOptionsBase all-optional) — no cast needed, honest real-types fix per D-01
 
 ### Quick Tasks Completed
 
@@ -476,9 +484,9 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-07-15T19:03:22.300Z
-Stopped at: Phase 125 context gathered
-Resume file: .planning/phases/125-svelte-check-0-trivial-tier/125-CONTEXT.md
+Last session: 2026-07-15T19:36:20.129Z
+Stopped at: Completed 125-01-PLAN.md
+Resume file: None
 Work done this session (122-05 Task 2):
 
 - Drove the EFLOW-10b bank-auth full-browser journey (`candidate-bank-auth-journey.spec.ts`) to SINGLE-PASS GREEN (`1 passed`, no skip/did-not-run) against the orchestrator-owned live env. Commit daab88f06 (tests/ only).

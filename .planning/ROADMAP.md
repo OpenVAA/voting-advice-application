@@ -410,16 +410,19 @@ Plans:
   3. The `_spikes-017-019` leftover spike scaffolding (4 errors) is deleted (TYPE-03).
   4. The svelte-check error count drops by the corresponding ~18 errors with no behavior change.
 
-**Plans**: 4 plans
+**Plans**: 1/4 plans executed
 
 Wave 1:
-- [ ] 125-01-PLAN.md — TYPE-01: add @types/qs devDependency + fix the one predicted fallout cast at data/[collection]/+server.ts (qs cluster → 0)
+
+- [x] 125-01-PLAN.md — TYPE-01: add @types/qs devDependency + fix the one predicted fallout cast at data/[collection]/+server.ts (qs cluster → 0)
 
 Wave 2 *(after the Wave-1 `yarn add` settles node_modules; both plans have zero file overlap)*:
+
 - [ ] 125-02-PLAN.md — TYPE-02: drop the dead `cookies` arg from both the destructure and the getUserData call in all 6 admin-jobs routes (cookies cluster → 0)
 - [ ] 125-03-PLAN.md — TYPE-03: delete the leftover _spikes-017-019 scaffolding directory (spike cluster → 0; _spikes-020 untouched)
 
 Wave 3:
+
 - [ ] 125-04-PLAN.md — D-04 full acceptance gate: build + unit + exact svelte-check accounting (151 → ≤133, three clusters at zero, no net-new) + one full E2E suite run (behavior-neutrality trust signal)
 
 #### Phase 126: svelte-check → 0 — supabaseDataProvider
@@ -539,7 +542,7 @@ The three workstreams are largely independent and may be planned/executed concur
 | 122. E2E Specs — Bank-Auth Round-Trip | v2.14 | 4/5 | In Progress|  |
 | 123. Svelte 5 Idiom Polish — Lifecycle & Reactive-State | v2.14 | 4/4 | Complete    | 2026-06-17 |
 | 124. Svelte 5 Idiom Polish — Lock-in & Visual Verification | v2.14 | 0/TBD | Not started | - |
-| 125. svelte-check → 0 — Trivial Tier | v2.14 | 0/TBD | Not started | - |
+| 125. svelte-check → 0 — Trivial Tier | v2.14 | 1/4 | In Progress|  |
 | 126. svelte-check → 0 — supabaseDataProvider | v2.14 | 0/TBD | Not started | - |
 | 127. svelte-check → 0 — Adapter Layer & Contexts | v2.14 | 0/TBD | Not started | - |
 | 128. svelte-check → 0 — Long-Tail, Tests & Docs | v2.14 | 0/TBD | Not started | - |
