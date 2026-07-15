@@ -5,15 +5,15 @@ milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Ze
 current_phase: 125
 current_phase_name: svelte-check → 0 — Trivial Tier
 status: executing
-stopped_at: Completed 125-02-PLAN.md
-last_updated: "2026-07-15T19:41:11.164Z"
+stopped_at: Completed 125-03-PLAN.md
+last_updated: "2026-07-15T19:45:10.504Z"
 last_activity: 2026-07-15
 last_activity_desc: Phase 125 execution started
 progress:
   total_phases: 15
   completed_phases: 7
   total_plans: 43
-  completed_plans: 41
+  completed_plans: 42
   percent: 47
 ---
 
@@ -29,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 ## Current Position
 
 Phase: 125 (svelte-check → 0 — Trivial Tier) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-07-15 — Phase 125 execution started
 
-Progress: [██████████] 95%
+Progress: [██████████] 98%
 
 ## Performance Metrics
 
@@ -50,6 +50,7 @@ Progress: [██████████] 95%
 |------|----------|-------|-------|
 | Phase 125 P01 | 4min | 2 tasks | 2 files |
 | Phase 125 P02 | 2min | 2 tasks | 6 files |
+| Phase 125 P03 | 1min | 2 tasks | 4 files |
 
 ## Deferred Items
 
@@ -442,6 +443,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Two full-suite E2E flakes (EFLOW-06, EFLOW-11) classified as env non-determinism, not regression — Different spec each run, both passed in isolation; trusted fresh-server+clean-DB run was 125/125
 - [Phase ?]: 125-01: Added @types/qs per-workspace resolving all 8 qs ambient-declaration errors; predicted data/[collection] fallout did not materialize (GetDataOptionsBase all-optional) — no cast needed, honest real-types fix per D-01
 - [Phase ?]: TYPE-02 (125-02): removed dead cookies arg from 6 admin-jobs routes (destructure + getUserData call); getUserData not widened (D-02); svelte-check 143 → 137, auth gate behavior-neutral
+- [Phase ?]: 125-03: deleted leftover _spikes-017-019 read-write-split scaffolding (4 files, git rm -r); TYPE-03 cluster cleared 137→133 svelte-check errors; _spikes-020 untouched; unit suite green (758)
 
 ### Quick Tasks Completed
 
@@ -486,8 +488,8 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-07-15T19:41:04.911Z
-Stopped at: Completed 125-02-PLAN.md
+Last session: 2026-07-15T19:45:03.474Z
+Stopped at: Completed 125-03-PLAN.md
 Resume file: None
 Work done this session (122-05 Task 2):
 

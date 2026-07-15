@@ -97,7 +97,7 @@ New settings-driven branches not yet covered by the existing 19 perm specs.
 
 - [x] **TYPE-01**: The `qs` module ambient-declaration errors (8 × TS7016) are resolved (`@types/qs` or a `declare module` shim).
 - [x] **TYPE-02**: The admin-jobs `+server.ts` `cookies`/fetch-event type-drift cluster (6 errors) is resolved.
-- [ ] **TYPE-03**: The `_spikes-017-019` leftover spike scaffolding (4 errors) is deleted.
+- [x] **TYPE-03**: The `_spikes-017-019` leftover spike scaffolding (4 errors) is deleted.
 - [ ] **TYPE-04**: `supabaseDataProvider.ts` is typed against the generated Supabase types — its 79 errors (untyped `Json`/row shapes, possibly-null) are cleared without changing runtime behavior.
 - [ ] **TYPE-05**: `supabaseDataWriter.ts` and the rest of the Supabase adapter layer typecheck clean.
 - [ ] **TYPE-06**: The context-layer type errors are resolved — `adminContext.svelte.ts` (8), `candidateContext.svelte.ts` (6), `authContext.svelte.ts` (4).
@@ -170,7 +170,7 @@ Each requirement maps to exactly one roadmap phase (see `.planning/ROADMAP.md` v
 | RUNES-04 | Phase 124 | Complete |
 | TYPE-01 | Phase 125 | Complete |
 | TYPE-02 | Phase 125 | Complete |
-| TYPE-03 | Phase 125 | Pending |
+| TYPE-03 | Phase 125 | Complete |
 | TYPE-04 | Phase 126 | Pending |
 | TYPE-05 | Phase 127 | Pending |
 | TYPE-06 | Phase 127 | Pending |
