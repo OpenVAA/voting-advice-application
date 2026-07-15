@@ -5,15 +5,15 @@ milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Ze
 current_phase: 125
 current_phase_name: svelte-check → 0 — Trivial Tier
 status: executing
-stopped_at: Completed 125-01-PLAN.md
-last_updated: "2026-07-15T19:36:29.682Z"
+stopped_at: Completed 125-02-PLAN.md
+last_updated: "2026-07-15T19:41:11.164Z"
 last_activity: 2026-07-15
 last_activity_desc: Phase 125 execution started
 progress:
   total_phases: 15
   completed_phases: 7
   total_plans: 43
-  completed_plans: 40
+  completed_plans: 41
   percent: 47
 ---
 
@@ -29,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 ## Current Position
 
 Phase: 125 (svelte-check → 0 — Trivial Tier) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-07-15 — Phase 125 execution started
 
-Progress: [█████████░] 93%
+Progress: [██████████] 95%
 
 ## Performance Metrics
 
@@ -49,6 +49,7 @@ Progress: [█████████░] 93%
 | Plan | Duration | Tasks | Files |
 |------|----------|-------|-------|
 | Phase 125 P01 | 4min | 2 tasks | 2 files |
+| Phase 125 P02 | 2min | 2 tasks | 6 files |
 
 ## Deferred Items
 
@@ -440,6 +441,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Phase 123 D-03 gate: build 14/14 + unit 769/769 + svelte-check 151 ERR/1 WARN (=baseline) + full E2E 125/125 green — all four gates pass — Behavior-neutrality of the idiom polish + 2 RUNES-05 bug fixes proven; criterion 4 holds (delta 0)
 - [Phase ?]: Two full-suite E2E flakes (EFLOW-06, EFLOW-11) classified as env non-determinism, not regression — Different spec each run, both passed in isolation; trusted fresh-server+clean-DB run was 125/125
 - [Phase ?]: 125-01: Added @types/qs per-workspace resolving all 8 qs ambient-declaration errors; predicted data/[collection] fallout did not materialize (GetDataOptionsBase all-optional) — no cast needed, honest real-types fix per D-01
+- [Phase ?]: TYPE-02 (125-02): removed dead cookies arg from 6 admin-jobs routes (destructure + getUserData call); getUserData not widened (D-02); svelte-check 143 → 137, auth gate behavior-neutral
 
 ### Quick Tasks Completed
 
@@ -484,8 +486,8 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-07-15T19:36:20.129Z
-Stopped at: Completed 125-01-PLAN.md
+Last session: 2026-07-15T19:41:04.911Z
+Stopped at: Completed 125-02-PLAN.md
 Resume file: None
 Work done this session (122-05 Task 2):
 
