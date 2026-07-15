@@ -2,10 +2,12 @@
 gsd_state_version: 1.0
 milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
+current_phase: 124
 status: completed
-stopped_at: Completed 124-01-PLAN.md
-last_updated: "2026-06-20T21:40:44.207Z"
-last_activity: 2026-06-20 -- Phase 124 marked complete
+stopped_at: Phase 125 context gathered
+last_updated: "2026-07-15T19:03:22.310Z"
+last_activity: 2026-06-20
+last_activity_desc: Phase 124 marked complete
 progress:
   total_phases: 15
   completed_phases: 7
@@ -474,9 +476,9 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-06-18T14:56:56.361Z
-Stopped at: Completed 124-01-PLAN.md
-Resume file: None
+Last session: 2026-07-15T19:03:22.300Z
+Stopped at: Phase 125 context gathered
+Resume file: .planning/phases/125-svelte-check-0-trivial-tier/125-CONTEXT.md
 Work done this session (122-05 Task 2):
 
 - Drove the EFLOW-10b bank-auth full-browser journey (`candidate-bank-auth-journey.spec.ts`) to SINGLE-PASS GREEN (`1 passed`, no skip/did-not-run) against the orchestrator-owned live env. Commit daab88f06 (tests/ only).
