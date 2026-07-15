@@ -1,21 +1,18 @@
 ---
 phase: 119-e2e-fixtures-helpers-seed
-verified: 2026-06-15T12:25:00Z
-status: human_needed
-score: 3.5/4
+verified: 2026-07-15T00:00:00Z
+status: passed
+score: 4/4
 overrides_applied: 0
-human_verification:
-  - test: "Run the 4 deferred perm-seeded probes (video, questionInfo, popupNotice, orgMatching) green once in true isolation"
-    expected: "Each probe passes cleanly once against a fresh Vite dev server + clean local Supabase, seeded with its respective perm template"
-    why_human: "Operator explicitly deferred these 4 probes to Phase 120 via DEF-119-08-01. The evidence gathered in Phase 119 was in a contaminated multi-run degraded-env session. SC2 is PARTIAL (4/8 live-proven). Phase 119 closes on author + static-verify (SC1 green) + 4/8-live; the remaining 4 live-greens carry forward. This checkpoint is the binding Phase-120 carry-forward, not a Phase-119 blocker per operator decision."
+re_verification: "2026-07-15 — human_needed item (DEF-119-08-01, 4 deferred perm probes) closed by Phase 120 isolation runs + 119-UAT.md status:complete (2026-06-16); see Re-verification Addendum"
 ---
 
 # Phase 119: E2E Fixtures & Helpers + Seed — Verification Report
 
 **Phase Goal:** The fixtures and helpers that the existing-feature specs depend on are built and self-tested before any spec consumes them (fixtures-first), and the default-seed tooling bug is fixed alongside the seed-data changes those specs need.
-**Verified:** 2026-06-15T12:25:00Z
-**Status:** human_needed
-**Re-verification:** No — initial verification
+**Verified:** 2026-06-15T12:25:00Z (initial) · 2026-07-15 (re-stamped passed)
+**Status:** passed
+**Re-verification:** Yes — the single human_needed item (4 deferred perm probes, DEF-119-08-01) was closed in Phase 120; see the Re-verification Addendum at the end of this report. The body below is preserved as written at initial verification.
 
 ---
 
@@ -159,5 +156,18 @@ The `human_needed` status reflects the 4 deferred probes that must be re-run in 
 
 ---
 
-_Verified: 2026-06-15T12:25:00Z_
-_Verifier: Claude (gsd-verifier)_
+## Re-verification Addendum (2026-07-15)
+
+The initial verification closed `human_needed` on exactly one item: run the 4 deferred perm-seeded probes (video, questionInfo, popupNotice, orgMatching) green once in true isolation (DEF-119-08-01 carry-forward to Phase 120). That item is now demonstrably closed:
+
+| Evidence | Source | Detail |
+|----------|--------|--------|
+| 4 probes run green in true isolation | `120-VERIFICATION.md` (status: passed, 2026-06-16) | "The `_probes` project was wired in Plan 01 (Part 1 closure gate) and the 4 deferred probes were run in true isolation per CONDITION 1/2. These probe results are the DEF-119-08-01 closure evidence, formally recorded in the Phase 119 UAT closure." Isolation-first diagnosis recorded in `120-01-PROBE-DIAGNOSIS.md`. |
+| UAT closure | `119-UAT.md` | Frontmatter `status: complete`, updated 2026-06-16T08:24:07Z — the human-verification checkpoint this report created was formally resolved there. |
+| SC2 completion | Combined | 4/8 probes were live-green at initial verification; the remaining 4 are live-green per the Phase 120 isolation runs → SC2 is now 8/8, raising the score from 3.5/4 to 4/4. |
+
+With the sole human item resolved and all four success criteria fully verified, the phase status is re-stamped **passed**. No code changed as part of this re-stamp; this is a records reconciliation only (the VERIFICATION.md status was never updated when the UAT closed on 2026-06-16).
+
+---
+
+_Verified: 2026-06-15T12:25:00Z (initial, gsd-verifier) · Re-stamped passed: 2026-07-15 (inline reconciliation, operator-directed)_
