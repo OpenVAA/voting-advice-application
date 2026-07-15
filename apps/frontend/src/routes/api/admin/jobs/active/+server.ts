@@ -14,8 +14,8 @@ type ActiveJobsResponse = Array<JobInfo> | { error: string };
  *
  * Returns: JobInfo[]
  */
-export async function GET({ url, cookies, fetch }) {
-  if ((await getUserData({ fetch, cookies }))?.role !== 'admin')
+export async function GET({ url, fetch }) {
+  if ((await getUserData({ fetch }))?.role !== 'admin')
     return json({ error: 'Forbidden' } as ActiveJobsResponse, { status: 403 });
 
   try {

@@ -16,8 +16,8 @@ type StartJobRequestBody = {
 
 type StartJobResponse = JobInfo | { error: string };
 
-export async function POST({ fetch, cookies, request }) {
-  if ((await getUserData({ fetch, cookies }))?.role !== 'admin')
+export async function POST({ fetch, request }) {
+  if ((await getUserData({ fetch }))?.role !== 'admin')
     return json({ error: 'Forbidden' } as StartJobResponse, { status: 403 });
 
   try {

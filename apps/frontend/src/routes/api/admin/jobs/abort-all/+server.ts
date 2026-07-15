@@ -10,9 +10,9 @@ type AbortAllResponse =
     }
   | { error: string };
 
-export async function POST({ fetch, cookies, request }) {
+export async function POST({ fetch, request }) {
   // TODO: Consider checking the user role with claims in the server hook when the route matches /api/admin
-  if ((await getUserData({ fetch, cookies }))?.role !== 'admin')
+  if ((await getUserData({ fetch }))?.role !== 'admin')
     return json({ error: 'Forbidden' } as AbortAllResponse, { status: 403 });
 
   try {

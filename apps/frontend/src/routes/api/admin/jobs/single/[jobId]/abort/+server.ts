@@ -8,8 +8,8 @@ import { requestAbort } from '$lib/server/admin/jobs/jobStore';
 
 type AbortSingleResponse = { message: string; jobId: string } | { error: string };
 
-export async function POST({ params, request, fetch, cookies }) {
-  if ((await getUserData({ fetch, cookies }))?.role !== 'admin')
+export async function POST({ params, request, fetch }) {
+  if ((await getUserData({ fetch }))?.role !== 'admin')
     return json({ error: 'Forbidden' } as AbortSingleResponse, { status: 403 });
 
   try {

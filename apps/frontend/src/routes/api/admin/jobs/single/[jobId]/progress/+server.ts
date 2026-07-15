@@ -10,8 +10,8 @@ import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
 
 type JobProgressResponse = JobInfo | { error: string };
 
-export async function GET({ fetch, cookies, params }) {
-  if ((await getUserData({ fetch, cookies }))?.role !== 'admin')
+export async function GET({ fetch, params }) {
+  if ((await getUserData({ fetch }))?.role !== 'admin')
     return json({ error: 'Forbidden' } as JobProgressResponse, { status: 403 });
 
   try {
