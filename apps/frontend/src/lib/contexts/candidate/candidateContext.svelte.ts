@@ -4,7 +4,7 @@ import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
-import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
+import { dataWriter } from '$lib/api/dataWriter';
 import { logDebugError } from '$lib/utils/logger';
 import { removeDuplicates } from '$lib/utils/removeDuplicates';
 import { getImpliedElectionIds } from '$lib/utils/route';
@@ -124,7 +124,7 @@ export class CandidateContextProvider implements CandidateContext {
   // (D1): the getter-thunks read them. The thunks are lazy, so this is safe.
   #userData = candidateUserDataState({
     answersLocked: () => this.#answersLocked,
-    dataWriterPromise,
+    dataWriter,
     locale: () => this.#locale
   });
 
@@ -416,11 +416,11 @@ export class CandidateContextProvider implements CandidateContext {
   checkRegistrationKey = (
     ...args: Parameters<DataWriter['checkRegistrationKey']>
   ): ReturnType<DataWriter['checkRegistrationKey']> => {
-    return prepareDataWriter(dataWriterPromise).then((dw) => dw.checkRegistrationKey(...args));
+    return prepareDataWriter(dataWriter).then((dw) => dw.checkRegistrationKey(...args));
   };
 
   register = (...args: Parameters<DataWriter['register']>): ReturnType<DataWriter['register']> => {
-    return prepareDataWriter(dataWriterPromise).then((dw) => dw.register(...args));
+    return prepareDataWriter(dataWriter).then((dw) => dw.register(...args));
   };
 
   exchangeCodeForIdToken = async (opts: {
@@ -428,9 +428,9 @@ export class CandidateContextProvider implements CandidateContext {
     codeVerifier: string;
     redirectUri: string;
   }): Promise<void> => {
-    const dataWriter = await prepareDataWriter(dataWriterPromise);
+    const dw = await prepareDataWriter(dataWriter);
     try {
-      const result = await dataWriter.exchangeCodeForIdToken(opts);
+      const result = await dw.exchangeCodeForIdToken(opts);
       if (result.type === 'success') {
         return await goto(this.#getRoute.current('CandAppPreregister'), { invalidateAll: true });
       }
@@ -457,9 +457,9 @@ export class CandidateContextProvider implements CandidateContext {
       };
     };
   }): Promise<void> => {
-    const dataWriter = await prepareDataWriter(dataWriterPromise);
+    const dw = await prepareDataWriter(dataWriter);
     try {
-      const result = await dataWriter.preregisterWithIdToken(opts);
+      const result = await dw.preregisterWithIdToken(opts);
       const errorMap: Record<number, string> = { 401: 'tokenExpiredError', 409: 'candidateExistsError' };
       let code: string;
       if (result.type === 'success') {
@@ -484,8 +484,8 @@ export class CandidateContextProvider implements CandidateContext {
   };
 
   clearIdToken = async (): Promise<void> => {
-    const dataWriter = await prepareDataWriter(dataWriterPromise);
-    await dataWriter.clearIdToken().catch((e) => {
+    const dw = await prepareDataWriter(dataWriter);
+    await dw.clearIdToken().catch((e) => {
       logDebugError(`Error logging out: ${e?.message ?? '-'}`);
     });
   };

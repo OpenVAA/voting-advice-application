@@ -37,7 +37,7 @@ import type { CandidateUserDataState } from './candidateUserDataState.type';
  */
 class CandidateUserDataStateImpl implements CandidateUserDataState {
   #answersLocked: () => boolean;
-  #dataWriterPromise: Promise<UniversalDataWriter>;
+  #dataWriter: UniversalDataWriter;
   #locale: () => string;
 
   ////////////////////////////////////////////////////////////////////
@@ -85,15 +85,15 @@ class CandidateUserDataStateImpl implements CandidateUserDataState {
 
   constructor({
     answersLocked,
-    dataWriterPromise,
+    dataWriter,
     locale
   }: {
     answersLocked: () => boolean;
-    dataWriterPromise: Promise<UniversalDataWriter>;
+    dataWriter: UniversalDataWriter;
     locale: () => string;
   }) {
     this.#answersLocked = answersLocked;
-    this.#dataWriterPromise = dataWriterPromise;
+    this.#dataWriter = dataWriter;
     this.#locale = locale;
 
     // React to `answersLocked` to clear edited data
@@ -231,7 +231,7 @@ class CandidateUserDataStateImpl implements CandidateUserDataState {
   };
 
   reloadCandidateData = async (): Promise<LocalizedCandidateData> => {
-    const dataWriter = await prepareDataWriter(this.#dataWriterPromise);
+    const dataWriter = await prepareDataWriter(this.#dataWriter);
     const userData = await dataWriter.getCandidateUserData({
       authToken: '',
       loadNominations: false,
@@ -257,7 +257,7 @@ class CandidateUserDataStateImpl implements CandidateUserDataState {
       }
     };
 
-    const dataWriter = await prepareDataWriter(this.#dataWriterPromise);
+    const dataWriter = await prepareDataWriter(this.#dataWriter);
 
     // The answer setters return only the updated `LocalizedAnswers` map, while
     // the property setter returns the whole updated `LocalizedCandidateData`.
@@ -302,17 +302,17 @@ class CandidateUserDataStateImpl implements CandidateUserDataState {
  * The saved data is cleared if answers become locked.
  * Dedicated methods are provided for loading, saving, setting or resetting data.
  * @param answersLocked - A getter that indicates whether answers are locked.
- * @param dataWriterPromise - A `Promise` resolving to `UniversalDataWriter` for saving data.
+ * @param dataWriter - The synchronous `UniversalDataWriter` instance for saving data.
  * @param locale - The current locale string, used for translating some data when it's fetched.
  */
 export function candidateUserDataState({
   answersLocked,
-  dataWriterPromise,
+  dataWriter,
   locale
 }: {
   answersLocked: () => boolean;
-  dataWriterPromise: Promise<UniversalDataWriter>;
+  dataWriter: UniversalDataWriter;
   locale: () => string;
 }): CandidateUserDataState {
-  return new CandidateUserDataStateImpl({ answersLocked, dataWriterPromise, locale });
+  return new CandidateUserDataStateImpl({ answersLocked, dataWriter, locale });
 }

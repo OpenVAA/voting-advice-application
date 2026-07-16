@@ -103,7 +103,7 @@ describe('candidateUserDataState.save()', () => {
     cleanup = $effect.root(() => {
       store = candidateUserDataState({
         answersLocked: () => false,
-        dataWriterPromise: Promise.resolve(fake.writer),
+        dataWriter: fake.writer,
         locale: () => 'en'
       });
     });
