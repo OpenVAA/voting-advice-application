@@ -486,7 +486,19 @@ Plans:
   2. The `.test.ts` / `.spike` type errors (~19) are resolved — fixed or dead scaffolding removed (TYPE-08).
   3. The `apps/docs` a11y svelte-check warning is resolved so monorepo svelte-check shows 0 warnings (TYPE-09).
 
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+**Wave 1** *(parallel — disjoint file sets)*
+
+- [ ] 128-01-PLAN.md — TYPE-08 / D-04+D-05: adapter test-file type-truth (11 serverClient concrete-typing sites + thenable mock + register args + LocalizedAnswers) and delete `_spikes-020-class-conversion/` after a zero-importer gate [Wave 1]
+- [ ] 128-02-PLAN.md — TYPE-07 / D-01+D-02+D-03: concrete-type the candidate `+layout.server.ts` serverClient seam + widen `setPassword` type-truth + drop the dead confirm-password prop + reconcile the testIds catalogue [Wave 1]
+- [ ] 128-03-PLAN.md — TYPE-07: scattered singles — built-in View Transition lib types, FeedbackPopup `'default'` status, EntityInfo dead-branch literal, two QuestionHeading numeric `tabindex` [Wave 1]
+- [ ] 128-04-PLAN.md — TYPE-09 / D-06: fix both a11y warnings at source — `Term.svelte` noninteractive-tabindex + `apps/docs` static-element-interactions [Wave 1]
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 128-05-PLAN.md — D-07 full acceptance gate: build + unit + frontend svelte-check 0/0 + docs svelte-check 0/0 + one full green E2E run (fresh dev server on :5173, `yarn db:reset` first; 502-wedge remedy) [Wave 2, depends on 128-01..128-04]
 
 #### Phase 129: New-Feature Build — Question Inputs + Alliance Render + Nominations Fetch
 
