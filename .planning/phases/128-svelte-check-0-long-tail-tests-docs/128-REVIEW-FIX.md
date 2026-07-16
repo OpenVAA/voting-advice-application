@@ -4,9 +4,11 @@ fixed_at: 2026-07-16T00:00:00Z
 review_path: .planning/phases/128-svelte-check-0-long-tail-tests-docs/128-REVIEW.md
 iteration: 1
 findings_in_scope: 5
-fixed: 4
+fixed: 3
+reverted: 1
 skipped: 1
 status: partial
+e2e_verified: 2026-07-16 — full suite 125/0/0 (9.0m) after WR-03 revert
 ---
 
 # Phase 128: Code Review Fix Report
@@ -17,8 +19,11 @@ status: partial
 
 **Summary:**
 - Findings in scope (critical + warning): 5
-- Fixed: 4 (WR-01, WR-02, WR-03, WR-04)
+- Fixed: 3 (WR-01, WR-02, WR-04)
+- Reverted after E2E falsification: 1 (WR-03 — misdiagnosis; see below)
 - Skipped: 1 (WR-05 — by design, out of scope)
+
+**Post-fix E2E outcome (orchestrator addendum, 2026-07-16):** The first full E2E run after these fixes FAILED — `candidate-journey.spec.ts` step 20 ("no continue prompt when all answered") found the partial-completion prompt present (1 failed / 78 did-not-run cascade / 46 passed). Root cause: the WR-03 "fix" was a misdiagnosis. Reads inside `getNextQuestionId` ARE tracked by the enclosing `$derived.by` (the in-file "wrapped in a function to not track" comment was wrong — a known Svelte 5 landmine), so every answer save re-runs it with the current question already removed from the unanswered set: `findIndex === -1` is the NORMAL post-save state, and the `[-1 + 1] === [0]` fall-through is what advances "Save & continue" to the first unanswered question. Returning `undefined` for `-1` rerouted every save to the questions list and broke the question walk. Reverted in commit `c94b4923c` (behavior restored, dead `index != null` guard removed, load-bearing `-1` semantics documented in-source). **Trusted re-run after revert: full suite 125 passed / 0 failed / 0 did-not-run (9.0m).**
 
 **Post-fix verification (whole worktree, all edits in place):**
 - `cd apps/frontend && yarn check` → **0 errors / 0 warnings** (2653 files). The `Term.svelte` a11y rework cleared the original `a11y_no_noninteractive_tabindex` warning with **no new a11y warnings** (no nested-interactive: `<Term>` is only rendered inside a non-interactive `<h1>` in `QuestionHeading.svelte`).
@@ -48,10 +53,10 @@ status: partial
 ### WR-03: `getNextQuestionId` now returns `undefined` for an already-answered question
 
 **Files modified:** `apps/frontend/src/routes/candidate/(protected)/questions/[questionId]/+page.svelte`
-**Commit:** 5836e16df
-**Status:** fixed: requires human verification (logic bug — confirm "Save & continue" routing via E2E/manual)
+**Commit:** 5836e16df — **REVERTED by c94b4923c** (see Post-fix E2E outcome above)
+**Status:** REVERTED — finding was a misdiagnosis; the `-1` fall-through is load-bearing product behavior, falsified by `candidate-journey.spec.ts` step 20 and confirmed by the 125/0/0 re-run after revert.
 
-**Applied fix:** Changed the sentinel check from `index != null` (always true, since `-1 != null` is `true`) to `index !== -1`. When the candidate re-edits an already-answered question, `findIndex` returns `-1`, which now correctly yields `undefined` so `submitRouting` routes "Save & continue" to the questions list instead of the first unanswered question.
+**Originally applied fix (now reverted):** Changed the sentinel check from `index != null` (always true, since `-1 != null` is `true`) to `index !== -1`, returning `undefined` when re-editing an answered question. This broke the normal save-advance flow because `-1` is also the post-save recompute state. The revert removes the dead `index != null` guard (behavior-identical) and documents the intentional `-1 → [0]` semantics in-source so the pattern is not re-flagged.
 
 ### WR-04: `setAnswer` empty-payload guard shows the correct error message
 
