@@ -4,6 +4,7 @@ import { SupabaseDataProvider } from './supabaseDataProvider';
 import type { DynamicSettings } from '@openvaa/app-shared';
 import type { Database } from '@openvaa/supabase-types';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseAdapterConfig } from '../supabaseAdapter.type';
 
 // Mock $env/dynamic/public before any imports that depend on it
 vi.mock('$env/dynamic/public', () => ({
@@ -55,8 +56,10 @@ function createMockSupabaseClient() {
       }),
       then: undefined as unknown as PromiseLike<unknown>['then']
     };
-    // Make the chain itself thenable so `await query` works on non-single queries
-    chain.then = (resolve: (value: unknown) => unknown, reject?: (reason: unknown) => unknown) => {
+    // Make the chain itself thenable so `await query` works on non-single queries.
+    // Params are left unannotated so they are contextually typed from
+    // PromiseLike<unknown>['then'] (optional onfulfilled?/onrejected?), matching the field type.
+    chain.then = (resolve, reject) => {
       const result = mockResponses[table] ?? { data: null, error: null };
       return Promise.resolve(result).then(resolve, reject);
     };
@@ -129,12 +132,13 @@ describe('SupabaseDataProvider', () => {
   beforeEach(() => {
     mockSupabase = createMockSupabaseClient();
     provider = new SupabaseDataProvider();
-    provider.init({
+    const config: SupabaseAdapterConfig = {
       fetch: vi.fn(),
       serverClient: asSupabaseMock(mockSupabase),
       locale: 'en',
       defaultLocale: 'en'
-    });
+    };
+    provider.init(config);
   });
 
   describe('getAppSettings', () => {
@@ -176,12 +180,13 @@ describe('SupabaseDataProvider', () => {
 
       // Create a provider with fi locale
       const fiProvider = new SupabaseDataProvider();
-      fiProvider.init({
+      const fiConfig: SupabaseAdapterConfig = {
         fetch: vi.fn(),
         serverClient: asSupabaseMock(mockSupabase),
         locale: 'fi',
         defaultLocale: 'en'
-      });
+      };
+      fiProvider.init(fiConfig);
 
       const result = await fiProvider.getAppSettings();
 
@@ -225,12 +230,13 @@ describe('SupabaseDataProvider', () => {
       };
 
       const fiProvider = new SupabaseDataProvider();
-      fiProvider.init({
+      const fiConfig: SupabaseAdapterConfig = {
         fetch: vi.fn(),
         serverClient: asSupabaseMock(mockSupabase),
         locale: 'fi',
         defaultLocale: 'en'
-      });
+      };
+      fiProvider.init(fiConfig);
 
       const result = await fiProvider.getAppCustomization();
 
@@ -271,12 +277,13 @@ describe('SupabaseDataProvider', () => {
       };
 
       const fiProvider = new SupabaseDataProvider();
-      fiProvider.init({
+      const fiConfig: SupabaseAdapterConfig = {
         fetch: vi.fn(),
         serverClient: asSupabaseMock(mockSupabase),
         locale: 'fi',
         defaultLocale: 'en'
-      });
+      };
+      fiProvider.init(fiConfig);
 
       const result = await fiProvider.getAppCustomization();
 
@@ -302,12 +309,13 @@ describe('SupabaseDataProvider', () => {
       };
 
       const fiProvider = new SupabaseDataProvider();
-      fiProvider.init({
+      const fiConfig: SupabaseAdapterConfig = {
         fetch: vi.fn(),
         serverClient: asSupabaseMock(mockSupabase),
         locale: 'fi',
         defaultLocale: 'en'
-      });
+      };
+      fiProvider.init(fiConfig);
 
       const result = await fiProvider.getAppCustomization();
 
@@ -474,12 +482,13 @@ describe('SupabaseDataProvider', () => {
       };
 
       const fiProvider = new SupabaseDataProvider();
-      fiProvider.init({
+      const fiConfig: SupabaseAdapterConfig = {
         fetch: vi.fn(),
         serverClient: asSupabaseMock(mockSupabase),
         locale: 'fi',
         defaultLocale: 'en'
-      });
+      };
+      fiProvider.init(fiConfig);
 
       const result = await fiProvider.getElectionData();
 
@@ -895,12 +904,13 @@ describe('SupabaseDataProvider', () => {
       };
 
       const fiProvider = new SupabaseDataProvider();
-      fiProvider.init({
+      const fiConfig: SupabaseAdapterConfig = {
         fetch: vi.fn(),
         serverClient: asSupabaseMock(mockSupabase),
         locale: 'fi',
         defaultLocale: 'en'
-      });
+      };
+      fiProvider.init(fiConfig);
 
       const result = (await fiProvider.getEntityData()) as Array<EntityTestNarrow>;
 
@@ -1049,12 +1059,13 @@ describe('SupabaseDataProvider', () => {
       };
 
       const fiProvider = new SupabaseDataProvider();
-      fiProvider.init({
+      const fiConfig: SupabaseAdapterConfig = {
         fetch: vi.fn(),
         serverClient: asSupabaseMock(mockSupabase),
         locale: 'fi',
         defaultLocale: 'en'
-      });
+      };
+      fiProvider.init(fiConfig);
 
       const result = await fiProvider.getQuestionData();
 
@@ -1119,12 +1130,13 @@ describe('SupabaseDataProvider', () => {
       };
 
       const fiProvider = new SupabaseDataProvider();
-      fiProvider.init({
+      const fiConfig: SupabaseAdapterConfig = {
         fetch: vi.fn(),
         serverClient: asSupabaseMock(mockSupabase),
         locale: 'fi',
         defaultLocale: 'en'
-      });
+      };
+      fiProvider.init(fiConfig);
 
       const result = await fiProvider.getQuestionData();
 
