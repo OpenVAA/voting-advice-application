@@ -286,9 +286,9 @@ No STRIDE-relevant change: the diff is generated types + type annotations + one 
 
 All other claims are `[VERIFIED]` by this session's execution. If A1/A2 shift at plan time, only the pinned count and the D-04 task size change — not the phase shape.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Exact final count after provider work.**
+1. **Exact final count after provider work.** — RESOLVED: pinned empirically at the 126-03/126-05 gate (plans assert the measured `yarn check` count in evidence rather than hardcoding 46).
    - What we know: regen → 50 (measured); target residual = 4; provider work clears them → 46.
    - What's unclear: whether the D-04 narrowing or the D-05 generification incidentally shifts any adjacent error by ±1.
    - Recommendation: pin the number empirically in the plan's acceptance step (`yarn check` assertion), stated as "~46, exact TBD at gate," per D-06.
