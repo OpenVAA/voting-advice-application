@@ -32,7 +32,7 @@ Show a popup asking for user feedback.
   });
 
   let canSubmit = $state(false);
-  let status = $state<SendingStatus>('idle');
+  let status = $state<SendingStatus>('default');
   let alertRef: Alert;
   let feedbackRef: { reset: () => void; submit: () => Promise<void> };
 
