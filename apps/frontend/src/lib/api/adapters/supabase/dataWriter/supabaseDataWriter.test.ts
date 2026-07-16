@@ -2,6 +2,7 @@ import { beforeEach,describe, expect, it, vi } from 'vitest';
 import { SupabaseDataWriter } from './supabaseDataWriter';
 import type { Database } from '@openvaa/supabase-types';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseAdapterConfig } from '../supabaseAdapter.type';
 
 // Mock $env/dynamic/public before any imports that depend on it
 vi.mock('$env/dynamic/public', () => ({
@@ -54,10 +55,11 @@ describe('SupabaseDataWriter', () => {
   beforeEach(() => {
     mockSupabase = createMockSupabaseClient();
     writer = new SupabaseDataWriter();
-    writer.init({
+    const config: SupabaseAdapterConfig = {
       fetch: vi.fn(),
       serverClient: asSupabaseMock(mockSupabase)
-    });
+    };
+    writer.init(config);
     // Mock global fetch for _logout's server-side cookie clearing call
     globalThis.fetch = vi.fn().mockResolvedValue({ ok: true });
   });
@@ -259,7 +261,7 @@ describe('SupabaseDataWriter', () => {
       const mockFile = new File(['image-data'], 'photo.png', { type: 'image/png' });
       const mockAnswers = {
         'q-text': { value: 'hello' },
-        'q-image': { value: mockFile, info: 'My photo' }
+        'q-image': { value: mockFile, info: { en: 'My photo' } }
       };
 
       // Mock candidate project_id lookup
@@ -350,7 +352,7 @@ describe('SupabaseDataWriter', () => {
   describe('register', () => {
     it('calls updateUser with password to complete registration', async () => {
       mockSupabase.auth.updateUser.mockResolvedValue({ data: {}, error: null });
-      const result = await writer.register({ password: 'newpass' });
+      const result = await writer.register({ registrationKey: 'test-key', password: 'newpass' });
       expect(mockSupabase.auth.updateUser).toHaveBeenCalledWith({ password: 'newpass' });
       expect(result).toEqual({ type: 'success' });
     });
@@ -360,7 +362,7 @@ describe('SupabaseDataWriter', () => {
         data: {},
         error: { message: 'Weak password' }
       });
-      await expect(writer.register({ password: 'x' })).rejects.toThrow('Weak password');
+      await expect(writer.register({ registrationKey: 'test-key', password: 'x' })).rejects.toThrow('Weak password');
     });
   });
 
