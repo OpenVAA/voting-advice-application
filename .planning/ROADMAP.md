@@ -463,7 +463,7 @@ Wave 3:
   2. The context-layer type errors are resolved — `adminContext.svelte.ts` (8), `candidateContext.svelte.ts` (6), `authContext.svelte.ts` (4) (TYPE-06).
   3. No behavior change; unit + E2E stay green.
 
-**Plans**: 2/3 plans executed
+**Plans**: 3/3 plans executed
 
 Plans:
 **Wave 1**
@@ -473,7 +473,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 127-03-PLAN.md — D-06 full acceptance gate: build + full unit + exact svelte-check 46→24/1 (5 target files at 0) + one full E2E suite run green (behavior-neutrality trust signal) [Wave 2, depends on 127-01, 127-02]
+- [x] 127-03-PLAN.md — D-06 full acceptance gate: build + full unit + exact svelte-check 46→24/1 (5 target files at 0) + one full E2E suite run green (behavior-neutrality trust signal) [Wave 2, depends on 127-01, 127-02]
 
 #### Phase 128: svelte-check → 0 — Long-Tail, Tests & Docs
 
@@ -568,7 +568,7 @@ The three workstreams are largely independent and may be planned/executed concur
 | 124. Svelte 5 Idiom Polish — Lock-in & Visual Verification | v2.14 | 0/TBD | Not started | - |
 | 125. svelte-check → 0 — Trivial Tier | v2.14 | 4/4 | Complete    | 2026-07-15 |
 | 126. svelte-check → 0 — supabaseDataProvider | v2.14 | 5/5 | Complete    | 2026-07-16 |
-| 127. svelte-check → 0 — Adapter Layer & Contexts | v2.14 | 2/3 | In Progress|  |
+| 127. svelte-check → 0 — Adapter Layer & Contexts | v2.14 | 3/3 | In Progress|  |
 | 128. svelte-check → 0 — Long-Tail, Tests & Docs | v2.14 | 0/TBD | Not started | - |
 | 129. New-Feature Build — Question Inputs + Alliance Render + Nominations Fetch | v2.14 | 0/TBD | Not started | - |
 | 130. E2E Specs — New-Feature Coverage | v2.14 | 0/TBD | Not started | - |
