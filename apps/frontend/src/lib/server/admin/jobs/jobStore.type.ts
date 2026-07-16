@@ -32,11 +32,11 @@ export interface JobInfo {
   errorMessages: Array<JobMessage>;
 }
 
-export interface JobMessage {
+export type JobMessage = {
   type: 'info' | 'warning' | 'error';
   message: string;
   timestamp: string; // ISO
-}
+};
 
 export type JobStatus = 'running' | 'completed' | 'failed' | 'aborted' | 'aborting';
 
