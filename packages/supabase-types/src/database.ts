@@ -49,6 +49,75 @@ export type Database = {
         };
         Relationships: [];
       };
+      admin_jobs: {
+        Row: {
+          author: string;
+          created_at: string;
+          election_id: string | null;
+          end_status: string;
+          end_time: string | null;
+          id: string;
+          input: Json | null;
+          job_id: string;
+          job_type: string;
+          messages: Json | null;
+          metadata: Json | null;
+          output: Json | null;
+          project_id: string;
+          start_time: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          author: string;
+          created_at?: string;
+          election_id?: string | null;
+          end_status: string;
+          end_time?: string | null;
+          id?: string;
+          input?: Json | null;
+          job_id: string;
+          job_type: string;
+          messages?: Json | null;
+          metadata?: Json | null;
+          output?: Json | null;
+          project_id: string;
+          start_time?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          author?: string;
+          created_at?: string;
+          election_id?: string | null;
+          end_status?: string;
+          end_time?: string | null;
+          id?: string;
+          input?: Json | null;
+          job_id?: string;
+          job_type?: string;
+          messages?: Json | null;
+          metadata?: Json | null;
+          output?: Json | null;
+          project_id?: string;
+          start_time?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'admin_jobs_election_id_fkey';
+            columns: ['election_id'];
+            isOneToOne: false;
+            referencedRelation: 'elections';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'admin_jobs_project_id_fkey';
+            columns: ['project_id'];
+            isOneToOne: false;
+            referencedRelation: 'projects';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
       alliances: {
         Row: {
           color: Json | null;
@@ -1087,39 +1156,122 @@ export type Database = {
         Args: { p_item: Json; p_project_id: string; p_table_name: string };
         Returns: boolean;
       };
-      bulk_delete: { Args: { data: Json }; Returns: Json };
-      bulk_import: { Args: { data: Json }; Returns: Json };
+      bulk_delete: { Args: { p_data: Json }; Returns: Json };
+      bulk_import: { Args: { p_data: Json }; Returns: Json };
       can_access_project: { Args: { p_project_id: string }; Returns: boolean };
-      custom_access_token_hook: { Args: { event: Json }; Returns: Json };
+      custom_access_token_hook: { Args: { p_event: Json }; Returns: Json };
       delete_storage_object: {
-        Args: { bucket: string; file_path: string };
+        Args: { p_bucket: string; p_file_path: string };
         Returns: undefined;
       };
+      get_candidate_user_data: {
+        Args: { p_entity_type?: Database['public']['Enums']['entity_type'] };
+        Returns: {
+          answers: Json;
+          color: Json;
+          custom_data: Json;
+          first_name: string;
+          id: string;
+          image: Json;
+          info: Json;
+          last_name: string;
+          name: Json;
+          organization_id: string;
+          project_id: string;
+          short_name: Json;
+          sort_order: number;
+          subtype: string;
+          terms_of_use_accepted: string;
+        }[];
+      };
       get_localized: {
-        Args: { default_locale?: string; locale: string; val: Json };
+        Args: { p_default_locale?: string; p_locale: string; p_val: Json };
         Returns: string;
+      };
+      get_nominations: {
+        Args: {
+          p_constituency_id?: string;
+          p_election_id?: string;
+          p_include_unconfirmed?: boolean;
+        };
+        Returns: {
+          alliance_id: string;
+          candidate_id: string;
+          color: Json;
+          constituency_id: string;
+          custom_data: Json;
+          election_id: string;
+          election_round: number;
+          election_symbol: string;
+          entity_answers: Json;
+          entity_color: Json;
+          entity_custom_data: Json;
+          entity_first_name: string;
+          entity_id: string;
+          entity_image: Json;
+          entity_info: Json;
+          entity_last_name: string;
+          entity_name: Json;
+          entity_organization_id: string;
+          entity_short_name: Json;
+          entity_sort_order: number;
+          entity_subtype: string;
+          entity_type: Database['public']['Enums']['entity_type'];
+          faction_id: string;
+          id: string;
+          image: Json;
+          info: Json;
+          name: Json;
+          organization_id: string;
+          parent_nomination_id: string;
+          short_name: Json;
+          sort_order: number;
+          subtype: string;
+        }[];
       };
       has_role: {
         Args: {
-          check_role: string;
-          check_scope_id?: string;
-          check_scope_type?: string;
+          p_check_role: string;
+          p_check_scope_id?: string;
+          p_check_scope_type?: string;
         };
         Returns: boolean;
       };
       is_candidate_self: {
-        Args: { row_auth_user_id: string };
+        Args: { p_row_auth_user_id: string };
         Returns: boolean;
       };
+      is_localized_string: { Args: { p_val: Json }; Returns: boolean };
       is_storage_entity_published: {
-        Args: { entity_id_segment: string; entity_type_segment: string };
+        Args: { p_entity_id_segment: string; p_entity_type_segment: string };
         Returns: boolean;
+      };
+      is_valid_choice_id: {
+        Args: { p_valid_choices: Json; p_value: Json };
+        Returns: boolean;
+      };
+      jsonb_recursive_merge: {
+        Args: { p_base: Json; p_patch: Json };
+        Returns: Json;
+      };
+      merge_custom_data: {
+        Args: { p_patch: Json; p_question_id: string };
+        Returns: Json;
+      };
+      merge_jsonb_column: {
+        Args: {
+          p_column_name: string;
+          p_partial_data: Json;
+          p_row_id: string;
+          p_table_name: string;
+        };
+        Returns: undefined;
       };
       resolve_email_variables: {
         Args: {
-          template_body?: string;
-          template_subject?: string;
-          user_ids: string[];
+          p_template_body?: string;
+          p_template_subject?: string;
+          p_user_ids: string[];
         };
         Returns: {
           email: string;
@@ -1129,18 +1281,18 @@ export type Database = {
         }[];
       };
       resolve_external_ref: {
-        Args: { p_project_id: string; ref: Json; target_table: string };
+        Args: { p_project_id: string; p_ref: Json; p_target_table: string };
         Returns: string;
       };
       upsert_answers: {
-        Args: { answers: Json; entity_id: string; overwrite?: boolean };
+        Args: { p_answers: Json; p_entity_id: string; p_overwrite?: boolean };
         Returns: Json;
       };
       validate_answer_value: {
         Args: {
-          answer_val: Json;
-          q_type: Database['public']['Enums']['question_type'];
-          valid_choices?: Json;
+          p_answer_val: Json;
+          p_q_type: Database['public']['Enums']['question_type'];
+          p_valid_choices?: Json;
         };
         Returns: undefined;
       };
