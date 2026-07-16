@@ -279,7 +279,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
           {questionBlocks}
           onShadedBg
           data-focus-on-nav
-          tabindex="-1"
+          tabindex={-1}
           style="view-transition-name: question-heading" />
       {/snippet}
 

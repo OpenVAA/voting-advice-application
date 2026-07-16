@@ -229,7 +229,7 @@
           question={question!}
           questionBlocks={voterCtx.selectedQuestionBlocks}
           data-focus-on-nav
-          tabindex="-1"
+          tabindex={-1}
           style="view-transition-name: question-heading"
           data-testid="voter-questions-heading" />
       {/snippet}
