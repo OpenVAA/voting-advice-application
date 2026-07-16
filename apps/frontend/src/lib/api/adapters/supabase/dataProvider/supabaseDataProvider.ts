@@ -543,7 +543,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     if (qError) throw new Error(`getQuestionData (questions): ${qError.message}`);
 
     const questions = (qData ?? []).map((row) => {
-      const obj = toDataObject(row as Record<string, unknown>, locale, this.defaultLocale);
+      const obj = toDataObject(row, locale, this.defaultLocale);
       // Localize choice labels for choice-type questions
       let choices = row.choices as Array<{
         id: number;
@@ -570,9 +570,18 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
         ...((obj.customData as Record<string, unknown> | undefined) ?? {})
       };
 
+      // Name the discriminant (`type`) plus the identity fields (`id`, `name`,
+      // `categoryId`) explicitly — drawn from the typed row / localized `obj`
+      // rather than relying on the opaque `...obj` spread — so the object
+      // structurally overlaps the discriminated `AnyQuestionVariantData` union
+      // (D-04). The `type` column is the question_type enum; localized `name`
+      // falls back to '' (the data model's smart default for a missing name).
       return {
         ...obj,
-        type: row.type, // question_type enum passes through as-is
+        id: obj.id as string,
+        type: row.type,
+        name: (obj.name as string | null) ?? '',
+        categoryId: obj.categoryId as string,
         choices,
         customData,
         // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
