@@ -90,6 +90,8 @@
 
 <section
   class="relative flex w-full flex-col items-center overflow-hidden bg-base-300"
+  role="group"
+  aria-label="OpenVAA screenshot showcase"
   style:--firstItem={firstItem}
   style:--numItems={numItems}
   style:--itemWidth="calc((100vw - (var(--numItems) - 1) * var(--itemGap) - 2 * var(--sideGap)) / var(--numItems))"
