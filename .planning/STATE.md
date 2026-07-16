@@ -5,8 +5,8 @@ milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Ze
 current_phase: 128
 current_phase_name: svelte-check → 0 — Long-Tail, Tests & Docs
 status: planning
-stopped_at: Completed 127-03-PLAN.md
-last_updated: "2026-07-16T12:29:32.361Z"
+stopped_at: Phase 128 context gathered
+last_updated: "2026-07-16T14:16:13.641Z"
 last_activity: 2026-07-16
 last_activity_desc: Phase 127 complete, transitioned to Phase 128
 progress:
@@ -507,9 +507,9 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-07-16T12:19:46.770Z
-Stopped at: Completed 127-03-PLAN.md
-Resume file: None
+Last session: 2026-07-16T14:16:13.630Z
+Stopped at: Phase 128 context gathered
+Resume file: .planning/phases/128-svelte-check-0-long-tail-tests-docs/128-CONTEXT.md
 Work done this session (122-05 Task 2):
 
 - Drove the EFLOW-10b bank-auth full-browser journey (`candidate-bank-auth-journey.spec.ts`) to SINGLE-PASS GREEN (`1 passed`, no skip/did-not-run) against the orchestrator-owned live env. Commit daab88f06 (tests/ only).
