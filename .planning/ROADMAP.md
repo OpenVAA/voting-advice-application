@@ -486,13 +486,13 @@ Plans:
   2. The `.test.ts` / `.spike` type errors (~19) are resolved — fixed or dead scaffolding removed (TYPE-08).
   3. The `apps/docs` a11y svelte-check warning is resolved so monorepo svelte-check shows 0 warnings (TYPE-09).
 
-**Plans**: 1/5 plans executed
+**Plans**: 2/5 plans executed
 
 Plans:
 **Wave 1** *(parallel — disjoint file sets)*
 
 - [x] 128-01-PLAN.md — TYPE-08 / D-04+D-05: adapter test-file type-truth (11 serverClient concrete-typing sites + thenable mock + register args + LocalizedAnswers) and delete `_spikes-020-class-conversion/` after a zero-importer gate [Wave 1]
-- [ ] 128-02-PLAN.md — TYPE-07 / D-01+D-02+D-03: concrete-type the candidate `+layout.server.ts` serverClient seam + widen `setPassword` type-truth + drop the dead confirm-password prop + reconcile the testIds catalogue [Wave 1]
+- [x] 128-02-PLAN.md — TYPE-07 / D-01+D-02+D-03: concrete-type the candidate `+layout.server.ts` serverClient seam + widen `setPassword` type-truth + drop the dead confirm-password prop + reconcile the testIds catalogue [Wave 1]
 - [ ] 128-03-PLAN.md — TYPE-07: scattered singles — built-in View Transition lib types, FeedbackPopup `'default'` status, EntityInfo dead-branch literal, two QuestionHeading numeric `tabindex` [Wave 1]
 - [ ] 128-04-PLAN.md — TYPE-09 / D-06: fix both a11y warnings at source — `Term.svelte` noninteractive-tabindex + `apps/docs` static-element-interactions [Wave 1]
 
@@ -581,7 +581,7 @@ The three workstreams are largely independent and may be planned/executed concur
 | 125. svelte-check → 0 — Trivial Tier | v2.14 | 4/4 | Complete    | 2026-07-15 |
 | 126. svelte-check → 0 — supabaseDataProvider | v2.14 | 5/5 | Complete    | 2026-07-16 |
 | 127. svelte-check → 0 — Adapter Layer & Contexts | v2.14 | 3/3 | Complete    | 2026-07-16 |
-| 128. svelte-check → 0 — Long-Tail, Tests & Docs | v2.14 | 1/5 | In Progress|  |
+| 128. svelte-check → 0 — Long-Tail, Tests & Docs | v2.14 | 2/5 | In Progress|  |
 | 129. New-Feature Build — Question Inputs + Alliance Render + Nominations Fetch | v2.14 | 0/TBD | Not started | - |
 | 130. E2E Specs — New-Feature Coverage | v2.14 | 0/TBD | Not started | - |
 | 131. E2E Reliability Hardening — Deferred Flake/Race Triage | v2.14 | 0/TBD | Not started | - |

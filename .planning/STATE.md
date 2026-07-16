@@ -5,15 +5,15 @@ milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Ze
 current_phase: 128
 current_phase_name: svelte-check → 0 — Long-Tail, Tests & Docs
 status: executing
-stopped_at: Completed 128-01-PLAN.md
-last_updated: "2026-07-16T15:13:19.806Z"
+stopped_at: Completed 128-02-PLAN.md
+last_updated: "2026-07-16T15:20:35.983Z"
 last_activity: 2026-07-16
 last_activity_desc: Phase 128 execution started
 progress:
   total_phases: 15
   completed_phases: 10
   total_plans: 56
-  completed_plans: 52
+  completed_plans: 53
   percent: 67
 ---
 
@@ -29,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 ## Current Position
 
 Phase: 128 (svelte-check → 0 — Long-Tail, Tests & Docs) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 Status: Ready to execute
 Last activity: 2026-07-16 — Phase 128 execution started
 
-Progress: [█████████░] 93%
+Progress: [██████████] 95%
 
 ## Performance Metrics
 
@@ -61,6 +61,7 @@ Progress: [█████████░] 93%
 | Phase 127 P02 | 3min | 2 tasks | 2 files |
 | Phase 127 P03 | 29min | 2 tasks | 0 files |
 | Phase 128 P01 | 7min | 3 tasks | 7 files |
+| Phase 128 P02 | 6min | 2 tasks | 5 files |
 
 ## Deferred Items
 
@@ -465,6 +466,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: 127-02: JobMessage interface->type alias makes JobMessage[] Json-assignable, fixing both admin_jobs insert sites at source; nominations map annotation dropped (partial select) + documented as-Json RPC cast. TYPE-05 cleared; svelte-check 28/1 -> 24/1.
 - [Phase ?]: Phase 127 D-06 gate PASSED: svelte-check 46/1 -> 24/1 (5 target files at 0), full unit green, full E2E 125/0/0 behavior-neutral
 - [Phase ?]: 128-01: passed SupabaseAdapterConfig via typed local var (mixin return-type erases the widened init override); cleared 15 adapter test-layer type errors + deleted dead _spikes-020 dir.
+- [Phase ?]: 128-02: setPassword currentPassword made optional (not required) at the AuthContext wrapper — register/password-reset flows call setPassword({ password }); keeps zero net-new svelte-check while satisfying the type-truth must_have.
 
 ### Quick Tasks Completed
 
@@ -509,8 +511,8 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-07-16T15:13:19.795Z
-Stopped at: Completed 128-01-PLAN.md
+Last session: 2026-07-16T15:20:29.205Z
+Stopped at: Completed 128-02-PLAN.md
 Resume file: None
 Work done this session (122-05 Task 2):
 
