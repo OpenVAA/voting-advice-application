@@ -109,7 +109,10 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
    */
   function getNextQuestionId(question: AnyQuestionVariant): Id | undefined {
     const index = unansweredOpinionQuestions.findIndex((q) => q.id === question.id);
-    return index != null && index < unansweredOpinionQuestions.length - 1
+    // `findIndex` returns -1 when the current question is not in the unanswered
+    // set (i.e. the candidate is re-editing an already-answered question); treat
+    // that as "no next question" so routing falls through to the questions list.
+    return index !== -1 && index < unansweredOpinionQuestions.length - 1
       ? unansweredOpinionQuestions[index + 1]?.id
       : undefined;
   }
