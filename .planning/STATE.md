@@ -5,15 +5,15 @@ milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Ze
 current_phase: 126
 current_phase_name: svelte-check → 0 — supabaseDataProvider
 status: executing
-stopped_at: Completed 126-04-PLAN.md
-last_updated: "2026-07-16T07:55:43.985Z"
+stopped_at: Completed 126-03-PLAN.md
+last_updated: "2026-07-16T08:16:23.885Z"
 last_activity: 2026-07-16
 last_activity_desc: Phase 126 execution started
 progress:
   total_phases: 15
   completed_phases: 8
   total_plans: 48
-  completed_plans: 46
+  completed_plans: 47
   percent: 53
 ---
 
@@ -29,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 ## Current Position
 
 Phase: 126 (svelte-check → 0 — supabaseDataProvider) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 Status: Ready to execute
 Last activity: 2026-07-16 — Phase 126 execution started
 
-Progress: [██████████] 96%
+Progress: [██████████] 98%
 
 ## Performance Metrics
 
@@ -55,6 +55,7 @@ Progress: [██████████] 96%
 | Phase 126 P01 | 2min | 2 tasks | 1 files |
 | Phase 126 P02 | 10m | 2 tasks | 2 files |
 | Phase 126 P04 | 2min | 1 tasks | 1 files |
+| Phase 126 P03 | 25min | 2 tasks | 2 files |
 
 ## Deferred Items
 
@@ -451,6 +452,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Phase 125 D-04 gate: svelte-check 151 → 133 (exactly −18), three clusters (qs/cookies/spike) at zero, no net-new; build+unit green; E2E 125/0/0 behavior-neutrality pass
 - [Phase ?]: 126-01: regen-only fix (yarn db:types) types get_nominations and drops svelte-check 133->50; generated types are single source of truth, never hand-edited (D-01/D-02).
 - [Phase ?]: 126-02: generified toDataObject over TRow with a Record<string,unknown> default (D-05) — backward-compatible; return type/body unchanged; yarn check delta 0
+- [Phase ?]: 126-03: Cleared supabaseDataProvider.ts to 0 svelte-check errors (total 50->46) via null->undefined RPC-arg coercion + discriminated-union narrowing (no as-unknown-as double-cast).
+- [Phase ?]: 126-03: Kept the parent_nomination_id nullable cast — the regenerated non-null string type is a nullability gap; removing it would strand the parent-lookup null-guards.
 
 ### Quick Tasks Completed
 
@@ -495,8 +498,8 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-07-16T07:55:43.975Z
-Stopped at: Completed 126-04-PLAN.md
+Last session: 2026-07-16T08:16:15.614Z
+Stopped at: Completed 126-03-PLAN.md
 Resume file: None
 Work done this session (122-05 Task 2):
 
