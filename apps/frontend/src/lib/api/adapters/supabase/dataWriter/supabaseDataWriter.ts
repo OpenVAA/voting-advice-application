@@ -5,7 +5,7 @@ import { constants } from '$lib/utils/constants';
 import { supabaseAdapterMixin } from '../supabaseAdapter';
 import { parseStoredImage } from '../utils/storageUrl';
 import { toDataObject } from '../utils/toDataObject';
-import type { Json, Tables } from '@openvaa/supabase-types';
+import type { Json } from '@openvaa/supabase-types';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type {
   BasicUserData,
@@ -239,7 +239,7 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
 
       if (nomError) throw new Error(`Failed to load nominations: ${nomError.message}`);
 
-      const nominationsList = (nomData ?? []).map((n: Tables<'nominations'>['Row']) => ({
+      const nominationsList = (nomData ?? []).map((n) => ({
         // `entityType` + `entityId` are part of the NominationData shape. These
         // raw partial nominations are surfaced on `userData` (consumed directly
         // by the candidate profile page) and are intentionally NOT fed to
@@ -316,7 +316,9 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     // Call upsert_answers RPC
     const { data, error } = await this.supabase.rpc('upsert_answers', {
       p_entity_id: id,
-      p_answers: processedAnswers,
+      // reason: processedAnswers is jsonb-safe at runtime (File values already replaced with { path } in the loop above);
+      // LocalizedAnswer.value's static AnswerValue/File union can't be expressed as Json without a runtime transform.
+      p_answers: processedAnswers as Json,
       p_overwrite: overwrite
     });
     if (error) throw new Error(`setAnswers: ${error.message}`);
