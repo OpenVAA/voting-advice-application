@@ -12,7 +12,9 @@ Show a definition popup when hovering over a term.
 
 ### Accessibility
 
-Uses the `term` and `definition` roles.
+The trigger is a focusable `button` (W3C APG tooltip pattern) whose accessible
+name is the term text; the definition popup uses the `tooltip` role and is linked
+via `aria-describedby` while shown.
 
 ### Usage
 
@@ -91,7 +93,7 @@ Uses the `term` and `definition` roles.
 <span
   class="group relative"
   bind:this={triggerElement}
-  role="term"
+  role="button"
   tabindex="0"
   aria-describedby={visible ? definitionId : undefined}
   data-testid="voter-questions-term-trigger"
