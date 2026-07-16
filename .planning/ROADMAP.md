@@ -436,7 +436,21 @@ Wave 3:
   2. No runtime behavior changes — the data-provider's outputs are unchanged, evidenced by the E2E suite staying green.
   3. The svelte-check baseline drops by ~79 errors.
 
-**Plans**: TBD
+**Plans**: 5 plans (measured target 133 → ~46; regen also clears ~9 Phase-127 writer errors — RESEARCH Pitfall 2)
+
+Wave 1 *(disjoint files — parallel-safe; 02/04 assert delta-0 so ordering vs the regen is irrelevant)*:
+
+- [ ] 126-01-PLAN.md — D-01/D-02: regenerate the Supabase types (`yarn db:types`) so `get_nominations` is typed; atomic regen commit (measure 133 → 50)
+- [ ] 126-02-PLAN.md — D-05: generify `toDataObject` backward-compatibly (defaulted generic; writer sites compile unchanged; count delta-0)
+- [ ] 126-04-PLAN.md — D-07: delete the inert `declare module 'qs';` shim from `global.d.ts` (svelte-check output unchanged)
+
+Wave 2:
+
+- [ ] 126-03-PLAN.md — D-03/D-04: type `_getNominationData` (RPC args 259/260 + dead-cast cleanup) and narrow the two TS2352 casts (374/549) properly — target file → 0, count → ~46
+
+Wave 3:
+
+- [ ] 126-05-PLAN.md — D-06 full acceptance gate: build + unit + exact svelte-check accounting (133 → ~46, provider at 0, no net-new) + one full E2E suite run (behavior-neutrality trust signal)
 
 #### Phase 127: svelte-check → 0 — Adapter Layer & Contexts
 
