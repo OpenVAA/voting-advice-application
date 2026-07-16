@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
-import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
+import { dataWriter } from '$lib/api/dataWriter';
 import { jobStates } from './jobStates.svelte';
 import { getAppContext } from '../app';
 import { getAuthContext } from '../auth';
@@ -159,49 +159,49 @@ export class AdminContextProvider implements AdminContext {
   updateQuestion = (
     opts: WithOptionalAuth<Parameters<DataWriter['updateQuestion']>[0]>
   ): ReturnType<DataWriter['updateQuestion']> => {
-    return prepareDataWriter(dataWriterPromise).then((dw) => dw.updateQuestion(this.#injectAuthToken(opts)));
+    return prepareDataWriter(dataWriter).then((dw) => dw.updateQuestion(this.#injectAuthToken(opts)));
   };
 
   getActiveJobs = (
     opts: WithOptionalAuth<Parameters<DataWriter['getActiveJobs']>[0]>
   ): ReturnType<DataWriter['getActiveJobs']> => {
-    return prepareDataWriter(dataWriterPromise).then((dw) => dw.getActiveJobs(this.#injectAuthToken(opts)));
+    return prepareDataWriter(dataWriter).then((dw) => dw.getActiveJobs(this.#injectAuthToken(opts)));
   };
 
   getPastJobs = (
     opts: WithOptionalAuth<Parameters<DataWriter['getPastJobs']>[0]>
   ): ReturnType<DataWriter['getPastJobs']> => {
-    return prepareDataWriter(dataWriterPromise).then((dw) => dw.getPastJobs(this.#injectAuthToken(opts)));
+    return prepareDataWriter(dataWriter).then((dw) => dw.getPastJobs(this.#injectAuthToken(opts)));
   };
 
   startJob = (
     opts: WithOptionalAuth<Parameters<DataWriter['startJob']>[0]>
   ): ReturnType<DataWriter['startJob']> => {
-    return prepareDataWriter(dataWriterPromise).then((dw) => dw.startJob(this.#injectAuthToken(opts)));
+    return prepareDataWriter(dataWriter).then((dw) => dw.startJob(this.#injectAuthToken(opts)));
   };
 
   getJobProgress = (
     opts: WithOptionalAuth<Parameters<DataWriter['getJobProgress']>[0]>
   ): ReturnType<DataWriter['getJobProgress']> => {
-    return prepareDataWriter(dataWriterPromise).then((dw) => dw.getJobProgress(this.#injectAuthToken(opts)));
+    return prepareDataWriter(dataWriter).then((dw) => dw.getJobProgress(this.#injectAuthToken(opts)));
   };
 
   abortJob = (
     opts: WithOptionalAuth<Parameters<DataWriter['abortJob']>[0]>
   ): ReturnType<DataWriter['abortJob']> => {
-    return prepareDataWriter(dataWriterPromise).then((dw) => dw.abortJob(this.#injectAuthToken(opts)));
+    return prepareDataWriter(dataWriter).then((dw) => dw.abortJob(this.#injectAuthToken(opts)));
   };
 
   abortAllJobs = (
     opts: WithOptionalAuth<Parameters<DataWriter['abortAllJobs']>[0]>
   ): ReturnType<DataWriter['abortAllJobs']> => {
-    return prepareDataWriter(dataWriterPromise).then((dw) => dw.abortAllJobs(this.#injectAuthToken(opts)));
+    return prepareDataWriter(dataWriter).then((dw) => dw.abortAllJobs(this.#injectAuthToken(opts)));
   };
 
   insertJobResult = (
     opts: WithOptionalAuth<Parameters<DataWriter['insertJobResult']>[0]>
   ): ReturnType<DataWriter['insertJobResult']> => {
-    return prepareDataWriter(dataWriterPromise).then((dw) => dw.insertJobResult(this.#injectAuthToken(opts)));
+    return prepareDataWriter(dataWriter).then((dw) => dw.insertJobResult(this.#injectAuthToken(opts)));
   };
 
   constructor() {

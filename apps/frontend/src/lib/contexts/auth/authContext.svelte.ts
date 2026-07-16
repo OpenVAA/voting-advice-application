@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
 import { page } from '$app/state';
-import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
+import { dataWriter } from '$lib/api/dataWriter';
 import { logDebugError } from '$lib/utils/logger';
 import { prepareDataWriter } from '../utils/prepareDataWriter';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
@@ -37,7 +37,7 @@ const CONTEXT_KEY = Symbol();
  * `resetPassword` / `setPassword`) are ARROW-FUNCTION FIELDS (§18 — they survive
  * detach: candidateContext does `const { logout: _logout } = authContext`) so
  * they capture `this`. Their bodies are preserved verbatim from the former
- * async-function declarations, including the `prepareDataWriter(dataWriterPromise)`
+ * async-function declarations, including the `prepareDataWriter(dataWriter)`
  * await and the `authToken: ''` cookie-auth stub.
  *
  * There is NO init/post-mount effect (§20): the `page.data.session` read is
@@ -78,27 +78,27 @@ export class AuthContextProvider implements AuthContext {
   requestForgotPasswordEmail = async (
     ...args: Parameters<DataWriter['requestForgotPasswordEmail']>
   ): ReturnType<DataWriter['requestForgotPasswordEmail']> => {
-    const dw = await prepareDataWriter(dataWriterPromise);
+    const dw = await prepareDataWriter(dataWriter);
     return dw.requestForgotPasswordEmail(...args);
   };
 
   resetPassword = async (
     ...args: Parameters<DataWriter['resetPassword']>
   ): ReturnType<DataWriter['resetPassword']> => {
-    const dw = await prepareDataWriter(dataWriterPromise);
+    const dw = await prepareDataWriter(dataWriter);
     return dw.resetPassword(...args);
   };
 
   logout = async (): Promise<void> => {
-    const dataWriter = await prepareDataWriter(dataWriterPromise);
-    await dataWriter.logout({ authToken: '' }).catch((e) => {
+    const dw = await prepareDataWriter(dataWriter);
+    await dw.logout({ authToken: '' }).catch((e) => {
       logDebugError(`Error logging out: ${e?.message ?? '-'}`);
     });
   };
 
   setPassword = async (opts: { password: string }): Promise<DataApiActionResult> => {
-    const dataWriter = await prepareDataWriter(dataWriterPromise);
-    return dataWriter.setPassword({ ...opts, authToken: '', currentPassword: '' });
+    const dw = await prepareDataWriter(dataWriter);
+    return dw.setPassword({ ...opts, authToken: '', currentPassword: '' });
   };
 }
 
