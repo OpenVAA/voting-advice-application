@@ -5,15 +5,15 @@ milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Ze
 current_phase: 126
 current_phase_name: svelte-check → 0 — supabaseDataProvider
 status: executing
-stopped_at: Completed 126-01-PLAN.md
-last_updated: "2026-07-16T07:49:42.973Z"
+stopped_at: Completed 126-02-PLAN.md
+last_updated: "2026-07-16T07:53:09.871Z"
 last_activity: 2026-07-16
 last_activity_desc: Phase 126 execution started
 progress:
   total_phases: 15
   completed_phases: 8
   total_plans: 48
-  completed_plans: 44
+  completed_plans: 45
   percent: 53
 ---
 
@@ -29,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 ## Current Position
 
 Phase: 126 (svelte-check → 0 — supabaseDataProvider) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 Status: Ready to execute
 Last activity: 2026-07-16 — Phase 126 execution started
 
-Progress: [█████████░] 92%
+Progress: [█████████░] 94%
 
 ## Performance Metrics
 
@@ -53,6 +53,7 @@ Progress: [█████████░] 92%
 | Phase 125 P03 | 1min | 2 tasks | 4 files |
 | Phase 125 P04 | 19min | 2 tasks | 0 files |
 | Phase 126 P01 | 2min | 2 tasks | 1 files |
+| Phase 126 P02 | 10m | 2 tasks | 2 files |
 
 ## Deferred Items
 
@@ -448,6 +449,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: 125-03: deleted leftover _spikes-017-019 read-write-split scaffolding (4 files, git rm -r); TYPE-03 cluster cleared 137→133 svelte-check errors; _spikes-020 untouched; unit suite green (758)
 - [Phase ?]: Phase 125 D-04 gate: svelte-check 151 → 133 (exactly −18), three clusters (qs/cookies/spike) at zero, no net-new; build+unit green; E2E 125/0/0 behavior-neutrality pass
 - [Phase ?]: 126-01: regen-only fix (yarn db:types) types get_nominations and drops svelte-check 133->50; generated types are single source of truth, never hand-edited (D-01/D-02).
+- [Phase ?]: 126-02: generified toDataObject over TRow with a Record<string,unknown> default (D-05) — backward-compatible; return type/body unchanged; yarn check delta 0
 
 ### Quick Tasks Completed
 
@@ -492,8 +494,8 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-07-16T07:49:42.964Z
-Stopped at: Completed 126-01-PLAN.md
+Last session: 2026-07-16T07:53:09.861Z
+Stopped at: Completed 126-02-PLAN.md
 Resume file: None
 Work done this session (122-05 Task 2):
 
