@@ -189,7 +189,9 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
     }
     if (value == null && info == null) {
       status = 'error';
-      errorMessage = t('candidateApp.common.editingNotAllowed');
+      // Internal empty-payload guard (programmer error) — not a lock condition,
+      // so use the generic save-failure message rather than "editing not allowed".
+      errorMessage = t('candidateApp.error.saveFailed');
       logDebugError('[Candidate app question page]: setAnswer called with no value nor info');
       return;
     }
