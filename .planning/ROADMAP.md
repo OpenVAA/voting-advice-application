@@ -436,7 +436,7 @@ Wave 3:
   2. No runtime behavior changes — the data-provider's outputs are unchanged, evidenced by the E2E suite staying green.
   3. The svelte-check baseline drops by ~79 errors.
 
-**Plans**: 4/5 plans executed
+**Plans**: 5/5 plans executed
 
 Wave 1 *(disjoint files — parallel-safe; 02/04 assert delta-0 so ordering vs the regen is irrelevant)*:
 
@@ -450,7 +450,7 @@ Wave 2:
 
 Wave 3:
 
-- [ ] 126-05-PLAN.md — D-06 full acceptance gate: build + unit + exact svelte-check accounting (133 → ~46, provider at 0, no net-new) + one full E2E suite run (behavior-neutrality trust signal)
+- [x] 126-05-PLAN.md — D-06 full acceptance gate: build + unit + exact svelte-check accounting (133 → ~46, provider at 0, no net-new) + one full E2E suite run (behavior-neutrality trust signal)
 
 #### Phase 127: svelte-check → 0 — Adapter Layer & Contexts
 
@@ -557,7 +557,7 @@ The three workstreams are largely independent and may be planned/executed concur
 | 123. Svelte 5 Idiom Polish — Lifecycle & Reactive-State | v2.14 | 4/4 | Complete    | 2026-06-17 |
 | 124. Svelte 5 Idiom Polish — Lock-in & Visual Verification | v2.14 | 0/TBD | Not started | - |
 | 125. svelte-check → 0 — Trivial Tier | v2.14 | 4/4 | Complete    | 2026-07-15 |
-| 126. svelte-check → 0 — supabaseDataProvider | v2.14 | 4/5 | In Progress|  |
+| 126. svelte-check → 0 — supabaseDataProvider | v2.14 | 5/5 | In Progress|  |
 | 127. svelte-check → 0 — Adapter Layer & Contexts | v2.14 | 0/TBD | Not started | - |
 | 128. svelte-check → 0 — Long-Tail, Tests & Docs | v2.14 | 0/TBD | Not started | - |
 | 129. New-Feature Build — Question Inputs + Alliance Render + Nominations Fetch | v2.14 | 0/TBD | Not started | - |

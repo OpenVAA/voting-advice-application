@@ -4,17 +4,17 @@ milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
 current_phase: 126
 current_phase_name: svelte-check → 0 — supabaseDataProvider
-status: executing
-stopped_at: Completed 126-03-PLAN.md
-last_updated: "2026-07-16T08:16:23.885Z"
+status: verifying
+stopped_at: Completed 126-05-PLAN.md
+last_updated: "2026-07-16T08:52:02.674Z"
 last_activity: 2026-07-16
 last_activity_desc: Phase 126 execution started
 progress:
   total_phases: 15
-  completed_phases: 8
+  completed_phases: 9
   total_plans: 48
-  completed_plans: 47
-  percent: 53
+  completed_plans: 48
+  percent: 60
 ---
 
 # Project State
@@ -30,10 +30,10 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 
 Phase: 126 (svelte-check → 0 — supabaseDataProvider) — EXECUTING
 Plan: 5 of 5
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-07-16 — Phase 126 execution started
 
-Progress: [██████████] 98%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -56,6 +56,7 @@ Progress: [██████████] 98%
 | Phase 126 P02 | 10m | 2 tasks | 2 files |
 | Phase 126 P04 | 2min | 1 tasks | 1 files |
 | Phase 126 P03 | 25min | 2 tasks | 2 files |
+| Phase 126 P05 | ~32min | 2 tasks | 0 files |
 
 ## Deferred Items
 
@@ -454,6 +455,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: 126-02: generified toDataObject over TRow with a Record<string,unknown> default (D-05) — backward-compatible; return type/body unchanged; yarn check delta 0
 - [Phase ?]: 126-03: Cleared supabaseDataProvider.ts to 0 svelte-check errors (total 50->46) via null->undefined RPC-arg coercion + discriminated-union narrowing (no as-unknown-as double-cast).
 - [Phase ?]: 126-03: Kept the parent_nomination_id nullable cast — the regenerated non-null string type is a nullability gap; removing it would strand the parent-lookup null-guards.
+- [Phase ?]: Phase 126 D-06 gate passed: svelte-check pinned 46/1 with supabaseDataProvider.ts (non-test) at 0; full E2E 125/0/0 proves behavior-neutrality.
 
 ### Quick Tasks Completed
 
@@ -498,8 +500,8 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-07-16T08:16:15.614Z
-Stopped at: Completed 126-03-PLAN.md
+Last session: 2026-07-16T08:52:02.664Z
+Stopped at: Completed 126-05-PLAN.md
 Resume file: None
 Work done this session (122-05 Task 2):
 
