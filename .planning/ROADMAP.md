@@ -486,7 +486,7 @@ Plans:
   2. The `.test.ts` / `.spike` type errors (~19) are resolved — fixed or dead scaffolding removed (TYPE-08).
   3. The `apps/docs` a11y svelte-check warning is resolved so monorepo svelte-check shows 0 warnings (TYPE-09).
 
-**Plans**: 4/5 plans executed
+**Plans**: 5/5 plans executed
 
 Plans:
 **Wave 1** *(parallel — disjoint file sets)*
@@ -498,7 +498,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 128-05-PLAN.md — D-07 full acceptance gate: build + unit + frontend svelte-check 0/0 + docs svelte-check 0/0 + one full green E2E run (fresh dev server on :5173, `yarn db:reset` first; 502-wedge remedy) [Wave 2, depends on 128-01..128-04]
+- [x] 128-05-PLAN.md — D-07 full acceptance gate: build + unit + frontend svelte-check 0/0 + docs svelte-check 0/0 + one full green E2E run (fresh dev server on :5173, `yarn db:reset` first; 502-wedge remedy) [Wave 2, depends on 128-01..128-04]
 
 #### Phase 129: New-Feature Build — Question Inputs + Alliance Render + Nominations Fetch
 
@@ -581,7 +581,7 @@ The three workstreams are largely independent and may be planned/executed concur
 | 125. svelte-check → 0 — Trivial Tier | v2.14 | 4/4 | Complete    | 2026-07-15 |
 | 126. svelte-check → 0 — supabaseDataProvider | v2.14 | 5/5 | Complete    | 2026-07-16 |
 | 127. svelte-check → 0 — Adapter Layer & Contexts | v2.14 | 3/3 | Complete    | 2026-07-16 |
-| 128. svelte-check → 0 — Long-Tail, Tests & Docs | v2.14 | 4/5 | In Progress|  |
+| 128. svelte-check → 0 — Long-Tail, Tests & Docs | v2.14 | 5/5 | In Progress|  |
 | 129. New-Feature Build — Question Inputs + Alliance Render + Nominations Fetch | v2.14 | 0/TBD | Not started | - |
 | 130. E2E Specs — New-Feature Coverage | v2.14 | 0/TBD | Not started | - |
 | 131. E2E Reliability Hardening — Deferred Flake/Race Triage | v2.14 | 0/TBD | Not started | - |
