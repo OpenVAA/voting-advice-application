@@ -102,7 +102,7 @@ New settings-driven branches not yet covered by the existing 19 perm specs.
 - [x] **TYPE-05**: `supabaseDataWriter.ts` and the rest of the Supabase adapter layer typecheck clean.
 - [x] **TYPE-06**: The context-layer type errors are resolved — `adminContext.svelte.ts` (8), `candidateContext.svelte.ts` (6), `authContext.svelte.ts` (4).
 - [ ] **TYPE-07**: The long-tail of scattered 1-per-file route/util/component type mismatches (~25) is resolved.
-- [ ] **TYPE-08**: The `.test.ts` / `.spike` type errors (~19) are resolved (fix or remove dead scaffolding).
+- [x] **TYPE-08**: The `.test.ts` / `.spike` type errors (~19) are resolved (fix or remove dead scaffolding).
 - [ ] **TYPE-09**: The `apps/docs` a11y svelte-check warning is resolved (monorepo svelte-check = 0 warnings).
 - [ ] **TYPE-10**: `apps/frontend` svelte-check passes with **0 errors / 0 warnings**, and the CI gate is flipped from "≤ 151 baseline" to "0 absolute".
 
@@ -175,7 +175,7 @@ Each requirement maps to exactly one roadmap phase (see `.planning/ROADMAP.md` v
 | TYPE-05 | Phase 127 | Complete |
 | TYPE-06 | Phase 127 | Complete |
 | TYPE-07 | Phase 128 | Pending |
-| TYPE-08 | Phase 128 | Pending |
+| TYPE-08 | Phase 128 | Complete |
 | TYPE-09 | Phase 128 | Pending |
 | UNBLK-03 | Phase 119 | Pending |
 | UNBLK-01 | Phase 129 | Pending |
