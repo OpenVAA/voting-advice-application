@@ -5,8 +5,8 @@ milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Ze
 current_phase: 126
 current_phase_name: svelte-check → 0 — supabaseDataProvider
 status: planning
-stopped_at: Completed 125-04-PLAN.md
-last_updated: "2026-07-15T20:19:10.409Z"
+stopped_at: Phase 126 context gathered
+last_updated: "2026-07-16T07:11:38.337Z"
 last_activity: 2026-07-15
 last_activity_desc: Phase 125 complete, transitioned to Phase 126
 progress:
@@ -490,9 +490,9 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-07-15T20:07:47.941Z
-Stopped at: Completed 125-04-PLAN.md
-Resume file: None
+Last session: 2026-07-16T07:11:38.326Z
+Stopped at: Phase 126 context gathered
+Resume file: .planning/phases/126-svelte-check-0-supabasedataprovider/126-CONTEXT.md
 Work done this session (122-05 Task 2):
 
 - Drove the EFLOW-10b bank-auth full-browser journey (`candidate-bank-auth-journey.spec.ts`) to SINGLE-PASS GREEN (`1 passed`, no skip/did-not-run) against the orchestrator-owned live env. Commit daab88f06 (tests/ only).
