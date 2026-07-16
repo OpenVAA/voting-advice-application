@@ -5,15 +5,15 @@ milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Ze
 current_phase: 126
 current_phase_name: svelte-check → 0 — supabaseDataProvider
 status: executing
-stopped_at: Phase 126 context gathered
-last_updated: "2026-07-16T07:44:36.438Z"
-last_activity: 2026-07-15
-last_activity_desc: Phase 125 complete, transitioned to Phase 126
+stopped_at: Completed 126-01-PLAN.md
+last_updated: "2026-07-16T07:49:42.973Z"
+last_activity: 2026-07-16
+last_activity_desc: Phase 126 execution started
 progress:
   total_phases: 15
   completed_phases: 8
-  total_plans: 43
-  completed_plans: 43
+  total_plans: 48
+  completed_plans: 44
   percent: 53
 ---
 
@@ -24,16 +24,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 125 — svelte-check → 0 — Trivial Tier
+**Current focus:** Phase 126 — svelte-check → 0 — supabaseDataProvider
 
 ## Current Position
 
-Phase: 126 — svelte-check → 0 — supabaseDataProvider
-Plan: Not started
+Phase: 126 (svelte-check → 0 — supabaseDataProvider) — EXECUTING
+Plan: 2 of 5
 Status: Ready to execute
-Last activity: 2026-07-15 — Phase 125 complete, transitioned to Phase 126
+Last activity: 2026-07-16 — Phase 126 execution started
 
-Progress: [██████████] 100%
+Progress: [█████████░] 92%
 
 ## Performance Metrics
 
@@ -52,6 +52,7 @@ Progress: [██████████] 100%
 | Phase 125 P02 | 2min | 2 tasks | 6 files |
 | Phase 125 P03 | 1min | 2 tasks | 4 files |
 | Phase 125 P04 | 19min | 2 tasks | 0 files |
+| Phase 126 P01 | 2min | 2 tasks | 1 files |
 
 ## Deferred Items
 
@@ -446,6 +447,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: TYPE-02 (125-02): removed dead cookies arg from 6 admin-jobs routes (destructure + getUserData call); getUserData not widened (D-02); svelte-check 143 → 137, auth gate behavior-neutral
 - [Phase ?]: 125-03: deleted leftover _spikes-017-019 read-write-split scaffolding (4 files, git rm -r); TYPE-03 cluster cleared 137→133 svelte-check errors; _spikes-020 untouched; unit suite green (758)
 - [Phase ?]: Phase 125 D-04 gate: svelte-check 151 → 133 (exactly −18), three clusters (qs/cookies/spike) at zero, no net-new; build+unit green; E2E 125/0/0 behavior-neutrality pass
+- [Phase ?]: 126-01: regen-only fix (yarn db:types) types get_nominations and drops svelte-check 133->50; generated types are single source of truth, never hand-edited (D-01/D-02).
 
 ### Quick Tasks Completed
 
@@ -490,9 +492,9 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-07-16T07:11:38.326Z
-Stopped at: Phase 126 context gathered
-Resume file: .planning/phases/126-svelte-check-0-supabasedataprovider/126-CONTEXT.md
+Last session: 2026-07-16T07:49:42.964Z
+Stopped at: Completed 126-01-PLAN.md
+Resume file: None
 Work done this session (122-05 Task 2):
 
 - Drove the EFLOW-10b bank-auth full-browser journey (`candidate-bank-auth-journey.spec.ts`) to SINGLE-PASS GREEN (`1 passed`, no skip/did-not-run) against the orchestrator-owned live env. Commit daab88f06 (tests/ only).
