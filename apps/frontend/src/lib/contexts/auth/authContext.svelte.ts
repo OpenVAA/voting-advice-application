@@ -96,9 +96,12 @@ export class AuthContextProvider implements AuthContext {
     });
   };
 
-  setPassword = async (opts: { password: string }): Promise<DataApiActionResult> => {
+  setPassword = async (opts: { currentPassword?: string; password: string }): Promise<DataApiActionResult> => {
     const dw = await prepareDataWriter(dataWriter);
-    return dw.setPassword({ ...opts, authToken: '', currentPassword: '' });
+    // Behavior-neutral: the Supabase `_setPassword` ignores currentPassword — the active
+    // session is verified via cookies, not the old password (Pitfall 1). Default to '' for
+    // the register/reset flows that omit it (mirrors the former hardcoded currentPassword: '').
+    return dw.setPassword({ password: opts.password, currentPassword: opts.currentPassword ?? '', authToken: '' });
   };
 }
 

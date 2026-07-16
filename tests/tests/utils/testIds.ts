@@ -68,7 +68,10 @@ export const testIds = {
     settings: {
       currentPassword: 'settings-current-password',
       newPassword: 'settings-new-password',
-      confirmPassword: 'settings-confirm-password',
+      // NB. the password confirmation input's live id is the component-hardcoded
+      // `candidate.passwordSetter.confirm` (PasswordSetter.svelte:80) — the former
+      // settings-scoped `confirmPassword` entry was dead (its prop fell into <form>
+      // restProps and never rendered a usable id) and was removed (128-02, D-03).
       updateButton: 'settings-update-password'
     },
     preview: {

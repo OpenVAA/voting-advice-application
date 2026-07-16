@@ -117,8 +117,7 @@ Shows the candidate's user settings.
           bind:valid={isNewPasswordValid}
           bind:errorMessage={validationError}
           bind:password
-          bind:this={passwordSetterRef}
-          confirmPasswordTestId="settings-confirm-password" />
+          bind:this={passwordSetterRef} />
 
         {#if status === 'error'}
           <ErrorMessage inline message={t('candidateApp.settings.error.changePassword')} class="mb-lg mt-md" />

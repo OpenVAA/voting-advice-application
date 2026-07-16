@@ -35,8 +35,16 @@ export type AuthContext = {
 
   /**
    * Change the current user's password.
-   * Only requires the new password -- old password requirement dropped per user decision.
+   * Mirrors the writer's real `setPassword` shape (universalDataWriter.ts:147:
+   * `WithAuth & { currentPassword: string; password: string }`). `currentPassword` is
+   * UI-collected but a Supabase-side no-op (the session, not the old password, is verified
+   * — Pitfall 1). It is OPTIONAL at this wrapper level because the wrapper serves three
+   * flows: the settings change-password page supplies it, while the register (first-set)
+   * and password-reset (post-recovery) flows have no current password to supply and call
+   * `setPassword({ password })`. The impl defaults it to `''` when forwarding to the writer's
+   * required shim, so runtime behavior is unchanged across all three flows.
+   * @param currentPassword - The current password (optional; backend no-op under Supabase session auth).
    * @param password - The new password.
    */
-  setPassword: (opts: { password: string }) => Promise<DataApiActionResult>;
+  setPassword: (opts: { currentPassword?: string; password: string }) => Promise<DataApiActionResult>;
 };
