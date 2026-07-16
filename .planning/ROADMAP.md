@@ -466,8 +466,13 @@ Wave 3:
 **Plans**: 3 plans
 
 Plans:
+**Wave 1**
+
 - [ ] 127-01-PLAN.md — TYPE-06 / D-01: drop the dead Promise plumbing (retype prepareDataWriter param to sync UniversalDataWriter, rename dataWriterPromise bindings + candidateUserDataState field/factory + test fallout) — clears all 18 context errors [Wave 1]
 - [ ] 127-02-PLAN.md — TYPE-05 / D-02 + discretion: flip JobMessage interface→type alias (fixes both admin_jobs inserts) + supabaseDataWriter residuals (drop ['Row'], documented `as Json` cast) — writer + adminWriter → 0 [Wave 1]
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 127-03-PLAN.md — D-06 full acceptance gate: build + full unit + exact svelte-check 46→24/1 (5 target files at 0) + one full E2E suite run green (behavior-neutrality trust signal) [Wave 2, depends on 127-01, 127-02]
 
 #### Phase 128: svelte-check → 0 — Long-Tail, Tests & Docs
