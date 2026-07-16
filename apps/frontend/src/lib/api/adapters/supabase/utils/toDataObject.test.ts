@@ -72,4 +72,38 @@ describe('toDataObject', () => {
     expect(result.sort_order).toBeUndefined();
     expect(result.custom_data).toBeUndefined();
   });
+
+  it('accepts a concrete typed row without an input cast and maps identically to an untyped call (locks D-05 generic)', () => {
+    // A concrete row type — NOT Record<string, unknown>. This must flow into the
+    // defaulted generic `toDataObject<TRow>` without an `as Record<string, unknown>` cast.
+    // If a future change narrowed the parameter back to `Record<string, unknown>`,
+    // this typed literal would fail to typecheck (excess-property / index-signature).
+    type NominationRow = {
+      id: string;
+      name: { en: string };
+      short_name: null;
+      info: null;
+      sort_order: number;
+    };
+    const typedRow: NominationRow = {
+      id: 'nom-1',
+      name: { en: 'Nomination' },
+      short_name: null,
+      info: null,
+      sort_order: 7
+    };
+    const typedResult = toDataObject(typedRow, 'en');
+    const untypedResult = toDataObject(
+      { id: 'nom-1', name: { en: 'Nomination' }, short_name: null, info: null, sort_order: 7 },
+      'en'
+    );
+    expect(typedResult).toEqual(untypedResult);
+    expect(typedResult).toEqual({
+      id: 'nom-1',
+      name: 'Nomination',
+      shortName: null,
+      info: null,
+      order: 7
+    });
+  });
 });
