@@ -5,15 +5,15 @@ milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Ze
 current_phase: 127
 current_phase_name: svelte-check → 0 — Adapter Layer & Contexts
 status: executing
-stopped_at: Completed 127-01-PLAN.md
-last_updated: "2026-07-16T11:42:57.000Z"
+stopped_at: Completed 127-02-PLAN.md
+last_updated: "2026-07-16T11:47:49.616Z"
 last_activity: 2026-07-16
 last_activity_desc: Phase 127 execution started
 progress:
   total_phases: 15
   completed_phases: 9
   total_plans: 51
-  completed_plans: 49
+  completed_plans: 50
   percent: 60
 ---
 
@@ -29,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 ## Current Position
 
 Phase: 127 (svelte-check → 0 — Adapter Layer & Contexts) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-07-16 — Phase 127 execution started
 
-Progress: [██████████] 96%
+Progress: [██████████] 98%
 
 ## Performance Metrics
 
@@ -58,6 +58,7 @@ Progress: [██████████] 96%
 | Phase 126 P03 | 25min | 2 tasks | 2 files |
 | Phase 126 P05 | ~32min | 2 tasks | 0 files |
 | Phase 127 P01 | 12min | 2 tasks | 6 files |
+| Phase 127 P02 | 3min | 2 tasks | 2 files |
 
 ## Deferred Items
 
@@ -459,6 +460,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Phase 126 D-06 gate passed: svelte-check pinned 46/1 with supabaseDataProvider.ts (non-test) at 0; full E2E 125/0/0 proves behavior-neutrality.
 - [Phase ?]: 127-01: retyped prepareDataWriter param to synchronous UniversalDataWriter (kept async return); cleared all 18 TYPE-06 context errors (svelte-check 46->28)
 - [Phase ?]: 127-01: renamed local await-consts to dw at 5 sites to avoid the renamed dataWriter import shadowing itself (TDZ)
+- [Phase ?]: 127-02: JobMessage interface->type alias makes JobMessage[] Json-assignable, fixing both admin_jobs insert sites at source; nominations map annotation dropped (partial select) + documented as-Json RPC cast. TYPE-05 cleared; svelte-check 28/1 -> 24/1.
 
 ### Quick Tasks Completed
 
@@ -503,8 +505,8 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-07-16T11:42:50.251Z
-Stopped at: Completed 127-01-PLAN.md
+Last session: 2026-07-16T11:47:49.606Z
+Stopped at: Completed 127-02-PLAN.md
 Resume file: None
 Work done this session (122-05 Task 2):
 

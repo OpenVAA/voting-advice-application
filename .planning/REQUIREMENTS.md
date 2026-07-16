@@ -99,7 +99,7 @@ New settings-driven branches not yet covered by the existing 19 perm specs.
 - [x] **TYPE-02**: The admin-jobs `+server.ts` `cookies`/fetch-event type-drift cluster (6 errors) is resolved.
 - [x] **TYPE-03**: The `_spikes-017-019` leftover spike scaffolding (4 errors) is deleted.
 - [x] **TYPE-04**: `supabaseDataProvider.ts` is typed against the generated Supabase types — its 79 errors (untyped `Json`/row shapes, possibly-null) are cleared without changing runtime behavior.
-- [ ] **TYPE-05**: `supabaseDataWriter.ts` and the rest of the Supabase adapter layer typecheck clean.
+- [x] **TYPE-05**: `supabaseDataWriter.ts` and the rest of the Supabase adapter layer typecheck clean.
 - [x] **TYPE-06**: The context-layer type errors are resolved — `adminContext.svelte.ts` (8), `candidateContext.svelte.ts` (6), `authContext.svelte.ts` (4).
 - [ ] **TYPE-07**: The long-tail of scattered 1-per-file route/util/component type mismatches (~25) is resolved.
 - [ ] **TYPE-08**: The `.test.ts` / `.spike` type errors (~19) are resolved (fix or remove dead scaffolding).
@@ -172,7 +172,7 @@ Each requirement maps to exactly one roadmap phase (see `.planning/ROADMAP.md` v
 | TYPE-02 | Phase 125 | Complete |
 | TYPE-03 | Phase 125 | Complete |
 | TYPE-04 | Phase 126 | Complete |
-| TYPE-05 | Phase 127 | Pending |
+| TYPE-05 | Phase 127 | Complete |
 | TYPE-06 | Phase 127 | Complete |
 | TYPE-07 | Phase 128 | Pending |
 | TYPE-08 | Phase 128 | Pending |

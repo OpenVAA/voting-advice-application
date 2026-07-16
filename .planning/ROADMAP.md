@@ -463,13 +463,13 @@ Wave 3:
   2. The context-layer type errors are resolved — `adminContext.svelte.ts` (8), `candidateContext.svelte.ts` (6), `authContext.svelte.ts` (4) (TYPE-06).
   3. No behavior change; unit + E2E stay green.
 
-**Plans**: 1/3 plans executed
+**Plans**: 2/3 plans executed
 
 Plans:
 **Wave 1**
 
 - [x] 127-01-PLAN.md — TYPE-06 / D-01: drop the dead Promise plumbing (retype prepareDataWriter param to sync UniversalDataWriter, rename dataWriterPromise bindings + candidateUserDataState field/factory + test fallout) — clears all 18 context errors [Wave 1]
-- [ ] 127-02-PLAN.md — TYPE-05 / D-02 + discretion: flip JobMessage interface→type alias (fixes both admin_jobs inserts) + supabaseDataWriter residuals (drop ['Row'], documented `as Json` cast) — writer + adminWriter → 0 [Wave 1]
+- [x] 127-02-PLAN.md — TYPE-05 / D-02 + discretion: flip JobMessage interface→type alias (fixes both admin_jobs inserts) + supabaseDataWriter residuals (drop ['Row'], documented `as Json` cast) — writer + adminWriter → 0 [Wave 1]
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -568,7 +568,7 @@ The three workstreams are largely independent and may be planned/executed concur
 | 124. Svelte 5 Idiom Polish — Lock-in & Visual Verification | v2.14 | 0/TBD | Not started | - |
 | 125. svelte-check → 0 — Trivial Tier | v2.14 | 4/4 | Complete    | 2026-07-15 |
 | 126. svelte-check → 0 — supabaseDataProvider | v2.14 | 5/5 | Complete    | 2026-07-16 |
-| 127. svelte-check → 0 — Adapter Layer & Contexts | v2.14 | 1/3 | In Progress|  |
+| 127. svelte-check → 0 — Adapter Layer & Contexts | v2.14 | 2/3 | In Progress|  |
 | 128. svelte-check → 0 — Long-Tail, Tests & Docs | v2.14 | 0/TBD | Not started | - |
 | 129. New-Feature Build — Question Inputs + Alliance Render + Nominations Fetch | v2.14 | 0/TBD | Not started | - |
 | 130. E2E Specs — New-Feature Coverage | v2.14 | 0/TBD | Not started | - |
