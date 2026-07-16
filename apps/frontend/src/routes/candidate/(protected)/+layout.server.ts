@@ -15,6 +15,7 @@ import { logDebugError } from '$lib/utils/logger';
 import { removeDuplicates } from '$lib/utils/removeDuplicates';
 import { buildRoute } from '$lib/utils/route';
 import type { Id } from '@openvaa/core';
+import type { SupabaseAdapterConfig } from '$lib/api/adapters/supabase/supabaseAdapter.type';
 import type { CandidateLoginError } from '$candidate/utils/loginError';
 
 export async function load({ fetch, locals }) {
@@ -24,7 +25,12 @@ export async function load({ fetch, locals }) {
   // This ensures authenticated calls (getCandidateUserData, etc.)
   // use the session cookies from the request.
   const dataWriter = await dataWriterPromise;
-  dataWriter.init({ fetch, serverClient: locals.supabase });
+  // Typed local: SupabaseAdapterConfig legitimises `serverClient` at the concrete seam.
+  // The mixin's return-type annotation (Constructor<SupabaseAdapter> & TBase) erases the
+  // widened init override, so a subtype value assignable to AdapterConfig sidesteps the
+  // fresh-object-literal excess-property check without widening the universal layer (D-01).
+  const writerConfig: SupabaseAdapterConfig = { fetch, serverClient: locals.supabase };
+  dataWriter.init(writerConfig);
 
   // Check for valid session
   const { session } = await locals.safeGetSession();
@@ -64,7 +70,9 @@ export async function load({ fetch, locals }) {
 
   // Get question data
   const dataProvider = await dataProviderPromise;
-  dataProvider.init({ fetch, serverClient: locals.supabase });
+  // Typed local (see writerConfig above): legitimises `serverClient` at the concrete seam (D-01).
+  const providerConfig: SupabaseAdapterConfig = { fetch, serverClient: locals.supabase };
+  dataProvider.init(providerConfig);
 
   // Await questionData to avoid SvelteKit streaming issues in dev mode.
   const questionData = await dataProvider
