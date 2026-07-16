@@ -192,7 +192,7 @@ Full details: `.planning/milestones/v2.13-ROADMAP.md`
 - [x] **Phase 123: Svelte 5 Idiom Polish — Lifecycle & Reactive-State** — RUNES-01/02/05: onMount/onDestroy→$effect, reactive let→$state, 2 context bugs. (completed 2026-06-17)
 - [x] **Phase 124: Svelte 5 Idiom Polish — Lock-in & Visual Verification** — RUNES-03/04: app-wide store ESLint guard + post-runes visual verification. (completed 2026-06-21)
 - [x] **Phase 125: svelte-check → 0 — Trivial Tier** — TYPE-01/02/03: qs ambient types, admin-jobs cookies cluster, _spikes-017-019 scaffolding. (completed 2026-07-15)
-- [ ] **Phase 126: svelte-check → 0 — supabaseDataProvider** — TYPE-04: type supabaseDataProvider.ts against generated Supabase types (79 errors, 52% of baseline).
+- [x] **Phase 126: svelte-check → 0 — supabaseDataProvider** — TYPE-04: type supabaseDataProvider.ts against generated Supabase types (79 errors, 52% of baseline). (completed 2026-07-16)
 - [ ] **Phase 127: svelte-check → 0 — Adapter Layer & Contexts** — TYPE-05/06: supabaseDataWriter + adapter remainder + context-layer type errors.
 - [ ] **Phase 128: svelte-check → 0 — Long-Tail, Tests & Docs** — TYPE-07/08/09: scattered long-tail mismatches, test/spike errors, docs a11y warning.
 - [ ] **Phase 129: New-Feature Build — Question Inputs + Alliance Render + Nominations Fetch** — UNBLK-01/02/04/05/06: build MultipleText + multi-choice categorical + number-scale inputs, alliance render, /nominations fetch.
@@ -557,7 +557,7 @@ The three workstreams are largely independent and may be planned/executed concur
 | 123. Svelte 5 Idiom Polish — Lifecycle & Reactive-State | v2.14 | 4/4 | Complete    | 2026-06-17 |
 | 124. Svelte 5 Idiom Polish — Lock-in & Visual Verification | v2.14 | 0/TBD | Not started | - |
 | 125. svelte-check → 0 — Trivial Tier | v2.14 | 4/4 | Complete    | 2026-07-15 |
-| 126. svelte-check → 0 — supabaseDataProvider | v2.14 | 5/5 | In Progress|  |
+| 126. svelte-check → 0 — supabaseDataProvider | v2.14 | 5/5 | Complete    | 2026-07-16 |
 | 127. svelte-check → 0 — Adapter Layer & Contexts | v2.14 | 0/TBD | Not started | - |
 | 128. svelte-check → 0 — Long-Tail, Tests & Docs | v2.14 | 0/TBD | Not started | - |
 | 129. New-Feature Build — Question Inputs + Alliance Render + Nominations Fetch | v2.14 | 0/TBD | Not started | - |
