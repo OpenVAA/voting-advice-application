@@ -436,13 +436,13 @@ Wave 3:
   2. No runtime behavior changes — the data-provider's outputs are unchanged, evidenced by the E2E suite staying green.
   3. The svelte-check baseline drops by ~79 errors.
 
-**Plans**: 2/5 plans executed
+**Plans**: 3/5 plans executed
 
 Wave 1 *(disjoint files — parallel-safe; 02/04 assert delta-0 so ordering vs the regen is irrelevant)*:
 
 - [x] 126-01-PLAN.md — D-01/D-02: regenerate the Supabase types (`yarn db:types`) so `get_nominations` is typed; atomic regen commit (measure 133 → 50)
 - [x] 126-02-PLAN.md — D-05: generify `toDataObject` backward-compatibly (defaulted generic; writer sites compile unchanged; count delta-0)
-- [ ] 126-04-PLAN.md — D-07: delete the inert `declare module 'qs';` shim from `global.d.ts` (svelte-check output unchanged)
+- [x] 126-04-PLAN.md — D-07: delete the inert `declare module 'qs';` shim from `global.d.ts` (svelte-check output unchanged)
 
 Wave 2:
 
@@ -557,7 +557,7 @@ The three workstreams are largely independent and may be planned/executed concur
 | 123. Svelte 5 Idiom Polish — Lifecycle & Reactive-State | v2.14 | 4/4 | Complete    | 2026-06-17 |
 | 124. Svelte 5 Idiom Polish — Lock-in & Visual Verification | v2.14 | 0/TBD | Not started | - |
 | 125. svelte-check → 0 — Trivial Tier | v2.14 | 4/4 | Complete    | 2026-07-15 |
-| 126. svelte-check → 0 — supabaseDataProvider | v2.14 | 2/5 | In Progress|  |
+| 126. svelte-check → 0 — supabaseDataProvider | v2.14 | 3/5 | In Progress|  |
 | 127. svelte-check → 0 — Adapter Layer & Contexts | v2.14 | 0/TBD | Not started | - |
 | 128. svelte-check → 0 — Long-Tail, Tests & Docs | v2.14 | 0/TBD | Not started | - |
 | 129. New-Feature Build — Question Inputs + Alliance Render + Nominations Fetch | v2.14 | 0/TBD | Not started | - |
