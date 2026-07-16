@@ -105,16 +105,19 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   }
 
   /**
-   * Returns the next unanswered question’s id. Wrapped in a function to not track `unansweredOpinionQuestions`.
+   * Returns the next unanswered question’s id.
+   *
+   * `findIndex` returning -1 is the NORMAL state here, not an edge case: reads inside
+   * this function ARE tracked by the enclosing `$derived.by`, so saving an answer
+   * (which removes the current question from `unansweredOpinionQuestions`) re-runs
+   * this with the current question absent. The -1 fall-through (`[-1 + 1] === [0]`)
+   * makes "Save & continue" resume at the FIRST unanswered question — both after a
+   * normal save and when re-editing an already-answered question. Do not "fix" -1
+   * to return undefined: that reroutes every save to the questions list.
    */
   function getNextQuestionId(question: AnyQuestionVariant): Id | undefined {
     const index = unansweredOpinionQuestions.findIndex((q) => q.id === question.id);
-    // `findIndex` returns -1 when the current question is not in the unanswered
-    // set (i.e. the candidate is re-editing an already-answered question); treat
-    // that as "no next question" so routing falls through to the questions list.
-    return index !== -1 && index < unansweredOpinionQuestions.length - 1
-      ? unansweredOpinionQuestions[index + 1]?.id
-      : undefined;
+    return index < unansweredOpinionQuestions.length - 1 ? unansweredOpinionQuestions[index + 1]?.id : undefined;
   }
 
   ////////////////////////////////////////////////////////////////////
