@@ -9,23 +9,11 @@
  * - `shouldAnimate` short-circuits on SSR, missing browser support,
  *   `prefers-reduced-motion: reduce` (VT-03 JS layer), and the `?notr=1`
  *   escape hatch (decision D-02 / 99-2).
- * - `startViewTransition` is a typed wrapper around the browser-native
- *   `document.startViewTransition` (SvelteKit ships no View-Transition type as
- *   of this repo), avoiding `any` per the CLAUDE.md TS-strict rule.
+ * - `startViewTransition` is a thin wrapper around the browser-native
+ *   `document.startViewTransition`, using the built-in `lib.dom.d.ts`
+ *   `ViewTransition` type (TS 5.9.3) so no local interface is hand-rolled and
+ *   no `any` is needed (CLAUDE.md TS-strict rule).
  */
-
-/** Minimal shape of the browser-native View-Transition object. */
-interface ViewTransition {
-  finished: Promise<void>;
-  ready: Promise<void>;
-  updateCallbackDone: Promise<void>;
-  skipTransition: () => void;
-}
-
-/** `Document` augmented with the View-Transitions API (not in the DOM lib here). */
-interface DocumentWithViewTransition extends Document {
-  startViewTransition: (updateCallback: () => void | Promise<void>) => ViewTransition;
-}
 
 /**
  * Returns whether a navigation to `destUrl` should play a View Transition.
@@ -36,22 +24,21 @@ interface DocumentWithViewTransition extends Document {
  */
 export function shouldAnimate(destUrl: URL | undefined): boolean {
   if (typeof document === 'undefined') return false;
-  if (!(document as Partial<DocumentWithViewTransition>).startViewTransition) return false;
+  if (!('startViewTransition' in document)) return false;
   if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return false;
   if (destUrl?.searchParams.get('notr') === '1') return false;
   return true;
 }
 
 /**
- * Typed wrapper around the browser-native `document.startViewTransition`.
+ * Thin wrapper around the browser-native `document.startViewTransition`.
  *
  * Returns the `ViewTransition` object, or `undefined` if the API is
  * unavailable. Contains NO reduced-motion / `notr` logic — that gate lives in
- * `shouldAnimate`; this is purely the typed invocation wrapper.
+ * `shouldAnimate`; this is purely the feature-checked invocation wrapper.
  */
 export function startViewTransition(updateCallback: () => void | Promise<void>): ViewTransition | undefined {
   if (typeof document === 'undefined') return undefined;
-  const doc = document as Partial<DocumentWithViewTransition>;
-  if (!doc.startViewTransition) return undefined;
-  return doc.startViewTransition(updateCallback);
+  if (!('startViewTransition' in document)) return undefined;
+  return document.startViewTransition(updateCallback);
 }
