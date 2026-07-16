@@ -55,7 +55,26 @@ via `aria-describedby` while shown.
   // hover + keyboard focus, associate via `aria-describedby` while shown.
   let hovered = $state(false);
   let focused = $state(false);
-  const visible = $derived(forceShow || hovered || focused);
+  // `dismissed` overrides the hover/focus reveal so the popup can be closed in
+  // place (Escape key or clicking the trigger) without moving the pointer or
+  // focus — WCAG 2.1 AA SC 1.4.13 (Content on Hover or Focus) dismissibility.
+  let dismissed = $state(false);
+  const visible = $derived(!dismissed && (forceShow || hovered || focused));
+
+  // Clear the dismissal once the trigger is no longer hovered or focused so a
+  // subsequent hover/focus reveals the definition again.
+  $effect(() => {
+    if (!hovered && !focused) dismissed = false;
+  });
+
+  /**
+   * Toggle the definition popup. Gives the trigger `button` real activation
+   * behaviour (click / Enter / Space) so its announced role matches what it
+   * does — WCAG 2.1 AA SC 4.1.2 (Name, Role, Value).
+   */
+  function toggle(): void {
+    dismissed = visible;
+  }
 
   // Position the popup once it is in the DOM (it cannot be measured at mount
   // because it is conditionally rendered).
@@ -83,29 +102,40 @@ via `aria-describedby` while shown.
 <svelte:window
   onresize={() => {
     if (visible) calculatePosition();
+  }}
+  onkeydown={(e) => {
+    // WCAG 2.1 AA SC 1.4.13: content shown on hover/focus must be dismissible
+    // without moving the pointer or focus. Escape hides the popup in place.
+    if (e.key === 'Escape' && visible) dismissed = true;
   }} />
 
-<!-- bind: keep — triggerElement is plain let; read in calculatePosition. tabindex makes the
-     definition reachable by keyboard (W3C APG tooltip); aria-describedby links it while shown.
-     Markup is whitespace-FLUSH (the `><span … </span\n  >{#if` trick, mirroring
-     QuestionHeading): a stray text-node space anywhere between the trigger text and the
-     conditional popup would leak into the host heading's text (e.g. "Likert  7"). -->
-<span
-  class="group relative"
-  bind:this={triggerElement}
-  role="button"
-  tabindex="0"
-  aria-describedby={visible ? definitionId : undefined}
-  data-testid="voter-questions-term-trigger"
-  onmouseenter={() => (hovered = true)}
-  onmouseleave={() => (hovered = false)}
-  onfocusin={() => (focused = true)}
-  onfocusout={() => (focused = false)}
-  ><span
-    {...concatClass(
-      restProps,
-      showUnderline ? 'underline underline-offset-[0.2em] decoration-primary decoration-dotted' : ''
-    )}>{@render children?.()}</span
+<!-- bind: keep — triggerElement is plain let; read in calculatePosition. The trigger is a real
+     <button> (W3C APG toggletip): it owns keyboard focus + Enter/Space/click activation, so the
+     announced "button" role matches real behaviour (WCAG 4.1.2) and no misleading role-on-a-span +
+     tabindex is needed. aria-describedby links the definition while shown; aria-expanded reflects
+     the popup state. The button is unstyled/inline (Tailwind preflight already resets its bg,
+     border, padding, margin and inherits font + colour) so the term renders as plain inline text.
+     Markup is whitespace-FLUSH (the `></button\n  >{#if` trick, mirroring QuestionHeading): a stray
+     text-node space anywhere between the trigger text and the conditional popup would leak into the
+     host heading's text (e.g. "Likert  7"). -->
+<span class="group relative" bind:this={triggerElement}
+  ><button
+    type="button"
+    class="inline appearance-none"
+    aria-describedby={visible ? definitionId : undefined}
+    aria-expanded={visible}
+    data-testid="voter-questions-term-trigger"
+    onclick={toggle}
+    onmouseenter={() => (hovered = true)}
+    onmouseleave={() => (hovered = false)}
+    onfocusin={() => (focused = true)}
+    onfocusout={() => (focused = false)}
+    ><span
+      {...concatClass(
+        restProps,
+        showUnderline ? 'underline underline-offset-[0.2em] decoration-primary decoration-dotted' : ''
+      )}>{@render children?.()}</span
+  ></button
   >{#if visible}<!-- bind: keep — definitionDiv is $state; read in calculatePosition ($effect + onresize) -->
     <div
       bind:this={definitionDiv}
