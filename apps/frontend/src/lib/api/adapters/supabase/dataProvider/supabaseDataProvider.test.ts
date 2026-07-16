@@ -1594,9 +1594,13 @@ describe('SupabaseDataProvider', () => {
 
       await provider.getNominationData();
 
+      // The regenerated RPC types `p_election_id` / `p_constituency_id` as
+      // `string | undefined`, so the provider now coerces the null fan-out
+      // locals to `undefined`. Omitting the value applies the SQL DEFAULT NULL
+      // — semantically identical to passing null (behavior-neutral).
       expect(mockSupabase.rpc).toHaveBeenCalledWith('get_nominations', {
-        p_election_id: null,
-        p_constituency_id: null,
+        p_election_id: undefined,
+        p_constituency_id: undefined,
         p_include_unconfirmed: false
       });
     });

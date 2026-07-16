@@ -11,6 +11,7 @@ import type {
   AnyEntityVariantData,
   AnyNominationVariantPublicData,
   AnyQuestionVariantData,
+  Colors,
   ConstituencyData,
   ConstituencyGroupData,
   ElectionData,
@@ -256,8 +257,12 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     const calls = electionIds.flatMap((eid) =>
       constituencyIds.map((cid) =>
         this.supabase.rpc('get_nominations', {
-          p_election_id: eid,
-          p_constituency_id: cid,
+          // The regenerated RPC types both filters as `string | undefined`; the
+          // fan-out locals are `string | null`. Coercing null → undefined omits
+          // the key, applying the SQL DEFAULT NULL — semantically identical to
+          // passing null (behavior-neutral).
+          p_election_id: eid ?? undefined,
+          p_constituency_id: cid ?? undefined,
           p_include_unconfirmed: includeUnconfirmed
         })
       )
@@ -285,14 +290,12 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     // is purely in-memory and adds no DB round-trips.
     const nominationTypeById = new Map<string, string>();
     for (const row of data) {
-      if (row.id != null && row.entity_type != null) {
-        nominationTypeById.set(row.id as string, row.entity_type as string);
-      }
+      nominationTypeById.set(row.id, row.entity_type);
     }
 
     for (const row of data) {
-      if (seenNominationIds.has(row.id as string)) continue;
-      seenNominationIds.add(row.id as string);
+      if (seenNominationIds.has(row.id)) continue;
+      seenNominationIds.add(row.id);
       // Build nomination object from nomination-level columns
       const parentNominationId = row.parent_nomination_id as string | null | undefined;
       const parentNominationType =
@@ -313,7 +316,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
         election_symbol: row.election_symbol,
         parent_nomination_id: parentNominationId ?? null
       };
-      const nomObj = toDataObject(nomRow as Record<string, unknown>, locale, this.defaultLocale);
+      const nomObj = toDataObject(nomRow, locale, this.defaultLocale);
 
       // Phase 64 P01: enforce the Nomination "either both or neither"
       // invariant (packages/data/src/objects/nominations/base/nomination.ts:38-45).
@@ -339,7 +342,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
       nominations.push(nominationOut as AnyNominationVariantPublicData);
 
       // Extract and deduplicate entity
-      const entityId = row.entity_id as string;
+      const entityId = row.entity_id;
       if (entityId && !entityMap.has(entityId)) {
         const entityRow = {
           id: entityId,
@@ -352,26 +355,47 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
           subtype: row.entity_subtype,
           custom_data: row.entity_custom_data
         };
-        const entityObj = toDataObject(entityRow as Record<string, unknown>, locale, this.defaultLocale);
-        const entityType = row.entity_type as string;
+        const entityObj = toDataObject(entityRow, locale, this.defaultLocale);
+        const entityType = row.entity_type;
 
-        const entity: Record<string, unknown> = {
-          ...entityObj,
-          type: entityType,
+        // Explicitly-typed shared DataObject fields (localized name/short_name/
+        // info + mapped order/customData from toDataObject) plus the JSONB
+        // runtime guards for image and answers. Building a variant-specific
+        // object below lets the discriminated `AnyEntityVariantData` union
+        // resolve structurally — no union-suppressing cast (D-04).
+        const base = {
+          id: entityId,
+          name: entityObj.name as string | null | undefined,
+          shortName: entityObj.shortName as string | null | undefined,
+          info: entityObj.info as string | null | undefined,
+          color: entityObj.color as Colors | null | undefined,
+          order: entityObj.order as number | null | undefined,
+          subtype: entityObj.subtype as string | null | undefined,
+          customData: entityObj.customData as object | null | undefined,
           // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
           image: parseStoredImage(row.entity_image as Json as unknown as StoredImage | null, supabaseUrl),
           // reason: JSONB → LocalizedAnswers shape; structural guard applied inside parseAnswers.
           answers: parseAnswers(row.entity_answers as Json as unknown as LocalizedAnswers | null, locale)
         };
 
-        // Candidate-specific fields
+        let entity: AnyEntityVariantData;
         if (entityType === ENTITY_TYPE.Candidate) {
-          entity.firstName = row.entity_first_name;
-          entity.lastName = row.entity_last_name;
-          entity.organizationId = row.entity_organization_id;
+          entity = {
+            ...base,
+            type: ENTITY_TYPE.Candidate,
+            firstName: row.entity_first_name,
+            lastName: row.entity_last_name,
+            organizationId: row.entity_organization_id
+          };
+        } else if (entityType === ENTITY_TYPE.Organization) {
+          entity = { ...base, type: ENTITY_TYPE.Organization, name: base.name ?? '' };
+        } else if (entityType === ENTITY_TYPE.Faction) {
+          entity = { ...base, type: ENTITY_TYPE.Faction };
+        } else {
+          entity = { ...base, type: ENTITY_TYPE.Alliance };
         }
 
-        entityMap.set(entityId, entity as AnyEntityVariantData);
+        entityMap.set(entityId, entity);
       }
     }
 
