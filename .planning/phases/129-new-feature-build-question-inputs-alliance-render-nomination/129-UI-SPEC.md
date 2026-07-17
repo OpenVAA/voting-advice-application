@@ -195,18 +195,26 @@ in `tests/tests/utils/testIds.ts`.
 
 ## UI Considerations
 
-Applicable state considerations resolved: 6 covered, 2 backstop, 0 unresolved.
+Applicable state considerations resolved (probe-verified over C-1..C-4): 12 covered, 4 backstop, 0 unresolved.
 
 | Category | Element(s) | Status | Resolution / Reason |
 |----------|------------|--------|---------------------|
 | empty | MultipleText (candidate, no values) | ✅ covered | Renders one empty row (or `min` rows if `min>1`); the row is the affordance — see Copywriting Contract. No blank-slate copy needed. |
 | empty | MultipleText value on entity-detail info tab (voter, no values) | ✅ covered | Reuses existing entity-detail "hasn't answered" convention (`questions.answers.*`). |
 | empty | Alliance results section (no alliance in voter's scope) | ✅ covered | Section/tab not rendered — matches existing per-type results behavior; no empty card shown. |
+| empty | Number-scale / multi-choice (no answer yet) | ✅ covered | Number: slider unset until voter interacts (no `text-primary` on label until set). Multi-choice: zero boxes checked = unanswered (D-07). Both follow the existing unanswered-opinion convention. |
+| loading | All new inputs + alliance card | ✅ covered | None of the new surfaces fetch — inputs bind to already-loaded question data behind the existing page-level loading states; the alliance card rides the existing results-list loading path (Phase 69). No new loading UI. |
+| error | All new inputs (save failure / unsupported) | ✅ covered | Save errors reuse the existing `QuestionActions`/save-flow error handling; the inline `error.unsupportedQuestion` fallback remains for genuinely unsupported types (the new branches remove it for number/multi-choice/MultipleText). See Copywriting Contract error row. |
+| populated | All new inputs + alliance card (normal state) | ✅ covered | The populated state IS the C-1..C-4 contracts (row list with values, slider at value, checked boxes, alliance card with gauge + members). |
 | zero-one-many | Multi-choice selections vs min/max | ✅ covered | 0 = unanswered; helper text drives 1..min..max; candidate Save gated, voter stays Skip outside range (D-07). |
 | zero-one-many | MultipleText rows (1 → many; min-floor) | ✅ covered | Add appends; remove gated at `min`; reorder up/down disabled at ends. |
+| zero-one-many | Alliance member orgs (in-card children) | ✅ covered | Existing Phase-69 subcard list renders 1..n members; seed guarantees ≥2 members for Alliance A (D-10 verify). Verify-only surface. |
 | partial | Number-scale mid-value + display dual-marker | ✅ covered | Live value label; display mode shows voter + entity markers read-only (D-04). |
+| partial | Multi-choice display mode (voter and entity picked different subsets) | ✅ covered | `yourAnswer` markers on all voter-selected choices + `otherLabel` on entity-selected choices (C-3 display-mode row). |
 | overflow | MultipleText long strings / many rows | 🧪 backstop | Long text wraps within the row `Input`; many rows scroll in the form flow — verify no horizontal overflow / control-cluster clipping at narrow viewport (held-out visual check). |
 | long-text | Multi-choice long choice labels in `h-32 w-32` box + checkbox helper | 🧪 backstop | Checkbox mode reuses radio label wrapping; verify long localized labels (fi/sv compound words) and the "Select N…" helper wrap without breaking the grid (held-out visual check, dark + light). |
+| overflow | Number-scale value label (large min/max spans, e.g. 0–100+) | 🧪 backstop | Label width bounded by digit count of `max`; verify label doesn't shift layout while sliding at narrow viewport (held-out visual check, rides the same pass as the MultipleText check). |
+| long-text | Alliance card summary + long org names in subcards | 🧪 backstop | Existing Phase-69 wrapping assumed correct; verify long localized org names + "X candidates across N parties" line wrap in-card once the seed change surfaces the card (rides the D-10 render verification). |
 
 ---
 
