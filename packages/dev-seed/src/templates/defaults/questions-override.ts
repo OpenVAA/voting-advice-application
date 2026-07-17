@@ -9,6 +9,10 @@
  *   - 1  boolean
  *   Total: 24
  *
+ * 1/5 of the questions (indices 0, 5, 10, 15, 20) additionally carry a
+ * `customData.terms` definition whose trigger is a word from the question's
+ * own name, so the in-text term popup (Term.svelte) renders in the demo data.
+ *
  * `multipleChoiceCategorical` was in this mix earlier but was dropped — the
  * default template is now single-choice only. The latent emitter still
  * supports `multipleChoiceCategorical` for custom templates that want it
@@ -86,6 +90,34 @@ function capitalize(s: string): string {
 }
 
 /**
+ * Pick a term-trigger word from a generated question name: the longest
+ * mid-sentence word (first word excluded — it is capitalized), stripped of
+ * punctuation, length >= 4. Deterministic: longest wins, ties broken by first
+ * occurrence. Returns undefined when no word qualifies.
+ *
+ * The trigger must appear VERBATIM in the question text — `QuestionHeading`
+ * splits `question.text` on the trigger strings to render the `<Term>` popup
+ * affordance. Locale fan-out mirrors the `en` name to all locales, so an
+ * English trigger matches in every locale.
+ */
+function pickTermTrigger(name: string): string | undefined {
+  const words = name
+    .split(/\s+/)
+    .slice(1)
+    .map((w) => w.replace(/[^\p{L}\p{N}-]/gu, ''))
+    .filter((w) => w.length >= 4);
+  if (words.length === 0) return undefined;
+  return words.reduce((longest, w) => (w.length > longest.length ? w : longest));
+}
+
+/**
+ * Every TERM_EVERY-th question gets a `customData.terms` definition (1/5 of
+ * the 24 questions → indices 0, 5, 10, 15, 20) so the in-text term popup
+ * (`Term.svelte` toggletip) is exercised by the default demo dataset.
+ */
+const TERM_EVERY = 5;
+
+/**
  * Questions override. Replaces QuestionsGenerator's type rotation with the
  * fixed split. Row shape matches QuestionsGenerator output (external_id,
  * project_id, type, name, choices[?], category ref, is_generated, sort_order,
@@ -131,6 +163,26 @@ export function questionsOverride(_fragment: unknown, ctx: Ctx): Array<Record<st
       row.custom_data = { filterable: true };
     }
     // boolean: no choices (QuestionsGenerator pattern — boolean is schema-free).
+
+    // 1/5 of questions carry a term definition in customData (see TERM_EVERY).
+    // Merged AFTER the type branches so the categorical `filterable` flag is
+    // preserved. Trigger is a word from the question's own name; content is
+    // seeded-faker prose (deterministic — same seed, same rows).
+    if (i % TERM_EVERY === 0) {
+      const trigger = pickTermTrigger((row.name as { en: string }).en);
+      if (trigger) {
+        row.custom_data = {
+          ...(row.custom_data as Record<string, unknown> | undefined),
+          terms: [
+            {
+              triggers: [trigger],
+              title: capitalize(trigger),
+              content: capitalize(faker.lorem.sentence({ min: 8, max: 14 }))
+            }
+          ]
+        };
+      }
+    }
 
     rows.push(row);
   }
