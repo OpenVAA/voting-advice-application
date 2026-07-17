@@ -514,14 +514,24 @@ Plans:
 
 **Plans**: 8 plans
 Plans:
+**Wave 1**
 
 - [ ] 129-01-PLAN.md — MultipleChoiceCategoricalQuestion matching trio (D-06) + isNumberQuestion guard (Wave 1)
 - [ ] 129-02-PLAN.md — customData min/max + count-constraint keys (D-02/D-07) + Supabase number min/max bridge (Wave 1)
 - [ ] 129-03-PLAN.md — /nominations loader questionData fetch parity (UNBLK-04, D-11) (Wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 129-04-PLAN.md — NumberScaleInput slider + OpinionQuestionInput number branch + dual-marker display (D-03/D-04) (Wave 2)
 - [ ] 129-05-PLAN.md — MultipleTextInput row-list + QuestionInput dispatch (D-01/D-02) + i18n ×7 (Wave 2)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 129-06-PLAN.md — QuestionChoices checkbox mode + validity surfacing + Save/Skip caller gates + auto-advance suppression (D-05/D-07) (Wave 3)
 - [ ] 129-07-PLAN.md — testIds registration + voter-journey walk slider/checkbox handling (D-14) (Wave 3)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [ ] 129-08-PLAN.md — e2e/base + default seed authoring (D-12/D-15/D-16), alliance sections fix (UNBLK-06), journey re-baselines + full-suite green gate (D-13/D-10) (Wave 4)
 
 **UI hint**: yes

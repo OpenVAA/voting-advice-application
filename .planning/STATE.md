@@ -4,9 +4,9 @@ milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
 current_phase: 129
 current_phase_name: New-Feature Build — Question Inputs + Alliance Render + Nominations Fetch
-status: planning
-stopped_at: Phase 128 complete, ready to plan Phase 129
-last_updated: "2026-07-17T06:40:57.724Z"
+status: executing
+stopped_at: Phase 129 UI-SPEC approved
+last_updated: "2026-07-17T13:43:53.860Z"
 last_activity: 2026-07-17
 last_activity_desc: Phase 128 complete, transitioned to Phase 129
 progress:
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 
 Phase: 129 — New-Feature Build — Question Inputs + Alliance Render + Nominations Fetch
 Plan: Not started
-Status: Ready to plan
+Status: Ready to execute
 Last activity: 2026-07-17 — Phase 128 complete, transitioned to Phase 129
 
 Progress: [██████████] 100%
@@ -516,10 +516,10 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-07-17T06:40:57.710Z
-Stopped at: Phase 128 complete, ready to plan Phase 129
+Last session: 2026-07-17T13:14:23.843Z
+Stopped at: Phase 129 UI-SPEC approved
 Resume file: 
-Work done this session (122-05 Task 2):
+.planning/phases/129-new-feature-build-question-inputs-alliance-render-nomination/129-UI-SPEC.md
 
 - Drove the EFLOW-10b bank-auth full-browser journey (`candidate-bank-auth-journey.spec.ts`) to SINGLE-PASS GREEN (`1 passed`, no skip/did-not-run) against the orchestrator-owned live env. Commit daab88f06 (tests/ only).
 - Enabled `preRegistration.enabled` SCOPED to the bank-auth-journey run: new `setupFromTemplate({ appSettingsOverride })` param (additive `merge_jsonb_column` AFTER the post-seed subset-match); paired teardown resets `{enabled:false}`. Shared `perm-not-located-2e2cg` template + `MINIMAL_BASE_APP_SETTINGS` + default suite untouched. DB-verified `{enabled:true}` during / `{enabled:false}` after.
