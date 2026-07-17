@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
-current_phase: 128
-current_phase_name: svelte-check → 0 — Long-Tail, Tests & Docs
-status: verifying
-stopped_at: Completed 128-05-PLAN.md (D-07 full acceptance gate green)
-last_updated: "2026-07-16T15:46:11.212Z"
-last_activity: 2026-07-16
-last_activity_desc: Phase 128 execution started
+current_phase: 129
+current_phase_name: New-Feature Build — Question Inputs + Alliance Render + Nominations Fetch
+status: planning
+stopped_at: Phase 128 complete, ready to plan Phase 129
+last_updated: "2026-07-17T06:40:57.724Z"
+last_activity: 2026-07-17
+last_activity_desc: Phase 128 complete, transitioned to Phase 129
 progress:
   total_phases: 15
   completed_phases: 11
@@ -28,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 
 ## Current Position
 
-Phase: 128 (svelte-check → 0 — Long-Tail, Tests & Docs) — EXECUTING
-Plan: 5 of 5
-Status: Phase complete — ready for verification
-Last activity: 2026-07-16 — Phase 128 execution started
+Phase: 129 — New-Feature Build — Question Inputs + Alliance Render + Nominations Fetch
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-07-17 — Phase 128 complete, transitioned to Phase 129
 
 Progress: [██████████] 100%
 
@@ -516,9 +516,9 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-07-16T15:46:05.459Z
-Stopped at: Completed 128-05-PLAN.md (D-07 full acceptance gate green)
-Resume file: None
+Last session: 2026-07-17T06:40:57.710Z
+Stopped at: Phase 128 complete, ready to plan Phase 129
+Resume file: 
 Work done this session (122-05 Task 2):
 
 - Drove the EFLOW-10b bank-auth full-browser journey (`candidate-bank-auth-journey.spec.ts`) to SINGLE-PASS GREEN (`1 passed`, no skip/did-not-run) against the orchestrator-owned live env. Commit daab88f06 (tests/ only).

