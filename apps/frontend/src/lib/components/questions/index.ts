@@ -1,3 +1,5 @@
+export { default as NumberScaleInput } from './NumberScaleInput.svelte';
+export * from './NumberScaleInput.type';
 export { default as OpinionQuestionInput } from './OpinionQuestionInput.svelte';
 export * from './OpinionQuestionInput.type';
 export { default as QuestionActions } from './QuestionActions.svelte';
