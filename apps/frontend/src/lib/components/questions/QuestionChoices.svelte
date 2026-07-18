@@ -180,7 +180,7 @@ The same component can also be used to display the answers of the voter and anot
     if (minSelections == null && maxSelections == null) return undefined;
     return {
       effectiveMin: minSelections ?? 1,
-      effectiveMax: maxSelections ?? (choices?.length ?? 0)
+      effectiveMax: maxSelections ?? choices?.length ?? 0
     };
   });
 
@@ -286,13 +286,15 @@ The same component can also be used to display the answers of the voter and anot
         aria-hidden="true"
         class="absolute left-16 w-4 -translate-x-1/2 bg-[var(--line-bg)]"
         style="grid-column: 2; height: calc(100% / {choices?.length} * {(choices?.length ?? 0) -
-          1}); top: calc(50% / {choices?.length})"></div>
+          1}); top: calc(50% / {choices?.length})">
+      </div>
     {:else}
       <div
         aria-hidden="true"
         class="absolute top-16 h-4 -translate-y-1/2 bg-[var(--line-bg)]"
         style="grid-row: 2; width: calc(100% / {choices?.length} * {(choices?.length ?? 0) -
-          1}); left: calc(50% / {choices?.length})"></div>
+          1}); left: calc(50% / {choices?.length})">
+      </div>
     {/if}
   {/if}
 
@@ -325,7 +327,7 @@ The same component can also be used to display the answers of the voter and anot
         <input
           type="checkbox"
           class="checkbox-primary checkbox border-lg bg-base-100 relative h-32 w-32 outline outline-4 outline-[var(--radio-bg)] disabled:opacity-100"
-          class:entitySelected={entitySelected}
+          class:entitySelected
           name="questionChoices-{question.id}"
           disabled={mode !== 'answer'}
           value={id}

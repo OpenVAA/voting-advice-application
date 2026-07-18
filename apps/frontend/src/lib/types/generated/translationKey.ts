@@ -569,6 +569,8 @@ export type TranslationKey =
   | 'questions.intro.ingress.withCategorySelection'
   | 'questions.intro.ingress.withoutCategorySelection'
   | 'questions.intro.start'
+  | 'questions.multiChoice.selectExact'
+  | 'questions.multiChoice.selectRange'
   | 'questions.next'
   | 'questions.previous'
   | 'questions.remove'
