@@ -30,9 +30,10 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
 -->
 
 <script lang="ts">
-  import { isBooleanQuestion, isSingleChoiceQuestion } from '@openvaa/data';
+  import { isBooleanQuestion, isNumberQuestion, isSingleChoiceQuestion } from '@openvaa/data';
   import { getComponentContext } from '$lib/contexts/component';
   import { logDebugError } from '$lib/utils/logger';
+  import NumberScaleInput from './NumberScaleInput.svelte';
   import QuestionChoices from './QuestionChoices.svelte';
   import ErrorMessage from '../errorMessage/ErrorMessage.svelte';
   import type { Choice } from '@openvaa/data';
@@ -108,6 +109,23 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
       {otherSelected}
       {otherLabel}
       onChange={onChange ? (d) => onChange({ value: d.value === 'yes', question: d.question }) : undefined}
+      {...restProps} />
+  {:else if isNumberQuestion(question) && question.isMatchable}
+    <!-- `isMatchable` gates on a defined min/max range so rangeless number
+         questions fall through to the unsupported fallback rather than rendering
+         a broken 0-width slider. Values routed through `ensureValue`; missing /
+         non-number answers coerce to `null` (unanswered). -->
+    {@const rawValue = question.ensureValue(answer?.value)}
+    {@const rawOther = question.ensureValue(otherAnswer?.value)}
+    {@const numberValue = typeof rawValue === 'number' ? rawValue : null}
+    {@const otherNumberValue = typeof rawOther === 'number' ? rawOther : null}
+    <NumberScaleInput
+      {question}
+      {mode}
+      value={numberValue}
+      otherValue={otherNumberValue}
+      {otherLabel}
+      onChange={onChange ? (d) => onChange({ value: d.value, question: d.question }) : undefined}
       {...restProps} />
   {:else}
     <ErrorMessage inline message={t('error.unsupportedQuestion')} class="text-center" />
