@@ -30,6 +30,15 @@ export async function load({ parent, fetch }) {
   const dataProvider = await dataProviderPromise;
   dataProvider.init({ fetch });
   return {
+    // Parity with the located layout loader (D-11): the all-nominations route is
+    // unscoped, so `getQuestionData` is called locale-only — `electionId` is optional
+    // in `GetQuestionsOptions`, and with none supplied all categories/questions are
+    // returned, which is correct for the unscoped all-nominations view.
+    questionData: dataProvider
+      .getQuestionData({
+        locale: lang
+      })
+      .catch((e) => e),
     nominationData: dataProvider
       .getNominationData({
         locale: lang

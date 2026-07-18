@@ -31,11 +31,12 @@ Provides the data used by the nominations route.
 
   $effect(() => {
     // Read data synchronously to register as dependency
+    const questionData = data.questionData;
     const nominationData = data.nominationData;
     // Reset state
     error = undefined;
     ready = false;
-    Promise.all([nominationData]).then(async (resolved) => {
+    Promise.all([questionData, nominationData]).then(async (resolved) => {
       error = await update(resolved);
     });
   });
@@ -44,9 +45,14 @@ Provides the data used by the nominations route.
    * Handle the update inside a function so that we don't track dataRoot, which would result in an infinite loop.
    * @returns `Error` if the data is invalid, `undefined` otherwise.
    */
-  async function update([nominationData]: [DPDataType['nominations'] | Error]): Promise<Error | undefined> {
+  async function update([questionData, nominationData]: [
+    DPDataType['questions'] | Error,
+    DPDataType['nominations'] | Error
+  ]): Promise<Error | undefined> {
+    if (!isValidResult(questionData, { allowEmpty: true })) return new Error('Error loading question data');
     if (!isValidResult(nominationData, { allowEmpty: true })) return new Error('Error loading nomination data');
     ctx.dataRoot.update(() => {
+      ctx.dataRoot.provideQuestionData(questionData);
       ctx.dataRoot.provideEntityData(nominationData.entities);
       ctx.dataRoot.provideNominationData(nominationData.nominations);
     });
