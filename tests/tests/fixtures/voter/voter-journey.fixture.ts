@@ -460,6 +460,35 @@ async function answerAndAdvanceToResults(page: Page, answerMode: AnswerMode, ans
   await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 15_000 });
 }
 
+/**
+ * Drive the native range slider to an EXACT `value` (129 D-03 keyboard
+ * contract: step=1, `Home`→min, `ArrowRight` +1). Unlike the walk's
+ * extreme-only Home/End branch (which only reaches min/max keyed on
+ * `answerMode`), this lands an ARBITRARY in-range value — the EQTYP-02
+ * boundary test needs mid values (e.g. 5), not just the poles.
+ *
+ * Behaviour: focus the first `question-number-slider`, press `Home` to land
+ * deterministically on `min`, then press `ArrowRight` `(value - min)` times.
+ * Driving past `max` is a NO-OP per press — the native range input clamps to
+ * `[min,max]`, so an out-of-range answer is physically impossible (the
+ * EQTYP-02 boundary proof).
+ *
+ * Never uses `fill()` — that bypasses the slider's persist-on-release logic
+ * (129 D-03). Does NOT click Next: number inputs never auto-advance
+ * (129-06); the caller clicks Next explicitly. Takes only the target value +
+ * the scale `min` (default 0) — no full question object required.
+ */
+async function answerNumberScale(page: Page, value: number, min = 0): Promise<void> {
+  const slider = page.getByTestId(testIds.voter.questions.numberSlider).first();
+  await slider.waitFor({ state: 'visible', timeout: TIMEOUTS.page });
+  await slider.focus();
+  await slider.press('Home');
+  const steps = Math.max(0, value - min);
+  for (let i = 0; i < steps; i++) {
+    await slider.press('ArrowRight');
+  }
+}
+
 export const voterJourneyTest = base.extend<VoterJourneyFixtures>({
   answerMode: ['max', { option: true }],
   answerCount: [undefined, { option: true }],
@@ -478,4 +507,4 @@ export const voterJourneyTest = base.extend<VoterJourneyFixtures>({
 
 // Internal helper exported for tests that need to compose the walk manually
 // (e.g. spec-level intermediate checkpoints between Home and /questions intro).
-export { answerAndAdvanceToResults, walkUntilQuestionsIntro };
+export { answerAndAdvanceToResults, answerNumberScale, walkUntilQuestionsIntro };

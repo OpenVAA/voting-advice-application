@@ -340,7 +340,7 @@ export default defineConfig({
     {
       name: '_probes',
       testDir: './tests/specs/_probes',
-      testMatch: /(video|questionInfo|popupNotice|orgMatching)\.probe\.spec\.ts$/,
+      testMatch: /(video|questionInfo|popupNotice|orgMatching|numberScale)\.probe\.spec\.ts$/,
       fullyParallel: false,
       use: { ...devices['Desktop Chrome'] }
     },
