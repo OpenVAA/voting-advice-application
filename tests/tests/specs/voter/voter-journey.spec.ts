@@ -21,7 +21,13 @@
  */
 
 import { createFeedbackDialog, isolateFeedbackRateLimit } from '../../fixtures/shared/feedbackDialog.fixture';
+import { createNavMenu } from '../../fixtures/shared/navMenu.fixture';
 import { expect, test } from '../../fixtures/voter/views';
+import {
+  answerAndAdvanceToResults,
+  answerNumberScale,
+  walkUntilQuestionsIntro
+} from '../../fixtures/voter/voter-journey.fixture';
 import { TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { testIds } from '../../utils/testIds';
@@ -387,6 +393,86 @@ async function dismissLeftoverDialogsBestEffort(page: Page): Promise<void> {
     .first()
     .waitFor({ state: 'hidden', timeout: TIMEOUTS.element })
     .catch(() => null);
+}
+
+/**
+ * Read a results-list card's match-score callout as an integer percentage.
+ * MatchScore.svelte renders the readout as "<n>%" (mirrors
+ * resultsPage.expectOrgMatchScore); parse the integer so the EQTYP-02 boundary
+ * test can compare POLAR_MIN vs POLAR_MAX scores numerically. Module-scope to
+ * keep the `expect(...).not.toBeNull()` guard out of the test body.
+ */
+async function readCardMatchScore(card: Locator): Promise<number> {
+  const callout = card.getByTestId(testIds.voter.results.matchScore).first();
+  await expect(callout).toBeVisible({ timeout: TIMEOUTS.slowPage });
+  const text = (await callout.textContent()) ?? '';
+  const match = text.match(/(\d+)\s*%/);
+  expect(match, `match-score callout "${text}" did not contain an <n>% readout`).not.toBeNull();
+  return Number((match as RegExpMatchArray)[1]);
+}
+
+/**
+ * From the located /questions intro (category-selection) page, walk CLIENT-SIDE
+ * to the Base-6 number slider and STOP on it. Deterministic against the e2e/base
+ * Base category (base-1..base-7, with the number slider at base-6): click
+ * questions-start, advance through the Base category intro, then skip the
+ * already-answered Base-1..Base-5 radios via Next. Fully client-side — no
+ * page.goto reload — so the in-memory election scope is preserved (a full reload
+ * to a questions route bounces to the election selector). Reuses the spec's
+ * proven expectCategoryIntroAndAdvance + settleAndAdvance (both plain-click,
+ * hard-assert helpers). Module-scope so its `for` loop stays out of the test
+ * body (playwright/no-conditional-in-test).
+ */
+async function advanceToNumberSlider(page: Page): Promise<void> {
+  const questionsStart = page.getByTestId(testIds.voter.questions.startButton);
+  await expect(questionsStart).toBeVisible({ timeout: TIMEOUTS.slowPage });
+  await questionsStart.click();
+  await expectCategoryIntroAndAdvance({ page, text: TEXT_RE.baseOpinion });
+  for (const text of [
+    TEXT_RE.baseOpinion1Likert5,
+    TEXT_RE.baseOpinion2Likert4,
+    TEXT_RE.baseOpinion3Likert7,
+    TEXT_RE.baseOpinion4Categorical,
+    TEXT_RE.baseOpinion5Boolean
+  ]) {
+    await settleAndAdvance({ page, text });
+  }
+  // Now settled on Base-6 (the number slider), the persisted min answer showing.
+  await expect(page.getByTestId(testIds.voter.questions.numberSlider).first()).toBeVisible({
+    timeout: TIMEOUTS.slowPage
+  });
+}
+
+/**
+ * Navigate from a located results view BACK into the questions flow via the
+ * in-app nav menu "Opinions" link. This is CLIENT-SIDE navigation (an `<a>`
+ * click) — a full `page.goto('/questions')` reload drops the in-memory election
+ * scope and bounces to the election selector (the questions-intro guard is
+ * stricter than the question/category routes advanceToNumberSlider reloads).
+ * Lands on the /questions intro; the caller runs advanceToNumberSlider next.
+ */
+async function goToLocatedQuestionsViaMenu(page: Page): Promise<void> {
+  const nav = createNavMenu(page);
+  await nav.openMobileNav();
+  await nav.menu.getByTestId(testIds.shared.navigation.menuItem).filter({ hasText: /Opinions/i }).first().click();
+  await page.waitForURL(/\/questions/, { timeout: TIMEOUTS.slowPage }).catch(() => null);
+}
+
+/**
+ * Return to the located results list via the in-app nav menu "Results" link
+ * (CLIENT-SIDE, preserving the in-memory scope), then select the first election
+ * if the multi-election picker renders (mirrors answerAndAdvanceToResults step
+ * 7) and wait for the results list.
+ */
+async function returnToLocatedResultsViaMenu(page: Page): Promise<void> {
+  const nav = createNavMenu(page);
+  await nav.openMobileNav();
+  await page.getByTestId(testIds.voter.nav.resultsLink).click();
+  // The multi-election results page renders the election picker; select the
+  // Regional election (the one answerAndAdvanceToResults picks first in step 1,
+  // so the candidate set matches) via the spec's proven accordion helper, which
+  // handles the expand/collapse dance and waits for the results list.
+  await expectElectionOptionAndSelect({ page, text: TEXT_RE.regional });
 }
 
 // ====================================================================
@@ -1537,24 +1623,91 @@ test.describe('voter journey', () => {
       await feedbackDialog.expectHidden();
     });
 
-    // SKIPPED — nominations route has a bug where it does not fetch all
-    // questions, causing the candidate-nominations list to fail to render.
-    // Re-enable once the route is fixed.
-    // See: .planning/todos/pending/2026-05-31-fix-nominations-route-fetch-all-questions.md
-    // await test.step('nominations route renders the candidate-nominations list', async () => {
-    //   // entities.showAllNominations defaults to true in base, so
-    //   // /en/nominations renders the candidate-nominations list. The voter
-    //   // is still located (selectedElections + selectedConstituencies
-    //   // populated from earlier steps), so the listing is scoped accordingly.
-    //   await page.goto(buildRoute({ route: 'Nominations', locale: 'en' }));
-    //   const list = page.getByTestId(testIds.voter.nominations.list);
-    //   await expect.soft(list).toBeVisible({ timeout: TIMEOUTS.slowPage });
-    //   // Conservative assertion: at least one entity-card visible inside the
-    //   // list (researcher-recommended — exact base nomination count varies
-    //   // by selected election + constituency scope).
-    //   await expect.soft(list.getByTestId(testIds.voter.results.card).first()).toBeVisible({
-    //     timeout: TIMEOUTS.page
-    //   });
-    // });
+    // Voter nominations coverage was moved OUT of this journey test. The former
+    // commented-out nominations step (SKIPPED for the since-fixed 2026-05-31
+    // fetch-all-questions bug) is superseded by the dedicated
+    // tests/tests/specs/voter/voter-nominations.spec.ts (plan 130-04, per D-01).
+  });
+});
+
+// ====================================================================
+// EQTYP-02: NUMBER-SCALE BOUNDARY MATCHING (dedicated test)
+//
+// Runs under the SAME voter-journey Playwright project (its exact
+// testMatch /voter-journey\.spec\.ts/ picks this file up). fullyParallel is
+// false, so this describe runs SERIALLY AFTER the journey test — no
+// serial-mode coupling with the journey describe is needed. Proves the number
+// dimension incorporates into matching at the MIN extreme and at a MID value,
+// asserted against the POLAR seed candidates (EQTYP-02 boundary + precision
+// backstop).
+// ====================================================================
+
+test.describe('EQTYP-02: number-scale boundary matching', () => {
+  test('all-min ranks POLAR_MIN above POLAR_MAX; a mid number answer shifts both scores monotonically without flipping the ordering', async ({
+    page,
+    resultsPage
+  }) => {
+    test.setTimeout(JOURNEY_TEST_MAX); // reason: reuses the full located walk — same 120s ceiling as the journey test.
+
+    let minScoreBefore = 0;
+    let maxScoreBefore = 0;
+
+    await test.step('all-min walk: POLAR_MIN ranks first and scores above the POLAR_MAX-named candidate', async () => {
+      await walkUntilQuestionsIntro(page);
+      await answerAndAdvanceToResults(page, 'min');
+      // Force the REGIONAL election deterministically. answerAndAdvanceToResults
+      // lands on whichever election its `options.first()` pick resolves to (which
+      // is not deterministic between EL-Reg/EL-Mun); POLAR_MIN + the POLAR_MAX
+      // candidate both live in the Regional election's CO-Reg-N constituency
+      // (13 cards), so pin Regional here to match step 2's return-selection.
+      await expectElectionOptionAndSelect({ page, text: TEXT_RE.regional });
+      await resultsPage.selectEntityTab('cands');
+      const cards = resultsPage.getEntityCards();
+      await expect(cards.first()).toBeVisible({ timeout: TIMEOUTS.slowPage });
+      // ORDERING assertion (NOT a first-position or 100% claim). The walk's
+      // multi-choice answer is ['a','b'] in BOTH modes (it always clicks the
+      // first 2 checkboxes), so the "all-min" voter actually AGREES with
+      // POLAR_MAX and DISAGREES with POLAR_MIN (['c','d'], base.ts:338) on the
+      // multi-choice dimension. POLAR_MIN is therefore penalized on multi-choice
+      // and is NOT first — a candidate whose multi-choice overlaps ['a','b'] can
+      // out-rank it. But POLAR_MIN still matches the voter on every ORDINAL
+      // dimension (likert/categorical/boolean/number all at min) while POLAR_MAX
+      // is maximally distant on all of them, so score(POLAR_MIN) > score(POLAR_MAX)
+      // holds. That ordering — and its monotonic shift under the number re-answer
+      // below — is the EQTYP-02 boundary proof.
+      const polarMinCard = cards.filter({ hasText: TEXT_RE.polarMin }).first();
+      const polarMaxCard = cards.filter({ hasText: TEXT_RE.polarMax }).first();
+      minScoreBefore = await readCardMatchScore(polarMinCard);
+      maxScoreBefore = await readCardMatchScore(polarMaxCard);
+      expect(minScoreBefore).toBeGreaterThan(maxScoreBefore);
+    });
+
+    await test.step('re-answer ONLY the number question to mid (5): POLAR_MIN score drops, POLAR_MAX rises, ordering preserved', async () => {
+      // Back into the question flow via the in-app menu (CLIENT-SIDE — preserves
+      // the in-memory election scope), skip forward to the Base-6 slider (answers
+      // persist, so Next stays available), change ONLY the number answer to the
+      // mid of 0..10, click Next, then return to the located results list.
+      await goToLocatedQuestionsViaMenu(page);
+      await advanceToNumberSlider(page);
+      await answerNumberScale(page, 5);
+      const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
+      await expect(nextButton).toBeVisible({ timeout: TIMEOUTS.element });
+      await nextButton.click();
+
+      await returnToLocatedResultsViaMenu(page);
+      await resultsPage.selectEntityTab('cands');
+      const cards = resultsPage.getEntityCards();
+      const polarMinCard = cards.filter({ hasText: TEXT_RE.polarMin }).first();
+      const polarMaxCard = cards.filter({ hasText: TEXT_RE.polarMax }).first();
+      const minScoreAfter = await readCardMatchScore(polarMinCard);
+      const maxScoreAfter = await readCardMatchScore(polarMaxCard);
+      // Value-proportional distance: POLAR_MIN (number 0) moves FURTHER from the
+      // voter (0→5) so its score DROPS; POLAR_MAX (number 10) moves CLOSER so its
+      // score RISES. The preserved ordering is the precision backstop — no
+      // slider-step rounding artifact flips the POLAR_MIN/POLAR_MAX order.
+      expect(minScoreAfter).toBeLessThan(minScoreBefore);
+      expect(maxScoreAfter).toBeGreaterThan(maxScoreBefore);
+      expect(minScoreAfter).toBeGreaterThan(maxScoreAfter);
+    });
   });
 });
