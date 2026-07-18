@@ -1040,6 +1040,19 @@ test.describe('voter journey', () => {
         .getByTestId(testIds.voter.results.card)
         .filter({ hasText: TEXT_RE.hiddenCandidate });
       await expect.soft(hiddenCandidates).toHaveCount(0, { timeout: TIMEOUTS.element });
+
+      // EQTYP-01 matching-incorporation proof (+ EQTYP-02 max side). The max-walk
+      // voter's answers equal POLAR_MAX on EVERY dimension INCLUDING the two new
+      // opinion types: number (10, slider End) and multi-choice (['a','b'] — the
+      // walk's first-2 checkbox click matches POLAR_MAX's seeded pair,
+      // base.ts:305-306). The first card is a perfect-match POLAR_MAX candidate,
+      // so its results-list match-score reads 100% — a reading only reachable if
+      // BOTH new types incorporate into matching with ZERO distance. A broken
+      // number or multi-choice dispatch would drag the score below 100. This is
+      // HARD (stronger than the soft ordering neighbours above).
+      await expect(cards.first().getByTestId(testIds.voter.results.matchScore).first()).toContainText(/100\s*%/, {
+        timeout: TIMEOUTS.element
+      });
     });
 
     // ====================================================================
@@ -1193,6 +1206,23 @@ test.describe('voter journey', () => {
       await entityDetails.expectQuestionDisplay(/Opt-B opinion 1 — Likert 5/i, {
         numSelected: 0,
         infoText: TEXT_RE.neitherAnswered
+      });
+
+      // EQTYP-01 / EQTYP-02 new-type drawer displays (129 D-04). CA-AA-Special
+      // answered base-6 number=10 and base-7 multi-choice=['a','b'] (case (a),
+      // both answered, base.ts:999-1000); the max-walk voter answered number 10
+      // (slider End) and multi-choice a,b (first-2 checkboxes). So:
+      //   - multi-choice: voter 2 checked + entity 2 markers (mutual agreement).
+      //   - number: voter 10 === entity 10 → a SINGLE combined dual-marker.
+      // Consumes the plan-130-01 extensions: expectQuestionDisplay checkbox
+      // counting + expectNumberQuestionDisplay number dual-marker. HARD (no soft).
+      await entityDetails.expectQuestionDisplay(TEXT_RE.baseOpinion7MultiChoice, {
+        voterSelectedCount: 2,
+        entitySelectedCount: 2
+      });
+      await entityDetails.expectNumberQuestionDisplay(TEXT_RE.baseOpinion6Number, {
+        voterValue: 10,
+        entityValue: 10
       });
 
       // Close drawer for the next step.
