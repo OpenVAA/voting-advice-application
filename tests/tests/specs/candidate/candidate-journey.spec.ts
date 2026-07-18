@@ -298,6 +298,47 @@ async function loginIfRedirectedToLoginPage(
   }
 }
 
+/**
+ * Extract the internal question id from a settled per-question editor URL
+ * (`/candidate/questions/<id>`). The choice inputs carry
+ * `name="questionChoices-<id>"`, so this id scopes the type-specific choice
+ * locators below (mirrors candidateQuestionPage.answerCurrentQuestion's
+ * id-scoping idiom, so a mid-transition read never touches a stale question's
+ * choices).
+ */
+function currentQuestionId(page: Page): string {
+  return (
+    page
+      .url()
+      .replace(/[?#].*$/, '')
+      .replace(/\/+$/, '')
+      .split('/')
+      .pop() ?? ''
+  );
+}
+
+/**
+ * Id-scoped `question-choice` inputs for the question currently in the editor.
+ * The `name="questionChoices-<id>"` conjunction with the `question-choice`
+ * testid is not expressible via getByTestId, so a raw attribute locator is used
+ * (same idiom as candidateQuestionPage.answerCurrentQuestion).
+ */
+function scopedChoices(page: Page, questionId: string): Locator {
+  // eslint-disable-next-line playwright/no-restricted-locators -- testid+name conjunction not expressible via getByTestId
+  return page.locator(`[data-testid="question-choice"][name="questionChoices-${questionId}"]`);
+}
+
+/**
+ * Id-scoped `question-choice` inputs further filtered by native input `type`.
+ * The input `type` is the render discriminant asserted by the type-specific
+ * steps: multi-choice categorical → `checkbox` (QuestionChoices.svelte multi
+ * branch), single-choice categorical / boolean / ordinal → `radio`.
+ */
+function scopedChoicesByType(page: Page, questionId: string, inputType: 'checkbox' | 'radio'): Locator {
+  // eslint-disable-next-line playwright/no-restricted-locators -- testid+name+type conjunction not expressible via getByTestId
+  return page.locator(`[data-testid="question-choice"][name="questionChoices-${questionId}"][type="${inputType}"]`);
+}
+
 // Start every test in this file UNAUTHENTICATED per R13.
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -704,6 +745,92 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       await page.goto('/en/candidate/questions');
       const q1CardEdited = candidateQuestionsOverviewPage.getQuestionCard(/\[qu-opin-base-1-likert5\]/);
       await expect(q1CardEdited.first()).toContainText(OPEN_ANSWER_1_EDITED);
+    });
+
+    // ============== Step 18.5: EQTYP-01 multi-choice type-specific ========
+
+    // EQTYP-01 candidate leg (129 D-07 / D-02): the walk answers the multi-choice
+    // question generically; nothing asserts its type-specific input contract.
+    // Assert here that the multi-choice opinion question renders CHECKBOX inputs
+    // (not radios), the min/max helper text, and Save gating on BOTH sides of the
+    // 2..3 selection window (incl. the over-max 4th). Entry point is step 18's
+    // overview state; this pre-answers qu-opin-base-7-multichoice, which is
+    // compatible with the step-19 walk (it covers only REMAINING unanswered
+    // questions).
+    await test.step('18.5. EQTYP-01: multi-choice opinion — type-specific input contract (checkboxes + helper + D-07 save gating)', async () => {
+      // Navigate from the overview to the multi-choice question editor via its
+      // card action (goToQuestion expands every category then clicks the card's
+      // Answer/Edit affordance and awaits navigation off the overview).
+      await candidateQuestionsOverviewPage.goToQuestion(/\[qu-opin-base-7-multichoice\]/);
+      await expect(page).toHaveURL(/\/candidate\/questions\/[^/]+/, { timeout: TIMEOUTS.slowPage });
+      const qid = currentQuestionId(page);
+
+      // Type-specific render: 4 CHECKBOX choices and ZERO radios (the categorical
+      // / likert questions render radios — the input type is the discriminant,
+      // mirroring candidateQuestionPage.answerCurrentQuestion's detection idiom).
+      await expect(scopedChoicesByType(page, qid, 'checkbox')).toHaveCount(4);
+      await expect(scopedChoicesByType(page, qid, 'radio')).toHaveCount(0);
+
+      // The min/max helper text renders — it is a TYPE-SPECIFIC contract element:
+      // QuestionChoices.svelte only emits `question-choice-helper` for a
+      // multi-choice question carrying authored min/max constraints
+      // (`{#if mode === 'answer' && multiConstraints}`), so its mere presence
+      // discriminates multi-choice from the categorical/boolean radios below.
+      //
+      // NOTE (BLOCKER-130-05 — runtime i18n gap, NOT asserted here): the helper's
+      // TEXT currently renders the raw key `questions.multiChoice.selectRange`
+      // rather than "Select 2 to 3 options.". The 129-06 helper-text work added
+      // `questions.multiChoice.{selectRange,selectExact}` to the type-gen source
+      // (`src/lib/i18n/translations/`, which is why the key type-checks) but NOT
+      // to the runtime Paraglide catalog (`apps/frontend/messages/{locale}/
+      // questions.json`), so `t()` (wrapper.ts) falls through to the raw key. This
+      // is a real product i18n gap surfaced by this step; a `/2.*3/` content
+      // assertion is deliberately withheld because (a) this is a specs-only phase
+      // that must not patch product to make an assertion pass, and (b) asserting
+      // the raw-key text would lock in the bug. Tracked as a blocker for a
+      // follow-up product fix (add the two multiChoice keys to messages/).
+      const helper = page.getByTestId(testIds.voter.questions.choiceHelper);
+      await expect(helper).toBeVisible();
+
+      // D-07 save gating across the 2..3 window. QuestionChoices.svelte never
+      // disables unchecked boxes ("we never disable unchecked boxes here" —
+      // QuestionChoices.svelte:170-178 handleToggle); over/under-selection surfaces
+      // on the caller's Save button via isMultiChoiceCountValid (valid iff the
+      // count is within [effectiveMin=2, effectiveMax=3] — multiChoiceValidity.ts:30).
+      const boxes = scopedChoices(page, qid);
+      // 1 selected → below min → Save DISABLED.
+      await boxes.nth(0).click();
+      await expect(boxes.nth(0)).toBeChecked();
+      await candidateQuestionPage.expectContinueDisabled();
+      // 2 selected → in range → Save ENABLED (the min boundary).
+      await boxes.nth(1).click();
+      await expect(boxes.nth(1)).toBeChecked();
+      await candidateQuestionPage.expectContinueEnabled();
+      // 3 selected → in range (== max) → Save ENABLED.
+      await boxes.nth(2).click();
+      await expect(boxes.nth(2)).toBeChecked();
+      await candidateQuestionPage.expectContinueEnabled();
+      // 4 selected → over max → the 4th box still CHECKS (unchecked boxes are
+      // never disabled — QuestionChoices.svelte:170-178), but Save DISABLES
+      // (over-max is invalid: isMultiChoiceCountValid count<=effectiveMax —
+      // multiChoiceValidity.ts:30).
+      await boxes.nth(3).click();
+      await expect(boxes.nth(3)).toBeChecked();
+      await candidateQuestionPage.expectContinueDisabled();
+      // Return to an in-range selection (uncheck the 4th → 3 selected) and save.
+      await boxes.nth(3).click();
+      await expect(boxes.nth(3)).not.toBeChecked();
+      await candidateQuestionPage.expectContinueEnabled();
+      await candidateQuestionPage.clickContinue();
+
+      // Overview reflects the answered multi-choice: the card renders the
+      // display-mode answer (question-choice markup), which is emitted ONLY when
+      // the question is answered (+page.svelte gates the display on `answer != null`).
+      // Mirror step 18's post-save overview re-read.
+      await page.goto('/en/candidate/questions');
+      const mcCard = candidateQuestionsOverviewPage.getQuestionCard(/\[qu-opin-base-7-multichoice\]/);
+      await expect(mcCard.first()).toBeVisible();
+      await expect(mcCard.first().getByTestId('question-choice').first()).toBeVisible();
     });
 
     // ============== Step 19: walk remaining opinions ======================
