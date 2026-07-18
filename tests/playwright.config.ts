@@ -329,6 +329,19 @@ export default defineConfig({
       dependencies: ['data-setup-base']
     },
 
+    // voter-nominations (Phase 130 UNBLK-04 rider) — LEAF. Read-only render
+    // check for the UNSCOPED all-nominations route (D-01 dedicated spec, NOT a
+    // journey step). D-04 assert-only (showAllNominations already true in
+    // e2e/base — no own setup/teardown). `testMatch` is scoped to this spec;
+    // sibling voter-* projects' exact testMatch excludes it.
+    {
+      name: 'voter-nominations',
+      testDir: './tests/specs/voter',
+      testMatch: /voter-nominations\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-base']
+    },
+
     // === _probes (fixtures-first isolation probes) — LEAF, no data-setup ===
     //
     // The 4 deferred perm-seeded probes (video→EPERM-06, questionInfo→EPERM-07,
