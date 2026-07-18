@@ -122,7 +122,8 @@ describe('BASE_APP_SETTINGS — base dataset settings contract', () => {
   });
 
   it('results block carries candidate cardContents with the info-text submatch question ref', () => {
-    expect(BASE_APP_SETTINGS.results.sections).toEqual(['candidate', 'organization']);
+    // 'alliance' LAST — Phase 129 UNBLK-06 (Org-first cascade invariant).
+    expect(BASE_APP_SETTINGS.results.sections).toEqual(['candidate', 'organization', 'alliance']);
     expect(BASE_APP_SETTINGS.results.cardContents.candidate).toEqual([
       'submatches',
       { question: { externalId: 'test-e2e-base-qu-info-text' } }

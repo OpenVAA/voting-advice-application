@@ -124,6 +124,17 @@ const OPIN_CATEGORICAL_EN: Array<{ id: string; label: { en: string } }> = [
   { id: 'c', label: { en: 'Option C' } }
 ];
 
+// Multi-choice categorical opinion choices (Phase 129 D-12). 4 choices so the
+// over-max boundary (4 selections vs maxSelections 3) is exercisable and the
+// POLAR_MAX / POLAR_MIN answer templates can pick disjoint 2-choice subsets
+// for maximal subdimension distance.
+const OPIN_MULTICHOICE_EN: Array<{ id: string; label: { en: string } }> = [
+  { id: 'a', label: { en: 'Multi option A' } },
+  { id: 'b', label: { en: 'Multi option B' } },
+  { id: 'c', label: { en: 'Multi option C' } },
+  { id: 'd', label: { en: 'Multi option D' } }
+];
+
 const INFO_MULTIPLE_CHOICE_EN: Array<{ id: string; label: { en: string } }> = [
   { id: 'a', label: { en: 'Choice A' } },
   { id: 'b', label: { en: 'Choice B' } },
@@ -211,7 +222,12 @@ export const BASE_APP_SETTINGS = {
     },
     showFeedbackPopup: 180,
     showSurveyPopup: 500,
-    sections: ['candidate', 'organization']
+    // 'alliance' MUST be strictly LAST — the Org-first imputation cascade
+    // invariant (matchState.svelte.ts:104-110) requires 'organization' to
+    // precede 'alliance' or orgProxiesById is empty and alliance scores
+    // silently degrade. Adding 'alliance' here is the single switch that
+    // turns on BOTH alliance matching and the results tab (UNBLK-06, D-08).
+    sections: ['candidate', 'organization', 'alliance']
   },
   elections: {
     disallowSelection: false,
@@ -256,10 +272,10 @@ const DEFAULT_INFO_ANSWERS: Record<string, { value: unknown }> = {
   'test-e2e-base-qu-info-text-link': { value: 'https://example.com/candidate-link' },
   'test-e2e-base-qu-info-number': { value: 42 },
   'test-e2e-base-qu-info-boolean': { value: true },
-  'test-e2e-base-qu-info-date': { value: '1980-06-15' }
-  // NOTE: multipleText info question intentionally omitted — the frontend
-  // QuestionInput.svelte does not yet implement MultipleTextQuestion (it
-  // throws). See .planning/todos/pending for the implementation TODO.
+  'test-e2e-base-qu-info-date': { value: '1980-06-15' },
+  // Phase 129 UNBLK-01: two campaign-keyword strings; the voter-journey
+  // asserts both render on the entity-detail info tab (round-trip read proof).
+  'test-e2e-base-qu-info-multipleText': { value: ['Campaign keyword alpha', 'Campaign keyword beta'] }
 };
 
 function withInfoAnswers(extra: Record<string, { value: unknown }>): Record<string, { value: unknown }> {
@@ -283,6 +299,11 @@ const POLAR_MAX: Record<string, { value: unknown }> = {
   'test-e2e-base-qu-opin-base-3-likert7': { value: '7' },
   'test-e2e-base-qu-opin-base-4-categorical': { value: 'c' },
   'test-e2e-base-qu-opin-base-5-boolean': { value: true },
+  // Number values are JSON numbers (not strings); multi-choice values are
+  // choice-id arrays respecting 2..3 selections, POLAR_MAX/POLAR_MIN disjoint
+  // for maximal subdimension distance (D-12).
+  'test-e2e-base-qu-opin-base-6-number': { value: 10 },
+  'test-e2e-base-qu-opin-base-7-multichoice': { value: ['a', 'b'] },
   'test-e2e-base-qu-opin-opt-a-1': { value: '5' },
   'test-e2e-base-qu-opin-opt-b-1': { value: '5' },
   'test-e2e-base-qu-opin-el-reg-1': { value: '5' },
@@ -297,6 +318,8 @@ const NEAR_MAX: Record<string, { value: unknown }> = {
   'test-e2e-base-qu-opin-base-3-likert7': { value: '6' },
   'test-e2e-base-qu-opin-base-4-categorical': { value: 'b' },
   'test-e2e-base-qu-opin-base-5-boolean': { value: true },
+  'test-e2e-base-qu-opin-base-6-number': { value: 8 },
+  'test-e2e-base-qu-opin-base-7-multichoice': { value: ['a', 'b', 'c'] },
   'test-e2e-base-qu-opin-opt-a-1': { value: '4' },
   'test-e2e-base-qu-opin-opt-b-1': { value: '4' },
   'test-e2e-base-qu-opin-el-reg-1': { value: '4' },
@@ -311,6 +334,8 @@ const POLAR_MIN: Record<string, { value: unknown }> = {
   'test-e2e-base-qu-opin-base-3-likert7': { value: '1' },
   'test-e2e-base-qu-opin-base-4-categorical': { value: 'a' },
   'test-e2e-base-qu-opin-base-5-boolean': { value: false },
+  'test-e2e-base-qu-opin-base-6-number': { value: 0 },
+  'test-e2e-base-qu-opin-base-7-multichoice': { value: ['c', 'd'] },
   'test-e2e-base-qu-opin-opt-a-1': { value: '1' },
   'test-e2e-base-qu-opin-opt-b-1': { value: '1' },
   'test-e2e-base-qu-opin-el-reg-1': { value: '1' },
@@ -331,6 +356,9 @@ const GENERIC: Record<string, { value: unknown }> = {
   'test-e2e-base-qu-opin-base-3-likert7': { value: '4' },
   'test-e2e-base-qu-opin-base-4-categorical': { value: 'b' },
   'test-e2e-base-qu-opin-base-5-boolean': { value: false },
+  // Number midpoint (0..10 → 5); multi-choice mid subset (2 in range).
+  'test-e2e-base-qu-opin-base-6-number': { value: 5 },
+  'test-e2e-base-qu-opin-base-7-multichoice': { value: ['b', 'c'] },
   'test-e2e-base-qu-opin-opt-a-1': { value: '3' },
   'test-e2e-base-qu-opin-opt-b-1': { value: '3' },
   'test-e2e-base-qu-opin-el-reg-1': { value: '3' },
@@ -699,11 +727,20 @@ export const baseTemplate: Template = {
         sort_order: 7,
         is_generated: false
       },
-      // NOTE: the multipleText info question (sort_order 8) is intentionally
-      // omitted — the frontend QuestionInput.svelte does not yet implement
-      // MultipleTextQuestion (it throws). Restore this question once the
-      // input is implemented (see .planning/todos/pending). The sort_order
-      // gap at 8 is harmless for ORDER BY.
+      // Phase 129 UNBLK-01: multipleText info question restored (the frontend
+      // MultipleTextInput now renders it — plan 05). Its DEFAULT_INFO_ANSWERS
+      // entry seeds two keyword strings the voter-journey asserts render on the
+      // entity-detail info tab (the round-trip read-path proof).
+      {
+        external_id: 'test-e2e-base-qu-info-multipleText',
+        type: 'multipleText',
+        name: { en: '[qu-info-multipleText] Info: keywords.' },
+        category: { external_id: 'test-e2e-base-qg-info' },
+        allow_open: false,
+        required: false,
+        sort_order: 8,
+        is_generated: false
+      },
 
       // Phase 89 Plan 01 (TIR4:94-99): 3 filtered info questions scoped to
       // municipal-only / north-only / south-only constituencies/elections.
@@ -809,6 +846,33 @@ export const baseTemplate: Template = {
         category: { external_id: 'test-e2e-base-qg-opin-base' },
         allow_open: true,
         sort_order: 104,
+        is_generated: false
+      },
+      // Phase 129 D-12: number-scale opinion question in the MAIN category.
+      // custom_data.min/max makes it matchable via the plan-02 NumberQuestion
+      // bridge; surfaces the NumberScaleInput slider in the voter question flow.
+      {
+        external_id: 'test-e2e-base-qu-opin-base-6-number',
+        type: 'number',
+        name: { en: '[qu-opin-base-6-number] Base opinion 6 — Number scale.' },
+        category: { external_id: 'test-e2e-base-qg-opin-base' },
+        custom_data: { min: 0, max: 10 },
+        allow_open: true,
+        sort_order: 105,
+        is_generated: false
+      },
+      // Phase 129 D-12: multipleChoiceCategorical opinion question in the MAIN
+      // category. 4 choices + minSelections 2 / maxSelections 3 (D-07 constraint
+      // edge-coverage); surfaces the checkbox multi-select input.
+      {
+        external_id: 'test-e2e-base-qu-opin-base-7-multichoice',
+        type: 'multipleChoiceCategorical',
+        name: { en: '[qu-opin-base-7-multichoice] Base opinion 7 — Multi-choice.' },
+        choices: OPIN_MULTICHOICE_EN,
+        category: { external_id: 'test-e2e-base-qg-opin-base' },
+        custom_data: { minSelections: 2, maxSelections: 3 },
+        allow_open: true,
+        sort_order: 106,
         is_generated: false
       },
 
@@ -929,6 +993,11 @@ export const baseTemplate: Template = {
           'test-e2e-base-qu-opin-base-3-likert7': { value: '7' },
           'test-e2e-base-qu-opin-base-4-categorical': { value: 'c' },
           'test-e2e-base-qu-opin-base-5-boolean': { value: true },
+          // base-6/base-7 (new D-12 base questions) — case (a) both answered;
+          // max values so CA-AA-Special stays a perfect match for the
+          // answerMode='max' voter (number 10, multi-choice ['a','b']).
+          'test-e2e-base-qu-opin-base-6-number': { value: 10 },
+          'test-e2e-base-qu-opin-base-7-multichoice': { value: ['a', 'b'] },
           // case (c) — voter skips these, entity has answers
           'test-e2e-base-qu-opin-opt-a-1': { value: '5' },
           'test-e2e-base-qu-opin-el-reg-1': { value: '5' },
