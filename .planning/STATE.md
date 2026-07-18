@@ -5,15 +5,15 @@ milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Ze
 current_phase: 130
 current_phase_name: E2E Specs — New-Feature Coverage
 status: executing
-stopped_at: Completed 130-04-PLAN.md
-last_updated: "2026-07-18T23:21:46.462Z"
+stopped_at: Completed 130-05-PLAN.md
+last_updated: "2026-07-18T23:42:27.530Z"
 last_activity: 2026-07-19
 last_activity_desc: Phase 130 execution started
 progress:
   total_phases: 15
   completed_phases: 12
   total_plans: 71
-  completed_plans: 68
+  completed_plans: 70
   percent: 80
 ---
 
@@ -29,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 ## Current Position
 
 Phase: 130 (E2E Specs — New-Feature Coverage) — EXECUTING
-Plan: 5 of 6
+Plan: 6 of 6
 Status: Ready to execute
 Last activity: 2026-07-19 — Phase 130 execution started
 
-Progress: [██████████] 96%
+Progress: [██████████] 99%
 
 ## Performance Metrics
 
@@ -78,6 +78,7 @@ Progress: [██████████] 96%
 | Phase 130 P02 | ~35min | 2 tasks | 3 files |
 | Phase 130 P03 | ~55min | 2 tasks | 1 files |
 | Phase 130 P04 | ~40min | 3 tasks | 3 files |
+| Phase 130 P05 | ~50min | 2 tasks | 1 files |
 
 ## Deferred Items
 
@@ -500,6 +501,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: 130-03: reach mid-flow questions via in-app menu (client-side) to preserve located scope; full page.goto reload bounces to the election selector
 - [Phase ?]: 130-03: dropped the 'POLAR_MIN ranks first' claim — the all-min walk answers multi-choice ['a','b'] (agrees with POLAR_MAX), so only the ordering + monotonic shift is asserted
 - [Phase ?]: 130-04: alliance click-through proven by drawer-identity assertion; generic openEntityDetailsForCard/getMemberCards work for alliances unmodified (no fixture edit)
+- [Phase ?]: 130-05: EQTYP-01 candidate type-specific opinion contracts (multi-choice checkbox + D-07 gating, categorical/boolean radios); choiceHelper content deferred to BLOCKER-130-05 (runtime i18n gap)
 
 ### Quick Tasks Completed
 
@@ -541,11 +543,12 @@ Key cross-milestone reference points carried forward into v2.10:
 - Phase 83 DETERM-06 image-upload (CAND-03) cascade blocks 3/4 Plan 86.2-01 per-spec smokes (candidate-profile-validation, voter-not-located-redirect, results-sections); refactors verified clean via grep + lint + tsc instead. Plan 86.2-03 3-run gate will surface true post-86.2 state.
 - voter-mega-journey project chain blocked by pre-existing perm-1e1cg1co flake (CASCADE) — Task 2 verify deferred to clean-environment manual run; orthogonal vite-dev cache wipe race documented in deferred-items.md
 - 122-02 EFLOW-10 deterministic-green BLOCKED: production identity-callback Edge Function createUser() omits email; local GoTrue (edge-runtime 1.71.0) rejects emailless user -> 500. Decrypt/verify/claim-extraction all succeed. Operator/Rule 4 fix (gated by T-122-03 'runs UNMODIFIED'): add email=${userId}@bank-auth.placeholder at createUser. Until then the keys-configured create path cannot be observed green; EFLOW-10 left unmarked.
+- BLOCKER-130-05: multi-choice helper text renders raw i18n key questions.multiChoice.selectRange at runtime — keys missing from Paraglide messages/{locale}/questions.json (added only to type-gen translations/ in 129-06). Also: getSavedAnswer discards saved boolean false. See phase deferred-items.md.
 
 ## Session Continuity
 
-Last session: 2026-07-18T23:21:46.452Z
-Stopped at: Completed 130-04-PLAN.md
+Last session: 2026-07-18T23:42:27.520Z
+Stopped at: Completed 130-05-PLAN.md
 Resume file: 
 None
 
