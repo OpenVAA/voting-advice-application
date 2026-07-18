@@ -268,9 +268,18 @@ async function walkUntilQuestionsIntro(page: Page): Promise<void> {
  *   - Likert (5/4/7): 'min' → first option; 'max' → last option.
  *   - singleChoiceCategorical: 'min' → first option; 'max' → last option.
  *   - Boolean: 'min' → 'No' (index 0); 'max' → 'Yes' (index 1).
- *   - Number (NOT expected in opinion questions, but the helper is
- *     future-proof): 'min' → first option index 0; 'max' → last option
- *     index (nth(-1)).
+ *   - Number (native range slider): 'min' → keyboard Home (exact min);
+ *     'max' → keyboard End (exact max). Does not auto-advance — Next clicked
+ *     explicitly (D-14, plans 04/06).
+ *   - MultipleChoiceCategorical (checkbox multi-select): clicks the first 2
+ *     choices to reach a valid selection count (plan-08 seed: min 2 / max 3);
+ *     does not auto-advance — Next clicked explicitly (D-14, plan 06).
+ *
+ * All three answer-input families share the question-choice testid +
+ * name=questionChoices-{id} scoping contract EXCEPT the slider (which has no
+ * question-choice options — detected by a scoped choice count of 0). Both new
+ * branches are inert against the current (pre-plan-08) seed, which surfaces no
+ * number or multi-choice OPINION question.
  */
 async function answerAndAdvanceToResults(page: Page, answerMode: AnswerMode, answerCount?: number): Promise<void> {
   // 5b. Click questions-intro start.
@@ -358,12 +367,54 @@ async function answerAndAdvanceToResults(page: Page, answerMode: AnswerMode, ans
       .catch(() => null);
     const choiceCount = await currentChoices.count();
     if (choiceCount === 0) {
-      // No selectable choices (e.g. text/number rendering) — Skip.
+      // Slider branch (D-14): a matchable NUMBER opinion question renders a
+      // native range (question-number-slider) and carries NO question-choice
+      // options, so the scoped choice count is 0. Probe for a visible slider
+      // BEFORE falling through to the Skip fallback. Number questions do NOT
+      // auto-advance (plan 06 suppresses the jump for the slider), so drive the
+      // answer by keyboard — native range Home/End land the EXACT min/max value
+      // per answerMode (the D-03 keyboard contract) — then click Next explicitly
+      // and settle the URL like the radio path. If no slider is present (e.g. a
+      // text-only rendering), fall through to the existing Skip path unchanged.
+      const slider = page.getByTestId(testIds.voter.questions.numberSlider).first();
+      if (answered < cap && (await waitForVisible(slider, TIMEOUTS.page))) {
+        await slider.focus();
+        await slider.press(answerMode === 'max' ? 'End' : 'Home');
+        answered++;
+        await nextButton.waitFor({ state: 'visible', timeout: TIMEOUTS.page });
+        await nextButton.click();
+        await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: TIMEOUTS.slowPage }).catch(() => null);
+        continue;
+      }
+      // No selectable choices and no slider (e.g. text rendering) — Skip.
       await nextButton.waitFor({ state: 'visible', timeout: TIMEOUTS.page });
       await nextButton.click();
       await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: TIMEOUTS.slowPage }).catch(() => null);
       continue;
     }
+    // Checkbox branch (D-14): MultipleChoiceCategorical opinion questions render
+    // CHECKBOX inputs that reuse the question-choice testid + name=questionChoices-{id}
+    // contract (plan 06), while single-choice / boolean / Likert render RADIOS.
+    // The input type is authoritative — detect it off the first scoped choice.
+    const inputType = await currentChoices.first().getAttribute('type');
+    if (inputType === 'checkbox' && answered < cap) {
+      // Click the first 2 choices to reach a VALID selection count. COUPLING:
+      // the plan-08 seeded multi-choice opinion question is authored with
+      // minSelections=2 / maxSelections=3, so exactly 2 selections is in-range
+      // (valid, not over/under-selected). Multi-choice does NOT auto-advance
+      // (plan 06), so advance via the explicit Next button. Count the question
+      // ONCE regardless of how many boxes were ticked.
+      const clicks = Math.min(2, choiceCount);
+      for (let c = 0; c < clicks; c++) {
+        await currentChoices.nth(c).click();
+      }
+      answered++;
+      await nextButton.waitFor({ state: 'visible', timeout: TIMEOUTS.page });
+      await nextButton.click();
+      await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: TIMEOUTS.slowPage }).catch(() => null);
+      continue;
+    }
+    // Radio path (single-choice / boolean / Likert) — unchanged byte-for-byte.
     const pickIndex = answerMode === 'min' ? 0 : choiceCount - 1;
     await currentChoices.nth(pickIndex).click();
     answered++;
