@@ -194,6 +194,11 @@ export const testIds = {
       //    (select-range / select-exact) rendered outside the choice grid (plan 06).
       numberSlider: 'question-number-slider',
       numberValue: 'question-number-value',
+      // NumberScaleInput.svelte root <div> (both answer + display modes). Scopes
+      // the dual-marker display-mode readout (129 D-04) inside an entity-detail
+      // opinion block. Byte-matches the existing component data-testid — NOT a
+      // new product testid (Phase 130 is specs-only).
+      numberScaleInput: 'number-scale-input',
       multipleTextRow: 'multiple-text-row',
       multipleTextAdd: 'multiple-text-add',
       multipleTextRemove: 'multiple-text-remove',

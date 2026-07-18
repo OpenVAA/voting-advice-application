@@ -135,15 +135,44 @@ export function createEntityDetails(page: Page) {
         voterAnswer?: RegExp | string;
         entityAnswer?: RegExp | string;
         numSelected?: number;
+        /**
+         * Count of CHECKED voter inputs (radios + checkboxes unioned). For
+         * MultipleChoiceCategorical (checkbox) displays the voter answer is
+         * ≥1 checked checkbox — the radio-only reads used by single-select
+         * types are invisible to it. EQTYP-01.
+         */
+        voterSelectedCount?: number;
+        /**
+         * Count of ENTITY selected-answer markers inside the block. The
+         * single-select `entityAnswer` accessible-name path assumes exactly
+         * one marker; multi-select entity answers surface N markers, so they
+         * are asserted by count. EQTYP-01.
+         */
+        entitySelectedCount?: number;
         infoText?: RegExp | string;
       }
     ): Promise<void> {
       const block = this.getQuestionDisplays().filter({ hasText: target });
       await expect(block).toHaveCount(1);
       if (options?.numSelected !== undefined) {
-        const voterChecked = block.getByRole('radio', { checked: true });
+        // Voter-side reads union checked radios AND checked checkboxes so
+        // checkbox multi-choice displays are counted (EQTYP-01); single-select
+        // types have zero checkboxes so the union is a no-op for them.
+        const voterChecked = block
+          .getByRole('radio', { checked: true })
+          .or(block.getByRole('checkbox', { checked: true }));
         const entitySelected = block.getByTestId(testIds.voter.entityDetail.entitySelectedAnswer);
         await expect(voterChecked.or(entitySelected)).toHaveCount(options.numSelected);
+      }
+      if (options?.voterSelectedCount !== undefined) {
+        const voterChecked = block
+          .getByRole('radio', { checked: true })
+          .or(block.getByRole('checkbox', { checked: true }));
+        await expect(voterChecked).toHaveCount(options.voterSelectedCount);
+      }
+      if (options?.entitySelectedCount !== undefined) {
+        const entitySelected = block.getByTestId(testIds.voter.entityDetail.entitySelectedAnswer);
+        await expect(entitySelected).toHaveCount(options.entitySelectedCount);
       }
       if (options?.infoText !== undefined) {
         // reason: infoText asserts the localized missing-answer marker message
@@ -154,12 +183,67 @@ export function createEntityDetails(page: Page) {
         await expect(block.getByText(options.infoText)).toBeVisible();
       }
       if (options?.voterAnswer !== undefined) {
-        const voter = block.getByRole('radio', { checked: true });
+        const voter = block
+          .getByRole('radio', { checked: true })
+          .or(block.getByRole('checkbox', { checked: true }));
         await expect(voter).toHaveAccessibleName(options.voterAnswer);
       }
       if (options?.entityAnswer !== undefined) {
         const entity = block.getByTestId(testIds.voter.entityDetail.entitySelectedAnswer);
         await expect(entity).toHaveAccessibleName(options.entityAnswer);
+      }
+    },
+
+    /**
+     * Assert the 129 D-04 number-scale dual-marker read-only display inside the
+     * question block matching `target`. Derived from NumberScaleInput.svelte's
+     * display-mode markup:
+     *   - the disabled `question-number-slider` carries `value = voter ?? entity
+     *     ?? midpoint` (voter wins) — asserted as the authoritative numeric.
+     *   - marker `<div class="marker …" style="left: {pct}%">` positions encode
+     *     each value; when voter === entity a SINGLE combined marker renders
+     *     (bothEqual), otherwise one marker per present value.
+     *
+     * `min`/`max` default to the base number question's 0/10 range (used only
+     * to compute the expected marker offset).
+     */
+    async expectNumberQuestionDisplay(
+      target: RegExp | string,
+      { voterValue, entityValue, min = 0, max = 10 }: { voterValue?: number; entityValue?: number; min?: number; max?: number }
+    ): Promise<void> {
+      const block = this.getQuestionDisplays().filter({ hasText: target });
+      await expect(block).toHaveCount(1);
+      const container = block.getByTestId(testIds.voter.questions.numberScaleInput);
+      await expect(container).toBeVisible();
+
+      // The display slider's value attribute is `voter ?? entity ?? midpoint`.
+      const displayValue = voterValue ?? entityValue;
+      if (displayValue !== undefined) {
+        await expect(container.getByTestId(testIds.voter.questions.numberSlider)).toHaveValue(String(displayValue));
+      }
+
+      const pct = (v: number): number =>
+        max === min ? 0 : Math.min(100, Math.max(0, ((v - min) / (max - min)) * 100));
+      // reason: the display-mode value markers carry the class `marker` (set in
+      // NumberScaleInput.svelte) but no data-testid — the numeric value is
+      // encoded in the `left: {pct}%` inline style. No getByTestId/getByRole
+      // form expresses a class-scoped marker read.
+      // eslint-disable-next-line playwright/no-restricted-locators
+      const markers = container.locator('.marker');
+
+      if (voterValue != null && entityValue != null && voterValue === entityValue) {
+        // bothEqual → a single combined marker at the shared position.
+        await expect(markers).toHaveCount(1);
+        await expect(markers.first()).toHaveAttribute('style', new RegExp(`left:\\s*${pct(voterValue)}%`));
+      } else {
+        const expectedCount = (voterValue != null ? 1 : 0) + (entityValue != null ? 1 : 0);
+        await expect(markers).toHaveCount(expectedCount);
+        if (voterValue != null) {
+          await expect(
+            // eslint-disable-next-line playwright/no-restricted-locators
+            container.locator('.marker.text-primary')
+          ).toHaveAttribute('style', new RegExp(`left:\\s*${pct(voterValue)}%`));
+        }
       }
     },
 
