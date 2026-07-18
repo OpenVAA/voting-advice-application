@@ -19,7 +19,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { buildMinimal } from './buildMinimal';
+import { buildMinimal, defaultAnswerForQuestion } from './buildMinimal';
 
 describe('buildMinimal', () => {
   it('returns a Template with default 1e/1cg/1co/2 orgs/1 cand/1 opin/0 info shape; candidate carries 1 answer (Test 1)', () => {
@@ -167,6 +167,43 @@ describe('buildMinimal', () => {
     expect(Object.keys(c1.answersByExternalId ?? {})).toHaveLength(1);
     // cand-2 is clean (empty map).
     expect(c2.answersByExternalId).toEqual({});
+  });
+
+  it('defaultAnswerForQuestion: number with custom_data min/max returns the numeric midpoint (D-16)', () => {
+    const entry = defaultAnswerForQuestion(
+      { type: 'number', custom_data: { min: 0, max: 10 } },
+      'e2e-num-qu-number-1'
+    );
+    // Numeric midpoint (0..10 → 5), JSON number not string.
+    expect(entry.value).toBe(5);
+    expect(typeof entry.value).toBe('number');
+  });
+
+  it('defaultAnswerForQuestion: number with no min/max returns { value: 0 } (D-16)', () => {
+    const entry = defaultAnswerForQuestion({ type: 'number' }, 'e2e-num-qu-number-2');
+    expect(entry.value).toBe(0);
+    expect(typeof entry.value).toBe('number');
+  });
+
+  it('defaultAnswerForQuestion: multipleChoiceCategorical returns an array of choice ids respecting minSelections (D-16)', () => {
+    const entry = defaultAnswerForQuestion(
+      {
+        type: 'multipleChoiceCategorical',
+        choices: [
+          { id: 'a' },
+          { id: 'b' },
+          { id: 'c' },
+          { id: 'd' }
+        ],
+        custom_data: { minSelections: 2, maxSelections: 3 }
+      },
+      'e2e-mc-qu-multichoice-1'
+    );
+    expect(Array.isArray(entry.value)).toBe(true);
+    const ids = entry.value as Array<string>;
+    // minSelections 2 → exactly 2 ids, all valid choice ids.
+    expect(ids).toHaveLength(2);
+    expect(ids).toEqual(['a', 'b']);
   });
 
   it("candidateAnswersDefault: 'none' produces all clean candidates (Test 8)", () => {

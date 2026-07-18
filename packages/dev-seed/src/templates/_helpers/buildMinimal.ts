@@ -153,7 +153,7 @@ function deepMerge<TRow extends Record<string, unknown>>(
  *   - opinion (`boolean`) → `{ value: true }`
  *   - opinion categorical → `{ value: <first-category-id> }`
  */
-function defaultAnswerForQuestion(question: Record<string, unknown>, fullExtId: string): AnswerEntry {
+export function defaultAnswerForQuestion(question: Record<string, unknown>, fullExtId: string): AnswerEntry {
   const type = question.type as string;
   if (type === 'text') {
     return { value: { en: `[${fullExtId}] desc` } };
