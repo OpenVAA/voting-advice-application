@@ -570,6 +570,23 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
         ...((obj.customData as Record<string, unknown> | undefined) ?? {})
       };
 
+      // NumberQuestionData.min/max have no DB column — the authoring home for a
+      // number question's answer-value range is `custom_data.{ min, max }` (see
+      // numberQuestion.ts getters, which read this.data.min/this.data.max and
+      // gate isMatchable on the range). Lift those into top-level fields for
+      // number rows only, and only when they are actual numbers: non-numeric
+      // JSONB values are dropped rather than coerced (untrusted-JSONB tampering
+      // guard T-129-02), and absent keys are omitted (spread-conditional) rather
+      // than set to undefined so NumberQuestion's zero-range check never fires on
+      // pass-through values.
+      const numberRange =
+        row.type === 'number'
+          ? {
+              ...(typeof customData.min === 'number' ? { min: customData.min } : {}),
+              ...(typeof customData.max === 'number' ? { max: customData.max } : {})
+            }
+          : {};
+
       // Name the discriminant (`type`) plus the identity fields (`id`, `name`,
       // `categoryId`) explicitly — drawn from the typed row / localized `obj`
       // rather than relying on the opaque `...obj` spread — so the object
@@ -584,6 +601,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
         categoryId: obj.categoryId as string,
         choices,
         customData,
+        ...numberRange,
         // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
         image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl)
       } as AnyQuestionVariantData;
