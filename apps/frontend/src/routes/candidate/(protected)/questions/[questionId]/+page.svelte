@@ -65,6 +65,11 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   let bypassPreventNavigation = $state(false);
   let errorMessage = $state<string | undefined>(undefined);
   let status = $state<ActionStatus>('loading');
+  // Validity surfaced by `OpinionQuestionInput` (D-07). The `{#key question.id}`
+  // remount around the input resets it per question; only the multi-choice branch
+  // ever sets it false (selection outside min/max). ANDed into `canSubmit` so
+  // Save is gated while a multi-choice selection is out of range.
+  let answerValid = $state(true);
 
   ////////////////////////////////////////////////////////////////////
   // Get the current and next question
@@ -125,7 +130,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   ////////////////////////////////////////////////////////////////////
 
   let canSubmit = $derived(
-    status !== 'loading' && !isEmptyValue(userData.current?.candidate.answers?.[question.id]?.value)
+    status !== 'loading' && !isEmptyValue(userData.current?.candidate.answers?.[question.id]?.value) && answerValid
   );
 
   let submitRouting = $derived.by(() => {
@@ -304,6 +309,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
             {answer}
             mode={answersLocked ? 'display' : 'answer'}
             onShadedBg
+            bind:valid={answerValid}
             onChange={handleValueChange}
             data-testid="candidate-questions-answer" />
 

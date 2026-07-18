@@ -22,6 +22,7 @@
 
 <script lang="ts">
   import { getCustomData } from '@openvaa/app-shared';
+  import { isBooleanQuestion, isSingleChoiceQuestion } from '@openvaa/data';
   import { error } from '@sveltejs/kit';
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
@@ -159,10 +160,34 @@
   /** Use to disable the response buttons when an answer is set but we're still waiting for the next page to load */
   let disabled = $state(false);
 
+  // Validity surfaced by `OpinionQuestionInput` (D-07). Lives OUTSIDE the {#key}
+  // so it survives same-type Q→Q reuse (the input is not remounted between two
+  // multi-choice questions). Reset to `true` on question-id change so a stale
+  // invalid state from the previous question does not linger before the input
+  // recomputes; only the multi-choice branch ever sets it false.
+  let opinionInputValid = $state(true);
+  $effect(() => {
+    void question?.id;
+    opinionInputValid = true;
+  });
+
   function handleAnswer({ question, value }: { question: AnyQuestionVariant; value?: unknown }): void {
-    disabled = true;
+    // Zero selections in a multi-choice question = unanswered (D-07): delete the
+    // answer rather than persisting an empty array, keeping matching clean and
+    // the results-CTA answer count honest.
+    if (Array.isArray(value) && value.length === 0) {
+      answers.deleteAnswer(question.id);
+      return;
+    }
     answers.setAnswer(question.id, value);
-    setTimeout(handleJump, DELAY.md);
+    // Auto-advance is instant only for single-choice / boolean inputs. Number
+    // (slider) and multipleChoiceCategorical (checkbox) inputs must NOT auto-jump:
+    // a per-keystep or per-toggle jump breaks the D-03 keyboard exact-value
+    // contract and multi-select entirely — the voter proceeds via Next/Skip.
+    if (isSingleChoiceQuestion(question) || isBooleanQuestion(question)) {
+      disabled = true;
+      setTimeout(handleJump, DELAY.md);
+    }
   }
 
   function handleDelete() {
@@ -261,12 +286,13 @@
           <OpinionQuestionInput
             question={question!}
             answer={answers.answers[question!.id]}
+            bind:valid={opinionInputValid}
             onChange={handleAnswer}
             data-testid="voter-questions-input" />
         {/key}
 
         <QuestionActions
-          answered={answers.answers[question!.id]?.value != null}
+          answered={answers.answers[question!.id]?.value != null && opinionInputValid}
           {disabled}
           nextLabel={questionBlock!.index === questions.length - 1 && answers.answers[question!.id]?.value != null
             ? t('results.title.results')
