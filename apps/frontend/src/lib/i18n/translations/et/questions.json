@@ -24,6 +24,10 @@
     },
     "start": "Vasta {numQuestions} küsimusele"
   },
+  "multiChoice": {
+    "selectExact": "Vali {count} valikut.",
+    "selectRange": "Vali {min}–{max} valikut."
+  },
   "next": "Järgmine",
   "previous": "Eelmine",
   "remove": "Kustuta vastus",

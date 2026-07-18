@@ -24,6 +24,10 @@
     },
     "start": "Répondre à {numQuestions} questions"
   },
+  "multiChoice": {
+    "selectExact": "Sélectionnez {count} options.",
+    "selectRange": "Sélectionnez {min} à {max} options."
+  },
   "next": "Question suivante",
   "previous": "Précédente",
   "remove": "Supprimer la réponse",

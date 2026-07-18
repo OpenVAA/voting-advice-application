@@ -24,6 +24,10 @@
     },
     "start": "{numQuestions} Froen beäntwerten"
   },
+  "multiChoice": {
+    "selectExact": "Wielt {count} Optiounen.",
+    "selectRange": "Wielt {min} bis {max} Optiounen."
+  },
   "next": "Nächst Fro",
   "previous": "Zréck",
   "remove": "Äntwert läschen",

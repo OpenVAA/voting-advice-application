@@ -2,6 +2,7 @@ import type { Id } from '@openvaa/core';
 import type {
   BooleanQuestion,
   Choice,
+  MultipleChoiceCategoricalQuestion,
   SingleChoiceCategoricalQuestion,
   SingleChoiceOrdinalQuestion
 } from '@openvaa/data';
@@ -11,8 +12,13 @@ export type QuestionChoicesProps = SvelteHTMLElements['fieldset'] & {
   /**
    * The `ChoiceQuestion` object. `BooleanQuestion` is also accepted when an
    * explicit `choices` prop is supplied to synthesize the Yes/No pseudo-choices.
+   * `MultipleChoiceCategoricalQuestion` activates checkbox multi-select mode.
    */
-  question: SingleChoiceCategoricalQuestion | SingleChoiceOrdinalQuestion | BooleanQuestion;
+  question:
+    | SingleChoiceCategoricalQuestion
+    | SingleChoiceOrdinalQuestion
+    | BooleanQuestion
+    | MultipleChoiceCategoricalQuestion;
   /**
    * Explicit choices to render. When provided, overrides `question.choices`.
    * Required for `BooleanQuestion` (which has no native `choices`); synthesized
@@ -32,9 +38,21 @@ export type QuestionChoicesProps = SvelteHTMLElements['fieldset'] & {
    */
   selectedId?: Id | null;
   /**
+   * The `Id`s of the initially selected `Choice`s in checkbox multi-select mode
+   * (`MultipleChoiceCategoricalQuestion`). The multi-mode counterpart of
+   * `selectedId`. @default undefined
+   */
+  selectedIds?: Array<Id> | null;
+  /**
    * The `Id` of the `Choice` selected by the other entity in `display` mode. @default undefined
    */
   otherSelected?: Id | null;
+  /**
+   * The `Id`s of the `Choice`s selected by the other entity in `display` mode in
+   * checkbox multi-select mode. The multi-mode counterpart of `otherSelected`.
+   * @default undefined
+   */
+  otherSelectedIds?: Array<Id> | null;
   /**
    * The label for the other entity's answer. Be sure to supply this if `otherSelected` is supplied.
    */
@@ -70,7 +88,10 @@ type ChoiceEventData = {
    */
   question: QuestionChoicesProps['question'];
   /**
-   * The `Id` of the selected `Choice` or `undefined` if none is selected.
+   * The `Id` of the selected `Choice` (single-choice/boolean mode), the array of
+   * selected `Id`s (checkbox multi-select mode), or `undefined`/`null` if none is
+   * selected. An empty array in multi-select mode signals zero selections
+   * (unanswered).
    */
-  value?: Id | null;
+  value?: Id | Array<Id> | null;
 };

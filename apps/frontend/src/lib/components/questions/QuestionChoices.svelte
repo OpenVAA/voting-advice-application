@@ -61,7 +61,7 @@ The same component can also be used to display the answers of the voter and anot
 
 <script lang="ts">
   import { getCustomData } from '@openvaa/app-shared';
-  import { isObjectType, OBJECT_TYPE } from '@openvaa/data';
+  import { isMultipleChoiceQuestion, isObjectType, OBJECT_TYPE } from '@openvaa/data';
   import { getComponentContext } from '$lib/contexts/component';
   import { onKeyboardFocusOut } from '$lib/utils/onKeyboardFocusOut';
   import type { Id } from '@openvaa/core';
@@ -72,7 +72,9 @@ The same component can also be used to display the answers of the voter and anot
     choices: explicitChoices = undefined,
     disabled = false,
     selectedId = undefined,
+    selectedIds = undefined,
     otherSelected = undefined,
+    otherSelectedIds = undefined,
     otherLabel = '',
     mode = 'answer',
     onShadedBg = false,
@@ -82,6 +84,14 @@ The same component can also be used to display the answers of the voter and anot
     onChange = undefined,
     ...restProps
   }: QuestionChoicesProps = $props();
+
+  ////////////////////////////////////////////////////////////////////
+  // Multi-select (checkbox) mode
+  ////////////////////////////////////////////////////////////////////
+
+  // Checkbox multi-select mode is activated for `MultipleChoiceCategoricalQuestion`
+  // (D-05/D-07). Radio and boolean modes are untouched below.
+  let multiMode = $derived(isMultipleChoiceQuestion(question));
 
   // For convenience. `explicitChoices` wins when provided (required for
   // `BooleanQuestion`, which has no native `.choices`; caller synthesizes them).
@@ -106,10 +116,15 @@ The same component can also be used to display the answers of the voter and anot
       isObjectType(question, OBJECT_TYPE.BooleanQuestion)
     );
   });
-  // The default layout for ordinal questions is horizontal, and vertical for categorical ones.
+  // The default layout for ordinal questions is horizontal, and vertical for
+  // categorical ones (both single- and multi-choice categorical).
   let vertical = $derived.by(() => {
     if (variant) return variant === 'vertical';
-    return isObjectType(question, OBJECT_TYPE.SingleChoiceCategoricalQuestion) || !!getCustomData(question).vertical;
+    return (
+      isObjectType(question, OBJECT_TYPE.SingleChoiceCategoricalQuestion) ||
+      isObjectType(question, OBJECT_TYPE.MultipleChoiceCategoricalQuestion) ||
+      !!getCustomData(question).vertical
+    );
   });
 
   ////////////////////////////////////////////////////////////////////
@@ -123,6 +138,50 @@ The same component can also be used to display the answers of the voter and anot
     selected = selectedId;
     // We need to explicitly set the selected value, because group binding does not consistently update the input states themeselves
     if (selected && inputs[selected]) inputs[selected].checked = true;
+  });
+
+  ////////////////////////////////////////////////////////////////////
+  // Multi-select checkbox state + change dispatch
+  ////////////////////////////////////////////////////////////////////
+
+  /**
+   * Holds the currently selected `Id`s in checkbox multi-select mode. Re-syncs
+   * from the `selectedIds` prop whenever it changes so that navigating between
+   * two multi-choice questions (same-type Q→Q component reuse) shows each
+   * question's own selections — mirroring the radio `selected = selectedId` sync
+   * above.
+   */
+  let selectedMulti: Array<Id> = $state([]);
+  $effect(() => {
+    selectedMulti = Array.isArray(selectedIds) ? [...selectedIds] : [];
+  });
+
+  /**
+   * Toggle a checkbox choice and dispatch the full selection as an array of
+   * choice `Id`s. Labels play no role in the value. Over-selection beyond
+   * `maxSelections` stays physically possible and surfaces as invalidity in the
+   * callers (D-07) — we never disable unchecked boxes here.
+   */
+  function handleToggle(id: Id): void {
+    if (disabled || mode !== 'answer') return;
+    const next = selectedMulti.includes(id) ? selectedMulti.filter((x) => x !== id) : [...selectedMulti, id];
+    selectedMulti = next;
+    onChange?.({ question, value: [...next] });
+  }
+
+  /**
+   * The min/max selection constraints for the helper text (D-07). Returns
+   * `undefined` when neither `minSelections` nor `maxSelections` is authored.
+   * `effectiveMin` defaults to 1 and `effectiveMax` to the choice count.
+   */
+  let multiConstraints = $derived.by<{ effectiveMin: number; effectiveMax: number } | undefined>(() => {
+    if (!multiMode) return undefined;
+    const { minSelections, maxSelections } = getCustomData(question);
+    if (minSelections == null && maxSelections == null) return undefined;
+    return {
+      effectiveMin: minSelections ?? 1,
+      effectiveMax: maxSelections ?? (choices?.length ?? 0)
+    };
   });
 
   // In order to achieve the correct behaviour with both mouse/touch and keyboard users and on different browsers, we have to listen a number of events. The radio inputs' events are fired in this order:
@@ -237,63 +296,125 @@ The same component can also be used to display the answers of the voter and anot
     {/if}
   {/if}
 
-  <!-- The radio buttons -->
+  <!-- The choice buttons -->
   {#each choices ?? [] as { id, label }, i}
-    <!-- The voter's and entity's answers in `display` mode -->
-    {#if mode === 'display'}
-      {@const style = `grid-${vertical ? 'row' : 'column'}: ${i + 1};`}
-      {#if selectedId == id && otherSelected == id}
-        <div class="display-label text-primary" {style}>
-          {t('questions.answers.yourAnswer')} & {otherLabel}
+    {#if multiMode}
+      <!-- Checkbox multi-select mode (MultipleChoiceCategoricalQuestion, D-05/D-07) -->
+      {@const voterSelected = selectedIds?.includes(id) ?? false}
+      {@const entitySelected = otherSelectedIds?.includes(id) ?? false}
+      {@const hasAnySelection = (selectedIds?.length ?? 0) > 0 || (otherSelectedIds?.length ?? 0) > 0}
+
+      <!-- The voter's and entity's answers in `display` mode -->
+      {#if mode === 'display'}
+        {@const style = `grid-${vertical ? 'row' : 'column'}: ${i + 1};`}
+        {#if voterSelected && entitySelected}
+          <div class="display-label text-primary" {style}>
+            {t('questions.answers.yourAnswer')} & {otherLabel}
+          </div>
+        {:else if voterSelected}
+          <div class="display-label text-primary" {style}>{t('questions.answers.yourAnswer')}</div>
+        {:else if entitySelected}
+          <div class="display-label" {style}>{otherLabel}</div>
+        {/if}
+      {/if}
+
+      <!-- The checkbox. The `<label>` widens the click target; a checkbox's
+           native change event handles both pointer and keyboard toggles, so no
+           custom keydown/focusout plumbing is needed (unlike the radio group). -->
+      <label>
+        <input
+          type="checkbox"
+          class="checkbox-primary checkbox border-lg bg-base-100 relative h-32 w-32 outline outline-4 outline-[var(--radio-bg)] disabled:opacity-100"
+          class:entitySelected={entitySelected}
+          name="questionChoices-{question.id}"
+          disabled={mode !== 'answer'}
+          value={id}
+          data-testid="question-choice"
+          checked={selectedMulti.includes(id)}
+          onchange={() => handleToggle(id)} />
+
+        <!-- Stable testId marker for the entity's selected answer in display
+             mode (mirrors the radio branch). -->
+        {#if entitySelected}
+          <span data-testid="entity-selected-answer" class="sr-only">entity-selected</span>
+        {/if}
+
+        <div
+          class:sr-only={mode === 'display' && hasAnySelection && !voterSelected && !entitySelected}
+          class={vertical ? 'text-start' : 'small-label text-center'}>
+          {label}
         </div>
-      {:else if selectedId == id}
-        <div class="display-label text-primary" {style}>{t('questions.answers.yourAnswer')}</div>
-      {:else if otherSelected == id}
-        <div class="display-label" {style}>{otherLabel}</div>
+      </label>
+    {:else}
+      <!-- The voter's and entity's answers in `display` mode -->
+      {#if mode === 'display'}
+        {@const style = `grid-${vertical ? 'row' : 'column'}: ${i + 1};`}
+        {#if selectedId == id && otherSelected == id}
+          <div class="display-label text-primary" {style}>
+            {t('questions.answers.yourAnswer')} & {otherLabel}
+          </div>
+        {:else if selectedId == id}
+          <div class="display-label text-primary" {style}>{t('questions.answers.yourAnswer')}</div>
+        {:else if otherSelected == id}
+          <div class="display-label" {style}>{otherLabel}</div>
+        {/if}
       {/if}
+
+      <!-- The button -->
+      <!-- The label wraps a radio input (interactive); the listeners exist
+           to widen the click/key target to the entire label region.
+           Both pointer and keyboard interactions are handled. -->
+      <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+      <label onclick={(e) => handleClick(e, id)} onkeyup={(e) => handleKeyUp(e, id)}>
+        <!-- bind: keep — Pattern 1 ($state target for bind:this; inputs is $state({}) per Phase 64 fix above); two-way DOM radio group bind:group={selected}, selected is $state. Bind directives placed AFTER value= as a defensive convention to keep diff-against-v2.6-baseline minimal — the order is order-invariant for these shapes per Svelte 5 semantics. -->
+        <input
+          type="radio"
+          class="radio-primary radio border-lg bg-base-100 relative h-32 w-32 outline outline-4 outline-[var(--radio-bg)] disabled:opacity-100"
+          class:entitySelected={otherSelected == id}
+          name="questionChoices-{question.id}"
+          disabled={mode !== 'answer'}
+          value={id}
+          data-testid="question-choice"
+          bind:this={inputs[id]}
+          bind:group={selected}
+          onkeyup={(e) => handleKeyUp(e, id)} />
+
+        <!--
+          260524-l1t D6: stable testId marker for the entity's selected answer
+          in display mode. Rendered as a sr-only sibling of the radio so that
+          the existing `data-testid="question-choice"` on the input is
+          preserved (Playwright's getByTestId matches data-testid only and
+          multiple data-testid attributes on one element are invalid HTML).
+          Consumed by tests/tests/utils/testIds.ts → voter.entityDetail.
+          entitySelectedAnswer (voter-mega-journey + voter-detail specs).
+        -->
+        {#if otherSelected == id}
+          <span data-testid="entity-selected-answer" class="sr-only">entity-selected</span>
+        {/if}
+
+        <!-- The text label. If we are displaying answers, we only show the label when it's in use to reduce clutter. We do show the answer also, when none are selected, because it would look weird otherwise. Due to Aria concerns we always show it to screenreaders. -->
+        <div
+          class:sr-only={mode === 'display' && (selectedId || otherSelected) && selectedId != id && otherSelected != id}
+          class={vertical ? 'text-start' : 'small-label text-center'}>
+          {label}
+        </div>
+      </label>
     {/if}
-
-    <!-- The button -->
-    <!-- The label wraps a radio input (interactive); the listeners exist
-         to widen the click/key target to the entire label region.
-         Both pointer and keyboard interactions are handled. -->
-    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-    <label onclick={(e) => handleClick(e, id)} onkeyup={(e) => handleKeyUp(e, id)}>
-      <!-- bind: keep — Pattern 1 ($state target for bind:this; inputs is $state({}) per Phase 64 fix above); two-way DOM radio group bind:group={selected}, selected is $state. Bind directives placed AFTER value= as a defensive convention to keep diff-against-v2.6-baseline minimal — the order is order-invariant for these shapes per Svelte 5 semantics. -->
-      <input
-        type="radio"
-        class="radio-primary radio border-lg bg-base-100 relative h-32 w-32 outline outline-4 outline-[var(--radio-bg)] disabled:opacity-100"
-        class:entitySelected={otherSelected == id}
-        name="questionChoices-{question.id}"
-        disabled={mode !== 'answer'}
-        value={id}
-        data-testid="question-choice"
-        bind:this={inputs[id]}
-        bind:group={selected}
-        onkeyup={(e) => handleKeyUp(e, id)} />
-
-      <!--
-        260524-l1t D6: stable testId marker for the entity's selected answer
-        in display mode. Rendered as a sr-only sibling of the radio so that
-        the existing `data-testid="question-choice"` on the input is
-        preserved (Playwright's getByTestId matches data-testid only and
-        multiple data-testid attributes on one element are invalid HTML).
-        Consumed by tests/tests/utils/testIds.ts → voter.entityDetail.
-        entitySelectedAnswer (voter-mega-journey + voter-detail specs).
-      -->
-      {#if otherSelected == id}
-        <span data-testid="entity-selected-answer" class="sr-only">entity-selected</span>
-      {/if}
-
-      <!-- The text label. If we are displaying answers, we only show the label when it's in use to reduce clutter. We do show the answer also, when none are selected, because it would look weird otherwise. Due to Aria concerns we always show it to screenreaders. -->
-      <div
-        class:sr-only={mode === 'display' && (selectedId || otherSelected) && selectedId != id && otherSelected != id}
-        class={vertical ? 'text-start' : 'small-label text-center'}>
-        {label}
-      </div>
-    </label>
   {/each}
 </fieldset>
+
+<!-- Multi-select constraint helper text (D-07). Rendered outside the grid
+     `<fieldset>` so it does not create a stray grid cell. -->
+{#if mode === 'answer' && multiConstraints}
+  <p class="small-label text-secondary mt-md text-center" data-testid="question-choice-helper">
+    {multiConstraints.effectiveMin === multiConstraints.effectiveMax
+      ? t('questions.multiChoice.selectExact', { count: multiConstraints.effectiveMax })
+      : t('questions.multiChoice.selectRange', {
+          min: multiConstraints.effectiveMin,
+          max: multiConstraints.effectiveMax
+        })}
+  </p>
+{/if}
 
 <style lang="postcss">
   @reference "../../../tailwind-theme.css";

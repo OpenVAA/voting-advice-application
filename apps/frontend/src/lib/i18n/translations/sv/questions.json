@@ -24,6 +24,10 @@
     },
     "start": "Börja svara på frågor"
   },
+  "multiChoice": {
+    "selectExact": "Välj {count} alternativ.",
+    "selectRange": "Välj {min}–{max} alternativ."
+  },
   "next": "Nästa fråga",
   "previous": "Föregående",
   "remove": "Radera svar",

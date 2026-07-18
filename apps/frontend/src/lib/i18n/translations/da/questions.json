@@ -24,6 +24,10 @@
     },
     "start": "Besvar {numQuestions} spørgsmål"
   },
+  "multiChoice": {
+    "selectExact": "Vælg {count} muligheder.",
+    "selectRange": "Vælg {min}-{max} muligheder."
+  },
   "next": "Næste spørgsmål",
   "previous": "Forrige",
   "remove": "Slet svar",

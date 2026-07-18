@@ -24,6 +24,10 @@
     },
     "start": "Vastaa {numQuestions} kysymykseen"
   },
+  "multiChoice": {
+    "selectExact": "Valitse {count} vaihtoehtoa.",
+    "selectRange": "Valitse {min}–{max} vaihtoehtoa."
+  },
   "next": "Seuraava",
   "previous": "Edellinen",
   "remove": "Poista vastaus",
