@@ -196,6 +196,39 @@ export function createCandidateProfilePage(page: Page) {
     },
 
     /**
+     * Fill a MultipleTextInput (row-list) info question matching `label` with
+     * `values`, one row per value. Mirrors `fillQuestion`'s label-locate idiom,
+     * then drives the row list:
+     *  - Row 0 pre-renders (the component pads to a floor of >= 1 row), so it is
+     *    filled in place.
+     *  - Each subsequent value needs a fresh row: click the `multiple-text-add`
+     *    control until a row exists at the target index, then fill it.
+     *
+     * Row inputs and the add control are located via testIds constants only
+     * (no raw `multiple-text-*` selector literals — selector-catalogue rule).
+     *
+     * Fail-fast: assert the target row is visible (bounded by the expect
+     * timeout) BEFORE filling, so a never-resolving locator surfaces the real
+     * cause in seconds instead of burning the full per-test timeout.
+     */
+    async fillMultipleTextQuestion(label: string | RegExp, values: Array<string>): Promise<void> {
+      const q = questionLocator(label).first();
+      await expect(q).toBeVisible();
+      const rows = q.getByTestId(testIds.voter.questions.multipleTextRow);
+      const addButton = q.getByTestId(testIds.voter.questions.multipleTextAdd);
+      for (let i = 0; i < values.length; i++) {
+        // Ensure a row exists at index `i` (row 0 is pre-rendered by the floor).
+        while ((await rows.count()) <= i) {
+          await expect(addButton).toBeEnabled();
+          await addButton.click();
+        }
+        const row = rows.nth(i);
+        await expect(row).toBeVisible();
+        await row.fill(values[i]);
+      }
+    },
+
+    /**
      * Click profile-submit (variant="main"). Caller asserts the post-submit
      * navigation target separately.
      *

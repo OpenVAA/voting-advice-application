@@ -69,6 +69,7 @@ import { createNavMenu } from '../../fixtures/shared/navMenu.fixture';
 import { TIMEOUTS } from '../../helpers';
 import {
   INFO_QUESTION_ANSWERS,
+  MULTIPLE_TEXT_ANSWERS,
   OPEN_ANSWER_1,
   OPEN_ANSWER_1_EDITED,
   PASSWORD_1,
@@ -572,6 +573,11 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
         const id = externalId.replace(/^test-/, '');
         await candidateProfilePage.fillQuestion(new RegExp(`\\[${id}\\]`), value);
       }
+      // Fill the multipleText info question (a string[] row list, so it lives
+      // outside INFO_QUESTION_ANSWERS). required:false → this must NOT change
+      // the required-empty submit-disabled gate the step already asserts; the
+      // values are round-tripped in step 21 (EQTYP-03 candidate leg).
+      await candidateProfilePage.fillMultipleTextQuestion(/\[qu-info-multipleText\]/, [...MULTIPLE_TEXT_ANSWERS]);
       await candidateProfilePage.submit();
       // Post-submit lands on home (opinions still disabled because the
       // required field is empty).

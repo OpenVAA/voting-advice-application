@@ -75,14 +75,33 @@ export const INFO_QUESTION_ANSWERS: Readonly<Record<string, string>> = Object.fr
   'test-qu-info-text-longText': '[INFO-LONGTEXT] An extended biography in long-form text.',
   'test-qu-info-text-link': 'https://example.test/unregistered-candidate',
   'test-qu-info-number': '42',
-  // NOTE: test-qu-info-multipleText intentionally omitted from the fill map —
-  // the input is now implemented (Phase 129 UNBLK-01, plan 05) and the question
-  // renders on the profile, but it is required:false so it is not part of the
-  // profile-completion gate; leaving it unfilled keeps this map focused on the
-  // required + round-tripped fields.
+  // NOTE: test-qu-info-multipleText is NOT in this map because its answer is a
+  // string[] (a row list), which cannot live in this Record<string,string>. It
+  // is filled explicitly in step 13 via MULTIPLE_TEXT_ANSWERS (below) +
+  // candidateProfilePage.fillMultipleTextQuestion, and round-tripped in step 21
+  // (EQTYP-03 candidate leg). It is required:false, so leaving it out of the
+  // completion-gate map does not affect the required-empty submit choreography.
   'test-qu-info-filt-co-reg-n':
     '[INFO-FILT-CO-REG-N] Answer for the north-only filtered info question.'
 });
+
+/**
+ * The multipleText info question (`test-qu-info-multipleText`) answer: a list
+ * of exactly 2 distinct ASCII marker values. Filled on the candidate profile
+ * (step 13) via `candidateProfilePage.fillMultipleTextQuestion` and asserted
+ * verbatim in the preview (step 21) — closing the EQTYP-03 candidate
+ * round-trip.
+ *
+ * The values live in a `string[]` (not the INFO_QUESTION_ANSWERS
+ * Record<string,string> map) because the MultipleTextInput answer is a row
+ * list. The distinct `[MULTITEXT-1]` / `[MULTITEXT-2]` bracket-token markers
+ * make the round-trip assertion a VERBATIM equality check — no locale /
+ * normalization / encoding ambiguity can silently pass a mangled value.
+ */
+export const MULTIPLE_TEXT_ANSWERS: ReadonlyArray<string> = Object.freeze([
+  '[MULTITEXT-1] First list value.',
+  '[MULTITEXT-2] Second list value.'
+]);
 
 /**
  * Loose RegExp for matching the registration / invite email subject in Mailpit. Supabase / GoTrue email subject strings can change across upgrades, so we match a family of plausible subjects rather than pin to one literal.
