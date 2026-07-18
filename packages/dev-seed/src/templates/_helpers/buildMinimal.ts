@@ -170,6 +170,31 @@ export function defaultAnswerForQuestion(question: Record<string, unknown>, full
   if (type === 'boolean') {
     return { value: true };
   }
+  if (type === 'number') {
+    // D-16: the backend validate_answer_value 'number' branch requires a JSON
+    // number. Return the midpoint of the question's min/max (read from
+    // custom_data, falling back to top-level min/max), else 0. Never a string.
+    const cd = (question.custom_data ?? {}) as Record<string, unknown>;
+    const min = typeof cd.min === 'number' ? cd.min : typeof question.min === 'number' ? (question.min as number) : undefined;
+    const max = typeof cd.max === 'number' ? cd.max : typeof question.max === 'number' ? (question.max as number) : undefined;
+    if (min !== undefined && max !== undefined) {
+      return { value: Math.round((min + max) / 2) };
+    }
+    return { value: 0 };
+  }
+  if (type === 'multipleChoiceCategorical') {
+    // D-16: the validate_answer_value 'multipleChoiceCategorical' branch requires
+    // an array of valid choice ids — a scalar choice id is invalid. Return the
+    // first max(minSelections ?? 1, 1) choice ids.
+    const mcChoices = question.choices as Array<{ id: string }> | undefined;
+    if (Array.isArray(mcChoices) && mcChoices.length > 0) {
+      const cd = (question.custom_data ?? {}) as Record<string, unknown>;
+      const minSel = typeof cd.minSelections === 'number' ? cd.minSelections : 1;
+      const take = Math.min(Math.max(minSel, 1), mcChoices.length);
+      return { value: mcChoices.slice(0, take).map((c) => c.id) };
+    }
+    return { value: [] };
+  }
   // Categorical (or any other choice-based question): pick the first
   // choice's id when available; otherwise fall back to empty string.
   const choices = question.choices as Array<{ id: string }> | undefined;

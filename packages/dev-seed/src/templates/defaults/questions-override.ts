@@ -1,22 +1,24 @@
 /**
  * Default-template questions override — enforces the type mix: majority Likert
- * (ordinal), some categorical, exactly 1 boolean. NO
- * number/text/date/image/multipleText.
+ * (ordinal), some categorical, exactly 1 boolean, plus (Phase 129 D-15) one
+ * number-scale + one multipleChoiceCategorical opinion question so the demo
+ * exercises the new question inputs. NO text/date/image/multipleText.
  *
  * Split:
  *   - 18 singleChoiceOrdinal (5-point Likert)
  *   - 5  singleChoiceCategorical (3-5 choices each)
  *   - 1  boolean
- *   Total: 24
+ *   - 1  number (D-15 — custom_data min/max, matchable)
+ *   - 1  multipleChoiceCategorical (D-15 — 4 choices, minSelections 2 / maxSelections 3)
+ *   Total: 26
  *
- * 1/5 of the questions (indices 0, 5, 10, 15, 20) additionally carry a
+ * 1/5 of the questions (indices 0, 5, 10, 15, 20, 25) additionally carry a
  * `customData.terms` definition whose trigger is a word from the question's
  * own name, so the in-text term popup (Term.svelte) renders in the demo data.
  *
- * `multipleChoiceCategorical` was in this mix earlier but was dropped — the
- * default template is now single-choice only. The latent emitter still
- * supports `multipleChoiceCategorical` for custom templates that want it
- * (emitters/latent/project.ts).
+ * The latent emitter (emitters/latent/project.ts) supports number (via the
+ * defaultRandomValidEmit fallback) and multipleChoiceCategorical (mapMulti-
+ * Categorical), so candidate answers for both new types are emitted for free.
  *
  * Questions are distributed across the 4 categories from
  * `ctx.refs.question_categories` in round-robin so every category receives
@@ -26,8 +28,9 @@
  * for ordinal + categorical types. Boolean falls back to
  * `defaultRandomValidEmit` — same behavior as the default generator.
  *
- * `TYPE_PLAN` contains ONLY the three allowed enum values; no
- * `number/text/date/image/multipleText` path is possible.
+ * `TYPE_PLAN` contains ordinal / categorical / boolean / number /
+ * multipleChoiceCategorical enum values; no `text/date/image/multipleText`
+ * path is possible.
  */
 
 import type { Faker } from '@faker-js/faker';
@@ -37,11 +40,13 @@ import type { Ctx } from '../../types';
 type QuestionType = Enums<'question_type'>;
 
 /**
- * Per-index type plan. Length is exactly 24 (questions count).
+ * Per-index type plan. Length is exactly 26 (questions count).
  *
  *   Indices  0..17 → 18 × singleChoiceOrdinal
  *   Indices 18..22 →  5 × singleChoiceCategorical
  *   Index      23  →  1 × boolean
+ *   Index      24  →  1 × number (D-15)
+ *   Index      25  →  1 × multipleChoiceCategorical (D-15)
  */
 const TYPE_PLAN: ReadonlyArray<QuestionType> = [
   ...(Array(18).fill('singleChoiceOrdinal') as Array<QuestionType>),
@@ -50,7 +55,9 @@ const TYPE_PLAN: ReadonlyArray<QuestionType> = [
   'singleChoiceCategorical',
   'singleChoiceCategorical',
   'singleChoiceCategorical',
-  'boolean'
+  'boolean',
+  'number',
+  'multipleChoiceCategorical'
 ];
 
 /**
@@ -161,6 +168,15 @@ export function questionsOverride(_fragment: unknown, ctx: Ctx): Array<Record<st
       // (party affiliation), this exercises the full filter surface against
       // the default Finnish demo seed.
       row.custom_data = { filterable: true };
+    } else if (type === 'number') {
+      // D-15: number-scale opinion question. custom_data min/max makes it
+      // matchable (NumberQuestion.isMatchable) and drives the slider input.
+      row.custom_data = { min: 0, max: 10 };
+    } else if (type === 'multipleChoiceCategorical') {
+      // D-15: multi-choice opinion question with 4 choices + the D-07
+      // selection-count constraints so the demo exercises the helper text.
+      row.choices = buildCategoricalChoices(faker, 4);
+      row.custom_data = { filterable: true, minSelections: 2, maxSelections: 3 };
     }
     // boolean: no choices (QuestionsGenerator pattern — boolean is schema-free).
 

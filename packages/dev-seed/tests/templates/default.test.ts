@@ -140,15 +140,15 @@ describe('candidatesOverride — non-uniform distribution + locale cycling', () 
 // ---------------------------------------------------------------------------
 
 describe('questionsOverride — D-58-03 type mix', () => {
-  it('Test 11: produces exactly 24 question rows', () => {
+  it('Test 11: produces exactly 26 question rows (D-15)', () => {
     const ctx = makeCtx({
       refs: { ...makeCtx().refs, question_categories: fourCategories() }
     });
     const rows = questionsOverride({}, ctx);
-    expect(rows).toHaveLength(24);
+    expect(rows).toHaveLength(26);
   });
 
-  it('Test 12: type mix is 18 singleChoiceOrdinal + 5 singleChoiceCategorical + 1 boolean', () => {
+  it('Test 12: type mix is 18 singleChoiceOrdinal + 5 singleChoiceCategorical + 1 boolean + 1 number + 1 multipleChoiceCategorical (D-15)', () => {
     const ctx = makeCtx({
       refs: { ...makeCtx().refs, question_categories: fourCategories() }
     });
@@ -161,7 +161,8 @@ describe('questionsOverride — D-58-03 type mix', () => {
     expect(counts.singleChoiceOrdinal).toBe(18);
     expect(counts.singleChoiceCategorical).toBe(5);
     expect(counts.boolean).toBe(1);
-    expect(counts.multipleChoiceCategorical).toBeUndefined();
+    expect(counts.number).toBe(1);
+    expect(counts.multipleChoiceCategorical).toBe(1);
   });
 
   it('Test 13: every question has a category ref', () => {
@@ -191,12 +192,14 @@ describe('questionsOverride — D-58-03 type mix', () => {
     }
   });
 
-  it('Test 15: no question has a forbidden type (number/text/date/image/multipleText)', () => {
+  it('Test 15: no question has a forbidden type (text/date/image/multipleText)', () => {
     const ctx = makeCtx({
       refs: { ...makeCtx().refs, question_categories: fourCategories() }
     });
     const rows = questionsOverride({}, ctx);
-    const forbidden = new Set(['number', 'text', 'date', 'image', 'multipleText']);
+    // number + multipleChoiceCategorical are now intentional demo types (D-15);
+    // text/date/image/multipleText remain excluded from the default template.
+    const forbidden = new Set(['text', 'date', 'image', 'multipleText']);
     for (const row of rows) {
       const t = (row as { type?: string }).type!;
       expect(forbidden.has(t)).toBe(false);
@@ -250,8 +253,8 @@ describe('defaultTemplate — shape & frontmatter constants', () => {
     expect(defaultTemplate.question_categories?.fixed).toHaveLength(4);
   });
 
-  it('Test 24: questions.count === 24 (D-58-02)', () => {
-    expect(defaultTemplate.questions?.count).toBe(24);
+  it('Test 24: questions.count === 26 (D-58-02, D-15)', () => {
+    expect(defaultTemplate.questions?.count).toBe(26);
   });
 
   it('Test 25: candidates.count === 327 (Phase 64 manual-smoke densification)', () => {
@@ -275,7 +278,7 @@ describe('defaultTemplate — shape & frontmatter constants', () => {
     // Phase 67: 2 hand-authored alliances (Progressive Front + Conservative Bloc).
     expect(rows.alliances).toHaveLength(2);
     expect(rows.question_categories).toHaveLength(4);
-    expect(rows.questions).toHaveLength(24);
+    expect(rows.questions).toHaveLength(26);
     expect(rows.candidates).toHaveLength(327);
     // 327 candidate noms + 8 × 5 = 40 organization noms (matrix is dense, every cell ≥ 1)
     // + 10 alliance noms (2 alliances × 5 constituencies, Phase 67)

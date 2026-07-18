@@ -149,7 +149,7 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
       expect(rows.constituencies.length).toBe(5);
       expect(rows.organizations.length).toBe(8);
       expect(rows.candidates.length).toBe(327);
-      expect(rows.questions.length).toBe(24);
+      expect(rows.questions.length).toBe(26);
       expect(rows.question_categories.length).toBe(4);
       // Phase 67: alliances + alliance noms
       expect(rows.alliances.length).toBe(2);
@@ -169,7 +169,7 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
       expect(await countByPrefix(readClient, 'constituencies', prefix)).toBe(5);
       expect(await countByPrefix(readClient, 'organizations', prefix)).toBe(8);
       expect(await countByPrefix(readClient, 'candidates', prefix)).toBe(327);
-      expect(await countByPrefix(readClient, 'questions', prefix)).toBe(24);
+      expect(await countByPrefix(readClient, 'questions', prefix)).toBe(26);
       expect(await countByPrefix(readClient, 'question_categories', prefix)).toBe(4);
       // Phase 67: 2 alliance entities + 327 cand noms + 40 org noms + 10 alliance noms
       expect(await countByPrefix(readClient, 'alliances', prefix)).toBe(2);

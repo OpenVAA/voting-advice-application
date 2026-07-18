@@ -6,8 +6,8 @@
  *   - 8 invented parties with Finnish-cultural flavor
  *   - 327 candidates non-uniformly distributed via `defaultOverrides.candidates`
  *     (`PARTY_WEIGHTS` sum 327; pairs with `candidates.count: 327`)
- *   - 24 questions (18 ordinal + 5 categorical + 1 boolean) via
- *     `defaultOverrides.questions`
+ *   - 26 questions (18 ordinal + 5 categorical + 1 boolean + 1 number +
+ *     1 multipleChoiceCategorical) via `defaultOverrides.questions` (D-15)
  *   - 4 categories
  *   - generateTranslationsForAllLocales: true
  *   - seed: 42 (determinism)
@@ -193,9 +193,10 @@ export const defaultTemplate: Template = {
   },
 
   // Exact shape via defaultOverrides.questions — override replaces the
-  // class-based QuestionsGenerator and emits the 18/4/1/1 mix.
+  // class-based QuestionsGenerator and emits the 18 ordinal / 5 categorical /
+  // 1 boolean / 1 number / 1 multi-choice mix (D-15).
   questions: {
-    count: 24
+    count: 26
   },
 
   // Exact shape via defaultOverrides.candidates — override replaces the
