@@ -552,7 +552,23 @@ Plans:
   4. Any new-feature-specific fixtures are built, typecheck-clean, and proven by a smoke/probe before the specs rely on them (fixtures-first within the phase).
   5. All new-feature-coverage specs pass 3× deterministically (fresh server, clean DB).
 
-**Plans**: TBD
+**Plans**: 6 plans
+Plans:
+
+**Wave 1**
+
+- [ ] 130-01-PLAN.md — Voter fixtures fixtures-first: value-parametrized `answerNumberScale` + `expectQuestionDisplay` multi-choice/number display support, proven by a new `@probe` smoke [EQTYP-01/02]
+- [ ] 130-02-PLAN.md — EQTYP-03 candidate leg: `fillMultipleTextQuestion` helper + fill-map wiring + preview round-trip of ≥2 multipleText values [EQTYP-03]
+
+**Wave 2**
+
+- [ ] 130-03-PLAN.md — voter-journey assertion depth: 100%-match incorporation proof + new-type drawer displays + dedicated EQTYP-02 number-scale min/mid boundary test; dead commented nominations block removed [EQTYP-01/02]
+- [ ] 130-04-PLAN.md — NEW `voter-alliance.spec.ts` (member-orgs drawer + clickable in-card children + EPERM-03 presence rider + EPERM-04 tab-control rider, D-03) + NEW `voter-nominations.spec.ts` (D-01) with their leaf project entries [EFLOW-02]
+- [ ] 130-05-PLAN.md — candidate-journey EQTYP-01 type-specific multi-choice contract (D-07 min/max save gating) + D-02 categorical/boolean tightening [EQTYP-01]
+
+**Wave 3**
+
+- [ ] 130-06-PLAN.md — D-05 determinism gate: full suite 3× green, fresh :5173 server + clean DB per run, zero failed / zero did-not-run, evidence captured [SC5]
 **UI hint**: yes
 
 #### Phase 131: E2E Reliability Hardening — Deferred Flake/Race Triage
