@@ -182,6 +182,24 @@ export const testIds = {
       heading: 'voter-questions-heading',
       nextButton: 'question-next',
       previousButton: 'question-previous',
+      // Phase-129 question-input locators (D-14). These support the Phase-130
+      // EQTYP fixtures (answerNumberScale / answerMultiChoice + the MultipleText
+      // round-trip) and the Phase-129 voter-journey answer-walk extension. Values
+      // byte-match the component-side data-testid strings shipped in plans 04/05/06:
+      //  - numberSlider / numberValue: NumberScaleInput.svelte native range +
+      //    live value label (plan 04).
+      //  - multipleText*: MultipleTextInput.svelte row-list add/remove/reorder
+      //    controls, candidate info-question input (plan 05).
+      //  - choiceHelper: QuestionChoices.svelte multi-select helper text
+      //    (select-range / select-exact) rendered outside the choice grid (plan 06).
+      numberSlider: 'question-number-slider',
+      numberValue: 'question-number-value',
+      multipleTextRow: 'multiple-text-row',
+      multipleTextAdd: 'multiple-text-add',
+      multipleTextRemove: 'multiple-text-remove',
+      multipleTextMoveUp: 'multiple-text-move-up',
+      multipleTextMoveDown: 'multiple-text-move-down',
+      choiceHelper: 'question-choice-helper',
       categoryIntro: 'voter-questions-category-intro',
       categoryList: 'voter-questions-category-list',
       categoryCheckbox: 'voter-questions-category-checkbox',
