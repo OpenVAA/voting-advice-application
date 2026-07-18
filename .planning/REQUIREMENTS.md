@@ -69,7 +69,7 @@ New settings-driven branches not yet covered by the existing 19 perm specs.
 
 - [x] **EQTYP-01**: E2E covers multi-choice categorical opinion questions — voter answering, candidate answering, and matching (depends on UNBLK-02). **NOTE**: Voter answering covered, but check ig categorial and boolen opinion questions are covered for candidates.
 - [x] **EQTYP-02**: E2E covers number-scale opinion questions — answering and matching boundary behavior. **NOTE**: Blocked on UNBLK-05 (number opinion input does not exist yet).
-- [ ] **EQTYP-03**: E2E covers text and MultipleText questions — voter/candidate rendering and answer round-trip (depends on UNBLK-01).
+- [x] **EQTYP-03**: E2E covers text and MultipleText questions — voter/candidate rendering and answer round-trip (depends on UNBLK-01).
 
 ### Coverage-Unblocking Product Work (UNBLK)
 
@@ -185,7 +185,7 @@ Each requirement maps to exactly one roadmap phase (see `.planning/ROADMAP.md` v
 | UNBLK-06 | Phase 129 | Complete |
 | EQTYP-01 | Phase 130 | Complete |
 | EQTYP-02 | Phase 130 | Complete |
-| EQTYP-03 | Phase 130 | Pending |
+| EQTYP-03 | Phase 130 | Complete |
 | EFLOW-02 | Phase 130 | Pending |
 | HARDN-01 | Phase 131 | Pending |
 | HARDN-02 | Phase 132 | Pending |
