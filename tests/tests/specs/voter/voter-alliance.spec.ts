@@ -108,5 +108,33 @@ test.describe('voter-alliance (EFLOW-02 + EPERM-03/04 riders)', () => {
       await page.keyboard.press('Escape');
       await expect(drawer).toBeHidden({ timeout: TIMEOUTS.page });
     });
+
+    await test.step('EPERM-04 rider: alliance drawer exposes EXACTLY [info, children] — no opinions tab', async () => {
+      // Re-anchor on the alliances section (the org drawer was an overlay; the
+      // tab state persists, but assert explicitly so the card lookup below is
+      // deterministic after the drawer close).
+      await resultsPage.selectEntityTab('alliances');
+
+      // Open the ALLIANCE's own drawer (the parent card's primary action —
+      // openEntityDetailsForCard clicks the FIRST entity-card-action, which for
+      // a subcard-bearing card is the alliance header wrap, not a member).
+      await resultsPage.openEntityDetailsForCard(/Alliance A/i);
+
+      // seed entityDetails.contents.alliance = ['info','children'] → EXACTLY the
+      // Basic Info + Members tabs, in order, and NO opinions tab (the per-type
+      // tab-control contract made unmistakable — mirrors the journey's
+      // absent-tab precedent).
+      await entityDetails.expectTabs(['info', 'children']);
+      const drawer = page.getByTestId(testIds.voter.results.entityDetails);
+      await expect(drawer.getByRole('tab', { name: /Opinions/i })).toHaveCount(0);
+    });
+
+    await test.step('EFLOW-02: member-orgs drawer lists both member orgs', async () => {
+      await entityDetails.selectTab('children');
+      const members = entityDetails.getMemberCards();
+      await expect(members).toHaveCount(2, { timeout: TIMEOUTS.slowPage });
+      await expect(members.filter({ hasText: /Party AA/i })).toHaveCount(1);
+      await expect(members.filter({ hasText: /Party AB/i })).toHaveCount(1);
+    });
   });
 });
