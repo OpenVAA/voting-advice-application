@@ -35,6 +35,7 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
   import { untrack } from 'svelte';
   import { getComponentContext } from '$lib/contexts/component';
   import { logDebugError } from '$lib/utils/logger';
+  import { isMultiChoiceCountValid } from '$lib/utils/multiChoiceValidity';
   import NumberScaleInput from './NumberScaleInput.svelte';
   import QuestionChoices from './QuestionChoices.svelte';
   import ErrorMessage from '../errorMessage/ErrorMessage.svelte';
@@ -72,19 +73,34 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
     });
   });
 
+  // D-07 validity for the current multi-choice selection count, delegating to
+  // the shared `isMultiChoiceCountValid` helper (single source of truth) so the
+  // formula stays in lockstep with its unit test. Reads the authored min/max via
+  // `getCustomData` and the choice count off the question.
+  function computeMultiChoiceValid(count: number): boolean {
+    if (!isMultipleChoiceQuestion(question)) return true;
+    const { minSelections, maxSelections } = getCustomData(question);
+    return isMultiChoiceCountValid({
+      count,
+      minSelections,
+      maxSelections,
+      choiceCount: question.choices.length
+    });
+  }
+
   // Push validity to the bound `valid` prop. Only multi-choice constrains it;
   // every other question type leaves it `true` (D-07: the component never
-  // disables anything — callers gate on this value).
+  // disables anything — callers gate on this value). This $effect handles the
+  // mount seed, question-identity changes, and the non-multi-choice reset; the
+  // multi-choice onChange wrapper additionally assigns `valid` SYNCHRONOUSLY
+  // (see below) because this $effect flushes too late for the same-stack read
+  // in the voter layout's handleAnswer.
   $effect(() => {
     if (!isMultipleChoiceQuestion(question)) {
       valid = true;
       return;
     }
-    const { minSelections, maxSelections } = getCustomData(question);
-    const effectiveMin = minSelections ?? 1;
-    const effectiveMax = maxSelections ?? question.choices.length;
-    const count = currentMultiSelection.length;
-    valid = count >= effectiveMin && count <= effectiveMax;
+    valid = computeMultiChoiceValid(currentMultiSelection.length);
   });
 
   // Debug warning — runs reactively so devs see the warning whenever the
@@ -184,7 +200,16 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
       {otherSelectedIds}
       {otherLabel}
       onChange={(d) => {
-        if (Array.isArray(d.value)) currentMultiSelection = d.value;
+        if (Array.isArray(d.value)) {
+          currentMultiSelection = d.value;
+          // Assign the bound `valid` SYNCHRONOUSLY before bubbling onChange:
+          // `$bindable` writes propagate to the parent's bound $state within this
+          // same call stack, whereas the validity $effect above flushes only
+          // after the event handler returns. The voter layout's handleAnswer
+          // (plan 129-09) reads `opinionInputValid` inside this synchronous
+          // onChange stack, so it must see fresh validity here (D-07).
+          valid = computeMultiChoiceValid(d.value.length);
+        }
         onChange?.({ value: d.value, question: d.question });
       }}
       {...restProps} />

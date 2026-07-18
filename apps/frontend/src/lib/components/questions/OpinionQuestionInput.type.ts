@@ -29,7 +29,10 @@ export type OpinionQuestionInputProps = QuestionInputProps & {
    * `maxSelections ?? choices.length` — so zero selections is always
    * invalid-as-unanswered per D-07); all other branches leave it `true`. Callers
    * use it to gate Save (candidate) or keep the action button as Skip (voter) —
-   * the component itself never disables anything (D-07). @default true
+   * the component itself never disables anything (D-07). In the multi-choice
+   * branch the value is assigned SYNCHRONOUSLY before the bubbled `onChange`, so
+   * a caller reading it inside the same onChange stack sees fresh validity.
+   * @default true
    */
   valid?: boolean;
   /**
