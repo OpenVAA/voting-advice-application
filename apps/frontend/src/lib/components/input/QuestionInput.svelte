@@ -26,7 +26,7 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
   import { getCustomData, isLocalizedString } from '@openvaa/app-shared';
   import { DateQuestion, isChoiceQuestion, isMultipleChoiceQuestion, QUESTION_TYPE } from '@openvaa/data';
   import { logDebugError } from '$lib/utils/logger';
-  import { Input } from '.';
+  import { Input, MultipleTextInput } from '.';
   import type { QuestionType } from '@openvaa/data';
   import type { InputProps } from '.';
   import type { QuestionInputProps } from './QuestionInput.type';
@@ -52,16 +52,23 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
   // we still derive so Svelte 5 sees the prop reads as reactive edges.
   // Validation runs as an $effect so the warnings re-fire on prop change.
   $effect(() => {
-    if (question.type === QUESTION_TYPE.MultipleText)
-      throw new Error(`MultipleTextQuestions are not yet supported by QuestionInput. Question id: ${question.id}.`);
     if (question instanceof DateQuestion && question.format)
       logDebugError(`Date formats are not supported yet by QuestionInput. Question id: ${question.id}.`);
   });
 
   const customData = $derived(getCustomData(question));
 
+  // MultipleText questions render a dedicated `MultipleTextInput` (row-list),
+  // not the generic `Input`. The `type`/`inputProps`/`allProps` deriveds below
+  // are lazy — Svelte only evaluates them when read, and the template reads them
+  // only in the non-MultipleText branch, so the Exclude cast never executes for
+  // MultipleText.
+  const isMultipleText = $derived(question.type === QUESTION_TYPE.MultipleText);
+
   const type = $derived.by<InputProps['type']>(() => {
-    // TODO: Remove cast when MultipleTextQuestion is implemented
+    // MultipleText is dispatched to `MultipleTextInput` (its own template
+    // branch) and never reaches this cast; the Exclude on INPUT_TYPES documents
+    // that the map has no MultipleText entry.
     let t = INPUT_TYPES[question.type as Exclude<QuestionType, typeof QUESTION_TYPE.MultipleText>];
     if (question.type === QUESTION_TYPE.Text && question.subtype === 'link') t = 'url';
     // reason: placed BEFORE longText + !disableMultilingual blocks so 'email' falls through unchanged (those blocks only remap 'text'/'textarea').
@@ -118,6 +125,16 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
     return props;
   });
 
+  // Props for the MultipleText row-list input (Array<string>, D-01). Reads the
+  // same question + customData sources as the Input path; minItems/maxItems come
+  // from the plan-02 customData keys via `getCustomData`.
+  const multipleTextProps = $derived.by(() => {
+    const { id, info, name: label } = question;
+    const { fillingInfo, locked, minItems, maxItems } = customData;
+    const value = answer?.value != null ? (question.ensureValue(answer.value) as Array<string>) : undefined;
+    return { id, label, info: fillingInfo ?? info, locked, minItems, maxItems, value };
+  });
+
   ////////////////////////////////////////////////////////////////////
   // Callback
   ////////////////////////////////////////////////////////////////////
@@ -130,4 +147,11 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
   const allProps = $derived({ ...inputProps, ...restProps, onChange: handleChange } as InputProps);
 </script>
 
-<Input {...allProps} />
+{#if isMultipleText}
+  <MultipleTextInput
+    {...multipleTextProps}
+    onShadedBg={restProps.onShadedBg}
+    onChange={(value) => onChange?.({ value, question })} />
+{:else}
+  <Input {...allProps} />
+{/if}
