@@ -30,12 +30,15 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
 -->
 
 <script lang="ts">
-  import { isBooleanQuestion, isNumberQuestion, isSingleChoiceQuestion } from '@openvaa/data';
+  import { getCustomData } from '@openvaa/app-shared';
+  import { isBooleanQuestion, isMultipleChoiceQuestion, isNumberQuestion, isSingleChoiceQuestion } from '@openvaa/data';
+  import { untrack } from 'svelte';
   import { getComponentContext } from '$lib/contexts/component';
   import { logDebugError } from '$lib/utils/logger';
   import NumberScaleInput from './NumberScaleInput.svelte';
   import QuestionChoices from './QuestionChoices.svelte';
   import ErrorMessage from '../errorMessage/ErrorMessage.svelte';
+  import type { Id } from '@openvaa/core';
   import type { Choice } from '@openvaa/data';
   import type { OpinionQuestionInputProps } from './OpinionQuestionInput.type';
 
@@ -45,9 +48,44 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
     answer = undefined,
     otherAnswer = undefined,
     otherLabel = undefined,
+    valid = $bindable(true),
     onChange,
     ...restProps
   }: OpinionQuestionInputProps = $props();
+
+  ////////////////////////////////////////////////////////////////////
+  // Multi-choice validity (D-07)
+  ////////////////////////////////////////////////////////////////////
+
+  // The current multi-choice selection, seeded from the ensured answer value and
+  // updated on every checkbox toggle. Reset when the question identity changes
+  // (voter same-type Q→Q reuse does not remount this component).
+  let currentMultiSelection = $state<Array<Id>>([]);
+  $effect(() => {
+    // Track question identity so the seed re-runs on Q→Q navigation; read the
+    // answer untracked so a parent answer update does not clobber in-progress
+    // toggles.
+    void question.id;
+    untrack(() => {
+      const ensured = question.ensureValue(answer?.value);
+      currentMultiSelection = Array.isArray(ensured) ? [...ensured] : [];
+    });
+  });
+
+  // Push validity to the bound `valid` prop. Only multi-choice constrains it;
+  // every other question type leaves it `true` (D-07: the component never
+  // disables anything — callers gate on this value).
+  $effect(() => {
+    if (!isMultipleChoiceQuestion(question)) {
+      valid = true;
+      return;
+    }
+    const { minSelections, maxSelections } = getCustomData(question);
+    const effectiveMin = minSelections ?? 1;
+    const effectiveMax = maxSelections ?? question.choices.length;
+    const count = currentMultiSelection.length;
+    valid = count >= effectiveMin && count <= effectiveMax;
+  });
 
   // Debug warning — runs reactively so devs see the warning whenever the
   // prop combination becomes invalid, not just at mount.
@@ -130,6 +168,26 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
       otherValue={otherNumberValue}
       {otherLabel}
       onChange={onChange ? (d) => onChange({ value: d.value, question: d.question }) : undefined} />
+  {:else if isMultipleChoiceQuestion(question)}
+    <!-- Checkbox multi-select mode (D-07). Values are choice-Id arrays routed
+         through `ensureValue`; missing / non-array answers coerce to `null`.
+         Validity is surfaced via the bound `valid` prop — this component never
+         disables anything; callers gate Save (candidate) / Skip (voter). -->
+    {@const rawSelected = question.ensureValue(answer?.value)}
+    {@const rawOther = question.ensureValue(otherAnswer?.value)}
+    {@const selectedIds = Array.isArray(rawSelected) ? rawSelected : null}
+    {@const otherSelectedIds = Array.isArray(rawOther) ? rawOther : null}
+    <QuestionChoices
+      {question}
+      {mode}
+      {selectedIds}
+      {otherSelectedIds}
+      {otherLabel}
+      onChange={(d) => {
+        if (Array.isArray(d.value)) currentMultiSelection = d.value;
+        onChange?.({ value: d.value, question: d.question });
+      }}
+      {...restProps} />
   {:else}
     <ErrorMessage inline message={t('error.unsupportedQuestion')} class="text-center" />
   {/if}

@@ -23,6 +23,16 @@ export type OpinionQuestionInputProps = QuestionInputProps & {
    */
   otherLabel?: string;
   /**
+   * Bindable. `true` when the current selection constitutes a saveable answer.
+   * Only the multi-choice branch computes it (count >= effectiveMin && count <=
+   * effectiveMax, with effectiveMin = `minSelections ?? 1` and effectiveMax =
+   * `maxSelections ?? choices.length` — so zero selections is always
+   * invalid-as-unanswered per D-07); all other branches leave it `true`. Callers
+   * use it to gate Save (candidate) or keep the action button as Skip (voter) —
+   * the component itself never disables anything (D-07). @default true
+   */
+  valid?: boolean;
+  /**
    * Event handler triggered when the value changes.
    * @param value - The new value of the input. NB. The type of `value` is guaranteed to be correct for the question type or a `LocalizedString` in case localizable questions but we cannot type it.
    * @param question - The `Question` to which the answer is.
