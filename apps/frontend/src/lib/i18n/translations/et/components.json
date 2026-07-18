@@ -30,6 +30,12 @@
     "selectOne": "Vali",
     "showTranslations": "Tõlked"
   },
+  "multipleTextInput": {
+    "add": "Lisa kirje",
+    "moveDown": "Liiguta alla",
+    "moveUp": "Liiguta üles",
+    "remove": "Eemalda kirje"
+  },
   "matchScore": {
     "label": "sobivus",
     "score": "{score}%"

@@ -30,6 +30,12 @@
     "selectOne": "Valitse",
     "showTranslations": "Käännökset"
   },
+  "multipleTextInput": {
+    "add": "Lisää kohde",
+    "moveDown": "Siirrä alas",
+    "moveUp": "Siirrä ylös",
+    "remove": "Poista kohde"
+  },
   "matchScore": {
     "label": "sopivuus",
     "score": "{score}%"

@@ -30,6 +30,12 @@
     "selectOne": "Välj",
     "showTranslations": "Översättningar"
   },
+  "multipleTextInput": {
+    "add": "Lägg till objekt",
+    "moveDown": "Flytta ner",
+    "moveUp": "Flytta upp",
+    "remove": "Ta bort objekt"
+  },
   "matchScore": {
     "label": "matchning",
     "score": "{score}%"

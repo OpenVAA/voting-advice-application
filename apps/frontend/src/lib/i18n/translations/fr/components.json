@@ -30,6 +30,12 @@
     "selectOne": "Sélectionner",
     "showTranslations": "Traductions"
   },
+  "multipleTextInput": {
+    "add": "Ajouter un élément",
+    "moveDown": "Déplacer vers le bas",
+    "moveUp": "Déplacer vers le haut",
+    "remove": "Supprimer l'élément"
+  },
   "matchScore": {
     "label": "correspondance",
     "score": "{score}%"

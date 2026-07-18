@@ -30,6 +30,12 @@
     "selectOne": "Select",
     "showTranslations": "Translations"
   },
+  "multipleTextInput": {
+    "add": "Add item",
+    "moveDown": "Move down",
+    "moveUp": "Move up",
+    "remove": "Remove item"
+  },
   "matchScore": {
     "label": "match",
     "score": "{score}%"

@@ -30,6 +30,12 @@
     "selectOne": "Vælg",
     "showTranslations": "Oversættelser"
   },
+  "multipleTextInput": {
+    "add": "Tilføj element",
+    "moveDown": "Flyt ned",
+    "moveUp": "Flyt op",
+    "remove": "Fjern element"
+  },
   "matchScore": {
     "label": "match",
     "score": "{score}%"

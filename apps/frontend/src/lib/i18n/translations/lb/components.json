@@ -30,6 +30,12 @@
     "selectOne": "Auswielen",
     "showTranslations": "Iwwersetzungen"
   },
+  "multipleTextInput": {
+    "add": "Element derbäisetzen",
+    "moveDown": "No ënnen réckelen",
+    "moveUp": "No uewen réckelen",
+    "remove": "Element ewechhuelen"
+  },
   "matchScore": {
     "label": "Iwwenestëmmung",
     "score": "{score}%"
