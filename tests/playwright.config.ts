@@ -314,6 +314,21 @@ export default defineConfig({
       dependencies: ['data-setup-base']
     },
 
+    // voter-alliance (Phase 130 EFLOW-02 + EPERM-03/04 riders) — LEAF. Read-only
+    // alliance results-surface DEPTH on the base dataset (Alliance A card,
+    // clickable member-org subcards, member-orgs drawer, ['info','children'] tab
+    // control). Consumes the shared 'max' voter walk (answeredVoterPage) under a
+    // Desktop descriptor; D-04 assert-only (no own setup/teardown — Alliance A +
+    // members already in e2e/base). `testMatch` is scoped to this spec; sibling
+    // voter-* projects' exact testMatch excludes it.
+    {
+      name: 'voter-alliance',
+      testDir: './tests/specs/voter',
+      testMatch: /voter-alliance\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-base']
+    },
+
     // === _probes (fixtures-first isolation probes) — LEAF, no data-setup ===
     //
     // The 4 deferred perm-seeded probes (video→EPERM-06, questionInfo→EPERM-07,
