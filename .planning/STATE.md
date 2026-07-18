@@ -5,8 +5,8 @@ milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Ze
 current_phase: 130
 current_phase_name: E2E Specs — New-Feature Coverage
 status: executing
-stopped_at: Completed 130-03-PLAN.md
-last_updated: "2026-07-18T23:09:19.400Z"
+stopped_at: Completed 130-04-PLAN.md
+last_updated: "2026-07-18T23:21:46.462Z"
 last_activity: 2026-07-19
 last_activity_desc: Phase 130 execution started
 progress:
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 ## Current Position
 
 Phase: 130 (E2E Specs — New-Feature Coverage) — EXECUTING
-Plan: 4 of 6
+Plan: 5 of 6
 Status: Ready to execute
 Last activity: 2026-07-19 — Phase 130 execution started
 
@@ -77,6 +77,7 @@ Progress: [██████████] 96%
 | Phase 130 P01 | 45min | 2 tasks | 5 files |
 | Phase 130 P02 | ~35min | 2 tasks | 3 files |
 | Phase 130 P03 | ~55min | 2 tasks | 1 files |
+| Phase 130 P04 | ~40min | 3 tasks | 3 files |
 
 ## Deferred Items
 
@@ -498,6 +499,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: EQTYP-03 candidate multipleText round-trip closed: fillMultipleTextQuestion helper + MULTIPLE_TEXT_ANSWERS markers + candidate-journey steps 13/21 (130-02)
 - [Phase ?]: 130-03: reach mid-flow questions via in-app menu (client-side) to preserve located scope; full page.goto reload bounces to the election selector
 - [Phase ?]: 130-03: dropped the 'POLAR_MIN ranks first' claim — the all-min walk answers multi-choice ['a','b'] (agrees with POLAR_MAX), so only the ordering + monotonic shift is asserted
+- [Phase ?]: 130-04: alliance click-through proven by drawer-identity assertion; generic openEntityDetailsForCard/getMemberCards work for alliances unmodified (no fixture edit)
 
 ### Quick Tasks Completed
 
@@ -542,8 +544,8 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-07-18T23:09:19.390Z
-Stopped at: Completed 130-03-PLAN.md
+Last session: 2026-07-18T23:21:46.452Z
+Stopped at: Completed 130-04-PLAN.md
 Resume file: 
 None
 

@@ -54,7 +54,7 @@ New settings-driven branches not yet covered by the existing 19 perm specs.
 ### E2E — Flow Coverage (EFLOW)
 
 - [x] **EFLOW-01**: E2E exercises voter-results entity filters — applying a filter updates the results list; reset and persistence behave correctly (the `entityFilters` fixture is wired into a journey). **NOTE**: Already partly covered by voter journey, but let's extend the filter coverage to: multiple filters' intersection; select all/none in categorical filter behaviour; text search; text search intersection with filters.
-- [ ] **EFLOW-02**: E2E asserts alliance-card rendering and the alliance member-orgs drawer in voter results. **NOTE**: Alliances currently not rendered but should be easy to implement => move to gap filling.
+- [x] **EFLOW-02**: E2E asserts alliance-card rendering and the alliance member-orgs drawer in voter results. **NOTE**: Alliances currently not rendered but should be easy to implement => move to gap filling.
 - [x] **EFLOW-03**: E2E asserts voter-answer-vs-entity answer comparison for all four cases (agree / disagree / voter-missing / entity-missing) in entity details. **NOTE**: Should be already covered.
 - [x] **EFLOW-04**: E2E asserts per-category match breakdown (subMatches) rendering on results. **NOTE**: Partly covered, but let's extend the test to test that correct values (only voter-answered categories, correct scores) are displayed for one candidate (as part of voter flow).
 - [x] **EFLOW-05**: E2E covers skip / delete / back navigation in the question flow and the resulting answer-count + results-CTA impact. **NOTE**: Should be already covered.
@@ -186,7 +186,7 @@ Each requirement maps to exactly one roadmap phase (see `.planning/ROADMAP.md` v
 | EQTYP-01 | Phase 130 | Complete |
 | EQTYP-02 | Phase 130 | Complete |
 | EQTYP-03 | Phase 130 | Complete |
-| EFLOW-02 | Phase 130 | Pending |
+| EFLOW-02 | Phase 130 | Complete |
 | HARDN-01 | Phase 131 | Pending |
 | HARDN-02 | Phase 132 | Pending |
 | TYPE-10 | Phase 132 | Pending |
