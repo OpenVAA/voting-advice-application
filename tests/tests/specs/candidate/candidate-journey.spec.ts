@@ -833,6 +833,51 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       await expect(mcCard.first().getByTestId('question-choice').first()).toBeVisible();
     });
 
+    // ============== Step 18.6: D-02 categorical + boolean type-specific ===
+
+    // D-02: tighten the existing categorical + boolean opinion coverage from
+    // generic choice-select to type-specific input contracts, in the SAME spec
+    // region as 18.5 (no general journey-spec refactor — steps 16-18's likert
+    // choreography and the step-19 walk are untouched). Radio input `type` +
+    // exact choice count is the discriminant vs the multi-choice checkboxes above.
+    await test.step('18.6. D-02: categorical + boolean opinion — type-specific input contracts', async () => {
+      // Categorical (qu-opin-base-4): singleChoiceCategorical → 3 RADIO choices.
+      await candidateQuestionsOverviewPage.goToQuestion(/\[qu-opin-base-4-categorical\]/);
+      await expect(page).toHaveURL(/\/candidate\/questions\/[^/]+/, { timeout: TIMEOUTS.slowPage });
+      const catId = currentQuestionId(page);
+      await expect(scopedChoicesByType(page, catId, 'radio')).toHaveCount(3);
+      await expect(scopedChoicesByType(page, catId, 'checkbox')).toHaveCount(0);
+      // Answer (first choice) + save; a single radio selection is immediately valid.
+      await candidateQuestionPage.selectChoice(0);
+      await candidateQuestionPage.expectContinueEnabled();
+      await candidateQuestionPage.clickContinue();
+      await page.goto('/en/candidate/questions');
+      const catCard = candidateQuestionsOverviewPage.getQuestionCard(/\[qu-opin-base-4-categorical\]/);
+      await expect(catCard.first()).toBeVisible();
+      await expect(catCard.first().getByTestId('question-choice').first()).toBeVisible();
+
+      // Boolean (qu-opin-base-5): boolean → exactly 2 RADIO choices.
+      await candidateQuestionsOverviewPage.goToQuestion(/\[qu-opin-base-5-boolean\]/);
+      await expect(page).toHaveURL(/\/candidate\/questions\/[^/]+/, { timeout: TIMEOUTS.slowPage });
+      const boolId = currentQuestionId(page);
+      await expect(scopedChoicesByType(page, boolId, 'radio')).toHaveCount(2);
+      await expect(scopedChoicesByType(page, boolId, 'checkbox')).toHaveCount(0);
+      // Select the "yes" choice (index 1 → value `true`). OpinionQuestionInput
+      // synthesizes boolean choices as ['no'→false, 'yes'→true]; the overview
+      // card's getSavedAnswer treats a saved `false` as unanswered
+      // (`if (!localizedAnswer?.value) return undefined` — +page.svelte:58, a
+      // pre-existing falsy-value quirk), so a `false` answer would render no
+      // display markup and defeat the answered-card round-trip below. Selecting
+      // the truthy option keeps the round-trip observable without touching product.
+      await candidateQuestionPage.selectChoice(1);
+      await candidateQuestionPage.expectContinueEnabled();
+      await candidateQuestionPage.clickContinue();
+      await page.goto('/en/candidate/questions');
+      const boolCard = candidateQuestionsOverviewPage.getQuestionCard(/\[qu-opin-base-5-boolean\]/);
+      await expect(boolCard.first()).toBeVisible();
+      await expect(boolCard.first().getByTestId('question-choice').first()).toBeVisible();
+    });
+
     // ============== Step 19: walk remaining opinions ======================
 
     await test.step('19. walk remaining opinion questions → home shows completed + preview enabled', async () => {
