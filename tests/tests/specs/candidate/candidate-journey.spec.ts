@@ -780,6 +780,12 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       // Info answers round-trip (sample the required + the link + the number).
       await candidatePreviewPage.expectInfoAnswer(/\[qu-info-text\]/, INFO_QUESTION_ANSWERS['test-qu-info-text']);
       await candidatePreviewPage.expectInfoAnswer(/\[qu-info-number\]/, INFO_QUESTION_ANSWERS['test-qu-info-number']);
+      // multipleText round-trip (EQTYP-03 candidate leg): both values filled in
+      // step 13 must appear verbatim in the multipleText info answer. Assert the
+      // distinct [MULTITEXT-1]/[MULTITEXT-2] marker tokens so no normalization /
+      // encoding mangling can silently pass.
+      await candidatePreviewPage.expectInfoAnswer(/\[qu-info-multipleText\]/, /\[MULTITEXT-1\]/);
+      await candidatePreviewPage.expectInfoAnswer(/\[qu-info-multipleText\]/, /\[MULTITEXT-2\]/);
       // Opinion answer round-trip: Q1 was edited to choice index 1 in step 18.
       await candidatePreviewPage.expectOpinionAnswer(/\[qu-opin-base-1-likert5\]/, 1);
       // No voter-comparison messaging — score-gauge + sub-matches absent.
