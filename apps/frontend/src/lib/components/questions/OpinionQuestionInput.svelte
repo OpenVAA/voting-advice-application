@@ -119,14 +119,17 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
     {@const rawOther = question.ensureValue(otherAnswer?.value)}
     {@const numberValue = typeof rawValue === 'number' ? rawValue : null}
     {@const otherNumberValue = typeof rawOther === 'number' ? rawOther : null}
+    <!-- restProps is spread FIRST: it carries `value?: unknown` from
+         InputPropsBase, which would otherwise override the typed
+         `value={numberValue}` and fail NumberScaleInput's `number | null` prop. -->
     <NumberScaleInput
+      {...restProps}
       {question}
       {mode}
       value={numberValue}
       otherValue={otherNumberValue}
       {otherLabel}
-      onChange={onChange ? (d) => onChange({ value: d.value, question: d.question }) : undefined}
-      {...restProps} />
+      onChange={onChange ? (d) => onChange({ value: d.value, question: d.question }) : undefined} />
   {:else}
     <ErrorMessage inline message={t('error.unsupportedQuestion')} class="text-center" />
   {/if}

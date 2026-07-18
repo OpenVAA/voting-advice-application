@@ -40,6 +40,7 @@ Home→min, End→max (D-03). Values at exactly `min`/`max` are reachable and cl
 -->
 
 <script lang="ts">
+  import { untrack } from 'svelte';
   import { getComponentContext } from '$lib/contexts/component';
   import { concatClass, getUUID } from '$lib/utils/components';
   import type { NumberScaleInputProps } from './NumberScaleInput.type';
@@ -76,10 +77,13 @@ Home→min, End→max (D-03). Values at exactly `min`/`max` are reachable and cl
   // Whether the voter has set a value. Starts true when a stored answer exists;
   // becomes true on the first slider interaction. Drives the unanswered-opinion
   // convention: no `text-primary` on the label until the value is set.
-  let isSet = $state(value != null);
+  // Init reads are intentionally non-reactive (the $effect below re-syncs on
+  // every later `value` change) — untrack() is the documented remedy for
+  // state_referenced_locally on a deliberate one-shot init read.
+  let isSet = $state(untrack(() => value != null));
   // The live numeric value shown in the label. Updates on every `input` event
   // so the label tracks the thumb during a drag; unset sliders sit at midpoint.
-  let liveValue = $state<number>(value ?? midpoint);
+  let liveValue = $state<number>(untrack(() => value ?? midpoint));
 
   $effect(() => {
     // Re-sync when the incoming answer changes (e.g. mode switch / navigation).
