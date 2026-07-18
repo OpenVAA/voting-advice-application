@@ -1,48 +1,27 @@
 ---
 phase: 129-new-feature-build-question-inputs-alliance-render-nomination
-verified: 2026-07-18T13:40:00Z
-status: gaps_found
-score: 4/5 must-haves verified
+verified: 2026-07-18T23:45:00Z
+status: passed
+score: 5/5 must-haves verified
 behavior_unverified: 0
 overrides_applied: 0
-gaps:
-  - truth: "UNBLK-02: multi-choice categorical opinion questions support D-07 constraint UX end-to-end — an out-of-range (non-zero, non-empty) voter selection is never treated as a persisted/matchable answer"
-    status: failed
-    reason: >
-      Independently confirmed in source (not just per code review 129-REVIEW.md WR-01): the voter
-      layout's handleAnswer only special-cases the EMPTY array (0 selections -> deleteAnswer). Any
-      non-empty selection — including an under-min (e.g. 1 of min 2) or over-max (e.g. 4 of max 3)
-      selection — is unconditionally persisted via answers.setAnswer(question.id, value), which feeds
-      MultipleChoiceCategoricalQuestion._normalizeValue and therefore the matching computation.
-      opinionInputValid / QuestionActions.answered correctly show a "Skip"-labeled button in most
-      question positions (confirmed by reading QuestionActions.svelte's handleNext/answered wiring),
-      but clicking that "Skip"-appearing button calls onSkip -> handleJump(+1) only — it never deletes
-      the already-persisted invalid answer. So an invalid selection silently survives into matching
-      even though the UI signals "unanswered". Additionally, at whatever question the voter layout's
-      `nextLabel` guard treats as the LAST question, the override
-      `answers.answers[question!.id]?.value != null ? t('results.title.results') : undefined` does not
-      AND in `opinionInputValid`, so if a multi-choice categorical question were ever the last question
-      in a category's question list, the button would misleadingly read "Results" instead of "Skip" at
-      an invalid selection count (not currently reachable in the e2e/base ordering — Base-7 multichoice
-      sits at sort_order 106 with further opinion questions at 110-160, so this specific sub-case is not
-      e2e-covered, but the core persistence gap is present regardless of question position).
-    artifacts:
-      - path: "apps/frontend/src/routes/(voters)/(located)/questions/+layout.svelte"
-        issue: "handleAnswer (lines ~174-191) persists any non-empty multi-choice array unconditionally; nextLabel guard (line ~297) omits the opinionInputValid AND-term"
-    missing:
-      - "Gate persistence in handleAnswer: when the multi-choice value is non-empty but !opinionInputValid, either skip the setAnswer call or route to deleteAnswer, so an invalid selection is never treated as a final matchable answer."
-      - "AND opinionInputValid into the nextLabel override so the last-question CTA never reads 'Results' while the selection is invalid."
-    candidate_side: "Not affected — candidate canSubmit correctly ANDs answerValid (confirmed at [questionId]/+page.svelte:132-133), so the candidate app cannot Save an invalid selection."
+re_verification:
+  previous_status: gaps_found
+  previous_score: 4/5
+  gaps_closed:
+    - "UNBLK-02: multi-choice categorical opinion questions support D-07 constraint UX end-to-end — an out-of-range (non-zero, non-empty) voter selection is never treated as a persisted/matchable answer"
+  gaps_remaining: []
+  regressions: []
 deferred: []
 human_verification: []
 ---
 
 # Phase 129: New-Feature Build — Question Inputs + Alliance Render + Nominations Fetch — Verification Report
 
-**Phase Goal:** UNBLK-01/02/04/05/06: build MultipleText + multi-choice categorical + number-scale inputs, alliance render, /nominations fetch. Phase 129 BUILDS the new features; Phase 130 lands their dependent E2E specs.
+**Phase Goal:** The coverage-unblocking product features are built — new question-input components render and persist, alliance entities render in voter results, and the /nominations route fetches its data.
 **Verified:** 2026-07-18
-**Status:** gaps_found
-**Re-verification:** No — initial verification
+**Status:** passed
+**Re-verification:** Yes — after gap closure (plan 129-09, commits 47374aec1, 321c4987b, f92896248, c77ed2692)
 
 ## Goal Achievement
 
@@ -50,110 +29,97 @@ human_verification: []
 
 | # | Truth | Status | Evidence |
 |---|-------|--------|----------|
-| 1 | UNBLK-01: `QuestionInput` renders and persists `MultipleTextQuestion` answers | ✓ VERIFIED | `QuestionInput.svelte` throw removed; `MultipleTextInput.svelte` exists with all 5 testids, min/max gating, order-preserving onChange; candidate-journey E2E spec (live-run, this session) passes including the restored `qu-info-multipleText` visibility + fill assertions |
-| 2 | UNBLK-02: frontend supports a multi-choice categorical opinion variant — input + matching dispatch + dev-seed authoring | ✗ FAILED (partial) | Input component, matching (`_normalizeValue` binary subdimensions), dev-seed authoring, and the *candidate-side* validity gate are all present and correct. The *voter-side* persistence gate is missing — see Gaps. |
-| 3 | UNBLK-04: `/nominations` route fetches question data so all-nominations entities render correctly | ✓ VERIFIED | `nominations/+layout.ts` adds `questionData` (locale-only `getQuestionData`, `.catch((e)=>e)` parity); `nominations/+layout.svelte` was ALSO wired to apply it via `provideQuestionData` (the actual prior gap, per 129-03-SUMMARY) — confirmed present in source |
-| 4 | UNBLK-05: frontend supports a number-scale opinion question — input + matching dispatch + dev-seed authoring | ✓ VERIFIED | `NumberScaleInput.svelte` (native range, both testids, min/max bound to `question.min/max`, `ensureValue` on change), `isNumberQuestion && question.isMatchable` dispatch branch, `customData.min/max` -> `NumberQuestionData` bridge, seed rows at sort_order 105 — voter-journey E2E (live-run, this session) exercises the slider via keyboard Home/End |
-| 5 | UNBLK-06: alliance entities render in voter results (card + member-orgs drawer) | ✓ VERIFIED | `results.sections` = `['candidate','organization','alliance']` (alliance strictly LAST) in both `e2e/base` and `default` templates; voter-journey E2E D-10 step (live-run, this session) asserts `voter-results-alliance-section` visible, Alliance A card visible, `match-score` gauge visible, and a 2nd member-org subcard visible — all passed |
+| 1 | UNBLK-01: `QuestionInput` renders and persists `MultipleTextQuestion` answers | ✓ VERIFIED | Unchanged since prior verification; `MultipleTextInput.svelte` present with 5 testids, min/max gating; unaffected by 129-09 (not in its `files_modified`) |
+| 2 | UNBLK-02: multi-choice categorical opinion questions support D-07 constraint UX end-to-end (input + matching dispatch + dev-seed authoring + **voter-side out-of-range selections never persisted into matching**) | ✓ VERIFIED (gap closed) | Source-level re-confirmation (this session) of the 129-09 fix, PLUS a live re-run of `voter-journey.spec.ts` and `candidate-journey.spec.ts` (fresh `db:reset` + `db:seed --template e2e/base` + fresh dev server, this session) — both passed, exercising the exact invalid→valid toggle transition. See Behavioral Spot-Checks. |
+| 3 | UNBLK-04: `/nominations` route fetches question data so all-nominations entities render correctly | ✓ VERIFIED | Unchanged since prior verification; `+layout.ts` `questionData` load + `+layout.svelte` `ctx.dataRoot.provideQuestionData(questionData)` consumer both confirmed present (re-checked this session); not touched by 129-09 |
+| 4 | UNBLK-05: number-scale opinion question — input + matching dispatch + dev-seed authoring | ✓ VERIFIED | Unchanged since prior verification; `NumberScaleInput.svelte` present with both testids; unaffected by 129-09 |
+| 5 | UNBLK-06: alliance entities render in voter results (card + member-orgs drawer) | ✓ VERIFIED | Unchanged since prior verification; `e2e/base.ts` `sections: ['candidate','organization','alliance']` re-confirmed present this session; unaffected by 129-09 |
 
-**Score:** 4/5 truths verified (1 partial-fail: UNBLK-02 voter-side persistence gap)
+**Score:** 5/5 truths verified
+
+### Gap Closure Detail (UNBLK-02, this re-verification's focus)
+
+The prior verification (2026-07-18T13:40:00Z) found one FAILED truth: the voter questions layout's `handleAnswer` persisted ANY non-empty multi-choice array unconditionally, so an out-of-range selection (e.g. 1 of `minSelections:2`) silently entered the answers store and matching, while the UI signaled "Skip"/unanswered. Gap-closure plan 129-09 (3 tasks, TDD) addressed this. Independently re-verified in this session (not trusting 129-09-SUMMARY's narrative):
+
+| Fix component | Claimed (129-09-SUMMARY) | Verified in source (this session) |
+|---|---|---|
+| Pure validity helper | `isMultiChoiceCountValid` in `multiChoiceValidity.ts`, single source of truth | Read in full — `effectiveMin = minSelections ?? 1`, `effectiveMax = maxSelections ?? choiceCount`, matches formula previously inlined |
+| Boundary-matrix unit test | 17 assertions | `yarn vitest run src/lib/utils/multiChoiceValidity.test.ts` → 17/17 passed (run live this session) |
+| Synchronous `valid` assignment | Assigned before bubbling `onChange` in `OpinionQuestionInput`'s multi-choice wrapper | `OpinionQuestionInput.svelte:202-214` — `valid = computeMultiChoiceValid(d.value.length)` appears textually before `onChange?.(...)`, inside the `Array.isArray` guard |
+| Voter persistence gate | `handleAnswer` withholds/deletes (existence-guarded) an out-of-range non-empty array instead of `setAnswer` | `+layout.svelte:188-198` — `if (Array.isArray(value) && !opinionInputValid) { if (answers.answers[question.id] != null) answers.deleteAnswer(question.id); return; }`, placed before the unconditional `setAnswer` call |
+| `nextLabel` AND-term | ANDs `opinionInputValid` so last-question CTA never reads "Results" while invalid | `+layout.svelte:320-324` — `... && answers.answers[question!.id]?.value != null && opinionInputValid ? t('results.title.results') : undefined`. `answered` prop (line 318) is also correctly ANDed. |
+| Wipe-proof `QuestionChoices` seed | `selectedMulti` re-keyed on `question.id`, `selectedIds` read via `untrack` | `QuestionChoices.svelte:159-165` — effect tracks only `void question.id`, reads `selectedIds` inside `untrack()`; `untrack` imported from `'svelte'` |
+| Delete-epoch remount | `deleteEpoch` counter folded into the `{#key}` expression, bumped in `handleDelete` | `+layout.svelte:178` (`let deleteEpoch = $state(0)`), `215` (`deleteEpoch += 1` in `handleDelete`), `308` (`{#key \`${question.type}-${deleteEpoch}\`}`) |
+| D-05 locator contract preserved | `data-testid="question-choice"`, `name="questionChoices-{question.id}"`, `checkbox-primary h-32 w-32` unchanged | All three confirmed byte-identical at `QuestionChoices.svelte:334-344` |
+| Candidate side unaffected | `canSubmit` still ANDs `answerValid` | `candidate/(protected)/questions/[questionId]/+page.svelte:132-133` — unchanged |
 
 ### Required Artifacts
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `packages/data/.../multipleChoiceCategoricalQuestion.ts` | matching trio implemented, TODO removed | ✓ VERIFIED | `isMatchable`, `normalizedDimensions`, `_normalizeValue` present; binary-subdimension logic correct; TODO gone |
-| `packages/data/src/utils/typeGuards.ts` + `index.ts` | `isNumberQuestion` guard, exported | ✓ VERIFIED | Present, exported, `objectType`-based (no `instanceof`) |
-| `packages/app-shared/.../customData.type.ts` | 6 new Question keys | ✓ VERIFIED | `min`, `max`, `minItems`, `maxItems`, `minSelections`, `maxSelections` all present with JSDoc |
-| `supabaseDataProvider.ts` | number min/max bridge in `getQuestionData` | ✓ VERIFIED | `row.type === 'number'` conditional lifts typeof-guarded `customData.min/max` |
-| `apps/frontend/.../nominations/+layout.ts` | `questionData` added to load return | ✓ VERIFIED | Present, locale-only, `.catch` wrapped |
-| `apps/frontend/.../nominations/+layout.svelte` | consumer applies questionData into dataRoot | ✓ VERIFIED | `provideQuestionData` call added (beyond plan-03's literal file list — a real, necessary fix, correctly self-reported in 129-03-SUMMARY) |
-| `NumberScaleInput.svelte` / `.type.ts` | native range slider, both testids, display mode | ✓ VERIFIED | Confirmed via grep + read; dual-marker display mode present |
-| `OpinionQuestionInput.svelte` | `isNumberQuestion` + `isMultipleChoiceQuestion` branches, `$bindable valid` | ✓ VERIFIED | Both branches present, gated correctly, `valid` bindable computed from selection count |
-| `MultipleTextInput.svelte` / `.type.ts` | row-list, 5 testids, min/max gating | ✓ VERIFIED | All 5 testids present; index-keyed `{#each}` (WR-03, minor — see Anti-Patterns) |
-| `QuestionInput.svelte` | MultipleText throw removed | ✓ VERIFIED | Throw removed; dedicated branch renders `MultipleTextInput` |
-| `QuestionChoices.svelte` | checkbox multi-select mode, locator contract preserved | ✓ VERIFIED | `type="checkbox"`, `data-testid="question-choice"`, `name="questionChoices-{id}"`, `checkbox-primary h-32 w-32` all present; no `disabled` tied to `maxSelections` |
-| voter layout `+layout.svelte` | auto-advance suppression, Skip gate, empty-array delete | ⚠️ PARTIAL | Auto-advance suppression correct (single-choice/boolean only); empty-array delete correct; but the non-empty invalid-selection persistence gap (WR-01) lives here — see Gaps |
-| candidate `[questionId]/+page.svelte` | Save gate ANDs validity | ✓ VERIFIED | `canSubmit` ANDs `answerValid`, confirmed at source |
-| `e2e/base.ts` | alliance in sections (LAST), 2 new opinion Qs, multipleText restored | ✓ VERIFIED | All confirmed via grep + live `yarn db:seed --template e2e/base` (25 questions, 0 rejections) run this session |
-| `default.ts` + `buildMinimal.ts` | D-15 parity + D-16 number/multi-choice branches | ✓ VERIFIED | `sections` alliance-inclusive; live `yarn db:seed:default` run this session (26 questions, 0 rejections) |
-| `tests/tests/utils/testIds.ts` | 8 new locators | ✓ VERIFIED | `grep -c` of the 8 strings reports 8 |
-| `voter-journey.fixture.ts` | slider + checkbox walk branches | ✓ VERIFIED | Present; inertness against pre-plan-08 seed was proven in 129-07; walk now live-exercises both branches (confirmed this session) |
+| `apps/frontend/src/lib/utils/multiChoiceValidity.ts` | Pure validity helper, single source of truth | ✓ VERIFIED | Exists, substantive, correct formula |
+| `apps/frontend/src/lib/utils/multiChoiceValidity.test.ts` | Boundary-matrix unit test | ✓ VERIFIED | 17 assertions, all pass (live run) |
+| `apps/frontend/src/lib/components/questions/OpinionQuestionInput.svelte` | Synchronous `valid` assignment before bubbling `onChange` | ✓ VERIFIED | Confirmed at source; imports `isMultiChoiceCountValid` |
+| `apps/frontend/src/routes/(voters)/(located)/questions/+layout.svelte` | Persistence gate, `nextLabel` AND-term, delete-epoch remount | ✓ VERIFIED | All three present and correctly ordered |
+| `apps/frontend/src/lib/components/questions/QuestionChoices.svelte` | Question-keyed untracked seed, D-05 locators intact | ✓ VERIFIED | Confirmed; markup/locators byte-identical |
+| All prior-phase artifacts (MultipleTextInput, NumberScaleInput, nominations loader, e2e/base seed sections) | Unaffected by 129-09 | ✓ VERIFIED (regression check) | Re-checked this session; not in 129-09's `files_modified`; source still matches prior verification's findings |
 
 ### Key Link Verification
 
 | From | To | Via | Status | Details |
 |------|----|----|--------|---------|
-| `OpinionQuestionInput.svelte` | `@openvaa/data` | `isNumberQuestion`/`isMultipleChoiceQuestion` import | ✓ WIRED | Both imported and used in dispatch chain |
-| `NumberQuestion.min/max` | `getQuestionData` bridge | `customData.min/max` typeof-guarded lift | ✓ WIRED | Confirmed at `supabaseDataProvider.ts:585-590` |
-| `nominations/+layout.ts` load result | `dataRoot` | `provideQuestionData` in `+layout.svelte` | ✓ WIRED | Confirmed; this was the real gap plan-03 closed (loader alone was insufficient) |
-| voter `handleAnswer` | `answers.setAnswer` / `answers.deleteAnswer` | multi-choice value routing | ⚠️ PARTIAL | Empty array → `deleteAnswer` (correct); non-empty invalid array → `setAnswer` (incorrect per D-07 intent — see Gaps) |
-| candidate `canSubmit` | `answerValid` (bound from `OpinionQuestionInput`) | AND-term | ✓ WIRED | Confirmed |
-| `e2e/base` seed `results.sections` | `voterContext.svelte.ts` `#entityTypes` | alliance element addition | ✓ WIRED | Live E2E run (this session) confirms the alliance tab, card, gauge, and member-org subcard all render |
+| `OpinionQuestionInput` multi-choice `onChange` wrapper | Voter layout `handleAnswer` | Synchronous `$bindable valid` write, read in the same call stack | ✓ WIRED | Confirmed by direct source reading of write-then-bubble ordering, corroborated by 129-REVIEW.md's independent reactivity trace |
+| Voter `handleAnswer` | `answers.setAnswer` / `answers.deleteAnswer` | Value + validity routing (empty→delete, invalid non-empty→withhold/delete, valid→setAnswer) | ✓ WIRED | All three branches present and correctly ordered |
+| `QuestionChoices` `selectedMulti` | Checkbox `checked=` render | Question-keyed untracked seed, decoupled from prop nulling on invalid-delete | ✓ WIRED | Confirmed; effect only tracks `question.id`, not `selectedIds` |
+| Voter layout `handleDelete` | `{#key}` remount | `deleteEpoch` counter interpolated into the key expression | ✓ WIRED | Confirmed; increments after `deleteAnswer` |
+| Candidate `canSubmit` | `answerValid` (bound from `OpinionQuestionInput`) | AND-term | ✓ WIRED | Unaffected, re-confirmed |
 
 ### Behavioral Spot-Checks (live-run this session, not from SUMMARY claims)
 
 | Behavior | Command | Result | Status |
 |----------|---------|--------|--------|
-| `packages/data` unit suite | `cd packages/data && yarn vitest run` | 244/244 passed (47 files) | ✓ PASS |
-| `apps/frontend` unit suite | `cd apps/frontend && yarn test:unit --run` | 742/742 passed (53 files) | ✓ PASS |
-| `packages/dev-seed` unit suite | `cd packages/dev-seed && yarn test:unit --run` | 444/444 passed (42 files), incl. integration test | ✓ PASS |
-| `apps/frontend` svelte-check | `cd apps/frontend && yarn check` | 2674 files, 0 errors, 0 warnings | ✓ PASS |
-| `yarn db:reset && yarn db:seed --template e2e/base` | seed import | 25 questions, 0 RPC validation errors | ✓ PASS |
-| `yarn db:reset && yarn db:seed:default` | seed import | 26 questions, 327 candidates, 0 RPC validation errors | ✓ PASS |
-| `voter-journey.spec.ts` (full, incl. D-10 alliance assertions + slider walk) | `npx playwright test tests/specs/voter/voter-journey.spec.ts` (fresh dev server + fresh e2e/base seed) | 3 passed (40.8s) | ✓ PASS |
-| `candidate-journey.spec.ts` (full, incl. multipleText + checkbox/slider walk) | `npx playwright test tests/specs/candidate/candidate-journey.spec.ts` (same server/seed) | 5 passed (29.5s) | ✓ PASS |
+| `multiChoiceValidity` boundary-matrix unit test | `cd apps/frontend && yarn vitest run src/lib/utils/multiChoiceValidity.test.ts` | 17/17 passed | ✓ PASS |
+| Full frontend unit suite | `cd apps/frontend && yarn test:unit --run` | 759/759 passed (54 files) — matches 129-09-SUMMARY's claimed count exactly | ✓ PASS |
+| svelte-check | `cd apps/frontend && yarn check` | 2092 files, 0 errors, 0 warnings — matches claimed count exactly | ✓ PASS |
+| Frontend production build | `yarn build --filter=@openvaa/frontend` | Exit 0, `✓ built in 8.26s` | ✓ PASS |
+| Git commit provenance | `git log`, `git show --stat` on 47374aec1/321c4987b/f92896248/c77ed2692 | All 4 commits exist, correct content, TDD RED (test) precedes GREEN (feat) | ✓ PASS |
+| **Behavior-dependent truth: invalid selection never persisted, valid selection persists on same toggle** | Fresh `yarn db:reset` + `yarn db:seed --template e2e/base` + fresh dev server + `npx playwright test -c ./tests/playwright.config.ts ./tests/tests/specs/voter/voter-journey.spec.ts ./tests/tests/specs/candidate/candidate-journey.spec.ts` | 6/6 passed (1.2m) — includes voter-journey (checkbox walk: first click = intentionally-unpersisted invalid 1-selection, second click persists + enables Next) and candidate-journey (multipleText + checkbox/slider walk) plus their data setup/teardown projects | ✓ PASS |
+| Independent code-review re-trace | `.planning/phases/.../129-REVIEW.md` re-review (separate agent, this phase's cycle) | "Prior WR-01 is RESOLVED" — independently traced the `$bindable` synchronous-write mechanism and confirmed it holds | ✓ CORROBORATES |
 
-Note: the full 125-spec E2E suite (`yarn test:e2e`) was NOT re-run in full during this verification (10+ minute cost); the two specs most directly exercising this phase's new surfaces (voter-journey, candidate-journey) were run live end-to-end against a freshly reset DB + fresh dev server and both passed, corroborating the 129-08-SUMMARY claim of "125 passed / 0 failed / 0 did-not-run" for the areas this phase touches. The remaining ~117 specs were not independently re-run; SUMMARY's full-suite claim is plausible given the two most-exposed specs pass cleanly and svelte-check/unit suites are independently confirmed clean.
+Note: the full 125-spec E2E suite (`yarn test:e2e`) was not re-run in full during this re-verification (10+ minute cost, and 129-09-SUMMARY already documents a live full-suite run of 125 passed / 0 failed / 0 did-not-run against these exact commits). The two specs most directly exercising the gap-closure surface (voter-journey, candidate-journey, including their setup/teardown) were run live end-to-end against a freshly reset DB + fresh dev server in this session and both passed cleanly, providing independent behavioral confirmation of the state-transition invariant (invalid→never-persisted, invalid→valid persists on the same toggle) beyond what source reading alone can prove.
 
 ### Requirements Coverage
 
 | Requirement | Source Plan(s) | Description | Status | Evidence |
 |-------------|----------------|--------------|--------|----------|
-| UNBLK-01 | 129-02, 129-05, 129-08 | MultipleText input renders + persists | ✓ SATISFIED | Component + dispatch + seed restore + live E2E pass |
-| UNBLK-02 | 129-01, 129-02, 129-06, 129-07, 129-08 | Multi-choice categorical variant: input + matching + seed | ✗ PARTIALLY BLOCKED | Matching, input, seed, candidate-gate all correct; voter-side invalid-selection persistence gap (WR-01) is a real defect in the shipped D-07 divergence design |
-| UNBLK-04 | 129-03 | `/nominations` fetches question data | ✓ SATISFIED | Loader + consumer both wired |
-| UNBLK-05 | 129-01, 129-02, 129-04, 129-07, 129-08 | Number-scale input: input + matching + seed | ✓ SATISFIED | Component + dispatch + bridge + seed + live E2E pass |
-| UNBLK-06 | 129-08 | Alliance entities render in voter results | ✓ SATISFIED | One-line seed fix + live E2E D-10 assertions pass |
+| UNBLK-01 | 129-02, 129-05, 129-08 | MultipleText input renders + persists | ✓ SATISFIED | Unaffected by 129-09; REQUIREMENTS.md marks `[x]` and "Complete" |
+| UNBLK-02 | 129-01, 129-02, 129-06, 129-07, 129-08, 129-09 | Multi-choice categorical variant: input + matching + seed + voter-side D-07 persistence integrity | ✓ SATISFIED | Gap closed by 129-09; source + live E2E re-confirmed this session; REQUIREMENTS.md marks `[x]` and "Complete" |
+| UNBLK-04 | 129-03 | `/nominations` fetches question data | ✓ SATISFIED | Unaffected by 129-09; REQUIREMENTS.md marks `[x]` and "Complete" |
+| UNBLK-05 | 129-01, 129-02, 129-04, 129-07, 129-08 | Number-scale input: input + matching + seed | ✓ SATISFIED | Unaffected by 129-09; REQUIREMENTS.md marks `[x]` and "Complete" |
+| UNBLK-06 | 129-08 | Alliance entities render in voter results | ✓ SATISFIED | Unaffected by 129-09; REQUIREMENTS.md marks `[x]` and "Complete" |
 
-No orphaned requirements: all 5 phase-mapped REQ-IDs (UNBLK-01/02/04/05/06) are declared across the 8 plans' `requirements` frontmatter and covered above.
+No orphaned requirements: all 5 phase-mapped REQ-IDs (UNBLK-01/02/04/05/06) are declared across the plans' `requirements` frontmatter (129-09 additionally declares `requirements: [UNBLK-02]`) and are covered above. `REQUIREMENTS.md`'s coverage table (lines 181-185) independently marks all five "Phase 129 / Complete".
 
 ### Anti-Patterns Found
 
 | File | Line | Pattern | Severity | Impact |
 |------|------|---------|----------|--------|
-| `apps/frontend/src/routes/(voters)/(located)/questions/+layout.svelte` | 174-191, 295-299 | Invalid multi-choice selections persisted unconditionally (WR-01) | 🛑 Blocker (for UNBLK-02 goal) | See Gaps — matching can be polluted by out-of-range voter selections |
-| `apps/frontend/src/lib/components/questions/QuestionChoices.svelte` | 370, 382 | Duplicate `onkeyup` on radio `<label>`+`<input>` double-dispatches keyboard events (WR-02) | ⚠️ Warning | Pre-existing (predates this phase, confirmed via `git log -S` against `c0eeb864c^`); re-indented into scope but not introduced by 129. Keyboard users can double-advance on single-choice/boolean questions. Not gating this phase's goal but flagged for awareness. |
-| `apps/frontend/src/lib/components/input/MultipleTextInput.svelte` | 159 | `{#each rows as row, index (index)}` — index-keyed reorder (WR-03) | ⚠️ Warning | Reorder moves values not DOM focus; no data loss, minor UX surprise for keyboard-driven reorder |
-| `packages/dev-seed/src/templates/defaults/questions-override.ts` | 15, 121-124 | Stale "24 questions" comments (IN-01) | ℹ️ Info | Cosmetic; code is correct |
-| `tests/tests/fixtures/voter/voter-journey.fixture.ts` (+ candidate fixture) | ~400-415 | Hardcoded "click first 2" coupled to seed's `minSelections=2` (IN-02) | ℹ️ Info | Latent flake source if a future seed authors different min/max; not a current failure |
-| `NumberScaleInput.svelte` | 154 | Display-mode thumb shows only one value (IN-03) | ℹ️ Info | Purely presentational, markers convey both values |
+| `apps/frontend/src/routes/(voters)/(located)/questions/+layout.svelte` | 184-187 | (129-REVIEW.md WR-01, renumbered) Empty-selection branch calls `answers.deleteAnswer` unconditionally (no existence guard), unlike the adjacent invalid-non-empty branch two lines below which is existence-guarded — asymmetry introduced by 129-09 | ⚠️ Warning | Low functional impact per independent code review: fires a spurious `answer_delete` tracking event when a never-answered question's checkbox is ticked-then-unticked; no data loss, does not affect matching correctness or the D-07 persistence contract this phase's must-haves assert |
+| `apps/frontend/src/lib/components/questions/QuestionChoices.svelte` | 378, 390 | (129-REVIEW.md CR-01, was WR-02 in prior verification) Duplicate `onkeyup` on radio `<label>` + `<input>` double-dispatches keyboard events, can skip a question via Space/Enter | 🛑 Blocker (per re-review) / not gating this phase's stated goal | Pre-existing (dates to `101d9e3d`, predates this phase by well over 6 weeks; re-indented but not introduced by 129 or 129-09, confirmed by both the prior verification's `git log -S` check and the re-review). Affects the single-choice/boolean radio branch only — the new checkbox branch (this phase's UNBLK-02 surface) uses a single `onchange`, unaffected. Not e2e-covered (fixtures use pointer clicks). Flagged for awareness; does not block phase goal achievement (none of the 5 observable truths assert keyboard-double-dispatch correctness) but is a real WCAG-relevant defect worth a follow-up fix. |
+| `apps/frontend/src/lib/components/input/MultipleTextInput.svelte` | 159 | Index-keyed `{#each}` reorder (129-REVIEW.md WR-02, prior WR-03) | ⚠️ Warning | Pre-existing finding, unchanged since prior verification; no data loss |
+| `packages/dev-seed/src/templates/defaults/questions-override.ts` | 120-124 | Stale "24 questions" comment (129-REVIEW.md IN-01) | ℹ️ Info | Cosmetic; unchanged since prior verification |
 
-No `TBD`/`FIXME`/`XXX` markers found in any file touched by this phase (only one pre-existing `TODO` unrelated to this phase's scope, in the voter questions layout, predating 129 by six weeks).
+No `TBD`/`FIXME`/`XXX` markers found in any file touched by 129-09. One pre-existing `TODO` (unrelated to this phase's scope, predates 129 by well over six weeks) remains in the voter questions layout at line 238 — consistent with the prior verification's finding.
 
 ### Human Verification Required
 
-None required — all must-haves are either mechanically verifiable (and were verified) or resolved to a concrete FAIL with source-level evidence (WR-01). No item needs subjective/visual human judgment to resolve status here (the UI-SPEC visual backstops noted as "deferred to dev-server" in 129-04/06 SUMMARYs were effectively exercised by the live E2E runs in this session, which render the actual UI).
+None required — all must-haves are mechanically verifiable and were verified, including the behavior-dependent invalid/valid-selection persistence transition, which was confirmed via a live re-run of the two most-exposed E2E specs in this session (not merely inferred from SUMMARY claims).
 
 ### Gaps Summary
 
-Four of five UNBLK requirements (01, 04, 05, 06) are cleanly and verifiably achieved — components exist, are wired end-to-end, and were exercised live in this session against a fresh seed + fresh dev server (not just re-stated from SUMMARY.md).
+None. All 5 UNBLK requirements (01, 02, 04, 05, 06) are cleanly and verifiably achieved. The single gap from the prior verification (UNBLK-02 voter-side persistence of out-of-range multi-choice selections) is closed: source-level re-confirmation of all 129-09 fix components, an independent code-review re-trace of the Svelte reactivity mechanism ("Prior WR-01 is RESOLVED"), and a live re-run of the voter-journey and candidate-journey E2E specs against a fresh DB reset + fresh dev server (this session) all converge on the same conclusion — invalid multi-choice selections are never persisted into matching, and a selection transitioning invalid→valid persists on the same toggle.
 
-UNBLK-02 (multi-choice categorical opinion questions) is **functionally incomplete on the voter side**: the shared `OpinionQuestionInput`/`QuestionChoices` correctly *compute* validity and *display* it (candidate Save disables correctly; voter action button reads "Skip" in the common case), but the voter layout's `handleAnswer` never actually clears or withholds an out-of-range non-empty selection from `answers.setAnswer`. This means a voter who selects, say, 1 choice on a `minSelections:2` question and then navigates away (via Skip, via header nav, or via any path that doesn't force them back to fix the selection) leaves an "invalid" answer in the store that IS consumed by `MultipleChoiceCategoricalQuestion._normalizeValue` and enters matching — silently contradicting the design intent stated in 129-06-PLAN.md's own objective ("D-07 divergence exact: candidate Save gated, voter stays Skip ... zero = unanswered"). This was independently confirmed by reading `+layout.svelte`, `QuestionActions.svelte`, and the multi-choice normalization code directly (not inferred from 129-REVIEW.md WR-01, though it corroborates that finding).
-
-This is a real, reproducible defect discovered through direct code reading, not a speculative concern. It does not crash anything, is not currently exercised by the e2e/base seed's question ordering (Base-7 multichoice is not the walk's last question, so the compounding CTA-label bug is not currently observable in the E2E suite), and 129-REVIEW.md rated it WARNING rather than Critical. Given the phase's own stated intent for the D-07 UX contract, and that it directly affects matching-data integrity for the new multi-choice categorical variant (the substance of UNBLK-02), it is reported here as a gap rather than downgraded to an info note.
-
-**This looks like it could be accepted as a documented, tracked deviation** if the developer judges the risk acceptable for this phase (WARNING-severity per code review, candidate side unaffected, not e2e-observable with the current seed ordering). To accept it, add to VERIFICATION.md frontmatter:
-
-```yaml
-overrides:
-  - must_have: "Voter-side invalid multi-choice selections are never persisted into matching"
-    reason: "Accepted as a known WARNING-severity gap (129-REVIEW.md WR-01); tracked for a follow-up fix"
-    accepted_by: "{name}"
-    accepted_at: "{ISO timestamp}"
-```
-
-Otherwise, the fix is small and scoped to `apps/frontend/src/routes/(voters)/(located)/questions/+layout.svelte`'s `handleAnswer` (gate the `setAnswer` call on `opinionInputValid` for array values, and AND `opinionInputValid` into the `nextLabel` guard) — see 129-REVIEW.md WR-01 for the suggested diff.
+Two minor, non-blocking findings remain from the independent code-review re-review (both already assessed as not gating this phase's goal): a small asymmetry in the empty-selection delete guard introduced by 129-09 (analytics-noise only, no data-integrity impact), and a pre-existing keyboard double-dispatch defect in the radio branch that predates this phase and does not touch the new multi-choice checkbox surface. Neither contradicts any of the phase's 5 observable truths or must-haves; both are recorded under Anti-Patterns for visibility and potential follow-up.
 
 ---
 

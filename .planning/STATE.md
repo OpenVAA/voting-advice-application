@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
-current_phase: 129
-current_phase_name: new-feature-build-question-inputs-alliance-render-nomination
-status: executing
+current_phase: 130
+current_phase_name: E2E Specs — New-Feature Coverage
+status: planning
 stopped_at: Completed 129-09-PLAN.md
-last_updated: "2026-07-18T20:21:29.619Z"
+last_updated: "2026-07-18T20:40:14.848Z"
 last_activity: 2026-07-18
-last_activity_desc: Phase 129 execution started
+last_activity_desc: Phase 129 complete, transitioned to Phase 130
 progress:
   total_phases: 15
-  completed_phases: 11
+  completed_phases: 12
   total_plans: 65
-  completed_plans: 64
-  percent: 73
+  completed_plans: 65
+  percent: 80
 ---
 
 # Project State
@@ -28,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 
 ## Current Position
 
-Phase: 129 (new-feature-build-question-inputs-alliance-render-nomination) — EXECUTING
-Plan: 2 of 9
-Status: Ready to execute
-Last activity: 2026-07-18 — Phase 129 execution started
+Phase: 130 — E2E Specs — New-Feature Coverage
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-07-18 — Phase 129 complete, transitioned to Phase 130
 
 Progress: [██████████] 98%
 
