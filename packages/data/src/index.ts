@@ -117,6 +117,7 @@ export {
   isLocalizedValue,
   isMultipleChoiceQuestion,
   isNomination,
+  isNumberQuestion,
   isObjectType,
   isQuestion,
   isSingleChoiceQuestion,

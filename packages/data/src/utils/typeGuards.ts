@@ -6,6 +6,7 @@ import type {
   BooleanQuestion,
   DataObject,
   MultipleChoiceCategoricalQuestion,
+  NumberQuestion,
   ObjectType,
   ObjectTypeMap,
   SingleChoiceCategoricalQuestion,
@@ -52,6 +53,13 @@ export function isChoiceQuestion(
  */
 export function isMultipleChoiceQuestion(obj: unknown): obj is MultipleChoiceCategoricalQuestion {
   return isDataObject(obj) && obj.objectType === OBJECT_TYPE.MultipleChoiceCategoricalQuestion;
+}
+
+/**
+ * Check if an object is a `NumberQuestion`.
+ */
+export function isNumberQuestion(obj: unknown): obj is NumberQuestion {
+  return isDataObject(obj) && obj.objectType === OBJECT_TYPE.NumberQuestion;
 }
 
 /**
