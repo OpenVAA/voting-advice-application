@@ -5,15 +5,15 @@ milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Ze
 current_phase: 129
 current_phase_name: new-feature-build-question-inputs-alliance-render-nomination
 status: executing
-stopped_at: Completed 129-04-PLAN.md
-last_updated: "2026-07-18T07:43:55.485Z"
+stopped_at: Completed 129-05-PLAN.md
+last_updated: "2026-07-18T07:54:37.150Z"
 last_activity: 2026-07-18
 last_activity_desc: Phase 129 execution started
 progress:
   total_phases: 15
   completed_phases: 11
   total_plans: 64
-  completed_plans: 59
+  completed_plans: 61
   percent: 73
 ---
 
@@ -29,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 ## Current Position
 
 Phase: 129 (new-feature-build-question-inputs-alliance-render-nomination) — EXECUTING
-Plan: 5 of 8
+Plan: 6 of 8
 Status: Ready to execute
 Last activity: 2026-07-18 — Phase 129 execution started
 
-Progress: [█████████░] 92%
+Progress: [██████████] 95%
 
 ## Performance Metrics
 
@@ -69,6 +69,7 @@ Progress: [█████████░] 92%
 | Phase 129 P02 | 2min | 2 tasks | 3 files |
 | Phase 129 P03 | 2min | 1 tasks | 2 files |
 | Phase 129 P04 | 18min | 2 tasks | 4 files |
+| Phase 129 P05 | 5min | 2 tasks | 12 files |
 
 ## Deferred Items
 
@@ -480,6 +481,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: 129-02: customData (JSONB) chosen as extension home for question-input min/max/item/selection constraints — no DB migration
 - [Phase ?]: 129-03: /nominations loader fetches question data locale-only (electionId optional) + consumer provides it into dataRoot for parity with (located) layout (UNBLK-04)
 - [Phase ?]: Number-scale opinion input built on native <input type=range> (D-03) so keyboard exact-value stepping is free; persist on change event only (never per drag pixel)
+- [Phase ?]: MultipleText i18n keys live at components.multipleTextInput.* (no input.* namespace file); reorder uses collapse/expand vertical chevrons
 
 ### Quick Tasks Completed
 
@@ -524,8 +526,8 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-07-18T07:43:55.474Z
-Stopped at: Completed 129-04-PLAN.md
+Last session: 2026-07-18T07:54:37.140Z
+Stopped at: Completed 129-05-PLAN.md
 Resume file: 
 None
 
