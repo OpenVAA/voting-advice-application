@@ -5,15 +5,15 @@ milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Ze
 current_phase: 130
 current_phase_name: E2E Specs — New-Feature Coverage
 status: executing
-stopped_at: Completed 129-09-PLAN.md
-last_updated: "2026-07-18T21:48:51.152Z"
-last_activity: 2026-07-18
-last_activity_desc: Phase 129 complete, transitioned to Phase 130
+stopped_at: Completed 130-01-PLAN.md
+last_updated: "2026-07-18T22:15:05.769Z"
+last_activity: 2026-07-19
+last_activity_desc: Phase 130 execution started
 progress:
   total_phases: 15
   completed_phases: 12
-  total_plans: 65
-  completed_plans: 65
+  total_plans: 71
+  completed_plans: 66
   percent: 80
 ---
 
@@ -24,16 +24,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 129 — new-feature-build-question-inputs-alliance-render-nomination
+**Current focus:** Phase 130 — E2E Specs — New-Feature Coverage
 
 ## Current Position
 
-Phase: 130 — E2E Specs — New-Feature Coverage
-Plan: Not started
+Phase: 130 (E2E Specs — New-Feature Coverage) — EXECUTING
+Plan: 2 of 6
 Status: Ready to execute
-Last activity: 2026-07-18 — Phase 129 complete, transitioned to Phase 130
+Last activity: 2026-07-19 — Phase 130 execution started
 
-Progress: [██████████] 98%
+Progress: [█████████░] 93%
 
 ## Performance Metrics
 
@@ -74,6 +74,7 @@ Progress: [██████████] 98%
 | Phase 129 P07 | 35min | 2 tasks | 2 files |
 | Phase 129 P08 | 250min | 3 tasks | 12 files |
 | Phase 129 P09 | 26min | 3 tasks | 6 files |
+| Phase 130 P01 | 45min | 2 tasks | 5 files |
 
 ## Deferred Items
 
@@ -490,6 +491,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: 129-07: registered all 8 Phase-129 question-input locators in testIds.ts (byte-matched to plans 04/05/06) + extended voter-journey walk with slider (Home/End) + checkbox (2-choice) branches; inert vs current seed (voter-journey 3 passed)
 - [Phase ?]: UNBLK-06 alliance render closed by a one-line seed sections change ('alliance' LAST); zero Phase-69 rebuilds, MatchScore gauge free via org→alliance imputation (D-08/D-09)
 - [Phase ?]: Candidate multi-choice walk stall was test-side (number→multi-choice transition lingering-slider race), not a frontend bug — fixed via id-scoped choice settle; exploratory QuestionChoices change reverted (frontend unchanged)
+- [Phase ?]: 130-01: answerNumberScale takes (value, min) not a full question object
+- [Phase ?]: 130-01: open candidate drawers by clicking the card article directly (not openEntityDetailsForCard) — no-subcard cards wrap the article in the navigating <a>
 
 ### Quick Tasks Completed
 
@@ -534,8 +537,8 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-07-18T20:21:29.609Z
-Stopped at: Completed 129-09-PLAN.md
+Last session: 2026-07-18T22:15:05.760Z
+Stopped at: Completed 130-01-PLAN.md
 Resume file: 
 None
 
