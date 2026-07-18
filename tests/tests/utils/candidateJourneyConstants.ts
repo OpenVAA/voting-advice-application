@@ -75,9 +75,11 @@ export const INFO_QUESTION_ANSWERS: Readonly<Record<string, string>> = Object.fr
   'test-qu-info-text-longText': '[INFO-LONGTEXT] An extended biography in long-form text.',
   'test-qu-info-text-link': 'https://example.test/unregistered-candidate',
   'test-qu-info-number': '42',
-  // NOTE: test-qu-info-multipleText intentionally omitted — multipleText
-  // input is not implemented in the frontend yet (QuestionInput.svelte
-  // throws). See .planning/todos/pending for the implementation TODO.
+  // NOTE: test-qu-info-multipleText intentionally omitted from the fill map —
+  // the input is now implemented (Phase 129 UNBLK-01, plan 05) and the question
+  // renders on the profile, but it is required:false so it is not part of the
+  // profile-completion gate; leaving it unfilled keeps this map focused on the
+  // required + round-tripped fields.
   'test-qu-info-filt-co-reg-n':
     '[INFO-FILT-CO-REG-N] Answer for the north-only filtered info question.'
 });

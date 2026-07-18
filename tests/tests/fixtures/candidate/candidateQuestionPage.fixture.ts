@@ -84,6 +84,55 @@ export function createCandidateQuestionPage(page: Page) {
     },
 
     /**
+     * Answer the CURRENT opinion question type-aware (Phase 129 D-12), scoped to
+     * `questionId` (the DB id from the URL) so a mid-transition read never
+     * touches the OUTGOING question's stale (detaching) choices:
+     *   - number-scale → focus the native slider + press End (exact max).
+     *   - multi-choice (checkbox) → click the first 2 choices (min 2 / max 3).
+     *   - radio (single/boolean/ordinal) → click the first choice.
+     *
+     * Settles first by waiting for either a slider OR a choice belonging to THIS
+     * question (`name=questionChoices-{questionId}`) to be visible.
+     */
+    async answerCurrentQuestion(questionId: string): Promise<void> {
+      // Page-level locators: the candidate page remounts via `{#key question.id}`
+      // so exactly one question renders at a time. (The number input's root
+      // carries its own `number-scale-input` testid, which overrides the
+      // `candidate-questions-answer` restProp — so we cannot scope through that
+      // container for sliders; a page-level slider locator is correct.)
+      const slider = page.getByTestId(testIds.voter.questions.numberSlider);
+      // eslint-disable-next-line playwright/no-restricted-locators -- testid+name conjunction not expressible via getByTestId
+      const scopedChoices = page.locator(
+        `[data-testid="question-choice"][name="questionChoices-${questionId}"]`
+      );
+      // Settle on THIS question's id-scoped choices first (reliable — a stale
+      // slider lingering from an outgoing number question can NOT satisfy an
+      // id-scoped choice wait). If they never appear, it is the number question.
+      const isChoiceQuestion = await scopedChoices
+        .first()
+        .waitFor({ state: 'visible', timeout: 4000 })
+        .then(() => true)
+        .catch(() => false);
+      if (isChoiceQuestion) {
+        // Checkbox multi-choice needs ≥ 2 selections; radio needs 1.
+        const isCheckbox = (await scopedChoices.first().getAttribute('type')) === 'checkbox';
+        if (isCheckbox) {
+          await scopedChoices.nth(0).click();
+          await scopedChoices.nth(1).click();
+          await expect(scopedChoices.nth(0)).toBeChecked();
+          await expect(scopedChoices.nth(1)).toBeChecked();
+        } else {
+          await scopedChoices.nth(0).click();
+        }
+        return;
+      }
+      // Number question — no id-scoped choices. Wait for the slider then max it.
+      await expect(slider.first()).toBeVisible();
+      await slider.first().focus();
+      await page.keyboard.press('End');
+    },
+
+    /**
      * Fill the open-answer (comment) textarea.
      */
     async enterInfo(text: string): Promise<void> {

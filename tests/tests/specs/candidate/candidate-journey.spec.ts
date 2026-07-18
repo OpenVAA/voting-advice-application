@@ -80,6 +80,7 @@ import {
 } from '../../utils/candidateJourneyConstants';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
+import type { CandidateQuestionPageFixture } from '../../fixtures/candidate/candidateQuestionPage.fixture';
 import type { Locator, Page } from '@playwright/test';
 
 // ====================================================================
@@ -195,9 +196,17 @@ const STEP_13_INFO_FILL_ENTRIES: ReadonlyArray<readonly [string, string]> = Obje
  * the last applicable question is answered).
  *
  * The loop ceiling (`MAX_STEPS`) is a defensive guard against an infinite
- * walk if the dispatch logic regresses; base currently exposes ~8
- * applicable opinion questions to the unregistered candidate (Base ×5 +
- * Opt-A ×1 + Opt-B ×1 + EL-Reg ×1), so 20 is a loose ceiling.
+ * walk if the dispatch logic regresses; base currently exposes ~10
+ * applicable opinion questions to the unregistered candidate (Base ×7 —
+ * incl. the Phase-129 number + multi-choice questions — + Opt-A ×1 +
+ * Opt-B ×1 + EL-Reg ×1), so 20 is a loose ceiling.
+ *
+ * Per-question answering is TYPE-AWARE (Phase 129 D-12): a number-scale
+ * question is answered via the native slider (focus + End); a multi-choice
+ * checkbox question via the first 2 choices (min 2 / max 3); every other
+ * (radio) question via the first choice. Without per-type driving the number
+ * question has no choice to click and the multi-choice needs ≥2 selections, so
+ * Save would stay disabled and the walk would stall.
  *
  * Hoisted to module scope (mirrors voter-journey precedent) to
  * satisfy `playwright/no-conditional-in-test` — the `if` inside is the
@@ -205,9 +214,7 @@ const STEP_13_INFO_FILL_ENTRIES: ReadonlyArray<readonly [string, string]> = Obje
  */
 async function walkRemainingOpinionQuestions(
   page: Page,
-  selectChoice: (n: number) => Promise<void>,
-  clickContinue: () => Promise<void>,
-  expectContinueEnabled: () => Promise<void>,
+  questionPage: CandidateQuestionPageFixture,
   timeoutMs: number
 ): Promise<void> {
   const MAX_STEPS = 20;
@@ -220,9 +227,12 @@ async function walkRemainingOpinionQuestions(
   for (let i = 0; i < MAX_STEPS; i++) {
     const current = page.url();
     if (!PER_QUESTION_URL_RE.test(current)) return;
-    await selectChoice(0);
-    await expectContinueEnabled();
-    await clickContinue();
+    // Type-aware answer scoped to THIS question's id (from the URL), so a
+    // mid-transition read never clicks the outgoing question's stale choices.
+    const currentId = current.replace(/[?#].*$/, '').replace(/\/+$/, '').split('/').pop() ?? '';
+    await questionPage.answerCurrentQuestion(currentId);
+    await questionPage.expectContinueEnabled();
+    await questionPage.clickContinue();
     // `clickContinue` (Save and Continue) saves then SPA-navigates to the next
     // question — or, after the last one, to the overview/home. Wait for the URL to
     // actually leave the current question so the next iteration reads fresh state
@@ -523,8 +533,9 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
         /\[qu-info-number\]/,
         /\[qu-info-boolean\]/,
         /\[qu-info-date\]/,
-        // NOTE: qu-info-multipleText omitted — multipleText input not yet
-        // implemented in the frontend (see .planning/todos/pending).
+        // Phase 129 UNBLK-01: multipleText info question restored + now rendered
+        // by the MultipleTextInput row-list (plan 05).
+        /\[qu-info-multipleText\]/,
         /\[qu-info-filt-co-reg-n\]/
       ]);
       await candidateProfilePage.expectQuestionsAbsent([/\[qu-info-filt-mun-only\]/, /\[qu-info-filt-co-reg-s\]/]);
@@ -697,13 +708,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       // Walk: at each /questions/{id} page, select first choice + continue.
       // Module-scope helper hoists the loop-exit condition out of the test
       // body per playwright/no-conditional-in-test.
-      await walkRemainingOpinionQuestions(
-        page,
-        (n) => candidateQuestionPage.selectChoice(n),
-        () => candidateQuestionPage.clickContinue(),
-        () => candidateQuestionPage.expectContinueEnabled(),
-        TIMEOUTS.slowPage
-      );
+      await walkRemainingOpinionQuestions(page, candidateQuestionPage, TIMEOUTS.slowPage);
       // After the last opinion: land at home with completed state. Navigate
       // explicitly to home to assert the completed state (the post-last
       // question may redirect to overview or home; force the assertion at home).

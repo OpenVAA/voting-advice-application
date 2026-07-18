@@ -76,6 +76,8 @@ const TEXT_RE = {
   baseOpinion3Likert7: /Base opinion 3 — Likert 7/i,
   baseOpinion4Categorical: /Base opinion 4 — Categorical/i,
   baseOpinion5Boolean: /Base opinion 5 — Boolean/i,
+  baseOpinion6Number: /Base opinion 6 — Number scale/i,
+  baseOpinion7MultiChoice: /Base opinion 7 — Multi-choice/i,
   regionalOpinionsQuestion: /Regional-only opinion 1/i,
   filtMunNeOpinion: /Filtered Mun-NE opinion/i,
   // candidate name fragments (driven by base first_name)
@@ -268,6 +270,77 @@ async function expectQuestionAndAdvance({
     const isChecked = await answerOption.isChecked();
     if (skip || isChecked) await nextButton.click();
     else await answerOption.click();
+  });
+}
+
+/**
+ * Answer a NUMBER-scale opinion question at max and advance (Phase 129 D-12).
+ *
+ * The NumberScaleInput renders a native `<input type=range>` (no question-choice
+ * options); a matchable number question carries no radio/checkbox options, so
+ * `expectQuestionAndAdvance` cannot drive it. Focus the slider and press End to
+ * land the exact max value (the D-03 native-range keyboard contract), then click
+ * Next explicitly — number inputs never auto-advance (plan 06).
+ */
+async function expectNumberQuestionAndAdvance({ page, text }: { page: Page; text: RegExp | string }): Promise<void> {
+  await expectUrlChange(page, async () => {
+    const questionHeading = page.getByTestId(testIds.voter.questions.heading);
+    await expect(questionHeading).toHaveText(text, { timeout: TIMEOUTS.element });
+    const slider = page.getByTestId(testIds.voter.questions.numberSlider);
+    await expect(slider.first()).toBeVisible({ timeout: TIMEOUTS.element });
+    await slider.first().focus();
+    await page.keyboard.press('End'); // native range → exact max
+    const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
+    await expect(nextButton).toBeVisible({ timeout: TIMEOUTS.element });
+    await nextButton.click();
+  });
+}
+
+/**
+ * Answer a MULTI-CHOICE (checkbox) opinion question and advance (Phase 129 D-12).
+ *
+ * The checkbox multi-select renders question-choice checkboxes; a valid answer
+ * needs minSelections..maxSelections (2..3 in e2e/base). Click the first 2
+ * choices to reach a valid in-range selection, then click Next explicitly
+ * (multi-choice never auto-advances, plan 06).
+ */
+async function expectMultiChoiceQuestionAndAdvance({
+  page,
+  text
+}: {
+  page: Page;
+  text: RegExp | string;
+}): Promise<void> {
+  await expectUrlChange(page, async () => {
+    const questionHeading = page.getByTestId(testIds.voter.questions.heading);
+    await expect(questionHeading).toHaveText(text, { timeout: TIMEOUTS.element });
+    const questionId = new URL(page.url()).pathname.replace(/\/+$/, '').split('/').filter(Boolean).pop() ?? '';
+    // eslint-disable-next-line playwright/no-restricted-locators -- testid+name conjunction not expressible via getByTestId/getByRole
+    const choices = page.locator(`[data-testid="question-choice"][name="questionChoices-${questionId}"]`);
+    await expect(choices.first()).toBeVisible({ timeout: TIMEOUTS.element });
+    // Click the first 2 checkboxes → valid in-range selection (min 2 / max 3).
+    await choices.nth(0).click();
+    await choices.nth(1).click();
+    const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
+    await expect(nextButton).toBeVisible({ timeout: TIMEOUTS.element });
+    await expect(nextButton).toBeEnabled({ timeout: TIMEOUTS.element });
+    await nextButton.click();
+  });
+}
+
+/**
+ * Settle on a question by heading and advance via Next WITHOUT touching the
+ * input (used to re-advance an already-answered number/multi-choice question on
+ * a forward round-trip — re-clicking a checkbox would toggle it OFF, and the
+ * slider value already persists).
+ */
+async function settleAndAdvance({ page, text }: { page: Page; text: RegExp | string }): Promise<void> {
+  await expectUrlChange(page, async () => {
+    const questionHeading = page.getByTestId(testIds.voter.questions.heading);
+    await expect(questionHeading).toHaveText(text, { timeout: TIMEOUTS.element });
+    const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
+    await expect(nextButton).toBeVisible({ timeout: TIMEOUTS.element });
+    await nextButton.click();
   });
 }
 
@@ -652,6 +725,11 @@ test.describe('voter journey', () => {
           optionIndex: (n) => n - 1 // Answer last option for matching test
         });
       }
+      // Phase 129 D-12: the MAIN category now ends with Base-6 (number scale)
+      // and Base-7 (multi-choice). Answer both at max (slider End; first 2
+      // checkboxes) before the Opt-A intro shows.
+      await expectNumberQuestionAndAdvance({ page, text: TEXT_RE.baseOpinion6Number });
+      await expectMultiChoiceQuestionAndAdvance({ page, text: TEXT_RE.baseOpinion7MultiChoice });
       // We should now see the next category intro
       await expectCategoryIntroAndAdvance({ page, text: TEXT_RE.optionalOpinionsA });
       // We should now see a question and the results list should be enabled
@@ -661,20 +739,35 @@ test.describe('voter journey', () => {
       const previousButton = page.getByTestId(testIds.voter.questions.previousButton);
       await expect(previousButton).toBeVisible({ timeout: TIMEOUTS.element });
       await previousButton.click();
-      // We should see the previous question and not the category intro again
+      // We should see the previous question (now Base-7 multi-choice, the last
+      // base question) and not the category intro again.
       const questionHeading = page.getByTestId(testIds.voter.questions.heading);
-      await expect.soft(questionHeading).toHaveText(TEXT_RE.baseOpinion5Boolean, { timeout: TIMEOUTS.element });
-      // Delete the answer to the last question, which should hide the results link again
+      await expect.soft(questionHeading).toHaveText(TEXT_RE.baseOpinion7MultiChoice, { timeout: TIMEOUTS.element });
+      // Min-answers gate (minimumAnswers: 5). Phase 129 D-12 added Base-6/Base-7,
+      // so the voter now holds 7 base answers here — deleting ONE no longer
+      // crosses the 5-answer threshold. Delete THREE (Base-7 → Base-6 → Base-5,
+      // 7→6→5→4) to cross below the gate, asserting the CTA stays enabled until
+      // the crossing delete, then re-answer forward to re-enable it.
       const deleteButton = page.getByTestId(testIds.shared.questionDelete);
-      await deleteButton.click();
+      await deleteButton.click(); // Base-7 deleted → 6 answers, still ≥ 5
+      await expect.soft(resultsLink).toBeEnabled({ timeout: TIMEOUTS.element });
+      await previousButton.click();
+      await expect.soft(questionHeading).toHaveText(TEXT_RE.baseOpinion6Number, { timeout: TIMEOUTS.element });
+      await deleteButton.click(); // Base-6 deleted → 5 answers, still ≥ 5
+      await expect.soft(resultsLink).toBeEnabled({ timeout: TIMEOUTS.element });
+      await previousButton.click();
+      await expect.soft(questionHeading).toHaveText(TEXT_RE.baseOpinion5Boolean, { timeout: TIMEOUTS.element });
+      await deleteButton.click(); // Base-5 deleted → 4 answers, below the gate
       await expect.soft(resultsLink).toBeDisabled({ timeout: TIMEOUTS.element });
-      // Re-answer the question to re-enable the results link and move forward, we also check that the option is not selected anymore
+      // Re-answer the three deleted questions forward to re-enable the CTA.
       await expectQuestionAndAdvance({
         page,
         text: TEXT_RE.baseOpinion5Boolean,
         optionIndex: (n) => n - 1,
         allowPreselected: false
       });
+      await expectNumberQuestionAndAdvance({ page, text: TEXT_RE.baseOpinion6Number });
+      await expectMultiChoiceQuestionAndAdvance({ page, text: TEXT_RE.baseOpinion7MultiChoice });
       await expect.soft(resultsLink).toBeEnabled({ timeout: TIMEOUTS.element });
     });
 
@@ -691,7 +784,15 @@ test.describe('voter journey', () => {
       await expectCategoryIntroAndAdvance({ page, text: TEXT_RE.optionalOpinionsA });
       const previousButton = page.getByTestId(testIds.voter.questions.previousButton);
       const questionHeading = page.getByTestId(testIds.voter.questions.heading);
-      // Go back two quetsions to the Base-4 Categorical question
+      // Go back across the new number + multi-choice questions to the Base-4
+      // Categorical question (opt-a-1 ← Base-7 ← Base-6 ← Base-5 ← Base-4). This
+      // crosses MULTIPLE question.type boundaries (multi-choice → number →
+      // boolean → categorical), exercising the `{#key question.type}` remount
+      // path each hop.
+      await previousButton.click();
+      await expect.soft(questionHeading).toHaveText(TEXT_RE.baseOpinion7MultiChoice, { timeout: TIMEOUTS.element });
+      await previousButton.click();
+      await expect.soft(questionHeading).toHaveText(TEXT_RE.baseOpinion6Number, { timeout: TIMEOUTS.element });
       await previousButton.click();
       await expect.soft(questionHeading).toHaveText(TEXT_RE.baseOpinion5Boolean, { timeout: TIMEOUTS.element });
       await previousButton.click();
@@ -700,7 +801,9 @@ test.describe('voter journey', () => {
       const answerOptions = page.getByTestId(testIds.voter.questions.answerOption);
       const lastOption = answerOptions.last();
       await expect(lastOption).toBeChecked({ timeout: TIMEOUTS.element });
-      // Advance forward again to confirm the round-trip left answers intact
+      // Advance forward again to confirm the round-trip left answers intact.
+      // Base-4/Base-5 are radios (allowPreselected); Base-6/Base-7 are the
+      // number/multi-choice inputs — re-advance via Next without re-toggling.
       await expectQuestionAndAdvance({
         page,
         text: TEXT_RE.baseOpinion4Categorical,
@@ -713,6 +816,8 @@ test.describe('voter journey', () => {
         optionIndex: (n) => n - 1,
         allowPreselected: true
       });
+      await settleAndAdvance({ page, text: TEXT_RE.baseOpinion6Number });
+      await settleAndAdvance({ page, text: TEXT_RE.baseOpinion7MultiChoice });
     });
 
     // ====================================================================
@@ -868,6 +973,37 @@ test.describe('voter journey', () => {
     });
 
     // ====================================================================
+    // D-10: ALLIANCE RENDER VERIFICATION (Phase 129 UNBLK-06 / D-09)
+    //
+    // Adding 'alliance' to results.sections (e2e/base seed, this phase) is the
+    // single switch that surfaces the alliance tab + cards. Alliance A is
+    // nominated in CO-Reg-N (the voter's Regional-election scope) with member
+    // orgs OR-AA + OR-AB. The org→alliance imputation (organizationMatching:
+    // 'impute') yields the card-level MatchScore gauge for free (D-09) — no
+    // frontend code was built this phase. Presence-level only; the full
+    // card+drawer EFLOW-02 spec is Phase-130 scope.
+    // ====================================================================
+    await test.step('D-10: alliance tab renders alliance cards with a match-score gauge + member-org subcards', async () => {
+      await resultsPage.selectEntityTab('alliances');
+      const allianceSection = page.getByTestId(testIds.voter.results.allianceSection);
+      await expect.soft(allianceSection).toBeVisible({ timeout: TIMEOUTS.slowPage });
+
+      // Alliance A card — nominated in the voter's CO-Reg-N scope.
+      const allianceA = resultsPage.getEntityCards().filter({ hasText: /Alliance A/i }).first();
+      await expect.soft(allianceA).toBeVisible({ timeout: TIMEOUTS.slowPage });
+      // Card-level MatchScore gauge (org→alliance imputation output; same
+      // rounding as org cards) — renders whenever parsed.match is set.
+      await expect.soft(allianceA.getByTestId(testIds.voter.results.matchScore).first()).toBeVisible({
+        timeout: TIMEOUTS.element
+      });
+      // Member-org children: OR-AA + OR-AB under AL-A → ≥ 2 subcards (the
+      // Phase-69 subcard list, verify-only). Assert the 2nd subcard visible to
+      // prove the zero-one-many "many" branch.
+      const allianceSubcards = allianceA.getByTestId(testIds.voter.results.cardSubcard);
+      await expect.soft(allianceSubcards.nth(1)).toBeVisible({ timeout: TIMEOUTS.slowPage });
+    });
+
+    // ====================================================================
     // MATCHING ALGORITHM VERIFICATION
     // ====================================================================
 
@@ -952,11 +1088,11 @@ test.describe('voter journey', () => {
       await expect(dialog.getByRole('tab', { name: TEXT_RE.membersTab })).toHaveCount(0);
 
       const infoItems = infoTab.getByTestId('info-item');
-      // 13 = 4 nomination-derived (election/constituency/list/number) + 8
-      // info questions + 1 grouped Links item. The multipleText info
-      // question is intentionally omitted (frontend input not yet
-      // implemented — see .planning/todos/pending).
-      await expect.soft(infoItems).toHaveCount(13, { timeout: TIMEOUTS.element });
+      // 14 = 4 nomination-derived (election/constituency/list/number) + 9 info
+      // questions (multipleText restored, Phase 129 UNBLK-01) + 1 grouped Links
+      // item. (The link info question is grouped into the trailing Links item,
+      // so 9 info questions still yield 8 standalone info-items + Links.)
+      await expect.soft(infoItems).toHaveCount(14, { timeout: TIMEOUTS.element });
       // All info-item label/value assertions use case-insensitive regexes
       // because CSS `text-transform: uppercase` on the `small-label` class
       // does NOT alter `textContent`, but the i18n source strings mix Title
@@ -995,8 +1131,12 @@ test.describe('voter journey', () => {
       // (10) date — toLocaleDateString('en', {year,month,day:'numeric'}) on 1980-06-15
       await expect.soft(infoItems.nth(10)).toContainText(/Info: date of birth\./i);
       await expect.soft(infoItems.nth(10)).toContainText(/6\/15\/1980/);
-      // NOTE: the multipleText "keywords" info item is intentionally omitted —
-      // the frontend input is not yet implemented (see .planning/todos/pending).
+      // (11) multipleText — the restored "keywords" info item (Phase 129
+      // UNBLK-01 round-trip read proof). CA-AA-Special carries the default
+      // two-keyword answer; both strings must render on the info tab.
+      await expect.soft(infoItems.nth(11)).toContainText(/Info: keywords\./i);
+      await expect.soft(infoTab).toContainText(/Campaign keyword alpha/i);
+      await expect.soft(infoTab).toContainText(/Campaign keyword beta/i);
       // The north-only filtered question + grouped Links item follow (matched
       // by text / .last() below, so no positional reindex is needed).
       // (last) Links — single grouped item containing the personal-link tag
