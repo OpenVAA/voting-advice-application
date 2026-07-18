@@ -62,6 +62,7 @@ The same component can also be used to display the answers of the voter and anot
 <script lang="ts">
   import { getCustomData } from '@openvaa/app-shared';
   import { isMultipleChoiceQuestion, isObjectType, OBJECT_TYPE } from '@openvaa/data';
+  import { untrack } from 'svelte';
   import { getComponentContext } from '$lib/contexts/component';
   import { onKeyboardFocusOut } from '$lib/utils/onKeyboardFocusOut';
   import type { Id } from '@openvaa/core';
@@ -145,15 +146,22 @@ The same component can also be used to display the answers of the voter and anot
   ////////////////////////////////////////////////////////////////////
 
   /**
-   * Holds the currently selected `Id`s in checkbox multi-select mode. Re-syncs
-   * from the `selectedIds` prop whenever it changes so that navigating between
-   * two multi-choice questions (same-type Q→Q component reuse) shows each
-   * question's own selections — mirroring the radio `selected = selectedId` sync
-   * above.
+   * Holds the currently selected `Id`s in checkbox multi-select mode. Seeded per
+   * question identity: the effect tracks `question.id` (Q→Q re-seed) and reads
+   * the `selectedIds` prop UNTRACKED. The prop is deliberately NOT live-tracked —
+   * when the voter layout deletes an invalid in-progress answer (D-07 gate), the
+   * `selectedIds` prop transitions to null and a live-tracking sync would wipe
+   * the voter's checked boxes mid-interaction (the boxes render from
+   * `selectedMulti.includes(id)`). Q→Q re-seeding is preserved via the
+   * `question.id` key; explicit deletes clear via the layout's delete-epoch
+   * remount. Mirrors OpinionQuestionInput.svelte's question-keyed untrack seed.
    */
   let selectedMulti: Array<Id> = $state([]);
   $effect(() => {
-    selectedMulti = Array.isArray(selectedIds) ? [...selectedIds] : [];
+    void question.id;
+    untrack(() => {
+      selectedMulti = Array.isArray(selectedIds) ? [...selectedIds] : [];
+    });
   });
 
   /**

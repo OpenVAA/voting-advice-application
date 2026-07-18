@@ -171,12 +171,29 @@
     opinionInputValid = true;
   });
 
+  // Bumped on every explicit answer deletion (question-delete button). Combined
+  // with `question.type` in the input's {#key} so an explicit delete remounts
+  // QuestionChoices, forcing its question-keyed seed (plan 129-09) to re-read the
+  // now-absent answer and visually clear the boxes. Lives OUTSIDE the {#key}.
+  let deleteEpoch = $state(0);
+
   function handleAnswer({ question, value }: { question: AnyQuestionVariant; value?: unknown }): void {
     // Zero selections in a multi-choice question = unanswered (D-07): delete the
     // answer rather than persisting an empty array, keeping matching clean and
     // the results-CTA answer count honest.
     if (Array.isArray(value) && value.length === 0) {
       answers.deleteAnswer(question.id);
+      return;
+    }
+    // Out-of-range (non-empty) multi-choice selection = in-progress/unanswered
+    // (D-07): NEVER persist it — an invalid selection must not reach matching.
+    // `opinionInputValid` is fresh here because OpinionQuestionInput assigns the
+    // bound valid synchronously before bubbling onChange (plan 129-09 Task 1).
+    // Delete any previously-persisted answer, but only when one actually exists,
+    // so a fresh invalid toggle does not fire a spurious answer_delete tracking
+    // event / store churn.
+    if (Array.isArray(value) && !opinionInputValid) {
+      if (answers.answers[question.id] != null) answers.deleteAnswer(question.id);
       return;
     }
     answers.setAnswer(question.id, value);
@@ -193,6 +210,9 @@
   function handleDelete() {
     if (!question) return;
     answers.deleteAnswer(question.id);
+    // Bump the remount epoch so QuestionChoices re-seeds from the now-absent
+    // answer and the rendered selection visually clears (D-07 / plan 129-09).
+    deleteEpoch += 1;
   }
 
   /**
@@ -278,11 +298,14 @@
       {/if}
 
       {#snippet primaryActions()}
-        <!-- {#key question.type}: remount the variant input only at a question-type
-             boundary (Likert↔open-text↔slider), NOT per question id (QLAYOUT-02 /
-             D-02). A same-type Q→Q run keeps the input mounted; layout-owned
-             `disabled` $state + voterCtx.answers survive the remount. -->
-        {#key question.type}
+        <!-- {#key `${question.type}-${deleteEpoch}`}: remount the variant input at
+             a question-type boundary (Likert↔open-text↔slider), NOT per question
+             id (QLAYOUT-02 / D-02) — AND on explicit answer deletion (deleteEpoch
+             bump) so QuestionChoices' question-keyed seed (plan 129-09) re-reads
+             the now-absent answer and visually clears the boxes. A same-type Q→Q
+             run keeps the input mounted (deleteEpoch only bumps on the delete
+             button); layout-owned `disabled` $state + voterCtx.answers survive. -->
+        {#key `${question.type}-${deleteEpoch}`}
           <OpinionQuestionInput
             question={question!}
             answer={answers.answers[question!.id]}
@@ -294,7 +317,9 @@
         <QuestionActions
           answered={answers.answers[question!.id]?.value != null && opinionInputValid}
           {disabled}
-          nextLabel={questionBlock!.index === questions.length - 1 && answers.answers[question!.id]?.value != null
+          nextLabel={questionBlock!.index === questions.length - 1 &&
+          answers.answers[question!.id]?.value != null &&
+          opinionInputValid
             ? t('results.title.results')
             : undefined}
           previousLabel={questionBlock!.index === 0 ? t('common.back') : undefined}
