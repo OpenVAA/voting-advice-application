@@ -73,7 +73,7 @@ New settings-driven branches not yet covered by the existing 19 perm specs.
 
 ### Coverage-Unblocking Product Work (UNBLK)
 
-- [ ] **UNBLK-01**: The frontend `QuestionInput` renders and persists answers for `MultipleTextQuestion` (multiple-text input component).
+- [x] **UNBLK-01**: The frontend `QuestionInput` renders and persists answers for `MultipleTextQuestion` (multiple-text input component).
 - [x] **UNBLK-02**: The frontend supports a multi-choice categorical opinion variant — input component + matching dispatch + dev-seed authoring support.
 - [ ] **UNBLK-03**: The default seed template (`yarn db:seed:default`) produces a valid dataset — parties present, candidates tab populated, consistent naming.
 - [ ] **UNBLK-04**: The `/nominations` route fetches question data so all-nominations entities render correctly (unblocks the nominations journey step).
@@ -178,7 +178,7 @@ Each requirement maps to exactly one roadmap phase (see `.planning/ROADMAP.md` v
 | TYPE-08 | Phase 128 | Complete |
 | TYPE-09 | Phase 128 | Complete |
 | UNBLK-03 | Phase 119 | Pending |
-| UNBLK-01 | Phase 129 | Pending |
+| UNBLK-01 | Phase 129 | Complete |
 | UNBLK-02 | Phase 129 | Complete |
 | UNBLK-04 | Phase 129 | Pending |
 | UNBLK-05 | Phase 129 | Complete |

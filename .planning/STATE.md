@@ -5,15 +5,15 @@ milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Ze
 current_phase: 129
 current_phase_name: new-feature-build-question-inputs-alliance-render-nomination
 status: executing
-stopped_at: Completed 129-01-PLAN.md
-last_updated: "2026-07-18T07:29:41.882Z"
+stopped_at: Completed 129-02-PLAN.md
+last_updated: "2026-07-18T07:33:19.056Z"
 last_activity: 2026-07-18
 last_activity_desc: Phase 129 execution started
 progress:
   total_phases: 15
   completed_phases: 11
   total_plans: 64
-  completed_plans: 57
+  completed_plans: 58
   percent: 73
 ---
 
@@ -29,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 ## Current Position
 
 Phase: 129 (new-feature-build-question-inputs-alliance-render-nomination) — EXECUTING
-Plan: 2 of 8
+Plan: 3 of 8
 Status: Ready to execute
 Last activity: 2026-07-18 — Phase 129 execution started
 
-Progress: [█████████░] 89%
+Progress: [█████████░] 91%
 
 ## Performance Metrics
 
@@ -66,6 +66,7 @@ Progress: [█████████░] 89%
 | Phase 128 P04 | 3m | 2 tasks | 2 files |
 | Phase 128 P05 | ~14m | 2 tasks | 0 files |
 | Phase 129 P01 | 6min | 2 tasks | 4 files |
+| Phase 129 P02 | 2min | 2 tasks | 3 files |
 
 ## Deferred Items
 
@@ -474,6 +475,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: 128-03: Adopted built-in TS 5.9.3 ViewTransition lib types over hand-rolled interfaces; confirmed EntityInfo:80 dead-branch collapse is a type-lie not a bug.
 - [Phase ?]: Phase 128 D-07 gate proven green: build 14/14, unit 19/19, frontend svelte-check 24/1→0/0, docs svelte-check 0/1→0/0, E2E 125/0/0.
 - [Phase ?]: MultipleChoiceCategorical matching: per-choice binary subdimensions, no 2-choice shortcut (D-06); empty/missing → all-MISSING_VALUE (D-07)
+- [Phase ?]: 129-02: customData (JSONB) chosen as extension home for question-input min/max/item/selection constraints — no DB migration
 
 ### Quick Tasks Completed
 
@@ -518,8 +520,8 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-07-18T07:29:41.872Z
-Stopped at: Completed 129-01-PLAN.md
+Last session: 2026-07-18T07:33:19.047Z
+Stopped at: Completed 129-02-PLAN.md
 Resume file: 
 None
 

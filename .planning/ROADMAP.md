@@ -512,12 +512,12 @@ Plans:
   3. The `/nominations` route fetches question data so all-nominations entities render correctly (UNBLK-04).
   4. Alliance entities render in voter results as a card with a working member-orgs drawer (UNBLK-06).
 
-**Plans**: 1/8 plans executed
+**Plans**: 2/8 plans executed
 Plans:
 **Wave 1**
 
 - [x] 129-01-PLAN.md — MultipleChoiceCategoricalQuestion matching trio (D-06) + isNumberQuestion guard (Wave 1)
-- [ ] 129-02-PLAN.md — customData min/max + count-constraint keys (D-02/D-07) + Supabase number min/max bridge (Wave 1)
+- [x] 129-02-PLAN.md — customData min/max + count-constraint keys (D-02/D-07) + Supabase number min/max bridge (Wave 1)
 - [ ] 129-03-PLAN.md — /nominations loader questionData fetch parity (UNBLK-04, D-11) (Wave 1)
 
 **Wave 2** *(blocked on Wave 1 completion)*
@@ -603,7 +603,7 @@ The three workstreams are largely independent and may be planned/executed concur
 | 126. svelte-check → 0 — supabaseDataProvider | v2.14 | 5/5 | Complete    | 2026-07-16 |
 | 127. svelte-check → 0 — Adapter Layer & Contexts | v2.14 | 3/3 | Complete    | 2026-07-16 |
 | 128. svelte-check → 0 — Long-Tail, Tests & Docs | v2.14 | 5/5 | Complete    | 2026-07-17 |
-| 129. New-Feature Build — Question Inputs + Alliance Render + Nominations Fetch | v2.14 | 1/8 | In Progress|  |
+| 129. New-Feature Build — Question Inputs + Alliance Render + Nominations Fetch | v2.14 | 2/8 | In Progress|  |
 | 130. E2E Specs — New-Feature Coverage | v2.14 | 0/TBD | Not started | - |
 | 131. E2E Reliability Hardening — Deferred Flake/Race Triage | v2.14 | 0/TBD | Not started | - |
 | 132. Milestone-Close Green Gate + svelte-check Zero Flip | v2.14 | 0/TBD | Not started | - |
