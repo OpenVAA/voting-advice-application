@@ -76,7 +76,7 @@ New settings-driven branches not yet covered by the existing 19 perm specs.
 - [x] **UNBLK-01**: The frontend `QuestionInput` renders and persists answers for `MultipleTextQuestion` (multiple-text input component).
 - [x] **UNBLK-02**: The frontend supports a multi-choice categorical opinion variant — input component + matching dispatch + dev-seed authoring support.
 - [ ] **UNBLK-03**: The default seed template (`yarn db:seed:default`) produces a valid dataset — parties present, candidates tab populated, consistent naming.
-- [ ] **UNBLK-04**: The `/nominations` route fetches question data so all-nominations entities render correctly (unblocks the nominations journey step).
+- [x] **UNBLK-04**: The `/nominations` route fetches question data so all-nominations entities render correctly (unblocks the nominations journey step).
 - [x] **UNBLK-05**: The frontend supports a number-scale opinion question — input component + matching dispatch + dev-seed authoring support (unblocks EQTYP-02).
 - [ ] **UNBLK-06**: Alliance entities render in voter results (card + member-orgs drawer) — small implementation flagged by the audit as "currently not rendered; easy to implement" (unblocks EFLOW-02).
 
@@ -180,7 +180,7 @@ Each requirement maps to exactly one roadmap phase (see `.planning/ROADMAP.md` v
 | UNBLK-03 | Phase 119 | Pending |
 | UNBLK-01 | Phase 129 | Complete |
 | UNBLK-02 | Phase 129 | Complete |
-| UNBLK-04 | Phase 129 | Pending |
+| UNBLK-04 | Phase 129 | Complete |
 | UNBLK-05 | Phase 129 | Complete |
 | UNBLK-06 | Phase 129 | Pending |
 | EQTYP-01 | Phase 130 | Pending |
