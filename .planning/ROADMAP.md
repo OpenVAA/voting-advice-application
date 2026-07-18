@@ -552,7 +552,7 @@ Plans:
   4. Any new-feature-specific fixtures are built, typecheck-clean, and proven by a smoke/probe before the specs rely on them (fixtures-first within the phase).
   5. All new-feature-coverage specs pass 3× deterministically (fresh server, clean DB).
 
-**Plans**: 2/6 plans executed
+**Plans**: 3/6 plans executed
 Plans:
 
 **Wave 1**
@@ -562,7 +562,7 @@ Plans:
 
 **Wave 2**
 
-- [ ] 130-03-PLAN.md — voter-journey assertion depth: 100%-match incorporation proof + new-type drawer displays + dedicated EQTYP-02 number-scale min/mid boundary test; dead commented nominations block removed [EQTYP-01/02]
+- [x] 130-03-PLAN.md — voter-journey assertion depth: 100%-match incorporation proof + new-type drawer displays + dedicated EQTYP-02 number-scale min/mid boundary test; dead commented nominations block removed [EQTYP-01/02]
 - [ ] 130-04-PLAN.md — NEW `voter-alliance.spec.ts` (member-orgs drawer + clickable in-card children + EPERM-03 presence rider + EPERM-04 tab-control rider, D-03) + NEW `voter-nominations.spec.ts` (D-01) with their leaf project entries [EFLOW-02]
 - [ ] 130-05-PLAN.md — candidate-journey EQTYP-01 type-specific multi-choice contract (D-07 min/max save gating) + D-02 categorical/boolean tightening [EQTYP-01]
 
@@ -624,6 +624,6 @@ The three workstreams are largely independent and may be planned/executed concur
 | 127. svelte-check → 0 — Adapter Layer & Contexts | v2.14 | 3/3 | Complete    | 2026-07-16 |
 | 128. svelte-check → 0 — Long-Tail, Tests & Docs | v2.14 | 5/5 | Complete    | 2026-07-17 |
 | 129. New-Feature Build — Question Inputs + Alliance Render + Nominations Fetch | v2.14 | 9/9 | Complete    | 2026-07-18 |
-| 130. E2E Specs — New-Feature Coverage | v2.14 | 2/6 | In Progress|  |
+| 130. E2E Specs — New-Feature Coverage | v2.14 | 3/6 | In Progress|  |
 | 131. E2E Reliability Hardening — Deferred Flake/Race Triage | v2.14 | 0/TBD | Not started | - |
 | 132. Milestone-Close Green Gate + svelte-check Zero Flip | v2.14 | 0/TBD | Not started | - |
