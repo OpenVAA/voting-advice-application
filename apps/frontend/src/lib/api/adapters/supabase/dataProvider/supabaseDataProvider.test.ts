@@ -1234,6 +1234,40 @@ describe('SupabaseDataProvider', () => {
       expect(cd(result.questions[3]).allowOpen).toBe(false); // explicit JSONB wins over column
     });
 
+    it('bridges custom_data.min/max into top-level min/max for number questions only', async () => {
+      mockSupabase._mockResponses['question_categories'] = {
+        data: [{ id: 'cat1', name: { en: 'C' }, category_type: 'opinion', sort_order: 1 }],
+        error: null
+      };
+      mockSupabase._mockResponses['questions'] = {
+        data: [
+          // number row with custom_data min/max → lifted to top-level (question matchable)
+          { id: 'q1', name: { en: 'Q1' }, type: 'number', category_id: 'cat1', custom_data: { min: 0, max: 10 }, allow_open: false },
+          // number row WITHOUT custom_data min/max → no top-level min/max (non-matchable)
+          { id: 'q2', name: { en: 'Q2' }, type: 'number', category_id: 'cat1', custom_data: null, allow_open: false },
+          // non-number row with custom_data.min → NOT lifted to top-level
+          { id: 'q3', name: { en: 'Q3' }, type: 'text', category_id: 'cat1', custom_data: { min: 3 }, allow_open: false }
+        ],
+        error: null
+      };
+
+      const result = await provider.getQuestionData();
+      const q = (i: number) => result.questions[i] as { min?: number; max?: number; customData: { min?: number; max?: number } };
+
+      // number + custom_data range → top-level min/max present, customData still carries them
+      expect(q(0).min).toBe(0);
+      expect(q(0).max).toBe(10);
+      expect(q(0).customData.min).toBe(0);
+      expect(q(0).customData.max).toBe(10);
+
+      // number without range → no top-level min/max (stays non-matchable)
+      expect(q(1).min).toBeUndefined();
+      expect(q(1).max).toBeUndefined();
+
+      // text row → custom_data.min NOT lifted to top-level
+      expect(q(2).min).toBeUndefined();
+    });
+
     it('filters categories by electionId (including categories with null/empty electionIds)', async () => {
       mockSupabase._mockResponses['question_categories'] = {
         data: [
