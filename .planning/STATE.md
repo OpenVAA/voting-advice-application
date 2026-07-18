@@ -3,17 +3,17 @@ gsd_state_version: 1.0
 milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
 current_phase: 129
-current_phase_name: New-Feature Build — Question Inputs + Alliance Render + Nominations Fetch
+current_phase_name: new-feature-build-question-inputs-alliance-render-nomination
 status: executing
-stopped_at: Phase 129 UI-SPEC approved
-last_updated: "2026-07-17T13:43:53.860Z"
-last_activity: 2026-07-17
-last_activity_desc: Phase 128 complete, transitioned to Phase 129
+stopped_at: Completed 129-01-PLAN.md
+last_updated: "2026-07-18T07:29:41.882Z"
+last_activity: 2026-07-18
+last_activity_desc: Phase 129 execution started
 progress:
   total_phases: 15
   completed_phases: 11
-  total_plans: 56
-  completed_plans: 56
+  total_plans: 64
+  completed_plans: 57
   percent: 73
 ---
 
@@ -24,16 +24,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 128 — svelte-check → 0 — Long-Tail, Tests & Docs
+**Current focus:** Phase 129 — new-feature-build-question-inputs-alliance-render-nomination
 
 ## Current Position
 
-Phase: 129 — New-Feature Build — Question Inputs + Alliance Render + Nominations Fetch
-Plan: Not started
+Phase: 129 (new-feature-build-question-inputs-alliance-render-nomination) — EXECUTING
+Plan: 2 of 8
 Status: Ready to execute
-Last activity: 2026-07-17 — Phase 128 complete, transitioned to Phase 129
+Last activity: 2026-07-18 — Phase 129 execution started
 
-Progress: [██████████] 100%
+Progress: [█████████░] 89%
 
 ## Performance Metrics
 
@@ -65,6 +65,7 @@ Progress: [██████████] 100%
 | Phase 128 P03 | 3min | 2 tasks | 5 files |
 | Phase 128 P04 | 3m | 2 tasks | 2 files |
 | Phase 128 P05 | ~14m | 2 tasks | 0 files |
+| Phase 129 P01 | 6min | 2 tasks | 4 files |
 
 ## Deferred Items
 
@@ -472,6 +473,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: 128-02: setPassword currentPassword made optional (not required) at the AuthContext wrapper — register/password-reset flows call setPassword({ password }); keeps zero net-new svelte-check while satisfying the type-truth must_have.
 - [Phase ?]: 128-03: Adopted built-in TS 5.9.3 ViewTransition lib types over hand-rolled interfaces; confirmed EntityInfo:80 dead-branch collapse is a type-lie not a bug.
 - [Phase ?]: Phase 128 D-07 gate proven green: build 14/14, unit 19/19, frontend svelte-check 24/1→0/0, docs svelte-check 0/1→0/0, E2E 125/0/0.
+- [Phase ?]: MultipleChoiceCategorical matching: per-choice binary subdimensions, no 2-choice shortcut (D-06); empty/missing → all-MISSING_VALUE (D-07)
 
 ### Quick Tasks Completed
 
@@ -516,10 +518,10 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-07-17T13:14:23.843Z
-Stopped at: Phase 129 UI-SPEC approved
+Last session: 2026-07-18T07:29:41.872Z
+Stopped at: Completed 129-01-PLAN.md
 Resume file: 
-.planning/phases/129-new-feature-build-question-inputs-alliance-render-nomination/129-UI-SPEC.md
+None
 
 - Drove the EFLOW-10b bank-auth full-browser journey (`candidate-bank-auth-journey.spec.ts`) to SINGLE-PASS GREEN (`1 passed`, no skip/did-not-run) against the orchestrator-owned live env. Commit daab88f06 (tests/ only).
 - Enabled `preRegistration.enabled` SCOPED to the bank-auth-journey run: new `setupFromTemplate({ appSettingsOverride })` param (additive `merge_jsonb_column` AFTER the post-seed subset-match); paired teardown resets `{enabled:false}`. Shared `perm-not-located-2e2cg` template + `MINIMAL_BASE_APP_SETTINGS` + default suite untouched. DB-verified `{enabled:true}` during / `{enabled:false}` after.
