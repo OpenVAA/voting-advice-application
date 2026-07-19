@@ -292,6 +292,18 @@ async function answerAndAdvanceToResults(page: Page, answerMode: AnswerMode, ans
   //    (continue) or a question (answer per mode). Terminates on /results.
   const categoryStart = page.getByTestId(testIds.voter.questions.categoryStart);
   const answerOption = page.getByTestId(testIds.voter.questions.answerOption);
+  // A NUMBER-scale opinion question renders ONLY a native range slider
+  // (question-number-slider) and carries NO question-choice options, so it is
+  // NOT matched by `answerOption`. Include it in the loop-entry surface probe
+  // below: without it, the entry wait can only pass while the OUTGOING choice
+  // question's options are still mounted (the page-reuse DOM-lag race). On a
+  // contended run (mobile viewport, full-suite workers) the outgoing choices
+  // unmount before the incoming number question paints, leaving neither a
+  // category-intro nor a question-choice to match → a 10s timeout on the
+  // number question (qu-opin-base-6-number). Probing the slider testid makes the
+  // number-scale surface a first-class loop-entry match. The slider is then
+  // driven by the choiceCount===0 branch below.
+  const numberSlider = page.getByTestId(testIds.voter.questions.numberSlider);
   const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
   const terminal = /\/results/;
   // A category-intro route is `/questions/category/<id>`; a question route is
@@ -307,8 +319,13 @@ async function answerAndAdvanceToResults(page: Page, answerMode: AnswerMode, ans
   for (let iter = 0; iter < maxIterations; iter++) {
     if (terminal.test(page.url())) break;
     const urlBefore = page.url();
-    // Wait for either a category-intro or a question to be present.
-    await categoryStart.or(answerOption.first()).first().waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
+    // Wait for a category-intro, a choice/likert question, OR a number-scale
+    // slider to be present (number questions render no question-choice option).
+    await categoryStart
+      .or(answerOption.first())
+      .or(numberSlider.first())
+      .first()
+      .waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
 
     if (categoryIntro.test(page.url())) {
       // The category-intro start button is an `<a href={getRoute('Question',
