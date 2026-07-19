@@ -196,7 +196,7 @@ Full details: `.planning/milestones/v2.13-ROADMAP.md`
 - [x] **Phase 127: svelte-check → 0 — Adapter Layer & Contexts** — TYPE-05/06: supabaseDataWriter + adapter remainder + context-layer type errors. (completed 2026-07-16)
 - [x] **Phase 128: svelte-check → 0 — Long-Tail, Tests & Docs** — TYPE-07/08/09: scattered long-tail mismatches, test/spike errors, docs a11y warning. (completed 2026-07-17)
 - [x] **Phase 129: New-Feature Build — Question Inputs + Alliance Render + Nominations Fetch** — UNBLK-01/02/04/05/06: build MultipleText + multi-choice categorical + number-scale inputs, alliance render, /nominations fetch. (completed 2026-07-18)
-- [ ] **Phase 130: E2E Specs — New-Feature Coverage** — EQTYP-01/02/03 + EFLOW-02; plus the nominations-route assertion (UNBLK-04) and the EPERM-03 alliance-presence extension as criteria.
+- [x] **Phase 130: E2E Specs — New-Feature Coverage** — EQTYP-01/02/03 + EFLOW-02; plus the nominations-route assertion (UNBLK-04) and the EPERM-03 alliance-presence extension as criteria. (completed 2026-07-19)
 - [ ] **Phase 131: E2E Reliability Hardening — Deferred Flake/Race Triage** — HARDN-01: triage the ~6 deferred flake/race todos (after all specs exist).
 - [ ] **Phase 132: Milestone-Close Green Gate + svelte-check Zero Flip** — HARDN-02 + TYPE-10: full-suite 3× green + svelte-check 0/0 absolute-gate flip.
 
@@ -624,6 +624,6 @@ The three workstreams are largely independent and may be planned/executed concur
 | 127. svelte-check → 0 — Adapter Layer & Contexts | v2.14 | 3/3 | Complete    | 2026-07-16 |
 | 128. svelte-check → 0 — Long-Tail, Tests & Docs | v2.14 | 5/5 | Complete    | 2026-07-17 |
 | 129. New-Feature Build — Question Inputs + Alliance Render + Nominations Fetch | v2.14 | 9/9 | Complete    | 2026-07-18 |
-| 130. E2E Specs — New-Feature Coverage | v2.14 | 6/6 | In Progress|  |
+| 130. E2E Specs — New-Feature Coverage | v2.14 | 6/6 | Complete    | 2026-07-19 |
 | 131. E2E Reliability Hardening — Deferred Flake/Race Triage | v2.14 | 0/TBD | Not started | - |
 | 132. Milestone-Close Green Gate + svelte-check Zero Flip | v2.14 | 0/TBD | Not started | - |

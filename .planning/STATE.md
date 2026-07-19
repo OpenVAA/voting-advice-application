@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
-current_phase: 130
-current_phase_name: E2E Specs — New-Feature Coverage
-status: verifying
+current_phase: 131
+current_phase_name: E2E Reliability Hardening — Deferred Flake/Race Triage
+status: planning
 stopped_at: Completed 130-06-PLAN.md
-last_updated: "2026-07-19T00:39:46.040Z"
+last_updated: "2026-07-19T01:08:38.684Z"
 last_activity: 2026-07-19
-last_activity_desc: Phase 130 execution started
+last_activity_desc: Phase 130 complete, transitioned to Phase 131
 progress:
   total_phases: 15
   completed_phases: 13
@@ -28,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 
 ## Current Position
 
-Phase: 130 (E2E Specs — New-Feature Coverage) — EXECUTING
-Plan: 6 of 6
-Status: Phase complete — ready for verification
-Last activity: 2026-07-19 — Phase 130 execution started
+Phase: 131 — E2E Reliability Hardening — Deferred Flake/Race Triage
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-07-19 — Phase 130 complete, transitioned to Phase 131
 
 Progress: [██████████] 100%
 
