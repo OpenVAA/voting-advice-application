@@ -552,7 +552,7 @@ Plans:
   4. Any new-feature-specific fixtures are built, typecheck-clean, and proven by a smoke/probe before the specs rely on them (fixtures-first within the phase).
   5. All new-feature-coverage specs pass 3× deterministically (fresh server, clean DB).
 
-**Plans**: 5/6 plans executed
+**Plans**: 6/6 plans executed
 Plans:
 
 **Wave 1**
@@ -568,7 +568,7 @@ Plans:
 
 **Wave 3**
 
-- [ ] 130-06-PLAN.md — D-05 determinism gate: full suite 3× green, fresh :5173 server + clean DB per run, zero failed / zero did-not-run, evidence captured [SC5]
+- [x] 130-06-PLAN.md — D-05 determinism gate: full suite 3× green, fresh :5173 server + clean DB per run, zero failed / zero did-not-run, evidence captured [SC5]
 
 **UI hint**: yes
 
@@ -624,6 +624,6 @@ The three workstreams are largely independent and may be planned/executed concur
 | 127. svelte-check → 0 — Adapter Layer & Contexts | v2.14 | 3/3 | Complete    | 2026-07-16 |
 | 128. svelte-check → 0 — Long-Tail, Tests & Docs | v2.14 | 5/5 | Complete    | 2026-07-17 |
 | 129. New-Feature Build — Question Inputs + Alliance Render + Nominations Fetch | v2.14 | 9/9 | Complete    | 2026-07-18 |
-| 130. E2E Specs — New-Feature Coverage | v2.14 | 5/6 | In Progress|  |
+| 130. E2E Specs — New-Feature Coverage | v2.14 | 6/6 | In Progress|  |
 | 131. E2E Reliability Hardening — Deferred Flake/Race Triage | v2.14 | 0/TBD | Not started | - |
 | 132. Milestone-Close Green Gate + svelte-check Zero Flip | v2.14 | 0/TBD | Not started | - |

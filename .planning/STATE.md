@@ -4,17 +4,17 @@ milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
 current_phase: 130
 current_phase_name: E2E Specs — New-Feature Coverage
-status: executing
-stopped_at: Completed 130-05-PLAN.md
-last_updated: "2026-07-18T23:42:27.530Z"
+status: verifying
+stopped_at: Completed 130-06-PLAN.md
+last_updated: "2026-07-19T00:39:46.040Z"
 last_activity: 2026-07-19
 last_activity_desc: Phase 130 execution started
 progress:
   total_phases: 15
-  completed_phases: 12
+  completed_phases: 13
   total_plans: 71
-  completed_plans: 70
-  percent: 80
+  completed_plans: 71
+  percent: 87
 ---
 
 # Project State
@@ -30,10 +30,10 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 
 Phase: 130 (E2E Specs — New-Feature Coverage) — EXECUTING
 Plan: 6 of 6
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-07-19 — Phase 130 execution started
 
-Progress: [██████████] 99%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -79,6 +79,7 @@ Progress: [██████████] 99%
 | Phase 130 P03 | ~55min | 2 tasks | 1 files |
 | Phase 130 P04 | ~40min | 3 tasks | 3 files |
 | Phase 130 P05 | ~50min | 2 tasks | 1 files |
+| Phase 130 P06 | ~55min | 2 tasks | 1 files |
 
 ## Deferred Items
 
@@ -502,6 +503,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: 130-03: dropped the 'POLAR_MIN ranks first' claim — the all-min walk answers multi-choice ['a','b'] (agrees with POLAR_MAX), so only the ordering + monotonic shift is asserted
 - [Phase ?]: 130-04: alliance click-through proven by drawer-identity assertion; generic openEntityDetailsForCard/getMemberCards work for alliances unmodified (no fixture edit)
 - [Phase ?]: 130-05: EQTYP-01 candidate type-specific opinion contracts (multi-choice checkbox + D-07 gating, categorical/boolean radios); choiceHelper content deferred to BLOCKER-130-05 (runtime i18n gap)
+- [Phase ?]: 130-06: D-05 gate green 3/3 full-suite (128 passed/0 failed each) on fresh server+clean DB; root-caused a voter-journey-mobile number-scale loop-entry fixture gap (fix 8725d86ef)
 
 ### Quick Tasks Completed
 
@@ -547,8 +549,8 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-07-18T23:42:27.520Z
-Stopped at: Completed 130-05-PLAN.md
+Last session: 2026-07-19T00:39:37.208Z
+Stopped at: Completed 130-06-PLAN.md
 Resume file: 
 None
 
