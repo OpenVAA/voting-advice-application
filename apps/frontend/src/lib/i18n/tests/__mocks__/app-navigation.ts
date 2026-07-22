@@ -8,14 +8,14 @@
  * transform time. Individual tests may still `vi.mock('$app/navigation', …)` to
  * inject controllable spies; this stub is the resolvable fallback.
  */
-export const goto = async () => {};
-export const invalidate = async () => {};
-export const invalidateAll = async () => {};
-export const beforeNavigate = () => {};
-export const afterNavigate = () => {};
-export const onNavigate = () => {};
-export const preloadData = async () => {};
-export const preloadCode = async () => {};
-export const pushState = () => {};
-export const replaceState = () => {};
-export const disableScrollHandling = () => {};
+export async function goto() {}
+export async function invalidate() {}
+export async function invalidateAll() {}
+export function beforeNavigate() {}
+export function afterNavigate() {}
+export function onNavigate() {}
+export async function preloadData() {}
+export async function preloadCode() {}
+export function pushState() {}
+export function replaceState() {}
+export function disableScrollHandling() {}

@@ -1252,7 +1252,9 @@ describe('SupabaseDataProvider', () => {
       };
 
       const result = await provider.getQuestionData();
-      const q = (i: number) => result.questions[i] as { min?: number; max?: number; customData: { min?: number; max?: number } };
+      function q(i: number) {
+        return result.questions[i] as { min?: number; max?: number; customData: { min?: number; max?: number } };
+      }
 
       // number + custom_data range → top-level min/max present, customData still carries them
       expect(q(0).min).toBe(0);

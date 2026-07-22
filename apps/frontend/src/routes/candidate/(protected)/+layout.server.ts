@@ -15,8 +15,8 @@ import { logDebugError } from '$lib/utils/logger';
 import { removeDuplicates } from '$lib/utils/removeDuplicates';
 import { buildRoute } from '$lib/utils/route';
 import type { Id } from '@openvaa/core';
-import type { SupabaseAdapterConfig } from '$lib/api/adapters/supabase/supabaseAdapter.type';
 import type { CandidateLoginError } from '$candidate/utils/loginError';
+import type { SupabaseAdapterConfig } from '$lib/api/adapters/supabase/supabaseAdapter.type';
 
 export async function load({ fetch, locals }) {
   const lang = getLocale();

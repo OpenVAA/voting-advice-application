@@ -13,8 +13,8 @@
 // context accessor — the provider is constructed and its members are read only
 // through the live class instance / spy `mock.calls`, never via destructuring.
 
-import { flushSync } from 'svelte';
 import { ENTITY_TYPE, QUESTION_CATEGORY_TYPE } from '@openvaa/data';
+import { flushSync } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { AnyQuestionVariant, QuestionCategory } from '@openvaa/data';
 
