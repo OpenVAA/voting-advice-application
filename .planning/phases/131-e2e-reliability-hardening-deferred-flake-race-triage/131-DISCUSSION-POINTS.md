@@ -102,6 +102,12 @@ Legend: `[x]` decided · `[ ]` open/for-execution · **D-NN** cross-refs `131-CO
 - [x] **#6** notifications.voterApp (#3) → disposition: **CLOSED-AS-STALE** · covering spec 3× result: **pass/pass/pass** (`perm-per-app-notifications` + `perm-access-disable`, 47 each; `post-fix/131-notifications-3x.txt`) · parity: CONFIRMED (no gap; no assertion added)
 - [x] **#7** perm-hide-election-tags → disposition: **FIXED** · helper hardened: **yes** (`navigateToFirstQuestion` terminal answer-option settle, commit a6ba83c5a; test-only) · 3× green: **pass/pass/pass** (81 each; `post-fix/131-perm-hide-election-tags-3x.txt`) · 5-consumer regression: **pass** (89 passed, 0 failed, 0 did-not-run; `post-fix/131-helper-consumer-regression.txt`)
 
+**Phase-gate close (Plan 05 Task 2):** targeted 3× cold-start on the changed/hardened spec set =
+**GATE-GREEN, 15/15** (5 specs × 3 runs, isolated `--no-deps` + `db:seed --template`;
+`post-fix/131-phase-gate-summary.txt`). No new skip introduced (`post-fix/131-no-skip-grep.txt` still 0).
+One NEW load-contention flake surfaced via the with-deps anchor (candidate-journey:661) → filed +
+escalated to Phase 132, never skipped (see §7.2).
+
 ## 7. Open questions carried to research/planning
 
 - [x] **7.1** Is the feedback text-persists-across-cancel contract (3.2) still a load-bearing
@@ -110,8 +116,17 @@ Legend: `[x]` decided · `[ ]` open/for-execution · **D-NN** cross-refs `131-CO
   → RESOLVED (Plan 04): LOAD-BEARING → ADD. Current code keeps the invariant (FeedbackModal.svelte:62
   `bind:this={feedbackRef}` keep-mounted + cancel calls closeFeedback without reset; only send resets).
   Added HARD test 1b in perm-show-feedback-survey.spec.ts; 3× green. Not dropped in the rebuild.
-- [ ] **7.2** For any todo whose covering spec 3× **fails** (a live flake resurfaces), does it
+- [x] **7.2** For any todo whose covering spec 3× **fails** (a live flake resurfaces), does it
   flip from CLOSED-AS-STALE to a FIX candidate under the D-06 no-skip rule — confirm budget/escalation.
+  → RESOLVED (Plan 05 Task 2): **none of the 7 triaged todos' covering specs failed** — all 5
+  CHANGED/hardened specs are 3× cold-start GATE-GREEN isolated (15/15; `post-fix/131-phase-gate-summary.txt`),
+  so no CLOSED-AS-STALE flip is needed. The gate DID surface ONE **new** flake (not among the 7):
+  `candidate-journey.spec.ts:661` step 13.5, pulled in only via the perm-DAG anchor's
+  `dependencies:['voter-journey','candidate-journey']`. Characterized as a cold-start LOAD-CONTENTION
+  flake (isolated 2/2 green in ~33s; not caused by this phase). Per D-07: NO skip, NO retry-until-green
+  — filed `.planning/todos/pending/2026-07-22-candidate-journey-link-url-status-load-flake.md`
+  (`resolves_phase: 132`) and ESCALATED to the operator / Phase-132 full-suite gate (load-contention is
+  full-suite territory, out of this triage phase's budget).
 - [x] **7.3** Confirm no residual reference to the deleted `SKIPPED_TESTS` / diff script remains
   in CI config or scripts (grep) so Phase 132's gate has nothing stale to trip on.
   → CONFIRMED CLEAN (Plan 05 Task 1): grep of `.github/` + `tests/scripts/` for
