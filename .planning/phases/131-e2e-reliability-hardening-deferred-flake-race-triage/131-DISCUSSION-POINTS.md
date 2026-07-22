@@ -44,8 +44,9 @@ Legend: `[x]` decided · `[ ]` open/for-execution · **D-NN** cross-refs `131-CO
   asserts "/results → bounces twice → resumes /results" (the CLEAN-02 contract) + 4 more. **D-02**
 - [ ] **3.4** *(execution)* Parity-verify todo #1 party-drawer **info/candidates/opinions tabs**
   are still asserted (voter-journey / voter-alliance) — add if the tab-open contract was dropped.
-- [ ] **3.5** *(execution)* Parity-verify todo #2 boolean + categorical question **render** paths
+- [x] **3.5** *(execution)* Parity-verify todo #2 boolean + categorical question **render** paths
   are asserted in `voter-journey` (were `voter-question-rendering` cells #7/#8).
+  → CONFIRMED: `voter-journey.spec.ts` asserts boolean (`baseOpinion5Boolean` heading, :845/:883) + categorical (`baseOpinion4Categorical` render, :807) + the `{#key question.type}` boundary remount (:868). No gap; no assertion added.
 - [ ] **3.6** *(execution)* Parity-verify todo #3 **popup-surfaces-through-root-layout-slot** on
   `/results` (popupNotice.probe / perm-show-feedback-survey).
 - [x] **3.7** *(execution)* Parity-verify todo #6 **notifications.voterApp** per-app-notification
@@ -85,7 +86,7 @@ Legend: `[x]` decided · `[ ]` open/for-execution · **D-NN** cross-refs `131-CO
 ## 6. Per-todo disposition ledger *(filled during execution)*
 
 - [ ] **#1** party-drawer boundary → disposition: `____` · covering spec 3× result: `____` · parity: `____`
-- [ ] **#2** qspec cold-start (#7/#8) → disposition: `____` · covering spec 3× result: `____` · parity: `____`
+- [x] **#2** qspec cold-start (#7/#8) → disposition: **CLOSED-AS-STALE** · covering spec 3× result: **pass/pass/pass** (`cold-entry-dataroot` resolver + `voter-journey`, 4 each; `post-fix/131-cold-entry-dataroot-3x.txt` + `post-fix/131-voter-journey-3x.txt`) · parity: CONFIRMED (boolean+categorical render asserted in voter-journey; no assertion added)
 - [ ] **#3** popup-hydration LAYOUT-03 (#6) → disposition: `____` · covering spec 3× result: `____` · parity: `____`
 - [ ] **#4** feedback-persistence (#5) → disposition: `____` · covering spec 3× result: `____` · **parity gap? add assertion?** `____`
 - [x] **#5** not-located CLEAN-02 → disposition: **CLOSED-AS-STALE** · covering spec 3× result: **pass/pass/pass** (`perm-not-located-2e2cg.spec.ts`, 38 each; `post-fix/131-not-located-3x.txt`) · parity: CONFIRMED

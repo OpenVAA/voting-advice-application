@@ -113,3 +113,15 @@ This is now the SAME v2.11+ next-action as Phase 86.3-04 Recommendation #3 (`nav
 - `.planning/phases/86.3-implement-skipped-tests-close-7-source-skipped-voter-app-can/86.3-04-SUMMARY.md` (cell #6 trace finding sibling)
 - `.planning/todos/pending/2026-05-16-voter-popup-hydration-layout-03-deeplink.md` (Phase 86.3-04 augmentation — paired closure target)
 - `.planning/todos/pending/2026-05-16-voter-feedback-persistence-second-pass.md` (Phase 86.3-03 augmentation — paired closure target)
+
+## Disposition: CLOSED-AS-STALE
+
+**Triaged:** Phase 131 Plan 03 (2026-07-22) · **Disposition:** CLOSED-AS-STALE (terminal).
+
+The QSPEC-01/02 cold-start blocker was never the `walkToQuestion` intro-start CTA wait — the Phase 86.3-05 evidence (this todo's REVISED action) proved the actual blocker is the UPSTREAM voter-app cold-deeplink `/intro` (and `/questions`, `/results`) hydration race that painted only `Loading…`. That shared cold-deeplink race is **resolved by prior work**: the Phase-117 `dataRoot` `#version`-bridge fix (CLAUDE.md "dataRoot `#version`-bridge carve-out" — consumers now take the `#version` dependency directly, so cold/direct-URL entry hydrates the populated data instead of the empty pre-mount snapshot). The canonical negative-control gate for that race, **`tests/tests/specs/voter/cold-entry-dataroot.spec.ts`** (Phase-117 COLD-03: bare `page.goto('/en/elections')` / `/en/info` cold entry renders the populated region), was run **3× cold-start this phase** with result **pass/pass/pass** (4 tests each incl. base setup/teardown; zero did-not-run) — evidence `.planning/phases/131-e2e-reliability-hardening-deferred-flake-race-triage/post-fix/131-cold-entry-dataroot-3x.txt`.
+
+**Parity CONFIRMED (D-02 / §3.5).** The old `voter-question-rendering` cells #7 (boolean) / #8 (categorical) render contract is now asserted inside **`tests/tests/specs/voter/voter-journey.spec.ts`**: the boolean question `TEXT_RE.baseOpinion5Boolean` ("Base opinion 5 — Boolean") heading is hard-asserted (`voter-journey.spec.ts:845`, `:883`) and the categorical `TEXT_RE.baseOpinion4Categorical` ("Base opinion 4 — Categorical") render is asserted in the summary-review render batch (`:807`, defined `:435-436`). Both question.type render paths — plus the `{#key question.type}` boundary-crossing remount (`:868`) — survive today. No coverage gap → no assertion added. voter-journey was run **3× cold-start this phase**: **pass/pass/pass** (4 each; `.planning/phases/131-e2e-reliability-hardening-deferred-flake-race-triage/post-fix/131-voter-journey-3x.txt`).
+
+The `walkToQuestion` / `SKIPPED_TESTS` machinery this todo referenced is retired by the v2.14 suite rebuild (nothing left to un-skip). No product or spec code changed. Zero new `test.skip` introduced.
+
+**Source:** `.planning/phases/131-e2e-reliability-hardening-deferred-flake-race-triage/131-03-PLAN.md` (Task 2) · evidence: `post-fix/131-cold-entry-dataroot-3x.txt` + `post-fix/131-voter-journey-3x.txt` (both this-phase-dated).
