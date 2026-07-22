@@ -586,10 +586,24 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
+**Wave 1**
+
 - [ ] 131-01-PLAN.md — TRACER: prove the triage loop end-to-end (todos #5 not-located + #6 notifications, stale)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 131-02-PLAN.md — FIX: harden navigateToFirstQuestion helper + 5-consumer regression (todo #7 perm-hide-election-tags)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 131-03-PLAN.md — cold-deeplink resolver + voter-journey cluster (todos #2 qspec + #1 party-drawer, stale)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [ ] 131-04-PLAN.md — popup/feedback cluster + feedback parity-gap decision (todos #3 popup-hydration + #4 feedback-persistence)
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
 - [ ] 131-05-PLAN.md — closeout: terminal-disposition + no-new-skip + CI-clean gate + targeted 3× (Phase-132 hand-off)
 
 #### Phase 132: Milestone-Close Green Gate + svelte-check Zero Flip
