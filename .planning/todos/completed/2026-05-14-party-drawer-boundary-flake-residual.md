@@ -46,3 +46,17 @@ Investigate the root hydration race in the party-drawer component itself (not ju
 ## Phase 87 implication
 
 Phase 87 (v2.10 milestone close) entry condition is "fresh 3-run cold-start gate SHA-identical FIRST attempt." Phase 86 closes with PASSED-WITH-DEFERRAL on this contract — Phase 87 inherits the residual boundary flake unless it's resolved as part of Phase 87 scope OR explicitly carried into v2.11+ as documented here.
+
+## Disposition: CLOSED-AS-STALE
+
+**Triaged:** Phase 131 Plan 03 (2026-07-22) · **Disposition:** CLOSED-AS-STALE (terminal).
+
+The original PASS_LOCKED-boundary flake was a hydration-completeness race on the retired `voter-detail.spec.ts` cell "should open party detail drawer with info, candidates, and opinions tabs" — a symptom of the same v2.13-era voter-app cold-deeplink hydration window that the Phase-117 `dataRoot` `#version`-bridge fix closed (CLAUDE.md carve-out; consumers now take the `#version` dependency directly so drawer content is hydrated on cold entry rather than mid-transition). The `voter-detail.spec.ts` spec + the whole diff-playwright-reports SHA-identity gate this todo referenced are retired by the v2.14 suite rebuild — the boundary classification no longer reproduces on the current suite.
+
+**Parity CONFIRMED (D-02 / §3.4).** The party/entity-detail drawer's info/candidates/opinions tab-open contract survives today:
+- **`tests/tests/specs/voter/voter-journey.spec.ts:1337`** hard-asserts the ORGANIZATION (party) drawer's exact tab set + order `expectTabs(['info', 'children', 'opinions'])` — info / candidates(members=children) / opinions — the direct successor of the old party-drawer tab contract (e2e/base.ts:148). The candidate drawer's `['info','opinions']` set is asserted at `:1186`.
+- **`tests/tests/specs/voter/voter-alliance.spec.ts:127`** asserts the alliance drawer's per-type tab-control contract `expectTabs(['info', 'children'])` (EXACTLY info + members, NO opinions tab) — the drawer-identity + tab-set family made unmistakable.
+
+No coverage gap → no assertion added. The drawer specs were run **3× cold-start this phase**: `voter-alliance` + `voter-journey-mobile` **pass/pass/pass** (4 tests each incl. shared base setup/teardown; zero did-not-run) — evidence `.planning/phases/131-e2e-reliability-hardening-deferred-flake-race-triage/post-fix/131-party-drawer-3x.txt` — plus the shared `voter-journey` run (which carries the `:1337` tab assertion) pass/pass/pass in `post-fix/131-voter-journey-3x.txt`. No product or spec code changed; zero new `test.skip` introduced.
+
+**Source:** `.planning/phases/131-e2e-reliability-hardening-deferred-flake-race-triage/131-03-PLAN.md` (Task 3) · evidence: `post-fix/131-party-drawer-3x.txt` + `post-fix/131-voter-journey-3x.txt` (both this-phase-dated).

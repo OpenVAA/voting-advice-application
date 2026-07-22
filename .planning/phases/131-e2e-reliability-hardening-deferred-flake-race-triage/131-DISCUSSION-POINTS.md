@@ -42,8 +42,9 @@ Legend: `[x]` decided · `[ ]` open/for-execution · **D-NN** cross-refs `131-CO
   confirm; if absent, **add the assertion**. **D-02**
 - [x] **3.3** **Parity CONFIRMED — todo #5 (not-located):** `perm-not-located-2e2cg.spec.ts`
   asserts "/results → bounces twice → resumes /results" (the CLEAN-02 contract) + 4 more. **D-02**
-- [ ] **3.4** *(execution)* Parity-verify todo #1 party-drawer **info/candidates/opinions tabs**
+- [x] **3.4** *(execution)* Parity-verify todo #1 party-drawer **info/candidates/opinions tabs**
   are still asserted (voter-journey / voter-alliance) — add if the tab-open contract was dropped.
+  → CONFIRMED: `voter-journey.spec.ts:1337` asserts the org/party drawer `expectTabs(['info','children','opinions'])` (info/candidates/opinions) + `voter-alliance.spec.ts:127` asserts the alliance `['info','children']` tab-control. No gap; no assertion added.
 - [x] **3.5** *(execution)* Parity-verify todo #2 boolean + categorical question **render** paths
   are asserted in `voter-journey` (were `voter-question-rendering` cells #7/#8).
   → CONFIRMED: `voter-journey.spec.ts` asserts boolean (`baseOpinion5Boolean` heading, :845/:883) + categorical (`baseOpinion4Categorical` render, :807) + the `{#key question.type}` boundary remount (:868). No gap; no assertion added.
@@ -85,7 +86,7 @@ Legend: `[x]` decided · `[ ]` open/for-execution · **D-NN** cross-refs `131-CO
 
 ## 6. Per-todo disposition ledger *(filled during execution)*
 
-- [ ] **#1** party-drawer boundary → disposition: `____` · covering spec 3× result: `____` · parity: `____`
+- [x] **#1** party-drawer boundary → disposition: **CLOSED-AS-STALE** · covering spec 3× result: **pass/pass/pass** (`voter-alliance` + `voter-journey-mobile`, 4 each; `post-fix/131-party-drawer-3x.txt`; + shared `voter-journey` carrying the :1337 tab assertion) · parity: CONFIRMED (org drawer info/children/opinions @ voter-journey:1337 + alliance info/children @ voter-alliance:127; no assertion added)
 - [x] **#2** qspec cold-start (#7/#8) → disposition: **CLOSED-AS-STALE** · covering spec 3× result: **pass/pass/pass** (`cold-entry-dataroot` resolver + `voter-journey`, 4 each; `post-fix/131-cold-entry-dataroot-3x.txt` + `post-fix/131-voter-journey-3x.txt`) · parity: CONFIRMED (boolean+categorical render asserted in voter-journey; no assertion added)
 - [ ] **#3** popup-hydration LAYOUT-03 (#6) → disposition: `____` · covering spec 3× result: `____` · parity: `____`
 - [ ] **#4** feedback-persistence (#5) → disposition: `____` · covering spec 3× result: `____` · **parity gap? add assertion?** `____`
