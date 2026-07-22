@@ -82,7 +82,7 @@ New settings-driven branches not yet covered by the existing 19 perm specs.
 
 ### E2E — Reliability Hardening (HARDN)
 
-- [ ] **HARDN-01**: The ~6 deferred "v2.11+ hardening" flake/race todos (party-drawer boundary, qspec cold-start race, popup-hydration deeplink, voter-feedback-persistence locator collision, not-located-redirect chain, candidate-settings notifications mount-lifecycle) are each triaged against the current suite and either fixed (passing 3×) or closed-as-stale with documented rationale.
+- [ ] **HARDN-01**: The ~6 deferred "v2.11+ hardening" flake/race todos (party-drawer boundary, qspec cold-start race, popup-hydration deeplink, voter-feedback-persistence locator collision, not-located-redirect chain, candidate-settings notifications mount-lifecycle) are each triaged against the current suite and either fixed (passing 3×) or closed-as-stale with documented rationale. _(Plan 01: #5 not-located + #6 notifications CLOSED-AS-STALE; #1–#4 + #7 pending Plans 02–05.)_
 - [ ] **HARDN-02**: The full E2E suite — including every net-new v2.14 spec — passes to the 3× determinism standard (fresh server, clean DB, no flakes) at milestone close.
 
 ### Svelte 5 — Idiom Polish (RUNES)
@@ -187,7 +187,7 @@ Each requirement maps to exactly one roadmap phase (see `.planning/ROADMAP.md` v
 | EQTYP-02 | Phase 130 | Complete |
 | EQTYP-03 | Phase 130 | Complete |
 | EFLOW-02 | Phase 130 | Complete |
-| HARDN-01 | Phase 131 | Pending |
+| HARDN-01 | Phase 131 | In Progress (2/7 todos closed — Plan 01) |
 | HARDN-02 | Phase 132 | Pending |
 | TYPE-10 | Phase 132 | Pending |
 

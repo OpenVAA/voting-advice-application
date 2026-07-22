@@ -3,17 +3,17 @@ gsd_state_version: 1.0
 milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
 current_phase: 131
-current_phase_name: E2E Reliability Hardening — Deferred Flake/Race Triage
+current_phase_name: e2e-reliability-hardening-deferred-flake-race-triage
 status: executing
-stopped_at: Phase 131 context gathered
-last_updated: "2026-07-22T07:36:43.819Z"
-last_activity: 2026-07-19
-last_activity_desc: Phase 130 complete, transitioned to Phase 131
+stopped_at: Completed 131-01-PLAN.md
+last_updated: "2026-07-22T08:25:47.013Z"
+last_activity: 2026-07-22
+last_activity_desc: Phase 131 execution started
 progress:
   total_phases: 15
   completed_phases: 13
   total_plans: 76
-  completed_plans: 71
+  completed_plans: 72
   percent: 87
 ---
 
@@ -24,16 +24,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 130 — E2E Specs — New-Feature Coverage
+**Current focus:** Phase 131 — e2e-reliability-hardening-deferred-flake-race-triage
 
 ## Current Position
 
-Phase: 131 — E2E Reliability Hardening — Deferred Flake/Race Triage
-Plan: Not started
+Phase: 131 (e2e-reliability-hardening-deferred-flake-race-triage) — EXECUTING
+Plan: 2 of 5
 Status: Ready to execute
-Last activity: 2026-07-19 — Phase 130 complete, transitioned to Phase 131
+Last activity: 2026-07-22 — Phase 131 execution started
 
-Progress: [██████████] 100%
+Progress: [██████████] 95%
 
 ## Performance Metrics
 
@@ -80,6 +80,7 @@ Progress: [██████████] 100%
 | Phase 130 P04 | ~40min | 3 tasks | 3 files |
 | Phase 130 P05 | ~50min | 2 tasks | 1 files |
 | Phase 130 P06 | ~55min | 2 tasks | 1 files |
+| Phase 131 P01 | 55min | 2 tasks | 5 files |
 
 ## Deferred Items
 
@@ -504,6 +505,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: 130-04: alliance click-through proven by drawer-identity assertion; generic openEntityDetailsForCard/getMemberCards work for alliances unmodified (no fixture edit)
 - [Phase ?]: 130-05: EQTYP-01 candidate type-specific opinion contracts (multi-choice checkbox + D-07 gating, categorical/boolean radios); choiceHelper content deferred to BLOCKER-130-05 (runtime i18n gap)
 - [Phase ?]: 130-06: D-05 gate green 3/3 full-suite (128 passed/0 failed each) on fresh server+clean DB; root-caused a voter-journey-mobile number-scale loop-entry fixture gap (fix 8725d86ef)
+- [Phase ?]: Phase 131-01: proved todo-triage tracer loop; todos #5 (not-located) + #6 (notifications.voterApp) CLOSED-AS-STALE on 3x pass/pass/pass; diagnosed+remediated db:reset storage-502-wedge (Kong upstream orphaned by storage restart)
 
 ### Quick Tasks Completed
 
@@ -549,10 +551,10 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-07-22T06:38:11.214Z
-Stopped at: Phase 131 context gathered
+Last session: 2026-07-22T08:25:46.996Z
+Stopped at: Completed 131-01-PLAN.md
 Resume file: 
-.planning/phases/131-e2e-reliability-hardening-deferred-flake-race-triage/131-CONTEXT.md
+None
 
 - Drove the EFLOW-10b bank-auth full-browser journey (`candidate-bank-auth-journey.spec.ts`) to SINGLE-PASS GREEN (`1 passed`, no skip/did-not-run) against the orchestrator-owned live env. Commit daab88f06 (tests/ only).
 - Enabled `preRegistration.enabled` SCOPED to the bank-auth-journey run: new `setupFromTemplate({ appSettingsOverride })` param (additive `merge_jsonb_column` AFTER the post-seed subset-match); paired teardown resets `{enabled:false}`. Shared `perm-not-located-2e2cg` template + `MINIMAL_BASE_APP_SETTINGS` + default suite untouched. DB-verified `{enabled:true}` during / `{enabled:false}` after.

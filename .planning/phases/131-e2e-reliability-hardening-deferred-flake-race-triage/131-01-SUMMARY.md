@@ -132,6 +132,12 @@ None - no external service configuration required.
 - Storage-wedge remediation recipe documented in both evidence artifacts — reuse for every 3x cold-start run.
 - No new `test.skip` introduced; both dispositions terminal.
 
+## Self-Check: PASSED
+
+- All 5 created/modified files verified present on disk.
+- All 3 commits (`273adb699`, `09ef18ecd`, `ae8bb9f76`) verified in git log.
+- Both todos confirmed moved (not copied): neither remains in `.planning/todos/pending/`.
+
 ---
 *Phase: 131-e2e-reliability-hardening-deferred-flake-race-triage*
 *Completed: 2026-07-22*
