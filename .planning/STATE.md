@@ -5,15 +5,15 @@ milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Ze
 current_phase: 132
 current_phase_name: Milestone-Close Green Gate + svelte-check Zero Flip
 status: executing
-stopped_at: Completed 132-01-PLAN.md
-last_updated: "2026-07-22T22:17:26.142Z"
+stopped_at: Completed 132-02-PLAN.md
+last_updated: "2026-07-22T22:22:06.570Z"
 last_activity: 2026-07-23
 last_activity_desc: Phase 132 execution started
 progress:
   total_phases: 15
   completed_phases: 14
   total_plans: 79
-  completed_plans: 77
+  completed_plans: 78
   percent: 93
 ---
 
@@ -29,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 ## Current Position
 
 Phase: 132 (Milestone-Close Green Gate + svelte-check Zero Flip) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-07-23 — Phase 132 execution started
 
-Progress: [██████████] 97%
+Progress: [██████████] 99%
 
 ## Performance Metrics
 
@@ -86,6 +86,7 @@ Progress: [██████████] 97%
 | Phase 131 P04 | ~70min | 2 tasks | 6 files |
 | Phase 131 P05 | 66min | 2 tasks | 4 files |
 | Phase 132 P01 | ~22min | 1 tasks | 1 files |
+| Phase 132 P02 | 8min | 2 tasks | 3 files |
 
 ## Deferred Items
 
@@ -516,6 +517,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Isolated mid-chain perm-spec recipe (--project=<perm> --no-deps + out-of-band yarn db:seed --template) + yarn db:*-only wedge recovery (never npx supabase start from repo root — foreign project steals :54322)
 - [Phase ?]: Phase 131 closed: 7/7 todos terminally disposed (2 FIXED, 5 CLOSED-AS-STALE), 0 new skips, changed specs 3x GATE-GREEN; candidate-journey:661 load-flake filed+escalated to Phase 132 (D-07, no skip)
 - [Phase ?]: 132-01: hardened candidate-journey step 13.5 with inline waitForURL(slowPage) post-submit settle (over the 5s-default expectSubmitMessage fixture) — root-causes the cold-start load-contention flake; candidate-journey green in isolation 5/0/0
+- [Phase ?]: 132-02: svelte-check gate flipped to 0-absolute — check script uses --fail-on-warnings + blocking CI step; negative control proved 1 warning breaks the gate (TYPE-10)
 
 ### Quick Tasks Completed
 
@@ -561,8 +563,8 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-07-22T22:17:26.117Z
-Stopped at: Completed 132-01-PLAN.md
+Last session: 2026-07-22T22:22:00.697Z
+Stopped at: Completed 132-02-PLAN.md
 Resume file: 
 None
 

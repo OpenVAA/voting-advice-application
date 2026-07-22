@@ -617,11 +617,11 @@ Plans:
   2. `apps/frontend` svelte-check passes with 0 errors / 0 warnings, and the CI gate is flipped from "≤ 151 baseline" to "0 absolute" (TYPE-10).
   3. Unit tests and lint are green, and the milestone-close anchor is recorded (matching the v2.10/v2.11/v2.13 close pattern).
 
-**Plans**: 1/3 plans executed
+**Plans**: 2/3 plans executed
 **Wave 1**
 
 - [x] 132-01-PLAN.md — TRACER: harden the :661 step-13.5 flake + prove candidate-journey isolated green (D-01/D-03, HARDN-02)
-- [ ] 132-02-PLAN.md — svelte-check 0-absolute gate: strict `check` script + blocking CI step + live 0/0 + close svelte-check-zero todo (D-08/D-09/D-13, TYPE-10)
+- [x] 132-02-PLAN.md — svelte-check 0-absolute gate: strict `check` script + blocking CI step + live 0/0 + close svelte-check-zero todo (D-08/D-09/D-13, TYPE-10)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -655,4 +655,4 @@ The three workstreams are largely independent and may be planned/executed concur
 | 129. New-Feature Build — Question Inputs + Alliance Render + Nominations Fetch | v2.14 | 9/9 | Complete    | 2026-07-18 |
 | 130. E2E Specs — New-Feature Coverage | v2.14 | 6/6 | Complete    | 2026-07-19 |
 | 131. E2E Reliability Hardening — Deferred Flake/Race Triage | v2.14 | 5/5 | Complete    | 2026-07-22 |
-| 132. Milestone-Close Green Gate + svelte-check Zero Flip | v2.14 | 1/3 | In Progress|  |
+| 132. Milestone-Close Green Gate + svelte-check Zero Flip | v2.14 | 2/3 | In Progress|  |

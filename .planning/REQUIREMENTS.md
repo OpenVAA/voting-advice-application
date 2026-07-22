@@ -104,7 +104,7 @@ New settings-driven branches not yet covered by the existing 19 perm specs.
 - [x] **TYPE-07**: The long-tail of scattered 1-per-file route/util/component type mismatches (~25) is resolved.
 - [x] **TYPE-08**: The `.test.ts` / `.spike` type errors (~19) are resolved (fix or remove dead scaffolding).
 - [x] **TYPE-09**: The `apps/docs` a11y svelte-check warning is resolved (monorepo svelte-check = 0 warnings).
-- [ ] **TYPE-10**: `apps/frontend` svelte-check passes with **0 errors / 0 warnings**, and the CI gate is flipped from "≤ 151 baseline" to "0 absolute".
+- [x] **TYPE-10**: `apps/frontend` svelte-check passes with **0 errors / 0 warnings**, and the CI gate is flipped from "≤ 151 baseline" to "0 absolute".
 
 ## v2 Requirements
 
@@ -189,7 +189,7 @@ Each requirement maps to exactly one roadmap phase (see `.planning/ROADMAP.md` v
 | EFLOW-02 | Phase 130 | Complete |
 | HARDN-01 | Phase 131 | Complete (2026-07-22) |
 | HARDN-02 | Phase 132 | Complete |
-| TYPE-10 | Phase 132 | Pending |
+| TYPE-10 | Phase 132 | Complete |
 
 **Structural phase (no requirement ownership — operator-mandated E2E audit-first ordering):**
 
