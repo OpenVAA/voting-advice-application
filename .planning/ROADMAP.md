@@ -618,8 +618,13 @@ Plans:
   3. Unit tests and lint are green, and the milestone-close anchor is recorded (matching the v2.10/v2.11/v2.13 close pattern).
 
 **Plans**: 3 plans
+**Wave 1**
+
 - [ ] 132-01-PLAN.md — TRACER: harden the :661 step-13.5 flake + prove candidate-journey isolated green (D-01/D-03, HARDN-02)
 - [ ] 132-02-PLAN.md — svelte-check 0-absolute gate: strict `check` script + blocking CI step + live 0/0 + close svelte-check-zero todo (D-08/D-09/D-13, TYPE-10)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 132-03-PLAN.md — 3× full-suite gate + static gates + MILESTONE-CLOSE-ANCHOR + REQUIREMENTS/ROADMAP flips + flake todo FIXED (D-04..D-07/D-10/D-11/D-12/D-13, HARDN-02+TYPE-10)
 
 ## Progress
