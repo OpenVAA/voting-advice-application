@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
-current_phase: 131
-current_phase_name: e2e-reliability-hardening-deferred-flake-race-triage
-status: verifying
+current_phase: 132
+current_phase_name: Milestone-Close Green Gate + svelte-check Zero Flip
+status: planning
 stopped_at: Completed 131-05-PLAN.md (phase 131 close)
-last_updated: "2026-07-22T11:46:05.334Z"
+last_updated: "2026-07-22T11:55:28.995Z"
 last_activity: 2026-07-22
-last_activity_desc: Phase 131 execution started
+last_activity_desc: Phase 131 complete, transitioned to Phase 132
 progress:
   total_phases: 15
   completed_phases: 14
@@ -28,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 
 ## Current Position
 
-Phase: 131 (e2e-reliability-hardening-deferred-flake-race-triage) — EXECUTING
-Plan: 5 of 5
-Status: Phase complete — ready for verification
-Last activity: 2026-07-22 — Phase 131 execution started
+Phase: 132 — Milestone-Close Green Gate + svelte-check Zero Flip
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-07-22 — Phase 131 complete, transitioned to Phase 132
 
 Progress: [██████████] 100%
 
