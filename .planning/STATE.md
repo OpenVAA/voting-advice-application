@@ -5,15 +5,15 @@ milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Ze
 current_phase: 132
 current_phase_name: Milestone-Close Green Gate + svelte-check Zero Flip
 status: executing
-stopped_at: Phase 132 context gathered
-last_updated: "2026-07-22T22:06:07.219Z"
-last_activity: 2026-07-22
-last_activity_desc: Phase 131 complete, transitioned to Phase 132
+stopped_at: Completed 132-01-PLAN.md
+last_updated: "2026-07-22T22:17:26.142Z"
+last_activity: 2026-07-23
+last_activity_desc: Phase 132 execution started
 progress:
   total_phases: 15
   completed_phases: 14
   total_plans: 79
-  completed_plans: 76
+  completed_plans: 77
   percent: 93
 ---
 
@@ -24,16 +24,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 131 — e2e-reliability-hardening-deferred-flake-race-triage
+**Current focus:** Phase 132 — Milestone-Close Green Gate + svelte-check Zero Flip
 
 ## Current Position
 
-Phase: 132 — Milestone-Close Green Gate + svelte-check Zero Flip
-Plan: Not started
+Phase: 132 (Milestone-Close Green Gate + svelte-check Zero Flip) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-07-22 — Phase 131 complete, transitioned to Phase 132
+Last activity: 2026-07-23 — Phase 132 execution started
 
-Progress: [██████████] 100%
+Progress: [██████████] 97%
 
 ## Performance Metrics
 
@@ -85,6 +85,7 @@ Progress: [██████████] 100%
 | Phase 131 P03 | ~45min | 3 tasks | 6 files |
 | Phase 131 P04 | ~70min | 2 tasks | 6 files |
 | Phase 131 P05 | 66min | 2 tasks | 4 files |
+| Phase 132 P01 | ~22min | 1 tasks | 1 files |
 
 ## Deferred Items
 
@@ -514,6 +515,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Phase 131 Plan 04: OQ-7.1 = ADD — feedback text-persists-across-cancel is load-bearing (FeedbackModal bind:this keep-mounted); added HARD assertion, todo #4 FIXED, todo #3 CLOSED-AS-STALE
 - [Phase ?]: Isolated mid-chain perm-spec recipe (--project=<perm> --no-deps + out-of-band yarn db:seed --template) + yarn db:*-only wedge recovery (never npx supabase start from repo root — foreign project steals :54322)
 - [Phase ?]: Phase 131 closed: 7/7 todos terminally disposed (2 FIXED, 5 CLOSED-AS-STALE), 0 new skips, changed specs 3x GATE-GREEN; candidate-journey:661 load-flake filed+escalated to Phase 132 (D-07, no skip)
+- [Phase ?]: 132-01: hardened candidate-journey step 13.5 with inline waitForURL(slowPage) post-submit settle (over the 5s-default expectSubmitMessage fixture) — root-causes the cold-start load-contention flake; candidate-journey green in isolation 5/0/0
 
 ### Quick Tasks Completed
 
@@ -559,10 +561,10 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-07-22T21:29:02.883Z
-Stopped at: Phase 132 context gathered
+Last session: 2026-07-22T22:17:26.117Z
+Stopped at: Completed 132-01-PLAN.md
 Resume file: 
-.planning/phases/132-milestone-close-green-gate-svelte-check-zero-flip/132-CONTEXT.md
+None
 
 - Drove the EFLOW-10b bank-auth full-browser journey (`candidate-bank-auth-journey.spec.ts`) to SINGLE-PASS GREEN (`1 passed`, no skip/did-not-run) against the orchestrator-owned live env. Commit daab88f06 (tests/ only).
 - Enabled `preRegistration.enabled` SCOPED to the bank-auth-journey run: new `setupFromTemplate({ appSettingsOverride })` param (additive `merge_jsonb_column` AFTER the post-seed subset-match); paired teardown resets `{enabled:false}`. Shared `perm-not-located-2e2cg` template + `MINIMAL_BASE_APP_SETTINGS` + default suite untouched. DB-verified `{enabled:true}` during / `{enabled:false}` after.
