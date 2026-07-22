@@ -2,6 +2,36 @@
 resolves_phase: 131
 ---
 
+## Disposition: CLOSED-AS-STALE
+
+**Closed:** 2026-07-22 · **Phase:** 131 (e2e-reliability-hardening-deferred-flake-race-triage) · **Plan:** 04
+
+The cold-deeplink `/results` hydration race this todo guarded (the `addInitScript`
+`VoterContext-answerStore` seed vs. the `(located)/+layout.ts` loader — main slot stuck at
+`Loading…`) was **resolved by Phase 117** (the `dataRoot` `#version`-bridge fix that closes the
+shared cold-entry hydration race; the recommended v2.11+ pickup — "fix the shared upstream
+loader race FIRST" — has since landed). Phase 131 Plan 03 re-proved that shared resolver by
+running the Phase-117 `cold-entry-dataroot.spec.ts` gate **3× green** (`post-fix/131-cold-entry-dataroot-3x.txt`),
+cited here as the shared cold-deeplink proof for the voter-journey-family cluster.
+
+**Parity CONFIRMED (D-02 / §3.6):** the `popup-surfaces-through-root-layout-slot` contract on
+`/results` is still asserted and green:
+- `perm-show-feedback-survey.spec.ts` tests 2/3 (feedback + survey popup surface + placement/
+  timing/once/no-double-pop/dismiss-persistence across reload) — **3× cold-start pass/pass/pass**
+  (`post-fix/131-feedback-survey-3x.txt`).
+- `popupNotice.probe.spec.ts` (the fixtures-first popup-surface probe) — **explicitly executed
+  and passed** via `--project=_probes --grep popupNotice` (`post-fix/131-popup-probe.txt`); NOT a
+  silent did-not-run (Pitfall 4 — @probe is excluded from the default `--grep-invert @probe` run).
+
+No assertion added — the popup-through-layout-slot contract is fully covered today. The old
+`voter-popup-hydration.spec.ts:122` deeplink test and its `SKIPPED_TESTS`/diff-script bookkeeping
+were deleted in the v2.14 rebuild (nothing to un-skip).
+
+**Source:** `.planning/phases/131-e2e-reliability-hardening-deferred-flake-race-triage/131-04-PLAN.md` (Task 1);
+evidence `post-fix/131-feedback-survey-3x.txt` + `post-fix/131-popup-probe.txt` + `post-fix/131-cold-entry-dataroot-3x.txt` (Plan 03).
+
+---
+
 # Voter-popup-hydration LAYOUT-03 deeplink — v2.11+ deferral
 
 **Phase 86.1-03 cell 1 disposition:** SKIPPED per CONTEXT D-05 (no fix attempt). Inherits Phase 86-04 PASS-WITH-DEFERRAL verdict.

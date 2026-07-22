@@ -2,6 +2,48 @@
 resolves_phase: 131
 ---
 
+## Disposition: FIXED
+
+**Closed:** 2026-07-22 · **Phase:** 131 (e2e-reliability-hardening-deferred-flake-race-triage) · **Plan:** 04
+
+**OQ 7.1 decision (Claude's discretion): the text-persists-across-cancel-then-reopen contract is
+a LOAD-BEARING product invariant → ADD the assertion.** Reading the current product code confirms
+the `bind:this` keep-mounted design is intact:
+- `FeedbackModal.svelte:62` renders `<Feedback ... bind:this={feedbackRef} />` — the form stays
+  mounted across modal close (the same fact the old H4 investigation hit: `feedback-form` count
+  stays `1` through the close transition).
+- The cancel path (`feedback-cancel` → `onCancel?.()` → `closeFeedback()` → `modalRef.closeModal()`)
+  does **NOT** reset. Only a *successful send* resets — `FeedbackModal.onSent()` calls
+  `feedbackRef.reset()` after `CLOSE_DELAY`, and `Feedback.reset()` clears `description`
+  (`Feedback.svelte:135-140`). So typed feedback survives an accidental cancel and is present on
+  reopen. This is a genuine UX invariant (don't lose the user's in-progress feedback), not an
+  implementation detail — so it warrants an E2E assertion.
+
+**The pre-identified parity gap (§3.2) is now CLOSED.** The suite asserted dismiss-persistence
+**across reload** (perm-show-feedback-survey tests 2/3) + feedback-form open (test 1) but NOT the
+text-persists-**across-cancel-then-reopen** contract. Plan 04 adds a new HARD assertion — test 1b
+`feedback text persists across cancel then reopen (kept-mounted form)` in
+`perm-show-feedback-survey.spec.ts`: walk to the voter intro → open the header feedback modal →
+`fill()` known text into `feedback-description` → click `feedback-cancel` → assert `feedback-form`
+`toBeHidden` → reopen → assert the textarea still `toHaveValue(...)`. It honors the file rigidity
+contract (HARD assertions only; no `expect.soft` / `try`-`catch` / `.catch`; testid-only; no
+`app_settings` mutation → no singleton hygiene needed).
+
+Note: the old close-signal-locator collision (H1 dialog-wrapper `toHaveCount(0)` / H4 form-element
+`toHaveCount(0)`) that this todo chased is **moot** — the new assertion targets the DURABLE
+`textarea` VALUE across cancel/reopen (the actual contract), not the transient close-transition
+DOM count. The old `voter-feedback-persistence.spec.ts` and its skip bookkeeping were deleted in
+the v2.14 rebuild.
+
+**Evidence:** the enlarged spec ran **3× cold-start pass/pass/pass** (6 tests each, incl. the new
+test 1b) — `post-fix/131-feedback-survey-3x.txt`. `git blame` anchor: perm-show-feedback-survey.spec.ts
+test 1b.
+
+**Source:** `.planning/phases/131-e2e-reliability-hardening-deferred-flake-race-triage/131-04-PLAN.md` (Task 2, OQ 7.1);
+evidence `post-fix/131-feedback-survey-3x.txt`.
+
+---
+
 # voter-feedback-persistence dialog-close locator collision — v2.11+ hardening
 
 **Filed:** 2026-05-16

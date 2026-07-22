@@ -40,6 +40,10 @@ Legend: `[x]` decided · `[ ]` open/for-execution · **D-NN** cross-refs `131-CO
   dismiss-persistence-**across-reload** (`perm-show-feedback-survey.spec.ts:74,91`) but NOT the
   old text-persists-**across-cancel-then-reopen** (`bind:this`) contract. → planner must
   confirm; if absent, **add the assertion**. **D-02**
+  → GAP CONFIRMED + CLOSED (Plan 04, OQ-7.1 = ADD): the contract is load-bearing (FeedbackModal.svelte:62
+  keeps `<Feedback bind:this={feedbackRef}>` mounted; cancel does not reset, only send does). Added HARD
+  test 1b `feedback text persists across cancel then reopen (kept-mounted form)` — fill → cancel →
+  `toBeHidden` → reopen → `toHaveValue`. 3× green (`post-fix/131-feedback-survey-3x.txt`).
 - [x] **3.3** **Parity CONFIRMED — todo #5 (not-located):** `perm-not-located-2e2cg.spec.ts`
   asserts "/results → bounces twice → resumes /results" (the CLEAN-02 contract) + 4 more. **D-02**
 - [x] **3.4** *(execution)* Parity-verify todo #1 party-drawer **info/candidates/opinions tabs**
@@ -48,8 +52,12 @@ Legend: `[x]` decided · `[ ]` open/for-execution · **D-NN** cross-refs `131-CO
 - [x] **3.5** *(execution)* Parity-verify todo #2 boolean + categorical question **render** paths
   are asserted in `voter-journey` (were `voter-question-rendering` cells #7/#8).
   → CONFIRMED: `voter-journey.spec.ts` asserts boolean (`baseOpinion5Boolean` heading, :845/:883) + categorical (`baseOpinion4Categorical` render, :807) + the `{#key question.type}` boundary remount (:868). No gap; no assertion added.
-- [ ] **3.6** *(execution)* Parity-verify todo #3 **popup-surfaces-through-root-layout-slot** on
+- [x] **3.6** *(execution)* Parity-verify todo #3 **popup-surfaces-through-root-layout-slot** on
   `/results` (popupNotice.probe / perm-show-feedback-survey).
+  → CONFIRMED (Plan 04): perm-show-feedback-survey tests 2/3 assert feedback+survey popup surface +
+  dismiss-persistence on `/results` (3× green, `post-fix/131-feedback-survey-3x.txt`); popupNotice.probe
+  explicitly executed + passed via `--project=_probes --grep popupNotice` (`post-fix/131-popup-probe.txt`,
+  NOT a silent did-not-run). No assertion added; todo #3 CLOSED-AS-STALE (race resolved by Phase 117).
 - [x] **3.7** *(execution)* Parity-verify todo #6 **notifications.voterApp** per-app-notification
   contract in `perm-per-app-notifications` / `perm-access-disable`. *(Plan 01: CONFIRMED — voter-route-only + candidate-route-only isolation both asserted with strict cross-route absence; no gap, no assertion added.)*
 
@@ -88,17 +96,20 @@ Legend: `[x]` decided · `[ ]` open/for-execution · **D-NN** cross-refs `131-CO
 
 - [x] **#1** party-drawer boundary → disposition: **CLOSED-AS-STALE** · covering spec 3× result: **pass/pass/pass** (`voter-alliance` + `voter-journey-mobile`, 4 each; `post-fix/131-party-drawer-3x.txt`; + shared `voter-journey` carrying the :1337 tab assertion) · parity: CONFIRMED (org drawer info/children/opinions @ voter-journey:1337 + alliance info/children @ voter-alliance:127; no assertion added)
 - [x] **#2** qspec cold-start (#7/#8) → disposition: **CLOSED-AS-STALE** · covering spec 3× result: **pass/pass/pass** (`cold-entry-dataroot` resolver + `voter-journey`, 4 each; `post-fix/131-cold-entry-dataroot-3x.txt` + `post-fix/131-voter-journey-3x.txt`) · parity: CONFIRMED (boolean+categorical render asserted in voter-journey; no assertion added)
-- [ ] **#3** popup-hydration LAYOUT-03 (#6) → disposition: `____` · covering spec 3× result: `____` · parity: `____`
-- [ ] **#4** feedback-persistence (#5) → disposition: `____` · covering spec 3× result: `____` · **parity gap? add assertion?** `____`
+- [x] **#3** popup-hydration LAYOUT-03 (#6) → disposition: **CLOSED-AS-STALE** · covering spec 3× result: **pass/pass/pass** (`perm-show-feedback-survey`, 6 each; `post-fix/131-feedback-survey-3x.txt`) + popupNotice probe **explicitly executed + passed** (2 passed; `post-fix/131-popup-probe.txt`) · parity: CONFIRMED (popup-through-layout-slot on /results; race resolved by Phase 117 per Plan-03 cold-entry-dataroot 3×; no assertion added)
+- [x] **#4** feedback-persistence (#5) → disposition: **FIXED** · covering spec 3× result: **pass/pass/pass** (`perm-show-feedback-survey`, 6 each incl. new test 1b; `post-fix/131-feedback-survey-3x.txt`) · **parity gap? add assertion?** GAP CONFIRMED → **ADDED** (OQ-7.1 = ADD; text-persists-across-cancel-then-reopen is load-bearing — FeedbackModal keep-mounted bind:this + cancel-doesn't-reset; new HARD test 1b fill→cancel→toBeHidden→reopen→toHaveValue)
 - [x] **#5** not-located CLEAN-02 → disposition: **CLOSED-AS-STALE** · covering spec 3× result: **pass/pass/pass** (`perm-not-located-2e2cg.spec.ts`, 38 each; `post-fix/131-not-located-3x.txt`) · parity: CONFIRMED
 - [x] **#6** notifications.voterApp (#3) → disposition: **CLOSED-AS-STALE** · covering spec 3× result: **pass/pass/pass** (`perm-per-app-notifications` + `perm-access-disable`, 47 each; `post-fix/131-notifications-3x.txt`) · parity: CONFIRMED (no gap; no assertion added)
 - [x] **#7** perm-hide-election-tags → disposition: **FIXED** · helper hardened: **yes** (`navigateToFirstQuestion` terminal answer-option settle, commit a6ba83c5a; test-only) · 3× green: **pass/pass/pass** (81 each; `post-fix/131-perm-hide-election-tags-3x.txt`) · 5-consumer regression: **pass** (89 passed, 0 failed, 0 did-not-run; `post-fix/131-helper-consumer-regression.txt`)
 
 ## 7. Open questions carried to research/planning
 
-- [ ] **7.1** Is the feedback text-persists-across-cancel contract (3.2) still a load-bearing
+- [x] **7.1** Is the feedback text-persists-across-cancel contract (3.2) still a load-bearing
   *product* invariant worth an E2E assertion, or was it an implementation detail dropped
   intentionally in the rebuild? (Affects whether 3.2 adds a spec or closes with rationale.)
+  → RESOLVED (Plan 04): LOAD-BEARING → ADD. Current code keeps the invariant (FeedbackModal.svelte:62
+  `bind:this={feedbackRef}` keep-mounted + cancel calls closeFeedback without reset; only send resets).
+  Added HARD test 1b in perm-show-feedback-survey.spec.ts; 3× green. Not dropped in the rebuild.
 - [ ] **7.2** For any todo whose covering spec 3× **fails** (a live flake resurfaces), does it
   flip from CLOSED-AS-STALE to a FIX candidate under the D-06 no-skip rule — confirm budget/escalation.
 - [ ] **7.3** Confirm no residual reference to the deleted `SKIPPED_TESTS` / diff script remains
