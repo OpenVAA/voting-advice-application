@@ -112,8 +112,12 @@ Legend: `[x]` decided · `[ ]` open/for-execution · **D-NN** cross-refs `131-CO
   Added HARD test 1b in perm-show-feedback-survey.spec.ts; 3× green. Not dropped in the rebuild.
 - [ ] **7.2** For any todo whose covering spec 3× **fails** (a live flake resurfaces), does it
   flip from CLOSED-AS-STALE to a FIX candidate under the D-06 no-skip rule — confirm budget/escalation.
-- [ ] **7.3** Confirm no residual reference to the deleted `SKIPPED_TESTS` / diff script remains
+- [x] **7.3** Confirm no residual reference to the deleted `SKIPPED_TESTS` / diff script remains
   in CI config or scripts (grep) so Phase 132's gate has nothing stale to trip on.
+  → CONFIRMED CLEAN (Plan 05 Task 1): grep of `.github/` + `tests/scripts/` for
+  `SKIPPED_TESTS|diff-playwright-reports` = **0** refs; repo-scope `.github/` grep (incl.
+  `skip-registry`) = **0**; `tests/scripts/diff-playwright-reports.ts` GONE. Evidence:
+  `post-fix/131-no-skip-grep.txt`. Phase-132's gate has nothing stale to trip on.
 
 ---
 

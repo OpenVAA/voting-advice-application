@@ -1,0 +1,29 @@
+Phase 131 — no-new-skip + CI-clean grep (Plan 05 Task 1)
+Captured: 2026-07-22 · Repo: voting-advice-application-gsd
+
+## Terminal-disposition invariant (ROADMAP SC #1-#3, prohibition P3)
+pending remaining (resolves_phase: 131 in .planning/todos/pending/): 0
+completed present  (resolves_phase: 131 in .planning/todos/completed/): 7
+  FIXED:            2026-07-16-perm-hide-election-tags-navigation-timing-flake.md   (#7)
+  FIXED:            2026-05-16-voter-feedback-persistence-second-pass.md            (#4)
+  CLOSED-AS-STALE:  2026-05-14-party-drawer-boundary-flake-residual.md             (#1)
+  CLOSED-AS-STALE:  2026-05-14-qspec-walkToQuestion-cold-start-race.md             (#2)
+  CLOSED-AS-STALE:  2026-05-16-voter-popup-hydration-layout-03-deeplink.md         (#3)
+  CLOSED-AS-STALE:  2026-05-16-voter-not-located-redirect-clean-02.md              (#5)
+  CLOSED-AS-STALE:  2026-05-21-candidate-settings-notifications-voterapp-mount-lifecycle.md (#6)
+=> 7/7 terminally disposed in completed/, 0 undocumented-deferred, 0 in pending/.
+
+## No-new-skip (D-06, prohibition P2)
+# skip directives in tests/tests:
+0
+# baseline was 0 per 131-RESEARCH §Runtime State Inventory; unchanged — zero introduced this phase.
+
+## CI-clean (OQ 7.3, D-08)
+# residual SKIPPED_TESTS / diff-playwright-reports refs in CI (.github/ + tests/scripts/):
+0
+# Also confirmed at repo scope (grep 'SKIPPED_TESTS|diff-playwright-reports|skip-registry' over .github/): 0
+# tests/scripts/diff-playwright-reports.ts: GONE (deleted pre-phase per RESEARCH); SKIPPED_TESTS const: 0 refs.
+# => Phase-132's gate has nothing stale to trip on.
+
+## Ledger
+131-DISCUSSION-POINTS.md `____` placeholder blanks remaining: 0
