@@ -4,16 +4,16 @@ milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
 current_phase: 132
 current_phase_name: Milestone-Close Green Gate + svelte-check Zero Flip
-status: executing
-stopped_at: Completed 132-02-PLAN.md
-last_updated: "2026-07-22T22:22:06.570Z"
+status: verifying
+stopped_at: Completed 132-04-PLAN.md
+last_updated: "2026-07-22T23:02:53.110Z"
 last_activity: 2026-07-23
 last_activity_desc: Phase 132 execution started
 progress:
   total_phases: 15
   completed_phases: 14
-  total_plans: 79
-  completed_plans: 78
+  total_plans: 80
+  completed_plans: 79
   percent: 93
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 
 Phase: 132 (Milestone-Close Green Gate + svelte-check Zero Flip) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-07-23 — Phase 132 execution started
 
 Progress: [██████████] 99%
@@ -87,6 +87,7 @@ Progress: [██████████] 99%
 | Phase 131 P05 | 66min | 2 tasks | 4 files |
 | Phase 132 P01 | ~22min | 1 tasks | 1 files |
 | Phase 132 P02 | 8min | 2 tasks | 3 files |
+| Phase 132 P04 | 6min | 3 tasks | 8 files |
 
 ## Deferred Items
 
@@ -518,6 +519,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Phase 131 closed: 7/7 todos terminally disposed (2 FIXED, 5 CLOSED-AS-STALE), 0 new skips, changed specs 3x GATE-GREEN; candidate-journey:661 load-flake filed+escalated to Phase 132 (D-07, no skip)
 - [Phase ?]: 132-01: hardened candidate-journey step 13.5 with inline waitForURL(slowPage) post-submit settle (over the 5s-default expectSubmitMessage fixture) — root-causes the cold-start load-contention flake; candidate-journey green in isolation 5/0/0
 - [Phase ?]: 132-02: svelte-check gate flipped to 0-absolute — check script uses --fail-on-warnings + blocking CI step; negative control proved 1 warning breaks the gate (TYPE-10)
+- [Phase ?]: 132-04: cleared all 20 clean-tree lint:check errors (14 frontend func-style/import-sort + 6 tests/ import-sort/reasoned-disables) via behavior-neutral edits in 8 files; lint:check now exits 0 — unblocks 132-03 static gate (SC #3).
 
 ### Quick Tasks Completed
 
@@ -560,11 +562,12 @@ Key cross-milestone reference points carried forward into v2.10:
 - voter-mega-journey project chain blocked by pre-existing perm-1e1cg1co flake (CASCADE) — Task 2 verify deferred to clean-environment manual run; orthogonal vite-dev cache wipe race documented in deferred-items.md
 - 122-02 EFLOW-10 deterministic-green BLOCKED: production identity-callback Edge Function createUser() omits email; local GoTrue (edge-runtime 1.71.0) rejects emailless user -> 500. Decrypt/verify/claim-extraction all succeed. Operator/Rule 4 fix (gated by T-122-03 'runs UNMODIFIED'): add email=${userId}@bank-auth.placeholder at createUser. Until then the keys-configured create path cannot be observed green; EFLOW-10 left unmarked.
 - BLOCKER-130-05: multi-choice helper text renders raw i18n key questions.multiChoice.selectRange at runtime — keys missing from Paraglide messages/{locale}/questions.json (added only to type-gen translations/ in 129-06). Also: getSavedAnswer discards saved boolean false. See phase deferred-items.md.
+- ~~Phase 132 Plan 03 milestone-close gate BLOCKED: yarn lint:check is RED on a clean tree (14 frontend errors: func-style + import-sort; 6 tests/ errors: raw-locators + conditional-in-test + import-sort).~~ **RESOLVED by 132-04 (2026-07-22):** all 20 clean-tree lint:check errors cleared via behavior-neutral edits in 8 files (func-style arrow→declaration, import reorder, reasoned `// reason:`-block disables); `yarn lint:check` now exits 0, `yarn test:unit` green (frontend 759 / dev-seed 444), `playwright --list` exit 0. 132-03 can now re-run `yarn lint:check` and honestly record the static gate (SC #3) as green.
 
 ## Session Continuity
 
-Last session: 2026-07-22T22:22:00.697Z
-Stopped at: Completed 132-02-PLAN.md
+Last session: 2026-07-22T23:02:46.231Z
+Stopped at: Completed 132-04-PLAN.md
 Resume file: 
 None
 
