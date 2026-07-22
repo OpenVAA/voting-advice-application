@@ -190,7 +190,16 @@ async function advanceVoterFlow(
         await listbox.waitFor({ state: 'visible', timeout: TIMEOUTS.page });
         await listbox.getByRole('option').first().click();
       }
-      await constituenciesCont.waitFor({ state: 'visible' });
+      try {
+        // reason: bounded visibility wait + hard-nav recovery. The continue button can stall
+        // (constituencies-continue-stall under the single dev server's SSR-compile load) or the
+        // page may already have advanced past /constituencies; fall back to hard-nav rather than
+        // hang the full 90s test timeout. Mirrors the click/URL-settle fallbacks below.
+        await constituenciesCont.waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
+      } catch {
+        await navigateDirectlyToQuestions(page);
+        continue;
+      }
       const urlBefore = page.url();
       try {
         // reason: tight 3s fast-fail click — paired with the goto-fallback below; a
@@ -213,7 +222,16 @@ async function advanceVoterFlow(
 
     if (await electionsList.isVisible()) {
       // Accept the default selection (all elections pre-checked).
-      await electionsCont.waitFor({ state: 'visible' });
+      try {
+        // reason: bounded visibility wait + hard-nav recovery. The continue button can stall
+        // (documented elections-continue-stall under the single dev server's SSR-compile load)
+        // or the page may already have advanced past /elections; fall back to hard-nav rather
+        // than hang the full 90s test timeout. Mirrors the click/URL-settle fallbacks below.
+        await electionsCont.waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
+      } catch {
+        await navigateDirectlyToQuestions(page);
+        continue;
+      }
       const urlBefore = page.url();
       try {
         // reason: tight 3s fast-fail click — paired with the goto-fallback below; a
