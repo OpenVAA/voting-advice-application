@@ -48,8 +48,8 @@ Legend: `[x]` decided · `[ ]` open/for-execution · **D-NN** cross-refs `131-CO
   are asserted in `voter-journey` (were `voter-question-rendering` cells #7/#8).
 - [ ] **3.6** *(execution)* Parity-verify todo #3 **popup-surfaces-through-root-layout-slot** on
   `/results` (popupNotice.probe / perm-show-feedback-survey).
-- [ ] **3.7** *(execution)* Parity-verify todo #6 **notifications.voterApp** per-app-notification
-  contract in `perm-per-app-notifications` / `perm-access-disable`.
+- [x] **3.7** *(execution)* Parity-verify todo #6 **notifications.voterApp** per-app-notification
+  contract in `perm-per-app-notifications` / `perm-access-disable`. *(Plan 01: CONFIRMED — voter-route-only + candidate-route-only isolation both asserted with strict cross-route absence; no gap, no assertion added.)*
 
 ## 4. perm-hide-election-tags (live candidate)
 
@@ -85,7 +85,7 @@ Legend: `[x]` decided · `[ ]` open/for-execution · **D-NN** cross-refs `131-CO
 - [ ] **#3** popup-hydration LAYOUT-03 (#6) → disposition: `____` · covering spec 3× result: `____` · parity: `____`
 - [ ] **#4** feedback-persistence (#5) → disposition: `____` · covering spec 3× result: `____` · **parity gap? add assertion?** `____`
 - [x] **#5** not-located CLEAN-02 → disposition: **CLOSED-AS-STALE** · covering spec 3× result: **pass/pass/pass** (`perm-not-located-2e2cg.spec.ts`, 38 each; `post-fix/131-not-located-3x.txt`) · parity: CONFIRMED
-- [ ] **#6** notifications.voterApp (#3) → disposition: `____` · covering spec 3× result: `____` · parity: `____`
+- [x] **#6** notifications.voterApp (#3) → disposition: **CLOSED-AS-STALE** · covering spec 3× result: **pass/pass/pass** (`perm-per-app-notifications` + `perm-access-disable`, 47 each; `post-fix/131-notifications-3x.txt`) · parity: CONFIRMED (no gap; no assertion added)
 - [ ] **#7** perm-hide-election-tags → disposition: `____` · helper hardened: `____` · 3× green: `____` · 5-consumer regression: `____`
 
 ## 7. Open questions carried to research/planning

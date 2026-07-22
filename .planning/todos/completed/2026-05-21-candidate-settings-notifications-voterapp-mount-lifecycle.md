@@ -33,3 +33,11 @@ The v2.10 ship anchor `bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32c
   - `.planning/todos/pending/2026-05-14-qspec-walkToQuestion-cold-start-race.md` (cells #7 + #8)
   - `.planning/todos/pending/2026-05-16-voter-feedback-persistence-second-pass.md` (cell #5)
 - Closure pattern precedent: Phase 86.3-04 cell #6 closure via answeredVoterPage fixture (commit 52a2f077a — navigation-from-home redesign). v2.11+ Recommendation #3 landed early during 86.3-v2 — same approach may apply to cell #3 closure.
+
+## Disposition: CLOSED-AS-STALE
+
+**Triaged:** Phase 131 Plan 01 (2026-07-22) · **Disposition:** CLOSED-AS-STALE (terminal).
+
+The v2.14 suite rebuild deleted the original hard-coded `test.skip()` cell (`candidate-settings.spec.ts` SETTINGS-01 wave A cell #3) and the entire `SKIPPED_TESTS` skip mechanism — there is nothing left to un-skip. The load-bearing `notifications.voterApp` mount-lifecycle behavior it guarded (per-app notification isolation) is now asserted by the current covering spec **`tests/tests/specs/perm/perm-per-app-notifications.spec.ts`**: the voter route surfaces ONLY the `[notif-voter]` dialog and the candidate route surfaces ONLY the `[notif-cand]` dialog, each with strict cross-route absence enforcement. The companion **`perm-access-disable.spec.ts`** (EPERM-11) covers the three `access.*` app-availability gates against the same seeded singleton. Coverage **parity CONFIRMED** by reading both specs (Discussion §3.7) — no gap, so no assertion was added. The original `$effect`→`onMount` re-queue race that forced the v2.10 skip (commit 0a34dfbc7 revert) was resolved by the Svelte-5 runes lifecycle work in Phases 123/124; the reactive popup re-queue is now deterministic and no longer races the `answeredVoterPage` fixture. Both covering specs were run **3× cold-start in this phase** (fresh DB via `yarn db:reset` per iteration, single `:5173` dev server, no Playwright `webServer`) with result **pass/pass/pass** (47 tests each run, zero did-not-run) — evidence at `.planning/phases/131-e2e-reliability-hardening-deferred-flake-race-triage/post-fix/131-notifications-3x.txt`. Zero new `test.skip` introduced.
+
+**Source:** `.planning/phases/131-e2e-reliability-hardening-deferred-flake-race-triage/131-01-PLAN.md` (Task 2) · evidence: `post-fix/131-notifications-3x.txt` (this-phase-dated).
