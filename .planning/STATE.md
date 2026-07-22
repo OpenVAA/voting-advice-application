@@ -5,15 +5,15 @@ milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Ze
 current_phase: 131
 current_phase_name: e2e-reliability-hardening-deferred-flake-race-triage
 status: executing
-stopped_at: Completed 131-03-PLAN.md
-last_updated: "2026-07-22T09:59:04.218Z"
+stopped_at: Completed 131-04-PLAN.md
+last_updated: "2026-07-22T10:36:46.400Z"
 last_activity: 2026-07-22
 last_activity_desc: Phase 131 execution started
 progress:
   total_phases: 15
   completed_phases: 13
   total_plans: 76
-  completed_plans: 74
+  completed_plans: 75
   percent: 87
 ---
 
@@ -29,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 ## Current Position
 
 Phase: 131 (e2e-reliability-hardening-deferred-flake-race-triage) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 Status: Ready to execute
 Last activity: 2026-07-22 — Phase 131 execution started
 
-Progress: [██████████] 97%
+Progress: [██████████] 99%
 
 ## Performance Metrics
 
@@ -83,6 +83,7 @@ Progress: [██████████] 97%
 | Phase 131 P01 | 55min | 2 tasks | 5 files |
 | Phase 131 P02 | ~80min | 2 tasks | 5 files |
 | Phase 131 P03 | ~45min | 3 tasks | 6 files |
+| Phase 131 P04 | ~70min | 2 tasks | 6 files |
 
 ## Deferred Items
 
@@ -509,6 +510,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: 130-06: D-05 gate green 3/3 full-suite (128 passed/0 failed each) on fresh server+clean DB; root-caused a voter-journey-mobile number-scale loop-entry fixture gap (fix 8725d86ef)
 - [Phase ?]: Phase 131-01: proved todo-triage tracer loop; todos #5 (not-located) + #6 (notifications.voterApp) CLOSED-AS-STALE on 3x pass/pass/pass; diagnosed+remediated db:reset storage-502-wedge (Kong upstream orphaned by storage restart)
 - [Phase ?]: Phase 131-02: hardened navigateToFirstQuestion helper (terminal answer-option settle) — todo #7 FIXED, 3x green + 5-consumer regression clean; corrected cold-start recipe (bare db:reset + bucket-ready gate)
+- [Phase ?]: Phase 131 Plan 04: OQ-7.1 = ADD — feedback text-persists-across-cancel is load-bearing (FeedbackModal bind:this keep-mounted); added HARD assertion, todo #4 FIXED, todo #3 CLOSED-AS-STALE
+- [Phase ?]: Isolated mid-chain perm-spec recipe (--project=<perm> --no-deps + out-of-band yarn db:seed --template) + yarn db:*-only wedge recovery (never npx supabase start from repo root — foreign project steals :54322)
 
 ### Quick Tasks Completed
 
@@ -554,8 +557,8 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-07-22T09:59:04.201Z
-Stopped at: Completed 131-03-PLAN.md
+Last session: 2026-07-22T10:36:37.427Z
+Stopped at: Completed 131-04-PLAN.md
 Resume file: 
 None
 
