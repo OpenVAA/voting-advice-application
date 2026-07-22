@@ -228,7 +228,7 @@ export function createEntityDetails(page: Page) {
       // NumberScaleInput.svelte) but no data-testid — the numeric value is
       // encoded in the `left: {pct}%` inline style. No getByTestId/getByRole
       // form expresses a class-scoped marker read.
-      // eslint-disable-next-line playwright/no-restricted-locators
+      // eslint-disable-next-line playwright/no-restricted-locators, playwright/no-raw-locators
       const markers = container.locator('.marker');
 
       if (voterValue != null && entityValue != null && voterValue === entityValue) {
@@ -240,7 +240,7 @@ export function createEntityDetails(page: Page) {
         await expect(markers).toHaveCount(expectedCount);
         if (voterValue != null) {
           await expect(
-            // eslint-disable-next-line playwright/no-restricted-locators
+            // eslint-disable-next-line playwright/no-restricted-locators, playwright/no-raw-locators
             container.locator('.marker.text-primary')
           ).toHaveAttribute('style', new RegExp(`left:\\s*${pct(voterValue)}%`));
         }

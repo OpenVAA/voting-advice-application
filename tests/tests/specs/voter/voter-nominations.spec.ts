@@ -22,7 +22,7 @@
  * test blocks completion.
  */
 
-import { test, expect } from '../../fixtures/voter/views';
+import { expect, test } from '../../fixtures/voter/views';
 import { TIMEOUTS } from '../../helpers';
 import { testIds } from '../../utils/testIds';
 

@@ -202,12 +202,20 @@ test.describe('candidate bank-auth journey', { tag: ['@bank-auth'] }, () => {
       // 6b. The linked candidate row exists (public.candidates via PostgREST).
       const candidateResult = await client.findData('candidates', { auth_user_id: authUserId });
       expect(candidateResult.type, 'candidate lookup should succeed').toBe('success');
+      // reason: discriminated-union data-extraction narrowing (not a branch on
+      // test outcome); the line above already asserts `.type === 'success'`. The
+      // downstream expect(candidateRows.length, ...) assertion is unchanged.
+      // eslint-disable-next-line playwright/no-conditional-in-test
       const candidateRows = (candidateResult.type === 'success' ? candidateResult.data : undefined) ?? [];
       expect(candidateRows.length, 'a candidate row should be linked to the bank-auth user').toBe(1);
 
       // 6c. The candidate role assignment exists (public.user_roles via PostgREST).
       const roleResult = await client.findData('user_roles', { user_id: authUserId, role: 'candidate' });
       expect(roleResult.type, 'user_roles lookup should succeed').toBe('success');
+      // reason: discriminated-union data-extraction narrowing (not a branch on
+      // test outcome); the line above already asserts `.type === 'success'`. The
+      // downstream expect(roleRows.length, ...) assertion is unchanged.
+      // eslint-disable-next-line playwright/no-conditional-in-test
       const roleRows = (roleResult.type === 'success' ? roleResult.data : undefined) ?? [];
       expect(roleRows.length, 'a candidate role should be assigned to the bank-auth user').toBeGreaterThan(0);
     });

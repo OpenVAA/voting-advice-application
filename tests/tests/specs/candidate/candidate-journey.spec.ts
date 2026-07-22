@@ -81,8 +81,8 @@ import {
 } from '../../utils/candidateJourneyConstants';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
-import type { CandidateQuestionPageFixture } from '../../fixtures/candidate/candidateQuestionPage.fixture';
 import type { Locator, Page } from '@playwright/test';
+import type { CandidateQuestionPageFixture } from '../../fixtures/candidate/candidateQuestionPage.fixture';
 
 // ====================================================================
 // FILE-SCOPE CONSTANTS
