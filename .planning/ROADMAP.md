@@ -583,7 +583,7 @@ Plans:
   2. Each is either fixed (passing 3× deterministically) or closed-as-stale with documented rationale (resolved by prior work / no longer reproducible).
   3. No deferred-flake todo is left in an undocumented "deferred" state.
 
-**Plans**: 1/5 plans executed
+**Plans**: 2/5 plans executed
 
 Plans:
 **Wave 1**
@@ -592,7 +592,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 131-02-PLAN.md — FIX: harden navigateToFirstQuestion helper + 5-consumer regression (todo #7 perm-hide-election-tags)
+- [x] 131-02-PLAN.md — FIX: harden navigateToFirstQuestion helper + 5-consumer regression (todo #7 perm-hide-election-tags)
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -646,5 +646,5 @@ The three workstreams are largely independent and may be planned/executed concur
 | 128. svelte-check → 0 — Long-Tail, Tests & Docs | v2.14 | 5/5 | Complete    | 2026-07-17 |
 | 129. New-Feature Build — Question Inputs + Alliance Render + Nominations Fetch | v2.14 | 9/9 | Complete    | 2026-07-18 |
 | 130. E2E Specs — New-Feature Coverage | v2.14 | 6/6 | Complete    | 2026-07-19 |
-| 131. E2E Reliability Hardening — Deferred Flake/Race Triage | v2.14 | 1/5 | In Progress|  |
+| 131. E2E Reliability Hardening — Deferred Flake/Race Triage | v2.14 | 2/5 | In Progress|  |
 | 132. Milestone-Close Green Gate + svelte-check Zero Flip | v2.14 | 0/TBD | Not started | - |
