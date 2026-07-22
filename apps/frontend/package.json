@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "lint": "eslint --flag v10_config_lookup_from_file src/",
     "typecheck": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "algorithm-example": "tsx src/matching/examples/example.ts",
     "generate:translation-key-type": "tsx tools/translationKey/generateTranslationKeyType.ts && prettier --write src/lib/types/generated/translationKey.ts",

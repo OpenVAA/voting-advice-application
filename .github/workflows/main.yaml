@@ -72,6 +72,9 @@ jobs:
       - name: "Configure frontend environment using the repo root .env.example file"
         run: cp .env.example apps/frontend/.env
 
+      - name: "Type-check frontend (svelte-check, 0 errors / 0 warnings)"
+        run: yarn workspace @openvaa/frontend check
+
       - name: "Build frontend"
         run: yarn workspace @openvaa/frontend build
 
