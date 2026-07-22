@@ -5,8 +5,8 @@ milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Ze
 current_phase: 131
 current_phase_name: E2E Reliability Hardening — Deferred Flake/Race Triage
 status: planning
-stopped_at: Completed 130-06-PLAN.md
-last_updated: "2026-07-19T01:08:38.684Z"
+stopped_at: Phase 131 context gathered
+last_updated: "2026-07-22T06:38:11.265Z"
 last_activity: 2026-07-19
 last_activity_desc: Phase 130 complete, transitioned to Phase 131
 progress:
@@ -549,10 +549,10 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-07-19T00:39:37.208Z
-Stopped at: Completed 130-06-PLAN.md
+Last session: 2026-07-22T06:38:11.214Z
+Stopped at: Phase 131 context gathered
 Resume file: 
-None
+.planning/phases/131-e2e-reliability-hardening-deferred-flake-race-triage/131-CONTEXT.md
 
 - Drove the EFLOW-10b bank-auth full-browser journey (`candidate-bank-auth-journey.spec.ts`) to SINGLE-PASS GREEN (`1 passed`, no skip/did-not-run) against the orchestrator-owned live env. Commit daab88f06 (tests/ only).
 - Enabled `preRegistration.enabled` SCOPED to the bank-auth-journey run: new `setupFromTemplate({ appSettingsOverride })` param (additive `merge_jsonb_column` AFTER the post-seed subset-match); paired teardown resets `{enabled:false}`. Shared `perm-not-located-2e2cg` template + `MINIMAL_BASE_APP_SETTINGS` + default suite untouched. DB-verified `{enabled:true}` during / `{enabled:false}` after.
