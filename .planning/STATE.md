@@ -5,8 +5,8 @@ milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Ze
 current_phase: 132
 current_phase_name: Milestone-Close Green Gate + svelte-check Zero Flip
 status: planning
-stopped_at: Completed 131-05-PLAN.md (phase 131 close)
-last_updated: "2026-07-22T11:55:28.995Z"
+stopped_at: Phase 132 context gathered
+last_updated: "2026-07-22T21:29:02.912Z"
 last_activity: 2026-07-22
 last_activity_desc: Phase 131 complete, transitioned to Phase 132
 progress:
@@ -559,10 +559,10 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-07-22T11:46:05.317Z
-Stopped at: Completed 131-05-PLAN.md (phase 131 close)
+Last session: 2026-07-22T21:29:02.883Z
+Stopped at: Phase 132 context gathered
 Resume file: 
-None
+.planning/phases/132-milestone-close-green-gate-svelte-check-zero-flip/132-CONTEXT.md
 
 - Drove the EFLOW-10b bank-auth full-browser journey (`candidate-bank-auth-journey.spec.ts`) to SINGLE-PASS GREEN (`1 passed`, no skip/did-not-run) against the orchestrator-owned live env. Commit daab88f06 (tests/ only).
 - Enabled `preRegistration.enabled` SCOPED to the bank-auth-journey run: new `setupFromTemplate({ appSettingsOverride })` param (additive `merge_jsonb_column` AFTER the post-seed subset-match); paired teardown resets `{enabled:false}`. Shared `perm-not-located-2e2cg` template + `MINIMAL_BASE_APP_SETTINGS` + default suite untouched. DB-verified `{enabled:true}` during / `{enabled:false}` after.
