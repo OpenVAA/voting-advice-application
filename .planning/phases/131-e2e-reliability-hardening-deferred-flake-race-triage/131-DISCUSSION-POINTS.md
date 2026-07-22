@@ -30,8 +30,8 @@ Legend: `[x]` decided · `[ ]` open/for-execution · **D-NN** cross-refs `131-CO
   (Phase 117 gate) run 3×, in addition to each todo's own covering spec. **D-01**
 - [x] **2.4** Execution prereqs per run: fresh single `:5173` dev server (no Playwright
   `webServer`), clean DB via `yarn db:reset`. **D-11**
-- [ ] **2.5** *(execution)* Capture pass/pass/pass evidence artifacts per surface into the phase
-  `post-fix/` dir; reference them in each todo's disposition stamp.
+- [x] **2.5** *(execution)* Capture pass/pass/pass evidence artifacts per surface into the phase
+  `post-fix/` dir; reference them in each todo's disposition stamp. *(Plan 01: `131-not-located-3x.txt`, `131-notifications-3x.txt` captured; each cited in its todo stamp.)*
 
 ## 3. Coverage-parity gate
 
@@ -84,7 +84,7 @@ Legend: `[x]` decided · `[ ]` open/for-execution · **D-NN** cross-refs `131-CO
 - [ ] **#2** qspec cold-start (#7/#8) → disposition: `____` · covering spec 3× result: `____` · parity: `____`
 - [ ] **#3** popup-hydration LAYOUT-03 (#6) → disposition: `____` · covering spec 3× result: `____` · parity: `____`
 - [ ] **#4** feedback-persistence (#5) → disposition: `____` · covering spec 3× result: `____` · **parity gap? add assertion?** `____`
-- [ ] **#5** not-located CLEAN-02 → disposition: `____` · covering spec 3× result: `____` · parity: CONFIRMED
+- [x] **#5** not-located CLEAN-02 → disposition: **CLOSED-AS-STALE** · covering spec 3× result: **pass/pass/pass** (`perm-not-located-2e2cg.spec.ts`, 38 each; `post-fix/131-not-located-3x.txt`) · parity: CONFIRMED
 - [ ] **#6** notifications.voterApp (#3) → disposition: `____` · covering spec 3× result: `____` · parity: `____`
 - [ ] **#7** perm-hide-election-tags → disposition: `____` · helper hardened: `____` · 3× green: `____` · 5-consumer regression: `____`
 

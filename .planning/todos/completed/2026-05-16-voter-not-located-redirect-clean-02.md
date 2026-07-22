@@ -47,3 +47,11 @@ The CLEAN-02 chain-head test asserts that a cold-start voter navigating directly
 - `tests/tests/specs/voter/voter-not-located-redirect.spec.ts:75` — the skipped chain-head test
 - `apps/frontend/src/routes/(voters)/(located)/+layout.ts` — the loader gate under test (suspected upstream change)
 - `packages/dev-seed/src/templates/e2e.ts` — the e2e seed template (election count / implication threshold suspected)
+
+## Disposition: CLOSED-AS-STALE
+
+**Triaged:** Phase 131 Plan 01 (2026-07-22) · **Disposition:** CLOSED-AS-STALE (terminal).
+
+The v2.14 suite rebuild retired the original skipped spec (`voter-not-located-redirect.spec.ts:75`) and the whole `SKIPPED_TESTS` skip mechanism; there is nothing left to un-skip. The CLEAN-02 load-bearing contract — a cold-start voter hitting `/results` with empty cookies + empty localStorage bounces through the deferred-target `?next=` chain (`/elections?next=%2Fresults` → `/constituencies?next=%2Fresults` → resumes `/results`) — is now asserted by the current covering spec **`tests/tests/specs/perm/perm-not-located-2e2cg.spec.ts`** (line 54, plus 4 further redirect contracts: query-param preservation, single-bounce via `electionId`, mid-session storage-clear resume, and open-redirect whitelist rejection). Coverage **parity CONFIRMED** by reading the current spec (matches Discussion §3.3). The contract was run **3× cold-start in this phase** (fresh DB via `yarn db:reset` per iteration, single `:5173` dev server, no Playwright `webServer`) with result **pass/pass/pass** (38 tests each run, zero did-not-run) — evidence at `.planning/phases/131-e2e-reliability-hardening-deferred-flake-race-triage/post-fix/131-not-located-3x.txt`. No product or spec code changed; the original hypotheses (H1–H4 / auto-implication) are moot because the rebuilt suite exercises the contract deterministically. Zero new `test.skip` introduced.
+
+**Source:** `.planning/phases/131-e2e-reliability-hardening-deferred-flake-race-triage/131-01-PLAN.md` (Task 1, tracer) · evidence: `post-fix/131-not-located-3x.txt` (this-phase-dated).
