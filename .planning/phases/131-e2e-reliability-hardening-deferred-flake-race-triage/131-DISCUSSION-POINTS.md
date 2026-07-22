@@ -61,10 +61,14 @@ Legend: `[x]` decided · `[ ]` open/for-execution · **D-NN** cross-refs `131-CO
 - [x] **4.4** After harden, **regression-check 5 consumers**: `perm-disable-allow-open`,
   `perm-hide-category-tags`, `perm-hide-election-tags`, `perm-hide-if-missing-answers` +
   `minimalVoterResultsPage.fixture.ts`. **D-10**
-- [ ] **4.5** *(execution)* Root-cause first: attempt to reproduce the run-1 race against current
+- [x] **4.5** *(execution)* Root-cause first: attempt to reproduce the run-1 race against current
   HEAD to locate the exact racy await before hardening; if unreproducible after a bounded attempt,
   harden the wait defensively anyway (helper class robustness) and record the reasoning.
-- [ ] **4.6** *(execution)* Prove `perm-hide-election-tags` 3× green post-harden.
+  → REPRO-1 passed 81/0/0 (race did NOT reproduce; 2 further iterations contaminated by an unrelated
+  vite dev-server crash). Racy await located by code-read: the `advanceVoterFlow` answer-option
+  short-circuit vs. the `/questions → /questions/__first__` onMount redirect. Hardened DEFENSIVELY.
+- [x] **4.6** *(execution)* Prove `perm-hide-election-tags` 3× green post-harden.
+  → pass/pass/pass, 81 each (`post-fix/131-perm-hide-election-tags-3x.txt`).
 
 ## 5. Records, todo lifecycle & this-phase gate
 
@@ -86,7 +90,7 @@ Legend: `[x]` decided · `[ ]` open/for-execution · **D-NN** cross-refs `131-CO
 - [ ] **#4** feedback-persistence (#5) → disposition: `____` · covering spec 3× result: `____` · **parity gap? add assertion?** `____`
 - [x] **#5** not-located CLEAN-02 → disposition: **CLOSED-AS-STALE** · covering spec 3× result: **pass/pass/pass** (`perm-not-located-2e2cg.spec.ts`, 38 each; `post-fix/131-not-located-3x.txt`) · parity: CONFIRMED
 - [x] **#6** notifications.voterApp (#3) → disposition: **CLOSED-AS-STALE** · covering spec 3× result: **pass/pass/pass** (`perm-per-app-notifications` + `perm-access-disable`, 47 each; `post-fix/131-notifications-3x.txt`) · parity: CONFIRMED (no gap; no assertion added)
-- [ ] **#7** perm-hide-election-tags → disposition: `____` · helper hardened: `____` · 3× green: `____` · 5-consumer regression: `____`
+- [x] **#7** perm-hide-election-tags → disposition: **FIXED** · helper hardened: **yes** (`navigateToFirstQuestion` terminal answer-option settle, commit a6ba83c5a; test-only) · 3× green: **pass/pass/pass** (81 each; `post-fix/131-perm-hide-election-tags-3x.txt`) · 5-consumer regression: **pass** (89 passed, 0 failed, 0 did-not-run; `post-fix/131-helper-consumer-regression.txt`)
 
 ## 7. Open questions carried to research/planning
 
