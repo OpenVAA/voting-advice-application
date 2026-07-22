@@ -583,7 +583,14 @@ Plans:
   2. Each is either fixed (passing 3× deterministically) or closed-as-stale with documented rationale (resolved by prior work / no longer reproducible).
   3. No deferred-flake todo is left in an undocumented "deferred" state.
 
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 131-01-PLAN.md — TRACER: prove the triage loop end-to-end (todos #5 not-located + #6 notifications, stale)
+- [ ] 131-02-PLAN.md — FIX: harden navigateToFirstQuestion helper + 5-consumer regression (todo #7 perm-hide-election-tags)
+- [ ] 131-03-PLAN.md — cold-deeplink resolver + voter-journey cluster (todos #2 qspec + #1 party-drawer, stale)
+- [ ] 131-04-PLAN.md — popup/feedback cluster + feedback parity-gap decision (todos #3 popup-hydration + #4 feedback-persistence)
+- [ ] 131-05-PLAN.md — closeout: terminal-disposition + no-new-skip + CI-clean gate + targeted 3× (Phase-132 hand-off)
 
 #### Phase 132: Milestone-Close Green Gate + svelte-check Zero Flip
 
@@ -625,5 +632,5 @@ The three workstreams are largely independent and may be planned/executed concur
 | 128. svelte-check → 0 — Long-Tail, Tests & Docs | v2.14 | 5/5 | Complete    | 2026-07-17 |
 | 129. New-Feature Build — Question Inputs + Alliance Render + Nominations Fetch | v2.14 | 9/9 | Complete    | 2026-07-18 |
 | 130. E2E Specs — New-Feature Coverage | v2.14 | 6/6 | Complete    | 2026-07-19 |
-| 131. E2E Reliability Hardening — Deferred Flake/Race Triage | v2.14 | 0/TBD | Not started | - |
+| 131. E2E Reliability Hardening — Deferred Flake/Race Triage | v2.14 | 0/5 | Not started | - |
 | 132. Milestone-Close Green Gate + svelte-check Zero Flip | v2.14 | 0/TBD | Not started | - |
