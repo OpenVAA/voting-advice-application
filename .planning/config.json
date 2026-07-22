@@ -13,6 +13,6 @@
     "use_worktrees": false
   },
   "model_overrides": {
-    "gsd-planner": "fable"
+    "gsd-planner": "opus"
   }
 }
