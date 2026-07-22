@@ -70,6 +70,37 @@ test.describe('perm-show-feedback-survey (EPERM-09)', () => {
     await expect(page.getByTestId('feedback-form')).toBeVisible();
   });
 
+  // --- Test 1b: feedback text persists across cancel-then-reopen ----------------
+  // The FeedbackModal keeps <Feedback bind:this={feedbackRef}> mounted across
+  // close (FeedbackModal.svelte:62); the cancel path calls closeFeedback()
+  // WITHOUT reset (only a successful send resets, via onSent → feedbackRef.reset).
+  // So feedback typed before an accidental cancel survives and is still present
+  // on reopen — a load-bearing UX invariant (todo #4 / OQ 7.1 parity gap). HARD
+  // assertions, testid-only; no /results nav and no app_settings mutation.
+  test('feedback text persists across cancel then reopen (kept-mounted form)', async ({ page, voterHomePage }) => {
+    const PERSIST_TEXT = 'persistence test text';
+
+    await voterHomePage.goToPage('en');
+    const feedbackBtn = page.getByTestId(testIds.shared.header.feedback);
+    const description = page.getByTestId('feedback-description');
+
+    // Open the feedback modal and type known text into the description textarea.
+    await feedbackBtn.click();
+    await expect(page.getByTestId('feedback-form')).toBeVisible();
+    await description.fill(PERSIST_TEXT);
+    await expect(description).toHaveValue(PERSIST_TEXT);
+
+    // Cancel — the modal closes but the kept-mounted form retains its $state
+    // (cancel does not reset; only a successful send does).
+    await page.getByTestId('feedback-cancel').click();
+    await expect(page.getByTestId('feedback-form')).toBeHidden();
+
+    // Reopen — the previously-typed text is still there.
+    await feedbackBtn.click();
+    await expect(page.getByTestId('feedback-form')).toBeVisible();
+    await expect(description).toHaveValue(PERSIST_TEXT);
+  });
+
   // --- Test 2: FEEDBACK popup coordination on /results --------------------------
   test('feedback popup: surfaces on /results (once, no double-pop), dismiss persists across reload', async ({
     page
