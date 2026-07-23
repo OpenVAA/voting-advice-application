@@ -60,3 +60,21 @@ e.g. wait for the profile-submit network settle / the home route to be interacti
 full-suite-load profile. Root-cause the load-contention window (SSR compile vs. status-message
 render) rather than papering with a blanket retry. Evidence: `post-fix/131-phase-gate-summary.txt`
 (first-attempt with-deps failure line + isolation 2/2-green characterization).
+
+## Disposition: FIXED
+
+Fixed in Phase 132.
+
+- **Harden (Plan 01, Task 1, commit cd06625bf):** step 13.5 in `candidate-journey.spec.ts` was
+  hardened per the Solution above — the post-submit `candidate-home-status` assertion now settles the
+  profile-submit navigation (`waitForURL` back to the `/candidate` home route) BEFORE asserting the
+  status element visible, so `toBeVisible` no longer races the `save()` + `goto()` + home-remount chain
+  under concurrent load.
+- **Proven isolated (Plan 01, D-01/D-03):** `--project=candidate-journey` green.
+- **Proven under the full concurrent DAG (Plan 03, gate run 1, D-02):** the milestone-close 3× E2E
+  determinism gate run 1 exercised `candidate-journey` (incl. step 13.5 / :661) under the FULL
+  concurrent perm-DAG at the stricter local `workers:6` profile and passed — 129 passed / 0 failed /
+  0 did-not-run. Runs 2 and 3 also green. See `132-MILESTONE-CLOSE-ANCHOR.md`.
+
+The terminal FIXED disposition is authorized by the full-DAG proof (gate run 1), per D-02.
+Cite: `132-01`, `132-03`.

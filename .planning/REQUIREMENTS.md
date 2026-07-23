@@ -83,7 +83,7 @@ New settings-driven branches not yet covered by the existing 19 perm specs.
 ### E2E — Reliability Hardening (HARDN)
 
 - [x] **HARDN-01**: The ~6 deferred "v2.11+ hardening" flake/race todos (party-drawer boundary, qspec cold-start race, popup-hydration deeplink, voter-feedback-persistence locator collision, not-located-redirect chain, candidate-settings notifications mount-lifecycle) are each triaged against the current suite and either fixed (passing 3×) or closed-as-stale with documented rationale. _(Complete 2026-07-22: all 7 todos terminally disposed — #7 hide-election-tags + #4 feedback-persistence FIXED; #1, #2, #3, #5, #6 CLOSED-AS-STALE with parity checks.)_
-- [x] **HARDN-02**: The full E2E suite — including every net-new v2.14 spec — passes to the 3× determinism standard (fresh server, clean DB, no flakes) at milestone close.
+- [x] **HARDN-02**: The full E2E suite — including every net-new v2.14 spec — passes to the 3× determinism standard (fresh server, clean DB, no flakes) at milestone close. _(Complete 2026-07-23: full `yarn test:e2e` 3× green — runs 1/2/3 each 129 passed / 0 failed / 0 did-not-run, fresh server + clean DB per run; one pre-count elections-continue-stall flake fixed in-phase (voterNavigation.ts harden, commit ad3f46e84) then the count restarted. See 132-MILESTONE-CLOSE-ANCHOR.md.)_
 
 ### Svelte 5 — Idiom Polish (RUNES)
 
@@ -104,7 +104,7 @@ New settings-driven branches not yet covered by the existing 19 perm specs.
 - [x] **TYPE-07**: The long-tail of scattered 1-per-file route/util/component type mismatches (~25) is resolved.
 - [x] **TYPE-08**: The `.test.ts` / `.spike` type errors (~19) are resolved (fix or remove dead scaffolding).
 - [x] **TYPE-09**: The `apps/docs` a11y svelte-check warning is resolved (monorepo svelte-check = 0 warnings).
-- [x] **TYPE-10**: `apps/frontend` svelte-check passes with **0 errors / 0 warnings**, and the CI gate is flipped from "≤ 151 baseline" to "0 absolute".
+- [x] **TYPE-10**: `apps/frontend` svelte-check passes with **0 errors / 0 warnings**, and the CI gate is flipped from "≤ 151 baseline" to "0 absolute". _(Complete 2026-07-23: live svelte-check 0/0 (2676 files); Plan 02 added a blocking CI step running `yarn workspace @openvaa/frontend check` with `--fail-on-warnings` (commit f70baae0d), enforcing 0-absolute for both errors and warnings. See 132-MILESTONE-CLOSE-ANCHOR.md.)_
 
 ## v2 Requirements
 

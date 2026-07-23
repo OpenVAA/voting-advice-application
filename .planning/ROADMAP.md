@@ -198,7 +198,7 @@ Full details: `.planning/milestones/v2.13-ROADMAP.md`
 - [x] **Phase 129: New-Feature Build — Question Inputs + Alliance Render + Nominations Fetch** — UNBLK-01/02/04/05/06: build MultipleText + multi-choice categorical + number-scale inputs, alliance render, /nominations fetch. (completed 2026-07-18)
 - [x] **Phase 130: E2E Specs — New-Feature Coverage** — EQTYP-01/02/03 + EFLOW-02; plus the nominations-route assertion (UNBLK-04) and the EPERM-03 alliance-presence extension as criteria. (completed 2026-07-19)
 - [x] **Phase 131: E2E Reliability Hardening — Deferred Flake/Race Triage** — HARDN-01: triage the ~6 deferred flake/race todos (after all specs exist). (completed 2026-07-22)
-- [ ] **Phase 132: Milestone-Close Green Gate + svelte-check Zero Flip** — HARDN-02 + TYPE-10: full-suite 3× green + svelte-check 0/0 absolute-gate flip.
+- [x] **Phase 132: Milestone-Close Green Gate + svelte-check Zero Flip** — HARDN-02 + TYPE-10: full-suite 3× green + svelte-check 0/0 absolute-gate flip.
 
 ## Phase Details
 
@@ -617,7 +617,7 @@ Plans:
   2. `apps/frontend` svelte-check passes with 0 errors / 0 warnings, and the CI gate is flipped from "≤ 151 baseline" to "0 absolute" (TYPE-10).
   3. Unit tests and lint are green, and the milestone-close anchor is recorded (matching the v2.10/v2.11/v2.13 close pattern).
 
-**Plans**: 3/4 plans executed
+**Plans**: 4/4 plans executed — Status: **Complete** (2026-07-23)
 
 - [x] 132-04-PLAN.md
 
@@ -628,7 +628,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 132-03-PLAN.md — 3× full-suite gate + static gates + MILESTONE-CLOSE-ANCHOR + REQUIREMENTS/ROADMAP flips + flake todo FIXED (D-04..D-07/D-10/D-11/D-12/D-13, HARDN-02+TYPE-10)
+- [x] 132-03-PLAN.md — 3× full-suite gate + static gates + MILESTONE-CLOSE-ANCHOR + REQUIREMENTS/ROADMAP flips + flake todo FIXED (D-04..D-07/D-10/D-11/D-12/D-13, HARDN-02+TYPE-10)
 
 ## Progress
 
