@@ -658,4 +658,4 @@ The three workstreams are largely independent and may be planned/executed concur
 | 129. New-Feature Build — Question Inputs + Alliance Render + Nominations Fetch | v2.14 | 9/9 | Complete    | 2026-07-18 |
 | 130. E2E Specs — New-Feature Coverage | v2.14 | 6/6 | Complete    | 2026-07-19 |
 | 131. E2E Reliability Hardening — Deferred Flake/Race Triage | v2.14 | 5/5 | Complete    | 2026-07-22 |
-| 132. Milestone-Close Green Gate + svelte-check Zero Flip | v2.14 | 4/4 | In Progress|  |
+| 132. Milestone-Close Green Gate + svelte-check Zero Flip | v2.14 | 4/4 | Complete    | 2026-07-23 |
