@@ -663,7 +663,7 @@ The three workstreams are largely independent and may be planned/executed concur
 ### Phase 133: Fix Phase 132 code review gaps
 
 **Goal:** Fix the issues raised in the Phase 132 code review. For the `navigateDirectlyToQuestions` issue: remove that function completely and make `advanceVoterFlow` deterministically check for each of the possible screens instead — trial whether that causes any issues (E2E suite is the gate).
-**Requirements**: WR-01, IN-01, IN-02 (code-review finding IDs from 132-REVIEW.md / 133-RESEARCH.md § Phase Requirements)
+**Requirements**: WR-01, IN-01, IN-02
 **Depends on:** Phase 132
 **Plans:** 3 plans
 
