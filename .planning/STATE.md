@@ -4,15 +4,15 @@ milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
 current_phase: 122
 current_phase_name: E2E Specs — Bank-Auth Round-Trip
-status: planning
+status: executing
 stopped_at: Completed 132-03-PLAN.md (milestone-close gate green; /gsd-complete-milestone deferred)
-last_updated: "2026-07-23T00:30:19.078Z"
+last_updated: "2026-07-24T11:04:41.927Z"
 last_activity: 2026-07-23
 last_activity_desc: Phase 132 complete, transitioned to Phase 122
 progress:
-  total_phases: 15
+  total_phases: 16
   completed_phases: 15
-  total_plans: 80
+  total_plans: 83
   completed_plans: 80
   percent: 100
 ---
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 
 Phase: 122 — E2E Specs — Bank-Auth Round-Trip
 Plan: Not started
-Status: Ready to plan
+Status: Ready to execute
 Last activity: 2026-07-23 — Phase 132 complete, transitioned to Phase 122
 
 Progress: [██████████] 100%

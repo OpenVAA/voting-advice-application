@@ -668,7 +668,14 @@ The three workstreams are largely independent and may be planned/executed concur
 **Plans:** 3 plans
 
 Plans:
+**Wave 1**
 
 - [ ] 133-01-PLAN.md — WR-01 + IN-02: delete hard-nav fallback, rewrite advanceVoterFlow branches to deterministic continue (tracer, wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 133-02-PLAN.md — IN-01: flip candidate-journey step-13.5 to a positive candidate-home assertion (wave 2)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 133-03-PLAN.md — Full E2E suite 3× determinism gate (wave 3)
