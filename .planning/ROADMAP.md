@@ -663,10 +663,12 @@ The three workstreams are largely independent and may be planned/executed concur
 ### Phase 133: Fix Phase 132 code review gaps
 
 **Goal:** Fix the issues raised in the Phase 132 code review. For the `navigateDirectlyToQuestions` issue: remove that function completely and make `advanceVoterFlow` deterministically check for each of the possible screens instead — trial whether that causes any issues (E2E suite is the gate).
-**Requirements**: TBD
+**Requirements**: WR-01, IN-01, IN-02 (code-review finding IDs from 132-REVIEW.md / 133-RESEARCH.md § Phase Requirements)
 **Depends on:** Phase 132
-**Plans:** 0 plans
+**Plans:** 3 plans
 
 Plans:
 
-- [ ] TBD (run /gsd-plan-phase 133 to break down)
+- [ ] 133-01-PLAN.md — WR-01 + IN-02: delete hard-nav fallback, rewrite advanceVoterFlow branches to deterministic continue (tracer, wave 1)
+- [ ] 133-02-PLAN.md — IN-01: flip candidate-journey step-13.5 to a positive candidate-home assertion (wave 2)
+- [ ] 133-03-PLAN.md — Full E2E suite 3× determinism gate (wave 3)
