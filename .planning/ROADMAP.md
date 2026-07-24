@@ -659,3 +659,14 @@ The three workstreams are largely independent and may be planned/executed concur
 | 130. E2E Specs — New-Feature Coverage | v2.14 | 6/6 | Complete    | 2026-07-19 |
 | 131. E2E Reliability Hardening — Deferred Flake/Race Triage | v2.14 | 5/5 | Complete    | 2026-07-22 |
 | 132. Milestone-Close Green Gate + svelte-check Zero Flip | v2.14 | 4/4 | Complete    | 2026-07-23 |
+
+### Phase 133: Fix Phase 132 code review gaps
+
+**Goal:** Fix the issues raised in the Phase 132 code review. For the `navigateDirectlyToQuestions` issue: remove that function completely and make `advanceVoterFlow` deterministically check for each of the possible screens instead — trial whether that causes any issues (E2E suite is the gate).
+**Requirements**: TBD
+**Depends on:** Phase 132
+**Plans:** 0 plans
+
+Plans:
+
+- [ ] TBD (run /gsd-plan-phase 133 to break down)
