@@ -5,15 +5,15 @@ milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Ze
 current_phase: 133
 current_phase_name: fix-phase-132-code-review-gaps
 status: executing
-stopped_at: Completed 133-01-PLAN.md
-last_updated: "2026-07-25T09:33:30.315Z"
+stopped_at: Completed 133-02-PLAN.md
+last_updated: "2026-07-25T09:38:53.123Z"
 last_activity: 2026-07-25
 last_activity_desc: Phase 133 execution started
 progress:
   total_phases: 16
   completed_phases: 15
   total_plans: 83
-  completed_plans: 81
+  completed_plans: 82
   percent: 94
 ---
 
@@ -29,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 ## Current Position
 
 Phase: 133 (fix-phase-132-code-review-gaps) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-07-25 — Phase 133 execution started
 
-Progress: [██████████] 98%
+Progress: [██████████] 99%
 
 ## Performance Metrics
 
@@ -90,6 +90,7 @@ Progress: [██████████] 98%
 | Phase 132 P04 | 6min | 3 tasks | 8 files |
 | Phase 132 P03 | 108 | 3 tasks | 13 files |
 | Phase 133 P01 | 3min | 1 tasks | 1 files |
+| Phase 133 P02 | 4min | 1 tasks | 1 files |
 
 ## Deferred Items
 
@@ -526,6 +527,9 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Phase 132 milestone-close gate: full E2E 3x green (129/0/0) + svelte-check 0/0 absolute; mid-gate elections-continue-stall flake hardened in-phase (voterNavigation.ts) then count restarted.
 - [Phase ?]: Phase 133-01: removed voterNavigation page.goto() hard-nav fallback (WR-01) — elections/constituencies stalls now continue into the deterministic race-loop; loop exhaustion is the sole loud failure path
 - [Phase ?]: Phase 133-01: kept the pre-click TIMEOUTS.slowPage bounded visibility wait and maxSteps=10 to absorb the Phase-132 SSR-compile continue-stall without masking a genuine break
+- [Phase ?]: 133-02: E2E URL settles assert the positive destination — step 13.5 uses /\/candidate\/?(?:\?|#|$)/ (CandAppHome) instead of a negative-lookahead that passed on any non-/profile route (IN-01)
+- [Phase ?]: 133-02: chose a boundary-terminated route regex over a bare $ anchor so trailing slash / query / hash / locale prefix are tolerated while every sub-route is still rejected
+- [Phase ?]: 133-02: retained the Phase 132 D-01 split-settle rationale in the reworded comment so the two-await structure is not later collapsed back into one racing assertion
 
 ### Quick Tasks Completed
 
@@ -572,8 +576,8 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-07-25T09:33:23.304Z
-Stopped at: Completed 133-01-PLAN.md
+Last session: 2026-07-25T09:38:43.322Z
+Stopped at: Completed 133-02-PLAN.md
 Resume file: 
 None
 
