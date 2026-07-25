@@ -658,17 +658,28 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       await candidateProfilePage.fillQuestion(/\[qu-info-text-link\]/, '');
       // Return to home so step 14's clickTask('profile') re-navigates cleanly.
       await page.getByTestId(testIds.candidate.profile.submit).click();
-      // Settle the post-submit navigation OFF /profile BEFORE asserting the home
-      // status message. Under the full-perm-DAG concurrent gate the
-      // save()+goto()+home-remount chain can exceed TIMEOUTS.slowPage when the
-      // visibility check races it directly (candidate-journey:661 cold-start
-      // load-contention flake surfaced by the Phase 131 P05 with-deps gate →
-      // Phase 132 D-01 harden). Splitting the URL-settle (generous slowPage
-      // budget) from the element-visibility wait composes the two additively, so
-      // the status check runs against an already-navigated, interactive home
-      // route rather than a mid-transition DOM. Mirrors the
-      // navigateToFirstQuestion waitForURL-then-settle idiom (voterNavigation.ts).
-      await page.waitForURL(/\/candidate(?!\/profile)/, { timeout: TIMEOUTS.slowPage });
+      // Positively settle on the candidate-home route BEFORE asserting the home
+      // status message. The field-cleared submit takes the not-canSubmit branch of
+      // profile/+page.svelte, which navigates to getRoute.current('CandAppHome') →
+      // '/candidate'. Asserting that exact destination (rather than "anything that
+      // isn't /profile") makes a misroute — to login, an error page, or any other
+      // candidate sub-route — fail fast here and name the true destination, instead
+      // of passing and deferring the failure to the downstream status-message check.
+      // The regex matches '/candidate', '/candidate/', '/candidate?…' and
+      // '/candidate#…' (tolerating an optional locale prefix), but not
+      // '/candidate/profile' or any other sub-route.
+      //
+      // The settle stays split from the element-visibility wait: under the
+      // full-perm-DAG concurrent gate the save()+goto()+home-remount chain can
+      // exceed TIMEOUTS.slowPage when the visibility check races it directly
+      // (candidate-journey:661 cold-start load-contention flake surfaced by the
+      // Phase 131 P05 with-deps gate → Phase 132 D-01 harden). Splitting the
+      // URL-settle (generous slowPage budget) from the element-visibility wait
+      // composes the two additively, so the status check runs against an
+      // already-navigated, interactive home route rather than a mid-transition DOM.
+      // Mirrors the navigateToFirstQuestion waitForURL-then-settle idiom
+      // (voterNavigation.ts).
+      await page.waitForURL(/\/candidate\/?(?:\?|#|$)/, { timeout: TIMEOUTS.slowPage });
       await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({
         timeout: TIMEOUTS.slowPage
       });
