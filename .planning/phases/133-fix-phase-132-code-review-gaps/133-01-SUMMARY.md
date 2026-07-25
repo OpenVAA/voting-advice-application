@@ -149,6 +149,14 @@ None - no external service configuration required.
 - **Plan 03 is the real gate for this plan's work.** Its full-suite 3× determinism run must confirm that the four perm specs (`perm-hide-election-tags`, `perm-hide-category-tags`, `perm-hide-if-missing-answers`, `perm-disable-allow-open`) and every voter walk still reach the first question without the bypass. Environment prerequisites apply: one fresh dev server on :5173 (no Playwright `webServer`; a stale server steals the port) and a clean DB via `yarn db:reset` before the run.
 - **Watch signal if Plan 03 is not clean:** an intermittent timeout at the loop-exhaustion terminal `waitFor`, or a spec parking on `/elections` / `/constituencies`, would indicate the SSR-compile continue-stall is exceeding the retry headroom — the tuning lever is `maxSteps`, not a reinstated fallback.
 
+## Self-Check: PASSED
+
+- `tests/tests/utils/voterNavigation.ts` — FOUND
+- `.planning/phases/133-fix-phase-132-code-review-gaps/133-01-SUMMARY.md` — FOUND
+- Commit `ce70c717e` (task 1) — FOUND
+- Commit `dba30e325` (plan metadata) — FOUND
+- No unintended file deletions in the task commit; no untracked files left behind.
+
 ---
 *Phase: 133-fix-phase-132-code-review-gaps*
 *Completed: 2026-07-25*

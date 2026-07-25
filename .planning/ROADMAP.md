@@ -665,12 +665,12 @@ The three workstreams are largely independent and may be planned/executed concur
 **Goal:** Fix the issues raised in the Phase 132 code review. For the `navigateDirectlyToQuestions` issue: remove that function completely and make `advanceVoterFlow` deterministically check for each of the possible screens instead — trial whether that causes any issues (E2E suite is the gate).
 **Requirements**: WR-01, IN-01, IN-02
 **Depends on:** Phase 132
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 133-01-PLAN.md — WR-01 + IN-02: delete hard-nav fallback, rewrite advanceVoterFlow branches to deterministic continue (tracer, wave 1)
+- [x] 133-01-PLAN.md — WR-01 + IN-02: delete hard-nav fallback, rewrite advanceVoterFlow branches to deterministic continue (tracer, wave 1)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 

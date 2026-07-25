@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
-current_phase: 122
-current_phase_name: E2E Specs — Bank-Auth Round-Trip
+current_phase: 133
+current_phase_name: fix-phase-132-code-review-gaps
 status: executing
-stopped_at: Completed 132-03-PLAN.md (milestone-close gate green; /gsd-complete-milestone deferred)
-last_updated: "2026-07-24T11:04:41.927Z"
-last_activity: 2026-07-23
-last_activity_desc: Phase 132 complete, transitioned to Phase 122
+stopped_at: Completed 133-01-PLAN.md
+last_updated: "2026-07-25T09:33:30.315Z"
+last_activity: 2026-07-25
+last_activity_desc: Phase 133 execution started
 progress:
   total_phases: 16
   completed_phases: 15
   total_plans: 83
-  completed_plans: 80
-  percent: 100
+  completed_plans: 81
+  percent: 94
 ---
 
 # Project State
@@ -24,16 +24,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 132 — Milestone-Close Green Gate + svelte-check Zero Flip
+**Current focus:** Phase 133 — fix-phase-132-code-review-gaps
 
 ## Current Position
 
-Phase: 122 — E2E Specs — Bank-Auth Round-Trip
-Plan: Not started
+Phase: 133 (fix-phase-132-code-review-gaps) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-07-23 — Phase 132 complete, transitioned to Phase 122
+Last activity: 2026-07-25 — Phase 133 execution started
 
-Progress: [██████████] 100%
+Progress: [██████████] 98%
 
 ## Performance Metrics
 
@@ -89,6 +89,7 @@ Progress: [██████████] 100%
 | Phase 132 P02 | 8min | 2 tasks | 3 files |
 | Phase 132 P04 | 6min | 3 tasks | 8 files |
 | Phase 132 P03 | 108 | 3 tasks | 13 files |
+| Phase 133 P01 | 3min | 1 tasks | 1 files |
 
 ## Deferred Items
 
@@ -523,6 +524,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: 132-02: svelte-check gate flipped to 0-absolute — check script uses --fail-on-warnings + blocking CI step; negative control proved 1 warning breaks the gate (TYPE-10)
 - [Phase ?]: 132-04: cleared all 20 clean-tree lint:check errors (14 frontend func-style/import-sort + 6 tests/ import-sort/reasoned-disables) via behavior-neutral edits in 8 files; lint:check now exits 0 — unblocks 132-03 static gate (SC #3).
 - [Phase ?]: Phase 132 milestone-close gate: full E2E 3x green (129/0/0) + svelte-check 0/0 absolute; mid-gate elections-continue-stall flake hardened in-phase (voterNavigation.ts) then count restarted.
+- [Phase ?]: Phase 133-01: removed voterNavigation page.goto() hard-nav fallback (WR-01) — elections/constituencies stalls now continue into the deterministic race-loop; loop exhaustion is the sole loud failure path
+- [Phase ?]: Phase 133-01: kept the pre-click TIMEOUTS.slowPage bounded visibility wait and maxSteps=10 to absorb the Phase-132 SSR-compile continue-stall without masking a genuine break
 
 ### Quick Tasks Completed
 
@@ -569,8 +572,8 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-07-23T00:15:59.348Z
-Stopped at: Completed 132-03-PLAN.md (milestone-close gate green; /gsd-complete-milestone deferred)
+Last session: 2026-07-25T09:33:23.304Z
+Stopped at: Completed 133-01-PLAN.md
 Resume file: 
 None
 
