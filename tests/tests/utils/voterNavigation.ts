@@ -10,40 +10,10 @@
  * at any time. These helpers are resilient to that.
  */
 
-import { SupabaseAdminClient } from './supabaseAdminClient';
 import { testIds } from './testIds';
 import { createVoterHomePage } from '../fixtures/voter/voterHomePage.fixture';
 import { TIMEOUTS } from '../helpers';
 import type { Locator, Page } from '@playwright/test';
-
-/**
- * Cached UUID lookups for the e2e seed's elections + leaf-constituencies.
- * Resolved once per process — the seed is reset at most once per test run.
- */
-let uuidCache: { electionUuids: Array<string>; constituencyUuids: Array<string> } | undefined;
-
-async function resolveSeedUuids(): Promise<{ electionUuids: Array<string>; constituencyUuids: Array<string> }> {
-  if (uuidCache) return uuidCache;
-  const client = new SupabaseAdminClient();
-  // The base dataset (`e2e/base`) seeds `test-e2e-base-el-reg` (Regional) +
-  // `test-e2e-base-el-mun` (Municipal) elections, with `cg-reg`→{co-reg-n,
-  // co-reg-s} and `cg-mun`→{co-mun-ne…sw}. The fallback URL needs one
-  // constituency per election: `co-reg-n` (Regional leaf) + `co-mun-ne`
-  // (Municipal leaf, child of co-reg-n).
-  const e1 = await client.findData('elections', { externalId: { $eq: 'test-e2e-base-el-reg' } });
-  const e2 = await client.findData('elections', { externalId: { $eq: 'test-e2e-base-el-mun' } });
-  // Pick one leaf-constituency per election (Regional + Municipal). With
-  // perfect hierarchy the Regional one is auto-implied from the Municipal
-  // leaf, but providing both keeps the bypass URL valid even if a variant
-  // breaks the hierarchy.
-  const cAlpha = await client.findData('constituencies', { externalId: { $eq: 'test-e2e-base-co-reg-n' } });
-  const cE2 = await client.findData('constituencies', { externalId: { $eq: 'test-e2e-base-co-mun-ne' } });
-  uuidCache = {
-    electionUuids: [e1.data?.[0]?.id, e2.data?.[0]?.id].filter((id): id is string => Boolean(id)),
-    constituencyUuids: [cAlpha.data?.[0]?.id, cE2.data?.[0]?.id].filter((id): id is string => Boolean(id))
-  };
-  return uuidCache;
-}
 
 /**
  * Stop points the unified passer recognises.
@@ -113,7 +83,6 @@ async function advanceClick(page: Page, target: Locator): Promise<void> {
  *
  * Resilient to:
  *   - intermediate pages disabled in app settings (no-op skip)
- *   - SvelteKit `goto()` silently failing post-continue (hard-nav fallback)
  *   - elements detaching mid-click due to concurrent settings mutation
  *     (retry on next iteration)
  *   - SvelteKit route-transition DOM where a just-clicked button is briefly
@@ -191,64 +160,66 @@ async function advanceVoterFlow(
         await listbox.getByRole('option').first().click();
       }
       try {
-        // reason: bounded visibility wait + hard-nav recovery. The continue button can stall
-        // (constituencies-continue-stall under the single dev server's SSR-compile load) or the
-        // page may already have advanced past /constituencies; fall back to hard-nav rather than
-        // hang the full 90s test timeout. Mirrors the click/URL-settle fallbacks below.
+        // Bounded visibility wait on the continue button (TIMEOUTS.slowPage bucket —
+        // cold-start multi-roundtrip render). On timeout the button never rendered, so
+        // `continue` and let the top-of-loop `anyCheckpoint.waitFor` re-detect whichever
+        // screen is actually current; a genuinely-stuck screen exhausts `maxSteps` and
+        // fails loudly at the terminal wait rather than being routed around.
         await constituenciesCont.waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
       } catch {
-        await navigateDirectlyToQuestions(page);
         continue;
       }
       const urlBefore = page.url();
       try {
-        // reason: tight 3s fast-fail click — paired with the goto-fallback below; a
-        // stalled continue must throw fast so navigateDirectlyToQuestions can recover.
+        // reason: deliberately TIGHTER than TIMEOUTS.click — a 3s fast-fail click so a
+        // detached/non-actionable continue throws quickly instead of stalling for the full
+        // 90s test ceiling; the loop then re-detects the screen on the next iteration.
+        // Not bucket-mappable.
         await constituenciesCont.click({ timeout: 3000 });
       } catch {
         continue;
       }
-      try {
-        // reason: tight 3s URL-change probe; on timeout the hard-nav fallback fires.
-        await page.waitForURL(
-          (url) => url.toString() !== urlBefore && !url.toString().includes('/constituencies'),
-          { timeout: 3000 }
-        );
-      } catch {
-        await navigateDirectlyToQuestions(page);
-      }
+      // Non-throwing URL settle (TIMEOUTS.page bucket — single route transition). On
+      // timeout the click did not advance the journey; the loop simply re-detects the
+      // current screen next iteration. No hard-navigation bypass.
+      await page
+        .waitForURL((url) => url.toString() !== urlBefore && !url.toString().includes('/constituencies'), {
+          timeout: TIMEOUTS.page
+        })
+        .catch(() => null);
       continue;
     }
 
     if (await electionsList.isVisible()) {
       // Accept the default selection (all elections pre-checked).
       try {
-        // reason: bounded visibility wait + hard-nav recovery. The continue button can stall
-        // (documented elections-continue-stall under the single dev server's SSR-compile load)
-        // or the page may already have advanced past /elections; fall back to hard-nav rather
-        // than hang the full 90s test timeout. Mirrors the click/URL-settle fallbacks below.
+        // Bounded visibility wait on the continue button (TIMEOUTS.slowPage bucket —
+        // cold-start multi-roundtrip render). On timeout the button never rendered, so
+        // `continue` and let the top-of-loop `anyCheckpoint.waitFor` re-detect whichever
+        // screen is actually current; a genuinely-stuck screen exhausts `maxSteps` and
+        // fails loudly at the terminal wait rather than being routed around.
         await electionsCont.waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
       } catch {
-        await navigateDirectlyToQuestions(page);
         continue;
       }
       const urlBefore = page.url();
       try {
-        // reason: tight 3s fast-fail click — paired with the goto-fallback below; a
-        // stalled continue must throw fast so navigateDirectlyToQuestions can recover.
+        // reason: deliberately TIGHTER than TIMEOUTS.click — a 3s fast-fail click so a
+        // detached/non-actionable continue throws quickly instead of stalling for the full
+        // 90s test ceiling; the loop then re-detects the screen on the next iteration.
+        // Not bucket-mappable.
         await electionsCont.click({ timeout: 3000 });
       } catch {
         continue;
       }
-      try {
-        // reason: tight 3s URL-change probe; on timeout the hard-nav fallback fires.
-        await page.waitForURL(
-          (url) => url.toString() !== urlBefore && !url.toString().includes('/elections'),
-          { timeout: 3000 }
-        );
-      } catch {
-        await navigateDirectlyToQuestions(page);
-      }
+      // Non-throwing URL settle (TIMEOUTS.page bucket — single route transition). On
+      // timeout the click did not advance the journey; the loop simply re-detects the
+      // current screen next iteration. No hard-navigation bypass.
+      await page
+        .waitForURL((url) => url.toString() !== urlBefore && !url.toString().includes('/elections'), {
+          timeout: TIMEOUTS.page
+        })
+        .catch(() => null);
       continue;
     }
 
@@ -268,24 +239,6 @@ async function advanceVoterFlow(
   } else {
     await categoryStart.waitFor({ state: 'visible', timeout: perStepTimeout });
   }
-}
-
-/**
- * Hard-navigation fallback used when SvelteKit goto() silently fails to
- * advance from /elections or /constituencies. Looks up the seed UUIDs once
- * and sends the page straight to /questions with both election + constituency
- * IDs in the search params.
- */
-async function navigateDirectlyToQuestions(page: Page): Promise<void> {
-  const { electionUuids, constituencyUuids } = await resolveSeedUuids();
-  const baseUrl = page.url().replace(/\/(elections|constituencies).*$/, '');
-  const eqs = electionUuids.map((id) => `electionId=${encodeURIComponent(id)}`).join('&');
-  const cqs = constituencyUuids.map((id) => `constituencyId=${encodeURIComponent(id)}`).join('&');
-  const sep = eqs && cqs ? '&' : '';
-  // reason: dynamic-URL hard-navigation fallback (runtime-discovered seed UUIDs
-  // in the query string), NOT a named-ROUTE-key navigation — exempt from the
-  // goToPage migration (a goToPage taking a freeform URL string is a smell).
-  await page.goto(`${baseUrl}/questions?${eqs}${sep}${cqs}`);
 }
 
 /**
