@@ -2,12 +2,12 @@ import type { StaticSettings } from './staticSettings.type';
 
 export const staticSettings: StaticSettings = {
   admin: {
-    email: 'first.last@openvaa.org'
+    email: 'sira@varldensmammor.se '
   },
   appVersion: {
     version: 1,
     requireUserDataVersion: 1,
-    source: 'https://github.com/OpenVAA/voting-advice-application'
+    source: 'https://github.com/OpenVAA/voting-advice-application/tree/deploy-kisam-vaa-2026'
   },
   dataAdapter: {
     type: 'strapi',
@@ -16,13 +16,13 @@ export const staticSettings: StaticSettings = {
   },
   colors: {
     light: {
-      primary: '#2546a8',
+      primary: '#1b98ac',
       secondary: '#666666',
       accent: '#0a716b',
       neutral: '#333333',
       'base-100': '#ffffff',
-      'base-200': '#e8f5f6',
-      'base-300': '#d1ebee',
+      'base-200': '#e8f4f7',
+      'base-300': '#d1eaee',
       warning: '#a82525',
       'line-color': '#d9d9d9'
     },
@@ -32,8 +32,8 @@ export const staticSettings: StaticSettings = {
       accent: '#11a8a0',
       neutral: '#cccccc',
       'base-100': '#000000',
-      'base-200': '#101212',
-      'base-300': '#1f2324',
+      'base-200': '#030f12',
+      'base-300': '#051e22',
       warning: '#e16060',
       'line-color': '#262626'
     }
@@ -50,21 +50,17 @@ export const staticSettings: StaticSettings = {
   },
   supportedLocales: [
     {
-      code: 'en',
-      name: 'English',
+      code: 'sv',
+      name: 'Svenska',
       isDefault: true
     },
     {
-      code: 'fi',
-      name: 'Suomi'
+      code: 'en',
+      name: 'English'
     },
     {
-      code: 'sv',
-      name: 'Svenska'
-    },
-    {
-      code: 'da',
-      name: 'Dansk'
+      code: 'so',
+      name: 'Soomaali'
     },
     {
       code: 'ar',

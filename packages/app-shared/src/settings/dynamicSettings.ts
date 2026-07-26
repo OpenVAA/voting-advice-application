@@ -4,7 +4,7 @@ export const dynamicSettings: DynamicSettings = {
   entityDetails: {
     contents: {
       candidate: ['info', 'opinions'],
-      organization: ['info', 'candidates', 'opinions']
+      organization: ['opinions', 'info']
     },
     showMissingElectionSymbol: {
       candidate: true,
@@ -16,8 +16,8 @@ export const dynamicSettings: DynamicSettings = {
     }
   },
   header: {
-    showFeedback: true,
-    showHelp: true
+    showFeedback: false,
+    showHelp: false
   },
   headerStyle: {
     dark: {
@@ -35,23 +35,23 @@ export const dynamicSettings: DynamicSettings = {
     hideIfMissingAnswers: {
       candidate: true
     },
-    showAllNominations: true
+    showAllNominations: false
   },
   matching: {
     minimumAnswers: 5,
-    organizationMatching: 'impute'
+    organizationMatching: 'answersOnly'
   },
   questions: {
     categoryIntros: {
       allowSkip: true,
-      show: true
+      show: false
     },
     interactiveInfo: {
       enabled: false
     },
     questionsIntro: {
-      allowCategorySelection: true,
-      show: true
+      allowCategorySelection: false,
+      show: false
     },
     showCategoryTags: true,
     showResultsLink: true
@@ -59,11 +59,11 @@ export const dynamicSettings: DynamicSettings = {
   results: {
     cardContents: {
       candidate: ['submatches'],
-      organization: ['candidates']
+      organization: ['submatches']
     },
     showFeedbackPopup: 180,
     showSurveyPopup: 500,
-    sections: ['candidate', 'organization']
+    sections: ['organization']
   },
   elections: {
     disallowSelection: false,
@@ -71,9 +71,9 @@ export const dynamicSettings: DynamicSettings = {
     startFromConstituencyGroup: undefined
   },
   access: {
-    candidateApp: true,
+    candidateApp: false,
     voterApp: true,
-    adminApp: true,
+    adminApp: false,
     underMaintenance: false,
     answersLocked: false
   },

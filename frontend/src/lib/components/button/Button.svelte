@@ -140,14 +140,18 @@ text="Add to list">
     // 4. Set color
     if (color) {
       // For the main button type we can use the btn-primary etc. classes, for the others, we just set the text color
-      classes += ` ${variant === 'main' || variant === 'floating-icon' ? 'btn' : 'text'}-${color}`;
+      classes +=
+        ' ' +
+        (variant === 'main' || variant === 'floating-icon'
+          ? 'text-black btn-[#F4F406] bg-[#F4F406] '
+          : `text-${color}`);
     }
 
     // 5. Apply default btn color for the `prominent` variant
     if (variant === 'prominent') classes += ' btn-base-300';
 
     // 6. Apply bg color for the `floating-icon` variants
-    if (variant === 'floating-icon') classes += ' bg-primary';
+    if (variant === 'floating-icon') classes += ' bg-[#F4F406]';
 
     // 7. Finally, define the class for the text label
     switch (variant) {
