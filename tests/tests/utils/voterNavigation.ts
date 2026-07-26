@@ -201,14 +201,21 @@ async function advanceVoterFlow(
       } catch {
         continue;
       }
-      // Non-throwing URL settle (TIMEOUTS.page bucket — single route transition). On
-      // timeout the click did not advance the journey; the loop simply re-detects the
-      // current screen next iteration. No hard-navigation bypass.
+      // URL settle (TIMEOUTS.page bucket — single route transition), non-throwing on
+      // TIMEOUT ONLY: a settle timeout means the click did not advance the journey, so the
+      // loop simply re-detects the current screen next iteration. No hard-navigation bypass.
+      // Every other error class (page/context/browser closed, frame detached) is RETHROWN —
+      // a bare `.catch(() => null)` would absorb those too and re-surface them one step
+      // removed at the next `isVisible()`, which is exactly the catch-all-eats-real-signal
+      // shape WR-01 removed from this function.
       await page
         .waitForURL((url) => url.toString() !== urlBefore && !url.toString().includes('/constituencies'), {
           timeout: TIMEOUTS.page
         })
-        .catch(() => null);
+        .catch((e) => {
+          if (!/Timeout .* exceeded/.test(String(e))) throw e;
+          return null;
+        });
       continue;
     }
 
@@ -248,14 +255,21 @@ async function advanceVoterFlow(
       } catch {
         continue;
       }
-      // Non-throwing URL settle (TIMEOUTS.page bucket — single route transition). On
-      // timeout the click did not advance the journey; the loop simply re-detects the
-      // current screen next iteration. No hard-navigation bypass.
+      // URL settle (TIMEOUTS.page bucket — single route transition), non-throwing on
+      // TIMEOUT ONLY: a settle timeout means the click did not advance the journey, so the
+      // loop simply re-detects the current screen next iteration. No hard-navigation bypass.
+      // Every other error class (page/context/browser closed, frame detached) is RETHROWN —
+      // a bare `.catch(() => null)` would absorb those too and re-surface them one step
+      // removed at the next `isVisible()`, which is exactly the catch-all-eats-real-signal
+      // shape WR-01 removed from this function.
       await page
         .waitForURL((url) => url.toString() !== urlBefore && !url.toString().includes('/elections'), {
           timeout: TIMEOUTS.page
         })
-        .catch(() => null);
+        .catch((e) => {
+          if (!/Timeout .* exceeded/.test(String(e))) throw e;
+          return null;
+        });
       continue;
     }
 
