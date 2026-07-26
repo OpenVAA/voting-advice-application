@@ -93,8 +93,10 @@ async function advanceClick(page: Page, target: Locator): Promise<void> {
  *
  * @param page - Playwright Page
  * @param stopAt - the checkpoint to stop at; default `first-question`.
- * @param opts.maxSteps - safety cap on the loop (default 10; the journey
- *   has at most 5 real hops so 10 is generous headroom).
+ * @param opts.maxSteps - safety cap on the loop (default 10; the journey has at
+ *   most 5 click-hops plus 1 terminal-detect iteration, leaving 4 retry
+ *   iterations. Note the wall-clock budget — maxSteps × the slowest per-iteration
+ *   wait — binds before maxSteps does; see the continue-button waits below).
  * @param opts.perStepTimeout - max wait per race cycle in ms (default 5000).
  */
 async function advanceVoterFlow(
