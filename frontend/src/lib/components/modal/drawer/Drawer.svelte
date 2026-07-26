@@ -79,7 +79,7 @@ See the `<ModalContainer>` component documentation for more information.
 
     {#if !showFloatingCloseButton}
       <form method="dialog">
-        <button class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">
+        <button class="btn btn-circle btn-ghost btn-sm absolute end-2 top-2">
           <span aria-hidden="true">✕</span>
           <span class="sr-only">{$t('common.closeDialog')}</span>
         </button>
@@ -91,7 +91,7 @@ See the `<ModalContainer>` component documentation for more information.
         text="close"
         icon="close"
         on:click={closeModal}
-        class="!absolute bottom-0 right-0 z-10" />
+        class="!absolute bottom-0 end-0 z-10" />
     {/if}
   </div>
 </ModalContainer>

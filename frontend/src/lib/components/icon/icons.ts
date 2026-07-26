@@ -83,3 +83,8 @@ export const ICONS = {
   videoOff: ['material', 'videocam_off'],
   warning: ['material', 'warning']
 } as const;
+
+/**
+ * Icons whose glyph points along the reading direction (e.g. forward/back arrows) and must therefore be horizontally mirrored under RTL. One icon set is reused and flipped — never duplicated per locale. `skip` is the question-flow "skip ahead" affordance and points toward the reading-end, so it mirrors too. Note: the media-player controls (`skipNext`/`skipPrevious`/sound) are deliberately excluded — the video player chrome stays LTR-oriented (do-not-mirror set). The `Icon` component mirrors these automatically unless `mirrored={false}` is passed (e.g. when an arrow is rotated into a vertical chevron).
+ */
+export const DIRECTIONAL_ICONS = new Set<IconName>(['next', 'previous', 'skip']);

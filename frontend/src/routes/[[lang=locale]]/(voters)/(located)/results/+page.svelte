@@ -253,7 +253,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
     TODO: When we get nice transitions for the list items, check whether this is still necessary -->
   <div slot="fullWidth" class="flex min-h-[120vh] flex-col items-center bg-base-300">
     {#if activeElectionId}
-      <div class="w-full max-w-xl pb-safelgb pl-safemdl pr-safemdr match-w-xl:px-0">
+      <div class="w-full max-w-xl pb-safelgb ps-safemds pe-safemde match-w-xl:px-0">
         <!-- EntityType selector if there are multiple -->
         {#if Object.keys($matches[activeElectionId]).length > 1}
           <Tabs tabs={entityTabs} activeIndex={initialEntityTabIndex} onChange={handleEntityTabChange} />

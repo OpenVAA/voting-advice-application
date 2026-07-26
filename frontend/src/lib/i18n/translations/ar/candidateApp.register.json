@@ -1,0 +1,22 @@
+{
+  "code": "رمز التسجيل",
+  "codePlaceholder": "مثال: CP23-174a-f4%&-aHAB",
+  "didYouAlreadyRegister": "هل سبق لك التسجيل؟",
+  "enterCode": "أدخل رمز التسجيل الذي استلمته عبر البريد الإلكتروني لإتمام تسجيلك.",
+  "goToLoginLabel": "الانتقال إلى صفحة تسجيل الدخول",
+  "loggedInWarning": "هناك مستخدم مسجّل الدخول حاليًا. سجّل الخروج قبل المتابعة.",
+  "passwordValidation": {
+    "commonPatterns": "يحتوي على تسلسلات أو أنماط شائعة",
+    "length": "على الأقل {minPasswordLength} أحرف",
+    "lowercase": "حرف صغير",
+    "number": "رقم",
+    "repetition": "يحتوي على تكرار للأحرف",
+    "symbol": "رمز (مثل !?%#€)",
+    "uppercase": "حرف كبير",
+    "username": "تجنب استخدام اسمك في كلمة المرور"
+  },
+  "register": "التسجيل",
+  "title": "التسجيل",
+  "titleWithPreregistration": "تأكيد عنوان بريدك الإلكتروني",
+  "wrongRegistrationCode": "رمز التسجيل غير صحيح"
+}

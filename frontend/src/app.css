@@ -3,6 +3,17 @@
 @tailwind utilities;
 
 @layer base {
+  /*
+   * Logical safe-area insets. The physical `env(safe-area-inset-left/right)` values do not follow `dir`, so we expose inline-start/end variables and swap them under `[dir="rtl"]`. Combined with the `safes`/`safee` (and `safemds`/`safelgs`…) Tailwind tokens, logical utilities such as `ps-*`, `pe-*`, `start-*` and `end-*` land notch padding on the correct physical side in both directions. See `tailwind.config.mjs`.
+   */
+  :root {
+    --safe-inline-start: env(safe-area-inset-left, 0px);
+    --safe-inline-end: env(safe-area-inset-right, 0px);
+  }
+  [dir='rtl'] {
+    --safe-inline-start: env(safe-area-inset-right, 0px);
+    --safe-inline-end: env(safe-area-inset-left, 0px);
+  }
   html {
     /* We need to explicitly set this, because we're not using the default `sans` font utility. */
     @apply hyphens-auto font-base;
@@ -43,10 +54,10 @@
     @apply mb-0;
   }
   ol {
-    @apply list-outside list-decimal pl-lg;
+    @apply list-outside list-decimal ps-lg;
   }
   ul {
-    @apply list-outside list-disc pl-lg;
+    @apply list-outside list-disc ps-lg;
   }
   hgroup p {
     @apply my-sm text-center first:mt-0;
@@ -77,14 +88,14 @@
    */
   .list-circled {
     counter-reset: steps;
-    @apply relative list-none pl-[2rem];
+    @apply relative list-none ps-[2rem];
   }
   .list-circled li {
     counter-increment: steps;
     @apply mt-12 first:mt-0;
   }
   .circled {
-    @apply absolute left-0 -mt-2 grid h-24 w-24 place-items-center rounded-full bg-base-300 text-md;
+    @apply absolute start-0 -mt-2 grid h-24 w-24 place-items-center rounded-full bg-base-300 text-md;
   }
   .circled-on-shaded {
     @apply bg-base-100;
@@ -219,6 +230,6 @@
    * TODO: Create dedicated Tailwind spacing terms for content padding.
    */
   .edgetoedge-x {
-    @apply -ml-safelgl -mr-safelgr w-screen pl-safelgl pr-safelgr match-w-xl:mx-0 match-w-xl:w-full match-w-xl:rounded-sm;
+    @apply -me-safelge -ms-safelgs w-screen pe-safelge ps-safelgs match-w-xl:mx-0 match-w-xl:w-full match-w-xl:rounded-sm;
   }
 }

@@ -33,6 +33,8 @@ services:
       service: awslocal
     environment:
       DEBUG: 1
+      # Activates LocalStack's licensed features; value is supplied via the (gitignored) .env file.
+      LOCALSTACK_AUTH_TOKEN: ${LOCALSTACK_AUTH_TOKEN}
       AWS_SES_REGION: ${AWS_SES_REGION}
       MAIL_FROM: ${MAIL_FROM}
       AWS_SES_ACCESS_KEY_ID: ${AWS_SES_ACCESS_KEY_ID}

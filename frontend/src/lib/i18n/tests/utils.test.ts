@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 import { defaultLocale, translate } from '../';
-import { canonize, isLocale, matchLocale, parseAcceptedLanguages } from '../utils';
+import { canonize, getLocaleDir, isLocale, isRtl, matchLocale, parseAcceptedLanguages } from '../utils';
 
 // This is needed for `/utils/constants.ts` to not throw. We don't actually need the variables.
 // TODO[Svelte 5]: Probably not needed anymore
@@ -48,6 +48,18 @@ test('parseAcceptedLanguages', () => {
   expect(parseAcceptedLanguages(header3), 'String order should dictate order when there are no q values').toEqual(
     result3
   );
+});
+
+test('getLocaleDir and isRtl', () => {
+  // `ar` is a registered RTL locale; the LTR locales default to 'ltr'.
+  expect(getLocaleDir('ar'), 'Arabic is RTL').toEqual('rtl');
+  expect(getLocaleDir('ar-EG'), 'Arabic soft-matched is RTL').toEqual('rtl');
+  expect(getLocaleDir('en'), 'English is LTR').toEqual('ltr');
+  expect(getLocaleDir('fi'), 'Finnish is LTR').toEqual('ltr');
+  expect(getLocaleDir('xx'), 'Unknown locale defaults to LTR').toEqual('ltr');
+  expect(getLocaleDir(undefined), 'Nullish defaults to LTR').toEqual('ltr');
+  expect(isRtl('ar'), 'isRtl true for Arabic').toEqual(true);
+  expect(isRtl('en'), 'isRtl false for English').toEqual(false);
 });
 
 test('translate', () => {

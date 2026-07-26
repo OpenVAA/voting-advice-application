@@ -112,6 +112,10 @@ export default {
     fontFamily: {
       base: [
         staticSettings.font?.name ?? 'Inter',
+        // Secondary font (e.g. an Arabic-capable face) inserted right after the main font so the browser uses it per-glyph for scripts the main font lacks. Quote it if it contains spaces.
+        ...(staticSettings.font?.secondary?.name
+          ? [/\s/.test(staticSettings.font.secondary.name) ? `"${staticSettings.font.secondary.name}"` : staticSettings.font.secondary.name]
+          : []),
         ...(fontFallbacks[staticSettings.font?.style ?? 'sans'] ?? fontFallbacks.sans),
         ...emojiFonts
       ],
@@ -172,6 +176,13 @@ export default {
       safelgt: `calc(env(safe-area-inset-top,    0px) + ${20 / 16}rem)`,
       safelgb: `calc(env(safe-area-inset-bottom, 0px) + ${20 / 16}rem)`,
       safenavt: `calc(env(safe-area-inset-top,   0px) + ${16 / 16}rem)`, // For the top nav
+      // Logical (direction-aware) safe-area insets. These resolve start→left / end→right in LTR and start→right / end→left in RTL via the `--safe-inline-start/end` variables swapped in `app.css`. Use with logical utilities only (`ps-*`, `pe-*`, `ms-*`, `me-*`, `start-*`, `end-*`).
+      safes: 'var(--safe-inline-start, 0px)',
+      safee: 'var(--safe-inline-end, 0px)',
+      safemds: `calc(var(--safe-inline-start, 0px) + ${10 / 16}rem)`,
+      safemde: `calc(var(--safe-inline-end,   0px) + ${10 / 16}rem)`,
+      safelgs: `calc(var(--safe-inline-start, 0px) + ${20 / 16}rem)`,
+      safelge: `calc(var(--safe-inline-end,   0px) + ${20 / 16}rem)`,
       touch: touchTargetSize
     },
     transitionDuration: {
