@@ -1,0 +1,71 @@
+{
+  "constituencySelect": {
+    "content": "<p>Dooro degmada doorashada ee aad musharrax ka noqon doonto.</p>",
+    "title": "Waa maxay degmadaada doorashada?"
+  },
+  "electionSelect": {
+    "content": "<p>Dooro doorashooyinka aad musharrax ka noqon doonto.</p>",
+    "title": "Doorashooyinkee ayaad musharrax ka noqon doontaa?"
+  },
+  "email": {
+    "html": "<p>Salaan {firstName},</p><p>Waad ku mahadsan tahay inaad musharrax ahaan isu diiwaangelisay! Si aad u dhammaystirto diiwaangelintaada, fadlan xaqiiji cinwaanka iimaylkaaga adigoo raacaya xidhiidhka hoose:</p><p><a href=\"{registrationUrl}\">{registrationUrl}</a></p><p>Taas ka dib waxaa lagu weydiin doonaa inaad dooratid furaha sirta ah.</p>",
+    "subject": "Fadlan xaqiiji cinwaanka iimaylkaaga",
+    "text": "Salaan {firstName},\nWaad ku mahadsan tahay inaad musharrax ahaan isu diiwaangelisay! Si aad u dhammaystirto diiwaangelintaada, fadlan xaqiiji cinwaanka iimaylkaaga adigoo raacaya xidhiidhka hoose:\n{registrationUrl}\nTaas ka dib waxaa lagu weydiin doonaa inaad dooratid furaha sirta ah."
+  },
+  "emailVerification": {
+    "content": "<p>Mustaqbalka, cinwaanka iimaylkaagu wuxuu noqon doonaa magaca isticmaalahaaga. Fadlan hoos laba jeer ku qor si aad u xaqiijiso inuu sax yahay.</p>",
+    "title": "Geli cinwaanka iimaylka oo aqbal shuruudaha isticmaalka"
+  },
+  "identification": {
+    "identifyYourselfButton": "Is aqoonsii",
+    "identifyYourselHelpText": "Waxaa lagu wareejin doonaa adeegga Bank ID. Marka xaqiijinta aqoonsiga la dhammeeyo, waxaad dib ugu soo noqon doontaa boggan.",
+    "start": {
+      "content": "<p>Si aad musharrax ahaan isugu diiwaangeliso, waa inaad marka hore aqoonsigaaga ku xaqiijiso Bank ID. Marka liiska rasmiga ah ee musharraxiinta la xaqiijiyo, waxaannu daabici doonnaa boroofaylkaaga haddii aannu liiskaas kaaga helno. Waxaannu adeegsan doonnaa magacaaga oo dhan iyo taariikhda dhalashadaada si aannu tan u xaqiijinno.</p>",
+      "heroEmoji": "🖋️",
+      "step": {
+        "constituencySelect": "Dooro degmadaada doorashada",
+        "electionSelect": "Dooro doorashooyinka",
+        "emailVerification": "Xaqiiji cinwaanka iimaylkaaga",
+        "identification": "Is aqoonsii adigoo isticmaalaya Bank ID",
+        "passwordSelect": "Dooro furaha sirta ah"
+      },
+      "title": "Musharrax ahaan isu diiwaangeli"
+    },
+    "success": {
+      "content": "<p>Xaqiijinta aqoonsiga way guulaysatay. Riix badhanka hoose si aad u sii wadato diiwaangelinta.</p>",
+      "heroEmoji": "👍",
+      "title": "Ku soo dhawoow Hagaha Doorashada, {firstName} {lastName}!"
+    }
+  },
+  "isPreregisteredNotification": {
+    "content": "Fadlan taa beddelkeeda kula soo gal iimaylkaaga iyo furahaaga sirta ah, ama iimaylkaaga ka hubi xidhiidhka xaqiijinta.",
+    "title": "Waxay u egtahay inaad horeba isu diiwaangelisay"
+  },
+  "status": {
+    "candidateExistsError": {
+      "content": "<p>Waxay u egtahay inaad horeba isu diiwaangelisay. Fadlan iimaylkaaga hubi si aad u xaqiijiso diiwaangelintaada. Marka diiwaangelinta la xaqiijiyo, waxaad kula soo geli kartaa iimaylkaaga iyo furahaaga sirta ah.</p><p>La xidhiidh taageerada haddii aad u malaynayso in khalad dhacay.</p>",
+      "title": "Horeba musharrax ahaan ayaad isu diiwaangelisay"
+    },
+    "loggedInError": {
+      "content": "<p>Horeba musharrax ahaan ayaad isu diiwaangelisay. U gudub akoonkaaga si aad u sii wadato.</p>",
+      "title": "Horeba waad soo gashay"
+    },
+    "strongIdentificationError": {
+      "content": "<p>Riix badhanka hoose si aad mar kale isugu daydo, ama la xidhiidh taageerada haddii dhibaatadu sii socoto.</p>",
+      "title": "Dhibaato ayaa ka dhacday xaqiijinta Bank ID"
+    },
+    "success": {
+      "content": "<p>Waxaannu farriin u dirnay iimaylkaaga. Riix xidhiidhka ku jira farriinta si aad u xaqiijiso cinwaanka iimaylkaaga oo aad u dhammaystirto diiwaangelinta.</p><p>Fadlan ogow in iimaylku qaadan karo waqti yar inta uu ku soo gaadhayo. Sidoo kale, hubi galka farriimaha aan la rabin haddii aadan farriinta helin.</p><p>Hadda waad xidhi kartaa daaqaddan.</p>",
+      "heroEmoji": "✉️",
+      "title": "Xaqiiji cinwaanka iimaylkaaga"
+    },
+    "tokenExpiredError": {
+      "content": "<p>Fadlan mar kale is aqoonsii si aad u dhammaystirto habka diiwaangelinta.</p>",
+      "title": "Fadhigaagii wuu dhacay"
+    },
+    "unknownError": {
+      "content": "<p>Riix badhanka hoose si aad mar kale isugu daydo, ama la xidhiidh taageerada haddii dhibaatadu sii socoto.</p>",
+      "title": "Wax baa qaldamay"
+    }
+  }
+}

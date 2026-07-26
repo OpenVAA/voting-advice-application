@@ -1,0 +1,26 @@
+{
+  "title": "Soo koobidda doodaha",
+  "description": "Soo koob oo maamul doodaha su'aalaha doorashada.",
+  "jobs": {
+    "noActiveJobs": "Hawlo firfircoon ma jiraan",
+    "startProcess": "Bilow hawl soo koobidda doodaha ah si aad u aragto kormeerka waqtiga dhabta ah"
+  },
+  "generate": {
+    "allQuestions": "Doodo u soo saar dhammaan su'aalaha aragtiyeed",
+    "button": "Soo saar doodaha",
+    "buttonLoading": "Waa la soo saarayaa...",
+    "error": "Khalad ayaa dhacay markii doodaha la soo saarayay",
+    "mayTakeTime": "Habkani wuxuu qaadan karaa dhowr daqiiqadood",
+    "noElectionsAvailable": "Doorashooyin hadda lama heli karo. Fadlan hubi habaynta xogtaada.",
+    "noElectionSelected": "Fadlan marka hore dooro doorasho",
+    "noQuestionsForElection": "Doorashada la doortay looma helin su'aalo aragtiyeed.",
+    "noQuestionSelected": "Fadlan dooro ugu yaraan hal su'aal",
+    "selectElection": "Dooro doorashada",
+    "selectElectionPlaceholder": "Dooro doorasho...",
+    "selectedQuestions": "Doodo u soo saar oo keliya su'aalaha la doortay",
+    "questionType": "Xulashada su'aalaha",
+    "selectAll": "Dooro dhammaan",
+    "unselectAll": "Ka saar dhammaan",
+    "errorLoadingQuestions": "Khalad ka dhacay soo rarista su'aalaha: {error}"
+  }
+}

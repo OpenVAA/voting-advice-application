@@ -1,0 +1,16 @@
+{
+  "editableInfos": {
+    "description": "Macluumaadkan wuxuu ka muuqan doonaa boroofaylkaaga.",
+    "title": "Boroofaylkaaga"
+  },
+  "error": {
+    "invalidQuestion": "Nooca su'aasha ama nooca jawaabta sax ma aha su'aasha {questionId}"
+  },
+  "instructions": "Marka hore buuxi macluumaadkaaga aasaasiga ah oo, haddaad rabto, soo geli sawir. Intaas ka dib waxaa lagu weydiin doonaa aragtiyahaaga siyaasadeed.",
+  "nominations": {
+    "description": "Kuwani waa degmooyinka doorashada ee aad ku musharrax tahay. Haddii liiska doorashada ama astaanta doorashada maqan yihiin, si toos ah ayaa mar dambe loo dari doonaa marka la xaqiijiyo liiska rasmiga ah ee musharraxiinta.",
+    "title": "Musharraxnimooyin"
+  },
+  "requiredInfo": "Waa inaad buuxisaa goobaha lagu calaamadeeyay astaantan ka hor intaadan ka jawaabin su'aalaha kale. Si kastaba ha ahaatee, waad kaydin kartaa jawaabahaaga ilaa hadda, waanad sii wadi kartaa buuxinta mar dambe.",
+  "title": "Macluumaadka aasaasiga ah"
+}

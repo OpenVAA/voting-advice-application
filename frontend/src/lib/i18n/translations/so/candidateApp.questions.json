@@ -1,0 +1,24 @@
+{
+  "answerQuestion": "Ka jawaab su'aashan",
+  "answerQuestionFirst": "Fadlan marka hore ka jawaab su'aasha",
+  "answerSaveError": "Kaydinta jawaabta way fashilantay",
+  "editAnswer": "Wax ka beddel jawaabtaada",
+  "enterMissingAnswers": "Geli jawaabaha maqan",
+  "error": {
+    "answerNotFound": "Jawaab lama helin su'aasha {questionId}",
+    "invalidAnswer": "Jawaabta su'aasha {questionId} sax ma aha",
+    "questionNotFound": "Su'aasha {questionId} lama helin"
+  },
+  "ingress": {
+    "default": "Waad arki kartaa dhammaan aragtiyahaaga hoos, waanad wax ka beddeli kartaa.",
+    "empty": "Marka xigta, barnaamijku wuxuu ku weydiin doonaa aragtiyahaaga {numQuestions} su'aal aragtiyeed oo ku saabsan arrimaha siyaasadda iyo qiyamka. Marka codbixiyayaashu isticmaalaan Hagaha Doorashada, iyaguna waxay ka jawaabi doonaan isla su'aalahaas, waxayna arki doonaan sida ay aragtiyahoodu ula waafaqsan yihiin kuwaaga.",
+    "partial": "Waad arki kartaa dhammaan aragtiyahaaga hoos, waad wax ka beddeli kartaa, waanad ka jawaabi kartaa kuwa hadhay."
+  },
+  "notAnswered": "Su'aashan kama aadan jawaabin.",
+  "openAnswerPrompt": "Doodo",
+  "start": "Geli aragtiyahaaga",
+  "tip": "Waad arki kartaa dhammaan jawaabahaaga boggan marka aad mar dambe ku soo noqoto.",
+  "title": "Aragtiyahaaga",
+  "unansweredWarning": "Waxaad weli haysataa {numUnansweredQuestions, plural, =1 {hal su'aal oo aan la jawaabin} other {# su'aalood oo aan la jawaabin}}.",
+  "viewAnswer": "Eeg jawaabtaada"
+}

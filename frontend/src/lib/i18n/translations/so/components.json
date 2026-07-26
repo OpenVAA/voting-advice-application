@@ -1,0 +1,76 @@
+{
+  "accordionSelect": {
+    "collapsedAriaInfo": "Taabo si aad u aragto dhammaan xulashooyinka"
+  },
+  "constituencySelector": {
+    "selectPrompt": "Dooro {constituencyGroup}"
+  },
+  "headingGroup": {
+    "roleDescription": "Koox cinwaanno ah"
+  },
+  "input": {
+    "addImage": "Ku dar sawir",
+    "allSelected": "Dhammaan waa la doortay",
+    "changeImage": "Beddel sawirka",
+    "deleteOption": "Ka saar xulashada: {option}",
+    "error": {
+      "fileLoadingError": "Soo raridda faylka way fashilantay.",
+      "invalidFile": "Faylku sax ma aha.",
+      "invalidUrl": "Cinwaanka internetku sax ma aha.",
+      "oversizeFile": "Faylku aad buu u weyn yahay. Cabbirka ugu badan waa {maxFilesize} MB."
+    },
+    "hideTranslations": "Qari",
+    "imageInfo": "Cabbirka ugu badan ee sawirku waa {maxFilesize} MB. Fadlan samir yeelo marka aad kaydinayso, sawirku wuxuu qaadan karaa waqti yar inuu soo rarmo.",
+    "multilingualInfo": "Waad ku geli kartaa jawaabtaada dhammaan luqadaha barnaamijka haddii aad rabto.",
+    "noImage": "Sawir ma jiro",
+    "selectAnother": "Dooro mid kale",
+    "selectFirst": "Dooro kan ugu horreeya",
+    "selectOne": "Dooro",
+    "showTranslations": "Turjumaado"
+  },
+  "matchScore": {
+    "label": "waafaqsanaan",
+    "score": "{score}%"
+  },
+  "passwordInput": {
+    "hidePassword": "Qari furaha sirta ah",
+    "password": "Furaha sirta ah",
+    "placeholder": "Furaha sirta ah",
+    "showPassword": "Muuji furaha sirta ah"
+  },
+  "preHeading": {
+    "roleDescription": "Cinwaan-hordhac"
+  },
+  "preventNavigation": {
+    "unsavedChanges": "Waxaad haysataa isbeddello aan la kaydin. Ma hubtaa inaad boggan ka baxdo?"
+  },
+  "select": {
+    "noMatchingOptions": "Lama helin xulasho ku habboon",
+    "placeholder": "Hoos ka dooro xulasho"
+  },
+  "video": {
+    "captions": "Qoraallo sharraxaad ah",
+    "error": "Waan ka xunnahay, waxaa u muuqata in dhib ka jiro fiidiyowga. Waad dib u soo rari kartaa bogga ama waad isticmaali kartaa badhanka hoose si aad ugu beddesho muuqaalka qoraalka.",
+    "hideCaptions": "Qari qoraal-hoosaadyada",
+    "jumpBack": "Dib u bood",
+    "jumpForward": "Hore u bood",
+    "mute": "Dami codka",
+    "pause": "Hakad geli",
+    "play": "Bilow",
+    "progessbarLabel": "Waqtiga hadhay",
+    "replay": "Dib u bilow",
+    "showCaptions": "Muuji qoraal-hoosaadyada",
+    "showTranscript": "Muuji fiidiyowga qoraal ahaan",
+    "showVideo": "Muuji fiidiyowga",
+    "subtitles": "Qoraal-hoosaadyo",
+    "timeLeft": "{minutes, plural, =0 {} =1 {hal daqiiqad} other {# daqiiqadood}} {seconds, plural, =0 {} =1 {hal ilbiriqsi} other {# ilbiriqsiyood}} ayaa hadhay",
+    "transcript": "Qoraal",
+    "transcriptToggleLabel": "U kala beddel muuqaalka fiidiyowga iyo qoraalka",
+    "unmute": "Shid codka",
+    "unsupportedWarning": "Nasiib darro, biraawsarkaagu ma taageero nooca fiidiyowgan ah.",
+    "video": "Fiidiyow"
+  },
+  "questionExtendedInfo": {
+    "title": "Baro wax dheeraad ah"
+  }
+}

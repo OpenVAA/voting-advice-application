@@ -1,0 +1,9 @@
+{
+  "controls": {
+    "noFilterResults": "Shaandhooyinku wax natiijo ah ma soo saarin. Waad isku dayi kartaa inaad beddesho.",
+    "noSearchResults": "Raadintu wax natiijo ah ma soo saarin. Waad isku dayi kartaa inaad beddesho.",
+    "searchPlaceholder": "Magac ku raadi",
+    "showingNumResults": "Waxaa la muujinayaa {numShown, plural, =1 {1 natiijo} other {# natiijo}}"
+  },
+  "showMore": "Muuji wax dheeraad ah"
+}

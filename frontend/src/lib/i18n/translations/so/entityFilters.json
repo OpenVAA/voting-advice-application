@@ -1,0 +1,18 @@
+{
+  "applyAndClose": "Xir shaandhooyinka",
+  "error": "Shaandhada lama soo rari karin, waan ka xunnahay!",
+  "filterButtonLabel": "Shaandhee",
+  "filters": "Shaandhooyin",
+  "missingValue": "Jawaab ma jirto",
+  "numeric": {
+    "maxLabel": "Ugu badnaan",
+    "minLabel": "Ugu yaraan"
+  },
+  "reset": "Dib u deji shaandhooyinka",
+  "selectAll": "Dooro dhammaan",
+  "text": {
+    "ariaLabel": "Eray raadin:",
+    "placeholder": "Erayga aad raadinayso"
+  },
+  "unselectAll": "Ka saar dhammaan"
+}

@@ -532,6 +532,7 @@ export type TranslationKey =
   | 'lang.en'
   | 'lang.et'
   | 'lang.fi'
+  | 'lang.so'
   | 'lang.sv'
   | 'maintenance.title'
   | 'privacy.analytics.content.umami'

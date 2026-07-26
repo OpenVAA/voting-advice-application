@@ -1,0 +1,21 @@
+{
+  "description": {
+    "label": "Faallooyin dheeraad ah",
+    "placeholder": "Faallooyin ama talooyin dheeraad ah"
+  },
+  "emailIntro": "Haddii aad rabto, waxaad sidoo kale nagu soo gaadhi kartaa iimayl",
+  "error": {
+    "emailIntro": "Waxaannu si edeb leh kaaga codsanaynaa inaad jawaab-celintaada iimayl ku soo dirto adigoo riixaya badhanka hoose. Jawaab-celintii aad hore u qortay si toos ah ayaa iimaylka loogu darayaa.",
+    "emailSubject": "Jawaab-celin",
+    "message": "Aad baannu uga xunnahay, khalad baa dhacay markii la dirayay jawaab-celintaada."
+  },
+  "popupTitle": "Ma qiimayn kartaa Hagaha Doorashada?",
+  "rating": {
+    "label": "Qiimaynta guud ee barnaamijka",
+    "valueLabel": "{rating, plural, =0 {Qiimayn ma jirto} other {Qiimayn # ka mid ah {ratingMax}}}"
+  },
+  "send": "Dir jawaab-celin",
+  "sending": "Waa la dirayaa…",
+  "thanks": "Waad ku mahadsan tahay jawaab-celintaada!",
+  "title": "Jawaab-celin"
+}

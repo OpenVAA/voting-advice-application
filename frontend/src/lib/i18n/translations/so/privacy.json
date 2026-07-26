@@ -1,0 +1,28 @@
+{
+  "analytics": {
+    "content": {
+      "umami": "Waxaannu isticmaalnaa adeegga Umami falanqaynta. Tani waxay dhacdaa si buuxda oo aan magac lahayn, mana u baahna kukiyo. Macluumaad dheeraad ah: {analyticsLink}."
+    },
+    "title": "Falanqayn"
+  },
+  "cookies": {
+    "content": "Barnaamijku kukiyo kuma isticmaalo kaydinta xogtaada. Jawaabahaaga iyo doorbidyadaada waxaa lagu kaydiyaa kaydka maxalliga ah (local storage) ee biraawsarkaaga si aad u hesho khibrad isticmaale oo wanaagsan. Xogtan waxaa heli kara oo kaliya qalabkaaga, ma aha daabacaha barnaamijka.",
+    "title": "Kukiyada"
+  },
+  "dataCollection": {
+    "platform": {
+      "umami": "Waxaannu isticmaalnaa adeegga Umami ururinta xogta. Kukiyo ma isticmaalo. Macluumaad dheeraad ah: {analyticsLink}."
+    }
+  },
+  "dataConsentInfoButton": "Macluumaad dheeraad ah oo ku saabsan ururinta xogta isticmaalka",
+  "dataConsentIntro": {
+    "denied": "Waxaad diidday ururinta xogta {consentDate, date, ::yyyyMMd}. Doorbidkaaga waad ka beddeli kartaa hoos.",
+    "granted": "Waxaad ogolaatay ururinta xogta {consentDate, date, ::yyyyMMd}.  Doorbidkaaga waad ka beddeli kartaa hoos.",
+    "indetermined": "Waad ogolaan kartaa ama diidi kartaa ururinta xogta adigoo dooranaya mid ka mid ah xulashooyinka hoose."
+  },
+  "dataConsentLabel": {
+    "denied": "Ma rabo in xogtayda la wadaago",
+    "granted": "Haa, waan ogolahay in xogtayda la wadaago"
+  },
+  "title": "Asturnaanta"
+}

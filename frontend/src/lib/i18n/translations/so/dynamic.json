@@ -1,0 +1,120 @@
+{
+  "about": {
+    "heroEmoji": "⚙️"
+  },
+  "appName": "Hagaha Doorashada",
+  "candidateAppBasicInfo": {
+    "immutableData": {
+      "title": "Macluumaadka shakhsiga ah",
+      "ingress": "Magacaaga iyo macluumaad kale ayaa horay loo buuxiyay ama waa la dhammaystiri doonaa marka liiska rasmiga ah ee musharraxiinta la xaqiijiyo. Adigu ma beddeli kartid macluumaadkan, laakiin haddii ay khaladaad jiraan, fadlan la xidhiidh taageerada musharraxiinta.",
+      "emptyPlaceholder": "Sida liiska rasmiga ah ee musharraxiinta"
+    }
+  },
+  "candidateAppName": "Hagaha Doorashada ee musharraxiinta",
+  "candidateAppNotAccessible": {
+    "content": "Hagaha Doorashada ee musharraxiinta weli lama daabicin. Fadlan dib ugu soo noqo cinwaankan marka la heli karo.",
+    "title": "Waan ka xunnahay, Hagaha Doorashada ee musharraxiinta weli lama heli karo"
+  },
+  "candidateAppPrivacy": {
+    "heroEmoji": "🛡️",
+    "consent": {
+      "acceptLabel": "Waxaan aqbalayaa kaydinta iyo isticmaalka xogtayda sida ay qabaan shuruudaha isticmaalka.",
+      "heroEmoji": "🖋️",
+      "ingress": "Waa inaad aqbashaa shuruudaha isticmaalka ka hor inta aanad sii wadin buuxinta boroofaylkaaga. Fadlan si taxaddar leh u akhri oo calaamadee sanduuqa hoose.",
+      "title": "Shuruudaha isticmaalka"
+    },
+    "registryStatement": {
+      "content": "<h3>1. Mas'uulka xogta</h3><p>DATA_CONTROLLER</p><h3>2. Qofka xidhiidhka ee diiwaanka</h3><p>DATA_CONTACT_PERSON, {adminEmailLink}.</p><h3>3. Magaca diiwaanka</h3><p>{appName} - Nidaamka macluumaadka musharraxiinta.</p><h3>4. Aasaaska sharciga ah iyo ujeeddada ka shaqaynta xogta shakhsiga ah</h3><p>Aasaaska sharciga ah ee ka shaqaynta xogta shakhsiga ah, sida uu qabo Xeerka Guud ee Ilaalinta Xogta ee Midowga Yurub (GDPR), waa ogolaanshaha qofka. Ujeeddada ka shaqaynta xogta shakhsiga ah waa in lagu isticmaalo hagaha doorashada.</p><h3>5. Waxa ku jira diiwaanka</h3><p>Diiwaanku wuxuu kaydiyaa xogtan soo socota: magaca, asalka siyaasadeed, cinwaanka iimaylka, taariikhda dhalashada, cinwaannada internet ee bogagga, cinwaannada internet ee boroofaylada baraha bulshada, jawaabo kale oo ikhtiyaari ah oo lagu siiyay su'aalaha hagaha doorashada, iyo macluumaad laga helay diiwaannada doorashada ee dadweynaha.</p><p>DATA_STORAGE_TERM_EG_5_YRS</p><p>Kukiyada lagama maarmaanka u ah shaqada adeegga waxaa laga shaqeeyaa iyadoo lagu salaynayo danta sharciga ah, tusaale ahaan si loo hubiyo amniga.</p><h3>6. Ilaha caadiga ah ee macluumaadka</h3><p>Xogta lagu kaydiyo diiwaanka waxaa laga helaa musharraxiinta iyadoo loo marayo foom internet, xilliga aqoonsiga Bank ID, iyo diiwaannada doorashada ee dadweynaha.</p><h3>7. Siidaynta caadiga ah ee xogta iyo u wareejinta bannaanka Midowga Yurub ama Aagga Dhaqaalaha Yurub (EEA)</h3><p>Xogta si caadi ah looma siiyo dhinacyo kale, laakiin marka daabacaadda hagaha doorashada ay dhammaato, xogta waxaa loo isticmaali karaa ujeeddooyin cilmi-baaris iyo horumarinta hagaha doorashada.</p><h3>8. Mabaadi'da ilaalinta diiwaanka</h3><p>Ka shaqaynta diiwaanka waxaa lagu sameeyaa taxaddar, xogta laga shaqeeyo nidaamyada macluumaadkana si ku filan ayaa loo ilaaliyaa. Marka xogta diiwaanka lagu kaydiyo serfarrada internetka, waxaa la qaadaa tallaabooyin habboon si loo hubiyo amniga jireed iyo kan dhijitaalka ah labadaba. Mas'uulka xogta wuxuu hubiyaa in xogta la kaydiyay, xuquuqaha gelitaanka serfarrada, iyo macluumaad kale oo muhiim u ah amniga xogta shakhsiga ah lagu maareeyo si qarsoodi ah, ayna maareeyaan oo keliya shaqaalaha ay mas'uuliyaddaasi ku jirto qeexidda shaqadooda.</p><h3>9. Xuquuqda hubinta iyo xuquuqda lagu codsado saxidda xogta</h3><p>Qof kasta oo diiwaanka ku jira wuxuu xaq u leeyahay inuu hubiyo xogtiisa la kaydiyay iyo inuu codsado in la saxo xog kasta oo khaldan ama aan dhammaystirnayn. Haddii qof rabo inuu hubiyo xogtiisa la kaydiyay ama uu codsado sixitaan, waa inuu codsiga iimayl ugu soo diraa mas'uulka xogta. Mas'uulka xogta wuxuu qofka ka codsan karaa inuu xaqiijiyo aqoonsigiisa haddii loo baahdo. Mas'uulka xogta wuxuu jawaab bixiyaa muddada uu dejiyay Xeerka Guud ee Ilaalinta Xogta ee Midowga Yurub (GDPR).</p><h3>10. Xuquuq kale oo la xidhiidha ka shaqaynta xogta shakhsiga ah</h3><p>Qofka diiwaanka ku jira wuxuu xaq u leeyahay inuu codsado in xogtiisa shakhsiga ah laga tirtiro diiwaanka (’xuquuqda in la ilaawo’). Sidoo kale, dadka diiwaangashan waxay leeyihiin xuquuq kale oo uu bixiyo Xeerka Guud ee Ilaalinta Xogta ee Midowga Yurub (GDPR), sida xuquuqda lagu xaddido ka shaqaynta xogta shakhsiga ah xaaladaha qaarkood. Codsiyada waa in iimayl loogu soo diraa mas'uulka xogta. Mas'uulka xogta wuxuu qofka ka codsan karaa inuu xaqiijiyo aqoonsigiisa haddii loo baahdo. Mas'uulka xogta wuxuu jawaab bixiyaa muddada uu dejiyay Xeerka Guud ee Ilaalinta Xogta ee Midowga Yurub (GDPR).</p>",
+      "title": "Qoraalka diiwaanka iyo ilaalinta xogta"
+    },
+    "otherTermsOfUse": {
+      "content": "",
+      "title": "Shuruudaha kale ee isticmaalka"
+    }
+  },
+  "constituencies": {
+    "heroEmoji": "📍",
+    "ingress": {
+      "multipleElections": "Musharraxiinta iyo xisbiyada waxaa loo qaybiyay degmooyin doorasho. Dooro degmada doorashada ee doorasho kasta.",
+      "singleElection": "Musharraxiinta iyo xisbiyada waxaa loo qaybiyay degmooyin doorasho. Waxaad kaliya cod u bixin kartaa kuwa ku jira degmadaada doorashada.",
+      "singleGroup": "Musharraxiinta iyo xisbiyada waxaa loo qaybiyay degmooyin doorasho. Hoos ka dooro degmo doorasho."
+    }
+  },
+  "elections": {
+    "heroEmoji": "🗳️",
+    "ingress": {
+      "multipleElections": "Dooro doorashooyinka aad rabto inaad ka hesho musharraxiin ama xisbiyo.",
+      "singleElection": "Degmada doorashada ee aad dooratay hal doorasho oo kaliya ayaa lagu qabtaa."
+    }
+  },
+  "error": {
+    "heroEmoji": "🙊"
+  },
+  "frontPage": {
+    "ingress": "Barnaamijkan waxaad ku isbarbardhigi kartaa musharraxiinta iyo xisbiyada iyadoo lagu saleynayo aragtiyahooda, xisbiyadooda iyo xog kale.",
+    "startButton": "Hel musharraxiinta iyo xisbiyada kugu habboon!"
+  },
+  "info": {
+    "content": "Hoos ka akhri wax dheeraad ah oo ku saabsan doorashooyinka.",
+    "dateInfo": "Taariikhda doorashada waa {electionDate, date, ::yyyyMMdd}.",
+    "heroEmoji": "🗳️"
+  },
+  "intro": {
+    "continue": "Sii wad",
+    "heroEmoji": "🚀",
+    "ingress": "Barnaamijkani wuxuu kaa caawin doonaa inaad hesho {candidatePlural} iyo {partyPlural} ee ugu waafaqsan aragtiyahaaga doorashooyinka.",
+    "list": {
+      "constituencies": "Dooro degmadaada doorashada",
+      "details": "Si faahfaahsan u eeg",
+      "elections": "Dooro doorasho",
+      "opinions": "Geli aragtiyahaaga",
+      "results": "Arag {candidatePlural} iyo {partyPlural} ee aad ugu badan kula waafaqsan"
+    },
+    "title": "Aan bilowno!"
+  },
+  "maintenance": {
+    "content": "<p>Aad baannu uga xunnahay, Hagaha Doorashada hadda lama heli karo dayactir dartiis. Waa inuu dhawaan mar kale soo laabtaa, sidaas darteed fadlan isku day mar dambe.</p><p>Ha welwelin haddii aad hadda su'aalaha ka jawaabaysay. Waad ka sii wadi kartaa meeshii aad ka tagtay, marka aad soo noqoto.</p>",
+    "heroEmoji": "🛠️"
+  },
+  "nominations": {
+    "title": "Dhammaan musharraxiinta diiwaangashan",
+    "content": "Boggan waxaad ka heli kartaa dhammaan musharraxiinta buuxiyay Hagaha Doorashada.",
+    "heroEmoji": "🔍"
+  },
+  "privacy": {
+    "content": "Hoos waxaa lagu soo koobay asturnaanta barnaamijka iyo ururinta xogta.",
+    "dataConsentIntro": {
+      "popup": "Ma ururin karnaa xogtaada si gebi ahaanba aan magac lahayn ujeeddooyin cilmi-baaris iyo si loo horumariyo barnaamijka? Kukiyo ma isticmaalno, xogtana lagumaba xidhiidhin karo adiga."
+    },
+    "heroEmoji": "🛡️"
+  },
+  "questions": {
+    "heroEmoji": "💬"
+  },
+  "results": {
+    "heroEmoji": "🎊",
+    "ingress": {
+      "browse": "Kuwani waa {candidatePlural} iyo {partyPlural} ee u taagan doorashooyinkan, oo loo kala saaray astaanta doorashada ama magaca. Waxaad isticmaali kartaa shaandhooyinka si aad u yarayso.",
+      "results": "Kuwani waa {candidatePlural} iyo {partyPlural} ee u taagan doorashooyinkan. Kuwa ugu waafaqsanaanta badan ayaa liiska ugu horreeya. Si aad natiijooyinka u yarayso, waxaad sidoo kale isticmaali kartaa shaandhooyinka."
+    },
+    "multipleElections": "Marka hore hoos ka dooro doorashada aad rabto inaad ka aragto {candidatePlural} iyo {partyPlural}, kadibna dooro haddii aad rabto inaad aragto {candidatePlural} ama {partyPlural}."
+  },
+  "statistics": {
+    "heroEmoji": "🧮"
+  },
+  "success": {
+    "heroEmoji": "🎉"
+  },
+  "survey": {
+    "button": "Ka qayb qaado sahanka isticmaalayaasha",
+    "info": "Ma jeclaan lahayd inaad ka caawiso horumarinta Hagayaasha Doorashada? Fur sahanka daaqad cusub oo buuxi hadda ama marka ay kugu habboon tahay.",
+    "popupInfo": "Sahanku wuxuu ka furmaa daaqad cusub. Waxaad buuxin kartaa isla markiiba ama marka ay kugu habboon tahay.",
+    "popupTitle": "Ma jeclaan lahayd inaad ka caawiso horumarinta Hagayaasha Doorashada?",
+    "thanks": "Waad ku mahadsan tahay buuxinta sahanka!",
+    "title": "Ka qayb qaado sahanka isticmaalayaasha"
+  },
+  "voterAppNotAccessible": {
+    "content": "Hagaha Doorashada weli lama daabicin. Fadlan dib ugu soo noqo cinwaankan marka la heli karo.",
+    "title": "Waan ka xunnahay, Hagaha Doorashada weli lama daabicin"
+  }
+}

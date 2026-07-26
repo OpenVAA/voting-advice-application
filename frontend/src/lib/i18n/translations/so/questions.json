@@ -1,0 +1,27 @@
+{
+  "additionalActions": "Ficillo dheeraad ah oo su'aashan la xidhiidha",
+  "answers": {
+    "bothHaventAnswered": "Adiga iyo {entity} midkiinna kama jawaabin su'aashan",
+    "entityHasntAnswered": "{entity} kama jawaabin su'aashan",
+    "youHaventAnswered": "Kama aadan jawaabin su'aashan",
+    "yourAnswer": "Adiga"
+  },
+  "category": {
+    "numQuestions": "{numQuestions, plural, =-1 {} =1 {1 su'aal} other {# su'aalood}}",
+    "skip": "Ka bood mawduucan"
+  },
+  "infoDescription": "Macluumaad asaasi ah oo ku saabsan su'aasha",
+  "intro": {
+    "ingress": {
+      "withCategorySelection": "Su'aalaha waxaa loo qaybiyay {numCategories} mawduuc. Waad ka jawaabi kartaa dhammaantood ama waad dooran kartaa kuwa aad rabto. {minQuestions, plural, =0 {} =1 {} other {Hase yeeshee, dooro mawduucyo ku filan si aad wadar ahaan u hesho ugu yaraan # su'aalood.}}",
+      "withoutCategorySelection": "Marka xigta, ka jawaab {numQuestions} su'aalood oo ku saabsan arrimaha siyaasadda iyo qiyamka. {numCategories, plural, =0 {} =1 {} other {Su'aalaha waxaa loo qaybiyay # mawduuc.}}"
+    },
+    "start": "Ka jawaab {numQuestions} su'aalood"
+  },
+  "next": "Su'aasha xigta",
+  "previous": "Tii hore",
+  "remove": "Tirtir jawaabta",
+  "skip": "Ka bood",
+  "skipToResults": "U bood natiijooyinka",
+  "title": "Aragtiyahaaga"
+}

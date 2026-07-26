@@ -1,0 +1,23 @@
+{
+  "emailDescription": "Iimaylkan waxaannu u isticmaalnaa inaannu kula soo xidhiidhno iyo dib u dejinta furaha sirta ah. Laguma muujin doono boroofaylkaaga dadweynaha.",
+  "error": {
+    "changeLanguage": "Khalad ayaa dhacay markii la beddelayay luqadda barnaamijka.",
+    "changePassword": "Beddelidda furaha sirta ah way fashilantay. Hubi in furaha sirta ah ee hadda uu sax yahay."
+  },
+  "ingress": "Habayntani waxay kaliya saameysaa sida aad u isticmaasho barnaamijkan. Macluumaad kasta oo aad halkan geliso lama muujin doono dadweynaha.",
+  "language": "Luqadda barnaamijka",
+  "languageDescription": "Barnaamijkan ku isticmaal luqaddan. Laguma muujin doono boroofaylkaaga dadweynaha.",
+  "password": {
+    "areSame": "Furaha sirta ah ee cusub waa isku mid furaha sirta ah ee hadda",
+    "current": "Furaha sirta ah ee hadda",
+    "currentDescription": "Geli furaha sirta ah ee akoonkaaga ee hadda jira oo aad rabto inaad beddesho.",
+    "dontMatch": "Furayaasha sirta ah isku mid ma aha",
+    "new": "Furaha sirta ah ee cusub",
+    "newConfirmation": "Xaqiijinta furaha sirta ah ee cusub",
+    "notValid": "Furaha sirta ah sax ma aha",
+    "title": "Furaha sirta ah ee akoonka",
+    "update": "Cusboonaysii furaha sirta ah",
+    "updated": "Furaha sirta ah waa la cusboonaysiiyay!"
+  },
+  "title": "Habaynta"
+}

@@ -1,0 +1,91 @@
+{
+  "alliance": {
+    "plural": "isbahaysiyo",
+    "singular": "isbahaysi"
+  },
+  "answer": {
+    "no": "Maya",
+    "yes": "Haa"
+  },
+  "back": "Dib u noqo",
+  "cancel": "Jooji",
+  "candidate": {
+    "plural": "musharraxiin",
+    "singular": "musharrax"
+  },
+  "candidatePortrait": "Sawirka shakhsiga",
+  "clear": "Nadiifi",
+  "close": "Xir",
+  "closeDialog": "Xir daaqadda xulashada",
+  "closeMenu": "Xir liiska xulashada",
+  "confirmed": "La xaqiijiyay",
+  "constituency": "Degmo doorasho",
+  "continue": "Sii wad",
+  "election": "Doorasho",
+  "electionList": "Liiska doorashada",
+  "electionSymbol": {
+    "alliance": "Astaanta doorashada",
+    "candidate": "Lambarka musharraxa",
+    "faction": "Astaanta doorashada",
+    "organization": "Astaanta doorashada"
+  },
+  "email": "Iimayl",
+  "emailPlaceholder": "Iimayl",
+  "expandOrCollapse": "Ballaari ama yaree qaybtan",
+  "faction": {
+    "plural": "kooxo",
+    "singular": "koox"
+  },
+  "firstName": "Magaca hore",
+  "home": "bogga hore",
+  "info": "Macluumaad",
+  "language": {
+    "select": "Dooro luqadda"
+  },
+  "lastName": "Magaca dambe",
+  "loading": "Waa la soo rarayaa…",
+  "locked": "Qufulan",
+  "login": "Soo gal",
+  "logout": "Ka bax",
+  "madeWithPrefix": "Waxaa lagu dhisay",
+  "madeWithSuffix": "",
+  "missingAnswer": "—",
+  "multipleAnswerSeparator": " • ",
+  "nomination": "Musharraxnimo",
+  "openCloseMenu": "Fur ama xir liiska xulashada",
+  "openMenu": "Fur liiska xulashada",
+  "openVAA": "OpenVAA",
+  "or": "Ama",
+  "organization": {
+    "plural": "xisbiyo",
+    "singular": "xisbi"
+  },
+  "password": "Furaha sirta ah",
+  "passwordConfirmation": "Xaqiiji furaha sirta ah",
+  "pending": "Aan la xaqiijin",
+  "primaryActions": "Ficillada aasaasiga ah",
+  "privacy": {
+    "dataCollection": {
+      "content": "Waxaannu jecel nahay inaannu si aan magac lahayn u ururinno xogta isticmaalka, si loogu isticmaalo cilmi-baadhis iyo hagaajinta barnaamijka. Xogta la ururinayo waxaa ka mid ah jawaabahaaga su'aalaha, waqtiga aad ku qaadatay jawaabidda su'aalaha iyo qaybaha kale, iyo natiijooyinka aad daawatay, laakiin xogtan adiga laguma xidhi karo.",
+      "title": "Ururinta xogta isticmaalka"
+    }
+  },
+  "progress": "Horumar",
+  "publishedBy": "Waxaa daabacay {publisher}",
+  "question": "Su'aal",
+  "readMore": "Akhri wax dheeraad ah",
+  "required": "Waajib",
+  "resetAnswers": "Nadiifi jawaabahaaga",
+  "return": "Dib u noqo",
+  "returnHome": "Dib ugu noqo bogga hore",
+  "saveAndContinue": "Kaydi oo sii wad",
+  "saveAndReturn": "Kaydi oo dib u noqo",
+  "saving": "Waa la kaydinayaa…",
+  "showFullImage": "Muuji sawirka oo dhan",
+  "skipToMain": "U bood nuxurka bogga",
+  "state": "Xaalad",
+  "success": "Howshu way guulaysatay!",
+  "thanksNo": "Maya, mahadsanid",
+  "unaffiliated": "Madax banaan",
+  "website": "Bogga internetka"
+}

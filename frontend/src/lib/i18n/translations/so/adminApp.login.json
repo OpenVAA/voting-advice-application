@@ -1,0 +1,17 @@
+{
+  "title": "Soo gelidda maamulaha",
+  "appTitle": "Hagaha Doorashada",
+  "appSubtitle": "Maamulka",
+  "instructions": "Geli macluumaadkaaga soo gelidda.",
+  "email": "Iimayl",
+  "password": "Furaha sirta ah",
+  "button": "Soo gal",
+  "forgotPassword": "Ma illowday furaha sirta ah?",
+  "errors": {
+    "invalidCredentials": "Iimayl ama furaha sirta ah oo aan sax ahayn",
+    "genericError": "Khalad baa dhacay markii la isku dayayay soo gelidda. Fadlan isku day mar kale.",
+    "unauthorized": "Waxaad u baahan tahay xuquuqaha maamulaha si aad u gasho aaggan",
+    "sessionExpired": "Fadhigaagii wuu dhacay, fadlan mar kale soo gal",
+    "unknown": "Khalad aan la garanayn ayaa dhacay"
+  }
+}

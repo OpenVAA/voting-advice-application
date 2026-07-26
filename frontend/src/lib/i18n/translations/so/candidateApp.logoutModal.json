@@ -1,0 +1,7 @@
+{
+  "continue": "Sii wad gelinta xogta",
+  "ingress": "Ma hubtaa inaad rabto inaad ka baxdo? Si toos ah ayaa laguu saari doonaa {timeLeft} ilbiriqsi ka dib.",
+  "itemsLeft": "Waxaa weli buuxin u baahan {infoQuestionsLeft, plural, =1 {hal shay} other {# shayo}} oo macluumaad aasaasi ah iyo {opinionQuestionsLeft, plural, =1 {hal aragti} other {# aragtiyo}}.",
+  "questionsLeft": "Waxaa weli buuxin u baahan {opinionQuestionsLeft, plural, =1 {hal aragti} other {# aragtiyo}}.",
+  "title": "Qaar ka mid ah xogtaada ayaa weli maqan"
+}

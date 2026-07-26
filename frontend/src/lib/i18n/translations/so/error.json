@@ -1,0 +1,13 @@
+{
+  "403": "Nasiib darro, ma haysatid xuquuqda aad ku gasho nuxurkan.",
+  "404": "Bogga lama helin, waan ka xunnahay!",
+  "500": "Khalad gudaha ah oo adeegaha ka dhacay, waan ka xunnahay!",
+  "content": "<p>Aad baannu uga xunnahay dhibaatada. Waad isku dayi kartaa inaad dib u noqoto oo aad bogga dib u soo rarto si aad u aragto haddii dhibaatadu sii socoto.</p><p>Haddii dhibaatadu weli jirto, fadlan iimayl u dir {adminEmailLink} oo sharrax dhibaatada. Mahadsanid!</p>",
+  "default": "Wax baa qaldamay, waan ka xunnahay!",
+  "general": "Wax baa qaldamay",
+  "loginFailed": "Soo gelidda way fashilantay. Fadlan hubi magaca isticmaalaha iyo furaha sirta ah.",
+  "noNominations": "Degmadaada doorashada ma jiraan musharraxiin ama xisbiyo ka jawaabay Hagaha Doorashada.",
+  "noQuestions": "Hagaha Doorashada weli kuma jiraan su'aalo la xidhiidha degmadaada doorashada.",
+  "unsupportedQuestion": "Su'aashan lama muujin karo, waan ka xunnahay!",
+  "wrongEmailOrPassword": "Iimayl ama furaha sirta ah oo qaldan"
+}

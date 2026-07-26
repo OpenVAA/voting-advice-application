@@ -1,0 +1,19 @@
+{
+  "basicInfo": {
+    "edit": "Wax ka beddel macluumaadkaaga aasaasiga ah",
+    "enter": "Geli macluumaadkaaga aasaasiga ah",
+    "view": "Eeg macluumaadkaaga aasaasiga ah"
+  },
+  "ingress": {
+    "notDone": "Si aad ugu muuqato Hagaha Doorashada, waa inaad gelisaa macluumaad aasaasi ah oo ku saabsan naftaada, waanad ka jawaabtaa su'aalo aragtiyeed oo la xidhiidha arrimaha siyaasadda.",
+    "ready": "Waxaad buuxisay dhammaan macluumaadka looga baahan yahay Hagaha Doorashada. Wali waad wax ka beddeli kartaa jawaabahaaga, waanad mar dambe soo geli kartaa si aad taas u samayso."
+  },
+  "preview": "Horudhac u samee boroofaylkaaga",
+  "previewTip": "Haddaad rabto inaad aragto sida codbixiyayaashu u arki doonaan boroofaylkaaga, waad horudhac u samayn kartaa.",
+  "questions": {
+    "edit": "Wax ka beddel aragtiyahaaga",
+    "enter": "Sheeg aragtiyahaaga",
+    "view": "Eeg aragtiyahaaga"
+  },
+  "ready": "Waad diyaar tahay!"
+}

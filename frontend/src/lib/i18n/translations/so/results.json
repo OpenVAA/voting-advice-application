@@ -1,0 +1,35 @@
+{
+  "alliance": {
+    "numShown": "{numShown, plural, =0 {Isbahaysi ma jiro} =1 {1 isbahaysi} other {# isbahaysi}}"
+  },
+  "candidate": {
+    "numShown": "{numShown, plural, =0 {{candidatePlural} ma jiraan} =1 {1 {candidateSingular}} other {# {candidatePlural}}}"
+  },
+  "faction": {
+    "numShown": "{numShown, plural, =0 {Koox ma jirto} =1 {1 koox} other {# koox}}"
+  },
+  "inConstituency": "degmada doorashada",
+  "ingress": {
+    "answerMinQuestions": "Haddii aad rabto inaad hesho {candidatePlural} iyo {partyPlural} ee aad ugu badan kula waafaqsan, marka hore {questionsLink}.",
+    "questionsLinkText": "ka jawaab ugu yaraan {numQuestions, plural, =1 {hal su'aal} other {# su'aalood}}"
+  },
+  "missingNominations": {
+    "noNominations": {
+      "title": "Degmadaada doorashada ma jiraan musharraxiin ama xisbiyo ka jawaabay Hagaha Doorashada",
+      "content": "Waad eegi kartaa su'aalaha haddii aad rabto, laakiin natiijooyinka lama muujin karo."
+    },
+    "someNominations": {
+      "title": "Musharraxiinta ama xisbiyada doorashooyinka qaar kama ay jawaabin Hagaha Doorashada",
+      "content": "Ma jiraan jawaabo musharraxiin ama xisbiyo oo la heli karo dhammaan doorashooyinka degmadaada doorashada. Natiijooyinku waxay kaliya muujin doonaan doorashooyinka jawaabahoodu la heli karo."
+    },
+    "noNominationsForElection": "lama heli karo"
+  },
+  "organization": {
+    "numShown": "{numShown, plural, =0 {{partyPlural} ma jiraan} =1 {1 {partySingular}} other {# {partyPlural}}}"
+  },
+  "selectElectionFirst": "Marka hore dooro doorasho",
+  "title": {
+    "browse": "Fiiri {candidatePlural} iyo {partyPlural}",
+    "results": "Natiijooyinkaaga"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "title": "Macluumaadka su'aasha",
+  "description": "Soo saar macluumaad macne guud oo ku saabsan su'aalaha hagaha doorashada, oo ay ku jiraan qeexidda erayada iyo qaybaha macluumaadka, si ay codbixiyayaashu si wanaagsan u fahmaan su'aalaha.",
+  "selectElection": "Dooro doorashada",
+  "selectQuestions": "Dooro su'aalaha",
+  "noQuestions": "Doorashadan looma helin su'aalo aragtiyeed",
+  "generate": {
+    "button": "Soo saar macluumaadka su'aasha",
+    "buttonLoading": "Waa la soo saarayaa...",
+    "allQuestions": "Dhammaan su'aalaha aragtiyeed",
+    "selectedQuestions": "Su'aalaha la doortay"
+  },
+  "options": {
+    "heading": "Xulashooyinka soo saarista",
+    "whatToGenerate": "Waxa la soo saarayo:",
+    "terms": "Qeexidda erayada",
+    "infoSections": "Qaybaha macluumaadka"
+  },
+  "sectionTopics": {
+    "label": "Mawduucyada qaybaha (ikhtiyaari)",
+    "help": "Liis ay hakadku kala qaybiso oo ah mawduucyo loogu talagalay qaybaha macluumaadka. Bannaan uga tag si loo isticmaalo kuwa caadiga ah.",
+    "placeholder": "Asalka, Xaaladda hadda, Daneeyayaasha muhiimka ah"
+  },
+  "customInstructions": {
+    "label": "Tilmaamo gaar ah (ikhtiyaari)",
+    "help": "Hagitaan dheeraad ah oo LLM-ka lagu siinayo sida loo soo saaro nuxurka.",
+    "placeholder": "Diirradda saar maamulka maxalliga ah iyo dhinacyada siyaasadda degmooyinka"
+  },
+  "questionContext": {
+    "label": "Macnaha guud ee su'aasha (ikhtiyaari)",
+    "help": "Macne guud oo ku saabsan doorashada ama mawduuca, si LLM-ka looga caawiyo inuu soo saaro nuxur ku habboon.",
+    "placeholder": "Doorashooyinka degmooyinka Finland 2025"
+  },
+  "validation": {
+    "noElection": "Fadlan dooro doorasho",
+    "noQuestions": "Fadlan dooro ugu yaraan hal su'aal",
+    "noOperations": "Fadlan dooro ugu yaraan hal xulasho oo soo saaris ah"
+  }
+}

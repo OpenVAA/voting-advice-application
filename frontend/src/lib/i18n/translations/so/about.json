@@ -1,0 +1,17 @@
+{
+  "content": "<p>Hagaha Doorashada wuxuu u shaqeeyaa isagoo isbarbardhigaya aragtiyaha aad gelisay iyo kuwa ay bixiyeen {candidatePlural} iyo {partyPlural}. Natiijooyinka waxaa la siiyaa natiijada waafaqsanaanta, taasoo ah boqolkiiba inta aad kula waafaqsan tahay.</p> <ul> <li>Natiijada 100 waxay ka dhigan tahay inaad gebi ahaanba isku waafaqsan tihiin dhammaan su'aalaha aad ka jawaabtay.</li> <li>Natiijada 0 waxay ka dhigan tahay inaad su'aalaha oo dhan is khilaafsan tihiin.</li> <li>Natiijada u dhaxaysa labadan daraf waxay ka dhigan tahay inaad su'aalaha qaarkood isku waafaqsan tihiin, qaarkalena aad is khilaafsan tihiin.</li> </ul>",
+  "feedback": {
+    "title": "Jawaab-celin"
+  },
+  "organizationMatching": {
+    "content": "{partyMatchingMethod, select, answersOnly {<p>Natiijooyinka xisbiyada waxaa lagu xisaabiyay jawaabaha ay xisbiyadu bixiyeen.</p>} imputed {<p>Natiijooyinka xisbiyada waxaa lagu xisaabiyay jawaabaha ay bixiyeen ama, haddii xisbi aanu ka jawaabin su'aalaha, waxaa laga soo qaatay qiimaha ugu badan ee soo noqnoqda ama qiimaha dhexe ee jawaabaha musharraxiintiisa ku sugan degmada doorashada.</p>} other {<p>Natiijooyinka xisbiyada waxaa lagu xisaabiyay jawaabaha ay bixiyeen ama, haddii xisbi aanu ka jawaabin su'aalaha, waxaa lagu saleeyay jawaabaha musharraxiintiisa ku sugan degmada doorashada.</p>}} {partyMatchingMethod, select, answersOnly {} other {<p>Ogow in musharraxiinta xisbigu ay xisbigooda kaga khilaafsanaan karaan arrimo qaar, sidaas darteed mowqifkan la xisaabiyay laga yaabaa inuusan si buuxda u matalin mowqifka rasmiga ah ee xisbiga.</p>}}",
+    "title": "Waafaqsanaanta xisbiyada"
+  },
+  "returnButton": "Dib ugu noqo bogga hore",
+  "source": {
+    "content": "Koodka isha ee barnaamijka waxaa laga heli karaa",
+    "sitename": "GitHub",
+    "title": "Koodka isha"
+  },
+  "title": "Sidee bay u shaqaysaa barnaamijkan?"
+}

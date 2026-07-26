@@ -1,0 +1,20 @@
+{
+  "title": "Falanqaynta faktooyinka",
+  "description": "Falanqee oo maamul faktooyinka su'aalaha doorashada.",
+  "compute": {
+    "title": "Xisaabi faktooyinka",
+    "description": "Ka xisaabi faktooyinka qarsoon jawaabaha ay bixiyeen musharraxiinta iyo xisbiyada.",
+    "selectElections": "Dooro doorashooyinka faktooyinkooda la xisaabinayo.",
+    "button": "Xisaabi faktooyinka",
+    "buttonLoading": "Waa la xisaabinayaa faktooyinka...",
+    "mayTakeTime": "Tani waxay qaadan kartaa waqti.",
+    "noElections": "Doorashooyin lama heli karo",
+    "candidates": "musharraxiin",
+    "parties": {
+      "some": "iyo {count} xisbi",
+      "none": "iyo xisbi aan jirin"
+    },
+    "haveAnswered": "ayaa jawaabay",
+    "error": "Xisaabinta faktooyinka way fashilantay"
+  }
+}

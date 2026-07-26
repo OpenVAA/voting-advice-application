@@ -1,0 +1,45 @@
+{
+  "title": "Bogga maamulka",
+  "emergencyCleanup": "Nadiifin degdeg ah",
+  "features": {
+    "ArgumentCondensation": {
+      "title": "Soo koobidda doodaha"
+    },
+    "QuestionInfoGeneration": {
+      "title": "Soo saarista macluumaadka su'aasha"
+    }
+  },
+  "confirmAbortAll": "Ma hubtaa inaad doonayso inaad joojiso DHAMMAAN hawlaha socda?",
+  "authRequired": "Xaqiijin ayaa loo baahan yahay",
+  "abortAllFailed": "Nadiifinta degdegga ah way fashilantay. Konsoolka ka eeg faahfaahinta.",
+  "systemHealth": "Caafimaadka nidaamka",
+  "activeJobs": "Hawlaha firfircoon",
+  "successfulJobs": "Hawlaha guulaystay",
+  "failedJobs": "Hawlaha fashilmay",
+  "abortedJobs": "Hawlaha la joojiyay",
+  "abortingInfo": "Joojin ayaa la codsaday. Waxaa la sugayaa in habraacu istaago oo si ammaan ah isu nadiifiyo.",
+  "abortJob": "Jooji hawsha",
+  "pastJobs": "Hawlihii hore",
+  "hidePastJobs": "Qari hawlihii hore",
+  "showPastJobs": "Muuji hawlihii hore",
+  "pastJobsDescription": "Hawlihii hore",
+  "noActiveJobs": "Hawlo firfircoon ma jiraan",
+  "noPastJobs": "Hawlo hore ma jiraan",
+  "started": "Bilaabmay",
+  "messages": "Farriimo",
+  "notAvailable": "Ma jiro",
+  "confirmAbortJob": "Ma hubtaa inaad doonayso inaad joojiso hawshan {feature}?",
+  "abortJobFailed": "Joojinta hawsha way fashilantay. Konsoolka ka eeg faahfaahinta.",
+  "alreadyRunning": "Hawl ayaa horeba socota. Fadlan sug inay dhammaato.",
+  "progress": "Horumar",
+  "warningsAndErrors": "Digniino iyo khaladaad",
+  "noWarningsOrErrors": "Digniino ama khaladaad ma jiraan",
+  "infoMessages": "Farriimaha macluumaadka",
+  "noInfoMessages": "Farriimo macluumaad ma jiraan",
+  "author": "Qoraa",
+  "duration": "Muddo",
+  "aborting": "Waa la joojinayaa…",
+  "hideMessages": "Qari farriimaha",
+  "showMessages": "Muuji farriimaha",
+  "id": "ID"
+}

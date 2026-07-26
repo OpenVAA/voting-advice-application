@@ -1,0 +1,22 @@
+{
+  "code": "koodka diiwaangelinta",
+  "codePlaceholder": "Tusaale: CP23-174a-f4%&-aHAB",
+  "didYouAlreadyRegister": "Ma hore ayaad isu diiwaangelisay?",
+  "enterCode": "Geli koodka diiwaangelinta ee aad iimaylka ku heshay si aad u dhammaystirto diiwaangelintaada.",
+  "goToLoginLabel": "Tag bogga soo gelidda",
+  "loggedInWarning": "Isticmaale ayaa hadda soo galay. Ka bax ka hor intaadan sii wadin.",
+  "passwordValidation": {
+    "commonPatterns": "Waxaa ku jira isku xigxig ama qaabab caadi ah",
+    "length": "Ugu yaraan {minPasswordLength} xaraf",
+    "lowercase": "Xaraf yar",
+    "number": "Lambar",
+    "repetition": "Waxaa ku jira xarfo isku celcelis ah",
+    "symbol": "Astaan (sida !?%#€)",
+    "uppercase": "Xaraf weyn",
+    "username": "Ka fogow inaad magacaaga ku isticmaasho furaha sirta ah"
+  },
+  "register": "Is diiwaangeli",
+  "title": "Diiwaangelin",
+  "titleWithPreregistration": "Xaqiiji cinwaanka iimaylkaaga",
+  "wrongRegistrationCode": "Koodka diiwaangelinta waa khalad"
+}
