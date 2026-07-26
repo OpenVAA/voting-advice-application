@@ -161,10 +161,21 @@ async function advanceVoterFlow(
       }
       try {
         // Bounded visibility wait on the continue button (TIMEOUTS.slowPage bucket —
-        // cold-start multi-roundtrip render). On timeout the button never rendered, so
-        // `continue` and let the top-of-loop `anyCheckpoint.waitFor` re-detect whichever
-        // screen is actually current; a genuinely-stuck screen exhausts `maxSteps` and
-        // fails loudly at the terminal wait rather than being routed around.
+        // cold-start multi-roundtrip render; slowPage is required here, the constituencies
+        // continue can wait on a post-selection data roundtrip). On timeout the button never
+        // rendered, so `continue` and let the top-of-loop `anyCheckpoint.waitFor` re-detect
+        // whichever screen is actually current. A genuinely-stuck screen is never routed
+        // around — it surfaces as one of two loud failures, depending on which way it is stuck:
+        //   - button renders but the click no-ops: each iteration costs only the TIMEOUTS.page
+        //     URL settle below, so the loop DOES exhaust `maxSteps` (~10 × 5 s + the 5 s terminal
+        //     wait ≈ 55 s, inside the 90 s TIMEOUTS.testMax ceiling) and fails at the terminal
+        //     `stopAt` wait at the bottom of this function.
+        //   - button never renders: each iteration burns this full slowPage wait, so
+        //     `maxSteps` × slowPage = 100 s overruns the 90 s TIMEOUTS.testMax ceiling. The test
+        //     is killed inside iteration 9's `waitFor` here, naming
+        //     `getByTestId('voter-constituencies-continue')`; the loop never exhausts and the
+        //     terminal `stopAt` wait is never reached. `maxSteps` is NOT the binding constraint
+        //     on this path — the wall clock is. Raising `maxSteps` alone changes nothing.
         await constituenciesCont.waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
       } catch {
         continue;
@@ -194,10 +205,24 @@ async function advanceVoterFlow(
       // Accept the default selection (all elections pre-checked).
       try {
         // Bounded visibility wait on the continue button (TIMEOUTS.slowPage bucket —
-        // cold-start multi-roundtrip render). On timeout the button never rendered, so
-        // `continue` and let the top-of-loop `anyCheckpoint.waitFor` re-detect whichever
-        // screen is actually current; a genuinely-stuck screen exhausts `maxSteps` and
-        // fails loudly at the terminal wait rather than being routed around.
+        // cold-start multi-roundtrip render; slowPage is required here, the first paint of the
+        // elections screen on a cold dev server is a multi-roundtrip render). On timeout the
+        // button never rendered, so `continue` and let the top-of-loop `anyCheckpoint.waitFor`
+        // re-detect whichever screen is actually current. A genuinely-stuck screen is never
+        // routed around — it surfaces as one of two loud failures, depending on which way it
+        // is stuck:
+        //   - button renders but the click no-ops: each iteration costs only the TIMEOUTS.page
+        //     URL settle below, so the loop DOES exhaust `maxSteps` (~10 × 5 s + the 5 s terminal
+        //     wait ≈ 55 s, inside the 90 s TIMEOUTS.testMax ceiling) and fails at the terminal
+        //     `stopAt` wait at the bottom of this function. Empirically confirmed against a
+        //     deliberately-broken build: failure at the terminal `getByTestId('question-choice')`
+        //     wait at 54.4 s (133-UAT.md, test 1).
+        //   - button never renders: each iteration burns this full slowPage wait, so
+        //     `maxSteps` × slowPage = 100 s overruns the 90 s TIMEOUTS.testMax ceiling. The test
+        //     is killed inside iteration 9's `waitFor` here, naming
+        //     `getByTestId('voter-elections-continue')`; the loop never exhausts and the terminal
+        //     `stopAt` wait is never reached. `maxSteps` is NOT the binding constraint on this
+        //     path — the wall clock is. Raising `maxSteps` alone changes nothing.
         await electionsCont.waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
       } catch {
         continue;
