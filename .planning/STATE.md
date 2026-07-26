@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
-current_phase: 133
-current_phase_name: fix-phase-132-code-review-gaps
-status: verifying
+current_phase: 122
+current_phase_name: E2E Specs — Bank-Auth Round-Trip
+status: planning
 stopped_at: Completed 133-03-PLAN.md
-last_updated: "2026-07-26T08:58:58.037Z"
+last_updated: "2026-07-26T14:09:57.114Z"
 last_activity: 2026-07-26
-last_activity_desc: "Phase 133 complete — 3x full-suite E2E determinism gate green (129/129 x3)"
+last_activity_desc: Phase 133 complete, transitioned to Phase 122
 progress:
   total_phases: 16
   completed_phases: 16
@@ -28,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 
 ## Current Position
 
-Phase: 133 (fix-phase-132-code-review-gaps) — COMPLETE
-Plan: 3 of 3
-Status: Phase complete — ready for verification
-Last activity: 2026-07-26 — 133-03 full-suite 3x determinism gate green (129/129, 0 failed / 0 did-not-run, three consecutive runs)
+Phase: 122 — E2E Specs — Bank-Auth Round-Trip
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-07-26 — Phase 133 complete, transitioned to Phase 122
 
 Progress: [██████████] 100%
 

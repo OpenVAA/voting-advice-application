@@ -665,7 +665,7 @@ The three workstreams are largely independent and may be planned/executed concur
 **Goal:** Fix the issues raised in the Phase 132 code review. For the `navigateDirectlyToQuestions` issue: remove that function completely and make `advanceVoterFlow` deterministically check for each of the possible screens instead — trial whether that causes any issues (E2E suite is the gate).
 **Requirements**: WR-01, IN-01, IN-02
 **Depends on:** Phase 132
-**Plans:** 3/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 **Wave 1**
