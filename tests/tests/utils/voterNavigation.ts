@@ -135,7 +135,16 @@ async function advanceVoterFlow(
     // Probe each checkpoint in priority order: closest-to-terminal first so
     // an already-visible answer option short-circuits the loop without
     // spending any extra time on the earlier checkpoints.
-    if (await answerOption.isVisible()) return;
+    //
+    // The `stopAt === 'first-question'` guard exists so this early return can only
+    // satisfy the TERMINAL stop point. Without it, a `'category-intro'` /
+    // `'questions-intro'` walk that overshoots its checkpoint (because that page is
+    // disabled in app settings) would sail through to the first question and resolve
+    // SUCCESSFULLY — a silent pass on a checkpoint that never rendered. Guarded, the
+    // overshoot instead falls through to the terminal `stopAt` wait and fails loudly.
+    // Inert for every current caller: `advanceVoterFlow` is module-private and its one
+    // call site passes `'first-question'`, for which the added conjunct is always true.
+    if (stopAt === 'first-question' && (await answerOption.isVisible())) return;
 
     if (await categoryStart.isVisible()) {
       if (stopAt === 'category-intro') return;
