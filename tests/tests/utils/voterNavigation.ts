@@ -291,13 +291,14 @@ export async function navigateToFirstQuestion(page: Page): Promise<void> {
   // wait prevents the caller's downstream waitForURL from racing the redirect.
   await page.waitForURL(/\/questions\//, { timeout: TIMEOUTS.slowPage });
   // reason: terminal answer-option settle closing the Phase-127 run-1 navigation-timing
-  // race. advanceVoterFlow can short-circuit (line ~167) on an answer option that is visible
-  // on the pre-redirect /questions intro page, but the /questions → /questions/__first__
-  // onMount redirect then detaches it; the waitForURL above only guards the URL, not that the
-  // question page has re-mounted. Waiting for an answer option to be stably visible on the
-  // SETTLED /questions/<id> URL guarantees the caller sees a fully-mounted question page (the
-  // heading where ElectionTag renders) rather than a mid-redirect transitional DOM. Mirrors the
-  // loop-exhaustion terminal wait (same locator + waitFor idiom). TIMEOUTS.element (no URL change).
+  // race. advanceVoterFlow can short-circuit (the terminal answerOption.isVisible() early return)
+  // on an answer option that is visible on the pre-redirect /questions intro page, but the
+  // /questions → /questions/__first__ onMount redirect then detaches it; the waitForURL above
+  // only guards the URL, not that the question page has re-mounted. Waiting for an answer
+  // option to be stably visible on the SETTLED /questions/<id> URL guarantees the caller sees a
+  // fully-mounted question page (the heading where ElectionTag renders) rather than a mid-redirect
+  // transitional DOM. Mirrors the loop-exhaustion terminal wait (same locator + waitFor idiom).
+  // TIMEOUTS.element (no URL change).
   const answerOption = page.getByTestId(testIds.voter.questions.answerOption).first();
   await answerOption.waitFor({ state: 'visible', timeout: TIMEOUTS.element });
 }
