@@ -149,9 +149,9 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
     const params = buildFilterParams(options);
     const allianceParams = structuredClone(params);
     params.filters ??= {};
-    params.filters.candidate = {
-      termsOfUseAccepted: { $notNull: 'true' }
-    };
+    // params.filters.candidate = {
+    //   termsOfUseAccepted: { $notNull: 'true' }
+    // };
     if (!options.includeUnconfirmed) params.filters.unconfirmed = { $ne: 'true' };
     params.populate = {
       constituency: 'true',

@@ -78,20 +78,20 @@ export function nominationAndQuestionStore({
                   return hasAllAnswers;
                 });
               }
-              if (entityType === ENTITY_TYPE.Organization || entityType === ENTITY_TYPE.Faction) {
-                // We need to also purge child nomination ids from the data if they don't have answers to all opinion questions
-                if (entityType === ENTITY_TYPE.Organization && hideIfMissingAnswers?.candidate) {
-                  for (const organization of nominations as Array<OrganizationNomination>) {
-                    organization.data.candidateNominationIds = organization.data.candidateNominationIds?.filter(
-                      (id) => !candidateNominationsWithMissingAnswers?.has(id)
-                    );
-                  }
-                  // And finally filter out orgs with no children left
-                  nominations = nominations.filter(
-                    (n) => (n as OrganizationNomination).data.candidateNominationIds?.length
-                  );
-                }
-              }
+              // if (entityType === ENTITY_TYPE.Organization || entityType === ENTITY_TYPE.Faction) {
+              //   // We need to also purge child nomination ids from the data if they don't have answers to all opinion questions
+              //   if (entityType === ENTITY_TYPE.Organization && hideIfMissingAnswers?.candidate) {
+              //     for (const organization of nominations as Array<OrganizationNomination>) {
+              //       organization.data.candidateNominationIds = organization.data.candidateNominationIds?.filter(
+              //         (id) => !candidateNominationsWithMissingAnswers?.has(id)
+              //       );
+              //     }
+              //     // And finally filter out orgs with no children left
+              //     nominations = nominations.filter(
+              //       (n) => (n as OrganizationNomination).data.candidateNominationIds?.length
+              //     );
+              //   }
+              // }
               return [entityType, { nominations, infoQuestions, opinionQuestions }];
             })
             .filter(([, value]) => value)
