@@ -41,6 +41,7 @@ The layout varies slightly based on the presence of a video player.
   export let primaryActionsLabel: $$Props['primaryActionsLabel'] = undefined;
   export let titleClass: $$Props['titleClass'] = '';
   export let contentClass: $$Props['contentClass'] = '';
+  export let hideTitle: $$Props['hideTitle'] = false;
 
   const { t } = getComponentContext();
   const {
@@ -67,12 +68,20 @@ The layout varies slightly based on the presence of a video player.
       <slot name="hero" />
     {/if}
 
+    {#if $$slots.hero2}
+      <div class="max-h-[50vh]">
+        <slot name="hero2" />
+      </div>
+    {/if}
+
     <!-- Title block -->
-    <div class="w-full max-w-xl text-center transition-[padding] {titleClass}" class:py-lg={!$hasVideo}>
-      <slot name="heading">
-        <h1>{title}</h1>
-      </slot>
-    </div>
+    {#if $$slots.heading || !hideTitle}
+      <div class="w-full max-w-xl text-center transition-[padding] {titleClass}" class:py-lg={!$hasVideo}>
+        <slot name="heading">
+          <h1>{title}</h1>
+        </slot>
+      </div>
+    {/if}
 
     <!-- Default content -->
     <div class="flex w-full max-w-xl flex-col items-center {contentClass}">
@@ -82,7 +91,7 @@ The layout varies slightly based on the presence of a video player.
 
   <!-- Full-width content -->
   {#if $$slots.fullWidth}
-    <div class="-mb-safelgb -ms-safelgs -me-safelge flex flex-col items-stretch self-stretch">
+    <div class="-mb-safelgb -me-safelge -ms-safelgs flex flex-col items-stretch self-stretch">
       <slot name="fullWidth" />
     </div>
   {/if}

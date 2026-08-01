@@ -71,7 +71,9 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
       max={$maxProgress}
       title={$t('common.progress')} />
   {/if}
-  <div class="inner-actions-bar flex w-full items-center justify-between pe-6" style:--background-color={bgColor}>
+  <div
+    class="inner-actions-bar grid w-full max-w-full grid-cols-3 items-center justify-between pe-6"
+    style:--background-color={bgColor}>
     <!-- invertLogo ? 'text-primary-content' : 'text-neutral' -->
     <button
       on:click={openDrawer}
@@ -80,11 +82,15 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
       aria-controls={menuId}
       aria-label={$t('common.openMenu')}
       disabled={$navigationSettings.hide}
-      class="btn btn-ghost drawer-button flex cursor-pointer items-center gap-md text-neutral">
+      class="btn btn-ghost drawer-button flex cursor-pointer flex-row flex-nowrap items-center gap-md justify-self-start text-neutral">
       <Icon name="menu" class={$navigationSettings.hide ? 'hidden' : undefined} />
       <!-- inverse={invertLogo} -->
-      <AppLogo inverse={false} aria-hidden="true" />
+      <AppLogo inverse={false} aria-hidden="true" size="lg" />
     </button>
+    <img
+      src="https://projects-471112560111-eu-north-1-an.s3.eu-north-1.amazonaws.com/kisam-2026/varldenskvinnor_logo_yellow.svg"
+      alt="Världens kvinnor"
+      class="max-h-[2rem] justify-self-center" />
     <Banner />
   </div>
 </header>

@@ -1,0 +1,86 @@
+[
+  {
+    "ar": {
+      "aspectRatio": 0.5625,
+      "poster": "https://projects-471112560111-eu-north-1-an.s3.eu-north-1.amazonaws.com/kisam-2026/intro.ar.jpg",
+      "sources": [
+        "https://projects-471112560111-eu-north-1-an.s3.eu-north-1.amazonaws.com/kisam-2026/intro.ar.webm",
+        "https://projects-471112560111-eu-north-1-an.s3.eu-north-1.amazonaws.com/kisam-2026/intro.ar.mp4"
+      ],
+      "title": "مرحبًا بك",
+      "captions": ""
+    },
+    "en": {
+      "aspectRatio": 0.5625,
+      "poster": "https://projects-471112560111-eu-north-1-an.s3.eu-north-1.amazonaws.com/kisam-2026/intro.en.jpg",
+      "sources": [
+        "https://projects-471112560111-eu-north-1-an.s3.eu-north-1.amazonaws.com/kisam-2026/intro.en.webm",
+        "https://projects-471112560111-eu-north-1-an.s3.eu-north-1.amazonaws.com/kisam-2026/intro.en.mp4"
+      ],
+      "title": "Welcome",
+      "captions": ""
+    },
+    "so": {
+      "aspectRatio": 0.5625,
+      "poster": "https://projects-471112560111-eu-north-1-an.s3.eu-north-1.amazonaws.com/kisam-2026/intro.so.jpg",
+      "sources": [
+        "https://projects-471112560111-eu-north-1-an.s3.eu-north-1.amazonaws.com/kisam-2026/intro.so.webm",
+        "https://projects-471112560111-eu-north-1-an.s3.eu-north-1.amazonaws.com/kisam-2026/intro.so.mp4"
+      ],
+      "title": "Ku soo dhowow",
+      "captions": ""
+    },
+    "sv": {
+      "aspectRatio": 0.5625,
+      "poster": "https://projects-471112560111-eu-north-1-an.s3.eu-north-1.amazonaws.com/kisam-2026/intro.sv.jpg",
+      "sources": [
+        "https://projects-471112560111-eu-north-1-an.s3.eu-north-1.amazonaws.com/kisam-2026/intro.sv.webm",
+        "https://projects-471112560111-eu-north-1-an.s3.eu-north-1.amazonaws.com/kisam-2026/intro.sv.mp4"
+      ],
+      "title": "Välkommen",
+      "captions": ""
+    }
+  },
+  {
+    "ar": {
+      "aspectRatio": 0.5625,
+      "poster": "https://projects-471112560111-eu-north-1-an.s3.eu-north-1.amazonaws.com/kisam-2026/info.ar.jpg",
+      "sources": [
+        "https://projects-471112560111-eu-north-1-an.s3.eu-north-1.amazonaws.com/kisam-2026/info.ar.webm",
+        "https://projects-471112560111-eu-north-1-an.s3.eu-north-1.amazonaws.com/kisam-2026/info.ar.mp4"
+      ],
+      "title": "الانتخابات والتصويت في السويد",
+      "captions": ""
+    },
+    "en": {
+      "aspectRatio": 0.5625,
+      "poster": "https://projects-471112560111-eu-north-1-an.s3.eu-north-1.amazonaws.com/kisam-2026/info.en.jpg",
+      "sources": [
+        "https://projects-471112560111-eu-north-1-an.s3.eu-north-1.amazonaws.com/kisam-2026/info.en.webm",
+        "https://projects-471112560111-eu-north-1-an.s3.eu-north-1.amazonaws.com/kisam-2026/info.en.mp4"
+      ],
+      "title": "Elections and voting in Sweden",
+      "captions": ""
+    },
+    "so": {
+      "aspectRatio": 0.5625,
+      "poster": "https://projects-471112560111-eu-north-1-an.s3.eu-north-1.amazonaws.com/kisam-2026/info.so.jpg",
+      "sources": [
+        "https://projects-471112560111-eu-north-1-an.s3.eu-north-1.amazonaws.com/kisam-2026/info.so.webm",
+        "https://projects-471112560111-eu-north-1-an.s3.eu-north-1.amazonaws.com/kisam-2026/info.so.mp4"
+      ],
+      "title": "Doorashada iyo codbixinta Iswiidhan",
+      "captions": ""
+    },
+    "sv": {
+      "aspectRatio": 0.5625,
+      "poster": "https://projects-471112560111-eu-north-1-an.s3.eu-north-1.amazonaws.com/kisam-2026/info.sv.jpg",
+      "sources": [
+        "https://projects-471112560111-eu-north-1-an.s3.eu-north-1.amazonaws.com/kisam-2026/info.sv.webm",
+        "https://projects-471112560111-eu-north-1-an.s3.eu-north-1.amazonaws.com/kisam-2026/info.sv.mp4"
+      ],
+      "title": "Val och att rösta i Sverige",
+      "captions": ""
+    }
+  }
+]

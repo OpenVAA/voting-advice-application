@@ -67,7 +67,7 @@ Accesses `AppContext` and optionally `VoterContext`.
 <!-- style:--headerIcon-color={hasVideo && screenWidth < Breakpoints.sm
   ? 'white'
   : 'oklch(var(--p))' -->
-<div class="vaa-basicPage-actions flex gap-0" style:--headerIcon-color="oklch(var(--p))">
+<div class="vaa-basicPage-actions flex gap-0 justify-self-end" style:--headerIcon-color="oklch(var(--p))">
   {#if $hasVideo}
     <Button
       on:click={toggleVideo}

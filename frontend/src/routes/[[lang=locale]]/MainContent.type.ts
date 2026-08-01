@@ -25,4 +25,5 @@ export type MainContentProps = SvelteHTMLElements['main'] & {
    * Optional class string to add to the `<div>` tag wrapping the `default` slot.
    */
   contentClass?: string;
+  hideTitle?: boolean;
 };
