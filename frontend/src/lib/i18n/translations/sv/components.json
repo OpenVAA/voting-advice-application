@@ -52,6 +52,7 @@
     "captions": "Bildtexter",
     "error": "Tyvärr, det verkar vara några problem med videon. Du kan försöka ladda om sidan eller använda knappen nedan för att växla till en textvy.",
     "hideCaptions": "Dölj undertexter",
+    "hideVideo": "Dölj video",
     "jumpBack": "Hoppa tillbaka",
     "jumpForward": "Hoppa framåt",
     "mute": "Mute",

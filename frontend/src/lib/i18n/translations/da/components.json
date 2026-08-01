@@ -52,6 +52,7 @@
     "captions": "Undertekster",
     "error": "Beklager, der opstod et problem med videoen. Prøv at genindlæse siden eller brug knappen nedenfor for at skifte til tekstvisning.",
     "hideCaptions": "Skjul undertekster",
+    "hideVideo": "Skjul video",
     "jumpBack": "Hop tilbage",
     "jumpForward": "Hop frem",
     "mute": "Slå lyd fra",

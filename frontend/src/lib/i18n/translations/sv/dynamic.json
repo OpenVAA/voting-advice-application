@@ -2,7 +2,7 @@
   "about": {
     "heroEmoji": "⚙️"
   },
-  "appName": "Valkompassen",
+  "appName": "Valkompass",
   "candidateAppBasicInfo": {
     "immutableData": {
       "title": "Personuppgifter",
@@ -51,8 +51,11 @@
     "heroEmoji": "🙊"
   },
   "frontPage": {
-    "ingress": "Valkompassen ger kandidater och partier poäng efter hur väl de överensstämmer med dina åsikter.",
-    "startButton": "Börja!"
+    "ingress": "Är du osäker på vilket parti du ska rösta på i riksdagsvalet? Vår valkompass kan hjälpa dig!",
+    "startButton": "BÖRJA!",
+    "selectLanguage": "Du kan också byta språk till:",
+    "startButtonIntro": "Vill du ha mer information om val och att rösta i Sverige, tryck här nedan.",
+    "startButtonSkip": "Hoppa över introduktionen"
   },
   "info": {
     "content": "Läs mer om valen.",
@@ -71,6 +74,10 @@
       "results": "Se de {candidatePlural} och {partyPlural} som bäst överensstämmer med dig"
     },
     "title": "Låt oss börja!"
+  },
+  "links": {
+    "varldensMammor": "Världens Mammor",
+    "varldensKvinnor": "Världens Kvinnor"
   },
   "maintenance": {
     "content": "<p>Vi är mycket ledsna, valkompassen är för närvarande inte tillgänglig på grund av underhåll. Den bör vara tillbaka inom kort, så försök igen senare.</p> <p>Oroa dig inte om du bara var mitt i att svara. Du kan fortsätta från där du slutade när du kommer tillbaka.</p>",
@@ -94,8 +101,8 @@
   "results": {
     "heroEmoji": "🎊",
     "ingress": {
-      "browse": "Detta är kandidaterna och partierna som ställer upp i dessa val, sorterade efter valsymbol eller namn. Du kan använda filtren för att begränsa dem.",
-      "results": "Detta är de kandidaterna och partierna som ställer upp i dessa val. De bästa matchningarna är först på listan. För att begränsa resultaten kan du också använda filtren."
+      "browse": "Detta är partierna som ställer upp i riksdagsvalet, sorterade efter valsymbol eller namn. För att begränsa resultaten kan du också använda filtren.",
+      "results": "Resultat. Detta är partierna som ställer upp i riksdagsvalet. De bästa matchningarna är först på listan. För att begränsa resultaten kan du också använda filtren."
     },
     "multipleElections": "Välj nedan först vilket vals {candidatePlural} och {partyPlural} du vill se och sedan om du vill se {candidatePlural} eller {partyPlural}."
   },

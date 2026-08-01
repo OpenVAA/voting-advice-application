@@ -72,6 +72,10 @@
     },
     "title": "Alustame!"
   },
+  "links": {
+    "varldensMammor": "Världens Mammor (rootsi keeles)",
+    "varldensKvinnor": "Världens Kvinnor (rootsi keeles)"
+  },
   "maintenance": {
     "content": "<p>Vabandame väga, kuid valimiskompass ei ole hetkel hoolduse tõttu kasutatav. See peaks peagi taas tööle hakkama, seega proovige hiljem uuesti.</p><p>Ärge muretsege, kui olite just küsimustele vastamas. Tagasi tulles saate jätkata sealt, kus pooleli jäite.</p>",
     "heroEmoji": "🛠️"

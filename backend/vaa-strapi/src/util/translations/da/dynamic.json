@@ -72,6 +72,10 @@
     },
     "title": "Lad os komme i gang!"
   },
+  "links": {
+    "varldensMammor": "Världens Mammor (på svensk)",
+    "varldensKvinnor": "Världens Kvinnor (på svensk)"
+  },
   "maintenance": {
     "content": "<p>Vi beklager, men Valgtesten er midlertidigt utilgængeligt på grund af vedligeholdelse. Det burde snart være tilbage, så prøv igen senere.</p><p>Hvis du var i gang med at besvare spørgsmål, skal du ikke bekymre dig. Du kan fortsætte, hvor du slap, når du vender tilbage.</p>",
     "heroEmoji": "🛠️"

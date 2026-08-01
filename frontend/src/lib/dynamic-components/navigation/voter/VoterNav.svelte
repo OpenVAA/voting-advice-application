@@ -102,15 +102,23 @@ A template part that outputs the navigation menu for the Voter App for use in `L
     {/if}
     <NavItem href={$getRoute('Privacy')} icon="privacy" text={$t('privacy.title')} />
   </NavGroup>
-  {#if $appSettings.survey?.showIn?.includes('navigation') || $openFeedbackModal}
-    <NavGroup>
-      {#if $appSettings.survey?.showIn?.includes('navigation')}
-        <NavItem href={$surveyLink} target="_blank" icon="research" text={$t('dynamic.survey.button')} />
-      {/if}
-      {#if $openFeedbackModal}
-        <NavItem on:click={$openFeedbackModal} icon="feedback" text={$t('feedback.send')} />
-      {/if}
-    </NavGroup>
-  {/if}
+  <NavGroup>
+    <NavItem
+      href="https://www.varldensmammor.se/"
+      target="_blank"
+      icon="alliance"
+      text={$t('dynamic.links.varldensMammor')} />
+    <NavItem
+      href="https://www.varldenskvinnor.se/"
+      target="_blank"
+      icon="alliance"
+      text={$t('dynamic.links.varldensKvinnor')} />
+    {#if $appSettings.survey?.showIn?.includes('navigation')}
+      <NavItem href={$surveyLink} target="_blank" icon="research" text={$t('dynamic.survey.button')} />
+    {/if}
+    {#if $openFeedbackModal}
+      <NavItem on:click={$openFeedbackModal} icon="feedback" text={$t('feedback.send')} />
+    {/if}
+  </NavGroup>
   <LanguageSelection />
 </Navigation>

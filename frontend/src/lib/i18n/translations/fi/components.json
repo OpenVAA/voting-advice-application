@@ -52,6 +52,7 @@
     "captions": "Kuvailevat tekstitykset",
     "error": "Anteeksi, videon lataamisessa näyttää olevan hankaluuksia. Voit kokeilla ladata sivun uudelleen tai vaihtaa alta tekstinäkymään videon sijaan.",
     "hideCaptions": "Piilota tekstitykset",
+    "hideVideo": "Piilota video",
     "jumpBack": "Hyppää taaksepäin",
     "jumpForward": "Hyppää eteenpäin",
     "mute": "Äänet pois",

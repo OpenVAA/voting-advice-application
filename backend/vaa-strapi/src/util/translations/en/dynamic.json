@@ -2,7 +2,7 @@
   "about": {
     "heroEmoji": "⚙️"
   },
-  "appName": "Election Compass",
+  "appName": "Electoral Compass",
   "candidateAppBasicInfo": {
     "immutableData": {
       "title": "Personal Information",
@@ -51,8 +51,11 @@
     "heroEmoji": "🙊"
   },
   "frontPage": {
-    "ingress": "With this application you can compare candidates and parties based on their opinions, parties and other data.",
-    "startButton": "Find the Best Candidates and Parties!"
+    "ingress": "Are you unsure which political party to vote for in the Swedish parliamentary election? Our voting compass can help you!",
+    "startButton": "START HERE!",
+    "selectLanguage": "You can also switch the language to:",
+    "startButtonIntro": "If you would like to have more information about elections and voting in Sweden, click below.",
+    "startButtonSkip": "Skip Introduction"
   },
   "info": {
     "content": "Read more about the elections below.",
@@ -71,6 +74,10 @@
       "results": "See the {candidatePlural} and {partyPlural} that best agree with you"
     },
     "title": "Let’s start!"
+  },
+  "links": {
+    "varldensMammor": "Världens Mammor (in Swedish)",
+    "varldensKvinnor": "Världens Kvinnor (in Swedish)"
   },
   "maintenance": {
     "content": "<p>We're very sorry, the Election Compass is currently unavailable due to maintenance. It should be back in use shortly, so please try again later.</p><p>Don’t worry if you were just in the middle of answering. You can continue from where you left off, when you come back.</p>",
@@ -94,8 +101,8 @@
   "results": {
     "heroEmoji": "🎊",
     "ingress": {
-      "browse": "These are the {candidatePlural} and {partyPlural} standing in these elections, ordered by election symbol or name. You can use the filters to narrow them down.",
-      "results": "These are the {candidatePlural} and {partyPlural} standing in these elections. The best matches are first on the list. To narrow down the results, you can also use the filters."
+      "browse": "These are the parties running in the parliamentary election, ordered by election symbol or name. You can also use the filters to narrow down the results.",
+      "results": "Results. These are the parties running in the parliamentary election. The best matches appear at the top of the list. You can also use the filters to narrow down the results."
     },
     "multipleElections": "Select below first which election’s {candidatePlural} and {partyPlural} you want to see and then whether you want to see {candidatePlural} or {partyPlural} ."
   },

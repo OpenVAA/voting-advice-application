@@ -52,6 +52,7 @@
     "captions": "Captions",
     "error": "Sorry, there seems to be some trouble with the video. You can try to reload the page or use the button below to switch to a text view.",
     "hideCaptions": "Hide subtitles",
+    "hideVideo": "Hide video",
     "jumpBack": "Jump back",
     "jumpForward": "Jump forward",
     "mute": "Mute",
