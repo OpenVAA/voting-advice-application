@@ -19,6 +19,7 @@ Accesses `AppContext` and optionally `VoterContext`.
   import { page } from '$app/stores';
   import { LogoutButton as CandidateLogoutButton } from '$candidate/components/logoutButton';
   import { Button } from '$lib/components/button';
+  import { videoPreferences } from '$lib/components/video/component-stores';
   import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
@@ -32,8 +33,35 @@ Accesses `AppContext` and optionally `VoterContext`.
   const resultsAvailable = $appType === 'voter' ? getVoterContext().resultsAvailable : undefined;
   const {
     topBarSettings,
-    video: { mode: videoMode, hasContent: hasVideo, player }
+    video: { mode: videoMode, hasContent: hasVideo, hasTranscript, player, show: showVideo }
   } = getLayoutContext(onDestroy);
+
+  ////////////////////////////////////////////////////////////////////
+  // Video button
+  ////////////////////////////////////////////////////////////////////
+
+  /**
+   * Whether the video itself is currently visible, i.e. the player is shown and not displaying the transcript.
+   */
+  let videoShown: boolean;
+  $: videoShown = $showVideo && (!$hasTranscript || $videoMode === 'video');
+
+  /**
+   * The video button switches between the video and the transcript, but if the video has no transcript, it hides and shows the whole player instead. The choice to hide the player is stored in `videoPreferences` so that it persists across loads.
+   */
+  function toggleVideo(): void {
+    // The player may have been hidden when watching a video without a transcript, in which case we always show it first
+    if (!$showVideo) return setPlayerHidden(false);
+    if ($hasTranscript) return $player?.toggleTranscript();
+    setPlayerHidden(true);
+  }
+
+  function setPlayerHidden(hidden: boolean): void {
+    $showVideo = !hidden;
+    $videoPreferences = { ...$videoPreferences, videoHidden: hidden };
+    // Pause the video when hiding it so that it doesn't keep playing out of sight and resume when showing it again. This mirrors what `toggleTranscript` does.
+    $player?.togglePlay(!hidden && !$player.atEnd ? 'play' : 'pause');
+  }
 </script>
 
 <!-- style:--headerIcon-color={hasVideo && screenWidth < Breakpoints.sm
@@ -42,10 +70,12 @@ Accesses `AppContext` and optionally `VoterContext`.
 <div class="vaa-basicPage-actions flex gap-0" style:--headerIcon-color="oklch(var(--p))">
   {#if $hasVideo}
     <Button
-      on:click={() => $player?.toggleTranscript()}
+      on:click={toggleVideo}
       variant="responsive-icon"
-      icon={$videoMode === 'video' ? 'videoOn' : 'videoOff'}
-      text={$videoMode === 'video' ? $t('components.video.showTranscript') : $t('components.video.showVideo')} />
+      icon={videoShown ? 'videoOn' : 'videoOff'}
+      text={videoShown
+        ? $t($hasTranscript ? 'components.video.showTranscript' : 'components.video.hideVideo')
+        : $t('components.video.showVideo')} />
   {/if}
 
   {#if $topBarSettings.actions.logout == 'show' && $page.data.token}

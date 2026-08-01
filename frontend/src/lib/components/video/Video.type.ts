@@ -12,6 +12,10 @@ export type VideoProps = SvelteHTMLElements['div'] & Partial<VideoContent> & Opt
  */
 export type OptionalVideoProps = {
   /**
+   * The maximum height of the player as a CSS length. The player may still be smaller than this due to its other size constraints. @default '100vh'
+   */
+  maxHeight?: string;
+  /**
    * The controls to hide. All are shown if the list is not defined. @default undefined
    */
   hideControls?: Array<VideoControl>;
@@ -57,6 +61,10 @@ export type BindableVideoProps = {
    * Bindable: Whether the video is at the end (with a small margin)
    */
   readonly atEnd?: boolean;
+  /**
+   * Bindable: Whether a transcript is available for the current video, i.e. it's either supplied or can be built from the captions.
+   */
+  readonly hasTranscript?: boolean;
   /**
    * Bindable: Whether the video or the transcript is visible.
    */

@@ -7,7 +7,9 @@ A video player that also includes a switcher between the video and a text transc
 
 The player can be initialized without providing any content in which case it will be hidden until the content is provided using the `load` function.
 
-It's best to supply a number of sources, such as `mp4` and `webm` to support different browsers and devices. You also need to supply a `poster` image and VTT `captions` for accessibility reasons. `aspectRatio` is required for sizing the player correctly. A text `transcript` is recommended to be supplied, but if it's missing, one will be created from the `captions`.
+It's best to supply a number of sources, such as `mp4` and `webm` to support different browsers and devices. You should also supply a `poster` image and VTT `captions` for accessibility reasons. `aspectRatio` is required for sizing the player correctly. A text `transcript` is recommended to be supplied, but if it's missing, one will be created from the `captions`.
+
+The video is displayed even if `captions` are missing, in which case the captions control is hidden. Likewise, the transcript controls are hidden if there's neither a `transcript` nor `captions` to build one from.
 
 You can hide some of the controls using the `hideControls` property, in which case you should implement the functionality otherwise by binding to the control functions (see below).
 
@@ -21,13 +23,14 @@ If not provided, the `video` element will be hidden until these properties are p
 
 - `title`: The title of the video for labelling.
 - `sources`: The source URLs of the video.
-- `captions`: The source URL for the video's captions.
+- `captions`: The source URL for the video's captions. Optional, but strongly recommended for accessibility.
 - `poster`: The poster image URL for the video.
 - `aspectRatio`: The aspect ratio of the video. This is needed so that the component can be sized correctly even before the data is loaded. Default: `1/1`
 - `transcript`: Optional transcript text for the video as a HTML string. If empty, `captions` will be used instead.
 
 ### Other properties
 
+- `maxHeight`: The maximum height of the player as a CSS length. The player may still be smaller than this due to its other size constraints. Default: `'100vh'`
 - `hideControls`: The controls to hide. All are shown if the list is not defined. Default: `undefined`
 - `autoPlay`: Whether to autoPlay the video (when content is provided). Default: `true`
 - `autoUnmute`: Whether to automatically try to unmute the video when the user interacts with it. Default: `true`
@@ -44,6 +47,7 @@ If not provided, the `video` element will be hidden until these properties are p
 ### Bindable properties
 
 - `atEnd`: Bindable: Whether the video is at the end (with a small margin)
+- `hasTranscript`: Bindable: Whether a transcript is available for the current video, i.e. it's either supplied or can be built from the captions. Bind to this if you implement the transcript toggle outside of the component.
 - `mode`: Bindable: Whether the video or the transcript is visible.
 
 ### Bindable functions
@@ -54,7 +58,7 @@ If not provided, the `video` element will be hidden until these properties are p
 - `toggleTranscript`:  Toggle transcript visibility.
 - `jump`: Skip the video a number of steps based on text track cues or `skipAmount` if cues are not available. If the video is in the end, a `steps` of `-1` will be skip to the beginning of the last cue. If `steps` would result in a negative index or one greater than the number of cues, the video will be scrolled to the beginning or the end.
 - `gotoAndPlay`: Scroll the video to the given time and play.
-- `load`: Change the video contents, i.e. sources, captions, poster and transcript, and optionally other properties.
+- `load`: Change the video contents, i.e. sources, captions, poster and transcript, and optionally other properties, such as `maxHeight`.
 
 ### Tracking events
 
@@ -98,7 +102,11 @@ If not provided, the `video` element will be hidden until these properties are p
   /**
    * The default skip amount
    */
-  const DEFAULT_SKIP_AMOUNT = 10;
+  const DEFAULT_SKIP_AMOUNT = 5;
+  /**
+   * The default maximum height of the player
+   */
+  const DEFAULT_MAX_HEIGHT = '80vh';
   /**
    * The time in ms to wait for a loading error to be resolved before an error message is shown. The same time out is also used to check for silent errors, i.e., when the video should be playing but is not.
    */
@@ -124,6 +132,7 @@ If not provided, the `video` element will be hidden until these properties are p
   export let poster: $$Props['poster'] = undefined;
   export let aspectRatio: $$Props['aspectRatio'] = 1;
   export let transcript: $$Props['transcript'] = '';
+  export let maxHeight: $$Props['maxHeight'] = DEFAULT_MAX_HEIGHT;
   export let hideControls: $$Props['hideControls'] = undefined;
   export let autoPlay: $$Props['autoPlay'] = true;
   export let autoUnmute: $$Props['autoUnmute'] = true;
@@ -135,6 +144,7 @@ If not provided, the `video` element will be hidden until these properties are p
   export let onEnded: $$Props['onEnded'] = undefined;
   export let mode: $$Props['mode'] = undefined;
   export let atEnd: $$Props['atEnd'] = undefined;
+  export let hasTranscript: $$Props['hasTranscript'] = undefined;
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -147,11 +157,17 @@ If not provided, the `video` element will be hidden until these properties are p
   ////////////////////////////////////////////////////////////////////////////////
 
   let hasContent: boolean;
-  $: hasContent = !!title && !!sources?.length && !!captions;
+  $: hasContent = !!title && !!sources?.length;
 
   ////////////////////////////////////////////////////////////////////////////////
   // TEXT TRACKS
   ////////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * Whether captions are available. If not, neither the text track nor the captions control are rendered.
+   */
+  let hasCaptions: boolean;
+  $: hasCaptions = !!captions;
 
   /**
    * Whether text tracks are shown
@@ -278,6 +294,15 @@ If not provided, the `video` element will be hidden until these properties are p
   ////////////////////////////////////////////////////////////////////////////////
 
   let transcriptVisible = $videoPreferences.transcriptVisible ?? showTranscript;
+
+  /**
+   * Bindable: Whether a transcript is available, i.e. it's either supplied or can be built from the captions. If not, the transcript controls are not rendered.
+   */
+  $: hasTranscript = !!transcript || hasCaptions;
+
+  // Never show an empty transcript, e.g. when the stored preference is to show it but the current video has neither a transcript nor captions to build one from
+  $: if (transcriptVisible && !hasTranscript) transcriptVisible = false;
+
   $: mode = transcriptVisible ? 'text' : 'video';
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -455,7 +480,9 @@ If not provided, the `video` element will be hidden until these properties are p
     if (!hasContent) return;
     if (show == null) show = !transcriptVisible;
     if (show === transcriptVisible) return;
-    if (show && !transcript) transcript = buildTranscript();
+    if (show && !transcript) transcript = buildTranscript() ?? '';
+    // There's nothing to show if the transcript is empty and could not be built from the captions
+    if (show && !transcript) return;
     transcriptVisible = show;
     setPaused(show || !!atEnd);
     addToEvent((data) => ({
@@ -533,6 +560,7 @@ If not provided, the `video` element will be hidden until these properties are p
         aspectRatio,
         transcript,
         // Optional props
+        maxHeight,
         skipAmount,
         skipByCue,
         showTranscript,
@@ -542,6 +570,7 @@ If not provided, the `video` element will be hidden until these properties are p
         hideControls
       } = {
         // Use the current values as defaults for optional props
+        maxHeight,
         skipAmount,
         skipByCue,
         showTranscript,
@@ -652,10 +681,11 @@ If not provided, the `video` element will be hidden until these properties are p
   )}
   class:hidden={!hasContent}
   style:--video-aspectRatio={aspectRatio}
-  style:max-height="min(36rem, calc(100vw / var(--video-aspectRatio))"
-  style:min-width="min(100%, calc(36rem * var(--video-aspectRatio)))">
+  style:--video-maxHeight={maxHeight}
+  style:max-height="min(36rem, var(--video-maxHeight), calc(100vw / var(--video-aspectRatio)))"
+  style:min-width="min(100%, calc(min(36rem, var(--video-maxHeight)) * var(--video-aspectRatio)))">
   <!-- Show video button if transcript visible -->
-  {#if !hideControls?.includes('transcript') && transcriptVisible}
+  {#if !hideControls?.includes('transcript') && hasTranscript && transcriptVisible}
     <Button
       variant="icon"
       color="white"
@@ -703,12 +733,14 @@ If not provided, the `video` element will be hidden until these properties are p
         {/each}
       {/if}
 
-      <track
-        label={$t('components.video.captions')}
-        kind="captions"
-        srclang={$locale}
-        src={captions}
-        default={textTracksHidden ? undefined : true} />
+      {#if hasCaptions}
+        <track
+          label={$t('components.video.captions')}
+          kind="captions"
+          srclang={$locale}
+          src={captions}
+          default={textTracksHidden ? undefined : true} />
+      {/if}
 
       <div class="flex items-center bg-base-100 p-lg text-center text-warning">
         {$t('components.video.unsupportedWarning')}
@@ -717,37 +749,22 @@ If not provided, the `video` element will be hidden until these properties are p
 
     <!-- All controls. Note that we do not want these two overlap -->
     <div class="absolute bottom-0 left-0 right-0 top-0 flex flex-col">
-      <!-- Invisible overlay areas -->
-      <div class="flex grow flex-row justify-stretch">
-        <button
-          on:click|once={tryUnmute}
-          on:click|capture={() => screenJump(-1)}
-          aria-hidden="true"
-          tabindex="-1"
-          class="w-[33.333%] opacity-20 transition-colors duration-sm active:bg-gradient-to-r active:from-neutral active:to-50%"
-          ><span class="sr-only">{$t('components.video.jumpBack')}</span></button>
-        <button
-          on:click|once={tryUnmute}
-          on:click|capture={() => screenJump(0)}
-          aria-hidden="true"
-          tabindex="-1"
-          class="grow-1 w-[33.333%] opacity-20 transition-colors duration-sm active:bg-gradient-to-r active:from-transparent active:via-neutral active:via-50%"
-          ><span class="sr-only">{$t('components.video.jumpBack')}</span></button>
-        <button
-          on:click|once={tryUnmute}
-          on:click|capture={() => screenJump(+1)}
-          aria-hidden="true"
-          tabindex="-1"
-          class="w-[33.333%] opacity-20 transition-colors duration-sm active:bg-gradient-to-l active:from-neutral active:to-50%"
-          class:hidden={atEnd}><span class="sr-only">{$t('components.video.jumpForward')}</span></button>
-      </div>
+      <!-- Progress bar -->
+      <div
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={duration}
+        aria-valuenow={Math.round(currentTime)}
+        aria-label={$t('components.video.progessbarLabel')}
+        style:--progress={`${!duration ? 0 : atEnd ? 100 : ((100 * currentTime) / duration).toFixed(2)}%`}
+        class="relative h-2 w-[var(--progress)] overflow-hidden rounded-full bg-primary" />
 
       <!-- Icon buttons -->
       <div
         class="flex items-center justify-between px-sm py-4 {!hideControls || hideControls.length === 0
-          ? "before:absolute before:bottom-0 before:left-0 before:right-0 before:h-[4rem] before:bg-gradient-to-t before:from-neutral before:from-50% before:opacity-50 before:content-['']"
+          ? "before:absolute before:left-0 before:right-0 before:top-0 before:h-[4rem] before:bg-gradient-to-b before:from-neutral before:from-50% before:opacity-50 before:content-['']"
           : ''}">
-        {#if !hideControls?.includes('transcript')}
+        {#if !hideControls?.includes('transcript') && hasTranscript}
           <Button
             variant="icon"
             color="white"
@@ -756,7 +773,7 @@ If not provided, the `video` element will be hidden until these properties are p
             text={$t('components.video.showTranscript')}
             class="rounded-full !bg-opacity-30 active:bg-white" />
         {/if}
-        {#if !hideControls?.includes('captions')}
+        {#if !hideControls?.includes('captions') && hasCaptions}
           <Button
             variant="icon"
             color="white"
@@ -807,22 +824,37 @@ If not provided, the `video` element will be hidden until these properties are p
         {/if}
       </div>
 
-      <!-- Progress bar -->
-      <div
-        role="progressbar"
-        aria-valuemin={0}
-        aria-valuemax={duration}
-        aria-valuenow={Math.round(currentTime)}
-        aria-label={$t('components.video.progessbarLabel')}
-        style:--progress={`${!duration ? 0 : atEnd ? 100 : ((100 * currentTime) / duration).toFixed(2)}%`}
-        class="relative h-2 w-[var(--progress)] overflow-hidden rounded-full bg-primary" />
+      <!-- Invisible overlay areas. These fill the rest of the player below the controls. -->
+      <div class="flex grow flex-row justify-stretch">
+        <button
+          on:click|once={tryUnmute}
+          on:click|capture={() => screenJump(-1)}
+          aria-hidden="true"
+          tabindex="-1"
+          class="w-[33.333%] opacity-20 transition-colors duration-sm active:bg-gradient-to-r active:from-neutral active:to-50%"
+          ><span class="sr-only">{$t('components.video.jumpBack')}</span></button>
+        <button
+          on:click|once={tryUnmute}
+          on:click|capture={() => screenJump(0)}
+          aria-hidden="true"
+          tabindex="-1"
+          class="grow-1 w-[33.333%] opacity-20 transition-colors duration-sm active:bg-gradient-to-r active:from-transparent active:via-neutral active:via-50%"
+          ><span class="sr-only">{$t('components.video.jumpBack')}</span></button>
+        <button
+          on:click|once={tryUnmute}
+          on:click|capture={() => screenJump(+1)}
+          aria-hidden="true"
+          tabindex="-1"
+          class="w-[33.333%] opacity-20 transition-colors duration-sm active:bg-gradient-to-l active:from-neutral active:to-50%"
+          class:hidden={atEnd}><span class="sr-only">{$t('components.video.jumpForward')}</span></button>
+      </div>
     </div>
 
-    <!-- Loading spinner -->
+    <!-- Loading spinner. NB. The `top` offset clears the controls above. -->
     <Loading
       inline
       size="md"
-      class="absolute right-[0.8rem] top-[3.1rem] !text-white transition-all duration-sm
+      class="absolute right-[0.8rem] top-[3.6rem] !text-white transition-all duration-sm
         {status === 'waiting' || status === 'error-pending' ? '' : 'opacity-0'}" />
 
     <!-- Error message -->
@@ -831,12 +863,14 @@ If not provided, the `video` element will be hidden until these properties are p
         role="status"
         aria-live="polite"
         transition:fade
-        class="absolute left-[0.8rem] right-[0.8rem] top-[3.1rem] grid justify-items-center rounded-md bg-base-100 p-md text-warning">
+        class="absolute left-[0.8rem] right-[0.8rem] top-[3.6rem] grid justify-items-center rounded-md bg-base-100 p-md text-warning">
         <Icon name="warning" />
         <div class="mt-sm text-center">
           {$t('components.video.error')}
         </div>
-        <Button on:click={() => toggleTranscript(true)} text={$t('components.video.showTranscript')} />
+        {#if hasTranscript}
+          <Button on:click={() => toggleTranscript(true)} text={$t('components.video.showTranscript')} />
+        {/if}
         <button on:click={() => (hideError = true)} class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">
           <span aria-hidden="true">✕</span>
           <span class="sr-only">{$t('common.close')}</span>

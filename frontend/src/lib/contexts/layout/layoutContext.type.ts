@@ -101,6 +101,10 @@ export interface VideoController {
    */
   hasContent: Writable<boolean>;
   /**
+   * Whether a transcript is available for the current video. If not, the player cannot be switched to `text` mode. This will be set internally, so it should only be read under normal circumstances. @default false
+   */
+  hasTranscript: Writable<boolean>;
+  /**
    * Whether the player is in `text` or `video` mode. This will be set internally, so it should only be read under normal circumstances. @default 'video'
    */
   mode: Writable<VideoMode>;

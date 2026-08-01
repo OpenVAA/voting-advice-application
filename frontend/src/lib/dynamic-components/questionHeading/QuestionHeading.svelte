@@ -4,7 +4,7 @@ Show a `Question`’s text and metadata, such as category and applicable electio
 
 ### Dynamic component
 
-This is a dynamic component, because it accesses the settings via `AppContext` and selected elections from `VoterContext` or `CandidateContext`.
+This is a dynamic component, because it accesses the settings via `AppContext`, selected elections from `VoterContext` or `CandidateContext`, and the video player’s visibility from `LayoutContext`.
 
 ### Properties
 
@@ -29,6 +29,7 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
 
 <script lang="ts">
   import { getCustomData } from '@openvaa/app-shared';
+  import { onDestroy } from 'svelte';
   import { readable } from 'svelte/store';
   import { CategoryTag } from '$lib/components/categoryTag';
   import { ElectionTag } from '$lib/components/electionTag';
@@ -36,6 +37,7 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
   import { Term } from '$lib/components/term';
   import { getAppContext } from '$lib/contexts/app';
   import { getCandidateContext } from '$lib/contexts/candidate';
+  import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
   import { concatClass } from '$lib/utils/components';
   import { getElectionsToShow } from '$lib/utils/questions';
@@ -58,6 +60,9 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
   ////////////////////////////////////////////////////////////////////
 
   const { appSettings, appType, dataRoot, t } = getAppContext();
+  const {
+    video: { show: showVideo }
+  } = getLayoutContext(onDestroy);
   let elections: Readable<Array<Election>>;
   if ($appType === 'voter') {
     elections = getVoterContext().selectedElections;
@@ -75,6 +80,8 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
   let numQuestions: number | undefined;
 
   $: customData = getCustomData(question);
+  // Use a more compact heading when the question's video is taking up space above it
+  $: videoVisible = !!customData?.video && $showVideo;
   $: titleParts = addTermsToTitle(customData.terms);
   $: blockWithStats = questionBlocks?.getByQuestion(question);
   $: numQuestions = questionBlocks?.questions.length;
@@ -112,6 +119,7 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
       <CategoryTag
         category={question.category}
         suffix={blockWithStats ? `${blockWithStats.indexInBlock + 1}/${blockWithStats.block.length}` : undefined}
+        class={videoVisible ? '!p-xs !px-sm !text-[0.6rem]' : ''}
         {onShadedBg} />
     {:else if blockWithStats}
       <!-- Index of question within all questions -->
@@ -120,7 +128,7 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
     {/if}
   </PreHeading>
   <!-- class={videoProps ? 'my-0 text-lg sm:my-md sm:text-xl' : ''} -->
-  <h1>
+  <h1 class:text-md={videoVisible}>
     {#each titleParts as { text, explanation, title }}
       {#if explanation}
         <Term definition={title ? `${title}: ${explanation}` : explanation}>{text}</Term>

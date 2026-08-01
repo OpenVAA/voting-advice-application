@@ -44,7 +44,7 @@ Defines the outer layout for the application, including the header and menu.
     pageStyles,
     navigation,
     navigationSettings,
-    video: { mode: videoMode, player, show: showVideo }
+    video: { hasTranscript, mode: videoMode, player, show: showVideo }
   } = getLayoutContext(onDestroy);
   navigation.close = closeDrawer;
 
@@ -102,6 +102,7 @@ Defines the outer layout for the application, including the header and menu.
         <Video
           bind:this={$player}
           bind:mode={$videoMode}
+          bind:hasTranscript={$hasTranscript}
           onTrack={({ data }) => track('video', data)}
           hideControls={['transcript']}
           class="transition-opacity {$showVideo ? '' : 'opacity-0'}" />

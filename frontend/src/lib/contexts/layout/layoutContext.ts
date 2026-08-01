@@ -4,6 +4,7 @@ import { cubicOut } from 'svelte/easing';
 import { tweened } from 'svelte/motion';
 import { get, writable } from 'svelte/store';
 import { afterNavigate, beforeNavigate } from '$app/navigation';
+import { videoPreferences } from '$lib/components/video/component-stores';
 import { mergeSettings } from '$lib/utils/merge';
 import { DELAY } from '$lib/utils/timing';
 import { stackedStore } from '../utils/stackedStore';
@@ -83,6 +84,7 @@ export function initLayoutContext(): LayoutContext {
     player: writable(),
     show: writable(false),
     hasContent: writable(false),
+    hasTranscript: writable(false),
     mode: writable('video')
   };
 
@@ -101,7 +103,8 @@ export function initLayoutContext(): LayoutContext {
     if (!result) return false;
     shouldClearContent = false;
     video.hasContent.set(true);
-    if (autoshow) video.show.set(true);
+    // Respect the user's choice to hide the player, which persists across loads
+    if (autoshow && !get(videoPreferences).videoHidden) video.show.set(true);
     return true;
   }
 
