@@ -84,7 +84,7 @@ Display a question for answering.
       progress.current.set(questionBlock.index + 1);
       // Possibly show video
       const customData = getCustomData(question);
-      if (customData?.video) video.load(customData.video);
+      if (customData?.video) video.load({ maxHeight: '60vh', ...customData.video });
     }
   }
 

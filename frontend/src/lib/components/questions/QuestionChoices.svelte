@@ -6,6 +6,8 @@ The buttons are rendered as `<input type="radio">` elements contained inside a `
 
 The buttons for ordinal questions are by default displayed horizontally and with a line connecting them, while categorical ones are displayed vertically using a larger text size and without a line. These can be overriden by setting the relevant properties. The vertical layout should always be used for choices with long labels.
 
+If the layout is horizontal and the question has only two choices, the labels are placed beside the radio buttons — the first one before its button and the second one after it — and shown in a larger text size.
+
 The radio buttons' behaviour is as follows when using a pointer or touch device:
 
 1. Selecting an option triggers the `onChange` callback
@@ -106,6 +108,12 @@ The same component can also be used to display the answers of the voter and anot
     if (variant) vertical = variant === 'vertical';
     else vertical = isObjectType(question, OBJECT_TYPE.SingleChoiceCategoricalQuestion);
   }
+
+  /**
+   * With a horizontal layout and only two choices, there's ample room for the labels beside the radio buttons, so we place the first one before its radio button and the second one after it, and use a larger text size.
+   */
+  let sideLabels: boolean;
+  $: sideLabels = !vertical && choices?.length === 2;
 
   ////////////////////////////////////////////////////////////////////
   // Selecting choices
@@ -210,6 +218,7 @@ The same component can also be used to display the answers of the voter and anot
   style:--radio-bg={onShadedBg ? 'var(--b2)' : 'var(--b1)'}
   style:--line-bg={onShadedBg ? 'var(--b1)' : 'var(--b2)'}
   class:vertical
+  class:sideLabels
   {...$$restProps}>
   <!-- Add a label for screen readers -->
   <legend class="sr-only">{text}</legend>
@@ -264,7 +273,8 @@ The same component can also be used to display the answers of the voter and anot
       <!-- The text label. If we are displaying answers, we only show the label when it's in use to reduce clutter. We do show the answer also, when none are selected, because it would look weird otherwise. Due to Aria concerns we always show it to screenreaders. -->
       <div
         class:sr-only={mode === 'display' && (selectedId || otherSelected) && selectedId != id && otherSelected != id}
-        class={vertical ? 'text-start' : 'small-label text-center'}>
+        class:beforeRadio={sideLabels && i === 0}
+        class={vertical ? 'text-start' : sideLabels ? 'small-label text-md' : 'small-label text-center'}>
         {label}
       </div>
     </label>
@@ -299,6 +309,29 @@ The same component can also be used to display the answers of the voter and anot
   fieldset:not(.vertical) label {
     @apply grid-flow-row auto-rows-max justify-items-center;
     grid-row: 2;
+  }
+
+  /* With only two horizontal choices, the labels are placed beside the radio buttons instead of below them. The radio button is kept in the middle column so that it stays centered in its grid column and thus aligned with the line connecting the choices. NB. These rules must come after the `:not(.vertical)` ones, because they have the same specificity. */
+  fieldset.sideLabels label {
+    @apply grid-flow-col items-center justify-items-stretch;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  }
+
+  /* Keep the radio button’s vertical position fixed even if the label wraps onto multiple lines, so that it remains aligned with the line */
+  fieldset.sideLabels label input {
+    @apply self-start;
+    grid-column: 2;
+  }
+
+  /* The label follows its radio button by default and precedes it for the first choice */
+  fieldset.sideLabels label div {
+    @apply text-start;
+    grid-column: 3;
+  }
+
+  fieldset.sideLabels label div.beforeRadio {
+    @apply text-end;
+    grid-column: 1;
   }
 
   .display-label {
