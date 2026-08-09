@@ -26,18 +26,12 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
   export let isDrawerOpen = false;
   export let drawerOpenElement: HTMLButtonElement | undefined;
 
-  const { appSettings, darkMode, t } = getAppContext();
+  const { appSettings, t } = getAppContext();
 
   const { navigationSettings, progress, topBarSettings } = getLayoutContext(onDestroy);
 
   const currentProgress = progress.current;
   const maxProgress = progress.max;
-
-  let bgColor: string | undefined;
-  $: {
-    const mode = $darkMode ? $appSettings.headerStyle.dark : $appSettings.headerStyle.light;
-    bgColor = $topBarSettings.imageSrc ? mode.overImgBgColor : mode.bgColor;
-  }
 
   ////////////////////////////////////////////////////////////////////
   // Stashed for video
@@ -71,10 +65,7 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
       max={$maxProgress}
       title={$t('common.progress')} />
   {/if}
-  <div
-    class="inner-actions-bar grid w-full max-w-full grid-cols-3 items-center justify-between pe-6"
-    style:--background-color={bgColor}>
-    <!-- invertLogo ? 'text-primary-content' : 'text-neutral' -->
+  <div class="inner-actions-bar grid w-full max-w-full grid-cols-3 items-center justify-between pe-6">
     <button
       on:click={openDrawer}
       bind:this={drawerOpenElement}
@@ -82,10 +73,9 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
       aria-controls={menuId}
       aria-label={$t('common.openMenu')}
       disabled={$navigationSettings.hide}
-      class="btn btn-ghost drawer-button flex cursor-pointer flex-row flex-nowrap items-center gap-md justify-self-start text-neutral">
+      class="btn btn-ghost drawer-button flex cursor-pointer flex-row flex-nowrap items-center gap-md justify-self-start text-primary-content">
       <Icon name="menu" class={$navigationSettings.hide ? 'hidden' : undefined} />
-      <!-- inverse={invertLogo} -->
-      <AppLogo inverse={false} aria-hidden="true" size="lg" />
+      <AppLogo inverse={true} aria-hidden="true" size="lg" />
     </button>
     <img
       src="https://projects-471112560111-eu-north-1-an.s3.eu-north-1.amazonaws.com/kisam-2026/varldenskvinnor_logo_yellow.svg"
@@ -127,9 +117,8 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
     background-repeat: no-repeat;
   }
 
+  /* The header background is hard-coded to the primary colour, so the `headerStyle` settings are not applied to it. */
   .inner-actions-bar {
-    @apply bg-base-300;
-    background-color: var(--background-color);
-    transition: background-color 0.5s ease;
+    @apply bg-primary;
   }
 </style>

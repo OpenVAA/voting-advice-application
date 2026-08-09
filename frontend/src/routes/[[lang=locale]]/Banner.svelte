@@ -64,10 +64,8 @@ Accesses `AppContext` and optionally `VoterContext`.
   }
 </script>
 
-<!-- style:--headerIcon-color={hasVideo && screenWidth < Breakpoints.sm
-  ? 'white'
-  : 'oklch(var(--p))' -->
-<div class="vaa-basicPage-actions flex gap-0 justify-self-end" style:--headerIcon-color="oklch(var(--p))">
+<!-- The header background is hard-coded to the primary colour, so the icons are always shown in `primary-content`. -->
+<div class="vaa-basicPage-actions flex gap-0 justify-self-end" style:--headerIcon-color="oklch(var(--pc))">
   {#if $hasVideo}
     <Button
       on:click={toggleVideo}
@@ -105,7 +103,7 @@ Accesses `AppContext` and optionally `VoterContext`.
 
   {#if $topBarSettings.actions.return === 'show'}
     <Button
-      class="!text-neutral"
+      class="!text-primary-content"
       variant="icon"
       icon="close"
       text={$topBarSettings.actions.returnButtonLabel || $t('common.return')}
@@ -129,6 +127,11 @@ Accesses `AppContext` and optionally `VoterContext`.
   :global(.vaa-basicPage-actions > button:not([disabled])),
   :global(.vaa-basicPage-actions > * > button:not([disabled])) {
     /* !text is valid class prefix */
+    @apply text-[var(--headerIcon-color)];
+  }
+
+  /* The `responsive-icon` and `secondary` variants of `Button` set the color of their labels separately, so we need to override those as well. */
+  :global(.vaa-basicPage-actions :not([disabled]) > .vaa-button-label) {
     @apply text-[var(--headerIcon-color)];
   }
 </style>
