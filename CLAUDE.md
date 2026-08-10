@@ -180,8 +180,8 @@ The `.turbo/` directory contains the local cache and should not be committed to 
 - Supabase adapter in `apps/frontend/src/lib/api/adapters/supabase/` provides all data access
 - No adapter switch -- Supabase is the only production adapter (local adapter available for static data)
 - Universal adapter pattern in `apps/frontend/src/lib/api/base/universalAdapter.ts`
-- Route structure uses optional locale param: `apps/frontend/src/routes/[[lang=locale]]/`
-- Separate apps for voters (`apps/frontend/src/routes/[[lang=locale]]/(voters)/`) and candidates (`apps/frontend/src/routes/[[lang=locale]]/candidate/`)
+- Routes carry no locale segment -- locale is resolved by Paraglide's `url` strategy (`apps/frontend/vite.config.ts`), not by a route param
+- Separate apps for voters (`apps/frontend/src/routes/(voters)/`) and candidates (`apps/frontend/src/routes/candidate/`)
 
 **Settings Architecture**:
 
@@ -211,10 +211,10 @@ The development stack uses Supabase CLI for backend services:
 
 **Routing**:
 
-- Optional locale in all routes: `[[lang=locale]]`
-- Voters app: `apps/frontend/src/routes/[[lang=locale]]/(voters)/`
-- Candidate app: `apps/frontend/src/routes/[[lang=locale]]/candidate/`
-- Candidate protected routes: `apps/frontend/src/routes/[[lang=locale]]/candidate/(protected)/`
+- No locale route param: locale is resolved by Paraglide's `url` strategy (`strategy: ['url', 'cookie', 'baseLocale']`), so no `ROUTE` constant carries a locale segment
+- Voters app: `apps/frontend/src/routes/(voters)/`
+- Candidate app: `apps/frontend/src/routes/candidate/`
+- Candidate protected routes: `apps/frontend/src/routes/candidate/(protected)/`
 
 **Styling**: Tailwind CSS + DaisyUI components. Theme colors defined in `packages/app-shared/src/settings/staticSettings.ts`.
 
