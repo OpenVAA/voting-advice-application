@@ -351,13 +351,6 @@
   }
 
   /**
-   * An element that should not yet be fully visible, akin to disabled inputs.
-   */
-  .faded {
-    @apply opacity-30;
-  }
-
-  /**
    * Use for longer text blocks
    */
   .prose {

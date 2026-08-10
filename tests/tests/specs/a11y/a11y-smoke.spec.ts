@@ -132,33 +132,61 @@ voterJourneyTest.use({ storageState: { cookies: [], origins: [] } });
 // later if needed.
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
 
-interface UnlocatedAxeRoute {
+interface AxeRoute {
   name: string;
   routeId: Route;
-  /** Role-based content settle BEFORE axe scan (never a network-idle settle) */
-  settle: (page: Page) => Promise<void>;
+  /**
+   * REQUIRED — the data-driven testid proving this route's real content is in
+   * the DOM.
+   *
+   * A route-level heading is NOT acceptable as a content anchor: headings render
+   * from a static i18n title and resolve BEFORE any data-driven content mounts,
+   * so a heading settle lets the scan run against a DOM that does not yet contain
+   * the content the scan exists to check. Making the field required means a new
+   * scan route physically cannot be added without declaring what "loaded" means
+   * for it (D-04).
+   *
+   * A route-unique anchor also detects a `+page.ts` `redirect(307, …)`
+   * automatically — that is how the `constituencies-selector` entry was found to
+   * have been silently re-scanning `/elections`.
+   */
+  contentTestId: string;
+  /**
+   * OPTIONAL extra navigation/interaction needed to REACH the scan target (e.g.
+   * walk a gate route, open a drawer). Runs BEFORE the `contentTestId` wait, so
+   * the content anchor stays the LAST gate before the scan.
+   */
+  settle?: (page: Page) => Promise<void>;
 }
 
-const UNLOCATED_ROUTES: ReadonlyArray<UnlocatedAxeRoute> = [
+const AXE_ROUTES: ReadonlyArray<AxeRoute> = [
   {
     name: 'home',
     routeId: 'Home',
-    settle: async (page) => {
-      await page.getByRole('heading').first().waitFor({ state: 'visible', timeout: 10000 });
-    }
+    contentTestId: testIds.voter.home.page
   },
   {
     name: 'elections-selector',
     routeId: 'Elections',
-    settle: async (page) => {
-      await page.getByRole('heading').first().waitFor({ state: 'visible', timeout: 10000 });
-    }
+    contentTestId: testIds.voter.elections.label
   },
   {
-    name: 'constituencies-selector',
-    routeId: 'Constituencies',
+    // The entry declares `routeId: 'Elections'`, NOT 'Constituencies', because
+    // `(voters)/constituencies/+page.ts` `redirect(307, 'Elections')`s any goto
+    // that carries no `electionId` — a bare `/constituencies` goto has never
+    // reached a constituency selector. So the walk goes through the elections
+    // gate: both elections are pre-checked in the `e2e/base` dataset, so
+    // Continue is enabled immediately and needs no option click.
+    name: 'constituencies-selector-located',
+    routeId: 'Elections',
+    contentTestId: testIds.voter.constituencies.list,
     settle: async (page) => {
-      await page.getByRole('heading').first().waitFor({ state: 'visible', timeout: 10000 });
+      await page
+        .getByTestId(testIds.voter.elections.label)
+        .first()
+        .waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
+      await page.getByTestId(testIds.voter.elections.continue).click();
+      await page.waitForURL(/\/constituencies/, { timeout: TIMEOUTS.slowPage });
     }
   }
 ];
@@ -195,10 +223,15 @@ async function assertAxeGates(
 
 // Module-level for…of route runner — module-level dispatch satisfies
 // playwright/no-conditional-in-test (no `if` inside test() bodies).
-for (const route of UNLOCATED_ROUTES) {
+for (const route of AXE_ROUTES) {
   test(`axe accessibility scan — ${route.name}`, async ({ page }, testInfo) => {
     await page.goto(buildRoute({ route: route.routeId, locale: 'en' }));
-    await route.settle(page);
+    await route.settle?.(page);
+    // The data-driven content anchor runs LAST, after any reach-the-target
+    // interaction — so a `+page.ts` loader redirect cannot be scanned unnoticed
+    // and the scan never fires against a route whose real content has not
+    // mounted yet.
+    await page.getByTestId(route.contentTestId).first().waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
     // Gate the scan on the entrance fade/animation finishing — otherwise axe
     // composites text colour through in-flight opacity and reports phantom
     // color-contrast failures (see awaitAnimationsSettled).
@@ -217,7 +250,9 @@ for (const route of UNLOCATED_ROUTES) {
   test(`axe accessibility scan — ${route.name} (dark)`, async ({ page }, testInfo) => {
     await page.emulateMedia({ colorScheme: 'dark' });
     await page.goto(buildRoute({ route: route.routeId, locale: 'en' }));
-    await route.settle(page);
+    await route.settle?.(page);
+    // See the light-variant scan above — the content anchor is the LAST gate.
+    await page.getByTestId(route.contentTestId).first().waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
     // See the light-variant scan above — gate on the entrance fade settling.
     await awaitAnimationsSettled(page);
 

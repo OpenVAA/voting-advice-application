@@ -288,12 +288,19 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
             bind:selected={sections[sectionIndex].selectedId}
             onChange={() => handleChange(sectionIndex)} />
 
-          <!-- If there are multiple applicable elections, show the implied constituency for each -->
+          <!--
+            If there are multiple applicable elections, show the implied constituency for each — but ONLY once a
+            constituency has actually been selected. Phase 134 / D-17 Option A: this block previously rendered
+            pre-selection as an em-dash placeholder dimmed to 30% opacity by a global dimming utility (since
+            deleted from app.css — this was its only consumer). That composited `text-secondary` down to 1.52:1
+            light / 1.46:1 dark, failing WCAG 2.1 AA colour contrast. Opacity is a steady state, so no scan-timing
+            settle can clear it; gating the block on selection removes the element from the a11y tree while it has
+            no content. Accepted cost: the "preview of what will be filled in" affordance and its
+            `transition-opacity` fade are gone.
+          -->
 
-          {#if applicableElections.length > 1}
-            <div
-              class="mt-xs gap-x-md gap-y-sm grid w-full max-w-md grid-cols-2 items-center place-self-center transition-opacity"
-              class:faded={!sections[sectionIndex].selectedId}>
+          {#if applicableElections.length > 1 && sections[sectionIndex].selectedId}
+            <div class="mt-xs gap-x-md gap-y-sm grid w-full max-w-md grid-cols-2 items-center place-self-center">
               {#each applicableElections.toReversed() as election}
                 {@const constituencyId = selected[election.id]}
                 <div class="small-label">{election.shortName}</div>
