@@ -882,20 +882,22 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       const boolId = currentQuestionId(page);
       await expect(scopedChoicesByType(page, boolId, 'radio')).toHaveCount(2);
       await expect(scopedChoicesByType(page, boolId, 'checkbox')).toHaveCount(0);
-      // Select the "yes" choice (index 1 → value `true`). OpinionQuestionInput
-      // synthesizes boolean choices as ['no'→false, 'yes'→true]; the overview
-      // card's getSavedAnswer treats a saved `false` as unanswered
-      // (`if (!localizedAnswer?.value) return undefined` — +page.svelte:58, a
-      // pre-existing falsy-value quirk), so a `false` answer would render no
-      // display markup and defeat the answered-card round-trip below. Selecting
-      // the truthy option keeps the round-trip observable without touching product.
-      await candidateQuestionPage.selectChoice(1);
+      // FIX-03 lock. OpinionQuestionInput synthesizes boolean choices as
+      // ['no'→false, 'yes'→true], so index 0 saves the FALSY value deliberately —
+      // the exact value the overview's old truthiness guard discarded. On an
+      // unfixed build the card below renders no display markup and its action
+      // reads "Answer this question", so all three assertions fail.
+      await candidateQuestionPage.selectChoice(0);
       await candidateQuestionPage.expectContinueEnabled();
       await candidateQuestionPage.clickContinue();
       await page.goto('/en/candidate/questions');
       const boolCard = candidateQuestionsOverviewPage.getQuestionCard(/\[qu-opin-base-5-boolean\]/);
       await expect(boolCard.first()).toBeVisible();
       await expect(boolCard.first().getByTestId('question-choice').first()).toBeVisible();
+      // Discriminating assertion: the card's call to action must be the EDIT
+      // label ("Edit Your Answer"), not the unanswered "Answer this question" —
+      // the card markup alone would render either way once the guard is right.
+      await expect(boolCard.first().getByTestId(testIds.candidate.questions.cardAction)).toHaveText(/edit/i);
     });
 
     // ============== Step 19: walk remaining opinions ======================
