@@ -11,6 +11,7 @@ Shows the opinion questions for the candidate to answer.
 
 <script lang="ts">
   import { isLocalizedString } from '@openvaa/app-shared';
+  import { isEmptyValue } from '@openvaa/data';
   import { Button } from '$lib/components/button';
   import ElectionTag from '$lib/components/electionTag/ElectionTag.svelte';
   import { Expander } from '$lib/components/expander';
@@ -55,7 +56,11 @@ Shows the opinion questions for the candidate to answer.
    */
   function getSavedAnswer(question: AnyQuestionVariant): Answer | undefined {
     const localizedAnswer = userData.savedCandidateData?.answers?.[question.id];
-    if (!localizedAnswer?.value) return undefined;
+    // Use the canonical emptiness predicate, not a truthiness test (which discarded a saved `false`) nor a bare
+    // null check, so this stays consistent with candidateContext's completion gating. `isEmptyValue(undefined)` is
+    // `true`, so the first clause already covers a missing `localizedAnswer`; the second is unreachable at runtime
+    // and exists only to narrow the type, since the predicate returns a plain `boolean`.
+    if (isEmptyValue(localizedAnswer?.value) || localizedAnswer == null) return undefined;
     const { value, info } = localizedAnswer;
     const answer = {
       value: isLocalizedString(value) ? translate(value) : value,
