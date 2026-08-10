@@ -624,6 +624,27 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       // the required-empty submit-disabled gate the step already asserts; the
       // values are round-tripped in step 21 (EQTYP-03 candidate leg).
       await candidateProfilePage.fillMultipleTextQuestion(/\[qu-info-multipleText\]/, [...MULTIPLE_TEXT_ANSWERS]);
+      // FIX-02 lock for `components.multipleTextInput.*`: with two rows filled,
+      // all four controls are in the DOM (move-up/move-down/remove render per
+      // row — only their `disabled` state is conditional — and add renders while
+      // the input is editable). Their accessible names come from the runtime
+      // Paraglide catalog, so a catalog regression would surface the raw dotted
+      // key here. Scoped to the multipleText question so a control elsewhere on
+      // the profile page cannot satisfy the assertion; located via testIds
+      // constants, never raw selector literals.
+      const multiTextQuestion = candidateProfilePage.getQuestion(/\[qu-info-multipleText\]/).first();
+      await expect(multiTextQuestion.getByTestId(testIds.voter.questions.multipleTextAdd)).toHaveAccessibleName(
+        'Add item'
+      );
+      await expect(
+        multiTextQuestion.getByTestId(testIds.voter.questions.multipleTextMoveUp).first()
+      ).toHaveAccessibleName('Move up');
+      await expect(
+        multiTextQuestion.getByTestId(testIds.voter.questions.multipleTextMoveDown).first()
+      ).toHaveAccessibleName('Move down');
+      await expect(
+        multiTextQuestion.getByTestId(testIds.voter.questions.multipleTextRemove).first()
+      ).toHaveAccessibleName('Remove item');
       await candidateProfilePage.submit();
       // Post-submit lands on home (opinions still disabled because the
       // required field is empty).

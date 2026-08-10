@@ -364,6 +364,15 @@ async function settleAndAdvance({ page, text }: { page: Page; text: RegExp | str
 async function expectElectionOptionAndSelect({ page, text }: { page: Page; text: RegExp | string }): Promise<void> {
   const electionAccordion = page.getByTestId(testIds.voter.results.electionAccordion);
   await expect(electionAccordion).toBeVisible({ timeout: TIMEOUTS.element });
+  // FIX-02 lock for `components.accordionSelect.listboxAriaLabel` — the one
+  // newly-translated key that is a genuine WCAG 2.1 AA defect: without it the
+  // listbox announces the raw dotted key path where a control name belongs.
+  // AccordionSelect spreads restProps (incl. data-testid) onto the `role=listbox`
+  // element itself, so intersect the testid locator with the role rather than
+  // searching for a descendant listbox; scoping to the accordion also keeps
+  // other routes' listboxes from satisfying the assertion.
+  const electionListbox = electionAccordion.and(page.getByRole('listbox'));
+  await expect(electionListbox).toHaveAccessibleName('Select an option');
   // If only one option is in the DOM, the accordion is collapsed — click the
   // visible (active) option to toggle it expanded. When fully expanded, all
   // options are present and the target click below selects the desired one.
