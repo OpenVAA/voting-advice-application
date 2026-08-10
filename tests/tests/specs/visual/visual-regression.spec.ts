@@ -24,7 +24,7 @@
  */
 
 import { STORAGE_STATE } from '../../../playwright.config';
-import { expect,test as candidateTest } from '../../fixtures/candidate/candidate-journey';
+import { expect, test as candidateTest } from '../../fixtures/candidate/candidate-journey';
 import { voterJourneyTest as voterTest } from '../../fixtures/voter/voter-journey.fixture';
 import { buildRoute } from '../../utils/buildRoute';
 import { testIds } from '../../utils/testIds';

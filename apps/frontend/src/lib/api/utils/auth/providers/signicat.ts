@@ -21,7 +21,8 @@ import type {
   IdentityProvider,
   IdTokenClaimsResult,
   TokenExchangeParams,
-  TokenExchangeResult} from './types';
+  TokenExchangeResult
+} from './types';
 
 export const signicatProvider: IdentityProvider = {
   type: 'signicat',

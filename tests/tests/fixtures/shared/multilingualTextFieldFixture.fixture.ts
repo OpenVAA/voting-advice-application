@@ -122,9 +122,7 @@ export function createMultilingualTextField(_page: Page) {
      * closeTranslations or when single-locale mode hides the surface).
      */
     async expectLocaleHidden(scope: Locator, locale: string): Promise<void> {
-      await expect(
-        scope.getByRole('textbox', { name: localeLabelRegex(locale) })
-      ).toHaveCount(0);
+      await expect(scope.getByRole('textbox', { name: localeLabelRegex(locale) })).toHaveCount(0);
     }
   };
 }

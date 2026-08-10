@@ -47,14 +47,12 @@ export interface DataRootRuneContext {
 }
 
 export function getDataRootRuneContext(): DataRootRuneContext {
-  if (!hasContext(CONTEXT_KEY))
-    error(500, 'getDataRootRuneContext() called before initDataRootRuneContext()');
+  if (!hasContext(CONTEXT_KEY)) error(500, 'getDataRootRuneContext() called before initDataRootRuneContext()');
   return getContext<DataRootRuneContext>(CONTEXT_KEY);
 }
 
 export function initDataRootRuneContext(): DataRootRuneContext {
-  if (hasContext(CONTEXT_KEY))
-    error(500, 'initDataRootRuneContext() called twice');
+  if (hasContext(CONTEXT_KEY)) error(500, 'initDataRootRuneContext() called twice');
 
   const root = new DataRoot();
 

@@ -36,10 +36,7 @@ type LocallyStoredValue<TData> = {
   data: TData;
 };
 
-export function runeLocalStorage<TValue>(
-  key: string,
-  defaultValue: TValue
-): RunePersistedState<TValue> {
+export function runeLocalStorage<TValue>(key: string, defaultValue: TValue): RunePersistedState<TValue> {
   const initial = readVersioned<TValue>(key) ?? defaultValue;
   let value = $state<TValue>(initial);
 

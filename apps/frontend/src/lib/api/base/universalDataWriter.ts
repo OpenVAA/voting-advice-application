@@ -261,9 +261,7 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
   protected abstract _getCandidateUserData<TNominations extends boolean | undefined>(
     opts: GetCandidateUserDataOptions<TNominations>
   ): DWReturnType<CandidateUserData<TNominations>>;
-  protected abstract _setAnswers(
-    opts: SetAnswersOptions & { overwrite: boolean }
-  ): DWReturnType<LocalizedAnswers>;
+  protected abstract _setAnswers(opts: SetAnswersOptions & { overwrite: boolean }): DWReturnType<LocalizedAnswers>;
   protected abstract _updateEntityProperties(opts: SetPropertiesOptions): DWReturnType<LocalizedCandidateData>;
   protected abstract _updateQuestion(opts: SetQuestionOptions): DWReturnType<DataApiActionResult>;
   protected abstract _insertJobResult(opts: InsertJobResultOptions): DWReturnType<DataApiActionResult>;

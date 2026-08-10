@@ -33,14 +33,14 @@ approach.
 
 ## Research
 
-| Concern | Pattern | Notes |
-|---|---|---|
-| SPA route announcement | `aria-live="polite" aria-atomic="true"` region whose text updates on route change | SvelteKit's `<title>` doesn't reliably announce on route changes for VoiceOver/JAWS/NVDA |
-| Focus management | `afterNavigate(() => target.focus({ preventScroll: true }))` | The `preventScroll: true` is critical — without it, focus() triggers an auto-scroll that fights `goto({ noScroll: true })` |
-| Focus target convention | An element marked `data-focus-on-nav` with `tabindex="-1"` (so the heading can be focused but doesn't appear in tab order) | If absent, fall back to `<h1>` |
-| Reduced motion | `matchMedia('(prefers-reduced-motion: reduce)').matches` JS check + CSS `@media (prefers-reduced-motion: reduce) { ::view-transition-*(*) { animation: none } }` belt+braces | The browser does NOT auto-disable transitions under reduced motion |
-| Focus during transition | `afterNavigate` runs AFTER SvelteKit's DOM swap but BEFORE View Transitions completes its animation | The focus ring lands on the new (already-swapped) element while the animation is still playing — perceived as smooth |
-| Tab order | Persistent chrome stays earliest in tab order; new content inserts at the H1 position | Layout-owned chrome means tab order is stable across nav |
+| Concern                 | Pattern                                                                                                                                                                      | Notes                                                                                                                      |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| SPA route announcement  | `aria-live="polite" aria-atomic="true"` region whose text updates on route change                                                                                            | SvelteKit's `<title>` doesn't reliably announce on route changes for VoiceOver/JAWS/NVDA                                   |
+| Focus management        | `afterNavigate(() => target.focus({ preventScroll: true }))`                                                                                                                 | The `preventScroll: true` is critical — without it, focus() triggers an auto-scroll that fights `goto({ noScroll: true })` |
+| Focus target convention | An element marked `data-focus-on-nav` with `tabindex="-1"` (so the heading can be focused but doesn't appear in tab order)                                                   | If absent, fall back to `<h1>`                                                                                             |
+| Reduced motion          | `matchMedia('(prefers-reduced-motion: reduce)').matches` JS check + CSS `@media (prefers-reduced-motion: reduce) { ::view-transition-*(*) { animation: none } }` belt+braces | The browser does NOT auto-disable transitions under reduced motion                                                         |
+| Focus during transition | `afterNavigate` runs AFTER SvelteKit's DOM swap but BEFORE View Transitions completes its animation                                                                          | The focus ring lands on the new (already-swapped) element while the animation is still playing — perceived as smooth       |
+| Tab order               | Persistent chrome stays earliest in tab order; new content inserts at the H1 position                                                                                        | Layout-owned chrome means tab order is stable across nav                                                                   |
 
 ## How to Run
 
@@ -52,7 +52,7 @@ Open `http://localhost:5173/runes-test/nav-a11y/questions/q1`.
 
 **Visual a11y panel:** A live event log appears in the right column
 (to the left of the mount ledger) showing every onNavigate /
-afterNavigate / focus-applied / vt-* event with ISO timestamps.
+afterNavigate / focus-applied / vt-\* event with ISO timestamps.
 
 **Protocol:**
 
@@ -85,6 +85,7 @@ Captured event sequence for a single Q1 → Q2 navigation:
 ```
 
 The critical ordering:
+
 - `afterNavigate` fires BEFORE `vt-finished` — so we apply focus while
   the transition is mid-animation
 - `focus-applied` happens 9ms after `afterNavigate` — the
@@ -102,6 +103,7 @@ want.
 
 Built the spike on top of the 014b+015 stack: unified questions layout,
 view transitions, plus:
+
 - `afterNavigate` hook that focuses an element matching
   `[data-focus-on-nav]`, falling back to `<h1>`
 - `aria-live="polite" aria-atomic="true"` route announcer whose text
@@ -250,15 +252,15 @@ Q1 → Q2 (reduced motion / ?notr=1):
 - **No further spikes needed** — 016 is the gate, and it passes.
 - **Production migration prerequisites are now clear:**
 
-  | Change | Where | Effort |
-  |---|---|---|
-  | Adopt 014b structure for `/questions` | `apps/frontend/src/routes/(voters)/(located)/questions/` | ~1d (file moves + layout-driven rendering) |
-  | Wire `onNavigate(document.startViewTransition)` | `apps/frontend/src/routes/+layout.svelte` | ~1h |
-  | Add `view-transition-name` CSS to chrome + question chrome | Header.svelte, MainContent.svelte, OpinionQuestionInput, etc. | ~2h |
-  | Add `aria-live` route announcer | `apps/frontend/src/routes/Layout.svelte` | ~30min |
-  | Add `data-focus-on-nav` + `afterNavigate(focus)` | Root layout + question layout | ~30min |
-  | Add `prefers-reduced-motion` JS + CSS | Root layout `<style>` block | ~15min |
-  | QA across Chrome / Firefox 144+ / Safari 18+ | All | ~2h |
+  | Change                                                     | Where                                                         | Effort                                     |
+  | ---------------------------------------------------------- | ------------------------------------------------------------- | ------------------------------------------ |
+  | Adopt 014b structure for `/questions`                      | `apps/frontend/src/routes/(voters)/(located)/questions/`      | ~1d (file moves + layout-driven rendering) |
+  | Wire `onNavigate(document.startViewTransition)`            | `apps/frontend/src/routes/+layout.svelte`                     | ~1h                                        |
+  | Add `view-transition-name` CSS to chrome + question chrome | Header.svelte, MainContent.svelte, OpinionQuestionInput, etc. | ~2h                                        |
+  | Add `aria-live` route announcer                            | `apps/frontend/src/routes/Layout.svelte`                      | ~30min                                     |
+  | Add `data-focus-on-nav` + `afterNavigate(focus)`           | Root layout + question layout                                 | ~30min                                     |
+  | Add `prefers-reduced-motion` JS + CSS                      | Root layout `<style>` block                                   | ~15min                                     |
+  | QA across Chrome / Firefox 144+ / Safari 18+               | All                                                           | ~2h                                        |
 
   **Total estimate:** ~2 days for the full production wiring with
   comfortable buffer for cross-browser edge cases.
@@ -268,6 +270,7 @@ Q1 → Q2 (reduced motion / ?notr=1):
   transitions + focus management).
 
 **Recommendation:** Ship in two waves.
+
 - Wave A (1d): View Transitions + aria-live announcer + reduced-motion.
   Standalone improvement, doesn't require structural change.
 - Wave B (1d): Convert `/questions/[questionId]/+page.svelte` to 014b

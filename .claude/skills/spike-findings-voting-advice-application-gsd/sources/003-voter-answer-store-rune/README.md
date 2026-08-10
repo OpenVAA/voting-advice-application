@@ -2,7 +2,7 @@
 spike: 003
 name: voter-answer-store-rune
 type: standard
-validates: "Given a rune-native voterAnswerStore that drops `toStore()` / `fromStore()` / `localStorageWritable` in favor of a `runeLocalStorage` helper + direct getter exposure, when setAnswer/deleteAnswer/reset are called, then (a) the `.answers` getter reflects each change reactively in template consumers, (b) localStorage is updated synchronously with the versioned payload format, (c) page reload rehydrates the state, (d) zero `svelte/store` imports remain in the store"
+validates: 'Given a rune-native voterAnswerStore that drops `toStore()` / `fromStore()` / `localStorageWritable` in favor of a `runeLocalStorage` helper + direct getter exposure, when setAnswer/deleteAnswer/reset are called, then (a) the `.answers` getter reflects each change reactively in template consumers, (b) localStorage is updated synchronously with the versioned payload format, (c) page reload rehydrates the state, (d) zero `svelte/store` imports remain in the store'
 verdict: VALIDATED
 related: [001, 002, 004, 005]
 tags: [svelte5, runes, store, localStorage, voter, answers, migration]

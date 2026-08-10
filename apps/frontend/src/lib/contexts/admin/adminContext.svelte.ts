@@ -174,9 +174,7 @@ export class AdminContextProvider implements AdminContext {
     return prepareDataWriter(dataWriter).then((dw) => dw.getPastJobs(this.#injectAuthToken(opts)));
   };
 
-  startJob = (
-    opts: WithOptionalAuth<Parameters<DataWriter['startJob']>[0]>
-  ): ReturnType<DataWriter['startJob']> => {
+  startJob = (opts: WithOptionalAuth<Parameters<DataWriter['startJob']>[0]>): ReturnType<DataWriter['startJob']> => {
     return prepareDataWriter(dataWriter).then((dw) => dw.startJob(this.#injectAuthToken(opts)));
   };
 
@@ -186,9 +184,7 @@ export class AdminContextProvider implements AdminContext {
     return prepareDataWriter(dataWriter).then((dw) => dw.getJobProgress(this.#injectAuthToken(opts)));
   };
 
-  abortJob = (
-    opts: WithOptionalAuth<Parameters<DataWriter['abortJob']>[0]>
-  ): ReturnType<DataWriter['abortJob']> => {
+  abortJob = (opts: WithOptionalAuth<Parameters<DataWriter['abortJob']>[0]>): ReturnType<DataWriter['abortJob']> => {
     return prepareDataWriter(dataWriter).then((dw) => dw.abortJob(this.#injectAuthToken(opts)));
   };
 

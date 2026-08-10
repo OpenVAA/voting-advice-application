@@ -102,9 +102,7 @@ export function createCandidateQuestionPage(page: Page) {
       // container for sliders; a page-level slider locator is correct.)
       const slider = page.getByTestId(testIds.voter.questions.numberSlider);
       // eslint-disable-next-line playwright/no-restricted-locators -- testid+name conjunction not expressible via getByTestId
-      const scopedChoices = page.locator(
-        `[data-testid="question-choice"][name="questionChoices-${questionId}"]`
-      );
+      const scopedChoices = page.locator(`[data-testid="question-choice"][name="questionChoices-${questionId}"]`);
       // Settle on THIS question's id-scoped choices first (reliable — a stale
       // slider lingering from an outgoing number question can NOT satisfy an
       // id-scoped choice wait). If they never appear, it is the number question.

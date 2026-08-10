@@ -128,18 +128,12 @@ class FilterContextProvider implements FilterContext {
 
   // §18 arrow field — survives detach. Intentional Phase-62 no-op stub (see D-06).
   addFilter = (_spec: unknown): void => {
-
-    console.warn(
-      'filterContext.addFilter() is not implemented in Phase 62 — see D-06 (future LLM chat follow-up).'
-    );
+    console.warn('filterContext.addFilter() is not implemented in Phase 62 — see D-06 (future LLM chat follow-up).');
   };
 
   // §18 arrow field — survives detach. Intentional Phase-62 no-op stub (see D-06).
   removeFilter = (_id: string): void => {
-
-    console.warn(
-      'filterContext.removeFilter() is not implemented in Phase 62 — see D-06 (future LLM chat follow-up).'
-    );
+    console.warn('filterContext.removeFilter() is not implemented in Phase 62 — see D-06 (future LLM chat follow-up).');
   };
 }
 

@@ -121,13 +121,13 @@ Legend: **Parallel** = `fullyParallel: true` (specs within run concurrently); **
 
 ### Base + journey family
 
-| Project | Spec / setup | Dataset | Within-project | Auth state | Notes |
-|---------|--------------|---------|----------------|------------|-------|
-| `data-setup-base` | `setup/shared/base.setup.ts` | `e2e/base` | n/a | — | Single merged base-seeding project; seeds 2 elections × multi-constituency, mixed opinion-question types. `teardown: data-teardown-base`. |
-| `data-teardown-base` | `setup/shared/base.teardown.ts` | — | n/a | — | Cleans up `test-`-prefixed base rows. |
-| `voter-journey` | `specs/voter/voter-journey.spec.ts` | inherits `data-setup-base` | **Serial** | empty (anonymous voter) | Single long serial journey test; Home → Intro → Elections → Constituencies → Questions → Results. |
-| `data-setup-candidate-journey` | `setup/candidate/candidate-journey.setup.ts` | inherits `data-setup-base` | n/a | — | Candidate-journey seed overlay; `teardown: data-teardown-candidate-journey`. |
-| `candidate-journey` | `specs/candidate/candidate-journey.spec.ts` | inherits `data-setup-candidate-journey` | **Serial** | empty (starts UNAUTHENTICATED) | Single long serial candidate flow; registration-via-email → profile → questions → preview → logout. |
+| Project                        | Spec / setup                                 | Dataset                                 | Within-project | Auth state                     | Notes                                                                                                                                     |
+| ------------------------------ | -------------------------------------------- | --------------------------------------- | -------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `data-setup-base`              | `setup/shared/base.setup.ts`                 | `e2e/base`                              | n/a            | —                              | Single merged base-seeding project; seeds 2 elections × multi-constituency, mixed opinion-question types. `teardown: data-teardown-base`. |
+| `data-teardown-base`           | `setup/shared/base.teardown.ts`              | —                                       | n/a            | —                              | Cleans up `test-`-prefixed base rows.                                                                                                     |
+| `voter-journey`                | `specs/voter/voter-journey.spec.ts`          | inherits `data-setup-base`              | **Serial**     | empty (anonymous voter)        | Single long serial journey test; Home → Intro → Elections → Constituencies → Questions → Results.                                         |
+| `data-setup-candidate-journey` | `setup/candidate/candidate-journey.setup.ts` | inherits `data-setup-base`              | n/a            | —                              | Candidate-journey seed overlay; `teardown: data-teardown-candidate-journey`.                                                              |
+| `candidate-journey`            | `specs/candidate/candidate-journey.spec.ts`  | inherits `data-setup-candidate-journey` | **Serial**     | empty (starts UNAUTHENTICATED) | Single long serial candidate flow; registration-via-email → profile → questions → preview → logout.                                       |
 
 ### Voter permutation family (parallel with base/journey)
 
@@ -147,17 +147,17 @@ Each `perm-<short>` spec project depends on its own `data-setup-perm-<short>` an
 
 **Default-on** (part of `yarn test:e2e`; opt OUT via the `PLAYWRIGHT_NO_*` env):
 
-| Project | Disable with | Spec dir | Depends on | Notes |
-|---------|--------------|----------|------------|-------|
-| `performance` | `PLAYWRIGHT_NO_PERF=1` | `tests/specs/perf/` | `data-setup-base` | Page-load timing assertions. |
-| `a11y-smoke` | `PLAYWRIGHT_NO_A11Y=1` | `tests/specs/a11y/` | `data-setup-base` | `@axe-core/playwright` WCAG 2.1 AA scan; consumes the base fixture. |
+| Project       | Disable with           | Spec dir            | Depends on        | Notes                                                               |
+| ------------- | ---------------------- | ------------------- | ----------------- | ------------------------------------------------------------------- |
+| `performance` | `PLAYWRIGHT_NO_PERF=1` | `tests/specs/perf/` | `data-setup-base` | Page-load timing assertions.                                        |
+| `a11y-smoke`  | `PLAYWRIGHT_NO_A11Y=1` | `tests/specs/a11y/` | `data-setup-base` | `@axe-core/playwright` WCAG 2.1 AA scan; consumes the base fixture. |
 
 **Opt-in** (excluded from the default run — each has a hard blocker):
 
-| Project | Enable with | Spec dir | Depends on | Why opt-in |
-|---------|-------------|----------|------------|------------|
-| `visual-regression` | `PLAYWRIGHT_VISUAL=1` | `tests/specs/visual/` | `data-setup-base` + `auth-setup` | `auth-setup` can't authenticate against the base dataset yet (no registered base candidate / email). Screenshot baselines under `tests/specs/__screenshots__/`; `auth-setup` is declared only under `PLAYWRIGHT_VISUAL`. |
-| `bank-auth` | `PLAYWRIGHT_BANK_AUTH=1` | `tests/specs/candidate/candidate-bank-auth.spec.ts` | `data-setup-base` | Spec throws at module load without `SUPABASE_SERVICE_ROLE_KEY`/`SUPABASE_ANON_KEY`, and 3 tests need the `identity-callback` Edge Function served (`--no-verify-jwt`). Idura/Signicat OIDC integration test. |
+| Project             | Enable with              | Spec dir                                            | Depends on                       | Why opt-in                                                                                                                                                                                                               |
+| ------------------- | ------------------------ | --------------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `visual-regression` | `PLAYWRIGHT_VISUAL=1`    | `tests/specs/visual/`                               | `data-setup-base` + `auth-setup` | `auth-setup` can't authenticate against the base dataset yet (no registered base candidate / email). Screenshot baselines under `tests/specs/__screenshots__/`; `auth-setup` is declared only under `PLAYWRIGHT_VISUAL`. |
+| `bank-auth`         | `PLAYWRIGHT_BANK_AUTH=1` | `tests/specs/candidate/candidate-bank-auth.spec.ts` | `data-setup-base`                | Spec throws at module load without `SUPABASE_SERVICE_ROLE_KEY`/`SUPABASE_ANON_KEY`, and 3 tests need the `identity-callback` Edge Function served (`--no-verify-jwt`). Idura/Signicat OIDC integration test.             |
 
 ---
 
@@ -186,7 +186,7 @@ Available on `yarn db:seed` invocations. `--external-id-prefix` / `--seed` contr
 
 Fixtures + setup follow a role-based shape:
 
-- **`tests/tests/fixtures/voter/`** — voter-app UI surface fixtures (`voter-journey.fixture.ts`, `views.ts`, `resultsPage.fixture.ts`, `entityDetails.fixture.ts`, `entityFilters.fixture.ts`, `minimalVoterResultsPage.fixture.ts`, `voterNavFixture.fixture.ts`, …). Perm specs importing these is fine — perm is a test *family*, not a separate app.
+- **`tests/tests/fixtures/voter/`** — voter-app UI surface fixtures (`voter-journey.fixture.ts`, `views.ts`, `resultsPage.fixture.ts`, `entityDetails.fixture.ts`, `entityFilters.fixture.ts`, `minimalVoterResultsPage.fixture.ts`, `voterNavFixture.fixture.ts`, …). Perm specs importing these is fine — perm is a test _family_, not a separate app.
 - **`tests/tests/fixtures/candidate/`** — candidate-app fixtures (`candidate-journey.ts` composition root, login/profile/question page fixtures).
 - **`tests/tests/fixtures/shared/`** — genuinely cross-app helpers only (`emailBucket.fixture.ts`, `langSelectorFixture.fixture.ts`, `multilingualTextFieldFixture.fixture.ts`, `feedbackDialog.fixture.ts`).
 - **`tests/tests/setup/shared/`** — cross-role infra (`auth.setup.ts`, `setupFromTemplate.ts`, the merged `base.setup.ts` / `base.teardown.ts`).
@@ -214,15 +214,15 @@ State that specs **must not assume** (because the chain re-seeds):
 
 ## Setup / teardown specs
 
-| File | Project | Purpose |
-|------|---------|---------|
-| `tests/setup/shared/base.setup.ts` | `data-setup-base` | Seeds the `e2e/base` template; verifies fresh-DB precondition; subset-asserts `app_settings.fixed[0].settings` persisted |
-| `tests/setup/shared/base.teardown.ts` | `data-teardown-base` | Cleans `test-`-prefixed rows after the base/journey families finish |
-| `tests/setup/shared/auth.setup.ts` | `auth-setup` (opt-in `PLAYWRIGHT_VISUAL`) | Logs in a candidate; writes `STORAGE_STATE` |
-| `tests/setup/candidate/candidate-journey.setup.ts` | `data-setup-candidate-journey` | Candidate-journey seed overlay |
-| `tests/setup/candidate/candidate-journey.teardown.ts` | `data-teardown-candidate-journey` | Cleans candidate-journey rows |
-| `tests/setup/perm/perm-*.setup.ts` | `data-setup-perm-<short>` | Per-permutation seed; pre-clears its own prefix first |
-| `tests/setup/perm/perm-*.teardown.ts` | `data-teardown-perm-<short>` | Wipes the permutation's `test-perm-<short>-` rows |
+| File                                                  | Project                                   | Purpose                                                                                                                  |
+| ----------------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `tests/setup/shared/base.setup.ts`                    | `data-setup-base`                         | Seeds the `e2e/base` template; verifies fresh-DB precondition; subset-asserts `app_settings.fixed[0].settings` persisted |
+| `tests/setup/shared/base.teardown.ts`                 | `data-teardown-base`                      | Cleans `test-`-prefixed rows after the base/journey families finish                                                      |
+| `tests/setup/shared/auth.setup.ts`                    | `auth-setup` (opt-in `PLAYWRIGHT_VISUAL`) | Logs in a candidate; writes `STORAGE_STATE`                                                                              |
+| `tests/setup/candidate/candidate-journey.setup.ts`    | `data-setup-candidate-journey`            | Candidate-journey seed overlay                                                                                           |
+| `tests/setup/candidate/candidate-journey.teardown.ts` | `data-teardown-candidate-journey`         | Cleans candidate-journey rows                                                                                            |
+| `tests/setup/perm/perm-*.setup.ts`                    | `data-setup-perm-<short>`                 | Per-permutation seed; pre-clears its own prefix first                                                                    |
+| `tests/setup/perm/perm-*.teardown.ts`                 | `data-teardown-perm-<short>`              | Wipes the permutation's `test-perm-<short>-` rows                                                                        |
 
 ---
 
@@ -238,6 +238,6 @@ State that specs **must not assume** (because the chain re-seeds):
 
 ## See also
 
-- Project conventions → [`../CLAUDE.md`](../CLAUDE.md) (Likert-only canonical chain, db:* command map, Context Destructuring Rule)
+- Project conventions → [`../CLAUDE.md`](../CLAUDE.md) (Likert-only canonical chain, db:\* command map, Context Destructuring Rule)
 - Seed-template authoring → [`../packages/dev-seed/README.md`](../packages/dev-seed/README.md)
 - Helper authoring + contracts → [`./tests/helpers/README.md`](./tests/helpers/README.md)

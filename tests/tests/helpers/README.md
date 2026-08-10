@@ -22,10 +22,10 @@ Otherwise, leave the pattern inline with a `// reason:` block explaining why.
 
 ## helpers/ vs utils/ boundary
 
-| Layer                    | Purpose                                                       | Examples                                                                          |
-| ------------------------ | ------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| `tests/tests/helpers/`   | Thin generic Playwright wrappers, NO domain knowledge.        | `settle.ts`, `navigation.ts`, `select.ts`                                         |
-| `tests/tests/utils/`     | Domain-specific assemblers + catalogs.                        | `voterNavigation.ts`, `supabaseAdminClient.ts`, `testIds.ts`, `buildRoute.ts`     |
+| Layer                  | Purpose                                                | Examples                                                                      |
+| ---------------------- | ------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| `tests/tests/helpers/` | Thin generic Playwright wrappers, NO domain knowledge. | `settle.ts`, `navigation.ts`, `select.ts`                                     |
+| `tests/tests/utils/`   | Domain-specific assemblers + catalogs.                 | `voterNavigation.ts`, `supabaseAdminClient.ts`, `testIds.ts`, `buildRoute.ts` |
 
 Helpers operate on raw Playwright primitives. Utils operate on the
 voter/candidate domain (the voter journey, the testId catalog, the

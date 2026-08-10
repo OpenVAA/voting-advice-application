@@ -85,8 +85,7 @@ const REACTIVE_ACCESSORS = new Set([
 const args = process.argv.slice(2);
 const APPLY = args.includes('--apply');
 const filesArgIdx = args.indexOf('--files');
-const FILES_GLOB =
-  filesArgIdx >= 0 ? args[filesArgIdx + 1] : 'apps/frontend/src/**/*.svelte';
+const FILES_GLOB = filesArgIdx >= 0 ? args[filesArgIdx + 1] : 'apps/frontend/src/**/*.svelte';
 
 const REPO_ROOT = resolve(process.cwd());
 
@@ -104,10 +103,7 @@ function rewriteFile(filepath) {
     // Negative lookbehind for `\w` to avoid matching `$$appSettings` or `obj.$appSettings`.
     // Negative lookbehind for `_` to avoid matching `_$appSettings`.
     // Negative lookahead `\w` after store name to avoid matching `$appSettingsFoo`.
-    const pattern = new RegExp(
-      `(?<![\\w$_])\\$${store}(?!\\w)`,
-      'g'
-    );
+    const pattern = new RegExp(`(?<![\\w$_])\\$${store}(?!\\w)`, 'g');
 
     changed = changed.replace(pattern, (match, offset) => {
       const lineStart = changed.lastIndexOf('\n', offset) + 1;
@@ -212,9 +208,7 @@ for (const { filepath, hits, warnings } of fileResults) {
     console.log(`    L${h.line}  ${h.match}  →  ${h.replacement}`);
   }
   for (const w of warnings) {
-    console.log(
-      `    L${w.line}  ⚠ DESTRUCTURE TRAP (${w.contextCall}) — names: ${w.trappedNames.join(', ')}`
-    );
+    console.log(`    L${w.line}  ⚠ DESTRUCTURE TRAP (${w.contextCall}) — names: ${w.trappedNames.join(', ')}`);
   }
 }
 

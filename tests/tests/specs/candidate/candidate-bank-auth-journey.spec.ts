@@ -195,9 +195,7 @@ test.describe('candidate bank-auth journey', { tag: ['@bank-auth'] }, () => {
       expect(authUser, `bank-auth auth user (${BANK_AUTH_JOURNEY_PLACEHOLDER_EMAIL}) should exist`).toBeTruthy();
       const authUserId = authUserIdOrThrow(authUser);
       expect(authUser!.app_metadata?.identity_provider, 'identity_provider claim').toBe('idura');
-      expect(authUser!.app_metadata?.identity_match_value, 'identity_match_value claim').toBe(
-        BANK_AUTH_JOURNEY_SUB
-      );
+      expect(authUser!.app_metadata?.identity_match_value, 'identity_match_value claim').toBe(BANK_AUTH_JOURNEY_SUB);
 
       // 6b. The linked candidate row exists (public.candidates via PostgREST).
       const candidateResult = await client.findData('candidates', { auth_user_id: authUserId });

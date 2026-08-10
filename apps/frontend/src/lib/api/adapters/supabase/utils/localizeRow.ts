@@ -24,11 +24,7 @@ export function localizeRow(
     const dotIndex = field.indexOf('.');
     if (dotIndex === -1) {
       // Top-level field
-      result[field] = getLocalized(
-        result[field] as Record<string, string> | null | undefined,
-        locale,
-        defaultLocale
-      );
+      result[field] = getLocalized(result[field] as Record<string, string> | null | undefined, locale, defaultLocale);
     } else {
       // Nested dot-notation path (e.g. "custom_data.fillingInfo")
       const topKey = field.slice(0, dotIndex);
@@ -41,12 +37,7 @@ export function localizeRow(
       }
 
       // Shallow-clone the top-level object to avoid mutation
-      result[topKey] = localizeNested(
-        { ...(topValue as Record<string, unknown>) },
-        restPath,
-        locale,
-        defaultLocale
-      );
+      result[topKey] = localizeNested({ ...(topValue as Record<string, unknown>) }, restPath, locale, defaultLocale);
     }
   }
 
@@ -66,11 +57,7 @@ function localizeNested(
   const dotIndex = path.indexOf('.');
   if (dotIndex === -1) {
     // Leaf key — localize it
-    obj[path] = getLocalized(
-      obj[path] as Record<string, string> | null | undefined,
-      locale,
-      defaultLocale
-    );
+    obj[path] = getLocalized(obj[path] as Record<string, string> | null | undefined, locale, defaultLocale);
     return obj;
   }
 
@@ -83,11 +70,6 @@ function localizeNested(
     return obj;
   }
 
-  obj[key] = localizeNested(
-    { ...(nested as Record<string, unknown>) },
-    rest,
-    locale,
-    defaultLocale
-  );
+  obj[key] = localizeNested({ ...(nested as Record<string, unknown>) }, rest, locale, defaultLocale);
   return obj;
 }

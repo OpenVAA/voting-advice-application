@@ -128,12 +128,24 @@ AND the per-question swap elements. Edit:
 }
 
 @keyframes fade-out-up {
-  from { transform: translateY(0); opacity: 1; }
-  to { transform: translateY(-10px); opacity: 0; }
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
 }
 @keyframes fade-in-down {
-  from { transform: translateY(10px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 ```
 
@@ -297,7 +309,7 @@ Hard facts that bound the implementation.
   "feels deliberate" window.
 - **`+page.svelte` instance reuse:** Applies to URL changes that match
   the SAME route file. `/questions/q1 → /questions/q2` reuses. `/questions
-  → /results` does NOT (different route files; layout chain
+→ /results` does NOT (different route files; layout chain
   changes — Spike 013 captured ResultsParentLayout mount on the
   crossing).
 - **Production DOM survival rate:** 9/25 (~36%) tracked elements
@@ -324,6 +336,7 @@ Synthesized from spikes: **013, 014a, 014b, 015, 016**.
 Spike sessions wrapped: 2026-05-25.
 
 Source files available in:
+
 - `sources/013-nav-mount-forensics/` — mount/destroy ledger infrastructure
   (`mountLedger.svelte.ts`, `LedgerPanel.svelte`) plus the production-mirroring
   route tree at `runes-test/nav-forensics/`. Shared across spikes 014a, 014b,
@@ -343,6 +356,7 @@ Source files available in:
   announcer + Likert input demonstrating layout-owned state survival.
 
 Related production files referenced:
+
 - `apps/frontend/src/routes/(voters)/(located)/questions/[questionId]/+page.svelte`
   — current page-with-chrome shape; target of Wave B migration.
 - `apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/+layout.svelte`

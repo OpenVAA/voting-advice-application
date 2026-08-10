@@ -220,7 +220,12 @@ describe('baseTemplate — registration + hierarchy invariants', () => {
   });
 
   it('every municipal constituency carries a parent ref to its regional constituency', () => {
-    const munIds = ['test-e2e-base-co-mun-ne', 'test-e2e-base-co-mun-nw', 'test-e2e-base-co-mun-se', 'test-e2e-base-co-mun-sw'];
+    const munIds = [
+      'test-e2e-base-co-mun-ne',
+      'test-e2e-base-co-mun-nw',
+      'test-e2e-base-co-mun-se',
+      'test-e2e-base-co-mun-sw'
+    ];
     const cos = fixedOf('constituencies') as Array<{
       external_id?: string;
       parent?: { external_id?: string };
@@ -235,16 +240,16 @@ describe('baseTemplate — registration + hierarchy invariants', () => {
 
 describe('baseTemplate — question scoping sentinels', () => {
   it('test-e2e-base-qg-opin-el-reg carries an _elections scoping sentinel for test-e2e-base-el-reg', () => {
-    const cat = fixedOf('question_categories').find(
-      (r) => r.external_id === 'test-e2e-base-qg-opin-el-reg'
-    ) as { _elections?: { external_id?: Array<string> } } | undefined;
+    const cat = fixedOf('question_categories').find((r) => r.external_id === 'test-e2e-base-qg-opin-el-reg') as
+      | { _elections?: { external_id?: Array<string> } }
+      | undefined;
     expect(cat?._elections?.external_id).toContain('test-e2e-base-el-reg');
   });
 
   it('test-e2e-base-qg-opin-co-mun-se-sw carries a _constituencies sentinel for the SE/SW municipalities', () => {
-    const cat = fixedOf('question_categories').find(
-      (r) => r.external_id === 'test-e2e-base-qg-opin-co-mun-se-sw'
-    ) as { _constituencies?: { external_id?: Array<string> } } | undefined;
+    const cat = fixedOf('question_categories').find((r) => r.external_id === 'test-e2e-base-qg-opin-co-mun-se-sw') as
+      | { _constituencies?: { external_id?: Array<string> } }
+      | undefined;
     expect(cat?._constituencies?.external_id).toEqual(
       expect.arrayContaining(['test-e2e-base-co-mun-se', 'test-e2e-base-co-mun-sw'])
     );
@@ -274,8 +279,7 @@ describe('baseTemplate — relational triangle closure', () => {
       faction?: unknown;
     }>;
     for (const n of noms) {
-      const refCount =
-        (n.candidate ? 1 : 0) + (n.organization ? 1 : 0) + (n.alliance ? 1 : 0) + (n.faction ? 1 : 0);
+      const refCount = (n.candidate ? 1 : 0) + (n.organization ? 1 : 0) + (n.alliance ? 1 : 0) + (n.faction ? 1 : 0);
       expect(refCount, `nomination ${n.external_id} must carry exactly one polymorphic ref`).toBe(1);
     }
   });
@@ -289,13 +293,10 @@ describe('baseTemplate — relational triangle closure', () => {
       constituency?: { external_id?: string };
     }>;
     for (const n of noms) {
-      expect(electionIds.has(n.election!.external_id!), `nom ${n.external_id} -> unknown election`).toBe(
+      expect(electionIds.has(n.election!.external_id!), `nom ${n.external_id} -> unknown election`).toBe(true);
+      expect(constituencyIds.has(n.constituency!.external_id!), `nom ${n.external_id} -> unknown constituency`).toBe(
         true
       );
-      expect(
-        constituencyIds.has(n.constituency!.external_id!),
-        `nom ${n.external_id} -> unknown constituency`
-      ).toBe(true);
     }
   });
 });

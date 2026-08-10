@@ -38,10 +38,7 @@ import type { Template } from '../template/types';
  * @param builtIns Map of built-in template name => Template. Plan 05 passes
  *            an empty map (`{}`); Plan 06 populates `{ default, 'e2e/base' }`.
  */
-export async function resolveTemplate(
-  arg: string,
-  builtIns: Record<string, Template>
-): Promise<Template> {
+export async function resolveTemplate(arg: string, builtIns: Record<string, Template>): Promise<Template> {
   if (isPath(arg)) {
     const absPath = isAbsolute(arg) ? arg : resolve(arg);
     if (absPath.endsWith('.json')) {
@@ -53,11 +50,10 @@ export async function resolveTemplate(
   const builtIn = builtIns[arg];
   if (!builtIn) {
     const builtInNames = Object.keys(builtIns);
-    const builtInList =
-      builtInNames.length > 0 ? builtInNames.join(', ') : '(none registered yet)';
+    const builtInList = builtInNames.length > 0 ? builtInNames.join(', ') : '(none registered yet)';
     throw new Error(
       `Unknown template: '${arg}'. Built-in templates: ${builtInList}. ` +
-        'For a custom template, pass a path like \'./my-template.ts\' or \'/abs/path.json\'.'
+        "For a custom template, pass a path like './my-template.ts' or '/abs/path.json'."
     );
   }
   return builtIn;

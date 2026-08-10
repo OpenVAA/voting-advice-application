@@ -20,7 +20,8 @@ import type {
   IdentityProvider,
   IdTokenClaimsResult,
   TokenExchangeParams,
-  TokenExchangeResult} from './types';
+  TokenExchangeResult
+} from './types';
 
 /**
  * Load the Idura RS256 signing key from environment configuration.
@@ -75,10 +76,7 @@ export const iduraProvider: IdentityProvider = {
     return { authorizeUrl, clientSideRedirect: false, state, nonce };
   },
 
-  async exchangeCodeForToken({
-    authorizationCode,
-    redirectUri
-  }: TokenExchangeParams): Promise<TokenExchangeResult> {
+  async exchangeCodeForToken({ authorizationCode, redirectUri }: TokenExchangeParams): Promise<TokenExchangeResult> {
     const clientId = publicConstants.PUBLIC_IDENTITY_PROVIDER_CLIENT_ID;
     const { key: signingKey, jwk: signingJwk } = await getSigningKey();
     const tokenEndpoint = `https://${constants.IDURA_DOMAIN}/oauth2/token`;

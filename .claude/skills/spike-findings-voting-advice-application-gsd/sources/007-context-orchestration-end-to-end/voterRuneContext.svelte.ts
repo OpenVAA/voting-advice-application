@@ -57,8 +57,7 @@ export interface VoterRuneContext {
 }
 
 export function getVoterRuneContext(): VoterRuneContext {
-  if (!hasContext(CONTEXT_KEY))
-    error(500, 'getVoterRuneContext() called before initVoterRuneContext()');
+  if (!hasContext(CONTEXT_KEY)) error(500, 'getVoterRuneContext() called before initVoterRuneContext()');
   return getContext<VoterRuneContext>(CONTEXT_KEY);
 }
 

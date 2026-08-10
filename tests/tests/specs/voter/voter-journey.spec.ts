@@ -454,7 +454,11 @@ async function advanceToNumberSlider(page: Page): Promise<void> {
 async function goToLocatedQuestionsViaMenu(page: Page): Promise<void> {
   const nav = createNavMenu(page);
   await nav.openMobileNav();
-  await nav.menu.getByTestId(testIds.shared.navigation.menuItem).filter({ hasText: /Opinions/i }).first().click();
+  await nav.menu
+    .getByTestId(testIds.shared.navigation.menuItem)
+    .filter({ hasText: /Opinions/i })
+    .first()
+    .click();
   await page.waitForURL(/\/questions/, { timeout: TIMEOUTS.slowPage }).catch(() => null);
 }
 
@@ -1075,7 +1079,10 @@ test.describe('voter journey', () => {
       await expect.soft(allianceSection).toBeVisible({ timeout: TIMEOUTS.slowPage });
 
       // Alliance A card — nominated in the voter's CO-Reg-N scope.
-      const allianceA = resultsPage.getEntityCards().filter({ hasText: /Alliance A/i }).first();
+      const allianceA = resultsPage
+        .getEntityCards()
+        .filter({ hasText: /Alliance A/i })
+        .first();
       await expect.soft(allianceA).toBeVisible({ timeout: TIMEOUTS.slowPage });
       // Card-level MatchScore gauge (org→alliance imputation output; same
       // rounding as org cards) — renders whenever parsed.match is set.

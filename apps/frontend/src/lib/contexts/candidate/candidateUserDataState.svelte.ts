@@ -71,16 +71,18 @@ class CandidateUserDataStateImpl implements CandidateUserDataState {
     // Return clone to prevent mutation of saved data.
     // Use JSON round-trip instead of structuredClone because Svelte 5's
     // $state proxy objects cannot be structurally cloned.
-    return JSON.parse(JSON.stringify({
-      candidate: {
-        answers: { ...answers, ...editedAnswers },
-        image: this.#editedImage ?? image,
-        termsOfUseAccepted: this.#editedTermsOfUseAccepted ?? termsOfUseAccepted,
-        ...rest
-      },
-      user,
-      nominations
-    })) as CandidateUserData<true>;
+    return JSON.parse(
+      JSON.stringify({
+        candidate: {
+          answers: { ...answers, ...editedAnswers },
+          image: this.#editedImage ?? image,
+          termsOfUseAccepted: this.#editedTermsOfUseAccepted ?? termsOfUseAccepted,
+          ...rest
+        },
+        user,
+        nominations
+      })
+    ) as CandidateUserData<true>;
   });
 
   constructor({
@@ -150,9 +152,7 @@ class CandidateUserDataStateImpl implements CandidateUserDataState {
       [
         this.#editedImage ? 'image' : undefined,
         this.#editedTermsOfUseAccepted !== undefined ? 'termsOfUseAccepted' : undefined
-      ].filter(
-        (p) => p !== undefined
-      ) as Array<keyof LocalizedCandidateData>
+      ].filter((p) => p !== undefined) as Array<keyof LocalizedCandidateData>
   );
 
   #hasUnsaved = $derived(this.#unsavedQuestionIds.length > 0 || this.#unsavedProperties.length > 0);

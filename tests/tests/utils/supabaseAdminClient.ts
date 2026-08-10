@@ -235,7 +235,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
       if (code === 'PGRST116') return null;
       throw new Error(`getAppSettings: fetch failed: ${error.message}`);
     }
-    return ((row?.settings ?? null) as Record<string, unknown> | null);
+    return (row?.settings ?? null) as Record<string, unknown> | null;
   }
 
   // ---------------------------------------------------------------------------
@@ -604,9 +604,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
       // reason: collect-and-throw at end so partial deletions complete first AND
       // the caller sees the failures (matches `unregisterCandidate`'s
       // throw-on-error pattern in this file).
-      throw new Error(
-        `deleteAllTestUsers: ${errors.length} failure(s) — ${JSON.stringify(errors)}`
-      );
+      throw new Error(`deleteAllTestUsers: ${errors.length} failure(s) — ${JSON.stringify(errors)}`);
     }
   }
 }

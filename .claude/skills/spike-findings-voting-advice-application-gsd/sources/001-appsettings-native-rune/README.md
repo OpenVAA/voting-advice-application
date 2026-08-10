@@ -2,7 +2,7 @@
 spike: 001
 name: appsettings-native-rune
 type: standard
-validates: "Given a rune-only `appSettings` context exposing `get current()` over `$state`, when DB overrides arrive via `page.data.appSettingsData`, then both a template consumer and a `.ts` `$derived` consumer update reactively — with no `toStore`, no `$appSettings` auto-subscribe, no `get(appSettings)`, and no `svelte/store` import"
+validates: 'Given a rune-only `appSettings` context exposing `get current()` over `$state`, when DB overrides arrive via `page.data.appSettingsData`, then both a template consumer and a `.ts` `$derived` consumer update reactively — with no `toStore`, no `$appSettings` auto-subscribe, no `get(appSettings)`, and no `svelte/store` import'
 verdict: VALIDATED
 related: [002]
 tags: [svelte5, runes, context, settings, migration]
@@ -93,7 +93,7 @@ fields will reflect `staticSettings ∪ dynamicSettings ∪ DB overrides`.
 
 ## Investigation Trail
 
-*(Updated as the spike progresses.)*
+_(Updated as the spike progresses.)_
 
 - **2026-05-21** — Built initial Approach A: rune context returning `get current()`
   with internal `$state` and `$effect`-driven merge on `page.data.appSettingsData`.
@@ -107,14 +107,14 @@ Browser verification on 2026-05-21 at http://localhost:5173/runes-test against
 the seeded default template (327 candidates / 1 election / 5 constituencies / 24
 questions / 4 categories) confirmed:
 
-| Field                          | Template direct    | $derived alias     | Match |
-|--------------------------------|--------------------|--------------------|-------|
-| admin.email                    | first.last@openvaa.org | first.last@openvaa.org | ✓ |
-| font.name                      | Inter              | (same)             | ✓ |
-| analytics.platform.name        | ∅ (no DB override) | (same)             | ✓ |
-| elections.disallowSelection    | false              | (same)             | ✓ |
-| header.showFeedback            | true (from DB)     | (same)             | ✓ |
-| colors.light.primary           | #2546a8            | (same)             | ✓ |
+| Field                       | Template direct        | $derived alias         | Match |
+| --------------------------- | ---------------------- | ---------------------- | ----- |
+| admin.email                 | first.last@openvaa.org | first.last@openvaa.org | ✓     |
+| font.name                   | Inter                  | (same)                 | ✓     |
+| analytics.platform.name     | ∅ (no DB override)     | (same)                 | ✓     |
+| elections.disallowSelection | false                  | (same)                 | ✓     |
+| header.showFeedback         | true (from DB)         | (same)                 | ✓     |
+| colors.light.primary        | #2546a8                | (same)                 | ✓     |
 
 **Key findings:**
 

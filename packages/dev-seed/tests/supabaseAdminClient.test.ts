@@ -204,9 +204,9 @@ describe('SupabaseAdminClient portrait surface (Phase 58 Plan 04)', () => {
       const client = new SupabaseAdminClient('http://localhost', 'key', 'proj-abc');
       const bytes = new Uint8Array([0xff, 0xd8, 0xff]);
 
-      await expect(
-        client.uploadPortrait('cand-uuid-7', 'seed_cand_0007', 'seed-portrait.jpg', bytes)
-      ).rejects.toThrow(/Portrait upload failed for seed_cand_0007: bucket not found/);
+      await expect(client.uploadPortrait('cand-uuid-7', 'seed_cand_0007', 'seed-portrait.jpg', bytes)).rejects.toThrow(
+        /Portrait upload failed for seed_cand_0007: bucket not found/
+      );
     });
   });
 

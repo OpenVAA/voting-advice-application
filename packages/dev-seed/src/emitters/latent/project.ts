@@ -243,9 +243,7 @@ function getOrSampleChoiceLoadings(
 ): Array<Array<number>> {
   const existing = cache[qExtId];
   if (existing) return existing;
-  const cls = Array.from({ length: numChoices }, () =>
-    Array.from({ length: dims }, () => boxMuller(ctx.faker, 0, 1))
-  );
+  const cls = Array.from({ length: numChoices }, () => Array.from({ length: dims }, () => boxMuller(ctx.faker, 0, 1)));
   cache[qExtId] = cls;
   return cls;
 }

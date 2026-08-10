@@ -133,9 +133,9 @@ describe('BASE_APP_SETTINGS — base dataset settings contract', () => {
 
 describe("BUILT_IN_TEMPLATES['e2e/base'].app_settings — registry visibility", () => {
   it('registry base template exposes the same app_settings block as the direct export', () => {
-    const registryFrag = (
-      BUILT_IN_TEMPLATES['e2e/base'] as unknown as Record<string, unknown>
-    ).app_settings as FragmentView | undefined;
+    const registryFrag = (BUILT_IN_TEMPLATES['e2e/base'] as unknown as Record<string, unknown>).app_settings as
+      | FragmentView
+      | undefined;
     const row = registryFrag?.fixed?.[0];
     expect((row?.external_id as string).startsWith('test-e2e-base-')).toBe(true);
     expect(row?.settings).toEqual(BASE_APP_SETTINGS);

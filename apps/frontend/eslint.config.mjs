@@ -98,7 +98,8 @@ export default [
           patterns: [
             {
               regex: '^(\\.\\./){2,}lib(/|$)',
-              message: 'Use the $lib alias instead of deep relative imports. Example: import X from "$lib/components/Foo".'
+              message:
+                'Use the $lib alias instead of deep relative imports. Example: import X from "$lib/components/Foo".'
             }
           ]
         }

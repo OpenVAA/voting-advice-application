@@ -1,5 +1,5 @@
 import { ENTITY_TYPE } from '@openvaa/data';
-import { beforeEach,describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SupabaseDataProvider } from './supabaseDataProvider';
 import type { DynamicSettings } from '@openvaa/app-shared';
 import type { Database } from '@openvaa/supabase-types';
@@ -257,10 +257,16 @@ describe('SupabaseDataProvider', () => {
 
       const result = await provider.getAppCustomization();
 
-      expect(result.publisherLogo?.url).toBe('http://localhost:54321/storage/v1/object/public/public-assets/proj/logo.png');
+      expect(result.publisherLogo?.url).toBe(
+        'http://localhost:54321/storage/v1/object/public/public-assets/proj/logo.png'
+      );
       expect(result.poster?.url).toBe('http://localhost:54321/storage/v1/object/public/public-assets/proj/poster.jpg');
-      expect(result.poster?.urlDark).toBe('http://localhost:54321/storage/v1/object/public/public-assets/proj/poster-dark.jpg');
-      expect(result.candPoster?.url).toBe('http://localhost:54321/storage/v1/object/public/public-assets/proj/cand.png');
+      expect(result.poster?.urlDark).toBe(
+        'http://localhost:54321/storage/v1/object/public/public-assets/proj/poster-dark.jpg'
+      );
+      expect(result.candPoster?.url).toBe(
+        'http://localhost:54321/storage/v1/object/public/public-assets/proj/cand.png'
+      );
     });
 
     it('localizes translationOverrides (each override value is a LocalizedString)', async () => {
@@ -414,10 +420,7 @@ describe('SupabaseDataProvider', () => {
             image: null,
             custom_data: null,
             subtype: null,
-            election_constituency_groups: [
-              { constituency_group_id: 'cg1' },
-              { constituency_group_id: 'cg2' }
-            ]
+            election_constituency_groups: [{ constituency_group_id: 'cg1' }, { constituency_group_id: 'cg2' }]
           }
         ],
         error: null
@@ -569,10 +572,7 @@ describe('SupabaseDataProvider', () => {
             image: null,
             custom_data: null,
             subtype: null,
-            constituency_group_constituencies: [
-              { constituency_id: 'c1' },
-              { constituency_id: 'c2' }
-            ]
+            constituency_group_constituencies: [{ constituency_id: 'c1' }, { constituency_id: 'c2' }]
           }
         ],
         error: null
@@ -1211,13 +1211,41 @@ describe('SupabaseDataProvider', () => {
       mockSupabase._mockResponses['questions'] = {
         data: [
           // allow_open: false → customData.allowOpen false (open-answer field hidden)
-          { id: 'q1', name: { en: 'Q1' }, type: 'singleChoiceOrdinal', category_id: 'cat1', custom_data: null, allow_open: false },
+          {
+            id: 'q1',
+            name: { en: 'Q1' },
+            type: 'singleChoiceOrdinal',
+            category_id: 'cat1',
+            custom_data: null,
+            allow_open: false
+          },
           // allow_open: true → customData.allowOpen true (open-answer field shown)
-          { id: 'q2', name: { en: 'Q2' }, type: 'singleChoiceOrdinal', category_id: 'cat1', custom_data: { hero: { emoji: 'x' } }, allow_open: true },
+          {
+            id: 'q2',
+            name: { en: 'Q2' },
+            type: 'singleChoiceOrdinal',
+            category_id: 'cat1',
+            custom_data: { hero: { emoji: 'x' } },
+            allow_open: true
+          },
           // allow_open: null → defaults to true (schema default)
-          { id: 'q3', name: { en: 'Q3' }, type: 'singleChoiceOrdinal', category_id: 'cat1', custom_data: null, allow_open: null },
+          {
+            id: 'q3',
+            name: { en: 'Q3' },
+            type: 'singleChoiceOrdinal',
+            category_id: 'cat1',
+            custom_data: null,
+            allow_open: null
+          },
           // explicit custom_data.allowOpen wins over the column
-          { id: 'q4', name: { en: 'Q4' }, type: 'singleChoiceOrdinal', category_id: 'cat1', custom_data: { allowOpen: false }, allow_open: true }
+          {
+            id: 'q4',
+            name: { en: 'Q4' },
+            type: 'singleChoiceOrdinal',
+            category_id: 'cat1',
+            custom_data: { allowOpen: false },
+            allow_open: true
+          }
         ],
         error: null
       };
@@ -1242,11 +1270,25 @@ describe('SupabaseDataProvider', () => {
       mockSupabase._mockResponses['questions'] = {
         data: [
           // number row with custom_data min/max → lifted to top-level (question matchable)
-          { id: 'q1', name: { en: 'Q1' }, type: 'number', category_id: 'cat1', custom_data: { min: 0, max: 10 }, allow_open: false },
+          {
+            id: 'q1',
+            name: { en: 'Q1' },
+            type: 'number',
+            category_id: 'cat1',
+            custom_data: { min: 0, max: 10 },
+            allow_open: false
+          },
           // number row WITHOUT custom_data min/max → no top-level min/max (non-matchable)
           { id: 'q2', name: { en: 'Q2' }, type: 'number', category_id: 'cat1', custom_data: null, allow_open: false },
           // non-number row with custom_data.min → NOT lifted to top-level
-          { id: 'q3', name: { en: 'Q3' }, type: 'text', category_id: 'cat1', custom_data: { min: 3 }, allow_open: false }
+          {
+            id: 'q3',
+            name: { en: 'Q3' },
+            type: 'text',
+            category_id: 'cat1',
+            custom_data: { min: 3 },
+            allow_open: false
+          }
         ],
         error: null
       };
@@ -1612,9 +1654,7 @@ describe('SupabaseDataProvider', () => {
       const nom = (result.nominations as Array<NominationTestNarrow>)[0];
       const entity = (result.entities as Array<EntityTestNarrow>)[0];
 
-      expect(nom.image?.url).toBe(
-        'http://localhost:54321/storage/v1/object/public/public-assets/proj/nom/n3/img.png'
-      );
+      expect(nom.image?.url).toBe('http://localhost:54321/storage/v1/object/public/public-assets/proj/nom/n3/img.png');
       expect(entity.image?.url).toBe(
         'http://localhost:54321/storage/v1/object/public/public-assets/proj/org/org1/logo.png'
       );

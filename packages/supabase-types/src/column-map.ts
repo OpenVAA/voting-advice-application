@@ -79,9 +79,9 @@ export type ColumnName = keyof typeof COLUMN_MAP;
 export type PropertyName = (typeof COLUMN_MAP)[ColumnName];
 
 /** Reverse mapping: camelCase -> snake_case */
-export const PROPERTY_MAP = Object.fromEntries(
-  Object.entries(COLUMN_MAP).map(([k, v]) => [v, k])
-) as {[K in PropertyName]: ColumnName};
+export const PROPERTY_MAP = Object.fromEntries(Object.entries(COLUMN_MAP).map(([k, v]) => [v, k])) as {
+  [K in PropertyName]: ColumnName;
+};
 
 /**
  * Mapping between camelCase collection names and snake_case database table names.
@@ -96,7 +96,7 @@ export const TABLE_MAP = {
   adminJobs: 'admin_jobs',
   electionConstituencyGroups: 'election_constituency_groups',
   constituencyGroupConstituencies: 'constituency_group_constituencies',
-  userRoles: 'user_roles',
+  userRoles: 'user_roles'
 } as const;
 
 /** camelCase collection name */
@@ -106,6 +106,6 @@ export type CollectionName = keyof typeof TABLE_MAP;
 export type TableName = (typeof TABLE_MAP)[CollectionName];
 
 /** Reverse mapping: snake_case table name -> camelCase collection name */
-export const COLLECTION_NAME_MAP = Object.fromEntries(
-  Object.entries(TABLE_MAP).map(([k, v]) => [v, k])
-) as {[K in TableName]: CollectionName};
+export const COLLECTION_NAME_MAP = Object.fromEntries(Object.entries(TABLE_MAP).map(([k, v]) => [v, k])) as {
+  [K in TableName]: CollectionName;
+};

@@ -19,12 +19,12 @@ fully idiomatic Svelte 5.
   child still lives, the child's overlay remains active. Index-based revert
   cannot guarantee this.
 - **Producer effect must not loop** — wrapping a rune $state collection in an
-  `$effect`-scoped helper triggers `effect_update_depth_exceeded` unless the
-  read-side is wrapped in `untrack()`. Same trap as [[reactive-contexts]]
+  `$effect`-scoped helper triggers `effect_update_depth_exceeded`unless the
+read-side is wrapped in`untrack()`. Same trap as [[reactive-contexts]]
   DataRoot producer; the fix is identical.
 - **`mergeSettings()` associativity preserved** — the registry approach
   (`current = slots.reduce(merge, base)`) is mathematically equivalent to the
-  strict-LIFO `StackedState` for the merge *result*; only cleanup semantics
+  strict-LIFO `StackedState` for the merge _result_; only cleanup semantics
   improve.
 
 ## How to Build It
@@ -58,9 +58,7 @@ export function settingsOverlay<TMerged, TOverlay = TMerged>(
   let nextId = 0;
   let slots = $state<Array<Slot>>([]);
 
-  const current = $derived(
-    slots.reduce<TMerged>((acc, s) => merge(acc, s.overlay), base)
-  );
+  const current = $derived(slots.reduce<TMerged>((acc, s) => merge(acc, s.overlay), base));
 
   function push(overlay: TOverlay): () => void {
     const id = ++nextId;
@@ -86,10 +84,14 @@ export function settingsOverlay<TMerged, TOverlay = TMerged>(
   }
 
   return {
-    get current() { return current; },
+    get current() {
+      return current;
+    },
     push,
     use,
-    get size() { return slots.length; }
+    get size() {
+      return slots.length;
+    }
   };
 }
 ```
@@ -105,13 +107,11 @@ import { settingsOverlay } from '../utils/settingsOverlay.svelte';
 const CONTEXT_KEY = Symbol('layoutSettings');
 
 export function initLayoutContext(): LayoutContext {
-  const topBar = settingsOverlay<TopBarSettings, DeepPartial<TopBarSettings>>(
-    DEFAULT_TOP_BAR,
-    (acc, ov) => mergeSettings(acc, ov)
+  const topBar = settingsOverlay<TopBarSettings, DeepPartial<TopBarSettings>>(DEFAULT_TOP_BAR, (acc, ov) =>
+    mergeSettings(acc, ov)
   );
-  const pageStyles = settingsOverlay<PageStyles, DeepPartial<PageStyles>>(
-    DEFAULT_PAGE_STYLES,
-    (acc, ov) => mergeSettings(acc, ov)
+  const pageStyles = settingsOverlay<PageStyles, DeepPartial<PageStyles>>(DEFAULT_PAGE_STYLES, (acc, ov) =>
+    mergeSettings(acc, ov)
   );
   const navigation = settingsOverlay<NavigationSettings, DeepPartial<NavigationSettings>>(
     DEFAULT_NAVIGATION,
@@ -119,7 +119,9 @@ export function initLayoutContext(): LayoutContext {
   );
 
   return setContext(CONTEXT_KEY, {
-    topBar, pageStyles, navigation,
+    topBar,
+    pageStyles,
+    navigation,
     useTopBar: (o) => topBar.use(o),
     usePageStyles: (o) => pageStyles.use(o),
     useNavigation: (o) => navigation.use(o)
@@ -204,6 +206,7 @@ from the codebase.
 
 Synthesized from spikes: 006
 Source files available in:
+
 - `sources/006-layout-overlay-rune/SettingsOverlay.svelte.ts` — generic registry
 - `sources/006-layout-overlay-rune/layoutSettingsRune.svelte.ts` — context wrapper
 - `sources/006-layout-overlay-rune/MockRoute.svelte` — declarative consumer demo

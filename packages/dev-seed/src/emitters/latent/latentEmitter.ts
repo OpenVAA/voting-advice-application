@@ -48,17 +48,14 @@ export function latentAnswerEmitter(template: Template): AnswerEmitter {
     // NO mutation of ctx (the WeakMap cache inside defaultProject is per-ctx
     // and is the only state keyed off ctx identity).
     if (bundle === undefined) {
-      const { dims, eigenvalues } =
-        ctx.latent?.dimensions?.(template) ?? defaultDimensions(template);
+      const { dims, eigenvalues } = ctx.latent?.dimensions?.(template) ?? defaultDimensions(template);
 
       const parties = ctx.refs.organizations;
       const centroids =
         ctx.latent?.centroids?.(dims, eigenvalues, parties, ctx, template.latent?.centroids) ??
         defaultCentroids(dims, eigenvalues, parties, ctx, template.latent?.centroids);
 
-      const spread =
-        ctx.latent?.spread?.(ctx, template.latent?.spread) ??
-        defaultSpread(ctx, template.latent?.spread);
+      const spread = ctx.latent?.spread?.(ctx, template.latent?.spread) ?? defaultSpread(ctx, template.latent?.spread);
 
       // Loadings use the questions passed to the first call — the pipeline
       // always calls this with the SAME questions array (CandidatesGenerator
@@ -71,9 +68,7 @@ export function latentAnswerEmitter(template: Template): AnswerEmitter {
       // `??` preserves a literal `0` override (noise-free determinism mode).
       const noiseStdDev =
         template.latent?.noise ??
-        (eigenvalues.length > 0
-          ? 0.1 * (eigenvalues.reduce((a, b) => a + b, 0) / eigenvalues.length)
-          : 0);
+        (eigenvalues.length > 0 ? 0.1 * (eigenvalues.reduce((a, b) => a + b, 0) / eigenvalues.length) : 0);
 
       bundle = { dims, eigenvalues, centroids, loadings, spread, noiseStdDev, parties };
     }

@@ -109,11 +109,7 @@ export function allianceExtId(key: 'L' | 'R', externalIdPrefix: string): string 
  * Constituency-specificity is critical (RESEARCH Pitfall 3): an org-nom in
  * c_03 must point at the alliance nom in c_03, not the alliance nom in c_01.
  */
-export function allianceNomExtId(
-  key: 'L' | 'R',
-  constituencyExtId: string,
-  externalIdPrefix: string
-): string {
+export function allianceNomExtId(key: 'L' | 'R', constituencyExtId: string, externalIdPrefix: string): string {
   return `${externalIdPrefix}nom_alliance_${key}_${constituencyExtId}`;
 }
 

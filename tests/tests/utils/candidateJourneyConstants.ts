@@ -81,8 +81,7 @@ export const INFO_QUESTION_ANSWERS: Readonly<Record<string, string>> = Object.fr
   // candidateProfilePage.fillMultipleTextQuestion, and round-tripped in step 21
   // (EQTYP-03 candidate leg). It is required:false, so leaving it out of the
   // completion-gate map does not affect the required-empty submit choreography.
-  'test-qu-info-filt-co-reg-n':
-    '[INFO-FILT-CO-REG-N] Answer for the north-only filtered info question.'
+  'test-qu-info-filt-co-reg-n': '[INFO-FILT-CO-REG-N] Answer for the north-only filtered info question.'
 });
 
 /**

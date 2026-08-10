@@ -70,7 +70,10 @@ test.describe('voter-alliance (EFLOW-02 + EPERM-03/04 riders)', () => {
     });
 
     await test.step('Alliance A card renders with a match-score gauge + both member-org subcards', async () => {
-      const allianceA = resultsPage.getEntityCards().filter({ hasText: /Alliance A/i }).first();
+      const allianceA = resultsPage
+        .getEntityCards()
+        .filter({ hasText: /Alliance A/i })
+        .first();
       await expect(allianceA).toBeVisible({ timeout: TIMEOUTS.slowPage });
 
       // Card-level MatchScore gauge (org→alliance imputation output).
@@ -90,10 +93,11 @@ test.describe('voter-alliance (EFLOW-02 + EPERM-03/04 riders)', () => {
       // (the whole subcard is wrapped by the member org's EntityCardAction <a>
       // — EntityCard.svelte:220). Assert the opened drawer is the ORG's, not
       // the alliance's (drawer-identity assertion, D-03).
-      const allianceA = resultsPage.getEntityCards().filter({ hasText: /Alliance A/i }).first();
-      const partyAASubcard = allianceA
-        .getByTestId(testIds.voter.results.cardSubcard)
-        .filter({ hasText: /Party AA/i });
+      const allianceA = resultsPage
+        .getEntityCards()
+        .filter({ hasText: /Alliance A/i })
+        .first();
+      const partyAASubcard = allianceA.getByTestId(testIds.voter.results.cardSubcard).filter({ hasText: /Party AA/i });
       await partyAASubcard.click();
 
       const drawer = page.getByTestId(testIds.voter.results.entityDetails);

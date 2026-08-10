@@ -121,9 +121,9 @@ class NominationAndQuestionStateImpl {
   }
 }
 
-export function nominationAndQuestionState(
-  deps: NominationAndQuestionStateDeps
-): { readonly value: NominationAndQuestionTree } {
+export function nominationAndQuestionState(deps: NominationAndQuestionStateDeps): {
+  readonly value: NominationAndQuestionTree;
+} {
   return new NominationAndQuestionStateImpl(deps);
 }
 

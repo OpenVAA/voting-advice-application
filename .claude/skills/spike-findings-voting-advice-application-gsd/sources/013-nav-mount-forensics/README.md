@@ -2,7 +2,7 @@
 spike: 013
 name: nav-mount-forensics
 type: standard
-validates: "Given the production voter route tree (root → voters → located → questions/[questionId] vs results/[electionTab]/[entityTab]), when navigating Q→Q / Q→Results / electionTab→electionTab / entityTab→entityTab, then a mount/destroy ledger proves which components re-instantiate vs persist."
+validates: 'Given the production voter route tree (root → voters → located → questions/[questionId] vs results/[electionTab]/[entityTab]), when navigating Q→Q / Q→Results / electionTab→electionTab / entityTab→entityTab, then a mount/destroy ledger proves which components re-instantiate vs persist.'
 verdict: VALIDATED
 related: [014a, 014b, 015]
 tags: [sveltekit, navigation, mount-forensics, layouts, observability]
@@ -26,6 +26,7 @@ spikes optimize the right surface.
 ## Research
 
 SvelteKit's layout-persistence guarantee:
+
 - `+layout.svelte` files persist across sub-route navigation; only the
   matching `+page.svelte` swaps. ([kit.svelte.dev/docs/routing](https://kit.svelte.dev/docs/routing))
 - Route groups (`(group)`) DO NOT introduce a layout unless the group has
@@ -41,12 +42,12 @@ SvelteKit's layout-persistence guarantee:
 
 Approach comparison:
 
-| Approach | Tool | Pros | Cons | Status |
-|----------|------|------|------|--------|
-| `onMount`/`onDestroy` ledger | Svelte primitives | Zero deps, matches conventions, ordered timestamps | Needs a module-scoped registry to aggregate | **CHOSEN** |
-| DOM identity attribute (`data-mount-id`) | DOM | Verifiable from devtools, doesn't get lost in console.clear | Visual noise | Supplemental (added to all instrumented components) |
-| Svelte devtools panel | `svelte-inspector` | Visual tree | No event ordering | Skip |
-| Performance.mark + observer | Web API | Shows in browser perf panel | Per-instance tagging awkward | Skip |
+| Approach                                 | Tool               | Pros                                                        | Cons                                        | Status                                              |
+| ---------------------------------------- | ------------------ | ----------------------------------------------------------- | ------------------------------------------- | --------------------------------------------------- |
+| `onMount`/`onDestroy` ledger             | Svelte primitives  | Zero deps, matches conventions, ordered timestamps          | Needs a module-scoped registry to aggregate | **CHOSEN**                                          |
+| DOM identity attribute (`data-mount-id`) | DOM                | Verifiable from devtools, doesn't get lost in console.clear | Visual noise                                | Supplemental (added to all instrumented components) |
+| Svelte devtools panel                    | `svelte-inspector` | Visual tree                                                 | No event ordering                           | Skip                                                |
+| Performance.mark + observer              | Web API            | Shows in browser perf panel                                 | Per-instance tagging awkward                | Skip                                                |
 
 **Chosen approach:** `trackMount(name)` returns `{ instanceId }`, records
 `{ ts, event, name, instanceId, url }` to a module-scoped `$state` ring buffer
@@ -115,15 +116,15 @@ button.
 
 Mirrored these production paths:
 
-| Production file | Spike file |
-|---|---|
-| `(voters)/+layout.svelte` | `nav-forensics/+layout.svelte` (combined outer chrome) |
-| `(voters)/(located)/+layout.svelte` | (collapsed into outer for spike simplicity) |
-| `(voters)/(located)/questions/+layout.svelte` | `nav-forensics/questions/+layout.svelte` |
-| `(voters)/(located)/questions/[questionId]/+page.svelte` | `nav-forensics/questions/[questionId]/+page.svelte` |
-| `(voters)/(located)/questions/category/[categoryId]/+page.svelte` | `nav-forensics/questions/category/[categoryId]/+page.svelte` |
-| `(voters)/(located)/results/[[electionTab]]/+layout.svelte` | `nav-forensics/results/[[electionTab]]/+layout.svelte` + `KeyedInner.svelte` |
-| (no analog) `results/+layout.svelte` parent | `nav-forensics/results/+layout.svelte` (added so the test isolates the results-parent vs election-layout layers separately) |
+| Production file                                                   | Spike file                                                                                                                  |
+| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `(voters)/+layout.svelte`                                         | `nav-forensics/+layout.svelte` (combined outer chrome)                                                                      |
+| `(voters)/(located)/+layout.svelte`                               | (collapsed into outer for spike simplicity)                                                                                 |
+| `(voters)/(located)/questions/+layout.svelte`                     | `nav-forensics/questions/+layout.svelte`                                                                                    |
+| `(voters)/(located)/questions/[questionId]/+page.svelte`          | `nav-forensics/questions/[questionId]/+page.svelte`                                                                         |
+| `(voters)/(located)/questions/category/[categoryId]/+page.svelte` | `nav-forensics/questions/category/[categoryId]/+page.svelte`                                                                |
+| `(voters)/(located)/results/[[electionTab]]/+layout.svelte`       | `nav-forensics/results/[[electionTab]]/+layout.svelte` + `KeyedInner.svelte`                                                |
+| (no analog) `results/+layout.svelte` parent                       | `nav-forensics/results/+layout.svelte` (added so the test isolates the results-parent vs election-layout layers separately) |
 
 The spike COLLAPSES `(voters)` and `(located)` into a single outer layout
 because the question being asked is "what re-mounts during nav?" — having
@@ -150,6 +151,7 @@ Results eu/candidates → Results eu/organizations → Results local/candidates
 ```
 
 Live-instance summary at end (DOM-verified via `[data-mount-id]`):
+
 - `NavForensicsOuterLayout` 1584c1a9 — alive (mounted pre-clear)
 - `QuestionsLayout` 538596a0 — alive
 - `CategoryPage` f75f7237 — alive
@@ -158,13 +160,13 @@ Live-instance summary at end (DOM-verified via `[data-mount-id]`):
 
 Some events expected from the protocol did NOT appear in the ledger:
 
-| Expected event | Actual |
-|---|---|
-| `QuestionPage` mount on Q1 click | **missing** (but DOM showed q1 content) |
-| `QuestionPage` destroy + remount on Q1→Q2 | **missing** (but DOM updated) |
-| `QuestionPage` destroy on Q3→Results | **missing** |
+| Expected event                                  | Actual                                                                          |
+| ----------------------------------------------- | ------------------------------------------------------------------------------- |
+| `QuestionPage` mount on Q1 click                | **missing** (but DOM showed q1 content)                                         |
+| `QuestionPage` destroy + remount on Q1→Q2       | **missing** (but DOM updated)                                                   |
+| `QuestionPage` destroy on Q3→Results            | **missing**                                                                     |
 | `KeyedEntityList` mount @ 7d0d3e23 (second tab) | **missing** (destroy event exists at 14.404 — the mount itself wasn't recorded) |
-| `CategoryPage` mount at end | **missing** (but DOM shows live element with mount-id f75f7237) |
+| `CategoryPage` mount at end                     | **missing** (but DOM shows live element with mount-id f75f7237)                 |
 
 This pattern — DOM nodes carrying valid `data-mount-id` attributes but no
 corresponding `record()` push reaching the ledger — points at a tight-loop
@@ -228,6 +230,7 @@ captured event stream.
    should target everything inside this boundary.
 
 **The user-reported symptom is real:**
+
 - `[questionId]/+page.svelte` is replaced on every Q→Q hop.
   All the local `$state` (the `disabled` flag, `OpinionQuestionInput`'s
   internal state, the `Hero` component's render cycle, etc.) is
@@ -237,6 +240,7 @@ captured event stream.
   destroy/mount cycle.
 
 **The asymmetry vs results is the design opportunity:**
+
 - Results already does it right — single layout-owned render, URL is
   the only state, `{#key}` block scopes the surgical remount.
 - Questions is the inverse pattern — per-URL page component, no shared
@@ -254,8 +258,8 @@ captured event stream.
 
 - The two consecutive `KeyedEntityList` destroys (13.798 + 14.404)
   with different instance IDs prove that the `{#key}` block teardown
-  + re-mount cycle is fast (~600ms apart, matching the click cadence).
-  Filter UI state lost each time — a UX consideration for 014/015.
+  - re-mount cycle is fast (~600ms apart, matching the click cadence).
+    Filter UI state lost each time — a UX consideration for 014/015.
 
 **Impact on remaining spikes:**
 
@@ -267,8 +271,8 @@ captured event stream.
 
 - **014b (single-page-url-keyed)** — confirmed feasible: results
   already proves the pattern works (the `[[electionTab]]/+layout.svelte`
-  + optional-param leaf page). Translating to questions means
-  collapsing `[questionId]/+page.svelte` into the parent layout.
+  - optional-param leaf page). Translating to questions means
+    collapsing `[questionId]/+page.svelte` into the parent layout.
 
 - **015 (view-transitions-api)** — independent of structural choice;
   the destroy/mount events are exactly the lifecycle window that

@@ -8,10 +8,10 @@
  */
 
 import * as jose from 'jose';
-import { beforeAll,describe, expect, it } from 'vitest';
-import { createTestKeySet  } from './keys';
+import { beforeAll, describe, expect, it } from 'vitest';
+import { createTestKeySet } from './keys';
 import { createTestJwe, createTestJwt } from './tokens';
-import type {TestKeySet} from './keys';
+import type { TestKeySet } from './keys';
 
 describe('Test fixture factories', () => {
   let rsaOaepKeys: TestKeySet;
@@ -57,11 +57,10 @@ describe('Test fixture factories', () => {
         await jose.importJWK(rsaOaepKeys.encryptionPrivateJWK as jose.JWK)
       );
       // Verify inner JWT
-      const { payload } = await jose.jwtVerify(
-        new TextDecoder().decode(plaintext),
-        rsaOaepKeys.signingPublicKey,
-        { issuer: 'test-iss', audience: 'test-aud' }
-      );
+      const { payload } = await jose.jwtVerify(new TextDecoder().decode(plaintext), rsaOaepKeys.signingPublicKey, {
+        issuer: 'test-iss',
+        audience: 'test-aud'
+      });
 
       expect(payload.given_name).toBe('Matti');
       expect(payload.family_name).toBe('Virtanen');
@@ -81,11 +80,10 @@ describe('Test fixture factories', () => {
         jwe,
         await jose.importJWK(rsaOaep256Keys.encryptionPrivateJWK as jose.JWK)
       );
-      const { payload } = await jose.jwtVerify(
-        new TextDecoder().decode(plaintext),
-        rsaOaep256Keys.signingPublicKey,
-        { issuer: 'idura-iss', audience: 'idura-aud' }
-      );
+      const { payload } = await jose.jwtVerify(new TextDecoder().decode(plaintext), rsaOaep256Keys.signingPublicKey, {
+        issuer: 'idura-iss',
+        audience: 'idura-aud'
+      });
 
       expect(payload.sub).toBe('user-123');
       expect(payload.given_name).toBe('Liisa');
@@ -94,11 +92,10 @@ describe('Test fixture factories', () => {
 
   describe('createTestJwt', () => {
     it('produces a verifiable JWT', async () => {
-      const jwt = await createTestJwt(
-        { custom: 'value' },
-        rsaOaepKeys.signingPrivateKey,
-        { issuer: 'jwt-iss', audience: 'jwt-aud' }
-      );
+      const jwt = await createTestJwt({ custom: 'value' }, rsaOaepKeys.signingPrivateKey, {
+        issuer: 'jwt-iss',
+        audience: 'jwt-aud'
+      });
 
       const { payload } = await jose.jwtVerify(jwt, rsaOaepKeys.signingPublicKey, {
         issuer: 'jwt-iss',

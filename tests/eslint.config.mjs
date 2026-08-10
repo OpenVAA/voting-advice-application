@@ -57,10 +57,7 @@ export default [
       // wrap `expect()` assertions; whitelist any `expect[A-Z]…` identifier so the
       // rule sees them as assertions. `assert[A-Z]…` helpers (e.g. `assertAxeGates`,
       // `assertDbRowCount`) are likewise assertion wrappers — whitelist them too.
-      'playwright/expect-expect': [
-        'error',
-        { assertFunctionPatterns: ['^expect[A-Z]', '^assert[A-Z]'] }
-      ],
+      'playwright/expect-expect': ['error', { assertFunctionPatterns: ['^expect[A-Z]', '^assert[A-Z]'] }],
 
       // === Other plugin warning rules (aspirational) ===
       // Prefer web-first assertions (toBeVisible over manual checks)

@@ -230,7 +230,12 @@ async function walkRemainingOpinionQuestions(
     if (!PER_QUESTION_URL_RE.test(current)) return;
     // Type-aware answer scoped to THIS question's id (from the URL), so a
     // mid-transition read never clicks the outgoing question's stale choices.
-    const currentId = current.replace(/[?#].*$/, '').replace(/\/+$/, '').split('/').pop() ?? '';
+    const currentId =
+      current
+        .replace(/[?#].*$/, '')
+        .replace(/\/+$/, '')
+        .split('/')
+        .pop() ?? '';
     await questionPage.answerCurrentQuestion(currentId);
     await questionPage.expectContinueEnabled();
     await questionPage.clickContinue();
@@ -947,9 +952,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       // The two `nav-menu-item` sets differ (logged-out had Sign in / Registration
       // / Forgot Password? which the authenticated menu drops). Compare by regex
       // source so the inequality is a content check, not a reference check.
-      expect(CANDIDATE_NAV_LOGGED_IN.map((r) => r.source)).not.toEqual(
-        CANDIDATE_NAV_LOGGED_OUT.map((r) => r.source)
-      );
+      expect(CANDIDATE_NAV_LOGGED_IN.map((r) => r.source)).not.toEqual(CANDIDATE_NAV_LOGGED_OUT.map((r) => r.source));
       await page.keyboard.press('Escape');
     });
 

@@ -62,14 +62,14 @@ Banned idioms verified absent: no `svelte/store` import; no
 Multi-step client-side navigation sequence executed in Chrome against
 the running dev server:
 
-| Step | URL after nav | A snapshot | B per-call | C $derived.by | D + afterNavigate | C ≡ B |
-|------|---------------|------------|------------|---------------|-------------------|-------|
-| mount | `/runes-test/getroute-rune/` | `/runes-test/getroute-rune` | `/runes-test/getroute-rune` | `/runes-test/getroute-rune` | `/runes-test/getroute-rune` | ✓ |
-| → nested | `/runes-test/getroute-rune/nested` | `/runes-test/getroute-rune` (stale) | `/.../nested` | `/.../nested` | `/.../nested` | ✓ |
-| → back | `/runes-test/getroute-rune/` | `/runes-test/getroute-rune` | `/.../getroute-rune` | `/.../getroute-rune` | `/.../getroute-rune` | ✓ |
-| → nested?demo=1 | `/runes-test/getroute-rune/nested?demo=1` | `/runes-test/getroute-rune` (stale) | `/.../nested` | `/.../nested` | `/.../nested` | ✓ |
-| → nested?demo=2 | `/runes-test/getroute-rune/nested?demo=2` | `/runes-test/getroute-rune` (stale) | `/.../nested` | `/.../nested` | `/.../nested` | ✓ |
-| → back | `/runes-test/getroute-rune/` | `/runes-test/getroute-rune` | `/.../getroute-rune` | `/.../getroute-rune` | `/.../getroute-rune` | ✓ |
+| Step            | URL after nav                             | A snapshot                          | B per-call                  | C $derived.by               | D + afterNavigate           | C ≡ B |
+| --------------- | ----------------------------------------- | ----------------------------------- | --------------------------- | --------------------------- | --------------------------- | ----- |
+| mount           | `/runes-test/getroute-rune/`              | `/runes-test/getroute-rune`         | `/runes-test/getroute-rune` | `/runes-test/getroute-rune` | `/runes-test/getroute-rune` | ✓     |
+| → nested        | `/runes-test/getroute-rune/nested`        | `/runes-test/getroute-rune` (stale) | `/.../nested`               | `/.../nested`               | `/.../nested`               | ✓     |
+| → back          | `/runes-test/getroute-rune/`              | `/runes-test/getroute-rune`         | `/.../getroute-rune`        | `/.../getroute-rune`        | `/.../getroute-rune`        | ✓     |
+| → nested?demo=1 | `/runes-test/getroute-rune/nested?demo=1` | `/runes-test/getroute-rune` (stale) | `/.../nested`               | `/.../nested`               | `/.../nested`               | ✓     |
+| → nested?demo=2 | `/runes-test/getroute-rune/nested?demo=2` | `/runes-test/getroute-rune` (stale) | `/.../nested`               | `/.../nested`               | `/.../nested`               | ✓     |
+| → back          | `/runes-test/getroute-rune/`              | `/runes-test/getroute-rune`         | `/.../getroute-rune`        | `/.../getroute-rune`        | `/.../getroute-rune`        | ✓     |
 
 `D.navCount` reached `6` after the sequence — confirms `afterNavigate`
 fired on every transition (initial nav + 5 link clicks). Console clean
@@ -159,11 +159,11 @@ is `getRoute.current`).
 
 ## Anti-patterns confirmed
 
-| Pattern | Why it fails | Spike evidence |
-|---------|--------------|----------------|
-| `derived(toStore(() => page), …)` | `toStore`'s internal `render_effect.set` short-circuits on `Object.is(prevPage, page)` — the page proxy is reference-stable, so `set` never fires and the wrapping `derived` never re-evaluates | Documented in the production file header; the spike does not re-test this because it requires `svelte/store` imports that the spike conventions ban |
-| `$derived(() => page)` capturing the whole page object | Would store a reference to the proxy; whether subsequent field reads through the captured reference establish dependencies is implementation-defined and fragile | Not tested directly — Approach A's snapshot capture (destructuring `page` once outside any tracking scope) gives the same negative result and is the unambiguous case |
-| Mount-scoped variant init for nav-survival behavior | Variant state survives only within the SAME component instance — a `+page.svelte`-scoped init resets the snapshot every nav, making "A stays stale" untestable. Layout-scoped init survives child-page remounts | This spike re-initialized variants at layout scope (`spike012Context.svelte.ts` + `+layout.svelte`) precisely so A's stale-snapshot claim is observable |
+| Pattern                                                | Why it fails                                                                                                                                                                                                    | Spike evidence                                                                                                                                                        |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `derived(toStore(() => page), …)`                      | `toStore`'s internal `render_effect.set` short-circuits on `Object.is(prevPage, page)` — the page proxy is reference-stable, so `set` never fires and the wrapping `derived` never re-evaluates                 | Documented in the production file header; the spike does not re-test this because it requires `svelte/store` imports that the spike conventions ban                   |
+| `$derived(() => page)` capturing the whole page object | Would store a reference to the proxy; whether subsequent field reads through the captured reference establish dependencies is implementation-defined and fragile                                                | Not tested directly — Approach A's snapshot capture (destructuring `page` once outside any tracking scope) gives the same negative result and is the unambiguous case |
+| Mount-scoped variant init for nav-survival behavior    | Variant state survives only within the SAME component instance — a `+page.svelte`-scoped init resets the snapshot every nav, making "A stays stale" untestable. Layout-scoped init survives child-page remounts | This spike re-initialized variants at layout scope (`spike012Context.svelte.ts` + `+layout.svelte`) precisely so A's stale-snapshot claim is observable               |
 
 ## Required reading (in order, for the production migration)
 
@@ -182,7 +182,7 @@ is `getRoute.current`).
 ## Infrastructure notes
 
 - Spike does not require Supabase. `yarn workspace @openvaa/frontend
-  dev` alone is enough; the spike exercises only `$app/state.page` +
+dev` alone is enough; the spike exercises only `$app/state.page` +
   `$app/navigation` + the pure `buildRoute` util.
 - Spike code lives entirely under
   `apps/frontend/src/routes/runes-test/getroute-rune/` — delete the

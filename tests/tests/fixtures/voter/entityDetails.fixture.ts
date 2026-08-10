@@ -183,9 +183,7 @@ export function createEntityDetails(page: Page) {
         await expect(block.getByText(options.infoText)).toBeVisible();
       }
       if (options?.voterAnswer !== undefined) {
-        const voter = block
-          .getByRole('radio', { checked: true })
-          .or(block.getByRole('checkbox', { checked: true }));
+        const voter = block.getByRole('radio', { checked: true }).or(block.getByRole('checkbox', { checked: true }));
         await expect(voter).toHaveAccessibleName(options.voterAnswer);
       }
       if (options?.entityAnswer !== undefined) {
@@ -209,7 +207,12 @@ export function createEntityDetails(page: Page) {
      */
     async expectNumberQuestionDisplay(
       target: RegExp | string,
-      { voterValue, entityValue, min = 0, max = 10 }: { voterValue?: number; entityValue?: number; min?: number; max?: number }
+      {
+        voterValue,
+        entityValue,
+        min = 0,
+        max = 10
+      }: { voterValue?: number; entityValue?: number; min?: number; max?: number }
     ): Promise<void> {
       const block = this.getQuestionDisplays().filter({ hasText: target });
       await expect(block).toHaveCount(1);

@@ -2,7 +2,7 @@
 spike: 014a
 name: nested-layout-promotion
 type: comparison
-validates: "Given a /runes-test/nav-promoted-layout/ route, when MainContent + hero + heading + primaryActions are hoisted into +layout.svelte and [questionId]/+page.svelte renders only the question body, then Q→Q nav keeps MainContent + hero + actions mounted (verifiable via the spike-013 ledger)."
+validates: 'Given a /runes-test/nav-promoted-layout/ route, when MainContent + hero + heading + primaryActions are hoisted into +layout.svelte and [questionId]/+page.svelte renders only the question body, then Q→Q nav keeps MainContent + hero + actions mounted (verifiable via the spike-013 ledger).'
 verdict: VALIDATED
 related: [013, 014b, 015]
 tags: [sveltekit, layouts, restructure, comparison]
@@ -27,11 +27,11 @@ shared (everything else).
 
 Three plausible patterns for hoisting:
 
-| Approach | Pattern | Pros | Cons |
-|---|---|---|---|
-| **A. Layout owns chrome, page provides named-snippet content** | Page consumes layout-level named snippets via context | Maximum structural reuse | Snippets across layout boundary in Svelte 5 are awkward |
-| **B. Layout owns chrome, page contributes via children slot** | Layout derives active question from `page.params.questionId`, renders `<MainContent>` with hero / heading / actions snippets defined IN THE LAYOUT, page just `{@render children()}`'s into the body | Cleanest mental model; uses standard layout/children contract; URL-driven | Title / actions live one file away from the body content |
-| **C. URL-derived everything in layout, page is empty** | Layout renders the entire page; child `+page.svelte` is a no-op stub | Identical to production results pattern | Effectively converges with spike 014b |
+| Approach                                                       | Pattern                                                                                                                                                                                              | Pros                                                                      | Cons                                                     |
+| -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | -------------------------------------------------------- |
+| **A. Layout owns chrome, page provides named-snippet content** | Page consumes layout-level named snippets via context                                                                                                                                                | Maximum structural reuse                                                  | Snippets across layout boundary in Svelte 5 are awkward  |
+| **B. Layout owns chrome, page contributes via children slot**  | Layout derives active question from `page.params.questionId`, renders `<MainContent>` with hero / heading / actions snippets defined IN THE LAYOUT, page just `{@render children()}`'s into the body | Cleanest mental model; uses standard layout/children contract; URL-driven | Title / actions live one file away from the body content |
+| **C. URL-derived everything in layout, page is empty**         | Layout renders the entire page; child `+page.svelte` is a no-op stub                                                                                                                                 | Identical to production results pattern                                   | Effectively converges with spike 014b                    |
 
 **Chosen approach:** **B**. Layout derives `activeQuestion` via
 `$derived(page.params.questionId)` per CONVENTIONS.md §9 (per-field reads
@@ -89,13 +89,13 @@ PromotedQuestionActions). Clicked **Clear**, then clicked Q2.
 
 **Observed:** ZERO events. Mount-ids identical before/after:
 
-| Element | Before Q2 | After Q2 |
-|---|---|---|
-| outer | 2bc8e274 | 2bc8e274 |
-| ql | 19ffa9fd | 19ffa9fd |
-| main-content | 7edb1af5 | 7edb1af5 |
+| Element               | Before Q2    | After Q2     |
+| --------------------- | ------------ | ------------ |
+| outer                 | 2bc8e274     | 2bc8e274     |
+| ql                    | 19ffa9fd     | 19ffa9fd     |
+| main-content          | 7edb1af5     | 7edb1af5     |
 | **body (page-level)** | **9dd9d39f** | **9dd9d39f** |
-| actions | 79b11438 | 79b11438 |
+| actions               | 79b11438     | 79b11438     |
 
 The PAGE-LEVEL `[questionId]/+page.svelte` ALSO kept its mount-id. This
 contradicted the spike's pre-flight hypothesis (carried over from the
@@ -114,6 +114,7 @@ element with a `__navIdProd` marker. Clicked the question's SKIP button to
 advance to the next question.
 
 **Element survival after Q→Q in production:**
+
 - **9 of 25** tracked content elements (`<h1>`, `<figure>`, `<p>`,
   `<button>`, `<section>`, elements with `data-testid`) survived
 - **16 of 25** were freshly created
@@ -141,6 +142,7 @@ reused" is **half right**:
   values.
 
 **The actual mechanism:**
+
 1. URL changes from `/questions/q1` → `/questions/q2`
 2. `+page.svelte`'s `question = $derived.by(...)` re-evaluates → new value
 3. Svelte's reactive update runs: `<MainContent title={text}>` props
@@ -156,6 +158,7 @@ reused" is **half right**:
 ### Iteration 5 — What 014a actually fixes vs doesn't
 
 **Fixes (vs the user's mental model):**
+
 - Confirms the chrome WAS already persistent — no need to add a "first-fix"
   pattern; the production code already gets this right
 - Provides a cleaner code layout where the layout file is the single
@@ -164,12 +167,14 @@ reused" is **half right**:
   `{#key activeQuestion.category}` around hero to scope hero swaps)
 
 **Does NOT fix:**
+
 - The 64% DOM churn during Q→Q (those nodes will keep churning because
   their parent components' props legitimately differ per question)
 - The visual perception of "redraw" — this is a render-cycle problem,
   not a mount-cycle problem; structural reuse alone won't quiet it
 
 **What WILL fix the perception:**
+
 - Spike 015 (View Transitions API) — wraps the render cycle in a
   cross-fade transition so the DOM churn is animated rather than
   instant

@@ -51,8 +51,7 @@ export function trackMount(name: string): { instanceId: string } {
   const url = typeof window !== 'undefined' ? window.location.pathname + window.location.search : undefined;
   record({ ts: new Date().toISOString(), event: 'mount', name, instanceId, url });
   onDestroy(() => {
-    const destroyUrl =
-      typeof window !== 'undefined' ? window.location.pathname + window.location.search : undefined;
+    const destroyUrl = typeof window !== 'undefined' ? window.location.pathname + window.location.search : undefined;
     record({ ts: new Date().toISOString(), event: 'destroy', name, instanceId, url: destroyUrl });
   });
   return { instanceId };

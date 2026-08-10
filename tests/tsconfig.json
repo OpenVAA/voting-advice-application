@@ -12,11 +12,7 @@
     "types": ["node"],
     "skipLibCheck": true
   },
-  "include": [
-    "tests/**/*.ts",
-    "*.ts",
-    "../apps/frontend/src/lib/types/global.d.ts"
-  ],
+  "include": ["tests/**/*.ts", "*.ts", "../apps/frontend/src/lib/types/global.d.ts"],
   "exclude": [
     "playwright-results/**",
     "playwright-results-cell4/**",

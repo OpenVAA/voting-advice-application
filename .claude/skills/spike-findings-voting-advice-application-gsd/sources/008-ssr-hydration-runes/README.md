@@ -74,9 +74,11 @@ data-test-b-sections="candidate,organization,alliance"
 
 ```js
 // After page load, in browser:
-Object.fromEntries([...document.querySelectorAll('[data-test-a-effectfired]')]
-  .flatMap(el => [...el.attributes].filter(a => a.name.startsWith('data-test-'))
-    .map(a => [a.name, a.value])));
+Object.fromEntries(
+  [...document.querySelectorAll('[data-test-a-effectfired]')].flatMap((el) =>
+    [...el.attributes].filter((a) => a.name.startsWith('data-test-')).map((a) => [a.name, a.value])
+  )
+);
 ```
 
 ```
@@ -101,12 +103,14 @@ Console clean — no hydration mismatches or `effect_update_depth_exceeded`.
 - **2026-05-22 first SSR check** — Both Variant A AND Variant B showed
   `'alliance'` even though Variant A's `effectfired="false"`. Surprising —
   suggests $effect runs on server? Investigated `mergeAppSettings` and found:
+
   ```ts
   export function mergeAppSettings(target, additional): AppSettings {
     const nonNull = Object.fromEntries(Object.entries(additional).filter(([, v]) => v != null));
-    return Object.assign(target, nonNull);  // ← MUTATES target in place
+    return Object.assign(target, nonNull); // ← MUTATES target in place
   }
   ```
+
   Both variants' `let value = $state(mergeAppSettings(staticSettings, ...))`
   was mutating the shared `staticSettings` reference. Variant B's
   page.data merge propagated through to Variant A's value via the shared
@@ -142,7 +146,7 @@ fires once but no-ops (data === prevData), so no re-render, no flash.
 ```ts
 export function mergeAppSettings(target, additional): AppSettings {
   const nonNull = Object.fromEntries(Object.entries(additional).filter(([, v]) => v != null));
-  return Object.assign(target, nonNull);  // ← MUTATES target
+  return Object.assign(target, nonNull); // ← MUTATES target
 }
 ```
 

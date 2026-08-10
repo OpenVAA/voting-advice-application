@@ -29,43 +29,43 @@ Grep `apps/frontend/src/lib/contexts/**` for `from 'svelte/store'` yields
 
 ### Tier 1 — Leaf contexts (already spiked or new in this spike)
 
-| File | Bridge mechanism | Spike | Migration shape |
-|------|------------------|-------|-----------------|
-| `app/appContext.svelte.ts` | `toStore(() => $state)` for appType, appSettings, appCustomization, darkMode, locale, idTokenClaims | 001 + 008 | Drop `toStore` for each, expose `get current()`. Adopt Spike 008's synchronous-init pattern for appSettings. |
-| `data/dataContext.svelte.ts` | `writable(dataRoot)` + `get(dataRootStore)` workaround | 002 | Drop `writable`, expose split `{ current, instance }` handles. |
-| `voter/answerStore.svelte.ts` | `localStorageWritable + fromStore` | 003 | Replace with `runeLocalStorage` + getter. |
-| `candidate/candidateUserDataStore.svelte.ts` | `localStorageWritable + fromStore` for edited answers | 005 | Same swap. |
-| `utils/persistedState.svelte.ts` (delete) | exports `localStorageWritable` / `sessionStorageWritable` | 003+005 | File becomes deletable once Tier 1 + Tier 2 callers migrate. |
-| `utils/StackedState.svelte.ts` (delete) | `implements Readable<T>` + `toStore()` | 006 | Replaced by `settingsOverlay`; file becomes deletable. |
-| `app/popup/popupStore.svelte.ts` | `toStore(() => firstItem)` + `subscribe` getter | 010 (this) | Drop `toStore`, expose `get current()`. ~5-line diff. |
+| File                                         | Bridge mechanism                                                                                    | Spike      | Migration shape                                                                                              |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------ |
+| `app/appContext.svelte.ts`                   | `toStore(() => $state)` for appType, appSettings, appCustomization, darkMode, locale, idTokenClaims | 001 + 008  | Drop `toStore` for each, expose `get current()`. Adopt Spike 008's synchronous-init pattern for appSettings. |
+| `data/dataContext.svelte.ts`                 | `writable(dataRoot)` + `get(dataRootStore)` workaround                                              | 002        | Drop `writable`, expose split `{ current, instance }` handles.                                               |
+| `voter/answerStore.svelte.ts`                | `localStorageWritable + fromStore`                                                                  | 003        | Replace with `runeLocalStorage` + getter.                                                                    |
+| `candidate/candidateUserDataStore.svelte.ts` | `localStorageWritable + fromStore` for edited answers                                               | 005        | Same swap.                                                                                                   |
+| `utils/persistedState.svelte.ts` (delete)    | exports `localStorageWritable` / `sessionStorageWritable`                                           | 003+005    | File becomes deletable once Tier 1 + Tier 2 callers migrate.                                                 |
+| `utils/StackedState.svelte.ts` (delete)      | `implements Readable<T>` + `toStore()`                                                              | 006        | Replaced by `settingsOverlay`; file becomes deletable.                                                       |
+| `app/popup/popupStore.svelte.ts`             | `toStore(() => firstItem)` + `subscribe` getter                                                     | 010 (this) | Drop `toStore`, expose `get current()`. ~5-line diff.                                                        |
 
 ### Tier 2 — Secondary bridges (consume Tier 1; migrate AFTER Tier 1 lands)
 
-| File | Bridge mechanism | Migration shape |
-|------|------------------|-----------------|
-| `app/getRoute.svelte.ts` | `writable(routeFn)` + custom `afterNavigate` workaround (lines 18-30 explain why `derived(toStore(() => page), …)` was rejected) | Migrate cautiously — file documents the `toStore` short-circuit it was working around. Once appSettings + page are rune-native, this should simplify to `$derived(buildRoute(page, locale))` |
-| `app/survey.svelte.ts` | `fromStore(appSettings) + fromStore(sessionId)` + `toStore(() => linkValue)` | Drop both `fromStore` calls (once Tier 1 done). Drop `toStore` return — return `{ get current() { return linkValue; } }` |
-| `app/tracking/trackingService.svelte.ts` | `fromStore(appSettings) + fromStore(userPreferences) + fromStore(sessionId)` + `toStore(...)` for sendTrackingEvent + shouldTrack | Drop all `fromStore` (Tier 1 dependencies become rune-native). Drop `toStore` wrappers; expose `.current` getters. |
-| `voter/voterContext.svelte.ts` | `fromStore(appSettings) + fromStore(locale)` + `sessionStorageWritable('voterContext-firstQuestionId') + fromStore(...)` | Drop both `fromStore` calls. Use `runeSessionStorage` (sibling of `runeLocalStorage` from Spike 003 — needs adding) for firstQuestionId. |
-| `candidate/candidateContext.svelte.ts` | `fromStore(appSettings) + fromStore(locale) + fromStore(getRoute)` | Drop all `fromStore` calls once Tier 1 + `getRoute.svelte.ts` migrate. **NB: destructure-trap risk per Spike 007** — consumers of candidateContext must not destructure reactive accessors. |
-| `utils/dataCollectionStore.ts` | Accepts `Readable<DataRoot>` + `Readable<Array<Id>>` and returns `Readable<Array<TObject>>` | Update signature to accept rune-context handles and return `{ get current() }`. |
+| File                                     | Bridge mechanism                                                                                                                  | Migration shape                                                                                                                                                                              |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/getRoute.svelte.ts`                 | `writable(routeFn)` + custom `afterNavigate` workaround (lines 18-30 explain why `derived(toStore(() => page), …)` was rejected)  | Migrate cautiously — file documents the `toStore` short-circuit it was working around. Once appSettings + page are rune-native, this should simplify to `$derived(buildRoute(page, locale))` |
+| `app/survey.svelte.ts`                   | `fromStore(appSettings) + fromStore(sessionId)` + `toStore(() => linkValue)`                                                      | Drop both `fromStore` calls (once Tier 1 done). Drop `toStore` return — return `{ get current() { return linkValue; } }`                                                                     |
+| `app/tracking/trackingService.svelte.ts` | `fromStore(appSettings) + fromStore(userPreferences) + fromStore(sessionId)` + `toStore(...)` for sendTrackingEvent + shouldTrack | Drop all `fromStore` (Tier 1 dependencies become rune-native). Drop `toStore` wrappers; expose `.current` getters.                                                                           |
+| `voter/voterContext.svelte.ts`           | `fromStore(appSettings) + fromStore(locale)` + `sessionStorageWritable('voterContext-firstQuestionId') + fromStore(...)`          | Drop both `fromStore` calls. Use `runeSessionStorage` (sibling of `runeLocalStorage` from Spike 003 — needs adding) for firstQuestionId.                                                     |
+| `candidate/candidateContext.svelte.ts`   | `fromStore(appSettings) + fromStore(locale) + fromStore(getRoute)`                                                                | Drop all `fromStore` calls once Tier 1 + `getRoute.svelte.ts` migrate. **NB: destructure-trap risk per Spike 007** — consumers of candidateContext must not destructure reactive accessors.  |
+| `utils/dataCollectionStore.ts`           | Accepts `Readable<DataRoot>` + `Readable<Array<Id>>` and returns `Readable<Array<TObject>>`                                       | Update signature to accept rune-context handles and return `{ get current() }`.                                                                                                              |
 
 ### Tier 3 — Type files (delete or update after Tier 1+2)
 
-| File | Status |
-|------|--------|
-| `app/appContext.type.ts` | Type imports `Readable<T>` — delete those once context exposes `.current` instead of subscribe. |
-| `app/popup/popupStore.type.ts` | `PopupStore = Readable<PopupQueueItem | undefined> & { push, shift }` — change to plain interface. |
-| `app/tracking/trackingService.type.ts` | Similar — drop `Readable<T>` aliases. |
-| `data/dataContext.type.ts` | Drop `Readable<DataRoot>`. |
+| File                                   | Status                                                                                          |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `app/appContext.type.ts`               | Type imports `Readable<T>` — delete those once context exposes `.current` instead of subscribe. |
+| `app/popup/popupStore.type.ts`         | `PopupStore = Readable<PopupQueueItem                                                           | undefined> & { push, shift }` — change to plain interface. |
+| `app/tracking/trackingService.type.ts` | Similar — drop `Readable<T>` aliases.                                                           |
+| `data/dataContext.type.ts`             | Drop `Readable<DataRoot>`.                                                                      |
 
 ### Outside `lib/contexts/`
 
-| File | Issue |
-|------|-------|
-| `routes/+layout.svelte:69` | `const popupQueueState = fromStore(popupQueue)` — drops once popupStore migrates (Tier 1). Template at line 230 becomes `{#if popupQueue.current}`. |
-| `lib/components/video/component-stores.ts` | Standalone — investigate during Tier 2 phase. |
-| `lib/dynamic-components/entityList/EntityListWithControls.svelte` | Consumer site — likely picked up by Spike 009 codemod. |
+| File                                                              | Issue                                                                                                                                               |
+| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `routes/+layout.svelte:69`                                        | `const popupQueueState = fromStore(popupQueue)` — drops once popupStore migrates (Tier 1). Template at line 230 becomes `{#if popupQueue.current}`. |
+| `lib/components/video/component-stores.ts`                        | Standalone — investigate during Tier 2 phase.                                                                                                       |
+| `lib/dynamic-components/entityList/EntityListWithControls.svelte` | Consumer site — likely picked up by Spike 009 codemod.                                                                                              |
 
 ## Representative spike — popupStore
 
@@ -76,8 +76,12 @@ import { toStore } from 'svelte/store';
 export function popupStore(): PopupStore {
   let queue = $state<Array<PopupQueueItem>>([]);
   const firstItem = $derived(queue[0]);
-  function push(item) { queue = [...queue, item]; }
-  function shift() { queue = queue.slice(1); }
+  function push(item) {
+    queue = [...queue, item];
+  }
+  function shift() {
+    queue = queue.slice(1);
+  }
   const store = toStore(() => firstItem as PopupQueueItem | undefined);
   return { push, shift, subscribe: store.subscribe };
 }
@@ -90,23 +94,30 @@ export function popupStore(): PopupStore {
 export function popupRuneStore(): PopupRuneStore {
   let queue = $state<Array<PopupQueueItem>>([]);
   const firstItem = $derived(queue[0]);
-  function push(item) { queue = [...queue, item]; }
-  function shift() { queue = queue.slice(1); }
+  function push(item) {
+    queue = [...queue, item];
+  }
+  function shift() {
+    queue = queue.slice(1);
+  }
   return {
-    push, shift,
-    get current() { return firstItem; }
+    push,
+    shift,
+    get current() {
+      return firstItem;
+    }
   };
 }
 ```
 
 **Verified in browser** at `/runes-test/popup-rune`:
 
-| Action sequence | popup.current | queue depth | queue contents |
-|-----------------|---------------|-------------|----------------|
-| push("Survey")  | {name:"Survey"} | 1 | ["Survey"] |
-| push("Feedback") + push("Onboarding") | {name:"Survey"} | 3 | ["Survey","Feedback","Onboarding"] |
-| shift() | {name:"Feedback"} | 2 | ["Feedback","Onboarding"] |
-| shift() again | {name:"Onboarding"} | 1 | ["Onboarding"] |
+| Action sequence                       | popup.current       | queue depth | queue contents                     |
+| ------------------------------------- | ------------------- | ----------- | ---------------------------------- |
+| push("Survey")                        | {name:"Survey"}     | 1           | ["Survey"]                         |
+| push("Feedback") + push("Onboarding") | {name:"Survey"}     | 3           | ["Survey","Feedback","Onboarding"] |
+| shift()                               | {name:"Feedback"}   | 2           | ["Feedback","Onboarding"]          |
+| shift() again                         | {name:"Onboarding"} | 1           | ["Onboarding"]                     |
 
 Both consumer patterns (template direct `{popup.current}` and `.ts $derived(popup.current)` alias) stay in sync.
 

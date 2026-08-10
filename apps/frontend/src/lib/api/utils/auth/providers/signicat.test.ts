@@ -8,7 +8,7 @@
  * @vitest-environment node
  */
 
-import { beforeEach,describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { signicatProvider } from './signicat';
 
 // Mock env modules BEFORE importing any modules that depend on them.
@@ -99,9 +99,7 @@ describe('Signicat provider', () => {
         codeChallenge: 'test-challenge'
       });
 
-      expect(result.authorizeUrl).toContain(
-        `redirect_uri=${encodeURIComponent('http://localhost:5173/callback')}`
-      );
+      expect(result.authorizeUrl).toContain(`redirect_uri=${encodeURIComponent('http://localhost:5173/callback')}`);
     });
 
     it('returns URL starting from the configured authorization endpoint', async () => {

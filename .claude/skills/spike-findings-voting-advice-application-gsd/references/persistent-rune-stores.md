@@ -43,15 +43,14 @@ export interface RunePersistedState<TValue> {
 
 type LocallyStoredValue<TData> = { version: number; data: TData };
 
-export function runeLocalStorage<TValue>(
-  key: string,
-  defaultValue: TValue
-): RunePersistedState<TValue> {
+export function runeLocalStorage<TValue>(key: string, defaultValue: TValue): RunePersistedState<TValue> {
   const initial = readVersioned<TValue>(key) ?? defaultValue;
   let value = $state<TValue>(initial);
 
   return {
-    get current() { return value; },
+    get current() {
+      return value;
+    },
     set(v) {
       value = v;
       writeVersioned(key, v);
@@ -210,6 +209,7 @@ pattern is fully retired from the OpenVAA codebase.
 
 Synthesized from spikes: 003, 005
 Source files available in:
+
 - `sources/003-voter-answer-store-rune/` — `runePersistedState.svelte.ts`,
   `voterAnswerRuneStore.svelte.ts`
 - `sources/005-candidate-answer-store-rune/` — `candidateAnswerRuneStore.svelte.ts`

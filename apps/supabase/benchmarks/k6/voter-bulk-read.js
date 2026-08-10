@@ -14,14 +14,9 @@
  */
 
 import http from 'k6/http';
-import {check} from 'k6';
-import {Trend} from 'k6/metrics';
-import {
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY,
-  PROJECT_IDS,
-  PROJECT_CONSTITUENCIES
-} from './config.js';
+import { check } from 'k6';
+import { Trend } from 'k6/metrics';
+import { SUPABASE_URL, SUPABASE_ANON_KEY, PROJECT_IDS, PROJECT_CONSTITUENCIES } from './config.js';
 
 const voterBulkReadDuration = new Trend('voter_bulk_read_duration', true);
 

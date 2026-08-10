@@ -74,21 +74,18 @@ export interface LayoutSettingsRune {
 }
 
 export function getLayoutSettingsRune(): LayoutSettingsRune {
-  if (!hasContext(CONTEXT_KEY))
-    error(500, 'getLayoutSettingsRune() called before initLayoutSettingsRune()');
+  if (!hasContext(CONTEXT_KEY)) error(500, 'getLayoutSettingsRune() called before initLayoutSettingsRune()');
   return getContext<LayoutSettingsRune>(CONTEXT_KEY);
 }
 
 export function initLayoutSettingsRune(): LayoutSettingsRune {
   if (hasContext(CONTEXT_KEY)) error(500, 'initLayoutSettingsRune() called twice');
 
-  const topBar = settingsOverlay<TopBarSettings, DeepPartial<TopBarSettings>>(
-    DEFAULT_TOP_BAR,
-    (acc, ov) => mergeSettings(acc, ov)
+  const topBar = settingsOverlay<TopBarSettings, DeepPartial<TopBarSettings>>(DEFAULT_TOP_BAR, (acc, ov) =>
+    mergeSettings(acc, ov)
   );
-  const pageStyles = settingsOverlay<PageStyles, DeepPartial<PageStyles>>(
-    DEFAULT_PAGE_STYLES,
-    (acc, ov) => mergeSettings(acc, ov)
+  const pageStyles = settingsOverlay<PageStyles, DeepPartial<PageStyles>>(DEFAULT_PAGE_STYLES, (acc, ov) =>
+    mergeSettings(acc, ov)
   );
   const navigation = settingsOverlay<NavigationSettings, DeepPartial<NavigationSettings>>(
     DEFAULT_NAVIGATION,

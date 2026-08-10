@@ -66,7 +66,7 @@ Dimensions where either coordinate is `MISSING_VALUE` are skipped when `allowMis
 All metric functions share the `MetricFunction` type:
 
 ```ts
-(params: { a: Position; b: Position; space?: MatchingSpace; allowMissing?: boolean }) => NormalizedDistance
+(params: { a: Position; b: Position; space?: MatchingSpace; allowMissing?: boolean }) => NormalizedDistance;
 ```
 
 The optional `space` parameter allows measuring distance in a different MatchingSpace (used for SubMatch subspaces). Defaults to `a.space`.

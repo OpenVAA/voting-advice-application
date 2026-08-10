@@ -1,4 +1,4 @@
-import { beforeEach,describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SupabaseAdminWriter } from './supabaseAdminWriter';
 import type { Database } from '@openvaa/supabase-types';
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -25,12 +25,10 @@ function createMockSupabaseClient() {
     const chain = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
-      single: vi.fn().mockImplementation(() =>
-        Promise.resolve(mockResponses[table] ?? { data: null, error: null })
-      ),
-      insert: vi.fn().mockImplementation(() =>
-        Promise.resolve(mockResponses[`${table}_insert`] ?? { data: null, error: null })
-      )
+      single: vi.fn().mockImplementation(() => Promise.resolve(mockResponses[table] ?? { data: null, error: null })),
+      insert: vi
+        .fn()
+        .mockImplementation(() => Promise.resolve(mockResponses[`${table}_insert`] ?? { data: null, error: null }))
     };
     return chain;
   }

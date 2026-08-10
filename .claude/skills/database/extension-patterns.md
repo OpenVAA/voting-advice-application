@@ -36,7 +36,7 @@ Follow these steps in order. Each step names the file to create or modify.
    - Pattern: follow existing entries in 015-external-id.sql
 
 5. **Add indexes** `schema/009-indexes.sql`
-   - B-tree on project_id: `CREATE INDEX idx_{table}_project_id ON {table} (project_id);`
+   - B-tree on project*id: `CREATE INDEX idx*{table}\_project_id ON {table} (project_id);`
    - B-tree on any FK columns: `CREATE INDEX idx_{table}_{fk} ON {table} ({fk});`
    - Pattern: follow existing index definitions in 009-indexes.sql
 
@@ -108,6 +108,7 @@ Follow these steps for a new content table with published column:
    - `CREATE POLICY {role}_update_own_{table} ON {table} FOR UPDATE TO authenticated USING (auth_user_id = (SELECT auth.uid())) WITH CHECK (auth_user_id = (SELECT auth.uid()));`
 
 **Critical rules:**
+
 - ALWAYS use `(SELECT auth.uid())` and `(SELECT auth.jwt())` -- scalar subqueries evaluated once per query, not per row
 - ALWAYS specify `TO anon` or `TO authenticated` -- never omit the role target
 - SELECT: USING only. INSERT: WITH CHECK only. UPDATE: USING + WITH CHECK. DELETE: USING only.
@@ -170,6 +171,7 @@ Follow these steps to add a new test file:
 10. **Update plan count**: Go back to `SELECT plan(N)` and set N to the exact number of test assertions in the file.
 
 **Test user helpers:**
+
 - `set_test_user('authenticated', user_id, user_roles)` -- simulates authenticated user with JWT claims
 - `set_test_user('anon')` -- simulates anonymous user
 - `reset_role()` -- switches back to postgres superuser for fixture operations

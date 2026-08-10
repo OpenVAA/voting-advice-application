@@ -10,10 +10,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { PARTY_WEIGHTS } from '../../src/templates/defaults/candidates-override';
-import {
-  PARTY_CONSTITUENCY_MATRIX,
-  nominationsOverride
-} from '../../src/templates/defaults/nominations-override';
+import { PARTY_CONSTITUENCY_MATRIX, nominationsOverride } from '../../src/templates/defaults/nominations-override';
 import type { Ctx } from '../../src/types';
 
 describe('PARTY_CONSTITUENCY_MATRIX', () => {
@@ -119,9 +116,7 @@ describe('nominationsOverride', () => {
 
   it('emits exactly one alliance-type nomination per (alliance × constituency) cell — 2 × 5 = 10', () => {
     const rows = nominationsOverride({}, makeCtx(CANONICAL));
-    const allianceRows = rows.filter(
-      (r) => 'alliance' in r && !('organization' in r) && !('candidate' in r)
-    );
+    const allianceRows = rows.filter((r) => 'alliance' in r && !('organization' in r) && !('candidate' in r));
     expect(allianceRows).toHaveLength(2 * 5);
     // No alliance nom carries parent_nomination (validate_nomination trigger
     // raises if alliance noms have a parent — schema invariant).
@@ -173,15 +168,9 @@ describe('nominationsOverride', () => {
   });
 
   it('throws when refs are empty', () => {
-    expect(() => nominationsOverride({}, makeCtx({ ...CANONICAL, candidates: 0 }))).toThrow(
-      /ctx\.refs is empty/
-    );
-    expect(() => nominationsOverride({}, makeCtx({ ...CANONICAL, constituencies: 0 }))).toThrow(
-      /ctx\.refs is empty/
-    );
-    expect(() => nominationsOverride({}, makeCtx({ ...CANONICAL, organizations: 0 }))).toThrow(
-      /ctx\.refs is empty/
-    );
+    expect(() => nominationsOverride({}, makeCtx({ ...CANONICAL, candidates: 0 }))).toThrow(/ctx\.refs is empty/);
+    expect(() => nominationsOverride({}, makeCtx({ ...CANONICAL, constituencies: 0 }))).toThrow(/ctx\.refs is empty/);
+    expect(() => nominationsOverride({}, makeCtx({ ...CANONICAL, organizations: 0 }))).toThrow(/ctx\.refs is empty/);
   });
 
   it('throws when organizations count does not match PARTY_WEIGHTS length', () => {

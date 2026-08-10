@@ -164,7 +164,10 @@ async function dismissModal(modal: Locator): Promise<void> {
       if (!(await probeOpen())) return;
       continue;
     }
-    await modal.getByRole('button', { name: /continue/i }).click({ timeout: 3000 }).catch(() => null);
+    await modal
+      .getByRole('button', { name: /continue/i })
+      .click({ timeout: 3000 })
+      .catch(() => null);
     // Brief settle so any in-flight $effect re-runs (and their downstream
     // `modalRef?.openModal()` paths) finish before the next iteration's
     // open-state probe.

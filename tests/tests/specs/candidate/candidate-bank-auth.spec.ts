@@ -136,7 +136,7 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
     // `{ error: { code: 401 } }`) are not misrepresented as a string. The
     // typeof check returns null when none of the candidate properties is a string.
     const candidateErrorValue = body.error ?? body.msg ?? body.details;
-    const errorMsg = keysConfigured ? null : (typeof candidateErrorValue === 'string' ? candidateErrorValue : null);
+    const errorMsg = keysConfigured ? null : typeof candidateErrorValue === 'string' ? candidateErrorValue : null;
 
     probe = {
       status,

@@ -135,7 +135,7 @@ via `aria-describedby` while shown.
         restProps,
         showUnderline ? 'underline underline-offset-[0.2em] decoration-primary decoration-dotted' : ''
       )}>{@render children?.()}</span
-  ></button
+    ></button
   >{#if visible}<!-- bind: keep — definitionDiv is $state; read in calculatePosition ($effect + onresize) -->
     <div
       bind:this={definitionDiv}

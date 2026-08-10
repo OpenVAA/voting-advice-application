@@ -1,4 +1,4 @@
-import { describe, expect,it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { parseStoredImage } from '../utils/storageUrl';
 import type { StoredImage } from '../utils/storageUrl';
 
@@ -45,10 +45,7 @@ describe('parseStoredImage', () => {
   });
 
   it('includes both pathDark and alt when provided', () => {
-    const result = parseStoredImage(
-      { path: 'img.jpg', pathDark: 'img-dark.jpg', alt: 'A photo' },
-      supabaseUrl
-    );
+    const result = parseStoredImage({ path: 'img.jpg', pathDark: 'img-dark.jpg', alt: 'A photo' }, supabaseUrl);
     expect(result).toEqual({
       url: 'http://localhost:54321/storage/v1/object/public/public-assets/img.jpg',
       urlDark: 'http://localhost:54321/storage/v1/object/public/public-assets/img-dark.jpg',

@@ -43,10 +43,9 @@ test.describe('perm-not-located-2e2cg', () => {
     const electionResult = await adminClient.findData('elections', {
       externalId: { $eq: 'e2e-perm-notloc-el-1' }
     });
-    expect(
-      electionResult.type,
-      'perm-not-located-2e2cg requires e2e-perm-notloc-el-1 to be present in the seed'
-    ).toBe('success');
+    expect(electionResult.type, 'perm-not-located-2e2cg requires e2e-perm-notloc-el-1 to be present in the seed').toBe(
+      'success'
+    );
     electionUuid = electionResult.data?.[0]?.id as string | undefined;
     expect(electionUuid, 'perm-not-located-2e2cg requires a discoverable EL-1 UUID').toBeTruthy();
   });
@@ -130,11 +129,9 @@ test.describe('perm-not-located-2e2cg', () => {
     // Step 2: simulate mid-session storage clear; URL params allow direct re-entry.
     await page.evaluate(() => window.localStorage.clear());
     await page.reload();
-    await expectLandedOn(
-      page,
-      new RegExp(resumedUrl.replace(/^https?:\/\/[^/]+/, '').replace(/[?].*$/, '')),
-      { timeoutMs: 15000 }
-    );
+    await expectLandedOn(page, new RegExp(resumedUrl.replace(/^https?:\/\/[^/]+/, '').replace(/[?].*$/, '')), {
+      timeoutMs: 15000
+    });
   });
 
   test('open-redirect attempt to external URL is rejected by whitelist (defense-in-depth)', async ({ page }) => {

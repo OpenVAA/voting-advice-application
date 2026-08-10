@@ -61,9 +61,8 @@ describe('latentAnswerEmitter (D-57-13 / D-57-14 / GEN-06g)', () => {
   });
 
   it('caches SpaceBundle across candidate emissions (D-57-13)', () => {
-    const centroidsHook = vi.fn(
-      (dims: number, _ev: Array<number>, parties: ReadonlyArray<{ external_id: string }>) =>
-        parties.map((_p, i) => Array.from({ length: dims }, (_, d) => (i === d ? 1 : 0)))
+    const centroidsHook = vi.fn((dims: number, _ev: Array<number>, parties: ReadonlyArray<{ external_id: string }>) =>
+      parties.map((_p, i) => Array.from({ length: dims }, (_, d) => (i === d ? 1 : 0)))
     );
     const ctx = ctxWith(['p0', 'p1'], [mkQ('q_0')]);
     ctx.latent = { centroids: centroidsHook };
@@ -98,9 +97,7 @@ describe('latentAnswerEmitter (D-57-13 / D-57-14 / GEN-06g)', () => {
   });
 
   it('hook wins over template (D-57-14) — centroids hook invoked with template data as arg', () => {
-    const centroidsHook = vi.fn((_dims, _ev, parties, _ctx, _tplCentroids) =>
-      parties.map(() => [0, 0])
-    );
+    const centroidsHook = vi.fn((_dims, _ev, parties, _ctx, _tplCentroids) => parties.map(() => [0, 0]));
     const templateCentroids = { p0: [0.1, 0.1], p1: [0.2, 0.2] };
     const ctx = ctxWith(['p0', 'p1'], [mkQ('q_0')]);
     ctx.latent = { centroids: centroidsHook };
@@ -126,15 +123,13 @@ describe('latentAnswerEmitter (D-57-13 / D-57-14 / GEN-06g)', () => {
   });
 
   it('each of the 6 hooks is independently swappable (GEN-06g)', () => {
-    const loadingsHook = vi.fn(
-      (questions: ReadonlyArray<TablesInsert<'questions'>>, dims: number) => {
-        const out: Record<string, Array<number>> = {};
-        for (const q of questions) {
-          if (q.external_id) out[q.external_id] = Array.from({ length: dims }, () => 0.5);
-        }
-        return out;
+    const loadingsHook = vi.fn((questions: ReadonlyArray<TablesInsert<'questions'>>, dims: number) => {
+      const out: Record<string, Array<number>> = {};
+      for (const q of questions) {
+        if (q.external_id) out[q.external_id] = Array.from({ length: dims }, () => 0.5);
       }
-    );
+      return out;
+    });
     const ctx = ctxWith(['p0'], [mkQ('q_0'), mkQ('q_1')]);
     ctx.latent = { loadings: loadingsHook };
     const emit = latentAnswerEmitter({} as Template);

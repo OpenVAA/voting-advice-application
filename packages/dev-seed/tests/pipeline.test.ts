@@ -144,10 +144,7 @@ describe('runPipeline', () => {
       },
       constituency_groups: {
         count: 0,
-        fixed: [
-          { external_id: 'cg_a' },
-          { external_id: 'cg_b' }
-        ]
+        fixed: [{ external_id: 'cg_a' }, { external_id: 'cg_b' }]
       }
     });
 
@@ -169,10 +166,7 @@ describe('runPipeline', () => {
       externalIdPrefix: '',
       constituency_groups: {
         count: 0,
-        fixed: [
-          { external_id: 'cg_a', constituencies: [{ external_id: 'c_a' }] },
-          { external_id: 'cg_b' }
-        ]
+        fixed: [{ external_id: 'cg_a', constituencies: [{ external_id: 'c_a' }] }, { external_id: 'cg_b' }]
       },
       constituencies: {
         count: 0,

@@ -87,9 +87,9 @@ describe('validateTemplate', () => {
   });
 
   it('TMPL-07: rejects non-boolean generateTranslationsForAllLocales with field-path error', () => {
-    expect(() =>
-      validateTemplate({ generateTranslationsForAllLocales: 'yes' as unknown as boolean })
-    ).toThrow(/template\.generateTranslationsForAllLocales/);
+    expect(() => validateTemplate({ generateTranslationsForAllLocales: 'yes' as unknown as boolean })).toThrow(
+      /template\.generateTranslationsForAllLocales/
+    );
   });
 
   it('TMPL-07: {} still passes (field remains optional per TMPL-02)', () => {

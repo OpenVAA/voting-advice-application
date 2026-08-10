@@ -58,8 +58,7 @@ export function getRouteVariantA_snapshot(): { readonly current: RouteBuilder } 
 export function getRouteVariantB_perCall(): { readonly current: RouteBuilder } {
   return {
     get current() {
-      return (options) =>
-        buildRoute(options, { params: page.params, route: page.route, url: page.url });
+      return (options) => buildRoute(options, { params: page.params, route: page.route, url: page.url });
     }
   };
 }

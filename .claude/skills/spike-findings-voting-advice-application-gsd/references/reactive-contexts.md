@@ -32,7 +32,7 @@ in `apps/frontend/src/lib/contexts/app/appContext.svelte.ts`,
   `staticSettings` reference. Switch to `{ ...target, ...nonNull }`.
 - **dataRoot sequential-population semantics preserved** —
   `provideElectionData → provideConstituencyData → provideQuestionData →
-  provideEntityData → provideNominationData` each triggers downstream `$derived`
+provideEntityData → provideNominationData` each triggers downstream `$derived`
   re-evaluation despite stable DataRoot object identity.
 
 ## How to Build It
@@ -57,7 +57,7 @@ import { page } from '$app/state';
 const CONTEXT_KEY = Symbol('appSettings');
 
 export interface AppSettingsContext {
-  readonly current: AppSettings;  // reactive — tracks at call site
+  readonly current: AppSettings; // reactive — tracks at call site
 }
 
 // Pure replacement for production `mergeAppSettings`. Production mutates the
@@ -92,7 +92,9 @@ export function initAppSettingsContext(): AppSettingsContext {
   });
 
   return setContext(CONTEXT_KEY, {
-    get current() { return value; }
+    get current() {
+      return value;
+    }
   });
 }
 ```
@@ -127,23 +129,25 @@ import { getContext, hasContext, setContext } from 'svelte';
 const CONTEXT_KEY = Symbol('dataRoot');
 
 export interface DataRootContext {
-  readonly current: DataRoot;   // reactive — tracks the version counter
-  readonly instance: DataRoot;  // non-reactive — same object, no dependency
+  readonly current: DataRoot; // reactive — tracks the version counter
+  readonly instance: DataRoot; // non-reactive — same object, no dependency
 }
 
 export function initDataRootContext(): DataRootContext {
   const root = new DataRoot();
 
   let version = $state(0);
-  root.subscribe(() => { version++; });
+  root.subscribe(() => {
+    version++;
+  });
 
   return setContext(CONTEXT_KEY, {
     get current() {
-      void version;  // establish dependency
+      void version; // establish dependency
       return root;
     },
     get instance() {
-      return root;   // no version read — non-reactive
+      return root; // no version read — non-reactive
     }
   });
 }
@@ -205,7 +209,7 @@ export interface GetRouteContext {
 
 export function createGetRoute(): GetRouteContext {
   const builder = $derived.by<RouteBuilder>(() => {
-    const { params, route, url } = page;  // PER-FIELD reads
+    const { params, route, url } = page; // PER-FIELD reads
     return (options) => buildRoute(options, { params, route, url });
   });
   return {
@@ -251,7 +255,7 @@ access at the call site**, not destructured into local vars:
 
 ```ts
 const ctx = getAppSettingsContext();
-const value = $derived(ctx.current);                    //  correct — read at call site
+const value = $derived(ctx.current); //  correct — read at call site
 // const { current } = ctx;                             //  WRONG — captures init-time snapshot
 ```
 
@@ -288,13 +292,13 @@ See CLAUDE.md "Context Destructuring Rule (Svelte 5)" for the full explanation.
    a new object on every nav, cascading filter recreation through downstream
    contexts.
 
-6. **Don't rely on `$effect` for the initial appSettings merge.** `$effect`
+5. **Don't rely on `$effect` for the initial appSettings merge.** `$effect`
    does NOT run during SSR — the server-rendered HTML will reflect only
    `staticSettings ∪ dynamicSettings`, missing the DB override. On slow
    connections this produces a visible "default → DB-override" flash on
    first paint. Spike 008 verified the gap via curl on real SSR output.
 
-7. **Don't ship `mergeAppSettings` as mutative.** `apps/frontend/src/lib/utils/settings.ts:12-20`
+6. **Don't ship `mergeAppSettings` as mutative.** `apps/frontend/src/lib/utils/settings.ts:12-20`
    uses `Object.assign(target, nonNull)` which mutates the shared
    `staticSettings` reference. In production today this is masked because
    only one appContext initializes per session — but the signature implies
@@ -303,7 +307,7 @@ See CLAUDE.md "Context Destructuring Rule (Svelte 5)" for the full explanation.
    Switch to a pure `{ ...target, ...nonNull }` merge as part of the
    migration; the diff is low-risk.
 
-5. **Don't try to make DataRoot functional/immutable** (per-provide identity
+7. **Don't try to make DataRoot functional/immutable** (per-provide identity
    change) just to avoid the version counter. The mutation-in-place idiom is
    the validated path — Approach B (functional updates) and Approach C
    (structured `$state` collections) from the spike research were rejected as
@@ -342,6 +346,7 @@ mechanical rewrite of all 134 `$getRoute(opts)` callsites (Wave 3).
 
 Synthesized from spikes: 001, 002, 008, 012
 Source files available in:
+
 - `sources/001-appsettings-native-rune/appSettingsRuneContext.svelte.ts`
 - `sources/002-dataroot-native-rune/dataRootRuneContext.svelte.ts`
 - `sources/008-ssr-hydration-runes/appSettingsVariantB.svelte.ts` — the SSR-aware shape promoted here

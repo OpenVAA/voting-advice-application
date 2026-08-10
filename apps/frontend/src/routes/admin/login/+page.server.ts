@@ -38,9 +38,7 @@ export const actions = {
     // Check user has an admin role via JWT claims.
     const payload = JSON.parse(atob(session.access_token.split('.')[1]));
     const userRoles: Array<{ role: string }> = payload.user_roles ?? [];
-    const isAdmin = userRoles.some((r) =>
-      ['project_admin', 'account_admin', 'super_admin'].includes(r.role)
-    );
+    const isAdmin = userRoles.some((r) => ['project_admin', 'account_admin', 'super_admin'].includes(r.role));
 
     if (!isAdmin) {
       await locals.supabase.auth.signOut({ scope: 'local' });

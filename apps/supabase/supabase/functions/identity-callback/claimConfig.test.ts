@@ -119,9 +119,7 @@ describe('extractIdentityClaims', () => {
     expect(() => extractIdentityClaims(payloadWithoutSub, PROVIDER_CONFIGS.idura)).toThrow(
       /Missing required identity claims/
     );
-    expect(() => extractIdentityClaims(payloadWithoutSub, PROVIDER_CONFIGS.idura)).toThrow(
-      /sub=missing/
-    );
+    expect(() => extractIdentityClaims(payloadWithoutSub, PROVIDER_CONFIGS.idura)).toThrow(/sub=missing/);
   });
 
   it('throws when required first name claim is missing', () => {
@@ -132,9 +130,7 @@ describe('extractIdentityClaims', () => {
       // no given_name
     };
 
-    expect(() => extractIdentityClaims(payloadWithoutFirstName, PROVIDER_CONFIGS.idura)).toThrow(
-      /given_name=missing/
-    );
+    expect(() => extractIdentityClaims(payloadWithoutFirstName, PROVIDER_CONFIGS.idura)).toThrow(/given_name=missing/);
   });
 
   it('throws when required last name claim is missing', () => {
@@ -145,8 +141,6 @@ describe('extractIdentityClaims', () => {
       // no family_name
     };
 
-    expect(() => extractIdentityClaims(payloadWithoutLastName, PROVIDER_CONFIGS.idura)).toThrow(
-      /family_name=missing/
-    );
+    expect(() => extractIdentityClaims(payloadWithoutLastName, PROVIDER_CONFIGS.idura)).toThrow(/family_name=missing/);
   });
 });

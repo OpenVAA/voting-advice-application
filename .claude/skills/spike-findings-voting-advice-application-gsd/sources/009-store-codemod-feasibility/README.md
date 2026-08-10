@@ -2,7 +2,7 @@
 spike: 009
 name: store-codemod-feasibility
 type: standard
-validates: "Given a regex-based Node.js codemod that targets $appSettings.X / $dataRoot.X / $darkMode / $locale template auto-subscribe sites across apps/frontend/src/**/*.svelte, when run in dry-run mode against the production tree, then (a) all 146+ enumerable sites are listed with file + line + before/after, (b) false positives are 0 (negative-lookbehind guards against word-boundary collisions), (c) the destructure-trap pass surfaces real production sites that the manual migration would otherwise miss, (d) the rewrite is mechanical and idempotent — applying twice produces identical output"
+validates: 'Given a regex-based Node.js codemod that targets $appSettings.X / $dataRoot.X / $darkMode / $locale template auto-subscribe sites across apps/frontend/src/**/*.svelte, when run in dry-run mode against the production tree, then (a) all 146+ enumerable sites are listed with file + line + before/after, (b) false positives are 0 (negative-lookbehind guards against word-boundary collisions), (c) the destructure-trap pass surfaces real production sites that the manual migration would otherwise miss, (d) the rewrite is mechanical and idempotent — applying twice produces identical output'
 verdict: VALIDATED
 related: [001, 002, 007]
 tags: [svelte5, codemod, regex, migration, automation]
@@ -37,6 +37,7 @@ dependencies beyond `node:fs` + `node:path`. Two passes:
 
 Regex pattern: `(?<![\\w$_])\\$<storeName>(?!\\w)` — matches `$<store>` as
 a standalone identifier, rejects:
+
 - `$$appSettings` (double-dollar) ✓
 - `_$appSettings` (prefixed) ✓
 - `$appSettingsFoo` (suffix continuation) ✓
@@ -78,7 +79,7 @@ node apps/frontend/scripts/spike-009-store-codemod.mjs --files 'apps/frontend/sr
 **Verdict:** VALIDATED ✓ — codemod is feasible, low-false-positive, and
 discovers an unexpected real production hit.
 
-### Dry-run against production tree (apps/frontend/src/**/*.svelte)
+### Dry-run against production tree (apps/frontend/src/\*_/_.svelte)
 
 ```
 Files scanned:   179
@@ -112,8 +113,8 @@ While investigating finding #2, identified a related-but-distinct trap in
 
 ```ts
 const adminContext: AdminContext = {
-  ...appContext,      // ← spread invokes every getter ONCE, captures VALUE
-  ...authContext,
+  ...appContext, // ← spread invokes every getter ONCE, captures VALUE
+  ...authContext
   // ...
 };
 ```

@@ -8,7 +8,7 @@
  * NO Deno imports. NO SvelteKit imports. Pure jose v6 only.
  */
 
-import { exportJWK,generateKeyPair } from 'jose';
+import { exportJWK, generateKeyPair } from 'jose';
 
 export interface TestKeySet {
   /** RS256 private key for signing JWTs */

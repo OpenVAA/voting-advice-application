@@ -111,12 +111,7 @@ export function nominationsOverride(_fragment: unknown, ctx: Ctx): Array<Record<
   const elections = refs.elections;
   const organizations = refs.organizations;
 
-  if (
-    candidates.length === 0 ||
-    constituencies.length === 0 ||
-    elections.length === 0 ||
-    organizations.length === 0
-  ) {
+  if (candidates.length === 0 || constituencies.length === 0 || elections.length === 0 || organizations.length === 0) {
     throw new Error(
       '[dev-seed] nominationsOverride: ctx.refs is empty for candidates / constituencies / elections / organizations. ' +
         'Ensure the pipeline runs in topological order and that the template requests non-zero counts.'

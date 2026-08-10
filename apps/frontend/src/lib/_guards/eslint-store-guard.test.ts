@@ -38,9 +38,12 @@ const probePath = path.resolve(__dirname, '__store_guard_probe__.ts');
 
 describe('svelte/store ESLint guard (RUNES-03 lock-in)', () => {
   it('fires no-restricted-imports on a svelte/store import (positive control)', async () => {
-    const [result] = await eslint.lintText("import { writable } from 'svelte/store';\nexport const x = writable(0);\n", {
-      filePath: probePath
-    });
+    const [result] = await eslint.lintText(
+      "import { writable } from 'svelte/store';\nexport const x = writable(0);\n",
+      {
+        filePath: probePath
+      }
+    );
     const restricted = result.messages.filter((m) => m.ruleId === 'no-restricted-imports');
     expect(restricted.length).toBeGreaterThan(0);
   });

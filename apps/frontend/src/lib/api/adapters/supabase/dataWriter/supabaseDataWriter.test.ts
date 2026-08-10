@@ -1,4 +1,4 @@
-import { beforeEach,describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SupabaseDataWriter } from './supabaseDataWriter';
 import type { Database } from '@openvaa/supabase-types';
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -189,9 +189,9 @@ describe('SupabaseDataWriter', () => {
         error: { message: 'Password too short' }
       });
 
-      await expect(
-        writer.setPassword({ password: 'x', authToken: '', currentPassword: '' })
-      ).rejects.toThrow('Password too short');
+      await expect(writer.setPassword({ password: 'x', authToken: '', currentPassword: '' })).rejects.toThrow(
+        'Password too short'
+      );
     });
   });
 
@@ -667,9 +667,9 @@ describe('SupabaseDataWriter', () => {
 
   describe('checkRegistrationKey', () => {
     it('throws "not supported" for Supabase adapter', async () => {
-      await expect(
-        writer.checkRegistrationKey({ registrationKey: 'some-key' })
-      ).rejects.toThrow('not supported by the Supabase adapter');
+      await expect(writer.checkRegistrationKey({ registrationKey: 'some-key' })).rejects.toThrow(
+        'not supported by the Supabase adapter'
+      );
     });
   });
 

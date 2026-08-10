@@ -6,7 +6,7 @@ import { isRouteParam } from './params';
 import { parseParams } from './parseParams';
 import { DEFAULT_PARAMS, ROUTE } from './route';
 import { removeDuplicates } from '../removeDuplicates';
-import type { locales as paraglideLocales} from '$lib/paraglide/runtime';
+import type { locales as paraglideLocales } from '$lib/paraglide/runtime';
 import type { Params } from './params';
 import type { Route } from './route';
 

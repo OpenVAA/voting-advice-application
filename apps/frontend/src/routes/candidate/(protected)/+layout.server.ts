@@ -91,7 +91,8 @@ export async function load({ fetch, locals }) {
    * Call logout and redirect to the login page with an error message.
    */
   async function handleError(error: CandidateLoginError): Promise<void> {
-    await locals.supabase.auth.signOut({ scope: 'local' })
+    await locals.supabase.auth
+      .signOut({ scope: 'local' })
       .catch((e: Error) => logDebugError(`[Candidate App protected layout] Error logging out: ${e?.message ?? '-'}`));
     redirect(
       307,

@@ -30,10 +30,9 @@ test.describe('perm-startfromcg', () => {
     const findResult = await client.findData('constituencyGroups', {
       externalId: { $eq: 'e2e-perm-startfromcg-cg-2' }
     });
-    expect(
-      findResult.type,
-      'perm-startfromcg requires e2e-perm-startfromcg-cg-2 to be present in the seed'
-    ).toBe('success');
+    expect(findResult.type, 'perm-startfromcg requires e2e-perm-startfromcg-cg-2 to be present in the seed').toBe(
+      'success'
+    );
     const cgDocumentId = findResult.data?.[0]?.documentId as string | undefined;
     expect(cgDocumentId, 'perm-startfromcg requires a discoverable CG-2 UUID').toBeTruthy();
 
@@ -68,7 +67,9 @@ test.describe('perm-startfromcg', () => {
     await expect(electionList.getByTestId(testIds.voter.elections.option)).toHaveCount(2);
   });
 
-  test('selecting CO-1C (CG-2 orphan, no parent): election selector shows EL2 only (auto-implied + disabled), continue advances to questions', async ({ page }) => {
+  test('selecting CO-1C (CG-2 orphan, no parent): election selector shows EL2 only (auto-implied + disabled), continue advances to questions', async ({
+    page
+  }) => {
     // Abstract contract: "user selects CO 1C: don't show election selector".
     // Observed app behavior: /elections renders with EXACTLY
     // one option that is `[checked] [disabled]` (the single election applicable

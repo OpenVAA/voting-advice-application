@@ -22,10 +22,7 @@ export interface StoredImage {
  * The caller provides `supabaseUrl` (from `constants.PUBLIC_SUPABASE_URL`)
  * to keep this utility pure and testable without env mocking.
  */
-export function parseStoredImage(
-  stored: StoredImage | null | undefined,
-  supabaseUrl: string
-): Image | undefined {
+export function parseStoredImage(stored: StoredImage | null | undefined, supabaseUrl: string): Image | undefined {
   if (!stored?.path) return undefined;
 
   function toUrl(p: string): string {

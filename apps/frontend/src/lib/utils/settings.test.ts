@@ -44,7 +44,11 @@ describe('mergeAppSettings', () => {
 
   it('filters out null/undefined values in additional (does not overwrite populated target keys)', () => {
     const target = { colors: { primary: 'red' }, locales: ['en'] } as unknown as StaticSettings;
-    const additional = { colors: null, locales: undefined, matching: { algorithm: 'manhattan' } } as unknown as DynamicSettings;
+    const additional = {
+      colors: null,
+      locales: undefined,
+      matching: { algorithm: 'manhattan' }
+    } as unknown as DynamicSettings;
 
     const result = mergeAppSettings(target, additional) as unknown as Record<string, unknown>;
 

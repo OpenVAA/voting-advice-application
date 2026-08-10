@@ -66,7 +66,7 @@ export class CandidatesGenerator {
 
   // Phase 56 ignores ctx here; Phase 57 reads ctx.refs.organizations to scale
   // count proportionally (candidates per party).
-   
+
   defaults(ctx: Ctx): CandidatesFragment {
     return { count: 8 };
   }

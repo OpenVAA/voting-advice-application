@@ -2,7 +2,7 @@
 spike: 011
 name: hmr-rune-contexts
 type: standard
-validates: "Given Vite HMR firing on edits to a rune-context file or its consumers, when the spike route is live in the browser with established state, then (a) component remounts cleanly (in-memory $state resets, log array clears, destructure-trap consumer re-captures), (b) localStorage-backed state survives the HMR (runeLocalStorage rehydrates new $state from storage on remount), (c) class-instance singletons (DataRoot) survive — same instance, populated collections preserved, (d) consoles stay clean — no effect_update_depth_exceeded, no zombie $effects, no hydration mismatches"
+validates: 'Given Vite HMR firing on edits to a rune-context file or its consumers, when the spike route is live in the browser with established state, then (a) component remounts cleanly (in-memory $state resets, log array clears, destructure-trap consumer re-captures), (b) localStorage-backed state survives the HMR (runeLocalStorage rehydrates new $state from storage on remount), (c) class-instance singletons (DataRoot) survive — same instance, populated collections preserved, (d) consoles stay clean — no effect_update_depth_exceeded, no zombie $effects, no hydration mismatches'
 verdict: VALIDATED
 related: [001, 002, 003, 007]
 tags: [svelte5, runes, hmr, vite, dx]
@@ -35,6 +35,7 @@ dataRoot, voterAnswerRuneStore, the new voterRuneContext) plus two consumer
 components (canonical + destructure-trap).
 
 Procedure:
+
 1. Drive page to a known state: click "Load DataRoot" → "Select first
    election" → "Set 3 demo answers". Verify canonical consumer shows
    `selectedElections=1, opinionQuestions=18, matchesCount=327, profileComplete=true`.
@@ -50,16 +51,16 @@ Procedure:
 
 ### State preservation matrix
 
-| Surface | Pre-HMR | Post-HMR | Survived? |
-|---------|---------|----------|-----------|
-| Canonical consumer `selectedElections.length` | 1 | 0 | ✗ (component remounted) |
-| Canonical consumer `opinionQuestions.length` | 18 | 0 | ✗ (derived from selectedElections) |
-| Canonical consumer `matchesCount` | 327 | 327 | ✓ (derived from voterAnswers + candidates) |
-| Canonical consumer `profileComplete` | true | true | ✓ (derived from voterAnswers) |
-| Destructure-trap consumer values | 0/0/0/false | 0/0/**327**/**true** | re-captured at new init (now showing live values) |
-| Log array | 4 lines | empty | ✗ (in-memory $state reset on remount) |
-| voterAnswers (localStorage-backed) | 3 answers | 3 answers | ✓ (runeLocalStorage rehydrated) |
-| DataRoot.candidates.length | 327 | 327 | ✓ (singleton preserved) |
+| Surface                                       | Pre-HMR     | Post-HMR             | Survived?                                         |
+| --------------------------------------------- | ----------- | -------------------- | ------------------------------------------------- |
+| Canonical consumer `selectedElections.length` | 1           | 0                    | ✗ (component remounted)                           |
+| Canonical consumer `opinionQuestions.length`  | 18          | 0                    | ✗ (derived from selectedElections)                |
+| Canonical consumer `matchesCount`             | 327         | 327                  | ✓ (derived from voterAnswers + candidates)        |
+| Canonical consumer `profileComplete`          | true        | true                 | ✓ (derived from voterAnswers)                     |
+| Destructure-trap consumer values              | 0/0/0/false | 0/0/**327**/**true** | re-captured at new init (now showing live values) |
+| Log array                                     | 4 lines     | empty                | ✗ (in-memory $state reset on remount)             |
+| voterAnswers (localStorage-backed)            | 3 answers   | 3 answers            | ✓ (runeLocalStorage rehydrated)                   |
+| DataRoot.candidates.length                    | 327         | 327                  | ✓ (singleton preserved)                           |
 
 **Key observations:**
 
@@ -103,6 +104,7 @@ Procedure:
 
 Zero errors / warnings observed across both HMR cycles. Specifically checked
 for:
+
 - `effect_update_depth_exceeded` — clean
 - `hydration` mismatches — none (HMR doesn't re-trigger hydration, only
   re-renders)
@@ -127,7 +129,7 @@ for:
 
 2. **The "HMR-masks-destructure-trap" finding is a real risk for developers.**
    During HMR-driven manual testing, the destructure-trap consumer
-   *temporarily* shows current values (because it re-captures at remount).
+   _temporarily_ shows current values (because it re-captures at remount).
    A developer iterating quickly might think the trap is fixed when it
    isn't. **Mitigation:** the Spike 009 codemod's destructure-trap audit
    pass should be part of pre-commit checks — running on push catches what
@@ -144,7 +146,7 @@ for:
    context — which doesn't remount when a child module changes. Voter
    wouldn't have to re-load all data on every HMR cycle.
 
-5. **Component remount is the right behavior** — it would be *worse* if
+5. **Component remount is the right behavior** — it would be _worse_ if
    $state values persisted across HMR, because then in-flight state could
    leak old code paths. Svelte/Vite's "remount component, preserve external
    state" model fits the rune migration cleanly.

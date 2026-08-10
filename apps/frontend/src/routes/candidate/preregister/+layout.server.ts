@@ -6,11 +6,7 @@ export async function load({ cookies, locals }) {
   // `preRegistration.enabled` is a DynamicSetting (backend/per-instance controlled,
   // stored in the `app_settings` JSONB row) — read it server-side via the request's
   // Supabase client rather than from build-time StaticSettings.
-  const { data: appSettingsRow } = await locals.supabase
-    .from('app_settings')
-    .select('settings')
-    .limit(1)
-    .maybeSingle();
+  const { data: appSettingsRow } = await locals.supabase.from('app_settings').select('settings').limit(1).maybeSingle();
   const preRegistrationEnabled = Boolean(
     (appSettingsRow?.settings as { preRegistration?: { enabled?: boolean } } | null)?.preRegistration?.enabled
   );

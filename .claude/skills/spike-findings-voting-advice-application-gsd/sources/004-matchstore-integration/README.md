@@ -67,11 +67,11 @@ yarn db:start
 
 Browser verification on 2026-05-21:
 
-| State                              | Top-5 score range |
-|------------------------------------|-------------------|
-| 3 persisted answers (q1=1, q2=5, q3=3) | 75% – 67% |
-| Same answers + q2 changed 5 → 1    | **100% – 92%** (completely re-ranked) |
-| All answers cleared                | matches=80 (raw nominations, no scores), top-5 list empty |
+| State                                  | Top-5 score range                                         |
+| -------------------------------------- | --------------------------------------------------------- |
+| 3 persisted answers (q1=1, q2=5, q3=3) | 75% – 67%                                                 |
+| Same answers + q2 changed 5 → 1        | **100% – 92%** (completely re-ranked)                     |
+| All answers cleared                    | matches=80 (raw nominations, no scores), top-5 list empty |
 
 **Key findings:**
 

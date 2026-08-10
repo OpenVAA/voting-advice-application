@@ -36,9 +36,7 @@ describe('template schema — latent block (D-57-21)', () => {
   });
 
   it('accepts matching dimensions + eigenvalues', () => {
-    expect(() =>
-      validateTemplate({ latent: { dimensions: 3, eigenvalues: [1, 0.333, 0.111] } })
-    ).not.toThrow();
+    expect(() => validateTemplate({ latent: { dimensions: 3, eigenvalues: [1, 0.333, 0.111] } })).not.toThrow();
   });
 
   it('rejects mismatched dimensions/eigenvalues length (D-57-02)', () => {

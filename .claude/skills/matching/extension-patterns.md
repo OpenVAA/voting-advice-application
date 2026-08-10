@@ -31,7 +31,7 @@ Follow these steps in order. Each step names the file to create or modify.
    - Follows the pattern of `manhattanDistance()`, `directionalDistance()`, `euclideanDistance()`
    - Calls the generic `distance()` function passing the three component functions:
      ```ts
-     distance({ a, b, kernel: myKernel, sum: mySum, subdimWeight: mySubdimWeight, space, allowMissing })
+     distance({ a, b, kernel: myKernel, sum: mySum, subdimWeight: mySubdimWeight, space, allowMissing });
      ```
    - Must accept the same parameters: `{ a, b, space?, allowMissing? }`
    - Must return `NormalizedDistance`

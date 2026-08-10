@@ -26,10 +26,7 @@ export function computeFiltered<TEntity>(
  * is provided. Mirrors the original idiom at
  * `EntityListControls.svelte:71` (`filterGroup.filters.filter((f) => f.active).length`).
  */
-export function countActiveFilters(
-  filterGroup: { filters: ReadonlyArray<{ active: boolean }> } | undefined
-): number {
+export function countActiveFilters(filterGroup: { filters: ReadonlyArray<{ active: boolean }> } | undefined): number {
   if (!filterGroup) return 0;
   return filterGroup.filters.filter((f) => f.active).length;
 }
-

@@ -35,12 +35,12 @@ PASS 2 — audit const { <reactive-accessor>, ... } = get*Context(...)
 
 Each store rewritten in Pass 1:
 
-| Store | Handle | Accessor |
-|-------|--------|----------|
+| Store          | Handle        | Accessor  |
+| -------------- | ------------- | --------- |
 | `$appSettings` | `appSettings` | `current` |
-| `$dataRoot` | `dataRoot` | `current` |
-| `$darkMode` | `darkMode` | `current` |
-| `$locale` | `locale` | `current` |
+| `$dataRoot`    | `dataRoot`    | `current` |
+| `$darkMode`    | `darkMode`    | `current` |
+| `$locale`      | `locale`      | `current` |
 
 ### Pass 1 — rewrite regex
 
@@ -80,16 +80,30 @@ preregistration contexts:
 ```js
 const REACTIVE_ACCESSORS = new Set([
   // voter
-  'selectedElections', 'selectedConstituencies', 'opinionQuestions',
-  'infoQuestions', 'infoQuestionCategories', 'opinionQuestionCategories',
-  'questionBlocks', 'unansweredOpinionQuestions',
-  'unansweredRequiredInfoQuestions', 'requiredInfoQuestions',
-  'answersLocked', 'profileComplete', 'electionsSelectable',
-  'constituenciesSelectable', 'matches', 'nominationsAvailable',
+  'selectedElections',
+  'selectedConstituencies',
+  'opinionQuestions',
+  'infoQuestions',
+  'infoQuestionCategories',
+  'opinionQuestionCategories',
+  'questionBlocks',
+  'unansweredOpinionQuestions',
+  'unansweredRequiredInfoQuestions',
+  'requiredInfoQuestions',
+  'answersLocked',
+  'profileComplete',
+  'electionsSelectable',
+  'constituenciesSelectable',
+  'matches',
+  'nominationsAvailable',
   'resultsAvailable',
   // candidate / auth / preregistration
-  'idTokenClaims', 'isPreregistered', 'isAuthenticated',
-  'preregistrationElections', 'preregistrationNominations', 'newUserEmail'
+  'idTokenClaims',
+  'isPreregistered',
+  'isAuthenticated',
+  'preregistrationElections',
+  'preregistrationNominations',
+  'newUserEmail'
 ]);
 ```
 
@@ -177,6 +191,7 @@ Total traps flagged:          2
 Synthesized from spike: 009
 
 Source files available in:
+
 - `sources/009-store-codemod-feasibility/spike-009-store-codemod.mjs` — the codemod itself
 - `sources/009-store-codemod-feasibility/README.md` — full investigation
   trail including the AdminNav production hit + spread-of-context bonus

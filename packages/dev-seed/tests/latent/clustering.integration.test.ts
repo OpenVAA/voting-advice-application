@@ -144,9 +144,7 @@ describe('Clustering integration (D-57-17 / D-57-18 / Success Criterion 5)', () 
 
     // Convert candidate answers → Position.
     const positions = rows.map((r) => {
-      const coords = matchable.map((mq) =>
-        mq.normalizeValue(r.answers[mq.id]?.value ?? undefined)
-      );
+      const coords = matchable.map((mq) => mq.normalizeValue(r.answers[mq.id]?.value ?? undefined));
       return new Position({ coordinates: coords, space });
     });
 

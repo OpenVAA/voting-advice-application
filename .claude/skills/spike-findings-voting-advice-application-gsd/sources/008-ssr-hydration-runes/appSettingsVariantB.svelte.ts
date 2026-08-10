@@ -37,8 +37,7 @@ export interface AppSettingsVariantB {
 }
 
 export function getAppSettingsVariantB(): AppSettingsVariantB {
-  if (!hasContext(CONTEXT_KEY))
-    error(500, 'getAppSettingsVariantB() called before init');
+  if (!hasContext(CONTEXT_KEY)) error(500, 'getAppSettingsVariantB() called before init');
   return getContext<AppSettingsVariantB>(CONTEXT_KEY);
 }
 
@@ -47,9 +46,7 @@ export function initAppSettingsVariantB(): AppSettingsVariantB {
 
   // Synchronous read at init — runs both server-side AND client-side.
   const initialDbData = page.data?.appSettingsData as DynamicSettings | Error | undefined;
-  const _initialMergeIncludedDbOverride = !!(
-    initialDbData && !(initialDbData instanceof Error)
-  );
+  const _initialMergeIncludedDbOverride = !!(initialDbData && !(initialDbData instanceof Error));
 
   let initial = pureMerge(staticSettings, dynamicSettings);
   if (_initialMergeIncludedDbOverride && initialDbData) {

@@ -134,10 +134,7 @@ async function expectInFlightStatePreserved(
 
   // The candidate card + its match score survive (proves the persisted answer
   // still drives the computed match identically post-reload).
-  const card = page
-    .getByTestId(testIds.voter.results.candidateSection)
-    .getByTestId(testIds.voter.results.card)
-    .first();
+  const card = page.getByTestId(testIds.voter.results.candidateSection).getByTestId(testIds.voter.results.card).first();
   await expect(card).toBeVisible({ timeout: L10N_SLOW_PAGE });
   const matchScore = card.getByTestId(testIds.voter.results.matchScore);
   await expect(matchScore).toBeVisible();

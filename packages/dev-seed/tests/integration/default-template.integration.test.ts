@@ -68,7 +68,11 @@ function makeReadClient(): SupabaseClient {
  * trust the trigger-based cascade to complete before assertions run — delete
  * storage explicitly.
  */
-async function runTeardown(prefix: string, adminClient: SupabaseAdminClient, readClient: SupabaseClient): Promise<void> {
+async function runTeardown(
+  prefix: string,
+  adminClient: SupabaseAdminClient,
+  readClient: SupabaseClient
+): Promise<void> {
   // 1. Delete rows via bulk_delete RPC (10 bulk-deletable tables; accounts,
   //    projects, app_settings are bootstrap-owned and stay intact per D-11).
   await adminClient.bulkDelete({
@@ -119,172 +123,168 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
     await runTeardown('seed_', adminClient, readClient);
   }, 60_000);
 
-  it(
-    'applies default template and meets NF-01 (<10s) + D-58-20 assertions',
-    async () => {
-      const template = BUILT_IN_TEMPLATES.default;
-      const overrides = BUILT_IN_OVERRIDES.default;
-      const seed = (template as { seed?: number }).seed ?? 42;
-      const prefix = (template as { externalIdPrefix?: string }).externalIdPrefix ?? 'seed_';
+  it('applies default template and meets NF-01 (<10s) + D-58-20 assertions', async () => {
+    const template = BUILT_IN_TEMPLATES.default;
+    const overrides = BUILT_IN_OVERRIDES.default;
+    const seed = (template as { seed?: number }).seed ?? 42;
+    const prefix = (template as { externalIdPrefix?: string }).externalIdPrefix ?? 'seed_';
 
-      const writer = new Writer();
-      const start = Date.now();
+    const writer = new Writer();
+    const start = Date.now();
 
-      const rows = runPipeline(template, overrides);
-      fanOutLocales(rows, template, seed);
-      const { portraits } = await writer.write(rows, prefix);
+    const rows = runPipeline(template, overrides);
+    fanOutLocales(rows, template, seed);
+    const { portraits } = await writer.write(rows, prefix);
 
-      const elapsedMs = Date.now() - start;
+    const elapsedMs = Date.now() - start;
 
-      // -----------------------------------------------------------------------
-      // 1. NF-01 budget — HARD GATE
-      // -----------------------------------------------------------------------
-      expect(elapsedMs).toBeLessThan(10_000);
+    // -----------------------------------------------------------------------
+    // 1. NF-01 budget — HARD GATE
+    // -----------------------------------------------------------------------
+    expect(elapsedMs).toBeLessThan(10_000);
 
-      // -----------------------------------------------------------------------
-      // 2. In-memory row counts match the default template (Phase 64 densification)
-      // -----------------------------------------------------------------------
-      expect(rows.elections.length).toBe(1);
-      expect(rows.constituency_groups.length).toBe(1);
-      expect(rows.constituencies.length).toBe(5);
-      expect(rows.organizations.length).toBe(8);
-      expect(rows.candidates.length).toBe(327);
-      expect(rows.questions.length).toBe(26);
-      expect(rows.question_categories.length).toBe(4);
-      // Phase 67: alliances + alliance noms
-      expect(rows.alliances.length).toBe(2);
-      // 327 candidate noms + 40 org noms + 10 alliance noms (2 alliances × 5 constituencies)
-      expect(rows.nominations.length).toBe(327 + 40 + 10);
+    // -----------------------------------------------------------------------
+    // 2. In-memory row counts match the default template (Phase 64 densification)
+    // -----------------------------------------------------------------------
+    expect(rows.elections.length).toBe(1);
+    expect(rows.constituency_groups.length).toBe(1);
+    expect(rows.constituencies.length).toBe(5);
+    expect(rows.organizations.length).toBe(8);
+    expect(rows.candidates.length).toBe(327);
+    expect(rows.questions.length).toBe(26);
+    expect(rows.question_categories.length).toBe(4);
+    // Phase 67: alliances + alliance noms
+    expect(rows.alliances.length).toBe(2);
+    // 327 candidate noms + 40 org noms + 10 alliance noms (2 alliances × 5 constituencies)
+    expect(rows.nominations.length).toBe(327 + 40 + 10);
 
-      // -----------------------------------------------------------------------
-      // 3. Portraits uploaded — 327 candidates, one portrait each
-      // -----------------------------------------------------------------------
-      expect(portraits).toBe(327);
+    // -----------------------------------------------------------------------
+    // 3. Portraits uploaded — 327 candidates, one portrait each
+    // -----------------------------------------------------------------------
+    expect(portraits).toBe(327);
 
-      // -----------------------------------------------------------------------
-      // 4. DB-level row counts via `seed_` prefix filter (idempotent re-runs)
-      // -----------------------------------------------------------------------
-      expect(await countByPrefix(readClient, 'elections', prefix)).toBe(1);
-      expect(await countByPrefix(readClient, 'constituency_groups', prefix)).toBe(1);
-      expect(await countByPrefix(readClient, 'constituencies', prefix)).toBe(5);
-      expect(await countByPrefix(readClient, 'organizations', prefix)).toBe(8);
-      expect(await countByPrefix(readClient, 'candidates', prefix)).toBe(327);
-      expect(await countByPrefix(readClient, 'questions', prefix)).toBe(26);
-      expect(await countByPrefix(readClient, 'question_categories', prefix)).toBe(4);
-      // Phase 67: 2 alliance entities + 327 cand noms + 40 org noms + 10 alliance noms
-      expect(await countByPrefix(readClient, 'alliances', prefix)).toBe(2);
-      expect(await countByPrefix(readClient, 'nominations', prefix)).toBe(327 + 40 + 10);
+    // -----------------------------------------------------------------------
+    // 4. DB-level row counts via `seed_` prefix filter (idempotent re-runs)
+    // -----------------------------------------------------------------------
+    expect(await countByPrefix(readClient, 'elections', prefix)).toBe(1);
+    expect(await countByPrefix(readClient, 'constituency_groups', prefix)).toBe(1);
+    expect(await countByPrefix(readClient, 'constituencies', prefix)).toBe(5);
+    expect(await countByPrefix(readClient, 'organizations', prefix)).toBe(8);
+    expect(await countByPrefix(readClient, 'candidates', prefix)).toBe(327);
+    expect(await countByPrefix(readClient, 'questions', prefix)).toBe(26);
+    expect(await countByPrefix(readClient, 'question_categories', prefix)).toBe(4);
+    // Phase 67: 2 alliance entities + 327 cand noms + 40 org noms + 10 alliance noms
+    expect(await countByPrefix(readClient, 'alliances', prefix)).toBe(2);
+    expect(await countByPrefix(readClient, 'nominations', prefix)).toBe(327 + 40 + 10);
 
-      // -----------------------------------------------------------------------
-      // 5. Candidates have organization_id + non-NULL image.path (Pitfall #2 —
-      //    column is `image` JSONB, NOT `image_id`)
-      // -----------------------------------------------------------------------
-      const { data: candidates, error: candErr } = await readClient
-        .from('candidates')
-        .select('id, external_id, organization_id, image')
-        .eq('project_id', TEST_PROJECT_ID)
-        .like('external_id', `${prefix}%`);
-      expect(candErr).toBeNull();
-      expect(candidates?.length).toBe(327);
-      for (const cand of candidates ?? []) {
-        expect(cand.organization_id).not.toBeNull();
-        const img = cand.image as { path?: string } | null;
-        expect(img?.path).toBeTruthy();
-      }
+    // -----------------------------------------------------------------------
+    // 5. Candidates have organization_id + non-NULL image.path (Pitfall #2 —
+    //    column is `image` JSONB, NOT `image_id`)
+    // -----------------------------------------------------------------------
+    const { data: candidates, error: candErr } = await readClient
+      .from('candidates')
+      .select('id, external_id, organization_id, image')
+      .eq('project_id', TEST_PROJECT_ID)
+      .like('external_id', `${prefix}%`);
+    expect(candErr).toBeNull();
+    expect(candidates?.length).toBe(327);
+    for (const cand of candidates ?? []) {
+      expect(cand.organization_id).not.toBeNull();
+      const img = cand.image as { path?: string } | null;
+      expect(img?.path).toBeTruthy();
+    }
 
-      // -----------------------------------------------------------------------
-      // 6. Nominations have FK refs resolved per type:
-      //    - Candidate-type: candidate_id non-null, parent_nomination_id non-null
-      //    - Organization-type:
-      //        * 30 of 40 (parties belonging to an alliance) have
-      //          parent_nomination_id non-null pointing at an alliance nom
-      //          in the SAME constituency (Phase 67)
-      //        * 10 of 40 (party_people, party_coast — 2 standalone × 5 const)
-      //          have parent_nomination_id null (Phase 67 no-alliance path)
-      //    - Alliance-type: alliance_id non-null, parent_nomination_id null
-      //      (alliances cannot have parents per validate_nomination trigger)
-      //    - All types: election_id + constituency_id non-null
-      // -----------------------------------------------------------------------
-      const { data: nominations, error: nomErr } = await readClient
-        .from('nominations')
-        .select(
-          'id, external_id, candidate_id, organization_id, alliance_id, election_id, constituency_id, parent_nomination_id'
-        )
-        .eq('project_id', TEST_PROJECT_ID)
-        .like('external_id', `${prefix}%`);
-      expect(nomErr).toBeNull();
-      // Phase 67: 327 + 40 + 10 = 377 total
-      expect(nominations?.length).toBe(327 + 40 + 10);
-      const candNoms = (nominations ?? []).filter((n) => n.candidate_id != null);
-      const orgNoms = (nominations ?? []).filter((n) => n.organization_id != null);
-      const allianceNoms = (nominations ?? []).filter((n) => n.alliance_id != null);
-      expect(candNoms.length).toBe(327);
-      expect(orgNoms.length).toBe(40);
-      expect(allianceNoms.length).toBe(10);
+    // -----------------------------------------------------------------------
+    // 6. Nominations have FK refs resolved per type:
+    //    - Candidate-type: candidate_id non-null, parent_nomination_id non-null
+    //    - Organization-type:
+    //        * 30 of 40 (parties belonging to an alliance) have
+    //          parent_nomination_id non-null pointing at an alliance nom
+    //          in the SAME constituency (Phase 67)
+    //        * 10 of 40 (party_people, party_coast — 2 standalone × 5 const)
+    //          have parent_nomination_id null (Phase 67 no-alliance path)
+    //    - Alliance-type: alliance_id non-null, parent_nomination_id null
+    //      (alliances cannot have parents per validate_nomination trigger)
+    //    - All types: election_id + constituency_id non-null
+    // -----------------------------------------------------------------------
+    const { data: nominations, error: nomErr } = await readClient
+      .from('nominations')
+      .select(
+        'id, external_id, candidate_id, organization_id, alliance_id, election_id, constituency_id, parent_nomination_id'
+      )
+      .eq('project_id', TEST_PROJECT_ID)
+      .like('external_id', `${prefix}%`);
+    expect(nomErr).toBeNull();
+    // Phase 67: 327 + 40 + 10 = 377 total
+    expect(nominations?.length).toBe(327 + 40 + 10);
+    const candNoms = (nominations ?? []).filter((n) => n.candidate_id != null);
+    const orgNoms = (nominations ?? []).filter((n) => n.organization_id != null);
+    const allianceNoms = (nominations ?? []).filter((n) => n.alliance_id != null);
+    expect(candNoms.length).toBe(327);
+    expect(orgNoms.length).toBe(40);
+    expect(allianceNoms.length).toBe(10);
 
-      for (const nom of candNoms) {
-        expect(nom.election_id).not.toBeNull();
-        expect(nom.constituency_id).not.toBeNull();
-        expect(nom.parent_nomination_id).not.toBeNull();
-      }
+    for (const nom of candNoms) {
+      expect(nom.election_id).not.toBeNull();
+      expect(nom.constituency_id).not.toBeNull();
+      expect(nom.parent_nomination_id).not.toBeNull();
+    }
 
-      // Phase 67: split org-noms by parent presence.
-      const orgNomsWithParent = orgNoms.filter((n) => n.parent_nomination_id != null);
-      const orgNomsStandalone = orgNoms.filter((n) => n.parent_nomination_id == null);
-      // 6 of 8 parties × 5 constituencies = 30 with-parent (alliance members)
-      expect(orgNomsWithParent.length).toBe(30);
-      // 2 of 8 parties × 5 constituencies = 10 standalone (party_people, party_coast)
-      expect(orgNomsStandalone.length).toBe(10);
-      for (const nom of orgNoms) {
-        expect(nom.election_id).not.toBeNull();
-        expect(nom.constituency_id).not.toBeNull();
-      }
+    // Phase 67: split org-noms by parent presence.
+    const orgNomsWithParent = orgNoms.filter((n) => n.parent_nomination_id != null);
+    const orgNomsStandalone = orgNoms.filter((n) => n.parent_nomination_id == null);
+    // 6 of 8 parties × 5 constituencies = 30 with-parent (alliance members)
+    expect(orgNomsWithParent.length).toBe(30);
+    // 2 of 8 parties × 5 constituencies = 10 standalone (party_people, party_coast)
+    expect(orgNomsStandalone.length).toBe(10);
+    for (const nom of orgNoms) {
+      expect(nom.election_id).not.toBeNull();
+      expect(nom.constituency_id).not.toBeNull();
+    }
 
-      // Phase 67: alliance noms have NO parent (validate_nomination trigger).
-      const allianceNomIds = new Set(allianceNoms.map((n) => n.id));
-      for (const nom of allianceNoms) {
-        expect(nom.election_id).not.toBeNull();
-        expect(nom.constituency_id).not.toBeNull();
-        expect(nom.parent_nomination_id).toBeNull();
-      }
+    // Phase 67: alliance noms have NO parent (validate_nomination trigger).
+    const allianceNomIds = new Set(allianceNoms.map((n) => n.id));
+    for (const nom of allianceNoms) {
+      expect(nom.election_id).not.toBeNull();
+      expect(nom.constituency_id).not.toBeNull();
+      expect(nom.parent_nomination_id).toBeNull();
+    }
 
-      // Phase 67: every parent_nomination_id on an org-nom resolves to an
-      // alliance-nom in the same constituency (the wiring that powers the
-      // v2.6 P64 supabase-adapter reverse-fill of organizationNominationIds).
-      const allianceNomById = new Map(allianceNoms.map((n) => [n.id, n]));
-      for (const orgNom of orgNomsWithParent) {
-        expect(allianceNomIds.has(orgNom.parent_nomination_id)).toBe(true);
-        const parent = allianceNomById.get(orgNom.parent_nomination_id);
-        // Constituency identity invariant (validate_nomination trigger:
-        // 011-validation-functions.sql:264-272). Belt + suspenders — the
-        // trigger would have raised on INSERT, but we also assert here so a
-        // future schema-bypass regression surfaces in this test.
-        expect(parent?.constituency_id).toBe(orgNom.constituency_id);
-        expect(parent?.election_id).toBe(orgNom.election_id);
-      }
+    // Phase 67: every parent_nomination_id on an org-nom resolves to an
+    // alliance-nom in the same constituency (the wiring that powers the
+    // v2.6 P64 supabase-adapter reverse-fill of organizationNominationIds).
+    const allianceNomById = new Map(allianceNoms.map((n) => [n.id, n]));
+    for (const orgNom of orgNomsWithParent) {
+      expect(allianceNomIds.has(orgNom.parent_nomination_id)).toBe(true);
+      const parent = allianceNomById.get(orgNom.parent_nomination_id);
+      // Constituency identity invariant (validate_nomination trigger:
+      // 011-validation-functions.sql:264-272). Belt + suspenders — the
+      // trigger would have raised on INSERT, but we also assert here so a
+      // future schema-bypass regression surfaces in this test.
+      expect(parent?.constituency_id).toBe(orgNom.constituency_id);
+      expect(parent?.election_id).toBe(orgNom.election_id);
+    }
 
-      // -----------------------------------------------------------------------
-      // 7. TMPL-07: locale fan-out produced all 4 locale keys on elections.name
-      // -----------------------------------------------------------------------
-      const { data: election, error: elErr } = await readClient
-        .from('elections')
-        .select('name')
-        .eq('project_id', TEST_PROJECT_ID)
-        .like('external_id', `${prefix}%`)
-        .single();
-      expect(elErr).toBeNull();
-      const electionName = (election as { name?: Record<string, string> } | null)?.name ?? {};
-      expect(Object.keys(electionName).sort()).toEqual(['en', 'fi', 'sv']);
+    // -----------------------------------------------------------------------
+    // 7. TMPL-07: locale fan-out produced all 4 locale keys on elections.name
+    // -----------------------------------------------------------------------
+    const { data: election, error: elErr } = await readClient
+      .from('elections')
+      .select('name')
+      .eq('project_id', TEST_PROJECT_ID)
+      .like('external_id', `${prefix}%`)
+      .single();
+    expect(elErr).toBeNull();
+    const electionName = (election as { name?: Record<string, string> } | null)?.name ?? {};
+    expect(Object.keys(electionName).sort()).toEqual(['en', 'fi', 'sv']);
 
-      // -----------------------------------------------------------------------
-      // 8. Storage bucket has ≥327 portrait objects under
-      //    `${projectId}/candidates/` (1 portrait per candidate)
-      // -----------------------------------------------------------------------
-      const portraitPaths = await listCandidatePortraitPaths(readClient);
-      expect(portraitPaths.length).toBeGreaterThanOrEqual(327);
-    },
-    60_000
-  );
+    // -----------------------------------------------------------------------
+    // 8. Storage bucket has ≥327 portrait objects under
+    //    `${projectId}/candidates/` (1 portrait per candidate)
+    // -----------------------------------------------------------------------
+    const portraitPaths = await listCandidatePortraitPaths(readClient);
+    expect(portraitPaths.length).toBeGreaterThanOrEqual(327);
+  }, 60_000);
 });
 
 // ---------------------------------------------------------------------------

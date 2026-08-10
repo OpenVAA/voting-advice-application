@@ -21,9 +21,7 @@ class ParamStateImpl<TParam extends Param> {
   // "used before initialization" diagnostic that the field-initializer ordering
   // (`#value` declared before the constructor assigns `#param`) would otherwise raise.
   #param!: TParam;
-  #value = $derived(
-    parseParams(page)[this.#param] as TParam extends ArrayParam ? Array<string> : string | undefined
-  );
+  #value = $derived(parseParams(page)[this.#param] as TParam extends ArrayParam ? Array<string> : string | undefined);
 
   constructor(param: TParam) {
     this.#param = param;

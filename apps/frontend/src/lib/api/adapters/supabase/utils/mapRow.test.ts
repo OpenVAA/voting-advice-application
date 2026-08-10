@@ -1,5 +1,5 @@
-import { describe, expect,it } from 'vitest';
-import { mapRow, mapRows,mapRowToDb } from '../utils/mapRow';
+import { describe, expect, it } from 'vitest';
+import { mapRow, mapRows, mapRowToDb } from '../utils/mapRow';
 
 describe('mapRow', () => {
   it('renames COLUMN_MAP keys to camelCase', () => {

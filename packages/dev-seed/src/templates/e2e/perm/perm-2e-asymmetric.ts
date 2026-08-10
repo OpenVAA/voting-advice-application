@@ -99,22 +99,88 @@ export const perm2eAsymmetricTemplate: Template = {
   candidates: {
     count: 0,
     fixed: [
-      buildCandidate({ prefix: P, orgN: 1, candLetter: 'A', idSuffix: 'ca-1-1a', sortOrder: 0, answersByExternalId: buildStandardCandidateAnswers({ prefix: P }) }),
-      buildCandidate({ prefix: P, orgN: 2, candLetter: 'A', idSuffix: 'ca-2-1a', sortOrder: 1, answersByExternalId: buildStandardCandidateAnswers({ prefix: P }) }),
-      buildCandidate({ prefix: P, orgN: 1, candLetter: 'C', idSuffix: 'ca-1-2a', sortOrder: 2, answersByExternalId: buildStandardCandidateAnswers({ prefix: P }) }),
-      buildCandidate({ prefix: P, orgN: 2, candLetter: 'C', idSuffix: 'ca-2-2a', sortOrder: 3, answersByExternalId: buildStandardCandidateAnswers({ prefix: P }) }),
-      buildCandidate({ prefix: P, orgN: 1, candLetter: 'D', idSuffix: 'ca-1-2b', sortOrder: 4, answersByExternalId: buildStandardCandidateAnswers({ prefix: P }) }),
-      buildCandidate({ prefix: P, orgN: 2, candLetter: 'D', idSuffix: 'ca-2-2b', sortOrder: 5, answersByExternalId: buildStandardCandidateAnswers({ prefix: P }) })
+      buildCandidate({
+        prefix: P,
+        orgN: 1,
+        candLetter: 'A',
+        idSuffix: 'ca-1-1a',
+        sortOrder: 0,
+        answersByExternalId: buildStandardCandidateAnswers({ prefix: P })
+      }),
+      buildCandidate({
+        prefix: P,
+        orgN: 2,
+        candLetter: 'A',
+        idSuffix: 'ca-2-1a',
+        sortOrder: 1,
+        answersByExternalId: buildStandardCandidateAnswers({ prefix: P })
+      }),
+      buildCandidate({
+        prefix: P,
+        orgN: 1,
+        candLetter: 'C',
+        idSuffix: 'ca-1-2a',
+        sortOrder: 2,
+        answersByExternalId: buildStandardCandidateAnswers({ prefix: P })
+      }),
+      buildCandidate({
+        prefix: P,
+        orgN: 2,
+        candLetter: 'C',
+        idSuffix: 'ca-2-2a',
+        sortOrder: 3,
+        answersByExternalId: buildStandardCandidateAnswers({ prefix: P })
+      }),
+      buildCandidate({
+        prefix: P,
+        orgN: 1,
+        candLetter: 'D',
+        idSuffix: 'ca-1-2b',
+        sortOrder: 4,
+        answersByExternalId: buildStandardCandidateAnswers({ prefix: P })
+      }),
+      buildCandidate({
+        prefix: P,
+        orgN: 2,
+        candLetter: 'D',
+        idSuffix: 'ca-2-2b',
+        sortOrder: 5,
+        answersByExternalId: buildStandardCandidateAnswers({ prefix: P })
+      })
     ]
   },
 
   nominations: {
     count: 0,
     fixed: [
-      ...buildElectionConstituencyNoms({ prefix: P, electionIdSuffix: 'el-1', constituencyIdSuffix: 'co-1a', candidateIdSuffixes: ['ca-1-1a', 'ca-2-1a'], electionSymbolStart: 1 }),
-      ...buildElectionConstituencyNoms({ prefix: P, electionIdSuffix: 'el-2', constituencyIdSuffix: 'co-1a', candidateIdSuffixes: ['ca-1-1a', 'ca-2-1a'], electionSymbolStart: 10 }),
-      ...buildElectionConstituencyNoms({ prefix: P, electionIdSuffix: 'el-2', constituencyIdSuffix: 'co-2a', candidateIdSuffixes: ['ca-1-2a', 'ca-2-2a'], electionSymbolStart: 20 }),
-      ...buildElectionConstituencyNoms({ prefix: P, electionIdSuffix: 'el-2', constituencyIdSuffix: 'co-2b', candidateIdSuffixes: ['ca-1-2b', 'ca-2-2b'], electionSymbolStart: 30 })
+      ...buildElectionConstituencyNoms({
+        prefix: P,
+        electionIdSuffix: 'el-1',
+        constituencyIdSuffix: 'co-1a',
+        candidateIdSuffixes: ['ca-1-1a', 'ca-2-1a'],
+        electionSymbolStart: 1
+      }),
+      ...buildElectionConstituencyNoms({
+        prefix: P,
+        electionIdSuffix: 'el-2',
+        constituencyIdSuffix: 'co-1a',
+        candidateIdSuffixes: ['ca-1-1a', 'ca-2-1a'],
+        electionSymbolStart: 10
+      }),
+      ...buildElectionConstituencyNoms({
+        prefix: P,
+        electionIdSuffix: 'el-2',
+        constituencyIdSuffix: 'co-2a',
+        candidateIdSuffixes: ['ca-1-2a', 'ca-2-2a'],
+        electionSymbolStart: 20
+      }),
+      ...buildElectionConstituencyNoms({
+        prefix: P,
+        electionIdSuffix: 'el-2',
+        constituencyIdSuffix: 'co-2b',
+        candidateIdSuffixes: ['ca-1-2b', 'ca-2-2b'],
+        electionSymbolStart: 30
+      })
     ]
   },
 

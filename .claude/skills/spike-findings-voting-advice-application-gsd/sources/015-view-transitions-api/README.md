@@ -2,7 +2,7 @@
 spike: 015
 name: view-transitions-api
 type: standard
-validates: "Given onNavigate(() => document.startViewTransition(...)), when Q→Q navigation fires, then a cross-fade/slide transition wraps the render cycle on the actual production-style route tree — WITHOUT structural changes — and disables automatically under prefers-reduced-motion."
+validates: 'Given onNavigate(() => document.startViewTransition(...)), when Q→Q navigation fires, then a cross-fade/slide transition wraps the render cycle on the actual production-style route tree — WITHOUT structural changes — and disables automatically under prefers-reduced-motion.'
 verdict: VALIDATED
 related: [013, 014a, 014b, 016]
 tags: [sveltekit, view-transitions, transitions, onnavigate, a11y]
@@ -26,18 +26,19 @@ those swaps are animated rather than instant.
 
 ## Research
 
-| Aspect | Pattern | Notes |
-|---|---|---|
-| SvelteKit hook | `onNavigate((navigation) => Promise)` | If callback returns a Promise, SvelteKit waits for it before completing nav |
-| Trigger | `document.startViewTransition(() => applyDomChange())` | Returns `{ ready, finished, skipTransition }` promises |
-| Coordination | Pass SvelteKit's `navigation.complete` into the startViewTransition callback | Browser captures BEFORE snapshot → callback runs → SvelteKit applies new DOM → browser captures AFTER → animates |
-| Per-element pairing | `view-transition-name: <name>` CSS property | Browser pairs old/new elements with the same name; animates morph/position |
+| Aspect                   | Pattern                                                                             | Notes                                                                                                                     |
+| ------------------------ | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| SvelteKit hook           | `onNavigate((navigation) => Promise)`                                               | If callback returns a Promise, SvelteKit waits for it before completing nav                                               |
+| Trigger                  | `document.startViewTransition(() => applyDomChange())`                              | Returns `{ ready, finished, skipTransition }` promises                                                                    |
+| Coordination             | Pass SvelteKit's `navigation.complete` into the startViewTransition callback        | Browser captures BEFORE snapshot → callback runs → SvelteKit applies new DOM → browser captures AFTER → animates          |
+| Per-element pairing      | `view-transition-name: <name>` CSS property                                         | Browser pairs old/new elements with the same name; animates morph/position                                                |
 | `prefers-reduced-motion` | Not automatic — must check `matchMedia('(prefers-reduced-motion: reduce)').matches` | Also use CSS `@media (prefers-reduced-motion: reduce) { ::view-transition-group(*) { animation: none } }` for belt+braces |
-| Browser support | Chrome 111+, Edge 111+, Firefox 144+, Safari 18+ | Detect via `'startViewTransition' in document`; fall back to instant swap |
-| Common pitfall | Reading `page.url` in onNavigate gives SOURCE URL, not destination | Read `navigation.to.url` instead |
+| Browser support          | Chrome 111+, Edge 111+, Firefox 144+, Safari 18+                                    | Detect via `'startViewTransition' in document`; fall back to instant swap                                                 |
+| Common pitfall           | Reading `page.url` in onNavigate gives SOURCE URL, not destination                  | Read `navigation.to.url` instead                                                                                          |
 
 **Chosen approach:** Wire onNavigate at the OUTER layout of the spike
 branch. Decide whether to animate based on:
+
 1. `document.startViewTransition` exists
 2. `prefers-reduced-motion: reduce` NOT set
 3. The destination URL doesn't contain `?notr=1` (escape hatch for testing)
@@ -55,6 +56,7 @@ yarn dev
 Open `http://localhost:5173/runes-test/nav-transitions/questions/q1`.
 
 **Protocol:**
+
 1. Click Q1 → Q2 → Q3. Watch for slide-down/fade title animation, hero
    cross-fade, body morph.
 2. Click `Q1 (no transitions)` then `Q2 (no transitions)` — observe instant
@@ -63,10 +65,11 @@ Open `http://localhost:5173/runes-test/nav-transitions/questions/q1`.
    the animated branch — should also be instant.
 
 To capture timings, paste this into devtools console:
+
 ```js
 window.__vtInvocations = [];
 const orig = document.startViewTransition.bind(document);
-document.startViewTransition = function(cb, ...rest) {
+document.startViewTransition = function (cb, ...rest) {
   const t = performance.now();
   window.__vtInvocations.push({ startedAt: t });
   const r = orig(cb, ...rest);
@@ -108,6 +111,7 @@ onNavigate((navigation) => {
 ```
 
 The key dance:
+
 1. `onNavigate` callback returns a Promise → SvelteKit waits before
    completing the nav
 2. Inside that Promise, call `startViewTransition` with an async callback
@@ -140,15 +144,15 @@ destination URL the user is navigating to.
 
 ### Iteration 4 — Captured timings
 
-| Navigation | startViewTransition calls | Duration (ms) | Notes |
-|---|---|---|---|
-| Index → Q1 (default) | 1 | 311.3 | Animated as expected |
-| Q1 → Q2 (default) | 1 | 316.1 | Animated |
-| Q2 → Q3 (default) | 1 | 305.6 | Animated |
-| Q1?notr=1 → Q2?notr=1 | 0 | — | Correctly skipped |
-| Q2?notr=1 → Q1?notr=1 | 0 | — | Correctly skipped |
-| Q1?notr=1 → Q2 (escape from notr) | 1 | 303.2 | Destination URL has no notr → animates ✓ |
-| Q2 → Q3 (after escape) | 1 | 300.6 | Animated normally |
+| Navigation                        | startViewTransition calls | Duration (ms) | Notes                                    |
+| --------------------------------- | ------------------------- | ------------- | ---------------------------------------- |
+| Index → Q1 (default)              | 1                         | 311.3         | Animated as expected                     |
+| Q1 → Q2 (default)                 | 1                         | 316.1         | Animated                                 |
+| Q2 → Q3 (default)                 | 1                         | 305.6         | Animated                                 |
+| Q1?notr=1 → Q2?notr=1             | 0                         | —             | Correctly skipped                        |
+| Q2?notr=1 → Q1?notr=1             | 0                         | —             | Correctly skipped                        |
+| Q1?notr=1 → Q2 (escape from notr) | 1                         | 303.2         | Destination URL has no notr → animates ✓ |
+| Q2 → Q3 (after escape)            | 1                         | 300.6         | Animated normally                        |
 
 Transition durations are tight to the 280ms CSS animation duration with
 a small constant overhead (~20–35ms) for browser snapshot capture and
@@ -157,6 +161,7 @@ SvelteKit DOM application.
 ### Iteration 5 — What got animated
 
 The per-element `view-transition-name` assignments:
+
 - `question-title` on the `<h1>` — slides down/up + fade
 - `question-hero` on the category banner — cross-fade
 - `question-body` on the body container — cross-fade

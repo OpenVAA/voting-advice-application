@@ -1,6 +1,6 @@
 ---
 name: matching
-description: "Domain expert for the @openvaa/matching package -- generic matching algorithms for Voting Advice Applications. Understands MatchingAlgorithm, MatchingSpace, distance metrics (Manhattan, Euclidean, directional), position mapping, subdimension handling for categorical questions, missing value imputation, and Match/SubMatch result objects. Activate when working in packages/matching/, implementing distance metrics, debugging match scores, reviewing matching changes, or understanding how voter-candidate matching works."
+description: 'Domain expert for the @openvaa/matching package -- generic matching algorithms for Voting Advice Applications. Understands MatchingAlgorithm, MatchingSpace, distance metrics (Manhattan, Euclidean, directional), position mapping, subdimension handling for categorical questions, missing value imputation, and Match/SubMatch result objects. Activate when working in packages/matching/, implementing distance metrics, debugging match scores, reviewing matching changes, or understanding how voter-candidate matching works.'
 targets:
   - packages/matching/src/
 ---
@@ -32,9 +32,9 @@ walkthrough.
    - `kernel(a, b)` computes per-coordinate distance
    - `sum(values)` aggregates dimension distances
    - `subdimWeight(n)` provides weight factor for subdimensions
-   Manhattan uses `absoluteKernel`/`basicSum`/`basicDivision`. Euclidean uses
-   `absoluteKernel`/`euclideanSum`/`1/sqrt(n)`. Directional uses
-   `directionalKernel`/`basicSum`/`basicDivision`. New metrics MUST follow this decomposition.
+     Manhattan uses `absoluteKernel`/`basicSum`/`basicDivision`. Euclidean uses
+     `absoluteKernel`/`euclideanSum`/`1/sqrt(n)`. Directional uses
+     `directionalKernel`/`basicSum`/`basicDivision`. New metrics MUST follow this decomposition.
 
 3. **COORDINATE range**: All normalized coordinates use the range `[-0.5, 0.5]` defined by
    `COORDINATE.Min` and `COORDINATE.Max` in `@openvaa/core`. `COORDINATE.Neutral` is `0`.
@@ -67,6 +67,7 @@ walkthrough.
 ## Mathematical Nuances
 
 **CategoricalQuestion multi-dimensional model:**
+
 - N>2 choices create N subdimensions. Selected choice gets `COORDINATE.Max` (+0.5), all others get
   `COORDINATE.Min` (-0.5). Binary (N=2) uses a single dimension.
 - Geometric intuition: each choice is an axis; selecting one means being at the positive extreme on
@@ -79,11 +80,13 @@ walkthrough.
   post-computation normalization uses max possible distance.
 
 **Directional distance:**
+
 - Formula: `0.5 * Extent - (2 * (a - Neutral) * (b - Neutral)) / Extent` (Mendez 2017, p. 51).
 - Treats neutral as "uncertain": two identical neutral answers yield 50% agreement, NOT 100%. Use
   Manhattan for standard matching; Directional only when "uncertain neutral" semantics are desired.
 
 **Score conversion:**
+
 - `distance` in `[0, COORDINATE.Extent]` where 0 = perfect match, 1 = worst match
 - `matchFraction = (COORDINATE.Extent - distance) / COORDINATE.Extent` where 0 = worst, 1 = best
 - `score = Math.round(matchFraction * MatchBase.multiplier)` where 0 = worst, 100 = best (default

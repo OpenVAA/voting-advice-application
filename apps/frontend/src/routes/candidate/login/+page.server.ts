@@ -36,9 +36,7 @@ export const actions = {
     // Check user has candidate role via JWT claims
     const payload = JSON.parse(atob(session.access_token.split('.')[1]));
     const userRoles: Array<{ role: string }> = payload.user_roles ?? [];
-    const isCandidateOrParty = userRoles.some(
-      (r) => r.role === 'candidate' || r.role === 'party'
-    );
+    const isCandidateOrParty = userRoles.some((r) => r.role === 'candidate' || r.role === 'party');
 
     if (!isCandidateOrParty) {
       await locals.supabase.auth.signOut({ scope: 'local' });

@@ -2,7 +2,7 @@
 spike: 006
 name: layout-overlay-rune
 type: standard
-validates: "Given a token-keyed overlay registry replacing StackedState + getLayoutContext(onDestroy) index plumbing, when nested mock routes mount and unmount in arbitrary order — including the canonical breaks-with-index-revert case (parent unmounts while child still live) — then (a) the effective merged settings reflect the live set of mounted overlays, (b) `$effect`-scoped auto-cleanup eliminates the onDestroy plumbing burden, (c) the producer effect does not loop infinitely (the same trap surfaced in Spike 002), (d) zero `svelte/store` imports remain"
+validates: 'Given a token-keyed overlay registry replacing StackedState + getLayoutContext(onDestroy) index plumbing, when nested mock routes mount and unmount in arbitrary order — including the canonical breaks-with-index-revert case (parent unmounts while child still live) — then (a) the effective merged settings reflect the live set of mounted overlays, (b) `$effect`-scoped auto-cleanup eliminates the onDestroy plumbing burden, (c) the producer effect does not loop infinitely (the same trap surfaced in Spike 002), (d) zero `svelte/store` imports remain'
 verdict: VALIDATED
 related: [002]
 tags: [svelte5, runes, layout, stackedstate, untrack, migration]
@@ -46,7 +46,7 @@ The naïve implementation of `push()`:
 
 ```ts
 function push(overlay) {
-  slots = [...slots, { id, overlay }];  // reads slots AND writes slots
+  slots = [...slots, { id, overlay }]; // reads slots AND writes slots
 }
 ```
 
@@ -124,8 +124,7 @@ yarn db:start
   toggled, Svelte $state variables for routeB/routeC stayed `false`. Diagnosed
   via console.log scan: `Svelte error: effect_update_depth_exceeded` —
   same trap as Spike 002. Root cause: `push()` body did
-  `slots = [...slots, { ... }]` — a read-and-write of the same `$state`
-  inside an `$effect`. This not only loops within the failing component
+  `slots = [...slots, { ... }]` — a read-and-write of the same `$state`inside an`$effect`. This not only loops within the failing component
   but also breaks the global effect scheduler, blocking subsequent
   components' `$effect`s from firing.
 - **2026-05-22 fix** — Wrap the read-side of the cycle in `untrack()`, same
@@ -140,14 +139,14 @@ yarn db:start
 
 **Verdict:** VALIDATED ✓
 
-| Test                                        | Expected                                              | Actual | Pass |
-|---------------------------------------------|-------------------------------------------------------|--------|------|
-| None mounted                                | defaults, counts 0/0/0                                | ✓      | ✓    |
-| A only                                      | progress=fixed-bottom, drawer=bg-base-200             | ✓      | ✓    |
-| A+B+C                                       | progress=fixed-top, drawer=bg-base-300, all overlays  | ✓      | ✓    |
-| Unmount A while B+C live (robustness test)  | feedback→hide, other B+C overlays preserved           | ✓      | ✓    |
-| Unmount all                                 | back to defaults, all counts=0                        | ✓      | ✓    |
-| Console clean (no effect_update_depth_exc.) | no errors after untrack fix                           | ✓      | ✓    |
+| Test                                        | Expected                                             | Actual | Pass |
+| ------------------------------------------- | ---------------------------------------------------- | ------ | ---- |
+| None mounted                                | defaults, counts 0/0/0                               | ✓      | ✓    |
+| A only                                      | progress=fixed-bottom, drawer=bg-base-200            | ✓      | ✓    |
+| A+B+C                                       | progress=fixed-top, drawer=bg-base-300, all overlays | ✓      | ✓    |
+| Unmount A while B+C live (robustness test)  | feedback→hide, other B+C overlays preserved          | ✓      | ✓    |
+| Unmount all                                 | back to defaults, all counts=0                       | ✓      | ✓    |
+| Console clean (no effect_update_depth_exc.) | no errors after untrack fix                          | ✓      | ✓    |
 
 **Signal for the real migration:**
 

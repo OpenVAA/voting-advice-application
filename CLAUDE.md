@@ -319,6 +319,7 @@ latent-factor answer model overrides).
 OpenVAA's Svelte 5 contexts (`getCandidateContext()`, `getVoterContext()`, `getAppContext()`, plus generic `getContext()` consumers) expose two property classes that have **different reactivity semantics under destructuring**:
 
 1. **Stable references** — translation function `t`, route helper `getRoute` (still a `{ current }` handle), `darkMode`, `answers`, the `userData` object (whose internal `$state` getters are accessed by property), lifecycle functions (`logout`, `register`, `preregister`, `startEvent`, `*Countdown`). These can be safely destructured:
+
    ```ts
    const { t, getRoute } = getVoterContext();
    ```
@@ -412,4 +413,4 @@ When performing code review or developing new features, make sure to check all t
 - **Spike findings for voting-advice-application-gsd** — two domains:
   - Svelte 5 rune migration (spikes 001–012): reactive context shapes, `runeLocalStorage` helper, `untrack()` write-after-read invariant, token-keyed overlay registry, SSR-aware synchronous-init for appSettings, voterContext/candidateContext orchestration, destructure-trap reproduction, consumer-migration codemod, 4-wave migration order, HMR DX, `$derived.by` over per-field `page` reads for getRoute.
   - Page navigation + View Transitions + a11y (spikes 013–016): SvelteKit already reuses `+page.svelte` across param-only URL changes (production: 9/25 ≈ 36% element survival); the user-perceived "redraw" is reactive content-node regeneration, fixed via `onNavigate(navigation => Promise(startViewTransition))` with per-element `view-transition-name`; unified-layout-with-empty-leaf shape (matches results pattern) + `{#key question.type}` for variant remount; WCAG 2.1 AA gate via `afterNavigate(focus({preventScroll: true}))` + `aria-live="polite"` route announcer + reduced-motion belt-and-braces.
-  → `Skill("spike-findings-voting-advice-application-gsd")`
+    → `Skill("spike-findings-voting-advice-application-gsd")`

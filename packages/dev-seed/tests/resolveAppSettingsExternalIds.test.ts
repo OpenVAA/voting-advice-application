@@ -14,10 +14,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import {
-  resolveAppSettingsExternalIds,
-  settingsContainsExternalIdRefs
-} from '../src/resolveAppSettingsExternalIds';
+import { resolveAppSettingsExternalIds, settingsContainsExternalIdRefs } from '../src/resolveAppSettingsExternalIds';
 
 describe('resolveAppSettingsExternalIds', () => {
   it('passes plain string `question` entries through unchanged (legacy UUID branch)', () => {

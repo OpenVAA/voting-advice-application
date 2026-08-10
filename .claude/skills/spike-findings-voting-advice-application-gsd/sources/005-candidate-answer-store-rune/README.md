@@ -77,13 +77,14 @@ yarn db:start
 
 Browser verification on 2026-05-21:
 
-| Step | Composite `current.answers`                                          | hasUnsaved | unsavedIds            |
-|------|----------------------------------------------------------------------|-----------|------------------------|
-| init | `{q-mock-1: pre-saved A, q-mock-2: 42}`                              | false     | `[]`                   |
-| edit q-mock-1 | `{q-mock-1: EDITED override, q-mock-2: 42}`                 | true      | `["q-mock-1"]`         |
-| add q-mock-3  | `{q-mock-1: EDITED override, q-mock-2: 42, q-mock-3: new}`  | true      | `["q-mock-1","q-mock-3"]` |
+| Step          | Composite `current.answers`                                | hasUnsaved | unsavedIds                |
+| ------------- | ---------------------------------------------------------- | ---------- | ------------------------- |
+| init          | `{q-mock-1: pre-saved A, q-mock-2: 42}`                    | false      | `[]`                      |
+| edit q-mock-1 | `{q-mock-1: EDITED override, q-mock-2: 42}`                | true       | `["q-mock-1"]`            |
+| add q-mock-3  | `{q-mock-1: EDITED override, q-mock-2: 42, q-mock-3: new}` | true       | `["q-mock-1","q-mock-3"]` |
 
 localStorage payload after edits:
+
 ```json
 {
   "data": {
@@ -109,6 +110,7 @@ localStorage payload after edits:
 **Signal for the real migration:**
 
 - Mechanical diff to `candidateUserDataStore.svelte.ts`:
+
   ```diff
   - import { fromStore } from 'svelte/store';
   - import { localStorageWritable } from '../utils/persistedState.svelte';
@@ -124,6 +126,7 @@ localStorage payload after edits:
 
     // writes (3 sites): same .update / .set signatures, no changes needed
   ```
+
 - After Spikes 003 + 005 promote, `localStorageWritable` has zero production
   callers — that file (`persistedState.svelte.ts`) becomes deletable, and
   the `Writable<T>` + `toStore()` + `subscribe`-based persistence pattern is

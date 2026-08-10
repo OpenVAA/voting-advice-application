@@ -69,10 +69,7 @@ export function createCandidatePreviewPage(page: Page) {
       // the active tab's content (`info` is active by default). Opinion questions
       // are therefore absent from the DOM until the Opinions tab is activated.
       await c.getByRole('tab', { name: /opinions/i }).click();
-      const question = c
-        .getByTestId(testIds.voter.entityDetail.opinionQuestion)
-        .filter({ hasText: qName })
-        .first();
+      const question = c.getByTestId(testIds.voter.entityDetail.opinionQuestion).filter({ hasText: qName }).first();
       await expect(question).toBeVisible();
       const choices = question.getByTestId('question-choice');
       if (aNthChecked === null) {
@@ -93,9 +90,7 @@ export function createCandidatePreviewPage(page: Page) {
       // getByTestId/getByRole path to the parent. The chained getByTestId stays.
       // eslint-disable-next-line playwright/no-restricted-locators, playwright/no-raw-locators
       const choiceLabel = choice.locator('xpath=..');
-      await expect(
-        choiceLabel.getByTestId(testIds.voter.entityDetail.entitySelectedAnswer)
-      ).toHaveCount(1);
+      await expect(choiceLabel.getByTestId(testIds.voter.entityDetail.entitySelectedAnswer)).toHaveCount(1);
     },
 
     /**

@@ -1,4 +1,4 @@
-import { describe, expect,it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { getLocalized } from '../utils/getLocalized';
 
 describe('getLocalized', () => {

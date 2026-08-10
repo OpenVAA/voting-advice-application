@@ -25,14 +25,18 @@ Nothing to build. After [[persistent-rune-stores]] migrates production
 
 ```ts
 // voterContext (post-migration) — same as today, just no fromStore inside
-const answers = voterAnswerStore({ /* ... */ });
+const answers = voterAnswerStore({
+  /* ... */
+});
 
 const matchSelections = matchStore({
-  answers,                                          // now rune-native getter
+  answers, // now rune-native getter
   nominationsAndQuestions: () => nq.value,
   algorithm,
   minAnswers: () => 1,
-  calcSubmatches: () => [/* … */],
+  calcSubmatches: () => [
+    /* … */
+  ],
   parentMatchingMethod: () => 'best'
 });
 
@@ -61,8 +65,8 @@ the rune system tracks per-getter-call.
    trap as documented in CLAUDE.md — invokes the getter once, captures the
    empty initial value.
 
-3. **Don't pass `answers.answers` (the *value*) into `matchStore`.** Pass
-   `answers` (the *store object*); `matchStore` reads `.answers` per-evaluation
+3. **Don't pass `answers.answers` (the _value_) into `matchStore`.** Pass
+   `answers` (the _store object_); `matchStore` reads `.answers` per-evaluation
    inside its `$derived.by`. Passing the value snapshots it at call time and
    breaks reactivity.
 
@@ -85,6 +89,7 @@ the rune system tracks per-getter-call.
 
 Synthesized from spikes: 004
 Source files available in:
+
 - `sources/004-matchstore-integration/runes-test-page.svelte` — the integration
   callsite wiring production `matchStore` + `nominationAndQuestionStore` +
   spike-003 `voterAnswerRuneStore`. The matchStore call itself is unchanged from

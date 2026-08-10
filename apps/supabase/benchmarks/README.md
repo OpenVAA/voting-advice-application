@@ -79,12 +79,12 @@ benchmarks/
 
 ## Query Patterns Tested
 
-| Pattern | What it tests | Concurrency levels |
-|---------|--------------|-------------------|
-| **Voter bulk-read** | Load all candidates in a constituency with answers | 1, 100, 500 |
-| **Candidate write** | Update a single answer for one candidate | 1, 100 |
-| **Candidate full-save** | Save all 50 answers at once | 1 |
-| **Aggregation** | Count/average answers per question | 1 |
+| Pattern                 | What it tests                                      | Concurrency levels |
+| ----------------------- | -------------------------------------------------- | ------------------ |
+| **Voter bulk-read**     | Load all candidates in a constituency with answers | 1, 100, 500        |
+| **Candidate write**     | Update a single answer for one candidate           | 1, 100             |
+| **Candidate full-save** | Save all 50 answers at once                        | 1                  |
+| **Aggregation**         | Count/average answers per question                 | 1                  |
 
 ## Test Data
 

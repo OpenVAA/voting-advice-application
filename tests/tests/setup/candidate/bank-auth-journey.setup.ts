@@ -26,10 +26,7 @@
  */
 
 import { test as setup } from '@playwright/test';
-import {
-  BANK_AUTH_JOURNEY_EMAIL,
-  BANK_AUTH_JOURNEY_PLACEHOLDER_EMAIL
-} from '../../utils/bankAuthJourneyConstants';
+import { BANK_AUTH_JOURNEY_EMAIL, BANK_AUTH_JOURNEY_PLACEHOLDER_EMAIL } from '../../utils/bankAuthJourneyConstants';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { setupFromTemplate } from '../shared/setupFromTemplate';
 

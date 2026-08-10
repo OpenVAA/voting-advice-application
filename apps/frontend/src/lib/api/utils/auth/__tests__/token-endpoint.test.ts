@@ -17,7 +17,7 @@
  */
 
 import * as jose from 'jose';
-import { afterEach,beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { POST as TokenPostHandler } from '../../../../../routes/api/oidc/token/+server';
 
 // Use vi.hoisted at file level so both describe blocks can access the mock state

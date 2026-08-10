@@ -37,7 +37,7 @@ export class FeedbackGenerator {
   constructor(private ctx: Ctx) {}
 
   // Phase 56 ignores ctx here; kept on the signature for D-08 consistency.
-   
+
   defaults(ctx: Ctx): FeedbackFragment {
     return { count: 0 };
   }
@@ -52,7 +52,7 @@ export class FeedbackGenerator {
     for (const fx of fragment.fixed ?? []) {
       // Discard the external_id sentinel from Fragment<T>; feedback table has
       // no corresponding column. Postgres would reject it as an unknown field.
-       
+
       const { external_id, ...rest } = fx;
       rows.push({
         ...rest,

@@ -47,9 +47,7 @@ export interface CandidateAnswerRuneStore {
   reset: () => void;
 }
 
-export function candidateAnswerRuneStore(
-  opts: { storageKey?: string } = {}
-): CandidateAnswerRuneStore {
+export function candidateAnswerRuneStore(opts: { storageKey?: string } = {}): CandidateAnswerRuneStore {
   const key = opts.storageKey ?? 'runes-test-CandidateAnswerRuneStore-edited';
 
   let saved = $state<SavedCandidate | undefined>(undefined);

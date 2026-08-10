@@ -79,8 +79,7 @@ const FLATTENED_ACCESSORS = new Set(['appSettings', 'dataRoot', 'locale']);
 const args = process.argv.slice(2);
 const APPLY = args.includes('--apply');
 const filesArgIdx = args.indexOf('--files');
-const FILES_GLOB =
-  filesArgIdx >= 0 ? args[filesArgIdx + 1] : 'apps/frontend/src/**/*.svelte';
+const FILES_GLOB = filesArgIdx >= 0 ? args[filesArgIdx + 1] : 'apps/frontend/src/**/*.svelte';
 
 const REPO_ROOT = resolve(process.cwd());
 
@@ -91,10 +90,7 @@ const REPO_ROOT = resolve(process.cwd());
 // AND private-field reads (`this.#appSettings.current` — the producers'
 // `ReactiveHandle<AppSettings>` input contract, which is KEPT). `\b...\b` bounds the
 // handle + `current` tokens.
-const FLATTEN_RE = new RegExp(
-  `(?<![\\w$.#])\\b(${HANDLE_FLATTENS.join('|')})\\.current\\b`,
-  'g'
-);
+const FLATTEN_RE = new RegExp(`(?<![\\w$.#])\\b(${HANDLE_FLATTENS.join('|')})\\.current\\b`, 'g');
 
 function rewriteFile(filepath) {
   const original = readFileSync(filepath, 'utf-8');
@@ -210,9 +206,7 @@ for (const { filepath, hits, warnings } of fileResults) {
     console.log(`    L${h.line}  ${h.match}  →  ${h.replacement}`);
   }
   for (const w of warnings) {
-    console.log(
-      `    L${w.line}  ⚠ DESTRUCTURE TRAP (${w.contextCall}) — names: ${w.trappedNames.join(', ')}`
-    );
+    console.log(`    L${w.line}  ⚠ DESTRUCTURE TRAP (${w.contextCall}) — names: ${w.trappedNames.join(', ')}`);
   }
 }
 

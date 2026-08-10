@@ -38,17 +38,13 @@ describe('buildMinimal', () => {
     const opinions = (tpl.questions?.fixed ?? []).filter(
       (q) => (q as { type?: string }).type === 'singleChoiceOrdinal'
     );
-    const infos = (tpl.questions?.fixed ?? []).filter(
-      (q) => (q as { type?: string }).type === 'text'
-    );
+    const infos = (tpl.questions?.fixed ?? []).filter((q) => (q as { type?: string }).type === 'text');
     expect(opinions).toHaveLength(1);
     expect(infos).toHaveLength(0);
 
     // Default candidateAnswersDefault='all' — the candidate has an answer to
     // the 1 seeded opinion question.
-    const cand = tpl.candidates?.fixed?.[0] as
-      | { answersByExternalId?: Record<string, unknown> }
-      | undefined;
+    const cand = tpl.candidates?.fixed?.[0] as { answersByExternalId?: Record<string, unknown> } | undefined;
     expect(cand?.answersByExternalId).toBeDefined();
     expect(Object.keys(cand?.answersByExternalId ?? {})).toHaveLength(1);
   });
@@ -59,8 +55,10 @@ describe('buildMinimal', () => {
       settingsOverlay: { access: { answersLocked: true } }
     });
 
-    const settings = (tpl.app_settings?.fixed?.[0] as { settings?: Record<string, unknown> })
-      ?.settings as Record<string, Record<string, unknown>>;
+    const settings = (tpl.app_settings?.fixed?.[0] as { settings?: Record<string, unknown> })?.settings as Record<
+      string,
+      Record<string, unknown>
+    >;
     expect(settings.access.answersLocked).toBe(true);
     // Base access flags preserved (deep merge, not shallow):
     expect(settings.access.candidateApp).toBe(true);
@@ -170,10 +168,7 @@ describe('buildMinimal', () => {
   });
 
   it('defaultAnswerForQuestion: number with custom_data min/max returns the numeric midpoint (D-16)', () => {
-    const entry = defaultAnswerForQuestion(
-      { type: 'number', custom_data: { min: 0, max: 10 } },
-      'e2e-num-qu-number-1'
-    );
+    const entry = defaultAnswerForQuestion({ type: 'number', custom_data: { min: 0, max: 10 } }, 'e2e-num-qu-number-1');
     // Numeric midpoint (0..10 → 5), JSON number not string.
     expect(entry.value).toBe(5);
     expect(typeof entry.value).toBe('number');
@@ -189,12 +184,7 @@ describe('buildMinimal', () => {
     const entry = defaultAnswerForQuestion(
       {
         type: 'multipleChoiceCategorical',
-        choices: [
-          { id: 'a' },
-          { id: 'b' },
-          { id: 'c' },
-          { id: 'd' }
-        ],
+        choices: [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }],
         custom_data: { minSelections: 2, maxSelections: 3 }
       },
       'e2e-mc-qu-multichoice-1'

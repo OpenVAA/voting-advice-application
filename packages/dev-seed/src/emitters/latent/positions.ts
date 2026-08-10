@@ -49,12 +49,7 @@ import type { Centroids, LatentHooks } from './latentTypes';
  *   faker draws are consumed (D-57-11 delegation via `boxMuller`).
  * @param ctx pipeline context — RNG source for the Gaussian draws.
  */
-export function defaultPositions(
-  partyIdx: number,
-  centroids: Centroids,
-  spread: number,
-  ctx: Ctx
-): Array<number> {
+export function defaultPositions(partyIdx: number, centroids: Centroids, spread: number, ctx: Ctx): Array<number> {
   if (partyIdx < 0 || partyIdx >= centroids.length) {
     throw new Error(`defaultPositions: partyIdx ${partyIdx} out of range [0, ${centroids.length})`);
   }

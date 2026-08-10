@@ -37,8 +37,7 @@ export interface AppSettingsVariantA {
 }
 
 export function getAppSettingsVariantA(): AppSettingsVariantA {
-  if (!hasContext(CONTEXT_KEY))
-    error(500, 'getAppSettingsVariantA() called before init');
+  if (!hasContext(CONTEXT_KEY)) error(500, 'getAppSettingsVariantA() called before init');
   return getContext<AppSettingsVariantA>(CONTEXT_KEY);
 }
 

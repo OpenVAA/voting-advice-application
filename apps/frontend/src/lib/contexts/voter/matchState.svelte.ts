@@ -134,9 +134,7 @@ class MatchStateImpl {
 
         // If we used proxies, unwrap them
         electionMatches[entityType as EntityType] = (
-          proxies
-            ? matches.map((m) => unwrapProxiedMatch(m as Match<MatchingProxy<AnyNominationVariant>>))
-            : matches
+          proxies ? matches.map((m) => unwrapProxiedMatch(m as Match<MatchingProxy<AnyNominationVariant>>)) : matches
         ) as Array<MaybeWrappedEntityVariant>;
       }
       tree[electionId] = electionMatches;

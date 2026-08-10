@@ -58,21 +58,21 @@ Source: `core/objectTypes.ts` defines the `OBJECT_TYPE` const and `ObjectTypeMap
 
 All collections available on `DataRoot` (source: `root/dataRoot.ts`):
 
-| Collection Getter | Returns | Id Getter | Provision Method |
-|---|---|---|---|
-| `elections` | `Election[]` | `getElection(id)` | `provideElectionData()` |
-| `constituencyGroups` | `ConstituencyGroup[]` | `getConstituencyGroup(id)` | `provideConstituencyData()` |
-| `constituencies` | `Constituency[]` | `getConstituency(id)` | `provideConstituencyData()` |
-| `questionCategories` | `QuestionCategory[]` | `getQuestionCategory(id)` | `provideQuestionData()` |
-| `questions` | `AnyQuestionVariant[]` | `getQuestion(id)` | `provideQuestionData()` |
-| `candidates` | `Candidate[]` | `getCandidate(id)` | `provideEntityData()` |
-| `organizations` | `Organization[]` | `getOrganization(id)` | `provideEntityData()` |
-| `factions` | `Faction[]` | `getFaction(id)` | `provideEntityData()` |
-| `alliances` | `Alliance[]` | `getAlliance(id)` | `provideEntityData()` |
-| `candidateNominations` | `CandidateNomination[]` | `getCandidateNomination(id)` | `provideNominationData()` |
-| `organizationNominations` | `OrganizationNomination[]` | `getOrganizationNomination(id)` | `provideNominationData()` |
-| `factionNominations` | `FactionNomination[]` | `getFactionNomination(id)` | `provideNominationData()` |
-| `allianceNominations` | `AllianceNomination[]` | `getAllianceNomination(id)` | `provideNominationData()` |
+| Collection Getter         | Returns                    | Id Getter                       | Provision Method            |
+| ------------------------- | -------------------------- | ------------------------------- | --------------------------- |
+| `elections`               | `Election[]`               | `getElection(id)`               | `provideElectionData()`     |
+| `constituencyGroups`      | `ConstituencyGroup[]`      | `getConstituencyGroup(id)`      | `provideConstituencyData()` |
+| `constituencies`          | `Constituency[]`           | `getConstituency(id)`           | `provideConstituencyData()` |
+| `questionCategories`      | `QuestionCategory[]`       | `getQuestionCategory(id)`       | `provideQuestionData()`     |
+| `questions`               | `AnyQuestionVariant[]`     | `getQuestion(id)`               | `provideQuestionData()`     |
+| `candidates`              | `Candidate[]`              | `getCandidate(id)`              | `provideEntityData()`       |
+| `organizations`           | `Organization[]`           | `getOrganization(id)`           | `provideEntityData()`       |
+| `factions`                | `Faction[]`                | `getFaction(id)`                | `provideEntityData()`       |
+| `alliances`               | `Alliance[]`               | `getAlliance(id)`               | `provideEntityData()`       |
+| `candidateNominations`    | `CandidateNomination[]`    | `getCandidateNomination(id)`    | `provideNominationData()`   |
+| `organizationNominations` | `OrganizationNomination[]` | `getOrganizationNomination(id)` | `provideNominationData()`   |
+| `factionNominations`      | `FactionNomination[]`      | `getFactionNomination(id)`      | `provideNominationData()`   |
+| `allianceNominations`     | `AllianceNomination[]`     | `getAllianceNomination(id)`     | `provideNominationData()`   |
 
 Additional cross-cutting getters:
 
@@ -86,12 +86,12 @@ Additional cross-cutting getters:
 
 Source: `objects/entities/base/entityTypes.ts`
 
-| ENTITY_TYPE | Value | Explicit/Implied |
-|---|---|---|
-| `Candidate` | `'candidate'` | Explicit -- requires separate EntityData |
-| `Organization` | `'organization'` | Explicit -- requires separate EntityData |
-| `Faction` | `'faction'` | Can be implied -- auto-created from NominationData if no entityId |
-| `Alliance` | `'alliance'` | Can be implied -- auto-created from NominationData if no entityId |
+| ENTITY_TYPE    | Value            | Explicit/Implied                                                  |
+| -------------- | ---------------- | ----------------------------------------------------------------- |
+| `Candidate`    | `'candidate'`    | Explicit -- requires separate EntityData                          |
+| `Organization` | `'organization'` | Explicit -- requires separate EntityData                          |
+| `Faction`      | `'faction'`      | Can be implied -- auto-created from NominationData if no entityId |
+| `Alliance`     | `'alliance'`     | Can be implied -- auto-created from NominationData if no entityId |
 
 Implied entities get deterministic IDs via `DataRoot.createId()`. They are constituency- and election-specific.
 
@@ -121,11 +121,11 @@ Source: `objects/questions/base/questionTypes.ts`
 
 Source: `objects/questions/category/questionCategoryTypes.ts`
 
-| QUESTION_CATEGORY_TYPE | Value | Purpose |
-|---|---|---|
-| `Opinion` | `'opinion'` | Opinion questions normally used for matching |
-| `Info` | `'info'` | Background/info questions not used for matching |
-| `Default` | `'default'` | Default type when category type is unspecified |
+| QUESTION_CATEGORY_TYPE | Value       | Purpose                                         |
+| ---------------------- | ----------- | ----------------------------------------------- |
+| `Opinion`              | `'opinion'` | Opinion questions normally used for matching    |
+| `Info`                 | `'info'`    | Background/info questions not used for matching |
+| `Default`              | `'default'` | Default type when category type is unspecified  |
 
 Category filtering uses `appliesTo(filters)` on `QuestionAndCategoryBase`, which checks election, constituency, entityType, and electionRound scoping. Questions inherit their category's filters unless `dontInherit: true`.
 

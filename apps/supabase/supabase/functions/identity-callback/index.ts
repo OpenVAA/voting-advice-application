@@ -58,10 +58,7 @@ async function decryptJweToken(jweToken: string): Promise<string> {
     throw new Error(`No matching decryption key found for kid=${header.kid}`);
   }
 
-  const { plaintext } = await jose.compactDecrypt(
-    jweToken,
-    await jose.importJWK(privateKey, header.alg || 'RSA-OAEP')
-  );
+  const { plaintext } = await jose.compactDecrypt(jweToken, await jose.importJWK(privateKey, header.alg || 'RSA-OAEP'));
 
   return new TextDecoder().decode(plaintext);
 }
@@ -78,11 +75,7 @@ async function verifyJwt(jwt: string): Promise<jose.JWTPayload> {
     verifyOptions.audience = clientId;
   }
 
-  const { payload } = await jose.jwtVerify(
-    jwt,
-    jose.createRemoteJWKSet(new URL(jwksUri)),
-    verifyOptions
-  );
+  const { payload } = await jose.jwtVerify(jwt, jose.createRemoteJWKSet(new URL(jwksUri)), verifyOptions);
 
   return payload;
 }
@@ -155,13 +148,10 @@ Deno.serve(async (req: Request) => {
     const providerType = Deno.env.get('IDENTITY_PROVIDER_TYPE') ?? 'signicat';
     const config = PROVIDER_CONFIGS[providerType];
     if (!config) {
-      return new Response(
-        JSON.stringify({ error: `Unknown identity provider type: ${providerType}` }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
+      return new Response(JSON.stringify({ error: `Unknown identity provider type: ${providerType}` }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
     // 1. Parse request body
@@ -236,10 +226,7 @@ Deno.serve(async (req: Request) => {
     const { firstName, lastName, matchValue: identityMatchValue, extraClaims: extractedClaims } = claimResult;
 
     // 5. Create admin Supabase client for user/candidate operations
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    );
+    const supabaseAdmin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
     // 6. Find or create auth user by identity_match_value
     let userId = await findUserByIdentityMatch(supabaseAdmin, identityMatchValue);

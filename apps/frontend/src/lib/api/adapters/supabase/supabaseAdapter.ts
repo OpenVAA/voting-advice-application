@@ -1,9 +1,9 @@
 import { createBrowserClient } from '@supabase/ssr';
-import { createClient  } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 import { browser } from '$app/environment';
 import { constants } from '$lib/utils/constants';
 import type { Database } from '@openvaa/supabase-types';
-import type {SupabaseClient} from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import type { UniversalAdapter } from '$lib/api/base/universalAdapter';
 import type { SupabaseAdapter, SupabaseAdapterConfig } from './supabaseAdapter.type';
 
@@ -17,9 +17,7 @@ type Constructor<TClass = UniversalAdapter> = abstract new (...args: Array<any>)
  * @param base - The base class to extend with the mixin.
  * @returns A class extending both the base and SupabaseAdapter.
  */
-export function supabaseAdapterMixin<TBase extends Constructor>(
-  base: TBase
-): Constructor<SupabaseAdapter> & TBase {
+export function supabaseAdapterMixin<TBase extends Constructor>(base: TBase): Constructor<SupabaseAdapter> & TBase {
   abstract class WithMixin extends base {
     #supabase: SupabaseClient<Database> | undefined;
     #locale = '';
@@ -41,11 +39,9 @@ export function supabaseAdapterMixin<TBase extends Constructor>(
       } else {
         // On the server (universal load functions without serverClient),
         // use plain createClient. The fetch from SvelteKit includes cookies.
-        this.#supabase = createClient<Database>(
-          constants.PUBLIC_SUPABASE_URL,
-          constants.PUBLIC_SUPABASE_ANON_KEY,
-          { global: { fetch: config.fetch! } }
-        );
+        this.#supabase = createClient<Database>(constants.PUBLIC_SUPABASE_URL, constants.PUBLIC_SUPABASE_ANON_KEY, {
+          global: { fetch: config.fetch! }
+        });
       }
       if (config.locale) this.#locale = config.locale;
       if (config.defaultLocale) this.#defaultLocale = config.defaultLocale;

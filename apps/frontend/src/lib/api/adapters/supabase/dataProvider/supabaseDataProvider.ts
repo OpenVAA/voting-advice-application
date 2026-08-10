@@ -523,7 +523,8 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
       const filterElectionId = Array.isArray(options.electionId) ? options.electionId : [options.electionId];
       categories = categories.filter((cat) => {
         // reason: electionIds is a runtime-only field tacked on by toDataObject; not yet in QuestionCategoryData
-        const catElectionIds = (cat as QuestionCategoryData & { electionIds?: Array<string> | null }).electionIds ?? null;
+        const catElectionIds =
+          (cat as QuestionCategoryData & { electionIds?: Array<string> | null }).electionIds ?? null;
         // Include categories with no electionIds (applicable to all) or matching
         return (
           !catElectionIds ||

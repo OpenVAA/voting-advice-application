@@ -832,7 +832,8 @@ If not provided, the `video` element will be hidden until these properties are p
         aria-valuenow={Math.round(currentTime)}
         aria-label={t('components.video.progessbarLabel')}
         style:--progress={`${!duration ? 0 : atEnd ? 100 : ((100 * currentTime) / duration).toFixed(2)}%`}
-        class="bg-primary relative h-2 w-[var(--progress)] overflow-hidden rounded-full"></div>
+        class="bg-primary relative h-2 w-[var(--progress)] overflow-hidden rounded-full">
+      </div>
     </div>
 
     <!-- Loading spinner -->

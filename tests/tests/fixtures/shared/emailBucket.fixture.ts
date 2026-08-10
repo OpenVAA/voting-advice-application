@@ -165,9 +165,7 @@ export function createEmailBucket(_page: Page, recipientEmail: string) {
           },
           {
             message: `Waiting for email ${
-              typeof subjectOrNth === 'number'
-                ? `at nth=${subjectOrNth}`
-                : `with subject matching ${subjectOrNth}`
+              typeof subjectOrNth === 'number' ? `at nth=${subjectOrNth}` : `with subject matching ${subjectOrNth}`
             } for ${recipientEmail}`,
             timeout: POLL_TIMEOUT,
             intervals: POLL_INTERVALS

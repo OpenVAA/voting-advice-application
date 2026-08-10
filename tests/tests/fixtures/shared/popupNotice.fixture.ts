@@ -84,7 +84,10 @@ export function createPopupNotice(page: Page): PopupNoticeFixture {
     // The Alert popup root carries its own close control. Click the close
     // button scoped INSIDE the popup root (getByRole is permitted by the
     // locator guard; raw .locator()/getByText() are not).
-    await popup.getByRole('button', { name: /close|dismiss|cancel/i }).first().click();
+    await popup
+      .getByRole('button', { name: /close|dismiss|cancel/i })
+      .first()
+      .click();
     await expect(popup).toBeHidden();
   }
 

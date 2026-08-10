@@ -144,14 +144,10 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     return { type: 'success' as const };
   }
 
-  protected async _checkRegistrationKey(
-    _opts: { registrationKey: string }
-  ): DWReturnType<CheckRegistrationData> {
+  protected async _checkRegistrationKey(_opts: { registrationKey: string }): DWReturnType<CheckRegistrationData> {
     // Supabase uses invite-based registration, not registration keys.
     // This method satisfies the abstract contract but is not used.
-    throw new Error(
-      'checkRegistrationKey is not supported by the Supabase adapter. Use invite-based registration.'
-    );
+    throw new Error('checkRegistrationKey is not supported by the Supabase adapter. Use invite-based registration.');
   }
 
   protected async _register({ password }: { password: string }) {
@@ -232,9 +228,7 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     if (loadNominations) {
       const { data: nomData, error: nomError } = await this.supabase
         .from('nominations')
-        .select(
-          'election_id, constituency_id, election_round, election_symbol, parent_nomination_id, entity_type, id'
-        )
+        .select('election_id, constituency_id, election_round, election_symbol, parent_nomination_id, entity_type, id')
         .eq('candidate_id', entityRow.id);
 
       if (nomError) throw new Error(`Failed to load nominations: ${nomError.message}`);
@@ -274,8 +268,7 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     answers,
     overwrite
   }: SetAnswersOptions & { overwrite: boolean }): DWReturnType<LocalizedAnswers> {
-    if (type !== ENTITY_TYPE.Candidate)
-      throw new Error(`Unsupported entity type for setting answers: ${type}`);
+    if (type !== ENTITY_TYPE.Candidate) throw new Error(`Unsupported entity type for setting answers: ${type}`);
 
     // Process answers: detect File objects and upload to Storage
     const processedAnswers: Record<string, unknown> = {};
@@ -388,10 +381,7 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
   // implementations satisfy the abstract contract on UniversalDataWriter.
   ////////////////////////////////////////////////////////////////////
 
-  protected async _updateQuestion({
-    id,
-    data: { customData }
-  }: SetQuestionOptions): DWReturnType<DataApiActionResult> {
+  protected async _updateQuestion({ id, data: { customData } }: SetQuestionOptions): DWReturnType<DataApiActionResult> {
     if (!customData || typeof customData !== 'object')
       throw new Error(`Expected a customData object but got type: ${typeof customData}`);
 

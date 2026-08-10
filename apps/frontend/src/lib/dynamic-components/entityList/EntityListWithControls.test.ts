@@ -49,9 +49,7 @@ class FakeSearchFilter {
   apply<TVal>(targets: Array<TVal>): Array<TVal> {
     this.applySpy(targets);
     if (!this.rule) return [...targets];
-    return targets.filter((t) =>
-      String((t as unknown as { name?: string }).name ?? '').includes(this.rule)
-    );
+    return targets.filter((t) => String((t as unknown as { name?: string }).name ?? '').includes(this.rule));
   }
 }
 

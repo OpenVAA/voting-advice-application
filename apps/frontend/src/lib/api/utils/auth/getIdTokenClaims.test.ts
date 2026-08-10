@@ -9,7 +9,7 @@
  */
 
 import * as jose from 'jose';
-import { beforeAll,describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { getIdTokenClaims } from './getIdTokenClaims';
 import type * as JoseType from 'jose';
 

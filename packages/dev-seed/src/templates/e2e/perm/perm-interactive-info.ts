@@ -245,7 +245,10 @@ export const permInteractiveInfoTemplate: Template = {
         category: { external_id: `${P}qc-opin` },
         custom_data: {
           infoSections: [
-            { title: '[QU-BOOLEAN-INFOSEC] Boolean background', content: '<p>[QU-BOOLEAN-INFOSEC-BODY] Boolean info.</p>' }
+            {
+              title: '[QU-BOOLEAN-INFOSEC] Boolean background',
+              content: '<p>[QU-BOOLEAN-INFOSEC-BODY] Boolean info.</p>'
+            }
           ],
           arguments: BOOLEAN_ARGUMENTS
         },

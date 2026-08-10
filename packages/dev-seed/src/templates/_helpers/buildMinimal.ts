@@ -130,15 +130,10 @@ function deepMerge<TRow extends Record<string, unknown>>(
     const overlayVal = overlay[key];
     if (overlayVal === undefined) continue; // Strip undefined for JSONB safety.
     const baseVal = out[key];
-    const overlayIsPlainObj =
-      overlayVal != null && typeof overlayVal === 'object' && !Array.isArray(overlayVal);
-    const baseIsPlainObj =
-      baseVal != null && typeof baseVal === 'object' && !Array.isArray(baseVal);
+    const overlayIsPlainObj = overlayVal != null && typeof overlayVal === 'object' && !Array.isArray(overlayVal);
+    const baseIsPlainObj = baseVal != null && typeof baseVal === 'object' && !Array.isArray(baseVal);
     if (overlayIsPlainObj && baseIsPlainObj) {
-      out[key] = deepMerge(
-        baseVal as Record<string, unknown>,
-        overlayVal as Record<string, unknown>
-      );
+      out[key] = deepMerge(baseVal as Record<string, unknown>, overlayVal as Record<string, unknown>);
     } else {
       out[key] = overlayVal;
     }
@@ -175,8 +170,10 @@ export function defaultAnswerForQuestion(question: Record<string, unknown>, full
     // number. Return the midpoint of the question's min/max (read from
     // custom_data, falling back to top-level min/max), else 0. Never a string.
     const cd = (question.custom_data ?? {}) as Record<string, unknown>;
-    const min = typeof cd.min === 'number' ? cd.min : typeof question.min === 'number' ? (question.min as number) : undefined;
-    const max = typeof cd.max === 'number' ? cd.max : typeof question.max === 'number' ? (question.max as number) : undefined;
+    const min =
+      typeof cd.min === 'number' ? cd.min : typeof question.min === 'number' ? (question.min as number) : undefined;
+    const max =
+      typeof cd.max === 'number' ? cd.max : typeof question.max === 'number' ? (question.max as number) : undefined;
     if (min !== undefined && max !== undefined) {
       return { value: Math.round((min + max) / 2) };
     }

@@ -2,7 +2,7 @@
 spike: 007
 name: context-orchestration-end-to-end
 type: standard
-validates: "Given a rune-native voterContext factory exposing reactive accessors (selectedElections, opinionQuestions, matchesCount, profileComplete) as getters, when consumers either (a) read via ctx.X / $derived(ctx.X) or (b) destructure via const { X } = ctx, then (a) reactive accessors update on every dependency change AND propagate through the appContext → dataContext → voterContext cascade, (b) destructure-on-init consumers visibly fail (capturing init-time values, never updating) — proving the destructure trap reproduces in the rune-native version in the same shape as production, so the codemod can mechanically find it"
+validates: 'Given a rune-native voterContext factory exposing reactive accessors (selectedElections, opinionQuestions, matchesCount, profileComplete) as getters, when consumers either (a) read via ctx.X / $derived(ctx.X) or (b) destructure via const { X } = ctx, then (a) reactive accessors update on every dependency change AND propagate through the appContext → dataContext → voterContext cascade, (b) destructure-on-init consumers visibly fail (capturing init-time values, never updating) — proving the destructure trap reproduces in the rune-native version in the same shape as production, so the codemod can mechanically find it'
 verdict: VALIDATED
 related: [001, 002, 003, 004]
 tags: [svelte5, runes, context, voter, candidate, orchestration, destructure-trap]
@@ -76,13 +76,13 @@ yarn db:start
 
 Visible divergence in 4 independent reactive accessors after step 3:
 
-| Accessor                    | Canonical | Trap | Verdict |
-|-----------------------------|-----------|------|---------|
-| selectedElections.length    | 1         | 0    | trap stale ✓ |
-| opinionQuestions.length     | 18        | 0    | trap stale ✓ |
-| matchesCount                | 327       | 0    | trap stale ✓ |
-| profileComplete             | true      | false| trap stale ✓ |
-| template direct (ctx.X)     | 1         | n/a  | live ✓ |
+| Accessor                 | Canonical | Trap  | Verdict      |
+| ------------------------ | --------- | ----- | ------------ |
+| selectedElections.length | 1         | 0     | trap stale ✓ |
+| opinionQuestions.length  | 18        | 0     | trap stale ✓ |
+| matchesCount             | 327       | 0     | trap stale ✓ |
+| profileComplete          | true      | false | trap stale ✓ |
+| template direct (ctx.X)  | 1         | n/a   | live ✓       |
 
 ## Investigation Trail
 
@@ -108,13 +108,13 @@ Visible divergence in 4 independent reactive accessors after step 3:
 against the seeded default template (327 candidates / 1 election / 24
 questions):**
 
-| Step | Canonical state                                                           | Trap state               |
-|------|---------------------------------------------------------------------------|--------------------------|
-| init | 0/0/0/false                                                               | 0/0/0/false              |
-| load | 0/0/0/false (no selection yet)                                            | 0/0/0/false              |
-| select first election | **1/18/0/false** (opinionQuestions and selectedElections live) | 0/0/0/false (stale)      |
-| set 3 demo answers | **1/18/327/true** (full cascade — matchesCount + profileComplete propagate via voterAnswers → matchesCount $derived) | 0/0/0/false (still stale) |
-| deselect + clear | 0/0/0/false (canonical reverts) | 0/0/0/false (always stale) |
+| Step                  | Canonical state                                                                                                      | Trap state                 |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| init                  | 0/0/0/false                                                                                                          | 0/0/0/false                |
+| load                  | 0/0/0/false (no selection yet)                                                                                       | 0/0/0/false                |
+| select first election | **1/18/0/false** (opinionQuestions and selectedElections live)                                                       | 0/0/0/false (stale)        |
+| set 3 demo answers    | **1/18/327/true** (full cascade — matchesCount + profileComplete propagate via voterAnswers → matchesCount $derived) | 0/0/0/false (still stale)  |
+| deselect + clear      | 0/0/0/false (canonical reverts)                                                                                      | 0/0/0/false (always stale) |
 
 **Key findings:**
 

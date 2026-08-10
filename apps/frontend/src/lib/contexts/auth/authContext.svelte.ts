@@ -82,9 +82,7 @@ export class AuthContextProvider implements AuthContext {
     return dw.requestForgotPasswordEmail(...args);
   };
 
-  resetPassword = async (
-    ...args: Parameters<DataWriter['resetPassword']>
-  ): ReturnType<DataWriter['resetPassword']> => {
+  resetPassword = async (...args: Parameters<DataWriter['resetPassword']>): ReturnType<DataWriter['resetPassword']> => {
     const dw = await prepareDataWriter(dataWriter);
     return dw.resetPassword(...args);
   };

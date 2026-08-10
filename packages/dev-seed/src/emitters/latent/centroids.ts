@@ -95,9 +95,7 @@ export function defaultCentroids(
   const pool: Array<Array<number>> = Array.from({ length: poolSize }, () =>
     // Sample each dim from N(0, sqrt(eigenvalue[d])) so the eigenvalue structure
     // shows up in raw samples (dominant axis has the widest spread).
-    Array.from({ length: dims }, (_, d) =>
-      boxMuller(ctx.faker, 0, Math.sqrt(eigenvalues[d] ?? 0))
-    )
+    Array.from({ length: dims }, (_, d) => boxMuller(ctx.faker, 0, Math.sqrt(eigenvalues[d] ?? 0)))
   );
 
   const centroids: Array<Array<number> | undefined> = new Array(N);

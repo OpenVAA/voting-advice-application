@@ -2,7 +2,7 @@
 spike: 014b
 name: single-page-url-keyed
 type: comparison
-validates: "Given a single layout that owns ALL rendering with active question derived from page.params.questionId, when navigating Q→Q, then there is exactly ONE +page.svelte mount across the session; a {#key questionId} block can be opted into when surgical remount is desired."
+validates: 'Given a single layout that owns ALL rendering with active question derived from page.params.questionId, when navigating Q→Q, then there is exactly ONE +page.svelte mount across the session; a {#key questionId} block can be opted into when surgical remount is desired.'
 verdict: VALIDATED
 related: [013, 014a, 015]
 tags: [sveltekit, url-as-state, key-block, comparison]
@@ -42,11 +42,11 @@ This spike replicates the production pattern in the question domain and
 toggles the `{#key}` block via `?nokey=1` to enable head-to-head
 observation.
 
-| Approach | Pattern | When it wins | When it loses |
-|---|---|---|---|
-| **A. Reactive update (no key)** | Same component instance; props change drive Svelte's diff | Identical question shape (e.g. Likert→Likert); want state preservation across nav | Different question variant requires different component (open-text vs Likert) |
-| **B. `{#key questionId}` force-remount** | Component destroys + remounts on every Q | Different question types per Q; need clean teardown of subscriptions, effects, focus rings | DOM churn cost is real (mirrors what Spike 013 captured for production's KeyedEntityList) |
-| **C. Hybrid — key only on the variant-dependent leaf** | `{#key question.type}` (not `question.id`) — keys only when question TYPE changes, not on every Q | Voter app's reality (most Q→Q is Likert→Likert) — minimum churn, maximum state preservation | Requires careful identification of which sub-component truly needs the key |
+| Approach                                               | Pattern                                                                                           | When it wins                                                                                | When it loses                                                                             |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| **A. Reactive update (no key)**                        | Same component instance; props change drive Svelte's diff                                         | Identical question shape (e.g. Likert→Likert); want state preservation across nav           | Different question variant requires different component (open-text vs Likert)             |
+| **B. `{#key questionId}` force-remount**               | Component destroys + remounts on every Q                                                          | Different question types per Q; need clean teardown of subscriptions, effects, focus rings  | DOM churn cost is real (mirrors what Spike 013 captured for production's KeyedEntityList) |
+| **C. Hybrid — key only on the variant-dependent leaf** | `{#key question.type}` (not `question.id`) — keys only when question TYPE changes, not on every Q | Voter app's reality (most Q→Q is Likert→Likert) — minimum churn, maximum state preservation | Requires careful identification of which sub-component truly needs the key                |
 
 **Chosen approach:** Build both A and B in the spike with a runtime toggle
 (`?nokey=1`), capture the head-to-head behavior, and recommend **C** for
@@ -73,11 +73,13 @@ Compare with spikes 013 (production-mirror) and 014a (layout-hoisted).
 ## What to Expect
 
 **KEY mode (default):**
+
 - 1 destroy event per Q→Q hop (KeyedQuestionBody destroys)
 - Scratchpad clears on every nav
 - DOM `data-mount-id` for the body changes
 
 **NO-KEY mode (`?nokey=1`):**
+
 - 0 events
 - Scratchpad PERSISTS across multiple navigations
 - DOM `data-mount-id` for the body stays constant
@@ -128,15 +130,15 @@ component reactively updated its visible content (`questionId` text and
 
 ### Iteration 4 — Head-to-head with 014a
 
-| Property | 014a (page-with-body) | 014b NO-KEY | 014b KEY |
-|---|---|---|---|
-| Layout-owned chrome | yes | yes | yes |
-| `+page.svelte` mount cycles | 0 (per Svelte-Kit reuse) | 0 (empty stub) | 0 |
-| `QuestionBody`-equivalent mount cycles | 0 | 0 | 1 per Q→Q hop |
-| Local `$state` in body | persists | persists | resets per Q |
-| DOM `data-mount-id` for body | stable | stable | changes per Q |
-| Suitable for | mixed question types (since SvelteKit's same-component reuse already happens) | same question type across all Q (no input swap) | mixed question types (Likert vs text vs slider) |
-| Code complexity | medium (snippets across layout boundary) | low (single layout file) | low + 1 line |
+| Property                               | 014a (page-with-body)                                                         | 014b NO-KEY                                     | 014b KEY                                        |
+| -------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------- |
+| Layout-owned chrome                    | yes                                                                           | yes                                             | yes                                             |
+| `+page.svelte` mount cycles            | 0 (per Svelte-Kit reuse)                                                      | 0 (empty stub)                                  | 0                                               |
+| `QuestionBody`-equivalent mount cycles | 0                                                                             | 0                                               | 1 per Q→Q hop                                   |
+| Local `$state` in body                 | persists                                                                      | persists                                        | resets per Q                                    |
+| DOM `data-mount-id` for body           | stable                                                                        | stable                                          | changes per Q                                   |
+| Suitable for                           | mixed question types (since SvelteKit's same-component reuse already happens) | same question type across all Q (no input swap) | mixed question types (Likert vs text vs slider) |
+| Code complexity                        | medium (snippets across layout boundary)                                      | low (single layout file)                        | low + 1 line                                    |
 
 Both achieve mount stability for the chrome. The DIFFERENCE between 014a
 and 014b NO-KEY is purely organizational. 014b KEY is the only variant
@@ -147,12 +149,14 @@ variant components, dirty subscriptions, etc.).
 ## Observed Ledger
 
 **KEY mode:**
+
 ```
 13:41:48.765  ▽ destroy  KeyedQuestionBody  90ab5820  ← Q1→Q2 destroy
 13:41:49.273  ▽ destroy  KeyedQuestionBody  59ffe5f0  ← Q2→Q3 destroy
 ```
 
 **NO-KEY mode:**
+
 ```
 (0 events; mountIds constant; scratchpad value preserved)
 ```

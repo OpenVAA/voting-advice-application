@@ -31,14 +31,12 @@ export interface AppSettingsRuneContext {
 }
 
 export function getAppSettingsRuneContext(): AppSettingsRuneContext {
-  if (!hasContext(CONTEXT_KEY))
-    error(500, 'getAppSettingsRuneContext() called before initAppSettingsRuneContext()');
+  if (!hasContext(CONTEXT_KEY)) error(500, 'getAppSettingsRuneContext() called before initAppSettingsRuneContext()');
   return getContext<AppSettingsRuneContext>(CONTEXT_KEY);
 }
 
 export function initAppSettingsRuneContext(): AppSettingsRuneContext {
-  if (hasContext(CONTEXT_KEY))
-    error(500, 'initAppSettingsRuneContext() called twice');
+  if (hasContext(CONTEXT_KEY)) error(500, 'initAppSettingsRuneContext() called twice');
 
   // Initial: static ∪ default-dynamic. Mirrors production line 74.
   let value = $state<AppSettings>(mergeAppSettings(staticSettings, dynamicSettings));

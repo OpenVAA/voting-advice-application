@@ -65,7 +65,9 @@ const isPrivate = /-----BEGIN (?:RSA |ENCRYPTED )?PRIVATE KEY-----/.test(pem);
 const isPublic = /-----BEGIN (?:RSA )?PUBLIC KEY-----/.test(pem);
 
 if (!isPrivate && !isPublic) {
-  process.stderr.write(`Could not detect a PEM header in ${values.in}. Expected BEGIN PRIVATE KEY or BEGIN PUBLIC KEY.\n`);
+  process.stderr.write(
+    `Could not detect a PEM header in ${values.in}. Expected BEGIN PRIVATE KEY or BEGIN PUBLIC KEY.\n`
+  );
   process.exit(1);
 }
 

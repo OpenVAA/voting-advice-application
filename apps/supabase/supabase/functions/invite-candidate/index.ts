@@ -1,4 +1,4 @@
-import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,13 +8,13 @@ const corsHeaders = {
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response('ok', {status: 200, headers: corsHeaders});
+    return new Response('ok', { status: 200, headers: corsHeaders });
   }
 
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({error: 'Method not allowed'}), {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
       status: 405,
-      headers: {...corsHeaders, 'Content-Type': 'application/json'}
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
 
@@ -26,12 +26,12 @@ Deno.serve(async (req) => {
     try {
       body = await req.json();
     } catch {
-      return new Response(
-        JSON.stringify({error: 'Invalid or missing request body'}),
-        {status: 400, headers: {...corsHeaders, 'Content-Type': 'application/json'}}
-      );
+      return new Response(JSON.stringify({ error: 'Invalid or missing request body' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
-    const {firstName, lastName, email, projectId, organizationId} = body as {
+    const { firstName, lastName, email, projectId, organizationId } = body as {
       firstName?: string;
       lastName?: string;
       email?: string;
@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
         JSON.stringify({
           error: 'Missing required fields: firstName, lastName, email, and projectId are required'
         }),
-        {status: 400, headers: {...corsHeaders, 'Content-Type': 'application/json'}}
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -53,36 +53,33 @@ Deno.serve(async (req) => {
     // -------------------------------------------------------------------------
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      return new Response(JSON.stringify({error: 'Missing Authorization header'}), {
+      return new Response(JSON.stringify({ error: 'Missing Authorization header' }), {
         status: 401,
-        headers: {...corsHeaders, 'Content-Type': 'application/json'}
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
     // First, verify the token is valid server-side via getUser()
-    const callerClient = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      {global: {headers: {Authorization: authHeader}}}
-    );
+    const callerClient = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
+      global: { headers: { Authorization: authHeader } }
+    });
 
     const {
-      data: {user: callerUser},
+      data: { user: callerUser },
       error: userError
     } = await callerClient.auth.getUser();
 
     if (userError || !callerUser) {
-      return new Response(JSON.stringify({error: 'Invalid or expired authentication token'}), {
+      return new Response(JSON.stringify({ error: 'Invalid or expired authentication token' }), {
         status: 401,
-        headers: {...corsHeaders, 'Content-Type': 'application/json'}
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
     // Decode JWT to check roles from claims (Custom Access Token Hook)
     const token = authHeader.replace('Bearer ', '');
     const payload = JSON.parse(atob(token.split('.')[1]));
-    const userRoles: Array<{role: string; scope_type: string; scope_id: string}> =
-      payload.user_roles || [];
+    const userRoles: Array<{ role: string; scope_type: string; scope_id: string }> = payload.user_roles || [];
 
     const isAdmin = userRoles.some(
       (r) =>
@@ -92,19 +89,16 @@ Deno.serve(async (req) => {
     );
 
     if (!isAdmin) {
-      return new Response(
-        JSON.stringify({error: 'Forbidden: caller does not have admin role for this project'}),
-        {status: 403, headers: {...corsHeaders, 'Content-Type': 'application/json'}}
-      );
+      return new Response(JSON.stringify({ error: 'Forbidden: caller does not have admin role for this project' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
     // -------------------------------------------------------------------------
     // 3. Create admin client (service_role)
     // -------------------------------------------------------------------------
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    );
+    const supabaseAdmin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
     // -------------------------------------------------------------------------
     // 4. Create candidate record
@@ -118,7 +112,7 @@ Deno.serve(async (req) => {
       candidateInsert.organization_id = organizationId;
     }
 
-    const {data: candidate, error: candidateError} = await supabaseAdmin
+    const { data: candidate, error: candidateError } = await supabaseAdmin
       .from('candidates')
       .insert(candidateInsert)
       .select()
@@ -126,8 +120,8 @@ Deno.serve(async (req) => {
 
     if (candidateError || !candidate) {
       return new Response(
-        JSON.stringify({error: 'Failed to create candidate record', details: candidateError?.message}),
-        {status: 500, headers: {...corsHeaders, 'Content-Type': 'application/json'}}
+        JSON.stringify({ error: 'Failed to create candidate record', details: candidateError?.message }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -137,28 +131,25 @@ Deno.serve(async (req) => {
     const siteUrl = Deno.env.get('SITE_URL') || Deno.env.get('SUPABASE_URL');
     const redirectTo = `${siteUrl}/candidate/complete-registration`;
 
-    const {data: inviteData, error: inviteError} = await supabaseAdmin.auth.admin.inviteUserByEmail(
-      email,
-      {
-        data: {candidate_id: candidate.id, project_id: projectId},
-        redirectTo
-      }
-    );
+    const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+      data: { candidate_id: candidate.id, project_id: projectId },
+      redirectTo
+    });
 
     if (inviteError || !inviteData?.user) {
       // Rollback: delete candidate record since invite failed
       await supabaseAdmin.from('candidates').delete().eq('id', candidate.id);
 
-      return new Response(
-        JSON.stringify({error: 'Failed to send invite email', details: inviteError?.message}),
-        {status: 500, headers: {...corsHeaders, 'Content-Type': 'application/json'}}
-      );
+      return new Response(JSON.stringify({ error: 'Failed to send invite email', details: inviteError?.message }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
     // -------------------------------------------------------------------------
     // 6. Create role assignment
     // -------------------------------------------------------------------------
-    const {error: roleError} = await supabaseAdmin.from('user_roles').insert({
+    const { error: roleError } = await supabaseAdmin.from('user_roles').insert({
       user_id: inviteData.user.id,
       role: 'candidate',
       scope_type: 'candidate',
@@ -174,9 +165,9 @@ Deno.serve(async (req) => {
     // -------------------------------------------------------------------------
     // 7. Link auth user to candidate record
     // -------------------------------------------------------------------------
-    const {error: linkError} = await supabaseAdmin
+    const { error: linkError } = await supabaseAdmin
       .from('candidates')
-      .update({auth_user_id: inviteData.user.id})
+      .update({ auth_user_id: inviteData.user.id })
       .eq('id', candidate.id);
 
     if (linkError) {
@@ -193,13 +184,13 @@ Deno.serve(async (req) => {
         candidateId: candidate.id,
         userId: inviteData.user.id
       }),
-      {status: 201, headers: {...corsHeaders, 'Content-Type': 'application/json'}}
+      { status: 201, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Internal server error';
-    return new Response(JSON.stringify({error: message}), {
+    return new Response(JSON.stringify({ error: message }), {
       status: 500,
-      headers: {...corsHeaders, 'Content-Type': 'application/json'}
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
 });

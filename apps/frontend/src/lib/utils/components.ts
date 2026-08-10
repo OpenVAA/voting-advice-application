@@ -41,9 +41,12 @@ export function concatClass<TProps extends Record<string, any>>(props: TProps, c
   if (normalized['class'] != null && typeof normalized['class'] !== 'string') {
     (normalized as Record<string, unknown>)['class'] = String(normalized['class']);
   }
-  return concatProps(normalized as TProps & { class?: string | null }, {
-    class: classes
-  } as Partial<StringProps<TProps & { class?: string | null }>>);
+  return concatProps(
+    normalized as TProps & { class?: string | null },
+    {
+      class: classes
+    } as Partial<StringProps<TProps & { class?: string | null }>>
+  );
 }
 
 /**

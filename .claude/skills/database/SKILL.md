@@ -1,6 +1,6 @@
 ---
 name: database
-description: "Domain expert for the OpenVAA Supabase backend: 17-table PostgreSQL schema with JSONB localization, 97 RLS policies across 5 role types (candidate through super_admin), JWT claims via Access Token Hook, 3 Edge Functions, bulk import/delete RPCs with external_id-based idempotent upsert, 204 pgTAP tests, and storage bucket configuration. Activate when working in apps/supabase/ or packages/supabase-types/, writing migrations, RLS policies, database functions, pgTAP tests, or understanding the Supabase auth and service layer."
+description: 'Domain expert for the OpenVAA Supabase backend: 17-table PostgreSQL schema with JSONB localization, 97 RLS policies across 5 role types (candidate through super_admin), JWT claims via Access Token Hook, 3 Edge Functions, bulk import/delete RPCs with external_id-based idempotent upsert, 204 pgTAP tests, and storage bucket configuration. Activate when working in apps/supabase/ or packages/supabase-types/, writing migrations, RLS policies, database functions, pgTAP tests, or understanding the Supabase auth and service layer.'
 targets:
   - apps/supabase/
   - packages/supabase-types/
@@ -201,7 +201,7 @@ All content tables reference `projects` via `project_id` FK with `ON DELETE CASC
    - Source: `apps/supabase/supabase/schema/014-storage.sql`.
 
 5. **Email variable resolution**: `resolve_email_variables(user_ids, template_body,
-   template_subject)` is SECURITY DEFINER (reads auth.users). For each user: looks up role via
+template_subject)` is SECURITY DEFINER (reads auth.users). For each user: looks up role via
    user_roles, resolves candidate fields (first_name, last_name, organization.name), nomination
    context (constituency.name, election.name). Returns user_id, email, preferred_locale,
    variables as flat JSONB. Source: `apps/supabase/supabase/schema/017-email-helpers.sql`.
@@ -226,7 +226,7 @@ All content tables reference `projects` via `project_id` FK with `ON DELETE CASC
      role, request.jwt.claims, request.jwt.claim.sub via `set_config()`.
 
 4. **User impersonation pattern**: Always call `set_test_user('authenticated',
-   test_user_id('admin_a'), test_user_roles('admin_a'))` before assertions, and `reset_role()`
+test_user_id('admin_a'), test_user_roles('admin_a'))` before assertions, and `reset_role()`
    after to switch back to postgres superuser for fixture operations.
 
 5. **3 assertion patterns**:
@@ -237,7 +237,7 @@ All content tables reference `projects` via `project_id` FK with `ON DELETE CASC
 
 6. **Transaction boundary**: Every test file starts with
    `BEGIN; SET search_path = public, extensions; DROP TABLE IF EXISTS __tcache__;
-   SELECT plan(N); SELECT create_test_data();` and ends with
+SELECT plan(N); SELECT create_test_data();` and ends with
    `SELECT * FROM finish(); ROLLBACK;`. The `__tcache__` drop resets pgTAP state from previous
    files.
 

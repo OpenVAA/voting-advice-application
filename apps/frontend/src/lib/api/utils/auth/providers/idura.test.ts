@@ -9,7 +9,7 @@
  */
 
 import * as jose from 'jose';
-import { afterEach,beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { iduraProvider } from './idura';
 
 // Use vi.hoisted to create shared state accessible from vi.mock factories.

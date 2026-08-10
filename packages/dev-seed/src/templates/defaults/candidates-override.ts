@@ -174,4 +174,3 @@ export function __buildLocaleFakerForTests(locale: LocaleCode, baseSeed = 42): F
   f.seed(baseSeed + LOCALE_SEED_OFFSETS[locale]);
   return f;
 }
-

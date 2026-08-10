@@ -14,12 +14,14 @@ export const SUPABASE_URL = __ENV.SUPABASE_URL || 'http://127.0.0.1:54321';
 export const SUPABASE_ANON_KEY = __ENV.SUPABASE_ANON_KEY || LOCAL_ANON_KEY;
 
 // Predictable UUID patterns matching generate-shared-data.sql
-export const PROJECT_IDS = Array.from({length: 5}, (_, i) =>
-  `00000000-0000-0000-0001-${String(i + 1).padStart(12, '0')}`
+export const PROJECT_IDS = Array.from(
+  { length: 5 },
+  (_, i) => `00000000-0000-0000-0001-${String(i + 1).padStart(12, '0')}`
 );
 
-export const CONSTITUENCY_IDS = Array.from({length: 50}, (_, i) =>
-  `00000000-0000-0000-0002-${String(i + 1).padStart(12, '0')}`
+export const CONSTITUENCY_IDS = Array.from(
+  { length: 50 },
+  (_, i) => `00000000-0000-0000-0002-${String(i + 1).padStart(12, '0')}`
 );
 
 // Map each project to its 10 constituencies

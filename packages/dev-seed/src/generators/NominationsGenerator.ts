@@ -87,7 +87,7 @@ export class NominationsGenerator {
 
   // Phase 56 ignores ctx here; Phase 58 templates drive counts via
   // `nominations: (fragment, ctx) => rows[]` overrides.
-   
+
   defaults(ctx: Ctx): NominationsFragment {
     // Default 0 — Phase 56 emits `fixed[]` or explicit count; Phase 58
     // templates drive richer counts.

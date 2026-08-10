@@ -1,4 +1,4 @@
-import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import nodemailer from 'npm:nodemailer@6.9.10';
 
 const corsHeaders = {
@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 interface SendEmailRequest {
-  templates: Record<string, {subject: string; body: string}>;
+  templates: Record<string, { subject: string; body: string }>;
   recipient_user_ids: string[];
   from?: string;
   dry_run?: boolean;
@@ -25,13 +25,13 @@ interface RecipientResult {
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response('ok', {status: 200, headers: corsHeaders});
+    return new Response('ok', { status: 200, headers: corsHeaders });
   }
 
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({error: 'Method not allowed'}), {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
       status: 405,
-      headers: {...corsHeaders, 'Content-Type': 'application/json'}
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
 
@@ -43,20 +43,20 @@ Deno.serve(async (req) => {
     try {
       body = await req.json();
     } catch {
-      return new Response(JSON.stringify({error: 'Invalid or missing request body'}), {
+      return new Response(JSON.stringify({ error: 'Invalid or missing request body' }), {
         status: 400,
-        headers: {...corsHeaders, 'Content-Type': 'application/json'}
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    const {templates, recipient_user_ids, from, dry_run} = body;
+    const { templates, recipient_user_ids, from, dry_run } = body;
 
     // Validate templates
     if (!templates || typeof templates !== 'object' || Object.keys(templates).length === 0) {
-      return new Response(
-        JSON.stringify({error: 'templates must be a non-empty object with locale keys'}),
-        {status: 400, headers: {...corsHeaders, 'Content-Type': 'application/json'}}
-      );
+      return new Response(JSON.stringify({ error: 'templates must be a non-empty object with locale keys' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
     for (const [locale, tmpl] of Object.entries(templates)) {
@@ -65,17 +65,17 @@ Deno.serve(async (req) => {
           JSON.stringify({
             error: `Template for locale "${locale}" must have "subject" and "body" strings`
           }),
-          {status: 400, headers: {...corsHeaders, 'Content-Type': 'application/json'}}
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
     }
 
     // Validate recipient_user_ids
     if (!Array.isArray(recipient_user_ids) || recipient_user_ids.length === 0) {
-      return new Response(
-        JSON.stringify({error: 'recipient_user_ids must be a non-empty array'}),
-        {status: 400, headers: {...corsHeaders, 'Content-Type': 'application/json'}}
-      );
+      return new Response(JSON.stringify({ error: 'recipient_user_ids must be a non-empty array' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
     // -------------------------------------------------------------------------
@@ -83,78 +83,68 @@ Deno.serve(async (req) => {
     // -------------------------------------------------------------------------
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      return new Response(JSON.stringify({error: 'Missing Authorization header'}), {
+      return new Response(JSON.stringify({ error: 'Missing Authorization header' }), {
         status: 401,
-        headers: {...corsHeaders, 'Content-Type': 'application/json'}
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
     // Verify the token is valid server-side via getUser()
-    const callerClient = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      {global: {headers: {Authorization: authHeader}}}
-    );
+    const callerClient = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
+      global: { headers: { Authorization: authHeader } }
+    });
 
     const {
-      data: {user: callerUser},
+      data: { user: callerUser },
       error: userError
     } = await callerClient.auth.getUser();
 
     if (userError || !callerUser) {
-      return new Response(JSON.stringify({error: 'Invalid or expired authentication token'}), {
+      return new Response(JSON.stringify({ error: 'Invalid or expired authentication token' }), {
         status: 401,
-        headers: {...corsHeaders, 'Content-Type': 'application/json'}
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
     // Decode JWT to check roles from claims (Custom Access Token Hook)
     const token = authHeader.replace('Bearer ', '');
     const payload = JSON.parse(atob(token.split('.')[1]));
-    const userRoles: Array<{role: string; scope_type: string; scope_id: string}> =
-      payload.user_roles || [];
+    const userRoles: Array<{ role: string; scope_type: string; scope_id: string }> = payload.user_roles || [];
 
     const isAdmin = userRoles.some(
-      (r) =>
-        r.role === 'super_admin' || r.role === 'account_admin' || r.role === 'project_admin'
+      (r) => r.role === 'super_admin' || r.role === 'account_admin' || r.role === 'project_admin'
     );
 
     if (!isAdmin) {
-      return new Response(
-        JSON.stringify({error: 'Forbidden: caller does not have admin role'}),
-        {status: 403, headers: {...corsHeaders, 'Content-Type': 'application/json'}}
-      );
+      return new Response(JSON.stringify({ error: 'Forbidden: caller does not have admin role' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
     // -------------------------------------------------------------------------
     // 3. Create admin client (service_role) and resolve template variables
     // -------------------------------------------------------------------------
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    );
+    const supabaseAdmin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
-    const {data: recipients, error: rpcError} = await supabaseAdmin.rpc(
-      'resolve_email_variables',
-      {
-        user_ids: recipient_user_ids,
-        template_body: '',
-        template_subject: ''
-      }
-    );
+    const { data: recipients, error: rpcError } = await supabaseAdmin.rpc('resolve_email_variables', {
+      user_ids: recipient_user_ids,
+      template_body: '',
+      template_subject: ''
+    });
 
     if (rpcError) {
       return new Response(
-        JSON.stringify({error: 'Failed to resolve template variables', details: rpcError.message}),
-        {status: 500, headers: {...corsHeaders, 'Content-Type': 'application/json'}}
+        JSON.stringify({ error: 'Failed to resolve template variables', details: rpcError.message }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     if (!recipients || recipients.length === 0) {
-      return new Response(
-        JSON.stringify({error: 'No valid recipients found for the provided user IDs'}),
-        {status: 400, headers: {...corsHeaders, 'Content-Type': 'application/json'}}
-      );
+      return new Response(JSON.stringify({ error: 'No valid recipients found for the provided user IDs' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
     // -------------------------------------------------------------------------
@@ -172,9 +162,7 @@ Deno.serve(async (req) => {
 
     for (const recipient of recipients) {
       // Select template matching recipient's preferred locale, fallback to first available
-      const locale = availableLocales.includes(recipient.preferred_locale)
-        ? recipient.preferred_locale
-        : defaultLocale;
+      const locale = availableLocales.includes(recipient.preferred_locale) ? recipient.preferred_locale : defaultLocale;
 
       const template = templates[locale];
       const vars: Record<string, string> = recipient.variables || {};
@@ -208,7 +196,7 @@ Deno.serve(async (req) => {
           dry_run: true,
           results: dryResults
         }),
-        {status: 200, headers: {...corsHeaders, 'Content-Type': 'application/json'}}
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -224,12 +212,12 @@ Deno.serve(async (req) => {
       host: smtpHost,
       port: smtpPort,
       secure: false,
-      tls: {rejectUnauthorized: false}
+      tls: { rejectUnauthorized: false }
     };
 
     // Add auth if credentials are provided (production SMTP)
     if (smtpUser && smtpPass) {
-      transportConfig.auth = {user: smtpUser, pass: smtpPass};
+      transportConfig.auth = { user: smtpUser, pass: smtpPass };
     }
 
     const transport = nodemailer.createTransport(transportConfig);
@@ -279,7 +267,7 @@ Deno.serve(async (req) => {
           dry_run: false,
           results
         }),
-        {status: 500, headers: {...corsHeaders, 'Content-Type': 'application/json'}}
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -291,13 +279,13 @@ Deno.serve(async (req) => {
         dry_run: false,
         results
       }),
-      {status: 200, headers: {...corsHeaders, 'Content-Type': 'application/json'}}
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Internal server error';
-    return new Response(JSON.stringify({error: message}), {
+    return new Response(JSON.stringify({ error: message }), {
       status: 500,
-      headers: {...corsHeaders, 'Content-Type': 'application/json'}
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
 });

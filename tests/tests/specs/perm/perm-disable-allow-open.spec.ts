@@ -40,10 +40,7 @@ import { minimalVoterResultsTest as test } from '../../fixtures/voter/minimalVot
 import { testIds } from '../../utils/testIds';
 import { TESTS_DIR } from '../../utils/testsDir';
 
-const STORAGE_STATE_PATH = path.join(
-  TESTS_DIR,
-  '../playwright/.auth/perm-disable-allow-open.json'
-);
+const STORAGE_STATE_PATH = path.join(TESTS_DIR, '../playwright/.auth/perm-disable-allow-open.json');
 
 test.describe('perm-disable-allow-open (candidate side — authenticated)', () => {
   test.use({ storageState: STORAGE_STATE_PATH });
@@ -69,41 +66,40 @@ test.describe('perm-disable-allow-open (candidate side — authenticated)', () =
 });
 
 test.describe('perm-disable-allow-open (voter side — unauthenticated)', () => {
-  test(
-    'voter detail drawer: Q1 info visible (entity-opinion-open-answer) AND Q2 info hidden',
-    async ({ minimalVoterResultsPage }) => {
-      // Click the only candidate card ([CA1A]) to open the detail drawer.
-      const card = minimalVoterResultsPage
-        .getByTestId(testIds.voter.results.card)
-        .filter({ hasText: /\[CA1A\]/ })
-        .first();
-      await expect(card).toBeVisible();
-      await card.click();
+  test('voter detail drawer: Q1 info visible (entity-opinion-open-answer) AND Q2 info hidden', async ({
+    minimalVoterResultsPage
+  }) => {
+    // Click the only candidate card ([CA1A]) to open the detail drawer.
+    const card = minimalVoterResultsPage
+      .getByTestId(testIds.voter.results.card)
+      .filter({ hasText: /\[CA1A\]/ })
+      .first();
+    await expect(card).toBeVisible();
+    await card.click();
 
-      // Detail drawer opens as a role=dialog. The open-answer surface lives on
-      // the OPINIONS tab (the drawer defaults to Basic Info), so switch tabs
-      // first — the standard entity-detail opinions-tab pattern. (The
-      // `voter-entity-detail` container testid does not exist in the source;
-      // the real scoped surface is `voter-entity-detail-opinions`.)
-      const dialog = minimalVoterResultsPage.getByRole('dialog');
-      await expect(dialog).toBeVisible();
-      await dialog.getByRole('tab', { name: /opinions/i }).click();
-      const detail = dialog.getByTestId(testIds.voter.entityDetail.opinionsTab);
-      await expect(detail).toBeVisible();
+    // Detail drawer opens as a role=dialog. The open-answer surface lives on
+    // the OPINIONS tab (the drawer defaults to Basic Info), so switch tabs
+    // first — the standard entity-detail opinions-tab pattern. (The
+    // `voter-entity-detail` container testid does not exist in the source;
+    // the real scoped surface is `voter-entity-detail-opinions`.)
+    const dialog = minimalVoterResultsPage.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole('tab', { name: /opinions/i }).click();
+    const detail = dialog.getByTestId(testIds.voter.entityDetail.opinionsTab);
+    await expect(detail).toBeVisible();
 
-      // Q1 info from cand-1 is rendered (allowOpen=true).
-      const openAnswers = detail.getByTestId(testIds.voter.entityDetail.opinionOpenAnswer);
-      await expect(openAnswers).toHaveCount(1);
-      await expect(openAnswers.first()).toContainText(/\[Q1 info from cand-1\]/);
+    // Q1 info from cand-1 is rendered (allowOpen=true).
+    const openAnswers = detail.getByTestId(testIds.voter.entityDetail.opinionOpenAnswer);
+    await expect(openAnswers).toHaveCount(1);
+    await expect(openAnswers.first()).toContainText(/\[Q1 info from cand-1\]/);
 
-      // Q2 info — verify the seeded `[Q2 info from cand-1]` marker is NOT
-      // present anywhere in the detail (the open-answer wrapper is suppressed
-      // by the EntityOpinions.svelte:78 `customData?.allowOpen !== false` gate).
-      await expect(
-        detail.getByTestId(testIds.voter.entityDetail.opinionOpenAnswer).filter({
-          hasText: /\[Q2 info from cand-1\]/
-        })
-      ).toHaveCount(0);
-    }
-  );
+    // Q2 info — verify the seeded `[Q2 info from cand-1]` marker is NOT
+    // present anywhere in the detail (the open-answer wrapper is suppressed
+    // by the EntityOpinions.svelte:78 `customData?.allowOpen !== false` gate).
+    await expect(
+      detail.getByTestId(testIds.voter.entityDetail.opinionOpenAnswer).filter({
+        hasText: /\[Q2 info from cand-1\]/
+      })
+    ).toHaveCount(0);
+  });
 });

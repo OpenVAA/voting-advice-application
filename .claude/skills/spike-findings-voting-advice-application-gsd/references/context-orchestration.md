@@ -62,16 +62,18 @@ export interface VoterContext {
 export function initVoterContext(): VoterContext {
   if (hasContext(CONTEXT_KEY)) error(500, 'initVoterContext() called twice');
 
-  const appSettings = getAppSettingsContext();    // Spike 001 / 008
-  const dataRoot = getDataRootContext();          // Spike 002
-  const voterAnswers = voterAnswerStore({ /* … */ });  // Spike 003
+  const appSettings = getAppSettingsContext(); // Spike 001 / 008
+  const dataRoot = getDataRootContext(); // Spike 002
+  const voterAnswers = voterAnswerStore({
+    /* … */
+  }); // Spike 003
 
   let _selectedElections = $state<Array<Election>>([]);
 
   const _opinionQuestions = $derived.by(() => {
     if (_selectedElections.length === 0) return [];
     const all = dataRoot.current.questions ?? [];
-    return all.filter((q) => q.matchable);  // production uses the `matchable` getter
+    return all.filter((q) => q.matchable); // production uses the `matchable` getter
   });
 
   const _matchesCount = $derived.by(() => {
@@ -82,13 +84,23 @@ export function initVoterContext(): VoterContext {
   const _profileComplete = $derived(Object.keys(voterAnswers.answers).length > 0);
 
   return setContext(CONTEXT_KEY, {
-    selectElection: (e) => { _selectedElections = e ? [e] : []; },
+    selectElection: (e) => {
+      _selectedElections = e ? [e] : [];
+    },
     setAnswer: voterAnswers.setAnswer,
     voterAnswers,
-    get selectedElections() { return _selectedElections; },
-    get opinionQuestions() { return _opinionQuestions; },
-    get matchesCount() { return _matchesCount; },
-    get profileComplete() { return _profileComplete; }
+    get selectedElections() {
+      return _selectedElections;
+    },
+    get opinionQuestions() {
+      return _opinionQuestions;
+    },
+    get matchesCount() {
+      return _matchesCount;
+    },
+    get profileComplete() {
+      return _profileComplete;
+    }
   });
 }
 ```
@@ -141,8 +153,12 @@ For each of the 18+ getters in `voterContext.svelte.ts` and 30+ in
 
    //  CORRECT — re-declare the getters to preserve the reactive chain
    const adminContext = {
-     get isAuthenticated() { return authContext.isAuthenticated; },
-     get t() { return authContext.t; },
+     get isAuthenticated() {
+       return authContext.isAuthenticated;
+     },
+     get t() {
+       return authContext.t;
+     }
      // ... or keep auth as a separate handle the caller pulls explicitly
    };
    ```
@@ -162,13 +178,13 @@ For each of the 18+ getters in `voterContext.svelte.ts` and 30+ in
 
 Vite HMR on rune-context edits behaves as follows:
 
-| Surface | Survives HMR? | Why |
-|---------|---------------|-----|
-| `$state` in `.svelte` files (e.g. log arrays) | ✗ | Standard Svelte HMR remount; resets to declared default |
-| `runeLocalStorage`-backed state (e.g. voter answers) | ✓ | Rehydrated from storage on construction |
-| Class-instance singletons in parent layout (DataRoot) | ✓ | Held by parent context whose layout doesn't remount |
-| `$derived` of survivors (e.g. matchesCount) | ✓ | Recomputed from preserved sources |
-| Destructure-trap consumers | ✓-then-✗ | **Re-capture at remount** then go stale again on next mutation |
+| Surface                                               | Survives HMR? | Why                                                            |
+| ----------------------------------------------------- | ------------- | -------------------------------------------------------------- |
+| `$state` in `.svelte` files (e.g. log arrays)         | ✗             | Standard Svelte HMR remount; resets to declared default        |
+| `runeLocalStorage`-backed state (e.g. voter answers)  | ✓             | Rehydrated from storage on construction                        |
+| Class-instance singletons in parent layout (DataRoot) | ✓             | Held by parent context whose layout doesn't remount            |
+| `$derived` of survivors (e.g. matchesCount)           | ✓             | Recomputed from preserved sources                              |
+| Destructure-trap consumers                            | ✓-then-✗      | **Re-capture at remount** then go stale again on next mutation |
 
 Implications:
 
@@ -189,12 +205,12 @@ Implications:
   election, 24 questions, 18 of which are `singleChoiceOrdinal`). The
   cascade-verified counts at every step:
 
-  | Step | selectedElections | opinionQuestions | matchesCount | profileComplete |
-  |------|------|------|------|------|
-  | init / load | 0 | 0 | 0 | false |
-  | select first election | 1 | 18 | 0 | false |
-  | set 3 demo answers | 1 | 18 | 327 | true |
-  | deselect + clear | 0 | 0 | 0 | false |
+  | Step                  | selectedElections | opinionQuestions | matchesCount | profileComplete |
+  | --------------------- | ----------------- | ---------------- | ------------ | --------------- |
+  | init / load           | 0                 | 0                | 0            | false           |
+  | select first election | 1                 | 18               | 0            | false           |
+  | set 3 demo answers    | 1                 | 18               | 327          | true            |
+  | deselect + clear      | 0                 | 0                | 0            | false           |
 
 - **Production has a "matchable" getter on question subclasses** — Spike 007
   initially filtered by `q.matchable === true` (returned 0 because it's a
@@ -213,6 +229,7 @@ Implications:
 Synthesized from spikes: 007, 011
 
 Source files available in:
+
 - `sources/007-context-orchestration-end-to-end/voterRuneContext.svelte.ts` — scoped factory
 - `sources/007-context-orchestration-end-to-end/CanonicalConsumer.svelte` — `ctx.X` reads
 - `sources/007-context-orchestration-end-to-end/DestructureTrapConsumer.svelte` — anti-pattern demo

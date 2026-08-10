@@ -13,7 +13,7 @@
  */
 
 import * as jose from 'jose';
-import { afterEach,beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { POST } from '../../../../../routes/api/oidc/authorize/+server';
 
 // Use vi.hoisted for dynamic mock state (signing keys injected in beforeAll)
@@ -109,7 +109,9 @@ describe('POST /api/oidc/authorize', () => {
         serialize: vi.fn()
       },
       _cookieStore: cookieStore
-    } as unknown as Parameters<typeof POST>[0] & { _cookieStore: Map<string, { value: string; options: Record<string, unknown> }> };
+    } as unknown as Parameters<typeof POST>[0] & {
+      _cookieStore: Map<string, { value: string; options: Record<string, unknown> }>;
+    };
   }
 
   it('returns 200 with an authorizeUrl in the response', async () => {

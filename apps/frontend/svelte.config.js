@@ -18,9 +18,9 @@ const config = {
     }
   },
   vitePlugin: {
-    dynamicCompileOptions({filename}) {
+    dynamicCompileOptions({ filename }) {
       if (!filename.includes('node_modules')) {
-        return {runes: true};
+        return { runes: true };
       }
     }
   }

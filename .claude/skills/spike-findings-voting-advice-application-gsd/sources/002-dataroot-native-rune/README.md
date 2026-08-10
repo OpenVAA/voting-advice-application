@@ -2,7 +2,7 @@
 spike: 002
 name: dataroot-native-rune
 type: standard
-validates: "Given a rune-only `dataRoot` context exposing both reactive `get current()` (version-counter driven) and non-reactive `instance` handles, when sequential `provideElectionData → provideConstituencyData → provideQuestionData → provideEntityData → provideNominationData` calls are made — including from a producer $effect inside untrack() — then (a) downstream $derived consumers re-evaluate on each provide, (b) the producer effect does NOT loop infinitely, (c) no get(store) call exists anywhere in the migrated path"
+validates: 'Given a rune-only `dataRoot` context exposing both reactive `get current()` (version-counter driven) and non-reactive `instance` handles, when sequential `provideElectionData → provideConstituencyData → provideQuestionData → provideEntityData → provideNominationData` calls are made — including from a producer $effect inside untrack() — then (a) downstream $derived consumers re-evaluate on each provide, (b) the producer effect does NOT loop infinitely, (c) no get(store) call exists anywhere in the migrated path'
 verdict: VALIDATED
 related: [001]
 tags: [svelte5, runes, context, dataroot, untrack, migration]
@@ -83,8 +83,8 @@ Key shape:
 
 ```ts
 export interface DataRootRuneContext {
-  readonly current: DataRoot;   // reactive
-  readonly instance: DataRoot;  // non-reactive (same object)
+  readonly current: DataRoot; // reactive
+  readonly instance: DataRoot; // non-reactive (same object)
 }
 ```
 
@@ -144,9 +144,9 @@ user see the version-counter propagation cycle from a single user action.
 
 ## Investigation Trail
 
-*(Updated as the spike progresses. The spike workflow encourages following
+_(Updated as the spike progresses. The spike workflow encourages following
 surprising findings, testing edge cases, and documenting pivots between
-approaches.)*
+approaches.)_
 
 - **2026-05-21** — Built initial Approach A: rune context exposing `current`
   (reactive via version counter) + `instance` (non-reactive). DataRoot
@@ -159,7 +159,7 @@ approaches.)*
   - H2: Producer-effect toggle does not loop (untrack breaks the cycle
     even though the same instance handles both read and write).
   - H3: A consumer that does `const dr = $derived(dataRootCtx.current)`
-    works correctly when reads happen *inside* template scope (tracking)
+    works correctly when reads happen _inside_ template scope (tracking)
     but a destructure `const dr = dataRootCtx.current; const elections = dr.elections;`
     in `.ts` module scope (no tracking scope) shows the same staleness
     trap documented for `candidateContext` in CLAUDE.md.
@@ -171,13 +171,13 @@ approaches.)*
 Browser verification on 2026-05-21 at http://localhost:5173/runes-test against
 the seeded default template:
 
-| Step | Action                                          | Result counts after          |
-|------|-------------------------------------------------|------------------------------|
-| 1    | `provideElectionData + provideConstituencyData` | elections=1, constituencies=5 |
-| 2    | `provideQuestionData` (fetched)                 | questions=24, categories=4 |
-| 3    | `provideEntityData + provideNominationData`     | candidates=327, candidateNominations=327 |
+| Step | Action                                          | Result counts after                                      |
+| ---- | ----------------------------------------------- | -------------------------------------------------------- |
+| 1    | `provideElectionData + provideConstituencyData` | elections=1, constituencies=5                            |
+| 2    | `provideQuestionData` (fetched)                 | questions=24, categories=4                               |
+| 3    | `provideEntityData + provideNominationData`     | candidates=327, candidateNominations=327                 |
 | —    | Toggle producer-$effect ON                      | (no change; idempotent reapply of step 1 from page.data) |
-| —    | Re-click step 1 with producer-effect enabled    | (no compound; no loop, no console error) |
+| —    | Re-click step 1 with producer-effect enabled    | (no compound; no loop, no console error)                 |
 
 **Key findings:**
 
@@ -201,8 +201,12 @@ the seeded default template:
 - The clean rune-native API for the production `dataContext` is:
   ```ts
   return setContext(KEY, {
-    get current() { /* tracks */ return root; },
-    get instance() { /* no track */ return root; }
+    get current() {
+      /* tracks */ return root;
+    },
+    get instance() {
+      /* no track */ return root;
+    }
   });
   ```
 - The `get(dataRootStore)` workaround at `routes/+layout.svelte:110-135`
