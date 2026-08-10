@@ -11,7 +11,7 @@
 - ✅ **v2.11 Svelte 5 Runes Migration + View Transitions** — Phases 95-101 (shipped 2026-06-07)
 - ⊘ **v2.12 Runes-Native Cleanup** — Phases 102-105 (SUPERSEDED 2026-06-12 by v2.13)
 - ✅ **v2.13 Context-as-Class Migration** — Phases 106-117 (shipped 2026-06-13)
-- 🚧 **v2.14 E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero** — Phases 118-132 (in progress)
+- 🚧 **v2.14 E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero** — Phases 118-134 (in progress)
 
 See `.planning/MILESTONES.md` for cumulative history and `.planning/milestones/` for archived roadmaps + requirements.
 
@@ -644,13 +644,13 @@ The three workstreams are largely independent and may be planned/executed concur
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 118. E2E Coverage Audit + Coverage Plan | v2.14 | 3/4 | In progress | - |
-| 119. E2E Fixtures & Helpers + Seed | v2.14 | 8/8 | Pending verify | - |
+| 118. E2E Coverage Audit + Coverage Plan | v2.14 | 4/4 | Complete    | 2026-07-15 |
+| 119. E2E Fixtures & Helpers + Seed | v2.14 | 8/8 | Complete    | 2026-07-15 |
 | 120. E2E Specs — Settings-Permutation Matrix | v2.14 | 8/8 | Complete   | 2026-06-16 |
 | 121. E2E Specs — Flow Coverage | v2.14 | 8/8 | Complete    | 2026-06-17 |
-| 122. E2E Specs — Bank-Auth Round-Trip | v2.14 | 4/5 | In Progress|  |
+| 122. E2E Specs — Bank-Auth Round-Trip | v2.14 | 5/5 | Complete    | 2026-06-17 |
 | 123. Svelte 5 Idiom Polish — Lifecycle & Reactive-State | v2.14 | 4/4 | Complete    | 2026-06-17 |
-| 124. Svelte 5 Idiom Polish — Lock-in & Visual Verification | v2.14 | 0/TBD | Not started | - |
+| 124. Svelte 5 Idiom Polish — Lock-in & Visual Verification | v2.14 | 2/2 | Complete    | 2026-06-21 |
 | 125. svelte-check → 0 — Trivial Tier | v2.14 | 4/4 | Complete    | 2026-07-15 |
 | 126. svelte-check → 0 — supabaseDataProvider | v2.14 | 5/5 | Complete    | 2026-07-16 |
 | 127. svelte-check → 0 — Adapter Layer & Contexts | v2.14 | 3/3 | Complete    | 2026-07-16 |
@@ -659,6 +659,8 @@ The three workstreams are largely independent and may be planned/executed concur
 | 130. E2E Specs — New-Feature Coverage | v2.14 | 6/6 | Complete    | 2026-07-19 |
 | 131. E2E Reliability Hardening — Deferred Flake/Race Triage | v2.14 | 5/5 | Complete    | 2026-07-22 |
 | 132. Milestone-Close Green Gate + svelte-check Zero Flip | v2.14 | 4/4 | Complete    | 2026-07-23 |
+| 133. Fix Phase 132 Code Review Gaps | v2.14 | 3/3 | Complete    | 2026-07-26 |
+| 134. A11y Contrast + i18n Catalog + Boolean-Answer Defect Closure | v2.14 | 0/TBD | Not started | - |
 
 ### Phase 133: Fix Phase 132 code review gaps
 
@@ -679,3 +681,31 @@ Plans:
 **Wave 3** *(blocked on Wave 2 completion)*
 
 - [x] 133-03-PLAN.md — Full E2E suite 3× determinism gate (wave 3)
+
+### Phase 134: A11y Contrast + i18n Catalog + Boolean-Answer Defect Closure
+
+**Goal:** Close the three confirmed user-facing defects that `v2.14-MILESTONE-AUDIT.md` surfaced as carried tech debt, so v2.14 ships without a known WCAG 2.1 AA violation, without an untranslated key visible to users, and without a saved answer reading back as unanswered.
+
+**Requirements**: FIX-01, FIX-02, FIX-03
+**Depends on:** Phase 133
+**Plans:** 8 plans
+
+**Success criteria:**
+
+1. **FIX-01 (a11y contrast).** No primary-content text inherits DaisyUI `.label`'s `color-mix(in oklab, currentcolor 60%, transparent)`. Settled axe scans on the elections selector return **0 color-contrast violations** — the current state is 12/12 FAIL against a suite that passes only by missing the render window, so the gate must be a *settled-DOM* scan, not a suite pass. Surfaces: `ElectionSelector.svelte:56`, `NumericEntityFilter.svelte:84,97,112` (child spans use `text-label`, which has no definition in `app.css` — no override at all), `EnumeratedEntityFilter.svelte:198`. `ConstituencySelector` is NOT affected (uses opaque `.small-label`) — do not change it.
+2. **FIX-02 (i18n runtime catalog).** `questions.multiChoice.selectExact` / `selectRange` resolve to real text in all 7 locales. They must be added to the **runtime Paraglide catalog** `apps/frontend/messages/{locale}/questions.json` (registered at `project.inlang/settings.json:53`) — NOT only to `src/lib/i18n/translations/`, where they already exist and which is the type-generation source, not the runtime one. Mirror the values already authored there. Restore the content assertion that Phase 130 step 18.5 deliberately withheld (`/2.*3/`) so the fix is locked in.
+3. **FIX-03 (boolean answer).** A saved boolean opinion answer of `false` renders as answered on the candidate questions overview. `candidate/(protected)/questions/+page.svelte:58` uses an explicit null check (`== null`) rather than a truthiness guard.
+4. Full E2E suite green to the 3× determinism standard; svelte-check stays 0/0; lint + prettier + `typecheck:tests` clean.
+
+**Out of scope (carried, per audit §4.4/§4.5):** the `preview/+page.svelte:32` `dataRoot` alias-indirection warning and DEF-120-03-01 feedback rate-limit teardown.
+
+Plans:
+
+- [ ] 134-01-PLAN.md — Typed a11y route contract (required `contentTestId`) + honest constituencies scan + the AA fix it exposes [wave 1]
+- [ ] 134-02-PLAN.md — Results filter-drawer axe coverage + `text-label` → `small-label` on the numeric filter [wave 2]
+- [ ] 134-03-PLAN.md — 7 missing i18n keys × 7 locales into the runtime Paraglide catalog, with a build-time render proof [wave 3]
+- [ ] 134-04-PLAN.md — Cross-catalog key-set parity check + negative control proving it fires [wave 4]
+- [ ] 134-05-PLAN.md — Boolean-answer guard via the canonical emptiness predicate + recorded repo-wide sweep [wave 4]
+- [ ] 134-06-PLAN.md — E2E locks: restored helper-text assertion, falsy-boolean round trip, accessible-name assertions [wave 5]
+- [ ] 134-07-PLAN.md — Bookkeeping corrections (ROADMAP / REQUIREMENTS / audit / CLAUDE.md) + the D-18 UAT review item [wave 5]
+- [ ] 134-08-PLAN.md — Verification gate: static gates clean + full E2E 3× determinism + requirement flips [wave 6]
