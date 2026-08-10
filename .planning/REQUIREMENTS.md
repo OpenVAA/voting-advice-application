@@ -75,7 +75,7 @@ New settings-driven branches not yet covered by the existing 19 perm specs.
 
 - [x] **UNBLK-01**: The frontend `QuestionInput` renders and persists answers for `MultipleTextQuestion` (multiple-text input component).
 - [x] **UNBLK-02**: The frontend supports a multi-choice categorical opinion variant — input component + matching dispatch + dev-seed authoring support.
-- [ ] **UNBLK-03**: The default seed template (`yarn db:seed:default`) produces a valid dataset — parties present, candidates tab populated, consistent naming.
+- [x] **UNBLK-03**: The default seed template (`yarn db:seed:default`) produces a valid dataset — parties present, candidates tab populated, consistent naming. _(Complete 2026-06-15: `default.ts` docstrings reconciled (5 constituencies / 327 candidates) + defensive `entities.hideIfMissingAnswers.candidate:false`, commit `49a23512e`; operator confirmed parties render, candidates tab populated, naming consistent at `/results` per SC3's running-app gate. Tracking row flipped 2026-08-09 — see `119-VERIFICATION.md:100-102`, which recorded this as documentation lag, not a code gap.)_
 - [x] **UNBLK-04**: The `/nominations` route fetches question data so all-nominations entities render correctly (unblocks the nominations journey step).
 - [x] **UNBLK-05**: The frontend supports a number-scale opinion question — input component + matching dispatch + dev-seed authoring support (unblocks EQTYP-02).
 - [x] **UNBLK-06**: Alliance entities render in voter results (card + member-orgs drawer) — small implementation flagged by the audit as "currently not rendered; easy to implement" (unblocks EFLOW-02).
@@ -84,6 +84,14 @@ New settings-driven branches not yet covered by the existing 19 perm specs.
 
 - [x] **HARDN-01**: The ~6 deferred "v2.11+ hardening" flake/race todos (party-drawer boundary, qspec cold-start race, popup-hydration deeplink, voter-feedback-persistence locator collision, not-located-redirect chain, candidate-settings notifications mount-lifecycle) are each triaged against the current suite and either fixed (passing 3×) or closed-as-stale with documented rationale. _(Complete 2026-07-22: all 7 todos terminally disposed — #7 hide-election-tags + #4 feedback-persistence FIXED; #1, #2, #3, #5, #6 CLOSED-AS-STALE with parity checks.)_
 - [x] **HARDN-02**: The full E2E suite — including every net-new v2.14 spec — passes to the 3× determinism standard (fresh server, clean DB, no flakes) at milestone close. _(Complete 2026-07-23: full `yarn test:e2e` 3× green — runs 1/2/3 each 129 passed / 0 failed / 0 did-not-run, fresh server + clean DB per run; one pre-count elections-continue-stall flake fixed in-phase (voterNavigation.ts harden, commit ad3f46e84) then the count restarted. See 132-MILESTONE-CLOSE-ANCHOR.md.)_
+
+### Defect Closure — v2.14 Audit Carry-Over (FIX)
+
+Surfaced by `.planning/v2.14-MILESTONE-AUDIT.md` (2026-08-09). All three are CONFIRMED user-facing defects verified against the live codebase, carried as documented deferrals from Phases 130 and the a11y debug session.
+
+- [ ] **FIX-01**: No primary-content text inherits DaisyUI `.label`'s 60%-alpha color. Settled axe scans on the elections selector return 0 color-contrast violations (currently 12/12 FAIL at 3.69:1 vs the 4.5:1 AA threshold). Surfaces: `ElectionSelector.svelte:56`, `NumericEntityFilter.svelte:84,97,112`, `EnumeratedEntityFilter.svelte:198`.
+- [ ] **FIX-02**: `questions.multiChoice.selectExact` / `selectRange` resolve to real text in all 7 locales — added to the runtime Paraglide catalog `apps/frontend/messages/{locale}/questions.json`, with the withheld Phase-130 content assertion restored.
+- [ ] **FIX-03**: A saved boolean opinion answer of `false` renders as answered on the candidate questions overview (`questions/+page.svelte:58` explicit null check).
 
 ### Svelte 5 — Idiom Polish (RUNES)
 
@@ -177,7 +185,7 @@ Each requirement maps to exactly one roadmap phase (see `.planning/ROADMAP.md` v
 | TYPE-07 | Phase 128 | Complete |
 | TYPE-08 | Phase 128 | Complete |
 | TYPE-09 | Phase 128 | Complete |
-| UNBLK-03 | Phase 119 | Pending |
+| UNBLK-03 | Phase 119 | Complete |
 | UNBLK-01 | Phase 129 | Complete |
 | UNBLK-02 | Phase 129 | Complete |
 | UNBLK-04 | Phase 129 | Complete |
@@ -190,6 +198,9 @@ Each requirement maps to exactly one roadmap phase (see `.planning/ROADMAP.md` v
 | HARDN-01 | Phase 131 | Complete (2026-07-22) |
 | HARDN-02 | Phase 132 | Complete |
 | TYPE-10 | Phase 132 | Complete |
+| FIX-01 | Phase 134 | Pending |
+| FIX-02 | Phase 134 | Pending |
+| FIX-03 | Phase 134 | Pending |
 
 **Structural phase (no requirement ownership — operator-mandated E2E audit-first ordering):**
 

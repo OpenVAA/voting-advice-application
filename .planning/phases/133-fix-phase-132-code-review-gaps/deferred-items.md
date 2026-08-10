@@ -7,7 +7,7 @@ rule these were **logged, not fixed** — they are not caused by this phase's ch
 
 ## DEF-133-01 — Latent intermittent flake in `voterIntro.ts` intro-CTA click (2 s stability budget)
 
-**Status:** open — NOT fixed in Phase 133
+**Status:** RESOLVED 2026-08-09 — root cause confirmed by reproduction, fixed, gated (see § Resolution below)
 **Severity:** medium (E2E Hard Rule: an intermittent failure is a real defect and must be ironed out)
 **Surfaced during:** Plan 03 (full-suite 3× determinism gate), by forensic recovery of the prior
 killed executor attempt's console logs.
@@ -81,3 +81,109 @@ and widening it would slow every fail-fast path.
 
 **Observed rate:** 1 / 9 full-suite runs (~11 %) at the current code state. Prior milestone gates
 (v2.13, Phase 124) recorded cardinal-clean runs, so this is low-frequency but real.
+
+---
+
+## DEF-133-01 — Resolution (2026-08-09)
+
+### The original hypothesis was WRONG
+
+The Phase-133 hypothesis (DaisyUI `.btn` still settling → Playwright *stability*
+check blocked) was tested directly and **disproven as the cause**:
+
+- A post-mount layout mutation on the intro page **does exist and was measured**:
+  the step `<ol>` goes 4 → 5 `<li>` at **t=529 ms** (`constituenciesSelectable`
+  flips `false → true` once the root-layout `$effect` applies `dataRoot`, which
+  starts empty because `.some()` on an empty election array returns `false`).
+- But it is **not the cause**: the CTA becomes visible at **~20 ms** and the click
+  completes in **43–138 ms**, i.e. the flow has already navigated away long before
+  the 529 ms mutation lands. The mutation also **did not move the CTA**
+  (`y: 656 → 656`, `h: 44 → 44`) — `MainContent`'s `flex-grow` + `justify-center`
+  absorbed it.
+
+(The 529 ms content flip is a real *product* CLS concern — the intro step list
+renders an incomplete list for ~½ s on client-side entry — but it is a separate
+issue from this flake. Not fixed here; see the todo note.)
+
+### Confirmed root cause — budget mismatch under main-thread contention
+
+The click's cost is **CPU-bound** and scales linearly with main-thread
+contention. Measured with CDP `Emulation.setCPUThrottlingRate`, all else equal:
+
+| throttle | 1x | 4x | 8x | 12x | 20x | 40x | 60x | 80x |
+|---|---|---|---|---|---|---|---|---|
+| `visible` | 12–23 ms | ~100 | ~165 | ~250 | ~370 | — | — | — |
+| `click` | ~55 ms | ~138 | ~290 | ~420 | ~690 | ~1800 | ~2400 | >2000 |
+| click timeouts | 0/4 | 0/4 | 0/4 | 0/4 | 0/4 | 0/4 | **1/4** | **4/4** |
+
+**The failure reproduces at ≥60x contention** — the exact
+`locator.click: Timeout 2000ms exceeded` at `voterIntro.ts:28`.
+
+The defect the old code encoded is an **asymmetric budget allocation**: the
+*visibility* wait preceding each click got `TIMEOUTS.slowPage` (10 s) while the
+click itself got `TIMEOUTS.click` (2 s) — even though the two costs scale
+together at roughly 1 : 1.7. The click was therefore **always** the budget that
+blew first. These clicks are the first interaction with a freshly-hydrating
+page, so they are gated on a *render-settle* boundary, not an *action-ack* one —
+`TIMEOUTS.click` was the semantically wrong bucket, exactly as lever #2 above
+suspected.
+
+### Fix applied
+
+`bypassIntroThen` now advances both hydration-gated navigation clicks (home → intro,
+intro → next) via the in-tree **`clickAndRaceSettle`** idiom (`helpers/navigation.ts`),
+whose own "Stuck click" docstring describes this failure family. It bounds the
+click, swallows the actionability timeout, and races the **landing** instead —
+the signal that actually matters. Hard assertions move downstream (the intro-CTA
+`toBeVisible`, then the caller's `expectation()`), so a genuinely stuck flow
+still fails loudly, with a better message than "click timed out". The module's
+rigidity contract gained an explicit carve-out documenting why this is not a
+weakening.
+
+`TIMEOUTS.click` was **NOT** widened (15 shared call sites — per lever guidance).
+
+### Rejected alternative
+
+`settleNetworkIdle` before the click. Measured **worse**: it helps at moderate
+contention (20x: 247–438 ms vs 693–788 ms) but adds its own unbounded wait and
+produced a **6254 ms** outlier at 60x. Its `.catch(() => null)` form would also
+violate this module's rigidity contract.
+
+### Validation
+
+**Targeted:** `clickAndRaceSettle` produced **0/4 click timeouts at every
+throttle level tested (20x / 40x / 60x / 80x)**, against 1/4 (60x) and 4/4 (80x)
+for the old code.
+
+**Full suite (3x determinism gate, 2026-08-09):**
+
+| run | result | baseline |
+|---|---|---|
+| 1 | **129 passed** / 0 failed / 0 skipped / 0 did-not-run (10.6 m) | clean `db:reset`, fresh dev server |
+| 2 | **129 passed** / 0 failed / 0 skipped / 0 did-not-run (10.4 m) | consecutive off run 1's baseline |
+| 3 | **129 passed** / 0 failed / 0 skipped / 0 did-not-run (10.5 m) | full cold start — Supabase bounced, `db:reset`, dev server restarted |
+
+Method note: runs 1-2 were consecutive off one clean baseline, run 3 off a fresh
+cold baseline — the Phase-122-accepted shape (repeated rapid `db:reset` container
+bounces 502-wedge local Supabase Storage, an environment artifact; that wedge was
+in fact hit and recovered from during this gate via `db:stop` + `db:start`).
+
+Two earlier attempts at run 3 were **killed by the OS at ~38/129 with zero test
+failures** — host swap exhaustion (20.6 GB of 21.5 GB used; 27 containers
+including two unrelated Supabase stacks). Not a suite defect; resolved by freeing
+~2.5 GB of unrelated containers. Recorded here rather than silently retried.
+
+Run 3 logged 25 `[setupFromTemplate] Database is NOT fresh` advisories that runs
+1-2 did not. Benign and by design: `probeFreshDatabasePrecondition` runs at
+step 0, BEFORE the step-1a/1b teardowns that clear those rows, and step 1a's own
+comment documents the brief cross-chain coexistence window. The probe is
+warn-only unless `E2E_REQUIRE_FRESH_DB=true`. The freed memory simply made
+scheduling fast enough to hit the documented window. DB verified clean (0
+non-baseline candidate rows) after teardown.
+
+### Follow-up filed separately (NOT fixed here)
+
+The 529 ms intro step-list content flip (incomplete list rendered pre-hydration,
+corrected after the root-layout `dataRoot` `$effect` applies) is a real
+user-visible CLS/flash on client-side entry. Out of scope for a test-flake fix —
+it needs a product decision about gating the intro list on data readiness.
