@@ -57,3 +57,19 @@ mirror `src/lib/i18n/translations/`, which the cross-catalog key-set parity chec
 D-18 makes the review a required deliverable, not a note. The phase UAT file is the primary
 carrier, but `/gsd-verify-work` may regenerate it; this todo is the durable half so the review
 item cannot vanish with a regeneration.
+
+---
+
+## RESOLVED — 2026-08-10
+
+**Disposition: ACCEPTED AS-IS (operator review).**
+
+The operator reviewed all six constructed singulars as rendered from the shipped
+catalogs and accepted them without change. `sv`'s numeral-only difference (correct —
+plural-invariant neuter noun) and `et`'s partitive-singular question (`Vali 1 valik.`
+vs `Vali 1 valikut.`) were both surfaced explicitly before acceptance.
+
+This is the operator's sign-off, not a six-way native-speaker certification. A later
+correction to any locale is an ordinary translation fix, not a Phase 134 regression.
+
+See `134-UAT.md` § Resolution for the full record.
