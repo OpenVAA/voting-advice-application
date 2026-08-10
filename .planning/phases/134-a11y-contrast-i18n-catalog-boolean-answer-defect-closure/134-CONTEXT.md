@@ -32,13 +32,15 @@ was written. These corrections are load-bearing; do NOT re-derive from the audit
 5. **Verification gate** (D-13): full E2E suite green to the **3×** determinism standard;
    svelte-check stays 0/0; lint + prettier + `typecheck:tests` clean.
 
-**Out of scope (operator-confirmed, carried per audit §4.4/§4.5):**
+**Out of scope (operator-confirmed, carried per audit §4.4/§4.5) — one item RETRACTED, see D-17:**
 - `preview/+page.svelte:32` `dataRoot` alias-indirection warning — pre-existing, does not
   currently manifest.
 - DEF-120-03-01 feedback rate-limit teardown.
 - Unifying the two i18n catalogs into one (that is a refactor phase, not defect closure).
 - Narrowing the global `app.css:492` `.label { color: inherit }` override (D-03).
-- Any change to `ConstituencySelector` (already uses opaque `.small-label`).
+- ~~Any change to `ConstituencySelector`~~ — **RETRACTED 2026-08-10 by research (§A.5).** The exclusion's
+  *rationale* holds (it is unaffected by the DaisyUI `.label` alpha mechanism), but a **different**
+  mechanism fails AA there: `class:faded` → `@apply opacity-30`. See **D-17**.
 </domain>
 
 <decisions>
@@ -161,6 +163,76 @@ stale conclusion.
   2026-06-22 debug doc's original flake reproduced only under `--workers>1`).
 - **D-16 (Static gates):** svelte-check stays **0/0**; `lint:check`, prettier `format:check`,
   and `typecheck:tests` clean. Unit suite green (D-10's parity check runs here).
+
+### Post-research amendments (added 2026-08-10 after `134-RESEARCH.md`)
+
+Research measured the codebase live (throwaway axe probe against the seeded dev server) and
+falsified four statements written above. **These amendments win over anything earlier in this
+document that contradicts them.**
+
+- **D-17 (ConstituencySelector `.faded` — fix via Option A; operator-decided):**
+  `/constituencies` is 307-redirected to `/elections` by `constituencies/+page.ts:60`, so the
+  `constituencies-selector` scan entry has **never scanned a constituency selector** — its
+  `getByRole('heading')` settle resolves on the *elections* page, making it a silent duplicate of
+  the elections scan (measured: `finalURL=/elections`, `constituencyList=0`, `electionLabels=2`).
+  Making the route honest (D-04) exposes a genuine AA failure at
+  `ConstituencySelector.svelte:296`: `class:faded` → `.faded { @apply opacity-30 }`
+  (`app.css:356-358`), `text-secondary` `#666` compositing to `#d1d1d1` on white —
+  **1.52:1 light / 1.46:1 dark, 2 nodes.** It is a **steady state**, so `awaitAnimationsSettled`
+  cannot clear it; only a product change closes it.
+  **Operator decision: Option A** — gate the block on selection
+  (`{#if applicableElections.length > 1 && sections[sectionIndex].selectedId}`) and **drop
+  `class:faded`**. ~2-line diff; the element leaves the a11y tree when it has no content.
+  **Accepted cost, stated plainly:** this removes the "preview of what will be filled in"
+  affordance and its `transition-opacity`. Not Option B (aria-hidden subtrees are still
+  contrast-scanned under some axe configs — would need re-measurement), not Option C (`#666`
+  needs ~0.85 opacity to clear 4.5:1, at which point "faded" conveys nothing, and it mutates a
+  global token). The `.faded` rule in `app.css` becomes dead after this — remove it too
+  (`ConstituencySelector` is its only consumer in the whole frontend).
+  **The route must also become a *located* route** (election/constituency context) or D-04 is
+  unsatisfiable there.
+
+- **D-18 (MF2 singulars — author all 7, flag for review; operator-decided):** D-09's MF2 plural
+  declaration for `selectExact` needs a **singular** variant per locale that exists nowhere —
+  `translations/` carries only the plain `Select {count} options.` string. **Operator decision:**
+  author the MF2 plural in **all 7 locales**, using the researcher's constructed non-English
+  singulars, and **raise an explicit UAT review item** ("verify the 6 non-English `selectExact`
+  singular forms — constructed, not natively authored, MEDIUM confidence") so a native speaker can
+  correct wording before milestone close. Consistent catalog shape everywhere; accepts unreviewed
+  grammar landing in-tree temporarily. The UAT item is a **required deliverable**, not optional.
+
+- **D-19 (Corrections to this document's own references — apply silently, do not re-derive):**
+  - **D-04 anchor:** there is **no per-option testid** on the constituency selector
+    (`SingleGroupConstituencySelector.svelte:71-78` delegates to `<Select>` and emits none). The
+    correct content anchor is **`voter-constituencies-list`** (`testIds.voter.constituencies.list`),
+    which is data-gated by `{#if sections.length}`. Note both selectors' root testids are
+    **shadowed at the call site** (`constituency-selector` → `voter-constituencies-list`;
+    `election-selector` → `voter-elections-list`) because `concatClass(restProps, …)` spreads after
+    the literal attribute.
+  - **D-12 import path:** `isEmptyValue()` is imported from **`@openvaa/data`**, not `@openvaa/core`
+    — match the sibling at `candidateContext.svelte.ts:2`.
+  - **Route path:** `routes/[[lang=locale]]/candidate/…` **does not exist** (the Paraglide `url`
+    strategy replaced the route param). The real path is
+    **`apps/frontend/src/routes/candidate/(protected)/questions/+page.svelte:58`**. CLAUDE.md
+    carries the same staleness — correcting it is in scope for the D-01c bookkeeping sweep.
+  - **Line numbers:** `NumericEntityFilter.svelte` is **85, 98, 113** (ROADMAP/REQUIREMENTS say
+    84, 97, 112).
+
+- **D-20 (Confirmed by measurement — no further work needed):** FIX-01's app-side fix is closed
+  (hardened settled-DOM scans of home / elections / questions-intro / results-with-cards / the
+  never-before-scanned filter drawer → **0 violations, light AND dark**). `text-label` measured
+  `rgb(51,51,51)` at `opacity: 1` — dead class, as claimed. **D-05 is a pure coverage gain with
+  zero fallout.** FIX-02's 7-key list reproduces byte-for-byte across all 7 locales. FIX-03's
+  repo-wide sweep (D-13) returned **1 genuine hit**, 10 benign — the sweep is done; record it as
+  evidence rather than re-running it.
+
+- **D-21 (D-14 lock is cheaper than assumed):** `candidate-journey.spec.ts` **step 18.6** already
+  documents this defect and works around it with `selectChoice(1)`. The lock is flipping it to
+  `selectChoice(0)` plus a cardAction-text assertion — not a new spec.
+
+- **D-22 (`small-label` appearance change — accepted):** D-02's swap makes the filter-drawer
+  min/max labels UPPERCASE and ~11.5px. Still AA-safe (5.74:1 / 6.24:1). Accepted; note it in the
+  SUMMARY so it is not mistaken for a regression at review.
 
 ### Claude's Discretion
 - Exact naming/placement of the `contentTestId` field and how the route-entry type is
