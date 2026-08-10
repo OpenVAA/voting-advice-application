@@ -701,11 +701,11 @@ Plans:
 
 Plans:
 
-- [ ] 134-01-PLAN.md — Typed a11y route contract (required `contentTestId`) + honest constituencies scan + the AA fix it exposes [wave 1]
-- [ ] 134-02-PLAN.md — Results filter-drawer axe coverage + `text-label` → `small-label` on the numeric filter [wave 2]
-- [ ] 134-03-PLAN.md — 7 missing i18n keys × 7 locales into the runtime Paraglide catalog, with a build-time render proof [wave 3]
-- [ ] 134-04-PLAN.md — Cross-catalog key-set parity check + negative control proving it fires [wave 4]
-- [ ] 134-05-PLAN.md — Boolean-answer guard via the canonical emptiness predicate + recorded repo-wide sweep [wave 4]
-- [ ] 134-06-PLAN.md — E2E locks: restored helper-text assertion, falsy-boolean round trip, accessible-name assertions [wave 5]
-- [ ] 134-07-PLAN.md — Bookkeeping corrections (ROADMAP / REQUIREMENTS / audit / CLAUDE.md) + the D-18 UAT review item [wave 5]
-- [ ] 134-08-PLAN.md — Verification gate: static gates clean + full E2E 3× determinism + requirement flips [wave 6]
+- [x] 134-01-PLAN.md — Typed a11y route contract (required `contentTestId`) + honest constituencies scan + the AA fix it exposes [wave 1]
+- [x] 134-02-PLAN.md — Results filter-drawer axe coverage + `text-label` → `small-label` on the numeric filter [wave 2]
+- [x] 134-03-PLAN.md — 7 missing i18n keys × 7 locales into the runtime Paraglide catalog, with a build-time render proof [wave 3]
+- [x] 134-04-PLAN.md — Cross-catalog key-set parity check + negative control proving it fires [wave 4]
+- [x] 134-05-PLAN.md — Boolean-answer guard via the canonical emptiness predicate + recorded repo-wide sweep [wave 4]
+- [x] 134-06-PLAN.md — E2E locks: restored helper-text assertion, falsy-boolean round trip, accessible-name assertions [wave 5]
+- [x] 134-07-PLAN.md — Bookkeeping corrections (ROADMAP / REQUIREMENTS / audit / CLAUDE.md) + the D-18 UAT review item [wave 5]
+- [x] 134-08-PLAN.md — Verification gate: static gates clean + full E2E 3× determinism + requirement flips [wave 6]
