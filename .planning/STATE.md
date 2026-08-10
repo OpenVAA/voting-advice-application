@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
-current_phase: 122
-current_phase_name: E2E Specs — Bank-Auth Round-Trip
-status: planning
-stopped_at: Completed 133-03-PLAN.md
-last_updated: "2026-07-26T14:09:57.114Z"
-last_activity: 2026-07-26
-last_activity_desc: Phase 133 complete, transitioned to Phase 122
+current_phase: 134
+current_phase_name: A11y Contrast + i18n Catalog + Boolean-Answer Defect Closure
+status: ready_to_execute
+stopped_at: Phase 134 planned (8 plans, 6 waves) — plan-checker PASS, ready to execute
+last_updated: "2026-08-09"
+last_activity: 2026-08-09
+last_activity_desc: v2.14 milestone audit written (status tech_debt, 48/48 reqs, 16/16 phases, svelte-check 0/0 verified live); Phase 134 added for defect closure
 progress:
-  total_phases: 16
+  total_phases: 17
   completed_phases: 16
   total_plans: 83
   completed_plans: 83
-  percent: 100
+  percent: 94
 ---
 
 # Project State
@@ -28,12 +28,12 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 
 ## Current Position
 
-Phase: 122 — E2E Specs — Bank-Auth Round-Trip
+Phase: 134 — A11y Contrast + i18n Catalog + Boolean-Answer Defect Closure (added 2026-08-09, not yet planned)
 Plan: Not started
-Status: Ready to plan
-Last activity: 2026-07-26 — Phase 133 complete, transitioned to Phase 122
+Status: Ready to plan — v2.14 audit returned tech_debt; Phase 134 closes the 3 confirmed user-facing defects before milestone close
+Last activity: 2026-08-09 — v2.14 milestone audit written; Phase 134 inserted
 
-Progress: [██████████] 100%
+Progress: [█████████░] 94% (16/17 phases — Phase 134 pending)
 
 ## Performance Metrics
 
@@ -294,6 +294,7 @@ The pre-close artifact audit surfaced 15 open items. All v2.10-internal artifact
 
 ### Roadmap Evolution
 
+- 2026-08-09: Phase 134 added: A11y Contrast + i18n Catalog + Boolean-Answer Defect Closure (FIX-01/02/03). Source: `.planning/v2.14-MILESTONE-AUDIT.md` status `tech_debt` — 3 CONFIRMED user-facing defects carried as deferrals (WCAG AA contrast on the elections selector; untranslated `multiChoice` key in all 7 locales; boolean `false` reading back as unanswered). Operator chose remediation-before-close.
 - 2026-07-24: Phase 133 added: Fix Phase 132 code review gaps — resolve REVIEW.md findings; remove `navigateDirectlyToQuestions` entirely and make `advanceVoterFlow` deterministically check each possible screen (trial for regressions via E2E).
 - 2026-06-12: **v2.13 Context-as-Class Migration** milestone roadmap created. **11 phases (106-116), 15 requirements mapped, 0 unmapped.** Phase numbering continues from v2.12 (last phase 105); no reset. Granularity `fine`; parallelization on; frontend-only scope (`apps/frontend/src/**`), backed by spikes 017–023 + `CONTEXT-MEMBER-AUDIT.md` + `CONTEXT-CLASS-PROOF.md` + CONVENTIONS §17–22 (3 contexts already converted as the migration template). Conversion follows the audit's low-blast-radius-first order: **106 (Group F helpers) → 107 (leaf auth/component + proof reconcile) / 108 (app producers getRoute/survey/tracking/popup) [107 ∥ 108] → 109 (appContext orchestrator + spread-of-context fix + `_poc*` removal) → 110 voter / 111 candidate / 112 admin [all three ∥, sibling orchestrators on the appContext base] → 113 FLATTEN (drop reactiveFoo dupes + ~524-site `.current` codemod — **runs ALONE**, the v2.12 collision lesson) → 114 RENAME (Store→State) → 115 SWEEP (last svelte/store + `$:` strip + widen ESLint guard; SWEEP-03 after SWEEP-01) → 116 GATE (terminal green gate).** End-loading per the user's explicit instruction: RENAME/SWEEP/GATE (the v2.12 Phases 104/105) sit at the tail, after all CLASS conversions + the flatten, because RENAME touches the same `*Store` files. Within-milestone parallelism: 107∥108, and 110∥111∥112 (each a distinct context dir; back-compat handles keep consumers byte-identical until the flatten, so file-overlap risk is low — serialize only if a planner finds a shared producer file). FLATTEN-02 is the one large mechanical codemod that must never run concurrently with another large rewrite.
 - 2026-06-08: **v2.12 Runes-Native Cleanup** milestone roadmap created. **4 phases (102-105), 9 requirements mapped 1:1, 0 unmapped.** Phase numbering continues from v2.11 (last phase 101); no reset. Granularity `fine`; frontend-only scope (`apps/frontend/src/**`), backed by the `spike-findings-voting-advice-application-gsd` skill. Effectively a single serial chain — **102 → 103 → 104 → 105** — driven by two hard constraints: (1) **spike-first** — Phase 102 (HANDLE-01) classifies the 40 `{ readonly current }` handles + picks the canonical idiom per class and GATES the codemod; (2) **codemod collision** — Phase 103 (HANDLE-02/03, the ~524-site `.current` codemod) and Phase 104 (RENAME-01/02, the Store→State rename) touch many of the same files, so they are serialized, not parallel. Within Phase 105, SWEEP-03 (widen the `svelte/store` ESLint guard app-wide) lands AFTER SWEEP-01 (convert the last `svelte/store`) so the widened guard doesn't flag existing code; GATE-01 is the terminal milestone-close green gate (full E2E incl. a11y-smoke + unit + typecheck + lint). The only safe parallelism is intra-phase (independent SWEEP-01/SWEEP-02 fixes before the SWEEP-03 guard + close).
@@ -579,10 +580,15 @@ Key cross-milestone reference points carried forward into v2.10:
 
 ## Session Continuity
 
-Last session: 2026-07-26T08:58:58.020Z
-Stopped at: Completed 133-03-PLAN.md
-Resume file: 
-None
+Last session: 2026-08-09 (resume)
+Stopped at: DEF-133-01 resolved (root cause confirmed by reproduction, fixed, 3x E2E gate green 129/0/0) + planning bookkeeping reconciled; v2.14 ready for /gsd-complete-milestone
+Resume file: None
+
+NOTE (2026-08-09 resume audit): the frontmatter `current_phase: 122 / status: planning` is STALE — an
+artifact of the known `state.complete-phase` transition quirk (see memory `project_gsd_execute_phase_quirks`).
+Phase 122 verified `passed` 2026-06-17; Phase 133 (last executed) verified `passed` 2026-07-26 with UAT +
+code-review fixes committed through 704cb30fc. No HANDOFF.json, no .continue-here checkpoint, no async jobs,
+no interrupted agents, and zero PLAN-without-SUMMARY across all phases.
 
 - Drove the EFLOW-10b bank-auth full-browser journey (`candidate-bank-auth-journey.spec.ts`) to SINGLE-PASS GREEN (`1 passed`, no skip/did-not-run) against the orchestrator-owned live env. Commit daab88f06 (tests/ only).
 - Enabled `preRegistration.enabled` SCOPED to the bank-auth-journey run: new `setupFromTemplate({ appSettingsOverride })` param (additive `merge_jsonb_column` AFTER the post-seed subset-match); paired teardown resets `{enabled:false}`. Shared `perm-not-located-2e2cg` template + `MINIMAL_BASE_APP_SETTINGS` + default suite untouched. DB-verified `{enabled:true}` during / `{enabled:false}` after.
@@ -615,8 +621,56 @@ Next action: /gsd-complete-milestone v2.10 to archive. Open flag for operator: c
 | 82 — A11Y-01 Required-Empty Cell | 1 plan | Product decision at discuss-phase + (if REJECT) save-path validation + `required` i18n key + spec cell 4; lighter if decision is SOFT-WARN-ONLY (spec only). |
 
 **Total v2.10 estimate:** ~6-10 plans across 4 phases. Risk: high on Phase 79 (race investigation may surface code-level bugs requiring framework or auth work); moderate on Phase 81 (schema decision drives implementation shape); low on Phases 80 + 82 (small focused fixes + product-decision-gated cell).
-
 ## Operator Next Steps
+
+> Reconciled 2026-08-09. The previous contents of this section were **stale by
+> 45 phases** (they described Phase 88 / v2.10-close work, shipped 2026-06-04).
+> That stale text is preserved verbatim in the collapsed block at the bottom for
+> history; it is NOT current guidance.
+
+**Milestone v2.14 is ready to close.** All 16 phases (118-133) carry a
+`status: passed` VERIFICATION.md; 83/83 plans have SUMMARYs; no PLAN lacks a
+SUMMARY; no HANDOFF.json, `.continue-here` checkpoint, async-job manifest, or
+interrupted agent is outstanding.
+
+### Recommended next action
+
+`/gsd-complete-milestone v2.14` — archive the milestone.
+
+### Cleared before close (2026-08-09)
+
+- **DEF-133-01** (intro-CTA click flake, ~1/9 full-suite rate) — **RESOLVED**.
+  The Phase-133 layout-shift hypothesis was disproven; the confirmed cause is an
+  asymmetric timeout-budget allocation in `bypassIntroThen` (10 s visibility wait
+  vs 2 s click budget, on costs that scale together under main-thread
+  contention). Reproduced at ≥60x CDP CPU throttling, fixed via the in-tree
+  `clickAndRaceSettle` idiom, validated 0/4 timeouts at 20x/40x/60x/80x, then
+  gated by **3x full E2E suite green — 129 passed / 0 failed / 0 skipped /
+  0 did-not-run** on every run (runs 1-2 consecutive off one clean baseline,
+  run 3 off a full cold start). Lint + prettier + `typecheck:tests` clean. Full
+  write-up: `.planning/phases/133-fix-phase-132-code-review-gaps/deferred-items.md`.
+- **ROADMAP progress-table drift** — rows 118 / 119 / 122 / 124 showed
+  In-progress / Pending-verify / Not-started against phases that were verified
+  passed weeks earlier; Phase 133 had no row at all. All reconciled against the
+  VERIFICATION.md frontmatter (the authoritative source).
+- **STATE.md frontmatter drift** — `current_phase: 122 / status: planning` was an
+  artifact of the known `state.complete-phase` transition quirk. Corrected.
+
+### Open at close (non-blocking)
+
+- **41 pending backlog todos** — triage via `/gsd-review-backlog` when shaping
+  v2.15. Includes the newly-filed
+  `2026-08-09-intro-step-list-renders-before-data-ready.md` (real user-visible
+  CLS on the intro page, surfaced by the DEF-133-01 investigation; needs a
+  product decision, not a test fix).
+- **Phase 133 VERIFICATION** carries 1 `behavior_unverified` item (the WR-01
+  loud-failure path) — closed by the Phase-133 UAT experiment; marker retained as
+  accurate phase history.
+
+---
+
+<details>
+<summary>Superseded — stale Phase 88 / v2.10-close guidance (kept for history)</summary>
 
 - Start the next milestone with /gsd-new-milestone
 
@@ -640,3 +694,4 @@ Next action: /gsd-complete-milestone v2.10 to archive. Open flag for operator: c
 ### Pre-existing flake to surface separately
 
 `candidate-profile.spec.ts:130` (terms-checkbox visibility race) is the primary cascade driver in full-suite runs (75 did_not_run in Plan 88-01's Task 6 Run #3). NOT caused by 88-01. Operator memory `project_all_green_suite_priority.md` flags this as v2.10 priority — likely a follow-up plan within Phase 88 or a sibling phase. Consider whether 88-02 absorbs it or if it gets its own plan.
+</details>
