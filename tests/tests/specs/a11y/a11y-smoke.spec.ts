@@ -5,28 +5,50 @@
  * regression gate (aria-required-parent, list, button-name) so future
  * reintroductions are caught.
  *
- * Routes (6 distinct entries):
- *   1. Home (voter landing /en)                       [pre-location — raw page.goto]
- *   2. Elections selector (/en/elections)             [pre-location — raw page.goto]
- *   3. Constituencies selector (/en/constituencies)   [pre-location — raw page.goto]
- *   4. Questions flow (/en/questions)                 [located — locatedVoterPage fixture]
- *   5. Results list (/en/results)                     [located — answeredVoterPage fixture]
- *   6. Voter-detail drawer (opened from Results)      [located — answeredVoterPage fixture]
+ * ## The route contract (D-04)
  *
- * Each route: navigate → settle via role-based content wait (NEVER a
- * network-idle settle) → run
- * AxeBuilder.withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze()
- * → assert per-rule 0-violation gate + global 0-violation gate.
+ * EVERY scan is declared as an entry in the single `AXE_ROUTES` table — there
+ * are no hand-written scan bodies outside it. Each entry MUST declare a
+ * `contentTestId`: the data-driven testid proving the route's real content is
+ * in the DOM. The field is REQUIRED, so a new scan route cannot be added
+ * without stating what "loaded" means for it.
  *
- * Located routes consume the voter-journey fixtures:
- *   - `questions` route → `locatedVoterPage` (walks Home → Elections →
- *     Constituencies → /questions intro and STOPS).
- *   - `results` + `voter-detail-drawer` routes → `answeredVoterPage`
- *     (full walk through to /results landing).
+ * This exists because a role-based settle is not a content settle. The previous
+ * `getByRole('heading')` settle resolved on a static i18n title that renders
+ * BEFORE any data-driven content mounts, so scans could — and did — pass against
+ * a DOM that did not contain the thing being checked. It also could not detect a
+ * `+page.ts` `redirect(307, …)`: the `constituencies-selector` entry had never
+ * once scanned a constituency selector, silently re-scanning /elections instead.
  *
+ * Entries are discriminated on `fixture`, which decides what supplies the page:
+ *   - `raw`      — the runner navigates itself (`routeId` required), from a
+ *                  clean unauthenticated page.
+ *   - `located`  — `locatedVoterPage` fixture (walks Home → Elections →
+ *                  Constituencies → /questions intro, then STOPS).
+ *   - `answered` — `answeredVoterPage` fixture (full walk to /results landing).
  * The fixtures walk the real voter flow and let the voter context populate
  * electionId/constituencyId via the live UI path, avoiding bypass-of-UI-flow
  * data setup and tightening the trust boundary.
+ *
+ * Routes (6 distinct entries — note Paraglide's `url` locale strategy means
+ * there is NO locale route segment; the paths really are `/`, `/elections`, …):
+ *   1. home                             (/)              [raw]
+ *   2. elections-selector               (/elections)     [raw]
+ *   3. constituencies-selector-located  (/constituencies)[raw + settle: walks
+ *      the elections Continue gate, because /constituencies 307-redirects a
+ *      goto that carries no electionId]
+ *   4. questions                        (/questions)     [located]
+ *   5. results                          (/results)       [answered]
+ *   6. voter-detail-drawer  (opened from Results)        [answered + settle]
+ *
+ * Each scan: (navigate) → optional reach-the-target `settle` → REQUIRED
+ * `contentTestId` wait (the LAST gate; NEVER a network-idle settle) →
+ * `awaitAnimationsSettled` → run
+ * AxeBuilder.withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze()
+ * → assert per-rule 0-violation gate + global 0-violation gate.
+ *
+ * Raw entries are scanned in light AND dark; fixture-driven entries are light
+ * only. That is a known coverage gap — see the comment above the runners.
  *
  * Per-rule axe-id assertions + global 0-violation gate are PRESERVED — no
  * weakening, per CLAUDE.md WCAG 2.1 AA discipline.
@@ -132,9 +154,11 @@ voterJourneyTest.use({ storageState: { cookies: [], origins: [] } });
 // later if needed.
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
 
-interface AxeRoute {
+/**
+ * Fields every scan entry carries, whatever supplies its page.
+ */
+interface AxeRouteBase {
   name: string;
-  routeId: Route;
   /**
    * REQUIRED — the data-driven testid proving this route's real content is in
    * the DOM.
@@ -144,7 +168,8 @@ interface AxeRoute {
    * so a heading settle lets the scan run against a DOM that does not yet contain
    * the content the scan exists to check. Making the field required means a new
    * scan route physically cannot be added without declaring what "loaded" means
-   * for it (D-04).
+   * for it (D-04) — and the requirement is uniform, because EVERY scan entry
+   * (raw and fixture-driven alike) is declared in this one table.
    *
    * A route-unique anchor also detects a `+page.ts` `redirect(307, …)`
    * automatically — that is how the `constituencies-selector` entry was found to
@@ -159,14 +184,36 @@ interface AxeRoute {
   settle?: (page: Page) => Promise<void>;
 }
 
+/**
+ * A scan entry the runner navigates to itself, from a clean unauthenticated
+ * page — `routeId` is required because nothing else supplies the URL.
+ */
+interface RawAxeRoute extends AxeRouteBase {
+  fixture: 'raw';
+  routeId: Route;
+}
+
+/**
+ * A scan entry whose page is supplied by a voter-journey fixture, which has
+ * already walked the real UI flow to get there. No `routeId`: navigating would
+ * discard the located/answered state the fixture exists to establish.
+ */
+interface FixtureAxeRoute extends AxeRouteBase {
+  fixture: 'located' | 'answered';
+}
+
+type AxeRoute = RawAxeRoute | FixtureAxeRoute;
+
 const AXE_ROUTES: ReadonlyArray<AxeRoute> = [
   {
     name: 'home',
+    fixture: 'raw',
     routeId: 'Home',
     contentTestId: testIds.voter.home.page
   },
   {
     name: 'elections-selector',
+    fixture: 'raw',
     routeId: 'Elections',
     contentTestId: testIds.voter.elections.label
   },
@@ -178,6 +225,7 @@ const AXE_ROUTES: ReadonlyArray<AxeRoute> = [
     // gate: both elections are pre-checked in the `e2e/base` dataset, so
     // Continue is enabled immediately and needs no option click.
     name: 'constituencies-selector-located',
+    fixture: 'raw',
     routeId: 'Elections',
     contentTestId: testIds.voter.constituencies.list,
     settle: async (page) => {
@@ -187,6 +235,49 @@ const AXE_ROUTES: ReadonlyArray<AxeRoute> = [
         .waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
       await page.getByTestId(testIds.voter.elections.continue).click();
       await page.waitForURL(/\/constituencies/, { timeout: TIMEOUTS.slowPage });
+    }
+  },
+  {
+    // `locatedVoterPage` walks Home → Elections → Constituencies → the
+    // /questions intro and STOPS there, so the start button IS the intro
+    // page's data-driven content and no extra settle is needed.
+    name: 'questions',
+    fixture: 'located',
+    contentTestId: testIds.voter.questions.startButton
+  },
+  {
+    // Strictly tighter than the previous `getByRole('tablist')` settle: the
+    // tablist is layout chrome that renders before any nomination data, while
+    // an entity card only exists once the matched entities have rendered.
+    name: 'results',
+    fixture: 'answered',
+    contentTestId: testIds.voter.results.card
+  },
+  {
+    // The drawer content flies in via Svelte `transition:fly` (Drawer.svelte:82),
+    // which animates opacity 0->1. axe composites text colour through any
+    // in-flight ancestor opacity, so scanning mid-fly produced phantom
+    // `color-contrast` failures — e.g. `text-secondary` #666666 rendered ~#969696
+    // (2.95:1) and `primary` #2546a8 rendered ~#6a80c3 (3.82:1), both exactly the
+    // token at ~0.69 opacity. At FULL opacity the tokens pass (≈5.7:1 / ≈8.6:1 on
+    // white), so this is a scan-timing fix, NOT a theme change. The shared
+    // `awaitAnimationsSettled` gate settles the WHOLE document (drawer fly + any
+    // page-level entrance fade) and is safe here specifically because it excludes
+    // INFINITE animations — the looping match bar on this surface would otherwise
+    // never resolve, which is why this route once needed a dialog-subtree-only
+    // settle.
+    name: 'voter-detail-drawer',
+    fixture: 'answered',
+    contentTestId: testIds.voter.results.entityDetails,
+    settle: async (page) => {
+      // Open the drawer — click first entity card. The drawer renders as
+      // role=dialog overlay intercepted by results/+layout.svelte beforeNavigate.
+      await page
+        .getByTestId(testIds.voter.results.card)
+        .first()
+        .waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
+      await page.getByTestId(testIds.voter.results.card).first().click();
+      await page.getByRole('dialog').waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
     }
   }
 ];
@@ -221,24 +312,55 @@ async function assertAxeGates(
   expect(Array.isArray(results.violations)).toBe(true);
 }
 
-// Module-level for…of route runner — module-level dispatch satisfies
-// playwright/no-conditional-in-test (no `if` inside test() bodies).
-for (const route of AXE_ROUTES) {
+/**
+ * The one scan body every entry shares, whatever supplied the page:
+ * reach-the-target settle → data-driven content anchor → animations settle →
+ * scan → gates. The content anchor is deliberately the LAST wait before the
+ * settle, so a `+page.ts` loader redirect or an unmounted data surface cannot
+ * be scanned unnoticed (D-04).
+ *
+ * Lives at module scope so the shared body is not duplicated per loop and so
+ * no branch sits inside a `test()` body (playwright/no-conditional-in-test).
+ * Named `assert…` because it terminates in `assertAxeGates` — that also makes it
+ * a recognised assertion helper under the repo's `playwright/expect-expect`
+ * `assertFunctionPatterns` config (tests/eslint.config.mjs), so the gates stay
+ * enforced rather than the rule being disabled at the call sites.
+ */
+async function assertAxeScan(page: Page, route: AxeRoute, testInfo: TestInfo, label: string): Promise<void> {
+  await route.settle?.(page);
+  await page.getByTestId(route.contentTestId).first().waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
+  // Gate the scan on the entrance fade/animation finishing — otherwise axe
+  // composites text colour through in-flight opacity and reports phantom
+  // color-contrast failures (see awaitAnimationsSettled).
+  await awaitAnimationsSettled(page);
+
+  const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
+  await assertAxeGates(results, testInfo, label);
+}
+
+// Module-level for…of route runners, filtered by the `fixture` discriminant —
+// module-level dispatch satisfies playwright/no-conditional-in-test (no `if`
+// inside test() bodies), and the type predicates narrow the union so each loop
+// sees only the fields its variant actually carries.
+//
+// THEME COVERAGE — a known gap, not a property of the design. Raw entries emit
+// a light AND a dark scan; fixture-driven entries (`questions`, `results`,
+// `voter-detail-drawer`) emit LIGHT ONLY. Both halves are unchanged from before
+// this table existed. Giving the fixture-driven entries dark twins would scan
+// those three surfaces in dark for the FIRST time — never measured, so an
+// unbounded fallout budget — and would double a full voter walk per entry in a
+// suite that runs three times at the determinism gate. So a dark-only contrast
+// regression on /questions, /results or the detail drawer would currently go
+// uncaught.
+
+const RAW_ROUTES = AXE_ROUTES.filter((route): route is RawAxeRoute => route.fixture === 'raw');
+const LOCATED_ROUTES = AXE_ROUTES.filter((route): route is FixtureAxeRoute => route.fixture === 'located');
+const ANSWERED_ROUTES = AXE_ROUTES.filter((route): route is FixtureAxeRoute => route.fixture === 'answered');
+
+for (const route of RAW_ROUTES) {
   test(`axe accessibility scan — ${route.name}`, async ({ page }, testInfo) => {
     await page.goto(buildRoute({ route: route.routeId, locale: 'en' }));
-    await route.settle?.(page);
-    // The data-driven content anchor runs LAST, after any reach-the-target
-    // interaction — so a `+page.ts` loader redirect cannot be scanned unnoticed
-    // and the scan never fires against a route whose real content has not
-    // mounted yet.
-    await page.getByTestId(route.contentTestId).first().waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
-    // Gate the scan on the entrance fade/animation finishing — otherwise axe
-    // composites text colour through in-flight opacity and reports phantom
-    // color-contrast failures (see awaitAnimationsSettled).
-    await awaitAnimationsSettled(page);
-
-    const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
-    await assertAxeGates(results, testInfo, route.name);
+    await assertAxeScan(page, route, testInfo, route.name);
   });
 
   // EFLOW-07: dark-mode colour-contrast (WCAG 2.1 AA gated in both themes).
@@ -250,67 +372,33 @@ for (const route of AXE_ROUTES) {
   test(`axe accessibility scan — ${route.name} (dark)`, async ({ page }, testInfo) => {
     await page.emulateMedia({ colorScheme: 'dark' });
     await page.goto(buildRoute({ route: route.routeId, locale: 'en' }));
-    await route.settle?.(page);
-    // See the light-variant scan above — the content anchor is the LAST gate.
-    await page.getByTestId(route.contentTestId).first().waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
-    // See the light-variant scan above — gate on the entrance fade settling.
-    await awaitAnimationsSettled(page);
-
-    const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
-    await assertAxeGates(results, testInfo, `${route.name}-dark`);
+    await assertAxeScan(page, route, testInfo, `${route.name}-dark`);
   });
 }
 
-// ── Located routes — voter-journey fixture consumes ────────────────────────
+// ── Located routes — voter-journey fixture supplies the page ───────────────
+//
+// The fixtures walk the real voter flow and let the voter context populate
+// electionId/constituencyId via the live UI path, avoiding bypass-of-UI-flow
+// data setup and tightening the trust boundary. No `page.goto` here: navigating
+// would discard the located/answered state the fixture exists to establish.
 
-voterJourneyTest('axe accessibility scan — questions', async ({ locatedVoterPage: page }, testInfo) => {
-  // locatedVoterPage walks Home → Elections → Constituencies → /questions
-  // intro and STOPS. The voter-questions-start button is visible at this
-  // point — the intro page is the route under axe scan.
-  await page.getByRole('heading').first().waitFor({ state: 'visible', timeout: 10000 });
-  // Gate on the entrance fade settling — see awaitAnimationsSettled.
-  await awaitAnimationsSettled(page);
+for (const route of LOCATED_ROUTES) {
+  // `locatedVoterPage` walks Home → Elections → Constituencies → the /questions
+  // intro and STOPS (it does NOT answer questions or proceed to /results). The
+  // fixture-name-aliasing idiom `{ locatedVoterPage: page }` lets the body read
+  // as if it had a plain `page`.
+  voterJourneyTest(`axe accessibility scan — ${route.name}`, async ({ locatedVoterPage: page }, testInfo) => {
+    await assertAxeScan(page, route, testInfo, route.name);
+  });
+}
 
-  const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
-  await assertAxeGates(results, testInfo, 'questions');
-});
-
-voterJourneyTest('axe accessibility scan — results', async ({ answeredVoterPage: page }, testInfo) => {
-  // answeredVoterPage walks the full flow + lands on /results. Wait for the
-  // results layout tablist (Tabs.svelte) — its explicit role="tablist"
-  // resolves the aria-required-parent + list axe violations.
-  await page.getByRole('tablist').first().waitFor({ state: 'visible', timeout: 10000 });
-  // Gate on the entrance fade settling — see awaitAnimationsSettled.
-  await awaitAnimationsSettled(page);
-
-  const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
-  await assertAxeGates(results, testInfo, 'results');
-});
-
-voterJourneyTest('axe accessibility scan — voter-detail-drawer', async ({ answeredVoterPage: page }, testInfo) => {
-  // Wait for the results layout tablist (Tabs.svelte) — its explicit
-  // role="tablist" resolves the aria-required-parent + list axe violations.
-  await page.getByRole('tablist').first().waitFor({ state: 'visible', timeout: 10000 });
-  // Open the drawer — click first entity card. The drawer renders as
-  // role=dialog overlay intercepted by results/+layout.svelte beforeNavigate.
-  await page.getByTestId('entity-card').first().waitFor({ state: 'visible', timeout: 10000 });
-  await page.getByTestId('entity-card').first().click();
-  await page.getByRole('dialog').waitFor({ state: 'visible', timeout: 10000 });
-  // Wait for the drawer's ENTRANCE TRANSITION to finish before scanning. The Drawer
-  // content flies in via Svelte `transition:fly` (Drawer.svelte:82), which animates
-  // opacity 0->1. axe composites text colour through any in-flight ancestor opacity,
-  // so scanning mid-fly produced phantom `color-contrast` failures — e.g.
-  // `text-secondary` #666666 rendered ~#969696 (2.95:1) and `primary` #2546a8 rendered
-  // ~#6a80c3 (3.82:1), both exactly the token at ~0.69 opacity. At FULL opacity the
-  // tokens pass (≈5.7:1 / ≈8.6:1 on white), so this is a scan-timing fix, NOT a theme
-  // change. The shared awaitAnimationsSettled gate settles the WHOLE document (drawer
-  // fly + any page-level entrance fade), so it backstops both the drawer transition
-  // and the same scan-timing class fixed on the other routes.
-  await awaitAnimationsSettled(page);
-
-  const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
-  await assertAxeGates(results, testInfo, 'voter-detail-drawer');
-});
+for (const route of ANSWERED_ROUTES) {
+  // `answeredVoterPage` walks the full flow through to the /results landing.
+  voterJourneyTest(`axe accessibility scan — ${route.name}`, async ({ answeredVoterPage: page }, testInfo) => {
+    await assertAxeScan(page, route, testInfo, route.name);
+  });
+}
 
 // ── Navigation-a11y assertions (transition stack active) ───────────────────
 //
