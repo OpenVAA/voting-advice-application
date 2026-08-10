@@ -5,6 +5,16 @@
  *
  * Rigidity contract: NO expect.soft, NO try/catch around expect, NO best-effort .catch(() => null) on assertion-bearing locator interactions, NO [xxx-followup] markers — every helper assertion is HARD.
  *
+ * Rigidity carve-out (DEF-133-01): `bypassIntroThen` advances via
+ * `clickAndRaceSettle`, which internally swallows the click's actionability
+ * timeout. This does NOT weaken the contract — the clicks in question are
+ * NAVIGATION clicks, not assertion-bearing interactions, and every one of them
+ * is immediately followed by a HARD landing assertion (the intro CTA
+ * `toBeVisible`, then the caller's `expectation()`). The swallow moves the
+ * failure signal from "the click did not ack in 2 s" to "the flow did not
+ * land" — strictly more meaningful. See `bypassIntroThen`'s docblock for the
+ * measured justification.
+ *
  * Helper `selectElectionAndAdvance` has set-only iteration semantics — matching options end aria-checked='true', non-matching end aria-checked='false', regardless of the page's default-selection state.
  *
  * Display-name convention: the perm-* templates encode each entity's role into its display name via the `[<SYMBOL>] <description>` convention. Specs match inline using `/\[<SYMBOL>\]/i` regexes — this module exports NO TEXT_RE constant.
@@ -12,20 +22,59 @@
 
 import { expect } from '@playwright/test';
 import { testIds } from './testIds';
-import { TIMEOUTS } from '../helpers';
+import { clickAndRaceSettle, TIMEOUTS } from '../helpers';
 import type { Locator, Page } from '@playwright/test';
 
 /**
  * Navigate to home, click start, advance through the intro page, then await
  * the caller's expectation. The intermediate intro-page visibility wait is
  * the authoritative signal — no URL-pattern wait needed.
+ *
+ * DEF-133-01: both clicks here are the FIRST interaction with a
+ * freshly-hydrating page, so their cost is a *render-settle* boundary, not an
+ * *action-ack* boundary. A raw `.click({ timeout: TIMEOUTS.click })` therefore
+ * spends the 2 s action-ack budget on Playwright's actionability re-check while
+ * the main thread is still saturated by hydration — and that cost scales
+ * linearly with contention. Measured on the intro CTA (CDP CPU throttling, all
+ * other factors held constant):
+ *
+ *   throttle   1x     4x     8x    12x    20x    40x    60x    80x
+ *   click    ~55ms  ~138  ~290   ~420   ~690  ~1800  ~2400  >2000 (4/4 timeouts)
+ *
+ * i.e. the 2 s budget is breached from ~60x contention upward — reproducing the
+ * observed `locator.click: Timeout 2000ms exceeded` at `voterIntro.ts:28`
+ * exactly. Note the asymmetry the old code encoded: the *visibility* wait that
+ * precedes each click gets `slowPage` (10 s) while the click itself got 2 s,
+ * even though the two costs scale together (~1:1.7) — so the click was always
+ * the budget that blew first.
+ *
+ * Fix: use `clickAndRaceSettle`, the in-tree idiom for exactly this family
+ * (see its "Stuck click" defense rationale). It bounds the click, swallows the
+ * actionability timeout, and races the *landing* instead — the landing being
+ * the signal that actually matters. Rigidity is preserved: the hard assertion
+ * simply moves downstream (the intro CTA visibility wait for the first click,
+ * the caller's `expectation()` for the second), so a genuinely stuck flow still
+ * fails loudly — and with a better message than "click timed out".
+ *
+ * NOT fixed by raising `TIMEOUTS.click`: that bucket is shared by 15 call sites
+ * and widening it would slow every fail-fast path in the suite.
+ *
+ * Rejected alternative: `settleNetworkIdle` before the click. Measured worse —
+ * it helps at moderate contention but adds its own unbounded wait (6254 ms
+ * outlier at 60x), and its `.catch(() => null)` form would violate this
+ * module's rigidity contract.
  */
 export async function bypassIntroThen(page: Page, expectation: () => Promise<void>): Promise<void> {
   await page.goto('/en/');
-  await page.getByTestId(testIds.voter.home.startButton).click({ timeout: TIMEOUTS.click });
+  // Landing signal: the intro route. The hard assertion is the `toBeVisible`
+  // on the intro CTA immediately below.
+  await clickAndRaceSettle(page.getByTestId(testIds.voter.home.startButton), /\/intro\b/);
   const introStart = page.getByTestId(testIds.voter.intro.startButton);
   await expect(introStart).toBeVisible({ timeout: TIMEOUTS.slowPage });
-  await introStart.click({ timeout: TIMEOUTS.click });
+  // Landing signal: any route other than the intro itself — the destination
+  // varies by topology (elections / constituencies / questions). The hard
+  // assertion is the caller's `expectation()`.
+  await clickAndRaceSettle(introStart, (url) => !url.pathname.endsWith('/intro'));
   await expectation();
 }
 
