@@ -804,20 +804,13 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       // (`{#if mode === 'answer' && multiConstraints}`), so its mere presence
       // discriminates multi-choice from the categorical/boolean radios below.
       //
-      // NOTE (BLOCKER-130-05 — runtime i18n gap, NOT asserted here): the helper's
-      // TEXT currently renders the raw key `questions.multiChoice.selectRange`
-      // rather than "Select 2 to 3 options.". The 129-06 helper-text work added
-      // `questions.multiChoice.{selectRange,selectExact}` to the type-gen source
-      // (`src/lib/i18n/translations/`, which is why the key type-checks) but NOT
-      // to the runtime Paraglide catalog (`apps/frontend/messages/{locale}/
-      // questions.json`), so `t()` (wrapper.ts) falls through to the raw key. This
-      // is a real product i18n gap surfaced by this step; a `/2.*3/` content
-      // assertion is deliberately withheld because (a) this is a specs-only phase
-      // that must not patch product to make an assertion pass, and (b) asserting
-      // the raw-key text would lock in the bug. Tracked as a blocker for a
-      // follow-up product fix (add the two multiChoice keys to messages/).
+      // The text assertion below is the FIX-02 lock for
+      // `questions.multiChoice.selectRange`: the question's effective 2..3 window
+      // renders the range variant ("Select 2 to 3 options." in en), so a runtime
+      // catalog regression that fell back to the raw key would fail here.
       const helper = page.getByTestId(testIds.voter.questions.choiceHelper);
       await expect(helper).toBeVisible();
+      await expect(helper).toHaveText(/2.*3/);
 
       // D-07 save gating across the 2..3 window. QuestionChoices.svelte never
       // disables unchecked boxes ("we never disable unchecked boxes here" —
