@@ -1,7 +1,8 @@
 {
   "components": {
     "accordionSelect": {
-      "collapsedAriaInfo": "Appuyez pour afficher toutes les options"
+      "collapsedAriaInfo": "Appuyez pour afficher toutes les options",
+      "listboxAriaLabel": "Sélectionner une option"
     },
     "constituencySelector": {
       "selectPrompt": "Sélectionnez {constituencyGroup}"
@@ -33,6 +34,12 @@
     "matchScore": {
       "label": "correspondance",
       "score": "{score}%"
+    },
+    "multipleTextInput": {
+      "add": "Ajouter un élément",
+      "moveDown": "Déplacer vers le bas",
+      "moveUp": "Déplacer vers le haut",
+      "remove": "Supprimer l'élément"
     },
     "passwordInput": {
       "hidePassword": "Masquer le mot de passe",

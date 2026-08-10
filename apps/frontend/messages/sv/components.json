@@ -1,7 +1,8 @@
 {
   "components": {
     "accordionSelect": {
-      "collapsedAriaInfo": "Tryck för att visa alla alternativ"
+      "collapsedAriaInfo": "Tryck för att visa alla alternativ",
+      "listboxAriaLabel": "Välj ett alternativ"
     },
     "constituencySelector": {
       "selectPrompt": "Välj {constituencyGroup}"
@@ -33,6 +34,12 @@
     "matchScore": {
       "label": "matchning",
       "score": "{score}%"
+    },
+    "multipleTextInput": {
+      "add": "Lägg till objekt",
+      "moveDown": "Flytta ner",
+      "moveUp": "Flytta upp",
+      "remove": "Ta bort objekt"
     },
     "passwordInput": {
       "hidePassword": "Dölj lösenord",

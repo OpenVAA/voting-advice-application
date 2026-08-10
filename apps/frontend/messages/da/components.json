@@ -1,7 +1,8 @@
 {
   "components": {
     "accordionSelect": {
-      "collapsedAriaInfo": "Tryk for at vise alle valgmuligheder"
+      "collapsedAriaInfo": "Tryk for at vise alle valgmuligheder",
+      "listboxAriaLabel": "Vælg en mulighed"
     },
     "constituencySelector": {
       "selectPrompt": "Vælg {constituencyGroup}"
@@ -33,6 +34,12 @@
     "matchScore": {
       "label": "match",
       "score": "{score}%"
+    },
+    "multipleTextInput": {
+      "add": "Tilføj element",
+      "moveDown": "Flyt ned",
+      "moveUp": "Flyt op",
+      "remove": "Fjern element"
     },
     "passwordInput": {
       "hidePassword": "Skjul adgangskode",
