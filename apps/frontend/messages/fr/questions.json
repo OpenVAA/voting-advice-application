@@ -62,6 +62,19 @@
       },
       "start": "Répondre à {numQuestions} questions"
     },
+    "multiChoice": {
+      "selectExact": [
+        {
+          "declarations": ["input count", "local countPlural = count: plural"],
+          "selectors": ["countPlural"],
+          "match": {
+            "countPlural=other": "Sélectionnez {count} options.",
+            "countPlural=one": "Sélectionnez 1 option."
+          }
+        }
+      ],
+      "selectRange": "Sélectionnez {min} à {max} options."
+    },
     "next": "Question suivante",
     "previous": "Précédente",
     "remove": "Supprimer la réponse",

@@ -62,6 +62,19 @@
       },
       "start": "{numQuestions} Froen beäntwerten"
     },
+    "multiChoice": {
+      "selectExact": [
+        {
+          "declarations": ["input count", "local countPlural = count: plural"],
+          "selectors": ["countPlural"],
+          "match": {
+            "countPlural=other": "Wielt {count} Optiounen.",
+            "countPlural=one": "Wielt 1 Optioun."
+          }
+        }
+      ],
+      "selectRange": "Wielt {min} bis {max} Optiounen."
+    },
     "next": "Nächst Fro",
     "previous": "Zréck",
     "remove": "Äntwert läschen",

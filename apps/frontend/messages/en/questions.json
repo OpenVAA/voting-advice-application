@@ -62,6 +62,19 @@
       },
       "start": "Answer {numQuestions} Questions"
     },
+    "multiChoice": {
+      "selectExact": [
+        {
+          "declarations": ["input count", "local countPlural = count: plural"],
+          "selectors": ["countPlural"],
+          "match": {
+            "countPlural=other": "Select {count} options.",
+            "countPlural=one": "Select 1 option."
+          }
+        }
+      ],
+      "selectRange": "Select {min} to {max} options."
+    },
     "next": "Next question",
     "previous": "Previous",
     "remove": "Delete answer",

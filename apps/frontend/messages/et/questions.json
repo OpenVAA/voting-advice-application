@@ -62,6 +62,19 @@
       },
       "start": "Vasta {numQuestions} küsimusele"
     },
+    "multiChoice": {
+      "selectExact": [
+        {
+          "declarations": ["input count", "local countPlural = count: plural"],
+          "selectors": ["countPlural"],
+          "match": {
+            "countPlural=other": "Vali {count} valikut.",
+            "countPlural=one": "Vali 1 valik."
+          }
+        }
+      ],
+      "selectRange": "Vali {min}–{max} valikut."
+    },
     "next": "Järgmine",
     "previous": "Eelmine",
     "remove": "Kustuta vastus",

@@ -62,6 +62,19 @@
       },
       "start": "Besvar {numQuestions} spørgsmål"
     },
+    "multiChoice": {
+      "selectExact": [
+        {
+          "declarations": ["input count", "local countPlural = count: plural"],
+          "selectors": ["countPlural"],
+          "match": {
+            "countPlural=other": "Vælg {count} muligheder.",
+            "countPlural=one": "Vælg 1 mulighed."
+          }
+        }
+      ],
+      "selectRange": "Vælg {min}-{max} muligheder."
+    },
     "next": "Næste spørgsmål",
     "previous": "Forrige",
     "remove": "Slet svar",

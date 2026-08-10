@@ -62,6 +62,19 @@
       },
       "start": "Börja svara på frågor"
     },
+    "multiChoice": {
+      "selectExact": [
+        {
+          "declarations": ["input count", "local countPlural = count: plural"],
+          "selectors": ["countPlural"],
+          "match": {
+            "countPlural=other": "Välj {count} alternativ.",
+            "countPlural=one": "Välj 1 alternativ."
+          }
+        }
+      ],
+      "selectRange": "Välj {min}–{max} alternativ."
+    },
     "next": "Nästa fråga",
     "previous": "Föregående",
     "remove": "Radera svar",

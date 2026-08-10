@@ -62,6 +62,19 @@
       },
       "start": "Vastaa {numQuestions} kysymykseen"
     },
+    "multiChoice": {
+      "selectExact": [
+        {
+          "declarations": ["input count", "local countPlural = count: plural"],
+          "selectors": ["countPlural"],
+          "match": {
+            "countPlural=other": "Valitse {count} vaihtoehtoa.",
+            "countPlural=one": "Valitse 1 vaihtoehto."
+          }
+        }
+      ],
+      "selectRange": "Valitse {min}–{max} vaihtoehtoa."
+    },
     "next": "Seuraava",
     "previous": "Edellinen",
     "remove": "Poista vastaus",
