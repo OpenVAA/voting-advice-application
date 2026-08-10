@@ -1,7 +1,7 @@
 /**
  * axe accessibility smoke — WCAG 2.1 AA regression gate.
  *
- * Asserts the 0-violation state across 6 voter-app routes AND a per-rule
+ * Asserts the 0-violation state across 7 voter-app surfaces AND a per-rule
  * regression gate (aria-required-parent, list, button-name) so future
  * reintroductions are caught.
  *
@@ -30,7 +30,7 @@
  * electionId/constituencyId via the live UI path, avoiding bypass-of-UI-flow
  * data setup and tightening the trust boundary.
  *
- * Routes (6 distinct entries — note Paraglide's `url` locale strategy means
+ * Routes (7 distinct entries — note Paraglide's `url` locale strategy means
  * there is NO locale route segment; the paths really are `/`, `/elections`, …):
  *   1. home                             (/)              [raw]
  *   2. elections-selector               (/elections)     [raw]
@@ -40,6 +40,9 @@
  *   4. questions                        (/questions)     [located]
  *   5. results                          (/results)       [answered]
  *   6. voter-detail-drawer  (opened from Results)        [answered + settle]
+ *   7. results-filter-drawer (filter dialog on Results)  [answered + settle:
+ *      opens the dialog through the entityFilters fixture and expands EVERY
+ *      filter row, because the filter bodies are lazily imported]
  *
  * Each scan: (navigate) → optional reach-the-target `settle` → REQUIRED
  * `contentTestId` wait (the LAST gate; NEVER a network-idle settle) →
@@ -56,6 +59,7 @@
 
 import { AxeBuilder } from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
+import { createEntityFilters } from '../../fixtures/voter/entityFilters.fixture';
 import { voterJourneyTest, walkUntilQuestionsIntro } from '../../fixtures/voter/voter-journey.fixture';
 import { TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
@@ -279,6 +283,51 @@ const AXE_ROUTES: ReadonlyArray<AxeRoute> = [
       await page.getByTestId(testIds.voter.results.card).first().click();
       await page.getByRole('dialog').waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
     }
+  },
+  {
+    // The results filter drawer — `NumericEntityFilter` / `EnumeratedEntityFilter`
+    // and the Expander rows that hold them. Before this entry these surfaces were
+    // scanned by NOTHING, which is what let the FIX-01 defect class sit on exactly
+    // the components the v2.14 audit named.
+    //
+    // The content anchor is the numeric filter's range input, NOT the dialog root
+    // and NOT a filter row. Filter bodies are lazily imported
+    // (`{#await import('./numeric')}` in EntityFilters.svelte), so a dialog-root or
+    // row anchor resolves while the bodies are still unmounted and the scan would
+    // cover an empty drawer. The `e2e/base` dataset renders exactly one numeric
+    // filter (the years-of-experience info question carries `filterable: true`), so
+    // this anchor is the strictest data-driven proof the drawer's real content is
+    // present.
+    //
+    // LIGHT ONLY, like its fixture-driven siblings (see the theme-coverage note
+    // above the runners). Research measured this drawer at 0 violations in BOTH
+    // themes, so the gap here is untested-in-CI rather than unknown.
+    name: 'results-filter-drawer',
+    fixture: 'answered',
+    contentTestId: testIds.voter.results.filterNumericMin,
+    settle: async (page) => {
+      await page
+        .getByTestId(testIds.voter.results.card)
+        .first()
+        .waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
+      // Go through the fixture, never a hand-rolled click: the fixture's dialog
+      // opener owns the two-conditional-render `.first()` invariant on the filter
+      // button AND the fallback from the unreliable `entity-filter-dialog` testid
+      // to `getByRole('dialog', { name: /Filters/i })`.
+      const dialog = await createEntityFilters(page).openFilterDialog();
+      // Expand EVERY row: EntityFilters defaults `defaultExpanded` to false for
+      // non-active/non-text filters, so an unexpanded drawer hides most of the
+      // markup this scan exists to check. `getFilter()` auto-expands through the
+      // Expander's internal `role=checkbox, name=/expand or collapse/i` toggle —
+      // never click an Expander header directly. The loop is bounded by a count
+      // read ONCE up front, and each expand is bounded by the fixture's own
+      // toggle-visibility assertion, so there is no unbounded polling here and no
+      // fixed-duration sleep anywhere in this file.
+      const rowCount = await dialog.getFilters().count();
+      for (let index = 0; index < rowCount; index++) {
+        await dialog.getFilter(() => index);
+      }
+    }
   }
 ];
 
@@ -302,7 +351,7 @@ async function assertAxeGates(
   expect(results.violations.filter((v) => v.id === 'list')).toHaveLength(0);
   expect(results.violations.filter((v) => v.id === 'button-name')).toHaveLength(0);
 
-  // Global zero gate — "0 violations across all 6 routes". Catches new rule-IDs
+  // Global zero gate — "0 violations across all 7 surfaces". Catches new rule-IDs
   // that the per-rule trio doesn't name (e.g., heading-order from a latent
   // h4-hoist outline gap).
   expect(results.violations).toHaveLength(0);
@@ -345,13 +394,13 @@ async function assertAxeScan(page: Page, route: AxeRoute, testInfo: TestInfo, la
 //
 // THEME COVERAGE — a known gap, not a property of the design. Raw entries emit
 // a light AND a dark scan; fixture-driven entries (`questions`, `results`,
-// `voter-detail-drawer`) emit LIGHT ONLY. Both halves are unchanged from before
+// `voter-detail-drawer`, `results-filter-drawer`) emit LIGHT ONLY. Both halves are unchanged from before
 // this table existed. Giving the fixture-driven entries dark twins would scan
 // those three surfaces in dark for the FIRST time — never measured, so an
 // unbounded fallout budget — and would double a full voter walk per entry in a
 // suite that runs three times at the determinism gate. So a dark-only contrast
-// regression on /questions, /results or the detail drawer would currently go
-// uncaught.
+// regression on /questions, /results, the detail drawer or the filter drawer
+// would currently go uncaught.
 
 const RAW_ROUTES = AXE_ROUTES.filter((route): route is RawAxeRoute => route.fixture === 'raw');
 const LOCATED_ROUTES = AXE_ROUTES.filter((route): route is FixtureAxeRoute => route.fixture === 'located');
