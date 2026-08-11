@@ -50,8 +50,11 @@
  * AxeBuilder.withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze()
  * → assert per-rule 0-violation gate + global 0-violation gate.
  *
- * Raw entries are scanned in light AND dark; fixture-driven entries are light
- * only. That is a known coverage gap — see the comment above the runners.
+ * EVERY entry is scanned in BOTH themes — each emits a light scan and a `-dark`
+ * twin, so there is no theme-shaped hole in the gate. Raw twins emulate dark
+ * before their `goto`; fixture-driven twins take a dark browser context so the
+ * fixture walks the whole journey in dark (see `assertDarkThemeApplied` for why
+ * flipping the theme after the walk is not equivalent).
  *
  * Per-rule axe-id assertions + global 0-violation gate are PRESERVED — no
  * weakening, per CLAUDE.md WCAG 2.1 AA discipline.
@@ -299,9 +302,10 @@ const AXE_ROUTES: ReadonlyArray<AxeRoute> = [
     // this anchor is the strictest data-driven proof the drawer's real content is
     // present.
     //
-    // LIGHT ONLY, like its fixture-driven siblings (see the theme-coverage note
-    // above the runners). Research measured this drawer at 0 violations in BOTH
-    // themes, so the gap here is untested-in-CI rather than unknown.
+    // Scanned in BOTH themes, like every other entry. Research had measured this
+    // drawer at 0 violations in light and dark; the `-dark` twin now holds that
+    // in CI rather than leaving it as an untested claim — and it confirms it,
+    // with the drawer opened and every filter row expanded in a dark context.
     name: 'results-filter-drawer',
     fixture: 'answered',
     contentTestId: testIds.voter.results.filterNumericMin,
@@ -458,15 +462,15 @@ async function assertAxeScan(page: Page, route: AxeRoute, testInfo: TestInfo, la
 // inside test() bodies), and the type predicates narrow the union so each loop
 // sees only the fields its variant actually carries.
 //
-// THEME COVERAGE — a known gap, not a property of the design. Raw entries emit
-// a light AND a dark scan; fixture-driven entries (`questions`, `results`,
-// `voter-detail-drawer`, `results-filter-drawer`) emit LIGHT ONLY. Both halves are unchanged from before
-// this table existed. Giving the fixture-driven entries dark twins would scan
-// those three surfaces in dark for the FIRST time — never measured, so an
-// unbounded fallout budget — and would double a full voter walk per entry in a
-// suite that runs three times at the determinism gate. So a dark-only contrast
-// regression on /questions, /results, the detail drawer or the filter drawer
-// would currently go uncaught.
+// THEME COVERAGE — complete. Every entry, raw and fixture-driven alike, emits a
+// light scan and a `-dark` twin, so a dark-only contrast regression on ANY
+// scanned surface fails the gate. The two runner families reach dark
+// differently, and the difference is load-bearing rather than stylistic: raw
+// twins emulate dark before their own `goto`, while fixture-driven twins take a
+// dark browser CONTEXT so the fixture walks the journey in dark from the first
+// paint. Flipping the theme onto an already-walked light page is NOT equivalent
+// — it strands the persistent layout chrome in light. See
+// `assertDarkThemeApplied` for the measurement and the guard that pins it.
 
 const RAW_ROUTES = AXE_ROUTES.filter((route): route is RawAxeRoute => route.fixture === 'raw');
 const LOCATED_ROUTES = AXE_ROUTES.filter((route): route is FixtureAxeRoute => route.fixture === 'located');
