@@ -733,3 +733,30 @@ Plans:
 - [x] 135-02-PLAN.md — Seeded equal-min/max multi-choice question + `selectExact` E2E standing guard [wave 2]
 - [x] 135-03-PLAN.md — dev-seed NF-01: replace the load-dependent wall-clock assertion [wave 2]
 - [x] 135-04-PLAN.md — Verification gate: full E2E 3× determinism + static gates + requirement flips [wave 3]
+
+### Phase 136: Real Guards — Visual Regression Repair + Fake-Guard Remediation
+
+**Goal:** Turn the suite's remaining guards-in-costume into guards that discriminate, and repair the visual-regression project so it actually runs and actually blocks. Driven by `.planning/audits/2026-08-11-fake-guard-sweep.md` (20 findings, 11 blind) and the operator's decision to repair rather than retire the visual chain.
+
+**Requirements**: REAL-01, REAL-02, REAL-03, REAL-04
+**Depends on:** Phase 135
+**Plans:** 6 plans
+
+**Success criteria:**
+
+1. **REAL-01 (visual regression works and blocks).** `e2e/base` seeds a registered candidate with the email/`forceRegister` contract `auth-setup` needs; `auth-setup` authenticates against base; the four baselines are regenerated **inside the CI-matching Playwright Linux container** (not on a developer Mac — font rendering differs); `continue-on-error: true` is removed from the `e2e-visual` job. The project passes 3× consecutively in the container. _(Operator decision 2026-08-11: repair fully and make it blocking, rather than retire. Evidence it was non-functional: baselines depict `Test Candidate Alpha`, a row `e2e/base` does not seed; PNGs were generated on a developer Mac at v1.2 and never re-baselined; no `--update-snapshots` process exists anywhere in CI.)_
+2. **REAL-02 (the worst blind guards are fixed).** F1 — the performance budget's 8s/15s thresholds sit at 7.6×/14.2× measured actual on a metric (`domContentLoaded`/`loadComplete`) that closes at the SSR response, before hydration, Supabase round-trips, or match computation; a 10× matching regression moves neither number, while the spec burns a ~27s fixture walk per CI run. F12 — nine `expect.arrayContaining` assertions across `@openvaa/data` and `@openvaa/filters` prove a filter *excludes* things with a *subset* matcher, so a filter that no-ops and returns everything passes all nine. Both fixed such that an injected regression is demonstrated to fail.
+3. **REAL-03 (guards that never run, run).** F5 — the Phase-135 op-budget does not execute in CI (`SUPABASE_URL` unset in the unit-test job, which never starts Supabase), so GUARD-03's guarantee is weaker than recorded. F4 — four `_probes/*.probe.spec.ts` files (6 tests) match no Playwright project and run from no command. Each is either wired in and passing, or deleted with rationale — not left in the tree implying coverage.
+4. **REAL-04 (the raw-i18n-key class is closed systemically).** `t()` returns the raw dotted key on a catalog miss, and 21 E2E matchers are satisfied by that raw key — including `voter-journey.spec.ts:1338`'s `/Yes/i` against `common.answer.yes`, the only standing check on the boolean-answer render path. A suite-wide raw-key scanner over the a11y routes covers all 598 English keys and every future one, rather than 21 site fixes — and would have caught `selectExact` without needing a seeded equal-window question.
+5. Full E2E suite green to the 3× determinism standard; visual project green 3× in-container; static gates clean; root `yarn test:unit` exits 0 under load.
+
+**Out of scope (deferred to `.planning/todos/`):** sweep findings F3, F9, F10, F13–F20 — unit-test quality issues, lower risk, no claimed guarantee depends on them. F8/F11 are benign by the audit's own assessment.
+
+Plans:
+
+- [ ] 136-01-PLAN.md — F1 performance budget + F7 10s dead wait in the voter fixture [wave 1]
+- [ ] 136-02-PLAN.md — F12 subset-matcher filters (9 sites) + F14 unused matcher [wave 1]
+- [ ] 136-03-PLAN.md — F5 op-budget CI wiring + F4 orphaned probe specs [wave 1]
+- [ ] 136-04-PLAN.md — F2 suite-wide raw-i18n-key scanner [wave 2]
+- [ ] 136-05-PLAN.md — Visual regression repair: base-candidate contract, auth-setup, containerised baselines, blocking CI [wave 2]
+- [ ] 136-06-PLAN.md — Verification gate: E2E 3× + visual 3× in-container + requirement flips [wave 3]

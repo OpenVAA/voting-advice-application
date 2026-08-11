@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
-current_phase: 135
-current_phase_name: Close the Three Phase-134 Coverage Carry-Overs
-status: complete
-stopped_at: Phase 135 COMPLETE — verifier PASS 7/7; v2.14 ready for /gsd-complete-milestone (4 carry-forwards open, incl. 4 visual-regression PNGs needing canonical-runner re-baseline)
+current_phase: 136
+current_phase_name: Real Guards — Visual Regression Repair + Fake-Guard Remediation
+status: ready_to_execute
+stopped_at: Phase 136 added — fake-guard sweep returned 20 findings (11 blind); repairing visual regression + top-tier findings before v2.14 close
 last_updated: "2026-08-11"
 last_activity: 2026-08-11
 last_activity_desc: Phase 135 verified PASS — GUARD-01/02/03 closed; all three Phase-134 coverage limits now real guards
 progress:
-  total_phases: 18
+  total_phases: 19
   completed_phases: 18
   total_plans: 95
   completed_plans: 95
-  percent: 100
+  percent: 95
 ---
 
 # Project State
