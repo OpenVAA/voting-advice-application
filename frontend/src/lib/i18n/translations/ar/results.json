@@ -29,7 +29,7 @@
   },
   "selectElectionFirst": "اختر انتخابات أولاً",
   "title": {
-    "browse": "تصفح {candidatePlural} و{partyPlural}",
+    "browse": "تصفح ال{partyPlural}",
     "results": "النتائج"
   }
 }

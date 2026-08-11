@@ -29,7 +29,7 @@
   },
   "selectElectionFirst": "Marka hore dooro doorasho",
   "title": {
-    "browse": "Fiiri {candidatePlural} iyo {partyPlural}",
+    "browse": "Firri {partyPlural}",
     "results": "Natiijooyinkaaga"
   }
 }

@@ -29,7 +29,7 @@
   },
   "selectElectionFirst": "Välj val först",
   "title": {
-    "browse": "Bläddra bland {candidatePlural} och {partyPlural}",
+    "browse": "Bläddra bland {partyPlural}",
     "results": "Resultat"
   }
 }

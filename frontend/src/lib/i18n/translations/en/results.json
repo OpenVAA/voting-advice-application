@@ -29,7 +29,7 @@
   },
   "selectElectionFirst": "Select an election first",
   "title": {
-    "browse": "Browse {candidatePlural} and {partyPlural}",
+    "browse": "Browse {partyPlural}",
     "results": "Results"
   }
 }
