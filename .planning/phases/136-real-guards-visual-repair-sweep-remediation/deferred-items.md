@@ -71,3 +71,29 @@ The fix is not more site patches — it is extending the axe route table (or an 
 authenticated scan family) to the candidate app, which would bring the raw-key gate along for free
 and close an a11y coverage gap at the same time. That is a phase-sized piece of work with its own
 auth-fixture and dataset questions, so it is recorded rather than smuggled into a test-guard plan.
+
+## From 136-05 (F6 visual-regression repair)
+
+### D-136-05-1 — Three copies of the /results election-pin helper remain in tree
+
+Pinning the election before asserting on `/results` is required for determinism (the walk lands on
+EL-Reg or EL-Mun by coin flip). Three implementations now exist:
+
+- `tests/tests/utils/selectElection.ts` — created by this plan, consumed by the visual spec.
+- `numberScale.probe.spec.ts` — a private copy, functionally identical to the shared one.
+- `voter-journey.spec.ts` — `expectElectionOptionAndSelect`, a stricter variant that additionally
+  locks the listbox accessible name (FIX-02); that one is a *different* contract, not duplication.
+
+Only the probe copy is redundant. It was left alone to keep this plan's blast radius on the visual
+chain: switching it means re-running the probe family to prove nothing moved, which is verification
+budget this plan spent on the 3x baseline-stability gate instead. Collapse the probe onto the shared
+helper next time the probe family is touched for another reason.
+
+### D-136-05-2 — Baselines depend on reaching fonts.googleapis.com at run time
+
+`staticSettings.font.url` loads Inter from Google Fonts with `display=swap`, so every visual run
+needs public network access to render the font the baselines were captured with. `settleFonts` now
+turns a missing font into an explicit "Inter did not load" failure instead of an inscrutable
+whole-page pixel diff, but the underlying dependency stands: an offline or egress-restricted runner
+cannot pass the visual job. Self-hosting the font (or vendoring a woff2 into the app) would remove
+the network from the gate and is the real fix.
