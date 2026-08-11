@@ -46,19 +46,47 @@ import path from 'path';
 import { TESTS_DIR } from './testsDir';
 import type { Page } from '@playwright/test';
 
+const FRONTEND_DIR = path.join(TESTS_DIR, '..', '..', 'apps', 'frontend');
+
 /**
  * The runtime Paraglide message catalog for the base locale. Each file's
  * top-level object key already carries the namespace (`common.json` opens with
  * `"common"`, `candidateApp.questions.json` with `"candidateApp.questions"`), so
- * the flattened paths are the exact strings `t()` echoes back on a miss — no
- * filename-derived prefixing required.
+ * the flattened paths are already the exact strings `t()` echoes back on a miss
+ * — no filename-derived prefixing required here.
  *
  * The base locale is enough: `project.inlang/settings.json` declares one
  * `pathPattern` set across all 7 locales, so the KEY set is locale-invariant
  * even though the values are not. A raw key rendered in any locale is the same
  * string in every locale.
  */
-const CATALOG_DIR = path.join(TESTS_DIR, '..', '..', 'apps', 'frontend', 'messages', 'en');
+const RUNTIME_CATALOG_DIR = path.join(FRONTEND_DIR, 'messages', 'en');
+
+/**
+ * The type-gen source catalog. Unlike the runtime catalog these files do NOT
+ * embed their namespace — the prefix comes from the FILENAME, exactly as
+ * `apps/frontend/tools/translationKey/generateTranslationKeyType.ts` does it.
+ */
+const TYPEGEN_CATALOG_DIR = path.join(FRONTEND_DIR, 'src', 'lib', 'i18n', 'translations', 'en');
+
+/**
+ * The generated `TranslationKey` union — the compile-time enumeration of every
+ * string a call site is ALLOWED to pass to `t()`, and therefore of every string
+ * `t()` can possibly echo back.
+ */
+const TRANSLATION_KEY_TYPE_FILE = path.join(FRONTEND_DIR, 'src', 'lib', 'types', 'generated', 'translationKey.ts');
+
+/**
+ * Non-vacuity floor for the key set.
+ *
+ * A scanner whose key set silently empties — a moved catalog directory, a
+ * renamed locale folder, a JSON parse that yields `{}` — would pass every
+ * surface forever while checking nothing. That is the exact failure shape this
+ * whole plan exists to eliminate, so an implausibly small key set is a hard
+ * error rather than a quiet green. The three sources currently agree on 598
+ * keys; the floor sits far below that so ordinary catalog churn never trips it.
+ */
+const MIN_EXPECTED_KEYS = 400;
 
 /**
  * Candidate-token shape: a dotted run of at least two segments whose first
@@ -116,21 +144,58 @@ function flattenCatalog(node: unknown, prefix: string, into: Set<string>): void 
   }
 }
 
+/** Flatten every `*.json` in `dir` into `into`, optionally prefixing by filename. */
+function flattenCatalogDir(dir: string, prefixFromFilename: boolean, into: Set<string>): void {
+  for (const filename of fs.readdirSync(dir)) {
+    if (!filename.endsWith('.json')) continue;
+    const parsed: unknown = JSON.parse(fs.readFileSync(path.join(dir, filename), 'utf8'));
+    flattenCatalog(parsed, prefixFromFilename ? filename.replace(/\.json$/, '') : '', into);
+  }
+}
+
 /**
- * The set of dotted key paths the app could echo back on a catalog miss, read
- * from the catalog on disk and memoised for the worker's lifetime.
- *
- * This is the whole point of the scanner: nothing here is hardcoded, so a key
+ * The set of dotted key paths the app could echo back on a miss — derived from
+ * disk, memoised for the worker's lifetime. Nothing here is hardcoded, so a key
  * added tomorrow is guarded tomorrow.
+ *
+ * ## Why the UNION of three sources and not just the runtime catalog
+ *
+ * The three sources agree on 598 keys today (the runtime catalog is a strict
+ * superset, holding the 7 synthesized `lang.<locale>` entries the other two
+ * derive differently). Taking the union anyway is not belt-and-braces — it is
+ * what makes the scanner cover the most likely real regression:
+ *
+ * A key **deleted from the runtime catalog while call sites still reference it**
+ * is precisely how a raw key reaches the screen. If the key set came from the
+ * runtime catalog alone, that deletion would remove the key from the scanner's
+ * own expectations at the same instant it started rendering raw — the scan would
+ * go green on the very defect it exists to catch. Because `t()` is typed against
+ * `TranslationKey` (generated from the type-gen catalog, a DIFFERENT directory),
+ * such a call site still compiles, so TypeScript does not cover this either.
+ *
+ * Reading all three closes that: a key has to disappear from every source at
+ * once to escape, and at that point no call site can reference it.
  */
 export function loadCatalogKeys(): ReadonlySet<string> {
   if (cachedKeys) return cachedKeys;
   const keys = new Set<string>();
-  for (const filename of fs.readdirSync(CATALOG_DIR)) {
-    if (!filename.endsWith('.json')) continue;
-    const parsed: unknown = JSON.parse(fs.readFileSync(path.join(CATALOG_DIR, filename), 'utf8'));
-    flattenCatalog(parsed, '', keys);
+
+  // 1. Runtime Paraglide catalog — namespace embedded in the JSON.
+  flattenCatalogDir(RUNTIME_CATALOG_DIR, false, keys);
+  // 2. Type-gen source catalog — namespace derived from the filename.
+  flattenCatalogDir(TYPEGEN_CATALOG_DIR, true, keys);
+  // 3. The generated `TranslationKey` union — every literal in the file is a key.
+  for (const [, literal] of fs.readFileSync(TRANSLATION_KEY_TYPE_FILE, 'utf8').matchAll(/'([^']+)'/g)) {
+    keys.add(literal);
   }
+
+  expect(
+    keys.size,
+    `Raw-i18n-key scanner loaded only ${keys.size} catalog keys (floor: ${MIN_EXPECTED_KEYS}). ` +
+      'The catalog sources have moved or failed to parse, and the scanner would pass vacuously. ' +
+      `Checked:\n  ${RUNTIME_CATALOG_DIR}\n  ${TYPEGEN_CATALOG_DIR}\n  ${TRANSLATION_KEY_TYPE_FILE}`
+  ).toBeGreaterThanOrEqual(MIN_EXPECTED_KEYS);
+
   cachedKeys = keys;
   return keys;
 }

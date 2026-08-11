@@ -1333,9 +1333,22 @@ test.describe('voter journey', () => {
       // (8) number
       await expect.soft(infoItems.nth(8)).toContainText(/Info: years of experience\./i);
       await expect.soft(infoItems.nth(8)).toContainText(/99/);
-      // (9) boolean
+      // (9) boolean — the only standing check in the suite on the boolean-answer
+      // render path (`dataContext.svelte.ts:113` formats it through
+      // `t(value ? 'common.answer.yes' : 'common.answer.no')`), so it asserts the
+      // RESOLVED string on the VALUE node rather than a regex over the whole item.
+      // The previous `toContainText(/Yes/i)` was blind twice over: it matched the
+      // raw key `common.answer.yes` that a catalog miss renders (sweep F2), and it
+      // matched the label's own "…-yes-no?" text, so it passed even when no value
+      // rendered at all.
       await expect.soft(infoItems.nth(9)).toContainText(/Info: would-you-run-again-yes-no\?/i);
-      await expect.soft(infoItems.nth(9)).toContainText(/Yes/i);
+      // reason: InfoItem.svelte renders label + value as its two direct children and
+      // gives a hook (`.test-label`) only to the label; the value node carries no
+      // testid, so excluding the label class is the only way to isolate the resolved
+      // answer. Structural and locale-stable — it names no user-facing string.
+      // eslint-disable-next-line playwright/no-restricted-locators, playwright/no-raw-locators
+      const booleanValue = infoItems.nth(9).locator('div:not(.test-label)');
+      await expect.soft(booleanValue).toHaveText('Yes');
       // (10) date — toLocaleDateString('en', {year,month,day:'numeric'}) on 1980-06-15
       await expect.soft(infoItems.nth(10)).toContainText(/Info: date of birth\./i);
       await expect.soft(infoItems.nth(10)).toContainText(/6\/15\/1980/);
