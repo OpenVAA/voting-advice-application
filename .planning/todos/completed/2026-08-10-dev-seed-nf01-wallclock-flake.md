@@ -1,7 +1,7 @@
 ---
 created: 2026-08-10
 source: Phase 134 (wave 4, plan 134-04 — DEF-134-04-01)
-resolves_phase: null
+resolves_phase: 135
 severity: medium
 area: packages/dev-seed
 ---
@@ -63,3 +63,29 @@ shape and only moves the threshold.
 ## Related
 
 - Phase 134 `deferred-items.md` — DEF-134-04-01 (the original scope call)
+
+## Resolution (Phase 135, plan 135-03 — 2026-08-11)
+
+Resolved by suggestion 1: **assert work, not wall-clock**. The
+`toBeLessThan(10_000)` line is gone (`grep -c` → 0) and NF-01 is now a
+deterministic budget over `SupabaseAdminClient` operations — 3 batched write
+passes, 1 candidate lookup, exactly 2 round-trips per candidate, 1 merge RPC
+per `app_settings` row, and zero calls to anything outside that set.
+
+Explicitly NOT resolved by raising the threshold. Evidence the new guard is
+stronger, not merely looser: an injected 327-query N+1 cost only **+937 ms**
+(5817 → 6754 ms), so the old 10 000 ms gate would have passed it — while the
+operation budget failed immediately with `expected 328 to be 1`.
+
+Load independence proven, not assumed: root `yarn test:unit` exits 0 beside a
+Vite dev server with 7, 11 and 14 CPU burners on a 14-core machine, at seed
+elapsed 14281 / 12793 / 62437 ms respectively. The 14-burner run holds every
+assertion at 10.7x the quiet duration.
+
+Proving that also surfaced a second load-dependent gate the original
+characterization did not name — the 60 s per-test timeout, whose value had been
+DERIVED from the deleted 10 s budget. It was re-derived from measurement (68 s
+worst legitimately-completing run → 300 s hang guard) and relabelled as a hang
+guard rather than a budget.
+
+See `.planning/phases/135-close-phase-134-coverage-carry-overs/135-03-SUMMARY.md`.
