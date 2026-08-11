@@ -19,7 +19,8 @@
   import { onDestroy } from 'svelte';
   import { browser } from '$app/environment';
   import { afterNavigate, beforeNavigate, onNavigate } from '$app/navigation';
-  import { updated } from '$app/stores';
+  import { base } from '$app/paths';
+  import { page, updated } from '$app/stores';
   import { isValidResult } from '$lib/api/utils/isValidResult';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Loading } from '$lib/components/loading';
@@ -119,6 +120,34 @@
     if ($locale) document.documentElement.lang = $locale;
   }
 
+  ////////////////////////////////////////////////////////////////////
+  // Social sharing (Open Graph / Twitter) metadata
+  ////////////////////////////////////////////////////////////////////
+
+  /**
+   * The preview images used when a link to the app is shared on social media and messaging apps. Two variants are declared, because clients pick differently: the landscape one is listed first and is what Facebook, X, LinkedIn and Slack render as a large card, while the square one is offered as an alternate for the chat clients that crop previews towards a square.
+   *
+   * Each `path` is either a root-relative path to a file in `frontend/static/` or an absolute `https` url, e.g. one pointing to an S3 bucket. Note that scrapers cache these images aggressively by url, so give the file a new name whenever its contents change.
+   */
+  const SHARE_IMAGE_BASE = 'https://projects-471112560111-eu-north-1-an.s3.eu-north-1.amazonaws.com/kisam-2026';
+  const SHARE_IMAGES = [
+    { path: `${SHARE_IMAGE_BASE}/share-image.png`, type: 'image/png', width: 1200, height: 630 },
+    { path: `${SHARE_IMAGE_BASE}/share-image-square.png`, type: 'image/png', width: 600, height: 600 }
+  ];
+
+  /**
+   * `og:locale` expects a `language_TERRITORY` tag, so we map the app's locale codes to the territories they are used in here. Locales missing from the map are emitted as-is.
+   */
+  const OG_LOCALES: Record<string, string> = { ar: 'ar_AR', en: 'en_GB', fi: 'fi_FI', so: 'so_SO', sv: 'sv_SE' };
+
+  // Absolute urls are required by all crawlers, and they are resolved from the current origin so that the same build works on any domain.
+  $: shareImages = SHARE_IMAGES.map((image) => ({
+    ...image,
+    url: /^https?:\/\//.test(image.path) ? image.path : new URL(`${base}${image.path}`, $page.url.origin).href
+  }));
+  $: shareTitle = $t('dynamic.appName');
+  $: shareDescription = $t('dynamic.frontPage.ingress');
+
   const fontUrl =
     staticSettings.font?.url ?? 'https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap';
   // Optional secondary font (e.g. an Arabic-capable face for RTL locales), loaded alongside the main font. The browser selects it per-glyph via the font stack, so the Latin path is unaffected.
@@ -137,6 +166,28 @@
     name="theme-color"
     content={staticSettings?.colors?.dark?.['base-300'] ?? '#1f2324'}
     media="(prefers-color-scheme: dark)" />
+  <meta name="description" content={shareDescription} />
+  <!-- Open Graph metadata used by Facebook, WhatsApp, LinkedIn, Slack and most messaging apps when the app is shared -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content={shareTitle} />
+  <meta property="og:title" content={shareTitle} />
+  <meta property="og:description" content={shareDescription} />
+  <meta property="og:url" content={$page.url.href} />
+  <meta property="og:locale" content={OG_LOCALES[$locale] ?? $locale} />
+  {#each shareImages as { url, type, width, height } (url)}
+    <meta property="og:image" content={url} />
+    <meta property="og:image:secure_url" content={url} />
+    <meta property="og:image:type" content={type} />
+    <meta property="og:image:width" content={`${width}`} />
+    <meta property="og:image:height" content={`${height}`} />
+    <meta property="og:image:alt" content={shareTitle} />
+  {/each}
+  <!-- X (Twitter) reads its own tags and falls back to the Open Graph ones for anything not defined here -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={shareTitle} />
+  <meta name="twitter:description" content={shareDescription} />
+  <meta name="twitter:image" content={shareImages[0].url} />
+  <meta name="twitter:image:alt" content={shareTitle} />
   {#if usesGoogleFonts}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true" />
