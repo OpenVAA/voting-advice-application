@@ -375,6 +375,35 @@ async function assertAxeGates(
  * `assertFunctionPatterns` config (tests/eslint.config.mjs), so the gates stay
  * enforced rather than the rule being disabled at the call sites.
  */
+/**
+ * Prove the emulated dark theme actually took on a page the voter-journey
+ * fixture already walked in LIGHT.
+ *
+ * The raw runner emulates dark BEFORE its `page.goto`, so its page is *born*
+ * dark and there is nothing to prove. The fixture runners cannot do that: the
+ * fixture owns the walk and hands back an already-rendered light page, so dark
+ * is emulated AFTER mount. That is safe here because BOTH dark sources react to
+ * a live `prefers-color-scheme` change rather than sampling it once at mount:
+ *   - the visual theme is pure CSS — DaisyUI's `dark` theme declares
+ *     `prefersdark: true` (app.css), so its token block lives inside an
+ *     `@media (prefers-color-scheme: dark)` rule and restyles on match;
+ *   - the JS handle (`DarkMode`, contexts/component/darkMode.svelte.ts) seeds
+ *     from `matchMedia(...).matches` and then subscribes to the query's
+ *     `change` event, so the `$state` field updates too.
+ * Neither is a mount-time snapshot, so no surface is left theme-stale.
+ *
+ * The poll is the guard against the fake-green this whole scan family exists to
+ * prevent: a `-dark` scan silently measuring a light DOM would report a
+ * confident 0 violations about a theme it never rendered.
+ */
+async function assertDarkThemeApplied(page: Page): Promise<void> {
+  await expect
+    .poll(() => page.evaluate(() => window.matchMedia('(prefers-color-scheme: dark)').matches), {
+      timeout: TIMEOUTS.page
+    })
+    .toBe(true);
+}
+
 async function assertAxeScan(page: Page, route: AxeRoute, testInfo: TestInfo, label: string): Promise<void> {
   await route.settle?.(page);
   await page.getByTestId(route.contentTestId).first().waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
@@ -440,12 +469,31 @@ for (const route of LOCATED_ROUTES) {
   voterJourneyTest(`axe accessibility scan — ${route.name}`, async ({ locatedVoterPage: page }, testInfo) => {
     await assertAxeScan(page, route, testInfo, route.name);
   });
+
+  // Dark twin. Unlike the raw runner there is no `goto` to precede, so dark is
+  // emulated on the page the fixture already walked — see assertDarkThemeApplied
+  // for why that is not theme-stale, and for the guard that proves it took.
+  // Emulating BEFORE assertAxeScan also means any `settle` (drawer open, row
+  // expansion) runs against the dark DOM, so the scanned surface is dark end to
+  // end rather than a dark page holding a light-rendered overlay.
+  voterJourneyTest(`axe accessibility scan — ${route.name} (dark)`, async ({ locatedVoterPage: page }, testInfo) => {
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await assertDarkThemeApplied(page);
+    await assertAxeScan(page, route, testInfo, `${route.name}-dark`);
+  });
 }
 
 for (const route of ANSWERED_ROUTES) {
   // `answeredVoterPage` walks the full flow through to the /results landing.
   voterJourneyTest(`axe accessibility scan — ${route.name}`, async ({ answeredVoterPage: page }, testInfo) => {
     await assertAxeScan(page, route, testInfo, route.name);
+  });
+
+  // Dark twin — same shape as the located loop above.
+  voterJourneyTest(`axe accessibility scan — ${route.name} (dark)`, async ({ answeredVoterPage: page }, testInfo) => {
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await assertDarkThemeApplied(page);
+    await assertAxeScan(page, route, testInfo, `${route.name}-dark`);
   });
 }
 
