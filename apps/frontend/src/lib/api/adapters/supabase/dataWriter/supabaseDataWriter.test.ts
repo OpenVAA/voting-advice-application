@@ -281,7 +281,7 @@ describe('SupabaseDataWriter', () => {
         'q-text': { value: 'hello' },
         'q-image': {
           value: { path: expect.stringMatching(/^proj-1\/candidates\/entity-1\/.*\.png$/) },
-          info: 'My photo'
+          info: { en: 'My photo' }
         }
       };
       mockSupabase.rpc.mockResolvedValue({ data: expectedAnswers, error: null });
@@ -301,13 +301,11 @@ describe('SupabaseDataWriter', () => {
       );
 
       // Verify RPC was called with path object instead of File
-      expect(mockSupabase.rpc).toHaveBeenCalledWith(
-        'upsert_answers',
-        expect.objectContaining({
-          p_entity_id: 'entity-1',
-          p_overwrite: false
-        })
-      );
+      expect(mockSupabase.rpc).toHaveBeenCalledWith('upsert_answers', {
+        p_entity_id: 'entity-1',
+        p_answers: expectedAnswers,
+        p_overwrite: false
+      });
     });
   });
 
