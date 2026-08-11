@@ -44,6 +44,33 @@ import type { Page } from '@playwright/test';
  * number scale) is visible. Mirrors the walk's category-intro href-resolve
  * idiom and the URL-settle idiom so it is deterministic under render churn.
  */
+/**
+ * Select a specific election in the `/results` election accordion, by name.
+ *
+ * Collapse-aware: `AccordionSelect` renders ONLY the active option when
+ * collapsed, so a bare `getByRole('option', { name })` finds nothing whenever
+ * the active election is not the wanted one. Expand first (clicking the single
+ * rendered option toggles it open), then click the target and wait for the
+ * accordion to collapse back — the signal that the selection committed.
+ *
+ * Mirrors `expectElectionOptionAndSelect` in voter-journey.spec.ts, minus that
+ * helper's FIX-02 listbox-accessible-name lock (which the journey spec owns).
+ * Duplicated rather than imported because the journey helper is spec-local and
+ * hoisting it would mean editing the gated spec for a non-gated probe.
+ */
+async function selectElectionByName(page: Page, name: RegExp | string): Promise<void> {
+  const accordion = page.getByTestId(testIds.voter.results.electionAccordion);
+  await expect(accordion).toBeVisible({ timeout: TIMEOUTS.page });
+  const options = accordion.getByRole('option');
+  const visibleCount = await options.count();
+  if (visibleCount === 1) await options.first().click({ timeout: TIMEOUTS.click });
+  const target = accordion.getByRole('option', { name }).first();
+  await expect(target).toBeVisible({ timeout: TIMEOUTS.element });
+  await target.click({ timeout: TIMEOUTS.click });
+  await expect(options).toHaveCount(1, { timeout: TIMEOUTS.element });
+  await expect(page.getByTestId(testIds.voter.results.list)).toBeVisible({ timeout: TIMEOUTS.page });
+}
+
 async function advanceToNumberSlider(page: Page): Promise<void> {
   const slider = page.getByTestId(testIds.voter.questions.numberSlider).first();
   const questionsStart = page.getByTestId(testIds.voter.questions.startButton);
@@ -108,10 +135,24 @@ test.describe('@probe answerNumberScale + new-type drawer displays (EQTYP-01/EQT
   });
 
   test('new-type drawer displays: multi-choice + number dual-marker', async ({ page, resultsPage, entityDetails }) => {
-    // Max walk answers every opinion question (multi-choice → first 2 = a,b;
-    // number → End = 10), then lands on /results.
+    // Max walk answers every opinion question (multi-choice → smallest valid
+    // selection from index 0, i.e. a,b on base-7 and a on base-8; number → End
+    // = 10), then lands on /results.
     await walkUntilQuestionsIntro(page);
     await answerAndAdvanceToResults(page, 'max');
+
+    // Pin the REGIONAL election. `answerAndAdvanceToResults` step 7 lands on
+    // whichever election its `options.first()` pick resolves to, and that is
+    // NOT deterministic between EL-Reg and EL-Mun — voter-journey.spec.ts says
+    // so in as many words and pins the election for exactly this reason
+    // (`expectElectionOptionAndSelect({ text: TEXT_RE.regional })`). This probe
+    // needs Regional specifically: Polar-Max BB One is nominated only in
+    // CO-Reg-N, so on the Municipal list it is legitimately absent and the
+    // `toHaveCount(1)` below fails for a reason that has nothing to do with the
+    // drawer capabilities under test. The probe previously relied on the coin
+    // landing Regional-side; Phase 135's extra base question changed the walk's
+    // shape enough to flip it, exposing the latent dependency.
+    await selectElectionByName(page, /Regional/i);
 
     // Open the Polar-Max candidate drawer (POLAR_MAX answers: base-6-number=10,
     // base-7-multichoice=['a','b']) and switch to the opinions tab. Candidate
