@@ -36,3 +36,20 @@ this plan's grep scope (`packages/data`, `packages/filters`). Unlike the F12 sit
 obvious that the SE/SW pair is the *complete* intended sentinel set rather than a required subset —
 converting it without confirming the template's intent risks turning a correct assertion into a
 brittle one. Needs a decision from whoever owns the base template's scoping sentinels.
+
+## From 136-01 (F7 dead-wait removal)
+
+**Give `NumberScaleInput.svelte` a question-id-scoped `name` attribute.**
+`apps/frontend/src/lib/components/questions/NumberScaleInput.svelte` renders the
+native range with `data-testid="question-number-slider"` and no question-id
+scoping (its only label handle is a per-mount `getUUID()`). `QuestionChoices.svelte`
+already carries `name="questionChoices-{question.id}"` precisely so the voter walk
+can disambiguate the incoming question from the outgoing one during the page-reuse
+DOM lag. Extending the same contract to the slider would let
+`voter-journey.fixture.ts` drop the `sliderJustAnswered` guard, would close the same
+latent stale-slider hazard in the loop-entry probe (~line 329), and would remove the
+last case (two adjacent NUMBER questions) that still pays the 10s wait.
+
+Not done in 136-01: it is product code, and 136 is a test-guard remediation phase.
+One line, render-invisible (`name` on an `<input type="range">` is standard form
+semantics and the app does not use native form posts for answers).
