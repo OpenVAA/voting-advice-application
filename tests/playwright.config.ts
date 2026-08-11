@@ -1,5 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
+import fs from 'fs';
 import path from 'path';
 import { TIMEOUTS } from './tests/helpers/timeouts';
 import { TESTS_DIR } from './tests/utils/testsDir';
@@ -7,6 +8,44 @@ import { TESTS_DIR } from './tests/utils/testsDir';
 dotenv.config();
 
 export const STORAGE_STATE = path.join(TESTS_DIR, '../playwright/.auth/user.json');
+
+/**
+ * The `_probes` project's `testMatch` (see the project definition below).
+ * Hoisted so the orphan check can compare the directory against it.
+ */
+const PROBE_TEST_MATCH = /(video|questionInfo|popupNotice|orgMatching|numberScale)\.probe\.spec\.ts$/;
+
+/**
+ * ORPHAN-PROBE GUARD (Phase 136 plan 03, fake-guard sweep finding F4).
+ *
+ * `_probes` is the one project whose `testMatch` enumerates its files by name
+ * rather than globbing the directory — deliberately, because each probe must be
+ * invocable one-at-a-time. The cost of enumeration is that ADDING a probe file
+ * without adding it to the pattern silently produces a test that matches no
+ * project and runs from no command, while still sitting in `specs/` looking like
+ * coverage. That is precisely what happened to four probe files between Phase 119
+ * and Phase 136: 6 tests, unreachable for ~16 phases, noticed only by an audit.
+ *
+ * A comment asking future authors to keep the list in sync would be the same
+ * kind of non-guard this phase exists to remove, so the invariant is CHECKED.
+ * Throwing here fails every `playwright test` / `--list` invocation immediately
+ * and by name, which is the earliest point at which the mistake is visible.
+ */
+const probesDir = path.join(TESTS_DIR, 'specs/_probes');
+if (fs.existsSync(probesDir)) {
+  const orphans = fs
+    .readdirSync(probesDir)
+    .filter((f) => f.endsWith('.probe.spec.ts'))
+    .filter((f) => !PROBE_TEST_MATCH.test(f));
+  if (orphans.length > 0) {
+    throw new Error(
+      `Orphaned probe spec(s) in tests/specs/_probes — they match NO Playwright project and run ` +
+        `from NO command: ${orphans.join(', ')}. Add each to the \`_probes\` project's testMatch ` +
+        `(PROBE_TEST_MATCH in this file), or delete the file. Leaving it in place implies coverage ` +
+        `that does not exist (fake-guard sweep 2026-08-11, finding F4).`
+    );
+  }
+}
 
 /**
  * Playwright configuration with project dependencies pattern.
@@ -361,14 +400,30 @@ export default defineConfig({
     // (one at a time, after `yarn db:seed --template <perm>`). Every probe test
     // is tagged `@probe` for this filter.
     //
-    // `testMatch` is scoped to the 4 DEFERRED probe files only. The 4
-    // already-green probes (entityFilters/navMenu/theme/trackingIntercept) share
-    // the `*.probe.spec.ts` glob but are excluded here so a project run never
-    // serially clobbers the singleton across all 8.
+    // `testMatch` lists the probe files EXPLICITLY, and every `*.probe.spec.ts`
+    // in this directory must appear in it. That is the invariant: a probe file
+    // not named here matches NO project and is reachable from NO command.
+    //
+    // It was violated between Phase 119 and Phase 136. Four base/read-only
+    // probes (entityFilters/navMenu/theme/trackingIntercept), added in 119-08 as
+    // fixture-development scaffolding, were left out of this pattern — so their
+    // 6 tests ran from nowhere, including from `yarn test:e2e:probes`, while
+    // still sitting in `specs/` implying coverage (fake-guard sweep 2026-08-11,
+    // finding F4). They were DELETED in Phase 136 plan 03 rather than wired up,
+    // because every fixture method they smoke-tested is now exercised by a spec
+    // that runs in the blocking default suite, in each case at least as
+    // strongly: selectAll/selectNone by voter-journey.spec.ts (exact 13/0/13
+    // counts plus the toggle-absent negative case), openMobileNav/items/
+    // expectNavMenuItems by candidate-journey.spec.ts (exact ordered 10-item
+    // list, logged-out and logged-in) and voter-journey-mobile.spec.ts,
+    // setColorScheme/expectTheme by voter-dark-mode.spec.ts (the probe's steps
+    // verbatim plus an extra reload), and getTrackCalls by
+    // voter-prefs-tracking.spec.ts (emit driven through the REAL in-app consent
+    // path, which the probe documented itself as unable to arm).
     {
       name: '_probes',
       testDir: './tests/specs/_probes',
-      testMatch: /(video|questionInfo|popupNotice|orgMatching|numberScale)\.probe\.spec\.ts$/,
+      testMatch: PROBE_TEST_MATCH,
       fullyParallel: false,
       use: { ...devices['Desktop Chrome'] }
     },

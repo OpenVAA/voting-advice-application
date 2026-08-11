@@ -12,7 +12,7 @@
  *
  * Both are proven HERE before any spec consumes them (Pitfall 3 / SC4).
  *
- * ## Probe convention — see entityFilters.probe.spec.ts. Seeded out-of-band,
+ * ## Probe convention — see video.probe.spec.ts. Seeded out-of-band,
  * run in isolation. This probe reads the base dataset (no perm singleton
  * clobber). Every test is tagged `@probe` so the default `yarn test:e2e`
  * (--grep-invert @probe) excludes it — zero runtime, zero flake surface on
