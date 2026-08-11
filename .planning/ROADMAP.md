@@ -716,7 +716,7 @@ Plans:
 
 **Requirements**: GUARD-01, GUARD-02, GUARD-03
 **Depends on:** Phase 134
-**Plans:** 3 plans
+**Plans:** 4 plans
 
 **Success criteria:**
 
@@ -732,3 +732,4 @@ Plans:
 - [ ] 135-01-PLAN.md — Dark-theme axe parity for the four fixture-driven entries + any violation it surfaces [wave 1]
 - [ ] 135-02-PLAN.md — Seeded equal-min/max multi-choice question + `selectExact` E2E standing guard [wave 2]
 - [ ] 135-03-PLAN.md — dev-seed NF-01: replace the load-dependent wall-clock assertion [wave 2]
+- [ ] 135-04-PLAN.md — Verification gate: full E2E 3× determinism + static gates + requirement flips [wave 3]
