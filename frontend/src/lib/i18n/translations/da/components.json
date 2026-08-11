@@ -48,6 +48,13 @@
     "noMatchingOptions": "Ingen matchende muligheder fundet",
     "placeholder": "Vælg en mulighed nedenfor"
   },
+  "share": {
+    "copyLink": "Kopiér link",
+    "email": "E-mail",
+    "linkCopied": "Linket er kopieret",
+    "modalTitle": "Del linket",
+    "title": "Del"
+  },
   "video": {
     "captions": "Undertekster",
     "error": "Beklager, der opstod et problem med videoen. Prøv at genindlæse siden eller brug knappen nedenfor for at skifte til tekstvisning.",

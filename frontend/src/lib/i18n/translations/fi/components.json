@@ -48,6 +48,13 @@
     "noMatchingOptions": "Ei hakuasi vastaavia vaihtoehtoja",
     "placeholder": "Valitse vaihtoehto alta"
   },
+  "share": {
+    "copyLink": "Kopioi linkki",
+    "email": "Sähköposti",
+    "linkCopied": "Linkki kopioitu",
+    "modalTitle": "Jaa linkki",
+    "title": "Jaa"
+  },
   "video": {
     "captions": "Kuvailevat tekstitykset",
     "error": "Anteeksi, videon lataamisessa näyttää olevan hankaluuksia. Voit kokeilla ladata sivun uudelleen tai vaihtaa alta tekstinäkymään videon sijaan.",

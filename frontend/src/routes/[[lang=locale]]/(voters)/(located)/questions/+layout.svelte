@@ -19,7 +19,13 @@
   ////////////////////////////////////////////////////////////////////
 
   const { appSettings, getRoute, opinionQuestions, selectedQuestionBlocks, t } = getVoterContext();
-  const { topBarSettings, progress } = getLayoutContext(onDestroy);
+  const { pageStyles, topBarSettings, progress } = getLayoutContext(onDestroy);
+
+  pageStyles.push({
+    drawer: {
+      background: 'bg-base-300'
+    }
+  });
 
   ////////////////////////////////////////////////////////////////////
   // Edit layout and set progress max
@@ -28,7 +34,9 @@
   topBarSettings.push({
     progress: 'show',
     actions: {
-      results: $appSettings.questions.showResultsLink ? 'show' : 'hide'
+      results: $appSettings.questions.showResultsLink ? 'show' : 'hide',
+      // Hidden during the question flow to keep the header focused on answering
+      share: 'hide'
     }
   });
 

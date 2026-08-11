@@ -39,5 +39,7 @@ type TrackingEventName =
   | 'results_changeTab'
   | `results_ranked_${EntityType}`
   | 'results_ranked'
+  | 'share'
+  | 'share_open'
   | 'survey_opened'
   | 'video';

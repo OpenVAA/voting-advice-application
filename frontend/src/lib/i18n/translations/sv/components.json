@@ -48,6 +48,13 @@
     "noMatchingOptions": "Inga alternativ matchade din sökning",
     "placeholder": "Välj ett alternativ nedan"
   },
+  "share": {
+    "copyLink": "Kopiera länk",
+    "email": "E-post",
+    "linkCopied": "Länken har kopierats",
+    "modalTitle": "Dela länken",
+    "title": "Dela"
+  },
   "video": {
     "captions": "Bildtexter",
     "error": "Tyvärr, det verkar vara några problem med videon. Du kan försöka ladda om sidan eller använda knappen nedan för att växla till en textvy.",

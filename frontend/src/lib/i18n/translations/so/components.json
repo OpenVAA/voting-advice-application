@@ -48,6 +48,13 @@
     "noMatchingOptions": "Lama helin xulasho ku habboon",
     "placeholder": "Hoos ka dooro xulasho"
   },
+  "share": {
+    "copyLink": "Koobi linkiga",
+    "email": "Iimayl",
+    "linkCopied": "Linkiga waa la koobiyeeyay",
+    "modalTitle": "La wadaag linkiga",
+    "title": "Wadaag"
+  },
   "video": {
     "captions": "Qoraallo sharraxaad ah",
     "error": "Waan ka xunnahay, waxaa u muuqata in dhib ka jiro fiidiyowga. Waad dib u soo rari kartaa bogga ama waad isticmaali kartaa badhanka hoose si aad ugu beddesho muuqaalka qoraalka.",

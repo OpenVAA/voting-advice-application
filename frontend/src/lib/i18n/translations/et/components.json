@@ -48,6 +48,13 @@
     "noMatchingOptions": "Teie otsingule vastavaid valikuid ei leitud",
     "placeholder": "Valige allpool olev valik"
   },
+  "share": {
+    "copyLink": "Kopeeri link",
+    "email": "E-post",
+    "linkCopied": "Link on kopeeritud",
+    "modalTitle": "Jaga linki",
+    "title": "Jaga"
+  },
   "video": {
     "captions": "Subtiitrid",
     "error": "Vabandust, video laadimisel näib olevat raskusi. Võite proovida lehte uuesti laadida või kasutada allpool olevat nuppu tekstivaatele lülitumiseks.",

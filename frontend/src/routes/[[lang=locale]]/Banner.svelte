@@ -24,6 +24,7 @@ Accesses `AppContext` and optionally `VoterContext`.
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
   import { LogoutButton as AdminLogoutButton } from '$lib/dynamic-components/logoutButton';
+  import { ShareButton } from '$lib/dynamic-components/shareButton';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -74,6 +75,11 @@ Accesses `AppContext` and optionally `VoterContext`.
       text={videoShown
         ? $t($hasTranscript ? 'components.video.showTranscript' : 'components.video.hideVideo')
         : $t('components.video.showVideo')} />
+  {/if}
+
+  <!-- Shown in every app's header by default, since it always shares the app's root url rather than the current one. Routes that need it hidden set `actions.share` to `'hide'` in their `topBarSettings`. -->
+  {#if $topBarSettings.actions.share === 'show'}
+    <ShareButton />
   {/if}
 
   {#if $topBarSettings.actions.logout == 'show' && $page.data.token}

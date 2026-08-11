@@ -4,6 +4,8 @@
 //
 // The icons in the folder `svg/custom` use the same license as the main repository.
 //
+// The icons in the folder `svg/brands` are from Simple Icons (https://github.com/simple-icons/simple-icons), which are released under CC0 1.0. The brands and logos themselves are trademarks of their respective owners and are used here only to identify the sharing targets they link to.
+//
 // NB. Icons must be contained in a subfolder of `svg` one level deep. Thus, 'icon(.ts)' and 'foo/bar/icon(.ts)' are not allowed, but 'foo/icon(.ts)' is.
 //
 // When adding new icons, keep in mind that they are expected to not contain any strokes (the color is applied to the fill) and to be monochromatic and have a 1:1 aspect ratio.
@@ -32,10 +34,13 @@ export const ICONS = {
   close: ['material', 'close'],
   collapse: ['material', 'expand_less'],
   constituency: ['material', 'person_pin_circle'],
+  copyLink: ['material', 'content_copy'],
   create: ['material', 'create'],
   download: ['material', 'download'],
   election: ['material', 'how_to_vote'],
+  email: ['material', 'mail'],
   expand: ['material', 'expand_more'],
+  facebook: ['brands', 'facebook'],
   feedback: ['material', 'feedback'],
   filter: ['material', 'filter_alt'],
   help: ['material', 'help'],
@@ -67,6 +72,7 @@ export const ICONS = {
   results: ['material', 'format_list_numbered'],
   search: ['material', 'search'],
   settings: ['material', 'settings'],
+  share: ['material', 'share'],
   show: ['material', 'visibility'],
   skip: ['custom', 'skip'],
   skipNext: ['material', 'skip_next'],
@@ -81,7 +87,9 @@ export const ICONS = {
   uncheckAll: ['material', 'remove_done'],
   videoOn: ['material', 'videocam'],
   videoOff: ['material', 'videocam_off'],
-  warning: ['material', 'warning']
+  warning: ['material', 'warning'],
+  whatsapp: ['brands', 'whatsapp'],
+  x: ['brands', 'x']
 } as const;
 
 /**

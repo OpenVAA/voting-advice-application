@@ -40,7 +40,7 @@ export interface PageStyles {
   };
 }
 
-export type TopBarAction = 'cancel' | 'feedback' | 'help' | 'logout' | 'results' | 'return';
+export type TopBarAction = 'cancel' | 'feedback' | 'help' | 'logout' | 'results' | 'return' | 'share';
 
 export type TopBarActionsSettings = {
   [action in TopBarAction]: 'hide' | 'show';

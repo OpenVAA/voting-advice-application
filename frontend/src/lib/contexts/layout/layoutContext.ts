@@ -33,7 +33,9 @@ export const DEFAULT_TOP_BAR_SETTINGS: TopBarSettings = {
     logout: 'hide',
     results: 'hide',
     return: 'hide',
-    returnButtonLabel: ''
+    returnButtonLabel: '',
+    // Unlike the other actions, sharing defaults to `show`, because it is a global header action that is only hidden on the few routes that need the space or the user's undivided attention
+    share: 'show'
   }
 };
 
