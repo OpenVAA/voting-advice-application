@@ -25,6 +25,7 @@
  */
 
 import { expect } from '@playwright/test';
+import { selectSmallestValidMultiChoice } from '../../utils/multiChoice';
 import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
 
@@ -88,7 +89,8 @@ export function createCandidateQuestionPage(page: Page) {
      * `questionId` (the DB id from the URL) so a mid-transition read never
      * touches the OUTGOING question's stale (detaching) choices:
      *   - number-scale → focus the native slider + press End (exact max).
-     *   - multi-choice (checkbox) → click the first 2 choices (min 2 / max 3).
+     *   - multi-choice (checkbox) → click choices from index 0 upward until Save
+     *     enables (the smallest count inside the authored min/max window).
      *   - radio (single/boolean/ordinal) → click the first choice.
      *
      * Settles first by waiting for either a slider OR a choice belonging to THIS
@@ -112,13 +114,26 @@ export function createCandidateQuestionPage(page: Page) {
         .then(() => true)
         .catch(() => false);
       if (isChoiceQuestion) {
-        // Checkbox multi-choice needs ≥ 2 selections; radio needs 1.
+        // Checkbox multi-choice needs a selection count inside the authored
+        // min/max window; radio needs 1.
         const isCheckbox = (await scopedChoices.first().getAttribute('type')) === 'checkbox';
         if (isCheckbox) {
-          await scopedChoices.nth(0).click();
-          await scopedChoices.nth(1).click();
-          await expect(scopedChoices.nth(0)).toBeChecked();
-          await expect(scopedChoices.nth(1)).toBeChecked();
+          // Phase 135 GUARD-01: select the SMALLEST VALID count instead of a
+          // hard-coded 2. The base seed now carries TWO multi-choice opinion
+          // questions with DIFFERENT windows (base-7 → 2..3, base-8 → exactly
+          // 1), so 2 clicks is over-max on base-8 and leaves Save permanently
+          // disabled — `walkRemainingOpinionQuestions`'s `expectContinueEnabled`
+          // would fail there. The Save button IS the validity signal
+          // (isMultiChoiceCountValid, multiChoiceValidity.ts:30).
+          const selected = await selectSmallestValidMultiChoice({
+            choices: scopedChoices,
+            validWhenEnabled: page.getByTestId(testIds.candidate.questions.saveButton)
+          });
+          // Every box the helper ticked must actually be checked (unchanged
+          // strictness — the old code asserted this for its fixed pair).
+          for (let i = 0; i < selected; i++) {
+            await expect(scopedChoices.nth(i)).toBeChecked();
+          }
         } else {
           await scopedChoices.nth(0).click();
         }

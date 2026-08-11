@@ -287,9 +287,11 @@ function withInfoAnswers(extra: Record<string, { value: unknown }>): Record<stri
 // partial-answer arrangement (see top-of-file docstring §"Partial-answer
 // candidate arrangement").
 //
-// Coverage: all 11 opinion questions across all categories — base 1-5,
-// opt-a/opt-b (singleChoiceOrdinal likert5), el-reg-1 (singleChoiceOrdinal),
-// co-mun-se-sw-1 (singleChoiceOrdinal), open-filt-mun-ne/se (singleChoiceOrdinal).
+// Coverage: all 14 opinion questions across all categories — base 1-8
+// (likert5/likert4/likert7/categorical/boolean/number/multi-choice 2..3/
+// multi-choice exact-1), opt-a/opt-b (singleChoiceOrdinal likert5), el-reg-1
+// (singleChoiceOrdinal), co-mun-se-sw-1 (singleChoiceOrdinal),
+// open-filt-mun-ne/se (singleChoiceOrdinal).
 // Candidates outside a given scope still carry the answer; the matching
 // algorithm picks only in-scope questions per voter, so the extra answers
 // are inert (they cost ~nothing on import).
@@ -304,6 +306,24 @@ const POLAR_MAX: Record<string, { value: unknown }> = {
   // for maximal subdimension distance (D-12).
   'test-e2e-base-qu-opin-base-6-number': { value: 10 },
   'test-e2e-base-qu-opin-base-7-multichoice': { value: ['a', 'b'] },
+  // Base-8 (exact-one multi-choice, Phase 135 GUARD-01) is DELIBERATELY
+  // MATCHING-NEUTRAL: every answer template below gives it the SAME value
+  // (['a']), and every automated walk selects checkboxes from index 0 upward,
+  // so the voter also lands on 'a' in BOTH answerMode='min' and 'max'. Every
+  // candidate therefore sits at distance 0 on this dimension.
+  //
+  // Why that is safe rather than lazy: a categorical question's subdimensions
+  // are re-weighted to one dimension's worth of total weight (metric.ts:225-231),
+  // so base-8 adds exactly 1 unit to the maximum possible distance and 0 to
+  // every candidate's actual distance. Scores become 1 - D/(Dmax+1) with D
+  // unchanged — a strictly monotone transform, so the existing ranking
+  // assertions (POLAR_MAX first at 100%, POLAR_MIN last, the EQTYP-02
+  // min-walk ordering) are preserved EXACTLY rather than merely "probably".
+  //
+  // Base-7 above remains the multi-choice MATCHING-coverage question (its
+  // POLAR_MAX/POLAR_MIN values are disjoint on purpose); base-8's job is the
+  // `selectExact` helper-text render guard, not matching discrimination.
+  'test-e2e-base-qu-opin-base-8-multichoice-exact': { value: ['a'] },
   'test-e2e-base-qu-opin-opt-a-1': { value: '5' },
   'test-e2e-base-qu-opin-opt-b-1': { value: '5' },
   'test-e2e-base-qu-opin-el-reg-1': { value: '5' },
@@ -320,6 +340,8 @@ const NEAR_MAX: Record<string, { value: unknown }> = {
   'test-e2e-base-qu-opin-base-5-boolean': { value: true },
   'test-e2e-base-qu-opin-base-6-number': { value: 8 },
   'test-e2e-base-qu-opin-base-7-multichoice': { value: ['a', 'b', 'c'] },
+  // Matching-neutral by construction — see the POLAR_MAX note above.
+  'test-e2e-base-qu-opin-base-8-multichoice-exact': { value: ['a'] },
   'test-e2e-base-qu-opin-opt-a-1': { value: '4' },
   'test-e2e-base-qu-opin-opt-b-1': { value: '4' },
   'test-e2e-base-qu-opin-el-reg-1': { value: '4' },
@@ -336,6 +358,9 @@ const POLAR_MIN: Record<string, { value: unknown }> = {
   'test-e2e-base-qu-opin-base-5-boolean': { value: false },
   'test-e2e-base-qu-opin-base-6-number': { value: 0 },
   'test-e2e-base-qu-opin-base-7-multichoice': { value: ['c', 'd'] },
+  // Matching-neutral by construction — see the POLAR_MAX note above. NOT the
+  // opposite of POLAR_MAX on purpose: base-8 must not shift any score.
+  'test-e2e-base-qu-opin-base-8-multichoice-exact': { value: ['a'] },
   'test-e2e-base-qu-opin-opt-a-1': { value: '1' },
   'test-e2e-base-qu-opin-opt-b-1': { value: '1' },
   'test-e2e-base-qu-opin-el-reg-1': { value: '1' },
@@ -359,6 +384,8 @@ const GENERIC: Record<string, { value: unknown }> = {
   // Number midpoint (0..10 → 5); multi-choice mid subset (2 in range).
   'test-e2e-base-qu-opin-base-6-number': { value: 5 },
   'test-e2e-base-qu-opin-base-7-multichoice': { value: ['b', 'c'] },
+  // Matching-neutral by construction — see the POLAR_MAX note above.
+  'test-e2e-base-qu-opin-base-8-multichoice-exact': { value: ['a'] },
   'test-e2e-base-qu-opin-opt-a-1': { value: '3' },
   'test-e2e-base-qu-opin-opt-b-1': { value: '3' },
   'test-e2e-base-qu-opin-el-reg-1': { value: '3' },
@@ -626,14 +653,17 @@ export const baseTemplate: Template = {
   },
 
   // ------------------------------------------------------------------- questions
-  // 14 questions: 9 info + 5 opinion-base + Opt-A-1 (was Base-B-1) + Opt-B-1
-  // (was Base-C-1) + EL-Reg-1 + CO-Mun-SE-SW-1 + Filt-Mun-NE + Filt-Mun-SE
-  // = 9 + 5 + 1 + 1 + 1 + 1 + 1 + 1 = 20.
-  // Refactor-doc:26-56 says "14 questions total" but the per-line enumeration
-  // adds up to 20 (9 info + 5 base + 1 Opt-A + 1 Opt-B + 1 EL-Reg + 1 CO-Mun + 2 Filt).
-  // Following the per-line enumeration verbatim — the "14" appears to count
-  // opinion questions only (5 + 1 + 1 + 1 + 1 + 2 = 11) or is approximate.
-  // The dataset declares all questions the refactor doc explicitly lists.
+  // 26 questions = 12 info + 14 opinion.
+  //   info    (12): 9 general (multipleChoiceCategorical, singleChoiceCategorical,
+  //                 text, text-longText, text-link, number, boolean, date,
+  //                 multipleText) + 3 constituency-filtered (filt-mun-only,
+  //                 filt-co-reg-n, filt-co-reg-s).
+  //   opinion (14): 8 in QG-Opin-Base + Opt-A-1 + Opt-B-1 + EL-Reg-1 +
+  //                 CO-Mun-SE-SW-1 + Filt-Mun-NE + Filt-Mun-SE.
+  // Refactor-doc:26-56 says "14 questions total"; that figure predates the
+  // filtered info questions AND the Phase 129 / 135 base-opinion additions, so
+  // it is NOT the count to trust. The enumeration above is derived from the
+  // `fixed` array below and is the authoritative one.
   questions: {
     count: 0,
     fixed: [
@@ -781,7 +811,8 @@ export const baseTemplate: Template = {
         is_generated: false
       },
 
-      // QG-Opin-Base — 5 opinion questions covering ordinal/categorical/boolean variants
+      // QG-Opin-Base — 8 opinion questions covering the ordinal / categorical /
+      // boolean / number-scale / multi-choice (range AND exact-one) variants
       {
         external_id: 'test-e2e-base-qu-opin-base-1-likert5',
         type: 'singleChoiceOrdinal',
@@ -873,6 +904,31 @@ export const baseTemplate: Template = {
         custom_data: { minSelections: 2, maxSelections: 3 },
         allow_open: true,
         sort_order: 106,
+        is_generated: false
+      },
+      // Phase 135 GUARD-01: a SECOND multipleChoiceCategorical opinion question
+      // in the MAIN category, carrying an EQUAL selection window
+      // (min === max === 1). The equality is the whole point: QuestionChoices
+      // .svelte renders `questions.multiChoice.selectExact` when
+      // `effectiveMin === effectiveMax` and `selectRange` otherwise
+      // (QuestionChoices.svelte:420-425), so without an equal-window question
+      // the running app can NEVER reach the `selectExact` branch and the key
+      // added in Phase 134 has no runtime coverage. Exact-ONE (not exact-two)
+      // is deliberate: it renders the MF2 `countPlural=one` branch — the branch
+      // carrying the constructed non-English singulars (134 D-18), i.e. the one
+      // most worth guarding.
+      //
+      // Base-7 above KEEPS its 2..3 window (Phase 129 D-07 range edge-coverage).
+      // This question is an ADDITION, never a repurposing of that one.
+      {
+        external_id: 'test-e2e-base-qu-opin-base-8-multichoice-exact',
+        type: 'multipleChoiceCategorical',
+        name: { en: '[qu-opin-base-8-multichoice-exact] Base opinion 8 — Multi-choice exact one.' },
+        choices: OPIN_MULTICHOICE_EN,
+        category: { external_id: 'test-e2e-base-qg-opin-base' },
+        custom_data: { minSelections: 1, maxSelections: 1 },
+        allow_open: true,
+        sort_order: 107,
         is_generated: false
       },
 
@@ -998,6 +1054,9 @@ export const baseTemplate: Template = {
           // answerMode='max' voter (number 10, multi-choice ['a','b']).
           'test-e2e-base-qu-opin-base-6-number': { value: 10 },
           'test-e2e-base-qu-opin-base-7-multichoice': { value: ['a', 'b'] },
+          // base-8 (Phase 135 GUARD-01) — case (a) both answered. Matching-
+          // neutral value, identical across every template (see POLAR_MAX).
+          'test-e2e-base-qu-opin-base-8-multichoice-exact': { value: ['a'] },
           // case (c) — voter skips these, entity has answers
           'test-e2e-base-qu-opin-opt-a-1': { value: '5' },
           'test-e2e-base-qu-opin-el-reg-1': { value: '5' },

@@ -45,6 +45,7 @@
 import { expect, test as base } from '@playwright/test';
 import { TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
+import { selectSmallestValidMultiChoice } from '../../utils/multiChoice';
 import { testIds } from '../../utils/testIds';
 import type { Locator, Page } from '@playwright/test';
 
@@ -271,9 +272,11 @@ async function walkUntilQuestionsIntro(page: Page): Promise<void> {
  *   - Number (native range slider): 'min' → keyboard Home (exact min);
  *     'max' → keyboard End (exact max). Does not auto-advance — Next clicked
  *     explicitly (D-14, plans 04/06).
- *   - MultipleChoiceCategorical (checkbox multi-select): clicks the first 2
- *     choices to reach a valid selection count (plan-08 seed: min 2 / max 3);
- *     does not auto-advance — Next clicked explicitly (D-14, plan 06).
+ *   - MultipleChoiceCategorical (checkbox multi-select): clicks choices from
+ *     index 0 upward until the app reports the selection VALID (Phase 135
+ *     GUARD-01 — constraint-agnostic, so both the 2..3 and the exact-1 seeded
+ *     questions are answered correctly); does not auto-advance — Next clicked
+ *     explicitly (D-14, plan 06).
  *
  * All three answer-input families share the question-choice testid +
  * name=questionChoices-{id} scoping contract EXCEPT the slider (which has no
@@ -415,16 +418,27 @@ async function answerAndAdvanceToResults(page: Page, answerMode: AnswerMode, ans
     // The input type is authoritative — detect it off the first scoped choice.
     const inputType = await currentChoices.first().getAttribute('type');
     if (inputType === 'checkbox' && answered < cap) {
-      // Click the first 2 choices to reach a VALID selection count. COUPLING:
-      // the plan-08 seeded multi-choice opinion question is authored with
-      // minSelections=2 / maxSelections=3, so exactly 2 selections is in-range
-      // (valid, not over/under-selected). Multi-choice does NOT auto-advance
-      // (plan 06), so advance via the explicit Next button. Count the question
-      // ONCE regardless of how many boxes were ticked.
-      const clicks = Math.min(2, choiceCount);
-      for (let c = 0; c < clicks; c++) {
-        await currentChoices.nth(c).click();
-      }
+      // Select the SMALLEST VALID number of choices, discovered from the app's
+      // own validity signal (Phase 135 GUARD-01). This used to hard-code "click
+      // the first 2", citing the single seeded multi-choice question's
+      // minSelections=2 / maxSelections=3 window — a coupling that BREAKS the
+      // moment a second window exists: `qu-opin-base-8-multichoice-exact` is
+      // authored min===max===1, so 2 clicks is OVER-max and the layout's
+      // handleAnswer refuses to persist an out-of-range selection, leaving the
+      // question silently UNANSWERED while the walk believed it had answered it.
+      //
+      // Validity signal: the DELETE button, which QuestionActions enables iff
+      // `answers[question.id].value != null && opinionInputValid` — i.e. iff a
+      // valid answer actually landed in voterCtx.answers. That makes the walk
+      // strictly stricter than before (it now verifies the answer registered).
+      //
+      // Multi-choice does NOT auto-advance (plan 06), so advance via the
+      // explicit Next button. Count the question ONCE regardless of how many
+      // boxes were ticked.
+      await selectSmallestValidMultiChoice({
+        choices: currentChoices,
+        validWhenEnabled: page.getByTestId(testIds.shared.questionDelete)
+      });
       answered++;
       await nextButton.waitFor({ state: 'visible', timeout: TIMEOUTS.page });
       await nextButton.click();
