@@ -167,6 +167,15 @@ Consider removing the obsolete Strapi-era compose stack from the sibling checkou
 **Severity:** low (one occurrence in 8 voter-journey runs and 2 full-suite runs during Plan 02)
 **Surfaced during:** Plan 02 Task 2, on the FIRST voter-journey run after a dev-server restart.
 
+> **Plan 04 gate update (2026-08-11): did NOT recur.** The three consecutive full-suite gate runs
+> each executed `voter-journey › full voter journey end-to-end` (test 3/134) and each passed —
+> and each ran against a **freshly restarted dev server on a cold Vite cache** (`yarn dev` runs
+> `dev:clean` first), i.e. under the exact condition the original — and disproved — cold-start
+> hypothesis named. Cumulative tally is now **1 failure in 5 full-suite runs plus 8 voter-journey
+> runs**. That is evidence the step is not reliably reproducible; it is **not** proof the defect is
+> absent, and this item stays OPEN. A single unexplained observation does not become a non-issue by
+> failing to recur — it becomes a lower-frequency unexplained observation.
+
 ### Observation
 
 `voter-journey.spec.ts` step "EPERM-07 customData.terms" failed at:
@@ -212,3 +221,67 @@ heading's term-parsing pass. Note that this assertion is HARD while the heading 
 immediately above it is `expect.soft` — so a mis-timed arrival on Base-3 surfaces here rather
 than at the (softer) heading check that would have explained it. Making that heading assertion
 hard would improve the diagnostic even if it does not change the failure rate.
+
+---
+
+## DEF-135-05 — Two concurrent turbo build graphs race on `packages/*/dist`, breaking `question-info#build`
+
+**Status:** OPEN (developer-experience hazard; does not affect any gate command)
+**Severity:** low (only reachable by forcing a rebuild while the dev watcher is mid-build)
+**Surfaced during:** Plan 04 Task 1, on the first loaded `yarn test:unit` run.
+
+### Observation
+
+A `yarn test:unit --force` started ~20 s after `yarn dev` (dev server launched 14:13:02) failed —
+not on a test, but on a build task:
+
+```
+Failed:    @openvaa/question-info#build
+ ERROR  run failed: command  exited (2)
+ Tasks:    12 successful, 16 total
+
+@openvaa/question-info:build: ../llm/dist/index.js(23,30): error TS7006: Parameter 'provider' implicitly has an 'any' type.
+@openvaa/question-info:build: ../llm/dist/index.js(27,52): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ openai: … }'.
+   … 30+ further TS7006 / TS7031 / TS7053, all on ../llm/dist/index.js
+```
+
+### Root cause — established, not assumed
+
+`yarn dev` runs `watch:shared` = `turbo watch build --filter=./packages/*`, whose **initial pass
+rebuilds every package**. `yarn test:unit --force` starts a **second** turbo graph that also
+rebuilds every package. Both write `packages/llm/dist`.
+
+`packages/llm/package.json` declares `"types": "./dist/index.d.ts"` and
+`"exports": {"import": "./dist/index.js"}`. `tsup` **cleans the output folder** before emitting, so
+there is a window in which `index.js` exists and `index.d.ts` does not. A consumer typechecked in
+that window resolves the JS instead of the declarations and reports implicit-`any` on every
+exported symbol — which is exactly the error shape observed. `packages/llm/dist/index.d.ts` mtimes
+tracked the concurrent rebuild (14:13 during the failure, rewritten again at 14:14).
+
+Discriminating evidence:
+
+| condition | result |
+|---|---|
+| `yarn test:unit --force`, watcher mid-initial-pass | **FAILS** at `question-info#build` |
+| `yarn test:unit --force`, watcher idle (same session, 90 s later) | exit 0, 19/19 tasks |
+| `yarn build --force`, no dev server at all | exit 0, 14/14 tasks |
+| `yarn test:unit` (no `--force`), watcher running, 7 and 14 CPU burners | exit 0, 19/19 tasks |
+
+### Why it does not affect any gate
+
+`--force` is not part of any gate command, and it is what creates the second build graph. In
+`turbo.json`, `test:unit` is `"cache": false` while `build` is cached — so a plain `yarn test:unit`
+**re-runs every test but rebuilds nothing**, leaving no window to race. Both binding loaded runs
+used the plain command and exited 0.
+
+### Why deferred
+
+Pre-existing monorepo-tooling behaviour, unrelated to anything Phase 135 changed, and outside every
+plan's `files_modified`. It is a build-tooling ordering hazard, not a test or product defect.
+
+### Suggested fix
+
+Either emit declarations to a staging directory and swap atomically, or drop `clean: true` from the
+package `tsup` configs so a stale `.d.ts` is overwritten rather than briefly removed. Cheapest
+mitigation meanwhile: do not run a forced build while `yarn dev` is running — wait for the
+watcher's initial pass to report `Build success` for every package first.
