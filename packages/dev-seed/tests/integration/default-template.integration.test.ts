@@ -6,6 +6,16 @@
  * skips in envs without `supabase start`. Developers run `yarn db:start`
  * (or `supabase start` directly) before `yarn test:unit` to exercise it.
  *
+ * WHERE THIS RUNS IN CI (Phase 136 plan 03, sweep finding F5): the dedicated
+ * `dev-seed-integration` job in `.github/workflows/main.yaml` — NOT the
+ * `frontend-and-shared-module-validation` job. That job runs `yarn test:unit`
+ * with no Supabase and no repo-root `.env`, so this file skips there and always
+ * did; up to Phase 135 that was the ONLY place it was reached from, i.e. the
+ * NF-01 budget never executed in CI at all. The dedicated job starts Supabase
+ * and exports `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` from
+ * `supabase status -o env`, and sets `DEV_SEED_INTEGRATION_REQUIRED=1` so a lost
+ * wiring is a red build rather than a silent skip (see the guard below).
+ *
  * Covers (D-58-20):
  *   - Row counts across the bulk-import tables (in-memory + DB-level)
  *   - Relational wiring (candidates → organization_id via organizations ref;
@@ -73,6 +83,35 @@ import {
 } from '../../src';
 
 const hasSupabase = Boolean(process.env.SUPABASE_URL);
+
+/**
+ * Guard-of-the-guard (Phase 136 plan 03, sweep finding F5).
+ *
+ * `describe.skipIf(!hasSupabase)` below is deliberate (D-58-21) and correct for
+ * a developer machine without `supabase start`. Its FAILURE MODE is that the
+ * skip is SILENT: for every CI run up to Phase 135 this whole file — including
+ * the NF-01 operation budget — skipped and the job went green, so the guarantee
+ * REQUIREMENTS.md recorded for GUARD-03 was true only locally.
+ *
+ * The `dev-seed-integration` job in `.github/workflows/main.yaml` now provides
+ * Supabase and exports `SUPABASE_URL`, and sets this variable to declare "this
+ * file is REQUIRED to run here". Throwing at module scope fails collection, so
+ * if that wiring is ever removed or renamed, CI turns RED instead of silently
+ * reverting to a green skip. Without this, the fix could regress invisibly —
+ * which is the exact defect F5 named.
+ *
+ * Deliberately NOT keyed on `CI === 'true'`: the `frontend-and-shared-module-
+ * validation` job legitimately runs `yarn test:unit` with no Supabase, and must
+ * keep skipping this file rather than failing it.
+ */
+if (process.env.DEV_SEED_INTEGRATION_REQUIRED === '1' && !hasSupabase) {
+  throw new Error(
+    'DEV_SEED_INTEGRATION_REQUIRED=1 but SUPABASE_URL is unset. This file carries the ' +
+      'NF-01 operation budget and is required to EXECUTE in the `dev-seed-integration` CI job; ' +
+      'skipping it there would silently drop the guard. Start Supabase and export SUPABASE_URL, ' +
+      'or unset DEV_SEED_INTEGRATION_REQUIRED if this run is genuinely not the integration job.'
+  );
+}
 
 /**
  * Ad-hoc read-only client constructed from env vars. Mirrors the defaults

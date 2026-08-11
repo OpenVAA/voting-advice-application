@@ -112,6 +112,95 @@ jobs:
         working-directory: apps/supabase
         run: supabase stop
 
+  # The @openvaa/dev-seed integration test carries the NF-01 OPERATION BUDGET —
+  # the deterministic batching / N+1 guard Phase 135 built to replace a
+  # load-sensitive wall-clock gate (REQUIREMENTS.md GUARD-03). It self-skips via
+  # `describe.skipIf(!process.env.SUPABASE_URL)`, and the
+  # `frontend-and-shared-module-validation` job above runs `yarn test:unit` with
+  # no Supabase and no repo-root `.env` — so before this job existed the budget
+  # ran on developer machines only and NEVER in CI, while the job went green
+  # (fake-guard sweep 2026-08-11, finding F5).
+  #
+  # It is a SEPARATE job rather than a step in `e2e-tests` on purpose: this test
+  # writes ~327 `seed_` candidates from the `default` template, which would
+  # contaminate the `e2e/base` dataset the E2E suite asserts against. Running it
+  # after `yarn test:e2e` in that job would instead couple it to E2E going
+  # green — a red E2E run would mask a seed-path regression.
+  #
+  # There is deliberately NO `paths-filter` here (unlike `supabase-tests`). The
+  # code this guards spans dev-seed, supabase-types, apps/supabase's schema, and
+  # the core/matching/app-shared chain the latent answer model uses, so an
+  # honest filter would cover most of the repo — and a conditional guard is how
+  # F5 happened in the first place. The job runs in parallel with `e2e-tests`,
+  # which does strictly more work (same install + build + `supabase start`, plus
+  # a Playwright install and the full E2E suite), so it does not extend the
+  # critical-path wall clock; the cost is runner minutes.
+  dev-seed-integration:
+    runs-on: ubuntu-latest
+    env:
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+      # Declares "this file is REQUIRED to execute in this job". The test throws
+      # at module scope if this is set while SUPABASE_URL is not, so losing the
+      # Supabase wiring below turns CI red instead of silently reverting to a
+      # green skip.
+      DEV_SEED_INTEGRATION_REQUIRED: "1"
+
+    steps:
+      - name: "Checkout source code"
+        uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Setup Yarn 4.13
+        uses: threeal/setup-yarn-action@v2
+        with:
+          version: 4.13
+
+      - name: Setup Node.js 22.22.1
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.1
+          cache: "yarn"
+
+      - name: "Install all dependencies"
+        run: yarn install --frozen-lockfile
+
+      - name: "Build @openvaa/dev-seed and its dependencies"
+        run: yarn build --filter=@openvaa/dev-seed
+
+      - name: "Start Supabase"
+        working-directory: apps/supabase
+        run: supabase start
+
+      # Read the connection details off the RUNNING instance rather than
+      # hard-coding the local demo keys, so a CLI change to the local key format
+      # cannot make this job authenticate as anon and fail confusingly.
+      - name: "Export Supabase connection env"
+        working-directory: apps/supabase
+        run: |
+          STATUS="$(supabase status -o env)"
+          API_URL="$(printf '%s\n' "$STATUS" | grep '^API_URL=' | cut -d= -f2- | tr -d '"')"
+          SERVICE_ROLE_KEY="$(printf '%s\n' "$STATUS" | grep '^SERVICE_ROLE_KEY=' | cut -d= -f2- | tr -d '"')"
+          test -n "$API_URL" || { echo "::error::API_URL missing from supabase status"; exit 1; }
+          test -n "$SERVICE_ROLE_KEY" || { echo "::error::SERVICE_ROLE_KEY missing from supabase status"; exit 1; }
+          echo "SUPABASE_URL=$API_URL" >> "$GITHUB_ENV"
+          echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY" >> "$GITHUB_ENV"
+
+      # With SUPABASE_URL set, `describe.skipIf(!hasSupabase)` in
+      # tests/integration/default-template.integration.test.ts is FALSE, so the
+      # NF-01 operation budget and the D-58-20 row-count / relational / portrait
+      # / TMPL-07 assertions all execute.
+      - name: "Run dev-seed tests (incl. the NF-01 operation budget)"
+        run: yarn workspace @openvaa/dev-seed test:unit
+
+      - name: "Stop Supabase"
+        if: always()
+        working-directory: apps/supabase
+        run: supabase stop
+
   e2e-tests:
     runs-on: ubuntu-latest
 
