@@ -84,6 +84,7 @@ const TEXT_RE = {
   baseOpinion5Boolean: /Base opinion 5 — Boolean/i,
   baseOpinion6Number: /Base opinion 6 — Number scale/i,
   baseOpinion7MultiChoice: /Base opinion 7 — Multi-choice/i,
+  baseOpinion8MultiChoiceExact: /Base opinion 8 — Multi-choice exact one/i,
   regionalOpinionsQuestion: /Regional-only opinion 1/i,
   filtMunNeOpinion: /Filtered Mun-NE opinion/i,
   // candidate name fragments (driven by base first_name)
@@ -327,6 +328,73 @@ async function expectMultiChoiceQuestionAndAdvance({
     // Click the first 2 checkboxes → valid in-range selection (min 2 / max 3).
     await choices.nth(0).click();
     await choices.nth(1).click();
+    const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
+    await expect(nextButton).toBeVisible({ timeout: TIMEOUTS.element });
+    await expect(nextButton).toBeEnabled({ timeout: TIMEOUTS.element });
+    await nextButton.click();
+  });
+}
+
+/**
+ * The resolved English render of `questions.multiChoice.selectExact` at
+ * `count = 1` — the MF2 `countPlural=one` branch
+ * (apps/frontend/messages/en/questions.json:72).
+ *
+ * Asserted as an EXACT string, deliberately. A loose regex (e.g. /1/ or
+ * /select/i) would also be satisfied by the raw dotted key path
+ * `questions.multiChoice.selectExact` that an unresolved catalog lookup emits,
+ * which is precisely the regression this guard exists to catch — so a loose
+ * matcher would be a guard that cannot fail. It also pins the singular noun
+ * ("option", not "options"), locking the plural branch itself rather than just
+ * the key's presence.
+ */
+const SELECT_EXACT_ONE_EN = 'Select 1 option.';
+
+/**
+ * Answer the EXACT-ONE multi-choice opinion question and advance, asserting the
+ * `selectExact` helper text on the way (Phase 135 GUARD-01).
+ *
+ * This is the standing regression guard for
+ * `questions.multiChoice.selectExact`. Phase 134 added the key in all 7 locales
+ * and proved it renders by importing the compiled Paraglide output at build
+ * time, but no seeded question had an equal min/max window, so the RUNNING app
+ * always took the `selectRange` branch and a break in the string would have
+ * shipped silently (134-06-SUMMARY §"still has no standing guard").
+ *
+ * `qu-opin-base-8-multichoice-exact` closes that: min === max === 1 makes
+ * QuestionChoices render `selectExact` with `count = 1`
+ * (QuestionChoices.svelte:420-421). Exactly ONE checkbox is a valid answer here
+ * — clicking two would be over-max, so the answer would never persist.
+ *
+ * Shape precedent: the `selectRange` lock at candidate-journey step 18.5. This
+ * one asserts the RESOLVED text rather than a digit pattern, per the reasoning
+ * on SELECT_EXACT_ONE_EN above.
+ */
+async function expectExactOneMultiChoiceQuestionAndAdvance({
+  page,
+  text
+}: {
+  page: Page;
+  text: RegExp | string;
+}): Promise<void> {
+  await expectUrlChange(page, async () => {
+    const questionHeading = page.getByTestId(testIds.voter.questions.heading);
+    await expect(questionHeading).toHaveText(text, { timeout: TIMEOUTS.element });
+    const questionId = new URL(page.url()).pathname.replace(/\/+$/, '').split('/').filter(Boolean).pop() ?? '';
+    // eslint-disable-next-line playwright/no-restricted-locators -- testid+name conjunction not expressible via getByTestId/getByRole
+    const choices = page.locator(`[data-testid="question-choice"][name="questionChoices-${questionId}"]`);
+    await expect(choices.first()).toBeVisible({ timeout: TIMEOUTS.element });
+
+    // ---- GUARD-01 lock ----
+    // The helper paragraph is emitted only for a multi-choice question carrying
+    // authored min/max (`{#if mode === 'answer' && multiConstraints}`), and its
+    // text is the branch output. Exact string → a raw-key regression fails here.
+    const helper = page.getByTestId(testIds.voter.questions.choiceHelper);
+    await expect(helper).toBeVisible({ timeout: TIMEOUTS.element });
+    await expect(helper).toHaveText(SELECT_EXACT_ONE_EN, { timeout: TIMEOUTS.element });
+
+    // Exactly ONE selection is in-range (min === max === 1).
+    await choices.nth(0).click();
     const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
     await expect(nextButton).toBeVisible({ timeout: TIMEOUTS.element });
     await expect(nextButton).toBeEnabled({ timeout: TIMEOUTS.element });
@@ -824,11 +892,15 @@ test.describe('voter journey', () => {
           optionIndex: (n) => n - 1 // Answer last option for matching test
         });
       }
-      // Phase 129 D-12: the MAIN category now ends with Base-6 (number scale)
-      // and Base-7 (multi-choice). Answer both at max (slider End; first 2
-      // checkboxes) before the Opt-A intro shows.
+      // Phase 129 D-12 + Phase 135 GUARD-01: the MAIN category now ends with
+      // Base-6 (number scale), Base-7 (multi-choice 2..3) and Base-8
+      // (multi-choice EXACT one). Answer all three (slider End; first 2
+      // checkboxes; a single checkbox) before the Opt-A intro shows.
       await expectNumberQuestionAndAdvance({ page, text: TEXT_RE.baseOpinion6Number });
       await expectMultiChoiceQuestionAndAdvance({ page, text: TEXT_RE.baseOpinion7MultiChoice });
+      // GUARD-01: this call carries the `questions.multiChoice.selectExact`
+      // resolved-text lock (see expectExactOneMultiChoiceQuestionAndAdvance).
+      await expectExactOneMultiChoiceQuestionAndAdvance({ page, text: TEXT_RE.baseOpinion8MultiChoiceExact });
       // We should now see the next category intro
       await expectCategoryIntroAndAdvance({ page, text: TEXT_RE.optionalOpinionsA });
       // We should now see a question and the results list should be enabled
@@ -838,16 +910,23 @@ test.describe('voter journey', () => {
       const previousButton = page.getByTestId(testIds.voter.questions.previousButton);
       await expect(previousButton).toBeVisible({ timeout: TIMEOUTS.element });
       await previousButton.click();
-      // We should see the previous question (now Base-7 multi-choice, the last
-      // base question) and not the category intro again.
+      // We should see the previous question (now Base-8 multi-choice exact-one,
+      // the last base question) and not the category intro again.
       const questionHeading = page.getByTestId(testIds.voter.questions.heading);
-      await expect.soft(questionHeading).toHaveText(TEXT_RE.baseOpinion7MultiChoice, { timeout: TIMEOUTS.element });
-      // Min-answers gate (minimumAnswers: 5). Phase 129 D-12 added Base-6/Base-7,
-      // so the voter now holds 7 base answers here — deleting ONE no longer
-      // crosses the 5-answer threshold. Delete THREE (Base-7 → Base-6 → Base-5,
-      // 7→6→5→4) to cross below the gate, asserting the CTA stays enabled until
-      // the crossing delete, then re-answer forward to re-enable it.
+      await expect
+        .soft(questionHeading)
+        .toHaveText(TEXT_RE.baseOpinion8MultiChoiceExact, { timeout: TIMEOUTS.element });
+      // Min-answers gate (minimumAnswers: 5). Phase 129 D-12 added Base-6/Base-7
+      // and Phase 135 added Base-8, so the voter now holds 8 base answers here —
+      // deleting ONE no longer crosses the 5-answer threshold. Delete FOUR
+      // (Base-8 → Base-7 → Base-6 → Base-5, 8→7→6→5→4) to cross below the gate,
+      // asserting the CTA stays enabled until the crossing delete, then
+      // re-answer forward to re-enable it.
       const deleteButton = page.getByTestId(testIds.shared.questionDelete);
+      await deleteButton.click(); // Base-8 deleted → 7 answers, still ≥ 5
+      await expect.soft(resultsLink).toBeEnabled({ timeout: TIMEOUTS.element });
+      await previousButton.click();
+      await expect.soft(questionHeading).toHaveText(TEXT_RE.baseOpinion7MultiChoice, { timeout: TIMEOUTS.element });
       await deleteButton.click(); // Base-7 deleted → 6 answers, still ≥ 5
       await expect.soft(resultsLink).toBeEnabled({ timeout: TIMEOUTS.element });
       await previousButton.click();
@@ -858,7 +937,7 @@ test.describe('voter journey', () => {
       await expect.soft(questionHeading).toHaveText(TEXT_RE.baseOpinion5Boolean, { timeout: TIMEOUTS.element });
       await deleteButton.click(); // Base-5 deleted → 4 answers, below the gate
       await expect.soft(resultsLink).toBeDisabled({ timeout: TIMEOUTS.element });
-      // Re-answer the three deleted questions forward to re-enable the CTA.
+      // Re-answer the four deleted questions forward to re-enable the CTA.
       await expectQuestionAndAdvance({
         page,
         text: TEXT_RE.baseOpinion5Boolean,
@@ -867,6 +946,11 @@ test.describe('voter journey', () => {
       });
       await expectNumberQuestionAndAdvance({ page, text: TEXT_RE.baseOpinion6Number });
       await expectMultiChoiceQuestionAndAdvance({ page, text: TEXT_RE.baseOpinion7MultiChoice });
+      // Second GUARD-01 pass — on a question whose answer was DELETED and is
+      // being re-entered, so the helper text is re-asserted against a freshly
+      // remounted QuestionChoices (deleteEpoch bump) rather than only the
+      // first-paint one.
+      await expectExactOneMultiChoiceQuestionAndAdvance({ page, text: TEXT_RE.baseOpinion8MultiChoiceExact });
       await expect.soft(resultsLink).toBeEnabled({ timeout: TIMEOUTS.element });
     });
 
@@ -884,10 +968,16 @@ test.describe('voter journey', () => {
       const previousButton = page.getByTestId(testIds.voter.questions.previousButton);
       const questionHeading = page.getByTestId(testIds.voter.questions.heading);
       // Go back across the new number + multi-choice questions to the Base-4
-      // Categorical question (opt-a-1 ← Base-7 ← Base-6 ← Base-5 ← Base-4). This
-      // crosses MULTIPLE question.type boundaries (multi-choice → number →
-      // boolean → categorical), exercising the `{#key question.type}` remount
-      // path each hop.
+      // Categorical question (opt-a-1 ← Base-8 ← Base-7 ← Base-6 ← Base-5 ←
+      // Base-4). This crosses MULTIPLE question.type boundaries (multi-choice →
+      // number → boolean → categorical), exercising the `{#key question.type}`
+      // remount path each hop. The Base-8 ← Base-7 hop is additionally a
+      // SAME-type hop (both multipleChoiceCategorical), which does NOT remount
+      // the input — so it also covers the reuse path.
+      await previousButton.click();
+      await expect
+        .soft(questionHeading)
+        .toHaveText(TEXT_RE.baseOpinion8MultiChoiceExact, { timeout: TIMEOUTS.element });
       await previousButton.click();
       await expect.soft(questionHeading).toHaveText(TEXT_RE.baseOpinion7MultiChoice, { timeout: TIMEOUTS.element });
       await previousButton.click();
@@ -901,8 +991,10 @@ test.describe('voter journey', () => {
       const lastOption = answerOptions.last();
       await expect(lastOption).toBeChecked({ timeout: TIMEOUTS.element });
       // Advance forward again to confirm the round-trip left answers intact.
-      // Base-4/Base-5 are radios (allowPreselected); Base-6/Base-7 are the
-      // number/multi-choice inputs — re-advance via Next without re-toggling.
+      // Base-4/Base-5 are radios (allowPreselected); Base-6/Base-7/Base-8 are
+      // the number/multi-choice inputs — re-advance via Next without
+      // re-toggling (a re-click would UNCHECK a box, and on Base-8 that would
+      // drop the selection below its min of 1).
       await expectQuestionAndAdvance({
         page,
         text: TEXT_RE.baseOpinion4Categorical,
@@ -917,6 +1009,7 @@ test.describe('voter journey', () => {
       });
       await settleAndAdvance({ page, text: TEXT_RE.baseOpinion6Number });
       await settleAndAdvance({ page, text: TEXT_RE.baseOpinion7MultiChoice });
+      await settleAndAdvance({ page, text: TEXT_RE.baseOpinion8MultiChoiceExact });
     });
 
     // ====================================================================
