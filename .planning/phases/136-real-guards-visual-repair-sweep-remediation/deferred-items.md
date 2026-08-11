@@ -97,3 +97,39 @@ turns a missing font into an explicit "Inter did not load" failure instead of an
 whole-page pixel diff, but the underlying dependency stands: an offline or egress-restricted runner
 cannot pass the visual job. Self-hosting the font (or vendoring a woff2 into the app) would remove
 the network from the gate and is the real fix.
+
+## From 136-06 (verification gate)
+
+### D-136-06-1 — `@openvaa/data` / `@openvaa/filters` unit tests are not reached by any CI command
+
+Discovered while corroborating REAL-02 at the gate. `yarn test:unit` is `turbo run test:unit`, so it
+runs only workspaces that declare a `test:unit` script. Measured (`yarn test:unit --force`, 19/19
+tasks, 0 cached): the task graph resolves to `app-shared`, `dev-seed`, `docs`, `frontend`, `supabase`
+— and to nothing else. `@openvaa/core`, `data`, `filters`, `matching`, `llm`, `question-info` and
+`argument-condensation` each ship a working `vitest.config.ts` and **no** `test:unit` script, so no
+CI command reaches them. They run only under a bare root `vitest` (wired by the root
+`vitest.config.ts` workspace array), which nothing in `.github/workflows/main.yaml` invokes.
+
+Consequence for this phase: the **eleven** F12 assertions plan 02 converted to exact equality — the
+ones a two-run negative control proved catch 8 over-inclusion regressions the old matchers could not
+see — are real guards that nothing on `main` executes. Same pathology as sweep finding F5, different
+mechanism (a missing script rather than a skip condition).
+
+Not fixed at the gate because it has a prerequisite: wiring these packages in makes `yarn test:unit`
+red on D-136-02-1 (`formatAnswer.test.ts:25` hard-codes an `en-US` rendering while
+`formatDateAnswer` falls back to the ambient machine locale; this machine is `fi`). Choosing between
+"pin the locale in the test" and "make the fallback deterministic in the implementation" is a product
+decision. Filed at `.planning/todos/pending/2026-08-12-data-filters-unit-tests-not-in-ci.md` and
+carried as a named boundary in REAL-02.
+
+### D-136-06-2 — The visual gate needs the Vite dev server bound beyond loopback
+
+Running the visual project in the CI-matching container requires the host's dev server to be
+reachable from the Docker VM gateway. Vite binds `127.0.0.1` by default, so the containerised run
+fails at the served-app check with `socat ... connect(... 192.168.65.254:5174): Connection refused`
+until the server is started with `--host 0.0.0.0`. This is a **local re-baselining/verification
+concern only** — in CI the visual job runs Playwright directly on the runner, against localhost, so
+nothing needs to change in the workflow. Worth recording because the container recipe quoted in
+`visual-regression.spec.ts`'s docblock does not mention it, and the failure mode (connection refused
+from inside the container while `curl localhost` works fine on the host) reads like a networking
+problem rather than a bind-address one.
