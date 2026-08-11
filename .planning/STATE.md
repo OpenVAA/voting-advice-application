@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
-current_phase: 134
-current_phase_name: A11y Contrast + i18n Catalog + Boolean-Answer Defect Closure
-status: complete
-stopped_at: Phase 134 COMPLETE — verifier PASS, D-18 UAT closed (operator-accepted 2026-08-10); v2.14 ready for /gsd-complete-milestone
-last_updated: "2026-08-10"
-last_activity: 2026-08-10
+current_phase: 135
+current_phase_name: Close the Three Phase-134 Coverage Carry-Overs
+status: ready_to_execute
+stopped_at: Phase 135 added — closing the 3 coverage carry-overs (selectExact guard, dark-theme axe parity, dev-seed NF-01 determinism) before v2.14 milestone close
+last_updated: "2026-08-11"
+last_activity: 2026-08-11
 last_activity_desc: Phase 134 closed — FIX-01/02/03 complete, E2E 3x green, D-18 selectExact singulars operator-accepted
 progress:
-  total_phases: 17
+  total_phases: 18
   completed_phases: 17
   total_plans: 91
   completed_plans: 91
-  percent: 100
+  percent: 94
 ---
 
 # Project State

@@ -709,3 +709,26 @@ Plans:
 - [x] 134-06-PLAN.md — E2E locks: restored helper-text assertion, falsy-boolean round trip, accessible-name assertions [wave 5]
 - [x] 134-07-PLAN.md — Bookkeeping corrections (ROADMAP / REQUIREMENTS / audit / CLAUDE.md) + the D-18 UAT review item [wave 5]
 - [x] 134-08-PLAN.md — Verification gate: static gates clean + full E2E 3× determinism + requirement flips [wave 6]
+
+### Phase 135: Close the Three Phase-134 Coverage Carry-Overs
+
+**Goal:** Convert the three coverage limits Phase 134 recorded-but-did-not-close into real guards, so v2.14 ships without a known untested branch, without a theme-blind a11y gate, and without a load-dependent wall-clock assertion sitting in a blocking CI step.
+
+**Requirements**: GUARD-01, GUARD-02, GUARD-03
+**Depends on:** Phase 134
+**Plans:** 3 plans
+
+**Success criteria:**
+
+1. **GUARD-01 (`selectExact` standing guard).** A seeded multi-choice question with an **equal min/max** exists in the `e2e/base` template, so `questions.multiChoice.selectExact` is rendered by the running app and asserted by the E2E suite. Phase 134 proved the string correct at build time (all 14 plural branches) but left it with no standing regression guard, because every seeded question carries a 2..3 window and therefore renders `selectRange`. The deliverable is a guard that FAILS if the key regresses — proven by negative control, not by assertion alone.
+2. **GUARD-02 (dark-theme axe parity).** The four fixture-driven axe entries (`questions`, `results`, `voter-detail-drawer`, `results-filter-drawer`) scan in **dark as well as light**, matching the raw entries. Phase 134 deliberately deferred this on the grounds that it newly scans four never-measured surfaces with unbounded fallout — that fallout is now in scope. **Any violation surfaced is fixed in this phase**, per the same reasoning as Phase 134's D-07: a violation found by our own gate is ours to close, and the E2E cardinal rule forbids shipping the suite red. The theme-coverage note at `a11y-smoke.spec.ts:396-401` is removed once it is no longer true.
+3. **GUARD-03 (dev-seed NF-01 determinism).** `packages/dev-seed`'s NF-01 seed-budget assertion no longer depends on machine load. Measured 2026-08-10: **fails at 23630ms / 11592ms under parallel load, passes at ~10143ms in isolation** against a 10000ms budget — a hard wall-clock assertion sitting beside its own threshold, inside the blocking `yarn test:unit` CI step. Resolve by asserting on **work done** (row counts / operation budget) rather than elapsed time, or by making the wall-clock a soft signal with a pathology-level threshold. **Explicitly NOT acceptable:** raising 10000 to a larger number — that preserves the flaky shape and only moves the goalposts.
+4. Full E2E suite green to the 3× determinism standard; svelte-check stays 0/0; lint + prettier + `typecheck:tests` clean; root `yarn test:unit` exits 0 **under parallel load**, not only in isolation.
+
+**Out of scope:** the `preview/+page.svelte:32` `dataRoot` alias-indirection warning and DEF-120-03-01 feedback rate-limit teardown (still carried); adding `format:check` to the milestone-close checklist (a process fix, not a code one).
+
+Plans:
+
+- [ ] 135-01-PLAN.md — Dark-theme axe parity for the four fixture-driven entries + any violation it surfaces [wave 1]
+- [ ] 135-02-PLAN.md — Seeded equal-min/max multi-choice question + `selectExact` E2E standing guard [wave 2]
+- [ ] 135-03-PLAN.md — dev-seed NF-01: replace the load-dependent wall-clock assertion [wave 2]
