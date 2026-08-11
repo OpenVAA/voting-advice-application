@@ -53,3 +53,21 @@ last case (two adjacent NUMBER questions) that still pays the 10s wait.
 Not done in 136-01: it is product code, and 136 is a test-guard remediation phase.
 One line, render-invisible (`name` on an `<input type="range">` is standard form
 semantics and the app does not use native form posts for answers).
+
+## From 136-04 (F2 raw-i18n-key scanner)
+
+### D-136-04-1 — The scanner covers voter surfaces only; candidate-app surfaces are unscanned
+
+`assertNoRawI18nKeys` is wired into `assertAxeScan`, so it runs on exactly the surfaces the
+`AXE_ROUTES` table declares: 7 voter routes x 2 themes. That is where 5 of the 7 tabulated F2 sites
+live, and the scanner covers **every** catalog key on them, current and future.
+
+It does NOT reach the candidate app. The two F2 sites outside its blast radius are
+`candidate-journey.spec.ts:921` (`toHaveText(/edit/i)` vs `candidateApp.questions.*.editAnswer`) and
+`candidateProfilePage.fixture.ts:174` (`toContainText(/required/i)` vs `common.required`). Both are
+still blind to a catalog break on the candidate profile/questions surfaces.
+
+The fix is not more site patches — it is extending the axe route table (or an equivalent
+authenticated scan family) to the candidate app, which would bring the raw-key gate along for free
+and close an a11y coverage gap at the same time. That is a phase-sized piece of work with its own
+auth-fixture and dataset questions, so it is recorded rather than smuggled into a test-guard plan.
