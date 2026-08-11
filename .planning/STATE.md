@@ -4,17 +4,17 @@ milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
 current_phase: 136
 current_phase_name: Real Guards — Visual Regression Repair + Fake-Guard Remediation
-status: ready_to_execute
-stopped_at: Phase 136 added — fake-guard sweep returned 20 findings (11 blind); repairing visual regression + top-tier findings before v2.14 close
-last_updated: "2026-08-11"
-last_activity: 2026-08-11
-last_activity_desc: Phase 135 verified PASS — GUARD-01/02/03 closed; all three Phase-134 coverage limits now real guards
+status: executed_pending_verification
+stopped_at: Phase 136 executed — 6/6 plans, E2E 3x green (134 each) + visual 4/4 in-container; NEW HOLE: @openvaa/data + @openvaa/filters have no test:unit script so CI never runs the F12 guards (D-136-06-1, blocked on a locale decision)
+last_updated: "2026-08-12"
+last_activity: 2026-08-12
+last_activity_desc: Phase 136 executed — fake-guard remediation + visual regression repaired and blocking; gate green
 progress:
   total_phases: 19
-  completed_phases: 18
-  total_plans: 95
-  completed_plans: 95
-  percent: 95
+  completed_phases: 19
+  total_plans: 101
+  completed_plans: 101
+  percent: 100
 ---
 
 # Project State
