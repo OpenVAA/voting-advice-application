@@ -3,7 +3,8 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { buildRoute } from '../../utils/buildRoute';
-import { TEST_CANDIDATE_EMAIL, TEST_CANDIDATE_PASSWORD } from '../../utils/testCredentials';
+import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
+import { TEST_CANDIDATE_EMAIL, TEST_CANDIDATE_EXTERNAL_ID, TEST_CANDIDATE_PASSWORD } from '../../utils/testCredentials';
 import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
 
@@ -46,13 +47,25 @@ async function waitForLoginForm(page: Page, loginRoute: string, emailTestId: str
 }
 
 /**
- * Auth setup project: authenticates as a candidate and saves storageState.
+ * Auth setup project: registers a base-dataset candidate and saves storageState.
  *
- * Depends on data-setup (the candidate must exist in the database).
- * Uses mock.candidate.2@openvaa.org which corresponds to Test Candidate Alpha
- * in the default dataset.
+ * Depends on `data-setup-base` (the candidate row must exist in the database
+ * before it can be force-registered).
+ *
+ * The `candidates` table carries NO email column, so the base seed cannot ship a
+ * *registered* candidate — registration is a runtime act. This setup therefore
+ * mints the auth user itself via `SupabaseAdminClient.forceRegister`, exactly as
+ * every perm-* setup does, then logs in through the real candidate-app login form
+ * (synthetic tokens fail server-side `safeGetSession()` JWT validation, so only a
+ * real Supabase-minted session survives the protected candidate layout).
+ *
+ * The `unregisterCandidate` call ahead of `forceRegister` makes re-runs idempotent:
+ * a prior run's auth user would otherwise collide as "User already exists". It is
+ * safe with respect to `terms_of_use_accepted` because `data-setup-base` has just
+ * re-inserted the candidate row with `auth_user_id` NULL, so the stale auth user
+ * matches no row and only the orphan auth.users record is removed.
  */
-setup('authenticate as candidate', async ({ page }) => {
+setup('register + authenticate as base candidate', async ({ page }) => {
   // Candidate app data loading can be slow; increase timeout
   setup.setTimeout(90000);
 
@@ -64,6 +77,12 @@ setup('authenticate as candidate', async ({ page }) => {
   const authDir = path.dirname(authFile);
   fs.mkdirSync(authDir, { recursive: true });
 
+  // Register the base candidate (mirrors the perm-* setups' forceRegister
+  // mechanism rather than inventing a second one).
+  const client = new SupabaseAdminClient();
+  await client.unregisterCandidate(TEST_CANDIDATE_EMAIL);
+  await client.forceRegister(TEST_CANDIDATE_EXTERNAL_ID, TEST_CANDIDATE_EMAIL, TEST_CANDIDATE_PASSWORD);
+
   // Navigate to candidate app home (which redirects to login for unauthenticated users).
   // The candidate app loads through the root layout which fetches data promises
   // and shows <Loading> until they resolve. The backend can be slow to respond,
@@ -74,7 +93,7 @@ setup('authenticate as candidate', async ({ page }) => {
   const candidateHome = buildRoute({ route: 'CandAppHome', locale: 'en' });
   await waitForLoginForm(page, candidateHome, testIds.candidate.login.email);
 
-  // Login credentials matching data.setup.ts (Test Candidate Alpha from default dataset)
+  // Log in as the candidate just registered above (base dataset CA-AA-1).
   await page.getByTestId(testIds.candidate.login.email).fill(TEST_CANDIDATE_EMAIL);
   await page.getByTestId(testIds.candidate.password.field).fill(TEST_CANDIDATE_PASSWORD);
   await page.getByTestId(testIds.candidate.login.submit).click();
