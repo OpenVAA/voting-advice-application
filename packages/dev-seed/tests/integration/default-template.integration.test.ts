@@ -10,10 +10,28 @@
  *   - Row counts across the bulk-import tables (in-memory + DB-level)
  *   - Relational wiring (candidates → organization_id via organizations ref;
  *     nominations → candidate_id × election_id × constituency_id)
- *   - Portraits: 100 candidates with `image.path` populated; `public-assets`
- *     bucket has ≥100 objects under `${projectId}/candidates/`
- *   - NF-01: elapsed ≤ 10_000 ms for the seed step
- *   - TMPL-07: locale fan-out produces all 4 locale keys on elections.name
+ *   - Portraits: 327 candidates with `image.path` populated; `public-assets`
+ *     bucket has ≥327 objects under `${projectId}/candidates/`
+ *   - NF-01, expressed as a deterministic OPERATION budget (see below) — NOT
+ *     as a wall-clock budget
+ *   - TMPL-07: locale fan-out produces every locale key on elections.name
+ *
+ * NF-01 (rewritten in Phase 135, plan 135-03): this test used to gate on ELAPSED
+ * WALL-CLOCK TIME, with a hard ten-second ceiling, measured across `runPipeline`
+ * + `fanOutLocales` + `writer.write` — i.e. across ~650 sequential HTTP
+ * round-trips to a local Supabase. Its outcome therefore depended on how busy
+ * the machine was, not on the code under test: measured 2026-08-10 at 23630 ms
+ * under parallel load versus ~6-10 s quiet, against that ten-second ceiling.
+ * Sitting inside the blocking `yarn test:unit` CI step, it was an intermittent
+ * red build waiting to happen, and it silently forbade running the unit suite
+ * beside a dev server.
+ *
+ * The elapsed time is now MEASURED AND LOGGED but NEVER ASSERTED. What NF-01
+ * actually protects — that the write path stays batched and does not degrade
+ * into per-row chatter — is asserted directly, as a deterministic budget over
+ * `SupabaseAdminClient` operations (§1 in the test body). That budget cannot be
+ * moved by scheduling noise, and it fails loudly on the regressions the 10 s
+ * number was only ever a proxy for: a lost batch, or an N+1 write.
  *
  * Teardown strategy: Plan 07 (teardown CLI) has not yet shipped, so this test
  * invokes `SupabaseAdminClient.bulkDelete` directly with the 10 bulk-deletable
@@ -26,13 +44,14 @@
  * keeps the plan self-contained — the write path already goes through the
  * admin client via `Writer`.
  *
- * Timeout: 60s — NF-01 budgets the seed step at <10s, but teardown + storage
- * cleanup + asserts consume additional wall time. Well under typical CI
- * per-test-file limits.
+ * Timeout: 60s — a generous ceiling, NOT a budget. The seed step plus teardown,
+ * storage cleanup and the DB-level assertions take roughly 10-15 s on a quiet
+ * machine and materially longer under contention; 60 s is sized to absorb that
+ * contention rather than to police it. Nothing in this file is a timing guard.
  */
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, type MockInstance, vi } from 'vitest';
 import {
   BUILT_IN_OVERRIDES,
   BUILT_IN_TEMPLATES,
@@ -123,11 +142,21 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
     await runTeardown('seed_', adminClient, readClient);
   }, 60_000);
 
-  it('applies default template and meets NF-01 (<10s) + D-58-20 assertions', async () => {
+  // Remove the `SupabaseAdminClient.prototype` spies installed by the §1
+  // operation-budget guard, so they cannot leak into any other test.
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('applies default template and meets the NF-01 operation budget + D-58-20 assertions', async () => {
     const template = BUILT_IN_TEMPLATES.default;
     const overrides = BUILT_IN_OVERRIDES.default;
     const seed = (template as { seed?: number }).seed ?? 42;
     const prefix = (template as { externalIdPrefix?: string }).externalIdPrefix ?? 'seed_';
+
+    // Counters go on BEFORE the write path runs. `beforeAll`'s teardown has
+    // already completed by now, so none of its calls are counted here.
+    const readOperationCounts = spyOnAdminClientOperations();
 
     const writer = new Writer();
     const start = Date.now();
@@ -137,11 +166,55 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
     const { portraits } = await writer.write(rows, prefix);
 
     const elapsedMs = Date.now() - start;
+    const ops = readOperationCounts();
 
     // -----------------------------------------------------------------------
-    // 1. NF-01 budget — HARD GATE
+    // 1. NF-01 — DETERMINISTIC OPERATION BUDGET
+    //
+    //    This replaces the former hard wall-clock gate (a ten-second ceiling on
+    //    elapsed time). It is a different KIND of assertion, not a bigger
+    //    threshold — nothing here is measured in milliseconds at all. The
+    //    seed step's cost is dominated by SEQUENTIAL round-trips, so the honest
+    //    invariant is how many round-trips the write path makes — not how many
+    //    milliseconds this particular machine needed to make them. Every count
+    //    below is a function of the template alone: identical on an idle box and
+    //    a thrashing one. See the NF-01 note in the header docblock.
     // -----------------------------------------------------------------------
-    expect(elapsedMs).toBeLessThan(10_000);
+
+    // Elapsed is reported for the record and deliberately NOT asserted on. The
+    // log line is the whole of the wall-clock treatment now: a number a human
+    // can watch drift, never a condition the suite passes or fails on.
+    console.info(`[NF-01] seed step elapsed: ${elapsedMs} ms (observability only — not asserted)`);
+
+    // 1a. Row writes stay BATCHED: three fixed passes (bulk_import →
+    //     importAnswers → linkJoinTables) no matter how many rows the template
+    //     produced. Splitting a pass per-table or per-row fails here.
+    expect(ops.bulkImport).toBe(1);
+    expect(ops.importAnswers).toBe(1);
+    expect(ops.linkJoinTables).toBe(1);
+
+    // 1b. Portraits cost exactly ONE candidate lookup for the whole run, plus
+    //     TWO round-trips per candidate (upload the object, write the image
+    //     JSONB). An N+1 lookup, or a third per-candidate call, fails here —
+    //     and this is the term that dominates the wall clock, so a real
+    //     performance regression lands precisely on this assertion.
+    //     `rows.candidates.length` is itself pinned to 327 by §2 below, so this
+    //     cannot pass by both sides quietly collapsing to zero.
+    expect(ops.selectCandidatesForPortraitUpload).toBe(1);
+    expect(ops.uploadPortrait).toBe(rows.candidates.length);
+    expect(ops.updateCandidateImage).toBe(rows.candidates.length);
+
+    // 1c. app_settings: one merge_jsonb_column RPC per row, and AT MOST one
+    //     question-external-id lookup for the entire payload (the Phase 88
+    //     Plan 04 cheap pre-walk gate — 88-04-ADR-cardContents-resolver.md).
+    expect(ops.updateAppSettings).toBe(rows.app_settings?.length ?? 0);
+    expect(ops.selectQuestionExternalIds).toBeLessThanOrEqual(1);
+
+    // 1d. Nothing ELSE on the admin client is touched by the write path. This
+    //     is what makes 1a-1c a budget rather than a checklist: a newly
+    //     introduced call cannot go uncounted, it surfaces here by name.
+    const unbudgeted = Object.entries(ops).filter(([name, count]) => count > 0 && !BUDGETED_WRITE_OPS.has(name));
+    expect(unbudgeted).toEqual([]);
 
     // -----------------------------------------------------------------------
     // 2. In-memory row counts match the default template (Phase 64 densification)
@@ -290,6 +363,46 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
 // ---------------------------------------------------------------------------
 // Local helpers — scoped to the integration test; not exported.
 // ---------------------------------------------------------------------------
+
+/**
+ * The `SupabaseAdminClient` operations the write path is BUDGETED to perform.
+ * Any other operation showing a non-zero count fails §1d by name, so the budget
+ * stays closed rather than becoming a checklist of the calls we remembered.
+ */
+const BUDGETED_WRITE_OPS = new Set([
+  'bulkImport',
+  'importAnswers',
+  'linkJoinTables',
+  'selectQuestionExternalIds',
+  'selectCandidatesForPortraitUpload',
+  'uploadPortrait',
+  'updateCandidateImage',
+  'updateAppSettings'
+]);
+
+/**
+ * Install call counters on EVERY `SupabaseAdminClient.prototype` method.
+ *
+ * `vi.spyOn` calls through by default, so the real write path still executes
+ * against the live local Supabase — this observes, it does not stub. Spying on
+ * the prototype (rather than an instance) is what makes it work at all: `Writer`
+ * constructs its own `SupabaseAdminClient` internally and never exposes it.
+ *
+ * Counted at the admin-client boundary, which is the layer where batching is
+ * decided. Queries issued INSIDE a single admin-client method are not visible
+ * here; the batching invariants that matter for NF-01 all live at this boundary.
+ *
+ * `afterEach` restores the originals.
+ *
+ * @returns a thunk that snapshots `{ methodName: callCount }` when invoked.
+ */
+function spyOnAdminClientOperations(): () => Record<string, number> {
+  const proto = SupabaseAdminClient.prototype as unknown as Record<string, (...args: Array<unknown>) => unknown>;
+  const spies: Array<[string, MockInstance]> = Object.getOwnPropertyNames(SupabaseAdminClient.prototype)
+    .filter((name) => name !== 'constructor' && typeof proto[name] === 'function')
+    .map((name) => [name, vi.spyOn(proto, name)]);
+  return () => Object.fromEntries(spies.map(([name, spy]) => [name, spy.mock.calls.length]));
+}
 
 /**
  * Count rows in a table where `external_id LIKE ${prefix}%` scoped to the
