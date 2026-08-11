@@ -317,6 +317,11 @@ async function answerAndAdvanceToResults(page: Page, answerMode: AnswerMode, ans
   // COUNT rationale).
   const categoryIntro = /\/questions\/category\//;
   let answered = 0;
+  // True iff the PREVIOUS loop iteration answered a NUMBER-scale question via
+  // the slider branch. Read by the loop's answer-surface wait below — see the
+  // DEAD-WAIT REMOVAL note there for why the slider can only be raced in when
+  // this is false.
+  let sliderJustAnswered = false;
   const cap = answerCount ?? Number.POSITIVE_INFINITY;
   const maxIterations = 50; // generous ceiling — base dataset has ≤9 reachable opinion questions
   for (let iter = 0; iter < maxIterations; iter++) {
@@ -343,12 +348,17 @@ async function answerAndAdvanceToResults(page: Page, answerMode: AnswerMode, ans
       // elections-continue-stall sibling render-timing class).
       await followLinkWhenHrefResolved(page, categoryStart, /\/questions\//, TIMEOUTS.slowPage);
       await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: TIMEOUTS.slowPage }).catch(() => null);
+      // Reaching here means the category-intro page RENDERED (we waited for its
+      // start link), so any question-page slider is long unmounted — the next
+      // iteration may safely race the slider again.
+      sliderJustAnswered = false;
       continue;
     }
 
     // Question page — pick by answerMode.
     if (answered >= cap) {
       // Use Skip to advance past remaining questions when answerCount is capped.
+      sliderJustAnswered = false;
       await nextButton.click();
       await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: TIMEOUTS.slowPage }).catch(() => null);
       continue;
@@ -379,12 +389,38 @@ async function answerAndAdvanceToResults(page: Page, answerMode: AnswerMode, ans
     // getByRole form expresses a testid+attribute conjunction.
     // eslint-disable-next-line playwright/no-restricted-locators
     const currentChoices = page.locator(`[data-testid="question-choice"][name="questionChoices-${questionId}"]`);
-    // Wait until the incoming question's own options are present (not the stale
-    // outgoing set), then read a stable count.
-    await currentChoices
-      .first()
-      .waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage })
-      .catch(() => null);
+    // Wait until the incoming question's own ANSWER SURFACE is present (not the
+    // stale outgoing one), then read a stable choice count.
+    //
+    // DEAD-WAIT REMOVAL (Phase 136 REAL-02). This used to wait on the scoped
+    // choices ALONE. A NUMBER-scale opinion question renders ONLY
+    // `question-number-slider` and carries NO `question-choice` nodes, so on
+    // that question the wait could never resolve: it burned the full
+    // `TIMEOUTS.slowPage` (measured 10 002 ms — 38% of this fixture's 26.4 s)
+    // on EVERY traversal, deterministically, and every consumer of
+    // `answeredVoterPage` paid it (a11y scans, visual, perf, voter journeys).
+    // Racing the slider in ends the wait on the real surface rather than on the
+    // clock. It is NOT a shortened timeout — the wait is still condition-based;
+    // the condition just now covers the surface that actually renders.
+    //
+    // The race is GUARDED. Unlike the choices, the slider carries no
+    // question-id-scoped attribute (the `name=questionChoices-<id>` contract),
+    // so an unscoped slider match cannot distinguish the INCOMING number
+    // question from the OUTGOING one still mounted during the page-reuse DOM
+    // lag this whole SETTLE-BEFORE-COUNT block exists to defeat. Racing it
+    // unguarded on the iteration right after a slider question would resolve on
+    // the STALE surface, read `choiceCount === 0` off the not-yet-swapped DOM,
+    // re-answer the previous question and skew `answered`. So when the previous
+    // question was itself the slider we fall back to the scoped-choices-only
+    // wait — byte-equivalent to the pre-136 behaviour. Worst case (two adjacent
+    // NUMBER questions) is therefore exactly today's cost, never worse; every
+    // other transition loses the dead wait. Dropping the guard requires giving
+    // the slider the same `name=questionChoices-<id>` contract QuestionChoices
+    // already has (product change — deliberately out of scope here).
+    const answerSurface = sliderJustAnswered
+      ? currentChoices.first()
+      : currentChoices.first().or(numberSlider.first()).first();
+    await answerSurface.waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage }).catch(() => null);
     const choiceCount = await currentChoices.count();
     if (choiceCount === 0) {
       // Slider branch (D-14): a matchable NUMBER opinion question renders a
@@ -401,12 +437,16 @@ async function answerAndAdvanceToResults(page: Page, answerMode: AnswerMode, ans
         await slider.focus();
         await slider.press(answerMode === 'max' ? 'End' : 'Home');
         answered++;
+        // The next iteration's answer-surface wait must NOT race an unscoped
+        // slider — this one stays mounted through the page-reuse DOM lag.
+        sliderJustAnswered = true;
         await nextButton.waitFor({ state: 'visible', timeout: TIMEOUTS.page });
         await nextButton.click();
         await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: TIMEOUTS.slowPage }).catch(() => null);
         continue;
       }
       // No selectable choices and no slider (e.g. text rendering) — Skip.
+      sliderJustAnswered = false;
       await nextButton.waitFor({ state: 'visible', timeout: TIMEOUTS.page });
       await nextButton.click();
       await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: TIMEOUTS.slowPage }).catch(() => null);
@@ -440,12 +480,15 @@ async function answerAndAdvanceToResults(page: Page, answerMode: AnswerMode, ans
         validWhenEnabled: page.getByTestId(testIds.shared.questionDelete)
       });
       answered++;
+      sliderJustAnswered = false;
       await nextButton.waitFor({ state: 'visible', timeout: TIMEOUTS.page });
       await nextButton.click();
       await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: TIMEOUTS.slowPage }).catch(() => null);
       continue;
     }
-    // Radio path (single-choice / boolean / Likert) — unchanged byte-for-byte.
+    // Radio path (single-choice / boolean / Likert) — answering behaviour
+    // unchanged; only the `sliderJustAnswered` bookkeeping below is new (136).
+    sliderJustAnswered = false;
     const pickIndex = answerMode === 'min' ? 0 : choiceCount - 1;
     await currentChoices.nth(pickIndex).click();
     answered++;
