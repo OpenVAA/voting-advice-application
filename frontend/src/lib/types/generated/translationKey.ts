@@ -537,6 +537,7 @@ export type TranslationKey =
   | 'feedback.thanks'
   | 'feedback.title'
   | 'help.title'
+  | 'info.readAsText'
   | 'info.title'
   | 'lang.ar'
   | 'lang.da'

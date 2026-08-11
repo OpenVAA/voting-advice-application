@@ -8,6 +8,7 @@ Displays information about the elections in the VAA, along with the info video f
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
   import { Button } from '$lib/components/button';
+  import { Expander } from '$lib/components/expander';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
@@ -23,7 +24,7 @@ Displays information about the elections in the VAA, along with the info video f
   const { dataRoot, getRoute, locale, t } = getVoterContext();
 
   const { pageStyles, topBarSettings, video } = getLayoutContext(onDestroy);
-  const { hasContent } = video;
+  const { hasContent, player } = video;
 
   topBarSettings.push({
     actions: {
@@ -54,6 +55,13 @@ Displays information about the elections in the VAA, along with the info video f
     video.load({ maxHeight: '60vh', ...videoProps });
   }
 
+  /**
+   * Pause the video when the text content is expanded, but keep the player visible.
+   */
+  function pauseVideo() {
+    $player?.togglePlay('pause');
+  }
+
   interface LocalizedIntroVideoProps {
     sv: IntroVideoProps;
     en: IntroVideoProps;
@@ -68,9 +76,11 @@ Displays information about the elections in the VAA, along with the info video f
     <HeroEmoji emoji={$t('dynamic.info.heroEmoji')} />
   </figure>
 
-  <div>
-    {@html sanitizeHtml($t('dynamic.info.content'))}
-  </div>
+  <Expander title={$t('info.readAsText')} variant="read-more" on:expand={pauseVideo}>
+    <div class="text-start">
+      {@html sanitizeHtml($t('dynamic.info.content'))}
+    </div>
+  </Expander>
 
   {#if $dataRoot.elections}
     <div class="items-stretch">
