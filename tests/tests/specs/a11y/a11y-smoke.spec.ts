@@ -46,8 +46,8 @@
  *
  * Each scan: (navigate) → optional reach-the-target `settle` → REQUIRED
  * `contentTestId` wait (the LAST gate; NEVER a network-idle settle) →
- * `awaitAnimationsSettled` → run
- * AxeBuilder.withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze()
+ * `awaitAnimationsSettled` → raw-i18n-key gate (`assertNoRawI18nKeys`, F2) →
+ * run AxeBuilder.withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze()
  * → assert per-rule 0-violation gate + global 0-violation gate.
  *
  * EVERY entry is scanned in BOTH themes — each emits a light scan and a `-dark`
@@ -66,6 +66,7 @@ import { createEntityFilters } from '../../fixtures/voter/entityFilters.fixture'
 import { voterJourneyTest, walkUntilQuestionsIntro } from '../../fixtures/voter/voter-journey.fixture';
 import { TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
+import { assertNoRawI18nKeys } from '../../utils/rawKeyScan';
 import { testIds } from '../../utils/testIds';
 import type { Page, TestInfo } from '@playwright/test';
 import type { Route } from '../../../../apps/frontend/src/lib/utils/route/route';
@@ -452,6 +453,22 @@ async function assertAxeScan(page: Page, route: AxeRoute, testInfo: TestInfo, la
   // composites text colour through in-flight opacity and reports phantom
   // color-contrast failures (see awaitAnimationsSettled).
   await awaitAnimationsSettled(page);
+
+  // Suite-wide raw-i18n-key gate (sweep finding F2). `t()` returns the raw
+  // dotted key path on a catalog miss (i18n/wrapper.ts:40), so a broken catalog
+  // renders `questions.multiChoice.selectExact` as literal user-visible text —
+  // a state that SATISFIES 21 of the suite's own text matchers (`/Yes/i` passes
+  // against `common.answer.yes`). Checking it here, against a key set derived
+  // from the catalog at runtime, covers all 598 keys and every future one on
+  // every scanned surface, instead of patching 21 individual regexes. The page
+  // is already navigated, content-anchored and animation-settled at this point,
+  // so the marginal cost is one DOM read.
+  //
+  // Runs BEFORE the axe scan deliberately: an untranslated catalog is a content
+  // defect that makes every accessible-name result on the surface meaningless,
+  // so it should be the reported failure rather than a footnote under a
+  // downstream contrast complaint.
+  await assertNoRawI18nKeys(page, label);
 
   const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
   await assertAxeGates(results, testInfo, label);
