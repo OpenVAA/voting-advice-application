@@ -65,9 +65,11 @@ if (fs.existsSync(probesDir)) {
  *   - specialized projects that run BY DEFAULT and are opt-OUT via env:
  *     performance (disable with PLAYWRIGHT_NO_PERF) and a11y-smoke (disable with
  *     PLAYWRIGHT_NO_A11Y). Each depends on `data-setup-base` (e2e/base dataset).
- *   - OPT-IN projects (excluded from the default run, each with a hard blocker):
- *       · visual-regression (PLAYWRIGHT_VISUAL) — `auth-setup` cannot
- *         authenticate against the base dataset yet (see KNOWN GAP below).
+ *   - OPT-IN projects (excluded from the default run):
+ *       · visual-regression (PLAYWRIGHT_VISUAL) — opt-in because its PNG
+ *         baselines are Linux/x86_64 captures that only reproduce on the CI
+ *         runner image, not because it is broken: it is a BLOCKING job in
+ *         .github/workflows/main.yaml (Phase 136 plan 05).
  *       · bank-auth (PLAYWRIGHT_BANK_AUTH) — the spec throws at module load
  *         without SUPABASE_SERVICE_ROLE_KEY/ANON_KEY and needs the
  *         identity-callback Edge Function served.
@@ -130,13 +132,16 @@ export default defineConfig({
     // `yarn test:e2e` (journeys + perm-* family + perf/a11y/bank-auth) never
     // runs the candidate-login storageState step.
     //
-    // KNOWN GAP (this is WHY visual stays opt-in): the base dataset (`e2e/base`)
-    // does not seed a `test-candidate-alpha` row and base candidates carry no
-    // email column, so `auth-setup`'s UI-login step has no registered base
-    // candidate to authenticate as. The dependency keeps the graph resolving;
-    // rewiring the auth chain against base must establish a registered
-    // base-candidate + email (forceRegister) contract before visual-regression
-    // can be promoted to default-on.
+    // The registered-base-candidate contract (Phase 136 plan 05): the candidates
+    // table carries no email column, so the seed cannot ship a *registered*
+    // candidate. `auth-setup` therefore force-registers base CA-AA-1 itself via
+    // SupabaseAdminClient before its UI login — the same mechanism every perm-*
+    // setup uses. See tests/tests/utils/testCredentials.ts.
+    //
+    // visual-regression stays opt-in for a snapshot-portability reason, NOT a
+    // blocker: its PNG baselines are Linux/x86_64 captures and only reproduce on
+    // the CI runner image (re-baseline procedure in the visual spec's docblock).
+    // The CI job that runs it is blocking.
     //
     // Only `visual-regression` consumes the candidate storageState, so
     // `auth-setup` is declared under PLAYWRIGHT_VISUAL alone (perf / a11y /
@@ -158,12 +163,12 @@ export default defineConfig({
     // Opt OUT of either with the matching PLAYWRIGHT_NO_* env, e.g.:
     //   PLAYWRIGHT_NO_PERF=1 yarn test:e2e
     //   PLAYWRIGHT_NO_A11Y=1 yarn test:e2e
-    // visual-regression and bank-auth stay OPT-IN (each has a hard blocker — see above):
+    // visual-regression and bank-auth stay OPT-IN (see the notes above):
     //   PLAYWRIGHT_VISUAL=1 npx playwright test -c tests/playwright.config.ts --project=visual-regression
     //   PLAYWRIGHT_BANK_AUTH=1 npx playwright test -c tests/playwright.config.ts --project=bank-auth
 
-    // Visual regression: screenshot comparison for key pages (OPT-IN — blocked
-    // on auth-setup vs base-dataset gap above).
+    // Visual regression: screenshot comparison for key pages (OPT-IN — see the
+    // snapshot-portability note above; the CI job itself is blocking).
     ...(process.env.PLAYWRIGHT_VISUAL
       ? [
           {

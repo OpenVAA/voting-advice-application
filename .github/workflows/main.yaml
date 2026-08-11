@@ -265,13 +265,24 @@ jobs:
         working-directory: apps/supabase
         run: supabase stop
 
-  # Visual regression is opt-in (PLAYWRIGHT_VISUAL) and currently expected to
-  # fail (auth-setup vs base-dataset gap), so it runs in its own advisory job.
-  # performance + a11y-smoke now run by default in the blocking `e2e-tests` job
-  # above (opt out with PLAYWRIGHT_NO_PERF / PLAYWRIGHT_NO_A11Y).
+  # Visual regression is opt-in at the Playwright level (PLAYWRIGHT_VISUAL gates
+  # the auth-setup + visual-regression projects) but BLOCKING at the CI level: a
+  # screenshot regression fails the build. It runs in its own job only because it
+  # needs PLAYWRIGHT_VISUAL set for the whole run; performance + a11y-smoke run by
+  # default in the blocking `e2e-tests` job above (opt out with
+  # PLAYWRIGHT_NO_PERF / PLAYWRIGHT_NO_A11Y).
+  #
+  # Baselines are Linux/x86_64 PNGs captured on this runner's image. After an
+  # INTENTIONAL UI change they must be regenerated in the container that matches
+  # this job (mcr.microsoft.com/playwright:v<version>-noble, --platform
+  # linux/amd64, --workers=1) — never on a developer Mac, whose font
+  # rasterisation differs enough to fail here permanently. The full procedure is
+  # in the docblock of tests/tests/specs/visual/visual-regression.spec.ts.
+  #
+  # The job needs network access to fonts.googleapis.com: the app loads Inter
+  # with display=swap and the specs assert it resolved before capturing.
   e2e-visual:
     runs-on: ubuntu-latest
-    continue-on-error: true
 
     steps:
       - name: "Checkout source code"
@@ -318,7 +329,7 @@ jobs:
             sleep 2
           done
 
-      - name: "Run visual regression tests (opt-in, advisory)"
+      - name: "Run visual regression tests (blocking)"
         run: PLAYWRIGHT_VISUAL=1 npx playwright test -c ./tests/playwright.config.ts --grep "@visual"
 
       - name: "Upload playwright report"
