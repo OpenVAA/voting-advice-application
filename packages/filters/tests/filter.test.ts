@@ -252,12 +252,12 @@ describe('TextQuestionFilter: multiple values', () => {
   test('Should return all that have the included item', () => {
     const filter = new TextQuestionFilter({ question }, LOCALE);
     filter.include = 'Hamburger';
-    expect(filter.apply(targets)).toEqual(expect.arrayContaining([people['Bart'], people['Homer']]));
+    expect(filter.apply(targets)).toEqual([people['Bart'], people['Homer']]);
   });
   test('Should return all that partally match the included item', () => {
     const filter = new TextQuestionFilter({ question }, LOCALE);
     filter.include = 'Hambu';
-    expect(filter.apply(targets)).toEqual(expect.arrayContaining([people['Bart'], people['Homer']]));
+    expect(filter.apply(targets)).toEqual([people['Bart'], people['Homer']]);
   });
   test('Should not return those excluded', () => {
     const filter = new TextQuestionFilter({ question }, LOCALE);
@@ -268,7 +268,7 @@ describe('TextQuestionFilter: multiple values', () => {
   test('Should not return all if none are excluded', () => {
     const filter = new TextQuestionFilter({ question }, LOCALE);
     filter.exclude = 'None of the above';
-    expect(filter.apply(targets)).toEqual(expect.arrayContaining(Object.values(people)));
+    expect(filter.apply(targets)).toEqual(Object.values(people));
   });
 });
 
