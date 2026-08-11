@@ -158,3 +158,57 @@ lsof -i:5173 | grep LISTEN | grep -q '^node' || { echo "5173 is not Vite — abo
 ```
 
 Consider removing the obsolete Strapi-era compose stack from the sibling checkout entirely.
+
+---
+
+## DEF-135-04 — Unreproduced single failure of the EPERM-07 term-trigger assertion
+
+**Status:** OPEN (observed once, never reproduced — no root cause claimed)
+**Severity:** low (one occurrence in 8 voter-journey runs and 2 full-suite runs during Plan 02)
+**Surfaced during:** Plan 02 Task 2, on the FIRST voter-journey run after a dev-server restart.
+
+### Observation
+
+`voter-journey.spec.ts` step "EPERM-07 customData.terms" failed at:
+
+```
+Error: expect(locator).toBeVisible() failed
+Locator: getByTestId('voter-questions-term-trigger').first()
+Expected: visible
+Timeout: 2000ms
+Error: element(s) not found
+```
+
+The failure's own page snapshot, however, SHOWS the trigger present in the DOM at that moment:
+
+```yaml
+- heading "[qu-opin-base-3-likert7] Base opinion 3 — Likert 7." [level=1]:
+    - text: "[qu-opin-base-3-likert7] Base opinion 3 —"
+    - button "Likert":
+        - generic: Likert
+```
+
+So the element does render; it simply had not satisfied the assertion inside the 2 s
+`TIMEOUTS.element` budget. That is a latency signal, not an absence signal.
+
+### Why it is NOT attributable to Plan 02
+
+The failing step runs strictly UPSTREAM of every line Plan 02 changed (the first modified step is
+"answer remaining base questions at polar-MAX", which follows it in the same serial test). A
+sequential spec cannot be perturbed at step N by an edit at step N+k.
+
+### Why no root cause is claimed
+
+The initial hypothesis was cold-start Vite module compilation (the run was the first after a
+dev-server restart). That hypothesis was TESTED and NOT confirmed: three subsequent runs, each
+also the first after a dev-server restart (the two negative-control runs and the post-restore
+run), all passed this step. Two full-suite runs also passed it. One observation with a disproved
+hypothesis is not a diagnosis, so none is recorded here.
+
+### Suggested follow-up
+
+If it recurs, capture the trace and check whether the `<Term>` trigger's mount is racing the
+heading's term-parsing pass. Note that this assertion is HARD while the heading assertion
+immediately above it is `expect.soft` — so a mis-timed arrival on Base-3 surfaces here rather
+than at the (softer) heading check that would have explained it. Making that heading assertion
+hard would improve the diagnostic even if it does not change the failure rate.
