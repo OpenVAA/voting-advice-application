@@ -44,10 +44,20 @@
  * keeps the plan self-contained — the write path already goes through the
  * admin client via `Writer`.
  *
- * Timeout: 60s — a generous ceiling, NOT a budget. The seed step plus teardown,
- * storage cleanup and the DB-level assertions take roughly 10-15 s on a quiet
- * machine and materially longer under contention; 60 s is sized to absorb that
- * contention rather than to police it. Nothing in this file is a timing guard.
+ * Timeout: 300s — a HANG GUARD, not a budget. Nothing in this file asserts on
+ * time; the number exists only so a wedged Supabase or storage connection cannot
+ * pin CI indefinitely. It previously read 60s, a value DERIVED FROM the NF-01
+ * wall-clock budget deleted above ("<10s for the seed step, plus teardown and
+ * asserts") — so removing that budget left it with no derivation, and it was
+ * measurably too tight. Re-derived from measurement (2026-08-11, 14-core
+ * machine, local Supabase): the whole test takes ~7 s quiet, ~15-20 s beside a
+ * Vite dev server with 7-11 cores busy, and 68 s with all 14 cores saturated —
+ * where it still PASSES, because every assertion below is load-independent.
+ * 300 s is ~4.4x the worst legitimately-completing run observed, so it can only
+ * fire on a real hang.
+ *
+ * Do NOT retighten this into a performance signal. Performance is guarded by the
+ * operation budget in §1 of the test body, where contention cannot reach it.
  */
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
@@ -140,7 +150,7 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
     adminClient = new SupabaseAdminClient();
     readClient = makeReadClient();
     await runTeardown('seed_', adminClient, readClient);
-  }, 60_000);
+  }, 300_000);
 
   // Remove the `SupabaseAdminClient.prototype` spies installed by the §1
   // operation-budget guard, so they cannot leak into any other test.
@@ -357,7 +367,7 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
     // -----------------------------------------------------------------------
     const portraitPaths = await listCandidatePortraitPaths(readClient);
     expect(portraitPaths.length).toBeGreaterThanOrEqual(327);
-  }, 60_000);
+  }, 300_000);
 });
 
 // ---------------------------------------------------------------------------
