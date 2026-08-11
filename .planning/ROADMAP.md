@@ -754,9 +754,9 @@ Plans:
 
 Plans:
 
-- [ ] 136-01-PLAN.md — F1 performance budget + F7 10s dead wait in the voter fixture [wave 1]
-- [ ] 136-02-PLAN.md — F12 subset-matcher filters (9 sites) + F14 unused matcher [wave 1]
-- [ ] 136-03-PLAN.md — F5 op-budget CI wiring + F4 orphaned probe specs [wave 1]
-- [ ] 136-04-PLAN.md — F2 suite-wide raw-i18n-key scanner [wave 2]
-- [ ] 136-05-PLAN.md — Visual regression repair: base-candidate contract, auth-setup, containerised baselines, blocking CI [wave 2]
+- [x] 136-01-PLAN.md — F1 performance budget + F7 10s dead wait in the voter fixture [wave 1]
+- [x] 136-02-PLAN.md — F12 subset-matcher filters (9 sites) + F14 unused matcher [wave 1]
+- [x] 136-03-PLAN.md — F5 op-budget CI wiring + F4 orphaned probe specs [wave 1]
+- [x] 136-04-PLAN.md — F2 suite-wide raw-i18n-key scanner [wave 2]
+- [x] 136-05-PLAN.md — Visual regression repair: base-candidate contract, auth-setup, containerised baselines, blocking CI [wave 2]
 - [ ] 136-06-PLAN.md — Verification gate: E2E 3× + visual 3× in-container + requirement flips [wave 3]
