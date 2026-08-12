@@ -16,9 +16,9 @@ deferred:
     evidence: "deferred-items.md D-136-06-1 'RESOLVED (operator decision, 2026-08-12): Option B … Implementation pending'"
 behavior_unverified_items:
   - truth: "REAL-01 — the visual-regression gate discriminates (a screenshot regression reddens the build)"
-    test: "Make a small, deliberate visual change to /results or the candidate preview (e.g. a padding/type-scale token) and run `--project=visual-regression` in the CI-matching container without --update-snapshots"
-    expected: "The run FAILS naming the changed baseline; revert and it passes again"
-    why_human: "Only stability (4/4 identical passes) is recorded, never sensitivity. Every other guard in this phase was proven by an injected-regression negative control; this one was not. At `maxDiffPixelRatio: 0.01` (tests/playwright.config.ts:112) a 1280x3684 baseline tolerates ~47k differing pixels, so the discrimination floor is unmeasured. Requires Docker + a running stack — out of bounds for this static verification."
+    test: "CLOSED 2026-08-12 — see 136-VISUAL-DISCRIMINATION-EVIDENCE.md"
+    expected: "PROVEN. Injected MatchScore.svelte:30 text-lg -> text-2xl; container run at the shipped config returned EXIT 1, naming voter-results-mobile.png (18,926 px, ratio 0.02). Reverted -> 7/7 green on three consecutive runs (5, 6, 7)."
+    why_human: "RESOLVED — no longer requires human action. BUT the same control opened a new, measured concern: at maxDiffPixelRatio 0.01 the voter-results-desktop baseline (1280x3684) PASSED the identical regression at 19,484 px = 0.41%, under its 47,155 px tolerance, while voter-results-mobile (390x4152) FAILED the same damage at 1.21%. The ratio budget dilutes with page height, so the gate blinds itself as pages grow. Filed: todos/pending/2026-08-12-visual-gate-ratio-blind-to-tall-pages.md. Also unexplained: 1 failure in 5 clean runs (run 4), failing test not captured, HMR-staleness hypothesis UNCONFIRMED."
   - truth: "REAL-03 — the dev-seed-integration job actually executes the NF-01 operation budget on a GitHub runner"
     test: "Observe the first real CI run of the `dev-seed-integration` job on a PR and confirm the dev-seed test count includes the integration test as EXECUTED (not skipped)"
     expected: "Job green, `default-template.integration.test.ts` runs, 0 skipped"
