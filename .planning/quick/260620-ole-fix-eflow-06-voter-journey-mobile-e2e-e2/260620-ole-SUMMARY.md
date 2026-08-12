@@ -3,12 +3,21 @@ quick_id: 260620-ole
 slug: fix-eflow-06-voter-journey-mobile-e2e-e2
 type: quick
 date: 2026-06-20
-status: blocked
+outcome: superseded
+superseded_by: 260620-ole-PERM-ISOLATION-FIX.md
+superseded_on: 2026-08-12
+status: complete
 ---
 
 # Quick 260620-ole: Fix EFLOW-06 + voter-journey-mobile E2E — Summary
 
-## BLOCKED
+> **SUPERSEDED 2026-08-12.** This summary records the BLOCKED state and a template-selection
+> hypothesis that was subsequently REFUTED. The real defect — perm `app_settings` singleton
+> cross-contamination — is diagnosed and fixed in `260620-ole-PERM-ISOLATION-FIX.md`
+> (`status: fixed`). EFLOW-06 was closed in Phase 124, which reached E2E 125/0/0 cardinal-clean.
+> Retained for the refutation trail; it is NOT open work.
+
+## BLOCKED (historical — see banner above)
 
 The operator-supplied diagnosis ("the seed template(s) lack an election / constituency
 *selection* path, so the voter walk cannot advance Home→Intro→Elections→Constituencies→/questions")

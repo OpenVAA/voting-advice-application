@@ -1,6 +1,9 @@
 ---
 phase: 260607-cd0-clean-up-e2e-test-folder
 plan: 01
+status: complete
+completed_on: 2026-06-07
+scope_note: "Analysis-only by design — produced catalogue + overlap verdicts + a consolidation proposal. Deprecating the duplicates was explicitly deferred to a follow-up run, so the absence of code changes is the delivered scope, not an incomplete one."
 subsystem: e2e-test-infra
 tags: [analysis, e2e, playwright, dead-code, catalogue]
 requires: []

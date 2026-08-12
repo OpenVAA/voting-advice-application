@@ -1,5 +1,35 @@
 # Milestones
 
+## v2.14 E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero (Shipped: 2026-08-12)
+
+**Phases completed:** 19 phases (118-136), 101 plans
+**Requirements:** 58/58 satisfied
+**Milestone-close gate:** full E2E **134 passed / 0 failed / 0 did-not-run** (11.6 min, exit 0; fresh dev server + clean DB) · `yarn test:unit` exit 0, 21/21 tasks · visual regression 7/7 in-container across four consecutive clean runs and **proven to discriminate** · svelte-check 0/0 · `format:check` + `lint:check` clean
+**Branch:** feat-gsd-roadmap. Phase numbering continued from v2.13 (last phase 117) → started at Phase 118 (no reset).
+**Closeout type:** `override_closeout` — 2 phases verified `human_needed` rather than `passed` (see "Known overrides" below).
+
+**Delivered:** Comprehensive Voter & Candidate E2E coverage across features × settings, the completed Svelte 5 runes idiom polish, `apps/frontend` svelte-check driven 151 → 0 with the CI gate flipped to absolute — and, in the final four phases, a sweep that turned the suite's remaining guards-in-costume into guards that actually discriminate.
+
+**Key accomplishments:**
+
+- **E2E coverage expansion (Phases 118-122, 130)** — audit-gated, fixtures-first build of the settings-permutation matrix (EPERM-01..11), flow coverage (EFLOW), the full Signicat/Idura OIDC bank-auth round-trip, and new-feature coverage. Suite grew to **134 tests**.
+- **Svelte 5 idiom polish (Phases 123-124)** — `onMount`/`onDestroy` → `$effect`, reactive `let` → `$state`, an app-wide store ESLint guard, and post-runes visual verification.
+- **svelte-check 151 → 0 (Phases 125-128, 132)** — tiered trivial → `supabaseDataProvider` (79 errors, 52% of baseline) → adapter layer + contexts → long tail; CI gate flipped from "≤151 baseline" to "0 absolute".
+- **New-feature build (Phase 129)** — MultipleText, multi-choice categorical and number-scale question inputs; alliance render; `/nominations` fetch.
+- **Defect closure + real guards (Phases 133-136)** — the milestone turned inward at the end: code-review gaps, three confirmed user-facing defects (a11y contrast gate, 7 raw i18n keys × 7 locales, boolean-`false`-reads-as-unanswered), Phase 134's recorded coverage limits converted into standing guards, then a full fake-guard sweep (20 findings, 11 blind).
+
+**The through-line — an assertion that cannot fail is worse than no assertion.** Phases 134-136 required every guard to be observed FAILING against an injected regression before acceptance. That discipline repeatedly changed outcomes and caught what passing runs had hidden: a raw-i18n-key scanner that went **green on the exact defect it existed to catch** (its expected key set was derived from the runtime catalog, so deleting a key removed it from the scanner's expectations at the same instant the app began rendering it raw — fixed by a 3-source UNION derivation, 598 keys, floor 400); a perf budget that did not move at all (55 ms) under a regression that moved the re-pointed metric 441 → 6993 ms; eleven subset matchers asserting that a filter EXCLUDES things, which a no-op filter passed (17 vs 25 failures under an identical stub); a visual-regression project non-functional since v1.2 (baselines depicting a candidate the dataset never seeds, Mac-generated PNGs, `continue-on-error: true`); and a port-identity check satisfied by a foreign Vite dev server from an unrelated project, which caused two full runs to silently scan the wrong application.
+
+**Known overrides at close:**
+
+- **DEF-135-04** — an undiagnosed intermittent `EPERM-07` term-trigger failure (1 in 8 full-suite runs; the cold-start-Vite hypothesis was tested and DISPROVED). Closed under an **explicit written waiver** against CLAUDE.md's cardinal no-flaky rule, with four conditions attached: `.planning/v2.14-CARDINAL-RULE-WAIVER.md`. Not closed, not downgraded — recurrence promotes it to a blocking diagnosis.
+- **Phase 134** `human_needed` — D-18 only: native-speaker review of six constructed non-English `selectExact` singulars. Operator-accepted; no automated check can assess grammaticality.
+- **Phase 136** `human_needed` — REAL-03's first observed CI run of the `dev-seed-integration` job, not executable outside GitHub Actions. Wiring verified by construction and local simulation.
+
+**Known gaps carried forward:** 4 queued to the next milestone (ROADMAP §Backlog) — the visual gate's page-height-proportional sensitivity floor (measured: the desktop baseline PASSED a regression the mobile one FAILED, from near-identical absolute damage); 5 packages still outside `test:unit` (18 test files run by no CI command; `matching` is core product logic); candidate-app axe + raw-i18n-key coverage; and the `fonts.googleapis.com` egress dependency inside the now-blocking visual gate. Plus ~48 standing-backlog todos.
+
+---
+
 ## v2.13 Context-as-Class Migration (Shipped: 2026-06-13)
 
 **Phases completed:** 12 phases (106-117), 35 plans, 50 tasks

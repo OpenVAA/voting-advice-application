@@ -1,14 +1,14 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.14
-milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
-current_phase: 136
-current_phase_name: Real Guards — Visual Regression Repair + Fake-Guard Remediation
-status: verified_ready_to_close
-stopped_at: Phase 136 VERIFIED + closed out (verifier PASS-WITH-CONCERNS; Option B implemented; visual gate proven to discriminate; DEF-135-04 waived). Gates green: test:unit exit 0, E2E 134/0/0. Only /gsd-complete-milestone for v2.14 remains. Prior: Phase 136 executed — 6/6 plans, E2E 3x green (134 each) + visual 4/4 in-container; NEW HOLE: @openvaa/data + @openvaa/filters have no test:unit script so CI never runs the F12 guards (D-136-06-1, blocked on a locale decision)
+milestone: none
+milestone_name: "(none — v2.14 shipped 2026-08-12)"
+current_phase: null
+current_phase_name: null
+status: milestone_shipped
+stopped_at: v2.14 archived + tagged 2026-08-12. No active milestone — next is /gsd-new-milestone.
 last_updated: "2026-08-12"
 last_activity: 2026-08-12
-last_activity_desc: Phase 136 executed — fake-guard remediation + visual regression repaired and blocking; gate green
+last_activity_desc: v2.14 milestone closed (override_closeout) — roadmap + requirements archived, 4 items queued to backlog
 progress:
   total_phases: 19
   completed_phases: 19
@@ -21,33 +21,43 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
+See: .planning/PROJECT.md (updated 2026-08-12 — v2.14 shipped, no active milestone)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 136 — verification, then v2.14 milestone close
+**Current focus:** None — awaiting `/gsd-new-milestone`.
 
 ## Current Position
 
-Phase: 136 — Real Guards: Visual Regression Repair + Fake-Guard Remediation
-Plan: 6 of 6 executed and committed
-Status: VERIFIED — PASS-WITH-CONCERNS (13/15 must-haves). Post-verification follow-through complete: D-136-06-1 Option B implemented, visual gate PROVEN to discriminate, DEF-135-04 waiver recorded. Full E2E 134 passed / 0 failed / 0 did-not-run (11.6m, exit 0).
-Last activity: 2026-08-12 — session resumed from HANDOFF.json; D-136-06-1 decided by operator
+Milestone: v2.14 — SHIPPED 2026-08-12 (19 phases, 101 plans, 58/58 requirements)
+Phase: none active
+Status: MILESTONE CLOSED — `override_closeout`
 
-Progress: [██████████] 100% (19/19 phases, 101/101 plans — Phase 136 pending verification)
+Progress: [██████████] v2.14 complete
 
 ## Session Continuity
 
-Last session: 2026-08-12 (resumed)
-Stopped at: Phase 136 verified and closed out. All four operator-approved follow-ups landed
-(d73d5a53f, 896fbf0bf, bfa5c6bef). Gates re-run green after the product change: yarn test:unit
-exit 0 (21/21 tasks, data 244 + filters 22 now included), full E2E 134 passed exit 0,
-format:check clean. ONLY REMAINING STEP: `/gsd-complete-milestone` for v2.14 — not yet run,
-awaiting operator go-ahead.
-Carried (disclosed, not blocking): DEF-135-04 undiagnosed EPERM-07 intermittent — explicit
-waiver at .planning/v2.14-CARDINAL-RULE-WAIVER.md; visual gate ratio blind to tall pages
-(measured: desktop baseline misses a regression mobile catches); 5 packages still outside
-test:unit; 1 unexplained visual-run failure in 5 (HMR hypothesis UNCONFIRMED).
-Resume file: .planning/phases/136-real-guards-visual-repair-sweep-remediation/.continue-here.md
+Last session: 2026-08-12
+Stopped at: v2.14 closed and tagged `v2.14` (local only — NOT pushed). Next: `/gsd-new-milestone`.
+Resume file: none
+
+## Deferred Items
+
+Items acknowledged and deferred at milestone close on 2026-08-12:
+
+| Category | Item | Status |
+|----------|------|--------|
+| verification | Phase 134 — D-18 native-speaker review of six constructed non-English `selectExact` singulars | human_needed; operator-accepted (no automated check can assess grammaticality) |
+| uat | Phase 134 — 134-UAT.md, 1 pending scenario (the same D-18 item) | pending; operator-accepted |
+| verification | Phase 136 — REAL-03 first observed CI run of the `dev-seed-integration` job | human_needed; not executable outside GitHub Actions. Wiring verified by construction + local simulation |
+| e2e | DEF-135-04 — undiagnosed intermittent `EPERM-07` term-trigger failure (1 in 8 runs) | WAIVED explicitly against CLAUDE.md's cardinal rule — `.planning/v2.14-CARDINAL-RULE-WAIVER.md`, four conditions attached; stays OPEN |
+| e2e | Visual-gate run-4 anomaly — 1 unexplained failure in 5 clean container runs, failing test not captured | recorded UNCONFIRMED; HMR-staleness hypothesis untested |
+| backlog | Visual-gate sensitivity floor (ratio dilutes with page height — measured) | queued to next milestone |
+| backlog | 5 packages outside `test:unit` (core, matching, llm, question-info, argument-condensation) | queued to next milestone |
+| backlog | Candidate-app axe + raw-i18n-key coverage (D-136-04-1) | queued to next milestone |
+| backlog | `fonts.googleapis.com` egress inside the blocking visual gate (D-136-05-2) | queued to next milestone |
+| todos | ~48 standing pending todos | carried; triage via `/gsd-review-backlog` |
+
+**Closeout type:** `override_closeout` — 2 phases verified `human_needed` rather than `passed`.
 
 ## Performance Metrics
 

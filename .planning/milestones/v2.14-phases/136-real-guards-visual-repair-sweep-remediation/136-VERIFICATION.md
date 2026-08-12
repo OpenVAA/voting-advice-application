@@ -24,18 +24,29 @@ behavior_unverified_items:
     expected: "Job green, `default-template.integration.test.ts` runs, 0 skipped"
     why_human: "GitHub Actions cannot be executed from this environment. The wiring is verified by construction (job present, no `if:` gate, env exported with hard `test -n` checks, module-scope throw guard) and by local simulation — but runner-side `supabase/setup-cli@latest` drift is only settled by an observed run. REAL-03's own text names this boundary."
 human_verification:
-  - test: "Decide whether the milestone may close while eleven F12 guards are executed by no CI command (D-136-06-1)"
+  - test: "RESOLVED 2026-08-12 (Option B implemented) — Decide whether the milestone may close while eleven F12 guards are executed by no CI command (D-136-06-1)"
     expected: "Either the D-136-06-1 Option B fix lands (formatDateAnswer takes an explicit locale → test:unit scripts for data/filters → green `yarn test:unit`), or the milestone close explicitly records that F12 remediation is local-only"
     why_human: "Independently confirmed by this verifier, not merely read from the SUMMARY: `npx turbo run test:unit --dry=json` reports `@openvaa/data |cmd: <NONEXISTENT>` and `@openvaa/filters |cmd: <NONEXISTENT>`. This is finding F5's exact pathology, and F5 was treated as blocker-grade in the same phase. The asymmetry is documented and justified, but it is a judgment call about what 'remediated' means."
-  - test: "Decide whether DEF-135-04 (undiagnosed ~1-in-5 EPERM-07 term-trigger failure) is compatible with closing the milestone under CLAUDE.md's cardinal E2E rule"
+  - test: "RESOLVED 2026-08-12 (explicit waiver recorded) — Decide whether DEF-135-04 (undiagnosed ~1-in-5 EPERM-07 term-trigger failure) is compatible with closing the milestone under CLAUDE.md's cardinal E2E rule"
     expected: "Either a root-cause diagnosis, or an explicit, recorded operator waiver at milestone close"
     why_human: "CLAUDE.md states there is no such thing as an acceptable flaky test and that a flake 'MUST be ironed out — not skipped, retried-until-green, or annotated as flaky'. The project has correctly refused to close it by absence (now 1 failure in 8 full-suite runs), but 'left open and tracked' is not the same as 'ironed out'. This is a milestone-close decision, not a Phase-136 defect."
-  - test: "Accept or remove the fonts.googleapis.com egress dependency inside the now-blocking e2e-visual gate (D-136-05-2)"
+  - test: "QUEUED 2026-08-12 to next milestone — Accept or remove the fonts.googleapis.com egress dependency inside the now-blocking e2e-visual gate (D-136-05-2)"
     expected: "Either Inter is self-hosted/vendored, or the risk is accepted with the failure mode (settleFonts → 'webfont Inter did not load') noted as the mitigation"
     why_human: "A third-party network dependency inside a build-reddening gate is an availability risk the project does not control. Disclosed in REAL-01, not resolved."
-  - test: "Confirm the two named candidate-app blind sites are acceptable to leave blind until the candidate-app axe route family lands (D-136-04-1)"
+  - test: "QUEUED 2026-08-12 to next milestone — Confirm the two named candidate-app blind sites are acceptable to leave blind until the candidate-app axe route family lands (D-136-04-1)"
     expected: "Recorded acceptance, or a follow-up phase scheduled"
     why_human: "Verified still blind at candidate-journey.spec.ts:921 (`toHaveText(/edit/i)`) and candidateProfilePage.fixture.ts:174 (`toContainText(/required/i)`). Whether 'the F2 class is closed' is an honest headline given voter-only reach is a wording/scope judgment."
+resolution_log_2026_08_12:
+  - item: "C1 / D-136-06-1 — eleven F12 guards executed by no CI command"
+    outcome: "CLOSED. Operator chose Option B: formatDateAnswer/formatNumberAnswer take an explicit DEFAULT_LOCALE instead of Intl ambient fallback (896fbf0bf). Negative control: pre-fix source FAILS under ambient fi-FI, PASSES under LC_ALL=en_US — it would have gone green on a US CI runner while the product bug shipped. test:unit added to data+filters; turbo resolves both (were NONEXISTENT); yarn test:unit --force exit 0, 21/21 tasks, data 244 + filters 22; all five F12 files execute."
+  - item: "DEF-135-04 — undiagnosed EPERM-07 intermittent"
+    outcome: "WAIVED explicitly, not closed. .planning/v2.14-CARDINAL-RULE-WAIVER.md — rule quoted, 1-in-8 count stated, four conditions attached."
+  - item: "REAL-01 visual-gate discrimination"
+    outcome: "PROVEN (7 container runs, same image digest as 136-05). Injected regression reddened the blocking job naming voter-results-mobile.png; reverted -> 7/7 green x3. Same control MEASURED a new defect: voter-results-desktop PASSED the identical regression at 19484 px (0.41% vs its 47155 px tolerance) while mobile FAILED at 1.21% — the ratio budget dilutes with page height. See 136-VISUAL-DISCRIMINATION-EVIDENCE.md."
+  - item: "REAL-03 first observed CI run"
+    outcome: "STILL OPEN — requires an actual GitHub Actions run; cannot be executed locally."
+  - item: "post-change regression gate"
+    outcome: "Full E2E 134 passed / 0 failed / 0 did-not-run (11.6m, exit 0) after the product change; format:check clean."
 ---
 
 # Phase 136: Real Guards — Visual Regression Repair + Fake-Guard Remediation — Verification Report

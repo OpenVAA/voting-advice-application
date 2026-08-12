@@ -1,9 +1,9 @@
 ---
-status: checkpoint
+status: resolved
 trigger: "A11y E2E flake (CARDINAL no-flaky): a11y-smoke.spec.ts axe color-contrast violation on elections-selector labels. fgColor #858585 on #ffffff = 3.69:1 (#666 token at ~0.8 ancestor opacity). SCAN-TIMING readiness defect — scan fires while entrance fade is ~80% complete. Two prior fixes (await Web Animations + quiescence loop) PROVEN INSUFFICIENT because a data-driven late render re-triggers the fade after the settle gate exits."
 created: 2026-06-22T00:00:00Z
-updated: 2026-06-22T00:00:00Z
-resolution: "CHECKPOINT — premise disproven. NOT a scan-timing/opacity phantom. The election option label text color is genuinely semi-transparent (DaisyUI .label color-mix 60% alpha → #858585 3.69:1) — a REAL persistent WCAG AA violation. Fix requires app CSS change (out of test-infra-only scope)."
+updated: 2026-08-12T00:00:00Z
+resolution: "RESOLVED 2026-08-12 at v2.14 close. This session's premise is OBSOLETE, not merely superseded. It records the ElectionSelector .label contrast failure as LIVE (settled scans 12/12 FAIL) — but that app-side defect was already closed by commit 0eb27c677 on 2026-06-22 19:59, hours after this session was written, and Phase 134 RE-MEASURED the elections selector under a settled DOM at 0 color-contrast violations in BOTH light and dark. The v2.14 milestone audit carries the same correction ([CORRECTED 2026-08-10]). What was genuinely real here — that the suite could not have caught the defect — was closed by Phase 134 FIX-01: a required data-driven content anchor per axe scan route, so a route cannot be added without declaring what loaded means. No open work remains."
 ---
 
 ## Current Focus
