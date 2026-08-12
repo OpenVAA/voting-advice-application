@@ -122,6 +122,11 @@ red on D-136-02-1 (`formatAnswer.test.ts:25` hard-codes an `en-US` rendering whi
 decision. Filed at `.planning/todos/pending/2026-08-12-data-filters-unit-tests-not-in-ci.md` and
 carried as a named boundary in REAL-02.
 
+**RESOLVED (operator decision, 2026-08-12):** Option B — `formatDateAnswer` takes an explicit
+locale rather than falling back to ambient. The product change is the fix; the test pin is not.
+Implementation pending (formatter → `test:unit` scripts → green `yarn test:unit` with quoted task
+lines). This also closes D-136-02-1.
+
 ### D-136-06-2 — The visual gate needs the Vite dev server bound beyond loopback
 
 Running the visual project in the CI-matching container requires the host's dev server to be

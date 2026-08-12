@@ -5,7 +5,7 @@ milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Ze
 current_phase: 136
 current_phase_name: Real Guards — Visual Regression Repair + Fake-Guard Remediation
 status: executed_pending_verification
-stopped_at: Phase 136 executed — 6/6 plans, E2E 3x green (134 each) + visual 4/4 in-container; NEW HOLE: @openvaa/data + @openvaa/filters have no test:unit script so CI never runs the F12 guards (D-136-06-1, blocked on a locale decision)
+stopped_at: Session resumed 2026-08-12 — gsd-verifier running on Phase 136; D-136-06-1 decided (Option B: formatDateAnswer takes explicit locale), implementation pending. Prior: Phase 136 executed — 6/6 plans, E2E 3x green (134 each) + visual 4/4 in-container; NEW HOLE: @openvaa/data + @openvaa/filters have no test:unit script so CI never runs the F12 guards (D-136-06-1, blocked on a locale decision)
 last_updated: "2026-08-12"
 last_activity: 2026-08-12
 last_activity_desc: Phase 136 executed — fake-guard remediation + visual regression repaired and blocking; gate green
@@ -24,16 +24,26 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 133 — fix-phase-132-code-review-gaps
+**Current focus:** Phase 136 — verification, then v2.14 milestone close
 
 ## Current Position
 
-Phase: 134 — A11y Contrast + i18n Catalog + Boolean-Answer Defect Closure (complete 2026-08-10 — verified)
-Plan: Not started
-Status: COMPLETE — verified; D-18 UAT closed (operator-accepted)
-Last activity: 2026-08-09 — v2.14 milestone audit written; Phase 134 inserted
+Phase: 136 — Real Guards: Visual Regression Repair + Fake-Guard Remediation
+Plan: 6 of 6 executed and committed
+Status: EXECUTED, VERIFICATION IN PROGRESS — gsd-verifier spawned 2026-08-12 (goal-backward, adversarial: each guard must DISCRIMINATE, not merely exist)
+Last activity: 2026-08-12 — session resumed from HANDOFF.json; D-136-06-1 decided by operator
 
-Progress: [█████████░] 94% (16/17 phases — Phase 134 pending)
+Progress: [██████████] 100% (19/19 phases, 101/101 plans — Phase 136 pending verification)
+
+## Session Continuity
+
+Last session: 2026-08-12 (resumed)
+Stopped at: Session resumed; gsd-verifier dispatched on Phase 136. Remaining after verification:
+(1) implement D-136-06-1 Option B — `formatDateAnswer` takes an explicit locale instead of the
+ambient fallback, then add `test:unit` scripts to `packages/data` + `packages/filters` and prove
+`yarn test:unit` reaches the eleven F12 assertions; (2) `/gsd-complete-milestone` for v2.14.
+Open: DEF-135-04 (undiagnosed ~1-in-5 EPERM-07 intermittent, no recurrence in six gate runs).
+Resume file: .planning/phases/136-real-guards-visual-repair-sweep-remediation/.continue-here.md
 
 ## Performance Metrics
 

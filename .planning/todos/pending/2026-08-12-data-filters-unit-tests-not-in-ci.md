@@ -51,3 +51,13 @@ machine locale** (`fi` on this machine). That is a product decision, not an exec
 - Phase 136 `136-02-SUMMARY.md` — the 17→25 negative-control delta these guards rest on
 - Phase 136 `136-06-SUMMARY.md` — where this was found
 - D-136-02-1 — the `formatAnswer.test.ts` locale failure itself
+
+## DECISION (operator, 2026-08-12)
+
+**Option B chosen — make `formatDateAnswer` take an explicit locale** instead of falling back to
+the ambient machine locale. The ambient fallback is a latent product bug (dates rendering
+differently depending on server locale), so the fix belongs in the formatter, not in a test pin.
+
+Sequence: fix the formatter → add `test:unit` scripts to `packages/data` + `packages/filters` →
+confirm `yarn test:unit` exits 0 and quote the task lines proving the F12 assertions execute.
+Blocker D-136-06-1 is therefore RESOLVED-PENDING-IMPLEMENTATION, not open on a decision.
