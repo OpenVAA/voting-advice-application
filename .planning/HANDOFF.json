@@ -1,0 +1,44 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-08-12T05:39:21.172Z",
+  "phase": "136",
+  "phase_name": "Real Guards — Visual Regression Repair + Fake-Guard Remediation",
+  "phase_dir": ".planning/phases/136-real-guards-visual-repair-sweep-remediation",
+  "plan": 6,
+  "task": 2,
+  "total_tasks": 2,
+  "status": "paused",
+  "completed_tasks": [
+    {"id": 1, "name": "136-01 F1 perf budget re-pointed + F7 10s dead wait removed", "status": "done", "commit": "b09064c61"},
+    {"id": 2, "name": "136-02 F12 eleven subset matchers -> equality + F14", "status": "done", "commit": "11159df03"},
+    {"id": 3, "name": "136-03 F5 dev-seed-integration CI job + F4 four orphaned probes deleted", "status": "done", "commit": "41f34db94"},
+    {"id": 4, "name": "136-04 union-derived raw-i18n-key scanner on all 14 a11y surfaces", "status": "done", "commit": "77515c993"},
+    {"id": 5, "name": "136-05 visual regression repaired, containerised baselines, job now blocking", "status": "done", "commit": "38ea3914d"},
+    {"id": 6, "name": "136-06 verification gate + REAL-01..04 flipped", "status": "done", "commit": "b1ca8417d"}
+  ],
+  "remaining_tasks": [
+    {"id": 7, "name": "Run gsd-verifier on Phase 136 (NOT yet run — every prior phase had one)", "status": "not_started"},
+    {"id": 8, "name": "Resolve D-136-06-1 locale decision, then wire @openvaa/data + @openvaa/filters into yarn test:unit", "status": "not_started"},
+    {"id": 9, "name": "/gsd-complete-milestone for v2.14", "status": "not_started"}
+  ],
+  "blockers": [
+    {"description": "D-136-06-1: @openvaa/data and @openvaa/filters declare no test:unit script, so turbo never runs them. The 11 F12 assertions fixed this phase (proven by negative control to catch 8 over-inclusion regressions) are executed by NO CI command. This is finding F5's exact pathology on a different surface, found inside the phase built to eliminate it.", "type": "technical", "workaround": "None applied. Wiring them in turns yarn test:unit RED on formatAnswer.test.ts, which hard-codes en-US while formatDateAnswer falls back to the ambient machine locale (fi here) — a product decision, deliberately not taken by an executor."},
+    {"description": "Phase 136 has no VERIFICATION.md. Phases 134 and 135 both ran gsd-verifier and it caught real things. 136 shipped six plans on executor self-report plus the orchestrator's gate.", "type": "technical", "workaround": "Spawn gsd-verifier before milestone close."}
+  ],
+  "async_jobs": [],
+  "human_actions_pending": [
+    {"action": "Decide the D-136-06-1 locale question: pin the test locale in formatAnswer.test.ts, OR make formatDateAnswer take an explicit locale instead of falling back to ambient.", "context": "Blocks wiring data+filters into CI. The second option fixes a latent product bug — dates would render differently depending on server locale — but touches product code.", "blocking": true},
+    {"action": "Repair the Docker credential helper: `docker-credential-desktop get` hangs indefinitely, blocking every docker pull before any network activity.", "context": "Worked around in 136-05 with a scratch DOCKER_CONFIG carrying no credsStore. Will recur on the next pull. The visual gate now needs the container.", "blocking": false},
+    {"action": "Consider self-hosting the Inter webfont (D-136-05-2).", "context": "The now-blocking visual gate depends on network egress to fonts.googleapis.com — a build-reddening surface the project does not control.", "blocking": false}
+  ],
+  "decisions": [
+    {"decision": "Repair the visual-regression project fully and make it blocking, rather than retire it", "rationale": "Operator decision 2026-08-11 after evidence it had been non-functional since the base-dataset merge (baselines depicted a candidate e2e/base never seeds; PNGs Mac-generated at v1.2; no re-baseline process in CI; job was continue-on-error)", "phase": "136"},
+    {"decision": "Fix the top-tier sweep findings (F1, F2, F4, F5, F12, F14); defer F3, F9, F10, F13, F15-F20", "rationale": "Orchestrator scope call — deferred items are unit-test quality with no claimed guarantee resting on them. Stated to the operator, not silently narrowed.", "phase": "136"},
+    {"decision": "Raw-key scanner derives its key set from the UNION of runtime catalog + type-gen source + generated TranslationKey union", "rationale": "The negative control broke the first design: a set derived from the runtime catalog alone loses a key at the same instant the app starts rendering it raw, so the scan goes green on the exact defect it exists to catch. TypeScript does not cover it either (t() is typed from a different directory).", "phase": "136"},
+    {"decision": "Baselines generated in mcr.microsoft.com/playwright:v1.58.2-noble on linux/amd64, not on the developer Mac", "rationale": "Mac font rendering differs from ubuntu CI; Mac-generated baselines would fail permanently — the exact trap that left the project broken.", "phase": "136"},
+    {"decision": "E2E port identity must assert the SERVED APP by response content, not the listener process type", "rationale": "A foreign Vite dev server from an unrelated project IS a node process and passed the DEF-135-03 check; two runs silently scanned the wrong application before it was caught.", "phase": "136"}
+  ],
+  "uncommitted_files": ["supabase/.temp/cli-latest"],
+  "next_action": "Spawn gsd-verifier on Phase 136 (goal-backward, adversarial, verify each guard DISCRIMINATES rather than merely exists). Then resolve D-136-06-1 with the operator. Then /gsd-complete-milestone for v2.14.",
+  "context_notes": "Three phases ran back-to-back this session (134 defect closure, 135 coverage carry-overs, 136 fake-guard remediation + visual repair), all on branch feat-gsd-roadmap in the main repo (no worktrees — the waves contend on a single :5173 and one local Supabase, so isolating executors would give private filesystems while still fighting over shared singletons). The through-line: every guard must be proven to FAIL against an injected regression, not merely to pass. That discipline caught a self-defeating scanner design, a perf budget blind to a 10x regression, eleven subset matchers that passed a no-op filter, and a wall-clock assertion that could not see a 327-query N+1. Two API 'Connection closed mid-response' drops occurred; both recovered by checking disk state then SendMessage-resuming the SAME agent (never respawning) — see memory project_gsd_executor_api_drop_recovery."
+}
