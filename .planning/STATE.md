@@ -4,8 +4,8 @@ milestone: v2.14
 milestone_name: E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero
 current_phase: 136
 current_phase_name: Real Guards — Visual Regression Repair + Fake-Guard Remediation
-status: executed_pending_verification
-stopped_at: Session resumed 2026-08-12 — gsd-verifier running on Phase 136; D-136-06-1 decided (Option B: formatDateAnswer takes explicit locale), implementation pending. Prior: Phase 136 executed — 6/6 plans, E2E 3x green (134 each) + visual 4/4 in-container; NEW HOLE: @openvaa/data + @openvaa/filters have no test:unit script so CI never runs the F12 guards (D-136-06-1, blocked on a locale decision)
+status: verified_ready_to_close
+stopped_at: Phase 136 VERIFIED + closed out (verifier PASS-WITH-CONCERNS; Option B implemented; visual gate proven to discriminate; DEF-135-04 waived). Gates green: test:unit exit 0, E2E 134/0/0. Only /gsd-complete-milestone for v2.14 remains. Prior: Phase 136 executed — 6/6 plans, E2E 3x green (134 each) + visual 4/4 in-container; NEW HOLE: @openvaa/data + @openvaa/filters have no test:unit script so CI never runs the F12 guards (D-136-06-1, blocked on a locale decision)
 last_updated: "2026-08-12"
 last_activity: 2026-08-12
 last_activity_desc: Phase 136 executed — fake-guard remediation + visual regression repaired and blocking; gate green
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-06-14 — v2.14 active)
 
 Phase: 136 — Real Guards: Visual Regression Repair + Fake-Guard Remediation
 Plan: 6 of 6 executed and committed
-Status: EXECUTED, VERIFICATION IN PROGRESS — gsd-verifier spawned 2026-08-12 (goal-backward, adversarial: each guard must DISCRIMINATE, not merely exist)
+Status: VERIFIED — PASS-WITH-CONCERNS (13/15 must-haves). Post-verification follow-through complete: D-136-06-1 Option B implemented, visual gate PROVEN to discriminate, DEF-135-04 waiver recorded. Full E2E 134 passed / 0 failed / 0 did-not-run (11.6m, exit 0).
 Last activity: 2026-08-12 — session resumed from HANDOFF.json; D-136-06-1 decided by operator
 
 Progress: [██████████] 100% (19/19 phases, 101/101 plans — Phase 136 pending verification)
@@ -38,11 +38,15 @@ Progress: [██████████] 100% (19/19 phases, 101/101 plans —
 ## Session Continuity
 
 Last session: 2026-08-12 (resumed)
-Stopped at: Session resumed; gsd-verifier dispatched on Phase 136. Remaining after verification:
-(1) implement D-136-06-1 Option B — `formatDateAnswer` takes an explicit locale instead of the
-ambient fallback, then add `test:unit` scripts to `packages/data` + `packages/filters` and prove
-`yarn test:unit` reaches the eleven F12 assertions; (2) `/gsd-complete-milestone` for v2.14.
-Open: DEF-135-04 (undiagnosed ~1-in-5 EPERM-07 intermittent, no recurrence in six gate runs).
+Stopped at: Phase 136 verified and closed out. All four operator-approved follow-ups landed
+(d73d5a53f, 896fbf0bf, bfa5c6bef). Gates re-run green after the product change: yarn test:unit
+exit 0 (21/21 tasks, data 244 + filters 22 now included), full E2E 134 passed exit 0,
+format:check clean. ONLY REMAINING STEP: `/gsd-complete-milestone` for v2.14 — not yet run,
+awaiting operator go-ahead.
+Carried (disclosed, not blocking): DEF-135-04 undiagnosed EPERM-07 intermittent — explicit
+waiver at .planning/v2.14-CARDINAL-RULE-WAIVER.md; visual gate ratio blind to tall pages
+(measured: desktop baseline misses a regression mobile catches); 5 packages still outside
+test:unit; 1 unexplained visual-run failure in 5 (HMR hypothesis UNCONFIRMED).
 Resume file: .planning/phases/136-real-guards-visual-repair-sweep-remediation/.continue-here.md
 
 ## Performance Metrics
