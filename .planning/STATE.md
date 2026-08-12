@@ -1,20 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: none
-milestone_name: "(none — v2.14 shipped 2026-08-12)"
-current_phase: null
-current_phase_name: null
-status: milestone_shipped
-stopped_at: v2.14 archived + tagged 2026-08-12. No active milestone — next is /gsd-new-milestone.
-last_updated: "2026-08-12"
+milestone: v2.15
+milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
+status: planning
+last_updated: "2026-08-12T16:35:07.337Z"
 last_activity: 2026-08-12
-last_activity_desc: v2.14 milestone closed (override_closeout) — roadmap + requirements archived, 4 items queued to backlog
 progress:
-  total_phases: 19
-  completed_phases: 19
-  total_plans: 101
-  completed_plans: 101
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -28,11 +24,10 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.14 shipped, no active miles
 
 ## Current Position
 
-Milestone: v2.14 — SHIPPED 2026-08-12 (19 phases, 101 plans, 58/58 requirements)
-Phase: none active
-Status: MILESTONE CLOSED — `override_closeout`
-
-Progress: [██████████] v2.14 complete
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-08-12 — Milestone v2.15 started
 
 ## Session Continuity
 
@@ -645,6 +640,7 @@ Next action: /gsd-complete-milestone v2.10 to archive. Open flag for operator: c
 | 82 — A11Y-01 Required-Empty Cell | 1 plan | Product decision at discuss-phase + (if REJECT) save-path validation + `required` i18n key + spec cell 4; lighter if decision is SOFT-WARN-ONLY (spec only). |
 
 **Total v2.10 estimate:** ~6-10 plans across 4 phases. Risk: high on Phase 79 (race investigation may surface code-level bugs requiring framework or auth work); moderate on Phase 81 (schema decision drives implementation shape); low on Phases 80 + 82 (small focused fixes + product-decision-gated cell).
+
 ## Operator Next Steps
 
 > Reconciled 2026-08-09. The previous contents of this section were **stale by
@@ -673,10 +669,12 @@ interrupted agent is outstanding.
   0 did-not-run** on every run (runs 1-2 consecutive off one clean baseline,
   run 3 off a full cold start). Lint + prettier + `typecheck:tests` clean. Full
   write-up: `.planning/phases/133-fix-phase-132-code-review-gaps/deferred-items.md`.
+
 - **ROADMAP progress-table drift** — rows 118 / 119 / 122 / 124 showed
   In-progress / Pending-verify / Not-started against phases that were verified
   passed weeks earlier; Phase 133 had no row at all. All reconciled against the
   VERIFICATION.md frontmatter (the authoritative source).
+
 - **STATE.md frontmatter drift** — `current_phase: 122 / status: planning` was an
   artifact of the known `state.complete-phase` transition quirk. Corrected.
 
@@ -687,6 +685,7 @@ interrupted agent is outstanding.
   `2026-08-09-intro-step-list-renders-before-data-ready.md` (real user-visible
   CLS on the intro page, surfaced by the DEF-133-01 investigation; needs a
   product decision, not a test fix).
+
 - **Phase 133 VERIFICATION** carries 1 `behavior_unverified` item (the WR-01
   loud-failure path) — closed by the Phase-133 UAT experiment; marker retained as
   accurate phase history.
