@@ -750,7 +750,7 @@ Plans:
 4. **REAL-04 (the raw-i18n-key class is closed systemically).** `t()` returns the raw dotted key on a catalog miss, and 21 E2E matchers are satisfied by that raw key — including `voter-journey.spec.ts:1338`'s `/Yes/i` against `common.answer.yes`, the only standing check on the boolean-answer render path. A suite-wide raw-key scanner over the a11y routes covers all 598 English keys and every future one, rather than 21 site fixes — and would have caught `selectExact` without needing a seeded equal-window question.
 5. Full E2E suite green to the 3× determinism standard; visual project green 3× in-container; static gates clean; root `yarn test:unit` exits 0 under load.
 
-**Out of scope (deferred to `.planning/todos/`):** sweep findings F3, F9, F10, F13–F20 — unit-test quality issues, lower risk, no claimed guarantee depends on them. F8/F11 are benign by the audit's own assessment.
+**Out of scope (deferred to `.planning/todos/`):** sweep findings F3, F9, F10, F13, F15–F20 — unit-test quality issues, lower risk, no claimed guarantee depends on them. F8/F11 are benign by the audit's own assessment.
 
 Plans:
 
