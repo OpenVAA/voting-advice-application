@@ -115,8 +115,66 @@ Deferred — tracked, not in this milestone's roadmap.
 
 ## Traceability
 
-Filled during roadmap creation.
+**Coverage: 38/38 v2.15 requirements mapped to exactly one phase each. No orphans, no duplicates.**
+Roadmap: `.planning/ROADMAP.md` (Phases 137-150). Future Requirements above are deliberately unmapped.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| _(pending roadmap)_ | | |
+| VGATE-01 | Phase 146 — Visual Gate — Self-Hosted Inter + Height-Independent Sensitivity + Re-baseline | Pending |
+| VGATE-02 | Phase 146 — Visual Gate — Self-Hosted Inter + Height-Independent Sensitivity + Re-baseline | Pending |
+| VGATE-03 | Phase 146 — Visual Gate — Self-Hosted Inter + Height-Independent Sensitivity + Re-baseline | Pending |
+| VGATE-04 | Phase 146 — Visual Gate — Self-Hosted Inter + Height-Independent Sensitivity + Re-baseline | Pending |
+| VGATE-05 | Phase 146 — Visual Gate — Self-Hosted Inter + Height-Independent Sensitivity + Re-baseline | Pending |
+| VGATE-06 | Phase 146 — Visual Gate — Self-Hosted Inter + Height-Independent Sensitivity + Re-baseline | Pending |
+| UNIT-01 | Phase 141 — Package Unit-Test Coverage + `test:unit` Invariant Guard | Pending |
+| UNIT-02 | Phase 141 — Package Unit-Test Coverage + `test:unit` Invariant Guard | Pending |
+| UNIT-03 | Phase 141 — Package Unit-Test Coverage + `test:unit` Invariant Guard | Pending |
+| UNIT-04 | Phase 141 — Package Unit-Test Coverage + `test:unit` Invariant Guard | Pending |
+| CSCAN-01 | Phase 147 — Candidate-App Scan Reach — Authenticated Fixture + Raw-Key Gate | Pending |
+| CSCAN-02 | Phase 148 — Candidate-App A11y Remediation to Zero | Pending |
+| CSCAN-03 | Phase 147 — Candidate-App Scan Reach — Authenticated Fixture + Raw-Key Gate | Pending |
+| CSCAN-04 | Phase 147 — Candidate-App Scan Reach — Authenticated Fixture + Raw-Key Gate | Pending |
+| INTEG-01 | Phase 138 — DEF-135-04 — `EPERM-07` Root Cause + Waiver Discharge | Pending |
+| INTEG-02 | Phase 138 — DEF-135-04 — `EPERM-07` Root Cause + Waiver Discharge | Pending |
+| INTEG-03 | Phase 138 — DEF-135-04 — `EPERM-07` Root Cause + Waiver Discharge | Pending |
+| INTEG-04 | Phase 137 — E2E Preflight Integrity — Assert the Served Application | Pending |
+| INTEG-05 | Phase 137 — E2E Preflight Integrity — Assert the Served Application | Pending |
+| INTEG-06 | Phase 137 — E2E Preflight Integrity — Assert the Served Application | Pending |
+| ASSERT-01 | Phase 139 — Single-Source Sweep Findings — Confirm or Withdraw | Pending |
+| ASSERT-02 | Phase 140 — Blind-Matcher Remediation | Pending |
+| ASSERT-03 | Phase 140 — Blind-Matcher Remediation | Pending |
+| ASSERT-04 | Phase 144 — Seed-Template Strict Typing + Unknown-Prop Guard | Pending |
+| ASSERT-05 | Phase 140 — Blind-Matcher Remediation | Pending |
+| ASSERT-06 | Phase 140 — Blind-Matcher Remediation | Pending |
+| ASSERT-07 | Phase 142 — Assertion Design — Wiring-Only Tests Assert Output | Pending |
+| ASSERT-08 | Phase 143 — `svelte/store` Guard — App-Wide Reach + Fallout Triage | Pending |
+| ASSERT-09 | Phase 143 — `svelte/store` Guard — App-Wide Reach + Fallout Triage | Pending |
+| TMPL-01 | Phase 144 — Seed-Template Strict Typing + Unknown-Prop Guard | Pending |
+| TMPL-02 | Phase 144 — Seed-Template Strict Typing + Unknown-Prop Guard | Pending |
+| TMPL-03 | Phase 145 — Default Seed Template Repair | Pending |
+| TMPL-04 | Phase 145 — Default Seed Template Repair | Pending |
+| CIGATE-01 | Phase 149 — CI Gates — SQL Lint/Format + Secrets & Vulnerability Scanning | Pending |
+| CIGATE-02 | Phase 149 — CI Gates — SQL Lint/Format + Secrets & Vulnerability Scanning | Pending |
+| CIGATE-03 | Phase 149 — CI Gates — SQL Lint/Format + Secrets & Vulnerability Scanning | Pending |
+| CIGATE-04 | Phase 150 — `RETURNS TABLE` Nullability — Audit + Single Override Mechanism | Pending |
+| CIGATE-05 | Phase 150 — `RETURNS TABLE` Nullability — Audit + Single Override Mechanism | Pending |
+
+### Phase → requirement rollup
+
+| Phase | Requirements | Count |
+|-------|--------------|-------|
+| 137 — E2E Preflight Integrity | INTEG-04, INTEG-05, INTEG-06 | 3 |
+| 138 — `EPERM-07` Root Cause + Waiver Discharge | INTEG-01, INTEG-02, INTEG-03 | 3 |
+| 139 — Single-Source Findings Confirm/Withdraw | ASSERT-01 | 1 |
+| 140 — Blind-Matcher Remediation | ASSERT-02, ASSERT-03, ASSERT-05, ASSERT-06 | 4 |
+| 141 — Package Unit-Test Coverage + Guard | UNIT-01, UNIT-02, UNIT-03, UNIT-04 | 4 |
+| 142 — Assertion Design | ASSERT-07 | 1 |
+| 143 — `svelte/store` Guard App-Wide | ASSERT-08, ASSERT-09 | 2 |
+| 144 — Seed-Template Strict Typing | TMPL-01, TMPL-02, ASSERT-04 | 3 |
+| 145 — Default Seed Template Repair | TMPL-03, TMPL-04 | 2 |
+| 146 — Visual Gate | VGATE-01..06 | 6 |
+| 147 — Candidate Scan Reach | CSCAN-01, CSCAN-03, CSCAN-04 | 3 |
+| 148 — Candidate A11y to Zero | CSCAN-02 | 1 |
+| 149 — CI Gates (SQL + secrets/vuln) | CIGATE-01, CIGATE-02, CIGATE-03 | 3 |
+| 150 — RPC Nullability | CIGATE-04, CIGATE-05 | 2 |
+| **Total** | | **38** |

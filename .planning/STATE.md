@@ -2,37 +2,53 @@
 gsd_state_version: 1.0
 milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
-status: planning
-last_updated: "2026-08-12T16:35:07.337Z"
+status: in_progress
+last_updated: "2026-08-12T00:00:00.000Z"
 last_activity: 2026-08-12
 progress:
-  total_phases: 0
+  total_phases: 14
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
   percent: 0
+  phase_range: 137-150
+  requirements_total: 38
+  requirements_satisfied: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-08-12 — v2.14 shipped, no active milestone)
+See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** None — awaiting `/gsd-new-milestone`.
+**Current focus:** v2.15 Trustworthy Foundations — Guards, Seed Data & CI Coverage. Make every automated check in the repo one that can be developed against.
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-08-12 — Milestone v2.15 started
+Milestone: v2.15 (Phases 137-150, 14 phases, 38 requirements)
+Phase: 137 — E2E Preflight Integrity — Assert the Served Application (not started)
+Plan: — (no plans yet; run `/gsd-plan-phase 137`)
+Status: Roadmap created — ready to plan Phase 137
+Last activity: 2026-08-12 — v2.15 roadmap created (14 phases, 38/38 requirements mapped)
+
+**Standing acceptance rule for every v2.15 phase:** prove the guard fails before claiming it guards —
+negative control run twice (once against the old assertion to demonstrate blindness, once against the
+new one to demonstrate the catch). Visual baselines only in
+`mcr.microsoft.com/playwright:v1.58.2-noble`, `--platform linux/amd64`, dev server `--host 0.0.0.0`;
+never on a developer Mac.
+
+**Phase order rationale:** 137 first (every later phase's E2E evidence depends on the served-app
+preflight), 138 second (an undiagnosed 1-in-8 intermittent contaminates every later "suite green"),
+139 before 142 (a withdrawn finding must shrink scope, not surprise remediation), 141 before 142 (the
+AI-package tests being repaired must actually run in CI), 144 before 145, 147 before 148. 143/146/149/150
+are independent.
 
 ## Session Continuity
 
 Last session: 2026-08-12
-Stopped at: v2.14 closed and tagged `v2.14` (local only — NOT pushed). Next: `/gsd-new-milestone`.
+Stopped at: v2.15 roadmap written (ROADMAP.md Phases 137-150 + REQUIREMENTS.md traceability 38/38). Next: `/gsd-plan-phase 137`.
 Resume file: none
 
 ## Deferred Items
@@ -44,12 +60,12 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | verification | Phase 134 — D-18 native-speaker review of six constructed non-English `selectExact` singulars | human_needed; operator-accepted (no automated check can assess grammaticality) |
 | uat | Phase 134 — 134-UAT.md, 1 pending scenario (the same D-18 item) | pending; operator-accepted |
 | verification | Phase 136 — REAL-03 first observed CI run of the `dev-seed-integration` job | human_needed; not executable outside GitHub Actions. Wiring verified by construction + local simulation |
-| e2e | DEF-135-04 — undiagnosed intermittent `EPERM-07` term-trigger failure (1 in 8 runs) | WAIVED explicitly against CLAUDE.md's cardinal rule — `.planning/v2.14-CARDINAL-RULE-WAIVER.md`, four conditions attached; stays OPEN |
-| e2e | Visual-gate run-4 anomaly — 1 unexplained failure in 5 clean container runs, failing test not captured | recorded UNCONFIRMED; HMR-staleness hypothesis untested |
-| backlog | Visual-gate sensitivity floor (ratio dilutes with page height — measured) | queued to next milestone |
-| backlog | 5 packages outside `test:unit` (core, matching, llm, question-info, argument-condensation) | queued to next milestone |
-| backlog | Candidate-app axe + raw-i18n-key coverage (D-136-04-1) | queued to next milestone |
-| backlog | `fonts.googleapis.com` egress inside the blocking visual gate (D-136-05-2) | queued to next milestone |
+| e2e | DEF-135-04 — undiagnosed intermittent `EPERM-07` term-trigger failure (1 in 8 runs) | WAIVED at v2.14 close (`.planning/v2.14-CARDINAL-RULE-WAIVER.md`, four conditions); **now in-milestone** → v2.15 INTEG-01/02/03, Phase 138 discharges it unrenewed |
+| e2e | Visual-gate run-4 anomaly — 1 unexplained failure in 5 clean container runs, failing test not captured | recorded UNCONFIRMED; carried into v2.15 Phase 146 criterion 5 (explain or re-observe during the re-baseline) |
+| backlog | Visual-gate sensitivity floor (ratio dilutes with page height — measured) | **CONSUMED** → v2.15 VGATE-01/02/03, Phase 146 |
+| backlog | 5 packages outside `test:unit` (core, matching, llm, question-info, argument-condensation) | **CONSUMED** → v2.15 UNIT-01..04, Phase 141 |
+| backlog | Candidate-app axe + raw-i18n-key coverage (D-136-04-1) | **CONSUMED** → v2.15 CSCAN-01..04, Phases 147-148 |
+| backlog | `fonts.googleapis.com` egress inside the blocking visual gate (D-136-05-2) | **CONSUMED** → v2.15 VGATE-04/05/06, Phase 146 |
 | todos | ~48 standing pending todos | carried; triage via `/gsd-review-backlog` |
 
 **Closeout type:** `override_closeout` — 2 phases verified `human_needed` rather than `passed`.
