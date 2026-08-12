@@ -1,7 +1,7 @@
 ---
 created: 2026-08-12
 source: Phase 136 D-136-04-1; queued for next milestone at v2.14 close
-resolves_phase: null
+resolves_phase: 147
 severity: medium
 area: E2E / a11y / i18n
 ---

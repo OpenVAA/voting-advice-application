@@ -1,7 +1,7 @@
 ---
 created: 2026-08-12
 source: Phase 136 post-verification discrimination control
-resolves_phase: null
+resolves_phase: 146
 severity: medium
 area: E2E / visual regression
 ---

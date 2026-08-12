@@ -8,6 +8,7 @@ files:
   - packages/supabase-types/src/database.ts
   - apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.ts
 source: Phase 126 finding (126-03-SUMMARY.md + 126-REVIEW.md)
+resolves_phase: 150
 ---
 
 ## Problem

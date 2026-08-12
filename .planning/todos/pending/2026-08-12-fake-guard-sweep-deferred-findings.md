@@ -1,7 +1,7 @@
 ---
 created: 2026-08-12
 source: Phase 136 plan 06 (verification gate) — deferred remainder of the 2026-08-11 fake-guard sweep
-resolves_phase: null
+resolves_phase: 139
 severity: medium
 area: tests / assertion quality
 ---

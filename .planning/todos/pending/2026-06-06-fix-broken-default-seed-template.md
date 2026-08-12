@@ -6,7 +6,7 @@ priority: high
 files:
   - packages/dev-seed/src/templates/default.ts
   - packages/dev-seed/src/templates/index.ts
-resolves_phase: 119
+resolves_phase: 145
 ---
 
 ## Problem

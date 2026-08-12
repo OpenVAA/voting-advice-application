@@ -1,7 +1,7 @@
 ---
 created: 2026-08-11
 source: Phase 136 plan 136-01 (supersedes DEF-135-03)
-resolves_phase: null
+resolves_phase: 137
 severity: high
 area: tests / E2E runbook
 ---

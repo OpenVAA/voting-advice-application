@@ -1,7 +1,7 @@
 ---
 created: 2026-08-12
 source: Phase 136 D-136-05-2; queued for next milestone at v2.14 close
-resolves_phase: null
+resolves_phase: 146
 severity: medium
 area: E2E / build reliability
 ---
