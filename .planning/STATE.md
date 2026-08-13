@@ -2,8 +2,8 @@
 gsd_state_version: 1.0
 milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
-current_phase: 137
-current_phase_name: E2E Preflight Integrity — Assert the Served Application
+current_phase: 138
+current_phase_name: DEF-135-04 — `EPERM-07` Root Cause + Cardinal-Rule Waiver Discharge
 status: in_progress
 stopped_at: Phase 138 context gathered
 last_updated: "2026-08-13T13:06:45.845Z"
