@@ -38,6 +38,11 @@ playwright-results/
 raw.json
 tests/.planning/
 
+# Phase 138 per-run E2E evidence dirs (tests/scripts/e2e-run.sh). Raw dev-server logs,
+# per-run HTML reports and traces live here and are NEVER committed; only the derived,
+# reviewed per-run table under .planning/ is.
+tests/e2e-runs/
+
 # Supabase Studio scratch (auto-named "Untitled query NNN.sql" — local dev only)
 apps/supabase/supabase/snippets/
 
