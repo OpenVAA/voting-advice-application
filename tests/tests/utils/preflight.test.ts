@@ -1,12 +1,12 @@
-import { createServer } from 'http';
 import fs from 'fs';
+import { createServer } from 'http';
 import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { afterEach, describe, expect, it } from 'vitest';
 import { assertServedApp, PROBE_RELATIVE_PATH } from '../support/preflight';
-import type { AddressInfo } from 'net';
 import type { Server } from 'http';
+import type { AddressInfo } from 'net';
 
 /**
  * Unit tests for the E2E served-application preflight (Phase 137).

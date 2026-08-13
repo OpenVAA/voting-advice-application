@@ -1,3 +1,4 @@
+import fs from 'fs';
 import path from 'path';
 
 /**
@@ -23,7 +24,11 @@ import path from 'path';
  *       so only a Vite dev server whose `server.fs.allow` root is this working
  *       tree can serve it. Evaluated ONCE — never polled (see `assertServedApp`).
  *
- *   (c) TITLE SANITY — added in a later task; explicitly subordinate to (b).
+ *   (c) TITLE SANITY — the served `<title>` is one of the `appName` values in
+ *       this checkout's message catalogue. Explicitly subordinate to (b): a
+ *       six-line adversary can serve a byte-identical title, and one was measured
+ *       doing exactly that. Skipped when the document carries no title, because
+ *       maintenance mode legitimately replaces it.
  *
  * Nothing here is hardcoded to a machine: the repo root is derived by the caller
  * and every compared value is read from this checkout at runtime (D-03). CI's
@@ -34,8 +39,8 @@ import path from 'path';
 /**
  * The repo-relative path of the file clause (b) probes.
  *
- * This is the ONLY path fragment in the module; the absolute path is composed at
- * runtime as `path.join(repoRoot, PROBE_RELATIVE_PATH)` (D-03).
+ * Repo-relative and nothing more: the absolute path is composed at runtime as
+ * `path.join(repoRoot, PROBE_RELATIVE_PATH)` (D-03).
  *
  * The path is load-bearing and was chosen by measurement, not by taste.
  * SvelteKit REPLACES Vite's default `server.fs.allow` list with six entries of
@@ -69,10 +74,20 @@ export type PreflightOptions = {
 };
 
 /**
+ * Repo-relative location of the message catalogue clause (c) derives its accepted
+ * title set from. Enumerated at runtime — the locale set grows, and hardcoding
+ * either the locales or the names is exactly what D-03 forbids.
+ */
+const MESSAGES_RELATIVE_PATH = 'apps/frontend/messages';
+
+/**
  * Modest enough that a locally-fast server costs ~3 polls rather than a fixed
  * quantum, small enough not to dominate the deadline.
  */
 const DEFAULT_POLL_INTERVAL_MS = 500;
+
+/** Rendered in place of the served module root when the HTML carries no reference to one. */
+const MODULE_ROOT_NOT_FOUND = '(not found)';
 
 /**
  * First line of every failure. Fixed, because the phase's verification commands
@@ -124,13 +139,104 @@ async function pollForLiveness(baseURL: string, deadlineMs: number, pollInterval
   }
 }
 
+/**
+ * Clause (c)'s accepted title set, read from this checkout's message catalogue.
+ *
+ * The key is NESTED: the value lives at `.dynamic.appName`, and a top-level
+ * `.appName` read returns undefined for every locale. Locales are enumerated from
+ * the directory rather than listed, and a locale whose file is missing or whose
+ * value is not a non-empty string is skipped rather than thrown on — a broken
+ * catalogue entry must not take down a run.
+ */
+function readAppNames(repoRoot: string): Set<string> {
+  const names = new Set<string>();
+  const messagesDir = path.join(repoRoot, MESSAGES_RELATIVE_PATH);
+  let locales: Array<string>;
+  try {
+    locales = fs.readdirSync(messagesDir);
+  } catch {
+    return names;
+  }
+  for (const locale of locales) {
+    try {
+      const raw = fs.readFileSync(path.join(messagesDir, locale, 'dynamic.json'), 'utf8');
+      const parsed = JSON.parse(raw) as { dynamic?: { appName?: unknown } };
+      const appName = parsed.dynamic === undefined ? undefined : parsed.dynamic.appName;
+      if (typeof appName === 'string' && appName.trim().length > 0) names.add(appName.trim());
+    } catch {
+      // Missing or unparsable locale file — skip it.
+    }
+  }
+  return names;
+}
+
+/** Extracts `<title>` from served HTML. `null` means the document has none — clause (c) then skips. */
+function extractTitle(html: string): string | null {
+  const match = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(html);
+  if (!match) return null;
+  const title = match[1].trim();
+  return title.length > 0 ? title : null;
+}
+
+/**
+ * Extracts the absolute root of the checkout that actually served the HTML, from
+ * the `/@fs…/.svelte-kit/…` module reference SvelteKit emits into the document.
+ *
+ * This is the single most diagnostic line in a failure ("the server that answered
+ * is rooted at /opt/frontend"). It costs nothing — the HTML was already fetched
+ * for clause (a) — and it must degrade rather than throw: a minimal adversary has
+ * no `.svelte-kit` at all.
+ */
+function extractServedModuleRoot(html: string): string {
+  const match = /\/@fs([^"']*?)\/\.svelte-kit/.exec(html);
+  return match ? match[1] : MODULE_ROOT_NOT_FOUND;
+}
+
+/** What the server that answered actually looked like — reported back to the operator on failure. */
+type Observed = {
+  status: number | null;
+  finalURL: string | null;
+  title: string | null;
+  servedModuleRoot: string;
+};
+
 /** Builds the operator-facing failure block. Expanded to the full diagnostic set in a later task. */
-function buildFailureMessage(args: { reason: string; port: string; baseURL: string; repoRoot: string }): string {
+function buildFailureMessage(args: {
+  reason: string;
+  port: string;
+  baseURL: string;
+  repoRoot: string;
+  observed: Observed;
+}): string {
+  const { observed } = args;
+  const observedLine = [
+    observed.status === null ? 'no response' : `HTTP ${observed.status}`,
+    ` -> ${observed.finalURL ?? args.baseURL}`,
+    `; <title>${observed.title ?? '(none)'}</title>`,
+    `; served module root: ${observed.servedModuleRoot}`
+  ].join('');
   return [
     `${FAILURE_HEADLINE} — the server on port ${args.port} is not this checkout's dev server.`,
     `  reason:            ${args.reason}`,
     `  expected port:     ${args.port} (${args.baseURL})`,
-    `  expected checkout: ${args.repoRoot}`
+    `  expected checkout: ${args.repoRoot}`,
+    `  observed:          ${observedLine}`
+  ].join('\n');
+}
+
+/**
+ * Failure of the preflight itself rather than of the server under test.
+ *
+ * Deliberately worded so it cannot be misread as "the server is foreign": if the
+ * probe target is not on disk, the guard is broken and must say so. This is the
+ * difference between a guard that fails correctly and one that fails confusingly.
+ */
+function buildBrokenPreflightMessage(args: { probeAbsolutePath: string; repoRoot: string }): string {
+  return [
+    `${FAILURE_HEADLINE} — the preflight itself is broken; this says nothing about the server.`,
+    `  reason:            its probe target is not on disk: ${args.probeAbsolutePath}`,
+    `  expected checkout: ${args.repoRoot}`,
+    '  fix:               restore the file, or update PROBE_RELATIVE_PATH in tests/tests/support/preflight.ts'
   ].join('\n');
 }
 
@@ -152,19 +258,39 @@ export async function assertServedApp(options: PreflightOptions): Promise<void> 
   const probeAbsolutePath = path.join(repoRoot, PROBE_RELATIVE_PATH);
   const origin = baseURL.replace(/\/+$/, '');
 
+  const observed: Observed = { status: null, finalURL: null, title: null, servedModuleRoot: MODULE_ROOT_NOT_FOUND };
+
   function fail(reason: string): never {
-    throw new Error(buildFailureMessage({ reason, port, baseURL, repoRoot }));
+    throw new Error(buildFailureMessage({ reason, port, baseURL, repoRoot, observed }));
+  }
+
+  // --- On-disk sanity, BEFORE any network work --------------------------------
+  //
+  // If the file clause (b) probes is not in this working tree, the preflight is
+  // broken and every server would "fail" it. Say that, do not blame the server.
+  if (!fs.existsSync(probeAbsolutePath)) {
+    throw new Error(buildBrokenPreflightMessage({ probeAbsolutePath, repoRoot }));
   }
 
   // --- Clause (a): liveness, polled ------------------------------------------
   const outcome = await pollForLiveness(baseURL, deadlineMs, pollIntervalMs);
   if (!outcome.live) {
-    const observed =
+    observed.status = outcome.lastStatus;
+    const lastSeen =
       outcome.lastStatus !== null
         ? `last response was HTTP ${outcome.lastStatus}`
         : `nothing accepted a connection (${outcome.lastError ?? 'no response'})`;
-    fail(`nothing answered 2xx on port ${port} within ${Math.round(deadlineMs / 1000)}s — ${observed}`);
+    fail(`nothing answered 2xx on port ${port} within ${Math.round(deadlineMs / 1000)}s — ${lastSeen}`);
   }
+
+  // Everything the failure message reports about the server comes from this one
+  // response: the FINAL url after redirects (which closes the measured
+  // `301 -> /sv/` empty-body hole), the title, and the serving checkout's own
+  // module root. The raw body itself is never reported — only these extracts.
+  observed.status = outcome.live.status;
+  observed.finalURL = outcome.live.finalURL;
+  observed.title = extractTitle(outcome.live.body);
+  observed.servedModuleRoot = extractServedModuleRoot(outcome.live.body);
 
   // --- Clause (b): identity, evaluated EXACTLY ONCE ---------------------------
   //
@@ -192,5 +318,21 @@ export async function assertServedApp(options: PreflightOptions): Promise<void> 
         'so it did not demonstrably transform the file in this working tree (a foreign server, or a ' +
         'Vite version that no longer emits the HMR preamble)'
     );
+  }
+
+  // --- Clause (c): title sanity, subordinate to (b) ---------------------------
+  //
+  // A sanity check, never the proof: the staged adversary in this phase's
+  // negative control PASSES this clause with a byte-identical title and is caught
+  // by clause (b) alone. Absence of a title is NOT a failure — maintenance mode
+  // and backend translationOverrides legitimately replace it.
+  if (observed.title !== null) {
+    const appNames = readAppNames(repoRoot);
+    if (appNames.size > 0 && !appNames.has(observed.title)) {
+      fail(
+        `the served <title> "${observed.title}" is not one of the app names in this checkout's ` +
+          `message catalogue (${MESSAGES_RELATIVE_PATH})`
+      );
+    }
   }
 }
