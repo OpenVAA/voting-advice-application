@@ -84,6 +84,20 @@ export default defineConfig({
   testIgnore: ['**/*.test.ts'],
   outputDir: path.join(TESTS_DIR, '../playwright-results'),
 
+  /* SERVED-APPLICATION GATE (Phase 137, INTEG-04/INTEG-05).
+   * Asserts that whatever is listening on `use.baseURL` below is THIS checkout's
+   * Vite dev server — proven by the served application's own response, not by the
+   * listener process — and aborts the run with exit 1 before any spec body if it
+   * is not. There is no bypass: `FRONTEND_PORT` moves the target, it does not
+   * skip the check.
+   * The path resolves relative to THIS config file's directory; that is not the
+   * `webServer.command` cwd gotcha documented further down, which concerns the
+   * spawn cwd instead.
+   * `--list` deliberately does not run it, so the "no dropped specs" check stays
+   * usable without a dev server (tests/README.md); the orphan-probe guard above
+   * runs at config-load time and covers that path. */
+  globalSetup: './global-setup.ts',
+
   /* Screenshot baselines stored alongside specs in a git-trackable directory */
   snapshotPathTemplate: '{testDir}/__screenshots__/{testFileName}/{arg}{ext}',
 
