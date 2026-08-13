@@ -22,6 +22,14 @@
 #                       (git-ignored, per plan 01).
 #   --ledger-file <path> Where the markdown ledger is written. Default:
 #                       <ledger-dir>/138-DETERMINISM-LEDGER.md
+#   --carry-discards <path>
+#                       A TSV of already-formatted abort rows from a PREVIOUS, discarded
+#                       attempt. They are carried into this batch's "Aborts and discards"
+#                       section so a restart cannot erase the record of what it restarted
+#                       from. Carried rows are historical: they precede run 01 of THIS
+#                       batch and so do not break its consecutive count, but they are never
+#                       dropped -- silence about a discarded attempt is exactly what makes
+#                       a green arguable.
 #
 # Prerequisites:
 #   - The working tree is COMMITTED. The batch pins one HEAD and aborts if it changes
@@ -88,6 +96,7 @@ RUNS=16
 PROJECT=""
 LEDGER_DIR=""
 LEDGER_FILE=""
+CARRY_DISCARDS=""
 SCOPED=0
 BATCH_START=""
 PINNED_HEAD=""
@@ -120,6 +129,10 @@ while [ $# -gt 0 ]; do
       ;;
     --ledger-file)
       LEDGER_FILE="${2:-}"
+      shift 2
+      ;;
+    --carry-discards)
+      CARRY_DISCARDS="${2:-}"
       shift 2
       ;;
     -h | --help)
@@ -188,6 +201,22 @@ ROWS_FILE="$LEDGER_DIR/rows.tsv"
 ABORTS_FILE="$LEDGER_DIR/aborts.tsv"
 : > "$ROWS_FILE"
 : > "$ABORTS_FILE"
+
+# Carried discards seed the aborts section BEFORE run 01, so a restart cannot erase the
+# record of the attempt it restarted from.
+CARRIED_COUNT=0
+if [ -n "$CARRY_DISCARDS" ]; then
+  case "$CARRY_DISCARDS" in
+    /*) : ;;
+    *) CARRY_DISCARDS="$REPO_ROOT/$CARRY_DISCARDS" ;;
+  esac
+  if [ ! -f "$CARRY_DISCARDS" ]; then
+    echo "determinism-batch.sh: --carry-discards file not found: $CARRY_DISCARDS" >&2
+    exit 2
+  fi
+  cat "$CARRY_DISCARDS" >> "$ABORTS_FILE"
+  CARRIED_COUNT="$(wc -l < "$ABORTS_FILE" | tr -d ' ')"
+fi
 
 # --- provenance -----------------------------------------------------------------------
 
@@ -268,6 +297,9 @@ emit_ledger() {
     echo "## Aborts and discards"
     echo
     if [ -s "$ABORTS_FILE" ]; then
+      local total_aborts own_aborts
+      total_aborts="$(wc -l < "$ABORTS_FILE" | tr -d ' ')"
+      own_aborts="$(( total_aborts - CARRIED_COUNT ))"
       echo "| Run | When (UTC) | Reason |"
       echo "|---|---|---|"
       cat "$ABORTS_FILE"
@@ -275,6 +307,17 @@ emit_ledger() {
       echo "An abort RESETS the consecutive count. The batch does not continue past one, and the"
       echo "slot is never quietly re-used: criterion 3 measures consecutive runs, and silence about"
       echo "aborts is exactly what makes a green arguable."
+      if [ "$CARRIED_COUNT" -gt 0 ]; then
+        echo
+        echo "The first **$CARRIED_COUNT** row(s) above are CARRIED from a previous, discarded attempt"
+        echo "and are historical: they happened before run 01 of this batch, and the batch restarted"
+        echo "from run 01 rather than resuming into the vacated slot. They are carried precisely so a"
+        echo "restart cannot erase the record of what it restarted from."
+      fi
+      if [ "$own_aborts" -le 0 ]; then
+        echo
+        echo "**This batch itself aborted no run.** Every row above is carried history."
+      fi
     else
       echo "**None.** No run in this batch was aborted, discarded or restarted. This section is"
       echo "stated explicitly rather than omitted, because an omitted section and an empty one are"
