@@ -1520,14 +1520,21 @@ the phase touches CI and developer workflow.
 | Quick run command | `yarn typecheck:tests` + the preflight's own two-run control |
 | Full suite command | `yarn test:e2e` |
 
-> **Wave 0 gap, stated plainly:** `tests/package.json` is **empty/absent as a workspace manifest**
-> (`cat tests/package.json` returned nothing) and there is no vitest project under `tests/`. So a
-> conventional unit test for `preflight.ts` has **no existing home**. Two honest options for the
-> planner: (i) put the pure helpers under an existing package that already has vitest, or (ii) accept
-> that the preflight's validation is behavioural (the two-run control + real-suite runs) rather than
-> unit-level. **(ii) is recommended** — the check's whole value is its behaviour against a real
-> foreign server, which a mocked unit test would not exercise, and standing up a new vitest project
-> inside `tests/` is scope this phase did not ask for.
+> **⚠ THIS FINDING WAS WITHDRAWN 2026-08-13, during plan 137-01 execution.**
+>
+> It claimed the `tests/` workspace has no vitest project and no home for a unit test of the
+> preflight. **False.** `tests/vitest.config.ts` exists (`include: ['tests/utils/**/*.test.ts']`),
+> `tests/tests/utils/buildTestIdToken.test.ts` is a precedent, and `tests/eslint.config.mjs:86`
+> carves out that glob. The error came from checking `tests/package.json`, finding no workspace
+> manifest, and inferring absence — the config is driven by an explicit `--config` flag instead.
+>
+> Plan 137-01 added `tests/tests/utils/preflight.test.ts` (12 cases, stub HTTP server) with no new
+> infrastructure. Invoke from the repo root as
+> `yarn vitest run --root tests --config vitest.config.ts` — the `--config tests/vitest.config.ts`
+> form resolves the glob against the repo root and matches nothing.
+>
+> Recorded rather than deleted: this milestone exists to stop unverified assertions from standing,
+> and that includes its own research. See `137-01-SUMMARY.md`.
 
 ### Phase requirements → validation map
 

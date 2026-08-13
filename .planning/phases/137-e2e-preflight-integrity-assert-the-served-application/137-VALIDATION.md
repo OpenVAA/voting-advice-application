@@ -20,20 +20,38 @@ created: 2026-08-13
 
 | Property | Value |
 |----------|-------|
-| **Framework** | Playwright 1.58.2 (E2E) · Vitest (unit, packages only) |
+| **Framework** | Playwright 1.58.2 (E2E) · Vitest (unit — packages **and** `tests/utils/`, see correction below) |
 | **Config file** | `tests/playwright.config.ts` |
-| **Quick run command** | `yarn typecheck:tests && yarn lint:check` |
+| **Quick run command** | `yarn typecheck:tests && yarn lint:check && yarn vitest run --root tests --config vitest.config.ts` |
 | **Full suite command** | `yarn test:e2e` |
 | **Estimated runtime** | quick ~30–60 s · full suite per the cardinal-rule gate |
 
-> **Known infrastructure gap (from research, stated plainly):** the `tests/` workspace has **no
-> vitest project** and `tests/package.json` is absent as a workspace manifest, so a conventional
-> unit test for the preflight has no existing home. Research recommends — and this strategy adopts —
-> **behavioural validation over unit-level**: the check's entire value is its behaviour against a
-> real foreign server, which a mocked unit test would not exercise. Standing up a vitest project
-> under `tests/` is scope this phase did not ask for. Consequence: the automated commands below are
-> process-level (exit-code) assertions and static greps, not `it()` blocks.
-
+> **⚠ CORRECTED 2026-08-13 during plan 137-01 execution — the gap below did not exist.**
+>
+> This section previously asserted that the `tests/` workspace has **no vitest project**, and on that
+> basis adopted "behavioural validation only; do not stand up a vitest project". **That premise was
+> false.** Verified during execution:
+>
+> - `tests/vitest.config.ts` **exists**, with `include: ['tests/utils/**/*.test.ts']`
+> - `tests/tests/utils/buildTestIdToken.test.ts` is a pre-existing precedent unit test
+> - `tests/eslint.config.mjs:86` already carves `**/utils/**/*.test.ts` out of the Playwright
+>   test-structure rules
+>
+> Research reached the wrong conclusion by checking `tests/package.json`, finding no workspace
+> manifest, and inferring no vitest project — missing a config that is driven with an explicit
+> `--config` flag rather than through the workspace. Plan 137-01 therefore added **real unit tests**
+> (`tests/tests/utils/preflight.test.ts`, 12 cases against a stub HTTP server) using the existing
+> infrastructure, and created **no** new test infrastructure. This is a better outcome than the
+> behavioural-only fallback, and the fallback rationale below no longer applies.
+>
+> **Correct invocation (matters — the obvious form silently finds nothing):**
+> from the repo root use `yarn vitest run --root tests --config vitest.config.ts`. The
+> `--config tests/vitest.config.ts` form resolves the include glob against the repo root and matches
+> zero files. This affects the pre-existing test too, not just the new one.
+>
+> Behavioural validation (exit codes + static greps) remains the primary proof for the phase's
+> success criteria — a mocked unit test cannot exercise a real foreign server — but it is now
+> *complemented* by unit coverage of the clause logic rather than substituting for it.
 ---
 
 ## Sampling Rate
