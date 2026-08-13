@@ -225,19 +225,25 @@ mis-specified. Corollary for the visual gate: baselines are captured only in
 - **137 first, always.** Every later phase's E2E evidence is only as trustworthy as the assertion
   that the page under test came from this checkout. A false green from a foreign dev server is
   undetectable after the fact, so the served-app preflight lands before anything else is measured.
+
 - **138 second.** The `EPERM-07` waiver is discharged early rather than at close, because an
   undiagnosed 1-in-8 intermittent contaminates every subsequent phase's "suite green" evidence. Its
   first plan lands forensic capture, so if it recurs during any later phase the occurrence is data
   rather than noise.
+
 - **139 before 142.** The single-source findings are re-confirmed as their own small phase, so a
   withdrawal shrinks the remediation scope instead of being discovered mid-remediation.
+
 - **141 before 142.** The AI-package tests that Phase 142 repairs must actually execute in CI, or
   the repair is unobserved.
+
 - **144 before 145.** Strict per-collection row types are the mechanism most likely to expose the
   constant-naming drift the `default.ts` breakage is suspected to rest on.
+
 - **147 before 148.** Extending the scanners to the candidate app produces an a11y violation
   inventory on never-measured surfaces; 148 exists so that fallout has somewhere to land instead of
   being absorbed silently or turning the suite red between phases.
+
 - **143, 146, 149, 150 are independent** and can run in any order against the rest.
 
 **No milestone-close gate phase.** The close gates are distributed into the phases that own them —
@@ -304,11 +310,28 @@ _v2.15 (Phases 137-150) below. Shipped milestones' details live in `.planning/mi
 **Plans:** 6 plans
 
 Plans:
+**Wave 1**
+
 - [ ] 138-01-PLAN.md — Forensic capture + the isolated hunt instrument: U-1 artifact recovery, then the tracer slice (console/network auto-fixture, video retention, `eperm07-term-trigger` LEAF spec + project) and the single-run wrapper that owns the dev-server log (wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 138-02-PLAN.md — D-08 soft→hard heading promotion, the budget-lever forcing sweep with its non-degeneracy check, and Discriminator A (reduced-motion A/B, zero app change) (wave 2)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 138-03-PLAN.md — Discriminator B (CDP amplification at the production budget), the contention variant, and the written named root cause — or the evidenced disproof ledger and the next hypothesis (wave 3)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [ ] 138-04-PLAN.md — D-06 fix-tier decision checkpoint, the authorised fix, and the criterion-2 negative-control pair; produces `138-NEGATIVE-CONTROL.md` (wave 4, autonomous: false)
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
 - [ ] 138-05-PLAN.md — The serial 16-run determinism batch with validity rules enforced in code; produces `138-DETERMINISM-LEDGER.md` (wave 5)
+
+**Wave 6** *(blocked on Wave 5 completion)*
+
 - [ ] 138-06-PLAN.md — Record-integrity audit (F-1 fix, F-2 filed, F-3 statement) and the one-way waiver-discharge checkpoint + reconciliation of every live record (wave 6, autonomous: false)
 
 **Shape note**: This is a **diagnosis phase, not an implementation phase**, and is deliberately not padded with adjacent work. Plan 01 lands forensic capture on the term-trigger path (trace/video/server-log retention) *before* the hunt, so the waiver's own condition 3 — "the next occurrence is data" — is honoured by every later v2.15 phase's suite runs rather than discarded. The phase is explicitly allowed to spend a plan on a hypothesis that gets disproved: a disproof is recorded and the next hypothesis pursued (the cold-start-Vite hypothesis is already eliminated). What it may not do is close on non-reproduction.
