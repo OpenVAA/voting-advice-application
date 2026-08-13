@@ -248,7 +248,7 @@ runs are the visual close gate. `/gsd-complete-milestone` performs the final com
 (Phase 76 / Phase 80 precedent — no `/gsd-ui-phase`), and Phase 146's font change is a
 delivery-origin swap whose visual consequence is re-proven by the baselines themselves.
 
-- [ ] **Phase 137: E2E Preflight Integrity — Assert the Served Application** - Replace the defeatable listener-identity check with a response-content assertion, enforced by the harness (INTEG-04/05/06)
+- [x] **Phase 137: E2E Preflight Integrity — Assert the Served Application** - Replace the defeatable listener-identity check with a response-content assertion, enforced by the harness (INTEG-04/05/06)
 - [ ] **Phase 138: DEF-135-04 — `EPERM-07` Root Cause + Cardinal-Rule Waiver Discharge** - Name the root cause, prove the fix across ≥16 runs, discharge the waiver unrenewed (INTEG-01/02/03)
 - [ ] **Phase 139: Single-Source Sweep Findings — Confirm or Withdraw** - Re-read F15/F16/F18/F19/F20 against live code; each independently confirmed or withdrawn before remediation is planned (ASSERT-01)
 - [ ] **Phase 140: Blind-Matcher Remediation — Teardowns, Null-Matchers, Positive Controls** - F3's 27 unfailable row counts, F19's `toBeDefined()`-on-null sites, F9's missing positive control, F10's budget drift (ASSERT-02/03/05/06)
@@ -269,6 +269,8 @@ _v2.15 (Phases 137-150) below. Shipped milestones' details live in `.planning/mi
 
 ### Phase 137: E2E Preflight Integrity — Assert the Served Application
 
+**Status**: Executed 2026-08-13 — 5 plans, 18 commits. Full suite green (134/134, 0 failed, 0 did-not-run, 648 s). Verification 3/4 ACHIEVED; criterion 3's **CI-runner half is unobserved** (Plan 05 Task 2 deferred — CI triggers only on push/PR to `main` and this branch is 2377 commits ahead of a stale `origin/main`). Open risk **T-137-11**. Discharge on the branch's first PR to `main`.
+
 **Goal**: Every E2E run in this repo proves the page under test was served by this checkout, so no result in this milestone — or after it — can be a false green from a foreign server.
 **Depends on**: Nothing (first v2.15 phase; sequenced first because every later phase's E2E evidence rests on it)
 **Requirements**: INTEG-04, INTEG-05, INTEG-06
@@ -279,7 +281,7 @@ _v2.15 (Phases 137-150) below. Shipped milestones' details live in `.planning/mi
   3. The preflight is **enforced by the harness**, not remembered by the operator: it runs from global setup or a project dependency, so omitting the manual runbook step still triggers it, and a run started against an unserved or wrong-app port aborts before the first spec executes rather than producing failures that read as app defects.
   4. `CLAUDE.md` and the E2E phase runbook state the response-content assertion; a grep for the retired "assert the listener is a node process" wording returns nothing, and `FRONTEND_PORT`'s role as the alternate-port escape hatch is documented alongside it.
 
-**Plans**: 5 plans
+**Plans**: 5 plans (01 preflight+globalSetup · 02 loadEnv+strictPort+CI-loop deletion · 03 two-run negative control · 04 live docs · 05 phase gate)
 
 - [ ] 137-01-PLAN.md — Preflight module + `globalSetup` wiring: the three-clause served-app identity assertion and the unskippable enforcement point (wave 1)
 - [ ] 137-02-PLAN.md — `loadEnv` so the root `.env` really sets the dev-server port (D-16), then `strictPort` (behind a decision checkpoint) + removal of both CI blind wait loops (wave 2)

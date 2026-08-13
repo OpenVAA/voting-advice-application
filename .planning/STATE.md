@@ -5,16 +5,16 @@ milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 137
 current_phase_name: E2E Preflight Integrity — Assert the Served Application
 status: in_progress
-stopped_at: Phase 137 planned — 5 plans, 4 waves, plan-checker PASSED
-last_updated: "2026-08-13T07:12:12.532Z"
+stopped_at: Phase 137 executed — 5 plans, suite green 134/134; CI observation deferred
+last_updated: "2026-08-13T12:21:34.557Z"
 last_activity: 2026-08-12
 last_activity_desc: v2.15 roadmap created (14 phases, 38/38 requirements mapped)
 progress:
   total_phases: 14
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 5
-  completed_plans: 0
-  percent: 0
+  completed_plans: 5
+  percent: 7
 ---
 
 # Project State
@@ -48,9 +48,9 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-13T07:12:12.513Z
-Stopped at: Phase 137 planned — 5 plans, 4 waves, plan-checker PASSED
-Resume file: .planning/phases/137-e2e-preflight-integrity-assert-the-served-application/137-01-PLAN.md
+Last session: 2026-08-13T12:21:34.537Z
+Stopped at: Phase 137 executed — 5 plans, suite green 134/134; CI observation deferred
+Resume file: none
 
 ## Deferred Items
 
@@ -58,6 +58,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 
 | Category | Item | Status |
 |----------|------|--------|
+| verification | **Phase 137 — Task 2: observed CI run on both jobs (E2E + `e2e-visual`).** Blocked at execution time: `main.yaml` triggers only on push-to-`main` / PR-to-`main`, and `feat-gsd-roadmap` is 2377 commits ahead of `origin/main`, so discharging it needs a 2377-commit PR — disproportionate to a verification step. Carries open risk **T-137-11**: the deleted CI wait loops make the preflight's 120 s poll CI's only cold-start absorber, and that ceiling is budget-preserving (60×2 s, the deleted loop's own budget), not measured. Discharge when the branch is next PR'd to `main`; append a CI section to `137-NEGATIVE-CONTROL.md`. | deferred; operator-accepted 2026-08-13 |
 | verification | Phase 134 — D-18 native-speaker review of six constructed non-English `selectExact` singulars | human_needed; operator-accepted (no automated check can assess grammaticality) |
 | uat | Phase 134 — 134-UAT.md, 1 pending scenario (the same D-18 item) | pending; operator-accepted |
 | verification | Phase 136 — REAL-03 first observed CI run of the `dev-seed-integration` job | human_needed; not executable outside GitHub Actions. Wiring verified by construction + local simulation |
