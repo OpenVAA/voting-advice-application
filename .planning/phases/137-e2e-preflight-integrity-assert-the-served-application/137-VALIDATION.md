@@ -65,6 +65,10 @@ created: 2026-08-13
 | D-08 | `strictPort` present and effective | static + behavioural | `grep -n strictPort apps/frontend/vite.config.ts`; occupy the port **same-address** and confirm `yarn dev` exits non-zero | ❌ W0 | ⬜ pending |
 | D-09 | Failure message carries all required fields | behavioural | inspect run-2a stderr for: expected port · expected checkout abs path · actual status · final URL · served module root · `<title>` · both remedies verbatim | ❌ W0 | ⬜ pending |
 | D-09 | `lsof` line is best-effort, never fatal | behavioural | force `lsof` absent (PATH shim) ⇒ preflight still emits the full failure message and exits 1, no crash, no masking | ❌ W0 | ⬜ pending |
+| D-16 | `.env` sets the dev server port | behavioural | with `FRONTEND_PORT=<free port>` in the root `.env` and NOT exported in the shell, run `yarn dev` ⇒ server listens on `<free port>`; `curl` confirms | ❌ W0 | ⬜ pending |
+| D-16 | Shell still overrides `.env` | behavioural | with `.env` set to port A, run `FRONTEND_PORT=<B> yarn dev` ⇒ server listens on **B**, not A | ❌ W0 | ⬜ pending |
+| D-16 | Unset var still yields 5173 | behavioural | remove `FRONTEND_PORT` from `.env` and shell ⇒ `yarn dev` listens on 5173 (no NaN) | ❌ W0 | ⬜ pending |
+| D-17 | Docs describe the working hatch | static | the three live docs mention `.env` **and** the one-off prefix form; the superseded "export in the shell for both commands" caveat is absent | ❌ W0 | ⬜ pending |
 | Regression | Whole suite still green | E2E | `yarn test:e2e` — **cardinal rule** | ✅ exists | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
@@ -80,6 +84,7 @@ created: 2026-08-13
 - [ ] The staged-adversary recipe, scripted for repeatability — covers criterion 1 (D-11 option B)
 - [ ] The throwaway retired-check script (D-12) — scratch only, never committed to the harness
 - [ ] `137-NEGATIVE-CONTROL.md` — the durable evidence (D-13)
+- [ ] `apps/frontend/vite.config.ts` converted to the `defineConfig(({ mode }) => ...)` form with `loadEnv` (D-16)
 - [ ] **No test-framework install needed.**
 
 ---

@@ -130,6 +130,57 @@ recommended options. Each is grounded in a scout finding (F1–F10) recorded in 
   - `tests/IDURA-TEST-RUNBOOK.md` — one cross-reference line (it already directs the operator to
     `FRONTEND_PORT=5174`).
 
+### D-E — `FRONTEND_PORT` escape hatch made real (added 2026-08-13, post-research)
+
+Added after research finding **QUAL-2** measured that `FRONTEND_PORT` in `.env` moves Playwright but
+NOT the dev server, making the "escape hatch" that D-07 and D-15 both rest on only half-wired.
+Operator decision on 2026-08-13: **fold the fix into this phase** rather than defer it.
+
+- **D-16:** `apps/frontend/vite.config.ts` reads `FRONTEND_PORT` via Vite's **`loadEnv`**, with
+  `envDir` pointed at the **repo root** (where the `.env` actually lives) and the prefix set to the
+  exact string `FRONTEND_PORT` (the var is not `VITE_`-prefixed, so the default `'VITE_'` prefix
+  returns nothing; the empty-string prefix would pull in every var and is rejected as needlessly
+  broad). Config converts to the function form `defineConfig(({ mode }) => ({...}))`.
+
+  **Precedence is verified, not assumed:** `loadEnv` parses the `.env` files into `parsed`, filters
+  by prefix, and *then* loops `process.env` overwriting matches
+  (`node_modules/vite/dist/node/chunks/config.js:9379`, read 2026-08-13). So the **shell wins over
+  `.env`** — `FRONTEND_PORT=5273 yarn dev` remains an ad-hoc override while `.env` becomes the
+  persistent default. This ordering is required, not incidental: reversing it would break the
+  documented per-run override.
+
+  **ESM caveat:** `apps/frontend/package.json` has `type: module`, so the config is ESM and
+  `__dirname` is unavailable — resolve the repo root from `import.meta.url`. Verify at implementation
+  time, since Vite bundles the config before evaluating it.
+
+  **No client-bundle exposure:** `loadEnv`'s return value is a plain object read inside the config.
+  Exposure to client code is governed by the separate `envPrefix` option, which this decision does
+  not touch.
+
+  **Synergy already in the file:** `vite.config.ts:17-19` already runs
+  `ViteRestart({ restart: ['../../.env'] })` — the config watches the root `.env` but never reads it.
+  After D-16 a port change in `.env` both restarts the dev server and moves it.
+
+  **CI is improved, not disturbed:** CI does `cp .env.example .env` and `.env.example` sets
+  `FRONTEND_PORT=5173`, while the dev server independently defaulted to 5173 — research flagged that
+  they agree **by coincidence, not by wiring**, so changing `.env.example`'s port would have broken CI
+  silently. D-16 turns the coincidence into wiring. Keep the `|| 5173` fallback so an unset var still
+  yields the current default.
+
+  — **Reversibility:** reversible — revert to `Number(process.env.FRONTEND_PORT)`; no migration, no
+  published contract, no consumer outside this repo.
+
+- **D-17 (consequence for D-15):** the doc wording changes. With D-16 in place, `.env` is a
+  legitimate way to set the port for BOTH the dev server and Playwright, so the docs should present
+  it as: set `FRONTEND_PORT` in the root `.env` for a persistent alternate port, or prefix a single
+  command (`FRONTEND_PORT=5273 yarn dev`) for a one-off override. The research-derived caveat
+  "must be exported in the shell for both commands, because `.env` only moves Playwright" is
+  **superseded** and must NOT be written into the docs.
+
+  Only three sites read the var — `apps/frontend/vite.config.ts:25`, `tests/playwright.config.ts:121`,
+  and `tests/tests/fixtures/shared/emailBucket.fixture.ts:221`; the latter two already resolve it
+  through `dotenv.config()`, so D-16 closes the last gap.
+
 ### Claude's Discretion
 
 - Exact CI poll ceiling (D-06) — research picks it against observed CI startup time.
@@ -240,6 +291,13 @@ recommended options. Each is grounded in a scout finding (F1–F10) recorded in 
 - **`kit.version.name` build stamp** — Q1.2 option C. Would give a built-server identity marker;
   the SvelteKit default is a build timestamp, not a checkout identifier (F10). Pairs with the item
   above if preview-target E2E ever lands.
+
+**Rejected alternative to D-16 (recorded so it is not re-proposed):** making the *dev scripts* export
+`FRONTEND_PORT` from `.env` instead of fixing the config. Rejected because `dotenv-cli` is not
+installed (it would be a new dependency), the shell alternative `set -a; . ./.env; set +a` is not
+cross-platform, `yarn dev` chains through `db:start && concurrently` into the workspace so the
+wrapping is awkward, and — decisively — it would only fix the commands someone remembers to wrap,
+whereas the config itself is the thing that is wrong.
 
 ### Reviewed Todos (not folded)
 
