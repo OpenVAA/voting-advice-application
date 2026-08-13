@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
-current_phase: 137
-current_phase_name: DEF-135-04 — `EPERM-07` Root Cause + Cardinal-Rule Waiver Discharge
-status: in_progress
-stopped_at: Phase 138 context gathered
-last_updated: "2026-08-13T14:33:23.996Z"
-last_activity: 2026-08-12
-last_activity_desc: v2.15 roadmap created (14 phases, 38/38 requirements mapped)
+current_phase: 138
+current_phase_name: DEF-135-04 — EPERM-07 Root Cause + Cardinal-Rule Waiver Discharge
+status: executing
+stopped_at: Completed 138-01-PLAN.md
+last_updated: "2026-08-13T15:12:40.267Z"
+last_activity: 2026-08-13
+last_activity_desc: Phase 138 execution started
 progress:
   total_phases: 14
   completed_phases: 1
   total_plans: 11
-  completed_plans: 5
+  completed_plans: 6
   percent: 7
 ---
 
@@ -24,15 +24,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** v2.15 Trustworthy Foundations — Guards, Seed Data & CI Coverage. Make every automated check in the repo one that can be developed against.
+**Current focus:** Phase 138 — DEF-135-04 — EPERM-07 Root Cause + Cardinal-Rule Waiver Discharge
 
 ## Current Position
 
 Milestone: v2.15 (Phases 137-150, 14 phases, 38 requirements)
-Phase: 137 — E2E Preflight Integrity — Assert the Served Application (not started)
-Plan: — (no plans yet; run `/gsd-plan-phase 137`)
-Status: Roadmap created — ready to plan Phase 137
-Last activity: 2026-08-12 — v2.15 roadmap created (14 phases, 38/38 requirements mapped)
+Phase: 138 (DEF-135-04 — EPERM-07 Root Cause + Cardinal-Rule Waiver Discharge) — EXECUTING
+Plan: 2 of 6
+Status: Ready to execute
+Last activity: 2026-08-13 — Phase 138 execution started
 
 **Standing acceptance rule for every v2.15 phase:** prove the guard fails before claiming it guards —
 negative control run twice (once against the old assertion to demonstrate blindness, once against the
@@ -48,9 +48,9 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-13T13:06:45.822Z
-Stopped at: Phase 138 context gathered
-Resume file: .planning/phases/138-def-135-04-eperm-07-root-cause-cardinal-rule-waiver-discharg/138-CONTEXT.md
+Last session: 2026-08-13T15:12:32.479Z
+Stopped at: Completed 138-01-PLAN.md
+Resume file: None
 
 ## Deferred Items
 
@@ -129,6 +129,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 133 P01 | 3min | 1 tasks | 1 files |
 | Phase 133 P02 | 4min | 1 tasks | 1 files |
 | Phase 133 P03 | 45min | 1 tasks | 0 files |
+| Phase 138 P01 | 30m | 3 tasks | 9 files |
 
 ## Deferred Items
 
@@ -571,6 +572,9 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: 133-02: retained the Phase 132 D-01 split-settle rationale in the reworded comment so the two-await structure is not later collapsed back into one racing assertion
 - [Phase ?]: Phase 133 gate: 3 consecutive full-suite E2E runs at 129/129 (0 unexpected/flaky/skipped) — hard-nav fallback removal did not reintroduce the continue-stall flake
 - [Phase ?]: DEF-133-01 deferred: latent ~11%-per-run flake at voterIntro.ts:28 (intro-CTA click vs 2s TIMEOUTS.click stability budget), root cause UNCONFIRMED, outside Phase 133 change surface
+- [Phase 138]: U-1 resolved UNRECOVERABLE after an 8-location search; all three EPERM-07 hypotheses stay live
+- [Phase 138]: eperm07-term-trigger hunt spec ships permanently; E2E executed-count baseline moves 134 -> 135
+- [Phase 138]: auto: true forensic capture fixture on the voter composition root — new convention, 16-spec reach intended
 
 ### Quick Tasks Completed
 
