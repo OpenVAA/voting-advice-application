@@ -1,3 +1,4 @@
+import { execFileSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 
@@ -200,7 +201,47 @@ type Observed = {
   servedModuleRoot: string;
 };
 
-/** Builds the operator-facing failure block. Expanded to the full diagnostic set in a later task. */
+/**
+ * Best-effort identification of whatever holds the port. Returns `null` on ANY
+ * error, which omits one line of decoration and nothing else.
+ *
+ * `execFileSync` with an argv array, never its shell-interpolating sibling: the
+ * port is interpolated into an argument, and a shell-free call has no injection
+ * surface even if `baseURL` were attacker-influenced. `-sTCP:LISTEN` is required
+ * — without it the output also lists ESTABLISHED client sockets and becomes
+ * noise. The timeout exists because `lsof` can block (a stale network mount, for
+ * instance) and a hung diagnostic must never outlive the failure it decorates.
+ */
+function findListeningProcess(port: string): string | null {
+  try {
+    const output = execFileSync('lsof', ['-nP', `-iTCP:${port}`, '-sTCP:LISTEN'], {
+      encoding: 'utf8',
+      timeout: 5000
+    }).trim();
+    return output.length > 0 ? output : null;
+  } catch {
+    // No lsof on this platform, nothing listening, or the call timed out. All
+    // three degrade to omitting the section — never to masking the real reason.
+    return null;
+  }
+}
+
+/**
+ * Builds the operator-facing failure block (D-09).
+ *
+ * Front-loaded on purpose: Playwright appends a source code frame and a stack
+ * trace immediately after this text, and the operator reads roughly the first ten
+ * lines. The reason and both remedies therefore live in the message body rather
+ * than in a trailing hint.
+ *
+ * Interpolates ONLY the extracted title, the extracted module root, the HTTP
+ * status, the final URL, the port, the repo root, and the `lsof` output. Never
+ * the raw response body — a hostile or merely enormous foreign response would
+ * otherwise be dumped into CI logs — and never any `process.env` value.
+ *
+ * Localisation does not apply: this is developer-facing tooling output, not
+ * application UI, so the project's localisation rule is not in scope here.
+ */
 function buildFailureMessage(args: {
   reason: string;
   port: string;
@@ -215,13 +256,28 @@ function buildFailureMessage(args: {
     `; <title>${observed.title ?? '(none)'}</title>`,
     `; served module root: ${observed.servedModuleRoot}`
   ].join('');
-  return [
+
+  const lines = [
     `${FAILURE_HEADLINE} — the server on port ${args.port} is not this checkout's dev server.`,
     `  reason:            ${args.reason}`,
     `  expected port:     ${args.port} (${args.baseURL})`,
     `  expected checkout: ${args.repoRoot}`,
     `  observed:          ${observedLine}`
-  ].join('\n');
+  ];
+
+  const listening = findListeningProcess(args.port);
+  if (listening !== null) {
+    lines.push('  listening process:');
+    for (const line of listening.split('\n')) lines.push(`    ${line}`);
+  }
+
+  lines.push(
+    '  remedies:',
+    `    - stop the other server occupying port ${args.port}, then start this repo's \`yarn dev\`; or`,
+    '    - re-run with FRONTEND_PORT=<port your server is actually on>'
+  );
+
+  return lines.join('\n');
 }
 
 /**
