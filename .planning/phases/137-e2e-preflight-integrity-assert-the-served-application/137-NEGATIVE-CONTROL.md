@@ -575,7 +575,32 @@ blindness. Neither substitutes for the other.**
 name, which is `Valkompassen`. That near-miss is a coincidence of the sibling's branch, not a
 property of the check.)
 
-**7b. The shadow-bind pair was NOT reproducible this session.** RESEARCH QUAL-1 measured a state
+**7b-SUPERSEDED (2026-08-13, during plan 137-02) — the shadow-bind WAS subsequently reproduced,
+with `strictPort` active.** The section below records honestly that plan 137-03's session could not
+reproduce the two-row state. That remains a true account of that session. It was **superseded a few
+hours later**: plan 137-02's execution, staging this checkout's dev server against the Docker
+wildcard, observed both LISTEN rows simultaneously and the two host spellings reaching different
+servers —
+
+```
+localhost:5173    -> <title>Election Compass</title>   (this checkout)
+127.0.0.1:5173    -> <title>Valkompass</title>         (the sibling in Docker)
+no EADDRINUSE — the second bind SUCCEEDED with strictPort: true active
+```
+
+This is the **decisive** measurement for the phase's central claim, and it is stronger than
+RESEARCH QUAL-1's original capture because it was taken **after** `strictPort: true` landed: it
+proves `strictPort` does not and cannot catch the wildcard shadow-bind, so the preflight is the only
+thing standing between that state and a false green. See `137-02-SUMMARY.md` for the full capture.
+
+The two "must be said honestly" bullets below stand unchanged and are now backed by direct
+observation rather than by citation alone. The Linux caveat also stands — still macOS/Docker Desktop
+only, still no claim that it generalises.
+
+---
+
+**7b (as recorded by plan 137-03 — accurate for that session, see the supersession above). The
+shadow-bind pair was NOT reproducible this session.** RESEARCH QUAL-1 measured a state
 where `lsof :5173` shows **two** LISTEN rows and `localhost:5173` and `127.0.0.1:5173` reach
 *different* servers. This session `:5173` had a **single** LISTEN row (the Docker wildcard), and both
 host spellings returned the identical `Valkompass` — the same server:
