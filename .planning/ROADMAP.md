@@ -307,7 +307,7 @@ _v2.15 (Phases 137-150) below. Shipped milestones' details live in `.planning/mi
   3. At least **16 consecutive full-suite runs** (2× the observed 1-in-8 rate) show zero `EPERM-07` failures, each run confirmed by Phase 137's served-app preflight.
   4. `.planning/v2.14-CARDINAL-RULE-WAIVER.md` is marked discharged with the diagnosis referenced; no successor waiver, no `test.skip`, no retry annotation, and no "could not reproduce" closure exists anywhere in the record. The cardinal rule is back in force unwaived.
 
-**Plans:** 4/6 plans executed
+**Plans:** 5/6 plans executed
 
 Plans:
 **Wave 1**
@@ -328,7 +328,7 @@ Plans:
 
 **Wave 5** *(blocked on Wave 4 completion)*
 
-- [ ] 138-05-PLAN.md — The serial 16-run determinism batch with validity rules enforced in code; produces `138-DETERMINISM-LEDGER.md` (wave 5)
+- [x] 138-05-PLAN.md — The serial 16-run determinism batch with validity rules enforced in code; produces `138-DETERMINISM-LEDGER.md` (wave 5)
 
 **Wave 6** *(blocked on Wave 5 completion)*
 
@@ -520,7 +520,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 137. E2E Preflight Integrity — Assert the Served Application | 0/TBD | Not started | - |
-| 138. DEF-135-04 — `EPERM-07` Root Cause + Waiver Discharge | 4/6 | In Progress|  |
+| 138. DEF-135-04 — `EPERM-07` Root Cause + Waiver Discharge | 5/6 | In Progress|  |
 | 139. Single-Source Sweep Findings — Confirm or Withdraw | 0/TBD | Not started | - |
 | 140. Blind-Matcher Remediation — Teardowns, Null-Matchers, Positive Controls | 0/TBD | Not started | - |
 | 141. Package Unit-Test Coverage + `test:unit` Invariant Guard | 0/TBD | Not started | - |

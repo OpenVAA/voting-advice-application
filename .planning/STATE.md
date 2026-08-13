@@ -5,8 +5,8 @@ milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 138
 current_phase_name: DEF-135-04 — EPERM-07 Root Cause + Cardinal-Rule Waiver Discharge
 status: executing
-stopped_at: Completed 138-04-PLAN.md
-last_updated: "2026-08-13T18:34:38.823Z"
+stopped_at: Completed 138-05-PLAN.md
+last_updated: "2026-08-13T23:00:14.997Z"
 last_activity: 2026-08-13
 last_activity_desc: Phase 138 execution started
 progress:
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 
 Milestone: v2.15 (Phases 137-150, 14 phases, 38 requirements)
 Phase: 138 (DEF-135-04 — EPERM-07 Root Cause + Cardinal-Rule Waiver Discharge) — EXECUTING
-Plan: 5 of 6
+Plan: 6 of 6
 Status: Ready to execute
 Last activity: 2026-08-13 — Phase 138 execution started
 
@@ -48,8 +48,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-13T18:34:27.890Z
-Stopped at: Completed 138-04-PLAN.md
+Last session: 2026-08-13T23:00:14.980Z
+Stopped at: Completed 138-05-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -133,6 +133,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 138 P02 | ~40 min | 3 tasks | 3 files |
 | Phase 138 P03 | ~70 min | 3 tasks | 2 files |
 | Phase 138 P04 | 75 min | 3 tasks | 6 files |
+| Phase 138 P05 | 4h 40m | 3 tasks | 2 files |
 
 ## Deferred Items
 
@@ -588,6 +589,9 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: 138-03: INTEG-01 deliberately NOT checked off mid-phase — the diagnosis artefact exists but plan 04 could still overturn it and plan 06 owns the phase-level reconciliation (matches plans 01 and 02, which also carried INTEG-01 and left it open)
 - [Phase ?]: Fix tier for DEF-135-04 chosen by the operator at a blocking D-06 checkpoint: TEST-SIDE, with the ~4 s user-visible excursion carried as a separate open item
 - [Phase ?]: In-app navigation settles now wait for the destination DOM (navigation-landmark text change) instead of the URL, in one shared helper used by both the voter walk and the EPERM-07 instrument
+- [Phase ?]: 138-05: batch validity is asserted on executed count (135) + preflight verdict + failed/flaky/did-not-run, never on exit status alone — an exit 0 with fewer tests executed is a cardinal failure
+- [Phase ?]: 138-05: an infrastructure abort resets the consecutive count and the batch restarts from run 01; the discarded attempt is carried into the ledger via --carry-discards rather than erased by the restart
+- [Phase ?]: 138-05: valid runs are pruned to results.json + stdout/devserver logs; only a non-valid run retains its HTML report (trace + video), keeping 16 full-suite runs at 9.9 MB instead of 5.2 GB
 
 ### Quick Tasks Completed
 
