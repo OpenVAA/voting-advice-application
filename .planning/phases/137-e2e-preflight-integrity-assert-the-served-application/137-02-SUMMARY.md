@@ -260,6 +260,11 @@ None — no env var was added, renamed, or newly required. `.env.example` is unc
 - **Plan 05 (phase gate)** carries the one open item: **T-137-11**, the accepted risk that the preflight's 120 s poll is now the only thing absorbing CI cold-start. This is CI-only and unfalsifiable locally; it needs a real observed CI run, not a local proxy.
 - No blockers.
 
+## Self-Check: PASSED
+
+Files asserted present on disk: `apps/frontend/vite.config.ts`, `.github/workflows/main.yaml`, `137-02-SUMMARY.md`.
+Commits asserted present in `git log --all`: `e7dd468b1`, `2c44982fa`, `8c54fd3b6`, `60322152d`.
+
 ---
 *Phase: 137-e2e-preflight-integrity-assert-the-served-application*
 *Completed: 2026-08-13*
