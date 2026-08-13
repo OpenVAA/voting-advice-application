@@ -279,7 +279,13 @@ _v2.15 (Phases 137-150) below. Shipped milestones' details live in `.planning/mi
   3. The preflight is **enforced by the harness**, not remembered by the operator: it runs from global setup or a project dependency, so omitting the manual runbook step still triggers it, and a run started against an unserved or wrong-app port aborts before the first spec executes rather than producing failures that read as app defects.
   4. `CLAUDE.md` and the E2E phase runbook state the response-content assertion; a grep for the retired "assert the listener is a node process" wording returns nothing, and `FRONTEND_PORT`'s role as the alternate-port escape hatch is documented alongside it.
 
-**Plans**: TBD
+**Plans**: 5 plans
+
+- [ ] 137-01-PLAN.md — Preflight module + `globalSetup` wiring: the three-clause served-app identity assertion and the unskippable enforcement point (wave 1)
+- [ ] 137-02-PLAN.md — `strictPort` (behind a decision checkpoint) + removal of both CI blind wait loops (wave 2)
+- [ ] 137-03-PLAN.md — Two-run negative control against a staged foreign dev server; produces `137-NEGATIVE-CONTROL.md` (wave 2)
+- [ ] 137-04-PLAN.md — Live-doc rewrite: `CLAUDE.md`, `tests/README.md`, `tests/IDURA-TEST-RUNBOOK.md` (wave 3)
+- [ ] 137-05-PLAN.md — Phase gate: full-suite green under the cardinal rule + observed CI run on both jobs (wave 4)
 
 ### Phase 138: DEF-135-04 — `EPERM-07` Root Cause + Cardinal-Rule Waiver Discharge
 
