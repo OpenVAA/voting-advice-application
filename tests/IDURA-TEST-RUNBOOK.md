@@ -276,6 +276,8 @@ PLAYWRIGHT_BANK_AUTH=1 FRONTEND_PORT=5174 \
   npx playwright test --project=bank-auth -c tests/playwright.config.ts
 ```
 
+> The dev server has to be on 5174 for this run as well — start it with the same prefix (`FRONTEND_PORT=5174 yarn dev`) or put a `FRONTEND_PORT=5174` line in the root `.env`, which moves both the dev server and Playwright. Otherwise the E2E preflight aborts the run before the first spec; see [`tests/README.md`](./README.md) § Run for what it asserts and how to read its failure message.
+
 **Expected:** all `bank-auth` tests pass with the keys-configured create path **TAKEN**
 (no skipped / did-not-run). The spec asserts `identity_provider='idura'`,
 `identity_match_prop='sub'`, `identity_match_value=<sub>`, the `hetu`/`birthdate` claim
