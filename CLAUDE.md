@@ -32,7 +32,7 @@ Turborepo handles dependency ordering and caching automatically. Second builds w
 ```bash
 yarn test:unit                 # Run all unit tests (vitest)
 yarn test:unit:watch          # Run unit tests in watch mode
-yarn test:e2e                 # Run Playwright E2E tests (requires yarn dev running)
+yarn test:e2e                 # Run Playwright E2E tests (requires yarn dev running; preflight-checked)
 yarn playwright install       # Install Playwright browsers
 ```
 
@@ -43,6 +43,16 @@ yarn playwright install       # Install Playwright browsers
 - **No "known-flaky" exemptions.** There is no such thing as an acceptable flaky test in this project. A test that fails intermittently is a real defect (in the test or the code) and MUST be ironed out — not skipped, retried-until-green, or annotated as flaky. Diagnose the root cause and fix it.
 - **Prefer E2E for interim verification.** When checking work-in-progress results, prefer running the E2E suite over ad-hoc manual checks. The recommended method is to **run the whole suite** (`yarn test:e2e`) — it does not take long, and a full-suite run is the trusted signal.
 - A "did not run" E2E test counts as a failure (e.g. cascade failures from an upstream dependency), not a pass.
+
+#### E2E preflight (served-application gate)
+
+Every E2E run begins with a preflight in Playwright's global setup. It aborts the run with exit 1 before any spec body executes, and there is no flag and no environment variable that skips it.
+
+- **What it asserts:** that the served application's own HTTP response proves the page under test came from **this** checkout — the server must serve, and echo back, this working tree's absolute path via Vite's `/@fs` endpoint — not merely that something answered on the port.
+- **Alternate port:** `FRONTEND_PORT` is the escape hatch, in two working forms. Put `FRONTEND_PORT=<port>` in the root `.env` for a persistent alternate port used by both the dev server and the suite, or prefix a single command (`FRONTEND_PORT=5273 yarn dev`) for a one-off override, which wins over the file.
+- **`strictPort`:** `yarn dev` now fails loudly (`Error: Port <port> is already in use`) instead of quietly moving to the next port. That closes same-address drift — the mechanism behind the original incident. It does **not** close a wildcard shadow-bind, where another process holds `*:<port>` and our server still binds `[::1]:<port>` without a bind error (measured); that case is what the preflight catches.
+
+See [`tests/README.md`](/tests/README.md) § Run for the fuller treatment, including how to read a preflight failure message field by field.
 
 ### Linting & Formatting
 
