@@ -5,15 +5,15 @@ milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 138
 current_phase_name: DEF-135-04 — EPERM-07 Root Cause + Cardinal-Rule Waiver Discharge
 status: executing
-stopped_at: Completed 138-03-PLAN.md
-last_updated: "2026-08-13T17:13:31.754Z"
+stopped_at: Completed 138-04-PLAN.md
+last_updated: "2026-08-13T18:34:38.823Z"
 last_activity: 2026-08-13
 last_activity_desc: Phase 138 execution started
 progress:
   total_phases: 14
   completed_phases: 1
   total_plans: 11
-  completed_plans: 8
+  completed_plans: 9
   percent: 7
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 
 Milestone: v2.15 (Phases 137-150, 14 phases, 38 requirements)
 Phase: 138 (DEF-135-04 — EPERM-07 Root Cause + Cardinal-Rule Waiver Discharge) — EXECUTING
-Plan: 4 of 6
+Plan: 5 of 6
 Status: Ready to execute
 Last activity: 2026-08-13 — Phase 138 execution started
 
@@ -48,8 +48,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-13T17:13:31.736Z
-Stopped at: Completed 138-03-PLAN.md
+Last session: 2026-08-13T18:34:27.890Z
+Stopped at: Completed 138-04-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -132,6 +132,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 138 P01 | 30m | 3 tasks | 9 files |
 | Phase 138 P02 | ~40 min | 3 tasks | 3 files |
 | Phase 138 P03 | ~70 min | 3 tasks | 2 files |
+| Phase 138 P04 | 75 min | 3 tasks | 6 files |
 
 ## Deferred Items
 
@@ -585,6 +586,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: 138-03: deterministic forcing configuration for plan 04 is EPERM07_FORCE_BUDGET_MS=400 + EPERM07_FORCE_CPU_RATE=40 (15/15, 5x oracle shrink), run ISOLATED for both halves of the criterion-2 pair
 - [Phase ?]: 138-03: the amplifier remains UNIDENTIFIED and is recorded as a bounded open question — the field occurrence needs a ~36x window excursion and every lever reached at most ~5.4x; mechanism established, excursion not
 - [Phase ?]: 138-03: INTEG-01 deliberately NOT checked off mid-phase — the diagnosis artefact exists but plan 04 could still overturn it and plan 06 owns the phase-level reconciliation (matches plans 01 and 02, which also carried INTEG-01 and left it open)
+- [Phase ?]: Fix tier for DEF-135-04 chosen by the operator at a blocking D-06 checkpoint: TEST-SIDE, with the ~4 s user-visible excursion carried as a separate open item
+- [Phase ?]: In-app navigation settles now wait for the destination DOM (navigation-landmark text change) instead of the URL, in one shared helper used by both the voter walk and the EPERM-07 instrument
 
 ### Quick Tasks Completed
 
@@ -628,6 +631,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - 122-02 EFLOW-10 deterministic-green BLOCKED: production identity-callback Edge Function createUser() omits email; local GoTrue (edge-runtime 1.71.0) rejects emailless user -> 500. Decrypt/verify/claim-extraction all succeed. Operator/Rule 4 fix (gated by T-122-03 'runs UNMODIFIED'): add email=${userId}@bank-auth.placeholder at createUser. Until then the keys-configured create path cannot be observed green; EFLOW-10 left unmarked.
 - BLOCKER-130-05: multi-choice helper text renders raw i18n key questions.multiChoice.selectRange at runtime — keys missing from Paraglide messages/{locale}/questions.json (added only to type-gen translations/ in 129-06). Also: getSavedAnswer discards saved boolean false. See phase deferred-items.md.
 - ~~Phase 132 Plan 03 milestone-close gate BLOCKED: yarn lint:check is RED on a clean tree (14 frontend errors: func-style + import-sort; 6 tests/ errors: raw-locators + conditional-in-test + import-sort).~~ **RESOLVED by 132-04 (2026-07-22):** all 20 clean-tree lint:check errors cleared via behavior-neutral edits in 8 files (func-style arrow→declaration, import reorder, reasoned `// reason:`-block disables); `yarn lint:check` now exits 0, `yarn test:unit` green (frontend 759 / dev-seed 444), `playwright --list` exit 0. 132-03 can now re-run `yarn lint:check` and honestly record the static gate (SC #3) as green.
+- DEF-135-04's ~4 s field excursion is unlocalised: the mechanism is established but the amplifier is not. Plan 06's waiver discharge must carry this qualification.
 
 ## Session Continuity
 

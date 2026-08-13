@@ -42,8 +42,8 @@ Corollary for the visual gate specifically: baselines are captured only in
 
 ### E2E Integrity
 
-- [ ] **INTEG-01**: The intermittent `EPERM-07` term-trigger failure is diagnosed to a **named root cause**, not merely stopped from reproducing.
-- [ ] **INTEG-02**: The fix holds across a determinism run long enough to exercise the observed 1-in-8 failure rate.
+- [x] **INTEG-01**: The intermittent `EPERM-07` term-trigger failure is diagnosed to a **named root cause**, not merely stopped from reproducing.
+- [x] **INTEG-02**: The fix holds across a determinism run long enough to exercise the observed 1-in-8 failure rate.
 - [ ] **INTEG-03**: `.planning/v2.14-CARDINAL-RULE-WAIVER.md` is discharged and recorded closed; the cardinal E2E rule is back in force unwaived, with no successor waiver opened.
 - [x] **INTEG-04**: The E2E preflight asserts the **served application's own response**, not the listener process — a foreign dev server occupying the port fails the preflight, proven by running it against one.
 - [x] **INTEG-05**: The preflight is enforced by the harness rather than remembered by the operator, so it cannot be skipped.
@@ -134,8 +134,8 @@ Roadmap: `.planning/ROADMAP.md` (Phases 137-150). Future Requirements above are 
 | CSCAN-02 | Phase 148 — Candidate-App A11y Remediation to Zero | Pending |
 | CSCAN-03 | Phase 147 — Candidate-App Scan Reach — Authenticated Fixture + Raw-Key Gate | Pending |
 | CSCAN-04 | Phase 147 — Candidate-App Scan Reach — Authenticated Fixture + Raw-Key Gate | Pending |
-| INTEG-01 | Phase 138 — DEF-135-04 — `EPERM-07` Root Cause + Waiver Discharge | Pending |
-| INTEG-02 | Phase 138 — DEF-135-04 — `EPERM-07` Root Cause + Waiver Discharge | Pending |
+| INTEG-01 | Phase 138 — DEF-135-04 — `EPERM-07` Root Cause + Waiver Discharge | Complete |
+| INTEG-02 | Phase 138 — DEF-135-04 — `EPERM-07` Root Cause + Waiver Discharge | Complete |
 | INTEG-03 | Phase 138 — DEF-135-04 — `EPERM-07` Root Cause + Waiver Discharge | Pending |
 | INTEG-04 | Phase 137 — E2E Preflight Integrity — Assert the Served Application | Satisfied |
 | INTEG-05 | Phase 137 — E2E Preflight Integrity — Assert the Served Application | Satisfied (CI-runner half deferred — see STATE deferred table, T-137-11) |
