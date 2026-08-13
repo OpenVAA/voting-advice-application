@@ -95,3 +95,132 @@ restart cannot erase the record of what it restarted from.
 | Actual total on disk after pruning | 9924 KB |
 | Pruned | the HTML report directory of every valid run (it embeds the trace and video) |
 
+
+## Verdict
+
+Criterion 3, verbatim from `.planning/ROADMAP.md` § Phase 138 § Success Criteria:
+
+> 3. At least **16 consecutive full-suite runs** (2x the observed 1-in-8 rate) show zero `EPERM-07`
+>    failures, each run confirmed by Phase 137's served-app preflight.
+
+**Achieved.** Sixteen consecutive full-suite runs, indexed 01 through 16 in `## Per-run ledger`,
+every one of them:
+
+- on the single pinned HEAD `8931516356ea4ce9f30ad84aa1e688f1b900bacd` (all sixteen rows carry it,
+  and it is the ledger header's pinned value);
+- with **135 tests executed** -- the full expected count, asserted per run rather than inferred from
+  the exit status, with 135 passed, 0 failed, 0 flaky and 0 did-not-run;
+- with a **preflight failure count of 0**, so each run is confirmed by Phase 137's served-app
+  preflight to have tested this checkout (D-17);
+- with the **`EPERM-07` step outcome `passed`**, read from that run's `results.json` by step title
+  rather than from the run's overall status;
+- serial: run N+1's start stamp is at or after run N's end stamp, with no overlap anywhere in the
+  table.
+
+This also satisfies `.planning/REQUIREMENTS.md` INTEG-02 -- *"The fix holds across a determinism run
+long enough to exercise the observed 1-in-8 failure rate"* -- at twice that rate (D-13).
+
+### What this batch does NOT establish
+
+**It is criterion 3 and nothing else.** Specifically:
+
+- **It is not the diagnosis.** The named root cause -- the ordering defect in which SvelteKit commits
+  the destination URL to history (`client.js:1759-1760`) before it swaps the DOM (`client.js:1824`),
+  while the walk's settle released at the URL -- is criterion 1, and it is written in
+  `138-DIAGNOSIS.md` § Named root cause. It was discharged in plan 03, before this batch ran.
+- **It is not the negative control.** The pre-fix-FAILS / post-fix-PASSES pair under one frozen
+  adversary is criterion 2, and it is recorded in `138-NEGATIVE-CONTROL.md` (five pre-fix failures,
+  five post-fix passes). It was discharged in plan 04, before this batch ran.
+
+The ordering matters and is not cosmetic. **Sixteen green runs would be the expected observation from
+an unfixed tree roughly one time in eight and a half**: at the documented 1-in-8 rate,
+`(1 - 1/8)^16 = 0.875^16 ~= 0.118`. A green batch presented on its own is therefore not far from the
+"it stopped happening" closure criterion 4 forbids -- it is only decisive **because** the mechanism
+was named first and the fix was shown to invert a deterministic adversary first. Anyone reading this
+ledger as the result should read `138-DIAGNOSIS.md` and `138-NEGATIVE-CONTROL.md` before doing so.
+
+## Retry posture -- on the record
+
+Criterion 4's language is absolute ("no retry annotation ... exists anywhere in the record"), and a
+later reader who greps this repository for retry settings **will find one**. Both halves are stated
+here so that discovery resolves rather than lingers.
+
+**(a) Every run in this batch executed with an effective retry count of zero.** It is not asserted
+from the config -- it is read back out of each run's `results.json` (`config.projects[].retries`) and
+recorded in the ledger header as `Effective retries (observed) | 0`, alongside
+`Effective workers (observed) | 6`. Further, `tests/scripts/determinism-batch.sh` **refuses to start**
+when `CI` is present in the environment, exiting 3 before creating anything, precisely because `CI`
+would buy three retries per test; and both the batch and `tests/scripts/e2e-run.sh` explicitly unset
+the three `EPERM07_` forcing knobs and record that they did. A green bought with retries would itself
+be the retried-until-green outcome the cardinal rule forbids, so the harness is built to make it
+impossible rather than merely discouraged.
+
+**(b) The config's continuous-integration retry setting is PRE-EXISTING and untouched by this phase.**
+It is `tests/playwright.config.ts:115`, verbatim:
+
+```ts
+  retries: process.env.CI ? 3 : 0,
+```
+
+Checkable rather than asserted: `git log -L 115,115:tests/playwright.config.ts` names its last
+modifying commit as **`9045a0a3d`, dated 2024-06-25** (*"test: change Playwright test to allow
+rerunnig them"*) -- more than two years before Phase 138 existed. Phase 138 touched
+`tests/playwright.config.ts` exactly once, in `77e870d94` (plan 01, the forensic-capture and hunt
+project), and that commit did not touch this line. It is therefore not a retry annotation added to
+mask this defect; it is long-standing continuous-integration configuration that this phase neither
+introduced nor altered, and it has no effect on any run in this ledger because `CI` was absent from
+all sixteen.
+
+For completeness on the same criterion:
+`grep -rnE 'test\.(skip|fixme|only)\(|describe\.(skip|only)\b' tests/tests --include='*.ts'` returns
+**0 matches** -- no skip, fixme, exclusive-run or quarantine annotation was added to make this batch
+green.
+
+## Executed-count baseline
+
+The suite's expected executed count **moved from 134 to 135 during this phase**.
+
+| | Count | Source |
+|---|---|---|
+| Through Phase 137 | 134 tests in 88 files | the Phase-137 gate run, `--list --grep-invert @probe` |
+| From Phase 138 plan 01 onward | **135 tests in 89 files** | `138-01-SUMMARY.md` § Verification |
+
+**Cause:** plan 01's `eperm07-term-trigger` spec **ships permanently** in the default suite as a LEAF
+regression guard rather than being deleted once the hunt ended -- following the precedent of the
+existing cold-entry regression project. One spec, one test, one file: 134 -> 135.
+
+**135 is the figure every later v2.15 phase reconciles against.** This section exists because a
+silent count change is indistinguishable from drift: a later reader who expects 134 and sees 135 must
+be able to find out in one lookup whether a test was added on purpose or a test count quietly moved.
+It was on purpose, and this is the decision.
+
+The count is also the reason exit status alone was never the acceptance test here. Per
+`CLAUDE.md` § E2E Hard Rule, a "did not run" test counts as a failure, so an exit 0 with fewer than
+135 executed is a cardinal failure, not a pass. `tests/scripts/determinism-batch.sh` carries 135 as a
+constant and marks any run whose executed count differs as INVALID, aborting the batch.
+
+## Contention environment
+
+Every run in this batch executed at **6 workers** -- observed, not assumed: the value is read out of
+each run's `results.json` (`config.workers`) and recorded in the ledger header.
+
+That is the same posture in which the original one-in-eight was observed. Per `138-RESEARCH.md` § R3.1
+on `workers: process.env.CI ? 1 : 6` (`tests/playwright.config.ts:117`), verbatim:
+
+> **`workers: 6` locally is itself a finding.** The full local suite runs six concurrent Chromium
+> instances on one host. That is the contention environment in which the 1-in-8 was observed [...]
+
+This matters because the defect is a timing race, and a batch run in a quieter posture would be
+weaker evidence while looking identical in the ledger. Two specific quieting moves were therefore
+foreclosed rather than merely avoided:
+
+- **`CI` would have collapsed the suite to a single worker** (`playwright.config.ts:117`) as well as
+  buying retries. The batch refuses to start with it set.
+- **A container was not used** (D-14). These are local host runs, on the machine where the 1-in-8 was
+  actually observed -- proving it somewhere the failure never happened would be weaker evidence, not
+  stronger.
+
+The sustained contention is visible in the ledger rather than only configured: the sixteen suite
+durations span **622-638 s**, tightly clustered and consistent with the 648 s full-suite baseline
+measured at 6 workers in `138-RESEARCH.md` § R5.1. A batch that had silently dropped to fewer workers
+would have shown a markedly longer suite duration.
