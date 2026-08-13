@@ -242,13 +242,6 @@ jobs:
       - name: "Start frontend"
         run: yarn workspace @openvaa/frontend dev &
 
-      - name: "Wait for frontend"
-        run: |
-          for i in $(seq 1 60); do
-            curl -s http://localhost:5173 > /dev/null 2>&1 && break
-            sleep 2
-          done
-
       - name: "Run E2E tests"
         run: yarn test:e2e
 
@@ -321,13 +314,6 @@ jobs:
 
       - name: "Start frontend"
         run: yarn workspace @openvaa/frontend dev &
-
-      - name: "Wait for frontend"
-        run: |
-          for i in $(seq 1 60); do
-            curl -s http://localhost:5173 > /dev/null 2>&1 && break
-            sleep 2
-          done
 
       - name: "Run visual regression tests (blocking)"
         run: PLAYWRIGHT_VISUAL=1 npx playwright test -c ./tests/playwright.config.ts --grep "@visual"
