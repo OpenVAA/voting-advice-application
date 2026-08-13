@@ -1209,3 +1209,342 @@ this task landed in a session-local scratch directory outside the repository; on
 above reach `.planning/`. `FRONTEND_PORT=5273` is a port selector, not a forcing knob — with the three
 `EPERM07_*` variables unset the spec runs at the production 2000 ms budget with no throttle and no
 media emulation, which is exactly what the run above demonstrates.
+
+---
+
+## Contention — isolated vs. under worker pressure
+
+D-04 named this as the known risk of the isolated instrument, and RESEARCH §R3.1 instructed that
+"the hunt spec alone" and "the hunt spec under worker pressure" be treated as **two different
+experiments**. They are recorded as two here. §B.7.3 sharpened the question: CPU amplification cannot
+widen the window enough at any usable rate, so if anything in the real environment widens it, worker
+contention is the remaining named candidate (RESEARCH Assumptions Log A2).
+
+### C.1 Precondition and construction
+
+`yarn db:reset` was run immediately before this section's first run, so no run below competes with
+residue from the § Discriminator B sweep. The dev server is unchanged — still PID 92504 on 5273.
+
+**Construction chosen: (a), a five-worker Chromium load generator.** Stated with its reason, and with
+the reason (b) was not made the primary instrument:
+
+- **Why (a).** This section's whole claim is a *rate comparison*, and a rate needs samples. Construction
+  (a) yields 10 comparable samples per arm in about three minutes. Construction (b) — the full gate
+  suite with the forcing prefix — yields exactly **one** hunt-spec sample per ~11-minute run, so the
+  same 10 samples would cost nearly two hours, and a 1-vs-1 comparison could not distinguish a
+  contention effect from a coin flip.
+- **What the generator is.** Five concurrent headless Chromium contexts, each looping hard navigations
+  over the voter app's public read-only routes (`/en`, `/en/elections`, `/en/info`), driven by a
+  standalone script in the session scratch directory. It performs **no database writes and depends on
+  no seeded data**, which is the one thing a second `playwright test` invocation could not offer: a
+  second invocation carries its own `data-setup-base` / `data-teardown-base` and would race the hunt
+  run's own dataset import, contaminating the very runs it was meant to pressure.
+- **The load is evidenced, not assumed.** Every pressured block records its navigation count from the
+  generator's own counter, and the generator was validated before use — `page.goto` against each route
+  returns HTTP **200** with a ~197 KB SSR document (29-114 ms warm), so the navigations are real full
+  page loads through Vite's dev server, not fast failures. Steady-state throughput is ~60 navigations
+  per second across the five workers.
+- **(b) is still run, once, as the real-environment sample** — see §C.6 — because construction (a) is
+  a *model* of the suite's contention and the suite itself is the thing being modelled.
+
+**Both arms are otherwise byte-identical:** same dev-server process, same port, same Playwright
+project and config, `config.workers` = 6 and 0 retries read back from `results.json` on every run,
+the `e2e/base` dataset re-imported by `data-setup-base` before each run, and the arms run back to
+back. The only difference is whether the load generator is running.
+
+### C.2 Arm comparison at the PRODUCTION budget (no knobs at all)
+
+The strongest question first: does real worker pressure reproduce the failure with the oracle
+**unweakened**? That would be the strong form of criterion 1, obtained by contention rather than by
+amplification.
+
+
+**Arm ISOLATED** — production 2000 ms budget, no throttle, no load generator — 10 runs
+
+| Run | Outcome | question id (URL) | headingCount | headingText | triggerCount | classification | assertion that failed |
+|---|---|---|---|---|---|---|---|
+| 01 | passed | 72ee4359 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 02 | passed | 1dbd7a97 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 03 | passed | a3434342 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 04 | passed | cca5fb6c | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 05 | passed | ff240078 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 06 | passed | 44be4121 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 07 | passed | ab8f3862 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 08 | passed | f7de3c68 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 09 | passed | 5279bc87 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 10 | passed | f6f0d9db | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+
+**Result: 0/10 failures.**
+
+**Arm PRESSURED** — identical configuration, five-worker load generator running (9 687 navigations delivered over 153 s) — 10 runs
+
+| Run | Outcome | question id (URL) | headingCount | headingText | triggerCount | classification | assertion that failed |
+|---|---|---|---|---|---|---|---|
+| 01 | passed | c5ed06ae | 0 | `null` | 0 | H2-shaped | — |
+| 02 | passed | 6aba18ff | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 03 | passed | fb1f322c | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 04 | passed | 29f4981e | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 05 | passed | 77d8fc21 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 06 | passed | b6836c0f | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 07 | passed | 82d908fa | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 08 | passed | b07d6622 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 09 | passed | 6dec3472 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 10 | passed | b8aeb2e4 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+
+**Result: 0/10 failures.**
+| Metric | Arm ISOLATED | Arm PRESSURED |
+|---|---|---|
+| Runs | 10 | 10 |
+| **Failures** | **0 / 10** | **0 / 10** |
+| Median test-body duration | **3.51 s** | **4.62 s** (**1.32× slower** — the pressure is real and measurable) |
+| Median wall clock per run | 7.5 s | 13.5 s |
+| Workers / retries (read from `results.json`) | 6 / 0 | 6 / 0 |
+| Tri-states | 10/10 H1-shaped | 9 H1-shaped, 1 H2-shaped |
+
+**At the production budget the two arms are indistinguishable: 0 failures each.** The pressure is not
+imaginary — it slows the test body by 1.32× and nearly doubles wall clock — it simply does not carry
+the post-settle window past 2000 ms. Taken with §B's 71 amplification runs, that is **96 runs at the
+production element budget with zero failures**, across every lever this phase has.
+
+### C.3 Arm comparison at a MARGINAL operating point — where the effect is visible
+
+A saturated configuration cannot show a contention effect: at `budget 400 + rate 40` the isolated arm
+already fails 15/15 (§B.8), so a pressured arm could only match it. A comparison needs an operating
+point with headroom in both directions. `EPERM07_FORCE_CPU_RATE=20 EPERM07_FORCE_BUDGET_MS=400` is
+exactly that — §B.7.1 measured the rate-20 window at 200-400 ms, so a 400 ms budget sits **on the
+edge of the band**, which is the most sensitive place on the whole curve.
+
+
+**Arm ISOLATED** — `EPERM07_FORCE_CPU_RATE=20 EPERM07_FORCE_BUDGET_MS=400`, no load generator — 10 runs
+
+| Run | Outcome | question id (URL) | headingCount | headingText | triggerCount | classification | assertion that failed |
+|---|---|---|---|---|---|---|---|
+| 01 | passed | 2ac95651 | 0 | `null` | 0 | H2-shaped | — |
+| 02 | passed | f11c03be | 0 | `null` | 0 | H2-shaped | — |
+| 03 | **failed** | ff53c085 | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 04 | passed | d36dd69c | 0 | `null` | 0 | H2-shaped | — |
+| 05 | passed | f83010c5 | 0 | `null` | 0 | H2-shaped | — |
+| 06 | passed | 97b0eed2 | 0 | `null` | 0 | H2-shaped | — |
+| 07 | passed | b7894dee | 0 | `null` | 0 | H2-shaped | — |
+| 08 | passed | 2b1a4366 | 0 | `null` | 0 | H2-shaped | — |
+| 09 | passed | 08ecea9e | 0 | `null` | 0 | H2-shaped | — |
+| 10 | passed | 13bef34e | 0 | `null` | 0 | H2-shaped | — |
+
+**Result: 1/10 failures.**
+
+**Arm PRESSURED** — the SAME prefix, five-worker load generator running (10 190 navigations over 165 s) — 10 runs
+
+| Run | Outcome | question id (URL) | headingCount | headingText | triggerCount | classification | assertion that failed |
+|---|---|---|---|---|---|---|---|
+| 01 | **failed** | 82c8b0af | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 02 | **failed** | fd6bedda | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 03 | **failed** | 608be62b | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 04 | **failed** | 62b8a7ac | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 05 | **failed** | 546024cf | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 06 | **failed** | b8f68247 | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 07 | **failed** | 99a0304a | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 08 | **failed** | 4fc30d56 | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 09 | **failed** | 54d4b155 | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 10 | **failed** | 460a0c2e | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+
+**Result: 10/10 failures.**
+| Metric | Arm ISOLATED | Arm PRESSURED |
+|---|---|---|
+| Runs | 10 | 10 |
+| **Failures** | **1 / 10 (10 %)** | **10 / 10 (100 %)** |
+| Every failure on the term-trigger locator? | yes (1/1) | yes (10/10) |
+| Degenerate failures | 0 | 0 |
+| Median test-body duration | 4.62 s | 6.60 s (1.43× slower) |
+| Tri-states | 10/10 H2-shaped | 10/10 H2-shaped |
+
+**1/10 against 10/10 on a byte-identical prefix.** Fisher's exact test on that 2×2 gives
+**p ≈ 0.0001**; this is not a sampling artefact. Worker pressure takes an operating point that
+almost never fails and makes it fail every time.
+
+### C.4 How much does contention widen the window? — the same bisection, run under load
+
+The rate comparison says contention matters. The bisection says by how much, and the answer bounds
+what contention can and cannot explain. Budget bisection at **no CPU throttle**, under the load
+generator:
+
+
+**PRESSURED, no throttle, `EPERM07_FORCE_BUDGET_MS=200`** — 5 runs
+
+| Run | Outcome | question id (URL) | headingCount | headingText | triggerCount | classification | assertion that failed |
+|---|---|---|---|---|---|---|---|
+| 01 | passed | bada1c52 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 02 | passed | 5585b3fc | 1 | Base-3 | 1 | DEGENERATE | — |
+| 03 | passed | 8bef309f | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 04 | passed | cd7c23e5 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 05 | passed | 5a2debb3 | 0 | `null` | 0 | H2-shaped | — |
+
+**Budget 200 ms result: 0/5 failures.**
+
+**PRESSURED, no throttle, `EPERM07_FORCE_BUDGET_MS=400`** — 5 runs
+
+| Run | Outcome | question id (URL) | headingCount | headingText | triggerCount | classification | assertion that failed |
+|---|---|---|---|---|---|---|---|
+| 01 | passed | ea62362c | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 02 | passed | 598b321e | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 03 | passed | e2289eaa | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 04 | passed | 48fa02d8 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 05 | passed | fb4e347f | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+
+**Budget 400 ms result: 0/5 failures.**
+
+**PRESSURED, no throttle, `EPERM07_FORCE_BUDGET_MS=800`** — 5 runs
+
+| Run | Outcome | question id (URL) | headingCount | headingText | triggerCount | classification | assertion that failed |
+|---|---|---|---|---|---|---|---|
+| 01 | passed | e71d411e | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 02 | passed | ad0b181c | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 03 | passed | c6f6f5e2 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 04 | passed | 4eff0da6 | 1 | Base-3 | 1 | DEGENERATE | — |
+| 05 | passed | 03c39ac7 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+
+**Budget 800 ms result: 0/5 failures.**
+
+| Condition | Post-settle window | Amplification vs. isolated + unthrottled |
+|---|---|---|
+| isolated, no throttle | **100 – 125 ms** (§ 3.3) | 1× |
+| **pressured, no throttle** | **< 200 ms** (0/5 fail at a 200 ms budget) | **< 1.8×** |
+| isolated, CPU rate 20 | 200 – 400 ms (§B.7.1) | ~2.7× |
+| **pressured, CPU rate 20** | **> 400 ms** (10/10 fail at a 400 ms budget) | **> 3.6×** |
+
+**Contention is a real amplifier and a modest one — under 2× on its own.** It reaches 100 % failure at
+the marginal point not because it is powerful but because that point sits on the edge of the band,
+where a sub-2× stretch is the difference between always passing and always failing. Extrapolated
+honestly, five extra Chromium workers move the window from ~112 ms to under ~200 ms; the production
+budget is 2000 ms. **Contention as measured here is roughly an order of magnitude short of explaining
+the wild failure**, exactly as CPU amplification was (§B.7.3).
+
+**Two probes in this block landed past the window, and both matter.** `preswidth-b200` run 02 and
+`preswidth-b800` run 04 recorded a heading reading **`Base opinion 3` with `triggerCount: 1`** — the
+first observations in the entire phase where the probe sampled after the swap completed. They are
+classified `DEGENERATE` (element present, oracle did not need to wait) and are correctly excluded from
+every failure count. Their diagnostic value is in § C.5's H3 statement, not in the rate comparison.
+
+### C.5 What the whole session's probes say, aggregated
+
+Every `eperm07-state` annotation recorded across every block of this plan, machine-read in one pass
+(217 runs launched; 192 reached the probe — the other 25 are §B.12's discarded block, §B.6.2's
+run 06 and §B.7.2's four rate-80 instrument breakages, none of which reached the hop):
+
+| Observed tri-state | Count (this plan) | Count (plan 02, § 3 + § A) |
+|---|---|---|
+| **H1-shaped** — heading present, reads `Base opinion 2`, `triggerCount: 0` | 63 | 60 |
+| **H2-shaped** — `headingCount: 0`, `headingText: null`, `triggerCount: 0` | 127 | 10 |
+| **H3-shaped** — heading reads `Base opinion 3`, `triggerCount: 0` | **0** | **0** |
+| Heading reads `Base opinion 3` **with** `triggerCount ≥ 1` (probe landed after the window) | 2 | 0 |
+| Unclassified | 0 | 0 |
+
+**The load-bearing row is the third: zero H3-shaped observations in 262 probes across two plans.** And
+the fourth row is its complement — on **both** occasions a probe ever saw the Base-3 heading text, the
+term trigger was there with it. The heading text and the trigger have never once been observed apart.
+`138-DIAGNOSIS.md` § Named root cause reads this together with the structural argument from the source.
+
+### C.6 The real-environment sample — construction (b), run once
+
+Construction (a) models the suite's contention; this is the suite. One **unprefixed** full gate-suite
+run at the production budget, six workers, the hunt spec now shipping in the default suite (plan 01).
+
+**This run is NOT a forced-configuration run.** No `EPERM07_*` variable was set — the invocation is
+`env -u EPERM07_FORCE_CPU_RATE -u EPERM07_FORCE_BUDGET_MS -u EPERM07_NO_VT` plus the standard
+`--grep-invert @probe`. It is therefore an ordinary gate observation and is reported as such: the
+cardinal rule applies to it in full, and it is **not** excluded from anything. (Had the forcing prefix
+been applied, this paragraph would have had to say the opposite — that it was a deliberate, scoped,
+recorded negative control excluded from every determinism count. It was not needed, because the
+question this section asks is best answered at the production budget.)
+
+| Property | Value (machine-read from the run's `results.json`) |
+|---|---|
+| Invocation | `npx playwright test -c tests/playwright.config.ts --grep-invert @probe --reporter=json`, `FRONTEND_PORT=5273` |
+| Result | **135 passed / 0 failed / 0 skipped** across **89 files** |
+| `stats` | `expected: 135`, `unexpected: 0`, `flaky: 0` |
+| Duration | **622 s** |
+| `config.workers` / retries | **6** / **0** |
+| Preflight | passed (a preflight abort exits 1 before any spec body runs) |
+| **The hunt spec** | **passed**, body duration **4 646 ms**, 0 retries |
+| **The hunt spec's probe** | `{"headingCount":1,"headingText":"…Base opinion 2 — Likert 4.","triggerCount":0}` — **H1-shaped** |
+
+Three things come out of this single run, and the third was not anticipated.
+
+1. **The gate is green.** 135/135 with zero failures, zero flakes and zero retries, after plan 02's
+   soft→hard promotion at `voter-journey.spec.ts:858` and after everything this session did to the
+   machine. The project's cardinal rule is satisfied by this run.
+2. **The window is present in the real environment too.** The hunt spec's probe inside the real
+   six-worker suite is H1-shaped: at the instant the production URL-only settle released, the URL had
+   advanced to Base-3 while the rendered heading still read `Base opinion 2` and `triggerCount` was 0.
+   The window is not an artefact of running the spec alone — it is there, in the gate, on a green run.
+3. **Construction (a) modelled construction (b) almost exactly.** The hunt spec's body took
+   **4 646 ms** inside the real suite against **3 510 ms** isolated — a **1.32×** stretch. The load
+   generator produced **4 620 ms** against the same 3 510 ms baseline — **1.32×**, the same figure to
+   two significant digits. The five-worker model is not a loose analogy for the suite's pressure; on
+   the one metric that can be compared it is quantitatively equivalent, which is what licenses reading
+   §C.3's 1/10-vs-10/10 as a statement about the real suite and not only about the model.
+
+### C.7 Verdict — **Contention-dependent**
+
+Recorded against the plan's three named verdicts, and the qualification is part of the verdict rather
+than an escape from it.
+
+**`Contention-dependent`.** At the marginal operating point the failures are overwhelmingly in the
+pressured arm — **1/10 isolated against 10/10 pressured** on a byte-identical prefix, p ≈ 0.0001
+(§C.3). Worker pressure is therefore part of the mechanism's environment: it is a real amplifier of
+the post-settle window, it is present in the environment the 1-in-8 was observed in, and it must be
+named in the root-cause statement rather than treated as background.
+
+**With the amplification bounded, because the bound is the honest half of the finding.** Contention
+widens the window by **less than 2×** on its own (§C.4: under 200 ms pressured against 100-125 ms
+isolated), and at the production budget the two arms are **0/10 and 0/10** (§C.2). Contention is
+decisive at the margin and roughly an order of magnitude short of the production budget. Anyone reading
+"contention-dependent" as "six workers explain DEF-135-04" would be over-reading this section; §C.4's
+table is there to prevent that.
+
+**What this eliminates.** RESEARCH Assumptions Log A2 assumed `workers: 6` contention was *the*
+amplifier that makes the failure ~1-in-8. Measured, it is *an* amplifier worth <2×, and the failure
+needs ~18×. A2 is not confirmed; it is bounded and found insufficient, which — with §B.7.3's identical
+verdict on CPU cost — leaves the wild amplifier **unidentified**. `138-DIAGNOSIS.md` § Named root
+cause carries that gap explicitly rather than papering it over: the mechanism is established, the
+excursion that makes the mechanism bite in the field is not.
+
+### C.8 Instruction to plan 04 — which construction the criterion-2 pair must use
+
+**Plan 04 must run BOTH halves of the criterion-2 negative-control pair with the ISOLATED construction
+— the hunt project alone, no load generator, no full-suite wrapper — at the byte-identical prefix
+`FRONTEND_PORT=5273 EPERM07_FORCE_BUDGET_MS=400 EPERM07_FORCE_CPU_RATE=40`, which is deterministic
+without worker pressure (15/15, §B.8), so adding pressure would add a variable the pair does not need
+and cannot control; what plan 04 must NOT do is drift to a marginal configuration, because §C.3 shows a
+marginal point swinging from 1/10 to 10/10 on load alone, and a pair built on such a point would
+measure the load rather than the fix.**
+
+### C.9 Discarded block — the first pressured arm ran with no pressure
+
+A 10-run `pres-prod` block was launched and is **not** counted above. The load generator resolved
+`require('@playwright/test')` against its own directory in the session scratch tree rather than
+against the repository, died instantly with `MODULE_NOT_FOUND`, and the ten "pressured" runs therefore
+ran with no load at all. It was caught before it reached this document by the same duration signal that
+later validated the real generator: the block's median body duration was 3.52 s, indistinguishable
+from the isolated arm's 3.51 s, where genuine pressure produces 4.62 s. The block was discarded, the
+require path was made absolute, the generator was validated against live HTTP responses (§C.1), and
+the arm was re-run in full as `pres-prod-v2`.
+
+It is recorded because "the load generator silently did nothing" is the single most likely way a
+contention experiment produces a confident false negative, and a reader is entitled to know it was
+checked for rather than assumed away.
+
+### C.10 Neutrality and the return to the unforced state
+
+```
+$ git status --porcelain tests/
+(no output)
+
+$ git status --porcelain apps/
+(no output)
+```
+
+The load generator lives entirely in the session scratch directory and was never added to the
+repository; it is not a Playwright project, not a spec, and nothing in `tests/` references it. No
+committed file was modified for any arm above, no quarantine/skip/`.only` annotation was added, and
+the §C.6 full-suite run is the unprefixed, unmodified gate suite. Every arm's artifacts landed outside
+the repository; only the derived tables above reach `.planning/`.
