@@ -110,3 +110,58 @@ describe('assertServedApp', () => {
     await expect(run(baseURL)).rejects.toThrow(/not this checkout's Vite dev server/);
   });
 });
+
+/** Drives a guaranteed failure and returns the message the operator would read. */
+async function captureFailure(baseURL: string, repoRoot: string = REPO_ROOT): Promise<string> {
+  try {
+    await assertServedApp({ baseURL, repoRoot, deadlineMs: 2000, pollIntervalMs: 50 });
+  } catch (e) {
+    return e instanceof Error ? e.message : String(e);
+  }
+  throw new Error('expected the preflight to fail, but it passed');
+}
+
+describe('preflight failure message', () => {
+  afterEach(async () => {
+    const current = server;
+    server = null;
+    if (current) await new Promise<void>((resolve) => current.close(() => resolve()));
+  });
+
+  it('carries every diagnostic field, in order, with both remedies verbatim', async () => {
+    const baseURL = await startStub({ title: 'Election Compass', probeStatus: 403 });
+    const message = await captureFailure(baseURL);
+
+    expect(message.split('\n')[0]).toContain('E2E PREFLIGHT FAILED');
+    expect(message).toMatch(/reason:[\s\S]*expected port:[\s\S]*expected checkout:[\s\S]*observed:[\s\S]*remedies:/);
+    expect(message).toContain(REPO_ROOT);
+    expect(message).toContain('FRONTEND_PORT=<port your server is actually on>');
+    expect(message).toMatch(/stop the other server occupying port \d+/);
+  });
+
+  it('renders complete and correct when lsof cannot be resolved', async () => {
+    const baseURL = await startStub({ title: 'Election Compass', probeStatus: 403 });
+    const emptyBin = fs.mkdtempSync(path.join(os.tmpdir(), 'preflight-nolsof-'));
+    const realPath = process.env.PATH;
+    process.env.PATH = emptyBin;
+    try {
+      const message = await captureFailure(baseURL);
+      expect(message).toContain('E2E PREFLIGHT FAILED');
+      expect(message).toContain('remedies:');
+      // The whole section is omitted rather than rendered empty or crashing.
+      expect(message).not.toContain('listening process:');
+    } finally {
+      process.env.PATH = realPath;
+      fs.rmSync(emptyBin, { recursive: true, force: true });
+    }
+  });
+
+  it('never leaks the raw response body', async () => {
+    const baseURL = await startStub({ title: 'Election Compass', probeStatus: 403 });
+    const message = await captureFailure(baseURL);
+    // Only the extracted title and module root cross over from the response.
+    expect(message).not.toContain('<html');
+    expect(message).not.toContain('<script');
+    expect(message).not.toContain('<body');
+  });
+});
