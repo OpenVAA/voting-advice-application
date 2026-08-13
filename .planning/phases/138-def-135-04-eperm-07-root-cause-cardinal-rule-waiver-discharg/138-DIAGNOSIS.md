@@ -423,3 +423,61 @@ that the test-side change is a diagnosis improvement rather than a defect fix �
 (i) the settle change, accepted as test-side with the excursion tracked as a separate open item, or
 (ii) held until the excursion is localised? The negative-control pair can be run for (i) today against
 the configuration in § How it was forced; (ii) cannot be run at all until the amplifier is named.
+
+---
+
+## Fix
+
+Written by plan 04 (2026-08-13), after the D-06 decision checkpoint. Commit `e96e24a44`.
+
+**Authorised tier: TEST-SIDE.** D-05 pre-authorises an app-side fix; D-06 reserves the test-side tier
+for the operator. The checkpoint was put to the operator with the mechanism, the run counts and the
+two different answers to "could a real user observe this?", and the recorded finding is:
+
+> The ~112 ms baseline window is not a user-visible defect — it is what a cross-fade view transition
+> is, it sits below the perceptual-instantaneity threshold, and nothing user-facing is wrong inside it;
+> the user-visible half is the unlocalised ~4 s excursion, whose amplifier this phase did not identify,
+> and which is therefore tracked as a separate open item rather than fixed here.
+
+**The link in the mechanism chain that the change closes: link 4.** The chain above is (1) SvelteKit
+commits the URL at `client.js:1759-1760`, (2) it awaits the `onNavigate` callbacks at `:1779-1785`,
+(3) it swaps the DOM at `:1824`, and (4) **the walk's settle released at step 1**. Step 4 is the only
+link the fix touches. Steps 1-3 are framework ordering and are unchanged — which is the point: the
+defect was never that the window opens, it was that an assertion was made inside it.
+
+**Files and lines changed** (`git diff --numstat 42b95d575 e96e24a44 -- tests/`):
+
+| File | +/− | What changed |
+|---|---|---|
+| `tests/tests/helpers/navigation.ts` | +106 / −0 | New shared `settleAfterClientNavigation` (`:78-115`) and `readNavigationLandmarkText` (`:124-130`) |
+| `tests/tests/specs/voter/voter-journey.spec.ts` | +20 / −3 | `expectUrlChange` (`:203-208`) delegates to the shared settle; the swallowed `waitForURL(...).catch(() => null)` is gone |
+| `tests/tests/specs/voter/eperm07-term-trigger.spec.ts` | +33 / −24 | The instrument's local copy of the defective settle is discharged and delegates to the same shared helper |
+| `tests/tests/helpers/index.ts` | +6 / −1 | Barrel exports |
+
+**What the settle now does**, in the terms of the mechanism rather than of the assertion:
+
+1. Waits for the URL change and **no longer swallows its own timeout**. Previously "the URL changed but
+   the DOM has not" and "the URL never changed at all" flowed onward identically; a navigation that
+   never happens now fails at the settle, where it reads as a navigation problem.
+2. Waits for the page's navigation landmark — `[data-focus-on-nav] ?? h1`, mirroring the app's own
+   `afterNavigate` focus target at `+layout.svelte:178-180` — to carry **different text** than the one
+   it navigated away from. That cannot be true until `root.$set(...)` has run at `client.js:1824`.
+
+A text comparison rather than an attachment check, because the stale state is not always "no heading":
+at low CPU rates the heading node survives the hop with the previous question's content, and an
+attachment-only wait would pass instantly against Base-2. Not the focus fact itself, though it is
+stronger, because it was measured during this plan to become true only after the View Transition
+finishes — a measurement of the animation, not of the swap.
+
+**No budget was raised.** `tests/tests/helpers/timeouts.ts` is byte-identical across the fix commit and
+`element: 2_000` remains present exactly once. D-07 is honoured, and no skip, quarantine, `.only` or
+per-suite retry annotation exists anywhere in `tests/`.
+
+**Evidence: `138-NEGATIVE-CONTROL.md`.** One adversary printed identically in both halves; pre-fix
+`360927495` failing 5/5 with `triggerCount: 0` at every settle release; post-fix `e96e24a44` passing
+5/5 with `triggerCount: 1` and Base-3's heading text at the same probe point.
+
+**What this fix does NOT close, carried to plan 06.** The ~4 s field excursion remains unlocalised —
+see § "The one thing this does not explain, stated plainly" above. The mechanism is established; the
+amplifier is not. The waiver discharge must carry that qualification rather than read as a full
+explanation of the field failure.

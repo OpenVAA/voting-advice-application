@@ -283,4 +283,207 @@ post-settle state, measured at `triggerCount: 0` in 260 of 262 forensic probes a
 
 ## 5. RUN 2 — the catch: post-fix under the byte-identical adversary
 
-*Pending — filled by task 3, after the operator-authorised fix is applied.*
+### 5.1 Provenance
+
+```
+$ git rev-parse --short HEAD
+e96e24a44
+
+$ git status --porcelain
+ M .vscode/settings.json
+ M supabase/.temp/cli-latest
+
+$ git status --porcelain tests/ apps/ packages/
+(no output)
+```
+
+The fix is **committed**, and these runs were taken against that commit with no working-tree
+modification over `tests/`, `apps/` or `packages/`. The two halves therefore differ by exactly one
+thing: the commit `e96e24a44` between them.
+
+> **An earlier post-fix block was discarded rather than reported — see § 5.6.** A second, smaller
+> point of the same discipline: a first version of this block was taken while the fix was still
+> uncommitted, and was re-run from scratch against the committed tree once a comment in
+> `navigation.ts` changed after it. The change was comment-only and could not affect behaviour, which
+> is exactly why re-running was cheap and why there is no reason to ask a reader to take that on
+> trust. The block below is the re-run.
+
+```
+$ git diff --stat 42b95d575 HEAD -- tests/
+ tests/tests/helpers/index.ts                       |   7 +-
+ tests/tests/helpers/navigation.ts                  | 106 +++++++++++++++++++++
+ .../tests/specs/voter/eperm07-term-trigger.spec.ts |  57 ++++++-----
+ tests/tests/specs/voter/voter-journey.spec.ts      |  23 ++++-
+ 4 files changed, 165 insertions(+), 28 deletions(-)
+```
+
+**Nothing under `apps/` is in that diff.** The authorised tier was test-side (§ 7), so no application
+file was touched — which is also why this pair cannot speak to the user-visible half of the defect,
+stated plainly in § 6.
+
+**Block start:** 2026-08-13T18:17:39Z · **Block end:** 2026-08-13T18:18:36Z (approx., last run's exit)
+
+### 5.2 The invocation, verbatim
+
+```bash
+FRONTEND_PORT=5273 \
+EPERM07_FORCE_BUDGET_MS=400 \
+EPERM07_FORCE_CPU_RATE=40 \
+PLAYWRIGHT_JSON_OUTPUT_FILE="$RUN_JSON" \
+  npx playwright test -c tests/playwright.config.ts \
+    --project=eperm07-term-trigger --reporter=json
+```
+
+Character-identical to § 4.2. Both halves ran against the same dev-server process (PID 92504, § 2) —
+the fix touches no application code, so no restart was warranted, and not restarting removes the
+server itself as a difference between the halves.
+
+### 5.3 Observed — five consecutive runs, all passing
+
+| # | Started (UTC) | exit | Outcome | Body duration | `eperm07-state` tri-state |
+|---|---|---|---|---|---|
+| 1 | 18:17:39 | 0 | **PASS** | 7499 ms | `{"pathname":"/questions/8262ebfa-6468-46c2-a011-cce36c64a880","headingCount":1,"headingText":"MunicipalRegional [qg-opin-base] Base Opinion Questions 3/8 [qu-opin-base-3-likert7] Base opinion 3 — Likert 7.","triggerCount":1}` |
+| 2 | 18:17:52 | 0 | **PASS** | 6347 ms | `{"pathname":"/questions/d592bb89-b886-4829-8c51-df0114d02942","headingCount":1,"headingText":"RegionalMunicipal [qg-opin-base] Base Opinion Questions 3/8 [qu-opin-base-3-likert7] Base opinion 3 — Likert 7.","triggerCount":1}` |
+| 3 | 18:18:04 | 0 | **PASS** | 6073 ms | `{"pathname":"/questions/b84c1ec1-6bde-41a0-ab8b-8dfedf38b735","headingCount":1,"headingText":"MunicipalRegional [qg-opin-base] Base Opinion Questions 3/8 [qu-opin-base-3-likert7] Base opinion 3 — Likert 7.","triggerCount":1}` |
+| 4 | 18:18:15 | 0 | **PASS** | 6237 ms | `{"pathname":"/questions/000a476f-1398-49be-9f18-8c6d051bd654","headingCount":1,"headingText":"RegionalMunicipal [qg-opin-base] Base Opinion Questions 3/8 [qu-opin-base-3-likert7] Base opinion 3 — Likert 7.","triggerCount":1}` |
+| 5 | 18:18:26 | 0 | **PASS** | 10234 ms | `{"pathname":"/questions/fb6d012f-82e3-4990-9773-adaca921c7c5","headingCount":1,"headingText":"RegionalMunicipal [qg-opin-base] Base Opinion Questions 3/8 [qu-opin-base-3-likert7] Base opinion 3 — Likert 7.","triggerCount":1}` |
+
+**5 / 5 passed.**
+
+**The tri-state is the evidence, not the exit code.** In RUN 1 every probe read
+`headingCount: 0, headingText: null, triggerCount: 0` — the settle released into a page that had not
+arrived. Here every probe reads `headingCount: 1`, `headingText` containing
+**`Base opinion 3 — Likert 7`**, and `triggerCount: 1`. The probe runs at the same place in the spec in
+both halves — immediately after the settle, *before* the assertion. So the pair does not merely show
+"the test went green": it shows that at the moment the settle releases, the destination question and
+its term trigger are **now already in the DOM**, which is the state the pre-fix settle failed to
+guarantee. The oracle did not become more patient; the observation moved to the other side of the swap.
+
+### 5.4 The two halves side by side
+
+| Half | git HEAD | Adversary | Runs | Failures | Tri-state at settle release |
+|---|---|---|---|---|---|
+| RUN 1 — pre-fix | `360927495` | `FRONTEND_PORT=5273 EPERM07_FORCE_BUDGET_MS=400 EPERM07_FORCE_CPU_RATE=40` | 5 | **5** | `headingCount: 0`, `headingText: null`, `triggerCount: 0` (5/5) |
+| RUN 2 — post-fix | `e96e24a44` | `FRONTEND_PORT=5273 EPERM07_FORCE_BUDGET_MS=400 EPERM07_FORCE_CPU_RATE=40` | 5 | **0** | `headingCount: 1`, Base-3 heading text, `triggerCount: 1` (5/5) |
+
+One adversary, character-identical in both rows. Two HEADs. Ten runs, and the outcome inverts
+completely across the commit between them.
+
+### 5.5 The finding
+
+Under one frozen, rebuildable forcing configuration the pre-fix tree failed **5 of 5** and the post-fix
+tree passed **5 of 5**, with the failing half captured first against a tree provably free of the fix.
+Criterion 2 is satisfied in its strict form: this is not "the failure stopped happening" — the failure
+was made deterministic first (15/15 in `138-FORCED-REPRO.md` § B.8, 5/5 again here) and then inverted
+by a single commit.
+
+What the fix changed is the settle, and only the settle. `expectUrlChange` and the instrument's copy of
+it now both call one shared `settleAfterClientNavigation`, which (1) no longer swallows its own
+`waitForURL` timeout, so a navigation that never happens fails as a navigation problem, and (2) waits
+for the page's navigation landmark to carry text different from the one it left — a fact that cannot be
+true until SvelteKit has run `root.$set(...)` at `client.js:1824`. That is precisely the link the
+diagnosis names as broken: the settle used to release at `client.js:1759-1760`, the URL commit, two
+steps too early.
+
+### 5.6 Discarded block — an intermediate implementation, recorded rather than hidden
+
+A 5-run post-fix block was taken at 17:59-18:01 UTC and is **not** counted above. It scored 1/5 and is
+discarded because it ran against an **intermediate** version of the settle, not the one that was
+committed. Two implementation attempts preceded the final one, and both failures were in the
+*observation method* rather than in the app:
+
+1. **Settling on focus.** The first attempt waited for `document.activeElement` to equal the app's
+   afterNavigate focus target — the stronger fact, since SvelteKit runs `afterNavigate` only after the
+   swap. Measured: it does not become true until the **View Transition finishes**, because the app's
+   `onNavigate` resolves inside `startViewTransition` (`+layout.svelte:161-170`). That makes it a
+   measurement of the animation, and it exceeded the budget outright at CPU rate 40.
+2. **rAF-starved polling.** The second attempt used the text comparison that shipped, but with
+   `waitForFunction`'s default `polling: 'raf'`. rAF callbacks are tied to the rendering loop, so the
+   predicate was starved at exactly the moment it needed to observe — while the browser was busy
+   committing the swap. It timed out in 4 of 5 runs on a path where the term assertion at the
+   production budget passes at every CPU rate tested (`138-FORCED-REPRO.md` § B.5). Fixed-interval
+   polling at 50 ms resolved it.
+
+Neither block is evidence about the defect, and neither is quoted as such. They are recorded because
+"the instrument was not measuring what it was aimed at" is the single most likely way this kind of
+experiment produces a confident wrong answer — the same reason `138-FORCED-REPRO.md` § B.12 and § C.9
+recorded a `rate: NaN` block and a dead load generator instead of quietly dropping them. A reader is
+entitled to know that the passing block above is the third attempt and why the first two failed.
+
+---
+
+## 6. What this pair does and does not prove
+
+**The authorised tier was test-side (D-06, § 7), and the honest reading of this pair follows from
+that.** It proves that the E2E harness no longer reports a false negative: under a forcing
+configuration that made the walk fail deterministically, the walk now observes the destination
+question *after* the DOM has committed rather than before, and the probe taken at the settle boundary
+shows the term trigger present in every run rather than absent in every run. The suite's report of the
+Base-2 → Base-3 hop is now a witness to the application's behaviour instead of a race against it.
+
+**It does not prove that no user-visible defect exists, and no run in this document could.** That is
+established by the operator's recorded finding in § 7, on the phase's measured evidence, not by these
+ten runs. Concretely, the pair is silent on two things:
+
+- **The ~112 ms baseline window is untouched and was not meant to be touched.** It still exists after
+  the fix; the settle now waits it out instead of asserting inside it. Per § 7 that window is not a
+  defect — it is what a cross-fade view transition is, and it sits below the threshold at which a UI
+  is perceived as anything but instantaneous.
+- **The ~4 s field excursion is neither reproduced nor fixed here.** `138-DIAGNOSIS.md` § "The one
+  thing this does not explain" records that the mechanism is established while the **amplifier is
+  not**: the recorded DEF-135-04 occurrence needed roughly 36× the median window, and this phase
+  reached at most ~5.4× by CPU amplification and <2× by worker contention. A four-second interval in
+  which the address bar says Base-3 and the page still shows Base-2 **is** user-visible, and no
+  test-side change can address it. It is carried forward as a separate open item (§ 7), not as
+  something this pair closed.
+
+**A note on the shrunk oracle.** Both halves ran at a 400 ms element budget against the production
+2000 ms — a 5× shrink, stated in § 3 as part of the adversary. The pair therefore demonstrates the fix
+against a deliberately weakened oracle. It is not, and is not offered as, a measurement of production
+margin; § 3 records that 97 production-budget runs across the whole CPU ladder produced zero failures,
+which is why the weakening was necessary to have a failing half at all.
+
+---
+
+## 7. The operator's decision (D-06)
+
+D-05 pre-authorises an **app-side** fix. D-06 explicitly does **not** pre-authorise a test-side one:
+where the mechanism is a harness artefact, the executor must stop and put the evidence in front of the
+operator rather than apply a remedy unilaterally, so that an app-only preference cannot silently
+expand into "the test was wrong". Plan 04 therefore led with a blocking decision checkpoint, and the
+executor did not select the tier.
+
+The evidence presented was: the named mechanism with its `file:line` chain; the forcing configuration
+and its 15/15 and 5/5 run counts; the eliminations (H1 by a 10-vs-10 A/B, H3 by U-2's closure, H4 by
+the error being an existence rather than a visibility failure); and the two different answers to "could
+a real user observe this?".
+
+**Selected tier: test-side.** The operator's recorded finding, quoted so the record carries the
+reasoning and not only the verdict:
+
+> The ~112 ms baseline window is not a user-visible defect — it is what a cross-fade view transition
+> is, it sits below the perceptual-instantaneity threshold, and nothing user-facing is wrong inside it;
+> the user-visible half is the unlocalised ~4 s excursion, whose amplifier this phase did not identify,
+> and which is therefore tracked as a separate open item rather than fixed here.
+
+Consequent constraints, all honoured by the commit under test here: no change to `Term.svelte` or
+`QuestionHeading.svelte` (H3, eliminated); no disabling or scoping of the View Transition (H1,
+eliminated); no budget bump (D-07, rejected — `git diff --stat` over
+`tests/tests/helpers/timeouts.ts` is empty between the two HEADs, and `element: 2_000` is still present
+exactly once); and no skip, quarantine, `.only` or per-suite retry annotation anywhere in `tests/`.
+
+### The separate open item
+
+**The ~4 s excursion that produced the field occurrence of DEF-135-04 is NOT fixed by this phase and
+is carried forward.** Its evidence is `138-DIAGNOSIS.md` § "The one thing this does not explain" and
+`138-FORCED-REPRO.md` § B.7.3 (the `gap ≈ 105 ms + 12 ms × cpu_rate` fit, which places the CPU rate
+needed to reach 2000 ms at ~130-190, about twice the rate at which the throttle stops measuring the
+thing it is aimed at). Candidate amplifiers, none confirmed: a dev-server module-transform stall, a
+garbage-collection pause, host-level scheduling starvation, and Chrome's own ~4 s view-transition skip
+ceiling.
+
+**The instrument that would localise it already exists and did not exist before this phase.** Plan 01's
+forensic capture — video retention, console transcript, failed-request transcript and the dev-server
+log — plus plan 02's hard heading gate mean the next occurrence arrives as data with a timestamped
+server log beside it. That is waiver condition 3 satisfied. Plan 06's waiver discharge must carry this
+qualification forward verbatim: **the mechanism is established, the amplifier is not.**
