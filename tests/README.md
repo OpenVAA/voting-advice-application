@@ -130,7 +130,7 @@ The graph (per [`playwright.config.ts`](./playwright.config.ts)) has three famil
   └──────────────────────────────────────────────────────────────┘
 ```
 
-> The `perm-per-app-notifications` projects + spec are currently quarantined (`describe.skip`) pending the Svelte 5 runes migration; their wiring stays in place. See the inline `// TODO: re-enable perm-per-app-notifications` marker in `playwright.config.ts`.
+> The `perm-per-app-notifications` projects and spec are **live** in the default `yarn test:e2e` run — not quarantined and not excluded. The spec declares an ordinary `test.describe('perm-per-app-notifications', …)` block carrying 2 tests (`tests/tests/specs/perm/perm-per-app-notifications.spec.ts:18`), and `playwright.config.ts:777-793` wires `data-setup-perm-per-app-notifications` → `perm-per-app-notifications` inside the perm chain, with `data-setup-perm-missing-nominations` chaining off it in turn. (Corrected in Phase 138 as part of the DEF-135-04 cardinal-rule waiver discharge: this line previously asserted a quarantine annotation on the spec and a matching re-enable TODO marker in `playwright.config.ts`; neither existed in the tree — the claim was stale, and a live document asserting a quarantine is exactly what the discharge's grep-based forbidden-artefact audit trips on.)
 
 - The base / journey family and the voter permutation family run **in parallel** — the permutation chain's first setup has no cross-chain dependency.
 - Within the permutation family, setups chain **sequentially** because each mutates the singleton `app_settings` row; serial chaining prevents cross-permutation clobbering.

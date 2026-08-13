@@ -69,6 +69,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | backlog | Candidate-app axe + raw-i18n-key coverage (D-136-04-1) | **CONSUMED** → v2.15 CSCAN-01..04, Phases 147-148 |
 | backlog | `fonts.googleapis.com` egress inside the blocking visual gate (D-136-05-2) | **CONSUMED** → v2.15 VGATE-04/05/06, Phase 146 |
 | todos | ~48 standing pending todos | carried; triage via `/gsd-review-backlog` |
+| docs | **Test-runbook concurrency claim contradicts the Playwright config (Phase 138 F-2).** `tests/README.md:124` (the ASCII project DAG) and `tests/README.md:135` both state that the voter permutation family runs *in parallel* with the base/journey families and that its first setup `data-setup-perm-1e1cg1co` has no upstream dependency. The config says the opposite: `tests/playwright.config.ts:514-517` declares `dependencies: ['voter-journey', 'candidate-journey']` on that setup, and the config's own docblocks at `tests/playwright.config.ts:57-64` and `:501-512` explain the serial anchoring and why it is load-bearing (shared `app_settings` singleton + mutually-destructive preclears). | open; found during Phase 138 research (§R7.2 F-2) and **deliberately NOT absorbed** — correcting the concurrency documentation is a separate concern from discharging a cardinal-rule waiver, and Phase 138's ROADMAP shape note forbids padding a diagnosis phase with adjacent work. Filed here rather than fixed; `tests/README.md:124`/`:135` are left exactly as written. |
 
 **Closeout type:** `override_closeout` — 2 phases verified `human_needed` rather than `passed`.
 
