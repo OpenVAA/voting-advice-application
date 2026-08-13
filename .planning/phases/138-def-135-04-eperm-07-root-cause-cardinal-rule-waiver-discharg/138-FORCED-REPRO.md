@@ -398,3 +398,168 @@ convenient. Isolation was achieved entirely by `--project=eperm07-term-trigger`,
 already supports.
 
 ---
+
+## Discriminator A — View Transition on/off
+
+The zero-app-change A/B that names or clears the View-Transition layer as **necessary** for the
+observed failure. Run at the frozen operating point from § Forcing configuration.
+
+### A.1 Design
+
+`EPERM07_NO_VT=true` makes the hunt spec call `page.emulateMedia({ reducedMotion: 'reduce' })`
+before any navigation. The app's own animation gate short-circuits on that media query —
+`apps/frontend/src/lib/utils/viewTransition.ts:28`, verbatim:
+
+```ts
+  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return false;
+```
+
+— so `shouldAnimate` returns `false`, the root layout's `onNavigate` hook returns `undefined`
+instead of a Promise (`apps/frontend/src/routes/+layout.svelte:165`), and SvelteKit never awaits a
+transition. Arm B therefore runs **the identical application code path** with no View Transition
+playing, at zero app change. Because no app file is edited, the emulation cannot itself be the cause
+of a flip.
+
+| | Arm A | Arm B |
+|---|---|---|
+| `EPERM07_NO_VT` | unset (transitions **ON**) | `true` (transitions **OFF**) |
+| `EPERM07_FORCE_BUDGET_MS` | 100 | 100 |
+| `FRONTEND_PORT` | 5273 | 5273 |
+| Runs | 10 | 10 |
+
+**Invariants held constant across the arms**, stated so the single-variable claim is checkable: the
+same dev server process (**PID 92504, never restarted between the arms** — `lsof` was re-read
+immediately before each arm and reported the same PID), the same port, the same
+`EPERM07_FORCE_BUDGET_MS=100` operating point, the same seeded `e2e/base` dataset re-imported by
+`data-setup-base` before every run, the same Playwright project and config, no CPU throttle in
+either arm (`EPERM07_FORCE_CPU_RATE` unset ⇒ rate 1), `retries` = 0 read back from `results.json` on
+all 20 runs, and both arms run back to back in one session. The **only** difference between the arms
+is the reduced-motion knob.
+
+Arm A is the same configuration as § 3's `b100` blocks but was re-run as a fresh 10-run arm rather
+than reusing those 15 runs, so both arms have identical run counts and identical recency.
+
+### A.2 Result
+
+| | Arm A (VT **on**) | Arm B (VT **off**) |
+|---|---|---|
+| Runs | 10 | 10 |
+| **Failures** | **7 / 10** | **9 / 10** |
+| Distinct tri-states observed | **1** — `{"headingCount":1,"headingText":"…Base opinion 2 — Likert 4.","triggerCount":0}` | **1** — `{"headingCount":0,"headingText":null,"triggerCount":0}` |
+| Classification (all 10 runs, pass and fail alike) | **H1-shaped**, 10/10 | **H2-shaped**, 10/10 |
+| Error text on failure | `element(s) not found` on `getByTestId('voter-questions-term-trigger').first()` | **identical**, byte for byte |
+
+Both arms' failure messages, machine-read from `run-01.json` `results[0].error.message` (ANSI
+stripped), are the same:
+
+```
+Error: expect(locator).toBeVisible() failed
+
+Locator: getByTestId('voter-questions-term-trigger').first()
+Expected: visible
+Timeout: 100ms
+Error: element(s) not found
+```
+
+**Arm A — transitions ON** (`EPERM07_FORCE_BUDGET_MS=100`)
+
+| Run | Outcome | question id (URL) | headingCount | headingText | triggerCount | classification |
+|---|---|---|---|---|---|---|
+| 01 | **failed** | 7a2ff607 | 1 | "…Base opinion 2 — Likert 4." | 0 | H1-shaped |
+| 02 | **failed** | 6a720644 | 1 | "…Base opinion 2 — Likert 4." | 0 | H1-shaped |
+| 03 | passed | 865a3ea1 | 1 | "…Base opinion 2 — Likert 4." | 0 | H1-shaped |
+| 04 | passed | 7efc2c82 | 1 | "…Base opinion 2 — Likert 4." | 0 | H1-shaped |
+| 05 | passed | 6e1bb22c | 1 | "…Base opinion 2 — Likert 4." | 0 | H1-shaped |
+| 06 | **failed** | 399fcdc2 | 1 | "…Base opinion 2 — Likert 4." | 0 | H1-shaped |
+| 07 | **failed** | 5948d338 | 1 | "…Base opinion 2 — Likert 4." | 0 | H1-shaped |
+| 08 | **failed** | 7c1b9311 | 1 | "…Base opinion 2 — Likert 4." | 0 | H1-shaped |
+| 09 | **failed** | 35398f9c | 1 | "…Base opinion 2 — Likert 4." | 0 | H1-shaped |
+| 10 | **failed** | c64126b8 | 1 | "…Base opinion 2 — Likert 4." | 0 | H1-shaped |
+
+**Arm B — transitions OFF** (`EPERM07_FORCE_BUDGET_MS=100 EPERM07_NO_VT=true`)
+
+| Run | Outcome | question id (URL) | headingCount | headingText | triggerCount | classification |
+|---|---|---|---|---|---|---|
+| 01 | **failed** | 97da265e | 0 | `null` | 0 | H2-shaped |
+| 02 | **failed** | 6b5909fc | 0 | `null` | 0 | H2-shaped |
+| 03 | passed | d308e402 | 0 | `null` | 0 | H2-shaped |
+| 04 | **failed** | 4b298da6 | 0 | `null` | 0 | H2-shaped |
+| 05 | **failed** | 1105e4ee | 0 | `null` | 0 | H2-shaped |
+| 06 | **failed** | 07c8be15 | 0 | `null` | 0 | H2-shaped |
+| 07 | **failed** | 6d4d9a64 | 0 | `null` | 0 | H2-shaped |
+| 08 | **failed** | 34ca1712 | 0 | `null` | 0 | H2-shaped |
+| 09 | **failed** | 51dce11a | 0 | `null` | 0 | H2-shaped |
+| 10 | **failed** | 99c2e176 | 0 | `null` | 0 | H2-shaped |
+
+### A.3 Verdict — **H1 eliminated at this lever**
+
+Switching the View Transition off did **not** clear the failure. Arm B failed **9 of 10** against
+arm A's **7 of 10** — comparable rates, and if anything slightly *worse* without the transition (the
+difference is well inside what 10 runs per arm can distinguish; Fisher exact on 7/10 vs 9/10 gives
+p ≈ 0.58, so the honest reading is "no detectable difference in rate", not "worse"). The
+View-Transition layer is therefore **not necessary** for the observed failure.
+
+This is a genuine result and it closes this task successfully. It narrows the hunt; it does not end
+the phase.
+
+### A.4 Interpretation — what the arms actually changed
+
+The rate did not move, but **the shape of the intermediate state did, completely and with zero
+overlap**: 10/10 H1-shaped in arm A, 10/10 H2-shaped in arm B, no run in either arm landing in the
+other's class. That is the informative part of this experiment, and it is not visible in the
+failure counts alone.
+
+With the transition **on**, `apps/frontend/src/routes/+layout.svelte:161-171` returns a Promise that
+SvelteKit awaits before swapping the DOM, and that Promise resolves inside
+`document.startViewTransition`'s update callback — so during the window the **outgoing Base-2 DOM is
+still live** (`headingCount: 1`, text `Base opinion 2`). With the transition **off**,
+`shouldAnimate` short-circuits at `viewTransition.ts:28`, the hook returns `undefined`
+(`+layout.svelte:165`), nothing is awaited — and during the window there is **no question heading in
+the document at all** (`headingCount: 0`, `headingText: null`).
+
+So the View Transition governs *what the DOM looks like* inside the window, not *whether the window
+exists*. The window itself is created upstream of the transition, by the client router's ordering:
+SvelteKit pushes the destination URL to history at
+`node_modules/@sveltejs/kit/src/runtime/client/client.js:1760` and only swaps the DOM at
+`client.js:1824`. The test's production settle (`voter-journey.spec.ts:186-190`, reproduced verbatim
+in the hunt spec) waits on the **URL** — i.e. it releases at line 1760 and then asserts against
+whatever the DOM happens to be before line 1824. The transition merely decides whether that DOM is
+*stale* or *absent*; either way it has no `voter-questions-term-trigger`, and either way the recorded
+`element(s) not found` follows. **The mechanism the evidence implicates is the URL-settle oracle
+racing the router's DOM swap, not the View-Transition layer that H1 named.**
+
+Corollary worth recording for plan 03: the in-repo prior art that motivated H1 —
+`tests/tests/specs/a11y/a11y-smoke.spec.ts` driving Q→Q with `?notr=1` so assertions "never race the
+cross-fade" — would **not** have prevented this failure. `?notr=1` is the second short-circuit in the
+same gate (`viewTransition.ts:29`) and lands the run in arm B, which fails at 9/10 here. Disabling
+the transition is not the fix.
+
+### A.5 Ledger effect, scoped
+
+`138-DIAGNOSIS.md` § Hypothesis ledger is updated for **H1 only**. H2 and H3 remain `live` and the
+hunt continues in plan 03.
+
+Arm B's uniform `headingCount: 0` is superficially H2's discriminator, and it is recorded as an
+observation — but it is **not** treated as confirming H2, for a stated reason: `headingCount: 0`
+under a *transition-disabled* navigation is also exactly what an ordinary mid-swap instant looks
+like, so the observation does not distinguish "the render gate at
+`questions/+layout.svelte:257-258` transiently closed" from "the new page component has simply not
+mounted yet". Separating those two is plan 03's job, with the amplification that lets the window be
+observed for longer than one probe. Per plan 02 task 3's own instruction, no H2 or H3 status is
+changed on this evidence.
+
+Nor does this section claim a root cause. It establishes that the transition is not *necessary* for
+the failure. The root-cause statement is plan 03's, and it must add the ordering evidence directly —
+the URL pushed to history before the DOM swap, observed rather than inferred.
+
+### A.6 Neutrality re-verified after the A/B
+
+```
+$ git status --porcelain apps/
+(no output)
+
+$ git status --porcelain tests/
+(no output)
+```
+
+No app source file and no committed test file was modified to run either arm.
