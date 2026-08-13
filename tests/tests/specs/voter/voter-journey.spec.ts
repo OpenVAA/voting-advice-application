@@ -855,7 +855,9 @@ test.describe('voter journey', () => {
       });
       // Settle on Base-3 by its heading.
       const questionHeading = page.getByTestId(testIds.voter.questions.heading);
-      await expect.soft(questionHeading).toHaveText(TEXT_RE.baseOpinion3Likert7, { timeout: TIMEOUTS.element });
+      // reason: HARD, not soft (Phase 138, D-08; deferred-items.md § DEF-135-04 "Suggested follow-up") —
+      // a mis-timed Base-3 arrival must abort HERE, not two lines below at the term gate that misdirects.
+      await expect(questionHeading).toHaveText(TEXT_RE.baseOpinion3Likert7, { timeout: TIMEOUTS.element });
 
       // The in-text term trigger renders inside the heading (the 'Likert' token).
       const termTrigger = page.getByTestId(testIds.voter.questions.termTrigger);
