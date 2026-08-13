@@ -352,7 +352,7 @@ PLAYWRIGHT_JSON_OUTPUT_FILE="$PWD/eperm07-run.json" \
 | Non-degenerate | 15/15, and 15/15 failing on the term-trigger locator rather than on some other assertion | §B.8 |
 | Error text | `element(s) not found` on `getByTestId('voter-questions-term-trigger').first()` | §B.9 |
 | Oracle weakened? | **YES — 400 ms against the production 2000 ms, a 5× shrink.** Part of the adversary description, not a footnote. | §B.8 |
-| Forced at the production budget? | **NO.** 96 runs at the unweakened 2000 ms budget across CPU rates 2-80 and under worker pressure, zero failures. | §B.5, §C.2 |
+| Forced at the production budget? | **NO.** 91 forced-lever runs at the unweakened 2000 ms budget across CPU rates 2-80 and under worker pressure, plus 5 unprefixed runs and 1 full-suite sample at the same budget — 97 in total, zero failures. | §B.5, §C.2 |
 | Why not | Reaching 2000 ms needs CPU rate ~130-190; the throttle breaks the instrument at 80, because ~105 ms of the ~112 ms window is rate-INDEPENDENT | §B.7.3 |
 
 The strong form of criterion 1 — forcing without weakening the oracle — **was attempted across the

@@ -1303,8 +1303,11 @@ amplification.
 
 **At the production budget the two arms are indistinguishable: 0 failures each.** The pressure is not
 imaginary — it slows the test body by 1.32× and nearly doubles wall clock — it simply does not carry
-the post-settle window past 2000 ms. Taken with §B's 71 amplification runs, that is **96 runs at the
-production element budget with zero failures**, across every lever this phase has.
+the post-settle window past 2000 ms. Taken with §B's 71 amplification runs, that is **91 forced-lever runs at the
+production element budget with zero failures** — 96 counting the five unprefixed runs this plan also
+made at that budget (the four task-close neutrality runs and §B.11's post-abort arm B), and 97
+counting §C.6's full-suite sample. Across every lever this phase has, at the unweakened oracle, the
+failure count is zero.
 
 ### C.3 Arm comparison at a MARGINAL operating point — where the effect is visible
 
