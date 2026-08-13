@@ -34,7 +34,13 @@ export default defineConfig(({ mode }) => {
       preserveSymlinks: true
     },
     server: {
-      port: Number(env.FRONTEND_PORT) || 5173
+      port: Number(env.FRONTEND_PORT) || 5173,
+      // Refuse a same-address bind so `yarn dev` cannot silently serve on a different port than
+      // Playwright targets. This does NOT refuse a wildcard shadow-bind: a process holding the IPv6
+      // wildcard lets Vite additionally bind the more specific loopback address with no bind error
+      // at all — that case is caught by the E2E preflight in `tests/global-setup.ts`. Both halves
+      // are measured in `.planning/phases/137-.../137-RESEARCH.md` QUAL-1.
+      strictPort: true
     }
   };
 });
