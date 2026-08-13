@@ -12,6 +12,27 @@ yarn test:e2e --grep "result card"         # filter by title substring
 yarn test:e2e --reporter=line              # less noisy output
 ```
 
+### Preflight — every run proves it is driving this checkout
+
+Before any spec body executes, Playwright's global setup runs a preflight against the base URL the specs are about to drive. It asserts that the served application's own HTTP response proves the page under test came from **this** checkout — the server must serve, and echo back, this working tree's absolute path via Vite's `/@fs` endpoint — rather than trusting that something merely answered on the port. If that does not hold, the run aborts with exit 1 before the first spec. Nothing skips it: there is no bypass flag and no bypass environment variable, and `FRONTEND_PORT` moves the target rather than disabling the check. The gate polls for liveness first (30s locally, 120s on CI — a budget ceiling that absorbs a just-started dev server, not a figure derived from observed CI timings), then asserts identity once.
+
+**Reading a failure.** The block prints these fields, in this order:
+
+- **`reason`** — which clause failed. For the load-bearing `/@fs` clause it names the exact URL probed and the status that came back.
+- **`expected port`** — the port, and the base URL, the suite was targeting.
+- **`expected checkout`** — the absolute path of the working tree this run should have been driving.
+- **`observed`** — what actually answered: HTTP status, the final URL _after redirects_, the `<title>`, and the **served module root**, i.e. the checkout the responding application is rooted at. The served module root is usually the single most diagnostic line, because it names the wrong checkout outright.
+- **`listening process`** — `lsof` output for whatever holds the port. Best-effort: on a platform without `lsof`, or when the lookup fails or times out, the section is omitted rather than reported as an error, so it may be absent from an otherwise complete failure.
+
+Then the two remedies, exactly as the message prints them:
+
+- stop the other server occupying the port, then start this repo's `yarn dev`; or
+- re-run with `FRONTEND_PORT=<port your server is actually on>`
+
+**The alternate-port hatch.** `FRONTEND_PORT` works in two forms. A `FRONTEND_PORT` line in the root `.env` sets the port for the frontend dev server **and** for Playwright, and persists across sessions (the frontend's Vite config reads that file through `loadEnv`). Prefixing a single command — `FRONTEND_PORT=5273 yarn dev`, `FRONTEND_PORT=5273 yarn test:e2e` — overrides the file for that one run, because a shell value wins over `.env`. Whichever form you use, the dev server and the suite have to end up on the same port; otherwise the preflight aborts and names the mismatch.
+
+Related: `yarn dev` now refuses to start when its port is already taken (`Error: Port <port> is already in use`) instead of quietly moving to the next one. That closes the same-address collision at source. It does not close the case where another process holds the wildcard address and both servers coexist on the same port number — that one is what the preflight catches.
+
 Type-check the suite without running it:
 
 ```bash
@@ -23,6 +44,8 @@ List the discovered tests without a running dev server (useful as a "no dropped 
 ```bash
 cd tests && npx playwright test --list
 ```
+
+This still works with no dev server running: `--list` stops before global setup, so the preflight never fires for it.
 
 Specialised projects:
 
