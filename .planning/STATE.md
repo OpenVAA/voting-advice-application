@@ -5,15 +5,15 @@ milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 138
 current_phase_name: DEF-135-04 — EPERM-07 Root Cause + Cardinal-Rule Waiver Discharge
 status: executing
-stopped_at: Completed 138-02-PLAN.md
-last_updated: "2026-08-13T15:52:05.211Z"
+stopped_at: Completed 138-03-PLAN.md
+last_updated: "2026-08-13T17:13:31.754Z"
 last_activity: 2026-08-13
 last_activity_desc: Phase 138 execution started
 progress:
   total_phases: 14
   completed_phases: 1
   total_plans: 11
-  completed_plans: 7
+  completed_plans: 8
   percent: 7
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 
 Milestone: v2.15 (Phases 137-150, 14 phases, 38 requirements)
 Phase: 138 (DEF-135-04 — EPERM-07 Root Cause + Cardinal-Rule Waiver Discharge) — EXECUTING
-Plan: 3 of 6
+Plan: 4 of 6
 Status: Ready to execute
 Last activity: 2026-08-13 — Phase 138 execution started
 
@@ -48,8 +48,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-13T15:52:05.195Z
-Stopped at: Completed 138-02-PLAN.md
+Last session: 2026-08-13T17:13:31.736Z
+Stopped at: Completed 138-03-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -131,6 +131,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 133 P03 | 45min | 1 tasks | 0 files |
 | Phase 138 P01 | 30m | 3 tasks | 9 files |
 | Phase 138 P02 | ~40 min | 3 tasks | 3 files |
+| Phase 138 P03 | ~70 min | 3 tasks | 2 files |
 
 ## Deferred Items
 
@@ -579,6 +580,11 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 138]: H1 (View-Transition snapshot capture) ELIMINATED at the reduced-motion lever — 10-vs-10 A/B, arm A 7/10 vs arm B 9/10 failures, identical error text; the transition changes the intermediate DOM's shape (stale vs absent), not whether the window exists
 - [Phase 138]: Budget lever alone cannot force DEF-135-04 deterministically (11/15 at the 100 ms floor); swap-latency band measured at 100-125 ms vs a 2000 ms production budget, so plan 03's CDP amplification (~20x) is on the critical path
 - [Phase 138]: The 100 ms operating point is explicitly disqualified as plan 04's negative-control pre-fix half — 73% is stochastic, and one passing pre-fix run would falsify the pair
+- [Phase ?]: 138-03: DEF-135-04 root cause NAMED as an ordering — SvelteKit commits the URL (client.js:1759-1760) before it swaps the DOM (client.js:1824) and the walk settle (voter-journey.spec.ts:186-190) waits on the URL only, so assertions land in a window where Base-2 is still rendered and Base-2 carries no terms
+- [Phase ?]: 138-03: all three hypotheses now terminal — H1, H2 and H3 eliminated; H4 and RESEARCH A2 also dispositioned; U-1 and U-2 both answered
+- [Phase ?]: 138-03: deterministic forcing configuration for plan 04 is EPERM07_FORCE_BUDGET_MS=400 + EPERM07_FORCE_CPU_RATE=40 (15/15, 5x oracle shrink), run ISOLATED for both halves of the criterion-2 pair
+- [Phase ?]: 138-03: the amplifier remains UNIDENTIFIED and is recorded as a bounded open question — the field occurrence needs a ~36x window excursion and every lever reached at most ~5.4x; mechanism established, excursion not
+- [Phase ?]: 138-03: INTEG-01 deliberately NOT checked off mid-phase — the diagnosis artefact exists but plan 04 could still overturn it and plan 06 owns the phase-level reconciliation (matches plans 01 and 02, which also carried INTEG-01 and left it open)
 
 ### Quick Tasks Completed
 

@@ -269,3 +269,9 @@ plus `--reporter=json`; no committed file was edited, no `TIMEOUTS` value moved,
 | `git status --porcelain tests/ apps/` | empty |
 | No orphan Chromium, driver or extra listener on 5273 | confirmed (only the operator's PID 92504) |
 | Full gate suite, unprefixed | 135 passed / 0 failed / 0 skipped / 0 flaky |
+
+## Self-Check: PASSED
+
+All three documents exist on disk (`138-03-SUMMARY.md`, `138-FORCED-REPRO.md`, `138-DIAGNOSIS.md`) and
+all four commits are reachable in `git log --all`: `9ea193bb7` (Discriminator B), `2ca539a9b`
+(Contention), `f91679f5c` (Named root cause), `067f890f3` (Summary + run-count correction).
