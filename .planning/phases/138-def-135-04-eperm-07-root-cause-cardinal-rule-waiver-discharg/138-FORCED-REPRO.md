@@ -563,3 +563,649 @@ $ git status --porcelain tests/
 ```
 
 No app source file and no committed test file was modified to run either arm.
+
+---
+
+## Discriminator B — CPU amplification at the production budget
+
+**The element budget was left UNSET for every rung of the ladder below, so the assertion ran at the
+shared production `TIMEOUTS.element` = 2000 ms throughout. The oracle was NOT weakened.** That is the
+entire point of this experiment: a failure forced here would be the *strong* form of criterion 1 — a
+race demonstrated at the budget the suite actually runs at, rather than one manufactured by shrinking
+the oracle's patience. Whether that was achieved is stated verbatim in §B.4.
+
+### B.1 Environment — delta against § 1
+
+Same machine, same session, **same dev-server process**. Only the facts that moved are restated; every
+other line of § 1's stamp still holds and is not duplicated here.
+
+```
+date:                2026-08-13T16:27:59Z (UTC)  /  2026-08-13 19:27 EEST
+git HEAD:            2d53e6842   branch feat-gsd-roadmap   (was bea9fc97a — plan 02's own commits)
+git status:          M .vscode/settings.json
+                     M supabase/.temp/cli-latest
+                     (nothing under tests/ or apps/ — see § B.10)
+Frontend port:       5273, dev server PID 92504 — THE SAME PROCESS that served every plan-02 run,
+                     never restarted between plan 02 and plan 03 (lsof re-read at 16:27:59Z)
+DB state:            not reset between plan 02 and this task; the `data-setup-base` project
+                     dependency re-imports the `e2e/base` dataset before every run, and the hunt
+                     spec is READ-ONLY. `yarn db:reset` is run before § Contention, whose
+                     precondition requires it.
+```
+
+**Run posture, read back OUT of `results.json` on every run below:** `config.workers` = 6,
+`results.length - 1` = **0 retries**. `CI` was absent throughout; no failure below is a retry artefact.
+
+### B.2 Design
+
+**The lever: `EPERM07_FORCE_CPU_RATE` only.** The knob opens a CDP session on the page and sends
+`Emulation.setCPUThrottlingRate` immediately BEFORE the Base-2 → Base-3 hop, and resets it to 1 and
+detaches in a `finally` (`tests/tests/specs/voter/eperm07-term-trigger.spec.ts`, `applyCpuThrottleKnob`
+/ `releaseCpuThrottle`). It is a browser-scheduler intervention applied from the test tier: **it
+changes no application code**, which is what makes it admissible under D-02.
+
+**D-02 compliance, restated for this task.** No artificial delay was injected into the app's
+term-render path — not into
+`apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.svelte` (which parses terms
+out of the heading text at lines 60-75 and renders them at 95-100), and not into
+`apps/frontend/src/lib/components/term/Term.svelte` (the trigger component). D-02 rules that out as
+the *first* mechanism precisely because an injected delay in a component ASSERTS that the mechanism
+lives in that component — the answer this phase exists to earn. D-02 names the old term-translation
+utility module; plan 01 established by repo-wide grep that it is dead code with no call site, so the
+constraint is read against the live parse path named above. **The technique was never reached for:**
+the ladder localised the race without it (§B.6), so the conditional authorisation D-02 grants for a
+follow-on confirmation instrument was not exercised, and nothing needed to be recorded under it.
+
+**The invocation, per run** — environment prefix and CLI flags only, no committed file touched:
+
+```bash
+FRONTEND_PORT=5273 \
+PLAYWRIGHT_JSON_OUTPUT_FILE=<per-run>.json \
+EPERM07_FORCE_CPU_RATE=<rung> \
+  npx playwright test -c tests/playwright.config.ts \
+    --project=eperm07-term-trigger --reporter=json
+```
+
+Note the absence of `EPERM07_FORCE_BUDGET_MS`. Its absence is the experiment.
+
+**The ladder:** 2 → 4 → 8 → 12 → 20 → **40 → 80**. The last two rungs are beyond RESEARCH §R2.4-B's
+suggested ceiling of 20 and were added at executor discretion (CONTEXT.md grants the tuning), because
+rate 20 came back completely clean and the honest way to record "amplification does not suffice" is to
+have pushed it until it visibly broke something. It broke at 80 (§B.6.2).
+
+**Non-degeneracy classification** — the identical table plan 02 defined in § 2, applied mechanically
+to the parsed `eperm07-state` annotation of every run, pass and fail alike. One column is added to
+every per-run table below: **which assertion actually failed**. A run that fails at the Base-2 heading
+gate rather than at the term trigger has not reproduced this defect at all — it has broken the
+instrument — and it is marked `OTHER` rather than silently counted.
+
+### B.3 The ladder — summary table
+
+| Rung (`EPERM07_FORCE_CPU_RATE`) | Budget | Runs | Failures | Rate | Tri-states observed | Median test duration |
+|---|---|---|---|---|---|---|
+| 1 (neutral sanity run) | 2000 (production) | 1 | 0 | 0 % | 1/1 H1-shaped | 3.57 s |
+| 2 | 2000 (production) | 10 | **0** | 0 % | 10/10 H1-shaped | 3.45 s |
+| 4 | 2000 (production) | 10 | **0** | 0 % | 7 H1-shaped, 3 H2-shaped | 3.57 s |
+| 8 | 2000 (production) | 10 | **0** | 0 % | 4 H1-shaped, 6 H2-shaped | 3.70 s |
+| 12 | 2000 (production) | 10 | **0** | 0 % | 10/10 H2-shaped | 3.98 s |
+| 20 | 2000 (production) | 10 | **0** | 0 % | 10/10 H2-shaped | 4.60 s |
+| 40 | 2000 (production) | 10 | **0** | 0 % | 10/10 H2-shaped | 5.88 s |
+| 80 | 2000 (production) | 10 | **0** | 0 % | 10/10 H2-shaped | 9.31 s |
+| **Total at the production budget** | — | **71** | **0** | **0 %** | — | — |
+
+**Zero failures in 71 runs at the production budget, at CPU slowdowns from 2× to 80×.** The throttle is
+demonstrably applying — median test duration rises monotonically from 3.45 s to 9.31 s, a 2.7×
+stretch of the throttled section — and it still never pushes the post-settle gap past 2000 ms.
+
+**The second finding in that table, which is not visible in the failure column.** The tri-state
+migrates with the throttle rate, monotonically and with no reversals:
+
+| Rung | H1-shaped (stale Base-2 heading live) | H2-shaped (`headingCount: 0`) |
+|---|---|---|
+| 1-2 | 11/11 | 0/11 |
+| 4 | 7/10 | 3/10 |
+| 8 | 4/10 | 6/10 |
+| 12-80 | 0/40 | **40/40** |
+
+At neutral rate the probe lands with the outgoing Base-2 DOM still live; from rate 12 upward it
+*always* lands with no question heading in the document at all. This matters for H2 and is read in
+§B.6.3 — and note immediately that it occurs with the View Transition **ON**, which plan 02 could not
+observe because its only route to `headingCount: 0` was to switch the transition off.
+
+### B.4 Per-run detail — every run at the production budget, machine-read
+
+`headingText` is the ASCII substring verdict on the annotation's `headingText`, never whole-string
+equality (the seeded title carries a U+2014 em dash). `question id (URL)` is the first 8 characters of
+the annotation's `pathname` leaf, recorded so no two runs can be confused for one another. The last
+column exists so that a run which failed at the WRONG assertion cannot be counted as a reproduction.
+
+
+**Rung `EPERM07_FORCE_CPU_RATE=2`, budget UNSET (production 2000 ms)** — 10 runs
+
+| Run | Outcome | question id (URL) | headingCount | headingText | triggerCount | classification | assertion that failed |
+|---|---|---|---|---|---|---|---|
+| 01 | passed | 455efcc0 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 02 | passed | 3bca9de6 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 03 | passed | 5b2e58b2 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 04 | passed | 3f8ed439 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 05 | passed | edf4b5a5 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 06 | passed | b64e139b | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 07 | passed | 2d864047 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 08 | passed | 9dc9cbc2 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 09 | passed | 5d0ded77 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 10 | passed | e2bac80a | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+
+**Rung 2 result: 0/10 failures.**
+
+**Rung `EPERM07_FORCE_CPU_RATE=4`, budget UNSET (production 2000 ms)** — 10 runs
+
+| Run | Outcome | question id (URL) | headingCount | headingText | triggerCount | classification | assertion that failed |
+|---|---|---|---|---|---|---|---|
+| 01 | passed | 6d168735 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 02 | passed | 0f5deaa6 | 0 | `null` | 0 | H2-shaped | — |
+| 03 | passed | 3902cfe6 | 0 | `null` | 0 | H2-shaped | — |
+| 04 | passed | 30971382 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 05 | passed | 6d5e3848 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 06 | passed | 2aabc2b6 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 07 | passed | f855b5ba | 0 | `null` | 0 | H2-shaped | — |
+| 08 | passed | a707ae00 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 09 | passed | ba9423cf | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 10 | passed | cfb5f0be | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+
+**Rung 4 result: 0/10 failures.**
+
+**Rung `EPERM07_FORCE_CPU_RATE=8`, budget UNSET (production 2000 ms)** — 10 runs
+
+| Run | Outcome | question id (URL) | headingCount | headingText | triggerCount | classification | assertion that failed |
+|---|---|---|---|---|---|---|---|
+| 01 | passed | 36be93f2 | 0 | `null` | 0 | H2-shaped | — |
+| 02 | passed | fbb8a035 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 03 | passed | 2b19e01c | 0 | `null` | 0 | H2-shaped | — |
+| 04 | passed | 9f10d775 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 05 | passed | f587bbf9 | 0 | `null` | 0 | H2-shaped | — |
+| 06 | passed | 402bfe66 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+| 07 | passed | 2279fd97 | 0 | `null` | 0 | H2-shaped | — |
+| 08 | passed | b2dc77d1 | 0 | `null` | 0 | H2-shaped | — |
+| 09 | passed | 80fc7ab6 | 0 | `null` | 0 | H2-shaped | — |
+| 10 | passed | 65625ad1 | 1 | Base-2 (stale) | 0 | H1-shaped | — |
+
+**Rung 8 result: 0/10 failures.**
+
+**Rung `EPERM07_FORCE_CPU_RATE=12`, budget UNSET (production 2000 ms)** — 10 runs
+
+| Run | Outcome | question id (URL) | headingCount | headingText | triggerCount | classification | assertion that failed |
+|---|---|---|---|---|---|---|---|
+| 01 | passed | b203a60e | 0 | `null` | 0 | H2-shaped | — |
+| 02 | passed | a7cd1b58 | 0 | `null` | 0 | H2-shaped | — |
+| 03 | passed | b24e8aea | 0 | `null` | 0 | H2-shaped | — |
+| 04 | passed | 11ff27e4 | 0 | `null` | 0 | H2-shaped | — |
+| 05 | passed | e8aa29d4 | 0 | `null` | 0 | H2-shaped | — |
+| 06 | passed | 6f6368c1 | 0 | `null` | 0 | H2-shaped | — |
+| 07 | passed | c713d3b5 | 0 | `null` | 0 | H2-shaped | — |
+| 08 | passed | df06f872 | 0 | `null` | 0 | H2-shaped | — |
+| 09 | passed | 74bb94cd | 0 | `null` | 0 | H2-shaped | — |
+| 10 | passed | c618b0a2 | 0 | `null` | 0 | H2-shaped | — |
+
+**Rung 12 result: 0/10 failures.**
+
+**Rung `EPERM07_FORCE_CPU_RATE=20`, budget UNSET (production 2000 ms)** — 10 runs
+
+| Run | Outcome | question id (URL) | headingCount | headingText | triggerCount | classification | assertion that failed |
+|---|---|---|---|---|---|---|---|
+| 01 | passed | d0255039 | 0 | `null` | 0 | H2-shaped | — |
+| 02 | passed | ec5febfd | 0 | `null` | 0 | H2-shaped | — |
+| 03 | passed | ac6cfef8 | 0 | `null` | 0 | H2-shaped | — |
+| 04 | passed | 758f011d | 0 | `null` | 0 | H2-shaped | — |
+| 05 | passed | 96aa85c8 | 0 | `null` | 0 | H2-shaped | — |
+| 06 | passed | 34db1f9d | 0 | `null` | 0 | H2-shaped | — |
+| 07 | passed | de678d31 | 0 | `null` | 0 | H2-shaped | — |
+| 08 | passed | 5f99e9a4 | 0 | `null` | 0 | H2-shaped | — |
+| 09 | passed | a76bbe4d | 0 | `null` | 0 | H2-shaped | — |
+| 10 | passed | 21f301a0 | 0 | `null` | 0 | H2-shaped | — |
+
+**Rung 20 result: 0/10 failures.**
+
+**Rung `EPERM07_FORCE_CPU_RATE=40`, budget UNSET (production 2000 ms)** — 10 runs
+
+| Run | Outcome | question id (URL) | headingCount | headingText | triggerCount | classification | assertion that failed |
+|---|---|---|---|---|---|---|---|
+| 01 | passed | b2594b5d | 0 | `null` | 0 | H2-shaped | — |
+| 02 | passed | 56081119 | 0 | `null` | 0 | H2-shaped | — |
+| 03 | passed | 5f2aa644 | 0 | `null` | 0 | H2-shaped | — |
+| 04 | passed | fb526a4c | 0 | `null` | 0 | H2-shaped | — |
+| 05 | passed | deece016 | 0 | `null` | 0 | H2-shaped | — |
+| 06 | passed | 7cdc5659 | 0 | `null` | 0 | H2-shaped | — |
+| 07 | passed | 1292b681 | 0 | `null` | 0 | H2-shaped | — |
+| 08 | passed | 313a2e5f | 0 | `null` | 0 | H2-shaped | — |
+| 09 | passed | 96af214c | 0 | `null` | 0 | H2-shaped | — |
+| 10 | passed | a0aa458f | 0 | `null` | 0 | H2-shaped | — |
+
+**Rung 40 result: 0/10 failures.**
+
+**Rung `EPERM07_FORCE_CPU_RATE=80`, budget UNSET (production 2000 ms)** — 10 runs
+
+| Run | Outcome | question id (URL) | headingCount | headingText | triggerCount | classification | assertion that failed |
+|---|---|---|---|---|---|---|---|
+| 01 | passed | 91c2243a | 0 | `null` | 0 | H2-shaped | — |
+| 02 | passed | 7a465dee | 0 | `null` | 0 | H2-shaped | — |
+| 03 | passed | 2d582864 | 0 | `null` | 0 | H2-shaped | — |
+| 04 | passed | c42292c6 | 0 | `null` | 0 | H2-shaped | — |
+| 05 | passed | beb12b7c | 0 | `null` | 0 | H2-shaped | — |
+| 06 | passed | 96ec08d1 | 0 | `null` | 0 | H2-shaped | — |
+| 07 | passed | fc9ebeb1 | 0 | `null` | 0 | H2-shaped | — |
+| 08 | passed | ca116cd8 | 0 | `null` | 0 | H2-shaped | — |
+| 09 | passed | 006acae1 | 0 | `null` | 0 | H2-shaped | — |
+| 10 | passed | 43388f46 | 0 | `null` | 0 | H2-shaped | — |
+
+**Rung 80 result: 0/10 failures.**
+
+---
+
+### B.5 Result — **Not forced at production budget; forced with the budget lever**
+
+Stated against the bar the plan set. Amplification alone did **not** suffice: **0 failures in 71 runs**
+at the production 2000 ms budget, across CPU slowdown rates 2, 4, 8, 12, 20, 40 and 80. The ceiling
+reached is **rate 80**, and rate 80 is not merely "the highest tried" — it is the highest *usable*
+rate, because at 80 the throttle starts breaking the instrument itself rather than the assertion under
+study (§B.6.2). The strong form of criterion 1 — a reproduction that survives at the production
+element budget — **was attempted and was not achieved**, and this document says so rather than
+rounding the attempt up.
+
+**What DOES force it** is the budget lever combined with amplification, and the combination is
+markedly stronger than plan 02's budget lever alone: plan 02's best operating point was 11/15 (73 %,
+longest streak 4), whereas two combination configurations below reach **10/10 and 15/15**. The
+criterion-2 pair therefore uses a budget-shrunk configuration, and **the shrink is part of the
+adversary description, not a footnote** — §B.8 states it in the terms plan 04 must copy.
+
+**This is a finding about the mechanism, not a failed experiment.** A 40× CPU slowdown stretches the
+whole throttled section from 3.45 s to 5.88 s but moves the post-settle gap only from ~112 ms to
+~600 ms (§B.7). Whatever holds that gap open is overwhelmingly **not main-thread JS cost** — which is
+exactly the class of cost a CPU throttle models, and exactly the class of cost RESEARCH §R1.8's H1
+assumed when it nominated View-Transition snapshot capture as the widener. Two of the phase's three
+hypotheses depended on that assumption. §B.7 quantifies it and § Contention tests the remaining
+candidate amplifier.
+
+### B.6 The combination rung
+
+The plan requires one combination data point — plan 02's forcing configuration PLUS the highest CPU
+rung — to distinguish "amplification helps" from "amplification is irrelevant" even when neither lever
+alone succeeds. Two were run rather than one, because the highest rung turned out to be degenerate.
+
+#### B.6.1 `EPERM07_FORCE_BUDGET_MS=100 EPERM07_FORCE_CPU_RATE=20` — 10/10
+
+
+
+| Run | Outcome | question id (URL) | headingCount | headingText | triggerCount | classification | assertion that failed |
+|---|---|---|---|---|---|---|---|
+| 01 | **failed** | a9e05cd8 | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 02 | **failed** | 8686b9d7 | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 03 | **failed** | c3bd1aee | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 04 | **failed** | 98a6db94 | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 05 | **failed** | f43363e5 | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 06 | **failed** | 7da3a52b | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 07 | **failed** | 3fc07728 | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 08 | **failed** | 3454cad5 | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 09 | **failed** | e57c004a | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 10 | **failed** | 097a9452 | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+
+**Result: 10/10 failures.**
+**Amplification is not irrelevant — it is decisive at this budget.** The identical 100 ms budget
+without the throttle is plan 02's § Forcing configuration, which failed **11/15 (73 %)** with a
+longest streak of 4. Adding rate 20 takes the same budget to **10/10**, all non-degenerate, all
+failing on the term-trigger locator. The combination crosses the determinism bar that neither lever
+crosses alone.
+
+#### B.6.2 `EPERM07_FORCE_BUDGET_MS=100 EPERM07_FORCE_CPU_RATE=80` — 10/10, but one run is degenerate
+
+
+
+| Run | Outcome | question id (URL) | headingCount | headingText | triggerCount | classification | assertion that failed |
+|---|---|---|---|---|---|---|---|
+| 01 | **failed** | 2b3c6b7b | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 02 | **failed** | 5c130255 | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 03 | **failed** | 0b84c7d2 | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 04 | **failed** | 68f25380 | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 05 | **failed** | e2ec460b | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 06 | **failed** | — | — | `null` | — | n/a | OTHER — see errHead |
+| 07 | **failed** | 57fcae9f | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 08 | **failed** | 7d982fe6 | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 09 | **failed** | 9a6c445f | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 10 | **failed** | 4325d902 | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+
+**Result: 10/10 failures.**
+Run 06 failed at `expect(heading).toHaveText(/Base opinion 2/)` — the **Base-2 gate**, an assertion
+that runs INSIDE the throttled block and is budgeted at the untouched `TIMEOUTS.element` = 2000 ms.
+At rate 80 that gate itself can time out, so the run never reached the hop under study. It is a broken
+instrument, not a reproduction, and it is marked `OTHER` above rather than counted. **Rate 80 is
+therefore rejected as a forcing rate** even though its raw failure count is also 10/10 — a rate that
+sometimes fails the wrong assertion cannot be a negative control, because the post-fix half would fail
+for a reason the fix was never meant to address. §B.6.4 shows the same breakage at 4/5 in a
+different block.
+
+### B.7 Window-width measurement — how much does the throttle actually buy?
+
+This is the experiment that converts "amplification did not suffice" from a dead end into a
+localisation. **Method:** hold the CPU rate fixed and bisect the budget until failures stop. The budget
+at which the assertion flips from always-failing to always-passing IS the width of the post-settle gap
+at that rate, measured in milliseconds, by the oracle itself.
+
+#### B.7.1 At CPU rate 20
+
+
+**`EPERM07_FORCE_CPU_RATE=20 EPERM07_FORCE_BUDGET_MS=200`** — 5 runs
+
+| Run | Outcome | question id (URL) | headingCount | headingText | triggerCount | classification | assertion that failed |
+|---|---|---|---|---|---|---|---|
+| 01 | **failed** | ce690571 | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 02 | **failed** | abb10f35 | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 03 | **failed** | ef0f8fed | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 04 | **failed** | 042028fd | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 05 | **failed** | b547fe4e | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+
+**Budget 200 ms result: 5/5 failures.**
+
+**`EPERM07_FORCE_CPU_RATE=20 EPERM07_FORCE_BUDGET_MS=400`** — 5 runs
+
+| Run | Outcome | question id (URL) | headingCount | headingText | triggerCount | classification | assertion that failed |
+|---|---|---|---|---|---|---|---|
+| 01 | passed | ac64b904 | 0 | `null` | 0 | H2-shaped | — |
+| 02 | passed | 77a953d2 | 0 | `null` | 0 | H2-shaped | — |
+| 03 | passed | dbe06e86 | 0 | `null` | 0 | H2-shaped | — |
+| 04 | passed | 835b1552 | 0 | `null` | 0 | H2-shaped | — |
+| 05 | passed | 6cd25b0d | 0 | `null` | 0 | H2-shaped | — |
+
+**Budget 400 ms result: 0/5 failures.**
+
+**`EPERM07_FORCE_CPU_RATE=20 EPERM07_FORCE_BUDGET_MS=800`** — 5 runs
+
+| Run | Outcome | question id (URL) | headingCount | headingText | triggerCount | classification | assertion that failed |
+|---|---|---|---|---|---|---|---|
+| 01 | passed | 4a4ba633 | 0 | `null` | 0 | H2-shaped | — |
+| 02 | passed | 533fff3f | 0 | `null` | 0 | H2-shaped | — |
+| 03 | passed | 4d1003f8 | 0 | `null` | 0 | H2-shaped | — |
+| 04 | passed | c9140183 | 0 | `null` | 0 | H2-shaped | — |
+| 05 | passed | 622e9aa3 | 0 | `null` | 0 | H2-shaped | — |
+
+**Budget 800 ms result: 0/5 failures.**
+
+#### B.7.2 At CPU rate 40, and the rate-80 ceiling
+
+
+**`EPERM07_FORCE_CPU_RATE=40 EPERM07_FORCE_BUDGET_MS=400`** — 5 runs
+
+| Run | Outcome | question id (URL) | headingCount | headingText | triggerCount | classification | assertion that failed |
+|---|---|---|---|---|---|---|---|
+| 01 | **failed** | 747490b8 | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 02 | **failed** | b647662d | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 03 | **failed** | a2d3dbe0 | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 04 | **failed** | 0e6408c4 | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 05 | **failed** | 4801584d | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+
+**Budget 400 ms result: 5/5 failures.**
+
+**`EPERM07_FORCE_CPU_RATE=40 EPERM07_FORCE_BUDGET_MS=800`** — 5 runs
+
+| Run | Outcome | question id (URL) | headingCount | headingText | triggerCount | classification | assertion that failed |
+|---|---|---|---|---|---|---|---|
+| 01 | passed | 24568240 | 0 | `null` | 0 | H2-shaped | — |
+| 02 | **failed** | dbc8603e | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 03 | **failed** | 8d5ecefe | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 04 | passed | d936b30a | 0 | `null` | 0 | H2-shaped | — |
+| 05 | **failed** | 7712bc6e | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+
+**Budget 800 ms result: 3/5 failures.**
+
+**`EPERM07_FORCE_CPU_RATE=80 EPERM07_FORCE_BUDGET_MS=800`** — 5 runs
+
+| Run | Outcome | question id (URL) | headingCount | headingText | triggerCount | classification | assertion that failed |
+|---|---|---|---|---|---|---|---|
+| 01 | **failed** | — | — | `null` | — | n/a | OTHER — see errHead |
+| 02 | **failed** | — | — | `null` | — | n/a | OTHER — see errHead |
+| 03 | **failed** | aec7b639 | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 04 | **failed** | — | — | `null` | — | n/a | OTHER — see errHead |
+| 05 | **failed** | — | — | `null` | — | n/a | OTHER — see errHead |
+
+**Budget 800 ms result: 5/5 failures.**
+
+#### B.7.3 The measurement, and what it localises
+
+| CPU rate | Post-settle gap (bisected band) | Evidence | Amplification vs. rate 1 |
+|---|---|---|---|
+| 1 (neutral) | **100 – 125 ms** | § 3.3 (plan 02): 5/5 pass at 125 ms, 11/15 fail at 100 ms | 1× |
+| 20 | **200 – 400 ms** | §B.7.1: 5/5 fail at 200 ms, 0/5 fail at 400 ms and at 800 ms | ~2.7× |
+| 40 | **400 – 800 ms** | §B.7.2: 5/5 fail at 400 ms, 3/5 fail at 800 ms (the band's upper edge) | ~5.4× |
+| 80 | not measurable | §B.7.2: the throttle breaks the Base-2 gate in 4/5 runs before the hop | — |
+
+**A 20× CPU slowdown widens the window ~2.7×. A 40× slowdown widens it ~5.4×.** The relationship is
+close to linear in rate with a large rate-independent intercept: fitting the three measured midpoints
+gives roughly `gap ≈ 105 ms + 12 ms × rate`. The intercept is the part of the window that CPU
+throttling cannot touch.
+
+**Extrapolate, and the negative result becomes a positive statement.** Reaching the production 2000 ms
+budget on that fit needs a rate of roughly **130 – 190**. The throttle already destroys the instrument
+at **80**. So it is not that this session failed to push hard enough — **the required rate is about
+twice the rate at which the technique stops measuring the thing it is aimed at**, and no ladder run at
+the production budget could have succeeded. That is a bounded, quantitative claim, and it is the
+reason §B.5's outcome is recorded as a finding rather than as a shortfall.
+
+**What it localises.** Roughly 105 ms of the ~112 ms neutral window — the overwhelming majority — is
+*rate-independent*. It is not main-thread JavaScript. The costs that behave that way on this path are
+frame cadence (the outgoing-snapshot capture and the post-swap paint each need a rendering frame, at
+~16.7 ms apiece regardless of CPU speed), event-loop turn boundaries, and the dev-server round trip
+for the route module — all of which the CPU throttle leaves alone, because it throttles the renderer's
+JS scheduler and not the compositor's clock, the network, or Vite. This is what disqualifies the
+snapshot-capture cost that RESEARCH §R1.8 nominated as H1's widener: **snapshot capture is a
+rendering-frame cost, and rendering-frame costs do not scale with CPU rate**, which is precisely what
+the table above measures. Plan 02 eliminated H1 by showing the transition is not *necessary*; this
+measurement additionally shows the transition could not have been the *amplifier* either.
+
+**Corollary for the wild 1-in-8.** In the field the gap must occasionally exceed 2000 ms — roughly
+**18× its median** — for DEF-135-04 to occur at all. Nothing in this ladder produces an 18× excursion
+by loading the CPU, at any rate the instrument survives. So the amplifier in the wild is **not
+main-thread CPU contention**, and the six-worker hypothesis (RESEARCH §R3.1 / Assumptions Log A2) is a
+hypothesis about exactly that. § Contention tests it directly, and its result should be read against
+this measurement rather than in isolation.
+
+### B.8 The forcing configuration this task hands to plan 04
+
+Two configurations reach determinism. **The one plan 04 must prefer is the one that weakens the oracle
+LEAST**, because the shrink is the part of the adversary description a reviewer will discount.
+
+| Configuration | Failures | Budget shrink vs. production | Degenerate runs | Verdict |
+|---|---|---|---|---|
+| `EPERM07_FORCE_BUDGET_MS=100` alone (plan 02) | 11/15 (73 %) | 20× | 0 | **rejected** — stochastic, not a control |
+| `EPERM07_FORCE_BUDGET_MS=100 EPERM07_FORCE_CPU_RATE=20` | **10/10** | 20× | 0 | deterministic, but the deeper shrink |
+| `EPERM07_FORCE_BUDGET_MS=100 EPERM07_FORCE_CPU_RATE=80` | 10/10 | 20× | **1/10** | **rejected** — the throttle breaks the Base-2 gate |
+| **`EPERM07_FORCE_BUDGET_MS=400 EPERM07_FORCE_CPU_RATE=40`** | **15/15** | **5×** | **0** | **PREFERRED** |
+
+The preferred configuration's 15 runs are two independently launched blocks — the 5-run bisection
+block at §B.7.2 and a 10-run confirmation block run afterwards — so its determinism is a rebuildability
+claim, not a single lucky sequence. The confirmation block:
+
+
+
+| Run | Outcome | question id (URL) | headingCount | headingText | triggerCount | classification | assertion that failed |
+|---|---|---|---|---|---|---|---|
+| 01 | **failed** | 5bd8e1ba | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 02 | **failed** | c7e1d484 | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 03 | **failed** | 2de5eaed | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 04 | **failed** | 7697f52a | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 05 | **failed** | cb5803d8 | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 06 | **failed** | 69c9e72b | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 07 | **failed** | df68ca9e | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 08 | **failed** | a98143b7 | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 09 | **failed** | 6088fa72 | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+| 10 | **failed** | 07150297 | 0 | `null` | 0 | H2-shaped | term-trigger (the assertion under study) |
+
+**Confirmation block result: 10/10 failures.**
+
+```bash
+# THE PREFERRED FORCING CONFIGURATION (plan 03, § Discriminator B).
+# Prereq: exactly one dev server for THIS checkout on 5273, and a reset DB.
+#   yarn db:reset
+#   FRONTEND_PORT=5273 yarn dev          # separate shell; leave it running
+
+FRONTEND_PORT=5273 \
+EPERM07_FORCE_BUDGET_MS=400 \
+EPERM07_FORCE_CPU_RATE=40 \
+PLAYWRIGHT_JSON_OUTPUT_FILE="$PWD/eperm07-run.json" \
+  npx playwright test -c tests/playwright.config.ts \
+    --project=eperm07-term-trigger --reporter=json
+```
+
+| Property | Value |
+|---|---|
+| Failure rate | **15/15 (100 %)** over two independently launched blocks |
+| Deterministic (≥8/10)? | **YES** |
+| Every failing run non-degenerate? | **YES** — 15/15 H2-shaped, 0 DEGENERATE, 15/15 failing on the term-trigger locator |
+| Error text | `element(s) not found` on `getByTestId('voter-questions-term-trigger').first()` — see §B.9 |
+| Oracle weakened? | **YES — 400 ms against a production 2000 ms budget, a 5× shrink.** This must be stated in plan 04's adversary description; it is not incidental. |
+| Rebuildable? | **YES** — two blocks, same prefix, both 100 % |
+
+**The adversary description plan 04 must carry, in full.** *"The term-trigger assertion is given 400 ms
+instead of the production 2000 ms, and the browser's main thread is slowed 40× across the Base-2 →
+Base-3 hop. Under that adversary the post-settle window (measured at 400–800 ms, §B.7.2) reliably
+outlasts the budget. The pre-fix tree fails 15/15; the post-fix tree must pass under the byte-identical
+prefix. The shrink is acknowledged: a reproduction at the production budget was attempted across 71
+runs at CPU rates 2–80 and could not be obtained, for the quantified reason in §B.7.3."*
+
+### B.9 The forced failure is the right failure — verbatim
+
+Machine-read from `combo-b100-cpu20/run-01.json`, `results[0].error.message` (ANSI stripped):
+
+```
+Error: expect(locator).toBeVisible() failed
+
+Locator: getByTestId('voter-questions-term-trigger').first()
+Expected: visible
+Timeout: 100ms
+Error: element(s) not found
+
+Call log:
+  - Expect "toBeVisible" with timeout 100ms
+  - waiting for getByTestId('voter-questions-term-trigger').first()
+```
+
+`element(s) not found` on the exact locator — the same phrase and the same locator the DEF-135-04
+occurrence recorded (`deferred-items.md:181-198`), differing only in the `Timeout:` line.
+
+**And the paradox reproduces too.** Playwright's post-failure page snapshot for a forced run, read from
+`tests/playwright-results/eperm07-term-trigger-…/error-context.md` immediately after a
+`b100 + cpu20` failure, contains verbatim:
+
+```yaml
+          - heading "[qu-opin-base-3-likert7] Base opinion 3 — Likert 7." [level=1] [ref=e47]:
+            - text: "[qu-opin-base-3-likert7] Base opinion 3 —"
+            - button "Likert" [ref=e49]:
+              - generic [ref=e50]: Likert
+```
+
+The forensic probe for that same run recorded `{"headingCount":0,"headingText":null,"triggerCount":0}`.
+**Same run: no heading and no trigger at assertion time, a complete Base-3 heading WITH the `Likert`
+term-trigger button in the snapshot taken after the budget expired.** That is the exact paradox
+`deferred-items.md` recorded against DEF-135-04 — an existence failure whose own failure snapshot shows
+the element present — reproduced on demand, and it is the single strongest evidence that the forced
+failure and the defect of record are the same event.
+
+### B.10 Forensic capture, read back
+
+Plan 01's D-11 auto-fixture attached a console transcript and a failed-request transcript to every
+forced failure. Read back from `combo-b100-cpu20/run-01.json` (inline attachments, base64-decoded):
+
+```
+--- console.log (complete, all 8 lines) ---
+[2026-08-13T16:08:28.244Z] debug: [vite] connecting...
+[2026-08-13T16:08:28.260Z] debug: [vite] connected.
+[2026-08-13T16:08:28.421Z] debug: [vite] connecting...
+[2026-08-13T16:08:28.426Z] debug: [vite] connected.
+[2026-08-13T16:08:28.465Z] debug: [vite] connecting...
+[2026-08-13T16:08:28.470Z] debug: [vite] connected.
+[2026-08-13T16:08:30.215Z] info: answerState.setAnswer(e055ab27-f682-4b9d-8e8a-e52608121944, 5)
+[2026-08-13T16:08:31.423Z] info: answerState.setAnswer(bba8fc0c-8040-4846-8787-d95fac4fee1a, 4)
+```
+
+**No error, no warning, no `pageerror`, and — load-bearing for H2 — no reroute log.** The render gate's
+own failure path logs
+`Question with id … not found in voterCtx.selectedQuestionBlocks. Rerouting to category selection.`
+(`apps/frontend/src/routes/(voters)/(located)/questions/+layout.svelte:119-121`). It does not appear.
+The application believed nothing was wrong during the window in which the assertion failed.
+
+The `requestfailed.log` transcript holds only `net::ERR_ABORTED` entries for Vite dev module fetches,
+all timestamped `16:08:28` — page-load-time prefetch aborts, ~3 s **before** the 16:08:31 hop. Nothing
+failed at hop time. The late-arriving-fetch story D-11 was wired to catch does not appear either.
+
+### B.11 Throttle-hygiene check
+
+**T-138-09 is the risk: a CPU throttle that survives its run silently distorts every later test in the
+same worker.** The check is adversarial by construction — abort a throttled run mid-flight, then
+measure the very next unprefixed run.
+
+**Arm A — the deliberate abort.** `EPERM07_FORCE_CPU_RATE=80`, launched in the background, `SIGINT` at
+**t+10 s**, which is inside the throttled block (at rate 80 the test body runs ~9.3 s, of which the
+throttled section is the last ~5.8 s). Playwright reported `1 interrupted / 1 did not run` and exited
+**130**. The abort landed where it was aimed.
+
+**Arm B — the immediate unprefixed run.** Launched with `env -u EPERM07_FORCE_CPU_RATE -u
+EPERM07_FORCE_BUDGET_MS -u EPERM07_NO_VT`, no other change, immediately after arm A returned.
+
+| | Arm A (aborted, rate 80) | Arm B (immediately after, unprefixed) |
+|---|---|---|
+| Wall clock | **10 s** (killed at t+10 s) | **8 s** |
+| Test body duration | 9.3 s typical for rate 80 (§B.3) | **3.766 s** |
+| Exit code | **130** (interrupted) | **0** (passed) |
+| Tri-state | — (interrupted before the probe) | `{"headingCount":1,"headingText":"…Base opinion 2 — Likert 4.","triggerCount":0}` — **H1-shaped** |
+
+**Verdict: no throttle survived.** Two independent signals agree, and the second is the stronger one:
+
+1. **Duration.** Arm B's test body ran in **3.766 s**, squarely in this project's normal single-digit
+   range and statistically indistinguishable from the 3.57 s neutral sanity run. A surviving rate-80
+   throttle would have produced ~9.3 s.
+2. **Tri-state shape.** Arm B came back **H1-shaped**. §B.3 establishes that at any rate ≥ 12 the probe
+   is H2-shaped in 40/40 runs, and at rate ≤ 2 it is H1-shaped in 11/11. The shape is therefore a
+   *categorical* throttle detector, independent of timing noise — and it reads "unthrottled". A leaked
+   rate-80 throttle could not produce an H1-shaped probe.
+
+The `finally`-scoped `releaseCpuThrottle` (reset to rate 1, then `detach`) in
+`tests/tests/specs/voter/eperm07-term-trigger.spec.ts` holds, and the browser context teardown on abort
+backstops it. T-138-09 is mitigated on evidence rather than on inspection.
+
+### B.12 A discarded block, recorded rather than hidden
+
+One 20-run block was launched and is **not** counted anywhere above. A loop written as
+`set -- $CFG` to split `"40 400"` into two arguments did not word-split — the session shell is `zsh`,
+which does not word-split unquoted parameter expansions the way `bash` does — so the whole string
+reached the knob as `EPERM07_FORCE_CPU_RATE="40 400"`. `Number("40 400")` is `NaN`, `NaN <= 1` is
+`false`, and the spec therefore issued `Emulation.setCPUThrottlingRate` with `rate: NaN`, which the
+browser rejected. All 20 runs died with `cdpSession.send: Protocol error` before reaching the hop.
+
+It is recorded for two reasons. First, **the runs are not measurements of anything** and silently
+dropping 20 runs from a hunt log is the kind of omission this document's evidence rule exists to
+prevent. Second, **the failure was caught by the classifier, not by eye**: every one of the 20 carried
+`failedOnTermTrigger: false`, which is the same column that later rejected rate 80 (§B.6.2). A
+per-run "which assertion actually failed" field is cheap and it caught two distinct classes of false
+reproduction in one session.
+
+### B.13 Neutrality and the return to the unforced state
+
+Verified immediately after the last forced run of this task:
+
+```
+$ env -u EPERM07_FORCE_CPU_RATE -u EPERM07_FORCE_BUDGET_MS -u EPERM07_NO_VT FRONTEND_PORT=5273 \
+    npx playwright test -c tests/playwright.config.ts --project=eperm07-term-trigger --reporter=line
+  3 passed (6.9s)
+EXIT=0
+
+$ git status --porcelain tests/
+(no output)
+
+$ git status --porcelain apps/
+(no output)
+```
+
+Every experiment in §B was an environment prefix plus `--reporter=json`. No committed file was edited,
+no `TIMEOUTS` value moved, no quarantine, `skip`, `fixme` or `.only` annotation was added to any spec,
+and isolation was achieved entirely by `--project=eperm07-term-trigger`. All 191 run artifacts from
+this task landed in a session-local scratch directory outside the repository; only the derived tables
+above reach `.planning/`. `FRONTEND_PORT=5273` is a port selector, not a forcing knob — with the three
+`EPERM07_*` variables unset the spec runs at the production 2000 ms budget with no throttle and no
+media emulation, which is exactly what the run above demonstrates.
