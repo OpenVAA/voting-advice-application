@@ -48,15 +48,17 @@
  * expect.soft, no try/catch around expect(), no .catch fallback on an
  * assertion-bearing interaction.
  *
- * CARVE-OUT — the one deliberate exception, named so this file does not read as
- * a contract violation: the post-hop navigation settle
- * (`settleOnUrlChangeAsProductionDoes`) reproduces the production helper's
- * URL-only wait AND its swallowed timeout (`.catch(() => null)`,
- * voter-journey.spec.ts:186-190) VERBATIM. Reproducing this defect requires
- * reproducing the settle, not improving it: the swallowed timeout is one half of
- * how a stale DOM reaches the term assertion at all. Fixing the settle here
- * would delete the phenomenon under investigation. The settle bears no
- * assertion — the hard assertion follows it.
+ * CARVE-OUT, now DISCHARGED (Phase 138 plan 04, D-06). While the defect was under
+ * investigation the post-hop settle (`settleOnUrlChangeAsProductionDoes`) was a
+ * local re-implementation of the production helper's URL-only wait AND its
+ * swallowed timeout, because reproducing the defect required reproducing the
+ * settle rather than improving it. The operator authorised the test-side fix on
+ * the recorded evidence, so the settle now delegates to the SHARED
+ * `settleAfterClientNavigation` that `voter-journey.spec.ts` also uses: one
+ * implementation, no drift, and this spec witnesses the production helper instead
+ * of holding a private copy of the bug. The settle still bears no assertion of its
+ * own — the hard assertion follows it. The pre-fix behaviour is not lost: it is on
+ * the record as RUN 1 of `138-NEGATIVE-CONTROL.md` (5/5 failing).
  *
  * The `try { … } finally { … }` around the hop is a resource-release block for
  * the CDP session (a surviving throttle would distort every later test in the
@@ -65,7 +67,7 @@
 
 import { expect, test } from '../../fixtures/voter/views';
 import { walkUntilQuestionsIntro } from '../../fixtures/voter/voter-journey.fixture';
-import { TIMEOUTS } from '../../helpers';
+import { readNavigationLandmarkText, settleAfterClientNavigation, TIMEOUTS } from '../../helpers';
 import { testIds } from '../../utils/testIds';
 import type { CDPSession, Page } from '@playwright/test';
 
@@ -110,12 +112,25 @@ type ForensicState = {
 };
 
 /**
- * Reproduce the production navigation settle EXACTLY (voter-journey.spec.ts:186-190):
- * URL-only, with its own timeout swallowed. See the CARVE-OUT in the file docblock —
- * this is the deliberate exception to the rigidity contract, and it bears no assertion.
+ * Use the production navigation settle — now the SHARED
+ * `settleAfterClientNavigation` (`helpers/navigation.ts`), which
+ * `voter-journey.spec.ts:186` also calls.
+ *
+ * reason: (Phase 138, D-06 — INTEG-01) this used to be a local re-implementation
+ * of the production helper's URL-only wait and swallowed timeout, because
+ * reproducing the defect required reproducing the settle. Now that the settle is
+ * FIXED, a local copy would be a copy of the defect: the instrument would keep
+ * failing after the production fix landed, and — worse in the long run — would
+ * stop witnessing `voter-journey.spec.ts` entirely, so a revert of the production
+ * fix would not be caught here. Delegating to the shared helper is what makes
+ * this spec a permanent regression test for that helper rather than a museum of
+ * the bug. Negative control: `138-NEGATIVE-CONTROL.md`.
  */
-async function settleOnUrlChangeAsProductionDoes(page: Page, urlBefore: string): Promise<void> {
-  await page.waitForURL((u) => u.toString() !== urlBefore, { timeout: TIMEOUTS.page }).catch(() => null);
+async function settleOnUrlChangeAsProductionDoes(page: Page, action: () => Promise<void>): Promise<void> {
+  const urlBefore = page.url();
+  const landmarkTextBefore = await readNavigationLandmarkText(page);
+  await action();
+  await settleAfterClientNavigation(page, urlBefore, landmarkTextBefore);
 }
 
 /**
@@ -153,9 +168,7 @@ async function advancePastBaseCategoryIntro(page: Page): Promise<void> {
   });
   await expect(categoryStart).toBeVisible({ timeout: TIMEOUTS.element });
 
-  const urlBefore = page.url();
-  await categoryStart.click();
-  await settleOnUrlChangeAsProductionDoes(page, urlBefore);
+  await settleOnUrlChangeAsProductionDoes(page, () => categoryStart.click());
 }
 
 /**
@@ -223,18 +236,14 @@ test.describe('eperm07-term-trigger', () => {
 
     // Base-1 → Base-2. Not the hop under test: settle it fully so the throttle
     // below is scoped to the transition being measured and nothing else.
-    const urlBeforeBase1 = page.url();
-    await gateOnQuestionAndAnswerLastOption(page, HEADING_BASE_1);
-    await settleOnUrlChangeAsProductionDoes(page, urlBeforeBase1);
+    await settleOnUrlChangeAsProductionDoes(page, () => gateOnQuestionAndAnswerLastOption(page, HEADING_BASE_1));
 
     const client = await applyCpuThrottleKnob(page);
     try {
       // THE HOP UNDER TEST — Base-2 → Base-3, driven IN-APP by answering
       // Base-2. Never by `goto`: a hard navigation would bypass the client
       // router ordering that H1 names as the mechanism.
-      const urlBeforeHop = page.url();
-      await gateOnQuestionAndAnswerLastOption(page, HEADING_BASE_2);
-      await settleOnUrlChangeAsProductionDoes(page, urlBeforeHop);
+      await settleOnUrlChangeAsProductionDoes(page, () => gateOnQuestionAndAnswerLastOption(page, HEADING_BASE_2));
 
       // Record the tri-state BEFORE the assertion, so a NEAR-MISS (a run that
       // passed at 1.9 s of a 2 s budget) is captured as data too — not only a

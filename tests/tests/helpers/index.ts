@@ -21,7 +21,12 @@
  * See `tests/tests/helpers/README.md` for the full design rationale.
  */
 
-export { clickAndRaceSettle, expectLandedOn } from './navigation';
+export {
+  clickAndRaceSettle,
+  expectLandedOn,
+  readNavigationLandmarkText,
+  settleAfterClientNavigation
+} from './navigation';
 export { iterateSelectOptions } from './select';
 export { settleNetworkIdle } from './settle';
 export { TIMEOUTS } from './timeouts';

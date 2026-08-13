@@ -28,7 +28,7 @@ import {
   answerNumberScale,
   walkUntilQuestionsIntro
 } from '../../fixtures/voter/voter-journey.fixture';
-import { TIMEOUTS } from '../../helpers';
+import { readNavigationLandmarkText, settleAfterClientNavigation, TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { testIds } from '../../utils/testIds';
 import type { Locator, Page } from '@playwright/test';
@@ -181,12 +181,29 @@ async function toggleCategoryListItem({
 }
 
 /**
- * Expect a URL change after performing the given action.
+ * Expect a client-side navigation after performing the given action, and settle on
+ * the DESTINATION DOM rather than on the URL.
+ *
+ * reason: (Phase 138, D-06 — INTEG-01) DEF-135-04 / EPERM-07. This helper used to
+ * end in `page.waitForURL(...).catch(() => null)` — a URL-only wait that swallowed
+ * its own timeout. Under the ordering named in `138-DIAGNOSIS.md` § Named root
+ * cause, SvelteKit commits the URL (`client.js:1759-1760`) before it swaps the DOM
+ * (`:1824`), so that settle released while the PREVIOUS question was still
+ * rendered, and any trailing assertion raced a swap that had not happened. The
+ * recorded DEF-135-04 failure is exactly that race: `element(s) not found` on the
+ * Base-3 term trigger, because the question still rendered was Base-2, which
+ * carries no `custom_data.terms`.
+ *
+ * The settle now lives in `helpers/navigation.ts` so this walk and the
+ * `eperm07-term-trigger` instrument share ONE implementation and cannot drift —
+ * the instrument would otherwise keep its own copy of the defect and stop
+ * witnessing this file. Negative control: `138-NEGATIVE-CONTROL.md`.
  */
 async function expectUrlChange(page: Page, action: () => Promise<void>): Promise<void> {
   const urlBefore = page.url();
+  const landmarkTextBefore = await readNavigationLandmarkText(page);
   await action();
-  await page.waitForURL((u) => u.toString() !== urlBefore, { timeout: TIMEOUTS.page }).catch(() => null);
+  await settleAfterClientNavigation(page, urlBefore, landmarkTextBefore);
 }
 
 /**

@@ -20,7 +20,113 @@
  */
 
 import { expect } from '@playwright/test';
+import { TIMEOUTS } from './timeouts';
 import type { Locator, Page } from '@playwright/test';
+
+/**
+ * Settle an in-app (client-side) navigation on the DESTINATION DOM, not on the URL.
+ *
+ * reason: (Phase 138, D-06 — INTEG-01) DEF-135-04 / EPERM-07. This closes the
+ * settle link in the ordering defect named in `138-DIAGNOSIS.md` § Named root
+ * cause. SvelteKit commits the destination URL to history FIRST
+ * (`client.js:1759-1760`), then awaits the `onNavigate` callbacks
+ * (`:1779-1785`), and only THEN swaps the DOM (`:1824`). A settle that waits on
+ * the URL alone therefore releases at step one — inside a window in which the
+ * destination DOM does not exist yet (measured at 100-125 ms isolated; observed
+ * as `triggerCount: 0` in 260 of 262 forensic probes). Every assertion made
+ * after such a settle races a swap that has not happened.
+ *
+ * Two stages, and BOTH matter:
+ *
+ *  1. The URL changed — and this wait is NOT swallowed. The predecessor helper
+ *     ended in `.catch(() => null)`, which made "the URL changed but the DOM has
+ *     not" and "the URL never changed at all" flow onward identically. A
+ *     navigation that never happens now fails HERE, where it reads as a
+ *     navigation problem, instead of surfacing lines later as a missing element.
+ *
+ *  2. The destination DOM committed — the page's navigation landmark now carries
+ *     DIFFERENT text than the one we navigated away from. The landmark selector
+ *     `[data-focus-on-nav] ?? h1` mirrors the app's own afterNavigate focus target
+ *     (`+layout.svelte:178-180`) character for character, so the two cannot drift.
+ *
+ *     Why a TEXT comparison and not mere attachment: the stale state this defect
+ *     produces is not always "no heading". At low CPU rates the heading NODE
+ *     survives the hop and only its content is stale — the previous question is
+ *     still rendered — so an attachment-only wait would pass instantly against
+ *     Base-2 and settle nothing. `headingCount: 0` (no landmark at all) is the
+ *     same defect observed at high CPU rates, and the text comparison covers both
+ *     because a null landmark is never "different text" and keeps the wait open.
+ *
+ *     Why NOT the focus itself, which would be the stronger fact: measured during
+ *     this phase, `document.activeElement === target` does not become true until
+ *     the View Transition has finished, because the app's `onNavigate` resolves
+ *     inside `startViewTransition` and `afterNavigate` runs after it. That makes a
+ *     focus wait a measurement of the ANIMATION rather than of the swap, and at
+ *     CPU rate 40 it exceeds the element budget outright. The text comparison
+ *     settles on the swap, which is the link the diagnosis names.
+ *
+ * NOT a timeout increase (D-07 rejects that outright, and it would not even fix
+ * anything): no budget is raised anywhere. The settle waits for a specific
+ * navigation-complete FACT and fails loudly when that fact does not arrive,
+ * rather than widening the interval in which a stale DOM goes unnoticed.
+ *
+ * @param page - Playwright Page.
+ * @param urlBefore - `page.url()` captured BEFORE the navigating action ran.
+ * @param landmarkTextBefore - landmark text captured BEFORE the action, via
+ *   {@link readNavigationLandmarkText}.
+ */
+export async function settleAfterClientNavigation(
+  page: Page,
+  urlBefore: string,
+  landmarkTextBefore: string | null
+): Promise<void> {
+  // Stage 1 — the URL must actually change. Deliberately NOT swallowed.
+  await page.waitForURL((u) => u.toString() !== urlBefore, { timeout: TIMEOUTS.page });
+
+  // Stage 2 — the destination DOM must have committed.
+  await page.waitForFunction(
+    (previous) => {
+      const target = document.querySelector('[data-focus-on-nav]') ?? document.querySelector('h1');
+      return target !== null && (target.textContent ?? '') !== previous;
+    },
+    landmarkTextBefore,
+    {
+      // `page` bucket, NOT `element`: this wait is part of a single route
+      // transition — it is the second half of the navigation whose first half is
+      // the URL change above — and `page` is that bucket by its own definition
+      // (`timeouts.ts:12`). No budget value is edited anywhere; this chooses the
+      // correct existing bucket for a navigation wait, which is a different thing
+      // from raising one (D-07).
+      timeout: TIMEOUTS.page,
+      // Fixed-interval polling, NOT the `raf` default. rAF callbacks are tied to
+      // the rendering loop, so rAF polling is starved at precisely the moment
+      // this predicate needs to observe — while the browser is busy committing
+      // the swap. Measured during this phase: with `raf` polling under the
+      // adversary's 40x CPU throttle the predicate missed a swap that had
+      // demonstrably happened — 4 of 5 runs timed out, on a path where the term
+      // assertion at the production budget passes at every CPU rate tested
+      // (`138-FORCED-REPRO.md` §B.5). That block is recorded as the discarded
+      // block in `138-NEGATIVE-CONTROL.md` § 5.6; it was an artifact of the
+      // observation method, not of the app.
+      polling: 50
+    }
+  );
+}
+
+/**
+ * Read the navigation landmark's text, for use as {@link settleAfterClientNavigation}'s
+ * `landmarkTextBefore`. Returns `null` when no landmark is present.
+ *
+ * reason: (Phase 138, D-06 — INTEG-01) the selector mirrors the app's afterNavigate
+ * focus target (`+layout.svelte:178-180`); keeping the two reads in one module is
+ * what stops the "before" and "after" halves of the comparison from drifting apart.
+ */
+export async function readNavigationLandmarkText(page: Page): Promise<string | null> {
+  return page.evaluate(() => {
+    const target = document.querySelector('[data-focus-on-nav]') ?? document.querySelector('h1');
+    return target?.textContent ?? null;
+  });
+}
 
 /**
  * Positive landing assertion — assert the page URL eventually matches the
