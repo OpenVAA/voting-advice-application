@@ -5,15 +5,15 @@ milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 138
 current_phase_name: DEF-135-04 — EPERM-07 Root Cause + Cardinal-Rule Waiver Discharge
 status: executing
-stopped_at: Completed 138-01-PLAN.md
-last_updated: "2026-08-13T15:12:40.267Z"
+stopped_at: Completed 138-02-PLAN.md
+last_updated: "2026-08-13T15:52:05.211Z"
 last_activity: 2026-08-13
 last_activity_desc: Phase 138 execution started
 progress:
   total_phases: 14
   completed_phases: 1
   total_plans: 11
-  completed_plans: 6
+  completed_plans: 7
   percent: 7
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 
 Milestone: v2.15 (Phases 137-150, 14 phases, 38 requirements)
 Phase: 138 (DEF-135-04 — EPERM-07 Root Cause + Cardinal-Rule Waiver Discharge) — EXECUTING
-Plan: 2 of 6
+Plan: 3 of 6
 Status: Ready to execute
 Last activity: 2026-08-13 — Phase 138 execution started
 
@@ -48,8 +48,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-13T15:12:32.479Z
-Stopped at: Completed 138-01-PLAN.md
+Last session: 2026-08-13T15:52:05.195Z
+Stopped at: Completed 138-02-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -130,6 +130,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 133 P02 | 4min | 1 tasks | 1 files |
 | Phase 133 P03 | 45min | 1 tasks | 0 files |
 | Phase 138 P01 | 30m | 3 tasks | 9 files |
+| Phase 138 P02 | ~40 min | 3 tasks | 3 files |
 
 ## Deferred Items
 
@@ -575,6 +576,9 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 138]: U-1 resolved UNRECOVERABLE after an 8-location search; all three EPERM-07 hypotheses stay live
 - [Phase 138]: eperm07-term-trigger hunt spec ships permanently; E2E executed-count baseline moves 134 -> 135
 - [Phase 138]: auto: true forensic capture fixture on the voter composition root — new convention, 16-spec reach intended
+- [Phase 138]: H1 (View-Transition snapshot capture) ELIMINATED at the reduced-motion lever — 10-vs-10 A/B, arm A 7/10 vs arm B 9/10 failures, identical error text; the transition changes the intermediate DOM's shape (stale vs absent), not whether the window exists
+- [Phase 138]: Budget lever alone cannot force DEF-135-04 deterministically (11/15 at the 100 ms floor); swap-latency band measured at 100-125 ms vs a 2000 ms production budget, so plan 03's CDP amplification (~20x) is on the critical path
+- [Phase 138]: The 100 ms operating point is explicitly disqualified as plan 04's negative-control pre-fix half — 73% is stochastic, and one passing pre-fix run would falsify the pair
 
 ### Quick Tasks Completed
 
