@@ -1,0 +1,254 @@
+/**
+ * EPERM-07 term-trigger intermittent — isolated hunt spec (Phase 138, D-03 — INTEG-01).
+ *
+ * Drives ONLY Base-1 → Base-2 → Base-3 and asserts the in-text <Term> trigger on
+ * Base-3, so the ~1-in-8 DEF-135-04 event can be forced and observed in
+ * single-digit seconds instead of inside a 648 s full-suite run. That is what
+ * makes dozens of forcing attempts affordable (D-03's economics).
+ *
+ * Hypothesis under investigation (a HYPOTHESIS, not a conclusion — the live
+ * ledger is `138-DIAGNOSIS.md` § Hypothesis ledger, and U-1 eliminated none of
+ * the three): SvelteKit pushes the destination URL to history (client.js:1760)
+ * BEFORE it swaps the DOM (client.js:1824), awaiting the `onNavigate` callbacks
+ * in between (client.js:1779-1785) — and the root layout's callback
+ * (+layout.svelte:161-172) resolves only inside `document.startViewTransition`'s
+ * update callback, i.e. after Chrome has captured the outgoing snapshot. Base-2
+ * carries no `customData.terms` (base.ts:828-838), so for the width of that
+ * window the term trigger genuinely does not exist in the DOM. H2 (the render
+ * gate at questions/+layout.svelte:257-258 transiently closing) and H3 (late
+ * `customData.terms` at QuestionHeading.svelte:60-61) remain equally live; the
+ * forensic tri-state below is what discriminates between all three.
+ *
+ * Negative-control posture: this spec is the INSTRUMENT the criterion-2 pair is
+ * measured with, not the control itself. Plan 04 runs it twice under a
+ * byte-identical forcing configuration — once against the pre-fix tree (must
+ * FAIL) and once against the post-fix tree (must PASS). It therefore ships
+ * permanently in the default suite (precedent: `cold-entry-dataroot`), and is
+ * NOT tagged `@probe` — a `@probe` tag would exclude it from the root
+ * `test:e2e` invocation and make it invisible to the 16-run determinism gate.
+ *
+ * FORCING KNOBS (D-01). All three are NEUTRAL BY CONSTRUCTION: with no
+ * environment variable set, this file runs at the production element budget,
+ * with no CPU throttle and no reduced-motion emulation. Neutrality is
+ * structural, not remembered — there is nothing to revert after a hunt.
+ *   EPERM07_FORCE_BUDGET_MS  element budget in ms for the term assertion
+ *                            (default: TIMEOUTS.element, the production 2000 ms)
+ *   EPERM07_FORCE_CPU_RATE   CDP CPU slowdown multiplier applied across the hop
+ *                            (default: 1 = no throttle)
+ *   EPERM07_NO_VT            'true' emulates prefers-reduced-motion: reduce,
+ *                            which the app's own gate short-circuits on
+ *                            (viewTransition.ts:28) — discriminator A, and it
+ *                            needs no app change, so it cannot itself be the
+ *                            cause of a flip (default: unset = transitions on)
+ *
+ * Seed: `data-setup-base` (`e2e/base`). Voter routes are public (no auth); this
+ * spec is READ-ONLY and has no teardown of its own.
+ *
+ * Rigidity contract (project E2E Hard Rule): every assertion is HARD — no
+ * expect.soft, no try/catch around expect(), no .catch fallback on an
+ * assertion-bearing interaction.
+ *
+ * CARVE-OUT — the one deliberate exception, named so this file does not read as
+ * a contract violation: the post-hop navigation settle
+ * (`settleOnUrlChangeAsProductionDoes`) reproduces the production helper's
+ * URL-only wait AND its swallowed timeout (`.catch(() => null)`,
+ * voter-journey.spec.ts:186-190) VERBATIM. Reproducing this defect requires
+ * reproducing the settle, not improving it: the swallowed timeout is one half of
+ * how a stale DOM reaches the term assertion at all. Fixing the settle here
+ * would delete the phenomenon under investigation. The settle bears no
+ * assertion — the hard assertion follows it.
+ *
+ * The `try { … } finally { … }` around the hop is a resource-release block for
+ * the CDP session (a surviving throttle would distort every later test in the
+ * same worker), not a `try/catch`: it swallows nothing and changes no outcome.
+ */
+
+import { expect, test } from '../../fixtures/voter/views';
+import { walkUntilQuestionsIntro } from '../../fixtures/voter/voter-journey.fixture';
+import { TIMEOUTS } from '../../helpers';
+import { testIds } from '../../utils/testIds';
+import type { CDPSession, Page } from '@playwright/test';
+
+// FORCING BUDGET — file-local, env-defaulted to the shared production budget.
+// reason: D-01's negative-control knob. It is scoped to THIS file by
+// construction, so no other spec's budget can be perturbed by this phase; the
+// shared TIMEOUTS.element default is NEVER edited (its own docblock,
+// timeouts.ts:16-21, forbids moving it, and it is shared with the Playwright
+// config and 88 suite files). With the variable unset this resolves to the
+// production 2000 ms, so the COMMITTED file is neutral.
+const FORCED_ELEMENT_BUDGET = Number(process.env.EPERM07_FORCE_BUDGET_MS ?? TIMEOUTS.element);
+
+// CDP slowdown multiplier for the hop under test (1 = no throttle).
+// reason: D-01's amplifier. Same file-local, env-defaulted construction —
+// unset means rate 1, which is the browser's normal scheduling.
+const FORCED_CPU_RATE = Number(process.env.EPERM07_FORCE_CPU_RATE ?? 1);
+
+// Discriminator A: emulate prefers-reduced-motion so the app's own
+// `shouldAnimate` gate (viewTransition.ts:28) short-circuits and no View
+// Transition plays.
+// reason: explicit string compare, not bare truthiness — `EPERM07_NO_VT=false`
+// must mean OFF. Matches the only boolean-env precedent in the suite
+// (setupFromTemplate.ts:98, `=== 'true'`); bare truthiness is out of convention.
+const FORCED_NO_VT = process.env.EPERM07_NO_VT === 'true';
+
+// Heading / category text gates. ASCII-only substrings on purpose: the seeded
+// titles carry a U+2014 em dash ("Base opinion 3 — Likert 7") and are expanded
+// across four locales in base.ts, and neither may be allowed to decide whether
+// this spec can find its way to Base-3.
+const CATEGORY_BASE_OPINION = /Base Opinion Questions/i;
+const HEADING_BASE_1 = /Base opinion 1/i;
+const HEADING_BASE_2 = /Base opinion 2/i;
+
+/** The forensic tri-state recorded at the instant of assertion (RESEARCH §R2.4-C). */
+type ForensicState = {
+  pathname: string;
+  /** `querySelectorAll` length — an absent heading reads as 0, it does not throw. */
+  headingCount: number;
+  /** `null` when no heading element exists at all — distinct from an empty string. */
+  headingText: string | null;
+  triggerCount: number;
+};
+
+/**
+ * Reproduce the production navigation settle EXACTLY (voter-journey.spec.ts:186-190):
+ * URL-only, with its own timeout swallowed. See the CARVE-OUT in the file docblock —
+ * this is the deliberate exception to the rigidity contract, and it bears no assertion.
+ */
+async function settleOnUrlChangeAsProductionDoes(page: Page, urlBefore: string): Promise<void> {
+  await page.waitForURL((u) => u.toString() !== urlBefore, { timeout: TIMEOUTS.page }).catch(() => null);
+}
+
+/**
+ * Gate on `text` as THIS question's heading, then click its LAST answer option.
+ *
+ * Does NOT settle afterwards — the caller owns the settle, because on the hop
+ * under test the settle IS the thing being reproduced.
+ *
+ * The option locator is scoped to the current question id rather than page-wide:
+ * on a Q→Q nav the outgoing question's options can linger in the DOM for a frame
+ * after the heading has already updated, so a page-wide count would be stale
+ * (the mechanism documented at voter-journey.spec.ts:255-265).
+ */
+async function gateOnQuestionAndAnswerLastOption(page: Page, text: RegExp): Promise<void> {
+  await expect(page.getByTestId(testIds.voter.questions.heading)).toHaveText(text, { timeout: TIMEOUTS.element });
+
+  const questionId = new URL(page.url()).pathname.replace(/\/+$/, '').split('/').filter(Boolean).pop() ?? '';
+  // reason: a testid+name conjunction is not expressible via getByTestId/getByRole;
+  // mirrors the identical scoped locator at voter-journey.spec.ts:267.
+  // eslint-disable-next-line playwright/no-restricted-locators
+  const answerOptions = page.locator(
+    `[data-testid="${testIds.voter.questions.answerOption}"][name="questionChoices-${questionId}"]`
+  );
+  await expect(answerOptions.first()).toBeVisible({ timeout: TIMEOUTS.element });
+
+  const nOptions = await answerOptions.count();
+  await answerOptions.nth(nOptions - 1).click();
+}
+
+/** Advance past the Base-Opinion category intro (`categoryIntros.show` is on for e2e/base). */
+async function advancePastBaseCategoryIntro(page: Page): Promise<void> {
+  const categoryStart = page.getByTestId(testIds.voter.questions.categoryStart);
+  await expect(page.getByTestId(testIds.voter.questions.categoryIntro)).toHaveText(CATEGORY_BASE_OPINION, {
+    timeout: TIMEOUTS.element
+  });
+  await expect(categoryStart).toBeVisible({ timeout: TIMEOUTS.element });
+
+  const urlBefore = page.url();
+  await categoryStart.click();
+  await settleOnUrlChangeAsProductionDoes(page, urlBefore);
+}
+
+/**
+ * Emulate reduced motion when the knob is on. Module scope so the conditional
+ * stays out of the test body (playwright/no-conditional-in-test).
+ */
+async function applyReducedMotionKnob(page: Page): Promise<void> {
+  if (!FORCED_NO_VT) return;
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+}
+
+/** Open a CDP session and apply the slowdown, or return null when the knob is neutral. */
+async function applyCpuThrottleKnob(page: Page): Promise<CDPSession | null> {
+  if (FORCED_CPU_RATE <= 1) return null;
+  const client: CDPSession = await page.context().newCDPSession(page);
+  await client.send('Emulation.setCPUThrottlingRate', { rate: FORCED_CPU_RATE });
+  return client;
+}
+
+/**
+ * Reset the rate to 1 and detach. Called UNCONDITIONALLY from a `finally`: a
+ * throttle surviving this test would distort every later test in the same worker.
+ */
+async function releaseCpuThrottle(client: CDPSession | null): Promise<void> {
+  if (!client) return;
+  await client.send('Emulation.setCPUThrottlingRate', { rate: 1 });
+  await client.detach();
+}
+
+/**
+ * Read the tri-state that discriminates H1 / H2 / H3 (RESEARCH §R2.4-C).
+ *
+ * `headingCount` is a `querySelectorAll` LENGTH, so an absent heading is
+ * observed as `0` rather than as a thrown locator error — H2's verdict is
+ * selected on that zero, never on an exception. `headingText` is independently
+ * nullable, so "no heading element" and "heading with empty text" stay distinct
+ * observations.
+ */
+async function readForensicState(page: Page): Promise<ForensicState> {
+  return page.evaluate(
+    ({ headingId, triggerId }) => ({
+      pathname: location.pathname,
+      headingCount: document.querySelectorAll(`[data-testid="${headingId}"]`).length,
+      headingText: document.querySelector(`[data-testid="${headingId}"]`)?.textContent ?? null,
+      triggerCount: document.querySelectorAll(`[data-testid="${triggerId}"]`).length
+    }),
+    { headingId: testIds.voter.questions.heading, triggerId: testIds.voter.questions.termTrigger }
+  );
+}
+
+test.describe('eperm07-term-trigger', () => {
+  test('the Base-3 in-text term trigger is present when the URL says we are on Base-3', async ({
+    page,
+    voterQuestionsPage
+  }) => {
+    // Discriminator A, applied BEFORE any navigation so no hop plays a transition.
+    await applyReducedMotionKnob(page);
+
+    // Walk to the questions flow. `walkUntilQuestionsIntro` installs the
+    // data-consent addLocatorHandler guard, whose absence was itself a
+    // documented full-suite flake — do not hand-roll this walk.
+    await walkUntilQuestionsIntro(page);
+    await voterQuestionsPage.clickStart();
+    await advancePastBaseCategoryIntro(page);
+
+    // Base-1 → Base-2. Not the hop under test: settle it fully so the throttle
+    // below is scoped to the transition being measured and nothing else.
+    const urlBeforeBase1 = page.url();
+    await gateOnQuestionAndAnswerLastOption(page, HEADING_BASE_1);
+    await settleOnUrlChangeAsProductionDoes(page, urlBeforeBase1);
+
+    const client = await applyCpuThrottleKnob(page);
+    try {
+      // THE HOP UNDER TEST — Base-2 → Base-3, driven IN-APP by answering
+      // Base-2. Never by `goto`: a hard navigation would bypass the client
+      // router ordering that H1 names as the mechanism.
+      const urlBeforeHop = page.url();
+      await gateOnQuestionAndAnswerLastOption(page, HEADING_BASE_2);
+      await settleOnUrlChangeAsProductionDoes(page, urlBeforeHop);
+
+      // Record the tri-state BEFORE the assertion, so a NEAR-MISS (a run that
+      // passed at 1.9 s of a 2 s budget) is captured as data too — not only a
+      // failure. The annotation rides in results.json for plans 02-05.
+      const forensic = await readForensicState(page);
+      test.info().annotations.push({ type: 'eperm07-state', description: JSON.stringify(forensic) });
+
+      // The assertion under investigation, at the file-local budget. Matched by
+      // exact data-testid equality, never by rendered text.
+      await expect(page.getByTestId(testIds.voter.questions.termTrigger).first()).toBeVisible({
+        timeout: FORCED_ELEMENT_BUDGET
+      });
+    } finally {
+      await releaseCpuThrottle(client);
+    }
+  });
+});

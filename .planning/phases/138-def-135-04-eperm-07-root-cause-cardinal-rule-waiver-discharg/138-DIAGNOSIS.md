@@ -84,7 +84,7 @@ column.
 
 | ID | Mechanism (file:line) | Status | Discriminator | Evidence |
 |---|---|---|---|---|
-| H1 | **View-Transition snapshot capture stalls the DOM swap while the URL has already advanced.** SvelteKit pushes the new URL at `node_modules/@sveltejs/kit/src/runtime/client/client.js:1760`, awaits the `onNavigate` callbacks at `client.js:1779-1785`, and only swaps the DOM at `client.js:1824`. The app holds that await open: `apps/frontend/src/routes/+layout.svelte:161-172` returns a Promise resolved *inside* `document.startViewTransition`'s update callback, i.e. after Chrome has captured the outgoing snapshot. Base-2 carries no `customData.terms` (`packages/dev-seed/src/templates/e2e/base.ts:828-838`), so a stale Base-2 DOM has zero term triggers — the recorded `element(s) not found`. | live | (A) `page.emulateMedia({ reducedMotion: 'reduce' })` — the app's own gate short-circuits on that query at `apps/frontend/src/lib/utils/viewTransition.ts:28`, so a forced failure that disappears under A and returns without it names the transition layer with zero app change. (B) CDP `Emulation.setCPUThrottlingRate` amplifies snapshot cost. (C) tri-state: `headingCount === 1` **and** `headingText` contains `Base opinion 2` **and** `triggerCount === 0`. | Pending — plan 02. U-1 unrecoverable, so H1 is neither supported nor eliminated by the original occurrence. Corroborated only indirectly, by in-repo prior art: `tests/tests/specs/a11y/a11y-smoke.spec.ts:570-574, 672-678` already drives Q→Q with `?notr=1` so assertions "never race the cross-fade" — a mitigation `voter-journey.spec.ts` never received. |
+| H1 | **View-Transition snapshot capture stalls the DOM swap while the URL has already advanced.** SvelteKit pushes the new URL at `node_modules/@sveltejs/kit/src/runtime/client/client.js:1760`, awaits the `onNavigate` callbacks at `client.js:1779-1785`, and only swaps the DOM at `client.js:1824`. The app holds that await open: `apps/frontend/src/routes/+layout.svelte:161-172` returns a Promise resolved *inside* `document.startViewTransition`'s update callback, i.e. after Chrome has captured the outgoing snapshot. Base-2 carries no `customData.terms` (`packages/dev-seed/src/templates/e2e/base.ts:828-838`), so a stale Base-2 DOM has zero term triggers — the recorded `element(s) not found`. | live | (A) `page.emulateMedia({ reducedMotion: 'reduce' })` — the app's own gate short-circuits on that query at `apps/frontend/src/lib/utils/viewTransition.ts:28`, so a forced failure that disappears under A and returns without it names the transition layer with zero app change. (B) CDP `Emulation.setCPUThrottlingRate` amplifies snapshot cost. (C) tri-state: `headingCount === 1` **and** `headingText` contains `Base opinion 2` **and** `triggerCount === 0`. | **First instrument reading (plan 01 task 2, 2026-08-13) — the H1 window is real and observable at NEUTRAL settings.** See § First instrument readings below. U-1 unrecoverable, so H1 is neither supported nor eliminated by the *original* occurrence. Corroborated indirectly by in-repo prior art: `tests/tests/specs/a11y/a11y-smoke.spec.ts:570-574, 672-678` already drives Q→Q with `?notr=1` so assertions "never race the cross-fade" — a mitigation `voter-journey.spec.ts` never received. |
 | H2 | **The render gate at `apps/frontend/src/routes/(voters)/(located)/questions/+layout.svelte:257-258` transiently closes.** If `voterCtx.opinionQuestions` or `selectedQuestionBlocks` is momentarily empty during the hop, the whole question block unmounts, taking the heading and the trigger with it. | live | (C) tri-state: `headingCount === 0`. Selected on the count, never on a thrown locator error — an absent heading must read as `0`, not as an exception. | Pending — plan 02. |
 | H3 | **`customData.terms` arrives after the heading text.** `QuestionHeading.svelte:60-61` computes `customData = $derived(getCustomData(question))` then `titleParts = $derived(addTermsToTitle(customData.terms))`; with `terms === undefined` the plain-text branch renders (`QuestionHeading.svelte:95-100`) — correct heading, no `<button>` child. Additionally requires a `DataRoot.update()` between the two reads, since `getCustomData` is a pure read (`packages/app-shared/src/data/getCustomData.ts:6`) — see U-2. | live | (C) tri-state: `headingText` contains `Base opinion 3` **and** `triggerCount === 0`. This is the only hypothesis under which D-05's app-side-fix clause fires as written. | Pending — plan 02. |
 
@@ -94,6 +94,35 @@ whole-string equality against the seeded title — the seeded name is
 four locales, and neither may be allowed to change a verdict. The term trigger is matched by **exact
 `data-testid` string equality** (`voter-questions-term-trigger`, `tests/tests/utils/testIds.ts:243`),
 never by rendered text.
+
+---
+
+## First instrument readings
+
+Recorded by plan 01 task 2 the moment the hunt spec first ran. These are **near-miss** observations
+from **passing** runs at **neutral** settings (no budget shrink, no CPU throttle, no reduced-motion
+emulation) — logged here because the spec records the tri-state *before* the assertion precisely so a
+near-miss counts as data, and because this evidence would otherwise live only in a scratch
+`results.json`.
+
+| Run | Date | Configuration | Outcome | `eperm07-state` annotation |
+|---|---|---|---|---|
+| 1 | 2026-08-13 | neutral (budget 2000 ms, CPU rate 1, transitions ON), dev server `FRONTEND_PORT=5273`, 1 worker | **PASS** | `{"pathname":"/questions/ecc52540-e9a4-4f22-b883-c34013534d4e","headingCount":1,"headingText":"MunicipalRegional [qg-opin-base] Base Opinion Questions 2/8 [qu-opin-base-2-likert4] Base opinion 2 — Likert 4.","triggerCount":0}` |
+| 2 | 2026-08-13 | identical | **PASS** | identical tri-state |
+
+**What this shows, stated no more strongly than it supports.** At the instant immediately after the
+production URL-only settle, the URL had already advanced to the next question while the rendered
+heading still read **`Base opinion 2`** and `triggerCount` was **0**. That is the exact tri-state row
+RESEARCH §R2.4-C assigns to H1 (`headingCount === 1`, heading text contains `Base opinion 2`,
+`triggerCount === 0`), and it excludes H2 (`headingCount` would be `0`) and H3 (heading text would
+contain `Base opinion 3`) **for that instant**. The assertion nonetheless passed, because the DOM
+swap landed well inside the 2000 ms budget.
+
+**What it does NOT show.** It is not a reproduction of DEF-135-04 and not a confirmation of H1. It
+establishes only that the URL-before-DOM window H1 depends on is **real, reachable and reliably
+observable on this machine at production settings** — i.e. the phenomenon is not hypothetical, and
+the question that remains is what widens that window past 2000 ms in roughly 1 run in 8. Forcing that
+widening, and running the criterion-2 negative-control pair, is plans 02–04's work. H1 stays `live`.
 
 ---
 

@@ -317,12 +317,40 @@ export default defineConfig({
       name: 'data-teardown-base',
       testMatch: /base\.teardown\.ts/
     },
+    // D-09 (Phase 138, INTEG-01) — `video: 'retain-on-failure'`. This project
+    // owns the EPERM-07 term-trigger step, whose failure is a LATENCY signal,
+    // not an absence signal: the recorded occurrence's own page snapshot showed
+    // the trigger present (deferred-items.md § DEF-135-04). A trace records what
+    // the test asserted; only a video records what the page was DOING across the
+    // Base-2 → Base-3 hop while the budget expired. Bounded by construction —
+    // this project runs ONE test, and a green run produces zero video bytes.
     {
       name: 'voter-journey',
       testDir: './tests/specs/voter',
       testMatch: /voter-journey\.spec\.ts/,
       fullyParallel: false, // single-test serial journey
-      use: { ...devices['Desktop Chrome'] },
+      use: { ...devices['Desktop Chrome'], video: 'retain-on-failure' },
+      dependencies: ['data-setup-base']
+    },
+
+    // eperm07-term-trigger (Phase 138, D-03 INTEG-01) — LEAF. Isolated hunt spec
+    // for the DEF-135-04 intermittent: drives ONLY Base-1 → Base-2 → Base-3 and
+    // asserts the in-text <Term> affordance, so the ~1-in-8 event can be forced
+    // and observed in seconds instead of in a 648 s full-suite run. Reads the
+    // base dataset read-only (no teardown of its own). `video: 'on'` rather than
+    // retain-on-failure — this project runs one short test, so keeping the
+    // near-miss recordings (a run that passed at 1.9 s of a 2 s budget) is cheap
+    // and is exactly the latency evidence the hunt needs. `testMatch` is scoped
+    // to the hunt spec; `voter-journey`'s `testMatch` (/voter-journey\.spec\.ts/)
+    // does not match this filename, so neither project picks up the other's
+    // specs. NOT under `_probes`: that project is excluded from the gate suite by
+    // the root `test:e2e` script's `--grep-invert @probe`, which would make this
+    // spec invisible to the 16-run determinism gate.
+    {
+      name: 'eperm07-term-trigger',
+      testDir: './tests/specs/voter',
+      testMatch: /eperm07-term-trigger\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'], video: 'on' },
       dependencies: ['data-setup-base']
     },
 

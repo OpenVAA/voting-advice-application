@@ -29,6 +29,8 @@ import { createResultsPage } from './resultsPage.fixture';
 import { createVoterHomePage } from './voterHomePage.fixture';
 import { createVoterIntroPage } from './voterIntroPage.fixture';
 import { createVoterQuestionsPage } from './voterQuestionsPage.fixture';
+import { attachForensicCapture, flushForensicCapture } from '../shared/forensicCapture.fixture';
+import type { ForensicLog } from '../shared/forensicCapture.fixture';
 import type { AboutPageFixture } from './aboutPage.fixture';
 import type { EntityDetailsFixture } from './entityDetails.fixture';
 import type { EntityFiltersFixture } from './entityFilters.fixture';
@@ -51,6 +53,8 @@ type ViewFixtures = {
   // Phase-119 EPERM voter-scoped readers (Plan 06).
   aboutPage: AboutPageFixture;
   questionInfo: QuestionInfoFixture;
+  // Phase-138 D-11 forensic capture (auto).
+  forensicCapture: ForensicLog;
 };
 
 export const test = base.extend<ViewFixtures>({
@@ -77,7 +81,29 @@ export const test = base.extend<ViewFixtures>({
   },
   questionInfo: async ({ page }, use) => {
     await use(createQuestionInfo(page));
-  }
+  },
+  // Phase-138 D-11 (INTEG-01): browser console + pageerror + failed-request
+  // capture, attached BEFORE the spec navigates and flushed on teardown.
+  //
+  // NOTE — an auto-registered fixture has NO precedent anywhere in `tests/tests`
+  // (this registration is the only one), and it crosses the standing
+  // `fixtures/shared/*` convention that such fixtures are
+  // "NOT extended into a composition root". Both facts are deliberate. All 16
+  // spec files importing this root are reached, which is the INTENDED coverage,
+  // not an incidental side effect: the v2.14 waiver's condition 3 ("the next
+  // occurrence is data") only holds if a recurrence during ANY later v2.15
+  // phase's run leaves evidence without someone having opted a spec in first.
+  // Cost is three event listeners per page and no behaviour change; the
+  // fixture asserts nothing. See forensicCapture.fixture.ts for the rationale
+  // in full and 138-DIAGNOSIS.md § U-1 for what its absence already cost.
+  forensicCapture: [
+    async ({ page }, use, testInfo) => {
+      const log = attachForensicCapture(page);
+      await use(log);
+      await flushForensicCapture(log, testInfo);
+    },
+    { auto: true }
+  ]
 });
 
 export { expect };
