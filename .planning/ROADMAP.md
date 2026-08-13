@@ -282,7 +282,7 @@ _v2.15 (Phases 137-150) below. Shipped milestones' details live in `.planning/mi
 **Plans**: 5 plans
 
 - [ ] 137-01-PLAN.md — Preflight module + `globalSetup` wiring: the three-clause served-app identity assertion and the unskippable enforcement point (wave 1)
-- [ ] 137-02-PLAN.md — `strictPort` (behind a decision checkpoint) + removal of both CI blind wait loops (wave 2)
+- [ ] 137-02-PLAN.md — `loadEnv` so the root `.env` really sets the dev-server port (D-16), then `strictPort` (behind a decision checkpoint) + removal of both CI blind wait loops (wave 2)
 - [ ] 137-03-PLAN.md — Two-run negative control against a staged foreign dev server; produces `137-NEGATIVE-CONTROL.md` (wave 2)
 - [ ] 137-04-PLAN.md — Live-doc rewrite: `CLAUDE.md`, `tests/README.md`, `tests/IDURA-TEST-RUNBOOK.md` (wave 3)
 - [ ] 137-05-PLAN.md — Phase gate: full-suite green under the cardinal rule + observed CI run on both jobs (wave 4)
