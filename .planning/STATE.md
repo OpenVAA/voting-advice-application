@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
-current_phase: 138
+current_phase: 139
+current_phase_name: single-source-sweep-findings-confirm-or-withdraw
 status: executing
-stopped_at: Phase 139 context gathered
-last_updated: "2026-08-14T09:23:35.965Z"
+stopped_at: Completed 139-01-PLAN.md
+last_updated: "2026-08-14T11:44:05.799Z"
 last_activity: 2026-08-14
 last_activity_desc: Phase 138 marked complete
 progress:
   total_phases: 14
   completed_phases: 2
   total_plans: 18
-  completed_plans: 11
+  completed_plans: 12
   percent: 14
-current_phase_name: DEF-135-04 — EPERM-07 Root Cause + Cardinal-Rule Waiver Discharge
 ---
 
 # Project State
@@ -24,15 +24,15 @@ current_phase_name: DEF-135-04 — EPERM-07 Root Cause + Cardinal-Rule Waiver Di
 See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 138 — DEF-135-04 — EPERM-07 Root Cause + Cardinal-Rule Waiver Discharge
+**Current focus:** Phase 139 — single-source-sweep-findings-confirm-or-withdraw
 
 ## Current Position
 
 Milestone: v2.15 (Phases 137-150, 14 phases, 38 requirements)
-Phase: 138 — COMPLETE
-Plan: 6 of 6
+Phase: 139 (single-source-sweep-findings-confirm-or-withdraw) — EXECUTING
+Plan: 2 of 7
 Status: Ready to execute
-Last activity: 2026-08-14 — Phase 138 marked complete
+Last activity: 2026-08-14 — Phase 139 execution started
 
 **Standing acceptance rule for every v2.15 phase:** prove the guard fails before claiming it guards —
 negative control run twice (once against the old assertion to demonstrate blindness, once against the
@@ -48,9 +48,9 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-14T08:25:17.370Z
-Stopped at: Phase 139 context gathered
-Resume file: .planning/phases/139-single-source-sweep-findings-confirm-or-withdraw/139-CONTEXT.md
+Last session: 2026-08-14T11:43:22.965Z
+Stopped at: Completed 139-01-PLAN.md
+Resume file: None
 
 ## Deferred Items
 
@@ -136,6 +136,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 138 P04 | 75 min | 3 tasks | 6 files |
 | Phase 138 P05 | 4h 40m | 3 tasks | 2 files |
 | Phase 138 P06 | ~37min active (7h04m wall) | 3 tasks | 7 files |
+| Phase 139 P01 | 14min | 2 tasks | 1 files |
 
 ## Deferred Items
 
@@ -595,6 +596,10 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: 138-05: an infrastructure abort resets the consecutive count and the batch restarts from run 01; the discarded attempt is carried into the ledger via --carry-discards rather than erased by the restart
 - [Phase ?]: 138-05: valid runs are pruned to results.json + stdout/devserver logs; only a non-valid run retains its HTML report (trace + video), keeping 16 full-suite runs at 9.9 MB instead of 5.2 GB
 - [Phase ?]: Phase 138: the v2.14 cardinal-rule waiver is DISCHARGED unrenewed (2026-08-14, operator decision at a one-way checkpoint) — named root cause + negative-control pair + 16/16 runs; no successor waiver; the unlocalised multi-second excursion stays open, attributed by operator judgment and falsifiable
+- [Phase ?]: Phase 139 apparatus: HYGIENE-LOOP / TWO-COLUMN RULE / COLLATERAL RULE / 15-row enumeration defined once in 139-VERDICTS.md SS 3; plans 02-07 invoke by name
+- [Phase ?]: Verdict vocabulary is exactly two values (confirmed/withdrawn); the severity-qualified third tier was rejected, so vacuous-but-red is plain confirmed with the mitigation in the verdict body (D-02)
+- [Phase ?]: Hygiene gate is the SCOPED porcelain (apps tests packages), never the bare form — three tracked files are dirty at session start in this linked worktree
+- [Phase ?]: A green injection run needs a positive control proving the break was live; F18 carries an npx tsx probe alongside its two green runs
 
 ### Quick Tasks Completed
 
