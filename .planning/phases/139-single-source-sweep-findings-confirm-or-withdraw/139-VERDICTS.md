@@ -192,8 +192,8 @@ unfilled but never silently absent. `pending` marks a row this plan did not fill
 | # | Finding | Site (current file:line) | Assertion outcome | File outcome | Verdict | Predicted | Matched? | Collateral |
 |---|---|---|---|---|---|---|---|---|
 | 1 | F15-A | `packages/question-info/tests/questionTypes.test.ts:84,139,199,263,323,387,532,535-537` | pending | pending | pending | PASS | pending | pending |
-| 2 | F15-B | `packages/argument-condensation/tests/condensation/condenserStandalone.test.ts:131-142,184-185` | pending | pending | pending | PASS | pending | pending |
-| 3 | F15-C | `packages/argument-condensation/tests/condensation/condenseQuestions.test.ts:139-145,215-219,268-274` | pending | pending | pending | PASS | pending | pending |
+| 2 | F15-B | `packages/argument-condensation/tests/condensation/condenserStandalone.test.ts:131-142,184-185` | **PASS** (blind) | **PASS** (green) | **confirmed** | PASS | yes | none |
+| 3 | F15-C | `packages/argument-condensation/tests/condensation/condenseQuestions.test.ts:139-145,215-219,268-274` | **PASS** (blind) | **PASS** (green) | **confirmed** | PASS | yes at the sites; viz-test sub-prediction **overturned** (§ 8) | none |
 | 4 | F16 | `packages/argument-condensation/tests/unit/handleQuestion.test.ts:56-68` | **PASS** (blind) — inj. B · **FAIL** — inj. A | **PASS** (green) — inj. B · **FAIL** (red) — inj. A | **confirmed** | PASS | inj. B **yes** · inj. A **no — overturned** (§ 8) | none |
 | 5 | F17 | `apps/frontend/src/lib/dynamic-components/entityList/EntityListWithControls.test.ts:84-95` | pending | pending | pending | PASS | pending | pending |
 | 6 | F18 | `packages/dev-seed/tests/templates/default.test.ts:121-135` | **PASS** (blind) | **PASS** (green) | **confirmed** | PASS | yes | none |
@@ -238,25 +238,436 @@ stated so Phase 142 re-applies it mechanically — ROADMAP criterion 3).
 
 ### 5.2 F15-B — `condenserStandalone.test.ts` (`result.arguments` never touched)
 
-**Status:** not yet run — filled by a later plan in this phase.
+> **Shared injection.** One edit to `Condenser.run()`'s return block is the regression for both F15-B
+> and **F15-C (§ 5.3)**, because both exercise the same method. The injection is recorded identically
+> in § 5.2.2 and § 5.3.2; each record carries its **own** invocation and its **own** observed outcome.
 
-- **5.2.1 Re-read evidence** — verbatim assertion text plus its current line, quoted from the live tree
-- **5.2.2 Injected diff** — the verbatim `-`/`+` lines (D-04)
-- **5.2.3 Invocation** — the verbatim command
-- **5.2.4 Observed** — assertion outcome, file outcome, failing line, verbatim runner output
-- **5.2.5 Verdict and reasoning** — ends in `confirmed` or `withdrawn`
-- **5.2.6 Pre-specified regression for Phase 142** — the concrete regression this assertion cannot detect
+**5.2.1 Re-read evidence**
+
+Quoted from the live tree at `12825b479`, not re-copied from the audit.
+`packages/argument-condensation/tests/condensation/condenserStandalone.test.ts`, first assertion
+block, verbatim at the current lines:
+
+```ts
+130    // Verify results
+131    expect(result).toBeDefined();
+132    expect(result.condensationType).toBe(CONDENSATION_TYPE.LikertPros);
+133
+134    // Check metrics
+135    expect(result.llmMetrics).toBeDefined();
+136    expect(result.llmMetrics.nLlmCalls).toBeGreaterThan(0);
+137    expect(result.llmMetrics.processingTimeMs).toBeGreaterThan(0);
+138    expect(result.llmMetrics.tokens).toBeDefined();
+139    expect(result.llmMetrics.tokens.totalTokens).toBeGreaterThan(0);
+140
+141    // Verify LLM provider was called
+142    expect(input.options.llmProvider.generateObjectParallel).toHaveBeenCalled();
+```
+
+Second assertion block, verbatim:
+
+```ts
+184    expect(result.condensationType).toBe(CONDENSATION_TYPE.LikertCons);
+185    expect(result.llmMetrics.nLlmCalls).toBeGreaterThan(0);
+```
+
+**Two audit drifts, both reported.**
+
+| Audit cite | Actual | Drift |
+|---|---|---|
+| `:130-141` | the assertions are `:131-142` — `:130` (`// Verify results`) and `:141` (`// Verify LLM provider was called`) are comment lines | **+1** |
+| `:181-183` | the assertions are `:184-185` | **+3 — the largest drift in this corpus** |
+
+Neither drift touches the substance. Both are recorded because Phase 142 edits these lines
+mechanically and a three-line miss lands inside the `const condenser = new Condenser(...)` /
+`await condenser.run()` pair at `:181-182`.
+
+**The audit's core claim, re-verified rather than re-copied: `result.arguments` is never touched in
+either block.** Checked by enumeration, not by eye — `grep -n 'arguments' ` over the whole 222-line
+file returns exactly three hits, and **none of them is an assertion**:
+
+```
+13:        arguments: [
+17:        reasoning: 'These arguments support lowering the voting age'
+29:          arguments: [
+```
+
+`:13` and `:29` are the mock LLM provider's canned response fixtures, and `:17` is the word
+"arguments" inside a `reasoning` string. The product of condensation is set up as input and never
+read back as output. The audit's characterisation is exact.
+
+**The incidental CONTEXT § Specifics asks to carry forward, recorded on this verdict rather than
+filed as a finding of its own.** `:137` is
+`expect(result.llmMetrics.processingTimeMs).toBeGreaterThan(0);` — a wall-clock assertion on a run
+whose every LLM call is a synchronous mock. It is the only flake-capable line in the cluster: it
+passes today because `LatencyTracker` measures a nonzero interval, but it guards nothing (no
+production behaviour depends on the pipeline taking measurable time) and it is the kind of assertion
+that reds on a fast machine or a coarse timer. Phase 142 should delete it rather than keep it as
+decoration — see § 5.2.6.
+
+**5.2.2 Injected diff**
+
+Target `packages/argument-condensation/src/core/condensation/condenser.ts:205`, verbatim (D-04 —
+Phase 142 re-applies this mechanically). **This is the shared injection; § 5.3.2 (F15-C) carries the
+identical diff.**
+
+```diff
+  packages/argument-condensation/src/core/condensation/condenser.ts:205
+-      data: { arguments: currentData as Array<Argument> },
++      data: { arguments: [] }, // INJECTED (139): discard every condensed argument
+```
+
+This is precisely the regression the audit names: *"A `Condenser.run()` that discards every argument
+and returns `{ arguments: [], llmMetrics }` passes."* The `INJECTED (139)` marker is present — the
+`+` line has room for a trailing comment that alters neither the emitted value nor the control flow,
+so § 3.1 step 2 applies rather than exempts.
+
+Confirmation that the injection landed as recorded, from `git diff` taken while it was live:
+
+```
+@@ -202,7 +202,7 @@ export class Condenser {
+     return {
+       runId: this.runId,
+       condensationType: this.input.options.outputType,
+-      data: { arguments: currentData as Array<Argument> },
++      data: { arguments: [] }, // INJECTED (139): discard every condensed argument
+       llmMetrics: {
+         processingTimeMs: totalDuration,
+         nLlmCalls: this.allPromptCalls.length,
+```
+
+**5.2.3 Invocation**
+
+Verbatim, from inside the workspace:
+
+```bash
+cd "$(git rev-parse --show-toplevel)/packages/argument-condensation" && npx vitest run tests/condensation/condenserStandalone.test.ts
+```
+
+**The `cd` is load-bearing, not stylistic.** `Condenser.run()` writes its operation tree to
+`path.join(process.cwd(), 'data/operationTrees', ...)` at `condenser.ts:198-199`. That path is
+gitignored **inside** `packages/argument-condensation` and is **not** gitignored at the repo root, so
+running this command from the root would leave an untracked `data/operationTrees/` directory and trip
+the § 3.1 post-gate for a reason having nothing to do with the injection — a false hygiene failure on
+top of a true verdict.
+
+**5.2.4 Observed**
+
+Two outcomes, recorded separately per the TWO-COLUMN RULE (§ 3.2).
+
+| Site | Injected line | Assertion outcome | File outcome | Failing line | exit |
+|---|---|---|---|---|---|
+| F15-B `condenserStandalone.test.ts:131-142,184-185` | `condenser.ts:205` | **PASS** (blind) | **PASS** (green) | none — the two columns agree | 0 |
+
+Verbatim runner output, under the live injection:
+
+```
+ RUN  v3.2.4 /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/packages/argument-condensation
+
+ ✓ tests/condensation/condenserStandalone.test.ts (3 tests) 4ms
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  14:56:02
+   Duration  405ms (transform 114ms, setup 142ms, collect 73ms, tests 4ms, environment 0ms, prepare 55ms)
+```
+
+Byte-for-byte the same count as the pre-injection baseline (3 passed) and the post-revert baseline
+(3 passed) taken in the same session. **Collateral: none** — no test in the file changed state.
+Prediction was PASS; observed PASS; **matched**.
+
+**Positive control — the injection was live, and the blindness is specific to the `arguments`
+field.** A green run only proves blindness if the break reached the module. Rather than probe the
+module out of band, the control was run **in band, one line away**: `condenser.ts:204` —
+`condensationType`, a sibling property of the *same return object literal* — was set to a sentinel in
+its own separate HYGIENE-LOOP iteration, with the `arguments` line left untouched:
+
+```diff
+  packages/argument-condensation/src/core/condensation/condenser.ts:204
+-      condensationType: this.input.options.outputType,
++      condensationType: 'positive-control-139' as unknown as CondensationRunResult['condensationType'],
+```
+
+Result — **5 of 8 tests across both F15 vehicle files went red immediately**:
+
+```
+ ❯ tests/condensation/condenserStandalone.test.ts (3 tests | 2 failed) 8ms
+   × Condenser Standalone Test > It should run the complete condensation pipeline with mock data 7ms
+     → expected 'positive-control-139' to be 'likertPros' // Object.is equality
+   × Condenser Standalone Test > It should handle different condensation types 1ms
+     → expected 'positive-control-139' to be 'likertCons' // Object.is equality
+   ✓ Condenser Standalone Test > It should handle empty comments gracefully 1ms
+ ❯ tests/condensation/condenseQuestions.test.ts (5 tests | 3 failed) 14ms
+   × handleQuestion > It should condense arguments for both pros and cons of a likert question 8ms
+     → expected [ 'positive-control-139', …(1) ] to include 'likertPros'
+   × handleQuestion > It should condense arguments for a categorical question 2ms
+     → expected false to be true // Object.is equality
+   × handleQuestion > It should condense arguments for a boolean question 1ms
+     → expected [ 'positive-control-139', …(1) ] to include 'booleanPros'
+   ✓ handleQuestion > It should throw an error if invalid prompt IDs are provided 1ms
+   ✓ handleQuestion > It should create visualization data when createVisualization flag is set 2ms
+
+ Test Files  2 failed (2)
+      Tests  5 failed | 3 passed (8)
+```
+
+This is a stronger control than an out-of-band probe. It establishes three things at once: the return
+literal at `condenser.ts:202-206` **executes** in both files' module graph; these tests **do** red
+when a field they read changes; and the blindness is therefore **specific to the `arguments`
+property**, not a symptom of an unreached code path or a stale build. The control injection is not a
+regression candidate and is labelled as such — Phase 142 must use § 5.2.6, not this diff.
+
+**5.2.5 Verdict and reasoning**
+
+`Condenser.run()` was made to throw away the entire product of condensation, and the test titled
+*"It should run the complete condensation pipeline with mock data"* reported pass. Under the
+injection every caller received `data: { arguments: [] }` — zero arguments, from a pipeline that had
+just executed a MAP, an ITERATE_MAP and a REDUCE and billed tokens for all of them — and all three
+tests in the file stayed green.
+
+The mechanism is that the assertions read everything **around** the result except the result. Of the
+nine assertions across the two blocks, `:132` and `:184` read `condensationType`, which merely echoes
+back the `outputType` the test itself passed in at `:151`; `:135-139` and `:185` read `llmMetrics`,
+which is accounting about the run rather than its output; and `:142` reads a spy on the mock
+provider, which confirms a call happened. Not one of them touches `result.data.arguments` — verified
+by the whole-file grep in § 5.2.1, which finds the token only in the mock's own input fixtures. The
+test therefore certifies that the pipeline *ran*, never that it *produced* anything. The audit's
+characterisation is accurate to the line, and the positive control rules out the one alternative
+explanation for a green run.
+
+The wall-clock assertion at `:137` is noted as an incidental on this verdict per CONTEXT § Specifics
+and is not folded into the finding: it is a different defect (a flake-capable assertion guarding
+nothing) in the same cluster, and § 5.2.6 names its disposition. Nothing in the run overturned a
+prediction for this site.
+
+**Verdict:** confirmed
+
+**5.2.6 Pre-specified regression for Phase 142**
+
+**The regression (re-apply this diff verbatim):** at
+`packages/argument-condensation/src/core/condensation/condenser.ts:205`, replace
+`data: { arguments: currentData as Array<Argument> },` with `data: { arguments: [] },`. In production
+this is total silent failure of the package's entire purpose: `handleQuestion` returns results whose
+`condensationType`, `runId`, token counts and costs are all correct and whose argument lists are
+empty, so a caller rendering condensed pros and cons for a question shows nothing, having paid for
+every LLM call. Today the whole `argument-condensation` suite stays green through it.
+
+**The target Phase 142 must reach:** the assertions must read `result.data.arguments`. The audit
+already names the three properties worth asserting, and the mock fixtures at
+`condenserStandalone.test.ts:13-17` and `:29` make all three checkable without a live LLM:
+
+1. **Count** — `expect(result.data.arguments.length).toBeGreaterThan(0)`, and better, the exact count
+   the mock's canned response implies, so a partial-loss regression is caught as well as a total one.
+2. **Non-empty `text` per argument** — `expect(result.data.arguments.every((a) => a.text.trim().length > 0)).toBe(true)`,
+   which additionally catches a pipeline that returns correctly-shaped but blank arguments.
+3. **Source-comment IDs map back to the input** — every argument's source ids ⊆ the ids of
+   `mockComments`, which is the assertion that makes the test about *this* run's data rather than
+   about any arguments at all.
+
+Any one of the three fails under the diff above; all nine current assertions pass.
+
+**Additionally, delete `:137` rather than keeping it.**
+`expect(result.llmMetrics.processingTimeMs).toBeGreaterThan(0);` guards no behaviour — no requirement
+says a mocked pipeline must take measurable wall-clock time — and it is the only assertion in the
+cluster that can red for reasons unrelated to the code under test. Replacing blindness with a real
+`arguments` assertion and leaving a timing assertion behind would trade a silent gap for an
+intermittent one.
 
 ### 5.3 F15-C — `condenseQuestions.test.ts` (shape and type only)
 
-**Status:** not yet run — filled by a later plan in this phase.
+> **Shared injection.** The same single edit to `Condenser.run()`'s return block is the regression for
+> this record and for **F15-B (§ 5.2)**; both exercise that method. The diff in § 5.3.2 is identical
+> to § 5.2.2. This record carries its own invocation and its own observed outcome.
 
-- **5.3.1 Re-read evidence** — verbatim assertion text plus its current line, quoted from the live tree
-- **5.3.2 Injected diff** — the verbatim `-`/`+` lines (D-04)
-- **5.3.3 Invocation** — the verbatim command
-- **5.3.4 Observed** — assertion outcome, file outcome, failing line, verbatim runner output
-- **5.3.5 Verdict and reasoning** — ends in `confirmed` or `withdrawn`
-- **5.3.6 Pre-specified regression for Phase 142** — the concrete regression this assertion cannot detect
+**5.3.1 Re-read evidence**
+
+Quoted from the live tree at `12825b479`, not re-copied from the audit. Three assertion clusters,
+one per condensed question type. **No drift — all three audit cites are line-exact.**
+
+Cluster 1, the likert question (`:139-145`), verbatim:
+
+```ts
+138    // Verify results
+139    expect(results).toBeDefined();
+140    expect(results).toHaveLength(2); // Should have one result for pros, one for cons
+141
+142    // Check that we have one of each type
+143    const types = results.map((r) => r.condensationType);
+144    expect(types).toContain(CONDENSATION_TYPE.LikertPros);
+145    expect(types).toContain(CONDENSATION_TYPE.LikertCons);
+```
+
+Cluster 2, the categorical question (`:215-219`), verbatim:
+
+```ts
+215    expect(results).toBeDefined();
+216    expect(results).toHaveLength(3); // Should have one result for 'cat1', 'cat2', and 'cat3'
+217
+218    // Check that all condensation results are of type PROS
+219    expect(results.every((r) => r.condensationType === CONDENSATION_TYPE.CategoricalPros)).toBe(true);
+```
+
+Cluster 3, the boolean question (`:268-274`), verbatim:
+
+```ts
+268    expect(results).toBeDefined();
+269    expect(results).toHaveLength(2); // Should have one result for pros, one for cons
+270
+271    // Check that we have one of each type
+272    const types = results.map((r) => r.condensationType);
+273    expect(types).toContain(CONDENSATION_TYPE.BooleanPros);
+274    expect(types).toContain(CONDENSATION_TYPE.BooleanCons);
+```
+
+**What the three clusters have in common is what makes them one finding.** Every assertion is either
+`toHaveLength(n)` on the **per-group result array** — how many condensation *runs* came back, which
+is determined by `getAndSliceComments`'s grouping of the test's own fixture entities, not by any
+run's output — or a read of `condensationType`, which echoes the type the caller requested. Not one
+assertion descends into `results[n].data.arguments`. Confirmed by enumeration over the whole 407-line
+file: `grep -n 'arguments'` returns hits only at `:28` and `:44` (mock provider response fixtures),
+`:32` and `:48` (the word inside a `reasoning` string), and `:62`/`:148`/`:222` (the word "arguments"
+in three test *titles*). **Zero assertions on argument content, in a file whose every test is titled
+"It should condense arguments for …".**
+
+**5.3.2 Injected diff**
+
+Target `packages/argument-condensation/src/core/condensation/condenser.ts:205`, verbatim (D-04).
+**This is the shared injection; § 5.2.2 (F15-B) carries the identical diff, and it was applied once
+with both records' runs taken before the revert.**
+
+```diff
+  packages/argument-condensation/src/core/condensation/condenser.ts:205
+-      data: { arguments: currentData as Array<Argument> },
++      data: { arguments: [] }, // INJECTED (139): discard every condensed argument
+```
+
+`handleQuestion` reaches this line through `handleBooleanQuestion` / `handleOrdinalQuestion` /
+`handleCategoricalQuestion` → `runSingleCondensation` → `Condenser.run()`, so all three of this
+file's condensing tests are downstream of it. The `git diff` confirmation while it was live is
+recorded in § 5.2.2 and is not duplicated here.
+
+**5.3.3 Invocation**
+
+Verbatim, from inside the workspace — the same `cd` requirement and the same reason as § 5.2.3
+(`Condenser.run()` writes `<cwd>/data/operationTrees/`, gitignored only inside the package):
+
+```bash
+cd "$(git rev-parse --show-toplevel)/packages/argument-condensation" && npx vitest run tests/condensation/condenseQuestions.test.ts
+```
+
+Here the `cd` is doubly load-bearing: the visualization test at `:331` **writes two tree files and
+reads them back** (`:388-396`), so this file exercises the `process.cwd()`-relative path directly
+rather than incidentally.
+
+**5.3.4 Observed**
+
+Two outcomes, recorded separately per the TWO-COLUMN RULE (§ 3.2).
+
+| Site | Injected line | Assertion outcome | File outcome | Failing line | exit |
+|---|---|---|---|---|---|
+| F15-C `condenseQuestions.test.ts:139-145,215-219,268-274` | `condenser.ts:205` | **PASS** (blind, all three clusters) | **PASS** (green) | none — the two columns agree | 0 |
+
+Verbatim runner output, under the live injection (the `stdout`/`stderr` lines are the package's own
+progress logging, kept because they are part of the record):
+
+```
+ RUN  v3.2.4 /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/packages/argument-condensation
+
+stderr | tests/condensation/condenseQuestions.test.ts > handleQuestion > It should create visualization data when createVisualization flag is set
+Only 1 comments for question "Visualization test question" (for pro arguments). The results may not be meaningful.
+Only 1 comments for question "Visualization test question" (for con arguments). The results may not be meaningful.
+
+ ✓ tests/condensation/condenseQuestions.test.ts (5 tests) 7ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  14:56:08
+   Duration  380ms (transform 114ms, setup 125ms, collect 78ms, tests 7ms, environment 0ms, prepare 44ms)
+```
+
+Byte-for-byte the same count as the pre-injection baseline (5 passed) and the post-revert baseline
+(5 passed).
+
+**Collateral: none — and this half of the prediction was overturned.** Research predicted
+*"condenseQuestions likely 4/5"*, expecting the out-of-scope visualization test at `:331` to red
+because it reads `prosData.nodes` back from the written tree. It did not: the file went **5/5**. The
+divergence is recorded in § 8 rather than the prediction being adjusted to fit.
+
+The reason is a two-line ordering detail in `Condenser.run()` that the prediction did not account
+for. The operation tree is populated at `condenser.ts:195` by
+`this.treeBuilder.setFinalArguments(currentData as Array<Argument>)` and written to disk at
+`:198-199` — both **before** the `return` statement at `:202`. The injection changes only the object
+literal in that `return`. So the tree on disk still contains the real arguments while the value
+handed to the caller is empty, and the viz test's `expect(prosData.nodes).toBeDefined()` at `:400` is
+untouched. **This makes the finding worse, not better:** not even the out-of-scope test that reads
+the pipeline's own serialized output can see a `Condenser.run()` that returns nothing.
+
+Prediction for the three F15-C sites was PASS; observed PASS; **matched**. The sub-prediction about
+the viz test was FAIL-expected; observed PASS; **overturned** (§ 8.2, O-2).
+
+**Positive control — shared with § 5.2.4 and decisive for this file too.** The control injection at
+`condenser.ts:204` (`condensationType` → a sentinel) reds **three of this file's five tests** —
+`:144` (`expected [ 'positive-control-139', …(1) ] to include 'likertPros'`), `:219`
+(`expected false to be true`) and `:273` (`… to include 'booleanPros'`). All three of the F15-C
+clusters therefore demonstrably execute the injected return literal and demonstrably red when a
+property they read changes. Their green under the `arguments: []` injection is measured blindness,
+not an unreached path. Full control output is in § 5.2.4.
+
+**5.3.5 Verdict and reasoning**
+
+Three tests, each titled *"It should condense arguments for …"*, ran a pipeline that returned zero
+arguments and all three reported pass. The likert, categorical and boolean paths were each exercised
+end to end through `handleQuestion` with `data: { arguments: [] }` coming back from every
+`Condenser.run()`, and the file went 5/5 green — including, per § 5.3.4, the visualization test that
+reads the pipeline's serialized output.
+
+The mechanism is that the clusters assert on the **cardinality of the result array** rather than on
+the **content of the results**. `toHaveLength(2)` at `:140` and `:269` and `toHaveLength(3)` at
+`:216` count how many condensation runs `handleQuestion` returned — a number fixed by how the
+fixture entities' answers group into pros/cons/choices in `getAndSliceComments`, entirely upstream of
+condensation. The remaining assertions (`:144-145`, `:219`, `:273-274`) read `condensationType`,
+which each run echoes back from the `outputType` it was given. So the suite verifies that the right
+*number* of runs of the right *kind* happened, and never that any of them produced an argument. The
+audit's characterisation — *"which assert only `toHaveLength(n)` plus the echoed type"* — is accurate
+to the line, and its three cites are exact.
+
+One prediction was overturned in the direction of strengthening the finding rather than weakening it
+(the viz test stayed green), and it is recorded as overturned in § 8 rather than rewritten. Nothing
+observed bears against the verdict.
+
+**Verdict:** confirmed
+
+**5.3.6 Pre-specified regression for Phase 142**
+
+**The regression (re-apply this diff verbatim):** at
+`packages/argument-condensation/src/core/condensation/condenser.ts:205`, replace
+`data: { arguments: currentData as Array<Argument> },` with `data: { arguments: [] },` — the same
+single line as § 5.2.6, since one fix must be validated against both files. In production a voter
+opening a question's condensed pros and cons sees two empty lists, while every log line, token count
+and cost figure reports a successful run.
+
+**The target Phase 142 must reach:** each cluster must assert on the arguments inside the results it
+already counts. Concretely, alongside the existing `toHaveLength(n)`:
+
+1. **Every returned run carries arguments** —
+   `expect(results.every((r) => r.data.arguments.length > 0)).toBe(true)`, which fails under the diff
+   above at all three clusters.
+2. **Argument text is non-empty** —
+   `expect(results.flatMap((r) => r.data.arguments).every((a) => a.text.trim().length > 0)).toBe(true)`,
+   catching a pipeline that returns shaped-but-blank arguments.
+3. **Source-comment IDs map back to the input entities' comments** — the assertion that ties the
+   output to *this* run's fixture data rather than to any arguments at all.
+
+**And pair the count with a content check rather than replacing it.** `toHaveLength(2)` / `(3)` are
+worth keeping — they are the only assertions that guard the pros/cons/per-choice *grouping* in
+`getAndSliceComments`, which is genuine behaviour and is not what F15-C is about. The defect is that
+they are the *only* thing asserted, not that they are asserted.
+
+**Note for the visualization test at `:331`.** It is out of scope for this finding (§ 3.3), but the
+§ 5.3.4 mechanism is worth carrying into any future work on it: because `setFinalArguments` runs at
+`condenser.ts:195`, before the return, that test's tree-file assertions cannot detect a corrupted
+return value either. If it is ever meant to guard end-to-end output, it needs an assertion on
+`results[n].data.arguments`, not only on `prosData.nodes`.
 
 ### 5.4 F16 — `handleQuestion.test.ts` (bare `rejects.toThrow()`, competing throw)
 
@@ -1331,6 +1742,24 @@ independent paths to a throw") and its named regression ("delete the language ch
 test still passes") are both **refuted by execution**, while the defect its title names — a bare
 matcher under a title promising a specific cause — is **confirmed** by the redesigned injection B.
 Phase 142 must take its negative control from § 5.4.6, not from the audit's sentence.
+
+**O-2 — F15-C: the visualization test at `:331` was predicted to red, and did not.** Recorded by
+plan 02. `139-RESEARCH.md:505-510` predicted *"condenseQuestions likely 4/5"* under the shared
+`condenser.ts:205` injection, on the ground that the out-of-scope test
+*"It should create visualization data when createVisualization flag is set"* reads `prosData.nodes`
+back from the written operation tree and would therefore see the emptied arguments. Observed: the
+file went **5/5 green**; that test passed.
+
+The premise missed a two-line ordering detail. `Condenser.run()` populates the tree at
+`condenser.ts:195` (`this.treeBuilder.setFinalArguments(currentData as Array<Argument>)`) and writes
+it to disk at `:198-199`, both **before** the `return` at `:202` whose object literal the injection
+edits. The serialized tree therefore still holds the real arguments while the caller receives none,
+and `expect(prosData.nodes).toBeDefined()` at `:400` never observes the break.
+
+Consequence, carried into § 5.3.4 and § 5.3.6: this **strengthens** F15-C rather than weakening it —
+not even the test that reads the pipeline's own serialized output can detect a `Condenser.run()` that
+returns nothing. It also means that test cannot serve as an accidental end-to-end guard, and § 5.3.6
+records what it would need to become one. No verdict changed; the prediction stands recorded as made.
 
 ### 8.3 Rejected injection designs
 
