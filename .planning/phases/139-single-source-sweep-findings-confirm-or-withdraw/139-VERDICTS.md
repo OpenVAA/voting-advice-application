@@ -4255,21 +4255,135 @@ bare.
 
 ## 6. Withdrawals and their propagation
 
-not yet written — filled by plan 07.
+**Reserved for plan 07, which owns criterion 4.** Its input is already fixed and is not re-derived
+there: § 4.2 records **`withdrawn: none`** — fifteen findings carry a verdict and all fifteen are
+`confirmed`. Plan 07 states here what that means for propagation: which audit entries are struck (on an
+empty withdrawal set, none), and whether ASSERT-07's scope in `.planning/ROADMAP.md` and
+`.planning/REQUIREMENTS.md` is edited down (on an empty withdrawal set, it is not). The section is
+reserved rather than written now because criterion 4 is plan 07's requirement, and a propagation
+statement written by the plan that produced the counts would be self-attested.
 
 ---
 
 ## 7. What this pass does and does not prove
 
-not yet written — filled by plan 06.
+Fifteen `confirmed` verdicts in a uniform column invite a stronger reading than the evidence supports.
+This section states the limits in the pass's own voice, so that a reader who never opens § 5 is not
+misled by § 4's regularity. Seven limits, each stated plainly.
+
+**1. A green injection proves the assertion blind, not the product broken.** Every observation in this
+document was produced by deliberately breaking working code and watching a test fail to notice. The
+subject of each verdict is an *assertion*, never the shipped behaviour it was pointed at: "F18
+confirmed" means `default.test.ts:121-135` cannot see a locale regression, **not** that locale cycling
+is broken. Nothing here is a defect report about the application. The shipped behaviour was restored
+after every run and the restoration is evidenced twice over — § 2's environment stamp establishes the
+scoped porcelain was empty over `apps`, `tests` and `packages` at the start, and each record's
+HYGIENE-LOOP post-gate (§ 3.1 step 5) re-establishes it, per path, per finding, before the next
+injection begins.
+
+*One exception, and it is not an injection result.* § 5.10 and § 8.2 O-3 record a **live defect found
+incidentally** while designing the F20-1 injection: `error()` in SvelteKit 2 throws rather than returns,
+so the OIDC authorize handler's `return error(400, …)` at `+server.ts:22` is caught by that same
+function's `catch (e)` at `:50` and replaced with the catch arm's 500 at `:52`. The endpoint does not
+return 400 for a missing `redirectUri` on the un-injected tree today. That is a product defect, it was
+observed rather than injected, and it is stated here because § 4's table would otherwise bury it: **the
+consequence for Phase 142 is that tightening `authorize-endpoint.test.ts:233` to assert
+`{ status: 400 }` will go red against the clean tree until the endpoint is fixed**, and an implementer
+who reads that red as a bad remediation will back the correct change out again.
+
+**2. F15-A's regression is a substitute, not the audit's.** The audit names its regression as an
+implementation that ignores question type. That regression is **un-injectable**, because there is
+nothing to remove:
+`grep -rnE 'question\.type|QUESTION_TYPE|choices' packages/question-info/src/` exits 1 with no output
+(§ 5.1.1(a)), so the shipped code already ignores question type and the audit's hypothetical is the
+production reality. The regression actually injected — the prompt's question text emptied at
+`infoGeneration.ts:76` — is recorded verbatim in § 5.1.2 with its reasoning, and the rejected
+alternatives in § 8.3 R-2 and R-3. **Phase 142 inherits the substitute, not the audit's wording**; its
+negative control must come from § 5.1.6. Stated at pass level because a summary-only reader would
+otherwise expect to find the audit's sentence re-applied, fail to apply it, and conclude the record was
+wrong. The absence is not a weakness in the evidence: it is *stronger* evidence for F15-A than any
+injection could be, and § 5.1.5 rests one of its two grounds on it.
+
+**3. F17's green run is degenerate.** `EntityListWithControls.svelte` is not in
+`EntityListWithControls.test.ts`'s module graph — the file's complete import set is `vitest` and
+`./EntityListWithControls.helpers`, and the helper has no imports of its own (§ 5.5.1(a)) — so the
+injected `$effect` loop never loaded and could not have been observed. The import-graph fact is the
+evidence; the run is corroboration, and § 8.3 R-10 records the control that converted the reading into
+a measurement (a deliberately unparseable component left the file at 8 passed, unchanged). **This pass
+did not exercise the component's reactivity and does not claim to.** F17 is the only site in this
+corpus where the run carries no verdict weight at all; for the other fourteen the run is the evidence
+and the reading is the frame, and here the relation is inverted.
+
+**4. F17 is out of criterion 1's scope.** It is named in ASSERT-07 but absent from Phase 139's
+criterion 1, because the auditor read it directly ("Confidence: high (read directly)") and it is
+therefore not single-source — and criterion 1 covers the single-source findings. It carries a verdict
+here under **D-06**, so that Phase 142 does not read its omission as a withdrawal, **not** because
+criterion 1 required one. A reader tallying criterion 1's coverage should count fourteen, not fifteen.
+
+**5. The vacuous-but-red class is confirmed, not withdrawn.** The three F19 sites (rows 7, 8, 9) pass
+their own assertion — `expect(null).toBeDefined()` passes, because `toBeDefined()` fails only on
+`undefined` — inside a file that goes red for an unrelated reason two or three lines later, when a
+`!`-asserted `null` reaches `.split('.')` or a `jose` entry point. Under **D-02** that is plain
+`confirmed`, with the mitigation recorded on the verdict: **the cost is diagnosis time, not coverage.**
+Criterion 2's "reads blind but fails correctly is withdrawn" reaches only findings whose *own*
+assertion catches the regression, and § 3.2's two-column rule exists precisely so that the file column
+cannot be mistaken for the assertion column here. Withdrawing this class would have shrunk ASSERT-03
+and Phase 140 as well as ASSERT-07 and Phase 142, on the strength of a column that was never measuring
+the assertion.
+
+**6. What the pass does not cover.** Four omissions, each deliberate:
+
+  - **Missing tests are out of scope.** `getIdTokenClaims.test.ts` has no negative test for a bad
+    signature, a wrong `issuer` or a wrong `audience` — the three rejections `jose.jwtVerify` at
+    `getIdTokenClaims.ts:33-37` is configured to perform (§ 5.12). That is a **coverage gap, not a fake
+    guard**: this pass judges assertions that exist, and a test that does not exist cannot be
+    remediated by ASSERT-07. Recorded so the gap is not lost, deferred to a future coverage phase.
+  - **No assertion was repaired.** Not one matcher in the corpus was strengthened, and no `file:line`
+    under `apps/`, `packages/` or `tests/` differs from HEAD. **Phase 140** owns the F3/F9/F10/F19
+    repairs under ASSERT-02/03/05/06; **Phase 142** owns the F15/F16/F17/F18/F20 redesign under
+    ASSERT-07.
+  - **No `test:unit` wiring was added.** `question-info` and `argument-condensation` expose only
+    `test` / `test:watch`, so `turbo run test:unit` still does not reach them; their runs here were ad
+    hoc and in-package per **D-05**. **Phase 141** owns the wiring under UNIT-01..04.
+  - **The F19 class was not swept.** § 8.1 C-2 and C-4 record that the
+    `!`-on-a-`null`-returning-`.get()` pattern appears **six** further times across the two auth test
+    files, outside the audit's enumeration. Those six carry no verdict here — they are a candidate
+    scope item for **Phase 140**'s ASSERT-03 sweep, and evidence that the F19 class is wider than the
+    three sites the audit named.
+
+**7. Only the first half of the negative-control pair is discharged here.** Each § 5.N.2 diff plus its
+§ 5.N.6 regression is one half of the pair Phase 142 must complete. This pass applied the injection
+against the **old** assertion and observed it stay green; Phase 142 re-applies the **same** diff against
+the **new** assertion and must observe it go red. The standing v2.15 acceptance rule ("prove the guard
+fails before claiming it guards") requires both halves, and a phase that ships only the first has not
+proved a guard — it has pre-specified the test that would. Four records qualify which diff to re-apply
+(F15-A, F16, F19c, F20-1; see § 4.3), and § 8.3 records ten designs that must **not** be used as
+negative controls — R-4, R-5, R-8, R-9 because they red both before and after a fix, R-10 because it
+reds neither before nor after and would red for the wrong reason once the test is repaired.
 
 ---
 
 ## 8. Discarded and collateral — recorded rather than hidden
 
-Plan 06 writes this section's synthesis. Until then, plans that produce collateral reds, overturned
-predictions or rejected injection designs **append their entries here as they happen**, so nothing
-waits on a later plan to be recorded. Entries below are in the order they were observed.
+**A pass that records only its successes is a pass whose predictions cannot be audited.** Everything
+below was produced by this phase and then set aside: a prediction the run contradicted, a test that
+went red for a reason unrelated to any verdict, an injection design weighed and rejected, a line the
+audit cited one or three lines off. None of it changes a verdict — and that is exactly why it is easy
+to lose, and why losing it would leave § 4 looking like fifteen confirmations of what research already
+expected rather than the result of fifteen experiments.
+
+Plans 02-05 appended their entries here **as they happened**, in observation order, so nothing waited
+on this plan to be recorded; plan 06 wrote the synthesis, added §§ 8.4 and 8.5, and changed no entry
+already present. The five subsections are: collateral reds (§ 8.1), overturned predictions (§ 8.2),
+rejected injection designs (§ 8.3), line-number drift (§ 8.4) and record corrections (§ 8.5).
+
+**Two standing rules govern this section.** A prediction the run overturned is recorded **beside** the
+original prediction, quoted as written and never rewritten to match the observation (§ 3.4) — a
+silently-corrected prediction destroys the only evidence that the pass produced information rather than
+confirmation. And every collateral red is recorded verbatim from the runner with an **explicit**
+statement that it does not bear on the verdict (§ 3.3) — an unlabelled collateral red is the material
+that gets misread as "the assertion caught it", and one such misreading would have withdrawn a valid
+finding.
 
 ### 8.1 Collateral reds
 
@@ -4712,3 +4826,88 @@ the other fourteen the run is the evidence and the reading is the frame; here th
 evidence and the run is corroboration. § 4's caveat paragraph and § 7 both record this asymmetry, and
 D-06 records the related scope fact — F17 is not single-source, so it sits outside Phase 139's
 criterion 1 to begin with.
+
+### 8.4 Line-number drift
+
+Every one of the fifteen sites was located in the live tree at `12825b479` and its cite compared to the
+audit's. **Twelve of the fifteen are line-exact.** The drift is recorded not because it changes any
+verdict — it changes none — but because Phase 142 edits these lines *mechanically*, and a three-line
+miss lands inside a `const condenser = new Condenser(...)` / `await condenser.run()` pair rather than on
+an assertion.
+
+| Finding | Audit cite | Actual (live tree) | Delta |
+|---|---|---|---|
+| F15-A | `:84,139,199,263,323,387,532,535-537` | identical | **0** — line-exact (see § 8.5 for two description corrections and one unlisted site) |
+| F15-B | `:130-141` | `:131-142` — `:130` (`// Verify results`) and `:141` (`// Verify LLM provider was called`) are comment lines | **+1** |
+| F15-B | `:181-183` | `:184-185` | **+3 — the largest drift in this corpus** |
+| F15-C | `:139-145, 215-219, 268-274` | identical, all three | **0** |
+| F16 | `:56-68` (the site itself) | identical | **0** |
+| F16 | "lines 19-26" (supporting fact: the mock provider) | `:19-27` — `streamText` closes at `:27`; `:28` is the `as unknown as LLMProvider` cast | **+1 on the closing line** |
+| F16 | "line 53" (supporting fact: the empty entities array) | `:54` | **+1** |
+| F17 | `:84-95` | identical — and the characterisation is accurate to the line | **0** |
+| F18 | `:121-135` | identical, range and both assertions | **0** |
+| F19a | `:144` | identical | **0** |
+| F19b | `:148` | identical — and the audit's "identical to F19a" is accurate | **0** |
+| F19c | `:167` | identical | **0** |
+| F20-1 | `:233` | identical | **0** |
+| F20-2 | `:32-36` | identical | **0** |
+| F20-3 | `:236`, `:259` | identical, both | **0** |
+| F20-4 | `:151` | identical | **0** |
+| F20-5 | `:5-12` | identical — and that is the whole file | **0** |
+| F20-6 | `:104` | identical | **0** |
+
+**No site moved file.** All fifteen were found in the file the audit named, under the enclosing test
+title the audit named, with the assertion text the audit quoted (subject to § 8.5's three description
+corrections, which concern *what the assertion says*, not *where it is*).
+
+**No site has been repaired.** Every assertion in the corpus is, at `12825b479`, exactly as the audit
+described it three days earlier — which is what makes the fifteen verdicts verdicts about the live tree
+rather than about a snapshot. This also means Phase 142 will find the corpus as recorded, provided no
+intervening phase edits these files.
+
+**One further drift, in this phase's own research rather than in the audit.**
+`139-RESEARCH.md:471` cites the F15-A injection target as `infoGeneration.ts:75`; in the current tree
+`:75` is the `const variables: Record<string, unknown> = {` opener and the `question: question.name,`
+entry is at **`:76`** — a **+1 drift**, caught in § 5.1.2 by asserting the line's text equal before
+writing rather than trusting the number. Recorded here for the same reason as the audit's drifts: the
+next reader of that cite is Phase 142.
+
+### 8.5 Record corrections
+
+Corrections the re-read produced. **Each is recorded here and in its § 5.N record, beside the original
+wording; neither `.planning/audits/2026-08-11-fake-guard-sweep.md` nor `139-RESEARCH.md` was edited in
+place.** That is deliberate and is the same rule § 8.2 applies to predictions: the original text is the
+evidence that the re-read produced information, and overwriting it would leave a corrected document
+indistinguishable from one that was right the first time. (Criterion 4 *does* force in-place edits to
+the audit — but only for a **withdrawal**, and § 4.2 records `withdrawn: none`. § 6 states that
+propagation.)
+
+**K-1 — the audit's description of the ten F15-A sites is wrong for three of them.** The audit says
+they are "all variations of `expect(results[0].data.infoSections).toBeDefined()`". Seven are.
+`:535`, `:536` and `:537` are **exact string equalities** — `toBe('Tax Policy')`,
+`toBe('Income Inequality Priority')`, `toBe('Policy Preference Analysis')` — which is the *strongest*
+matcher in the file, not a weak one. Stated in full with all ten lines quoted at § 5.1.1(b).
+**The finding's substance survives the correction; its description does not**: the three are blind for a
+different reason (they assert against the payload the test itself mocked in), not because the matcher is
+loose. Phase 142 must remediate them as mock-in/mock-out sites, not as `toBeDefined()` weakenings.
+
+**K-2 — the audit missed an eleventh F15-A assertion.** `questionTypes.test.ts:388` carries the same
+pattern in the same cluster the audit does enumerate, and the identical unlisted pattern also appears at
+`:140` and `:264` (`toHaveLength(2)` against a mocked-in count). Recorded at § 5.1.1 and carried in
+§ 4's row 1 as `(+ unlisted :388)`. This **widens** F15-A rather than changing its verdict.
+
+**K-3 — `139-RESEARCH.md` § F20-4's sibling-assertion grouping is off by one.** It groups the siblings
+as `:152-155`, `:156-158` and `:159-160`; the actual groups are one line lower throughout, and `:160` is
+the closing `});`, not an assertion. Stated at § 5.13.1. The substance — three groups, none reachable by
+the injection — is unaffected, and the observed run confirmed it.
+
+**K-4 — a collateral-count prediction was low by a factor of three.** Plan 04 anticipated three
+`Token exchange failed:` stderr lines under the F19c runs; the observed count is **×10 in the baseline**
+and ×10 under each injection, one per test, since every test drives the handler through the same failing
+claims extraction. Stated at § 5.9.4. Because they are present identically in all three runs they
+distinguish none of them, and they are not a symptom of either injection.
+
+**K-5 — the ordering audit found nothing to correct.** § 4.1 walked the fifteen rows against the fifteen
+records position by position: 15/15 matched, no record was written into the wrong slot, and no
+renumbering was performed. Recorded as a result rather than omitted, because "no correction was needed"
+and "no check was run" look identical in a document that reports only corrections.
