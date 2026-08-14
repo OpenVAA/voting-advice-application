@@ -5,15 +5,15 @@ milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 139
 current_phase_name: single-source-sweep-findings-confirm-or-withdraw
 status: executing
-stopped_at: Completed 139-03-PLAN.md — 8 of 15 verdicts filled (F15-A, F20-5 added), 7 placeholders remain
-last_updated: "2026-08-14T12:15:14.825Z"
+stopped_at: Completed 139-04-PLAN.md — 11 of 15 verdicts filled (F19a, F19b, F19c added), 4 placeholders remain
+last_updated: "2026-08-14T12:30:11.039Z"
 last_activity: 2026-08-14
 last_activity_desc: Phase 138 marked complete
 progress:
   total_phases: 14
   completed_phases: 2
   total_plans: 18
-  completed_plans: 14
+  completed_plans: 15
   percent: 14
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 
 Milestone: v2.15 (Phases 137-150, 14 phases, 38 requirements)
 Phase: 139 (single-source-sweep-findings-confirm-or-withdraw) — EXECUTING
-Plan: 4 of 7
+Plan: 5 of 7
 Status: Ready to execute
 Last activity: 2026-08-14 — Phase 139 execution started
 
@@ -48,8 +48,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-14T12:15:03.144Z
-Stopped at: Completed 139-03-PLAN.md — 8 of 15 verdicts filled (F15-A, F20-5 added), 7 placeholders remain
+Last session: 2026-08-14T12:30:11.017Z
+Stopped at: Completed 139-04-PLAN.md — 11 of 15 verdicts filled (F19a, F19b, F19c added), 4 placeholders remain
 Resume file: None
 
 ## Deferred Items
@@ -139,6 +139,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 139 P01 | 14min | 2 tasks | 1 files |
 | Phase 139 P02 | 20m | 2 tasks | 1 files |
 | Phase 139 P03 | ~20 minutes | 2 tasks | 2 files |
+| Phase 139 P04 | 25m | 2 tasks | 1 files |
 
 ## Deferred Items
 
@@ -609,6 +610,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Phase 139 Plan 03: The audit's description of questionTypes.test.ts:535-537 is corrected on the record — exact toBe string equalities, not toBeDefined() variations — and an unlisted eleventh site at :388 is added; neither weakens F15-A
 - [Phase ?]: Phase 139 Plan 03: F20-5 carries two injections under one verdict (vacuity at variants.ts:94, wrong ID at :100), giving Phase 142 two distinct pre-specified regressions: a length guard and equality assertions on the expected ids
 - [Phase ?]: Phase 139 Plan 03: In-band positive controls run for both findings — key-vs-value at infoGeneration.ts:77 (7/7 red) and electionId: undefined at variants.ts:100 (red inside the forEach) — the latter is what makes injection A's vacuous green interpretable
+- [Phase ?]: Phase 139 plan 04: all three F19 findings confirmed — the verdict cites the assertion column (PASS, blind), never the process exit code (FAIL); D-02 and the TWO-COLUMN RULE
+- [Phase ?]: Phase 139 plan 04: F19c needed a second injection — 'undefined as unknown as string' serialises to the string "undefined" via URLSearchParams, modelling malformation not absence; deleting the entry produces the null the finding names (§ 8.3 R-6)
 
 ### Quick Tasks Completed
 
