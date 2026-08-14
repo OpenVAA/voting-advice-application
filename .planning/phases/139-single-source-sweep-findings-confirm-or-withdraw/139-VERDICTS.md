@@ -196,7 +196,7 @@ unfilled but never silently absent. `pending` marks a row this plan did not fill
 | 3 | F15-C | `packages/argument-condensation/tests/condensation/condenseQuestions.test.ts:139-145,215-219,268-274` | pending | pending | pending | PASS | pending | pending |
 | 4 | F16 | `packages/argument-condensation/tests/unit/handleQuestion.test.ts:56-68` | pending | pending | pending | PASS | pending | pending |
 | 5 | F17 | `apps/frontend/src/lib/dynamic-components/entityList/EntityListWithControls.test.ts:84-95` | pending | pending | pending | PASS | pending | pending |
-| 6 | F18 | `packages/dev-seed/tests/templates/default.test.ts:121-135` | pending | pending | pending | PASS | pending | pending |
+| 6 | F18 | `packages/dev-seed/tests/templates/default.test.ts:121-135` | **PASS** (blind) | **PASS** (green) | **confirmed** | PASS | yes | none |
 | 7 | F19a | `apps/frontend/src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts:144` | pending | pending | pending | PASS | pending | pending |
 | 8 | F19b | `apps/frontend/src/lib/api/utils/auth/providers/idura.test.ts:148` | pending | pending | pending | PASS | pending | pending |
 | 9 | F19c | `apps/frontend/src/lib/api/utils/auth/__tests__/token-endpoint.test.ts:167` | pending | pending | pending | PASS | pending | pending |
@@ -282,14 +282,193 @@ stated so Phase 142 re-applies it mechanically — ROADMAP criterion 3).
 
 ### 5.6 F18 — `default.test.ts:121-135` (locale cycling asserts only non-empty names)
 
-**Status:** not yet run — filled by a later plan in this phase.
+**5.6.1 Re-read evidence**
 
-- **5.6.1 Re-read evidence** — verbatim assertion text plus its current line, quoted from the live tree
-- **5.6.2 Injected diff** — the verbatim `-`/`+` lines (D-04)
-- **5.6.3 Invocation** — the verbatim command
-- **5.6.4 Observed** — assertion outcome, file outcome, failing line, verbatim runner output
-- **5.6.5 Verdict and reasoning** — ends in `confirmed` or `withdrawn`
-- **5.6.6 Pre-specified regression for Phase 142** — the concrete regression this assertion cannot detect
+Quoted from the live tree at `12825b479`, not re-copied from the audit.
+`packages/dev-seed/tests/templates/default.test.ts`, verbatim at the current line numbers:
+
+```ts
+121  it('Test 10: faker locale cycling — 109 candidates per locale block (en/fi/sv)', () => {
+130    for (const idx of [0, 109, 218]) {
+131      const r = rows[idx] as { first_name?: string; last_name?: string };
+132      expect(r.first_name).toBeTruthy();
+133      expect(r.last_name).toBeTruthy();
+134    }
+135  });
+```
+
+The audit's cite of `:121-135` is **line-exact** — no drift on the range or on either assertion. The
+test's own comment at `:122-126` is candid about the gap ("We cannot easily assert the locale packet …
+Shape-only assertion: non-empty strings"), which is why the audit filed this as a documented weakness
+rather than a misleading one. The candour does not change what the assertion can detect, and detection
+is what this pass measures.
+
+The indices are the load-bearing part of the title: `[0, 109, 218]` are precisely the first row of each
+locale block, chosen so the test would notice a block-boundary regression — and then nothing
+locale-specific is asserted about any of them.
+
+**5.6.2 Injected diff**
+
+Target `packages/dev-seed/src/templates/defaults/candidates-override.ts:53`, verbatim (D-04 — Phase 142
+re-applies this mechanically):
+
+```diff
+  packages/dev-seed/src/templates/defaults/candidates-override.ts:53
+-export const LOCALE_BLOCK_SIZE = 109;
++export const LOCALE_BLOCK_SIZE = 327;
+```
+
+**Marker exemption, decided rather than forgotten.** No `INJECTED (139)` comment is appended. A
+trailing comment would be syntactically legal here, but it would sit on the one line whose *value* is
+the entire experiment, and a reader diffing the record against the tree would have to disentangle the
+marker from the injected constant. § 3.1 step 2 exempts constant reassignments for this reason; the
+git gates (a) and (b) carry the hygiene claim for this site.
+
+**The consequence, stated before the run.** The consumer at
+`packages/dev-seed/src/templates/defaults/candidates-override.ts:133` is
+`const localeIdx = Math.floor(i / LOCALE_BLOCK_SIZE);`, and `LOCALE_ORDER` at `:60` is
+`['en', 'fi', 'sv'] as const`. With the block size at 327, `Math.floor(i / 327) === 0` for every `i` in
+`[0, 327)`, so all 327 candidates take `LOCALE_ORDER[0]` — `'en'`. That is exactly the regression the
+audit names: *"Generating all 327 candidates with `en`, or changing `LOCALE_BLOCK_SIZE` from 109,
+leaves every name truthy."* The injection produces both halves of that sentence at once.
+
+**Blast radius, run rather than restated.** Repo-wide grep, output pasted verbatim:
+
+```
+$ grep -rn 'LOCALE_BLOCK_SIZE' apps packages tests
+packages/dev-seed/tests/templates/default.test.ts:125:    // LOCALE_BLOCK_SIZE constant is 109. Shape-only assertion: non-empty
+packages/dev-seed/src/templates/defaults/candidates-override.ts:53:export const LOCALE_BLOCK_SIZE = 109;
+packages/dev-seed/src/templates/defaults/candidates-override.ts:133:    const localeIdx = Math.floor(i / LOCALE_BLOCK_SIZE);
+```
+
+Exactly three hits: the declaration, its single consumer, and a **comment** in the test file. No other
+module imports the constant, so the blast radius is one file and the collateral question is confined to
+`default.test.ts` itself.
+
+Confirmation that the injection landed as recorded, from `git diff` taken while it was live:
+
+```
+@@ -50,7 +50,7 @@ const TOTAL_CANDIDATES = PARTY_WEIGHTS.reduce((a, b) => a + b, 0);
+  * en, 109-217 fi, 218-326 sv. Math.floor(i / 109) gives the locale index for
+  * candidate i in [0, 327).
+  */
+-export const LOCALE_BLOCK_SIZE = 109;
++export const LOCALE_BLOCK_SIZE = 327;
+```
+
+**5.6.3 Invocation**
+
+Two runs, both under the same live injection. Per the COLLATERAL RULE (§ 3.3) the isolated run is the
+**verdict run** and the whole-file run is the **collateral record**; only the first bears on the
+verdict.
+
+**The verdict run** — isolated to the site:
+
+```bash
+cd "$(git rev-parse --show-toplevel)/packages/dev-seed" && npx vitest run tests/templates/default.test.ts -t 'Test 10'
+```
+
+**The collateral record** — whole-file:
+
+```bash
+cd "$(git rev-parse --show-toplevel)/packages/dev-seed" && npx vitest run tests/templates/default.test.ts
+```
+
+**5.6.4 Observed**
+
+Two outcomes for the verdict run, recorded separately per the TWO-COLUMN RULE (§ 3.2).
+
+| Site | Injected line | Assertion outcome | File outcome | Failing line | exit |
+|---|---|---|---|---|---|
+| F18 `default.test.ts:132-133` | `candidates-override.ts:53` | **PASS** (blind) | **PASS** (green) | none — the two columns agree | 0 |
+
+Verbatim runner output, **verdict run** (isolated):
+
+```
+ RUN  v3.2.4 /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/packages/dev-seed
+
+ ✓ tests/templates/default.test.ts (27 tests | 26 skipped) 4ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 26 skipped (27)
+   Start at  14:39:15
+   Duration  415ms (transform 86ms, setup 0ms, collect 224ms, tests 4ms, environment 0ms, prepare 60ms)
+```
+
+Verbatim runner output, **collateral record** (whole-file):
+
+```
+ RUN  v3.2.4 /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/packages/dev-seed
+
+ ✓ tests/templates/default.test.ts (27 tests) 57ms
+
+ Test Files  1 passed (1)
+      Tests  27 passed (27)
+   Start at  14:39:21
+   Duration  443ms (transform 79ms, setup 0ms, collect 198ms, tests 57ms, environment 0ms, prepare 43ms)
+```
+
+**Collateral: none.** All 27 tests in the file passed under the injection, so nothing is carried to
+§ 8 for this site. In particular **Test 9**, the determinism comparison at `:113-119`, stayed green
+exactly as predicted — both of its halves call the *same* mutated generator, so a uniform locale
+collapse leaves `JSON.stringify(rowsA)` and `JSON.stringify(rowsB)` byte-identical to each other. Had
+Test 9 gone red it would have been collateral, recorded in § 8, and explicitly excluded from this
+verdict.
+
+**Positive control — the injection was live, not a no-op.** A green run only proves blindness if the
+break actually reached the module under test. Probed with `npx tsx` against the live tree, importing
+the same source specifier the test imports:
+
+```
+LOCALE_BLOCK_SIZE = 327
+Math.floor(0 / 327) = 0  -> LOCALE_ORDER index
+Math.floor(109 / 327) = 0  -> LOCALE_ORDER index
+Math.floor(218 / 327) = 0  -> LOCALE_ORDER index
+```
+
+All three probed indices — the exact three the test iterates at `:130` — resolve to `LOCALE_ORDER[0]`,
+i.e. `'en'`. The three-locale block structure the test's title advertises was fully collapsed while the
+test ran, and the test still passed.
+
+Prediction was PASS; observed PASS; **matched**.
+
+**5.6.5 Verdict and reasoning**
+
+The block structure the test is named for was destroyed and the test did not notice. Under the
+injection every one of the 327 generated candidates drew its name from the `en` Faker instance — the
+positive control above shows indices 0, 109 and 218 all mapping to `LOCALE_ORDER[0]` — so the "109
+candidates per locale block (en/fi/sv)" the title promises was, at run time, 327 candidates in one
+block and one locale. Both the isolated verdict run and the whole-file collateral run reported pass.
+
+The mechanism is that the assertions never read the property the test exists to check.
+`packages/dev-seed/tests/templates/default.test.ts:132-133` assert `toBeTruthy()` on `first_name` and
+`last_name`, and a Faker-generated personal name is a non-empty string in every locale pack — `en`,
+`fi` and `sv` alike. The locale is therefore invisible to the oracle by construction: the indices at
+`:130` are chosen to straddle the block boundaries, but the only thing examined at those indices is
+whether a name exists at all. The audit's characterisation is accurate to the line, and its own
+`:122-126` comment names the gap without closing it. Nothing in the run overturned a prediction.
+
+**Verdict:** confirmed
+
+**5.6.6 Pre-specified regression for Phase 142**
+
+**The regression (re-apply this diff verbatim):** change the block size at
+`packages/dev-seed/src/templates/defaults/candidates-override.ts:53` from
+`export const LOCALE_BLOCK_SIZE = 109;` to `export const LOCALE_BLOCK_SIZE = 327;`. Every candidate in
+the default seed template is then generated in one locale while all three of the test's probed indices
+still read truthy — a seeded dataset that silently loses its multi-locale character, which is the whole
+point of the `en`/`fi`/`sv` cycling for demo and matching-visibility purposes. Today the suite stays
+green through it.
+
+**The target Phase 142 must reach:** the assertion must observe the block boundary the title already
+promises — that `rows[108]` and `rows[109]` come from **different** locales. Concretely, assert that
+the name at the last index of one block and the name at the first index of the next are drawn from
+distinct locale packs: compare `rows[108]` against a freshly-seeded `__buildLocaleFakerForTests('en')`
+draw and `rows[109]` against `__buildLocaleFakerForTests('fi')` (the helper is exported at
+`candidates-override.ts:172` for exactly this purpose), or — weaker but sufficient to fail the diff
+above — assert that the multiset of names across the three block starts is not all drawn from one
+pack, e.g. via the Finnish/Swedish `ä`/`ö`/`å` character classes the `fi`/`sv` packs produce and the
+`en` pack does not. Either form fails under the diff above; `toBeTruthy()` does not.
 
 ### 5.7 F19a — `authorize-endpoint.test.ts:144` (`expect(requestParam).toBeDefined()`)
 
