@@ -307,7 +307,7 @@ _v2.15 (Phases 137-150) below. Shipped milestones' details live in `.planning/mi
   3. At least **16 consecutive full-suite runs** (2× the observed 1-in-8 rate) show zero `EPERM-07` failures, each run confirmed by Phase 137's served-app preflight.
   4. `.planning/v2.14-CARDINAL-RULE-WAIVER.md` is marked discharged with the diagnosis referenced; no successor waiver, no `test.skip`, no retry annotation, and no "could not reproduce" closure exists anywhere in the record. The cardinal rule is back in force unwaived.
 
-**Plans:** 5/6 plans executed
+**Plans:** 6/6 plans executed
 
 Plans:
 **Wave 1**
@@ -332,7 +332,7 @@ Plans:
 
 **Wave 6** *(blocked on Wave 5 completion)*
 
-- [ ] 138-06-PLAN.md — Record-integrity audit (F-1 fix, F-2 filed, F-3 statement) and the one-way waiver-discharge checkpoint + reconciliation of every live record (wave 6, autonomous: false)
+- [x] 138-06-PLAN.md — Record-integrity audit (F-1 fix, F-2 filed, F-3 statement) and the one-way waiver-discharge checkpoint + reconciliation of every live record (wave 6, autonomous: false)
 
 **Shape note**: This is a **diagnosis phase, not an implementation phase**, and is deliberately not padded with adjacent work. Plan 01 lands forensic capture on the term-trigger path (trace/video/server-log retention) *before* the hunt, so the waiver's own condition 3 — "the next occurrence is data" — is honoured by every later v2.15 phase's suite runs rather than discarded. The phase is explicitly allowed to spend a plan on a hypothesis that gets disproved: a disproof is recorded and the next hypothesis pursued (the cold-start-Vite hypothesis is already eliminated). What it may not do is close on non-reproduction.
 
@@ -520,7 +520,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 137. E2E Preflight Integrity — Assert the Served Application | 0/TBD | Not started | - |
-| 138. DEF-135-04 — `EPERM-07` Root Cause + Waiver Discharge | 5/6 | In Progress|  |
+| 138. DEF-135-04 — `EPERM-07` Root Cause + Waiver Discharge | 6/6 | In Progress|  |
 | 139. Single-Source Sweep Findings — Confirm or Withdraw | 0/TBD | Not started | - |
 | 140. Blind-Matcher Remediation — Teardowns, Null-Matchers, Positive Controls | 0/TBD | Not started | - |
 | 141. Package Unit-Test Coverage + `test:unit` Invariant Guard | 0/TBD | Not started | - |

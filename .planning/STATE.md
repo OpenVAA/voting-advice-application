@@ -4,17 +4,17 @@ milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 138
 current_phase_name: DEF-135-04 — EPERM-07 Root Cause + Cardinal-Rule Waiver Discharge
-status: executing
-stopped_at: Completed 138-05-PLAN.md
-last_updated: "2026-08-13T23:00:14.997Z"
+status: verifying
+stopped_at: Completed 138-06-PLAN.md — waiver discharged
+last_updated: "2026-08-14T06:08:33.667Z"
 last_activity: 2026-08-13
 last_activity_desc: Phase 138 execution started
 progress:
   total_phases: 14
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 11
-  completed_plans: 9
-  percent: 7
+  completed_plans: 11
+  percent: 14
 ---
 
 # Project State
@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 Milestone: v2.15 (Phases 137-150, 14 phases, 38 requirements)
 Phase: 138 (DEF-135-04 — EPERM-07 Root Cause + Cardinal-Rule Waiver Discharge) — EXECUTING
 Plan: 6 of 6
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-08-13 — Phase 138 execution started
 
 **Standing acceptance rule for every v2.15 phase:** prove the guard fails before claiming it guards —
@@ -48,8 +48,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-13T23:00:14.980Z
-Stopped at: Completed 138-05-PLAN.md
+Last session: 2026-08-14T06:08:33.650Z
+Stopped at: Completed 138-06-PLAN.md — waiver discharged
 Resume file: None
 
 ## Deferred Items
@@ -135,6 +135,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 138 P03 | ~70 min | 3 tasks | 2 files |
 | Phase 138 P04 | 75 min | 3 tasks | 6 files |
 | Phase 138 P05 | 4h 40m | 3 tasks | 2 files |
+| Phase 138 P06 | ~37min active (7h04m wall) | 3 tasks | 7 files |
 
 ## Deferred Items
 
@@ -593,6 +594,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: 138-05: batch validity is asserted on executed count (135) + preflight verdict + failed/flaky/did-not-run, never on exit status alone — an exit 0 with fewer tests executed is a cardinal failure
 - [Phase ?]: 138-05: an infrastructure abort resets the consecutive count and the batch restarts from run 01; the discarded attempt is carried into the ledger via --carry-discards rather than erased by the restart
 - [Phase ?]: 138-05: valid runs are pruned to results.json + stdout/devserver logs; only a non-valid run retains its HTML report (trace + video), keeping 16 full-suite runs at 9.9 MB instead of 5.2 GB
+- [Phase ?]: Phase 138: the v2.14 cardinal-rule waiver is DISCHARGED unrenewed (2026-08-14, operator decision at a one-way checkpoint) — named root cause + negative-control pair + 16/16 runs; no successor waiver; the unlocalised multi-second excursion stays open, attributed by operator judgment and falsifiable
 
 ### Quick Tasks Completed
 
