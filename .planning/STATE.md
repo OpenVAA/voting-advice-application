@@ -3,18 +3,18 @@ gsd_state_version: 1.0
 milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 138
-current_phase_name: DEF-135-04 — EPERM-07 Root Cause + Cardinal-Rule Waiver Discharge
-status: verifying
+status: completed
 stopped_at: Completed 138-06-PLAN.md — waiver discharged
-last_updated: "2026-08-14T06:08:33.667Z"
-last_activity: 2026-08-13
-last_activity_desc: Phase 138 execution started
+last_updated: "2026-08-14T06:28:01.840Z"
+last_activity: 2026-08-14
+last_activity_desc: Phase 138 marked complete
 progress:
   total_phases: 14
   completed_phases: 2
   total_plans: 11
   completed_plans: 11
   percent: 14
+current_phase_name: DEF-135-04 — EPERM-07 Root Cause + Cardinal-Rule Waiver Discharge
 ---
 
 # Project State
@@ -29,10 +29,10 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 ## Current Position
 
 Milestone: v2.15 (Phases 137-150, 14 phases, 38 requirements)
-Phase: 138 (DEF-135-04 — EPERM-07 Root Cause + Cardinal-Rule Waiver Discharge) — EXECUTING
+Phase: 138 — COMPLETE
 Plan: 6 of 6
-Status: Phase complete — ready for verification
-Last activity: 2026-08-13 — Phase 138 execution started
+Status: Phase 138 complete
+Last activity: 2026-08-14 — Phase 138 marked complete
 
 **Standing acceptance rule for every v2.15 phase:** prove the guard fails before claiming it guards —
 negative control run twice (once against the old assertion to demonstrate blindness, once against the

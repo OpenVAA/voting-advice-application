@@ -255,7 +255,7 @@ runs are the visual close gate. `/gsd-complete-milestone` performs the final com
 delivery-origin swap whose visual consequence is re-proven by the baselines themselves.
 
 - [x] **Phase 137: E2E Preflight Integrity — Assert the Served Application** - Replace the defeatable listener-identity check with a response-content assertion, enforced by the harness (INTEG-04/05/06)
-- [ ] **Phase 138: DEF-135-04 — `EPERM-07` Root Cause + Cardinal-Rule Waiver Discharge** - Name the root cause, prove the fix across ≥16 runs, discharge the waiver unrenewed (INTEG-01/02/03)
+- [x] **Phase 138: DEF-135-04 — `EPERM-07` Root Cause + Cardinal-Rule Waiver Discharge** - Name the root cause, prove the fix across ≥16 runs, discharge the waiver unrenewed (INTEG-01/02/03) (completed 2026-08-14)
 - [ ] **Phase 139: Single-Source Sweep Findings — Confirm or Withdraw** - Re-read F15/F16/F18/F19/F20 against live code; each independently confirmed or withdrawn before remediation is planned (ASSERT-01)
 - [ ] **Phase 140: Blind-Matcher Remediation — Teardowns, Null-Matchers, Positive Controls** - F3's 27 unfailable row counts, F19's `toBeDefined()`-on-null sites, F9's missing positive control, F10's budget drift (ASSERT-02/03/05/06)
 - [ ] **Phase 141: Package Unit-Test Coverage + `test:unit` Invariant Guard** - Wire `matching` + `core`, decide the three Experimental packages, then guard the class so the hole cannot reopen (UNIT-01/02/03/04)
@@ -307,7 +307,7 @@ _v2.15 (Phases 137-150) below. Shipped milestones' details live in `.planning/mi
   3. At least **16 consecutive full-suite runs** (2× the observed 1-in-8 rate) show zero `EPERM-07` failures, each run confirmed by Phase 137's served-app preflight.
   4. `.planning/v2.14-CARDINAL-RULE-WAIVER.md` is marked discharged with the diagnosis referenced; no successor waiver, no `test.skip`, no retry annotation, and no "could not reproduce" closure exists anywhere in the record. The cardinal rule is back in force unwaived.
 
-**Plans:** 6/6 plans executed
+**Plans:** 6/6 plans complete
 
 Plans:
 **Wave 1**
@@ -520,7 +520,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 137. E2E Preflight Integrity — Assert the Served Application | 0/TBD | Not started | - |
-| 138. DEF-135-04 — `EPERM-07` Root Cause + Waiver Discharge | 6/6 | In Progress|  |
+| 138. DEF-135-04 — `EPERM-07` Root Cause + Waiver Discharge | 6/6 | Complete   | 2026-08-14 |
 | 139. Single-Source Sweep Findings — Confirm or Withdraw | 0/TBD | Not started | - |
 | 140. Blind-Matcher Remediation — Teardowns, Null-Matchers, Positive Controls | 0/TBD | Not started | - |
 | 141. Package Unit-Test Coverage + `test:unit` Invariant Guard | 0/TBD | Not started | - |
