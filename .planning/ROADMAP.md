@@ -348,7 +348,7 @@ Plans:
   3. For every confirmed finding, the realistic regression its current assertion cannot detect is named concretely — so Phase 142's negative control is pre-specified rather than invented at remediation time.
   4. Any withdrawn finding is struck from `.planning/audits/2026-08-11-fake-guard-sweep.md` with its reasoning, and ASSERT-07's scope in this ROADMAP and in `REQUIREMENTS.md` is edited down to match. The shrink is visible in the record, not silent.
 
-**Plans:** 1/7 plans executed
+**Plans:** 3/7 plans executed
 
 Plans:
 **Wave 1**
@@ -357,11 +357,11 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 — injections are serialized; the hygiene gate is whole-tree and cannot attribute a dirty path to one of two concurrent injections)*
 
-- [ ] 139-02-PLAN.md — The `argument-condensation` vehicle: F16 and F20-6 (TRAP-2 — the message swap, not the throw removal), then F15-B and F15-C from one shared `Condenser.run()` injection (wave 2)
+- [x] 139-02-PLAN.md — The `argument-condensation` vehicle: F16 and F20-6 (TRAP-2 — the message swap, not the throw removal), then F15-B and F15-C from one shared `Condenser.run()` injection (wave 2)
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 139-03-PLAN.md — F15-A (TRAP-1 — prove the audit's own regression un-injectable, run the recorded substitute, correct the audit's description of `:535-537`) and F20-5's two injections (wave 3)
+- [x] 139-03-PLAN.md — F15-A (TRAP-1 — prove the audit's own regression un-injectable, run the recorded substitute, correct the audit's description of `:535-537`) and F20-5's two injections (wave 3)
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
@@ -552,7 +552,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 137. E2E Preflight Integrity — Assert the Served Application | 0/TBD | Not started | - |
 | 138. DEF-135-04 — `EPERM-07` Root Cause + Waiver Discharge | 6/6 | Complete   | 2026-08-14 |
-| 139. Single-Source Sweep Findings — Confirm or Withdraw | 1/7 | In Progress|  |
+| 139. Single-Source Sweep Findings — Confirm or Withdraw | 3/7 | In Progress|  |
 | 140. Blind-Matcher Remediation — Teardowns, Null-Matchers, Positive Controls | 0/TBD | Not started | - |
 | 141. Package Unit-Test Coverage + `test:unit` Invariant Guard | 0/TBD | Not started | - |
 | 142. Assertion Design — Wiring-Only Tests Assert Output | 0/TBD | Not started | - |
