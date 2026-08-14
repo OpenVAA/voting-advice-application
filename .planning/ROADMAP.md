@@ -348,7 +348,7 @@ Plans:
   3. For every confirmed finding, the realistic regression its current assertion cannot detect is named concretely — so Phase 142's negative control is pre-specified rather than invented at remediation time.
   4. Any withdrawn finding is struck from `.planning/audits/2026-08-11-fake-guard-sweep.md` with its reasoning, and ASSERT-07's scope in this ROADMAP and in `REQUIREMENTS.md` is edited down to match. The shrink is visible in the record, not silent.
 
-**Plans:** 6/7 plans executed
+**Plans:** 7/7 plans executed
 
 Plans:
 **Wave 1**
@@ -377,7 +377,7 @@ Plans:
 
 **Wave 7** *(blocked on Wave 6 completion)*
 
-- [ ] 139-07-PLAN.md — Criterion 4: § 6 withdrawals and propagation to all THREE targets (audit, `REQUIREMENTS.md:60`, ROADMAP Phase 142 criteria 2 and 3), the answer to the audit's `## Not assessed` prediction, and the phase-close gate (113 tests across 7 vehicles, zero source diff, zero markers) (wave 7)
+- [x] 139-07-PLAN.md — Criterion 4: § 6 withdrawals and propagation to all THREE targets (audit, `REQUIREMENTS.md:60`, ROADMAP Phase 142 criteria 2 and 3), the answer to the audit's `## Not assessed` prediction, and the phase-close gate (113 tests across 7 vehicles, zero source diff, zero markers) (wave 7)
 
 **Shape note**: This phase ships **zero product code**. Every source-file modification is transient — injected, run and reverted inside the same task — so the plans' `files_modified` lists name only the durable writes (`139-VERDICTS.md` plus the criterion-4 record edits), and each plan carries a separate `transient_files_reverted` list so no reviewer misreads an injection target as phase output. The seven waves are strictly sequential by necessity rather than by dependency: two concurrent injections would each see the other's edit, and either agent's `git checkout --` could revert the other's live injection mid-run. Criterion 4's propagation has **three** targets, not the two the criterion's wording implies — ROADMAP Phase 142 enumerates the findings inline in criteria 2 and 3, so a withdrawal there is an in-sentence edit rather than a struck line.
 
@@ -552,7 +552,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 137. E2E Preflight Integrity — Assert the Served Application | 0/TBD | Not started | - |
 | 138. DEF-135-04 — `EPERM-07` Root Cause + Waiver Discharge | 6/6 | Complete   | 2026-08-14 |
-| 139. Single-Source Sweep Findings — Confirm or Withdraw | 6/7 | In Progress|  |
+| 139. Single-Source Sweep Findings — Confirm or Withdraw | 7/7 | In Progress|  |
 | 140. Blind-Matcher Remediation — Teardowns, Null-Matchers, Positive Controls | 0/TBD | Not started | - |
 | 141. Package Unit-Test Coverage + `test:unit` Invariant Guard | 0/TBD | Not started | - |
 | 142. Assertion Design — Wiring-Only Tests Assert Output | 0/TBD | Not started | - |

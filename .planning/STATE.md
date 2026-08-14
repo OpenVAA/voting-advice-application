@@ -4,17 +4,17 @@ milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 139
 current_phase_name: single-source-sweep-findings-confirm-or-withdraw
-status: executing
-stopped_at: Completed 139-06-PLAN.md
-last_updated: "2026-08-14T13:16:18.024Z"
+status: verifying
+stopped_at: Completed 139-07-PLAN.md — phase 139 complete, ready for verification
+last_updated: "2026-08-14T13:28:01.883Z"
 last_activity: 2026-08-14
 last_activity_desc: Phase 138 marked complete
 progress:
   total_phases: 14
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 18
-  completed_plans: 17
-  percent: 14
+  completed_plans: 18
+  percent: 21
 ---
 
 # Project State
@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 Milestone: v2.15 (Phases 137-150, 14 phases, 38 requirements)
 Phase: 139 (single-source-sweep-findings-confirm-or-withdraw) — EXECUTING
 Plan: 7 of 7
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-08-14 — Phase 139 execution started
 
 **Standing acceptance rule for every v2.15 phase:** prove the guard fails before claiming it guards —
@@ -48,8 +48,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-14T13:16:18.006Z
-Stopped at: Completed 139-06-PLAN.md
+Last session: 2026-08-14T13:28:01.864Z
+Stopped at: Completed 139-07-PLAN.md — phase 139 complete, ready for verification
 Resume file: None
 
 ## Deferred Items
@@ -142,6 +142,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 139 P04 | 25m | 2 tasks | 1 files |
 | Phase 139 P05 | 32 min | 3 tasks | 1 files |
 | Phase 139 P06 | 18min | 2 tasks | 1 files |
+| Phase 139 P07 | 12min | 3 tasks | 3 files |
 
 ## Deferred Items
 
@@ -618,6 +619,9 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: 139-05: four positive controls added where the plan specified none — every site predicted PASS, so a green run alone could not rule out a null experiment
 - [Phase ?]: Phase 139 plan 06: § 4 ordering audit passed 15/15 — no record mis-slotted; roll-up records 15 confirmed, withdrawn: none, 2 overturned predictions (F15-C, F16) and 1 refuted premise (F20-1)
 - [Phase ?]: Phase 139 plan 06: § 7 records the incidental live OIDC defect — SvelteKit 2 error() throws, so authorize's return error(400) is swallowed by its own catch and returned as 500; Phase 142 tightening that matcher to {status:400} will red on the clean tree until the endpoint is fixed
+- [Phase ?]: Phase 139 plan 07 — ASSERT-01 traceability status set to `Complete` (majority value, matches the Phase-138 rows that carry inline evidence clauses) rather than `Satisfied`
+- [Phase ?]: Phase 139 plan 07 — criterion-4 record corrections K-1..K-3 deliberately NOT propagated into the audit's prose: criterion 4 forces an in-place audit edit only on a withdrawal, and the withdrawal set is empty
+- [Phase ?]: Phase 139 plan 07 — the six unenumerated F19-class sites were NOT added to ASSERT-07; criterion 4 is a shrink mechanism and this phase does not use it to widen scope on sites it never verdicted (proposed to Phase 140 instead)
 
 ### Quick Tasks Completed
 
