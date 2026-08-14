@@ -5162,3 +5162,148 @@ distinguish none of them, and they are not a symptom of either injection.
 records position by position: 15/15 matched, no record was written into the wrong slot, and no
 renumbering was performed. Recorded as a result rather than omitted, because "no correction was needed"
 and "no check was run" look identical in a document that reports only corrections.
+
+---
+
+## 9. Phase-close gate — the corpus restored
+
+The phase's other deliverable is a **non-deliverable**: a source tree byte-identical to the one it
+started with. Fifteen injections were applied to nine files across five packages and one app, and every
+one was reverted inside the task that applied it. This section runs the gate rather than trusting those
+per-task reverts — a partial revert passes a per-task check and fails here. **Every line below is
+pasted output**, captured at HEAD `74a29621a` on branch `feat-gsd-roadmap`, 2026-08-14.
+
+### 9.1 The seven vehicles
+
+Each command verbatim, with the observed count beside the pre-phase baseline from
+`139-VALIDATION.md` § Sampling Rate.
+
+| # | Command | Baseline | Observed |
+|---|---|---|---|
+| 1 | `cd "$(git rev-parse --show-toplevel)/packages/question-info" && npx vitest run tests/questionTypes.test.ts` | 7 | **7 passed** |
+| 2 | `cd "$(git rev-parse --show-toplevel)/packages/argument-condensation" && npx vitest run tests/unit/planValidation.test.ts tests/unit/handleQuestion.test.ts` | 11 | **11 passed** |
+| 3 | `cd "$(git rev-parse --show-toplevel)/packages/argument-condensation" && npx vitest run tests/condensation/condenserStandalone.test.ts` | 3 | **3 passed** |
+| 4 | `cd "$(git rev-parse --show-toplevel)/packages/argument-condensation" && npx vitest run tests/condensation/condenseQuestions.test.ts` | 5 | **5 passed** |
+| 5 | `cd "$(git rev-parse --show-toplevel)/packages/dev-seed" && npx vitest run tests/templates/default.test.ts tests/supabaseAdminClient.test.ts` | 34 | **34 passed** |
+| 6 | `cd "$(git rev-parse --show-toplevel)/packages/data" && npx vitest run src/objects/nominations/variants/variants.test.ts` | 1 | **1 passed** |
+| 7 | `cd "$(git rev-parse --show-toplevel)/apps/frontend" && npx vitest run src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts src/lib/api/utils/auth/__tests__/token-endpoint.test.ts src/lib/api/utils/auth/providers/idura.test.ts src/lib/api/utils/auth/getIdTokenClaims.test.ts src/lib/i18n/tests/overrides.test.ts src/lib/dynamic-components/entityList/EntityListWithControls.test.ts` | 52 | **52 passed** |
+| | **Total** | **113** | **113 passed, 0 failed, 0 skipped** |
+
+Runner summary lines, verbatim:
+
+```
+[1] ✓ tests/questionTypes.test.ts (7 tests) 3ms
+    Test Files  1 passed (1)
+         Tests  7 passed (7)
+
+[2] ✓ tests/unit/planValidation.test.ts (10 tests) 2ms
+    ✓ tests/unit/handleQuestion.test.ts (1 test) 2ms
+    Test Files  2 passed (2)
+         Tests  11 passed (11)
+
+[3] ✓ tests/condensation/condenserStandalone.test.ts (3 tests) 4ms
+    Test Files  1 passed (1)
+         Tests  3 passed (3)
+
+[4] ✓ tests/condensation/condenseQuestions.test.ts (5 tests) 7ms
+    Test Files  1 passed (1)
+         Tests  5 passed (5)
+
+[5] ✓ tests/supabaseAdminClient.test.ts (7 tests) 4ms
+    ✓ tests/templates/default.test.ts (27 tests) 52ms
+    Test Files  2 passed (2)
+         Tests  34 passed (34)
+
+[6] ✓ src/objects/nominations/variants/variants.test.ts (1 test) 2ms
+    Test Files  1 passed (1)
+         Tests  1 passed (1)
+
+[7] ✓ src/lib/api/utils/auth/providers/idura.test.ts (13 tests) 25ms
+    ✓ src/lib/api/utils/auth/__tests__/token-endpoint.test.ts (10 tests) 46ms
+    ✓ src/lib/api/utils/auth/getIdTokenClaims.test.ts (5 tests) 58ms
+    ✓ src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts (9 tests) 89ms
+    ✓ src/lib/dynamic-components/entityList/EntityListWithControls.test.ts (8 tests) 3ms
+    ✓ src/lib/i18n/tests/overrides.test.ts (7 tests) 12ms
+    Test Files  6 passed (6)
+         Tests  52 passed (52)
+```
+
+Vehicle 7's six per-file lines are quoted from a second, confirming invocation of the same command
+(52/52 both times); vitest prints them in completion order and the per-file millisecond figures vary
+between runs, so the **counts** are the invariant and the timings are not. The per-file split is
+13 + 10 + 5 + 9 + 8 + 7 = 52.
+
+**The stderr lines in vehicles 1, 5 and 7 are not failures and are present in every run of this
+document.** Vehicle 1 emits `[PromptRegistry] Package 'question-info' already registered, skipping.`;
+vehicle 7 emits ten `Token exchange failed: HttpError { status: 401, … }` lines from
+`token-endpoint.test.ts` (§ 8.5 K-4 records the count) and one
+`Failed to construct authorization request: HttpError { status: 400, body: { message: 'redirectUri is
+required' } }` from `authorize-endpoint.test.ts`'s 400 test. All are handler-path logging from tests
+that pass. They are recorded here so a later operator running this gate does not read them as a red.
+
+### 9.2 Why `yarn test:unit` is deliberately **not** the gate
+
+`turbo run test:unit` cannot reach `packages/question-info` or `packages/argument-condensation` —
+neither exposes a `test:unit` script (only `test` / `test:watch`), which is **D-05** and the reason
+Phase 141 exists. Substituting the shorter command would drop vehicles 1, 2, 3 and 4, silently skipping
+**four of the fifteen findings' sites** (F15-A, F16, F20-6, F15-B, F15-C — 26 of the 113 tests) while
+reporting green. The seven per-package invocations are the gate precisely because they are reachable
+without the wiring Phase 141 has not yet done. **Do not "improve" this gate by replacing it with
+`yarn test:unit` until Phase 141 has landed UNIT-01..04 and the two packages are actually reached.**
+
+### 9.3 The three closing checks
+
+```
+$ git status --porcelain -- apps tests packages
+(no output)
+
+$ git diff --stat -- apps packages tests
+(no output)
+
+$ test -d apps -a -d packages -a -d tests && echo present
+present
+
+$ grep -rn 'INJECTED (139)' apps packages tests
+(no output)
+$ echo $?
+1
+```
+
+**A `grep` that matches nothing exits 1, and that is the passing outcome here** — the exit status is
+recorded rather than the absence of output alone, because a mistyped path also produces no output. The
+`test -d` guard is run first and pasted for the same reason: it proves the three pathspecs the grep and
+the porcelain checks are scoped to actually exist from the directory the checks were run in (the repo
+root), so neither check can pass vacuously against a pathspec that matches nothing.
+
+For context, the **bare** porcelain at the same moment:
+
+```
+$ git status --porcelain
+ M .vscode/settings.json
+ M supabase/.temp/cli-latest
+```
+
+As § 2 states: **the bare form is non-empty by construction in this linked worktree and is never the
+gate.** Both files were dirty before Phase 139 began — `.vscode/settings.json` is editor configuration
+and `supabase/.temp/cli-latest` is a CLI version-check cache written by the Supabase tooling — and
+neither was committed, reverted or touched by this phase. (§ 2's stamp additionally listed
+`.planning/STATE.md`, which plan 06 has since committed; that is a planning document and inert to this
+corpus either way.) The load-bearing claim is the **scoped** porcelain over `apps`, `tests` and
+`packages`, empty at the start of the phase in § 2 and empty here at its close.
+
+### 9.4 The two statements the phase rests on
+
+**1. The shipped behaviour of every injected file was restored.** No `file:line` under `apps/`,
+`packages/` or `tests/` differs from HEAD; the scoped diff is empty, the scoped porcelain is empty, no
+phase marker survives anywhere under the source tree, and all 113 tests return their exact pre-phase
+counts. Not one matcher in the corpus was strengthened and not one product line was changed — the
+repairs belong to Phases 140, 141 and 142.
+
+**2. No `yarn dev`, `yarn test:e2e` or Playwright command was run at any point in Phase 139.** Every
+observation in this document came from an in-package `npx vitest run` against a source specifier; § 2
+records that no site in the corpus needs Supabase, a dev server, a network call, an API key, an
+environment variable or a `yarn build`. This matters beyond hygiene: the project's **cardinal E2E rule**
+makes a failing E2E test a stop-everything condition, and a phase that deliberately breaks working code
+for fifteen intervals would have put that rule in direct tension with its own method had any injection
+window overlapped a suite run. It never did, because no suite run occurred. The waiver discharged by
+Phase 138 (INTEG-03) stayed discharged throughout.
