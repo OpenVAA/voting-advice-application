@@ -954,6 +954,14 @@ they are internally consistent with what I did verify, but treat them as one-sou
   prediction — stated so it can be checked — is that they hold, because the four I did verify were
   accurate to the line and because F15's shape (mock-in, mock-out) was visible in the
   `condenserIntegration.test.ts` header I read independently.
+  **Tested — Phase 139, 2026-08-14: the prediction held.** All fifteen sites (F15 as three
+  sub-findings, F16, F18, F19's three sites and all six F20 rows) were re-read against the live tree
+  and each was verdicted by *executing* an injection: **15 confirmed, 0 withdrawn**, so no entry above
+  is struck. Two descriptions were corrected without changing a verdict — three of the ten F15-A sites
+  are exact string equalities rather than `toBeDefined()` variants, and an eleventh site at
+  `questionTypes.test.ts:388` was missed — and both corrections strengthen the mock-in/mock-out ground
+  this bullet gives. See `.planning/phases/139-single-source-sweep-findings-confirm-or-withdraw/139-VERDICTS.md`
+  § 6.3 for the full answer and § 5 for the per-finding runs.
 - **Whether the F2 loose regexes would *actually* fail today.** I proved the mechanism (`t()`
   returns the key) and the regex/key overlap, but I did not run the suite against a deliberately
   broken catalog to observe a green pass. That experiment is the definitive confirmation and is

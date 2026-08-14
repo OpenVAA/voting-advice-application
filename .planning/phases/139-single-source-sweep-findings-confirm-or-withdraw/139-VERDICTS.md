@@ -4255,13 +4255,215 @@ bare.
 
 ## 6. Withdrawals and their propagation
 
-**Reserved for plan 07, which owns criterion 4.** Its input is already fixed and is not re-derived
-there: § 4.2 records **`withdrawn: none`** — fifteen findings carry a verdict and all fifteen are
-`confirmed`. Plan 07 states here what that means for propagation: which audit entries are struck (on an
-empty withdrawal set, none), and whether ASSERT-07's scope in `.planning/ROADMAP.md` and
-`.planning/REQUIREMENTS.md` is edited down (on an empty withdrawal set, it is not). The section is
-reserved rather than written now because criterion 4 is plan 07's requirement, and a propagation
-statement written by the plan that produced the counts would be self-attested.
+ROADMAP criterion 4 requires that a withdrawn finding be struck from
+`.planning/audits/2026-08-11-fake-guard-sweep.md` with its reasoning, that ASSERT-07's scope be edited
+down "in this ROADMAP and in `REQUIREMENTS.md`" to match, and that **the shrink be visible in the
+record, not silent**. This section discharges that criterion. Its input is § 4.2's roll-up, *read* here
+rather than re-derived — the counts were produced by plans 01-05 and audited by plan 06; restating them
+from memory in the section that acts on them would make the propagation self-attested.
+
+### 6.1 The outcome, as counts and as a list
+
+**Of the fifteen enumerated findings, 15 are confirmed and 0 are withdrawn.**
+
+**Withdrawn: none.**
+
+That line is written out rather than left as an empty list, because *no withdrawals* and *nobody
+checked* are indistinguishable in a document that records only edits. A zero here is a result of
+fifteen executed injections (§ 5), not the default state of an unfilled section.
+
+Confirmed, by id, in the enumeration order § 3.4 fixed and § 4.1 audited position by position:
+**F15-A, F15-B, F15-C, F16, F17, F18, F19a, F19b, F19c, F20-1, F20-2, F20-3, F20-4, F20-5, F20-6.**
+Fifteen ids, matching § 4's fifteen rows one-to-one.
+
+**Two confirmations are weaker than the uniform column suggests, and neither is a partial withdrawal.**
+§ 7 limit 2 records that **F15-A**'s injection is a *substitute* — the regression the audit names is
+un-injectable because the shipped code already ignores question type — and § 7 limits 3 and 4 record
+that **F17**'s run is corroboration rather than a discriminating experiment, and that F17 is outside
+criterion 1's scope under **D-06**. Both are `confirmed`. Neither qualification reduces the withdrawal
+set, and neither is a reason for Phase 142 to drop the site; § 6.4 states what each *does* mean for
+propagation.
+
+### 6.2 The three propagation targets
+
+Criterion 4's wording names two documents. There are **three**. The third is `.planning/ROADMAP.md`
+§ Phase 142, whose criteria 2 and 3 enumerate the findings **inline in the criterion prose** — so a
+withdrawal there is an *in-sentence edit* of an enumeration, not a struck line, and criterion 4 is
+therefore **not** satisfied by editing `REQUIREMENTS.md` alone. A withdrawal that touched only
+`REQUIREMENTS.md` would leave Phase 142's own success criteria demanding remediation of a finding this
+phase had struck — discovered mid-remediation, which is precisely the failure the phase's placement
+("deliberately early and small") exists to prevent.
+
+Each target below records what was **done**, not merely what would have been done. With an empty
+withdrawal set the action at every target is the same: *inspected, and deliberately left unchanged.*
+The current enumeration is quoted verbatim in each case, so the record proves the check was performed
+rather than asserting it.
+
+| # | Target | Enumeration lives in | Edit shape a withdrawal would take | Action taken this pass |
+|---|---|---|---|---|
+| 1 | `.planning/audits/2026-08-11-fake-guard-sweep.md` | per-finding `### F<n>` entries (F20: six table rows) | heading marked `(WITHDRAWN)` + appended blockquote, original text retained | **inspected; finding entries left unchanged.** The `## Not assessed` bullet was answered in place (§ 6.3) — that edit is unconditional and is not a strike |
+| 2 | `.planning/REQUIREMENTS.md:60` | ASSERT-07's **bold id list** | remove the withdrawn id from the bold list only | **inspected; left unchanged** |
+| 3 | `.planning/ROADMAP.md` § Phase 142, criteria 2 and 3 | **inline in criterion prose** | in-sentence removal of the clause + a parenthetical pointer to this section | **inspected; left unchanged** |
+
+**Target 1 — the audit.** Six finding entries are in scope and all six survive. The heading count is
+the evidence that none was deleted:
+
+```
+$ grep -cE '^### F1[5-9] |^### F20 ' .planning/audits/2026-08-11-fake-guard-sweep.md
+6
+```
+
+```
+:622  ### F15 — The AI packages' tests verify wiring, not output
+:660  ### F16 — `rejects.toThrow()` against a mock that throws from every method
+:683  ### F17 — "Bounded apply() invocations" measures the test's own loop
+:719  ### F18 — "Faker locale cycling" asserts only that names are non-empty
+:749  ### F19 — `toBeDefined()` on APIs that return `null`, never `undefined` (3 sites)
+:771  ### F20 — Six assertions weaker than their test titles
+```
+
+No entry carries a `(WITHDRAWN)` marker and none should: every finding the entries describe was
+confirmed. **The three record corrections this pass produced (§ 8.5 K-1, K-2, K-3) are deliberately
+*not* propagated into the audit's prose.** They correct the audit's *description* of F15-A — three of
+its ten sites are exact string equalities rather than `toBeDefined()` variants (K-1), and an eleventh
+site at `:388` was missed (K-2) — while leaving the finding's substance standing. Criterion 4 forces an
+in-place audit edit only for a **withdrawal**; editing the audit for a *confirmed* finding would
+overwrite the evidence that the re-read produced information, and would leave a corrected document
+indistinguishable from one that was right the first time. The corrections live in § 5.1.1 and § 8.5,
+which is where Phase 142 is directed to read them from (§ 4.3).
+
+**Target 2 — `.planning/REQUIREMENTS.md:60`.** Current line, quoted verbatim and unchanged by this
+pass:
+
+```markdown
+- [ ] **ASSERT-07**: **F15, F16, F17, F18, F20** — each finding that survives ASSERT-01 either asserts observable output rather than wiring, or is explicitly withdrawn with the reasoning recorded.
+```
+
+All five ids in that bold list survive ASSERT-01. F15 survives as three sub-findings (F15-A, F15-B,
+F15-C), F20 as six rows (F20-1..F20-6); the line's ids are the audit's finding-level ids, and every one
+of them has at least one confirmed sub-finding under it — so no id is removable and the list is correct
+as written. The `- [ ]` box stays unticked: **Phase 142 ticks it**, not this phase. ASSERT-01's own box
+is a separate line (`:54`) and is ticked by this plan (§ 6.5).
+
+**Target 3 — `.planning/ROADMAP.md` § Phase 142, criteria 2 and 3.** Current text, quoted verbatim and
+unchanged by this pass (`:421` and `:422`):
+
+```markdown
+  2. **F15** — `questionTypes.test.ts`'s three "Configuration" blocks differ observably from one another (assertions on the prompt the mocked provider received), so an implementation that ignores question type fails at least one; `condenserStandalone.test.ts` and `condenseQuestions.test.ts` assert `result.arguments` content, so a `Condenser.run()` returning `{ arguments: [], llmMetrics }` fails. The wall-clock `processingTimeMs > 0` assertion on a fully-mocked run is removed rather than kept as decoration.
+  3. **F16** asserts the language rejection specifically (non-empty `entities` plus a `/language/i` matcher), so deleting the language check fails the test. **F17** either exercises real reactivity or is renamed to the contract it verifies. **F18** asserts the locale block boundary, so generating all candidates in one locale fails. Each of the six **F20** sites carries a matcher as strong as its title (status code, exact ICU output, error code, exact column, length guard, message matcher).
+```
+
+Criterion 2 names F15 and its three sub-sites (`questionTypes.test.ts`'s three "Configuration" blocks,
+`condenserStandalone.test.ts`, `condenseQuestions.test.ts`) — the same three this pass verdicted as
+F15-A, F15-B and F15-C, all confirmed. Criterion 3 names F16, F17, F18 and "each of the six F20 sites"
+— F16, F17, F18 confirmed, and the count **six** still matches the surviving F20 set exactly, because
+all six rows were confirmed. **Nothing in either criterion overstates the surviving scope, so neither
+sentence is edited.** Had one been, the edit would have had to keep the sentence grammatical and to
+carry a parenthetical pointer to this section — a criterion left with a dangling conjunction is a worse
+record than an unedited one.
+
+**One thing Phase 142 should carry forward from criterion 2 anyway, and it is not a scope change.**
+§ 7 limit 2 records that F15-A's remediation cannot use the audit's own regression sentence as its
+negative control — the regression is un-injectable — so criterion 2's "an implementation that ignores
+question type fails at least one" must be discharged against the substitute diff recorded at § 5.1.2
+and the pre-specified regression at § 5.1.6. That is a *method* qualification on a confirmed finding,
+not a withdrawal, which is why it is stated here rather than propagated as an enumeration edit.
+
+### 6.3 The answer to the audit's own prediction
+
+The audit's `## Not assessed` section opens with a bullet that stakes a checkable prediction on exactly
+the findings this phase re-read. Quoted verbatim from `.planning/audits/2026-08-11-fake-guard-sweep.md`
+`:952-956`:
+
+```
+- **F15, F16, F18, F19 and the F20 table are single-source** (the delegated sweep). I verified the
+  four highest-value unit findings myself but not these; see the *Method note* in Cleared. My
+  prediction — stated so it can be checked — is that they hold, because the four I did verify were
+  accurate to the line and because F15's shape (mock-in, mock-out) was visible in the
+  `condenserIntegration.test.ts` header I read independently.
+```
+
+**The prediction held. All of it.** F15 (three sub-findings), F16, F18, F19 (three sites) and all six
+rows of the F20 table were re-read against the live tree and each was verdicted by executing an
+injection: fifteen sites, fifteen `confirmed`, none withdrawn. The single-source class the auditor
+flagged as "treat them as one-source" is now two-source, and the second source is a run rather than a
+second reading.
+
+**What held with a correction, and what the correction does to the auditor's reasoning.** Two of the
+audit's *descriptions* were wrong while its *findings* were right:
+
+  - **K-1** — the audit describes the ten F15-A sites as "all variations of
+    `expect(results[0].data.infoSections).toBeDefined()`". Seven are; `:535`, `:536` and `:537` are
+    exact string equalities (`toBe('Tax Policy')` and two siblings) — the *strongest* matcher in the
+    file, not a weak one. They are blind for a different reason: they assert against the payload the
+    test itself mocked in. The finding survives; its description does not.
+  - **K-2** — an eleventh F15-A assertion at `questionTypes.test.ts:388` carries the same pattern in
+    the same cluster the audit does enumerate, and the identical unlisted pattern also appears at
+    `:140` and `:264`. This **widens** F15-A rather than changing its verdict.
+
+Both corrections *strengthen* the auditor's own stated ground rather than undermining it. His reason
+for predicting F15 would hold was its **mock-in/mock-out shape** — and K-1 finds that the three sites
+he mis-described are the *purest* instance of exactly that shape in the file. The prediction was right,
+and it was right for the reason he gave.
+
+**On the two grounds the bullet cites, stated precisely rather than generously.**
+
+  - *"the four I did verify were accurate to the line"* — this pass did not re-test F12, F13 or F14, so
+    it neither corroborates nor contradicts that claim for those three. It **did** re-read the fourth,
+    **F17**, which is in this corpus under D-06: the audit's reading is accurate (the loop is
+    non-reactive; the assertion is `10 === 10` on the test's own `for` loop), and § 5.5.1(a) adds the
+    import-graph fact that makes it decisive — `EntityListWithControls.svelte` is not in the test's
+    module graph at all. One of the four checked out; three were not examined.
+  - *"F15's shape … was visible in the `condenserIntegration.test.ts` header I read independently"* —
+    **`condenserIntegration.test.ts` is not in this corpus.** It exists in the tree but was not among
+    the fifteen enumerated sites, so this pass does not confirm or deny what its header shows. What the
+    pass does establish is that the mock-in/mock-out shape holds at the F15 sites it *did* run:
+    F15-B (`condenserStandalone.test.ts`), F15-C (`condenseQuestions.test.ts`) and F15-A's `:535-537`.
+    The auditor's inference from a neighbouring file's header turns out to be sound about the files it
+    was extrapolating to, which is a different — and weaker — statement than "his read of that header
+    was verified", and it is recorded here as the weaker one.
+
+The audit is annotated in place with this outcome: a closing sentence appended to the bullet itself
+(the bullet ends with an explicit invitation to check the prediction, so answering it anywhere else
+would leave the audit still stating an untested prediction to anyone reading it alone). The bullet's
+original wording is untouched — only a sentence is added — for the same reason § 8.2 never rewrites an
+overturned prediction: the original is the evidence that the check produced information.
+
+### 6.4 What did not propagate, and why
+
+Three items sit near the propagation boundary and none of them crosses it. Named so that a later reader
+does not find them by surprise and read the silence as an oversight.
+
+  1. **F17 is named in ASSERT-07 but is outside criterion 1's scope (D-06).** The auditor read it
+     directly ("Confidence: high (read directly)"), so it is not single-source and criterion 1 — which
+     covers the single-source findings — does not reach it. It carries a verdict here under **D-06**
+     purely so Phase 142 cannot read its omission as a withdrawal. Because it is `confirmed`, it
+     triggers no criterion-4 edit in any case; had it been *withdrawn*, its removal from ASSERT-07's
+     list would have been required despite being out of criterion 1's scope, because ASSERT-07's list
+     is the thing criterion 4 edits, not criterion 1's. A reader tallying criterion 1's coverage should
+     count **fourteen**, not fifteen.
+  2. **The `getIdTokenClaims` adjacent coverage gap does not enter ASSERT-07's scope in either
+     direction.** `getIdTokenClaims.test.ts` has no negative test for a bad signature, a wrong `issuer`
+     or a wrong `audience` (§ 5.12, § 7 limit 6). That is a **missing** test, not a fake one: ASSERT-07
+     is about assertions that exist and assert the wrong thing, and a test that does not exist cannot
+     be remediated by tightening a matcher. It is neither added to nor removed from any enumeration
+     here; it is recorded in § 7 limit 6 and deferred to a future coverage phase.
+  3. **The six unenumerated F19-class sites are not added to ASSERT-07.** § 8.1 C-2 and C-4 record that
+     the `!`-on-a-`null`-returning-`.get()` pattern appears six further times across the two auth test
+     files, outside the audit's enumeration. They carry **no verdict** in this document. Criterion 4 is
+     a *shrink* mechanism — it edits scope down on a withdrawal — and this phase does not use it to
+     widen scope on the strength of sites it never verdicted. They are recorded in § 7 limit 6 as a
+     candidate scope item for **Phase 140**'s ASSERT-03 sweep, which is a proposal to that phase rather
+     than an edit to its requirement.
+
+Also not propagated, and for a different reason: the **live defect** recorded at § 7 limit 1 and
+§ 8.2 O-3 (SvelteKit 2's `error()` throws rather than returns, so the OIDC authorize handler's
+`return error(400, …)` at `+server.ts:22` is swallowed by that function's own `catch` at `:50` and
+returned as a 500). It was *observed*, not injected, and this phase ships zero product code, so it is
+not fixed here. It bears on Phase 142 rather than on ASSERT-07's scope: tightening
+`authorize-endpoint.test.ts:233` to assert `{ status: 400 }` will go red against the clean tree until
+the endpoint is fixed, and an implementer who misreads that red as a bad remediation will back the
+correct change out again.
 
 ---
 
