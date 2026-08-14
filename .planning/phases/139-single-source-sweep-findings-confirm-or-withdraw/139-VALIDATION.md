@@ -2,10 +2,11 @@
 phase: 139
 slug: single-source-sweep-findings-confirm-or-withdraw
 # status lifecycle: draft (seeded by plan-phase) → validated (set by validate-phase §6)
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: validated
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-08-14
+validated: 2026-08-14
 ---
 
 # Phase 139 — Validation Strategy
@@ -76,7 +77,7 @@ keys. Every external surface is `vi.mock`ed.
 
 ## Wave 0 Requirements
 
-- [ ] `139-VERDICTS.md` — the evidence artifact itself. This is the phase's product, not
+- [x] `139-VERDICTS.md` — the evidence artifact itself. This is the phase's product, not
       test scaffolding; it is "missing" only in the sense that producing it is the work.
 
 *Test infrastructure has no gaps — all 7 commands were executed and observed green this
@@ -113,12 +114,55 @@ places and both must move together.
 
 ## Validation Sign-Off
 
-- [ ] All 14 (+F17 = 15-row) sites have an observed injection outcome recorded
-- [ ] Sampling continuity: every injection task carries its vehicle command + 3 hygiene gates
-- [ ] Wave 0 covers the deliverable artifact
-- [ ] No watch-mode flags (`vitest run`, never bare `vitest`)
-- [ ] Feedback latency < 1s per vehicle
-- [ ] Phase-close: 113 tests green across 7 vehicles; `git status --porcelain -- apps tests packages` empty; marker grep clean
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All 14 (+F17 = 15-row) sites have an observed injection outcome recorded
+- [x] Sampling continuity: every injection task carries its vehicle command + 3 hygiene gates
+- [x] Wave 0 covers the deliverable artifact
+- [x] No watch-mode flags (`vitest run`, never bare `vitest`)
+- [x] Feedback latency < 1s per vehicle
+- [x] Phase-close: 113 tests green across 7 vehicles; `git status --porcelain -- apps tests packages` empty; marker grep clean
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** validated 2026-08-14 (/gsd-validate-phase 139)
+
+---
+
+## Validation Audit 2026-08-14
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 0 |
+| Resolved | 0 |
+| Escalated | 0 |
+| Manual-only (declared at plan time, irreducible) | 2 |
+
+**Method:** State A audit — every sign-off item was re-executed in this session rather than
+read off `139-VERDICTS.md` § 9's pasted output. No auditor subagent was spawned, because
+gap analysis found nothing fillable.
+
+**Re-executed evidence (this session, HEAD on `feat-gsd-roadmap`):**
+
+| Check | Command | Observed |
+|-------|---------|----------|
+| Vehicles 1–7 | the seven `npx vitest run` invocations from § Per-Task Verification Map | 7 + 11 + 3 + 5 + 34 + 1 + 52 = **113 passed, 0 failed, 0 skipped** |
+| Scoped porcelain | `git status --porcelain -- apps tests packages` | empty |
+| Scoped diff | `git diff --stat -- apps packages tests` | empty |
+| Pathspec non-vacuity | `test -d apps -a -d packages -a -d tests` | `present` |
+| Marker grep | `grep -rn 'INJECTED (139)' apps packages tests` | no output, **exit 1** |
+| Watch-mode audit | bare `npx vitest` (no `run`) in `139-VERDICTS.md` | zero hits; 29 × `npx vitest run` |
+| Latency | vitest `Duration` lines | 373 ms / 431 ms / 568 ms — all < 1 s |
+| Record completeness | `5.N.3` Invocation / `5.N.4` Observed / `5.N.5` Verdict / `5.N.6` Regression | 15/15 records carry all four |
+| Sampling continuity | per-SUMMARY porcelain + marker-grep evidence | 7/7 summaries, 7/7 `Self-Check: PASSED` |
+| Criterion-4 targets | `grep -n 'ASSERT-07' .planning/REQUIREMENTS.md .planning/ROADMAP.md` | `REQUIREMENTS.md:60` and `ROADMAP.md:349` enumerations intact — correct, withdrawn set is empty |
+
+**Manual-only entries left manual, with reasons:**
+
+1. *Verdict judgement per finding* — a verdict is reasoning applied to an observation. The
+   observation half is fully automated (above); the judgement half is not a computable
+   predicate. 15 confirmed / 0 withdrawn, each resting on a recorded observation.
+2. *Criterion-4 propagation completeness* — a cross-document prose diff over three planning
+   files. Deliberately **not** automated: a generated assertion over `REQUIREMENTS.md`
+   enumeration prose has no product surface and would break on any legitimate rewording,
+   trading a real check for a brittle one.
+
+Neither is deferred work. `nyquist_compliant: true` records that the phase's automatable
+surface is fully covered and green.
