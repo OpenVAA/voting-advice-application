@@ -204,7 +204,7 @@ unfilled but never silently absent. `pending` marks a row this plan did not fill
 | 11 | F20-2 | `apps/frontend/src/lib/i18n/tests/overrides.test.ts:32-36` | pending | pending | pending | PASS | pending | pending |
 | 12 | F20-3 | `apps/frontend/src/lib/api/utils/auth/getIdTokenClaims.test.ts:236,259` | pending | pending | pending | PASS | pending | pending |
 | 13 | F20-4 | `packages/dev-seed/tests/supabaseAdminClient.test.ts:151` | **PASS** (blind) | **PASS** (green) | **confirmed** | PASS | yes | none |
-| 14 | F20-5 | `packages/data/src/objects/nominations/variants/variants.test.ts:5-12` | pending | pending | pending | PASS | pending | pending |
+| 14 | F20-5 | `packages/data/src/objects/nominations/variants/variants.test.ts:5-12` | **PASS** — inj. A (vacuous) · **PASS** (blind) — inj. B | **PASS** (green) — both | **confirmed** | PASS | yes, both | none |
 | 15 | F20-6 | `packages/argument-condensation/tests/unit/planValidation.test.ts:104` | **PASS** (blind) | **PASS** isolated · **FAIL** whole-file (collateral) | **confirmed** | PASS | yes | `:89-97` sibling matcher (§ 8) |
 
 Two rows carry a scope caveat that § 7 states in full: **F15-A**'s injection is a substitution (the
@@ -1757,14 +1757,333 @@ form fails under the diff above; `toContain('id')` does not.
 
 ### 5.14 F20-5 — `variants.test.ts:5-12` (`forEach` with no length guard)
 
-**Status:** not yet run — filled by a later plan in this phase.
+The audit names **two distinct blind spots** on this one file — vacuity when the parse returns an empty
+array, and blindness to a *wrong* ID being propagated — so this record carries **two** injected diffs,
+two invocations and two observed outcomes under one verdict. They were run as two complete, separate
+HYGIENE-LOOP iterations; neither was ever live while the other was.
 
-- **5.14.1 Re-read evidence** — verbatim assertion text plus its current line, quoted from the live tree
-- **5.14.2 Injected diff** — the verbatim `-`/`+` lines (D-04)
-- **5.14.3 Invocation** — the verbatim command
-- **5.14.4 Observed** — assertion outcome, file outcome, failing line, verbatim runner output
-- **5.14.5 Verdict and reasoning** — ends in `confirmed` or `withdrawn`
-- **5.14.6 Pre-specified regression for Phase 142** — the concrete regression this assertion cannot detect
+**5.14.1 Re-read evidence**
+
+The file is twelve lines. Quoting it entirely is cheaper than excerpting it, and the **absence** of a
+length guard is the finding — an excerpt could not show an absence. Verbatim from the live tree at
+`12825b479`, `packages/data/src/objects/nominations/variants/variants.test.ts:1-12`:
+
+```ts
+ 1  import { expect, test } from 'vitest';
+ 2  import { parseNominationTree } from './variants';
+ 3  import { getTestData } from '../../../testUtils';
+ 4
+ 5  test('ParseNominationTree should insert election and constituencyId to all items', () => {
+ 6    const tree = getTestData().nominations;
+ 7    const nominationData = parseNominationTree(tree);
+ 8    nominationData.forEach((d) => {
+ 9      expect(d.electionId).toBeDefined();
+10      expect(d.constituencyId).toBeDefined();
+11    });
+12  });
+```
+
+The audit's cite (`:5-12`) is line-exact; no drift. **That is the whole file** — one import block, one
+`test`, two assertions.
+
+**The two assertions at `:9` and `:10` sit inside a `forEach` callback, and nothing anywhere in the
+file asserts that `nominationData` is non-empty.** There is no `expect(nominationData.length).toBeGreaterThan(0)`,
+no `toHaveLength(n)`, no `expect(nominationData).not.toHaveLength(0)` — the twelve lines above are
+exhaustive. `[].forEach(cb)` invokes `cb` zero times, so on an empty array the test body executes
+**zero assertions** and vitest counts a zero-assertion test as passing. The title —
+*"ParseNominationTree should insert election and constituencyId to all items"* — is vacuously true of
+no items.
+
+The second blind spot is in the matcher rather than the loop. `toBeDefined()` asserts only
+`!== undefined`. It cannot distinguish the correct election id from any other non-`undefined` value:
+not a wrong id, not an empty string, not `null`, not a number.
+
+The code under test, verbatim from `packages/data/src/objects/nominations/variants/variants.ts:93-107`:
+
+```ts
+ 93  export function parseNominationTree(tree: NominationVariantTree): Array<AnyNominationVariantPublicData> {
+ 94    const nominations = new Array<AnyNominationVariantPublicData>();
+ 95    for (const electionId in tree) {
+ 96      for (const constituencyId in tree[electionId]) {
+ 97        nominations.push(
+ 98          ...tree[electionId][constituencyId].map((n) => ({
+ 99            ...n,
+100            electionId,
+101            constituencyId
+102          }))
+103        );
+104      }
+105    }
+106    return nominations;
+107  }
+```
+
+Fifteen lines, two `for…in` loops and one shorthand spread. The `electionId` and `constituencyId`
+shorthand properties at `:100-101` are the *only* product behaviour the test claims to guard — that the
+loop variables are attached to every parsed nomination. Research cited this block as `:93-101`; the
+function in fact runs to `:107`, and the shorthand entries are at `:100` and `:101` exactly as
+researched. **No drift at the injection targets.**
+
+**5.14.2 Injected diff**
+
+Two diffs, both one-liners, applied and reverted independently (D-04 — Phase 142 re-applies each
+mechanically).
+
+**INJECTION A — vacuity.** Target `packages/data/src/objects/nominations/variants/variants.ts:94`,
+inserting a line immediately after the function opens at `:93`:
+
+```diff
+  packages/data/src/objects/nominations/variants/variants.ts:94
++  return []; // INJECTED (139): the parse yields nothing
+```
+
+Confirmation that it landed as recorded, from `git diff` taken while it was live:
+
+```
+@@ -91,6 +91,7 @@ type WithoutElAndCoId<TType extends EntityType> = Omit<
+  * Parse a `NominationVariantTree` into an array of `NominationVariantPublicData`.
+  */
+ export function parseNominationTree(tree: NominationVariantTree): Array<AnyNominationVariantPublicData> {
++  return []; // INJECTED (139): the parse yields nothing
+   const nominations = new Array<AnyNominationVariantPublicData>();
+   for (const electionId in tree) {
+     for (const constituencyId in tree[electionId]) {
+```
+
+This is a **category-varying** injection, not a category-removing one (§ 3.4): the function still
+exists, still has its signature, still returns an `Array<AnyNominationVariantPublicData>` and still
+type-checks. Only its *contents* change — from every parsed nomination to none. The remaining lines
+`:95-107` become unreachable; vitest does not type-check, and `tsc`'s unreachable-code diagnostic is a
+warning rather than an error, so nothing outside the assertions could have reported this.
+
+**INJECTION B — wrong ID.** Target `packages/data/src/objects/nominations/variants/variants.ts:100`,
+applied **only after** injection A's post-gate was clean:
+
+```diff
+  packages/data/src/objects/nominations/variants/variants.ts:100
+-          electionId,
++          electionId: 'WRONG-ELECTION-ID', // INJECTED (139): a defined but incorrect id
+```
+
+Confirmation, from `git diff` taken while it was live:
+
+```
+@@ -97,7 +97,7 @@ export function parseNominationTree(tree: NominationVariantTree): Array<AnyNomin
+       nominations.push(
+         ...tree[electionId][constituencyId].map((n) => ({
+           ...n,
+-          electionId,
++          electionId: 'WRONG-ELECTION-ID', // INJECTED (139): a defined but incorrect id
+           constituencyId
+         }))
+       );
+```
+
+Also category-varying, and deliberately so: the property is still **present** and still a `string`, so
+the shape the test's matcher inspects is untouched. Only the *value* is wrong. This is the narrowest
+possible break of the exact behaviour the title promises — "insert election … to all items" — while
+leaving `toBeDefined()`'s only predicate satisfied.
+
+**Marker convention:** both `+` lines carry the `INJECTED (139)` marker in legal trailing comments; no
+exemption was needed at either site.
+
+**5.14.3 Invocation**
+
+The same command for both injections, for the control, and for both baselines — verbatim, run from
+inside the workspace directory (D-05 — the run is ad hoc and in-package; no `test:unit` script was
+added and neither `turbo.json` nor `vitest.workspace.ts` was touched):
+
+```bash
+cd "$(git rev-parse --show-toplevel)/packages/data" && npx vitest run src/objects/nominations/variants/variants.test.ts
+```
+
+The site is isolated by construction — it is the only test in the file — so § 3.3's isolation
+provision needs no `-t` filter here, and the file run *is* the site run.
+
+**5.14.4 Observed**
+
+Two outcomes recorded separately for **each** injection, per the TWO-COLUMN RULE (§ 3.2).
+
+| Injection | Injected line | Assertion outcome | File outcome | Failing line | exit |
+|---|---|---|---|---|---|
+| **A — vacuity** | `variants.ts:94` (`return []`) | **PASS** (vacuous — zero assertions executed) | **PASS** (green, 1/1) | none | 0 |
+| **B — wrong ID** | `variants.ts:100` (`'WRONG-ELECTION-ID'`) | **PASS** (blind — assertions executed and satisfied) | **PASS** (green, 1/1) | none | 0 |
+
+The two `PASS`es in the assertion column are **not the same fact**, and collapsing them would lose the
+finding. Under **A** the assertions at `:9-10` never ran at all; under **B** they ran, evaluated
+`'WRONG-ELECTION-ID'` and were satisfied by it. Vacuity and blindness are different defects that this
+one matcher exhibits at once.
+
+**A — vacuity. Verbatim runner output under the live injection:**
+
+```
+ RUN  v3.2.4 /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/packages/data
+
+ ✓ src/objects/nominations/variants/variants.test.ts (1 test) 1ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  15:09:56
+   Duration  555ms (transform 166ms, setup 0ms, collect 244ms, tests 1ms, environment 0ms, prepare 80ms)
+```
+
+Prediction was PASS (green); observed PASS; **matched**. **Collateral: none.**
+
+**B — wrong ID. Verbatim runner output under the live injection:**
+
+```
+ RUN  v3.2.4 /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/packages/data
+
+ ✓ src/objects/nominations/variants/variants.test.ts (1 test) 2ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  15:10:11
+   Duration  669ms (transform 197ms, setup 0ms, collect 335ms, tests 2ms, environment 0ms, prepare 88ms)
+```
+
+Prediction was PASS (green); observed PASS; **matched**. **Collateral: none.** Both runs report
+byte-identical counts to the pre-injection baseline (1 passed, 15:09:46) and the post-revert baseline
+(1 passed, 15:11:03) taken in the same session.
+
+**IN-BAND POSITIVE CONTROL — required, because both injection runs were green.**
+
+Two green runs cannot by themselves distinguish *"the assertions are blind"* (the finding) from *"the
+injections never took effect"* (a null experiment) — and here the risk is sharper than usual, because
+injection A's green is *supposed* to mean "zero assertions ran", which is observationally identical to
+"the test never ran". Per the pattern plan 02 established at `condenser.ts:204`, the control breaks the
+**same property in the same object literal** as injection B, differing only in the one respect the
+matcher can see:
+
+```diff
+  packages/data/src/objects/nominations/variants/variants.ts:100
+-          electionId,
++          electionId: undefined, // INJECTED (139): positive control — the id is absent rather than merely wrong
+```
+
+Observed — **red**, at exactly the assertion under test:
+
+```
+ RUN  v3.2.4 /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/packages/data
+
+ ❯ src/objects/nominations/variants/variants.test.ts (1 test | 1 failed) 3ms
+   × ParseNominationTree should insert election and constituencyId to all items 3ms
+     → expected undefined to be defined
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/objects/nominations/variants/variants.test.ts > ParseNominationTree should insert election and constituencyId to all items
+AssertionError: expected undefined to be defined
+ ❯ src/objects/nominations/variants/variants.test.ts:9:26
+      7|   const nominationData = parseNominationTree(tree);
+      8|   nominationData.forEach((d) => {
+      9|     expect(d.electionId).toBeDefined();
+       |                          ^
+     10|     expect(d.constituencyId).toBeDefined();
+     11|   });
+ ❯ src/objects/nominations/variants/variants.test.ts:8:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  15:10:22
+   Duration  763ms (transform 234ms, setup 0ms, collect 354ms, tests 3ms, environment 0ms, prepare 124ms)
+```
+
+This one run discharges the null-experiment risk for **both** injections, and it does so more sharply
+than an out-of-band probe could:
+
+1. **Liveness.** `variants.ts` is in this test's import graph and `parseNominationTree` executes; the
+   `.map()` callback at `:98-102` runs; there is no stale build and no `dist/` shadow.
+2. **The array is non-empty in the un-injected code.** The failure is reported *from inside* the
+   `forEach` callback (the stack shows `:9:26` called from `:8:18`), which is only reachable if
+   `nominationData` had at least one element. **This is what makes injection A's green
+   interpretable**: without it, "1 passed" under `return []` is equally consistent with the test
+   passing vacuously and with the test never having asserted anything in the first place. It did assert,
+   on real data, and stopped only because the data became empty.
+3. **`toBeDefined()` at `:9` does fire.** The matcher is not inert; it fails, loudly and at the right
+   line, on the one input it can see.
+4. **The blindness is exactly `undefined`-shaped.** Control and injection B are the same line, the same
+   property, one keystroke apart in intent — `undefined` versus `'WRONG-ELECTION-ID'`. The suite guards
+   the **presence** of an election id and is blind to its **correctness**, which is the whole of the
+   audit's second claim in one line.
+
+The control was reverted and its own POST-GATE run before the post-revert baseline. It is a control,
+not a regression candidate: `electionId: undefined` reds before *and* after any fix to the assertions,
+so Phase 142 must not use it as a negative control (§ 8.3, R-5) — the same disqualification that
+removed the audit's F16 sentence from § 5.4.6.
+
+**5.14.5 Verdict and reasoning**
+
+One verdict, two observations, and each observation supports a different one of the audit's two named
+blind spots.
+
+**Observation A supports the vacuity claim** — *"vacuous if the parse returns `[]` (no length guard in
+the file)"*. With `parseNominationTree` returning an empty array — total failure of the function the
+test is named for, and in production a voter app with no nominations at all in any election or
+constituency — the file reported `1 passed`. The mechanism is `Array.prototype.forEach`, which invokes
+its callback once per element and therefore zero times on an empty array: the two assertions at `:9-10`
+were never evaluated, and vitest treats a test that completes without a thrown assertion as passing
+whether or not it asserted anything. The audit's parenthetical is precise and was checked rather than
+taken on trust — the twelve lines quoted in § 5.14.1 are the entire file, and none of them constrains
+the array's length.
+
+**Observation B supports the wrong-ID claim** — *"also blind to the *wrong* ID being propagated"*. With
+every parsed nomination carrying `electionId: 'WRONG-ELECTION-ID'` instead of the key it was found
+under — in production, every nomination misattributed to a nonexistent election, which is precisely the
+"insert election … to all items" behaviour the title promises — the file again reported `1 passed`.
+Here the assertions **did** run: the in-band control proves the array is non-empty and proves `:9` is
+capable of failing. `toBeDefined()`'s predicate is `!== undefined`, and `'WRONG-ELECTION-ID'` satisfies
+it exactly as `'election-1'` would. The matcher is structurally incapable of distinguishing the
+correct id from any other string.
+
+Neither observation triggers ROADMAP criterion 2's withdrawal condition. The site does not "read blind
+but fail correctly" — it reads blind and passes blind, twice, on two independent breaks, with a control
+demonstrating that it can fail when the one thing it checks is removed. And neither injection is a
+category-removal of the § 3.4 kind: both leave the function, its signature, its return type and (in B)
+the property itself in place, varying only the detail the matcher cannot see. The audit's row is
+accurate to the line, its two claims are separately established, and there is nothing here to withdraw.
+
+**Verdict:** confirmed
+
+**5.14.6 Pre-specified regression for Phase 142**
+
+**Two regressions, not one** — the file has two independent defects and closing one does not close the
+other. A remediation that adds a length guard still passes injection B; a remediation that tightens the
+matcher still passes injection A.
+
+**Regression A — vacuity (re-apply this diff verbatim):** insert `return [];` as the first statement of
+`parseNominationTree` at `packages/data/src/objects/nominations/variants/variants.ts:94`. In production
+this empties every nomination list in the application: `@openvaa/data` is consumed by the frontend, so
+no candidate or party would appear under any election or constituency in the voter app. Today
+`variants.test.ts` stays green through it, executing zero assertions.
+
+**The target Phase 142 must reach:** a **length guard**, asserted *before* the loop, so the loop's
+assertions cannot be skipped silently. The minimal sufficient form is
+`expect(nominationData.length).toBeGreaterThan(0);` between the current `:7` and `:8`. The stronger form
+— preferable because it also pins the fixture, and the one this document recommends — is
+`expect(nominationData).toHaveLength(<n>);` with the exact count `getTestData().nominations` yields, so
+a parse that silently drops *some* nominations fails too, not only one that drops all of them. Either
+form fails under regression A; the current file does not.
+
+**Regression B — wrong ID propagated (re-apply this diff verbatim):** replace the shorthand
+`electionId,` at `packages/data/src/objects/nominations/variants/variants.ts:100` with
+`electionId: 'WRONG-ELECTION-ID',`. In production every nomination is attributed to an election that
+does not exist, so nominations resolve against no election and vanish from the app just as completely as
+under regression A — but through a path that leaves the data *shaped* correctly, which is the harder
+failure to notice. Today the assertion at `:9` evaluates the wrong value and passes.
+
+**The target Phase 142 must reach:** **equality assertions on the specific expected ids**, replacing
+`toBeDefined()`. Concretely, assert that each parsed nomination's `electionId` and `constituencyId` are
+the keys it was found under — e.g. build the expected `(electionId, constituencyId)` pairs from
+`getTestData().nominations` and assert `expect(nominationData).toEqual(expect.arrayContaining([…]))`,
+or at minimum assert each id is a member of `Object.keys(tree)` / `Object.keys(tree[electionId])`
+rather than merely defined. Either form fails under regression B; `toBeDefined()` does not.
+
+**Do not use `electionId: undefined` as the negative control** (§ 8.3, R-5). It reds today, before any
+fix, so it cannot verify the remediation — it verifies only that the file was already running.
 
 ### 5.15 F20-6 — `planValidation.test.ts:104` (bare `toThrow()` among seven message matchers)
 
@@ -2148,3 +2467,11 @@ reds 7 of 7 tests via `loadPrompt`'s `throwIfVarsMissing`. It is deliberately ex
 because it reds **before and after** any fix to the assertions, which would make Phase 142's
 remediation unverifiable — the same disqualification that removed the audit's F16 sentence from
 § 5.4.6.
+
+**R-5 — F20-5: the in-band positive control at `variants.ts:100` (`electionId: undefined`) is a
+control, not a regression candidate.** Recorded by plan 03; stated in full in § 5.14.4. Setting the
+property to `undefined` reds `variants.test.ts:9` today, which is exactly why it is excluded from
+§ 5.14.6: a negative control that reds before *and* after the fix verifies nothing about the fix. Its
+job was to prove the array is non-empty in the un-injected code — without which injection A's green
+("1 passed" under `return []`) is indistinguishable from a test that never asserted at all. Same
+disqualification as R-4, reached from the vacuity side rather than the value side.
