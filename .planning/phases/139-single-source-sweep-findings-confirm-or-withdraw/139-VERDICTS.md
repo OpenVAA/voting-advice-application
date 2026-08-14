@@ -200,8 +200,8 @@ unfilled but never silently absent. `pending` marks a row this plan did not fill
 | 7 | F19a | `apps/frontend/src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts:144` | **PASS** (blind) | **FAIL** (red) at `:147` `requestParam!.split('.')` | **confirmed** | PASS (assertion) / FAIL (file) | yes | `:159`, `:171`, `:192` (§ 8.1 C-2) |
 | 8 | F19b | `apps/frontend/src/lib/api/utils/auth/providers/idura.test.ts:148` | **PASS** (blind) | **FAIL** (red) at `:151` `requestParam!.split('.')` | **confirmed** | PASS (assertion) / FAIL (file) | yes | `:184` (§ 8.1 C-3) |
 | 9 | F19c | `apps/frontend/src/lib/api/utils/auth/__tests__/token-endpoint.test.ts:167` | **PASS** (blind) — inj. B · **PASS** (on `"undefined"`) — inj. A | **FAIL** (red) at `:170` `assertion.split('.')` — inj. B · **FAIL** (red) at `:171` `toHaveLength(3)` — inj. A | **confirmed** | PASS (assertion) / FAIL (file) | yes (inj. B; inj. A is a second axis, § 8.3 R-6) | `:189`, `:208`, `:230` (§ 8.1 C-4) |
-| 10 | F20-1 | `apps/frontend/src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts:233` | pending | pending | pending | PASS | pending | pending |
-| 11 | F20-2 | `apps/frontend/src/lib/i18n/tests/overrides.test.ts:32-36` | pending | pending | pending | PASS | pending | pending |
+| 10 | F20-1 | `apps/frontend/src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts:233` | **PASS** (blind) — both inj. | **PASS** (green) — both inj. | **confirmed** | PASS | yes (inj. A zero-delta on the axis, § 8.3 R-7) | none |
+| 11 | F20-2 | `apps/frontend/src/lib/i18n/tests/overrides.test.ts:32-36` | **PASS** (blind) | **PASS** (green) | **confirmed** | PASS | yes | none |
 | 12 | F20-3 | `apps/frontend/src/lib/api/utils/auth/getIdTokenClaims.test.ts:236,259` | pending | pending | pending | PASS | pending | pending |
 | 13 | F20-4 | `packages/dev-seed/tests/supabaseAdminClient.test.ts:151` | **PASS** (blind) | **PASS** (green) | **confirmed** | PASS | yes | none |
 | 14 | F20-5 | `packages/data/src/objects/nominations/variants/variants.test.ts:5-12` | **PASS** — inj. A (vacuous) · **PASS** (blind) — inj. B | **PASS** (green) — both | **confirmed** | PASS | yes, both | none |
@@ -2421,25 +2421,436 @@ control that verifies it — it reds after the fix at `:167` and passes before i
 
 ### 5.10 F20-1 — `authorize-endpoint.test.ts:233` (bare `rejects.toThrow()` under a 400 title)
 
-**Status:** not yet run — filled by a later plan in this phase.
+**5.10.1 Re-read evidence**
 
-- **5.10.1 Re-read evidence** — verbatim assertion text plus its current line, quoted from the live tree
-- **5.10.2 Injected diff** — the verbatim `-`/`+` lines (D-04)
-- **5.10.3 Invocation** — the verbatim command
-- **5.10.4 Observed** — assertion outcome, file outcome, failing line, verbatim runner output
-- **5.10.5 Verdict and reasoning** — ends in `confirmed` or `withdrawn`
-- **5.10.6 Pre-specified regression for Phase 142** — the concrete regression this assertion cannot detect
+Quoted from the live tree at `12825b479`, not re-copied from the audit.
+`apps/frontend/src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts:228`, the title:
+
+```ts
+  it('returns 400 when redirectUri is missing', async () => {
+```
+
+and `:233`, the entirety of what that test asserts:
+
+```ts
+    await expect(POST(event)).rejects.toThrow();
+```
+
+The audit's cite (`:233`) is line-exact; no drift. The gap between what the title promises — a
+**400** — and what the matcher can see — *that something, anything, was thrown* — is the finding.
+
+**The injected shape is realistic rather than contrived.** A 500 already exists in the same file, in
+the catch arm of the same function, `apps/frontend/src/routes/api/oidc/authorize/+server.ts:50-53`:
+
+```ts
+  } catch (e) {
+    console.error('Failed to construct authorization request:', e);
+    return error(500, { message: 'Failed to construct authorization request' });
+  }
+```
+
+So a 500 escaping from this handler is a shape the file already produces, not one invented to make
+the finding look bad.
+
+**A live pre-existing defect, discovered while designing the injection and recorded rather than
+dropped.** `error()` from `@sveltejs/kit` v2 **throws**; it does not return. So `return error(400,
+{ message: 'redirectUri is required' })` at `+server.ts:22` throws an `HttpError`, which is caught by
+the same function's own `catch (e)` three lines of control-flow later, logged, and **replaced** by
+the `error(500, …)` at `:52`. The proof is in the runner's own stderr on the **un-injected** tree,
+pasted as observed:
+
+```
+stderr | src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts > POST /api/oidc/authorize > returns 400 when redirectUri is missing
+Failed to construct authorization request: HttpError { status: 400, body: { message: 'redirectUri is required' } }
+```
+
+That line is emitted by the `console.error` **inside the catch arm**. Its presence proves the 400 was
+caught rather than returned, and therefore that the value the test's promise actually rejects with is
+the catch's **500** — not the 400 its title names. *The endpoint does not return 400 for a missing
+`redirectUri` today.*
+
+This makes F20-1 **stronger** than the audit states. The assertion is not merely blind to a
+hypothetical future 500; it is blind to a status divergence that is **live in the tree right now**,
+and has been for as long as the test has been green. The shape matches R-2 (§ 8.3) for F15-A: the
+regression the finding hypothesises is already the production reality, and that absence of a delta is
+itself stronger evidence than any injection. It also drives the injection design below — see
+§ 8.3 R-7.
+
+**5.10.2 Injected diff**
+
+Two injections, run as two separate complete HYGIENE-LOOP iterations, never both live at once.
+
+**Injection A — the plan-specified one (wrong status, same throw).** Target
+`apps/frontend/src/routes/api/oidc/authorize/+server.ts:22`, verbatim (D-04):
+
+```diff
+  apps/frontend/src/routes/api/oidc/authorize/+server.ts:22
+-      return error(400, { message: 'redirectUri is required' });
++      return error(500, { message: 'redirectUri is required' }); // INJECTED (139): wrong status, same throw
+```
+
+The `+` line still contains a `return error(` call, so the throw is preserved and only the status code
+changes — the injection varies exactly the detail the bare matcher cannot see, and does not remove the
+category of the failure (the R-1 failure mode, § 8.3).
+
+Confirmation that it landed as recorded, from `git diff` taken while it was live:
+
+```
+@@ -19,7 +19,7 @@ export async function POST({ cookies, request }: RequestEvent): Promise<Response
+     const { redirectUri, codeChallenge } = await request.json();
+ 
+     if (!redirectUri) {
+-      return error(400, { message: 'redirectUri is required' });
++      return error(500, { message: 'redirectUri is required' }); // INJECTED (139): wrong status, same throw
+     }
+ 
+     const provider = getActiveProvider();
+```
+
+**Injection B — the on-axis one (a different rejection *kind*, reaching the caller).** Injection A
+turns out to be zero-delta on the axis the caller observes (§ 8.3 R-7): because the 400 is swallowed
+by the function's own catch, the promise rejects with the catch's 500 whether A is applied or not.
+Injection B varies the rejection the caller *actually receives*, and models the audit's second named
+clause verbatim — *"a `TypeError` on a malformed event stub"*. Target
+`apps/frontend/src/routes/api/oidc/authorize/+server.ts:52`:
+
+```diff
+  apps/frontend/src/routes/api/oidc/authorize/+server.ts:52
+-    return error(500, { message: 'Failed to construct authorization request' });
++    throw new TypeError('INJECTED (139): a raw TypeError, not an HttpError with a status');
+```
+
+The throw is preserved — the promise still rejects — and only its *kind* changes: from a SvelteKit
+`HttpError` carrying a status and a body to a bare `TypeError` carrying neither. This is the
+discriminating experiment; the verdict rests on it.
+
+**5.10.3 Invocation**
+
+Verbatim, identical for both injections, run from the workspace directory (D-05 — ad-hoc in-package
+vitest; no wiring was changed):
+
+```bash
+cd "$(git rev-parse --show-toplevel)/apps/frontend" && npx vitest run src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts
+```
+
+**The stderr line is benign and expected.** `Failed to construct authorization request: HttpError { … }`
+is printed by the handler's own `console.error` on the deliberate negative path this file exercises. It
+is present in the baseline run too, and is **not** a failure indication. In this record it does double
+duty as the effect-detector for injection A.
+
+**5.10.4 Observed**
+
+Two outcomes per injection, recorded separately per the TWO-COLUMN RULE (§ 3.2).
+
+| Injection | Injected line | Assertion outcome (`:233`) | File outcome | Failing line | Collateral |
+|---|---|---|---|---|---|
+| A — wrong status | `+server.ts:22` | **PASS** (blind) | **PASS** (green, 9/9) | none | none |
+| B — raw `TypeError` | `+server.ts:52` | **PASS** (blind) | **PASS** (green, 9/9) | none | none |
+
+Verbatim runner output under injection A (ANSI colour codes stripped; the plugin-warning preamble
+common to every frontend run is elided):
+
+```
+ RUN  v3.2.4 /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/frontend
+
+stderr | src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts > POST /api/oidc/authorize > returns 400 when redirectUri is missing
+Failed to construct authorization request: HttpError { status: 500, body: { message: 'redirectUri is required' } }
+
+ ✓ src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts (9 tests) 28ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  15:34:12
+   Duration  272ms (transform 38ms, setup 0ms, collect 65ms, tests 28ms, environment 0ms, prepare 42ms)
+```
+
+**Injection A carries its own positive control, in band and free.** The stderr line reads
+`status: 500` here and `status: 400` in the baseline run of the same file taken minutes earlier in the
+same session. That single changed token proves the injected line **executed** — the run is a live
+experiment, not a null one (the hazard carried forward from plans 03 and 04). The test at `:233`
+nonetheless reported pass.
+
+Verbatim runner output under injection B:
+
+```
+ RUN  v3.2.4 /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/frontend
+
+stderr | src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts > POST /api/oidc/authorize > returns 400 when redirectUri is missing
+Failed to construct authorization request: HttpError { status: 400, body: { message: 'redirectUri is required' } }
+
+ ✓ src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts (9 tests) 56ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  15:34:44
+   Duration  341ms (transform 54ms, setup 0ms, collect 75ms, tests 56ms, environment 0ms, prepare 78ms)
+```
+
+**Injection B's positive control is the same stderr line, read the other way.** The `console.error` at
+`:51` is the statement immediately preceding the injected `throw` at `:52`, inside the same catch arm.
+Its presence in the output proves the catch arm executed to that point, and therefore that the very
+next statement — the injected `TypeError` — is what the promise rejected with. The caller received a
+bare `TypeError` with **no status and no body at all**, and `expect(POST(event)).rejects.toThrow()`
+reported pass.
+
+**Collateral: none, for either injection.** The file's other eight tests (`:117`, `:128`, `:136`,
+`:151`, `:163`, `:183`, `:196`, `:213`) all supply a valid `redirectUri` and never enter the catch arm,
+so neither injection is reachable from them; 9 passed under both, byte-identical to the 9-passed
+baseline. § 8 has no collateral entry for this site.
+
+Prediction was PASS for both; observed PASS for both; **matched**.
+
+**5.10.5 Verdict and reasoning**
+
+The behaviour the test claims to guard was broken in production source, twice and on two different
+axes, and the test that names a specific status code in its own title reported pass both times.
+
+Injection A changed the rejection status the handler constructs from 400 to 500 — the exact regression
+the audit names — and the observed stderr proves the changed line ran. Injection B went further and
+replaced the caller-observable rejection entirely: not an `HttpError` with a different status, but a
+`TypeError` with no status, no body and no HTTP semantics whatsoever. `.rejects.toThrow()` with no
+argument registers neither, because it asserts only that the promise rejected — the identity of the
+rejection value is outside what the matcher can see. A test titled `'returns 400 when redirectUri is
+missing'` is therefore satisfied by a 500, by a 503, by a `TypeError`, and by any other throw the
+handler could conceivably produce.
+
+The stronger conclusion the design work forced is on the record in § 5.10.1 and matters more than
+either injection: **the endpoint already fails to return 400.** `error()` throws, the handler catches
+its own 400, and the caller gets the catch's 500. The assertion at `:233` has been green across that
+divergence for the whole life of the test. This is the F15-A/R-2 pattern reached from the opposite
+direction — there, the hypothetical regression could not be injected because the code already had it;
+here, the hypothetical regression *was* injected and turned out to be a no-op *because the code
+already had it*.
+
+**Verdict:** confirmed
+
+**5.10.6 Pre-specified regression for Phase 142**
+
+**The regression (re-apply this diff verbatim — injection B, not injection A):** replace the catch
+arm's HTTP error at `apps/frontend/src/routes/api/oidc/authorize/+server.ts:52` with a bare throw —
+`return error(500, { message: 'Failed to construct authorization request' })` becomes
+`throw new TypeError('…')`. In production this turns every handled failure of the authorize endpoint
+into an unhandled non-HTTP exception: the client receives a framework 500 with a stack-derived body
+instead of the endpoint's own error contract, and nothing in the suite notices. Today the file stays
+green through it, 9 of 9.
+
+**Injection A is explicitly NOT the negative control** — see § 8.3 R-7. It produces no change in the
+caller-observable rejection, so a Phase 142 assertion strengthened correctly would still pass under it,
+and the remediation would appear unverified. Re-apply **B**.
+
+**The target Phase 142 must reach:** the assertion must name the status its title promises. The
+stronger form the audit names is `await expect(POST(event)).rejects.toMatchObject({ status: 400 })`
+(equivalently `.rejects.toThrow(expect.objectContaining({ status: 400 }))`). That form fails under
+injection B — a `TypeError` has no `status` property — and `.rejects.toThrow()` does not.
+
+**A prerequisite Phase 142 cannot skip, and must decide deliberately.** The strengthened assertion
+`{ status: 400 }` **fails on the un-injected tree today**, because of the swallow documented in
+§ 5.10.1. Phase 142 therefore cannot simply tighten the matcher and expect green; it must first choose
+between two remedies and record the choice:
+
+1. **Fix the endpoint** so it honours its own title — re-throw `HttpError`s from the catch arm rather
+   than converting them (`if (e instanceof HttpError) throw e;` before the `console.error`, or hoist the
+   `redirectUri` guard outside the `try`). Then assert `{ status: 400 }`. This is the remedy the test's
+   title already promises and the one this record recommends.
+2. **Assert the true current behaviour** — `{ status: 500 }` — and rename the test. This closes the
+   blindness but ratifies a defect, and should only be chosen with the defect explicitly accepted.
+
+Tightening the matcher without making this choice will produce a red suite that looks like a
+remediation failure and is in fact a pre-existing defect surfacing for the first time.
 
 ### 5.11 F20-2 — `overrides.test.ts:32-36` (`typeof result` is `'string'`)
 
-**Status:** not yet run — filled by a later plan in this phase.
+**5.11.1 Re-read evidence**
 
-- **5.11.1 Re-read evidence** — verbatim assertion text plus its current line, quoted from the live tree
-- **5.11.2 Injected diff** — the verbatim `-`/`+` lines (D-04)
-- **5.11.3 Invocation** — the verbatim command
-- **5.11.4 Observed** — assertion outcome, file outcome, failing line, verbatim runner output
-- **5.11.5 Verdict and reasoning** — ends in `confirmed` or `withdrawn`
-- **5.11.6 Pre-specified regression for Phase 142** — the concrete regression this assertion cannot detect
+Quoted from the live tree at `12825b479`, not re-copied from the audit.
+`apps/frontend/src/lib/i18n/tests/overrides.test.ts:32`, the title:
+
+```ts
+  test('getOverride returns raw template on ICU parse error', () => {
+```
+
+and the whole body, `:33-36`, with `:36` the only assertion:
+
+```ts
+    setOverrides('en', { bad: { key: '{broken, plural, }' } });
+    // Should not throw, returns raw template
+    const result = getOverride('bad.key', { broken: 1 });
+    expect(typeof result).toBe('string');
+```
+
+The audit's cite (`:32-36`) is line-exact; no drift. The title makes a specific promise — the **raw
+template** comes back — and the assertion checks only that *something of type string* came back. Every
+string in the language satisfies it: the raw template, the empty string, the key name, a
+half-formatted fragment, an error message.
+
+The code under test, `apps/frontend/src/lib/i18n/overrides.ts:33-37`:
+
+```ts
+  try {
+    return new IntlMessageFormat(template, locale).format(params) as string;
+  } catch {
+    return template;
+  }
+```
+
+**5.11.2 Injected diff**
+
+Target `apps/frontend/src/lib/i18n/overrides.ts:36`, verbatim (D-04 — Phase 142 re-applies this
+mechanically):
+
+```diff
+  apps/frontend/src/lib/i18n/overrides.ts:36
+-    return template;
++    return ''; // INJECTED (139): the fallback returns nothing instead of the raw template
+```
+
+The catch arm is preserved and still returns a `string` — the category of the behaviour is untouched
+(no throw is introduced, no arm is deleted). Only the *value* varies, which is precisely the detail
+`typeof` cannot see. This avoids the R-1 failure mode (§ 8.3) by construction.
+
+Confirmation that it landed as recorded, from `git diff` taken while it was live:
+
+```
+@@ -33,7 +33,7 @@ export function getOverride(key: string, params?: Record<string, unknown>): stri
+   try {
+     return new IntlMessageFormat(template, locale).format(params) as string;
+   } catch {
+-    return template;
++    return ''; // INJECTED (139): the fallback returns nothing instead of the raw template
+   }
+ }
+```
+
+**5.11.3 Invocation**
+
+Verbatim, run from the workspace directory (D-05):
+
+```bash
+cd "$(git rev-parse --show-toplevel)/apps/frontend" && npx vitest run src/lib/i18n/tests/overrides.test.ts
+```
+
+**5.11.4 Observed**
+
+Two outcomes, recorded separately per the TWO-COLUMN RULE (§ 3.2), even though this site is predicted
+to have neither collateral nor divergence — a row that quietly drops a column is the failure mode that
+rule exists to prevent.
+
+| Site | Injected line | Assertion outcome | File outcome | Failing line | Collateral |
+|---|---|---|---|---|---|
+| F20-2 `overrides.test.ts:36` | `overrides.ts:36` | **PASS** (blind) | **PASS** (green, 7/7) | none — the two columns agree | none |
+
+Verbatim runner output, under the live injection (ANSI codes stripped; plugin-warning preamble
+elided):
+
+```
+ RUN  v3.2.4 /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/frontend
+
+ ✓ src/lib/i18n/tests/overrides.test.ts (7 tests) 11ms
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  15:35:09
+   Duration  465ms (transform 22ms, setup 0ms, collect 44ms, tests 11ms, environment 240ms, prepare 42ms)
+```
+
+Byte-identical test counts to the pre-injection baseline (7 passed) and the post-revert baseline
+(7 passed) taken in the same session. **Collateral: none** — the file's other six tests (`:9`, `:13`,
+`:18`, `:23`, `:39`, `:46`) exercise non-throwing paths that never reach the catch arm, exactly as
+predicted; § 8 has no collateral entry for this site.
+
+**Two positive controls, because a green run alone would not have been evidence.** A pass under this
+injection has two possible causes: the assertion is blind (the finding), or the catch arm is never
+reached and the injected line never ran (a null experiment). Both were run, and they agree.
+
+*Control 1 — out of band, no tree mutation.* The question is whether the fixture template
+`'{broken, plural, }'` actually throws. Resolved directly against the same `intl-messageformat`
+instance the frontend resolves, pasted as observed:
+
+```console
+$ cd apps/frontend && node -e "console.log(require.resolve('intl-messageformat'))"
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/node_modules/intl-messageformat/index.js
+$ node --input-type=module -e "import IntlMessageFormat from '<that path>'; const MF = IntlMessageFormat.default ?? IntlMessageFormat; try { const out = new MF('{broken, plural, }', 'en').format({ broken: 1 }); console.log('NO THROW — catch arm unreachable; formatted =', JSON.stringify(out)); } catch (e) { console.log('THREW — catch arm IS reached:', e.constructor.name + ':', String(e.message).split('\n')[0]); }"
+THREW — catch arm IS reached: SyntaxError: EXPECT_PLURAL_ARGUMENT_SELECTOR
+```
+
+*Control 2 — in band, and decisive.* Control 1 resolves the hoisted CommonJS entry, which need not be
+the build vitest loads, so the reachability claim was re-established inside the actual test run. As its
+own separate HYGIENE-LOOP iteration, the catch arm was replaced with a throw:
+
+```diff
+  apps/frontend/src/lib/i18n/overrides.ts:36
+-    return template;
++    throw new Error('INJECTED (139): in-band positive control — proves the catch arm executes');
+```
+
+Verbatim runner output:
+
+```
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/i18n/tests/overrides.test.ts > Runtime override wrapper > getOverride returns raw template on ICU parse error
+Error: INJECTED (139): in-band positive control — proves the catch arm executes
+ ❯ getOverride src/lib/i18n/overrides.ts:36:11
+     34|     return new IntlMessageFormat(template, locale).format(params) as s…
+     35|   } catch {
+     36|     throw new Error('INJECTED (139): in-band positive control — proves…
+       |           ^
+     37|   }
+     38| }
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 passed (7)
+```
+
+This settles three things at once. The frame `❯ getOverride src/lib/i18n/overrides.ts:36:11` proves
+line 36 **executes** during this test, so the empty-string injection was a live experiment. The failing
+test is the F20-2 site itself, reached from `overrides.test.ts:35` — the `getOverride` call at `:35`,
+one line above the assertion — so the site genuinely exercises the fallback path it names. And exactly
+**1 of 7** reddened, independently confirming that the other six never reach the catch arm, which is
+the zero-collateral prediction verified rather than assumed.
+
+**Control 2 is a control, not a regression candidate**, and is disqualified from § 5.11.6 for the same
+reason as R-4 and R-5: it reds *before and after* any fix to the assertion, so a Phase 142 remediation
+verified against it would be unverifiable. Recorded in full at § 8.3 R-8.
+
+Prediction was PASS with zero collateral; observed PASS with zero collateral; **matched**.
+
+**5.11.5 Verdict and reasoning**
+
+The behaviour the test names in its own title was removed from production source, and the test reported
+pass. `getOverride` returned the empty string on an ICU parse error instead of the raw template, and
+the assertion whose entire job is to check what comes back on an ICU parse error did not register it.
+The positive controls remove the only innocent explanation: line 36 provably executes during this test,
+so the guard was exercised and stayed silent rather than being bypassed.
+
+The mechanism is the matcher's altitude. `expect(typeof result).toBe('string')` asserts membership of a
+type inhabited by every possible return value of a function whose signature is already
+`string | undefined` — so the assertion's only real discriminating power is against `undefined`, which
+is not what the title is about. Every regression the audit names for this site — *"returning `''`, the
+key name, or a half-formatted string"* — is a string, and every one of them passes. In production the
+injected value is a visible defect: a user hitting a malformed override sees an empty label where the
+untranslated template should have appeared, and the suite stays green.
+
+The audit's characterisation is accurate to the line, and the run overturned nothing it predicted.
+
+**Verdict:** confirmed
+
+**5.11.6 Pre-specified regression for Phase 142**
+
+**The regression (re-apply this diff verbatim):** empty the ICU fallback at
+`apps/frontend/src/lib/i18n/overrides.ts:36` — `return template;` becomes `return '';`. In production
+this replaces every override whose ICU template fails to parse with a blank string: the affected label,
+button or heading renders empty rather than degrading to the raw template the function promises. Today
+the file stays green through it, 7 of 7.
+
+**The target Phase 142 must reach:** the assertion must check the *value* the title promises, not its
+type. The stronger form is an exact equality against the raw template —
+`expect(result).toBe('{broken, plural, }')` — or, if the fixture literal is preferred as a named
+constant, `expect(result).toBe(BAD_TEMPLATE)` with the same string. Either form fails under the diff
+above (`'' !== '{broken, plural, }'`); `expect(typeof result).toBe('string')` does not. A weaker
+tightening such as `expect(result).toBeTruthy()` would also catch this particular injection but would
+still pass on the key name or a half-formatted string, which the audit names as the same class of
+regression — exact equality is the form that closes all three.
 
 ### 5.12 F20-3 — `getIdTokenClaims.test.ts:236,259` (`result.success` is `false`, no error code)
 
@@ -3409,6 +3820,28 @@ not even the test that reads the pipeline's own serialized output can detect a `
 returns nothing. It also means that test cannot serve as an accidental end-to-end guard, and § 5.3.6
 records what it would need to become one. No verdict changed; the prediction stands recorded as made.
 
+**O-3 — F20-1: the outcome prediction held, but the premise underneath it was refuted.** Recorded by
+plan 05. `139-RESEARCH.md:647-660` and `139-05-PLAN.md` both predicted that flipping
+`+server.ts:22` from `error(400, …)` to `error(500, …)` would leave
+`authorize-endpoint.test.ts:233` green, "because a bare `.rejects.toThrow()` cannot see a status code,
+so a test titled 'returns 400' is satisfied by a 500". Observed: green, 9 of 9 — the prediction
+matched, and § 4 row 10 records it as matched.
+
+What the run refuted is the unstated premise that the endpoint returns **400** in the first place.
+`error()` from `@sveltejs/kit` v2 throws rather than returns, so the handler's own `catch (e)` at
+`:50` intercepts its 400 and substitutes the catch arm's 500 at `:52`. The caller's rejection is a 500
+**with or without** the injection, which makes injection A zero-delta on the axis the finding is about
+(§ 8.3 R-7) — it varies which status gets logged, not which status is returned. The evidence is the
+runner's own stderr, which reads `status: 400` on the clean tree and `status: 500` under the
+injection while the test passes in both.
+
+Consequence, carried into § 5.10.1, § 5.10.5 and § 5.10.6: the finding is **strengthened**, because the
+assertion is blind to a status divergence that is live in the tree today rather than to a hypothetical
+one; the verdict is rested on injection B, which varies the caller-observable rejection; and Phase 142
+is warned in § 5.10.6 that tightening this matcher to `{ status: 400 }` will red on the un-injected
+tree until the swallow is fixed. This is the second time in this pass that a finding's hypothetical
+regression turned out to be the production reality — R-2 for F15-A was the first.
+
 ### 8.3 Rejected injection designs
 
 Designs considered and deliberately not run, recorded so the reasoning is auditable rather than
@@ -3479,3 +3912,47 @@ Kept in the record rather than discarded because it measures something injection
 assertion is blind to malformation as well as to absence, which is why § 5.9.6 recommends
 `toMatch(/^[\w-]+\.[\w-]+\.[\w-]+$/)` over the audit's `.not.toBeNull()` — the latter closes only the
 axis B measured. Consequence for Phase 142: re-apply **B**; A is not the negative control.
+
+**R-7 — F20-1: `error(400, …)` → `error(500, …)` at `+server.ts:22` is zero-delta on the
+caller-observable axis.** Recorded by plan 05; **run** as the plan specified it, recorded in full at
+§ 5.10.2 and § 5.10.4 as injection A, and then set aside as the negative control in favour of
+injection B.
+
+The reason is a SvelteKit control-flow detail, measured rather than assumed: `error()` in SvelteKit 2
+**throws** rather than returns, so the `return error(400, …)` at `:22` is caught by the same function's
+`catch (e)` at `:50` and replaced with the catch arm's `error(500, …)` at `:52`. The promise the test
+awaits therefore rejects with a **500 whether or not injection A is applied**. The injection does
+change something — the runner's stderr moves from `HttpError { status: 400 }` to
+`HttpError { status: 500 }`, which is what proves it executed — but the changed value is only ever
+*logged*, never *returned*. A verdict resting on A alone would be evidence about the handler's logging
+dressed as evidence about its status code.
+
+**This is R-6's failure mode reached by the opposite route, and the two together bracket it.** R-6
+(F19c) applied cleanly and produced a red on the wrong axis; R-7 applies cleanly and produces a
+**green** on the wrong axis. Both are invisible in the runner's summary line — R-6 was distinguishable
+only by the failing line number, R-7 only by a status token in a stderr line that a reader would
+reasonably dismiss as benign noise. Neither is caught by the marker grep or the git gates, because both
+are hygienically perfect; the only defence is checking that the injected edit is on the axis the finding
+names before trusting the run.
+
+Injection B (replacing the catch arm's `error(500, …)` with a bare `throw new TypeError(…)`) varies the
+rejection the caller actually receives, models the audit's own second clause — *"a `TypeError` on a
+malformed event stub"* — and carries the verdict. Consequence for Phase 142: re-apply **B**; A is not
+the negative control.
+
+**R-8 — F20-2: the in-band positive control at `overrides.ts:36` (`throw` in the catch arm) is a
+control, not a regression candidate.** Recorded by plan 05; stated in full in § 5.11.4. Replacing the
+fallback `return template;` with a `throw` reds exactly 1 of the file's 7 tests — the F20-2 site
+itself, at `overrides.test.ts:35` — with a stack frame naming `overrides.ts:36`.
+
+Its job was to close the gap a green run cannot close on its own: distinguishing "the assertion is
+blind" (the finding) from "the catch arm is never reached, so the injected line never ran" (a null
+experiment). It proves line 36 executes during this test, and its 1-of-7 blast radius independently
+verifies the zero-collateral prediction rather than leaving it assumed.
+
+It is deliberately excluded from § 5.11.6 because it reds **before and after** any fix to the
+assertion — a crash is visible to every matcher, including the blind one — which would make Phase 142's
+remediation unverifiable. Same disqualification as R-4 and R-5, reached from the reachability side
+rather than the value or vacuity side. Both of this site's controls agree with each other and with the
+out-of-band probe recorded alongside it; neither bears on the verdict, which rests on the
+empty-string injection.
