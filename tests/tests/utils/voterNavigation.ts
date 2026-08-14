@@ -45,6 +45,34 @@ type StopAt = 'first-question' | 'questions-intro' | 'category-intro';
  * click is dispatched but actionability stalls because SvelteKit detached
  * the button mid-action. With this helper, the click has a tight 3 s
  * timeout and the post-click settle short-circuits the loop iteration.
+ *
+ * RESIDUAL EXPOSURE, stated explicitly (Phase 138 review WR-04). The
+ * `Promise.race` below settles on the URL ALONE (the URL branch normally wins —
+ * SvelteKit commits the URL at `client.js:1759-1760` before it swaps the DOM at
+ * `:1824`) and BOTH branches swallow. That is the exact shape
+ * `138-DIAGNOSIS.md` § Named root cause calls link 4 of the DEF-135-04
+ * mechanism, and Phase 138's fix did not remove it here. `advanceClick` drives
+ * `voter-journey.fixture`'s `answerAndAdvanceToResults` /
+ * `walkUntilQuestionsIntro` stack, on which `perm-hide-category-tags`,
+ * `perm-hide-election-tags`, `minimalVoterResultsPage.fixture` and
+ * `candidate-journey` all sit.
+ *
+ * It was deliberately NOT routed through `settleAfterClientNavigation`, because
+ * the swallow is what makes `advanceVoterFlow` work. This is a RESILIENT WALKER,
+ * not an assertion path: a click that does not take effect must let the loop
+ * re-detect whichever screen is actually current (intermediate pages can be
+ * disabled in app settings, and concurrent settings mutation can detach a button
+ * mid-click). A throwing DOM settle would convert every such benign no-op into a
+ * hard failure, undoing the fix this docstring documents. The walker's guarantee
+ * is instead terminal: `navigateToFirstQuestion` ends in a hard `waitForURL` plus
+ * a hard answer-option visibility wait on the settled URL, and every spec built
+ * on the stack opens with its own hard assertion. Those, not this race, are what
+ * bound the exposure.
+ *
+ * Consequence for a later reader: "the settle was fixed in Phase 138" covers the
+ * voter walk's Q→Q hops (`helpers/navigation.ts` `expectClientNavigation`), NOT
+ * this function. Use `expectClientNavigation` for any hop whose next assertion is
+ * not a hard landing assertion on the destination.
  */
 async function advanceClick(page: Page, target: Locator): Promise<void> {
   const urlBefore = page.url();

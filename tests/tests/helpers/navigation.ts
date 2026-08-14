@@ -1,14 +1,30 @@
 /**
  * Navigation assertion + click-and-settle helpers.
  *
- * Thin wrappers around `expect(page).toHaveURL(...)` and the
- * `click + race-against-URL-change` pattern.
+ * TWO DIFFERENT SETTLE CONTRACTS LIVE IN THIS FILE, and the difference is
+ * load-bearing (Phase 138 review WR-04):
+ *
+ *   - `settleAfterClientNavigation` / `expectClientNavigation` settle on the
+ *     DESTINATION DOM and do NOT swallow. This is the contract the walk needs:
+ *     it is the link the DEF-135-04 ordering defect broke.
+ *   - `expectLandedOn` and `clickAndRaceSettle` are thin wrappers around
+ *     `expect(page).toHaveURL(...)` and the `click + race-against-URL-change`
+ *     pattern. `clickAndRaceSettle` settles on the URL ALONE and swallows its own
+ *     timeout — i.e. it still has the shape `138-DIAGNOSIS.md` § Named root cause
+ *     calls link 4. It is NOT a settle in the sense the fixed helper is; see its
+ *     own docblock for the residual exposure and why it is nevertheless correct
+ *     at its two call sites.
+ *
+ * "The settle was fixed in Phase 138" therefore does NOT mean every navigation in
+ * the suite is settled on the DOM. It means the voter walk's Q→Q hops are, plus
+ * the instrument that witnesses them.
  *
  * Existing in-tree analog for `clickAndRaceSettle`:
  *   `tests/tests/utils/voterNavigation.ts` `advanceClick` — NOT refactored to
  *   call this helper. The two co-exist intentionally; `voterNavigation.ts` is
  *   the domain-specific voter-journey assembler, this helper is its
- *   generic counterpart for non-voter-journey call sites.
+ *   generic counterpart for non-voter-journey call sites. It carries the same
+ *   residual exposure, recorded in its own docblock.
  *
  * "Stuck click" defense rationale:
  *   Without the click-timeout + post-click URL-change race, a raw
@@ -275,6 +291,29 @@ type UrlPredicate = string | RegExp | ((url: URL) => boolean);
  * pattern — distinct from `settleNetworkIdle` which does NOT swallow. The
  * asymmetry is intentional: `settleNetworkIdle` is a hard wait helper, this is
  * a defensive click+race helper.
+ *
+ * RESIDUAL EXPOSURE, stated explicitly (Phase 138 review WR-04). This helper
+ * still has the exact shape the diagnosis names as link 4 of the DEF-135-04
+ * mechanism: it settles on the URL ALONE, and it swallows. Under the ordering in
+ * `138-DIAGNOSIS.md` § Named root cause, SvelteKit commits the URL
+ * (`client.js:1759-1760`) before it swaps the DOM (`:1824`), so this helper can
+ * return with the PREVIOUS page still rendered, and it cannot distinguish "the
+ * navigation never happened" from "the URL committed but the DOM has not".
+ *
+ * It was deliberately NOT routed through `settleAfterClientNavigation`, because
+ * doing so would break what makes it correct where it is used. Both call sites
+ * (`utils/voterIntro.ts:71,77`) follow it IMMEDIATELY with a HARD landing
+ * assertion — the intro CTA `toBeVisible`, then the caller's `expectation()` —
+ * and that assertion IS the DOM settle. `bypassIntroThen`'s docblock records the
+ * measurement behind that design (DEF-133-01): the swallow moves the failure
+ * signal from "the click did not ack in 2 s" to "the flow did not land", which is
+ * strictly more meaningful. A throwing DOM settle here would re-introduce the
+ * actionability-timeout failure mode that design removed, and would do it on the
+ * hydration boundary where it was measured worst.
+ *
+ * The exposure is therefore bounded by the call sites' own hard assertions rather
+ * than by this helper. Do not use it for a hop whose next assertion is not a hard
+ * landing assertion on the destination — use `expectClientNavigation` for that.
  *
  * @param locator - the element to click (extracts its Page via `locator.page()`).
  * @param destinationPredicate - one or more URL predicates to race against.
