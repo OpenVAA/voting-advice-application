@@ -195,7 +195,7 @@ unfilled but never silently absent. `pending` marks a row this plan did not fill
 | 2 | F15-B | `packages/argument-condensation/tests/condensation/condenserStandalone.test.ts:131-142,184-185` | **PASS** (blind) | **PASS** (green) | **confirmed** | PASS | yes | none |
 | 3 | F15-C | `packages/argument-condensation/tests/condensation/condenseQuestions.test.ts:139-145,215-219,268-274` | **PASS** (blind) | **PASS** (green) | **confirmed** | PASS | yes at the sites; viz-test sub-prediction **overturned** (§ 8) | none |
 | 4 | F16 | `packages/argument-condensation/tests/unit/handleQuestion.test.ts:56-68` | **PASS** (blind) — inj. B · **FAIL** — inj. A | **PASS** (green) — inj. B · **FAIL** (red) — inj. A | **confirmed** | PASS | inj. B **yes** · inj. A **no — overturned** (§ 8) | none |
-| 5 | F17 | `apps/frontend/src/lib/dynamic-components/entityList/EntityListWithControls.test.ts:84-95` | pending | pending | pending | PASS | pending | pending |
+| 5 | F17 | `apps/frontend/src/lib/dynamic-components/entityList/EntityListWithControls.test.ts:84-95` | **PASS** (trivially — module not in graph) | **PASS** (green) | **confirmed** (on the import graph, not the run) | PASS | yes, but vacuously — see § 5.5.4 | none |
 | 6 | F18 | `packages/dev-seed/tests/templates/default.test.ts:121-135` | **PASS** (blind) | **PASS** (green) | **confirmed** | PASS | yes | none |
 | 7 | F19a | `apps/frontend/src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts:144` | **PASS** (blind) | **FAIL** (red) at `:147` `requestParam!.split('.')` | **confirmed** | PASS (assertion) / FAIL (file) | yes | `:159`, `:171`, `:192` (§ 8.1 C-2) |
 | 8 | F19b | `apps/frontend/src/lib/api/utils/auth/providers/idura.test.ts:148` | **PASS** (blind) | **FAIL** (red) at `:151` `requestParam!.split('.')` | **confirmed** | PASS (assertion) / FAIL (file) | yes | `:184` (§ 8.1 C-3) |
@@ -1341,14 +1341,276 @@ under which a message matcher is actually load-bearing.
 
 ### 5.5 F17 — `EntityListWithControls.test.ts` (self-referential `10 === 10`)
 
-**Status:** not yet run — filled by a later plan in this phase.
+**This record is deliberately shaped differently from the other fourteen, and the difference is the
+point.** For every other finding the injection run is the evidence. Here it cannot be: the file the
+injection edits is not in the test's module graph, so the run is incapable of discriminating anything
+about the assertion, and presenting it as though it were would put a false experiment on the record
+(D-06; RESEARCH Pitfall 7). The **primary evidence is the import graph**, stated first and standing on
+its own. The runs come after, labelled as corroboration.
 
-- **5.5.1 Re-read evidence** — verbatim assertion text plus its current line, quoted from the live tree
-- **5.5.2 Injected diff** — the verbatim `-`/`+` lines (D-04)
-- **5.5.3 Invocation** — the verbatim command
-- **5.5.4 Observed** — assertion outcome, file outcome, failing line, verbatim runner output
-- **5.5.5 Verdict and reasoning** — ends in `confirmed` or `withdrawn`
-- **5.5.6 Pre-specified regression for Phase 142** — the concrete regression this assertion cannot detect
+**5.5.1 Re-read evidence**
+
+Quoted from the live tree at `12825b479`, not re-copied from the audit.
+
+**(a) PRIMARY — the component under test is not in the test's module graph.**
+
+`apps/frontend/src/lib/dynamic-components/entityList/EntityListWithControls.test.ts:1-2` is the
+complete set of import statements in the file:
+
+```ts
+import { describe, expect, it, vi } from 'vitest';
+import { computeFiltered, countActiveFilters } from './EntityListWithControls.helpers';
+```
+
+The only non-vitest import is `./EntityListWithControls.helpers`. **`EntityListWithControls.svelte` is
+never imported, never mounted and never rendered** — it is mentioned exactly once anywhere in the
+file's 262 lines, inside a doc comment at `:9` explaining why it is *not* mounted. Pasted as observed:
+
+```console
+$ grep -n "EntityListWithControls.svelte\|mount(\|render(" apps/frontend/src/lib/dynamic-components/entityList/EntityListWithControls.test.ts
+9: * up the full appContext + locale + i18n surface a `mount()`-based test
+```
+
+And the graph is **closed**, not merely shallow — the helper module it does import has no imports of
+its own:
+
+```console
+$ grep -n "^import\|from '" apps/frontend/src/lib/dynamic-components/entityList/EntityListWithControls.helpers.ts
+(no output — helpers.ts has zero imports)
+```
+
+So the transitive module graph of this test file is exactly `{ EntityListWithControls.test.ts, vitest,
+EntityListWithControls.helpers.ts }`. There is no path, direct or transitive, to the `.svelte`
+component. Nothing the component does — its `$derived.by`, its two version-counter bridges, its
+effects — is executed by this test at all.
+
+**(b) The assertion is arithmetic over the test's own loop.**
+
+The site, `EntityListWithControls.test.ts:84` (title) and `:88-94` (body):
+
+```ts
+    it('Contract 4: bounded apply() invocations under a flurry of filter mutations', () => {
+```
+```ts
+      for (let i = 0; i < 10; i++) {
+        group.filters[0].setActive(i % 2 === 0);
+        computeFiltered(entities, group, undefined);
+      }
+      // Each computeFiltered call invokes apply once. 10 cycles → 10 invocations.
+      // Bounded: the assertion proves no recursive/extra calls occur.
+      expect(group.applySpy).toHaveBeenCalledTimes(10);
+```
+
+The helper it calls is two statements,
+`apps/frontend/src/lib/dynamic-components/entityList/EntityListWithControls.helpers.ts:19-20`:
+
+```ts
+  const afterGroup = filterGroup ? filterGroup.apply([...entities]) : [...entities];
+  return searchFilter ? searchFilter.apply(afterGroup) : afterGroup;
+```
+
+and the fake it calls it with invokes the spy exactly once per `apply`,
+`EntityListWithControls.test.ts:40-43`:
+
+```ts
+  apply<TVal>(targets: Array<TVal>): Array<TVal> {
+    this.applySpy(targets);
+    return this.active ? [] : [...targets];
+  }
+```
+
+Composing the three: the test's own `for` loop calls `computeFiltered` **10** times; `computeFiltered`
+with a `filterGroup` and no `searchFilter` calls `filterGroup.apply` exactly once; `FakeGroup.apply`
+calls `applySpy` exactly once. So `expect(group.applySpy).toHaveBeenCalledTimes(10)` is
+`10 === 10` — a restatement of the loop bound written four lines above it, evaluated against a fake
+the test also wrote. The audit's characterisation is accurate to the line.
+
+The comment at `:93` — *"Bounded: the assertion proves no recursive/extra calls occur"* — is the
+precise claim that fails. No recursion is possible in a two-statement straight-line helper, and the
+place where recursive re-runs *could* occur is the component's reactive graph, which this test does not
+load.
+
+**(c) Scope note (D-06) — F17 is out of Phase 139's criterion 1.**
+
+F17 is named in ASSERT-07 but is **absent from Phase 139's criterion 1**, because it is not
+single-source: the auditor read it directly rather than taking it from the delegated sweep. The audit's
+own line, `.planning/audits/2026-08-11-fake-guard-sweep.md`, F17 entry:
+
+> Confidence: high (read directly)
+
+Criterion 1 exists to check the sweep's unverified delegated findings; a finding the auditor verified
+personally is not in that set. A verdict is recorded here anyway because it costs one run and stops
+Phase 142 from reading the omission as a withdrawal — F17's remediation is in ASSERT-07's scope
+regardless of how it entered the audit.
+
+**5.5.2 Injected diff**
+
+Two edits, each its own complete HYGIENE-LOOP iteration. Neither is a discriminating experiment about
+the assertion; § 5.5.4 says what each one is actually for.
+
+**Injection (the plan-specified one) — a simulated re-run storm.** Target
+`apps/frontend/src/lib/dynamic-components/entityList/EntityListWithControls.svelte`, inserted
+immediately after the existing `filtered` `$derived.by` block that closes at `:128`:
+
+```diff
+  apps/frontend/src/lib/dynamic-components/entityList/EntityListWithControls.svelte:129
++  // INJECTED (139): simulated re-run storm — the regression F17's title claims to bound
++  $effect(() => {
++    void computeFiltered(
++      entities,
++      activeFilterGroup as unknown as ApplyFn | undefined,
++      searchFilter as unknown as ApplyFn | undefined
++    );
++  });
+```
+
+It reuses the `ApplyFn` type declared at `:119` and the same structural casts the existing `filtered`
+block uses at `:125-126`, and reads `activeFilterGroup` / `searchFilter` directly rather than
+destructuring any reactive context accessor, per `CLAUDE.md` § Context Destructuring Rule — a compile
+or lint failure mid-injection would have cost the iteration without teaching anything.
+
+**Control D — a deliberate syntax error.** Same file, at `:120`, turning the component into something
+that cannot be compiled at all:
+
+```diff
+  apps/frontend/src/lib/dynamic-components/entityList/EntityListWithControls.svelte:120
+-  const filtered = $derived.by(() => {
++  // INJECTED (139): deliberate syntax error — control proving the module never loads
++  const filtered = $derived.by(() => { ( [ {
+```
+
+**5.5.3 Invocation**
+
+Verbatim, identical for the baseline, the injection and the control, run from the workspace directory
+(D-05):
+
+```bash
+cd "$(git rev-parse --show-toplevel)/apps/frontend" && npx vitest run src/lib/dynamic-components/entityList/EntityListWithControls.test.ts
+```
+
+**5.5.4 Observed**
+
+| Edit | Injected file | Assertion outcome (`:94`) | File outcome | Failing line | Collateral |
+|---|---|---|---|---|---|
+| Effect loop | `EntityListWithControls.svelte:129` | **PASS** — but *trivially*; see below | **PASS** (green, 8/8) | none | none |
+| Control D (syntax error) | `EntityListWithControls.svelte:120` | **PASS** — the file does not compile and the test does not care | **PASS** (green, 8/8) | none | none |
+
+Verbatim runner output under the effect-loop injection (ANSI codes stripped; plugin-warning preamble
+elided):
+
+```
+ RUN  v3.2.4 /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/frontend
+
+ ✓ src/lib/dynamic-components/entityList/EntityListWithControls.test.ts (8 tests) 3ms
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  16:00:55
+   Duration  546ms (transform 27ms, setup 0ms, collect 22ms, tests 3ms, environment 288ms, prepare 74ms)
+```
+
+**This run is CORROBORATION of § 5.5.1(a), not a discriminating experiment, and must not be read as
+one.** The green result carries no information about the assertion at `:94`, because
+`EntityListWithControls.svelte` is not in this test's module graph: the injected `$effect` is never
+compiled, never mounted and never executed by this run. The sentence *"an effect loop was injected into
+the component and the test stayed green"* is true and, on its own, **misleading** — it implies the test
+was exercised and found wanting, when in fact the test was never in contact with the injected code.
+What the run corroborates is the import-graph fact itself: the component can be given an unbounded
+re-run storm without the suite noticing, which is what § 5.5.1(a) predicts and what § 5.5.6 pre-specifies.
+
+**Control D converts that inference into a measurement.** § 5.5.1(a) establishes non-membership by
+reading import statements. Control D establishes it by execution: the component file was made
+syntactically invalid, and the test still reported **8 passed**. Verbatim:
+
+```
+ RUN  v3.2.4 /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/frontend
+
+ ✓ src/lib/dynamic-components/entityList/EntityListWithControls.test.ts (8 tests) 3ms
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  16:01:19
+   Duration  592ms (transform 28ms, setup 0ms, collect 23ms, tests 3ms, environment 316ms, prepare 78ms)
+```
+
+That the injected error is genuinely fatal — rather than something the Svelte parser tolerates — was
+checked directly against the same compiler the frontend uses, pasted as observed:
+
+```console
+$ cd apps/frontend && node --input-type=module -e "import { compile } from 'svelte/compiler'; import fs from 'node:fs'; const src = fs.readFileSync('src/lib/dynamic-components/entityList/EntityListWithControls.svelte','utf8'); try { compile(src, { filename: 'EntityListWithControls.svelte' }); console.log('COMPILED OK — control is not fatal'); } catch (e) { console.log('COMPILE FAILED (control is genuinely fatal):', e.code ?? e.name, '—', String(e.message).split('\n')[0]); }"
+COMPILE FAILED (control is genuinely fatal): js_parse_error — Unexpected keyword 'void'
+```
+
+So: a file that **cannot be parsed** sat in the working tree under the exact name the test bears, and
+the test file named after it passed 8 of 8 without a murmur. No import-statement reading is required to
+accept the conclusion — if the module were in the graph, the run would have died at transform.
+
+**Collateral: none, for either edit.** All 8 tests in the file pass in the baseline, under the effect
+loop and under control D, with identical 3ms test durations and identical counts throughout; § 8 has no
+collateral entry for this site. Prediction was PASS, and *trivially* PASS; observed exactly that;
+**matched** — while noting that a matched prediction here is weak evidence by construction, since no
+possible edit to that file could have produced any other result.
+
+**5.5.5 Verdict and reasoning**
+
+The reasoning rests on § 5.5.1, not on the runs.
+
+`expect(group.applySpy).toHaveBeenCalledTimes(10)` at `EntityListWithControls.test.ts:94` cannot detect
+the regression its own title describes. The title promises *bounded `apply()` invocations under a
+flurry of filter mutations*; the body performs ten explicit calls in a `for` loop it wrote itself,
+against a fake whose `apply` it also wrote, and asserts that ten calls produced ten invocations. The
+count on the left of the assertion is fixed by the literal `10` four lines above it, and the count on
+the right is fixed by the one-call-per-`apply` fake at `:40-43`. Nothing in that chain is capable of
+returning a number other than 10 unless the two-statement helper at `helpers.ts:19-20` is itself
+changed — and *that* helper is not where unbounded re-runs come from.
+
+The regression the title names lives in the component's reactive graph: a `$derived` that re-runs on
+every keystroke, or an effect loop of the kind that produced `effect_update_depth_exceeded` and that
+the component's own comment at `:112-115` says the `$derived.by` pattern exists to prevent. That graph
+is in `EntityListWithControls.svelte`, which this test does not import, does not mount and — as control
+D demonstrates by execution — need not even be syntactically valid for the test to pass. The test is a
+genuine unit test of `computeFiltered`, filed under a name and a title that claim a guarantee about a
+component it never loads.
+
+Recorded per D-06 as **out of Phase 139 criterion 1** — F17 is not single-source (the auditor read it
+directly), so no criterion-1 obligation attaches to this row. It is in ASSERT-07's remediation scope,
+and this verdict exists so Phase 142 does not read its absence as a withdrawal.
+
+**Verdict:** confirmed
+
+**5.5.6 Pre-specified regression for Phase 142**
+
+**The regression:** introduce an unbounded re-run into
+`apps/frontend/src/lib/dynamic-components/entityList/EntityListWithControls.svelte` — either the
+`$effect` block recorded verbatim in § 5.5.2, or a `$derived` that re-runs on every keystroke by
+reading the search input's value rather than the debounced version counter. In production this is the
+`effect_update_depth_exceeded` class of defect the component's own comment at `:112-115` documents as
+having happened before: filter or search mutation drives an unbounded recompute cascade and the list
+freezes. **Today it leaves the test green because the component is not in its module graph** — as
+control D shows, so does a component that does not compile.
+
+**Control D is not the negative control** (§ 8.3 R-10): it reds nothing before or after a fix under the
+current test, and once the test *is* fixed it would red for the wrong reason — a parse failure, not an
+unbounded re-run.
+
+**The target Phase 142 must reach — both remedies the audit offers, and they are not equivalent:**
+
+1. **Mount the component and drive a real state mutation.** Make the assertion measure the thing its
+   title names by putting the component in the module graph: mount it with the repo's existing
+   `.svelte.test.ts` harness pattern, mutate the filter group or the search input, and assert a bound
+   on the resulting `apply` invocations. This is the remedy that makes the *current title* true, and it
+   is the one the audit's named regression requires — only a mounted component can red under the
+   `$effect` diff above. Its cost is the reason the test is shaped as it is: the file's own doc comment
+   at `:4-10` explains that mounting needs "the full appContext + locale + i18n surface", which is a
+   real cost and an honest one.
+2. **Rename the test to the contract it actually verifies** — that `computeFiltered` invokes `apply`
+   exactly once per call. This is a legitimate contract and the helper is worth testing; it is simply a
+   far smaller claim than the current title makes. Choosing it means accepting that **no** test covers
+   the component's re-run bounds, and that gap should then be recorded rather than closed by wording.
+
+Remedy 1 closes the guard; remedy 2 closes the *misdescription* and leaves the guard absent. Phase 142
+must pick deliberately and record which, because only remedy 1 makes the pre-specified regression above
+red.
 
 ### 5.6 F18 — `default.test.ts:121-135` (locale cycling asserts only non-empty names)
 
@@ -4341,3 +4603,27 @@ assertions and would go on redding them **after** — inverting the asserted boo
 blind matcher and to every strengthened one. A Phase 142 remediation verified against it would be
 unverifiable. Same disqualification as R-4, R-5 and R-8, reached from the reachability side. Phase 142
 re-applies regressions **A and B** from § 5.12.6; C is not a negative control.
+
+**R-10 — F17: the deliberate syntax error in `EntityListWithControls.svelte` is a control, not a
+regression candidate.** Recorded by plan 05; stated in full in § 5.5.4 as control D. Making the
+component syntactically invalid (`$derived.by(() => { ( [ {`, confirmed fatal against `svelte/compiler`
+with `js_parse_error — Unexpected keyword 'void'`) leaves `EntityListWithControls.test.ts` at **8
+passed**, unchanged from baseline.
+
+Its job was to convert § 5.5.1(a) from an inference into a measurement. Reading the test's import
+statements establishes that `EntityListWithControls.svelte` is outside its module graph; control D
+establishes the same fact by execution, which is stronger and needs no reading at all — a file that
+cannot be parsed cannot have been loaded by a run that passed.
+
+It is excluded from § 5.5.6 for a reason distinct from R-4, R-5, R-8 and R-9. Those controls red
+*before and after* a fix. This one reds **neither** before nor after under the current test — and once
+the test is fixed by mounting the component (remedy 1 of § 5.5.6), it would red for the **wrong
+reason**: a parse failure rather than an unbounded re-run, verifying that the module is now loaded but
+saying nothing about whether the strengthened assertion can see the regression it names. Phase 142
+re-applies the `$effect` diff from § 5.5.2, not this one.
+
+**F17 is the only site in this corpus where the injection run carries no verdict weight at all.** For
+the other fourteen the run is the evidence and the reading is the frame; here the reading is the
+evidence and the run is corroboration. § 4's caveat paragraph and § 7 both record this asymmetry, and
+D-06 records the related scope fact — F17 is not single-source, so it sits outside Phase 139's
+criterion 1 to begin with.
