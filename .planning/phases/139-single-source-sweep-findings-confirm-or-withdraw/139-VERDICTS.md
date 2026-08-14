@@ -202,7 +202,7 @@ unfilled but never silently absent. `pending` marks a row this plan did not fill
 | 9 | F19c | `apps/frontend/src/lib/api/utils/auth/__tests__/token-endpoint.test.ts:167` | **PASS** (blind) — inj. B · **PASS** (on `"undefined"`) — inj. A | **FAIL** (red) at `:170` `assertion.split('.')` — inj. B · **FAIL** (red) at `:171` `toHaveLength(3)` — inj. A | **confirmed** | PASS (assertion) / FAIL (file) | yes (inj. B; inj. A is a second axis, § 8.3 R-6) | `:189`, `:208`, `:230` (§ 8.1 C-4) |
 | 10 | F20-1 | `apps/frontend/src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts:233` | **PASS** (blind) — both inj. | **PASS** (green) — both inj. | **confirmed** | PASS | yes (inj. A zero-delta on the axis, § 8.3 R-7) | none |
 | 11 | F20-2 | `apps/frontend/src/lib/i18n/tests/overrides.test.ts:32-36` | **PASS** (blind) | **PASS** (green) | **confirmed** | PASS | yes | none |
-| 12 | F20-3 | `apps/frontend/src/lib/api/utils/auth/getIdTokenClaims.test.ts:236,259` | pending | pending | pending | PASS | pending | pending |
+| 12 | F20-3 | `apps/frontend/src/lib/api/utils/auth/getIdTokenClaims.test.ts:236,259` | **PASS** (blind) — both sites, both inj. | **FAIL** (red) at `:147`, `:174`, `:203` — inj. A · **PASS** (green) — inj. B | **confirmed** | PASS | yes, both (collateral counts too) | `:147`, `:174`, `:203` (§ 8.1 C-5) — inj. A only |
 | 13 | F20-4 | `packages/dev-seed/tests/supabaseAdminClient.test.ts:151` | **PASS** (blind) | **PASS** (green) | **confirmed** | PASS | yes | none |
 | 14 | F20-5 | `packages/data/src/objects/nominations/variants/variants.test.ts:5-12` | **PASS** — inj. A (vacuous) · **PASS** (blind) — inj. B | **PASS** (green) — both | **confirmed** | PASS | yes, both | none |
 | 15 | F20-6 | `packages/argument-condensation/tests/unit/planValidation.test.ts:104` | **PASS** (blind) | **PASS** isolated · **FAIL** whole-file (collateral) | **confirmed** | PASS | yes | `:89-97` sibling matcher (§ 8) |
@@ -2854,14 +2854,335 @@ regression — exact equality is the form that closes all three.
 
 ### 5.12 F20-3 — `getIdTokenClaims.test.ts:236,259` (`result.success` is `false`, no error code)
 
-**Status:** not yet run — filled by a later plan in this phase.
+**5.12.1 Re-read evidence**
 
-- **5.12.1 Re-read evidence** — verbatim assertion text plus its current line, quoted from the live tree
-- **5.12.2 Injected diff** — the verbatim `-`/`+` lines (D-04)
-- **5.12.3 Invocation** — the verbatim command
-- **5.12.4 Observed** — assertion outcome, file outcome, failing line, verbatim runner output
-- **5.12.5 Verdict and reasoning** — ends in `confirmed` or `withdrawn`
-- **5.12.6 Pre-specified regression for Phase 142** — the concrete regression this assertion cannot detect
+Quoted from the live tree at `12825b479`, not re-copied from the audit. Two sites, both in the
+`describe('error handling', …)` block that opens at `:215`.
+
+Site 1 — `apps/frontend/src/lib/api/utils/auth/getIdTokenClaims.test.ts:216` (title) and `:236`
+(the entirety of what it asserts):
+
+```ts
+    it('returns success=false when kid not in JWKS', async () => {
+```
+```ts
+      expect(result.success).toBe(false);
+```
+
+Site 2 — `:239` (title) and `:259`:
+
+```ts
+    it('returns success=false when kid does not match available keys', async () => {
+```
+```ts
+      expect(result.success).toBe(false);
+```
+
+The audit's cites (`:236`, `:259`) are line-exact; no drift.
+
+**The fact that makes both blind.** Each title names a *specific cause* — a kid absent from the JWKS,
+and a kid that does not match the keys available — but neither test asserts anything about the cause.
+The function's own failure type carries a discriminant that would let them,
+`getIdTokenClaims.ts:20-23`:
+
+```ts
+): Promise<
+  | { success: true; data: { firstName: string; lastName: string; identifier: string } }
+  | { success: false; error: { code?: string } }
+> {
+```
+
+`result.error.code` exists and is never read: `grep -n 'error.code' getIdTokenClaims.test.ts` returns
+nothing across all 262 lines. So the assertion `expect(result.success).toBe(false)` is satisfied by
+**any** rejection whatsoever — a missing key, a bad signature, a wrong audience, an unrelated
+programming error, or a function that has stopped succeeding altogether. The two titles describe two
+different causes and assert the identical, cause-free fact.
+
+**File shape, established by reading rather than assumed** (it determines what counts as collateral):
+five tests total — three success-path (`:128`, `:155`, `:183`, each asserting `result.success` is
+`true`) and the two error-handling sites above.
+
+**5.12.2 Injected diff**
+
+Two injections plus one positive control, each run as its own complete HYGIENE-LOOP iteration, never
+more than one live at a time. The audit names **two distinct blind spots** for these sites —
+*"failing for a **different** reason, or `getIdTokenClaims` returning `{success:false}`
+unconditionally"* — and each is one edit, so both were run.
+
+**Injection A — unconditional false (the audit's second clause).** Target
+`apps/frontend/src/lib/api/utils/auth/getIdTokenClaims.ts:39-46`, replacing the whole success return
+(D-04):
+
+```diff
+  apps/frontend/src/lib/api/utils/auth/getIdTokenClaims.ts:39-46
+-    return {
+-      success: true,
+-      data: {
+-        firstName: `${payload.given_name}`,
+-        lastName: `${payload.family_name}`,
+-        identifier: `${payload.birthdate}`
+-      }
+-    };
++    return { success: false, error: {} }; // INJECTED (139): never succeeds, whatever the token says
+```
+
+**Injection B — a different rejection reason (the audit's first clause).** Target
+`apps/frontend/src/lib/api/utils/auth/getIdTokenClaims.ts:29`, changing the kid-lookup throw's message
+while keeping the throw:
+
+```diff
+  apps/frontend/src/lib/api/utils/auth/getIdTokenClaims.ts:29
+-      throw new Error(`Cannot decode ID token: JWK not found: kid=${kid}.`);
++      throw new Error('INJECTED (139): an entirely different failure reason');
+```
+
+The `+` line is still a `throw new Error(` call, so the *category* of the failure is preserved and only
+its *reason* varies — the R-1 failure mode (§ 8.3) is avoided by construction.
+
+**Control C — a positive control at the same line, not a regression candidate.** Target the same
+`:29`, replacing the throw with a success return:
+
+```diff
+  apps/frontend/src/lib/api/utils/auth/getIdTokenClaims.ts:29
+-      throw new Error(`Cannot decode ID token: JWK not found: kid=${kid}.`);
++      return { success: true, data: { firstName: 'C', lastName: 'C', identifier: 'C' } }; // INJECTED (139): positive control — proves the kid-lookup branch is reached
+```
+
+Its purpose is stated in § 5.12.4 and its disqualification from § 5.12.6 in § 8.3 R-9.
+
+**5.12.3 Invocation**
+
+Verbatim, identical for the baseline, both injections and the control, run from the workspace
+directory (D-05 — ad-hoc in-package vitest; no wiring was changed):
+
+```bash
+cd "$(git rev-parse --show-toplevel)/apps/frontend" && npx vitest run src/lib/api/utils/auth/getIdTokenClaims.test.ts
+```
+
+No Supabase, no dev server, no network: the test builds its own JWE fixtures with `jose` in-process.
+**No `yarn dev`, `yarn test:e2e` or Playwright command was run at any point while any of these three
+edits was live** — the standing constraint of § 3.1, which is also the security control for this site
+(see § 5.12.5).
+
+**5.12.4 Observed**
+
+Per the TWO-COLUMN RULE (§ 3.2), assertion outcome and file outcome are recorded separately for each
+injection. The two columns **diverge** under injection A, which is exactly the case the rule exists
+for.
+
+| Injection | Injected line | Assertion outcome (`:236`, `:259`) | File outcome | Failing lines | Collateral |
+|---|---|---|---|---|---|
+| A — unconditional false | `getIdTokenClaims.ts:39-46` | **PASS** (blind), both sites | **FAIL** (red, 3 failed / 2 passed) | `:147`, `:174`, `:203` — none of them a site | `:147`, `:174`, `:203` (§ 8.1 C-5) |
+| B — different reason | `getIdTokenClaims.ts:29` | **PASS** (blind), both sites | **PASS** (green, 5/5) | none | **none** |
+| C — positive control | `getIdTokenClaims.ts:29` | **FAIL** (red), both sites | **FAIL** (red, 2 failed / 3 passed) | `:236`, `:259` — both sites | none |
+
+**Sub-block A — unconditional false.** Verbatim runner output (ANSI codes stripped; the plugin-warning
+preamble common to every frontend run is elided; the three identical `AssertionError` bodies are
+elided after the first, and their frames are quoted):
+
+```
+ RUN  v3.2.4 /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/frontend
+
+ ❯ src/lib/api/utils/auth/getIdTokenClaims.test.ts (5 tests | 3 failed) 177ms
+   × getIdTokenClaims > RSA-OAEP decryption (Signicat-style) > decrypts RSA-OAEP JWE and returns identifier from birthdate 10ms
+     → expected false to be true // Object.is equality
+   × getIdTokenClaims > RSA-OAEP decryption (Signicat-style) > returns correct names from OIDC claims 3ms
+     → expected false to be true // Object.is equality
+   × getIdTokenClaims > RSA-OAEP-256 decryption (Idura-style) > decrypts RSA-OAEP-256 JWE successfully 2ms
+     → expected false to be true // Object.is equality
+   ✓ getIdTokenClaims > error handling > returns success=false when kid not in JWKS 1ms
+   ✓ getIdTokenClaims > error handling > returns success=false when kid does not match available keys 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/api/utils/auth/getIdTokenClaims.test.ts > getIdTokenClaims > RSA-OAEP decryption (Signicat-style) > decrypts RSA-OAEP JWE and returns identifier from birthdate
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/lib/api/utils/auth/getIdTokenClaims.test.ts:147:30
+    145|       });
+    146| 
+    147|       expect(result.success).toBe(true);
+       |                              ^
+    148|       if (result.success) {
+    149|         expect(result.data.firstName).toBe('Matti');
+
+ ❯ src/lib/api/utils/auth/getIdTokenClaims.test.ts:174:30
+ ❯ src/lib/api/utils/auth/getIdTokenClaims.test.ts:203:30
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 2 passed (5)
+   Start at  15:55:55
+   Duration  512ms (transform 43ms, setup 0ms, collect 64ms, tests 177ms, environment 0ms, prepare 75ms)
+```
+
+**The two green ticks are the finding; the three reds are not.** The function no longer succeeds for
+*any* input — every ID token, valid or not, is now rejected — and both sites whose titles name a
+specific decryption failure reported **pass**. The three reds are at `:147`, `:174` and `:203`, which
+are the success-path assertions, **not** among the fifteen enumerated sites. Per the COLLATERAL RULE
+(§ 3.3) they are recorded verbatim in § 8.1 as C-5 and **do not bear on this or any verdict**. This is
+the precise place RESEARCH Pitfall 4 warns a collateral red gets misfiled as "the assertion caught it";
+the file outcome here is red, and the verdict cites the assertion column, which is green.
+
+The reds double as injection A's positive control: they prove the replaced return statement executed.
+
+**Sub-block B — a different rejection reason.** Verbatim runner output:
+
+```
+ RUN  v3.2.4 /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/frontend
+
+ ✓ src/lib/api/utils/auth/getIdTokenClaims.test.ts (5 tests) 121ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  15:56:27
+   Duration  581ms (transform 71ms, setup 0ms, collect 134ms, tests 121ms, environment 0ms, prepare 115ms)
+```
+
+Byte-identical test counts to the pre-injection baseline (5 passed) and the post-revert baseline
+(5 passed) taken in the same session. **Zero collateral** — the three success-path tests supply a
+matching kid, never enter the `!privateEncryptionJWK` branch, and are untouched.
+
+**The contrast between A and B is itself evidence, and is the reason both were run.** A changed *what*
+the function returns and reddened three tests that are not the sites; B changed *why* it fails and
+reddened nothing at all. Neither site moved under either. Together they show the sites are insensitive
+along both axes the audit names — the rejection's cause (B) and whether rejection is conditional on
+anything at all (A).
+
+**Sub-block C — the positive control, and why sub-block B needs one.** B's green run has two possible
+explanations: the assertions are blind (the finding), or the kid-lookup throw at `:29` is never reached
+by these tests, in which case B changed nothing and the run proves nothing. The two are
+indistinguishable from B's output alone, because a code-less `Error` and the original code-less `Error`
+both fall to the same catch branch (`getIdTokenClaims.ts:56-59`, `return { success: false, error: {} }`)
+and produce an identical observable. Control C settles it by making the same branch return **success**
+instead:
+
+```
+ RUN  v3.2.4 /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/frontend
+
+ ❯ src/lib/api/utils/auth/getIdTokenClaims.test.ts (5 tests | 2 failed) 98ms
+   ✓ getIdTokenClaims > RSA-OAEP decryption (Signicat-style) > decrypts RSA-OAEP JWE and returns identifier from birthdate 5ms
+   ✓ getIdTokenClaims > RSA-OAEP decryption (Signicat-style) > returns correct names from OIDC claims 2ms
+   ✓ getIdTokenClaims > RSA-OAEP-256 decryption (Idura-style) > decrypts RSA-OAEP-256 JWE successfully 2ms
+   × getIdTokenClaims > error handling > returns success=false when kid not in JWKS 4ms
+     → expected true to be false // Object.is equality
+   × getIdTokenClaims > error handling > returns success=false when kid does not match available keys 1ms
+     → expected true to be false // Object.is equality
+
+ FAIL  src/lib/api/utils/auth/getIdTokenClaims.test.ts > getIdTokenClaims > error handling > returns success=false when kid not in JWKS
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/lib/api/utils/auth/getIdTokenClaims.test.ts:236:30
+    234|       });
+    235| 
+    236|       expect(result.success).toBe(false);
+       |                              ^
+    237|     });
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 3 passed (5)
+   Start at  15:57:07
+   Duration  374ms (transform 38ms, setup 0ms, collect 55ms, tests 98ms, environment 0ms, prepare 63ms)
+```
+
+Control C reds **exactly the two sites, at `:236` and `:259`, and nothing else** — the exact complement
+of injection A's three reds. Between them, A and C partition the file's five tests with no overlap and
+no remainder. This establishes three things that B alone could not: the `!privateEncryptionJWK` branch
+at `:28-30` **is** reached by both sites, so the statement injection B replaced is the one that
+produces their rejection and B was a live experiment; the two sites are **not vacuous** — they can red,
+so their green under A and B is blindness rather than non-execution; and the zero-collateral claim for
+B is verified rather than assumed.
+
+Prediction was PASS at both sites for both injections, with three collateral reds under A and none
+under B; observed exactly that; **matched**, including the collateral counts.
+
+**5.12.5 Verdict and reasoning**
+
+The behaviour these tests claim to guard was broken in production source along both axes the audit
+names, and both assertions reported pass both times.
+
+Under injection A, `getIdTokenClaims` stopped succeeding for every possible input — a correctly
+encrypted, correctly signed, correctly issued and correctly audienced ID token now returns
+`{ success: false }` — and the two tests titled for two specific decryption failures passed. They pass
+because a function that never succeeds trivially satisfies "returns success=false when kid not in
+JWKS": the assertion contains no clause tying the rejection to the kid, to the JWKS, or to anything
+else in its own title. Under injection B, the rejection was made to happen for an entirely unrelated
+reason — a message with nothing to do with key lookup — and both passed with zero collateral, because
+`expect(result.success).toBe(false)` cannot read `result.error.code`, the one field that would
+distinguish causes and that the return type deliberately provides.
+
+Control C removes the innocent explanation. The two sites can red — they redden under C at `:236` and
+`:259` — so their green under A and B is genuine blindness, not a branch that never executed.
+
+The mechanism is a discriminant that exists and is never read. Two tests with different titles, testing
+different causes, assert the same cause-free boolean; either one would pass verbatim if pasted into the
+other's body. The audit's characterisation is accurate to the line, and the runs overturned nothing it
+predicted.
+
+**Verdict:** confirmed
+
+**Adjacent coverage gap — recorded here, and explicitly NOT folded into the verdict above.**
+`getIdTokenClaims.test.ts` contains five tests: three success paths and two kid-lookup failures. It has
+**no** negative test for a bad signature, a wrong `issuer` or a wrong `audience` — the three rejections
+a token validator most needs, and the three that `jose.jwtVerify` at `getIdTokenClaims.ts:33-37` is
+configured to perform. That is a **missing** test, not a fake one, and this pass judges assertions that
+exist rather than assertions that are absent. It does **not** bear on the F20-3 verdict, which rests
+solely on the observed behaviour of the two assertions at `:236` and `:259`. Per `139-CONTEXT.md`
+`<specifics>`, it is deferred to a future coverage phase and is **out of ASSERT-07's scope** — ASSERT-07
+remediates fake guards, and a test that does not exist is not a fake guard. Recording it here rather
+than in the verdict keeps the count of confirmed fake guards honest while ensuring the gap is not lost.
+
+**Security note on the conduct of this record, not on the finding.** Injection A removed the entire
+successful ID-token verification path and injection B replaced a verification failure's reason; both are
+authentication material. Each was live only inside its own HYGIENE-LOOP iteration, was reverted with
+`git checkout --` before the next began, and the standing prohibition on `yarn dev`, `yarn test:e2e` and
+Playwright (§ 3.1) held throughout, so no server ever ran against the weakened code and no injected
+state reached a commit. `git diff --exit-code` over
+`apps/frontend/src/lib/api/utils/auth/getIdTokenClaims.ts` exits 0 at the close of this record.
+
+**5.12.6 Pre-specified regression for Phase 142**
+
+**TWO regressions, because the sites are blind along two independent axes.** Both must red once the
+assertions are strengthened; an assertion that closes only one is a partial remediation.
+
+**Regression A — unconditional failure (re-apply this diff verbatim):** replace the success return at
+`apps/frontend/src/lib/api/utils/auth/getIdTokenClaims.ts:39-46` with
+`return { success: false, error: {} };`. In production this breaks bank authentication outright — no
+user can ever complete an OIDC login, because a fully valid ID token is rejected. Today both sites stay
+green through it (the file reds, but only at the three success-path assertions, which are a *different*
+guard doing its job).
+
+**Regression B — an unrelated rejection reason (re-apply this diff verbatim):** change the kid-lookup
+throw at `apps/frontend/src/lib/api/utils/auth/getIdTokenClaims.ts:29` from
+`` throw new Error(`Cannot decode ID token: JWK not found: kid=${kid}.`) `` to a throw with an unrelated
+message. In production this class of change hides *why* token validation failed — the failure is
+reported identically whether the key is missing, the signature is forged or the issuer is wrong, which
+is precisely the information an auth incident needs. Today the file stays green through it, 5 of 5, with
+zero collateral.
+
+**Control C is explicitly NOT a negative control** — see § 8.3 R-9. It reds the two sites *before* any
+fix, so a remediation verified against it would be unverifiable.
+
+**The target Phase 142 must reach:** each assertion must name the specific error its own title claims.
+The stronger form is an assertion on the discriminant the return type already carries — for site 1,
+`expect(result).toMatchObject({ success: false, error: { code: '<the kid-lookup code>' } })`, and
+likewise for site 2 — or, if the current implementation does not yet attach a distinguishing `code` to
+the kid-lookup failure (it does not: a plain `Error` has no `code`, so both sites currently receive
+`error: {}` via `getIdTokenClaims.ts:56-59`), then remediation must **also** give that failure a stable
+code before the assertion can name it. That ordering is load-bearing: strengthening the test alone is
+impossible here, because there is currently nothing in the failure value to assert on. Both regressions
+above fail against the strengthened form; `expect(result.success).toBe(false)` fails against neither.
 
 ### 5.13 F20-4 — `supabaseAdminClient.test.ts:151` (`toContain('id')` substring-matches `external_id`)
 
@@ -3777,6 +4098,50 @@ in the process that reported `:167` green. Second — and this is the pattern wo
 outside the audit's enumeration. Recorded here rather than folded into any verdict; a candidate scope
 item for Phase 140's ASSERT-03 sweep, and evidence that the F19 class is wider than three sites.
 
+**C-5 — `getIdTokenClaims.test.ts:147`, `:174` and `:203`, red under the F20-3 unconditional-false
+injection (§ 5.12, injection A).** Recorded by plan 05. **Does not bear on the F20-3 verdict**, nor on
+any other verdict in this document: none of the three is one of the fifteen sites. They are the file's
+three success-path assertions, and their redness is the correct behaviour of a *different* guard — a
+function that never succeeds should red a test that asserts success. Reading them as "the assertion
+caught it" would withdraw a finding whose own two sites both stayed green in the same run; this is the
+exact misfiling RESEARCH Pitfall 4 names. Verbatim:
+
+```
+   × getIdTokenClaims > RSA-OAEP decryption (Signicat-style) > decrypts RSA-OAEP JWE and returns identifier from birthdate 10ms
+     → expected false to be true // Object.is equality
+   × getIdTokenClaims > RSA-OAEP decryption (Signicat-style) > returns correct names from OIDC claims 3ms
+     → expected false to be true // Object.is equality
+   × getIdTokenClaims > RSA-OAEP-256 decryption (Idura-style) > decrypts RSA-OAEP-256 JWE successfully 2ms
+     → expected false to be true // Object.is equality
+
+ FAIL  src/lib/api/utils/auth/getIdTokenClaims.test.ts > getIdTokenClaims > RSA-OAEP decryption (Signicat-style) > decrypts RSA-OAEP JWE and returns identifier from birthdate
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/lib/api/utils/auth/getIdTokenClaims.test.ts:147:30
+    145|       });
+    146| 
+    147|       expect(result.success).toBe(true);
+       |                              ^
+    148|       if (result.success) {
+    149|         expect(result.data.firstName).toBe('Matti');
+
+ ❯ src/lib/api/utils/auth/getIdTokenClaims.test.ts:174:30
+ ❯ src/lib/api/utils/auth/getIdTokenClaims.test.ts:203:30
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 2 passed (5)
+```
+
+The same run's two green ticks — `returns success=false when kid not in JWKS` and `returns
+success=false when kid does not match available keys` — are the verdict evidence, and they are in the
+assertion column, which § 3.2 requires the verdict to cite.
+
 ### 8.2 Overturned predictions
 
 § 3.4 requires a prediction the run contradicts to be recorded as overturned, never rewritten to match
@@ -3956,3 +4321,23 @@ remediation unverifiable. Same disqualification as R-4 and R-5, reached from the
 rather than the value or vacuity side. Both of this site's controls agree with each other and with the
 out-of-band probe recorded alongside it; neither bears on the verdict, which rests on the
 empty-string injection.
+
+**R-9 — F20-3: the positive control at `getIdTokenClaims.ts:29` (returning success from the kid-lookup
+branch) is a control, not a regression candidate.** Recorded by plan 05; stated in full in § 5.12.4
+sub-block C. Replacing the kid-lookup `throw` with a success return reds **exactly** the two F20-3
+sites, at `getIdTokenClaims.test.ts:236` and `:259`, and nothing else — the precise complement of
+injection A's three success-path reds, the two together partitioning the file's five tests with no
+overlap and no remainder.
+
+Its job was one injection B could not do for itself. A code-less `Error` thrown at `:29` and the
+original code-less `Error` thrown at `:29` both fall to the same catch branch
+(`getIdTokenClaims.ts:56-59`) and return the identical `{ success: false, error: {} }`, so injection B's
+green run is observationally indistinguishable from a run in which the branch was never reached at all.
+Control C establishes reachability directly, and additionally proves the two sites are not vacuous —
+they *can* red — which is what makes their green under A and B blindness rather than non-execution.
+
+It is deliberately excluded from § 5.12.6 because it reds the two sites **before** any fix to the
+assertions and would go on redding them **after** — inverting the asserted boolean is visible to the
+blind matcher and to every strengthened one. A Phase 142 remediation verified against it would be
+unverifiable. Same disqualification as R-4, R-5 and R-8, reached from the reachability side. Phase 142
+re-applies regressions **A and B** from § 5.12.6; C is not a negative control.
