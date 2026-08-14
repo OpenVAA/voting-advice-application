@@ -348,7 +348,38 @@ Plans:
   3. For every confirmed finding, the realistic regression its current assertion cannot detect is named concretely — so Phase 142's negative control is pre-specified rather than invented at remediation time.
   4. Any withdrawn finding is struck from `.planning/audits/2026-08-11-fake-guard-sweep.md` with its reasoning, and ASSERT-07's scope in this ROADMAP and in `REQUIREMENTS.md` is edited down to match. The shrink is visible in the record, not silent.
 
-**Plans**: TBD
+**Plans:** 7 plans
+
+Plans:
+**Wave 1**
+
+- [ ] 139-01-PLAN.md — Tracer: build the verdict apparatus (`139-VERDICTS.md` §§ 1-4, the named HYGIENE-LOOP / TWO-COLUMN / COLLATERAL rules, the 15-row enumeration and all fifteen record stubs) and prove it end to end on F20-4, then expand to F18 on the same `dev-seed` vehicle (wave 1)
+
+**Wave 2** *(blocked on Wave 1 — injections are serialized; the hygiene gate is whole-tree and cannot attribute a dirty path to one of two concurrent injections)*
+
+- [ ] 139-02-PLAN.md — The `argument-condensation` vehicle: F16 and F20-6 (TRAP-2 — the message swap, not the throw removal), then F15-B and F15-C from one shared `Condenser.run()` injection (wave 2)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 139-03-PLAN.md — F15-A (TRAP-1 — prove the audit's own regression un-injectable, run the recorded substitute, correct the audit's description of `:535-537`) and F20-5's two injections (wave 3)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [ ] 139-04-PLAN.md — The three F19 sites (TRAP-3 — two observed columns and the verbatim failure block, so a vacuous-but-red assertion is `confirmed` per D-02 rather than withdrawn by exit code) (wave 4)
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
+- [ ] 139-05-PLAN.md — F20-1, F20-2, F20-3 (two injections) and F17 (import-graph fact first, run as corroboration, D-06); completes all fifteen records (wave 5)
+
+**Wave 6** *(blocked on Wave 5 completion)*
+
+- [ ] 139-06-PLAN.md — Synthesis: § 4 ordering audit and roll-up, § 7 scope limits, § 8 discarded-and-collateral (wave 6)
+
+**Wave 7** *(blocked on Wave 6 completion)*
+
+- [ ] 139-07-PLAN.md — Criterion 4: § 6 withdrawals and propagation to all THREE targets (audit, `REQUIREMENTS.md:60`, ROADMAP Phase 142 criteria 2 and 3), the answer to the audit's `## Not assessed` prediction, and the phase-close gate (113 tests across 7 vehicles, zero source diff, zero markers) (wave 7)
+
+**Shape note**: This phase ships **zero product code**. Every source-file modification is transient — injected, run and reverted inside the same task — so the plans' `files_modified` lists name only the durable writes (`139-VERDICTS.md` plus the criterion-4 record edits), and each plan carries a separate `transient_files_reverted` list so no reviewer misreads an injection target as phase output. The seven waves are strictly sequential by necessity rather than by dependency: two concurrent injections would each see the other's edit, and either agent's `git checkout --` could revert the other's live injection mid-run. Criterion 4's propagation has **three** targets, not the two the criterion's wording implies — ROADMAP Phase 142 enumerates the findings inline in criteria 2 and 3, so a withdrawal there is an in-sentence edit rather than a struck line.
 
 ### Phase 140: Blind-Matcher Remediation — Teardowns, Null-Matchers, Positive Controls
 
