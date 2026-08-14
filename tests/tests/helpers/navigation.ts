@@ -57,6 +57,22 @@ import type { Locator, Page } from '@playwright/test';
  *     same defect observed at high CPU rates, and the text comparison covers both
  *     because a null landmark is never "different text" and keeps the wait open.
  *
+ *     Three ways that comparison can be satisfied WITHOUT the swap having landed,
+ *     all closed here (Phase 138 review WR-02):
+ *
+ *       (a) a `null` BASELINE made the whole predicate a tautology. The destination
+ *           read is always a `string`, and `string !== null` is always `true`, so
+ *           the settle silently collapsed to the attachment-only wait this docblock
+ *           rejects by name. The `null`-baseline case is not hypothetical: the
+ *           diagnosis records `headingCount: 0` as the observed shape of the defect
+ *           at high CPU rates. It is now REJECTED rather than honoured — see below.
+ *       (b) an EMPTY destination landmark (a skeleton, a one-frame `{#key}` remount,
+ *           a hydration boundary) satisfied `'' !== previous`. The predicate now
+ *           requires non-empty text.
+ *       (c) WHITESPACE-ONLY differences between a server-rendered and a
+ *           client-rendered pass of the SAME heading satisfied a raw `textContent`
+ *           comparison. Both sides are now whitespace-normalised, identically.
+ *
  *     Why NOT the focus itself, which would be the stronger fact: measured during
  *     this phase, `document.activeElement === target` does not become true until
  *     the View Transition has finished, because the app's `onNavigate` resolves
@@ -73,13 +89,31 @@ import type { Locator, Page } from '@playwright/test';
  * @param page - Playwright Page.
  * @param urlBefore - `page.url()` captured BEFORE the navigating action ran.
  * @param landmarkTextBefore - landmark text captured BEFORE the action, via
- *   {@link readNavigationLandmarkText}.
+ *   {@link readNavigationLandmarkText}. Must be non-empty: a `null` or blank
+ *   baseline is a baseline this settle cannot distinguish "arrived" from "never
+ *   left" with, and is rejected rather than silently honoured.
+ * @throws if `landmarkTextBefore` is `null` or blank.
  */
 export async function settleAfterClientNavigation(
   page: Page,
   urlBefore: string,
   landmarkTextBefore: string | null
 ): Promise<void> {
+  // A baseline we cannot trust must fail LOUDLY here, where it reads as "the
+  // settle was handed a bad baseline", rather than degrading into an
+  // attachment-only wait that passes instantly and surfaces lines later as a
+  // missing element (Phase 138 review WR-02(a)). Reaching this means the caller
+  // captured its baseline while the origin page had no landmark — i.e. mid-swap,
+  // which is precisely when the baseline is meaningless.
+  if (landmarkTextBefore === null || landmarkTextBefore.trim() === '') {
+    throw new Error(
+      'settleAfterClientNavigation: the origin landmark text is absent or blank, so the ' +
+        'destination-DOM comparison cannot tell "we arrived" from "we never left". Capture it ' +
+        'via readNavigationLandmarkText() AFTER the caller gate has settled the DOM on the page ' +
+        'being navigated away from, and immediately before the click that navigates.'
+    );
+  }
+
   // Stage 1 — the URL must actually change. Deliberately NOT swallowed.
   await page.waitForURL((u) => u.toString() !== urlBefore, { timeout: TIMEOUTS.page });
 
@@ -87,7 +121,13 @@ export async function settleAfterClientNavigation(
   await page.waitForFunction(
     (previous) => {
       const target = document.querySelector('[data-focus-on-nav]') ?? document.querySelector('h1');
-      return target !== null && (target.textContent ?? '') !== previous;
+      if (target === null) return false;
+      // Normalised IDENTICALLY to readNavigationLandmarkText — the two halves of
+      // this comparison must never drift, or a whitespace difference alone would
+      // read as "the destination arrived". This function is serialised into the
+      // page, so the expression is inlined rather than shared.
+      const text = (target.textContent ?? '').replace(/\s+/g, ' ').trim();
+      return text.length > 0 && text !== previous;
     },
     landmarkTextBefore,
     {
@@ -115,7 +155,13 @@ export async function settleAfterClientNavigation(
 
 /**
  * Read the navigation landmark's text, for use as {@link settleAfterClientNavigation}'s
- * `landmarkTextBefore`. Returns `null` when no landmark is present.
+ * `landmarkTextBefore`. Returns `null` when no landmark ELEMENT is present, and `''`
+ * when one is present but carries no text — the two stay distinct observations.
+ *
+ * The text is whitespace-normalised (runs collapsed, ends trimmed), identically to
+ * the settle's own in-page predicate. Raw `textContent` carries template indentation
+ * and newlines, so an unnormalised comparison can be satisfied by a server-rendered
+ * vs client-rendered pass of the SAME heading — Phase 138 review WR-02(c).
  *
  * reason: (Phase 138, D-06 — INTEG-01) the selector mirrors the app's afterNavigate
  * focus target (`+layout.svelte:178-180`); keeping the two reads in one module is
@@ -124,7 +170,8 @@ export async function settleAfterClientNavigation(
 export async function readNavigationLandmarkText(page: Page): Promise<string | null> {
   return page.evaluate(() => {
     const target = document.querySelector('[data-focus-on-nav]') ?? document.querySelector('h1');
-    return target?.textContent ?? null;
+    if (target === null) return null;
+    return (target.textContent ?? '').replace(/\s+/g, ' ').trim();
   });
 }
 
