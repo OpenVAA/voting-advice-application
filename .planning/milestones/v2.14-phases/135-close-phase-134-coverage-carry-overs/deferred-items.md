@@ -163,7 +163,7 @@ Consider removing the obsolete Strapi-era compose stack from the sibling checkou
 
 ## DEF-135-04 — Unreproduced single failure of the EPERM-07 term-trigger assertion
 
-**Status:** OPEN (observed once, never reproduced — no root cause claimed)
+**Status:** RESOLVED 2026-08-14 by v2.15 Phase 138 — named root cause (a URL-committed-before-DOM-swapped ordering defect that the walk's navigation settle released into) + proven test-side fix; see `138-DIAGNOSIS.md` § Named root cause and `.planning/v2.14-CARDINAL-RULE-WAIVER.md` § Discharged. Everything below this line is the original 2026-08-11 record and is unchanged.
 **Severity:** low (one occurrence in 8 voter-journey runs and 2 full-suite runs during Plan 02)
 **Surfaced during:** Plan 02 Task 2, on the FIRST voter-journey run after a dev-server restart.
 

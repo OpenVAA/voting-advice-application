@@ -22,7 +22,7 @@
 
 **Known overrides at close:**
 
-- **DEF-135-04** — an undiagnosed intermittent `EPERM-07` term-trigger failure (1 in 8 full-suite runs; the cold-start-Vite hypothesis was tested and DISPROVED). Closed under an **explicit written waiver** against CLAUDE.md's cardinal no-flaky rule, with four conditions attached: `.planning/v2.14-CARDINAL-RULE-WAIVER.md`. Not closed, not downgraded — recurrence promotes it to a blocking diagnosis.
+- **DEF-135-04** — an undiagnosed intermittent `EPERM-07` term-trigger failure (1 in 8 full-suite runs; the cold-start-Vite hypothesis was tested and DISPROVED). Closed under an **explicit written waiver** against CLAUDE.md's cardinal no-flaky rule, with four conditions attached: `.planning/v2.14-CARDINAL-RULE-WAIVER.md`. Not closed, not downgraded — recurrence promotes it to a blocking diagnosis. **→ DISCHARGED 2026-08-14 by v2.15 Phase 138**, unrenewed and with no successor waiver: a named root cause (SvelteKit commits the destination URL at `client.js:1759-1760` before swapping the DOM at `:1824`; the walk's settle released at the URL), a negative-control pair (pre-fix 5/5 failing, post-fix 0/5 under a character-identical adversary) and 16 consecutive full-suite runs on one pinned HEAD. See `.planning/v2.14-CARDINAL-RULE-WAIVER.md` § Discharged. The sentences preceding this one record what was true at v2.14 close and are unchanged.
 - **Phase 134** `human_needed` — D-18 only: native-speaker review of six constructed non-English `selectExact` singulars. Operator-accepted; no automated check can assess grammaticality.
 - **Phase 136** `human_needed` — REAL-03's first observed CI run of the `dev-seed-integration` job, not executable outside GitHub Actions. Wiring verified by construction and local simulation.
 
