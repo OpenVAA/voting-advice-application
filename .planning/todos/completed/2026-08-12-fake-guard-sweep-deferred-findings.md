@@ -60,3 +60,34 @@ the old assertion to prove blindness, once against the new one to prove the fix)
 - `.planning/audits/2026-08-11-fake-guard-sweep.md` — the full sweep
 - `.planning/REQUIREMENTS.md` — REAL-01..04 (the eight findings that WERE closed)
 - `.planning/phases/136-real-guards-visual-repair-sweep-remediation/136-06-SUMMARY.md` — the gate
+
+---
+
+## Resolution — Phase 139 (2026-08-14)
+
+This todo named Phase 139 for its **confidence caveat**, not for remediation. That caveat is now
+discharged: `139-VERDICTS.md` carries an independent, run-backed verdict for each of the fifteen
+single-source findings (F15-A/B/C, F16, F17, F18, F19a/b/c, F20-1..F20-6) — **15 confirmed, 0
+withdrawn**. None of them failed to survive contact with the live code, so no downstream scope
+shrank. Propagation was checked against all three criterion-4 targets and recorded as
+*inspected; left unchanged* (`139-VERDICTS.md` § 6).
+
+**Remediation of every finding listed above remains open** and is tracked in the ROADMAP, not here:
+
+| Findings | Owner |
+|---|---|
+| F3, F9, F10, F19 | Phase 140 (ASSERT-02/03/05/06) |
+| F13 | The `TemplateSchema` phase (TMPL-01/02, ASSERT-04) |
+| F15, F16, F17, F18, F20 | Phase 142 (ASSERT-07) |
+
+Two items surfaced by the verdict pass that the table above does not carry:
+
+- **The F19 blind pattern appears at six further sites** beyond the audit's enumeration
+  (`authorize-endpoint.test.ts:157,169,189`, `token-endpoint.test.ts:188,207,229`). Deliberately
+  NOT added to ASSERT-07 — criterion 4 is a shrink mechanism, and widening scope onto sites this
+  pass never verdicted would push unverified work into Phase 140. Proposed in `139-VERDICTS.md` § 6.4.
+- **A live product defect, not in the audit:** the OIDC authorize endpoint does not return 400 for a
+  missing `redirectUri` — SvelteKit 2's `error()` throws, so `return error(400, …)` at
+  `apps/frontend/src/routes/api/oidc/authorize/+server.ts:22` is swallowed by that function's own
+  `catch` and returned as 500. Phase 142 tightening `authorize-endpoint.test.ts:233` to
+  `{ status: 400 }` **will red on the clean tree** until the endpoint is fixed. See § 7.
