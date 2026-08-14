@@ -140,7 +140,7 @@ Roadmap: `.planning/ROADMAP.md` (Phases 137-150). Future Requirements above are 
 | INTEG-04 | Phase 137 — E2E Preflight Integrity — Assert the Served Application | Satisfied |
 | INTEG-05 | Phase 137 — E2E Preflight Integrity — Assert the Served Application | Satisfied (CI-runner half deferred — see STATE deferred table, T-137-11) |
 | INTEG-06 | Phase 137 — E2E Preflight Integrity — Assert the Served Application | Satisfied |
-| ASSERT-01 | Phase 139 — Single-Source Sweep Findings — Confirm or Withdraw | Pending (2 of 15 findings verdicted — 139-01; plans 02-07 outstanding) |
+| ASSERT-01 | Phase 139 — Single-Source Sweep Findings — Confirm or Withdraw | Pending (6 of 15 findings verdicted — 139-01, 139-02; plans 03-07 outstanding) |
 | ASSERT-02 | Phase 140 — Blind-Matcher Remediation | Pending |
 | ASSERT-03 | Phase 140 — Blind-Matcher Remediation | Pending |
 | ASSERT-04 | Phase 144 — Seed-Template Strict Typing + Unknown-Prop Guard | Pending |

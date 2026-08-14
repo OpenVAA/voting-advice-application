@@ -5,8 +5,8 @@ milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 139
 current_phase_name: single-source-sweep-findings-confirm-or-withdraw
 status: executing
-stopped_at: Completed 139-01-PLAN.md
-last_updated: "2026-08-14T11:44:05.799Z"
+stopped_at: Completed 139-02-PLAN.md — 4 of 15 verdicts filled (F15-B, F15-C, F16, F20-6), 9 placeholders remain
+last_updated: "2026-08-14T12:00:27.824Z"
 last_activity: 2026-08-14
 last_activity_desc: Phase 138 marked complete
 progress:
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 
 Milestone: v2.15 (Phases 137-150, 14 phases, 38 requirements)
 Phase: 139 (single-source-sweep-findings-confirm-or-withdraw) — EXECUTING
-Plan: 2 of 7
+Plan: 3 of 7
 Status: Ready to execute
 Last activity: 2026-08-14 — Phase 139 execution started
 
@@ -48,8 +48,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-14T11:43:22.965Z
-Stopped at: Completed 139-01-PLAN.md
+Last session: 2026-08-14T12:00:27.803Z
+Stopped at: Completed 139-02-PLAN.md — 4 of 15 verdicts filled (F15-B, F15-C, F16, F20-6), 9 placeholders remain
 Resume file: None
 
 ## Deferred Items
@@ -137,6 +137,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 138 P05 | 4h 40m | 3 tasks | 2 files |
 | Phase 138 P06 | ~37min active (7h04m wall) | 3 tasks | 7 files |
 | Phase 139 P01 | 14min | 2 tasks | 1 files |
+| Phase 139 P02 | 20m | 2 tasks | 1 files |
 
 ## Deferred Items
 
@@ -600,6 +601,9 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Verdict vocabulary is exactly two values (confirmed/withdrawn); the severity-qualified third tier was rejected, so vacuous-but-red is plain confirmed with the mitigation in the verdict body (D-02)
 - [Phase ?]: Hygiene gate is the SCOPED porcelain (apps tests packages), never the bare form — three tracked files are dirty at session start in this linked worktree
 - [Phase ?]: A green injection run needs a positive control proving the break was live; F18 carries an npx tsx probe alongside its two green runs
+- [Phase ?]: Phase 139 Plan 02: F16 confirmed, but the audit's own named regression is REFUTED by execution: deleting the language check reds handleQuestion.test.ts (promise resolves []). With entities: [] getAndSliceComments returns zero groups, so no downstream throw path is reachable — the audit's 'three independent paths to a throw' is false. Verdict rests on a category-preserving message-swap injection instead; Phase 142 must take its negative control from 139-VERDICTS.md § 5.4.6, not from the audit sentence.
+- [Phase ?]: Phase 139 Plan 02: a predicted-PASS injection that comes back FAIL is a design smell, not a withdrawal (§ 3.4). Applied to F16 after the fact and to F20-6 in advance; both stayed confirmed. Withdrawing on a category-removing injection would have struck two real weaknesses from the audit.
+- [Phase ?]: Phase 139 Plan 02: positive controls for green injection runs are best run IN BAND: for F15-B/C the control changed condensationType at condenser.ts:204 — a sibling property of the same return literal — reddening 5 of 8 tests, which proves the code path is live AND that the blindness is specific to the arguments field.
 
 ### Quick Tasks Completed
 
