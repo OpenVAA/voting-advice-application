@@ -57,7 +57,10 @@
 #   5  the dev server never started listening, or the port was already occupied
 #      before the spawn (this wrapper SPAWNS AND OWNS its server; adopting a foreign
 #      one is not evidence)
-#   6  the run produced one or more preflight failures
+#   6  the run produced one or more preflight failures, or produced no preflight SUCCESS
+#      line at all (an unconfirmed run is not evidence either way)
+#   7  the wrapper's preflight literals no longer match tests/tests/support/preflight.ts,
+#      so its preflight verdict cannot be trusted
 # 130  the run was INTERRUPTED (SIGINT/SIGTERM). Never 0: criterion 3 counts 16
 #      CONSECUTIVE runs, so an abort must be recorded as an abort by the caller, not
 #      silently counted as a green.
@@ -79,9 +82,17 @@ SUPABASE_URL="${SUPABASE_URL:-http://127.0.0.1:54321}"
 READINESS_TIMEOUT_S="${READINESS_TIMEOUT_S:-120}"
 DEVSERVER_TIMEOUT_S="${DEVSERVER_TIMEOUT_S:-180}"
 
-# The preflight's failure headline is deliberately FIXED so it can be grepped
-# (tests/tests/support/preflight.ts:97). Do not parse anything else out of human output.
+# The preflight's headlines are deliberately FIXED so they can be grepped, and both are
+# EXPORTED CONSTANTS in tests/tests/support/preflight.ts so this wrapper can assert it is
+# still grepping for strings that exist (see the drift guard below). Do not parse anything
+# else out of human output.
+#
+# The SUCCESS headline is what makes the verdict a POSITIVE assertion. A pure absence
+# check (`failures == 0`) cannot distinguish "the preflight passed" from "the preflight
+# never ran" from "the literal was renamed" -- and the determinism ledger's evidentiary
+# claim rests on this verdict.
 PREFLIGHT_HEADLINE='E2E PREFLIGHT FAILED'
+PREFLIGHT_OK_HEADLINE='E2E PREFLIGHT OK'
 
 RUN_DIR=""
 PROJECT=""
@@ -89,7 +100,10 @@ DEV_PID=""
 INTERRUPTED=0
 
 usage() {
-  sed -n '2,50p' "${BASH_SOURCE[0]}"
+  # Delimit the header block rather than hardcoding a line range: the previous
+  # `sed -n '2,Np'` truncated the exit-code table the header tells the caller to
+  # branch on, and drifted further every time the header grew.
+  sed -n '2,/^set -euo pipefail/p' "${BASH_SOURCE[0]}" | sed '$d'
 }
 
 # A value-taking flag given as the LAST argument must be a USAGE error, not a silent
@@ -147,6 +161,22 @@ case "$RUN_DIR" in
 esac
 
 mkdir -p "$RUN_DIR"
+
+# --- preflight literal drift guard ---------------------------------------------------
+
+# Both greps below are only as good as the strings they look for. Bind them to the
+# source of truth HERE, loudly, rather than through a comment: a rename in preflight.ts
+# with a stale copy here would otherwise agree on "0 preflight failures" forever, which
+# is precisely the false confirmation this wrapper exists to prevent.
+PREFLIGHT_SRC="$TESTS_DIR/tests/support/preflight.ts"
+for literal in "$PREFLIGHT_HEADLINE" "$PREFLIGHT_OK_HEADLINE"; do
+  if ! grep -qF "$literal" "$PREFLIGHT_SRC" 2> /dev/null; then
+    echo "e2e-run.sh: FATAL -- the literal '$literal' is not present in $PREFLIGHT_SRC." >&2
+    echo "            This wrapper's preflight verdict is derived by grepping for it, so it" >&2
+    echo "            would silently report a confirmed run. Re-sync the constants." >&2
+    exit 7
+  fi
+done
 
 # --- teardown ---------------------------------------------------------------------
 
@@ -404,12 +434,26 @@ fi
 PREFLIGHT_FAILURES="$(grep -c "$PREFLIGHT_HEADLINE" "$RUN_DIR/stdout.log" || true)"
 PREFLIGHT_FAILURES="${PREFLIGHT_FAILURES:-0}"
 echo "$PREFLIGHT_FAILURES" > "$RUN_DIR/preflight-failures"
-echo "e2e-run.sh: preflight failures $PREFLIGHT_FAILURES"
+PREFLIGHT_SUCCESSES="$(grep -c "$PREFLIGHT_OK_HEADLINE" "$RUN_DIR/stdout.log" || true)"
+PREFLIGHT_SUCCESSES="${PREFLIGHT_SUCCESSES:-0}"
+echo "$PREFLIGHT_SUCCESSES" > "$RUN_DIR/preflight-successes"
+echo "e2e-run.sh: preflight failures $PREFLIGHT_FAILURES, successes $PREFLIGHT_SUCCESSES"
 
 # --- 8/9. teardown + end timestamp happen in the trap -----------------------------------
 
 if [ "$PREFLIGHT_FAILURES" != "0" ]; then
   echo "e2e-run.sh: FATAL -- the run was not preflight-confirmed; it is not evidence (D-17)" >&2
+  exit 6
+fi
+
+# POSITIVE assertion, not merely the absence of a failure: globalSetup runs the preflight
+# exactly once per invocation, so a confirmed run prints this line exactly once. Zero means
+# the gate did not execute -- which is NOT the same fact as "the gate passed", and must not
+# be recorded as one.
+if [ "$PREFLIGHT_SUCCESSES" -lt 1 ]; then
+  echo "e2e-run.sh: FATAL -- no preflight SUCCESS line ('$PREFLIGHT_OK_HEADLINE') in the run" >&2
+  echo "            output, and no failure either. The served-application gate did not run," >&2
+  echo "            so this run is unconfirmed and is not evidence (D-17)." >&2
   exit 6
 fi
 

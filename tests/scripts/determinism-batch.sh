@@ -53,9 +53,10 @@
 #      Playwright invocation, preflight capture) to tests/scripts/e2e-run.sh
 #   5. Derives each ledger row MECHANICALLY from that run's results.json and the wrapper's
 #      artifact files -- nothing is transcribed from human-readable console output
-#   6. Enforces the validity rules AS CODE: preflight failures 0, executed count equals the
-#      expected constant, failed and did-not-run 0, wrapper exit 0. An invalid run ABORTS
-#      the batch; it is recorded with its reason, never skipped and never renumbered
+#   6. Enforces the validity rules AS CODE: preflight failures 0 AND at least one preflight
+#      SUCCESS line, executed count equals the expected constant, failed and did-not-run 0,
+#      wrapper exit 0. An invalid run ABORTS the batch; it is recorded with its reason,
+#      never skipped and never renumbered
 #   7. Measures run 1's directory and projects the total BEFORE committing to the rest,
 #      then prunes each valid run to its machine-readable and text evidence
 #   8. Regenerates the markdown ledger after every iteration, so an interrupted batch still
@@ -115,7 +116,10 @@ ABORT_RECORDED=0
 BATCH_COMPLETE=0
 
 usage() {
-  sed -n '2,66p' "${BASH_SOURCE[0]}"
+  # Delimit the header block rather than hardcoding a line range: the previous
+  # `sed -n '2,Np'` truncated the exit-code table the header tells the caller to
+  # branch on, and drifted further every time the header grew.
+  sed -n '2,/^set -euo pipefail/p' "${BASH_SOURCE[0]}" | sed '$d'
 }
 
 # A value-taking flag given as the LAST argument must be a USAGE error, not a silent
@@ -313,12 +317,12 @@ emit_ledger() {
     echo "run N+1's start being at or after run N's end is itself the proof the batch was serial."
     echo "Wall clock is informational only and is never an input to a pass/fail decision."
     echo
-    echo "| Run | Start (UTC) | End (UTC) | Wall | HEAD | Exit | Preflight fails | Executed | Passed | Failed | Flaky | Did-not-run | EPERM-07 step | Verdict | Artifacts |"
-    echo "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"
+    echo "| Run | Start (UTC) | End (UTC) | Wall | HEAD | Exit | Preflight fails | Preflight OKs | Executed | Passed | Failed | Flaky | Did-not-run | EPERM-07 step | Verdict | Artifacts |"
+    echo "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"
     if [ -s "$ROWS_FILE" ]; then
       cat "$ROWS_FILE"
     else
-      echo "| _(no run completed)_ | | | | | | | | | | | | | | |"
+      echo "| _(no run completed)_ | | | | | | | | | | | | | | | |"
     fi
     echo
     echo "## Aborts and discards"
@@ -441,6 +445,10 @@ while [ "$i" -le "$RUNS" ]; do
   END_TS="$(cat "$RUN_DIR/ended" 2>/dev/null || echo unknown)"
   RUN_HEAD="$(cat "$RUN_DIR/head" 2>/dev/null || echo unknown)"
   PREFLIGHT_FAILS="$(cat "$RUN_DIR/preflight-failures" 2>/dev/null || echo unknown)"
+  # POSITIVE confirmation, written by the wrapper from the preflight's own success line.
+  # An absence check alone cannot distinguish "the preflight passed" from "the preflight
+  # never ran"; this ledger's evidentiary claim rests on the difference.
+  PREFLIGHT_OKS="$(cat "$RUN_DIR/preflight-successes" 2>/dev/null || echo unknown)"
 
   # Derive every count from the machine-readable report. Nothing here is parsed from
   # human-readable console output.
@@ -520,6 +528,9 @@ while [ "$i" -le "$RUNS" ]; do
   elif [ "$PREFLIGHT_FAILS" != "0" ]; then
     VERDICT="INVALID"
     REASON="preflight failure count is $PREFLIGHT_FAILS -- the run is not confirmed to have tested this checkout (D-17)"
+  elif ! printf '%s' "$PREFLIGHT_OKS" | grep -qE '^[1-9][0-9]*$'; then
+    VERDICT="INVALID"
+    REASON="preflight success count is $PREFLIGHT_OKS -- the served-application gate did not positively confirm this run, and 'no failure was printed' is not the same fact as 'the gate passed' (D-17)"
   elif [ "$SCOPED" = "0" ] && [ "$EXECUTED" != "$EXPECTED_EXECUTED" ]; then
     VERDICT="INVALID"
     REASON="executed count is $EXECUTED, expected $EXPECTED_EXECUTED -- a test that did not run is a failure, never a skip (CLAUDE.md E2E Hard Rule)"
@@ -537,9 +548,9 @@ while [ "$i" -le "$RUNS" ]; do
     REASON="the EPERM-07 step outcome is '$EPERM', not 'passed' -- this is the step criterion 3 is about"
   fi
 
-  printf '| %s | %s | %s | %s | `%s` | %s | %s | %s | %s | %s | %s | %s | %s | %s | `%s` |\n' \
+  printf '| %s | %s | %s | %s | `%s` | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | `%s` |\n' \
     "$RUN_LABEL" "$START_TS" "$END_TS" "$WALL" "$RUN_HEAD" "$RUN_STATUS" \
-    "$PREFLIGHT_FAILS" "$EXECUTED" "$PASSED" "$FAILED" "$FLAKY" "$DIDNOTRUN" \
+    "$PREFLIGHT_FAILS" "$PREFLIGHT_OKS" "$EXECUTED" "$PASSED" "$FAILED" "$FLAKY" "$DIDNOTRUN" \
     "$EPERM" "$VERDICT" "${RUN_DIR#"$REPO_ROOT"/}" >> "$ROWS_FILE"
 
   if [ "$VERDICT" != "VALID" ]; then

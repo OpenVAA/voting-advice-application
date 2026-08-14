@@ -93,8 +93,29 @@ const MODULE_ROOT_NOT_FOUND = '(not found)';
 /**
  * First line of every failure. Fixed, because the phase's verification commands
  * and the runbook both grep for it.
+ *
+ * EXPORTED (Phase 138 review WR-09) so the shell wrappers can assert the literal
+ * they grep for still exists here. `tests/scripts/e2e-run.sh` previously bound
+ * itself to this string through a comment alone, which meant a rename here and a
+ * stale copy there would agree on "0 preflight failures" forever.
  */
-const FAILURE_HEADLINE = 'E2E PREFLIGHT FAILED';
+export const FAILURE_HEADLINE = 'E2E PREFLIGHT FAILED';
+
+/**
+ * Printed exactly once, on success. Fixed for the same reason as
+ * {@link FAILURE_HEADLINE}, and load-bearing for a different one.
+ *
+ * reason: (Phase 138 review WR-09) the wrappers' "preflight-confirmed" verdict was
+ * an ABSENCE check — `grep -c 'E2E PREFLIGHT FAILED' == 0`. Three different states
+ * produce that zero: the preflight passed, the preflight never executed, or the
+ * two copies of the literal drifted apart. All three were recorded identically,
+ * and the determinism ledger's evidentiary claim ("each confirmed by the
+ * served-app preflight") rested on it. Success was previously silent — this
+ * function emitted no output at all on the happy path — so a POSITIVE
+ * confirmation was not merely absent, it was impossible. It is now emitted, and
+ * the wrappers require `successes >= 1 && failures == 0`.
+ */
+export const SUCCESS_HEADLINE = 'E2E PREFLIGHT OK';
 
 /** What clause (a) observed on the attempt that finally answered 2xx. */
 type Liveness = {
@@ -391,4 +412,11 @@ export async function assertServedApp(options: PreflightOptions): Promise<void> 
       );
     }
   }
+
+  // POSITIVE confirmation, on stdout, exactly once per Playwright invocation (this
+  // runs from globalSetup). Without it "the preflight passed" and "the preflight
+  // never ran" are indistinguishable to any caller reading the run's output — see
+  // SUCCESS_HEADLINE. The served module root is carried because it is the single
+  // most diagnostic fact the preflight learned: it names the checkout that answered.
+  console.log(`${SUCCESS_HEADLINE} ${observed.servedModuleRoot} (verified against ${repoRoot})`);
 }
