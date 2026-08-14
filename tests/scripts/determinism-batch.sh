@@ -60,6 +60,8 @@
 #      then prunes each valid run to its machine-readable and text evidence
 #   8. Regenerates the markdown ledger after every iteration, so an interrupted batch still
 #      leaves a complete, honest record on disk
+#   9. Stamps the ledger from an EXIT trap if the batch dies unexpectedly, so an
+#      INCOMPLETE ledger can never read as "No run in this batch was aborted"
 #
 # NEW CONVENTION (as with e2e-run.sh in plan 01): nothing else in tests/ is orchestrated by
 # a shell script; per-iteration exit-code capture and a machine-readable ledger have no
@@ -106,6 +108,11 @@ RUN1_KB=""
 PROJECTED_MB=""
 ACTUAL_KB=""
 INTERRUPTED=0
+# Set by `record_abort` so the EXIT trap never double-records an abort that the
+# batch already recorded deliberately, and by the tail of the loop so a clean
+# finish is not mistaken for an unexpected death.
+ABORT_RECORDED=0
+BATCH_COMPLETE=0
 
 usage() {
   sed -n '2,66p' "${BASH_SOURCE[0]}"
@@ -358,6 +365,7 @@ emit_ledger() {
 
 record_abort() {
   local idx="$1" reason="$2"
+  ABORT_RECORDED=1
   printf '| %s | %s | %s |\n' "$idx" "$(date -u +%FT%TZ)" "$reason" >> "$ABORTS_FILE"
   emit_ledger
   echo "determinism-batch.sh: ABORT at run $idx -- $reason" >&2
@@ -369,7 +377,29 @@ on_signal() {
   record_abort "${RUN_LABEL:-n/a}" "batch INTERRUPTED (SIGINT/SIGTERM); recorded as a discard, not a pass"
   exit 130
 }
+
+# `trap on_signal INT TERM` covers interrupts and every validity failure calls
+# `record_abort` explicitly -- but NOTHING covered a `set -e` death: a failing
+# `git rev-parse`, `du -sk` or `mkdir`, or a full disk inside `emit_ledger`. In that
+# state the last-emitted ledger still says, in the one section a reader checks for
+# aborts, "**None.** No run in this batch was aborted, discarded or restarted" -- which
+# is affirmatively false, in the document whose stated purpose is that silence about a
+# discarded attempt is what makes a green arguable. The only tell was `Batch end | in
+# progress` in the header table.
+#
+# Stamp an incomplete batch instead. Guarded three ways so it can only ever fire for a
+# death nobody recorded: a clean finish sets BATCH_COMPLETE, an interrupt sets
+# INTERRUPTED, and any deliberate abort sets ABORT_RECORDED.
+on_exit() {
+  local st=$?
+  set +e
+  if [ "$st" != "0" ] && [ "$INTERRUPTED" != "1" ] && [ "$ABORT_RECORDED" != "1" ] && [ "$BATCH_COMPLETE" != "1" ]; then
+    record_abort "${RUN_LABEL:-n/a}" "batch terminated UNEXPECTEDLY (exit $st) -- this ledger is INCOMPLETE and proves nothing about consecutiveness" || true
+  fi
+  exit "$st"
+}
 trap on_signal INT TERM
+trap on_exit EXIT
 
 # --- the serial loop --------------------------------------------------------------------
 
@@ -561,6 +591,7 @@ done
 
 BATCH_END="$(date -u +%FT%TZ)"
 ACTUAL_KB="$(du -sk "$LEDGER_DIR" | awk '{print $1}')"
+BATCH_COMPLETE=1
 emit_ledger
 
 echo
