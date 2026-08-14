@@ -199,7 +199,7 @@ unfilled but never silently absent. `pending` marks a row this plan did not fill
 | 6 | F18 | `packages/dev-seed/tests/templates/default.test.ts:121-135` | **PASS** (blind) | **PASS** (green) | **confirmed** | PASS | yes | none |
 | 7 | F19a | `apps/frontend/src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts:144` | **PASS** (blind) | **FAIL** (red) at `:147` `requestParam!.split('.')` | **confirmed** | PASS (assertion) / FAIL (file) | yes | `:159`, `:171`, `:192` (§ 8.1 C-2) |
 | 8 | F19b | `apps/frontend/src/lib/api/utils/auth/providers/idura.test.ts:148` | **PASS** (blind) | **FAIL** (red) at `:151` `requestParam!.split('.')` | **confirmed** | PASS (assertion) / FAIL (file) | yes | `:184` (§ 8.1 C-3) |
-| 9 | F19c | `apps/frontend/src/lib/api/utils/auth/__tests__/token-endpoint.test.ts:167` | pending | pending | pending | PASS | pending | pending |
+| 9 | F19c | `apps/frontend/src/lib/api/utils/auth/__tests__/token-endpoint.test.ts:167` | **PASS** (blind) — inj. B · **PASS** (on `"undefined"`) — inj. A | **FAIL** (red) at `:170` `assertion.split('.')` — inj. B · **FAIL** (red) at `:171` `toHaveLength(3)` — inj. A | **confirmed** | PASS (assertion) / FAIL (file) | yes (inj. B; inj. A is a second axis, § 8.3 R-6) | `:189`, `:208`, `:230` (§ 8.1 C-4) |
 | 10 | F20-1 | `apps/frontend/src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts:233` | pending | pending | pending | PASS | pending | pending |
 | 11 | F20-2 | `apps/frontend/src/lib/i18n/tests/overrides.test.ts:32-36` | pending | pending | pending | PASS | pending | pending |
 | 12 | F20-3 | `apps/frontend/src/lib/api/utils/auth/getIdTokenClaims.test.ts:236,259` | pending | pending | pending | PASS | pending | pending |
@@ -2044,14 +2044,380 @@ distinguishable in the runner output by line number.
 
 ### 5.9 F19c — `token-endpoint.test.ts:167` (`expect(assertion).toBeDefined()`)
 
-**Status:** not yet run — filled by a later plan in this phase.
+> The third F19 site, and the only one with its **own** injection (`idura.ts:102`, the token-exchange
+> body) rather than the shared `:74` one. It mirrors §§ 5.7 and 5.8 in shape, and the TWO-COLUMN RULE
+> (§ 3.2) governs it identically: the assertion and file outcomes diverge, and the verdict cites the
+> assertion column.
+>
+> **Two injections were run at this site, A then B**, in separate HYGIENE-LOOP iterations. The reason
+> is recorded in § 5.9.2 and is itself a finding about the injection design: the plan's mandated
+> injection A does **not** produce absence at run time, so it cannot exercise the `null`-vs-`undefined`
+> matcher gap that F19c names. B does. Both are recorded; the verdict rests on B, with A as
+> corroboration on a second, independent axis. Precedent: § 5.4 (F16 A/B) and § 5.14 (F20-5 A/B).
 
-- **5.9.1 Re-read evidence** — verbatim assertion text plus its current line, quoted from the live tree
-- **5.9.2 Injected diff** — the verbatim `-`/`+` lines (D-04)
-- **5.9.3 Invocation** — the verbatim command
-- **5.9.4 Observed** — assertion outcome, file outcome, failing line, verbatim runner output
-- **5.9.5 Verdict and reasoning** — ends in `confirmed` or `withdrawn`
-- **5.9.6 Pre-specified regression for Phase 142** — the concrete regression this assertion cannot detect
+**5.9.1 Re-read evidence**
+
+Quoted from the live tree at `91a7e7db9`, not re-copied from the audit.
+`apps/frontend/src/lib/api/utils/auth/__tests__/token-endpoint.test.ts:165-171`, verbatim with current
+line numbers:
+
+```ts
+165    expect(capturedFetchBody).not.toBeNull();
+166    const assertion = capturedFetchBody!.get('client_assertion')!;
+167    expect(assertion).toBeDefined();
+168
+169    // JWT has 3 dot-separated segments
+170    const parts = assertion.split('.');
+171    expect(parts).toHaveLength(3);
+```
+
+Enclosing test title, `:151`:
+
+```ts
+  it('sends a valid JWT as client_assertion', async () => {
+```
+
+The audit's cite (`:167`) is line-exact; no drift.
+
+**Mechanism one — the matcher.** `capturedFetchBody` is a `URLSearchParams`, built from the
+intercepted request body by the `fetch` spy at `:115-117`
+(`capturedFetchBody = new URLSearchParams(body);`). `URLSearchParams.get()` returns `string | null`,
+and `expect(null).toBeDefined()` passes, so `:167` cannot detect the client assertion's absence — the
+same structural blindness as §§ 5.7 and 5.8.
+
+**Mechanism two — the test's own non-null assertion at `:166`, which the other two sites do not
+carry.** `capturedFetchBody!.get('client_assertion')!` applies a TypeScript `!` to the result of
+`.get()`. That is a **compile-time claim the runtime does not enforce**: TypeScript narrows the type to
+`string`, so a reader (and any type-driven lint) sees a value that cannot be `null`, while at run time
+the very same expression yields `null` whenever the parameter is missing. This is a **second,
+independent reason the site cannot see absence**, and it compounds the first rather than duplicating
+it — the matcher cannot fail on `null`, and the type system has been told `null` is impossible, so
+neither layer will report what the run below demonstrates actually happens. Injection B confirmed it
+empirically: under B the value at `:166` **is** `null` despite the `!`, which is why `:170` throws.
+
+Note that `:165` — `expect(capturedFetchBody).not.toBeNull();` — is the correct matcher, applied one
+line earlier to the *container* rather than to the *value*. The file already knows the idiom; `:167`
+simply does not use it. That makes the repair in § 5.9.6 a one-word change to match the file's own
+neighbouring line, not a new convention.
+
+**5.9.2 Injected diff**
+
+Two injections, run in separate HYGIENE-LOOP iterations, each reverted before the next.
+
+**Injection A — the diff the plan mandates.** Target
+`apps/frontend/src/lib/api/utils/auth/providers/idura.ts:102`, verbatim (D-04):
+
+```diff
+  apps/frontend/src/lib/api/utils/auth/providers/idura.ts:102
+-        client_assertion: clientAssertion
++        client_assertion: undefined as unknown as string // INJECTED (139): the client assertion is dropped
+```
+
+**The deliberate type-safety violation, and why it is acceptable here and nowhere else.** The `+` line
+casts through `unknown` to defeat the `Record<string, string>` constraint on the `URLSearchParams`
+initialiser, which CLAUDE.md's "use TypeScript strictly, avoid `any`-shaped casts" rule forbids. It is
+acceptable **only** because it is reverted inside the task that wrote it and never committed — the
+hygiene gate is what makes the injection compliant, not an exemption from the rule. A later reader must
+not take this line as a pattern: it exists to model a regression for one runner invocation, and the
+POST-GATE in § 3.1 step 5 is what keeps it from becoming precedent. The same applies to the
+authentication-material dimension: this injection strips the `private_key_jwt` client assertion from a
+live token-exchange body, and it reached no commit, no branch and no running process. No `yarn dev`,
+`yarn test:e2e` or Playwright command ran while either injection was live.
+
+Confirmation that injection A landed as recorded, from `git diff` taken while it was live:
+
+```
+@@ -99,7 +99,7 @@ export const iduraProvider: IdentityProvider = {
+         code: authorizationCode,
+         redirect_uri: redirectUri,
+         client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+-        client_assertion: clientAssertion
++        client_assertion: undefined as unknown as string // INJECTED (139): the client assertion is dropped
+       }).toString()
+     });
+```
+
+**Why injection A is insufficient on its own, established by measurement rather than by argument.**
+`new URLSearchParams({ … })` built from a record **stringifies every value**, so `undefined` becomes
+the four-character *string* `"undefined"` rather than an omitted key. Measured out of band, in
+`${TMPDIR}/gsd-139` so nothing was written inside the repository:
+
+```console
+$ node -e "const u=new URLSearchParams({a:'x',b:undefined}); console.log('toString:',u.toString()); console.log('get(b):',JSON.stringify(u.get('b'))); console.log('get(missing):',JSON.stringify(u.get('zzz')));"
+toString: a=x&b=undefined
+get(b): "undefined"
+get(missing): null
+```
+
+So under injection A the token request body carries `client_assertion=undefined`, `.get()` returns the
+non-empty string `"undefined"`, and `:167` passes because the value is a *present but garbage* string —
+**not** because of the `null`-vs-`undefined` gap the finding names. Injection A therefore varies the
+detail on a different axis (malformed rather than absent) and leaves F19c's named mechanism untested.
+Recorded in § 8.3 as **R-6**, not silently replaced.
+
+**Injection B — absence, the regression F19c actually names.** Same target file, the
+`client_assertion` entry deleted entirely (the alternative `139-RESEARCH.md:641` names as "or delete
+the line"):
+
+```diff
+  apps/frontend/src/lib/api/utils/auth/providers/idura.ts:101-102
+-        client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+-        client_assertion: clientAssertion
++        client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer' // INJECTED (139): the client_assertion entry is deleted entirely
+```
+
+The preceding line's trailing comma is removed because the deleted entry was last in the object
+literal; the `client_assertion_type` value itself is unchanged. The `INJECTED (139)` marker rides on
+that line — a deleted line cannot carry a marker, so it is placed on the line the deletion
+structurally modifies, and the marker gate (§ 3.1 step 5(c)) is exercised rather than exempted.
+
+Confirmation that injection B landed as recorded, from `git diff` taken while it was live:
+
+```
+@@ -98,8 +98,7 @@ export const iduraProvider: IdentityProvider = {
+         grant_type: 'authorization_code',
+         code: authorizationCode,
+         redirect_uri: redirectUri,
+-        client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+-        client_assertion: clientAssertion
++        client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer' // INJECTED (139): the client_assertion entry is deleted entirely
+       }).toString()
+     });
+```
+
+**Phase 142 re-applies injection B**, not A. A is recorded for completeness and as the second axis of
+corroboration; § 5.9.6 names B.
+
+**5.9.3 Invocation**
+
+Verbatim, run from inside the workspace directory (D-05), identically for the baseline and for both
+injections:
+
+```bash
+cd "$(git rev-parse --show-toplevel)/apps/frontend" && npx vitest run src/lib/api/utils/auth/__tests__/token-endpoint.test.ts
+```
+
+**Baseline**, taken this session immediately before injection A:
+
+```
+ ✓ src/lib/api/utils/auth/__tests__/token-endpoint.test.ts (10 tests) 63ms
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  15:23:50
+```
+
+**Benign stderr, recorded rather than diagnosed.** This file exercises deliberate negative paths — the
+mocked `id_token` cannot be decrypted, so `getIdTokenClaims` fails and the handler returns 401 — and
+every run prints, once per such test:
+
+```
+stderr | src/lib/api/utils/auth/__tests__/token-endpoint.test.ts > POST /api/oidc/token (Signicat - client_secret) > sends client_secret in the token request body
+Token exchange failed: HttpError { status: 401, body: { message: 'Unauthorized' } }
+```
+
+**Count correction, recorded rather than restated.** The plan anticipated these ×3; the observed count
+is **×10 in the baseline** (one per test, since every test drives the handler through the same failing
+claims extraction) and ×10 under each injection. They are present identically in all three runs and
+therefore distinguish none of them. Not a symptom of either injection; not investigated further.
+
+**5.9.4 Observed**
+
+Four distinct facts per injection, per the TWO-COLUMN RULE (§ 3.2). **The two outcome columns diverge
+under both injections**, and they diverge *differently*, which is why both rows are kept.
+
+| Injection | Injected line | Assertion outcome | File outcome | Failing line | exit |
+|---|---|---|---|---|---|
+| **B — absence** (the verdict-bearing run) | `idura.ts:101-102` (entry deleted) | **PASS** (blind — `expect(null).toBeDefined()`) | **FAIL** (red, 4 failed / 6 passed of 10) | `token-endpoint.test.ts:170:29` — `assertion.split('.')` | 1 |
+| **A — malformed value** (corroboration) | `idura.ts:102` (`undefined as unknown as string`) | **PASS** (blind — on the string `"undefined"`) | **FAIL** (red, 4 failed / 6 passed of 10) | `token-endpoint.test.ts:171:19` — `expect(parts).toHaveLength(3)` | 1 |
+
+**Injection B — the four facts.**
+
+1. **Assertion outcome — PASS.** The runner names `:170:29`, not `:167`. The test body executes
+   top-to-bottom, so `:167` was evaluated and did not throw: `expect(null).toBeDefined()` passed.
+   Read from the reported failure location, **not** from the exit code. This also confirms mechanism
+   two from § 5.9.1 empirically — the `!` at `:166` did not prevent `null` from reaching `:170`.
+2. **File outcome — FAIL.** The file exited red.
+3. **Failing line — `token-endpoint.test.ts:170:29`**, three lines below the assertion.
+4. **Verbatim runner failure block**, pasted unedited from `${TMPDIR}/gsd-139/f19c.log`:
+
+```
+ ❯ src/lib/api/utils/auth/__tests__/token-endpoint.test.ts (10 tests | 4 failed) 56ms
+   ✓ POST /api/oidc/token (Idura - private_key_jwt) > sends client_assertion_type=jwt-bearer to the token endpoint 29ms
+   × POST /api/oidc/token (Idura - private_key_jwt) > sends a valid JWT as client_assertion 4ms
+     → Cannot read properties of null (reading 'split')
+   × POST /api/oidc/token (Idura - private_key_jwt) > client assertion has RS256 algorithm in header 2ms
+     → Invalid Token or Protected Header formatting
+   × POST /api/oidc/token (Idura - private_key_jwt) > client assertion has correct iss, sub, aud claims 2ms
+     → JWTs must use Compact JWS serialization, JWT must be a string
+   × POST /api/oidc/token (Idura - private_key_jwt) > client assertion has exp within 5 minutes and a jti 1ms
+     → JWTs must use Compact JWS serialization, JWT must be a string
+   ✓ POST /api/oidc/token (Idura - private_key_jwt) > does NOT include client_secret in the token request 1ms
+   ✓ POST /api/oidc/token (Signicat - client_secret) > sends client_secret in the token request body 1ms
+   ✓ POST /api/oidc/token (Signicat - client_secret) > sends client_id in the token request body 0ms
+   ✓ POST /api/oidc/token (Signicat - client_secret) > sends code_verifier in the token request body (PKCE) 0ms
+   ✓ POST /api/oidc/token (Signicat - client_secret) > does NOT include client_assertion in the token request 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/api/utils/auth/__tests__/token-endpoint.test.ts > POST /api/oidc/token (Idura - private_key_jwt) > sends a valid JWT as client_assertion
+TypeError: Cannot read properties of null (reading 'split')
+ ❯ src/lib/api/utils/auth/__tests__/token-endpoint.test.ts:170:29
+    168| 
+    169|     // JWT has 3 dot-separated segments
+    170|     const parts = assertion.split('.');
+       |                             ^
+    171|     expect(parts).toHaveLength(3);
+    172|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+```
+
+Summary line of the same run, verbatim:
+
+```
+ Test Files  1 failed (1)
+      Tests  4 failed | 6 passed (10)
+   Start at  15:24:38
+   Duration  333ms (transform 44ms, setup 0ms, collect 45ms, tests 56ms, environment 0ms, prepare 74ms)
+```
+
+**Injection A — the four facts.**
+
+1. **Assertion outcome — PASS**, but for a different reason: the value was the non-empty string
+   `"undefined"`, so `toBeDefined()` passed trivially. This tests the assertion's blindness to a
+   *malformed* value, not to an *absent* one.
+2. **File outcome — FAIL.**
+3. **Failing line — `token-endpoint.test.ts:171:19`** — the `toHaveLength(3)` assertion, **one line
+   further along than under B**, because `"undefined".split('.')` returns a one-element array instead
+   of throwing.
+4. **Verbatim runner failure block**, pasted unedited from `${TMPDIR}/gsd-139/f19c-injA.log`:
+
+```
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/api/utils/auth/__tests__/token-endpoint.test.ts > POST /api/oidc/token (Idura - private_key_jwt) > sends a valid JWT as client_assertion
+AssertionError: expected [ 'undefined' ] to have a length of 3 but got 1
+
+- Expected
++ Received
+
+- 3
++ 1
+
+ ❯ src/lib/api/utils/auth/__tests__/token-endpoint.test.ts:171:19
+    169|     // JWT has 3 dot-separated segments
+    170|     const parts = assertion.split('.');
+    171|     expect(parts).toHaveLength(3);
+       |                   ^
+    172|   });
+    173| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+```
+
+**What the two injections establish together, and neither establishes alone.** Under B the assertion
+is blind to **absence** (the finding as named). Under A it is blind to a **present-but-garbage value**
+(a defect the finding does not name, and which `.not.toBeNull()` would also miss — see § 5.9.6). The
+pair also shows the injections are genuinely discriminating rather than producing one generic red: the
+same site fails at `:170` under one and at `:171` under the other, with different error classes, both
+downstream of an assertion that passed in both runs.
+
+Prediction (§ 4 row 9, and `139-RESEARCH.md:640-643`) was assertion **PASS** / file **FAIL** at the
+`split('.')` line; observed exactly that under injection B, to the error string; **matched**. The
+prediction was made against an injection that produces absence, which is B; A's divergence from it is a
+property of A's design, recorded as R-6 in § 8.3, and is not an overturned prediction.
+
+**Collateral: three tests** under each injection — `:189` (`client assertion has RS256 algorithm in
+header`), `:208` (`client assertion has correct iss, sub, aud claims`) and `:230` (`client assertion
+has exp within 5 minutes and a jti`), none of which is one of the fifteen enumerated sites. Recorded
+verbatim in § 8.1 as **C-4**; per § 3.3 they bear on no verdict.
+
+**No separate positive control was run**, for the reason given in § 5.7.4: both runs came back **red**,
+at the predicted line and with the predicted error under B, which establishes directly that the edit
+executed in the process that reported `:167` green. The three collateral failures are a second liveness
+proof from the same run, and the six passing tests — including the two Signicat tests, which do not
+touch the Idura token body — show the reds are specific to the injected path rather than a whole-file
+breakage.
+
+**5.9.5 Verdict and reasoning**
+
+The `private_key_jwt` client assertion was deleted from the token-exchange request body — in
+production, the *entire* means by which this client authenticates to the Idura token endpoint — and
+`expect(assertion).toBeDefined()` at `:167`, inside a test titled *"sends a valid JWT as
+client_assertion"*, **passed**. The file went red three lines later at `assertion.split('.')` with a
+`TypeError` about `null`.
+
+The D-02 reasoning, in full:
+
+1. **Structurally incapable of detecting absence, on two independent layers.** `URLSearchParams.get()`
+   returns `string | null` and `toBeDefined()` fails only on `undefined`, so the matcher cannot fail on
+   a missing parameter; and `:166`'s `!` tells the type system the value cannot be `null`, so nothing
+   in the type layer flags the gap either. Injection B evaluated `:167` against an actual `null` and it
+   passed. Injection A additionally showed the assertion is blind to a present-but-garbage value, so
+   the site discriminates neither absence nor malformation.
+2. **Rescued by an incidental downstream throw.** `:170` dereferences the value to split JWT segments.
+   It is a step in the test's extraction logic, not a guard; the red is a side effect of the next
+   operation. Under injection A even that rescue shifts — the file survives to `:171` and fails on a
+   length mismatch instead.
+3. **The cost is diagnosis time rather than coverage.** A maintainer who drops the client assertion
+   sees `TypeError: Cannot read properties of null (reading 'split')` pointing at the test's own line,
+   rather than a message naming the missing authentication material at the provider. The audit
+   anticipated this and marked it **Mitigated**
+   (`.planning/audits/2026-08-11-fake-guard-sweep.md:761-763`).
+4. **ROADMAP criterion 2's withdrawal clause does not reach this class.** It is scoped to findings
+   whose **own assertion** catches the regression (D-02, CONTEXT `<specifics>` bullet 2). This
+   assertion caught nothing. Reading the process exit code here — the column that says FAIL — would
+   withdraw a real matcher defect and shrink ASSERT-03 and Phase 140 (which owns the `.not.toBeNull()`
+   repair) as well as ASSERT-07 and Phase 142.
+
+The audit's characterisation is accurate to the line. Nothing in either run overturned a prediction for
+this site; the one design divergence is injection A's, and it is recorded as R-6 rather than folded
+into the verdict.
+
+**Verdict:** confirmed
+
+**5.9.6 Pre-specified regression for Phase 142**
+
+**The regression (re-apply injection B verbatim — not injection A):** delete the `client_assertion`
+entry from the token-exchange body at
+`apps/frontend/src/lib/api/utils/auth/providers/idura.ts:101-102`, removing the preceding line's
+trailing comma. In production this is a total authentication failure at the token endpoint: the
+request carries `client_assertion_type=…jwt-bearer` while carrying no assertion, so Idura rejects the
+exchange and no user can complete bank authentication. Today the assertion at `:167` that claims to
+guard the assertion's presence stays green through it.
+
+**The named regression in one sentence, for Phase 142's negative control:** *the client assertion is
+absent from the token request body, and the assertion that claims to guard its presence passes.*
+
+**Do not use injection A as the negative control.** `client_assertion: undefined as unknown as string`
+serialises to the literal string `"undefined"` rather than omitting the key (§ 5.9.2), so it models a
+malformed assertion rather than a missing one and does not exercise the `null` path this finding is
+about. It is recorded in § 8.3 as R-6 for exactly this reason.
+
+**The target Phase 142 must reach** — the audit already names it at
+`.planning/audits/2026-08-11-fake-guard-sweep.md:765`: **`.not.toBeNull()`**, matching the idiom the
+same file already uses one line earlier at `:165`:
+
+```ts
+const assertion = capturedFetchBody!.get('client_assertion');
+expect(assertion).not.toBeNull();
+```
+
+Drop the trailing `!` at `:166` as part of the same edit — keeping it re-asserts at the type level the
+very thing the new matcher is there to check at run time, and would leave the file claiming a guarantee
+its own assertion exists to verify. This fails under injection B at `:167` itself, naming the missing
+parameter, instead of at `:170` with a `TypeError` about `split`.
+
+**Take the stronger form here, because `.not.toBeNull()` alone does not close what injection A found.**
+`expect(assertion).toMatch(/^[\w-]+\.[\w-]+\.[\w-]+$/)` fails under **both** injections — under B
+because `null` is not a string, and under A because `"undefined"` is not a three-segment JWT. It is the
+only form of this repair that covers both axes this record measured, and it subsumes `:171`'s
+`toHaveLength(3)`.
+
+**Ownership seam:** Phase 140 owns the repair under **ASSERT-03** (the F3/F9/F10/F19 matcher fixes);
+Phase 142 owns the F19 line of **ASSERT-07**. One diff serves both, and injection B is the negative
+control that verifies it — it reds after the fix at `:167` and passes before it.
 
 ### 5.10 F20-1 — `authorize-endpoint.test.ts:233` (bare `rejects.toThrow()` under a 400 title)
 
@@ -2946,6 +3312,60 @@ JWTInvalid: JWTs must use Compact JWS serialization, JWT must be a string
 Same disposition and same corroboration as C-2: excluded from the verdict, and independent evidence
 that the injection reached the module in the process that reported `:148` green.
 
+**C-4 — `token-endpoint.test.ts:189`, `:208` and `:230`, red under both F19c injections at
+`idura.ts:101-102` (§ 5.9).** Recorded by plan 04. **Does not bear on the F19c verdict**; none of the
+three is one of the fifteen sites. Verbatim, from the injection-B run:
+
+```
+ FAIL  src/lib/api/utils/auth/__tests__/token-endpoint.test.ts > POST /api/oidc/token (Idura - private_key_jwt) > client assertion has RS256 algorithm in header
+TypeError: Invalid Token or Protected Header formatting
+ ❯ Module.decodeProtectedHeader ../../node_modules/jose/dist/webapi/util/decode_protected_header.js:32:15
+ ❯ src/lib/api/utils/auth/__tests__/token-endpoint.test.ts:189:25
+    187| 
+    188|     const assertion = capturedFetchBody!.get('client_assertion')!;
+    189|     const header = jose.decodeProtectedHeader(assertion);
+       |                         ^
+    190|     expect(header.alg).toBe('RS256');
+    191|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/lib/api/utils/auth/__tests__/token-endpoint.test.ts > POST /api/oidc/token (Idura - private_key_jwt) > client assertion has correct iss, sub, aud claims
+JWTInvalid: JWTs must use Compact JWS serialization, JWT must be a string
+ ❯ Module.decodeJwt ../../node_modules/jose/dist/webapi/util/decode_jwt.js:7:15
+ ❯ src/lib/api/utils/auth/__tests__/token-endpoint.test.ts:208:26
+    206| 
+    207|     const assertion = capturedFetchBody!.get('client_assertion')!;
+    208|     const payload = jose.decodeJwt(assertion);
+       |                          ^
+    209| 
+    210|     expect(payload.iss).toBe('test-idura-client');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  src/lib/api/utils/auth/__tests__/token-endpoint.test.ts > POST /api/oidc/token (Idura - private_key_jwt) > client assertion has exp within 5 minutes and a jti
+JWTInvalid: JWTs must use Compact JWS serialization, JWT must be a string
+ ❯ Module.decodeJwt ../../node_modules/jose/dist/webapi/util/decode_jwt.js:7:15
+ ❯ src/lib/api/utils/auth/__tests__/token-endpoint.test.ts:230:26
+    228| 
+    229|     const assertion = capturedFetchBody!.get('client_assertion')!;
+    230|     const payload = jose.decodeJwt(assertion);
+       |                          ^
+    231| 
+    232|     // exp should be set and within 5 minutes from now
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+```
+
+Excluded from the verdict, and corroborating in the same two ways as C-2. First, liveness: three
+independent `jose` entry points each received the missing assertion, so the edit demonstrably executed
+in the process that reported `:167` green. Second — and this is the pattern worth carrying forward —
+`:188`, `:207` and `:229` each write `capturedFetchBody!.get('client_assertion')!`, repeating the
+`:166` non-null assertion that § 5.9.1 identifies as F19c's second mechanism. Counting C-2's three, the
+`!`-on-a-`null`-returning-`.get()` pattern appears **six** further times across the two auth test files
+outside the audit's enumeration. Recorded here rather than folded into any verdict; a candidate scope
+item for Phase 140's ASSERT-03 sweep, and evidence that the F19 class is wider than three sites.
+
 ### 8.2 Overturned predictions
 
 § 3.4 requires a prediction the run contradicts to be recorded as overturned, never rewritten to match
@@ -3032,3 +3452,30 @@ property to `undefined` reds `variants.test.ts:9` today, which is exactly why it
 job was to prove the array is non-empty in the un-injected code — without which injection A's green
 ("1 passed" under `return []`) is indistinguishable from a test that never asserted at all. Same
 disqualification as R-4, reached from the vacuity side rather than the value side.
+
+**R-6 — F19c: `client_assertion: undefined as unknown as string` models a malformed value, not an
+absent one.** Recorded by plan 04; stated in full in § 5.9.2, and **run** rather than merely
+considered — it is injection A of the two at that site, kept in the record as a second axis of
+corroboration but excluded from § 5.9.6's negative control.
+
+The reason is a `URLSearchParams` serialisation detail, measured out of band rather than assumed:
+`new URLSearchParams({ b: undefined })` stringifies the value, producing `b=undefined`, so `.get('b')`
+returns the four-character string `"undefined"` — not `null`, and not an omitted key. Under injection A
+the token body therefore carries a *present but garbage* client assertion, `:167` passes because a
+non-empty string is defined, and the file fails at `:171` on `expected [ 'undefined' ] to have a length
+of 3` rather than at `:170` with the `TypeError` the finding predicts. F19c's named mechanism —
+`expect(null).toBeDefined()` passes — goes untested.
+
+**This is a third distinct failure mode of injection design, alongside R-1 and R-2.** R-1 *over*-shot
+(it removed the category rather than varying the detail); R-2 could not be applied at all (zero delta);
+R-6 applies cleanly and produces a red, but on the **wrong axis** — it varies a different detail than
+the finding names, so a verdict resting on it alone would be evidence about malformation dressed as
+evidence about absence. It is the subtlest of the three, because nothing in the run's output announces
+the substitution: the file goes red either way, and only the failing line number distinguishes them.
+Injection B (deleting the entry, the alternative `139-RESEARCH.md:641` already named) produces genuine
+absence and carries the verdict.
+
+Kept in the record rather than discarded because it measures something injection B cannot: the
+assertion is blind to malformation as well as to absence, which is why § 5.9.6 recommends
+`toMatch(/^[\w-]+\.[\w-]+\.[\w-]+$/)` over the audit's `.not.toBeNull()` — the latter closes only the
+axis B measured. Consequence for Phase 142: re-apply **B**; A is not the negative control.
