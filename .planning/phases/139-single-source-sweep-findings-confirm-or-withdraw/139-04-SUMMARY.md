@@ -182,3 +182,11 @@ Both injections stripped live OIDC authentication material — the JAR request o
   limit of the pass.
 - **Phase 140 (ASSERT-03) has an expanded candidate scope**: three matcher repairs plus the six
   `!`-on-`null` sites in § 8.1.
+
+## Self-Check: PASSED
+
+- Files claimed created/modified exist: `139-04-SUMMARY.md`, `139-VERDICTS.md`.
+- Commits claimed exist: `ffb4b9520`, `1f1a5a057`, `29dce4f6d`.
+- All 18 sub-part labels present across §§ 5.7, 5.8 and 5.9 (six each).
+- 11 `**Verdict:** confirmed` lines in `139-VERDICTS.md`, matching 11 of 15 findings verdicted.
+- 4 `not yet run` placeholders and 4 `pending` § 4 rows remain, as required.
