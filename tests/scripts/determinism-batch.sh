@@ -111,28 +111,48 @@ usage() {
   sed -n '2,66p' "${BASH_SOURCE[0]}"
 }
 
+# A value-taking flag given as the LAST argument must be a USAGE error, not a silent
+# death. `VAR="${2:-}"; shift 2` looks safe but is not: with one positional left,
+# `shift 2` fails, and under `set -euo pipefail` the script dies with exit 1 -- no
+# message, no usage -- which this batch would then record as RUN_STATUS=1 -> INVALID
+# with a reason naming the wrapper's exit table. A typo must not read as a test failure.
+#
+# $1 = flag name, $2 = the caller's remaining argument count ($#).
+require_value() {
+  if [ "$2" -lt 2 ]; then
+    echo "determinism-batch.sh: $1 requires a value" >&2
+    usage >&2
+    exit 2
+  fi
+}
+
 # --- argument parsing ---------------------------------------------------------------
 
 while [ $# -gt 0 ]; do
   case "$1" in
     --runs)
-      RUNS="${2:-}"
+      require_value --runs $#
+      RUNS="$2"
       shift 2
       ;;
     --project)
-      PROJECT="${2:-}"
+      require_value --project $#
+      PROJECT="$2"
       shift 2
       ;;
     --ledger-dir)
-      LEDGER_DIR="${2:-}"
+      require_value --ledger-dir $#
+      LEDGER_DIR="$2"
       shift 2
       ;;
     --ledger-file)
-      LEDGER_FILE="${2:-}"
+      require_value --ledger-file $#
+      LEDGER_FILE="$2"
       shift 2
       ;;
     --carry-discards)
-      CARRY_DISCARDS="${2:-}"
+      require_value --carry-discards $#
+      CARRY_DISCARDS="$2"
       shift 2
       ;;
     -h | --help)

@@ -92,16 +92,34 @@ usage() {
   sed -n '2,50p' "${BASH_SOURCE[0]}"
 }
 
+# A value-taking flag given as the LAST argument must be a USAGE error, not a silent
+# death. `VAR="${2:-}"; shift 2` looks safe but is not: with one positional left,
+# `shift 2` fails, and under `set -euo pipefail` the script dies with exit 1 -- no
+# message, no usage. Exit 1 is "Playwright reported failures" in the table above, so a
+# caller branching on the status alone (which the table says it must be able to do)
+# reads a typo as a test failure.
+#
+# $1 = flag name, $2 = the caller's remaining argument count ($#).
+require_value() {
+  if [ "$2" -lt 2 ]; then
+    echo "e2e-run.sh: $1 requires a value" >&2
+    usage >&2
+    exit 2
+  fi
+}
+
 # --- argument parsing -------------------------------------------------------------
 
 while [ $# -gt 0 ]; do
   case "$1" in
     --run-dir)
-      RUN_DIR="${2:-}"
+      require_value --run-dir $#
+      RUN_DIR="$2"
       shift 2
       ;;
     --project)
-      PROJECT="${2:-}"
+      require_value --project $#
+      PROJECT="$2"
       shift 2
       ;;
     -h | --help)
