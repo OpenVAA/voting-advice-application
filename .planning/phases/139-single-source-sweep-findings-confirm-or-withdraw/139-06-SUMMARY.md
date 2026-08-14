@@ -180,3 +180,11 @@ None. This plan wrote documentation only. `§ 6` is reserved rather than stubbed
 ---
 *Phase: 139-single-source-sweep-findings-confirm-or-withdraw*
 *Completed: 2026-08-14*
+
+## Self-Check: PASSED
+
+- `139-06-SUMMARY.md` — FOUND
+- `139-VERDICTS.md` — FOUND (§§ 4.1/4.2/4.3 present, §§ 8.1-8.5 present)
+- Commit `e5c930a58` — FOUND
+- Commit `b6c400de1` — FOUND
+- Commit `078a80d22` — FOUND
