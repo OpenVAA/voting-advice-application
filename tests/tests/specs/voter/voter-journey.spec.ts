@@ -28,10 +28,11 @@ import {
   answerNumberScale,
   walkUntilQuestionsIntro
 } from '../../fixtures/voter/voter-journey.fixture';
-import { readNavigationLandmarkText, settleAfterClientNavigation, TIMEOUTS } from '../../helpers';
+import { expectClientNavigation, TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { testIds } from '../../utils/testIds';
 import type { Locator, Page } from '@playwright/test';
+import type { CaptureNavigationBaseline } from '../../helpers';
 
 // ====================================================================
 // FILE-SCOPE CONSTANTS
@@ -198,12 +199,20 @@ async function toggleCategoryListItem({
  * `eperm07-term-trigger` instrument share ONE implementation and cannot drift —
  * the instrument would otherwise keep its own copy of the defect and stop
  * witnessing this file. Negative control: `138-NEGATIVE-CONTROL.md`.
+ *
+ * The baseline is captured BY THE ACTION, via the `capture` callback it receives,
+ * immediately before the navigating click — never here at wrapper entry (Phase 138
+ * review WR-01). Every action below gates on the heading of the page it is leaving,
+ * and that gate targets the SAME element the baseline read targets, so a baseline
+ * taken before the gate can be one page stale and would make the settle's stage-2
+ * text comparison true on arrival. The mechanism is spelled out on
+ * `expectClientNavigation`.
  */
-async function expectUrlChange(page: Page, action: () => Promise<void>): Promise<void> {
-  const urlBefore = page.url();
-  const landmarkTextBefore = await readNavigationLandmarkText(page);
-  await action();
-  await settleAfterClientNavigation(page, urlBefore, landmarkTextBefore);
+async function expectUrlChange(
+  page: Page,
+  action: (capture: CaptureNavigationBaseline) => Promise<void>
+): Promise<void> {
+  await expectClientNavigation(page, action);
 }
 
 /**
@@ -218,7 +227,7 @@ async function expectCategoryIntroAndAdvance({
   text: RegExp | string;
   skip?: boolean;
 }): Promise<void> {
-  await expectUrlChange(page, async () => {
+  await expectUrlChange(page, async (capture) => {
     const categoryIntro = page.getByTestId(testIds.voter.questions.categoryIntro);
     const categorySkip = page.getByTestId(testIds.voter.questions.categorySkip);
     const categoryStart = page.getByTestId(testIds.voter.questions.categoryStart);
@@ -227,6 +236,7 @@ async function expectCategoryIntroAndAdvance({
       expect(categorySkip).toBeVisible({ timeout: TIMEOUTS.element }),
       expect(categoryStart).toBeVisible({ timeout: TIMEOUTS.element })
     ]);
+    await capture();
     if (skip) await categorySkip.click();
     else await categoryStart.click();
   });
@@ -261,7 +271,7 @@ async function expectQuestionAndAdvance({
   optionIndex?: (nOptions: number) => number;
   allowPreselected?: boolean;
 }): Promise<void> {
-  await expectUrlChange(page, async () => {
+  await expectUrlChange(page, async (capture) => {
     const questionHeading = page.getByTestId(testIds.voter.questions.heading);
     const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
 
@@ -292,6 +302,7 @@ async function expectQuestionAndAdvance({
     ]);
     if (!allowPreselected) await expect(answerOption).not.toBeChecked();
     const isChecked = await answerOption.isChecked();
+    await capture();
     if (skip || isChecked) await nextButton.click();
     else await answerOption.click();
   });
@@ -307,7 +318,7 @@ async function expectQuestionAndAdvance({
  * Next explicitly — number inputs never auto-advance (plan 06).
  */
 async function expectNumberQuestionAndAdvance({ page, text }: { page: Page; text: RegExp | string }): Promise<void> {
-  await expectUrlChange(page, async () => {
+  await expectUrlChange(page, async (capture) => {
     const questionHeading = page.getByTestId(testIds.voter.questions.heading);
     await expect(questionHeading).toHaveText(text, { timeout: TIMEOUTS.element });
     const slider = page.getByTestId(testIds.voter.questions.numberSlider);
@@ -316,6 +327,7 @@ async function expectNumberQuestionAndAdvance({ page, text }: { page: Page; text
     await page.keyboard.press('End'); // native range → exact max
     const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
     await expect(nextButton).toBeVisible({ timeout: TIMEOUTS.element });
+    await capture();
     await nextButton.click();
   });
 }
@@ -335,7 +347,7 @@ async function expectMultiChoiceQuestionAndAdvance({
   page: Page;
   text: RegExp | string;
 }): Promise<void> {
-  await expectUrlChange(page, async () => {
+  await expectUrlChange(page, async (capture) => {
     const questionHeading = page.getByTestId(testIds.voter.questions.heading);
     await expect(questionHeading).toHaveText(text, { timeout: TIMEOUTS.element });
     const questionId = new URL(page.url()).pathname.replace(/\/+$/, '').split('/').filter(Boolean).pop() ?? '';
@@ -348,6 +360,7 @@ async function expectMultiChoiceQuestionAndAdvance({
     const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
     await expect(nextButton).toBeVisible({ timeout: TIMEOUTS.element });
     await expect(nextButton).toBeEnabled({ timeout: TIMEOUTS.element });
+    await capture();
     await nextButton.click();
   });
 }
@@ -394,7 +407,7 @@ async function expectExactOneMultiChoiceQuestionAndAdvance({
   page: Page;
   text: RegExp | string;
 }): Promise<void> {
-  await expectUrlChange(page, async () => {
+  await expectUrlChange(page, async (capture) => {
     const questionHeading = page.getByTestId(testIds.voter.questions.heading);
     await expect(questionHeading).toHaveText(text, { timeout: TIMEOUTS.element });
     const questionId = new URL(page.url()).pathname.replace(/\/+$/, '').split('/').filter(Boolean).pop() ?? '';
@@ -415,6 +428,7 @@ async function expectExactOneMultiChoiceQuestionAndAdvance({
     const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
     await expect(nextButton).toBeVisible({ timeout: TIMEOUTS.element });
     await expect(nextButton).toBeEnabled({ timeout: TIMEOUTS.element });
+    await capture();
     await nextButton.click();
   });
 }
@@ -426,11 +440,12 @@ async function expectExactOneMultiChoiceQuestionAndAdvance({
  * slider value already persists).
  */
 async function settleAndAdvance({ page, text }: { page: Page; text: RegExp | string }): Promise<void> {
-  await expectUrlChange(page, async () => {
+  await expectUrlChange(page, async (capture) => {
     const questionHeading = page.getByTestId(testIds.voter.questions.heading);
     await expect(questionHeading).toHaveText(text, { timeout: TIMEOUTS.element });
     const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
     await expect(nextButton).toBeVisible({ timeout: TIMEOUTS.element });
+    await capture();
     await nextButton.click();
   });
 }

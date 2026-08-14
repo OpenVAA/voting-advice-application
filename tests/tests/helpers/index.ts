@@ -21,8 +21,10 @@
  * See `tests/tests/helpers/README.md` for the full design rationale.
  */
 
+export type { CaptureNavigationBaseline } from './navigation';
 export {
   clickAndRaceSettle,
+  expectClientNavigation,
   expectLandedOn,
   readNavigationLandmarkText,
   settleAfterClientNavigation

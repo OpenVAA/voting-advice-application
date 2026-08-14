@@ -67,9 +67,10 @@
 
 import { expect, test } from '../../fixtures/voter/views';
 import { walkUntilQuestionsIntro } from '../../fixtures/voter/voter-journey.fixture';
-import { readNavigationLandmarkText, settleAfterClientNavigation, TIMEOUTS } from '../../helpers';
+import { expectClientNavigation, TIMEOUTS } from '../../helpers';
 import { testIds } from '../../utils/testIds';
 import type { CDPSession, Page } from '@playwright/test';
+import type { CaptureNavigationBaseline } from '../../helpers';
 
 // FORCING BUDGET — file-local, env-defaulted to the shared production budget.
 // reason: D-01's negative-control knob. It is scoped to THIS file by
@@ -125,26 +126,40 @@ type ForensicState = {
  * fix would not be caught here. Delegating to the shared helper is what makes
  * this spec a permanent regression test for that helper rather than a museum of
  * the bug. Negative control: `138-NEGATIVE-CONTROL.md`.
+ *
+ * The `capture` callback the action receives records the settle's baseline
+ * (URL + landmark text) at the LAST instant before the navigating click, which is
+ * the only instant at which the DOM is known to be on the page being left (Phase
+ * 138 review WR-01). The mechanism is on `expectClientNavigation`; this wrapper
+ * exists only to keep the spec's own naming, and delegating means the instrument
+ * cannot drift from the production walk.
  */
-async function settleOnUrlChangeAsProductionDoes(page: Page, action: () => Promise<void>): Promise<void> {
-  const urlBefore = page.url();
-  const landmarkTextBefore = await readNavigationLandmarkText(page);
-  await action();
-  await settleAfterClientNavigation(page, urlBefore, landmarkTextBefore);
+async function settleOnUrlChangeAsProductionDoes(
+  page: Page,
+  action: (capture: CaptureNavigationBaseline) => Promise<void>
+): Promise<void> {
+  await expectClientNavigation(page, action);
 }
 
 /**
  * Gate on `text` as THIS question's heading, then click its LAST answer option.
  *
  * Does NOT settle afterwards — the caller owns the settle, because on the hop
- * under test the settle IS the thing being reproduced.
+ * under test the settle IS the thing being reproduced. It DOES own the settle's
+ * baseline: `capture()` runs after the heading gate and immediately before the
+ * click, which is the only instant at which the DOM is known to be on the
+ * question we are leaving (Phase 138 review WR-01).
  *
  * The option locator is scoped to the current question id rather than page-wide:
  * on a Q→Q nav the outgoing question's options can linger in the DOM for a frame
  * after the heading has already updated, so a page-wide count would be stale
  * (the mechanism documented at voter-journey.spec.ts:255-265).
  */
-async function gateOnQuestionAndAnswerLastOption(page: Page, text: RegExp): Promise<void> {
+async function gateOnQuestionAndAnswerLastOption(
+  page: Page,
+  text: RegExp,
+  capture: CaptureNavigationBaseline
+): Promise<void> {
   await expect(page.getByTestId(testIds.voter.questions.heading)).toHaveText(text, { timeout: TIMEOUTS.element });
 
   const questionId = new URL(page.url()).pathname.replace(/\/+$/, '').split('/').filter(Boolean).pop() ?? '';
@@ -157,6 +172,7 @@ async function gateOnQuestionAndAnswerLastOption(page: Page, text: RegExp): Prom
   await expect(answerOptions.first()).toBeVisible({ timeout: TIMEOUTS.element });
 
   const nOptions = await answerOptions.count();
+  await capture();
   await answerOptions.nth(nOptions - 1).click();
 }
 
@@ -168,7 +184,10 @@ async function advancePastBaseCategoryIntro(page: Page): Promise<void> {
   });
   await expect(categoryStart).toBeVisible({ timeout: TIMEOUTS.element });
 
-  await settleOnUrlChangeAsProductionDoes(page, () => categoryStart.click());
+  await settleOnUrlChangeAsProductionDoes(page, async (capture) => {
+    await capture();
+    await categoryStart.click();
+  });
 }
 
 /**
@@ -236,14 +255,18 @@ test.describe('eperm07-term-trigger', () => {
 
     // Base-1 → Base-2. Not the hop under test: settle it fully so the throttle
     // below is scoped to the transition being measured and nothing else.
-    await settleOnUrlChangeAsProductionDoes(page, () => gateOnQuestionAndAnswerLastOption(page, HEADING_BASE_1));
+    await settleOnUrlChangeAsProductionDoes(page, (capture) =>
+      gateOnQuestionAndAnswerLastOption(page, HEADING_BASE_1, capture)
+    );
 
     const client = await applyCpuThrottleKnob(page);
     try {
       // THE HOP UNDER TEST — Base-2 → Base-3, driven IN-APP by answering
       // Base-2. Never by `goto`: a hard navigation would bypass the client
       // router ordering that H1 names as the mechanism.
-      await settleOnUrlChangeAsProductionDoes(page, () => gateOnQuestionAndAnswerLastOption(page, HEADING_BASE_2));
+      await settleOnUrlChangeAsProductionDoes(page, (capture) =>
+        gateOnQuestionAndAnswerLastOption(page, HEADING_BASE_2, capture)
+      );
 
       // Record the tri-state BEFORE the assertion, so a NEAR-MISS (a run that
       // passed at 1.9 s of a 2 s budget) is captured as data too — not only a

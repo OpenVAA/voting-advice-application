@@ -129,6 +129,60 @@ export async function readNavigationLandmarkText(page: Page): Promise<string | n
 }
 
 /**
+ * The callback an {@link expectClientNavigation} action MUST invoke immediately
+ * before the click that navigates, to record the settle's baseline.
+ */
+export type CaptureNavigationBaseline = () => Promise<void>;
+
+/**
+ * Run a navigating `action` and then settle on the DESTINATION DOM.
+ *
+ * reason: (Phase 138 review WR-01) the baseline MUST be read from the page the
+ * action navigates AWAY from, and only the action knows when the DOM is
+ * definitively on that page — its own entry gate (`expect(heading).toHaveText(...)`)
+ * is what establishes it. Reading the baseline at wrapper entry instead is
+ * unsound: the caller's gate targets the SAME element the baseline read targets,
+ * so a DOM that is one page stale at wrapper entry yields the sequence
+ *
+ *   1. baseline := page A's landmark text (stale)
+ *   2. the action's gate waits for page B's heading — the DOM catches up here
+ *   3. the click on B navigates to C
+ *   4. stage 2 of the settle asks "landmark text != A?" — the DOM shows B, so
+ *      this is true IMMEDIATELY
+ *
+ * and the settle releases with the DOM on B while the test asserts against C.
+ * That is exactly the pre-fix no-op the phase named, silently restored. Stale
+ * baselines are reachable in this suite because several neighbourhoods
+ * (`page.goBack()`, the `previousButton` hops) re-establish the DOM only through
+ * a NON-aborting `expect.soft`, which hands the next wrapper a page-behind DOM.
+ *
+ * Handing the capture down as a callback makes the precondition structural: an
+ * action that never captures cannot silently settle against a wrong baseline, it
+ * throws here instead.
+ *
+ * @param page - Playwright Page.
+ * @param action - performs the navigation. It must gate on the page being left,
+ *   then call `capture()`, then click.
+ */
+export async function expectClientNavigation(
+  page: Page,
+  action: (capture: CaptureNavigationBaseline) => Promise<void>
+): Promise<void> {
+  let baseline: { url: string; landmarkText: string | null } | undefined;
+  await action(async () => {
+    baseline = { url: page.url(), landmarkText: await readNavigationLandmarkText(page) };
+  });
+  if (baseline === undefined) {
+    throw new Error(
+      'expectClientNavigation: the action never called its capture() callback, so there is no ' +
+        'trustworthy baseline for the destination-DOM settle. Call capture() immediately before ' +
+        'the click that navigates — after the action has gated on the page it is leaving.'
+    );
+  }
+  await settleAfterClientNavigation(page, baseline.url, baseline.landmarkText);
+}
+
+/**
  * Positive landing assertion — assert the page URL eventually matches the
  * given pattern.
  *
