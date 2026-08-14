@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
-current_phase: 139
-current_phase_name: single-source-sweep-findings-confirm-or-withdraw
-status: verifying
+current_phase: 140
+current_phase_name: Blind-Matcher Remediation — Teardowns, Null-Matchers, Positive Controls
+status: planning
 stopped_at: Completed 139-07-PLAN.md — phase 139 complete, ready for verification
-last_updated: "2026-08-14T13:28:01.883Z"
+last_updated: "2026-08-14T13:33:44.633Z"
 last_activity: 2026-08-14
 last_activity_desc: Phase 138 marked complete
 progress:
@@ -29,10 +29,10 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 ## Current Position
 
 Milestone: v2.15 (Phases 137-150, 14 phases, 38 requirements)
-Phase: 139 (single-source-sweep-findings-confirm-or-withdraw) — EXECUTING
-Plan: 7 of 7
-Status: Phase complete — ready for verification
-Last activity: 2026-08-14 — Phase 139 execution started
+Phase: 140 — Blind-Matcher Remediation — Teardowns, Null-Matchers, Positive Controls
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-08-14 — Phase 139 complete, transitioned to Phase 140
 
 **Standing acceptance rule for every v2.15 phase:** prove the guard fails before claiming it guards —
 negative control run twice (once against the old assertion to demonstrate blindness, once against the

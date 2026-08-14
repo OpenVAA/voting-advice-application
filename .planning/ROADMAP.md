@@ -256,7 +256,7 @@ delivery-origin swap whose visual consequence is re-proven by the baselines them
 
 - [x] **Phase 137: E2E Preflight Integrity — Assert the Served Application** - Replace the defeatable listener-identity check with a response-content assertion, enforced by the harness (INTEG-04/05/06)
 - [x] **Phase 138: DEF-135-04 — `EPERM-07` Root Cause + Cardinal-Rule Waiver Discharge** - Name the root cause, prove the fix across ≥16 runs, discharge the waiver unrenewed (INTEG-01/02/03) (completed 2026-08-14)
-- [ ] **Phase 139: Single-Source Sweep Findings — Confirm or Withdraw** - Re-read F15/F16/F18/F19/F20 against live code; each independently confirmed or withdrawn before remediation is planned (ASSERT-01)
+- [x] **Phase 139: Single-Source Sweep Findings — Confirm or Withdraw** - Re-read F15/F16/F18/F19/F20 against live code; each independently confirmed or withdrawn before remediation is planned (ASSERT-01) (completed 2026-08-14)
 - [ ] **Phase 140: Blind-Matcher Remediation — Teardowns, Null-Matchers, Positive Controls** - F3's 27 unfailable row counts, F19's `toBeDefined()`-on-null sites, F9's missing positive control, F10's budget drift (ASSERT-02/03/05/06)
 - [ ] **Phase 141: Package Unit-Test Coverage + `test:unit` Invariant Guard** - Wire `matching` + `core`, decide the three Experimental packages, then guard the class so the hole cannot reopen (UNIT-01/02/03/04)
 - [ ] **Phase 142: Assertion Design — Wiring-Only Tests Assert Output** - Every finding surviving 139 asserts observable output or is withdrawn on the record (ASSERT-07)
@@ -348,7 +348,7 @@ Plans:
   3. For every confirmed finding, the realistic regression its current assertion cannot detect is named concretely — so Phase 142's negative control is pre-specified rather than invented at remediation time.
   4. Any withdrawn finding is struck from `.planning/audits/2026-08-11-fake-guard-sweep.md` with its reasoning, and ASSERT-07's scope in this ROADMAP and in `REQUIREMENTS.md` is edited down to match. The shrink is visible in the record, not silent.
 
-**Plans:** 7/7 plans executed
+**Plans:** 7/7 plans complete
 
 Plans:
 **Wave 1**
@@ -552,7 +552,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 137. E2E Preflight Integrity — Assert the Served Application | 0/TBD | Not started | - |
 | 138. DEF-135-04 — `EPERM-07` Root Cause + Waiver Discharge | 6/6 | Complete   | 2026-08-14 |
-| 139. Single-Source Sweep Findings — Confirm or Withdraw | 7/7 | In Progress|  |
+| 139. Single-Source Sweep Findings — Confirm or Withdraw | 7/7 | Complete    | 2026-08-14 |
 | 140. Blind-Matcher Remediation — Teardowns, Null-Matchers, Positive Controls | 0/TBD | Not started | - |
 | 141. Package Unit-Test Coverage + `test:unit` Invariant Guard | 0/TBD | Not started | - |
 | 142. Assertion Design — Wiring-Only Tests Assert Output | 0/TBD | Not started | - |
