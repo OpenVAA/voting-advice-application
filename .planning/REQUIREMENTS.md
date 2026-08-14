@@ -51,7 +51,7 @@ Corollary for the visual gate specifically: baselines are captured only in
 
 ### Assertion Quality
 
-- [ ] **ASSERT-01**: The single-source findings — F15, F16, F18, F19 and the F20 table — are re-read against the live code and each is independently **confirmed or withdrawn** before any remediation is planned around it.
+- [x] **ASSERT-01**: The single-source findings — F15, F16, F18, F19 and the F20 table — are re-read against the live code and each is independently **confirmed or withdrawn** before any remediation is planned around it. — Evidence: `139-VERDICTS.md` § 4 (15 confirmed, 0 withdrawn across the fifteen enumerated findings; each verdict backed by an executed injection run recorded in § 5), propagation to all three criterion-4 targets recorded in § 6.
 - [ ] **ASSERT-02**: **F3** — the 27 `*.teardown.ts` row-count assertions assert the expected count; a teardown that deletes nothing fails.
 - [ ] **ASSERT-03**: **F19** — the `toBeDefined()` sites on `URLSearchParams.get()` / `FormData.get()` (which return `string | null` and never `undefined`) assert an actual value; a missing parameter fails.
 - [ ] **ASSERT-04**: **F13** — `TemplateSchema` rejects unknown fields, so the six "accepts field X" tests fail when the schema stops declaring that field. Fallout from tightening is owned, not worked around.
@@ -140,7 +140,7 @@ Roadmap: `.planning/ROADMAP.md` (Phases 137-150). Future Requirements above are 
 | INTEG-04 | Phase 137 — E2E Preflight Integrity — Assert the Served Application | Satisfied |
 | INTEG-05 | Phase 137 — E2E Preflight Integrity — Assert the Served Application | Satisfied (CI-runner half deferred — see STATE deferred table, T-137-11) |
 | INTEG-06 | Phase 137 — E2E Preflight Integrity — Assert the Served Application | Satisfied |
-| ASSERT-01 | Phase 139 — Single-Source Sweep Findings — Confirm or Withdraw | Pending (15 of 15 findings verdicted — 139-01..139-05; plans 06-07 outstanding: § 6 withdrawals, § 7 scope limits, § 8 synthesis, phase-close gate) |
+| ASSERT-01 | Phase 139 — Single-Source Sweep Findings — Confirm or Withdraw | Complete |
 | ASSERT-02 | Phase 140 — Blind-Matcher Remediation | Pending |
 | ASSERT-03 | Phase 140 — Blind-Matcher Remediation | Pending |
 | ASSERT-04 | Phase 144 — Seed-Template Strict Typing + Unknown-Prop Guard | Pending |

@@ -4465,6 +4465,55 @@ not fixed here. It bears on Phase 142 rather than on ASSERT-07's scope: tighteni
 the endpoint is fixed, and an implementer who misreads that red as a bad remediation will back the
 correct change out again.
 
+### 6.5 Reconciliation — the closing evidence
+
+`139-VALIDATION.md` names this check **manual-only**: no automated gate can tell whether an enumeration
+in a prose sentence still matches a withdrawal set. So the check is recorded here as *output plus
+comparison*, legible to a human reviewer, rather than asserted as having passed.
+
+Every mention of ASSERT-07 across both record documents, verbatim:
+
+```
+$ grep -n 'ASSERT-07' .planning/REQUIREMENTS.md .planning/ROADMAP.md
+.planning/REQUIREMENTS.md:60:- [ ] **ASSERT-07**: **F15, F16, F17, F18, F20** — each finding that survives ASSERT-01 either asserts observable output rather than wiring, or is explicitly withdrawn with the reasoning recorded.
+.planning/REQUIREMENTS.md:149:| ASSERT-07 | Phase 142 — Assertion Design — Wiring-Only Tests Assert Output | Pending |
+.planning/REQUIREMENTS.md:171:| 142 — Assertion Design | ASSERT-07 | 1 |
+.planning/ROADMAP.md:262:- [ ] **Phase 142: Assertion Design — Wiring-Only Tests Assert Output** - Every finding surviving 139 asserts observable output or is withdrawn on the record (ASSERT-07)
+.planning/ROADMAP.md:349:  4. Any withdrawn finding is struck from `.planning/audits/2026-08-11-fake-guard-sweep.md` with its reasoning, and ASSERT-07's scope in this ROADMAP and in `REQUIREMENTS.md` is edited down to match. The shrink is visible in the record, not silent.
+.planning/ROADMAP.md:417:**Requirements**: ASSERT-07
+```
+
+Six hits. Compared against the withdrawn list (**empty**), hit by hit:
+
+| Hit | Carries a finding enumeration? | Compared against `withdrawn: none` | Action |
+|---|---|---|---|
+| `REQUIREMENTS.md:60` | **yes** — `**F15, F16, F17, F18, F20**` | all five ids survive; none removable | unchanged |
+| `REQUIREMENTS.md:149` | no — traceability row, status `Pending` (Phase 142 owns it) | n/a | unchanged |
+| `REQUIREMENTS.md:171` | no — phase rollup count (`142 … 1`) | count unaffected by a zero-withdrawal outcome | unchanged |
+| `ROADMAP.md:262` | no — the milestone-level phase list line | n/a | unchanged |
+| `ROADMAP.md:349` | no — this is Phase **139**'s criterion 4, the instruction being discharged, not a target | n/a | unchanged |
+| `ROADMAP.md:417` | no — Phase 142's `**Requirements**` line | n/a | unchanged |
+
+The grep is deliberately over-broad: `ASSERT-07` does not appear in Phase 142's criteria 2 and 3 at all
+(they name findings, not the requirement id), which is exactly why criterion 4's third target is easy to
+miss and why § 6.2 quotes those two criteria in full rather than relying on this grep to surface them.
+Their enumerations — F15 plus three sub-sites; F16, F17, F18 and "each of the six F20 sites" — were
+compared to the withdrawn set by hand in § 6.2 and are unchanged.
+
+**`git diff --stat -- .planning/ROADMAP.md` is empty**, and `grep -c '^### Phase '` returns **14** both
+before and after — the file was inspected and not written to. That empty diff is the propagation
+evidence for target 3, and it is meaningful only because § 6.2 records the inspection that produced it;
+on its own an empty diff is indistinguishable from a file nobody opened.
+
+Two record edits **were** made by this plan, and neither is a scope shrink:
+
+  - `.planning/REQUIREMENTS.md:54` — ASSERT-01's box ticked and its inline evidence clause added, in the
+    convention the INTEG-01..03 rows established (`- [x]` plus `— Evidence: <artifact> § <section>
+    (<specific observation>)`).
+  - `.planning/REQUIREMENTS.md:143` — ASSERT-01's traceability status advanced from the running
+    `Pending (15 of 15 findings verdicted …)` note to **`Complete`**, the value the file's other
+    finished rows use.
+
 ---
 
 ## 7. What this pass does and does not prove
