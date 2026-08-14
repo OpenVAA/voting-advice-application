@@ -26,8 +26,8 @@ services:
     branch: deploy-kisam-vaa-2026
     plan: standard # Check
     envVars:
-      - key: PUBLIC_CACHE_ENABLED # Check
-        value: 'false'
+      - key: PUBLIC_CACHE_ENABLED # Requires the disk defined below
+        value: 'true'
       - key: CACHE_TTL
         value: 86400000
       - key: CACHE_LRU_SIZE
@@ -64,7 +64,7 @@ services:
     # domains:
     #   - <INSTANCE_DOMAIN>
 
-    disk: # Check and comment out if not planning on using the cache
+    disk: # Required by PUBLIC_CACHE_ENABLED; mountPath must match CACHE_DIR above
       name: disk
       mountPath: /var/data/cache
       sizeGB: 1
