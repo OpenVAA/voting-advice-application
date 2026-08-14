@@ -524,7 +524,20 @@ while [ "$i" -le "$RUNS" ]; do
   if [ "$i" = "1" ]; then
     RUN1_KB="$(du -sk "$RUN_DIR" | awk '{print $1}')"
     PROJECTED_MB="$(( RUN1_KB * RUNS / 1024 ))"
-    AVAIL_KB="$(df -k "$REPO_ROOT" | awk 'NR==2 {print $4}')"
+    # `-P` (POSIX output) is not optional: without it GNU coreutils `df` wraps a long
+    # device name onto its own line, `NR==2` lands on the continuation row and `$4` is
+    # EMPTY. `AVAIL_KB=""` then makes `$(( AVAIL_KB / 4 ))` evaluate to 0, the guard
+    # below is unconditionally true, and an unattended batch aborts at run 01 reporting
+    # a disk failure ("... exceeds a quarter of free disk (0 MB)") that is really a
+    # parsing failure. `-P` guarantees one line per filesystem; `END` reads it whatever
+    # the header does.
+    AVAIL_KB="$(df -Pk "$REPO_ROOT" | awk 'END {print $4}')"
+    # An unreadable value is REFUSED, never treated as zero: "I could not measure the
+    # disk" and "the disk is full" must not produce the same abort reason.
+    if ! printf '%s' "$AVAIL_KB" | grep -qE '^[0-9]+$'; then
+      record_abort "$RUN_LABEL" "could not read free space for \`$REPO_ROOT\` -- \`df -Pk\` yielded '${AVAIL_KB:-<empty>}', which is not a number. Refusing to project artifact volume from an unparsable value (this is a MEASUREMENT failure, not a disk-space failure)."
+      exit 4
+    fi
     echo "determinism-batch.sh: run 01 directory ${RUN1_KB} KB; projected unpruned total for $RUNS runs ~${PROJECTED_MB} MB; $((AVAIL_KB / 1024)) MB free"
     # Peak usage with pruning is roughly one unpruned run plus N pruned ones. Refuse a
     # batch that cannot fit even the UNPRUNED projection in a quarter of free space --
