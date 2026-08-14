@@ -187,7 +187,9 @@ rewritten to match the observation.
 ## 4. Verdict summary
 
 Fifteen rows, created in full before the first injection ran, so a finding can be left visibly
-unfilled but never silently absent. `pending` marks a row this plan did not fill.
+unfilled but never silently absent. `pending` marked a row whose plan had not yet filled it. **No row
+is `pending`.** All fifteen were filled by plans 01-05 and audited row-by-row against §§ 5.1-5.15 by
+plan 06, below.
 
 | # | Finding | Site (current file:line) | Assertion outcome | File outcome | Verdict | Predicted | Matched? | Collateral |
 |---|---|---|---|---|---|---|---|---|
@@ -206,6 +208,89 @@ unfilled but never silently absent. `pending` marks a row this plan did not fill
 | 13 | F20-4 | `packages/dev-seed/tests/supabaseAdminClient.test.ts:151` | **PASS** (blind) | **PASS** (green) | **confirmed** | PASS | yes | none |
 | 14 | F20-5 | `packages/data/src/objects/nominations/variants/variants.test.ts:5-12` | **PASS** — inj. A (vacuous) · **PASS** (blind) — inj. B | **PASS** (green) — both | **confirmed** | PASS | yes, both | none |
 | 15 | F20-6 | `packages/argument-condensation/tests/unit/planValidation.test.ts:104` | **PASS** (blind) | **PASS** isolated · **FAIL** whole-file (collateral) | **confirmed** | PASS | yes | `:89-97` sibling matcher (§ 8) |
+
+**Ordering statement.** The row set was fixed when this table was created — before the first injection
+ran — so a finding in this corpus can be *visibly unfilled* but never *silently absent*, and the
+fifteen rows are the enumeration declared in § 3.4, in that order: F15-A, F15-B, F15-C, F16, F17, F18, F19a, F19b, F19c, F20-1, F20-2, F20-3, F20-4, F20-5, F20-6. Row N and `### 5.N` are the same finding
+by construction. A reader — Phase 142 above all — may therefore treat the *absence* of a finding from
+this table as impossible rather than as a withdrawal; a withdrawal appears in the **Verdict** column as
+the literal word `withdrawn` and nowhere else.
+
+### 4.1 Ordering audit — the check, not only its result
+
+Plan 06 walked the fifteen table rows and the fifteen `### 5.N` headings in parallel and ran three
+checks. The checks are recorded here rather than only their outcome, because "the order is correct" is
+a claim, and the reader is owed the procedure that produced it.
+
+| # | Check | Method | Result |
+|---|---|---|---|
+| 1 | The table has exactly fifteen data rows | `grep -cE '^\| +[0-9]{1,2} \| F' 139-VERDICTS.md` | **15** |
+| 2 | Row N's Finding cell names the same finding as `### 5.N`, for every N from 1 to 15 | the two lists extracted independently (`grep -E '^\| +[0-9]{1,2} \| F'` field 3; `grep -E '^### 5\.[0-9]+ '` field 2) and compared position by position | **15/15 match** — 1→F15-A, 2→F15-B, 3→F15-C, 4→F16, 5→F17, 6→F18, 7→F19a, 8→F19b, 9→F19c, 10→F20-1, 11→F20-2, 12→F20-3, 13→F20-4, 14→F20-5, 15→F20-6 |
+| 3 | The order matches § 3.4's enumeration sentence exactly | the § 3.4 sentence grepped verbatim and compared to the extracted row order | **identical** |
+
+**No record was mis-slotted, so no correction was required and none is recorded in § 8.5.** Had one
+failed, the fix would have been at the mis-slotted record — never a renumbering of the table, which
+would have made the mismatch disappear without making it right.
+
+**Two-column check (§ 3.2, TRAP-3, D-02).** Every row was checked for the two outcome columns as
+*separate* cells. All fifteen rows carry nine cells (`awk -F'|'` returns 11 fields on every row,
+header included); **no row anywhere in the table merges the assertion outcome and the file outcome into
+a single value.** The three rows where the two columns diverge are 7, 8 and 9 (F19a, F19b, F19c) — the
+vacuous-but-red class — and each names its failing line in the file-outcome cell: `:147`
+`requestParam!.split('.')`, `:151` `requestParam!.split('.')`, and `:170` `assertion.split('.')` (inj.
+B) / `:171` `toHaveLength(3)` (inj. A). Rows 12 and 15 diverge by *run* rather than by column — inj. A
+versus inj. B for F20-3, isolated versus whole-file for F20-6 — and both keep the two columns
+separate as well. This is the invariant that stops criterion 2's "reads blind but fails correctly →
+withdraw" from firing on a column that was never measuring the assertion.
+
+### 4.2 Roll-up
+
+Counts, sourced from the rows above rather than restated from memory.
+
+| Quantity | Value |
+|---|---|
+| Findings carrying a verdict | **15** |
+| `confirmed` | **15** |
+| `withdrawn` | **0** |
+| Withdrawn, by id | **withdrawn: none** |
+| Predictions that matched the observation | **15 of 15** at the verdict-bearing level — every verdict-bearing run observed **PASS** on the assertion column, as predicted |
+| Predictions the runs overturned | **2** — **F15-C** (the visualization-test sub-prediction, § 8.2 O-2) and **F16** (injection A, § 8.2 O-1) |
+| Predictions whose outcome held but whose stated premise was refuted | **1** — **F20-1** (§ 8.2 O-3) |
+| Findings that produced collateral | **5** — **F19a** (§ 8.1 C-2), **F19b** (C-3), **F19c** (C-4), **F20-3** (C-5, inj. A only), **F20-6** (C-1) |
+| Findings that produced no collateral | **10** — F15-A, F15-B, F15-C, F16, F17, F18, F20-1, F20-2, F20-4, F20-5 |
+
+**Withdrawn: none.** Stated explicitly rather than omitted, because an omitted line reads as an
+oversight and a `0` cell reads as a count nobody checked. § 6 propagates this: with an empty withdrawal
+set there is nothing for criterion 4 to strike from the audit and nothing to edit down in ASSERT-07's
+scope, and § 6 says so in place rather than being left blank.
+
+**Prediction calibration — why fifteen matched predictions is the expected result and not a
+self-congratulation.** Every correctly-designed injection in this corpus **predicts PASS** (§ 3.4),
+because the assertion under test is blind by hypothesis and therefore stays green under a break it
+cannot see. A matched prediction here is consequently the *unsurprising* observation; it is the
+overturned ones that carry information, which is why they are named individually above and written out
+in full in § 8.2. A predicted FAIL, conversely, would have been a sign that the injection was
+mis-designed — that it removed the *category* of behaviour rather than varying the *detail* the matcher
+cannot see — rather than a sign that the finding should be withdrawn. Two of the three divergences
+recorded in § 8.2 are exactly that (O-1's over-shot injection A, O-3's off-axis injection A), and
+neither changed a verdict.
+
+**What the counts do not say.** Fifteen confirmations are fifteen statements that an *assertion is
+blind*, not fifteen defects in the shipped application. § 7 limit 1 states that distinction in full, and
+§ 7 limits 2-4 name the two rows (F15-A, F17) whose evidence is weaker than the table's uniform
+`confirmed` column would suggest to a reader who never opened § 5.
+
+### 4.3 What Phase 142 consumes
+
+**The pair § 5.N.2 (the verbatim injected diff) and § 5.N.6 (the pre-specified regression) is Phase 142's
+input for finding N**, and the two are kept adjacent inside each record for that reason: Phase 142
+re-applies the recorded diff mechanically against the *strengthened* assertion and must observe a red,
+where this pass applied it against the *current* assertion and observed a green. Re-deriving either half
+at remediation time is the invention ROADMAP criterion 3 exists to prevent. Four records qualify their
+§ N.6 explicitly — F16 (do not use the audit's sentence; § 5.4.6), F15-A (the audit's regression is
+un-injectable; § 5.1.6), F19c (re-apply injection B, not A; § 5.9.6) and F20-1 (re-apply injection B,
+and expect a red on the un-injected tree until the status swallow is fixed; § 5.10.6) — and § 7 lifts
+those qualifications to pass level.
 
 Two rows carry a scope caveat that § 7 states in full: **F15-A**'s injection is a substitution (the
 regression the audit names does not exist in the package's `src/`, and that absence is itself stronger
