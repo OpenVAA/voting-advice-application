@@ -510,11 +510,21 @@ export default defineConfig({
     // datasets. The perm→journey direction (NOT base→perm) keeps opt-in
     // `--project` runs (visual/perf/a11y/bank-auth) pulling only `data-setup-base`
     // (+ auth-setup), never the perm family — base still seeds standalone.
+    //
+    // `eperm07-term-trigger` is in the anchor too (Phase 138 review WR-10). Several
+    // other base leaves sit OUTSIDE it and are fine there because they do not
+    // hard-assert settings-dependent UI; this one does, twice — the category-intro
+    // page it walks through exists only while `questions.categoryIntros.show` is
+    // true, and `voterQuestionsPage.clickStart()` only while `questionsIntro.show`
+    // is. A perm setup clobbering the `app_settings` singleton mid-walk would
+    // therefore surface inside the phase's designated permanent regression guard for
+    // the shared navigation settle, where it would read as a settle regression rather
+    // than as the contamination flake this suite has a recorded history of.
     {
       name: 'data-setup-perm-1e1cg1co',
       testMatch: /perm-1e1cg1co\.setup\.ts/,
       teardown: 'data-teardown-perm-1e1cg1co',
-      dependencies: ['voter-journey', 'candidate-journey']
+      dependencies: ['voter-journey', 'candidate-journey', 'eperm07-term-trigger']
     },
     {
       name: 'data-teardown-perm-1e1cg1co',
