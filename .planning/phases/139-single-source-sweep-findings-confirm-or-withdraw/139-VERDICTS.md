@@ -194,7 +194,7 @@ unfilled but never silently absent. `pending` marks a row this plan did not fill
 | 1 | F15-A | `packages/question-info/tests/questionTypes.test.ts:84,139,199,263,323,387,532,535-537` | pending | pending | pending | PASS | pending | pending |
 | 2 | F15-B | `packages/argument-condensation/tests/condensation/condenserStandalone.test.ts:131-142,184-185` | pending | pending | pending | PASS | pending | pending |
 | 3 | F15-C | `packages/argument-condensation/tests/condensation/condenseQuestions.test.ts:139-145,215-219,268-274` | pending | pending | pending | PASS | pending | pending |
-| 4 | F16 | `packages/argument-condensation/tests/unit/handleQuestion.test.ts:56-68` | pending | pending | pending | PASS | pending | pending |
+| 4 | F16 | `packages/argument-condensation/tests/unit/handleQuestion.test.ts:56-68` | **PASS** (blind) — inj. B · **FAIL** — inj. A | **PASS** (green) — inj. B · **FAIL** (red) — inj. A | **confirmed** | PASS | inj. B **yes** · inj. A **no — overturned** (§ 8) | none |
 | 5 | F17 | `apps/frontend/src/lib/dynamic-components/entityList/EntityListWithControls.test.ts:84-95` | pending | pending | pending | PASS | pending | pending |
 | 6 | F18 | `packages/dev-seed/tests/templates/default.test.ts:121-135` | **PASS** (blind) | **PASS** (green) | **confirmed** | PASS | yes | none |
 | 7 | F19a | `apps/frontend/src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts:144` | pending | pending | pending | PASS | pending | pending |
@@ -205,7 +205,7 @@ unfilled but never silently absent. `pending` marks a row this plan did not fill
 | 12 | F20-3 | `apps/frontend/src/lib/api/utils/auth/getIdTokenClaims.test.ts:236,259` | pending | pending | pending | PASS | pending | pending |
 | 13 | F20-4 | `packages/dev-seed/tests/supabaseAdminClient.test.ts:151` | **PASS** (blind) | **PASS** (green) | **confirmed** | PASS | yes | none |
 | 14 | F20-5 | `packages/data/src/objects/nominations/variants/variants.test.ts:5-12` | pending | pending | pending | PASS | pending | pending |
-| 15 | F20-6 | `packages/argument-condensation/tests/unit/planValidation.test.ts:104` | pending | pending | pending | PASS | pending | pending |
+| 15 | F20-6 | `packages/argument-condensation/tests/unit/planValidation.test.ts:104` | **PASS** (blind) | **PASS** isolated · **FAIL** whole-file (collateral) | **confirmed** | PASS | yes | `:89-97` sibling matcher (§ 8) |
 
 Two rows carry a scope caveat that § 7 states in full: **F15-A**'s injection is a substitution (the
 regression the audit names does not exist in the package's `src/`, and that absence is itself stronger
@@ -260,14 +260,321 @@ stated so Phase 142 re-applies it mechanically — ROADMAP criterion 3).
 
 ### 5.4 F16 — `handleQuestion.test.ts` (bare `rejects.toThrow()`, competing throw)
 
-**Status:** not yet run — filled by a later plan in this phase.
+> **This record carries two injections, and the audit's own one is the one that failed.** Injection A
+> is the regression the audit names verbatim; it **overturned** the prediction and reds the test.
+> Injection B is the § 3.4-mandated redesign that follows from that overturn; it passes blind and is
+> the verdict run. Both are recorded in full. § 5.4.5 states which claims of the audit survive and
+> which are refuted.
 
-- **5.4.1 Re-read evidence** — verbatim assertion text plus its current line, quoted from the live tree
-- **5.4.2 Injected diff** — the verbatim `-`/`+` lines (D-04)
-- **5.4.3 Invocation** — the verbatim command
-- **5.4.4 Observed** — assertion outcome, file outcome, failing line, verbatim runner output
-- **5.4.5 Verdict and reasoning** — ends in `confirmed` or `withdrawn`
-- **5.4.6 Pre-specified regression for Phase 142** — the concrete regression this assertion cannot detect
+**5.4.1 Re-read evidence**
+
+Quoted from the live tree at `12825b479`, not re-copied from the audit.
+`packages/argument-condensation/tests/unit/handleQuestion.test.ts`, verbatim at the current lines —
+the assertion opens at `:56` and closes at `:68`:
+
+```ts
+ 56    await expect(
+ 57      handleQuestion({
+ 58        question,
+ 59        entities,
+ 60        options: {
+ 61          language: unsupportedLanguage,
+ 62          llmProvider: mockLLMProvider,
+ 63          runId: 'test-run',
+ 64          maxCommentsPerGroup: 1000,
+ 65          controller: noOpController
+ 66        }
+ 67      })
+ 68    ).rejects.toThrow();
+```
+
+Its enclosing test title at `:31`:
+
+```ts
+ 31  test('It should throw an error for an unsupported language', async () => {
+```
+
+**The two supporting facts the audit rests on, re-read — and both audit cites drift.**
+
+The mock provider. The audit cites it as "lines 19-26"; it is actually **`:19-27`** (`streamText`
+closes at `:27`, and `:28` is the `as unknown as LLMProvider` cast). **Drift: +1 on the closing
+line — report this.** Verbatim:
+
+```ts
+ 19  generateObject: () => {
+ 20    throw new Error('Method not implemented.');
+ 21  },
+ 22  generateObjectParallel: () => {
+ 23    throw new Error('Method not implemented.');
+ 24  },
+ 25  streamText: () => {
+ 26    throw new Error('Method not implemented.');
+ 27  }
+```
+
+The empty entities array. The audit cites it as "line 53"; it is actually **`:54`**. **Drift: +1 —
+report this.** Verbatim:
+
+```ts
+ 54    const entities: Array<HasAnswers> = [];
+```
+
+**The competing-throw proof, quoted verbatim.**
+`packages/argument-condensation/tests/unit/defineCondensationPlan.test.ts:71`:
+
+```ts
+ 71    ).rejects.toThrow('There must be at least one comment to process.');
+```
+
+That throw is real and independently proven by its own passing test. The audit's inference from it —
+that `handleQuestion` with `entities: []` reaches it — is what injection A tested, and it is **false**.
+See § 5.4.4.
+
+**The reachability trace, run rather than assumed.** With `entities: []`:
+
+- `packages/argument-condensation/src/core/utils/condensation/getAndSliceComments.ts:52` iterates
+  `entities.entries()` — zero iterations — so `prosComments` and `consComments` stay empty, and the
+  group pushes at `:144` and `:147` are each guarded by `.length > 0`. It returns `[]` groups.
+- `packages/argument-condensation/src/question-handlers.ts:30` is
+  `for (const group of commentGroups) {` — zero iterations — so `runSingleCondensation` is never
+  called, `createCondensationSteps` is never reached, and **the mock provider's methods are never
+  invoked.** `handleBooleanQuestion` returns its empty `results` accumulator.
+
+So after the language check there are **zero** reachable throw paths for this test's inputs, not the
+"at least three" the audit asserts. The mock that throws from every method — the fact the finding is
+titled for — is unreachable dead weight on this path.
+
+**5.4.2 Injected diff**
+
+Two injections, run in this order, each a complete HYGIENE-LOOP iteration with the tree returned to
+HEAD in between. Injection A is the audit's own; injection B is the redesign § 3.4 mandates once A's
+predicted PASS is overturned.
+
+**Injection A — the audit's named regression, verbatim** (target
+`packages/argument-condensation/src/api.ts:118-122`):
+
+```diff
+  packages/argument-condensation/src/api.ts:118-122
+-  if (!supportedLanguages.includes(language)) {
+-    throw new Error(
+-      `Unsupported language: ${language}. Please use a supported language: ${supportedLanguages.join(', ')}`
+-    );
+-  }
++  // INJECTED (139): language validation removed
+```
+
+The `INJECTED (139)` marker **is** present here: the `+` line is a whole-line comment, so the marker
+is syntactically legal and carries no risk of distorting an injected value. This is the § 3.1 step-2
+convention applied rather than exempted — the contrast case to §§ 5.6.2 and 5.13.2, both of which
+record an exemption.
+
+Confirmation that injection A landed as recorded, from `git diff` taken while it was live:
+
+```
+@@ -115,11 +115,7 @@ export async function handleQuestion({
+ 
+   // Check that the language is in supportedLocales in staticSettings
+   const supportedLanguages = staticSettings.supportedLocales.map((locale) => locale.code);
+-  if (!supportedLanguages.includes(language)) {
+-    throw new Error(
+-      `Unsupported language: ${language}. Please use a supported language: ${supportedLanguages.join(', ')}`
+-    );
+-  }
++  // INJECTED (139): language validation removed
+ 
+   // Separate the comments into argumentation groups (e.g. for tax cuts vs. against tax cuts)
+   const commentGroups = getAndSliceComments({
+```
+
+**Injection B — category preserved, detail varied** (target
+`packages/argument-condensation/src/api.ts:119-121`):
+
+```diff
+  packages/argument-condensation/src/api.ts:119-121
+-    throw new Error(
+-      `Unsupported language: ${language}. Please use a supported language: ${supportedLanguages.join(', ')}`
+-    );
++    throw new Error('Cannot read properties of undefined (reading tpmLimit)'); // INJECTED (139): a DIFFERENT failure's message
+```
+
+**Why B is the § 3.4-correct design, and why it was written after A rather than instead of A.** § 3.4
+says a predicted-PASS injection that comes back FAIL "removed the *category* of the behaviour instead
+of varying the *detail* the matcher cannot see" — a design smell, not a withdrawal. Injection A
+removes the category: with the check gone, no rejection occurs at all, and `.rejects` is a perfectly
+adequate oracle for *that*. Injection B keeps the rejection and the condition that triggers it, and
+varies only the message — the detail a bare `.rejects.toThrow()` cannot see. Its message is modelled
+on a realistic degradation: a `TypeError`-shaped crash on the `tpmLimit` read two lines above at
+`:114`, i.e. the test's promise rejecting for a reason that has nothing to do with language.
+
+**B's predicted outcome was recorded as PASS before it ran**, per the § 3.4 calibration rule. This is
+the guard against the failure mode of retrying injections until one is green: A's overturn is recorded
+as an overturn (§ 8), not rewritten, and B's prediction was fixed in advance and matched.
+
+**5.4.3 Invocation**
+
+Verbatim, from inside the workspace (D-05 — `argument-condensation` exposes no `test:unit` script, so
+the run is ad hoc and in-package; no wiring was changed). The same command was used for A and for B:
+
+```bash
+cd "$(git rev-parse --show-toplevel)/packages/argument-condensation" && npx vitest run tests/unit/handleQuestion.test.ts
+```
+
+The file holds exactly one test, so the whole-file run *is* the isolated verdict run; § 3.3's
+isolation step is a no-op here and no separate `-t` invocation was needed.
+
+**5.4.4 Observed**
+
+Two outcomes per injection, recorded separately per the TWO-COLUMN RULE (§ 3.2).
+
+| Injection | Injected line | Assertion outcome | File outcome | Failing line | exit |
+|---|---|---|---|---|---|
+| **A** — check removed (audit's own) | `api.ts:118-122` | **FAIL** (caught) | **FAIL** (red) | `handleQuestion.test.ts:68` | 1 |
+| **B** — message swapped (verdict run) | `api.ts:119-121` | **PASS** (blind) | **PASS** (green) | none — the two columns agree | 0 |
+
+Verbatim runner output, **injection A**:
+
+```
+ RUN  v3.2.4 /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/packages/argument-condensation
+
+ ❯ tests/unit/handleQuestion.test.ts (1 test | 1 failed) 5ms
+   × handleQuestion > It should throw an error for an unsupported language 5ms
+     → promise resolved "[]" instead of rejecting
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/handleQuestion.test.ts > handleQuestion > It should throw an error for an unsupported language
+AssertionError: promise resolved "[]" instead of rejecting
+
+- Expected: 
+Error {
+  "message": "rejected promise",
+}
+
++ Received: 
+[]
+
+ ❯ tests/unit/handleQuestion.test.ts:68:5
+     66|         }
+     67|       })
+     68|     ).rejects.toThrow();
+       |     ^
+     69|   });
+     70| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  14:48:07
+   Duration  600ms (transform 160ms, setup 179ms, collect 119ms, tests 5ms, environment 0ms, prepare 104ms)
+```
+
+`promise resolved "[]" instead of rejecting` is the single most informative line in this record. It is
+the direct experimental refutation of the audit's mechanism: with the language check removed, the call
+does not merely throw something else — **it does not throw at all**, and returns the empty result
+accumulator traced in § 5.4.1.
+
+Prediction for A was PASS; observed FAIL; **overturned** — carried to § 8 unrewritten.
+
+Verbatim runner output, **injection B** (the verdict run):
+
+```
+ RUN  v3.2.4 /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/packages/argument-condensation
+
+ ✓ tests/unit/handleQuestion.test.ts (1 test) 2ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  14:50:06
+   Duration  532ms (transform 137ms, setup 170ms, collect 103ms, tests 2ms, environment 0ms, prepare 75ms)
+```
+
+Prediction for B was PASS; observed PASS; **matched**.
+
+**Positive control — not needed here, and why that is a stronger position, not a weaker one.** §§ 5.6
+and 5.13 each need a positive control because a green run alone cannot distinguish "the assertion is
+blind" from "the injection never took effect". This record does not: injection A's **red** is itself
+proof that edits to `api.ts:118-122` reach the module under test through the test's own import
+specifier, since the file went from green (baseline) to red (A) to green (B) to green (post-revert
+baseline) on nothing but that one file's contents. B's green is therefore a measured blindness, not an
+unexecuted no-op. **Collateral: none** — the file holds one test under both injections.
+
+**5.4.5 Verdict and reasoning**
+
+Two of the audit's three substantive claims about F16 are refuted by execution, and the third is
+confirmed. The verdict follows the third, and the record corrects the first two rather than inheriting
+them.
+
+**Refuted — the mechanism.** The audit writes: *"`entities` is `[]` (line 53) **and** the mock
+`LLMProvider` (lines 19-26) throws `'Method not implemented.'` from every method. There are at least
+three independent paths to a throw before language validation is reached."* There are **zero**. The
+trace in § 5.4.1 shows `getAndSliceComments` returning no groups for empty entities and
+`handleBooleanQuestion`'s loop never entering, so neither `createCondensationSteps` nor any mock
+method is reachable on this path. The mock throwing from every method — the fact the finding is
+*titled* for — is inert here.
+
+**Refuted — the named regression.** The audit writes: *"Delete the language check entirely and this
+test still passes."* It does not. Injection A is that deletion, applied verbatim, and the test went
+red at `handleQuestion.test.ts:68` with `promise resolved "[]" instead of rejecting`. The test's green
+does depend on the language check existing. This matters beyond bookkeeping: had Phase 142 taken the
+audit's sentence as its negative control, it would have written a control that reds *before* the fix
+and reds *after* it, and the remediation would have been unverifiable. § 5.4.6 replaces it.
+
+**Confirmed — the defect the title names.** The assertion is `.rejects.toThrow()` with no matcher,
+under a title that promises the rejection is *"for an unsupported language"*. Injection B keeps the
+rejection and its triggering condition and changes only the message, and the test stayed green: the
+assertion cannot distinguish its own invariant's rejection from a `TypeError`-shaped crash reading
+`tpmLimit`. It verifies *that* the promise rejected, never *why*. The audit's suggested fix
+(`.rejects.toThrow(/language/i)` plus a non-empty `entities` array) is exactly right and remains
+warranted.
+
+**Why this is not a withdrawal, stated explicitly because criterion 2 points the other way on a
+careless read.** ROADMAP criterion 2 withdraws "a finding that reads blind but fails correctly", and
+injection A is a case of failing correctly. But § 3.4 and RESEARCH Pitfall 2 both settle this in
+advance and in general: *"for every finding whose complaint is 'the matcher is weaker than the title',
+the injection must preserve the category of the failure and vary only the detail the matcher cannot
+see"*, and *"a predicted FAIL is a design smell, not a withdrawal."* F16's complaint is that a bare
+matcher sits under a title naming a specific cause; injection A removed the category (any rejection
+at all) rather than varying the detail (which rejection). Withdrawing on A would strike from the audit
+a weakness that injection B demonstrates by execution — a net loss of true information, and precisely
+the spurious withdrawal § 3.3 and Pitfall 2 exist to prevent. This is the same trap as F20-6 (§ 5.15),
+reached from the opposite direction: there the removal injection was foreseen and avoided, here it was
+prescribed, run, and had to be corrected after the fact.
+
+**Verdict:** confirmed
+
+**5.4.6 Pre-specified regression for Phase 142**
+
+**Do not use the audit's sentence as the negative control.** "Delete the language check entirely" reds
+the test today (§ 5.4.4, injection A) and would therefore red both before and after any fix, proving
+nothing. Phase 142 must use injection B.
+
+**The regression (re-apply this diff verbatim):** at
+`packages/argument-condensation/src/api.ts:119-121`, keep the `if (!supportedLanguages.includes(language))`
+guard and replace only its thrown message:
+
+```diff
+-    throw new Error(
+-      `Unsupported language: ${language}. Please use a supported language: ${supportedLanguages.join(', ')}`
+-    );
++    throw new Error('Cannot read properties of undefined (reading tpmLimit)');
+```
+
+In production this is the shape of a real degradation: `handleQuestion` rejects, but for a reason that
+has nothing to do with the caller's language argument — a crash on the `tpmLimit` read at `:114`, a
+provider-config failure, a refactor that reroutes the guard into a generic error. Every caller-facing
+diagnostic for "you passed an unsupported locale" is lost, and the one test whose title promises to
+guard that message stays green through it.
+
+**The target Phase 142 must reach:** the assertion must name the cause its title already promises.
+`.rejects.toThrow(/language/i)` — or, tighter, the exact prefix `'Unsupported language: lol'` — fails
+under the diff above where the bare matcher does not. Pair it with the audit's second half, a
+**non-empty `entities` array**, for an independent reason this record surfaces and the audit does not:
+with `entities: []` the call reaches no code past the language check at all, so the test currently
+exercises five lines of `handleQuestion` and nothing else. A non-empty `entities` array makes the
+language guard the *first* of several live paths rather than the only one, which is the condition
+under which a message matcher is actually load-bearing.
 
 ### 5.5 F17 — `EntityListWithControls.test.ts` (self-referential `10 === 10`)
 
@@ -698,14 +1005,244 @@ form fails under the diff above; `toContain('id')` does not.
 
 ### 5.15 F20-6 — `planValidation.test.ts:104` (bare `toThrow()` among seven message matchers)
 
-**Status:** not yet run — filled by a later plan in this phase.
+**5.15.1 Re-read evidence**
 
-- **5.15.1 Re-read evidence** — verbatim assertion text plus its current line, quoted from the live tree
-- **5.15.2 Injected diff** — the verbatim `-`/`+` lines (D-04)
-- **5.15.3 Invocation** — the verbatim command
-- **5.15.4 Observed** — assertion outcome, file outcome, failing line, verbatim runner output
-- **5.15.5 Verdict and reasoning** — ends in `confirmed` or `withdrawn`
-- **5.15.6 Pre-specified regression for Phase 142** — the concrete regression this assertion cannot detect
+Quoted from the live tree at `12825b479`, not re-copied from the audit.
+`packages/argument-condensation/tests/unit/planValidation.test.ts:99-105`, verbatim — the site is
+`:104` and its title is `:99`:
+
+```ts
+ 99  test('It should throw if a final map step would produce multiple batches', () => {
+100    const steps: Array<ProcessingStep> = [
+101      createStep(CondensationOperations.REDUCE, { denominator: 10 }),
+102      createStep(CondensationOperations.MAP, { batchSize: 1 }) // Invalid use of map
+103    ];
+104    expect(() => validatePlan({ steps, commentCount: 100 })).toThrow();
+105  });
+```
+
+The audit's cite (`:104`) is line-exact; no drift.
+
+**The contrast that *is* the finding**, quoted verbatim — the immediately preceding sibling at
+`:89-97`, which asserts the same call in the same file and *does* pin the message:
+
+```ts
+ 89  test('It should throw if the pipeline does not result in a single list', () => {
+ 90    const steps: Array<ProcessingStep> = [
+ 91      createStep(CondensationOperations.MAP, { batchSize: 10 }), // produces 10 lists for 100 comments
+ 92      createStep(CondensationOperations.REDUCE, { denominator: 5 }) // reduces 10 lists to 2 lists
+ 93    ];
+ 94    expect(() => validatePlan({ steps, commentCount: 100 })).toThrow(
+ 95      'Pipeline must end with a single list, but ends with listOfLists in 2 batch(es)'
+ 96    );
+ 97  });
+```
+
+**The audit's "other 7 tests all use message matchers" is exact, and was counted rather than
+trusted.** The file holds 10 tests. Enumerated by `grep -n 'toThrow' tests/unit/planValidation.test.ts`:
+two `.not.toThrow()` success paths (`:34`, `:42`); seven with message matchers (`:49`, `:55`, `:65`,
+`:72`, `:78`, `:86`, `:94`); and one bare — `:104`, the site. Seven against one, in a file whose own
+convention is unambiguous.
+
+**Which invariant `:104` actually trips, traced against the live source.** Steps are
+`[REDUCE(denominator: 10), MAP(batchSize: 1)]` at `commentCount: 100`. `createStep` injects every
+required prompt id, so per-step parameter validation passes. Then in `validatePipelineOutputs`:
+
+- `planValidation.ts:156-160` (REDUCE): `batchCount = Math.ceil(1 / 10) = 1`, `structure = 'list'`.
+- `planValidation.ts:146-150` (MAP): `batchCount = Math.ceil(100 / 1) = 100`, and since
+  `batchCount > 1`, `structure = 'listOfLists'`.
+- `planValidation.ts:168-169`: `structure !== 'list'`, so the final structure check throws.
+
+So `:104`'s green comes from the **pipeline-output-shape** invariant at `:169` — the *same* invariant
+the sibling at `:94-96` pins by message. Two tests, one invariant, one of them able to say so.
+
+**5.15.2 Injected diff**
+
+**REJECTED design, recorded rather than silently omitted — deleting the `:169` throw.** The obvious
+reading of "break the behaviour the test claims to assert" is "remove it": drop the `throw` at
+`planValidation.ts:169` and let `validatePipelineOutputs` return normally. The test then goes **RED**,
+and under a naive application of ROADMAP criterion 2 ("a finding that reads blind but fails correctly
+is withdrawn") that red would **withdraw a valid finding**. It is rejected because the red is produced
+by the wrong thing: the test fails only because *no* throw occurred at all, and "no throw at all" is
+not the regression F20-6 names. F20-6's complaint is **message discrimination** — that this site
+cannot tell its own invariant from the seven its siblings pin. A removal injection cannot measure
+discrimination, because it destroys the thing to be discriminated. This design was considered,
+written down, and not run.
+
+**ACCEPTED design — the throw is preserved and only its message changes** (target
+`packages/argument-condensation/src/core/utils/condensation/planValidation.ts:169`, verbatim — D-04):
+
+```diff
+  packages/argument-condensation/src/core/utils/condensation/planValidation.ts:169
+-    throw new Error(`Pipeline must end with a single list, but ends with ${structure} in ${batchCount} batch(es)`);
++    throw new Error('refine can only be followed by ground'); // INJECTED (139): a DIFFERENT invariant's message
+```
+
+The `INJECTED (139)` marker is present: the `+` line is a statement with room for a trailing comment
+that alters neither the thrown value nor the control flow, so § 3.1 step 2 applies rather than
+exempts.
+
+**The substituted message is not arbitrary.** `'refine can only be followed by ground'` is the live,
+verbatim message of a genuinely different invariant in the *same module* —
+`planValidation.ts:110`, inside `validateStepFlow` — and it is the message the sibling test at `:86`
+pins. The injection therefore simulates the precise confusion the finding predicts: one invariant's
+failure wearing another invariant's label, both of them real and both of them in this file's own test
+suite.
+
+This is the general rule for every finding whose complaint is "the matcher is weaker than its title":
+**preserve the category of the failure, vary only the invisible detail.** § 5.4 is this rule applied
+after the fact, when the audit's own prescribed injection turned out to remove the category instead.
+
+Confirmation that the injection landed as recorded, from `git diff` taken while it was live:
+
+```
+@@ -166,6 +166,6 @@ function validatePipelineOutputs(steps: Array<ProcessingStep>, commentCount: num
+   }
+ 
+   if (structure !== 'list') {
+-    throw new Error(`Pipeline must end with a single list, but ends with ${structure} in ${batchCount} batch(es)`);
++    throw new Error('refine can only be followed by ground'); // INJECTED (139): a DIFFERENT invariant's message
+   }
+ }
+```
+
+**5.15.3 Invocation**
+
+Two runs under the same live injection. Per the COLLATERAL RULE (§ 3.3) the isolated run is the
+**verdict run** and the whole-file run is the **collateral record**; only the first bears on the
+verdict.
+
+**The verdict run** — isolated to the site:
+
+```bash
+cd "$(git rev-parse --show-toplevel)/packages/argument-condensation" && npx vitest run tests/unit/planValidation.test.ts -t 'It should throw if a final map step would produce multiple batches'
+```
+
+**The collateral record** — whole-file, the invocation the plan names verbatim:
+
+```bash
+cd "$(git rev-parse --show-toplevel)/packages/argument-condensation" && npx vitest run tests/unit/planValidation.test.ts
+```
+
+**5.15.4 Observed**
+
+Two outcomes, recorded separately per the TWO-COLUMN RULE (§ 3.2). Here the columns **diverge across
+runs**, which is exactly the situation the rule exists for: the file exits red while the site's own
+assertion passes, and a single merged column would have reported this site as "caught".
+
+| Site | Injected line | Assertion outcome | File outcome | Failing line | exit |
+|---|---|---|---|---|---|
+| F20-6 `planValidation.test.ts:104` | `planValidation.ts:169` | **PASS** (blind) | **PASS** isolated · **FAIL** whole-file (collateral only) | none at `:104`; the whole-file red is at `:94` | 0 isolated · 1 whole-file |
+
+Verbatim runner output, **verdict run** (isolated):
+
+```
+ RUN  v3.2.4 /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/packages/argument-condensation
+
+ ✓ tests/unit/planValidation.test.ts (10 tests | 9 skipped) 2ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 9 skipped (10)
+   Start at  14:51:11
+   Duration  512ms (transform 95ms, setup 171ms, collect 21ms, tests 2ms, environment 0ms, prepare 94ms)
+```
+
+Verbatim runner output, **collateral record** (whole-file):
+
+```
+ RUN  v3.2.4 /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/packages/argument-condensation
+
+ ❯ tests/unit/planValidation.test.ts (10 tests | 1 failed) 7ms
+   ✓ validatePlan > It should not throw for a valid map -> reduce plan 1ms
+   ✓ validatePlan > It should not throw for a valid refine -> ground plan 0ms
+   ✓ validatePlan > It should throw if commentCount is zero 0ms
+   ✓ validatePlan > It should throw if the plan has no steps 0ms
+   ✓ validatePlan > It should throw if refine is not the first step 0ms
+   ✓ validatePlan > It should throw if a step has invalid parameters (e.g., batchSize <= 0) 0ms
+   ✓ validatePlan > It should throw if a step is missing required prompt parameters 0ms
+   ✓ validatePlan > It should throw for invalid step flow (refine followed by something other than ground) 0ms
+   × validatePlan > It should throw if the pipeline does not result in a single list 4ms
+     → expected [Function] to throw error including 'Pipeline must end with a single list,…' but got 'refine can only be followed by ground'
+   ✓ validatePlan > It should throw if a final map step would produce multiple batches 0ms
+```
+
+**Collateral: one test — `:89-97`, and it is excluded from this verdict.** The sibling
+*"It should throw if the pipeline does not result in a single list"* went red because its message
+matcher at `:94-96` saw the swapped string. It is not one of the fifteen enumerated sites, so under
+§ 3.3 it is **collateral and does not bear on this verdict**; its verbatim failure block is recorded
+in § 8.
+
+It is also, separately, the strongest corroboration in this record. The same injection, reaching the
+same `throw` at `planValidation.ts:169`, was **detected** by the sibling and **not detected** by the
+site — a within-file controlled comparison. Whatever else is true, the difference between red and
+green here is nothing but the presence of a message matcher.
+
+**Positive control — the injection was live, not a no-op.** The sibling's red *is* the positive
+control: `expected … 'Pipeline must end with a single list,…' but got 'refine can only be followed by
+ground'` is the runner printing the injected string back, proving the edited line executed inside the
+same process that reported `:104` green. No separate probe was needed.
+
+Prediction was PASS at the site with a collateral red at `:89-97`; observed exactly that;
+**matched**, in both halves.
+
+**5.15.5 Verdict and reasoning**
+
+An entirely different invariant's failure message was thrown from the pipeline-shape check, and the
+test whose title names the pipeline-shape condition did not notice. Under the injection, a plan that
+ends in 100 batches reported *"refine can only be followed by ground"* — a message about step
+ordering, describing a plan that contains no `refine` step at all — and
+`planValidation.test.ts:104` stayed green.
+
+The mechanism is the matcher, and the file proves it against itself. `.toThrow()` with no argument
+is satisfied by any thrown value, so the assertion at `:104` tests only that `validatePlan` rejected
+the plan, never that it rejected it *for the reason the title states*. Seven of the ten tests in the
+same file pin their message; the sibling at `:94-96`, asserting the same `validatePlan` call through
+the same code path to the same `throw` statement, caught the swap on the first run. The audit's
+characterisation — *"the other 7 tests in this file all use message matchers; this one cannot
+distinguish its invariant from theirs"* — is accurate to the line, accurate to the count, and now
+accurate by measurement.
+
+The whole-file run exited red, and that red is **not** the assertion catching the regression: it came
+from `:94`, a different test that is not among the fifteen sites. Reading it as a catch is the exact
+misreading § 3.3 was written to prevent, and would have withdrawn a finding that the isolated verdict
+run shows to be blind. The removal injection rejected in § 5.15.2 would have produced the same
+spurious withdrawal by a different route. Nothing in either run overturned a prediction.
+
+**Verdict:** confirmed
+
+**5.15.6 Pre-specified regression for Phase 142**
+
+**The regression (re-apply this diff verbatim):** at
+`packages/argument-condensation/src/core/utils/condensation/planValidation.ts:169`, keep the
+`if (structure !== 'list')` guard and its `throw`, and replace only the message —
+`` throw new Error(`Pipeline must end with a single list, but ends with ${structure} in ${batchCount} batch(es)`); ``
+becomes `throw new Error('refine can only be followed by ground');`. In production this is what a
+mis-merge or a copy-paste refactor inside `planValidation.ts` looks like: the plan is still correctly
+rejected, but the operator debugging a broken condensation pipeline is told to check a `refine`
+step that does not exist, and the two computed values that actually localise the fault —
+`structure` and `batchCount` — are gone from the diagnostic. Today `:104` stays green through it while
+`:94` reds, so the suite's only signal points at the wrong test.
+
+**The target Phase 142 must reach:** `:104` must pin the message its own invariant produces, the way
+its seven siblings already do. Concretely, replace the bare matcher with the exact string that trace
+in § 5.15.1 shows this input generates —
+
+```ts
+expect(() => validatePlan({ steps, commentCount: 100 })).toThrow(
+  'Pipeline must end with a single list, but ends with listOfLists in 100 batch(es)'
+);
+```
+
+— which fails under the diff above where `.toThrow()` does not, and additionally pins the `100` that
+makes this test's `MAP(batchSize: 1)` scenario distinguishable from the sibling's `2`. A looser
+`/must end with a single list/` also fails under the diff and is acceptable if the batch arithmetic is
+judged too brittle to assert; the bare matcher is not.
+
+**One caveat Phase 142 should carry into the fix.** After this change, `:94-96` and `:104` would pin
+messages from the *same* `throw` statement, differing only in the interpolated `batchCount`. That is
+correct and intended — they exercise different arithmetic paths to it — but it means a future edit to
+that one message reds two tests. That is a feature of pinning, not a reason to leave one of them
+bare.
 
 ---
 
@@ -723,4 +1260,84 @@ not yet written — filled by plan 06.
 
 ## 8. Discarded and collateral — recorded rather than hidden
 
-not yet written — filled by plan 06.
+Plan 06 writes this section's synthesis. Until then, plans that produce collateral reds, overturned
+predictions or rejected injection designs **append their entries here as they happen**, so nothing
+waits on a later plan to be recorded. Entries below are in the order they were observed.
+
+### 8.1 Collateral reds
+
+Tests outside the fifteen enumerated sites that went red under an injection. Per § 3.3 **none of these
+bears on any verdict.**
+
+**C-1 — `planValidation.test.ts:89-97`, red under the F20-6 injection (§ 5.15).**
+Recorded by plan 02. **Does not bear on the F20-6 verdict**, nor on any other verdict in this
+document: it is not one of the fifteen sites. Verbatim:
+
+```
+   × validatePlan > It should throw if the pipeline does not result in a single list 4ms
+     → expected [Function] to throw error including 'Pipeline must end with a single list,…' but got 'refine can only be followed by ground'
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/planValidation.test.ts > validatePlan > It should throw if the pipeline does not result in a single list
+AssertionError: expected [Function] to throw error including 'Pipeline must end with a single list,…' but got 'refine can only be followed by ground'
+
+Expected: "Pipeline must end with a single list, but ends with listOfLists in 2 batch(es)"
+Received: "refine can only be followed by ground"
+
+ ❯ tests/unit/planValidation.test.ts:94:62
+     92|       createStep(CondensationOperations.REDUCE, { denominator: 5 }) //…
+     93|     ];
+     94|     expect(() => validatePlan({ steps, commentCount: 100 })).toThrow(
+       |                                                              ^
+     95|       'Pipeline must end with a single list, but ends with listOfLists…
+     96|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 9 passed (10)
+   Start at  14:51:19
+   Duration  498ms (transform 90ms, setup 209ms, collect 20ms, tests 7ms, environment 0ms, prepare 80ms)
+```
+
+Excluded from the verdict, and separately **corroborating**: the same injection reaching the same
+`throw` was caught here and missed at `:104`, with the presence of a message matcher as the only
+difference between the two. It is also this site's positive control — the runner prints the injected
+string back, proving the edit executed in the process that reported `:104` green.
+
+### 8.2 Overturned predictions
+
+§ 3.4 requires a prediction the run contradicts to be recorded as overturned, never rewritten to match
+the observation.
+
+**O-1 — F16 injection A predicted PASS, observed FAIL.** Recorded by plan 02.
+`139-RESEARCH.md:534-541` and `139-02-PLAN.md` both predicted the audit's named regression — deleting
+the language allow-list check at `api.ts:118-122` — would leave `handleQuestion.test.ts:56-68` green,
+on the stated ground that "control falls through to `getAndSliceComments` / `createCondensationSteps`
+with `entities: []`, whose throw is independently proven at `defineCondensationPlan.test.ts:71`". The
+run contradicted it: the promise **resolved with `[]`** and the test went red.
+
+The prediction's premise was wrong, not its logic. With `entities: []`, `getAndSliceComments`
+(`getAndSliceComments.ts:143-149`) returns **zero** comment groups because each group push is guarded
+by `.length > 0`, so `handleBooleanQuestion`'s `for (const group of commentGroups)` loop
+(`question-handlers.ts:30`) never executes, `runSingleCondensation` is never called and
+`createCondensationSteps` is never reached. The proven throw at `defineCondensationPlan.test.ts:71` is
+real but unreachable from this test's inputs — as is the mock provider that F16 is titled for.
+
+Consequence, carried into § 5.4.5 and § 5.4.6: the audit's mechanism claim ("at least three
+independent paths to a throw") and its named regression ("delete the language check entirely and this
+test still passes") are both **refuted by execution**, while the defect its title names — a bare
+matcher under a title promising a specific cause — is **confirmed** by the redesigned injection B.
+Phase 142 must take its negative control from § 5.4.6, not from the audit's sentence.
+
+### 8.3 Rejected injection designs
+
+Designs considered and deliberately not run, recorded so the reasoning is auditable rather than
+invisible.
+
+**R-1 — F20-6: deleting the `planValidation.ts:169` throw.** Recorded by plan 02; stated in full in
+§ 5.15.2. Rejected because the resulting red is produced by the absence of *any* throw rather than by
+the message confusion the finding names, and would have withdrawn a valid finding under a naive
+reading of ROADMAP criterion 2. The accepted design preserves the throw and varies only the message.
