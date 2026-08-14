@@ -30,8 +30,10 @@
 #   3. Runs `yarn db:reset` (which starts Supabase first)
 #   4. POLLS REST + Storage for readiness and asserts the `public-assets` bucket is
 #      listed -- `db:status` passing is NOT readiness
-#   5. Spawns the frontend dev server with its stdout+stderr redirected into the run
-#      directory as devserver.log (D-10), and waits for the port to accept connections
+#   5. ASSERTS $FRONTEND_PORT has no listener, then spawns the frontend dev server with
+#      its stdout+stderr redirected into the run directory as devserver.log (D-10), and
+#      waits for the port to accept connections. It refuses to adopt a foreign listener,
+#      and at teardown it kills only processes in its own spawned process group
 #   6. Runs Playwright with per-run JSON and HTML reporter output
 #   7. Captures the Phase-137 preflight verdict by counting its fixed failure headline
 #      in the captured stdout
@@ -52,7 +54,9 @@
 #   2  usage error
 #   3  `yarn db:reset` failed
 #   4  the readiness poll timed out (or the service-role key it needs is unavailable)
-#   5  the dev server never started listening
+#   5  the dev server never started listening, or the port was already occupied
+#      before the spawn (this wrapper SPAWNS AND OWNS its server; adopting a foreign
+#      one is not evidence)
 #   6  the run produced one or more preflight failures
 # 130  the run was INTERRUPTED (SIGINT/SIGTERM). Never 0: criterion 3 counts 16
 #      CONSECUTIVE runs, so an abort must be recorded as an abort by the caller, not
@@ -146,13 +150,30 @@ cleanup() {
     kill -TERM -"$DEV_PID" 2>/dev/null || kill -TERM "$DEV_PID" 2>/dev/null
     wait "$DEV_PID" 2>/dev/null
   fi
-  # Belt and braces: whatever still holds the port goes, then assert it is free.
-  local holders
+  # Belt and braces: kill whatever still holds the port -- but ONLY processes in OUR
+  # OWN process group. The unscoped form `kill -9 $holders` would SIGKILL an operator's
+  # own `yarn dev`, or any unrelated process that happens to hold this port, on a run
+  # this wrapper did not start it for. `set -m` above puts the spawned job in its own
+  # group whose pgid equals $DEV_PID, so pgid membership is exactly "we spawned it".
+  local holders pid pgid foreign
   holders="$(lsof -nP -tiTCP:"$FRONTEND_PORT" -sTCP:LISTEN 2>/dev/null || true)"
-  if [ -n "$holders" ]; then
-    # shellcheck disable=SC2086
-    kill -9 $holders 2>/dev/null
+  foreign=""
+  if [ -n "$holders" ] && [ -n "$DEV_PID" ]; then
+    for pid in $holders; do
+      pgid="$(ps -o pgid= -p "$pid" 2>/dev/null | tr -d ' ')"
+      if [ "$pgid" = "$DEV_PID" ]; then
+        kill -9 "$pid" 2>/dev/null
+      else
+        foreign="$foreign $pid"
+      fi
+    done
     sleep 1
+  elif [ -n "$holders" ]; then
+    foreign="$holders"
+  fi
+  if [ -n "$foreign" ]; then
+    echo "e2e-run.sh: WARNING -- port $FRONTEND_PORT is held by process(es) this wrapper did" >&2
+    echo "            not spawn; leaving them alone:$foreign" >&2
   fi
   holders="$(lsof -nP -tiTCP:"$FRONTEND_PORT" -sTCP:LISTEN 2>/dev/null || true)"
   if [ -n "$holders" ]; then
@@ -265,6 +286,21 @@ echo "e2e-run.sh: Supabase ready (REST $rest_code, public-assets bucket present)
 # with one that trusts a Playwright-started one, and reusing an already-running server
 # would reintroduce exactly the "something answered on the port" ambiguity Phase 137
 # eliminated. The wrapper owns the server; the harness is not made to.
+# The header lists "NOTHING is already listening on $FRONTEND_PORT" as a prerequisite;
+# ASSERT it rather than assume it. Without this check the wait loop below tests the port
+# FIRST and so breaks on its very first poll against a PRE-EXISTING listener -- the
+# `kill -0 "$DEV_PID"` liveness probe never runs, our own `yarn dev` can already have died
+# on Vite's `strictPort`, and the wrapper reports "dev server listening" for a server it
+# does not own. That is the "something answered on the port" ambiguity this design exists
+# to eliminate; the Phase-137 preflight catches wrong-checkout, not right-checkout-wrong-owner.
+pre_holders="$(lsof -nP -tiTCP:"$FRONTEND_PORT" -sTCP:LISTEN 2>/dev/null || true)"
+if [ -n "$pre_holders" ]; then
+  echo "e2e-run.sh: FATAL -- port $FRONTEND_PORT already has a listener (pids: $pre_holders)." >&2
+  echo "            This wrapper SPAWNS AND OWNS its dev server; adopting a foreign one is" >&2
+  echo "            not evidence. Stop it, or re-run with FRONTEND_PORT=<a free port>." >&2
+  exit 5
+fi
+
 echo "e2e-run.sh: starting dev server on port $FRONTEND_PORT -> $RUN_DIR/devserver.log"
 set -m # job control: the background job gets its own process group, so the trap can kill the tree
 (cd "$REPO_ROOT" && FRONTEND_PORT="$FRONTEND_PORT" yarn dev) > "$RUN_DIR/devserver.log" 2>&1 &
@@ -274,13 +310,16 @@ set +m
 devserver_deadline=$(( $(date +%s) + DEVSERVER_TIMEOUT_S ))
 listening=false
 while [ "$(date +%s)" -lt "$devserver_deadline" ]; do
-  if lsof -nP -iTCP:"$FRONTEND_PORT" -sTCP:LISTEN > /dev/null 2>&1; then
-    listening=true
-    break
-  fi
+  # Liveness FIRST: with the port asserted free above, any listener that appears is ours,
+  # but a dev server that died before binding must still be reported as a dead dev server
+  # rather than as a timeout.
   if ! kill -0 "$DEV_PID" 2>/dev/null; then
     echo "e2e-run.sh: FATAL -- dev server exited before listening; see $RUN_DIR/devserver.log" >&2
     exit 5
+  fi
+  if lsof -nP -iTCP:"$FRONTEND_PORT" -sTCP:LISTEN > /dev/null 2>&1; then
+    listening=true
+    break
   fi
   sleep 2
 done
