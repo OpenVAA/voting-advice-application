@@ -41,6 +41,12 @@
  *                            needs no app change, so it cannot itself be the
  *                            cause of a flip (default: unset = transitions on)
  *
+ * The two numeric knobs are parsed STRICTLY (see `forcedNumber`): unset or blank
+ * means the production default, and a malformed or out-of-range value throws at
+ * collection time. Neither may ever degrade to the most permissive setting — this
+ * spec ships as a permanent regression guard, and a silently disarmed guard is
+ * worse than a noisy one.
+ *
  * Seed: `data-setup-base` (`e2e/base`). Voter routes are public (no auth); this
  * spec is READ-ONLY and has no teardown of its own.
  *
@@ -72,19 +78,60 @@ import { testIds } from '../../utils/testIds';
 import type { CDPSession, Page } from '@playwright/test';
 import type { CaptureNavigationBaseline } from '../../helpers';
 
+/**
+ * Read a numeric forcing knob, or fall back to the PRODUCTION default. Never to
+ * anything more permissive than production, and never silently.
+ *
+ * reason: (Phase 138 review WR-03) the file's neutrality contract above says
+ * neutrality is structural rather than remembered, and `Number(process.env.X ??
+ * default)` did not deliver that for anything except a strictly-unset variable.
+ * `??` catches only `undefined`, so an EXPORTED-BUT-EMPTY variable — the ordinary
+ * result of `env: X: ${{ inputs.budget }}` with no input, or of `X= yarn test:e2e`
+ * — yielded `Number('') === 0`. For the budget knob Playwright reads `timeout: 0`
+ * as NO TIMEOUT, silently converting this permanent regression guard's only
+ * assertion into one that cannot fail on latency; for the CPU knob `0 <= 1` meant
+ * the throttle was silently not applied, so an operator hunting "at rate 40" would
+ * read a no-reproduction result off a run that had no throttle. A non-numeric
+ * value was worse still: `Number('2s')` is `NaN`, whose Playwright timeout
+ * semantics are undefined and which CDP serialises to `null`, killing the test
+ * with a protocol error instead of a usage error.
+ *
+ * A blank value therefore means "unset" (production default), and a malformed one
+ * FAILS LOUDLY at collection time, which is where a usage error belongs.
+ *
+ * @param name - environment variable name.
+ * @param fallback - the production value used when the knob is unset or blank.
+ * @param min - smallest accepted value; below it the knob would be inert or
+ *   more permissive than production, which must never happen quietly.
+ */
+function forcedNumber(name: string, fallback: number, min: number): number {
+  const raw = process.env[name];
+  if (raw === undefined || raw.trim() === '') return fallback;
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || parsed < min) {
+    throw new Error(`${name} must be a finite number >= ${min} (got '${raw}')`);
+  }
+  return parsed;
+}
+
 // FORCING BUDGET — file-local, env-defaulted to the shared production budget.
 // reason: D-01's negative-control knob. It is scoped to THIS file by
 // construction, so no other spec's budget can be perturbed by this phase; the
 // shared TIMEOUTS.element default is NEVER edited (its own docblock,
 // timeouts.ts:16-21, forbids moving it, and it is shared with the Playwright
 // config and 88 suite files). With the variable unset this resolves to the
-// production 2000 ms, so the COMMITTED file is neutral.
-const FORCED_ELEMENT_BUDGET = Number(process.env.EPERM07_FORCE_BUDGET_MS ?? TIMEOUTS.element);
+// production 2000 ms, so the COMMITTED file is neutral. `min: 1` because a
+// budget of 0 is Playwright's "no timeout" — the one value that disarms the
+// instrument outright.
+const FORCED_ELEMENT_BUDGET = forcedNumber('EPERM07_FORCE_BUDGET_MS', TIMEOUTS.element, 1);
 
 // CDP slowdown multiplier for the hop under test (1 = no throttle).
 // reason: D-01's amplifier. Same file-local, env-defaulted construction —
-// unset means rate 1, which is the browser's normal scheduling.
-const FORCED_CPU_RATE = Number(process.env.EPERM07_FORCE_CPU_RATE ?? 1);
+// unset means rate 1, which is the browser's normal scheduling. `min: 1` because
+// `Emulation.setCPUThrottlingRate` accepts no slowdown below 1, and a sub-1 value
+// would be dropped by `applyCpuThrottleKnob` — an unapplied throttle the operator
+// would never be told about.
+const FORCED_CPU_RATE = forcedNumber('EPERM07_FORCE_CPU_RATE', 1, 1);
 
 // Discriminator A: emulate prefers-reduced-motion so the app's own
 // `shouldAnimate` gate (viewTransition.ts:28) short-circuits and no View
