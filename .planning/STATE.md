@@ -5,15 +5,15 @@ milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 139
 current_phase_name: single-source-sweep-findings-confirm-or-withdraw
 status: executing
-stopped_at: Completed 139-05-PLAN.md — all fifteen verdicts filled
-last_updated: "2026-08-14T13:05:59.845Z"
+stopped_at: Completed 139-06-PLAN.md
+last_updated: "2026-08-14T13:16:18.024Z"
 last_activity: 2026-08-14
 last_activity_desc: Phase 138 marked complete
 progress:
   total_phases: 14
   completed_phases: 2
   total_plans: 18
-  completed_plans: 16
+  completed_plans: 17
   percent: 14
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 
 Milestone: v2.15 (Phases 137-150, 14 phases, 38 requirements)
 Phase: 139 (single-source-sweep-findings-confirm-or-withdraw) — EXECUTING
-Plan: 6 of 7
+Plan: 7 of 7
 Status: Ready to execute
 Last activity: 2026-08-14 — Phase 139 execution started
 
@@ -48,8 +48,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-14T13:05:59.823Z
-Stopped at: Completed 139-05-PLAN.md — all fifteen verdicts filled
+Last session: 2026-08-14T13:16:18.006Z
+Stopped at: Completed 139-06-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -141,6 +141,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 139 P03 | ~20 minutes | 2 tasks | 2 files |
 | Phase 139 P04 | 25m | 2 tasks | 1 files |
 | Phase 139 P05 | 32 min | 3 tasks | 1 files |
+| Phase 139 P06 | 18min | 2 tasks | 1 files |
 
 ## Deferred Items
 
@@ -615,6 +616,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Phase 139 plan 04: F19c needed a second injection — 'undefined as unknown as string' serialises to the string "undefined" via URLSearchParams, modelling malformation not absence; deleting the entry produces the null the finding names (§ 8.3 R-6)
 - [Phase ?]: 139-05: F20-1's plan-specified injection was zero-delta on the finding's axis (error() throws, so the handler catches its own 400); verdict rested on a second correctly-scoped injection — § 8.3 R-7
 - [Phase ?]: 139-05: four positive controls added where the plan specified none — every site predicted PASS, so a green run alone could not rule out a null experiment
+- [Phase ?]: Phase 139 plan 06: § 4 ordering audit passed 15/15 — no record mis-slotted; roll-up records 15 confirmed, withdrawn: none, 2 overturned predictions (F15-C, F16) and 1 refuted premise (F20-1)
+- [Phase ?]: Phase 139 plan 06: § 7 records the incidental live OIDC defect — SvelteKit 2 error() throws, so authorize's return error(400) is swallowed by its own catch and returned as 500; Phase 142 tightening that matcher to {status:400} will red on the clean tree until the endpoint is fixed
 
 ### Quick Tasks Completed
 
