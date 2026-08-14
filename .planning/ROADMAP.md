@@ -348,7 +348,7 @@ Plans:
   3. For every confirmed finding, the realistic regression its current assertion cannot detect is named concretely — so Phase 142's negative control is pre-specified rather than invented at remediation time.
   4. Any withdrawn finding is struck from `.planning/audits/2026-08-11-fake-guard-sweep.md` with its reasoning, and ASSERT-07's scope in this ROADMAP and in `REQUIREMENTS.md` is edited down to match. The shrink is visible in the record, not silent.
 
-**Plans:** 4/7 plans executed
+**Plans:** 5/7 plans executed
 
 Plans:
 **Wave 1**
@@ -369,7 +369,7 @@ Plans:
 
 **Wave 5** *(blocked on Wave 4 completion)*
 
-- [ ] 139-05-PLAN.md — F20-1, F20-2, F20-3 (two injections) and F17 (import-graph fact first, run as corroboration, D-06); completes all fifteen records (wave 5)
+- [x] 139-05-PLAN.md — F20-1, F20-2, F20-3 (two injections) and F17 (import-graph fact first, run as corroboration, D-06); completes all fifteen records (wave 5)
 
 **Wave 6** *(blocked on Wave 5 completion)*
 
@@ -552,7 +552,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 137. E2E Preflight Integrity — Assert the Served Application | 0/TBD | Not started | - |
 | 138. DEF-135-04 — `EPERM-07` Root Cause + Waiver Discharge | 6/6 | Complete   | 2026-08-14 |
-| 139. Single-Source Sweep Findings — Confirm or Withdraw | 4/7 | In Progress|  |
+| 139. Single-Source Sweep Findings — Confirm or Withdraw | 5/7 | In Progress|  |
 | 140. Blind-Matcher Remediation — Teardowns, Null-Matchers, Positive Controls | 0/TBD | Not started | - |
 | 141. Package Unit-Test Coverage + `test:unit` Invariant Guard | 0/TBD | Not started | - |
 | 142. Assertion Design — Wiring-Only Tests Assert Output | 0/TBD | Not started | - |
