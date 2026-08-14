@@ -197,8 +197,8 @@ unfilled but never silently absent. `pending` marks a row this plan did not fill
 | 4 | F16 | `packages/argument-condensation/tests/unit/handleQuestion.test.ts:56-68` | **PASS** (blind) — inj. B · **FAIL** — inj. A | **PASS** (green) — inj. B · **FAIL** (red) — inj. A | **confirmed** | PASS | inj. B **yes** · inj. A **no — overturned** (§ 8) | none |
 | 5 | F17 | `apps/frontend/src/lib/dynamic-components/entityList/EntityListWithControls.test.ts:84-95` | pending | pending | pending | PASS | pending | pending |
 | 6 | F18 | `packages/dev-seed/tests/templates/default.test.ts:121-135` | **PASS** (blind) | **PASS** (green) | **confirmed** | PASS | yes | none |
-| 7 | F19a | `apps/frontend/src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts:144` | pending | pending | pending | PASS | pending | pending |
-| 8 | F19b | `apps/frontend/src/lib/api/utils/auth/providers/idura.test.ts:148` | pending | pending | pending | PASS | pending | pending |
+| 7 | F19a | `apps/frontend/src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts:144` | **PASS** (blind) | **FAIL** (red) at `:147` `requestParam!.split('.')` | **confirmed** | PASS (assertion) / FAIL (file) | yes | `:159`, `:171`, `:192` (§ 8.1 C-2) |
+| 8 | F19b | `apps/frontend/src/lib/api/utils/auth/providers/idura.test.ts:148` | **PASS** (blind) | **FAIL** (red) at `:151` `requestParam!.split('.')` | **confirmed** | PASS (assertion) / FAIL (file) | yes | `:184` (§ 8.1 C-3) |
 | 9 | F19c | `apps/frontend/src/lib/api/utils/auth/__tests__/token-endpoint.test.ts:167` | pending | pending | pending | PASS | pending | pending |
 | 10 | F20-1 | `apps/frontend/src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts:233` | pending | pending | pending | PASS | pending | pending |
 | 11 | F20-2 | `apps/frontend/src/lib/i18n/tests/overrides.test.ts:32-36` | pending | pending | pending | PASS | pending | pending |
@@ -1542,25 +1542,505 @@ pack, e.g. via the Finnish/Swedish `ä`/`ö`/`å` character classes the `fi`/`sv
 
 ### 5.7 F19a — `authorize-endpoint.test.ts:144` (`expect(requestParam).toBeDefined()`)
 
-**Status:** not yet run — filled by a later plan in this phase.
+> **Shared injection.** One edit to the `authorizeUrl` construction at
+> `apps/frontend/src/lib/api/utils/auth/providers/idura.ts:74` is the regression for both F19a and
+> **F19b (§ 5.8)**, because both exercise that construction — F19a through the route handler, F19b
+> through the provider directly. The diff is recorded identically in § 5.7.2 and § 5.8.2; each record
+> carries its **own** invocation and its **own** observed outcome. Both runs were taken before the
+> single revert.
+>
+> **This is the record the TWO-COLUMN RULE (§ 3.2) exists for.** The assertion outcome and the file
+> outcome **diverge** here, and the verdict cites the assertion column. Read § 3.2 before reading the
+> verdict.
 
-- **5.7.1 Re-read evidence** — verbatim assertion text plus its current line, quoted from the live tree
-- **5.7.2 Injected diff** — the verbatim `-`/`+` lines (D-04)
-- **5.7.3 Invocation** — the verbatim command
-- **5.7.4 Observed** — assertion outcome, file outcome, failing line, verbatim runner output
-- **5.7.5 Verdict and reasoning** — ends in `confirmed` or `withdrawn`
-- **5.7.6 Pre-specified regression for Phase 142** — the concrete regression this assertion cannot detect
+**5.7.1 Re-read evidence**
+
+Quoted from the live tree at `91a7e7db9`, not re-copied from the audit. `git diff --stat 12825b479 HEAD -- apps packages tests`
+is empty, so the source is byte-identical to the § 2 environment stamp; this phase commits documents only.
+
+The three-line shape at `apps/frontend/src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts:141-148`,
+verbatim with current line numbers:
+
+```ts
+141    // Extract the request param from the URL
+142    const url = new URL(authorizeUrl);
+143    const requestParam = url.searchParams.get('request');
+144    expect(requestParam).toBeDefined();
+145
+146    // JWT has 3 dot-separated segments
+147    const parts = requestParam!.split('.');
+148    expect(parts).toHaveLength(3);
+```
+
+Enclosing test title, `:136`:
+
+```ts
+  it('authorizeUrl contains a signed JWT request parameter', async () => {
+```
+
+The audit's cite (`:144`) is line-exact; no drift.
+
+**The mechanism, stated as matcher semantics.** `URLSearchParams.get()` returns `string | null` — it
+returns `null`, never `undefined`, for an absent parameter. `expect(null).toBeDefined()` **passes**,
+because `toBeDefined()` fails only on `undefined`. So `:144`, the assertion whose enclosing title
+promises that the authorize URL *contains* a signed JWT request parameter, is **structurally incapable
+of detecting its absence**. There is no input to `url.searchParams.get('request')` for which this
+assertion can fail: it passes on a valid JWT, on an empty string and on a missing parameter alike.
+
+**The route-to-provider link, observed rather than assumed.** The shared injection edits the *Idura
+provider*, while this site exercises the *route handler*, so the link is evidence rather than
+background. Four facts, each read from the live tree this session:
+
+1. `authorize-endpoint.test.ts:17` imports the handler under test:
+   `import { POST } from '../../../../../routes/api/oidc/authorize/+server';`
+2. `authorize-endpoint.test.ts:38-40` mocks the public constants with
+   `PUBLIC_IDENTITY_PROVIDER_TYPE: 'idura'`, injected through the `$lib/utils/constants` getter mock at
+   `:64-68`.
+3. `apps/frontend/src/routes/api/oidc/authorize/+server.ts:25-26` calls
+   `const provider = getActiveProvider();` then `await provider.getAuthorizeUrl({ redirectUri, codeChallenge })`.
+4. `apps/frontend/src/lib/api/utils/auth/providers/index.ts:31-34` reads
+   `constants.PUBLIC_IDENTITY_PROVIDER_TYPE` and returns `iduraProvider` for `'idura'`.
+
+The RS256 signing key pair the test generates in `beforeAll` for JAR construction confirms the same
+link from the fixture side — `authorize-endpoint.test.ts:73-83`, verbatim:
+
+```ts
+73  beforeAll(async () => {
+74    // Generate RS256 signing key pair for Idura JAR construction
+75    const { privateKey, publicKey } = await jose.generateKeyPair('RS256', { extractable: true });
+76    signingPublicKey = publicKey;
+77
+78    const jwk = {
+79      ...(await jose.exportJWK(privateKey)),
+80      kid: 'test-signing-kid',
+81      alg: 'RS256'
+82    };
+83    mockServerConstants.IDURA_SIGNING_JWKS = JSON.stringify([jwk]);
+84  });
+```
+
+The observed run in § 5.7.4 closes the link empirically as well: the injection to `idura.ts` changed
+this file's outcome, which it could not have done had the route selected a different provider.
+
+**5.7.2 Injected diff**
+
+Target `apps/frontend/src/lib/api/utils/auth/providers/idura.ts:74`, verbatim (D-04 — Phase 142
+re-applies this mechanically). **This is the shared injection; § 5.8.2 (F19b) carries the identical
+diff, and it was applied once with both records' runs taken before the revert.**
+
+```diff
+  apps/frontend/src/lib/api/utils/auth/providers/idura.ts:74
+-      `&request=${requestObject}`;
++      ``; // INJECTED (139): the JAR request object is dropped from the authorize URL
+```
+
+The signed request object is still constructed at `:57-69`; only its delivery to the authorize URL is
+removed, so the injection removes the *authentication material in transit* rather than the code that
+builds it — the narrowest form of the regression the finding names. The `INJECTED (139)` marker is
+present in a legal trailing comment; no exemption was needed at this site, and this is the first
+injection in the phase to exercise the marker gate (§ 3.1 step 5(c)) against a real marker.
+
+**Authentication-material handling.** This injection strips the JAR request object from a live OIDC
+authorize URL. It was applied, run twice and reverted inside the task that created it; it reached no
+commit, no branch and no running process, and no `yarn dev`, `yarn test:e2e` or Playwright command was
+run while it was live.
+
+Confirmation that the injection landed as recorded, from `git diff` taken while it was live:
+
+```
+@@ -71,7 +71,7 @@ export const iduraProvider: IdentityProvider = {
+     const authorizeUrl =
+       `https://${constants.IDURA_DOMAIN}/oauth2/authorize` +
+       `?client_id=${encodeURIComponent(clientId)}` +
+-      `&request=${requestObject}`;
++      ``; // INJECTED (139): the JAR request object is dropped from the authorize URL
+ 
+     return { authorizeUrl, clientSideRedirect: false, state, nonce };
+   },
+```
+
+**5.7.3 Invocation**
+
+Verbatim, run from inside the workspace directory (D-05):
+
+```bash
+cd "$(git rev-parse --show-toplevel)/apps/frontend" && npx vitest run src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts
+```
+
+**Benign stderr, recorded rather than diagnosed.** Every run of this file — baseline and injected
+alike — prints the deliberate negative-path log from the `returns 400 when redirectUri is missing`
+test:
+
+```
+stderr | src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts > POST /api/oidc/authorize > returns 400 when redirectUri is missing
+Failed to construct authorization request: HttpError { status: 400, body: { message: 'redirectUri is required' } }
+```
+
+It is present identically in both runs and therefore distinguishes neither.
+
+**5.7.4 Observed**
+
+Four distinct facts, per the TWO-COLUMN RULE (§ 3.2) and the plan's recording requirement. **The two
+outcome columns diverge at this site** — this is the case the rule was written for, and the divergence
+is what the verbatim block below makes visible rather than asserted.
+
+| Site | Injected line | Assertion outcome | File outcome | Failing line | exit |
+|---|---|---|---|---|---|
+| F19a `authorize-endpoint.test.ts:144` | `idura.ts:74` | **PASS** (blind — `expect(null).toBeDefined()`) | **FAIL** (red, 4 failed / 5 passed of 9) | `authorize-endpoint.test.ts:147:33` — `requestParam!.split('.')` | 1 |
+
+1. **Assertion outcome — PASS.** The runner names `:147:33` as the failure site, not `:144`. The test
+   body executes top-to-bottom, so `:144` was evaluated and did not throw: `expect(null).toBeDefined()`
+   passed, exactly as the matcher semantics in § 5.7.1 require. This is read from the reported failure
+   location, **not** from the exit code.
+2. **File outcome — FAIL.** The file exited red.
+3. **Failing line — `authorize-endpoint.test.ts:147:33`**, three lines below the assertion.
+4. **Verbatim runner failure block**, pasted unedited from `${TMPDIR}/gsd-139/f19a.log`:
+
+```
+ ❯ src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts (9 tests | 4 failed) 73ms
+   ✓ POST /api/oidc/authorize > returns 200 with an authorizeUrl in the response 6ms
+   ✓ POST /api/oidc/authorize > authorizeUrl contains client_id query parameter 1ms
+   × POST /api/oidc/authorize > authorizeUrl contains a signed JWT request parameter 3ms
+     → Cannot read properties of null (reading 'split')
+   × POST /api/oidc/authorize > JAR is signed with RS256 algorithm 1ms
+     → Invalid Token or Protected Header formatting
+   × POST /api/oidc/authorize > JAR payload contains required OIDC fields 1ms
+     → JWTs must use Compact JWS serialization, JWT must be a string
+   × POST /api/oidc/authorize > JAR signature is verifiable with the signing public key 1ms
+     → Compact JWS must be a string or Uint8Array
+   ✓ POST /api/oidc/authorize > sets oidc_state cookie when provider returns state 5ms
+   ✓ POST /api/oidc/authorize > sets oidc_nonce cookie when provider returns nonce 2ms
+   ✓ POST /api/oidc/authorize > returns 400 when redirectUri is missing 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts > POST /api/oidc/authorize > authorizeUrl contains a signed JWT request parameter
+TypeError: Cannot read properties of null (reading 'split')
+ ❯ src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts:147:33
+    145| 
+    146|     // JWT has 3 dot-separated segments
+    147|     const parts = requestParam!.split('.');
+       |                                 ^
+    148|     expect(parts).toHaveLength(3);
+    149|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+```
+
+Summary line of the same run, verbatim:
+
+```
+ Test Files  1 failed (1)
+      Tests  4 failed | 5 passed (9)
+   Start at  15:19:15
+   Duration  375ms (transform 51ms, setup 0ms, collect 77ms, tests 73ms, environment 0ms, prepare 60ms)
+```
+
+The pre-injection baseline of the same file was **9 passed**, taken this session as part of the
+two-file run recorded in § 5.8.3's baseline note (22 passed across both files).
+
+Prediction (§ 4 row 7, and `139-RESEARCH.md:604-607`) was assertion **PASS** / file **FAIL** at the
+`split('.')` line with `TypeError: Cannot read properties of null (reading 'split')`; observed exactly
+that, to the error string; **matched**.
+
+**Collateral: three tests** — `:159` (`JAR is signed with RS256 algorithm`), `:171` (`JAR payload
+contains required OIDC fields`) and `:192` (`JAR signature is verifiable with the signing public key`),
+none of which is one of the fifteen enumerated sites. Recorded verbatim in § 8.1 as **C-2**; per § 3.3
+they bear on no verdict.
+
+**No separate positive control was needed, and none was run.** The requirement in § 3.4 and the
+carried-forward wave-1..3 finding — that a green injection run needs a control to distinguish
+blindness from a null experiment — applies to runs that come back **green**. This run came back
+**red**, at the exact line and with the exact error the injection predicts, which is itself proof that
+the edit reached the module in the process that reported `:144` green. The three collateral failures
+are a second, independent liveness proof from the same run: `jose.decodeProtectedHeader`,
+`jose.decodeJwt` and `jose.jwtVerify` each rejected the now-missing request parameter. Adding a
+disqualified control here would add nothing this run does not already establish.
+
+**5.7.5 Verdict and reasoning**
+
+The JAR request object was removed from the authorize URL — in production, the entire signed
+authorization request, gone — and `expect(requestParam).toBeDefined()` at `:144`, the one assertion in
+the file whose title promises that parameter is present, **passed**. The file went red three lines
+later, at `requestParam!.split('.')`, with a `TypeError` about `null`.
+
+The D-02 reasoning, stated in full because this is the verdict that reading the exit code would get
+wrong:
+
+1. **The assertion is structurally incapable of detecting absence.** `URLSearchParams.get()` returns
+   `string | null`; `expect(null).toBeDefined()` passes. There is no absent-parameter case that `:144`
+   can fail on. That is the finding, and the run demonstrated it directly: the assertion evaluated
+   against `null` and passed.
+2. **The file still red-lights, but on an incidental downstream throw.** `:147` calls `.split('.')` on
+   `null`. Nothing about that line was written as a guard; it is a step in extracting JWT segments that
+   happens to dereference the value. The red is a side effect of the test's next operation, not the
+   verdict of its assertion.
+3. **The cost is diagnosis time rather than coverage.** A future maintainer who drops the request
+   parameter sees `TypeError: Cannot read properties of null (reading 'split')` instead of "expected
+   the request parameter to be present" — a message that points at the test's own line rather than at
+   the missing authentication material. The audit anticipated exactly this and marked it
+   **Mitigated** (`.planning/audits/2026-08-11-fake-guard-sweep.md:761-763`), which is why F19 is
+   ranked as it is rather than higher — not why it would be withdrawn.
+4. **ROADMAP criterion 2's withdrawal clause does not reach this class.** "A finding that reads blind
+   but fails correctly is withdrawn" is scoped to findings whose **own assertion** catches the
+   regression (CONTEXT `<specifics>` bullet 2, D-02). This assertion caught nothing; the file was
+   rescued by an incidental `TypeError` on a line that is not a guard. Withdrawing here would strike a
+   real matcher defect from the audit on the strength of a column — the process exit code — that was
+   never measuring the assertion, and would shrink ASSERT-03 and Phase 140 (which owns the
+   `.not.toBeNull()` repair) as well as ASSERT-07 and Phase 142.
+
+The audit's characterisation is accurate to the line, its `Mitigated` paragraph is accurate to the
+mechanism, and the run overturned nothing it predicted.
+
+**Verdict:** confirmed
+
+**5.7.6 Pre-specified regression for Phase 142**
+
+**The regression (re-apply this diff verbatim):** drop the JAR request object from the authorize URL at
+`apps/frontend/src/lib/api/utils/auth/providers/idura.ts:74` — `` `&request=${requestObject}`; ``
+becomes `` ``; ``. In production this is an authentication failure of the first order: the authorize
+URL carries only `client_id`, so every parameter that the signed request object was carrying —
+`response_type`, `redirect_uri`, `scope`, `state`, `nonce`, and the RS256 signature binding them —
+never reaches the IdP. Today the assertion at `:144` that claims to guard the parameter's presence
+stays green through it.
+
+**The named regression in one sentence, for Phase 142's negative control:** *the JAR request parameter
+is absent from the authorize URL, and the assertion that claims to guard its presence passes.*
+
+**The target Phase 142 must reach** — and the audit already names it correctly at
+`.planning/audits/2026-08-11-fake-guard-sweep.md:765`: **`.not.toBeNull()`**. One word:
+
+```ts
+expect(requestParam).not.toBeNull();
+```
+
+This fails under the diff above at `:144` itself, with a message naming the missing parameter, instead
+of at `:147` with a `TypeError` about `split`. Stronger still, and worth taking while the line is open:
+`expect(requestParam).toMatch(/^[\w-]+\.[\w-]+\.[\w-]+$/)`, which additionally rejects an empty string
+and a non-JWT value — neither of which `.not.toBeNull()` catches.
+
+**Ownership seam, recorded so the two phases do not each wait for the other.** Phase 140 owns this
+repair under **ASSERT-03** (the F3/F9/F10/F19 matcher fixes); Phase 142 owns the F19 line of
+**ASSERT-07**. The same one-word diff serves both, and this record's injection is the negative control
+that verifies it: it reds after the fix at `:144` and passes before it, which is the discrimination a
+disqualified control cannot provide.
 
 ### 5.8 F19b — `idura.test.ts:148` (`expect(requestParam).toBeDefined()`)
 
-**Status:** not yet run — filled by a later plan in this phase.
+> **Shared injection.** The same single edit to
+> `apps/frontend/src/lib/api/utils/auth/providers/idura.ts:74` is the regression for this record and
+> for **F19a (§ 5.7)**; both exercise that `authorizeUrl` construction. The diff in § 5.8.2 is
+> identical to § 5.7.2. This record carries its own invocation and its own observed outcome. Where
+> F19a reaches the provider through the route handler, this record calls
+> `iduraProvider.getAuthorizeUrl()` directly — one injection, two independent entry points, two
+> verdicts.
+>
+> The TWO-COLUMN RULE (§ 3.2) governs this record as it governs § 5.7: the assertion and file outcomes
+> diverge, and the verdict cites the assertion column.
 
-- **5.8.1 Re-read evidence** — verbatim assertion text plus its current line, quoted from the live tree
-- **5.8.2 Injected diff** — the verbatim `-`/`+` lines (D-04)
-- **5.8.3 Invocation** — the verbatim command
-- **5.8.4 Observed** — assertion outcome, file outcome, failing line, verbatim runner output
-- **5.8.5 Verdict and reasoning** — ends in `confirmed` or `withdrawn`
-- **5.8.6 Pre-specified regression for Phase 142** — the concrete regression this assertion cannot detect
+**5.8.1 Re-read evidence**
+
+Quoted from the live tree at `91a7e7db9`, not re-copied from the audit.
+`apps/frontend/src/lib/api/utils/auth/providers/idura.test.ts:145-152`, verbatim with current line
+numbers — the identical three-line shape to § 5.7.1:
+
+```ts
+145      // Extract the request parameter from the URL
+146      const url = new URL(result.authorizeUrl);
+147      const requestParam = url.searchParams.get('request');
+148      expect(requestParam).toBeDefined();
+149
+150      // The request parameter should be a valid JWT (3 base64url segments)
+151      const parts = requestParam!.split('.');
+152      expect(parts).toHaveLength(3);
+```
+
+Enclosing test title, `:140`:
+
+```ts
+    it('includes a signed JWT request parameter in the URL', async () => {
+```
+
+The audit's cite (`:148`) is line-exact; no drift, and the audit's "identical" is accurate — the two
+sites differ only in indentation (this one sits one `describe` deeper) and in how they obtain the URL:
+`:141-146` calls `iduraProvider.getAuthorizeUrl({ redirectUri: … })` directly, where F19a goes through
+`POST /api/oidc/authorize`.
+
+**Mechanism, identical to § 5.7.1.** `url.searchParams.get('request')` returns `string | null`;
+`expect(null).toBeDefined()` passes; `:148` cannot fail on an absent request parameter. The title
+promises the URL *includes* a signed JWT request parameter and the assertion under it discriminates
+nothing.
+
+**5.8.2 Injected diff**
+
+Target `apps/frontend/src/lib/api/utils/auth/providers/idura.ts:74`, verbatim (D-04). **This is the
+shared injection; § 5.7.2 (F19a) carries the identical diff, and it was applied once with both
+records' runs taken before the single revert.**
+
+```diff
+  apps/frontend/src/lib/api/utils/auth/providers/idura.ts:74
+-      `&request=${requestObject}`;
++      ``; // INJECTED (139): the JAR request object is dropped from the authorize URL
+```
+
+This record's entry point makes the injection *more* direct than F19a's: the test calls the injected
+module's own exported method, with no route handler and no provider selection in between. The
+`git diff` confirmation taken while the injection was live is recorded in § 5.7.2 and is not duplicated
+here. The same authentication-material handling applies: applied, run, reverted inside the task, never
+committed, no dev server or E2E run while live.
+
+**5.8.3 Invocation**
+
+Verbatim, run from inside the workspace directory (D-05):
+
+```bash
+cd "$(git rev-parse --show-toplevel)/apps/frontend" && npx vitest run src/lib/api/utils/auth/providers/idura.test.ts
+```
+
+**Baseline for both F19a and F19b**, taken in the same session immediately before the injection:
+
+```bash
+cd "$(git rev-parse --show-toplevel)/apps/frontend" && npx vitest run src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts src/lib/api/utils/auth/providers/idura.test.ts
+```
+
+```
+ ✓ src/lib/api/utils/auth/providers/idura.test.ts (13 tests) 25ms
+ ✓ src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts (9 tests) 49ms
+
+ Test Files  2 passed (2)
+      Tests  22 passed (22)
+   Start at  15:18:54
+```
+
+**5.8.4 Observed**
+
+Four distinct facts, per the TWO-COLUMN RULE (§ 3.2). **The two outcome columns diverge**, as at
+§ 5.7.4.
+
+| Site | Injected line | Assertion outcome | File outcome | Failing line | exit |
+|---|---|---|---|---|---|
+| F19b `idura.test.ts:148` | `idura.ts:74` | **PASS** (blind — `expect(null).toBeDefined()`) | **FAIL** (red, 2 failed / 11 passed of 13) | `idura.test.ts:151:35` — `requestParam!.split('.')` | 1 |
+
+1. **Assertion outcome — PASS.** The runner names `:151:35`, not `:148`. `:148` was evaluated against
+   `null` and passed. Read from the reported failure location, **not** from the exit code.
+2. **File outcome — FAIL.** The file exited red.
+3. **Failing line — `idura.test.ts:151:35`**, three lines below the assertion.
+4. **Verbatim runner failure block**, pasted unedited from `${TMPDIR}/gsd-139/f19b.log`:
+
+```
+ ❯ src/lib/api/utils/auth/providers/idura.test.ts (13 tests | 2 failed) 36ms
+   ✓ Idura provider > interface compliance (D-04) > has type property set to idura 1ms
+   ✓ Idura provider > interface compliance (D-04) > implements getAuthorizeUrl as a function 0ms
+   ✓ Idura provider > interface compliance (D-04) > implements exchangeCodeForToken as a function 0ms
+   ✓ Idura provider > interface compliance (D-04) > implements getIdTokenClaims as a function 0ms
+   ✓ Idura provider > interface compliance (D-04) > has authConfig with Idura claim mappings 0ms
+   ✓ Idura provider > getAuthorizeUrl (JAR-based) > returns a URL pointing to the Idura authorize endpoint 2ms
+   ✓ Idura provider > getAuthorizeUrl (JAR-based) > returns clientSideRedirect=false (Idura uses server-side JAR) 1ms
+   ✓ Idura provider > getAuthorizeUrl (JAR-based) > includes a state parameter for CSRF protection 1ms
+   ✓ Idura provider > getAuthorizeUrl (JAR-based) > includes a nonce parameter for replay protection 1ms
+   × Idura provider > getAuthorizeUrl (JAR-based) > includes a signed JWT request parameter in the URL 3ms
+     → Cannot read properties of null (reading 'split')
+   ✓ Idura provider > getAuthorizeUrl (JAR-based) > includes client_id in the URL query parameters 1ms
+   ✓ Idura provider > getAuthorizeUrl (JAR-based) > does NOT call global fetch (JAR is built locally, not via server endpoint) 1ms
+   × Idura provider > getAuthorizeUrl (JAR-based) > signed request object contains correct claims 1ms
+     → JWTs must use Compact JWS serialization, JWT must be a string
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/api/utils/auth/providers/idura.test.ts > Idura provider > getAuthorizeUrl (JAR-based) > includes a signed JWT request parameter in the URL
+TypeError: Cannot read properties of null (reading 'split')
+ ❯ src/lib/api/utils/auth/providers/idura.test.ts:151:35
+    149| 
+    150|       // The request parameter should be a valid JWT (3 base64url segm…
+    151|       const parts = requestParam!.split('.');
+       |                                   ^
+    152|       expect(parts).toHaveLength(3);
+    153|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+```
+
+Summary line of the same run, verbatim:
+
+```
+ Test Files  1 failed (1)
+      Tests  2 failed | 11 passed (13)
+   Start at  15:19:25
+   Duration  336ms (transform 49ms, setup 0ms, collect 62ms, tests 36ms, environment 0ms, prepare 66ms)
+```
+
+Against the 13-passed baseline in § 5.8.3.
+
+**Two green tests in this file are worth naming, because they sharpen the finding rather than
+weakening it.** `returns a URL pointing to the Idura authorize endpoint` and `includes client_id in the
+URL query parameters` both passed under the injection — correctly, since the injection leaves the
+origin and the `client_id` query parameter intact and removes only the request object. They are the
+in-file demonstration that this file's *other* URL assertions are specific to what they name; only the
+`request` parameter's guard is blind.
+
+Prediction (§ 4 row 8) was assertion **PASS** / file **FAIL** at the `split('.')` line; observed
+exactly that; **matched**.
+
+**Collateral: one test** — `:184` (`signed request object contains correct claims`, failing in
+`jose.decodeJwt`), not one of the fifteen enumerated sites. Recorded verbatim in § 8.1 as **C-3**; per
+§ 3.3 it bears on no verdict, and like C-2 it independently confirms the injection reached the module.
+
+**No separate positive control was run**, for the reason given in § 5.7.4: the run came back **red at
+the predicted line with the predicted error**, which establishes liveness directly. A control is
+required to interpret a **green** injection run, not a red one.
+
+**5.8.5 Verdict and reasoning**
+
+`iduraProvider.getAuthorizeUrl()` was made to return an authorize URL with no request object at all,
+and `expect(requestParam).toBeDefined()` at `:148` — inside a test titled *"includes a signed JWT
+request parameter in the URL"* — **passed**. The file went red at `:151`, on `.split('.')`.
+
+The D-02 reasoning, in full:
+
+1. **Structurally incapable of detecting absence.** `URLSearchParams.get()` returns `string | null`,
+   and `toBeDefined()` fails only on `undefined`. The run evaluated `:148` against `null` and it
+   passed. No absent-parameter input exists that this assertion can fail on.
+2. **Rescued by an incidental downstream throw.** `:151` dereferences the value to split JWT segments.
+   It is a step in the test's extraction logic, not a guard; the red it produces is a side effect.
+3. **Cost is diagnosis time rather than coverage.** The failure reads `Cannot read properties of null
+   (reading 'split')` at the test's own line, not "the request parameter is missing" at the provider's.
+4. **Criterion 2's withdrawal clause does not reach this class.** It is scoped to findings whose own
+   assertion catches the regression (D-02, CONTEXT `<specifics>` bullet 2). This one caught nothing. A
+   withdrawal here would be produced by the process exit code — a column that was never measuring the
+   assertion — and would shrink ASSERT-03 and Phase 140 as well as ASSERT-07 and Phase 142.
+
+The audit's "identical" is accurate: same matcher, same `null`-returning API, same three-line shape,
+same mitigation. Nothing in the run overturned a prediction for this site.
+
+**Verdict:** confirmed
+
+**5.8.6 Pre-specified regression for Phase 142**
+
+**The regression (re-apply this diff verbatim):** the shared one at
+`apps/frontend/src/lib/api/utils/auth/providers/idura.ts:74` — `` `&request=${requestObject}`; ``
+becomes `` ``; ``. Production consequence as in § 5.7.6: the signed authorization request never reaches
+the IdP, and `response_type`, `redirect_uri`, `scope`, `state`, `nonce` and the RS256 signature binding
+them go with it. Today `:148` stays green through it.
+
+**The named regression in one sentence:** *the JAR request parameter is absent from the authorize URL,
+and the assertion that claims to guard its presence passes.*
+
+**The target Phase 142 must reach:** `.not.toBeNull()` at `:148`, per the audit's own suggested fix
+(`.planning/audits/2026-08-11-fake-guard-sweep.md:765`):
+
+```ts
+expect(requestParam).not.toBeNull();
+```
+
+It fails under the diff above at `:148` itself rather than at `:151`. The stronger form named in
+§ 5.7.6 — `toMatch(/^[\w-]+\.[\w-]+\.[\w-]+$/)` — applies here identically and additionally rejects an
+empty string.
+
+**Ownership seam:** Phase 140 owns the repair under **ASSERT-03**; Phase 142 owns the F19 line of
+**ASSERT-07**. One diff, both phases. Because F19a and F19b share the injection, a Phase 140 fix
+applied to only one of the two sites will still be caught: re-applying this diff reds whichever site
+was left unfixed at its `split('.')` line and reds the fixed site at its own assertion, and the two are
+distinguishable in the runner output by line number.
 
 ### 5.9 F19c — `token-endpoint.test.ts:167` (`expect(assertion).toBeDefined()`)
 
@@ -2388,6 +2868,83 @@ Excluded from the verdict, and separately **corroborating**: the same injection 
 `throw` was caught here and missed at `:104`, with the presence of a message matcher as the only
 difference between the two. It is also this site's positive control — the runner prints the injected
 string back, proving the edit executed in the process that reported `:104` green.
+
+**C-2 — `authorize-endpoint.test.ts:159`, `:171` and `:192`, red under the shared F19a/F19b injection
+at `idura.ts:74` (§ 5.7).** Recorded by plan 04. **Does not bear on the F19a verdict**, nor on any
+other verdict in this document: none of the three is one of the fifteen sites. All three fail for the
+same reason the site does — the `request` parameter is `null`, so each `jose` call receives a non-string
+— and each fails in a different `jose` entry point. Verbatim:
+
+```
+ FAIL  src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts > POST /api/oidc/authorize > JAR is signed with RS256 algorithm
+TypeError: Invalid Token or Protected Header formatting
+ ❯ Module.decodeProtectedHeader ../../node_modules/jose/dist/webapi/util/decode_protected_header.js:32:15
+ ❯ src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts:159:25
+    157|     const requestParam = url.searchParams.get('request')!;
+    158| 
+    159|     const header = jose.decodeProtectedHeader(requestParam);
+       |                         ^
+    160|     expect(header.alg).toBe('RS256');
+    161|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts > POST /api/oidc/authorize > JAR payload contains required OIDC fields
+JWTInvalid: JWTs must use Compact JWS serialization, JWT must be a string
+ ❯ Module.decodeJwt ../../node_modules/jose/dist/webapi/util/decode_jwt.js:7:15
+ ❯ src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts:171:26
+    169|     const requestParam = url.searchParams.get('request')!;
+    170| 
+    171|     const payload = jose.decodeJwt(requestParam);
+       |                          ^
+    172|     expect(payload.response_type).toBe('code');
+    173|     expect(payload.response_mode).toBe('query');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts > POST /api/oidc/authorize > JAR signature is verifiable with the signing public key
+JWSInvalid: Compact JWS must be a string or Uint8Array
+ ❯ compactVerify ../../node_modules/jose/dist/webapi/jws/compact/verify.js:9:15
+ ❯ Module.jwtVerify ../../node_modules/jose/dist/webapi/jwt/verify.js:5:28
+ ❯ src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts:192:36
+    190| 
+    191|     // Should not throw -- signature is valid
+    192|     const { payload } = await jose.jwtVerify(requestParam, signingPubl…
+       |                                    ^
+    193|     expect(payload.client_id).toBe('test-client-id');
+    194|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+```
+
+Excluded from the verdict, and separately **corroborating** in two ways. First, they are this
+injection's liveness proof: three independent `jose` entry points each received the missing parameter,
+so the edit demonstrably executed in the process that reported `:144` green — which is why § 5.7.4
+records that no separate positive control was needed. Second, they show the **same non-null-assertion
+pattern one step further along**: `:157`, `:169` and `:189` each write
+`url.searchParams.get('request')!`, applying a TypeScript `!` to a value the runtime hands back as
+`null`. That is the F19c defect (§ 5.9.1) appearing three more times in this file, outside the audit's
+enumeration. It is recorded here rather than folded into any verdict, and is a candidate scope item for
+Phase 140's ASSERT-03 sweep.
+
+**C-3 — `idura.test.ts:184`, red under the same shared injection (§ 5.8).** Recorded by plan 04.
+**Does not bear on the F19b verdict**; it is not one of the fifteen sites. Verbatim:
+
+```
+ FAIL  src/lib/api/utils/auth/providers/idura.test.ts > Idura provider > getAuthorizeUrl (JAR-based) > signed request object contains correct claims
+JWTInvalid: JWTs must use Compact JWS serialization, JWT must be a string
+ ❯ Module.decodeJwt ../../node_modules/jose/dist/webapi/util/decode_jwt.js:7:15
+ ❯ src/lib/api/utils/auth/providers/idura.test.ts:184:28
+    182| 
+    183|       // Decode the payload without verification (we control the key)
+    184|       const payload = jose.decodeJwt(requestParam);
+       |                            ^
+    185| 
+    186|       expect(payload.client_id).toBe('test-idura-client');
+```
+
+Same disposition and same corroboration as C-2: excluded from the verdict, and independent evidence
+that the injection reached the module in the process that reported `:148` green.
 
 ### 8.2 Overturned predictions
 
