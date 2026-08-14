@@ -191,7 +191,7 @@ unfilled but never silently absent. `pending` marks a row this plan did not fill
 
 | # | Finding | Site (current file:line) | Assertion outcome | File outcome | Verdict | Predicted | Matched? | Collateral |
 |---|---|---|---|---|---|---|---|---|
-| 1 | F15-A | `packages/question-info/tests/questionTypes.test.ts:84,139,199,263,323,387,532,535-537` | pending | pending | pending | PASS | pending | pending |
+| 1 | F15-A | `packages/question-info/tests/questionTypes.test.ts:84,139,199,263,323,387,532,535-537` (+ unlisted `:388`) | **PASS** (blind) | **PASS** (green) | **confirmed** | PASS | yes | none |
 | 2 | F15-B | `packages/argument-condensation/tests/condensation/condenserStandalone.test.ts:131-142,184-185` | **PASS** (blind) | **PASS** (green) | **confirmed** | PASS | yes | none |
 | 3 | F15-C | `packages/argument-condensation/tests/condensation/condenseQuestions.test.ts:139-145,215-219,268-274` | **PASS** (blind) | **PASS** (green) | **confirmed** | PASS | yes at the sites; viz-test sub-prediction **overturned** (§ 8) | none |
 | 4 | F16 | `packages/argument-condensation/tests/unit/handleQuestion.test.ts:56-68` | **PASS** (blind) — inj. B · **FAIL** — inj. A | **PASS** (green) — inj. B · **FAIL** (red) — inj. A | **confirmed** | PASS | inj. B **yes** · inj. A **no — overturned** (§ 8) | none |
@@ -227,14 +227,366 @@ stated so Phase 142 re-applies it mechanically — ROADMAP criterion 3).
 
 ### 5.1 F15-A — `questionTypes.test.ts` (10 mock-in/mock-out sites)
 
-**Status:** not yet run — filled by a later plan in this phase.
+This record does three things the other fourteen do not: it **proves a negative**, it **substitutes
+the injection** the audit names, and it **corrects the audit's own description of the sites**. None of
+the three is grounds for withdrawal; all three are on the record here and carried into § 7.
 
-- **5.1.1 Re-read evidence** — verbatim assertion text plus its current line, quoted from the live tree
-- **5.1.2 Injected diff** — the verbatim `-`/`+` lines (D-04)
-- **5.1.3 Invocation** — the verbatim command
-- **5.1.4 Observed** — assertion outcome, file outcome, failing line, verbatim runner output
-- **5.1.5 Verdict and reasoning** — ends in `confirmed` or `withdrawn`
-- **5.1.6 Pre-specified regression for Phase 142** — the concrete regression this assertion cannot detect
+**5.1.1 Re-read evidence**
+
+**(a) The audit's named regression does not exist to be deleted.**
+
+The audit's claim, `.planning/audits/2026-08-11-fake-guard-sweep.md:632-634`, verbatim:
+
+> A `generateQuestionInfo` that ignored question type entirely, or that passed the LLM response
+> through untouched, keeps all 540 lines green.
+
+Scope grep over the package's **source** (not its tests), run this session, pasted as observed rather
+than restated:
+
+```console
+$ cd "$(git rev-parse --show-toplevel)" && grep -rnE 'question\.type|QUESTION_TYPE|choices' packages/question-info/src/ ; echo "exit=$?"
+exit=1
+```
+
+Zero lines of output. `grep` exits **1** when the pattern matched nothing and **2** on error, so
+`exit=1` is the load-bearing value: the search ran, found the directory, and matched nothing. There is
+no `question.type` read, no `QUESTION_TYPE` constant and no `choices` access anywhere under
+`packages/question-info/src/`.
+
+What the prompt is actually built from, quoted verbatim from the live tree at
+`packages/question-info/src/core/infoGeneration.ts:75-82`:
+
+```ts
+        const variables: Record<string, unknown> = {
+          question: question.name,
+          generalInstructions: GENERAL_INSTRUCTIONS,
+          neutralityRequirements: NEUTRALITY_REQUIREMENTS,
+          questionContext: options.questionContext || '',
+          customInstructions: options.customInstructions || '',
+          examples: formattedExamples
+        };
+```
+
+`question.name` plus five fixed instruction constants and caller-supplied option strings. The only
+branch anywhere downstream is on `promptKey` — the *operation* requested (`generateTerms`,
+`generateInfoSections`, `generateBoth`) at `:85-91` — never on the question's type. A `BooleanQuestion`,
+a 7-point `OrdinalQuestion` and a `CategoricalQuestion` with choice labels all produce byte-identical
+prompt variables for the same operation.
+
+**Conclusion, stated plainly: the behaviour the audit proposes deleting does not exist, so the audit's
+literal injection is impossible.** You cannot break what is already broken, and an injection producing
+green would prove nothing new. *This absence is stronger evidence for F15-A than any injection could
+be.* The test file's organisation into `Configuration 1: Boolean Questions` /
+`Configuration 2: Ordinal Questions` / `Configuration 3: Categorical Questions` is answering a
+distinction the implementation never draws — it is pure theatre. The three "Configurations" cannot
+differ in outcome, because nothing in the code path they exercise reads the property that
+distinguishes them.
+
+**(b) Correction to the audit's description of the ten sites.**
+
+The audit says the sites are "all variations of `expect(results[0].data.infoSections).toBeDefined()`".
+Seven of the ten are. **Three are not.** All ten quoted from the live tree at `12825b479`, with their
+current line numbers — the audit's cites are line-exact, no drift:
+
+| Line | Verbatim assertion | Audit's description |
+|---|---|---|
+| 84 | `      expect(results[0].data.infoSections).toBeDefined();` | accurate |
+| 139 | `      expect(results[0].data.terms).toBeDefined();` | accurate |
+| 199 | `      expect(results[0].data.infoSections).toBeDefined();` | accurate |
+| 263 | `      expect(results[0].data.terms).toBeDefined();` | accurate |
+| 323 | `      expect(results[0].data.infoSections).toBeDefined();` | accurate |
+| 387 | `      expect(results[0].data.terms).toBeDefined();` | accurate |
+| 532 | `      expect(results.every((r) => r.data.infoSections && r.data.terms)).toBe(true);` | accurate in spirit — a `toBe(true)` over a truthiness reduction, not a `toBeDefined()` |
+| 535 | `      expect(results[0].data.infoSections![0].title).toBe('Tax Policy');` | **wrong — an exact string equality** |
+| 536 | `      expect(results[1].data.infoSections![0].title).toBe('Income Inequality Priority');` | **wrong — an exact string equality** |
+| 537 | `      expect(results[2].data.infoSections![0].title).toBe('Policy Preference Analysis');` | **wrong — an exact string equality** |
+
+**The finding's substance survives the correction; its description does not.** `:535-537` are not
+weak matchers — `toBe` on an exact string is the strongest matcher in the file. They are nonetheless
+mock-in / mock-out, because those three exact strings are what the test itself fed to the mock. From
+the same file, `:452` opens the feed and the titles are supplied at `:457`, `:480` and `:503`:
+
+```ts
+452      mockLLMProvider.generateObjectParallel.mockResolvedValue([
+457                title: 'Tax Policy',
+480                title: 'Income Inequality Priority',
+503                title: 'Policy Preference Analysis',
+```
+
+So `:535-537` assert that a `vi.fn()` returned the value the test configured it to return, 78, 56 and
+34 lines earlier respectively. (Research characterised the gap as "about twenty lines"; measured, it is
+32-78 lines. Recorded rather than repeated.) The matcher is strong and the fixture is a tautology, which
+is a *different* defect from the one the audit describes and the *same* defect it names in its heading.
+
+**Unlisted eleventh assertion the audit missed**, in the same cluster the audit does list, verbatim
+from `packages/question-info/tests/questionTypes.test.ts:386-388`:
+
+```ts
+386      expect(results).toHaveLength(1);
+387      expect(results[0].data.terms).toBeDefined();
+388      expect(results[0].data.terms).toHaveLength(3);
+```
+
+`:388` is not in the audit's enumeration. It is the same shape as the rest — the mocked response
+configured at `:354` carries exactly three terms — so it strengthens the finding by one site rather
+than weakening it. Recorded so Phase 142's remediation covers eleven assertions, not ten. (The
+identical unlisted pattern also appears at `:140` and `:264`, both `toHaveLength(2)` against
+two-element mock fixtures.)
+
+**Mock handle**, verbatim from `packages/question-info/tests/questionTypes.test.ts:14-17` — the reason
+the substituted injection below cannot be seen:
+
+```ts
+// Mock LLM provider (new API)
+const mockLLMProvider = {
+  generateObjectParallel: vi.fn()
+} as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+```
+
+A bare `vi.fn()`. It records the request it was handed and never reads it; the resolved value is fixed
+by the test. **The prompt is never inspected by any assertion in the file.** Confirmed by enumeration:
+`grep -n 'mock.calls' packages/question-info/tests/questionTypes.test.ts` returns nothing.
+
+**Scope note carried from the audit:** the sibling `packages/question-info/tests/api.test.ts` is
+explicitly **excluded** from F15-A by the audit itself (`:635-637`) — it carries negative assertions
+(`toBeUndefined()` for non-requested operations) and `success: false` paths, and is called "genuinely
+stronger". It is not part of this verdict and was not run against the injection as evidence.
+
+**5.1.2 Injected diff**
+
+> ### ⚠ THIS IS A SUBSTITUTE, NOT THE AUDIT'S NAMED REGRESSION
+>
+> The audit's regression — *"a `generateQuestionInfo` that ignored question type entirely"* — is
+> **un-injectable**, for the reason proved in § 5.1.1(a): the shipped code already ignores question
+> type, and the scope grep exits 1. There is no delta to apply. Phase 142 must re-apply **this** diff,
+> not the audit's sentence. Plan 06 lifts this substitution into § 7's scope limits so it is a
+> declared limit of the whole pass, not a footnote on one record.
+
+Target `packages/question-info/src/core/infoGeneration.ts:76`, verbatim (D-04 — Phase 142 re-applies
+this mechanically):
+
+```diff
+  packages/question-info/src/core/infoGeneration.ts:76
+-          question: question.name,
++          question: '', // INJECTED (139): the prompt no longer carries the question at all
+```
+
+**Line-number drift, verified before editing.** `139-RESEARCH.md:471` cites this line as `:75`. In the
+current tree `:75` is the `const variables: Record<string, unknown> = {` opener and the
+`question: question.name,` entry is at **`:76`** — a **+1 drift**. The line was read and asserted equal
+to `question: question.name,` before the write, and the edit refused to apply anywhere else.
+
+Confirmation that the injection landed as recorded, from `git diff` taken while it was live:
+
+```
+@@ -73,7 +73,7 @@ export async function generateInfo({
+       questions.map(async (question) => {
+         // Build variables object based on the operation type. Start with tasks' shared variables
+         const variables: Record<string, unknown> = {
+-          question: question.name,
++          question: '', // INJECTED (139): the prompt no longer carries the question at all
+           generalInstructions: GENERAL_INSTRUCTIONS,
+           neutralityRequirements: NEUTRALITY_REQUIREMENTS,
+           questionContext: options.questionContext || '',
+```
+
+**Why this substitute is faithful to D-01's intent.** It is a real and catastrophic regression: the
+question text is the only question-specific content in the entire prompt (§ 5.1.1(a)), so with it
+emptied the LLM is asked to generate info sections and term definitions **about nothing at all** —
+every question in the corpus would receive the same generic response. In production this is total
+product failure. It is exactly the class of break the ten assertions claim to guard and provably
+cannot see, because the provider is a bare `vi.fn()` whose resolved value is fixed by the test and
+whose received request no assertion reads.
+
+**Considered and not used** (recorded per § 8.3, entry R-3): the second candidate matching the audit's
+*second* clause — *"passed the LLM response through untouched"* — is to bypass
+`packages/question-info/src/utils/responseTransformer.ts` and return the raw provider response from
+`transformResponse` at `infoGeneration.ts:129-137`. **Not run.** Reason: markedly higher blast radius
+(it changes the shape of every returned object, so it would red `api.test.ts` and any consumer of the
+result type) for **no additional discrimination** — it would demonstrate the same single fact, that the
+assertions read only the mocked payload. The chosen substitute touches one line and one field.
+
+**Marker convention:** the `+` line carries the `INJECTED (139)` marker in a legal trailing comment; no
+exemption was needed at this site.
+
+**5.1.3 Invocation**
+
+Verbatim, run from inside the workspace directory (D-05 — `packages/question-info` exposes no
+`test:unit` script that `turbo run` would reach, so the run is ad hoc and in-package; no `test:unit`
+script was added, and neither `turbo.json` nor `vitest.workspace.ts` was touched):
+
+```bash
+cd "$(git rev-parse --show-toplevel)/packages/question-info" && npx vitest run tests/questionTypes.test.ts
+```
+
+**Benign stderr, recorded rather than diagnosed.** Every run of this file — baseline, injected, control
+and post-revert alike — prints:
+
+```
+stderr | tests/questionTypes.test.ts
+[PromptRegistry] Package 'question-info' already registered, skipping.
+```
+
+It is present identically in all four runs and therefore cannot distinguish any of them. Not a symptom
+of the injection; not investigated further.
+
+**5.1.4 Observed**
+
+Two outcomes recorded separately per the TWO-COLUMN RULE (§ 3.2).
+
+| Site | Injected line | Assertion outcome | File outcome | Failing line | exit |
+|---|---|---|---|---|---|
+| F15-A `questionTypes.test.ts:84,139,199,263,323,387,532,535-537` (+ unlisted `:388`) | `infoGeneration.ts:76` | **PASS** (blind — all eleven) | **PASS** (green, 7/7) | none — the two columns agree | 0 |
+
+Verbatim runner output, under the live injection:
+
+```
+ RUN  v3.2.4 /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/packages/question-info
+
+stderr | tests/questionTypes.test.ts
+[PromptRegistry] Package 'question-info' already registered, skipping.
+
+ ✓ tests/questionTypes.test.ts (7 tests) 5ms
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  15:04:52
+   Duration  699ms (transform 218ms, setup 222ms, collect 148ms, tests 5ms, environment 0ms, prepare 96ms)
+```
+
+Byte-for-byte the same test counts as the pre-injection baseline (7 passed, 15:04:30) and the
+post-revert baseline (7 passed, 15:05:50) taken in the same session. Prediction was PASS (green);
+observed PASS; **matched**. **Collateral: none** — no test anywhere in the file changed state, so § 8.1
+has nothing to record for this site.
+
+**IN-BAND POSITIVE CONTROL — required, because the injection run was green.**
+
+Two green runs alone cannot distinguish *"the assertion is blind"* (the finding) from *"the injection
+never took effect"* (a null experiment). Per the pattern plan 02 established at `condenser.ts:204`, the
+control breaks a **sibling property of the same object literal**, one line from the regression:
+
+```diff
+  packages/question-info/src/core/infoGeneration.ts:77
+-          generalInstructions: GENERAL_INSTRUCTIONS,
++          generalInstructionsCONTROL: GENERAL_INSTRUCTIONS, // INJECTED (139): positive control — key renamed so loadPrompt's throwIfVarsMissing fires
+```
+
+The mechanism is the `throwIfVarsMissing: true` flag the same call site passes at
+`infoGeneration.ts:98`: renaming the **key** (rather than emptying the **value**, as the regression
+does) makes the prompt registry report the variable missing. Observed — **7 of 7 red**, the exact
+inverse of the regression run on the same object literal:
+
+```
+ ❯ tests/questionTypes.test.ts (7 tests | 7 failed) 6ms
+   × Question Type Configurations > Configuration 1: Boolean Questions > should handle boolean question with yes/no answers 4ms
+     → Error generating question info: Error: [PromptRegistry] Missing required parameters for prompt 'generateInfoSections': generalInstructions
+   × Question Type Configurations > Configuration 1: Boolean Questions > should handle boolean question with terms generation 0ms
+     → Error generating question info: Error: [PromptRegistry] Missing required parameters for prompt 'generateTerms': generalInstructions
+   × Question Type Configurations > Configuration 2: Ordinal Questions > should handle 5-point Likert scale question 0ms
+     → Error generating question info: Error: [PromptRegistry] Missing required parameters for prompt 'generateInfoSections': generalInstructions
+   × Question Type Configurations > Configuration 2: Ordinal Questions > should handle 7-point Likert scale question 0ms
+     → Error generating question info: Error: [PromptRegistry] Missing required parameters for prompt 'generateTerms': generalInstructions
+   × Question Type Configurations > Configuration 3: Categorical Questions > should handle categorical question with multiple choices 0ms
+     → Error generating question info: Error: [PromptRegistry] Missing required parameters for prompt 'generateInfoSections': generalInstructions
+   × Question Type Configurations > Configuration 3: Categorical Questions > should handle binary categorical question 0ms
+     → Error generating question info: Error: [PromptRegistry] Missing required parameters for prompt 'generateTerms': generalInstructions
+   × Question Type Configurations > Mixed Question Type Scenarios > should handle combination of all three question types 0ms
+     → Error generating question info: Error: [PromptRegistry] Missing required parameters for prompt 'generateBoth': generalInstructions
+
+ Test Files  1 failed (1)
+      Tests  7 failed (7)
+   Start at  15:05:31
+   Duration  783ms (transform 157ms, setup 209ms, collect 86ms, tests 6ms, environment 0ms, prepare 118ms)
+```
+
+This control establishes **four** things in one run, and it is the reason the green above can be read
+as blindness:
+
+1. **Liveness.** `infoGeneration.ts` is in this test file's import graph and the `const variables`
+   block at `:75-82` *executes* — every one of the 7 tests reached it. There is no stale build, no
+   `dist/` shadow, no skipped path.
+2. **The object literal is consumed.** The variables object is genuinely read by `loadPrompt` at
+   `:94-100`; it is not dead scaffolding.
+3. **These tests do red.** The file is capable of failing, and it fails loudly when the code path
+   changes in a way the runtime can see.
+4. **The blindness is field-specific and, more precisely, *value*-specific.** The control and the
+   regression are one line apart in the same literal. The difference is that the control removes the
+   **key** (which the runtime checks) while the regression empties the **value** (which nothing checks).
+   The suite guards the *presence* of prompt variables and is blind to their *content* — which is the
+   whole of F15-A in one sentence.
+
+The control was reverted and its own POST-GATE run before the post-revert baseline. It is a control,
+not a regression candidate: Phase 142 must not use it as a negative control, because it reds before and
+after any fix to the assertions.
+
+**5.1.5 Verdict and reasoning**
+
+F15-A is confirmed on **two independent grounds**, either of which would carry it alone.
+
+**Ground one — the un-injectability proof (§ 5.1.1(a)).** The audit alleged that a `generateQuestionInfo`
+ignoring question type would keep all 540 lines green. The stronger fact is that the shipped
+`generateQuestionInfo` *already ignores question type entirely* and all 540 lines are green **today**:
+`packages/question-info/src/` contains zero references to `question.type`, `QUESTION_TYPE` or `choices`,
+and the prompt is built from `question.name` and fixed constants. The audit's hypothetical is the
+production reality. A test file whose three top-level `describe` blocks are named for question types,
+and which contains not one assertion capable of distinguishing them, is not merely weak — it is
+documenting a distinction its subject does not make. That this had to be established by grep rather than
+by injection is a fact about the *method*, not a weakening of the *finding*.
+
+**Ground two — the substituted injection's observed outcome (§ 5.1.4).** With the question text emptied
+at `infoGeneration.ts:76` — the LLM asked about nothing at all, total product failure in production —
+all seven tests and all eleven assertions reported pass, byte-identically to both baselines. The in-band
+positive control at `:77` proves that block executes and that these tests do red when the runtime can
+see a change, so the green is blindness rather than a no-op. The mechanism is the bare `vi.fn()` at
+`questionTypes.test.ts:15-17`: it resolves to a value the test itself fixed, and no assertion in the
+file ever reads `mock.calls`, so the prompt — the only artefact the injection alters — is never
+observed.
+
+Two corrections ride along and are recorded rather than buried: the audit's description of `:535-537`
+is **wrong** (they are exact string equalities, not `toBeDefined()` variations, though still
+mock-in/mock-out), and its enumeration **misses** `:388`. Neither weakens the finding; the first
+sharpens its diagnosis and the second widens its scope by one site. Nothing in this record supports
+withdrawal, and ROADMAP criterion 2's withdrawal trigger — "reads blind but fails correctly" — never
+fired: the sites read blind and passed correctly-blind.
+
+**Verdict:** confirmed
+
+**5.1.6 Pre-specified regression for Phase 142**
+
+**The regression (re-apply this diff verbatim — and note it is the substitute, not the audit's
+sentence):** empty the question text in the prompt variables at
+`packages/question-info/src/core/infoGeneration.ts:76` — `question: question.name,` becomes
+`question: '',`. In production this is catastrophic: the question is the sole question-specific input to
+the prompt, so every question in a VAA would receive identical, contentless info sections and term
+definitions. Today every assertion in `questionTypes.test.ts` stays green through it, as does the
+unlisted `:388`.
+
+**Do not use the audit's own named regression as the negative control.** "Make `generateQuestionInfo`
+ignore question type" cannot be applied — the code already does, and there is nothing to delete. A
+Phase 142 that tries will spend its time hunting a branch that does not exist (RESEARCH Pitfall 3).
+
+**The target Phase 142 must reach** — and the audit already names it correctly at `.planning/audits/2026-08-11-fake-guard-sweep.md:651-654`: assert on
+the **prompt the mocked provider received**, via
+`mockLLMProvider.generateObjectParallel.mock.calls[0]`, so the three "Configurations" differ observably
+from one another. Concretely, three things the current file cannot do and the fixed file must:
+
+1. **The question text reaches the prompt.** Assert the request the provider received contains the
+   question's own name (e.g. assert the system message the provider was handed
+   contains the string `'Do you support universal healthcare?'`, the `name` the test set at
+   `questionTypes.test.ts:41`). This fails under the diff above; every current assertion passes.
+2. **The three Configurations differ.** Assert that the prompt built for a `BooleanQuestion`, a
+   7-point `OrdinalQuestion` and a `CategoricalQuestion` are **not equal to one another** — the minimal
+   assertion that gives the file's own `describe` structure meaning. This fails **today, before any
+   injection**, and is therefore a genuine defect the remediation must close rather than a
+   regression guard. It is the single highest-value assertion named in this document.
+3. **Choice labels are carried for categorical questions.** Assert the categorical question's choice
+   labels appear in its prompt. Also fails today.
+
+**The mock-in/mock-out tautology at `:535-537` is a separate remediation item.** Strengthening the
+matcher there is impossible — `toBe` on an exact string is already maximal. The fix is to stop asserting
+on values the test itself supplied to the mock, and assert instead on the *transform* the code applies
+between provider response and returned result (`packages/question-info/src/utils/responseTransformer.ts`),
+which is the only product logic on that path.
 
 ### 5.2 F15-B — `condenserStandalone.test.ts` (`result.arguments` never touched)
 
@@ -1770,3 +2122,29 @@ invisible.
 § 5.15.2. Rejected because the resulting red is produced by the absence of *any* throw rather than by
 the message confusion the finding names, and would have withdrawn a valid finding under a naive
 reading of ROADMAP criterion 2. The accepted design preserves the throw and varies only the message.
+
+**R-2 — F15-A: the audit's own named regression, "make `generateQuestionInfo` ignore question type".**
+Recorded by plan 03; proved un-injectable in § 5.1.1(a). Rejected because **there is nothing to
+delete**: `grep -rnE 'question\.type|QUESTION_TYPE|choices' packages/question-info/src/` exits 1 with
+no output, so the shipped code already ignores question type and the audit's hypothetical is the
+production reality. This is a different failure mode from R-1 — R-1's injection would have *over*-shot
+(removing the category); R-2's cannot be applied at all (zero delta). Its absence is nonetheless
+**stronger** evidence for F15-A than any injection, and § 5.1.5 rests one of its two grounds on it.
+Consequence for Phase 142: its negative control must come from § 5.1.6, never from the audit's
+sentence — the same consequence F16 carries for the opposite reason. Plan 06 lifts this into § 7 as a
+scope limit of the whole pass.
+
+**R-3 — F15-A: bypassing `responseTransformer.ts` to return the raw LLM response untransformed.**
+Recorded by plan 03; the second candidate `139-RESEARCH.md:478-480` names, matching the audit's second
+clause ("passed the LLM response through untouched"). Considered and **not run**. Rejected for blast
+radius without discrimination: it changes the shape of every returned object, so it would red
+`api.test.ts` and any consumer of the result type, while demonstrating the same single fact the chosen
+one-line substitute demonstrates — that the assertions read only the mocked payload. Recorded so a
+later reader sees it was weighed rather than overlooked.
+
+**R-4 — F15-A: the in-band positive control at `infoGeneration.ts:77` is a control, not a regression
+candidate.** Recorded by plan 03; stated in full in § 5.1.4. Renaming the `generalInstructions` **key**
+reds 7 of 7 tests via `loadPrompt`'s `throwIfVarsMissing`. It is deliberately excluded from § 5.1.6
+because it reds **before and after** any fix to the assertions, which would make Phase 142's
+remediation unverifiable — the same disqualification that removed the audit's F16 sentence from
+§ 5.4.6.
