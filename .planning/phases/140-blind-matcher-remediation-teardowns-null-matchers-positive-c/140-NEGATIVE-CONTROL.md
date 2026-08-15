@@ -2012,3 +2012,369 @@ Criterion 3 has three sub-claims; each is discharged by a named observation:
 
 <!-- Part III §§ 13-15 written by plan 140-03 (F9 RUN 1); § 16 (F9 RUN 2/2b/3 + verdict) by plan 140-04.
      The F3 lane (ASSERT-02) is appended by plans 140-05 and 140-06. -->
+
+---
+
+# Part IV — the F3 lane (ASSERT-02): the unfailable teardown row counts
+
+> Written by plan `140-06` (task 2). Depends on `140-05` (the shared helper + the 27-site
+> codemod + the row-count probe) and on `140-MEASUREMENT.md` § 8 (the adjudication that
+> chose the matcher this lane now tries to break).
+
+---
+
+## 17. F3 — the defect, the sample, and the adversary
+
+### 17.1 The defect, stated exactly
+
+Before this phase, all 27 `*.teardown.ts` files asserted their delete with
+`expect(rowsDeleted).toBeGreaterThanOrEqual(0)`. `countDeletedRows`
+(`packages/dev-seed/src/cli/teardown.ts:145-155`) initialises to `0` and only accumulates finite
+numbers, so the assertion's predicate is satisfied by every value the expression can produce. It is
+not a weak assertion; it is an **unfailable** one. A teardown whose delete silently matched nothing
+— a no-opping RPC, a table dropped from `ALLOWED_TEARDOWN_TABLES`, a scoping bug sending the RPC a
+different prefix — passed exactly as loudly as a teardown that removed every row.
+
+Post-adjudication the matcher is the before/after invariant (`140-MEASUREMENT.md` § 8): the delete
+must account for every row present under the prefix, and nothing under the prefix may survive it.
+
+### 17.2 The adversary — one mutation, in one place, reaching every site
+
+The mutation lives in `tests/tests/setup/shared/assertTeardown.ts`, which all 27 teardown files call.
+It forces `runTeardown` to receive a **deliberately non-matching prefix** while the `before` count is
+still taken from the **real** prefix — so rows genuinely exist, the delete genuinely accounts for none
+of them, and the invariant is violated exactly as a real scoping bug would violate it. It is
+deliberately **not** a hard-coded failing assertion: that would test the assertion's ability to fail,
+not its ability to detect the defect.
+
+```diff
+ export async function runTeardownAsserted(prefix: string, client: SupabaseAdminClient): Promise<void> {
+   const rowsBefore = await client.countRowsByPrefix(prefix);
+-  const { rowsDeleted } = await runTeardown(prefix, client);
++  const injectedNonMatchingPrefix = `${prefix}zzINJECTED-140-NO-MATCHzz-`; // INJECTED (140)
++  const { rowsDeleted } = await runTeardown(injectedNonMatchingPrefix, client); // INJECTED (140) adversary: the delete matches nothing
+   const rowsAfter = await client.countRowsByPrefix(prefix);
++  console.log(`[140-CONTROL] ${JSON.stringify({ prefix, rowsBefore, rowsDeleted, rowsAfter })}`); // INJECTED (140)
+```
+
+The injected prefix is longer than two characters, so `runTeardown`'s mass-delete guard
+(`teardown.ts:110-113`) is not tripped and is not the thing under test.
+
+The `console.log` is **observation-only and present in BOTH halves**. It is load-bearing for
+honesty: without it, RUN 1's silent pass would not prove rows were actually present, and "mutating a
+site whose legitimate `before` is 0 would prove nothing".
+
+**RUN 1** additionally replaces the two adjudicated assertions with the pre-change floor, restored
+verbatim as a throwaway (the same technique `137-NEGATIVE-CONTROL.md` § 4.2 used for its retired
+check):
+
+```ts
+  // INJECTED (140) RUN 1 blindness half: the pre-change non-negative floor,
+  // transiently restored in place of the two adjudicated assertions.
+  expect(rowsDeleted, 'runTeardown returned non-numeric rowsDeleted').toBeGreaterThanOrEqual(0); // INJECTED (140)
+```
+
+**Byte-identity of the adversary across the halves was established mechanically**, not by eye: both
+variants were generated from the single committed file by a script that inserts the same three
+adversary lines, and only then swaps the assertion block for RUN 1. A `diff` of the adversary lines
+(and their line numbers) between the two variants is empty.
+
+### 17.3 The sample — three structurally distinct shapes, and how each was made to have rows
+
+`140-MEASUREMENT.md` § 4 records `before = 0` at 25 of 26 sites under **full-suite** ordering, so a
+full-suite invocation would have injected an adversary into sites with nothing to delete and proved
+nothing. The sample therefore uses **scoped invocations chosen so the target site's setup is terminal
+in the pulled subset** — which is precisely the § 5.2 mechanism read in reverse. Each site's
+`rowsBefore` is reported by the `[140-CONTROL]` line, so the precondition is evidenced per run rather
+than assumed.
+
+| # | Shape | Teardown file | Prefix | Invocation making `before > 0` |
+|---|---|---|---|---|
+| 1 | delete is the whole body | `tests/tests/setup/perm/perm-1e1cg1co.teardown.ts` | `e2e-perm-1e1cg1co-` | `--project perm-1e1cg1co` — the first perm in the serial chain, so its own setup is the last to run |
+| 2 | `unregisterCandidate` **before** the delete | `tests/tests/setup/shared/base.teardown.ts` | `test-e2e-base-` | `--project cold-entry-dataroot` — a base-only leaf, so no perm setup's `extraTeardownPrefix: ['test-', …]` pre-clear wipes the base rows first |
+| 3 | delete as **step 1 of 3**, then two auth deletes and a settings restore | `tests/tests/setup/candidate/bank-auth-journey.teardown.ts` | `e2e-perm-notloc-` | `PLAYWRIGHT_BANK_AUTH=1 … --project data-setup-bank-auth-journey` — the setup project carries `teardown: 'data-teardown-bank-auth-journey'`, so seeding it runs the teardown after it, with **no browser leg and no OIDC round trip** |
+
+**Shape 3 was expected to be a named gap and is not.** `140-MEASUREMENT.md` § 4.1 recorded
+`bank-auth-journey.teardown.ts` as unmeasured because its **journey project** is opt-in behind
+`PLAYWRIGHT_BANK_AUTH` and needs the Idura OIDC environment. That is true of the *journey spec*, not
+of the *data lane*: `data-setup-bank-auth-journey` has no `dependencies`, seeds through the ordinary
+admin client, and pulls its teardown via the `teardown:` key. Driving the data lane alone reaches the
+teardown site with 38 rows present, without the mock issuer's browser leg mattering to the result.
+The gap that remains is narrower and is stated in § 19.6.
+
+### 17.4 The HYGIENE-LOOP, verbatim
+
+```bash
+# 1. PRE-GATE
+git status --porcelain -- apps tests packages          # empty
+grep -rn 'INJECTED (140)' apps packages tests          # no match
+
+# 2. INJECT (RUN 1 variant, then RUN 2 variant — § 17.2)
+cp /tmp/gsd-140/run{1,2}-assertTeardown.ts tests/tests/setup/shared/assertTeardown.ts
+
+# 3. RUN, combined output to logs OUTSIDE the repo
+tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/140-f3-ctl-run<N> --project <p> > /tmp/gsd-140/run<N>.log 2>&1
+
+# 4. REVERT
+git checkout -- tests/tests/setup/shared/assertTeardown.ts
+
+# 5. POST-GATE — all three must hold
+git status --porcelain -- tests/tests/setup/shared/assertTeardown.ts   # empty
+git status --porcelain -- apps tests packages                          # empty
+grep -rn 'INJECTED (140)' apps packages tests                          # no match
+```
+
+Ran after RUN 1 and again after RUN 2. All three checks held both times. The fourth, stronger check
+also held: `git diff --quiet HEAD -- tests/tests/setup/shared/assertTeardown.ts` — the helper is
+byte-identical to its committed state.
+
+### 17.5 Environment (delta from § 2)
+
+| Field | Value |
+|---|---|
+| Date (UTC) | 2026-08-15 |
+| Git HEAD, **both halves** | `15d2e6687367c7e5782561ae12a635d806777a57` (`test(140-06): adjudicate the F3 matcher against the measured table and land it`) |
+| Node · Yarn · Playwright · macOS | v24.14.1 · 4.13.0 · 1.58.2 · 26.5.1 |
+| Frontend port | 5273 (the wrapper spawns and owns its own dev server) |
+| Retries · workers | 0 · 6 (observed, from `results.json`) |
+| Preflight | 1 SUCCESS line, 0 FAILURE lines — **in all six runs** |
+| `dirty_files` at run start | 3 — `.vscode/settings.json`, `supabase/.temp/cli-latest` (both pre-existing and unrelated) and the injected helper |
+
+Every run does its own `yarn db:reset`, so the leaked rows the adversary deliberately fails to delete
+never carry into the next run.
+
+---
+
+## 18. RUN 1 — blindness: the pre-change non-negative floor
+
+### 18.1 Provenance — proof the floor was genuinely in force
+
+The injected file contained, at the point of assertion, exactly
+`expect(rowsDeleted, 'runTeardown returned non-numeric rowsDeleted').toBeGreaterThanOrEqual(0);` and
+**neither** adjudicated assertion (§ 17.2). This is the pre-change form as committed at
+`9c2a1535a` — restored transiently and reverted in the same task, never re-committed.
+
+### 18.2 The invocations, verbatim
+
+```bash
+tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/140-f3-ctl-run1a --project perm-1e1cg1co
+tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/140-f3-ctl-run1b --project cold-entry-dataroot
+PLAYWRIGHT_BANK_AUTH=1 tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/140-f3-ctl-run1c --project data-setup-bank-auth-journey
+```
+
+### 18.3 Observed — verbatim, not paraphrase
+
+```
+[140-CONTROL] {"prefix":"e2e-perm-1e1cg1co-","rowsBefore":14,"rowsDeleted":0,"rowsAfter":14}
+[140-CONTROL] {"prefix":"test-e2e-base-","rowsBefore":0,"rowsDeleted":0,"rowsAfter":0}
+  11 passed (1.8m)
+e2e-run.sh: preflight failures 0, successes 1
+RUN1A_EXIT=0
+
+[140-CONTROL] {"prefix":"test-e2e-base-","rowsBefore":142,"rowsDeleted":0,"rowsAfter":142}
+  4 passed (6.4s)
+e2e-run.sh: preflight failures 0, successes 1
+RUN1B_EXIT=0
+
+[140-CONTROL] {"prefix":"e2e-perm-notloc-","rowsBefore":38,"rowsDeleted":0,"rowsAfter":38}
+  2 passed (4.6s)
+e2e-run.sh: preflight failures 0, successes 1
+RUN1C_EXIT=0
+```
+
+`results.json` stats, all three: `unexpected 0, flaky 0, skipped 0` (11, 4 and 2 expected).
+
+### 18.4 The finding
+
+At every one of the three shapes the delete removed **nothing** while **14 / 142 / 38 rows were
+present**, the rows were still present afterwards — and every run exited **0 with everything green**.
+That is the defect F3 named, reproduced on demand: the teardown assertion could not tell a complete
+delete from a total no-op.
+
+The `rowsAfter` figures make the leak explicit. `rowsAfter === rowsBefore` in all three: the datasets
+survived their own teardown intact and the suite reported success.
+
+**Row 2 of RUN 1a is the boundary control, obtained for free.** `test-e2e-base-` shows
+`rowsBefore = 0` in the perm invocation — the base rows had already been wiped by the perm setup's
+`extraTeardownPrefix` pre-clear (`140-MEASUREMENT.md` § 5.2) — so the adversary was live at that site
+too and had nothing to expose. It is the same site that shows `142` in RUN 1b when no perm setup
+precedes it. The identical mutation is therefore visible at one site and legitimately invisible at
+another, decided entirely by whether rows were present.
+
+---
+
+## 19. RUN 2 — the catch: the adjudicated before/after invariant
+
+### 19.1 Provenance — the post-adjudication source
+
+Identical tree, identical adversary, identical invocations; the only difference is the assertion block,
+which is the committed matcher at HEAD `15d2e6687` (§ 17.2 shows what RUN 1 replaced it with).
+
+### 19.2 The invocations, verbatim
+
+```bash
+tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/140-f3-ctl-run2a --project perm-1e1cg1co
+tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/140-f3-ctl-run2b --project cold-entry-dataroot
+PLAYWRIGHT_BANK_AUTH=1 tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/140-f3-ctl-run2c --project data-setup-bank-auth-journey
+```
+
+### 19.3 Observed — verbatim, not paraphrase
+
+**Shape 1 — `perm-1e1cg1co.teardown.ts`** (`1 failed / 10 passed`, exit 1):
+
+```
+  1) [data-teardown-perm-1e1cg1co] › tests/tests/setup/perm/perm-1e1cg1co.teardown.ts:15:1 › delete perm-1e1cg1co dataset
+
+    Error: teardown of prefix 'e2e-perm-1e1cg1co-' deleted 0 row(s) but 14 row(s) were present under that prefix before the delete — the delete accounted for none or only some of them
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 14
+    Received: 0
+
+       at setup/shared/assertTeardown.ts:73
+
+        at runTeardownAsserted (…/tests/tests/setup/shared/assertTeardown.ts:73:5)
+        at …/tests/tests/setup/perm/perm-1e1cg1co.teardown.ts:17:3
+```
+
+**Shape 2 — `base.teardown.ts`** (`1 failed / 3 passed`, exit 1):
+
+```
+  1) [data-teardown-base] › tests/tests/setup/shared/base.teardown.ts:30:1 › delete base dataset
+
+    Error: teardown of prefix 'test-e2e-base-' deleted 0 row(s) but 142 row(s) were present under that prefix before the delete — the delete accounted for none or only some of them
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 142
+    Received: 0
+
+       at setup/shared/assertTeardown.ts:73
+
+        at runTeardownAsserted (…/tests/tests/setup/shared/assertTeardown.ts:73:5)
+        at …/tests/tests/setup/shared/base.teardown.ts:34:3
+```
+
+**Shape 3 — `bank-auth-journey.teardown.ts`** (`1 failed / 1 passed`, exit 1):
+
+```
+  1) [data-teardown-bank-auth-journey] › tests/tests/setup/candidate/bank-auth-journey.teardown.ts:28:1 › delete bank-auth-journey dataset + created auth user
+
+    Error: teardown of prefix 'e2e-perm-notloc-' deleted 0 row(s) but 38 row(s) were present under that prefix before the delete — the delete accounted for none or only some of them
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 38
+    Received: 0
+
+       at setup/shared/assertTeardown.ts:73
+
+        at runTeardownAsserted (…/tests/tests/setup/shared/assertTeardown.ts:73:5)
+        at …/tests/tests/setup/candidate/bank-auth-journey.teardown.ts:32:3
+```
+
+The `[140-CONTROL]` lines in all three RUN 2 logs are **numerically identical to RUN 1's**
+(`14/0/14`, `142/0/142`, `38/0/38`, and `0/0/0` at the base site of RUN 2a). The scenario did not
+change between the halves; only the assertion did.
+
+### 19.4 The two halves side by side — THE LOAD-BEARING TABLE
+
+TWO-COLUMN RULE (`139-VERDICTS.md` § 3.2) applied: **assertion outcome** and **project outcome** are
+separate columns, and the verdict cites the assertion column.
+
+| Half | git HEAD | Assertion form in force | Adversary | Site (prefix) | `before/deleted/after` | Run exit | **Assertion outcome** | Project outcome | Failing `file:line` |
+|---|---|---|---|---|---|---|---|---|---|
+| RUN 1a | `15d2e6687` | pre-change `toBeGreaterThanOrEqual(0)` | § 17.2 | `perm-1e1cg1co` (`e2e-perm-1e1cg1co-`) | 14 / 0 / 14 | 0 | **PASS (blind)** | PASS (11/11) | — (none) |
+| RUN 2a | `15d2e6687` | adjudicated before/after invariant | § 17.2, byte-identical | `perm-1e1cg1co` (`e2e-perm-1e1cg1co-`) | 14 / 0 / 14 | 1 | **FAIL (caught)** | FAIL (1 of 11) | `assertTeardown.ts:73:5` |
+| RUN 1b | `15d2e6687` | pre-change `toBeGreaterThanOrEqual(0)` | § 17.2 | `base` (`test-e2e-base-`) | 142 / 0 / 142 | 0 | **PASS (blind)** | PASS (4/4) | — (none) |
+| RUN 2b | `15d2e6687` | adjudicated before/after invariant | § 17.2, byte-identical | `base` (`test-e2e-base-`) | 142 / 0 / 142 | 1 | **FAIL (caught)** | FAIL (1 of 4) | `assertTeardown.ts:73:5` |
+| RUN 1c | `15d2e6687` | pre-change `toBeGreaterThanOrEqual(0)` | § 17.2 | `bank-auth-journey` (`e2e-perm-notloc-`) | 38 / 0 / 38 | 0 | **PASS (blind)** | PASS (2/2) | — (none) |
+| RUN 2c | `15d2e6687` | adjudicated before/after invariant | § 17.2, byte-identical | `bank-auth-journey` (`e2e-perm-notloc-`) | 38 / 0 / 38 | 1 | **FAIL (caught)** | FAIL (1 of 2) | `assertTeardown.ts:73:5` |
+| RUN 1a / 2a, **boundary row** | `15d2e6687` | both forms, in turn | § 17.2, live at this site too | `base` (`test-e2e-base-`), reached via the perm chain | 0 / 0 / 0 | — | **PASS in both halves** | PASS in both | — (none) |
+
+Unlike the F19 lane, **both** columns move here, because a `data-teardown-*` project's only assertion
+is this one. The discrimination is still read off the assertion column: PASS → FAIL under a scenario
+that did not change, at a `file:line` **inside the helper**, not at a call site and not at a
+downstream error.
+
+The final row is the boundary control and is the one row where the two halves agree — correctly. It
+is what shows the matcher is discriminating rather than always-on: the same live adversary at a site
+with `before === 0` passes under both forms, because a no-op delete of nothing is a legitimate
+teardown outcome and the measurement says it is the common one.
+
+### 19.5 COLLATERAL RULE — applied, and empty
+
+`results.json` for each RUN 2: `unexpected 1, flaky 0, skipped 0`. **Exactly one** project failed in
+each run, and in each case it is the teardown project carrying the adversary. Nothing else reddened —
+no spec, no setup, no cascade. The three RUN 1 counterparts are `unexpected 0` across 11, 4 and 2
+tests.
+
+One in-scope consequence, recorded rather than glossed: in RUN 2c the assertion throws at **step 1 of
+3**, so `bank-auth-journey.teardown.ts`'s later `deleteBankAuthCandidateBySub` /
+`unregisterCandidate` / `updateAppSettings` steps did not execute. That is inherent to putting a real
+assertion in an early step, it is what the shape-3 sample exists to expose, and the next run's
+`yarn db:reset` clears the consequence.
+
+### 19.6 The named gap that remains, and the coverage that is by construction
+
+**Observed:** three of three structurally distinct shapes, each at its own file, each red at the
+helper's own assertion line.
+
+**The named gap** is narrower than `140-MEASUREMENT.md` § 4.1 anticipated but it is real: the
+**bank-auth journey SPEC** (`candidate-bank-auth-journey.spec.ts`, the mock-OIDC browser round trip)
+was **not** run. Its teardown's *data* half was driven directly (§ 17.3), which is the half the helper
+participates in; the browser leg needs a separately started SvelteKit server carrying the IdP env plus
+`NODE_TLS_REJECT_UNAUTHORIZED=0` and a generated key env file
+(`tests/IDURA-TEST-RUNBOOK.md` §§ B-1, B-2), none of which `e2e-run.sh` provides — it spawns a plain
+dev server. So: the teardown site is observed; the journey that normally precedes it is not. Nothing
+in the observed failure depends on which spec ran before the teardown.
+
+**Honest limit of the shape sample.** The three shapes differ only in what SURROUNDS the helper call —
+the helper itself sees an identical call in all three, and the failing line is the same
+`assertTeardown.ts:73:5` in all three. The sample is therefore evidence about **integration** (the
+assertion reaches the call sites and reds there, in each surrounding structure), not additional
+evidence about the matcher.
+
+**The remaining 24 sites are covered by CONSTRUCTION, not by extrapolation.** Every `*.teardown.ts`
+routes through `runTeardownAsserted` and none carries a matcher of its own — the static check is in
+§ 20. One mutation of one file reached three different call sites in three different directories in
+this lane; the same mechanism reaches the other 24 for the same reason. This is the property the
+`140-05` codemod existed to create, and it is why criterion 1's "the 27th file is covered by
+construction rather than by 27 hand edits nobody re-checks" is satisfiable at all.
+
+### 19.7 Design notes — including what was NOT tried
+
+Recorded rather than hidden, per the § 5.6 convention.
+
+- **No intermediate adversary shape was discarded.** The § 17.2 mutation was the first and only one
+  implemented. Recorded explicitly so the absence of a "Discarded block" reads as a fact rather than
+  as an omission.
+- **A full-suite invocation was deliberately NOT used for either half.** It would have injected the
+  adversary into 25 sites whose legitimate `before` is 0 (`140-MEASUREMENT.md` § 4) and reddened only
+  `e2e-perm-analytics-`, at ~11 minutes per half. The scoped invocations reach three distinct shapes
+  with rows present, in under 4 minutes per half. The full-suite run this phase does need is the
+  post-change **gate** (§ 20), where the adversary is absent.
+- **The `[140-CONTROL]` probe was kept in BOTH halves rather than only in the failing one.** Putting
+  it only in RUN 2 would have made RUN 1's silent pass unfalsifiable — there would be no record that
+  rows were present when the old form passed.
+
+### 19.8 What the F3 pair does NOT discharge
+
+- **It does not exercise the CI runner.** All six runs are local, one machine, one session — the same
+  standing Phase-137 CI gap carried in `.planning/STATE.md` § Deferred Items.
+- **One run per half, no determinism claim.** Each of the six invocations was executed once at 0
+  retries. Nothing here establishes a repeat rate for either outcome.
+- **It does not prove the matcher catches a call-site `PREFIX` typo.** It does not, and
+  `140-MEASUREMENT.md` § 8.4 says so with the reason: one `prefix` argument feeds both the count and
+  the delete, so a typo presents as a legitimate `0/0/0`. The adversary here decouples them precisely
+  *because* the production code does not.
+- **It does not exercise the residue half in isolation.** Both clauses were violated simultaneously by
+  the adversary and the accounting clause (`:73`) throws first, so the residue clause (`:79`) has
+  never been observed failing. A defect that removed rows *without reporting them* — the only shape
+  that would red the residue clause alone — was not constructed.
+- **It says nothing about storage cleanup.** `storageRemoved` is outside both clauses; the probe
+  counts database rows only.
+- **It does not prove the 24 unobserved sites red.** They are covered by construction (§ 19.6) — one
+  helper, no local matchers — which is an argument from the static structure verified in § 20, not an
+  observation at those sites.
