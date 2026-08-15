@@ -799,4 +799,238 @@ replacement are recorded in § 5.6 rather than removed.
 
 ---
 
-<!-- Sections for the F3, F9 and F10 lanes are appended by plans 140-02, 140-03, 140-04 and 140-06. -->
+# Part II — the F10 lane (ASSERT-06): the unguarded soft-assertion budget
+
+**Written by `140-02-PLAN.md` (wave 2).** Same document, same standing acceptance rule, different
+adversary. The F19 lane above injected an *absence* into production source and asked whether a matcher
+noticed. This lane injects an *addition* into a test file and asks whether the harness notices — the
+mirror-image question, because F10 is a drift defect rather than a blindness defect: the file's header
+stated a contract the file had stopped honouring, and nothing in the repository could tell.
+
+- **Date:** 2026-08-15
+- **Plan:** `140-02-PLAN.md`
+- **Requirement:** ASSERT-06 — ROADMAP criterion 4 (fake-guard sweep 2026-08-11, finding F10)
+- **Decision in force:** D-01 — the count is **136**, and the guard must derive it from a measurement, not quote it from a planning document
+
+> **Every appearance of `137` in this Part is one of exactly two things**, and neither presents it as the
+> file's current count. Either (a) a **provenance** sentence attributing 137 to the 2026-08-11 sweep,
+> when it was true; or (b) the **adversary count** — `136 + 1` — measured while the injection was live,
+> which is the number the guard is *supposed* to report. **The file's current count is 136.** This note
+> exists because D-01 forbids carrying 137 forward as a current count, and a reader grepping for the
+> literal deserves to be told which of the two they have found.
+
+---
+
+## 9. F10 — measurement, and the adversary
+
+### 9.1 The measurement, and why the algorithm matters
+
+Taken at this plan's HEAD, in the working tree, at the time of the task — not quoted:
+
+```
+$ git rev-parse HEAD
+5f12d86158023ec17c060782d1a003a4f6d0c69a
+
+$ grep -o 'expect\.soft(' tests/tests/specs/voter/voter-journey.spec.ts | wc -l
+     136
+
+$ grep -c 'expect\.soft(' tests/tests/specs/voter/voter-journey.spec.ts
+136
+```
+
+**The measured value is 136, which agrees with D-01.** No divergence to record.
+
+**The two commands agree today and are nonetheless different algorithms**, which is why the guard may
+not be built on the second one. `grep -o … | wc -l` counts **occurrences**; `grep -c` counts **matching
+lines**. They coincide at HEAD only because no line in this file currently carries two soft-assertion
+calls. The day someone writes such a line, `grep -c` silently undercounts and a ceiling built on it
+silently widens. The guard landed in § 10 therefore counts occurrences —
+`(contents.match(/expect\.soft\(/g) ?? []).length` — and this paragraph is the reason.
+
+**Provenance of the superseded number.** 137 was the correct count when the sweep measured it on
+2026-08-11. Phase 138's `bea9fc97a` promoted one soft assertion to a hard `expect()` at
+`voter-journey.spec.ts:858`, taking 137 → 136. `.planning/audits/2026-08-11-fake-guard-sweep.md` and the
+completed-todo entry still say 137 and were **deliberately left untouched** — they were true when
+written, and rewriting a dated record to match today's tree is how provenance is destroyed.
+`git diff --stat .planning/audits/2026-08-11-fake-guard-sweep.md` is empty for this phase.
+
+### 9.2 The adversary — one added soft assertion, rebuildable
+
+The knob is a single one: **whether the counted guard exists**. The injection bytes, the injection site,
+the invocation and the working directory are held identical across both halves.
+
+```diff
+  tests/tests/specs/voter/voter-journey.spec.ts:609  (inside the existing
+  test.step('home page renders with a start button', …) body)
+
+       await voterHomePage.goToPage('en');
+       await expect.soft(page.getByTestId(testIds.voter.home.startButton)).toBeVisible();
++      expect.soft(true, 'budget adversary').toBe(true); // INJECTED (140)
+     });
+```
+
+The added assertion is **trivially true**, so it cannot change any test outcome. That is deliberate: an
+adversary that could itself fail would confound "the harness noticed the count changed" with "the added
+check went red". The only thing that changes is the population, from 136 to 137.
+
+Verified under injection, before any run:
+
+```
+$ grep -o 'expect\.soft(' tests/tests/specs/voter/voter-journey.spec.ts | wc -l
+     137
+```
+
+### 9.3 The HYGIENE-LOOP for this lane, verbatim
+
+```bash
+# 1. PRE-GATE
+git status --porcelain -- apps tests packages                       # MUST print nothing
+mkdir -p "${TMPDIR:-/tmp}/gsd-140"
+# 2. INJECT (diff in § 9.2)
+# 3. RUN, combined output to a log OUTSIDE the repo
+cd "$(git rev-parse --show-toplevel)/tests" \
+  && npx playwright test --list > "${TMPDIR:-/tmp}/gsd-140/f10-<half>.log" 2>&1; echo "EXIT=$?"
+# 4. REVERT
+git checkout -- tests/tests/specs/voter/voter-journey.spec.ts
+# 5. POST-GATE — all three must hold
+git status --porcelain -- tests/tests/specs/voter/voter-journey.spec.ts   # (a) empty
+git status --porcelain -- apps tests packages                            # (b) empty
+grep -rn 'INJECTED (140)' apps packages tests                            # (c) no match
+```
+
+**Why `--list` and not a test run.** `--list` loads `playwright.config.ts` in full and then enumerates
+the suite **without starting a browser, a dev server or a database**. Port 5173 is held by an unrelated
+Docker container in this environment and no dev server was started by this lane — consistent with the
+C-5 constraint recorded in § 2. `--list` is therefore both the safest and the *strictest* vehicle:
+strictest because it is the invocation with the least machinery between the shell and the config, so a
+guard that fires under `--list` fires under every heavier invocation too.
+
+**And `--list` is precisely the invocation the Phase-137 preflight cannot reach.** `--list` does not run
+`globalSetup`, which is where the served-application preflight lives — recorded and deliberately
+preserved in `137-NEGATIVE-CONTROL.md` § "The `--list` exemption is correct and deliberate — do not
+'fix' it". An F10 invariant implemented as a test, or inside `globalSetup`, would inherit that same
+blind spot. Implemented as module-level code in `playwright.config.ts`, it fires on `--list` anyway.
+That reach — not convenience — is why the guard lives at config load.
+
+### 9.4 Environment (delta from § 2)
+
+```
+date (UTC):        2026-08-15T12:56:53Z
+date (local):      2026-08-15 15:56:53 EEST
+git HEAD:          5f12d86158023ec17c060782d1a003a4f6d0c69a   (post-140-01)
+git branch:        feat-gsd-roadmap  (linked worktree)
+Playwright:        1.58.2
+runner cwd:        <repo root>/tests
+log directory:     ${TMPDIR}/gsd-140/   (OUTSIDE the repository, by design)
+ports bound:       none — no dev server, no database, no browser
+```
+
+---
+
+## RUN 1 — blindness: the unguarded config
+
+### 10.1 Provenance — proof the config was genuinely unguarded
+
+RUN 1 was taken at HEAD `5f12d861`, **before** any edit to `tests/playwright.config.ts`. At that HEAD
+the file's only module-level guard was the ORPHAN-PROBE GUARD (`:18-47`); `SOFT_ASSERTION_BUDGETS` did
+not exist anywhere in the repository:
+
+```
+$ grep -rn 'SOFT_ASSERTION_BUDGETS' tests/
+(no match)
+```
+
+The ordering is load-bearing and is not retrofittable: once the guard is committed, the unguarded half
+can never again be observed on this tree without deleting it. This is why the plan places the blind half
+in task 1, before the guard lands in task 2.
+
+### 10.2 The invocation, verbatim
+
+```bash
+cd /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests \
+  && npx playwright test --list > "${TMPDIR:-/tmp}/gsd-140/f10-before.log" 2>&1; echo "EXIT=$?"
+```
+
+### 10.3 Observed — verbatim, not paraphrase
+
+```
+EXIT=0
+```
+
+Head of `${TMPDIR}/gsd-140/f10-before.log`, verbatim:
+
+```
+[dotenv@17.3.1] injecting env (0) from .env -- tip: 🤖 agentic secret storage: https://dotenvx.com/as2
+Listing tests:
+  [data-teardown-perm-analytics-tracking] › setup/perm/perm-analytics-tracking.teardown.ts:15:1 › delete perm-analytics-tracking dataset
+  [data-teardown-perm-org-matching] › setup/perm/perm-org-matching.teardown.ts:15:1 › delete perm-org-matching dataset
+  [data-teardown-perm-interactive-info] › setup/perm/perm-interactive-info.teardown.ts:15:1 › delete perm-interactive-info dataset
+  [data-teardown-perm-question-video] › setup/perm/perm-question-video.teardown.ts:22:1 › delete perm-question-video dataset
+```
+
+Tail, verbatim:
+
+```
+  [voter-prefs-tracking] › specs/voter/voter-prefs-tracking.spec.ts:212:3 › voter-prefs-tracking (EFLOW-08) › user-preferences round-trip: consent + feedback + survey survive a reload
+Total: 143 tests in 94 files
+EXIT=0
+```
+
+A complete, normal listing — 143 tests in 94 files, exit 0 — produced while the file carried **137**
+soft assertions against a header claiming a three-slot budget.
+
+**The absence, measured rather than asserted.** "No error mentioning a budget" is a negative claim, so
+it is stated as a command and its output:
+
+```
+$ grep -c 'Error' "${TMPDIR}/gsd-140/f10-before.log"
+0
+$ grep -ci 'SOFT_ASSERTION' "${TMPDIR}/gsd-140/f10-before.log"
+0
+$ grep -ci 'budget' "${TMPDIR}/gsd-140/f10-before.log"
+1
+```
+
+**The one `budget` hit is not an error, and saying so matters more than hiding it.** It is a test title:
+
+```
+$ grep -in 'budget' "${TMPDIR}/gsd-140/f10-before.log"
+112:  [performance] › specs/perf/performance-budget.spec.ts:105:3 › Performance budgets › voter results page renders matches within budget
+```
+
+A naive `grep -i budget` over the log is therefore **non-zero in the blind half**, which would make it a
+worthless discriminator between the two halves. The discriminators that do work — and that § 11.4 uses
+— are the **exit code** and the presence of a **thrown error naming the spec path and both numbers**.
+Recording this is the difference between evidence and advocacy: the obvious grep was tried, it does not
+discriminate, and that is written down rather than quietly replaced.
+
+### 10.4 The revert and the three-check POST-GATE
+
+```
+$ git checkout -- tests/tests/specs/voter/voter-journey.spec.ts
+$ git status --porcelain -- tests/tests/specs/voter/voter-journey.spec.ts   # (a)
+(empty)
+$ git status --porcelain -- apps tests packages                            # (b)
+(empty)
+$ grep -rn 'INJECTED (140)' apps packages tests                            # (c)
+no match
+$ grep -o 'expect\.soft(' tests/tests/specs/voter/voter-journey.spec.ts | wc -l
+     136
+```
+
+### 10.5 The finding
+
+**With no counted guard, adding a soft assertion to `voter-journey.spec.ts` costs nothing and is seen by
+nothing.** The suite listed cleanly, exit 0, no warning, no error. The file's own header still claimed a
+three-slot budget while the file carried 137 — and the repository contained no mechanism capable of
+producing that contradiction.
+
+This is the mechanism behind F10 itself, reproduced on demand rather than argued from the audit record:
+the budget did not drift from 3 to 136 through a single careless commit, it drifted one honest addition
+at a time, and each of those additions ran exactly the run recorded above — green, silent, and
+indistinguishable from a change that honoured the contract. A guard that only fires when someone
+*chooses* to check is not a guard; the count claim in the header was documentation of an intent, and
+documentation cannot fail.
+
+<!-- Sections for the F3 and F9 lanes are appended by plans 140-03, 140-04, 140-05 and 140-06. -->
+<!-- The F10 lane's RUN 2, side-by-side table and verdict row are appended below by 140-02 task 3. -->
