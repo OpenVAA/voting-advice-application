@@ -108,11 +108,27 @@ for (const [rel, budget] of Object.entries(SOFT_ASSERTION_BUDGETS)) {
   if (actual !== budget) {
     throw new Error(
       `Soft-assertion budget diverged in ${rel} — the declared budget is ${budget} but the file ` +
-        `carries ${actual} (counted outside comments/strings). Convert the new assertion to a hard ` +
-        `\`expect()\`, or change the budget in SOFT_ASSERTION_BUDGETS in this file AND record the ` +
-        `reason in that spec's header (prose only — do not restate the number; the header deliberately ` +
-        `does not). A budget edited to match whatever the file happens to contain is not a budget ` +
-        `(fake-guard sweep 2026-08-11, finding F10).`
+        // Phase 140 WR-05: the count is taken outside comments; string literals are
+        // NOT excluded (a naive claim otherwise would itself be the F10 failure mode).
+        `carries ${actual} (counted outside comments; string literals are NOT excluded). Convert the ` +
+        `new assertion to a hard \`expect()\`, or change the budget in SOFT_ASSERTION_BUDGETS in this ` +
+        `file AND record the reason in that spec's header (prose only — do not restate the number; the ` +
+        `header deliberately does not). A budget edited to match whatever the file happens to contain ` +
+        `is not a budget (fake-guard sweep 2026-08-11, finding F10).`
+    );
+  }
+  // Phase 140 WR-05 (under-count hole): the count above matches only the literal
+  // `expect.soft(` token, so an aliased/destructured soft assertion — e.g.
+  // `const soft = expect.soft; soft(x).toBe(y)` — is invisible to it and the
+  // budget would silently over-report headroom, the direction that produced F10
+  // in the first place. Reject any bare `expect.soft` reference that is not
+  // immediately called, so an alias must be introduced deliberately with a
+  // budget-guard-aware follow-up rather than slipping past unseen.
+  if (/\bexpect\s*\.\s*soft\b(?!\s*\()/.test(source)) {
+    throw new Error(
+      `${rel} references \`expect.soft\` without calling it directly (an alias or a destructure). ` +
+        'The budget above counts call sites textually, so an aliased soft assertion is invisible to ' +
+        'it — call `expect.soft(...)` inline, or the budget silently over-reports headroom.'
     );
   }
 }
