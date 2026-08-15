@@ -102,13 +102,14 @@
  * The caller's `prefix` is forwarded verbatim — no default, no normalisation, no
  * fallback — so `runTeardown`'s two-character mass-delete guard keeps its full
  * reach over the delete, and the call is not wrapped in a try/catch that would
- * swallow it. Phase 140 WR-07: the SAME guard is re-checked at the top of
- * `runTeardownAsserted` itself (mirrored, not merely relied upon), so the
- * before-count probe below never runs an unbounded `LIKE '%'` scan for a
- * prefix `runTeardown` would refuse anyway.
+ * swallow it. Phase 140 WR-07 / IN-02: the SAME guard is re-checked at the top
+ * of `runTeardownAsserted` itself via dev-seed's exported `assertTeardownPrefix`
+ * (the SAME implementation `runTeardown` calls, not a hand-maintained mirror
+ * that could drift from it), so the before-count probe below never runs an
+ * unbounded `LIKE '%'` scan for a prefix `runTeardown` would refuse anyway.
  */
 
-import { runTeardown } from '@openvaa/dev-seed';
+import { assertTeardownPrefix, runTeardown } from '@openvaa/dev-seed';
 import { expect } from '@playwright/test';
 import type { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 
@@ -124,20 +125,20 @@ import type { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
  * @param client - admin client constructed by the caller (reused for its other steps).
  */
 export async function runTeardownAsserted(prefix: string, client: SupabaseAdminClient): Promise<void> {
-  // Phase 140 WR-07: mirror runTeardown's T-58-07-02 mass-delete guard here,
-  // BEFORE the probe below. Forwarding `prefix` verbatim (this file's
-  // docblock, "no default, no normalisation, no fallback") means
-  // `runTeardown`'s own guard still fires for a bad prefix — but only AFTER
-  // this function's `countRowsByPrefix` has already run ten unbounded
-  // `external_id LIKE '%'` exact-count scans across every content table.
-  // Read-only, so no data risk, but it inverts the guard's stated intent
-  // (refuse before touching the DB) and is the slowest possible way to reach
-  // an error that is decidable from the argument alone. Re-checking the
-  // identical invariant here means the probe never runs for an argument the
-  // delete will refuse anyway.
-  if (!prefix || prefix.length < 2) {
-    throw new Error(`runTeardownAsserted: prefix must be at least 2 characters (got '${prefix}').`);
-  }
+  // Phase 140 WR-07 / IN-02: re-check runTeardown's T-58-07-02 mass-delete
+  // guard here, BEFORE the probe below, via the SAME exported implementation
+  // `runTeardown` itself calls (`assertTeardownPrefix` from `@openvaa/dev-seed`)
+  // — not a hand-maintained mirror that could silently drift from it (IN-02).
+  // Forwarding `prefix` verbatim (this file's docblock, "no default, no
+  // normalisation, no fallback") means `runTeardown`'s own guard still fires
+  // for a bad prefix — but only AFTER this function's `countRowsByPrefix` has
+  // already run ten unbounded `external_id LIKE '%'` exact-count scans across
+  // every content table. Read-only, so no data risk, but it inverts the
+  // guard's stated intent (refuse before touching the DB) and is the slowest
+  // possible way to reach an error that is decidable from the argument alone.
+  // Re-checking the identical invariant here means the probe never runs for
+  // an argument the delete will refuse anyway.
+  assertTeardownPrefix(prefix, 'runTeardownAsserted');
 
   const rowsBefore = await client.countRowsByPrefix(prefix);
   // `storageRemoved` (portrait objects) is intentionally NOT destructured —

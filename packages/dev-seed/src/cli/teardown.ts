@@ -99,6 +99,33 @@ export interface TeardownResult {
 }
 
 /**
+ * T-58-07-02 mass-delete guard. `--prefix ''` (or a 1-character prefix) would
+ * be `LIKE %`-adjacent — matching effectively every `external_id` across all
+ * 10 content tables. Refuse with an actionable, caller-labelled message.
+ *
+ * Exported (Phase 140 review IN-02) so callers outside this package — namely
+ * `tests/tests/setup/shared/assertTeardown.ts`'s `runTeardownAsserted`, which
+ * re-checks the SAME invariant before probing so an unbounded `LIKE '%'`
+ * count scan never runs for a prefix `runTeardown` would refuse anyway —
+ * import the ONE implementation rather than hand-maintaining a second copy
+ * that could silently drift from this one (the exact duplicated-fact drift
+ * this phase exists to close elsewhere).
+ *
+ * @param prefix - the prefix to validate.
+ * @param callerLabel - identifies the calling site in the thrown message
+ *   (e.g. `'runTeardown'`, `'runTeardownAsserted'`) so a failure reads as a
+ *   sentence naming where it was raised.
+ * @throws Error if `prefix` is falsy or shorter than 2 characters.
+ */
+export function assertTeardownPrefix(prefix: string, callerLabel: string): void {
+  if (!prefix || prefix.length < 2) {
+    throw new Error(
+      `${callerLabel}: prefix must be at least 2 characters to prevent accidental mass-delete (got '${prefix}').`
+    );
+  }
+}
+
+/**
  * Pure orchestration — no process.exit, no env reads, no stdout writes.
  * The CLI wrapper below composes this with parseArgs + exit codes.
  *
@@ -106,12 +133,7 @@ export interface TeardownResult {
  * list/remove failure. Caller rephrases + prints.
  */
 export async function runTeardown(prefix: string, client: TeardownClient): Promise<TeardownResult> {
-  // T-58-07-02 mass-delete guard. `--prefix ''` would be `LIKE %` —
-  // equivalent to deleting every row with a non-null external_id across
-  // all 10 content tables. Refuse with an actionable message.
-  if (!prefix || prefix.length < 2) {
-    throw new Error(`--prefix must be at least 2 characters to prevent accidental mass-delete (got '${prefix}').`);
-  }
+  assertTeardownPrefix(prefix, 'runTeardown');
 
   // Step 1: collect the candidate UUIDs matching the prefix BEFORE we delete
   // the DB rows. After bulkDelete runs, `candidates.external_id LIKE $prefix%`
