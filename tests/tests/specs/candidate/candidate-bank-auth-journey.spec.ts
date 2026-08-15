@@ -133,10 +133,24 @@ test.describe('candidate bank-auth journey', { tag: ['@bank-auth'] }, () => {
 
     await test.step('2. continue → select election + advance', async () => {
       await page.getByTestId(testIds.candidate.preregister.continue).click();
-      // Land on the election selector (perm-not-located-2e2cg seeds 2 elections).
-      await expect(page.getByTestId(testIds.candidate.preregister.electionsList)).toBeVisible({
+      // Land on the election selector (perm-bankauth-notloc seeds 2 elections).
+      const electionsList = page.getByTestId(testIds.candidate.preregister.electionsList);
+      await expect(electionsList).toBeVisible({
         timeout: TIMEOUTS.slowPage
       });
+      // Phase 140 review WR-09: submitElection()/submitConstituency() select
+      // whichever option renders FIRST with no identity check, so if the DB
+      // carries another dataset (a prior full-suite run's base rows, a
+      // db:seed default template, a leaked perm dataset) the journey would
+      // silently preregister into a foreign election and still pass — the
+      // 3× determinism gate could pass without ever exercising D-04's own
+      // seeded dataset. Assert the seeded template's own election renders
+      // before selecting, so the walk cannot silently run on foreign data.
+      await expect(
+        electionsList,
+        'the preregister election selector must offer the perm-bankauth-notloc dataset (EL1); a ' +
+          'different set means the DB carries another dataset and this walk is not exercising D-04'
+      ).toContainText('[EL1]');
       await candidatePreregisterPage.submitElection();
     });
 
