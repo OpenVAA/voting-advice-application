@@ -385,7 +385,13 @@ export default defineConfig({
           },
           {
             name: 'data-teardown-bank-auth-journey',
-            testMatch: /bank-auth-journey\.teardown\.ts/
+            testMatch: /bank-auth-journey\.teardown\.ts/,
+            // reason (Phase 140 WR-02): the F3 accounting assertion in
+            // runTeardownAsserted is state-mutating — a retry always observes an
+            // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
+            // exactly the partial-delete class the assertion exists to catch, while
+            // local retries: 0 would still red on the same defect.
+            retries: 0
           },
           {
             name: 'bank-auth-journey',
@@ -438,7 +444,13 @@ export default defineConfig({
     },
     {
       name: 'data-teardown-base',
-      testMatch: /base\.teardown\.ts/
+      testMatch: /base\.teardown\.ts/,
+      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // runTeardownAsserted is state-mutating — a retry always observes an
+      // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
+      // exactly the partial-delete class the assertion exists to catch, while
+      // local retries: 0 would still red on the same defect.
+      retries: 0
     },
     // D-09 (Phase 138, INTEG-01) — `video: 'retain-on-failure'`. This project
     // owns the EPERM-07 term-trigger step, whose failure is a LATENCY signal,
@@ -651,7 +663,13 @@ export default defineConfig({
     },
     {
       name: 'data-teardown-perm-1e1cg1co',
-      testMatch: /perm-1e1cg1co\.teardown\.ts/
+      testMatch: /perm-1e1cg1co\.teardown\.ts/,
+      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // runTeardownAsserted is state-mutating — a retry always observes an
+      // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
+      // exactly the partial-delete class the assertion exists to catch, while
+      // local retries: 0 would still red on the same defect.
+      retries: 0
     },
     {
       name: 'perm-1e1cg1co',
@@ -679,7 +697,13 @@ export default defineConfig({
     },
     {
       name: 'data-teardown-perm-2e-shared',
-      testMatch: /perm-2e-shared\.teardown\.ts/
+      testMatch: /perm-2e-shared\.teardown\.ts/,
+      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // runTeardownAsserted is state-mutating — a retry always observes an
+      // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
+      // exactly the partial-delete class the assertion exists to catch, while
+      // local retries: 0 would still red on the same defect.
+      retries: 0
     },
     {
       name: 'perm-2e-shared',
@@ -700,7 +724,13 @@ export default defineConfig({
     },
     {
       name: 'data-teardown-perm-2e-asymmetric',
-      testMatch: /perm-2e-asymmetric\.teardown\.ts/
+      testMatch: /perm-2e-asymmetric\.teardown\.ts/,
+      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // runTeardownAsserted is state-mutating — a retry always observes an
+      // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
+      // exactly the partial-delete class the assertion exists to catch, while
+      // local retries: 0 would still red on the same defect.
+      retries: 0
     },
     {
       name: 'perm-2e-asymmetric',
@@ -721,7 +751,13 @@ export default defineConfig({
     },
     {
       name: 'data-teardown-perm-startfromcg',
-      testMatch: /perm-startfromcg\.teardown\.ts/
+      testMatch: /perm-startfromcg\.teardown\.ts/,
+      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // runTeardownAsserted is state-mutating — a retry always observes an
+      // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
+      // exactly the partial-delete class the assertion exists to catch, while
+      // local retries: 0 would still red on the same defect.
+      retries: 0
     },
     {
       name: 'perm-startfromcg',
@@ -742,7 +778,13 @@ export default defineConfig({
     },
     {
       name: 'data-teardown-perm-disjoint-1co',
-      testMatch: /perm-disjoint-1co\.teardown\.ts/
+      testMatch: /perm-disjoint-1co\.teardown\.ts/,
+      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // runTeardownAsserted is state-mutating — a retry always observes an
+      // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
+      // exactly the partial-delete class the assertion exists to catch, while
+      // local retries: 0 would still red on the same defect.
+      retries: 0
     },
     {
       name: 'perm-disjoint-1co',
@@ -763,7 +805,13 @@ export default defineConfig({
     },
     {
       name: 'data-teardown-perm-disable-election-1co',
-      testMatch: /perm-disable-election-1co\.teardown\.ts/
+      testMatch: /perm-disable-election-1co\.teardown\.ts/,
+      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // runTeardownAsserted is state-mutating — a retry always observes an
+      // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
+      // exactly the partial-delete class the assertion exists to catch, while
+      // local retries: 0 would still red on the same defect.
+      retries: 0
     },
     {
       name: 'perm-disable-election-1co',
@@ -784,7 +832,13 @@ export default defineConfig({
     },
     {
       name: 'data-teardown-perm-disable-election-2co',
-      testMatch: /perm-disable-election-2co\.teardown\.ts/
+      testMatch: /perm-disable-election-2co\.teardown\.ts/,
+      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // runTeardownAsserted is state-mutating — a retry always observes an
+      // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
+      // exactly the partial-delete class the assertion exists to catch, while
+      // local retries: 0 would still red on the same defect.
+      retries: 0
     },
     {
       name: 'perm-disable-election-2co',
@@ -805,7 +859,13 @@ export default defineConfig({
     },
     {
       name: 'data-teardown-perm-not-located-2e2cg',
-      testMatch: /perm-not-located-2e2cg\.teardown\.ts/
+      testMatch: /perm-not-located-2e2cg\.teardown\.ts/,
+      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // runTeardownAsserted is state-mutating — a retry always observes an
+      // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
+      // exactly the partial-delete class the assertion exists to catch, while
+      // local retries: 0 would still red on the same defect.
+      retries: 0
     },
     {
       name: 'perm-not-located-2e2cg',
@@ -840,7 +900,14 @@ export default defineConfig({
     },
     {
       name: 'data-teardown-candidate-journey',
-      testMatch: /candidate-journey\.teardown\.ts/
+      testMatch: /candidate-journey\.teardown\.ts/,
+      // reason (Phase 140 WR-02): candidate-journey.teardown.ts performs no
+      // prefix delete (it only calls unregisterCandidate — CR-02), so there is
+      // no runTeardownAsserted accounting to mask here. Set to 0 anyway for
+      // consistency with every other data-teardown-* project, so a future edit
+      // that adds a delete + runTeardownAsserted call to this file inherits the
+      // non-retrying posture by default rather than needing a new opt-in.
+      retries: 0
     },
     {
       name: 'candidate-journey',
@@ -881,7 +948,13 @@ export default defineConfig({
     },
     {
       name: 'data-teardown-perm-access-disable',
-      testMatch: /perm-access-disable\.teardown\.ts/
+      testMatch: /perm-access-disable\.teardown\.ts/,
+      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // runTeardownAsserted is state-mutating — a retry always observes an
+      // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
+      // exactly the partial-delete class the assertion exists to catch, while
+      // local retries: 0 would still red on the same defect.
+      retries: 0
     },
     {
       name: 'perm-access-disable',
@@ -915,7 +988,13 @@ export default defineConfig({
     },
     {
       name: 'data-teardown-perm-per-app-notifications',
-      testMatch: /perm-per-app-notifications\.teardown\.ts/
+      testMatch: /perm-per-app-notifications\.teardown\.ts/,
+      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // runTeardownAsserted is state-mutating — a retry always observes an
+      // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
+      // exactly the partial-delete class the assertion exists to catch, while
+      // local retries: 0 would still red on the same defect.
+      retries: 0
     },
     {
       name: 'perm-per-app-notifications',
@@ -937,7 +1016,13 @@ export default defineConfig({
     },
     {
       name: 'data-teardown-perm-missing-nominations',
-      testMatch: /perm-missing-nominations\.teardown\.ts/
+      testMatch: /perm-missing-nominations\.teardown\.ts/,
+      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // runTeardownAsserted is state-mutating — a retry always observes an
+      // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
+      // exactly the partial-delete class the assertion exists to catch, while
+      // local retries: 0 would still red on the same defect.
+      retries: 0
     },
     {
       name: 'perm-missing-nominations',
@@ -960,7 +1045,13 @@ export default defineConfig({
     },
     {
       name: 'data-teardown-perm-localisation-positive',
-      testMatch: /perm-localisation-positive\.teardown\.ts/
+      testMatch: /perm-localisation-positive\.teardown\.ts/,
+      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // runTeardownAsserted is state-mutating — a retry always observes an
+      // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
+      // exactly the partial-delete class the assertion exists to catch, while
+      // local retries: 0 would still red on the same defect.
+      retries: 0
     },
     {
       name: 'perm-localisation-positive',
@@ -995,7 +1086,13 @@ export default defineConfig({
     },
     {
       name: 'data-teardown-perm-answers-locked',
-      testMatch: /perm-answers-locked\.teardown\.ts/
+      testMatch: /perm-answers-locked\.teardown\.ts/,
+      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // runTeardownAsserted is state-mutating — a retry always observes an
+      // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
+      // exactly the partial-delete class the assertion exists to catch, while
+      // local retries: 0 would still red on the same defect.
+      retries: 0
     },
     {
       name: 'perm-answers-locked',
@@ -1015,7 +1112,13 @@ export default defineConfig({
     },
     {
       name: 'data-teardown-perm-hide-hero',
-      testMatch: /perm-hide-hero\.teardown\.ts/
+      testMatch: /perm-hide-hero\.teardown\.ts/,
+      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // runTeardownAsserted is state-mutating — a retry always observes an
+      // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
+      // exactly the partial-delete class the assertion exists to catch, while
+      // local retries: 0 would still red on the same defect.
+      retries: 0
     },
     {
       name: 'perm-hide-hero',
@@ -1040,7 +1143,13 @@ export default defineConfig({
     },
     {
       name: 'data-teardown-perm-show-feedback-survey',
-      testMatch: /perm-show-feedback-survey\.teardown\.ts/
+      testMatch: /perm-show-feedback-survey\.teardown\.ts/,
+      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // runTeardownAsserted is state-mutating — a retry always observes an
+      // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
+      // exactly the partial-delete class the assertion exists to catch, while
+      // local retries: 0 would still red on the same defect.
+      retries: 0
     },
     {
       name: 'perm-show-feedback-survey',
@@ -1061,7 +1170,13 @@ export default defineConfig({
     },
     {
       name: 'data-teardown-perm-header-show-help',
-      testMatch: /perm-header-show-help\.teardown\.ts/
+      testMatch: /perm-header-show-help\.teardown\.ts/,
+      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // runTeardownAsserted is state-mutating — a retry always observes an
+      // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
+      // exactly the partial-delete class the assertion exists to catch, while
+      // local retries: 0 would still red on the same defect.
+      retries: 0
     },
     {
       name: 'perm-header-show-help',
@@ -1082,7 +1197,13 @@ export default defineConfig({
     },
     {
       name: 'data-teardown-perm-hide-all-nominations',
-      testMatch: /perm-hide-all-nominations\.teardown\.ts/
+      testMatch: /perm-hide-all-nominations\.teardown\.ts/,
+      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // runTeardownAsserted is state-mutating — a retry always observes an
+      // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
+      // exactly the partial-delete class the assertion exists to catch, while
+      // local retries: 0 would still red on the same defect.
+      retries: 0
     },
     {
       name: 'perm-hide-all-nominations',
@@ -1103,7 +1224,13 @@ export default defineConfig({
     },
     {
       name: 'data-teardown-perm-hide-if-missing-answers',
-      testMatch: /perm-hide-if-missing-answers\.teardown\.ts/
+      testMatch: /perm-hide-if-missing-answers\.teardown\.ts/,
+      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // runTeardownAsserted is state-mutating — a retry always observes an
+      // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
+      // exactly the partial-delete class the assertion exists to catch, while
+      // local retries: 0 would still red on the same defect.
+      retries: 0
     },
     {
       name: 'perm-hide-if-missing-answers',
@@ -1124,7 +1251,13 @@ export default defineConfig({
     },
     {
       name: 'data-teardown-perm-hide-election-tags',
-      testMatch: /perm-hide-election-tags\.teardown\.ts/
+      testMatch: /perm-hide-election-tags\.teardown\.ts/,
+      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // runTeardownAsserted is state-mutating — a retry always observes an
+      // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
+      // exactly the partial-delete class the assertion exists to catch, while
+      // local retries: 0 would still red on the same defect.
+      retries: 0
     },
     {
       name: 'perm-hide-election-tags',
@@ -1145,7 +1278,13 @@ export default defineConfig({
     },
     {
       name: 'data-teardown-perm-hide-category-tags',
-      testMatch: /perm-hide-category-tags\.teardown\.ts/
+      testMatch: /perm-hide-category-tags\.teardown\.ts/,
+      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // runTeardownAsserted is state-mutating — a retry always observes an
+      // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
+      // exactly the partial-delete class the assertion exists to catch, while
+      // local retries: 0 would still red on the same defect.
+      retries: 0
     },
     {
       name: 'perm-hide-category-tags',
@@ -1167,7 +1306,13 @@ export default defineConfig({
     },
     {
       name: 'data-teardown-perm-disable-allow-open',
-      testMatch: /perm-disable-allow-open\.teardown\.ts/
+      testMatch: /perm-disable-allow-open\.teardown\.ts/,
+      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // runTeardownAsserted is state-mutating — a retry always observes an
+      // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
+      // exactly the partial-delete class the assertion exists to catch, while
+      // local retries: 0 would still red on the same defect.
+      retries: 0
     },
     {
       name: 'perm-disable-allow-open',
@@ -1190,7 +1335,13 @@ export default defineConfig({
     },
     {
       name: 'data-teardown-perm-question-video',
-      testMatch: /perm-question-video\.teardown\.ts/
+      testMatch: /perm-question-video\.teardown\.ts/,
+      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // runTeardownAsserted is state-mutating — a retry always observes an
+      // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
+      // exactly the partial-delete class the assertion exists to catch, while
+      // local retries: 0 would still red on the same defect.
+      retries: 0
     },
     {
       name: 'perm-question-video',
@@ -1215,7 +1366,13 @@ export default defineConfig({
     },
     {
       name: 'data-teardown-perm-interactive-info',
-      testMatch: /perm-interactive-info\.teardown\.ts/
+      testMatch: /perm-interactive-info\.teardown\.ts/,
+      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // runTeardownAsserted is state-mutating — a retry always observes an
+      // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
+      // exactly the partial-delete class the assertion exists to catch, while
+      // local retries: 0 would still red on the same defect.
+      retries: 0
     },
     {
       name: 'perm-interactive-info',
@@ -1242,7 +1399,13 @@ export default defineConfig({
     },
     {
       name: 'data-teardown-perm-org-matching',
-      testMatch: /perm-org-matching\.teardown\.ts/
+      testMatch: /perm-org-matching\.teardown\.ts/,
+      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // runTeardownAsserted is state-mutating — a retry always observes an
+      // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
+      // exactly the partial-delete class the assertion exists to catch, while
+      // local retries: 0 would still red on the same defect.
+      retries: 0
     },
     {
       name: 'perm-org-matching',
@@ -1270,7 +1433,13 @@ export default defineConfig({
     },
     {
       name: 'data-teardown-perm-analytics-tracking',
-      testMatch: /perm-analytics-tracking\.teardown\.ts/
+      testMatch: /perm-analytics-tracking\.teardown\.ts/,
+      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // runTeardownAsserted is state-mutating — a retry always observes an
+      // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
+      // exactly the partial-delete class the assertion exists to catch, while
+      // local retries: 0 would still red on the same defect.
+      retries: 0
     },
     {
       name: 'voter-prefs-tracking',
