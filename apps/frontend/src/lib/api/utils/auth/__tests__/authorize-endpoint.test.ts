@@ -141,11 +141,9 @@ describe('POST /api/oidc/authorize', () => {
     // Extract the request param from the URL
     const url = new URL(authorizeUrl);
     const requestParam = url.searchParams.get('request');
-    expect(requestParam).toBeDefined();
-
-    // JWT has 3 dot-separated segments
-    const parts = requestParam!.split('.');
-    expect(parts).toHaveLength(3);
+    expect(requestParam, "authorize URL is missing the 'request' (JAR) parameter").toEqual(
+      expect.stringMatching(/^[\w-]+\.[\w-]+\.[\w-]+$/)
+    );
   });
 
   it('JAR is signed with RS256 algorithm', async () => {
