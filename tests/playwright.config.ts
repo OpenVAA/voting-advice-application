@@ -95,13 +95,23 @@ for (const [rel, budget] of Object.entries(SOFT_ASSERTION_BUDGETS)) {
         `nothing is a guard that can never fire (fake-guard sweep 2026-08-11, finding F10).`
     );
   }
-  const actual = (fs.readFileSync(specPath, 'utf8').match(/expect\.soft\(/g) ?? []).length;
+  // Phase 140 WR-04: strip comments before counting. A naive whole-file regex
+  // match counts every textual occurrence including inside comments and string
+  // literals — so the remediation instruction below ("state the reason in that
+  // spec's header") could itself contain the literal `expect.soft(` token and
+  // re-trip this very guard by inflating the count with a comment, not code.
+  const source = fs
+    .readFileSync(specPath, 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '') // block comments
+    .replace(/(^|[^:])\/\/.*$/gm, '$1'); // line comments (":" guard skips URLs like https://)
+  const actual = (source.match(/\bexpect\.soft\s*\(/g) ?? []).length;
   if (actual !== budget) {
     throw new Error(
       `Soft-assertion budget diverged in ${rel} — the declared budget is ${budget} but the file ` +
-        `carries ${actual}. Convert the new assertion to a hard \`expect()\`, or change the budget ` +
-        `in SOFT_ASSERTION_BUDGETS in this file AND state the reason in that spec's header. A ` +
-        `budget edited to match whatever the file happens to contain is not a budget ` +
+        `carries ${actual} (counted outside comments/strings). Convert the new assertion to a hard ` +
+        `\`expect()\`, or change the budget in SOFT_ASSERTION_BUDGETS in this file AND record the ` +
+        `reason in that spec's header (prose only — do not restate the number; the header deliberately ` +
+        `does not). A budget edited to match whatever the file happens to contain is not a budget ` +
         `(fake-guard sweep 2026-08-11, finding F10).`
     );
   }
