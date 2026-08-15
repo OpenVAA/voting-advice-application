@@ -53,7 +53,7 @@ Corollary for the visual gate specifically: baselines are captured only in
 
 - [x] **ASSERT-01**: The single-source findings — F15, F16, F18, F19 and the F20 table — are re-read against the live code and each is independently **confirmed or withdrawn** before any remediation is planned around it. — Evidence: `139-VERDICTS.md` § 4 (15 confirmed, 0 withdrawn across the fifteen enumerated findings; each verdict backed by an executed injection run recorded in § 5), propagation to all three criterion-4 targets recorded in § 6.
 - [ ] **ASSERT-02**: **F3** — the 27 `*.teardown.ts` row-count assertions assert the expected count; a teardown that deletes nothing fails.
-- [ ] **ASSERT-03**: **F19** — the `toBeDefined()` sites on `URLSearchParams.get()` / `FormData.get()` (which return `string | null` and never `undefined`) assert an actual value; a missing parameter fails.
+- [x] **ASSERT-03**: **F19** — the `toBeDefined()` sites on `URLSearchParams.get()` / `FormData.get()` (which return `string | null` and never `undefined`) assert an actual value; a missing parameter fails.
 - [ ] **ASSERT-04**: **F13** — `TemplateSchema` rejects unknown fields, so the six "accepts field X" tests fail when the schema stops declaring that field. Fallout from tightening is owned, not worked around.
 - [ ] **ASSERT-05**: **F9** — a positive control exists for the `perm-hide-category-tags` / `perm-hide-election-tags` absence assertions; a tag that never renders at all now fails the pair instead of satisfying it.
 - [ ] **ASSERT-06**: **F10** — `voter-journey.spec.ts`'s documented `expect.soft` budget matches the file's actual count (**136**, not 3), or the stated budget is enforced. _(Was 137; corrected 2026-08-15 — Phase 138's `bea9fc97a` promoted one soft assertion to hard in that file after the sweep measured it. See ROADMAP Phase 140 criterion 4 for the provenance.)_
@@ -142,7 +142,7 @@ Roadmap: `.planning/ROADMAP.md` (Phases 137-150). Future Requirements above are 
 | INTEG-06 | Phase 137 — E2E Preflight Integrity — Assert the Served Application | Satisfied |
 | ASSERT-01 | Phase 139 — Single-Source Sweep Findings — Confirm or Withdraw | Complete |
 | ASSERT-02 | Phase 140 — Blind-Matcher Remediation | Pending |
-| ASSERT-03 | Phase 140 — Blind-Matcher Remediation | Pending |
+| ASSERT-03 | Phase 140 — Blind-Matcher Remediation | Complete |
 | ASSERT-04 | Phase 144 — Seed-Template Strict Typing + Unknown-Prop Guard | Pending |
 | ASSERT-05 | Phase 140 — Blind-Matcher Remediation | Pending |
 | ASSERT-06 | Phase 140 — Blind-Matcher Remediation | Pending |

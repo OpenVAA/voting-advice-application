@@ -3,17 +3,17 @@ gsd_state_version: 1.0
 milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 140
-current_phase_name: Blind-Matcher Remediation — Teardowns, Null-Matchers, Positive Controls
+current_phase_name: blind-matcher-remediation-teardowns-null-matchers-positive-c
 status: executing
-stopped_at: Completed 139-07-PLAN.md — phase 139 complete, ready for verification
-last_updated: "2026-08-15T10:11:48.252Z"
-last_activity: 2026-08-14
-last_activity_desc: Phase 138 marked complete
+stopped_at: Completed 140-01-PLAN.md
+last_updated: "2026-08-15T10:48:03.698Z"
+last_activity: 2026-08-15
+last_activity_desc: Phase 140 execution started
 progress:
   total_phases: 14
   completed_phases: 3
   total_plans: 24
-  completed_plans: 18
+  completed_plans: 19
   percent: 21
 ---
 
@@ -24,15 +24,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 139 — single-source-sweep-findings-confirm-or-withdraw
+**Current focus:** Phase 140 — blind-matcher-remediation-teardowns-null-matchers-positive-c
 
 ## Current Position
 
 Milestone: v2.15 (Phases 137-150, 14 phases, 38 requirements)
-Phase: 140 — Blind-Matcher Remediation — Teardowns, Null-Matchers, Positive Controls
-Plan: Not started
+Phase: 140 (blind-matcher-remediation-teardowns-null-matchers-positive-c) — EXECUTING
+Plan: 2 of 6
 Status: Ready to execute
-Last activity: 2026-08-14 — Phase 139 complete, transitioned to Phase 140
+Last activity: 2026-08-15 — Phase 140 execution started
 
 **Standing acceptance rule for every v2.15 phase:** prove the guard fails before claiming it guards —
 negative control run twice (once against the old assertion to demonstrate blindness, once against the
@@ -48,8 +48,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-14T13:28:01.864Z
-Stopped at: Completed 139-07-PLAN.md — phase 139 complete, ready for verification
+Last session: 2026-08-15T10:47:55.557Z
+Stopped at: Completed 140-01-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -143,6 +143,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 139 P05 | 32 min | 3 tasks | 1 files |
 | Phase 139 P06 | 18min | 2 tasks | 1 files |
 | Phase 139 P07 | 12min | 3 tasks | 3 files |
+| Phase 140 P01 | ~15min | 3 tasks | 4 files |
 
 ## Deferred Items
 
@@ -622,6 +623,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Phase 139 plan 07 — ASSERT-01 traceability status set to `Complete` (majority value, matches the Phase-138 rows that carry inline evidence clauses) rather than `Satisfied`
 - [Phase ?]: Phase 139 plan 07 — criterion-4 record corrections K-1..K-3 deliberately NOT propagated into the audit's prose: criterion 4 forces an in-place audit edit only on a withdrawal, and the withdrawal set is empty
 - [Phase ?]: Phase 139 plan 07 — the six unenumerated F19-class sites were NOT added to ASSERT-07; criterion 4 is a shrink mechanism and this phase does not use it to widen scope on sites it never verdicted (proposed to Phase 140 instead)
+- [Phase ?]: F19 matcher: expect(v, msg).toEqual(expect.stringMatching(/^[\w-]+\.[\w-]+\.[\w-]+$/)) over toMatch — vitest's toMatch throws a raw TypeError on null and drops the custom message; identical discrimination, better diagnostics (140-01)
+- [Phase ?]: Phase 142's F19 obligation under ASSERT-07 is discharged by the 140-01 diff — one diff serves both; Phase 142 must not re-apply the idura.ts injections (140-01)
 
 ### Quick Tasks Completed
 
