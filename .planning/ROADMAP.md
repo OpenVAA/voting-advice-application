@@ -397,11 +397,28 @@ Plans:
 **Plans**: 6 plans (fully serial — waves 1-6; see note below)
 
 Plans:
+**Wave 1**
+
 - [ ] 140-01-PLAN.md — TRACER: F19 null-blind matchers repaired at all three sites, two-run control run at each, `140-NEGATIVE-CONTROL.md` established (ASSERT-03)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 140-02-PLAN.md — F10 counted `expect.soft` guard at config load + truthful `voter-journey.spec.ts` header, blindness half observed first (ASSERT-06)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 140-03-PLAN.md — F9 seeded preconditions: complementary-tag template edits + observed blindness of the absence-only pair (ASSERT-05)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [ ] 140-04-PLAN.md — F9 positive controls in both perm specs (house form), catch half observed, `140-VALIDATION.md` reconciled (ASSERT-05)
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
 - [ ] 140-05-PLAN.md — F3 shared `assertTeardown` helper + exact-count probe + 27-site codemod (behaviour-preserving) + instrumented measurement (ASSERT-02)
+
+**Wave 6** *(blocked on Wave 5 completion)*
+
 - [ ] 140-06-PLAN.md — F3 matcher adjudicated against the measured table, two-run control, phase gate (ASSERT-02, criterion 5)
 
 _Wave note: the six plans are strictly serial. Every E2E-bearing plan contends for the same single dev
