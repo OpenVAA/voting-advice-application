@@ -688,7 +688,7 @@ time so that each recorded `file:line` is attributable to a single vehicle.
 |---|---|---|
 | **1 — F3** (teardown delete matching nothing FAILS by name; pre-change form PASSES; sample spans helper + 27 call sites) | plans `140-05` (measurement + helper + codemod) and `140-06` (matcher adjudicated against the measured table, two-run control) | **owned by a later plan** — not attempted here, not silently absent |
 | **2 — F19** (removing `request` / `client_assertion` makes the assertion itself fail naming the missing parameter, not a downstream `TypeError`; passes under the old `toBeDefined()`; two-run control at all three sites) | **this plan (`140-01`)** — §§ 4, 5, 5.4, 5.7, 5.8 | **DISCHARGED** |
-| **3 — F9** (perm specs FAIL when the tag stops rendering anywhere; positive control is seeded data, not a comment) | plans `140-03` (seeded preconditions + blindness half) and `140-04` (positive controls, catch half) | **owned by a later plan** |
+| **3 — F9** (perm specs FAIL when the tag stops rendering anywhere; positive control is seeded data, not a comment) | plans `140-03` (seeded preconditions + RUN 1 blindness, §§ 13-15) and `140-04` (presence assertions + RUN 2 / 2b catch + RUN 3 restored, § 16) | **DISCHARGED.** Both specs observed red at their OWN presence-assertion line (`perm-hide-election-tags.spec.ts:43:7`, `perm-hide-category-tags.spec.ts:43:7`) under the § 13.3 render-path deletion, where the byte-identical injection left both green in RUN 1; byte-restored tree re-runs 86/86 green. Severally, not jointly — the serial chain skips the downstream spec once the upstream one fails (§ 16.4, § 16.11) |
 | **4 — F10** (stated `expect.soft` budget matches the real count **136**, or a counted guard enforces it and fails when one more is added, with the addition made and the failure observed) | **plan `140-02`** — Part II §§ 9, 10, 11, 11.5, 12 | **DISCHARGED — on BOTH alternatives.** The header now states the real posture and restates no number, AND `SOFT_ASSERTION_BUDGETS` + a counted config-load guard enforce the measured 136. The addition was made and the failure observed (§ 11.3) after the unguarded half (§ 10.3) and before the guard was accepted — order followed, not retrofitted (§ 12.1) |
 | **5 — suites green after the edits, Phase-137 preflight satisfied on every evidence run** | plan `140-06` (phase gate). **Partially advanced here:** `yarn test:unit` (21/21 tasks, frontend 773 tests / 54 files) and `yarn lint:check` (0 errors, incl. `typecheck:tests`) both exit 0 at this plan's HEAD, and `svelte-check` reports 0 errors / 0 warnings across 2683 files. **No E2E evidence** — see § 7.4. | **partially advanced; owned by `140-06`** |
 
@@ -1615,5 +1615,400 @@ nothing in the suite detects the deletion.
 
 ---
 
-<!-- Part III §§ 13-15 written by plan 140-03 (F9 RUN 1). § 16 (F9 RUN 2 + verdict) is appended by
-     plan 140-04; the F3 lane (ASSERT-02) is appended by plans 140-05 and 140-06. -->
+## 16. RUN 2 — the catch: presence assertions against the same dead render path
+
+### 16.1 Provenance — the post-assertion HEAD
+
+The assertions landed in commit `c6b3abaec4b6db0ad85201178f58b255fd8fa913`
+(`test(140-04): pair each perm tag absence assertion with a presence control`). Each spec now carries
+its absence assertion **and** a counted presence assertion on the tag its SIBLING dataset suppresses:
+
+```console
+$ grep -n 'toHaveCount\|toBeGreaterThan' tests/tests/specs/perm/perm-hide-category-tags.spec.ts
+30:    await expect(page.getByTestId(testIds.shared.categoryTag)).toHaveCount(0);
+43:    ).toBeGreaterThan(0);
+$ grep -n 'toHaveCount\|toBeGreaterThan' tests/tests/specs/perm/perm-hide-election-tags.spec.ts
+31:    await expect(page.getByTestId(testIds.shared.electionTag)).toHaveCount(0);
+43:    ).toBeGreaterThan(0);
+```
+
+The absence assertions are byte-identical to their 2026-06-03 form; nothing was weakened. Before any
+injection, the pair was run clean at that content (`tests/e2e-runs/140-f9-green`, HEAD `9df37999d`,
+the pre-commit working tree): **exit 0, 86 expected / 0 unexpected / 0 flaky / 0 skipped, preflight 1
+success / 0 failures**. A presence assertion that could not pass on a healthy tree would make every
+later red uninterpretable, so that run is a precondition of this section rather than part of the
+control.
+
+### 16.2 The injection — byte-identical to § 13.3, and the one byte that is not
+
+The § 13.3 diff was extracted **programmatically** from this document (not retyped) and applied with
+`git apply`:
+
+```console
+$ awk '/^```diff$/{f=1;next} f&&/^```$/{exit} f{print}' 140-NEGATIVE-CONTROL.md  # § 13.3 block
+$ git apply --check "$SCRATCH/f9-injection.diff"
+APPLIES CLEANLY
+```
+
+**The pre-image is provably identical.** The recorded diff's pre-image index is `d2d618bfd`, and the
+file at this plan's HEAD hashes to exactly that:
+
+```console
+$ git rev-parse HEAD:apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.svelte
+d2d618bfd0475b4776f9db12a73826dea25229d0
+```
+
+**The post-image hash does not reproduce, and the reason is measured rather than assumed.** § 13.3
+records `index d2d618bfd..dbf93ba0d`; applying that same diff here yields `6ee50ee71`. The recorded
+`dbf93ba0d` is not in the object database — plan `140-03` never committed its injection, so the blob
+was never written — and therefore cannot be diffed against. What *can* be measured is the record
+itself. Comparing the diff extracted from this document against the diff `git` produced from the
+applied working tree, byte for byte with the index lines stripped:
+
+```console
+$ diff <(grep -v '^index ' f9-injection.diff | cat -et) <(grep -v '^index ' f9-actual.diff | cat -et)
+5c5
+< $
+---
+>  $
+```
+
+One line differs, and it is the **blank context line** after the `@@` header: in a real unified diff it
+is a single space, and the markdown fenced block that records it has that trailing space stripped. So
+the recording medium demonstrably loses trailing whitespace. A byte-level hash equality with plan
+`140-03`'s injected file therefore cannot be re-derived from the record, and that limit is stated here
+rather than glossed.
+
+What *is* established, and what the comparability of the halves actually rests on:
+
+1. the pre-image blob is identical (`d2d618bfd`), so both halves mutate the same source file;
+2. the hunk body — every `-` line, every `+` line, every non-blank context line — is character-identical
+   between the recorded diff and the applied one;
+3. the observable cannot be affected by the residual difference. Whatever the missing byte is, it is
+   trailing whitespace on a deleted line or inside an HTML comment; neither can change a rendered DOM,
+   and the assertion under test counts DOM elements.
+
+### 16.3 RUN 2 — the § 13.3 adversary, verbatim
+
+```bash
+tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/140-f9-after \
+  --project perm-hide-category-tags
+```
+
+```
+  1 failed
+    [perm-hide-election-tags] › tests/tests/specs/perm/perm-hide-election-tags.spec.ts:23:3 › perm-hide-election-tags › showElectionTags=false: election-tag absent on /questions
+  2 did not run
+  83 passed (6.5m)
+e2e-run.sh: playwright exit 1
+e2e-run.sh: preflight failures 0, successes 1
+E2E_EXIT=1
+```
+
+```
+exit:                 1
+head:                 c6b3abaec4b6db0ad85201178f58b255fd8fa913
+started / ended:      2026-08-15T13:45:26Z / 2026-08-15T13:52:30Z
+preflight successes:  1
+preflight failures:   0
+observed_workers:     6
+observed_retries:     0
+totals:               83 expected, 1 unexpected, 0 flaky, 2 skipped
+```
+
+The injection was live for the whole run, per the runner's own pre-run capture
+(`tests/e2e-runs/140-f9-after/worktree-status.txt`, written before Playwright starts):
+
+```
+ M .vscode/settings.json
+ M apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.svelte
+ M supabase/.temp/cli-latest
+```
+
+The two specs are already committed at this HEAD, so — exactly as in RUN 1 — the injection is the sole
+source difference between this run and the clean run that bracket it.
+
+The failure, verbatim from `stdout.log`:
+
+```
+  1) [perm-hide-election-tags] › tests/tests/specs/perm/perm-hide-election-tags.spec.ts:23:3 › perm-hide-election-tags › showElectionTags=false: election-tag absent on /questions
+
+    Error: ASSERT-05 positive control: the perm-hide-election-tags dataset overlay sets showCategoryTags: true so the complementary category-tag must render on /questions; with none rendered, the election-tag absence assertion above is vacuously satisfied by a heading that renders no tags at all
+
+    expect(received).toBeGreaterThan(expected)
+
+    Expected: > 0
+    Received:   0
+
+      41 |       count,
+      42 |       'ASSERT-05 positive control: the perm-hide-election-tags dataset overlay sets showCategoryTags: true so the complementary category-tag must render on /questions; with none rendered, the election-tag absence assertion above is vacuously satisfied by a heading that renders no tags at all'
+    > 43 |     ).toBeGreaterThan(0);
+         |       ^
+        at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/perm/perm-hide-election-tags.spec.ts:43:7
+```
+
+**Failing `file:line`: `tests/tests/specs/perm/perm-hide-election-tags.spec.ts:43:7`** — the presence
+assertion's own line, not the absence assertion at `:31` and not a walk helper. The message names the
+seeded precondition (`showCategoryTags: true`) verbatim, which is the property that makes the red
+legible without opening a trace.
+
+Per-project outcomes for the pair, from `tests/e2e-runs/140-f9-after/results.json`:
+
+| Project | Title | Status | Failing `file:line` |
+|---|---|---|---|
+| `data-setup-perm-hide-election-tags` | import perm-hide-election-tags dataset | expected | — |
+| `perm-hide-election-tags` | showElectionTags=false: election-tag absent on /questions | **unexpected (FAIL)** | `perm-hide-election-tags.spec.ts:43:7` |
+| `data-setup-perm-hide-category-tags` | import perm-hide-category-tags dataset | **skipped (did not run)** | — |
+| `perm-hide-category-tags` | showCategoryTags=false: category-tag absent on /questions | **skipped (did not run)** | — |
+
+### 16.4 The harness fact RUN 2 uncovered — a serial chain cannot observe its own downstream half
+
+The plan predicted BOTH specs failing in this single run. Only one did, and the reason is structural,
+not a defect in either assertion.
+
+`tests/playwright.config.ts` chains the perm projects **serially** so that only one dataset is resident
+at a time: `data-setup-perm-hide-category-tags` declares `dependencies: ['perm-hide-election-tags']`.
+That is the same edge § 14 relied on for transitive coverage — and it cuts both ways. When
+`perm-hide-election-tags` FAILS, Playwright skips every project downstream of it, so the
+category-tags setup and spec are reported `did not run`. Under this repository's own rule a
+`did not run` counts as a failure, and this document counts it as one; but a cascade skip is **not an
+observation of that spec's own assertion**, and recording it as one would be exactly the reconstruction
+this phase's prohibitions forbid.
+
+The plan's acceptance criterion asks for two distinct failing `file:line` values, one per spec. Under
+the full § 13.3 adversary that is **unobtainable in a single run** — a fact about the harness that was
+measured here rather than predicted. RUN 2b obtains the missing observation directly.
+
+### 16.5 RUN 2b — the subset adversary that reaches the downstream spec
+
+The adversary is a **strict subset** of § 13.3: only the `ElectionTag` block is deleted, and the
+`CategoryTag` block is left intact.
+
+```diff
+--- a/apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.svelte
++++ b/apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.svelte
+@@ -77,11 +77,7 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
+
+ <HeadingGroup {...concatClass(restProps, 'relative')}>
+   <PreHeading class="gap-sm flex flex-row flex-wrap items-center justify-center">
+-    {#if appSettings.elections.showElectionTags}
+-      {#each getElectionsToShow({ question, elections }) as election}
+-        <ElectionTag {election} {onShadedBg} />
+-      {/each}
+-    {/if}
++    <!-- INJECTED (140) - ElectionTag render block deleted for the F9 negative control (subset of the 13.3 adversary) -->
+     {#if appSettings.questions.showCategoryTags}
+       <CategoryTag
+         category={question.category}
+```
+
+Why this reaches further: `perm-hide-election-tags` asserts `election-tag` ABSENT (still true — the
+setting is false and now the block is gone too) and `category-tag` PRESENT (still true — that block is
+untouched), so it PASSES and the chain proceeds to the category-tags dataset, where the deleted
+`ElectionTag` is precisely what that spec's presence assertion demands.
+
+```bash
+tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/140-f9-after-b \
+  --project perm-hide-category-tags
+```
+
+```
+  1 failed
+    [perm-hide-category-tags] › tests/tests/specs/perm/perm-hide-category-tags.spec.ts:22:3 › perm-hide-category-tags › showCategoryTags=false: category-tag absent on /questions
+  85 passed (6.5m)
+e2e-run.sh: playwright exit 1
+e2e-run.sh: preflight failures 0, successes 1
+E2E_EXIT=1
+```
+
+```
+exit:                 1
+head:                 c6b3abaec4b6db0ad85201178f58b255fd8fa913
+started / ended:      2026-08-15T13:54:04Z / 2026-08-15T14:01:14Z
+preflight successes:  1
+preflight failures:   0
+observed_workers:     6
+observed_retries:     0
+totals:               85 expected, 1 unexpected, 0 flaky, 0 skipped
+```
+
+```
+  1) [perm-hide-category-tags] › tests/tests/specs/perm/perm-hide-category-tags.spec.ts:22:3 › perm-hide-category-tags › showCategoryTags=false: category-tag absent on /questions
+
+    Error: ASSERT-05 positive control: the perm-hide-category-tags dataset seeds elections: 2 so the complementary election-tag must render on /questions; with none rendered, the category-tag absence assertion above is vacuously satisfied by a heading that renders no tags at all
+
+    expect(received).toBeGreaterThan(expected)
+
+    Expected: > 0
+    Received:   0
+
+      41 |       count,
+      42 |       'ASSERT-05 positive control: the perm-hide-category-tags dataset seeds elections: 2 so the complementary election-tag must render on /questions; with none rendered, the category-tag absence assertion above is vacuously satisfied by a heading that renders no tags at all'
+    > 43 |     ).toBeGreaterThan(0);
+         |       ^
+        at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/perm/perm-hide-category-tags.spec.ts:43:7
+```
+
+**Failing `file:line`: `tests/tests/specs/perm/perm-hide-category-tags.spec.ts:43:7`** — again the
+presence assertion's own line, again with the seeded precondition (`elections: 2`) named in the message.
+
+RUN 2b buys a second thing the plan did not ask for and which is worth more than the line it was run to
+obtain: **the two controls are independently discriminating.** Under an adversary that removes only the
+ElectionTag, `perm-hide-election-tags` stays green and `perm-hide-category-tags` goes red — each spec
+reds on the deletion of the tag it is responsible for observing, not on "something changed in the
+heading".
+
+### 16.6 RUN 3 — the revert and the three-check POST-GATE
+
+```console
+$ git checkout -- apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.svelte
+
+$ git status --porcelain -- apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.svelte
+                                        # (a) empty - PASS
+$ git status --porcelain -- apps tests packages
+                                        # (b) empty - PASS
+$ grep -rn 'INJECTED (140)' apps packages tests
+                                        # (c) no matches - PASS
+
+$ git hash-object apps/.../QuestionHeading.svelte
+d2d618bfd0475b4776f9db12a73826dea25229d0
+$ git rev-parse HEAD:apps/.../QuestionHeading.svelte
+d2d618bfd0475b4776f9db12a73826dea25229d0
+$ grep -c 'showElectionTags' apps/.../QuestionHeading.svelte
+1
+$ grep -c 'showCategoryTags' apps/.../QuestionHeading.svelte
+2
+```
+
+The blob-hash equality is a stronger statement of byte-restoration than either grep: it asserts the
+whole file equals HEAD. The `showCategoryTags` count is **2**, not the 1 the plan predicted, for the
+reason plan `140-03` already measured and recorded in § 15.4 — the component's own `### Settings` doc
+block at line 18 also names the setting. The prediction was wrong about the file, not the file about
+the prediction, and no prose was deleted to make a grep agree.
+
+```bash
+tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/140-f9-restored \
+  --project perm-hide-category-tags
+```
+
+```
+  86 passed (6.6m)
+e2e-run.sh: playwright exit 0
+e2e-run.sh: preflight failures 0, successes 1
+E2E_EXIT=0
+```
+
+```
+exit:                 0
+head:                 c6b3abaec4b6db0ad85201178f58b255fd8fa913
+started / ended:      2026-08-15T14:01:44Z / 2026-08-15T14:08:57Z
+totals:               86 expected, 0 unexpected, 0 flaky, 0 skipped
+```
+
+**RUN 3 is the row that makes rows 2 and 2b mean something.** Without it, "assertions present → red" is
+consistent with a presence assertion that is simply wrong — a locator that never matches, a walk that
+lands on the wrong page. With it, the only variable that moved is the adversary.
+
+### 16.7 The four runs side by side — THE LOAD-BEARING TABLE
+
+| Half | git HEAD | Injection | Exit | `perm-hide-election-tags` | `perm-hide-category-tags` | Failing `file:line` |
+|---|---|---|---|---|---|---|
+| **RUN 1 — blind** (plan `140-03`, § 15) | `4c0bf5839` (absence assertions only) | both blocks deleted (§ 13.3) | **0** | expected (**PASS**) | expected (**PASS**) | — (nothing failed) |
+| **RUN 2 — catch** | `c6b3abaec` (presence assertions added) | both blocks deleted (§ 13.3), applied from the recorded diff | **1** | **unexpected (FAIL)** | skipped (did not run — cascade) | `perm-hide-election-tags.spec.ts:43:7` |
+| **RUN 2b — catch, downstream** | `c6b3abaec` | ElectionTag block only — a strict subset of § 13.3 | **1** | expected (**PASS**) | **unexpected (FAIL)** | `perm-hide-category-tags.spec.ts:43:7` |
+| **RUN 3 — restored** | `c6b3abaec` | none (byte-restored, blob `d2d618bfd`) | **0** | expected (**PASS**) | expected (**PASS**) | — |
+
+**Read rows 1 and 2 together — that is the two-run control.** Same adversary, same invocation, same
+machine, same session; the ONLY difference is the presence assertion added between them. Exit `0 → 1`.
+Outcome for `perm-hide-election-tags`: `PASS → FAIL`, at a line that did not exist in RUN 1.
+
+**Read rows 2 and 2b together for the second spec.** RUN 2's cascade skip is a harness consequence
+(§ 16.4), not an observation; RUN 2b supplies the direct observation for `perm-hide-category-tags` under
+a subset of the same adversary, at that spec's own presence line.
+
+**Read row 3 for soundness.** Both specs green on a byte-restored tree, so neither red was an artifact
+of the new assertions.
+
+### 16.8 COLLATERAL RULE — applied
+
+Per `139-VERDICTS.md` § 3.3, any test other than the two enumerated sites that goes red under these
+injections is collateral: recorded verbatim, explicitly not bearing on the verdict.
+
+**RUN 2:** two collateral outcomes, both `skipped`, both cascade consequences of the enumerated failure —
+`data-setup-perm-hide-category-tags` (import perm-hide-category-tags dataset) and
+`perm-hide-category-tags` itself. `results.json` reports `unexpected: 1`, so no *other* project failed.
+
+**RUN 2b:** none. `85 expected, 1 unexpected, 0 flaky, 0 skipped` — the single failure is the enumerated
+site.
+
+**The collateral column is nearly empty for the same reason it was in § 15.6, and that is the finding
+restated.** `voter-journey`, `candidate-journey` and the other 20 perm specs all executed against builds
+with a deleted tag-render path, in both injected runs, and none of them noticed. The suite's blindness is
+unchanged everywhere except at the two specs this plan repaired.
+
+### 16.9 The finding
+
+**Under the byte-identical § 13.3 adversary, the pair now reds where it previously stayed green — and
+each spec reds at its own presence assertion, naming the seeded precondition that should have made the
+tag render.**
+
+Three things this establishes that § 15 could not:
+
+1. **The DOM observation § 15.7 said was missing is now direct.** RUN 1 observed only that nothing in the
+   suite detected the deletion; it did not observe the served page. RUN 2 and RUN 2b each read the
+   rendered DOM through `page.getByTestId(...).count()` and got **0** where the seeded dataset requires
+   at least one. RUN 1's premise is confirmed rather than retroactively invalidated.
+2. **The absence assertions were never the problem, and were not touched.** In both injected runs both
+   `toHaveCount(0)` assertions still passed. The pair fails *because of the positive control* — which is
+   precisely the design: the remedy for a vacuous absence assertion is not a stronger matcher on the same
+   observable but a second, complementary observable in the same dataset.
+3. **The precondition is data, not prose.** The red messages quote `elections: 2` and
+   `showCategoryTags: true`, both of which live in
+   `packages/dev-seed/src/templates/e2e/perm/perm-hide-{category,election}-tags.ts` and are enforced at
+   seed time by the exact-equality `app_settings` assertion at
+   `tests/tests/setup/shared/setupFromTemplate.ts:256-260`. Delete the seeded precondition and the
+   *setup* fails loudly; a comment could not do that.
+
+### 16.10 Verdict — the F9 lane (ASSERT-05)
+
+The § 7.1 table has been updated in place; the criterion-3 row is reproduced here with its reasoning.
+
+| ROADMAP criterion | Discharged by | Status |
+|---|---|---|
+| **3 — F9** (perm specs FAIL when the tag stops rendering anywhere; positive control is seeded data, not a comment) | plans `140-03` (seeded preconditions, RUN 1 blindness) and `140-04` (presence assertions, RUN 2 / 2b catch, RUN 3 restored) — §§ 13-16 | **DISCHARGED** |
+
+Criterion 3 has three sub-claims; each is discharged by a named observation:
+
+| Sub-claim | Discharged by | Observation |
+|---|---|---|
+| "the pair go red" | RUN 2 (§ 16.3) + RUN 2b (§ 16.5) | `perm-hide-election-tags.spec.ts:43:7` and `perm-hide-category-tags.spec.ts:43:7`, each `unexpected`, against RUN 1's PASS/PASS on the same adversary |
+| "when the tag element stops rendering **anywhere**" (not because a setting changed) | the adversary itself (§ 13.3 / § 16.5) | the injections delete the `{#if}` render blocks from production source. No `app_settings` value, template overlay or seed row is touched in either run — the setup projects' exact-equality assertions passed in every run, including the failing ones |
+| "the positive control is seeded data, not a comment" | § 13.2 (plan `140-03`) + the red messages | the preconditions are `elections: 2` and `questions: { showCategoryTags: true }` in the two templates, cited by path in both failure messages and enforced at seed time |
+
+### 16.11 What the F9 pair does NOT discharge
+
+- **The two failing lines come from two different runs, not one.** RUN 2 alone cannot produce them:
+  the serial project chain skips the downstream spec once the upstream one fails (§ 16.4). The pair is
+  therefore proven red *severally*, under the full adversary and a strict subset of it, rather than
+  *jointly* in a single invocation. Anyone re-running the full § 13.3 adversary should expect
+  `1 failed / 2 did not run`, not `2 failed`.
+- **Byte-identity with plan `140-03`'s injected file is not hash-proven** (§ 16.2). It is established by
+  an identical pre-image blob plus a character-identical hunk body, with the residual difference bounded
+  to trailing whitespace that cannot reach the DOM.
+- **It says nothing about the other 20 perm specs.** ASSERT-05's scope is these two. The same
+  absence-only shape may exist elsewhere in `tests/tests/specs/perm/`, and both injected runs show the
+  rest of the suite still does not notice a deleted tag-render path.
+- **It does not prove the two settings suppress the tags.** Each spec proves the complementary tag
+  renders and its own tag does not; neither run flips `showCategoryTags` / `showElectionTags` to true in
+  its own dataset to observe the tag appear. That stronger claim — the tag renders when the setting is
+  on and not when it is off, in the same dataset — is not what criterion 3 asks for and is not made here.
+- **No CI run has exercised any of this.** All four runs are local (macOS 26.5.1, Node v24.14.1,
+  Playwright 1.58.2, one machine, one session), the same standing Phase-137 CI gap carried in
+  `.planning/STATE.md` § Deferred Items.
+- **One run each, no determinism claim.** Each half was executed once at 0 retries. Nothing here
+  establishes a repeat rate for either the green or the red.
+
+---
+
+<!-- Part III §§ 13-15 written by plan 140-03 (F9 RUN 1); § 16 (F9 RUN 2/2b/3 + verdict) by plan 140-04.
+     The F3 lane (ASSERT-02) is appended by plans 140-05 and 140-06. -->
