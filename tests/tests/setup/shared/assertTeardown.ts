@@ -4,7 +4,9 @@
  *
  * ROLE: wraps `runTeardown(prefix, client)` and asserts the delete accounted for
  * every row that was present under the prefix, and that none survived it. Every
- * `*.teardown.ts` project routes through this function.
+ * `*.teardown.ts` project that performs a prefix delete routes through this
+ * function (27 of 28; `candidate-journey.teardown.ts` performs no delete — it
+ * only unregisters an auth user, so it has nothing to route through here).
  *
  * RATIONALE: the assertion previously lived inline at 27 call sites, so
  * strengthening it meant 27 hand edits and the 27th file was covered only by
@@ -31,12 +33,27 @@
  * `before === 0` must pass here and does.
  *
  * WHAT IT CATCHES: a delete that accounts for none (or only some) of the rows
- * that were present — a silently no-opping `bulk_delete`, a table dropped from
- * `ALLOWED_TEARDOWN_TABLES`, a scoping bug that sends the RPC a different prefix
- * from the one counted. WHAT IT DOES NOT CATCH: a typo in a call site's `PREFIX`
- * constant, which propagates to the count and the delete alike and therefore
- * presents as a legitimate `0/0/0` no-op. Stated so nobody reads more into it
- * than the measurement supports (`140-MEASUREMENT.md` § Adjudication).
+ * that were present — a silently no-opping `bulk_delete`, a scoping bug that
+ * sends the RPC a different prefix from the one counted.
+ *
+ * WHAT IT DOES NOT CATCH:
+ *   - A typo in a call site's `PREFIX` constant, which propagates to the count
+ *     and the delete alike and therefore presents as a legitimate `0/0/0`
+ *     no-op.
+ *   - A table removed from `ALLOWED_TEARDOWN_TABLES`. `countRowsByPrefix`
+ *     (`tests/tests/utils/supabaseAdminClient.ts:263`) iterates that SAME
+ *     constant, by design (its own docblock: "the SAME list `runTeardown`'s
+ *     `bulkDelete` clears — so the probe cannot drift from the delete it
+ *     measures" — a second hand-maintained copy under `tests/` was rejected
+ *     as exactly the duplicated-fact drift this phase closed elsewhere, per
+ *     `packages/dev-seed/src/cli/teardown.ts:65-67`). Sharing the constant is
+ *     the right call for scope-drift, but it means a table dropped from that
+ *     list goes blind on BOTH sides at once: `rowsBefore` stops counting it,
+ *     `bulk_delete` stops deleting it, `rowsDeleted` drops by the same
+ *     amount, and `rowsAfter` never looks at it again — a clean `N/N/0` while
+ *     every row in the dropped table survives.
+ * Stated so nobody reads more into this assertion than the measurement
+ * supports (`140-MEASUREMENT.md` § Adjudication).
  *
  * The caller's `prefix` is forwarded verbatim — no default, no normalisation, no
  * fallback — so `runTeardown`'s two-character mass-delete guard keeps its full
