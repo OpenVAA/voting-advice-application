@@ -641,16 +641,162 @@ time so that each recorded `file:line` is attributable to a single vehicle.
 
 ## 6. What this pair does and does not prove
 
-<!-- F19 lane written by 140-01 task 3; later lanes appended by 140-02/03/04/06. -->
+### 6.1 The F19 lane (ASSERT-03) — written by `140-01`
+
+**What it proves.**
+
+- Each of the three assertions **now fails at its own line**, and the failure text **names the missing
+  parameter** (`request` at sites 1-2, `client_assertion` at site 3), under the recorded absence
+  injection. Observed, twice per site, with the failing `file:line` captured for both halves.
+- The **pre-repair form was blind to the same absence**: `expect(null).toBeDefined()` passed at every
+  site while the parameter was genuinely `null`. This is what makes the pair evidence rather than a
+  single observation — it separates "the guard caught it" from "something else was already red".
+- The file was rescued in the pre-repair half only by an **incidental downstream `TypeError`** on a
+  `.split('.')` that was never written as a guard. Criterion 2's phrasing — "not a downstream
+  `TypeError` from the following line" — is met by construction now: that line no longer exists.
+- The repair **does not redden the clean tree**: 9/9, 13/13 and 10/10 with the injections reverted, so
+  a real RS256-signed JAR and a real client assertion both match the anchored regex.
+- The matcher is **strictly stronger than the `.not.toBeNull()` that Phase 139 pre-specified**: measured
+  across seven inputs (§ 5.6), it additionally rejects the empty string, the literal four-character
+  string `"undefined"` that R-6 would have produced, a two-segment value and a four-segment value.
+  `[\w-]` is ASCII-only (`\w` is `[A-Za-z0-9_]`, no `u` flag) and exactly spans the base64url alphabet,
+  so a legitimate JWT segment never fails for an encoding reason.
+
+**What it does NOT prove.**
+
+- It does **not** prove the matcher rejects every malformed JWT shape in the wild. It asserts a
+  three-segment base64url *shape*, not a valid signature, valid claims or a live IdP round trip. A
+  value like `aaa.bbb.ccc` passes the matcher and is not a usable JAR. The signature and claim checks
+  live in the sibling tests (`JAR signature is verifiable with the signing public key`), which are out
+  of this lane's scope.
+- It does **not** exercise the CI runner. Every run above was local, on one macOS machine, in one
+  session.
+- It does **not** speak to the F3, F9 or F10 lanes. Those are ASSERT-02, ASSERT-05 and ASSERT-06,
+  owned by plans `140-05`/`06`, `140-03`/`04` and `140-02` respectively, and are appended below as
+  those plans run.
+- It does **not** establish that the three assertions are the *only* blind matchers in these files.
+  See § 7.3 — the surviving `toBeDefined()` calls are enumerated and argued individually rather than
+  waved through.
+
+---
 
 ## 7/8. Verdict — evidence mapped to ROADMAP criteria
 
-<!-- Written by 140-01 task 3 for criterion 2; criteria 1/3/4/5 marked as owned by later plans. -->
+### 7.1 The verdict table
+
+| ROADMAP criterion | Discharged by | Status |
+|---|---|---|
+| **1 — F3** (teardown delete matching nothing FAILS by name; pre-change form PASSES; sample spans helper + 27 call sites) | plans `140-05` (measurement + helper + codemod) and `140-06` (matcher adjudicated against the measured table, two-run control) | **owned by a later plan** — not attempted here, not silently absent |
+| **2 — F19** (removing `request` / `client_assertion` makes the assertion itself fail naming the missing parameter, not a downstream `TypeError`; passes under the old `toBeDefined()`; two-run control at all three sites) | **this plan (`140-01`)** — §§ 4, 5, 5.4, 5.7, 5.8 | **DISCHARGED** |
+| **3 — F9** (perm specs FAIL when the tag stops rendering anywhere; positive control is seeded data, not a comment) | plans `140-03` (seeded preconditions + blindness half) and `140-04` (positive controls, catch half) | **owned by a later plan** |
+| **4 — F10** (stated `expect.soft` budget matches the real count **136**, or a counted guard enforces it and fails when one more is added, with the addition made and the failure observed) | plan `140-02` | **owned by a later plan** |
+| **5 — suites green after the edits, Phase-137 preflight satisfied on every evidence run** | plan `140-06` (phase gate). **Partially advanced here:** `yarn test:unit` (21/21 tasks, frontend 773 tests / 54 files) and `yarn lint:check` (0 errors, incl. `typecheck:tests`) both exit 0 at this plan's HEAD, and `svelte-check` reports 0 errors / 0 warnings across 2683 files. **No E2E evidence** — see § 7.4. | **partially advanced; owned by `140-06`** |
+
+### 7.2 The ownership seam — Phase 142 does not redo this
+
+**Phase 142's F19 obligation under ASSERT-07 is discharged by THIS diff.** `139-VERDICTS.md` §§ 5.7.6,
+5.8.6 and 5.9.6 each record that Phase 140 owns the F19 repair under **ASSERT-03** while Phase 142 owns
+the F19 line of **ASSERT-07**, and that **one diff serves both** — the repair and its negative control
+are the same artifact. The control recorded in this document (reds after the fix at the assertion's own
+line, passes before it) is precisely the discrimination Phase 142's ASSERT-07 lane would otherwise have
+to re-establish.
+
+**Phase 142 should therefore cite this document for F19 rather than re-running the injections.** What it
+must NOT do is re-apply the `idura.ts` injections to "confirm" a result already observed here — that
+would put live OIDC authentication material back into the working tree for no new information.
+
+### 7.3 Out of scope, and why — the surviving `toBeDefined()` calls
+
+`toBeDefined()` is **not wrong everywhere**; it is wrong on a `.get()` return, whose type is
+`string | null`. Every surviving call in these files is on an **object property**, where the type
+genuinely admits `undefined` and `toBeDefined()` is the correct matcher. Enumerated so a reviewer does
+not read them as missed sites:
+
+| File | Line | Call | Value under assertion | Why `toBeDefined()` is correct |
+|---|---|---|---|---|
+| `apps/frontend/src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts` | 124 | `expect(data.authorizeUrl).toBeDefined()` | property of the parsed JSON response body | an absent JSON key reads as `undefined`, not `null` |
+| `apps/frontend/src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts` | 177 | `expect(payload.state).toBeDefined()` | decoded JWT payload claim | an absent claim reads as `undefined` |
+| `apps/frontend/src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts` | 178 | `expect(payload.nonce).toBeDefined()` | decoded JWT payload claim | as above |
+| `apps/frontend/src/lib/api/utils/auth/__tests__/token-endpoint.test.ts` | 231 | `expect(payload.exp).toBeDefined()` | decoded JWT payload claim | as above |
+| `apps/frontend/src/lib/api/utils/auth/__tests__/token-endpoint.test.ts` | 237 | `expect(payload.jti).toBeDefined()` | decoded JWT payload claim | as above |
+
+**Count check.** `grep -c 'toBeDefined()'` over those two `__tests__/` files returns **3 + 2 = 5**, and
+this table lists **5**. (The plan text anticipated "four"; the measured number is five, and the count
+the table must match is the measured one.)
+
+**Two further calls in the third repaired file**, listed for completeness though the plan's criterion
+scopes the count to the two `__tests__/` files:
+`apps/frontend/src/lib/api/utils/auth/providers/idura.test.ts:126` (`expect(result.state).toBeDefined()`)
+and `:136` (`expect(result.nonce).toBeDefined()`) — both properties of the `getAuthorizeUrl` return
+object, same reasoning.
+
+**Also deliberately untouched:** the three remaining `capturedFetchBody!.get('client_assertion')!`
+reads at `token-endpoint.test.ts:186`, `:205` and `:227`. Each belongs to a *different* test whose own
+assertion is a `jose` decode of the value; those tests are not blind (they throw on absence) and are not
+F19 sites. Repairing them would widen this plan beyond ASSERT-03.
 
 ### What is explicitly NOT discharged by this document
 
-<!-- Written by 140-01 task 3. -->
+An evidence document that records only confirmations is advocacy, not evidence. For the F19 lane:
+
+- **No CI run.** Every run recorded here is local, macOS 26.5.1, Node v24.14.1, vitest 3.2.4, one
+  session. The GitHub Actions runner has not executed these assertions. This mirrors the standing
+  Phase-137 CI gap already carried in `.planning/STATE.md` § Deferred Items (`main.yaml` triggers only
+  on push/PR to `main`, and `feat-gsd-roadmap` is thousands of commits ahead).
+- **No full-suite E2E evidence.** That is ROADMAP criterion 5 and is owned by plan `140-06`. This plan
+  ran **no** `yarn dev`, **no** `yarn test:e2e` and **no** Playwright command — deliberately, under
+  C-5 / research Pitfall 7, because live `idura.ts` injections strip OIDC material from production
+  source and a concurrent E2E run would have gone red for a manufactured reason.
+- **No coverage of the three sibling `Rigidity contract` drift files.** See the recorded follow-up
+  below. ASSERT-06's scope is `voter-journey.spec.ts` only; these three are a separate, verified drift
+  and are **not** absorbed into this phase.
+- **No claim about F3, F9 or F10.** Those lanes are empty in this document until plans `140-02`
+  through `140-06` append to it.
+- **No claim that the suite being green is evidence.** The suite was already green before these edits.
+  Requirement satisfaction here is "the assertion can now fail", never "the run is now green".
+
+### Recorded follow-up — three sibling `Rigidity contract` drift files
+
+Found while scoping F10's declared-vs-real `expect.soft` count. **Measured at HEAD `568b1dfe`, not
+quoted** — each figure below was produced by `grep -c 'expect\.soft(' <file>` this session:
+
+| File | Declares | Actually carries |
+|---|---|---|
+| `tests/tests/specs/candidate/candidate-journey.spec.ts:47-48` | `Rigidity contract: - 0 expect.soft` | **3** |
+| `tests/tests/fixtures/candidate/candidateProfilePage.fixture.ts:43-44` | `**Rigidity contract:** NO \`expect.soft\`` | **6** |
+| `tests/tests/fixtures/candidate/candidateHomePage.fixture.ts:23-24` | `**Rigidity contract:** NO \`expect.soft\`` | **4** |
+
+This is the same drift class F10 exists to close — a header that states a contract the file no longer
+honours — but **ASSERT-06's scope is `voter-journey.spec.ts` only**. Widening plan `140-02` to absorb
+three more files would pad a scoped requirement with adjacent work. Filed rather than fixed, following
+the precedent of the `tests/README.md` concurrency-claim item already carried in `.planning/STATE.md`.
+Also filed to `.planning/WINDOWS.md` so it is visible at ship time.
 
 ### Reproducibility and non-contamination
 
-<!-- Written by 140-01 task 3. -->
+**Reproducible.** Every ingredient is recorded: the HEAD (`568b1dfeae2cd5aa950b0f2a73f8aea96fbcf991`),
+the two injection diffs verbatim (§ 3, § 5.8.1), the exact invocations (§ 4.2, § 5.2, § 5.7.2, § 5.8.3),
+and the environment (§ 2). A reader on another machine can rebuild both halves at every site.
+
+**Non-contaminating — proven, not asserted.** The three-check HYGIENE-LOOP POST-GATE ran after every
+injection at every site, and all three checks held each time:
+
+```
+(a) git status --porcelain -- apps/frontend/src/lib/api/utils/auth/providers/idura.ts   → empty
+(b) git status --porcelain -- apps tests packages                                        → repairs only
+(c) grep -rn 'INJECTED (140)' apps packages tests                                        → no match
+```
+
+No injection reached a commit, a branch or a running process. Every run log lives under
+`${TMPDIR}/gsd-140/`, **outside** the repository, so no log could become untracked-file noise or trip
+check (b). The one throwaway probe file created for the § 5.6 measurement
+(`.../__tests__/zz-probe.test.ts`) was deleted in the same task and is covered by the same gate.
+
+**Honesty of the record.** Every outcome in §§ 4, 5, 5.4, 5.7 and 5.8 traces to a captured log
+containing a real failing `file:line`. No outcome was reconstructed, inferred or predicted. Where the
+pre-specified implementation was replaced, the replaced version and the measurement that motivated the
+replacement are recorded in § 5.6 rather than removed.
+
+---
+
+<!-- Sections for the F3, F9 and F10 lanes are appended by plans 140-02, 140-03, 140-04 and 140-06. -->
