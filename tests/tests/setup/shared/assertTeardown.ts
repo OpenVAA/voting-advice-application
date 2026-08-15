@@ -2,8 +2,9 @@
  * Shared delete-count assertion helper — the single owner of the F3 assertion
  * (Phase 140, ASSERT-02).
  *
- * ROLE: wraps `runTeardown(prefix, client)` and asserts on the returned
- * `rowsDeleted`. Every `*.teardown.ts` project routes through this function.
+ * ROLE: wraps `runTeardown(prefix, client)` and asserts the delete accounted for
+ * every row that was present under the prefix, and that none survived it. Every
+ * `*.teardown.ts` project routes through this function.
  *
  * RATIONALE: the assertion previously lived inline at 27 call sites, so
  * strengthening it meant 27 hand edits and the 27th file was covered only by
@@ -16,15 +17,26 @@
  * delete to stay in its ordinal position among numbered steps. This function
  * replaces exactly the `runTeardown(...)` call plus its `expect(...)` line.
  *
- * MATCHER: deliberately unchanged from the pre-change inline form. Per decision
- * D-02 the matcher is not chosen until the measurement across all 27 sites has
- * been taken (`140-MEASUREMENT.md`) and adjudicated in plan 06 — two independent
- * mechanisms make `rowsDeleted === 0` a legitimate outcome at most sites, so a
- * positivity floor committed before the measurement would redden ~26 projects at
- * once. Carrying the pre-change matcher is what makes the 27-site codemod
- * behaviour-preserving by construction. `SupabaseAdminClient.countRowsByPrefix`
- * exists as the probe that measurement uses; the assertion does not consume it
- * yet. Neither is an oversight.
+ * MATCHER — the before/after invariant (research shape A), adopted under
+ * **branch A** of plan 06's pre-specified decision rule. Evidence:
+ * `140-MEASUREMENT.md` § 4 (one instrumented, preflight-confirmed full-suite run,
+ * 26 observations) and § Adjudication. `rowsDeleted === before` held at 26/26
+ * observations and `after === 0` held at 26/26, so the invariant is adopted
+ * without relaxation. The rejected alternatives are costed there against the same
+ * data: a uniform positivity floor on `rowsDeleted` (research shape C) would have
+ * reddened 25 of the 26 executed sites, because two confirmed mechanisms —
+ * Playwright's `teardown:` deferral and the `extraTeardownPrefix: ['test-',
+ * 'e2e-perm-']` pre-clear at `setupFromTemplate.ts:184-196` — make
+ * `rowsDeleted === 0` the LEGITIMATE outcome at almost every site. That is why
+ * `before === 0` must pass here and does.
+ *
+ * WHAT IT CATCHES: a delete that accounts for none (or only some) of the rows
+ * that were present — a silently no-opping `bulk_delete`, a table dropped from
+ * `ALLOWED_TEARDOWN_TABLES`, a scoping bug that sends the RPC a different prefix
+ * from the one counted. WHAT IT DOES NOT CATCH: a typo in a call site's `PREFIX`
+ * constant, which propagates to the count and the delete alike and therefore
+ * presents as a legitimate `0/0/0` no-op. Stated so nobody reads more into it
+ * than the measurement supports (`140-MEASUREMENT.md` § Adjudication).
  *
  * The caller's `prefix` is forwarded verbatim — no default, no normalisation, no
  * fallback — so `runTeardown`'s two-character mass-delete guard keeps its full
@@ -36,12 +48,31 @@ import { expect } from '@playwright/test';
 import type { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 
 /**
- * Delete every row matching `prefix`, then assert on the reported count.
+ * Delete every row matching `prefix`, then assert the delete accounted for all
+ * of them and left none behind.
+ *
+ * Both assertion messages name the prefix and both counts, so a failure reads as
+ * a sentence about the dataset rather than as a bare numeric mismatch
+ * (ROADMAP Phase 140 criterion 1: the failure must be "by name").
  *
  * @param prefix - `external_id` prefix owned by the calling project, forwarded verbatim.
  * @param client - admin client constructed by the caller (reused for its other steps).
  */
 export async function runTeardownAsserted(prefix: string, client: SupabaseAdminClient): Promise<void> {
+  const rowsBefore = await client.countRowsByPrefix(prefix);
   const { rowsDeleted } = await runTeardown(prefix, client);
-  expect(rowsDeleted, 'runTeardown returned non-numeric rowsDeleted').toBeGreaterThanOrEqual(0);
+  const rowsAfter = await client.countRowsByPrefix(prefix);
+
+  // Accounting half: the delete must account for every row that was there.
+  // `before === 0` is a legitimate no-op and passes — it is the common case.
+  expect(
+    rowsDeleted,
+    `teardown of prefix '${prefix}' deleted ${rowsDeleted} row(s) but ${rowsBefore} row(s) were present under that prefix before the delete — the delete accounted for none or only some of them`
+  ).toBe(rowsBefore);
+
+  // Residue half: nothing under the prefix may survive the delete.
+  expect(
+    rowsAfter,
+    `teardown of prefix '${prefix}' left ${rowsAfter} row(s) behind (${rowsBefore} present before the delete, ${rowsDeleted} reported deleted)`
+  ).toBe(0);
 }

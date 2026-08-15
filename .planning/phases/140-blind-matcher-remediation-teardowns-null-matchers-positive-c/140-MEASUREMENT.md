@@ -278,3 +278,90 @@ limits:
 - **`before` and `after` bracket the delete but not the whole teardown body.** At the five
   perm sites that call `unregisterCandidate` before the delete, and at `base.teardown.ts`,
   work outside the bracketed region is unobserved.
+
+---
+
+## 8. Adjudication — the matcher, chosen against § 4
+
+Written by plan `140-06` task 1, consuming the table above. Decision rule pre-specified in
+`140-06-PLAN.md` task 1, evaluated here against the real rows rather than against research's
+prediction.
+
+### 8.1 Branch classification — **branch A**
+
+The rule offers exactly three branches. Evaluated:
+
+| Branch | Its condition | Holds against § 4? |
+|---|---|---|
+| **A** | `rowsDeleted === before` at every observed row **and** `after === 0` at every observed row | **YES — 26/26 and 26/26** |
+| B | `after === 0` everywhere but `rowsDeleted` and `before` disagree at ≥1 row (assumption A2 false) | No — zero rows disagree; A2 holds |
+| C | `before > 0` at essentially every site (assumption A1 false, ordering hazard absent) | No — `before > 0` at **1 of 26** sites; A1 holds and is stronger than assumed (§ 5.2) |
+
+**Branch A is taken.** Assumption **A2 is CONFIRMED**: `bulk_delete`'s summed per-collection
+`deleted` counts and the ten-table `countRowsByPrefix` HEAD-count probe are directly comparable —
+they agreed exactly at all 26 observations, including the only row where either was non-zero.
+
+### 8.2 The rows that support it
+
+- **Row 1** (`e2e-perm-analytics-`, `before=13, rowsDeleted=13, after=0`) is the only observation that
+  exercises the non-trivial path of either clause. It is what shows `rowsDeleted === before` is
+  satisfiable when rows are actually present, and that `after === 0` is reached by a real delete rather
+  than by there having been nothing to delete.
+- **Rows 2–26** (all `0/0/0`) are the boundary path: `before === 0`, a legitimate no-op, which the
+  chosen matcher passes. They are the reason no positivity floor may be adopted — see § 8.3.
+- **Row 18** (`e2e-perm-notloc-`) additionally shows the duplicated-prefix case passing on the
+  `before === 0` path, which is the shape the second owner of that prefix
+  (`bank-auth-journey.teardown.ts`, unmeasured — § 4.1) will present in whichever order the two run.
+
+### 8.3 What each rejected shape would have cost, against these 26 rows
+
+The load-bearing part. Counts are against the measured data, not against a prediction.
+
+| Rejected shape | Rows it would have REDDENED | Why |
+|---|---|---|
+| **C** — positivity floor, `expect(rowsDeleted).toBeGreaterThan(0)` | **25 of 26** | Every row except row 1. `rowsDeleted === 0` is the legitimate outcome at 25 sites because two confirmed mechanisms (§ 5.2) empty the prefix before the teardown reaches it. Committing this unmeasured would have been a 25-project cardinal-rule violation. |
+| **D** — per-site expected constant, `expect(rowsDeleted).toBe(N)` with N the template's seeded row count | **25 of 26** | Same 25 sites, for the same reason, plus it pins row 1 to `13` — a number that changes with any template edit, and which § 5.3(4) shows is a property of chain ORDER, not of the site. |
+| **B** — residue-only, `expect(await listCandidateIdsByPrefix(prefix)).toHaveLength(0)` | **0 of 26** | Reddens nothing, which is precisely its problem: it is candidates-table-only, so it asserts over 1 of the 10 tables `bulk_delete` clears, and at 25 of 26 sites it asserts over an empty set. It carries no accounting clause at all. |
+| **E** — delete the `expect` entirely | **0 of 26** | Fails ASSERT-02 by construction; recorded only because research enumerated it. |
+| **A** — the adopted before/after invariant | **0 of 26** | Both clauses hold at every observation. The post-change full-suite gate (plan 06 task 3) is what confirms this prospectively rather than retrospectively. |
+
+Branch C's premise is not merely unmet — it is **inverted**: research predicted the positivity floor
+would redden ~26 of 27; the measurement says 25 of the 26 that executed. D-02 is vindicated by a
+margin, not by a technicality.
+
+### 8.4 The adopted assertion, and an honest statement of its reach
+
+Landed at `tests/tests/setup/shared/assertTeardown.ts`:
+
+```ts
+const rowsBefore = await client.countRowsByPrefix(prefix);
+const { rowsDeleted } = await runTeardown(prefix, client);
+const rowsAfter = await client.countRowsByPrefix(prefix);
+
+expect(rowsDeleted, `teardown of prefix '${prefix}' deleted ${rowsDeleted} row(s) but ${rowsBefore} row(s) were present …`).toBe(rowsBefore);
+expect(rowsAfter,  `teardown of prefix '${prefix}' left ${rowsAfter} row(s) behind (${rowsBefore} present before the delete, ${rowsDeleted} reported deleted)`).toBe(0);
+```
+
+**It catches:** a delete that accounts for none or only some of the rows present — a silently
+no-opping `bulk_delete`, a table dropped from `ALLOWED_TEARDOWN_TABLES`, a scoping bug that sends the
+RPC a prefix different from the one counted. That is exactly the defect class F3 named.
+
+**It does NOT catch a call-site `PREFIX` typo.** `140-06-PLAN.md`'s branch-C paragraph asserts the
+before/after invariant "also catches a prefix typo (which a positivity floor cannot)". **Corrected
+here against the code:** the helper takes ONE `prefix` argument, so a typo'd constant propagates
+identically to the count and to the delete, yielding `before=0, rowsDeleted=0, after=0` — a passing,
+legitimate-looking no-op. Neither shape A nor shape B nor shape C detects that; only a per-site
+expected-count (shape D, rejected above) would, at a cost the measurement shows is unpayable. The
+claim is corrected rather than repeated, per this phase's own standard: a document that restates a
+plan's optimistic wording it can see is false is the drift class Phase 140 exists to close.
+
+**Residual race window, stated not hidden.** The accounting clause compares a count taken *before*
+`runTeardown` against what `runTeardown` reports. If another actor removes rows in the interval
+between the `before` count and the RPC, the assertion reds for a reason that is not this site's
+defect (`before > 0`, `rowsDeleted === 0`, `after === 0`). § 5.2's timeline shows the default suite
+never opens that window — every setup completes before any teardown starts — so it is not reachable
+under the measured ordering, and it is not reachable under a `--project` invocation either, where a
+single chain's teardown follows its own setup. It IS reachable in principle under a future
+parallelised perm chain. Recorded as a known property of the chosen shape, unobserved in this run,
+and not traded away: relaxing the clause to tolerate it is exactly the "weaken the assertion to keep
+the suite green" move this phase prohibits.
