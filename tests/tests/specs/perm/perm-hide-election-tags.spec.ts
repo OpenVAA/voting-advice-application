@@ -2,7 +2,15 @@
  * `elections.showElectionTags=false` removes the ElectionTag from the
  * question heading. With 2 elections in the dataset the tag would normally
  * render to disambiguate the election in the question heading. Asserting
- * `expect(electionTag).toHaveCount(0)` on /questions covers the negative.
+ * `expect(electionTag).toHaveCount(0)` on /questions covers the negative —
+ * but a lone absence assertion is equally satisfied by a heading that renders
+ * no tags at all, so it is paired here with a positive control: the
+ * COMPLEMENTARY CategoryTag must be present. The dataset's overlay sets
+ * `questions.showCategoryTags: true`
+ * (`packages/dev-seed/src/templates/e2e/perm/perm-hide-election-tags.ts`),
+ * against the perm baseline's false, precisely so that tag can render.
+ * Deleting the tag-render path therefore reds this spec at the presence
+ * assertion (ASSERT-05 / finding F9).
  *
  * Rigidity contract: no soft assertions, no .catch fallbacks, testid-only.
  */
@@ -21,5 +29,17 @@ test.describe('perm-hide-election-tags', () => {
     // /questions/<id> page — the heading is where ElectionTag would render.
     await navigateToFirstQuestion(page);
     await expect(page.getByTestId(testIds.shared.electionTag)).toHaveCount(0);
+
+    // Positive control (ASSERT-05 / F9). The absence assertion above is also
+    // satisfied by a page that renders no tags at all — a deleted render path,
+    // a renamed testid, a heading that never mounted. The dataset's
+    // showCategoryTags: true overlay is the seeded precondition that lets the
+    // COMPLEMENTARY CategoryTag render here, so asserting its presence is what
+    // makes this spec fail when the tag-render path stops rendering anywhere.
+    const count = await page.getByTestId(testIds.shared.categoryTag).count();
+    expect(
+      count,
+      'ASSERT-05 positive control: the perm-hide-election-tags dataset overlay sets showCategoryTags: true so the complementary category-tag must render on /questions; with none rendered, the election-tag absence assertion above is vacuously satisfied by a heading that renders no tags at all'
+    ).toBeGreaterThan(0);
   });
 });

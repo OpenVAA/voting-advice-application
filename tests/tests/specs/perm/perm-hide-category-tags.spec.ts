@@ -1,7 +1,15 @@
 /**
  * `questions.showCategoryTags=false` removes the CategoryTag from the
  * question heading. Asserting `expect(categoryTag).toHaveCount(0)` on
- * /questions covers the negative.
+ * /questions covers the negative — but a lone absence assertion is equally
+ * satisfied by a heading that renders no tags at all, so it is paired here
+ * with a positive control: the COMPLEMENTARY ElectionTag must be present.
+ * The dataset seeds TWO elections
+ * (`packages/dev-seed/src/templates/e2e/perm/perm-hide-category-tags.ts`)
+ * precisely so that tag can render — `getElectionsToShow`
+ * (`apps/frontend/src/lib/utils/questions/electionTags.ts:13`) returns `[]`
+ * below two elections. Deleting the tag-render path therefore reds this spec
+ * at the presence assertion (ASSERT-05 / finding F9).
  *
  * Rigidity contract: no soft assertions, no .catch fallbacks, testid-only.
  */
@@ -20,5 +28,18 @@ test.describe('perm-hide-category-tags', () => {
     // /questions/<id> page — the heading is where CategoryTag would render.
     await navigateToFirstQuestion(page);
     await expect(page.getByTestId(testIds.shared.categoryTag)).toHaveCount(0);
+
+    // Positive control (ASSERT-05 / F9). The absence assertion above is also
+    // satisfied by a page that renders no tags at all — a deleted render path,
+    // a renamed testid, a heading that never mounted. The dataset's second
+    // election is the seeded precondition that lets the COMPLEMENTARY
+    // ElectionTag (left enabled by the perm baseline's showElectionTags) render
+    // here, so asserting its presence is what makes this spec fail when the
+    // tag-render path stops rendering anywhere.
+    const count = await page.getByTestId(testIds.shared.electionTag).count();
+    expect(
+      count,
+      'ASSERT-05 positive control: the perm-hide-category-tags dataset seeds elections: 2 so the complementary election-tag must render on /questions; with none rendered, the category-tag absence assertion above is vacuously satisfied by a heading that renders no tags at all'
+    ).toBeGreaterThan(0);
   });
 });
