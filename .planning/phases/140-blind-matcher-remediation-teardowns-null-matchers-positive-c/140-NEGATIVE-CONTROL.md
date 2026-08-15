@@ -689,7 +689,7 @@ time so that each recorded `file:line` is attributable to a single vehicle.
 | **1 — F3** (teardown delete matching nothing FAILS by name; pre-change form PASSES; sample spans helper + 27 call sites) | plans `140-05` (measurement + helper + codemod) and `140-06` (matcher adjudicated against the measured table, two-run control) | **owned by a later plan** — not attempted here, not silently absent |
 | **2 — F19** (removing `request` / `client_assertion` makes the assertion itself fail naming the missing parameter, not a downstream `TypeError`; passes under the old `toBeDefined()`; two-run control at all three sites) | **this plan (`140-01`)** — §§ 4, 5, 5.4, 5.7, 5.8 | **DISCHARGED** |
 | **3 — F9** (perm specs FAIL when the tag stops rendering anywhere; positive control is seeded data, not a comment) | plans `140-03` (seeded preconditions + blindness half) and `140-04` (positive controls, catch half) | **owned by a later plan** |
-| **4 — F10** (stated `expect.soft` budget matches the real count **136**, or a counted guard enforces it and fails when one more is added, with the addition made and the failure observed) | plan `140-02` | **owned by a later plan** |
+| **4 — F10** (stated `expect.soft` budget matches the real count **136**, or a counted guard enforces it and fails when one more is added, with the addition made and the failure observed) | **plan `140-02`** — Part II §§ 9, 10, 11, 11.5, 12 | **DISCHARGED — on BOTH alternatives.** The header now states the real posture and restates no number, AND `SOFT_ASSERTION_BUDGETS` + a counted config-load guard enforce the measured 136. The addition was made and the failure observed (§ 11.3) after the unguarded half (§ 10.3) and before the guard was accepted — order followed, not retrofitted (§ 12.1) |
 | **5 — suites green after the edits, Phase-137 preflight satisfied on every evidence run** | plan `140-06` (phase gate). **Partially advanced here:** `yarn test:unit` (21/21 tasks, frontend 773 tests / 54 files) and `yarn lint:check` (0 errors, incl. `typecheck:tests`) both exit 0 at this plan's HEAD, and `svelte-check` reports 0 errors / 0 warnings across 2683 files. **No E2E evidence** — see § 7.4. | **partially advanced; owned by `140-06`** |
 
 ### 7.2 The ownership seam — Phase 142 does not redo this
@@ -1032,5 +1032,217 @@ indistinguishable from a change that honoured the contract. A guard that only fi
 *chooses* to check is not a guard; the count claim in the header was documentation of an intent, and
 documentation cannot fail.
 
+---
+
+## 11. RUN 2 — the catch: the guarded config
+
+### 11.1 Provenance — the post-guard HEAD
+
+RUN 2 was taken at HEAD `7a259e548a2bc748e066389ab18b66e95251ca4d`, the commit that landed
+`SOFT_ASSERTION_BUDGETS` and the counted guard, with the **byte-identical** adversary from § 9.2
+re-applied to the same site. The guard as landed:
+
+```
+$ grep -n 'SOFT_ASSERTION_BUDGETS\|SOFT-ASSERTION BUDGET GUARD' tests/playwright.config.ts
+59:const SOFT_ASSERTION_BUDGETS: Record<string, number> = {
+64: * SOFT-ASSERTION BUDGET GUARD (Phase 140 plan 02, fake-guard sweep finding F10).
+89:for (const [rel, budget] of Object.entries(SOFT_ASSERTION_BUDGETS)) {
+94:        `file, or drop its entry from SOFT_ASSERTION_BUDGETS in this file. A budget pointing at ` +
+103:        `in SOFT_ASSERTION_BUDGETS in this file AND state the reason in that spec's header. A ` +
+```
+
+The re-applied diff, confirmed identical to RUN 1's before the run:
+
+```
+$ git --no-pager diff -- tests/tests/specs/voter/voter-journey.spec.ts
++      expect.soft(true, 'budget adversary').toBe(true); // INJECTED (140)
+
+$ grep -o 'expect\.soft(' tests/tests/specs/voter/voter-journey.spec.ts | wc -l
+     137
+```
+
+The line number the diff hunk reports moved from `@@ -607,6` (RUN 1) to `@@ -620,6` (RUN 2) because the
+rewritten header is longer. The **bytes injected are the same**; only their offset in the file changed.
+That is the one difference between the halves that is not the knob, and it is recorded rather than
+elided — it affects nothing the guard reads, since the guard counts occurrences over the whole file and
+never looks at a line number.
+
+### 11.2 The invocation, verbatim
+
+```bash
+cd /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests \
+  && npx playwright test --list > "${TMPDIR:-/tmp}/gsd-140/f10-after.log" 2>&1; echo "EXIT=$?"
+```
+
+Byte-identical to § 10.2 apart from the log filename.
+
+### 11.3 Observed — verbatim, not paraphrase
+
+Complete contents of `${TMPDIR}/gsd-140/f10-after.log`:
+
+```
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+Error: Soft-assertion budget diverged in specs/voter/voter-journey.spec.ts — the declared budget is 136 but the file carries 137. Convert the new assertion to a hard `expect()`, or change the budget in SOFT_ASSERTION_BUDGETS in this file AND state the reason in that spec's header. A budget edited to match whatever the file happens to contain is not a budget (fake-guard sweep 2026-08-11, finding F10).
+    at file:///Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright.config.ts:100:11
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at requireOrImport (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/node_modules/playwright/lib/transform/transform.js:223:12)
+    at loadUserConfig (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/node_modules/playwright/lib/common/configLoader.js:107:46)
+    at loadConfig (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/node_modules/playwright/lib/common/configLoader.js:119:22)
+    at loadConfigFromFile (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/node_modules/playwright/lib/common/configLoader.js:331:10)
+    at runTests (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/node_modules/playwright/lib/program.js:197:18)
+    at i.<anonymous> (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/node_modules/playwright/lib/program.js:70:7)
+EXIT=1
+```
+
+**Three things in that output, each doing work:**
+
+1. **The message carries all three identifying values** — the `TESTS_DIR`-relative path
+   `specs/voter/voter-journey.spec.ts`, the declared budget `136`, and the actual count `137`. A
+   maintainer reading only this line knows which file, which direction and by how much, without opening
+   the planning record.
+2. **`loadConfigFromFile` → `loadUserConfig` → `playwright.config.ts:100:11`.** The stack shows the throw
+   happened while *loading the config*, before `runTests` reached suite construction. There is **no
+   listing** in this log — not a truncated one, none at all. The project graph was never built.
+3. **Exit 1, and `--list` at that** — the invocation that does not run `globalSetup` and therefore never
+   reaches the Phase-137 preflight. The guard fired anyway, which is the reach § 9.3 argued for.
+
+### 11.4 The third observation — the guard is discriminating, not always-on
+
+A guard that threw unconditionally would produce output 11.3 as well. So the injection was reverted and
+the identical invocation re-run on the clean tree:
+
+```
+$ git checkout -- tests/tests/specs/voter/voter-journey.spec.ts
+$ grep -o 'expect\.soft(' tests/tests/specs/voter/voter-journey.spec.ts | wc -l
+     136
+$ cd tests && npx playwright test --list > "${TMPDIR:-/tmp}/gsd-140/f10-reverted.log" 2>&1; echo "EXIT=$?"
+```
+
+Tail of `${TMPDIR}/gsd-140/f10-reverted.log`:
+
+```
+Total: 143 tests in 94 files
+EXIT=0
+```
+
+Same 143 tests in 94 files as the blind half. **The guard's verdict tracks the adversary, not the
+guard's own presence.**
+
+### 11.5 The three runs side by side — THE LOAD-BEARING TABLE
+
+| Half | git HEAD | Guard present | Adversary (the added soft assertion) | Invocation | Exit | Observed |
+|---|---|---|---|---|---|---|
+| **RUN 1 — blind** | `5f12d861` (post-`140-01`) | **no** | **yes** — count 137 | `npx playwright test --list` | **0** | Full listing, `Total: 143 tests in 94 files`. No error, no warning. `grep -c 'Error'` over the log → **0** |
+| **RUN 2 — catch** | `7a259e54` (post-guard) | **yes** | **yes** — count 137, byte-identical injection | `npx playwright test --list` | **1** | `Error: Soft-assertion budget diverged in specs/voter/voter-journey.spec.ts — the declared budget is 136 but the file carries 137.` Thrown at `playwright.config.ts:100:11` during `loadConfigFromFile`. **No listing produced at all** |
+| **RUN 3 — reverted** | `7a259e54` (post-guard) | **yes** | **no** — count back to 136 | `npx playwright test --list` | **0** | Full listing, `Total: 143 tests in 94 files`. No error |
+
+**Read the exit column.** It is `0 → 1 → 0`. The two halves are distinct there, which is what the F19
+lane above could *not* achieve (its file outcome was FAIL in both halves, so its discrimination had to
+live in the assertion column and the failing `file:line`). Here the process exit code itself
+discriminates, because the defect class is different: F19 was a matcher too weak to notice a value, F10
+was an invariant that did not exist at all.
+
+**RUN 3 is the row that makes rows 1 and 2 mean something.** Without it, "guard present → exit 1" is
+consistent with a guard that throws on every invocation, which would be worse than no guard. With it,
+the only variable that moved is the adversary.
+
+### 11.6 The finding
+
+Under a byte-identical addition of one soft assertion to `voter-journey.spec.ts`:
+
+1. **Before the guard**, every Playwright invocation succeeded and said nothing. The header's contract
+   and the file's contents disagreed by 133 and no mechanism in the repository could say so.
+2. **After the guard**, the same addition aborts **every** Playwright invocation — including `--list`,
+   the lightest one, which does not even start `globalSetup` — with a message naming the file, the
+   declared budget and the real count.
+
+What the guard buys is not detection of a bug; the added assertion was trivially true and broke nothing.
+It buys the *impossibility of silent drift*. The next person to add a soft assertion here must make a
+decision in the open: convert it to a hard `expect()`, or raise the budget in `SOFT_ASSERTION_BUDGETS`
+and say why in the spec's header. Both are fine. Neither can now happen by accident, which is the only
+thing that distinguishes a budget from a wish.
+
+**And the equality direction matters symmetrically.** Phase 138's `bea9fc97a` promoted one soft
+assertion to hard and took the count 137 → 136 — a good change that, under a ceiling-style guard, would
+have passed unnoticed and quietly widened the headroom. Under equality it would have thrown, forcing the
+improvement to be recorded. The budget therefore ratchets in the direction of fewer soft assertions
+rather than drifting in the direction of more.
+
+---
+
+## 12. Verdict — the F10 lane (ASSERT-06)
+
+### 12.1 The verdict row
+
+The § 7.1 table above has been updated in place; the criterion-4 row is reproduced here with its
+reasoning spelled out.
+
+| ROADMAP criterion | Discharged by | Status |
+|---|---|---|
+| **4 — F10** (stated soft-assertion budget matches the real count **136**, **or** a counted guard enforces it and fails when one more is added, with the addition made and the failure observed) | plan `140-02` — §§ 9, 10, 11, 11.5 | **DISCHARGED — on BOTH alternatives, not one** |
+
+**Both halves were delivered, and the criterion only asked for one.** Criterion 4 is disjunctive ("budget
+matches its real count **or** a counted guard enforces it"). Satisfying only the first — editing `3` to
+`136` — would have reproduced the defect on a slower clock: it was 3 once, 137 four days ago, 136 today.
+So the header was rewritten to state the *posture* and name `SOFT_ASSERTION_BUDGETS` as the number's
+authority (stating no number of its own), **and** the guard was added to enforce the measured value.
+
+**The criterion's own procedural observable was satisfied in order, not retrofitted.** Criterion 4
+requires "the addition is made and the failure observed *before* the guard is accepted". The commit
+sequence shows this is what happened rather than what is claimed:
+
+| Commit | What it contains |
+|---|---|
+| `7bb36c6b3` | the measurement and RUN 1 — taken on a tree where `grep -rn 'SOFT_ASSERTION_BUDGETS' tests/` returned no match |
+| `7a259e548` | the guard and the header rewrite |
+| RUN 2 / RUN 3 | run against `7a259e548`, recorded in this commit |
+
+The blind half is not reproducible after `7a259e548` without deleting the guard, which is precisely why
+it had to be taken first. Its evidence was committed before the guard existed.
+
+### 12.2 What the F10 pair proves
+
+- **The guard fires on the adversary and only on the adversary.** Three runs, exit `0 → 1 → 0`, one
+  variable moved.
+- **It fires at config load**, which is the earliest reachable point and the only one that covers
+  `--list`. Observed: the stack in § 11.3 shows the throw inside `loadConfigFromFile`, before
+  `runTests`, and the log contains no listing whatsoever.
+- **The message is self-sufficient** — file, declared budget, actual count, both remedies, and the
+  provenance citation `(fake-guard sweep 2026-08-11, finding F10)` — so a future divergence is
+  diagnosable without the planning record.
+- **The number is derived from a measurement, not a quotation** (D-01). `136` was measured at
+  `5f12d861` two ways (§ 9.1), and the guard re-measures the file on every config load rather than
+  trusting the constant.
+- **The declared posture is now honest and cannot silently rot**, in both directions: adding a soft
+  assertion throws, and removing one throws.
+
+### 12.3 What the F10 pair does NOT prove — the honest gaps
+
+- **The guard is scoped to `voter-journey.spec.ts` alone.** `SOFT_ASSERTION_BUDGETS` has exactly one
+  entry. Every other spec and fixture in the suite remains entirely unbudgeted and unguarded.
+- **The three sibling `Rigidity contract` drift files remain unguarded and unfixed** —
+  `tests/tests/specs/candidate/candidate-journey.spec.ts` (declares 0, carries 3),
+  `tests/tests/fixtures/candidate/candidateProfilePage.fixture.ts` (declares NO soft assertions, carries
+  6), `tests/tests/fixtures/candidate/candidateHomePage.fixture.ts` (declares NO soft assertions,
+  carries 4). These are the **same defect class** that F10 names, they were measured this phase, and
+  they are deliberately **out of scope**: ASSERT-06's scope is `voter-journey.spec.ts`. They are the
+  recorded follow-up filed by plan `140-01` task 3 (§ "Recorded follow-up" above, and
+  `.planning/WINDOWS.md`). Nothing in this plan reduces their drift.
+- **No CI run has exercised the guard.** Every run recorded in Part II is local — macOS 26.5.1, Node
+  v24.14.1, Playwright 1.58.2, one session, one machine. The GitHub Actions runner has never loaded
+  this config. This is the same standing Phase-137 CI gap carried in `.planning/STATE.md` § Deferred
+  Items.
+- **No test was executed at all in this lane.** `--list` loads the config and enumerates; it runs no
+  browser, no dev server, no database. This lane therefore says **nothing** about whether the voter
+  journey passes, and nothing about ROADMAP criterion 5 — that is plan `140-06`'s phase gate.
+- **The guard does not evaluate whether any given soft assertion *should* be soft.** It counts. A
+  maintainer who converts a load-bearing hard assertion into a soft one and lowers a hard assertion's
+  count elsewhere could hold the total at 136 and pass. The budget constrains the population, not the
+  judgement behind each member.
+- **Per-worker re-evaluation is argued, not measured.** Playwright re-imports the config in each worker
+  process; the guard only reads one file and throws, so it is idempotent and side-effect-free by
+  inspection of its own source. No run in this lane spawned workers (`--list` does not), so this
+  property is established by construction rather than by observation, and is recorded as such.
+
 <!-- Sections for the F3 and F9 lanes are appended by plans 140-03, 140-04, 140-05 and 140-06. -->
-<!-- The F10 lane's RUN 2, side-by-side table and verdict row are appended below by 140-02 task 3. -->
