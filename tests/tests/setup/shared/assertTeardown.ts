@@ -32,9 +32,26 @@
  * `rowsDeleted === 0` the LEGITIMATE outcome at almost every site. That is why
  * `before === 0` must pass here and does.
  *
- * WHAT IT CATCHES: a delete that accounts for none (or only some) of the rows
- * that were present — a silently no-opping `bulk_delete`, a scoping bug that
- * sends the RPC a different prefix from the one counted.
+ * WHAT IT CATCHES UNCONDITIONALLY (holds regardless of `rowsBefore`):
+ * over-deletion — rows deleted under a prefix the probe counted as empty
+ * (`rowsDeleted > 0` while `rowsBefore === 0`), or rows left behind after a
+ * delete that claimed to have removed them (`rowsAfter > 0`).
+ *
+ * WHAT IT CATCHES ONLY WHEN `rowsBefore > 0` AT THE SITE IN QUESTION: a
+ * silently no-opping `bulk_delete`, a scoping bug that sends the RPC a
+ * different prefix from the one counted. `140-MEASUREMENT.md` § 4 observed
+ * `rowsBefore > 0` at 1 of 26 executed sites — Playwright's `teardown:`
+ * deferral and the `extraTeardownPrefix: ['test-', 'e2e-perm-']` pre-clear at
+ * `setupFromTemplate.ts:184-196` make `rowsBefore === 0` (and therefore a
+ * trivial `0 === 0` / `0 === 0` evaluation on both halves) the LEGITIMATE,
+ * overwhelmingly common outcome. So at ~25 of 26 observed sites this
+ * assertion's discriminating power is limited to the unconditional
+ * over-deletion catch above; the no-op/scoping catches are exercised by
+ * construction at only the sites that still own rows at teardown time (e.g.
+ * `base.teardown.ts`, the one site the measurement found doing so). Read the
+ * "26/26 held" framing in the MATCHER note above accordingly: 25 of those 26
+ * observations are `0/0/0` confirmations of the trivial branch, not
+ * independent confirmations of the no-op/scoping catches.
  *
  * WHAT IT DOES NOT CATCH:
  *   - A typo in a call site's `PREFIX` constant, which propagates to the count
