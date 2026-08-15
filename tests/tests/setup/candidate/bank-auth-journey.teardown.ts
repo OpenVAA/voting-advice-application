@@ -18,10 +18,10 @@
  * partial spec failure.
  */
 
-import { runTeardown } from '@openvaa/dev-seed';
-import { expect, test as teardown } from '@playwright/test';
+import { test as teardown } from '@playwright/test';
 import { BANK_AUTH_JOURNEY_EMAIL, BANK_AUTH_JOURNEY_PLACEHOLDER_EMAIL } from '../../utils/bankAuthJourneyConstants';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
+import { runTeardownAsserted } from '../shared/assertTeardown';
 
 const PREFIX = 'e2e-perm-notloc-';
 
@@ -29,8 +29,7 @@ teardown('delete bank-auth-journey dataset + created auth user', async () => {
   const client = new SupabaseAdminClient();
 
   // 1. Clear the seeded perm-not-located-2e2cg rows.
-  const { rowsDeleted } = await runTeardown(PREFIX, client);
-  expect(rowsDeleted, 'runTeardown returned non-numeric rowsDeleted').toBeGreaterThanOrEqual(0);
+  await runTeardownAsserted(PREFIX, client);
 
   // 2. Delete the auth.users + user_roles + candidate-link the journey created.
   //    The identity-callback Edge Function creates the bank-auth user under the

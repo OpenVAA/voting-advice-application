@@ -4,12 +4,12 @@
  * Scoped to PREFIX='e2e-perm-answers-locked-'. Also deletes the per-perm Playwright storage-state JSON file produced by the setup phase.
  */
 
-import { runTeardown } from '@openvaa/dev-seed';
-import { expect, test as teardown } from '@playwright/test';
+import { test as teardown } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { TESTS_DIR } from '../../utils/testsDir';
+import { runTeardownAsserted } from '../shared/assertTeardown';
 
 const PREFIX = 'e2e-perm-answers-locked-';
 const STORAGE_STATE_PATH = path.join(TESTS_DIR, '../playwright/.auth/perm-answers-locked.json');
@@ -22,8 +22,7 @@ const CANDIDATE_EMAIL = `${PREFIX}cand-1@test.openvaa.local`;
 teardown('delete perm-answers-locked dataset', async () => {
   const client = new SupabaseAdminClient();
   await client.unregisterCandidate(CANDIDATE_EMAIL);
-  const { rowsDeleted } = await runTeardown(PREFIX, client);
-  expect(rowsDeleted, 'runTeardown returned non-numeric rowsDeleted').toBeGreaterThanOrEqual(0);
+  await runTeardownAsserted(PREFIX, client);
 
   if (fs.existsSync(STORAGE_STATE_PATH)) fs.unlinkSync(STORAGE_STATE_PATH);
 });

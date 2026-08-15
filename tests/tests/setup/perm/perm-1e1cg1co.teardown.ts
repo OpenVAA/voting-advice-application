@@ -6,14 +6,13 @@
  * No auth unregister step — perm-* chains are voter-only and do not authenticate any candidate.
  */
 
-import { runTeardown } from '@openvaa/dev-seed';
-import { expect, test as teardown } from '@playwright/test';
+import { test as teardown } from '@playwright/test';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
+import { runTeardownAsserted } from '../shared/assertTeardown';
 
 const PREFIX = 'e2e-perm-1e1cg1co-';
 
 teardown('delete perm-1e1cg1co dataset', async () => {
   const client = new SupabaseAdminClient();
-  const { rowsDeleted } = await runTeardown(PREFIX, client);
-  expect(rowsDeleted, 'runTeardown returned non-numeric rowsDeleted').toBeGreaterThanOrEqual(0);
+  await runTeardownAsserted(PREFIX, client);
 });

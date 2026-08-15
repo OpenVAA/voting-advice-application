@@ -20,8 +20,8 @@
  * `test-e2e-base-` orphans nothing.
  */
 
-import { runTeardown } from '@openvaa/dev-seed';
-import { expect, test as teardown } from '@playwright/test';
+import { test as teardown } from '@playwright/test';
+import { runTeardownAsserted } from './assertTeardown';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { TEST_CANDIDATE_EMAIL } from '../../utils/testCredentials';
 
@@ -31,6 +31,5 @@ teardown('delete base dataset', async () => {
   const client = new SupabaseAdminClient();
   // Runs BEFORE the row wipe so the candidate row is still present to unlink.
   await client.unregisterCandidate(TEST_CANDIDATE_EMAIL);
-  const { rowsDeleted } = await runTeardown(PREFIX, client);
-  expect(rowsDeleted, 'runTeardown returned non-numeric rowsDeleted').toBeGreaterThanOrEqual(0);
+  await runTeardownAsserted(PREFIX, client);
 });
