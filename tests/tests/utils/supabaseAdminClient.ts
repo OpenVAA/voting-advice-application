@@ -254,30 +254,38 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
    * Read-only — returns integers only, no row content. Scoped by `project_id` and by
    * `external_id LIKE '<prefix>%'`, matching the delete's own prefix semantics.
    *
-   * Phase 140 WR-06: `%` / `_` / `*` are rejected before the query runs.
-   * PostgREST's `like` filter (used here) is not byte-identical to the RPC's
-   * raw SQL `LIKE` that `bulk_delete` executes (`00001_initial_schema.sql`):
-   * PostgREST maps a literal `*` in the input to SQL `%`, and neither side
-   * escapes `_` (a SQL LIKE single-character wildcard), so a prefix carrying
-   * any of these three characters would be counted under a DIFFERENT match
-   * set than `bulk_delete` actually deletes — the exact drift the shared
-   * `ALLOWED_TEARDOWN_TABLES` constant was meant to preclude, reintroduced
-   * through the operator instead of the table list. All 27 current E2E
-   * prefixes are plain hyphenated strings and are unaffected; the guard exists
-   * for the dev-seed CLI's default `seed_` prefix (which contains `_`) in case
-   * this probe is ever reused on that path.
+   * Phase 140 WR-06 / WR-02 (iteration-2 correction): only `*` is rejected
+   * before the query runs. PostgREST's `like` filter (used here) maps a
+   * literal `*` in the input to SQL `%`, but `bulk_delete`'s raw SQL
+   * `external_id LIKE $2` (`00001_initial_schema.sql`) does not — a `*` in
+   * the prefix would therefore be counted under a DIFFERENT match set than
+   * `bulk_delete` actually deletes. **This is genuine divergence** and is
+   * correctly rejected.
+   *
+   * `_` and `%` are NOT rejected (WR-06's original guard rejected them too,
+   * on a rationale that does not hold for either): both PostgREST's `like`
+   * and the RPC's raw SQL `LIKE` treat `_` as a single-character wildcard and
+   * `%` as a multi-character wildcard identically on both sides, so the probe
+   * and the delete over-match the SAME extra rows — `rowsDeleted ===
+   * rowsBefore` still holds; the prefix is merely imprecise, not
+   * mismeasured. Because this probe runs BEFORE the delete
+   * (`runTeardownAsserted`), rejecting `_`/`%` would make a teardown using
+   * such a prefix throw and delete NOTHING — turning an imprecise-but-correct
+   * delete into a silent full leak of the dataset. The dev-seed CLI's default
+   * `seed_` prefix (which contains `_`) is the motivating case this guard
+   * must not break.
    *
    * @param prefix - `external_id` prefix, forwarded verbatim (no normalisation).
    * @returns total matching rows summed across the ten tables.
-   * @throws Error if any per-table count query fails, or if `prefix` contains a
-   *   LIKE metacharacter (`%`, `_`, `*`).
+   * @throws Error if any per-table count query fails, or if `prefix` contains
+   *   the LIKE metacharacter `*`.
    */
   async countRowsByPrefix(prefix: string): Promise<number> {
-    if (/[%_*]/.test(prefix)) {
+    if (prefix.includes('*')) {
       throw new Error(
-        `countRowsByPrefix: prefix '${prefix}' contains a LIKE metacharacter (% _ *); the probe and ` +
-          'bulk_delete do not agree on its meaning (PostgREST\'s `like` maps `*` to `%`, and neither ' +
-          'side escapes `_`), so the count would not measure the same rows the delete touches.'
+        `countRowsByPrefix: prefix '${prefix}' contains '*'. PostgREST's \`like\` filter maps '*' to ` +
+          "SQL '%', but bulk_delete's raw `external_id LIKE $2` does not — the probe would count a " +
+          'wildcard match while the delete matched the literal, so the count would not measure the delete.'
       );
     }
     let total = 0;
