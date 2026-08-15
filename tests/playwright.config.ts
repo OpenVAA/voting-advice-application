@@ -164,6 +164,18 @@ for (const [rel, budget] of Object.entries(SOFT_ASSERTION_BUDGETS)) {
  * failure mode as fake-guard finding F4 above).
  */
 const teardownDir = path.join(TESTS_DIR, 'setup');
+// Phase 140 review IN-01: named precondition, mirroring the ORPHAN-PROBE
+// guard's `fs.existsSync` check above. Without it, a missing/renamed
+// `tests/tests/setup` directory would die on a raw `readdirSync` ENOENT —
+// the opposite of the "fails immediately and by name" property this guard
+// claims for itself.
+if (!fs.existsSync(teardownDir)) {
+  throw new Error(
+    `Teardown prefix guard: expected directory '${teardownDir}' does not exist. The ` +
+      'teardown-prefix-uniqueness guard (Phase 140 review CR-01) cannot enumerate *.teardown.ts ' +
+      'files without it.'
+  );
+}
 const teardownPrefixDeclarations: Array<{ file: string; prefix: string }> = [];
 const unparsedTeardownPrefixFiles: Array<string> = [];
 for (const rel of fs
