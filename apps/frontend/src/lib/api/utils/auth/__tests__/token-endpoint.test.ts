@@ -136,11 +136,7 @@ describe('POST /api/oidc/token (Idura - private_key_jwt)', () => {
     });
 
     // The handler will throw/return 401 because getIdTokenClaims fails on mock token
-    try {
-      await POST(event);
-    } catch {
-      // Expected
-    }
+    await expect(POST(event), 'POST should reject at getIdTokenClaims on the mock token').rejects.toThrow();
 
     expect(capturedFetchBody).not.toBeNull();
     expect(capturedFetchBody!.get('client_assertion_type')).toBe(
@@ -156,11 +152,7 @@ describe('POST /api/oidc/token (Idura - private_key_jwt)', () => {
       redirectUri: 'http://localhost:5173/callback'
     });
 
-    try {
-      await POST(event);
-    } catch {
-      // Expected
-    }
+    await expect(POST(event), 'POST should reject at getIdTokenClaims on the mock token').rejects.toThrow();
 
     expect(capturedFetchBody).not.toBeNull();
     const assertion = capturedFetchBody!.get('client_assertion');
@@ -177,11 +169,7 @@ describe('POST /api/oidc/token (Idura - private_key_jwt)', () => {
       redirectUri: 'http://localhost:5173/callback'
     });
 
-    try {
-      await POST(event);
-    } catch {
-      // Expected
-    }
+    await expect(POST(event), 'POST should reject at getIdTokenClaims on the mock token').rejects.toThrow();
 
     const assertion = capturedFetchBody!.get('client_assertion')!;
     const header = jose.decodeProtectedHeader(assertion);
@@ -196,11 +184,7 @@ describe('POST /api/oidc/token (Idura - private_key_jwt)', () => {
       redirectUri: 'http://localhost:5173/callback'
     });
 
-    try {
-      await POST(event);
-    } catch {
-      // Expected
-    }
+    await expect(POST(event), 'POST should reject at getIdTokenClaims on the mock token').rejects.toThrow();
 
     const assertion = capturedFetchBody!.get('client_assertion')!;
     const payload = jose.decodeJwt(assertion);
@@ -218,11 +202,7 @@ describe('POST /api/oidc/token (Idura - private_key_jwt)', () => {
       redirectUri: 'http://localhost:5173/callback'
     });
 
-    try {
-      await POST(event);
-    } catch {
-      // Expected
-    }
+    await expect(POST(event), 'POST should reject at getIdTokenClaims on the mock token').rejects.toThrow();
 
     const assertion = capturedFetchBody!.get('client_assertion')!;
     const payload = jose.decodeJwt(assertion);
@@ -247,11 +227,7 @@ describe('POST /api/oidc/token (Idura - private_key_jwt)', () => {
       redirectUri: 'http://localhost:5173/callback'
     });
 
-    try {
-      await POST(event);
-    } catch {
-      // Expected
-    }
+    await expect(POST(event), 'POST should reject at getIdTokenClaims on the mock token').rejects.toThrow();
 
     expect(capturedFetchBody).not.toBeNull();
     expect(capturedFetchBody!.has('client_secret')).toBe(false);
