@@ -417,6 +417,12 @@ Playwright starts the mock OIDC issuer (`webServer` entry → `tsx mockOidcIssue
 waits for `https://127.0.0.1:9443/.well-known/openid-configuration/jwks` (with
 `ignoreHTTPSErrors`), then runs the journey, then tears the issuer down.
 
+> **Since Phase 140 CR-01:** `--project=bank-auth-journey` also depends on `data-setup-base`
+> (see `playwright.config.ts`'s bank-auth-journey block comment), so this gate now seeds the
+> base dataset before the bank-auth dataset. Both are present in the DB while the journey
+> walks — a known, deferred gap (Phase 140 review iteration 3 CR-01; see
+> `140-REVIEW-FIX.md`) that a green run of this gate does NOT rule out.
+
 > **Cardinal rule (CLAUDE.md):** the journey must pass — a "did not run" counts as a failure.
 > Run the gate **3×** on a fresh dev server + clean DB, and confirm the DEFAULT suite
 > (`yarn test:e2e`) stays green afterwards (the opt-in project must not perturb it).

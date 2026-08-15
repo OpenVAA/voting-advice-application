@@ -422,12 +422,20 @@ export default defineConfig({
     // → authenticated → election/constituency → email+ToU → preregister() →
     // registration-key → set password → logged-in.
     //
-    // OPT-IN (PLAYWRIGHT_BANK_AUTH) and STANDS ALONE — it pulls ONLY its own
-    // data-setup, NOT the perm serial chain (RESEARCH A4/Pitfall 3; mirrors the
-    // sibling `bank-auth` project's standalone wiring). The setup/teardown FILES
-    // these entries point at land in 122-04; the journey SPEC matched by the
-    // `bank-auth-journey` project lands in 122-05. Until then this block is
-    // gated-off in the default run and dormant in the opt-in run.
+    // OPT-IN (PLAYWRIGHT_BANK_AUTH). It does NOT join the perm serial chain
+    // (RESEARCH A4/Pitfall 3), but as of Phase 140 CR-01 it DOES depend on
+    // `data-setup-base` below — mirroring the sibling `bank-auth` project's
+    // wiring above — so the isolated `--project=bank-auth-journey` gate runs 5
+    // projects (base setup, this setup, the spec, both teardowns) and the base
+    // dataset IS present in the DB while the journey walks. KNOWN GAP (Phase
+    // 140 review iteration 3 CR-01, deliberately deferred — see
+    // `140-REVIEW-FIX.md`): `submitElection()` / `submitConstituency()` in
+    // `candidatePreregisterPage.fixture.ts` still select the FIRST rendered
+    // option with no tiebreak on `sort_order`, so with the base dataset
+    // present the journey can silently preregister into a foreign election
+    // rather than the one this dataset owns. Not yet fixed here. The
+    // setup/teardown FILES these entries point at land in 122-04; the journey
+    // SPEC matched by the `bank-auth-journey` project lands in 122-05.
     //
     // The mock OIDC issuer is spawned via the `webServer` entry below (also
     // PLAYWRIGHT_BANK_AUTH-gated). It binds 127.0.0.1-only and serves over HTTPS
