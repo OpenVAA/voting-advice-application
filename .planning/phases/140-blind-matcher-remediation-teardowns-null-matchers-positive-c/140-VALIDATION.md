@@ -68,10 +68,25 @@ failure is now possible**, not merely a command that exits 0.
 | ASSERT-03 (F19) | A missing `request` param fails **at the assertion line** | Under the `idura.ts:74` injection: **before** — failure at `authorize-endpoint.test.ts:147` (`TypeError … 'split'`); **after** — failure at `:144`, message contains `request` | unit | `cd apps/frontend && npx vitest run src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts` ×2 | ✅ file exists; assertion changes | ⬜ pending |
 | ASSERT-03 (F19) | Same at site 2 | Same injection; **before** failure at `idura.test.ts:151`, **after** at `:148` | unit | `cd apps/frontend && npx vitest run src/lib/api/utils/auth/providers/idura.test.ts` ×2 | ✅ | ⬜ pending |
 | ASSERT-03 (F19) | Same at site 3 | Under the `idura.ts:101-102` deletion: **before** failure at `token-endpoint.test.ts:170`, **after** at `:167`, message contains `client_assertion` | unit | `cd apps/frontend && npx vitest run src/lib/api/utils/auth/__tests__/token-endpoint.test.ts` ×2 | ✅ | ⬜ pending |
-| ASSERT-05 (F9) | A tag that never renders fails the pair | Under the `QuestionHeading.svelte:80-89` deletion: **before** — both perm projects green; **after** — the corresponding project(s) red on the `.not.toHaveCount(0)` line | E2E | `e2e-run.sh --run-dir <d> --project=perm-hide-category-tags` and `--project=perm-hide-election-tags`, ×2 each | ❌ W0 — positive assertions do not exist | ⬜ pending |
-| ASSERT-05 (F9) | The control is seeded data | The two templates declare the precondition (`elections: 2`; `showCategoryTags: true`) and `dev-seed` is rebuilt before the run | static + build | `grep` the two template files; `yarn build` | ❌ W0 | ⬜ pending |
+| ASSERT-05 (F9) | A tag that never renders fails the pair | Under the `QuestionHeading.svelte:80-89` deletion: **before** — both perm projects green (RUN 1, `140-NEGATIVE-CONTROL.md` § 15.3); **after** — each spec red at **its own counted presence assertion**, `expect(count, '<why>').toBeGreaterThan(0)`, with the explanatory message naming the seeded precondition: `perm-hide-election-tags.spec.ts:43:7` (§ 16.3) and `perm-hide-category-tags.spec.ts:43:7` (§ 16.5) | E2E | `e2e-run.sh --run-dir <d> --project perm-hide-category-tags` — ONE invocation covers both spec projects transitively (`tests/playwright.config.ts:1081`), run injected then byte-restored | ✅ both assertions landed (`c6b3abaec`) | ✅ green |
+| ASSERT-05 (F9) | The control is seeded data | The two templates declare the precondition (`elections: 2`; `showCategoryTags: true`), each failure message quotes it verbatim, and the post-seed **exact-equality** `app_settings` assertion (`setupFromTemplate.ts:256-260`) fails the *setup* loudly if a template and its overlay disagree | static + E2E | `grep` the two template files; the setup projects reported `expected` in every run (`140-NEGATIVE-CONTROL.md` § 14, § 16.3, § 16.5). **No rebuild step:** `packages/dev-seed` is source-resolved (`"build": "echo 'Nothing to build.'"`, `exports` → `./src/index.ts`, no `dist`), measured by plan `140-03` | ✅ landed (`4c0bf5839`) | ✅ green |
 | ASSERT-06 (F10) | The stated budget is true **or** enforced | Add one `expect.soft(true).toBe(true)` to `voter-journey.spec.ts` ⇒ **any** Playwright invocation (including `--list`) throws naming the file and both numbers. Remove it ⇒ passes. Both observed **before** the guard is accepted. | config-load guard | `cd tests && npx playwright test --list` ×2 (with / without the extra soft assertion) | ❌ W0 | ⬜ pending |
 | Criterion 5 | Suites green after the edits, preflight satisfied | `e2e-run.sh` exits 0 **and** its evidence dir records ≥1 preflight success line and 0 failure lines; `yarn test:unit` exits 0; `yarn lint:check` exits 0 | full suite | `tests/scripts/e2e-run.sh --run-dir <d>` + `yarn test:unit` + `yarn lint:check` | ✅ infrastructure exists | ⬜ pending |
+
+> **Form note (ASSERT-05).** The rows above name `expect(count, '<why>').toBeGreaterThan(0)`, not the
+> `.not.toHaveCount(0)` that `140-RESEARCH.md` § Validation Architecture and its § F9 code example
+> proposed and that this document inherited. `140-PATTERNS.md`'s pattern map found `.not.toHaveCount(`
+> appears **nowhere** in `tests/tests/specs/perm/`, while the counted form is the established house
+> convention at three in-tree call sites — `perm-answers-locked.spec.ts:54` (`expect(count, 'profile
+> page must render at least one visible input').toBeGreaterThan(0)`), the same shape at `:86`, and
+> `perm-localisation-positive.spec.ts:193,205,244`. House style won: it carries the explanatory second
+> argument this phase wants on every new assertion, and `.not.toHaveCount(0)` is an auto-retrying
+> web-first matcher whose negation semantics differ subtly from a one-shot count comparison — not an
+> idiom worth introducing casually into a suite that has none of it. Resolved in `140-04-PLAN.md`
+> § `<conflict_resolutions>` and executed there; recorded here so the contract states the form that
+> actually shipped. The landed assertions wrap across four lines because the explanatory message
+> exceeds Prettier's 120-column `printWidth` — the same wrap the house precedent takes at
+> `perm-localisation-positive.spec.ts:206-209`.
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -82,7 +97,7 @@ failure is now possible**, not merely a command that exits 0.
 - [ ] `tests/tests/setup/shared/assertTeardown.ts` — the shared F3 assertion helper (**does not exist**; research confirmed there is no shared teardown helper today, so creating it is part of the deliverable, not a refactor)
 - [ ] A row-count-by-prefix probe usable from `tests/` (build on `client.query('<table>').like('external_id', prefix + '%')`; the existing `listCandidateIdsByPrefix` covers candidates only)
 - [ ] Instrumented measurement pass producing the `{prefix, before, rowsDeleted, after}` table for all 27 sites — **must precede** the matcher choice
-- [ ] Positive assertions in the two perm specs + the two template preconditions (F9)
+- [x] Positive assertions in the two perm specs + the two template preconditions (F9) — preconditions in `4c0bf5839` (plan `140-03`), counted presence assertions in `c6b3abaec` (plan `140-04`), both observed red under the render-path deletion (`140-NEGATIVE-CONTROL.md` §§ 16.3, 16.5) and green on a byte-restored tree (§ 16.6)
 - [ ] The F10 counted guard block in `tests/playwright.config.ts` + the rewritten header
 - [ ] A phase evidence document (`140-NEGATIVE-CONTROL.md`, following `137-NEGATIVE-CONTROL.md` / `138-NEGATIVE-CONTROL.md`) recording all two-run pairs with both outcome columns and the failing `file:line`
 
