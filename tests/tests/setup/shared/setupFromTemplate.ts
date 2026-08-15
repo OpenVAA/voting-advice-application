@@ -181,6 +181,9 @@ export async function setupFromTemplate(
   //     BEFORE the next chain's setup waits on it). Without this, two
   //     templates from different chains coexist briefly. ≥2-char guard
   //     delegated to runTeardown itself.
+  //     NOTE (Phase 140 WR-05): this delete does NOT route through
+  //     runTeardownAsserted (assertTeardown.ts) and is therefore unasserted —
+  //     see .planning/WINDOWS.md and assertTeardown.ts's RATIONALE docblock.
   if (options?.extraTeardownPrefix) {
     const prefixes = Array.isArray(options.extraTeardownPrefix)
       ? options.extraTeardownPrefix
@@ -193,6 +196,8 @@ export async function setupFromTemplate(
   // 1b. Pre-clear any stale state from a prior run. runTeardown's 2-char
   //     guard requires prefix.length >= 2; the base dataset uses
   //     'test-e2e-base-' (empty-prefix fallback above).
+  //     NOTE (Phase 140 WR-05): unasserted, same as 1a above — the template's
+  //     own pre-clear does not route through runTeardownAsserted either.
   await runTeardown(teardownPrefix, client);
 
   // 2. Pipeline + writer. Writer Pass-5 applies app_settings.fixed[] via
@@ -275,6 +280,7 @@ export async function setupFromTemplate(
   }
 
   // 5. Cleanup closure — idempotent re-invocation of runTeardown.
+  //    NOTE (Phase 140 WR-05): unasserted, same as steps 1a/1b above.
   const cleanup = async (): Promise<void> => {
     await runTeardown(teardownPrefix, client);
   };

@@ -10,8 +10,19 @@
  *
  * RATIONALE: the assertion previously lived inline at 27 call sites, so
  * strengthening it meant 27 hand edits and the 27th file was covered only by
- * whoever remembered it. With the matcher owned here, a newly added project is
- * covered by construction — the call sites carry no matcher of their own.
+ * whoever remembered it. With the matcher owned here, a newly added
+ * `*.teardown.ts` project's OWN delete is covered by construction — the call
+ * sites carry no matcher of their own.
+ *
+ * NOT covered (Phase 140 WR-05): `setupFromTemplate.ts` performs three
+ * prefix-scoped deletes of its own that do NOT route through this function —
+ * the `extraTeardownPrefix` pre-clear loop (`:189`), the template's own
+ * pre-clear (`:196`), and the `cleanup` closure returned to callers (`:279`).
+ * These are the deletes that run in the COMMON case (they are why
+ * `rowsBefore === 0` at almost every teardown site — see WR-03 above), so the
+ * delete path most exercised by the suite carries no assertion at all. "Every
+ * `*.teardown.ts` project's own delete is covered by construction" does NOT
+ * extend to `setupFromTemplate.ts`'s internal deletes.
  *
  * The helper deliberately does NOT construct the admin client and does NOT own
  * the Playwright wrapper: all three call-site shapes build the client themselves
