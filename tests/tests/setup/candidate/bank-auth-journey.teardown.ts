@@ -52,10 +52,19 @@ teardown('delete bank-auth-journey dataset + created auth user', async () => {
   await client.unregisterCandidate(BANK_AUTH_JOURNEY_PLACEHOLDER_EMAIL);
   await client.unregisterCandidate(BANK_AUTH_JOURNEY_EMAIL);
 
-  // 3. Restore the scoped preregistration flag. The setup overlaid
-  //    `preRegistration.enabled = true` onto the runtime app_settings row (EFLOW-10b
-  //    route-guard precondition); reset it to `false` so a later default-suite run
-  //    is NOT left with preregistration enabled (additive merge_jsonb_column —
-  //    flips the single scoped key back).
-  await client.updateAppSettings({ preRegistration: { enabled: false } });
+  // 3. (Phase 140 review WR-08 — REMOVED, not gated) This step used to write
+  //    `preRegistration.enabled = false` back onto the shared `app_settings`
+  //    singleton via an ADDITIVE merge. That write is NOT ordered relative to
+  //    the perm chain — `data-setup-bank-auth-journey` depends only on
+  //    `data-setup-base` (Phase 140 CR-01), not on the perm serial chain
+  //    (A4) — so under `PLAYWRIGHT_BANK_AUTH=1 yarn test:e2e` this step could
+  //    fire while the perm family is still mid-run and OWNS the singleton
+  //    for its own authoritative REPLACE, clobbering it. Every
+  //    `setupFromTemplate` call already does a full authoritative REPLACE of
+  //    `app_settings.settings` before ITS OWN overlay (`setupFromTemplate.ts`
+  //    step 3), so the next setup to run — base, perm, or a re-run of this
+  //    project itself (which now always runs `data-setup-base` first) —
+  //    unconditionally resets `preRegistration` to that setup's own baseline.
+  //    Nothing needs to restore it here; doing so was both redundant and the
+  //    one remaining unordered write into shared state.
 });

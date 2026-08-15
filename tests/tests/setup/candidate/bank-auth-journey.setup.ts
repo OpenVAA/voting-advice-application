@@ -72,9 +72,14 @@ setup('seed perm-bankauth-notloc + pre-clean bank-auth-journey identity', async 
   // preregister flow ONLY when it is truthy. We do NOT enable it in the
   // template nor in `MINIMAL_BASE_APP_SETTINGS`. Instead we overlay the scoped
   // flag onto the runtime DB row AFTER seeding via `appSettingsOverride`
-  // (additive merge_jsonb_column); the paired teardown resets it to
-  // `{ enabled: false }` so a later default-suite run is NOT left with
-  // preregistration enabled.
+  // (additive merge_jsonb_column). Phase 140 review WR-08: the paired teardown
+  // no longer restores `{ enabled: false }` itself — that write was not
+  // ordered relative to the perm chain and could clobber it mid-run. This
+  // project now always depends on `data-setup-base` (CR-01), and EVERY
+  // `setupFromTemplate` call (base, perm, or a re-run of this project) does
+  // an authoritative REPLACE of `app_settings.settings` before its own
+  // overlay, so the next setup to run resets `preRegistration` to that
+  // setup's own baseline unconditionally — nothing needs to restore it here.
   //
   // No `extraTeardownPrefix` pre-clear: `perm-bankauth-notloc-` is this
   // project's OWN dedicated namespace, so there is nothing to wipe on behalf
