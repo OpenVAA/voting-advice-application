@@ -994,7 +994,7 @@ assertion without updating the declared posture, keeping the header honest in bo
 | **A6** | The `app_settings` exact-equality post-seed assertion in `setupFromTemplate.ts:256-260` will accept the two F9 overlay changes once the templates declare them, without a separate expectation edit. | Runtime State Inventory | Medium. The assertion compares against the template's own declared settings, so a template-side overlay should be self-consistent — but this was not executed. Surfaces immediately as a **setup** failure, not a silent pass. |
 | **A7** | No OS-registered state, scheduler entry, or external service config references anything this phase renames or changes. Asserted from the absence of such registrations in the repo, not from an exhaustive host scan. | Runtime State Inventory | Low. This phase renames nothing user-visible. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 These are the four design calls the ROADMAP left open (no CONTEXT.md exists). Each carries a
 recommendation; the planner should convert each into an explicit decision or a `checkpoint:` task.
