@@ -31,17 +31,21 @@
  * replaces exactly the `runTeardown(...)` call plus its `expect(...)` line.
  *
  * MATCHER — the before/after invariant (research shape A), adopted under
- * **branch A** of plan 06's pre-specified decision rule. Evidence:
- * `140-MEASUREMENT.md` § 4 (one instrumented, preflight-confirmed full-suite run,
- * 26 observations) and § Adjudication. `rowsDeleted === before` held at 26/26
- * observations and `after === 0` held at 26/26, so the invariant is adopted
- * without relaxation. The rejected alternatives are costed there against the same
- * data: a uniform positivity floor on `rowsDeleted` (research shape C) would have
- * reddened 25 of the 26 executed sites, because two confirmed mechanisms —
- * Playwright's `teardown:` deferral and the `extraTeardownPrefix: ['test-',
- * 'e2e-perm-']` pre-clear at `setupFromTemplate.ts:184-196` — make
- * `rowsDeleted === 0` the LEGITIMATE outcome at almost every site. That is why
- * `before === 0` must pass here and does.
+ * **branch A** of plan 06's pre-specified decision rule. The full measurement
+ * (observation counts, per-site breakdown, and the rejected-alternatives cost
+ * analysis) lives in `140-MEASUREMENT.md` § 4 / § Adjudication — the single
+ * source of truth; figures are deliberately NOT restated here (Phase 140
+ * IN-02 — a duplicated number in a docblock is precisely the F10 failure mode
+ * this phase closed elsewhere, and line-number citations into
+ * `setupFromTemplate.ts` go stale on that file's first edit). Conclusion:
+ * both `rowsDeleted === before` and `after === 0` held at every observed
+ * site, so the invariant is adopted without relaxation; a uniform positivity
+ * floor on `rowsDeleted` (research shape C) was rejected because
+ * Playwright's `teardown:` deferral and `setupFromTemplate.ts`'s
+ * `extraTeardownPrefix` pre-clear make `rowsBefore === 0` (and therefore
+ * `rowsDeleted === 0`) the LEGITIMATE outcome at almost every site — see
+ * WHAT IT CATCHES below for what that implies about this assertion's
+ * discriminating power at those sites.
  *
  * WHAT IT CATCHES UNCONDITIONALLY (holds regardless of `rowsBefore`):
  * over-deletion — rows deleted under a prefix the probe counted as empty
@@ -50,19 +54,15 @@
  *
  * WHAT IT CATCHES ONLY WHEN `rowsBefore > 0` AT THE SITE IN QUESTION: a
  * silently no-opping `bulk_delete`, a scoping bug that sends the RPC a
- * different prefix from the one counted. `140-MEASUREMENT.md` § 4 observed
- * `rowsBefore > 0` at 1 of 26 executed sites — Playwright's `teardown:`
- * deferral and the `extraTeardownPrefix: ['test-', 'e2e-perm-']` pre-clear at
- * `setupFromTemplate.ts:184-196` make `rowsBefore === 0` (and therefore a
- * trivial `0 === 0` / `0 === 0` evaluation on both halves) the LEGITIMATE,
- * overwhelmingly common outcome. So at ~25 of 26 observed sites this
+ * different prefix from the one counted. Per `140-MEASUREMENT.md` § 4 /
+ * § Adjudication, `rowsBefore > 0` was the RARE outcome, not the common one
+ * (see MATCHER above for the mechanism) — so at most observed sites this
  * assertion's discriminating power is limited to the unconditional
  * over-deletion catch above; the no-op/scoping catches are exercised by
- * construction at only the sites that still own rows at teardown time (e.g.
- * `base.teardown.ts`, the one site the measurement found doing so). Read the
- * "26/26 held" framing in the MATCHER note above accordingly: 25 of those 26
- * observations are `0/0/0` confirmations of the trivial branch, not
- * independent confirmations of the no-op/scoping catches.
+ * construction only at the sites that still own rows at teardown time. Read
+ * any "held at every site" framing accordingly: that is a `0/0/0`
+ * confirmation of the trivial branch at most sites, not an independent
+ * confirmation of the no-op/scoping catches everywhere.
  *
  * WHAT IT DOES NOT CATCH:
  *   - A typo in a call site's `PREFIX` constant, which propagates to the count
