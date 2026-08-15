@@ -394,7 +394,22 @@ Plans:
   4. **F10** — `voter-journey.spec.ts`'s stated `expect.soft` budget matches its real count (**136**, not 3), **or** a counted guard enforces the stated budget and fails when one more `expect.soft` is added — the addition is made and the failure observed before the guard is accepted. _(Corrected 2026-08-15 during Phase 140 planning: this criterion read **137** until now, and 137 was correct when the sweep measured it on 2026-08-11. Phase 138 then promoted one soft assertion to hard in this very file — `bea9fc97a`, `voter-journey.spec.ts:858` — taking the count 137 → 136. Verified at both commits: `bea9fc97a~1` → 137, `bea9fc97a` and HEAD → 136. The 2026-08-11 audit record and the completed-todo entry still say 137 and are **left as-is**; they were true when written. That this criterion went stale between Phase 138 and Phase 140 is the same drift class F10 exists to close, which is why the number is now pinned to a measurement rather than a quotation.)_
   5. Unit and E2E suites return to green after the edits, with the Phase-137 preflight satisfied on every run used as evidence.
 
-**Plans**: TBD
+**Plans**: 6 plans (fully serial — waves 1-6; see note below)
+
+Plans:
+- [ ] 140-01-PLAN.md — TRACER: F19 null-blind matchers repaired at all three sites, two-run control run at each, `140-NEGATIVE-CONTROL.md` established (ASSERT-03)
+- [ ] 140-02-PLAN.md — F10 counted `expect.soft` guard at config load + truthful `voter-journey.spec.ts` header, blindness half observed first (ASSERT-06)
+- [ ] 140-03-PLAN.md — F9 seeded preconditions: complementary-tag template edits + observed blindness of the absence-only pair (ASSERT-05)
+- [ ] 140-04-PLAN.md — F9 positive controls in both perm specs (house form), catch half observed, `140-VALIDATION.md` reconciled (ASSERT-05)
+- [ ] 140-05-PLAN.md — F3 shared `assertTeardown` helper + exact-count probe + 27-site codemod (behaviour-preserving) + instrumented measurement (ASSERT-02)
+- [ ] 140-06-PLAN.md — F3 matcher adjudicated against the measured table, two-run control, phase gate (ASSERT-02, criterion 5)
+
+_Wave note: the six plans are strictly serial. Every E2E-bearing plan contends for the same single dev
+server on `:5173` and the same local Supabase database (`e2e-run.sh` spawns and owns its own server and
+runs `db:reset`); plan 01 holds live `idura.ts` injections that forbid any concurrent Playwright command
+(research Pitfall 7); plan 02 edits `playwright.config.ts`, which every run loads; and five of the six
+append to the same `140-NEGATIVE-CONTROL.md`. The serial ordering is a property of the work, not an
+unexploited parallelism._
 
 ### Phase 141: Package Unit-Test Coverage + `test:unit` Invariant Guard
 
