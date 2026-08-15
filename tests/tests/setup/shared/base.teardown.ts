@@ -13,11 +13,19 @@
  * returns early when the user does not exist, so the default run pays only one
  * admin listUsers call and its behaviour is unchanged.
  *
- * Teardown-ownership: this teardown is the SOLE owner of the base namespace.
- * Every perm setup owns its own distinct `e2e-perm-*` prefix; candidate-journey
- * consumes (does not re-seed) base data and owns only its auth.users row. No
- * other setup writes bare `test-` rows, so narrowing the wipe from `test-` to
- * `test-e2e-base-` orphans nothing.
+ * Teardown-ownership: this teardown is the sole *writer* of the
+ * `test-e2e-base-` namespace, but NOT its sole deleter — all 19 perm setups
+ * pass `extraTeardownPrefix: ['test-', 'e2e-perm-']`, and `'test-'` matches
+ * `test-e2e-base-%`, so a perm setup wipes this dataset before seeding its
+ * own (`140-MEASUREMENT.md` § 5.2, confirmed empirically — the stated reason
+ * `before = 0` was observed at this site). That is safe only because
+ * Playwright's `teardown:` deferral is transitive over the serial perm chain,
+ * so every setup completes before any teardown runs (Phase 140 review WR-06);
+ * it is NOT safe by namespace ownership. Breaking that ordering would make
+ * this site's `runTeardownAsserted` accounting race the perm pre-clears.
+ * Every perm setup owns its own distinct `e2e-perm-*` prefix for its OWN
+ * seeded data; candidate-journey consumes (does not re-seed) base data and
+ * owns only its auth.users row.
  */
 
 import { test as teardown } from '@playwright/test';
