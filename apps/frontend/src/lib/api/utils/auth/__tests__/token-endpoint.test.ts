@@ -163,12 +163,10 @@ describe('POST /api/oidc/token (Idura - private_key_jwt)', () => {
     }
 
     expect(capturedFetchBody).not.toBeNull();
-    const assertion = capturedFetchBody!.get('client_assertion')!;
-    expect(assertion).toBeDefined();
-
-    // JWT has 3 dot-separated segments
-    const parts = assertion.split('.');
-    expect(parts).toHaveLength(3);
+    const assertion = capturedFetchBody!.get('client_assertion');
+    expect(assertion, "token request body is missing 'client_assertion'").toEqual(
+      expect.stringMatching(/^[\w-]+\.[\w-]+\.[\w-]+$/)
+    );
   });
 
   it('client assertion has RS256 algorithm in header', async () => {

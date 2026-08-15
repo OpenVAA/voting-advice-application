@@ -145,11 +145,9 @@ describe('Idura provider', () => {
       // Extract the request parameter from the URL
       const url = new URL(result.authorizeUrl);
       const requestParam = url.searchParams.get('request');
-      expect(requestParam).toBeDefined();
-
-      // The request parameter should be a valid JWT (3 base64url segments)
-      const parts = requestParam!.split('.');
-      expect(parts).toHaveLength(3);
+      expect(requestParam, "authorize URL is missing the 'request' (JAR) parameter").toEqual(
+        expect.stringMatching(/^[\w-]+\.[\w-]+\.[\w-]+$/)
+      );
     });
 
     it('includes client_id in the URL query parameters', async () => {

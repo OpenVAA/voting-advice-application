@@ -325,18 +325,28 @@ null
 
 ### 5.4 The two halves side by side — THE LOAD-BEARING TABLE
 
-| Site | Injected line | Half | Assertion outcome | File outcome | Failing `file:line` | Failure text |
-|---|---|---|---|---|---|---|
-| **1** `authorize-endpoint.test.ts` | `idura.ts:74` | RUN 1 (pre-repair) | **PASS** (blind) | FAIL (4/9) | `authorize-endpoint.test.ts:147:33` | `TypeError: Cannot read properties of null (reading 'split')` |
-| **1** `authorize-endpoint.test.ts` | `idura.ts:74` | RUN 2 (repaired) | **FAIL** (caught) | FAIL (4/9) | `authorize-endpoint.test.ts:144:84` | `AssertionError: authorize URL is missing the 'request' (JAR) parameter: expected null to deeply equal StringMatching{…}` |
+| Site | Injected line | RUN 1 assertion | RUN 1 file | RUN 1 failing `file:line` | RUN 2 assertion | RUN 2 file | RUN 2 failing `file:line` |
+|---|---|---|---|---|---|---|---|
+| **1** `authorize-endpoint.test.ts` | `idura.ts:74` | **PASS** (blind) | FAIL (4/9) | `authorize-endpoint.test.ts:147:33` | **FAIL** (caught) | FAIL (4/9) | `authorize-endpoint.test.ts:144:84` |
+| **2** `idura.test.ts` | `idura.ts:74` (shared with site 1) | **PASS** (blind) | FAIL (2/13) | `idura.test.ts:151:35` | **FAIL** (caught) | FAIL (2/13) | `idura.test.ts:148:86` |
+| **3** `token-endpoint.test.ts` | `idura.ts:101-102` (entry deleted) | **PASS** (blind) | FAIL (4/10) | `token-endpoint.test.ts:170:29` | **FAIL** (caught) | FAIL (4/10) | `token-endpoint.test.ts:167:75` |
 
-<!-- Rows for sites 2 and 3 are appended by 140-01 task 2. -->
+The failure **text** for each half, which is the other thing that moved:
 
-**Read the assertion column, and read the two `file:line` values.** The file outcome is FAIL in both
+| Site | RUN 1 failure text (pre-repair) | RUN 2 failure text (repaired) |
+|---|---|---|
+| **1** | `TypeError: Cannot read properties of null (reading 'split')` | `AssertionError: authorize URL is missing the 'request' (JAR) parameter: expected null to deeply equal StringMatching{…}` |
+| **2** | `TypeError: Cannot read properties of null (reading 'split')` | `AssertionError: authorize URL is missing the 'request' (JAR) parameter: expected null to deeply equal StringMatching{…}` |
+| **3** | `TypeError: Cannot read properties of null (reading 'split')` | `AssertionError: token request body is missing 'client_assertion': expected null to deeply equal StringMatching{…}` |
+
+Clean-tree runs, all three repaired, no injection: 9/9, 13/13, 10/10 — all green.
+
+**Read the assertion column, and read the two `file:line` values in each row.** The file outcome is FAIL in both
 halves — that column distinguishes nothing here, which is exactly why the TWO-COLUMN RULE
 (`139-VERDICTS.md` § 3.2) exists. The discrimination lives in (a) the assertion column, PASS → FAIL, and
-(b) the failing line, `:147` → `:144`. **The two `file:line` values differ.** A table in which they were
-equal would not be evidence.
+(b) the failing line, which moved at every site (`:147`→`:144`, `:151`→`:148`, `:170`→`:167`). **In
+every row the two `file:line` values differ.** A row in which they were equal would not be evidence —
+it would mean the file was already red for a reason the repair did not supply.
 
 ### 5.5 The finding
 
@@ -401,9 +411,231 @@ anchored `expect.stringMatching(/^…$/)`. No new idiom was introduced.
 substance the criteria encode — one anchored three-segment regex per site, carrying a second-argument
 message naming the parameter — holds unchanged and is verified in `140-01-SUMMARY.md`.
 
-### 5.7 Sites 2 and 3
+### 5.7 Site 2 — `providers/idura.test.ts`
 
-<!-- Appended by 140-01 task 2. -->
+**Same injection, different vehicle.** Site 2 shares site 1's injection target exactly
+(`idura.ts:74`) — one edit reddens both files, because site 1 reaches the provider through the route
+handler (`routes/api/oidc/authorize/+server.ts` → `getActiveProvider()` → `iduraProvider`) while site 2
+calls `iduraProvider.getAuthorizeUrl()` directly. The control was nevertheless run against site 2's
+**own** file so the recorded `file:line` is unambiguous.
+
+#### 5.7.1 Provenance
+
+Pre-repair shape, verbatim with pre-repair line numbers:
+
+```ts
+147      const requestParam = url.searchParams.get('request');
+148      expect(requestParam).toBeDefined();
+149
+150      // The request parameter should be a valid JWT (3 base64url segments)
+151      const parts = requestParam!.split('.');
+152      expect(parts).toHaveLength(3);
+```
+
+Post-repair shape, verbatim:
+
+```ts
+146      const url = new URL(result.authorizeUrl);
+147      const requestParam = url.searchParams.get('request');
+148      expect(requestParam, "authorize URL is missing the 'request' (JAR) parameter").toEqual(
+149        expect.stringMatching(/^[\w-]+\.[\w-]+\.[\w-]+$/)
+150      );
+```
+
+#### 5.7.2 The invocation, verbatim (both halves, identical but for the log name)
+
+```bash
+cd "$(git rev-parse --show-toplevel)/apps/frontend" \
+  && npx vitest run src/lib/api/utils/auth/providers/idura.test.ts 2>&1 \
+  | tee "${TMPDIR:-/tmp}/gsd-140/f19b-before.log"     # RUN 2: f19b-after.log
+```
+
+#### 5.7.3 Observed
+
+RUN 1, from `${TMPDIR}/gsd-140/f19b-before.log` (ANSI stripped):
+
+```
+ FAIL  src/lib/api/utils/auth/providers/idura.test.ts > Idura provider > getAuthorizeUrl (JAR-based) > includes a signed JWT request parameter in the URL
+TypeError: Cannot read properties of null (reading 'split')
+ ❯ src/lib/api/utils/auth/providers/idura.test.ts:151:35
+    149|
+    150|       // The request parameter should be a valid JWT (3 base64url segm…
+    151|       const parts = requestParam!.split('.');
+       |                                   ^
+    152|       expect(parts).toHaveLength(3);
+    153|     });
+```
+
+RUN 2, from `${TMPDIR}/gsd-140/f19b-after.log`:
+
+```
+ FAIL  src/lib/api/utils/auth/providers/idura.test.ts > Idura provider > getAuthorizeUrl (JAR-based) > includes a signed JWT request parameter in the URL
+AssertionError: authorize URL is missing the 'request' (JAR) parameter: expected null to deeply equal StringMatching{…}
+
+- Expected:
+StringMatching /^[\w-]+\.[\w-]+\.[\w-]+$/
+
++ Received:
+null
+
+ ❯ src/lib/api/utils/auth/providers/idura.test.ts:148:86
+    146|       const url = new URL(result.authorizeUrl);
+    147|       const requestParam = url.searchParams.get('request');
+    148|       expect(requestParam, "authorize URL is missing the 'request' (JA…
+       |                                                                                      ^
+    149|         expect.stringMatching(/^[\w-]+\.[\w-]+\.[\w-]+$/)
+    150|       );
+```
+
+Clean tree, repaired, injection reverted: `Test Files 1 passed (1) / Tests 13 passed (13)`.
+
+#### 5.7.4 The finding
+
+Assertion outcome moved **PASS → FAIL**; the failing line moved **`:151:35` → `:148:86`**; the failure
+text moved from a `TypeError` about `split` to a sentence naming the `request` (JAR) parameter.
+
+**Collateral (COLLATERAL RULE): one test** — `signed request object contains correct claims`
+(`idura.test.ts:182`, `jose.decodeJwt` rejecting the now-missing parameter). It is not a site under
+control and **bears on no verdict**; it is a second liveness proof that the edit reached the module.
+
+### 5.8 Site 3 — `__tests__/token-endpoint.test.ts`
+
+#### 5.8.1 The injection — a DIFFERENT diff, and the variant deliberately not used
+
+Site 3 exercises the token-exchange path, so its injection targets the token-request
+`URLSearchParams` object at `apps/frontend/src/lib/api/utils/auth/providers/idura.ts:101-102`. The
+`client_assertion` entry is **deleted outright**, and the preceding trailing comma is dropped so
+`client_assertion_type` becomes the final entry:
+
+```diff
+  apps/frontend/src/lib/api/utils/auth/providers/idura.ts:101-102
+-        client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+-        client_assertion: clientAssertion
++        client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer' // INJECTED (140): the client_assertion entry is deleted from the token request body
+       }).toString()
+```
+
+**The variant NOT used, and why.** `client_assertion: undefined as unknown as string` was rejected:
+Phase 139 measured that `new URLSearchParams({ b: undefined })` stringifies the value to the
+four-character string `"undefined"`, so `.get()` returns a **non-empty string**. That run would model a
+MALFORMED assertion rather than a MISSING one — a different regression from the one F19 names. Recorded
+as rejected design **R-6** in `139-VERDICTS.md` § 5.9.2.
+
+#### 5.8.2 Provenance
+
+Pre-repair shape, verbatim with pre-repair line numbers — note that the **correct idiom already sat one
+line above the defect**:
+
+```ts
+165      expect(capturedFetchBody).not.toBeNull();
+166      const assertion = capturedFetchBody!.get('client_assertion')!;
+167      expect(assertion).toBeDefined();
+168
+169      // JWT has 3 dot-separated segments
+170      const parts = assertion.split('.');
+171      expect(parts).toHaveLength(3);
+```
+
+Post-repair shape, verbatim:
+
+```ts
+165      expect(capturedFetchBody).not.toBeNull();
+166      const assertion = capturedFetchBody!.get('client_assertion');
+167      expect(assertion, "token request body is missing 'client_assertion'").toEqual(
+168        expect.stringMatching(/^[\w-]+\.[\w-]+\.[\w-]+$/)
+169      );
+```
+
+Three things changed and one deliberately did not:
+
+- `:165`'s `expect(capturedFetchBody).not.toBeNull()` is **untouched** — it guards a different value
+  (the captured body itself) and is the correct matcher for it.
+- The **trailing** `!` on `capturedFetchBody!.get('client_assertion')!` is dropped. Keeping it would
+  re-assert at the type level exactly what the new matcher exists to check at runtime.
+- The **leading** `capturedFetchBody!` stays — it is guarded by `:165` one line above.
+- The subsumed `assertion.split('.')` / `toHaveLength(3)` pair and its comment are removed.
+
+#### 5.8.3 The invocation, verbatim
+
+```bash
+cd "$(git rev-parse --show-toplevel)/apps/frontend" \
+  && npx vitest run src/lib/api/utils/auth/__tests__/token-endpoint.test.ts 2>&1 \
+  | tee "${TMPDIR:-/tmp}/gsd-140/f19c-before.log"     # RUN 2: f19c-after.log
+```
+
+#### 5.8.4 Observed
+
+RUN 1, from `${TMPDIR}/gsd-140/f19c-before.log`:
+
+```
+ FAIL  src/lib/api/utils/auth/__tests__/token-endpoint.test.ts > POST /api/oidc/token (Idura - private_key_jwt) > sends a valid JWT as client_assertion
+TypeError: Cannot read properties of null (reading 'split')
+ ❯ src/lib/api/utils/auth/__tests__/token-endpoint.test.ts:170:29
+    168|
+    169|     // JWT has 3 dot-separated segments
+    170|     const parts = assertion.split('.');
+       |                             ^
+    171|     expect(parts).toHaveLength(3);
+    172|   });
+```
+
+RUN 2, from `${TMPDIR}/gsd-140/f19c-after.log`:
+
+```
+ FAIL  src/lib/api/utils/auth/__tests__/token-endpoint.test.ts > POST /api/oidc/token (Idura - private_key_jwt) > sends a valid JWT as client_assertion
+AssertionError: token request body is missing 'client_assertion': expected null to deeply equal StringMatching{…}
+
+- Expected:
+StringMatching /^[\w-]+\.[\w-]+\.[\w-]+$/
+
++ Received:
+null
+
+ ❯ src/lib/api/utils/auth/__tests__/token-endpoint.test.ts:167:75
+    165|     expect(capturedFetchBody).not.toBeNull();
+    166|     const assertion = capturedFetchBody!.get('client_assertion');
+    167|     expect(assertion, "token request body is missing 'client_assertion…
+       |                                                                           ^
+    168|       expect.stringMatching(/^[\w-]+\.[\w-]+\.[\w-]+$/)
+    169|     );
+```
+
+Clean tree, repaired, injection reverted: `Test Files 1 passed (1) / Tests 10 passed (10)`.
+
+#### 5.8.5 The finding
+
+Assertion outcome moved **PASS → FAIL**; the failing line moved **`:170:29` → `:167:75`**; the failure
+text names `client_assertion`.
+
+Note the fact that makes this site's blindness sharpest: **`:165`'s `.not.toBeNull()` passed in both
+halves.** `capturedFetchBody` is a populated `URLSearchParams` — the body was captured fine; it is the
+`client_assertion` *entry within it* that was gone. A guard on the container cannot see an absent
+member, which is precisely why `:167` had to be repaired rather than leaned on its neighbour.
+
+**Collateral (COLLATERAL RULE): three tests** — `client assertion has RS256 algorithm in header`,
+`client assertion has correct iss, sub, aud claims`, `client assertion has exp within 5 minutes and a
+jti`. None is a site under control; each fails because `jose` rejects the now-missing assertion. **They
+bear on no verdict.**
+
+### 5.9 The three sites, and what the pattern shows
+
+All three sites are the same defect in the same shape: a `.get()` return typed `string | null`, guarded
+by a matcher that fails only on `undefined`. All three now fail at their own line with a sentence naming
+the missing parameter. In all three the failing `file:line` **moved** between the halves, which is the
+single fact that distinguishes "the guard caught it" from "something else was already red" — and in all
+three the file outcome was FAIL in *both* halves, so the file column distinguishes nothing.
+
+**Ordering note (`must_haves.flagged_assumptions[0]`, recorded not dropped).** The `ordering` edge
+category is **unresolved and flagged** for ASSERT-03. Each F19 site extracts exactly ONE named
+query/form parameter by key; it produces no collection and no output order, so no ordering semantics
+exist to assert. Writing an acceptance criterion here would mean inventing a predicate to hit a count.
+It is recorded as a flagged assumption rather than silently omitted.
+
+**Concurrency (backstop).** The three repaired assertions are independent of vitest's file-level
+parallelism: each test constructs its own request material inside its own `it()` body (a fresh
+`createMockRequestEvent(...)` or a direct `iduraProvider.getAuthorizeUrl(...)` call), and no repaired
+assertion reads state written by another test file. The injections were nevertheless run one file at a
+time so that each recorded `file:line` is attributable to a single vehicle.
 
 ---
 
