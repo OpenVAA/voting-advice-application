@@ -121,8 +121,11 @@ describe('POST /api/oidc/authorize', () => {
     expect(response.status).toBe(200);
 
     const data = await response.json();
-    expect(data.authorizeUrl).toBeDefined();
-    expect(typeof data.authorizeUrl).toBe('string');
+    // Phase 140 WR-08: collapsed from toBeDefined()+typeof pair (the sibling
+    // null-blind pattern F19 removed elsewhere) into one non-blind assertion —
+    // `data` crosses a JSON boundary (response.json()), so `authorizeUrl`
+    // could plausibly arrive `null` there.
+    expect(data.authorizeUrl, 'authorize response is missing authorizeUrl').toEqual(expect.any(String));
   });
 
   it('authorizeUrl contains client_id query parameter', async () => {

@@ -123,9 +123,11 @@ describe('Idura provider', () => {
         redirectUri: 'http://localhost:5173/callback'
       });
 
-      expect(result.state).toBeDefined();
-      expect(typeof result.state).toBe('string');
-      expect(result.state!.length).toBeGreaterThan(0);
+      // Phase 140 WR-08: collapsed from a toBeDefined()+typeof+length triple
+      // (the sibling null-blind pattern F19 removed elsewhere) into one
+      // non-blind assertion, so a future edit dropping a follow-up line can no
+      // longer silently restore the blindness.
+      expect(result.state, 'getAuthorizeUrl returned no CSRF state').toEqual(expect.stringMatching(/.+/));
     });
 
     it('includes a nonce parameter for replay protection', async () => {
@@ -133,8 +135,7 @@ describe('Idura provider', () => {
         redirectUri: 'http://localhost:5173/callback'
       });
 
-      expect(result.nonce).toBeDefined();
-      expect(typeof result.nonce).toBe('string');
+      expect(result.nonce, 'getAuthorizeUrl returned no replay nonce').toEqual(expect.stringMatching(/.+/));
     });
 
     it('includes a signed JWT request parameter in the URL', async () => {
