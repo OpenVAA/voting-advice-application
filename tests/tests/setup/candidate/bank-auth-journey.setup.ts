@@ -5,14 +5,32 @@
  * the perm serial chain — A4). Guarantees two things before the journey spec
  * runs:
  *
- *  1. The multi-election dataset (D-04). Reuses the EXISTING
- *     `perm-not-located-2e2cg` TEMPLATE (registry key
+ *  1. The multi-election dataset (D-04). Seeds the DEDICATED
+ *     `perm-bankauth-notloc` TEMPLATE (registry key
  *     `packages/dev-seed/src/templates/index.ts` →
- *     `permNotLocated2e2cgTemplate`) — confirmed to seed 2 elections × 2
- *     disjoint constituency groups × 2 constituencies each, the only existing
- *     shape that forces BOTH the candidate-preregister election selector AND
- *     the constituency selector to render (A1 confirmed; no fallback to
- *     `perm-2e-asymmetric` needed). Row prefix: `e2e-perm-notloc-`.
+ *     `permBankauthNotLocatedTemplate`) — a Phase 140 CR-01 copy of
+ *     `perm-not-located-2e2cg`'s shape (2 elections × 2 disjoint constituency
+ *     groups × 2 constituencies each, the only existing shape that forces
+ *     BOTH the candidate-preregister election selector AND the constituency
+ *     selector to render; A1 confirmed; no fallback to `perm-2e-asymmetric`
+ *     needed), under its OWN `e2e-bankauth-notloc-` row prefix.
+ *
+ *     Phase 140 CR-01: this project originally reused the SHARED
+ *     `perm-not-located-2e2cg` template verbatim, which meant its teardown
+ *     shared the `e2e-perm-notloc-` PREFIX with
+ *     `perm-not-located-2e2cg.teardown.ts`. The two data-teardown projects
+ *     are not ordered relative to each other in the DAG (A4 keeps this
+ *     project standing alone, deliberately NOT depending on the perm serial
+ *     chain — see `IDURA-TEST-RUNBOOK.md` Step B-3's isolated
+ *     `--project=bank-auth-journey` 3× determinism gate, which would break if
+ *     this project depended on the perm chain), so under
+ *     `PLAYWRIGHT_BANK_AUTH=1 yarn test:e2e` the two teardowns could run
+ *     concurrently and race on the same before/after row counts. A dedicated
+ *     template with a disjoint prefix removes the collision at the root
+ *     instead of ordering around it — no dependency edge needed, A4 stays
+ *     intact. No `extraTeardownPrefix` pre-clear is needed either: the
+ *     dedicated prefix means this setup never needs to wipe the `test-` /
+ *     `e2e-perm-` namespaces it does not own.
  *
  *  2. A clean auth.users state for the journey identity. The bank-auth journey
  *     creates a real `auth.users` + `candidates` + `user_roles` row (via the
@@ -21,8 +39,8 @@
  *     `candidate-journey.setup.ts`) means a cold-start, a warm-start, and a
  *     partial-prior-run all converge to the same clean starting state.
  *
- * The paired `bank-auth-journey.teardown.ts` owns BOTH the `e2e-perm-notloc-`
- * prefix wipe and the created auth-user delete.
+ * The paired `bank-auth-journey.teardown.ts` owns BOTH the
+ * `e2e-bankauth-notloc-` prefix wipe and the created auth-user delete.
  */
 
 import { test as setup } from '@playwright/test';
@@ -30,21 +48,27 @@ import { BANK_AUTH_JOURNEY_EMAIL, BANK_AUTH_JOURNEY_PLACEHOLDER_EMAIL } from '..
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { setupFromTemplate } from '../shared/setupFromTemplate';
 
-setup('seed perm-not-located-2e2cg + pre-clean bank-auth-journey identity', async () => {
-  // D-04: reuse the perm-not-located-2e2cg TEMPLATE (not the perm chain).
+setup('seed perm-bankauth-notloc + pre-clean bank-auth-journey identity', async () => {
+  // D-04 / Phase 140 CR-01: seed the DEDICATED perm-bankauth-notloc template
+  // (own `e2e-bankauth-notloc-` prefix — see the file docblock for why this is
+  // a separate template rather than a runtime prefix override on the shared
+  // perm-not-located-2e2cg template).
   //
   // Scoped preregistration enablement (EFLOW-10b): the candidate-preregister
   // route guard (`/candidate/preregister/+layout.server.ts`) reads
   // `app_settings.settings.preRegistration.enabled` server-side and renders the
-  // preregister flow ONLY when it is truthy. `perm-not-located-2e2cg` is a
-  // SHARED template (its other consumer, `perm-not-located-2e2cg.spec.ts`, must
-  // keep preregistration DISABLED), so we do NOT enable it in the template nor
-  // in `MINIMAL_BASE_APP_SETTINGS`. Instead we overlay the scoped flag onto the
-  // runtime DB row AFTER seeding via `appSettingsOverride` (additive
-  // merge_jsonb_column); the paired teardown resets it to `{ enabled: false }`
-  // so a later default-suite run is NOT left with preregistration enabled.
-  await setupFromTemplate('perm-not-located-2e2cg', {
-    extraTeardownPrefix: ['test-', 'e2e-perm-'],
+  // preregister flow ONLY when it is truthy. We do NOT enable it in the
+  // template nor in `MINIMAL_BASE_APP_SETTINGS`. Instead we overlay the scoped
+  // flag onto the runtime DB row AFTER seeding via `appSettingsOverride`
+  // (additive merge_jsonb_column); the paired teardown resets it to
+  // `{ enabled: false }` so a later default-suite run is NOT left with
+  // preregistration enabled.
+  //
+  // No `extraTeardownPrefix` pre-clear: `perm-bankauth-notloc-` is this
+  // project's OWN dedicated namespace, so there is nothing to wipe on behalf
+  // of another chain (Phase 140 CR-01 — the prior `['test-', 'e2e-perm-']`
+  // pre-clear wiped namespaces this project does not own).
+  await setupFromTemplate('perm-bankauth-notloc', {
     appSettingsOverride: { preRegistration: { enabled: true } }
   });
 

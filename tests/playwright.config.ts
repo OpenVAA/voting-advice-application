@@ -108,6 +108,69 @@ for (const [rel, budget] of Object.entries(SOFT_ASSERTION_BUDGETS)) {
 }
 
 /**
+ * TEARDOWN-PREFIX-UNIQUENESS GUARD (Phase 140 review, finding CR-01).
+ *
+ * `runTeardownAsserted` (`tests/tests/setup/shared/assertTeardown.ts`) turned the
+ * before/after row-count accounting into a HARD assertion. That assertion is only
+ * valid if each `*.teardown.ts` project owns an `external_id` prefix that no other
+ * project can touch concurrently — two data-teardown projects sharing (or
+ * substring-overlapping) a prefix race on the same before/after counts, and
+ * Playwright does not order data-teardown projects relative to each other unless an
+ * explicit `dependencies` edge forces it (most don't — see the perm family's
+ * `extraTeardownPrefix`-based cross-chain isolation instead of hard ordering).
+ *
+ * `bank-auth-journey.teardown.ts` and `perm-not-located-2e2cg.teardown.ts` shipped
+ * with the IDENTICAL prefix `e2e-perm-notloc-` (CR-01) — invisible before this phase
+ * because the old `toBeGreaterThanOrEqual(0)` matcher could not fail on the race.
+ * The fix here is scanning every `*.teardown.ts` file's `const PREFIX = '...'`
+ * declaration and throwing at config-load time if any two are equal OR one is a
+ * string-prefix of another (a `LIKE '<prefix>%'` scoping bug the review flagged
+ * separately, WR-06) — a comment asking future authors to pick a distinct prefix
+ * would be the same non-guard this file's other two checks exist to remove.
+ *
+ * Deliberately excludes files with no `const PREFIX = '...'` declaration (e.g.
+ * `candidate-journey.teardown.ts`, which performs no prefix-scoped delete — see
+ * `assertTeardown.ts`'s corrected docblock claim, CR-02).
+ */
+const teardownDir = path.join(TESTS_DIR, 'setup');
+const teardownPrefixDeclarations: Array<{ file: string; prefix: string }> = [];
+for (const rel of fs
+  .readdirSync(teardownDir, { recursive: true })
+  .map(String)
+  .filter((f) => f.endsWith('.teardown.ts'))) {
+  const abs = path.join(teardownDir, rel);
+  const match = /^const PREFIX = ['"]([^'"]+)['"]/m.exec(fs.readFileSync(abs, 'utf8'));
+  if (match) {
+    teardownPrefixDeclarations.push({ file: rel, prefix: match[1] });
+  }
+}
+for (let i = 0; i < teardownPrefixDeclarations.length; i++) {
+  for (let j = i + 1; j < teardownPrefixDeclarations.length; j++) {
+    const a = teardownPrefixDeclarations[i];
+    const b = teardownPrefixDeclarations[j];
+    if (a.prefix === b.prefix) {
+      throw new Error(
+        `Teardown prefix collision: '${a.file}' and '${b.file}' both declare PREFIX = '${a.prefix}'. ` +
+          `The two data-teardown projects are not guaranteed to be ordered relative to each other, so ` +
+          `their runTeardownAsserted before/after row counts can race nondeterministically (Phase 140 ` +
+          `review CR-01). Give one of them its own dedicated prefix — and, if it reuses a shared dev-seed ` +
+          `template, its own dedicated template registration too (see ` +
+          `packages/dev-seed/src/templates/e2e/perm/perm-bankauth-notloc.ts for the pattern).`
+      );
+    }
+    if (a.prefix.startsWith(b.prefix) || b.prefix.startsWith(a.prefix)) {
+      const [shorter, longer] = a.prefix.length <= b.prefix.length ? [a, b] : [b, a];
+      throw new Error(
+        `Teardown prefix overlap: '${shorter.file}' declares PREFIX = '${shorter.prefix}', which is a ` +
+          `string-prefix of '${longer.file}'s PREFIX = '${longer.prefix}'. Both are matched by the SAME ` +
+          `\`external_id LIKE '${shorter.prefix}%'\` scan, so the shorter prefix's teardown/count also ` +
+          `touches the longer prefix's rows (Phase 140 review CR-01 + WR-06). Choose non-overlapping prefixes.`
+      );
+    }
+  }
+}
+
+/**
  * Playwright configuration with project dependencies pattern.
  *
  * The suite is:

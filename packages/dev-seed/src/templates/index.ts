@@ -21,6 +21,7 @@ import { perm2eSharedTemplate } from './e2e/perm/perm-2e-shared';
 import { permAccessDisableTemplate } from './e2e/perm/perm-access-disable';
 import { permAnalyticsTrackingTemplate } from './e2e/perm/perm-analytics-tracking';
 import { permAnswersLockedTemplate } from './e2e/perm/perm-answers-locked';
+import { permBankauthNotLocatedTemplate } from './e2e/perm/perm-bankauth-notloc';
 import { permDisableAllowOpenTemplate } from './e2e/perm/perm-disable-allow-open';
 import { permDisableCandidateAppTemplate } from './e2e/perm/perm-disable-candidate-app';
 import { permDisableElection1coTemplate } from './e2e/perm/perm-disable-election-1co';
@@ -63,6 +64,11 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   'perm-disable-election-1co': permDisableElection1coTemplate,
   'perm-disable-election-2co': permDisableElection2coTemplate,
   'perm-not-located-2e2cg': permNotLocated2e2cgTemplate,
+  // Phase 140 CR-01 remediation — dedicated copy of perm-not-located-2e2cg's
+  // shape reserved for bank-auth-journey.setup.ts/.teardown.ts, with its own
+  // disjoint externalIdPrefix ('e2e-bankauth-notloc-') so its teardown never
+  // shares a PREFIX with (and cannot race) `data-teardown-perm-not-located-2e2cg`.
+  'perm-bankauth-notloc': permBankauthNotLocatedTemplate,
   // 3 settings-permutation templates. Each carries its own distinct
   // externalIdPrefix ('e2e-perm-novapp-', 'e2e-perm-nocand-',
   // 'e2e-perm-notif-') for parallel safety across the wider suite.
@@ -144,6 +150,7 @@ export { perm2eSharedTemplate } from './e2e/perm/perm-2e-shared';
 export { permAccessDisableTemplate } from './e2e/perm/perm-access-disable';
 export { permAnalyticsTrackingTemplate } from './e2e/perm/perm-analytics-tracking';
 export { permAnswersLockedTemplate } from './e2e/perm/perm-answers-locked';
+export { permBankauthNotLocatedTemplate } from './e2e/perm/perm-bankauth-notloc';
 export { permDisableAllowOpenTemplate } from './e2e/perm/perm-disable-allow-open';
 export { permDisableCandidateAppTemplate } from './e2e/perm/perm-disable-candidate-app';
 export { permDisableElection1coTemplate } from './e2e/perm/perm-disable-election-1co';

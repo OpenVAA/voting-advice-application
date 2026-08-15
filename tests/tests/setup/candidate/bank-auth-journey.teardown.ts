@@ -4,8 +4,14 @@
  * Owns BOTH halves of the journey's runtime state (RESEARCH §Runtime State
  * Inventory):
  *
- *  1. The seeded dataset — clears the `e2e-perm-notloc-` prefix via
- *     `runTeardown` (mirror `perm-not-located-2e2cg.teardown.ts`).
+ *  1. The seeded dataset — clears the `e2e-bankauth-notloc-` prefix via
+ *     `runTeardown`. Phase 140 CR-01: this prefix is DEDICATED to this
+ *     project (registered via the `perm-bankauth-notloc` template — see
+ *     `bank-auth-journey.setup.ts`'s docblock) and is disjoint from
+ *     `perm-not-located-2e2cg.teardown.ts`'s `e2e-perm-notloc-` prefix, so the
+ *     two teardown projects — which the DAG deliberately leaves unordered
+ *     relative to each other (A4) — can never race on the same
+ *     before/after row counts.
  *  2. The created auth user — the bank-auth journey creates a real
  *     `auth.users` + `candidates` + `user_roles` row (via the
  *     identity-callback + preregistration-invite flow). `unregisterCandidate`
@@ -23,12 +29,12 @@ import { BANK_AUTH_JOURNEY_EMAIL, BANK_AUTH_JOURNEY_PLACEHOLDER_EMAIL } from '..
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { runTeardownAsserted } from '../shared/assertTeardown';
 
-const PREFIX = 'e2e-perm-notloc-';
+const PREFIX = 'e2e-bankauth-notloc-';
 
 teardown('delete bank-auth-journey dataset + created auth user', async () => {
   const client = new SupabaseAdminClient();
 
-  // 1. Clear the seeded perm-not-located-2e2cg rows.
+  // 1. Clear the seeded perm-bankauth-notloc rows (own dedicated prefix — Phase 140 CR-01).
   await runTeardownAsserted(PREFIX, client);
 
   // 2. Delete the auth.users + user_roles + candidate-link the journey created.
