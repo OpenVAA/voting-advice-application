@@ -14,16 +14,16 @@
  * Surface:
  *  - clickStart()                  — click the preregister-start CTA on the
  *                                    preregister landing page.
- *  - submitElection()              — select the first selectable election in
- *                                    the election-selector list, then click
- *                                    preregister-elections-submit. Tolerates
- *                                    the single-election auto-select case
- *                                    (the checkbox is disabled + pre-checked).
- *  - submitConstituency()          — select the first real constituency option
- *                                    in EACH constituency-selector section
- *                                    (native <select> or autocomplete combobox
- *                                    — both rendered by the shared Select
- *                                    component), then click
+ *  - submitElection(label)         — select the election whose label carries
+ *                                    `label` (identity, NOT position), then
+ *                                    click preregister-elections-submit.
+ *                                    Tolerates the single-election auto-select
+ *                                    case (checkbox disabled + pre-checked).
+ *  - submitConstituency(prefix)    — select the constituency labelled with
+ *                                    `prefix` in EACH constituency-selector
+ *                                    section (native <select> or autocomplete
+ *                                    combobox — both rendered by the shared
+ *                                    Select component), then click
  *                                    preregister-constituencies-submit.
  *  - fillEmailAndAcceptToU(email)  — fill preregister-email-input +
  *                                    preregister-email-confirm with `email`,
@@ -53,26 +53,46 @@ import { testIds } from '../../utils/testIds';
 import type { Locator, Page } from '@playwright/test';
 
 /**
- * Select the first real option of a single constituency-selector combobox,
- * handling both rendered shapes the shared `Select` component produces:
- *  - native `<select>` (autocomplete off): selectOption by index 1 (index 0
- *    is the disabled placeholder `<option>`).
+ * Select a constituency-selector option BY LABEL, handling both rendered
+ * shapes the shared `Select` component produces:
+ *  - native `<select>` (autocomplete off): resolve the matching `<option>`'s
+ *    value in-page, then `selectOption` it.
  *  - autocomplete combobox (`role="combobox"` input + `role="option"` list):
- *    click the input to open the listbox, then click the first option.
+ *    open the listbox, then click the matching option.
  *
  * Both shapes carry the implicit/explicit ARIA role `combobox`; the tag name
  * disambiguates which interaction to use.
+ *
+ * Selection is by label, never by position (Phase 140 review iter-3 CR-01):
+ * the provider orders constituencies with no guaranteed tiebreak across
+ * datasets, so an index-based pick silently lands on a foreign constituency
+ * whenever another dataset shares the DB.
  */
-async function selectFirstConstituencyOption(combobox: Locator, optionScope: Locator): Promise<void> {
+async function selectConstituencyOptionByLabel(
+  combobox: Locator,
+  optionScope: Locator,
+  labelPrefix: string
+): Promise<void> {
   const tagName = await combobox.evaluate((el) => el.tagName.toLowerCase());
   if (tagName === 'select') {
-    // Native <select>: pick the first non-placeholder option by position.
-    await combobox.selectOption({ index: 1 });
+    // Native <select>: resolve the first enabled, non-placeholder option whose
+    // visible text carries the dataset's label prefix, then select it by value.
+    const value = await combobox.evaluate(
+      (el, prefix) =>
+        Array.from((el as HTMLSelectElement).options).find(
+          (option) => !option.disabled && (option.textContent ?? '').trim().startsWith(prefix)
+        )?.value ?? null,
+      labelPrefix
+    );
+    expect(value, `no constituency option labelled '${labelPrefix}…' is offered`).not.toBeNull();
+    await combobox.selectOption(value as string);
     return;
   }
-  // Autocomplete combobox: open the listbox, then click the first option.
+  // Autocomplete combobox: open the listbox, then click the matching option.
   await combobox.click();
-  await optionScope.getByRole('option').first().click();
+  const option = optionScope.getByRole('option').filter({ hasText: labelPrefix }).first();
+  await expect(option, `no constituency option labelled '${labelPrefix}…' is offered`).toBeVisible();
+  await option.click();
 }
 
 export function createCandidatePreregisterPage(page: Page) {
@@ -85,27 +105,49 @@ export function createCandidatePreregisterPage(page: Page) {
     },
 
     /**
-     * Select the first selectable election then advance. With >1 election the
-     * checkboxes are enabled — check the first. With exactly one election the
-     * ElectionSelector auto-selects + disables it, so a manual check is a
-     * no-op; we guard on `isDisabled` to avoid clicking a disabled control.
+     * Select the election whose label carries `labelSubstring`, then advance.
+     *
+     * Selection is BY IDENTITY, never positional (Phase 140 review iter-3
+     * CR-01). `supabaseDataProvider` orders elections by `sort_order` with no
+     * secondary key, and separate datasets routinely both use `sort_order: 0`,
+     * so Postgres returns tied rows in plan-dependent order. A `.first()` pick
+     * therefore lands on a foreign election whenever another dataset shares the
+     * DB — silently, because the preregister path writes no nomination row and
+     * so raises no FK error. The `toHaveCount(1)` assertion below also
+     * subsumes the presence check the caller would otherwise make: an absent
+     * or ambiguous dataset fails here rather than being walked past.
+     *
+     * With exactly one election the ElectionSelector auto-selects + disables
+     * it, so a manual check is a no-op; we guard on `isDisabled` to avoid
+     * clicking a disabled control.
      */
-    async submitElection(): Promise<void> {
+    async submitElection(labelSubstring: string): Promise<void> {
       const list = page.getByTestId(testIds.candidate.preregister.electionsList);
-      const firstOption = list.getByTestId('election-selector-option').first();
-      await expect(firstOption).toBeVisible();
-      if (!(await firstOption.isDisabled())) {
-        await firstOption.check();
+      const option = list
+        .getByTestId(testIds.candidate.preregister.electionLabel)
+        .filter({ hasText: labelSubstring })
+        .getByTestId(testIds.candidate.preregister.electionOption);
+      await expect(
+        option,
+        `expected exactly one election labelled '${labelSubstring}' to be offered — a different ` +
+          'count means the DB carries another dataset and this walk is not exercising its own'
+      ).toHaveCount(1);
+      if (!(await option.isDisabled())) {
+        await option.check();
       }
       await page.getByTestId(testIds.candidate.preregister.electionsSubmit).click();
     },
 
     /**
-     * Select the first real constituency option in every selector section then
-     * advance. Multiple selected elections produce multiple sections; each must
-     * be satisfied before the submit button enables.
+     * Select the constituency labelled with `labelPrefix` in every selector
+     * section, then advance. Multiple selected elections produce multiple
+     * sections; each must be satisfied before the submit button enables.
+     *
+     * Like `submitElection`, selection is by label rather than by index, so a
+     * foreign dataset sharing the DB fails the walk loudly instead of being
+     * silently preregistered into (Phase 140 review iter-3 CR-01).
      */
-    async submitConstituency(): Promise<void> {
+    async submitConstituency(labelPrefix: string): Promise<void> {
       const list = page.getByTestId(testIds.candidate.preregister.constituenciesList);
       await expect(list).toBeVisible();
       // Each selector section renders one combobox (native <select> or
@@ -114,7 +156,7 @@ export function createCandidatePreregisterPage(page: Page) {
       const count = await comboboxes.count();
       expect(count, 'expected at least one constituency combobox to render').toBeGreaterThan(0);
       for (let i = 0; i < count; i++) {
-        await selectFirstConstituencyOption(comboboxes.nth(i), list);
+        await selectConstituencyOptionByLabel(comboboxes.nth(i), list, labelPrefix);
       }
       await page.getByTestId(testIds.candidate.preregister.constituenciesSubmit).click();
     },

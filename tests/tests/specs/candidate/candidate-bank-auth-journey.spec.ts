@@ -138,20 +138,15 @@ test.describe('candidate bank-auth journey', { tag: ['@bank-auth'] }, () => {
       await expect(electionsList).toBeVisible({
         timeout: TIMEOUTS.slowPage
       });
-      // Phase 140 review WR-09: submitElection()/submitConstituency() select
-      // whichever option renders FIRST with no identity check, so if the DB
-      // carries another dataset (a prior full-suite run's base rows, a
-      // db:seed default template, a leaked perm dataset) the journey would
-      // silently preregister into a foreign election and still pass — the
-      // 3× determinism gate could pass without ever exercising D-04's own
-      // seeded dataset. Assert the seeded template's own election renders
-      // before selecting, so the walk cannot silently run on foreign data.
-      await expect(
-        electionsList,
-        'the preregister election selector must offer the perm-bankauth-notloc dataset (EL1); a ' +
-          'different set means the DB carries another dataset and this walk is not exercising D-04'
-      ).toContainText('[EL1]');
-      await candidatePreregisterPage.submitElection();
+      // Phase 140 review WR-09 → iter-3 CR-01: select the perm-bankauth-notloc
+      // election BY IDENTITY. The earlier `toContainText('[EL1]')` presence
+      // check could not catch the real defect — it asserted the dataset was in
+      // the list, not that the fixture then checked it — and since the
+      // `data-setup-base` edge landed, base's `el-reg` shares `sort_order: 0`
+      // with this dataset's `el-1`, so the previous positional `.first()` pick
+      // silently preregistered into a BASE election on every gate run.
+      // submitElection's `toHaveCount(1)` subsumes the presence assertion.
+      await candidatePreregisterPage.submitElection('[EL1]');
     });
 
     // ============== Step 3: constituency selector ==========================
@@ -160,7 +155,9 @@ test.describe('candidate bank-auth journey', { tag: ['@bank-auth'] }, () => {
       await expect(page.getByTestId(testIds.candidate.preregister.constituenciesList)).toBeVisible({
         timeout: TIMEOUTS.slowPage
       });
-      await candidatePreregisterPage.submitConstituency();
+      // Identity-scoped for the same reason as step 2: '[CO1' matches only this
+      // dataset's Region constituencies (CO1A/CO1B), never base's.
+      await candidatePreregisterPage.submitConstituency('[CO1');
     });
 
     // ============== Step 4: email + ToU → preregister() ====================

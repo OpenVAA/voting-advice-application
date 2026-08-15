@@ -101,6 +101,15 @@ export const testIds = {
       continue: 'preregister-continue',
       return: 'preregister-return',
       electionsList: 'preregister-elections-list',
+      // Ids owned by the SHARED ElectionSelector component
+      // (`lib/components/electionSelector/ElectionSelector.svelte`), which the
+      // preregister election step renders — the voter elections page renders
+      // the same component, hence the route-agnostic names. `electionLabel` is
+      // the <label> wrapping both the checkbox and the election name, so
+      // filtering it by text and descending to `electionOption` selects an
+      // election by IDENTITY rather than position (Phase 140 iter-3 CR-01).
+      electionLabel: 'election-selector-option-label',
+      electionOption: 'election-selector-option',
       electionsSubmit: 'preregister-elections-submit',
       constituenciesList: 'preregister-constituencies-list',
       constituenciesSubmit: 'preregister-constituencies-submit',
