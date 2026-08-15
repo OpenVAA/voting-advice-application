@@ -80,15 +80,16 @@
  *     `bulkDelete` clears — so the probe cannot drift from the delete it
  *     measures" — a second hand-maintained copy under `tests/` was rejected
  *     as exactly the duplicated-fact drift this phase closed elsewhere, per
- *     `packages/dev-seed/src/cli/teardown.ts:65-67`). Sharing the constant is
+ *     `ALLOWED_TEARDOWN_TABLES`'s own docblock in
+ *     `packages/dev-seed/src/cli/teardown.ts`). Sharing the constant is
  *     the right call for scope-drift, but it means a table dropped from that
  *     list goes blind on BOTH sides at once: `rowsBefore` stops counting it,
  *     `bulk_delete` stops deleting it, `rowsDeleted` drops by the same
  *     amount, and `rowsAfter` never looks at it again — a clean `N/N/0` while
  *     every row in the dropped table survives.
  *   - Portrait STORAGE cleanup (Phase 140 IN-03). `runTeardown` returns
- *     `{ rowsDeleted, storageRemoved }`
- *     (`packages/dev-seed/src/cli/teardown.ts:126-132`); this function only
+ *     `{ rowsDeleted, storageRemoved }` (`runTeardown` in
+ *     `packages/dev-seed/src/cli/teardown.ts`); this function only
  *     destructures `rowsDeleted`. `storageRemoved` is completely unasserted at
  *     all 27 call sites — a silent regression in `listCandidatePortraitPaths`
  *     / `removePortraitStorageObjects` would leak storage objects across
