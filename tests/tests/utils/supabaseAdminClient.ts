@@ -276,8 +276,8 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
     if (/[%_*]/.test(prefix)) {
       throw new Error(
         `countRowsByPrefix: prefix '${prefix}' contains a LIKE metacharacter (% _ *); the probe and ` +
-          `bulk_delete do not agree on its meaning (PostgREST's \`like\` maps \`*\` to \`%\`, and neither ` +
-          `side escapes \`_\`), so the count would not measure the same rows the delete touches.`
+          'bulk_delete do not agree on its meaning (PostgREST\'s `like` maps `*` to `%`, and neither ' +
+          'side escapes `_`), so the count would not measure the same rows the delete touches.'
       );
     }
     let total = 0;
