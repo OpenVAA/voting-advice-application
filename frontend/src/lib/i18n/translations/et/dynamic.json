@@ -51,7 +51,7 @@
     "heroEmoji": "🙊"
   },
   "frontPage": {
-    "ingress": "Valimiskompassi abil saate otsida kandidaate ja erakondi selle järgi, kui palju nad teiega nõustuvad.",
+    "ingress": "Antud valimiskompass aitab sul leida kandidaadid ja erakonnad, kelle seisukohad ühtivad valmistel kõige paremini sinu omadega.",
     "startButton": "Leidke sobivaimad kandidaadid ja erakonnad!"
   },
   "info": {
@@ -65,10 +65,10 @@
     "ingress": "Valimiskompass aitab teil leida nendes valimistes teiega kõige enam nõustuvad {candidatePlural} ja {partyPlural}.",
     "list": {
       "constituencies": "Valige oma valimisringkond",
-      "details": "Uurige kandidaate ja erakondi lähemalt",
+      "details": "Uuri nende kohta põhjalikumalt",
       "elections": "Valige valimised",
-      "opinions": "Avaldage oma arvamused",
-      "results": "Vaadake teiega kõige enam nõustuvaid {candidatePlural} ja {partyPlural}"
+      "opinions": "Vali oma arvamus",
+      "results": "Vaata, millised kandidaadid ja erakonnad nõustuvad sinuga enim"
     },
     "title": "Alustame!"
   },
@@ -95,7 +95,7 @@
     "heroEmoji": "🎊",
     "ingress": {
       "browse": "Allpool on nende valimiste {candidatePlural} ja {partyPlural}, järjestatuna valimisnumbri või nime järgi. Saate kasutada filtreid nende kitsendamiseks.",
-      "results": "Allpool on nende valimiste {candidatePlural} ja {partyPlural}. Teiega kõige enam nõustuvad on nimekirjas esimesed. Tulemuste kitsendamiseks saate kasutada ka filtreid."
+      "results": "Need on kandidaadid ja erakonnad, kes kandideerivad algavatel valimistel. Enim ühtivad on nimekirjas eespool. Tulemuste täpsustamiseks saad kasutada ka filtreid."
     },
     "multipleElections": "Valige altpoolt esmalt, milliste valimiste {candidatePlural} ja {partyPlural} soovite näha, ja seejärel, kas soovite vaadata kandidaate või erakondi."
   },
