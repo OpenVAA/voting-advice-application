@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 4
+open_count: 6
 waived_count: 0
 fixed_count: 0
-total_count: 4
-last_updated: 2026-08-15T10:46:11.858Z
+total_count: 6
+last_updated: 2026-08-15T15:24:14.942Z
 ---
 
 # Broken Windows Ledger
@@ -19,6 +19,8 @@ last_updated: 2026-08-15T10:46:11.858Z
 | 2 | 140 | deviation | tests/tests/specs/candidate/candidate-journey.spec.ts | 47 | Rigidity contract drift: header declares '0 expect.soft' but the file carries 3 (measured at 568b1dfe). Out of ASSERT-06 scope (voter-journey.spec.ts only); filed by 140-01 rather than absorbed. | open |  | 2026-08-15T10:46:11.569Z |  |
 | 3 | 140 | deviation | tests/tests/fixtures/candidate/candidateProfilePage.fixture.ts | 43 | Rigidity contract drift: header declares 'NO expect.soft' but the file carries 6 (measured at 568b1dfe). Out of ASSERT-06 scope; filed by 140-01. | open |  | 2026-08-15T10:46:11.715Z |  |
 | 4 | 140 | deviation | tests/tests/fixtures/candidate/candidateHomePage.fixture.ts | 23 | Rigidity contract drift: header declares 'NO expect.soft' but the file carries 4 (measured at 568b1dfe). Out of ASSERT-06 scope; filed by 140-01. | open |  | 2026-08-15T10:46:11.858Z |  |
+| 5 | 140 | unrun-verify | tests/tests/specs/candidate/candidate-bank-auth-journey.spec.ts |  | Bank-auth journey SPEC not run in Phase 140's F3 control; only its teardown data lane was exercised (140-NEGATIVE-CONTROL.md § 19.6, § 22) | open |  | 2026-08-15T15:24:14.808Z |  |
+| 6 | 140 | unrun-verify | .planning/phases/140-blind-matcher-remediation-teardowns-null-matchers-positive-c/140-06-PLAN.md |  | Both verification:backstop truths (duplicated e2e-perm-notloc- prefix in one invocation; concurrent pre-clear tolerance) are reasoned, not observed (140-NEGATIVE-CONTROL.md § 22) | open |  | 2026-08-15T15:24:14.942Z |  |
 
 ````json
 [
@@ -68,6 +70,30 @@ last_updated: 2026-08-15T10:46:11.858Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-08-15T10:46:11.858Z",
+    "resolved_at": null
+  },
+  {
+    "id": 5,
+    "kind": "unrun-verify",
+    "phase": "140",
+    "file": "tests/tests/specs/candidate/candidate-bank-auth-journey.spec.ts",
+    "line": null,
+    "description": "Bank-auth journey SPEC not run in Phase 140's F3 control; only its teardown data lane was exercised (140-NEGATIVE-CONTROL.md § 19.6, § 22)",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-15T15:24:14.808Z",
+    "resolved_at": null
+  },
+  {
+    "id": 6,
+    "kind": "unrun-verify",
+    "phase": "140",
+    "file": ".planning/phases/140-blind-matcher-remediation-teardowns-null-matchers-positive-c/140-06-PLAN.md",
+    "line": null,
+    "description": "Both verification:backstop truths (duplicated e2e-perm-notloc- prefix in one invocation; concurrent pre-clear tolerance) are reasoned, not observed (140-NEGATIVE-CONTROL.md § 22)",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-15T15:24:14.942Z",
     "resolved_at": null
   }
 ]

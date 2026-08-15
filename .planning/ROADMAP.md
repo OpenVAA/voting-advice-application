@@ -394,7 +394,7 @@ Plans:
   4. **F10** — `voter-journey.spec.ts`'s stated `expect.soft` budget matches its real count (**136**, not 3), **or** a counted guard enforces the stated budget and fails when one more `expect.soft` is added — the addition is made and the failure observed before the guard is accepted. _(Corrected 2026-08-15 during Phase 140 planning: this criterion read **137** until now, and 137 was correct when the sweep measured it on 2026-08-11. Phase 138 then promoted one soft assertion to hard in this very file — `bea9fc97a`, `voter-journey.spec.ts:858` — taking the count 137 → 136. Verified at both commits: `bea9fc97a~1` → 137, `bea9fc97a` and HEAD → 136. The 2026-08-11 audit record and the completed-todo entry still say 137 and are **left as-is**; they were true when written. That this criterion went stale between Phase 138 and Phase 140 is the same drift class F10 exists to close, which is why the number is now pinned to a measurement rather than a quotation.)_
   5. Unit and E2E suites return to green after the edits, with the Phase-137 preflight satisfied on every run used as evidence.
 
-**Plans**: 5/6 plans executed (fully serial — waves 1-6; see note below)
+**Plans**: 6/6 plans executed (fully serial — waves 1-6; see note below)
 
 Plans:
 **Wave 1**
@@ -419,7 +419,7 @@ Plans:
 
 **Wave 6** *(blocked on Wave 5 completion)*
 
-- [ ] 140-06-PLAN.md — F3 matcher adjudicated against the measured table, two-run control, phase gate (ASSERT-02, criterion 5)
+- [x] 140-06-PLAN.md — F3 matcher adjudicated against the measured table, two-run control, phase gate (ASSERT-02, criterion 5)
 
 _Wave note: the six plans are strictly serial. Every E2E-bearing plan contends for the same single dev
 server on `:5173` and the same local Supabase database (`e2e-run.sh` spawns and owns its own server and
@@ -585,7 +585,7 @@ unexploited parallelism._
 | 137. E2E Preflight Integrity — Assert the Served Application | 0/TBD | Not started | - |
 | 138. DEF-135-04 — `EPERM-07` Root Cause + Waiver Discharge | 6/6 | Complete   | 2026-08-14 |
 | 139. Single-Source Sweep Findings — Confirm or Withdraw | 7/7 | Complete    | 2026-08-14 |
-| 140. Blind-Matcher Remediation — Teardowns, Null-Matchers, Positive Controls | 5/6 | In Progress|  |
+| 140. Blind-Matcher Remediation — Teardowns, Null-Matchers, Positive Controls | 6/6 | In Progress|  |
 | 141. Package Unit-Test Coverage + `test:unit` Invariant Guard | 0/TBD | Not started | - |
 | 142. Assertion Design — Wiring-Only Tests Assert Output | 0/TBD | Not started | - |
 | 143. `svelte/store` Guard — App-Wide Reach + Fallout Triage | 0/TBD | Not started | - |

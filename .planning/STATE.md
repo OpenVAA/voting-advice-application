@@ -4,17 +4,17 @@ milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 140
 current_phase_name: blind-matcher-remediation-teardowns-null-matchers-positive-c
-status: executing
-stopped_at: Completed 140-05-PLAN.md
-last_updated: "2026-08-15T14:41:40.760Z"
+status: verifying
+stopped_at: Completed 140-06-PLAN.md (phase 140 gate green)
+last_updated: "2026-08-15T15:24:14.431Z"
 last_activity: 2026-08-15
 last_activity_desc: Phase 140 execution started
 progress:
   total_phases: 14
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 24
-  completed_plans: 23
-  percent: 21
+  completed_plans: 24
+  percent: 29
 ---
 
 # Project State
@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 Milestone: v2.15 (Phases 137-150, 14 phases, 38 requirements)
 Phase: 140 (blind-matcher-remediation-teardowns-null-matchers-positive-c) — EXECUTING
 Plan: 6 of 6
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-08-15 — Phase 140 execution started
 
 **Standing acceptance rule for every v2.15 phase:** prove the guard fails before claiming it guards —
@@ -48,8 +48,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-15T14:41:40.739Z
-Stopped at: Completed 140-05-PLAN.md
+Last session: 2026-08-15T15:24:14.409Z
+Stopped at: Completed 140-06-PLAN.md (phase 140 gate green)
 Resume file: None
 
 ## Deferred Items
@@ -148,6 +148,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 140 P03 | 33min | 2 tasks | 3 files |
 | Phase 140 P04 | 45min | 3 tasks | 4 files |
 | Phase 140 P05 | 55m | 3 tasks | 32 files |
+| Phase 140 P06 | 45min | 3 tasks | 4 files |
 
 ## Deferred Items
 
@@ -638,6 +639,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: A serial Playwright project chain cannot observe its own downstream half: once the upstream spec fails everything after it is 'did not run', so a subset adversary is required to red the downstream spec at its own line (140-NEGATIVE-CONTROL.md 16.4)
 - [Phase ?]: 140-05: helper carries pre-change matcher unchanged (D-02) so the 27-site codemod is behaviour-preserving; matcher chosen in plan 06
 - [Phase ?]: 140-05: F3 measurement taken — 25 of 26 executed sites report 0/0/0; only the last-seeded perm has rows to delete
+- [Phase ?]: F3 matcher: branch A (before/after invariant) adopted against 140-MEASUREMENT.md's 26-row table; a positivity floor would have reddened 25 of 26 executed sites
+- [Phase ?]: Shape-3 bank-auth teardown reached via its data lane (--project data-setup-bank-auth-journey), turning the expected named gap into an observation; only the journey spec's browser leg remains a named gap
 
 ### Quick Tasks Completed
 
