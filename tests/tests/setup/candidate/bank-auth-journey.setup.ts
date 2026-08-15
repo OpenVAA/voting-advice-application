@@ -19,7 +19,7 @@
  *     `perm-not-located-2e2cg` template verbatim, which meant its teardown
  *     shared the `e2e-perm-notloc-` PREFIX with
  *     `perm-not-located-2e2cg.teardown.ts`. The two data-teardown projects
- *     are not ordered relative to each other in the DAG (A4 keeps this
+ *     are not ordered relative to EACH OTHER in the DAG (A4 keeps this
  *     project standing alone, deliberately NOT depending on the perm serial
  *     chain — see `IDURA-TEST-RUNBOOK.md` Step B-3's isolated
  *     `--project=bank-auth-journey` 3× determinism gate, which would break if
@@ -27,10 +27,22 @@
  *     `PLAYWRIGHT_BANK_AUTH=1 yarn test:e2e` the two teardowns could run
  *     concurrently and race on the same before/after row counts. A dedicated
  *     template with a disjoint prefix removes the collision at the root
- *     instead of ordering around it — no dependency edge needed, A4 stays
- *     intact. No `extraTeardownPrefix` pre-clear is needed either: the
- *     dedicated prefix means this setup never needs to wipe the `test-` /
- *     `e2e-perm-` namespaces it does not own.
+ *     instead of ordering around it. No `extraTeardownPrefix` pre-clear on
+ *     THIS setup is needed: the dedicated prefix means this setup never needs
+ *     to wipe the `test-` / `e2e-perm-` namespaces it does not own.
+ *
+ *     Phase 140 CR-01 (iteration-2 regression fix): the dedicated
+ *     `e2e-bankauth-notloc-` prefix also sits outside every EXISTING sweep in
+ *     the suite (`base.setup`'s old `'e2e-perm-'` pre-clear, and all 19 perm
+ *     setups' `['test-', 'e2e-perm-']`), so a failed/aborted teardown here
+ *     used to self-heal via those sweeps and no longer did. The fix is a
+ *     `dependencies: ['data-setup-base']` edge on `data-setup-bank-auth-journey`
+ *     (`playwright.config.ts`) — mirrors the sibling `bank-auth` project, is
+ *     `data-setup-base` ONLY (not the perm chain, so A4 and the isolated 3×
+ *     determinism gate above are unaffected) — paired with `base.setup.ts`
+ *     adding `'e2e-bankauth-'` to ITS `extraTeardownPrefix` sweep so an
+ *     orphaned bank-auth dataset is cleared before base (and this project)
+ *     re-seed.
  *
  *  2. A clean auth.users state for the journey identity. The bank-auth journey
  *     creates a real `auth.users` + `candidates` + `user_roles` row (via the

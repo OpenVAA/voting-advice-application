@@ -16,13 +16,24 @@ import { test as setup } from '@playwright/test';
 import { setupFromTemplate } from './setupFromTemplate';
 
 setup('import base dataset', async () => {
-  // `extraTeardownPrefix: 'e2e-perm-'` defensively wipes any residual perm-*
-  // family rows before seeding the base dataset. `data-setup-base` is decoupled
-  // from the perm anchor, so the base chain no longer waits on the perm family.
-  // This pre-clear is a belt-and-braces guard: it is an idempotent wipe of a
-  // DIFFERENT prefix namespace (`e2e-perm-`, never the base `test-` rows), so it
-  // is safe and keeps the base dataset deterministic even if a perm chain ran
-  // earlier in the same DB session and left rows (same `[EL1] Region election` /
-  // `[EL2] Municipal election` names as perm-not-located-2e2cg).
-  await setupFromTemplate('e2e/base', { extraTeardownPrefix: 'e2e-perm-' });
+  // `extraTeardownPrefix` defensively wipes residual rows from namespaces this
+  // project does not own, before seeding the base dataset. `data-setup-base` is
+  // decoupled from the perm anchor, so the base chain no longer waits on the
+  // perm family. Both prefixes below are idempotent wipes of DIFFERENT
+  // namespaces (never the base `test-` rows), so they are safe even when
+  // nothing is present:
+  //  - 'e2e-perm-' — a perm chain that ran earlier in the same DB session and
+  //    left rows (same `[EL1] Region election` / `[EL2] Municipal election`
+  //    names as perm-not-located-2e2cg).
+  //  - 'e2e-bankauth-' (Phase 140 CR-01, iteration-2 regression fix) — a
+  //    dataset left behind by an aborted opt-in `PLAYWRIGHT_BANK_AUTH=1`
+  //    bank-auth-journey run. Since that project moved to its own dedicated
+  //    `e2e-bankauth-notloc-` prefix, nothing else in the suite swept that
+  //    namespace; a failed/aborted teardown there used to self-heal via the
+  //    `e2e-perm-` sweep (old shared prefix) and now would not, silently
+  //    wedging voter-journey's exact-count assertions in the blocking default
+  //    suite until an out-of-band `yarn db:reset`. `data-setup-bank-auth-journey`
+  //    now also depends on `data-setup-base` (`playwright.config.ts`) so this
+  //    sweep runs before that project (re-)seeds.
+  await setupFromTemplate('e2e/base', { extraTeardownPrefix: ['e2e-perm-', 'e2e-bankauth-'] });
 });

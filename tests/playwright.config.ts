@@ -391,7 +391,20 @@ export default defineConfig({
           {
             name: 'data-setup-bank-auth-journey',
             testMatch: /bank-auth-journey\.setup\.ts/,
-            teardown: 'data-teardown-bank-auth-journey'
+            teardown: 'data-teardown-bank-auth-journey',
+            // Phase 140 CR-01 (iteration-2 regression fix): order this project
+            // after `data-setup-base` — mirrors the sibling `bank-auth` project's
+            // wiring above. A4 is preserved: this is `data-setup-base` only, NOT
+            // the perm serial chain, so the isolated `--project=bank-auth-journey`
+            // 3× determinism gate (IDURA-TEST-RUNBOOK.md Step B-3) is unaffected —
+            // it still runs `yarn db:reset` first and only pulls this one extra
+            // (fast, disjoint-prefix) leaf. Ordering after base also lets
+            // `base.setup`'s `extraTeardownPrefix` sweep an orphaned
+            // `e2e-bankauth-` dataset left by an aborted prior run (see
+            // `base.setup.ts`) — without this edge the dataset had no sweeper at
+            // all under the new dedicated `e2e-bankauth-notloc-` prefix and a
+            // failed teardown would silently wedge the default suite.
+            dependencies: ['data-setup-base']
           },
           {
             name: 'data-teardown-bank-auth-journey',
