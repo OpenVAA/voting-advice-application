@@ -19,10 +19,12 @@
  *
  * NOT covered (Phase 140 WR-05): `setupFromTemplate.ts` performs three
  * prefix-scoped deletes of its own that do NOT route through this function —
- * the `extraTeardownPrefix` pre-clear loop (`:189`), the template's own
- * pre-clear (`:196`), and the `cleanup` closure returned to callers (`:279`).
- * These are the deletes that run in the COMMON case (they are why
- * `rowsBefore === 0` at almost every teardown site — see WR-03 above), so the
+ * the `extraTeardownPrefix` pre-clear loop, the template's own step-1b
+ * pre-clear, and the `cleanup` closure returned to callers. Cited by SYMBOL,
+ * not by line (Phase 140 WR-01): line-number citations into this file go
+ * stale on its own first edit, as this docblock's own MATCHER paragraph
+ * below already observes. These are the deletes that run in the COMMON case
+ * (they are why `rowsBefore === 0` at almost every teardown site — see WR-03 above), so the
  * delete path most exercised by the suite carries no assertion at all. "Every
  * `*.teardown.ts` project's own delete is covered by construction" does NOT
  * extend to `setupFromTemplate.ts`'s internal deletes.
@@ -72,7 +74,8 @@
  *     and the delete alike and therefore presents as a legitimate `0/0/0`
  *     no-op.
  *   - A table removed from `ALLOWED_TEARDOWN_TABLES`. `countRowsByPrefix`
- *     (`tests/tests/utils/supabaseAdminClient.ts:263`) iterates that SAME
+ *     (`tests/tests/utils/supabaseAdminClient.ts` — cited by symbol, not by
+ *     line; Phase 140 WR-01) iterates that SAME
  *     constant, by design (its own docblock: "the SAME list `runTeardown`'s
  *     `bulkDelete` clears — so the probe cannot drift from the delete it
  *     measures" — a second hand-maintained copy under `tests/` was rejected
