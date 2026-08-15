@@ -3,7 +3,10 @@
  * (Phase 140, ASSERT-02).
  *
  * ROLE: wraps `runTeardown(prefix, client)` and asserts the delete accounted for
- * every row that was present under the prefix, and that none survived it. Every
+ * every ROW that was present under the prefix, and that none survived it —
+ * `runTeardown`'s OTHER return value, `storageRemoved` (portrait objects), is
+ * NOT asserted here at all (Phase 140 IN-03; see WHAT IT DOES NOT CATCH
+ * below). Every
  * `*.teardown.ts` project that performs a prefix delete routes through this
  * function (27 of 28; `candidate-journey.teardown.ts` performs no delete — it
  * only unregisters an auth user, so it has nothing to route through here).
@@ -80,6 +83,16 @@
  *     `bulk_delete` stops deleting it, `rowsDeleted` drops by the same
  *     amount, and `rowsAfter` never looks at it again — a clean `N/N/0` while
  *     every row in the dropped table survives.
+ *   - Portrait STORAGE cleanup (Phase 140 IN-03). `runTeardown` returns
+ *     `{ rowsDeleted, storageRemoved }`
+ *     (`packages/dev-seed/src/cli/teardown.ts:126-132`); this function only
+ *     destructures `rowsDeleted`. `storageRemoved` is completely unasserted at
+ *     all 27 call sites — a silent regression in `listCandidatePortraitPaths`
+ *     / `removePortraitStorageObjects` would leak storage objects across
+ *     every run with no signal. Not a regression (matches prior behaviour),
+ *     but this ROLE paragraph's "the delete accounted for every row that was
+ *     present… and none survived it" describes rows only — it should not be
+ *     read as covering storage too.
  * Stated so nobody reads more into this assertion than the measurement
  * supports (`140-MEASUREMENT.md` § Adjudication).
  *
@@ -124,6 +137,9 @@ export async function runTeardownAsserted(prefix: string, client: SupabaseAdminC
   }
 
   const rowsBefore = await client.countRowsByPrefix(prefix);
+  // `storageRemoved` (portrait objects) is intentionally NOT destructured —
+  // this function asserts row counts only. See the file docblock's WHAT IT
+  // DOES NOT CATCH entry (Phase 140 IN-03) for why that gap is unclosed.
   const { rowsDeleted } = await runTeardown(prefix, client);
   const rowsAfter = await client.countRowsByPrefix(prefix);
 
