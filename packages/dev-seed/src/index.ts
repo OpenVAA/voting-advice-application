@@ -49,7 +49,9 @@
 export { USAGE as SEED_CLI_USAGE } from './cli/help';
 export { resolveTemplate } from './cli/resolve-template';
 export { formatSummary } from './cli/summary';
-export { runTeardown } from './cli/teardown';
+// `ALLOWED_TEARDOWN_TABLES` is exported so the tests/ row-count probe iterates the
+// same ten tables `bulk_delete` clears, rather than keeping a second copy.
+export { ALLOWED_TEARDOWN_TABLES, runTeardown } from './cli/teardown';
 export { TEARDOWN_USAGE } from './cli/teardown-help';
 export { buildCtx } from './ctx';
 export { defaultRandomValidEmit } from './emitters/answers';

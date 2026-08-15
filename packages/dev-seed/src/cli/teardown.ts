@@ -61,8 +61,12 @@ if (!process.env.SUPABASE_URL && process.env.PUBLIC_SUPABASE_URL) {
  *
  * Order listed here doesn't matter — the RPC re-orders server-side per
  * schema line 2845-2849.
+ *
+ * Exported (Phase 140 plan 05) so the row-count probe in `tests/` iterates the
+ * SAME ten tables `bulk_delete` clears — a second hand-maintained copy under
+ * `tests/` would be exactly the duplicated-fact drift this phase exists to close.
  */
-const ALLOWED_TEARDOWN_TABLES = [
+export const ALLOWED_TEARDOWN_TABLES = [
   'nominations',
   'questions',
   'question_categories',

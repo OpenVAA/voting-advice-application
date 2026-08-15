@@ -22,7 +22,8 @@
  *
  * Added by this subclass:
  *   - Auth helpers (private): `safeListUsers`
- *   - E2E query helpers: `findData`, `query`, `update`, `getAppSettings`
+ *   - E2E query helpers: `findData`, `query`, `update`, `getAppSettings`,
+ *     `countRowsByPrefix`
  *   - Auth actions: `setPassword`, `forceRegister`, `unregisterCandidate`,
  *     `sendEmail`, `sendForgotPassword`, `deleteAllTestUsers`
  *
@@ -41,7 +42,7 @@
  * ```
  */
 
-import { SupabaseAdminClient as DevSeedAdminClient, TEST_PROJECT_ID } from '@openvaa/dev-seed';
+import { ALLOWED_TEARDOWN_TABLES, SupabaseAdminClient as DevSeedAdminClient, TEST_PROJECT_ID } from '@openvaa/dev-seed';
 import { PROPERTY_MAP, TABLE_MAP } from '@openvaa/supabase-types';
 import type { FindDataResult } from '@openvaa/dev-seed';
 
@@ -236,6 +237,41 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
       throw new Error(`getAppSettings: fetch failed: ${error.message}`);
     }
     return (row?.settings ?? null) as Record<string, unknown> | null;
+  }
+
+  /**
+   * Exact row count across the ten teardown tables for a given `external_id` prefix.
+   *
+   * Iterates `ALLOWED_TEARDOWN_TABLES` imported from `@openvaa/dev-seed` — the SAME
+   * list `runTeardown`'s `bulkDelete` clears — so the probe cannot drift from the
+   * delete it measures.
+   *
+   * Uses a HEAD count query (`{ count: 'exact', head: true }`) and reads the returned
+   * `count`, never the length of a returned row array — that length is bounded by
+   * PostgREST's default page limit and would silently under-report a prefix matching
+   * more rows than one page.
+   *
+   * Read-only — returns integers only, no row content. Scoped by `project_id` and by
+   * `external_id LIKE '<prefix>%'`, matching the delete's own prefix semantics.
+   *
+   * @param prefix - `external_id` prefix, forwarded verbatim (no normalisation).
+   * @returns total matching rows summed across the ten tables.
+   * @throws Error if any per-table count query fails.
+   */
+  async countRowsByPrefix(prefix: string): Promise<number> {
+    let total = 0;
+    for (const table of ALLOWED_TEARDOWN_TABLES) {
+      const { count, error } = await this.client
+        .from(table)
+        .select('*', { count: 'exact', head: true })
+        .eq('project_id', this.projectId)
+        .like('external_id', `${prefix}%`);
+      if (error) {
+        throw new Error(`countRowsByPrefix failed: ${error.message}`);
+      }
+      total += count ?? 0;
+    }
+    return total;
   }
 
   // ---------------------------------------------------------------------------
