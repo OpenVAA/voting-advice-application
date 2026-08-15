@@ -1245,4 +1245,375 @@ it had to be taken first. Its evidence was committed before the guard existed.
   inspection of its own source. No run in this lane spawned workers (`--list` does not), so this
   property is established by construction rather than by observation, and is recorded as such.
 
-<!-- Sections for the F3 and F9 lanes are appended by plans 140-03, 140-04, 140-05 and 140-06. -->
+# Part III — the F9 lane (ASSERT-05): the absence-only tag assertions
+
+> **Ownership of this Part is split across two plans, deliberately.** Plan `140-03` lands the seeded
+> precondition and writes **RUN 1 (blindness)** — §§ 13-15 below. Plan `140-04` adds the presence
+> assertions and writes **RUN 2 (the catch)**, re-running the *byte-identical* injection recorded in
+> § 13.3 so that the only variable between the halves is the new assertion. The split is the point:
+> RUN 1 is taken while the specs are still absence-only, which cannot be reconstructed after plan
+> `140-04` edits them.
+
+## 13. F9 — the defect, the precondition, and the adversary
+
+### 13.1 The defect, stated exactly
+
+Two perm specs each carried exactly one assertion, and each was of the form "count is zero":
+
+```
+tests/tests/specs/perm/perm-hide-category-tags.spec.ts:22
+  await expect(page.getByTestId(testIds.shared.categoryTag)).toHaveCount(0);
+
+tests/tests/specs/perm/perm-hide-election-tags.spec.ts:23
+  await expect(page.getByTestId(testIds.shared.electionTag)).toHaveCount(0);
+```
+
+`toHaveCount(0)` is satisfied by a page on which the setting under test worked. It is **equally**
+satisfied by a page on which the tag component stopped rendering everywhere, by a page whose testid
+was renamed, and by a page that failed to render the question heading at all. The assertion cannot
+distinguish "the setting suppressed the tag" from "there was never a tag to suppress" — so it does not
+in fact test the setting. That is finding F9 / requirement ASSERT-05.
+
+The remedy is **not** a stronger matcher. No count matcher can distinguish those cases, because the
+observable is identical in all of them. The remedy is a **complementary positive control in the same
+dataset**: a second tag, of the same component family, that the same page is expected to *render*. A
+render-path deletion then makes the positive half red even though the negative half stays green.
+
+### 13.2 The seeded precondition — what plan `140-03` landed first
+
+ROADMAP criterion 3 requires the positive control's precondition to be **seeded data**, not spec prose.
+Each perm dataset therefore received the property its sibling already carried — a literal
+cross-transplant, one property each way (commit `4c0bf5839`):
+
+| Template | Was | Now | Why this property |
+|---|---|---|---|
+| `packages/dev-seed/src/templates/e2e/perm/perm-hide-category-tags.ts` | 1 election; overlay `questions.showCategoryTags: false` | **2 elections**; same overlay, untouched | `getElectionsToShow` returns `[]` when `elections.length < 2` (`apps/frontend/src/lib/utils/questions/electionTags.ts:13`). The perm baseline already sets `elections.showElectionTags: true` (`packages/dev-seed/src/templates/e2e/perm/shared.ts`), so the missing ingredient was the election **count**, not the flag. At one election an ElectionTag presence assertion would be red for a reason unrelated to the tag component. |
+| `packages/dev-seed/src/templates/e2e/perm/perm-hide-election-tags.ts` | 2 elections; overlay `elections: { showElectionTags: false }` | same, plus **`questions: { showCategoryTags: true }`** in the *extended* overlay | Overrides the perm baseline's `showCategoryTags: false` so the complementary CategoryTag renders. The existing `showElectionTags: false` entry is extended, not replaced. |
+
+Neither edit introduces a new option key: `elections` and `settingsOverlay` are both first-class
+`BuildMinimalOptions` fields (`packages/dev-seed/src/templates/_helpers/buildMinimal.ts:77-107`), and
+the overlay is applied by JSONB-safe **deep** merge, so `questions.showCategoryTags` overrides that one
+key without disturbing `questions.categoryIntros`, `questions.questionsIntro` or
+`questions.showResultsLink`.
+
+Both doc blocks were rewritten in the same commit. Leaving a header describing only the absence
+assertion — which becomes false the moment the complementary tag renders — while remediating a sibling
+header drift is exactly the F10 failure mode this phase is closing.
+
+### 13.3 The adversary — deletion of the tag-render path, rebuildable
+
+The adversary is a deletion of **both** `{#if}` blocks that render the two tags, applied to production
+frontend source. The `{:else if blockWithStats}` branch is promoted to a plain `{#if blockWithStats}`
+so the markup remains valid Svelte. Per **D-03** this is a deletion of the rendering blocks **only** —
+the component's `ctx` reads, `appSettings` access patterns and `$derived` declarations are untouched, so
+neither the Svelte 5 context-destructuring rule nor the `dataRoot` `#version`-bridge carve-out is in
+play. The now-unused `ElectionTag` / `CategoryTag` / `getElectionsToShow` imports were deliberately left
+in place: removing them would be a refactor, not the minimal mutation.
+
+```diff
+diff --git a/apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.svelte b/apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.svelte
+index d2d618bfd..dbf93ba0d 100644
+--- a/apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.svelte
++++ b/apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.svelte
+@@ -77,17 +77,8 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
+
+ <HeadingGroup {...concatClass(restProps, 'relative')}>
+   <PreHeading class="gap-sm flex flex-row flex-wrap items-center justify-center">
+-    {#if appSettings.elections.showElectionTags}
+-      {#each getElectionsToShow({ question, elections }) as election}
+-        <ElectionTag {election} {onShadedBg} />
+-      {/each}
+-    {/if}
+-    {#if appSettings.questions.showCategoryTags}
+-      <CategoryTag
+-        category={question.category}
+-        suffix={blockWithStats ? `${blockWithStats.indexInBlock + 1}/${blockWithStats.block.length}` : undefined}
+-        {onShadedBg} />
+-    {:else if blockWithStats}
++    <!-- INJECTED (140) - both tag-render blocks deleted for the F9 negative control -->
++    {#if blockWithStats}
+       {t('common.question')}
+       <span class="text-secondary">{blockWithStats.index + 1}/{numQuestions}</span>
+     {/if}
+```
+
+**Marker exemption: none.** An HTML comment is syntactically legal at the injection site, so the
+`INJECTED (140)` marker was placed on a `+` line and the marker grep is available as a supplement to
+the two git gates. No position in this injection required an omission.
+
+### 13.4 The HYGIENE-LOOP for this lane, verbatim
+
+Per `139-VERDICTS.md` § 3.1 (D-03), adapted to a Playwright vehicle:
+
+```bash
+# 1. PRE-GATE
+git status --porcelain -- apps tests packages          # MUST print nothing
+grep -rn 'INJECTED (140)' apps packages tests          # MUST print nothing
+
+# 2. INJECT (diff in § 13.3)
+
+# 3. RUN, combined output to a log OUTSIDE the repo
+tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/140-f9-before \
+  --project perm-hide-category-tags > "$SCRATCH/f9-before.log" 2>&1
+
+# 4. REVERT
+git checkout -- apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.svelte
+
+# 5. POST-GATE - all three must hold
+git status --porcelain -- apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.svelte
+git status --porcelain -- apps tests packages
+! grep -rn 'INJECTED (140)' apps packages tests
+```
+
+**The C-5 constraint recorded in § 2 does not apply to this lane, and its inverse does.** Part I forbade
+any Playwright command because its injections stripped live OIDC material from production source. This
+lane's vehicle **is** Playwright: the F9 observable is a rendered DOM, and there is no unit-level
+substitute for it. The run is scoped to one project chain and the injection window is bounded by steps
+2 and 4 above, with the revert and all three gates executed inside the same task.
+
+**The bare `git status --porcelain` is again not a gate**, for the reason given in § 2: `.vscode/settings.json`
+and `supabase/.temp/cli-latest` are tracked and dirty in this linked worktree at session start, and
+`.planning/STATE.md` is written by the orchestrator during execution. The scoped form
+`-- apps tests packages` is the gate that carries the claim, and the per-path form is the gate that
+carries the byte-restoration claim.
+
+### 13.5 Environment (delta from § 2)
+
+```
+date (UTC):        2026-08-15T13:18:19Z .. 2026-08-15T13:25:29Z  (the RUN 1 window)
+git HEAD:          4c0bf5839b8fee87c233e56b6cc92dbf21ce5b94
+git branch:        feat-gsd-roadmap  (linked worktree)
+Node:              v24.14.1
+Playwright:        1.58.2
+runner:            tests/scripts/e2e-run.sh (spawns and owns its own dev server)
+FRONTEND_PORT:     5273  (e2e-run.sh default; 5173 was NOT used)
+Supabase:          local, reset by the runner via `yarn db:reset` at the head of each run
+workers / retries: 6 / 0  (observed, from env-posture.txt)
+evidence dirs:     tests/e2e-runs/140-f9-precondition/  and  tests/e2e-runs/140-f9-before/
+                   (both gitignored at .gitignore:44)
+log directory:     $SCRATCH  (OUTSIDE the repository, by design)
+```
+
+Unlike Part I and Part II, this lane **does** bind a port and **does** use the database: the dev server
+on 5273 and the local Supabase stack, both started and torn down by `e2e-run.sh` within each run.
+
+## 14. RUN 0 — the precondition confirmation (not a control half)
+
+Recorded because it is load-bearing for the interpretation of RUN 1, and explicitly labelled **not** a
+half of the two-run control: no adversary was present.
+
+Bumping `perm-hide-category-tags` from one election to two inserts an election-selector page into its
+voter walk. Taken **before** any assertion was added, this run establishes that the widened walk still
+completes — so a red in plan `140-04` cannot be confused with a walk regression introduced here.
+
+```bash
+tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/140-f9-precondition \
+  --project perm-hide-category-tags
+```
+
+```
+exit:                 0
+head:                 d66467616dded03ef9fd2237e05d879ea0003a7a
+started / ended:      2026-08-15T13:09:55Z / 2026-08-15T13:17:07Z
+preflight successes:  1
+preflight failures:   0
+totals:               86 expected, 0 unexpected, 0 flaky, 0 skipped
+```
+
+Per-project outcomes for the pair, from `results.json`:
+
+| Project | Title | Status |
+|---|---|---|
+| `data-setup-perm-hide-election-tags` | import perm-hide-election-tags dataset | expected |
+| `perm-hide-election-tags` | showElectionTags=false: election-tag absent on /questions | expected |
+| `data-setup-perm-hide-category-tags` | import perm-hide-category-tags dataset | expected |
+| `perm-hide-category-tags` | showCategoryTags=false: category-tag absent on /questions | expected |
+
+Two things this confirms beyond the walk:
+
+1. **The single-invocation transitive-coverage claim is observed, not assumed.** `tests/playwright.config.ts:1081`
+   declares `data-setup-perm-hide-category-tags` → `dependencies: ['perm-hide-election-tags']`, so one
+   `--project perm-hide-category-tags` invocation executes **both** specs. The table above is the
+   observation.
+2. **Both post-seed `app_settings` EXACT-equality assertions passed** (`setupFromTemplate.ts:256-260`).
+   That assertion `toEqual`s the persisted singleton against the template's own declared settings after
+   a REPLACE, so an overlay change not mirrored in the template's expectation fails the **setup**, loudly,
+   rather than contaminating a downstream perm silently. Both setups are `expected`, so both edited
+   templates are internally self-consistent.
+
+## 15. RUN 1 — blindness: absence assertions against a dead render path
+
+### 15.1 Provenance - proof the specs were genuinely still absence-only
+
+The run was taken at HEAD `4c0bf5839b8fee87c233e56b6cc92dbf21ce5b94`, which is the template-edit commit
+from § 13.2. At that HEAD:
+
+```console
+$ git log -1 --format='%h %ad %s' --date=short -- tests/tests/specs/perm/perm-hide-category-tags.spec.ts
+e4de205c4 2026-06-03 refactor(94-03): de-plan + retitle the 22 perm specs
+$ git log -1 --format='%h %ad %s' --date=short -- tests/tests/specs/perm/perm-hide-election-tags.spec.ts
+e4de205c4 2026-06-03 refactor(94-03): de-plan + retitle the 22 perm specs
+
+$ git show 4c0bf5839:tests/tests/specs/perm/perm-hide-category-tags.spec.ts | grep -n 'toHaveCount'
+22:    await expect(page.getByTestId(testIds.shared.categoryTag)).toHaveCount(0);
+$ git show 4c0bf5839:tests/tests/specs/perm/perm-hide-election-tags.spec.ts | grep -n 'toHaveCount'
+23:    await expect(page.getByTestId(testIds.shared.electionTag)).toHaveCount(0);
+```
+
+Neither spec had been touched since 2026-06-03, ten weeks before this phase, and each carried exactly
+one assertion — the absence one. **No presence assertion existed anywhere in either file.**
+
+And the template edits WERE present, so the two halves are comparable:
+
+```console
+$ git show 4c0bf5839:packages/dev-seed/src/templates/e2e/perm/perm-hide-category-tags.ts | grep -n 'elections: 2'
+40:  elections: 2,
+$ git show 4c0bf5839:packages/dev-seed/src/templates/e2e/perm/perm-hide-election-tags.ts | grep -n 'showCategoryTags: true'
+38:    questions: { showCategoryTags: true }
+```
+
+The injection was live for the whole run, evidenced by the runner's own pre-run capture
+(`tests/e2e-runs/140-f9-before/worktree-status.txt`), written before Playwright starts:
+
+```
+ M .vscode/settings.json
+ M apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.svelte
+ M supabase/.temp/cli-latest
+```
+
+Note what is **absent** from that capture: the two templates, because they were already committed. The
+only source difference between RUN 0 and RUN 1 is the injection.
+
+### 15.2 The invocation, verbatim
+
+```bash
+tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/140-f9-before \
+  --project perm-hide-category-tags
+```
+
+### 15.3 Observed - verbatim, not paraphrase
+
+```
+  86 passed (6.6m)
+e2e-run.sh: playwright exit 0
+e2e-run.sh: preflight failures 0, successes 1
+E2E_EXIT=0
+```
+
+```
+exit:                 0
+head:                 4c0bf5839b8fee87c233e56b6cc92dbf21ce5b94
+started / ended:      2026-08-15T13:18:19Z / 2026-08-15T13:25:29Z
+preflight successes:  1
+preflight failures:   0
+observed_workers:     6
+observed_retries:     0
+totals:               86 expected, 0 unexpected, 0 flaky, 0 skipped
+```
+
+Per-project outcomes for the pair, from `tests/e2e-runs/140-f9-before/results.json`, **while both tags
+were unrenderable**:
+
+| Project | Title | Status | Failing `file:line` |
+|---|---|---|---|
+| `data-setup-perm-hide-election-tags` | import perm-hide-election-tags dataset | expected | — |
+| `perm-hide-election-tags` | showElectionTags=false: election-tag absent on /questions | **expected (PASS)** | — |
+| `data-setup-perm-hide-category-tags` | import perm-hide-category-tags dataset | expected | — |
+| `perm-hide-category-tags` | showCategoryTags=false: category-tag absent on /questions | **expected (PASS)** | — |
+
+There is no failing `file:line` to record, in either spec, because nothing failed. That absence is the
+observation.
+
+`e2e-run.sh` exits **6** if it finds no preflight SUCCESS line, so the `exit: 0` above is itself the
+machine-checked proof that the served application was this checkout and the run is admissible evidence.
+
+### 15.4 The revert and the three-check POST-GATE
+
+```console
+$ git checkout -- apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.svelte
+
+$ git status --porcelain -- apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.svelte
+                                        # (a) empty - PASS
+$ git status --porcelain -- apps tests packages
+                                        # (b) empty - PASS
+$ grep -rn 'INJECTED (140)' apps packages tests
+                                        # (c) no matches - PASS
+
+$ grep -c 'showElectionTags' apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.svelte
+1
+$ grep -c 'showCategoryTags' apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.svelte
+2
+```
+
+The component is byte-restored. Gate (a) — an empty per-path `git status --porcelain` — is the
+definitive proof of that, since it asserts equality with HEAD across the whole file rather than at two
+grep sites. The two counts are recorded because plan `140-03` named them as acceptance criteria; on the
+measured file the `showCategoryTags` count is **2**, not the 1 the plan predicted, because the
+component's own `### Settings` doc block at line 18 also names the setting. Both counts are identical
+to their pre-injection values by construction (gate (a)).
+
+### 15.5 The finding
+
+**With the tag-render path deleted from production source, both perm specs stayed green, and so did the
+other 84 tests in the chain.**
+
+`expect(tag).toHaveCount(0)` reports "the setting suppressed the tag" and "the component that would
+render the tag no longer exists" with the same green. It measures the *absence of an element*, which is
+the state the page is in for at least four distinct reasons, only one of which is the one under test.
+An assertion whose pass condition is satisfied by the component's deletion is not testing the setting;
+it is testing that the page loaded.
+
+The sharper form of the finding is the 86: the entire perm chain plus `voter-journey` and
+`candidate-journey` executed against a build in which **no question heading anywhere renders any tag**,
+and the suite reported success. The blind spot is not confined to the two specs that name the tags —
+it is the suite's, and the two specs are merely where it is named.
+
+This is why the remedy in plan `140-04` is a complementary **presence** assertion in the same dataset
+rather than a stronger matcher: the seeded preconditions from § 13.2 make each dataset render the tag
+its sibling suppresses, so this same deletion must make the positive half red while the negative half
+stays green. RUN 2 tests exactly that.
+
+### 15.6 COLLATERAL RULE - applied, and empty
+
+Per `139-VERDICTS.md` § 3.3, any test other than the two enumerated sites that goes red under this
+injection is collateral: recorded verbatim, explicitly not bearing on the verdict.
+
+**There was none.** `results.json` reports 0 unexpected, 0 flaky and 0 skipped across all 86 tests; a
+programmatic filter for any outcome other than `expected` returned an empty list. Deleting the tag
+render path plausibly perturbs `voter-journey` and other perm specs, and those specs **did** execute in
+this run (the chain is serial and `perm-hide-category-tags` sits near its end) — they simply did not
+notice. The collateral column is empty not because the blast radius was scoped away, but because
+nothing in the suite detects the deletion.
+
+### 15.7 What this half does NOT discharge
+
+- **It does not discharge ROADMAP criterion 3.** Criterion 3 requires the named pair to FAIL when the
+  tag element stops rendering anywhere. This half establishes only the "before" — that they currently do
+  **not** fail. The catch is plan `140-04`'s RUN 2, and until that run is recorded with a real failing
+  `file:line`, criterion 3 is open.
+- **It does not directly observe the rendered DOM.** The run observes that no assertion in the suite
+  detected the deletion. It does not, on its own, prove the served page lacked the tags — that the
+  mutation reached the browser is established by construction (the runner spawns its own dev server
+  *after* the injection is on disk, refuses to adopt a foreign listener, and its preflight asserts the
+  served app is this checkout) rather than by a DOM-level observation. **Plan `140-04`'s RUN 2 is what
+  converts this to a direct observation**: under the byte-identical injection the new presence
+  assertions must go red. If they do not, this half's premise is retroactively invalid and must be
+  re-examined rather than explained away.
+- **It says nothing about whether the two settings actually work.** Both specs passing under the
+  injection means the suite currently has no evidence either way that `showCategoryTags: false` and
+  `showElectionTags: false` suppress anything. That evidence arrives only with the positive controls.
+- **It is scoped to one project chain and to one tag pair.** `--project perm-hide-category-tags` runs
+  86 of the suite's tests, not all of them. The visual gate, the `@probe` family and any project outside
+  this dependency chain were not executed. And the same absence-only shape may exist in perm specs this
+  phase never examined; ASSERT-05's scope is these two.
+- **No CI run has exercised any of this.** Both runs are local — macOS 26.5.1, Node v24.14.1, Playwright
+  1.58.2, one machine, one session — which is the same standing Phase-137 CI gap carried in
+  `.planning/STATE.md` § Deferred Items.
+- **The `elections: 2` widening is proven safe for one walk, once.** RUN 0 shows the category-tags walk
+  survives the inserted election-selector page on a single execution at 0 retries. It is not a
+  determinism claim; nothing here establishes a repeat rate.
+
+---
+
+<!-- Part III §§ 13-15 written by plan 140-03 (F9 RUN 1). § 16 (F9 RUN 2 + verdict) is appended by
+     plan 140-04; the F3 lane (ASSERT-02) is appended by plans 140-05 and 140-06. -->
