@@ -236,6 +236,25 @@ describe('POST /api/oidc/token (Idura - private_key_jwt)', () => {
 
 // ── Signicat test suite (backward compatibility - D-09, D-10) ──
 
+// Phase 140 review WR-04 — DELIBERATELY OUT OF SCOPE, not an oversight.
+//
+// The four `try { await POST(event) } catch {}` blocks below are structurally
+// identical to the six in the Idura describe above, which Phase 140 converted
+// to `await expect(POST(event)).rejects.toThrow()`. They were NOT converted,
+// and that asymmetry is a scoping decision recorded here so the file does not
+// read as half-migrated:
+//
+//   Phase 140's remit is the Idura (private_key_jwt) bank-auth path. Signicat
+//   (client_secret) is a separate provider whose own coverage phase has not
+//   run; converting its assertions here would change what this describe proves
+//   without any Signicat-side gate to catch a regression in the conversion.
+//
+// The gap is real and unchanged: each block discards every rejection from the
+// call under test, so it cannot distinguish "the handler threw at
+// getIdTokenClaims as intended" from "the handler threw during argument
+// construction before fetch was reached". Do NOT copy this pattern into new
+// tests — the converted Idura blocks above are the convention. Apply the same
+// `.rejects.toThrow()` conversion when Signicat coverage is next touched.
 describe('POST /api/oidc/token (Signicat - client_secret)', () => {
   let capturedFetchBody: URLSearchParams | null = null;
 
