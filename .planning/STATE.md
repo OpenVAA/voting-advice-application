@@ -5,15 +5,15 @@ milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 140
 current_phase_name: blind-matcher-remediation-teardowns-null-matchers-positive-c
 status: executing
-stopped_at: Completed 140-03-PLAN.md
-last_updated: "2026-08-15T13:31:25.754Z"
+stopped_at: Completed 140-04-PLAN.md
+last_updated: "2026-08-15T14:15:59.799Z"
 last_activity: 2026-08-15
 last_activity_desc: Phase 140 execution started
 progress:
   total_phases: 14
   completed_phases: 3
   total_plans: 24
-  completed_plans: 21
+  completed_plans: 22
   percent: 21
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 
 Milestone: v2.15 (Phases 137-150, 14 phases, 38 requirements)
 Phase: 140 (blind-matcher-remediation-teardowns-null-matchers-positive-c) — EXECUTING
-Plan: 4 of 6
+Plan: 5 of 6
 Status: Ready to execute
 Last activity: 2026-08-15 — Phase 140 execution started
 
@@ -48,8 +48,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-15T13:31:16.417Z
-Stopped at: Completed 140-03-PLAN.md
+Last session: 2026-08-15T14:15:52.066Z
+Stopped at: Completed 140-04-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -146,6 +146,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 140 P01 | ~15min | 3 tasks | 4 files |
 | Phase 140 P02 | 22min | 3 tasks | 3 files |
 | Phase 140 P03 | 33min | 2 tasks | 3 files |
+| Phase 140 P04 | 45min | 3 tasks | 4 files |
 
 ## Deferred Items
 
@@ -632,6 +633,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 140]: 140-03: F9 remedy is a complementary in-dataset POSITIVE control (Design A cross-transplant of one seeded property each way), not a stronger matcher — no count matcher can distinguish 'setting suppressed the tag' from 'the component is gone' because the observable is identical
 - [Phase 140]: 140-03: OBSERVED — with both tag-render {#if} blocks deleted from QuestionHeading.svelte, 86/86 E2E tests stay green including both perm tag specs; the blind spot is the suite's, not just the two named specs'
 - [Phase 140]: 140-03: packages/dev-seed is NOT a built package (build is 'echo Nothing to build', exports point at ./src/index.ts, no dist) — the 'stale build seeds the old dataset' risk assumed by planning does not exist for this package
+- [Phase ?]: F9 positive controls use the house form expect(count, '<why>').toBeGreaterThan(0), not research's .not.toHaveCount(0); 140-VALIDATION.md reconciled to the shipped form
+- [Phase ?]: A serial Playwright project chain cannot observe its own downstream half: once the upstream spec fails everything after it is 'did not run', so a subset adversary is required to red the downstream spec at its own line (140-NEGATIVE-CONTROL.md 16.4)
 
 ### Quick Tasks Completed
 

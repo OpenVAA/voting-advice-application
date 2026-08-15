@@ -55,7 +55,7 @@ Corollary for the visual gate specifically: baselines are captured only in
 - [ ] **ASSERT-02**: **F3** — the 27 `*.teardown.ts` row-count assertions assert the expected count; a teardown that deletes nothing fails.
 - [x] **ASSERT-03**: **F19** — the `toBeDefined()` sites on `URLSearchParams.get()` / `FormData.get()` (which return `string | null` and never `undefined`) assert an actual value; a missing parameter fails.
 - [ ] **ASSERT-04**: **F13** — `TemplateSchema` rejects unknown fields, so the six "accepts field X" tests fail when the schema stops declaring that field. Fallout from tightening is owned, not worked around.
-- [ ] **ASSERT-05**: **F9** — a positive control exists for the `perm-hide-category-tags` / `perm-hide-election-tags` absence assertions; a tag that never renders at all now fails the pair instead of satisfying it.
+- [x] **ASSERT-05**: **F9** — a positive control exists for the `perm-hide-category-tags` / `perm-hide-election-tags` absence assertions; a tag that never renders at all now fails the pair instead of satisfying it.
 - [x] **ASSERT-06**: **F10** — `voter-journey.spec.ts`'s documented `expect.soft` budget matches the file's actual count (**136**, not 3), or the stated budget is enforced. _(Was 137; corrected 2026-08-15 — Phase 138's `bea9fc97a` promoted one soft assertion to hard in that file after the sweep measured it. See ROADMAP Phase 140 criterion 4 for the provenance.)_
 - [ ] **ASSERT-07**: **F15, F16, F17, F18, F20** — each finding that survives ASSERT-01 either asserts observable output rather than wiring, or is explicitly withdrawn with the reasoning recorded.
 - [ ] **ASSERT-08**: The `svelte/store` ESLint guard covers the whole `apps/frontend/src/**` tree; a `svelte/store` import in `lib/components`, `lib/utils`, dynamic-components or candidate components fails `yarn lint:check`, proven by injection.
@@ -144,7 +144,7 @@ Roadmap: `.planning/ROADMAP.md` (Phases 137-150). Future Requirements above are 
 | ASSERT-02 | Phase 140 — Blind-Matcher Remediation | Pending |
 | ASSERT-03 | Phase 140 — Blind-Matcher Remediation | Complete |
 | ASSERT-04 | Phase 144 — Seed-Template Strict Typing + Unknown-Prop Guard | Pending |
-| ASSERT-05 | Phase 140 — Blind-Matcher Remediation | Pending |
+| ASSERT-05 | Phase 140 — Blind-Matcher Remediation | Complete |
 | ASSERT-06 | Phase 140 — Blind-Matcher Remediation | Complete |
 | ASSERT-07 | Phase 142 — Assertion Design — Wiring-Only Tests Assert Output | Pending |
 | ASSERT-08 | Phase 143 — `svelte/store` Guard — App-Wide Reach + Fallout Triage | Pending |
