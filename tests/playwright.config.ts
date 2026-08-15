@@ -48,6 +48,66 @@ if (fs.existsSync(probesDir)) {
 }
 
 /**
+ * Declared soft-assertion budget per spec file, keyed by path relative to `TESTS_DIR`.
+ * Hoisted so the budget guard below — and every reader — has ONE place to look for the
+ * number, which is why the spec's own header names this symbol instead of restating it.
+ *
+ * Scoped deliberately to a single file: ASSERT-06's scope is `voter-journey.spec.ts`.
+ * The three sibling `Rigidity contract` drift files found alongside it are a recorded
+ * follow-up (`.planning/WINDOWS.md`), not a licence to widen this table quietly.
+ */
+const SOFT_ASSERTION_BUDGETS: Record<string, number> = {
+  'specs/voter/voter-journey.spec.ts': 136
+};
+
+/**
+ * SOFT-ASSERTION BUDGET GUARD (Phase 140 plan 02, fake-guard sweep finding F10).
+ *
+ * Soft assertions are budgeted because they do not fail fast. In a long serial walk a
+ * growing population silently degrades failure legibility: one genuinely broken card
+ * reports alongside — and is buried by — a hundred-odd other checks, so the run stops
+ * telling you which failure mattered. A budget is the statement that every soft slot
+ * was a deliberate choice rather than a default reached for under time pressure.
+ *
+ * `voter-journey.spec.ts` carried a header claiming a 3-slot budget while the file held
+ * 136 such calls. It drifted there one honest addition at a time, and every one of those
+ * additions ran green, because a prose claim cannot fail. A comment asking future authors
+ * to keep the number in sync would be the same kind of non-guard this phase exists to
+ * remove, so the invariant is CHECKED — the identical argument this file already makes
+ * for its sibling above.
+ *
+ * The comparison is EQUALITY, not a ceiling: REMOVING a soft assertion without updating
+ * the budget throws too, so the declared posture stays honest in both directions and a
+ * promotion to a hard `expect()` is recorded rather than absorbed. Counting is by
+ * OCCURRENCE — a global regex match over the file contents — not by line, so a line
+ * carrying two calls counts as two; `grep -c` semantics would silently undercount it.
+ *
+ * Throwing here fails every `playwright test` / `--list` invocation immediately and by
+ * name. `--list` matters specifically: it does not run `globalSetup`, so a check living
+ * in a test or in setup would never see it. Config-load code does.
+ */
+for (const [rel, budget] of Object.entries(SOFT_ASSERTION_BUDGETS)) {
+  const specPath = path.join(TESTS_DIR, rel);
+  if (!fs.existsSync(specPath)) {
+    throw new Error(
+      `Soft-assertion budget names a spec that no longer exists: ${rel}. Either restore the ` +
+        `file, or drop its entry from SOFT_ASSERTION_BUDGETS in this file. A budget pointing at ` +
+        `nothing is a guard that can never fire (fake-guard sweep 2026-08-11, finding F10).`
+    );
+  }
+  const actual = (fs.readFileSync(specPath, 'utf8').match(/expect\.soft\(/g) ?? []).length;
+  if (actual !== budget) {
+    throw new Error(
+      `Soft-assertion budget diverged in ${rel} — the declared budget is ${budget} but the file ` +
+        `carries ${actual}. Convert the new assertion to a hard \`expect()\`, or change the budget ` +
+        `in SOFT_ASSERTION_BUDGETS in this file AND state the reason in that spec's header. A ` +
+        `budget edited to match whatever the file happens to contain is not a budget ` +
+        `(fake-guard sweep 2026-08-11, finding F10).`
+    );
+  }
+}
+
+/**
  * Playwright configuration with project dependencies pattern.
  *
  * The suite is:

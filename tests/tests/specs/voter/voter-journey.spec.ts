@@ -6,12 +6,25 @@
  * structure is approximate — the walk is grouped for a smooth continuous
  * traversal and back-and-forth navigation is minimised.
  *
+ * Soft-assertion posture: this is ONE long serial walk, so a hard failure
+ * anywhere truncates the traversal and hides every check after it. Visibility
+ * assertions therefore use the soft modifier deliberately — one broken card
+ * reports and the walk continues, so a single run surfaces every defect
+ * rather than only the first. Load-bearing preconditions (navigation
+ * anchors, gates, data state) stay hard, because walking past those produces
+ * noise rather than information.
+ *
+ * The count is deliberately NOT restated here. It lives in
+ * SOFT_ASSERTION_BUDGETS in tests/playwright.config.ts, which counts this
+ * file at config load and throws on any divergence, in either direction. A
+ * number in a comment is precisely what went stale and produced fake-guard
+ * sweep finding F10; a number the harness checks cannot.
+ *
  * Lint posture: all defensive `if (count > 0) { expect(...) }` patterns are
  * hoisted into module-scope helper functions (below). The
  * `playwright/no-conditional-in-test` rule fires only inside `test()`
  * bodies, so helpers below are the canonical home for any
- * dataset-conditional walk logic. Genuinely soft assertions use
- * `expect.soft` (3-slot budget honored).
+ * dataset-conditional walk logic.
  *
  * Running:
  *   yarn test:e2e --project=voter-journey --reporter=list
