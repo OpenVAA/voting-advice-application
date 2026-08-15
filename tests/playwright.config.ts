@@ -138,21 +138,40 @@ for (const [rel, budget] of Object.entries(SOFT_ASSERTION_BUDGETS)) {
  * separately, WR-06) — a comment asking future authors to pick a distinct prefix
  * would be the same non-guard this file's other two checks exist to remove.
  *
- * Deliberately excludes files with no `const PREFIX = '...'` declaration (e.g.
- * `candidate-journey.teardown.ts`, which performs no prefix-scoped delete — see
- * `assertTeardown.ts`'s corrected docblock claim, CR-02).
+ * Deliberately excludes files with no `const PREFIX = '...'` declaration AND no
+ * `runTeardownAsserted(` call (e.g. `candidate-journey.teardown.ts`, which
+ * performs no prefix-scoped delete — see `assertTeardown.ts`'s corrected
+ * docblock claim, CR-02). A file that DOES call `runTeardownAsserted(` but
+ * whose `const PREFIX` this guard fails to parse is a completeness failure,
+ * not a legitimate exclusion — see the `unparsed` check below (Phase 140
+ * review WR-03: an enumeration guard with no completeness check is the same
+ * failure mode as fake-guard finding F4 above).
  */
 const teardownDir = path.join(TESTS_DIR, 'setup');
 const teardownPrefixDeclarations: Array<{ file: string; prefix: string }> = [];
+const unparsedTeardownPrefixFiles: Array<string> = [];
 for (const rel of fs
   .readdirSync(teardownDir, { recursive: true })
   .map(String)
   .filter((f) => f.endsWith('.teardown.ts'))) {
   const abs = path.join(teardownDir, rel);
-  const match = /^const PREFIX = ['"]([^'"]+)['"]/m.exec(fs.readFileSync(abs, 'utf8'));
+  const source = fs.readFileSync(abs, 'utf8');
+  const match = /^\s*(?:export\s+)?const PREFIX(?:\s*:\s*string)?\s*=\s*['"]([^'"]+)['"]/m.exec(source);
   if (match) {
     teardownPrefixDeclarations.push({ file: rel, prefix: match[1] });
+  } else if (source.includes('runTeardownAsserted(')) {
+    unparsedTeardownPrefixFiles.push(rel);
   }
+}
+if (unparsedTeardownPrefixFiles.length > 0) {
+  throw new Error(
+    "Teardown prefix guard could not parse a `const PREFIX = '...'` declaration in " +
+      `${unparsedTeardownPrefixFiles.join(', ')}, but the file calls runTeardownAsserted — so its ` +
+      'prefix is NOT covered by the uniqueness/overlap check below and a collision could reappear ' +
+      'silently (Phase 140 review WR-03; same enumeration-drift shape as fake-guard finding F4). Make ' +
+      "the declaration match `const PREFIX = '...'` (a plain top-level string literal), or widen the " +
+      'regex above to cover the new shape.'
+  );
 }
 for (let i = 0; i < teardownPrefixDeclarations.length; i++) {
   for (let j = i + 1; j < teardownPrefixDeclarations.length; j++) {
