@@ -5,15 +5,15 @@ milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 140
 current_phase_name: blind-matcher-remediation-teardowns-null-matchers-positive-c
 status: executing
-stopped_at: Completed 140-04-PLAN.md
-last_updated: "2026-08-15T14:15:59.799Z"
+stopped_at: Completed 140-05-PLAN.md
+last_updated: "2026-08-15T14:41:40.760Z"
 last_activity: 2026-08-15
 last_activity_desc: Phase 140 execution started
 progress:
   total_phases: 14
   completed_phases: 3
   total_plans: 24
-  completed_plans: 22
+  completed_plans: 23
   percent: 21
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 
 Milestone: v2.15 (Phases 137-150, 14 phases, 38 requirements)
 Phase: 140 (blind-matcher-remediation-teardowns-null-matchers-positive-c) — EXECUTING
-Plan: 5 of 6
+Plan: 6 of 6
 Status: Ready to execute
 Last activity: 2026-08-15 — Phase 140 execution started
 
@@ -48,8 +48,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-15T14:15:52.066Z
-Stopped at: Completed 140-04-PLAN.md
+Last session: 2026-08-15T14:41:40.739Z
+Stopped at: Completed 140-05-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -147,6 +147,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 140 P02 | 22min | 3 tasks | 3 files |
 | Phase 140 P03 | 33min | 2 tasks | 3 files |
 | Phase 140 P04 | 45min | 3 tasks | 4 files |
+| Phase 140 P05 | 55m | 3 tasks | 32 files |
 
 ## Deferred Items
 
@@ -635,6 +636,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 140]: 140-03: packages/dev-seed is NOT a built package (build is 'echo Nothing to build', exports point at ./src/index.ts, no dist) — the 'stale build seeds the old dataset' risk assumed by planning does not exist for this package
 - [Phase ?]: F9 positive controls use the house form expect(count, '<why>').toBeGreaterThan(0), not research's .not.toHaveCount(0); 140-VALIDATION.md reconciled to the shipped form
 - [Phase ?]: A serial Playwright project chain cannot observe its own downstream half: once the upstream spec fails everything after it is 'did not run', so a subset adversary is required to red the downstream spec at its own line (140-NEGATIVE-CONTROL.md 16.4)
+- [Phase ?]: 140-05: helper carries pre-change matcher unchanged (D-02) so the 27-site codemod is behaviour-preserving; matcher chosen in plan 06
+- [Phase ?]: 140-05: F3 measurement taken — 25 of 26 executed sites report 0/0/0; only the last-seeded perm has rows to delete
 
 ### Quick Tasks Completed
 
