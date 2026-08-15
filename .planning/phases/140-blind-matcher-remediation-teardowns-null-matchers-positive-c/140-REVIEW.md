@@ -1,494 +1,506 @@
 ---
 phase: 140-blind-matcher-remediation-teardowns-null-matchers-positive-c
-reviewed: 2026-08-15T18:45:00Z
+reviewed: 2026-08-15T22:35:00Z
 depth: standard
-files_reviewed: 40
+iteration: 3
+files_reviewed: 24
 files_reviewed_list:
   - apps/frontend/src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts
   - apps/frontend/src/lib/api/utils/auth/__tests__/token-endpoint.test.ts
   - apps/frontend/src/lib/api/utils/auth/providers/idura.test.ts
   - packages/dev-seed/src/cli/teardown.ts
   - packages/dev-seed/src/index.ts
+  - packages/dev-seed/src/templates/index.ts
+  - packages/dev-seed/src/templates/e2e/perm/notLocated2e2cgShape.ts
+  - packages/dev-seed/src/templates/e2e/perm/perm-bankauth-notloc.ts
+  - packages/dev-seed/src/templates/e2e/perm/perm-not-located-2e2cg.ts
   - packages/dev-seed/src/templates/e2e/perm/perm-hide-category-tags.ts
   - packages/dev-seed/src/templates/e2e/perm/perm-hide-election-tags.ts
+  - packages/dev-seed/tests/cli/allowedTeardownTables.test.ts
   - tests/playwright.config.ts
+  - tests/tests/setup/candidate/bank-auth-journey.setup.ts
   - tests/tests/setup/candidate/bank-auth-journey.teardown.ts
-  - tests/tests/setup/perm/perm-1e1cg1co.teardown.ts
-  - tests/tests/setup/perm/perm-2e-asymmetric.teardown.ts
-  - tests/tests/setup/perm/perm-2e-shared.teardown.ts
-  - tests/tests/setup/perm/perm-access-disable.teardown.ts
-  - tests/tests/setup/perm/perm-analytics-tracking.teardown.ts
-  - tests/tests/setup/perm/perm-answers-locked.teardown.ts
-  - tests/tests/setup/perm/perm-disable-allow-open.teardown.ts
-  - tests/tests/setup/perm/perm-disable-election-1co.teardown.ts
-  - tests/tests/setup/perm/perm-disable-election-2co.teardown.ts
-  - tests/tests/setup/perm/perm-disjoint-1co.teardown.ts
-  - tests/tests/setup/perm/perm-header-show-help.teardown.ts
-  - tests/tests/setup/perm/perm-hide-all-nominations.teardown.ts
-  - tests/tests/setup/perm/perm-hide-category-tags.teardown.ts
-  - tests/tests/setup/perm/perm-hide-election-tags.teardown.ts
-  - tests/tests/setup/perm/perm-hide-hero.teardown.ts
-  - tests/tests/setup/perm/perm-hide-if-missing-answers.teardown.ts
-  - tests/tests/setup/perm/perm-interactive-info.teardown.ts
-  - tests/tests/setup/perm/perm-localisation-positive.teardown.ts
-  - tests/tests/setup/perm/perm-missing-nominations.teardown.ts
-  - tests/tests/setup/perm/perm-not-located-2e2cg.teardown.ts
-  - tests/tests/setup/perm/perm-org-matching.teardown.ts
-  - tests/tests/setup/perm/perm-per-app-notifications.teardown.ts
-  - tests/tests/setup/perm/perm-question-video.teardown.ts
-  - tests/tests/setup/perm/perm-show-feedback-survey.teardown.ts
-  - tests/tests/setup/perm/perm-startfromcg.teardown.ts
   - tests/tests/setup/shared/assertTeardown.ts
+  - tests/tests/setup/shared/base.setup.ts
   - tests/tests/setup/shared/base.teardown.ts
+  - tests/tests/setup/shared/setupFromTemplate.ts
+  - tests/tests/specs/candidate/candidate-bank-auth-journey.spec.ts
   - tests/tests/specs/perm/perm-hide-category-tags.spec.ts
   - tests/tests/specs/perm/perm-hide-election-tags.spec.ts
   - tests/tests/specs/voter/voter-journey.spec.ts
   - tests/tests/utils/supabaseAdminClient.ts
 findings:
-  critical: 2
-  warning: 8
-  info: 4
-  total: 14
+  critical: 1
+  warning: 4
+  info: 5
+  total: 10
 status: issues_found
 ---
 
-# Phase 140: Code Review Report
+# Phase 140: Code Review Report (iteration 3 — final)
 
-**Reviewed:** 2026-08-15T18:45:00Z
+**Reviewed:** 2026-08-15T22:35:00Z
 **Depth:** standard
-**Files Reviewed:** 40
+**Files Reviewed:** 24
 **Status:** issues_found
 
 ## Summary
 
-Phase 140 remediated four "blind matcher" findings. The three null-blind auth matchers (F19) are
-correctly repaired — `toEqual(expect.stringMatching(/^[\w-]+\.[\w-]+\.[\w-]+$/))` genuinely reds on
-`null` where `toBeDefined()` did not, and the regex is *stricter* than the `split('.').length === 3`
-check it replaced. Verified green: `yarn vitest run` over the three files, 32/32 pass. The
-config-load soft-assertion budget guard is real (the declared 136 is the file's true occurrence
-count, verified by independent grep) and the config loads cleanly (`--list` → 143 tests in 94 files,
-no throw). `eslint --flag v10_config_lookup_from_file tests` and `tsc -p tests/tsconfig.json` are
-both clean; dev-seed unit tests 444/444 pass. Both template edits are sound — I traced
-`getElectionsToShow` → `QuestionHeading.svelte:81`, the perm baseline `shared.ts:110`
-(`showElectionTags: true`), and the elections page default-select-all
-(`elections/+page.svelte:66-68`) and confirmed the two positive-control preconditions actually hold.
-I also verified against `00001_initial_schema.sql:2886-2894` that the probe's `LIKE prefix || '%'`
-+ `project_id` scoping is byte-identical to what `bulk_delete` executes, and that `nominations`'
-self-referential `ON DELETE CASCADE` (`:738`) cannot undercount `ROW_COUNT` (RI cascade triggers
-fire *after* the outer statement completes).
+Two jobs: adjudicate iteration 2's 13 `fix(140):` commits against `140-REVIEW.iter3.md`, and hunt
+for a second compounding regression across the shared spine (`base.setup.ts`, `base.teardown.ts`,
+`playwright.config.ts`) that iteration 2 touched.
 
-That said, the shared teardown helper — the phase's headline deliverable, and the file whose whole
-purpose is to be an *honest* guard — ships two coverage claims that are structurally impossible, and
-the newly load-bearing `rowsAfter === 0` assertion turns a pre-existing prefix collision into a
-nondeterministic red. Those are the two blockers. Everything else is quality/robustness.
+**Adjudication verdict: 14 of 15 findings genuinely resolved; IN-05 (the owed E2E gates) remains
+open and is still open at the end of this iteration.** Verified against the code, not the report:
 
-The dominant theme across the findings: the remediation is honest about *some* of its limits
-(`assertTeardown.ts:36-39` names the PREFIX-typo hole) but overstates others, and the phase's own
-measurement shows the strengthened matcher is 0-vs-0 at ~25 of 27 sites — i.e. it still cannot fail
-for the reason it claims at the overwhelming majority of the places it was deployed.
+- **CR-01 — the *stated* defect is fixed, but the chosen fix carries a new regression (see CR-01
+  below).** `base.setup.ts` now sweeps `'e2e-bankauth-'`, which is a genuine string-prefix of
+  `e2e-bankauth-notloc-`, so an orphaned bank-auth dataset is cleared before the blocking default
+  suite seeds. That half is correct and sufficient on its own. The other half — the new
+  `dependencies: ['data-setup-base']` edge — is what this review's blocker is about.
+- **WR-01 (stale citations) — RESOLVED for the two cited files, then partially re-broken by the
+  IN-02 commit one hour later.** See WR-01 below.
+- **WR-02 (LIKE metacharacter guard) — RESOLVED and correctly narrowed.** `countRowsByPrefix` now
+  rejects only `*`. The reasoning in the rewritten docblock is right: PostgREST's `like` maps a
+  literal `*` to SQL `%` while `bulk_delete`'s `external_id LIKE $2`
+  (`00001_initial_schema.sql:2890`) does not, whereas `_` and `%` produce byte-identical patterns on
+  both sides and both are `project_id`-scoped, so `rowsDeleted === rowsBefore` survives. The
+  `seed_`-leaks-its-dataset failure mode the original guard would have created is gone.
+- **WR-03 (guard completeness) — RESOLVED.** The `unparsed` check fires on any `*.teardown.ts` that
+  calls `runTeardownAsserted(` without a parseable declaration; the regex was widened to accept
+  `export const` and `: string`. Verified live: `npx playwright test --list` → **143 tests in 94
+  files**, unchanged, so the new throw does not misfire against the current 27 files.
+- **WR-04 (`ALLOWED_TEARDOWN_TABLES`) — RESOLVED with a real check, not prose.** I ran
+  `npx vitest run tests/cli/allowedTeardownTables.test.ts` — passes. The regex resolves against the
+  real migration (`apps/supabase/supabase/migrations/00001_initial_schema.sql:2853`) and
+  `allowed_collections` has exactly one declaration in the file, so the non-greedy match cannot
+  bind the wrong array. The `expect(allowedCollections.length).toBeGreaterThan(0)` anti-vacuity
+  guard is present. This is the strongest single addition of the two fix iterations.
+- **WR-05 / WR-06 / WR-08 / IN-01 / IN-02 / IN-03 — RESOLVED as written.** WR-08's removal of the
+  `updateAppSettings({ preRegistration: { enabled: false } })` write is correct and I traced the
+  claim it rests on: `setupFromTemplate` step 3 does an authoritative REPLACE before its own
+  overlay, and `ALLOWED_TEARDOWN_TABLES` deliberately excludes `app_settings`, so nothing else was
+  restoring it either. Leaving `enabled: true` in the DB after a gate run is harmless because
+  `data-setup-base` unconditionally REPLACEs at the head of every suite.
+- **WR-07 — RESOLVED for the six cited blocks.** All 6 Idura blocks now use
+  `await expect(POST(event), '…').rejects.toThrow()`. Verified not vacuous:
+  `npx vitest run src/lib/api/utils/auth` → **59/59 pass**, so `POST` genuinely rejects under the
+  mock fixture and the assertion would red if it started resolving. Four structurally identical
+  blocks survive in the Signicat describe (WR-04 below).
+- **WR-09 — the fix was applied as specified but is now INSUFFICIENT, because CR-01's fix landed in
+  the same iteration and removed the precondition WR-09's assertion depends on.** This is the
+  compounding regression.
+- **IN-04 — RESOLVED, and verified byte-for-byte, not by claim.** I extracted the original template
+  object literal from `036d21201` and the factory's `return { … }` body and diffed them: they are
+  **identical apart from the opening line and the trailing `};` vs `}`**. Every nested FK reference
+  is `${P}`-built, `generateTranslationsForAllLocales: false` is preserved (so 4-locale expansion
+  behaviour is unchanged for both consumers), `buildOrganizations()`/`buildQuestionCategories()`
+  still emit bare ids the writer prefixes, and both templates are registered in `BUILT_IN_TEMPLATES`
+  and re-exported. `tsc -p packages/dev-seed/tsconfig.json --noEmit` clean.
+
+**Static verification performed this iteration:** `npx tsc -p tests/tsconfig.json --noEmit` clean;
+`npx tsc -p packages/dev-seed/tsconfig.json --noEmit` clean; `npx playwright test --list` → 143/94;
+`PLAYWRIGHT_BANK_AUTH=1 npx playwright test --list --project=bank-auth-journey` → **5 tests in 5
+files** (see CR-01 — this is the load-bearing measurement); `vitest` on the auth suite 59/59 and on
+the new dev-seed test 1/1; 28 `data-teardown-*` projects and 28 `retries: 0` keys, matched.
+I also read Playwright 1.58.2's `createPhasesTask` (`node_modules/playwright/lib/runner/tasks.js:302-320`)
+and `buildDependentProjects` (`projectUtils.js:124-146`) directly rather than reasoning from the
+docs, because the DAG semantics are what both CR-01 arguments turn on.
+
+**Per the prompt, the `setupFromTemplate` `extraTeardownPrefix` pre-clear race is NOT re-raised** —
+iteration 2 disproved it from `140-MEASUREMENT.md` § 5.2.
+
+## Settling the CR-01 disagreement (iteration 1 vs iteration 2 on A4)
+
+**Iteration 2 is right on A4; iteration 1's objection does not apply to the edge that was actually
+added.** The two agents were arguing about different edges. Iteration 1 evaluated
+`dependencies: ['perm-not-located-2e2cg']` and correctly refused it — that edge pulls the entire
+perm serial chain into the isolated gate. Iteration 2 added `dependencies: ['data-setup-base']`,
+which is a different edge, and the source of A4 supports it: `122-RESEARCH.md:318` states A4 as
+"an opt-in-isolated project (own setup, **like `bank-auth`**), NOT threaded into the perm serial
+chain", and the sibling `bank-auth` project has carried `dependencies: ['data-setup-base']` since
+Phase 122 (`playwright.config.ts:415`). Nothing in `IDURA-TEST-RUNBOOK.md` Step B-3 forbids a base
+dependency; Step B-3's only stated precondition is a fresh dev server plus `yarn db:reset`.
+
+**But A4 was never a claim about data cleanliness, and that is where the edge does damage.** A4
+constrains the *project graph*; it says nothing about what rows are in the DB when the journey
+walks. Neither agent evaluated that, and it is what CR-01 below is about. Note also that the edge
+is **not required** for the self-healing that iteration 2's CR-01 was raised about: `base.setup`'s
+new `'e2e-bankauth-'` sweep restores it in the default suite on its own, and the bank-auth setup's
+own `setupFromTemplate` step-1b pre-clear (`runTeardown('e2e-bankauth-notloc-')`) already clears the
+namespace inside the opt-in run. The edge bought ordering, not sweeping.
 
 ## Critical Issues
 
-### CR-01: `e2e-perm-notloc-` is owned by two unordered teardown projects — the new `rowsAfter === 0` / `rowsDeleted === rowsBefore` assertions make the collision fail nondeterministically
+### CR-01: The new `data-setup-base` edge seeds a foreign dataset into the bank-auth journey, and the journey selects `.first()` — so the owed 3× determinism gate now preregisters into a base election and WR-09's identity assertion cannot see it
 
-**File:** `tests/tests/setup/candidate/bank-auth-journey.teardown.ts:26,32` and `tests/tests/setup/perm/perm-not-located-2e2cg.teardown.ts:10,14`
-**Also:** `tests/tests/setup/shared/assertTeardown.ts:61-78`
+**File:** `tests/playwright.config.ts:439-455` (the `dependencies: ['data-setup-base']` edge),
+`tests/tests/fixtures/candidate/candidatePreregisterPage.fixture.ts:93-119`,
+`tests/tests/specs/candidate/candidate-bank-auth-journey.spec.ts:145-153`
+**Introduced by:** commit `c592f3f96` (iteration 2's CR-01 fix), interacting with commit `5e08e0fb0`
+(iteration 2's WR-09 fix)
 
-**Issue:** Of the 27 routed call sites, 26 prefixes are unique; exactly one is duplicated. Both
-`bank-auth-journey.teardown.ts` and `perm-not-located-2e2cg.teardown.ts` declare
-`const PREFIX = 'e2e-perm-notloc-'`, and both now run the same before/after accounting through
-`runTeardownAsserted`. The two projects are *not* ordered relative to each other:
-`data-setup-bank-auth-journey` (`tests/playwright.config.ts:316-320`) declares **no** `dependencies`
-and is documented as standing alone ("STANDS ALONE — it pulls ONLY its own data-setup, NOT the perm
-serial chain"), while `data-teardown-perm-not-located-2e2cg` is deferred off its own setup. Under
-`PLAYWRIGHT_BANK_AUTH=1 yarn test:e2e` both exist, and locally `workers: 6` /
-`fullyParallel: true` allow them to be scheduled concurrently.
+**Issue:** This is the second compounding regression — two fixes from the *same* iteration, each
+defensible alone, that cancel each other.
 
-Two concrete red paths, both new in this phase:
+Measured, not inferred:
 
-1. Two concurrent teardowns, same prefix. A counts `rowsBefore = N`; B counts `rowsBefore = N`;
-   A's `bulk_delete` wins and returns N; B's returns 0. B fails `expect(0).toBe(N)` with a message
-   that blames "the delete accounted for none or only some of them" — pointing at a nonexistent
-   `bulk_delete` bug.
-2. A teardown racing the bank-auth *setup*. `bank-auth-journey.setup.ts:47-50` seeds the same
-   `e2e-perm-notloc-` prefix (and pre-clears `['test-', 'e2e-perm-']`, i.e. the entire perm namespace
-   plus the base dataset). A seed landing between `runTeardown` and the second
-   `countRowsByPrefix` makes `rowsAfter > 0` → red. A pre-clear landing between the *first*
-   `countRowsByPrefix` and `runTeardown` makes `rowsDeleted < rowsBefore` → red.
+```
+$ PLAYWRIGHT_BANK_AUTH=1 npx playwright test --list --project=bank-auth-journey -c tests/playwright.config.ts
+  [data-teardown-bank-auth-journey] › setup/candidate/bank-auth-journey.teardown.ts
+  [data-teardown-base]              › setup/shared/base.teardown.ts
+  [data-setup-base]                 › setup/shared/base.setup.ts
+  [data-setup-bank-auth-journey]    › setup/candidate/bank-auth-journey.setup.ts
+  [bank-auth-journey]               › specs/candidate/candidate-bank-auth-journey.spec.ts
+Total: 5 tests in 5 files
+```
 
-Before this phase the collision was latent — `toBeGreaterThanOrEqual(0)` passed regardless. It is now
-load-bearing. Per the project's cardinal E2E rule ("a test that fails intermittently is a real
-defect… not skipped, retried-until-green, or annotated as flaky"), shipping a newly flaky teardown
-into a gated configuration (the bank-auth 3× determinism gate) is a blocker.
+The runbook's isolated gate now seeds the **base dataset** (`test-e2e-base-*`, 2 elections) before
+the bank-auth dataset (`e2e-bankauth-notloc-*`, 2 elections). Four elections are then live in the
+shared DB when the journey walks. Three facts make that fatal to the gate's meaning:
 
-**Fix:** Give the bank-auth journey its own namespace so no two projects can own one prefix, and
-stop it wiping the perm/base namespaces it does not own:
+1. **The preregister page renders every election in `dataRoot`.**
+   `preregister/(authenticated)/elections/+page.svelte:31` passes `candCtx.dataRoot.elections`
+   straight into `ElectionSelector`, which `{#each}`es all of them.
+2. **The fixture selects positionally, not by identity.** `submitElection()` takes
+   `list.getByTestId('election-selector-option').first()`; `submitConstituency()` takes
+   `selectFirstConstituencyOption` on every combobox. Neither asserts which row it picked.
+3. **There is no tiebreak on the ordering.**
+   `supabaseDataProvider.ts:140-142` issues `.order('sort_order')` with no secondary key. Base's
+   `test-e2e-base-el-reg` has `sort_order: 0` (`base.ts:415`) and the bank-auth template's `el-1`
+   has `sort_order: 0` (`notLocated2e2cgShape.ts:72`). Postgres returns tied rows in plan-dependent
+   order; with base inserted first, the first option is overwhelmingly likely to be
+   `[el-reg] Regional Election` — a row the bank-auth journey does not own.
+
+So the journey preregisters into the **base** election and constituency, and still passes: step 6
+(`candidate-bank-auth-journey.spec.ts:195-233`) asserts only that an `auth.users` +
+`candidates` + `user_roles` cascade exists, with nothing election-scoped. I confirmed no nomination
+row is created by the preregister path (no `nominations` write in
+`apps/frontend/src/routes/api/candidate/preregister/+server.ts` or the `identity-callback` Edge
+Function), so there is no FK failure to make this loud — it is silent.
+
+**WR-09's fix cannot catch this.** `toContainText('[EL1]')` asserts the bank-auth dataset is
+*present in the list*; it says nothing about which option `submitElection()` then checks. The
+finding WR-09 raised — "the gate could pass three times without ever exercising the dataset it was
+built for" — is now not a hypothetical about a dirty DB. It is the guaranteed steady state of a
+clean `yarn db:reset` run, created by a fix committed 20 minutes earlier in the same iteration.
+
+Secondary confirmation from the same root cause: `probeFreshDatabasePrecondition`
+(`setupFromTemplate.ts:97-127`) filters only `${prefix}%` and `seed_%`, so the bank-auth setup now
+finds base's candidates and organizations on **every** gate run and emits
+`[setupFromTemplate] Database is NOT fresh …`. That also means `E2E_REQUIRE_FRESH_DB=true` — the
+hardening iteration 2's own review offered as the alternative WR-09 remedy — would now make the
+bank-auth setup *throw* and the gate hard-fail. The knob and the gate became mutually exclusive.
+
+Per CLAUDE.md's cardinal rule and this phase's own thesis, shipping a gated E2E journey that cannot
+fail for the reason it claims — in the phase whose entire purpose is removing exactly that — is a
+blocker.
+
+**Fix (preferred — spec/fixture level, correct with or without the edge):** select by identity, not
+by position. This is strictly stronger than the `toContainText` assertion and replaces it.
 
 ```ts
-// packages/dev-seed/src/templates/index.ts — register a distinct alias, or
-// tests/tests/setup/candidate/bank-auth-journey.setup.ts
-await setupFromTemplate('perm-not-located-2e2cg', {
-  externalIdPrefix: 'e2e-bankauth-notloc-',   // own namespace, not the perm one
-  extraTeardownPrefix: [],                    // do NOT pre-clear 'test-' / 'e2e-perm-'
-  appSettingsOverride: { preRegistration: { enabled: true } }
-});
-
-// tests/tests/setup/candidate/bank-auth-journey.teardown.ts
-const PREFIX = 'e2e-bankauth-notloc-';
+// tests/tests/fixtures/candidate/candidatePreregisterPage.fixture.ts
+async submitElection(labelSubstring: string): Promise<void> {
+  const list = page.getByTestId(testIds.candidate.preregister.electionsList);
+  // Select the option whose LABEL identifies the seeded dataset. `.first()` is
+  // positional and the provider orders by `sort_order` with no tiebreak, so with
+  // any other dataset in the shared DB it silently picks a foreign election
+  // (Phase 140 review iter-3 CR-01).
+  const option = list
+    .getByTestId('election-selector-option-label')
+    .filter({ hasText: labelSubstring })
+    .getByTestId('election-selector-option');
+  await expect(option, `no election matching '${labelSubstring}' is offered`).toHaveCount(1);
+  if (!(await option.isDisabled())) await option.check();
+  await page.getByTestId(testIds.candidate.preregister.electionsSubmit).click();
+}
 ```
-
-If re-namespacing is out of scope, the minimum viable fix is to order the two chains
-(`dependencies: ['perm-not-located-2e2cg']` on `data-setup-bank-auth-journey`) **and** add a
-prefix-uniqueness check to the config alongside the existing ORPHAN-PROBE and SOFT-ASSERTION guards,
-so a future duplicate cannot be introduced silently:
 
 ```ts
-// tests/playwright.config.ts — mirror the two existing config-load guards
-const prefixes = fs.readdirSync(..., { recursive: true })
-  .filter((f) => f.endsWith('.teardown.ts'))
-  .map((f) => [f, /^const PREFIX = '([^']+)'/m.exec(fs.readFileSync(f, 'utf8'))?.[1]]);
-// throw when any prefix appears twice, or when one is a string-prefix of another
+// candidate-bank-auth-journey.spec.ts, step 2 — replaces the toContainText assertion
+await candidatePreregisterPage.submitElection('[EL1]');
 ```
 
----
+and apply the same identity scoping in `submitConstituency()` (assert the rendered combobox belongs
+to `[CG1]`, or assert the selected option text starts with `[CO1`).
 
-### CR-02: `assertTeardown.ts` documents two catches the assertion is structurally incapable of making — a fake-guard claim shipped by the fake-guard-removal phase
-
-**File:** `tests/tests/setup/shared/assertTeardown.ts:33-39` (and `:7-8`)
-
-**Issue:** The docblock's "WHAT IT CATCHES" list is:
-
-> a silently no-opping `bulk_delete`, **a table dropped from `ALLOWED_TEARDOWN_TABLES`**, a scoping
-> bug that sends the RPC a different prefix from the one counted.
-
-The middle item cannot happen. `countRowsByPrefix`
-(`tests/tests/utils/supabaseAdminClient.ts:263`) iterates *that same constant*, and the design note
-at `:245-248` states this explicitly as the drift-prevention rationale ("the SAME list
-`runTeardown`'s `bulkDelete` clears — so the probe cannot drift from the delete it measures"). Drop
-`nominations` from `ALLOWED_TEARDOWN_TABLES` and: `rowsBefore` stops counting nominations,
-`bulk_delete` stops deleting them, `rowsDeleted` drops by the same amount, and `rowsAfter` never
-looks at the table. The assertion reads a clean `N/N/0` while every nomination row survives. Sharing
-the constant *is* the right call for scope-drift, but it makes this exact failure invisible by
-construction, and the docblock asserts the opposite.
-
-The same paragraph's remaining two catches are also conditional on `rowsBefore > 0` — see WR-03 —
-which the phase's own measurement puts at 1 of 26 observations.
-
-Second false claim, `:7-8`: "Every `*.teardown.ts` project routes through this function." There are
-28 `*.teardown.ts` files in `tests/`; `tests/tests/setup/candidate/candidate-journey.teardown.ts`
-does not (correctly — it calls no `runTeardown`). "Covered by construction" for a newly added
-project therefore does not follow: a new teardown that forgets `runTeardownAsserted` is exactly as
-uncovered as before.
-
-This matters more than a normal comment defect because the file's stated ROLE is to be the single
-honest owner of the F3 assertion; a future author will size their trust from this paragraph.
-
-**Fix:** Either close the hole or stop claiming it is closed. To close it, pin the probe to an
-independent list and assert the two agree, so a table dropped from one side reds:
-
-```ts
-// tests/tests/utils/supabaseAdminClient.ts
-/** Independent copy — deliberately NOT the delete's list; the assertion below is what keeps them honest. */
-const PROBE_TABLES = [
-  'nominations', 'questions', 'question_categories', 'candidates', 'factions',
-  'alliances', 'organizations', 'constituencies', 'constituency_groups', 'elections'
-] as const;
-
-// tests/tests/setup/shared/assertTeardown.ts (or a unit test)
-expect(
-  [...PROBE_TABLES].sort(),
-  'the row-count probe and bulk_delete must cover the same tables'
-).toEqual([...ALLOWED_TEARDOWN_TABLES].sort());
-```
-
-To merely stop claiming it, move the item into "WHAT IT DOES NOT CATCH" and say why:
-
-```
- * WHAT IT DOES NOT CATCH: a typo in a call site's `PREFIX` constant … ; and a table removed
- * from `ALLOWED_TEARDOWN_TABLES`, because the probe iterates that same constant — both sides
- * go blind together and the site reports a clean N/N/0.
-```
-
-And correct `:7-8` to "Every `*.teardown.ts` project that performs a prefix delete routes through
-this function (27 of 28; `candidate-journey.teardown.ts` performs no delete)."
+**Alternative (config level, if you prefer to restore the gate's isolation instead):** drop
+`dependencies: ['data-setup-base']` and keep `base.setup.ts`'s `'e2e-bankauth-'` sweep, which is the
+half that actually fixes iteration 2's CR-01. Be aware this reinstates the pre-iteration-2 state
+where `data-setup-base` and `data-setup-bank-auth-journey` share phase 1 under
+`PLAYWRIGHT_BANK_AUTH=1 yarn test:e2e` and race on the `app_settings` singleton (WR-03 below), so
+prefer the fixture fix if you can only do one. Doing **both** is the correct end state.
 
 ## Warnings
 
-### WR-01: The two new positive controls use a non-retrying `.count()` while their sibling absence assertion auto-retries
+### WR-01: The IN-02 commit re-planted a stale line citation in the same docblock the WR-01 commit had just de-lined, one hour earlier, in the same iteration
 
-**File:** `tests/tests/specs/perm/perm-hide-category-tags.spec.ts:39-43`, `tests/tests/specs/perm/perm-hide-election-tags.spec.ts:39-43`
+**File:** `tests/tests/setup/shared/assertTeardown.ts:94-96`
 
-**Issue:** Line 30/31 uses `await expect(locator).toHaveCount(0)` — Playwright's auto-retrying
-web-first assertion. Line 39 then drops to `const count = await locator.count()` followed by a
-generic `expect(count).toBeGreaterThan(0)`, which is a **single-shot** DOM query with no retry and
-no timeout. Any transient state where the `QuestionHeading` `PreHeading` has not flushed yet reds
-the run, and per the project's cardinal rule that is a defect, not an acceptable flake. Both specs
-sit on the `advanceClick` stack whose own docblock (`tests/tests/utils/voterNavigation.ts:50-76`)
-documents a *residual* timing exposure on exactly this path.
+**Issue:** Commit `9d1366c3a` (WR-01) replaced four line citations with symbol references and the
+docblock now states, as its own rationale, that "line-number citations into `setupFromTemplate.ts`
+go stale on that file's first edit" (`assertTeardown.ts:46-47`). Commit `b5d91844c` (IN-02) then
+inserted the exported `assertTeardownPrefix` into `packages/dev-seed/src/cli/teardown.ts` at
+lines ~106-126, shifting everything below — and the WHAT IT DOES NOT CATCH paragraph still reads:
 
-The retry was given up for nothing: Playwright's `expect` accepts a message for locator assertions
-too, so the message and the retry are not mutually exclusive.
+> `runTeardown` returns `{ rowsDeleted, storageRemoved }`
+> (`packages/dev-seed/src/cli/teardown.ts:126-132`)
+
+Lines 126-132 are now the closing brace of `assertTeardownPrefix` plus the `runTeardown` docblock.
+The storage code the sentence points at is at `:155-160`. (The sibling `:65-67` citation in the same
+docblock survives by luck — the insertion landed below it.)
+
+This is not cosmetic given the file's stated role. It is the fourth time in three iterations that a
+line citation in this one docblock has gone stale, and the third of those was self-inflicted inside
+the fix batch that de-lined it.
+
+**Fix:** finish the job the WR-01 commit started — cite by symbol.
+
+```
+ *   - Portrait STORAGE cleanup (Phase 140 IN-03). `runTeardown` returns
+ *     `{ rowsDeleted, storageRemoved }` (`runTeardown` in
+ *     `packages/dev-seed/src/cli/teardown.ts`); this function only destructures
+ *     `rowsDeleted`.
+```
+
+and likewise for `:65-67` → "`ALLOWED_TEARDOWN_TABLES`'s own docblock in `teardown.ts`".
+
+---
+
+### WR-02: `playwright.config.ts`'s bank-auth block still asserts "STANDS ALONE — it pulls ONLY its own data-setup", which the config it annotates now contradicts
+
+**File:** `tests/playwright.config.ts:425-427`, and the un-updated `tests/IDURA-TEST-RUNBOOK.md`
+Step B-3 / `tests/README.md` opt-in table
+
+**Issue:** Fourteen lines above the new `dependencies: ['data-setup-base']` edge, the block comment
+still reads:
+
+> OPT-IN (PLAYWRIGHT_BANK_AUTH) and STANDS ALONE — it pulls ONLY its own data-setup, NOT the perm
+> serial chain
+
+`--list` disproves the first clause: the gate pulls five projects, including `data-setup-base` and
+`data-teardown-base`. The second clause is still true. The new comment on the project entry
+(`:441-454`) explains the edge honestly, so the file now says two contradictory things ten lines
+apart, and the FALSE one is the one positioned as the block's summary — which is the sentence a
+future reader takes their model from. This is the exact defect class CR-02 was raised for in
+iteration 1 (a claim positioned to be trusted that the code falsifies), reintroduced.
+
+The operator-facing docs have the same gap: `IDURA-TEST-RUNBOOK.md` Step B-3 describes the gate as
+one project run against a `db:reset` DB and does not mention that the base dataset is now seeded
+first — which is precisely the fact an operator needs to interpret CR-01's symptom.
+`tests/README.md`'s opt-in table never listed `bank-auth-journey` at all.
 
 **Fix:**
 
-```ts
-await expect(
-  page.getByTestId(testIds.shared.electionTag),
-  'ASSERT-05 positive control: the perm-hide-category-tags dataset seeds elections: 2 so the complementary election-tag must render on /questions; with none rendered, the category-tag absence assertion above is vacuously satisfied by a heading that renders no tags at all'
-).not.toHaveCount(0);
+```
+    // OPT-IN (PLAYWRIGHT_BANK_AUTH). It does NOT join the perm serial chain
+    // (RESEARCH A4/Pitfall 3), but as of Phase 140 CR-01 it DOES depend on
+    // `data-setup-base` — mirroring the sibling `bank-auth` project — so the
+    // isolated `--project=bank-auth-journey` gate runs 5 projects (base setup,
+    // this setup, the spec, both teardowns) and the base dataset IS present in
+    // the DB while the journey walks. See the spec's election-identity
+    // assertions: positional `.first()` selection is not safe under that.
 ```
 
-(and the mirrored `categoryTag` form in `perm-hide-election-tags.spec.ts`). This keeps the message,
-regains the retry, and drops the intermediate `count` variable.
+and add a one-line note to `IDURA-TEST-RUNBOOK.md` Step B-3 plus a `bank-auth-journey` row to
+`tests/README.md`'s opt-in table.
 
 ---
 
-### WR-02: The accounting half is not retry-stable — CI (`retries: 3`) and local (`retries: 0`) reach different verdicts on the same defect
+### WR-03: The edge moved `data-setup-bank-auth-journey` into the same execution phase as `voter-journey`, so its `app_settings` REPLACE now fires *during* a running spec instead of before it
 
-**File:** `tests/tests/setup/shared/assertTeardown.ts:62-71`, `tests/playwright.config.ts:170`
+**File:** `tests/playwright.config.ts:439-455` vs `:533-541` (`voter-journey`), `:382-398`
+(`performance`, `a11y-smoke`), `:966-971` (`data-setup-candidate-journey`)
 
-**Issue:** `runTeardownAsserted` mutates the state it asserts on: attempt 1 counts, deletes, counts.
-`retries` in `playwright.config.ts` is global (`process.env.CI ? 3 : 0`) and applies to teardown
-projects like any other. So for the class of defect where a *second* delete completes what the first
-left behind (partial delete, RPC transient, a race such as CR-01), attempt 2 observes
-`rowsBefore = 0 → rowsDeleted = 0 → rowsAfter = 0` and passes. The run is green on CI and red
-locally, for identical code and identical data. That is precisely the "retried-until-green" shape
-CLAUDE.md's cardinal rule forbids, arrived at by configuration rather than by annotation.
+**Issue:** Playwright 1.58.2 groups projects into phases by "all dependencies already processed"
+(`node_modules/playwright/lib/runner/tasks.js:302-320`) and dispatches every project in a phase to
+the shared worker pool together. Before commit `c592f3f96`, `data-setup-bank-auth-journey` had no
+`dependencies` and therefore sat in **phase 1** — it completed before `voter-journey` began. After
+the edge, its dependency set is `['data-setup-base']`, which is byte-identical to
+`voter-journey`'s, `performance`'s, `a11y-smoke`'s and `data-setup-candidate-journey`'s. All five
+now enter the **same phase** and run concurrently at `workers: 6` / `fullyParallel: true`.
 
-**Fix:** Exempt the teardown projects from retries so the assertion is evaluated once against real
-state, and record the reason:
+Under `PLAYWRIGHT_BANK_AUTH=1 yarn test:e2e` (which `tests/README.md:67` documents, with the
+`SUPABASE_*` keys the collection-time throw requires), the bank-auth setup's authoritative
+`app_settings.settings` REPLACE + `preRegistration` overlay (`setupFromTemplate.ts` step 3) plus a
+2-election / 8-candidate / 16-nomination `bulk_import` now execute *while voter-journey is walking*.
+The config's own architecture note (`:191-197`) states that clobbering the `app_settings` JSONB
+singleton is the entire reason the perm family is serialised and must not interleave with the
+journey chains. The edge created a new interleaving of exactly that shape.
+
+Related: `base.teardown.ts:22-24`'s newly-written safety claim — "every setup completes before any
+teardown runs" — is derived from a **default-suite** `results.json` (`140-MEASUREMENT.md` § 5.2) and
+does not hold in this invocation, where `data-teardown-bank-auth-journey` fires long before the perm
+setups finish. That is harmless today only because the prefixes are disjoint, which is a different
+reason from the one the docblock gives.
+
+**Fix:** either declare the combination unsupported and make it fail loudly, or order it. The cheap
+correct form is the latter — give the bank-auth setup an ordering edge past the journey leaves when
+the full suite is in play, mirroring how the perm family is kept out of the journeys' way:
 
 ```ts
-// tests/playwright.config.ts, on each data-teardown-* project
 {
-  name: 'data-teardown-base',
-  testMatch: /base\.teardown\.ts/,
-  // reason: the F3 accounting assertion is state-mutating — a retry always observes an
-  // already-cleared prefix (0/0/0) and passes, so retries would mask exactly the
-  // partial-delete class the assertion exists to catch.
-  retries: 0
+  name: 'data-setup-bank-auth-journey',
+  testMatch: /bank-auth-journey\.setup\.ts/,
+  teardown: 'data-teardown-bank-auth-journey',
+  // `data-setup-base` alone puts this project in the SAME phase as voter-journey /
+  // performance / a11y-smoke (identical dependency set → identical phase, see
+  // playwright/lib/runner/tasks.js createPhasesTask), so its authoritative
+  // app_settings REPLACE would land mid-spec under `PLAYWRIGHT_BANK_AUTH=1 yarn test:e2e`.
+  // Depending on the journey LEAVES orders it after them without joining the perm
+  // serial chain (A4 preserved).
+  dependencies: ['voter-journey', 'candidate-journey']
 }
 ```
 
----
-
-### WR-03: The strengthened matcher is 0-vs-0 at ~25 of 27 sites — its stated catches are unreachable there
-
-**File:** `tests/tests/setup/shared/assertTeardown.ts:20-39`
-
-**Issue:** The docblock's own evidence paragraph states that a positivity floor "would have reddened
-25 of the 26 executed sites, because … make `rowsDeleted === 0` the LEGITIMATE outcome at almost
-every site." Read the other way: at 25 of 26 observed sites `rowsBefore === 0`, so both halves
-evaluate `0 === 0` and `0 === 0`. At those sites the assertion cannot detect a no-opping
-`bulk_delete`, cannot detect a prefix-scoping bug, and cannot detect residue — every one of the
-listed catches requires `rowsBefore > 0`. What it *can* still detect there is over-deletion
-(`rowsDeleted > 0` with nothing counted), which is a real but much narrower property than the
-paragraph implies.
-
-Consequently the F3 remediation's discriminating power rests on a single observation (n = 1), and
-the "26/26 held" framing at `:22-24` reads as 26 independent confirmations when 25 of them are
-tautological. This is the same over-reading of a green result that produced F3 in the first place.
-
-**Fix:** State the conditionality where the catches are listed, and separate the two evidence
-classes:
-
-```
- * WHAT IT CATCHES — all of the following require `rowsBefore > 0` at the site in question,
- * which the measurement observed at 1 of 26 sites (the deferred-teardown + `extraTeardownPrefix`
- * pre-clear make 0 the normal `before`): a silently no-opping `bulk_delete`, a scoping bug that
- * sends the RPC a different prefix from the one counted.
- * WHAT IT CATCHES UNCONDITIONALLY: over-deletion — rows deleted under a prefix the probe counted
- * as empty.
-```
-
-Then consider whether a site-specific expectation (e.g. `base.teardown` asserting `rowsBefore > 0`,
-since it is the one site that genuinely still owns rows at teardown time) is worth adding, so at
-least one site exercises the non-trivial branch by contract rather than by accident.
+(Note this changes what the isolated `--project=bank-auth-journey` gate pulls, so weigh it against
+CR-01's alternative remedy; if you take CR-01's "drop the edge" option instead, record in the block
+comment that the phase-1 co-scheduling with `data-setup-base` is a known, accepted limitation of the
+undocumented full-suite-plus-bank-auth invocation.)
 
 ---
 
-### WR-04: The soft-assertion budget is counted textually, so the guard's own remediation instruction can trip it
+### WR-04: Four `try { await POST(event) } catch {}` swallows remain in `token-endpoint.test.ts`, so one file now treats the identical pattern two different ways
 
-**File:** `tests/playwright.config.ts:98,99-107`
+**File:** `apps/frontend/src/lib/api/utils/auth/__tests__/token-endpoint.test.ts:279-283, 298-302,
+317-321, 336-340`
 
-**Issue:** `fs.readFileSync(specPath, 'utf8').match(/expect\.soft\(/g)` counts every textual
-occurrence, including inside comments and string literals. The guard's failure message (`:103`)
-instructs the author to "change the budget in SOFT_ASSERTION_BUDGETS in this file AND state the
-reason in that spec's header" — and the most natural way to state that reason is to write
-`expect.soft(` in the header, which increments the count and re-trips the guard with a message that
-blames "the new assertion". The spec header currently dodges this only by an explicit convention
-("The count is deliberately NOT restated here", `voter-journey.spec.ts:17-21`) that the guard itself
-does not enforce.
+**Issue:** The six Idura blocks were converted to `.rejects.toThrow()`; the four structurally
+identical blocks in the Signicat describe were deliberately left, on the grounds that the finding
+named six. The result is a single file where the same construct is a hard rejection assertion above
+line 260 and a silent swallow below it, with no comment marking the boundary or the reason. A
+future author reading the file bottom-up will reasonably copy the swallow.
 
-The mirror-image hole: a soft assertion introduced without the literal token (aliasing, e.g.
-`const soft = expect.soft; soft(x).toBe(y)`) is *not* counted, so the budget silently over-reports
-headroom.
+The substantive gap is unchanged for those four: each discards every rejection from the call under
+test, so they cannot distinguish "the handler threw at `getIdTokenClaims` as intended" from "the
+handler threw during argument construction before `fetch` was reached", and `:279-283`'s own
+`// Expected: getIdTokenClaims fails on mock token` comment asserts the former without checking it.
 
-**Fix:** Strip comments and strings before counting, or scope the regex to statement position:
+**Fix:** apply the same conversion; the mechanism is proven (all 10 tests in the file pass with the
+6 converted, so `POST` genuinely rejects under this fixture):
 
 ```ts
-const source = fs
-  .readFileSync(specPath, 'utf8')
-  .replace(/\/\*[\s\S]*?\*\//g, '')   // block comments
-  .replace(/(^|[^:])\/\/.*$/gm, '$1'); // line comments
-const actual = (source.match(/\bexpect\.soft\s*\(/g) ?? []).length;
+await expect(POST(event), 'POST should reject at getIdTokenClaims on the mock token').rejects.toThrow();
 ```
 
-and reword `:103` to "state the reason in that spec's header **without writing the literal
-`expect` + `.soft(` token**".
-
----
-
-### WR-05: Three `runTeardown` call sites remain unasserted, so "covered by construction" does not hold for the delete path as a whole
-
-**File:** `tests/tests/setup/shared/setupFromTemplate.ts:189,196,279` (unchanged this phase), claim at `tests/tests/setup/shared/assertTeardown.ts:9-12`
-
-**Issue:** The RATIONALE paragraph argues that owning the matcher centrally means "a newly added
-project is covered by construction". But `setupFromTemplate` performs three unasserted deletes — the
-`extraTeardownPrefix` loop (`:189`), the pre-clear (`:196`) and the `cleanup` closure (`:279`) — and
-those are the deletes that actually run in the common case (they are why `rowsBefore === 0` at
-almost every teardown, per WR-03). The delete path most exercised by the suite carries no assertion
-at all, which materially qualifies the "single owner of the F3 assertion" framing at `:1-2`.
-
-**Fix:** Either route the pre-clear through the helper too (it is prefix-scoped and idempotent, so
-the same invariant applies), or narrow the claim:
-
-```
- * ROLE: … Every `*.teardown.ts` project's own delete routes through this function. NOTE: the
- * pre-clear + cleanup deletes inside `setupFromTemplate.ts` (:189, :196, :279) are NOT routed
- * and remain unasserted — see WINDOWS.md.
-```
-
----
-
-### WR-06: `countRowsByPrefix` forwards the prefix into `LIKE` unescaped, and PostgREST's `like` is not byte-identical to the RPC's SQL `LIKE`
-
-**File:** `tests/tests/utils/supabaseAdminClient.ts:268`
-
-**Issue:** Two divergence vectors against the "cannot drift from the delete it measures" claim
-(`:245-248`):
-
-1. Neither side escapes LIKE metacharacters, so `_` matches any character. Harmless for the 26
-   hyphenated E2E prefixes, but the dev-seed CLI's default prefix is `seed_`
-   (`packages/dev-seed/src/cli/teardown.ts:176`); if the probe is ever reused on that path it
-   over-counts (`seed_` also matches `seedX`), which would make `rowsDeleted === rowsBefore` red for
-   a correct delete.
-2. PostgREST's `like` operator maps `*` to `%`; `bulk_delete`'s raw `external_id LIKE $2`
-   (`00001_initial_schema.sql:2890`) does not. A prefix containing `*` would therefore be counted
-   with a wildcard and deleted literally — the exact drift the shared-constant design was meant to
-   preclude, reintroduced through the operator rather than the table list.
-
-**Fix:** Escape the prefix for LIKE on the probe side and document that the RPC does not (so the
-divergence is a known, single-direction one), or add a cheap guard:
-
-```ts
-async countRowsByPrefix(prefix: string): Promise<number> {
-  if (/[%_*]/.test(prefix)) {
-    throw new Error(
-      `countRowsByPrefix: prefix '${prefix}' contains a LIKE metacharacter (% _ *); the probe ` +
-        `and bulk_delete do not agree on its meaning, so the count would not measure the delete.`
-    );
-  }
-  …
-}
-```
-
----
-
-### WR-07: The row-count probe runs before `runTeardown`'s mass-delete guard, so a 0/1-character prefix triggers ten unbounded `LIKE '%'` scans first
-
-**File:** `tests/tests/setup/shared/assertTeardown.ts:62-63`, `packages/dev-seed/src/cli/teardown.ts:105-108`
-
-**Issue:** The docblock at `:41-43` claims the verbatim forwarding means "`runTeardown`'s
-two-character mass-delete guard keeps its full reach". It keeps its reach over the *delete*, but the
-helper now performs work *before* the guard can fire: `countRowsByPrefix('')` issues ten
-`external_id LIKE '%'` exact-count scans across every content table before `runTeardown` throws.
-Read-only, so no data risk — but it inverts the guard's stated intent (refuse before touching the
-DB) and, on a large project, is the slowest possible way to reach an error that is decidable from
-the argument alone.
-
-**Fix:** Re-check the same invariant in the helper before probing, referencing the owner so the two
-cannot drift:
-
-```ts
-export async function runTeardownAsserted(prefix: string, client: SupabaseAdminClient): Promise<void> {
-  // Mirror of runTeardown's T-58-07-02 guard, re-checked here so the probe below never
-  // runs an unbounded `LIKE '%'` scan for an argument the delete will refuse anyway.
-  if (!prefix || prefix.length < 2) {
-    throw new Error(`runTeardownAsserted: prefix must be at least 2 characters (got '${prefix}').`);
-  }
-  …
-```
-
----
-
-### WR-08: The two repaired auth files still contain the sibling null-blind pattern the phase set out to remove
-
-**File:** `apps/frontend/src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts:124`, `apps/frontend/src/lib/api/utils/auth/providers/idura.test.ts:126,136`
-
-**Issue:** The phase repaired the three `searchParams.get(…)` / `FormData.get(…)` sites, which is
-the correct set for a *null*-returning API. But the surrounding tests still lead with
-`expect(x).toBeDefined()` on values that could plausibly be `null` from the JSON boundary
-(`data.authorizeUrl`, `result.state`, `result.nonce`). These happen to be saved by the *following*
-line in each case (`expect(typeof …).toBe('string')`, `expect(result.state!.length)`), so they are
-not live defects — but they are the same matcher in the same files, and a future edit that drops the
-follow-up line silently restores the blindness. Leaving them means the F19 lane's fix depends on
-adjacent lines rather than on the matcher.
-
-Also note the three test bodies swallow the call under test with `try { await POST(event) } catch {}`
-(`token-endpoint.test.ts:139-142` and siblings). The `expect(capturedFetchBody).not.toBeNull()`
-guard makes this safe today, but an empty catch around the subject of the test is the same
-"cannot-fail-for-the-stated-reason" family.
-
-**Fix:** Collapse each pair into one non-blind assertion:
-
-```ts
-expect(data.authorizeUrl, 'authorize response is missing authorizeUrl').toEqual(expect.any(String));
-expect(result.state, 'getAuthorizeUrl returned no CSRF state').toEqual(expect.stringMatching(/.+/));
-expect(result.nonce, 'getAuthorizeUrl returned no replay nonce').toEqual(expect.stringMatching(/.+/));
-```
+If they are intentionally out of scope for this phase, say so at the top of the Signicat describe
+with a pointer, so the inconsistency reads as a decision rather than an oversight.
 
 ## Info
 
-### IN-01: The guard's error message and the spec header it points at give conflicting instructions
+### IN-01: `allowedTeardownTables.test.ts` checks `allowed_collections`, but `bulk_delete` deletes via `delete_order`
 
-**File:** `tests/playwright.config.ts:103` vs `tests/tests/specs/voter/voter-journey.spec.ts:17-21`
-**Issue:** The guard says to "state the reason in that spec's header"; the header says "The count is
-deliberately NOT restated here." A reader hitting the guard has to reconcile the two.
-**Fix:** Reword `:103` to "…AND record the reason in that spec's header (prose only — do not restate
-the number; the header deliberately does not)."
+**File:** `packages/dev-seed/tests/cli/allowedTeardownTables.test.ts:44`,
+`apps/supabase/supabase/migrations/00001_initial_schema.sql:2845-2858`
+**Issue:** `bulk_delete` validates the caller's collection names against `allowed_collections` but
+performs the deletes by iterating a *separate* array, `delete_order`. They happen to hold the same
+11 names today. If a table were added to `allowed_collections` only, this test would fail and
+instruct an author to add it to `ALLOWED_TEARDOWN_TABLES` — after which the probe would count that
+table's rows while `bulk_delete` never deletes them, reddening `rowsDeleted === rowsBefore` at every
+one of the 27 sites. The check is correct for the drift it was written for, but points at the
+declaration that governs *validation* rather than the one that governs *deletion*.
+**Fix:** assert against the intersection, and assert the two SQL arrays agree:
+`expect(parseArray('delete_order').sort()).toEqual(parseArray('allowed_collections').sort())`.
 
-### IN-02: `assertTeardown.ts` duplicates ~25 lines of measurement narrative that will drift from `140-MEASUREMENT.md`
+### IN-02: The teardown-prefix guard only enumerates `tests/tests/setup/**`
 
-**File:** `tests/tests/setup/shared/assertTeardown.ts:20-39`
-**Issue:** Counts (26 observations, 25/26, the `setupFromTemplate.ts:184-196` line reference) are
-restated in-tree. Line-number citations in particular go stale on the first edit to that file — and
-a stale number in a docblock is precisely the F10 failure mode this phase closed elsewhere.
-**Fix:** Keep the *conclusion* and the decision-rule branch in-tree; replace the restated figures
-with a single pointer to `140-MEASUREMENT.md § 4 / § Adjudication`.
+**File:** `tests/playwright.config.ts:158-170`
+**Issue:** The completeness check WR-03 added closes the "declaration shape it cannot parse" hole,
+but the enumeration itself is still directory-scoped to `TESTS_DIR/setup`. The teardown projects'
+`testMatch` patterns (e.g. `/base\.teardown\.ts/`) are unanchored and match anywhere under the
+inherited `testDir`, so a `*.teardown.ts` placed outside `setup/` would be picked up by Playwright
+and invisible to the guard — the same enumeration-drift shape as F4, one level up from where WR-03
+fixed it.
+**Fix:** enumerate from `TESTS_DIR` rather than `TESTS_DIR/setup`, or throw if any `*.teardown.ts`
+exists outside `setup/`.
 
-### IN-03: `runTeardownAsserted` discards `storageRemoved`
+### IN-03: `.rejects.toThrow()` asserts that *something* threw, not that the documented thing threw
 
-**File:** `tests/tests/setup/shared/assertTeardown.ts:63`
-**Issue:** `runTeardown` returns `{ rowsDeleted, storageRemoved }`; only the first is destructured.
-Portrait-storage cleanup (`packages/dev-seed/src/cli/teardown.ts:126-132`) is therefore still
-completely unasserted at all 27 sites — a silent regression in `listCandidatePortraitPaths` /
-`removePortraitStorageObjects` leaks storage objects across every run with no signal. Matches the
-prior behaviour, so not a regression, but the phase's own framing ("the delete accounted for every
-row that was present… and none survived it") reads as broader coverage than shipped.
-**Fix:** Either assert it (`expect(storageRemoved).toBe(expectedPortraits)` needs a probe that does
-not exist yet) or name the gap in the WHAT IT DOES NOT CATCH paragraph.
+**File:** `apps/frontend/src/lib/api/utils/auth/__tests__/token-endpoint.test.ts:139, 155, 172, 187,
+205, 230`
+**Issue:** Applied exactly as iteration 2's review specified, and it is a genuine strengthening (the
+test now reds if `POST` starts *resolving*). But the message asserts a specific failure point —
+"POST should reject at getIdTokenClaims on the mock token" — that the bare `toThrow()` does not
+check. An unrelated early throw satisfies it while the message misattributes the cause.
+**Fix:** pass a matcher: `.rejects.toThrow(/id_token|claims|jwt/i)`, or assert the guard first
+(`expect(capturedFetchBody).not.toBeNull()`) so a pre-`fetch` throw is distinguishable.
 
-### IN-04: `tests/e2e-runs/` holds 1.7 GB of untracked local evidence artifacts
+### IN-04: Two residual doc defects in the files this phase rewrote
 
-**File:** `tests/e2e-runs/140-f3-measure/`, `140-f9-*/` (untracked)
-**Issue:** Not committed (correctly), but 1.7 GB of traces/videos now sit in the worktree from this
-phase's five instrumented runs. Worth confirming `.gitignore` coverage is intentional and pruning,
-so a future `git add -A` or a Docker build context does not pick them up.
-**Fix:** Confirm the ignore rule, and prune runs older than the ones cited in `140-MEASUREMENT.md`.
+**File:** `tests/tests/setup/shared/assertTeardown.ts:27`;
+`tests/tests/specs/perm/perm-hide-category-tags.spec.ts:45` and
+`perm-hide-election-tags.spec.ts:45`
+**Issue:** (a) The NOT-covered paragraph says "see WR-03 above", but the `rowsBefore > 0`
+conditionality it refers to appears ~40 lines *below* it in the docblock. (b) The two positive-control
+comments added in iteration 1 cite `voterNavigation.ts:50-76` by line — accurate today (I checked;
+the RESIDUAL EXPOSURE paragraph spans 49-76), but contrary to the cite-by-symbol rule WR-01
+established in the same phase.
+**Fix:** "see WHAT IT CATCHES ONLY WHEN `rowsBefore > 0` below"; and cite `advanceClick`'s docblock
+in `voterNavigation.ts` by symbol.
+
+### IN-05: The E2E gates are owed for the third consecutive iteration
+
+**File:** n/a (process)
+**Issue:** No suite run has happened since `036d21201`, across 26 commits and three reviews. Every
+verdict in all three reviews — including CR-01 above — is static. CR-01 in particular predicts a
+*passing* run that tests the wrong data, so a green gate will not discharge it on its own.
+**Fix:** see Residual Risk below.
+
+## Residual Risk
+
+**What a human should look at before this phase closes.**
+
+1. **CR-01 is the only thing that must be decided by a person.** The fix is a choice between two
+   shapes (identity-based selection in the preregister fixture, vs. dropping the `data-setup-base`
+   edge and accepting phase-1 co-scheduling), and the right answer depends on whether you intend
+   `PLAYWRIGHT_BANK_AUTH=1 yarn test:e2e` to be a supported invocation at all. If you decide it is
+   not, say so in `playwright.config.ts` and WR-03 collapses to a doc fix.
+2. **A green bank-auth gate will not clear CR-01.** The predicted failure mode is a *pass* on the
+   wrong dataset. To discharge it empirically you must look at which election the walk selected —
+   easiest via a trace (`--trace on`) or by temporarily asserting the selected option's label.
+3. **The three doc-truth findings (WR-01, WR-02, IN-04) are cheap and worth doing** precisely
+   because this phase's deliverable is "claims that cannot be silently false". Leaving a false
+   summary comment on the bank-auth block is the phase contradicting itself in its own artefact.
+4. **WR-04 is a judgement call** — either convert the four Signicat blocks or mark them as
+   deliberately out of scope. Do not leave the file half-converted and unannotated.
+5. **Nothing found in this iteration risks data loss or a security exposure.** The
+   `NODE_TLS_REJECT_UNAUTHORIZED=0` and committed self-signed cert remain correctly confined to the
+   opt-in run and the scratch env file; no secret, injection, or authz defect was found in the
+   reviewed surface.
+
+**E2E commands that must be run to discharge the owed gates (IN-05):**
+
+```bash
+# Gate 1 — the blocking default suite. Must be cardinal-clean (no failures, no
+# "did not run"). One FRESH dev server on :5173; no stale server stealing the port.
+yarn db:reset
+yarn dev                      # separate terminal, leave running
+yarn test:e2e
+
+# Gate 2 — the bank-auth 3x determinism gate (IDURA-TEST-RUNBOOK.md Step B-3).
+# Terminal 1, per Step B-1/B-2:
+yarn db:reset
+source /tmp/eflow10b.env      # IdP env + scoped TLS bypass, derived from testKeys.ts
+yarn dev                      # plus: supabase functions serve --no-verify-jwt (identity-callback)
+# Terminal 2, run this THREE times, with `yarn db:reset` between runs:
+source /tmp/eflow10b.env
+PLAYWRIGHT_BANK_AUTH=1 npx playwright test --project=bank-auth-journey -c tests/playwright.config.ts
+
+# Gate 3 — CR-01-specific. Re-run gate 2 once with a trace and confirm from the
+# trace which election-selector option step 2 actually checked:
+PLAYWRIGHT_BANK_AUTH=1 npx playwright test --project=bank-auth-journey --trace on -c tests/playwright.config.ts
+npx playwright show-trace test-results/*/trace.zip
+```
+
+Also worth confirming during gate 2, per iteration 2's own owed list: that `perm-bankauth-notloc`
+seeds and tears down cleanly against a real Supabase, that the 28 `retries: 0` additions do not
+surface a latent teardown transient, and that removing the `preRegistration` reset from the
+bank-auth teardown leaves no stale `true` visible to a subsequent run before `data-setup-base`
+REPLACEs.
 
 ---
 
-_Reviewed: 2026-08-15T18:45:00Z_
+_Reviewed: 2026-08-15T22:35:00Z_
 _Reviewer: Claude (gsd-code-reviewer)_
-_Depth: standard_
+_Depth: standard — iteration 3 (final; adjudication + compounding-regression hunt)_
