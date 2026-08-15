@@ -678,6 +678,27 @@ time so that each recorded `file:line` is attributable to a single vehicle.
   See § 7.3 — the surviving `toBeDefined()` calls are enumerated and argued individually rather than
   waved through.
 
+### 6.2 The other three lanes — where each lane's own answer lives
+
+`§ 6.1` was written when only the F19 lane existed. The other three lanes each carry their own
+"what it does and does not prove" section rather than duplicating one here, and this subsection
+exists so no reader concludes a lane is missing:
+
+| Lane | Requirement | What it proves | What it does NOT prove |
+|---|---|---|---|
+| **F10** — soft-assertion budget | ASSERT-06 | § 12.2 | § 12.3 |
+| **F9** — absence-only tag assertions | ASSERT-05 | § 16.9, § 16.10 | § 16.11, § 15.7 |
+| **F3** — unfailable teardown row counts | ASSERT-02 | § 18.4, § 19.4, § 19.6 | § 19.8 |
+
+### 6.3 The one thing NO lane in this document proves
+
+**That the suite being green is evidence of anything.** The suite was green before every edit in this
+phase and is green after them (§ 20.1). Phase 140 changes *assertions*, not product behaviour, so
+requirement satisfaction here is always "the assertion can now fail" — observed as a red under a
+constructed adversary, paired with a pass under the byte-identical adversary and the pre-change form.
+Four such pairs are recorded above. A green run is the **prohibition** this phase operates under
+(never weaken an assertion to obtain one), not its evidence.
+
 ---
 
 ## 7/8. Verdict — evidence mapped to ROADMAP criteria
@@ -686,11 +707,11 @@ time so that each recorded `file:line` is attributable to a single vehicle.
 
 | ROADMAP criterion | Discharged by | Status |
 |---|---|---|
-| **1 — F3** (teardown delete matching nothing FAILS by name; pre-change form PASSES; sample spans helper + 27 call sites) | plans `140-05` (measurement + helper + codemod) and `140-06` (matcher adjudicated against the measured table, two-run control) | **owned by a later plan** — not attempted here, not silently absent |
+| **1 — F3** (teardown delete matching nothing FAILS by name; pre-change form PASSES; sample spans helper + 27 call sites) | plans `140-05` (measurement + helper + codemod) and `140-06` (matcher adjudicated against the measured table, two-run control) — **Part IV §§ 17-19 and § 20.2** | **DISCHARGED** (updated by `140-06`; this row read "owned by a later plan" until that plan ran). Three structurally distinct sites observed red at `assertTeardown.ts:73:5` with 14 / 142 / 38 rows present and none deleted, each message naming the prefix and both counts; the byte-identical adversary left all three green under the pre-change floor (§ 19.4). The remaining 24 sites are covered by construction, verified statically in § 20.2 |
 | **2 — F19** (removing `request` / `client_assertion` makes the assertion itself fail naming the missing parameter, not a downstream `TypeError`; passes under the old `toBeDefined()`; two-run control at all three sites) | **this plan (`140-01`)** — §§ 4, 5, 5.4, 5.7, 5.8 | **DISCHARGED** |
 | **3 — F9** (perm specs FAIL when the tag stops rendering anywhere; positive control is seeded data, not a comment) | plans `140-03` (seeded preconditions + RUN 1 blindness, §§ 13-15) and `140-04` (presence assertions + RUN 2 / 2b catch + RUN 3 restored, § 16) | **DISCHARGED.** Both specs observed red at their OWN presence-assertion line (`perm-hide-election-tags.spec.ts:43:7`, `perm-hide-category-tags.spec.ts:43:7`) under the § 13.3 render-path deletion, where the byte-identical injection left both green in RUN 1; byte-restored tree re-runs 86/86 green. Severally, not jointly — the serial chain skips the downstream spec once the upstream one fails (§ 16.4, § 16.11) |
 | **4 — F10** (stated `expect.soft` budget matches the real count **136**, or a counted guard enforces it and fails when one more is added, with the addition made and the failure observed) | **plan `140-02`** — Part II §§ 9, 10, 11, 11.5, 12 | **DISCHARGED — on BOTH alternatives.** The header now states the real posture and restates no number, AND `SOFT_ASSERTION_BUDGETS` + a counted config-load guard enforce the measured 136. The addition was made and the failure observed (§ 11.3) after the unguarded half (§ 10.3) and before the guard was accepted — order followed, not retrofitted (§ 12.1) |
-| **5 — suites green after the edits, Phase-137 preflight satisfied on every evidence run** | plan `140-06` (phase gate). **Partially advanced here:** `yarn test:unit` (21/21 tasks, frontend 773 tests / 54 files) and `yarn lint:check` (0 errors, incl. `typecheck:tests`) both exit 0 at this plan's HEAD, and `svelte-check` reports 0 errors / 0 warnings across 2683 files. **No E2E evidence** — see § 7.4. | **partially advanced; owned by `140-06`** |
+| **5 — suites green after the edits, Phase-137 preflight satisfied on every evidence run** | plan `140-06` (phase gate) — **§ 20.1**. Advanced here at `140-01`'s HEAD by `yarn test:unit` and `yarn lint:check` (no E2E evidence — see § 7.4) | **DISCHARGED** (updated by `140-06`; this row read "partially advanced" until that plan ran). `yarn build`, `yarn test:unit`, `yarn lint:check` and one full preflight-confirmed `e2e-run.sh` with no `--project` all exit 0 at HEAD `9872b5593`: **135 passed, 0 unexpected, 0 flaky, 0 skipped, 0 did-not-run**, 1 preflight SUCCESS line, 0 preflight FAILURE lines |
 
 ### 7.2 The ownership seam — Phase 142 does not redo this
 
@@ -2378,3 +2399,201 @@ Recorded rather than hidden, per the § 5.6 convention.
 - **It does not prove the 24 unobserved sites red.** They are covered by construction (§ 19.6) — one
   helper, no local matchers — which is an argument from the static structure verified in § 20, not an
   observation at those sites.
+
+---
+
+# Part V — Phase close-out (plan `140-06`, task 3)
+
+## 20. The phase gate
+
+### 20.1 The four gates — commands and outcomes
+
+Run from the repo root at HEAD `9872b5593` (`docs(140-06): record the F3 two-run control at three
+structurally distinct sites`) — i.e. with **every** Phase-140 source edit landed and **no** injection
+present.
+
+| # | Command | Exit | Outcome |
+|---|---|---|---|
+| 1 | `yarn build` | **0** | 14/14 turbo tasks successful |
+| 2 | `yarn test:unit` | **0** | 21/21 turbo tasks; frontend 773 tests / 54 files, dev-seed 444 tests / 42 files |
+| 3 | `yarn lint:check` | **0** | 11/11 turbo tasks, 0 errors (includes `eslint tests` and `typecheck:tests`) |
+| 4 | `tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/140-gate` — **no `--project`** | **0** | **135 passed (10.5m)**; `results.json` stats `expected 135, unexpected 0, flaky 0, skipped 0`; `preflight failures 0, successes 1` |
+
+Gate 4 is the phase gate proper: the full suite through the wrapper, not bare `yarn test:e2e`, so the
+Phase-137 preflight verdict is captured as a positive machine-checked fact (the wrapper exits 6 when
+no preflight SUCCESS line is found; it found one and zero failures).
+
+**Cardinal rule satisfied.** Zero failed **and** zero did-not-run: `skipped: 0` in `results.json`, and
+a per-test census of the reporter output finds **no** test with a status other than `expected`
+anywhere in the run. No `test.skip`, no `test.fixme`, no retry annotation and no env-gated control
+mode was added by this phase (§ 20.3).
+
+### 20.2 Static coverage — criterion 1's "by construction" clause
+
+Commands and their real outputs, run at the gate HEAD:
+
+```console
+$ grep -rl 'runTeardownAsserted' tests/tests/setup --include='*.teardown.ts' | wc -l
+      27
+$ grep -rc 'toBeGreaterThanOrEqual' tests/tests/setup/ | grep -v ':0$'
+(no file has a non-zero count)
+$ find tests/tests/setup -name '*.teardown.ts' | wc -l
+      28
+```
+
+**The direct-call check needed a correction, recorded rather than quietly satisfied.** The
+pre-specified command predicted 0 and measured 5:
+
+```console
+$ grep -rl 'runTeardown(' tests/tests/setup --include='*.teardown.ts' | wc -l
+       5
+```
+
+All five hits are **prose comments**, not call sites — four instances of
+`// The auth.users row minted by the setup's forceRegister. runTeardown(PREFIX)` and one docblock
+sentence in `perm-localisation-positive.teardown.ts:6`. No prose was deleted to make a grep agree
+(this phase has now hit the predicted-N/measured-N+k pattern four times: plans 03, 04, 05 and here).
+The intent was verified with two stronger checks that count code rather than text:
+
+```console
+$ grep -rn 'await runTeardown(' tests/tests/setup --include='*.teardown.ts' | wc -l
+       0
+$ grep -rn "import .*[{ ]runTeardown[ ,}]" tests/tests/setup --include='*.teardown.ts' | wc -l
+       0
+```
+
+**Zero teardown files call the library delete directly and zero import it.** The delete is reachable
+from `tests/` only through the shared helper.
+
+**The 28th file, identified positively rather than assumed:**
+
+```console
+$ comm -23 <(find tests/tests/setup -name '*.teardown.ts' | sort) \
+           <(grep -rl 'runTeardownAsserted' tests/tests/setup --include='*.teardown.ts' | sort)
+tests/tests/setup/candidate/candidate-journey.teardown.ts
+```
+
+Its whole body is `await client.unregisterCandidate(UNREGISTERED_CANDIDATE_EMAIL)` — it performs no
+prefix delete, so it correctly carries no delete-count assertion. **27 of 28 teardown files carry the
+assertion; the 28th has nothing to assert on.**
+
+### 20.3 No annotation was added by this phase
+
+```console
+$ grep -rn 'test.skip\|test.fixme\|retries:' tests/tests/setup/ \
+    tests/tests/specs/perm/perm-hide-category-tags.spec.ts \
+    tests/tests/specs/perm/perm-hide-election-tags.spec.ts
+(none)
+```
+
+### 20.4 Post-change outcomes compared against the pre-change measurement
+
+This is what makes the `ordering` edge **evidenced** rather than asserted. The comparison is between
+`140-MEASUREMENT.md` § 3-4 (the pre-change instrumented run at HEAD `9c2a1535a`, carrying the old
+floor) and the gate run above (HEAD `9872b5593`, carrying the adjudicated invariant):
+
+| Property | Pre-change measurement run | Post-change gate run | Changed? |
+|---|---|---|---|
+| Playwright exit | 0 | 0 | no |
+| `expected` / `unexpected` / `flaky` / `skipped` | 135 / 0 / 0 / 0 | 135 / 0 / 0 / 0 | no |
+| Preflight SUCCESS / FAILURE lines | 1 / 0 | 1 / 0 | no |
+| `data-teardown-*` projects executed | 27 | 27 | no |
+| `data-teardown-*` projects with a non-`expected` status | 0 | 0 | no |
+| Distinct teardown project names | the 26 assertion-bearing sites + `data-teardown-candidate-journey` | identical set | no |
+
+**No site's outcome changed.** Every one of the 25 sites the measurement recorded as
+`before=0, rowsDeleted=0, after=0` still passes under a matcher that would have reddened all 25 had it
+been a positivity floor (`140-MEASUREMENT.md` § 8.3), and `e2e-perm-analytics-` — the one site with
+rows to delete — still passes under a matcher that now checks the count it deletes. That is the
+order-independence claim (`must_haves` truth 5), read off two runs rather than argued from Playwright's
+documentation.
+
+---
+
+## 21. Phase verdict — all five ROADMAP criteria
+
+The § 7.1 table is the live verdict table and has been updated in place by this plan (rows 1 and 5).
+Reproduced here as the phase-level summary, with the per-lane evidence pointers:
+
+| ROADMAP Phase 140 criterion | Discharged by | Status |
+|---|---|---|
+| **1 — F3** teardown delete matching nothing FAILS by name; pre-change form PASSES; 27th file covered by construction | `140-05` (helper + probe + 27-site codemod + measurement) · `140-06` (adjudication § 8 of `140-MEASUREMENT.md`; control §§ 17-19; static coverage § 20.2) | **DISCHARGED** |
+| **2 — F19** `request` / `client_assertion` removal fails the assertion itself, naming the parameter; passes under `toBeDefined()`; control at all three sites | `140-01` — §§ 4, 5, 5.4, 5.7, 5.8 | **DISCHARGED** |
+| **3 — F9** the perm pair FAILs when the tag stops rendering anywhere; positive control is seeded data | `140-03` (seeded preconditions + blindness §§ 13-15) · `140-04` (presence assertions + catch § 16) | **DISCHARGED** (severally, not jointly — § 16.4, § 16.11) |
+| **4 — F10** stated `expect.soft` budget matches the real count **136**, or a counted guard enforces it and fails on one more | `140-02` — §§ 9-12 | **DISCHARGED on both alternatives** |
+| **5 — unit and E2E suites green after the edits, Phase-137 preflight satisfied on every evidence run** | `140-06` — § 20.1 | **DISCHARGED** |
+
+## 22. What is explicitly NOT discharged by this document
+
+Phase-level. An evidence document that records only confirmations is advocacy, not evidence.
+
+- **No CI run has exercised any of the four repairs.** Every run in this document — 6 unit-lane runs,
+  3 config-load runs, 4 F9 E2E runs, 6 F3 E2E runs and the gate — is local: one macOS 26.5.1 machine,
+  Node v24.14.1, vitest 3.2.4, Playwright 1.58.2. The GitHub Actions runner has executed none of them.
+  This is the standing Phase-137 CI gap carried in `.planning/STATE.md` § Deferred Items (`main.yaml`
+  triggers only on push/PR to `main`, and `feat-gsd-roadmap` is thousands of commits ahead). It
+  discharges on this branch's first PR to `main`.
+- **The bank-auth JOURNEY spec was not run** (§ 19.6). The F3 control reached
+  `bank-auth-journey.teardown.ts` through its data lane (`--project data-setup-bank-auth-journey`,
+  38 rows present, red at the helper's assertion line), which is the half the helper participates in.
+  The mock-OIDC browser round trip that normally precedes it needs a separately started SvelteKit
+  server with the IdP env and `NODE_TLS_REJECT_UNAUTHORIZED=0` (`tests/IDURA-TEST-RUNBOOK.md` §§ B-1,
+  B-2), which `e2e-run.sh` does not provide. Narrower than `140-MEASUREMENT.md` § 4.1 anticipated, and
+  still a gap.
+- **The three sibling `Rigidity contract` drift files are FILED, NOT FIXED.**
+  `candidate-journey.spec.ts:47-48` (declares 0, carries 3), `candidateProfilePage.fixture.ts:43-44`
+  (declares NO `expect.soft`, carries 6) and `candidateHomePage.fixture.ts:23-24` (declares NO
+  `expect.soft`, carries 4). Same drift class F10 closes; outside ASSERT-06's scope, which is
+  `voter-journey.spec.ts` only. Recorded above under "Recorded follow-up" and filed to
+  `.planning/WINDOWS.md` so it is visible at ship time.
+- **Both `verification: backstop` truths in `140-06-PLAN.md` are REASONED, not observed.**
+  1. *The duplicated `e2e-perm-notloc-` prefix.* Two teardown files declare it
+     (`perm-not-located-2e2cg.teardown.ts` and `bank-auth-journey.teardown.ts`). Each was observed
+     **separately** — the former in the measurement (`before=0`, row 18) and in the gate; the latter in
+     the F3 control (`before=38`). **They were never observed running in the SAME invocation**, which
+     is the scenario the truth actually describes: whichever runs second legitimately observes
+     `before === 0`. That follows from the matcher's shape plus the two separate observations; it is
+     not an observation of the pair.
+  2. *Tolerance of a concurrent `extraTeardownPrefix` pre-clear.* Argued from the `before === 0` path,
+     and illustrated by the boundary row of § 19.4 (`test-e2e-base-` at `0/0/0` inside a perm
+     invocation, passing under both assertion forms — a pre-clear that had already happened). But no
+     run in this phase executed a teardown **concurrently** with another chain's setup; § 5.2's
+     timeline shows the suite never does. The complementary hazard — a pre-clear landing *between* the
+     `before` count and the RPC, which would red the accounting clause — is recorded in
+     `140-MEASUREMENT.md` § 8.4 as unobserved and unreachable under the measured ordering, not as
+     impossible.
+
+  A verifier that cannot confirm these with explicit evidence must abstain to `human_needed`. They are
+  surfaced here precisely so a silent pass is not available.
+- **One run per half, everywhere.** No control in this document was repeated; nothing here establishes
+  a determinism rate for any red or any green.
+- **No claim that the green suite is evidence.** See § 6.3.
+
+## 23. Reproducibility and non-contamination — phase level
+
+**Reproducible.** Every ingredient of every lane is recorded: the HEAD each half ran at, the injection
+diffs verbatim (§ 3, § 5.8.1, § 9.2, § 13.3, § 17.2), the exact invocations, and the environment
+deltas (§ 2, § 9.4, § 13.5, § 17.5).
+
+**Non-contaminating — proven, not asserted.** The three-check HYGIENE-LOOP POST-GATE ran after every
+injection in every lane. Final state, verified at the gate HEAD:
+
+```console
+$ git status --porcelain -- apps tests packages
+(empty)
+$ grep -rn 'INJECTED (140)' apps packages tests
+(no match)
+$ git diff --quiet HEAD -- tests/tests/setup/shared/assertTeardown.ts && echo identical
+identical
+```
+
+**Every injection in this phase was reverted in the task that made it** — the F19 `idura.ts`
+injections (`140-01`), the added `expect.soft` (`140-02`), the `QuestionHeading.svelte` render-path
+deletion (`140-03`/`140-04`), the measurement instrumentation (`140-05`) and both F3 control variants
+(`140-06`). None reached a commit, a branch or a running process. Run logs live under
+`${TMPDIR}/gsd-140/` and evidence directories under `tests/e2e-runs/`, gitignored at `.gitignore:44`,
+so neither can become untracked-file noise.
+
+Two files are dirty in the working tree throughout — `.vscode/settings.json` and
+`supabase/.temp/cli-latest` — both pre-existing, both unrelated to this phase, both deliberately left
+alone. The wrapper's `dirty_files=3` during an injected run is these two plus the injected helper.

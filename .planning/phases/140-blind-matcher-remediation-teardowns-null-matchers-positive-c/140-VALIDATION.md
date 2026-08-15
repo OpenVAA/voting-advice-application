@@ -3,10 +3,12 @@ phase: 140
 slug: blind-matcher-remediation-teardowns-null-matchers-positive-controls
 # status lifecycle: draft (seeded by plan-phase) → validated (set by validate-phase §6)
 # audit-milestone §5.5 distinguishes NOT-VALIDATED (draft) from PARTIAL (validated + nyquist_compliant: false) (#2117)
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: validated
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-08-15
+validated: 2026-08-15
+validated_by: 140-06 task 3
 ---
 
 # Phase 140 — Validation Strategy
@@ -62,16 +64,16 @@ failure is now possible**, not merely a command that exits 0.
 
 | Req ID | Behavior | The observable that proves it can fail | Test type | Automated Command | File Exists | Status |
 |--------|----------|----------------------------------------|-----------|-------------------|-------------|--------|
-| ASSERT-02 (F3) | A teardown whose delete matches nothing fails **by name** | Under a mutated helper (prefix forced to a non-matching value with rows present), the run fails and the message contains the prefix and both counts. **Same mutation against the pre-change `toBeGreaterThanOrEqual(0)` passes.** | E2E teardown project | `tests/scripts/e2e-run.sh --run-dir <d> --project=data-teardown-perm-<name>` ×2 (before/after) | ❌ W0 — helper does not exist | ⬜ pending |
-| ASSERT-02 (F3) | The 27th file is covered by construction | `grep -c "runTeardownAsserted" tests/tests/setup/**/*.teardown.ts` = 27 **and** `grep -rn "toBeGreaterThanOrEqual(0)" tests/tests/setup/` = 0 | static | one grep pair | ❌ W0 | ⬜ pending |
-| ASSERT-02 (F3) | The matcher is chosen against data | A committed `{prefix, before, rowsDeleted, after}` table for all 27 sites from one instrumented full-suite run | measurement | `e2e-run.sh --run-dir <d>` with the instrumented helper | ❌ W0 | ⬜ pending |
-| ASSERT-03 (F19) | A missing `request` param fails **at the assertion line** | Under the `idura.ts:74` injection: **before** — failure at `authorize-endpoint.test.ts:147` (`TypeError … 'split'`); **after** — failure at `:144`, message contains `request` | unit | `cd apps/frontend && npx vitest run src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts` ×2 | ✅ file exists; assertion changes | ⬜ pending |
-| ASSERT-03 (F19) | Same at site 2 | Same injection; **before** failure at `idura.test.ts:151`, **after** at `:148` | unit | `cd apps/frontend && npx vitest run src/lib/api/utils/auth/providers/idura.test.ts` ×2 | ✅ | ⬜ pending |
-| ASSERT-03 (F19) | Same at site 3 | Under the `idura.ts:101-102` deletion: **before** failure at `token-endpoint.test.ts:170`, **after** at `:167`, message contains `client_assertion` | unit | `cd apps/frontend && npx vitest run src/lib/api/utils/auth/__tests__/token-endpoint.test.ts` ×2 | ✅ | ⬜ pending |
+| ASSERT-02 (F3) | A teardown whose delete matches nothing fails **by name** | Under a mutated helper (prefix forced to a non-matching value with rows present), the run fails and the message contains the prefix and both counts. **Same mutation against the pre-change `toBeGreaterThanOrEqual(0)` passes.** | E2E teardown project | `e2e-run.sh --project perm-1e1cg1co` / `cold-entry-dataroot` / `data-setup-bank-auth-journey`, ×2 each (before/after) | ✅ `tests/tests/setup/shared/assertTeardown.ts` (`9c2a1535a`), matcher adjudicated `15d2e6687` | ✅ green — `140-NEGATIVE-CONTROL.md` § 19.4: PASS(blind)/FAIL(caught) at three sites, red at `assertTeardown.ts:73:5`, 14/142/38 rows present |
+| ASSERT-02 (F3) | The 27th file is covered by construction | `grep -c "runTeardownAsserted" tests/tests/setup/**/*.teardown.ts` = 27 **and** `grep -rn "toBeGreaterThanOrEqual(0)" tests/tests/setup/` = 0 | static | one grep pair | ✅ | ✅ green — § 20.2: 27 helper callers, 0 direct `await runTeardown(` call sites, 0 `toBeGreaterThanOrEqual`; the 28th file has no delete |
+| ASSERT-02 (F3) | The matcher is chosen against data | A committed `{prefix, before, rowsDeleted, after}` table for all 27 sites from one instrumented full-suite run | measurement | `e2e-run.sh --run-dir <d>` with the instrumented helper | ✅ | ✅ green — `140-MEASUREMENT.md` § 4 (26 observations from one preflight-confirmed full-suite run) + § 8 adjudication |
+| ASSERT-03 (F19) | A missing `request` param fails **at the assertion line** | Under the `idura.ts:74` injection: **before** — failure at `authorize-endpoint.test.ts:147` (`TypeError … 'split'`); **after** — failure at `:144`, message contains `request` | unit | `cd apps/frontend && npx vitest run src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts` ×2 | ✅ | ✅ green — § 5.4 site 1 (`:147`→`:144`) |
+| ASSERT-03 (F19) | Same at site 2 | Same injection; **before** failure at `idura.test.ts:151`, **after** at `:148` | unit | `cd apps/frontend && npx vitest run src/lib/api/utils/auth/providers/idura.test.ts` ×2 | ✅ | ✅ green — § 5.4 site 2 (`:151`→`:148`) |
+| ASSERT-03 (F19) | Same at site 3 | Under the `idura.ts:101-102` deletion: **before** failure at `token-endpoint.test.ts:170`, **after** at `:167`, message contains `client_assertion` | unit | `cd apps/frontend && npx vitest run src/lib/api/utils/auth/__tests__/token-endpoint.test.ts` ×2 | ✅ | ✅ green — § 5.4 site 3 (`:170`→`:167`) |
 | ASSERT-05 (F9) | A tag that never renders fails the pair | Under the `QuestionHeading.svelte:80-89` deletion: **before** — both perm projects green (RUN 1, `140-NEGATIVE-CONTROL.md` § 15.3); **after** — each spec red at **its own counted presence assertion**, `expect(count, '<why>').toBeGreaterThan(0)`, with the explanatory message naming the seeded precondition: `perm-hide-election-tags.spec.ts:43:7` (§ 16.3) and `perm-hide-category-tags.spec.ts:43:7` (§ 16.5) | E2E | `e2e-run.sh --run-dir <d> --project perm-hide-category-tags` — ONE invocation covers both spec projects transitively (`tests/playwright.config.ts:1081`), run injected then byte-restored | ✅ both assertions landed (`c6b3abaec`) | ✅ green |
 | ASSERT-05 (F9) | The control is seeded data | The two templates declare the precondition (`elections: 2`; `showCategoryTags: true`), each failure message quotes it verbatim, and the post-seed **exact-equality** `app_settings` assertion (`setupFromTemplate.ts:256-260`) fails the *setup* loudly if a template and its overlay disagree | static + E2E | `grep` the two template files; the setup projects reported `expected` in every run (`140-NEGATIVE-CONTROL.md` § 14, § 16.3, § 16.5). **No rebuild step:** `packages/dev-seed` is source-resolved (`"build": "echo 'Nothing to build.'"`, `exports` → `./src/index.ts`, no `dist`), measured by plan `140-03` | ✅ landed (`4c0bf5839`) | ✅ green |
-| ASSERT-06 (F10) | The stated budget is true **or** enforced | Add one `expect.soft(true).toBe(true)` to `voter-journey.spec.ts` ⇒ **any** Playwright invocation (including `--list`) throws naming the file and both numbers. Remove it ⇒ passes. Both observed **before** the guard is accepted. | config-load guard | `cd tests && npx playwright test --list` ×2 (with / without the extra soft assertion) | ❌ W0 | ⬜ pending |
-| Criterion 5 | Suites green after the edits, preflight satisfied | `e2e-run.sh` exits 0 **and** its evidence dir records ≥1 preflight success line and 0 failure lines; `yarn test:unit` exits 0; `yarn lint:check` exits 0 | full suite | `tests/scripts/e2e-run.sh --run-dir <d>` + `yarn test:unit` + `yarn lint:check` | ✅ infrastructure exists | ⬜ pending |
+| ASSERT-06 (F10) | The stated budget is true **or** enforced | Add one `expect.soft(true).toBe(true)` to `voter-journey.spec.ts` ⇒ **any** Playwright invocation (including `--list`) throws naming the file and both numbers. Remove it ⇒ passes. Both observed **before** the guard is accepted. | config-load guard | `cd tests && npx playwright test --list` ×2 (with / without the extra soft assertion) | ✅ `SOFT_ASSERTION_BUDGETS`, `tests/playwright.config.ts:52-108` | ✅ green — § 11.5 three-run table (unguarded PASS / guarded FAIL / guarded-clean PASS) |
+| Criterion 5 | Suites green after the edits, preflight satisfied | `e2e-run.sh` exits 0 **and** its evidence dir records ≥1 preflight success line and 0 failure lines; `yarn test:unit` exits 0; `yarn lint:check` exits 0 | full suite | `tests/scripts/e2e-run.sh --run-dir <d>` + `yarn test:unit` + `yarn lint:check` | ✅ | ✅ green — § 20.1: build/unit/lint/E2E all exit 0; 135 passed, 0 unexpected, 0 flaky, 0 skipped, preflight 1/0 |
 
 > **Form note (ASSERT-05).** The rows above name `expect(count, '<why>').toBeGreaterThan(0)`, not the
 > `.not.toHaveCount(0)` that `140-RESEARCH.md` § Validation Architecture and its § F9 code example
@@ -94,12 +96,12 @@ failure is now possible**, not merely a command that exits 0.
 
 ## Wave 0 Requirements
 
-- [ ] `tests/tests/setup/shared/assertTeardown.ts` — the shared F3 assertion helper (**does not exist**; research confirmed there is no shared teardown helper today, so creating it is part of the deliverable, not a refactor)
-- [ ] A row-count-by-prefix probe usable from `tests/` (build on `client.query('<table>').like('external_id', prefix + '%')`; the existing `listCandidateIdsByPrefix` covers candidates only)
-- [ ] Instrumented measurement pass producing the `{prefix, before, rowsDeleted, after}` table for all 27 sites — **must precede** the matcher choice
+- [x] `tests/tests/setup/shared/assertTeardown.ts` — the shared F3 assertion helper (**does not exist**; research confirmed there is no shared teardown helper today, so creating it is part of the deliverable, not a refactor)
+- [x] A row-count-by-prefix probe usable from `tests/` (build on `client.query('<table>').like('external_id', prefix + '%')`; the existing `listCandidateIdsByPrefix` covers candidates only)
+- [x] Instrumented measurement pass producing the `{prefix, before, rowsDeleted, after}` table for all 27 sites — **must precede** the matcher choice. Landed (`140-05`); **26 of 27 sites observed**, the 27th (`bank-auth-journey.teardown.ts`) named as a gap in `140-MEASUREMENT.md` § 4.1 and subsequently reached by `140-06`'s control via its data lane (`140-NEGATIVE-CONTROL.md` § 17.3)
 - [x] Positive assertions in the two perm specs + the two template preconditions (F9) — preconditions in `4c0bf5839` (plan `140-03`), counted presence assertions in `c6b3abaec` (plan `140-04`), both observed red under the render-path deletion (`140-NEGATIVE-CONTROL.md` §§ 16.3, 16.5) and green on a byte-restored tree (§ 16.6)
-- [ ] The F10 counted guard block in `tests/playwright.config.ts` + the rewritten header
-- [ ] A phase evidence document (`140-NEGATIVE-CONTROL.md`, following `137-NEGATIVE-CONTROL.md` / `138-NEGATIVE-CONTROL.md`) recording all two-run pairs with both outcome columns and the failing `file:line`
+- [x] The F10 counted guard block in `tests/playwright.config.ts` + the rewritten header
+- [x] A phase evidence document (`140-NEGATIVE-CONTROL.md`, following `137-NEGATIVE-CONTROL.md` / `138-NEGATIVE-CONTROL.md`) recording all two-run pairs with both outcome columns and the failing `file:line`
 
 *No new test framework or config is needed — vitest and Playwright are both already wired.*
 
@@ -115,12 +117,27 @@ from the runner output; none require human observation of a UI.
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 1s (unit lane) / one project chain (E2E lane)
-- [ ] Every requirement's two-run control recorded with **both** outcome columns in `140-NEGATIVE-CONTROL.md`
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 1s (unit lane) / one project chain (E2E lane)
+- [x] Every requirement's two-run control recorded with **both** outcome columns in `140-NEGATIVE-CONTROL.md` — ASSERT-02 § 19.4 · ASSERT-03 § 5.4 · ASSERT-05 § 16.7 · ASSERT-06 § 11.5
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** **VALIDATED 2026-08-15** by plan `140-06` task 3, at HEAD `9872b5593`.
+
+Every requirement row above is green and every two-run control is recorded with both the assertion
+outcome and the project outcome, per the TWO-COLUMN RULE. The phase gate passed on all four legs
+(`140-NEGATIVE-CONTROL.md` § 20.1).
+
+**What this sign-off does NOT claim** — read alongside `140-NEGATIVE-CONTROL.md` § 22, which is the
+authoritative list:
+
+- No CI runner has executed any of the four repairs (the standing Phase-137 gap).
+- The bank-auth **journey spec** was not run; its teardown site was reached through the data lane only.
+- The two `verification: backstop` truths in `140-06-PLAN.md` (the duplicated `e2e-perm-notloc-`
+  prefix observed on both files in one invocation; tolerance of a genuinely concurrent pre-clear) are
+  **reasoned from the matcher's shape plus separate observations, not observed as such**. A verifier
+  that cannot confirm them with explicit evidence must abstain to `human_needed` rather than pass them.
+- Each control half was run once. Nothing here establishes a determinism rate.
