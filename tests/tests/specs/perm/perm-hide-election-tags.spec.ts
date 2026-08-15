@@ -36,10 +36,18 @@ test.describe('perm-hide-election-tags', () => {
     // showCategoryTags: true overlay is the seeded precondition that lets the
     // COMPLEMENTARY CategoryTag render here, so asserting its presence is what
     // makes this spec fail when the tag-render path stops rendering anywhere.
-    const count = await page.getByTestId(testIds.shared.categoryTag).count();
-    expect(
-      count,
+    //
+    // Phase 140 WR-01: uses the auto-retrying web-first locator assertion
+    // (`.not.toHaveCount(0)`) instead of a single-shot `.count()` + generic
+    // `expect()` — the sibling absence assertion above retries; this one
+    // must too, so a transient pre-flush render state cannot red the spec
+    // (`voterNavigation.ts:50-76` documents a residual timing exposure on
+    // exactly this path). The message argument is supported on locator
+    // assertions too, so the retry and the diagnostic message are not
+    // mutually exclusive.
+    await expect(
+      page.getByTestId(testIds.shared.categoryTag),
       'ASSERT-05 positive control: the perm-hide-election-tags dataset overlay sets showCategoryTags: true so the complementary category-tag must render on /questions; with none rendered, the election-tag absence assertion above is vacuously satisfied by a heading that renders no tags at all'
-    ).toBeGreaterThan(0);
+    ).not.toHaveCount(0);
   });
 });
