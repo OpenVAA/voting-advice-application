@@ -24,7 +24,8 @@
  * not by line (Phase 140 WR-01): line-number citations into this file go
  * stale on its own first edit, as this docblock's own MATCHER paragraph
  * below already observes. These are the deletes that run in the COMMON case
- * (they are why `rowsBefore === 0` at almost every teardown site — see WR-03 above), so the
+ * (they are why `rowsBefore === 0` at almost every teardown site — see WHAT IT
+ * CATCHES ONLY WHEN `rowsBefore > 0` below), so the
  * delete path most exercised by the suite carries no assertion at all. "Every
  * `*.teardown.ts` project's own delete is covered by construction" does NOT
  * extend to `setupFromTemplate.ts`'s internal deletes.

@@ -41,8 +41,8 @@ test.describe('perm-hide-election-tags', () => {
     // (`.not.toHaveCount(0)`) instead of a single-shot `.count()` + generic
     // `expect()` — the sibling absence assertion above retries; this one
     // must too, so a transient pre-flush render state cannot red the spec
-    // (`voterNavigation.ts:50-76` documents a residual timing exposure on
-    // exactly this path). The message argument is supported on locator
+    // (`advanceClick`'s docblock in `voterNavigation.ts` documents a residual
+    // timing exposure on exactly this path). The message argument is supported on locator
     // assertions too, so the retry and the diagnostic message are not
     // mutually exclusive.
     await expect(
