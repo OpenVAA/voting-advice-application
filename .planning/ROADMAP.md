@@ -588,7 +588,8 @@ the commit history into reviewable groupings, and produce a review-only stack of
 
 Source: `ROADMAP.md` § "Addendum 1: Shipping v0.2 Akita" (repo root, not this file).
 
-**Requirements**: TBD
+**Requirements**: none mapped — the seven success criteria below serve as the requirement set, and
+each plan's `requirements` field cites the criteria it serves (`criterion-1` … `criterion-7`).
 **Depends on:** Phase 150
 
 **Success Criteria** (what must be TRUE):
@@ -620,7 +621,29 @@ Source: `ROADMAP.md` § "Addendum 1: Shipping v0.2 Akita" (repo root, not this f
      a reviewer would otherwise read changes that a later commit undoes, or a partial version of a
      feature that was later reworked.
 
-**Plans**: TBD
+**Plans:** 19 plans, 17 waves. Tracer-first: plan 01 proves the whole stack mechanism end to end on
+throwaway refs before any sweep, slice or PR exists. Slice work is serialised bottom-up per D-07.
+
+Plans:
+- [ ] 151-01-PLAN.md — TRACER: end-to-end stack pipeline proof on throwaway refs (wave 1)
+- [ ] 151-02-PLAN.md — Wave-0 verification and report tooling: taxonomy, hygiene grep, overlap matrix (wave 2)
+- [ ] 151-03-PLAN.md — Backup worktree pin (criterion 5) and lint/format/unit/hygiene baselines (wave 2)
+- [ ] 151-04-PLAN.md — Re-measure every gate's reach, slice anatomy, and the pre-seeded findings (wave 2)
+- [ ] 151-05-PLAN.md — Slice partition, stack manifest, and the split's human-verify checkpoint (wave 3)
+- [ ] 151-06-PLAN.md — Merge-target integration commit, disposition scaffold, E2E escape hatch (wave 4)
+- [ ] 151-07-PLAN.md — Comment hygiene stage 1: the codemod (wave 5)
+- [ ] 151-08-PLAN.md — Comment hygiene stage 2: agent residue and the hygiene report (wave 6)
+- [ ] 151-09-PLAN.md — Sweep and cut slices 01a, 01b, 02 (wave 7)
+- [ ] 151-10-PLAN.md — Open the stack: publish consent, PR #860 decision, PRs 01a and 01b (wave 8)
+- [ ] 151-11-PLAN.md — Sweep and cut slice 03, the database slice; open PR 02 (wave 9)
+- [ ] 151-12-PLAN.md — Sweep and cut slice 04, dev-seed; open PR 03 (wave 10)
+- [ ] 151-13-PLAN.md — Sweep and cut slice 05, the E2E suite; open PR 04 (wave 11)
+- [ ] 151-14-PLAN.md — Sweep and cut slice 06, the frontend library; open PR 05 (wave 12)
+- [ ] 151-15-PLAN.md — Sweep and cut slices 07 and 08, routes and messages; open PRs 06 and 07 (wave 13)
+- [ ] 151-16-PLAN.md — Sweep and cut slices 09 and 10, docs and root config; open PRs 08 and 09 (wave 14)
+- [ ] 151-17-PLAN.md — Slice 11, the planning slice, plus its secret scan; open PR 10 (wave 15)
+- [ ] 151-18-PLAN.md — Byte-identity proof, commit taxonomy, the D-24 suite gate, PR 11, PR #860 (wave 16)
+- [ ] 151-19-PLAN.md — Codify the ship procedure as a skill (D-25) and finalise every record (wave 17)
 
 ## Progress
 
