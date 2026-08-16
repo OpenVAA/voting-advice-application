@@ -15,6 +15,31 @@ backup_head_detached: true
 hooks_path: /dev/null
 worktrees_before: 7
 worktrees_after: 8
+
+# --- Task 2: the gate baseline (A5) ---
+lint_check: green
+format_check: red
+test_unit: green
+pre_existing_failures: 2
+lint_check_exit: 0
+format_check_exit: 1
+test_unit_exit: 0
+lint_check_secs: 13
+format_check_secs: 9
+test_unit_secs: 14
+lint_warnings: 20
+lint_errors: 0
+unit_tests_passed: 1522
+unit_test_files: 149
+any_files_naive: 24
+any_occurrences_naive: 96
+any_files_corrected: 14
+any_occurrences_corrected: 77
+any_files_in_lint_scope: 7
+ts_expect_error_occurrences: 7
+ts_expect_error_files: 4
+ts_ignore_occurrences: 0
+no_explicit_any_disable_files: 15
 ---
 
 # Phase 151 — Baseline Record
@@ -140,3 +165,212 @@ infers that phases 141–150 ran.
 sweep, this backup will not contain their commits. The pin would then need re-taking. It does not
 need re-taking for work that lands after the sweep begins — that is what criterion 7's byte-identity
 proof against the post-sweep tip covers.
+
+---
+
+## Baseline
+
+Assumption **A5** — "`yarn lint:check` currently passes" — is now measured rather than assumed.
+It holds. `yarn format:check` does **not**.
+
+| Gate | Verdict | Exit | Wall time | Notes |
+|---|---|---|---|---|
+| `yarn lint:check` | **green** | `0` | 13 s | 0 errors, **20 warnings**. Re-run with `TURBO_FORCE=1` — see below. |
+| `yarn format:check` | **red** | `1` | 9 s | **2 files**. Enumerated under *Pre-existing failures*. |
+| `yarn test:unit` | **green** | `0` | 14 s | 1,522 tests / 149 files, 0 failed, 0 skipped. |
+
+Nothing was fixed. This section measures.
+
+### `yarn lint:check` — green, and measured uncached
+
+The first run returned exit 0 in 5 s with `Cached: 11 cached, 11 total >>> FULL TURBO`. A replayed
+green is a green in turbo's model — the cache key is an input hash — but a baseline that the whole
+phase will be judged against should not rest on a cache entry this file cannot inspect. It was
+re-run forced:
+
+```
+$ TURBO_FORCE=1 yarn lint:check ; echo $?
+ Tasks:    11 successful, 11 total
+Cached:    0 cached, 11 total
+  Time:    9.899s
+0
+```
+
+`lint:check` is `turbo run lint && eslint --flag v10_config_lookup_from_file tests && yarn
+typecheck:tests`, so the typecheck of `tests/tsconfig.json` is included in that exit 0 — no separate
+typecheck invocation is needed, and none was made.
+
+**20 warnings, 0 errors.** Warnings do not fail the gate and are therefore *not* baseline failures,
+but they are recorded because D-05's fix bar ("anything a reviewer would block on") may reach some
+of them:
+
+| Count | Rule | Where |
+|---|---|---|
+| 15 | `unused-imports/no-unused-vars` | `packages/dev-seed/src/generators/*.ts` — an unused `ctx` parameter in 14 generators, plus an unused `external_id` in `FeedbackGenerator.ts:56` |
+| 2 | `unused-imports/no-unused-vars` | `packages/core/src/controller/controller.ts:73` — `operationId`, `subOperations` |
+| 1 | `unused-imports/no-unused-vars` | `apps/frontend/src/lib/contexts/candidate/candidateContext.svelte.test.ts:39` — `question` |
+| 1 | `playwright/prefer-to-have-length` | `tests/tests/specs/candidate/candidate-bank-auth-journey.spec.ts:223:94` |
+| 1 | `unused eslint-disable directive` | `tests/tests/support/mockOidcIssuerEntry.ts:33:3` — disables `no-console`, which reports nothing |
+
+The 15 dev-seed `ctx` warnings are one shape repeated, not 15 independent findings; the rule allows
+`^_`-prefixed args, so the whole class is a rename away from silent.
+
+### `yarn test:unit` — green
+
+```
+@openvaa/filters      Test Files   1 passed (1)     Tests   22 passed (22)
+@openvaa/supabase     Test Files   1 passed (1)     Tests   16 passed (16)
+@openvaa/app-shared   Test Files   3 passed (3)     Tests   21 passed (21)
+@openvaa/data         Test Files  47 passed (47)    Tests  244 passed (244)
+@openvaa/frontend     Test Files  54 passed (54)    Tests  773 passed (773)
+@openvaa/dev-seed     Test Files  43 passed (43)    Tests  446 passed (446)
+
+ Tasks:    21 successful, 21 total
+Cached:    14 cached, 21 total
+  Time:    13.347s
+```
+
+Exit code **0**. Totals: **1,522 tests across 149 files**, zero failed, zero skipped. Seven
+workspaces expose a `test:unit` script (the six above plus `@openvaa/docs`, which contributes no
+test files). `matching`, `core`, `llm`, `question-info` and `argument-condensation` have **no**
+`test:unit` script — their `tests/` directories exist but are not reached by this gate.
+
+---
+
+## Pre-existing failures
+
+Two, both from `yarn format:check`, both cosmetic. **Per PD-03 they are outside D-05's fix bar by
+default** — they are pre-existing debt, not findings introduced by the v0.2 body of work, and
+repairing them here would add unrelated noise to the diff the stack exists to make reviewable.
+
+**Exception (PD-03 clause 3):** if a slice sweep independently surfaces either one under checklist
+item 3 or 4, it is in scope *for that slice* and is dispositioned there, citing this section as the
+baseline evidence. Both files fall inside planned slices — `packages/dev-seed/…` in slice 04
+(`dev-seed`) and `tests/README.md` in slice 05 (`e2e-tests`) — so this exception is likely to fire
+rather than being theoretical.
+
+Each gets a row in `151-DISPOSITION.md` with verdict `**DEFERRED** — pre-existing at baseline`.
+
+### 1. `packages/dev-seed/src/templates/e2e/perm/perm-bankauth-notloc.ts:30–33`
+
+Rule: **Prettier `printWidth`** (no eslint rule id — prettier reports files, not rules). The
+declaration is hand-wrapped across four lines; prettier collapses it to one, because the collapsed
+form is 111 chars and fits.
+
+```diff
+-export const permBankauthNotLocatedTemplate: Template = buildNotLocated2e2cgTemplate(
+-  'e2e-bankauth-notloc-',
+-  'BA-'
+-);
++export const permBankauthNotLocatedTemplate: Template = buildNotLocated2e2cgTemplate('e2e-bankauth-notloc-', 'BA-');
+```
+
+### 2. `tests/README.md:182–185`
+
+Rule: **Prettier markdown table alignment**. A later edit added the `bank-auth-journey` row (line
+186) with much longer cell content without re-padding the header, separator and two preceding rows,
+so columns 3–5 are narrower than the widest cell. Prettier re-pads lines 182–185; line 186 is
+already correct and is unchanged.
+
+### Producing commands
+
+```
+$ yarn lint:check ; echo $?                    # 0   (and TURBO_FORCE=1 rerun: 0)
+$ yarn format:check ; echo $?                  # 1
+Checking formatting...
+[warn] packages/dev-seed/src/templates/e2e/perm/perm-bankauth-notloc.ts
+[warn] tests/README.md
+[warn] Code style issues found in 2 files. Run Prettier with --write to fix.
+
+$ yarn test:unit ; echo $?                     # 0
+$ npx prettier <file> | diff -u <file> -       # to enumerate the two above
+```
+
+---
+
+## Checklist items 3 and 4 — the counts "fixed" will be measured against
+
+### `@ts-expect-error` / `@ts-ignore`
+
+```
+$ git grep -o -P '@ts-expect-error' -- apps/ packages/ tests/ | wc -l      # 7   (4 files)
+$ git grep -o -P '@ts-ignore'       -- apps/ packages/ tests/ | wc -l      # 0
+```
+
+Both reproduce `151-RESEARCH.md`'s figures exactly.
+
+### `any` usage — research's count is inflated, and A6 is resolved
+
+Research's pattern reproduces its own number exactly (**24 files / 96 occurrences**), so the figure
+is *reproducible*; it is not *correct*. Two defects:
+
+1. **`as\s+any\b` has no left word boundary**, so it matches the tail of ordinary English —
+   "h**as any** active rule" (`packages/filters/src/filter/enumerated/enumeratedFilter.ts:109`),
+   "w**as any**", and so on, inside prose comments. The `\b` anchor alone drops **73 → 70**
+   occurrences, and removes three files whose *only* matches were prose.
+2. **Non-source files are counted**: two `apps/docs/**/+page.md` documentation pages (one of them
+   the code-style guide, which discusses `any` by name) and `apps/frontend/tsconfig.tsbuildinfo`.
+
+Corrected pattern and result:
+
+```
+$ CORR='(?<![A-Za-z0-9_]):\s*any\b|\bas\s+any\b|<any>'
+$ git grep -l -P "$CORR" -- apps/ packages/ tests/ ':(exclude)*.md' ':(exclude)*.tsbuildinfo' | wc -l
+14
+$ git grep -o -P "$CORR" -- apps/ packages/ tests/ ':(exclude)*.md' ':(exclude)*.tsbuildinfo' | wc -l
+77
+```
+
+| Measure | Naive (research) | Corrected |
+|---|---|---|
+| Files | 24 | **14** |
+| Occurrences | 96 | **77** |
+
+**Both are recorded.** The naive figure is what `151-RESEARCH.md` says and is kept so the two
+records can be reconciled; the corrected figure is what checklist item 4 should be dispositioned
+against. This is the same failure mode as C-5 — a pattern without a word boundary silently
+over-counting — and is the second time it has appeared in this phase.
+
+### A6 resolved: which of the 14 the lint gate actually reaches
+
+A6 asked whether the `any`-bearing test files are eslint-exempt. They are not *exempt* — they are
+**not linted at all**. Every workspace lint script is `eslint … src/`:
+
+```
+$ for f in packages/*/package.json apps/*/package.json; do grep -o '"lint": "[^"]*"' "$f"; done
+packages/app-shared, argument-condensation, core, data, dev-seed, dev-tools, filters,
+llm, matching, question-info, apps/frontend   →   all: eslint … src/
+apps/supabase, apps/docs                      →   no lint script at all
+```
+
+No workspace lints its own `tests/`. The root `eslint tests` in `lint:check` covers only the
+top-level Playwright `tests/` directory. So of the 14 corrected files:
+
+| Lint reach | Count | Files |
+|---|---|---|
+| **Inside** the gate | 7 | 5 × `apps/frontend/src/…`, `packages/app-shared/src/utils/mergeSettings.ts`, `packages/llm/src/llm-providers/provider.types.ts` |
+| **Outside** the gate | 7 | `apps/frontend/vite.config.ts` (outside `src/`), 3 × `packages/dev-seed/tests/`, `packages/llm/tests/llmProvider.test.ts` (57 occurrences — the single largest concentration), 2 × `packages/question-info/tests/` |
+
+And the 7 inside the gate are green lawfully, not accidentally:
+
+- **4 carry an explicit `no-explicit-any` disable** (`popupComponent.type.ts`, `buildRoute.ts`,
+  `mergeSettings.ts` ×2, `provider.types.ts`) — i.e. checklist item 4's "document or
+  `@ts-expect-error`" clause is already satisfied for these.
+- **3 have no disable and still pass** because their matches are `...args: Array<any>` rest
+  parameters, which the rule allows via its `ignoreRestArgs: true` option
+  (`packages/shared-config/eslint.config.mjs`), or sit in a comment.
+
+Repo-wide, **15 files** carry a `no-explicit-any` disable directive
+(`git grep -l -P 'no-explicit-any' -- apps/ packages/ tests/ | wc -l`). That is more than double the
+7 `@ts-expect-error` occurrences, and is the real shape of checklist item 4's surface.
+
+**Incidental finding for 151-04:** `apps/frontend/tsconfig.tsbuildinfo` is a **tracked build
+artifact** (`git ls-files --error-unmatch` succeeds). Not a checklist item 3 or 4 matter, and not
+dispositioned here, but it belongs in the frontend slice's pre-seeded findings.
+
+### Tree untouched
+
+```
+$ git status --porcelain -- . ':(exclude).planning'
+                                    # empty, after all three gates and every grep
+```
