@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 6
+open_count: 8
 waived_count: 0
 fixed_count: 0
-total_count: 6
-last_updated: 2026-08-15T15:24:14.942Z
+total_count: 8
+last_updated: 2026-08-16T20:58:29.034Z
 ---
 
 # Broken Windows Ledger
@@ -21,6 +21,8 @@ last_updated: 2026-08-15T15:24:14.942Z
 | 4 | 140 | deviation | tests/tests/fixtures/candidate/candidateHomePage.fixture.ts | 23 | Rigidity contract drift: header declares 'NO expect.soft' but the file carries 4 (measured at 568b1dfe). Out of ASSERT-06 scope; filed by 140-01. | open |  | 2026-08-15T10:46:11.858Z |  |
 | 5 | 140 | unrun-verify | tests/tests/specs/candidate/candidate-bank-auth-journey.spec.ts |  | Bank-auth journey SPEC not run in Phase 140's F3 control; only its teardown data lane was exercised (140-NEGATIVE-CONTROL.md § 19.6, § 22) | open |  | 2026-08-15T15:24:14.808Z |  |
 | 6 | 140 | unrun-verify | .planning/phases/140-blind-matcher-remediation-teardowns-null-matchers-positive-c/140-06-PLAN.md |  | Both verification:backstop truths (duplicated e2e-perm-notloc- prefix in one invocation; concurrent pre-clear tolerance) are reasoned, not observed (140-NEGATIVE-CONTROL.md § 22) | open |  | 2026-08-15T15:24:14.942Z |  |
+| 7 | 151 | lint-warning | packages/dev-seed/src/templates/e2e/perm/perm-bankauth-notloc.ts | 30 | prettier printWidth: hand-wrapped declaration; format:check red at 151-03 baseline, DEFERRED per PD-03 | open |  | 2026-08-16T20:58:28.880Z |  |
+| 8 | 151 | lint-warning | tests/README.md | 182 | prettier markdown table alignment: columns 3-5 under-padded; format:check red at 151-03 baseline, DEFERRED per PD-03 | open |  | 2026-08-16T20:58:29.034Z |  |
 
 ````json
 [
@@ -94,6 +96,30 @@ last_updated: 2026-08-15T15:24:14.942Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-08-15T15:24:14.942Z",
+    "resolved_at": null
+  },
+  {
+    "id": 7,
+    "kind": "lint-warning",
+    "phase": "151",
+    "file": "packages/dev-seed/src/templates/e2e/perm/perm-bankauth-notloc.ts",
+    "line": 30,
+    "description": "prettier printWidth: hand-wrapped declaration; format:check red at 151-03 baseline, DEFERRED per PD-03",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-16T20:58:28.880Z",
+    "resolved_at": null
+  },
+  {
+    "id": 8,
+    "kind": "lint-warning",
+    "phase": "151",
+    "file": "tests/README.md",
+    "line": 182,
+    "description": "prettier markdown table alignment: columns 3-5 under-padded; format:check red at 151-03 baseline, DEFERRED per PD-03",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-16T20:58:29.034Z",
     "resolved_at": null
   }
 ]
