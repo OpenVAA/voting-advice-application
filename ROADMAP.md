@@ -122,6 +122,8 @@ If there are some ready-made components for embedding editable Supabase tables i
 
 This is a freeform description of the tasks to undertake for shipping v0.2.
 
+Start a new branch off the current tip, noting that I may spin another GSD session to continue work from there, while the review and ship part below is still underway.
+
 This is a huge task, so it might be best done as a phase or other structured workflow with multiple agents.
 
 ## General principles
