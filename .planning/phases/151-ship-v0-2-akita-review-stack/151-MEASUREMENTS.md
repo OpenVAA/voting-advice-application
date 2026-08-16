@@ -485,4 +485,329 @@ same workflow already documents this failure mode in prose at `main.yaml:138-160
 `dev-seed-integration` job deliberately omits a `paths-filter` because *"a conditional guard is how
 F5 happened in the first place"*.
 
+---
+
+## Slice anatomy (re-measured)
+
+*(§ 2 of this record. Subsection numbers below are 2.x.)*
+
+### 2.0 The refs everything below is measured against
+
+Rebuilt this run with the plan-151-01 scripts, from `feat-gsd-roadmap` at `df81f5e65` and
+`origin/main` at `ac30f132a`. All four OIDs are **unreferenced throwaway objects** — nothing was
+branched, pushed or checked out — and every one is reproducible from the commands shown.
+
+```
+$ git rev-parse origin/main
+ac30f132a407084bf30626029a0a71a0a521982f          # unchanged from research AND from 151-01 (C-12 clear)
+
+$ git -c merge.renameLimit=20000 merge-tree --write-tree --name-only feat-gsd-roadmap origin/main
+ecee2604c96479c5091c3cd3d9b18aac13b67ebe
+apps/docs/static/images/youthvotes-logo.png
+CONFLICT (file location): docs/static/images/youthvotes-logo.png added in origin/main inside a
+directory that was renamed in feat-gsd-roadmap, …
+$ echo $?
+1                                                 # C-4 again: exit 1 on a directory-rename NOTIFICATION
+$ git ls-tree -r --name-only ecee2604c | grep -i youthvotes
+apps/docs/static/images/youthvotes-logo.png       # merge-ort already placed it; no manual resolution
+
+$ git commit-tree ecee2604c -p feat-gsd-roadmap -p origin/main -m "…"
+3808a75b8a5b0a75e5e3c42ab9f11c3c780cfeec          # TARGET
+
+$ export GIT_INDEX_FILE=<scratch>/idx-a
+$ scripts/build-rename-commit.sh ac30f132a407084bf30626029a0a71a0a521982f
+moved=1316 kept=714 dropped=0                                    # stderr
+   1316 R                                                        # taxonomy at diff.renameLimit=1
+d01e69c5469bf89e4cc23882ba6cc5d37ba431c2          # C1  (no drop — 151-01 / D-09 Q4 convention)
+
+$ export GIT_INDEX_FILE=<scratch>/idx-b
+$ scripts/build-rename-commit.sh ac30f132a407084bf30626029a0a71a0a521982f --drop-prefix backend/
+moved=1316 kept=465 dropped=249                                  # stderr
+    249 D
+   1316 R
+d65ca1a95a877ddae009b96519254ae24fb0be56          # C1D (research's method — backend/ dropped inside PR #1)
+```
+
+| Symbol | OID | Meaning |
+|---|---|---|
+| `TARGET` | `3808a75b8` | materialised D-22 merge target at today's tip |
+| `C1` | `d01e69c54` | pure-rename commit, **nothing dropped** — the 151-01 / D-09 Q4 convention, where the Strapi removal is slice 01b |
+| `C1D` | `d65ca1a95` | pure-rename commit **with `backend/` dropped** — reconstructs research's measurement method, for reconciliation only |
+
+**The anatomy below is measured `C1 → TARGET`**, because that is the partition plan 151-05 must
+build. `C1D` appears only in § 2.2.
+
+```
+$ git -c diff.renameLimit=20000 diff --name-only -z --no-renames d01e69c54 3808a75b8 | tr '\0' '\n' | sed '/^$/d' | wc -l
+4252                                              # the acceptance-criterion denominator
+$ git -c diff.renameLimit=20000 diff --name-status --no-renames d01e69c54 3808a75b8 | cut -f1 | sort | uniq -c
+3424 A
+ 424 D
+ 404 M
+```
+
+### 2.1 Per-area file counts
+
+Areas are evaluated **in the listed order, first match wins**, so every path lands in exactly one
+row — the rows are disjoint by construction and their sum is therefore an overlap check, not just a
+tally. Produced by one pass over the 4,252-path list:
+
+```
+$ git -c diff.renameLimit=20000 diff --name-only -z --no-renames d01e69c54 3808a75b8 \
+    | tr '\0' '\n' | sed '/^$/d' > files-c1.txt
+$ python3 …  # first-match-wins classifier over files-c1.txt; full predicate list reproduced below
+```
+
+| Area (pathspec predicate, first match wins) | files | research | Δ |
+|---|---:|---:|---|
+| **A01b** strapi-removal — `backend/` ∪ `apps/frontend/tests/strapiDataProvider` | 252 | 3 (tests only) | see § 2.2 |
+| **A02** `packages/*` excl. `dev-seed`, `supabase-types` | 97 | 97 | 0 |
+| **A03** `apps/supabase/` ∪ `packages/supabase-types/` ∪ `supabase/` | 118 | 118 | 0 |
+| **A04** `packages/dev-seed/` | 161 | 161 | 0 |
+| **A05** `tests/` | 195 | 195 | 0 |
+| **A06** `apps/frontend/src/lib/` | 526 | 526 | 0 |
+| **A07** `apps/frontend/src/routes/` | 200 | 200 | 0 |
+| **A07b** `apps/frontend/src/params/` | 6 | 6 | 0 |
+| **A08** `apps/frontend/messages/` | 329 | 329 | 0 |
+| **A09** `apps/docs/` ∪ `docs/` ∪ root `*.md` | 40 | 39 | +1 |
+| **A11** `.planning/` ∪ `.claude/` ∪ `.agents/` | 2,283 | 2,248 | **+35** |
+| **A10r** ▶ **RESIDUAL** `apps/frontend/` outside `src/` and `messages/` | **18** | *not named* | **new row** |
+| **A10s** ▶ **RESIDUAL** `apps/frontend/src/` outside `lib/`, `routes/`, `params/` | **7** | *not named* | **new row** |
+| **A10** root config / tooling (everything remaining) | 20 | 22 | −2 |
+| **TOTAL** | **4,252** | — | — |
+
+**The sum is 4,252 — exactly the independently measured total, so the divergence is 0.00% against a
+2% allowance.** Sum-equals-total is the *overlap* proof (no path counted twice); first-match-wins
+plus a residual bucket that absorbs everything is the *gap* proof (no path counted zero times).
+
+**Every research-time code area reproduces to the file** except `.planning`/`.claude` (+35, this
+phase's own artifacts) and the two rows research never had. The +1 in A09 is
+`docs/key-generation.md`, the top-level file 151-01 already found needs a bare `docs` pathspec in
+slice 09; the −2 in A10 is the reciprocal of A09's +1 plus a boundary shift, not a disappearance.
+
+### 2.1a The residual `apps/frontend/` paths — enumerated
+
+**This is the row the research's area table does not name, and it is exactly where a partition gap
+would open.** 151-01 flagged slice 10 as "the weakest boundary … mixes root tooling with the ~25-file
+`apps/frontend` shell remainder". Measured, the remainder is **25 files (18 + 7)**:
+
+**A10r — `apps/frontend/` outside `src/` and `messages/` (18):**
+
+```
+apps/frontend/.gitignore                          apps/frontend/postcss.config.cjs
+apps/frontend/Dockerfile                          apps/frontend/project.inlang/settings.json
+apps/frontend/README.md                           apps/frontend/scripts/flatten-current-codemod.mjs   ← F-03
+apps/frontend/capacitor.config.ts                 apps/frontend/scripts/store-to-state-codemod.mjs    ← F-03
+apps/frontend/docker-compose.dev.yml              apps/frontend/static/images/e2e-test-image-1.jpg
+apps/frontend/eslint.config.mjs                   apps/frontend/svelte.config.js
+apps/frontend/package.json                        apps/frontend/tailwind.config.mjs
+                                                  apps/frontend/tsconfig.json
+                                                  apps/frontend/tsconfig.tsbuildinfo                  ← F-08
+                                                  apps/frontend/vite.config.ts                        ← item 4, unlinted
+                                                  apps/frontend/vitest.config.ts
+```
+
+**A10s — `apps/frontend/src/` outside `lib/`, `routes/`, `params/` (7):**
+
+```
+apps/frontend/src/app.css        apps/frontend/src/hooks.server.ts
+apps/frontend/src/app.d.ts       apps/frontend/src/hooks.ts
+apps/frontend/src/app.html       apps/frontend/src/tailwind-theme.css
+apps/frontend/src/error.html
+```
+
+**Three consequences for plan 151-05's partition:**
+
+1. **`hooks.server.ts` is in the residual bucket.** It is the SvelteKit server hook — Supabase
+   session handling and locale resolution, i.e. an **auth-boundary file** (checklist item 2, OWASP).
+   Leaving it in a "root config / tooling" slice buries the single most security-relevant frontend
+   file in the least security-reviewed PR. 151-05 should give A10s a home with the frontend, not
+   with `turbo.json`.
+2. **Two dead one-shot codemods sit in A10r** (finding F-03) and would ride into whichever slice
+   claims it.
+3. **`tsconfig.tsbuildinfo` is a tracked build artifact** (finding F-08) and is likewise in A10r.
+
+### 2.1b The root-config residual — enumerated (20)
+
+```
+.bg-shell/manifest.json      .github/workflows/main.yaml   .prettierignore
+.changeset/README.md         .github/workflows/release.yml .yarn/releases/yarn-4.13.0.cjs
+.changeset/config.json       .gitignore                    .yarn/releases/yarn-4.6.0.cjs
+.env.example                 .husky/pre-commit             .yarnrc.yml
+.github/dependabot.yml       .lintstagedrc.json            docker-compose.dev.yml
+.github/workflows/docs.yml                                 package.json
+                                                           render.example.yaml
+                                                           turbo.json
+                                                           yarn.lock
+```
+
+Note `.github/workflows/main.yaml` lands here — the file that defines every CI gate in § 1, and
+whose conditional `supabase-tests` job is § 1.5's subject. Whichever slice owns it is where the CI
+posture gets reviewed.
+
+### 2.2 The +271 "drift" was a measurement-method difference, not repo drift
+
+`151-01-SUMMARY.md` records: *"Research measured 3969 reconstructed files; today it is **4240**
+(+271), because Phases 141–150 advanced `feat-gsd-roadmap` after the research session."*
+
+**That attribution is false, and the arithmetic that replaces it is exact.**
+
+**Refutation, three independent lines:**
+
+1. **Phases 141–150 do not exist.** `ls -d .planning/phases/1[4-5]*/` returns only `140-…` and
+   `151-…`; `.planning/ROADMAP.md:720` lists Phase 147 as `0/TBD — Not started`.
+2. **`origin/main` never moved** — `ac30f132a` at research time, at 151-01, and now.
+3. **The code surface is unchanged**, measured on research's own method (`C1D → TARGET`):
+
+```
+$ git -c diff.renameLimit=20000 diff --name-status --no-renames d65ca1a95 3808a75b8 | cut -f1 | sort | uniq -c
+3424 A
+ 175 D          ← research: 175 D   (identical)
+ 404 M          ← research: 404 M   (identical)
+$ git -c diff.renameLimit=20000 diff --name-only --no-renames d65ca1a95 3808a75b8 | wc -l
+4003            ← research: 3969
+$ … --diff-filter=A … | grep -cE '^(\.planning/|\.claude/)'
+2282            ← research: 2248     (+34)
+$ … --diff-filter=A … | grep -vcE '^(\.planning/|\.claude/)'
+1142
+$ git -c diff.renameLimit=20000 diff --name-only --no-renames d65ca1a95 3808a75b8 -- . ':(exclude).planning' ':(exclude).claude' | wc -l
+1721            ← research: ~1723    (−2)
+```
+
+**`D` and `M` are byte-identical to research. The entire `A` delta is `.planning`/`.claude`.**
+
+**The +271, decomposed:**
+
+| Component | Files | Cause |
+|---|---:|---|
+| `backend/**` deletions retained in `C1` | **+249** | 151-01 ran `build-rename-commit.sh` **without** `--drop-prefix backend/` (D-09 Q4 moves the Strapi removal to slice 01b). Research's `C1` dropped `backend/`, so those 249 paths were already absent from its tree and never appeared in its `C1 → target` diff. **A method difference, present at commit 1 of the phase.** |
+| `.planning`/`.claude` growth, research → `ca10b9736` | **+22** | Phase 151's own planning artifacts |
+| **151-01's total** | **+271** | `4240 − 3969` |
+| further `.planning` growth, `ca10b9736` → `df81f5e65` | +12 | Phase 151's plans 01–03 |
+| **today's total** | **+283** | `4252 − 3969` = 249 + 34 |
+
+**Zero of it is attributable to any phase between 141 and 150.** The correct statement for the
+record is: *research measured with `--drop-prefix backend/`; 151-01 measured without it; the 249-file
+difference is the Strapi tree moving from PR #1 into slice 01b, and the remaining 22–34 files are
+this phase's own `.planning/` output. The product tree has not moved at all.*
+
+151-01's substantive conclusion — *"nothing was hard-coded, so nothing broke"* — is untouched. Only
+the cause is corrected.
+
+### 2.3 Rename inventory — Pitfall 1 reproduced exactly
+
+Measured on the **net** diff `origin/main → feat-gsd-roadmap` (the rename-sensitive comparison), at
+both limits, with stderr captured rather than discarded:
+
+```
+$ git diff -M --name-status origin/main feat-gsd-roadmap 2>rn-default.err | cut -c1 | sort | uniq -c
+3667 A
+ 668 D
+  94 M
+ 908 R
+$ cat rn-default.err
+warning: exhaustive rename detection was skipped due to too many files.
+warning: you may want to set your diff.renameLimit variable to at least 3667 and retry the command.
+$ wc -c < rn-default.err
+172
+
+$ git -c diff.renameLimit=20000 diff -M --name-status origin/main feat-gsd-roadmap 2>rn-20000.err | cut -c1 | sort | uniq -c
+3440 A
+ 441 D
+  94 M
+1135 R
+$ wc -c < rn-20000.err
+0
+```
+
+| Limit | A | D | M | **R** | stderr warning |
+|---|---:|---:|---:|---:|---|
+| default (git's built-in) | 3,667 | 668 | 94 | **908** | **yes — 172 bytes, 2 lines** |
+| `diff.renameLimit=20000` | 3,440 | 441 | 94 | **1,135** | **no — 0 bytes** |
+
+**C-2 reproduces to the file: 908 vs 1,135, a 227-rename divergence.** The 227 undetected renames do
+not vanish — they reappear as 227 extra `A` **and** 227 extra `D`, which is how a "layout move"
+silently becomes a "mass rewrite" in a reviewer's diff view. The warning goes to **stderr**, so any
+invocation that pipes stdout and lets stderr scroll loses it entirely — that is Pitfall 1's actual
+mechanism, and it is why every rename-sensitive command in this phase carries `-c
+diff.renameLimit=20000`.
+
+**Per-top-level-directory breakdown** (`diff.renameLimit=20000`, NUL-safe parse — the path
+`apps/frontend/src/lib/server/api/README.md 21-40-30-014.md` contains a space, Pitfall 2):
+
+```
+$ git -c diff.renameLimit=20000 diff -M --name-status --diff-filter=R -z origin/main feat-gsd-roadmap \
+    | python3 -c "…NUL-split, count (src_top, dst_top) pairs…"
+```
+
+| source → destination | renames | reading |
+|---|---:|---|
+| `frontend/` → `apps/` | 853 | the monorepo layout move |
+| `docs/` → `apps/` | 271 | **C-3 confirmed exactly** — the refresh moved `docs/` too, not just `frontend/` |
+| `backend/` → `apps/` | 5 | **spurious** — similarity pairs across a deleted tree |
+| `backend/` → `.planning/` | 4 | **spurious** |
+| `tests/` → `.planning/` | 1 | **spurious** |
+| `frontend/` → `packages/` | 1 | **spurious** |
+| **total** | **1,135** | |
+
+**11 of the 1,135 detected renames are spurious cross-tree pairs** — the T-151-01-02 threat,
+measured. This is the whole argument for deriving the path map **by rule**: `C1` produces
+**1,316 R / 0 A / 0 M / 0 D at `diff.renameLimit=1`**, because every output blob OID is copied
+unchanged, while similarity detection at its most generous limit finds only 1,135 and gets 11 of
+them wrong.
+
+1,316 (by rule) − 1,124 (`frontend/`+`docs/`, detected) = **192 renames similarity detection misses
+even at limit 20000** — files whose content changed enough to break the pairing. A reviewer reading
+the detected diff sees those 192 as add+delete pairs.
+
+### 2.4 Segment overlap — re-measured, and it has not moved
+
+The central tradeoff in plan 151-05's partition: D-09 splits the pre-v2.4 prefix chronologically and
+the post-v2.4 tail by subsystem, so any file in **both** segments is read twice by the reviewer, the
+first time in a version a later PR rewrites.
+
+```
+$ git merge-base origin/main feat-gsd-roadmap
+9e0399286dfa269d23741b0b7829facbd084a971
+$ git rev-parse 983eef384                      # v2.4 close, "chore(v2.4): Full Svelte 5 Rewrite — config and cleanup"
+983eef384dc467af78cd7c64c9eb9d66c7d1ff95
+$ git rev-list --count 9e0399286..983eef384    # prefix commits
+35
+$ git rev-list --count 983eef384..feat-gsd-roadmap
+2538
+
+$ git -c diff.renameLimit=20000 diff --name-only --no-renames 9e0399286 983eef384 \
+    -- . ':(exclude).planning' ':(exclude).claude' | sort -u > seg-prefix.txt
+$ git -c diff.renameLimit=20000 diff --name-only --no-renames 983eef384 feat-gsd-roadmap \
+    -- . ':(exclude).planning' ':(exclude).claude' | sort -u > seg-tail.txt
+
+$ wc -l < seg-prefix.txt                          # 3598
+$ wc -l < seg-tail.txt                            # 901
+$ comm -12 seg-prefix.txt seg-tail.txt | wc -l    # 459   both
+$ comm -23 seg-prefix.txt seg-tail.txt | wc -l    # 3139  prefix-only
+$ comm -13 seg-prefix.txt seg-tail.txt | wc -l    # 442   tail-only
+```
+
+| Set | `comm` invocation | files | research | Δ |
+|---|---|---:|---:|---:|
+| pre-v2.4 prefix (code only) | `wc -l < seg-prefix.txt` | **3,598** | 3,598 | **0** |
+| post-v2.4 tail (code only) | `wc -l < seg-tail.txt` | **901** | 901 | **0** |
+| **in both segments** | `comm -12 seg-prefix.txt seg-tail.txt` | **459** | 459 | **0** |
+| prefix-only | `comm -23 seg-prefix.txt seg-tail.txt` | **3,139** | 3,139 | **0** |
+| tail-only | `comm -13 seg-prefix.txt seg-tail.txt` | **442** | 442 | **0** |
+
+**Every value re-measures identically. Zero drift.** Consistent with § 2.2: the product tree has not
+moved since research, so the segment sets could not have moved either. The prefix commit count
+(**35**) and the "already milestone-squashed" property also hold.
+
+`--no-renames` is deliberate on both sides: the two lists are compared by path with `comm`, so
+rename *detection* on one side and not the other would manufacture phantom differences. This is the
+same trap 151-02 hit from the other direction (its `--union` total needed `--no-renames` to avoid
+reporting a 1,135-file phantom gap).
+
+**The tradeoff, stated for plan 151-05's operator decision:** 459 of the 901 tail files —
+**51.0%** — are also touched by the chronological prefix. Reviewing the prefix chronologically means
+reading a majority of the tail's files in a superseded version first. The number is current as of
+`df81f5e65`.
+
 <!-- gsd:write-continue -->
