@@ -46,6 +46,9 @@ tests/e2e-runs/
 # Supabase Studio scratch (auto-named "Untitled query NNN.sql" — local dev only)
 apps/supabase/supabase/snippets/
 
+# Supabase CLI local state (rewritten on every CLI run — machine-local, never shared)
+supabase/.temp/
+
 # Claude Code harness state (scheduled-task lock file)
 .claude/scheduled_tasks.lock
 
@@ -57,7 +60,6 @@ Thumbs.db
 *.swo
 *~
 .vscode/*
-!.vscode/settings.json
 *.code-workspace
 .env.*
 node_modules/
