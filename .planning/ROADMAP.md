@@ -596,20 +596,25 @@ each plan's `requirements` field cites the criteria it serves (`criterion-1` …
 
   1. Every condition in `/.agents/code-review-checklist.md` is addressed across the v0.2 diff, with
      each item's disposition recorded (met / fixed / deliberately deferred + why) rather than assumed.
+
   2. The diff adheres to the Code Style Guide
      (`docs/src/routes/(content)/developers-guide/contributing/code-style-guide/+page.md`).
+
   3. Comment hygiene holds: no in-file comment narrates changes for the reviewer or points at
      planning artifacts or codebase history, except short pointers of the form "see phase 55 /
      spike 66". Any `[PR review]`-tagged comments are removed before the stack is opened.
+
   4. The commit history is restructured so that: all planning items are one commit; all other
      documentation is one commit; all tests are one commit; feature/fix commits touching the same
      files or features are squashed such that the PR contains no fixes of itself — only the final
      outcome; purely-formatting changes are collected into one commit as far as possible; and every
      commit containing migrations or other database changes carries a `[db]` tag.
+
   5. The original reiterative history survives in a backup worktree for the duration of the review.
   6. A review-only PR stack exists — first PR targeting `origin/main`, the rest stacked on each
      other — split so that PRs touching the same files are minimised and each PR holds changes of a
      similar nature. Individual PRs need not build or pass tests; only the whole matters.
+
   7. The stack's final state is byte-identical to the original branch's final state, demonstrated,
      so the stack need not be merged.
 
@@ -617,6 +622,7 @@ each plan's `requirements` field cites the criteria it serves (`criterion-1` …
 
   - Continuation branch `feat-v02-akita-continued` was created at `315b9795e` so a parallel session
      can continue feature work while this review/ship work proceeds.
+
   - Milestone/phase boundaries are a starting point for the PR split, but merge or split them where
      a reviewer would otherwise read changes that a later commit undoes, or a partial version of a
      feature that was later reworked.
@@ -625,24 +631,74 @@ each plan's `requirements` field cites the criteria it serves (`criterion-1` …
 throwaway refs before any sweep, slice or PR exists. Slice work is serialised bottom-up per D-07.
 
 Plans:
+**Wave 1**
+
 - [ ] 151-01-PLAN.md — TRACER: end-to-end stack pipeline proof on throwaway refs (wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 151-02-PLAN.md — Wave-0 verification and report tooling: taxonomy, hygiene grep, overlap matrix (wave 2)
 - [ ] 151-03-PLAN.md — Backup worktree pin (criterion 5) and lint/format/unit/hygiene baselines (wave 2)
 - [ ] 151-04-PLAN.md — Re-measure every gate's reach, slice anatomy, and the pre-seeded findings (wave 2)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 151-05-PLAN.md — Slice partition, stack manifest, and the split's human-verify checkpoint (wave 3)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [ ] 151-06-PLAN.md — Merge-target integration commit, disposition scaffold, E2E escape hatch (wave 4)
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
 - [ ] 151-07-PLAN.md — Comment hygiene stage 1: the codemod (wave 5)
+
+**Wave 6** *(blocked on Wave 5 completion)*
+
 - [ ] 151-08-PLAN.md — Comment hygiene stage 2: agent residue and the hygiene report (wave 6)
+
+**Wave 7** *(blocked on Wave 6 completion)*
+
 - [ ] 151-09-PLAN.md — Sweep and cut slices 01a, 01b, 02 (wave 7)
+
+**Wave 8** *(blocked on Wave 7 completion)*
+
 - [ ] 151-10-PLAN.md — Open the stack: publish consent, PR #860 decision, PRs 01a and 01b (wave 8)
+
+**Wave 9** *(blocked on Wave 8 completion)*
+
 - [ ] 151-11-PLAN.md — Sweep and cut slice 03, the database slice; open PR 02 (wave 9)
+
+**Wave 10** *(blocked on Wave 9 completion)*
+
 - [ ] 151-12-PLAN.md — Sweep and cut slice 04, dev-seed; open PR 03 (wave 10)
+
+**Wave 11** *(blocked on Wave 10 completion)*
+
 - [ ] 151-13-PLAN.md — Sweep and cut slice 05, the E2E suite; open PR 04 (wave 11)
+
+**Wave 12** *(blocked on Wave 11 completion)*
+
 - [ ] 151-14-PLAN.md — Sweep and cut slice 06, the frontend library; open PR 05 (wave 12)
+
+**Wave 13** *(blocked on Wave 12 completion)*
+
 - [ ] 151-15-PLAN.md — Sweep and cut slices 07 and 08, routes and messages; open PRs 06 and 07 (wave 13)
+
+**Wave 14** *(blocked on Wave 13 completion)*
+
 - [ ] 151-16-PLAN.md — Sweep and cut slices 09 and 10, docs and root config; open PRs 08 and 09 (wave 14)
+
+**Wave 15** *(blocked on Wave 14 completion)*
+
 - [ ] 151-17-PLAN.md — Slice 11, the planning slice, plus its secret scan; open PR 10 (wave 15)
+
+**Wave 16** *(blocked on Wave 15 completion)*
+
 - [ ] 151-18-PLAN.md — Byte-identity proof, commit taxonomy, the D-24 suite gate, PR 11, PR #860 (wave 16)
+
+**Wave 17** *(blocked on Wave 16 completion)*
+
 - [ ] 151-19-PLAN.md — Codify the ship procedure as a skill (D-25) and finalise every record (wave 17)
 
 ## Progress

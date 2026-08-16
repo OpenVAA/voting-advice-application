@@ -4,15 +4,15 @@ milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 140
 current_phase_name: blind-matcher-remediation-teardowns-null-matchers-positive-c
-status: verifying
+status: executing
 stopped_at: Phase 151 context gathered
-last_updated: "2026-08-16T14:25:46.534Z"
+last_updated: "2026-08-16T15:56:05.844Z"
 last_activity: 2026-08-15
 last_activity_desc: Phase 140 execution started
 progress:
   total_phases: 15
   completed_phases: 4
-  total_plans: 24
+  total_plans: 43
   completed_plans: 24
   percent: 27
 ---
@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 Milestone: v2.15 (Phases 137-151, 15 phases, 38 requirements)
 Phase: 140 (blind-matcher-remediation-teardowns-null-matchers-positive-c) — EXECUTING
 Plan: 6 of 6
-Status: Phase complete — ready for verification
+Status: Ready to execute
 Last activity: 2026-08-15 — Phase 140 execution started
 
 **Standing acceptance rule for every v2.15 phase:** prove the guard fails before claiming it guards —
