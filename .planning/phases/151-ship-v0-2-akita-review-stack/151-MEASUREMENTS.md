@@ -27,6 +27,50 @@ a6_test_glob_exempt: partial
 db_lint_sql_is_sqlfluff: false
 db_lint_sql_check_count: 2
 supabase_tests_ci_conditional: true
+
+# --- Task 2: slice anatomy, renames, segment overlap ---
+merge_target_tree: ecee2604c96479c5091c3cd3d9b18aac13b67ebe
+merge_target_commit: 3808a75b8a5b0a75e5e3c42ab9f11c3c780cfeec
+rename_commit_nodrop: d01e69c5469bf89e4cc23882ba6cc5d37ba431c2
+rename_commit_backend_dropped: d65ca1a95a877ddae009b96519254ae24fb0be56
+reconstructed_files_total: 4252
+reconstructed_files_research_method: 4003
+reconstructed_files_code_only: 1721
+area_rows: 14
+area_sum: 4252
+area_sum_divergence_pct: 0.00
+residual_frontend_outside_src_messages: 18
+residual_frontend_src_other: 7
+renames_default_limit: 908
+renames_limit_20000: 1135
+rename_warning_bytes_default: 172
+rename_warning_bytes_20000: 0
+renames_by_rule: 1316
+renames_spurious_cross_tree: 11
+drift_271_cause: measurement-method (backend/ drop) + this phase's own .planning growth
+drift_attributable_to_phases_141_150: 0
+segment_prefix_files: 3598
+segment_tail_files: 901
+segment_both: 459
+segment_prefix_only: 3139
+segment_tail_only: 442
+segment_drift_vs_research: 0
+
+# --- Task 3: pre-seeded findings ---
+findings_preseeded: 6
+findings_holds: 8
+findings_resolved: 0
+findings_new_this_plan: 2
+stale_path_files: 13
+stale_path_occurrences: 20
+todo_occurrences: 65
+todo_files: 49
+todo_token_todo: 65
+todo_token_fixme: 0
+todo_token_hack: 0
+todo_token_xxx: 0
+checklist_d15_hygiene_exempt: true
+checklist_item7_applicable: true
 ---
 
 # Phase 151 — Execution-Time Measurements
@@ -81,7 +125,7 @@ Two consequences, both load-bearing for this phase:
   containing a literal `[ ]`, not a tickable checkbox. A reviewer working the checklist in a PR
   **cannot tick the `any` item** — the single item this phase spends the most measurement effort on.
 
-**Recorded as a finding, not fixed here.** See § 4, finding **F-07**. It maps to checklist items 6
+**Recorded as a finding, not fixed here.** See § 3, finding **F-07**. It maps to checklist items 6
 (repo documentation markdown updated) and 15 (guide entries updated), on top of the stale-path
 finding F-04 that the same file already carries.
 
@@ -121,7 +165,7 @@ this whole table.
 | 4 | General | Avoid `any`; document or `@ts-expect-error` | `@typescript-eslint/no-explicit-any: ['error', {ignoreRestArgs:true}]` — `packages/shared-config/eslint.config.mjs:98-103` | Corrected surface **14 files / 77 occurrences** (naive research pattern: 24 / 96 — see § 1.3). Of the 14, **7 are inside** the lint gate and **7 outside** it. **Complement:** `apps/frontend/vite.config.ts` (outside `src/`), 3 × `packages/dev-seed/tests/`, `packages/llm/tests/llmProvider.test.ts` (**57 occurrences — the single largest concentration in the repo, entirely unlinted**), 2 × `packages/question-info/tests/`. Plus a *severity* complement: the top-level `tests/` tree downgrades the rule to `warn` (`tests/eslint.config.mjs:78`). A6 fully resolved in § 1.3. | partial |
 | 5 | General | No repeated code in PR or repo | none | No gate exists. Manual; explicitly inside D-05's fix bar. | none |
 | 6 | General | New components/functions/entities documented | none | No gate exists. TSDoc presence is unenforced (see item 3's complement). | none |
-| 7 | General | Repo documentation markdown updated | none | No gate exists. `apps/docs` `validate:links` exists but is **not a PR gate** — see item 15. Concrete target set measured in § 4: **13 files / 20 occurrences / 19 lines** of the stale `docs/src/routes/…` path. | none |
+| 7 | General | Repo documentation markdown updated | none | No gate exists. `apps/docs` `validate:links` exists but is **not a PR gate** — see item 15. Concrete target set measured in § 3.1: **13 files / 20 occurrences / 19 lines** of the stale `docs/src/routes/…` path. | none |
 | 8 | General | Tracking events for new user-facing functions | none | No gate exists. Surface is `apps/frontend/src/lib/contexts/app/tracking/` (5 files) + `components/analytics/umami/`. Manual. | none |
 | 9 | General | New Svelte components follow the guidelines | `yarn workspace @openvaa/frontend check` = `svelte-check --tsconfig ./tsconfig.json --fail-on-warnings` (CI job `frontend-and-shared-module-validation`, `.github/workflows/main.yaml:84-86`) | svelte-check covers **types + the Svelte compiler's own a11y/unused warnings at 0-tolerance**. It does **not** cover the guide's component conventions. **Complement — and a correction to research:** `eslint-plugin-svelte` is loaded as `compat.extends('plugin:svelte/prettier')` (`apps/frontend/eslint.config.mjs:20`) — the **prettier-conflict-DISABLE** config, which turns rules *off* and enables **none**. `plugin:svelte/recommended` appears nowhere (`git grep -n 'svelte/recommended' -- '*eslint.config*'` → empty). Research's "partial (eslint svelte plugin)" overstates: no svelte lint rule is active in `apps/frontend`. Also unreached: `**/_spikes-*/**` (`apps/frontend/eslint.config.mjs:38-40`). | partial |
 | 10 | General | Errors handled and logged | none | No gate exists. Manual. (`no-console` permits `warn`/`error`/`info`, so it is not even a logging-shape constraint.) | none |
@@ -810,4 +854,243 @@ reporting a 1,135-file phantom gap).
 reading a majority of the tail's files in a superseded version first. The number is current as of
 `df81f5e65`.
 
-<!-- gsd:write-continue -->
+---
+
+## Pre-seeded findings (re-confirmed)
+
+*(§ 3 of this record.)*
+
+Each of `151-RESEARCH.md` § Pre-seeded findings' six entries had its verifying command **re-run
+against `df81f5e65`**. Status is `holds` or `resolved`; **a finding that has already been fixed is
+still a row, not an omission**. Two further findings surfaced during this plan's own measurement and
+are appended as `holds` with `pre-seeded: no`.
+
+Rows are in the shape plan 151-06's disposition scaffold consumes: bolded finding ID, checklist item
+numbers (**canonical 1–31 numbering per § 0**), evidence as path + line numbers, owning slice.
+
+| ID | Status | Items | Finding | Evidence (path : lines) | Owning slice |
+|---|---|---|---|---|---|
+| **F-01** | **holds** | 4, 6 | `apps/frontend/jest.config.json` is dead. Jest is a dependency of nothing in the repo and the file is referenced by nothing. A leftover from `backend/vaa-strapi/jest.config.json`. | `apps/frontend/jest.config.json` (96 bytes, whole file) | **10** root-config / A10r *(see note)* |
+| **F-02** | **holds** | 6, 15 | `apps/frontend/src/lib/server/api/README.md 21-40-30-014.md` — the **sole** README of `server/api/`, with a GSD artifact ID baked into the filename, **and** carrying a stale `/docs/src/routes/…` link. Also the space-containing path behind Pitfall 2. | `apps/frontend/src/lib/server/api/README.md 21-40-30-014.md:3` | **06** frontend-lib |
+| **F-03** | **holds** | 4, 5 | `apps/frontend/scripts/flatten-current-codemod.mjs` and `store-to-state-codemod.mjs` — one-shot v2.13/v2.14 migration scripts shipped in the product tree, referenced by nothing outside themselves, each printing `PHASE 113` / `PHASE 114` at runtime. | both files, whole; cross-reference is `store-to-state-codemod.mjs` naming `flatten-current-codemod` | **10** / A10r |
+| **F-04** | **holds — and widened** | 7, 15 | Stale documentation route path. Research: 12 files / 18 occurrences. **Re-measured: 13 files / 20 occurrences across 19 lines.** Full table in § 3.1. | see § 3.1 | **spans 6 slices** — 02, 06, 07, 09, 10, 11 |
+| **F-05** | **holds** | 3, 10 | Two `console.warn` strings embedding a planning decision ID in **user-visible runtime output** — not a comment, so no codemod reaches them. | `apps/frontend/src/lib/contexts/filter/filterContext.svelte.ts:131,136` | **06** frontend-lib |
+| **F-06** | **holds** | 5, 6 | The `TODO`/`FIXME`/`HACK`/`XXX` class. Research: 65 / 49 files. Re-measured **66 occurrences / 50 files** on the union pathspec, **65 / 49** on the baseline pathspec — both reproduce. **All 66 are `TODO`; `FIXME`, `HACK` and `XXX` are each 0.** Details + the `-I` trap in § 3.2. | 50 files; per-token census in § 3.2 | **spans all code slices** |
+| **F-07** | **holds** — *pre-seeded: no* | 6, 15 | `.agents/code-review-checklist.md:8` writes the `any` item as `- [<U+00A0>]<U+00A0>Avoid…`. **The item is not a valid GFM task-list marker and cannot be ticked**, and every `^- \[ \] ` census of the file undercounts by one — which is how `151-RESEARCH.md` recorded 30 items for a 31-item file. Full derivation in § 0. | `.agents/code-review-checklist.md:8` (bytes `2d 20 5b c2 a0 5d c2 a0`) | **11** planning |
+| **F-08** | **holds** — *pre-seeded: no* | 4, 5 | `apps/frontend/tsconfig.tsbuildinfo` is a **tracked build artifact** — machine-generated incremental-compile state, committed to git. Raised as an incidental finding by 151-03; re-confirmed tracked, and located in the A10r residual bucket by § 2.1a. | `git ls-files --error-unmatch apps/frontend/tsconfig.tsbuildinfo` → exit 0 | **10** / A10r |
+
+**Six pre-seeded findings re-run; six `holds`; zero `resolved`.** Consistent with § 2.2 — the
+product tree has not moved since research, so nothing could have been fixed in between. The
+`resolved` column is not decoration: it exists so a later fix cannot silently delete a row.
+
+**Note on F-01's slice.** `apps/frontend/jest.config.json` does **not** appear in the
+`C1 → TARGET` diff, because it exists identically at both ends: `frontend/jest.config.json` in
+`origin/main` is re-pathed to `apps/frontend/jest.config.json` by C1's rule, and the target carries
+the same blob. **It is therefore invisible to the slice partition entirely** — it is a rename in
+PR #1 (slice 01a) and appears in no later slice's diff. A reviewer of any slice will never see it.
+Whichever plan dispositions item 5 must reach it deliberately; the partition will not deliver it.
+
+### Verifying commands, re-run verbatim
+
+```
+$ ls -la apps/frontend/jest.config.json                                       # F-01
+-rw-r--r--  1 … 96 … apps/frontend/jest.config.json
+$ git grep -l '"jest"' -- '*/package.json' 'package.json'
+                                                                              # empty — nothing depends on jest
+$ git grep -ln 'jest.config' -- . ':(exclude).planning' ':(exclude).claude'
+                                                                              # empty — nothing references the file
+
+$ git ls-files 'apps/frontend/src/lib/server/api/*'                           # F-02
+apps/frontend/src/lib/server/api/README.md 21-40-30-014.md
+apps/frontend/src/lib/server/api/adapters/… (7 more)
+apps/frontend/src/lib/server/api/dataProvider.ts
+apps/frontend/src/lib/server/api/feedbackWriter.ts
+
+$ git grep -ln 'flatten-current-codemod' -- . ':(exclude).planning' ':(exclude).claude'   # F-03
+apps/frontend/scripts/flatten-current-codemod.mjs
+apps/frontend/scripts/store-to-state-codemod.mjs
+$ git grep -ln 'store-to-state-codemod'  -- . ':(exclude).planning' ':(exclude).claude'
+apps/frontend/scripts/store-to-state-codemod.mjs
+                                    # each names only itself (and its sibling) — zero external callers
+
+$ git grep -n 'not implemented in Phase 62' -- apps/frontend/src/lib/contexts/filter/   # F-05
+apps/frontend/src/lib/contexts/filter/filterContext.svelte.ts:131:    console.warn('filterContext.addFilter() is not implemented in Phase 62 — see D-06 (future LLM chat follow-up).');
+apps/frontend/src/lib/contexts/filter/filterContext.svelte.ts:136:    console.warn('filterContext.removeFilter() is not implemented in Phase 62 — see D-06 (future LLM chat follow-up).');
+
+$ git ls-files --error-unmatch apps/frontend/tsconfig.tsbuildinfo; echo $?    # F-08
+apps/frontend/tsconfig.tsbuildinfo
+0
+```
+
+**F-05 is routed to plan 151-08's judgement-driven residue pass, not to the D-14/D-16 codemod.**
+The strings are runtime `console.warn` arguments, i.e. **user-visible output**, not comments. The
+scripted hygiene pass strips planning references from *comments*; a codemod that reached into string
+literals would be rewriting behaviour. Threat **T-151-04-03** names this exact routing.
+
+### 3.1 CRITICAL — Catalog path correction
+
+The documentation tree moved from `docs/` to `apps/docs/` at v1.1. Every reference below still
+points at the pre-move location. Left column is the stale reference as written; right column is the
+**verified-on-disk** path.
+
+```
+$ git grep -l -F 'docs/src/routes' -- . ':(exclude).planning' | wc -l
+13
+$ git grep -o -F 'docs/src/routes' -- . ':(exclude).planning' | wc -l
+20
+$ ls -d apps/docs/src/routes 'apps/docs/src/routes/(content)/developers-guide' 'apps/docs/src/routes/(content)/publishers-guide'
+apps/docs/src/routes
+apps/docs/src/routes/(content)/developers-guide
+apps/docs/src/routes/(content)/publishers-guide
+$ ls -d docs/src/routes
+ls: docs/src/routes: No such file or directory        # the stale target does not exist
+$ git ls-files 'docs/*'
+docs/key-generation.md                                # all that remains at the old top level
+```
+
+**Row count is 13, equal to the acceptance command's output measured in this same task.**
+
+| # | File carrying the stale reference | occ | Stale reference as written | Actual verified-on-disk path |
+|---|---|---:|---|---|
+| 1 | `.agents/code-review-checklist.md:7,13,19,20` | 5 | `docs/src/routes/(content)/developers-guide/…` (×4 links; line 19 carries two) | `apps/docs/src/routes/(content)/developers-guide/…` |
+| 2 | `ROADMAP.md:28,135` | 2 | `/docs/src/routes` and `docs/src/routes/(content)/developers-guide/contributing/code-style-guide/+page.md` | `apps/docs/src/routes[/(content)/developers-guide/contributing/code-style-guide/+page.md]` |
+| 3 | `apps/docs/scripts/generate-navigation-config.ts:6` | 1 | `Reads all routes from docs/src/routes` (header comment describing the docs app's **own** tree) | `apps/docs/src/routes` — or `src/routes`, relative to the workspace |
+| 4 | `apps/docs/scripts/validate-links.ts:6` | 1 | `Finds all markdown files in docs/src/routes` (same self-referential shape) | `apps/docs/src/routes` — or `src/routes` |
+| 5 | `apps/frontend/src/lib/api/README.md:3` | 1 | `/docs/src/routes/developers-guide/frontend/data-api` | `apps/docs/src/routes/(content)/developers-guide/frontend/data-api` |
+| 6 | `apps/frontend/src/lib/candidate/components/README.md:3` | 1 | `/docs/src/routes/…/frontend/components` | `apps/docs/src/routes/(content)/developers-guide/frontend/components` |
+| 7 | `apps/frontend/src/lib/components/README.md:3` | 1 | `/docs/src/routes/developers-guide/frontend/components` | `apps/docs/src/routes/(content)/developers-guide/frontend/components` |
+| 8 | `apps/frontend/src/lib/contexts/README.md:3` | 1 | `/docs/src/routes/developers-guide/frontend/contexts` | `apps/docs/src/routes/(content)/developers-guide/frontend/contexts` |
+| 9 | `apps/frontend/src/lib/dynamic-components/README.md:3` | 1 | `/docs/src/routes/…/frontend/components` | `apps/docs/src/routes/(content)/developers-guide/frontend/components` |
+| 10 | `apps/frontend/src/lib/server/api/README.md 21-40-30-014.md:3` | 1 | `/docs/src/routes/developers-guide/frontend/data-api` | `apps/docs/src/routes/(content)/developers-guide/frontend/data-api` — **and see F-02: the filename itself is defective** |
+| 11 | `apps/frontend/src/routes/README.md:3` | 1 | `/docs/src/routes/developers-guide/frontend/routing` | `apps/docs/src/routes/(content)/developers-guide/frontend/routing` |
+| 12 | `apps/frontend/src/routes/candidate/README.md:5,6` | 2 | `/docs/src/routes/developers-guide/candidate-user-management`, `…/frontend/routing` | `apps/docs/src/routes/(content)/developers-guide/…` |
+| 13 | `packages/app-shared/src/settings/README.md:5,6` | 2 | `/docs/src/routes/developers-guide/configuration/{static-settings,app-settings}` | `apps/docs/src/routes/(content)/developers-guide/configuration/…` |
+
+**13 files / 20 occurrences / 19 lines** (line 19 of the checklist carries two occurrences — the
+Developers' and Publishers' Guide links in one bullet).
+
+**Research measured 12 / 18. The extra file is `ROADMAP.md` at the repo root** (not
+`.planning/ROADMAP.md` — a distinct, tracked, product-tree file; `git log --diff-filter=A -1 --
+ROADMAP.md` → `c4a7662fa docs(v1.0): E2E Testing Framework`). Research's pathspec excluded it. The
+extra two occurrences are its two references.
+
+**Rows 3 and 4 are a different kind of staleness** and should be dispositioned as such: they are
+header comments inside `apps/docs`'s own build scripts, describing the tree the script walks. They
+are wrong in the same direction but a *relative* fix (`src/routes`) is more durable there than an
+absolute one. Named rather than folded into the link-rewrite set.
+
+### 3.1a `.agents/code-review-checklist.md` under item 7 — stated explicitly
+
+This is the one file whose disposition is genuinely ambiguous, so it is settled here rather than
+left to plan 151-06.
+
+**D-15 (`151-CONTEXT.md:96-98`) reads:** *"`CLAUDE.md`, `.agents/` and `.claude/` are **exempt** —
+agent-facing planning infrastructure, not shipped source. They ride in the top-of-stack planning PR
+with citations intact. Hygiene applies only to `apps/`, `packages/` and `tests/`."*
+
+**Disposition — the two are different questions and must not be collapsed:**
+
+| Question | Answer | Reason |
+|---|---|---|
+| Is `.agents/code-review-checklist.md` subject to the **D-14/D-16 hygiene sweep**? | **No — exempt.** | D-15 names `.agents/` explicitly. Its *planning citations* (phase numbers, decision IDs, milestone tags) stay intact; it is agent-facing infrastructure, and stripping its references would degrade the very artifact the agents review against. |
+| Is it subject to **checklist item 7** ("The repo documentation markdown files are updated if the changes touch upon those")? | **Yes — applicable.** | Item 7 asks that *repo documentation markdown* be updated. `.agents/code-review-checklist.md` is a tracked `.md` file in the repo that documents a process. **The checklist is repo documentation, and its own item 7 applies to it.** |
+
+**The exemption is from a *sweep*, not from the *checklist*.** D-15 answers "does the codemod rewrite
+this file's planning citations"; item 7 answers "are this file's four links to a tree that moved
+three milestones ago still broken". The second is not a planning citation at all — it is a plain
+broken relative link to `docs/src/routes/…`, a path that **does not exist**
+(`ls -d docs/src/routes` → *No such file or directory*).
+
+**Concretely, `.agents/code-review-checklist.md` carries two independent item-7 defects:**
+
+1. **F-04** — 5 occurrences of the stale `docs/src/routes/…` path on lines 7, 13, 19, 20.
+2. **F-07** — the U+00A0 on line 8, which makes the `any` item an unclickable non-checkbox and
+   corrupts every automated census of the file.
+
+Both are in scope for item 7 and **neither is in scope for D-15's hygiene exemption**. Plan 151-06
+must record them as findings against the file; whether they are *fixed* in this phase is D-05's
+fix-bar question, not a hygiene-scope question. The file rides in the top-of-stack planning slice
+(**11**) either way.
+
+### 3.2 The `TODO` class, and why `git grep -I` is load-bearing
+
+```
+$ git grep -I -o -P '\b(TODO|FIXME|HACK|XXX)\b' -- apps/ packages/ tests/ | wc -l      # 65   (baseline pathspec)
+$ git grep -I -l -P '\b(TODO|FIXME|HACK|XXX)\b' -- apps/ packages/ tests/ | wc -l      # 49
+$ git grep -I -o -P '\b(TODO|FIXME|HACK|XXX)\b' -- . ':(exclude).planning' ':(exclude).claude' | wc -l   # 66
+$ git grep -I -l -P '\b(TODO|FIXME|HACK|XXX)\b' -- . ':(exclude).planning' ':(exclude).claude' | wc -l   # 50
+$ git grep    -o -P '\b(TODO|FIXME|HACK|XXX)\b' -- . ':(exclude).planning' ':(exclude).claude' | wc -l   # 72   ← no -I
+$ git grep    -l -P '\b(TODO|FIXME|HACK|XXX)\b' -- . ':(exclude).planning' ':(exclude).claude' | wc -l   # 56   ← no -I
+```
+
+| Pathspec | `-I` | occurrences | files |
+|---|---|---:|---:|
+| `apps/ packages/ tests/` (151-03 baseline) | yes | **65** | **49** |
+| `. ':(exclude).planning' ':(exclude).claude'` | yes | **66** | **50** |
+| `. ':(exclude).planning' ':(exclude).claude'` | **no** | 72 | 56 |
+
+**The baseline's 65 / 49 reproduces exactly.** The union pathspec adds exactly one file —
+**`.prettierignore`**, the only match outside `apps/`, `packages/`, `tests/`. The `-I` delta is
+exactly **6 occurrences in 6 binary files**, all of them images whose compressed bytes happen to
+contain the ASCII sequence `XXX`:
+
+```
+$ comm -13 <(git grep -I -l -P '…' … | sort) <(git grep -l -P '…' … | sort)
+apps/docs/static/images/guides/results-link.png
+apps/docs/static/images/guides/subcategory-matches.png
+apps/docs/static/images/screenshots/eu-elections-2024-vaa-screenshot-10.png
+apps/docs/static/images/screenshots/eu-elections-2024-vaa-screenshot-8.png
+apps/docs/static/images/shiba-inu-facing-front.png
+tests/tests/specs/visual/__screenshots__/visual-regression.spec.ts/voter-results-desktop.png
+```
+
+**Per-token census — the four-token label is misleading and the record says so:**
+
+```
+$ for t in TODO FIXME HACK XXX; do echo "$t: $(git grep -I -o -P "\b$t\b" -- apps/ packages/ tests/ | wc -l)"; done
+TODO: 65
+FIXME: 0
+HACK: 0
+XXX: 0
+```
+
+**All 65 are `TODO`. `FIXME`, `HACK` and `XXX` are each zero in text files** — every `XXX` in the
+repo is a PNG byte sequence. Research's "65 `TODO`/`FIXME`/`HACK`/`XXX`" is numerically right and
+descriptively wrong, and dropping `-I` inflates it to 71/55 (or 72/56 on the union pathspec) with
+six image files masquerading as source.
+
+**Not authorised for deletion**, per the 151-03 baseline. D-14 covers *planning references* — phase
+numbers, decision IDs, section anchors, plan numbers — and says nothing about TODOs. A `TODO` is a
+statement about the code, not a planning citation. It surfaces as an **explicit disposition question
+against items 5 and 6**, not as a silent codemod delete.
+
+---
+
+## What this record does NOT establish
+
+Recorded here because it is the easiest thing for plan 151-06 to over-read:
+
+- **It does not disposition anything.** Every row above is a *reach* measurement or a *finding*. No
+  checklist item is marked met, unmet, or waived by this file.
+- **`none` is not "nothing was checked".** It means *no automated gate reaches this item* — the
+  item still needs agent or human review, and 21 of 31 items are in that state.
+- **`partial` is not "mostly covered".** Item 13's `partial` covers **5 of 36 route surfaces**;
+  item 22's covers FK columns but not `project_id`. The complement column, not the verdict word, is
+  the load-bearing part of every `partial` row.
+- **It does not re-run the gates.** `lint:check`, `format:check` and `test:unit` results are the
+  151-03 baseline's (green / red-on-2-cosmetic-prettier-files / green); this plan measured what
+  those gates *reach*, not what they currently *return*.
+- **It does not choose slice boundaries.** § 2.1's areas are a *measurement* partition chosen to be
+  disjoint and total, so the counts are trustworthy. Plan 151-05 chooses the *review* partition, and
+  § 2.1a exists to make sure it does so with the residual paths in view rather than absorbed.
+
+## Self-check
+
+| Claim | Check | Result |
+|---|---|---|
+| 31 checklist rows, contiguous 1–31 | regex census over this file's own main table | **31, contiguous** |
+| every row has a closed-vocabulary verdict | `Counter` over the last column | `{none: 21, partial: 10}`, **0 blank, 0 out-of-vocabulary** |
+| ≥ 30 numbered rows (plan verify) | `awk '/^\| *[0-9]+ \|/{c++} END{print c+0}'` | **≥ 30 → pass** |
+| area rows sum to the measured total | Σ over § 2.1's 14 rows vs `git diff --name-only --no-renames C1 TARGET \| wc -l` | **4,252 = 4,252 → 0.00%** |
+| stale-path rows == acceptance command | § 3.1 rows vs `git grep -l -F 'docs/src/routes' -- . ':(exclude).planning' \| wc -l` | **13 = 13** |
+| frontmatter parses | `yaml.safe_load` over lines 2..N | **26 keys** |
