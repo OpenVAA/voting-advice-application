@@ -40,6 +40,17 @@ ts_expect_error_occurrences: 7
 ts_expect_error_files: 4
 ts_ignore_occurrences: 0
 no_explicit_any_disable_files: 15
+
+# --- Task 3: the pre-codemod hygiene surface (criterion 3) ---
+hygiene_files: 366
+hygiene_occurrences: 1866
+hygiene_taskid_supplementary: 535
+hygiene_gate_rows_failing: 8
+review_tag_occurrences: 0
+todo_occurrences: 65
+todo_files: 49
+todo_authorised_for_deletion: false
+hygiene_baseline_tsv: .planning/phases/151-ship-v0-2-akita-review-stack/151-hygiene-baseline.tsv
 ---
 
 # Phase 151 — Baseline Record
@@ -373,4 +384,121 @@ dispositioned here, but it belongs in the frontend slice's pre-seeded findings.
 ```
 $ git status --porcelain -- . ':(exclude).planning'
                                     # empty, after all three gates and every grep
+```
+
+---
+
+## Hygiene baseline
+
+The "before" half of criterion 3's before/after proof. Plan 151-08 produces the "after" half by
+re-running **the same script**, so the two runs are comparable by construction rather than by
+assertion.
+
+```
+$ .planning/phases/151-ship-v0-2-akita-review-stack/scripts/hygiene-grep-report.sh \
+    --save-baseline .planning/phases/151-ship-v0-2-akita-review-stack/151-hygiene-baseline.tsv
+
+Planning-Reference Hygiene Report -- criterion 3
+===============================================
+scope   : apps/ packages/ tests/   (CLAUDE.md, .agents/, .claude/ exempt per D-15)
+mode    : report
+
+  pattern               occ   files    bare  expect     verdict
+  -----------------  ------  ------  ------  ---------  -------
+  phase-ref             704     241     700  bare = 0   FAIL
+  spike-ref              41      30      41  bare = 0   FAIL
+  decision-id-long      185      44       -  occ = 0    FAIL
+  decision-id-bare      540     162       -  occ = 0    FAIL
+  section-anchor        219     100       -  occ = 0    FAIL
+  planning-path          27      23       -  occ = 0    FAIL
+  plan-number           105      56       -  occ = 0    FAIL
+  milestone-ver          45      30       -  -          REPORT
+  task-id               535     199       -  occ = 0    FAIL
+
+  planning-reference total (8 rows, comparable to the research loop) : 1866
+  task-id supplementary (no counterpart in that loop)                : 535
+  union files touched by any row                                     : 366
+  baseline written                                                   : …/151-hygiene-baseline.tsv
+
+---
+Gate rows failing: 8  (milestone-ver is report-only and never counted)
+Report mode: no gate applied. Re-run with --assert-clean to fail on the rows above.
+```
+
+Exit **0** (report mode does not gate). Eight of nine rows are red, which is the correct state —
+the codemod has not run.
+
+### Deviation from the plan's instruction, and why
+
+The task says run the script "with no arguments". It was run with `--save-baseline` instead. Running
+it bare prints the table but writes nothing, so 151-08's "after" run would have no machine-readable
+"before" to diff against and the `base`/`delta` columns — added in 151-02 for exactly this
+handoff — would stay dead. The printed table is byte-identical either way; the flag only *adds* the
+TSV. **151-08 should pass `.planning/phases/151-ship-v0-2-akita-review-stack/151-hygiene-baseline.tsv`
+as the positional argument** to get the delta columns.
+
+```
+$ cat 151-hygiene-baseline.tsv
+phase-ref	704	241        section-anchor	219	100        milestone-ver	45	30
+spike-ref	41	30         planning-path	27	23         task-id	535	199
+decision-id-long	185	44     plan-number	105	56
+decision-id-bare	540	162
+```
+
+### Agreement with the corrected surface
+
+| Measure | Research | 151-02 | Here | Drift |
+|---|---|---|---|---|
+| Comparable occurrences | 1,984 | 1,866 | **1,866** | 5.9 % under research, **0 %** from 151-02 |
+| Union files | 358 | 366 | **366** | 2.2 % over research, **0 %** from 151-02 |
+
+Both inside the ±10 % acceptance band, and identical to 151-02's measurement — the branch advanced
+by three commits between the two runs, all of them `.planning/`-only, which is exactly the null
+result the scope pathspec is supposed to produce.
+
+### Review-tagged comments — measured 0, not assumed 0
+
+```
+$ git grep -I -o -P '\[PR review\]' -- apps/ packages/ tests/ | wc -l
+0
+```
+
+C-7 said this clause of criterion 3 was already satisfied. It is. The task it implies is a **no-op**,
+and this line is the record that the no-op was *measured* rather than inherited — which is the only
+thing separating a satisfied criterion from an unchecked one.
+
+### The `TODO` class — sized here, **not authorised for deletion**
+
+```
+$ git grep -I -o -P '\b(TODO|FIXME|HACK|XXX)\b' -- apps/ packages/ tests/ | wc -l   # 65
+$ git grep -I -l -P '\b(TODO|FIXME|HACK|XXX)\b' -- apps/ packages/ tests/ | wc -l   # 49
+```
+
+Per-token: **TODO 65 / 49 files**; **FIXME 0**; **HACK 0**; **XXX 0**.
+
+**This class is an open disposition question for the operator and is NOT authorised for deletion or
+rewriting by any plan in this phase.** D-14 covers *planning references* — phase numbers, decision
+IDs, section anchors, plan numbers — and says nothing about TODOs. A `TODO` is a statement about the
+code's future, not a leaked artifact of how the code was planned; stripping it would delete
+information no other record holds. Plan 151-08 puts the question to the operator. This task only
+sizes it.
+
+**Measurement note — the `-I` flag is load-bearing.** Without it the same command returns
+**71 occurrences across 55 files**. The extra 6 are `XXX` byte sequences inside **binary PNGs**
+(five under `apps/docs/static/images/`, one Playwright screenshot baseline) — random bytes, not
+markers. With `-I` the result reproduces C-7's 65 / 49 exactly, so research's figure was right and
+the four-token label on it was the imprecise part: 65 is **TODO alone**, and the other three tokens
+contribute nothing. Any later plan re-measuring this class must pass `-I` or it will chase six
+phantom markers into image files.
+
+That is the **third** count in this phase inflated by an under-specified pattern — C-5's missing
+`(?!-\d{2})`, item 4's missing `\b` before `as`, and now a missing `-I`. The lesson is consistent
+enough to state plainly: **every count in this phase is wrong until its pattern has been read
+against the matches it actually produced.**
+
+### Tree untouched
+
+```
+$ git status --porcelain -- . ':(exclude).planning'
+                                    # empty — this task reads only
 ```
