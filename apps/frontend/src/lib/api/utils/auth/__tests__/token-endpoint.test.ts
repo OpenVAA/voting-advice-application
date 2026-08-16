@@ -71,6 +71,29 @@ vi.mock('$lib/utils/constants', () => ({
 }));
 
 /**
+ * The rejection every Idura test below asserts against (Phase 140 review IN-03).
+ *
+ * `POST` wraps its whole body in `try/catch` and re-raises every failure as
+ * `error(401, { message: 'Unauthorized' })`, so the value it rejects with is a
+ * SvelteKit `HttpError` — `{ status, body }`, NOT an `Error`, and with NO
+ * `message` property. That rules out the obvious strengthening of a bare
+ * `.rejects.toThrow()`: a message matcher (`.rejects.toThrow(/claims|jwt/i)`)
+ * cannot pass here, because there is no message to match. Do not "fix" this
+ * back to a message regex — verified 2026-08-16 against the running test:
+ * `ctor=HttpError, isError=false, message=undefined, keys=['status','body']`.
+ *
+ * What the shape assertion buys over a bare `toThrow()`: the bare form is
+ * satisfied by ANY throw, including one raised while constructing the request
+ * — i.e. before `fetch` is ever called — while the test's own name claims the
+ * handler got as far as exchanging the code. Pairing this matcher with the
+ * `expect(capturedFetchBody).not.toBeNull()` guard that follows every call
+ * site pins BOTH halves: the token request was actually issued, and the
+ * handler then failed the documented way (`getIdTokenClaims` on the mock
+ * token) rather than some other way that happens to also throw.
+ */
+const EXPECTED_REJECTION = { status: 401, body: { message: 'Unauthorized' } };
+
+/**
  * Helper to build a mock RequestEvent for the POST handler.
  */
 function createMockRequestEvent(body: Record<string, unknown>) {
@@ -135,8 +158,10 @@ describe('POST /api/oidc/token (Idura - private_key_jwt)', () => {
       redirectUri: 'http://localhost:5173/callback'
     });
 
-    // The handler will throw/return 401 because getIdTokenClaims fails on mock token
-    await expect(POST(event), 'POST should reject at getIdTokenClaims on the mock token').rejects.toThrow();
+    await expect(
+      POST(event),
+      'POST should reject with the documented 401 HttpError, not merely throw something'
+    ).rejects.toMatchObject(EXPECTED_REJECTION);
 
     expect(capturedFetchBody).not.toBeNull();
     expect(capturedFetchBody!.get('client_assertion_type')).toBe(
@@ -152,7 +177,10 @@ describe('POST /api/oidc/token (Idura - private_key_jwt)', () => {
       redirectUri: 'http://localhost:5173/callback'
     });
 
-    await expect(POST(event), 'POST should reject at getIdTokenClaims on the mock token').rejects.toThrow();
+    await expect(
+      POST(event),
+      'POST should reject with the documented 401 HttpError, not merely throw something'
+    ).rejects.toMatchObject(EXPECTED_REJECTION);
 
     expect(capturedFetchBody).not.toBeNull();
     const assertion = capturedFetchBody!.get('client_assertion');
@@ -169,8 +197,15 @@ describe('POST /api/oidc/token (Idura - private_key_jwt)', () => {
       redirectUri: 'http://localhost:5173/callback'
     });
 
-    await expect(POST(event), 'POST should reject at getIdTokenClaims on the mock token').rejects.toThrow();
+    await expect(
+      POST(event),
+      'POST should reject with the documented 401 HttpError, not merely throw something'
+    ).rejects.toMatchObject(EXPECTED_REJECTION);
 
+    expect(
+      capturedFetchBody,
+      'POST rejected before reaching fetch — the token request was never issued'
+    ).not.toBeNull();
     const assertion = capturedFetchBody!.get('client_assertion')!;
     const header = jose.decodeProtectedHeader(assertion);
     expect(header.alg).toBe('RS256');
@@ -184,8 +219,15 @@ describe('POST /api/oidc/token (Idura - private_key_jwt)', () => {
       redirectUri: 'http://localhost:5173/callback'
     });
 
-    await expect(POST(event), 'POST should reject at getIdTokenClaims on the mock token').rejects.toThrow();
+    await expect(
+      POST(event),
+      'POST should reject with the documented 401 HttpError, not merely throw something'
+    ).rejects.toMatchObject(EXPECTED_REJECTION);
 
+    expect(
+      capturedFetchBody,
+      'POST rejected before reaching fetch — the token request was never issued'
+    ).not.toBeNull();
     const assertion = capturedFetchBody!.get('client_assertion')!;
     const payload = jose.decodeJwt(assertion);
 
@@ -202,8 +244,15 @@ describe('POST /api/oidc/token (Idura - private_key_jwt)', () => {
       redirectUri: 'http://localhost:5173/callback'
     });
 
-    await expect(POST(event), 'POST should reject at getIdTokenClaims on the mock token').rejects.toThrow();
+    await expect(
+      POST(event),
+      'POST should reject with the documented 401 HttpError, not merely throw something'
+    ).rejects.toMatchObject(EXPECTED_REJECTION);
 
+    expect(
+      capturedFetchBody,
+      'POST rejected before reaching fetch — the token request was never issued'
+    ).not.toBeNull();
     const assertion = capturedFetchBody!.get('client_assertion')!;
     const payload = jose.decodeJwt(assertion);
 
@@ -227,7 +276,10 @@ describe('POST /api/oidc/token (Idura - private_key_jwt)', () => {
       redirectUri: 'http://localhost:5173/callback'
     });
 
-    await expect(POST(event), 'POST should reject at getIdTokenClaims on the mock token').rejects.toThrow();
+    await expect(
+      POST(event),
+      'POST should reject with the documented 401 HttpError, not merely throw something'
+    ).rejects.toMatchObject(EXPECTED_REJECTION);
 
     expect(capturedFetchBody).not.toBeNull();
     expect(capturedFetchBody!.has('client_secret')).toBe(false);
@@ -240,7 +292,8 @@ describe('POST /api/oidc/token (Idura - private_key_jwt)', () => {
 //
 // The four `try { await POST(event) } catch {}` blocks below are structurally
 // identical to the six in the Idura describe above, which Phase 140 converted
-// to `await expect(POST(event)).rejects.toThrow()`. They were NOT converted,
+// to `await expect(POST(event)).rejects.toMatchObject(EXPECTED_REJECTION)`.
+// They were NOT converted,
 // and that asymmetry is a scoping decision recorded here so the file does not
 // read as half-migrated:
 //
@@ -254,7 +307,8 @@ describe('POST /api/oidc/token (Idura - private_key_jwt)', () => {
 // getIdTokenClaims as intended" from "the handler threw during argument
 // construction before fetch was reached". Do NOT copy this pattern into new
 // tests — the converted Idura blocks above are the convention. Apply the same
-// `.rejects.toThrow()` conversion when Signicat coverage is next touched.
+// `.rejects.toMatchObject(EXPECTED_REJECTION)` conversion, plus the
+// reached-`fetch` guard, when Signicat coverage is next touched.
 describe('POST /api/oidc/token (Signicat - client_secret)', () => {
   let capturedFetchBody: URLSearchParams | null = null;
 
