@@ -89,8 +89,11 @@ Wave 0 lifts them into the repo, it does not invent them.
 - [ ] `scripts/verify-commit-taxonomy.sh` — criteria 4.1–4.6, including the `[db]` implication check
 - [ ] `scripts/hygiene-grep-report.sh` — criterion 3, before/after occurrence table
 - [ ] `scripts/slice-overlap-matrix.sh` — criterion 6, pairwise file-set overlap
-- [ ] `scripts/hygiene-codemod.mjs` — hygiene Stage 1, with dry-run mode following the two existing
-      in-repo codemods' `APPLY`-flag convention
+- [ ] `scripts/hygiene-codemod.mjs` — hygiene Stage 1, dry-run by default with an `--apply` CLI flag,
+      following the two in-repo precedents `apps/frontend/scripts/store-to-state-codemod.mjs` and
+      `apps/frontend/scripts/flatten-current-codemod.mjs` (see `151-PATTERNS.md`). Reuse their
+      per-line string-literal guard so rewrites are restricted to comment spans, and their
+      warn-only second pass to hand the non-comment matches to Stage-2 agents.
 - [ ] **Baseline capture, before any edit** — the hygiene grep table plus checklist-relevant counts
       (`any`, TODO, stale `docs/src/routes`), so "fixed" is provable rather than asserted
 - [ ] **Baseline lint/format state** — `yarn lint:check` was NOT measured during research
