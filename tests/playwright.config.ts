@@ -162,13 +162,24 @@ for (const [rel, budget] of Object.entries(SOFT_ASSERTION_BUDGETS)) {
  * not a legitimate exclusion — see the `unparsed` check below (Phase 140
  * review WR-03: an enumeration guard with no completeness check is the same
  * failure mode as fake-guard finding F4 above).
+ *
+ * ENUMERATION SCOPE (Phase 140 review IN-02). Scans all of `TESTS_DIR`, not
+ * `TESTS_DIR/setup`, even though all 28 `*.teardown.ts` files live under
+ * `setup/` today. The teardown projects' `testMatch` patterns are unanchored
+ * regexes (e.g. `/base\.teardown\.ts/`) evaluated against the inherited
+ * `testDir` — which is `TESTS_DIR` — so a `*.teardown.ts` added anywhere under
+ * it would be PICKED UP AND RUN by Playwright. Scoping the scan to `setup/`
+ * left exactly that file invisible to the uniqueness check: the same
+ * enumeration-drift shape as fake-guard finding F4, one level up from where
+ * WR-03 fixed it. Matching the scan to the runner's own scope keeps the two
+ * from drifting apart again, which a convention ("put teardowns in setup/")
+ * would not.
  */
-const teardownDir = path.join(TESTS_DIR, 'setup');
+const teardownDir = TESTS_DIR;
 // Phase 140 review IN-01: named precondition, mirroring the ORPHAN-PROBE
 // guard's `fs.existsSync` check above. Without it, a missing/renamed
-// `tests/tests/setup` directory would die on a raw `readdirSync` ENOENT —
-// the opposite of the "fails immediately and by name" property this guard
-// claims for itself.
+// tests directory would die on a raw `readdirSync` ENOENT — the opposite of
+// the "fails immediately and by name" property this guard claims for itself.
 if (!fs.existsSync(teardownDir)) {
   throw new Error(
     `Teardown prefix guard: expected directory '${teardownDir}' does not exist. The ` +
