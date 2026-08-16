@@ -410,8 +410,6 @@ See `render.example.yaml` for Render deployment configuration:
 
 ## Roadmap
 
-**2025 H2**: Documentation site, AI features, application manager UI, first production release
-
 **2026**: Plugins/customization, multi-tenant model, Svelte 5 upgrade
 
 ## Code Review
