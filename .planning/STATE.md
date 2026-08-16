@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
-current_phase: 140
-current_phase_name: blind-matcher-remediation-teardowns-null-matchers-positive-c
+current_phase: 151
+current_phase_name: ship-v0-2-akita-review-stack
 status: executing
-stopped_at: Phase 151 context gathered
-last_updated: "2026-08-16T15:56:05.844Z"
-last_activity: 2026-08-15
-last_activity_desc: Phase 140 execution started
+stopped_at: Completed 151-01-PLAN.md
+last_updated: "2026-08-16T20:29:33.446Z"
+last_activity: 2026-08-16
+last_activity_desc: Phase 151 execution started
 progress:
   total_phases: 15
   completed_phases: 4
   total_plans: 43
-  completed_plans: 24
+  completed_plans: 25
   percent: 27
 ---
 
@@ -24,15 +24,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 140 — blind-matcher-remediation-teardowns-null-matchers-positive-c
+**Current focus:** Phase 151 — ship-v0-2-akita-review-stack
 
 ## Current Position
 
 Milestone: v2.15 (Phases 137-151, 15 phases, 38 requirements)
-Phase: 140 (blind-matcher-remediation-teardowns-null-matchers-positive-c) — EXECUTING
-Plan: 6 of 6
+Phase: 151 (ship-v0-2-akita-review-stack) — EXECUTING
+Plan: 2 of 19
 Status: Ready to execute
-Last activity: 2026-08-15 — Phase 140 execution started
+Last activity: 2026-08-16 — Phase 151 execution started
 
 **Standing acceptance rule for every v2.15 phase:** prove the guard fails before claiming it guards —
 negative control run twice (once against the old assertion to demonstrate blindness, once against the
@@ -48,9 +48,9 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-16T14:25:46.509Z
-Stopped at: Phase 151 context gathered
-Resume file: .planning/phases/151-ship-v0-2-akita-review-stack/151-CONTEXT.md
+Last session: 2026-08-16T20:29:25.812Z
+Stopped at: Completed 151-01-PLAN.md
+Resume file: None
 
 ## Deferred Items
 
@@ -149,6 +149,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 140 P04 | 45min | 3 tasks | 4 files |
 | Phase 140 P05 | 55m | 3 tasks | 32 files |
 | Phase 140 P06 | 45min | 3 tasks | 4 files |
+| Phase 151 P01 | 28min | 3 tasks | 4 files |
 
 ## Deferred Items
 
@@ -642,6 +643,9 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: 140-05: F3 measurement taken — 25 of 26 executed sites report 0/0/0; only the last-seeded perm has rows to delete
 - [Phase ?]: F3 matcher: branch A (before/after invariant) adopted against 140-MEASUREMENT.md's 26-row table; a positivity floor would have reddened 25 of 26 executed sites
 - [Phase ?]: Shape-3 bank-auth teardown reached via its data lane (--project data-setup-bank-auth-journey), turning the expected named gap into an observation; only the journey spec's browser leg remains a named gap
+- [Phase ?]: 151-01: slice 09 needs a bare 'docs' pathspec alongside apps/docs — the target reintroduces a top-level docs/key-generation.md the rename rule does not cover
+- [Phase ?]: 151-01: slice 10 must not be written as a complement of 01b-09, or the catch-all tripwire becomes a tautology; explicit enumeration instead
+- [Phase ?]: 151-01: partition overlap is proven by arithmetic (per-slice counts sum to the independently measured total, 4240), not by the tree hash alone
 
 ### Quick Tasks Completed
 
