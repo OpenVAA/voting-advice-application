@@ -12,7 +12,7 @@
 - ⊘ **v2.12 Runes-Native Cleanup** — Phases 102-105 (SUPERSEDED 2026-06-12 by v2.13)
 - ✅ **v2.13 Context-as-Class Migration** — Phases 106-117 (shipped 2026-06-13)
 - ✅ **v2.14 E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero** — Phases 118-136 (shipped 2026-08-12)
-- 🚧 **v2.15 Trustworthy Foundations — Guards, Seed Data & CI Coverage** — Phases 137-150 (in progress)
+- 🚧 **v2.15 Trustworthy Foundations — Guards, Seed Data & CI Coverage** — Phases 137-151 (in progress)
 
 See `.planning/MILESTONES.md` for cumulative history and `.planning/milestones/` for archived roadmaps + requirements.
 
@@ -204,7 +204,7 @@ Full details: `.planning/milestones/v2.14-ROADMAP.md`
 
 </details>
 
-### 🚧 v2.15 Trustworthy Foundations — Guards, Seed Data & CI Coverage (Phases 137-150) — IN PROGRESS
+### 🚧 v2.15 Trustworthy Foundations — Guards, Seed Data & CI Coverage (Phases 137-151) — IN PROGRESS
 
 **Milestone goal:** Make every automated check in the repo one that can be developed against — closing
 the coverage holes, blind assertions, untrustworthy test data, and missing CI gates that v2.14
@@ -268,10 +268,11 @@ delivery-origin swap whose visual consequence is re-proven by the baselines them
 - [ ] **Phase 148: Candidate-App A11y Remediation to Zero** - Fix everything 147's inventory found, then flip the candidate routes into the blocking axe family (CSCAN-02)
 - [ ] **Phase 149: CI Gates — SQL Lint/Format + Secrets & Vulnerability Scanning** - Invoke the `db:lint:sql` script that nothing runs, put SQL in the standard format gate, add secrets + vuln scanning (CIGATE-01/02/03)
 - [ ] **Phase 150: `RETURNS TABLE` Nullability — Audit + Single Override Mechanism** - Enumerate every RPC's semantically-nullable columns and fix the lie with one mechanism, not scattered casts (CIGATE-04/05)
+- [ ] **Phase 151: Ship v0.2 Akita — Review Stack & Commit-History Restructure** - Checklist + style-guide sweeps, comment hygiene, commit-history restructure, and a review-only PR stack off `origin/main` (see ROADMAP.md § Addendum 1)
 
 ## Phase Details
 
-_v2.15 (Phases 137-150) below. Shipped milestones' details live in `.planning/milestones/`._
+_v2.15 (Phases 137-151) below. Shipped milestones' details live in `.planning/milestones/`._
 
 ### Phase 137: E2E Preflight Integrity — Assert the Served Application
 
@@ -576,9 +577,54 @@ unexploited parallelism._
 
 **Plans**: TBD
 
+### Phase 151: Ship v0.2 Akita — Review Stack & Commit-History Restructure
+
+**Goal:** Take the v0.2 "Akita" body of work from its reiterative development history to a
+reviewable, shippable state: sweep the whole diff against the Code Review Checklist and the Code
+Style Guide, bring in-file comments to hygiene (self-explanatory code first; no references to
+planning artifacts or historical changes beyond a short "see phase N" where imperative), restructure
+the commit history into reviewable groupings, and produce a review-only stack of PRs off
+`origin/main`.
+
+Source: `ROADMAP.md` § "Addendum 1: Shipping v0.2 Akita" (repo root, not this file).
+
+**Requirements**: TBD
+**Depends on:** Phase 150
+
+**Success Criteria** (what must be TRUE):
+
+  1. Every condition in `/.agents/code-review-checklist.md` is addressed across the v0.2 diff, with
+     each item's disposition recorded (met / fixed / deliberately deferred + why) rather than assumed.
+  2. The diff adheres to the Code Style Guide
+     (`docs/src/routes/(content)/developers-guide/contributing/code-style-guide/+page.md`).
+  3. Comment hygiene holds: no in-file comment narrates changes for the reviewer or points at
+     planning artifacts or codebase history, except short pointers of the form "see phase 55 /
+     spike 66". Any `[PR review]`-tagged comments are removed before the stack is opened.
+  4. The commit history is restructured so that: all planning items are one commit; all other
+     documentation is one commit; all tests are one commit; feature/fix commits touching the same
+     files or features are squashed such that the PR contains no fixes of itself — only the final
+     outcome; purely-formatting changes are collected into one commit as far as possible; and every
+     commit containing migrations or other database changes carries a `[db]` tag.
+  5. The original reiterative history survives in a backup worktree for the duration of the review.
+  6. A review-only PR stack exists — first PR targeting `origin/main`, the rest stacked on each
+     other — split so that PRs touching the same files are minimised and each PR holds changes of a
+     similar nature. Individual PRs need not build or pass tests; only the whole matters.
+  7. The stack's final state is byte-identical to the original branch's final state, demonstrated,
+     so the stack need not be merged.
+
+**Notes:**
+
+  - Continuation branch `feat-v02-akita-continued` was created at `315b9795e` so a parallel session
+     can continue feature work while this review/ship work proceeds.
+  - Milestone/phase boundaries are a starting point for the PR split, but merge or split them where
+     a reviewer would otherwise read changes that a later commit undoes, or a partial version of a
+     feature that was later reworked.
+
+**Plans**: TBD
+
 ## Progress
 
-**Active milestone: v2.15 Trustworthy Foundations — Guards, Seed Data & CI Coverage** — Phases 137-150 (14 phases), 38/38 requirements mapped. Plan counts are set per phase by `/gsd-plan-phase`.
+**Active milestone: v2.15 Trustworthy Foundations — Guards, Seed Data & CI Coverage** — Phases 137-151 (15 phases), 38/38 requirements mapped. Plan counts are set per phase by `/gsd-plan-phase`.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
