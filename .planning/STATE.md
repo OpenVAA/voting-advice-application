@@ -5,16 +5,16 @@ milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 140
 current_phase_name: blind-matcher-remediation-teardowns-null-matchers-positive-c
 status: verifying
-stopped_at: Completed 140-06-PLAN.md (phase 140 gate green)
-last_updated: "2026-08-15T15:24:14.431Z"
+stopped_at: Phase 151 context gathered
+last_updated: "2026-08-16T14:25:46.534Z"
 last_activity: 2026-08-15
 last_activity_desc: Phase 140 execution started
 progress:
-  total_phases: 14
+  total_phases: 15
   completed_phases: 4
   total_plans: 24
   completed_plans: 24
-  percent: 29
+  percent: 27
 ---
 
 # Project State
@@ -48,9 +48,9 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-15T15:24:14.409Z
-Stopped at: Completed 140-06-PLAN.md (phase 140 gate green)
-Resume file: None
+Last session: 2026-08-16T14:25:46.509Z
+Stopped at: Phase 151 context gathered
+Resume file: .planning/phases/151-ship-v0-2-akita-review-stack/151-CONTEXT.md
 
 ## Deferred Items
 
