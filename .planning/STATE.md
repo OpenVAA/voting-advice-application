@@ -5,15 +5,15 @@ milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 151
 current_phase_name: ship-v0-2-akita-review-stack
 status: executing
-stopped_at: Completed 151-01-PLAN.md
-last_updated: "2026-08-16T20:29:33.446Z"
+stopped_at: Completed 151-02-PLAN.md
+last_updated: "2026-08-16T20:47:07.041Z"
 last_activity: 2026-08-16
 last_activity_desc: Phase 151 execution started
 progress:
   total_phases: 15
   completed_phases: 4
   total_plans: 43
-  completed_plans: 25
+  completed_plans: 26
   percent: 27
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 
 Milestone: v2.15 (Phases 137-151, 15 phases, 38 requirements)
 Phase: 151 (ship-v0-2-akita-review-stack) — EXECUTING
-Plan: 2 of 19
+Plan: 3 of 19
 Status: Ready to execute
 Last activity: 2026-08-16 — Phase 151 execution started
 
@@ -48,8 +48,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-16T20:29:25.812Z
-Stopped at: Completed 151-01-PLAN.md
+Last session: 2026-08-16T20:46:57.504Z
+Stopped at: Completed 151-02-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -150,6 +150,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 140 P05 | 55m | 3 tasks | 32 files |
 | Phase 140 P06 | 45min | 3 tasks | 4 files |
 | Phase 151 P01 | 28min | 3 tasks | 4 files |
+| Phase 151 P02 | 48min | 3 tasks | 3 files |
 
 ## Deferred Items
 
@@ -646,6 +647,9 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: 151-01: slice 09 needs a bare 'docs' pathspec alongside apps/docs — the target reintroduces a top-level docs/key-generation.md the rename rule does not cover
 - [Phase ?]: 151-01: slice 10 must not be written as a complement of 01b-09, or the catch-all tripwire becomes a tautology; explicit enumeration instead
 - [Phase ?]: 151-01: partition overlap is proven by arithmetic (per-slice counts sum to the independently measured total, 4240), not by the tree hash alone
+- [Phase ?]: Criteria 4.1-4.2 are distinct single-commit classes: the planning slice must be subjected planning: / docs[planning]: / docs(planning):, never bare docs:
+- [Phase ?]: Hygiene rows are made disjoint with (?!-\d{2}); 725 is the COMBINED decision-ID count (540 bare + 185 long), correcting C-5
+- [Phase ?]: The hygiene report prints two totals: an 8-row planning-reference total comparable to research's 1,984, and a labelled task-id supplementary subtotal
 
 ### Quick Tasks Completed
 
