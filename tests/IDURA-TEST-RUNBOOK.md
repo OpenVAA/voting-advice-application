@@ -417,11 +417,20 @@ Playwright starts the mock OIDC issuer (`webServer` entry → `tsx mockOidcIssue
 waits for `https://127.0.0.1:9443/.well-known/openid-configuration/jwks` (with
 `ignoreHTTPSErrors`), then runs the journey, then tears the issuer down.
 
-> **Since Phase 140 CR-01:** `--project=bank-auth-journey` also depends on `data-setup-base`
-> (see `playwright.config.ts`'s bank-auth-journey block comment), so this gate now seeds the
-> base dataset before the bank-auth dataset. Both are present in the DB while the journey
-> walks — a known, deferred gap (Phase 140 review iteration 3 CR-01; see
-> `140-REVIEW-FIX.md`) that a green run of this gate does NOT rule out.
+> **Since Phase 140 WR-03 this gate is NO LONGER FAST.** `data-setup-bank-auth-journey`
+> depends on `voter-prefs-tracking`, the tail of the perm serial chain, so
+> `--project=bank-auth-journey` pulls the ENTIRE chain transitively — expect full-suite
+> wall-clock (~11 min per run, so ~35 min for the 3× gate), not seconds. This is deliberate:
+> the setup does an authoritative `app_settings` REPLACE, the singleton needs mutual
+> exclusion rather than mere ordering, and being in the serial chain is how this config
+> spells that. RESEARCH A4 ("stands alone") is explicitly superseded — there is no
+> requirement that this journey be runnable quickly in isolation.
+>
+> Consequently many datasets (base, every perm dataset) are live in the DB while the journey
+> walks. That is SAFE because selection is identity-based since Phase 140 CR-01:
+> `submitElection('[EL1]')` / `submitConstituency('[CO1')` assert on the dataset's own labels,
+> so a foreign dataset fails the walk loudly instead of being silently preregistered into.
+> Verified by trace — see `140-GATES.md` Gate 3.
 
 > **Cardinal rule (CLAUDE.md):** the journey must pass — a "did not run" counts as a failure.
 > Run the gate **3×** on a fresh dev server + clean DB, and confirm the DEFAULT suite

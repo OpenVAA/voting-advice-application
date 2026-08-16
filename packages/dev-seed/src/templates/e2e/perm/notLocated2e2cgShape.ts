@@ -51,8 +51,16 @@ import {
 } from './shared';
 import type { Template } from '../../../template/types';
 
-export function buildNotLocated2e2cgTemplate(prefix: string): Template {
+export function buildNotLocated2e2cgTemplate(prefix: string, labelToken = ''): Template {
   const P = prefix;
+  // Display-label namespace. `[EL1]`/`[CO1A]`/… are a PERM-FAMILY SHAPE
+  // CONVENTION, not a dataset identity — twelve templates emit `[EL1]`. A
+  // consumer whose dataset can be live in the DB alongside another perm
+  // dataset MUST pass a token so its labels are unique, or a label-based
+  // locator silently resolves to the wrong row (Phase 140 WR-03: appending
+  // bank-auth to the chain tail made `[EL1]` resolve to 2 elements and
+  // correctly failed the journey's identity assertion).
+  const T = labelToken;
 
   return {
     seed: 42,
@@ -64,8 +72,8 @@ export function buildNotLocated2e2cgTemplate(prefix: string): Template {
       fixed: [
         {
           external_id: 'el-1',
-          name: { en: '[EL1] Region election' },
-          short_name: { en: 'EL1' },
+          name: { en: `[${T}EL1] Region election` },
+          short_name: { en: `${T}EL1` },
           election_type: 'general',
           election_date: '2026-06-15',
           sort_order: 0,
@@ -76,8 +84,8 @@ export function buildNotLocated2e2cgTemplate(prefix: string): Template {
         },
         {
           external_id: 'el-2',
-          name: { en: '[EL2] Municipal election' },
-          short_name: { en: 'EL2' },
+          name: { en: `[${T}EL2] Municipal election` },
+          short_name: { en: `${T}EL2` },
           election_type: 'local',
           election_date: '2026-06-15',
           sort_order: 1,
@@ -94,14 +102,14 @@ export function buildNotLocated2e2cgTemplate(prefix: string): Template {
       fixed: [
         {
           external_id: 'cg-1',
-          name: { en: '[CG1] Region' },
+          name: { en: `[${T}CG1] Region` },
           sort_order: 0,
           is_generated: false,
           constituencies: [{ external_id: `${P}co-1a` }, { external_id: `${P}co-1b` }]
         },
         {
           external_id: 'cg-2',
-          name: { en: '[CG2] Municipal' },
+          name: { en: `[${T}CG2] Municipal` },
           sort_order: 1,
           is_generated: false,
           constituencies: [{ external_id: `${P}co-2a` }, { external_id: `${P}co-2b` }]
@@ -112,10 +120,10 @@ export function buildNotLocated2e2cgTemplate(prefix: string): Template {
     constituencies: {
       count: 0,
       fixed: [
-        { external_id: 'co-1a', name: { en: '[CO1A] Region North' }, sort_order: 0, is_generated: false },
-        { external_id: 'co-1b', name: { en: '[CO1B] Region South' }, sort_order: 1, is_generated: false },
-        { external_id: 'co-2a', name: { en: '[CO2A] Municipal East' }, sort_order: 2, is_generated: false },
-        { external_id: 'co-2b', name: { en: '[CO2B] Municipal West' }, sort_order: 3, is_generated: false }
+        { external_id: 'co-1a', name: { en: `[${T}CO1A] Region North` }, sort_order: 0, is_generated: false },
+        { external_id: 'co-1b', name: { en: `[${T}CO1B] Region South` }, sort_order: 1, is_generated: false },
+        { external_id: 'co-2a', name: { en: `[${T}CO2A] Municipal East` }, sort_order: 2, is_generated: false },
+        { external_id: 'co-2b', name: { en: `[${T}CO2B] Municipal West` }, sort_order: 3, is_generated: false }
       ]
     },
 

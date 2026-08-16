@@ -422,19 +422,22 @@ export default defineConfig({
     // → authenticated → election/constituency → email+ToU → preregister() →
     // registration-key → set password → logged-in.
     //
-    // OPT-IN (PLAYWRIGHT_BANK_AUTH). It does NOT join the perm serial chain
-    // (RESEARCH A4/Pitfall 3), but as of Phase 140 CR-01 it DOES depend on
-    // `data-setup-base` below — mirroring the sibling `bank-auth` project's
-    // wiring above — so the isolated `--project=bank-auth-journey` gate runs 5
-    // projects (base setup, this setup, the spec, both teardowns) and the base
-    // dataset IS present in the DB while the journey walks. KNOWN GAP (Phase
-    // 140 review iteration 3 CR-01, deliberately deferred — see
-    // `140-REVIEW-FIX.md`): `submitElection()` / `submitConstituency()` in
-    // `candidatePreregisterPage.fixture.ts` still select the FIRST rendered
-    // option with no tiebreak on `sort_order`, so with the base dataset
-    // present the journey can silently preregister into a foreign election
-    // rather than the one this dataset owns. Not yet fixed here. The
-    // setup/teardown FILES these entries point at land in 122-04; the journey
+    // OPT-IN (PLAYWRIGHT_BANK_AUTH). As of Phase 140 WR-03 it JOINS THE TAIL OF
+    // THE PERM SERIAL CHAIN (see `dependencies` below). This SUPERSEDES RESEARCH
+    // A4/Pitfall 3 ("stands alone") by explicit operator decision: A4 bought a
+    // fast isolated gate at the cost of `app_settings` singleton safety, and the
+    // singleton wins. The isolated `--project=bank-auth-journey` gate therefore
+    // now pulls the whole chain transitively and takes full-suite time rather
+    // than seconds — accepted, because there is no requirement that this journey
+    // be runnable quickly in isolation.
+    //
+    // Phase 140 CR-01 is FIXED (commit `10ca954ac`): `submitElection()` /
+    // `submitConstituency()` in `candidatePreregisterPage.fixture.ts` select by
+    // LABEL, not by position, so a foreign dataset in the DB fails the walk
+    // loudly instead of being silently preregistered into. Proven by trace —
+    // `check` fires on the `[EL1]` option (see `140-GATES.md` Gate 3).
+    //
+    // The setup/teardown FILES these entries point at land in 122-04; the journey
     // SPEC matched by the `bank-auth-journey` project lands in 122-05.
     //
     // The mock OIDC issuer is spawned via the `webServer` entry below (also
@@ -447,19 +450,30 @@ export default defineConfig({
             name: 'data-setup-bank-auth-journey',
             testMatch: /bank-auth-journey\.setup\.ts/,
             teardown: 'data-teardown-bank-auth-journey',
-            // Phase 140 CR-01 (iteration-2 regression fix): order this project
-            // after `data-setup-base` — mirrors the sibling `bank-auth` project's
-            // wiring above. A4 is preserved: this is `data-setup-base` only, NOT
-            // the perm serial chain, so the isolated `--project=bank-auth-journey`
-            // 3× determinism gate (IDURA-TEST-RUNBOOK.md Step B-3) is unaffected —
-            // it still runs `yarn db:reset` first and only pulls this one extra
-            // (fast, disjoint-prefix) leaf. Ordering after base also lets
-            // `base.setup`'s `extraTeardownPrefix` sweep an orphaned
-            // `e2e-bankauth-` dataset left by an aborted prior run (see
-            // `base.setup.ts`) — without this edge the dataset had no sweeper at
-            // all under the new dedicated `e2e-bankauth-notloc-` prefix and a
-            // failed teardown would silently wedge the default suite.
-            dependencies: ['data-setup-base']
+            // Phase 140 WR-03: APPEND TO THE TAIL OF THE PERM SERIAL CHAIN.
+            //
+            // `voter-prefs-tracking` is the chain's last leaf, so this setup's
+            // authoritative `app_settings` REPLACE cannot overlap any other
+            // project's. Ordering edges express ORDER, not MUTUAL EXCLUSION, and
+            // the `app_settings` JSONB singleton needs the latter — which in this
+            // config is spelled "be in the serial chain". The two cheaper-looking
+            // alternatives were both measured unsound:
+            //   · `['data-setup-base']` (the iteration-2 wiring) put this project
+            //     in the SAME phase as `voter-journey` / `performance` /
+            //     `a11y-smoke` (identical dependency set → identical phase, see
+            //     playwright/lib/runner/tasks.js createPhasesTask), so the REPLACE
+            //     landed mid-spec under `PLAYWRIGHT_BANK_AUTH=1 yarn test:e2e`.
+            //   · `['voter-journey', 'candidate-journey']` (the Phase 140 review's
+            //     own suggestion) merely RELOCATES the race: it lands this project
+            //     in the same phase as `data-setup-perm-1e1cg1co`, the perm chain
+            //     HEAD, which does the same REPLACE. Do not "fix" it that way.
+            //
+            // `data-setup-base` is still ordered before this project transitively
+            // (chain head → `voter-journey` → `data-setup-base`), so `base.setup`'s
+            // `extraTeardownPrefix` sweep of an orphaned `e2e-bankauth-` dataset
+            // from an aborted prior run still runs first — the property Phase 140
+            // CR-01 (iteration 2) added the base edge for is preserved.
+            dependencies: ['voter-prefs-tracking']
           },
           {
             name: 'data-teardown-bank-auth-journey',

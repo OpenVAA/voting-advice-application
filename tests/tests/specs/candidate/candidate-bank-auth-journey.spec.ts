@@ -141,12 +141,15 @@ test.describe('candidate bank-auth journey', { tag: ['@bank-auth'] }, () => {
       // Phase 140 review WR-09 → iter-3 CR-01: select the perm-bankauth-notloc
       // election BY IDENTITY. The earlier `toContainText('[EL1]')` presence
       // check could not catch the real defect — it asserted the dataset was in
-      // the list, not that the fixture then checked it — and since the
-      // `data-setup-base` edge landed, base's `el-reg` shares `sort_order: 0`
-      // with this dataset's `el-1`, so the previous positional `.first()` pick
-      // silently preregistered into a BASE election on every gate run.
+      // the list, not that the fixture then checked it — so the positional
+      // `.first()` pick silently preregistered into a foreign election.
       // submitElection's `toHaveCount(1)` subsumes the presence assertion.
-      await candidatePreregisterPage.submitElection('[EL1]');
+      //
+      // `BA-` (Phase 140 WR-03): `[EL1]` alone is a perm-family shape
+      // convention emitted by twelve templates, so once this project moved to
+      // the chain tail it matched 2 elections. `[BA-EL1]` is this dataset's
+      // own label namespace — see `perm-bankauth-notloc.ts`.
+      await candidatePreregisterPage.submitElection('[BA-EL1]');
     });
 
     // ============== Step 3: constituency selector ==========================
@@ -155,9 +158,10 @@ test.describe('candidate bank-auth journey', { tag: ['@bank-auth'] }, () => {
       await expect(page.getByTestId(testIds.candidate.preregister.constituenciesList)).toBeVisible({
         timeout: TIMEOUTS.slowPage
       });
-      // Identity-scoped for the same reason as step 2: '[CO1' matches only this
-      // dataset's Region constituencies (CO1A/CO1B), never base's.
-      await candidatePreregisterPage.submitConstituency('[CO1');
+      // Identity-scoped for the same reason as step 2: '[BA-CO1' matches only
+      // this dataset's Region constituencies (BA-CO1A / BA-CO1B), never base's
+      // and never a perm dataset's bare `[CO1A]`.
+      await candidatePreregisterPage.submitConstituency('[BA-CO1');
     });
 
     // ============== Step 4: email + ToU → preregister() ====================

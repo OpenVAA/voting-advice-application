@@ -20,6 +20,16 @@
 import { buildNotLocated2e2cgTemplate } from './notLocated2e2cgShape';
 import type { Template } from '../../../template/types';
 
-export const permBankauthNotLocatedTemplate: Template = buildNotLocated2e2cgTemplate('e2e-bankauth-notloc-');
+// Label discipline (Phase 140 WR-03): the `BA-` token gives this dataset its
+// own DISPLAY-label namespace, matching the discipline already applied to its
+// `external_id` prefix. `[EL1]`/`[CO1A]`/… are a perm-family shape convention
+// emitted by twelve templates, so once this setup moved to the chain tail —
+// where perm datasets are still live — a bare `[EL1]` locator resolved to 2
+// elements and the journey's identity assertion (correctly) failed. With the
+// token its labels are `[BA-EL1]`, `[BA-CO1A]`, … which no other template emits.
+export const permBankauthNotLocatedTemplate: Template = buildNotLocated2e2cgTemplate(
+  'e2e-bankauth-notloc-',
+  'BA-'
+);
 
 export default permBankauthNotLocatedTemplate;
