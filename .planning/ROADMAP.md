@@ -627,7 +627,7 @@ each plan's `requirements` field cites the criteria it serves (`criterion-1` …
      a reviewer would otherwise read changes that a later commit undoes, or a partial version of a
      feature that was later reworked.
 
-**Plans:** 2/19 plans executed, 17 waves. Tracer-first: plan 01 proves the whole stack mechanism end to end on
+**Plans:** 3/19 plans executed, 17 waves. Tracer-first: plan 01 proves the whole stack mechanism end to end on
 throwaway refs before any sweep, slice or PR exists. Slice work is serialised bottom-up per D-07.
 
 Plans:
@@ -638,7 +638,7 @@ Plans:
 **Wave 2** *(blocked on Wave 1 completion)*
 
 - [x] 151-02-PLAN.md — Wave-0 verification and report tooling: taxonomy, hygiene grep, overlap matrix (wave 2)
-- [ ] 151-03-PLAN.md — Backup worktree pin (criterion 5) and lint/format/unit/hygiene baselines (wave 2)
+- [x] 151-03-PLAN.md — Backup worktree pin (criterion 5) and lint/format/unit/hygiene baselines (wave 2)
 - [ ] 151-04-PLAN.md — Re-measure every gate's reach, slice anatomy, and the pre-seeded findings (wave 2)
 
 **Wave 3** *(blocked on Wave 2 completion)*

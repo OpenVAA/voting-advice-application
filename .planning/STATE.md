@@ -5,15 +5,15 @@ milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 151
 current_phase_name: ship-v0-2-akita-review-stack
 status: executing
-stopped_at: Completed 151-02-PLAN.md
-last_updated: "2026-08-16T20:47:07.041Z"
+stopped_at: Completed 151-03-PLAN.md
+last_updated: "2026-08-16T21:00:37.675Z"
 last_activity: 2026-08-16
 last_activity_desc: Phase 151 execution started
 progress:
   total_phases: 15
   completed_phases: 4
   total_plans: 43
-  completed_plans: 26
+  completed_plans: 27
   percent: 27
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 
 Milestone: v2.15 (Phases 137-151, 15 phases, 38 requirements)
 Phase: 151 (ship-v0-2-akita-review-stack) — EXECUTING
-Plan: 3 of 19
+Plan: 4 of 19
 Status: Ready to execute
 Last activity: 2026-08-16 — Phase 151 execution started
 
@@ -48,8 +48,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-16T20:46:57.504Z
-Stopped at: Completed 151-02-PLAN.md
+Last session: 2026-08-16T21:00:37.653Z
+Stopped at: Completed 151-03-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -151,6 +151,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 140 P06 | 45min | 3 tasks | 4 files |
 | Phase 151 P01 | 28min | 3 tasks | 4 files |
 | Phase 151 P02 | 48min | 3 tasks | 3 files |
+| Phase 151 P03 | 31min | 3 tasks | 2 files |
 
 ## Deferred Items
 
@@ -650,6 +651,9 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Criteria 4.1-4.2 are distinct single-commit classes: the planning slice must be subjected planning: / docs[planning]: / docs(planning):, never bare docs:
 - [Phase ?]: Hygiene rows are made disjoint with (?!-\d{2}); 725 is the COMBINED decision-ID count (540 bare + 185 long), correcting C-5
 - [Phase ?]: The hygiene report prints two totals: an 8-row planning-reference total comparable to research's 1,984, and a labelled task-id supplementary subtotal
+- [Phase ?]: 151-03: pin is the execution-time tip fe91f3099, not CONTEXT's 94be73a61; both recorded, drift is 15 source-free planning commits
+- [Phase ?]: 151-03: format:check is RED (2 prettier files); PD-03 fences both out of D-05's fix bar unless a slice sweep surfaces them
+- [Phase ?]: 151-03: A6 resolved — per-package tests/ are UNLINTED not exempt; every workspace lints src/ only, so 'lint-enforced' is true of src/ only
 
 ### Quick Tasks Completed
 
