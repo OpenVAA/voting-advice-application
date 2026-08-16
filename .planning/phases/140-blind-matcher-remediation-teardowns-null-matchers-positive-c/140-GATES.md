@@ -3,6 +3,8 @@ phase: 140-blind-matcher-remediation-teardowns-null-matchers-positive-c
 ran_at: 2026-08-16T13:40:00Z
 gates_owed: 4
 gates_discharged: 4
+regate_2026_08_16: gate 1 re-run cardinal-clean after IN-01/IN-02/IN-03 fixes
+info_findings: all 5 closed
 status: all_green
 evidence_dir: tests/e2e-runs/140-cr01-gates + tests/e2e-runs/140-wr03-gates (gitignored — local only)
 supersedes: the 2026-08-15 run of Gates 1-3, which predates the WR-03 chain move
@@ -202,4 +204,62 @@ singleton.
 - **WR-03 is CLOSED** (structurally, per above), superseding the "still open"
   note in the 2026-08-15 section.
 - **WR-04** closed as a scoping decision (`f3f635c13`), not a fix.
-- Remaining Info findings from `140-REVIEW.md` are untouched.
+- **All five Info findings are now closed** (2026-08-16) — see the section
+  below. IN-04 had already landed in `e3d37315e`, two minutes before
+  `140-REVIEW.md` was written, which is why the report lists it as both
+  in-scope-fixed and an open finding; IN-05 is this document.
+
+## Gate 1 re-run — after the IN-01/IN-02/IN-03 fixes (2026-08-16)
+
+The three remaining Info findings were closed in `ddacce370` (IN-03),
+`f40205f88` (IN-01), and `c15e444e8` (IN-02). Only IN-02 touches anything the
+E2E suite loads (`playwright.config.ts`), and only at config-load time — but
+per the E2E hard rule the full suite is the trusted signal, so Gate 1 was
+re-run rather than argued from scope.
+
+```
+yarn db:reset && yarn dev && yarn test:e2e
+```
+
+**PASSED — cardinal-clean. 135 passed (10.9m).** Identical counts to the
+2026-08-16T13:40 run above. From the HTML report's embedded `report.json`, NOT
+the console tail:
+
+```json
+{ "total": 135, "expected": 135, "unexpected": 0,
+  "flaky": 0, "skipped": 0, "ok": true }
+```
+
+Supporting static gates: unit 773/773 across 54 files; `tsc -p
+tests/tsconfig.json --noEmit` clean; `yarn lint:check` 0 errors (2 pre-existing
+warnings, both in files this pass did not touch); prettier clean;
+`playwright test --list` resolves 143 tests in 94 files.
+
+### Each fix carries a reverted negative control
+
+Static verification alone would repeat the failure mode this phase exists to
+close — a guard that cannot be shown to fail is not a guard.
+
+- **IN-01** — added `'ghost_table'` to `allowed_collections` only. The new
+  array-agreement test reds with its named message; the intersection test stays
+  GREEN, i.e. the misleading "add it to `ALLOWED_TEARDOWN_TABLES`" instruction
+  (the actual defect) no longer fires.
+- **IN-02** — planted a colliding `specs/_in02probe.teardown.ts` outside
+  `setup/`. Scan at `TESTS_DIR/setup` (prior): no throw, "Total: 143 tests in
+  94 files". Scan at `TESTS_DIR` (fixed): throws naming both files. The hole
+  was reproduced before it was closed.
+- **IN-03** — `EXPECTED_REJECTION.status` 401 -> 403 reds exactly the six Idura
+  sites and leaves the Signicat four alone; making the mock `fetch` stop
+  recording reds all ten on the reached-`fetch` guard.
+
+### One deviation from the review's prescribed fix
+
+`140-REVIEW.md`'s IN-03 proposed `.rejects.toThrow(/id_token|claims|jwt/i)`.
+That would have reddened the suite: `POST` re-raises every failure as
+`error(401, ...)`, so it rejects with a SvelteKit `HttpError` — `{status,
+body}`, not an `Error`, with no `message` to match (probed live before
+choosing: `ctor=HttpError, isError=false, message=undefined,
+keys=['status','body']`). The shape matcher plus the reached-`fetch` guard
+gives what the review actually wanted — the token request was issued AND the
+handler then failed the documented way — and the rationale is recorded in the
+test file so the regex is not re-applied later.
