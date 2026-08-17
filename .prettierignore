@@ -16,12 +16,6 @@ pnpm-lock.yaml
 yarn.lock
 
 # NB! Because of prettier’s limitations, .prettierignore files in subfolders are not respected
-# Ignores for apps/strapi
-apps/strapi/.strapi-updater.json
-apps/strapi/.strapi
-apps/strapi/.cache
-apps/strapi/**/documentation
-apps/strapi/temp
 # Ignores for apps/frontend
 apps/frontend/.svelte-kit
 apps/frontend/package
