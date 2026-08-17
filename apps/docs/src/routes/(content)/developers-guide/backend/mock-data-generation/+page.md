@@ -1,3 +1,5 @@
+> **Note:** This page documents the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release.
+
 # Mock data generation
 
 > NB! This feature must only be used for local development and testing (not on production)
@@ -25,9 +27,25 @@ Setting `GENERATE_MOCK_DATA_ON_RESTART` as true will override `GENERATE_MOCK_DAT
 
 **Note:** you need to modify these variables in the relevant `.env` file (located either in the project's root directory or in `backend/vaa-strapi`) depending on how you choose to run the backend service locally.
 
-### Mock users
+### Dev users (always created)
 
-By default, mock data includes the following Users (for up-to-date details, see [mockUsers](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/functions/mockData/mockUsers.json)):
+In development, a Strapi admin and a test candidate user are always created on bootstrap (via `ensureDevData`), even without mock data generation. Their credentials are configurable via env vars:
+
+```dotenv
+DEV_ADMIN_EMAIL=mock.admin@openvaa.org
+DEV_ADMIN_PASSWORD=admin
+DEV_CANDIDATE_EMAIL=mock.candidate.2@openvaa.org
+DEV_CANDIDATE_PASSWORD=Password1!
+```
+
+| User type      | User role     | Email (default)                | Password (default) | Remarks                            |
+| -------------- | ------------- | ------------------------------ | ------------------ | ---------------------------------- |
+| Strapi Admin   | Super Admin   | `mock.admin@openvaa.org`       | `admin`            | Configurable via `DEV_ADMIN_*`     |
+| Test Candidate | Authenticated | `mock.candidate.2@openvaa.org` | `Password1!`       | Configurable via `DEV_CANDIDATE_*` |
+
+### Mock users (with mock data generation)
+
+When mock data generation is enabled, additional users are created (for up-to-date details, see [mockUsers](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/functions/mockData/mockUsers.json)):
 
 | User type   | User role     | Email                          | Password     | Remarks                       |
 | ----------- | ------------- | ------------------------------ | ------------ | ----------------------------- |
@@ -35,8 +53,4 @@ By default, mock data includes the following Users (for up-to-date details, see 
 | Candidate 2 | Authenticated | `mock.candidate.2@openvaa.org` | `Password1!` | Use to test the Candidate App |
 | Admin       | Admin         | `mock.admin@openvaa.org`       | `Password1!` | Use to test the Admin App     |
 
-Note that the mock admin is different from the default Strapi Admin, generated along with mock data.
-
-| User type    | Username | Email                    | Password | Remarks                |
-| ------------ | -------- | ------------------------ | -------- | ---------------------- |
-| Strapi Admin | `admin`  | `mock.admin@openvaa.org` | `admin`  | Use to login to Strapi |
+Note that the mock admin above is a users-permissions "admin" role user, different from the Strapi panel admin.

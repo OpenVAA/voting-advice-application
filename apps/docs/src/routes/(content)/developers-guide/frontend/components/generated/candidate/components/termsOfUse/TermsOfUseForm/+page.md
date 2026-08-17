@@ -23,6 +23,6 @@ Accesses `CandidateContext`.
 
 ## Source
 
-[frontend/src/lib/candidate/components/termsOfUse/TermsOfUseForm.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/candidate/components/termsOfUse/TermsOfUseForm.svelte)
+[frontend/src/lib/candidate/components/termsOfUse/TermsOfUseForm.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/candidate/components/termsOfUse/TermsOfUseForm.svelte)
 
-[frontend/src/lib/candidate/components/termsOfUse/TermsOfUseForm.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/candidate/components/termsOfUse/TermsOfUseForm.type.ts)
+[frontend/src/lib/candidate/components/termsOfUse/TermsOfUseForm.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/candidate/components/termsOfUse/TermsOfUseForm.type.ts)

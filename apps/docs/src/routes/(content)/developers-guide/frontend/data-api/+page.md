@@ -1,3 +1,5 @@
+> **Note:** Parts of this page reference the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release.
+
 # Data API
 
 The Data API is the interface between the frontend and the backend. It handles reading and writing of data in such a way that the frontend can remain agnostic to the actual implementation.
@@ -12,27 +14,27 @@ The Data API is composed of three services:
 
 ### Cache
 
-A simple [disk cache](https://github.com/jaredwray/cacheable#readme) may also be opted in by setting the `PUBLIC_CACHE_ENABLED` env variable to `true` (and configuring the other `CACHE_` variables). If enabled, non-authenticated `GET` requests are cached by default. Caching is handled by the [UniversalAdapter.fetch](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/api/base/universalAdapter.ts) method, using the [/api/cache/+server] route.
+A simple [disk cache](https://github.com/jaredwray/cacheable#readme) may also be opted in by setting the `PUBLIC_CACHE_ENABLED` env variable to `true` (and configuring the other `CACHE_` variables). If enabled, non-authenticated `GET` requests are cached by default. Caching is handled by the [UniversalAdapter.fetch](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/base/universalAdapter.ts) method, using the [/api/cache/+server] route.
 
 Note that the cache can be enabled also when the `local` data adapter is used. This may, however, not improve performance by much, as the only overhead saved is the application of query filters to the locally stored json data.
 
 ### Folder structure
 
-- [frontend/](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend)
-  - [src/](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src)
-    - [lib/api/](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/api) — All universally available Data API implementations.
-      - [adapters/](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/api/adapters) — Specific Data API implemenations.
-        - [apiRoute/](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/api/adapters/apiRoute) — Generic `ApiRouteDataProvider` and `ApiRouteFeedbackWriter` implementations through which all server-run implementations are accessed. Redirects calls to local API routes (see below).
-        - [strapi/](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/api/adapters/strapi) – Specific `StrapiDataProvider`, `StrapiFeedbackWriter` and `StrapiDataWriter` implementations for use with the Strapi backend.
-      - [base/](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/api/base) — Common types and interfaces as well as the `UniversalDataProvider`, `UniversalFeedbackWriter` and `UniversalDataWriter` classes which the specific implementations extend. All common data processing, such as color contrast checking, is handled by these classes.
-      - [utils/](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/api/utils) — Utilities related to the Data API.
-      - [dataProvider.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/api/dataProvider.ts) — The main entry point for the `load` functions via `import { dataProvider } from '$lib/api/dataProvider'`. The implementation specified in the settings is returned (as a Promise).
-      - [dataWriter.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/api/dataWriter.ts) — The main entry point for the `CandidateContext` methods.
-      - [feedbackWriter.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/api/feedbackWriter.ts) — The main entry point for the `sendFeedback` method of `AppContext`.
-    - [server/api/](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/server/api) – All Data API implementations that must run on the server.
-      - [adapters/local/](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/server/api/adapters/local) — Specific `LocalServerDataProvider` and `LocalServerFeedbackWriter` implementations that read and write local `json` files in the [data](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/data) folder.
-      - [dataProvider.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/server/api/dataProvider.ts) — The main entry point for the `GET` function of the `/api/data/[collection]/+server.ts` API route.
-      - [feedbackWriter.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/server/api/feedbackWriter.ts) — The main entry point for the `POST` function of the `/api/feedback/+server.ts` API route.
+- [frontend/](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend)
+  - [src/](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src)
+    - [lib/api/](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api) — All universally available Data API implementations.
+      - [adapters/](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/adapters) — Specific Data API implemenations.
+        - [apiRoute/](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/adapters/apiRoute) — Generic `ApiRouteDataProvider` and `ApiRouteFeedbackWriter` implementations through which all server-run implementations are accessed. Redirects calls to local API routes (see below).
+        - [strapi/](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/adapters/strapi) – Specific `StrapiDataProvider`, `StrapiFeedbackWriter` and `StrapiDataWriter` implementations for use with the Strapi backend.
+      - [base/](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/base) — Common types and interfaces as well as the `UniversalDataProvider`, `UniversalFeedbackWriter` and `UniversalDataWriter` classes which the specific implementations extend. All common data processing, such as color contrast checking, is handled by these classes.
+      - [utils/](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/utils) — Utilities related to the Data API.
+      - [dataProvider.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/dataProvider.ts) — The main entry point for the `load` functions via `import { dataProvider } from '$lib/api/dataProvider'`. The implementation specified in the settings is returned (as a Promise).
+      - [dataWriter.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/dataWriter.ts) — The main entry point for the `CandidateContext` methods.
+      - [feedbackWriter.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/feedbackWriter.ts) — The main entry point for the `sendFeedback` method of `AppContext`.
+    - [server/api/](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/server/api) – All Data API implementations that must run on the server.
+      - [adapters/local/](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/server/api/adapters/local) — Specific `LocalServerDataProvider` and `LocalServerFeedbackWriter` implementations that read and write local `json` files in the [data](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/data) folder.
+      - [dataProvider.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/server/api/dataProvider.ts) — The main entry point for the `GET` function of the `/api/data/[collection]/+server.ts` API route.
+      - [feedbackWriter.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/server/api/feedbackWriter.ts) — The main entry point for the `POST` function of the `/api/feedback/+server.ts` API route.
     - `routes/[lang=locale]/`
       - `api/` – Contains the API routes.
         - `cache/+server.ts` – Implements simple disk caching using [`flat-cache`](https://github.com/jaredwray/cacheable#readme)
@@ -41,7 +43,7 @@ Note that the cache can be enabled also when the `local` data adapter is used. T
         - `data/[collection]/+server.ts` – Access to the server-run `ServerDataProvider` implementations.
         - `feedback/+server.ts` – Access to the server-run `ServerFeedbackWriter` implementations.
       - `candidate/login/+page.server.ts` - Access to `DataWriter.login` and set the authentication cookie.
-  - [data/](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/data) — For data used by the `LocalServerDataProvider` and `LocalServerFeedbackWriter`.
+  - [data/](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/data) — For data used by the `LocalServerDataProvider` and `LocalServerFeedbackWriter`.
 
 ### Classes and interfaces
 

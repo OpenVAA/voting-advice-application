@@ -17,6 +17,6 @@ Render a text filter for entities.
 
 ## Source
 
-[frontend/src/lib/components/entityFilters/text/TextEntityFilter.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/entityFilters/text/TextEntityFilter.svelte)
+[frontend/src/lib/components/entityFilters/text/TextEntityFilter.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/entityFilters/text/TextEntityFilter.svelte)
 
-[frontend/src/lib/components/entityFilters/text/TextEntityFilter.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/entityFilters/text/TextEntityFilter.type.ts)
+[frontend/src/lib/components/entityFilters/text/TextEntityFilter.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/entityFilters/text/TextEntityFilter.type.ts)

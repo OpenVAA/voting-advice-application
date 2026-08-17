@@ -38,6 +38,6 @@ Create navigation menus for the application in a predefined style.
 
 ## Source
 
-[frontend/src/lib/dynamic-components/navigation/Navigation.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/navigation/Navigation.svelte)
+[frontend/src/lib/dynamic-components/navigation/Navigation.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/Navigation.svelte)
 
-[frontend/src/lib/dynamic-components/navigation/Navigation.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/navigation/Navigation.type.ts)
+[frontend/src/lib/dynamic-components/navigation/Navigation.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/Navigation.type.ts)

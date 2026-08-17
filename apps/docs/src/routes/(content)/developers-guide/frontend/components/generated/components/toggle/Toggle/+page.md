@@ -52,6 +52,6 @@ Display a short list of options as toggleable text or icon buttons from which on
 
 ## Source
 
-[frontend/src/lib/components/toggle/Toggle.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/toggle/Toggle.svelte)
+[frontend/src/lib/components/toggle/Toggle.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/toggle/Toggle.svelte)
 
-[frontend/src/lib/components/toggle/Toggle.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/toggle/Toggle.type.ts)
+[frontend/src/lib/components/toggle/Toggle.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/toggle/Toggle.type.ts)

@@ -14,6 +14,6 @@ A simple warning component to be used with BasicPage
 
 ## Source
 
-[frontend/src/lib/components/warning/Warning.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/warning/Warning.svelte)
+[frontend/src/lib/components/warning/Warning.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/warning/Warning.svelte)
 
-[frontend/src/lib/components/warning/Warning.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/warning/Warning.type.ts)
+[frontend/src/lib/components/warning/Warning.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/warning/Warning.type.ts)

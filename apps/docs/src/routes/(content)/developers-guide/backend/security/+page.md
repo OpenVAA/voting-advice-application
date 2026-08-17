@@ -1,3 +1,5 @@
+> **Note:** This page documents the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release.
+
 # Security
 
 > NB. The Security chapter may be partly outdated.

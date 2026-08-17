@@ -90,6 +90,8 @@
 
 <section
   class="relative flex w-full flex-col items-center overflow-hidden bg-base-300"
+  role="group"
+  aria-label="OpenVAA screenshot showcase"
   style:--firstItem={firstItem}
   style:--numItems={numItems}
   style:--itemWidth="calc((100vw - (var(--numItems) - 1) * var(--itemGap) - 2 * var(--sideGap)) / var(--numItems))"
@@ -164,14 +166,18 @@
     </div>
   </div>
 
- <div class="flex flex-col-reverse items-end gap-md rounded-lg border border-base-300 p-lg md:flex-row">
-    <img
-      src="/images/youthvotes-logo.png"
-      alt="YouthVotes project logo"
-      class="-ms-sm max-w-[5rem] md:max-w-[7rem]" />
+  <div class="flex flex-col-reverse items-end gap-md rounded-lg border border-base-300 p-lg md:flex-row">
+    <img src="/images/youthvotes-logo.png" alt="YouthVotes project logo" class="-ms-sm max-w-[5rem] md:max-w-[7rem]" />
     <div>
       <h4 class="mb-md font-bold">YouthVotes</h4>
-      <p>OpenVAA is participating in the <a href="https://nuorisoala.fi/en/projects/youthvotes/" target="_blank" class="link">YouthVotes</a> (2025–2027) project together with the National Youth Councils of Finland (FYCS), Denmark (DUF) and Estonia (ENL).</p>
+      <p>
+        OpenVAA is participating in the <a
+          href="https://nuorisoala.fi/en/projects/youthvotes/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="link">YouthVotes</a> (2025–2027) project together with the National Youth Councils of Finland (FYCS), Denmark
+        (DUF) and Estonia (ENL).
+      </p>
     </div>
   </div>
 

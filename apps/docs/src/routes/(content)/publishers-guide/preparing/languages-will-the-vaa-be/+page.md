@@ -6,6 +6,6 @@ The language affects all of the application’s content. Candidates or parties c
 
 ## Are all the languages available?
 
-The currently available languages can be seen in the [translations folder](https://github.com/OpenVAA/voting-advice-application/tree/main/frontend/src/lib/i18n/translations).
+The currently available languages can be seen in the [translations folder](https://github.com/OpenVAA/voting-advice-application/tree/main/apps/frontend/messages).
 
 If the language you would like to use is not available, it can be added by creating [new translation files](/developers-guide/localization/supported-locales). This process is a bit arduous and is best started using an LLM.

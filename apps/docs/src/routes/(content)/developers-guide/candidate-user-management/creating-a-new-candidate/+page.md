@@ -1,3 +1,5 @@
+> **Note:** Parts of this page reference the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release.
+
 # Creating a New Candidate
 
 A candidate can log in to the candidate app either by having the admin give them a registration key, registering an account for them, or using pre-registration.

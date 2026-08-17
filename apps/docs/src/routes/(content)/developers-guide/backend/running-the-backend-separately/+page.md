@@ -1,3 +1,5 @@
+> **Note:** This page documents the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release.
+
 # Running the backend separately
 
 0. You should be running Strapi with the Node version specified under `engines` in the root [package.json](https://github.com/OpenVAA/voting-advice-application/blob/main/package.json). Use of nvm is encouraged. **Additionally, you need Docker!**

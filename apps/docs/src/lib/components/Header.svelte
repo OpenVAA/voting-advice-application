@@ -52,7 +52,7 @@
 
 <style>
   [data-active] {
-    color: oklch(var(--p));
+    color: var(--color-primary);
     font-weight: 700;
   }
 </style>

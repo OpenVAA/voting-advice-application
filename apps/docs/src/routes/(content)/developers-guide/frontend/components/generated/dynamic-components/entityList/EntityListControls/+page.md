@@ -25,6 +25,6 @@ TODO: Consider moving the tracking events away from the component and just addin
 
 ## Source
 
-[frontend/src/lib/dynamic-components/entityList/EntityListControls.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/entityList/EntityListControls.svelte)
+[frontend/src/lib/dynamic-components/entityList/EntityListControls.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityList/EntityListControls.svelte)
 
-[frontend/src/lib/dynamic-components/entityList/EntityListControls.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/entityList/EntityListControls.type.ts)
+[frontend/src/lib/dynamic-components/entityList/EntityListControls.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityList/EntityListControls.type.ts)

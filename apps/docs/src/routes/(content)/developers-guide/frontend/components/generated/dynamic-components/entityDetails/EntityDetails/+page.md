@@ -31,6 +31,6 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
 ## Source
 
-[frontend/src/lib/dynamic-components/entityDetails/EntityDetails.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/entityDetails/EntityDetails.svelte)
+[frontend/src/lib/dynamic-components/entityDetails/EntityDetails.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityDetails/EntityDetails.svelte)
 
-[frontend/src/lib/dynamic-components/entityDetails/EntityDetails.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/entityDetails/EntityDetails.type.ts)
+[frontend/src/lib/dynamic-components/entityDetails/EntityDetails.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityDetails/EntityDetails.type.ts)

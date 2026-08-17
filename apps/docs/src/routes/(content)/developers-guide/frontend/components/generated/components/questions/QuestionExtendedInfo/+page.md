@@ -22,6 +22,6 @@ Display the question's expandable information content.
 
 ## Source
 
-[frontend/src/lib/components/questions/QuestionExtendedInfo.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/questions/QuestionExtendedInfo.svelte)
+[frontend/src/lib/components/questions/QuestionExtendedInfo.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionExtendedInfo.svelte)
 
-[frontend/src/lib/components/questions/QuestionExtendedInfo.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/questions/QuestionExtendedInfo.type.ts)
+[frontend/src/lib/components/questions/QuestionExtendedInfo.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionExtendedInfo.type.ts)

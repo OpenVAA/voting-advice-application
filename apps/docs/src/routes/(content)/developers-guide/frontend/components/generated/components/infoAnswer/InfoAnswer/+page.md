@@ -19,6 +19,6 @@ Used to display a possibly wrapped entity's answer to an info question. Dependin
 
 ## Source
 
-[frontend/src/lib/components/infoAnswer/InfoAnswer.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/infoAnswer/InfoAnswer.svelte)
+[frontend/src/lib/components/infoAnswer/InfoAnswer.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/infoAnswer/InfoAnswer.svelte)
 
-[frontend/src/lib/components/infoAnswer/InfoAnswer.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/infoAnswer/InfoAnswer.type.ts)
+[frontend/src/lib/components/infoAnswer/InfoAnswer.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/infoAnswer/InfoAnswer.type.ts)

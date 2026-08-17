@@ -34,6 +34,6 @@ This is a dynamic component, because it renders the dynamic `EntityCard` compone
 
 ## Source
 
-[frontend/src/lib/dynamic-components/entityList/EntityList.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/entityList/EntityList.svelte)
+[frontend/src/lib/dynamic-components/entityList/EntityList.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityList/EntityList.svelte)
 
-[frontend/src/lib/dynamic-components/entityList/EntityList.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/entityList/EntityList.type.ts)
+[frontend/src/lib/dynamic-components/entityList/EntityList.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityList/EntityList.type.ts)

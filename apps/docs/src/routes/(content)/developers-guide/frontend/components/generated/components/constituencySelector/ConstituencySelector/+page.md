@@ -27,6 +27,6 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
 
 ## Source
 
-[frontend/src/lib/components/constituencySelector/ConstituencySelector.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/constituencySelector/ConstituencySelector.svelte)
+[frontend/src/lib/components/constituencySelector/ConstituencySelector.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/constituencySelector/ConstituencySelector.svelte)
 
-[frontend/src/lib/components/constituencySelector/ConstituencySelector.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/constituencySelector/ConstituencySelector.type.ts)
+[frontend/src/lib/components/constituencySelector/ConstituencySelector.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/constituencySelector/ConstituencySelector.type.ts)

@@ -25,6 +25,6 @@ Show a tab title bar that can be used to switch between different tabs.
 
 ## Source
 
-[frontend/src/lib/components/tabs/Tabs.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/tabs/Tabs.svelte)
+[frontend/src/lib/components/tabs/Tabs.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/tabs/Tabs.svelte)
 
-[frontend/src/lib/components/tabs/Tabs.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/tabs/Tabs.type.ts)
+[frontend/src/lib/components/tabs/Tabs.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/tabs/Tabs.type.ts)

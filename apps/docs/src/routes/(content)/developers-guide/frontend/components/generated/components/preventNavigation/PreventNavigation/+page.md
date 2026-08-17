@@ -16,6 +16,6 @@ Functional component used to block user nagivation.
 
 ## Source
 
-[frontend/src/lib/components/preventNavigation/PreventNavigation.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/preventNavigation/PreventNavigation.svelte)
+[frontend/src/lib/components/preventNavigation/PreventNavigation.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/preventNavigation/PreventNavigation.svelte)
 
-[frontend/src/lib/components/preventNavigation/PreventNavigation.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/preventNavigation/PreventNavigation.type.ts)
+[frontend/src/lib/components/preventNavigation/PreventNavigation.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/preventNavigation/PreventNavigation.type.ts)

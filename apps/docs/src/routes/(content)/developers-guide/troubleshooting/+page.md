@@ -1,3 +1,5 @@
+> **Note:** Parts of this page reference the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release.
+
 # Troubleshooting
 
 If you can't find an answer to your problem below, feel free to reach us via Github [Discussions](https://github.com/OpenVAA/voting-advice-application/discussions).
@@ -16,13 +18,13 @@ export NVM_DIR="$HOME/.nvm"
 
 ## Commit error: ’TypeError: Cannot read properties of undefined (reading 'font')’ error when running `/generateTranslationKeyType.ts`
 
-Try running `yarn build:app-shared` first.
+Try running `yarn build --filter=@openvaa/app-shared` first.
 
 ## Docker error related to `frozen lockfile` when running `yarn dev`
 
 Try deleting `/yarn.lock` and rerunning the command. You may also:
 
-- check that you’re using the correct Node version (see [Docker Setup: Requirements](https://github.com/OpenVAA/voting-advice-application/blob/main/docs/docker-setup-guide.md#requirements)).
+- check that you’re using the correct Node version (see [Requirements](/developers-guide/development/requirements)).
 - follow the steps in [Docker error: ”No space left on device” error](#docker-error-no-space-left-on-device-errordocker-no-space-left-on-device-error) below.
 
 ## Docker error: Load metadata for docker.io/library/node:foo
@@ -43,10 +45,10 @@ Docker has some issues handling disk usage when spun up multiple times. They may
 2. On Mac you may need to remove the Docker raw file with `rm ~/Library/Containers/com.docker.docker/Data/vms/0/data/Docker.raw`
 3. Restart your computer to clear any temp files possibly bloated by Docker.
 
-Note also that there are two commands that can be used to stop the containers:
+Note also the two commands that manage the local backend containers:
 
-1. `yarn dev:down`: This command will remove the unused volumes
-2. `yarn dev:stop`: This command stops the containers but keeps the volumes
+1. `yarn db:stop`: stops the local Supabase services and keeps their data
+2. `yarn db:reset`: drops and recreates the database from the migrations and `seed.sql`
 
 ## Docker error: Service "foo" can't be used with `extends` as it declare `depends_on`
 
