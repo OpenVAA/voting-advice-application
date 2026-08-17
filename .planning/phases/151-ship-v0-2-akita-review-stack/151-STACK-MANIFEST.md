@@ -40,6 +40,22 @@ criterion_4_2_satisfied_by: 2865b05b3846015852ed15bdc3774ce7dce8890a
 slices_tsv_amended_by: "151-16, on the operator's F-15 decision (options 1 and 2 accepted, 3 declined)"
 ruleset_8477541: untouched-active
 pr_860_decision: repurpose-at-151-18
+
+# --- plan 151-17: the last slice cut; the stack is complete and byte-identical ---
+slices_cut_all_twelve: true
+slice_11_sha: 6f04fa02313b60b7447a7262a0e05a3091a7cb12
+slice_11_files: 2324
+slice_11_insertions: 879826
+slice_11_deletions: 104
+cut_target_sha_151_17: 1ab69a32b868e5b8d39e155b369ec0dbf908fa07
+cut_target_tree_151_17: 291cc9a563603b0ef45f084f759fe146d521456a
+partition_total_files_at_151_17: 4507
+final_catchall_files: 0
+full_stack_identity_verified: true
+criterion_4_1_satisfied_by: 6f04fa02313b60b7447a7262a0e05a3091a7cb12
+taxonomy_c1_to_tip: CONFORMING
+taxonomy_whole_stack_shared_paths: 628   # rename-aware, the gate's own extraction; 682 under --no-renames
+slice_11_must_be_recut_before_push: true # this plan, 151-18 and 151-19 all write .planning/ files
 ---
 
 # Phase 151 — Stack Manifest
@@ -98,7 +114,7 @@ later plan — only its cells.
 | 08 | 9 | `ship/v0.2-akita-08-i18n-messages` | `feat: add the Paraglide message catalogues for every supported locale` | **330** | **8986** | 0 | **files > 300** — 47 messages × 7 locales, one shape, plus the catalogue README | `6a810df8a` | [#871](https://github.com/OpenVAA/voting-advice-application/pull/871) |
 | 09 | 10 | `ship/v0.2-akita-09-docs` | `docs: update the project documentation - the docs site, the root README and roadmap, and the key-generation guide` | **152** | **777** | **347** | ok — 152 files, 1,124 changed lines, inside both caps; GitHub renders the same triple (no rename detection: `2 A / 150 M`) | `2865b05b3` | [#872](https://github.com/OpenVAA/voting-advice-application/pull/872) |
 | 10 | 11 | `ship/v0.2-akita-10-root-config` | `chore: update the monorepo and frontend-app build, lint, CI and deployment plumbing` | **129** | **8662** | **27267** | **lines > 20k** — `yarn.lock` alone accounts for most of it; the +90 files are the F-15 Option-2 deletions | `3aa503741` | pending (opens at 151-17, per D-07) |
-| 11 | 12 | `ship/v0.2-akita-11-planning` | `docs[planning]: add the v0.2 planning record and agent configuration` | 2321 | 878943 | 104 | **files > 300 and lines > 20k** — unreadable by design (D-12) | pending | pending |
+| 11 | 12 | `ship/v0.2-akita-11-planning` | `docs[planning]: add the v0.2 planning record and agent configuration` | **2324** | **879826** | **104** | **files > 300 and lines > 20k** — unreadable by design (D-12) | `6f04fa023` | pending (opens at 151-18, after the identity proof and the D-24 suite gate) |
 
 Pathspecs are **not** duplicated into this table: `slices.tsv` column 4 is the single source, and a
 copy here would be a second source able to drift from it. Reproduce any row's pathspec with
@@ -1242,6 +1258,160 @@ has **7** non-markdown files, and `paths-ignore` only ever filters a run the tri
 - **The taxonomy gate's `docs` cardinality clause is now satisfied** (`1 == 1`); only `planning`
   remains, and it closes when slice 11 is cut.
 
+
+---
+
+## Slice 11 cut — the stack is complete, and the final catch-all is empty — plan 151-17
+
+**All twelve slices now exist as branches. The full stack reconstructs the branch tip byte for
+byte, and the final catch-all is empty.** Every number below is measured at
+`TARGET = 1ab69a32b` (`feat-gsd-roadmap` tip; `origin/main` is an ancestor, so D-22's merge is
+materialised and `TARGET` is the tip itself, not a synthesised merge object).
+
+| ref | value |
+|---|---|
+| slice 11 | `6f04fa02313b60b7447a7262a0e05a3091a7cb12` (`6f04fa023`), branch `ship/v0.2-akita-11-planning` |
+| parent | `3aa503741` = `ship/v0.2-akita-10-root-config`, asserted by `rev-parse` on both sides |
+| files / lines | **2324 files, +879,826 / −104** (`--no-renames`) |
+| status set | **`2322 A / 2 M`** — the two modifications are `.agents/code-review-checklist.md` and `CLAUDE.md`, the only two files in this slice that exist at `origin/main` |
+| commits in `10..11` | **1** — criterion 4.1 |
+| final catch-all, pathspec `.` from slice 11 | **`files=0`**, `EMPTY:` — the literal, per Pitfall 5 |
+| full-stack identity | `verify-identity.sh feat-gsd-roadmap ship/v0.2-akita-11-planning` → **exit 0**, changed files **0**, both trees `291cc9a56`. **BYTE-IDENTICAL.** |
+| partition arithmetic | 252 + 97 + 119 + 162 + 195 + 533 + 214 + 330 + 152 + 129 + 2324 = **4507** = comparable total (`diff --no-renames C1..TARGET`). **Gap: 0.** |
+| `git status --porcelain` | empty throughout; `HEAD` never left `feat-gsd-roadmap`; the catch-all was applied into a scratch `GIT_INDEX_FILE` through `build-slice.sh` itself and never committed to a ref |
+
+### Criterion 4.1 — satisfied, with the commit SHA as its evidence
+
+`git log --oneline ship/v0.2-akita-10-root-config..ship/v0.2-akita-11-planning | wc -l` returns
+**1**. All planning items are one commit: **`6f04fa02313b60b7447a7262a0e05a3091a7cb12`**.
+
+With 4.2 (`2865b05b3`, plan 151-16) and 4.3 (`545cc26c8`, plan 151-13) already closed, **every
+cardinality clause of criterion 4 is now satisfied**, and the taxonomy gate says so over `C1..TIP`:
+`planning 1 == 1`, `docs 1 == 1`, `test 1 == 1`, `style 0 <= 1`, `[db]` gaps `0`, unplaced `0`.
+
+### What the empty catch-all proves, and what it does not
+
+**It proves nothing about the partition.** The slice above the catch-all — slice 11 — had a
+pathspec, but the catch-all itself has none, so the union of the slices reproduces the target
+*whether or not the split was correct*. A path no slice claims is simply absorbed by whatever runs
+last with an unrestricted pathspec. Research measured this exact laundering live: **two broken
+slices, 472 files absorbed, the tree hash still matching** — proof true, stack wrong
+(151-RESEARCH.md Pitfall 5).
+
+**The actual evidence for the partition is the per-slice remaining-slices check run in plans
+151-09 through 151-16**, each of which compared a measured remainder against a *prediction* made
+before the cut and reported the deviation against a 1% halt threshold. Those ran while a wrong
+answer was still catchable. This one cannot be wrong.
+
+The one meaningful equality available at this point closed in **plan 151-16, not here**: the
+catch-all measured after slice 10 was **2321 files, and its file list contained zero paths outside
+`.planning/`, `.claude/`, `.agents/`, `CLAUDE.md`** — slice 11's own pathspec. That is the assertion
+that says nothing leaked between the last code slice and the planning slice, and it was checked one
+plan earlier precisely because by the time the final catch-all runs there is nothing left to catch.
+
+### The plan's "equals 2321 exactly" criterion is wrong as written — the fourteenth in this phase
+
+`151-17-PLAN.md` requires slice 11's file count to equal 151-16's recorded catch-all count
+**exactly**. It measures **2324**, not 2321, and the criterion as written cannot hold: 151-16
+committed three of its own artifacts *after* taking that measurement, and every `.planning/` file
+any plan writes rides slice 11. This is the trap this manifest already warned against in
+§ "How to consume `slices.tsv`" — *"Do not hard-code the number. The identity is the assertion;
+the literal is a snapshot."* The plan hard-coded the snapshot.
+
+**The identity does hold, and it was checked instead.** Measured at this same `TARGET`, slice 11's
+pathspec claims **2324** files and the unrestricted remainder is **2324** files, with **0** paths
+in the remainder outside that pathspec. Slice 11 *is* the remainder, exactly.
+
+**The rise from 2321 → 2324 is attributed by set difference, every file named, zero leaving:**
+
+| file | why |
+|---|---|
+| `.planning/phases/151-…/151-16-SUMMARY.md` | 151-16's own summary, committed after its measurement |
+| `.planning/phases/151-…/pr-bodies/08.md` | 151-16's PR body for slice 08 |
+| `.planning/phases/151-…/pr-bodies/09.md` | 151-16's PR body for slice 09 |
+
+The **+883 insertion** delta (878,943 → 879,826) closes to the line over the same interval:
+`151-16-SUMMARY.md` +221, `pr-bodies/08.md` +222, `pr-bodies/09.md` +294, plus edits to three files
+already inside the slice — `151-STACK-MANIFEST.md` +158/−15, `.planning/STATE.md` +9/−6,
+`.planning/ROADMAP.md` +2/−2. `221 + 222 + 294 + 143 + 3 + 0 = 883`. Deletions are unchanged at
+**104**.
+
+### Slice 11 MUST be re-cut before it is pushed — this cut is already stale
+
+**This is a structural property of the slice, not a defect in this cut.** Slice 11's pathspec is
+`.planning .claude .agents CLAUDE.md`, and *every plan in this phase writes `.planning/` files* —
+including this one. The moment this plan commits `151-SECRET-SCAN.md`, `pr-bodies/10.md` and its
+own summary, `ship/v0.2-akita-11-planning` no longer reproduces the branch tip.
+
+Consequences, stated so they are not rediscovered:
+
+1. **151-18 must re-cut slice 11 at its own `TARGET` before running `verify-identity.sh`.** The
+   identity check that plan owns is against `feat-gsd-roadmap`, and it will fail on this commit.
+   The re-cut is free — the branch is **unpushed**, so no force-push is involved. If 151-19 also
+   writes `.planning/` files after 151-18's push, that ordering needs an explicit decision; it is
+   not resolved here.
+2. **The secret scan recorded in `151-SECRET-SCAN.md` covers *this* commit's diff.** Any file added
+   to slice 11 after it — by this plan, by 151-18, by 151-19 — is **outside that scan's coverage**
+   and must be re-scanned before the push. This is stated in the scan record itself as a named
+   coverage limit, not left implicit.
+
+### Criterion 4.4's proxy across the rename base — the standing instruction from 151-05, discharged
+
+151-05 left this as a standing instruction for this plan: run the taxonomy gate over `C1..TIP` and
+**record the whole-stack `origin/main..TIP` run beside it with the explanation**, because
+suppressing the whole-stack run would hide a real number and presenting it as a violation would
+misreport a designed property. Both runs, verbatim results:
+
+| range | commits | verdict | 4.4 proxy: shared paths |
+|---|---:|---|---:|
+| `ship/v0.2-akita-01a-layout-move..ship/v0.2-akita-11-planning` (`C1..TIP`) | 11 | **CONFORMING**, exit 0 | **0** |
+| `origin/main..ship/v0.2-akita-11-planning` (whole stack) | 12 | **exit 1**, `Errors: 1` | **628** |
+
+**Every one of those shared paths pairs the rename commit `602b79351` with exactly one later
+slice. Measured, not argued:**
+
+- Directly — for each shared path, `602b79351` is one of the two owning commits: **0 exceptions**.
+- Independently, and decisively — the `C1..TIP` run *excludes* 01a and reports **0** shared paths.
+  If any two of the eleven later slices shared a path it would appear there. None does. So every
+  shared path in the whole-stack run must involve 01a, by construction rather than by inspection.
+- **100% are under `apps/`** (628/628 rename-aware; 682/682 under `--no-renames`), which is what a
+  tree move looks like in path terms.
+
+This is D-11's design stated in path terms — *paths change in 01a, contents change later* — and a
+rename-based stack can never satisfy a proxy that treats a rename as a modification.
+
+**The two shared-path counts differ, and the pair is reconciled rather than left to be distrusted.**
+The gate reports **628**; an independent per-commit `--no-renames` set comparison reports **682**.
+Cause, measured: the gate's extraction is `git log --name-only` at git's *default* rename settings,
+so rename detection **inside the later slices** pairs a deleted source with an added destination and
+prints only the destination — hiding 56 source paths that 01a had created. `apps/frontend/src/app.css`
+and the four `*Store.type.ts` context files are in that set. This manifest's stated convention is
+`--no-renames`, so **682 is the number consistent with every other file count in this record, and
+628 is the number the gate prints.** Neither is wrong; only an unreconciled pair would be. (A
+re-implementation of the gate's own extraction reproduced 626 of its 628 — the 2-path residue is in
+the re-implementation, and the gate's own output is authoritative for its own claim.)
+
+For scale: 151-05 measured 420 (gate) / 474 (`--no-renames`) at the dry run. The rise tracks slices
+09 and 10 claiming 112 and 2 more files that 01a had moved.
+
+### Rename detection: 151-16 predicted the gap would reappear on slice 11. It did not — measured
+
+151-15's standing instruction requires every PR body to carry both the `--no-renames` triple and
+GitHub's rename-aware one. 151-16 recorded the expectation that **"slice 11 is where the gap will
+reappear", and 151-17 should expect it.** It does not, and this was measured before anything was
+written into a body:
+
+```
+git diff --shortstat --no-renames 10 11  ->  2324 files changed, 879826 insertions(+), 104 deletions(-)
+git diff --shortstat -M          10 11  ->  2324 files changed, 879826 insertions(+), 104 deletions(-)
+```
+
+Identical triples, and identical status sets (`2322 A / 2 M` both ways). **The reason is structural:
+slice 11 has zero deletions**, and rename detection needs a delete to pair an add with. A slice that
+only adds cannot render differently under `-M`. The same reason made the two coincide for slices 08,
+09 and 10 — 151-16 attributed *those* correctly and then over-generalised the wrong half of the
+mechanism to slice 11. **Recorded as a refuted prediction, not a surprise:** the prediction was made
+from size, and the mechanism depends on deletions.
 
 ---
 
