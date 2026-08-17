@@ -5,15 +5,15 @@ milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 151
 current_phase_name: ship-v0-2-akita-review-stack
 status: executing
-stopped_at: Completed 151-14-PLAN.md
-last_updated: "2026-08-17T13:11:26.552Z"
+stopped_at: Completed 151-15-PLAN.md
+last_updated: "2026-08-17T14:47:41.319Z"
 last_activity: 2026-08-16
 last_activity_desc: Phase 151 execution started
 progress:
   total_phases: 15
   completed_phases: 4
   total_plans: 43
-  completed_plans: 38
+  completed_plans: 39
   percent: 27
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 
 Milestone: v2.15 (Phases 137-151, 15 phases, 38 requirements)
 Phase: 151 (ship-v0-2-akita-review-stack) — EXECUTING
-Plan: 15 of 19
+Plan: 16 of 19
 Status: Ready to execute
 Last activity: 2026-08-16 — Phase 151 execution started
 
@@ -48,8 +48,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-17T13:11:16.768Z
-Stopped at: Completed 151-14-PLAN.md
+Last session: 2026-08-17T14:47:25.346Z
+Stopped at: Completed 151-15-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -163,6 +163,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 151 P12 | ~1h25m | 3 tasks | 10 files |
 | Phase 151 P13 | 96 | 3 tasks | 26 files |
 | Phase 151 P14 | 118 | 3 tasks | 533 files |
+| Phase 151 P15 | 92 | 3 tasks | 34 files |
 
 ## Deferred Items
 
@@ -703,6 +704,10 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: F-24 is escalated, not fixed: the decisive fact about Signicat's response is external knowledge the repo does not contain; question narrowed for the operator at 151-18
 - [Phase ?]: The three context-destructuring / dataRoot-alias violations found are all in slice 07 and are deferred to 151-15, because a reactivity fix must name a covering test and that test is an unrunnable E2E spec
 - [Phase ?]: The Supabase Adapter checklist block is CLOSED by 151-14, proven by enumeration over 24 files with the unsafe-session-accessor-in-a-guard count asserted at 0
+- [Phase ?]: Slice 07 items 13/14: the axe scan reaches 5 of 36 routes; the 31 it does not were named and manually swept class by class, which found the one real a11y defect
+- [Phase ?]: F-73: a second reactive-accessor destructure, in the root layout from initAppContext() — a scan keyed on get*Context() reported 41 sites/1 violation where re-running found 84/2
+- [Phase ?]: Locale key parity measured exactly: 7 locales x 47 files x 598 keys, symmetric difference 0; placeholder-set parity recursing into the 147 plural bodies found the one real i18n defect
+- [Phase ?]: PR files-changed counts use rename detection; a --no-renames convention disagrees with them (533 vs 528, 214 vs 165) — every later PR body must state and reconcile both
 
 ### Quick Tasks Completed
 

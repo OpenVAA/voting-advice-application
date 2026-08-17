@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 33
+open_count: 38
 waived_count: 0
 fixed_count: 0
-total_count: 33
-last_updated: 2026-08-17T13:11:37.478Z
+total_count: 38
+last_updated: 2026-08-17T14:47:41.887Z
 ---
 
 # Broken Windows Ledger
@@ -48,6 +48,11 @@ last_updated: 2026-08-17T13:11:37.478Z
 | 31 | 151 | deviation | apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/+layout.svelte | 73 | F-61: destructures the reactive accessors appSettings and dataRoot while its own comment asserts the destructure is correct; dataRoot.elections read at :349 never re-evaluates. Deferred to 151-15. | open |  | 2026-08-17T13:11:37.190Z |  |
 | 32 | 151 | unrun-verify | tests/ |  | The 43 E2E specs were not run by plan 151-14; D-24's full-suite run at 151-18 discharges them. | open |  | 2026-08-17T13:11:37.359Z |  |
 | 33 | 151 | deviation | apps/frontend/src/lib/dynamic-components/entityList/EntityListControls.svelte | 98 | F-60: duplicate filter handlers shared with EntityListWithControls.svelte:144-161; extraction excluded by D-13. | open |  | 2026-08-17T13:11:37.478Z |  |
+| 34 | 151 | deviation | apps/frontend/src/routes/candidate/login/+page.server.ts |  | F-74 login form action duplication incl. a duplicated hand-rolled JWT payload decode | open |  | 2026-08-17T14:47:41.417Z |  |
+| 35 | 151 | deviation | apps/frontend/src/lib/components/expander/Expander.svelte |  | F-75 Expander title is not a heading and its control has no specific accessible name | open |  | 2026-08-17T14:47:41.529Z |  |
+| 36 | 151 | deviation | apps/frontend/messages/sv/questions.json |  | sv questions.intro.start drops the {numQuestions} placeholder six other locales carry | open |  | 2026-08-17T14:47:41.648Z |  |
+| 37 | 151 | deviation | apps/frontend/src/params/etSg.ts |  | F-76 a line-broken phase reference is invisible to the hygiene gate's phase-ref pattern | open |  | 2026-08-17T14:47:41.767Z |  |
+| 38 | 151 | unrun-verify | tests/tests/specs/voter/cold-entry-dataroot.spec.ts |  | F-61's covering spec class has no /results case and was not run; the cold /results case is the covering case, deferred to 151-18 | open |  | 2026-08-17T14:47:41.887Z |  |
 
 ````json
 [
@@ -445,6 +450,66 @@ last_updated: 2026-08-17T13:11:37.478Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-08-17T13:11:37.478Z",
+    "resolved_at": null
+  },
+  {
+    "id": 34,
+    "kind": "deviation",
+    "phase": "151",
+    "file": "apps/frontend/src/routes/candidate/login/+page.server.ts",
+    "line": null,
+    "description": "F-74 login form action duplication incl. a duplicated hand-rolled JWT payload decode",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T14:47:41.417Z",
+    "resolved_at": null
+  },
+  {
+    "id": 35,
+    "kind": "deviation",
+    "phase": "151",
+    "file": "apps/frontend/src/lib/components/expander/Expander.svelte",
+    "line": null,
+    "description": "F-75 Expander title is not a heading and its control has no specific accessible name",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T14:47:41.529Z",
+    "resolved_at": null
+  },
+  {
+    "id": 36,
+    "kind": "deviation",
+    "phase": "151",
+    "file": "apps/frontend/messages/sv/questions.json",
+    "line": null,
+    "description": "sv questions.intro.start drops the {numQuestions} placeholder six other locales carry",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T14:47:41.648Z",
+    "resolved_at": null
+  },
+  {
+    "id": 37,
+    "kind": "deviation",
+    "phase": "151",
+    "file": "apps/frontend/src/params/etSg.ts",
+    "line": null,
+    "description": "F-76 a line-broken phase reference is invisible to the hygiene gate's phase-ref pattern",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T14:47:41.767Z",
+    "resolved_at": null
+  },
+  {
+    "id": 38,
+    "kind": "unrun-verify",
+    "phase": "151",
+    "file": "tests/tests/specs/voter/cold-entry-dataroot.spec.ts",
+    "line": null,
+    "description": "F-61's covering spec class has no /results case and was not run; the cold /results case is the covering case, deferred to 151-18",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T14:47:41.887Z",
     "resolved_at": null
   }
 ]
