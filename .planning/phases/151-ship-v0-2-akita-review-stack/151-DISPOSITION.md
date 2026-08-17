@@ -14,6 +14,7 @@ blank_cells: 0
 db_slice: "03"
 adapter_slice: "06"
 migrations_added: 0
+e2e_collisions: 0
 dropped_finding_class_files: 842
 comparable_total: 4257
 status: scaffolded
@@ -361,8 +362,121 @@ already RED on two cosmetic prettier files — PD-03 fences those out of D-05's 
 | 1 | `151-06-PLAN.md` frontmatter and `<verify>` say `items_total: 30`; the file has 31 items. | `items_total: 31` is authoritative (`151-MEASUREMENTS.md` § 0). The plan's grep is superseded and is not evidence for this record. |
 | 2 | The plan's `cells_expected` formula yields 207; its own action text yields 163. | **163.** Arithmetic shown above; the formula double-counts the 4 phase-level items. |
 | 3 | `151-STACK-MANIFEST.md` says **151-17** must run the taxonomy gate over `C1..TIP`; `151-18`'s objective explicitly names "commit taxonomy" among the phase's closing proofs. | Item 16 cites **151-18**. Flagged so whichever plan runs it does so knowingly rather than both assuming the other did. |
-| 4 | `CLAUDE.md` cites Edge Functions at `apps/supabase/functions/`; the real path is `apps/supabase/supabase/functions/`. The checklist is correct; `CLAUDE.md` is stale. | Recorded under F-04's family for slice 11's sweep (`CLAUDE.md` rides slice 11 per D-15). |
+| 4 | **`CLAUDE.md` is stale on all three `apps/supabase/` paths** — it cites `apps/supabase/migrations/`, `apps/supabase/functions/` and `apps/supabase/tests/`; every one of them is really nested one level deeper (`apps/supabase/supabase/…`). Measured: `git ls-files 'apps/supabase/migrations/*'` → **0 files**, `apps/supabase/supabase/migrations/*` → **3**. The code-review checklist has the Edge Functions path right; `CLAUDE.md` has it wrong. | Recorded under F-04's family for slice 11's sweep (`CLAUDE.md` rides slice 11 per D-15). **Load-bearing for PD-02**: the migration gate as written in `151-06-PLAN.md` matches a directory that does not exist, so an unqualified reading of it would never fire — see the path note under PD-02. |
 | 5 | The standing sum-check `Σ files == 4255` now reads **4257**. | **Benign and fully attributed.** Reconstructing plan 151-05's own target at its measurement tip `faf55161b` reproduces tree `e424d633e` and total **4255** exactly; the delta is exactly two files — `151-05-SUMMARY.md` and `151-STACK-MANIFEST.md` — written by 151-05's own doc commits. **Zero files left the set.** The assertion is re-baselined to **4257** and will keep growing as each plan writes its own `.planning/` artifacts (which ride slice 11). |
+
+---
+
+## Procedural decisions
+
+**Reproduced verbatim from `151-06-PLAN.md` so an executing agent in plan 151-11 or 151-14 reads the
+rule from the record it is already writing into, not from a plan file it may not have loaded.**
+
+Both decisions are governed by frontmatter counters: `e2e_collisions` and `migrations_added`, both
+`0` at scaffold time and incremented by the plan that triggers them. **A collision that occurs and
+is not reflected in `e2e_collisions` is a record defect**, and the same is true of a migration that
+lands without moving `migrations_added`.
+
+### The escalation trigger, stated once and unambiguously
+
+**Option B is the default for any collision. Option C is reachable only when the colliding finding
+is a security or correctness defect, and reaching it requires a blocking operator decision, never an
+agent's judgement. No agent may create a waiver unilaterally, under any circumstances.**
+
+---
+
+### Decision PD-01 — the E2E escape hatch (Q2, answered here, not at 2am)
+
+`CLAUDE.md`'s cardinal rule is absolute; D-05's fix bar says fix anything a reviewer would block on.
+D-13 already shrinks the collision surface by excluding code restructuring. This is the written rule
+for what happens when they still collide.
+
+**Trigger.** A fix landed on `feat-gsd-roadmap` under D-05's fix bar causes `yarn test:unit`,
+`yarn lint:check`, or the D-24 full-suite `yarn test:e2e` to go from green to red, **and** the
+accompanying test repair is not tractable within the owning slice's work.
+
+**Action — option B, the default.** Revert the fix. Record the finding in `151-DISPOSITION.md` with
+verdict `**DEFERRED** — E2E collision`, evidence = the failing spec name and line, the reverted
+commit SHA, and a one-line statement of what the fix would have been. D-05 already provides for
+deferral with rationale; this is that mechanism, used deliberately. The cost is that a
+known-blockable finding ships unfixed — and it ships **visible in the disposition matrix**, which is
+exactly where a reviewer will look.
+
+**Escalation — option C, security or correctness only.** If the colliding finding sits at the top of
+D-05's bar (a security or correctness defect), do **not** silently defer. Halt and raise a
+`checkpoint:decision` proposing a `151-CARDINAL-RULE-WAIVER.md` in the shape of
+`.planning/v2.14-CARDINAL-RULE-WAIVER.md`: named, operator-signed, single-defect,
+explicitly non-precedent-setting, with attached conditions and a required discharge.
+
+**State this to the operator when raising it, in plain words:** v2.14's waiver was taken once, for
+an undiagnosed intermittent, and was discharged at v2.15 Phase 138 with its original text retained
+as history. Its own **condition 4 reads: "No other intermittent inherits this reasoning. A second
+waiver would mean the rule has stopped functioning."** Invoking option C is therefore itself a
+signal about the health of the rule, and the operator is being asked to pay that cost knowingly
+rather than have it slipped past them as paperwork.
+
+**Never.** Skip a test, retry until green, or annotate as flaky. `CLAUDE.md` forbids all three and
+this phase does not create an exception to that.
+
+#### v2.14 waiver condition 4 — quoted in full, from the source
+
+Source: [`.planning/v2.14-CARDINAL-RULE-WAIVER.md`](../../v2.14-CARDINAL-RULE-WAIVER.md) § "Conditions attached", lines 58–60.
+**PD-01's inline quotation above is abridged; this is the complete sentence, verbatim:**
+
+> 4. No other intermittent inherits this reasoning. A second waiver would mean the rule has stopped
+>    functioning, and should be treated as evidence that the rule needs rewriting rather than
+>    re-waiving.
+
+**Three facts from that same file that raise the cost of option C, and which must be stated to the
+operator alongside it:**
+
+1. **The waiver was DISCHARGED on 2026-08-14** (v2.15 Phase 138, INTEG-03), unrenewed, and closed by
+   a named root cause rather than by absence of reproduction. Its closing line reads:
+   *"The cardinal E2E rule is back in force, unwaived, with no standing exception anywhere in the
+   project."* (`v2.14-CARDINAL-RULE-WAIVER.md:220`)
+2. **Condition 4 was answered "Honoured"** at discharge, on the specific evidence that
+   *"exactly one file matching `.planning/*WAIVER*.md` is present in the project after this
+   discharge, and it is this one."* (`:126-127`) **Creating `151-CARDINAL-RULE-WAIVER.md` would
+   falsify that recorded audit fact** — which is not an argument that it may never be done, but is
+   an argument that it cannot be done quietly.
+3. A waiver taken now would therefore be the **first since the rule was restored to full force** —
+   precisely the "second waiver" condition 4 identifies as evidence that *the rule needs rewriting
+   rather than re-waiving*. Option C is consequently a decision about the rule, not only about the
+   defect in front of it.
+
+---
+
+### Decision PD-02 — the migration gate (schema-scan resolution)
+
+The deterministic schema scan is inconclusive for this phase: the scope *references*
+`apps/supabase/` and migrations (criterion 4.6's db tag) but the phase modifies no schema by design.
+**We do not conclude that no migration can arise.** The checklist's Supabase Backend block asks for
+RLS-pattern conformance — the 5-policy set, scalar-subquery auth calls, explicit role targets,
+`SECURITY DEFINER` with a pinned empty `search_path` — and the fix for a non-conforming policy **is
+a new migration**.
+
+**Rule.** If any sweep fix in the slice-03 plan (151-11) adds or edits a file under
+`apps/supabase/migrations/`, that fix is `[BLOCKING]`:
+
+1. Apply it locally with `yarn db:reset` before the slice is cut — build and type checks pass
+   without it, so nothing else catches an unapplied migration.
+2. Run `yarn db:lint:sql` and the pgTAP suite against the reset database.
+3. The D-24 full-suite gate in plan 151-18 must run against a database reset from migrations, not
+   an incrementally-mutated one.
+4. Record `migrations_added: <n>` in `151-DISPOSITION.md` frontmatter. If no migration is added,
+   record `migrations_added: 0` and the gate is a recorded no-op rather than an unasked question.
+
+#### Two path notes for whoever applies this rule
+
+- **The rule names `apps/supabase/migrations/`. The migrations actually live under
+  `apps/supabase/supabase/migrations/`** — the same doubled-directory shape as
+  `apps/supabase/supabase/functions/`. Watch a fix land one level up and evade the gate; match on
+  the real path, and treat the rule as covering both spellings.
+- **`yarn db:lint:sql` is not sqlfluff.** It is `supabase db lint --schema public --fail-on warning`
+  plus a 174-line local `scripts/lint-schema.mjs` implementing 2 Splinter advisors. `CLAUDE.md`
+  overstates it (`151-MEASUREMENTS.md` § 1.4). Step 2 buys less than its name suggests: **neither
+  check reads policy bodies, policy role targets, function attributes, trigger names, or column
+  sets** — items 17, 19, 20, 21 and 23 are `none`-reach and remain agent review.
 
 ---
 
