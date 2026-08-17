@@ -26,7 +26,7 @@ export async function load({ fetch, parent, untrack, url }) {
   untrack(() => ({ electionId, constituencyId } = parseParams({ url })));
 
   // reason: voter-app routes allowlist for ?next= deferred target — prevents
-  // open-redirect attacks per CONTEXT. The whitelist accepts
+  // open-redirect attacks. The whitelist accepts
   // either a locale-prefixed path (`/en/...`) or one of the bare voter-app
   // route roots (`/results`, `/questions`, `/nominations`). Cross-origin
   // values (`https://...`, `//evil.com`) fail the regex and are dropped —

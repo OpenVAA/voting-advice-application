@@ -1,6 +1,6 @@
 /**
  * SvelteKit param matcher for the plural entity-type URL segment in `/results`
- * (short-name alias of `entityTypePlural`; see phase 88
+ * (short-name alias of `entityTypePlural`, see phase 88), introduced
  * to make the new 4-segment results route shape
  * `/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]`
  * readable in directory listings).

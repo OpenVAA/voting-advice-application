@@ -13,7 +13,7 @@ import type { PageLoad } from './$types';
  *   5. /results/[electionTab]/organizations/candidate/[id]     — edge case: org list + candidate drawer
  *
  * Name-disjoint dissociation:
- *   - ROUTE side: `params.electionTab` = SELECTED singular (new).
+ *   - ROUTE side: `params.electionTab` = SELECTED singular.
  *   - SEARCH side: `?electionId=…` / `electionId[N]=…` = AVAILABLE array
  *     (existing PERSISTENT_SEARCH_PARAMS; preserved on redirect via
  *     `url.search`).

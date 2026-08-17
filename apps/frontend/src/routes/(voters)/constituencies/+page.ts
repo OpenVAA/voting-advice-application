@@ -50,7 +50,7 @@ export async function load({ parent, params, route, url }) {
     selectedElectionIds: electionId ? [electionId].flat() : undefined
   });
 
-  // (see phase 78 Plan 02): forward the deferred-target `?next=` past
+  // Deferred-target handling (see phase 78): forward the `?next=` target past
   // auto-redirects on this page. `next` is not a persistent search param, so
   // buildRoute strips it unless passed through `extraParams`.
   const nextSearch = url.searchParams.get('next');

@@ -83,7 +83,7 @@ See `+page.ts` for possible redirects.
   async function handleSubmit(): Promise<void> {
     if (!canSubmit) return;
     const electionId = Array.from(selected);
-    // (see phase 78 Plan 02): forward the deferred-target `?next=`
+    // Deferred-target handling (see phase 78): forward the `?next=` target
     // parameter through to the constituency selector so the final selector
     // step can resume the originally-requested route. `next` is NOT a
     // persistent search param (see params.ts PERSISTENT_SEARCH_PARAMS), so

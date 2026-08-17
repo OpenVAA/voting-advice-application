@@ -34,7 +34,7 @@
   ////////////////////////////////////////////////////////////////////
 
   // WR-04 (see phase 86.3 review): popupQueue is a stable instance reference per
-  // CLAUDE.md "Context Destructuring Rule " — popupStore returns an object
+  // CLAUDE.md "Context Destructuring Rule" — popupStore() returns an object
   // literal `{ push, shift, subscribe }` (popupStore.svelte.ts:23) attached as
   // a plain context property (appContext.svelte.ts:226), NOT a $state/$derived
   // getter. The `push`/`shift`/`subscribe` methods are bound function
@@ -62,7 +62,7 @@
   // propagate to the header Banner. Mirrors the canonical $effect pattern at
   // appContext.svelte.ts:93-100.
   //
-  // (see phase 95): migrated off the StackedState revert/push-baseline
+  // Migrated (see phase 95) off the StackedState revert/push-baseline
   // pattern to the token-keyed settingsOverlay registry. `useTopBar(...)` is
   // `$effect(() => topBar.push(overlay))` — a NESTED effect. When this OUTER
   // $effect re-runs on an appSettings change, Svelte tears down the nested
@@ -103,7 +103,7 @@
   //
   // Cell #3 disposition is now REVERT-TO-ONMOUNT (downgraded from FIX-PASS),
   // matching the baseline (see phase 77). The DataConsentPopup branch (below) stays
-  // in the same onMount per -01 small-fix constraint (CONTEXT).
+  // in the same onMount, per the same small-fix constraint.
   onMount(() => {
     if (!appSettings.access.voterApp) return;
     // Queue the voter-app notification popup (cell #3 — onMount one-shot).

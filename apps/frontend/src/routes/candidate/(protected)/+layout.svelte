@@ -85,7 +85,7 @@
     // wider loader union (`DPDataType['questions'] | Error`) due to the
     // `.catch((e) => e)` in `+layout.server.ts`. `isValidResult` is already a
     // type guard; the cast is safe at this boundary and mirrors the same
-    // pattern used by the root layout (decision #2).
+    // pattern used by the root layout.
     return {
       state: 'resolved' as const,
       questionData: data.questionData as DPDataType['questions'],

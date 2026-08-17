@@ -234,11 +234,11 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
 
   /**
    * Build a path-only /results URL with the SELECTED election landing on the
-   * new `electionTab` route segment (refactor) and the existing
+   * new `electionTab` route segment and the existing
    * search params preserved verbatim.
    *
    * Name-disjoint dissociation: `electionTab` is the route-side singular
-   * (new); `electionId` is the search-side AVAILABLE-array
+   * (route side); `electionId` is the search-side AVAILABLE-array
    * (existing PERSISTENT_SEARCH_PARAMS member at `$lib/utils/route/params.ts`).
    * The two never alias. The pre-88-02 qs.parse round-trip that overwrote
    * the search-side `electionId` is GONE — the search-side AVAILABLE array

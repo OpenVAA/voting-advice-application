@@ -39,8 +39,8 @@ See `+page.ts` for possible redirects.
   // dataRoot is identity-stable (#version-bridge): NEVER bind it to an intermediate $derived alias and read through
   // the alias — the alias yields the same DataRoot ref on each #version bump, so Svelte 5 skips downstream
   // notification and the cold/direct-URL snapshot stays empty. Read `voterCtx.dataRoot.<prop>` directly inside each
-  // consuming tracking scope. See CLAUDE.md "Context Destructuring Rule"
-  // (see spike 024 anti-pattern entry). see phase 117.
+  // consuming tracking scope. See CLAUDE.md "Context Destructuring Rule" and the
+  // stable-reference alias anti-pattern (see spike 024, see phase 117).
 
   ////////////////////////////////////////////////////////////////////
   // Set initial values
@@ -116,7 +116,7 @@ See `+page.ts` for possible redirects.
     // propagation), `selected` carries the same id under multiple election
     // keys. The URL contract is a set, not a per-election map, so collapse.
     const constituencyId = Array.from(new Set(Object.values(selected).filter((id) => id)));
-    // (see phase 78 Plan 02): if a deferred-target `?next=` is set,
+    // Deferred-target handling (see phase 78): if a `?next=` target is set,
     // decode + re-validate against the voter-app URL whitelist regex and
     // navigate to the original destination. Whitelist re-check is a
     // defense-in-depth pass — the (located)/+layout.ts entry-point check

@@ -58,8 +58,8 @@
   // appSettings/dataRoot are reactive accessors (see phase 113 flatten) — read via voterCtx.X, never destructure.
   const appSettings = $derived(voterCtx.appSettings);
   // dataRoot is identity-stable (#version-bridge): read `voterCtx.dataRoot.<prop>` directly in the tracking scope,
-  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" +
-  // (see spike 024). see phase 117.
+  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" and the
+  // stable-reference alias anti-pattern (see spike 024, see phase 117).
   const { topBarSettings, progress, video } = getLayoutContext();
 
   let { children }: { children: Snippet } = $props();
@@ -188,7 +188,7 @@
     // Out-of-range (non-empty) multi-choice selection = in-progress/unanswered
     // NEVER persist it — an invalid selection must not reach matching.
     // `opinionInputValid` is fresh here because OpinionQuestionInput assigns the
-    // bound valid synchronously before bubbling onChange (Task 1).
+    // bound valid synchronously before bubbling onChange.
     // Delete any previously-persisted answer, but only when one actually exists,
     // so a fresh invalid toggle does not fire a spurious answer_delete tracking
     // event / store churn.

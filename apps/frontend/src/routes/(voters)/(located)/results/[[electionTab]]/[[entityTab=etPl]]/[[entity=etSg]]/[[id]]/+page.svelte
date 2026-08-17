@@ -1,7 +1,7 @@
 <!--@component
 
-# Results — list / detail page (see phase 62; renamed to
-# see phase 88 4-segment shape)
+# Results — list / detail page (see phase 62; renamed to the
+# 4-segment shape, see phase 88)
 
 Single page file serving the URL shapes of `/results`:
 
@@ -10,9 +10,9 @@ Single page file serving the URL shapes of `/results`:
   3. `/results/[electionTab]/[entityTab]/[entity]/[id]?electionId=X` — list + drawer (matching types)
   4. `/results/[electionTab]/organizations/candidate/[id]?electionId=X` — list + drawer (cross-type edge)
 
-## ownership split (preserved through 88-02)
+## Layout / page ownership split (preserved through 88-02)
 
-After the **parent `+layout.svelte` renders both the list AND the drawer
+The **parent `+layout.svelte` renders both the list AND the drawer
 overlay**. The drawer uses `<EntityDetailsDrawer>` and paints first thanks to
 source-order markup + `content-visibility: auto` on the list container.
 That means this page file is deliberately empty when a detail URL is visited —

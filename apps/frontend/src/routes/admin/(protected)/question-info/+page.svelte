@@ -21,8 +21,8 @@ Page for controlling the question info generation feature.
   ////////////////////////////////////////////////////////////////////////
 
   // dataRoot is identity-stable (#version-bridge): read `ctx.dataRoot.<prop>` directly in the tracking scope,
-  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" +
-  // (see spike 024). see phase 117.
+  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" and the
+  // stable-reference alias anti-pattern (see spike 024, see phase 117).
   const ctx = getAdminContext();
   const {
     t,

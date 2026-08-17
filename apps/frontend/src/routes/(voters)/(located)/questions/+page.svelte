@@ -50,7 +50,7 @@ Display a general intro before starting answering the questions and possibly all
     voterCtx.firstQuestionId = null;
     // Filter stale category IDs (holdovers from a different election/constituency).
     // Navigation-level concern — stays here. Default-seeding moved to voterContext
-    // per (see phase 61).
+    // per the voter-context default seeding (see phase 61).
     const filtered = voterCtx.selectedQuestionCategoryIds.filter((id) =>
       voterCtx.opinionQuestionCategories.find((c) => c.id === id)
     );
