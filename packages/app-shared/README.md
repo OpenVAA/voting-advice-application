@@ -22,6 +22,6 @@ yarn workspace @openvaa/app-shared build
 
 ## Build target
 
-ESM-only via `tsup`. All current in-repo consumers (`@openvaa/frontend`, `@openvaa/docs`, `@openvaa/dev-seed`, `@openvaa/argument-condensation`, `@openvaa/llm`) declare `"type": "module"`. No `require()` consumers exist in the workspace; Supabase Edge Functions do not import from this package. The historic dual ESM+CommonJS build was added to support `apps/strapi/`, which has been retired.
+ESM-only via `tsup`. All current in-repo consumers (`@openvaa/frontend`, `@openvaa/docs`, `@openvaa/dev-seed`, `@openvaa/argument-condensation`, `@openvaa/llm`) declare `"type": "module"`. No `require()` consumers exist in the workspace; Supabase Edge Functions do not import from this package. The historic dual ESM+CommonJS build was added to support the Strapi backend at `backend/vaa-strapi/`, which has been retired.
 
 If a future consumer requires CommonJS, restore `format: ['esm', 'cjs']` in `tsup.config.ts` and the corresponding `main` / `exports.require` entries in `package.json`.
