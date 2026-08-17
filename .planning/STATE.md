@@ -5,15 +5,15 @@ milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 151
 current_phase_name: ship-v0-2-akita-review-stack
 status: executing
-stopped_at: Completed 151-05-PLAN.md
-last_updated: "2026-08-17T05:30:49.563Z"
+stopped_at: Completed 151-06-PLAN.md
+last_updated: "2026-08-17T06:13:30.968Z"
 last_activity: 2026-08-16
 last_activity_desc: Phase 151 execution started
 progress:
   total_phases: 15
   completed_phases: 4
   total_plans: 43
-  completed_plans: 29
+  completed_plans: 30
   percent: 27
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 
 Milestone: v2.15 (Phases 137-151, 15 phases, 38 requirements)
 Phase: 151 (ship-v0-2-akita-review-stack) — EXECUTING
-Plan: 6 of 19
+Plan: 7 of 19
 Status: Ready to execute
 Last activity: 2026-08-16 — Phase 151 execution started
 
@@ -48,8 +48,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-17T05:30:49.540Z
-Stopped at: Completed 151-05-PLAN.md
+Last session: 2026-08-17T06:13:21.440Z
+Stopped at: Completed 151-06-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -154,6 +154,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 151 P03 | 31min | 3 tasks | 2 files |
 | Phase 151 P04 | 51min | 3 tasks | 1 files |
 | Phase 151 P05 | 45min | 4 tasks | 2 files |
+| Phase 151 P06 | 50m | 4 tasks | 3 files |
 
 ## Deferred Items
 
@@ -663,6 +664,10 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: D-15 exempts .agents/code-review-checklist.md from the hygiene sweep, not from checklist item 7 — its stale docs/src/routes links and NBSP checkbox are repo-documentation defects, not planning citations.
 - [Phase ?]: Slice 07 absorbs the seven-file SvelteKit app shell by name so hooks.server.ts (Supabase session + locale) is reviewed with the request path, not inside a config PR
 - [Phase ?]: Criterion 4.4's disjoint-path proxy cannot hold across a D-11 rename base; the gate's honest range is C1..TIP with the whole-stack run recorded beside it (151-17)
+- [Phase ?]: items_total is 31 not 30 - checklist line 8 uses NBSP task markers
+- [Phase ?]: cells_expected is 163 not 207 - the plan formula double-counts 4 phase-level items
+- [Phase ?]: origin/main integration commit classed chore, not docs, so it cannot perturb clause 4.2's docs count == 1
+- [Phase ?]: the dropped-finding class is 842 files, 110 unclaimed by any slice pathspec
 
 ### Quick Tasks Completed
 
