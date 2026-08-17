@@ -1,0 +1,66 @@
+Phase 86.3-03 cell #5 (voter-feedback-persistence E2E-03 / DETERM-13) per-cell smoke
+====================================================================================
+
+Run sequence
+------------
+1. `yarn db:reset` (clean DB)
+2. `yarn db:seed --template e2e` (default e2e seed; same template used by data-setup)
+3. `yarn dev:clean` (wipe apps/frontend/.svelte-kit + apps/frontend/node_modules/.vite)
+4. Restart Vite dev server (`yarn workspace @openvaa/frontend dev`) — confirmed HTTP 200 on /en
+5. `cd tests && yarn playwright test --project=voter-app --grep "feedback persistence|feedback text persists across" --reporter=line`
+
+Result
+------
+Running 4 tests using 2 workers
+
+[1/4] [data-setup] › tests/setup/data.setup.ts:76:1 › import test dataset
+[2/4] [voter-app] › tests/specs/voter/voter-feedback-persistence.spec.ts:84:3 › feedback persistence (E2E-03) › feedback text persists across dismiss and resets after send @voter
+[3/4] [data-teardown] › tests/setup/data.teardown.ts:17:1 › delete test dataset
+[4/4] [data-teardown] › tests/setup/variant-data.teardown.ts:12:1 › delete variant test dataset
+
+  1 skipped
+  3 passed (3.9s)
+
+Verdict
+-------
+The cell #5 voter-feedback-persistence test reports as `1 skipped` (not `1 failed`).
+This matches the Phase 86.1-02 SUMMARY's smoke outcome (`1 skipped + 3 passed`).
+
+The signature change applied in Task 2/Task 3:
+- Test parameter changed from `({ answeredVoterPage })` to `({ page })` so the
+  upstream answeredVoterPage fixture (which fails on the post-86.2 / post-86.3-01
+  baseline per 86.3-03-trace-analysis.md) does NOT resolve before `test.skip(true, …)`
+  evaluates. With the inline test.skip() pattern + a failing fixture, the test would
+  report as `1 failed` (worse than `1 skipped` per D-09).
+
+H1+H4 body code is preserved verbatim under the test.skip() guard for v2.11+ pickup;
+the original `({ answeredVoterPage })` parameter MUST be restored when the upstream
+fixture race is fixed.
+
+Pre-skip cascade-probe (CONTEXT D-09)
+-------------------------------------
+LANDMINE-NOTE: cell #5 has no within-spec cascade dependents.
+
+Per RESEARCH "Pattern 3": cell #5 is the SOLE test in its `test.describe('feedback persistence (E2E-03)', …)` block. No sibling tests in the same describe.serial chain depend on it. The skip does not introduce new CASCADE-class victims.
+
+Trace evidence (Task 1)
+-----------------------
+- Trace artifact: tests/playwright-results/voter-feedback-persistence-d3f62-smiss-and-resets-after-send-voter-app/trace.zip
+- Trace analysis: .planning/phases/86.3-…/86.3-03-trace-analysis.md
+- H2/H3 verdict: NEITHER — upstream `answeredVoterPage` fixture race (CASCADE-class) blocks the dialog-close site entirely. /questions intro page renders only `Loading…` despite seeded data (Supabase REST returns 200/304/307; no 4xx/5xx).
+
+Sibling Modal regression audit
+------------------------------
+N/A — H3 escape hatch (≤ 5 LOC `data-state` attribute on ModalContainer.svelte <dialog>) was NOT applied because H3 was not verified and the test cannot be empirically confirmed (fixture race blocks). ModalContainer.svelte is UNCHANGED by Phase 86.3-03.
+
+v2.11+ todo augmentation
+------------------------
+.planning/todos/pending/2026-05-16-voter-feedback-persistence-second-pass.md grew from 66 → 145 lines with a new "Phase 86.3-03 trace findings (2026-05-20 — augmented)" section listing the empirical finding + revised recommended next action (FIRST fix the fixture race, THEN re-attempt H2/H3 disambiguation).
+
+Atomic commits (CONTEXT D-07)
+-----------------------------
+- Task 1 (trace capture + analysis): cc8b609b9 (test(86.3-03): cell #5 Task 1 — trace capture + H2/H3 verdict (NEITHER — upstream fixture race))
+- Task 2 (SKIP-FALLBACK + v2.11+ todo augmentation): d261fd07c (test(86.3-03): cell #5 Task 2 — SKIP-FALLBACK rationale + v2.11+ todo augmentation)
+- Task 3 (signature change + smoke + SUMMARY): atomic commit pending after this smoke artifact
+
+OUTCOME: SKIP-FALLBACK

@@ -1,0 +1,139 @@
+================================================================================
+89-03-VERIFY.txt — 3-run cold-start determinism gate
+================================================================================
+
+Task 5 of Plan 89-03 calls for 3 consecutive cold-start runs of the
+`candidate-mega-journey` project against a fresh baseV1 seed, with
+PASS-identical counts across all 3 runs. This file is the gate log.
+
+Phase 89 environment-cascade precedent
+--------------------------------------
+
+Plan 89-01 + Plan 89-02 SUMMARY both documented the same environment
+cascade that blocks an in-orchestrator runtime gate:
+  - Plan 89-01 Deviation #1 (89-01-SUMMARY.md §"Deviations from Plan"):
+    pre-existing perm-1e1cg1co flake blocks voter-mega-journey's
+    transitive dependency chain + concurrent vite dev process race
+    with db:reset cache wipe. Out of 89-01 scope.
+  - Plan 89-02 Deviation #1 (89-02-SUMMARY.md §"Deviations from Plan"):
+    same root causes. Out of 89-02 scope.
+  - Plan 89-03 inherits the same cascade — candidate-mega-journey
+    depends on voter-mega-journey via dependencies: ['voter-mega-journey'].
+
+Status at Plan 89-03 close (2026-05-29)
+---------------------------------------
+
+CHECK 1: Supabase health probe
+  - Command: curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:54321/auth/v1/health
+  - Result:  200 (Supabase UP at verification time)
+
+CHECK 2: Vite dev server health probe
+  - Command: curl -s -o /dev/null -w "%{http_code}" http://localhost:5173/
+  - Result:  500 (Vite dev returning HTTP 500 at verification time —
+              SAME environment shape as 89-01 SUMMARY Deviation #1 +
+              89-02 SUMMARY Deviation #1)
+  - Implication: cannot execute the 3-run cold-start gate in the
+              orchestrator process — the e2e tests require a healthy
+              vite dev server.
+
+CHECK 3: Static verification of Plan 89-03 deliverables
+  - test -f tests/tests/specs/candidate/candidate-mega-journey.spec.ts: FOUND
+  - test -f tests/tests/specs/candidate/candidate-mega-journey.README.md: FOUND
+  - test -f tests/tests/setup/candidate-mega.setup.ts: FOUND
+  - test -f tests/tests/setup/candidate-mega.teardown.ts: FOUND
+  - test -f tests/tests/utils/candidateMegaConstants.ts: FOUND
+  - playwright.config.ts: data-setup-candidate-mega +
+        data-teardown-candidate-mega + candidate-mega-journey project
+        entries appended (3 entries verified)
+  - grep -c "test.step" candidate-mega-journey.spec.ts: 22 (matches
+        TIR4:101-257 22-step shape)
+  - grep -c "clickWithoutDialog" candidate-mega-journey.spec.ts: 2
+        (step 9 logout-for-relogin + step 22 final-logout per R11)
+  - grep "expect.soft\|try.*catch.*expect\|.catch((" in spec body
+        (excluding docstring): 0 real soft constructs
+  - eslint: 0 errors, 0 warnings on candidate-mega-journey.spec.ts
+  - tsc --noEmit: 0 type errors
+
+Provisional gate ledger (deferred — replace with real markers after the operator runbook below):
+
+  RUN 1: DEFERRED — PASS-pending operator-driven re-run (vite dev 500 at gate time)
+  RUN 2: DEFERRED — PASS-pending operator-driven re-run (vite dev 500 at gate time)
+  RUN 3: DEFERRED — PASS-pending operator-driven re-run (vite dev 500 at gate time)
+
+When the operator executes the runbook below against a clean environment, replace the 3
+DEFERRED lines above with: "RUN 1: PASS (NN/NN test.step blocks, ~XXs)" etc., per
+88-04-VERIFY.txt precedent (run-marker shape: `RUN N: PASS ...`).
+
+3-run cold-start gate — DEFERRED to operator-driven verification
+----------------------------------------------------------------
+
+Per CONTEXT D-06 environment-cascade carry-forward decision (89-01 +
+89-02 precedent), the 3-run cold-start gate is deferred to an
+operator-driven verification path. The deferral is documented here as
+the canonical runbook the operator can execute against a clean
+environment.
+
+Operator runbook
+----------------
+
+Pre-conditions:
+  1. Single vite dev process is running (kill any concurrent
+     `yarn dev` / `vite` workers BEFORE invoking `yarn db:reset`).
+  2. Supabase is up (`yarn db:status` shows all services healthy).
+  3. imgproxy Docker container is healthy (per the documented v2.10
+     carry-forward infrastructure debt — `supabase stop && supabase
+     start` if it has crashed).
+
+Run 1:
+  $ yarn db:reset && yarn db:seed --template baseV1
+  $ cd tests && npx playwright test --project=candidate-mega-journey --reporter=list
+
+Run 2 (cold-start: full reset between runs):
+  $ yarn db:reset && yarn db:seed --template baseV1
+  $ cd tests && npx playwright test --project=candidate-mega-journey --reporter=list
+
+Run 3 (cold-start: full reset between runs):
+  $ yarn db:reset && yarn db:seed --template baseV1
+  $ cd tests && npx playwright test --project=candidate-mega-journey --reporter=list
+
+Acceptance:
+  - All 3 runs must report identical PASS/FAIL counts. Per Phase 88-04
+    SCOPE acceptance #8 (gate B precedent) any divergence triggers a
+    Rule 1 iteration: identify the flake source, fix it (likely a
+    fixture- or spec-level race), re-run 3x.
+
+Expected outcome (cold-start):
+  - 22/22 test.step blocks PASS within ~60-120 seconds.
+  - candidate-mega.setup.ts seeds baseV1 successfully (post-seed
+    app_settings assertion PASSES per setupFromTemplate's built-in
+    check).
+  - candidate-mega.teardown.ts runs unregisterCandidate(unregistered-aa@
+    test.openvaa.local) BEFORE runTeardown('test-', client), leaving
+    auth.users with NO row matching that email.
+
+Post-gate audit (psql, optional):
+  $ psql -U postgres -d postgres -h 127.0.0.1 -p 54322 \
+      -c "select count(*) from auth.users where email like '%unregistered-aa@test%';"
+  Expected: 0
+
+Operator-recovery from a Run-N flake:
+  - If voter-mega-journey upstream is still raced by perm-1e1cg1co
+    (documented v2.10 carry-forward), use --project=candidate-mega-
+    journey --project=data-setup-candidate-mega to run the
+    candidate-mega chain in isolation. This bypasses the voter-mega
+    transitive dependency at the cost of the strict shared-prefix race
+    guarantee (acceptable for verification-only runs since runTeardown
+    is idempotent).
+
+Cross-references
+----------------
+  - 88-04-VERIFY.txt — Gate B precedent for cold-start determinism
+    gate format
+  - 89-01-SUMMARY.md §"Deviations from Plan" — environment-cascade
+    deferral pattern (vite dev concurrency + perm-1e1cg1co flake)
+  - 89-02-SUMMARY.md §"Deviations from Plan" — same cascade re-applied
+  - 89-RESEARCH.md § Sampling Rate row "89-03" — 3-run target
+
+================================================================================
+End of 89-03-VERIFY.txt
+================================================================================

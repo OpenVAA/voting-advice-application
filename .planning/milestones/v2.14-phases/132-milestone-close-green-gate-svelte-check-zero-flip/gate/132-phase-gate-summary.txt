@@ -1,0 +1,47 @@
+=== PHASE 132 PLAN 03 — MILESTONE-CLOSE GATE SUMMARY ===
+Recorded: 2026-07-23
+Tree at gate: HEAD ad3f46e84 (post 132-04 lint remediation + this plan's voterNavigation.ts harden)
+
+########## STATIC GATES (Task 1) ##########
+  yarn build ............................ PASS (14/14 turbo tasks)
+  yarn test:unit ........................ PASS (frontend 759/54/0, dev-seed 444/42/0; 19/19 tasks)
+  yarn lint:check ....................... PASS (exit 0; 0 errors, warnings-only residual)
+  yarn workspace @openvaa/frontend check  PASS (svelte-check 0 ERRORS / 0 WARNINGS, 2676 files;
+                                          --fail-on-warnings gate live from Plan 02)
+  Evidence: gate/132-static-gates.txt, gate/132-svelte-check-close.txt
+
+########## 3x E2E DETERMINISM GATE (Task 2) ##########
+  Local profile workers:6 / retries:0 (STRICTER than CI's workers:1 / retries:3).
+  Each run: FRESH :5173 Vite dev server (killed prior) + clean DB (yarn db:reset, elections=0,
+  no default-template pollution; public-assets bucket asserted).
+
+  Run 1 of 3 .... PASS — 129 passed / 0 failed / 0 did-not-run (10.5m)  [gate/132-full-suite-run1.txt]
+                  (D-02 full-DAG proof: candidate-journey incl. :661 step-13.5 passed under the
+                   full concurrent perm-DAG)
+  Run 2 of 3 .... PASS — 129 passed / 0 failed / 0 did-not-run (10.6m)  [gate/132-full-suite-run2.txt]
+  Run 3 of 3 .... PASS — 129 passed / 0 failed / 0 did-not-run (10.6m)  [gate/132-full-suite-run3.txt]
+
+  VERDICT: 3x GREEN to the determinism standard. HARDN-02 satisfied.
+
+########## COUNT-RESTART LOG (D-05 / D-06) ##########
+  A PRE-FIX run (before the count) FAILED once and RESTARTED the 3x count at 0:
+    - perm-hide-election-tags.spec.ts:15 — 90s timeout at voterNavigation.ts:216 waiting for
+      voter-elections-continue visibility (elections-continue-stall / page-already-advanced).
+      105 passed / 1 failed / 23 did-not-run (8.3m).
+    - Root cause: unbounded `...Cont.waitFor({state:'visible'})` in advanceVoterFlow's elections
+      (:216) + constituencies (:193) branches — no fast-fail + hard-nav fallback (the sibling
+      click/URL-settle steps had it; these visibility waits did not).
+    - Fix (in-phase, D-03/D-06 test-side harden, commit ad3f46e84): bounded TIMEOUTS.slowPage
+      wait + navigateDirectlyToQuestions() fallback on both branches. Behavior-neutral happy path.
+    - Todo filed FIXED: todos/completed/2026-07-23-elections-continue-stall-voternavigation-unbounded-wait.md
+    - After the fix the count was RESTARTED at 0; runs 1-3 above are the clean post-fix count.
+    - No skip directive, no retry-until-green, "did not run" counted as failure (cardinal rule honored).
+    - `git diff` on tests/ this plan shows only the voterNavigation.ts harden — NO new `.skip(` modifiers.
+
+########## DISCARDED ENV-WEDGE LOG (D-07) ##########
+  During pre-run `yarn db:reset` setup, the local Supabase storage service wedged twice
+  (storage/v1/bucket "context deadline exceeded" 502 / imgproxy 502). Each was recovered per the
+  D-07 runbook (`yarn db:stop && yarn db:start && yarn db:reset`, then public-assets bucket asserted)
+  BEFORE any counted test run started. No COUNTED test run was invalidated by an env-wedge — these
+  were pre-run setup wedges, recovered, and are logged here for evidence integrity. NEVER counted as
+  a suite failure; NEVER counted as a pass.

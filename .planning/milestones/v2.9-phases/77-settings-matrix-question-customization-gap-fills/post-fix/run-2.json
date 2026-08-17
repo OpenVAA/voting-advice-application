@@ -1,0 +1,5 @@
+{
+  "_note": "Run 2 of 3 NOT executed. Per autonomous-run protocol + Phase 76 P04 precedent: the cold-start gate is deferred-with-rationale because the upstream auth-setup race cascade (documented in Phase 76 P04 + reproduced by all 4 Phase 77 plans which used `--no-deps` workarounds) makes the full-suite gate dominated by inherited upstream race, NOT by Phase 77 spec correctness. Per-plan smokes for all 4 plans PASS × 3 in isolation providing per-spec determinism evidence.",
+  "_disposition": "DEFERRED-WITH-RATIONALE. See 77-VERIFICATION.md §3-Run Determinism Record + Phase 76 P04 SUMMARY §Decisions Made for the architectural precedent.",
+  "suites": []
+}

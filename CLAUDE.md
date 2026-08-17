@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-OpenVAA is a framework for building Voting Advice Applications (VAAs). It's a monorepo containing frontend (SvelteKit), backend (Strapi CMS), and shared packages for matching algorithms, filters, and data management.
+OpenVAA is a framework for building Voting Advice Applications (VAAs). It's a monorepo containing frontend (SvelteKit), backend (Supabase), and shared packages for matching algorithms, filters, and data management.
 
 ## Development Commands
 
@@ -12,26 +12,47 @@ OpenVAA is a framework for building Voting Advice Applications (VAAs). It's a mo
 
 ```bash
 yarn install                    # Install all workspace dependencies
-yarn dev                        # Start full Docker stack (frontend, backend, postgres, localstack)
-yarn dev:down                   # Clean shutdown (removes containers, volumes, images)
-yarn dev:stop                   # Stop without removing volumes
+yarn dev                        # Full stack: start local Supabase + package watcher + Vite dev server
+yarn db:stop                    # Stop local Supabase
+yarn db:reset                   # Reset the database only (drops + recreates from migrations + seed.sql)
+yarn db:status                  # Show Supabase service status
 ```
 
 ### Building
 
 ```bash
-yarn build:app-shared          # Build @openvaa/app-shared (required before most dev work)
-yarn build:shared              # Build all packages in /packages
+yarn build                     # Build all packages (Turborepo - cached, parallel)
+yarn build --filter=@openvaa/core  # Build a specific package and its dependencies
 ```
+
+Turborepo handles dependency ordering and caching automatically. Second builds with no changes complete in under 5 seconds.
 
 ### Testing
 
 ```bash
 yarn test:unit                 # Run all unit tests (vitest)
 yarn test:unit:watch          # Run unit tests in watch mode
-yarn test:e2e                 # Run Playwright E2E tests (requires yarn dev running)
+yarn test:e2e                 # Run Playwright E2E tests (requires yarn dev running; preflight-checked)
 yarn playwright install       # Install Playwright browsers
 ```
+
+#### E2E Hard Rule (cardinal failure)
+
+> **Failing E2E tests are a CARDINAL FAILURE. No task may proceed, complete, or be marked done while any E2E test is failing — the tests must pass first, full stop.**
+
+- **No "known-flaky" exemptions.** There is no such thing as an acceptable flaky test in this project. A test that fails intermittently is a real defect (in the test or the code) and MUST be ironed out — not skipped, retried-until-green, or annotated as flaky. Diagnose the root cause and fix it.
+- **Prefer E2E for interim verification.** When checking work-in-progress results, prefer running the E2E suite over ad-hoc manual checks. The recommended method is to **run the whole suite** (`yarn test:e2e`) — it does not take long, and a full-suite run is the trusted signal.
+- A "did not run" E2E test counts as a failure (e.g. cascade failures from an upstream dependency), not a pass.
+
+#### E2E preflight (served-application gate)
+
+Every E2E run begins with a preflight in Playwright's global setup. It aborts the run with exit 1 before any spec body executes, and there is no flag and no environment variable that skips it.
+
+- **What it asserts:** that the served application's own HTTP response proves the page under test came from **this** checkout — the server must serve, and echo back, this working tree's absolute path via Vite's `/@fs` endpoint — not merely that something answered on the port.
+- **Alternate port:** `FRONTEND_PORT` is the escape hatch, in two working forms. Put `FRONTEND_PORT=<port>` in the root `.env` for a persistent alternate port used by both the dev server and the suite, or prefix a single command (`FRONTEND_PORT=5273 yarn dev`) for a one-off override, which wins over the file.
+- **`strictPort`:** `yarn dev` now fails loudly (`Error: Port <port> is already in use`) instead of quietly moving to the next port. That closes same-address drift — the mechanism behind the original incident. It does **not** close a wildcard shadow-bind, where another process holds `*:<port>` and our server still binds `[::1]:<port>` without a bind error (measured); that case is what the preflight catches.
+
+See [`tests/README.md`](/tests/README.md) § Run for the fuller treatment, including how to read a preflight failure message field by field.
 
 ### Linting & Formatting
 
@@ -46,8 +67,30 @@ yarn format                   # Format all files with Prettier
 
 ```bash
 yarn workspace @openvaa/frontend dev
-yarn workspace @openvaa/strapi dev
-yarn workspace @openvaa/app-shared build
+```
+
+### Database & Stack Commands
+
+**Harmonised naming:** `db:*` scripts touch **only the database/Supabase**; `dev:*` scripts drive the **full stack** (DB + shared-package watcher + frontend). There are no `supabase:*` scripts and no deprecated `dev:*` aliases — those were removed at v2.10 close.
+
+```bash
+# --- Database only (Supabase + dev-seed; never touches the vite cache or frontend) ---
+yarn db:start                 # Start local Supabase (Postgres, Auth, Storage, Edge Functions, Inbucket)
+yarn db:stop                  # Stop local Supabase
+yarn db:status                # Show Supabase service status
+yarn db:reset                 # Reset the DB only: ensure Supabase is up, then `supabase db reset` (migrations + seed.sql)
+yarn db:reset-with-data       # db:reset, then db:seed --template default
+yarn db:seed                  # Run @openvaa/dev-seed (accepts --template <name>, --seed <int>, --external-id-prefix <str>)
+yarn db:seed:default          # db:seed --template default
+yarn db:seed:teardown         # Remove all seed_-prefixed rows + portraits
+yarn db:types                 # Regenerate TypeScript types from schema
+yarn db:lint:sql              # Run SQL linter on all migrations (sqlfluff + Splinter advisors)
+
+# --- Full stack (DB + watcher + frontend) ---
+yarn dev                      # Start Supabase + package watcher + Vite dev server
+yarn dev:clean                # Wipe apps/frontend/.svelte-kit + apps/frontend/node_modules/.vite (vite-cache reset)
+yarn dev:reset                # db:reset, then launch the full stack (yarn dev)
+yarn dev:reset-with-data      # db:reset-with-data, then launch the full stack (yarn dev)
 ```
 
 ### Single Test Development
@@ -62,7 +105,7 @@ yarn test:unit                # Run tests for this package only
 For frontend:
 
 ```bash
-cd frontend
+cd apps/frontend
 yarn test:unit                # Run frontend tests only
 ```
 
@@ -86,10 +129,11 @@ The project uses Yarn 4 workspaces with these modules:
 - `@openvaa/argument-condensation` - Argument processing
 - `@openvaa/question-info` - Question metadata
 
-**Application**:
+**Applications** (`apps/`):
 
-- `@openvaa/strapi` - Strapi v5 backend with Postgres at `backend/vaa-strapi/`. Custom plugins in `backend/vaa-strapi/src/plugins/`
-- `@openvaa/frontend` - SvelteKit 2 frontend at `frontend/`. Uses Tailwind + DaisyUI for styling
+- `@openvaa/supabase` - Supabase backend at `apps/supabase/`. Schema, migrations, Edge Functions, pgTAP tests. Local dev via `supabase start`
+- `@openvaa/frontend` - SvelteKit 2 frontend at `apps/frontend/`. Uses Tailwind + DaisyUI for styling
+- `@openvaa/docs` - Documentation site (SvelteKit) at `apps/docs/`
 
 **Development**:
 
@@ -99,14 +143,26 @@ The project uses Yarn 4 workspaces with these modules:
 
 **IDE Resolution**: Uses TypeScript project references in `tsconfig.json` files. You don't need to build dependencies for IDE to resolve imports.
 
-**Runtime Resolution**: NPM/Node requires built `.js` files. Always build dependee packages before running dependent packages. The `yarn dev` script watches packages and rebuilds automatically.
+**Runtime Resolution**: NPM/Node requires built `.js` files. Always build dependee packages before running dependent packages. The `yarn dev` script builds packages before starting the dev server.
 
-**Dependency Flow**: `core` → `data`/`matching`/`filters` → `app-shared` → `frontend`/`strapi`
+**Dependency Flow**: `core` -> `data`/`matching`/`filters` -> `app-shared` -> `frontend`/`supabase`
 
 When adding interdependencies:
 
 1. Add to `package.json`: `"@openvaa/core": "workspace:^"`
 2. Add TypeScript reference: `"references": [{ "path": "../core/tsconfig.json" }]`
+
+**Canonical package paradigm:** New `packages/<name>/` workspaces follow the shape of `@openvaa/core` (lowest in the dep graph; tiebreaker per the canonical-paradigm doc). Same `package.json` scripts + `exports`, `tsconfig.json` extends `@openvaa/shared-config/ts`, `tsup.config.ts`, flat `src/index.ts` barrel, no `.js` extensions on TS-internal relative imports. See `packages/README.md` for the full reference.
+
+### Build System
+
+The project uses [Turborepo](https://turbo.build) for build orchestration. Configuration is in `turbo.json` at the project root. Turborepo provides:
+
+- Dependency-aware builds (packages build in topological order)
+- Local caching (unchanged packages are skipped on rebuild)
+- Parallel execution (independent packages build simultaneously)
+
+The `.turbo/` directory contains the local cache and should not be committed to git.
 
 ### Key Architectural Patterns
 
@@ -131,40 +187,33 @@ When adding interdependencies:
 
 **Frontend Data Flow**:
 
-- Data adapters in `frontend/src/lib/api/adapters/` abstract data source (Strapi vs local JSON)
-- Universal adapter pattern in `frontend/src/lib/api/base/universalAdapter.ts`
-- Server-side and client-side backend URLs differ when using Docker (see `.env`)
-- Route structure uses optional locale param: `frontend/src/routes/[[lang=locale]]/`
-- Separate apps for voters (`frontend/src/routes/[[lang=locale]]/(voters)/`) and candidates (`frontend/src/routes/[[lang=locale]]/candidate/`)
-
-**Backend Customization** (`@openvaa/strapi`):
-
-- Automatic data loading on init: Question Types, App Settings, Translation overrides
-- Custom permissions via `backend/vaa-strapi/src/extensions/users-permissions/strapi-server.ts`
-- Route policies: `restrict-populate` applied to all routes
-- Mock data generation controlled by env vars (dev/test only)
+- Supabase adapter in `apps/frontend/src/lib/api/adapters/supabase/` provides all data access
+- No adapter switch -- Supabase is the only production adapter (local adapter available for static data)
+- Universal adapter pattern in `apps/frontend/src/lib/api/base/universalAdapter.ts`
+- Routes carry no locale segment -- locale is resolved by Paraglide's `url` strategy (`apps/frontend/vite.config.ts`), not by a route param
+- Separate apps for voters (`apps/frontend/src/routes/(voters)/`) and candidates (`apps/frontend/src/routes/candidate/`)
 
 **Settings Architecture**:
 
 - `StaticSettings` - hardcoded in `packages/app-shared/src/settings/staticSettings.ts` (colors, locales, fonts, admin email). Edit these to customize your VAA instance
 - `DynamicSettings` - loaded from backend (election data, feature flags)
 
-## Docker Development
+## Development Environment
 
-The stack runs four services:
+The development stack uses Supabase CLI for backend services:
 
-1. `frontend` - SvelteKit on port 5173
-2. `strapi` - Backend on port 1337 (admin at /admin, default admin/admin)
-3. `postgres` - Database on port 5432
-4. `awslocal` - LocalStack for S3/SES on port 4566
+1. `supabase start` - Launches local Supabase (Postgres, Auth, Storage, Edge Functions, Inbucket email)
+2. `yarn dev` - Starts Vite dev server for the frontend (port 5173)
 
-**Port conflicts**: Ensure 1337, 5173, 5432, 4566 are free. Change in `.env` if needed.
+**Supabase Dashboard**: http://127.0.0.1:54323 (local admin UI)
+**Inbucket**: http://127.0.0.1:54324 (email testing)
+**Supabase API**: http://127.0.0.1:54321
 
-**Environment variables**: When using Docker, only edit the root `.env` file (not `frontend/.env` or `backend/vaa-strapi/.env`).
+**Docker Compose** (`docker-compose.dev.yml`) is only used for production build testing, not development.
 
-**Mock data**: Set `GENERATE_MOCK_DATA_ON_INITIALISE=true` in `.env` to seed database with fake candidates, questions, etc. Use `GENERATE_MOCK_DATA_ON_RESTART=true` to regenerate on every restart (clears database - dev only).
+**Environment variables**: Edit the root `.env` file (copied from `.env.example`).
 
-**Hot reloading**: Frontend hot reloads by default. Backend can hot reload if you mount `./backend/vaa-strapi:/opt` in `backend/vaa-strapi/docker-compose.dev.yml` (slow, not recommended unless actively developing backend).
+**Seed data**: The database is seeded automatically on `supabase start` via `apps/supabase/seed.sql`.
 
 ## Frontend (SvelteKit)
 
@@ -172,67 +221,57 @@ The stack runs four services:
 
 **Routing**:
 
-- Optional locale in all routes: `[[lang=locale]]`
-- Voters app: `frontend/src/routes/[[lang=locale]]/(voters)/`
-- Candidate app: `frontend/src/routes/[[lang=locale]]/candidate/`
-- Candidate protected routes: `frontend/src/routes/[[lang=locale]]/candidate/(protected)/`
+- No locale route param: locale is resolved by Paraglide's `url` strategy (`strategy: ['url', 'cookie', 'baseLocale']`), so no `ROUTE` constant carries a locale segment
+- Voters app: `apps/frontend/src/routes/(voters)/`
+- Candidate app: `apps/frontend/src/routes/candidate/`
+- Candidate protected routes: `apps/frontend/src/routes/candidate/(protected)/`
 
 **Styling**: Tailwind CSS + DaisyUI components. Theme colors defined in `packages/app-shared/src/settings/staticSettings.ts`.
 
-**Path aliases** (defined in `frontend/svelte.config.js`):
+**Path aliases** (defined in `apps/frontend/svelte.config.js`):
 
-- `$types` → `frontend/src/lib/types`
-- `$voter` → `frontend/src/lib/voter`
-- `$candidate` → `frontend/src/lib/candidate`
+- `$types` -> `apps/frontend/src/lib/types`
+- `$voter` -> `apps/frontend/src/lib/voter`
+- `$candidate` -> `apps/frontend/src/lib/candidate`
 
 **Key directories**:
 
-- `frontend/src/lib/api/` - Data adapters (Strapi, local JSON)
-- `frontend/src/lib/components/` - Reusable Svelte components
-- `frontend/src/lib/contexts/` - Svelte context providers
-- `frontend/src/lib/i18n/` - Internationalization (sveltekit-i18n)
-- `frontend/src/lib/utils/` - Helper functions
-- `frontend/src/hooks.server.ts` - SvelteKit hooks (auth, locale handling)
+- `apps/frontend/src/lib/api/` - Data adapters (Supabase, local)
+- `apps/frontend/src/lib/components/` - Reusable Svelte components
+- `apps/frontend/src/lib/contexts/` - Svelte context providers
+- `apps/frontend/src/lib/i18n/` - Internationalization (sveltekit-i18n)
+- `apps/frontend/src/lib/utils/` - Helper functions
+- `apps/frontend/src/hooks.server.ts` - SvelteKit hooks (Supabase session, locale handling)
 
-**Build**: `yarn workspace @openvaa/frontend build` (also copies `frontend/data/` folder if present for local adapter)
+**Build**: `yarn workspace @openvaa/frontend build` (also copies `apps/frontend/data/` folder if present for local adapter)
 
-## Backend (Strapi)
+## Backend (Supabase)
 
-**Version**: Strapi v5 with TypeScript
-
-**Database**: Postgres (required, not SQLite in production)
+**Database**: PostgreSQL managed by Supabase (local via `supabase start`, production via Supabase Cloud)
 
 **Authentication**:
 
-- Public read access to API (configured in permissions)
-- Candidates authenticate via `users-permissions` plugin
-- Pre-registration requires API token with `users-permissions.candidate.preregister` permission
+- Cookie-based sessions with PKCE
+- Candidates authenticate via Supabase Auth
+- Pre-registration via Supabase Edge Function
 - Bank authentication via OpenID Connect (Signicat) - see `.env` for IdP settings
 
-**Plugins**:
+**Schema**: See `apps/supabase/migrations/` for the database schema
 
-- AWS S3 for media uploads
-- AWS SES for emails
-- `@openvaa/strapi-admin-tools` (local plugin in `backend/vaa-strapi/src/plugins/openvaa-admin-tools/`)
+**Edge Functions**: See `apps/supabase/functions/` for serverless functions (preregister, send-email, admin)
 
-**Type generation**: Run `yarn workspace @openvaa/strapi generate:types` after schema changes to update `backend/vaa-strapi/types/`.
+**Tests**: pgTAP tests in `apps/supabase/tests/`
 
-**Adding new content types**:
-
-1. Add to `CONTENT_API` list in `backend/vaa-strapi/src/util/api.ts`
-2. Update permissions in `backend/vaa-strapi/src/extensions/users-permissions/strapi-server.ts`
-3. Add route config with `restrict-populate` policy (see `backend/vaa-strapi/README.md`)
-
-**Email**: Uses AWS SES. Control sender with `MAIL_FROM`, `MAIL_FROM_NAME`, `MAIL_REPLY_TO` env vars.
+**Type generation**: Run `yarn db:types` after schema changes to update `packages/supabase-types/`
 
 ## Common Workflows
 
 ### Starting a new feature
 
-1. `yarn build:app-shared` (if not already built)
+1. `yarn build` (builds all packages with caching -- fast if already built)
 2. Understand the feature scope - read relevant package READMEs
-3. For frontend work: check existing components in `frontend/src/lib/components/`, `frontend/src/lib/dynamic-components` and `frontend/src/lib/candidate/components`
-4. For backend work: check content types and custom API in Strapi admin
+3. For frontend work: check existing components in `apps/frontend/src/lib/components/`, `apps/frontend/src/lib/dynamic-components` and `apps/frontend/src/lib/candidate/components`
+4. For backend work: check schema in `apps/supabase/migrations/` and Edge Functions in `apps/supabase/functions/`
 
 ### Running tests after changes
 
@@ -240,10 +279,10 @@ The stack runs four services:
 # Quick check
 yarn test:unit
 
-# Full E2E (requires clean docker stack)
-yarn dev:down
+# Full E2E (requires Supabase running)
+yarn db:reset
 yarn dev
-# Wait for stack to be healthy
+# Wait for services to be healthy
 yarn test:e2e
 ```
 
@@ -256,20 +295,24 @@ cd packages/matching
 tsx examples/example.ts
 ```
 
-### Translation updates
-
-Dynamic translations are synced from frontend to backend:
-
-```bash
-yarn sync:translations
-```
-
 ### Fixing "module not found" errors
 
 ```bash
-yarn build:app-shared  # Most common fix
-yarn build:shared      # If core/data/matching/filters are involved
+yarn build             # Rebuilds all packages (cached -- only changed packages rebuild)
 ```
+
+### Seeding local data
+
+```bash
+yarn db:reset-with-data                        # db:reset + default template (Finnish demo, 4 locales); DB only — does not touch the vite cache
+yarn db:seed --template e2e/base               # E2E test data for manual Playwright runs (canonical base dataset; bare `e2e` retired in Phase 93)
+yarn db:seed --template ./my-template.ts       # custom templates from filesystem
+yarn db:seed:teardown                          # remove all seed_-prefixed rows + portraits
+```
+
+See `packages/dev-seed/README.md` for authoring custom templates (mixing
+`fixed[]` hand-authored rows with synthetic `count`, 4-locale expansion,
+latent-factor answer model overrides).
 
 ## Important Implementation Notes
 
@@ -279,37 +322,103 @@ yarn build:shared      # If core/data/matching/filters are involved
 - **Matching algorithms** - questions creating subdimensions (like categorical) need special handling
 - **Missing values** - use `MISSING_VALUE` from `@openvaa/core` in matching contexts, `undefined` or empty literals elsewhere
 - **Localization** - all user-facing strings must support multiple locales (see `packages/app-shared/src/settings/staticSettings.ts` for `supportedLocales`)
-- **Always** check that your code against the [Code review checklist](docs/code-review-checklist.md)
+- **Always** check your code against the [Code review checklist](/.agents/code-review-checklist.md)
+
+### Context Destructuring Rule (Svelte 5)
+
+OpenVAA's Svelte 5 contexts (`getCandidateContext()`, `getVoterContext()`, `getAppContext()`, plus generic `getContext()` consumers) expose two property classes that have **different reactivity semantics under destructuring**:
+
+1. **Stable references** — translation function `t`, route helper `getRoute` (still a `{ current }` handle), `darkMode`, `answers`, the `userData` object (whose internal `$state` getters are accessed by property), lifecycle functions (`logout`, `register`, `preregister`, `startEvent`, `*Countdown`). These can be safely destructured:
+
+   ```ts
+   const { t, getRoute } = getVoterContext();
+   ```
+
+2. **Reactive accessors** — getters returning `$state`- or `$derived`-backed values that change over time. `appSettings`, `dataRoot`, and `locale` (which became reactive accessors in v2.13 Phase 113 — the handle flatten; previously stable `{ current }` handles, now bare reactive fields). Plus: `selectedElections`, `selectedConstituencies`, `opinionQuestions`, `infoQuestions`, `infoQuestionCategories`, `opinionQuestionCategories`, `questionBlocks`, `unansweredOpinionQuestions`, `unansweredRequiredInfoQuestions`, `requiredInfoQuestions`, `answersLocked`, `profileComplete`, `electionsSelectable`, `constituenciesSelectable`, `matches`, `nominationsAvailable`, `resultsAvailable`, `idTokenClaims`, `isPreregistered`, `isAuthenticated`, `preregistrationElections`, `preregistrationNominations`, `newUserEmail`. These **MUST** be read via direct property access:
+
+   ```ts
+   const ctx = getCandidateContext();
+   const opinionQuestions = $derived(ctx.opinionQuestions); //  correct
+   // const { opinionQuestions } = ctx;                     //  captures initial empty array
+   ```
+
+   **Why:** Destructuring invokes the getter ONCE at component-init time and binds the captured value (the initial empty `$state` array) to a local var. Subsequent reads of the local var are reads of a static binding — not getter calls — and do not propagate dependency invalidation. Reads via `ctx.X` re-invoke the getter inside the tracking scope each time, preserving the reactive edge.
+
+**Canonical pattern** (`apps/frontend/src/routes/(voters)/(located)/results/+layout.svelte:61-79`):
+
+```ts
+const ctx = getVoterContext();
+// Stable: destructure ok.
+const { t, getRoute, answers } = ctx;
+// Reactive: read via ctx.X (aliased through $derived for template readability).
+// appSettings/dataRoot/locale are reactive accessors post Phase 113 — never destructure them.
+const appSettings = $derived(ctx.appSettings);
+const dataRoot = $derived(ctx.dataRoot);
+const elections = $derived(ctx.selectedElections);
+const constituencies = $derived(ctx.selectedConstituencies);
+```
+
+<!-- Updated v2.13 Phase 113 (FLATTEN-02 complete): appSettings/dataRoot/locale flattened from { current } handles to bare reactive fields (read ctx.X, no .current); reclassified stable→reactive. -->
+
+For a one-time, non-reactive init read (e.g. building a `const mailto` or a `topBarSettings.use({...})` call at component setup), read the value off `ctx` directly (`ctx.appSettings`) rather than aliasing through `$derived`; the `$derived` alias is for values consumed reactively in the template / `$derived` / `$effect`, and aliasing it for a one-shot init read triggers a `state_referenced_locally` warning.
+
+**Diagnostic origin:** v2.6 Phase 61 Plan 03 — see `.planning/milestones/v2.6-phases/61-voter-app-question-flow/61-03-DIAGNOSIS.md`. The `candidateContext` `$derived` chain captured initial empty arrays at component init and never re-evaluated after the data layer populated, because consumers destructured reactive properties out of the context object. The fix landed by switching consumers to `ctx.X` reads. The in-tree explanation lives at `apps/frontend/src/lib/contexts/candidate/candidateContext.svelte.ts:106-123`.
+
+**Caveat — genuinely store-shaped stable members:** A few context members are still `{ current }` rune handles (e.g. `getRoute`) and are STABLE — they remain safe to destructure. NOTE: as of v2.13 Phase 113, `appSettings`/`dataRoot`/`locale` are NO LONGER stores nor `{ current }` handles — they are bare reactive fields and **must NOT be destructured** (destructuring captures the value once at init and stops updating on navigation — the Phase-61 destructure-trap). Read them via `ctx.appSettings` (bare, no `.current` — the FLATTEN-02 codemod removed every `.current` read on these three). Only the genuinely-handle-shaped stable members (like `getRoute`) stay destructurable.
+
+**Carve-out — the `dataRoot` `#version`-bridge alias-indirection hole (v2.13 Phase 117):** The canonical `const X = $derived(ctx.X)` read pattern (above) is correct for **value-replacing** accessors — `appSettings` (its reference is replaced on update), `locale` (a scalar), and the array accessors `selectedElections` / `opinionQuestions` / `matches` (their array reference is replaced). For those the existing destructure-trap guidance fully applies and the `$derived` read alias is safe.
+
+It has a HOLE for `dataRoot` — and any same-shape **identity-stable** `#version`-bridge accessor (an object whose reference never changes and whose only reactive signal is a private `#version` `$state` counter bumped on `DataRoot.update()`). Binding `dataRoot` to an intermediate read alias and reading `aliasedDataRoot.<prop>` downstream goes **STALE on cold / direct-URL entry**: the alias recomputes on each `#version` bump but yields the SAME `DataRoot` reference every time, and Svelte 5's referential-equality rule SKIPS downstream notification — so the consumer keeps the empty pre-mount snapshot. (Warm `intro → Continue` entry masks it because the data is already present before the alias first computes; cold entry exposes it because the data arrives after mount.)
+
+**Safe consumption for `dataRoot`:** read `ctx.dataRoot.<prop>` **DIRECTLY** inside the consuming tracking scope (`$derived.by` thunk / template `{#if}`/`{#each}`/`{@const}` / `$effect`) so the consumer itself takes the `#version` dependency — never bind it to an intermediate read alias. Canonical analog: `apps/frontend/src/routes/(voters)/elections/+page.svelte:43-44`.
+
+Mechanism explanation is NOT duplicated here — see `.planning/spikes/024-derived-alias-stable-ref-skip/README.md` (4/4 validated affected-vs-not classification), `.planning/spikes/CONVENTIONS.md` §9 + the Spike-024 anti-pattern entry, and `.planning/debug/dataroot-stale-direct-nav.md` (root cause + 14-site consumer map).
+
+**Lint enforcement** is currently a guideline, not an automated rule. A future phase may add a custom svelte-eslint rule if violations recur.
+
+### Svelte Warning-Accepted Format
+
+When a Svelte / vite-plugin-svelte / SvelteKit warning is intentionally accepted (rather than fixed at the source), use this inline format:
+
+```
+// svelte-warning: accepted — <one-sentence-rationale>
+```
+
+Place the comment IMMEDIATELY ABOVE the warning-triggering line. The rationale should explain WHY the warning is accepted (e.g., "framework-emitted false positive for prop reassignment in init phase"; "intentional non-reactive read at mount per design"). Per v2.8 Phase 70 Cat A `// reason:` block convention; the `svelte-warning: accepted` prefix scopes the comment to vite-plugin-svelte / SvelteKit / Svelte-compiler-emitted warnings specifically (vs. ESLint `// reason:` which scopes to lint-rule acceptances).
+
+Use sparingly — preferred outcome is to FIX the warning at the source. Acceptance is the fallback when the warning is a framework false-positive OR a design tradeoff that can't be cleanly fixed.
 
 ## Deployment
 
-Fully containerized with Docker. See `docs/README.md` deployment section for:
+Frontend is deployed as a Docker container. Backend uses Supabase Cloud.
 
-- Render + AWS S3/SES setup
-- Environment variable configuration
-- Production build process
-- Domain configuration
+See `render.example.yaml` for Render deployment configuration:
 
-Recent costs (2024-2025): $80-350/month depending on traffic and instance sizes.
+- Frontend service with Supabase environment variables (`PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`)
+- No backend service needed on Render -- Supabase Cloud handles the database and auth
+- Domain and cache disk configuration
 
 ## Troubleshooting
 
-**Docker issues**: Run `yarn dev:down` to clean everything and start fresh.
+**Database issues**: Run `yarn db:reset` to reset the database only (drops and recreates all tables from migrations + `seed.sql`). For a full-stack reset that also wipes the vite cache and relaunches, use `yarn dev:reset`.
 
-**Port conflicts**: Check ports 1337, 5173, 5432, 4566 are free. Edit `.env` to change.
+**Port conflicts**: Check ports 54321 (Supabase API), 54323 (Supabase Studio), 5173 (frontend) are free.
 
-**TypeScript errors in IDE**: Run `yarn build:shared` to rebuild all packages.
+**TypeScript errors in IDE**: Run `yarn build` to rebuild all packages.
 
-**Mock data not generating**: Check `GENERATE_MOCK_DATA_ON_INITIALISE=true` in root `.env` and ensure database is empty.
-
-**Frontend can't reach backend**: Verify `PUBLIC_BROWSER_BACKEND_URL` and `PUBLIC_SERVER_BACKEND_URL` in `.env`.
+**Frontend can't reach backend**: Verify `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY` in `.env`.
 
 ## Roadmap
 
-**2025 H2**: Documentation site, AI features, application manager UI, first production release
-
-**2026**: Plugins/customization, multi-tenant model, migration from Strapi to Supabase, Svelte 5 upgrade
+**2026**: Plugins/customization, multi-tenant model, Svelte 5 upgrade
 
 ## Code Review
 
 When performing code review or developing new features, make sure to check all the items in the [Code Review Checklist](/.agents/code-review-checklist.md).
+
+## Skill Routing
+
+- **Spike findings for voting-advice-application-gsd** — two domains:
+  - Svelte 5 rune migration (spikes 001–012): reactive context shapes, `runeLocalStorage` helper, `untrack()` write-after-read invariant, token-keyed overlay registry, SSR-aware synchronous-init for appSettings, voterContext/candidateContext orchestration, destructure-trap reproduction, consumer-migration codemod, 4-wave migration order, HMR DX, `$derived.by` over per-field `page` reads for getRoute.
+  - Page navigation + View Transitions + a11y (spikes 013–016): SvelteKit already reuses `+page.svelte` across param-only URL changes (production: 9/25 ≈ 36% element survival); the user-perceived "redraw" is reactive content-node regeneration, fixed via `onNavigate(navigation => Promise(startViewTransition))` with per-element `view-transition-name`; unified-layout-with-empty-leaf shape (matches results pattern) + `{#key question.type}` for variant remount; WCAG 2.1 AA gate via `afterNavigate(focus({preventScroll: true}))` + `aria-live="polite"` route announcer + reduced-motion belt-and-braces.
+    → `Skill("spike-findings-voting-advice-application-gsd")`

@@ -1,0 +1,259 @@
+=== run-1 vs run-2 ===
+Baseline: 4p / 29f / 69c
+Post:     4p / 29f / 69c
+Contract: 66 pass-locked, 15 data-race pool, 21 cascade-baseline.
+PARITY GATE: FAIL — 62 regression(s):
+  - [pass -> fail] voter-app-settings :: specs/voter/voter-settings.spec.ts > should show category checkboxes when allowCategorySelection enabled
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app-settings :: specs/voter/voter-settings.spec.ts > should filter questions to selected categories
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app-settings :: specs/voter/voter-settings.spec.ts > should show category intro page before each category
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app-settings :: specs/voter/voter-settings.spec.ts > should skip category when skip button clicked
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app-settings :: specs/voter/voter-settings.spec.ts > should show question intro page when questionsIntro.show enabled
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app-settings :: specs/voter/voter-settings.spec.ts > should enforce minimum answers before results available
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app-settings :: specs/voter/voter-settings.spec.ts > should hide results link when showResultsLink is false
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app-popups :: specs/voter/voter-popups.spec.ts > should show feedback popup after delay on results page
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app-popups :: specs/voter/voter-popups.spec.ts > should remember dismissal after page reload
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app-popups :: specs/voter/voter-popups.spec.ts > should show survey popup after delay on results page
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app-popups :: specs/voter/voter-popups.spec.ts > should not show any popup when disabled
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] auth-setup :: setup/auth.setup.ts > authenticate as candidate
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] candidate-app :: specs/candidate/candidate-auth.spec.ts > should login with valid credentials
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] candidate-app :: specs/candidate/candidate-auth.spec.ts > should show error on invalid credentials
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] candidate-app :: specs/candidate/candidate-questions.spec.ts > should display question cards organized by category (CAND-05)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] candidate-app :: specs/candidate/candidate-questions.spec.ts > should answer a Likert opinion question and save (CAND-04)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] candidate-app :: specs/candidate/candidate-questions.spec.ts > should navigate between categories (CAND-05)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] candidate-app :: specs/candidate/candidate-questions.spec.ts > should edit a previously answered question (CAND-05)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] candidate-app :: specs/candidate/candidate-questions.spec.ts > should persist question answers after page reload (CAND-12)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] candidate-app :: specs/candidate/candidate-questions.spec.ts > should persist comment text on a question after page reload (CAND-12)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] candidate-app :: specs/candidate/candidate-questions.spec.ts > should display entered profile and opinion data on preview page (CAND-06)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] candidate-app :: specs/candidate/candidate-questions.spec.ts > should show specific candidate data (name or answered question) in preview (CAND-06)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should register the fresh candidate via email link
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] candidate-app-mutation :: specs/candidate/candidate-registration.spec.ts > should send registration email and extract link
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] candidate-app-mutation :: specs/candidate/candidate-registration.spec.ts > should complete registration via email link
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] candidate-app-mutation :: specs/candidate/candidate-registration.spec.ts > should complete forgot-password and reset flow via Inbucket email
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-detail.spec.ts > should open candidate detail drawer when clicking a result card
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-detail.spec.ts > should display candidate info and opinions tabs
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-detail.spec.ts > should display candidate answers correctly in info and opinions tabs
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-detail.spec.ts > should open party detail drawer with info, candidates, and opinions tabs
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-journey.spec.ts > should load home page and display start button
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app :: specs/voter/voter-journey.spec.ts > should auto-imply election and constituency
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app :: specs/voter/voter-journey.spec.ts > should show questions intro page with start button
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app :: specs/voter/voter-journey.spec.ts > should answer all Likert questions with navigation
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-matching.spec.ts > should display candidates in correct match ranking order
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app :: specs/voter/voter-matching.spec.ts > should show perfect match candidate as top result
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app :: specs/voter/voter-matching.spec.ts > should show worst match candidate as last result
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app :: specs/voter/voter-matching.spec.ts > should show partial-answer candidate in results with valid score
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app :: specs/voter/voter-matching.spec.ts > should NOT show hidden candidate (no termsOfUseAccepted)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app :: specs/voter/voter-matching.spec.ts > should confirm category intros were not shown during journey (VOTE-05 partial negative coverage)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app :: specs/voter/voter-matching.spec.ts > should confirm results accessible after all questions answered (VOTE-07 partial above-threshold coverage)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-popup-hydration.spec.ts > popup appears on full page load to /results (LAYOUT-03 hydration path)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-questions.spec.ts > fresh session defaults to all opinion categories checked + counter non-zero on first paint
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-questions.spec.ts > counter updates reactively on category toggle
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-results.spec.ts > should display candidates section with result cards
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-results.spec.ts > should display entity type tabs for switching between candidates and organizations
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-results.spec.ts > should switch to organizations/parties section and back
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-results.spec.ts > canonical URL: /results redirects to /results/candidates (RESEARCH A3)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-results.spec.ts > filter toggle narrows list without effect_update_depth_exceeded (RESULTS-01 + RESULTS-02)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-results.spec.ts > filter state resets on plural tab switch (D-14)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-results.spec.ts > filter state survives drawer open/close (D-15)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-results.spec.ts > deeplink list+drawer URL renders both (RESULTS-03, D-08 shape 3)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-results.spec.ts > deeplink edge case: organizations list + candidate drawer (D-08 shape 4)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-results.spec.ts > Browser Back steps through tab+drawer changes (D-13)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-results.spec.ts > invalid plural matcher returns 404 (D-11)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-results.spec.ts > coupling-rule redirect: singular without id → list view (D-11)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-results.spec.ts > drawer paints before list on cold deeplink (D-10 source-order + content-visibility)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-static-pages.spec.ts > about page renders correctly
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-static-pages.spec.ts > info page renders correctly
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-static-pages.spec.ts > privacy page renders correctly
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-static-pages.spec.ts > should render nominations page with entries
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app :: specs/voter/voter-static-pages.spec.ts > should redirect to home when showAllNominations is false
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+
+=== run-2 vs run-3 ===
+Baseline: 4p / 29f / 69c
+Post:     4p / 29f / 69c
+Contract: 66 pass-locked, 15 data-race pool, 21 cascade-baseline.
+PARITY GATE: FAIL — 62 regression(s):
+  - [pass -> fail] voter-app-settings :: specs/voter/voter-settings.spec.ts > should show category checkboxes when allowCategorySelection enabled
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app-settings :: specs/voter/voter-settings.spec.ts > should filter questions to selected categories
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app-settings :: specs/voter/voter-settings.spec.ts > should show category intro page before each category
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app-settings :: specs/voter/voter-settings.spec.ts > should skip category when skip button clicked
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app-settings :: specs/voter/voter-settings.spec.ts > should show question intro page when questionsIntro.show enabled
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app-settings :: specs/voter/voter-settings.spec.ts > should enforce minimum answers before results available
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app-settings :: specs/voter/voter-settings.spec.ts > should hide results link when showResultsLink is false
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app-popups :: specs/voter/voter-popups.spec.ts > should show feedback popup after delay on results page
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app-popups :: specs/voter/voter-popups.spec.ts > should remember dismissal after page reload
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app-popups :: specs/voter/voter-popups.spec.ts > should show survey popup after delay on results page
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app-popups :: specs/voter/voter-popups.spec.ts > should not show any popup when disabled
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] auth-setup :: setup/auth.setup.ts > authenticate as candidate
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] candidate-app :: specs/candidate/candidate-auth.spec.ts > should login with valid credentials
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] candidate-app :: specs/candidate/candidate-auth.spec.ts > should show error on invalid credentials
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] candidate-app :: specs/candidate/candidate-questions.spec.ts > should display question cards organized by category (CAND-05)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] candidate-app :: specs/candidate/candidate-questions.spec.ts > should answer a Likert opinion question and save (CAND-04)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] candidate-app :: specs/candidate/candidate-questions.spec.ts > should navigate between categories (CAND-05)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] candidate-app :: specs/candidate/candidate-questions.spec.ts > should edit a previously answered question (CAND-05)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] candidate-app :: specs/candidate/candidate-questions.spec.ts > should persist question answers after page reload (CAND-12)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] candidate-app :: specs/candidate/candidate-questions.spec.ts > should persist comment text on a question after page reload (CAND-12)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] candidate-app :: specs/candidate/candidate-questions.spec.ts > should display entered profile and opinion data on preview page (CAND-06)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] candidate-app :: specs/candidate/candidate-questions.spec.ts > should show specific candidate data (name or answered question) in preview (CAND-06)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should register the fresh candidate via email link
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] candidate-app-mutation :: specs/candidate/candidate-registration.spec.ts > should send registration email and extract link
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] candidate-app-mutation :: specs/candidate/candidate-registration.spec.ts > should complete registration via email link
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] candidate-app-mutation :: specs/candidate/candidate-registration.spec.ts > should complete forgot-password and reset flow via Inbucket email
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-detail.spec.ts > should open candidate detail drawer when clicking a result card
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-detail.spec.ts > should display candidate info and opinions tabs
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-detail.spec.ts > should display candidate answers correctly in info and opinions tabs
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-detail.spec.ts > should open party detail drawer with info, candidates, and opinions tabs
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-journey.spec.ts > should load home page and display start button
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app :: specs/voter/voter-journey.spec.ts > should auto-imply election and constituency
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app :: specs/voter/voter-journey.spec.ts > should show questions intro page with start button
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app :: specs/voter/voter-journey.spec.ts > should answer all Likert questions with navigation
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-matching.spec.ts > should display candidates in correct match ranking order
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app :: specs/voter/voter-matching.spec.ts > should show perfect match candidate as top result
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app :: specs/voter/voter-matching.spec.ts > should show worst match candidate as last result
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app :: specs/voter/voter-matching.spec.ts > should show partial-answer candidate in results with valid score
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app :: specs/voter/voter-matching.spec.ts > should NOT show hidden candidate (no termsOfUseAccepted)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app :: specs/voter/voter-matching.spec.ts > should confirm category intros were not shown during journey (VOTE-05 partial negative coverage)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app :: specs/voter/voter-matching.spec.ts > should confirm results accessible after all questions answered (VOTE-07 partial above-threshold coverage)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-popup-hydration.spec.ts > popup appears on full page load to /results (LAYOUT-03 hydration path)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-questions.spec.ts > fresh session defaults to all opinion categories checked + counter non-zero on first paint
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-questions.spec.ts > counter updates reactively on category toggle
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-results.spec.ts > should display candidates section with result cards
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-results.spec.ts > should display entity type tabs for switching between candidates and organizations
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-results.spec.ts > should switch to organizations/parties section and back
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-results.spec.ts > canonical URL: /results redirects to /results/candidates (RESEARCH A3)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-results.spec.ts > filter toggle narrows list without effect_update_depth_exceeded (RESULTS-01 + RESULTS-02)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-results.spec.ts > filter state resets on plural tab switch (D-14)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-results.spec.ts > filter state survives drawer open/close (D-15)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-results.spec.ts > deeplink list+drawer URL renders both (RESULTS-03, D-08 shape 3)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-results.spec.ts > deeplink edge case: organizations list + candidate drawer (D-08 shape 4)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-results.spec.ts > Browser Back steps through tab+drawer changes (D-13)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-results.spec.ts > invalid plural matcher returns 404 (D-11)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-results.spec.ts > coupling-rule redirect: singular without id → list view (D-11)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-results.spec.ts > drawer paints before list on cold deeplink (D-10 source-order + content-visibility)
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-static-pages.spec.ts > about page renders correctly
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-static-pages.spec.ts > info page renders correctly
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-static-pages.spec.ts > privacy page renders correctly
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> fail] voter-app :: specs/voter/voter-static-pages.spec.ts > should render nominations page with entries
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)
+  - [pass -> cascade] voter-app :: specs/voter/voter-static-pages.spec.ts > should redirect to home when showAllNominations is false
+      baseline-passing test regressed (D-59-04 PASS_LOCKED violation)

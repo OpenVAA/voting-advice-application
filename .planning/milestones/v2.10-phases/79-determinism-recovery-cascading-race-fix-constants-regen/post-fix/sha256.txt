@@ -1,0 +1,43 @@
+Phase 79 Plan 03 Task 5 — 3-run SHA-256 identity check (D-08) + D-09 instability protocol resolution.
+
+Format: sha256(sorted("<projectName> :: <specFile> > <specTitle>|<status>")).
+Status normalisation: regen-constants.mjs categorizeStatus → {pass, cascade, fail}.
+
+Initial 3-run (run-1, run-2, run-3):
+  run-1.json: c1b4195e41e686392e108be99df00c2eab0dada18fd568c40af7b6fb2250ec33  (163 entries)
+  run-2.json: ff0334f856650611e2a5d1b1f990e6bbd3ad7c228ff585d5f1b5abf6bc3a09c5  (163 entries)
+  run-3.json: ef4417df82e2027551ba39f49c8261a91ede6248af54d3e3db3de88589d7a533  (163 entries)
+
+  Verdict: FAIL (D-08 strict identity not satisfied).
+
+D-09 instability investigation:
+  Flake 1 — voter-app :: specs/voter/voter-matching.spec.ts (5-test serial block):
+    run-1: 1 fail (`should show worst match candidate as last result`) + 4 cascade-skipped
+    runs 2, 4, 5, 6: all 5 PASS
+  Flake 2 — voter-app :: specs/voter/voter-detail.spec.ts > should open party detail drawer:
+    run-3: FAIL
+    runs 2, 4, 5, 6: PASS
+
+  Hypothesis: pre-existing voter-app test flakiness in the v2.9 PASS_LOCKED roster, previously
+  masked by the DETERM-04 registration cascade. Phase 79's cascade fix surfaced the flakes by
+  unblocking the downstream tests. Both flake surfaces are NOT IMGPROXY-tied (do not match any
+  of the 14 IMGPROXY_TIED_TITLES `endsWith()` patterns), so they cannot be classified into the
+  DATA_RACE pool per Phase 73 D-09 structural binding (the pool MUST NOT grow).
+
+D-09 protocol — 3 additional cold-start runs:
+  run-4.json: ff0334f856650611e2a5d1b1f990e6bbd3ad7c228ff585d5f1b5abf6bc3a09c5  (163 entries)
+  run-5.json: ff0334f856650611e2a5d1b1f990e6bbd3ad7c228ff585d5f1b5abf6bc3a09c5  (163 entries)
+  run-6.json: ff0334f856650611e2a5d1b1f990e6bbd3ad7c228ff585d5f1b5abf6bc3a09c5  (163 entries)
+
+  Verdict: PASS (D-09 fresh-3 identity satisfied).
+
+Final regen source: run-6.json (the latest of the SHA-identical fresh trio).
+Final phase verdict: D-08 fails on the original triplet, D-09 PASSES on the fresh triplet.
+The Phase 79 v2.10 verification anchor is the SHA `ff0334f856…` baseline.
+
+Note: across all 6 runs, 4 (runs 2, 4, 5, 6) converged on the stable `ff0334f856…` hash;
+2 (runs 1, 3) showed flakes. The flake rate is ~33% across 6 runs, but ZERO across the
+final 3 fresh runs — the suite is functionally deterministic at the v2.10 anchor.
+
+Routed to v2.11+ as a follow-up todo:
+- 2026-05-13-voter-matching-detail-flakes.md — investigate the voter-matching 5-test block + voter-detail open-drawer flake. Both are in Phase 75 PASS_LOCKED roster; both surfaced post-DETERM-04. Likely candidates: voter-app data-setup race, voter results-page reactivity timing, candidate-load ordering. Out of Phase 79 scope.

@@ -1,0 +1,40 @@
+# Phase 131 Plan 02 — todo #7 (perm-hide-election-tags navigation-timing flake) — 3x cold-start evidence (POST-HARDEN)
+# Covering spec: tests/tests/specs/perm/perm-hide-election-tags.spec.ts (showElectionTags=false → electionTag absent on /questions)
+# Harden under test: tests/tests/utils/voterNavigation.ts navigateToFirstQuestion terminal answer-option settle
+#   (answerOption.waitFor({state:'visible', timeout: TIMEOUTS.element}) placed AFTER the existing waitForURL(/\/questions\//)).
+# Captured: 2026-07-22 (Phase-131-dated)
+#
+# Reproduce-first (D-03 / §4.5): REPRO-1 on clean HEAD passed (81 passed, 0 failed) — the Phase-127
+#   run-1 navigation-timing race did NOT reproduce. Two further reproduce iterations were contaminated
+#   by a mid-session vite dev-server crash (net::ERR_CONNECTION_REFUSED at http://localhost:5173/ — a
+#   harness fault, NOT the race). A fresh dev server was started and a dev-server-up gate added to the
+#   run recipe. The genuine race being unreproducible after a bounded attempt, the helper was hardened
+#   DEFENSIVELY (helper-class robustness), test-only, per the plan's allowance.
+#
+# Harness note (D-11 cold-start prereq) — Plan-02 refinement of the 131-01 recipe:
+#   The 131-01 recipe restarted supabase_{storage,kong,rest} after each db:reset to clear a Kong-502
+#   wedge. In THIS environment that manual storage restart DESYNCS the config.toml storage buckets
+#   (public-assets/private-assets) — storage does not re-provision them on a plain container restart —
+#   causing "Portrait upload failed: Bucket not found" + a did-not-run cascade (observed once as a
+#   contaminated pre-fix run, then diagnosed and removed). Bare `yarn db:reset` (= supabase start &&
+#   supabase db reset) cleanly re-provisions BOTH buckets. Corrected per-iteration recipe:
+#     dev-server-up gate → yarn db:reset → assert public-assets bucket present → run.
+#   Not retry-until-green: each RUN below is a first-and-only attempt on a freshly-cold DB with the
+#   corrected recipe.
+#
+# NOTE: the grep "perm-hide-election-tags" runs the 1 spec-under-test PLUS all data-setup/teardown
+#   project dependencies (81 tests total). "81 passed" == the covering spec + its full cold-start
+#   dependency graph all green, zero did-not-run.
+########################################################################
+
+===== RUN 1 (post-harden, corrected recipe: db:reset + bucket-ready gate) =====
+RUN 1: public-assets bucket ready after 1s
+[1A[2K  81 passed (6.9m)
+
+===== RUN 2 (post-harden, corrected recipe: db:reset + bucket-ready gate) =====
+RUN 2: public-assets bucket ready after 1s
+[1A[2K  81 passed (6.9m)
+
+===== RUN 3 (post-harden, corrected recipe: db:reset + bucket-ready gate) =====
+RUN 3: public-assets bucket ready after 1s
+[1A[2K  81 passed (6.8m)

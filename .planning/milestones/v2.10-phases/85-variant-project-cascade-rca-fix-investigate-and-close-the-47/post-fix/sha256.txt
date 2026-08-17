@@ -1,0 +1,178 @@
+# Phase 85 Plan 02 Task 3 — 3-Run Cold-Start Identity Gate (D-05 + D-08 protocol)
+# Captured: 2026-05-14T12:46:00Z (run-3 final flush)
+# Predecessor: Phase 84 anchor `04ddfdd85cf…` (binding pre-Task-1 baseline)
+# Path B decouple commit (Task 1): `d1f8adec0`
+# Task 2 smoke commit: `c2c94d71a`
+
+run-1.json: 6815977e27764fe66195069b526bd180bc6230583a03035b7d7aa9e8b4da5d21
+run-2.json: 6815977e27764fe66195069b526bd180bc6230583a03035b7d7aa9e8b4da5d21
+run-3.json: 411e09f5ffb15015ca57a7405619f127f3950c402c082e2599f6782601158ac5
+
+# Hash algorithm: sha256 over the file `(id, status)` pairs sorted lexicographically.
+# Each `id` is constructed as `<projectName> :: <file> > <title>`.
+# Per Phase 79 D-08, this hashes the deterministic identity surface (NOT the raw JSON
+# whose timestamps + durations legitimately vary across runs).
+
+# === STRICT D-08 IDENTITY GATE — STATUS ===
+#
+# Run 1 SHA == Run 2 SHA (full identity), Run 3 differs.
+#
+# Per-test diff (only 1 cell varies — IDENTICAL to Phase 84 D-08 precedent):
+#
+# voter-app :: specs/voter/voter-detail.spec.ts > should open party detail drawer
+#   with info, candidates, and opinions tabs
+#     Run 1: failed
+#     Run 2: failed
+#     Run 3: passed
+#
+# All other 165 (id, status) pairs are byte-identical across all 3 runs.
+# Verdict: PASS-WITH-DEFERRAL.
+
+# === FLAKE ANALYSIS ===
+#
+# Domain: voter-app (NOT a Phase 85 DETERM-11 surface; Phase 86 scope per ROADMAP.md).
+#
+# This is the SAME boundary-case cell that diverged in Phase 84 (sha256.txt line 19-23
+# of Phase 84). Phase 84 routed it to Phase 86 per ROADMAP scope (voter-app hydration-
+# guard tightening). Phase 85 inherits the same routing per D-08:
+#
+#   "voter-detail 'should open party detail drawer' was previously in FAILURE-CLASS
+#    — Phase 83 DETERM-07b hydration-guard promoted it to PASS_LOCKED. Pre-Phase 83
+#    deterministic-fail; under specific worker scheduling pressure, the hydration-guard
+#    safety window is on the edge — may still race. NOT IMGPROXY-RELATED."
+#
+# Phase 84 verdict: ROUTE TO Phase 86. Phase 85 verdict: ROUTE TO Phase 86 (consistent).
+#
+# Note: This cell passed in Phase 84's run-1 and run-3 (failing only in run-2). In
+# Phase 85's 3-run gate, it failed in run-1 and run-2 (passing only in run-3). The
+# direction of the flake is symmetric (sometimes pass, sometimes fail) — confirming
+# the boundary-case classification rather than a deterministic regression.
+
+# === RUN-LEVEL AGGREGATE ===
+#
+# All 3 runs: TOTAL tests = 166
+#
+# Run 1: passed=111  failed=11  skipped=42  flaky=0  timedOut=2
+# Run 2: passed=111  failed=11  skipped=42  flaky=0  timedOut=2
+# Run 3: passed=112  failed=10  skipped=42  flaky=0  timedOut=2
+#
+# The +1 pass / -1 fail delta in run-3 is EXACTLY the voter-detail party-drawer cell.
+
+# === VARIANT-PROJECT VERDICT (Path B decouple + WARNING 9 contingency) ===
+#
+# All 3 runs (IDENTICAL across runs):
+#   Total variant-project tests:  37
+#     passed:    3
+#     failed:    0
+#     skipped:   32 (cascade-skips from the 2 variant-multi-election timeouts)
+#     timedOut:  2
+#
+# Per-Project Variant Verdicts (DAG order, top-of-chain → bottom-of-chain):
+#   data-setup-multi-election:        pass=1, fail=0, skip=0    ← CHAIN HEAD: Path B decouple WORKED
+#   variant-multi-election:           pass=2, fail=0, skip=2, timedOut=2  ← First chain-internal failure (2 timeouts)
+#   variant-results-sections:         pass=0, fail=0, skip=3    ← cascade-skip from variant-multi-election timeout
+#   data-setup-constituency:          pass=0, fail=0, skip=1    ← cascade-skip
+#   variant-constituency:             pass=0, fail=0, skip=7    ← cascade-skip
+#   data-setup-startfromcg:           pass=0, fail=0, skip=1    ← cascade-skip
+#   variant-startfromcg:              pass=0, fail=0, skip=5    ← cascade-skip
+#   data-setup-low-minimum-answers:   pass=0, fail=0, skip=1    ← cascade-skip
+#   variant-low-minimum-answers:      pass=0, fail=0, skip=1    ← cascade-skip
+#   data-setup-1e-Nc:                 pass=0, fail=0, skip=1    ← cascade-skip
+#   variant-1e-Nc:                    pass=0, fail=0, skip=1    ← cascade-skip
+#   data-setup-Ne-Nc:                 pass=0, fail=0, skip=1    ← cascade-skip
+#   variant-Ne-Nc:                    pass=0, fail=0, skip=1    ← cascade-skip
+#   data-setup-allowopen:             pass=0, fail=0, skip=1    ← cascade-skip
+#   variant-allowopen:                pass=0, fail=0, skip=3    ← cascade-skip
+#   data-setup-hidden-required:       pass=0, fail=0, skip=1    ← cascade-skip
+#   variant-hidden-required-voter:    pass=0, fail=0, skip=1    ← cascade-skip
+#   variant-hidden-required-candidate: pass=0, fail=0, skip=1   ← cascade-skip
+#
+# NEW DETERMINISTIC VARIANT FAILURES (matching Task 2 smoke — D-08 routing):
+#   1. variant-multi-election :: should display questions and reach results
+#      - err: Test timeout of 60000ms exceeded. Locator: getByTestId('question-choice').nth(2)
+#      - At: variant-multi-election.spec.ts:139
+#      - Status across all 3 runs: timedOut (deterministic)
+#   2. variant-multi-election :: should bypass election selection when disallowSelection is true
+#      - err: Test timeout of 60000ms exceeded. Locator: getByTestId('question-choice').nth(2)
+#      - At: variant-multi-election.spec.ts:139 (same line)
+#      - Status across all 3 runs: timedOut (deterministic)
+#
+# Per CONTEXT.md D-08 + WARNING 9 contingency: these 2 deterministic timeouts route to
+# Phase 86 (variant-spec failures join FAILURE-CLASS cohort). The CASCADE relaxation per
+# WARNING 9 applies: (CASCADE + new variant-FAIL count) = 32 + 2 = 34 ≤ 47 ✓ — meets the
+# relaxed criterion (MUST NOT GROW the un-passed pool).
+
+# === DATA_RACE PRE-REGEN GATE (BLOCKER 3; CONTEXT.md D-09 binding) ===
+#
+# Gate output from run-3.json (mirrors regen-constants.mjs:flattenReport() + IMGPROXY_TIED_TITLES):
+#
+# === DATA_RACE PRE-REGEN GATE (run-3.json) ===
+# Count: 3
+#   candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should persist profile image after page reload (CAND-12)
+#   candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should show editable info fields on profile page (CAND-03)
+#   candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should upload a profile image (CAND-03)
+#
+# PASS: DATA_RACE pool size == 3 (D-09 binding preserved).
+#
+# All 3 tests passed in all 3 runs (data-race-semantic preserved per Phase 73 D-09 +
+# Phase 84 renegotiated 3-item set). The CONTEXT.md D-09 MOST-CRITICAL no-grow contract
+# is intact; Task 4 atomic regen can use run-3.json as the canonical regen source.
+
+# === PHASE 85-SCOPE TEST DETERMINISM (verified across all 3 runs) ===
+#
+# 3 DATA_RACE survivors (image-intrinsic, preserved verbatim per Phase 84 renegotiation):
+#   - should upload a profile image (CAND-03)  ✓✓✓ (3/3 passed)
+#   - should show editable info fields on profile page (CAND-03)  ✓✓✓
+#   - should persist profile image after page reload (CAND-12)  ✓✓✓
+#
+# All 16 candidate-app-mutation tests:  ✓✓✓ (16/16 across all 3 runs)
+# All 11 candidate-app tests:           ✓✓✓ (11/11 across all 3 runs)
+# All 7 voter-app-settings tests:       ✓✓✓ (7/7 across all 3 runs)
+# All 18 candidate-app-settings tests:  ✓✓✓ for the 15 active tests (3 PASS-WITH-DEFERRAL
+#                                              skipped intentionally per spec L424-487)
+# All 2 candidate-app-password tests:   ✓✓✓
+# All 2 re-auth.setup.ts entries:       ✓✓✓
+# All 2 auth-setup entries:             ✓✓✓
+#
+# Variant-project deterministic verdicts (post-Path-B-decouple):
+#   - data-setup-multi-election (CHAIN HEAD): ✓✓✓ (3/3 passed — Path B decouple verified)
+#   - variant-multi-election deterministic FAILs: 2 (variant-multi-election.spec.ts:139,
+#     same locator timeout in 2 cells across all 3 runs) — ROUTE TO Phase 86 per D-08.
+#
+# voter-app-popups status (unchanged per CONTEXT.md D-08 — Phase 86 territory):
+#   - should show feedback popup after delay on results page    ✓✓✓ (3/3 passed)
+#   - should remember dismissal after page reload               ✗✗✗ (3/3 failed — Phase 86 DETERM-12)
+#   - should show survey popup after delay on results page      ⊝⊝⊝ (3/3 skipped intentionally)
+#   - should not show any popup when disabled                   ⊝⊝⊝ (3/3 skipped intentionally)
+
+# === IMGPROXY 502 RECOVERY (TRANSPARENCY) ===
+#
+# Imgproxy 502 events during 3-run capture:
+#   - Run 1: 1 × 502 during initial reset chain (pre-test); recovered via supabase stop && start; reset retried successfully.
+#   - Run 2: 1 × 502 during pre-test reset chain; recovered via supabase stop && start; reset retried successfully.
+#   - Run 3: 1 × 502 during pre-test reset chain; recovered via supabase stop && start; reset retried successfully.
+#
+# All 502s occurred during the `supabase db reset` container-restart phase (pre-test).
+# NO 502s occurred during test execution. The 3 CAND-03/CAND-12 image-intrinsic
+# DATA_RACE survivors passed in all 3 runs (no imgproxy 502 contamination at runtime).
+
+# === DISPOSITION ===
+#
+# VERDICT: PASS-WITH-DEFERRAL.
+#
+# Reasoning:
+# - Run-1 SHA ≡ Run-2 SHA (strict identity across 2 of 3 runs).
+# - Run-3 SHA differs by 1 non-Phase-85-scope cell (voter-detail party-drawer; routed
+#   to Phase 86 per D-08, matching Phase 84 precedent).
+# - DATA_RACE pool == 3 (BLOCKER 3 gate PASSED).
+# - Variant-project deterministic failures = 2 (variant-multi-election timeouts in
+#   the same spec.ts:139 cell; route to Phase 86 per WARNING 9 contingency + D-08).
+# - CASCADE pool size + new variant-FAILs = 32 + 2 = 34 ≤ 47 (RELAXED CRITERION MET per
+#   WARNING 9; CASCADE preserved at 32 against the 47-baseline pre-Phase-85).
+# - Phase 85-scope determinism: 3/3 image-intrinsic DATA_RACE survivors PASS in all
+#   3 runs; data-setup-multi-election (chain head) PASS in all 3 runs.
+#
+# Task 4 atomic regen MAY proceed against run-3.json. run-3.json is the canonical
+# regen source per Phase 84 D-05 + D-06 precedent.
+#
+# The new Phase 85 v2.10 anchor SHA will be: 411e09f5ffb15015ca57a7405619f127f3950c402c082e2599f6782601158ac5

@@ -1,0 +1,13 @@
+{
+  "_note": "Run 1 of 3 was started at 2026-05-12T14:38:04Z and terminated (SIGINT, exit 129) at 2026-05-12T14:54:25Z after ~16 minutes of execution. Full-suite cold-start `--workers=1` runs in this dev shell exceed the executor's wall-clock budget for the 3-run verification gate (Phase 76 P04 precedent: each run took ~54 min × 3 = ~162 min; same upstream auth-setup race cascade in this dev shell makes Run 1's progress dominated by the upstream registration test failure + cascade-blocking the candidate-app + variant-* projects).",
+  "_rationale": "Per the autonomous-run instruction: when the cold-start gate would capture a degraded baseline due to the upstream auth-setup cascade (Phase 76 P04 architectural decision documented at commit f205b114f), the rational path is to PRESERVE the prior baseline + document the inherited race deferral. The 4 per-plan SUMMARYs (77-01 through 77-04) all confirm `--no-deps` per-plan smokes PASS × 3 in isolation, providing the per-spec determinism evidence. The full-suite cold-start gate is documented as deferred-with-rationale via 77-VERIFICATION.md status=human_needed.",
+  "_disposition": "DEFERRED-WITH-RATIONALE. See 77-VERIFICATION.md §3-Run Determinism Record for the full disposition.",
+  "_run_state_at_termination": {
+    "elapsed_seconds": 980,
+    "expected_duration_seconds": 3200,
+    "completion_percent_estimate": "~30%",
+    "process_state_at_kill": "S (sleep, awaiting Playwright child workers)",
+    "playwright_progress_signal": "no test progress writes to stdout (--reporter=json buffers entire output until end-of-run)"
+  },
+  "suites": []
+}

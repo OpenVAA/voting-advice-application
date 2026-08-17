@@ -1,0 +1,119 @@
+# Requirements Archive: v5.0 Claude Skills
+
+**Archived:** 2026-03-18
+**Status:** SHIPPED
+
+For current requirements, see `.planning/REQUIREMENTS.md`.
+
+---
+
+# Requirements: OpenVAA Claude Skills
+
+**Defined:** 2026-03-15
+**Core Value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
+
+## v5.0 Requirements
+
+Requirements for Claude Code domain-expert skills. Each maps to roadmap phases.
+
+### Scaffolding
+
+- [x] **SCAF-01**: Skill directory structure created at `.claude/skills/` with subdirectories per skill
+- [x] **SCAF-02**: CLAUDE.md refactored to move domain-specific content into skills (target ~150 lines)
+- [x] **SCAF-03**: Skill boundary definitions documented (which skill owns which files/concepts)
+
+### Data Skill
+
+- [x] **DATA-01**: SKILL.md with description that auto-triggers on @openvaa/data work
+- [x] **DATA-02**: Data model conventions documented (DataRoot, DataObject hierarchy, smart defaults, MISSING_VALUE)
+- [x] **DATA-03**: Extension patterns for adding new entity types and question types
+- [x] **DATA-04**: Review checklist for data package changes (internal.ts barrel, instanceof avoidance, circular deps)
+- [x] **DATA-05**: Reference files for type hierarchies and relationship diagrams
+
+### Matching Skill
+
+- [x] **MATC-01**: SKILL.md with description that auto-triggers on @openvaa/matching work
+- [x] **MATC-02**: Algorithm conventions documented (distance metrics, normalization, subdimensions)
+- [x] **MATC-03**: Extension patterns for adding new matching algorithms or distance metrics
+- [x] **MATC-04**: Mathematical nuances documented (CategoricalQuestion multi-dimensional model, weight compensation)
+- [x] **MATC-05**: Reference files for matching paradigm and Match object structure
+
+### Filters Skill
+
+- [x] **FILT-01**: SKILL.md with description that auto-triggers on @openvaa/filters work
+- [x] **FILT-02**: Filter system conventions documented (3 filter categories, extension pattern)
+- [x] **FILT-03**: Extension patterns for adding new filter types
+- [x] **FILT-04**: Review checklist for filter package changes
+
+### Database Skill
+
+- [x] **DB-01**: SKILL.md with description that auto-triggers on Supabase/database work
+- [x] **DB-02**: Schema conventions documented (17 tables, JSONB patterns, enums, localization)
+- [x] **DB-03**: RLS and auth patterns documented (79 policies, role types, JWT claims, Access Token Hook)
+- [x] **DB-04**: Service patterns documented (bulk import/delete RPCs, Edge Functions, storage)
+- [x] **DB-05**: pgTAP testing conventions documented (helpers, tenant isolation, test patterns)
+- [x] **DB-06**: Reference files for schema diagram and RLS policy map
+
+### Quality
+
+- [x] **QUAL-01**: All skills tested with cross-cutting scenarios (multi-skill active)
+- [x] **QUAL-02**: Skill triggering accuracy validated against natural developer queries
+- [x] **QUAL-03**: No CLAUDE.md/skill content duplication
+
+## Future Requirements
+
+### Deferred Skills (post v4.0 Svelte 5 Migration)
+
+- **ARCH-01**: Architect skill — whole app + monorepo knowledge, frontend internals
+- **COMP-01**: Components skill — frontend component library patterns
+- **LLM-01**: LLM skill — @openvaa/llm package patterns
+
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| Architect skill | Needs all other skills first + post-Svelte 5 architecture |
+| Components skill | Deferred until Svelte 5 migration completes |
+| LLM skill | Deferred — lowest priority package |
+| Skill CI validation | Over-engineering for initial version |
+| Subagent/forked skills | Research confirms inline skills are correct for domain knowledge |
+
+## Traceability
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| SCAF-01 | Phase 16 | Complete |
+| SCAF-02 | Phase 16 | Complete |
+| SCAF-03 | Phase 16 | Complete |
+| DATA-01 | Phase 17 | Complete |
+| DATA-02 | Phase 17 | Complete |
+| DATA-03 | Phase 17 | Complete |
+| DATA-04 | Phase 17 | Complete |
+| DATA-05 | Phase 17 | Complete |
+| MATC-01 | Phase 18 | Complete |
+| MATC-02 | Phase 18 | Complete |
+| MATC-03 | Phase 18 | Complete |
+| MATC-04 | Phase 18 | Complete |
+| MATC-05 | Phase 18 | Complete |
+| FILT-01 | Phase 19 | Complete |
+| FILT-02 | Phase 19 | Complete |
+| FILT-03 | Phase 19 | Complete |
+| FILT-04 | Phase 19 | Complete |
+| DB-01 | Phase 20 | Complete |
+| DB-02 | Phase 20 | Complete |
+| DB-03 | Phase 20 | Complete |
+| DB-04 | Phase 20 | Complete |
+| DB-05 | Phase 20 | Complete |
+| DB-06 | Phase 20 | Complete |
+| QUAL-01 | Phase 21 | Complete |
+| QUAL-02 | Phase 21 | Complete |
+| QUAL-03 | Phase 21 | Complete |
+
+**Coverage:**
+- v5.0 requirements: 26 total
+- Mapped to phases: 26
+- Unmapped: 0
+
+---
+*Requirements defined: 2026-03-15*
+*Last updated: 2026-03-15 after roadmap creation*

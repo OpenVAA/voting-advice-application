@@ -1,0 +1,16 @@
+[dotenv@17.3.1] injecting env (25) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+
+Running 4 tests using 1 worker
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+
+[1A[2K[1/4] [data-setup] › tests/tests/setup/data.setup.ts:30:1 › import test dataset
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+
+[1A[2K[2/4] [voter-app] › tests/tests/specs/voter/voter-results.spec.ts:199:3 › voter results › filter state resets on plural tab switch (D-14) @voter
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+
+[1A[2K[3/4] [data-teardown] › tests/tests/setup/data.teardown.ts:17:1 › delete test dataset
+[1A[2K[4/4] [data-teardown] › tests/tests/setup/variant-data.teardown.ts:12:1 › delete variant test dataset
+[1A[2K  1 skipped
+  3 passed (22.0s)

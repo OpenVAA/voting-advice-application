@@ -1,0 +1,9 @@
+=== 3x E2E DETERMINISM GATE — RUN 2 of 3 (post-fix, COUNTED) ===
+Recorded: 2026-07-23
+Command: yarn test:e2e (full suite; local profile workers:6, retries:0 — stricter than CI)
+Server / DB: FRESH Vite dev server (yarn workspace @openvaa/frontend dev) on :5173, restarted clean
+             for this run (fresh-server-per-run per D-04) + clean DB (yarn db:reset → seed.sql,
+             elections=0; public-assets bucket asserted).
+Tree: HEAD ad3f46e84.
+
+RESULT: PASS — 129 passed / 0 failed / 0 did-not-run (10.6m).

@@ -1,0 +1,94 @@
+[dotenv@17.3.1] injecting env (25) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+
+Running 51 tests using 3 workers
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🤖 agentic secret storage: https://dotenvx.com/as2
+
+[1A[2K[1/51] [data-setup] › tests/tests/setup/data.setup.ts:76:1 › import test dataset
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+
+[1A[2K[2/51] [auth-setup] › tests/tests/setup/re-auth.setup.ts:20:1 › re-authenticate as candidate
+[1A[2K[3/51] [auth-setup] › tests/tests/setup/auth.setup.ts:66:1 › authenticate as candidate
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+
+[1A[2K[4/51] [candidate-app] › tests/tests/specs/candidate/candidate-questions.spec.ts:27:3 › candidate opinion questions › should display question cards organized by category (CAND-05) @candidate
+[1A[2K[5/51] [candidate-app] › tests/tests/specs/candidate/candidate-translation.spec.ts:27:3 › candidate translation surface (E2E-01) › multilocale candidate authors a translation and the value persists across reload @candidate
+[1A[2K[6/51] [candidate-app] › tests/tests/specs/candidate/candidate-auth.spec.ts:19:3 › candidate authentication › should login with valid credentials @candidate @smoke
+[1A[2K[7/51] [candidate-app] › tests/tests/specs/candidate/candidate-questions.spec.ts:55:3 › candidate opinion questions › should answer a Likert opinion question and save (CAND-04) @candidate
+[1A[2K[8/51] [candidate-app] › tests/tests/specs/candidate/candidate-auth.spec.ts:33:3 › candidate authentication › should show error on invalid credentials @candidate @smoke
+[1A[2K[9/51] [candidate-app] › tests/tests/specs/candidate/candidate-questions.spec.ts:88:3 › candidate opinion questions › should navigate between categories (CAND-05) @candidate
+[1A[2K[10/51] [candidate-app] › tests/tests/specs/candidate/candidate-questions.spec.ts:117:3 › candidate opinion questions › should edit a previously answered question (CAND-05) @candidate
+[1A[2K[11/51] [candidate-app] › tests/tests/specs/candidate/candidate-questions.spec.ts:154:3 › candidate opinion questions › should persist question answers after page reload (CAND-12) @candidate
+[1A[2K[12/51] [candidate-app] › tests/tests/specs/candidate/candidate-questions.spec.ts:192:3 › candidate opinion questions › should persist comment text on a question after page reload (CAND-12) @candidate
+[1A[2K[13/51] [candidate-app] › tests/tests/specs/candidate/candidate-questions.spec.ts:239:3 › candidate preview › should display entered profile and opinion data on preview page (CAND-06) @candidate
+[1A[2K[14/51] [candidate-app] › tests/tests/specs/candidate/candidate-questions.spec.ts:262:3 › candidate preview › should show specific candidate data (name or answered question) in preview (CAND-06) @candidate
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+
+[1A[2K[15/51] [re-auth-setup] › tests/tests/setup/re-auth.setup.ts:20:1 › re-authenticate as candidate
+[1A[2K[16/51] [candidate-app-mutation] › tests/tests/specs/candidate/candidate-registration.spec.ts:84:3 › candidate registration via email › should send registration email and extract link @candidate
+[1A[2K[17/51] [candidate-app-mutation] › tests/tests/specs/candidate/candidate-profile.spec.ts:130:3 › candidate profile (fresh candidate) › should register the fresh candidate via email link @candidate
+[1A[2K[candidate-app-mutation] › tests/tests/specs/candidate/candidate-registration.spec.ts:84:3 › candidate registration via email › should send registration email and extract link @candidate
+[REG] Callback URL: http://localhost:5173/en/candidate/auth/callback?token_hash=4891fd4d57e620e2f980acfd2f3dd2ddfeaec450ab8256cce7546ef3&type=invite
+
+[1A[2K[18/51] [candidate-app-mutation] › tests/tests/specs/candidate/candidate-registration.spec.ts:116:3 › candidate registration via email › should complete registration via email link @candidate
+[1A[2K[19/51] [candidate-app-mutation] › tests/tests/specs/candidate/candidate-registration.spec.ts:175:3 › candidate password reset › should complete forgot-password and reset flow via Inbucket email @candidate
+[1A[2K[20/51] [candidate-app-mutation] › tests/tests/specs/candidate/candidate-profile.spec.ts:210:3 › candidate profile (fresh candidate) › should upload a profile image (CAND-03) @candidate
+[1A[2K  1) [candidate-app-mutation] › tests/tests/specs/candidate/candidate-profile.spec.ts:210:3 › candidate profile (fresh candidate) › should upload a profile image (CAND-03) @candidate 
+
+    Error: [2mexpect([22m[31mpage[39m[2m).not.[22mtoHaveURL[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Expected pattern: not [32m/login/[39m
+    Received string: [31m"http://localhost:5173/en/candidate/[7mlogin[27m?redirectTo=candidate"[39m
+    Timeout: 10000ms
+
+    Call log:
+    [2m  - Expect "not toHaveURL" with timeout 10000ms[22m
+    [2m    14 × unexpected value "http://localhost:5173/en/candidate/login?redirectTo=candidate"[22m
+
+
+      125 |     await page.getByTestId(testIds.candidate.login.password).fill(candidatePassword);
+      126 |     await page.getByTestId(testIds.candidate.login.submit).click();
+    > 127 |     await expect(page).not.toHaveURL(/login/, { timeout: 10000 });
+          |                            ^
+      128 |   }
+      129 |
+      130 |   test('should register the fresh candidate via email link', async ({ page }) => {
+        at loginAsCandidate (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/candidate/candidate-profile.spec.ts:127:28)
+        at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/candidate/candidate-profile.spec.ts:213:5
+
+    Error Context: tests/playwright-results/candidate-profile-candidat-c600e-ad-a-profile-image-CAND-03--candidate-app-mutation/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    tests/playwright-results/candidate-profile-candidat-c600e-ad-a-profile-image-CAND-03--candidate-app-mutation/trace.zip
+    Usage:
+
+        yarn playwright show-trace tests/playwright-results/candidate-profile-candidat-c600e-ad-a-profile-image-CAND-03--candidate-app-mutation/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[21/51] [candidate-app-mutation] › tests/tests/specs/candidate/candidate-profile.spec.ts:258:3 › candidate profile (fresh candidate) › should show editable info fields on profile page (CAND-03) @candidate
+[1A[2K[22/51] [candidate-app-mutation] › tests/tests/specs/candidate/candidate-profile.spec.ts:272:3 › candidate profile (fresh candidate) › should persist profile image after page reload (CAND-12) @candidate
+[1A[2K[23/51] [candidate-app-mutation] › tests/tests/specs/candidate/candidate-profile.spec.ts:295:3 › candidate profile (fresh candidate) › A11Y-02 should persist display name after page reload @candidate
+[1A[2K[24/51] [candidate-app-mutation] › tests/tests/specs/candidate/candidate-profile.spec.ts:332:3 › candidate profile (fresh candidate) › A11Y-02 should persist bio after page reload @candidate
+[1A[2K[25/51] [candidate-app-mutation] › tests/tests/specs/candidate/candidate-profile.spec.ts:358:3 › candidate profile (fresh candidate) › A11Y-02 should persist social link after page reload @candidate
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+
+[1A[2K[26/51] [data-teardown] › tests/tests/setup/variant-data.teardown.ts:12:1 › delete variant test dataset
+[1A[2K[27/51] [data-teardown] › tests/tests/setup/data.teardown.ts:17:1 › delete test dataset
+[1A[2K  1 failed
+    [candidate-app-mutation] › tests/tests/specs/candidate/candidate-profile.spec.ts:210:3 › candidate profile (fresh candidate) › should upload a profile image (CAND-03) @candidate 
+  29 did not run
+  21 passed (36.1s)

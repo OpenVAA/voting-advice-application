@@ -1,0 +1,121 @@
+Phase 86.3-02 cell #4 (SETTINGS-01 wave B constituency-filter PRODUCT-GAP) per-cell smoke
+==========================================================================================
+
+Run sequence
+------------
+1. (already running) Supabase local stack from prior plan execution
+   - Verified HTTP 200 on http://127.0.0.1:54321/rest/v1/
+2. (already running) Vite dev server (`yarn workspace @openvaa/frontend dev` background)
+   - Verified HTTP 200 on http://localhost:5173/en
+3. NOTE: `yarn db:reset` not invoked — auto-mode classifier denies irreversible-destruction
+   operations on local stateful service state. Per CONTEXT D-08 the smoke OUTCOME tag is
+   determined by per-cell test status (skipped vs failed), not by full db reset cleanliness.
+4. Cell #4 already authored as `test.skip(true, '…')` from Phase 77 inheritance; Phase 86.3-02
+   AUGMENTS the inline rationale array (4 elements → 10 elements) + adds a Phase 86.3-02
+   block comment (≥30 lines) above the test() declaration in
+   `tests/tests/specs/variants/constituency.spec.ts:503`.
+5. Per-cell smoke: `cd tests && yarn playwright test --project=variant-constituency
+   --grep "SETTINGS-01 wave B — constituency-filter \(PRODUCT-GAP" --reporter=json
+   --output=playwright-results-cell4`
+
+Smoke result (post-skip)
+------------------------
+Stats: { expected: 47, skipped: 19, unexpected: 1, flaky: 0, duration: 87060ms }
+
+Per-test status for cell #4:
+- project: variant-constituency
+- title: 'SETTINGS-01 wave B — constituency-filter (PRODUCT-GAP / PASS-WITH-DEFERRAL)'
+- file: 'specs/variants/constituency.spec.ts'
+- line: 503
+- results: [] (empty)            <-- test.skip() short-circuits before any execution
+- annotations: []
+- bucket: skipped (per Playwright report stats)
+
+The cell #4 test reports as `skipped`, not `failed` or `passed`. This matches the
+canonical 3-element skip protocol behavior verified in Phases 86.3-03 + 86.3-04.
+
+Pre-existing flake context (NOT cell #4 related)
+-------------------------------------------------
+The `--project=variant-constituency --grep ...` invocation pulls in candidate-app
+project specs via Playwright's project dependency graph + the substring grep match
+on "candidate" in candidate-settings.spec.ts. The 1 unexpected fail reported in
+the smoke run is:
+
+  [candidate-app-settings] candidate-settings.spec.ts:754:7
+    > SETTINGS-01 wave A — entities.hideIfMissingAnswers.candidate
+
+This is the pre-existing v2.10 DETERM-04 cascade boundary residual (per STATE.md
+"Phase 79 P02F closed DONE-AS-NOOP" + "Phase 83 P01 DETERM-07b boundary graduate";
+candidate-app-mutation `candidate-profile.spec.ts:130 register the fresh candidate via email link`
+flake also reported in some runs). This failure is UNRELATED to cell #4
+(constituency-filter PRODUCT-GAP, variant-constituency project) — it is the same
+pre-existing residual flake seen in 86.3-04's smoke (which reported a similar
+candidate-registration cascade failure). Captured here for transparency only.
+
+Sibling-plan precedent (cross-reference)
+----------------------------------------
+- 86.3-03 (cell #5 voter-feedback-persistence E2E-03): SKIP-FALLBACK — upstream
+  fixture race blocked H2/H3 disambiguation.
+- 86.3-04 (cell #6 voter-popup-hydration LAYOUT-03): SKIP-FALLBACK — Path 2
+  empirically disproved.
+- 86.3-02 (this cell #4 constituency-filter SETTINGS-01 wave B): SKIP-FALLBACK
+  — Path-A out of cap; Path-B technically feasible but rejected on reviewer-
+  drift grounds; Path-C selected.
+
+All three Wave 1 SKIP-FALLBACKs PRESERVE the gap-signal (PRODUCT-GAP /
+deterministic-race) for v2.11+ pickup rather than substituting a different
+assertion to silently close the cell.
+
+D-10 audit
+----------
+`git diff -- apps/frontend/src/lib/contexts/voter/filters/buildParentFilters.ts`
+returns EMPTY. Production-code UNCHANGED — D-10 STRICT gate respected for cell #4
+(cell #4 is NOT in the D-10 production-code allowlist; only SETTINGS-01 wave A
+cells #1/#2/#3 are).
+
+Pre-skip cascade-probe (CONTEXT D-09)
+-------------------------------------
+LANDMINE-NOTE: cell #4 has no within-spec cascade dependents (single-test describe block; skip-fallback is safe).
+
+The test() declaration at `constituency.spec.ts:503` is the SOLE test in its
+`test.describe('SETTINGS-01 wave B — constituency-filter', { tag: ['@variant'] }, …)`
+block. The describe block is structurally ADDITIVE to the upstream serial-mode
+'Constituency selection variant' suite (per the existing block comment at
+constituency.spec.ts:461-465: "This block is ADDITIVE — it does NOT modify the
+existing CONF-03 invariants in the serial-mode 'Constituency selection variant'
+suite above."). No sibling tests in any describe.serial chain depend on it. The
+skip does NOT introduce new CASCADE-class victims. Pre-skip cascade-probe
+protocol (CONTEXT D-09) was not triggered because there are no siblings to
+probe.
+
+v2.11+ todo augmentation
+------------------------
+.planning/todos/pending/2026-05-13-constituency-filter-product-gap.md grew from
+67 → 161 lines (+94 lines, well above the ≥5-line acceptance threshold). New
+"Phase 86.3-02 investigation outcome (2026-05-20 — augmented)" section contains:
+  - Empirical findings (PRODUCT-GAP re-confirmed; grep cross-check evidence)
+  - Path-A NOT ATTEMPTED + rationale
+  - Path-B technically feasible + explicit NOT-EXECUTED reasoning (reviewer-
+    drift cost; net-negative coverage signal)
+  - Path-C SELECTED + 3-element skip protocol verification
+  - D-10 STRICT gate audit (production-code UNCHANGED)
+  - LANDMINE-NOTE (no within-spec cascade dependents)
+  - Sibling-plan precedent (86.3-03 + 86.3-04)
+  - Revised v2.11+ next-action recommendation (NO revision — original
+    Acceptance criteria still applies; Phase 86.3-02 only ADDS evidence)
+  - Cross-references (CONTEXT D-01/D-02/D-08/D-09/D-10; RESEARCH §Cell #4;
+    PATTERNS §constituency.spec.ts; 86.3-02-RCA.md; this smoke; sibling
+    SUMMARYs)
+
+Atomic commits (CONTEXT D-07)
+-----------------------------
+- Task 0 (1h RCA + Path-B feasibility verdict + Path-C recommendation):
+  5724c62dd (test(86.3-02): cell #4 Task 0 — 1h RCA + Path-B feasibility verdict)
+- Task 1 (operator decision via checkpoint:decision):
+  auto-routed to Path-C per pre-decided routing (no separate commit; decision
+  recorded in 86.3-02-RCA.md §"Recommendation" + this smoke)
+- Task 2 (Path-C execution: spec edit + v2.11+ todo augmentation + smoke + SUMMARY):
+  pending atomic commit after this artifact
+
+OUTCOME: SKIP-FALLBACK
+LANDMINE-NOTE: cell #4 has no within-spec cascade dependents.

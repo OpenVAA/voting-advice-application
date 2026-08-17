@@ -1,0 +1,25 @@
+Phase 83 Plan 01 Task 8 — IMGPROXY_TIED_TITLES audit (LANDMINE L4; Phase 73 D-09 structural binding).
+
+Source: tests/scripts/diff-playwright-reports.ts DATA_RACE_TESTS const + post-fix/regen-constants.mjs:67-82 IMGPROXY_TIED_TITLES list (Phase 79 verbatim).
+
+Audit method: regen-constants.mjs runtime assertion verifies every IMGPROXY_TIED_TITLES entry matches at least one test in the new JSON via `endsWith('> ' + pattern)`. Fail-loud: script exits 1 if any pattern returns zero matches.
+
+Audit result (against run-3.json from Phase 83 3-run cold-start gate):
+
+  IMGPROXY_TIED_TITLES match-count assertion: 14 titles, 15 total matches.
+  PASS — zero zero-match titles; pool preserved at 15 entries (14 IMGPROXY-tied + 1 dual-project re-auth.setup.ts).
+
+Phase 83 NEW test titles enumerated:
+  - No NEW Playwright test() blocks added by Phase 83 itself. The Plan 01
+    Tasks 4-5 added hydration-completeness guards to existing tests (no new
+    test() declarations); Tasks 1, 6 modified fixture overlays / docstring
+    only (no new tests). The Rule-2 deviation added a fill-required-empty
+    step to the existing CAND-03 test body (no new test() declaration).
+
+Pool integrity verdict: CLEAN. The 15-entry DATA_RACE pool preserved verbatim
+across Phase 73 → Phase 74 → Phase 75 → Phase 79 → Phase 83.
+
+W-6 acceptance gate (runtime Bash assertion):
+  DATA_RACE_COUNT=$(awk '/const DATA_RACE_TESTS/,/^\];/' tests/scripts/diff-playwright-reports.ts | grep -v '^#' | grep -c "::")
+  → 15 ✓
+  [ "$DATA_RACE_COUNT" = "15" ] → ASSERTION PASS
