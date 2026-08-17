@@ -5,15 +5,15 @@ milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 151
 current_phase_name: ship-v0-2-akita-review-stack
 status: executing
-stopped_at: Completed 151-16-PLAN.md
-last_updated: "2026-08-17T15:55:02.231Z"
+stopped_at: "Completed 151-17-PLAN.md — stack complete, PR #873 open, slice 11 cut and scanned but unpushed"
+last_updated: "2026-08-17T18:00:55.548Z"
 last_activity: 2026-08-16
 last_activity_desc: Phase 151 execution started
 progress:
   total_phases: 15
   completed_phases: 4
   total_plans: 43
-  completed_plans: 40
+  completed_plans: 41
   percent: 27
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 
 Milestone: v2.15 (Phases 137-151, 15 phases, 38 requirements)
 Phase: 151 (ship-v0-2-akita-review-stack) — EXECUTING
-Plan: 17 of 19
+Plan: 18 of 19
 Status: Ready to execute
 Last activity: 2026-08-16 — Phase 151 execution started
 
@@ -48,8 +48,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-17T15:54:54.079Z
-Stopped at: Completed 151-16-PLAN.md
+Last session: 2026-08-17T18:00:46.582Z
+Stopped at: Completed 151-17-PLAN.md — stack complete, PR #873 open, slice 11 cut and scanned but unpushed
 Resume file: None
 
 ## Deferred Items
@@ -165,6 +165,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 151 P14 | 118 | 3 tasks | 533 files |
 | Phase 151 P15 | 92 | 3 tasks | 34 files |
 | Phase 151 P16 | one session | 3 tasks | 232 files |
+| Phase 151 P17 | one session | 4 tasks | 11 files |
 
 ## Deferred Items
 
@@ -711,6 +712,10 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: PR files-changed counts use rename detection; a --no-renames convention disagrees with them (533 vs 528, 214 vs 165) — every later PR body must state and reconcile both
 - [Phase ?]: 151-16: F-15 options 1 and 2 accepted by the operator — slices.tsv amended to claim README.md (slice 09) and the Capacitor scaffold (slice 10); the first partition change since approval, and no force-push was needed
 - [Phase ?]: 151-16: F-04's stale-path count was a substring artefact — 8 of 13 files were already correct; the -F acceptance grep is unsatisfiable because the correct path contains the stale one
+- [Phase 151]: Operator overruled 'approve' with remove-and-rescan on S-07: the mandatory re-cut made redaction nearly free against an unbounded downside
+- [Phase 151]: F-21 decided — option (a), implement the two RPC parameters rather than drop them, scheduled after this phase ships
+- [Phase 151]: PD-02 needs an explicit carve-out: as written it blocks the very migration that would green its gate; F-29 rides that carve-out
+- [Phase 151]: Slice 11's twelve checklist cells routed to 151-18; D-20 still requires a measured reason per N/A
 
 ### Quick Tasks Completed
 
