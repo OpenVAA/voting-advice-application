@@ -13,8 +13,8 @@ criterion_3: closed-by-plan-151-08
 criterion_3_gate_red_is_expected: true
 per_slice_items: 12
 cells_expected: 163
-cells_filled: 99
-cells_pending: 64
+cells_filled: 123
+cells_pending: 40
 blank_cells: 0
 db_slice: "03"
 adapter_slice: "06"
@@ -23,11 +23,13 @@ migrations_added: 0  # PD-02 answered by 151-11: no fix touched a migration
 e2e_collisions: 0
 dropped_finding_class_files: 841  # re-measured at 151-14 (was 842 at 151-06; the branch moved)
 dropped_finding_class_slice_06: 492
+dropped_finding_class_slice_07: 0  # the first slice whose diff IS its whole surface, proven two ways
+dropped_finding_class_slice_08: 0
 invisible_to_review_files: 1202
 unclaimed_by_any_pathspec: 120
-comparable_total: 4274
-slices_dispositioned: ["01a", "01b", "02", "03", "04", "05", "06"]
-findings_total: 65
+comparable_total: 4296  # re-measured at 151-15; every rise attributed by set difference, zero files ever leaving
+slices_dispositioned: ["01a", "01b", "02", "03", "04", "05", "06", "07", "08"]
+findings_total: 72
 status: in-progress
 approval: pending
 ---
@@ -37,10 +39,10 @@ approval: pending
 **Created:** 2026-08-17
 **Phase:** 151 — Ship the v0.2 Akita review stack
 **Plan:** 06 (scaffold + phase-level rows). Cells are filled by plans 151-09 … 151-18.
-**Status:** 🟡 **IN PROGRESS — approval gate NOT reached.** `cells_filled: 99` of 163, after plans
+**Status:** 🟡 **IN PROGRESS — approval gate NOT reached.** `cells_filled: 123` of 163, after plans
 151-09 (slices **01a**, **01b**, **02**), 151-11 (slice **03**), 151-12 (slice **04**), 151-13
-(slice **05**) and 151-14 (slice **06**, **plus the Supabase Adapter block**) — all 99 cells
-terminal, none pending. The gate closes only when
+(slice **05**), 151-14 (slice **06**, **plus the Supabase Adapter block**) and 151-15 (slices **07**
+and **08**) — all 123 cells terminal, none pending. The gate closes only when
 `cells_filled == cells_expected` **and** `blank_cells == 0`, checked in plan 151-18. Criterion 1 has
 no other automated evidence, so this frontmatter *is* the criterion.
 
@@ -194,18 +196,18 @@ Columns are slices. Every cell holds a verdict token or `PENDING→NN` (the plan
 
 | # | Item | Reach | 01a | 01b | 02 | 03 | 04 | 05 | 06 | 07 | 08 | 09 | 10 | 11 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| **2** | OWASP Top 10 review | `none` | N/A | MET | MET | FIXED | FIXED | MET | MET | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **3** | Follows the Code style guide | `partial` | N/A | N/A | FIXED | MET | MET | FIXED | FIXED | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **4** | Avoid `any`; document or `@ts-expect-error` | `partial` | N/A | N/A | FIXED | FIXED | FIXED | MET | FIXED | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **5** | No repeated code in the PR or elsewhere in the repo | `none` | DEF | FIXED | MET | DEF | DEF | MET | DEF | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **6** | New components / functions / entities documented | `none` | N/A | N/A | FIXED | FIXED | FIXED | MET | FIXED | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **7** | Repo documentation markdown updated | `none` | DEF | DEF | FIXED | FIXED | FIXED | FIXED | FIXED | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **8** | Tracking events for new user-facing functions | `none` | N/A | N/A | N/A | N/A | N/A | N/A | MET | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **9** | New Svelte components follow the guidelines | `partial` | N/A | N/A | N/A | N/A | N/A | N/A | FIXED | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **10** | Errors handled and logged | `none` | N/A | N/A | FIXED | FIXED | FIXED | MET | FIXED | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **13** | WCAG A and AA | `partial` | N/A | N/A | N/A | N/A | N/A | MET | MET | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **14** | Keyboard + screen-reader usable | `partial` | N/A | N/A | N/A | N/A | N/A | DEF | DEF | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **15** | Developers'/Publishers' Guide entries updated | `none` | DEF | DEF | DEF | DEF | FIXED | FIXED | DEF | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **2** | OWASP Top 10 review | `none` | N/A | MET | MET | FIXED | FIXED | MET | MET | FIXED | MET | P→16 | P→16 | P→17 |
+| **3** | Follows the Code style guide | `partial` | N/A | N/A | FIXED | MET | MET | FIXED | FIXED | FIXED | FIXED | P→16 | P→16 | P→17 |
+| **4** | Avoid `any`; document or `@ts-expect-error` | `partial` | N/A | N/A | FIXED | FIXED | FIXED | MET | FIXED | MET | N/A | P→16 | P→16 | P→17 |
+| **5** | No repeated code in the PR or elsewhere in the repo | `none` | DEF | FIXED | MET | DEF | DEF | MET | DEF | DEF | DEF | P→16 | P→16 | P→17 |
+| **6** | New components / functions / entities documented | `none` | N/A | N/A | FIXED | FIXED | FIXED | MET | FIXED | FIXED | FIXED | P→16 | P→16 | P→17 |
+| **7** | Repo documentation markdown updated | `none` | DEF | DEF | FIXED | FIXED | FIXED | FIXED | FIXED | FIXED | N/A | P→16 | P→16 | P→17 |
+| **8** | Tracking events for new user-facing functions | `none` | N/A | N/A | N/A | N/A | N/A | N/A | MET | MET | N/A | P→16 | P→16 | P→17 |
+| **9** | New Svelte components follow the guidelines | `partial` | N/A | N/A | N/A | N/A | N/A | N/A | FIXED | MET | N/A | P→16 | P→16 | P→17 |
+| **10** | Errors handled and logged | `none` | N/A | N/A | FIXED | FIXED | FIXED | MET | FIXED | FIXED | N/A | P→16 | P→16 | P→17 |
+| **13** | WCAG A and AA | `partial` | N/A | N/A | N/A | N/A | N/A | MET | MET | FIXED | MET | P→16 | P→16 | P→17 |
+| **14** | Keyboard + screen-reader usable | `partial` | N/A | N/A | N/A | N/A | N/A | DEF | DEF | DEF | N/A | P→16 | P→16 | P→17 |
+| **15** | Developers'/Publishers' Guide entries updated | `none` | DEF | DEF | DEF | DEF | FIXED | FIXED | DEF | DEF | DEF | P→16 | P→16 | P→17 |
 
 `P→NN` abbreviates the pending marker `PENDING→NN`. Count: 12 × 12 = **144 cells, 0 blank**.
 
@@ -1693,6 +1695,542 @@ were defective.
 As in 151-12 and 151-13: the sweep ran first, the commits did not, because a cell may not read
 `FIXED` before the commit it cites exists. D-04's actual requirement — fixes on `feat-gsd-roadmap`
 before the slice is cut — is met.
+
+---
+
+## Slice 07 — `ship/v0.2-akita-07-frontend-routes` — cell-by-cell evidence
+
+**Filled by plan 151-15.** The 12 per-slice general items. All three conditional blocks read
+`n/a — outside block pathspec`: the slice touches neither `apps/supabase/`, nor
+`apps/supabase/supabase/functions/`, nor `apps/frontend/src/lib/api/adapters/supabase/`. The four
+phase-level items (1, 11, 12, 16) are **not** re-run here; evidence is contributed below and their
+cells stay `PENDING→18`.
+
+**This slice is the request path.** Every route, the server hooks that wrap them, the 17 API endpoints
+they call, and the app shell that frames them. `hooks.server.ts` is here rather than in the config
+slice by a deliberate partition correction at 151-04, precisely so it would be reviewed as an
+authorization surface; that framing is honoured below — items 2 and 10 are swept across guards, load
+functions and endpoints rather than treated as styling surface.
+
+Measured refs for this pass:
+
+| ref | value |
+|---|---|
+| `BASE` = `origin/main` | `ac30f132a` — **still unmoved**; C-12's re-measurement trigger has not fired at any point in this phase |
+| `PARENT` = slice 06 | `8c613634b` |
+| `TARGET` = `feat-gsd-roadmap` at sweep start | `e2ed9d997` |
+| slice-07 file set at sweep start | `diff --no-renames ship/v0.2-akita-06-frontend-lib..TARGET -- <slice-07 pathspec>` → **213 files** (`108 A`, `99 D`, `6 M`), +10,291 / −8,268 |
+| local Supabase / dev server | **not running.** No spec was executed; every verdict below is static. |
+
+### Sweep surface, stated before any verdict (D-20)
+
+**For the first time in this stack, the diff IS the whole surface — and that is a measured claim, not
+a convenience.** Every other slice carries a dropped-finding class: files byte-identical across the
+layout move, which slice 01a renders as rename lines and no later slice's diff contains, reviewed by
+nobody if review is organised by slice diff. Under this slice's paths there is **no such class**,
+established two independent ways:
+
+| Method | Result |
+|---|---|
+| set difference: files tracked at `HEAD` under the pathspec, minus files present in the diff (`A` ∪ `M`) | **114 − 114 = 0** |
+| blob comparison: for each tracked file, `HEAD:<path>` vs `origin/main:frontend/<path>` | **0 identical across the move** |
+
+The two methods answer the question from opposite directions and agree. So the 213-file diff (109 A
+after this plan's fix, 99 D, 6 M) covers all 114 files that exist under these paths plus the 99
+predecessors they replace. **Nothing here is invisible to a reviewer.**
+
+Route inventory, since the accessibility items turn on it: **36 `+page.svelte`**, 17
+`+layout.svelte`, 17 `+server.ts`, 8 `+layout.ts`, 5 `+page.ts`, 4 `+page.server.ts`, 4
+`+layout.server.ts`, 1 `+error.svelte`, 6 shell components, 6 `params/`, 7 `src/` shell files, 2
+READMEs, and this plan's `loginRedirectTarget.ts`.
+
+### Items 13 and 14 — the accessibility scan's reach, its complement, and the complement swept
+
+**This is the cell D-20 exists for, so it is reported as three numbers and then a named list.**
+
+| | Count |
+|---|---:|
+| page routes changed in this slice | **36** |
+| of those, covered by `assertAxeScan` | **5** |
+| of those, **NOT** covered | **31** |
+
+The five covered, with the URL each actually reaches (`151-MEASUREMENTS.md` § 1.1: seven scan entries
+resolve to five distinct URLs, because three are DOM states of `/results`):
+
+| Route file | URL |
+|---|---|
+| `(voters)/+page.svelte` | `/` |
+| `(voters)/elections/+page.svelte` | `/elections` |
+| `(voters)/constituencies/+page.svelte` | `/constituencies` |
+| `(voters)/(located)/questions/+page.svelte` | `/questions` |
+| `(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/+page.svelte` | `/results` |
+
+**The 31 uncovered, named path by path, each with a manual verdict.** No cell here reads
+not-applicable: every one was swept by hand for the classes the scan would have applied, and the
+per-class totals over the whole set are given after the list so the verdicts are checkable rather
+than assertable.
+
+| # | Route (under `apps/frontend/src/routes/`) | Manual verdict |
+|---|---|---|
+| 1 | `(voters)/(located)/questions/[questionId]/+page.svelte` | **MET** — a deliberately empty leaf (1 template line); rendering is owned by `questions/+layout.svelte`. No markup to assess. |
+| 2 | `(voters)/(located)/questions/category/[categoryId]/+page.svelte` | **MET** — renders through `MainContent`; 0 hits on all nine classes below. |
+| 3 | `(voters)/(located)/results/[[electionTab]]/statistics/+page.svelte` | **FIXED** — the one defect in the set: `<h1>` → `<h4>`, a two-level skip at two sites. Now `<h2 class="text-base">`. Commit **`f7076dbfe`**. |
+| 4 | `(voters)/about/+page.svelte` | **MET** — `MainContent`, own `<h1>` + `<h2>` in order; sanitised `{@html}`. |
+| 5 | `(voters)/info/+page.svelte` | **MET** — `MainContent`, `<h2>` under it; 0 hits. |
+| 6 | `(voters)/intro/+page.svelte` | **MET** — `MainContent`; 0 hits. |
+| 7 | `(voters)/nominations/+page.svelte` | **MET** — `MainContent`, `<h3>` under a `<h2>`-bearing layout; 0 hits. |
+| 8 | `(voters)/privacy/+page.svelte` | **MET** — `MainContent`, `<h1>`+`<h2>`; sanitised `{@html}`. |
+| 9 | `admin/(protected)/+page.svelte` | **MET** — `MainContent`; 0 hits. |
+| 10 | `admin/(protected)/argument-condensation/+page.svelte` | **MET** — 4 form controls, **4 labelled** (`for`/`id` pairs); 0 hits. |
+| 11 | `admin/(protected)/jobs/+page.svelte` | **MET** — `MainContent`, `<h2>`; 0 hits. |
+| 12 | `admin/(protected)/question-info/+page.svelte` | **MET** — the largest form in the slice: 13 raw controls of which 4 are `type="hidden"`; **all 9 visible ones labelled**, by `for`/`id` (`electionId`, the two radio ids, `sectionTopics`, `customInstructions`, `questionContext`) or by a wrapping `<label>` (the checkbox rows). 0 hits. |
+| 13 | `admin/login/+page.svelte` | **MET** — `<h1>`+`<h2>`, labelled form; its one `svelte-ignore` is `state_referenced_locally`, a reactivity warning, not an a11y suppression. |
+| 14 | `candidate/(protected)/+page.svelte` | **MET** — `MainContent`; 0 hits. |
+| 15 | `candidate/(protected)/preview/+page.svelte` | **MET** — 16 template lines, `MainContent`; 0 hits. |
+| 16 | `candidate/(protected)/profile/+page.svelte` | **MET** — 193 template lines, `MainContent`, `<h2>`; 0 hits. Its a11y-relevant markup is a wrapped image `Input`, whose rationale comment survives at `:282`. |
+| 17 | `candidate/(protected)/questions/+page.svelte` | **MET** — `MainContent`, `<h3>` under the layout's `<h2>`; 0 hits. |
+| 18 | `candidate/(protected)/questions/[questionId]/+page.svelte` | **MET** — the slice's only `tabindex`, and it is `{-1}` paired with `data-focus-on-nav`: a programmatic focus target, the correct use. 0 hits. |
+| 19 | `candidate/(protected)/settings/+page.svelte` | **MET** — `MainContent`, `<h2>`, 1 labelled control; 0 hits. |
+| 20 | `candidate/forgot-password/+page.svelte` | **MET** — `<h1>`, 1 control, `aria-*` present; 0 hits. |
+| 21 | `candidate/help/+page.svelte` | **MET** — `MainContent`; 0 hits. |
+| 22 | `candidate/login/+page.svelte` | **MET** — `<h1>`, labelled form, hidden `redirectTo` field (no label required, and now validated server-side — see item 2). |
+| 23 | `candidate/password-reset/+page.svelte` | **MET** — `<h1>`; 0 hits. |
+| 24 | `candidate/preregister/(authenticated)/constituencies/+page.svelte` | **MET** — `MainContent`; 0 hits. |
+| 25 | `candidate/preregister/(authenticated)/elections/+page.svelte` | **MET** — `MainContent`; 0 hits. |
+| 26 | `candidate/preregister/(authenticated)/email/+page.svelte` | **MET** — 2 controls, 2 `aria-*`; 0 hits. |
+| 27 | `candidate/preregister/+page.svelte` | **MET** — `MainContent`, sanitised `{@html}`, 2 `role=`; 0 hits. |
+| 28 | `candidate/preregister/status/+page.svelte` | **MET** — `MainContent`, sanitised `{@html}`; 0 hits. |
+| 29 | `candidate/privacy/+page.svelte` | **MET** — `MainContent`; its `{@html}` content's `<h3>`s sit under `TermsOfUse.svelte:36`'s `<h2>`, checked rather than assumed (see slice 08 item 13). |
+| 30 | `candidate/register/+page.svelte` | **MET** — `<h3>`, 1 control, `aria-*`; its `svelte-ignore` is `state_referenced_locally`, not a11y. |
+| 31 | `candidate/register/password/+page.svelte` | **MET** — `<h1>`; 0 hits. |
+
+**The nine classes applied to all 31, with totals — this is what makes the 30 `MET` verdicts
+checkable:**
+
+| Class the axe scan would have caught | Occurrences across the 31 |
+|---|---:|
+| non-semantic element carrying a click/key handler | **0** |
+| positive `tabindex` | **0** |
+| `<img>` without `alt` | **0** (there is no `<img>` in the route layer at all) |
+| `autofocus` | **0** |
+| `aria-hidden` on a focusable element | **0** |
+| anchor with no discernible text | **0** |
+| `title` as an element's only accessible name | **0** |
+| inline `display:none` on a focusable element | **0** |
+| **heading-level skip** | **2 — found and FIXED** |
+
+**Structural reason the 30 come out clean, stated because it is also the caveat: 30 of the 31 render
+through `MainContent` or `SingleCardContent`**, the shell components in this same slice, which supply
+the `<h1 tabindex="-1">` and the `[data-focus-on-nav]` focus target (`MainContent.svelte:94`). The
+31st is the empty leaf. So the route-level a11y surface is thin *by construction*, and the shell is
+where it actually lives — which is in this slice and was swept directly: `Layout.svelte:66-68` (skip
+link, with the only `a11y_positive_tabindex` suppression in the slice and a rationale on it),
+`Layout.svelte:87` (`<main>` landmark), `Header.svelte:88-90`
+(`aria-expanded`/`aria-controls`/`aria-label` on the menu button), `+layout.svelte:237-239`
+(always-present `aria-live="polite"` route announcer, deliberately outside the error/loading/
+maintenance branches) and `+layout.svelte:175-185` (`afterNavigate` focus reset with
+`preventScroll: true`).
+
+**Item 13 = FIXED** on that evidence. **Item 14 = DEFERRED**, and the reason is a gate that does not
+exist rather than a defect that was found: **keyboard navigation has no automated gate anywhere in
+this project.** axe is a static-DOM auditor and does not tab through the UI, so the keyboard half is
+uncovered on the 5 scanned URLs exactly as much as on the other 31, and the raw-i18n-key scan has
+identically the axe reach because its only call site is inside `assertAxeScan`. One keyboard path was
+traced by hand and is correct — the drawer opens focusing `#drawerCloseButton` (`Layout.svelte:50`)
+and closes returning focus to the opener (`:61`), and the `<div onclick>` overlay at `:108` is
+`aria-hidden="true"` and duplicates that keyboard-reachable control rather than replacing it — but one
+path read carefully is not a gate. **Authoring one is net-new test authorship, which D-13 excludes**,
+and widening the axe route table is Phase 147's declared scope, which has not executed
+(`151-MEASUREMENTS.md` § 1.2).
+
+### Slice 07 — general items (12 cells)
+
+| # | Item | Verdict | Evidence |
+|---|---|---|---|
+| **2** | OWASP Top 10 | **FIXED** | Swept across the route layer as an authorization surface, per the 151-04 partition correction. **A01 — unvalidated redirect, FIXED.** `candidate/login/+page.server.ts:19` and `admin/login/+page.server.ts:21` read a `redirectTo` form field — sourced from `?redirectTo=` via `page.url.searchParams` at `candidate/login/+page.svelte:58` / `admin/login/+page.svelte:49` and posted back in a hidden input — and interpolated it into `redirect(303, \`/${locals.currentLocale}/${redirectTo}\`)`. **What made it safe was incidental**: the leading `/{locale}/` stops the value from ever starting the string, so it cannot form `//host` or `scheme:`, and `currentLocale` cannot be empty (paraglide's `['url','cookie','baseLocale']` strategy terminates in `baseLocale`). It did not stop steering a just-authenticated user to an arbitrary in-origin path. Decisive: **the voter half of this same slice validates its analogous `?next=` twice** (`(located)/+layout.ts:34`, `constituencies/+page.svelte:130`) with a defence-in-depth comment, and **the app has exactly one producer of `?redirectTo=`** (`hooks.server.ts:76`, candidate `(protected)` bounces only — nothing produces one for admin at all). Fixed in **`271f3f8e4`** via `routes/loginRedirectTarget.ts`, fail-safe (a rejected value takes the existing no-`redirectTo` branch). **A01 — access control, MET by enumeration:** all **6** `api/admin/jobs/**` endpoints open with `(await getUserData({ fetch }))?.role !== 'admin'` → 403 before any work; **9** server guards use `locals.safeGetSession()` and **0** use the raw accessor; `hooks.server.ts:74-77` gates `(protected)` route ids. **A03 — `{@html}` 20 occurrences, 20 wrapped in `sanitizeHtml`, difference 0**; `eval(` / `new Function(` / `innerHTML` = **0/0/0**. **A02/A05 — secret-shaped literals over 214 files = 0.** **Complement:** `hooks.server.ts:24`'s `getSession()` is `safeGetSession`'s own implementation and validates via `getUser()` at `:29`; and the JWT payload decode duplicated at both login actions (`JSON.parse(atob(token.split('.')[1]))`) has no `try`/`catch` — reachable only if a validated Supabase session carries a malformed token, so recorded rather than fixed. |
+| **3** | Follows the Code style guide | **FIXED** | **28 comments the hygiene codemod left broken, repaired in `d0c63af0d`.** Found with the old/new diff-pair method over `0c538024c`, `5862397ad` and `54ec7fed9` restricted to this pathspec — **57 files, ~250 comment lines rewritten by the codemod** — not by grepping for damage signatures, which under-report because the damage shape depends on the original wording. Nine were the same fragment (`(see spike 024). see phase 117.` — a dangling `+`, then a lowercase clause with no verb); three had lost the subject a preposition governed (`per (see phase 61).`, `per CONTEXT.`, `per -01 small-fix constraint (CONTEXT).`); one had had the call parens stripped off `popupStore()` one clause before the words "returns an object literal", plus a trailing space inside a quoted rule name; three were in one docblock (`renamed to see phase 88 4-segment shape`, a heading opening in lower case, a dangling `After the **parent`); five were parentheticals naming nothing; four were `(see phase 78 Plan 02):` citations standing where the subject used to be. **`params/etPl.ts:3` had been broken by the stage-2 repair pass itself** while its untouched `etSg.ts` sibling still parsed — recorded because a repair pass introducing a defect is the failure mode this phase keeps finding. **Named sub-check: the two context reactivity rules** — 84 destructure sites enumerated, 2 violations, both fixed; see the next section. Hygiene gate **byte-identical** before and after all commits: `phase-ref` 660 occ / 235 files / **bare 11**, `spike-ref` 40/30/0, `task-id` 84/46, `milestone-ver` 43/30. |
+| **4** | Avoid `any`; document or `@ts-expect-error` | **MET** | Exhaustive: `git grep -nw 'any'` over all 214 files, every hit read. **0 occurrences in type position** — all 20 matches are the English word in prose ("any of those change", "Clear any possible selected categories"). **`@ts-expect-error` 0, `@ts-ignore` 0.** The cleanest result in the stack on this axis, and it is a real result rather than an absence of surface: the slice contains 84 typed load functions, endpoints and components. **Complement:** `lint:check` would not have proven this — `no-explicit-any` is configured with `ignoreRestArgs: true` (`packages/shared-config/eslint.config.mjs:98-102`), which is how three `Array<any>` rest parameters passed the gate in slice 06. Here there are none to exempt. |
+| **5** | No repeated code in the PR or elsewhere in the repo | **DEFERRED** | A real duplication, deferred because the fix is excluded rather than because it is small. `candidate/login/+page.server.ts` and `admin/login/+page.server.ts` are **substantially the same action**: normalise the app name and they differ only in a role list (`candidate`/`party` vs `project_admin`/`account_admin`/`super_admin`), a route constant, and comment wording — including a **verbatim-duplicated hand-rolled JWT payload decode**, which is the security-relevant half. **Not fixed: extracting it is code restructuring, which D-13 excludes explicitly, and it is a behaviour change on an authentication path with no coverage in either direction** (`grep -rn redirectTo tests/` matches only an unrelated Supabase auth-email parameter). Partially addressed in passing: `loginRedirectTarget.ts` (`271f3f8e4`) is shared by both rather than copied into each, so this plan did not add to the duplication it found. Separately **not** a finding: the voter-route allowlist regex appears at 2 sites and both comments say the second is a deliberate defence-in-depth re-check at the consumption layer — intentional, documented duplication. |
+| **6** | New components / functions / entities documented | **FIXED** | `src/routes/README.md` enumerated the route tree as three bullets — voters, candidate, candidate/(protected) — and **omitted the two trees this slice adds**: `admin/` (5 page routes, 4 `(protected)`) and `api/` (17 `+server.ts` endpoints). That is **22 of the slice's 114 present files**: the whole server-side API surface and the whole admin app, missing from the one file whose job is to say where routes live — and this README is the only documentation *inside* the slice, since the fuller treatment is in `apps/docs` (slice 09), which a reviewer of PR 8 never sees. Fixed in **`bc1963610`**, which also documents the seven non-route shell files, because a reader who knows SvelteKit will otherwise read every `.svelte` in the top directory as a route — and because `Layout.svelte`/`MainContent.svelte` carry the app's a11y structure, so naming them is where an accessibility reviewer should start. `loginRedirectTarget.ts`, this plan's own new file, ships with a 30-line docblock stating the threat, the single legitimate producer, and why the fallback is fail-safe. **The README's existing claim that locale handling runs through a reroute hook was checked, not assumed:** `hooks.ts:5-7` exports `reroute` and calls `deLocalizeUrl`. Accurate; left as written. |
+| **7** | Repo documentation markdown updated | **FIXED** | Two READMEs in the slice, both touched. `src/routes/README.md` per item 6 (**`bc1963610`**). `src/routes/candidate/README.md` needed no content change — checked rather than waved through: it describes registration, authentication and profile management, which is what `candidate/` still does, and carries no stale `[[lang=locale]]` or pre-move `docs/` path (**both of its dead local links were already repaired by 151-14's F-57, inside this slice's diff, so they are reviewed with it**). `apps/frontend/messages/README.md` created for slice 08 (**`75c10cb8f`**, see that section). |
+| **8** | Tracking events for new user-facing functions | **MET** | Enumerated: **17 `startEvent(` call sites**, **12 distinct event names** — `menu_open`, `question_next`, `question_previous`, `question_skip`, `question_startFrom`, `questionExtendedInfo_open`, `questionExtendedInfo_expandSection`, `questionExtendedInfo_collapseSection`, `questionInfo_expand`, `questionInfo_collapse`, `results_changeElection`, `results_changeTab` — every one a member of the `TrackingEventName` union (`$lib/contexts/app/tracking/trackingEvent.type.ts:14-43`). **The gate is `yarn build`**: the union makes a typo'd name a type error, so a mis-named event cannot ship. **Complement, unchanged from slice 06: the union is one-directional.** It cannot detect a declared-and-never-fired name, and nothing requires a new user-facing route to add an event — which is the half a gate cannot express, and this slice adds the whole admin app with **0** tracking events in it. Recorded as a deliberate absence (admin is operator-facing, not user-facing) rather than as coverage. |
+| **9** | New Svelte components follow the guidelines | **MET** | 60 `.svelte` files added. Structural conformance checked and clean: **0** `svelte/store` imports (the frontend's own eslint config makes one an `error` across `src/**`), **0** `export let` (Svelte 4 props syntax) — every component uses `$props()`. The six shell components all carry `<!--@component` docblocks documenting their snippets and properties (`Layout.svelte:1-16`, `MainContent.svelte:1-24`, and siblings), and unlike slice 06's four repaired examples **none documents a deleted API**: no `$store` auto-subscription syntax appears in any docblock in this slice. **3 `svelte-ignore` directives total, 1 of them a11y** (`Layout.svelte:67`, `a11y_positive_tabindex`) and it carries its rationale on the line above. The other two are `state_referenced_locally`. |
+| **10** | Errors handled and logged | **FIXED** | **19 debug `console.*` statements in the two admin form actions — the route half of the defect 151-14 fixed as F-53 one slice below.** That plan took `console.*` under `src/lib/server/admin` to 0; the actions that *call* those features kept more, and worse: `argument-condensation/+page.server.ts` logged `typeof jobInfo` and `Object.keys(jobInfo || {})`, and carried a block commented `// DEBUG:` that awaited `dataWriter.getJobProgress()` — **an extra network round-trip on every admin job start** whose sole consumer was the next line's log (verified a pure read, `universalDataWriter.ts:211`, with nothing downstream using the result). `question-info/+page.server.ts:25-33` logged `customInstructions` and `questionContext` — **admin-authored free-text LLM prompt content** — at INFO level, unguarded, on every submit. All 19 removed and both catch blocks moved onto the project's DEV-only `logDebugError`, which all 22 other route files here use, and both already return the message to the admin UI via `fail()`. Commit **`a82af4c38`**; `console.*` under `routes/admin/` is now **0**. **Complement, recorded rather than swept:** 12 `console.error` calls remain, in `routes/api/**/+server.ts` catch blocks and `hooks.server.ts:86` (`handleError`). Those are genuine server-side error paths with no admin-visible alternative and no server logger in the project — deliberately left, and named so the count is not mistaken for zero. |
+| **13** | WCAG A and AA | **FIXED** | See the reach section above. 36 routes changed, **5** scanned, **31** not — every one of the 31 named with a manual verdict, nine defect classes applied to all of them, and **the one defect found and fixed**: the `<h1>` → `<h4>` two-level skip at `results/[[electionTab]]/statistics/+page.svelte:125,151`, an axe `heading-order` failure on a route the scan never visits. That h2 is the correct level was verified rather than chosen: `Expander.svelte:156-157` renders its title in a plain `<div class="collapse-title">` with no heading role, so the page's real heading tree is the `<h1>` and then these two. Rendered output unchanged — `app.css` styles headings in `@layer base`, so the `text-base` utility overrides size and leaves weight identical — and baseline exposure was checked first: the visual chain covers `/results` and `CandAppPreview` only, and no spec or fixture references the statistics route at all. Commit **`f7076dbfe`**; **0** baselines regenerated. |
+| **14** | Keyboard + screen-reader usable | **DEFERRED** | The keyboard half has **no gate anywhere in the project** — axe does not tab through the UI, so it is uncovered on the 5 scanned URLs as much as on the other 31 — and the raw-i18n-key scan has identically the axe reach (one call site, inside `assertAxeScan`). The drawer path was traced by hand and is correct (`Layout.svelte:50`, `:61`, and the `aria-hidden` overlay at `:108` duplicating a keyboard-reachable control), and the app-wide `afterNavigate` focus reset plus the `aria-live` route announcer are in this slice and are real. But one path read carefully is not a gate. **DEFERRED rather than MET because authoring one is net-new test authorship, which D-13 excludes**, and widening the axe route table is Phase 147's scope and it has not executed. |
+| **15** | Developers'/Publishers' Guide entries updated | **DEFERRED** | The guide pages documenting this slice — `developers-guide/frontend/routing`, `developers-guide/candidate-user-management` — were **not** updated for it, and the defect is the whole-tree class 151-14 raised as **F-64**: 272 `blob/main/frontend/…` permalinks across 117 files under `apps/docs/`, pointing at a path slice 01a removed. `apps/docs/**` is **slice 09, cut by 151-16**, and that plan owns the class including its generator half. Two specifics this slice adds to it, recorded here so 151-16 need not re-derive them: the routing guide's generated page does not describe the **`admin/` app or the `api/` tree at all** (the same gap this plan fixed in the in-slice README), and the routing prose predates the locale-segment removal that is this slice's defining change. Fixing 117 files inside another uncut slice from this plan would put a change of that size outside the disposition that reviews it. |
+
+### The two context reactivity violations — enumerated, and one of them was previously missed
+
+**151-14 scanned this slice from next door and reported 41 destructure sites with 1 violation. Re-run
+here over the same tree it is 84 sites with 2.** The gap is instructive and is exactly the phase's
+recurring failure mode — an internal identity that is self-consistent and incomplete: that scan
+matched `get*Context()` call sites, and the second violation destructures from **`initAppContext()`**,
+which is not one of those.
+
+| Surface | Destructure sites | Destructuring a reactive accessor | `dataRoot` consumers | Bound to an intermediate `$derived` alias |
+|---|---:|---:|---:|---:|
+| slice 07 (`src/routes`, `src/params`, shell) | **84** | **2 — both FIXED** | **19 files** | 2, both benign |
+
+- **F-61 (was routed here by 151-14) — FIXED in `f91356687`.**
+  `(voters)/(located)/results/[[electionTab]]/+layout.svelte:73-82` destructured `appSettings` and
+  `dataRoot`, above a comment at `:66-72` asserting *"Stable stores/functions/objects (appSettings,
+  dataRoot, getRoute, t, answers, startEvent, *Countdown) remain destructured."* True before the
+  v2.13 handle flatten, false after. `appSettings` is value-replacing, so the local went stale;
+  `dataRoot` is identity-stable, so the destructure took its `#version` dependency once at init and
+  `{#if dataRoot.elections.length > 1}` at `:349` never re-evaluated when data arrived — the
+  cold-entry class. `appSettings` now reads through a `$derived` alias (correct for a value-replacing
+  accessor); both `dataRoot` reads (`:176` inside a `$derived.by` thunk, `:349` in the template) now
+  go through `voterCtx.dataRoot` inside their own tracking scope. **The stale comment was rewritten
+  too** — a comment asserting the wrong rule is how this survived four phases.
+- **F-73 (new here) — FIXED in `f91356687`.** `routes/+layout.svelte:48-57` destructured
+  `appSettings` out of `initAppContext()`, whose own declaration reads *"MUST be read off `ctx`
+  (never destructured)"* (`$lib/contexts/app/appContext.type.ts:54-61`). Consumers: the
+  `visibilitychange` registration at `:189` and the analytics mount at `:254-257`. Failure mode is a
+  settings re-merge after mount (`appContext.svelte.ts:385`) that the frozen local would never see.
+- **F-62 (was routed here) — confirmed NOT a defect, and not "fixed".** The two
+  `const dataRoot = $derived(ctx.dataRoot)` aliases are the forbidden *shape* without its failure
+  mode, verified line by line rather than accepted on 151-14's word:
+  `(voters)/(located)/+layout.svelte:38` is used only at `:93-96` inside `updateAsync`, an async
+  function whose docblock at `:84` says it exists so `dataRoot` is *not* tracked; and
+  `candidate/(protected)/preview/+page.svelte:32` is used at `:66-67` inside `loadCandidate`, after
+  an `await`, assigning to `$state`. Both are outside any tracking scope. **Left alone** — "fixing" a
+  non-bug here would have made the record less trustworthy, not more.
+- **The 17 other `dataRoot` consumers are the control set**, and they are what makes F-61 legible as a
+  defect rather than a style preference: every one reads `ctx.dataRoot.<prop>` directly inside its
+  tracking scope and carries a comment saying so. The results layout was the single file whose comment
+  said the opposite.
+
+**Covering tests, named rather than claimed** (the requirement this plan inherited from 151-14, which
+deferred F-61 precisely so it could be met):
+
+- F-61's class: `tests/tests/specs/voter/cold-entry-dataroot.spec.ts` — written as the negative
+  control for exactly this staleness class, on the multi-election `e2e/base` seed F-61's guard needs.
+  **It has no `/results` case**, so it covers the class and not this site; the warm intro walk that
+  does reach `/results` (`voter-journey.spec.ts`) **masks** the bug, by that spec header's own
+  account. Extending it with a cold `/results/...` case is net-new test authorship (D-13) and is
+  **deferred to 151-18**.
+- F-73: `tests/tests/specs/voter/voter-prefs-tracking.spec.ts` asserts the `window.umami.track`
+  boundary, which requires the analytics branch this fix touches to render. Its seed sets the platform
+  before mount, so it is a **regression guard for the fix, not a detector of the bug** — stated that
+  way rather than counted as coverage.
+- **Neither was run.** No dev server on `:5173`, no seeded local Supabase. Per `CLAUDE.md` a
+  did-not-run E2E test counts as a failure, so **no green suite is claimed**; D-24's run at 151-18
+  owns that signal.
+
+### F-44's blind spots, run over this slice because the gate will not
+
+151-13 routed three known gate blind spots to the sweeping plans. Run here:
+
+| Pattern | Hits in slice 07 | Disposition |
+|---|---:|---|
+| bare `NN-NN` plan identifiers (`\b\d{2,3}-\d{2}\b`) | **18 raw**, of which **10 are genuine** (`88-02` ×9 in `post-88-02` / `pre-88-02` / bare form, `86.3-01` ×1) | **Recorded, not stripped.** Unlike 151-13's pure `122-05` citations, these sit inside load-bearing prose that distinguishes two design generations of the same route ("the post-88-02 loop fix"); removing them costs meaning. The other 8 are false positives — threat ids `T-62-04`/`T-69-01` and line ranges (`75-76`, `166-188`, `43-48`, `60-67`). |
+| `plan NN` single-number (`\bplans?\s+\d+\b`) | **5** (`Plan 02` ×4, `Plan 02` in a profile comment ×1) | **4 removed** as part of the item-3 comment repair (`d0c63af0d`), which rewrote those four citations to `Deferred-target handling (see phase 78):`. Gate-neutral: `plan-number` requires a two-part number. |
+| task id with a trailing character (`\b[A-Z]{3,}-\d{2}[a-z]\b`) | **0** | nothing to find |
+| **a fourth blind spot, found here** | **1** | `params/etSg.ts:3-4` ends a line with `introduced by Phase` and continues `88 to make…`. The gate's `phase-ref` pattern needs keyword and digits on the **same line**, so a wrapped reference is invisible to it — F-44's third blind spot, confirmed live for the first time. **Left in place**: it is grammatical as it stands, and collapsing it onto one line would either add a `phase-ref occ` (if `see`-prefixed) or add a `bare` (if not), both of which move an operator-approved count. Routed to **151-19** with the rest of F-44. |
+
+Strip-row patterns over this slice are all **0** (`D-NN` long and bare, `§`, `.planning/`, two-part
+`plan N-N`, `[A-Z]{3,}-\d{2}`), and `phase-ref` **bare = 0** against 90 `occ` — so **this slice
+contributes nothing to either of the gate's two operator-approved red rows.**
+
+### The line-break trap, and the drift this plan caught in its own work
+
+**The trap that moved criterion 3's approved state at 151-13 did not fire here, but a sibling of it
+did — in this plan's own commits, and it is recorded rather than quietly corrected.** The two
+reactivity-fix comments in `f91356687` carried three new `see phase N` citations, one new
+`see spike N` and one new `v2.13`, taking the report's **ungated** columns from 660/40/43 to
+663/41/44. **The gated `bare` columns never moved** — every citation was correctly `see`-prefixed — so
+`--assert-clean` would have gone on reporting exactly the two approved rows and the drift would have
+shipped unnoticed. That is precisely why the standing check is on `occ` and not only on `bare`.
+Corrected in **`33e616758`** by removing the citations, which were redundant anyway: the rule they
+pointed at is in `CLAUDE.md`, which both comments name, and the 17 sibling consumers already carry the
+same references. Final state byte-identical to the pre-plan baseline.
+
+### Findings queued by this sweep
+
+| ID | Verdict | Item(s) | Finding | Landing |
+|---|---|---|---|---|
+| **F-61** | FIXED `f91356687` | 3, 12, 13 | `results/[[electionTab]]/+layout.svelte` destructured `appSettings` and `dataRoot` while its own comment asserted that was correct. Routed here by 151-14. | slice 07 |
+| **F-62** | **NOT a defect** | 3 | The two `$derived(ctx.dataRoot)` aliases are write-only and outside any tracking scope, verified line by line. Left alone. | — |
+| **F-67** | FIXED `271f3f8e4` | 2 | Unvalidated caller-controlled `redirectTo` interpolated into both login actions' redirect target, while the voter half of the same slice validates its equivalent twice. | slice 07 |
+| **F-68** | FIXED `a82af4c38` | 10 | 19 debug `console.*` in the two admin form actions, including an extra network round-trip that existed only to feed a log line and one that logged admin prompt content. The route half of 151-14's F-53. | slice 07 |
+| **F-70** | FIXED `bc1963610` | 6, 7 | `src/routes/README.md` omitted the `admin/` and `api/` trees — 22 of the slice's 114 files. | slice 07 |
+| **F-71** | FIXED `f7076dbfe` | 13, 14 | `h1` → `h4` heading skip at two sites on an unscanned route. | slice 07 |
+| **F-73** | FIXED `f91356687` | 3, 12 | Second reactive-accessor destructure, in the root layout, from `initAppContext()` — invisible to a scan keyed on `get*Context()`. | slice 07 |
+| **F-74** | DEFERRED | 5 | The two login form actions are substantially the same action, including a verbatim-duplicated hand-rolled JWT payload decode. Extraction is restructuring (D-13); no coverage either way. | 151-18 / later phase |
+| **F-75** | DEFERRED | 13, 14 | `Expander`'s title is a plain `<div>` with no heading role, and its only control is a checkbox whose accessible name is the generic `common.expandOrCollapse` — a screen-reader user is not told which question. **Slice 06, published as PR #869**, so fixing it means force-pushing a PR under review. | 151-18 / post-merge |
+| **F-76** | DEFERRED → **151-19** | 3 | A fourth F-44 gate blind spot, confirmed live: a phase reference broken across a line (`params/etSg.ts:3-4`) is invisible to `phase-ref`, and neither repair is count-neutral. | gate design |
+
+### Evidence contributed to the phase-level cells (which stay `PENDING→18`)
+
+- **Item 12 (shared-dependency blast radius).** This slice is the app's entry surface: 84 context
+  destructure sites, 19 `dataRoot` consumers, 17 API endpoints, and the three sequenced server hooks
+  every request passes through. `yarn build` (14/14) and `yarn test:unit` (1,522 / 149) both cover it,
+  and the two `params/` matchers carry their own unit tests. **Complement, and it is the load-bearing
+  one for this slice: neither gate exercises a request.** `hooks.server.ts`'s handler sequence, the six
+  admin endpoint guards and the login redirect all run only under E2E, which is D-24's at 151-18.
+- **Item 11 (failing checks).** Nothing new. Re-verified against the live run rather than copied:
+  `gh run view 32017478048 --json jobs` reports step **3 `Setup Yarn 4.6` — failure** and step **5
+  `Install all dependencies` — skipped** on `frontend-and-shared-module-validation`; the same on the
+  other two jobs. `main.yaml` at 01a's tip is blob **`c2fdcedb2`**, byte-identical to `origin/main`'s,
+  and defines exactly three jobs — so `skill-drift-check`, `supabase-tests` and
+  `dev-seed-integration` do **not** exist at any published head.
+- **Item 16 (history).** Nine commits, all conventional, all scoped `(151-15)`.
+
+### Slice 07 — the file-count delta, attributed by set difference
+
+**213 → 214 files, +10,291 → +10,319, −8,268 unchanged.** Established with `comm` over the two
+`diff --name-only --no-renames` sets, not by subtraction.
+
+| File | Why it entered | Left the set |
+|---|---|---|
+| `apps/frontend/src/routes/loginRedirectTarget.ts` | F-67's shared guard, placed under `routes/` because `$lib` is slice 06 and published | — |
+
+**Zero files left the set.** Line delta `+142 / −114` across 28 files → net +28 insertions and 0 net
+deletions, which reproduces 10,291 + 28 = **10,319** and 8,268 unchanged.
+
+**The dry run's prediction is also fully attributed, in both directions.** It predicted
+213 / +10,291 / −8,267. At 151-13's tip the slice measured 213 / +10,290 / −8,267 and at 151-14's
+213 / +10,291 / −8,268 — the +1/+1 is 151-14's F-57 dead-link repair in `src/routes/README.md`, a
+file already inside this slice's diff. **No file has ever entered or left this slice's cell.**
+
+---
+
+## Slice 08 — `ship/v0.2-akita-08-i18n-messages` — cell-by-cell evidence
+
+**Filled by plan 151-15.** The 12 per-slice general items. All three conditional blocks read
+`n/a — outside block pathspec`. The four phase-level items are not re-run here.
+
+**330 files, 47 namespaces × 7 locales plus one README, one shape, +8,986 / −0 — and the sweep is
+dominated by one question that no per-item fan-out would improve: are the key sets in parity?** It is
+answered by measurement below, not by inspection, and D-19's fan-out was collapsed accordingly and is
+recorded as collapsed rather than performed.
+
+Measured refs: `PARENT` = slice 07 `342926b93`; `TARGET` = `feat-gsd-roadmap` `75c10cb8f`; file set
+`diff --no-renames ship/v0.2-akita-07-frontend-routes..TARGET -- apps/frontend/messages` → **330
+files, all `A`**. Status set `A` only — no deletion, no modification. Dropped-finding class: **0**,
+by the same two independent methods used for slice 07.
+
+### Key-set parity — measured over every locale, every file, every key
+
+**This is the cell the slice exists to answer, and the answer is exact.**
+
+| Measurement | Value |
+|---|---|
+| locale directories on disk | **7** — `da`, `en`, `et`, `fi`, `fr`, `lb`, `sv` |
+| locales declared in `project.inlang/settings.json` | **7**, identical set; `baseLocale` `en` |
+| files per locale | **47**, and the union of file names across all 7 is also **47** — no locale is missing a namespace and none has an extra |
+| files listed in `pathPattern` vs files on disk | **47 = 47**, symmetric difference **0 both ways** — no uncompiled file, no pattern entry without a file |
+| keys per locale (fully qualified, `file::path`) | **598** in every one of the 7 |
+| **union of all locales' key sets** | **598** |
+| **intersection of all locales' key sets** | **598** |
+| **symmetric difference (union − intersection)** | **0** |
+
+**No key is present in one locale and missing in another.** Reproduce with the script now committed
+at `apps/frontend/messages/README.md` § "Checking your work", which was executed as written before
+being committed and prints nothing.
+
+**Why parity had to be measured directly rather than delegated to the scan** — and this is the reason
+the plan's key link is right: `t()` returns **the key string itself** when it cannot resolve a message
+(`$lib/i18n/wrapper.ts:29-38`), so a locale missing a key renders a raw dotted identifier into the
+page. That is exactly what `assertNoRawI18nKeys` catches — but only within its measured reach, which
+is the axe reach (5 URLs; one call site, inside `assertAxeScan`), i.e. **5 of 36 routes and none of the
+candidate or admin apps**. A parity defect in a Finnish candidate-app string is outside the gate by
+construction.
+
+### Placeholder-set parity — the second measurement, and it found the slice's one defect
+
+A key can be present in all seven locales and still be broken, because `{name}` refers to a **declared
+input** and the declared names are part of the message's callable signature. Compared across all 598
+keys × 7 locales, recursing into the plural/selector bodies (147 message bodies are arrays, not
+strings — a check that skipped them would have reported a clean result and been wrong):
+
+| | Before | After |
+|---|---:|---:|
+| placeholder-set divergences vs `en` | **2** | **1** |
+
+- **F-69 — FIXED in `3efe68d30`.** `sv/components.json` → `components.video.timeLeft` declared
+  `input minuter` / `input sekunder` and interpolated `{minuter}` / `{sekunder}`, where all six other
+  locales declare `minutes` / `seconds`. The Swedish variant therefore had a **different signature**
+  from its siblings and could not receive what callers pass. Only the four declarations, two selector
+  names and two interpolations were renamed — **the Swedish text is untouched**, so this is not a
+  translation decision. **Severity stated rather than inflated: the key has zero call sites
+  repo-wide** (`Video.svelte` uses 12 sibling keys and not this one), so nothing renders it today. It
+  was fixed because the repair is mechanical and lossless, not because it is live. The defect is also
+  **inherited, not introduced**: the pre-Paraglide ICU catalogue at
+  `src/lib/i18n/translations/sv/components.json:74` carries the same `{minuter, plural, …}`, so the
+  migration copied it faithfully.
+- **The remaining divergence is DEFERRED and named:** `questions.intro.start` is
+  `Answer {numQuestions} Questions` in `en` and interpolates `numQuestions` in five other locales, but
+  `sv` reads `Börja svara på frågor` with no placeholder. That one **is** live — the questions-intro
+  CTA at `(voters)/(located)/questions/+page.svelte:161` — but the remedy is Swedish copy, which is a
+  publisher decision and not this plan's to make.
+
+Also measured, and neither is a defect: **12 empty-string values**, of which 7 are
+`dynamic.candidateAppPrivacy.otherTermsOfUse.content` (empty in all 7 — a deliberate
+publisher-overridable default whose own render site is guarded on truthiness,
+`TermsOfUse.svelte:42`) and 5 are `common.madeWithSuffix`; and **31 values identical to `en` in all
+six other locales**, of which 24 are emoji, 7 are the endonyms in `lang.json` (`Suomi`, `Svenska`, …,
+correctly untranslated by design) and one is the empty default above.
+
+### Two corrections this sweep produced
+
+- **The plan's stated authority for the locale count is wrong.** `151-15-PLAN.md`'s `read_first` names
+  `packages/app-shared/src/settings/staticSettings.ts` as "the authority for how many locales the
+  message sets must cover". It lists **3** (`en`, `fi`, `sv`); this slice ships **7**. The authority
+  for what must exist here is `apps/frontend/project.inlang/settings.json` → `locales`;
+  `supportedLocales` decides what a *deployment* offers and is meant to be edited per instance. Not a
+  repository defect — a plan-encoded claim, the eleventh in this phase to be wrong as written, and now
+  documented in the slice's own README so the next reader does not repeat it.
+- **The compile-time key gate for this slice reads a different catalogue, and the file it lives in is
+  reviewed by nobody.** `t()`'s `key` parameter is typed against the generated `TranslationKey` union,
+  which makes a non-existent key a build error — a genuinely strong gate. But
+  `apps/frontend/tools/translationKey/generateTranslationKeyType.ts` builds that union from
+  `src/lib/i18n/translations/` (the legacy ICU catalogue, **slice 06**), not from `messages/`, and
+  from **one** locale's filenames. Today the two agree exactly — union **598**, catalogue **598**,
+  symmetric difference **0 in both directions** — but nothing enforces that, and the failure is
+  asymmetric: a key added to the legacy tree alone is *typed* while Paraglide cannot resolve it, so
+  `t()` falls through and renders the key to a user. Worse, `apps/frontend/tools/` (3 files) is
+  **claimed by no slice's pathspec** — asserted by running every row of `slices.tsv` against it, all
+  eleven returning 0 — **and** is byte-identical across the layout move, so it is in no slice's diff
+  either. It is a named, load-bearing instance of the class F-15 raises abstractly. **F-15's
+  structural question is the operator's at 151-16 and is not acted on here**; this is recorded so that
+  decision has a concrete example rather than a count of 120.
+
+### Slice 08 — general items (12 cells)
+
+| # | Item | Verdict | Evidence |
+|---|---|---|---|
+| **2** | OWASP Top 10 | **MET** | Message values are user-facing content rendered through `{@html sanitizeHtml(…)}` at the 20 call sites in slice 07 and 19 in slice 06 — **A03 is therefore mitigated at the render site, not here**, and this cell's job is to confirm the content does not require more than the sanitiser gives. Tag census over all 7 × 47 files: only `p` (279), `h3` (70), `li` (21), `a` (21), `ul` (7) — **no `script`, `iframe`, `object`, `embed`, `form`, `style`, or event-handler attribute anywhere**, all of which DOMPurify's html profile would strip regardless. **Secret-shaped literal scan over 330 files: 0.** **Complement: a malformed interpolation is an availability defect, not an injection one** — `t()` catches the throw and returns the key, so the failure mode is a raw identifier on the page rather than executed content. That path is item 3's, and it is where F-69 was found. |
+| **3** | Follows the Code style guide | **FIXED** | For a message catalogue the style contract is shape, not TypeScript: file-per-namespace naming matching `pathPattern` exactly (**47 = 47**, both directions), one directory per declared locale (**7 = 7**), valid JSON in all 330 files (`json.load` over every one, **0 failures**), and the inlang `declarations`/`selectors`/`match` form for the 147 plural bodies. **FIXED** on F-69: `sv`'s `components.video.timeLeft` violated the one shape rule that has teeth — that a `{name}` names a declared input rather than a word to translate. Commit **`3efe68d30`**. Hygiene: every gate pattern over this slice returns **0** — `phase-ref` 0, `D-NN` 0, `§` 0, `.planning/` 0, `[A-Z]{3,}-\d{2}` 0, `plan N` 0, bare `NN-NN` 0 — and all three of F-44's blind-spot patterns return 0 as well. **The hygiene codemod never touched this slice**: the diff-pair method over all three of its commits, restricted to `apps/frontend/messages`, returns nothing. |
+| **4** | Avoid `any`; document or `@ts-expect-error` | **NOT-SWEPT** | `n/a — no applicable surface in this slice.` 330 files: 329 JSON and one Markdown. No TypeScript, so no type position for `any` to occupy. |
+| **5** | No repeated code in the PR or elsewhere in the repo | **DEFERRED** | A real duplication, and a large one: **`src/lib/i18n/translations/` (slice 06) is a second, parallel translation catalogue** — 46 files × 7 locales in ICU syntax, carrying the same 591 keys this slice ships in inlang syntax (confirmed by comparing the generated union, 598, against this catalogue's key set plus the 7 `lang.*` keys the generator appends: they close exactly). It is not dead — the `TranslationKey` generator reads it — but its *content* is duplicated, so a string edited in one and not the other diverges silently in whichever direction the reader is not looking. **Not fixed: the remedy is to repoint the generator at `messages/` and delete the legacy tree, which is a change to a file no slice claims plus a 322-file deletion in a published slice (PR #869)** — restructuring on both counts, excluded by D-13. Recorded with the mechanism so 151-18 can route it. |
+| **6** | New components / functions / entities documented | **FIXED** | The entity a translation catalogue exposes is its **contract**, and none of it was written down: no README in `messages/`, and the only nearby prose is `project.inlang/README.md` (slice 10), which describes the inlang folder and says only that translation files live elsewhere. `apps/frontend/messages/README.md` created in **`75c10cb8f`**: which of the two locale lists is authoritative and why, the six rules a translator must keep (parity, `pathPattern` correspondence, placeholders-are-signatures, placeholder-set equality, the HTML/heading-level constraint, the plural form), a **runnable** parity check, and the honest limit of the compile-time one. **The embedded script was executed as written before being committed** — a documented check nobody has run is the same class of defect as the comments item 3 of slice 07 spent a commit repairing. **Deliberately not recorded MET on the strength of the slice being "just translations"**, which this plan was warned against and which the two defects found here would have concealed. |
+| **7** | Repo documentation markdown updated | **NOT-SWEPT** | `n/a — no repo documentation markdown existed under this pathspec before this plan created it.` The README added under item 6 **is** this slice's documentation, and the guide-side half is item 15's. |
+| **8** | Tracking events for new user-facing functions | **NOT-SWEPT** | `n/a — no applicable surface in this slice.` A catalogue defines no user-facing function; the 17 `startEvent` call sites that consume `t()` are slice 07's and the 13 more are slice 06's. |
+| **9** | New Svelte components follow the guidelines | **NOT-SWEPT** | `n/a — no applicable surface in this slice.` **0** `.svelte` files. |
+| **10** | Errors handled and logged | **NOT-SWEPT** | `n/a — no applicable surface in this slice.` JSON data declares no error handling. The resolution failure path — catch, `logDebugError`, return the key — is `$lib/i18n/wrapper.ts:29-38`, slice 06, and was dispositioned there. What *is* this slice's responsibility is not creating an input that path has to absorb, which is item 3's F-69. |
+| **13** | WCAG A and AA | **MET** | Message content reaches the accessibility tree, so this is a real cell rather than a formality, and it was swept over the content rather than waved. **21 anchors across the 7 locales, 0 with no discernible text** (each has visible link text inside the tag). **0 `<img>`, so 0 missing `alt`.** **70 `<h3>` occurrences, and they are correct — verified by tracing the content into its renderer rather than judged from the value.** All 70 are 10 headings × 7 locales inside the single key `dynamic.candidateAppPrivacy.registryStatement.content`, which renders at `TermsOfUse.svelte:38` **immediately below an `<h2>` that the same component supplies at `:36`**, itself under `MainContent`'s `<h1>` (`candidate/privacy/+page.svelte:22`). Tree: h1 → h2 → h3, **no skip** — the opposite verdict from the superficially identical pattern this plan fixed on the statistics page, and the difference is entirely in the render context. **Complement: the route that renders it, `candidate/privacy`, is one of the 31 the axe scan never visits**, so this content's heading order has no automated coverage in either direction. |
+| **14** | Keyboard + screen-reader usable | **NOT-SWEPT** | `n/a — no applicable surface in this slice.` A catalogue has no focus order and no interactive elements. The screen-reader-visible half of its content is item 13's above; the raw-key scan that would catch a resolution failure has the axe reach and is recorded as such there. |
+| **15** | Developers'/Publishers' Guide entries updated | **DEFERRED** | Neither guide documents this slice's authoring workflow — how to add a namespace, the parity requirement, or the placeholder-signature rule. Same class as slice 07's cell: `apps/docs/**` is **slice 09, cut by 151-16**, carrying F-64's 117-file permalink repair, and a guide page written from this plan would sit outside the disposition that reviews it. **Partially discharged rather than wholly deferred:** the in-slice README added under item 6 puts the contract where a translator actually looks first, so the deferred half is the guide's narrative, not the rules themselves. |
+
+### Slice 08 — D-19 fan-out, recorded as collapsed rather than performed
+
+D-19 prescribes one agent per checklist item per slice. **For this slice that was deliberately not
+done, and saying so is the point:** eight of the twelve items have no applicable surface in 329 JSON
+files, and the four that do (2, 3, 6, 13) turn on four *measurements* — key-set parity, placeholder-set
+parity, tag census, and the render context of the content that carries headings — each of which is a
+single computation over the whole slice rather than a judgement twelve agents could improve. Fanning
+out would have produced twelve reports of the same four numbers. The plan anticipated exactly this
+("its sweep is dominated by one question that no per-item fan-out would improve") and the record states
+the deviation rather than implying twelve passes happened.
+
+### Slice 08 — the file-count delta, attributed by set difference
+
+**329 → 330 files, +8,904 → +8,986.** One file entered, zero left:
+`apps/frontend/messages/README.md` (item 6's fix). Established with `comm` over the two
+`diff --name-only --no-renames` sets. The F-69 fix moved **no** count — `+14 / −14` inside
+`sv/components.json`, a file already in the diff — which is why the totals moved only by the README's
+82 lines.
+
+**Slice 08 was therefore re-cut, and nothing published moved.** Its branch was rebuilt on the
+unchanged, already-pushed slice-07 commit `342926b93`, and the assertion that slice 07 needed no
+re-cut was made before the rebuild, not assumed: `diff --no-renames` between the pushed slice-07 tip
+and the new target, restricted to slice 07's pathspec, returns **0 files**. PRs #869 and #870 show the
+same objects that were pushed; **no force-push anywhere.** This is D-07's one-slice lag being spent
+for the second time in the phase, after 151-11's slice-02 re-cut.
+
+### The per-slice safety check — gap 0, identity MATCH
+
+| check | result |
+|---|---|
+| chain | `07^ == 06` (`8c613634b` both sides) and `08^ == 07` (`342926b93` both sides), by `rev-parse` |
+| commit count per slice | **1** and **1** (`git log --oneline <parent>..<slice>`) |
+| status sets | slice 07 `ADM` (`109 A / 99 D / 6 M`); slice 08 `A` (`330 A`) |
+| remaining-slices catch-all, `TIP08..TARGET` pathspec `.` | **`files=2394`** |
+| partition arithmetic | 252 + 97 + 119 + 162 + 195 + 533 + 214 + 330 + 2,394 = **4,296** = comparable total (`diff --no-renames C1..TARGET`). **Gap: 0.** |
+| attribution of the rise from 151-14's 4,292 | **+4, every one named, zero leaving.** By set difference: `151-14-SUMMARY.md` and `pr-bodies/05.md` (two `.planning/` files 151-14 committed after its own measurement, riding slice 11, 2,316 → 2,318), plus this plan's `loginRedirectTarget.ts` (slice 07) and `messages/README.md` (slice 08). |
+| predicted remainder | 151-14's catch-all was 2,934 including slice 07's then-213 and slice 08's 329. 2,934 − 213 − 329 + 2 = **2,394**, the measured value. **Deviation 0.000%** against a 1% halt threshold. |
+| a second, independent decomposition | per-slice pathspecs measured at this `TARGET`: 39 + 37 + 2,318 = **2,394**. The remainder closes **without reference to the catch-all**, and slices 09 and 10 are unchanged **file for file** from the dry-run table (39 / 37). |
+| **partial-stack identity** | the nine cut slices plus the catch-all produce tree **`10ef4af4f`** = `TARGET^{tree}` **`10ef4af4f`**. **MATCH.** (Measured twice: `276d89a94` before the last two commits, `10ef4af4f` after, matching the target both times.) |
+| `git status --porcelain` | empty throughout; `HEAD` never left `feat-gsd-roadmap`; the catch-all was applied into a scratch `GIT_INDEX_FILE` through `build-slice.sh` itself, never reimplemented, and never committed to a ref |
+
+### Published
+
+| slice | branch on `origin` | SHA (remote == local, asserted) | PR | base |
+|---|---|---|---|---|
+| 06 | `ship/v0.2-akita-06-frontend-lib` | `8c613634b` | [#869](https://github.com/OpenVAA/voting-advice-application/pull/869) | `ship/v0.2-akita-05-e2e-tests` |
+| 07 | `ship/v0.2-akita-07-frontend-routes` | `342926b93` | [#870](https://github.com/OpenVAA/voting-advice-application/pull/870) | `ship/v0.2-akita-06-frontend-lib` |
+
+Asserted after the fact, not assumed: both PRs return the expected `baseRefName`, `headRefOid` equal
+to the local tip, and `OPEN`. `gh pr list --head ship/v0.2-akita-08-i18n-messages` returns **0** and
+`git ls-remote --heads origin 'ship/v0.2-akita-08*'` returns **0**, so D-07's one-slice lag held —
+**PR 9 stays closed until slice 09 is swept at 151-16.** `git ls-remote --heads origin 'ship/*'`
+returns exactly **8** refs; `origin/main` is unmoved at `ac30f132a`; and PR **#860 was not touched**
+(`updatedAt` still `2026-05-19T12:08:25Z`). Both pushes were dry-run immediately beforehand and each
+reported `[new branch]`, with no force anywhere. Titles follow the format 151-13 stabilised —
+`7/12 …` and `8/12 …`, `N/12` plus `slices.tsv` column 3 verbatim. Both PRs fire **no checks**,
+asserted not predicted: `gh pr checks` returns *"no checks reported"* on each.
+
+### The published numbers did not match the measured ones, and the reconciliation is in both bodies
+
+**GitHub reported `528 files, +22,550, −8,179` for PR #869 against a measured 533 / +22,715 / −8,344,
+and `165 files, +7,593, −5,542` for PR #870 against 214 / +10,319 / −8,268.** Both bodies had already
+been written with the measured numbers, so this was caught by comparing the published result against
+the measurement rather than by trusting either.
+
+**Cause: rename detection**, and it reproduces exactly locally. `git show -M --shortstat` on the two
+slice commits returns `528 / 22550 / 8179` and `165 / 7593 / 5542` — digit for digit what GitHub
+reports — with rename-aware status sets `207 A / 55 D / 261 M / 5 R` and `60 A / 50 D / 6 M / 49 R`.
+The manifest's convention for the stack table is `--no-renames`; GitHub's Files-changed tab is not.
+For slice 07 the gap is large and *favourable*: 49 of the 97 `[[lang=locale]]` route files are matched
+to their de-localised counterparts, so a reviewer gets 49 readable rename diffs instead of 98
+delete-plus-add halves.
+
+**Both live PR bodies were edited to carry both numbers and the reconciliation** before any review
+arrived. Neither number changes a conclusion: #869 is over both render budgets on either measure
+(528 > 300, 30,729 > 20,000) and #870 is inside both on either (165 and 13,135).
+
+### Gate verdicts after this plan's fixes — measured, not assumed
+
+| Gate | `151-BASELINE.md` | Measured after | Verdict |
+|---|---|---|---|
+| `yarn build` (`TURBO_FORCE=1`) | 14/14 | **14/14** | unchanged |
+| `yarn test:unit` (`TURBO_FORCE=1`) | 1522 tests / 149 files | **1522 / 149** | unchanged |
+| `yarn lint:check` (`TURBO_FORCE=1`) | 0 errors / 20 warnings | **0 / 20** (core 2, dev-seed 15, frontend 1, tests 2) | unchanged |
+| `yarn format:check` | RED on exactly 2 PD-03-fenced files | **RED on exactly 2** (`perm-bankauth-notloc.ts`, `tests/README.md`) | unchanged |
+| `hygiene-grep-report.sh --assert-clean` | exit 1; `task-id` 84, `phase-ref` bare 11 | **exit 1, every column identical** (660/235/11, 40/30/0, 84/46, 43/30) | unchanged |
+
+**`yarn format` was NOT run.** Two files were reformatted individually by path with
+`npx prettier --write` — `routes/+layout.svelte` (the reactivity fix changed a destructuring line's
+width) and `messages/README.md` (emphasis markers) — because growing `format:check`'s red set is what
+PD-03 fences, and its *cardinality* is the fenced property. Every other edited file was
+`prettier --check`ed individually and was already clean. **F-39 honoured: the lint warning count was
+not reduced.** `yarn db:lint:sql` deliberately not run — it exits 1 on a correct tree pending F-21
+and nothing here touches SQL.
+
+**Snapshot check: `git diff --name-only ship/v0.2-akita-06-frontend-lib..HEAD` matches `-snapshots`
+and `__screenshots__` 0 times each.**
+
+### What this plan's sweep did NOT establish
+
+**The 43 E2E specs were not run.** No dev server on `:5173`, no seeded local Supabase. Per `CLAUDE.md`
+a did-not-run E2E test counts as a failure, so **this record claims two statically swept slices, not
+green ones** — and that matters more here than in most slices, because two of this plan's seven fixes
+are reactivity fixes and reactivity is what an E2E test is uniquely able to catch. Both covering specs
+are named above with what they do and do not cover, and both are **deferred to 151-18** for execution
+under D-24.
+
+**No contrast ratio was measured** and no rendered output was inspected — the accessibility sweep over
+the 31 unscanned routes is structural. **No keyboard interaction was exercised.** Both are stated
+because the alternative is a claim.
+
+### Ordering note — fixes were committed before this record, deliberately
+
+As in 151-12, 151-13 and 151-14: the sweep ran first, the commits did not, because a cell may not read
+`FIXED` before the commit it cites exists. D-04's actual requirement — fixes on `feat-gsd-roadmap`
+before the slice is cut — is met for both slices, and for slice 08 twice over, since it was re-cut
+after its own fix landed.
 
 ---
 
