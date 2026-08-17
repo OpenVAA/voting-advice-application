@@ -1,0 +1,85 @@
+# Spike Manifest
+
+## Idea
+
+Convert OpenVAA's legacy `svelte/store` bridges in `apps/frontend/src/lib/contexts/` (currently hybrid: `$state` internally, wrapped in `toStore()` / `writable()` for `$store.X` template auto-subscribe and `get(store)` imperative reads) into **fully idiomatic Svelte 5** — pure runes (`$state`, `$derived`, `$effect`), getter-based context exposure, no `svelte/store` import. Build a temporary `/runes-test` route that exercises both contexts end-to-end against the real Supabase backend without touching production code paths.
+
+## Requirements
+
+Established constraints from the user. Non-negotiable for the real migration.
+
+- **No `svelte/store` imports in migrated contexts** — no `writable`, `readable`, `derived`, `toStore`, `fromStore`, `get`.
+- **No `$store.X` template auto-subscribe** in consumers — template reads via `ctx.current.X` or local `$derived` alias.
+- **No `get(store)` imperative reads** in producers — write-side mutation idiom must avoid both the bridge AND the infinite-loop trap that currently requires `get()`.
+- **Spike is non-invasive** — parallel rune contexts shadowing the real ones; no production-code mutation. Temp `/runes-test` route only.
+- **appSettings merge semantics preserved** — effective settings = merge(staticSettings, dynamicSettings, page.data.appSettingsData), reactive on the third input.
+- **dataRoot sequential-population semantics preserved** — `provideElectionData → provideConstituencyData → provideQuestionData → provideEntityData → provideNominationData` each triggers downstream `$derived` re-evaluation despite stable DataRoot object identity.
+- **Persistence helper centralized** — both voter and candidate answer stores route through a single `runeLocalStorage` helper that mirrors `localStorageWritable`'s versioned-payload format, allowing direct retirement of the legacy helper once both callsites migrate.
+
+### From Spike 013-016 (nav/transitions):
+
+- **SvelteKit `+page.svelte` already reuses across param-only URL changes** — established by Spike 013 + 014a. The user-perceived "redraw" on Q→Q is NOT a mount-cycle problem; it is a reactive-render-cycle problem affecting ~64% of visible DOM content nodes inside the persistent component shell.
+- **Structural layout promotion is a code-clarity move, not a perf fix** — Spike 014a established that the mount stability the user wanted already exists. Hoisting chrome into `questions/+layout.svelte` is still worthwhile for code readability, but does NOT change Q→Q visual behavior.
+- **The transitions layer (Spike 015) is the load-bearing fix for the perceived redraw** — confirmed by 014a's findings.
+
+## Findings Summary (post-Spike 005)
+
+The OpenVAA frontend's reactive layer is **already ~80% idiomatic Svelte 5**.
+The remaining ~20% is concentrated in three surfaces, all addressed by these spikes:
+
+| Production file | Legacy surface | Spike | Migration shape |
+|-----------------|----------------|-------|-----------------|
+| `appContext.svelte.ts` | `toStore()` bridge for `$appSettings.X` auto-subscribe (17+ template sites) | 001 | Replace with `appSettings.current.X` reads everywhere |
+| `dataContext.svelte.ts` + `routes/+layout.svelte` | `writable(dataRoot)` bridge + `get(dataRootStore)` workaround for infinite-loop trap | 002 | Replace dual export with `{ current, instance }` split; eliminate `get()` |
+| `answerStore.svelte.ts` (voter) | `localStorageWritable` + `fromStore` three-layer bridge | 003 | Single `runeLocalStorage<Answers>(key, default)` |
+| `matchStore.svelte.ts` (voter) | (none — already rune-native) | 004 | ZERO migration work |
+| `candidateUserDataStore.svelte.ts` | 7-line legacy surface for edited-answer persistence | 005 | Single `runeLocalStorage` swap |
+| `persistedState.svelte.ts` (utility) | `Writable<T>` + `toStore()` + `subscribe`-based persistence | 003+005 | Replaced by `runePersistedState.svelte.ts`; old file becomes deletable |
+
+**Net effect of full migration:** every `import {*} from 'svelte/store'` site in
+`apps/frontend/src/lib/contexts/**` and `apps/frontend/src/routes/**` can be deleted.
+Template `$store.X` auto-subscribe sites become mechanical search-and-replace
+(every one is enumerable via grep). No paradigm alteration required — Svelte 5
+runes are a strict superset of what these stores were doing.
+
+## Outcome — context-as-class decision LOCKED (2026-06-12)
+
+Spikes 020-023 + the audit (`CONTEXT-MEMBER-AUDIT.md`) answered "turn each context into
+a class?" → **yes**. Proven on three real production contexts (`CONTEXT-CLASS-PROOF.md`):
+`dataContext` + `filterContext` (Group C version-bridge) and `darkMode` (Group B
+primitive) — all green on svelte-check (151/0, zero new), unit (85/85), and SSR build,
+with zero consumer churn. **DataRoot/Filters stay classes, not svelte/store** (stores
+considered and rejected — see the proof doc's "Decision — LOCKED": `.svelte.ts` consumers
+would need a `fromStore` re-bridge + a redundant second observable, and `set(sameRef)`
+reinvites the Phase-64 `safe_not_equal` over-fire footgun). Disciplines codified in
+CONVENTIONS §17-22. The full tier-by-tier migration is a future phase, not yet planned.
+
+## Spikes
+
+| # | Name | Type | Validates | Verdict | Tags |
+|---|------|------|-----------|---------|------|
+| 001 | appsettings-native-rune | standard | Rune-only `appSettings` context with reactive merge; template + `.ts` consumers without `$store` | VALIDATED | svelte5, runes, context, settings |
+| 002 | dataroot-native-rune | standard | Rune-only `dataRoot` context with version-counter reactivity for stable-identity mutation; reactive consumers + non-reactive producer without `get()` | VALIDATED | svelte5, runes, context, dataroot, untrack |
+| 003 | voter-answer-store-rune | standard | Rune-native voter answer store via shared `runeLocalStorage` helper — eliminates `$state→toStore→fromStore` three-layer bridge | VALIDATED | svelte5, runes, store, localStorage, voter, answers |
+| 004 | matchstore-integration | standard | Production `matchStore` (already rune-native) works zero-diff with rune-native `voterAnswerRuneStore` — full reactive re-ranking on answer change | VALIDATED | svelte5, runes, matching, voter, integration |
+| 005 | candidate-answer-store-rune | standard | Scoped rune rewrite of candidateUserDataStore edited-answer layer — drops `fromStore`/`localStorageWritable`, composite `$derived.by` merge preserved | VALIDATED | svelte5, runes, store, candidate, answers |
+| 006 | layout-overlay-rune | standard | Token-keyed overlay registry + `$effect`-scoped auto-cleanup replaces `StackedState` + `getLayoutContext(onDestroy)` index plumbing. Robust against out-of-order mount/unmount | VALIDATED | svelte5, runes, layout, stackedstate, untrack |
+| 007 | context-orchestration-end-to-end | standard | Rune-native voterContext (and/or candidateContext) factory exposing `selectedElections`/`opinionQuestions`/`matches`/`profileComplete` as getters; verifies the destructure trap is observable + the cascade `appContext.userData → dataContext.init → voterContext` propagates correctly | VALIDATED | svelte5, runes, context, voter, candidate, orchestration, destructure-trap |
+| 008 | ssr-hydration-runes | standard | appSettings + dataRoot rune contexts under SSR; verifies whether server-rendered HTML reflects DB-override merge (`$effect`-driven merge does NOT run during SSR — potential real-bug discovery) and whether hydration is clean | VALIDATED | svelte5, runes, ssr, hydration, appsettings |
+| 009 | store-codemod-feasibility | standard | ts-morph (or jscodeshift) codemod for mechanical `$appSettings.X` / `$dataRoot.X` / `$darkMode` template rewrites; verifies the consumer migration is 1-day mechanical vs 1-week manual | VALIDATED | svelte5, codemod, ts-morph, migration |
+| 010 | adjacent-store-bridges | standard | Inventory of remaining `svelte/store` imports across `lib/contexts/**`; spike one representative bridge (popupStore) to confirm Spike 001's value-replace pattern generalizes; produce 4-wave migration order | VALIDATED | svelte5, runes, popup, inventory, migration-order |
+| 011 | hmr-rune-contexts | standard | Vite HMR behavior on rune context edits + consumer edits; verifies $effects don't leak, state is cleanly preserved-or-reset, DX is non-degraded | VALIDATED | svelte5, runes, hmr, vite, dx |
+| 012 | getroute-rune | standard | Rune-native `getRoute` producer: `$derived.by` over per-field `$app/state.page` reads bypasses the documented `toStore` short-circuit trap on the page-proxy object reference; `afterNavigate` defensive layer proven redundant | VALIDATED | svelte5, runes, route, sveltekit, page-state, after-navigate |
+| 013 | nav-mount-forensics | standard | Given the production voter route tree, when navigating Q→Q / Q→Results / electionTab→electionTab / entityTab→entityTab, then a mount/destroy ledger proves which components re-instantiate vs persist — foundation for restructure decisions | VALIDATED | sveltekit, navigation, mount-forensics, layouts, observability |
+| 014a | nested-layout-promotion | comparison | Hoisting `MainContent` + hero + heading scaffold into `+layout.svelte` keeps shared chrome mounted across Q→Q; child `+page.svelte` renders only the question body. **Reframe:** SvelteKit already reuses `+page.svelte` across param changes; the user-perceived "redraw" is from reactive DOM regeneration of ~64% of content nodes (proven via production-page DOM tagging), not from component remount | VALIDATED | sveltekit, layouts, restructure, comparison |
+| 014b | single-page-url-keyed | comparison | Layout owns ALL rendering (mirrors production results pattern); `+page.svelte` is empty stub; `{#key questionId}` is runtime opt-in. **Head-to-head with 014a:** both achieve mount stability identically — choice is organizational. Recommendation: 014b shape + `{#key question.type}` for mixed variants | VALIDATED | sveltekit, url-as-state, key-block, comparison |
+| 015 | view-transitions-api | standard | `onNavigate(document.startViewTransition)` integration delivers cross-fade/slide transitions WITHOUT structural change. **3 navigations → 3 transitions, ~310ms each.** Honors `prefers-reduced-motion` and a destination-URL opt-out flag. Production-ready; ~1 day to wire. | VALIDATED | sveltekit, view-transitions, transitions, onnavigate |
+| 016 | focus-and-a11y-during-transitions | standard | Winner of 014b + 015 stack preserves keyboard focus, screen-reader title announcements, `aria-live` regions, `prefers-reduced-motion` honoring — WCAG 2.1 AA gate. **23ms click→focus latency; focus lands DURING animation (not after) for smooth perception.** Production wiring ~2 days, ship-able in two 1-day waves. | VALIDATED | a11y, transitions, focus-management, reduced-motion, wcag, aria-live |
+| 017 | readwrite-split-dataroot | standard | GIVEN a dataRoot context exposing bare `get dataRoot()` (reactive) + `setDataRoot(updater)` (mutation via internal `untrack`), WHEN a producer effect runs `provide*` through the setter, THEN the `{ current, instance }` split (E3) collapses to a read/write split — `.instance` is **eliminable, not renamed**, the producer's hand-written `untrack` disappears, and reactivity is preserved. Relates to Phase 103. | VALIDATED | svelte5, runes, context, dataroot, untrack, readwrite-split |
+| 018 | readwrite-split-producer-inputs | standard | GIVEN survey/trackingService producers receiving inputs as bare getters instead of `ReactiveHandle<T>.current`, WHEN settings change, THEN producer `$derived` recomputes. **PARTIAL:** the producer inputs are reassigned bindings / derived primitives, so they need a DEFERRED read (companion 018b proves reactivity = re-executing a read in a tracking scope; only mutate-in-place proxies survive bare) — the read can't be removed. But `() => T` is reactively identical to `.current` and carries no `.current` token, dissolving Phase-103 finding #2 by spelling, not removal. Finding #2 doesn't need the full redesign — a read-pass exclude (option-1 fix) is smaller and lands now. | PARTIAL | svelte5, runes, producer, survey, tracking, codemod, phase-103 |
+| 019 | readwrite-split-destructure-trap | standard | GIVEN the bare-getter read/write-split shape, WHEN a consumer writes `const { foo } = ctx`, THEN the destructure trap STILL fires. **INVALIDATED** (for the trap claim): the trap is orthogonal to the write concern, and the bare `get foo()` read side is the trap-PRONE shape — `{ current }` was incidentally a firewall (destructuring the stable handle keeps `foo.current` reactive). Confirms Phase-103 MUST keep PASS 3 (destructure→$derived rewrite) + PASS 4 (audit); the split can't shortcut them. | INVALIDATED | svelte5, runes, destructure-trap, context, phase-103 |
+| 020 | class-context-core | standard | GIVEN a context re-expressed as a Svelte 5 class with `$state`/`$derived` fields, THEN audit Groups A (wholesale-reassigned objects), B (primitives), D ($derived), G (delegation) collapse to plain fields/getters with **NO `{ current }` handle** (a reassigned FIELD stays reactive via `instance.x`, unlike a reassigned `let`). Methods (E) require **arrow-function fields** to survive detach (`const { m } = ctx`), and the destructure trap (019) survives unchanged. **VALIDATED** — classes simplify A/B/D/E/G; add one new discipline (arrow methods), keep one (no destructuring). | VALIDATED | svelte5, runes, class, context, destructure-trap, this-binding, class-conversion |
+| 021 | class-localstorage | standard | GIVEN `localStorageState` rebuilt as a class with a `$state` field + imperative (non-`$effect`) persistence, THEN `current` is reactive, storage round-trips, the class constructs OUTSIDE any effect context (factory/SSR-safe), and arrow `set`/`update` survive detach. **VALIDATED** — Group C's localStorage sub-pattern is a drop-in class conversion; keep persistence imperative, never `$effect`. | VALIDATED | svelte5, runes, class, localstorage, persistence, ssr, class-conversion |
+| 022 | class-version-bridge | standard | GIVEN the dataRoot/FilterGroup version-bridge re-expressed as a class (private `#version` `$state`, bare `get dataRoot()`, arrow `setDataRoot`), THEN Spike 017's read/write split holds in the class shape and this group does NOT simplify away (bridge intrinsic to wrapping a non-rune object). **NEW HAZARD:** the class private-`#version` loop self-perpetuates WITHOUT tripping Svelte's synchronous `effect_update_depth_exceeded` guard (017 threw; the class silently spins) — making the `setDataRoot`/`untrack` encapsulation MORE load-bearing (silent failure, not loud). **VALIDATED.** | VALIDATED | svelte5, runes, class, dataroot, filtergroup, untrack, version-bridge, class-conversion |
+| 023 | class-ssr-effect | standard | GIVEN a context-as-class whose merged/derived initial value is sourced from `$effect` vs a synchronous field initializer vs a `$derived` field, THEN only the latter two are SSR-correct (`$effect` never runs server-side — CONVENTIONS §7). **SHARPER FINDING:** a class calling `$effect` in its constructor throws `effect_orphan` when constructed outside an effect context (module/factory scope) — making merge-in-`$effect` not just wrong but sometimes impossible to construct. **VALIDATED** — the synchronous-init rule relocates into field initializers / `$derived` fields, enforced by the `effect_orphan` throw. | VALIDATED | svelte5, runes, class, ssr, effect, hydration, class-conversion |
+| 024 | derived-alias-stable-ref-skip | standard | GIVEN the four reactive-accessor shapes of the voter/candidate context, WHEN data is provided AFTER mount (cold direct-URL entry), THEN ONLY the `const X = $derived(ctx.X)` intermediate-alias consumer over the identity-stable `#version`-backed `dataRoot` goes STALE (alias yields the same object ref → Svelte's referential-equality DOWNSTREAM-SKIP); the direct-read consumer of `dataRoot` and ALL of appSettings (ref-replaced) / locale (scalar) / selectedElections (array-replaced) update normally. **VALIDATED** (4/4 deterministic vitest tests) — confirms debug `dataroot-stale-direct-nav` root cause + scope map: defect is general-but-bounded to identity-stable mutated-in-place accessors; distinct from the Spike-019 destructure trap; codemod targets ONLY `$derived(ctx.dataRoot)`-shape sites, not all `$derived(ctx.X)`. | VALIDATED | svelte5, runes, derived, referential-equality, dataroot, version-bridge, scope-classification, phase-113 |

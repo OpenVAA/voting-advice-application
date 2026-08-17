@@ -1,0 +1,17 @@
+=== Post-Regen Parity (run-1 vs run-2) ===
+Baseline: 4p / 29f / 69c
+Post:     4p / 29f / 69c
+Contract: 4 pass-locked, 15 data-race pool, 55 cascade-baseline.
+PARITY GATE: PASS — no regressions detected per D-59-04.
+
+=== Post-Regen Parity (run-2 vs run-3) ===
+Baseline: 4p / 29f / 69c
+Post:     4p / 29f / 69c
+Contract: 4 pass-locked, 15 data-race pool, 55 cascade-baseline.
+PARITY GATE: PASS — no regressions detected per D-59-04.
+
+=== Self-Identity (run-3 vs run-3) ===
+Baseline: 4p / 29f / 69c
+Post:     4p / 29f / 69c
+Contract: 4 pass-locked, 15 data-race pool, 55 cascade-baseline.
+PARITY GATE: PASS — no regressions detected per D-59-04.

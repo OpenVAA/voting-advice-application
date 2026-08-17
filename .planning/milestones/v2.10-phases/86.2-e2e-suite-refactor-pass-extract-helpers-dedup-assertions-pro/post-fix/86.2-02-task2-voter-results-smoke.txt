@@ -1,0 +1,44 @@
+[dotenv@17.3.1] injecting env (25) from .env -- tip: ⚙️  override existing env vars with { override: true }
+
+Running 21 tests using 6 workers
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+
+[1A[2K[1/21] [data-setup] › tests/tests/setup/data.setup.ts:76:1 › import test dataset
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2
+
+[1A[2K[2/21] [voter-app] › tests/tests/specs/voter/voter-results.spec.ts:118:3 › voter results › should display entity type tabs for switching between candidates and organizations @voter
+[1A[2K[3/21] [voter-app] › tests/tests/specs/voter/voter-results.spec.ts:100:3 › voter results › should display candidates section with result cards @voter
+[1A[2K[4/21] [voter-app] › tests/tests/specs/voter/voter-results.spec.ts:131:3 › voter results › should switch to organizations/parties section and back @voter
+[1A[2K[5/21] [voter-app] › tests/tests/specs/voter/voter-results.spec.ts:158:3 › voter results › canonical URL: /results redirects to /results/candidates (RESEARCH A3) @voter
+[1A[2K[6/21] [voter-app] › tests/tests/specs/voter/voter-results.spec.ts:173:3 › voter results › filter toggle narrows list without effect_update_depth_exceeded (RESULTS-01 + RESULTS-02) @voter
+[1A[2K[7/21] [voter-app] › tests/tests/specs/voter/voter-results.spec.ts:273:3 › voter results › filter state resets on plural tab switch (D-14) @voter
+[1A[2K[8/21] [voter-app] › tests/tests/specs/voter/voter-results.spec.ts:331:3 › voter results › filter state survives drawer open/close (D-15) @voter
+[1A[2K[9/21] [voter-app] › tests/tests/specs/voter/voter-results.spec.ts:400:3 › voter results › deeplink list+drawer URL renders both (RESULTS-03, D-08 shape 3) @voter
+[1A[2K[10/21] [voter-app] › tests/tests/specs/voter/voter-results.spec.ts:419:3 › voter results › deeplink edge case: organizations list + candidate drawer (D-08 shape 4) @voter
+[1A[2K[11/21] [voter-app] › tests/tests/specs/voter/voter-results.spec.ts:439:3 › voter results › Browser Back steps through tab+drawer changes (D-13) @voter
+[1A[2K[12/21] [voter-app] › tests/tests/specs/voter/voter-results.spec.ts:454:3 › voter results › invalid plural matcher returns 404 (D-11) @voter
+[1A[2K[13/21] [voter-app] › tests/tests/specs/voter/voter-results.spec.ts:461:3 › voter results › coupling-rule redirect: singular without id → list view (D-11) @voter
+[1A[2K[14/21] [voter-app] › tests/tests/specs/voter/voter-results.spec.ts:470:3 › voter results › drawer paints before list on cold deeplink (D-10 source-order + content-visibility) @voter
+[1A[2K[15/21] [voter-app] › tests/tests/specs/voter/voter-results.spec.ts:613:5 › voter results › SETTINGS-01 wave B — filter-type matrix › SETTINGS-01 wave B — NumberFilter @voter
+[1A[2K[16/21] [voter-app] › tests/tests/specs/voter/voter-results.spec.ts:672:5 › voter results › SETTINGS-01 wave B — filter-type matrix › SETTINGS-01 wave B — TextFilter @voter
+[1A[2K[17/21] [voter-app] › tests/tests/specs/voter/voter-results.spec.ts:731:5 › voter results › SETTINGS-01 wave B — filter-type matrix › SETTINGS-01 wave B — ChoiceQuestionFilter (categorical) @voter
+[1A[2K[18/21] [voter-app] › tests/tests/specs/voter/voter-results.spec.ts:797:5 › voter results › SETTINGS-01 wave B — filter-type matrix › SETTINGS-01 wave B — FilterGroup AND @voter
+[1A[2K[19/21] [voter-app] › tests/tests/specs/voter/voter-results.spec.ts:889:5 › voter results › SETTINGS-01 wave B — filter-type matrix › SETTINGS-01 wave B — MISSING_FILTER_VALUE @voter
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+
+[1A[2K[20/21] [data-teardown] › tests/tests/setup/data.teardown.ts:17:1 › delete test dataset
+[1A[2K[21/21] [data-teardown] › tests/tests/setup/variant-data.teardown.ts:12:1 › delete variant test dataset
+[1A[2K  21 passed (40.5s)

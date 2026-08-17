@@ -1,0 +1,16 @@
+[dotenv@17.3.1] injecting env (25) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+
+Running 4 tests using 1 worker
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+
+[1A[2K[1/4] [data-setup] › tests/tests/setup/data.setup.ts:30:1 › import test dataset
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🤖 agentic secret storage: https://dotenvx.com/as2
+
+[1A[2K[2/4] [voter-app] › tests/tests/specs/voter/voter-results.spec.ts:230:3 › voter results › filter state survives drawer open/close (D-15) @voter
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+
+[1A[2K[3/4] [data-teardown] › tests/tests/setup/data.teardown.ts:17:1 › delete test dataset
+[1A[2K[4/4] [data-teardown] › tests/tests/setup/variant-data.teardown.ts:12:1 › delete variant test dataset
+[1A[2K  1 skipped
+  3 passed (22.0s)

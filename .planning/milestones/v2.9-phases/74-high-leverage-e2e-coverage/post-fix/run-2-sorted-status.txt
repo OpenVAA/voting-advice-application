@@ -1,0 +1,123 @@
+auth-setup :: setup/auth.setup.ts > authenticate as candidate|failed
+auth-setup :: setup/re-auth.setup.ts > re-authenticate as candidate|timedOut
+candidate-app :: specs/candidate/candidate-auth.spec.ts > should login with valid credentials|skipped
+candidate-app :: specs/candidate/candidate-auth.spec.ts > should show error on invalid credentials|skipped
+candidate-app :: specs/candidate/candidate-questions.spec.ts > should answer a Likert opinion question and save (CAND-04)|skipped
+candidate-app :: specs/candidate/candidate-questions.spec.ts > should display entered profile and opinion data on preview page (CAND-06)|skipped
+candidate-app :: specs/candidate/candidate-questions.spec.ts > should display question cards organized by category (CAND-05)|skipped
+candidate-app :: specs/candidate/candidate-questions.spec.ts > should edit a previously answered question (CAND-05)|skipped
+candidate-app :: specs/candidate/candidate-questions.spec.ts > should navigate between categories (CAND-05)|skipped
+candidate-app :: specs/candidate/candidate-questions.spec.ts > should persist comment text on a question after page reload (CAND-12)|skipped
+candidate-app :: specs/candidate/candidate-questions.spec.ts > should persist question answers after page reload (CAND-12)|skipped
+candidate-app :: specs/candidate/candidate-questions.spec.ts > should show specific candidate data (name or answered question) in preview (CAND-06)|skipped
+candidate-app :: specs/candidate/candidate-translation.spec.ts > multilocale candidate authors a translation and the value persists across reload|skipped
+candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should persist profile image after page reload (CAND-12)|skipped
+candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should register the fresh candidate via email link|skipped
+candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should show editable info fields on profile page (CAND-03)|skipped
+candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should upload a profile image (CAND-03)|skipped
+candidate-app-mutation :: specs/candidate/candidate-registration.spec.ts > should complete forgot-password and reset flow via Inbucket email|skipped
+candidate-app-mutation :: specs/candidate/candidate-registration.spec.ts > should complete registration via email link|skipped
+candidate-app-mutation :: specs/candidate/candidate-registration.spec.ts > should send registration email and extract link|skipped
+candidate-app-password :: specs/candidate/candidate-password.spec.ts > should change password and login with new password|skipped
+candidate-app-password :: specs/candidate/candidate-password.spec.ts > should logout and return to login page|skipped
+candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should display notification popup when enabled|skipped
+candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should hide hero when hideHero is enabled|skipped
+candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should render help page correctly|skipped
+candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should render privacy page correctly|skipped
+candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should show hero when hideHero is disabled|skipped
+candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should show maintenance page when candidateApp is disabled|skipped
+candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should show maintenance page when underMaintenance is true|skipped
+candidate-app-settings :: specs/candidate/candidate-settings.spec.ts > should show read-only warning when answers are locked|skipped
+data-setup :: setup/data.setup.ts > import test dataset|passed
+data-setup-1e-Nc :: setup/variant-1e-Nc.setup.ts > import 1e-Nc dataset|skipped
+data-setup-Ne-Nc :: setup/variant-Ne-Nc.setup.ts > import Ne-Nc dataset|skipped
+data-setup-constituency :: setup/variant-constituency.setup.ts > import constituency dataset|skipped
+data-setup-low-minimum-answers :: setup/variant-low-minimum-answers.setup.ts > import low-minimum-answers dataset|skipped
+data-setup-multi-election :: setup/variant-multi-election.setup.ts > import multi-election dataset|skipped
+data-setup-startfromcg :: setup/variant-startfromcg.setup.ts > import startfromcg dataset|skipped
+data-teardown :: setup/data.teardown.ts > delete test dataset|passed
+data-teardown :: setup/variant-data.teardown.ts > delete variant test dataset|passed
+data-teardown-variants :: setup/variant-data.teardown.ts > delete variant test dataset|passed
+re-auth-setup :: setup/re-auth.setup.ts > re-authenticate as candidate|skipped
+variant-1e-Nc :: specs/variants/1e-Nc.spec.ts > 1e × Nc — election selection bypassed; constituency selector shown with 3 options|skipped
+variant-Ne-Nc :: specs/variants/Ne-Nc.spec.ts > Ne × Nc — both selectors shown; constituency dropdown filters by selected election (no cross-bleed)|skipped
+variant-constituency :: specs/variants/constituency.spec.ts > should allow constituency selection and proceed to questions|skipped
+variant-constituency :: specs/variants/constituency.spec.ts > should answer questions and reach results|skipped
+variant-constituency :: specs/variants/constituency.spec.ts > should display constituency-filtered results|skipped
+variant-constituency :: specs/variants/constituency.spec.ts > should show constituency selection page after election selection|skipped
+variant-constituency :: specs/variants/constituency.spec.ts > should show election accordion in multi-election results|skipped
+variant-constituency :: specs/variants/constituency.spec.ts > should show missing nominations warning for partial-coverage constituency|skipped
+variant-low-minimum-answers :: specs/voter/voter-browse-without-match.spec.ts > voter completes location, skips opinions, browses entity list without match scores|skipped
+variant-multi-election :: specs/variants/multi-election.spec.ts > Ne × 1c — election selector shown; constituency auto-implied (single)|skipped
+variant-multi-election :: specs/variants/multi-election.spec.ts > should bypass election selection when disallowSelection is true|skipped
+variant-multi-election :: specs/variants/multi-election.spec.ts > should display election-specific questions|skipped
+variant-multi-election :: specs/variants/multi-election.spec.ts > should display questions and reach results|skipped
+variant-multi-election :: specs/variants/multi-election.spec.ts > should show election accordion and results after selecting election|skipped
+variant-multi-election :: specs/variants/multi-election.spec.ts > should show election selection page with 2 elections|skipped
+variant-results-sections :: specs/variants/results-sections.spec.ts > should show both sections with tabs when sections is ["candidate", "organization"]|skipped
+variant-results-sections :: specs/variants/results-sections.spec.ts > should show only candidates when sections is ["candidate"]|skipped
+variant-results-sections :: specs/variants/results-sections.spec.ts > should show only organizations when sections is ["organization"]|skipped
+variant-startfromcg :: specs/variants/startfromcg.spec.ts > should complete journey through questions to results|skipped
+variant-startfromcg :: specs/variants/startfromcg.spec.ts > should handle orphan municipality without error|skipped
+variant-startfromcg :: specs/variants/startfromcg.spec.ts > should show constituency selection first (reversed flow)|skipped
+variant-startfromcg :: specs/variants/startfromcg.spec.ts > should show election selection after constituency selection|skipped
+variant-startfromcg :: specs/variants/startfromcg.spec.ts > startFromConstituency — constituency selector shown first; elections list hidden; constituency URL segment present|skipped
+voter-app :: specs/voter/voter-browse-without-match.spec.ts > voter completes location, skips opinions, browses entity list without match scores|timedOut
+voter-app :: specs/voter/voter-detail.spec.ts > case (a) — both answered: voter row and entity row rendered|timedOut
+voter-app :: specs/voter/voter-detail.spec.ts > case (b) — voter answered, entity missing: voter row only|timedOut
+voter-app :: specs/voter/voter-detail.spec.ts > case (c) — voter missing, entity answered: entity row only|timedOut
+voter-app :: specs/voter/voter-detail.spec.ts > case (d) — both missing: "Neither has answered" message rendered|timedOut
+voter-app :: specs/voter/voter-detail.spec.ts > directional-metric SubMatch row exists for a candidate who answered the categorical question|timedOut
+voter-app :: specs/voter/voter-detail.spec.ts > per-category SubMatch grid renders Manhattan + directional metric path categories|timedOut
+voter-app :: specs/voter/voter-detail.spec.ts > should display candidate answers correctly in info and opinions tabs|timedOut
+voter-app :: specs/voter/voter-detail.spec.ts > should display candidate info and opinions tabs|timedOut
+voter-app :: specs/voter/voter-detail.spec.ts > should open candidate detail drawer when clicking a result card|timedOut
+voter-app :: specs/voter/voter-detail.spec.ts > should open party detail drawer with info, candidates, and opinions tabs|timedOut
+voter-app :: specs/voter/voter-feedback-persistence.spec.ts > feedback text persists across dismiss and resets after send|timedOut
+voter-app :: specs/voter/voter-journey.spec.ts > should answer all Likert questions with navigation|skipped
+voter-app :: specs/voter/voter-journey.spec.ts > should auto-imply election and constituency|skipped
+voter-app :: specs/voter/voter-journey.spec.ts > should load home page and display start button|failed
+voter-app :: specs/voter/voter-journey.spec.ts > should show questions intro page with start button|skipped
+voter-app :: specs/voter/voter-locale-switching.spec.ts > locale switches via LanguageSelection widget (when present)|failed
+voter-app :: specs/voter/voter-locale-switching.spec.ts > locale switches via route prefix|failed
+voter-app :: specs/voter/voter-matching.spec.ts > should NOT show hidden candidate (no termsOfUseAccepted)|skipped
+voter-app :: specs/voter/voter-matching.spec.ts > should confirm category intros were not shown during journey (VOTE-05 partial negative coverage)|skipped
+voter-app :: specs/voter/voter-matching.spec.ts > should confirm results accessible after all questions answered (VOTE-07 partial above-threshold coverage)|skipped
+voter-app :: specs/voter/voter-matching.spec.ts > should display candidates in correct match ranking order|timedOut
+voter-app :: specs/voter/voter-matching.spec.ts > should show partial-answer candidate in results with valid score|skipped
+voter-app :: specs/voter/voter-matching.spec.ts > should show perfect match candidate as top result|skipped
+voter-app :: specs/voter/voter-matching.spec.ts > should show worst match candidate as last result|skipped
+voter-app :: specs/voter/voter-navigation.spec.ts > browser-back preserves answer state across navigation|skipped
+voter-app :: specs/voter/voter-navigation.spec.ts > results-CTA toggles per minimumAnswers threshold|timedOut
+voter-app :: specs/voter/voter-popup-hydration.spec.ts > popup appears on full page load to /results (LAYOUT-03 hydration path)|failed
+voter-app :: specs/voter/voter-questions.spec.ts > counter updates reactively on category toggle|timedOut
+voter-app :: specs/voter/voter-questions.spec.ts > fresh session defaults to all opinion categories checked + counter non-zero on first paint|timedOut
+voter-app :: specs/voter/voter-results.spec.ts > Browser Back steps through tab+drawer changes (D-13)|timedOut
+voter-app :: specs/voter/voter-results.spec.ts > canonical URL: /results redirects to /results/candidates (RESEARCH A3)|timedOut
+voter-app :: specs/voter/voter-results.spec.ts > coupling-rule redirect: singular without id → list view (D-11)|timedOut
+voter-app :: specs/voter/voter-results.spec.ts > deeplink edge case: organizations list + candidate drawer (D-08 shape 4)|timedOut
+voter-app :: specs/voter/voter-results.spec.ts > deeplink list+drawer URL renders both (RESULTS-03, D-08 shape 3)|timedOut
+voter-app :: specs/voter/voter-results.spec.ts > drawer paints before list on cold deeplink (D-10 source-order + content-visibility)|timedOut
+voter-app :: specs/voter/voter-results.spec.ts > filter state resets on plural tab switch (D-14)|timedOut
+voter-app :: specs/voter/voter-results.spec.ts > filter state survives drawer open/close (D-15)|timedOut
+voter-app :: specs/voter/voter-results.spec.ts > filter toggle narrows list without effect_update_depth_exceeded (RESULTS-01 + RESULTS-02)|timedOut
+voter-app :: specs/voter/voter-results.spec.ts > invalid plural matcher returns 404 (D-11)|timedOut
+voter-app :: specs/voter/voter-results.spec.ts > should display candidates section with result cards|timedOut
+voter-app :: specs/voter/voter-results.spec.ts > should display entity type tabs for switching between candidates and organizations|timedOut
+voter-app :: specs/voter/voter-results.spec.ts > should switch to organizations/parties section and back|timedOut
+voter-app :: specs/voter/voter-static-pages.spec.ts > about page renders correctly|failed
+voter-app :: specs/voter/voter-static-pages.spec.ts > info page renders correctly|failed
+voter-app :: specs/voter/voter-static-pages.spec.ts > privacy page renders correctly|failed
+voter-app :: specs/voter/voter-static-pages.spec.ts > should redirect to home when showAllNominations is false|skipped
+voter-app :: specs/voter/voter-static-pages.spec.ts > should render nominations page with entries|failed
+voter-app-popups :: specs/voter/voter-popups.spec.ts > should not show any popup when disabled|skipped
+voter-app-popups :: specs/voter/voter-popups.spec.ts > should remember dismissal after page reload|skipped
+voter-app-popups :: specs/voter/voter-popups.spec.ts > should show feedback popup after delay on results page|skipped
+voter-app-popups :: specs/voter/voter-popups.spec.ts > should show survey popup after delay on results page|skipped
+voter-app-settings :: specs/voter/voter-settings.spec.ts > should enforce minimum answers before results available|skipped
+voter-app-settings :: specs/voter/voter-settings.spec.ts > should filter questions to selected categories|skipped
+voter-app-settings :: specs/voter/voter-settings.spec.ts > should hide results link when showResultsLink is false|skipped
+voter-app-settings :: specs/voter/voter-settings.spec.ts > should show category checkboxes when allowCategorySelection enabled|timedOut
+voter-app-settings :: specs/voter/voter-settings.spec.ts > should show category intro page before each category|skipped
+voter-app-settings :: specs/voter/voter-settings.spec.ts > should show question intro page when questionsIntro.show enabled|skipped
+voter-app-settings :: specs/voter/voter-settings.spec.ts > should skip category when skip button clicked|skipped

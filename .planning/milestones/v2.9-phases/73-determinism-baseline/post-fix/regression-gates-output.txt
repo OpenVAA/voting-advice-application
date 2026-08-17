@@ -1,0 +1,128 @@
+=== yarn build ===
+@openvaa/frontend:build: .svelte-kit/output/server/chunks/InputGroup.svelte_svelte_type_style_lang.js                                                                                                  23.32 kB
+@openvaa/frontend:build: .svelte-kit/output/server/chunks/shared2.js                                                                                                                                   27.07 kB
+@openvaa/frontend:build: .svelte-kit/output/server/chunks/Layout.js                                                                                                                                    30.20 kB
+@openvaa/frontend:build: .svelte-kit/output/server/chunks/appContext.svelte.js                                                                                                                         33.66 kB
+@openvaa/frontend:build: .svelte-kit/output/server/chunks/EntityListControls.js                                                                                                                        42.83 kB
+@openvaa/frontend:build: .svelte-kit/output/server/entries/pages/(voters)/(located)/results/_layout.svelte.js                                                                                          45.19 kB
+@openvaa/frontend:build: .svelte-kit/output/server/chunks/root.js                                                                                                                                     123.51 kB
+@openvaa/frontend:build: .svelte-kit/output/server/index.js                                                                                                                                           124.35 kB
+@openvaa/frontend:build: .svelte-kit/output/server/chunks/init.js                                                                                                                                   1,760.37 kB
+@openvaa/frontend:build: ✓ built in 8.84s
+@openvaa/frontend:build: 
+@openvaa/frontend:build: Run npm run preview to preview your production build locally.
+@openvaa/frontend:build: 
+@openvaa/frontend:build: > Using @sveltejs/adapter-node
+@openvaa/frontend:build:   ✔ done
+
+ Tasks:    14 successful, 14 total
+Cached:    14 cached, 14 total
+  Time:    129ms >>> FULL TURBO
+
+yarn build exit: 0
+
+=== yarn test:unit ===
+@openvaa/frontend:test:unit:  ❯ loadAndTransform ../../node_modules/vitest/node_modules/vite/dist/node/chunks/config.js:22670:26
+@openvaa/frontend:test:unit: 
+@openvaa/frontend:test:unit: Caused by: Error: Cannot find module './.svelte-kit/tsconfig.json'
+@openvaa/frontend:test:unit: Require stack:
+@openvaa/frontend:test:unit: - /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/frontend/tsconfig.json
+@openvaa/frontend:test:unit:  ❯ resolveExtends ../../node_modules/vitest/node_modules/vite/dist/node/chunks/config.js:5800:16
+@openvaa/frontend:test:unit:  ❯ ../../node_modules/vitest/node_modules/vite/dist/node/chunks/config.js:5776:76
+@openvaa/frontend:test:unit:  ❯ parseExtends ../../node_modules/vitest/node_modules/vite/dist/node/chunks/config.js:5776:64
+@openvaa/frontend:test:unit:  ❯ parse$13 ../../node_modules/vitest/node_modules/vite/dist/node/chunks/config.js:5677:23
+@openvaa/frontend:test:unit:  ❯ loadTsconfigJsonForFile ../../node_modules/vitest/node_modules/vite/dist/node/chunks/config.js:6286:37
+@openvaa/frontend:test:unit:  ❯ transformWithEsbuild ../../node_modules/vitest/node_modules/vite/dist/node/chunks/config.js:6086:55
+@openvaa/frontend:test:unit:  ❯ TransformPluginContext.transform ../../node_modules/vitest/node_modules/vite/dist/node/chunks/config.js:6172:20
+@openvaa/frontend:test:unit: 
+@openvaa/frontend:test:unit: ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/38]⎯
+@openvaa/frontend:test:unit: 
+@openvaa/frontend:test:unit: 
+@openvaa/frontend:test:unit:  Test Files  38 failed (38)
+@openvaa/frontend:test:unit:       Tests  no tests
+@openvaa/frontend:test:unit:    Start at  03:07:56
+@openvaa/frontend:test:unit:    Duration  3.54s (transform 18ms, setup 0ms, collect 0ms, tests 0ms, environment 25.55s, prepare 5.08s)
+@openvaa/frontend:test:unit: 
+@openvaa/frontend:test:unit: ERROR: command finished with error: command (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/frontend) /private/var/folders/3p/10hbv0415234v3x5ctp50l4m0000gn/T/xfs-0f384cc2/yarn run test:unit exited (1)
+@openvaa/frontend#test:unit: command (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/frontend) /private/var/folders/3p/10hbv0415234v3x5ctp50l4m0000gn/T/xfs-0f384cc2/yarn run test:unit exited (1)
+
+ Tasks:    17 successful, 19 total
+Cached:    14 cached, 19 total
+  Time:    5.745s 
+Failed:    @openvaa/frontend#test:unit
+
+ ERROR  run failed: command  exited (1)
+yarn test:unit exit: 0
+
+=== yarn test:unit (retry after svelte-kit sync) ===
+@openvaa/frontend:test:unit: Token exchange failed: HttpError { status: [33m401[39m, body: { message: [32m'Unauthorized'[39m } }
+@openvaa/frontend:test:unit: 
+@openvaa/frontend:test:unit:  ✓ src/lib/api/utils/auth/__tests__/token-endpoint.test.ts (10 tests) 203ms
+@openvaa/frontend:test:unit:  ✓ src/lib/api/adapters/supabase/dataWriter/supabaseDataWriter.test.ts (34 tests) 12ms
+@openvaa/frontend:test:unit:  ✓ src/lib/api/utils/auth/providers/idura.test.ts (13 tests) 134ms
+@openvaa/frontend:test:unit:  ✓ src/lib/api/utils/auth/getIdTokenClaims.test.ts (5 tests) 320ms
+@openvaa/frontend:test:unit:  ✓ src/lib/contexts/utils/StackedState.svelte.test.ts (8 tests) 6ms
+@openvaa/frontend:test:unit:  ✓ src/lib/api/utils/auth/providers/signicat.test.ts (12 tests) 3ms
+@openvaa/frontend:test:unit:  ✓ src/lib/contexts/filter/filterContext.svelte.test.ts (8 tests) 12ms
+@openvaa/frontend:test:unit:  ✓ src/lib/contexts/utils/persistedState.svelte.test.ts (8 tests) 270ms
+@openvaa/frontend:test:unit:  ✓ src/lib/api/utils/auth/providers/__fixtures__/fixtures.test.ts (6 tests) 712ms
+@openvaa/frontend:test:unit: 
+@openvaa/frontend:test:unit:  Test Files  38 passed (38)
+@openvaa/frontend:test:unit:       Tests  660 passed (660)
+@openvaa/frontend:test:unit:    Start at  03:08:14
+@openvaa/frontend:test:unit:    Duration  3.95s (transform 2.32s, setup 0ms, collect 6.31s, tests 2.01s, environment 21.16s, prepare 4.37s)
+@openvaa/frontend:test:unit: 
+@openvaa/dev-seed:test:unit:  ✓ tests/integration/default-template.integration.test.ts (1 test) 9705ms
+@openvaa/dev-seed:test:unit:    ✓ default template integration (DX-03) > applies default template and meets NF-01 (<10s) + D-58-20 assertions  6110ms
+@openvaa/dev-seed:test:unit: 
+@openvaa/dev-seed:test:unit:  Test Files  41 passed (41)
+@openvaa/dev-seed:test:unit:       Tests  484 passed (484)
+@openvaa/dev-seed:test:unit:    Start at  03:08:12
+@openvaa/dev-seed:test:unit:    Duration  10.94s (transform 1.06s, setup 0ms, collect 13.29s, tests 11.67s, environment 4ms, prepare 5.30s)
+@openvaa/dev-seed:test:unit: 
+
+ Tasks:    19 successful, 19 total
+Cached:    14 cached, 19 total
+  Time:    12.089s 
+
+yarn test:unit exit: 0
+
+=== yarn lint:check ===
+@openvaa/dev-seed:lint: ✖ 15 problems (0 errors, 15 warnings)
+@openvaa/dev-seed:lint: 
+@openvaa/question-info:lint: cache hit, replaying logs d97936137b20ee12
+@openvaa/argument-condensation:lint: cache hit, replaying logs adee5cc892fc0c61
+@openvaa/frontend:lint: cache hit, replaying logs 66a39b2d7e992379
+
+ Tasks:    11 successful, 11 total
+Cached:    11 cached, 11 total
+  Time:    69ms >>> FULL TURBO
+
+yarn lint:check exit: 0
+
+=== yarn workspace @openvaa/frontend check (svelte-check) ===
+1778458126637 ERROR "src/routes/api/admin/jobs/past/+server.ts" 20:35 "Object literal may only specify known properties, and 'cookies' does not exist in type '{ fetch: { (input: URL | RequestInfo, init?: RequestInit | undefined): Promise<Response>; (input: string | URL | Request, init?: RequestInit | undefined): Promise<...>; }; parent?: (() => Promise<...>) | undefined; }'."
+1778458126637 ERROR "src/routes/api/admin/jobs/single/[jobId]/abort/+server.ts" 12:35 "Object literal may only specify known properties, and 'cookies' does not exist in type '{ fetch: { (input: URL | RequestInfo, init?: RequestInit | undefined): Promise<Response>; (input: string | URL | Request, init?: RequestInit | undefined): Promise<...>; }; parent?: (() => Promise<...>) | undefined; }'."
+1778458126637 ERROR "src/routes/api/admin/jobs/single/[jobId]/progress/+server.ts" 14:35 "Object literal may only specify known properties, and 'cookies' does not exist in type '{ fetch: { (input: URL | RequestInfo, init?: RequestInit | undefined): Promise<Response>; (input: string | URL | Request, init?: RequestInit | undefined): Promise<...>; }; parent?: (() => Promise<...>) | undefined; }'."
+1778458126637 ERROR "src/routes/api/admin/jobs/start/+server.ts" 20:35 "Object literal may only specify known properties, and 'cookies' does not exist in type '{ fetch: { (input: URL | RequestInfo, init?: RequestInit | undefined): Promise<Response>; (input: string | URL | Request, init?: RequestInit | undefined): Promise<...>; }; parent?: (() => Promise<...>) | undefined; }'."
+1778458126637 ERROR "src/routes/api/data/[collection]/+server.ts" 5:16 "Could not find a declaration file for module 'qs'. '/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/node_modules/qs/lib/index.js' implicitly has an 'any' type.\n  Try `npm i --save-dev @types/qs` if it exists or add a new declaration (.d.ts) file containing `declare module 'qs';`"
+1778458126637 ERROR "src/routes/(voters)/nominations/+page.svelte" 45:7 "Type 'Readable<string>' is not assignable to type 'string'."
+1778458126637 ERROR "src/routes/candidate/(protected)/settings/+page.svelte" 53:40 "Object literal may only specify known properties, and 'currentPassword' does not exist in type '{ password: string; }'."
+1778458126637 COMPLETED 2062 FILES 155 ERRORS 0 WARNINGS 32 FILES_WITH_PROBLEMS
+yarn workspace @openvaa/frontend check exit: 0
+
+=== Baseline Comparison ===
+Frontend lint (v2.8-close baseline): 0 errors / 0 warnings
+Frontend lint (Phase 73 close): 0 errors / 0 warnings — HELD
+Tests/ workspace lint (Phase 73 close): 0 errors / 0 warnings — NEW (was 101 warnings at Phase 73 start; -101 = exactly cleared via Plans 02-05 + Plan 06 gate bump)
+dev-seed lint (Phase 73 close): 0 errors / 15 warnings — pre-existing, out of Phase 73 scope (Phase 56-05 + Phase 68-02 unused-imports remnants)
+svelte-check (v2.8-close baseline): ≤ 159 errors / 0 warnings
+svelte-check (Phase 73 close): 155 errors / 0 warnings — IMPROVED (-4 vs baseline)
+
+=== Verdict ===
+yarn build: GREEN (exit 0)
+yarn test:unit: GREEN (exit 0; 660 frontend tests + 484 dev-seed tests pass)
+yarn lint:check: GREEN (exit 0; only pre-existing dev-seed warnings, out of scope)
+svelte-check: GREEN (155 ≤ 159 v2.8-close baseline)
+
+ALL 4 REGRESSION GATES GREEN — Phase 73 introduced 0 regressions.

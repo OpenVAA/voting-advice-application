@@ -1,0 +1,43 @@
+# Phase 131 — todo #6 (candidate-settings notifications.voterApp) — 3x cold-start evidence
+# Covering specs: perm-per-app-notifications.spec.ts (2) + perm-access-disable.spec.ts (3)
+# Contract under test: per-app notification isolation — voter route surfaces ONLY [notif-voter],
+# candidate route surfaces ONLY [notif-cand] (strict cross-route absence). This is the
+# notifications.voterApp mount-lifecycle behavior the old cell #3 guarded; the Phase 123/124
+# Svelte-5 runes lifecycle work resolved the reactive $effect->onMount re-queue race.
+# Captured: 2026-07-22T08:13:26Z (Phase-131-dated)
+#
+# Harness note (D-11): same db:reset storage-502-wedge remediation as todo #5 — per
+# iteration: db:reset -> restart supabase_{storage,kong,rest} -> POLL STORAGE non-502 -> run.
+# Not retry-until-green: each run is a first-and-only attempt on a freshly-cold DB.
+########################################################################
+
+===== RUN 1 (cold DB + gateway reconnect + storage-ready gate) =====
+RUN 1: storage ready (http 200) after 3
+Running 47 tests using 2 workers
+[1A[2K[30/47] [perm-access-disable] › tests/tests/specs/perm/perm-access-disable.spec.ts:59:3 › perm-access-disable (EPERM-11) › voterApp disabled: / + /elections show maintenance; /candidate available
+[1A[2K[31/47] [perm-access-disable] › tests/tests/specs/perm/perm-access-disable.spec.ts:81:3 › perm-access-disable (EPERM-11) › candidateApp disabled: /candidate shows maintenance; / + /elections available
+[1A[2K[32/47] [perm-access-disable] › tests/tests/specs/perm/perm-access-disable.spec.ts:101:3 › perm-access-disable (EPERM-11) › underMaintenance: BOTH voter + candidate apps show maintenance simultaneously
+[1A[2K[34/47] [perm-per-app-notifications] › tests/tests/specs/perm/perm-per-app-notifications.spec.ts:19:3 › perm-per-app-notifications › voter route shows voter notification only
+[1A[2K[35/47] [perm-per-app-notifications] › tests/tests/specs/perm/perm-per-app-notifications.spec.ts:31:3 › perm-per-app-notifications › candidate route shows candidate notification only
+[1A[2K  47 passed (2.6m)
+
+===== RUN 2 (cold DB + gateway reconnect + storage-ready gate) =====
+RUN 2: storage ready (http 200) after 2
+Running 47 tests using 2 workers
+[1A[2K[30/47] [perm-access-disable] › tests/tests/specs/perm/perm-access-disable.spec.ts:59:3 › perm-access-disable (EPERM-11) › voterApp disabled: / + /elections show maintenance; /candidate available
+[1A[2K[31/47] [perm-access-disable] › tests/tests/specs/perm/perm-access-disable.spec.ts:81:3 › perm-access-disable (EPERM-11) › candidateApp disabled: /candidate shows maintenance; / + /elections available
+[1A[2K[32/47] [perm-access-disable] › tests/tests/specs/perm/perm-access-disable.spec.ts:101:3 › perm-access-disable (EPERM-11) › underMaintenance: BOTH voter + candidate apps show maintenance simultaneously
+[1A[2K[34/47] [perm-per-app-notifications] › tests/tests/specs/perm/perm-per-app-notifications.spec.ts:19:3 › perm-per-app-notifications › voter route shows voter notification only
+[1A[2K[35/47] [perm-per-app-notifications] › tests/tests/specs/perm/perm-per-app-notifications.spec.ts:31:3 › perm-per-app-notifications › candidate route shows candidate notification only
+[1A[2K  47 passed (2.4m)
+
+===== RUN 3 (cold DB + gateway reconnect + storage-ready gate) =====
+RUN 3: storage ready (http 200) after 2
+Running 47 tests using 2 workers
+[1A[2K[30/47] [perm-access-disable] › tests/tests/specs/perm/perm-access-disable.spec.ts:59:3 › perm-access-disable (EPERM-11) › voterApp disabled: / + /elections show maintenance; /candidate available
+[1A[2K[31/47] [perm-access-disable] › tests/tests/specs/perm/perm-access-disable.spec.ts:81:3 › perm-access-disable (EPERM-11) › candidateApp disabled: /candidate shows maintenance; / + /elections available
+[1A[2K[32/47] [perm-access-disable] › tests/tests/specs/perm/perm-access-disable.spec.ts:101:3 › perm-access-disable (EPERM-11) › underMaintenance: BOTH voter + candidate apps show maintenance simultaneously
+[1A[2K[34/47] [perm-per-app-notifications] › tests/tests/specs/perm/perm-per-app-notifications.spec.ts:19:3 › perm-per-app-notifications › voter route shows voter notification only
+[1A[2K[35/47] [perm-per-app-notifications] › tests/tests/specs/perm/perm-per-app-notifications.spec.ts:31:3 › perm-per-app-notifications › candidate route shows candidate notification only
+[1A[2K  47 passed (2.5m)
+========================================================================

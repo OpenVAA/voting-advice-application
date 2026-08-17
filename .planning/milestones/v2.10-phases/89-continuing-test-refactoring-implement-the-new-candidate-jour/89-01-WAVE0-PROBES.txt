@@ -1,0 +1,243 @@
+Phase 89 Plan 01 — Wave 0 Probes (R3 / R7 / R8 de-risk)
+========================================================
+
+Captured: 2026-05-29
+Author: execute-plan executor (89-01 Task 0)
+Purpose: De-risk the three blocking/warning risks called out in 89-RESEARCH.md
+         §"Risk Register" BEFORE Task 1 mutates baseV1.ts. Findings here drive
+         decisions made by Tasks 1 and 2.
+
+---
+
+## R3 — Playwright project `dependencies:` array syntax for the
+        candidate-mega chain (89-03)
+
+Source: tests/playwright.config.ts lines 618-643 (the existing
+baseV1 / voter-mega-journey triple).
+
+Verbatim project entries (from the existing config, used as the model
+89-03 will mirror for the candidate-mega chain):
+
+```ts
+{
+  name: 'data-setup-baseV1',
+  testMatch: /baseV1\.setup\.ts/,
+  teardown: 'data-teardown-baseV1',
+  // Anchor the mega-journey chain AFTER the perm-* family finishes —
+  // perm-not-located-2e2cg is the last spec in the sequential perm-*
+  // chain. This sequences default-mode runs as:
+  //    perm-* family → baseV1 setup → voter-mega-journey
+  // perm-*'s extraTeardownPrefix: ['test-', 'e2e-perm-'] would wipe
+  // baseV1 data if they ran in parallel; ordering perm-* first makes
+  // every perm spec see only its own e2e-perm-* data, and the final
+  // perm teardown leaves a clean DB for baseV1 to seed against.
+  dependencies: ['perm-not-located-2e2cg']
+},
+{
+  name: 'data-teardown-baseV1',
+  testMatch: /baseV1\.teardown\.ts/
+},
+{
+  name: 'voter-mega-journey',
+  testDir: './tests/specs/voter',
+  testMatch: /voter-mega-journey\.spec\.ts/,
+  fullyParallel: false, // single-test serial journey
+  use: { ...devices['Desktop Chrome'] },
+  dependencies: ['data-setup-baseV1']
+}
+```
+
+R3 VERDICT
+----------
+
+`dependencies` is an `Array<string>` of project NAMES (not file paths). The
+89-03 plan can mirror this triple exactly:
+
+```ts
+{
+  name: 'data-setup-candidate-mega',
+  testMatch: /candidate-mega\.setup\.ts/,
+  teardown: 'data-teardown-candidate-mega',
+  dependencies: ['voter-mega-journey']  // sequence AFTER voter-mega
+                                        // (shared 'test-' prefix race)
+},
+{
+  name: 'data-teardown-candidate-mega',
+  testMatch: /candidate-mega\.teardown\.ts/
+},
+{
+  name: 'candidate-mega-journey',
+  testDir: './tests/specs/candidate',
+  testMatch: /candidate-mega-journey\.spec\.ts/,
+  fullyParallel: false,
+  use: {
+    ...devices['Desktop Chrome'],
+    storageState: { cookies: [], origins: [] } // start unauthenticated
+  },
+  dependencies: ['data-setup-candidate-mega']
+}
+```
+
+The dependencies-array syntax is locked in by precedent; no surprises.
+
+---
+
+## R7 — Hero.svelte renders HeroContent via isEmoji/isImage discriminators;
+        baseV1 custom_data.hero JSONB round-trips through dev-seed writer
+        and PostgREST
+
+Hero.svelte render path
+-----------------------
+
+apps/frontend/src/lib/components/hero/Hero.svelte:17-36 imports
+`isEmoji` and `isImage` from `@openvaa/app-shared` and dispatches:
+
+```svelte
+<script lang="ts">
+  import { isEmoji, isImage } from '@openvaa/app-shared';
+  ...
+  let { content, ...restProps }: HeroProps = $props();
+</script>
+
+<div {...concatClass(restProps, '...')}>
+  {#if isEmoji(content)}
+    <HeroEmoji emoji={content.emoji} />
+  {:else if isImage(content)}
+    <Image image={content} class="..." />
+  {:else}
+    <ErrorMessage logMessage="Unsupported content for Hero: ..." />
+  {/if}
+</div>
+```
+
+Discriminators (verbatim):
+  - isEmoji: `isPlainObject(value) && 'emoji' in value && typeof value.emoji === 'string'`
+    (packages/app-shared/src/data/isEmoji.ts:9-11)
+  - isImage: `isPlainObject(value) && 'url' in value && typeof value.url === 'string'`
+    (packages/app-shared/src/data/isImage.ts:7-9)
+
+Implications for baseV1 mutation
+--------------------------------
+
+(a) Emoji shape on test-qu-opin-base-1-likert5:
+    `custom_data: { hero: { emoji: '🗳️' } }` is sufficient — isEmoji only
+    checks the `emoji` property is a string. NO `type` field needed.
+
+(b) Image shape on test-qu-opin-base-2-likert4 AND test-qg-opin-base:
+    `custom_data: { hero: { url: '/images/test-hero-q2.svg', type: 'image' } }`.
+    isImage only checks the `url` property is a string. The `type: 'image'`
+    field is asserted per behavior block but is not part of isImage's
+    discrimination — it's there to match Hero.type.ts / @openvaa/data Image
+    shape (downstream callers may rely on it). Including `type: 'image'`
+    is the safe convention.
+
+Hero.svelte source citation: apps/frontend/src/lib/components/hero/Hero.svelte:17-36.
+
+JSONB round-trip pre-mutation check
+------------------------------------
+
+Not run via `yarn db:reset && supabase db query` in this probe — running
+`db:reset` here would race with the pre-existing uncommitted user edits on
+the working tree (per orchestrator note about pre-existing user state).
+Instead, evidence is taken from existing in-tree usage of `custom_data` in
+baseV1.ts (any non-null custom_data fields, like `filterable: true`, are
+already round-tripping through the Writer to PostgREST and back to the
+frontend — that round-trip is what 88-04 ADR-88-04-01 stabilised via the
+Pass-5 resolver). The hero field is an ADDITIVE JSONB field; it consumes
+the same writer/JSONB-serializer path as the existing `filterable`,
+`longText`, `min`, `max` fields on the same `questions.custom_data` JSON.
+
+R7 VERDICT
+----------
+
+  - Emoji shape: `{ emoji: '🗳️' }` — minimum viable per isEmoji.
+  - Image shape: `{ url: '<path>', type: 'image' }` — minimum viable per
+    isImage; `type: 'image'` retained as convention.
+  - JSONB round-trip: PRESUMED OK based on existing `custom_data` fields
+    already shipping through the same Writer path (filterable / longText /
+    min / max). Empirical confirmation will surface during Task 2 voter-mega
+    run (the hero will either render or it won't — that IS the round-trip
+    test). No pre-mutation seed probe required because we cannot safely
+    re-seed in this sandbox without colliding with pre-existing user edits
+    on the working tree.
+
+  - Risk residual: LOW. If the post-mutation voter-mega run fails on hero
+    visibility, the likely cause is shape mismatch (e.g., HeroEmoji
+    component requiring additional fields), not a JSONB transport problem.
+
+---
+
+## R8 — candidates.email column existence (drives whether the unregistered
+        candidate row in Task 1 includes `email`)
+
+Source: packages/supabase-types/src/database.ts lines 152-238 (the
+candidates table Row/Insert/Update declarations).
+
+Column inventory for `candidates`:
+
+  Row columns:
+    answers, auth_user_id, color, created_at, custom_data, external_id,
+    first_name, id, image, info, is_generated, last_name, name,
+    organization_id, project_id, published, short_name, sort_order,
+    subtype, terms_of_use_accepted, updated_at
+
+  Insert columns: same set (with first_name + last_name + project_id
+    required, rest optional).
+
+  Update columns: same set (all optional).
+
+The `email` column appears ZERO times in the candidates table's Row /
+Insert / Update declarations. The only `email` mentions in the database
+types file are within `auth.users` (Supabase Auth) and the
+`resolve_email_variables` RPC's return shape — both are SEPARATE from the
+public `candidates` table.
+
+R8 VERDICT
+----------
+
+**candidates.email ABSENT** — the candidates table does NOT have an `email`
+column. The unregistered candidate's email must therefore be stored in a
+sibling test-constant file in Plan 89-03 (per RESEARCH §"Plan 89-03 Files
+to CREATE" recommendation: `tests/tests/utils/candidateMegaConstants.ts`
+or similar).
+
+Task 1 implication
+------------------
+
+The Task 1 unregistered candidate row (`test-ca-aa-unregistered`) MUST NOT
+include an `email` property. The full canonical row shape is:
+
+```ts
+{
+  external_id: 'test-ca-aa-unregistered',
+  first_name: 'Unregistered',
+  last_name: 'Candidate AA',
+  // terms_of_use_accepted DELIBERATELY absent (registration must trigger ToU)
+  sort_order: 14,
+  is_generated: false,
+  organization: { external_id: 'test-or-aa' }
+  // no answersByExternalId (unregistered → no answers)
+  // no auth_user_id (the sendEmail-driven invite flow creates this at
+  //                  test-time; pre-seeded row is left without it so the
+  //                  spec's inviteUserByEmail branch fires correctly)
+  // no email column on candidates — stored in 89-03 sibling const file
+}
+```
+
+Email value reserved for 89-03:
+  `unregistered-aa@test.openvaa.local`
+(matches RESEARCH:299 recommendation + per-row convention.)
+
+---
+
+## Summary
+
+  R3: dependencies-array syntax confirmed (array of project NAMES); 89-03
+      can mirror the existing voter-mega triple verbatim.
+  R7: HeroContent JSONB shape locked — emoji = { emoji: <str> }; image =
+      { url: <str>, type: 'image' }. Round-trip presumed OK based on
+      existing custom_data fields in baseV1.ts already shipping cleanly.
+  R8: candidates.email column ABSENT. Task 1 row omits `email`; the email
+      string lives in 89-03 in a sibling const file.
+
+All three risks de-risked. Proceeding to Task 1.

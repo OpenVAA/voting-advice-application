@@ -1,0 +1,41 @@
+Phase 87 Pre-Gate Baseline Snapshot (v2 reshape, 2026-05-21)
+=============================================================
+
+Date: 2026-05-21
+Source: tests/scripts/diff-playwright-reports.ts (post-Phase-86.3-v2 anchor; PHASE 86.3 v2 ANCHOR jsdoc block)
+Upstream baseline commit: 9ad802ec0 (chore(86.3): mark v2 baseline — 0 fails + 4 hard-coded skips, 3 runs verified)
+
+Live classification array counts (measured 2026-05-21):
+- PASS_LOCKED_TESTS: 114 entries  (original ROADMAP target ~150-160; actual reflects honest post-86.3-v2 state)
+- DATA_RACE_TESTS:   3 entries    (CONTEXT D-05 binding: exactly 3 — preserved ✓)
+- CASCADE_TESTS:     36 entries   (CONTEXT D-05 tolerance: 0 or ≤5 — OPERATOR-AMENDED at 86.3 close per 86.3 D-06)
+- SKIPPED_TESTS:     4 entries    (cells #3 / #5 / #7 / #8 — operator-locked v2.11+ deferrals per 86.3-SUMMARY.md)
+
+Verdict: BASELINE-ACCEPTED (D-05 amendment already applied at Phase 86.3 close)
+
+Lineage of the D-05 amendment (the operator-already-accepted CASCADE/SKIPPED deferrals):
+  - 2026-05-15: original Phase 87 Task 0 dry-run surfaced CASCADE=40 vs D-05 tolerance ≤5. Operator selected Path A (reopen Phase 85) at that point (historical narrative preserved in this file's prior content before the v2 reshape — see git log).
+  - 2026-05-20: Phase 86.3 close (commit d305d89f1) delivered 86.3 v1 baseline (CASCADE=37, SKIPPED=5) with D-06 disposition = RE-PLAN; operator accepted this as the working baseline for Phase 87.
+  - 2026-05-21: Phase 86.3 v2 follow-up commits (6d0914b22 untrack fix / 0a34dfbc7 cell-3 revert / 52a2f077a cell-6 fixture rewrite / 9ad802ec0 v2 baseline mark) finalized the post-86.3-v2 state: 3 test suite runs verified, 0 fails + 4 hard-coded skips, CASCADE=36, SKIPPED=4. Operator accepted this as the v2.10 ship baseline.
+
+Composition of CASCADE=36 (per PHASE 86.3 v2 ANCHOR jsdoc narrative in tests/scripts/diff-playwright-reports.ts):
+- Variant-multi-election deterministic FAILs cascade-tail (Phase 85 WARNING-9 contingency; v2.11+ deferral per Phase 86 D-08 + 86.3 D-06).
+- Cold-deeplink race victims (cells #5 / #7 / #8 cluster + related voter-app failures behind /intro Loading…).
+- All entries documented as v2.11+ deferrals; none are surprise regressions.
+
+4 Hard-Coded Skips (SKIPPED_TESTS):
+1. candidate-settings.spec.ts > SETTINGS-01 wave A — notifications.voterApp (cell #3; PASS-WITH-DEFERRAL via skipReason; revert(86.3-01) 0a34dfbc7 — test-infra conflict with reactive popup re-queue). v2.11+ closure path: mount-lifecycle reorder or move popup queueing into appContext.
+2. voter-feedback-persistence.spec.ts > feedback persistence (E2E-03) (cell #5; SKIP-FALLBACK 86.3-03 NEITHER verdict; upstream answeredVoterPage fixture race). v2.11+ todo: 2026-05-16-voter-feedback-persistence-second-pass.md.
+3. voter-question-rendering-boolean.spec.ts > boolean opinion question renders, voter answers, persists across goBack, mirrors on entity-detail (cell #7; QSPEC-01 SKIP-FALLBACK 86.3-05). v2.11+ todo: 2026-05-14-qspec-walkToQuestion-cold-start-race.md.
+4. voter-question-rendering-categorical.spec.ts > categorical opinion question (single-choice) renders, voter answers, persists across goBack, mirrors on entity-detail (cell #8; QSPEC-02 SKIP-FALLBACK 86.3-05). v2.11+ todo: 2026-05-14-qspec-walkToQuestion-cold-start-race.md (shared with cell #7).
+
+Cells #5 / #7 / #8 share ONE upstream voter-app cold-deeplink loader race (per 86.3-SUMMARY cross-plan finding). v2.11+ closure target: navigation-from-home redesign (the same approach that closed cell #6 in commit 52a2f077a — v2.11+ Recommendation #3 landed early during Phase 86.3-v2).
+
+Phase 87 Plan response:
+  Phase 87 does NOT re-escalate the CASCADE/SKIPPED counts — they are operator-accepted deferrals from 86.3 close. Phase 87 captures these as the v2.10 ship anchor. Task 1 produces sha256.txt via Path A (verbal-accept; documentary SHA pin) OR Path B (re-capture; ~216 min strict 3-run gate). Task 2 atomically regens the anchor citing this baseline. Task 4 audit-milestone expected verdict: tech_debt operator-accepted.
+
+D-05 amendment binding for v2.10 ship:
+  Original D-05: CASCADE 0 (or ≤5 with explicit Phase 85 deferrals).
+  Operator-amended D-05 for v2.10 ship: CASCADE 36 + 4 SKIPPED accepted as documented v2.11+ deferrals (lineage in this file + Phase 86.3 SUMMARY). Pool growth without further operator sign-off is prohibited per CONTEXT D-08.
+
+Status: Phase 87 proceeds directly to Task 1 (run-mode decision). No further operator escalation required at this checkpoint — the deferral is binding from 86.3 close.

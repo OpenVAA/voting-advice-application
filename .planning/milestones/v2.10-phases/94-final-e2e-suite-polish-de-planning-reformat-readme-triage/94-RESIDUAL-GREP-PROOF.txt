@@ -1,0 +1,59 @@
+Phase 94 — Phase-wide de-planning residual-token gate
+Date: 2026-06-03
+Plan: 94-08 Task 2 (final wave verification gate)
+
+================================================================================
+GATE 1 — PHASE-WIDE RESIDUAL-TOKEN GREP
+================================================================================
+
+Command:
+  git grep -nE 'Phase|Plan|D-[0-9]|FLAG-|TIR|baseV1|mega' \
+    -- 'tests/' 'packages/dev-seed/src/templates' \
+  | grep -vE 'eslint-disable|@ts-expect-error|svelte-warning: accepted|reason:|e2e/base|test-e2e-base-|e2e-perm-|test-perm-|test-qu-info-|re-enable perm-per-app-notifications'
+
+Scope (per CONTEXT.md D-01):
+  (a) all of tests/
+  (b) packages/dev-seed/src/templates  (NOT the wider src/ tree — D-01)
+
+Documented functional carve-outs (NOT archaeology):
+  - Directive comments:  eslint-disable | @ts-expect-error | svelte-warning: accepted | reason:
+  - Functional string literals:  e2e/base | test-e2e-base- | e2e-perm- | test-perm- | test-qu-info-
+  - Quarantine TODO (current-intent, references runes migration not a planning phase):
+      re-enable perm-per-app-notifications
+
+Notes on non-carve-outs:
+  - tests/scripts/diff-playwright-reports.ts was DELETED in Plan 94-01 (D-02);
+    it needs no carve-out and the tests/README.md hyperlink to it was dropped in 94-08 Task 1.
+  - The two spec journey READMEs (voter-journey.README.md, candidate-journey.README.md)
+    were DELETED in Plan 94-04 (D-04); no carve-out needed.
+
+Output:
+  (empty — no residual archaeology tokens in scope)
+
+Result: PASS — phase-wide filtered residual grep returns EMPTY.
+
+================================================================================
+GATE 2 — yarn typecheck:tests
+================================================================================
+
+Command:  yarn typecheck:tests
+Exit code: 0
+Result:   PASS
+
+================================================================================
+GATE 3 — playwright test --list (no dropped specs)
+================================================================================
+
+Command:  cd tests && npx playwright test --list
+Output:   Total: 84 tests in 72 files
+Baseline: 84 tests in 72 files  (94-PLAYWRIGHT-LIST-BASELINE.txt)
+Result:   PASS — count unchanged (D-03 removes nothing).
+
+================================================================================
+OPERATOR FINAL GATE (manual, not run here)
+================================================================================
+
+Full `yarn test:e2e` green remains the operator's final manual gate. It requires
+a running local Supabase + `yarn dev` stack, which is not available in this
+execution environment. The three gates above (grep + typecheck + --list) run
+without the stack and are the automatable phase-close proof.

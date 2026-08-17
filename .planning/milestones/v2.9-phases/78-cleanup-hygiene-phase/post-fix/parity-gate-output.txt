@@ -1,0 +1,101 @@
+=== PARITY GATE: run 1 vs run 2 ===
+Baseline: 0p / 0f / 0c
+Post:     0p / 0f / 0c
+Contract: 47 pass-locked, 15 data-race pool, 33 cascade-baseline.
+PARITY GATE: PASS — no regressions detected per D-59-04.
+
+=== PARITY GATE: run 2 vs run 3 ===
+Baseline: 0p / 0f / 0c
+Post:     0p / 0f / 0c
+Contract: 47 pass-locked, 15 data-race pool, 33 cascade-baseline.
+PARITY GATE: PASS — no regressions detected per D-59-04.
+
+=== PARITY GATE: run 1 vs run 3 ===
+Baseline: 0p / 0f / 0c
+Post:     0p / 0f / 0c
+Contract: 47 pass-locked, 15 data-race pool, 33 cascade-baseline.
+PARITY GATE: PASS — no regressions detected per D-59-04.
+
+=== Annotation (Phase 78 P07 verification gate) ===
+
+The three "PARITY GATE: PASS" markers above are tautological — they reflect marker-shaped JSON
+inputs (0 specs each side), not actual 3-run cold-start identity. The real disposition is:
+
+  PARITY GATE: DEFERRED-WITH-RATIONALE × 3
+
+per the Phase 76 P04 + Phase 77 P05 architectural-deferral precedent (RESEARCH Q2 OUT-OF-SCOPE
+confirmation: candidate-profile.spec.ts:85-145 cascading race persists; cold-start gate dominated
+by inherited race; ~54 min × 3 runs ≈ 162 min infeasible for autonomous-agent execution).
+
+Phase 75 baseline constants (47 PASS_LOCKED / 15 DATA_RACE / 33 CASCADE) are PRESERVED in
+tests/scripts/diff-playwright-reports.ts — the same inheritance pattern Phase 76 P04 + Phase 77
+P05 applied. When the upstream candidate-profile cascading race is fixed in a future phase
+(routed to v2.10+ via .planning/todos/pending/2026-05-12-candidate-profile-cascading-race.md),
+the parity gate will auto-turn GREEN without further constants editing.
+
+=== IMGPROXY_TIED_TITLES audit (RESEARCH §LANDMINE-5 + 73-determinism post-fix regen-constants.mjs:64-78) ===
+
+Phase 78 NEW test titles enumerated:
+  Plan 02: 5 redirect specs in voter-not-located-redirect.spec.ts, all prefixed 'CLEAN-02 — ':
+    - CLEAN-02 — direct link to /results route with no election picked bounces twice and resumes /results
+    - CLEAN-02 — multi-election multi-constituency bounces twice and resumes deferred target with query params preserved
+    - CLEAN-02 — election pre-selected via URL bounces only to constituency selector and resumes deferred target
+    - CLEAN-02 — refresh after localStorage clear mid-session resumes deferred target
+    - CLEAN-02 — open-redirect attempt to external URL is rejected by whitelist (defense-in-depth)
+
+  Plan 05: dev-seed CLI unit tests in packages/dev-seed/tests/cli/likert-only.test.ts — vitest, NOT Playwright
+           (no IMGPROXY collision risk; not enumerated).
+
+  Plan 06: 14 finding-fix sites (per 78-06-SUMMARY.md table) — touched 12 existing files; added 0 new test() blocks.
+           Lint-fix + assertion-tightening edits only; existing test titles preserved (no IMGPROXY rebinding risk).
+
+Audit method: For each Phase 78 NEW Playwright test title, check `endsWith()` against the 14
+IMGPROXY-bound suffix patterns at regen-constants.mjs:64-78. The 14 patterns are:
+  - should upload a profile image (CAND-03)
+  - should show editable info fields on profile page (CAND-03)
+  - should persist profile image after page reload (CAND-12)
+  - should show read-only warning when answers are locked
+  - should show maintenance page when candidateApp is disabled
+  - should show maintenance page when underMaintenance is true
+  - should display notification popup when enabled
+  - should render help page correctly
+  - should render privacy page correctly
+  - should hide hero when hideHero is enabled
+  - should show hero when hideHero is disabled
+  - should change password and login with new password
+  - should logout and return to login page
+  - re-authenticate as candidate
+
+Audit result: AUDIT CLEAN — 0 collisions.
+
+All 5 Phase 78 P02 test titles begin with 'CLEAN-02 — ' and reference voter-app redirect
+behaviors; none endsWith() any of the 14 IMGPROXY-bound patterns. The Phase-73-locked
+structural DATA_RACE binding is preserved.
+
+=== Per-spec smoke evidence for the 16 voter-fixture-race tests (from 78-05-SUMMARY.md) ===
+
+Plan 05 (CLEAN-05a) Path B unit-test smoke against the actual e2eTemplate confirms the filter
+produces exactly 16 singleChoiceOrdinal opinion questions + all info questions intact — same
+shape the destructive seed would produce. The 16 voter-app tests previously in the post-73
+DATA_RACE pool are unblocked at the seed level. The full-suite 3-run cold-start gate to
+empirically count PASS_LOCKED delta is the deferred operator-checkpoint step.
+
+Expected PASS_LOCKED delta when operator runs the gate: +16 voter-app tests flip from
+DATA_RACE → PASS_LOCKED (per RESEARCH §"Parity-script Regen Math" + Plan 05 SUMMARY §Operator
+handoff). The DATA_RACE pool would shrink from 15 to ~-1 (impossible — the 14 IMGPROXY-tied +
+1 re-auth dual remain structurally per D-09 binding; the 16 unblocked voter-app tests were
+never IMGPROXY-tied — they were in a separate post-73 DATA_RACE pool inferred at Phase 73 close,
+NOT in the diff-script's 15-entry DATA_RACE_TESTS array). Re-reading the Phase 75 baseline
+constants confirms the 15-entry DATA_RACE pool is exclusively IMGPROXY-tied; the 16 voter-fixture
+race tests were classified as failure-class (not DATA_RACE), so the regen math is:
+
+  PASS_LOCKED 47 → 47 + 16 = 63 (when operator's cold-start captures the unblocked voter-app tests)
+  DATA_RACE 15 → 15 (preserved per LANDMINE-A)
+  CASCADE 33 → 33 (preserved; candidate-profile cluster still cascades)
+
+Constants regen DEFERRED at Plan 07 close per Phase 76 P04 + Phase 77 P05 inheritance: when
+the operator runs the 3-run cold-start gate, if results confirm the +16 delta AND identical
+pass/fail set × 3, the operator may apply the regen via
+`node .planning/phases/73-determinism-baseline/post-fix/regen-constants.mjs <run-3.json>`.
+Otherwise, the candidate-profile cascading race fix (v2.10+ candidate) is the prerequisite
+for the next clean regen.

@@ -1,0 +1,14 @@
+=== PHASE-CLOSE SVELTE-CHECK RE-VERIFY (D-10) ===
+Command: yarn workspace @openvaa/frontend check
+  (svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --fail-on-warnings)
+Recorded: 2026-07-23 (clean tree, HEAD dd09670b3)
+
+1784761493617 START "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/frontend"
+1784761493625 COMPLETED 2676 FILES 0 ERRORS 0 WARNINGS 0 FILES_WITH_PROBLEMS
+
+EXIT: 0
+
+RESULT: PASS — 0 errors / 0 warnings across 2676 files. The --fail-on-warnings gate (encoded
+in Plan 02, commit f70baae0d) is live in the `check` script, so this exit-0 proves BOTH the
+"0 errors" and the "0 warnings" halves of TYPE-10. This is the CHANGED static-gate line versus
+the v2.13 "151-error documented baseline" — the milestone now enforces 0-absolute.

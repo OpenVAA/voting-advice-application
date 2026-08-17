@@ -1,0 +1,9 @@
+Total: 84 tests in 72 files
+
+Captured: 2026-06-03
+Source: cd tests && npx playwright test --list
+
+Binding "no dropped specs" gate for the Wave 2 de-planning sweeps. Per CONTEXT.md
+D-03 nothing is removed in Phase 94 (the perm-per-app-notifications projects + spec
+stay quarantined), so this equals the pre-existing baseline. Any Wave 2 sweep that
+changes this count without an explicit decision is an unintended regression.

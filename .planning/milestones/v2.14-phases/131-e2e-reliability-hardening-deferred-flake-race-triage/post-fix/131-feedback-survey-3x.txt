@@ -1,0 +1,76 @@
+# Phase 131 — todos #3 (popup-hydration LAYOUT-03) + #4 (feedback-persistence) — 3x cold-start evidence
+# Covering spec: tests/tests/specs/perm/perm-show-feedback-survey.spec.ts (EPERM-09)
+# Captured: 2026-07-22 (Phase-131-dated)
+#
+# CONSOLIDATED RUN NOTE: this 3x run was executed AFTER adding Plan-04 Task-2's new
+# feedback text-persistence assertion (test 1b: "feedback text persists across cancel
+# then reopen (kept-mounted form)", committed in the Task-2 test() commit). It therefore
+# validates in ONE 3x pass BOTH:
+#   - Task 1 (todo #3): the popup-surfaces-through-root-layout-slot contract on /results
+#     (tests 2/3: feedback + survey popup placement/timing/once/no-double-pop/dismiss-persist)
+#     + the survey.showIn surface audit (tests 4/5).
+#   - Task 2 (todo #4): the text-persists-across-cancel-then-reopen bind:this keep-mounted
+#     contract (test 1b) — the OQ-7.1 ADD decision.
+# Consolidated to a single 3x run (not 3x-before + 3x-after) since the new test lives in
+# the same describe and the same cold-start run proves both the retained and new assertions.
+#
+# Harness recipe (Plan 02/03 corrected, isolated): the perm-show-feedback-survey project
+# sits mid-chain in the perm serial-DAG (dependencies pull the ENTIRE upstream perm chain
+# localisation->answers-locked->hide-hero). To avoid running that whole chain 3x, the spec
+# is run ISOLATED via --project=perm-show-feedback-survey --no-deps with the seed provided
+# out-of-band by `yarn db:seed --template show-feedback-survey` (functionally equivalent to
+# the setup project's setupFromTemplate('show-feedback-survey') — same @openvaa/dev-seed
+# pipeline), mirroring the documented _probes out-of-band-seed + isolated-run discipline.
+# Per iteration: dev-gate(:5173==200) -> yarn db:reset -> bucket-ready gate (public-assets;
+# if empty => yarn db:stop/start + db:reset) -> yarn db:seed --template show-feedback-survey
+# -> dev-gate re-confirm -> playwright --no-deps.
+# Not retry-until-green: each run is a first-and-only attempt on a freshly-cold DB.
+# 6 tests = test 1 (header-feedback) + test 1b (NEW persistence) + tests 2-5.
+#
+# ENVIRONMENT FIX (see SUMMARY Deviation): the first 3x attempt was fully contaminated by a
+# foreign supabase instance — a `npx supabase start` fallback (since removed) booted the
+# root-level `supabase/` project (project-id voting-advice-application-gsd) which grabbed
+# port 54322 and starved the repo dev instance (openvaa-local), emptying storage.buckets and
+# failing every run (1 failed / 5 did-not-run x3). Recovery: `npx supabase stop` (foreign) +
+# `yarn db:stop && yarn db:start && yarn db:reset` (openvaa-local) re-provisioned both buckets.
+# The recovery branch now uses `yarn db:*` ONLY (never bare npx supabase). The runs below are
+# the clean re-do against the correct openvaa-local instance.
+########################################################################
+
+## VALIDATION (1x, pre-3x, recipe + new-assertion smoke, correct instance)
+dev-gate:200 · public-assets bucket present: 1 · seeded show-feedback-survey · dev-gate:200
+  6 passed (2.5m)
+
+===== RUN 1 (cold DB + bucket gate) =====
+dev-gate:200
+  public-assets bucket present: 1
+  seeded show-feedback-survey
+dev-gate:200
+[1A[2K[4/6] [perm-show-feedback-survey] › tests/specs/perm/perm-show-feedback-survey.spec.ts:125:3 › perm-show-feedback-survey (EPERM-09) › survey popup: surfaces on /results behind feedback (once, no double-pop), dismiss persists across reload
+[1A[2K[5/6] [perm-show-feedback-survey] › tests/specs/perm/perm-show-feedback-survey.spec.ts:146:3 › perm-show-feedback-survey (EPERM-09) › survey.showIn=[frontpage]: banner present on frontpage, absent on entityDetails
+[1A[2K[6/6] [perm-show-feedback-survey] › tests/specs/perm/perm-show-feedback-survey.spec.ts:172:3 › perm-show-feedback-survey (EPERM-09) › survey.showIn=[entityDetails]: banner present on entityDetails, absent on frontpage
+[1A[2K  6 passed (2.5m)
+===== end RUN 1 (cold DB + bucket gate) =====
+===== RUN 2 (cold DB + bucket gate) =====
+dev-gate:200
+  ! public-assets bucket EMPTY after db:reset -> storage-502-wedge recovery (yarn db:stop/start)
+  public-assets bucket present: 1
+  seeded show-feedback-survey
+dev-gate:200
+[1A[2K[4/6] [perm-show-feedback-survey] › tests/specs/perm/perm-show-feedback-survey.spec.ts:125:3 › perm-show-feedback-survey (EPERM-09) › survey popup: surfaces on /results behind feedback (once, no double-pop), dismiss persists across reload
+[1A[2K[5/6] [perm-show-feedback-survey] › tests/specs/perm/perm-show-feedback-survey.spec.ts:146:3 › perm-show-feedback-survey (EPERM-09) › survey.showIn=[frontpage]: banner present on frontpage, absent on entityDetails
+[1A[2K[6/6] [perm-show-feedback-survey] › tests/specs/perm/perm-show-feedback-survey.spec.ts:172:3 › perm-show-feedback-survey (EPERM-09) › survey.showIn=[entityDetails]: banner present on entityDetails, absent on frontpage
+[1A[2K  6 passed (2.5m)
+===== end RUN 2 (cold DB + bucket gate) =====
+# (RUN 3 first attempt was cut short by a 10-min shell wrapper timeout mid-playwright,
+#  not a test failure; re-run cleanly below.)
+===== RUN 3 (cold DB + bucket gate) [clean re-do] =====
+dev-gate:200
+  public-assets bucket present: 1
+  seeded show-feedback-survey
+dev-gate:200
+[1A[2K[4/6] [perm-show-feedback-survey] › tests/specs/perm/perm-show-feedback-survey.spec.ts:125:3 › perm-show-feedback-survey (EPERM-09) › survey popup: surfaces on /results behind feedback (once, no double-pop), dismiss persists across reload
+[1A[2K[5/6] [perm-show-feedback-survey] › tests/specs/perm/perm-show-feedback-survey.spec.ts:146:3 › perm-show-feedback-survey (EPERM-09) › survey.showIn=[frontpage]: banner present on frontpage, absent on entityDetails
+[1A[2K[6/6] [perm-show-feedback-survey] › tests/specs/perm/perm-show-feedback-survey.spec.ts:172:3 › perm-show-feedback-survey (EPERM-09) › survey.showIn=[entityDetails]: banner present on entityDetails, absent on frontpage
+[1A[2K  6 passed (2.5m)
+===== end RUN 3 (cold DB + bucket gate) [clean re-do] =====
