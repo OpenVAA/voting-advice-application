@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 16
+open_count: 23
 waived_count: 0
 fixed_count: 0
-total_count: 16
-last_updated: 2026-08-17T08:50:38.709Z
+total_count: 23
+last_updated: 2026-08-17T10:54:25.572Z
 ---
 
 # Broken Windows Ledger
@@ -31,6 +31,13 @@ last_updated: 2026-08-17T08:50:38.709Z
 | 14 | 151 | deviation | README.md | 12 | Front-page mascot image src=./docs/static/images/shiba-inu-facing-front.png broken by the layout move; blocked by F-15 (no slice pathspec claims README.md) | open |  | 2026-08-17T08:50:38.414Z |  |
 | 15 | 151 | deviation | apps/frontend/jest.config.json |  | F-01 dead jest config; deletion blocked by F-15 (unclaimed by any slice pathspec) | open |  | 2026-08-17T08:50:38.585Z |  |
 | 16 | 151 | deviation | apps/frontend/android |  | F-10 89 orphaned Capacitor files; deletion blocked by F-15 (unclaimed by any slice pathspec) | open |  | 2026-08-17T08:50:38.709Z |  |
+| 17 | 151 | deviation | apps/supabase/supabase/schema/502-email-helpers.sql | 22 | F-21 yarn db:lint:sql exits 1 on four plpgsql_check warnings; greening it needs a breaking public-RPC signature change (operator decision) | open |  | 2026-08-17T10:54:24.731Z |  |
+| 18 | 151 | deviation | apps/supabase/supabase/functions/identity-callback/claimConfig.ts | 34 | F-24 Signicat identity path keys account identity on birthdate, so two candidates sharing one collide into the same auth user; same design stated in the frontend (routed to 151-14) | open |  | 2026-08-17T10:54:24.887Z |  |
+| 19 | 151 | deviation | apps/supabase/supabase/schema/200-indexes.sql |  | F-29 two join-table FKs have no covering index; fix is a migration, blocked by PD-02 on the F-21-red gate | open |  | 2026-08-17T10:54:25.019Z |  |
+| 20 | 151 | deviation | apps/supabase/supabase/schema/302-rls.sql |  | F-30 22 of 52 triggers use prefixes outside the checklist's set; both remedies are the operator's | open |  | 2026-08-17T10:54:25.152Z |  |
+| 21 | 151 | stub | packages/supabase-types/tsconfig.tsbuildinfo |  | F-31 packages/supabase-types/tsconfig.tsbuildinfo is a tracked build artifact (class of F-08, routed to 151-16) | open |  | 2026-08-17T10:54:25.286Z |  |
+| 22 | 151 | deviation | apps/supabase/supabase/schema/400-storage.sql | 529 | F-32 storage_config stores a live service_role key in a plaintext column in production; remedy is Supabase Vault | open |  | 2026-08-17T10:54:25.431Z |  |
+| 23 | 151 | deviation | apps/docs/src/routes/(content)/developers-guide/app-and-repo-structure/+page.md | 14 | F-33 apps/strapi (a path that never existed) appears 46 times across 16 files, 15 under apps/docs (routed to 151-16) | open |  | 2026-08-17T10:54:25.572Z |  |
 
 ````json
 [
@@ -224,6 +231,90 @@ last_updated: 2026-08-17T08:50:38.709Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-08-17T08:50:38.709Z",
+    "resolved_at": null
+  },
+  {
+    "id": 17,
+    "kind": "deviation",
+    "phase": "151",
+    "file": "apps/supabase/supabase/schema/502-email-helpers.sql",
+    "line": 22,
+    "description": "F-21 yarn db:lint:sql exits 1 on four plpgsql_check warnings; greening it needs a breaking public-RPC signature change (operator decision)",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T10:54:24.731Z",
+    "resolved_at": null
+  },
+  {
+    "id": 18,
+    "kind": "deviation",
+    "phase": "151",
+    "file": "apps/supabase/supabase/functions/identity-callback/claimConfig.ts",
+    "line": 34,
+    "description": "F-24 Signicat identity path keys account identity on birthdate, so two candidates sharing one collide into the same auth user; same design stated in the frontend (routed to 151-14)",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T10:54:24.887Z",
+    "resolved_at": null
+  },
+  {
+    "id": 19,
+    "kind": "deviation",
+    "phase": "151",
+    "file": "apps/supabase/supabase/schema/200-indexes.sql",
+    "line": null,
+    "description": "F-29 two join-table FKs have no covering index; fix is a migration, blocked by PD-02 on the F-21-red gate",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T10:54:25.019Z",
+    "resolved_at": null
+  },
+  {
+    "id": 20,
+    "kind": "deviation",
+    "phase": "151",
+    "file": "apps/supabase/supabase/schema/302-rls.sql",
+    "line": null,
+    "description": "F-30 22 of 52 triggers use prefixes outside the checklist's set; both remedies are the operator's",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T10:54:25.152Z",
+    "resolved_at": null
+  },
+  {
+    "id": 21,
+    "kind": "stub",
+    "phase": "151",
+    "file": "packages/supabase-types/tsconfig.tsbuildinfo",
+    "line": null,
+    "description": "F-31 packages/supabase-types/tsconfig.tsbuildinfo is a tracked build artifact (class of F-08, routed to 151-16)",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T10:54:25.286Z",
+    "resolved_at": null
+  },
+  {
+    "id": 22,
+    "kind": "deviation",
+    "phase": "151",
+    "file": "apps/supabase/supabase/schema/400-storage.sql",
+    "line": 529,
+    "description": "F-32 storage_config stores a live service_role key in a plaintext column in production; remedy is Supabase Vault",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T10:54:25.431Z",
+    "resolved_at": null
+  },
+  {
+    "id": 23,
+    "kind": "deviation",
+    "phase": "151",
+    "file": "apps/docs/src/routes/(content)/developers-guide/app-and-repo-structure/+page.md",
+    "line": 14,
+    "description": "F-33 apps/strapi (a path that never existed) appears 46 times across 16 files, 15 under apps/docs (routed to 151-16)",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T10:54:25.572Z",
     "resolved_at": null
   }
 ]

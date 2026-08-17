@@ -5,15 +5,15 @@ milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 151
 current_phase_name: ship-v0-2-akita-review-stack
 status: executing
-stopped_at: "Completed 151-10-PLAN.md — PRs #863 and #864 open"
-last_updated: "2026-08-17T10:01:45.094Z"
+stopped_at: "Completed 151-11-PLAN.md — slice 03 cut, PR #865 open"
+last_updated: "2026-08-17T10:54:49.017Z"
 last_activity: 2026-08-16
 last_activity_desc: Phase 151 execution started
 progress:
   total_phases: 15
   completed_phases: 4
   total_plans: 43
-  completed_plans: 34
+  completed_plans: 35
   percent: 27
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 
 Milestone: v2.15 (Phases 137-151, 15 phases, 38 requirements)
 Phase: 151 (ship-v0-2-akita-review-stack) — EXECUTING
-Plan: 11 of 19
+Plan: 12 of 19
 Status: Ready to execute
 Last activity: 2026-08-16 — Phase 151 execution started
 
@@ -48,8 +48,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-17T10:01:33.319Z
-Stopped at: Completed 151-10-PLAN.md — PRs #863 and #864 open
+Last session: 2026-08-17T10:54:38.543Z
+Stopped at: Completed 151-11-PLAN.md — slice 03 cut, PR #865 open
 Resume file: None
 
 ## Deferred Items
@@ -159,6 +159,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 151 P08 | ~3h | 4 tasks | 151 files |
 | Phase 151 P09 | 35m | 3 tasks | 7 files |
 | Phase 151 P10 | ~50m | 4 tasks | 5 files |
+| Phase 151 P11 | ~1h40m | 3 tasks | 9 files |
 
 ## Deferred Items
 
@@ -686,6 +687,9 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: 151-10: operator consented to publish (accept-reviews) — ruleset 8477541 stays active; ~12 one-shot Copilot reviews accepted (review_on_push:false)
 - [Phase ?]: 151-10: PR #860 will be REPURPOSED as the stack umbrella at 151-18 — head update is a fast-forward not a force-push; #860 carries zero human reviews
 - [Phase ?]: 151-10: stack PRs fire origin/main's main.yaml, which has NO skill-drift-check — research Pitfall 7 is wrong; real CI signature is 'Setup Yarn 4.6' / YN0028
+- [Phase ?]: migrations_added stays 0 deliberately: F-29 and F-30 would each need a migration, and PD-02 makes a migration blocking on yarn db:lint:sql exiting 0, which F-21 prevents
+- [Phase ?]: F-21 not fixed — greening yarn db:lint:sql needs a breaking signature change to a granted, type-generated, pgTAP-referenced public RPC; that is a product decision (Rule 4), escalated to the operator
+- [Phase ?]: F-24 (Signicat birthdate identity key) reframed as a repo-wide design choice after checking the frontend, and routed to 151-14 so one decision covers both halves rather than desynchronising them
 
 ### Quick Tasks Completed
 
