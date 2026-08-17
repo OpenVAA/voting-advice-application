@@ -362,12 +362,12 @@ run_date: 2026-08-17
 plan: 151-18
 base_sha: ac30f132a407084bf30626029a0a71a0a521982f
 base_ref: origin/main
-target_source_sha: ff027416cce9abeabaa5c81af062f94b29a92c46
+target_source_sha: 0c24e87dd100776959b9e5079580b0d37aeb3266   # post-fix; ff027416c was the pre-fix measurement
 target_source_ref: feat-gsd-roadmap
 merge_target_commit: d55587fb1cadde0c37fa75c8e4da7a265e68e6d2
-merge_target_tree: d5f77fd48b987667dea26141fd70da5de3290f2b
-stack_tip_commit: 1e33b5073ebbcd3beba84dffc72eb81a5996e7d0
-stack_tip_tree: d5f77fd48b987667dea26141fd70da5de3290f2b
+merge_target_tree: c967a8457783764f9c9e9bbd9f5434cfe02f2f88
+stack_tip_commit: 7dae80f35c3e45f97f144fce2bd17c43d6ed68cb   # re-cut after the perf fix
+stack_tip_tree: c967a8457783764f9c9e9bbd9f5434cfe02f2f88
 changed_files: 0
 catchall_files: 0
 rename_commit: 602b793510cf432365e14a2562cc5e3f917e040e
@@ -388,6 +388,9 @@ toolchain:
   python3: 3.9.16
   prettier: 3.7.4
 status: criteria_4_5_7_proven
+suite_green: true      # D-24 run 2: 135 passed, exit 0
+recut_after_perf_fix: true
+force_pushed_branches: 6   # slices 05-10, on explicit operator authorisation
 ```
 
 ### Step 0 — the target, re-resolved (C-12)
@@ -727,3 +730,69 @@ the main checkout and every sibling worktree share.
   the tip it is published from.
 - **Anything about the suite, the pull requests, or the review itself.** Those are D-24's gate and
   criterion 6's read, recorded elsewhere.
+
+
+---
+
+## Section 2a — the re-cut after the perf fix, and the identity re-established
+
+**The Section 2 measurement above was taken at `ff027416c` and is superseded by this one.** It is not
+deleted: it is the proof that the mechanism held before the fix, and the two together show the
+identity surviving a mid-flight content change.
+
+The D-24 gate failed on its first run. The failure was diagnosed to a test defect, the operator chose
+**fix-and-recut** over waiving it, and `0c24e87dd` landed on `feat-gsd-roadmap` **before** any slice
+was re-cut — D-04's ordering, unchanged.
+
+Slices **05–11** were then rebuilt from the fixed tip; **01a–04 were not touched**, because the only
+content change is under `tests/` and they sit below slice 05 in the chain. Verified rather than
+assumed:
+
+```
+$ git diff --name-only --no-renames 798c952f6 0c24e87dd
+tests/tests/specs/perf/performance-budget.spec.ts        # exactly one file
+```
+
+### The identity, re-established at the new tip
+
+```
+$ bash scripts/verify-identity.sh feat-gsd-roadmap ship/v0.2-akita-11-planning
+== Check 1: git diff must be empty ==
+target : feat-gsd-roadmap  (0c24e87dd100776959b9e5079580b0d37aeb3266)
+tip    : ship/v0.2-akita-11-planning  (7dae80f35c3e45f97f144fce2bd17c43d6ed68cb)
+changed files: 0
+
+== Check 2: tree hashes must be equal ==
+target tree : c967a8457783764f9c9e9bbd9f5434cfe02f2f88
+stack  tree : c967a8457783764f9c9e9bbd9f5434cfe02f2f88
+
+---
+Checks failed: 0  (changed files: 0, trees equal: yes)
+
+BYTE-IDENTICAL
+```
+
+Catch-all `files=0`; taxonomy over `C1..TIP` **CONFORMING** (exit 0, 0 shared paths); Σ per-slice
+**4,511** = comparable total **4,511**, gap **0**.
+
+### What a force-push actually changed for a reviewer — measured, not reassured
+
+Six published branches had their history rewritten. The question that matters to anyone already
+reading them is whether the *content* changed, and for five of the six it did not:
+
+| slice | own-patch hash before | after | |
+|---|---|---|---|
+| 06 | `4be7f4fdf` | `4be7f4fdf` | identical |
+| 07 | `cd9f673c6` | `cd9f673c6` | identical |
+| 08 | `bcfe8e0ad` | `bcfe8e0ad` | identical |
+| 09 | `9c14558cc` | `9c14558cc` | identical |
+| 10 | `8f23fc2b1` | `8f23fc2b1` | identical |
+
+Each slice's own patch (`parent..self`) hashes identically before and after; **only the parent
+pointer moved.** Slice 05 changed by exactly the fix — same 195 files, 0 entered, 0 left,
+`1 file changed, 49 insertions(+)`.
+
+**A first attempt at this check compared cumulative trees and reported "1 changed file" for each of
+06–10.** That file was the perf spec, inherited through the chain. The check was wrong, not the
+content — recorded because this phase's standing lesson is to establish which of the two is at fault
+before believing either.

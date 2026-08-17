@@ -21,10 +21,13 @@ adapter_slice: "06"
 adapter_block_dispositioned: true  # by 151-14; the block's only appearance in the stack
 migrations_added: 0  # PD-02 answered by 151-11: no fix touched a migration
 e2e_collisions: 0
-suite_green: false  # 1 failed / 134 passed / 0 skipped / 0 did-not-run -- CARDINAL FAILURE, see the D-24 section
-suite_run_at: 2026-08-17T18:20:25Z
-suite_failure: "performance-budget.spec.ts:105 timeToMatches 7536 > 5000; ttfb 5718 = 76% of the window; resultsFetches invariant at 11"
-suite_root_cause: test-defect-cold-vite-ssr-under-contention  # NOT a landed fix; PD-01 finds no target
+suite_green: true   # run 2: 135 passed / 0 failed / 0 skipped / 0 did-not-run, exit 0. Run 1 was RED; its record is kept as the diagnosis.
+suite_run_at: 2026-08-17T18:51:43Z   # run 2 (the gate); run 1 at 18:20:25Z
+suite_failure: none  # run 1 failed performance-budget.spec.ts:105 (7536 > 5000); fixed at source by 0c24e87dd, not waived
+suite_root_cause_run1: test-defect-cold-vite-ssr-under-contention  # NOT a landed fix; PD-01 found no target
+suite_fix_commit: 0c24e87dd  # unmeasured warm-up reload; budget NOT raised
+recut_slices: ["05","06","07","08","09","10","11"]
+force_pushed_branches: 6  # 05-10, on explicit operator authorisation; 11 was unpushed
 findings_total_note: F-88 raised at 151-18
 dropped_finding_class_files: 841  # re-measured at 151-14 (was 842 at 151-06; the branch moved)
 dropped_finding_class_slice_06: 492
@@ -44,7 +47,7 @@ f_15_operator_gate: accepted-options-1-and-2-at-151-16  # option 3 declined; sli
 comparable_total: 4413  # re-measured at 151-16; every rise attributed by set difference, zero files ever leaving
 slices_dispositioned: ["01a", "01b", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11"]
 findings_total: 84  # F-88 raised at 151-18
-status: cells-complete-suite-red
+status: cells-complete-suite-green
 approval: pending
 ---
 
@@ -3001,13 +3004,15 @@ does not fail any PR in this stack, and will fail the first one after it.
 
 ---
 
-## D-24 — the collective green signal: THE SUITE IS RED
+## D-24 — the collective green signal: GREEN, on the second run, after a real fix
 
-**Run by plan 151-18 against the post-sweep `feat-gsd-roadmap` tip. Result: `1 failed, 134 passed`,
-exit 1. This is a CARDINAL FAILURE and the phase does not proceed past it.**
+**Final result: `135 passed`, 0 failed, 0 skipped, 0 did-not-run, exit 0, 10.7 min.**
 
-Recorded exactly as observed. The three phase-level cells this run was to discharge (**1**, **11**,
-**12**) therefore **cannot** be closed on a green signal, and `suite_green` is `false`.
+**The first run was RED and its record is kept below in full.** It is not history to be tidied away:
+it is the diagnosis that produced the fix, and deleting it would hide the fact that this gate caught
+something. Run 1 failed, was diagnosed to root cause, the defect was fixed **in the test rather than
+waived**, the affected slices were re-cut on the operator's explicit authorisation, and run 2 is
+green. Both runs are recorded; the gate is run 2.
 
 ### Prerequisites — all three met, so the red is trustworthy
 
@@ -3163,3 +3168,97 @@ fourth time.** PR 01a targets `main`, so the workflow that runs is `origin/main`
 which has no such job; `backend-validation` appears here and nowhere else in the stack because it
 validates the Strapi backend that slice 01b deletes. This is the measured list; the phase's earlier
 predicted list is superseded.
+
+
+---
+
+## D-24 run 2 — the gate, after the fix (plan 151-18)
+
+**`135 passed`, exit 0.** The operator selected **fix-and-recut** at this plan's checkpoint and
+authorised force-pushing exactly six branches (`05`…`10`). Nothing was waived, skipped, retried to
+green, or annotated flaky.
+
+### Prerequisites — all three re-established from scratch for this run
+
+| # | Prerequisite | Evidence |
+|---|---|---|
+| 1 | Clean database | `yarn db:reset` → exit **0**, second time, after run 1 and the diagnostic runs had used the database. |
+| 2 | Exactly one fresh server | Previous server **stopped first** (`lsof` → 0 listeners), then one `yarn dev`; `lsof` → exactly **1**; `GET /` → HTTP 200. |
+| 3 | Preflight | The positive line again: `E2E PREFLIGHT OK …/apps/frontend (verified against …/voting-advice-application-gsd)`. |
+
+### The run
+
+| field | value |
+|---|---|
+| started / ended (UTC) | `2026-08-17T18:51:43Z` → `2026-08-17T19:02:26Z` |
+| wall time | **10.7 min** |
+| tests | **135** |
+| **passed** | **135** |
+| failed / skipped / did-not-run | **0 / 0 / 0** |
+| **exit code** | **0** |
+| failure blocks in output | **0** |
+
+**The previously failing spec, in-suite, under the same 6-worker contention:**
+
+```
+Results performance: {"timeToMatches":540,"resultsFetches":11,"cardCount":6,"scoreCount":6,
+  "navigationTiming":{"domContentLoaded":69,"loadComplete":69,"ttfb":54}}
+```
+
+**540 ms against the unchanged 5,000 ms budget** — 9.3× headroom — and `resultsFetches` still **11**,
+which is the proof that the warm-up did not blind the load-independent guard. `ttfb` 54 ms, versus
+5,718 ms in run 1: the dev-server transform cost is out of the window, exactly as diagnosed.
+
+### The fix — calibration, not weakening
+
+`0c24e87dd` adds an **unmeasured warm-up reload** before the measured one, and resets the request
+counter between them. What was deliberately **not** done, because the operator's instruction and the
+spec's own rule both forbid it: the budget was **not raised** (`TIME_TO_MATCHES_BUDGET_MS` is still
+`5000`, `RESULTS_FETCH_BUDGET` still `13`), no retry was added, no timeout extended, nothing marked
+flaky or skipped. The spec's own instruction — *"never raise a budget to make a red test green"* —
+is the rule that was followed.
+
+**Verified on a genuinely cold server before landing**, with the same 13-card result set that failed:
+`timeToMatches 264 ms`, `ttfb 28 ms`, `resultsFetches 11`.
+
+### The re-cut — six branches force-pushed, and what a reviewer of them actually sees
+
+Slices **05–11** were re-cut from the fixed tip `0c24e87dd`. Slices **01a–04** were untouched: the
+only content change is under `tests/`, which slice 05 owns, and they sit below it in the chain.
+
+**The reviewer-visible content of slices 06–10 did not change at all**, which is the thing worth
+knowing about a force-push. Measured by hashing each slice's **own patch** (`parent..self`) before and
+after:
+
+| slice | own-patch hash, old cut | own-patch hash, new cut | |
+|---|---|---|---|
+| 06 | `4be7f4fdf` | `4be7f4fdf` | **identical** |
+| 07 | `cd9f673c6` | `cd9f673c6` | **identical** |
+| 08 | `bcfe8e0ad` | `bcfe8e0ad` | **identical** |
+| 09 | `9c14558cc` | `9c14558cc` | **identical** |
+| 10 | `8f23fc2b1` | `8f23fc2b1` | **identical** |
+
+Only their **parent pointer** moved. A first pass compared cumulative trees instead and reported
+"1 changed file" for each — that file was the inherited perf spec, and the **check was wrong, not the
+content**; the own-patch comparison is the right one and is what is recorded.
+
+Slice **05** changed by exactly the fix: same **195** files, **0 entered, 0 left**, `1 file changed,
+49 insertions(+)`.
+
+### Post-re-cut verification
+
+| check | result |
+|---|---|
+| `verify-identity.sh feat-gsd-roadmap ship/v0.2-akita-11-planning` | **exit 0** — 0 changed files, both trees `c967a8457` |
+| catch-all tripwire | **`files=0`**, `EMPTY:` |
+| taxonomy `C1..TIP` | **CONFORMING**, exit 0, 11 commits, **0 shared paths** |
+| sum-check | Σ **4,511** = comparable total **4,511**, **gap 0** |
+| slice 05 / 11 delta | 195 / 2,328 files, **0 entered, 0 left** in both |
+
+### Phase-level cells — revised on the green run
+
+| # | Item | Verdict | Basis |
+|---|---|---|---|
+| **11** | Troubleshoot failing checks in the PR | **FIXED** | The gate's one failure was diagnosed to root cause and **fixed at the source** (`0c24e87dd`), not skipped or waived; the suite is now green. PR 01a's actual failing jobs are recorded below from a real run. **Complement: per-PR CI still is not the gate** — `supabase-tests` reports green having run nothing on a sibling-based PR, and **F-88** (`skill-drift-check` exits 1 at the branch tip) is a red that no PR in this stack will show. |
+| **12** | Shared-dependency blast radius | **MET** | `yarn build` 14/14, `yarn test:unit` 1,522 / 149 files, **plus 135/135 E2E** across voter, candidate, a11y, perf and the full permutation matrix — the SSR/adapter/database boundary unit tests cannot reach. **Complement: `apps/docs`' `test:unit` is an empty `--passWithNoTests` (F-83).** |
+| **1** | Changes solve the issues the work set out to solve | **MET (agent half) → operator** | Criteria 4, 5 and 7 proven by command; criteria 1 and 3 closed; criterion 2 swept across all twelve slices; D-24 green. **Criterion 6's manual read remains the operator's and is the only thing outstanding.** |
