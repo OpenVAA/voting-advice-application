@@ -20,19 +20,19 @@ operator_approved: true
 operator_approved_date: 2026-08-17
 
 # --- plan 151-09: the bottom three slices cut for real (no longer a dry run) ---
-slices_cut: ["01a", "01b", "02"]
-slices_cut_by: "151-09"
+slices_cut: ["01a", "01b", "02", "03"]
+slices_cut_by: "151-09 (01a, 01b, 02); 151-11 (03; 02 re-cut from the F-18-fixed tip)"
 cut_base_sha: ac30f132a407084bf30626029a0a71a0a521982f
-cut_target_sha: 3c40ae8add3d2a6b5c7f22f50dce1c75c01d235f
-cut_target_tree: 6f8fa499e3bed5bd78e4badefe9a4f7effdb122c
-partition_total_files_at_cut: 4274
-catchall_remaining_files: 3925
-catchall_deviation_pct: 0.486
+cut_target_sha: b64977c9f7b3e2732e1e80568023c6ab9f386324
+cut_target_tree: 27350c24394ba6a6165bd5d884f6d0bc88505a45
+partition_total_files_at_cut: 4280
+catchall_remaining_files: 3812
+catchall_deviation_pct: 0.0
 partial_stack_identity_verified: true
-branches_pushed: 2
-prs_opened: 2
-pushed_by: "151-10"
-prs_open: [863, 864]
+branches_pushed: 3
+prs_opened: 3
+pushed_by: "151-10 (01a, 01b); 151-11 (02)"
+prs_open: [863, 864, 865]
 ruleset_8477541: untouched-active
 pr_860_decision: repurpose-at-151-18
 ---
@@ -84,8 +84,8 @@ later plan — only its cells.
 |---|---|---|---|---|---|---|---|---|---|
 | 01a | 1 | `ship/v0.2-akita-01a-layout-move` | `refactor: move the frontend and docs trees into apps/ (renames only, no content change)` | 1316 | 0 | 0 | **files > 300** — 1316 renames, **zero lines** | `602b79351` | [#863](https://github.com/OpenVAA/voting-advice-application/pull/863) |
 | 01b | 2 | `ship/v0.2-akita-01b-strapi-removal` | `chore: remove the Strapi backend and the frontend tests that drove it` | 252 | 0 | 55663 | **lines > 20k** — deletions only | `4a7c85934` | [#864](https://github.com/OpenVAA/voting-advice-application/pull/864) |
-| 02 | 3 | `ship/v0.2-akita-02-shared-packages` | `feat: rework the shared @openvaa packages for the v0.2 data, matching and filter model` | 97 | 1273 | 289 | ok | `4c7d3db5a` | pending |
-| 03 | 4 | `ship/v0.2-akita-03-supabase` | `feat[db]: replace the Strapi backend with the Supabase schema, RLS, functions and generated types` | 118 | 16257 | 0 | ok | pending | pending |
+| 02 | 3 | `ship/v0.2-akita-02-shared-packages` | `feat: rework the shared @openvaa packages for the v0.2 data, matching and filter model` | 97 | 1273 | 289 | ok | `ee270800b` | [#865](https://github.com/OpenVAA/voting-advice-application/pull/865) |
+| 03 | 4 | `ship/v0.2-akita-03-supabase` | `feat[db]: replace the Strapi backend with the Supabase schema, RLS, functions and generated types` | 119 | 16422 | 0 | ok | `11f877913` | pending (opens at 151-12, per D-07) |
 | 04 | 5 | `ship/v0.2-akita-04-dev-seed` | `feat: add the dev-seed package that generates deterministic local and E2E data` | 162 | 19560 | 0 | ok — 19,560 lines, just inside the 20k cap | pending | pending |
 | 05 | 6 | `ship/v0.2-akita-05-e2e-tests` | `test: add the Playwright end-to-end suite and its runner configuration` | 195 | 23297 | 778 | **lines > 20k** | pending | pending |
 | 06 | 7 | `ship/v0.2-akita-06-frontend-lib` | `feat: rewrite the frontend library layer on Svelte 5 runes and the Supabase adapter` | 526 | 22657 | 8315 | **files > 300 and lines > 20k** | pending | pending |
@@ -484,6 +484,104 @@ substance rather than relying on the link.
 
 **GitHub confirmed 01a's central claim independently:** the API reports `files=1316, +0, -0` with
 **1,316 `renamed` entries**. The zero-line rename PR renders as promised.
+
+## Slice 03 cut, slice 02 re-cut and published — plan 151-11
+
+**The stack's fourth slice exists and its third PR is open.** Slice 02 was **re-cut** before it was
+pushed, from a tip carrying this plan's fix for F-18 — the whole point of D-07's one-slice lag, used
+for the first time.
+
+| ref | value |
+|---|---|
+| base, re-resolved | `origin/main` = `ac30f132a` — **still unmoved**, so C-12's re-measurement trigger has not fired at any point in this phase |
+| `TARGET`, the fixed tip at cut time | `b64977c9f` — includes 151-11's six sweep fixes |
+| `TIP01B`, unchanged and already pushed | `4a7c85934` — slice 02's parent; **not** re-cut, so PRs #863 and #864 were not disturbed |
+
+| slice | branch | commit | files | +lines | −lines |
+|---|---|---|---|---|---|
+| 02 (re-cut) | `ship/v0.2-akita-02-shared-packages` | `4c7d3db5a` → **`ee270800b`** | 97 | 1273 | 289 |
+| 03 | `ship/v0.2-akita-03-supabase` | **`11f877913`** | **119** | 16422 | 0 |
+
+**Slice 02's counts did not move.** F-18 replaced one line of `packages/app-shared/README.md` with
+another, and that line was already inside the slice's diff, so the file count stays 97 and the line
+totals stay 1273 / 289 — the same numbers 151-09 recorded. Only the content of one line changed, which
+is exactly the D-04 outcome: the reviewer of PR 3 sees the corrected sentence and never a fix of itself.
+
+**Slice 03 is 119 files, not the table's 118.** The extra file is `apps/supabase/README.md`, added by
+this plan's F-28 fix. It falls inside slice 03's existing pathspec (`apps/supabase`), so no partition
+change was needed — the count rose for a reason attributable to a single named file.
+
+### The per-slice safety check
+
+| check | result |
+|---|---|
+| chain | `02^ == 01b` and `03^ == 02`, both by `rev-parse` |
+| remaining-slices catch-all, `TIP03..TARGET` pathspec `.` | **`files=3812`** at the final tip (3811 at cut time; the +1 is `pr-bodies/02.md`) |
+| partition arithmetic | 252 + 97 + 119 + 3812 = **4280** = comparable total (`diff --no-renames C1..TARGET`). **Gap: 0.** |
+| attribution of the rise from 151-09's 4274 | **+6, every one named**: `151-09-SUMMARY.md`, `151-10-SUMMARY.md`, `pr-bodies/01a.md`, `pr-bodies/01b.md`, `pr-bodies/02.md` (five `.planning/` files, all riding slice 11) and `apps/supabase/README.md` (slice 03). No file has left the set. |
+| predicted remainder | 151-09's catch-all was 3925 including slice 03's then-118. 3925 − 118 + 5 new `.planning/` files = **3812**, the measured value. **Deviation 0.000%**, against a 1% halt threshold. |
+| **partial-stack identity** | the four cut slices plus the catch-all produce tree **`27350c243`** = `TARGET^{tree}` **`27350c243`**. **MATCH.** |
+| `git status --porcelain` | empty throughout; `HEAD` never left `feat-gsd-roadmap` |
+
+> **A trap worth recording, because it produced a false MISMATCH before the canonical path produced a
+> MATCH.** The catch-all was first applied with a hand-rolled reimplementation of `build-slice.sh`'s
+> `diff --raw -z` → `update-index` pipeline, capturing the NUL-separated stream through a shell
+> command substitution. **Command substitution strips NUL bytes**, so the index-info stream was
+> silently mangled and `write-tree` produced a tree that did not match — while the *file count* came
+> out correct, because the count was taken before the corruption. The arithmetic said gap 0 and the
+> identity said MISMATCH, and the arithmetic was the one telling the truth. Re-run through
+> `build-slice.sh` itself, the identity matches. **Do not reimplement the applier; call the script.**
+
+### Commit taxonomy — slice 03 carries the only `[db]` tag in the stack
+
+`verify-commit-taxonomy.sh "ship/v0.2-akita-01a-layout-move..ship/v0.2-akita-03-supabase"`:
+
+| clause | result |
+|---|---|
+| **4.6** `[db]` marker on db-touching commits | **violations: 0** — `feat[db]: replace the Strapi backend with the Supabase schema, RLS, functions and generated types` |
+| **4.4** proxy, disjoint modified-path sets | **shared paths: 0** |
+| unplaced commits (unrecognised subject) | **0** |
+| `planning` / `docs` / `test` cardinality | `0 == 1` on each — **expected**: slices 11, 09 and 05 are not cut yet (plans 151-17, 151-16, 151-13) |
+
+The three cardinality failures are the correct reading of a partially-cut stack, not a defect. The gate
+must be re-run at 151-17 over the full `C1..TIP` range, per this record's existing note.
+
+### Published
+
+| slice | branch on `origin` | SHA (remote == local, asserted) | PR | base |
+|---|---|---|---|---|
+| 02 | `ship/v0.2-akita-02-shared-packages` | `ee270800b` | [#865](https://github.com/OpenVAA/voting-advice-application/pull/865) | `ship/v0.2-akita-01b-strapi-removal` |
+
+Asserted after the fact, not assumed: `gh pr view 865 --json baseRefName` returns
+`ship/v0.2-akita-01b-strapi-removal` and `headRefOid` equals the local tip;
+`gh pr list --head ship/v0.2-akita-03-supabase --json number --jq length` returns **0**, so D-07's
+one-slice lag held — **PR 4 stays closed until slice 04 is swept at plan 151-12**;
+`git ls-remote --heads origin 'ship/*'` returns exactly **3** refs; `origin/main` is unmoved at
+`ac30f132a`; and PR **#860 was not touched**. The push was dry-run immediately beforehand and reported
+`[new branch]`, with no force anywhere.
+
+Like #864, PR #865 fires **no checks**: `main.yaml`'s `pull_request` trigger is `branches: [main]` and
+this PR's base is a sibling branch.
+
+### Two gates the phase had never measured, found red here
+
+`151-BASELINE.md` records `build`, `test:unit`, `lint:check` and `format:check` — and nothing else. The
+Supabase slice's own two gates were outside it, and both were red:
+
+- **the pgTAP suite** — `Files=11, Tests=272, Failed 2/272, Result: FAIL` against a database reset from
+  migrations. Fixed (F-27); now `All tests successful, Result: PASS`.
+- **`yarn db:lint:sql`** — exit 1 on four `plpgsql_check` warnings, and its second half,
+  `scripts/lint-schema.mjs`, had **never run against this project's database at all** (F-19, a
+  `54332`/`54322` port transposition). The linter half is fixed; the four warnings are **F-21** and
+  need an operator decision, because the only change that greens them is a breaking signature change to
+  a granted, type-generated, pgTAP-referenced public RPC.
+
+**Any plan whose `<verify>` names `yarn db:lint:sql` will fail on a correct tree until F-21 is
+discharged.** `151-11-PLAN.md` sets it as both Task 1's and Task 2's automated check; it exited 1 before
+that plan changed anything. That is the **seventh** plan-encoded claim in this phase to be wrong as
+written, and it is the same shape as the other six.
+
+---
 
 ---
 
