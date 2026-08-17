@@ -3,6 +3,7 @@ import { fail } from '@sveltejs/kit';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { getLocale } from '$lib/paraglide/runtime';
 import { generateQuestionInfo } from '$lib/server/admin/features/generateQuestionInfo';
+import { logDebugError } from '$lib/utils/logger';
 import type { Actions } from '@sveltejs/kit';
 
 /**
@@ -12,7 +13,6 @@ export const actions: Actions = {
   default: async ({ fetch, request, locals }) => {
     try {
       const lang = getLocale();
-      console.info('[question-info] action start');
       const formData = await request.formData();
       const electionId = formData.get('electionId')?.toString();
       const questionIds = formData.getAll('questionIds').map((id) => id.toString());
@@ -22,25 +22,13 @@ export const actions: Actions = {
       const customInstructions = formData.get('customInstructions')?.toString() || '';
       const questionContext = formData.get('questionContext')?.toString() || '';
 
-      console.info('[question-info] parsed form', {
-        electionId,
-        nQuestionIds: questionIds.length,
-        language,
-        operations: operationsString,
-        sectionTopics: sectionTopicsString,
-        customInstructions,
-        questionContext
-      });
-
       if (!electionId) {
-        console.warn('[question-info] early exit: missing electionId');
         return fail(400, { type: 'error', error: 'Missing electionId' });
       }
 
       // Parse operations
       const operations = operationsString.split(',').filter((op) => op.trim());
       if (operations.length === 0) {
-        console.warn('[question-info] early exit: no operations selected');
         return fail(400, { type: 'error', error: 'No operations selected' });
       }
 
@@ -74,10 +62,7 @@ export const actions: Actions = {
         authToken: ''
       });
 
-      console.info('[question-info] created job:', jobInfo?.id);
-
       // Run the generation
-      console.info('[question-info] calling generateQuestionInfo()…');
       const result = await generateQuestionInfo({
         electionId,
         questionIds,
@@ -90,11 +75,9 @@ export const actions: Actions = {
         customInstructions: customInstructions || undefined,
         questionContext: questionContext || undefined
       });
-      console.info('[question-info] generateQuestionInfo() returned', result);
-
       return result ? { type: 'success' } : fail(500);
     } catch (error) {
-      console.error('[question-info] error:', error);
+      logDebugError(`[Admin App question info] ${error instanceof Error ? error.message : String(error)}`);
       return fail(500, { type: 'error', error: 'Internal server error' });
     }
   }

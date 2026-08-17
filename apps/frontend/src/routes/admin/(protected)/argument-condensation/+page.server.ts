@@ -2,6 +2,7 @@ import { fail } from '@sveltejs/kit';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { getLocale } from '$lib/paraglide/runtime';
 import { condenseArguments } from '$lib/server/admin/features/condenseArguments';
+import { logDebugError } from '$lib/utils/logger';
 import type { Actions } from '@sveltejs/kit';
 
 /**
@@ -11,14 +12,11 @@ export const actions = {
   default: async ({ fetch, request, locals }) => {
     try {
       const lang = getLocale();
-      console.info('[condense] action start');
       const formData = await request.formData();
       const electionId = formData.get('electionId')?.toString();
       const questionIds = formData.getAll('questionIds').map((id) => id.toString());
-      console.info('[condense] parsed form', { electionId, nQuestionIds: questionIds.length });
 
       if (!electionId) {
-        console.warn('[condense] early exit: missing electionId');
         return fail(400, { type: 'error', error: 'Missing electionId' });
       }
 
@@ -39,25 +37,6 @@ export const actions = {
         authToken: ''
       });
 
-      console.info('[condense] startJob returned:', jobInfo);
-      console.info('[condense] jobInfo type:', typeof jobInfo);
-      console.info('[condense] jobInfo keys:', Object.keys(jobInfo || {}));
-      console.info('[condense] created job (or at least tried to):', jobInfo?.id);
-
-      // DEBUG: Check if the job was created and is in active state
-      const jobData = await dataWriter.getJobProgress({
-        jobId: jobInfo.id,
-        authToken: ''
-      });
-
-      console.info('[condense] job initial state:', {
-        id: jobData.id,
-        status: jobData.status,
-        progress: jobData.progress,
-        feature: jobData.jobType
-      });
-
-      console.info('[condense] calling condenseArguments()…');
       const result = await condenseArguments({
         electionId,
         questionIds,
@@ -66,11 +45,9 @@ export const actions = {
         jobId: jobInfo.id,
         authToken: ''
       });
-      console.info('[condense] condenseArguments() returned', result);
-
       return result ? { type: 'success' } : fail(500);
     } catch (err) {
-      console.error('[condense] error', err);
+      logDebugError(`[Admin App argument condensation] ${err instanceof Error ? err.message : String(err)}`);
       const message = err instanceof Error ? err.message : String(err);
       return fail(500, { type: 'error', error: message });
     }
