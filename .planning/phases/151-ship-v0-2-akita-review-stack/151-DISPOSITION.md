@@ -13,19 +13,21 @@ criterion_3: closed-by-plan-151-08
 criterion_3_gate_red_is_expected: true
 per_slice_items: 12
 cells_expected: 163
-cells_filled: 84
-cells_pending: 79
+cells_filled: 99
+cells_pending: 64
 blank_cells: 0
 db_slice: "03"
 adapter_slice: "06"
+adapter_block_dispositioned: true  # by 151-14; the block's only appearance in the stack
 migrations_added: 0  # PD-02 answered by 151-11: no fix touched a migration
 e2e_collisions: 0
-dropped_finding_class_files: 842
+dropped_finding_class_files: 841  # re-measured at 151-14 (was 842 at 151-06; the branch moved)
+dropped_finding_class_slice_06: 492
 invisible_to_review_files: 1202
 unclaimed_by_any_pathspec: 120
 comparable_total: 4274
-slices_dispositioned: ["01a", "01b", "02", "03", "04", "05"]
-findings_total: 50
+slices_dispositioned: ["01a", "01b", "02", "03", "04", "05", "06"]
+findings_total: 65
 status: in-progress
 approval: pending
 ---
@@ -35,9 +37,10 @@ approval: pending
 **Created:** 2026-08-17
 **Phase:** 151 — Ship the v0.2 Akita review stack
 **Plan:** 06 (scaffold + phase-level rows). Cells are filled by plans 151-09 … 151-18.
-**Status:** 🟡 **IN PROGRESS — approval gate NOT reached.** `cells_filled: 84` of 163, after plans
-151-09 (slices **01a**, **01b**, **02**), 151-11 (slice **03**), 151-12 (slice **04**) and 151-13
-(slice **05**) — all 84 cells terminal, none pending. The gate closes only when
+**Status:** 🟡 **IN PROGRESS — approval gate NOT reached.** `cells_filled: 99` of 163, after plans
+151-09 (slices **01a**, **01b**, **02**), 151-11 (slice **03**), 151-12 (slice **04**), 151-13
+(slice **05**) and 151-14 (slice **06**, **plus the Supabase Adapter block**) — all 99 cells
+terminal, none pending. The gate closes only when
 `cells_filled == cells_expected` **and** `blank_cells == 0`, checked in plan 151-18. Criterion 1 has
 no other automated evidence, so this frontmatter *is* the criterion.
 
@@ -191,18 +194,18 @@ Columns are slices. Every cell holds a verdict token or `PENDING→NN` (the plan
 
 | # | Item | Reach | 01a | 01b | 02 | 03 | 04 | 05 | 06 | 07 | 08 | 09 | 10 | 11 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| **2** | OWASP Top 10 review | `none` | N/A | MET | MET | FIXED | FIXED | MET | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **3** | Follows the Code style guide | `partial` | N/A | N/A | FIXED | MET | MET | FIXED | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **4** | Avoid `any`; document or `@ts-expect-error` | `partial` | N/A | N/A | FIXED | FIXED | FIXED | MET | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **5** | No repeated code in the PR or elsewhere in the repo | `none` | DEF | FIXED | MET | DEF | DEF | MET | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **6** | New components / functions / entities documented | `none` | N/A | N/A | FIXED | FIXED | FIXED | MET | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **7** | Repo documentation markdown updated | `none` | DEF | DEF | FIXED | FIXED | FIXED | FIXED | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **8** | Tracking events for new user-facing functions | `none` | N/A | N/A | N/A | N/A | N/A | N/A | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **9** | New Svelte components follow the guidelines | `partial` | N/A | N/A | N/A | N/A | N/A | N/A | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **10** | Errors handled and logged | `none` | N/A | N/A | FIXED | FIXED | FIXED | MET | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **13** | WCAG A and AA | `partial` | N/A | N/A | N/A | N/A | N/A | MET | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **14** | Keyboard + screen-reader usable | `partial` | N/A | N/A | N/A | N/A | N/A | DEF | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **15** | Developers'/Publishers' Guide entries updated | `none` | DEF | DEF | DEF | DEF | FIXED | FIXED | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **2** | OWASP Top 10 review | `none` | N/A | MET | MET | FIXED | FIXED | MET | MET | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **3** | Follows the Code style guide | `partial` | N/A | N/A | FIXED | MET | MET | FIXED | FIXED | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **4** | Avoid `any`; document or `@ts-expect-error` | `partial` | N/A | N/A | FIXED | FIXED | FIXED | MET | FIXED | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **5** | No repeated code in the PR or elsewhere in the repo | `none` | DEF | FIXED | MET | DEF | DEF | MET | DEF | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **6** | New components / functions / entities documented | `none` | N/A | N/A | FIXED | FIXED | FIXED | MET | FIXED | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **7** | Repo documentation markdown updated | `none` | DEF | DEF | FIXED | FIXED | FIXED | FIXED | FIXED | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **8** | Tracking events for new user-facing functions | `none` | N/A | N/A | N/A | N/A | N/A | N/A | MET | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **9** | New Svelte components follow the guidelines | `partial` | N/A | N/A | N/A | N/A | N/A | N/A | FIXED | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **10** | Errors handled and logged | `none` | N/A | N/A | FIXED | FIXED | FIXED | MET | FIXED | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **13** | WCAG A and AA | `partial` | N/A | N/A | N/A | N/A | N/A | MET | MET | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **14** | Keyboard + screen-reader usable | `partial` | N/A | N/A | N/A | N/A | N/A | DEF | DEF | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **15** | Developers'/Publishers' Guide entries updated | `none` | DEF | DEF | DEF | DEF | FIXED | FIXED | DEF | P→15 | P→15 | P→16 | P→16 | P→17 |
 
 `P→NN` abbreviates the pending marker `PENDING→NN`. Count: 12 × 12 = **144 cells, 0 blank**.
 
@@ -417,9 +420,9 @@ modification can never pass over `origin/main..TIP`. Run the gate over `C1..TIP`
 
 | # | Item | Reach | Slice 06 | Gate + complement |
 |---|---|---|---|---|
-| **26** | Adapter classes use `supabaseAdapterMixin` with `init({ fetch })` | `none` | `PENDING→14` | No gate. Exhaustively provable by agent over the **24** files under `apps/frontend/src/lib/api/adapters/supabase/` — but nothing enforces it. |
-| **27** | Row mapping via `COLUMN_MAP`/`PROPERTY_MAP` | `none` | `PENDING→14` | No gate. Type-checking catches a *wrong* map, not a *missing* one — hand-rolled snake→camel conversion type-checks fine. Same 24-file surface. |
-| **28** | `safeGetSession()` (not `getSession()`) for route guards | `none` | `PENDING→14` | No gate. **The highest-value greppable item in the block, and nothing enforces it** — `getSession()` is a valid call that compiles. Agent review. |
+| **26** | Adapter classes use `supabaseAdapterMixin` with `init({ fetch })` | `none` | **MET** | No gate. Exhaustively provable by agent over the **24** files under `apps/frontend/src/lib/api/adapters/supabase/` — but nothing enforces it. |
+| **27** | Row mapping via `COLUMN_MAP`/`PROPERTY_MAP` | `none` | **MET** | No gate. Type-checking catches a *wrong* map, not a *missing* one — hand-rolled snake→camel conversion type-checks fine. Same 24-file surface. |
+| **28** | `safeGetSession()` (not `getSession()`) for route guards | `none` | **MET** | No gate. **The highest-value greppable item in the block, and nothing enforces it** — `getSession()` is a valid call that compiles. Agent review. |
 
 ---
 
@@ -440,12 +443,19 @@ under `apps/supabase/supabase/functions/`. Small enough that exhaustive agent re
 
 | Group | Cells | Filled | Pending | Blank |
 |---|---:|---:|---:|---:|
-| Per-slice general (12 × 12) | 144 | 60 | 84 | **0** |
+| Per-slice general (12 × 12) | 144 | 84 | 60 | **0** |
 | Phase-level (4 × 1) | 4 | 0 | 4 | **0** |
 | Supabase Backend (9, slice 03) | 9 | 9 | 0 | **0** |
-| Supabase Adapter (3, slice 06) | 3 | 0 | 3 | **0** |
+| Supabase Adapter (3, slice 06) | 3 | **3** | 0 | **0** |
 | Edge Functions (3, slice 03) | 3 | 3 | 0 | **0** |
-| **Total** | **163** | **72** | **91** | **0** |
+| **Total** | **163** | **99** | **64** | **0** |
+
+**Slice 06** (plan 151-14) — 6 `FIXED` + 3 `MET` + 3 `DEFERRED`, and **0 `NOT-SWEPT`: it is the first
+slice in the stack where every one of the 12 general items has a real surface.** It also closes the
+**Supabase Adapter block**, 3 `MET`, the block's only appearance in the stack — proven by enumeration
+over 24 files with the unsafe-session-accessor-in-a-guard count asserted at **0**. Its three
+`DEFERRED` cells are the honest ones: real duplication whose fix D-13 excludes (item 5), a keyboard
+gate that does not exist (item 14), and a 117-file docs class that belongs to slice 09 (item 15).
 
 **Slice 04** (plan 151-12) — 6 `FIXED` + 4 `NOT-SWEPT` + 1 `MET` + 1 `DEFERRED`. It is the first
 slice in the stack whose `FIXED` count is half its cells, which is what sweeping a large new
@@ -1415,6 +1425,276 @@ is unaffected and met.
 
 ---
 
+
+## Slice 06 — `ship/v0.2-akita-06-frontend-lib` — cell-by-cell evidence
+
+**Filled by plan 151-14.** The 12 per-slice general items **plus the three Supabase Adapter items
+(26–28), which apply to this slice and to no other in the stack**. A miss here has no second chance,
+so all three are proven by enumeration with counts rather than by sample. The Supabase Backend
+(17–25) and Edge Functions (29–31) blocks read `n/a — outside block pathspec`: the slice touches
+neither `apps/supabase/` nor `apps/supabase/supabase/functions/`. The four phase-level items (1, 11,
+12, 16) are **not** re-run here; evidence is contributed below and their cells stay `PENDING→18`.
+
+**This is the largest reviewing surface in the stack and the only one carrying the project's two
+undetectable correctness traps.** The Svelte 5 context destructuring rule and the identity-stable
+version-bridge carve-out are enforced by no lint rule, no type, and no test; the project has a
+documented incident where a violation shipped. Every consumer in the slice was therefore enumerated
+mechanically and checked individually, and the enumeration was extended to slice 07 because the same
+contexts are consumed there.
+
+Measured refs for this pass:
+
+| ref | value |
+|---|---|
+| `BASE` = `origin/main` | `ac30f132a` — **still unmoved**; C-12's re-measurement trigger has not fired at any point in this phase |
+| `PARENT` = slice 05 | `545cc26c8` |
+| `TARGET` = `feat-gsd-roadmap` at sweep start | `0eb55ed7d` |
+| slice-06 file set at sweep start | `diff --no-renames ship/v0.2-akita-05-e2e-tests..TARGET -- apps/frontend/src/lib` → **526 files** (`211 A`, `59 D`, `256 M`), +22,659 / −8,315 |
+| local Supabase / dev server | **not running.** No spec was executed; every verdict below is static. |
+
+### Sweep surface, stated before any verdict (D-20)
+
+**The diff is not the surface.** 526 files are in slice 06's diff; **492 more files under
+`apps/frontend/src/lib` are in the dropped-finding class** — byte-identical across the
+`frontend/` → `apps/frontend/` move, so slice 01a renders them as rename lines and no later slice's
+diff contains them. Enumerated from the target tree with the manifest's standing command, not from
+any diff. Both defects in the *Findings* table below marked `dropped-class` came from that half, and
+one of them is a tracked file whose **name** is corrupted — a defect no content grep could ever find.
+
+| In surface | Count |
+|---|---|
+| files in the slice's diff, at sweep start | **526** (`211 A`, `59 D`, `256 M`) |
+| files in the dropped-finding class under the same pathspec | **492** (301 `.ts`, 185 `.json`, 6 `.md`) |
+| tracked under `apps/frontend/src/lib` at `TARGET` | **960** — and the two sets partition it: 467 in-diff-and-present + 492 dropped + 1 (`apiRouteAdapter.ts`, moved into the diff by this plan's own fix), asserted by `comm`, with **zero** files in neither set and **zero** in both |
+| `.svelte` components | **110** |
+| `.ts` | 520 · `.json` (i18n catalogues) 322 · `.md` 8 |
+| Supabase adapter files (items 26–28's surface) | **24** under `api/adapters/supabase/` |
+| context modules | **107** files under `contexts/` |
+| context-consumer destructuring sites enumerated | **60** in this slice, **41** more in slice 07 |
+
+### The three enumerable adapter checks — counts, not samples
+
+Each is `none`-reach: no gate, no type and no test enforces any of them. All three are exhaustive
+over the bounded 24-file adapter surface, with the producing command recorded so a reader can re-run
+rather than trust.
+
+| # | Item | Checked | Conforming | Command |
+|---|---|---:|---:|---|
+| **26** | adapter classes use `supabaseAdapterMixin` with the fetch-carrying initialiser | **4** concrete classes | **4** | `git grep -n 'class ' -- apps/frontend/src/lib/api/adapters/supabase` → `SupabaseAdminWriter`, `SupabaseDataProvider`, `SupabaseDataWriter`, `SupabaseFeedbackWriter`, each `extends supabaseAdapterMixin(...)` |
+| **27** | row mapping goes through the shared column/property maps | **11** read-mapping sites | **11** | `git grep -n 'toDataObject' --` → 11 non-test call sites, every one routed `toDataObject` → `mapRow` → `COLUMN_MAP`; hand-rolled case conversion (`replace(/_./)`, `camelCase`, `toUpperCase`) scan over the 24 files → **0** |
+| **28** | route guards use the safe session accessor | **9** safe call sites | **9** | `git grep -n 'safeGetSession' -- apps/frontend` → 9 guard call sites; `git grep -n 'getSession(' \| grep -v safeGetSession` → **2**, and **0 of them are route guards** — see below |
+
+**Item 28's second count is the one that matters, and it is 0.** The two bare `getSession()`
+occurrences are `hooks.server.ts:24`, which is the *implementation* of `safeGetSession` and pairs it
+with `supabase.auth.getUser()` on the next line so the session is validated against the auth server
+before it is returned; and `supabaseDataWriter.ts:169` in `_getBasicUserData`, which is a data-read
+method, not a guard. Its result does reach an authorization decision —
+`candidate/(protected)/+layout.server.ts:59` rejects `role !== 'candidate'` — but that route calls
+`locals.safeGetSession()` at `:36` and redirects on a missing session **before** the role is read, so
+the unvalidated read is downstream of a validated gate rather than in place of one. Recorded in full
+rather than reduced to the number, because the number alone would hide the one call site a reader
+would want to check.
+
+**Item 26's complement, recorded because the count alone overstates it.** The mixin passes
+`config.fetch!` into `createBrowserClient` / `createClient` (`supabaseAdapter.ts:37,43`), a non-null
+assertion over `AdapterConfig.fetch`, which is typed `Fetch | undefined`
+(`universalAdapter.type.ts:8`). Every one of the 19 production `init(...)` call sites supplies
+SvelteKit's load-event `fetch`, so the assertion holds today; nothing enforces that it keeps holding,
+and the base class's own `fetch()` throws a clear error while the mixin's silently constructs a
+client with `fetch: undefined`.
+
+**Item 27's complement is a real gap, recorded rather than closed.** The map is used in the read
+direction only. `mapRowToDb` (the `PROPERTY_MAP` direction) and `mapRows` are exported and
+unit-tested and have **zero production call sites repo-wide**. The one write that would want
+`mapRowToDb` cannot use it: `COLUMN_MAP` carries `DataObject` content columns only, so the
+`admin_jobs` insert at `supabaseDataWriter.ts:407-419` — `job_id`, `job_type`, `end_status`,
+`start_time`, `end_time` — would pass those keys through unchanged and fail. That writer spells 12
+snake_case keys by hand, correctly. **The item is MET as written** (no hand-rolled *conversion*
+exists) **while the shared map is half a contract**, and the next person to assume `mapRowToDb` is
+the sanctioned write path will be wrong. Both docblocks now say so (`021d37218`); widening
+`COLUMN_MAP` is a change to a package in slice 03, which is cut and published.
+
+### The two context reactivity traps — enumerated consumer by consumer
+
+Named sub-check under items 3 and 12, because these are correctness traps rather than style. Both
+were checked by a script over every file in the slice, not by reading a sample.
+
+**Rule 1 — reactive accessors must not be destructured.** A destructure invokes the getter once at
+component-init and binds the captured value, so later reads of the local are reads of a static
+binding and propagate no invalidation.
+
+| Surface | Destructuring sites | Destructuring a reactive accessor |
+|---|---:|---:|
+| slice 06 (`src/lib`) | **60** | **0** |
+| slice 07 (`src/routes`), checked because it consumes the same contexts | **41** | **1** |
+| two-step form (`const ctx = getX(); const { … } = ctx;`), both slices | — | **1** (the same site) |
+
+**Rule 2 — the identity-stable carve-out.** `dataRoot`'s only reactive signal is the private
+`#version` `$state` counter read inside its accessor
+(`contexts/data/dataContext.svelte.ts:81-88`: `get() { void self.#version; return dataRoot; }`). The
+object reference never changes, so an intermediate `$derived` alias recomputes and yields the same
+reference, and referential equality skips downstream notification. **The dependency is taken only
+where `ctx.dataRoot` is read**, which is why the read must happen inside the consuming tracking
+scope. Confirmed from the source above, not assumed from the rule.
+
+| Surface | `dataRoot` consumers | Bound to an intermediate alias |
+|---|---:|---:|
+| slice 06 | 5 component/context read paths | **0** |
+| slice 07 | 3 | **2** |
+
+**Slice 06 is clean on both rules, and it is clean deliberately rather than accidentally.** Every
+one of its five `dataRoot` consumers reads through the accessor inside the tracking scope and says
+so in a comment: `EntityInfo.svelte:47` + `:67` (`{#if ctx.dataRoot.elections.length > 1}`),
+`QuestionHeading.svelte:50` + `:57`, `EntityCard.svelte:134` (`dataRoot: ctx.dataRoot`, inside a
+`$derived.by`), `nominationAndQuestionState.svelte.ts:25,40` (a **thunk** — `dataRoot: () => DataRoot`
+called inside `$derived.by`, which defers the read into the consumer's scope), and the contexts
+themselves via the private `get #dataRoot()` re-read
+(`voterContext.svelte.ts:163-164`, `candidateContext.svelte.ts:108-109`), consumed inside `$derived`
+at `voterContext.svelte.ts:211,214` and `candidateContext.svelte.ts:137,139`.
+
+**The three violations are all in slice 07, are recorded as F-61 and F-63 below, and are NOT fixed
+here** — see the findings table for why.
+
+### Slice 06 — general items (12 cells)
+
+| # | Item | Verdict | Evidence |
+|---|---|---|---|
+| **2** | OWASP Top 10 | **MET** | Exhaustive over the slice's four trust boundaries. **A03 (injection/XSS) — `{@html}` appears 19 times and ALL 19 are `{@html sanitizeHtml(…)}`**; `sanitizeHtml` is `DOMPurify.sanitize(html, { USE_PROFILES: { html: true } })` with an empty-input guard (`utils/sanitize.ts:8-11`). Counted both sides: `git grep -o '{@html'` → 19, `git grep -o '{@html sanitizeHtml('` → 19, difference **0**. `eval(` / `new Function(` → **0**. One `innerHTML` write, `Icon.svelte:47`, assigned from `import(\`./svg/${folder}/${filename}.ts\`)` — Vite resolves that template into a build-time glob over the local `svg/` tree, so the value is a repo-committed SVG string and the path cannot escape the directory. **A02/A05 — secret-shaped-literal scan over all 526 files returns 0**: `git grep -oE 'eyJ[A-Za-z0-9_-]{10,}'` → **0** (cleaner than slice 04, which carries two demo-key literals), and a `(password\|secret\|api_key\|service_role\|token)\s*[:=]\s*'…'` scan → **0**. **A01 (broken access control) — the session surface is item 28's, and its unsafe-accessor-in-a-guard count is 0.** Client-side persistence is confined to `contexts/utils/persistedState.svelte.ts`, whose handles are versioned and expirable; the values stored are preferences, a session id, preregistration selections and unsaved answer drafts — no credential. |
+| **3** | Follows the Code style guide | **FIXED** | Five comments the hygiene codemod left broken, found with the **old/new diff-pair method** over `0c538024c` and `5862397ad` rather than a tree grep (the 151-13 lesson): `EntityCard.svelte:106` (`see phase 62 see phase 88`, two citations collapsed adjacently), `EntityListWithControls.type.ts:13` (a dangling preposition — "the canonical shape for the results-page integration in."), `voterContext.svelte.ts:311` (`see phase 62 scope tuple becomes implied`, connective eaten), `token-endpoint.test.ts:300` (`see phase 140's remit is …`, the possessive class), `viewTransition.ts:11` (`(decision 99-2)`, a bare identifier naming nothing and invisible to the gate). Commit **`77ab326f9`**. **Named sub-check: the two context reactivity rules — 60 consumers enumerated in this slice, 0 violations**; see the section above. Hygiene gate byte-identical before and after: `phase-ref` 660 occ / 235 files / **bare 11**, `spike-ref` 40/30/0, `task-id` 84/46, `milestone-ver` 43/30. **F-44's three blind-spot patterns run over this slice's 526 files return 0, 0 and 0** — the gate would not have found them, and here there was nothing to find. |
+| **4** | Avoid `any`; document or `@ts-expect-error` | **FIXED** | Exhaustive: `git grep -nw 'any'` over the slice, every hit read. **6 occurrences in type position, in 4 files.** Three were already documented with a `// reason:` block — `popupComponent.type.ts:33` (`Component<any>`, Svelte 5 `Component<T>` invariance), `utils/components.ts:38` (`Record<string, any>`, `HTMLAttributes` has no index signature), `route/buildRoute.ts:89` (`as any` ×2, `resolveRoute`'s literal-route-id contract). Three were not: the TypeScript mixin `Constructor` rest parameter at `supabaseAdapter.ts:10` and `apiRouteAdapter.ts:13,39`. Fixed in **`021d37218`**. **Complement, and it is the point of the cell:** those three do not trip `lint:check` because `@typescript-eslint/no-explicit-any` is configured `'error'` with **`ignoreRestArgs: true`** (`packages/shared-config/eslint.config.mjs:98-102`) — they are exempted by configuration, not judged conforming, and the comments now say so. `@ts-expect-error` in the slice: **1**, at `i18n/tests/translations.test.ts:225`, with a 4-line note explaining what would make it "unused". `@ts-ignore`: **0**. |
+| **5** | No repeated code in the PR or elsewhere in the repo | **DEFERRED** | A real duplication, recorded because the fix is excluded rather than because it is small. `EntityListControls.svelte:98-112` and `EntityListWithControls.svelte:144-161` carry the same three handlers — `openFilters`, `reset*Filters` (including the identical `startEvent('filters_reset')` guard) and `trackActiveFilters` (identical five-line `.filter(active).map(name).join(',')` chain) — differing only in the filter-group variable name and in return-type annotations, followed by near-identical control markup. The extraction target already exists (`EntityListWithControls.helpers.ts`), which is what makes it duplication rather than coincidence. **Not fixed: extracting a shared handler is code restructuring, which D-13 excludes explicitly, and it is behaviour-adjacent in the filter path with no E2E gate available to this plan (D-24's run is at 151-18).** Remedy recorded so a later phase need not re-derive it. Separately **FIXED** in this class: `mapRowToDb` and `mapRows`, exported and tested with zero production call sites, now document that fact and its precondition (`021d37218`). |
+| **6** | New components / functions / entities documented | **FIXED** | Four `@component` docblocks documented a usage that cannot compile — `bind:selected={$selectedConstituencies}`, `bind:selected={$selectedElectionIds}`, `answer={$voterAnswers[question.id]}` ×2, `selectedId={$voterAnswers[question.id]}` ×2 — the `$store` auto-subscription syntax for a `svelte/store` seam this milestone deleted and the frontend's own eslint config now makes an **error** (`no-restricted-imports`, `src/**/*.{ts,svelte}`; real `svelte/store` imports under `src/lib`: **0**). `QuestionChoices`'s example was wrong a second, independent way: `selectedId` is typed `Id \| null` (`QuestionChoices.type.ts:39`) and the example passed an `Answer`. All four rewritten against their real call sites; `SingleGroupConstituencySelector` was already correct and is the in-slice control. Commit **`e32b4031f`**. |
+| **7** | Repo documentation markdown updated | **FIXED** | Every "or locally" link in the frontend's READMEs pointed at `/docs/src/routes/developers-guide/…`, wrong twice: `docs/` became `apps/docs/` in slice 01a, and the route carries a `(content)` group segment the links omit. **8 sites fixed, each target asserted to exist on disk** — 6 under `src/lib`, 2 under `src/routes` (slice 07, uncut). Commit **`a75b87e4c`**, which also renames the corrupted `README.md 21-40-30-014.md` (F-56). **A ninth site, `packages/app-shared/src/settings`, is NOT fixed and is deferred: slice 02 is cut, pushed and open as PR #865, so correcting it would require force-pushing a PR under review.** First time in this phase that D-07's lag has been paid rather than collected on. |
+| **8** | Tracking events for new user-facing functions | **MET** | Enumerated: **13** `startEvent(` call sites in the slice, and every event name is a member of the `TrackingEventName` union (`contexts/app/tracking/trackingEvent.type.ts:14-43`) — `answer`, `answer_delete`, `answer_resetAll`, `dataConsent_granted`, `entityCard_expandSubcards`, `entityDetails_changeTab`, `feedback_error`, `feedback_sent`, `filters_active`, `filters_reset`, `survey_opened`. **The gate is `yarn build`**: the union makes a typo'd event name a type error, so a mis-named event cannot ship. **Complement: the union is one-directional.** It cannot detect an event that is *declared* and never fired, so a dead event name is invisible; and nothing requires a NEW user-facing function to add an event, which is the half of the item a gate cannot express. |
+| **9** | New Svelte components follow the guidelines | **FIXED** | Same four docblocks as item 6, judged against the Svelte-component sections of the code style guide: the "Usage" block is part of the documented component contract, and four of them documented an API the runtime no longer has. Structural conformance checked separately and clean: **0** `svelte/store` imports (the eslint ban is an `error` across `src/**`), the two `_guards/eslint-store-guard.test.ts` matches are the guard's own fixture asserting the rule fires. Commit **`e32b4031f`**. |
+| **10** | Errors handled and logged | **FIXED** | The slice's two long-running admin job features drive a `PipelineController` whose `info`/`warning`/`error` write into the job store so an admin sees them (`jobs/pipelineController.ts:382-410`); 22 call sites use it and **5 did not**. `condenseArguments.ts:107-108` shipped `console.error({ election })` and `console.error(dataRoot.candidateNominations.map(…))` — an entire `Election` object and every candidate-nomination id, at **ERROR** level, unguarded, on every run of a job an admin triggers from the UI. Neither is an error and neither reaches the admin. Deleted; the three `console.info('[condense] …' / '[question-info] …')` progress dumps kept but moved onto `controller.info`. The project's DEV-only `logDebugError` (`utils/logger.ts:8-12`) was bypassed by all five. Commit **`873e1a7f8`**; `console.*` under `server/admin` is now **0**. |
+| **13** | WCAG A and AA | **MET** | Reviewed exhaustively over the slice's own suppressions, which is where an a11y regression hides in a component library: **26 `svelte-ignore` directives, of which 9 suppress an `a11y_*` rule.** 8 carried a rationale (`Input.svelte:383-388` covers its four `a11y_label_has_associated_control` sites by explaining the `aria-labelledby` association; `MultipleTextInput.svelte:142-143` the same; `QuestionChoices.svelte:373-376`, `Select.svelte:316-321`, `NavItem.svelte:59-63`). One did not — `Button.svelte:181` — and now does (**`021d37218`**): `<svelte:element>` resolves `this` at runtime so the compiler cannot see that the tag is interactive. Positive markers across the slice: 113 `aria-*` attributes, 34 `role=`, 12 `tabindex`. **Complement, measured and large: the axe gate cannot see most of this slice.** `assertAxeScan` reaches **5 distinct URLs × 2 themes** (`151-MEASUREMENTS.md` § 1.1; 31 of the 36 `+page.svelte` route surfaces are never scanned), and it reaches components only *transitively* through what those 5 URLs render — so of the slice's **110** components, any not mounted on `/`, `/elections`, `/constituencies`, `/questions` or `/results` is **not swept by that gate at all**, including every candidate-app and admin-app component in `candidate/components/` and `admin/components/`. |
+| **14** | Keyboard + screen-reader usable | **DEFERRED** | Inherits 151-13's verdict on the gate that lives in slice 05, re-stated against this slice's surface. The raw-key scan has exactly the axe gate's reach — one call site, inside `assertAxeScan` — so the screen-reader half is unswept on every component not rendered by those 5 URLs. **The keyboard half has no gate anywhere: axe is a static-DOM auditor and does not tab through the UI**, so it is uncovered on the 5 scanned URLs as much as on the rest. This slice contains the interactive primitives that make the item real — `Select.svelte` (`aria-activedescendant`, `onkeydown` focus-index navigation), `QuestionChoices.svelte` (radio-group focus-out handling), `Tabs.svelte`, `Expander.svelte`, `Modal` — every one hand-rolled, and none exercised by a keyboard test. **DEFERRED rather than MET because authoring that gate is net-new test authorship, which D-13 excludes**, and widening the axe route table is Phase 147's declared scope, which has not executed. |
+| **15** | Developers'/Publishers' Guide entries updated | **DEFERRED** | The guide pages that document this slice — `developers-guide/frontend/{contexts,components,data-api,routing,styling}` — were **not** updated for it, and the defect is a whole-tree class rather than a page: **272 `blob/main/frontend/…` permalinks across 117 files under `apps/docs/`** point at a path the layout slice removed, and `frontend/contexts/+page.md:3` still describes the contexts as "shared stores" and locates them at `$lib/api/contexts` (they are `$lib/contexts`). Many of the 117 are auto-generated component pages, so the fix is a generator change plus a prose pass, not a text edit. **The whole class is `apps/docs/**` = slice 09, cut by 151-16**; recorded here as **F-64** and routed there, exactly as 151-13 routed `mock-data-generation` as a whole-page decision. Fixing 117 files inside another uncut slice from this plan would put a change of that size outside the disposition that reviews it. |
+
+### Slice 06 — Supabase Adapter block (items 26–28, 3 cells)
+
+The block's only appearance in the stack. Every verdict is backed by a count in the table above.
+
+| # | Item | Verdict | Evidence |
+|---|---|---|---|
+| **26** | Adapter classes use `supabaseAdapterMixin` with `init({ fetch })` | **MET** | 4 of 4 concrete classes, enumerated: `supabaseAdminWriter.ts:17`, `supabaseDataProvider.ts:42`, `supabaseDataWriter.ts:31`, `supabaseFeedbackWriter.ts:13`. The mixin's `init` (`supabaseAdapter.ts:26-49`) calls `super.init(config)` — which is `UniversalAdapter.init({ fetch })` (`universalAdapter.ts:22-25`) — and then threads `config.fetch` into `global.fetch` on both the browser (`createBrowserClient`, so the client shares the session cookies `hooks.server.ts` sets) and server (`createClient`) branches, plus a `serverClient` short-circuit for the two call sites that pass the request-scoped client. **Complement: `config.fetch!` is a non-null assertion over a `Fetch \| undefined` field; all 19 production `init` call sites supply SvelteKit's load `fetch`, and nothing enforces that they keep doing so.** |
+| **27** | Row mapping via `COLUMN_MAP`/`PROPERTY_MAP` | **MET** | Read direction exhaustive: 11 of 11 mapping sites go through `toDataObject` (`utils/toDataObject.ts:36` → `mapRow` → `COLUMN_MAP`, `utils/mapRow.ts:12`); hand-rolled case-conversion scan over all 24 adapter files → **0**. **Complement, recorded rather than closed: the write direction has no production consumer.** `mapRowToDb`/`PROPERTY_MAP` has 0 call sites repo-wide, and the write that would use it cannot — `COLUMN_MAP` lacks the `admin_jobs` operational columns, so `supabaseDataWriter.ts:407-419` spells them out correctly by hand. Both docblocks now state this and the precondition for future use (`021d37218`). Widening the map is a slice-03 package change and slice 03 is published. |
+| **28** | `safeGetSession()` (not `getSession()`) for route guards | **MET** | **Safe-accessor call sites: 9. Unsafe-accessor call sites in a route guard: 0.** The 9: `admin/+layout.server.ts:8`, `admin/login/+page.server.ts:32`, `admin/(protected)/argument-condensation/+page.server.ts:26`, `admin/(protected)/question-info/+page.server.ts:61`, `candidate/+layout.server.ts:10`, `candidate/login/+page.server.ts:30`, `candidate/(protected)/+layout.server.ts:36`, and `hooks.server.ts:70` (the `candidateAuthHandle` redirect gate), against its declaration at `app.d.ts:13`. The 2 bare `getSession()`: `hooks.server.ts:24`, which **is** `safeGetSession`'s implementation and validates via `supabase.auth.getUser()` at `:29`; and `supabaseDataWriter.ts:169` in `_getBasicUserData`, a data-read method. The latter's `role` does reach an authorization decision at `candidate/(protected)/+layout.server.ts:59`, but that route runs `safeGetSession` at `:36` and redirects first, so the unvalidated read sits behind a validated gate rather than replacing one. **This is the highest-value greppable item in the block and nothing enforces it** — `getSession()` compiles. |
+
+### Findings queued by this sweep
+
+| ID | Verdict | Item(s) | Finding | Landing |
+|---|---|---|---|---|
+| **F-51** | FIXED `e32b4031f` | 6, 9 | Four `@component` usage examples document the deleted `svelte/store` `$name` API; one also passes the wrong type. | slice 06 |
+| **F-52** | FIXED `77ab326f9` | 3 | Five hygiene-codemod comment defects (double citation, dangling preposition, eaten connective, surviving possessive, bare `decision 99-2`). | slice 06 |
+| **F-53** | FIXED `873e1a7f8` | 10 | Five `console.*` statements bypass the job controller in the two admin features; two are leftover debug at ERROR level. | slice 06 |
+| **F-54** | FIXED `021d37218` | 4 | Three `Array<any>` mixin rest parameters undocumented; exempted by `ignoreRestArgs`, not conforming. | slice 06 |
+| **F-55** | FIXED `021d37218` | 13 | `Button.svelte:181` suppresses an a11y rule with no rationale; the other 8 a11y suppressions carry one. | slice 06 |
+| **F-56** | FIXED `a75b87e4c` | 5, 7 | `README.md 21-40-30-014.md` — a tracked file whose NAME is editor debris. **dropped-class**; no content grep could find it. | slice 06 |
+| **F-57** | FIXED `a75b87e4c` | 7 | Eight "or locally" README links point at the pre-move `docs/` path and omit the `(content)` route group. 6 in slice 06 (4 **dropped-class**), 2 in slice 07. | slices 06, 07 |
+| **F-58** | FIXED `021d37218` (documented) | 5, 27 | `mapRowToDb`/`mapRows` exported, tested, zero production call sites; the write path that would want them cannot use them. | slice 06 |
+| **F-59** | FIXED `c98ec04d2` | 3 | `apps/frontend/eslint.config.mjs:77-84` — three broken sentences of the same codemod class, in the block explaining why a lint ban is duplicated verbatim. | **slice 10** (uncut) |
+| **F-60** | DEFERRED | 5 | `EntityListControls` / `EntityListWithControls` duplicate three filter handlers and their markup. Fix is extraction = code restructuring, excluded by D-13, behaviour-adjacent with no E2E gate available. | 151-18 / later phase |
+| **F-61** | **DEFERRED → 151-15** | 3, 12 | `results/[[electionTab]]/+layout.svelte:73-77` **destructures `appSettings` and `dataRoot`** and its comment at `:69-72` asserts the destructure is correct — "Stable stores/functions/objects (appSettings, dataRoot, …) remain destructured". That was true before the v2.13 handle flatten and is false now. `appSettings` is value-replacing, so the destructured local goes stale on navigation; `dataRoot` is identity-stable, so the destructure takes the `#version` dependency once at init and `{#if dataRoot.elections.length > 1}` at `:349` never re-evaluates when data arrives — the cold-entry staleness class. **A file in slice 07, which 151-15 sweeps and cuts.** Not fixed here for the reason this plan states itself: a reactivity fix changes when a component updates, must name a covering test, and the test that would catch it is an E2E spec this plan cannot run. |
+| **F-62** | **DEFERRED → 151-15** | 3 | Two `const dataRoot = $derived(ctx.dataRoot)` intermediate aliases — `(voters)/(located)/+layout.svelte:38`, `candidate/(protected)/preview/+page.svelte:32`. The forbidden shape **without** the failure mode: both use the alias only to *write* (`dataRoot.update(...)`, `provideEntityData`), deliberately outside a tracking scope (`+layout.svelte:84` says so). Recorded with that analysis so 151-15 does not "fix" a non-bug or dismiss F-61 by association. | slice 07 |
+| **F-63** | DEFERRED | 7 | `packages/app-shared/src/settings` carries the same dead `docs/` link as F-57. **Slice 02 is cut, pushed and open as PR #865**; fixing it means force-pushing a PR under review. | 151-18 / post-merge |
+| **F-64** | **DEFERRED → 151-16** | 15 | 272 `blob/main/frontend/…` permalinks across 117 `apps/docs/` files point at the pre-move path, plus store-era prose on the contexts page. A generator change plus a prose pass, not a text edit. | slice 09 |
+| **F-65** | DEFERRED | 27 | `COLUMN_MAP` (slice 03, published) is documented "only includes columns where the names differ" but carries the identity entry `published: 'published'`, and two keys — `organization_id` and `organization_id_nom` — map to the same property. Neither is a live defect; both are noted because the map is the adapter block's shared contract. | 151-18 |
+
+### F-24 — the Signicat birthdate identity key, resolved as routed
+
+**151-11 routed this here so one decision would cover both halves. The decision is: record and escalate,
+not fix.**
+
+The frontend half is exactly where 151-11 said it was, and it states the design in its own words:
+`api/utils/auth/providers/authConfig.ts:18-26` — *"Signicat Finnish bank authentication returns
+`birthdate` as the primary identifier"* — with `getIdTokenClaims.ts:44` and
+`api/base/dataWriter.type.ts:64` carrying it through. The Edge Function half sets
+`identityMatchProp: 'birthdate'` and uses that value both to find an existing auth user and to derive
+the account's placeholder email, so **two candidates who share a birth date resolve to the same auth
+user and the same candidate record**, and `IDENTITY_PROVIDER_TYPE` defaults to `signicat`.
+
+**Three reasons this is not an agent's fix to make, stated so the escalation is not mistaken for a
+deferral of convenience:**
+
+1. **It is a design, not a slip.** Both halves state it independently and consistently. Changing one
+   desynchronises them; changing both is a change to how accounts are identified.
+2. **The decisive fact is external knowledge the repository does not contain** — whether Signicat's
+   Finnish bank-authentication response can be relied on to carry a stable subject identifier for
+   this deployment, and what the operator's contract with the IdP actually provides. No amount of
+   reading this codebase settles it. The newer provider, Idura, correctly uses `sub`
+   (`providers/idura.ts`), which is evidence about the intended direction and not about what Signicat
+   returns.
+3. **The fix is a behaviour change to shipped authentication code** well beyond D-05's bar, and the
+   E2E suite that covers the bank-auth journey is not runnable by this plan.
+
+**Routed to the operator at 151-18**, with F-21, F-29, F-30 and F-36's locality half. The question to
+put is narrow: *is `birthdate` still the intended identity key for the Signicat path, or is that path
+now legacy behind Idura?* If it is legacy, the remedy is a deprecation, not a schema change.
+
+### Evidence contributed to the phase-level cells (which stay `PENDING→18`)
+
+- **Item 12 (shared-dependency blast radius).** This slice is the frontend's dependency hub: 96 files
+  consume a context and 101 destructuring sites exist across slices 06 and 07 combined. `yarn build`
+  (14/14) and `yarn test:unit` (1,522 / 149 files) both cover it, and the frontend workspace alone
+  contributes **773 tests across 54 files**. **Complement: neither exercises the SSR/adapter
+  boundary end to end** — the adapter's `init({ fetch })` contract, which item 26 is about, is
+  exercised only by unit tests with mocked clients; the real cross-request behaviour is E2E's.
+- **Item 11 (failing checks).** Nothing new. No CI job fires on a sibling-based PR, and the workflow
+  at every published head does not contain a job that would exercise this slice.
+- **Item 16 (history).** Six commits, all conventional, all scoped `(151-14)`.
+
+### Gate verdicts after this plan's fixes — measured, not assumed
+
+| Gate | `151-BASELINE.md` | Measured after | Verdict |
+|---|---|---|---|
+| `yarn build` (`TURBO_FORCE=1`) | 14/14 | **14/14** | unchanged |
+| `yarn test:unit` (`TURBO_FORCE=1`) | 1522 tests / 149 files | **1522 / 149** | unchanged |
+| `yarn lint:check` (`TURBO_FORCE=1`) | 0 errors / 20 warnings | **0 / 20** (core 2, dev-seed 15, frontend 1, tests 2) | unchanged |
+| `yarn format:check` | RED on exactly 2 PD-03-fenced files | **RED on exactly 2** (`perm-bankauth-notloc.ts`, `tests/README.md`) | unchanged |
+| `hygiene-grep-report.sh --assert-clean` | exit 1; `task-id` 84, `phase-ref` bare 11 | **exit 1, every column identical** | unchanged |
+
+**`yarn format` was NOT run.** Two edited files were reformatted individually with
+`npx prettier --write` on those paths only, because the replacement `controller.info(...)` calls
+exceeded the line width and would otherwise have grown `format:check`'s red set from 2 to 4 — the
+*cardinality* of that set is what PD-03 fences. Every other edited file was `prettier --check`ed file
+by file and was already clean. **F-39 was honoured: the lint warning count was not reduced.**
+
+**`yarn db:lint:sql` was deliberately not run** — it exits 1 on a correct tree pending F-21, and
+nothing in this slice touches SQL. **The E2E suite was not run**; per `CLAUDE.md` this record
+therefore claims a statically swept slice, not a green one. D-24's run at 151-18 is where that is paid.
+
+### The file-count delta, attributed by set difference
+
+The slice moved **526 → 533 files**, and all seven are named. Established with `comm` over the two
+`diff --name-only --no-renames` sets, **not** by subtraction — and the first attempt got it wrong in a
+way worth recording: `awk '{print $2}'` over `--name-status` output **truncates a path containing a
+space**, so the corrupted README's old path silently vanished from the delta and the arithmetic read
++6 against a measured +7. The count was right; the attribution was one short. Re-run on
+`--name-only`, both close.
+
+| File | Why it entered | Left the set |
+|---|---|---|
+| `api/adapters/apiRoute/apiRouteAdapter.ts` | was byte-identical across the move (dropped class); F-54's `// reason:` blocks put it in the diff | — |
+| `candidate/components/README.md` | dropped class; F-57 | — |
+| `components/README.md` | dropped class; F-57 | — |
+| `contexts/README.md` | dropped class; F-57 | — |
+| `dynamic-components/README.md` | dropped class; F-57 | — |
+| `server/api/README.md` | F-56's rename, new path (`A`) | — |
+| `server/api/README.md 21-40-30-014.md` | F-56's rename, old path (`D`) | — |
+
+**Zero files left the set.** This is the dropped-finding class working as the manifest intended: six
+files that no reviewer would have seen are now in a reviewer's diff, and they are there because they
+were defective.
+
+### Ordering note — fixes were committed before this record, deliberately
+
+As in 151-12 and 151-13: the sweep ran first, the commits did not, because a cell may not read
+`FIXED` before the commit it cites exists. D-04's actual requirement — fixes on `feat-gsd-roadmap`
+before the slice is cut — is met.
+
+---
 
 ---
 
