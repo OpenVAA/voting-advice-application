@@ -1,6 +1,6 @@
 # Routes
 
-> See also the online doc [Routing](https://openvaa.org/developers-guide/frontend/routing) (or [locally](/docs/src/routes/developers-guide/frontend/routing/+page.md))
+> See also the online doc [Routing](https://openvaa.org/developers-guide/frontend/routing) (or [locally](</apps/docs/src/routes/(content)/developers-guide/frontend/routing/+page.md>))
 
 This directory contains the SvelteKit route structure for the OpenVAA frontend application.
 

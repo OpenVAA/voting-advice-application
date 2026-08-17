@@ -1,6 +1,6 @@
 # Data API
 
-> See also the online doc [Data API](https://openvaa.org/developers-guide/frontend/data-api) (or [locally](/docs/src/routes/developers-guide/frontend/data-api/+page.md))
+> See also the online doc [Data API](https://openvaa.org/developers-guide/frontend/data-api) (or [locally](</apps/docs/src/routes/(content)/developers-guide/frontend/data-api/+page.md>))
 
 This directory contains the Data API implementation for the OpenVAA frontend, including:
 
