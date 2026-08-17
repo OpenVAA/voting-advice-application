@@ -5,15 +5,15 @@ milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 151
 current_phase_name: ship-v0-2-akita-review-stack
 status: executing
-stopped_at: "Completed 151-11-PLAN.md — slice 03 cut, PR #865 open"
-last_updated: "2026-08-17T10:54:49.017Z"
+stopped_at: Completed 151-12-PLAN.md
+last_updated: "2026-08-17T11:43:59.654Z"
 last_activity: 2026-08-16
 last_activity_desc: Phase 151 execution started
 progress:
   total_phases: 15
   completed_phases: 4
   total_plans: 43
-  completed_plans: 35
+  completed_plans: 36
   percent: 27
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 
 Milestone: v2.15 (Phases 137-151, 15 phases, 38 requirements)
 Phase: 151 (ship-v0-2-akita-review-stack) — EXECUTING
-Plan: 12 of 19
+Plan: 13 of 19
 Status: Ready to execute
 Last activity: 2026-08-16 — Phase 151 execution started
 
@@ -48,8 +48,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-17T10:54:38.543Z
-Stopped at: Completed 151-11-PLAN.md — slice 03 cut, PR #865 open
+Last session: 2026-08-17T11:43:59.632Z
+Stopped at: Completed 151-12-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -160,6 +160,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 151 P09 | 35m | 3 tasks | 7 files |
 | Phase 151 P10 | ~50m | 4 tasks | 5 files |
 | Phase 151 P11 | ~1h40m | 3 tasks | 9 files |
+| Phase 151 P12 | ~1h25m | 3 tasks | 10 files |
 
 ## Deferred Items
 
@@ -690,6 +691,9 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: migrations_added stays 0 deliberately: F-29 and F-30 would each need a migration, and PD-02 makes a migration blocking on yarn db:lint:sql exiting 0, which F-21 prevents
 - [Phase ?]: F-21 not fixed — greening yarn db:lint:sql needs a breaking signature change to a granted, type-generated, pgTAP-referenced public RPC; that is a product decision (Rule 4), escalated to the operator
 - [Phase ?]: F-24 (Signicat birthdate identity key) reframed as a repo-wide design choice after checking the frontend, and routed to 151-14 so one decision covers both halves rather than desynchronising them
+- [Phase ?]: 151-12: fixes committed before the disposition record, inverting the plan's task order — a cell may not read FIXED before the commit it cites exists
+- [Phase ?]: 151-12: F-39 not fixed — dev-seed's 15 lint warnings are one deliberate class, and the remedy would move a phase-wide baseline eight later plans compare against
+- [Phase ?]: 151-12: F-36's locality guard deferred to the operator — dev-seed has none, and adding one changes the behaviour of a command that deletes rows
 
 ### Quick Tasks Completed
 

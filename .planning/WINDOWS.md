@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 23
+open_count: 26
 waived_count: 0
 fixed_count: 0
-total_count: 23
-last_updated: 2026-08-17T10:54:25.572Z
+total_count: 26
+last_updated: 2026-08-17T11:44:12.162Z
 ---
 
 # Broken Windows Ledger
@@ -38,6 +38,9 @@ last_updated: 2026-08-17T10:54:25.572Z
 | 21 | 151 | stub | packages/supabase-types/tsconfig.tsbuildinfo |  | F-31 packages/supabase-types/tsconfig.tsbuildinfo is a tracked build artifact (class of F-08, routed to 151-16) | open |  | 2026-08-17T10:54:25.286Z |  |
 | 22 | 151 | deviation | apps/supabase/supabase/schema/400-storage.sql | 529 | F-32 storage_config stores a live service_role key in a plaintext column in production; remedy is Supabase Vault | open |  | 2026-08-17T10:54:25.431Z |  |
 | 23 | 151 | deviation | apps/docs/src/routes/(content)/developers-guide/app-and-repo-structure/+page.md | 14 | F-33 apps/strapi (a path that never existed) appears 46 times across 16 files, 15 under apps/docs (routed to 151-16) | open |  | 2026-08-17T10:54:25.572Z |  |
+| 24 | 151 | deviation | packages/dev-seed/src/cli/seed.ts | 123 | F-38: live forward-compatibility scaffolding for shipped plans — writer.write cast to (...args: Array<unknown>) defeats type-checking on a real call; D-13 excludes the restructure | open |  | 2026-08-17T11:44:11.884Z |  |
+| 25 | 151 | deviation | packages/dev-seed/README.md |  | F-36: dev-seed has no locality guard; both CLIs fall back SUPABASE_URL ??= PUBLIC_SUPABASE_URL and seed:teardown has no env enforcement. Documented, not guarded — operator decision | open |  | 2026-08-17T11:44:12.028Z |  |
+| 26 | 151 | lint-warning | packages/dev-seed/src/generators |  | F-39: 15 of the repo's 20 lint:check warnings, all unused-ctx on the uniform generator signature; the /^_/ remedy would move the phase-wide baseline | open |  | 2026-08-17T11:44:12.162Z |  |
 
 ````json
 [
@@ -315,6 +318,42 @@ last_updated: 2026-08-17T10:54:25.572Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-08-17T10:54:25.572Z",
+    "resolved_at": null
+  },
+  {
+    "id": 24,
+    "kind": "deviation",
+    "phase": "151",
+    "file": "packages/dev-seed/src/cli/seed.ts",
+    "line": 123,
+    "description": "F-38: live forward-compatibility scaffolding for shipped plans — writer.write cast to (...args: Array<unknown>) defeats type-checking on a real call; D-13 excludes the restructure",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T11:44:11.884Z",
+    "resolved_at": null
+  },
+  {
+    "id": 25,
+    "kind": "deviation",
+    "phase": "151",
+    "file": "packages/dev-seed/README.md",
+    "line": null,
+    "description": "F-36: dev-seed has no locality guard; both CLIs fall back SUPABASE_URL ??= PUBLIC_SUPABASE_URL and seed:teardown has no env enforcement. Documented, not guarded — operator decision",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T11:44:12.028Z",
+    "resolved_at": null
+  },
+  {
+    "id": 26,
+    "kind": "lint-warning",
+    "phase": "151",
+    "file": "packages/dev-seed/src/generators",
+    "line": null,
+    "description": "F-39: 15 of the repo's 20 lint:check warnings, all unused-ctx on the uniform generator signature; the /^_/ remedy would move the phase-wide baseline",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T11:44:12.162Z",
     "resolved_at": null
   }
 ]
