@@ -14,6 +14,6 @@ Show a popup asking for user feedback.
 
 ## Source
 
-[frontend/src/lib/dynamic-components/feedback/popup/FeedbackPopup.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/feedback/popup/FeedbackPopup.svelte)
+[frontend/src/lib/dynamic-components/feedback/popup/FeedbackPopup.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/feedback/popup/FeedbackPopup.svelte)
 
-[frontend/src/lib/dynamic-components/feedback/popup/FeedbackPopup.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/feedback/popup/FeedbackPopup.type.ts)
+[frontend/src/lib/dynamic-components/feedback/popup/FeedbackPopup.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/feedback/popup/FeedbackPopup.type.ts)

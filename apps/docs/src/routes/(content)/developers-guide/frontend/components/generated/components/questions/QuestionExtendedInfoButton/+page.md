@@ -21,6 +21,6 @@ A button that will display the question's extended information content in a `Dra
 
 ## Source
 
-[frontend/src/lib/components/questions/QuestionExtendedInfoButton.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/questions/QuestionExtendedInfoButton.svelte)
+[frontend/src/lib/components/questions/QuestionExtendedInfoButton.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionExtendedInfoButton.svelte)
 
-[frontend/src/lib/components/questions/QuestionExtendedInfoButton.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/questions/QuestionExtendedInfoButton.type.ts)
+[frontend/src/lib/components/questions/QuestionExtendedInfoButton.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionExtendedInfoButton.type.ts)

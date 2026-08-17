@@ -24,7 +24,7 @@ Try running `yarn build:app-shared` first.
 
 Try deleting `/yarn.lock` and rerunning the command. You may also:
 
-- check that you’re using the correct Node version (see [Docker Setup: Requirements](https://github.com/OpenVAA/voting-advice-application/blob/main/docs/docker-setup-guide.md#requirements)).
+- check that you’re using the correct Node version (see [Requirements](/developers-guide/development/requirements)).
 - follow the steps in [Docker error: ”No space left on device” error](#docker-error-no-space-left-on-device-errordocker-no-space-left-on-device-error) below.
 
 ## Docker error: Load metadata for docker.io/library/node:foo

@@ -199,7 +199,7 @@ In most cases, default values for properties included in `$$restProps`, such as 
 </div>
 ```
 
-However, if you want to concatenate values with properties in `$$restProps`, such as concatenating a default `class` string with one possibly defined in `$$restProps`, this should be added after `{...$$restProps}`. To make this easier, a `concatClass` helper function is provided in [`$lib/utils/components`](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/utils/components.ts). For example:
+However, if you want to concatenate values with properties in `$$restProps`, such as concatenating a default `class` string with one possibly defined in `$$restProps`, this should be added after `{...$$restProps}`. To make this easier, a `concatClass` helper function is provided in [`$lib/utils/components`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/utils/components.ts). For example:
 
 ```tsx
 <div {...concatClass($$restProps, 'default-class')}>...</div>
@@ -224,7 +224,7 @@ let className: $$Props['class'] = $$props['class'];
 
 #### Component documentation
 
-Follow Svelte's [guidelines for component documentation](https://svelte.dev/docs/faq#how-do-i-document-my-components). For an example, see [`IconBase`](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/icon/base/IconBase.svelte) component and its associated [type definition](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/icon/base/IconBase.type.ts).
+Follow Svelte's [guidelines for component documentation](https://svelte.dev/docs/faq#how-do-i-document-my-components). For an example, see [`IconBase`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/icon/base/IconBase.svelte) component and its associated [type definition](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/icon/base/IconBase.type.ts).
 
 Place the Svelte docstring at the top of the file, before the `<script>` block. The documentation must consist of:
 

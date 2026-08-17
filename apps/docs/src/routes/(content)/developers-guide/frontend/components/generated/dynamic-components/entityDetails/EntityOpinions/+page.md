@@ -17,6 +17,6 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
 
 ## Source
 
-[frontend/src/lib/dynamic-components/entityDetails/EntityOpinions.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/entityDetails/EntityOpinions.svelte)
+[frontend/src/lib/dynamic-components/entityDetails/EntityOpinions.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityDetails/EntityOpinions.svelte)
 
-[frontend/src/lib/dynamic-components/entityDetails/EntityOpinions.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/entityDetails/EntityOpinions.type.ts)
+[frontend/src/lib/dynamic-components/entityDetails/EntityOpinions.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityDetails/EntityOpinions.type.ts)

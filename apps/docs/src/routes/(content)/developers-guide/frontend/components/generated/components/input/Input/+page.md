@@ -52,6 +52,6 @@ The input itself is wrapped in multiple container elements, the outermost of whi
 
 ## Source
 
-[frontend/src/lib/components/input/Input.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/input/Input.svelte)
+[frontend/src/lib/components/input/Input.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/input/Input.svelte)
 
-[frontend/src/lib/components/input/Input.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/input/Input.type.ts)
+[frontend/src/lib/components/input/Input.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/input/Input.type.ts)

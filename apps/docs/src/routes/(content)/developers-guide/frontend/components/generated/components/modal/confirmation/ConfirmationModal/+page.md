@@ -45,6 +45,6 @@ See the `<Modal>` component documentation for more information.
 
 ## Source
 
-[frontend/src/lib/components/modal/confirmation/ConfirmationModal.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/modal/confirmation/ConfirmationModal.svelte)
+[frontend/src/lib/components/modal/confirmation/ConfirmationModal.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/confirmation/ConfirmationModal.svelte)
 
-[frontend/src/lib/components/modal/confirmation/ConfirmationModal.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/modal/confirmation/ConfirmationModal.type.ts)
+[frontend/src/lib/components/modal/confirmation/ConfirmationModal.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/confirmation/ConfirmationModal.type.ts)

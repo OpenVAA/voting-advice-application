@@ -22,6 +22,6 @@ attributes of one.
 
 ## Source
 
-[frontend/src/lib/components/openVAALogo/OpenVAALogo.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/openVAALogo/OpenVAALogo.svelte)
+[frontend/src/lib/components/openVAALogo/OpenVAALogo.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/openVAALogo/OpenVAALogo.svelte)
 
-[frontend/src/lib/components/openVAALogo/OpenVAALogo.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/openVAALogo/OpenVAALogo.type.ts)
+[frontend/src/lib/components/openVAALogo/OpenVAALogo.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/openVAALogo/OpenVAALogo.type.ts)

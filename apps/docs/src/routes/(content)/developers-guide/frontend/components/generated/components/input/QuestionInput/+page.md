@@ -23,6 +23,6 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
 
 ## Source
 
-[frontend/src/lib/components/input/QuestionInput.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/input/QuestionInput.svelte)
+[frontend/src/lib/components/input/QuestionInput.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/input/QuestionInput.svelte)
 
-[frontend/src/lib/components/input/QuestionInput.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/input/QuestionInput.type.ts)
+[frontend/src/lib/components/input/QuestionInput.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/input/QuestionInput.type.ts)

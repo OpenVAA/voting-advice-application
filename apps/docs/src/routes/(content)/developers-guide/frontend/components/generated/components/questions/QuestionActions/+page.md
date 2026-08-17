@@ -38,6 +38,6 @@ If `separateSkip` is set to `true`, the `onNext` callback is switched to a `onSk
 
 ## Source
 
-[frontend/src/lib/components/questions/QuestionActions.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/questions/QuestionActions.svelte)
+[frontend/src/lib/components/questions/QuestionActions.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionActions.svelte)
 
-[frontend/src/lib/components/questions/QuestionActions.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/questions/QuestionActions.type.ts)
+[frontend/src/lib/components/questions/QuestionActions.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionActions.type.ts)

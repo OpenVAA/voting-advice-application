@@ -26,6 +26,6 @@ A template part that outputs the navigation menu for the Voter App for use in `L
 
 ## Source
 
-[frontend/src/lib/dynamic-components/navigation/voter/VoterNav.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/navigation/voter/VoterNav.svelte)
+[frontend/src/lib/dynamic-components/navigation/voter/VoterNav.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/voter/VoterNav.svelte)
 
-[frontend/src/lib/dynamic-components/navigation/voter/VoterNav.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/navigation/voter/VoterNav.type.ts)
+[frontend/src/lib/dynamic-components/navigation/voter/VoterNav.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/voter/VoterNav.type.ts)

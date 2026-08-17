@@ -16,6 +16,6 @@ Reusable component for displaying warning and error messages with scrolling.
 
 ## Source
 
-[frontend/src/lib/components/controller/WarningMessages.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/controller/WarningMessages.svelte)
+[frontend/src/lib/components/controller/WarningMessages.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/controller/WarningMessages.svelte)
 
-[frontend/src/lib/components/controller/WarningMessages.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/controller/WarningMessages.type.ts)
+[frontend/src/lib/components/controller/WarningMessages.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/controller/WarningMessages.type.ts)

@@ -24,6 +24,6 @@ and the main title.
 
 ## Source
 
-[frontend/src/lib/components/headingGroup/HeadingGroup.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/headingGroup/HeadingGroup.svelte)
+[frontend/src/lib/components/headingGroup/HeadingGroup.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/headingGroup/HeadingGroup.svelte)
 
-[frontend/src/lib/components/headingGroup/HeadingGroup.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/headingGroup/HeadingGroup.type.ts)
+[frontend/src/lib/components/headingGroup/HeadingGroup.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/headingGroup/HeadingGroup.type.ts)

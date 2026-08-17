@@ -30,6 +30,6 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
 
 ## Source
 
-[frontend/src/lib/components/questions/OpinionQuestionInput.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/questions/OpinionQuestionInput.svelte)
+[frontend/src/lib/components/questions/OpinionQuestionInput.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/OpinionQuestionInput.svelte)
 
-[frontend/src/lib/components/questions/OpinionQuestionInput.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/questions/OpinionQuestionInput.type.ts)
+[frontend/src/lib/components/questions/OpinionQuestionInput.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/OpinionQuestionInput.type.ts)

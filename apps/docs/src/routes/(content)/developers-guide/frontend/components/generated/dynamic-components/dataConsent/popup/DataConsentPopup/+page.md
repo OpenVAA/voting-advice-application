@@ -14,6 +14,6 @@ Show a popup with a data consent form, if data consent has not been given yet.
 
 ## Source
 
-[frontend/src/lib/dynamic-components/dataConsent/popup/DataConsentPopup.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/dataConsent/popup/DataConsentPopup.svelte)
+[frontend/src/lib/dynamic-components/dataConsent/popup/DataConsentPopup.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/dataConsent/popup/DataConsentPopup.svelte)
 
-[frontend/src/lib/dynamic-components/dataConsent/popup/DataConsentPopup.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/dataConsent/popup/DataConsentPopup.type.ts)
+[frontend/src/lib/dynamic-components/dataConsent/popup/DataConsentPopup.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/dataConsent/popup/DataConsentPopup.type.ts)

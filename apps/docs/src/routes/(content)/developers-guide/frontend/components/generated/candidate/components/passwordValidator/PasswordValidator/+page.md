@@ -39,6 +39,6 @@ When using this component, the `validPassword` property should be bound to a boo
 
 ## Source
 
-[frontend/src/lib/candidate/components/passwordValidator/PasswordValidator.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/candidate/components/passwordValidator/PasswordValidator.svelte)
+[frontend/src/lib/candidate/components/passwordValidator/PasswordValidator.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/candidate/components/passwordValidator/PasswordValidator.svelte)
 
-[frontend/src/lib/candidate/components/passwordValidator/PasswordValidator.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/candidate/components/passwordValidator/PasswordValidator.type.ts)
+[frontend/src/lib/candidate/components/passwordValidator/PasswordValidator.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/candidate/components/passwordValidator/PasswordValidator.type.ts)

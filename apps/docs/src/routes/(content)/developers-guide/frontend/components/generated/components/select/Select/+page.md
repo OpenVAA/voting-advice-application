@@ -35,6 +35,6 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
 
 ## Source
 
-[frontend/src/lib/components/select/Select.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/select/Select.svelte)
+[frontend/src/lib/components/select/Select.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/select/Select.svelte)
 
-[frontend/src/lib/components/select/Select.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/select/Select.type.ts)
+[frontend/src/lib/components/select/Select.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/select/Select.type.ts)

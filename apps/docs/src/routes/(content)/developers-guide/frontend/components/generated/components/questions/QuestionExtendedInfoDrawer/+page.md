@@ -20,6 +20,6 @@ A `Drawer` that displays the question's extended information.
 
 ## Source
 
-[frontend/src/lib/components/questions/QuestionExtendedInfoDrawer.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/questions/QuestionExtendedInfoDrawer.svelte)
+[frontend/src/lib/components/questions/QuestionExtendedInfoDrawer.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionExtendedInfoDrawer.svelte)
 
-[frontend/src/lib/components/questions/QuestionExtendedInfoDrawer.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/questions/QuestionExtendedInfoDrawer.type.ts)
+[frontend/src/lib/components/questions/QuestionExtendedInfoDrawer.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionExtendedInfoDrawer.type.ts)

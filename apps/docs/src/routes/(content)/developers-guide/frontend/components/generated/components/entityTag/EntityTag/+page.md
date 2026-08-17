@@ -18,6 +18,6 @@ Used to display an `Entity` as small tag including an icon.
 
 ## Source
 
-[frontend/src/lib/components/entityTag/EntityTag.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/entityTag/EntityTag.svelte)
+[frontend/src/lib/components/entityTag/EntityTag.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/entityTag/EntityTag.svelte)
 
-[frontend/src/lib/components/entityTag/EntityTag.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/entityTag/EntityTag.type.ts)
+[frontend/src/lib/components/entityTag/EntityTag.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/entityTag/EntityTag.type.ts)

@@ -6,9 +6,9 @@
 
 Setting the password is done in three components:
 
-- [`PasswordSetPage.svelte`](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/routes/candidate/register/PasswordSetPage.svelte) (new user)
-- [`PasswordResetPage.svelte`](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/routes/candidate/password-reset/PasswordResetPage.svelte) (forgotten password)
-- [`settings/+page.svelte`](<https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/routes/candidate/(protected)/settings/>) (update existing password)
+- [`PasswordSetPage.svelte`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/routes/candidate/register/PasswordSetPage.svelte) (new user)
+- [`PasswordResetPage.svelte`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/routes/candidate/password-reset/PasswordResetPage.svelte) (forgotten password)
+- [`settings/+page.svelte`](<https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/routes/candidate/(protected)/settings/>) (update existing password)
 
 The password is validated using [`passwordValidation.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/utils/passwordValidation.ts).
 
@@ -20,7 +20,7 @@ The file provides two main functions for validating a password
   Returns both the password validity status boolean as well as details and state for each password requirement. These details are used for the validation UI.
 
 On all password set pages, a password validation UI is shown to the user.
-This functionality is provided by the [`PasswordValidator.svelte`](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/passwordValidator/PasswordValidator.svelte) component.
+This functionality is provided by the [`PasswordValidator.svelte`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/passwordValidator/PasswordValidator.svelte) component.
 The component provides real-time password validation checks and shows the state of each password requirement.
 More details on how the different requirements are shown to the user can be found in the documentation of the component.
 

@@ -19,6 +19,6 @@ Accesses `AuthContext` and `AppContext`.
 
 ## Source
 
-[frontend/src/lib/dynamic-components/logoutButton/LogoutButton.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/logoutButton/LogoutButton.svelte)
+[frontend/src/lib/dynamic-components/logoutButton/LogoutButton.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/logoutButton/LogoutButton.svelte)
 
-[frontend/src/lib/dynamic-components/logoutButton/LogoutButton.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/logoutButton/LogoutButton.type.ts)
+[frontend/src/lib/dynamic-components/logoutButton/LogoutButton.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/logoutButton/LogoutButton.type.ts)

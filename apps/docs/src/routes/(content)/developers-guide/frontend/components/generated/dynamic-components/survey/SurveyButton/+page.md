@@ -31,6 +31,6 @@ Accesses `AppContext` to set and read the current survey status and link.
 
 ## Source
 
-[frontend/src/lib/dynamic-components/survey/SurveyButton.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/survey/SurveyButton.svelte)
+[frontend/src/lib/dynamic-components/survey/SurveyButton.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/survey/SurveyButton.svelte)
 
-[frontend/src/lib/dynamic-components/survey/SurveyButton.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/survey/SurveyButton.type.ts)
+[frontend/src/lib/dynamic-components/survey/SurveyButton.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/survey/SurveyButton.type.ts)

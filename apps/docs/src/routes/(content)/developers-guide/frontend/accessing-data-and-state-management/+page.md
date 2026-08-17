@@ -27,7 +27,7 @@ The basic paradigm is (from top to bottom):
 - The specific `DataProvider` implementations may either
   - directly access the database, or
   - if they can only run on the server circulate the calls via the generic `ApiRouteDataProvider`—`/routes/api/data/[collection]/+server.ts`—`$lib/server/_api/serverDataProvider` chain, the last part of which exports the correct `ServerDataProvider` implementation.
-- If the `PUBLIC_CACHE_ENABLED` env variable is set, the either adapters `fetch` requests are rerouted via the cache route (`/routes/api/cache/server.ts`). This is handled by the [`UniversalAdapter.fetch`](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/api/base/universalAdapter.ts), which the providers use internally.
+- If the `PUBLIC_CACHE_ENABLED` env variable is set, the either adapters `fetch` requests are rerouted via the cache route (`/routes/api/cache/server.ts`). This is handled by the [`UniversalAdapter.fetch`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/base/universalAdapter.ts), which the providers use internally.
 
 The process is described in the flowchart below.
 

@@ -34,6 +34,6 @@ text="Add to list">
 
 ## Source
 
-[frontend/src/lib/components/buttonWithConfirmation/ButtonWithConfirmation.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/buttonWithConfirmation/ButtonWithConfirmation.svelte)
+[frontend/src/lib/components/buttonWithConfirmation/ButtonWithConfirmation.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/buttonWithConfirmation/ButtonWithConfirmation.svelte)
 
-[frontend/src/lib/components/buttonWithConfirmation/ButtonWithConfirmation.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/buttonWithConfirmation/ButtonWithConfirmation.type.ts)
+[frontend/src/lib/components/buttonWithConfirmation/ButtonWithConfirmation.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/buttonWithConfirmation/ButtonWithConfirmation.type.ts)

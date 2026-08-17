@@ -8,7 +8,7 @@ The existing content-type of `User` is used to identify the users that can log i
 
 See [password-validation.md](/developers-guide/candidate-user-management/password-validation) on additional information on how password validation is handled.
 
-For logging in and logging out, the frontend stores the session JWT token returned by Strapi in the local storage of the browser. The primary logic for this is handled in [`authenticationStore.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/utils/authenticationStore.ts). Log out is handled simply by resetting the state to being logged out and discarding the saved JWT token inside local storage.
+For logging in and logging out, the frontend stores the session JWT token returned by Strapi in the local storage of the browser. The primary logic for this is handled in [`authenticationStore.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/utils/authenticationStore.ts). Log out is handled simply by resetting the state to being logged out and discarding the saved JWT token inside local storage.
 
 ### Email Templates
 

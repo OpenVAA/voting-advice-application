@@ -19,6 +19,6 @@ Used for a pre-title, or kicker, above the main title of a page within a `Headin
 
 ## Source
 
-[frontend/src/lib/components/headingGroup/PreHeading.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/headingGroup/PreHeading.svelte)
+[frontend/src/lib/components/headingGroup/PreHeading.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/headingGroup/PreHeading.svelte)
 
-[frontend/src/lib/components/headingGroup/PreHeading.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/headingGroup/PreHeading.type.ts)
+[frontend/src/lib/components/headingGroup/PreHeading.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/headingGroup/PreHeading.type.ts)

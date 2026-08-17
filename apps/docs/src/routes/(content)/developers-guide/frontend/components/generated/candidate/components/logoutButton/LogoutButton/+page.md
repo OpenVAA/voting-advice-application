@@ -24,6 +24,6 @@ Accesses `CandidateContext`.
 
 ## Source
 
-[frontend/src/lib/candidate/components/logoutButton/LogoutButton.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/candidate/components/logoutButton/LogoutButton.svelte)
+[frontend/src/lib/candidate/components/logoutButton/LogoutButton.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/candidate/components/logoutButton/LogoutButton.svelte)
 
-[frontend/src/lib/candidate/components/logoutButton/LogoutButton.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/candidate/components/logoutButton/LogoutButton.type.ts)
+[frontend/src/lib/candidate/components/logoutButton/LogoutButton.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/candidate/components/logoutButton/LogoutButton.type.ts)

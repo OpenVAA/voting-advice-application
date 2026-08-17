@@ -20,6 +20,6 @@ Used to show a label-content pair in a Candidate's basic information.
 
 ## Source
 
-[frontend/src/lib/dynamic-components/entityDetails/InfoItem.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/entityDetails/InfoItem.svelte)
+[frontend/src/lib/dynamic-components/entityDetails/InfoItem.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityDetails/InfoItem.svelte)
 
-[frontend/src/lib/dynamic-components/entityDetails/InfoItem.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/entityDetails/InfoItem.type.ts)
+[frontend/src/lib/dynamic-components/entityDetails/InfoItem.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityDetails/InfoItem.type.ts)

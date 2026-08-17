@@ -16,6 +16,6 @@ Small badge component used to display information next to other components.
 
 ## Source
 
-[frontend/src/lib/components/infoBadge/InfoBadge.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/infoBadge/InfoBadge.svelte)
+[frontend/src/lib/components/infoBadge/InfoBadge.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/infoBadge/InfoBadge.svelte)
 
-[frontend/src/lib/components/infoBadge/InfoBadge.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/infoBadge/InfoBadge.type.ts)
+[frontend/src/lib/components/infoBadge/InfoBadge.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/infoBadge/InfoBadge.type.ts)
