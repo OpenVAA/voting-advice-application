@@ -103,7 +103,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     const elSym = unwrapped.nomination?.electionSymbol;
 
     // The default action is a link to the entity's ResultEntity route.
-    // see phase 62 see phase 88: ResultEntity now resolves
+    // see phase 62 and see phase 88: ResultEntity now resolves
     // to the 4-segment shape `[[electionTab]]/[[entityTab]]/[[entity]]/[[id]]`.
     // The `entity` (singular drawer entity-type matcher) is the entity's own
     // `type` (candidate | organization | alliance); the `entityTab` (plural

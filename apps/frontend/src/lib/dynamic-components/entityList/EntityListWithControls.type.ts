@@ -10,7 +10,7 @@ import type { SvelteHTMLElements } from 'svelte/elements';
  *     `itemsTolerance`, `scrollIntoView`.
  *   - `filterGroup` is optional. When omitted, the component reads
  *     `filterContext.filterGroup` — the canonical shape for the
- *     results-page integration in. The override prop is kept
+ *     results-page integration. The override prop is kept
  *     for off-context usage (tests, candidate-app migration).
  */
 export type EntityListWithControlsProps<TEntity extends MaybeWrappedEntityVariant = MaybeWrappedEntityVariant> =

@@ -308,8 +308,8 @@ export class VoterContextProvider implements VoterContext {
   //     `/results/{e}/candidates`, which combined with downstream consumers
   //     emitting same-shape URLs produced a redirect loop).
   //   - Lets `filterContext` resolve the active FilterGroup even when the URL
-  //     omits `entityTab` (see phase 62 scope tuple becomes implied, not
-  //     URL-derived).
+  //     omits `entityTab` (see phase 62: the scope tuple becomes implied,
+  //     not URL-derived).
   //   - Mirrors `currentResultsElection`'s singular-derived-from-URL pattern.
   //
   // Per CLAUDE.md Context Destructuring Rule, consumers MUST read via

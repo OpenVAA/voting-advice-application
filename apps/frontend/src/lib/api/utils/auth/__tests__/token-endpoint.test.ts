@@ -297,7 +297,7 @@ describe('POST /api/oidc/token (Idura - private_key_jwt)', () => {
 // and that asymmetry is a scoping decision recorded here so the file does not
 // read as half-migrated:
 //
-//   see phase 140's remit is the Idura (private_key_jwt) bank-auth path. Signicat
+//   see phase 140 — its remit is the Idura (private_key_jwt) bank-auth path. Signicat
 //   (client_secret) is a separate provider whose own coverage phase has not
 //   run; converting its assertions here would change what this describe proves
 //   without any Signicat-side gate to catch a regression in the conversion.
