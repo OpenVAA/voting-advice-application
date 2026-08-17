@@ -265,8 +265,18 @@ Requires:
 - `SUPABASE_SERVICE_ROLE_KEY` — set automatically by `supabase start`;
   readable via `yarn db:status`.
 
-Missing env → the CLI exits 1 with an actionable message. The
-writer enforces both at construction time (NF-02).
+Missing env → `seed` exits 1 with an actionable message: the `Writer`
+constructor enforces both at construction time (NF-02), before any client is
+built. **`seed:teardown` does not go through the `Writer`** — it constructs
+`SupabaseAdminClient` directly, and that module falls back to
+`http://localhost:54321` and the published Supabase CLI demo service-role key
+when either variable is unset. So an unset environment makes teardown act on the
+local instance rather than fail; it never makes it act on nothing.
+
+Both CLIs also fall back to `PUBLIC_SUPABASE_URL` when `SUPABASE_URL` is unset,
+and auto-load the repo-root `.env`. See the warning under Security Notes: that
+fallback is the frontend's variable, so what is in your `.env` decides what these
+commands act on.
 
 ## Security Notes
 
@@ -277,9 +287,30 @@ executes any top-level code in the file. This is the SAME trust model as
 JSON templates (`.json` extension) parse as pure data and cannot execute code
 (T-58-05-02).
 
-The CLI only writes with a service-role Supabase client against a local
-Supabase instance (the writer refuses to run without `SUPABASE_URL` set);
-it is not intended to run against production.
+**These commands act on whatever `SUPABASE_URL` names, and nothing checks that it
+is local.** Both CLIs auto-load the repo-root `.env` and, when `SUPABASE_URL` is
+unset, fall back to `PUBLIC_SUPABASE_URL` — the _deployed frontend's_ variable.
+A repo-root `.env` pointing at a staging or production Supabase therefore
+silently retargets both `db:seed` and `db:seed:teardown` at it, using a
+service-role client that bypasses RLS. `db:seed:teardown` is the one that hurts:
+it deletes every row whose `external_id` matches the prefix across 10 content
+tables.
+
+The guards that do exist, so you know what you are relying on:
+
+- The `external_id` prefix scopes teardown; nothing outside it is touched.
+- `assertTeardownPrefix` refuses a prefix shorter than 2 characters, which is
+  what stops a `LIKE '%'`-adjacent mass delete (T-58-07-02).
+- `accounts`, `projects`, `feedback` and `app_settings` are not in the teardown
+  set at all, so bootstrap rows survive.
+
+There is **no locality check** among them. Before running either command, confirm
+what `SUPABASE_URL` resolves to — `yarn db:status` prints the local one. This is
+a local-development and CI tool; it is not intended to run against production.
+
+**Custom templates run with that same service-role client.** The two facts
+compose: a template is developer-authored code, and it executes against whatever
+instance the environment names.
 
 ## Troubleshooting
 
