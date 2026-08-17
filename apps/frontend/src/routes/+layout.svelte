@@ -47,8 +47,9 @@
   initDataContext();
   const appCtx = initAppContext();
   const { setDataRoot, openFeedbackModal, popupQueue, sendTrackingEvent, startPageview, submitAllEvents, t } = appCtx;
-  // appSettings is a bare reactive accessor (see phase 113) whose own declaration
-  // states it MUST be read off the context — destructuring it would bind the value
+  // appSettings is a bare reactive accessor whose own declaration in
+  // `appContext.type.ts` states it MUST be read off the context — destructuring
+  // it would bind the value
   // once at init, so the analytics branch below would never see a settings re-merge.
   const appSettings = $derived(appCtx.appSettings);
   const layoutCtx = initLayoutContext();

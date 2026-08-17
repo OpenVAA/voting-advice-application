@@ -69,12 +69,11 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   // Genuinely stable members (getRoute, t, answers, startEvent, *Countdown)
   // remain destructured.
   //
-  // appSettings and dataRoot are NOT in that set. They became bare reactive
-  // accessors at the v2.13 handle flatten (see phase 113), so per CLAUDE.md's
-  // Context Destructuring Rule neither may be destructured: appSettings is
-  // value-replacing, so a destructured local stops updating, and dataRoot is
-  // identity-stable behind a #version bridge, so the destructure takes the
-  // version dependency once at init and never again.
+  // appSettings and dataRoot are NOT in that set. Both are bare reactive
+  // accessors, so per CLAUDE.md's Context Destructuring Rule neither may be
+  // destructured: appSettings is value-replacing, so a destructured local stops
+  // updating, and dataRoot is identity-stable behind a #version bridge, so the
+  // destructure takes the version dependency once at init and never again.
   const voterCtx = getVoterContext();
   const { answers, getRoute, startEvent, startFeedbackPopupCountdown, startSurveyPopupCountdown, t } = voterCtx;
   // appSettings is value-replacing: a $derived read alias is safe and correct.
@@ -83,8 +82,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   // the consuming tracking scope, never through an intermediate $derived alias
   // (referential equality would suppress downstream notification and the
   // cold/direct-URL snapshot would stay empty). See CLAUDE.md "Context
-  // Destructuring Rule" and the stable-reference alias anti-pattern
-  // (see spike 024, see phase 117).
+  // Destructuring Rule" and its stable-reference carve-out.
   // Re-named local aliases preserved for template readability:
   const elections = $derived(voterCtx.selectedElections);
   const constituencies = $derived(voterCtx.selectedConstituencies);
