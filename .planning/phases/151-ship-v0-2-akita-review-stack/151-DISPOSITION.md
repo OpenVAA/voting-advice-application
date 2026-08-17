@@ -13,8 +13,8 @@ criterion_3: closed-by-plan-151-08
 criterion_3_gate_red_is_expected: true
 per_slice_items: 12
 cells_expected: 163
-cells_filled: 60
-cells_pending: 103
+cells_filled: 72
+cells_pending: 91
 blank_cells: 0
 db_slice: "03"
 adapter_slice: "06"
@@ -24,8 +24,8 @@ dropped_finding_class_files: 842
 invisible_to_review_files: 1202
 unclaimed_by_any_pathspec: 120
 comparable_total: 4274
-slices_dispositioned: ["01a", "01b", "02", "03"]
-findings_total: 33
+slices_dispositioned: ["01a", "01b", "02", "03", "04"]
+findings_total: 41
 status: in-progress
 approval: pending
 ---
@@ -35,8 +35,8 @@ approval: pending
 **Created:** 2026-08-17
 **Phase:** 151 — Ship the v0.2 Akita review stack
 **Plan:** 06 (scaffold + phase-level rows). Cells are filled by plans 151-09 … 151-18.
-**Status:** 🟡 **IN PROGRESS — approval gate NOT reached.** `cells_filled: 60` of 163, after plans
-151-09 (slices **01a**, **01b**, **02**) and 151-11 (slice **03**) — all 60 cells terminal, none pending. The gate closes only when
+**Status:** 🟡 **IN PROGRESS — approval gate NOT reached.** `cells_filled: 72` of 163, after plans
+151-09 (slices **01a**, **01b**, **02**), 151-11 (slice **03**) and 151-12 (slice **04**) — all 72 cells terminal, none pending. The gate closes only when
 `cells_filled == cells_expected` **and** `blank_cells == 0`, checked in plan 151-18. Criterion 1 has
 no other automated evidence, so this frontmatter *is* the criterion.
 
@@ -190,18 +190,18 @@ Columns are slices. Every cell holds a verdict token or `PENDING→NN` (the plan
 
 | # | Item | Reach | 01a | 01b | 02 | 03 | 04 | 05 | 06 | 07 | 08 | 09 | 10 | 11 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| **2** | OWASP Top 10 review | `none` | N/A | MET | MET | FIXED | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **3** | Follows the Code style guide | `partial` | N/A | N/A | FIXED | MET | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **4** | Avoid `any`; document or `@ts-expect-error` | `partial` | N/A | N/A | FIXED | FIXED | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **5** | No repeated code in the PR or elsewhere in the repo | `none` | DEF | FIXED | MET | DEF | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **6** | New components / functions / entities documented | `none` | N/A | N/A | FIXED | FIXED | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **7** | Repo documentation markdown updated | `none` | DEF | DEF | FIXED | FIXED | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **8** | Tracking events for new user-facing functions | `none` | N/A | N/A | N/A | N/A | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **9** | New Svelte components follow the guidelines | `partial` | N/A | N/A | N/A | N/A | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **10** | Errors handled and logged | `none` | N/A | N/A | FIXED | FIXED | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **13** | WCAG A and AA | `partial` | N/A | N/A | N/A | N/A | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **14** | Keyboard + screen-reader usable | `partial` | N/A | N/A | N/A | N/A | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **15** | Developers'/Publishers' Guide entries updated | `none` | DEF | DEF | DEF | DEF | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **2** | OWASP Top 10 review | `none` | N/A | MET | MET | FIXED | FIXED | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **3** | Follows the Code style guide | `partial` | N/A | N/A | FIXED | MET | MET | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **4** | Avoid `any`; document or `@ts-expect-error` | `partial` | N/A | N/A | FIXED | FIXED | FIXED | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **5** | No repeated code in the PR or elsewhere in the repo | `none` | DEF | FIXED | MET | DEF | DEF | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **6** | New components / functions / entities documented | `none` | N/A | N/A | FIXED | FIXED | FIXED | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **7** | Repo documentation markdown updated | `none` | DEF | DEF | FIXED | FIXED | FIXED | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **8** | Tracking events for new user-facing functions | `none` | N/A | N/A | N/A | N/A | N/A | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **9** | New Svelte components follow the guidelines | `partial` | N/A | N/A | N/A | N/A | N/A | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **10** | Errors handled and logged | `none` | N/A | N/A | FIXED | FIXED | FIXED | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **13** | WCAG A and AA | `partial` | N/A | N/A | N/A | N/A | N/A | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **14** | Keyboard + screen-reader usable | `partial` | N/A | N/A | N/A | N/A | N/A | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **15** | Developers'/Publishers' Guide entries updated | `none` | DEF | DEF | DEF | DEF | FIXED | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
 
 `P→NN` abbreviates the pending marker `PENDING→NN`. Count: 12 × 12 = **144 cells, 0 blank**.
 
@@ -439,12 +439,17 @@ under `apps/supabase/supabase/functions/`. Small enough that exhaustive agent re
 
 | Group | Cells | Filled | Pending | Blank |
 |---|---:|---:|---:|---:|
-| Per-slice general (12 × 12) | 144 | 48 | 96 | **0** |
+| Per-slice general (12 × 12) | 144 | 60 | 84 | **0** |
 | Phase-level (4 × 1) | 4 | 0 | 4 | **0** |
 | Supabase Backend (9, slice 03) | 9 | 9 | 0 | **0** |
 | Supabase Adapter (3, slice 06) | 3 | 0 | 3 | **0** |
 | Edge Functions (3, slice 03) | 3 | 3 | 0 | **0** |
-| **Total** | **163** | **60** | **103** | **0** |
+| **Total** | **163** | **72** | **91** | **0** |
+
+**Slice 04** (plan 151-12) — 6 `FIXED` + 4 `NOT-SWEPT` + 1 `MET` + 1 `DEFERRED`. It is the first
+slice in the stack whose `FIXED` count is half its cells, which is what sweeping a large new
+package with a real public surface produces: four of the six are documentation defects in prose
+that describes the package's own API, and none was reachable by any automated gate.
 
 **The 36 filled cells, by slice** (plan 151-09): **01a** — 9 `NOT-SWEPT` + 3 `DEFERRED`, **0 `MET`**;
 **01b** — 8 `NOT-SWEPT` + 1 `MET` + 1 `FIXED` + 2 `DEFERRED`; **02** — 4 `NOT-SWEPT` + 2 `MET` +
@@ -982,6 +987,198 @@ A database reset **was** run regardless, because item 24's evidence had to come 
 database built from migrations rather than an incrementally mutated one: `yarn db:reset`
 applied 00001, 00002 and 00003 and seeded `seed.sql` successfully, and the pgTAP result
 above is measured against it.
+
+## Slice 04 — `ship/v0.2-akita-04-dev-seed` — cell-by-cell evidence
+
+**Filled by plan 151-12.** The 12 per-slice general items. The two conditional Supabase blocks
+and the Adapter block read `n/a — outside block pathspec`: this slice touches neither
+`apps/supabase/` nor `apps/frontend/src/lib/api/adapters/supabase/`, so under § "Cell arithmetic"
+those pairs are not in the expected set at all and create no cells. The four phase-level items
+(1, 11, 12, 16) are **not** re-run here; their evidence is contributed below and their cells stay
+`PENDING→18`.
+
+Measured refs for this pass:
+
+| ref | value |
+|---|---|
+| `BASE` = `origin/main` | `ac30f132a` — **still unmoved**; C-12's re-measurement trigger has not fired at any point in this phase |
+| `PARENT` = slice 03 | `11f877913` |
+| `TARGET` = `feat-gsd-roadmap` at sweep time | `122e3e0cf` |
+| slice-04 file set | `diff --no-renames ship/v0.2-akita-03-supabase..TARGET -- packages/dev-seed apps/frontend/static/images/e2e-test-image-1.jpg` → **162 files, all `A`**, +19,549 / −0 |
+| local Supabase | running — the integration test in § item 12 below wrote against it |
+
+### Sweep surface, stated before any verdict (D-20)
+
+| In surface | Count |
+|---|---|
+| `src/` TypeScript | **72** files — CLI ×6, generators ×14, latent emitter ×11, templates ×33 (2 built-in + 30 perm/registry + helpers), plus `writer.ts`, `supabaseAdminClient.ts`, `pipeline.ts`, `ctx.ts`, `locales.ts`, `types.ts`, template schema ×3 |
+| `tests/` TypeScript | **43** files / **446** assertions (`yarn workspace @openvaa/dev-seed test:unit` → `43 passed (43)`, `446 passed (446)`) |
+| maintainer script | `scripts/download-portraits.ts` ×1 |
+| documentation | `README.md` (303 lines), `src/assets/portraits/LICENSE.md` |
+| package config | `package.json`, `tsconfig.json`, `vitest.config.ts` |
+| binary assets | **31** `.jpg` — 30 portraits + `apps/frontend/static/images/e2e-test-image-1.jpg` |
+
+**Declared out of surface, with reason (D-20 makes the reason mandatory):** the **31 binary
+`.jpg` files** are swept under items 2, 5 and 7 only — provenance, licensing and reference
+resolution — and not read as content, because they are images. Their licensing posture is
+`src/assets/portraits/LICENSE.md`, which states plainly that the source publishes no explicit
+licence, calls the legal posture ambiguous, and scopes the pool to local dev / CI. Every one of
+the other 131 files is inside at least one lens below.
+
+### The five enumerable checks — counts, not samples
+
+Each row gives the command whose output produced it. **Two of the five were cross-checked against
+an independent source, and one of those cross-checks corrected the first number** — recorded
+because that is the discipline this phase keeps failing to apply.
+
+| Check | Command | Checked | Conforming |
+|---|---|---:|---:|
+| public-API names in `src/index.ts` enumerated by the docblock that calls itself "Public API (stable)" | parse `export {…}` / `export type {…}` bodies for the actual set; parse `` * - `name` `` bullets above `*/` for the documented set | **38 exported names** | **18** before the fix — see **F-34** |
+| built-in template registry keys vs the names the README documents | `Object.keys(BUILT_IN_TEMPLATES)` **at runtime under `tsx`** | **30 built-ins** | README named **2**, one of which (`e2e`) does not exist — see **F-35** |
+| `any` in type position across the slice | `git grep -n -I -P '(:\s*any\b\|<any>\|\bas any\b\|Array<any>\|any\[\])'` | **13 occurrences**, **0 of them in `src/`** | 9 documented, **4 not** — the F-12 / F-25 class, third occurrence |
+| `TODO` / `FIXME` / `HACK` / `XXX` | `git grep -n -I -E '\b(TODO\|FIXME\|HACK\|XXX)\b' -- packages/dev-seed` | 162 files | **0 occurrences** — the only slice so far with none |
+| perm-family duplication factored through a helper rather than copied | `git grep -l buildMinimal -- src/templates/e2e/perm \| wc -l` against the file count | **30 perm templates** | **17** compose `buildMinimal`; the other 13 are documented at `templates/index.ts:104-124` as layouts `buildMinimal` cannot express |
+
+> **The registry count is where an internal identity nearly went into a public PR body wrong.**
+> A static parse of `BUILT_IN_TEMPLATES`'s object literal returned **31** keys — self-consistent,
+> and wrong, because the regex also matched the marker line `BUILT_IN_TEMPLATES:` that opens the
+> block. Importing the module under `tsx` and reading `Object.keys` returns **30**. The static
+> parse and the runtime read disagreed by exactly the artefact of the measurement. **30 is the
+> number**, and it is the runtime one.
+
+### Criterion 3 on the densest reference concentration in the repository — confirmed on real slice content
+
+`151-12-PLAN.md`'s `key_links` records that dev-seed carries **88 of the 183 files** holding the
+bare decision-ID form, and asks this sweep to confirm the hygiene passes cleared them. Confirmed,
+on the slice's own file set rather than on the gate's aggregate:
+
+| Form | Rule | In slice 04 |
+|---|---|---:|
+| bare decision ID | `\bD-\d{2}\b(?!-\d{2})` | **0** |
+| long decision ID | `\bD-\d{2,3}-\d{2}\b` | **0** |
+| any `D-<digit>` at all | `D-[0-9]` | **0** |
+| artifact path | `\.planning/` | **0** |
+| section anchor | `§` | **0** |
+| plan number, gate form | `(?i)\bplans?\s+\d+[-.]\d+` | **0** |
+| **bare `phase-ref`** — the operator-approved KEEP row | `(?i)(?<!see\s)\bphases?\s+\d+` | **0** |
+
+**Slice 04 contributes nothing to the `phase-ref` half of the deliberately-red gate.** All 11 of
+those occurrences live in three files — `apps/supabase/benchmarks/scripts/run-concurrency-scaling.sh`,
+`apps/supabase/supabase/tests/database/00-helpers.test.sql`,
+`packages/argument-condensation/src/core/condensation/condenser.ts` — enumerated here rather than
+asserted, and none is in this slice.
+
+**It does contribute to the other half, and the number is stated rather than left to inference:
+45 of the gate's 84 `task-id` occurrences, across 21 of its 46 files.** They are requirement IDs
+used as inline traceability anchors — `GEN-04` ×20, `TMPL-0x` ×16, `GEN-08/09/10` ×6, `CLI-03/04` ×3
+— e.g. `README.md:230` *"`externalIdPrefix: string` — teardown filter + row prefix (GEN-04)"*. The
+`task-id` row carries a **row-level** operator KEEP verdict, so these are approved as they stand;
+the count is recorded so a reader of the red gate can attribute it rather than re-derive it.
+
+**One planning-reference class in this slice is outside criterion 3's rule set entirely, and is
+recorded rather than acted on.** The bare `Plan NN` form — `Plan 06`, `Plan 07` — appears **96
+times across 39 files** here, of **144 across 67 files** repo-wide: this slice carries **67%** of
+it. The gate's `plan-number` rule is `(?i)\bplans?\s+\d+[-.]\d+`, which matches the `Plan 88-02`
+spelling D-14 names and **not** the bare one, so the row reads `0` and is green. That is the rule
+working as written, not a miss; whether the rule should be widened is gate design, which
+`151-DISPOSITION.md` § "FOR PLAN 151-18" already defers to **plan 151-19**. The subset of these
+comments that is a genuine defect — the ones describing a development state that no longer exists —
+is **F-38** below, and it is a dead-comment finding rather than a hygiene one.
+
+**The `milestone-ver` REPORT-only row has 2 occurrences in this slice, both reviewed and kept:**
+`src/generators/AccountsGenerator.ts:26` (*"v2.5 — Supabase Auth owns account creation in production
+deployments"*) and `tests/integration/default-template.integration.test.ts:377` (*"v2.6 P64
+supabase-adapter reverse-fill"*). Both read as historical context for a design decision, not as
+planning references, which is the judgement 151-08's Stage-2 pass was for. The row is never
+auto-stripped by design.
+
+### Slice 04 — general items (12 cells)
+
+| # | Item | Verdict | Evidence |
+|---|---|---|---|
+| **2** | OWASP Top 10 | **FIXED** — commit `0691123d8` | Exhaustive over the slice's input-handling paths per D-20, which here means the two CLI entry points, the template loader, the writer and the admin client — every file that takes a value from outside the process. **A03** — `--seed` is validated against `/^-?\d+$/` on the FULL token before `parseInt`, with the reason stated in place (`cli/seed.ts:84-88`: `Number.parseInt('12abc', 10)` returns 12, so a typo'd seed would silently become a different-but-valid dataset); `parseArgs` runs `strict: true, allowPositionals: false` in both CLIs, so an unknown flag is rejected rather than ignored; every template — built-in, `.ts`/`.js` or `.json` — passes `validateTemplate()` before use (`cli/resolve-template.ts:47,89,105`). **A08** — `resolve-template.ts:93` executes developer-authored code via dynamic `import()`. Intentional, documented at `:19-24` and in `README.md` § Security Notes, and the `.json` path parses as pure data and cannot execute. Accepted, not laundered. **A05** — the secret-shaped-literal scan over all 162 files returns **0** credentials; the two `eyJ…`-shaped literals (`src/supabaseAdminClient.ts:42`, `tests/integration/default-template.integration.test.ts:126`) decode to `{"iss":"supabase-demo","role":"service_role"}` — the published Supabase CLI local demo key, the same value `apps/supabase/seed.sql:20` seeds, and not a secret. **A10** — no outbound URL is derived from any input: the only ones are `SUPABASE_URL` (environment) and the one-off maintainer script's fixed `thispersondoesnotexist.com`. **No `writeFile`/`unlink`/`rm` exists anywhere in `src/`**, so a template-supplied string cannot reach the filesystem — the only writer is `scripts/download-portraits.ts`, to a fixed directory. **T-151-12-01 is closed by that measurement.** **T-151-12-02 is closed the other way, and is the finding**: the package has **no locality guard at all**, and the README claimed one it does not have — **F-36**, fixed in the documentation; the guard itself is **DEFERRED to the operator** because adding one changes the behaviour of a destructive command. Gate: **none**. |
+| **3** | Code style guide | **MET** | Measured over the 116 TypeScript files: **0** `Foo[]` array-suffix type declarations (the guide requires `Array<Foo>`, `code-style-guide/+page.md:79`) and **0** single-letter type parameters (`:80`) — the two greps' only hits are inside comments naming `Fragment<T>`. Named-parameter discipline is applied and stated as a convention in place (`src/templates/e2e/perm/shared.ts:25-31`: *"every builder that takes more than one parameter where positional order can be confused accepts a single named-options object"*). `yarn format:check` is clean on every file in this slice **except** `src/templates/e2e/perm/perm-bankauth-notloc.ts`, which is one of the two PD-03-fenced files and is fenced out of D-05's fix bar by that decision, not by this cell. Gate: `eslint --flag v10_config_lookup_from_file src/`, **partial** — **complement, and it is large here: the lint script is `src/`-only, so all 43 `tests/` files and `scripts/download-portraits.ts` — 44 of the slice's 116 TypeScript files, 38% — are never linted at all.** That is exactly where the four undocumented `any` suppressions of item 4 live. Within `src/` the gate reports **0 errors and 15 warnings**, which is **15 of the repository's 20** — one deliberate class, recorded as **F-39** and deferred with its reason. |
+| **4** | Avoid `any` | **FIXED** — commit `ad52b8baf` | Exhaustive, and the headline is a clean one: **`src/` contains zero `any` in type position.** All 13 occurrences are in `tests/`, in three files, and every one is a mock-shape surface: `tests/writer.test.ts:45,95-107` (9), `tests/supabaseAdminClient.test.ts:56,59` (2), `tests/cli/teardown.test.ts:48` (1), plus the `__getLastInstance` accessor cast at `writer.test.ts:112`. Each carries an `eslint-disable-next-line @typescript-eslint/no-explicit-any`. **Nine carry a documented reason** — `writer.test.ts:89-92`'s docblock states it (*"The cast isolates the only `any`-ish surface in this file (mock internals)"*) and covers the eight-field block beneath it. **Four did not**: `writer.test.ts:44`, `supabaseAdminClient.test.ts:55` and `:58`, `teardown.test.ts:47`. That is **F-41**, and it is the **third** appearance of the same class in this stack — **F-12** in slice 02, **F-25** in slice 03 — fixed the same way, by stating the reason rather than removing the suppression. Gate: `@typescript-eslint/no-explicit-any`, **partial** — **complement: none of these four sites is reachable by the gate at all, because `tests/` is outside the package's `src/`-only lint script. The rule could not have flagged them, and the suppression comments above them are decorative.** |
+| **5** | No repeated / dead code | **DEFERRED** — live forward-compatibility scaffolding for a future that has already arrived | The duplication question comes out well and is worth stating first: the perm family's shared shapes are factored into `src/templates/e2e/perm/shared.ts` (12 exported builders) and `src/templates/_helpers/buildMinimal.ts`, which **17 of the 30** built-in templates compose; the 13 that do not are individually justified at `templates/index.ts:104-124` as layouts the helper cannot express. `ALLOWED_TEARDOWN_TABLES` (`cli/teardown.ts:73-85`) and `assertTeardownPrefix` (`:117`) are **exported specifically so `tests/` imports the one implementation instead of keeping a second copy**, and both say so in place. **0** `TODO`/`FIXME`/`HACK`/`XXX` occurrences — the only slice in the stack with none. What is deferred is **F-38**: `cli/seed.ts` still carries the scaffolding it was given to ship *before* the plans it depends on landed, and those plans have landed. `:123-126` casts `writer.write` to `(...args: Array<unknown>) => Promise<unknown>` — **defeating type-checking on a real call** — so the CLI can tolerate a `void` return the writer no longer has; `extractPortraitCount` (`:186-199`) exists to inspect the result shape at runtime; `loadBuiltIns` (`:151-179`) builds its import path in a local variable expressly *"to keep TypeScript from statically resolving it"*. Deleting the scaffolding is **code restructuring, which D-13 excludes from this phase's sweep scope**, and pruning the comments alone would leave the casts unexplained — strictly worse. Recorded with the remedy so a later phase does not re-derive it. Gate: **none**. |
+| **6** | Entities documented | **FIXED** — commits `e5f55c111`, `9621f2393` | **The ratio, measured rather than asserted, which is what this cell exists for.** `src/index.ts` opens with a docblock headed *"Public API (stable)"* that enumerates the package's exports one by one. It named **18** of the **38** names the file actually exports — and **0** it does not export, so the inventory was incomplete rather than wrong. The 20 absent names are not marginal: they are the **entire teardown surface** (`runTeardown`, `assertTeardownPrefix`, `ALLOWED_TEARDOWN_TABLES`, `TEARDOWN_USAGE`, `TeardownResult`), the **entire built-in-template surface** (`BUILT_IN_TEMPLATES`, `BUILT_IN_OVERRIDES`, `defaultTemplate`, `defaultOverrides`, `baseTemplate`, `BASE_APP_SETTINGS`), the **locale surface** (`LOCALES`, `LocaleCode`, `fanOutLocales`), and `resolveTemplate`, `formatSummary`, `SEED_CLI_USAGE`, `SummaryInput`, `resolveAppSettingsExternalIds`, `settingsContainsExternalIdRefs`. **F-34**, fixed. Below the barrel, definition-site documentation is strong: of **134** exported entity declarations in `src/`, **65** carry an adjacent doc comment and the great majority of the remainder are the single primary export of a file whose header docblock describes it (every generator class, every perm template). **The CLI surface is fully documented and was checked flag by flag**: `parseArgs` accepts 4 options on `seed` (`--template/-t`, `--seed`, `--external-id-prefix`, `--help/-h`) and 2 on `seed:teardown` (`--prefix`, `--help/-h`); `cli/help.ts` and `cli/teardown-help.ts` document **6 of 6**, with the environment variables and the permissive-prefix contract besides. **The README is where the second defect was** — **F-35**: it documented **2** of the **30** built-in templates and one of the two, `e2e`, has not existed since the name was retired, so `--template e2e` errors. Fixed. Gate: **none**. |
+| **7** | Repo documentation updated | **FIXED** — commits `9621f2393`, `0691123d8`, `645bee548` | Three defects, all in prose describing this package, all fixed. **F-35** — the README named the retired `e2e` built-in at three sites (`:45` flag table, `:97` section heading, `:277` a worked troubleshooting message). **The cross-check that settles it: root `CLAUDE.md:308` is *correct*** — it writes `--template e2e/base` and states the retirement explicitly — so the repo-level document was updated when the name changed and the package's own README was not. **F-36** — README § Security Notes asserted *"the writer refuses to run without `SUPABASE_URL` set"* as the package's guard, which is true of `Writer` (`writer.ts:92-105`) and **false of the destructive command**: `seed:teardown` never constructs a `Writer`, it constructs `SupabaseAdminClient` directly (`cli/teardown.ts:216`), whose module-level fallbacks (`supabaseAdminClient.ts:34,40-42`) supply a URL and the demo key with no enforcement — a decision recorded in place at `cli/teardown.ts:24-27`. **F-40** — the Developers' Guide's testing page, three false claims, fixed **in slice 09** and recorded as a cross-slice landing below. Gate: **none**. |
+| **8** | Tracking events | **NOT-SWEPT** — `n/a — the item's condition is not met: the slice adds no user-available function` | The slice is a developer CLI and a data generator; nothing in it is reachable by a voter or a candidate. The distinction worth recording is that it **does** touch analytics — `src/templates/e2e/perm/perm-analytics-tracking.ts:185-193` seeds an `app_settings.analytics` object with `trackEvents: true` — but that is seeded **configuration data**, not an event call site: `git grep -iE 'trackEvent\|umami\|gtag\|plausible\|track\('` over the 162 files returns only that template's data literals, its docblock, and `shared.ts:128`'s `analytics: { trackEvents: false }` default. The umami code it seeds is the literal `'e2e-dummy-code'`, stated at `:18-19` to be deliberately not a real key. Event call sites live in the frontend and are dispositioned in slices 06 and 07. |
+| **9** | Svelte component guidelines | **NOT-SWEPT** — `n/a — no `.svelte` file in the slice` | Extension census over all 162 files: **127** `.ts`, **31** `.jpg`, **2** `.md`, **2** `.json`. Zero `.svelte`. Gate `svelte-check` **not cited** — nothing is in scope for it. |
+| **10** | Errors handled and logged | **FIXED** — commit `3242d9dfd` | Exhaustive over the slice's failure paths. The shape is good and deliberate throughout: `Writer`'s constructor fails loudly on either missing env var with a message naming the variable and the command that supplies it (`writer.ts:92-105`); `resolve-template.ts` wraps both loaders so a JSON parse error, a module load error and a module with no usable export each surface as a named, actionable message (`:83,95,101`); `cli/seed.ts:203-211` and `cli/teardown.ts:228-233` both rephrase `fetch failed`/`ECONNREFUSED`/`ENOTFOUND` into *"Cannot reach Supabase at … Is 'supabase start' running?"*; portrait upload failure is deliberately seed-blocking rather than a warning; `countDeletedRows` (`cli/teardown.ts:160-171`) tolerates a missing or non-numeric `deleted` field instead of producing `NaN`. **One catch discarded its cause, and it was the one that mattered** — **F-37**: `cli/seed.ts:151-179`'s `loadBuiltIns()` caught **every** error from the dynamic import of the built-in-template registry and returned empty maps, so any runtime failure inside `src/templates/index.ts` reached the user as `Unknown template: 'default'. Built-in templates: (none registered yet).` — a message that names the wrong cause and sends the reader to check their spelling. Fixed by reporting the swallowed cause on stderr before falling back; the fallback itself is unchanged. Gate: **none**. |
+| **13** | WCAG A and AA | **NOT-SWEPT** — `n/a — no rendered markup in this slice` | Zero `.svelte`, `.html` or route file; the slice renders nothing to a browser. Its only human-facing output is CLI stdout. `assertAxeScan` is **not** cited — citing an a11y gate over a slice with no markup is the laundering D-18 forbids. |
+| **14** | Keyboard + screen-reader | **NOT-SWEPT** — `n/a — no rendered markup in this slice` | As item 13. |
+| **15** | Developers'/Publishers' Guides | **FIXED** — commit `645bee548`, landing in **slice 09** | **F-40.** `apps/docs/src/routes/(content)/developers-guide/development/testing/+page.md:21` is the Developers' Guide's only mention of this package, and all three of its factual claims were false against the shipped tree. (1) It names the built-in template **`e2e`** — the registry has 30 keys and no `e2e` (runtime-verified), the name is `e2e/base`. (2) It says variant specs compose on the base *"(see `tests/tests/setup/templates/variant-*.ts`)"* — **`git ls-files 'tests/tests/setup/templates'` returns 0 files**, and no `variant-*` path exists anywhere in the tree outside `.planning/`. (3) It says the data is *"seeded into Supabase via the Admin Tools API"* — dev-seed writes through the `bulk_import` RPC with a service-role client (`supabaseAdminClient.ts:202`), and "Admin Tools" was `@openvaa/strapi-admin-tools`, deleted by slice 01b. **Cross-slice landing, recorded rather than silently split:** the file is under `apps/docs/**`, which is **slice 09**'s pathspec, so the fix lands on `feat-gsd-roadmap` and enters slice 09's diff when plan **151-16** cuts it. It is deliberately **not** forced into this slice's pathspec — doing so would break the partition and trip the catch-all. The Publishers' Guide describes no seeding surface, so nothing there is invalidated. **Recorded, not fixed:** `GENERATE_MOCK_DATA_ON_RESTART`, the Strapi-era env var, is referenced by **3** docs pages (`backend/mock-data-generation`, `deployment`, `development/testing`) and by **no code in the repository** — same class as F-04 and F-33, routed to plan **151-16** with them. Gate: **none**. |
+
+### Findings queued by this sweep
+
+Numbering continues the series. Six landed as fixes on `feat-gsd-roadmap` before the slice was cut,
+per D-04; one of the six lands in a **different slice** and says so.
+
+| ID | Items | Slice | Finding | Disposition |
+|---|---|---|---|---|
+| **F-34** | 6 | **04** | `src/index.ts`'s *"Public API (stable)"* docblock enumerated **18 of the 38** names the file exports. The 20 omissions include the whole teardown surface, the whole built-in-template surface and the locale surface. Zero phantom entries — the inventory was incomplete, not wrong. | **FIXED** — `e5f55c111` |
+| **F-35** | 6, 7 | **04** | `README.md` named a **retired** built-in template, `e2e`, at three sites (`:45`, `:97`, `:277`). The registry has **30** built-ins and no `e2e` key (verified by `Object.keys` at runtime, after a static parse returned a wrong 31); `--template e2e` errors out. Root `CLAUDE.md:308` has it right and records the retirement, so the package's own README is the stale one. | **FIXED** — `9621f2393` |
+| **F-36** | 2, 7 | **04** | `README.md` § Security Notes asserted the package's guard as *"the writer refuses to run without `SUPABASE_URL` set"*. True of `Writer`; **false of `seed:teardown`**, which constructs `SupabaseAdminClient` directly (`cli/teardown.ts:216`) and has **no env enforcement** — module-level fallbacks supply a URL and the published demo key (`supabaseAdminClient.ts:34,40-42`), a decision recorded at `cli/teardown.ts:24-27`. Both CLIs additionally fall back `SUPABASE_URL ??= PUBLIC_SUPABASE_URL` (`cli/seed.ts:56-58`, `cli/teardown.ts:60-62`), and `PUBLIC_SUPABASE_URL` is the *deployed frontend's* variable — so a repo-root `.env` configured for a non-local Supabase silently retargets both commands, including the mass-delete. | **FIXED in the documentation** — `0691123d8`. **The guard itself is DEFERRED — operator decision.** Adding a locality check changes the behaviour of a destructive command and could break any consumer that legitimately points these CLIs at a non-`localhost` test instance (CI does exactly that). D-13 excludes restructuring and Rule 4 reserves behaviour changes for the operator. |
+| **F-37** | 10 | **04** | `cli/seed.ts:151-179` `loadBuiltIns()` caught every error from the dynamic import of `src/templates/index.ts` and returned empty maps, discarding the cause — so a runtime failure in the registry reached the user as `Unknown template: 'default'. Built-in templates: (none registered yet).` | **FIXED** — `3242d9dfd`; the cause is now reported on stderr and the fallback is unchanged |
+| **F-38** | 3, 5 | **04** | **Live forward-compatibility scaffolding for plans that have already shipped.** `cli/seed.ts:123-126` casts `writer.write` to `(...args: Array<unknown>) => Promise<unknown>`, defeating type-checking on a real call, so the CLI can tolerate a `void` return the writer has not had since portrait upload landed; `extractPortraitCount` (`:186-199`) inspects the result shape at runtime for the same reason; `loadBuiltIns` (`:151-179`) builds its import path in a local variable expressly to stop TypeScript resolving a module that now exists. 96 bare `Plan NN` comments across 39 files narrate this state. | **DEFERRED** — removing the scaffolding is code restructuring, which **D-13 explicitly excludes**, and pruning the comments without the code would leave three casts unexplained. **Remedy, stated so a later phase need not re-derive it:** import `../templates/index.js` statically, type `writer.write`'s return as `{ portraits: number }`, delete `extractPortraitCount`, and drop the narrating comments in the same commit. |
+| **F-39** | 3 | **04** | The slice contributes **15 of the repository's 20 `lint:check` warnings**: 14 × `'ctx' is defined but never used` on the uniform `generate(fragment, ctx)` generator signature, plus `FeedbackGenerator.ts:56`'s deliberately discarded `external_id`. All are `warn`-level by project configuration and all are consistent. | **DEFERRED — operator.** The rule's own remedy is the `/^_/` prefix, but applying it would take `lint:check` from the baseline's `0 errors / 20 warnings` to `0 / 5` — **moving a phase-wide number that eight later plans compare "unchanged" against**. Re-baselining a gate mid-stack to make a slice look tidier is worse than recording the gap. |
+| **F-40** | 7, 15 | **09** (surfaced by 04's sweep) | The Developers' Guide's testing page makes three claims about this package, and all three are false against the shipped tree: the built-in template is named `e2e` (it is `e2e/base`); variant specs live at `tests/tests/setup/templates/variant-*.ts` (**0 tracked files**, and no `variant-*` path exists outside `.planning/`); the data is seeded *"via the Admin Tools API"* (it is written through the `bulk_import` RPC — "Admin Tools" was the Strapi plugin slice 01b deleted). | **FIXED** — `645bee548`, **landing in slice 09** (`apps/docs/**`), which plan **151-16** cuts. Recorded here so the reviewer of PR 5 knows where the corresponding documentation change went. Sub-finding **recorded, not fixed**: `GENERATE_MOCK_DATA_ON_RESTART` appears in 3 docs pages and no code — routed to **151-16** with F-04 and F-33. |
+| **F-41** | 3, 4 | **04** | Four `eslint-disable @typescript-eslint/no-explicit-any` suppressions with **no documented reason** (`tests/writer.test.ts:44`, `tests/supabaseAdminClient.test.ts:55` and `:58`, `tests/cli/teardown.test.ts:47`) — the exact class of **F-12** (slice 02) and **F-25** (slice 03), now with three members and therefore a pattern. Each reason now names *why* the type cannot be written: an unexported deep supabase-js generic, a self-referential thenable assembled by assigning its own methods onto itself, and an array of ad-hoc literals that are not instances of the class they stand in for. | **FIXED** — `ad52b8baf`. Recorded alongside it: **the rule could not have flagged any of the four**, because the package's lint script is `src/`-only and all 43 `tests/` files are unlinted. |
+
+### Evidence contributed to the phase-level cells (which stay `PENDING→18`)
+
+- **Item 11 (troubleshoot failing checks) and item 12 (blast radius).** `main.yaml` at this slice's
+  head is blob **`c2fdcedb2`** — byte-identical to `origin/main`'s — and defines exactly three jobs
+  (`frontend-and-shared-module-validation`, `backend-validation`, `e2e-tests`), all on
+  `Setup Yarn 4.6`. **The `dev-seed-integration` job does not exist at this PR's head at all**: it is
+  defined only in the branch-tip `main.yaml` (blob `4dcd9bdde`, `Setup Yarn 4.13`) and arrives with
+  slice **10**. **`151-12-PLAN.md` states that the dev-seed integration job "exists in CI but is
+  conditional and will not fire on a sibling-based PR". Both halves are wrong**, and the workflow
+  says so itself: `main.yaml:130-136` records that there is **deliberately NO `paths-filter`** on
+  that job, naming the incident that made it unconditional (*"a conditional guard is how F5 happened
+  in the first place"*). The real reason no check fires on PR 5 is the one that applies to PRs 2, 3
+  and 4 as well — `main.yaml`'s `pull_request` trigger is `branches: [main]`, and this PR's base is a
+  sibling. **This is the eighth plan-encoded claim in this phase to be wrong as written, and again
+  the reasoning is sound while the observable signature is not.** The evidence that does exist is the
+  local run: `yarn workspace @openvaa/dev-seed test:unit` → **43 files / 446 tests, all passing**,
+  including `tests/integration/default-template.integration.test.ts`, which wrote the full `default`
+  template against the running local Supabase in 11.8 s and carries the NF-01 operation budget.
+
+### Gate verdicts after this plan's fixes — measured, not assumed
+
+All four re-run with **`TURBO_FORCE=1`**, so none is a cache replay:
+
+| Gate | `151-BASELINE.md` | After the six fixes | Verdict |
+|---|---|---|---|
+| `yarn build` | 14/14 | **14 successful / 14 total, 0 cached** | unchanged |
+| `yarn test:unit` | 1522 passed / 149 files | **1522 passed / 149 files** (16 + 244 + 21 + 22 + 446 + 773 across 1 + 47 + 3 + 1 + 43 + 54), 21/21 tasks, 0 cached | unchanged |
+| `yarn lint:check` | 0 errors / 20 warnings | **0 errors / 20 warnings** (core 2, dev-seed 15, frontend 1, tests 2), 11/11 tasks, 0 cached | unchanged |
+| `yarn format:check` | RED on exactly 2 PD-03-fenced files | **RED on exactly 2** — `packages/dev-seed/src/templates/e2e/perm/perm-bankauth-notloc.ts`, `tests/README.md` | unchanged |
+
+**`e2e_collisions` stays `0`.** PD-01's trigger is a fix *landed* on the branch taking a gate from
+green to red; no landed fix did. Two of the six edits made a file newly `format:check`-dirty and
+each was run through `npx prettier --write` **on that single path** before its commit, so the
+red set stayed at exactly the two PD-03-fenced files and never gained a third. `yarn format` was
+**not** run.
+
+**`migrations_added` stays `0`.** No fix in this plan touches
+`apps/supabase/supabase/migrations/` or the `apps/supabase/migrations/` spelling PD-02's text
+uses. PD-02 is a recorded no-op for this slice, not an unasked question.
+
+**`yarn db:lint:sql` was deliberately not run as a gate.** It exits 1 on a correct tree pending
+**F-21**, which is an open operator decision from plan 151-11, and nothing in this slice touches
+SQL. Naming it here would have manufactured a red signal that says nothing about this slice.
+
+### Ordering note — fixes were committed before this record, deliberately
+
+`151-12-PLAN.md` orders the sweep (Task 1) before the fixes (Task 2). The *sweep* ran first, as
+written; the *commits* did not, and that was a choice. This record's own rule is that **a cell may
+not read `FIXED` before the commit it must cite exists** (§ "Per-slice matrix", the six `P→09`
+cells 151-09 held between its two passes). Committing the six fixes first means every `FIXED` cell
+above cites a reachable object from the moment it is written, instead of carrying a placeholder
+through an intermediate commit and being corrected afterwards — which is the shape that produced
+151-11's own deviation 4, five cells citing an amended hash. D-04's actual requirement, that fixes
+land on `feat-gsd-roadmap` before the slice is cut, is unaffected and met.
 
 ---
 
