@@ -12,13 +12,15 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { logDebugError } from '$lib/utils/logger';
 import { buildRoute } from '$lib/utils/route';
+import { safeRedirectTarget } from '../../loginRedirectTarget';
 
 export const actions = {
   default: async ({ request, locals }) => {
     const data = await request.formData();
     const email = data.get('email') as string;
     const password = data.get('password') as string;
-    const redirectTo = data.get('redirectTo') as string;
+    // Caller-controlled: see `loginRedirectTarget.ts`. Rejected values fall back to the app home.
+    const redirectTo = safeRedirectTarget(data.get('redirectTo') as string | null);
 
     // Sign in directly via the Supabase server client from hooks.server.ts.
     // This ensures session cookies are set on THIS response (not a nested API route response).
