@@ -1,9 +1,64 @@
 ---
 phase: 151-ship-v0-2-akita-review-stack
-plan: 07
+plan: 08
 artifact: hygiene-report
-stage: 1
+stage: 2
 measured: 2026-08-17
+
+# --- STAGE 2 (plan 151-08, the agent pass). Stage-1 keys below are preserved as the
+#     mid-sweep record; every Stage-2 key is prefixed s2_ so the two states never merge.
+assert_clean: fail
+s2_assert_clean_exit: 1
+s2_gate_rows_failing: 2
+criterion_3: satisfied-with-two-recorded-exceptions
+
+# the operator's answer to plan 151-08 Task 1, recorded verbatim in shape
+todo_disposition: leave-and-record-plus-two-named-exceptions
+s2_todo_occurrences: 64
+s2_todo_files: 48
+s2_todo_left_in_place: 64
+s2_todo_relabelled: 1
+s2_todo_recorded_as_finding: 1
+
+# --- Stage-2 gate rows ---
+s2_phase_ref_occ: 659
+s2_phase_ref_bare: 11
+s2_spike_ref_occ: 40
+s2_spike_ref_bare: 0
+s2_decision_id_long: 0
+s2_decision_id_bare: 0
+s2_section_anchor: 0
+s2_planning_path: 0
+s2_plan_number: 0
+s2_task_id: 84
+s2_milestone_ver: 43
+s2_review_tag_occurrences: 0
+
+# --- criterion 3 positive shape check (not an absence-only check) ---
+s2_phase_refs_surviving: 659
+s2_phase_refs_in_pointer_form: 648
+s2_spike_refs_surviving: 40
+s2_spike_refs_in_pointer_form: 40
+s2_refs_not_in_pointer_form: 11
+s2_refs_not_in_pointer_form_all_keep_classified: true
+
+# --- the two deliberate KEEP exceptions, sized ---
+s2_keep_task_id: 84
+s2_keep_phase_ref_domain_labels: 11
+
+# --- gates, against 151-BASELINE.md ---
+s2_lint_check: green
+s2_lint_errors: 0
+s2_lint_warnings: 20
+s2_format_check: red
+s2_format_check_files: 2
+s2_test_unit: green
+s2_unit_tests_passed: 1522
+s2_unit_test_files: 149
+s2_build: green
+s2_build_tasks: 14
+s2_gates_match_baseline_exactly: true
+s2_source_commit: 5862397ad
 
 # --- what the codemod did (one pattern set, one run, pre-apply tree 44fdc7ab9) ---
 files_scanned: 1788
@@ -993,3 +1048,302 @@ Reasons, and what each one asks of the agent pass:
 **Row count: 528.** Equal to `residue_total` in the frontmatter, by construction —
 this table is generated from `151-hygiene-residue.tsv`, which the codemod writes on the
 same run that produces the count.
+
+---
+---
+
+# Stage 2 — the agent pass (plan 151-08)
+
+Stage 1 removed the deterministic 79 %. This stage resolved, one by one, the 528 items
+the codemod reported rather than rewrote, plus 6 it had failed to attribute at all.
+
+**Read this section for the two exceptions before quoting `criterion_3` as satisfied.**
+`--assert-clean` still exits **1** on **2 of 9** rows, and that is a recorded verdict
+rather than unfinished work. Both exceptions are argued from measurement below.
+
+## The written rule applied (copied from the plan, so judgements are auditable)
+
+Every residue item was resolved by exactly one of four verdicts. No fifth verdict exists.
+
+| Verdict | Applies to | Action |
+|---|---|---|
+| **REWRITE** | a planning reference where removal changes no behaviour and no test identity | collapse to `see phase N`, or delete if nothing survives |
+| **REWRITE-WITH-CARE** | a planning reference in a **runtime user- or operator-visible string** or an ESLint rule message | rewrite the message so it still reads as a complete sentence; do not merely excise the token |
+| **KEEP** | a **test identity** | keep, record the reason — a deliberate exception to criterion 3 |
+| **KEEP-VERSION** | a genuine tool, package, platform or domain identifier that merely looks like a planning tag | keep |
+
+For D-13's second clause (a comment the code makes redundant) the rule was applied
+narrowly, as D-13 requires: a comment was deleted only where the adjacent identifier
+already said the same thing. No restructuring was performed to make a comment redundant.
+
+## Before → Stage 1 → Stage 2
+
+Same script, same scope (`-- apps/ packages/ tests/`), same pattern set. The `base` and
+`delta` columns come from `151-hygiene-baseline.tsv`, so all three states are comparable
+by construction.
+
+```
+$ .planning/phases/151-ship-v0-2-akita-review-stack/scripts/hygiene-grep-report.sh \
+    .planning/phases/151-ship-v0-2-akita-review-stack/151-hygiene-baseline.tsv
+
+  pattern               occ   files    bare  expect     verdict    base    delta
+  -----------------  ------  ------  ------  ---------  -------  ------  -------
+  phase-ref             659     235      11  bare = 0   FAIL        704      -45
+  spike-ref              40      30       0  bare = 0   OK           41       -1
+  decision-id-long        0       0       -  occ = 0    OK          185     -185
+  decision-id-bare        0       0       -  occ = 0    OK          540     -540
+  section-anchor          0       0       -  occ = 0    OK          219     -219
+  planning-path           0       0       -  occ = 0    OK           27      -27
+  plan-number             0       0       -  occ = 0    OK          105     -105
+  milestone-ver          43      30       -  -          REPORT       45       -2
+  task-id                84      46       -  occ = 0    FAIL        535     -451
+
+  planning-reference total (8 rows) : 742
+  task-id supplementary             : 84
+  union files touched by any row    : 270
+
+Gate rows failing: 2  (milestone-ver is report-only and never counted)
+```
+
+Row-by-row across the three states, on the column each row is actually gated on:
+
+| Gate row | gated on | baseline | after Stage 1 | after Stage 2 | verdict |
+|---|---|---:|---:|---:|---|
+| `phase-ref` | `bare` | 700 | 154 | **11** | FAIL — all 11 KEEP-classified |
+| `spike-ref` | `bare` | 41 | 5 | **0** | OK |
+| `decision-id-long` | `occ` | 185 | 49 | **0** | OK |
+| `decision-id-bare` | `occ` | 540 | 47 | **0** | OK |
+| `section-anchor` | `occ` | 219 | 70 | **0** | OK |
+| `planning-path` | `occ` | 27 | 5 | **0** | OK |
+| `plan-number` | `occ` | 105 | 2 | **0** | OK |
+| `task-id` | `occ` | 535 | 84 | **84** | FAIL — KEEP, see below |
+| `milestone-ver` | — | 45 | 45 | 43 | REPORT-only by design |
+
+Six rows went from red to green in this stage. The two that did not are argued below.
+
+## Criterion 3 clause 1, proven by SHAPE and not only by absence
+
+An absence-only check cannot catch a reference that survives in the wrong form, so the
+surviving references are counted positively and the two counts compared.
+
+```
+$ git grep -I -h -o -P '(?i)\bphases?\s+\d+'            -- apps/ packages/ tests/ | wc -l   # 659
+$ git grep -I -h -o -P '(?i)(?<!see\s)\bphases?\s+\d+'  -- apps/ packages/ tests/ | wc -l   #  11
+$ git grep -I -h -o -P '(?i)\bspikes?[\s\-/]\d+'        -- apps/ packages/ tests/ | wc -l   #  40
+$ git grep -I -h -o -P '(?i)(?<!see\s)\bspikes?[\s\-/]\d+' -- apps/ packages/ tests/ | wc -l #  0
+$ git grep -I -h -o -P '(?i)\bsee (phase|spike) \d+'    -- apps/ packages/ tests/ | wc -l   # 688
+```
+
+| | surviving | in collapsed pointer form | not in pointer form |
+|---|---:|---:|---:|
+| phase references | 659 | **648** | 11 |
+| spike references | 40 | **40** | 0 |
+| **total** | **699** | **688** | **11** |
+
+648 + 40 = 688, and 688 + 11 = 699. The arithmetic closes. **Every** surviving reference
+is in `see phase N` / `see spike N` form **except the 11**, and those 11 are not planning
+references at all — see exception 2.
+
+A note on a temptation that was rejected: rendering an attributive reference as the
+hyphenated compound `phase-56` would satisfy every grep in this file, because the gate
+pattern requires whitespace (`phases?\s+\d+`). It was not used. A surviving reference
+spelled `phase-56` is still a surviving reference; it merely evades the check. This
+positive shape table is exactly the instrument that would have caught it.
+
+## Criterion 3 clause 2 — review-tagged comments, measured on both sides
+
+```
+$ git grep -I -o -P '\[PR review\]' -- apps/ packages/ tests/ | wc -l
+0
+```
+
+**0, measured after the agent pass** — not inherited from the Stage-1 record and not
+assumed from C-7. Nothing in this stage could have introduced one, but "nothing could
+have" is not a measurement.
+
+## Exception 1 — `task-id` (84 occurrences). KEEP, and the cost of not keeping is measured
+
+Test identities. The plan's default verdict for a test title is KEEP; this stage found
+**direct evidence** that the default is correct here rather than merely cautious.
+
+`tests/scripts/determinism-batch.sh` matches a Playwright step by its title as a
+**functional string**:
+
+```
+tests/scripts/determinism-batch.sh:96    EPERM07_STEP_PREFIX='EPERM-07 customData.terms'
+tests/scripts/determinism-batch.sh:493   ... "$RUN_DIR/results.json" "$EPERM07_STEP_PREFIX" ...
+tests/tests/specs/voter/voter-journey.spec.ts:894
+    await test.step('EPERM-07 customData.terms: in-text affordance + definition popup on Base-3', ...)
+```
+
+Stripping `EPERM-07` from that step title to satisfy the `task-id` row would leave the
+determinism gate silently unable to find the step it exists to measure. That is a
+regression a grep-driven rewrite would have introduced and no test would have caught.
+
+The same class covers the rest of the row: the coverage IDs (`EPERM-*`, `EFLOW-*`,
+`GEN-*`, `TMPL-*`, `EQTYP-*`) index this project's own failure history and coverage
+records, and `tests/IDURA-TEST-RUNBOOK.md` § `EFLOW-10` is a cross-reference target named
+from `candidate-bank-auth-journey.spec.ts`.
+
+One member of this row is a KEEP-VERSION rather than a test identity: `BYZ-38` in
+`apps/frontend/ios/App/App/Base.lproj/Main.storyboard` is an Xcode-generated
+`viewController id`, a functional identifier that merely matches `[A-Z]{3,}-\d{2}`.
+
+**Recommendation for the gate, not applied here:** `task-id` should become REPORT-only,
+exactly as `milestone-ver` already is, and for the identical reason the script's own
+header gives — the pattern cannot mechanically distinguish the class it should strip from
+the class it must not. Changing a gate is not this plan's authority; it is recorded for
+the operator.
+
+## Exception 2 — `phase-ref` bare (11 occurrences). KEEP: these are not planning references
+
+The pattern `phases?\s+\d+` matches domain step labels as readily as milestone phases —
+Pitfall 6's problem in a different row.
+
+| File | Occurrences | What it actually is |
+|---|---:|---|
+| `apps/supabase/benchmarks/scripts/run-concurrency-scaling.sh` | 5 | `# PHASE 1: JSONB Schema` / `PHASE 2: Relational Schema` — the benchmark's own two phases |
+| `apps/supabase/supabase/tests/database/00-helpers.test.sql` | 2 | `-- Phase 1: Create persistent helper functions` / `-- Phase 2: Smoke tests` — pgTAP procedure steps |
+| `packages/argument-condensation/src/core/condensation/condenser.ts` | 4 | `// PHASE 1: CREATE TREE NODES` … `PHASE 4` — the condensation algorithm's stages |
+
+Renaming these to `STEP` would turn both rows green. It was not done, on purpose: the
+text is correct as written, it has nothing to do with this project's planning vocabulary,
+and rewriting correct domain prose so that a regex stops matching it is letting the tool
+dictate the code — the same failure the KEEP verdict exists to prevent.
+
+## The TODO class — the operator's answer, applied exactly
+
+**Answer: `leave-and-record`, plus two named exceptions.** This is `leave-and-record`
+with two specific carve-outs, NOT a fourth policy.
+
+Three corrections to the question as originally posed, measured before it was answered:
+
+1. The class is **TODO-only**. `FIXME`, `HACK` and `XXX` are each **0** in shipped source;
+   the plan's "65 TODO/FIXME/HACK/XXX" over-specified it.
+2. **5 of the 65 are not actionable markers.** Three are in *generated* files under
+   `apps/docs/.../generated/` (mirrors of component-source comments, regenerated from
+   their source). Two are prose mentions: `packages/argument-condensation/README.md:255`
+   ("that is left TODO") and `tests/README.md:135`, which describes a TODO that **never
+   existed** — *"this line previously asserted … a matching re-enable TODO marker in
+   `playwright.config.ts`; neither existed in the tree — the claim was stale"*. That one
+   is a correction record and is **deliberately preserved**; deleting the word would
+   corrupt it.
+3. **`-I` is not the only load-bearing flag — `-P` is too.** `git grep -E '\b(TODO)\b'`
+   returns **0**, because git's ERE does not honour `\b`; the same pattern under `-P`
+   returns 65. The Stage-1 note about `-I` is right but incomplete, and the next person
+   to re-derive this count will hit the same trap.
+
+| Disposition | Count | Action |
+|---|---:|---|
+| Left in place, recorded | 64 | none — locality was the deciding argument |
+| Relabelled (not a TODO) | 1 | `mapRow.ts:7` |
+| Recorded as a finding | 1 | `FeedbackGenerator.svelte:103`, in `151-DISPOSITION.md` |
+
+```
+$ git grep -c -I -P '\b(TODO|FIXME|HACK|XXX)\b' -- apps/ packages/ tests/   # 64 occurrences
+$ git grep -l -I -P '\b(TODO|FIXME|HACK|XXX)\b' -- apps/ packages/ tests/   # 48 files
+```
+
+**Exception A — relabelled.** `apps/frontend/src/lib/api/adapters/supabase/utils/mapRow.ts:7`
+read `TODO: RLS is responsible for preventing sensitive data leakage, not the mapper.`
+That is not a TODO; it is a correct statement of where the responsibility lies, wearing a
+TODO marker. The marker was replaced with `Note:` and the sentence kept verbatim.
+
+**Exception B — recorded, not fixed.** `apps/frontend/src/lib/admin/components/jobs/FeatureJobs.svelte:103`
+carries an admitted shipped bug (*"Past Jobs Section. Currently has a bug. TODO: fix bug
+of not showing past jobs. If we even want to keep this section. Do we?"*). It sits at
+D-05's fix bar as a **finding**, and it carries an unresolved product question. It is
+recorded in `151-DISPOSITION.md` against checklist item 5 with the product question
+surfaced to the operator. **It was deliberately not fixed and the question deliberately
+not answered** — an agent answering "do we even want to keep this section?" would be
+making a product decision it has no standing to make.
+
+The rejected options are recorded with the reason: `triage` would have touched ~46 source
+files for a non-blocking concern, inflating the exact diff this PR stack exists to make
+reviewable, and would have destroyed locality (`TODO[Node 24]` sitting beside the polyfill
+it will replace is worth more in place than in a tracker). `fix-blocking-only`'s triage
+cost was already sunk — all 65 were read — and its yield was one code fix blocked on a
+product question.
+
+## REWRITE-WITH-CARE — ten sites, not the two the plan anticipated
+
+The plan named the two frontend filter-context warnings. The file-by-file pass found
+**eight more** planning references crossing the same trust boundary into user- or
+operator-visible output. Every one is a checklist item 3 and item 10 finding and is
+cross-referenced in `151-DISPOSITION.md`.
+
+| # | Site | Surface | Before → after |
+|---|---|---|---|
+| 1 | `filterContext.svelte.ts:130` | runtime `console.warn` | `…not implemented in Phase 62 — see D-06 (future LLM chat follow-up).` → `…is not implemented: this build exposes a fixed filter set, so filters cannot be added at runtime.` |
+| 2 | `filterContext.svelte.ts:135` | runtime `console.warn` | same shape, `removeFilter` |
+| 3 | `apps/frontend/eslint.config.mjs:95` | ESLint rule `message:` | `…(v2.11 K1). … See .planning/v2.11-DECISIONS.md K1.` → `…banned in migrated contexts and routes. Use $state/$derived rune handles exposing \`current\` instead.` |
+| 4 | `packages/dev-seed/src/cli/teardown-help.ts:34` | CLI `--help` text | `Permissive by design (D-58-17):` → `Permissive by design:` |
+| 5 | `AccountsGenerator.ts:48` | runtime logger | `accounts are bootstrap-only per D-11.` → `accounts are bootstrap-only.` |
+| 6 | `ProjectsGenerator.ts:48` | runtime logger | `projects are bootstrap-only per D-11.` → `projects are bootstrap-only.` |
+| 7 | `NominationsGenerator.ts:174` | thrown `Error` message | `runs in D-06 topo order` → `runs in topological order` |
+| 8 | `FeedbackGenerator.ts:65` + `writer.ts:196-197` | runtime logger | `disabled in Phase 56` → `disabled`; `skipped in Phase 56` → `skipped`; `Phase 58 may add direct upsert support` → `direct upsert support may be added later` |
+| 9 | `tests/scripts/e2e-run.sh:251,445,456` | operator stdout | `(Phase 138, D-12)` and `(D-17)` removed from three echoed lines |
+| 10 | `tests/scripts/determinism-batch.sh:530,533` | operator stdout | `(D-17)` removed from two `REASON=` strings |
+
+### A rewrite that had to be re-decided, per PD-01
+
+The first attempt at sites 8 reworded the messages more than the reference required
+(`synthetic feedback disabled` → `synthetic feedback generation is disabled`, and
+`feedback writes skipped` → `feedback writes are not supported`). Two unit tests assert on
+those substrings and went red:
+
+```
+FAIL tests/generators/FeedbackGenerator.test.ts  expect(...).toContain('synthetic feedback disabled')
+FAIL tests/writer.test.ts                        expect(logger).toHaveBeenCalledWith(stringContaining('feedback writes skipped'))
+```
+
+PD-01's trigger fired and the item was re-decided rather than the tests being edited to
+match. Neither assertion depended on the phase reference — only on the semantic substring
+— so the messages were re-cut to excise the reference and **preserve the asserted
+wording**. Both tests pass untouched, and the resulting diff is strictly smaller. Editing
+the assertions would also have worked and would have been worse: it would have moved a
+test to fit a comment sweep.
+
+## Damage the Stage-1 codemod left, repaired here
+
+All 7 prose-review-queue lines were repaired. The pass also found the same failure in a
+shape Stage 1 did not count: where the codemod stripped a `.planning/...` path from
+mid-sentence it left an **empty backtick pair**, producing text like
+
+```
+ * analysis) lives in ` ` § Adjudication — the single
+```
+
+Eleven such sites were repaired across `tests/tests/helpers/navigation.ts`,
+`assertTeardown.ts`, `forensicCapture.fixture.ts`, `views.ts`, `voterNavigation.ts`,
+`eperm07-term-trigger.spec.ts` and `voter-journey.spec.ts`. They were not in the
+prose-review queue because the codemod counted a rewrite as clean once the reference was
+gone; "the reference is gone" and "the sentence still parses" are different properties.
+
+## Gates — identical to `151-BASELINE.md`, not merely no worse
+
+| Gate | Baseline | After Stage 2 | Verdict |
+|---|---|---|---|
+| `yarn build` | green | **14/14 tasks** | identical |
+| `yarn test:unit` | 1522 passed / 149 files | **1522 passed / 149 files** | identical |
+| `yarn lint:check` | 0 errors / 20 warnings | **0 errors / 20 warnings** (`TURBO_FORCE=1`) | identical |
+| `yarn format:check` | red on 2 files | red on **exactly those 2 files** | identical |
+
+The two format-red files remain `packages/dev-seed/src/templates/e2e/perm/perm-bankauth-notloc.ts`
+and `tests/README.md`, both PD-03-fenced. **`yarn format` was deliberately NOT run**, a
+documented deviation from this plan's action text carried forward from Stage 1: running it
+would reformat the two fenced files this phase is not allowed to touch.
+
+Scope was verified before commit: `git status` reported changes under `apps/`, `packages/`
+and `tests/` only — nothing under `.planning/`, `.claude/`, `.agents/` or `CLAUDE.md`.
+
+## What remains open
+
+| Item | State | Owner |
+|---|---|---|
+| `--assert-clean` exit 0 | **NOT MET** — exits 1 on 2 rows, both KEEP-classified | operator: accept the exceptions, or re-scope the two gate rows as REPORT-only |
+| `task-id` at zero | **KEEP** — measured breakage if stripped | recorded exception |
+| `phase-ref` bare at zero | **KEEP** — 11 domain step labels, not planning references | recorded exception |
+| Every other gate row | **MET** — 6 rows red → green this stage | — |
+| Criterion 3 clause 2 (`[PR review]`) | **MET** — measured 0 | — |
+| TODO disposition | **MET** — answered, applied, recorded | — |

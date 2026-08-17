@@ -6,6 +6,9 @@ created: 2026-08-17
 items_total: 31
 slices: 12
 phase_level_items: 4
+plan_151_08_findings: 11
+plan_151_08_item3_item10_findings: 10
+plan_151_08_item5_findings: 1
 per_slice_items: 12
 cells_expected: 163
 cells_filled: 0
@@ -477,6 +480,69 @@ a new migration**.
   overstates it (`151-MEASUREMENTS.md` § 1.4). Step 2 buys less than its name suggests: **neither
   check reads policy bodies, policy role targets, function attributes, trigger names, or column
   sets** — items 17, 19, 20, 21 and 23 are `none`-reach and remain agent review.
+
+---
+
+## Plan 151-08 findings — planning references reaching a user, plus one shipped-bug record
+
+Added by plan 151-08 (comment-hygiene Stage 2). These are **phase-level** rows: they were found by
+the hygiene pass across the whole tree, before any slice was cut, and each was fixed on
+`feat-gsd-roadmap` per D-04.
+
+### Checklist items 3 + 10 — internal vocabulary crossing into user/operator-visible output
+
+A planning reference that reaches a user is a **defect**, not untidiness. The plan anticipated two
+such sites; the file-by-file pass found **ten**. All ten were rewritten so the message still reads
+as a complete sentence — the reference was not merely excised.
+
+| # | File:line | Surface a reader/operator sees | Reference removed | Disposition |
+|---|---|---|---|---|
+| 1 | `apps/frontend/src/lib/contexts/filter/filterContext.svelte.ts:130` | `console.warn` in the running voter app | `Phase 62`, `D-06` | FIXED — message rewritten |
+| 2 | `apps/frontend/src/lib/contexts/filter/filterContext.svelte.ts:137` | `console.warn` in the running voter app | `Phase 62`, `D-06` | FIXED — message rewritten |
+| 3 | `apps/frontend/eslint.config.mjs:95` | ESLint error text shown to every contributor | `v2.11 K1`, `.planning/v2.11-DECISIONS.md` | FIXED — message rewritten |
+| 4 | `packages/dev-seed/src/cli/teardown-help.ts:34` | `seed:teardown --help` output | `D-58-17` | FIXED |
+| 5 | `packages/dev-seed/src/generators/AccountsGenerator.ts:48` | `ctx.logger` warning during a seed run | `D-11` | FIXED |
+| 6 | `packages/dev-seed/src/generators/ProjectsGenerator.ts:48` | `ctx.logger` warning during a seed run | `D-11` | FIXED |
+| 7 | `packages/dev-seed/src/generators/NominationsGenerator.ts:174` | thrown `Error` message | `D-06` | FIXED — "topo order" → "topological order" |
+| 8 | `packages/dev-seed/src/generators/FeedbackGenerator.ts:65` + `src/writer.ts:196-197` | `ctx.logger` warnings during a seed run | `Phase 56`, `Phase 58` | FIXED — asserted substrings preserved (see below) |
+| 9 | `tests/scripts/e2e-run.sh:251,445,456` | operator stdout from the E2E runner | `Phase 138`, `D-12`, `D-17` ×2 | FIXED |
+| 10 | `tests/scripts/determinism-batch.sh:530,533` | operator stdout, `REASON=` lines | `D-17` ×2 | FIXED |
+
+**Re-decision recorded (PD-01 trigger).** Row 8's first rewrite changed more wording than the
+reference required and reddened two unit tests that assert on the message substrings
+(`synthetic feedback disabled`, `feedback writes skipped`). Per PD-01 the item was re-decided rather
+than the tests edited: the messages were re-cut to remove only the reference and preserve the
+asserted wording. Both tests pass untouched. Editing the assertions would also have gone green and
+would have been worse — it would have moved a test to fit a comment sweep.
+
+### Checklist item 5 — known-incomplete code shipped, recorded not fixed
+
+| File:line | Finding | Disposition |
+|---|---|---|
+| `apps/frontend/src/lib/admin/components/jobs/FeatureJobs.svelte:103` | Admitted shipped bug in the admin Past Jobs section: *"Past Jobs Section. Currently has a bug. TODO: fix bug of not showing past jobs. If we even want to keep this section. Do we?"* | **RECORDED, NOT FIXED** |
+
+This sits at D-05's fix bar as a genuine correctness finding, and it is the one TODO in the tree
+that does. It was deliberately left unfixed under the operator's `leave-and-record` answer.
+
+> **Open product question for the operator, deliberately unanswered:** the comment asks *"If we even
+> want to keep this section. Do we?"* Fixing the bug and deleting the section are both defensible,
+> and the choice is a product decision an agent has no standing to make. A reviewer meeting this
+> section in the PR stack should be pointed at this row.
+
+### Checklist item 3 — TODO inventory disposition
+
+The remaining 64 TODO occurrences across 48 files are **left in place by operator decision**
+(`leave-and-record`), recorded here as an inventory rather than removed. Locality was the deciding
+argument: `TODO[Node 24]` beside the polyfill it will replace carries more information in place than
+in a tracker, and triaging them would have touched ~46 source files for a non-blocking concern —
+inflating the exact diff this PR stack exists to make reviewable. Full breakdown, including the two
+non-actionable prose mentions and the three generated-file mirrors, is in `151-HYGIENE-REPORT.md`
+§ "The TODO class".
+
+One relabel was applied: `apps/frontend/src/lib/api/adapters/supabase/utils/mapRow.ts:7` carried a
+`TODO:` marker on what is actually a correct rationale note about RLS owning data-leak prevention.
+The marker became `Note:`; the sentence is unchanged.
+
 
 ---
 

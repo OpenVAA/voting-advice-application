@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 11
+open_count: 13
 waived_count: 0
 fixed_count: 0
-total_count: 11
-last_updated: 2026-08-17T07:05:45.533Z
+total_count: 13
+last_updated: 2026-08-17T08:05:52.468Z
 ---
 
 # Broken Windows Ledger
@@ -26,6 +26,8 @@ last_updated: 2026-08-17T07:05:45.533Z
 | 9 | 151 | unmet-truth | .planning/phases/151-ship-v0-2-akita-review-stack/151-HYGIENE-REPORT.md |  | 151-07 must-have 'surviving phase/spike references appear only in the collapsed short-pointer form' is NOT met: 108 attributive references (e.g. 'the Phase 64 fix') were deliberately reported instead of collapsed, because 'the see phase 64 fix' is ungrammatical. phase-ref/spike-ref gate rows stay red until plan 151-08. | open |  | 2026-08-17T07:05:45.227Z |  |
 | 10 | 151 | deviation | .planning/phases/151-ship-v0-2-akita-review-stack/151-HYGIENE-REPORT.md |  | 151-07 Task 3 acceptance criteria 1 and 2 (zero '.planning/' paths, zero 'Plan NN-NN') are not met: 5 + 2 occurrences survive in Markdown prose and in an ESLint rule message string, both classes the same plan routes to the 151-08 agent pass. Plan-internal contradiction, enumerated in 151-HYGIENE-REPORT.md. | open |  | 2026-08-17T07:05:45.402Z |  |
 | 11 | 151 | deviation | .planning/phases/151-ship-v0-2-akita-review-stack/151-hygiene-prose-queue.tsv |  | 7 comment lines were rewritten correctly (reference removed) but read badly after a mid-sentence deletion, e.g. 'See for the trace.' Enumerated as 151-08's prose-polish queue. | open |  | 2026-08-17T07:05:45.533Z |  |
+| 12 | 151 | deviation | apps/frontend/src/lib/admin/components/jobs/FeatureJobs.svelte | 103 | Admitted shipped bug: admin Past Jobs section does not show past jobs; recorded not fixed per operator leave-and-record, carries an open product question | open |  | 2026-08-17T08:05:52.298Z |  |
+| 13 | 151 | unrun-verify | .planning/phases/151-ship-v0-2-akita-review-stack/scripts/hygiene-grep-report.sh |  | hygiene --assert-clean exits 1 on task-id (84) and phase-ref bare (11); both KEEP-classified with measured justification, gate re-scoping left to operator | open |  | 2026-08-17T08:05:52.468Z |  |
 
 ````json
 [
@@ -159,6 +161,30 @@ last_updated: 2026-08-17T07:05:45.533Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-08-17T07:05:45.533Z",
+    "resolved_at": null
+  },
+  {
+    "id": 12,
+    "kind": "deviation",
+    "phase": "151",
+    "file": "apps/frontend/src/lib/admin/components/jobs/FeatureJobs.svelte",
+    "line": 103,
+    "description": "Admitted shipped bug: admin Past Jobs section does not show past jobs; recorded not fixed per operator leave-and-record, carries an open product question",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T08:05:52.298Z",
+    "resolved_at": null
+  },
+  {
+    "id": 13,
+    "kind": "unrun-verify",
+    "phase": "151",
+    "file": ".planning/phases/151-ship-v0-2-akita-review-stack/scripts/hygiene-grep-report.sh",
+    "line": null,
+    "description": "hygiene --assert-clean exits 1 on task-id (84) and phase-ref bare (11); both KEEP-classified with measured justification, gate re-scoping left to operator",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T08:05:52.468Z",
     "resolved_at": null
   }
 ]
