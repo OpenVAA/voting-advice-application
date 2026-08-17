@@ -5,15 +5,15 @@ milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 151
 current_phase_name: ship-v0-2-akita-review-stack
 status: executing
-stopped_at: Completed 151-08-PLAN.md
-last_updated: "2026-08-17T08:14:21.514Z"
+stopped_at: Completed 151-09-PLAN.md
+last_updated: "2026-08-17T08:50:24.626Z"
 last_activity: 2026-08-16
 last_activity_desc: Phase 151 execution started
 progress:
   total_phases: 15
   completed_phases: 4
   total_plans: 43
-  completed_plans: 32
+  completed_plans: 33
   percent: 27
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 
 Milestone: v2.15 (Phases 137-151, 15 phases, 38 requirements)
 Phase: 151 (ship-v0-2-akita-review-stack) — EXECUTING
-Plan: 9 of 19
+Plan: 10 of 19
 Status: Ready to execute
 Last activity: 2026-08-16 — Phase 151 execution started
 
@@ -48,8 +48,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-17T08:14:13.180Z
-Stopped at: Completed 151-08-PLAN.md
+Last session: 2026-08-17T08:50:15.009Z
+Stopped at: Completed 151-09-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -157,6 +157,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 151 P06 | 50m | 4 tasks | 3 files |
 | Phase 151 P07 | 2h10m | 3 tasks | 352 files |
 | Phase 151 P08 | ~3h | 4 tasks | 151 files |
+| Phase 151 P09 | 35m | 3 tasks | 7 files |
 
 ## Deferred Items
 
@@ -676,6 +677,11 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: task-id KEEP proven by breakage: determinism-batch.sh matches a Playwright step title as a functional string (151-08)
 - [Phase ?]: Decision-IDs stripped from unit-test titles, task-IDs kept — nothing selects tests by decision ID (151-08)
 - [Phase ?]: REPORT-only re-scope of task-id/phase-ref gate rows deferred to plan 151-19 (151-08)
+- [Phase ?]: The invisible-to-review class is 1202 files, not 842; unclaimed-by-pathspec is 120, not 110 (151-09)
+- [Phase ?]: Stack states 01a..09 declare workspaces that do not exist — PR #1's body must say so (151-09)
+- [Phase ?]: Findings on the 120 unclaimed files are DEFERRED, not fixed — the remedy edits an operator-approved slices.tsv, so it is the operator's call (151-09)
+- [Phase ?]: The plan's 01a <verify> asserts 'DR'; a correct pure-rename commit yields 'R' — asserted the prose criterion (R>0, A=0, M=0) instead (151-09)
+- [Phase ?]: Items 12 and 16 stay phase-level (PENDING->18); their evidence is recorded as input rather than filled into per-slice cells (151-09)
 
 ### Quick Tasks Completed
 
