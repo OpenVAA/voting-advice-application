@@ -1102,6 +1102,147 @@ Both bodies state exactly that and no more.
   byte-identical to the pre-plan baseline.
 
 
+
+## Slices 09 and 10 cut, PRs 8 and 9 published, and `slices.tsv` amended — plan 151-16
+
+**The last two code slices exist, the stack is ten PRs deep, and the partition was amended for the
+first time in the phase — on an operator decision, not an agent's.** No slice was re-cut: slice 08
+was asserted unaffected before slice 09 was built, so PRs #863 … #870 were never disturbed and **no
+force-push was needed anywhere**.
+
+| ref | value |
+|---|---|
+| base, re-resolved | `origin/main` = `ac30f132a` — **still unmoved**, at every measurement point in this phase |
+| `TARGET`, the fixed tip at cut time | `1567c7a23`, tree `40f5d20c5` — includes this plan's eleven fixes and the two F-15 fixes |
+| `PARENT` for 09, unchanged and pushed by this plan | `6a810df8a` — slice 08; **not** re-cut |
+
+| slice | branch | commit | files | +lines | −lines |
+|---|---|---|---|---|---|
+| 09 | `ship/v0.2-akita-09-docs` | **`2865b05b3`** | **152** | **777** | **347** |
+| 10 | `ship/v0.2-akita-10-root-config` | **`3aa503741`** | **129** | **8662** | **27267** |
+
+### Criterion 4.2 — satisfied, with the commit SHA as its evidence
+
+> **4.2 — all documentation outside the planning tree is one commit.**
+
+`git log --oneline ship/v0.2-akita-08-i18n-messages..ship/v0.2-akita-09-docs | wc -l` → **1**. The
+commit is **`2865b05b3`**, subject `docs: update the project documentation - the docs site, the root
+README and roadmap, and the key-generation guide`, 152 files, `2 A / 150 M`.
+
+**The criterion and the slice coincide by construction, as they did for 4.3 at slice 05.** Slice 09's
+pathspec *is* the non-planning documentation, so "one slice", "one commit" and "all documentation"
+are the same set; nothing was collapsed to satisfy the clause. The taxonomy gate's `docs` cardinality
+clause goes from `0 == 1` to `1 == 1` with this cut, leaving only `planning` outstanding until 151-17.
+
+### `slices.tsv` was amended — the first partition change since operator approval
+
+**F-15's remedy was put to the operator at this plan's checkpoint and accepted.** Options 1 and 2
+accepted, Option 3 (claim all 120 unclaimed files) declined. The edits, and nothing else:
+
+| row | column | before | after |
+|---|---|---|---|
+| `09` | pathspec | `apps/docs docs ROADMAP.md` | `apps/docs docs ROADMAP.md README.md` |
+| `09` | subject | `…the docs site, the root roadmap and the key-generation guide` | `…the docs site, the root README and roadmap, and the key-generation guide` |
+| `10` | pathspec | 29 tokens | + `apps/frontend/android apps/frontend/ios apps/frontend/jest.config.json` |
+
+The subject amendment is load-bearing rather than cosmetic: criterion 6's own test is *"does the title
+describe every file in it, without an 'and also'?"*, and a slice claiming `README.md` while its
+subject named only the docs site and the roadmap would fail it on the file just added.
+
+Two fixes became possible only because of it, and **both were structurally unfixable before**:
+`README.md:12`'s broken front-page image (`aad244085`) and the 89 orphaned Capacitor files plus the
+dead jest config (`6c40fb57b`). **The residual risk on the second is external and was accepted
+knowingly**: every in-repo signal says the scaffold is dead (`@capacitor/*` in no `package.json`, 0
+`yarn.lock` entries, referenced only by itself), and no in-repo measurement can see an app-store
+pipeline outside this repository. `pr-bodies/09.md` states it in those terms so a reviewer who knows
+of one can object from the body alone.
+
+> **Standing instruction for the plan that writes slice 10's body (151-17).** It now owes the cold
+> reviewer **two** justifications, not one: the operator's original obligation on the three contested
+> files (`apps/frontend/README.md`, the two dead codemods, `tsconfig.tsbuildinfo`), **and** the
+> Capacitor removal's external-pipeline risk in the same terms `pr-bodies/09.md` uses. Slice 10 is
+> still **not to be re-partitioned** beyond the amendment recorded above.
+
+### The per-slice safety check
+
+| check | result |
+|---|---|
+| chain | `09^ == 08` (`6a810df8a` both sides) and `10^ == 09` (`2865b05b3` both sides), by `rev-parse` |
+| commit count per slice | **1** and **1** |
+| status sets | slice 09 **`AM`** (`2 A / 150 M`); slice 10 **`ADM`** (`9 A / 94 D / 26 M`) |
+| remaining-slices catch-all, `TIP10..TARGET` pathspec `.` | **`files=2321`** |
+| partition arithmetic | 252 + 97 + 119 + 162 + 195 + 533 + 214 + 330 + 152 + 129 + 2321 = **4504** = comparable total. **Gap: 0.** |
+| **the catch-all is exactly slice 11, asserted rather than inferred** | 2321 equals slice 11's own pathspec measured at this `TARGET`, **and** the catch-all's file list contains **0** paths outside `.planning/`, `.claude/`, `.agents/`, `CLAUDE.md`. The last real chance to catch a partition gap — the final catch-all is empty by construction — closes at **0.000%**. |
+| attribution of the rise from 151-15's 4296 | **+208, every one named, zero leaving**, by set difference over the two comparable file sets: +3 `.planning/` files riding slice 11 (`151-15-SUMMARY.md`, `pr-bodies/06.md`, `pr-bodies/07.md`), +112 into slice 09 and +2 into slice 10 from this plan's documentation fixes, then +91 from the two F-15 fixes (55 `android/` + 34 `ios/` + `jest.config.json` into slice 10, `README.md` into slice 09). |
+| **partial-stack identity** | the eleven cut slices plus the catch-all produce tree **`40f5d20c5`** = `TARGET^{tree}` **`40f5d20c5`**. **MATCH.** |
+| F-15 Option 2 post-condition | `git ls-files apps/frontend/android apps/frontend/ios apps/frontend/jest.config.json` → **0**; `capacitor` (word, case-insensitive) over the tree excluding `yarn.lock` and `.yarn/` → **0** |
+| `git status --porcelain` | empty throughout; `HEAD` never left `feat-gsd-roadmap`; the catch-all was applied into a scratch `GIT_INDEX_FILE` through `build-slice.sh` itself, never reimplemented, and never committed to a ref |
+
+### Published
+
+| slice | branch on `origin` | SHA (remote == local, asserted) | PR | base |
+|---|---|---|---|---|
+| 08 | `ship/v0.2-akita-08-i18n-messages` | `6a810df8a` | [#871](https://github.com/OpenVAA/voting-advice-application/pull/871) | `ship/v0.2-akita-07-frontend-routes` |
+| 09 | `ship/v0.2-akita-09-docs` | `2865b05b3` | [#872](https://github.com/OpenVAA/voting-advice-application/pull/872) | `ship/v0.2-akita-08-i18n-messages` |
+
+Asserted after the fact, not assumed: `gh pr view` returns the expected `baseRefName` for each,
+`headRefOid` equal to the local tip, and `OPEN`. **GitHub's own API independently confirms both
+bodies' central numbers** — `#871: changedFiles 330, additions 8986, deletions 0` and
+`#872: changedFiles 152, additions 777, deletions 347`, matching the measured triples exactly.
+`gh pr list --head ship/v0.2-akita-10-root-config` returns **0**, so D-07's one-slice lag held —
+**PR 11 stays closed until slice 11 is swept at plan 151-17**; `git ls-remote --heads origin 'ship/*'`
+returns exactly **10** refs; `origin/main` is unmoved at `ac30f132a`; and PR **#860 was not touched**
+(`updatedAt` still `2026-05-19T12:08:25Z`). Both pushes were dry-run immediately beforehand and each
+reported `[new branch]`, with **no force anywhere**, no `git clean`, no `git stash`.
+
+Like #864 … #870, both new PRs fire **no checks** — asserted, not predicted: `gh pr checks` returns
+*"no checks reported"* on each. Titles follow the format 151-13 stabilised: `9/12 feat: …` and
+`10/12 docs: …`, `N/12` plus `slices.tsv` column 3 verbatim.
+
+### Rename detection: for the first time in the stack the two numbers coincide — and it was measured
+
+151-15's standing instruction requires every body to carry both the `--no-renames` figure and
+GitHub's rename-aware one and reconcile them. **Here they are identical**, and that is a measurement,
+not an assumption: `git diff -M --shortstat` returns `330 / +8986 / −0`, `152 / +777 / −347` and
+`129 / +8662 / −27267` — the same triples as `--no-renames` — because slice 08 is `330 A`, slice 09
+is `2 A / 150 M`, and slice 10's 94 deletions have no additions to pair with. GitHub's API confirmed
+both published rows after the fact. **Slice 11 is where the gap will reappear**, and 151-17 should
+expect it.
+
+### The CI signature was re-verified at all three heads before either body was published
+
+`main.yaml` is blob **`c2fdcedb2`** — byte-identical to `origin/main`'s — at slice 08's head **and**
+at slice 09's, defining exactly three jobs on `Setup Yarn 4.6`. At **slice 10's** head it is blob
+**`4dcd9bdde`** with **six** jobs on Yarn 4.13, so `skill-drift-check`, `supabase-tests`,
+`dev-seed-integration` and `e2e-visual` **arrive with slice 10** and with no earlier head — research's
+Pitfall 7 stays refuted for every published head. The root `package.json` at slice 09's head still
+declares the five stale workspace globs and `yarn@4.6.0`, read at that exact commit, so the ten-branch
+`YN0028` claim still holds for both new PRs. Step names re-read from run `32017478048`: step **3
+`Setup Yarn 4.6` — failure**, step **5 `Install all dependencies` — skipped**.
+
+**A plan-encoded claim corrected before it reached a public body — the thirteenth this phase.**
+`151-16-PLAN.md` instructs `pr-bodies/08.md` to say that a markdown-only PR fires no workflow because
+the CI configuration ignores markdown paths. Slice 08 is **329 `.json` files and one `.md`**, slice 09
+has **7** non-markdown files, and `paths-ignore` only ever filters a run the trigger already selected
+— the operative reason for both is the **sibling base**. Both bodies say that instead.
+
+### What 151-17 inherits from this cut
+
+- **PR 11 (slice 10) opens at 151-17**, once slice 11 is swept. Slice 10's branch exists locally at
+  `3aa503741` and is **not** pushed.
+- **`151-DISPOSITION.md` is at `cells_filled: 147` of 163.** The remaining 16 are slice 11's twelve
+  general cells and the four phase-level items, which 151-18 owns.
+- **F-07** (the NBSP that makes the `any` checklist item untickable) and **F-86** (root `package.json`
+  declares `"engine"`, singular, so its Node/yarn floor is inert) are slice 11's and the operator's.
+- **F-81** — `.bg-shell/manifest.json`, the literal `[]`, referenced by nothing and not gitignored —
+  needs an owner before it can be deleted.
+- **F-87 widens F-08: three `tsconfig.tsbuildinfo` files are tracked**, not one —
+  `apps/frontend/` (slice 10), `apps/docs/` (slice 09) and `packages/supabase-types/` (slice 02,
+  published).
+- **The taxonomy gate's `docs` cardinality clause is now satisfied** (`1 == 1`); only `planning`
+  remains, and it closes when slice 11 is cut.
+
+
 ---
 
 ---
