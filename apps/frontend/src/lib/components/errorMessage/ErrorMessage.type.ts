@@ -6,7 +6,7 @@ export type ErrorMessageProps = SvelteHTMLElements['div'] & {
    */
   inline?: boolean;
   /**
-   * The message to display. @default `$t('error.default')`
+   * The message to display. @default `t('error.default')`
    */
   message?: string | null;
   /**

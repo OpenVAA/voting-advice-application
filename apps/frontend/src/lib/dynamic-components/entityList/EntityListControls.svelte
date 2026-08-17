@@ -26,7 +26,7 @@ TODO: Consider moving the tracking events away from the component and just addin
 
 <script lang="ts">
   import { TextPropertyFilter } from '@openvaa/filters';
-  import { onDestroy } from 'svelte';
+  import { untrack } from 'svelte';
   import { slide } from 'svelte/transition';
   import { Button } from '$lib/components/button';
   import { EntityFilters } from '$lib/components/entityFilters';
@@ -38,174 +38,154 @@ TODO: Consider moving the tracking events away from the component and just addin
   import { DELAY } from '$lib/utils/timing';
   import type { EntityListControlsProps } from './EntityListControls.type';
 
-  type $$Props = EntityListControlsProps;
+  let { entities, filterGroup, searchProperty = 'name', onUpdate, ...restProps }: EntityListControlsProps = $props();
 
-  export let entities: $$Props['entities'];
-  export let filterGroup: $$Props['filterGroup'] = undefined;
-  export let searchProperty: $$Props['searchProperty'] = 'name';
-  export let onUpdate: $$Props['onUpdate'];
+  const ctx = getAppContext();
+  const { startEvent, t } = ctx;
+  // locale is a reactive accessor (see phase 113 flatten) — read via ctx.locale, never destructure.
+  const locale = $derived(ctx.locale);
+  let filtersModalRef: Modal | undefined = $state();
+  let filteredContents: EntityListControlsProps['entities'] = $state([]);
+  let output: EntityListControlsProps['entities'] = $state([]);
+  let numActiveFilters = $state(0);
 
-  ////////////////////////////////////////////////////////////////////
-  // Get contexts
-  ////////////////////////////////////////////////////////////////////
+  // searchFilter depends on searchProperty + locale; recompute reactively
+  // (the props are typically stable, but this honors Svelte 5 idioms).
+  const searchFilter = $derived(
+    searchProperty
+      ? new TextPropertyFilter<MaybeWrappedEntityVariant>(
+          { property: searchProperty as keyof MaybeWrappedEntityVariant },
+          // `locale` is a rune handle (`{ readonly current: string }`) post Phase
+          // 97/98 store→rune migration; TextPropertyFilter wants the string.
+          locale
+        )
+      : undefined
+  );
 
-  const { locale, startEvent, t } = getAppContext();
-
-  ////////////////////////////////////////////////////////////////////
-  // Filtering
-  ////////////////////////////////////////////////////////////////////
-
-  // Exports from Modal
-  let openFiltersModal: () => void;
-  let closeFiltersModal: () => void;
-
-  /**
-   * Contents after filtering but before search
-   */
-  let filteredContents: $$Props['entities'];
-
-  /**
-   * Final entities
-   */
-  let output: $$Props['entities'];
-
-  // This is kept in sync by `updateFilters()`
-  let numActiveFilters = 0;
-
-  // Create the text search filter
-  const searchFilter = searchProperty
-    ? new TextPropertyFilter<MaybeWrappedEntityVariant>(
-        { property: searchProperty as keyof MaybeWrappedEntityVariant },
-        $locale
-      )
-    : undefined;
-
-  // Listen to changes in the filters
-  filterGroup?.onChange(updateFilters);
-  searchFilter?.onChange(updateSearch);
-
-  // Initialize the filters and react to changes in input
-  $: {
-    updateFilters();
-    entities; // eslint-disable-line @typescript-eslint/no-unused-expressions
-  }
-
-  // Clean up
-  onDestroy(() => {
-    filterGroup?.onChange(updateFilters, false);
-    searchFilter?.onChange(updateSearch, false);
+  // Wire onChange handlers via $effect so cleanup runs symmetrically and
+  // re-attaches if filterGroup / searchFilter ever change.
+  $effect(() => {
+    filterGroup?.onChange(updateFilters);
+    return () => filterGroup?.onChange(updateFilters, false);
   });
 
-  ////////////////////////////////////////////////////////////////////
-  // Functions
-  ////////////////////////////////////////////////////////////////////
+  $effect(() => {
+    searchFilter?.onChange(updateSearch);
+    return () => searchFilter?.onChange(updateSearch, false);
+  });
 
-  /** Update all filters */
+  // Re-run when the `entities` prop reference changes. The body is wrapped in
+  // `untrack` so reactive reads inside updateFilters → updateSearch → onUpdate
+  // (notably the `onUpdate` callback prop, which the consumer re-creates on
+  // every render via inline arrow) do NOT become dependencies of this effect.
+  // Without untrack, the inline-arrow identity churn produced an
+  // effect_update_depth_exceeded loop on the nominations page.
+  $effect(() => {
+    void entities;
+    untrack(() => updateFilters());
+  });
+
   function updateFilters() {
     filteredContents = filterGroup ? filterGroup.apply(entities) : [...entities];
     numActiveFilters = filterGroup ? filterGroup.filters.filter((f) => f.active).length : 0;
     updateSearch();
   }
 
-  /** Update text search */
   function updateSearch() {
     output = searchFilter ? searchFilter.apply(filteredContents) : [...filteredContents];
     onUpdate(output);
   }
-
-  /** Open filters dialog */
   function openFilters() {
-    openFiltersModal();
+    filtersModalRef?.openModal();
   }
-
-  /** Reset and close the filters dialog */
   function resetFilters() {
     filterGroup?.reset();
     if (filterGroup) startEvent('filters_reset');
-    closeFiltersModal();
+    filtersModalRef?.closeModal();
   }
-
-  /**
-   * Create a tracking event for the active filters
-   */
   function trackActiveFilters() {
-    const activeFilters = filterGroup?.filters
+    const af = filterGroup?.filters
       .filter((f) => f.active)
       .map((f) => f.name)
       .join(',');
-    if (activeFilters) startEvent('filters_active', { activeFilters });
+    if (af) startEvent('filters_active', { activeFilters: af });
   }
 </script>
 
-<div {...concatClass($$restProps, 'flex flex-col')}>
-  <div class="mb-md flex flex-row-reverse justify-between gap-lg">
+<div data-testid="entity-list-controls" {...concatClass(restProps, 'flex flex-col')}>
+  <div class="mb-md gap-lg flex flex-row-reverse justify-between">
     {#if searchFilter}
       <TextEntityFilter
         filter={searchFilter}
-        placeholder={$t('entityList.controls.searchPlaceholder')}
+        placeholder={t('entityList.controls.searchPlaceholder')}
         variant="discrete"
-        class="grow" />
+        class="grow"
+        data-testid="entity-list-search" />
     {/if}
-    <!-- 
-      Sorting (TBA)
-      <Button 
-        on:click={() => console.warn('Not implemented yet')}
-        icon="sort"
-        iconPos="left"
-        class="!w-auto grow"
-        text="Sort results"/> 
-    -->
     {#if filterGroup?.filters.length}
       {#if numActiveFilters}
         <Button
-          on:click={openFilters}
+          onclick={openFilters}
           color="warning"
           icon="filter"
           iconPos="left"
           class="!w-auto"
-          text={$t('entityFilters.filterButtonLabel')}>
-          <InfoBadge text={numActiveFilters} slot="badge" />
-        </Button>
+          data-testid="entity-list-filter"
+          text={t('entityFilters.filterButtonLabel')}
+          >{#snippet badge()}<InfoBadge text={numActiveFilters} />{/snippet}</Button>
       {:else}
         <Button
-          on:click={openFilters}
+          onclick={openFilters}
           icon="filter"
           iconPos="left"
           class="!w-auto"
-          text={$t('entityFilters.filterButtonLabel')} />
+          data-testid="entity-list-filter"
+          text={t('entityFilters.filterButtonLabel')} />
       {/if}
     {/if}
   </div>
   {#if entities.length > 0}
     {#if output.length === 0}
       <div
-        class="my-lg flex flex-col items-center text-center text-secondary"
+        class="my-lg text-secondary flex flex-col items-center text-center"
         transition:slide={{ duration: DELAY.md }}>
         {filterGroup?.filters.length
-          ? $t('entityList.controls.noFilterResults')
-          : $t('entityList.controls.noSearchResults')}
+          ? t('entityList.controls.noFilterResults')
+          : t('entityList.controls.noSearchResults')}
       </div>
     {:else if output.length !== entities.length}
       <div
-        class="my-lg flex flex-col items-center text-center text-secondary"
+        class="my-lg text-secondary flex flex-col items-center text-center"
         transition:slide={{ duration: DELAY.md }}>
-        {$t('entityList.controls.showingNumResults', { numShown: output.length })}
+        {t('entityList.controls.showingNumResults', { numShown: output.length })}
       </div>
     {/if}
   {/if}
 </div>
 
 {#if filterGroup?.filters.length}
+  <!-- bind: keep — filtersModalRef is $state(); single ref read in event handlers -->
   <Modal
-    title={$t('entityFilters.filters')}
+    bind:this={filtersModalRef}
+    title={t('entityFilters.filters')}
     boxClass="sm:max-w-[calc(36rem_+_2_*_24px)]"
-    onClose={trackActiveFilters}
-    bind:openModal={openFiltersModal}
-    bind:closeModal={closeFiltersModal}>
+    data-testid="entity-filter-dialog"
+    onClose={trackActiveFilters}>
     <EntityFilters {filterGroup} targets={entities} />
-    <div class="flex w-full flex-col items-center" slot="actions">
-      <Button on:click={closeFiltersModal} text={$t('entityFilters.applyAndClose')} variant="main" />
-      <Button on:click={resetFilters} color="warning" disabled={!numActiveFilters} text={$t('entityFilters.reset')} />
-    </div>
+    {#snippet actions()}
+      <div class="flex w-full flex-col items-center">
+        <Button
+          onclick={() => filtersModalRef?.closeModal()}
+          text={t('entityFilters.applyAndClose')}
+          variant="main"
+          data-testid="entity-filter-dialog-apply" />
+        <Button
+          onclick={resetFilters}
+          color="warning"
+          disabled={!numActiveFilters}
+          text={t('entityFilters.reset')}
+          data-testid="entity-filter-dialog-reset" />
+      </div>
+    {/snippet}
   </Modal>
 {/if}

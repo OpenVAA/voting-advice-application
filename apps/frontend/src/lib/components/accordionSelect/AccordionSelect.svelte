@@ -20,6 +20,7 @@ If there's only one option, it is automatically selected and no interactions are
 -->
 
 <script lang="ts">
+  import { untrack } from 'svelte';
   import { scale, slide } from 'svelte/transition';
   import { Icon } from '$lib/components/icon';
   import { getComponentContext } from '$lib/contexts/component';
@@ -27,12 +28,13 @@ If there's only one option, it is automatically selected and no interactions are
   import { DELAY } from '$lib/utils/timing';
   import type { AccordionSelectProps } from './AccordionSelect.type';
 
-  type $$Props = AccordionSelectProps<unknown>;
-
-  export let options: $$Props['options'] = [];
-  export let activeIndex: $$Props['activeIndex'] = undefined;
-  export let onChange: $$Props['onChange'] = undefined;
-  export let labelGetter: $$Props['labelGetter'] = String;
+  let {
+    options = [],
+    activeIndex = $bindable(),
+    onChange,
+    labelGetter = String,
+    ...restProps
+  }: AccordionSelectProps<unknown> = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -44,9 +46,17 @@ If there's only one option, it is automatically selected and no interactions are
   // Expanding and selecting
   ////////////////////////////////////////////////////////////////////
 
-  let expanded = activeIndex == null || activeIndex < 0;
+  let expanded = $state(activeIndex == null || activeIndex < 0);
 
-  $: if (options.length === 1) activate(0);
+  // Auto-select when only one option exists. Wrap the write in `untrack` so
+  // that the `activeIndex` / `expanded` / `onChange` writes inside `activate`
+  // don't retrigger this effect when the parent re-derives `options` with
+  // different identity (Svelte 5 `effect_update_depth_exceeded` guard —
+  // mirrors the pattern used elsewhere in the codebase, e.g.
+  // protected-layout $effect).
+  $effect(() => {
+    if (options.length === 1) untrack(() => activate(0));
+  });
 
   function activate(index: number): void {
     if (activeIndex === index) {
@@ -64,13 +74,21 @@ If there's only one option, it is automatically selected and no interactions are
   }
 </script>
 
-<div {...concatClass($$restProps, 'grid pl-0 gap-xs min-w-xs !max-w-full items-stretch join join-vertical')}>
+<!-- role=listbox: the children carry role=option, which axe's aria-required-parent
+  rule (WCAG 2.1 AA, critical) requires to be contained by a listbox/group — most
+  visibly in the collapsed state where only the selected option button is in the
+  DOM with no wrapping role. aria-label gives the listbox an accessible name;
+  callers may override it via restProps. -->
+<div
+  role="listbox"
+  aria-label={restProps['aria-label'] ?? t('components.accordionSelect.listboxAriaLabel')}
+  {...concatClass(restProps, 'grid pl-0 gap-xs min-w-xs !max-w-full items-stretch join join-vertical')}>
   {#each options as option, index}
     {#if expanded || activeIndex === index}
       <button
-        class="join-item relative grid h-touch w-auto place-items-center
-          bg-base-200 px-[3rem] transition-all hover:bg-base-300
-          focus:text-primary"
+        class="join-item h-touch bg-base-200 hover:bg-base-300 focus:text-primary relative
+          grid w-auto place-items-center px-[3rem]
+          transition-all"
         class:bg-base-300={index === activeIndex}
         class:font-bold={index === activeIndex}
         class:pointer-events-none={options.length === 1}
@@ -78,20 +96,20 @@ If there's only one option, it is automatically selected and no interactions are
         role="option"
         tabindex="0"
         transition:slide={{ duration: DELAY.sm }}
-        on:click={() => handleSelect(index)}>
+        onclick={() => handleSelect(index)}>
         {#if index === activeIndex}
-          <div transition:scale class="absolute left-md">
+          <div transition:scale class="left-md absolute">
             <Icon name="check" />
           </div>
         {/if}
         <span class="uc-first">
           {labelGetter?.(option)}
           {#if !expanded}
-            <span class="sr-only">{$t('components.accordionSelect.collapsedAriaInfo')}</span>
+            <span class="sr-only">{t('components.accordionSelect.collapsedAriaInfo')}</span>
           {/if}
         </span>
         {#if !expanded && options.length > 1 && index === activeIndex}
-          <div transition:scale class="absolute right-md">
+          <div transition:scale class="right-md absolute">
             <Icon name="expand" />
           </div>
         {/if}

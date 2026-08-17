@@ -21,42 +21,34 @@ Show a popup asking for user feedback.
   import { SurveyButton } from '..';
   import type { SurveyPopupProps } from './SurveyPopup.type';
 
-  /* eslint-disable @typescript-eslint/no-unused-vars */
-  type $$Props = SurveyPopupProps;
+  let { ...restProps }: SurveyPopupProps = $props();
 
-  /**
-   * The delay for autoclosing the modal after it's been submitted.
-   */
   const CLOSE_DELAY = 1500;
-
   const { t } = getComponentContext();
-
   let closeTimeout: NodeJS.Timeout | undefined;
-
   onDestroy(() => {
     if (closeTimeout) clearTimeout(closeTimeout);
   });
 
-  let closeAlert: () => void;
+  let alertRef: Alert;
 
   function onClick() {
     closeTimeout = setTimeout(() => {
-      closeAlert();
+      alertRef?.closeAlert();
     }, CLOSE_DELAY);
   }
 </script>
 
-<Alert bind:closeAlert title={$t('dynamic.survey.title')} {...$$restProps}>
+<!-- bind: keep — alertRef is plain let Alert; single ref read in onClick callback -->
+<Alert bind:this={alertRef} title={t('dynamic.survey.title')} data-testid="survey-popup" {...restProps}>
   <div class="justify-self-stretch">
-    <h3 class="mb-sm mt-0 text-center">
-      {$t('dynamic.survey.popupTitle')}
-    </h3>
+    <h3 class="mb-sm mt-0 text-center">{t('dynamic.survey.popupTitle')}</h3>
   </div>
-  <div slot="actions">
-    <SurveyButton on:click={onClick} variant="main" />
-    <p class="small-info my-sm">
-      {$t('dynamic.survey.popupInfo')}
-    </p>
-    <Button on:click={closeAlert} text={$t('common.thanksNo')} color="warning" />
-  </div>
+  {#snippet actions()}
+    <div>
+      <SurveyButton {onClick} variant="main" />
+      <p class="small-info my-sm">{t('dynamic.survey.popupInfo')}</p>
+      <Button onclick={() => alertRef?.closeAlert()} text={t('common.thanksNo')} color="warning" />
+    </div>
+  {/snippet}
 </Alert>

@@ -25,21 +25,15 @@ Accesses `AuthContext` and `AppContext`.
   import { getAuthContext } from '$lib/contexts/auth';
   import type { LogoutButtonProps } from './LogoutButton.type';
 
-  type $$Props = LogoutButtonProps;
-
-  export let redirectTo: $$Props['redirectTo'] = 'Home';
-
-  ////////////////////////////////////////////////////////////////////
-  // Get contexts
-  ////////////////////////////////////////////////////////////////////
+  let { redirectTo = 'Home', ...restProps }: LogoutButtonProps = $props();
 
   const { getRoute, t } = getAppContext();
   const { logout } = getAuthContext();
 
   async function handleLogout() {
     await logout();
-    await goto($getRoute(redirectTo!), { invalidateAll: true });
+    await goto(getRoute.current(redirectTo!), { invalidateAll: true });
   }
 </script>
 
-<Button on:click={handleLogout} icon="logout" text={$t('common.logout')} color="warning" {...$$restProps} />
+<Button onclick={handleLogout} icon="logout" text={t('common.logout')} color="warning" {...restProps} />

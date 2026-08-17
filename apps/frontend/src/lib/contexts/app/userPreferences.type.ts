@@ -26,5 +26,9 @@ export type ConsentStatus = 'denied' | 'granted' | 'indetermined';
 
 /**
  * The possible values for the status of asking for a user's feedback or filling out a survey.
+ *
+ * `dismissed` is persisted by `setFeedbackStatus('dismissed')` (when the user closes
+ * the feedback popup without responding) and read back / compared at the popup-countdown
+ * predicates — it must be representable here. Mirrors the global `UserFeedbackStatus`.
  */
-export type FeedbackStatus = 'received' | 'indetermined';
+export type FeedbackStatus = 'received' | 'dismissed' | 'indetermined';

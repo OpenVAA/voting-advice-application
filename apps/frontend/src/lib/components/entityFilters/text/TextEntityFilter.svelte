@@ -5,7 +5,7 @@ Render a text filter for entities.
 ### Properties
 
 - `filter`: The text filter object.
-- `placeholder`: The placeholder text. Default: `$t('components.entityFilters.text.placeholder')`
+- `placeholder`: The placeholder text. Default: `t('components.entityFilters.text.placeholder')`
 - `variant`: The styling variant for the text field. Default: `'default'`
 - Any valid attributes of a `<div>` element.
 
@@ -17,17 +17,12 @@ Render a text filter for entities.
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { Icon } from '$lib/components/icon';
   import { getComponentContext } from '$lib/contexts/component';
   import { concatClass } from '$lib/utils/components';
   import type { TextEntityFilterProps } from './TextEntityFilter.type';
 
-  type $$Props = TextEntityFilterProps;
-
-  export let filter: $$Props['filter'];
-  export let placeholder: $$Props['placeholder'] = undefined;
-  export let variant: $$Props['variant'] = 'default';
+  let { filter, placeholder, variant = 'default', ...restProps }: TextEntityFilterProps = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -39,17 +34,23 @@ Render a text filter for entities.
   // Filtering
   ////////////////////////////////////////////////////////////////////
 
-  let value: string;
-  updateText();
+  // value seeds from filter.include at mount; mutable thereafter (bound
+  // by the input element). filter is treated as a stable reference for
+  // the component's lifetime per filterContext design.
+  // svelte-ignore state_referenced_locally
+  let value: string = $state(filter.include);
 
   // Update filter values when selection changes
-  $: filter.include = value;
+  $effect(() => {
+    filter.include = value;
+  });
 
-  // Update selection when filter values change
-  filter.onChange(updateText);
-
-  // Cleanup
-  onDestroy(() => filter.onChange(updateText, false));
+  // Wire onChange in an effect so the cleanup handler runs symmetrically
+  // (matches the pattern used elsewhere in the filter components).
+  $effect(() => {
+    filter.onChange(updateText);
+    return () => filter.onChange(updateText, false);
+  });
 
   ////////////////////////////////////////////////////////////////////
   // Functions
@@ -63,31 +64,32 @@ Render a text filter for entities.
   // Styling
   ////////////////////////////////////////////////////////////////////
 
-  let labelClass: string;
-  $: {
-    labelClass = 'input flex items-center gap-2';
+  let labelClass = $derived.by(() => {
+    let lc = 'input flex items-center gap-2';
     switch (variant) {
       case 'discrete':
-        labelClass += ' bg-base-200';
+        lc += ' bg-base-200';
         break;
       default:
-        labelClass += ' input-bordered';
+        break;
     }
-  }
+    return lc;
+  });
 </script>
 
-<div {...concatClass($$restProps, '')}>
+<div {...concatClass(restProps, '')}>
   <label class={labelClass}>
-    <span class="sr-only">{$t('entityFilters.text.ariaLabel')}</span>
+    <span class="sr-only">{t('entityFilters.text.ariaLabel')}</span>
+    <!-- bind: keep — two-way DOM input bind:value; value is $state(filter.include) -->
     <input
       bind:value
       type="text"
       class="w-full grow"
-      placeholder={placeholder ?? $t('entityFilters.text.placeholder')} />
+      placeholder={placeholder ?? t('entityFilters.text.placeholder')} />
     {#if value === ''}
       <Icon name="search" />
     {:else}
-      <button on:click={() => (value = '')} aria-label={$t('common.clear')} title={$t('common.clear')}>
+      <button onclick={() => (value = '')} aria-label={t('common.clear')} title={t('common.clear')}>
         <Icon name="close" />
       </button>
     {/if}

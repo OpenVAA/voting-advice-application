@@ -4,9 +4,8 @@ Display the question's expandable information content.
 
 ### Properties
 
-- `title`: The title for the info, usually the question text.
-- `info`: The info content to show as a plain or HTML string.
-- `infoSections`: An array of objects with `title` and `content` properties to show as expandable sections.
+- `question`: The question to show the info for.
+- `title`: Optional title for the info, by default the question text.
 - Any valid properties of a `<div>` element
 
 ### Callback properties
@@ -17,46 +16,72 @@ Display the question's expandable information content.
 ### Usage
 
 ```tsx
-<QuestionExtendedInfo
-  info={question.info}
-  infoSections={customData.infoSections} />
+<QuestionExtendedInfo {question} />
 ```
 -->
 
 <script lang="ts">
+  import { getCustomData } from '@openvaa/app-shared';
+  import { getComponentContext } from '$lib/contexts/component';
   import { concatClass } from '$lib/utils/components';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { Expander } from '../expander';
+  import { QuestionArguments } from '.';
   import type { QuestionExtendedInfoProps } from './QuestionExtendedInfo.type';
 
-  type $$Props = QuestionExtendedInfoProps;
+  let {
+    question,
+    title = undefined,
+    onSectionCollapse = undefined,
+    onSectionExpand = undefined,
+    ...restProps
+  }: QuestionExtendedInfoProps = $props();
 
-  export let title: $$Props['title'];
-  export let info: $$Props['info'];
-  export let infoSections: $$Props['infoSections'] = [];
-  export let onSectionCollapse: $$Props['onSectionCollapse'] = undefined;
-  export let onSectionExpand: $$Props['onSectionExpand'] = undefined;
+  const { t } = getComponentContext();
+
+  const info = $derived(question.info);
+  const args = $derived(getCustomData(question).arguments);
+  const infoSections = $derived(getCustomData(question).infoSections);
 </script>
 
-<div {...concatClass($$restProps, 'flex flex-col gap-lg justify-stretch')}>
-  <h2 class="text-center">{title}</h2>
+<div {...concatClass(restProps, 'flex flex-col gap-lg justify-stretch')}>
+  <h2 class="text-center">{title || question.text}</h2>
   <div class="prose">
     {@html sanitizeHtml(info)}
   </div>
   {#if infoSections?.length}
     <div class="prose">
-      {#each infoSections as { title, content }}
+      {#each infoSections as { title, content }, index}
         {#if title}
-          <Expander
-            {title}
-            titleClass="flex justify-between font-bold"
-            contentClass="!text-left"
-            on:collapse={() => onSectionCollapse?.(title)}
-            on:expand={() => onSectionExpand?.(title)}>
-            {@html sanitizeHtml(content)}
-          </Expander>
+          <!-- Per-infoSection testid (keyed by index) so the Phase-120
+               expectInfoSections([...]) reader can enumerate sections. -->
+          <div data-testid="voter-questions-info-section-{index}">
+            <Expander
+              {title}
+              titleClass="flex justify-between font-bold"
+              contentClass="!text-left"
+              onCollapse={() => onSectionCollapse?.(title)}
+              onExpand={() => onSectionExpand?.(title)}>
+              {@html sanitizeHtml(content)}
+            </Expander>
+          </div>
         {/if}
       {/each}
+      {#if args}
+        {@const title = t('questions.arguments.title')}
+        <!-- Arguments-block testid (sibling to the per-section infoSection
+             testids above) so the Phase-120 expectArguments reader can expand the
+             arguments Expander and read its per-group blocks. -->
+        <Expander
+          {title}
+          titleClass="flex justify-between font-bold"
+          contentClass="!text-left"
+          data-testid="voter-questions-arguments"
+          onCollapse={() => onSectionCollapse?.(title)}
+          onExpand={() => onSectionExpand?.(title)}>
+          <QuestionArguments {question} />
+        </Expander>
+      {/if}
     </div>
   {/if}
 </div>

@@ -31,12 +31,14 @@ Contains the dynamic `PasswordValidator` component.
   import { getUUID } from '$lib/utils/components';
   import type { PasswordSetterProps } from './PasswordSetter.type';
 
-  type $$Props = PasswordSetterProps;
+  let {
+    password = $bindable(''),
+    autocomplete = 'new-password',
+    errorMessage = $bindable(undefined),
+    valid = $bindable(false),
+    ...restProps
+  }: PasswordSetterProps = $props();
 
-  export let password: $$Props['password'] = '';
-  export let autocomplete: $$Props['autocomplete'] = 'new-password';
-  export let errorMessage: $$Props['errorMessage'] = undefined;
-  export let valid: $$Props['valid'] = false;
   export function reset(): void {
     password = '';
     passwordConfirmation = '';
@@ -47,30 +49,41 @@ Contains the dynamic `PasswordValidator` component.
 
   const id = getUUID();
 
-  let passwordConfirmation = '';
-  let validPassword = false;
+  let passwordConfirmation = $state('');
+  let validPassword = $state(false);
 
-  $: valid = !!(password && passwordConfirmation && validPassword && password === passwordConfirmation);
-  $: if (!validPassword) {
-    errorMessage = $t('candidateApp.setPassword.passwordNotValid');
-  } else if (password !== passwordConfirmation) {
-    errorMessage = $t('candidateApp.setPassword.passwordsDontMatch');
-  } else {
-    errorMessage = undefined;
-  }
+  $effect(() => {
+    valid = !!(password && passwordConfirmation && validPassword && password === passwordConfirmation);
+  });
+  $effect(() => {
+    if (!validPassword) {
+      errorMessage = t('candidateApp.setPassword.passwordNotValid');
+    } else if (password !== passwordConfirmation) {
+      errorMessage = t('candidateApp.setPassword.passwordsDontMatch');
+    } else {
+      errorMessage = undefined;
+    }
+  });
 </script>
 
-<form class="m-0 flex w-full flex-col flex-nowrap items-center">
+<form class="m-0 flex w-full flex-col flex-nowrap items-center" {...restProps}>
   <p class="mx-md my-0 self-stretch">
-    {$t('candidateApp.setPassword.ingress')}
+    {t('candidateApp.setPassword.ingress')}
   </p>
+  <!-- bind: keep — Pattern 2: PasswordValidator.validPassword is $bindable(false) -->
   <PasswordValidator bind:validPassword {password} />
   <div class="mb-md mt-md flex w-full flex-col gap-6">
-    <PasswordField bind:password id="password-{id}" label={$t('common.password')} {autocomplete} />
-    <PasswordField
-      bind:password={passwordConfirmation}
-      id="confirmation-{id}"
-      label={$t('common.passwordConfirmation')}
-      {autocomplete} />
+    <div data-testid="password-setter-password">
+      <!-- bind: keep — Pattern 2: PasswordField.password is $bindable('') -->
+      <PasswordField bind:password id="password-{id}" label={t('common.password')} {autocomplete} />
+    </div>
+    <div data-testid="password-setter-confirmation">
+      <!-- bind: keep — Pattern 2: PasswordField.password is $bindable('') -->
+      <PasswordField
+        bind:password={passwordConfirmation}
+        id="confirmation-{id}"
+        label={t('common.passwordConfirmation')}
+        {autocomplete} />
+    </div>
   </div>
 </form>

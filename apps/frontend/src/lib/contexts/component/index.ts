@@ -1,2 +1,2 @@
-export * from './componentContext';
+export * from './componentContext.svelte';
 export * from './componentContext.type';

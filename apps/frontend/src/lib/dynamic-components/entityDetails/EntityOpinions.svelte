@@ -6,17 +6,18 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
 
 - `entity`: A possibly ranked entity, e.g. candidate or a party.
 - `questions`: An array of `opinion` questions.
-- `answers`: An optional `AnswerStore` with the Voter's answers to the questions.
+- `answers`: An optional `AnswerState` with the Voter's answers to the questions.
 - Any valid attributes of a `<div>` element
 
 ### Usage
 
 ```tsx
-<EntityOpinions entity={candidate} questions={$opinionQuestions} />
+<EntityOpinions entity={candidate} questions={opinionQuestions} />
 ```
 -->
 
 <script lang="ts">
+  import { getCustomData } from '@openvaa/app-shared';
   import { CategoryTag } from '$lib/components/categoryTag';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { OpinionQuestionInput, QuestionOpenAnswer } from '$lib/components/questions';
@@ -25,66 +26,51 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
   import type { AnyEntityVariant } from '@openvaa/data';
   import type { EntityOpinionsProps } from './EntityOpinions.type';
 
-  type $$Props = EntityOpinionsProps;
+  let { entity, questions, answers }: EntityOpinionsProps = $props();
 
-  export let entity: $$Props['entity'];
-  export let questions: $$Props['questions'];
-  export let answers: $$Props['answers'] = undefined;
+  const ctx = getAppContext();
+  const { appType, t } = ctx;
+  // appSettings is a reactive accessor (see phase 113 flatten) — read via ctx.X, never destructure.
+  const appSettings = $derived(ctx.appSettings);
 
-  ////////////////////////////////////////////////////////////////////
-  // Get contexts
-  ////////////////////////////////////////////////////////////////////
-
-  const { appSettings, appType, t } = getAppContext();
-
-  ////////////////////////////////////////////////////////////////////
-  // Parse entity components
-  ////////////////////////////////////////////////////////////////////
-
-  let nakedEntity: AnyEntityVariant;
-  let shortName: string;
-
-  $: {
-    ({ entity: nakedEntity } = unwrapEntity(entity));
-    ({ shortName } = nakedEntity);
-  }
+  const unwrapped = $derived(unwrapEntity(entity));
+  let nakedEntity: AnyEntityVariant = $derived(unwrapped.entity);
+  let shortName: string = $derived(nakedEntity.shortName);
 </script>
 
-<div class="mt-xl grid gap-xxl px-lg pb-safelgb">
+<div class="mt-xl gap-xxl px-lg pb-safelgb grid">
   {#each questions as question}
     {@const { id, text, category } = question}
     {@const answer = nakedEntity.getAnswer(question)}
-    {@const voterAnswer = $answers?.[id]}
+    {@const voterAnswer = answers?.answers?.[id]}
+    {@const customData = getCustomData(question)}
 
-    <div class="grid">
+    <div class="grid" data-testid="entity-opinion-question">
       <HeadingGroup class="mb-lg text-center">
-        {#if $appSettings.questions.showCategoryTags && category}
+        {#if appSettings.questions.showCategoryTags && category}
           <PreHeading><CategoryTag {category} /></PreHeading>
         {/if}
         <h3>{text}</h3>
       </HeadingGroup>
 
-      {#if $appType === 'candidate'}
+      {#if appType.current === 'candidate'}
         {#if answer == null}
           <div class="small-label mb-16 text-center">
-            {$t('questions.answers.entityHasntAnswered', { entity: shortName })}
+            {t('questions.answers.entityHasntAnswered', { entity: shortName })}
           </div>
         {/if}
       {:else if voterAnswer == null && answer == null}
         <div class="small-label mb-16 text-center">
-          {$t('questions.answers.bothHaventAnswered', { entity: shortName })}
+          {t('questions.answers.bothHaventAnswered', { entity: shortName })}
         </div>
       {:else if voterAnswer == null}
-        <div class="small-label mb-16 text-center">
-          {$t('questions.answers.youHaventAnswered')}
-        </div>
+        <div class="small-label mb-16 text-center">{t('questions.answers.youHaventAnswered')}</div>
       {:else if answer == null}
         <div class="small-label mb-16 text-center">
-          {$t('questions.answers.entityHasntAnswered', { entity: shortName })}
+          {t('questions.answers.entityHasntAnswered', { entity: shortName })}
         </div>
       {/if}
 
-      <!-- Only show the answering choices if either one has answered -->
       {#if voterAnswer != null || answer != null}
         <OpinionQuestionInput
           {question}
@@ -92,9 +78,8 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
           answer={voterAnswer}
           otherAnswer={answer}
           otherLabel={shortName} />
-
-        {#if answer?.info}
-          <QuestionOpenAnswer content={answer.info} class="mt-md" />
+        {#if answer?.info && customData?.allowOpen !== false}
+          <QuestionOpenAnswer content={answer.info} class="mt-md" data-testid="entity-opinion-open-answer" />
         {/if}
       {/if}
     </div>

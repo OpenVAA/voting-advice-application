@@ -1,0 +1,24 @@
+{
+  "answerQuestion": "Dës Fro beäntwerten",
+  "answerQuestionFirst": "Beäntwert wgl. fir d’éischt d’Fro",
+  "answerSaveError": "D’Äntwert konnt net gespäichert ginn",
+  "editAnswer": "Är Äntwert änneren",
+  "enterMissingAnswers": "Feelend Äntwerten aginn",
+  "error": {
+    "answerNotFound": "Keng Äntwert fonnt fir Fro {questionId}",
+    "invalidAnswer": "Ongëlteg Äntwert fir Fro {questionId}",
+    "questionNotFound": "Fro {questionId} net fonnt"
+  },
+  "ingress": {
+    "default": "Hei ënnen kënnt Dir all Är Meenungen gesinn an änneren.",
+    "empty": "D’Applikatioun freet Iech duerno {numQuestions} Aussoe iwwer politesch Themen a Wäerter. Wann d’Wieler*inne de Wal-Kompass benotzen, beäntweren si déi selwecht Aussoe a gesinn, wéi staark hir Meenungen mat Ären iwwereneestëmmen.",
+    "partial": "Hei ënnen kënnt Dir all Är Meenungen gesinn, änneren an déi feelend nach ausfëllen."
+  },
+  "notAnswered": "Dir hutt dës Fro net beäntwert.",
+  "openAnswerPrompt": "Argumenter",
+  "start": "Är Meenungen aginn",
+  "tip": "Dir kënnt dës Säit spéider nach eng Kéier opmaachen, fir Är Äntwerten ze gesinn.",
+  "title": "Är Meenungen",
+  "unansweredWarning": "Et bleiwen {numUnansweredQuestions, plural, =1 {eng onbeäntwert Fro} other {# onbeäntwert Froen}} iwwreg.",
+  "viewAnswer": "Är Äntwert gesinn"
+}

@@ -1,6 +1,11 @@
 {
   "alliance": {
-    "numShown": "{numShown, plural, =0 {Ei vaaliliittoja} =1 {1 vaaliliitto} other {# vaaliliittoa}}"
+    "numShown": "{numShown, plural, =0 {Ei vaaliliittoja} =1 {1 vaaliliitto} other {# vaaliliittoa}}",
+    "summary": {
+      "template": "{candidates} yhteensä {parties}",
+      "candidates": "{numCandidates, plural, =0 {Ei ehdokkaita} =1 {1 ehdokas} other {# ehdokasta}}",
+      "parties": "{numParties, plural, =0 {ei puoluetta} =1 {1 puolueesta} other {# puolueesta}}"
+    }
   },
   "candidate": {
     "numShown": "{numShown, plural, =0 {Ei ehdokkaita}=1 {1 ehdokas} other {# ehdokasta}}"
@@ -10,7 +15,7 @@
   },
   "inConstituency": "vaalipiirissä",
   "ingress": {
-    "answerMinQuestions": "Jos haluat löytää eniten kanssasi samaa mieltä olevat {candidatePlural} ja {partyPlural}, {questionsLink} ensin.",
+    "answerMinQuestions": "Jos haluat löytää eniten kanssasi samaa mieltä olevat ehdokkaat ja puolueet, {questionsLink} ensin.",
     "questionsLinkText": "vastaa ainakin {numQuestions, plural, =1 {yhteen kysymykseen} other {# kysymykseen}}"
   },
   "missingNominations": {

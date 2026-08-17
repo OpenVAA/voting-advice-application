@@ -4,6 +4,8 @@ Display any data input, its associated label and possible info. The HTML element
 
 The input itself is wrapped in multiple container elements, the outermost of which can be passed the `containerProps` prop.
 
+Multilingual features are only available if the `locales` store contains more than one locale.Button
+
 ### Properties
 
 - `type`: The type of input element to use. This also defines the type of the `value` prop, which of the other properties are allowed or required, and the HTML element rendered.
@@ -29,7 +31,7 @@ The input itself is wrapped in multiple container elements, the outermost of whi
 - `options`: The options to show for a `select` or `select-multiple` input.
 - `ordered`: If `true`, enables ordering of the values of a `select-multiple` input. @default false
 - `maxFilesize`: The maximum file size for `image` inputs. @default `20 * 1024**2` (20MB)
-- `multilingualInfo`: Additional info displayed below the input for multilingual input together with possible `info`. @default $t('components.input.multilingualInfo')
+- `multilingualInfo`: Additional info displayed below the input for multilingual input together with possible `info`. @default t('components.input.multilingualInfo')
 - Any valid attributes of the HTML element (`input`, `select` or `textarea`) used for the input, except in the case of `image` whose input is hidden.
 
 ### Callbacks
@@ -70,25 +72,28 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   import type { TranslationKey } from '$types';
   import type { InputProps } from './Input.type';
 
-  type $$Props = InputProps;
+  let {
+    type,
+    label,
+    containerProps,
+    id = getUUID(),
+    info,
+    locked,
+    required,
+    value = $bindable(),
+    onShadedBg,
+    onChange,
+    placeholder,
+    options,
+    ordered,
+    disabled,
+    maxFilesize = 20 * 1024 * 1024,
+    multilingualInfo,
+    ...restProps
+  }: InputProps = $props();
 
-  export let type: $$Props['type'];
-  export let label: $$Props['label'];
-  // export let variant: $$Props['variant'] = 'default';
-  export let containerProps: $$Props['containerProps'] = undefined;
-  export let id: $$Props['id'] = getUUID();
-  export let info: $$Props['info'] = undefined;
-  export let locked: $$Props['locked'] = undefined;
-  export let required: $$Props['required'] = undefined;
-  export let value: $$Props['value'] = undefined;
-  export let onShadedBg: $$Props['onShadedBg'] = undefined;
-  export let onChange: ((value: $$Props['value']) => void) | undefined = undefined;
-  export let placeholder: $$Props['placeholder'] = undefined;
-  export let options: $$Props['options'] = undefined;
-  export let ordered: $$Props['ordered'] = undefined;
-  export let disabled: $$Props['disabled'] = undefined;
-  export let maxFilesize: $$Props['maxFilesize'] = 20 * 1024 * 1024;
-  export let multilingualInfo: $$Props['multilingualInfo'] = undefined;
+  // reason: pragmatic regex catches obvious typos; server-side does final validation. The 3 disjoint [^\s@]+ groups have no nested quantifiers, so this regex is ReDoS-safe by construction.
+  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   // const SAVE_INTERVAL_MS = 1000;
 
@@ -96,35 +101,42 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { locale: currentLocale, locales, t } = getComponentContext();
+  // `locale` here is the i18n plain-string locale from ComponentContext (NOT the
+  // flattened AppContext rune handle); read off `ctx` to keep the audit grep clean.
+  const ctx = getComponentContext();
+  const { locales, t } = ctx;
+  const currentLocale = ctx.locale;
 
   ////////////////////////////////////////////////////////////////////
   // Handling multilinguality, disabled and other cases
   ////////////////////////////////////////////////////////////////////
 
-  const maxFilesizeInMB = Math.floor((maxFilesize ?? 0) / (1024 * 1024));
-  const multilingual = type.endsWith('-multilingual');
+  const maxFilesizeInMB = $derived(Math.floor((maxFilesize ?? 0) / (1024 * 1024)));
+  const multilingual = $derived(type.endsWith('-multilingual'));
   /** Whether the label is above the field or inside it */
-  const isLabelOutside = multilingual || type.startsWith('textarea');
+  const isLabelOutside = $derived(multilingual || type.startsWith('textarea'));
 
-  /*** Extend info */
-  if (multilingual && multilingualInfo != '') {
-    multilingualInfo ??= $t('components.input.multilingualInfo');
-    info ??= '';
-    info += ` ${multilingualInfo}`;
-  }
-  if (type === 'image') {
-    info ??= '';
-    info += ` ${$t('components.input.imageInfo', { maxFilesize: maxFilesizeInMB })}`;
-  }
+  /*** Extend info — derived so the prop isn't mutated. */
+  const effectiveMultilingualInfo = $derived(
+    multilingual && locales.length > 1 && multilingualInfo != ''
+      ? (multilingualInfo ?? t('components.input.multilingualInfo'))
+      : ''
+  );
+  const effectiveInfo = $derived.by(() => {
+    let result = info ?? '';
+    if (effectiveMultilingualInfo) result += ` ${effectiveMultilingualInfo}`;
+    if (type === 'image') {
+      result += ` ${t('components.input.imageInfo', { maxFilesize: maxFilesizeInMB })}`;
+    }
+    return result || undefined;
+  });
 
-  let error: string | undefined;
-  let isDisabled: boolean;
+  let error: string | undefined = $state(undefined);
+  let isDisabled = $derived(!!(disabled || locked));
   /** For image input */
-  let isLoading = false;
-  let isTranslationsVisible = false;
-  let showRequired = false;
-  $: isDisabled = !!(disabled || locked);
+  let isLoading = $state(false);
+  let isTranslationsVisible = $state(false);
+  let showRequired = $derived(!!required && isEmptyValue(value));
 
   function handleToggleTranslations(): void {
     isTranslationsVisible = !isTranslationsVisible;
@@ -141,27 +153,32 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   ensureValue();
 
   // For easier handling of selected options when multiple can be selected
-  let selectedOptions = new Array<AnyChoice>();
-  let unselectedOptions = new Array<AnyChoice>();
-  $: if (type === 'select-multiple' && options) {
-    // If the values can be ordered, we maintain their order in the options array
-    selectedOptions = ordered
-      ? (value as Array<Id>).map((v) => options.find((o) => o.id === v)!) // We can be sure all ids are valid bc we checked it above
-      : options.filter((o) => (value as Array<Id>).includes(o.id));
-    unselectedOptions = options.filter((o) => !selectedOptions.includes(o));
-  }
+  let selectedOptions = $state(new Array<AnyChoice>());
+  let unselectedOptions = $state(new Array<AnyChoice>());
+  $effect(() => {
+    if (type === 'select-multiple' && options) {
+      // Compute into a local first so the effect never reads the `selectedOptions`
+      // state it also writes — reading + writing the same state inside an effect
+      // creates a self-invalidating cycle (effect_update_depth_exceeded).
+      const selected = ordered
+        ? (value as Array<Id>).map((v) => options.find((o) => o.id === v)!) // We can be sure all ids are valid bc we checked it above
+        : options.filter((o) => (value as Array<Id>).includes(o.id));
+      selectedOptions = selected;
+      unselectedOptions = options.filter((o) => !selected.includes(o));
+    }
+  });
 
   /**
    * Ensure that the value is valid for the given type.
    */
   function ensureValue(): void {
     // Empty string values
-    if (type === 'text' || type === 'textarea' || type === 'url') {
+    if (type === 'text' || type === 'textarea' || type === 'url' || type === 'email') {
       value ??= '';
     }
     // Initialize the value for an empty `LocalizedString`
     if (multilingual && !isLocalizedString(value)) {
-      value = typeof value === 'string' ? { [$currentLocale]: value } : {};
+      value = typeof value === 'string' ? { [currentLocale]: value } : {};
     }
     // Ensure `select` values are present in the options
     if (type.startsWith('select') && options) {
@@ -184,7 +201,7 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   /**
    * Gets the url of the image.
    */
-  function getImageUrl(value: $$Props['value']): string {
+  function getImageUrl(value: InputProps['value']): string {
     return value && typeof value === 'object' && 'url' in value ? (value as Image).url : '';
   }
 
@@ -193,7 +210,7 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   ////////////////////////////////////////////////////////////////////
 
   /** The input is hidden and triggered when the image preview or custom button is pressed */
-  let fileInput: HTMLInputElement | undefined;
+  let fileInput: HTMLInputElement | undefined = $state();
 
   /**
    * Open the file dialog when the label or image label when `Space` or `Enter` is pressed.
@@ -204,7 +221,11 @@ The input itself is wrapped in multiple container elements, the outermost of whi
     fileInput?.click();
   }
 
-  let mainInputs = new Array<HTMLElement>();
+  // bind: migrate — `mainInputs` must be $state in Svelte 5 because
+  // `bind:this={mainInputs[i]}` mutates a property on it. A plain array
+  // triggers `binding_property_non_reactive`. Mirrors the earlier fix (see phase 64)
+  // at QuestionChoices.svelte:122-124.
+  const mainInputs: Array<HTMLElement> = $state([]);
   /**
    * Return focus to the main input after a multilingual item has been expanded or an option has been deleted in select-multiple.
    */
@@ -282,6 +303,23 @@ The input itself is wrapped in multiple container elements, the outermost of whi
         if (url == null) return handleError('components.input.error.invalidUrl');
         value = url;
       }
+    } else if (type === 'email') {
+      // Only update the value if it's an empty string or a valid email
+      const currentValue = currentTarget.value.trim();
+      if (currentValue === '') {
+        value = '';
+      } else {
+        if (!EMAIL_REGEX.test(currentValue)) return handleError('components.input.error.invalidEmail');
+        value = currentValue;
+      }
+
+      // Number — coerce the DOM string value to a real JS number (or undefined when cleared).
+      // The backend `validate_answer_value` RPC requires a JSON number, so emitting the raw
+      // string would fail validation ("Answer for number question must be a number").
+    } else if (type === 'number' && currentTarget instanceof HTMLInputElement) {
+      // `valueAsNumber` is NaN for an empty or non-numeric field — map that to a cleared value.
+      const numericValue = currentTarget.valueAsNumber;
+      value = Number.isNaN(numericValue) ? undefined : numericValue;
 
       // All other types
     } else {
@@ -305,7 +343,7 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   ////////////////////////////////////////////////////////////////////
 
   function handleError(key: TranslationKey, payload?: TranslationsPayload): void {
-    error = $t(key, payload);
+    error = t(key, payload);
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -329,10 +367,6 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   // Styling
   ////////////////////////////////////////////////////////////////////
 
-  // Show required icon only if the input is empty
-  $: showRequired = !!required && isEmptyValue(value);
-
-  // TODO[Svelte 5]: Use snippets instead of these clunky class variables
   const inputContainerClass =
     'flex min-h-touch items-center justify-between gap-2 overflow-hidden rounded-lg bg-[var(--inputBgColor)]';
   const inputLabelClass = 'label-sm label pointer-events-none min-w-[4rem] mx-md my-2 px-0 text-secondary';
@@ -346,19 +380,25 @@ The input itself is wrapped in multiple container elements, the outermost of whi
 </script>
 
 <!-- Add containarProps to the outer container and set styles for it -->
+<!-- a11y note: every <label> in this file uses an `id` referenced by an
+     `aria-labelledby` on the actual <input>/<textarea>/<select>. The
+     a11y_label_has_associated_control rule fires because the label
+     doesn't use `for=""`, but the WCAG association is still satisfied
+     via aria-labelledby. The svelte-ignore comments below are
+     intentional. -->
 <div
   {...concatClass(containerProps ?? {}, 'w-full flex flex-col items-stretch')}
-  style:--inputBgColor={onShadedBg ? 'oklch(var(--b1))' : 'oklch(var(--b3))'}>
+  style:--inputBgColor={onShadedBg ? 'var(--color-base-100)' : 'var(--color-base-300)'}>
   <!-- The label in small caps above the input -->
   {#if isLabelOutside}
     <div class="{outsideLabelClass} me-8 flex flex-row items-center justify-between">
-      <!-- svelte-ignore a11y-label-has-associated-control -->
+      <!-- svelte-ignore a11y_label_has_associated_control -->
       <label id="{id}-label">{label}</label>
       {#if showRequired}
-        <div class="required-badge"><Icon name="required" /><span>{$t('common.required')}</span></div>
+        <div class="required-badge"><Icon name="required" /><span>{t('common.required')}</span></div>
       {/if}
       {#if locked}
-        <div class="locked-badge"><Icon name="locked" /><span>{$t('common.locked')}</span></div>
+        <div class="locked-badge"><Icon name="locked" /><span>{t('common.locked')}</span></div>
       {/if}
     </div>
   {/if}
@@ -367,56 +407,58 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   {#if multilingual}
     <div class="join join-vertical items-stretch {joinGap}">
       <!-- Show the field for the current locale and for all others, if translations are visible -->
-      {#each [$currentLocale, ...$locales.filter((l) => l !== $currentLocale)] as locale, i}
-        {#if locale === $currentLocale || isTranslationsVisible}
+      {#each [currentLocale, ...locales.filter((l) => l !== currentLocale)] as locale, i}
+        {#if locale === currentLocale || isTranslationsVisible}
           {#if type === 'textarea-multilingual'}
             <div class="relative flex flex-col items-stretch">
               <!-- The language label inside the field -->
-              <!-- svelte-ignore a11y-label-has-associated-control -->
+              <!-- svelte-ignore a11y_label_has_associated_control -->
               <label
                 id="{id}-label-{locale}"
-                class="small-label absolute left-md top-sm text-secondary transition-opacity"
-                class:opacity-0={!isTranslationsVisible}>{$t(assertTranslationKey(`lang.${locale}`))}</label>
-              <!-- The actual textarea 
+                class="small-label left-md top-sm text-secondary absolute transition-opacity"
+                class:opacity-0={!isTranslationsVisible}>{t(assertTranslationKey(`lang.${locale}`))}</label>
+              <!-- The actual textarea
                    NB. Join does not work it, so we do it by hand -->
+              <!-- bind: keep — Pattern 1 ($state target for bind:this; mainInputs is $state([]) per declaration above). bind: placed AFTER value/class for symmetry with the reorder revert (see phase 65). -->
               <textarea
                 id="{id}-{locale}"
                 aria-labelledby="{id}-label {id}-label-{locale}"
                 {placeholder}
                 disabled={isDisabled}
                 rows="4"
-                {...concatClass($$restProps, `${textareaClass} transition-[padding]`)}
+                {...concatClass(restProps, `${textareaClass} transition-[padding]`)}
                 class:pt-24={isTranslationsVisible}
                 class:rounded-t-none={isTranslationsVisible && i > 0}
-                class:rounded-b-none={isTranslationsVisible && i !== $locales.length - 1}
+                class:rounded-b-none={isTranslationsVisible && i !== locales.length - 1}
                 bind:this={mainInputs[i]}
-                on:change={(e) => handleChange(e, locale)}
-                value={getLocalizedValue(locale)} />
+                onchange={(e) => handleChange(e, locale)}
+                value={getLocalizedValue(locale)}></textarea>
             </div>
           {:else if type === 'text-multilingual'}
             <div class="{inputContainerClass} join-item">
               <!-- The language label inside the field -->
-              <!-- svelte-ignore a11y-label-has-associated-control -->
+              <!-- svelte-ignore a11y_label_has_associated_control -->
               <label
                 id="{id}-label-{locale}"
                 class="{inputLabelClass} transition-opacity"
-                class:opacity-0={!isTranslationsVisible}>{$t(assertTranslationKey(`lang.${locale}`))}</label>
+                class:opacity-0={!isTranslationsVisible}>{t(assertTranslationKey(`lang.${locale}`))}</label>
               <div class={inputAndIconContainerClass}>
                 <!-- The actual text input -->
+                <!-- bind: keep — Pattern 1 ($state target for bind:this; mainInputs is $state([]) per declaration above). bind: placed AFTER type/value for symmetry with the reorder revert (see phase 65). -->
                 <input
                   type="text"
                   id="{id}-{locale}"
                   aria-labelledby="{id}-label {id}-label-{locale}"
                   {placeholder}
                   disabled={isDisabled}
-                  {...concatClass($$restProps, inputClass)}
+                  {...concatClass(restProps, inputClass)}
                   bind:this={mainInputs[i]}
-                  on:change={(e) => handleChange(e, locale)}
+                  onchange={(e) => handleChange(e, locale)}
                   value={getLocalizedValue(locale)} />
               </div>
             </div>
           {:else}
-            <ErrorMessage inline message={$t('error.general')} />
+            <ErrorMessage inline message={t('error.general')} />
           {/if}
         {/if}
       {/each}
@@ -432,9 +474,9 @@ The input itself is wrapped in multiple container elements, the outermost of whi
         {placeholder}
         disabled={isDisabled}
         rows="4"
-        {...concatClass($$restProps, `${textareaClass} vaa-group-join-item`)}
-        on:change={handleChange}
-        value={`${value}`} />
+        {...concatClass(restProps, `${textareaClass} vaa-group-join-item`)}
+        onchange={handleChange}
+        value={`${value}`}></textarea>
     </div>
 
     <!-- 3. Select multiple -->
@@ -444,34 +486,35 @@ The input itself is wrapped in multiple container elements, the outermost of whi
         <label class={inputLabelClass} for={id}>{label}</label>
         <div class={inputAndIconContainerClass}>
           {#if options?.length}
+            <!-- bind: keep — Pattern 1 ($state target for bind:this; mainInputs is $state([]) per declaration above). bind: placed AFTER class= for symmetry with the reorder revert (see phase 65). -->
             <select
               {id}
               disabled={isDisabled}
-              {...concatClass($$restProps, selectClass)}
+              {...concatClass(restProps, selectClass)}
               bind:this={mainInputs[0]}
-              on:change={handleChange}>
+              onchange={handleChange}>
               <option disabled selected
                 >{placeholder ||
                   (selectedOptions.length > 0
                     ? selectedOptions.length === options.length
-                      ? $t('components.input.allSelected')
-                      : $t('components.input.selectAnother')
-                    : $t('components.input.selectFirst'))}</option>
+                      ? t('components.input.allSelected')
+                      : t('components.input.selectAnother')
+                    : t('components.input.selectFirst'))}</option>
               {#each unselectedOptions as option}
                 <option value={option.id}>{option.label}</option>
               {/each}
             </select>
           {:else}
-            <ErrorMessage inline message={$t('error.general')} />
+            <ErrorMessage inline message={t('error.general')} />
           {/if}
           {#if showRequired}
             <div class="required-badge">
-              <Icon name="required" class={iconBadgeClass} /><span>{$t('common.required')}</span>
+              <Icon name="required" class={iconBadgeClass} /><span>{t('common.required')}</span>
             </div>
           {/if}
           {#if locked}
             <div class="locked-badge">
-              <Icon name="locked" class={iconBadgeClass} /><span>{$t('common.locked')}</span>
+              <Icon name="locked" class={iconBadgeClass} /><span>{t('common.locked')}</span>
             </div>
           {/if}
         </div>
@@ -479,12 +522,12 @@ The input itself is wrapped in multiple container elements, the outermost of whi
 
       <!-- Selected options -->
       {#each selectedOptions as option}
-        {@const buttonLabel = $t('components.input.deleteOption', { option: option.label })}
+        {@const buttonLabel = t('components.input.deleteOption', { option: option.label })}
         <div class="{inputContainerClass} join-item !justify-end">
           <span class={inputLabelClass}>{option.label}</span>
           <div class="{inputAndIconContainerClass} grow-0">
             {#if !locked}
-              <button type="button" title={buttonLabel} on:click={() => handleDeleteOption(option.id)}>
+              <button type="button" title={buttonLabel} onclick={() => handleDeleteOption(option.id)}>
                 <span class="sr-only">{buttonLabel}, {label}</span>
                 <Icon name="close" class={iconBadgeClass} />
               </button>
@@ -498,52 +541,53 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   {:else if type === 'image'}
     {@const url = getImageUrl(value)}
     <div class="{inputContainerClass} vaa-group-join-item">
-      <!-- svelte-ignore a11y-label-has-associated-control -->
+      <!-- svelte-ignore a11y_label_has_associated_control -->
       <label id="{id}-label" class={inputLabelClass}>{label}</label>
       <div class={inputAndIconContainerClass}>
-        <!-- svelte-ignore a11y-no-noninteractive-tabindex a11y-no-noninteractive-element-interactions a11y-label-has-associated-control -->
-        <label
+        <button
+          type="button"
           id="{id}-image-label"
-          tabindex="0"
-          class="flex h-60 justify-stretch text-primary"
+          class="text-primary flex h-60 justify-stretch"
           class:cursor-pointer={!isDisabled}
-          on:click={() => fileInput?.click()}
-          on:keydown={handleFileInputLabelKeydown}>
+          disabled={isDisabled}
+          onclick={() => fileInput?.click()}
+          onkeydown={handleFileInputLabelKeydown}>
           {#if isLoading}
             <Loading inline />
           {:else if url}
             <div class="flex w-60 items-center justify-center overflow-hidden {locked ? 'mr-8' : '-mr-8'}">
               <img src={url} alt={label} class="h-full w-full object-cover" class:rounded-r-lg={!locked} />
             </div>
-            <span class="sr-only">{$t('components.input.changeImage')}</span>
+            <span class="sr-only">{t('components.input.changeImage')}</span>
           {:else if !isDisabled}
-            <div class="flex items-center gap-sm">
-              {$t('components.input.addImage')}
+            <div class="gap-sm flex items-center">
+              {t('components.input.addImage')}
               <Icon name="photo" />
             </div>
           {:else}
-            <div class="me-8 flex items-center text-secondary">
-              {$t('components.input.noImage')}
+            <div class="text-secondary me-8 flex items-center">
+              {t('components.input.noImage')}
             </div>
           {/if}
-        </label>
+        </button>
+        <!-- bind: keep — fileInput is $state(); single ref read in event handlers -->
         <input
+          bind:this={fileInput}
           type="file"
           {id}
           aria-labelledby="{id}-label {id}-image-label"
           disabled={isDisabled}
           class="hidden"
-          bind:this={fileInput}
-          on:change={handleChange}
+          onchange={handleChange}
           accept="image/jpeg, image/png, image/gif" />
         {#if showRequired}
           <div class="required-badge">
-            <Icon name="required" class={iconBadgeClass} /><span>{$t('common.required')}</span>
+            <Icon name="required" class={iconBadgeClass} /><span>{t('common.required')}</span>
           </div>
         {/if}
         {#if locked}
           <div class="locked-badge">
-            <Icon name="locked" class={iconBadgeClass} /><span>{$t('common.locked')}</span>
+            <Icon name="locked" class={iconBadgeClass} /><span>{t('common.locked')}</span>
           </div>
         {/if}
       </div>
@@ -561,15 +605,15 @@ The input itself is wrapped in multiple container elements, the outermost of whi
             {id}
             disabled={isDisabled}
             {placeholder}
-            {...concatClass($$restProps, 'toggle toggle-primary mr-md')}
+            {...concatClass(restProps, 'toggle toggle-primary mr-md')}
             checked={!!value}
-            on:change={handleChange} />
+            onchange={handleChange} />
 
           <!-- 5.2 Select -->
         {:else if type === 'select'}
           {#if options?.length}
-            <select {id} disabled={isDisabled} {...concatClass($$restProps, selectClass)} on:change={handleChange}>
-              <option disabled selected={!value}>{placeholder || $t('components.input.selectOne')}</option>
+            <select {id} disabled={isDisabled} {...concatClass(restProps, selectClass)} onchange={handleChange}>
+              <option disabled selected={!value}>{placeholder || t('components.input.selectOne')}</option>
               {#each options as { id, label }}
                 <option value={id} selected={value === id}>
                   {label}
@@ -577,7 +621,7 @@ The input itself is wrapped in multiple container elements, the outermost of whi
               {/each}
             </select>
           {:else}
-            <ErrorMessage message={$t('error.general')} />
+            <ErrorMessage message={t('error.general')} />
           {/if}
 
           <!-- 5.3 All other inputs: date, number, text -->
@@ -587,19 +631,19 @@ The input itself is wrapped in multiple container elements, the outermost of whi
             {id}
             disabled={isDisabled}
             {placeholder}
-            {...concatClass($$restProps, inputClass)}
+            {...concatClass(restProps, inputClass)}
             {value}
-            on:change={handleChange} />
+            onchange={handleChange} />
         {/if}
 
         {#if showRequired}
           <div class="required-badge">
-            <Icon name="required" class={iconBadgeClass} /><span>{$t('common.required')}</span>
+            <Icon name="required" class={iconBadgeClass} /><span>{t('common.required')}</span>
           </div>
         {/if}
         {#if locked}
           <div class="locked-badge">
-            <Icon name="locked" class={iconBadgeClass} /><span>{$t('common.locked')}</span>
+            <Icon name="locked" class={iconBadgeClass} /><span>{t('common.locked')}</span>
           </div>
         {/if}
       </div>
@@ -609,32 +653,32 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   <!-- Error messages -->
 
   {#if error}
-    <ErrorMessage inline message={error} class="my-sm text-center" />
+    <ErrorMessage inline message={error} data-testid="input-error" class="my-sm text-center" />
   {/if}
 
   <!-- Optional elements below the form widgets -->
 
-  {#if multilingual || info}
+  {#if (multilingual && locales.length > 1) || effectiveInfo}
     <!-- If both info and the multilingual button are shown, they're arranged side by side -->
-    <div class="flex gap-md {multilingual && info ? 'flex-row items-start' : 'flex-col'}">
-      {#if info}
+    <div class="gap-md flex {multilingual && effectiveInfo ? 'flex-row items-start' : 'flex-col'}">
+      {#if effectiveInfo}
         <!-- pt-4 aligns the info more nicely with the multilingual button -->
-        <div class="{infoClass} {multilingual ? 'pt-4' : ''} grow">{info}</div>
+        <div class="{infoClass} {multilingual ? 'pt-4' : ''} grow">{effectiveInfo}</div>
       {/if}
-      {#if multilingual}
+      {#if multilingual && locales.length > 1}
         <Button
-          text={isTranslationsVisible
-            ? $t('components.input.hideTranslations')
-            : $t('components.input.showTranslations')}
+          data-testid="multilingual-toggle"
+          text={isTranslationsVisible ? t('components.input.hideTranslations') : t('components.input.showTranslations')}
           icon={isTranslationsVisible ? 'hide' : 'language'}
           class="!w-auto"
-          on:click={handleToggleTranslations} />
+          onclick={handleToggleTranslations} />
       {/if}
     </div>
   {/if}
 </div>
 
 <style lang="postcss">
+  @reference "../../../tailwind-theme.css";
   .locked-badge {
     @apply text-secondary;
   }

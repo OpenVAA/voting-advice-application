@@ -1,6 +1,6 @@
 # Contexts
 
-> See also the online doc [Contexts](https://openvaa.org/developers-guide/frontend/contexts) (or [locally](/docs/src/routes/developers-guide/frontend/contexts/+page.md))
+> See also the online doc [Contexts](https://openvaa.org/developers-guide/frontend/contexts) (or [locally](</apps/docs/src/routes/(content)/developers-guide/frontend/contexts/+page.md>))
 
 This directory contains context providers for managing application state throughout the OpenVAA frontend, including:
 

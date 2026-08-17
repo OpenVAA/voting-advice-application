@@ -4,8 +4,8 @@ Display an entity's match score.
 
 ### Properties
 
-- `score`: The match score as a `string` or a `number`. Note that `$t('components.matchScore.label')` will be used display the score.
-- `label`: The label to display under the score. Default: `$t('components.matchScore.label')`
+- `score`: The match score as a `string` or a `number`. Note that `t('components.matchScore.label')` will be used display the score.
+- `label`: The label to display under the score. Default: `t('components.matchScore.label')`
 - `showLabel`: Whether to show the label. Default: `true`
 - Any valid attributes of a `<div>` element
 
@@ -21,18 +21,14 @@ Display an entity's match score.
   import { concatClass } from '$lib/utils/components';
   import type { MatchScoreProps } from './MatchScore.type';
 
-  type $$Props = MatchScoreProps;
-
-  export let score: $$Props['score'];
-  export let label: $$Props['label'] = undefined;
-  export let showLabel: $$Props['showLabel'] = true;
+  let { score, label, showLabel = true, ...restProps }: MatchScoreProps = $props();
 
   const { t } = getComponentContext();
 </script>
 
-<div {...concatClass($$restProps, 'flex min-w-[3.125rem] flex-col items-center')}>
-  <span class="text-lg font-bold">{$t('components.matchScore.score', { score })}</span>
+<div {...concatClass(restProps, 'flex min-w-[3.125rem] flex-col items-center')}>
+  <span class="text-lg font-bold" data-testid="match-score">{t('components.matchScore.score', { score })}</span>
   {#if showLabel && label !== ''}
-    <span class="text-center text-xs text-secondary">{label ?? $t('components.matchScore.label')}</span>
+    <span class="text-secondary text-center text-xs">{label ?? t('components.matchScore.label')}</span>
   {/if}
 </div>

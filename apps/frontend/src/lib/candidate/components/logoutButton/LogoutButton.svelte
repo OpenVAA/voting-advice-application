@@ -31,40 +31,38 @@ Accesses `CandidateContext`.
   import { logDebugError } from '$lib/utils/logger';
   import type { LogoutButtonProps } from './LogoutButton.type';
 
-  type $$Props = LogoutButtonProps;
-
-  export let stayOnPage: $$Props['stayOnPage'] = false;
-  export let logoutModalTimer: $$Props['logoutModalTimer'] = 30;
+  let { stayOnPage = false, logoutModalTimer = 30, ...restProps }: LogoutButtonProps = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const {
-    answersLocked,
-    appSettings,
-    getRoute,
-    logout,
-    unansweredOpinionQuestions,
-    unansweredRequiredInfoQuestions,
-    t
-  } = getCandidateContext();
+  // see phase 61 follow-up: read reactive context getters via candCtx.X so
+  // updates after data load propagate (the same destructure-snapshot bug class
+  // that 61-03 fixed for candidate-questions).
+  const candCtx = getCandidateContext();
+  const { getRoute, logout, t } = candCtx;
+  // appSettings is a reactive accessor (see phase 113 flatten) — read via candCtx.X, never destructure.
+  const appSettings = $derived(candCtx.appSettings);
 
   ////////////////////////////////////////////////////////////////////
   // Handle logout and the modal
   ////////////////////////////////////////////////////////////////////
 
-  // exports from TimedModal
-  let openModal: () => void;
-  let closeModal: () => void;
-  let timeLeft = logoutModalTimer;
+  // reference to TimedModal
+  let timedModalRef: TimedModal | undefined = $state();
+  // `timeLeft` is bound by TimedModal (countdown ticks); seed from the
+  // prop's initial value. Reading the prop inside the initializer is
+  // intentional: we want the initial seed, not a reactive dependency.
+  // svelte-ignore state_referenced_locally
+  let timeLeft = $state(logoutModalTimer);
 
   async function triggerLogout() {
     if (
-      !$answersLocked &&
-      ($unansweredOpinionQuestions?.length !== 0 || $unansweredRequiredInfoQuestions?.length !== 0)
+      !candCtx.answersLocked &&
+      (candCtx.unansweredOpinionQuestions?.length !== 0 || candCtx.unansweredRequiredInfoQuestions?.length !== 0)
     ) {
-      openModal();
+      timedModalRef?.openModal();
     } else {
       await logout();
     }
@@ -74,50 +72,61 @@ Accesses `CandidateContext`.
     await logout().catch((e) => {
       logDebugError(`Error logging out: ${e?.message}`);
     });
-    closeModal();
+    timedModalRef?.closeModal();
     if (!stayOnPage) {
-      await goto($getRoute('CandAppLogin'), { invalidateAll: true });
+      await goto(getRoute.current('CandAppLogin'), { invalidateAll: true });
     }
   }
 </script>
 
-<Button on:click={triggerLogout} icon="logout" text={$t('common.logout')} color="warning" {...$$restProps} />
+<Button
+  disabled={!timedModalRef}
+  onclick={triggerLogout}
+  icon="logout"
+  text={t('common.logout')}
+  color="warning"
+  {...restProps} />
 
+<!-- bind: keep — timedModalRef is $state(); single ref read in event handlers. bind:timeLeft against TimedModal.timeLeft = $bindable(...) -->
 <TimedModal
+  bind:this={timedModalRef}
   bind:timeLeft
-  bind:openModal
-  bind:closeModal
   onTimeout={handleLogout}
-  title={$t('candidateApp.logoutModal.title')}
+  title={t('candidateApp.logoutModal.title')}
   timerDuration={logoutModalTimer}>
   <!-- <div class="notification max-w-md text-center"> -->
-  {#if $unansweredOpinionQuestions && $unansweredRequiredInfoQuestions?.length === 0}
+  {#if candCtx.unansweredOpinionQuestions && candCtx.unansweredRequiredInfoQuestions?.length === 0}
     <p>
-      {$t('candidateApp.logoutModal.questionsLeft', {
-        opinionQuestionsLeft: $unansweredOpinionQuestions.length ?? 0
+      {t('candidateApp.logoutModal.questionsLeft', {
+        opinionQuestionsLeft: candCtx.unansweredOpinionQuestions.length ?? 0
       })}
     </p>
   {:else}
     <p>
-      {$t('candidateApp.logoutModal.itemsLeft', {
-        infoQuestionsLeft: $unansweredRequiredInfoQuestions?.length ?? 0,
-        opinionQuestionsLeft: $unansweredOpinionQuestions?.length ?? 0
+      {t('candidateApp.logoutModal.itemsLeft', {
+        infoQuestionsLeft: candCtx.unansweredRequiredInfoQuestions?.length ?? 0,
+        opinionQuestionsLeft: candCtx.unansweredOpinionQuestions?.length ?? 0
       })}
     </p>
-    {#if $unansweredRequiredInfoQuestions?.length !== 0 || ($appSettings.entities?.hideIfMissingAnswers?.candidate && $unansweredOpinionQuestions?.length !== 0)}
-      <p>{$t('candidateApp.common.willBeHiddenIfMissing')}</p>
+    {#if candCtx.unansweredRequiredInfoQuestions?.length !== 0 || (appSettings.entities?.hideIfMissingAnswers?.candidate && candCtx.unansweredOpinionQuestions?.length !== 0)}
+      <p>{t('candidateApp.common.willBeHiddenIfMissing')}</p>
     {/if}
   {/if}
   <p>
-    {$t('candidateApp.logoutModal.ingress', { timeLeft })}
+    {t('candidateApp.logoutModal.ingress', { timeLeft })}
   </p>
   <!-- </div> -->
-  <div slot="actions" class="flex w-full flex-col items-center">
-    <Button on:click={closeModal} text={$t('candidateApp.logoutModal.continue')} variant="main" />
-    <Button
-      on:click={handleLogout}
-      text={$t('common.logout')}
-      class="w-full hover:bg-warning hover:text-warning-content"
-      color="warning" />
-  </div>
+  {#snippet actions()}
+    <div class="flex w-full flex-col items-center">
+      <Button
+        onclick={() => timedModalRef?.closeModal()}
+        text={t('candidateApp.logoutModal.continue')}
+        variant="main" />
+      <Button
+        onclick={handleLogout}
+        text={t('common.logout')}
+        class="hover:bg-warning hover:text-warning-content w-full"
+        color="warning" />
+    </div>
+  {/snippet}
 </TimedModal>

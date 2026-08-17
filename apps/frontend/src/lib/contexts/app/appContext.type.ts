@@ -1,51 +1,93 @@
-import type { Readable, Writable } from 'svelte/store';
 import type { FeedbackWriter } from '$lib/api/base/feedbackWriter.type';
 import type { ComponentContext } from '../component';
 import type { DataContext } from '../data';
 import type { AppCustomization } from './appCustomization.type';
-import type { getRoute } from './getRoute';
-import type { PopupStore } from './popup';
+import type { RouteBuilder } from './getRoute.svelte';
+import type { PopupState } from './popup';
 import type { TrackingService } from './tracking';
 import type { UserPreferences } from './userPreferences.type';
 
-export type AppContext = ComponentContext &
+/**
+ * The AppContext type.
+ *
+ * ComponentContext properties are overridden: `locale` is a BARE reactive accessor
+ * (see phase 113, read `ctx.locale`); `locales`/`darkMode` remain
+ * `{ readonly current }` rune handles for downstream Phase-52 contexts (VoterContext,
+ * CandidateContext, AdminContext) which read them via `.current`.
+ *
+ * Plain function properties (`t`, `translate`) are kept as-is from ComponentContext.
+ */
+export type AppContext = Omit<ComponentContext, 'locale' | 'locales' | 'darkMode'> &
   DataContext &
   TrackingService & {
     /**
+     * The current locale, exposed as a BARE reactive accessor (see phase 113).
+     * Read directly via `ctx.locale`. MUST be read off `ctx` (never destructured) —
+     * it is a reactive accessor per CLAUDE.md's Context Destructuring Rule.
+     */
+    readonly locale: string;
+    /**
+     * Available locales, exposed as a `{ readonly current }` rune handle. Read via `.current`.
+     */
+    locales: { readonly current: ReadonlyArray<string> };
+    /**
+     * Dark mode state, exposed as a `{ readonly current }` rune handle. Read via `.current`.
+     */
+    darkMode: { readonly current: boolean };
+    /**
      * The application type we're using. Set this to the current type in the layout containing the app.
      */
-    appType: Writable<AppType>;
+    appType: {
+      readonly current: AppType;
+      set(v: AppType): void;
+      update(fn: (v: AppType) => AppType): void;
+    };
     /**
-     * A store for app customization from `DataProvider`.
-     * NB. The store is `Writable`, but it should not be written to under normal circumstances.
+     * App customization from `DataProvider`, exposed as a writable rune handle.
+     * NB. It is writable, but it should not be written to under normal circumstances.
      */
-    appCustomization: Writable<AppCustomization>;
+    appCustomization: {
+      readonly current: AppCustomization;
+      set(v: AppCustomization): void;
+      update(fn: (v: AppCustomization) => AppCustomization): void;
+    };
     /**
-     * A store for currently effective app settings.
-     * NB. The store is `Writable`, but it should not be written to under normal circumstances.
+     * Currently effective app settings, exposed as a BARE reactive accessor (see phase 113
+     * ). Read directly via `ctx.appSettings`. MUST be read off `ctx` (never
+     * destructured) — it is a reactive accessor per CLAUDE.md's Context Destructuring
+     * Rule. The former writable `set`/`update` surface had no external callers; internal
+     * writes go through the private `#appSettingsValue` $state (re-merge `$effect`s).
      */
-    appSettings: Writable<AppSettings>;
+    readonly appSettings: AppSettings;
     /**
-     * A store for building routes.
+     * Rune-native route-builder handle. Read via `getRoute.current(opts)`.
      */
-    getRoute: typeof getRoute;
+    getRoute: { readonly current: RouteBuilder };
     /**
-     * A store containing the possible survey link.
+     * The possible survey link, exposed as a `{ readonly current }` rune handle. Read via `.current`.
      */
-    surveyLink: Readable<string | undefined>;
+    surveyLink: { readonly current: string | undefined };
     /**
-     * A store for user (not necessarily a voter) preferences which is maintained in local storage.
+     * User (not necessarily a voter) preferences maintained in local storage,
+     * exposed as a writable rune handle backed by `localStorageState`.
      */
-    userPreferences: Writable<UserPreferences>;
+    userPreferences: {
+      readonly current: UserPreferences;
+      set(v: UserPreferences): void;
+      update(fn: (v: UserPreferences) => UserPreferences): void;
+    };
     /**
      * A store that manages a queue of popup components and resolves to the first component in the queue.
      */
-    popupQueue: PopupStore;
+    popupQueue: PopupState;
     /**
-     * A store that holds the function for opening the feedback modal.
+     * Holds the function for opening the feedback modal, exposed as a writable rune handle.
      * TODO: Refactor when Cand App is refactored.
      */
-    openFeedbackModal: Writable<() => void | undefined>;
+    openFeedbackModal: {
+      readonly current: (() => void) | undefined;
+      set(v: (() => void) | undefined): void;
+    };
     /**
      * Send feedback using the `FeedbackWriter` api.
      */

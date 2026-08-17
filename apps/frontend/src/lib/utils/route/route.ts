@@ -1,8 +1,8 @@
-const CANDIDATE = '/[[lang=locale]]/candidate';
+const CANDIDATE = '/candidate';
 const CANDIDATE_PROT = `${CANDIDATE}/(protected)`;
-const VOTER = '/[[lang=locale]]/(voters)';
+const VOTER = '/(voters)';
 const VOTER_LOCATED = `${VOTER}/(located)`;
-const ADMIN = '/[[lang=locale]]/admin';
+const ADMIN = '/admin';
 const ADMIN_PROT = `${ADMIN}/(protected)`;
 
 /**
@@ -23,11 +23,23 @@ export const ROUTE = {
   Question: `${VOTER_LOCATED}/questions/[questionId]`,
   QuestionCategory: `${VOTER_LOCATED}/questions/category/[categoryId]`,
   Questions: `${VOTER_LOCATED}/questions`,
-  ResultCandidate: `${VOTER_LOCATED}/results/[entityType]/[entityId]`,
-  ResultEntity: `${VOTER_LOCATED}/results/[entityType]/[entityId]`,
-  ResultParty: `${VOTER_LOCATED}/results/[entityType]/[entityId]`,
+  // Results routes — 4-segment optional shape (see phase 88)
+  // (see `src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]`).
+  // Route params:
+  //   - electionTab   (freeform)              — SELECTED election (singular) whose results are being rendered.
+  //   - entityTab     (matcher etPl)          — `candidates` | `organizations` | `alliances` (list tab).
+  //   - entity        (matcher etSg)          — `candidate`  | `organization`  | `alliance`  (drawer entity type).
+  //   - id            (any)                   — entity id for the drawer.
+  // Name-disjoint dissociation: `electionTab` (route key, SELECTED singular) and
+  // `electionId` (search key, AVAILABLE array; PERSISTENT_SEARCH_PARAMS member at
+  // `params.ts`) are literally different identifiers throughout the codebase —
+  // they never alias. `constituencyId` continues to travel as a persistent
+  // search param.
+  ResultCandidate: `${VOTER_LOCATED}/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]`,
+  ResultEntity: `${VOTER_LOCATED}/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]`,
+  ResultParty: `${VOTER_LOCATED}/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]`,
   Results: `${VOTER_LOCATED}/results`,
-  Statistics: `${VOTER_LOCATED}/results/statistics`,
+  Statistics: `${VOTER_LOCATED}/results/[[electionTab]]/statistics`,
 
   // Candidate App
   CandAppForgotPassword: `${CANDIDATE}/forgot-password`,
@@ -39,16 +51,14 @@ export const ROUTE = {
   CandAppQuestion: `${CANDIDATE_PROT}/questions/[questionId]`,
   CandAppQuestions: `${CANDIDATE_PROT}/questions`,
   CandAppPreregister: `${CANDIDATE}/preregister`,
-  CandAppPreregisterIdentityProviderCallback: `${CANDIDATE}/preregister/signicat/oidc/callback`, // TODO: Shorter URL, does not have to be Signicat- specific.
+  CandAppPreregisterIdentityProviderCallback: '/api/oidc/callback',
   CandAppPreregisterElection: `${CANDIDATE}/preregister/elections`,
   CandAppPreregisterConstituency: `${CANDIDATE}/preregister/constituencies`,
   CandAppPreregisterEmail: `${CANDIDATE}/preregister/email`,
   CandAppPreregisterStatus: `${CANDIDATE}/preregister/status`,
   CandAppLogin: `${CANDIDATE}/login`,
-  /** NB! If this route is changed, make sure to update the Strapi config at backend/vaa-strapi/src/plugins/openvaa-admin-tools/server/services/email.js */
   CandAppRegister: `${CANDIDATE}/register`,
   CandAppSetPassword: `${CANDIDATE}/register/password`,
-  /** NB! If this route is changed, make sure to update the Strapi config at backend/vaa-strapi/src/extensions/users-permissions/strapi-server.js */
   CandAppResetPassword: `${CANDIDATE}/password-reset`,
   CandAppSettings: `${CANDIDATE_PROT}/settings`,
 
@@ -77,6 +87,6 @@ export const FIRST_QUESTION_ID = '__first__';
  */
 export const DEFAULT_PARAMS: Partial<Record<Route, Record<string, string>>> = {
   Question: { questionId: FIRST_QUESTION_ID },
-  ResultCandidate: { entityType: 'candidate' },
-  ResultParty: { entityType: 'organization' }
+  ResultCandidate: { entityTab: 'candidates', entity: 'candidate' },
+  ResultParty: { entityTab: 'organizations', entity: 'organization' }
 };

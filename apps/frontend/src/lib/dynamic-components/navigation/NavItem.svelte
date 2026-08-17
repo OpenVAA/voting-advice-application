@@ -2,7 +2,7 @@
 @component
 Outputs a navigation item for use inside a `<NavGroup>` which in turn is used within a `<Navigation>` component.
 
-The item is rendered as an `<a>` element if `href` is supplied. Otherwise a `<button>` element will be used. Be sure to provde an `on:click` event  handler or other way of making the item interactive.
+The item is rendered as an `<a>` element if `href` is supplied. Otherwise a `<button>` element will be used. Be sure to provide an `onclick` handler or other way of making the item interactive.
 
 ### Dynamic component
 
@@ -19,65 +19,84 @@ Accesses `LayoutContext`.
 ### Usage
 
 ```tsx
-<NavItem href={$getRoute(ROUTE.Info)} icon="info" text="Show info"/>
-<NavItem on:click={(e) => foo(e)} text="Do foo"/>
+<NavItem href={getRoute.current(ROUTE.Info)} icon="info" text="Show info"/>
+<NavItem onclick={(e) => foo(e)} text="Do foo"/>
 ```
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
+  import { getContext } from 'svelte';
   import { Icon } from '$lib/components/icon';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { concatClass } from '$lib/utils/components';
+  import { NAV_GROUP_CONTEXT_KEY } from './navGroupContext';
   import type { NavItemProps } from './NavItem.type';
 
-  type $$Props = NavItemProps;
+  let { autoCloseNav = true, disabled, href, onclick, icon, text, children, ...restProps }: NavItemProps = $props();
 
-  export let autoCloseNav: $$Props['autoCloseNav'] = true;
-  export let disabled: $$Props['disabled'] = undefined;
-  export let href: $$Props['href'] = undefined;
-  export let icon: $$Props['icon'] = undefined;
-  export let text: $$Props['text'];
+  const { navigation } = getLayoutContext();
 
-  const { navigation } = getLayoutContext(onDestroy);
+  // reason: Top-level getContext read — NOT inside an element attribute
+  // (Svelte issue #7549). Static structural detection:
+  // NavItem's containment in a NavGroup is fixed at component creation.
+  const inNavGroup = getContext(NAV_GROUP_CONTEXT_KEY) === true;
 
   // Create classes
-  let classes: string;
-  $: {
-    classes =
+  const classes = $derived.by(() => {
+    let c =
       'nav-item flex items-center gap-md px-10 py-md min-h-touch min-w-touch w-full !text-neutral hover:bg-base-200 active:bg-base-200';
     if (!icon) {
       // This corresponds to the width of an icon (24/16 rem) and the gap between the icon and the text (md = 10/16 rem)
-      classes += ' pl-[2.75rem]';
+      c += ' pl-[2.75rem]';
     }
-  }
+    return c;
+  });
 </script>
 
-<!-- We use a div with an Aria role instead of a `<li>` because we don't place the items within a valid parent for a `<li>`. We need the wrapper because we can't change the role of `<ActionItem>`, which renders as an `<a>` or `<button>` and thus already has a defined Aria role. -->
-<div role="listitem">
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
+{#snippet content()}
+  <!--
+    `disabled` is non-standard on `<a>`. On the `<a>` branch we set
+    `aria-disabled="true"` and drop `href` so the link is observably
+    disabled (WCAG 2.1 AA + Playwright `toBeDisabled()`-compatible). On
+    the `<button>` branch we keep native `disabled`. CSS targets both via
+    `[disabled]` and `[aria-disabled="true"]`.
+  -->
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
   <svelte:element
     this={href == null ? 'button' : 'a'}
-    {href}
-    on:click
-    on:click={() => {
+    href={disabled ? undefined : href}
+    onclick={(e: MouseEvent) => {
+      if (onclick) onclick(e);
       if (autoCloseNav && navigation.close) navigation.close();
     }}
-    disabled={disabled || undefined}
-    {...concatClass($$restProps, classes)}>
+    disabled={href == null && disabled ? true : undefined}
+    aria-disabled={href != null && disabled ? 'true' : undefined}
+    data-testid="nav-menu-item"
+    {...concatClass(restProps, classes)}>
     {#if icon}
       <Icon name={icon} />
     {/if}
     <span class="uc-first">{text}</span>
-    <slot />
+    {@render children?.()}
   </svelte:element>
-</div>
+{/snippet}
+
+<!-- The wrapping <div role="listitem"> is rendered ONLY when this NavItem is a child of a NavGroup (auto-detected via getContext; see phase 80). Orphan NavItems (e.g., VoterNav/CandidateNav/AdminNav close-buttons) render bare to avoid the axe aria-required-parent violation. -->
+{#if inNavGroup}
+  <div role="listitem">
+    {@render content()}
+  </div>
+{:else}
+  {@render content()}
+{/if}
 
 <style lang="postcss">
+  @reference "../../../tailwind-theme.css";
   /* The class prefixes are valid even though linter flags them */
   .nav-item[disabled],
   .nav-item:disabled,
+  .nav-item[aria-disabled='true'],
   .nav-item.disabled {
-    @apply pointer-events-none !text-secondary hover:bg-transparent;
+    @apply !text-secondary pointer-events-none hover:bg-transparent;
   }
 </style>

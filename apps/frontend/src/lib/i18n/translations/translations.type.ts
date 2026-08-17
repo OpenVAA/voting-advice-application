@@ -3,10 +3,7 @@
  * for interpolation
  */
 export type TranslationsPayload = Partial<{
-  adminEmailLink: string;
   analyticsLink: string;
-  candidatePlural: string;
-  candidateSingular: string;
   consentDate: Date;
   constituency: string;
   constituencyGroup: string;
@@ -29,8 +26,6 @@ export type TranslationsPayload = Partial<{
   organization: string;
   partiesTerm: string;
   partyMatchingMethod: AppSettings['matching']['organizationMatching'];
-  partyPlural: string;
-  partySingular: string;
   publisher: string;
   questionsLink: string;
   rating: number;

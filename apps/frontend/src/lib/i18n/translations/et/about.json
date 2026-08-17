@@ -1,5 +1,5 @@
 {
-  "content": "<p>Valimiskompass võrdleb sinu arvamusi nendega, mida {candidatePlural} ja {partyPlural} on samadele küsimustele esitanud. Pärast vastamist arvutatakse sobivustulemus, mis näitab, kui palju te nõustute.</p> <ul> <li>Tulemus 100 tähendab, et olete täielikult nõus küsimustes, millele oled vastanud.</li> <li>Tulemus 0 tähendab, et olete kõigis küsimustes, millele oled vastanud, täiesti eri meelt.</li> <li>Tulemused nende vahel tähendavad, et mõnes küsimuses olete nõus, mõnes mitte.</li> </ul>",
+  "content": "<p>Valimiskompass võrdleb sinu arvamusi nendega, mida kandidaadid ja erakonnad on samadele küsimustele esitanud. Pärast vastamist arvutatakse sobivustulemus, mis näitab, kui palju te nõustute.</p> <ul> <li>Tulemus 100 tähendab, et olete täielikult nõus küsimustes, millele oled vastanud.</li> <li>Tulemus 0 tähendab, et olete kõigis küsimustes, millele oled vastanud, täiesti eri meelt.</li> <li>Tulemused nende vahel tähendavad, et mõnes küsimuses olete nõus, mõnes mitte.</li> </ul>",
   "feedback": {
     "title": "Tagasiside"
   },

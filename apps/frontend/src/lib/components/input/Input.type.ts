@@ -1,6 +1,6 @@
 import type { Id } from '@openvaa/core';
 import type { AnyChoice, Image } from '@openvaa/data';
-import type { SvelteHTMLElements } from 'svelte/elements';
+import type { HTMLAttributes } from 'svelte/elements';
 
 export type InputProps =
   | ({
@@ -8,6 +8,9 @@ export type InputProps =
     } & InputPropsBase<string>)
   | ({
       type: 'url';
+    } & InputPropsBase<string>)
+  | ({
+      type: 'email';
     } & InputPropsBase<string>)
   | ({
       type: 'text-multilingual';
@@ -44,10 +47,12 @@ export type InputType = InputProps['type'];
 
 /**
  * @typeParam TValue - The type of value associated with the input.
- * @typeParam TElement - The type of the underlying HTML element for the input. Defaults to 'input'.
+ * @typeParam TElement - Retained for API compatibility but no longer used to derive the base type.
+ *   Uses `HTMLAttributes<HTMLElement>` instead of `SvelteHTMLElements[TElement]` to avoid
+ *   "union too complex" TypeScript errors in the 10-way `InputProps` union.
  */
-export type InputPropsBase<TValue, TElement extends keyof SvelteHTMLElements = 'input'> = Omit<
-  SvelteHTMLElements[TElement],
+export type InputPropsBase<TValue, TElement extends string = 'input'> = Omit<
+  HTMLAttributes<HTMLElement>,
   'disabled' | 'id' | 'label' | 'value'
 > & {
   /**
@@ -63,7 +68,7 @@ export type InputPropsBase<TValue, TElement extends keyof SvelteHTMLElements = '
   /**
    * Any additional props to be passed to the container element of the input. @default {}
    */
-  containerProps?: SvelteHTMLElements['div'];
+  containerProps?: HTMLAttributes<HTMLDivElement>;
   /**
    * The id of the input. If not provided, a unique id will be generated.
    */
@@ -111,7 +116,7 @@ export type InputPropsBase<TValue, TElement extends keyof SvelteHTMLElements = '
    */
   maxFilesize?: TValue extends Image ? number : never;
   /**
-   * Additional info displayed below the input for multilingual input together with possible `info`. @default $t('components.input.multilingualInfo')
+   * Additional info displayed below the input for multilingual input together with possible `info`. @default t('components.input.multilingualInfo')
    */
   multilingualInfo?: TValue extends LocalizedString ? string : never;
 };

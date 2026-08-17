@@ -22,79 +22,63 @@ Show a popup asking for user feedback.
   import type { SendingStatus } from '..';
   import type { FeedbackPopupProps } from './FeedbackPopup.type';
 
-  /* eslint-disable @typescript-eslint/no-unused-vars */
-  type $$Props = FeedbackPopupProps;
+  let { ...restProps }: FeedbackPopupProps = $props();
 
-  /**
-   * The delay for autoclosing the modal after it's been submitted.
-   */
   const CLOSE_DELAY = 1500;
-
-  ////////////////////////////////////////////////////////////////////
-  // Get contexts
-  ////////////////////////////////////////////////////////////////////
-
   const { t } = getComponentContext();
-
-  ////////////////////////////////////////////////////////////////////
-  // Events
-  ////////////////////////////////////////////////////////////////////
-
   let closeTimeout: NodeJS.Timeout | undefined;
-
   onDestroy(() => {
     if (closeTimeout) clearTimeout(closeTimeout);
   });
 
-  let canSubmit: boolean;
-  let status: SendingStatus;
-  let closeAlert: () => void;
-  let reset: () => void;
-  let submit: () => Promise<void>;
+  let canSubmit = $state(false);
+  let status = $state<SendingStatus>('default');
+  let alertRef: Alert;
+  let feedbackRef: { reset: () => void; submit: () => Promise<void> };
 
   function onSent() {
     closeTimeout = setTimeout(() => {
-      closeAlert();
-      reset();
+      alertRef?.closeAlert();
+      feedbackRef?.reset();
     }, CLOSE_DELAY);
   }
-
   function onSubmit(): void {
     if (canSubmit) {
-      submit();
+      feedbackRef?.submit();
       return;
     }
-    closeAlert();
+    alertRef?.closeAlert();
   }
 </script>
 
-<Alert bind:closeAlert title={$t('privacy.title')} {...$$restProps}>
+<!-- bind: keep — alertRef is plain let Alert; single ref read in onSent/onSubmit -->
+<Alert bind:this={alertRef} title={t('privacy.title')} data-testid="feedback-popup" {...restProps}>
   <div class="justify-self-stretch">
-    <h3 class="mb-lg mt-0 text-center">
-      {$t('feedback.popupTitle')}
-    </h3>
+    <h3 class="mb-lg mt-0 text-center">{t('feedback.popupTitle')}</h3>
+    <!-- bind: keep — Pattern 2: Feedback.canSubmit/status are $bindable; bind:this single ref to feedbackRef -->
     <Feedback
-      on:sent={onSent}
+      {onSent}
       bind:canSubmit
-      bind:reset
       bind:status
-      bind:submit
+      bind:this={feedbackRef}
       showActions={false}
       variant="compact"
       class="w-full" />
   </div>
-  <div slot="actions">
-    <Button
-      on:click={onSubmit}
-      color={canSubmit ? 'primary' : 'warning'}
-      variant={canSubmit ? 'main' : 'normal'}
-      text={status === 'sending'
-        ? $t('feedback.sending')
-        : status === 'sent'
-          ? $t('feedback.thanks')
-          : canSubmit
-            ? $t('feedback.send')
-            : $t('common.close')}
-      class="min-w-full sm:min-w-[12rem]" />
-  </div>
+  {#snippet actions()}
+    <div>
+      <Button
+        onclick={onSubmit}
+        color={canSubmit ? 'primary' : 'warning'}
+        variant={canSubmit ? 'main' : 'normal'}
+        text={status === 'sending'
+          ? t('feedback.sending')
+          : status === 'sent'
+            ? t('feedback.thanks')
+            : canSubmit
+              ? t('feedback.send')
+              : t('common.close')}
+        class="min-w-full sm:min-w-[12rem]" />
+    </div>
+  {/snippet}
 </Alert>

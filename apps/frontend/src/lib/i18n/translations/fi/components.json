@@ -1,6 +1,7 @@
 {
   "accordionSelect": {
-    "collapsedAriaInfo": "Napauta näyttääksesi kaikki vaihtoehdot"
+    "collapsedAriaInfo": "Napauta näyttääksesi kaikki vaihtoehdot",
+    "listboxAriaLabel": "Valitse vaihtoehto"
   },
   "constituencySelector": {
     "selectPrompt": "Valitse {constituencyGroup}"
@@ -15,6 +16,7 @@
     "deleteOption": "Poista valinta: {option}",
     "error": {
       "fileLoadingError": "Tiedoston lataaminen ei onnistunut.",
+      "invalidEmail": "Sähköpostiosoite ei kelpaa.",
       "invalidFile": "Tiedosto on vääränlainen.",
       "invalidUrl": "Verkko-osoite ei ole kelvollinen.",
       "oversizeFile": "Tiedosto on liian suuri. Enimmäiskoko on {maxFilesize} Mt."
@@ -27,6 +29,12 @@
     "selectFirst": "Valitse ensimmäinen",
     "selectOne": "Valitse",
     "showTranslations": "Käännökset"
+  },
+  "multipleTextInput": {
+    "add": "Lisää kohde",
+    "moveDown": "Siirrä alas",
+    "moveUp": "Siirrä ylös",
+    "remove": "Poista kohde"
   },
   "matchScore": {
     "label": "sopivuus",

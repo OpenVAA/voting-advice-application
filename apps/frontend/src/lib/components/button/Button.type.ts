@@ -1,7 +1,12 @@
-import type { SvelteHTMLElements } from 'svelte/elements';
+import type { Snippet } from 'svelte';
+import type { HTMLAttributes } from 'svelte/elements';
 import type { IconName } from '$lib/components/icon';
 
-export type ButtonProps = LinkOrButtonElementProps & {
+export type ButtonProps = ButtonBaseElementProps & {
+  /**
+   * A snippet for adding a badge to the button.
+   */
+  badge?: Snippet;
   /**
    * The required text of the button. If `variant` is `icon`, the text will be used as the `aria-label` and `title` for the button. You can override both by providing them as attributes, e.g. `aria-label="Another text"`.
    */
@@ -31,14 +36,32 @@ export type ButtonProps = LinkOrButtonElementProps & {
    */
   loading?: boolean;
   /**
-   * The text shown when `loading` is `true`. @default $t('common.loading')
+   * The text shown when `loading` is `true`. @default t('common.loading')
    */
   loadingText?: string;
 };
 
 /**
- * The base properties of a navigation item must be either those of an `<a>` element with the `href` attribute, or a `<button>` element, preferably with the `on:click` event handler.
+ * Base element properties for Button. Uses a single type instead of a union of
+ * `SvelteHTMLElements['a'] | SvelteHTMLElements['button']` to avoid "union too complex"
+ * TypeScript errors when consumers spread `Partial<ButtonProps>` as restProps.
+ * The component renders as `<a>` or `<button>` dynamically based on `href`.
  */
-type LinkOrButtonElementProps =
-  | WithRequired<SvelteHTMLElements['a'], 'href'>
-  | (SvelteHTMLElements['button'] & { href?: null });
+type ButtonBaseElementProps = HTMLAttributes<HTMLElement> & {
+  /** If provided, the button renders as an `<a>` element. */
+  href?: string | null;
+  /** The type attribute for the button element. */
+  type?: 'button' | 'submit' | 'reset' | string | null;
+  /** Anchor-specific: target window/frame. */
+  target?: string | null;
+  /** Anchor-specific: relationship to linked resource. */
+  rel?: string | null;
+  /** Anchor-specific: download filename. */
+  download?: unknown;
+  /** Button-specific: form action URL. */
+  formaction?: string | null;
+  /** Button-specific: skip form validation. */
+  formnovalidate?: boolean | null;
+  /** Click handler. */
+  onclick?: ((e: MouseEvent) => void) | null;
+};

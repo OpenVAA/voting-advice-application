@@ -56,23 +56,20 @@ Display a short list of options as toggleable text or icon buttons from which on
   import { concatClass } from '$lib/utils/components';
   import type { ToggleProps } from './Toggle.type';
 
-  type $$Props = ToggleProps;
-
-  export let label: $$Props['label'];
-  export let options: $$Props['options'];
-  export let selected: $$Props['selected'] = undefined;
+  let { label, options, selected = $bindable(), ...restProps }: ToggleProps = $props();
 </script>
 
 <fieldset
   role="radiogroup"
   title={label}
   {...concatClass(
-    $$restProps,
+    restProps,
     'flex flex-row items-center bg-base-100 rounded-full p-2 border-md border-neutral focus-within:ring focus-within:ring-offset-2'
   )}>
   <legend class="sr-only">{label}</legend>
   {#each options as option}
     <label class="small-label rounded-full px-8 py-4">
+      <!-- bind: keep — two-way DOM radio group bind:group={selected}; selected is $bindable() -->
       <input tabindex="0" type="radio" name="toggle-options" value={option.key} bind:group={selected} class="sr-only" />
       {#if option.icon}
         <Icon name={option.icon} size="sm" />
@@ -83,6 +80,7 @@ Display a short list of options as toggleable text or icon buttons from which on
 </fieldset>
 
 <style lang="postcss">
+  @reference "../../../tailwind-theme.css";
   label:has(input:checked) {
     @apply bg-neutral text-primary-content;
   }

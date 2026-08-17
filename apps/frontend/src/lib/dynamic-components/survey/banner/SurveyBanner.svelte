@@ -25,24 +25,26 @@ Accesses `AppContext` to get `appSettings` and `userPreferences`.
   import { SurveyButton } from '..';
   import type { SurveyBannerProps } from './SurveyBanner.type';
 
-  type $$Props = SurveyBannerProps;
+  let { variant = 'default', ...restProps }: SurveyBannerProps = $props();
 
-  export let variant: $$Props['variant'] = 'default';
-
-  const { appSettings, userPreferences, t } = getAppContext();
-
-  let clicked: boolean;
+  const ctx = getAppContext();
+  const { userPreferences, t } = ctx;
+  // appSettings is a reactive accessor (see phase 113 flatten) — read via ctx.X, never destructure.
+  const appSettings = $derived(ctx.appSettings);
+  let clicked: boolean = $state(false);
 </script>
 
-{#if clicked || ($appSettings.survey && $userPreferences.survey?.status !== 'received')}
+{#if clicked || (appSettings.survey && userPreferences.current.survey?.status !== 'received')}
   <div
+    data-testid="survey-banner"
     {...concatClass(
-      $$restProps,
+      restProps,
       'grid justify-items-center w-full ' + (variant === 'compact' ? '' : 'rounded-lg bg-base-200 p-lg pt-md')
     )}>
+    <!-- bind: keep — Pattern 2: SurveyButton.clicked is $bindable(false) -->
     <SurveyButton bind:clicked />
     {#if variant !== 'compact'}
-      <div class="small-info text-center">{$t('dynamic.survey.info')}</div>
+      <div class="small-info text-center">{t('dynamic.survey.info')}</div>
     {/if}
   </div>
 {/if}

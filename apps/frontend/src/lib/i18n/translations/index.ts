@@ -1,5 +1,3 @@
-import type { Translations } from '@sveltekit-i18n/base';
-
 export * from './translations.type';
 
 /**
@@ -60,17 +58,9 @@ export const locales = {
   fi: 'Suomi',
   sv: 'Svenska',
   da: 'Dansk',
-  et: 'Eesti'
-};
-
-/**
- * Add any payload key / translation key pairs that should be included in the default translations payloads here. They will be available to all translations by default. In addition to these, some values are added from settings. See `init.ts` for more details.
- */
-export const DEFAULT_PAYLOAD_KEYS = {
-  candidateSingular: 'common.candidate.singular',
-  candidatePlural: 'common.candidate.plural',
-  partySingular: 'common.organization.singular',
-  partyPlural: 'common.organization.plural'
+  et: 'Eesti',
+  fr: 'Fran\u00e7ais',
+  lb: 'L\u00ebtzebuergesch'
 };
 
 /**
@@ -81,7 +71,7 @@ export const staticTranslations: {
     name: string;
     loaders: Array<{
       key: string;
-      loader: () => Promise<Translations.Input>;
+      loader: () => Promise<Record<string, unknown>>;
     }>;
   };
 } = {};

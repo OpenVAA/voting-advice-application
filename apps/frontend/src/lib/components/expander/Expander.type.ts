@@ -1,6 +1,11 @@
+import type { Snippet } from 'svelte';
 import type { SvelteHTMLElements } from 'svelte/elements';
 
 export type ExpanderProps = SvelteHTMLElements['div'] & {
+  /**
+   * The content of the expander.
+   */
+  children?: Snippet;
   /**
    * Title is seen as the text in the expander's visible part, and it is mandatory.
    * Title will also be used as a 'aria-label' for a checkbow on which the
@@ -37,4 +42,12 @@ export type ExpanderProps = SvelteHTMLElements['div'] & {
    * Variable used to define a variant for the expander.
    */
   variant?: 'read-more' | 'category' | 'question' | 'question-help';
+  /**
+   * Callback fired when the expander is expanded.
+   */
+  onExpand?: () => void;
+  /**
+   * Callback fired when the expander is collapsed.
+   */
+  onCollapse?: () => void;
 };
