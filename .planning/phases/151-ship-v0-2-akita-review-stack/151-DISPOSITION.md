@@ -25,7 +25,7 @@ invisible_to_review_files: 1202
 unclaimed_by_any_pathspec: 120
 comparable_total: 4274
 slices_dispositioned: ["01a", "01b", "02"]
-findings_total: 17
+findings_total: 18
 status: in-progress
 approval: pending
 ---
@@ -762,6 +762,48 @@ One relabel was applied: `apps/frontend/src/lib/api/adapters/supabase/utils/mapR
 `TODO:` marker on what is actually a correct rationale note about RLS owning data-leak prevention.
 The marker became `Note:`; the sentence is unchanged.
 
+
+## Plan 151-10 finding — F-18, raised while verifying PR 01b's body
+
+**F-18 — `packages/app-shared/README.md:25` cites `apps/strapi/`, a path that has never existed.**
+
+| | |
+|---|---|
+| **Items** | 5 (dead/incorrect content), 7 (repo documentation) |
+| **Found during** | verifying PR 01b's "is anything still referencing Strapi?" claim against the shipped tree, rather than copying 151-09's verdict |
+| **Slice** | **02** — the file is in slice 02's diff (`git show --name-only ship/v0.2-akita-02-shared-packages` contains it) |
+| **Status** | **DEFERRED — routed to plan 151-11** |
+
+The line reads: *"The historic dual ESM+CommonJS build was added to support `apps/strapi/`, which has
+been retired."* Measured: `git ls-tree ac30f132a apps/strapi` -> **0 entries**, and
+`git ls-tree HEAD apps/strapi` -> **0 entries**. The retired backend lived at `backend/vaa-strapi/`.
+
+**This is the same class as F-16** — the `.prettierignore` block that ignored `apps/strapi/**`, a path
+that never existed, which v0.2 had *rewritten* rather than deleted along with the tree. F-16 was at the
+fix bar and was fixed. F-18 is the same defect in prose, and the class now has two members, which makes
+it a pattern rather than a one-off: **v0.2 rewrote references to the dead backend using a path it never
+had.** A later plan should grep for `apps/strapi` across the whole target tree rather than assume these
+two are all of them.
+
+**Why it is not fixed here.** It is not this plan's file and not this plan's slice; this plan's scope is
+publishing. Fixing it means landing the fix on `feat-gsd-roadmap` per D-04 and **re-cutting slice 02**.
+That is cheap **now**, while slice 02 is cut but its PR is unopened, and expensive once **151-11** opens
+PR 3 — at which point a fix requires force-pushing a PR already under review, which is exactly what
+D-07's one-slice lag exists to avoid. **151-11 should fix it before opening PR 3.**
+
+**Recorded so nobody re-raises it: the two other `strapi` matches in the shipped tree are not findings.**
+`git grep -i strapi` over the tree, excluding `.planning`, `.claude`, `.agents` and `apps/docs`, returns
+exactly two files:
+
+- `packages/dev-seed/src/generators/AccountsGenerator.ts:46,50` — a **false positive**. The match is
+  inside the identifier `bootstrapId` (`boot`+`strapI`+`d`). There is no Strapi reference in this file.
+  A case-insensitive `strapi` grep will always hit `bootstrap*` identifiers; use a word-boundary or
+  path-shaped pattern instead.
+- `packages/app-shared/README.md:25` — F-18 above.
+
+Neither is a live reference, so **slice 01b's item-2 `MET` verdict stands**: the removal is complete at
+the dependency layer (`yarn.lock` at the shipped tree carries **0** `strapi` and **0** `localstack`
+entries, and the root `package.json` `workspaces` no longer names `backend/vaa-strapi`).
 
 ---
 

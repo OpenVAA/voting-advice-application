@@ -29,8 +29,12 @@ partition_total_files_at_cut: 4274
 catchall_remaining_files: 3925
 catchall_deviation_pct: 0.486
 partial_stack_identity_verified: true
-branches_pushed: 0
-prs_opened: 0
+branches_pushed: 2
+prs_opened: 2
+pushed_by: "151-10"
+prs_open: [863, 864]
+ruleset_8477541: untouched-active
+pr_860_decision: repurpose-at-151-18
 ---
 
 # Phase 151 — Stack Manifest
@@ -78,8 +82,8 @@ later plan — only its cells.
 
 | id | PR | branch | subject | files | +lines | −lines | render flag | commit | PR # |
 |---|---|---|---|---|---|---|---|---|---|
-| 01a | 1 | `ship/v0.2-akita-01a-layout-move` | `refactor: move the frontend and docs trees into apps/ (renames only, no content change)` | 1316 | 0 | 0 | **files > 300** — 1316 renames, **zero lines** | `602b79351` | pending |
-| 01b | 2 | `ship/v0.2-akita-01b-strapi-removal` | `chore: remove the Strapi backend and the frontend tests that drove it` | 252 | 0 | 55663 | **lines > 20k** — deletions only | `4a7c85934` | pending |
+| 01a | 1 | `ship/v0.2-akita-01a-layout-move` | `refactor: move the frontend and docs trees into apps/ (renames only, no content change)` | 1316 | 0 | 0 | **files > 300** — 1316 renames, **zero lines** | `602b79351` | [#863](https://github.com/OpenVAA/voting-advice-application/pull/863) |
+| 01b | 2 | `ship/v0.2-akita-01b-strapi-removal` | `chore: remove the Strapi backend and the frontend tests that drove it` | 252 | 0 | 55663 | **lines > 20k** — deletions only | `4a7c85934` | [#864](https://github.com/OpenVAA/voting-advice-application/pull/864) |
 | 02 | 3 | `ship/v0.2-akita-02-shared-packages` | `feat: rework the shared @openvaa packages for the v0.2 data, matching and filter model` | 97 | 1273 | 289 | ok | `4c7d3db5a` | pending |
 | 03 | 4 | `ship/v0.2-akita-03-supabase` | `feat[db]: replace the Strapi backend with the Supabase schema, RLS, functions and generated types` | 118 | 16257 | 0 | ok | pending | pending |
 | 04 | 5 | `ship/v0.2-akita-04-dev-seed` | `feat: add the dev-seed package that generates deterministic local and E2E data` | 162 | 19560 | 0 | ok — 19,560 lines, just inside the 20k cap | pending | pending |
@@ -388,6 +392,98 @@ itself") holds without force-pushing a PR already under review. Cost: a one-slic
 - **That the 2,287-file planning slice is safe to open.** It is approvable without reading (D-12),
   which is exactly why threat T-151-05-03 makes a secret scan over its diff a blocking precondition
   in 151-17.
+
+## The stack goes public — plan 151-10
+
+**The first outward-facing action of the phase.** `origin` is
+`OpenVAA/voting-advice-application`, `visibility: PUBLIC`. Two branches pushed, two PRs opened, both
+behind an explicit operator decision recorded below.
+
+| slice | branch on `origin` | SHA (remote == local, asserted) | PR | base |
+|---|---|---|---|---|
+| 01a | `ship/v0.2-akita-01a-layout-move` | `602b79351` | [#863](https://github.com/OpenVAA/voting-advice-application/pull/863) | `main` |
+| 01b | `ship/v0.2-akita-01b-strapi-removal` | `4a7c85934` | [#864](https://github.com/OpenVAA/voting-advice-application/pull/864) | `ship/v0.2-akita-01a-layout-move` |
+
+`ship/v0.2-akita-02-shared-packages` was **not** pushed and PR 3 was **not** opened — D-07's
+one-slice lag; slice 03 is unswept. Asserted, not assumed:
+`gh pr list --head ship/v0.2-akita-02-shared-packages --json number --jq length` -> **0**, and
+`git ls-remote --heads origin 'ship/*'` -> exactly **2** refs. `origin/main` unmoved at `ac30f132a`
+before and after. PR **#860 was not touched** in any way.
+
+### The operator's decisions, verbatim
+
+- **Task 1 — `accept-reviews`.** Ruleset 8477541 stays **active and untouched**. The automatic Copilot
+  review on each PR is accepted. **Do not re-litigate this** and do not alter the ruleset in any later
+  plan.
+- **Task 2 — `repurpose`, recorded only, executed at 151-18.** PR #860 becomes the stack's umbrella
+  entry point: push the post-sweep tip to `origin/feat-gsd-roadmap`, retitle #860, and carry a table of
+  the twelve slice PRs in its body. **Nothing was executed against #860 in this plan.**
+
+Two measured corrections decided Task 2, both of which contradict the plan's own option text:
+
+- Updating #860's head is a **fast-forward, not a force-push** — `97f55cb41` is a strict ancestor of the
+  local tip (`git merge-base --is-ancestor` -> 0; 1,655 ahead, 0 behind). **Repurposing therefore does
+  not fall under the phase's force-push prohibition at all.**
+- #860 carries **zero human reviews** — two reviews, both bots (`copilot-pull-request-reviewer`,
+  `github-advanced-security`, the latter with an empty body), 5 review comments, 1 `changeset-bot`
+  comment. The plan's claim that closing "loses review history" is overstated to the point of being
+  misleading.
+
+Also measured, so no later plan re-derives it: ruleset 8477541 has **`review_on_push: false`**, so
+Copilot reviews **once per PR at open time** — the stack's total cost is ~12 one-shot reviews, not
+continuous re-review. And `.github/workflows/claude.yml` fires on `pull_request_review: [submitted]`,
+so each Copilot review triggers its `route` job; the job gates on the review author's repo permission,
+the Copilot bot resolves to `none`, and it no-ops. Expect ~12 harmless no-op runs. **Both accepted.**
+
+### CI on PR #863 — measured, and Pitfall 7 is WRONG
+
+**Research's Pitfall 7 must not be copied into any later PR body.** It states that PR #1 fails
+`skill-drift-check` on a missing `.claude/scripts/audit-skill-drift.sh`. **That job does not exist in
+the workflow these PRs fire.** `main.yaml` at 01a's tip is byte-identical to `origin/main`'s
+(blob `c2fdcedb2`) and defines only `frontend-and-shared-module-validation`, `backend-validation` and
+`e2e-tests`. `skill-drift-check` exists only in the branch-tip `main.yaml`, which arrives with slice 10.
+This is the **fifth** plan-encoded claim in this phase to be wrong as written.
+
+What actually happened, observed on run `32017478048`:
+
+| check | result |
+|---|---|
+| `frontend-and-shared-module-validation` | **fail** — step 3, `Setup Yarn 4.6` |
+| `backend-validation` | **fail** — step 3, `Setup Yarn 4.6` |
+| `e2e-tests` | **fail** — step 4, `Setup Yarn 4.6` |
+| `Analyze (javascript-typescript)`, `Analyze (actions)`, `CodeQL` | **pass** |
+| PR #864 | **no checks at all** — `main.yaml`'s `pull_request` trigger is `branches: [main]` |
+
+> **A sixth wrong-as-written claim, and it was this plan's own.** `pr-bodies/01a.md` first attributed the
+> failure to the `Install all dependencies` step. **It is `Setup Yarn 4.6`** —
+> `threeal/setup-yarn-action@v2` performs the dependency install itself as part of its caching, so the
+> workflow's own, more obviously named install step is `skipped` and never runs. The *mechanism* was
+> predicted correctly; the *step* was not. Corrected in both bodies before this record was written.
+> **Any later plan describing CI failure must name `Setup Yarn 4.6`.**
+
+The error is the predicted one, verbatim: `YN0085` drops **412** packages — the dependency closure of
+the moved-away `frontend` and `docs` workspaces — then
+`##[error]The lockfile would have been modified by this install, which is explicitly forbidden. (YN0028)`.
+That is the D-11-by-design workspace-glob staleness, confirmed end to end rather than merely argued.
+
+**Reusable for every later PR body:** stack states 01a through 09 — **ten branches** — cannot
+`yarn install`, because the root `package.json` still names `frontend`, `docs` and `backend/vaa-strapi`
+as workspaces while 01a moved two and 01b deleted the third. The fix lands in slice 10, whose pathspec
+owns `package.json` and `yarn.lock` (verified). 151-09 recorded this as "nine slices"; enumerated, the
+affected branches are 01a, 01b, 02, 03, 04, 05, 06, 07, 08 and 09 — **ten**.
+
+### What the PR bodies must keep doing
+
+`pr-bodies/01a.md` and `01b.md` are the shape every later body copies: the stack contract stated
+self-contained (review-only; PRs need not build or pass; byte-identical final state; the stack need not
+be merged; fixes may land on a separate branch), then the slice's position, base, counts, a plain
+description, the rendering caveat, and a link to its disposition rows. **Every body must stand alone** —
+a cold reviewer must never need to open a planning artifact. Note that links into `151-DISPOSITION.md`
+only resolve once `ship/v0.2-akita-11-planning` is pushed (151-17), so both bodies say so and inline the
+substance rather than relying on the link.
+
+**GitHub confirmed 01a's central claim independently:** the API reports `files=1316, +0, -0` with
+**1,316 `renamed` entries**. The zero-line rename PR renders as promised.
 
 ---
 
