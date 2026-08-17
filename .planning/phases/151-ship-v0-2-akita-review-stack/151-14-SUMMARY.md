@@ -26,7 +26,7 @@ provides:
   - 'F-51..F-65 (15 findings; 9 fixed, 6 deferred with routing) and F-24 resolved as escalate-not-fix'
 affects:
   - '151-15 (slice 07 sweep + PR 6; F-61 is a live reactivity defect in its files, F-62 is the same shape without the failure mode, two F-57 fixes already ride its diff)'
-  - '151-16 (slice 09 carries F-64, a 117-file stale-permalink class; slice 10 carries F-59'"'"'s fix)'
+  - "151-16 (slice 09 carries F-64, a 117-file stale-permalink class; slice 10 carries F-59's fix)"
   - '151-18 (F-24 escalation with F-21/F-29/F-30/F-36; F-60 duplication; F-63 blocked by a published slice)'
 tech-stack:
   added: []
@@ -314,6 +314,16 @@ that reason. Recorded as **not triggered**, not as satisfied.
 
 **No test was skipped and no baseline regenerated.** `git diff --name-only` over this plan's commits
 matches `-snapshots` and `__screenshots__` **0** times each.
+
+## One defect this plan introduced into its own record, and caught
+
+The first commit of this SUMMARY carried a **YAML-invalid frontmatter**: a shell single-quote escape
+sequence (`'"'"'`) leaked verbatim into a `affects:` entry because it was written inside a Python
+heredoc, where that sequence has no meaning. The file rendered fine and read fine; `yaml.safe_load`
+refused it. Caught by parsing the frontmatter rather than by reading it, and repaired in the following
+commit. **Recorded rather than quietly amended** — it is the same class as the five self-consistent
+artifacts this phase has already caught, produced by this plan, and the lesson is the cheap one:
+validate a machine-readable block with the machine.
 
 ## Method note — why the disposition surface is 1,018 files and not 526
 
