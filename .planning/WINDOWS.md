@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 8
+open_count: 11
 waived_count: 0
 fixed_count: 0
-total_count: 8
-last_updated: 2026-08-16T20:58:29.034Z
+total_count: 11
+last_updated: 2026-08-17T07:05:45.533Z
 ---
 
 # Broken Windows Ledger
@@ -23,6 +23,9 @@ last_updated: 2026-08-16T20:58:29.034Z
 | 6 | 140 | unrun-verify | .planning/phases/140-blind-matcher-remediation-teardowns-null-matchers-positive-c/140-06-PLAN.md |  | Both verification:backstop truths (duplicated e2e-perm-notloc- prefix in one invocation; concurrent pre-clear tolerance) are reasoned, not observed (140-NEGATIVE-CONTROL.md § 22) | open |  | 2026-08-15T15:24:14.942Z |  |
 | 7 | 151 | lint-warning | packages/dev-seed/src/templates/e2e/perm/perm-bankauth-notloc.ts | 30 | prettier printWidth: hand-wrapped declaration; format:check red at 151-03 baseline, DEFERRED per PD-03 | open |  | 2026-08-16T20:58:28.880Z |  |
 | 8 | 151 | lint-warning | tests/README.md | 182 | prettier markdown table alignment: columns 3-5 under-padded; format:check red at 151-03 baseline, DEFERRED per PD-03 | open |  | 2026-08-16T20:58:29.034Z |  |
+| 9 | 151 | unmet-truth | .planning/phases/151-ship-v0-2-akita-review-stack/151-HYGIENE-REPORT.md |  | 151-07 must-have 'surviving phase/spike references appear only in the collapsed short-pointer form' is NOT met: 108 attributive references (e.g. 'the Phase 64 fix') were deliberately reported instead of collapsed, because 'the see phase 64 fix' is ungrammatical. phase-ref/spike-ref gate rows stay red until plan 151-08. | open |  | 2026-08-17T07:05:45.227Z |  |
+| 10 | 151 | deviation | .planning/phases/151-ship-v0-2-akita-review-stack/151-HYGIENE-REPORT.md |  | 151-07 Task 3 acceptance criteria 1 and 2 (zero '.planning/' paths, zero 'Plan NN-NN') are not met: 5 + 2 occurrences survive in Markdown prose and in an ESLint rule message string, both classes the same plan routes to the 151-08 agent pass. Plan-internal contradiction, enumerated in 151-HYGIENE-REPORT.md. | open |  | 2026-08-17T07:05:45.402Z |  |
+| 11 | 151 | deviation | .planning/phases/151-ship-v0-2-akita-review-stack/151-hygiene-prose-queue.tsv |  | 7 comment lines were rewritten correctly (reference removed) but read badly after a mid-sentence deletion, e.g. 'See for the trace.' Enumerated as 151-08's prose-polish queue. | open |  | 2026-08-17T07:05:45.533Z |  |
 
 ````json
 [
@@ -120,6 +123,42 @@ last_updated: 2026-08-16T20:58:29.034Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-08-16T20:58:29.034Z",
+    "resolved_at": null
+  },
+  {
+    "id": 9,
+    "kind": "unmet-truth",
+    "phase": "151",
+    "file": ".planning/phases/151-ship-v0-2-akita-review-stack/151-HYGIENE-REPORT.md",
+    "line": null,
+    "description": "151-07 must-have 'surviving phase/spike references appear only in the collapsed short-pointer form' is NOT met: 108 attributive references (e.g. 'the Phase 64 fix') were deliberately reported instead of collapsed, because 'the see phase 64 fix' is ungrammatical. phase-ref/spike-ref gate rows stay red until plan 151-08.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T07:05:45.227Z",
+    "resolved_at": null
+  },
+  {
+    "id": 10,
+    "kind": "deviation",
+    "phase": "151",
+    "file": ".planning/phases/151-ship-v0-2-akita-review-stack/151-HYGIENE-REPORT.md",
+    "line": null,
+    "description": "151-07 Task 3 acceptance criteria 1 and 2 (zero '.planning/' paths, zero 'Plan NN-NN') are not met: 5 + 2 occurrences survive in Markdown prose and in an ESLint rule message string, both classes the same plan routes to the 151-08 agent pass. Plan-internal contradiction, enumerated in 151-HYGIENE-REPORT.md.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T07:05:45.402Z",
+    "resolved_at": null
+  },
+  {
+    "id": 11,
+    "kind": "deviation",
+    "phase": "151",
+    "file": ".planning/phases/151-ship-v0-2-akita-review-stack/151-hygiene-prose-queue.tsv",
+    "line": null,
+    "description": "7 comment lines were rewritten correctly (reference removed) but read badly after a mid-sentence deletion, e.g. 'See for the trace.' Enumerated as 151-08's prose-polish queue.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T07:05:45.533Z",
     "resolved_at": null
   }
 ]

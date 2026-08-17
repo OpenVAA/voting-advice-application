@@ -1,0 +1,32 @@
+{
+  "mode": "apply",
+  "filesScanned": 1788,
+  "filesRewritten": 346,
+  "linesDeleted": 11,
+  "totalMatches": 2513,
+  "totalHits": 1985,
+  "totalResidue": 528,
+  "absorbed": 222,
+  "byRule": {
+    "artifact-path": 67,
+    "section-anchor": 149,
+    "plan-number": 103,
+    "decision-id-long": 136,
+    "decision-id-bare": 493,
+    "task-id": 451,
+    "phase-ref": 550,
+    "spike-ref": 36
+  },
+  "byReason": {
+    "not-a-comment-span": 202,
+    "markdown-file": 45,
+    "milestone-version": 37,
+    "todo-class": 60,
+    "unstrippable-section-anchor": 66,
+    "ambiguous-reference": 10,
+    "attributive-reference": 108
+  },
+  "residueFiles": 228,
+  "proseFlags": 7,
+  "note": "Produced by re-running the FINAL codemod against the pre-apply tree (commit 44fdc7ab9) in a temporary detached worktree, so every figure here comes from one pattern set. The applied tree is byte-identical to what the original apply run produced."
+}
