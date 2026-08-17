@@ -29,10 +29,10 @@ partition_total_files_at_cut: 4504
 catchall_remaining_files: 2321
 catchall_deviation_pct: 0.0
 partial_stack_identity_verified: true
-branches_pushed: 10
-prs_opened: 10
-pushed_by: "151-10 (01a, 01b); 151-11 (02); 151-12 (03); 151-13 (04); 151-14 (05); 151-15 (06, 07); 151-16 (08, 09)"
-prs_open: [863, 864, 865, 866, 867, 868, 869, 870, 871, 872]
+branches_pushed: 11
+prs_opened: 11
+pushed_by: "151-10 (01a, 01b); 151-11 (02); 151-12 (03); 151-13 (04); 151-14 (05); 151-15 (06, 07); 151-16 (08, 09); 151-17 (10)"
+prs_open: [863, 864, 865, 866, 867, 868, 869, 870, 871, 872, 873]
 adapter_block_dispositioned_by: "151-14"
 cells_filled: 147  # of 163, after 151-16 filled slices 09 and 10
 criterion_4_3_satisfied_by: 545cc26c8790c54b532f3d50fe5bceb02d851177
@@ -113,7 +113,7 @@ later plan — only its cells.
 | 07 | 8 | `ship/v0.2-akita-07-frontend-routes` | `feat: rewrite the frontend app shell and the voter and candidate routing surface` | **214** | **10319** | **8268** | ok — 214 files, 18,587 changed lines, inside both caps (GitHub renders 165 / +7,593 / −5,542 with rename detection on) | `342926b93` | [#870](https://github.com/OpenVAA/voting-advice-application/pull/870) |
 | 08 | 9 | `ship/v0.2-akita-08-i18n-messages` | `feat: add the Paraglide message catalogues for every supported locale` | **330** | **8986** | 0 | **files > 300** — 47 messages × 7 locales, one shape, plus the catalogue README | `6a810df8a` | [#871](https://github.com/OpenVAA/voting-advice-application/pull/871) |
 | 09 | 10 | `ship/v0.2-akita-09-docs` | `docs: update the project documentation - the docs site, the root README and roadmap, and the key-generation guide` | **152** | **777** | **347** | ok — 152 files, 1,124 changed lines, inside both caps; GitHub renders the same triple (no rename detection: `2 A / 150 M`) | `2865b05b3` | [#872](https://github.com/OpenVAA/voting-advice-application/pull/872) |
-| 10 | 11 | `ship/v0.2-akita-10-root-config` | `chore: update the monorepo and frontend-app build, lint, CI and deployment plumbing` | **129** | **8662** | **27267** | **lines > 20k** — `yarn.lock` alone accounts for most of it; the +90 files are the F-15 Option-2 deletions | `3aa503741` | pending (opens at 151-17, per D-07) |
+| 10 | 11 | `ship/v0.2-akita-10-root-config` | `chore: update the monorepo and frontend-app build, lint, CI and deployment plumbing` | **129** | **8662** | **27267** | **lines > 20k** — `yarn.lock` alone accounts for most of it; the +90 files are the F-15 Option-2 deletions | `3aa503741` | [#873](https://github.com/OpenVAA/voting-advice-application/pull/873) |
 | 11 | 12 | `ship/v0.2-akita-11-planning` | `docs[planning]: add the v0.2 planning record and agent configuration` | **2325** | **880314** | **104** | **files > 300 and lines > 20k** — unreadable by design (D-12) | `384e7b40a` | pending (opens at 151-18, after the identity proof and the D-24 suite gate) |
 
 Pathspecs are **not** duplicated into this table: `slices.tsv` column 4 is the single source, and a
@@ -1379,6 +1379,61 @@ those, it was free precisely because D-07's one-slice lag kept the branch unopen
 everything 151-18 and 151-19 write, again falls outside both the slice and its scan.
 `slice_11_must_be_recut_before_push: true` stays set, and **151-18 owes a final re-cut and a delta
 rescan before it opens PR 11.**
+
+### Published — slice 10, PR 11 of 12
+
+| slice | branch on `origin` | SHA (remote == local, asserted) | PR | base |
+|---|---|---|---|---|
+| 10 | `ship/v0.2-akita-10-root-config` | `3aa503741` | [#873](https://github.com/OpenVAA/voting-advice-application/pull/873) | `ship/v0.2-akita-09-docs` |
+
+Asserted after the fact, not assumed: `gh pr view 873` returns `baseRefName ship/v0.2-akita-09-docs`,
+`headRefOid 3aa503741…` equal to the local tip, and `OPEN`. The push was dry-run immediately
+beforehand and reported `[new branch]`; **no force anywhere**, no `git clean`, no `git stash`,
+`origin/main` unmoved at `ac30f132a`, and PR **#860 untouched** (`updatedAt` still
+`2026-05-19T12:08:25Z`).
+
+**GitHub's own API confirms the body's central numbers exactly: `changedFiles 129, additions 8662,
+deletions 27267`** — identical to the measured `--no-renames` triple, as this record predicted, and
+for the measured reason: the slice's 94 deletions have no additions to pair with, so rename
+detection has nothing to do. Like #864 … #872, PR #873 fires **no checks** — asserted, not
+predicted: `gh pr checks 873` returns *"no checks reported"*.
+
+**`gh pr list --head ship/v0.2-akita-11-planning` could not be run to completion** — GitHub's GraphQL
+API returned `HTTP 503` on four attempts over ~45 seconds. **The assertion was met by two independent
+routes instead, and both are stronger than the filtered query:** the unfiltered
+`gh pr list --state open` enumerates **exactly eleven** `ship/*` pull requests, #863 … #873, whose
+bases form an unbroken chain and **none of which is slice 11**; and `git ls-remote --heads origin`
+returns **11** `ship/*` refs with `ship/v0.2-akita-11-planning` absent. D-07's one-slice lag holds:
+**PR 12 stays closed until 151-18.**
+
+### The CI claim was re-verified against a real run before the body was written
+
+The plan's own "Corrections applied" section repeats research's **Pitfall 7** — *"the skill-drift CI
+job's script arrives in this slice, which is why PR 01a at the bottom of the stack fails that job."*
+**Measured at run `32017478048`, that is wrong, for the second time in this phase.** PR #863 reports
+exactly **three** failing jobs — `frontend-and-shared-module-validation`, `backend-validation`,
+`e2e-tests` — plus CodeQL, a separate workflow, which **passes**. `skill-drift-check` is **not among
+them**, because the workflow at 01a's head is `main`'s three-job version (blob `c2fdcedb2`).
+151-16 already refuted this once; the plan carried the refuted claim forward anyway.
+
+What *is* true, and what the body says instead, was measured head by head:
+
+| head | `main.yaml` blob | jobs | `.claude/scripts/audit-skill-drift.sh` |
+|---|---|---:|---|
+| `origin/main`, 01a … 09 | `c2fdcedb2` | 3 | **absent** |
+| **10 (this slice)** | **`4dcd9bdde`** | **6** | **absent** |
+| 11 (planning) | `4dcd9bdde` | 6 | **present** |
+
+So the four new jobs arrive with slice 10 while the script `skill-drift-check` runs arrives with
+slice 11 — **a genuine forward reference that never fires**, because no stacked PR triggers the
+workflow at all: the trigger at slice 10's head is still `pull_request: branches: [main]`, read at
+that exact commit, and every stacked PR has a sibling base.
+
+**The workspace-glob claim was also sharpened by measurement.** It is not that the globs fail at the
+stack's *base* — at `origin/main` all five resolve. They fail at every stacked *head* from 01a
+through 09, where four of the five (`backend/vaa-strapi`, `backend/vaa-strapi/src/plugins/*`,
+`frontend`, `docs`) resolve to nothing. At slice 10's head `packages/*` → 12 and `apps/*` → 3, the
+repository's real shape. The body states it that way.
 
 ### Criterion 4.4's proxy across the rename base — the standing instruction from 151-05, discharged
 
