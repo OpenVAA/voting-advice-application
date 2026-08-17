@@ -1,5 +1,5 @@
 /**
- * `defaultCentroids` unit tests (Plan 57-03 — GEN-06b / D-57-03 / D-57-05).
+ * `defaultCentroids` unit tests (GEN-06b).
  *
  * Covers the farthest-point greedy max-min default centroid sampler:
  *   - Shape: `Array<Array<number>>`, outer length = N parties, inner length = dims.
@@ -7,14 +7,14 @@
  *     `Infinity` anywhere (Pitfall 1 regression guard via `gaussian.ts`).
  *   - Determinism: two `makeCtx()` calls (both seeded 42) emit byte-identical
  *     centroids for the same parties input.
- *   - Anchor handling (D-57-05): full anchor map is honored verbatim; partial
+ *   - Anchor handling: full anchor map is honored verbatim; partial
  *     anchor map fills missing parties via farthest-point; wrong-length anchors
  *     are silently ignored and the slot is filled via farthest-point.
  *   - Spread sanity: at N=8 with eigenvalues `[1, 1/3]`, min pairwise Euclidean
  *     distance exceeds 0.3 (a baseline uniform Gaussian cloud would miss with
  *     high probability). Protects against algorithm regression.
  *
- * D-22 contract: pure I/O. No Supabase imports, no `createClient`, no `.rpc()`.
+ * contract: pure I/O. No Supabase imports, no `createClient`, no `.rpc `.
  */
 
 import { describe, expect, it } from 'vitest';

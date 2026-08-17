@@ -25,7 +25,7 @@ Shows a form with which to set a new password when it has been reset.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // Phase 61-03 follow-up: isAuthenticated is reactive; access via candCtx.X.
+  // see phase 61 follow-up: isAuthenticated is reactive; access via candCtx.X.
   // (This page evaluates isSessionFlow once at component init, so the original
   // destructure was effectively safe — but switching to candCtx.X future-proofs
   // any later code that re-reads isSessionFlow inside an effect/derived.)

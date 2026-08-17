@@ -1,5 +1,5 @@
 /**
- * Unit tests for the shared `buildTestIdToken` synthetic JWE id_token builder (D-03).
+ * Unit tests for the shared `buildTestIdToken` synthetic JWE id_token builder.
  *
  * Exercises the pure transform end-to-end against the fixed test key pair: build a
  * JWE, decrypt it with the private encryption key, verify the inner JWS with the

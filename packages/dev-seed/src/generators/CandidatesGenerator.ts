@@ -1,7 +1,7 @@
 /**
  * CandidatesGenerator — content generator for the `candidates` table.
  *
- * RESEARCH §4.9: `project_id`, `first_name`, `last_name` are required;
+ * RESEARCH: `project_id`, `first_name`, `last_name` are required;
  * `organization_id` is nullable FK; `answers` JSONB defaults to '{}'.
  *
  * Ref shape: `organization: { external_id }` → bulk_import (migration line 2624)
@@ -11,20 +11,20 @@
  * by bulk_import (unknown fields are ignored) and later consumed by Plan 07's
  * `importAnswers` helper, which resolves question ext_id → UUID and stitches
  * the `candidate.answers` JSONB post-insert. Generator only populates the
- * sentinel; writer owns the round-trip (D-07.2 post-topo pass).
+ * sentinel; writer owns the round-trip (.2 post-topo pass).
  *
- * D-27 seam (critical): `const emit = ctx.answerEmitter ?? defaultRandomValidEmit`
- * is the SINGLE hook point Phase 57's latent-factor emitter overrides. The
+ * seam (critical): `const emit = ctx.answerEmitter?? defaultRandomValidEmit`
+ * is the SINGLE hook point see phase 57's latent-factor emitter overrides. The
  * default is the random-valid-per-question-type stub in emitters/answers.ts.
  * This file does NOT change between Phase 56 and Phase 57 — only
  * `ctx.answerEmitter` gets populated.
  *
- * D-19: Phase 56 emits shape-valid random answers per question type.
- * D-20: shape-valid ONLY. Subdimension / MISSING_VALUE projection stays in
- * `@openvaa/matching`. No correlated/clustered answers here — that's Phase 57.
- * D-26: ctx captured at construction; `defaults(ctx)` is per-call per D-08.
+ * see phase 56 emits shape-valid random answers per question type.
+ * shape-valid ONLY. Subdimension / MISSING_VALUE projection stays in
+ * `@openvaa/matching`. No correlated/clustered answers here — that's see phase 57.
+ * ctx captured at construction; `defaults(ctx)` is per-call.
  *
- * Ref dependencies (requires Plan 07's pipeline to run generators in D-06 topo
+ * Ref dependencies (requires Plan 07's pipeline to run generators in topo
  * order):
  *   - `ctx.refs.organizations` — candidates round-robin pick a party
  *   - `ctx.refs.questions` — answer emitter reads question types + choices
@@ -32,7 +32,7 @@
  * Cross-plan contract for Plan 07: after QuestionsGenerator runs, the pipeline
  * MUST populate `ctx.refs.questions` with the FULL question rows (not just
  * external_id stubs) so the answer emitter can read question.type + choices.
- * This is a refinement of the D-07.3 "prior-entity ref map" — for questions
+ * This is a refinement of the.3 "prior-entity ref map" — for questions
  * specifically, refs carry full rows. Plan 07's pipeline documents this.
  *
  * If either ref is empty at generate time, the corresponding field is omitted
@@ -41,7 +41,7 @@
  * better than silently producing orphan rows.
  *
  * Default count = 8: enough candidates per party (4 orgs × 2) for visible
- * matching patterns without stressing the <10s seed budget (NF-01). Phase 57
+ * matching patterns without stressing the <10s seed budget (NF-01). see phase 57
  * tunes this upward once the latent emitter drives clustering.
  */
 
@@ -64,7 +64,7 @@ type CandidateRow = TablesInsert<'candidates'> & {
 export class CandidatesGenerator {
   constructor(private ctx: Ctx) {}
 
-  // Phase 56 ignores ctx here; Phase 57 reads ctx.refs.organizations to scale
+  // see phase 56 ignores ctx here; see phase 57 reads ctx.refs.organizations to scale
   // count proportionally (candidates per party).
 
   defaults(ctx: Ctx): CandidatesFragment {
@@ -87,7 +87,7 @@ export class CandidatesGenerator {
       } as CandidateRow);
     }
 
-    // D-27 seam: resolve the answer emitter ONCE per run. Phase 57's override
+    // seam: resolve the answer emitter ONCE per run. see phase 57's override
     // drops in here via `ctx.answerEmitter = latentEmitter` with zero changes
     // to this generator.
     const emit = this.ctx.answerEmitter ?? defaultRandomValidEmit;
@@ -121,16 +121,16 @@ export class CandidatesGenerator {
         row.organization = { external_id: party.external_id };
       }
 
-      // Answer emission via the D-27 seam. Skipped if no questions exist —
+      // Answer emission via the seam. Skipped if no questions exist —
       // importAnswers then has nothing to stitch and no-ops.
       if (questionRows.length > 0) {
         // Narrow candidate shape for the emitter: only fields the emitter may
-        // read are passed. Phase 56's default emitter doesn't read the candidate
-        // (`_candidate` arg); Phase 57's latent emitter will read latent
+        // read are passed. see phase 56's default emitter doesn't read the candidate
+        // (`_candidate` arg); see phase 57's latent emitter will read latent
         // position / party ref injected onto this object.
         //
-        // D-57 Interpretation Note (2026-04-22 revision): forward the already-
-        // populated `row.organization` ref to the emitter so Phase 57's latent
+        // Interpretation Note (2026-04-22 revision): forward the already-
+        // populated `row.organization` ref to the emitter so see phase 57's latent
         // emitter `findPartyIndex` can resolve a non-negative partyIdx in the
         // production path. Synthetic candidates set `row.organization` above
         // (line 121) when `refs.organizations` is non-empty; if the ref is

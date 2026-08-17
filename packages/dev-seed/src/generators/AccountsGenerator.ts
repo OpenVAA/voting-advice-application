@@ -1,5 +1,5 @@
 /**
- * AccountsGenerator — PASS-THROUGH per D-11.
+ * AccountsGenerator — PASS-THROUGH.
  *
  * `accounts` is bootstrapped by `apps/supabase/supabase/seed.sql`:
  *
@@ -12,7 +12,7 @@
  * reference it via `ctx.refs.accounts[0].id`.
  *
  * This class exists to:
- *   1. Satisfy GEN-01 "one generator per non-system public table" — all 16
+ *   1. Satisfy "one generator per non-system public table" — all 16
  *      non-system public tables have a generator class entry in Plan 07's
  *      TOPO_ORDER map, even the two that are bootstrap-only.
  *   2. Make the zero-write behavior explicit in code rather than by omission.
@@ -34,8 +34,8 @@ export type AccountsFragment = Fragment<TablesInsert<'accounts'>>;
 export class AccountsGenerator {
   constructor(private ctx: Ctx) {}
 
-  // Phase 56 ignores ctx here; kept on the signature for consistency with the
-  // rest of the generator classes + the D-08 contract.
+  // see phase 56 ignores ctx here; kept on the signature for consistency with the
+  // rest of the generator classes + the contract.
 
   defaults(ctx: Ctx): AccountsFragment {
     return { count: 0 };

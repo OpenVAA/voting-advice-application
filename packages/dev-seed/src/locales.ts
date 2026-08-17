@@ -1,7 +1,7 @@
 /**
  * Locale fan-out — post-processing step that expands `{ en: "..." }` JSONB
  * fields to `{ en, fi, sv }` when `template.generateTranslationsForAllLocales`
- * is true (TMPL-07 / D-58-04).
+ * is true.
  *
  * Runs AFTER generators produce rows, BEFORE the writer bulk-imports them.
  * Pure function — no I/O, no mutation of shared state. Operates on a row
@@ -27,12 +27,12 @@
  *
  * Only JSONB localized-string columns are expanded. Plain-text columns
  * (`candidates.first_name`, `candidates.last_name`) are structurally
- * single-valued and NOT touched (see RESEARCH §5 final paragraph).
+ * single-valued and NOT touched (see RESEARCH final paragraph).
  *
  * ## Per-locale Fakers
  *
  * Each fan-out invocation constructs per-locale Faker instances keyed by
- * locale + seed, seeded deterministically. Per Pattern A (RESEARCH §5) the
+ * locale + seed, seeded deterministically. Per Pattern A (RESEARCH) the
  * fakers are CONSTRUCTED FRESH inside the function — no module-level
  * singleton. The `fakers` map inside `fanOutLocales` is an in-invocation
  * cache (re-created on each call).
@@ -71,7 +71,7 @@ const LOCALE_DATA: Record<LocaleCode, typeof en> = {
 
 /**
  * Localized-string JSONB columns per table. Derived from schema grep
- * (RESEARCH §5 "Localized field inventory"). Order is alphabetical by
+ * (RESEARCH "Localized field inventory"). Order is alphabetical by
  * table name for determinism.
  *
  * Tables not listed here have no localized-string columns the fan-out cares
@@ -91,7 +91,7 @@ const LOCALIZED_FIELDS: Record<string, ReadonlyArray<string>> = {
 };
 
 /**
- * Build a per-locale Faker with a given seed. Pattern A per RESEARCH §5 —
+ * Build a per-locale Faker with a given seed. Pattern A per RESEARCH —
  * fresh instance, never module-level state. The fallback chain `[locale, en]`
  * means missing keys in the locale pack fall back to English.
  */
@@ -129,7 +129,7 @@ function generateLocaleValue(faker: Faker, field: string): string {
  * for ergonomic chaining.
  *
  * No-op when `template.generateTranslationsForAllLocales` is not `true`
- * (undefined / false both skip — preserves Phase 56/57 behavior).
+ * (undefined / false both skip — preserves see phase 56/57 behavior).
  *
  * @param rows  Pipeline output: `Record<tableName, Array<row>>`.
  * @param template Validated Template. Must include the boolean flag.

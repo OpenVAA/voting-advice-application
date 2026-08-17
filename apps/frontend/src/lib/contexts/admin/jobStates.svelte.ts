@@ -8,16 +8,16 @@ import type { JobStates } from './jobStates.type';
 
 /**
  * The job-polling store re-expressed as a Svelte 5 CLASS (`JobStatesProvider`;
- * v2.13 context-as-class migration, CLASS-07 jobStates half). CONVERTED from the
+ * v2.13 context-as-class migration, jobStates half). CONVERTED from the
  * `jobStates()` closure-factory that returned a `{ readonly ... }` object literal.
  *
  * The reactive core is the private `#jobs` `$state` Map registry + the three
  * private `$derived` projections (`#pastJobs` / `#activeJobsByFeature` /
- * `#pastJobsByFeature`), exposed as READ-ONLY PROTOTYPE GETTERS (CONVENTIONS §17)
+ * `#pastJobsByFeature`), exposed as READ-ONLY PROTOTYPE GETTERS (CONVENTIONS)
  * so reads via `instance.X` re-invoke the getter in the tracking scope and keep
  * the projections reactive.
  *
- * `startPolling` / `stopPolling` are ARROW-FUNCTION FIELDS (§18) so they survive
+ * `startPolling` / `stopPolling` are ARROW-FUNCTION FIELDS so they survive
  * `const { startPolling } = instance` detach (they capture `this`) — both are
  * returned to and called by consumers (`WithPolling.svelte`). `#fetchAndUpdateJobs`
  * is a PRIVATE arrow field (read only by `startPolling`; not on the `JobStates`

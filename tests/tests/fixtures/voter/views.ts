@@ -53,7 +53,7 @@ type ViewFixtures = {
   // Phase-119 EPERM voter-scoped readers (Plan 06).
   aboutPage: AboutPageFixture;
   questionInfo: QuestionInfoFixture;
-  // Phase-138 D-11 forensic capture (auto).
+  // Phase-138 forensic capture (auto).
   forensicCapture: ForensicLog;
 };
 
@@ -82,7 +82,7 @@ export const test = base.extend<ViewFixtures>({
   questionInfo: async ({ page }, use) => {
     await use(createQuestionInfo(page));
   },
-  // Phase-138 D-11 (INTEG-01): browser console + pageerror + failed-request
+  // Phase-138: browser console + pageerror + failed-request
   // capture, attached BEFORE the spec navigates and flushed on teardown.
   //
   // NOTE — an auto-registered fixture has NO precedent anywhere in `tests/tests`
@@ -95,7 +95,7 @@ export const test = base.extend<ViewFixtures>({
   // phase's run leaves evidence without someone having opted a spec in first.
   // Cost is three event listeners per page and no behaviour change; the
   // fixture asserts nothing. See forensicCapture.fixture.ts for the rationale
-  // in full and 138-DIAGNOSIS.md § U-1 for what its absence already cost.
+  // in full and § U-1 for what its absence already cost.
   forensicCapture: [
     async ({ page }, use, testInfo) => {
       const log = attachForensicCapture(page);

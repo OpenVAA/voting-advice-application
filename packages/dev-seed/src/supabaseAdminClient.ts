@@ -1,17 +1,17 @@
 /**
  * @openvaa/dev-seed SupabaseAdminClient — bulk-write surface for dev data seeding.
  *
- * Split from tests/tests/utils/supabaseAdminClient.ts per D-24 (Phase 56, 2026-04-22).
+ * Split from tests/tests/utils/supabaseAdminClient.ts per (see phase 56, 2026-04-22).
  * The tests/ file is rewritten as a thin subclass that adds auth/email + legacy
  * E2E query helpers on top of this base.
  *
  * Env-var handling: the module-level fallbacks below preserve backward-compat for
- * tests/ E2E. Env enforcement per D-15 (NF-02 "fail loudly when env missing") is
+ * tests/ E2E. Env enforcement per (NF-02 "fail loudly when env missing") is
  * the Writer's responsibility (packages/dev-seed/src/writer.ts), NOT this file —
  * pure generators consuming this client must stay env-free so `yarn test:unit`
  * doesn't require env fixture.
  *
- * Bulk-import routing note (D-11): `bulk_import` RPC's `processing_order` accepts
+ * Bulk-import routing note: `bulk_import` RPC's `processing_order` accepts
  * exactly 11 of 16 non-system tables. `accounts`, `projects`, `feedback`,
  * `constituency_group_constituencies`, `election_constituency_groups` are NOT in
  * that list. Callers must route those elsewhere (writer strips accounts/projects,
@@ -65,7 +65,7 @@ const FIELD_MAP: Record<string, string> = {
 /**
  * Result of a find operation.
  *
- * Consumed by the `findData` helper that lives in the tests/ subclass (see D-24);
+ * Consumed by the `findData` helper that lives in the tests/ subclass;
  * re-exported from here so tests/ can `export type { FindDataResult } from '@openvaa/dev-seed'`.
  */
 export interface FindDataResult {
@@ -93,7 +93,7 @@ function resolveFieldName(field: string): string {
 /**
  * Admin-client base for the dev-seed package.
  *
- * Narrow bulk-write surface (D-24): bulkImport, bulkDelete, importAnswers,
+ * Narrow bulk-write surface: bulkImport, bulkDelete, importAnswers,
  * linkJoinTables, updateAppSettings. Auth / email / legacy E2E query helpers
  * live in the tests/ subclass.
  *
@@ -238,7 +238,7 @@ export class SupabaseAdminClient {
    * JSONB, and updates each answer-bearing entity record. BOTH candidates AND
    * organizations carry an `answers` JSONB column and may declare
    * `answersByExternalId` (the org path backs
-   * `matching.organizationMatching=answersOnly` — EPERM-10).
+   * `matching.organizationMatching=answersOnly`).
    *
    * @param data - The same dataset passed to bulkImport, containing candidates
    *   and/or organizations with `answersByExternalId` fields
@@ -248,7 +248,7 @@ export class SupabaseAdminClient {
     // (apps/supabase/.../schema/105-answers.sql) and can declare
     // `answersByExternalId` in a template. The org path matters for
     // `matching.organizationMatching=answersOnly` where an organization is
-    // matched on its OWN answers (EPERM-10). The two tables share the same
+    // matched on its OWN answers. The two tables share the same
     // (external_id, answers, project_id) shape, so we generalise over both.
     const answerSources: Array<{ table: 'candidates' | 'organizations'; rows: Array<Record<string, unknown>> }> = [];
     const candidates = data.candidates as Array<Record<string, unknown>> | undefined;
@@ -336,7 +336,7 @@ export class SupabaseAdminClient {
   }
 
   // ---------------------------------------------------------------------------
-  // Questions external_id → UUID lookup (Phase 88 Plan 04 T3 — Option B)
+  // Questions external_id → UUID lookup (see phase 88 Plan 04 T3 — Option B)
   // ---------------------------------------------------------------------------
 
   /**
@@ -601,12 +601,12 @@ export class SupabaseAdminClient {
    * Uses the merge_jsonb_column RPC for recursive deep merge. Callers only
    * need to send the settings they want to change.
    *
-   * D-11 (Phase 63 E2E-02): baseline test-setup usage of this method has
+   * (see phase 63 E2E-02): baseline test-setup usage of this method has
    * migrated to the `@openvaa/dev-seed` e2e template's `app_settings.fixed[]`
    * block (and to the per-variant filesystem templates at
    * `tests/tests/setup/templates/variant-*.ts`). The 4 setup-file
    * `updateAppSettings({ ... })` blocks in `tests/tests/setup/*.setup.ts`
-   * were deleted in Plan 63-02 Task 3.
+   * were deleted in Task 3.
    *
    * The method is RETAINED for two legitimate use cases:
    *   1. Per-test scenario mutations from `*.spec.ts` files (e.g.
@@ -619,7 +619,7 @@ export class SupabaseAdminClient {
    *      per row.
    *
    * Do NOT call this method from a `*.setup.ts` file for baseline settings —
-   * extend the appropriate template instead (D-04, D-09, D-10).
+   * extend the appropriate template instead.
    *
    * @param partialSettings - Partial settings object to deep-merge
    * @throws Error if the app_settings row is not found or the merge fails
@@ -685,7 +685,7 @@ export class SupabaseAdminClient {
   }
 
   // ---------------------------------------------------------------------------
-  // Portrait upload surface (Phase 58 Plan 04 — GEN-09)
+  // Portrait upload surface (see phase 58 Plan 04)
   // ---------------------------------------------------------------------------
 
   /**
@@ -760,13 +760,13 @@ export class SupabaseAdminClient {
   }
 
   // ---------------------------------------------------------------------------
-  // Storage cleanup surface (Phase 58 Plan 07 — CLI-03 teardown Path 2)
+  // Storage cleanup surface (see phase 58 Plan 07 — teardown Path 2)
   // ---------------------------------------------------------------------------
 
   /**
    * List all candidate-portrait file paths under `${projectId}/candidates/` in
    * the `public-assets` bucket — used by `seed:teardown` Path 2 explicit
-   * cleanup (D-58-07 + RESEARCH §3).
+   * cleanup (RESEARCH).
    *
    * Storage layout (verified by Plan 04's `uploadPortrait`):
    *   `${projectId}/candidates/${candidateId}/${filename}`
@@ -775,7 +775,7 @@ export class SupabaseAdminClient {
    * files under each. Returns a flat array of fully-qualified paths ready to
    * hand to `.storage.from(...).remove(paths)`.
    *
-   * Pitfall #5 (RESEARCH §3): the AFTER-DELETE `pg_net` trigger may or may
+   * Pitfall #5 (RESEARCH): the AFTER-DELETE `pg_net` trigger may or may
    * not have reclaimed these files by the time the teardown CLI gets here.
    * Either way, the explicit list+remove is deterministic — this is the
    * PRIMARY path; the trigger is a nice-to-have async fallback.
@@ -831,8 +831,7 @@ export class SupabaseAdminClient {
    * Return candidate UUIDs whose `external_id` matches the given prefix.
    *
    * Used by `runTeardown` to scope storage cleanup to exactly the candidates
-   * being deleted (Phase 58 UAT gap — see
-   * `.planning/phases/58-templates-cli-default-dataset/58-HUMAN-UAT.md`
+   * being deleted (see phase 58 UAT gap — see
    * Gap #1). Must be called BEFORE `bulkDelete` — once the DB rows are gone,
    * this query returns an empty list.
    */

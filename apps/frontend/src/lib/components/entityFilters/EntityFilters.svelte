@@ -39,7 +39,7 @@ Show filters for entities. This component and the individual filter components o
    * TextPropertyFilter subclasses so `customData.filterable: true` on text
    * questions (built via `buildQuestionFilter → new TextQuestionFilter` per
    * `filterStore.svelte.ts:55-66`) renders correctly instead of falling
-   * through to the error fallback. Phase 77 P02 fix.
+   * through to the error fallback. see phase 77 P02 fix.
    */
   function _isTextFilter(filter: unknown) {
     return isTextFilter<MaybeWrappedEntityVariant>(filter);

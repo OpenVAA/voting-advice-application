@@ -27,9 +27,9 @@ export type OpinionQuestionInputProps = QuestionInputProps & {
    * Only the multi-choice branch computes it (count >= effectiveMin && count <=
    * effectiveMax, with effectiveMin = `minSelections ?? 1` and effectiveMax =
    * `maxSelections ?? choices.length` — so zero selections is always
-   * invalid-as-unanswered per D-07); all other branches leave it `true`. Callers
+   * invalid-as-unanswered per); all other branches leave it `true`. Callers
    * use it to gate Save (candidate) or keep the action button as Skip (voter) —
-   * the component itself never disables anything (D-07). In the multi-choice
+   * the component itself never disables anything. In the multi-choice
    * branch the value is assigned SYNCHRONOUSLY before the bubbled `onChange`, so
    * a caller reading it inside the same onChange stack sees fresh validity.
    * @default true

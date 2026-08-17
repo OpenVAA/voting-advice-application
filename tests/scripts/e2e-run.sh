@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # e2e-run.sh -- Perform exactly ONE preflight-confirmed E2E run and leave behind a
-#               complete, machine-readable evidence directory (Phase 138, D-10/D-12).
+#               complete, machine-readable evidence directory (see phase 138).
 #
 # Usage:
 #   tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/run-01
@@ -31,7 +31,7 @@
 #   4. POLLS REST + Storage for readiness and asserts the `public-assets` bucket is
 #      listed -- `db:status` passing is NOT readiness
 #   5. ASSERTS $FRONTEND_PORT has no listener, then spawns the frontend dev server with
-#      its stdout+stderr redirected into the run directory as devserver.log (D-10), and
+#      its stdout+stderr redirected into the run directory as devserver.log, and
 #      waits for the port to accept connections. It refuses to adopt a foreign listener,
 #      and at teardown it kills only processes in its own spawned process group
 #   6. Runs Playwright with per-run JSON and HTML reporter output
@@ -325,14 +325,14 @@ if [ "$ready" != true ]; then
 fi
 echo "e2e-run.sh: Supabase ready (REST $rest_code, public-assets bucket present)"
 
-# --- 5. spawn the dev server, with its output redirected (D-10) ------------------------
+# --- 5. spawn the dev server, with its output redirected ------------------------
 
-# This redirection is the ONLY available mechanism for D-10. Playwright does not manage
+# This redirection is the ONLY available mechanism for. Playwright does not manage
 # the frontend dev server in this repo, and making it do so -- by adding a
 # Playwright-managed frontend server entry to the config -- is FORBIDDEN: it would
 # replace the Phase-137 trust model (a gate that VERIFIES an operator-started server)
 # with one that trusts a Playwright-started one, and reusing an already-running server
-# would reintroduce exactly the "something answered on the port" ambiguity Phase 137
+# would reintroduce exactly the "something answered on the port" ambiguity see phase 137
 # eliminated. The wrapper owns the server; the harness is not made to.
 # The header lists "NOTHING is already listening on $FRONTEND_PORT" as a prerequisite;
 # ASSERT it rather than assume it. Without this check the wait loop below tests the port

@@ -1,6 +1,6 @@
 /**
  * teardown.ts + supabaseAdminClient storage-cleanup tests
- * (Phase 58 Plan 07 — CLI-03 + D-58-07 + D-58-17 + Pitfall #5 + Pitfall #6).
+ * (see phase 58 Plan 07 — Pitfall #5 + Pitfall #6).
  *
  * Covers:
  *   - `SupabaseAdminClient.listCandidatePortraitPaths()` — 2-level enumeration
@@ -9,13 +9,13 @@
  *     via the Storage API.
  *   - `runTeardown(prefix, client)` pure orchestrator:
  *       1. bulkDelete of exactly the 10 allowed tables (Pitfall #6 guardrail).
- *       2. Explicit Storage Path 2 cleanup AFTER bulkDelete (RESEARCH §3).
+ *       2. Explicit Storage Path 2 cleanup AFTER bulkDelete (RESEARCH).
  *       3. `--prefix` override.
  *       4. Prefix length guard (T-58-07-02 — mass-delete prevention).
- *       5. Error rephrasing for `fetch failed` (D-58-12 parity).
- *   - `TEARDOWN_USAGE` constant (CLI-04 / D-58-13).
+ *       5. Error rephrasing for `fetch failed` (parity).
+ *   - `TEARDOWN_USAGE` constant.
  *
- * D-22 pattern: all Supabase side-effects go through a mocked client — tests
+ * pattern: all Supabase side-effects go through a mocked client — tests
  * are fully offline. Integration test (Plan 09) exercises the live path.
  */
 

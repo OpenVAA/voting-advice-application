@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
- * PHASE 113 (FLATTEN-02) — Codemod: <handle>.current → <handle> (bare reactive field)
+ * see phase 113 — Codemod: <handle>.current → <handle> (bare reactive field)
  *
- * The INVERSE of spike-009-store-codemod.mjs. Phases 106–112 left context handles
- * as back-compat `{ current }` objects; Phase 113 flattens the three canonical
+ * The INVERSE of spike-009-store-codemod.mjs. see phase 106–112 left context handles
+ * as back-compat `{ current }` objects; see phase 113 flattens the three canonical
  * handles to bare reactive class fields, so consumer reads drop the `.current`
  * accessor. Two passes:
  *
@@ -23,7 +23,7 @@
  * Only `appSettings`, `dataRoot`, `locale` are flattened — EXACTLY these three.
  * The frontend has 606 `.current` reads across many OUT-OF-SCOPE handles. The
  * single largest is `getRoute.current` (~147 sites) which is explicitly NOT in
- * the FLATTEN-01 enumeration and MUST stay `{ current }`. Other out-of-scope
+ * the enumeration and MUST stay `{ current }`. Other out-of-scope
  * handles (`userData`, `topBarSettings`, `overlay`, `store`, `userPreferences`,
  * `appCustomization`, `appType`, `darkMode`, `openFeedbackModal`, …) likewise
  * stay untouched. A broad `\w+\.current` regex is FORBIDDEN (research Pitfall 1)
@@ -31,7 +31,7 @@
  * The negative lookbehind on `[\w$.#]` additionally rejects member-of-something
  * reads (`foo.appSettings.current`, `reactiveAppSettings.current`,
  * `myAppSettings.current`) AND private-field reads (`this.#appSettings.current`).
- * The `#` exclusion is load-bearing for FLATTEN-02: the trackingService / surveyLink
+ * The `#` exclusion is load-bearing: the trackingService / surveyLink
  * producers hold their input as a PRIVATE `#appSettings: ReactiveHandle<AppSettings>`
  * field and read `this.#appSettings.current`. That `ReactiveHandle` input contract is
  * KEPT (only the consumer-facing `ctx.appSettings` surface goes bare; the appContext

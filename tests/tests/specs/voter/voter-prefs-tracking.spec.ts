@@ -1,11 +1,11 @@
 /**
- * @file voter-prefs-tracking.spec.ts — EFLOW-08.
+ * @file voter-prefs-tracking.spec.ts.
  *
  * Two assertions over the voter app, hosted UNDER the `voter-prefs-tracking`
  * Playwright project (depends on `data-setup-perm-analytics-tracking`, Plan 04):
  *
  *  1. TRACKING emit-vs-suppress at the `window.umami.track` boundary, captured by
- *     the verified `trackingIntercept` fixture (Phase 119).
+ *     the verified `trackingIntercept` fixture (see phase 119).
  *  2. USER-PREFERENCES round-trip — every persisted field survives a reload.
  *
  * ## Why this is a perm-hosted spec (NOT a base leaf)
@@ -51,7 +51,7 @@
  * `isVisible({timeout})` as a wait.
  */
 
-// EFLOW-08: prefs round-trip + tracking emit/suppress
+// prefs round-trip + tracking emit/suppress
 
 import { expect, test } from '@playwright/test';
 import { createTrackingIntercept } from '../../fixtures/shared/trackingIntercept.fixture';

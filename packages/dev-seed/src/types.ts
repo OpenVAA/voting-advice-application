@@ -22,7 +22,7 @@ export type { Template } from './template/types';
  * `TRow` is the `TablesInsert<'X'>` row type from `@openvaa/supabase-types`.
  * `fixed[]` accepts partial rows (so users can omit fields the generator fills in
  * from defaults / faker) but `external_id` is required so the writer's upsert
- * works (GEN-04).
+ * works.
  */
 export type Fragment<TRow> = {
   count?: number;
@@ -30,11 +30,11 @@ export type Fragment<TRow> = {
 };
 
 /**
- * D-25 override map — public override signature.
+ * override map — public override signature.
  *
  *   `{ [table]: (fragment, ctx) => Rows[] }`
  *
- * The pipeline bridges this with the class-based built-in generators per D-26:
+ * The pipeline bridges this with the class-based built-in generators:
  *
  *   `const rows = overrides[table]?.(fragment, ctx) ?? gen.generate(fragment);`
  *

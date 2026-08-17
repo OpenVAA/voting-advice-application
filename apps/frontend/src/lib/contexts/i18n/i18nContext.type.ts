@@ -6,7 +6,7 @@ import type { TranslationKey } from '$lib/types/generated/translationKey';
  * - `locale` is the current locale string (constant within a page lifecycle, locale changes trigger full page reloads)
  * - `locales` is the array of available locale codes
  * - `t` is a plain function for translating message keys; `key` is typed against
- *   the auto-generated `TranslationKey` union for compile-time validation (Phase 78 CLEAN-04)
+ *   the auto-generated `TranslationKey` union for compile-time validation (see phase 78)
  * - `translate` is a plain function for translating localized objects
  *
  * All properties are plain values — use them directly without `$` prefix.

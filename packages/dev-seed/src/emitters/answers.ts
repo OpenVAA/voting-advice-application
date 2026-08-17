@@ -1,19 +1,19 @@
 /**
- * Answer emitter — Phase 56 random-valid-per-question-type stub behind the D-27
+ * Answer emitter — see phase 56 random-valid-per-question-type stub behind the
  * function-pointer seam.
  *
- * D-27: SINGLE function pointer, NO interface ceremony. Phase 57 supplies a
+ * SINGLE function pointer, NO interface ceremony. see phase 57 supplies a
  * latent-factor emitter by assigning `ctx.answerEmitter`. The candidate generator
  * does not change between Phase 56 and Phase 57 — only `ctx.answerEmitter` gets
  * populated.
  *
- * D-21 forward note: Phase 57's latent emitter can fall back to
+ * forward note: see phase 57's latent emitter can fall back to
  * `defaultRandomValidEmit` for categorical questions when no explicit loading /
  * choice mapping is supplied, mirroring this Phase 56 stub.
  *
- * D-20: shape-valid ONLY. Subdimension projection / MISSING_VALUE handling stays in
+ * shape-valid ONLY. Subdimension projection / MISSING_VALUE handling stays in
  * `@openvaa/matching`. This emitter does NOT produce correlated or clustered
- * answers — Phase 57's latent-factor emitter does that.
+ * answers — see phase 57's latent-factor emitter does that.
  */
 
 import type { Faker } from '@faker-js/faker';
@@ -21,10 +21,10 @@ import type { Enums, TablesInsert } from '@openvaa/supabase-types';
 import type { Ctx } from '../ctx';
 
 /**
- * AnswerEmitter signature per RESEARCH Open Question 4 + D-27.
+ * AnswerEmitter signature per RESEARCH Open Question 4.
  *
  *  - `candidate` — the candidate row being emitted (TablesInsert<'candidates'>).
- *    Phase 56 does not consume it, but Phase 57's latent emitter will (candidate's
+ *    see phase 56 does not consume it, but see phase 57's latent emitter will (candidate's
  *    latent position).
  *  - `questions` — the pre-built list of question rows (TablesInsert<'questions'>[]).
  *  - `ctx` — gives access to the seeded `ctx.faker` for RNG.
@@ -41,14 +41,14 @@ export type AnswerEmitter = (
 type QuestionType = Enums<'question_type'>;
 
 /**
- * Phase 56 default: random-valid-per-question-type (D-19).
+ * see phase 56 default: random-valid-per-question-type.
  *
  * Mapping per question_type enum:
  *  - `text` / `multipleText` — `faker.lorem.sentence()` / array of words.
  *  - `number` — `faker.number.int({ min: 0, max: 100 })`.
  *  - `boolean` — `faker.datatype.boolean()`.
  *  - `date` — `faker.date.recent().toISOString()`.
- *  - `image` — `null` (opaque JSONB; upload path is Phase 58).
+ *  - `image` — `null` (opaque JSONB; upload path is see phase 58).
  *  - `singleChoiceOrdinal` / `singleChoiceCategorical` — random choice id from
  *    `q.choices[].id`.
  *  - `multipleChoiceCategorical` — random non-empty subset of `q.choices[].id`.

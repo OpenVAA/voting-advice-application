@@ -1,17 +1,17 @@
 /**
- * defaultProject unit tests (Plan 57-06 Task 1).
+ * defaultProject unit tests (Task 1).
  *
  * Exercises the per-question-type dispatch in `src/emitters/latent/project.ts`:
- *   - Ordinal (singleChoiceOrdinal) via COORDINATE inverse-normalize (D-57-08).
- *   - Single-choice categorical (singleChoiceCategorical) via per-choice argmax (D-57-09).
- *   - Multi-choice categorical with ≥ 1 guarantee (D-57-09 + S-4).
- *   - Non-choice types delegate to `defaultRandomValidEmit` (D-57-10).
+ *   - Ordinal (singleChoiceOrdinal) via COORDINATE inverse-normalize.
+ *   - Single-choice categorical (singleChoiceCategorical) via per-choice argmax.
+ *   - Multi-choice categorical with ≥ 1 guarantee (S-4).
+ *   - Non-choice types delegate to `defaultRandomValidEmit`.
  *   - Cross-cutting: empty questions, missing external_id, contract assertion.
  *
  * Plus the A2 fix regression on QuestionsGenerator.LIKERT_5 — each choice
  * carries `normalizableValue: j + 1` per RESEARCH Open Question 2.
  *
- * D-22 contract: pure I/O. No Supabase imports, no `createClient`, no `.rpc()`.
+ * contract: pure I/O. No Supabase imports, no `createClient`, no `.rpc `.
  */
 
 import type { Enums, TablesInsert } from '@openvaa/supabase-types';
@@ -173,7 +173,7 @@ describe('defaultProject (GEN-06f)', () => {
     expect(sizes.size).toBeGreaterThanOrEqual(2); // must see at least 2 different selection counts
   });
 
-  // ---- Non-choice fallback (D-57-10) ----
+  // ---- Non-choice fallback ----
 
   it('text → non-empty string', () => {
     const q = mkQ('q_text', 'text');

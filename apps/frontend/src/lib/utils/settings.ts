@@ -16,7 +16,7 @@ export function mergeAppSettings(
   const nonNull = Object.fromEntries(Object.entries(additional).filter(([, v]) => v != null)) as
     | AppSettings
     | DynamicSettings;
-  // Pure spread (Pattern 8 / D-05): never mutate `target`. The previous
+  // Pure spread (Pattern 8): never mutate `target`. The previous
   // in-place assign mutated the shared `staticSettings` module reference,
   // polluting every other context that read it.
   return { ...target, ...nonNull };
@@ -24,7 +24,7 @@ export function mergeAppSettings(
 
 /**
  * Build the INITIAL effective `AppSettings` value for `appContext`'s `$state`,
- * folding in the DB override synchronously (D-04 / CTX-01).
+ * folding in the DB override synchronously.
  *
  * This is the pure, server-and-client-safe init merge used at `$state` init so
  * the server-rendered HTML already carries the DB override (no post-hydration

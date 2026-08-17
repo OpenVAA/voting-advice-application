@@ -1,24 +1,24 @@
 /**
- * D-58-09 + D-58-10 template resolver.
+ * template resolver.
  *
- * Resolution algorithm (D-58-09):
+ * Resolution algorithm:
  *   1. Arg starts with `./`, `/`, or `../` => filesystem path.
  *   2. Arg ends in `.ts`, `.js`, or `.json` => filesystem path.
  *   3. Otherwise => built-in name lookup in the provided map.
  *   4. Unknown name => error listing built-ins + suggesting path form.
  *
- * Loader (D-58-10):
+ * Loader:
  *   - `.ts` / `.js` => `await import(pathToFileURL(absPath).href)`. tsx runtime
  *     handles `.ts` transformation. Reads `mod.default` or `mod.template`.
  *   - `.json` => `JSON.parse(readFileSync(absPath, 'utf8'))` + zod validate.
  *
  * Validation:
  *   - Every resolved template runs through `validateTemplate()` before return.
- *     TMPL-09 field-path errors surface on misconfiguration.
+ *     field-path errors surface on misconfiguration.
  *
  * Security note (T-58-05-02 in Plan's threat model):
  *   - Loading `.ts`/`.js` from arbitrary paths executes developer-authored
- *     code at runtime. This is INTENTIONAL (TMPL-06 — custom templates).
+ *     code at runtime. This is INTENTIONAL (custom templates).
  *     Not a vulnerability — dev tool with same trust model as tsx itself.
  *     LICENSE.md-level warning in README.md (Plan 10).
  */
@@ -60,7 +60,7 @@ export async function resolveTemplate(arg: string, builtIns: Record<string, Temp
 }
 
 /**
- * D-58-09 step 1+2: path if starts with `./`, `/`, `../` OR ends in .ts/.js/.json.
+ * step 1+2: path if starts with `./`, `/`, `../` OR ends in.ts/.js/.json.
  */
 function isPath(arg: string): boolean {
   return (
@@ -74,9 +74,9 @@ function isPath(arg: string): boolean {
 }
 
 /**
- * D-58-10 JSON loader: read + JSON.parse + zod validate.
+ * JSON loader: read + JSON.parse + zod validate.
  * JSON parse errors bubble up with their default message; zod errors include
- * TMPL-09 field paths via `validateTemplate`.
+ * field paths via `validateTemplate`.
  */
 function loadJsonTemplate(absPath: string): Template {
   let raw: unknown;
@@ -89,7 +89,7 @@ function loadJsonTemplate(absPath: string): Template {
 }
 
 /**
- * D-58-10 .ts/.js loader: dynamic import => mod.default ?? mod.template.
+ * ts/.js loader: dynamic import => mod.default?? mod.template.
  * The `pathToFileURL` conversion is REQUIRED for absolute paths on all
  * platforms (Windows/POSIX) — bare paths don't work with ESM `import()`.
  */

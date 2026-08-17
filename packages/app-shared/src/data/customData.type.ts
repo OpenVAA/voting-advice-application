@@ -57,7 +57,7 @@ export type CustomData = {
      */
     max?: number;
     /**
-     * For `MultipleTextInput` (D-02): the maximum number of value rows. Once reached, adding further rows is disabled.
+     * For `MultipleTextInput`: the maximum number of value rows. Once reached, adding further rows is disabled.
      */
     maxItems?: number;
     /**
@@ -65,7 +65,7 @@ export type CustomData = {
      */
     maxlength?: number;
     /**
-     * For multi-choice categorical opinion questions (D-07): the maximum number of selected choices for a valid answer.
+     * For multi-choice categorical opinion questions: the maximum number of selected choices for a valid answer.
      */
     maxSelections?: number;
     /**
@@ -73,11 +73,11 @@ export type CustomData = {
      */
     min?: number;
     /**
-     * For `MultipleTextInput` (D-02): the minimum number of value rows. A value greater than 1 renders that many rows initially and prevents deletion below it.
+     * For `MultipleTextInput`: the minimum number of value rows. A value greater than 1 renders that many rows initially and prevents deletion below it.
      */
     minItems?: number;
     /**
-     * For multi-choice categorical opinion questions (D-07): the minimum number of selected choices for a valid answer. Zero selections is always treated as unanswered.
+     * For multi-choice categorical opinion questions: the minimum number of selected choices for a valid answer. Zero selections is always treated as unanswered.
      */
     minSelections?: number;
     /**

@@ -71,7 +71,7 @@ export const testIds = {
       // NB. the password confirmation input's live id is the component-hardcoded
       // `candidate.passwordSetter.confirm` (PasswordSetter.svelte:80) — the former
       // settings-scoped `confirmPassword` entry was dead (its prop fell into <form>
-      // restProps and never rendered a usable id) and was removed (128-02, D-03).
+      // restProps and never rendered a usable id) and was removed (128-02).
       updateButton: 'settings-update-password'
     },
     preview: {
@@ -107,7 +107,7 @@ export const testIds = {
       // the same component, hence the route-agnostic names. `electionLabel` is
       // the <label> wrapping both the checkbox and the election name, so
       // filtering it by text and descending to `electionOption` selects an
-      // election by IDENTITY rather than position (Phase 140 iter-3 CR-01).
+      // election by IDENTITY rather than position (see phase 140 iter-3 CR-01).
       electionLabel: 'election-selector-option-label',
       electionOption: 'election-selector-option',
       electionsSubmit: 'preregister-elections-submit',
@@ -191,7 +191,7 @@ export const testIds = {
       heading: 'voter-questions-heading',
       nextButton: 'question-next',
       previousButton: 'question-previous',
-      // Phase-129 question-input locators (D-14). These support the Phase-130
+      // Phase-129 question-input locators. These support the Phase-130
       // EQTYP fixtures (answerNumberScale / answerMultiChoice + the MultipleText
       // round-trip) and the Phase-129 voter-journey answer-walk extension. Values
       // byte-match the component-side data-testid strings shipped in plans 04/05/06:
@@ -204,9 +204,9 @@ export const testIds = {
       numberSlider: 'question-number-slider',
       numberValue: 'question-number-value',
       // NumberScaleInput.svelte root <div> (both answer + display modes). Scopes
-      // the dual-marker display-mode readout (129 D-04) inside an entity-detail
+      // the dual-marker display-mode readout (129) inside an entity-detail
       // opinion block. Byte-matches the existing component data-testid — NOT a
-      // new product testid (Phase 130 is specs-only).
+      // new product testid (see phase 130 is specs-only).
       numberScaleInput: 'number-scale-input',
       multipleTextRow: 'multiple-text-row',
       multipleTextAdd: 'multiple-text-add',
@@ -274,7 +274,7 @@ export const testIds = {
       infoItem: 'info-item',
       // MatchScore.svelte list-card callout (the "<n>%" readout in the card
       // header). Distinct from `scoreGauge` (`score-gauge`), which only renders
-      // inside the entity-details SubMatches drawer. EPERM-10 reads this scoped
+      // inside the entity-details SubMatches drawer. reads this scoped
       // to a single org card to assert the exact per-mode organization score.
       matchScore: 'match-score',
       scoreGauge: 'score-gauge',
@@ -292,7 +292,7 @@ export const testIds = {
       // Renders only `{#if values.length > 3}` (threshold > 3 confirmed) and its
       // label flips selectAll/unselectAll via `allSelected` — it is ONE toggle, not
       // two buttons. The entityFilters fixture (Plan 07) clicks it to select-all when
-      // not-all-selected and to select-none when all-selected. EFLOW-01.
+      // not-all-selected and to select-none when all-selected..
       filterSelectAllToggle: 'entity-filter-select-all-toggle'
     },
     entityDetail: {
@@ -323,8 +323,8 @@ export const testIds = {
       returnButton: 'voter-about-return',
       // Dedicated testid on the about.organizationMatching disclosure block on the
       // About page (rendered only when matching.organizationMatching !== 'none').
-      // Tighter than the coarse voter-about-content anchor so EPERM-10 can assert the
-      // org-matching disclosure specifically. EPERM-10.
+      // Tighter than the coarse voter-about-content anchor so can assert the
+      // org-matching disclosure specifically..
       organizationMatching: 'voter-about-organization-matching'
     },
     info: {
@@ -334,7 +334,7 @@ export const testIds = {
       // election region (apps/frontend/src/routes/(voters)/info/+page.svelte).
       // Distinct from the static `voter-info-content` {@html} div — this region is
       // EMPTY when dataRoot.elections is stale, so it is the correct cold-entry
-      // regression anchor (Phase 117 COLD-03).
+      // regression anchor (see phase 117).
       electionList: 'voter-info-election-list'
     },
     privacy: {
@@ -396,16 +396,16 @@ export const testIds = {
     // Generic Video component root <div> testid (Video.svelte). Shared between the
     // voter + candidate apps. The element is class:hidden-not-destroyed (hidden when
     // !hasContent), so expectVideo(true) asserts toBeVisible() and expectVideo(false)
-    // asserts not.toBeVisible() — NOT mount/unmount churn. EPERM-06.
+    // asserts not.toBeVisible — NOT mount/unmount churn..
     video: 'video',
     // Distinct root testids on the results feedback + survey popups (FeedbackPopup /
     // SurveyPopup Alert roots). Distinct so the dismiss-and-reload helper can assert
-    // each popup's dismiss-persistence independently. EPERM-09.
+    // each popup's dismiss-persistence independently..
     feedbackPopup: 'feedback-popup',
     surveyPopup: 'survey-popup',
     // Root <div> testid on SurveyBanner.svelte — the survey prompt rendered on the
     // frontpage / entityDetails surfaces when survey.showIn includes that surface.
-    // Consumed by the perm-show-feedback-survey showIn-surface audit. EPERM-09.
+    // Consumed by the perm-show-feedback-survey showIn-surface audit..
     surveyBanner: 'survey-banner'
   }
 } as const;

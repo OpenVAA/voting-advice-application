@@ -1,5 +1,5 @@
 /**
- * Dark-mode applied + persists across reload (EFLOW-07).
+ * Dark-mode applied + persists across reload.
  *
  * Read-only LEAF spec on `data-setup-base` (`e2e/base`). Voter routes are public
  * (no auth, no own setup/teardown). Mirrors the leaf shape of
@@ -41,7 +41,7 @@ test.describe('voter-dark-mode', () => {
 
     // Persistence: the emulated media preference survives reload automatically
     // (no toggle, no client storage). Assert the dark signal STILL holds — this
-    // is EFLOW-07's "persists across reload".
+    // is 's "persists across reload".
     await page.reload();
     await theme.expectTheme('dark');
 

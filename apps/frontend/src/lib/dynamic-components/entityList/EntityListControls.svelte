@@ -42,7 +42,7 @@ TODO: Consider moving the tracking events away from the component and just addin
 
   const ctx = getAppContext();
   const { startEvent, t } = ctx;
-  // locale is a reactive accessor (Phase 113 flatten) — read via ctx.locale, never destructure.
+  // locale is a reactive accessor (see phase 113 flatten) — read via ctx.locale, never destructure.
   const locale = $derived(ctx.locale);
   let filtersModalRef: Modal | undefined = $state();
   let filteredContents: EntityListControlsProps['entities'] = $state([]);

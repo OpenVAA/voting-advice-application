@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { inheritContextMembers } from './inheritContextMembers';
 
 /**
- * Phase 113 CR-01 regression guard. inheritContextMembers must forward accessor
+ * see phase 113 CR-01 regression guard. inheritContextMembers must forward accessor
  * members as LIVE accessors (not snapshot their current value the way Object.assign
  * does), while copying data members by value. A regression here silently freezes the
  * reactivity of inherited bare reactive accessors (appSettings / dataRoot / locale)

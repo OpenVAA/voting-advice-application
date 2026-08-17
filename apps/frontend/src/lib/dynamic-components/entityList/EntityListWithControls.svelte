@@ -1,11 +1,11 @@
 <!--
 @component
 Compound component combining search + filter controls with an `EntityList`
-in a fixed layout (D-01 + D-03). Replaces the broken `$effect` +
+in a fixed layout. Replaces the broken `$effect` +
 `filterGroup.onChange` + `updateFilters` circular chain on
-`EntityListControls.svelte:56-73` (RESULTS-01) with pure `$derived`
+`EntityListControls.svelte:56-73` with pure `$derived`
 computations bridged to `FilterGroup.onChange` via the version counter
-provided by `filterContext` (Phase 62 D-04, D-05).
+provided by `filterContext` (see phase 62).
 
 ### Properties
 
@@ -65,14 +65,14 @@ component-local). See `EntityListWithControls.helpers.ts` for the pure
   const ctx = getAppContext();
   const { startEvent, t } = ctx;
   const fctx = getFilterContext();
-  // appContext exposes `locale` as a reactive accessor (Phase 113 flatten) — read
+  // appContext exposes `locale` as a reactive accessor (see phase 113 flatten) — read
   // via `ctx.locale`, never destructure it (destructuring would capture
   // the value once at init and stop updating). The legacy store shape (and
   // `fromStore` bridge) is gone, so `fromStore(ctx.locale)` would throw
   // `store.subscribe is not a function`.
   const locale = $derived(ctx.locale);
 
-  // Active FilterGroup: prop override wins over context (D-02 additive contract
+  // Active FilterGroup: prop override wins over context (additive contract
   // for off-context use such as tests and the candidate-app migration).
   // The cast to FilterGroup<MaybeWrappedEntityVariant> handles the generic
   // variance gap — FilterGroup<TEntity> is invariant in TEntity, but our

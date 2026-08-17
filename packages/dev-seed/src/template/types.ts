@@ -1,5 +1,5 @@
 /**
- * Template TS type — derived via `z.infer<>` per D-16 + D-17.
+ * Template TS type — derived via `z.infer<>` per.
  *
  * The Template type is the single source of truth for template shape; it
  * mirrors {@link TemplateSchema} exactly without hand-written duplication.
@@ -12,16 +12,16 @@
  * ## Template anatomy
  *
  * A template is a declarative config describing what to seed. Every field is
- * optional; a `{}` template produces a valid trivial row-set (TMPL-02).
+ * optional; a `{}` template produces a valid trivial row-set.
  *
  * ### Top-level fields
  *
- * - `seed: number` — fixed faker RNG seed for deterministic output (TMPL-08).
+ * - `seed: number` — fixed faker RNG seed for deterministic output.
  *   Default 42 (via `buildCtx`). Setting this guarantees byte-identical rows
  *   across runs at the same seed (NF-04).
  *
  * - `externalIdPrefix: string` — prefix prepended to every generator-emitted
- *   `external_id` (GEN-04). Default `'seed_'`. Teardown (`seed:teardown`)
+ *   `external_id`. Default `'seed_'`. Teardown (`seed:teardown`)
  *   filters on this prefix to remove generator-produced rows.
  *
  * - `projectId: string` — UUID of the project under which rows are created.
@@ -32,10 +32,10 @@
  * - `generateTranslationsForAllLocales: boolean` — when true, localized
  *   JSONB fields are expanded across every locale in
  *   `staticSettings.supportedLocales` (`en`, `fi`, `sv`, `da`). Default
- *   false / undefined. Set `true` in the default template (D-58-04); set
- *   `false` in the e2e template (D-58-16).
+ *   false / undefined. Set `true` in the default template; set
+ *   `false` in the e2e template.
  *
- * - `latent: LatentConfig` — Phase 57 latent-factor answer model
+ * - `latent: LatentConfig` — see phase 57 latent-factor answer model
  *   configuration (per-party centroids, question loadings, noise). See
  *   {@link LatentHooks} for the swappable per-sub-step seam.
  *
@@ -50,10 +50,10 @@
  *   Smart default per entity (see individual generators).
  *
  * - `fixed: Array<Partial<Row> & { external_id }>` — HAND-AUTHORED rows
- *   merged into the synthetic output (TMPL-03). Use for exact party names,
+ *   merged into the synthetic output. Use for exact party names,
  *   test-specific candidates, known constituency IDs, etc.
  *
- * Example mixing synthetic + hand-authored (TMPL-03):
+ * Example mixing synthetic + hand-authored:
  *
  * ```ts
  * const template: Template = {
@@ -72,10 +72,9 @@
  *
  * ## Further reading
  *
- * - `packages/dev-seed/README.md` — worked authoring example (Phase 58 DX-01).
- * - `.planning/phases/56-generator-foundations-plumbing/56-CONTEXT.md` — D-18
- *   schema-extension pattern; D-25 override signature.
- * - `.planning/phases/57-latent-factor-answer-model/57-CONTEXT.md` — latent
+ * - `packages/dev-seed/README.md` — worked authoring example (see phase 58 DX-01).
+ *   schema-extension pattern; override signature.
+ * - — latent
  *   block semantics (`dimensions`, `eigenvalues`, `centroids`, `spread`,
  *   `loadings`, `noise`).
  */

@@ -4,9 +4,9 @@ import type { HTMLAttributes } from 'svelte/elements';
  * Props for the `MultipleTextInput` component.
  *
  * A row-list input for `MultipleTextQuestion`s whose answer value is an
- * `Array<string>` (D-01). Each value is an opaque, plain (non-multilingual)
+ * `Array<string>`. Each value is an opaque, plain (non-multilingual)
  * string — multilingual `multipleText` values are out of this phase's input
- * scope. Empty rows are dropped on save and duplicates are preserved (D-02).
+ * scope. Empty rows are dropped on save and duplicates are preserved.
  */
 export type MultipleTextInputProps = Omit<HTMLAttributes<HTMLDivElement>, 'value' | 'id' | 'onchange'> & {
   /**
@@ -33,12 +33,12 @@ export type MultipleTextInputProps = Omit<HTMLAttributes<HTMLDivElement>, 'value
    */
   id?: string;
   /**
-   * Minimum number of rows (D-02). When `> 1`, that many rows are rendered
+   * Minimum number of rows. When `> 1`, that many rows are rendered
    * initially and per-row removal is prevented below this floor. @default 1
    */
   minItems?: number;
   /**
-   * Maximum number of rows (D-02). When set, the Add button is disabled once
+   * Maximum number of rows. When set, the Add button is disabled once
    * the row count reaches this ceiling.
    */
   maxItems?: number;

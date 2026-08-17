@@ -1,10 +1,10 @@
 /**
  * AlliancesGenerator — foundation generator for the `alliances` table.
  *
- * RESEARCH §4.11: `project_id` is required; standard DataObject scaffolding
+ * RESEARCH: `project_id` is required; standard DataObject scaffolding
  * otherwise; no content FK refs on this table.
  *
- * D-04/D-26/D-08 + GEN-02/GEN-04 apply — see ElectionsGenerator.ts.
+ * apply — see ElectionsGenerator.ts.
  *
  * Default count = 0: alliances are uncommon in VAA datasets; templates enable
  * them explicitly via `alliances: { count: N }`. Keeping the default off
@@ -19,7 +19,7 @@ export type AlliancesFragment = Fragment<TablesInsert<'alliances'>>;
 export class AlliancesGenerator {
   constructor(private ctx: Ctx) {}
 
-  // Phase 56 ignores ctx here; Phase 57/58 generators read ctx.refs to scale counts.
+  // see phase 56 ignores ctx here; see phase 57/58 generators read ctx.refs to scale counts.
 
   defaults(ctx: Ctx): AlliancesFragment {
     return { count: 0 };

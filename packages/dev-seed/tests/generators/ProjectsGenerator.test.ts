@@ -1,7 +1,7 @@
 /**
- * ProjectsGenerator unit tests — pass-through per D-11.
+ * ProjectsGenerator unit tests — pass-through.
  *
- * D-22 scope: pure I/O. Mirrors AccountsGenerator shape — both tables are
+ * scope: pure I/O. Mirrors AccountsGenerator shape — both tables are
  * bootstrapped by seed.sql and dev-seed emits `[]` for any request shape.
  */
 

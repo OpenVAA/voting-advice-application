@@ -34,15 +34,15 @@ Display the intro to a question category and possibly a button with which to ski
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // Phase 61-03 voter-side parallel fix: selectedQuestionBlocks is a reactive
+  // see phase 61 voter-side parallel fix: selectedQuestionBlocks is a reactive
   // context getter; access via voterCtx.X (live $state).
   const voterCtx = getVoterContext();
   const { getRoute, t } = voterCtx;
-  // appSettings/dataRoot are reactive accessors (Phase 113 flatten) — read via voterCtx.X, never destructure.
+  // appSettings/dataRoot are reactive accessors (see phase 113 flatten) — read via voterCtx.X, never destructure.
   const appSettings = $derived(voterCtx.appSettings);
   // dataRoot is identity-stable (#version-bridge): read `voterCtx.dataRoot.<prop>` directly in the tracking scope,
   // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md §Context Destructuring Rule +
-  // .planning/spikes/CONVENTIONS.md §9 (Spike-024). Phase 117 COLD-01.
+  // (see spike 024). see phase 117.
   const { pageStyles, video } = getLayoutContext();
 
   ////////////////////////////////////////////////////////////////////

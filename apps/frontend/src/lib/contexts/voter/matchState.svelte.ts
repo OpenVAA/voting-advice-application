@@ -55,7 +55,7 @@ class MatchStateImpl {
 
     for (const [electionId, electionContent] of Object.entries(nq)) {
       const electionMatches: Record<EntityType, Array<MaybeWrappedEntityVariant>> = {} as never;
-      // Phase 69 D-06: cross-iteration org-proxy cache. Populated by the Org branch
+      // see phase 69: cross-iteration org-proxy cache. Populated by the Org branch
       // in Pass 1; consumed by the Alliance branch in Pass 2 via the imputeParentAnswers
       // childProxies arg. Per the Org-first invariant documented in imputeParentAnswers.ts.
       const orgProxiesById = new Map<Id, MatchingProxy<AnyNominationVariant>>();
@@ -88,7 +88,7 @@ class MatchStateImpl {
                 nominations: nominations as Array<OrganizationNomination | FactionNomination>,
                 questions
               });
-              // Phase 69 D-06: cache org proxies for the Alliance branch.
+              // see phase 69: cache org proxies for the Alliance branch.
               // Faction proxies are NOT cached — alliances aggregate at the organization level.
               if (entityType === ENTITY_TYPE.Organization) {
                 for (const p of proxies) orgProxiesById.set(p.target.id, p);

@@ -9,9 +9,9 @@
  * template was retired, crashing every consumer (including the default-suite perm-*
  * setups that only need the password literal).
  *
- * ## The registered-base-candidate contract (Phase 136 plan 05)
+ * ## The registered-base-candidate contract (see phase 136 plan 05)
  *
- * The `candidates` table has NO email column (Phase 89-01 Wave 0 R8 verdict), so a
+ * The `candidates` table has NO email column (see phase 89 Wave 0 R8 verdict), so a
  * base candidate is not "registered" by the seed — the seed only creates the
  * candidate row. Registration is a RUNTIME act: `auth-setup` calls
  * `SupabaseAdminClient.forceRegister(externalId, email, password)`, which mints the

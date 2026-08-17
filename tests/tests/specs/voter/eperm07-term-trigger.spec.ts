@@ -1,13 +1,13 @@
 /**
- * EPERM-07 term-trigger intermittent — isolated hunt spec (Phase 138, D-03 — INTEG-01).
+ * term-trigger intermittent — isolated hunt spec (see phase 138).
  *
  * Drives ONLY Base-1 → Base-2 → Base-3 and asserts the in-text <Term> trigger on
  * Base-3, so the ~1-in-8 DEF-135-04 event can be forced and observed in
  * single-digit seconds instead of inside a 648 s full-suite run. That is what
- * makes dozens of forcing attempts affordable (D-03's economics).
+ * makes dozens of forcing attempts affordable ('s economics).
  *
  * Hypothesis under investigation (a HYPOTHESIS, not a conclusion — the live
- * ledger is `138-DIAGNOSIS.md` § Hypothesis ledger, and U-1 eliminated none of
+ * ledger is ` ` § Hypothesis ledger, and U-1 eliminated none of
  * the three): SvelteKit pushes the destination URL to history (client.js:1760)
  * BEFORE it swaps the DOM (client.js:1824), awaiting the `onNavigate` callbacks
  * in between (client.js:1779-1785) — and the root layout's callback
@@ -27,7 +27,7 @@
  * NOT tagged `@probe` — a `@probe` tag would exclude it from the root
  * `test:e2e` invocation and make it invisible to the 16-run determinism gate.
  *
- * FORCING KNOBS (D-01). All three are NEUTRAL BY CONSTRUCTION: with no
+ * FORCING KNOBS. All three are NEUTRAL BY CONSTRUCTION: with no
  * environment variable set, this file runs at the production element budget,
  * with no CPU throttle and no reduced-motion emulation. Neutrality is
  * structural, not remembered — there is nothing to revert after a hunt.
@@ -54,7 +54,7 @@
  * expect.soft, no try/catch around expect(), no .catch fallback on an
  * assertion-bearing interaction.
  *
- * CARVE-OUT, now DISCHARGED (Phase 138 plan 04, D-06). While the defect was under
+ * CARVE-OUT, now DISCHARGED (see phase 138 plan 04). While the defect was under
  * investigation the post-hop settle (`settleOnUrlChangeAsProductionDoes`) was a
  * local re-implementation of the production helper's URL-only wait AND its
  * swallowed timeout, because reproducing the defect required reproducing the
@@ -64,7 +64,7 @@
  * implementation, no drift, and this spec witnesses the production helper instead
  * of holding a private copy of the bug. The settle still bears no assertion of its
  * own — the hard assertion follows it. The pre-fix behaviour is not lost: it is on
- * the record as RUN 1 of `138-NEGATIVE-CONTROL.md` (5/5 failing).
+ * the record as RUN 1 of ` ` (5/5 failing).
  *
  * The `try { … } finally { … }` around the hop is a resource-release block for
  * the CDP session (a surviving throttle would distort every later test in the
@@ -82,7 +82,7 @@ import type { CaptureNavigationBaseline } from '../../helpers';
  * Read a numeric forcing knob, or fall back to the PRODUCTION default. Never to
  * anything more permissive than production, and never silently.
  *
- * reason: (Phase 138 review WR-03) the file's neutrality contract above says
+ * reason: (see phase 138 review WR-03) the file's neutrality contract above says
  * neutrality is structural rather than remembered, and `Number(process.env.X ??
  * default)` did not deliver that for anything except a strictly-unset variable.
  * `??` catches only `undefined`, so an EXPORTED-BUT-EMPTY variable — the ordinary
@@ -115,7 +115,7 @@ function forcedNumber(name: string, fallback: number, min: number): number {
 }
 
 // FORCING BUDGET — file-local, env-defaulted to the shared production budget.
-// reason: D-01's negative-control knob. It is scoped to THIS file by
+// reason: 's negative-control knob. It is scoped to THIS file by
 // construction, so no other spec's budget can be perturbed by this phase; the
 // shared TIMEOUTS.element default is NEVER edited (its own docblock,
 // timeouts.ts:16-21, forbids moving it, and it is shared with the Playwright
@@ -126,7 +126,7 @@ function forcedNumber(name: string, fallback: number, min: number): number {
 const FORCED_ELEMENT_BUDGET = forcedNumber('EPERM07_FORCE_BUDGET_MS', TIMEOUTS.element, 1);
 
 // CDP slowdown multiplier for the hop under test (1 = no throttle).
-// reason: D-01's amplifier. Same file-local, env-defaulted construction —
+// reason: 's amplifier. Same file-local, env-defaulted construction —
 // unset means rate 1, which is the browser's normal scheduling. `min: 1` because
 // `Emulation.setCPUThrottlingRate` accepts no slowdown below 1, and a sub-1 value
 // would be dropped by `applyCpuThrottleKnob` — an unapplied throttle the operator
@@ -164,7 +164,7 @@ type ForensicState = {
  * `settleAfterClientNavigation` (`helpers/navigation.ts`), which
  * `voter-journey.spec.ts:186` also calls.
  *
- * reason: (Phase 138, D-06 — INTEG-01) this used to be a local re-implementation
+ * reason: (see phase 138) this used to be a local re-implementation
  * of the production helper's URL-only wait and swallowed timeout, because
  * reproducing the defect required reproducing the settle. Now that the settle is
  * FIXED, a local copy would be a copy of the defect: the instrument would keep
@@ -172,7 +172,7 @@ type ForensicState = {
  * stop witnessing `voter-journey.spec.ts` entirely, so a revert of the production
  * fix would not be caught here. Delegating to the shared helper is what makes
  * this spec a permanent regression test for that helper rather than a museum of
- * the bug. Negative control: `138-NEGATIVE-CONTROL.md`.
+ * the bug. Negative control: ` `.
  *
  * The `capture` callback the action receives records the settle's baseline
  * (URL + landmark text) at the LAST instant before the navigating click, which is
@@ -195,7 +195,7 @@ async function settleOnUrlChangeAsProductionDoes(
  * under test the settle IS the thing being reproduced. It DOES own the settle's
  * baseline: `capture()` runs after the heading gate and immediately before the
  * click, which is the only instant at which the DOM is known to be on the
- * question we are leaving (Phase 138 review WR-01).
+ * question we are leaving (see phase 138 review WR-01).
  *
  * The option locator is scoped to the current question id rather than page-wide:
  * on a Q→Q nav the outgoing question's options can linger in the DOM for a frame
@@ -317,7 +317,7 @@ test.describe('eperm07-term-trigger', () => {
 
       // Record the tri-state BEFORE the assertion, so a NEAR-MISS (a run that
       // passed at 1.9 s of a 2 s budget) is captured as data too — not only a
-      // failure. The annotation rides in results.json for plans 02-05.
+      // failure. The annotation rides in results.json.
       const forensic = await readForensicState(page);
       test.info().annotations.push({ type: 'eperm07-state', description: JSON.stringify(forensic) });
 

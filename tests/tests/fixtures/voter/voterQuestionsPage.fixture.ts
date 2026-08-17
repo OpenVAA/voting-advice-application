@@ -51,13 +51,12 @@ export function createVoterQuestionsPage(page: Page) {
     /**
      * Click the questions-intro start button (advances to the first question).
      *
-     * BYPASS-TOLERANT (Phase 120-01): when `questions.questionsIntro.show ===
+     * BYPASS-TOLERANT (see phase 120): when `questions.questionsIntro.show ===
      * false` (the minimal perm seeds) the intro page auto-redirects past itself
      * on mount, so the `voter-questions-start` button never paints and the page
      * is ALREADY on the first question (`question-choice` visible). In that case
      * there is nothing to click — return early. When the intro IS shown
      * (`e2e/base`), the start button paints and is clicked as before. See
-     * 120-01-PROBE-DIAGNOSIS.md.
      */
     async clickStart(): Promise<void> {
       const start = page.getByTestId(testIds.voter.questions.startButton);

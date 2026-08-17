@@ -1,5 +1,5 @@
 /**
- * perm-interactive-info data-teardown project (EPERM-07).
+ * perm-interactive-info data-teardown project.
  *
  * Scoped to PREFIX='e2e-perm-iinfo-' (matches the template's own externalIdPrefix,
  * perm-interactive-info.ts:46). Bare seed-only teardown — no candidate auth user

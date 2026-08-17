@@ -48,7 +48,7 @@ test('Should normalize selected choices to Max and unselected to Min in choices 
   const normalized = obj.normalizeValue(['a', 'c']);
   expect(normalized).toEqual([COORDINATE.Max, COORDINATE.Min, COORDINATE.Max, COORDINATE.Min]);
 
-  // Every non-missing coordinate is exactly Max or Min (binary subdimensions per D-06).
+  // Every non-missing coordinate is exactly Max or Min (binary subdimensions per).
   for (const coord of normalized as Array<number>) {
     expect(coord === COORDINATE.Max || coord === COORDINATE.Min).toBe(true);
   }
@@ -69,6 +69,6 @@ test('Should normalize an empty selection ([]) to an all-MISSING_VALUE subdimens
   obj.data.ordered = false;
   obj.data.choices = quatenaryChoices;
 
-  // Zero selections = unanswered per D-07.
+  // Zero selections = unanswered.
   expect(obj.normalizeValue([])).toEqual([MISSING_VALUE, MISSING_VALUE, MISSING_VALUE, MISSING_VALUE]);
 });

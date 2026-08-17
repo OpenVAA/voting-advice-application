@@ -33,7 +33,7 @@ If there's only one option, it is automatically selected and no interactions are
 
   // If there's only one option, it is automatically selected. This must
   // run reactively because `elections` may arrive asynchronously after
-  // the component mounts (Phase 64-04 fix — the previous init-time
+  // the component mounts (see phase 64 fix — the previous init-time
   // short-circuit fired against a snapshot value of an empty `elections`
   // array on first paint and never re-fired when the data resolved,
   // contributing to voter-app cascade failures in the canonical

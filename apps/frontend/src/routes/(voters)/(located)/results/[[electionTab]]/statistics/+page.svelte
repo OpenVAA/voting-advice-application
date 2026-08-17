@@ -30,7 +30,7 @@ Usually accessed by direct link only and not meant for the wide public.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // Phase 61-03 voter-side parallel fix: matches + opinionQuestions are
+  // see phase 61 voter-side parallel fix: matches + opinionQuestions are
   // reactive context getters, accessed via voterCtx to avoid stale snapshots.
   const voterCtx = getVoterContext();
   const { answers, t } = voterCtx;

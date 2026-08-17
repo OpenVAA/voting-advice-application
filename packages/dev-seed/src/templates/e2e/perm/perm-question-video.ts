@@ -1,9 +1,9 @@
 /**
- * perm-question-video minimal-data template (EPERM-06).
+ * perm-question-video minimal-data template.
  *
  * Topology: 1 election, 1 CG with 1 CO, 2 organisations, 2 candidates. The
  * opinion questions span THREE opinion categories (category intros SHOWN) so
- * the EPERM-06 voter visibility matrix can assert per-surface video placement:
+ * the voter visibility matrix can assert per-surface video placement:
  *
  *   q-cat 1: q1 (video), q2 (no video), q3 (video)
  *   q-cat 2: q4 (no video)
@@ -14,7 +14,7 @@
  * ONLY — NEVER on the category intros (the matrix asserts that the question
  * video and the category-intro video are distinct surfaces). The video is
  * INFO ABOUT the question (rendered by the standalone `Video` component, not
- * the hero `<figure>`), so the URLs are PLACEHOLDERS — the EPERM-06 spec
+ * the hero `<figure>`), so the URLs are PLACEHOLDERS — the spec
  * asserts visibility/attachment of the rendered Video instance, NOT playback.
  *
  * `questions.categoryIntros.show = true` (overriding the MINIMAL base default
@@ -44,7 +44,7 @@ const P = 'e2e-perm-qvid-';
 /**
  * A placeholder `VideoContent`. Distinct titles per carrier so a spec can
  * disambiguate which question's video rendered. No real network is hit — the
- * EPERM-06 assertions test visibility/attachment, not playback.
+ * assertions test visibility/attachment, not playback.
  */
 function placeholderVideo(label: string): VideoContent {
   return {
@@ -252,7 +252,7 @@ export const permQuestionVideoTemplate: Template = {
           ...MINIMAL_BASE_APP_SETTINGS,
           questions: {
             ...MINIMAL_BASE_APP_SETTINGS.questions,
-            // Category intros SHOWN — the EPERM-06 voter matrix walks each of
+            // Category intros SHOWN — the voter matrix walks each of
             // the 3 category intros and asserts NONE carries the question video.
             categoryIntros: {
               allowSkip: true,

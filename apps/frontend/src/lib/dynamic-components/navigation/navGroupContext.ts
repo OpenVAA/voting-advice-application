@@ -1,6 +1,6 @@
 /**
  * Module-scoped Svelte context key for the NavGroup ↔ NavItem auto-detect bridge
- * (Phase 80 D-03).
+ * (see phase 80).
  *
  * - **Provider:** `NavGroup.svelte` calls `setContext(NAV_GROUP_CONTEXT_KEY, true)`
  *   at script top-level so the marker is in place BEFORE child NavItems render.

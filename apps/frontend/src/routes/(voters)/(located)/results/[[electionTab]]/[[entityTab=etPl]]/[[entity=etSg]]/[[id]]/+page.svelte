@@ -1,7 +1,7 @@
 <!--@component
 
-# Results — list / detail page (Phase 62 D-08, D-11, D-12; renamed to
-# Phase 88 Plan 88-02 4-segment shape)
+# Results — list / detail page (see phase 62; renamed to
+# see phase 88 4-segment shape)
 
 Single page file serving the URL shapes of `/results`:
 
@@ -10,16 +10,16 @@ Single page file serving the URL shapes of `/results`:
   3. `/results/[electionTab]/[entityTab]/[entity]/[id]?electionId=X` — list + drawer (matching types)
   4. `/results/[electionTab]/organizations/candidate/[id]?electionId=X` — list + drawer (cross-type edge)
 
-## Plan 62-03 ownership split (preserved through 88-02)
+## ownership split (preserved through 88-02)
 
-After Plan 62-03 the **parent `+layout.svelte` renders both the list AND the drawer
+After the **parent `+layout.svelte` renders both the list AND the drawer
 overlay**. The drawer uses `<EntityDetailsDrawer>` and paints first thanks to
-source-order markup + `content-visibility: auto` on the list container (D-10).
+source-order markup + `content-visibility: auto` on the list container.
 That means this page file is deliberately empty when a detail URL is visited —
 the layout consumes `page.params.entity` + `page.params.id` and
 renders the overlay itself.
 
-Route params (Phase 88 Plan 88-02 renames):
+Route params (see phase 88 renames):
 - `electionTab`   (optional, freeform)             — SELECTED election id for the active results tab
 - `entityTab`     (optional, matcher-gated by etPl) — `candidates` | `organizations` | `alliances`
 - `entity`        (optional, matcher-gated by etSg) — `candidate` | `organization` | `alliance`

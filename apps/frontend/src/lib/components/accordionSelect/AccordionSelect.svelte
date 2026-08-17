@@ -52,7 +52,7 @@ If there's only one option, it is automatically selected and no interactions are
   // that the `activeIndex` / `expanded` / `onChange` writes inside `activate`
   // don't retrigger this effect when the parent re-derives `options` with
   // different identity (Svelte 5 `effect_update_depth_exceeded` guard —
-  // mirrors the pattern used elsewhere in the codebase, e.g. Plan 60-03
+  // mirrors the pattern used elsewhere in the codebase, e.g.
   // protected-layout $effect).
   $effect(() => {
     if (options.length === 1) untrack(() => activate(0));

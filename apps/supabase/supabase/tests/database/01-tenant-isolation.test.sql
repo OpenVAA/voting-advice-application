@@ -1,4 +1,4 @@
--- 01-tenant-isolation.test.sql: QUAL-01 cross-project data isolation
+-- 01-tenant-isolation.test.sql: cross-project data isolation
 --
 -- Verifies that users scoped to Project B cannot access admin-level data
 -- from Project A, cannot modify any Project A data, and that the published

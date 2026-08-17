@@ -1,7 +1,7 @@
 /**
- * perm-bankauth-notloc minimal-data template (Phase 140, CR-01 remediation).
+ * perm-bankauth-notloc minimal-data template (see phase 140, CR-01 remediation).
  *
- * A DEDICATED instance of the shared "not-located 2e2cg" shape (Phase 140
+ * A DEDICATED instance of the shared "not-located 2e2cg" shape (see phase 140
  * review IN-04 — see `notLocated2e2cgShape.ts`'s docblock for the topology
  * and why a factory closes the shape over its `prefix` parameter rather than
  * two hand-maintained copies), reserved for the `bank-auth-journey`
@@ -12,7 +12,7 @@
  * construction from `e2e-perm-notloc-` (the perm-family prefix) AND from
  * `test-` (the base-journey prefix), so `bank-auth-journey.setup.ts` no
  * longer needs to pre-clear either namespace via `extraTeardownPrefix`. See
- * `base.setup.ts` for the OTHER half of this namespace's coverage (Phase 140
+ * `base.setup.ts` for the OTHER half of this namespace's coverage (see phase 140
  * CR-01, iteration-2 regression fix): base sweeps this prefix so an aborted
  * run's leaked dataset does not silently wedge the default suite.
  */
@@ -20,7 +20,7 @@
 import { buildNotLocated2e2cgTemplate } from './notLocated2e2cgShape';
 import type { Template } from '../../../template/types';
 
-// Label discipline (Phase 140 WR-03): the `BA-` token gives this dataset its
+// Label discipline (see phase 140 WR-03): the `BA-` token gives this dataset its
 // own DISPLAY-label namespace, matching the discipline already applied to its
 // `external_id` prefix. `[EL1]`/`[CO1A]`/… are a perm-family shape convention
 // emitted by twelve templates, so once this setup moved to the chain tail —

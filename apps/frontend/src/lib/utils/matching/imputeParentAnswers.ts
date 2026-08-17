@@ -17,13 +17,13 @@ import type {
 /**
  * Impute the answers for the provided `Nomination`s from their child `Nomination`s.
  *
- * # Cascading-proxy pattern (Phase 69)
+ * # Cascading-proxy pattern (see phase 69)
  *
  * Two-pass cascade:
  *   - **Pass 1 (existing):** candidate-noms (children) → organization/faction-noms
  *     (parents). Output: `MatchingProxy<OrganizationNomination | FactionNomination>`
  *     per parent.
- *   - **Pass 2 (Phase 69):** organization-noms (children) → alliance-noms (parents).
+ *   - **Pass 2 (see phase 69):** organization-noms (children) → alliance-noms (parents).
  *     Reads child answers from the Pass-1 proxy map (`childProxies` arg) instead of
  *     `child.entity.getAnswer(...)` because alliance children (organization-noms)
  *     typically don't own answers — only their candidates do.

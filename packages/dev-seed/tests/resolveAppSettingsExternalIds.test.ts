@@ -1,6 +1,6 @@
 /**
  * Unit tests for `resolveAppSettingsExternalIds` + `settingsContainsExternalIdRefs`
- * (Phase 88 Plan 04 T3 — Option B seed-time resolver).
+ * (see phase 88 Plan 04 T3 — Option B seed-time resolver).
  *
  * Covers:
  *   - String passthrough: legacy `question: '<uuid>'` shape unchanged.

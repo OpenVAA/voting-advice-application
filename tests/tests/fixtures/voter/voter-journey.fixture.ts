@@ -125,7 +125,7 @@ type VoterJourneyFixtures = VoterJourneyFixtureOptions & {
  * auto-redirects past itself and the post-condition is instead the bypassed
  * landing (a category intro start `voter-questions-category-start`, or the first
  * question's `question-choice`). Voter context has electionId + constituencyId
- * resolved either way. See 120-01-PROBE-DIAGNOSIS.md for the trace.
+ * resolved either way. See for the trace.
  */
 async function walkUntilQuestionsIntro(page: Page): Promise<void> {
   // 0. Consent-popup guard. When data-collection consent is `indetermined` (the
@@ -232,7 +232,7 @@ async function walkUntilQuestionsIntro(page: Page): Promise<void> {
   //    Do NOT click it; that's the divergence point between locatedVoterPage
   //    (stops here) and answeredVoterPage (continues to answer-loop).
   //
-  //    BYPASS-TOLERANT (Phase 120-01 trace-confirmed): the /questions intro page
+  //    BYPASS-TOLERANT (see phase 120 trace-confirmed): the /questions intro page
   //    auto-redirects on mount (questions/+page.svelte onMount, line 61) when
   //    `appSettings.questions.questionsIntro.show === false`. The minimal perm
   //    seeds (MINIMAL_BASE_APP_SETTINGS, packages/dev-seed/.../perm/shared.ts:92)
@@ -244,7 +244,7 @@ async function walkUntilQuestionsIntro(page: Page): Promise<void> {
   //    `e2e/base` dataset keeps `questionsIntro.show=true` (base.ts:196), so the
   //    start button DOES paint there and the `.or()` resolves on it first —
   //    making this change zero-regression for the base journey + a11y-smoke.
-  //    This is the trace-grounded root cause from 120-01-PROBE-DIAGNOSIS.md (the
+  //    This is the trace-grounded root cause from (the
   //    119-08 "reactive churn / TOCTOU detach" verdict is REFUTED — the failure
   //    is deterministic and settings-driven, and occurs here at line ~184, never
   //    reaching the suspected `answerAndAdvanceToResults` churn site at line ~209
@@ -271,12 +271,12 @@ async function walkUntilQuestionsIntro(page: Page): Promise<void> {
  *   - Boolean: 'min' → 'No' (index 0); 'max' → 'Yes' (index 1).
  *   - Number (native range slider): 'min' → keyboard Home (exact min);
  *     'max' → keyboard End (exact max). Does not auto-advance — Next clicked
- *     explicitly (D-14, plans 04/06).
+ *     explicitly (plans 04/06).
  *   - MultipleChoiceCategorical (checkbox multi-select): clicks choices from
- *     index 0 upward until the app reports the selection VALID (Phase 135
- *     GUARD-01 — constraint-agnostic, so both the 2..3 and the exact-1 seeded
+ *     index 0 upward until the app reports the selection VALID (see phase 135
+ *     constraint-agnostic, so both the 2..3 and the exact-1 seeded
  *     questions are answered correctly); does not auto-advance — Next clicked
- *     explicitly (D-14, plan 06).
+ *     explicitly (plan 06).
  *
  * All three answer-input families share the question-choice testid +
  * name=questionChoices-{id} scoping contract EXCEPT the slider (which has no
@@ -392,7 +392,7 @@ async function answerAndAdvanceToResults(page: Page, answerMode: AnswerMode, ans
     // Wait until the incoming question's own ANSWER SURFACE is present (not the
     // stale outgoing one), then read a stable choice count.
     //
-    // DEAD-WAIT REMOVAL (Phase 136 REAL-02). This used to wait on the scoped
+    // DEAD-WAIT REMOVAL (see phase 136). This used to wait on the scoped
     // choices ALONE. A NUMBER-scale opinion question renders ONLY
     // `question-number-slider` and carries NO `question-choice` nodes, so on
     // that question the wait could never resolve: it burned the full
@@ -423,13 +423,13 @@ async function answerAndAdvanceToResults(page: Page, answerMode: AnswerMode, ans
     await answerSurface.waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage }).catch(() => null);
     const choiceCount = await currentChoices.count();
     if (choiceCount === 0) {
-      // Slider branch (D-14): a matchable NUMBER opinion question renders a
+      // Slider branch: a matchable NUMBER opinion question renders a
       // native range (question-number-slider) and carries NO question-choice
       // options, so the scoped choice count is 0. Probe for a visible slider
       // BEFORE falling through to the Skip fallback. Number questions do NOT
       // auto-advance (plan 06 suppresses the jump for the slider), so drive the
       // answer by keyboard — native range Home/End land the EXACT min/max value
-      // per answerMode (the D-03 keyboard contract) — then click Next explicitly
+      // per answerMode (the keyboard contract) — then click Next explicitly
       // and settle the URL like the radio path. If no slider is present (e.g. a
       // text-only rendering), fall through to the existing Skip path unchanged.
       const slider = page.getByTestId(testIds.voter.questions.numberSlider).first();
@@ -452,14 +452,14 @@ async function answerAndAdvanceToResults(page: Page, answerMode: AnswerMode, ans
       await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: TIMEOUTS.slowPage }).catch(() => null);
       continue;
     }
-    // Checkbox branch (D-14): MultipleChoiceCategorical opinion questions render
+    // Checkbox branch: MultipleChoiceCategorical opinion questions render
     // CHECKBOX inputs that reuse the question-choice testid + name=questionChoices-{id}
     // contract (plan 06), while single-choice / boolean / Likert render RADIOS.
     // The input type is authoritative — detect it off the first scoped choice.
     const inputType = await currentChoices.first().getAttribute('type');
     if (inputType === 'checkbox' && answered < cap) {
       // Select the SMALLEST VALID number of choices, discovered from the app's
-      // own validity signal (Phase 135 GUARD-01). This used to hard-code "click
+      // own validity signal (see phase 135). This used to hard-code "click
       // the first 2", citing the single seeded multi-choice question's
       // minSelections=2 / maxSelections=3 window — a coupling that BREAKS the
       // moment a second window exists: `qu-opin-base-8-multichoice-exact` is
@@ -535,20 +535,20 @@ async function answerAndAdvanceToResults(page: Page, answerMode: AnswerMode, ans
 }
 
 /**
- * Drive the native range slider to an EXACT `value` (129 D-03 keyboard
+ * Drive the native range slider to an EXACT `value` (129 keyboard
  * contract: step=1, `Home`→min, `ArrowRight` +1). Unlike the walk's
  * extreme-only Home/End branch (which only reaches min/max keyed on
- * `answerMode`), this lands an ARBITRARY in-range value — the EQTYP-02
+ * `answerMode`), this lands an ARBITRARY in-range value — the
  * boundary test needs mid values (e.g. 5), not just the poles.
  *
  * Behaviour: focus the first `question-number-slider`, press `Home` to land
  * deterministically on `min`, then press `ArrowRight` `(value - min)` times.
  * Driving past `max` is a NO-OP per press — the native range input clamps to
  * `[min,max]`, so an out-of-range answer is physically impossible (the
- * EQTYP-02 boundary proof).
+ * boundary proof).
  *
  * Never uses `fill()` — that bypasses the slider's persist-on-release logic
- * (129 D-03). Does NOT click Next: number inputs never auto-advance
+ * (129). Does NOT click Next: number inputs never auto-advance
  * (129-06); the caller clicks Next explicitly. Takes only the target value +
  * the scale `min` (default 0) — no full question object required.
  */

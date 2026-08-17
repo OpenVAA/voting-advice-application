@@ -28,19 +28,19 @@ See `+page.ts` for possible redirects.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // Phase 61-03 voter-side parallel fix: read selectedConstituencies +
+  // see phase 61 voter-side parallel fix: read selectedConstituencies +
   // selectedElections via voterCtx.X (live $state) rather than destructured
   // snapshots. This was the originating bug per the user investigation —
   // destructuring captured an empty `selectedElections` on cold deeplink.
   const voterCtx = getVoterContext();
   const { getRoute, t } = voterCtx;
-  // appSettings/dataRoot are reactive accessors (Phase 113 flatten) — read via voterCtx.X, never destructure.
+  // appSettings/dataRoot are reactive accessors (see phase 113 flatten) — read via voterCtx.X, never destructure.
   const appSettings = $derived(voterCtx.appSettings);
   // dataRoot is identity-stable (#version-bridge): NEVER bind it to an intermediate $derived alias and read through
   // the alias — the alias yields the same DataRoot ref on each #version bump, so Svelte 5 skips downstream
   // notification and the cold/direct-URL snapshot stays empty. Read `voterCtx.dataRoot.<prop>` directly inside each
-  // consuming tracking scope. See CLAUDE.md §Context Destructuring Rule + .planning/spikes/CONVENTIONS.md §9
-  // (Spike-024 anti-pattern entry). Phase 117 COLD-01.
+  // consuming tracking scope. See CLAUDE.md §Context Destructuring Rule
+  // (see spike 024 anti-pattern entry). see phase 117.
 
   ////////////////////////////////////////////////////////////////////
   // Set initial values
@@ -116,7 +116,7 @@ See `+page.ts` for possible redirects.
     // propagation), `selected` carries the same id under multiple election
     // keys. The URL contract is a set, not a per-election map, so collapse.
     const constituencyId = Array.from(new Set(Object.values(selected).filter((id) => id)));
-    // CLEAN-02 (Phase 78 Plan 02): if a deferred-target `?next=` is set,
+    // (see phase 78 Plan 02): if a deferred-target `?next=` is set,
     // decode + re-validate against the voter-app URL whitelist regex and
     // navigate to the original destination. Whitelist re-check is a
     // defense-in-depth pass — the (located)/+layout.ts entry-point check
@@ -125,7 +125,7 @@ See `+page.ts` for possible redirects.
     // re-validate before calling goto().
     //
     // reason: voter-app whitelist re-check — prevents open-redirect at
-    // selector-consumption layer (defense in depth vs CLEAN-02
+    // selector-consumption layer (defense in depth vs
     // (located)/+layout.ts entry-point check).
     const VOTER_ROUTE_WHITELIST = /^\/[a-z]{2}\/.*|^\/(results|questions|nominations)\b/;
     const next = page.url.searchParams.get('next');
@@ -138,9 +138,9 @@ See `+page.ts` for possible redirects.
         // sees no electionId in URL OR voter-context state (the constituency
         // page never writes back to voterCtx — the URL is the only
         // persistence) and bounces the voter back through /elections,
-        // looping CLEAN-02 test 1. Preserve any query params the original
+        // looping test 1. Preserve any query params the original
         // deferred target already carried (e.g., `?entityType=candidates`
-        // in CLEAN-02 test 2 — the test asserts that param survives the
+        // in test 2 — the test asserts that param survives the
         // round-trip).
         const target = new URL(decoded, page.url.origin);
         const persistent = filterPersistent(parseParams({ url: page.url }));

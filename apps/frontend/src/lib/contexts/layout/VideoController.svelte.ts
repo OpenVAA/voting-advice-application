@@ -4,22 +4,22 @@ import type { VideoController as VideoControllerApi } from './layoutContext.type
 
 /**
  * The video player controller as a Svelte 5 CLASS (Group F helper; v2.13
- * context-as-class migration, CLASS-01). EXTRACTED from the `video` const-ref
+ * context-as-class migration). EXTRACTED from the `video` const-ref
  * formerly embedded inside `initLayoutContext()` (`show`/`hasContent`/`mode`/
  * `player` `$state` mutated in place + the inline `load()`).
  *
  * The reactive core is the four PUBLIC `$state` FIELDS — `show` / `hasContent` /
- * `mode` / `player` (§17: a reassigned/assigned `$state` field read as
+ * `mode` / `player` (a reassigned/assigned `$state` field read as
  * `instance.show` tracks via the field accessor, so no private-field-plus-getter
  * indirection is needed to keep the read+write API byte-identical to the old ref).
  *
- * `load` is an ARROW-FUNCTION FIELD (§18) so it survives `const { load } = video`
+ * `load` is an ARROW-FUNCTION FIELD so it survives `const { load } = video`
  * detach (it captures `this`). It preserves the inline `load()` logic verbatim:
  * returns `false` when there is no `player` ref; awaits `player.load(props)`; on a
  * truthy result clears `shouldClearContent`, sets `hasContent = true`, and (default
  * `autoshow:true`) sets `show = true`.
  *
- * There is NO `$effect` here (§20): the navigation-driven auto-hide stays in the
+ * There is NO `$effect` here: the navigation-driven auto-hide stays in the
  * host's `beforeNavigate` / `afterNavigate` hooks in `initLayoutContext()`, which
  * toggle the public `shouldClearContent` field and drive the instance. That field
  * is NOT part of the public `VideoController` interface, so it is kept off the typed

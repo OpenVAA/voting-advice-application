@@ -1,6 +1,6 @@
 /**
  * Option-B local mock OIDC issuer for the bank-auth full-browser journey
- * (EFLOW-10b, D-01). PLAYWRIGHT_BANK_AUTH-gated, localhost-only, TEST-ONLY.
+ * (EFLOW-10b). PLAYWRIGHT_BANK_AUTH-gated, localhost-only, TEST-ONLY.
  *
  * WHY THIS EXISTS (the decisive architectural fact):
  *   The real OIDC code→token exchange AND the JWE id_token decryption run in the
@@ -55,7 +55,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const BIND_HOST = '127.0.0.1';
 
 /**
- * The Idura test identity claims the token endpoint mints (reuses the EFLOW-10
+ * The Idura test identity claims the token endpoint mints (reuses the
  * TEST_IDENTITY shape: sub/given_name/family_name/birthdate/hetu/country). `sub`
  * is the persistent pseudonym Idura matches identity on.
  */

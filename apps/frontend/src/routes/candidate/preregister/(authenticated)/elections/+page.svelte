@@ -16,7 +16,7 @@
   const { getRoute, t } = candCtx;
   // dataRoot is identity-stable (#version-bridge): read `candCtx.dataRoot.<prop>` directly in the tracking scope,
   // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md §Context Destructuring Rule +
-  // .planning/spikes/CONVENTIONS.md §9 (Spike-024). Phase 117 COLD-01.
+  // (see spike 024). see phase 117.
   const nextRoute = $derived(
     candCtx.constituenciesSelectable ? 'CandAppPreregisterConstituency' : 'CandAppPreregisterEmail'
   );

@@ -1,6 +1,5 @@
 /**
  * @file popupNotice.probe.spec.ts — smoke/probe for the `popupNotice` fixture
- * (EPERM-09).
  *
  * SC2 (A8 fixtures-first): exercises the `createPopupNotice` fixture
  * (`tests/tests/fixtures/shared/popupNotice.fixture.ts`) end-to-end —
@@ -49,7 +48,7 @@ test.describe('@probe popupNotice fixture (EPERM-09)', () => {
     // feedback (delay 1s) AND survey (delay 1s) countdowns active on /results,
     // the feedback popup occupies the queue head and the survey popup is queued
     // BEHIND it — so the survey only surfaces once the feedback popup is
-    // dismissed (Phase 120-01 trace-confirmed; see 120-01-PROBE-DIAGNOSIS.md).
+    // dismissed (see phase 120 trace-confirmed; see).
     // Dismiss the leading feedback popup first, then assert the survey popup.
     await popups.expectVisible('feedback');
     await popups.dismiss('feedback');

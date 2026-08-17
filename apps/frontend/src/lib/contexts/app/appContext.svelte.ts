@@ -27,7 +27,7 @@ const CONTEXT_KEY = Symbol();
 
 /**
  * The app context (orchestrator) re-expressed as a Svelte 5 CLASS
- * (`AppContextProvider`; v2.13 context-as-class migration, CLASS-04). CONVERTED
+ * (`AppContextProvider`; v2.13 context-as-class migration). CONVERTED
  * from the 368-line object-literal factory that `initAppContext()` returned.
  * Constructed via `new AppContextProvider()` inside `initAppContext()`, at
  * component-init time exactly as the former factory ran.
@@ -37,7 +37,7 @@ const CONTEXT_KEY = Symbol();
  * contexts (the componentCtx / dataCtx / tracking instance-spreads) and then
  * overriding a handful of members. Those THREE internal instance-spreads are
  * GONE. Every forwarded member is now an EXPLICIT OWN-ENUMERABLE instance
- * property assigned in the constructor (CONVENTIONS §17 "explicit getter
+ * property assigned in the constructor (CONVENTIONS "explicit getter
  * forwarding, never instance spread") — the canonical
  * `Object.assign(this, getX())` composing-leaf copy for the stable members and
  * `Object.defineProperty(this, …)` / handle-object fields for the reactive ones.
@@ -45,10 +45,10 @@ const CONTEXT_KEY = Symbol();
  * ── The DECISIVE downstream-spread constraint ────────────────────────────────
  * `candidateContext.svelte.ts:366`, `adminContext.svelte.ts:98`, and
  * `voterContext.svelte.ts:488` ALL do `{ ...appContext }` and are NOT touched in
- * Phase 109. `{ ...instance }` copies only OWN-ENUMERABLE properties; Svelte 5
+ * see phase 109. `{...instance }` copies only OWN-ENUMERABLE properties; Svelte 5
  * compiles bare `$state`/`$derived` class fields AND prototype `get` accessors to
  * PRIVATE backing + PROTOTYPE accessors, which object spread silently drops
- * (Phase 107/108 spread-safety gate, headlessly verified). Therefore EVERY member
+ * (see phase 107/108 spread-safety gate, headlessly verified). Therefore EVERY member
  * this context exposes is installed as an OWN-ENUMERABLE instance property — never
  * a bare `$state`/`$derived` field, never a prototype getter. This is the
  * load-bearing discipline of the whole phase: a prototype getter here would
@@ -58,15 +58,15 @@ const CONTEXT_KEY = Symbol();
  * The v2.11 DB-override merge stays a SYNCHRONOUS FIELD INITIALIZER
  * (`#appSettingsValue = $state(mergeInitialAppSettings(...))`) — it runs on the
  * server AND the client, so the server-rendered HTML already carries the DB
- * override (no post-hydration default→override flash; spike 008). It is NEVER an
- * `$effect` for the INITIAL value (§20 — `$effect` does not run on the server).
+ * override (no post-hydration default→override flash; see spike 008). It is NEVER an
+ * `$effect` for the INITIAL value (`$effect` does not run on the server).
  * The prev-ref-guarded RE-MERGE `$effect`s (the Phase-64 over-fire fix) live in
  * the CONSTRUCTOR — legal because the class is constructed during component init,
  * an effect context (filterContext precedent, 109-PATTERNS finding 4).
  *
  * Detachable methods (`sendFeedback`, `setDataConsent`, `setFeedbackStatus`,
  * `setSurveyStatus`, `startFeedbackPopupCountdown`, `startSurveyPopupCountdown`)
- * are ARROW-FUNCTION FIELDS (§18) so they survive detach after the downstream
+ * are ARROW-FUNCTION FIELDS so they survive detach after the downstream
  * spread + consumer destructure, with their bodies preserved verbatim.
  */
 /**
@@ -86,7 +86,7 @@ export class AppContextProvider implements AppContext {
   #dataCtx = getDataContext();
 
   // `getRoute` is a rune-native `{ readonly current: RouteBuilder }` handle
-  // (CTX-08). It must be created here (not at module load) because
+  // . It must be created here (not at module load) because
   // `createGetRoute` uses `$derived.by`, which requires component-init context.
   // The class is constructed during initAppContext at component init, so this is
   // exactly the same call site as before. See `getRoute.svelte.ts` header.
@@ -102,11 +102,11 @@ export class AppContextProvider implements AppContext {
    * NB! Settings are overwritten by root key.
    * TODO: Handle merging so that empty objects do not overwrite defaults
    *
-   * D-04 (CTX-01): the DB override is folded into the INITIAL `$state` value,
+   * the DB override is folded into the INITIAL `$state` value,
    * read synchronously from `page.data.appSettingsData`. This SYNCHRONOUS FIELD
    * INITIALIZER runs both server-side AND client-side, so the server-rendered
    * HTML already carries the DB override — no post-hydration default→override
-   * flash (the real production bug spike 008 surfaced; `$effect` does not run on
+   * flash (the real production bug see spike 008 surfaced; `$effect` does not run on
    * the server). The constructor `$effect` below handles only post-navigation
    * `page.data` changes. NEVER move this initial derivation into an `$effect`.
    */
@@ -116,7 +116,7 @@ export class AppContextProvider implements AppContext {
   // prettier-ignore
   #appSettingsValue = $state<AppSettings>(mergeInitialAppSettings(staticSettings, dynamicSettings, page.data?.appSettingsData as DynamicSettings | Error | undefined));
 
-  // Same D-04 synchronous-init treatment for appCustomization: fold the DB
+  // Same synchronous-init treatment for appCustomization: fold the DB
   // override into the initial `$state` value (SSR-correct, no flash).
   #appCustomizationValue = $state<AppCustomization>(
     page.data?.appCustomizationData && !((page.data?.appCustomizationData as AppCustomization | Error) instanceof Error)
@@ -144,7 +144,7 @@ export class AppContextProvider implements AppContext {
 
   // Track the previous `data` reference to skip merges when SvelteKit hands us
   // the same loader result on a URL change (the Phase-64 over-fire fix).
-  // Initialized to the init-time DB value (D-04) so the first post-init run does
+  // Initialized to the init-time DB value so the first post-init run does
   // not re-merge the identical payload already folded into `$state` above.
   #prevAppSettingsData: DynamicSettings | Error | undefined = page.data?.appSettingsData as
     | DynamicSettings
@@ -166,8 +166,8 @@ export class AppContextProvider implements AppContext {
 
   // Reactive `{ current, set?, update? }` handles installed via `const self = this`.
   readonly appType!: AppContext['appType'];
-  // appSettings/locale are BARE own-enumerable reactive accessors (Phase 113
-  // FLATTEN-02), installed via Object.defineProperty(this, …, { enumerable: true })
+  // appSettings/locale are BARE own-enumerable reactive accessors (see phase 113
+  // ), installed via Object.defineProperty(this, …, { enumerable: true })
   // so they survive the downstream `{ ...appContext }` spreads.
   readonly appSettings!: AppContext['appSettings'];
   readonly appCustomization!: AppContext['appCustomization'];
@@ -185,7 +185,7 @@ export class AppContextProvider implements AppContext {
   readonly translate!: AppContext['translate'];
 
   // Forwarded dataCtx members. `dataRoot` is a BARE own-enumerable reactive accessor
-  // (Phase 113 FLATTEN-02) installed via Object.defineProperty so it survives the
+  // (see phase 113) installed via Object.defineProperty so it survives the
   // downstream spreads; `setDataRoot` is an arrow field — reference copied.
   readonly dataRoot!: AppContext['dataRoot'];
   readonly setDataRoot!: AppContext['setDataRoot'];
@@ -201,7 +201,7 @@ export class AppContextProvider implements AppContext {
   readonly resetAllEvents!: AppContext['resetAllEvents'];
 
   constructor() {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias -- the own-enumerable reactive handle getters below use `get current()` / defineProperty getters with their own `this`; `self` captures the instance so they reach the private `$state` backings (spread-safe class-conversion pattern, v2.13 Phase 109).
+    // eslint-disable-next-line @typescript-eslint/no-this-alias -- the own-enumerable reactive handle getters below use `get current ` / defineProperty getters with their own `this`; `self` captures the instance so they reach the private `$state` backings (spread-safe class-conversion pattern, v2.13 see phase 109).
     const self = this;
 
     ////////////////////////////////////////////////////////////////////
@@ -221,7 +221,7 @@ export class AppContextProvider implements AppContext {
       }
     };
 
-    // BARE own-enumerable reactive accessor (Phase 113 FLATTEN-02). The former
+    // BARE own-enumerable reactive accessor (see phase 113). The former
     // writable `{ current, set, update }` handle had NO external writer (internal
     // writes go through `#appSettingsValue` directly — the re-merge `$effect`s
     // below + the field initializer), so the public surface is read-only bare.
@@ -264,10 +264,10 @@ export class AppContextProvider implements AppContext {
     // the spread copy (`{ ...appContext }.locale === appContext.locale`). The inner
     // `get current()` re-reads the backing `$derived`/`$state` per access, so reads
     // stay live and reactive in the tracking scope. The `{ ...appContext }` downstream
-    // spreads copy these own-enumerable values intact. (Phase 113 FLATTEN-01 deleted
+    // spreads copy these own-enumerable values intact. (see phase 113 deleted
     // the redundant read-only app-settings / locale mirrors that read these same
     // backings — internal consumers now read the canonical handles directly.)
-    // BARE own-enumerable reactive accessor (Phase 113 FLATTEN-02): read `ctx.locale`
+    // BARE own-enumerable reactive accessor (see phase 113): read `ctx.locale`
     // directly. Installed via Object.defineProperty(enumerable:true) so it survives
     // the downstream spreads. `locales`/`darkMode` stay `{ current }` (out of scope).
     Object.defineProperty(this, 'locale', {
@@ -300,7 +300,7 @@ export class AppContextProvider implements AppContext {
 
     // The trackingService + surveyLink producers consume `appSettings` as a
     // `ReactiveHandle<AppSettings>` and read `.current`. The consumer-facing
-    // `this.appSettings` surface is now BARE (Phase 113 FLATTEN-02), so we wrap
+    // `this.appSettings` surface is now BARE (see phase 113), so we wrap
     // `#appSettingsValue` back into a `{ get current() }` handle for the producer
     // INPUTS only — keeping the producers' `ReactiveHandle` input contract unchanged
     // (research Open Question #2: keep blast radius minimal; only the consumer-facing
@@ -326,8 +326,8 @@ export class AppContextProvider implements AppContext {
     // producers/contexts.
     ////////////////////////////////////////////////////////////////////
 
-    // Forward dataCtx.dataRoot as a BARE own-enumerable reactive accessor (Phase 113
-    // FLATTEN-02): read the now-bare `dataContext.dataRoot` accessor each access so the
+    // Forward dataCtx.dataRoot as a BARE own-enumerable reactive accessor (see phase 113
+    // ): read the now-bare `dataContext.dataRoot` accessor each access so the
     // `#version` reactive re-read inside it stays live, and install via
     // Object.defineProperty(enumerable:true) so it survives the downstream
     // `{ ...appContext }` spreads. (Cannot go through the plain `Object.assign` value
@@ -368,7 +368,7 @@ export class AppContextProvider implements AppContext {
     ////////////////////////////////////////////////////////////////////
 
     // Read appSettingsData directly from page.data (replaces pageDatumState per
-    // D-02). Track the previous `data` reference to skip merges when SvelteKit
+    // ). Track the previous `data` reference to skip merges when SvelteKit
     // hands us the same loader result on a URL change (e.g., drawer open/close —
     // root layout loader has no URL deps so its data is cached). Without this
     // guard `mergeAppSettings` always produces a new AppSettings object, which
@@ -396,7 +396,7 @@ export class AppContextProvider implements AppContext {
   }
 
   ////////////////////////////////////////////////////////////////////
-  // Sending feedback (§18 arrow field — survives detach)
+  // Sending feedback (arrow field — survives detach)
   ////////////////////////////////////////////////////////////////////
 
   sendFeedback = async (feedback: FeedbackData): Promise<DataApiActionResult> => {
@@ -408,7 +408,7 @@ export class AppContextProvider implements AppContext {
 
   ////////////////////////////////////////////////////////////////////
   // Utility methods for popups and setting user preferences
-  // (§18 arrow fields — survive detach after the downstream spread)
+  // (arrow fields — survive detach after the downstream spread)
   ////////////////////////////////////////////////////////////////////
 
   startFeedbackPopupCountdown = (delay = 3 * 60): void => {

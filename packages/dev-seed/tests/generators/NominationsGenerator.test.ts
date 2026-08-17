@@ -1,7 +1,7 @@
 /**
  * NominationsGenerator unit tests.
  *
- * GEN-08 + polymorphism contract (RESEARCH §9 / migration line 741 CHECK):
+ * + polymorphism contract (RESEARCH migration line 741 CHECK):
  *   - Client-side ref validation: throws a descriptive error BEFORE bulk_import
  *     when required refs are empty (covers candidates, elections, constituencies)
  *   - Emits only the authoritative polymorphic ref (`candidate`) — no redundant
@@ -10,7 +10,7 @@
  *   - Emits `election` + `constituency` refs on every generated row
  *   - Clamps generated count to `refs.candidates.length` with logger warning
  *
- * Plus D-22 acceptance: external_id prefix applied; fixed[] pass-through.
+ * Plus acceptance: external_id prefix applied; fixed pass-through.
  */
 
 import { describe, expect, it, vi } from 'vitest';

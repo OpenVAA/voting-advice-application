@@ -4,7 +4,7 @@ import { imputeParentAnswers } from './imputeParentAnswers';
 import { MatchingProxy } from './imputeParentAnswers.type';
 
 /**
- * Phase 69 regression guard for `imputeParentAnswers`.
+ * see phase 69 regression guard for `imputeParentAnswers`.
  *
  * 1. **Risk #7 backward-compat (childProxies omitted):** output is byte-identical
  *    to the entity-only read path for Organization / Faction parents. A regression
@@ -12,7 +12,7 @@ import { MatchingProxy } from './imputeParentAnswers.type';
  * 2. **Cascade (childProxies provided):** when a child has an entry in childProxies,
  *    the proxy answer wins over the entity answer. When a child has no entry,
  *    the function falls back to the entity read.
- * 3. **Alliance parent type (Phase 69 new branch):** parent.organizationNominations
+ * 3. **Alliance parent type (see phase 69 new branch):** parent.organizationNominations
  *    is read as the children array.
  *
  * Test strategy: synthetic input — no seed coupling. Mock objects conform to the
@@ -20,7 +20,7 @@ import { MatchingProxy } from './imputeParentAnswers.type';
  * candidateNominations / organizationNominations accessors as needed). The casts
  * via `as never` are intentional — the test exercises the function's runtime
  * behaviour with minimal-shape mocks rather than constructing fully-typed
- * nomination instances (Phase 67 D-03 "no coupling unit tests to seed shape").
+ * nomination instances (see phase 67 "no coupling unit tests to seed shape").
  */
 
 // --- Synthetic fixtures ---

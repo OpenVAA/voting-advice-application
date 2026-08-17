@@ -2,12 +2,12 @@
  * EFLOW-10b — candidate bank-auth (Idura OIDC) full-browser self-registration
  * journey.
  *
- * This is the full-browser counterpart to the EFLOW-10 Edge-Function seam spec
+ * This is the full-browser counterpart to the Edge-Function seam spec
  * (`candidate-bank-auth.spec.ts`). It walks the REAL OIDC redirect chain end to
  * end, faking ONLY the IdP at the env-pointed network seam (the mock OIDC issuer
  * auto-spawned by the Playwright `webServer` entry). The
  * authorize → callback → server-side exchange → JWE decrypt → claims → preregister
- * chain runs UNMODIFIED (D-01 Option B; no production-code change, no test-only
+ * chain runs UNMODIFIED (Option B; no production-code change, no test-only
  * branch).
  *
  * Structure: ONE serial-describe → ONE long `test('full bank-auth ...')` →
@@ -40,7 +40,7 @@
  *      `identity_provider='idura'` + `identity_match_value=<sub>` app_metadata
  *      AND a linked `candidates` row + candidate `user_roles` assignment — the
  *      only way these exist is if the REAL authorize→callback→exchange→decrypt→
- *      claims→create chain ran end to end (D-01, unmodified production auth code).
+ *      claims→create chain ran end to end (unmodified production auth code).
  *
  * Rigidity contract: no soft assertions, no try/catch wrapping assertions, and
  * no swallowed-rejection fallbacks on assertion-bearing locator interactions —
@@ -59,7 +59,7 @@
  *                                     # IDENTITY_PROVIDER_ISSUER/_CLIENT_ID,
  *                                     # NODE_TLS_REJECT_UNAUTHORIZED=0 (test-only)
  *   yarn dev                          # :5173 inherits the IdP env
- *   #   + serve identity-callback with the test decryption JWKS (EFLOW-10 E-1..E-3)
+ *   #   + serve identity-callback with the test decryption JWKS (E-1..E-3)
  *
  *   # Terminal 2 — the journey run (the mock issuer auto-spawns via webServer):
  *   source /tmp/eflow10b.env
@@ -138,14 +138,14 @@ test.describe('candidate bank-auth journey', { tag: ['@bank-auth'] }, () => {
       await expect(electionsList).toBeVisible({
         timeout: TIMEOUTS.slowPage
       });
-      // Phase 140 review WR-09 → iter-3 CR-01: select the perm-bankauth-notloc
+      // see phase 140 review WR-09 → iter-3 CR-01: select the perm-bankauth-notloc
       // election BY IDENTITY. The earlier `toContainText('[EL1]')` presence
       // check could not catch the real defect — it asserted the dataset was in
       // the list, not that the fixture then checked it — so the positional
       // `.first()` pick silently preregistered into a foreign election.
       // submitElection's `toHaveCount(1)` subsumes the presence assertion.
       //
-      // `BA-` (Phase 140 WR-03): `[EL1]` alone is a perm-family shape
+      // `BA-` (see phase 140 WR-03): `[EL1]` alone is a perm-family shape
       // convention emitted by twelve templates, so once this project moved to
       // the chain tail it matched 2 elections. `[BA-EL1]` is this dataset's
       // own label namespace — see `perm-bankauth-notloc.ts`.
@@ -195,7 +195,7 @@ test.describe('candidate bank-auth journey', { tag: ['@bank-auth'] }, () => {
 
     await test.step('6. assert the bank-auth identity + candidate + role were created', async () => {
       // The ONLY way these rows exist is if the REAL authorize→callback→
-      // exchange→decrypt→claims→create chain ran UNMODIFIED end to end (D-01):
+      // exchange→decrypt→claims→create chain ran UNMODIFIED end to end:
       // the Edge Function created the auth user under the identity-derived
       // placeholder email, stamped the idura identity claims into app_metadata,
       // and created the linked candidate + role.

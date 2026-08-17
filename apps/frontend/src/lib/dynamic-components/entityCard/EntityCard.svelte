@@ -77,11 +77,11 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
   const ctx = getAppContext();
   const { appType, getRoute, startEvent, t } = ctx;
-  // appSettings/dataRoot are reactive accessors (Phase 113 flatten) — read via ctx.X, never destructure.
+  // appSettings/dataRoot are reactive accessors (see phase 113 flatten) — read via ctx.X, never destructure.
   const appSettings = $derived(ctx.appSettings);
   // dataRoot is identity-stable (#version-bridge): read `ctx.dataRoot` directly inside the consuming `$derived.by`,
   // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md §Context Destructuring Rule +
-  // .planning/spikes/CONVENTIONS.md §9 (Spike-024). Phase 117 COLD-01.
+  // (see spike 024). see phase 117.
   const voterContext = appType.current === 'voter' ? getVoterContext() : undefined;
 
   ////////////////////////////////////////////////////////////////////
@@ -103,7 +103,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     const elSym = unwrapped.nomination?.electionSymbol;
 
     // The default action is a link to the entity's ResultEntity route.
-    // Phase 62 Plan 62-03 + Phase 88 Plan 88-02: ResultEntity now resolves
+    // see phase 62 see phase 88: ResultEntity now resolves
     // to the 4-segment shape `[[electionTab]]/[[entityTab]]/[[entity]]/[[id]]`.
     // The `entity` (singular drawer entity-type matcher) is the entity's own
     // `type` (candidate | organization | alliance); the `entityTab` (plural
@@ -138,7 +138,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
     // The possible subentities to display in the card, shown only in the list variant
     let scs: Array<EntityCardProps> | undefined;
-    let scsMaxOverride: number | undefined; // Phase 69 D-03: alliance branch overrides maxSubcards to render all member orgs
+    let scsMaxOverride: number | undefined; // see phase 69: alliance branch overrides maxSubcards to render all member orgs
     if (
       variant === 'list' &&
       unwrapped.nomination &&
@@ -159,13 +159,13 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
           entity: e
         })
       );
-      scsMaxOverride = Infinity; // Phase 69 D-03: render all member orgs, not just top-3
+      scsMaxOverride = Infinity; // see phase 69: render all member orgs, not just top-3
     }
 
     // Alliance summary "X candidates across N parties" — rendered on the list-variant alliance card.
     // The drawer-header surface is rendered by EntityDetails.svelte (which itself wraps EntityCard
     // variant=details); rendering it only on `'list'` here avoids a visible duplicate when EntityCard
-    // is consumed inside EntityDetails. Phase 69 D-04 / executor Rule 1 — see SUMMARY.md.
+    // is consumed inside EntityDetails. see phase 69 executor Rule 1 — see SUMMARY.md.
     let allianceSummary: { numCandidates: number; numParties: number } | undefined;
     if (
       unwrapped.nomination &&
@@ -286,7 +286,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
         {/if}
       </header>
 
-      <!-- Alliance summary line (Phase 69 D-04): "X candidates across N parties" -->
+      <!-- Alliance summary line (see phase 69): "X candidates across N parties" -->
       <!-- Composed from 3 keys to work around an inlang plugin-message-format dual-selector compile bug. -->
       {#if parsed.allianceSummary}
         <p class="text-secondary text-sm">

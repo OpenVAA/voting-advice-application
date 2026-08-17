@@ -1,12 +1,12 @@
 /**
  * FactionsGenerator — foundation generator for the `factions` table.
  *
- * RESEARCH §4.10: `project_id` is required; standard DataObject scaffolding
+ * RESEARCH: `project_id` is required; standard DataObject scaffolding
  * otherwise. Factions have no content FK refs on this table — the hierarchical
  * relationship between a faction and its candidates is expressed through
  * `nominations` (`parent_nomination` + `entity_type='faction'`), not here.
  *
- * D-04/D-26/D-08 + GEN-02/GEN-04 apply — see ElectionsGenerator.ts.
+ * apply — see ElectionsGenerator.ts.
  *
  * Default count = 0: factions are uncommon in VAA datasets and templates enable
  * them explicitly via `factions: { count: N }`. Keeping the default off prevents
@@ -21,7 +21,7 @@ export type FactionsFragment = Fragment<TablesInsert<'factions'>>;
 export class FactionsGenerator {
   constructor(private ctx: Ctx) {}
 
-  // Phase 56 ignores ctx here; Phase 57/58 generators read ctx.refs to scale counts.
+  // see phase 56 ignores ctx here; see phase 57/58 generators read ctx.refs to scale counts.
 
   defaults(ctx: Ctx): FactionsFragment {
     return { count: 0 };

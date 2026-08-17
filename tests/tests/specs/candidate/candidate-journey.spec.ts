@@ -93,7 +93,7 @@ import type { CandidateQuestionPageFixture } from '../../fixtures/candidate/cand
 // ====================================================================
 
 // ====================================================================
-// EFLOW-09: candidate nav-menu auth-state item sets
+// candidate nav-menu auth-state item sets
 //
 // Exact ordered accessible-name lists for the items the navMenu fixture's
 // `items()` reader resolves (the `nav-menu-item` testid). Derived at build by
@@ -202,7 +202,7 @@ const STEP_13_INFO_FILL_ENTRIES: ReadonlyArray<readonly [string, string]> = Obje
  * incl. the Phase-129 number + multi-choice questions — + Opt-A ×1 +
  * Opt-B ×1 + EL-Reg ×1), so 20 is a loose ceiling.
  *
- * Per-question answering is TYPE-AWARE (Phase 129 D-12): a number-scale
+ * Per-question answering is TYPE-AWARE (see phase 129): a number-scale
  * question is answered via the native slider (focus + End); a multi-choice
  * checkbox question via the first 2 choices (min 2 / max 3); every other
  * (radio) question via the first choice. Without per-type driving the number
@@ -398,9 +398,9 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       });
     });
 
-    // ============== Step 2.5: EFLOW-09 candidate nav-menu (logged-out) ====
+    // ============== Step 2.5: candidate nav-menu (logged-out) ====
 
-    // EFLOW-09: candidate nav-menu logged-out vs logged-in.
+    // candidate nav-menu logged-out vs logged-in.
     // Logged-out item set: the menu (still unauthenticated on the public
     // /candidate/privacy page) renders the EXACT ordered list below. All ten
     // are anchored on the `nav-menu-item` testid the navMenu fixture reads.
@@ -580,7 +580,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
         /\[qu-info-number\]/,
         /\[qu-info-boolean\]/,
         /\[qu-info-date\]/,
-        // Phase 129 UNBLK-01: multipleText info question restored + now rendered
+        // see phase 129: multipleText info question restored + now rendered
         // by the MultipleTextInput row-list (plan 05).
         /\[qu-info-multipleText\]/,
         /\[qu-info-filt-co-reg-n\]/
@@ -622,9 +622,9 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       // Fill the multipleText info question (a string[] row list, so it lives
       // outside INFO_QUESTION_ANSWERS). required:false → this must NOT change
       // the required-empty submit-disabled gate the step already asserts; the
-      // values are round-tripped in step 21 (EQTYP-03 candidate leg).
+      // values are round-tripped in step 21 (candidate leg).
       await candidateProfilePage.fillMultipleTextQuestion(/\[qu-info-multipleText\]/, [...MULTIPLE_TEXT_ANSWERS]);
-      // FIX-02 lock for `components.multipleTextInput.*`: with two rows filled,
+      // lock for `components.multipleTextInput.*`: with two rows filled,
       // all four controls are in the DOM (move-up/move-down/remove render per
       // row — only their `disabled` state is conditional — and add renders while
       // the input is editable). Their accessible names come from the runtime
@@ -699,7 +699,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       // full-perm-DAG concurrent gate the save()+goto()+home-remount chain can
       // exceed TIMEOUTS.slowPage when the visibility check races it directly
       // (candidate-journey:661 cold-start load-contention flake surfaced by the
-      // Phase 131 P05 with-deps gate → Phase 132 D-01 harden). Splitting the
+      // see phase 131 P05 with-deps gate → see phase 132 harden). Splitting the
       // URL-settle (generous slowPage budget) from the element-visibility wait
       // composes the two additively, so the status check runs against an
       // already-navigated, interactive home route rather than a mid-transition DOM.
@@ -795,9 +795,9 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       await expect(q1CardEdited.first()).toContainText(OPEN_ANSWER_1_EDITED);
     });
 
-    // ============== Step 18.5: EQTYP-01 multi-choice type-specific ========
+    // ============== Step 18.5: multi-choice type-specific ========
 
-    // EQTYP-01 candidate leg (129 D-07 / D-02): the walk answers the multi-choice
+    // candidate leg (129): the walk answers the multi-choice
     // question generically; nothing asserts its type-specific input contract.
     // Assert here that the multi-choice opinion question renders CHECKBOX inputs
     // (not radios), the min/max helper text, and Save gating on BOTH sides of the
@@ -825,7 +825,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       // (`{#if mode === 'answer' && multiConstraints}`), so its mere presence
       // discriminates multi-choice from the categorical/boolean radios below.
       //
-      // The text assertion below is the FIX-02 lock for
+      // The text assertion below is the lock for
       // `questions.multiChoice.selectRange`: the question's effective 2..3 window
       // renders the range variant ("Select 2 to 3 options." in en), so a runtime
       // catalog regression that fell back to the raw key would fail here.
@@ -833,7 +833,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       await expect(helper).toBeVisible();
       await expect(helper).toHaveText(/2.*3/);
 
-      // D-07 save gating across the 2..3 window. QuestionChoices.svelte never
+      // save gating across the 2..3 window. QuestionChoices.svelte never
       // disables unchecked boxes ("we never disable unchecked boxes here" —
       // QuestionChoices.svelte:170-178 handleToggle); over/under-selection surfaces
       // on the caller's Save button via isMultiChoiceCountValid (valid iff the
@@ -874,9 +874,9 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       await expect(mcCard.first().getByTestId('question-choice').first()).toBeVisible();
     });
 
-    // ============== Step 18.6: D-02 categorical + boolean type-specific ===
+    // ============== Step 18.6: categorical + boolean type-specific ===
 
-    // D-02: tighten the existing categorical + boolean opinion coverage from
+    // tighten the existing categorical + boolean opinion coverage from
     // generic choice-select to type-specific input contracts, in the SAME spec
     // region as 18.5 (no general journey-spec refactor — steps 16-18's likert
     // choreography and the step-19 walk are untouched). Radio input `type` +
@@ -903,7 +903,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       const boolId = currentQuestionId(page);
       await expect(scopedChoicesByType(page, boolId, 'radio')).toHaveCount(2);
       await expect(scopedChoicesByType(page, boolId, 'checkbox')).toHaveCount(0);
-      // FIX-03 lock. OpinionQuestionInput synthesizes boolean choices as
+      // lock. OpinionQuestionInput synthesizes boolean choices as
       // ['no'→false, 'yes'→true], so index 0 saves the FALSY value deliberately —
       // the exact value the overview's old truthiness guard discarded. On an
       // unfixed build the card below renders no display markup and its action
@@ -942,9 +942,9 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       });
     });
 
-    // ============== Step 19.5: EFLOW-09 candidate nav-menu (logged-in) ===
+    // ============== Step 19.5: candidate nav-menu (logged-in) ===
 
-    // EFLOW-09: candidate nav-menu logged-in item set, asserted to DIFFER from
+    // candidate nav-menu logged-in item set, asserted to DIFFER from
     // the logged-out set.
     //
     // Fixture-visibility note (build finding): the authenticated candidate nav
@@ -993,7 +993,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       // Info answers round-trip (sample the required + the link + the number).
       await candidatePreviewPage.expectInfoAnswer(/\[qu-info-text\]/, INFO_QUESTION_ANSWERS['test-qu-info-text']);
       await candidatePreviewPage.expectInfoAnswer(/\[qu-info-number\]/, INFO_QUESTION_ANSWERS['test-qu-info-number']);
-      // multipleText round-trip (EQTYP-03 candidate leg): both values filled in
+      // multipleText round-trip (candidate leg): both values filled in
       // step 13 must appear verbatim in the multipleText info answer. Assert the
       // distinct [MULTITEXT-1]/[MULTITEXT-2] marker tokens so no normalization /
       // encoding mangling can silently pass.

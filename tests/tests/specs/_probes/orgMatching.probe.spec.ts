@@ -1,6 +1,5 @@
 /**
  * @file orgMatching.probe.spec.ts — smoke/probe for the org-matching readers
- * (EPERM-10).
  *
  * SC2 (A8 fixtures-first): exercises two readers built in Plan 06 —
  *   - `resultsPage.expectOrgMatchScore(target)`
@@ -50,14 +49,14 @@ test.describe('@probe org-matching readers (EPERM-10)', () => {
     // "<n>% match" string in the card header).
     await expect(firstOrgCard).toContainText('%');
 
-    // NOTE (Phase 120-01): the strict score-GAUGE reader
+    // NOTE (see phase 120): the strict score-GAUGE reader
     // (`resultsPage.expectOrgMatchScore`) targets `testIds.voter.results.scoreGauge`
     // (`score-gauge`), but the RESULTS-LIST card renders its callout via
     // MatchScore.svelte (a `<span>` with the "% match" text), NOT ScoreGauge.svelte
     // (`score-gauge` is only emitted inside the entity-details SubMatches drawer).
     // Wiring expectOrgMatchScore to the list-card score (add a stable testid to
-    // MatchScore, or re-point the reader) is an EPERM-10 SPEC concern (Plan 06) —
-    // trace-confirmed in 120-01-PROBE-DIAGNOSIS.md. The probe proves the org card
+    // MatchScore, or re-point the reader) is an SPEC concern (Plan 06) —
+    // trace-confirmed in. The probe proves the org card
     // + computed match readout against the active org-matching seed.
   });
 

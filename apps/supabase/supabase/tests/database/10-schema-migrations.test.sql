@@ -1,12 +1,12 @@
--- 10-schema-migrations.test.sql: Phase 22 + Phase 27 schema migration tests
+-- 10-schema-migrations.test.sql: see phase 22 + see phase 27 schema migration tests
 --
 -- Verifies all four SCHM requirements + ADMN requirements:
---   SCHM-01: customization JSONB column on app_settings
---   SCHM-02: feedback table with CHECK constraint, RLS, and rate limiting
---   SCHM-03: terms_of_use_accepted timestamptz column on candidates
---   SCHM-04: upsert_answers RPC (merge/overwrite modes, null stripping, RLS)
---   ADMN-01: merge_custom_data RPC for question custom_data JSONB merge
---   ADMN-02: admin_jobs table with admin-only RLS
+--   customization JSONB column on app_settings
+--   feedback table with CHECK constraint, RLS, and rate limiting
+--   terms_of_use_accepted timestamptz column on candidates
+--   upsert_answers RPC (merge/overwrite modes, null stripping, RLS)
+--   merge_custom_data RPC for question custom_data JSONB merge
+--   admin_jobs table with admin-only RLS
 --
 -- Depends on: 00-helpers.test.sql (set_test_user, create_test_data, test_id, etc.)
 
@@ -23,7 +23,7 @@ SELECT plan(65);
 SELECT create_test_data();
 
 -- =====================================================================
--- SCHM-01: customization column on app_settings
+-- customization column on app_settings
 -- =====================================================================
 
 -- 1. Column exists
@@ -91,7 +91,7 @@ SELECT is(
 );
 
 -- =====================================================================
--- SCHM-02: feedback table
+-- feedback table
 -- =====================================================================
 
 -- 8. Table exists
@@ -228,7 +228,7 @@ SELECT throws_ok(
 );
 
 -- =====================================================================
--- SCHM-03: terms_of_use_accepted column on candidates
+-- terms_of_use_accepted column on candidates
 -- =====================================================================
 
 SELECT reset_role();
@@ -296,7 +296,7 @@ SELECT ok(
 );
 
 -- =====================================================================
--- SCHM-04: upsert_answers RPC
+-- upsert_answers RPC
 -- =====================================================================
 
 -- 33. Function exists
@@ -409,7 +409,7 @@ SELECT ok(
 );
 
 -- =====================================================================
--- ADMN-02: admin_jobs table
+-- admin_jobs table
 -- =====================================================================
 
 SELECT reset_role();
@@ -479,7 +479,7 @@ SELECT is(
 );
 
 -- =====================================================================
--- ADMN-01: merge_custom_data RPC
+-- merge_custom_data RPC
 -- =====================================================================
 
 SELECT reset_role();

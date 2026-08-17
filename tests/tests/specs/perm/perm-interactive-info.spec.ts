@@ -1,5 +1,5 @@
 /**
- * @file perm-interactive-info.spec.ts — EPERM-07 perm-chain spec.
+ * @file perm-interactive-info.spec.ts — perm-chain spec.
  *
  * Asserts the `questions.interactiveInfo.enabled` matrix IN FULL plus the
  * advanced question-info content, against the `perm-interactive-info` dataset
@@ -145,13 +145,13 @@ test.describe('perm-interactive-info (EPERM-07)', () => {
   });
 });
 
-// EFLOW-11 D-03: interactive-info works on mobile.
+// interactive-info works on mobile.
 //
 // A SCOPED mobile-viewport sub-test — `test.use` is INSIDE its own describe so
-// the 390×844 isMobile/hasTouch descriptor NEVER leaks to the EPERM-07 slices
+// the 390×844 isMobile/hasTouch descriptor NEVER leaks to the slices
 // above (a file-scope test.use would flip the whole spec to mobile). Asserts the
 // popup-modal info disclosure (the shipped interactiveInfo.enabled=true default)
-// opens on mobile, reusing the EPERM-07 popup assertion adapted to mobile.
+// opens on mobile, reusing the popup assertion adapted to mobile.
 test.describe('mobile viewport smoke', () => {
   test.describe.configure({ mode: 'serial' });
   test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });

@@ -34,15 +34,15 @@ type QuestionBlocksShape = {
 
 /**
  * The candidate context (orchestrator) re-expressed as a Svelte 5 CLASS
- * (`CandidateContextProvider`; v2.13 context-as-class migration, CLASS-06).
+ * (`CandidateContextProvider`; v2.13 context-as-class migration).
  * CONVERTED from the 452-line object-literal factory that `initCandidateContext()`
  * returned. Constructed via `new CandidateContextProvider()` inside
  * `initCandidateContext()`, at component-init time exactly as the former factory ran.
  *
- * ── Shape decision (111-PATTERNS §1) ─────────────────────────────────────────
+ * ── Shape decision (111-PATTERNS) ─────────────────────────────────────────
  * NO consumer spreads `candidateContext` (`{ ...candidateContext }` /
  * `...getCandidateContext()` / `...userData` → zero hits). So its OWN members are
- * exposed as plain PROTOTYPE GETTERS (the natural class shape; CONVENTIONS §17) —
+ * exposed as plain PROTOTYPE GETTERS (the natural class shape; CONVENTIONS) —
  * candidateContext does NOT need the Phase-109 own-enumerable discipline. The
  * own-enumerable concern applies ONLY to the INHERITED appContext + authContext
  * members, which arrive already own-enumerable from the Phase-109
@@ -60,7 +60,7 @@ type QuestionBlocksShape = {
  *
  * ── Destructure-trap contract ────────────────────────────────────────────────
  * This very context is the canonical Phase-61 destructure-trap diagnostic
- * (CLAUDE.md Context Destructuring Rule; the QUESTION-04 push-based `$state`
+ * (CLAUDE.md Context Destructuring Rule; the push-based `$state`
  * mirrors below are the FIX). Class prototype getters preserve the contract:
  * reads via `ctx.X` re-invoke the getter in the tracking scope, so updates after
  * data load propagate. Do NOT regress to destructured-capture or pull-chain.
@@ -91,9 +91,9 @@ export class CandidateContextProvider implements CandidateContext {
   #appContext = getAppContext();
   #authContext = getAuthContext();
 
-  // getRoute is a rune-native `{ readonly current }` handle (CTX-08); read
+  // getRoute is a rune-native `{ readonly current }` handle; read
   // directly via `#getRoute.current(...)`. appSettings/locale/dataRoot are now BARE
-  // reactive accessors (Phase 113 FLATTEN-02) — read `this.#appContext.X` directly.
+  // reactive accessors (see phase 113) — read `this.#appContext.X` directly.
   // They are exposed here as private GETTERS (not value-captured fields): a field
   // initializer would snapshot the bare value once at construction and lose
   // reactivity; the getters re-invoke `this.#appContext.X` inside the tracking scope
@@ -138,7 +138,7 @@ export class CandidateContextProvider implements CandidateContext {
 
   #constituenciesSelectable = $derived(this.#dataRoot.elections?.some((e) => !e.singleConstituency));
 
-  // Persisted handles — imperative round-trip via .current/.set() (spike 021/023);
+  // Persisted handles — imperative round-trip via.current/.set (see spike 021/023);
   // NO $effect-driven init.
   #preregistrationElectionIds = sessionStorageState('candidateContext-preselectedElectionIds', new Array<Id>());
 
@@ -169,10 +169,10 @@ export class CandidateContextProvider implements CandidateContext {
     }>;
   });
 
-  // QUESTION-04 (Phase 61 Plan 03, Hypothesis A reactivity fix):
+  // (see phase 61 Plan 03, Hypothesis A reactivity fix):
   // The pull-chain `$derived.by` pattern (via helper stores) did not propagate
   // reactive invalidation correctly to cross-module consumers — confirmed by
-  // console trace (see 61-03-DIAGNOSIS.md): selectedElections/opinionQuestions
+  // console trace: selectedElections/opinionQuestions
   // derivations evaluated ONCE at component-init with pre-data values and never
   // re-ran after the protected layout `$effect` populated dataRoot + userData.
   // Root mechanism: Svelte 5 tracks reactive reads from within a tracking scope,
@@ -192,7 +192,7 @@ export class CandidateContextProvider implements CandidateContext {
 
   /**
    * All applicable, non-empty question categories to be used as a base for the other stores.
-   * QUESTION-04 (Phase 61 Plan 03): inlined the pull-chain helper-store derivations
+   * (see phase 61 Plan 03): inlined the pull-chain helper-store derivations
    * into a single push-based `$effect` that writes `$state` mirrors. Behavior is
    * equivalent to `questionCategoryState`/`questionState`/`questionBlockState` but
    * the consumer-facing reactivity works via context getters.
@@ -307,7 +307,7 @@ export class CandidateContextProvider implements CandidateContext {
     // authContext member EXCEPT `logout`; the inherited logout is already captured in
     // `#authLogout` and wrapped by the prototype getter.
 
-    // Phase 113 CR-01: inheritContextMembers (NOT Object.assign) forwards the bare
+    // see phase 113 CR-01: inheritContextMembers (NOT Object.assign) forwards the bare
     // reactive accessors (appSettings / dataRoot / locale) as LIVE accessors;
     // Object.assign would snapshot and freeze their reactivity for consumers.
     inheritContextMembers(this, this.#appContext);
@@ -406,7 +406,7 @@ export class CandidateContextProvider implements CandidateContext {
   }
 
   ////////////////////////////////////////////////////////////////////
-  // Wrappers for DataWriter methods (§18 arrow fields — survive detach)
+  // Wrappers for DataWriter methods (arrow fields — survive detach)
   // NB. These automatically handle authentication
   // See also userData which handles other methods
   ////////////////////////////////////////////////////////////////////
@@ -516,7 +516,7 @@ export class CandidateContextProvider implements CandidateContext {
   };
 
   ////////////////////////////////////////////////////////////
-  // Surface members (prototype get/set accessors — spread-safe; §17). Reads via
+  // Surface members (prototype get/set accessors — spread-safe). Reads via
   // `ctx.X` re-invoke the getter in the tracking scope (destructure-trap contract).
   ////////////////////////////////////////////////////////////
 

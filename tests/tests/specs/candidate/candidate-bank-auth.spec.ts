@@ -1,5 +1,5 @@
 /**
- * Candidate bank authentication E2E tests — EFLOW-10 (Idura-only Edge-Function seam).
+ * Candidate bank authentication E2E tests — (Idura-only Edge-Function seam).
  *
  * Tests the identity-callback Edge Function integration by:
  * 1. Building a synthetic JWE-encrypted Idura id_token (fixed test keys, kid test-enc-1/test-sig-1)
@@ -8,17 +8,17 @@
  * 4. Verifying a magic-link session (action_link) is returned
  *
  * This spec is Idura-only (the previous generic/legacy-provider assertions are dropped per
- * phase 122 D-01). It asserts the
+ * see phase 122). It asserts the
  * Idura claim model: `identity_provider='idura'`, `identity_match_prop='sub'`,
  * `identity_match_value=<sub>`, and the IDURA_AUTH_CONFIG.extractClaims flow-through
  * (`birthdate`, `hetu` — see apps/supabase/.../identity-callback/claimConfig.ts).
  *
- * DETERMINISTIC-GREEN GATE (122 D-02): the keys-configured create path runs on EVERY run
+ * DETERMINISTIC-GREEN GATE (122): the keys-configured create path runs on EVERY run
  * (never skipped). This requires the served Edge Function to read the FIXED test
  * decryption JWK (`IDENTITY_PROVIDER_DECRYPTION_JWKS` = `decryptionJwks` from
  * tests/tests/utils/testKeys.ts). A "did not run" counts as a CARDINAL failure.
  *
- * Run (see tests/IDURA-TEST-RUNBOOK.md → "EFLOW-10 deterministic E2E run"):
+ * Run (see tests/IDURA-TEST-RUNBOOK.md → " deterministic E2E run"):
  *   # Terminal A — serve the Edge Function with the TEST decryption JWKS env file:
  *   cd apps/supabase/supabase && npx supabase functions serve identity-callback \
  *     --no-verify-jwt --env-file <tests/.eflow10.env from the runbook>
@@ -66,10 +66,10 @@ const TEST_IDENTITY = {
 test.use({ storageState: { cookies: [], origins: [] } });
 
 /**
- * The token builder + fixed test key pair are now shared utils (D-03):
+ * The token builder + fixed test key pair are now shared utils:
  *   - `buildTestIdToken` — tests/tests/utils/buildTestIdToken.ts
  *   - `getTestKeys`      — tests/tests/utils/testKeys.ts (fixed committed pair)
- * The EFLOW-10 retarget + deterministic-green gate (D-02) lands in plan 122-02;
+ * The retarget + deterministic-green gate lands;
  * this plan only de-duplicates so the spec compiles against the shared util.
  */
 
@@ -77,7 +77,7 @@ test.use({ storageState: { cookies: [], origins: [] } });
  * Edge Function probe result captured once in beforeAll. The bank-auth project is
  * env-gated (PLAYWRIGHT_BANK_AUTH=1 selects the project per playwright.config.ts).
  *
- * Under the D-02 deterministic-green gate the served Edge Function ALWAYS has the fixed
+ * Under the deterministic-green gate the served Edge Function ALWAYS has the fixed
  * test decryption JWK wired (IDENTITY_PROVIDER_DECRYPTION_JWKS = decryptionJwks from
  * testKeys.ts), so `keysConfigured` is deterministically true and the create path runs
  * every run. The keys-configured test therefore asserts `keysConfigured === true` LOUDLY
@@ -158,10 +158,10 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
   });
 
   test('should create candidate via identity-callback Edge Function (Idura sub-based identity)', async () => {
-    // D-02 deterministic-green gate: the keys-configured create path MUST run every run.
+    // deterministic-green gate: the keys-configured create path MUST run every run.
     // Instead of skipping (a silent "did not run" = cardinal failure), assert LOUDLY that
     // the served Edge Function had the fixed test decryption JWK wired. If this fails, the
-    // run procedure in tests/IDURA-TEST-RUNBOOK.md (EFLOW-10) was not followed.
+    // run procedure in tests/IDURA-TEST-RUNBOOK.md was not followed.
     expect(
       probe,
       'EFLOW-10 keys-configured path did not run — the served identity-callback Edge Function ' +
@@ -190,7 +190,7 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
     expect(candidate?.first_name).toBe(TEST_IDENTITY.given_name);
     expect(candidate?.last_name).toBe(TEST_IDENTITY.family_name);
 
-    // Verify app_metadata carries the Idura sub-based identity model (Idura-only retarget, D-01).
+    // Verify app_metadata carries the Idura sub-based identity model (Idura-only retarget).
     const {
       data: { user }
     } = await adminClient.auth.admin.getUserById(captured.body.user_id as string);
@@ -205,7 +205,7 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
   });
 
   test('should reject an id_token encrypted with a mismatched (wrong) decryption key', async () => {
-    // D-02: the inverse "keys-NOT-configured" skip is replaced by a NEGATIVE-PATH test that RUNS
+    // the inverse "keys-NOT-configured" skip is replaced by a NEGATIVE-PATH test that RUNS
     // every run. With the fixed test keys wired, the create path is always reachable — so instead
     // we prove the reject path by encrypting under a DELIBERATELY wrong enc key (kid the served
     // function has no private half for) → the function returns a structured decryption-failure 401.
@@ -236,7 +236,7 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
   });
 
   test('should return session with magic link when candidate is created', async () => {
-    // D-02: no skip — the create path is guaranteed by the keys-configured gate above, so the
+    // no skip — the create path is guaranteed by the keys-configured gate above, so the
     // action_link is asserted UNCONDITIONALLY (a silent skip here would be a cardinal "did not run").
     expect(probe, 'probe must have created a user (keys-configured path)').not.toBeNull();
     expect(probe!.createdUserId, 'createdUserId must be present — keys-configured create path').toBeTruthy();

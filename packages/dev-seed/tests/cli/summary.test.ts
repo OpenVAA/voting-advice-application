@@ -1,5 +1,5 @@
 /**
- * summary.ts tests (CLI-05 / D-58-14).
+ * summary.ts tests.
  */
 
 import { describe, expect, it } from 'vitest';

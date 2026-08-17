@@ -1,8 +1,8 @@
 /**
- * perm-interactive-info minimal-data template (EPERM-07).
+ * perm-interactive-info minimal-data template.
  *
  * Topology: 1 election, 1 CG with 1 CO, 2 organisations, 2 candidates, ONE
- * opinion category carrying the question-info substrate the EPERM-07 spec
+ * opinion category carrying the question-info substrate the spec
  * needs to assert both `questions.interactiveInfo.enabled` modes plus the
  * advanced info content.
  *
@@ -16,7 +16,7 @@
  *   - `qu-default` — carries `info` text too (under the static-expander mode
  *                    re-seed, the SAME question reveals its body inline).
  *
- * Advanced info content (EPERM-07 NOTE, all shapes per
+ * Advanced info content (NOTE, all shapes per
  * `packages/app-shared/src/data/customData.type.ts`):
  *   - `customData.infoSections` (`Array<{title, content(html)}>`) on
  *     `qu-popup` (≥1 question).
@@ -216,8 +216,8 @@ export const permInteractiveInfoTemplate: Template = {
       // QuestionExtendedInfo's `{#if infoSections?.length}` block
       // (QuestionExtendedInfo.svelte:52,70). Argument carriers carry no `info`,
       // so a co-seeded infoSection is what makes the popup disclosure (and hence
-      // the type-dependent argument layout) reachable. Decided at the EPERM-07
-      // spec build per 120-01-PROBE-DIAGNOSIS.md (co-seed infoSections vs. moving
+      // the type-dependent argument layout) reachable. Decided at the
+      // spec build per (co-seed infoSections vs. moving
       // the production `{#if args}` gate — the additive seed choice keeps the
       // production component untouched).
       {
@@ -328,7 +328,7 @@ export const permInteractiveInfoTemplate: Template = {
             ...MINIMAL_BASE_APP_SETTINGS.questions,
             // Popup-modal mode by default (the static-expander mode is the
             // spec's per-mode re-seed; default `false` is the absence of this
-            // override). EPERM-07 asserts BOTH modes in full.
+            // override). asserts BOTH modes in full.
             interactiveInfo: {
               enabled: true
             }

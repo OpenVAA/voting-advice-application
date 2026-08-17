@@ -16,7 +16,7 @@ export const STORAGE_STATE = path.join(TESTS_DIR, '../playwright/.auth/user.json
 const PROBE_TEST_MATCH = /(video|questionInfo|popupNotice|orgMatching|numberScale)\.probe\.spec\.ts$/;
 
 /**
- * ORPHAN-PROBE GUARD (Phase 136 plan 03, fake-guard sweep finding F4).
+ * ORPHAN-PROBE GUARD (see phase 136 plan 03, fake-guard sweep finding F4).
  *
  * `_probes` is the one project whose `testMatch` enumerates its files by name
  * rather than globbing the directory — deliberately, because each probe must be
@@ -52,16 +52,16 @@ if (fs.existsSync(probesDir)) {
  * Hoisted so the budget guard below — and every reader — has ONE place to look for the
  * number, which is why the spec's own header names this symbol instead of restating it.
  *
- * Scoped deliberately to a single file: ASSERT-06's scope is `voter-journey.spec.ts`.
+ * Scoped deliberately to a single file: 's scope is `voter-journey.spec.ts`.
  * The three sibling `Rigidity contract` drift files found alongside it are a recorded
- * follow-up (`.planning/WINDOWS.md`), not a licence to widen this table quietly.
+ * follow-up, not a licence to widen this table quietly.
  */
 const SOFT_ASSERTION_BUDGETS: Record<string, number> = {
   'specs/voter/voter-journey.spec.ts': 136
 };
 
 /**
- * SOFT-ASSERTION BUDGET GUARD (Phase 140 plan 02, fake-guard sweep finding F10).
+ * SOFT-ASSERTION BUDGET GUARD (see phase 140 plan 02, fake-guard sweep finding F10).
  *
  * Soft assertions are budgeted because they do not fail fast. In a long serial walk a
  * growing population silently degrades failure legibility: one genuinely broken card
@@ -95,7 +95,7 @@ for (const [rel, budget] of Object.entries(SOFT_ASSERTION_BUDGETS)) {
         `nothing is a guard that can never fire (fake-guard sweep 2026-08-11, finding F10).`
     );
   }
-  // Phase 140 WR-04: strip comments before counting. A naive whole-file regex
+  // see phase 140 WR-04: strip comments before counting. A naive whole-file regex
   // match counts every textual occurrence including inside comments and string
   // literals — so the remediation instruction below ("state the reason in that
   // spec's header") could itself contain the literal `expect.soft(` token and
@@ -108,7 +108,7 @@ for (const [rel, budget] of Object.entries(SOFT_ASSERTION_BUDGETS)) {
   if (actual !== budget) {
     throw new Error(
       `Soft-assertion budget diverged in ${rel} — the declared budget is ${budget} but the file ` +
-        // Phase 140 WR-05: the count is taken outside comments; string literals are
+        // see phase 140 WR-05: the count is taken outside comments; string literals are
         // NOT excluded (a naive claim otherwise would itself be the F10 failure mode).
         `carries ${actual} (counted outside comments; string literals are NOT excluded). Convert the ` +
         `new assertion to a hard \`expect()\`, or change the budget in SOFT_ASSERTION_BUDGETS in this ` +
@@ -117,7 +117,7 @@ for (const [rel, budget] of Object.entries(SOFT_ASSERTION_BUDGETS)) {
         `is not a budget (fake-guard sweep 2026-08-11, finding F10).`
     );
   }
-  // Phase 140 WR-05 (under-count hole): the count above matches only the literal
+  // see phase 140 WR-05 (under-count hole): the count above matches only the literal
   // `expect.soft(` token, so an aliased/destructured soft assertion — e.g.
   // `const soft = expect.soft; soft(x).toBe(y)` — is invisible to it and the
   // budget would silently over-report headroom, the direction that produced F10
@@ -134,7 +134,7 @@ for (const [rel, budget] of Object.entries(SOFT_ASSERTION_BUDGETS)) {
 }
 
 /**
- * TEARDOWN-PREFIX-UNIQUENESS GUARD (Phase 140 review, finding CR-01).
+ * TEARDOWN-PREFIX-UNIQUENESS GUARD (see phase 140 review, finding CR-01).
  *
  * `runTeardownAsserted` (`tests/tests/setup/shared/assertTeardown.ts`) turned the
  * before/after row-count accounting into a HARD assertion. That assertion is only
@@ -159,11 +159,11 @@ for (const [rel, budget] of Object.entries(SOFT_ASSERTION_BUDGETS)) {
  * performs no prefix-scoped delete — see `assertTeardown.ts`'s corrected
  * docblock claim, CR-02). A file that DOES call `runTeardownAsserted(` but
  * whose `const PREFIX` this guard fails to parse is a completeness failure,
- * not a legitimate exclusion — see the `unparsed` check below (Phase 140
+ * not a legitimate exclusion — see the `unparsed` check below (see phase 140
  * review WR-03: an enumeration guard with no completeness check is the same
  * failure mode as fake-guard finding F4 above).
  *
- * ENUMERATION SCOPE (Phase 140 review IN-02). Scans all of `TESTS_DIR`, not
+ * ENUMERATION SCOPE (see phase 140 review IN-02). Scans all of `TESTS_DIR`, not
  * `TESTS_DIR/setup`, even though all 28 `*.teardown.ts` files live under
  * `setup/` today. The teardown projects' `testMatch` patterns are unanchored
  * regexes (e.g. `/base\.teardown\.ts/`) evaluated against the inherited
@@ -176,7 +176,7 @@ for (const [rel, budget] of Object.entries(SOFT_ASSERTION_BUDGETS)) {
  * would not.
  */
 const teardownDir = TESTS_DIR;
-// Phase 140 review IN-01: named precondition, mirroring the ORPHAN-PROBE
+// see phase 140 review IN-01: named precondition, mirroring the ORPHAN-PROBE
 // guard's `fs.existsSync` check above. Without it, a missing/renamed
 // tests directory would die on a raw `readdirSync` ENOENT — the opposite of
 // the "fails immediately and by name" property this guard claims for itself.
@@ -260,7 +260,7 @@ for (let i = 0; i < teardownPrefixDeclarations.length; i++) {
  *       · visual-regression (PLAYWRIGHT_VISUAL) — opt-in because its PNG
  *         baselines are Linux/x86_64 captures that only reproduce on the CI
  *         runner image, not because it is broken: it is a BLOCKING job in
- *         .github/workflows/main.yaml (Phase 136 plan 05).
+ *         .github/workflows/main.yaml (see phase 136 plan 05).
  *       · bank-auth (PLAYWRIGHT_BANK_AUTH) — the spec throws at module load
  *         without SUPABASE_SERVICE_ROLE_KEY/ANON_KEY and needs the
  *         identity-callback Edge Function served.
@@ -275,7 +275,7 @@ export default defineConfig({
   testIgnore: ['**/*.test.ts'],
   outputDir: path.join(TESTS_DIR, '../playwright-results'),
 
-  /* SERVED-APPLICATION GATE (Phase 137, INTEG-04/INTEG-05).
+  /* SERVED-APPLICATION GATE (see phase 137).
    * Asserts that whatever is listening on `use.baseURL` below is THIS checkout's
    * Vite dev server — proven by the served application's own response, not by the
    * listener process — and aborts the run with exit 1 before any spec body if it
@@ -337,7 +337,7 @@ export default defineConfig({
     // `yarn test:e2e` (journeys + perm-* family + perf/a11y/bank-auth) never
     // runs the candidate-login storageState step.
     //
-    // The registered-base-candidate contract (Phase 136 plan 05): the candidates
+    // The registered-base-candidate contract (see phase 136 plan 05): the candidates
     // table carries no email column, so the seed cannot ship a *registered*
     // candidate. `auth-setup` therefore force-registers base CA-AA-1 itself via
     // SupabaseAdminClient before its UI login — the same mechanism every perm-*
@@ -442,11 +442,11 @@ export default defineConfig({
     // than seconds — accepted, because there is no requirement that this journey
     // be runnable quickly in isolation.
     //
-    // Phase 140 CR-01 is FIXED (commit `10ca954ac`): `submitElection()` /
+    // see phase 140 CR-01 is FIXED (commit `10ca954ac`): `submitElection ` /
     // `submitConstituency()` in `candidatePreregisterPage.fixture.ts` select by
     // LABEL, not by position, so a foreign dataset in the DB fails the walk
     // loudly instead of being silently preregistered into. Proven by trace —
-    // `check` fires on the `[EL1]` option (see `140-GATES.md` Gate 3).
+    // `check` fires on the `[EL1]` option (see ` ` Gate 3).
     //
     // The setup/teardown FILES these entries point at land in 122-04; the journey
     // SPEC matched by the `bank-auth-journey` project lands in 122-05.
@@ -461,7 +461,7 @@ export default defineConfig({
             name: 'data-setup-bank-auth-journey',
             testMatch: /bank-auth-journey\.setup\.ts/,
             teardown: 'data-teardown-bank-auth-journey',
-            // Phase 140 WR-03: APPEND TO THE TAIL OF THE PERM SERIAL CHAIN.
+            // see phase 140 WR-03: APPEND TO THE TAIL OF THE PERM SERIAL CHAIN.
             //
             // `voter-prefs-tracking` is the chain's last leaf, so this setup's
             // authoritative `app_settings` REPLACE cannot overlap any other
@@ -482,14 +482,14 @@ export default defineConfig({
             // `data-setup-base` is still ordered before this project transitively
             // (chain head → `voter-journey` → `data-setup-base`), so `base.setup`'s
             // `extraTeardownPrefix` sweep of an orphaned `e2e-bankauth-` dataset
-            // from an aborted prior run still runs first — the property Phase 140
+            // from an aborted prior run still runs first — the property see phase 140
             // CR-01 (iteration 2) added the base edge for is preserved.
             dependencies: ['voter-prefs-tracking']
           },
           {
             name: 'data-teardown-bank-auth-journey',
             testMatch: /bank-auth-journey\.teardown\.ts/,
-            // reason (Phase 140 WR-02): the F3 accounting assertion in
+            // reason (see phase 140 WR-02): the F3 accounting assertion in
             // runTeardownAsserted is state-mutating — a retry always observes an
             // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
             // exactly the partial-delete class the assertion exists to catch, while
@@ -548,15 +548,15 @@ export default defineConfig({
     {
       name: 'data-teardown-base',
       testMatch: /base\.teardown\.ts/,
-      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // reason (see phase 140 WR-02): the F3 accounting assertion in
       // runTeardownAsserted is state-mutating — a retry always observes an
       // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
       // exactly the partial-delete class the assertion exists to catch, while
       // local retries: 0 would still red on the same defect.
       retries: 0
     },
-    // D-09 (Phase 138, INTEG-01) — `video: 'retain-on-failure'`. This project
-    // owns the EPERM-07 term-trigger step, whose failure is a LATENCY signal,
+    // (see phase 138) — `video: 'retain-on-failure'`. This project
+    // owns the term-trigger step, whose failure is a LATENCY signal,
     // not an absence signal: the recorded occurrence's own page snapshot showed
     // the trigger present (deferred-items.md § DEF-135-04). A trace records what
     // the test asserted; only a video records what the page was DOING across the
@@ -571,7 +571,7 @@ export default defineConfig({
       dependencies: ['data-setup-base']
     },
 
-    // eperm07-term-trigger (Phase 138, D-03 INTEG-01) — LEAF. Isolated hunt spec
+    // eperm07-term-trigger (see phase 138) — LEAF. Isolated hunt spec
     // for the DEF-135-04 intermittent: drives ONLY Base-1 → Base-2 → Base-3 and
     // asserts the in-text <Term> affordance, so the ~1-in-8 event can be forced
     // and observed in seconds instead of in a 648 s full-suite run. Reads the
@@ -592,9 +592,9 @@ export default defineConfig({
       dependencies: ['data-setup-base']
     },
 
-    // cold-entry-dataroot (Phase 117 COLD-03) — LEAF. Read-only cold/direct-URL
+    // cold-entry-dataroot (see phase 117) — LEAF. Read-only cold/direct-URL
     // entry regression for the dataRoot #version-bridge alias-indirection
-    // staleness (Spike 024). Reads the base dataset read-only (no teardown of its
+    // staleness (see spike 024). Reads the base dataset read-only (no teardown of its
     // own). `testMatch` is scoped to the cold-entry spec; `voter-journey`'s
     // `testMatch` (/voter-journey\.spec\.ts/) excludes this file, so neither
     // project picks up the other's specs.
@@ -606,7 +606,7 @@ export default defineConfig({
       dependencies: ['data-setup-base']
     },
 
-    // voter-dark-mode (Phase 121 EFLOW-07) — LEAF. Read-only dark-scheme
+    // voter-dark-mode (see phase 121) — LEAF. Read-only dark-scheme
     // regression on the base dataset. Theme is driven via emulateMedia
     // (prefers-color-scheme) — there is NO toggle and NO localStorage write
     // (darkMode.svelte.ts derives from matchMedia only). `testMatch` is scoped to
@@ -619,7 +619,7 @@ export default defineConfig({
       dependencies: ['data-setup-base']
     },
 
-    // voter-journey-mobile (Phase 121 EFLOW-11) — LEAF. The viewport-agnostic
+    // voter-journey-mobile (see phase 121) — LEAF. The viewport-agnostic
     // 'max' voter walk under a mobile descriptor. The descriptor lives here at
     // project scope (explicit 390×844 isMobile/hasTouch, matching
     // visual-regression — NOT devices['Pixel 5']); the walk itself is unchanged.
@@ -638,11 +638,11 @@ export default defineConfig({
       dependencies: ['data-setup-base']
     },
 
-    // voter-alliance (Phase 130 EFLOW-02 + EPERM-03/04 riders) — LEAF. Read-only
+    // voter-alliance (see phase 130 04 riders) — LEAF. Read-only
     // alliance results-surface DEPTH on the base dataset (Alliance A card,
     // clickable member-org subcards, member-orgs drawer, ['info','children'] tab
     // control). Consumes the shared 'max' voter walk (answeredVoterPage) under a
-    // Desktop descriptor; D-04 assert-only (no own setup/teardown — Alliance A +
+    // Desktop descriptor; assert-only (no own setup/teardown — Alliance A +
     // members already in e2e/base). `testMatch` is scoped to this spec; sibling
     // voter-* projects' exact testMatch excludes it.
     {
@@ -653,9 +653,9 @@ export default defineConfig({
       dependencies: ['data-setup-base']
     },
 
-    // voter-nominations (Phase 130 UNBLK-04 rider) — LEAF. Read-only render
-    // check for the UNSCOPED all-nominations route (D-01 dedicated spec, NOT a
-    // journey step). D-04 assert-only (showAllNominations already true in
+    // voter-nominations (see phase 130 rider) — LEAF. Read-only render
+    // check for the UNSCOPED all-nominations route (dedicated spec, NOT a
+    // journey step). assert-only (showAllNominations already true in
     // e2e/base — no own setup/teardown). `testMatch` is scoped to this spec;
     // sibling voter-* projects' exact testMatch excludes it.
     {
@@ -668,8 +668,8 @@ export default defineConfig({
 
     // === _probes (fixtures-first isolation probes) — LEAF, no data-setup ===
     //
-    // The 4 deferred perm-seeded probes (video→EPERM-06, questionInfo→EPERM-07,
-    // popupNotice→EPERM-09, orgMatching→EPERM-10) live under
+    // The 4 deferred perm-seeded probes (video→, questionInfo→,
+    // popupNotice→, orgMatching→) live under
     // ./tests/specs/_probes. They are DELIBERATELY OUTSIDE the perm serial-DAG
     // chain: each clobbers the shared `app_settings` JSONB singleton, so they
     // MUST run ONE-AT-A-TIME in true isolation, seeded OUT-OF-BAND per the probe
@@ -749,7 +749,7 @@ export default defineConfig({
     // `--project` runs (visual/perf/a11y/bank-auth) pulling only `data-setup-base`
     // (+ auth-setup), never the perm family — base still seeds standalone.
     //
-    // `eperm07-term-trigger` is in the anchor too (Phase 138 review WR-10). Several
+    // `eperm07-term-trigger` is in the anchor too (see phase 138 review WR-10). Several
     // other base leaves sit OUTSIDE it and are fine there because they do not
     // hard-assert settings-dependent UI; this one does, twice — the category-intro
     // page it walks through exists only while `questions.categoryIntros.show` is
@@ -767,7 +767,7 @@ export default defineConfig({
     {
       name: 'data-teardown-perm-1e1cg1co',
       testMatch: /perm-1e1cg1co\.teardown\.ts/,
-      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // reason (see phase 140 WR-02): the F3 accounting assertion in
       // runTeardownAsserted is state-mutating — a retry always observes an
       // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
       // exactly the partial-delete class the assertion exists to catch, while
@@ -801,7 +801,7 @@ export default defineConfig({
     {
       name: 'data-teardown-perm-2e-shared',
       testMatch: /perm-2e-shared\.teardown\.ts/,
-      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // reason (see phase 140 WR-02): the F3 accounting assertion in
       // runTeardownAsserted is state-mutating — a retry always observes an
       // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
       // exactly the partial-delete class the assertion exists to catch, while
@@ -828,7 +828,7 @@ export default defineConfig({
     {
       name: 'data-teardown-perm-2e-asymmetric',
       testMatch: /perm-2e-asymmetric\.teardown\.ts/,
-      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // reason (see phase 140 WR-02): the F3 accounting assertion in
       // runTeardownAsserted is state-mutating — a retry always observes an
       // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
       // exactly the partial-delete class the assertion exists to catch, while
@@ -855,7 +855,7 @@ export default defineConfig({
     {
       name: 'data-teardown-perm-startfromcg',
       testMatch: /perm-startfromcg\.teardown\.ts/,
-      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // reason (see phase 140 WR-02): the F3 accounting assertion in
       // runTeardownAsserted is state-mutating — a retry always observes an
       // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
       // exactly the partial-delete class the assertion exists to catch, while
@@ -882,7 +882,7 @@ export default defineConfig({
     {
       name: 'data-teardown-perm-disjoint-1co',
       testMatch: /perm-disjoint-1co\.teardown\.ts/,
-      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // reason (see phase 140 WR-02): the F3 accounting assertion in
       // runTeardownAsserted is state-mutating — a retry always observes an
       // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
       // exactly the partial-delete class the assertion exists to catch, while
@@ -909,7 +909,7 @@ export default defineConfig({
     {
       name: 'data-teardown-perm-disable-election-1co',
       testMatch: /perm-disable-election-1co\.teardown\.ts/,
-      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // reason (see phase 140 WR-02): the F3 accounting assertion in
       // runTeardownAsserted is state-mutating — a retry always observes an
       // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
       // exactly the partial-delete class the assertion exists to catch, while
@@ -936,7 +936,7 @@ export default defineConfig({
     {
       name: 'data-teardown-perm-disable-election-2co',
       testMatch: /perm-disable-election-2co\.teardown\.ts/,
-      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // reason (see phase 140 WR-02): the F3 accounting assertion in
       // runTeardownAsserted is state-mutating — a retry always observes an
       // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
       // exactly the partial-delete class the assertion exists to catch, while
@@ -963,7 +963,7 @@ export default defineConfig({
     {
       name: 'data-teardown-perm-not-located-2e2cg',
       testMatch: /perm-not-located-2e2cg\.teardown\.ts/,
-      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // reason (see phase 140 WR-02): the F3 accounting assertion in
       // runTeardownAsserted is state-mutating — a retry always observes an
       // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
       // exactly the partial-delete class the assertion exists to catch, while
@@ -1004,7 +1004,7 @@ export default defineConfig({
     {
       name: 'data-teardown-candidate-journey',
       testMatch: /candidate-journey\.teardown\.ts/,
-      // reason (Phase 140 WR-02): candidate-journey.teardown.ts performs no
+      // reason (see phase 140 WR-02): candidate-journey.teardown.ts performs no
       // prefix delete (it only calls unregisterCandidate — CR-02), so there is
       // no runTeardownAsserted accounting to mask here. Set to 0 anyway for
       // consistency with every other data-teardown-* project, so a future edit
@@ -1029,7 +1029,7 @@ export default defineConfig({
     // Chained sequentially among themselves (perm-access-disable →
     // perm-per-app-notifications) per the perm-* family precedent. The former
     // per-app maintenance pair (voter-app + candidate-app disable) was
-    // CONSOLIDATED (EPERM-11) into the single perm-access-disable node, which
+    // CONSOLIDATED into the single perm-access-disable node, which
     // re-seeds the app_settings singleton per access mode in-spec.
     //
     // Parallel-safety: each perm template uses a distinct externalIdPrefix
@@ -1052,7 +1052,7 @@ export default defineConfig({
     {
       name: 'data-teardown-perm-access-disable',
       testMatch: /perm-access-disable\.teardown\.ts/,
-      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // reason (see phase 140 WR-02): the F3 accounting assertion in
       // runTeardownAsserted is state-mutating — a retry always observes an
       // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
       // exactly the partial-delete class the assertion exists to catch, while
@@ -1092,7 +1092,7 @@ export default defineConfig({
     {
       name: 'data-teardown-perm-per-app-notifications',
       testMatch: /perm-per-app-notifications\.teardown\.ts/,
-      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // reason (see phase 140 WR-02): the F3 accounting assertion in
       // runTeardownAsserted is state-mutating — a retry always observes an
       // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
       // exactly the partial-delete class the assertion exists to catch, while
@@ -1120,7 +1120,7 @@ export default defineConfig({
     {
       name: 'data-teardown-perm-missing-nominations',
       testMatch: /perm-missing-nominations\.teardown\.ts/,
-      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // reason (see phase 140 WR-02): the F3 accounting assertion in
       // runTeardownAsserted is state-mutating — a retry always observes an
       // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
       // exactly the partial-delete class the assertion exists to catch, while
@@ -1149,7 +1149,7 @@ export default defineConfig({
     {
       name: 'data-teardown-perm-localisation-positive',
       testMatch: /perm-localisation-positive\.teardown\.ts/,
-      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // reason (see phase 140 WR-02): the F3 accounting assertion in
       // runTeardownAsserted is state-mutating — a retry always observes an
       // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
       // exactly the partial-delete class the assertion exists to catch, while
@@ -1190,7 +1190,7 @@ export default defineConfig({
     {
       name: 'data-teardown-perm-answers-locked',
       testMatch: /perm-answers-locked\.teardown\.ts/,
-      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // reason (see phase 140 WR-02): the F3 accounting assertion in
       // runTeardownAsserted is state-mutating — a retry always observes an
       // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
       // exactly the partial-delete class the assertion exists to catch, while
@@ -1216,7 +1216,7 @@ export default defineConfig({
     {
       name: 'data-teardown-perm-hide-hero',
       testMatch: /perm-hide-hero\.teardown\.ts/,
-      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // reason (see phase 140 WR-02): the F3 accounting assertion in
       // runTeardownAsserted is state-mutating — a retry always observes an
       // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
       // exactly the partial-delete class the assertion exists to catch, while
@@ -1232,12 +1232,12 @@ export default defineConfig({
       dependencies: ['data-setup-perm-hide-hero']
     },
 
-    // A3 — perm-show-feedback-survey (EPERM-09). Unauthenticated voter intro +
+    // A3 — perm-show-feedback-survey. Unauthenticated voter intro +
     // Banner header-feedback assertion + feedback-form open, EXTENDED with the
     // results-view feedback/survey popup-coordination assertions (placement,
     // timing/once, no-double-pop, dismiss-persistence) + the survey.showIn[]
     // per-surface audit. Renamed in place from the former header-show-feedback
-    // node (Phase 120-07) — KEEPS its position after perm-hide-hero.
+    // node (see phase 120) — KEEPS its position after perm-hide-hero.
     {
       name: 'data-setup-perm-show-feedback-survey',
       testMatch: /perm-show-feedback-survey\.setup\.ts/,
@@ -1247,7 +1247,7 @@ export default defineConfig({
     {
       name: 'data-teardown-perm-show-feedback-survey',
       testMatch: /perm-show-feedback-survey\.teardown\.ts/,
-      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // reason (see phase 140 WR-02): the F3 accounting assertion in
       // runTeardownAsserted is state-mutating — a retry always observes an
       // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
       // exactly the partial-delete class the assertion exists to catch, while
@@ -1274,7 +1274,7 @@ export default defineConfig({
     {
       name: 'data-teardown-perm-header-show-help',
       testMatch: /perm-header-show-help\.teardown\.ts/,
-      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // reason (see phase 140 WR-02): the F3 accounting assertion in
       // runTeardownAsserted is state-mutating — a retry always observes an
       // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
       // exactly the partial-delete class the assertion exists to catch, while
@@ -1301,7 +1301,7 @@ export default defineConfig({
     {
       name: 'data-teardown-perm-hide-all-nominations',
       testMatch: /perm-hide-all-nominations\.teardown\.ts/,
-      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // reason (see phase 140 WR-02): the F3 accounting assertion in
       // runTeardownAsserted is state-mutating — a retry always observes an
       // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
       // exactly the partial-delete class the assertion exists to catch, while
@@ -1328,7 +1328,7 @@ export default defineConfig({
     {
       name: 'data-teardown-perm-hide-if-missing-answers',
       testMatch: /perm-hide-if-missing-answers\.teardown\.ts/,
-      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // reason (see phase 140 WR-02): the F3 accounting assertion in
       // runTeardownAsserted is state-mutating — a retry always observes an
       // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
       // exactly the partial-delete class the assertion exists to catch, while
@@ -1355,7 +1355,7 @@ export default defineConfig({
     {
       name: 'data-teardown-perm-hide-election-tags',
       testMatch: /perm-hide-election-tags\.teardown\.ts/,
-      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // reason (see phase 140 WR-02): the F3 accounting assertion in
       // runTeardownAsserted is state-mutating — a retry always observes an
       // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
       // exactly the partial-delete class the assertion exists to catch, while
@@ -1382,7 +1382,7 @@ export default defineConfig({
     {
       name: 'data-teardown-perm-hide-category-tags',
       testMatch: /perm-hide-category-tags\.teardown\.ts/,
-      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // reason (see phase 140 WR-02): the F3 accounting assertion in
       // runTeardownAsserted is state-mutating — a retry always observes an
       // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
       // exactly the partial-delete class the assertion exists to catch, while
@@ -1410,7 +1410,7 @@ export default defineConfig({
     {
       name: 'data-teardown-perm-disable-allow-open',
       testMatch: /perm-disable-allow-open\.teardown\.ts/,
-      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // reason (see phase 140 WR-02): the F3 accounting assertion in
       // runTeardownAsserted is state-mutating — a retry always observes an
       // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
       // exactly the partial-delete class the assertion exists to catch, while
@@ -1426,7 +1426,7 @@ export default defineConfig({
       dependencies: ['data-setup-perm-disable-allow-open']
     },
 
-    // A10 — perm-question-video (EPERM-06). Voter visibility matrix (video on
+    // A10 — perm-question-video. Voter visibility matrix (video on
     // q1/q3/q5 only, none on q2/q4 or any category intro) + candidate hideVideo
     // slice (authenticated via a storage state minted in setup). Appended to the
     // perm tail after perm-disable-allow-open.
@@ -1439,7 +1439,7 @@ export default defineConfig({
     {
       name: 'data-teardown-perm-question-video',
       testMatch: /perm-question-video\.teardown\.ts/,
-      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // reason (see phase 140 WR-02): the F3 accounting assertion in
       // runTeardownAsserted is state-mutating — a retry always observes an
       // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
       // exactly the partial-delete class the assertion exists to catch, while
@@ -1455,7 +1455,7 @@ export default defineConfig({
       dependencies: ['data-setup-perm-question-video']
     },
 
-    // A11 — perm-interactive-info (EPERM-07). Voter questions-flow info matrix:
+    // A11 — perm-interactive-info. Voter questions-flow info matrix:
     // popup-modal mode (interactiveInfo.enabled=true, shipped default) vs the
     // static-expander mode (per-question re-seed), plus customData.infoSections
     // and per-type arguments (Likert/Boolean/Categorical). Unauthenticated voter
@@ -1470,7 +1470,7 @@ export default defineConfig({
     {
       name: 'data-teardown-perm-interactive-info',
       testMatch: /perm-interactive-info\.teardown\.ts/,
-      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // reason (see phase 140 WR-02): the F3 accounting assertion in
       // runTeardownAsserted is state-mutating — a retry always observes an
       // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
       // exactly the partial-delete class the assertion exists to catch, while
@@ -1486,7 +1486,7 @@ export default defineConfig({
       dependencies: ['data-setup-perm-interactive-info']
     },
 
-    // A12 — perm-org-matching (EPERM-10). Voter results-flow organization-match
+    // A12 — perm-org-matching. Voter results-flow organization-match
     // matrix: matching.organizationMatching none / answersOnly / impute, re-seeded
     // per mode. PRIMARY: exact per-mode org match scores (none → no score;
     // answersOnly → org's own answers only, blanks penalised polar-opposite;
@@ -1503,7 +1503,7 @@ export default defineConfig({
     {
       name: 'data-teardown-perm-org-matching',
       testMatch: /perm-org-matching\.teardown\.ts/,
-      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // reason (see phase 140 WR-02): the F3 accounting assertion in
       // runTeardownAsserted is state-mutating — a retry always observes an
       // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
       // exactly the partial-delete class the assertion exists to catch, while
@@ -1519,7 +1519,7 @@ export default defineConfig({
       dependencies: ['data-setup-perm-org-matching']
     },
 
-    // D-01 — perm-analytics-tracking (EFLOW-08). Voter analytics-tracking emission
+    // perm-analytics-tracking. Voter analytics-tracking emission
     // matrix: the analytics overlay (analytics.platform.name='umami',
     // trackEvents=true) is a singleton-clobbering app_settings node, so the
     // tracking-payload spec (voter-prefs-tracking) is hosted HERE under its own
@@ -1537,7 +1537,7 @@ export default defineConfig({
     {
       name: 'data-teardown-perm-analytics-tracking',
       testMatch: /perm-analytics-tracking\.teardown\.ts/,
-      // reason (Phase 140 WR-02): the F3 accounting assertion in
+      // reason (see phase 140 WR-02): the F3 accounting assertion in
       // runTeardownAsserted is state-mutating — a retry always observes an
       // already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask
       // exactly the partial-delete class the assertion exists to catch, while

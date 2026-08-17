@@ -1,5 +1,5 @@
 /**
- * The single source of truth for the D-07 multi-choice categorical
+ * The single source of truth for the multi-choice categorical
  * selection-count validity used by `OpinionQuestionInput` (and, transitively,
  * the voter persistence gate + candidate Save gate).
  *

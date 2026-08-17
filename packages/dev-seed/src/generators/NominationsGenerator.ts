@@ -3,7 +3,7 @@
  *
  * Nominations wire candidates / parties / factions / alliances to
  * elections × constituencies. This is the most constraint-heavy generator in
- * Phase 56; it encodes three layers of DB-side invariants client-side so
+ * see phase 56; it encodes three layers of DB-side invariants client-side so
  * misconfiguration fails fast with a readable error before bulk_import is
  * called.
  *
@@ -20,23 +20,23 @@
  *
  * Parent consistency (migration lines 360–373): if parent_nomination_id is
  * set, the child's election_id / constituency_id / election_round MUST match
- * the parent's. Phase 56's generator emits top-level candidate nominations
+ * the parent's. see phase 56's generator emits top-level candidate nominations
  * only (no parent), sidestepping this trigger path; `fixed[]` rows that
- * include parents rely on the user supplying consistent values — per D-22
+ * include parents rely on the user supplying consistent values —
  * "pure I/O" contract.
  *
- * GEN-08 enforcement (D-07.3): BEFORE emitting any generated row, the
+ * enforcement (.3): BEFORE emitting any generated row, the
  * generator validates that the refs it needs are populated in `ctx.refs`.
  * An empty ref throws a descriptive client-side error pointing at the
  * missing category, which surfaces cleanly in the pipeline's exception
  * path — far better than a PL/pgSQL `RAISE EXCEPTION` trace from
  * bulk_import's resolve_external_ref.
  *
- * Phase 56 emission strategy (deliberately minimal): for each candidate in
+ * see phase 56 emission strategy (deliberately minimal): for each candidate in
  * `ctx.refs.candidates` (up to `fragment.count`), emit ONE candidate-type
  * nomination wired to the FIRST election × FIRST constituency. This
  * exercises the polymorphism + ref-resolution code path end-to-end without
- * combinatorial cross-election × cross-constituency wiring. Phase 58
+ * combinatorial cross-election × cross-constituency wiring. see phase 58
  * templates override via `nominations: (fragment, ctx) => rows[]` for
  * richer topologies.
  *
@@ -44,7 +44,7 @@
  *   - `id` (auto-generated UUID)
  *   - `entity_type` (GENERATED column; migration line 724–731 — would fail
  *     "cannot write to generated column")
- *   - Redundant `organization` ref on candidate-type rows. RESEARCH §9
+ *   - Redundant `organization` ref on candidate-type rows. RESEARCH
  *     explicitly drops the legacy tests/ admin-client "emit both, strip
  *     one" workaround (lines 172–180): since dev-seed controls emission,
  *     it emits only the authoritative ref. The party-candidate
@@ -53,9 +53,9 @@
  * Polymorphism variants NOT produced in Phase 56's generated path:
  *   organization / faction / alliance nominations. The SHAPE supports them
  *   (PolymorphicRef union + `fixed[]` pass-through); users who want them
- *   supply via `fixed[]`. Phase 58 templates extend to generate them.
+ *   supply via `fixed `. see phase 58 templates extend to generate them.
  *
- * D-26: ctx captured at construction; `defaults(ctx)` is per-call per D-08.
+ * ctx captured at construction; `defaults(ctx)` is per-call.
  */
 
 import type { TablesInsert } from '@openvaa/supabase-types';
@@ -85,11 +85,11 @@ type NominationRow = Omit<TablesInsert<'nominations'>, 'election_id' | 'constitu
 export class NominationsGenerator {
   constructor(private ctx: Ctx) {}
 
-  // Phase 56 ignores ctx here; Phase 58 templates drive counts via
+  // see phase 56 ignores ctx here; see phase 58 templates drive counts via
   // `nominations: (fragment, ctx) => rows[]` overrides.
 
   defaults(ctx: Ctx): NominationsFragment {
-    // Default 0 — Phase 56 emits `fixed[]` or explicit count; Phase 58
+    // Default 0 — see phase 56 emits `fixed ` or explicit count; see phase 58
     // templates drive richer counts.
     return { count: 0 };
   }
@@ -100,7 +100,7 @@ export class NominationsGenerator {
 
     // fixed[] pass-through — user-authored nominations, prefix applied.
     // Users supplying fixed[] are responsible for polymorphism + hierarchy
-    // correctness (D-22 pure-I/O contract). bulk_import's CHECK constraint
+    // correctness (pure-I/O contract). bulk_import's CHECK constraint
     // and validate_nomination trigger catch any violations DB-side.
     for (const fx of fragment.fixed ?? []) {
       rows.push({
@@ -114,7 +114,7 @@ export class NominationsGenerator {
     // ctx.refs.candidates, capped at fragment.count.
     const n = fragment.count ?? 0;
     if (n > 0) {
-      // GEN-08: client-side ref validation. Throw with a descriptive error
+      // client-side ref validation. Throw with a descriptive error
       // that points at the missing ref category — catching this here is far
       // more debuggable than letting bulk_import fail deep in PL/pgSQL.
       this.assertRefsPopulated();
@@ -140,10 +140,10 @@ export class NominationsGenerator {
           election: { external_id: electionExtId },
           constituency: { external_id: constituencyExtId },
           election_round: 1
-          // No parent_nomination — Phase 56 candidate nominations are
+          // No parent_nomination — see phase 56 candidate nominations are
           // top-level for simplicity (sidesteps parent-consistency trigger).
           // No organization ref — that redundancy was the legacy tests/
-          // workaround (RESEARCH §9); dev-seed emits clean refs.
+          // workaround (RESEARCH); dev-seed emits clean refs.
         });
       }
     }
@@ -155,7 +155,7 @@ export class NominationsGenerator {
   }
 
   /**
-   * GEN-08 in-memory ref validation per D-07.3.
+   * in-memory ref validation per.3.
    *
    * Runs before any candidate-type nomination is emitted. Throws a
    * descriptive error pointing at the missing ref category, surfacing in

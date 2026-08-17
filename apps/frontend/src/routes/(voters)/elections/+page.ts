@@ -38,7 +38,7 @@ export async function load({ parent, params, route, url }) {
     dataRoot
   });
 
-  // CLEAN-02 (Phase 78 Plan 02): a `?next=` deferred target from
+  // (see phase 78 Plan 02): a `?next=` deferred target from
   // `(voters)/(located)/+layout.ts` is NOT a persistent search param, so it
   // gets dropped by buildRoute's `filterPersistent` pass. Forward it
   // explicitly so an auto-implied election still chains the deferred target

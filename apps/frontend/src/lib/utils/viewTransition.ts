@@ -8,7 +8,7 @@
  *
  * - `shouldAnimate` short-circuits on SSR, missing browser support,
  *   `prefers-reduced-motion: reduce` (VT-03 JS layer), and the `?notr=1`
- *   escape hatch (decision D-02 / 99-2).
+ *   escape hatch (decision 99-2).
  * - `startViewTransition` is a thin wrapper around the browser-native
  *   `document.startViewTransition`, using the built-in `lib.dom.d.ts`
  *   `ViewTransition` type (TS 5.9.3) so no local interface is hand-rolled and

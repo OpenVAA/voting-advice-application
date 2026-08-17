@@ -3,7 +3,7 @@
  *
  * Tests the pure functions extracted from the identity-callback Edge Function.
  * Covers PROVIDER_CONFIGS for both Signicat and Idura, and extractIdentityClaims
- * behavior with various payloads (D-07 from 48-CONTEXT.md).
+ * behavior with various payloads (from).
  *
  * No mocks needed -- claimConfig.ts has no external dependencies.
  */

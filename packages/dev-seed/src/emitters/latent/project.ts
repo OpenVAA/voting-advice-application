@@ -1,32 +1,32 @@
 /**
- * defaultProject — Phase 57 sub-step default behind `ctx.latent?.project` (GEN-06f).
+ * defaultProject — see phase 57 sub-step default behind `ctx.latent?.project` (GEN-06f).
  *
  * Projects each candidate's latent `position` through the loading matrix,
- * adds Gaussian noise (D-57-11; `noiseStdDev === 0` short-circuits via the
+ * adds Gaussian noise (`noiseStdDev === 0` short-circuits via the
  * shared `boxMuller`), and maps the resulting scalar `z` to a valid answer per
  * question type. This is the last and most complex of the six sub-step defaults.
  *
- * ## Per-type dispatch (matches Phase 56 S-2 pattern)
+ * ## Per-type dispatch (matches see phase 56 S-2 pattern)
  *
- *  - `singleChoiceOrdinal` → D-57-08: inverse-normalize `z` through
+ *  - `singleChoiceOrdinal` →: inverse-normalize `z` through
  *    `@openvaa/core`'s `COORDINATE` semantics to find the choice whose
  *    `normalizableValue` is closest. NO hand-rolled bucket tables.
- *  - `singleChoiceCategorical` → D-57-09: sample per-choice N(0,1) loading
+ *  - `singleChoiceCategorical` →: sample per-choice N(0,1) loading
  *    vectors (cached per-ctx), return `choice.id` of argmax dot product.
- *  - `multipleChoiceCategorical` → D-57-09 + S-4: include each choice whose
+ *  - `multipleChoiceCategorical` → S-4: include each choice whose
  *    dot product > 0; if none qualify, fall back to the argmax to satisfy
  *    the DB CHECK (parity with `pickMultipleChoiceIds` in answers.ts).
- *  - `text` / `multipleText` / `number` / `boolean` / `date` / `image` → D-57-10:
- *    delegate to `defaultRandomValidEmit` from answers.ts (Phase 56 parity).
- *  - Unknown types → compile-time `never` assertion (Phase 56 S-2 guardrail);
+ *  - `text` / `multipleText` / `number` / `boolean` / `date` / `image` →:
+ *    delegate to `defaultRandomValidEmit` from answers.ts (see phase 56 parity).
+ *  - Unknown types → compile-time `never` assertion (see phase 56 S-2 guardrail);
  *    runtime returns `{ value: null }` to match the enum-addition path.
  *
- * ## Per-choice loading cache — WeakMap by ctx identity (D-57-09 / D-57-13)
+ * ## Per-choice loading cache — WeakMap by ctx identity
  *
  * Categorical questions need per-choice loading vectors. These must be sampled
  * ONCE per pipeline run (same ctx → same cache → deterministic argmax across
  * candidates), NOT once per function invocation and NOT at module scope. The
- * emitter shell (Plan 57-07) calls `defaultProject` once per candidate, so a
+ * emitter shell calls `defaultProject` once per candidate, so a
  * function-local cache would give each candidate a different choice space —
  * wrong semantics. A module-level mutable object would leak between pipeline
  * runs.
@@ -75,9 +75,9 @@ function getChoiceLoadings(ctx: Ctx): Record<string, Array<Array<number>>> {
  * GEN-06f default: project `position` through `loadings` to a per-question
  * answer dict keyed by question `external_id`.
  *
- * Callers: `latentAnswerEmitter` (Plan 57-07) invokes this once per candidate
+ * Callers: `latentAnswerEmitter` invokes this once per candidate
  * after the one-shot space bundle is built. Users may replace this wholesale
- * via `ctx.latent.project = myProjectFn` (D-57-12).
+ * via `ctx.latent.project = myProjectFn`.
  *
  * Return shape matches `AnswerEmitter`'s return — `importAnswers` then resolves
  * each `external_id` to a question UUID and stitches the JSONB.
@@ -117,7 +117,7 @@ export function defaultProject(
       case 'boolean':
       case 'date':
       case 'image': {
-        // D-57-10 fallback — reuse the Phase 56 per-type stub one question at a
+        // fallback — reuse the Phase 56 per-type stub one question at a
         // time. The candidate argument is unused by `defaultRandomValidEmit`;
         // pass a minimal TablesInsert<'candidates'> shell.
         const fallback = defaultRandomValidEmit({} as TablesInsert<'candidates'>, [q], ctx);
@@ -125,7 +125,7 @@ export function defaultProject(
         break;
       }
       default: {
-        // Exhaustiveness guardrail (Phase 56 S-2): if the DB enum adds a new
+        // Exhaustiveness guardrail (see phase 56 S-2): if the DB enum adds a new
         // question_type without a matching case above, this line fails to
         // compile. Runtime fallback matches answers.ts's null-return policy.
         const _exhaustive: never = type;
@@ -148,7 +148,7 @@ function computeZ(position: Array<number>, qLoading: Array<number>, noiseStdDev:
 }
 
 /**
- * D-57-08: inverse-normalize `z` through `@openvaa/core`'s `COORDINATE`
+ * inverse-normalize `z` through `@openvaa/core`'s `COORDINATE`
  * semantics. `z` is clipped to `[COORDINATE.Min, COORDINATE.Max]` (Pitfall 1
  * of T-57-26 — unbounded z from noise could otherwise land outside the
  * normalizable range and produce NaN target values). The inverse of
@@ -219,7 +219,7 @@ function mapMultiCategorical(
       bestIdx = i;
     }
   }
-  // D-57-09 / S-4: guarantee ≥ 1 selection. DB CHECK on multi-choice requires
+  // / S-4: guarantee ≥ 1 selection. DB CHECK on multi-choice requires
   // at least one id per row; if every dot product fell ≤ 0, fall back to the
   // argmax choice. Mirrors `pickMultipleChoiceIds` in answers.ts.
   if (picked.length === 0) picked.push(choices[bestIdx]);

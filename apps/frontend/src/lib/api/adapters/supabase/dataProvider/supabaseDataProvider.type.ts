@@ -2,7 +2,7 @@ import type { Id } from '@openvaa/core';
 import type { EntityType } from '@openvaa/data';
 
 /**
- * Adapter-internal flattened view of a Nomination during the v2.6 Phase 64
+ * Adapter-internal flattened view of a Nomination during the v2.6 see phase 64
  * reverse-fill pass. See `supabaseDataProvider.ts:365-417` for the consuming logic.
  *
  * The reverse-fill walks the post-`toDataObject` `nominations` array twice:
@@ -22,7 +22,7 @@ import type { EntityType } from '@openvaa/data';
  * Adapter-internal: not exported beyond `supabaseDataProvider.ts`. Filename
  * uses singular `.type.ts` to match the codebase convention (30+ sibling
  * `.type.ts` files exist under `apps/frontend/src/lib`; zero plural
- * `.types.ts` files exist) — this deviates from the literal CONTEXT D-03
+ * `.types.ts` files exist) — this deviates from the literal CONTEXT
  * string `supabaseDataProvider.types.ts`. Convention beats the literal.
  *
  * Note: `Id` is exported from `@openvaa/core` (not `@openvaa/data` as the

@@ -24,7 +24,7 @@ Displays information about the privacy policy of the app as well as the possible
 
   const ctx = getAppContext();
   const { getRoute, t } = ctx;
-  // appSettings is a reactive accessor (Phase 113 flatten) — read via ctx.X, never destructure.
+  // appSettings is a reactive accessor (see phase 113 flatten) — read via ctx.X, never destructure.
   const appSettings = $derived(ctx.appSettings);
 
   // Construct the analytics link for privacy translations

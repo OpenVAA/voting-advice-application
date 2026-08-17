@@ -1,7 +1,7 @@
 import type { LayoutLoad } from './$types';
 
 /**
- * D-01 parity load for the questions route (Phase 100 Plan 100-02).
+ * parity load for the questions route (see phase 100).
  *
  * Establishes the unified-layout-with-empty-leaf pattern that already ships in
  * production at `results/[[electionTab]]/+layout.ts`. Question data flows through

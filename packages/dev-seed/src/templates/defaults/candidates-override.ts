@@ -69,7 +69,7 @@ const LOCALE_SEED_OFFSETS: Record<LocaleCode, number> = {
 /**
  * Build a per-locale Faker instance. Fallback chain `[locale, en]` keeps name
  * generation robust if the locale pack lacks an entry. Seed is the ctx base
- * seed plus a fixed per-locale offset (Pattern A, RESEARCH §5).
+ * seed plus a fixed per-locale offset (Pattern A, RESEARCH).
  *
  * The base seed is read defensively — we cannot extract the *original* seed
  * from `ctx.faker` once draws have occurred (faker.seed() without args

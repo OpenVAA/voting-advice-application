@@ -2,8 +2,8 @@
  * Default-template nominations override — distribution tests.
  *
  * Covers the PARTY_CONSTITUENCY_MATRIX integrity + the end-to-end override shape.
- * Phase 58 UAT follow-up (2026-04-23); Phase 64 manual-smoke densification +
- * parent_nomination wiring (2026-04-28); Phase 67 adds 10 alliance noms
+ * see phase 58 UAT follow-up (2026-04-23); see phase 64 manual-smoke densification +
+ * parent_nomination wiring (2026-04-28); see phase 67 adds 10 alliance noms
  * (2 alliances × 5 constituencies) emitted from this override into the
  * nominations table (alliance ENTITY rows live in alliances-override.ts).
  */
@@ -140,7 +140,7 @@ describe('nominationsOverride', () => {
 
   it('every candidate-type nomination references a valid (party × constituency) parent_nomination', () => {
     const rows = nominationsOverride({}, makeCtx(CANONICAL));
-    // Phase 67: scope parent set to org-noms specifically (alliance noms are
+    // see phase 67: scope parent set to org-noms specifically (alliance noms are
     // in the row set but candidate parents are only ever org-noms).
     const orgIds = new Set(
       rows

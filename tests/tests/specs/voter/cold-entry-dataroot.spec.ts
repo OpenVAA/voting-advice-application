@@ -1,7 +1,7 @@
 /**
- * Cold / direct-URL entry dataRoot reactivity regression (Phase 117 COLD-03).
+ * Cold / direct-URL entry dataRoot reactivity regression (see phase 117).
  *
- * Root cause (LOCKED — debug `dataroot-stale-direct-nav` + Spike 024): an
+ * Root cause (LOCKED — debug `dataroot-stale-direct-nav` + see spike 024): an
  * intermediate `const dataRoot = $derived(ctx.dataRoot)` alias over the
  * identity-stable, `#version`-bridge `DataRoot` yields the SAME object reference
  * on every version bump, so Svelte 5's referential-equality rule SKIPS downstream
@@ -9,7 +9,7 @@
  * downstream consumer keeps the empty pre-mount snapshot → the elections list /
  * info election region never renders.
  *
- * These tests are the negative control for the COLD-01 codemod: they FAIL against
+ * These tests are the negative control for the codemod: they FAIL against
  * the pre-fix (aliased) source (the data-dependent region never appears → timeout)
  * and PASS once each consumer reads `ctx.dataRoot.<prop>` directly in its tracking
  * scope. NO intro→Continue walk — a bare hard navigation IS the cold entry; the

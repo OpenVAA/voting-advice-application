@@ -3,7 +3,7 @@ import type { ReactiveHandle } from './reactiveHandle.type';
 /**
  * A link to the user survey, including the session ID, or `undefined` if the survey is not configured.
  *
- * Pure-rune producer (CTX-06): reads its `appSettings` / `sessionId` inputs via
+ * Pure-rune producer: reads its `appSettings` / `sessionId` inputs via
  * `.current` getters — no store bridge over the inputs nor the output. The
  * store-shaped exported surface (`$surveyLink` consumers) is owned by the
  * `appContext` seam, which wraps this handle back to a readable store.

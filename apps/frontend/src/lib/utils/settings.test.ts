@@ -3,7 +3,7 @@ import { mergeAppSettings, mergeInitialAppSettings } from './settings';
 import type { DynamicSettings, StaticSettings } from '@openvaa/app-shared';
 
 /**
- * Wave-0 purity gate for `mergeAppSettings` (CTX-01 / D-05, Pattern 8).
+ * Wave-0 purity gate for `mergeAppSettings` (Pattern 8).
  *
  * The historical bug: `mergeAppSettings` returned `Object.assign(target, nonNull)`,
  * mutating the shared `staticSettings` module reference and polluting every other
@@ -68,7 +68,7 @@ describe('mergeAppSettings', () => {
 });
 
 /**
- * D-04 (CTX-01) SSR-init assertion. `appContext` folds the DB override into the
+ * SSR-init assertion. `appContext` folds the DB override into the
  * INITIAL `$state` value via `mergeInitialAppSettings` (read synchronously from
  * `page.data.appSettingsData`). Because the merge happens at init — NOT in an
  * `$effect` (which never runs on the server) — the server-rendered HTML already

@@ -29,7 +29,7 @@ Accesses `AppContext` to get `appSettings` and `userPreferences`.
 
   const ctx = getAppContext();
   const { userPreferences, t } = ctx;
-  // appSettings is a reactive accessor (Phase 113 flatten) — read via ctx.X, never destructure.
+  // appSettings is a reactive accessor (see phase 113 flatten) — read via ctx.X, never destructure.
   const appSettings = $derived(ctx.appSettings);
   let clicked: boolean = $state(false);
 </script>

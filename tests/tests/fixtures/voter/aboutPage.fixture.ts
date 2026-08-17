@@ -1,8 +1,8 @@
 /**
- * @file aboutPage fixture (voter — EPERM-10 secondary).
+ * @file aboutPage fixture (voter — secondary).
  *
  * Function-fixture exposing the About-page org-matching disclosure reader
- * consumed by the Phase-120 EPERM-10 spec. Mirrors the `feedbackDialog.fixture.ts`
+ * consumed by the Phase-120 spec. Mirrors the `feedbackDialog.fixture.ts`
  * testid-anchored reader-factory shape and routes every locator through
  * `testIds` (A3 — no raw locators). Composed into the voter `views.ts` root.
  *

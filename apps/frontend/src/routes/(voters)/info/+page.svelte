@@ -18,8 +18,8 @@ Displays information about the elections in the VAA.
   // dataRoot is identity-stable (#version-bridge): NEVER bind it to an intermediate $derived alias and read through
   // the alias — the alias yields the same DataRoot ref on each #version bump, so Svelte 5 skips downstream
   // notification and the cold/direct-URL election region stays empty. Read `ctx.dataRoot.<prop>` directly inside each
-  // consuming tracking scope. See CLAUDE.md §Context Destructuring Rule + .planning/spikes/CONVENTIONS.md §9
-  // (Spike-024 anti-pattern entry). Phase 117 COLD-01.
+  // consuming tracking scope. See CLAUDE.md §Context Destructuring Rule
+  // (see spike 024 anti-pattern entry). see phase 117.
 
   const { topBarSettings } = getLayoutContext();
   topBarSettings.use({

@@ -37,7 +37,7 @@ Use to group `NavItem` components. Displays a faint line above the group.
   setContext(NAV_GROUP_CONTEXT_KEY, true);
 </script>
 
-<!-- reason: <section> preserved for `:before` line-separator CSS; role="list" migrated to inner <div> for axe `list` rule compliance (Phase 80 D-02). -->
+<!-- reason: <section> preserved for `:before` line-separator CSS; role="list" migrated to inner <div> for axe `list` rule compliance (see phase 80). -->
 <section
   {...concatClass(
     restProps,

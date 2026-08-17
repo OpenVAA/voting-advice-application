@@ -5,7 +5,7 @@
  * the perm serial chain — A4). Guarantees two things before the journey spec
  * runs:
  *
- *  1. The multi-election dataset (D-04). Seeds the DEDICATED
+ *  1. The multi-election dataset. Seeds the DEDICATED
  *     `perm-bankauth-notloc` TEMPLATE (registry key
  *     `packages/dev-seed/src/templates/index.ts` →
  *     `permBankauthNotLocatedTemplate`) — a Phase 140 CR-01 copy of
@@ -15,7 +15,7 @@
  *     selector to render; A1 confirmed; no fallback to `perm-2e-asymmetric`
  *     needed), under its OWN `e2e-bankauth-notloc-` row prefix.
  *
- *     Phase 140 CR-01: this project originally reused the SHARED
+ *     see phase 140 CR-01: this project originally reused the SHARED
  *     `perm-not-located-2e2cg` template verbatim, which meant its teardown
  *     shared the `e2e-perm-notloc-` PREFIX with
  *     `perm-not-located-2e2cg.teardown.ts`. The two data-teardown projects
@@ -31,7 +31,7 @@
  *     THIS setup is needed: the dedicated prefix means this setup never needs
  *     to wipe the `test-` / `e2e-perm-` namespaces it does not own.
  *
- *     Phase 140 CR-01 (iteration-2 regression fix): the dedicated
+ *     see phase 140 CR-01 (iteration-2 regression fix): the dedicated
  *     `e2e-bankauth-notloc-` prefix also sits outside every EXISTING sweep in
  *     the suite (`base.setup`'s old `'e2e-perm-'` pre-clear, and all 19 perm
  *     setups' `['test-', 'e2e-perm-']`), so a failed/aborted teardown here
@@ -61,7 +61,7 @@ import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { setupFromTemplate } from '../shared/setupFromTemplate';
 
 setup('seed perm-bankauth-notloc + pre-clean bank-auth-journey identity', async () => {
-  // D-04 / Phase 140 CR-01: seed the DEDICATED perm-bankauth-notloc template
+  // / see phase 140 CR-01: seed the DEDICATED perm-bankauth-notloc template
   // (own `e2e-bankauth-notloc-` prefix — see the file docblock for why this is
   // a separate template rather than a runtime prefix override on the shared
   // perm-not-located-2e2cg template).
@@ -72,7 +72,7 @@ setup('seed perm-bankauth-notloc + pre-clean bank-auth-journey identity', async 
   // preregister flow ONLY when it is truthy. We do NOT enable it in the
   // template nor in `MINIMAL_BASE_APP_SETTINGS`. Instead we overlay the scoped
   // flag onto the runtime DB row AFTER seeding via `appSettingsOverride`
-  // (additive merge_jsonb_column). Phase 140 review WR-08: the paired teardown
+  // (additive merge_jsonb_column). see phase 140 review WR-08: the paired teardown
   // no longer restores `{ enabled: false }` itself — that write was not
   // ordered relative to the perm chain and could clobber it mid-run. This
   // project now always depends on `data-setup-base` (CR-01), and EVERY
@@ -83,7 +83,7 @@ setup('seed perm-bankauth-notloc + pre-clean bank-auth-journey identity', async 
   //
   // No `extraTeardownPrefix` pre-clear: `perm-bankauth-notloc-` is this
   // project's OWN dedicated namespace, so there is nothing to wipe on behalf
-  // of another chain (Phase 140 CR-01 — the prior `['test-', 'e2e-perm-']`
+  // of another chain (see phase 140 CR-01 — the prior `['test-', 'e2e-perm-']`
   // pre-clear wiped namespaces this project does not own).
   await setupFromTemplate('perm-bankauth-notloc', {
     appSettingsOverride: { preRegistration: { enabled: true } }

@@ -1,8 +1,8 @@
 /**
- * `defaultSpread` unit tests (Plan 57-02 Task 2).
+ * `defaultSpread` unit tests (Task 2).
  *
  * Covers the RED/GREEN gate for `src/emitters/latent/spread.ts`:
- *   - Test 1: no template override → D-57-04 default `0.15`.
+ *   - Test 1: no template override → default `0.15`.
  *   - Test 2: scalar template override forwarded verbatim.
  *   - Test 3: `tplSpread === 0` preserved (nullish-coalesce, not `||`) — collapses
  *     candidates to centroids, a legal deterministic mode.
@@ -10,7 +10,7 @@
  *     consulted.
  *   - Test 5: purity — defaultSpread consumes ZERO faker draws across varied inputs.
  *
- * D-22 contract: pure I/O. No Supabase imports, no `createClient`, no `.rpc()`.
+ * contract: pure I/O. No Supabase imports, no `createClient`, no `.rpc `.
  */
 
 import { describe, expect, it } from 'vitest';

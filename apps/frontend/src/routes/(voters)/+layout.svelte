@@ -33,8 +33,8 @@
   // Init Voter Context
   ////////////////////////////////////////////////////////////////////
 
-  // WR-04 (Phase 86.3 review): popupQueue is a stable instance reference per
-  // CLAUDE.md "Context Destructuring Rule §1" — popupStore() returns an object
+  // WR-04 (see phase 86.3 review): popupQueue is a stable instance reference per
+  // CLAUDE.md "Context Destructuring Rule " — popupStore returns an object
   // literal `{ push, shift, subscribe }` (popupStore.svelte.ts:23) attached as
   // a plain context property (appContext.svelte.ts:226), NOT a $state/$derived
   // getter. The `push`/`shift`/`subscribe` methods are bound function
@@ -43,7 +43,7 @@
   // queue. DO NOT swap popupQueue for a $derived/$state-based collection (or
   // a getter on the context object) without migrating consumers to
   // `ctx.popupQueue.push(...)` per the destructuring rule.
-  // appSettings is a reactive accessor (Phase 113 flatten) — read via
+  // appSettings is a reactive accessor (see phase 113 flatten) — read via
   // `ctx.appSettings`, never destructure (the alias below tracks it).
   const ctx = initVoterContext();
   const { appType, popupQueue, userPreferences, t } = ctx;
@@ -56,13 +56,13 @@
 
   const { navigation, useTopBar } = getLayoutContext();
 
-  // Phase 86.3-01 SETTINGS-01 wave A fix (cells #1 + #2): the top-bar overlay must
+  // see phase 86.3-01 wave A fix (cells #1 + #2): the top-bar overlay must
   // be reactive on appSettings so runtime overrides via
   // mergeAppSettings(page.data.appSettingsData) (appContext.svelte.ts:93-100)
   // propagate to the header Banner. Mirrors the canonical $effect pattern at
   // appContext.svelte.ts:93-100.
   //
-  // CTX-04 (Phase 95-05): migrated off the StackedState revert/push-baseline
+  // (see phase 95): migrated off the StackedState revert/push-baseline
   // pattern to the token-keyed settingsOverlay registry. `useTopBar(...)` is
   // `$effect(() => topBar.push(overlay))` — a NESTED effect. When this OUTER
   // $effect re-runs on an appSettings change, Svelte tears down the nested
@@ -89,7 +89,7 @@
   // Popup management
   ////////////////////////////////////////////////////////////////////
 
-  // Phase 86.3-01 cell #3 (notifications.voterApp) REVERTED 2026-05-20 to the
+  // see phase 86.3-01 cell #3 (notifications.voterApp) REVERTED 2026-05-20 to the
   // pre-86.3 onMount-only queueing semantic. The reactive `$effect` rewrite
   // surfaced an unintended interaction with test-infrastructure conventions:
   // multiple e2e specs leave `notifications.voterApp.show: true` in their
@@ -103,7 +103,7 @@
   //
   // Cell #3 disposition is now REVERT-TO-ONMOUNT (downgraded from FIX-PASS),
   // matching the Phase 77 baseline. The DataConsentPopup branch (below) stays
-  // in the same onMount per Plan 86.3-01 small-fix constraint (CONTEXT D-10).
+  // in the same onMount per -01 small-fix constraint (CONTEXT).
   onMount(() => {
     if (!appSettings.access.voterApp) return;
     // Queue the voter-app notification popup (cell #3 — onMount one-shot).

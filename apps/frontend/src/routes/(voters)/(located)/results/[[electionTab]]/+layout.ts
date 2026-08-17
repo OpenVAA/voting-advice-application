@@ -3,12 +3,12 @@ import { parseParams } from '$lib/utils/route';
 import type { LayoutLoad } from './$types';
 
 /**
- * Server-side electionTab validation + auto-canonicalization (Phase 88 Plan
+ * Server-side electionTab validation + auto-canonicalization (see phase 88 Plan
  * 88-02 Task 6, simplified by the post-88-02 follow-up that broke the
  * route-shape redirect loop).
  *
  * Name-disjoint dissociation (unchanged from 88-02):
- *   - ROUTE side: `params.electionTab` (Plan 88-02 new) = SELECTED singular
+ *   - ROUTE side: `params.electionTab` (new) = SELECTED singular
  *     election whose results page is being rendered.
  *   - SEARCH side: `?electionId=…` / `electionId[N]=…` (existing
  *     PERSISTENT_SEARCH_PARAMS member at `$lib/utils/route/params.ts`) =

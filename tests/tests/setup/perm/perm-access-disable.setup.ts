@@ -1,5 +1,5 @@
 /**
- * perm-access-disable data-setup project (EPERM-11, consolidated).
+ * perm-access-disable data-setup project (consolidated).
  *
  * Invokes setupFromTemplate('perm-access-disable').
  * Prefix: 'e2e-perm-access-disable-'.

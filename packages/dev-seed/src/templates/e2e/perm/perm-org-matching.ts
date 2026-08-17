@@ -1,5 +1,5 @@
 /**
- * perm-org-matching minimal-data template (EPERM-10).
+ * perm-org-matching minimal-data template.
  *
  * Topology: 1 election, 1 CG with 1 CO, 2 organisations, member candidates,
  * ONE opinion category with FOUR Likert-5 questions. The dataset is shaped so
@@ -28,7 +28,7 @@
  *   - q4: or-1 BLANK; member ca-1-1a = '5' (imputes agreement).
  * Under `answersOnly` the blanks q3/q4 are penalised (treated as '1'); under
  * `impute` they become '5'. The two scores therefore differ for the polar-max
- * voter, satisfying the EPERM-10 distinguishability requirement.
+ * voter, satisfying the distinguishability requirement.
  *
  * Org own answers are stitched by the Writer's `importAnswers` pass (which —
  * as of Phase 119 — generalises over candidates AND organizations); the org
@@ -246,7 +246,7 @@ export const permOrgMatchingTemplate: Template = {
           ...MINIMAL_BASE_APP_SETTINGS,
           matching: {
             ...MINIMAL_BASE_APP_SETTINGS.matching,
-            // Default mode; the EPERM-10 spec re-seeds the singleton with each
+            // Default mode; the spec re-seeds the singleton with each
             // of {none, answersOnly, impute} to assert distinguishable scores.
             organizationMatching: 'impute'
           }

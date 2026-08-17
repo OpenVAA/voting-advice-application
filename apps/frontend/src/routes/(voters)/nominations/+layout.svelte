@@ -21,7 +21,7 @@ Provides the data used by the nominations route.
 
   let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
-  // dataRoot is a reactive accessor (Phase 113 flatten) — read via ctx.dataRoot,
+  // dataRoot is a reactive accessor (see phase 113 flatten) — read via ctx.dataRoot,
   // never destructure. The reads below are deliberately INSIDE the non-reactive `update()`
   // function so dataRoot is not tracked (tracking it would cause an infinite loop).
   const ctx = getVoterContext();

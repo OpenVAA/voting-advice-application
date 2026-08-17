@@ -2,12 +2,12 @@
  * OrganizationsGenerator — foundation generator for the `organizations` table
  * (political parties in VAA terminology).
  *
- * RESEARCH §4.8: `project_id` is required; `auth_user_id` is nullable FK to
- * auth.users (left NULL — Phase 56 scope excludes auth); `answers` defaults to
+ * RESEARCH: `project_id` is required; `auth_user_id` is nullable FK to
+ * auth.users (left NULL — see phase 56 scope excludes auth); `answers` defaults to
  * '{}' at the DB level; standard DataObject scaffolding otherwise. No content
  * FK refs on this table.
  *
- * D-04/D-26/D-08 + GEN-02/GEN-04 apply — see ElectionsGenerator.ts for the
+ * apply — see ElectionsGenerator.ts for the
  * canonical-pattern rationale.
  *
  * Default count = 4: enough parties for matching/filtering sanity-checks
@@ -23,7 +23,7 @@ export type OrganizationsFragment = Fragment<TablesInsert<'organizations'>>;
 export class OrganizationsGenerator {
   constructor(private ctx: Ctx) {}
 
-  // Phase 56 ignores ctx here; Phase 57/58 generators read ctx.refs to scale counts.
+  // see phase 56 ignores ctx here; see phase 57/58 generators read ctx.refs to scale counts.
 
   defaults(ctx: Ctx): OrganizationsFragment {
     return { count: 4 };
@@ -51,7 +51,7 @@ export class OrganizationsGenerator {
         color: { normal: faker.color.rgb(), dark: faker.color.rgb() },
         sort_order: i,
         is_generated: true
-        // `auth_user_id` omitted — Phase 56 scope excludes auth (RESEARCH §4.8).
+        // `auth_user_id` omitted — see phase 56 scope excludes auth (RESEARCH).
         // `answers` omitted — DB default '{}' applies.
       });
     }

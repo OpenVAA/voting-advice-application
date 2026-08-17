@@ -1,5 +1,5 @@
 /**
- * D-58-14 CLI success summary — plain text, stdout, human-readable.
+ * CLI success summary — plain text, stdout, human-readable.
  *
  * Output shape (fixed — not a machine-parseable format):
  *
@@ -14,7 +14,7 @@
  *   ─────────────────────────────── ──────────
  *   Total                          251
  *
- * Deferred (D-58-14 note): `--output json` mode for CI/machine consumption.
+ * Deferred (note): `--output json` mode for CI/machine consumption.
  */
 
 export interface SummaryInput {

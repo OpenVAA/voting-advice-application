@@ -33,7 +33,7 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
   } = $props();
 
   // `darkMode` is a stable `{ readonly current }` rune handle from AppContext.
-  // `appSettings` is a reactive accessor (Phase 113 flatten) — read via
+  // `appSettings` is a reactive accessor (see phase 113 flatten) — read via
   // `ctx.appSettings`, never destructure (the alias below tracks it).
   const ctx = getAppContext();
   const { darkMode, t } = ctx;

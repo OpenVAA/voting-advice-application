@@ -1,12 +1,12 @@
 /**
  * Shared test utilities for `@openvaa/dev-seed` generator unit tests.
  *
- * D-22: tests are pure I/O — NO Supabase imports, NO `createClient`, NO `.rpc()`.
+ * tests are pure I/O — NO Supabase imports, NO `createClient`, NO `.rpc `.
  * Each test constructs a fresh `Ctx` via `makeCtx()` with a seeded Faker instance,
  * synthetic bootstrap refs, and a no-op logger. Overrides are spread LAST so tests
  * can patch `refs`, `logger`, `answerEmitter`, etc. per scenario.
  *
- * Pattern A per RESEARCH §5: fresh `new Faker()` + `.seed()` per call — never
+ * Pattern A per RESEARCH: fresh `new Faker ` + `.seed ` per call — never
  * module-level `faker.seed()` (shared-state trap). Same construction pattern as
  * `buildCtx` in `src/ctx.ts`, minus the `Template` argument (tests don't exercise
  * the template-merge surface; that lives in Plan 09's cross-cutting tests).

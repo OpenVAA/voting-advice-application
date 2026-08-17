@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { isMultiChoiceCountValid } from './multiChoiceValidity';
 
 /**
- * D-07 boundary matrix for the multi-choice selection-count validity helper.
+ * boundary matrix for the multi-choice selection-count validity helper.
  *
  * `isMultiChoiceCountValid` is the single source of truth for whether a
  * multi-choice categorical selection of a given size is a saveable answer:

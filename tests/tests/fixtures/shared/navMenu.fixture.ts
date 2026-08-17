@@ -1,5 +1,5 @@
 /**
- * @file navMenu reader fixture (EFLOW-09 / EFLOW-11).
+ * @file navMenu reader fixture.
  *
  * Shared, cross-app function-fixture for the navigation menu. Used by both the
  * voter and candidate nav assertions.
@@ -16,10 +16,10 @@
  * ## Surface
  *  - menu                       — the nav-menu root Locator.
  *  - items()                    — all nav-menu-item Locators inside the menu.
- *  - openMobileNav()            — click the hamburger toggle (EFLOW-11); the
+ *  - openMobileNav — click the hamburger toggle; the
  *                                 mobile-only open step before reading items.
  *  - expectNavMenuItems(items)  — assert the menu contains EXACTLY the given
- *                                 item labels, in order (EFLOW-09).
+ *                                 item labels, in order.
  *
  * **Rigidity contract**: no soft assertions, no try/catch wrapping an
  * assertion, no best-effort swallowing of assertion-bearing interactions.
@@ -35,11 +35,11 @@ export interface NavMenuFixture {
   readonly menu: Locator;
   /** All nav-menu-item Locators inside the menu. */
   items(): Locator;
-  /** Click the mobile hamburger toggle to open the nav drawer (EFLOW-11). */
+  /** Click the mobile hamburger toggle to open the nav drawer. */
   openMobileNav(): Promise<void>;
   /**
    * Assert the menu contains exactly `expected` item labels, in order
-   * (EFLOW-09). Each entry is matched against the corresponding item's
+   * . Each entry is matched against the corresponding item's
    * accessible name (regex or substring).
    */
   expectNavMenuItems(expected: Array<RegExp | string>): Promise<void>;

@@ -1,19 +1,19 @@
 /**
- * defaultPositions tests (Plan 57-04 Task 1).
+ * defaultPositions tests (Task 1).
  *
- * Covers GEN-06d / D-57-04 — per-candidate isotropic Gaussian draw around a
+ * Covers GEN-06d — per-candidate isotropic Gaussian draw around a
  * party centroid. The position default is the only sub-step that runs
- * per-candidate (D-57-13 — dims/centroids/loadings/spread are closure-cached
+ * per-candidate (dims/centroids/loadings/spread are closure-cached
  * by the emitter shell). Tests pin:
  *   - shape + higher-dim generalization (Tests 1, 2)
- *   - D-57-04 / D-57-11 short-circuit when `spread === 0` (Tests 3, 4)
+ *   - short-circuit when `spread === 0` (Tests 3, 4)
  *   - statistical correctness: centered at centroid, std matches spread,
  *     isotropic across dims, zero cross-dim correlation (Tests 5, 6, 7)
  *   - API behaviour — partyIdx selection, determinism (Tests 8, 9)
  *   - error handling for out-of-range partyIdx (Test 10)
  *   - Pitfall 1 finiteness regression over 1000 varied-spread calls (Test 11)
  *
- * D-22 contract: pure I/O, no Supabase imports.
+ * contract: pure I/O, no Supabase imports.
  */
 
 import { describe, expect, it } from 'vitest';

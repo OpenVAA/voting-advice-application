@@ -1,8 +1,8 @@
 /**
  * FactionsGenerator unit tests.
  *
- * D-22 acceptance criteria (a)–(e) + default count = 0 (templates must opt-in
- * explicitly per RESEARCH §4.10 — factions are uncommon in VAA datasets).
+ * acceptance criteria (a)–(e) + default count = 0 (templates must opt-in
+ * explicitly per RESEARCH — factions are uncommon in VAA datasets).
  */
 
 import { describe, expect, it } from 'vitest';

@@ -141,12 +141,12 @@ describe.each(otherLocales)(`'%s' has same message keys as '${firstLocale}'`, (l
 const EXPECTED_MESSAGES_ONLY = new Set(translationLocales.map((locale) => `lang.${locale}`));
 
 /**
- * Cross-catalog key-set parity (FIX-02 / D-10).
+ * Cross-catalog key-set parity.
  *
  * The two i18n catalogs are independent. `src/lib/i18n/translations/` feeds the `TranslationKey` type;
  * `apps/frontend/messages/` feeds the Paraglide runtime. Adding a key to only the former still
  * type-checks, and at runtime `t()` then renders the raw dotted key path to the user. Seven real
- * user-facing strings shipped through exactly that gap before Phase 134 closed them (including an
+ * user-facing strings shipped through exactly that gap before see phase 134 closed them (including an
  * `aria-label` that announced `components.accordionSelect.listboxAriaLabel` to screen readers).
  * These two assertions make that defect class structurally unreinventable.
  *
@@ -217,7 +217,7 @@ test('all message files are valid JSON', () => {
 
 describe('TranslationKey type safety (CLEAN-04)', () => {
   test('t() signature rejects non-TranslationKey strings at compile-time', () => {
-    // reason: regression-locker for Phase 78 CLEAN-04 (CONTEXT D-11 + RESEARCH Q7).
+    // reason: regression-locker for Phase 78 (CONTEXT RESEARCH Q7).
     // If `t()` in wrapper.ts is loosened back to `key: string`, the @ts-expect-error
     // directive below becomes "unused @ts-expect-error" and the typecheck (yarn check)
     // fails. The real assertion is the compiler — the runtime smoke below only satisfies

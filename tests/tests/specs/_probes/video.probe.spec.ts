@@ -1,5 +1,5 @@
 /**
- * @file video.probe.spec.ts — smoke/probe for the `video` fixture (EPERM-06).
+ * @file video.probe.spec.ts — smoke/probe for the `video` fixture.
  *
  * SC2 (A8 fixtures-first): each NEW Phase-119 fixture is exercised by at least
  * one smoke/probe that proves its preparatory steps + view manipulation BEFORE
@@ -56,14 +56,14 @@ test.describe('@probe video fixture (EPERM-06)', () => {
     // sets `questions.questionsIntro.show=false` (MINIMAL_BASE_APP_SETTINGS), so
     // the intro page auto-redirects on mount PAST the `voter-questions-start`
     // button straight to the category intro (`categoryIntros.show=true` here).
-    // walkUntilQuestionsIntro is bypass-tolerant (Phase 120-01) and lands on the
-    // category intro directly. See 120-01-PROBE-DIAGNOSIS.md.
+    // walkUntilQuestionsIntro is bypass-tolerant (see phase 120) and lands on the
+    // category intro directly..
     await walkUntilQuestionsIntro(page);
 
     // Under perm-question-video the questions-intro is bypassed (show=false) and
     // walkUntilQuestionsIntro deterministically lands on the category intro
     // (categoryIntros.show=true). No questions-start dispatch is needed — the
-    // page is already on the category intro. See 120-01-PROBE-DIAGNOSIS.md.
+    // page is already on the category intro..
     const categoryStart = page.getByTestId(testIds.voter.questions.categoryStart);
 
     // On the category intro: NO question video here (seeded on questions only).

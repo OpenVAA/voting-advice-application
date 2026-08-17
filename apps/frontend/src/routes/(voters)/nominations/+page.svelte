@@ -19,7 +19,7 @@ List all nominations in the application.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // dataRoot/locale are reactive accessors (Phase 113 flatten) — read via ctx.X, never destructure.
+  // dataRoot/locale are reactive accessors (see phase 113 flatten) — read via ctx.X, never destructure.
   const ctx = getVoterContext();
   const { t } = ctx;
 

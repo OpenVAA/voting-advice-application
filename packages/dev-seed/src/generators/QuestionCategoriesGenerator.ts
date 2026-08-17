@@ -1,7 +1,7 @@
 /**
  * QuestionCategoriesGenerator — content generator for the `question_categories` table.
  *
- * RESEARCH §4.12: `project_id` is required; optional `category_type` enum defaults
+ * RESEARCH: `project_id` is required; optional `category_type` enum defaults
  * to 'opinion'; `election_ids`/`election_rounds`/`constituency_ids`/`entity_type`
  * JSONB filters default to NULL.
  *
@@ -12,12 +12,12 @@
  * output sentinel-free also means unit tests can assert raw `TablesInsert` shape
  * without filtering sentinels.
  *
- * D-04/D-26/D-08 + GEN-02/GEN-04 apply — see ElectionsGenerator.ts for the
+ * apply — see ElectionsGenerator.ts for the
  * canonical-pattern rationale.
  *
  * Default count = 2: enough category diversity for Phase 56 plumbing
  * (e.g. "Economy", "Environment") so QuestionsGenerator's rotation assigns
- * questions across more than one category. Phase 58 templates can override.
+ * questions across more than one category. see phase 58 templates can override.
  */
 
 import type { Enums, TablesInsert } from '@openvaa/supabase-types';
@@ -28,7 +28,7 @@ export type QuestionCategoriesFragment = Fragment<TablesInsert<'question_categor
 export class QuestionCategoriesGenerator {
   constructor(private ctx: Ctx) {}
 
-  // Phase 56 ignores ctx here; Phase 57/58 generators read ctx.refs to scale counts.
+  // see phase 56 ignores ctx here; see phase 57/58 generators read ctx.refs to scale counts.
 
   defaults(ctx: Ctx): QuestionCategoriesFragment {
     return { count: 2 };
@@ -55,7 +55,7 @@ export class QuestionCategoriesGenerator {
         category_type: 'opinion' satisfies Enums<'category_type'>,
         sort_order: i,
         is_generated: true
-        // _elections sentinel added by Plan 07's post-topo pass (RESEARCH §4.12).
+        // _elections sentinel added by Plan 07's post-topo pass (RESEARCH).
       });
     }
 

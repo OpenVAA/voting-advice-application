@@ -81,7 +81,7 @@ Accesses `LayoutContext`.
   </svelte:element>
 {/snippet}
 
-<!-- The wrapping <div role="listitem"> is rendered ONLY when this NavItem is a child of a NavGroup (auto-detected via getContext per Phase 80 D-03). Orphan NavItems (e.g., VoterNav/CandidateNav/AdminNav close-buttons) render bare to avoid the axe aria-required-parent violation. -->
+<!-- The wrapping <div role="listitem"> is rendered ONLY when this NavItem is a child of a NavGroup (auto-detected via getContext per Phase 80). Orphan NavItems (e.g., VoterNav/CandidateNav/AdminNav close-buttons) render bare to avoid the axe aria-required-parent violation. -->
 {#if inNavGroup}
   <div role="listitem">
     {@render content()}

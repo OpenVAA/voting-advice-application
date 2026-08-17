@@ -2,7 +2,7 @@ import { untrack } from 'svelte';
 
 /**
  * Native Svelte 5 rune replacement for the index-based `StackedState` LIFO stack
- * used by the layout-overlay system (CTX-04 / D-07).
+ * used by the layout-overlay system.
  *
  * The superseded `StackedState` (deleted in Phase 98) implemented a strict-LIFO
  * stack with index-based revert. The consumer-side
@@ -54,20 +54,20 @@ export interface SettingsOverlayApi<TMerged, TOverlay = TMerged> {
 
 /**
  * Token-keyed settings overlay registry as a Svelte 5 CLASS (Group F helper;
- * v2.13 context-as-class migration, CLASS-01).
+ * v2.13 context-as-class migration).
  *
  * The reactive core is the private `#slots` `$state` array field, reassigned
- * wholesale on push/revert (CONVENTIONS §17 — a reassigned array field needs no
+ * wholesale on push/revert (CONVENTIONS — a reassigned array field needs no
  * `{current}` handle; the `#current` `$derived` reduce tracks the reassignment).
  * `current`/`size` are prototype getters (this handle is NOT spread — consumers
  * read `.current` / `.push` / `.use` / `.size` directly, so prototype accessors
- * are safe — Spike 020 finding A).
+ * are safe — see spike 020 finding A).
  *
- * `push`/`use` are ARROW-FUNCTION FIELDS (§18): `push` is destructured / called
+ * `push`/`use` are ARROW-FUNCTION FIELDS: `push` is destructured / called
  * from inside `$effect` bodies (via `use`) and from layout consumers, so it must
  * capture `this` on detach. `use` is the ONE permitted `$effect` — it is a
  * post-construction reaction at the component call site (auto-revert on destroy),
- * not an initialization effect (§20). No `$effect` runs in the constructor; the
+ * not an initialization effect. No `$effect` runs in the constructor; the
  * class is SSR-safe and constructable in any context.
  *
  * The merge runs on every `$derived` re-evaluation, NOT incrementally on push.

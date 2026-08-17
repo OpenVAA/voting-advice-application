@@ -8,7 +8,7 @@
  *
  * Auth unregister step: the default base chain is voter-only and registers no
  * candidate, but the opt-in `auth-setup` project (PLAYWRIGHT_VISUAL) force-registers
- * CA-AA-1 (Phase 136 plan 05). Without unregistering, that auth.users row outlives
+ * CA-AA-1 (see phase 136 plan 05). Without unregistering, that auth.users row outlives
  * the deleted candidate row and accumulates across runs. `unregisterCandidate`
  * returns early when the user does not exist, so the default run pays only one
  * admin listUsers call and its behaviour is unchanged.
@@ -17,10 +17,10 @@
  * `test-e2e-base-` namespace, but NOT its sole deleter — all 19 perm setups
  * pass `extraTeardownPrefix: ['test-', 'e2e-perm-']`, and `'test-'` matches
  * `test-e2e-base-%`, so a perm setup wipes this dataset before seeding its
- * own (`140-MEASUREMENT.md` § 5.2, confirmed empirically — the stated reason
+ * own (` `, confirmed empirically — the stated reason
  * `before = 0` was observed at this site). That is safe only because
  * Playwright's `teardown:` deferral is transitive over the serial perm chain,
- * so every setup completes before any teardown runs (Phase 140 review WR-06);
+ * so every setup completes before any teardown runs (see phase 140 review WR-06);
  * it is NOT safe by namespace ownership. Breaking that ordering would make
  * this site's `runTeardownAsserted` accounting race the perm pre-clears.
  * Every perm setup owns its own distinct `e2e-perm-*` prefix for its OWN

@@ -42,15 +42,15 @@ function sameRefs<TItem>(a: ReadonlyArray<TItem>, b: ReadonlyArray<TItem>): bool
 
 /**
  * The voter context (orchestrator) re-expressed as a Svelte 5 CLASS
- * (`VoterContextProvider`; v2.13 context-as-class migration, CLASS-05).
+ * (`VoterContextProvider`; v2.13 context-as-class migration).
  * CONVERTED from the 559-line object-literal factory that `initVoterContext()`
  * returned. Constructed via `new VoterContextProvider()` inside
  * `initVoterContext()`, at component-init time exactly as the former factory ran.
  *
- * ── Shape decision (110-PATTERNS §1) ─────────────────────────────────────────
+ * ── Shape decision (110-PATTERNS) ─────────────────────────────────────────
  * NO consumer spreads `voterContext` (`{ ...voterContext }` → zero hits). So its
  * OWN members are exposed as plain PROTOTYPE GETTERS (the natural class shape;
- * CONVENTIONS §17) — voterContext does NOT need the Phase-109 own-enumerable
+ * CONVENTIONS) — voterContext does NOT need the Phase-109 own-enumerable
  * discipline that AppContextProvider required. The own-enumerable concern applies
  * ONLY to the INHERITED appContext members, which arrive already own-enumerable
  * from the Phase-109 AppContextProvider instance and are reproduced via
@@ -77,9 +77,9 @@ export class VoterContextProvider implements VoterContext {
   // Private $state backings + persisted/param handles
   ////////////////////////////////////////////////////////////
 
-  // QUESTION-04 follow-up (Phase 61-03 voter-side parallel fix):
+  // follow-up (see phase 61 voter-side parallel fix):
   // Push-based `$state` + `$effect` mirror, mirroring the candidateContext fix
-  // documented at .planning/phases/61-voter-app-question-flow/61-03-DIAGNOSIS.md.
+  // documented.
   // The previous `$derived.by` pull-chain captured initial empty values when
   // consumers destructured the context property; subsequent reads via the
   // destructured local were not live reactive sources, so updates after data
@@ -89,13 +89,13 @@ export class VoterContextProvider implements VoterContext {
   #selectedElections = $state<Array<Election>>([]);
   #selectedConstituencies = $state<Array<Constituency>>([]);
 
-  // QUESTION-04 follow-up (Phase 61-03 voter-side parallel fix):
+  // follow-up (see phase 61 voter-side parallel fix):
   // Inlined the previous helper-store pull-chain (`questionCategoryState` /
   // `questionState` / `questionBlockState`) into a single push-based `$effect`
   // that writes `$state` mirrors. The helper-store derivations were declared
   // in another module's scope and did not propagate invalidation across the
   // function-accessor boundary on the voter side (same root-cause class as
-  // the candidate-side fix in 61-03-DIAGNOSIS.md). The behavior is
+  // the candidate-side fix in). The behavior is
   // equivalent; helpers remain available for any non-context consumers.
   #infoQuestionCategories = $state<Array<QuestionCategory>>([]);
   #opinionQuestionCategories = $state<Array<QuestionCategory>>([]);
@@ -110,11 +110,11 @@ export class VoterContextProvider implements VoterContext {
     getByQuestion: () => undefined
   });
 
-  // QUESTION-03 fix (Phase 61 D-09 + D-11): pure $state, no sessionStorage.
+  // fix (see phase 61): pure $state, no sessionStorage.
   // `bind:group` on a getter/setter context accessor backed by
   // `fromStore(sessionStorageWritable)` intermittently failed to propagate writes
   // (known Svelte 5 binding pitfall — see RESEARCH §Pitfall 1). Migrated to pure
-  // $state; session-only per D-11; default-all-checked seeded here rather than
+  // $state; session-only; default-all-checked seeded here rather than
   // in the page's onMount so the counter never renders the transient 0 state.
   #selectedQuestionCategoryIds = $state<Array<Id>>([]);
   #hasSeededCategorySelection = $state(false);
@@ -147,7 +147,7 @@ export class VoterContextProvider implements VoterContext {
 
   #appContext = getAppContext();
 
-  // The canonical reactive accessors from appContext. (Phase 113 FLATTEN-02: these
+  // The canonical reactive accessors from appContext. (see phase 113: these
   // are now BARE reactive accessors — `this.#appContext.appSettings` etc. read the
   // live value directly, no `.current`. They MUST be re-read each access to stay
   // reactive, so they are private GETTERS, not value-captured fields: a field
@@ -202,7 +202,7 @@ export class VoterContextProvider implements VoterContext {
   ////////////////////////////////////////////////////////////
   // $derived projections (field initializers — bodies are lazy thunks evaluated
   // on first read, so they may reference fields assigned later (e.g. #matches);
-  // CONVENTIONS §20 reactive-projection-in-$derived + FilterContextProvider
+  // CONVENTIONS reactive-projection-in-$derived + FilterContextProvider
   // #filterGroup precedent). Read through the prototype getters below.
   ////////////////////////////////////////////////////////////
 
@@ -214,7 +214,7 @@ export class VoterContextProvider implements VoterContext {
   #constituenciesSelectable = $derived(this.#dataRoot.elections?.some((e) => !e.singleConstituency));
 
   ////////////////////////////////////////////////////////////
-  // currentResultsElection (Phase 88 Plan 88-02)
+  // currentResultsElection (see phase 88)
   ////////////////////////////////////////////////////////////
   //
   // Singular SELECTED election whose results page is being rendered, sourced
@@ -304,11 +304,11 @@ export class VoterContextProvider implements VoterContext {
   //
   // Why this lives on voterContext (not the route layout):
   //   - Removes the need for `+layout.ts` to force-fill `entityTab` into the
-  //     URL (previous Plan 88-02 behavior auto-redirected `/results/{e}` →
+  //     URL (previous behavior auto-redirected `/results/{e}` →
   //     `/results/{e}/candidates`, which combined with downstream consumers
   //     emitting same-shape URLs produced a redirect loop).
   //   - Lets `filterContext` resolve the active FilterGroup even when the URL
-  //     omits `entityTab` (Phase 62 D-14 scope tuple becomes implied, not
+  //     omits `entityTab` (see phase 62 scope tuple becomes implied, not
   //     URL-derived).
   //   - Mirrors `currentResultsElection`'s singular-derived-from-URL pattern.
   //
@@ -381,7 +381,7 @@ export class VoterContextProvider implements VoterContext {
     // sub-store producers + $derived projections are field initializers above,
     // which run in declaration order BEFORE this constructor body — D1.)
     //
-    // Phase 113 CR-01: use inheritContextMembers (NOT Object.assign) so the bare
+    // see phase 113 CR-01: use inheritContextMembers (NOT Object.assign) so the bare
     // reactive accessors (appSettings / dataRoot / locale) are forwarded as LIVE
     // accessors. Object.assign would snapshot their construction-time value and
     // freeze reactivity for every consumer reading them off this orchestrator.
@@ -570,8 +570,8 @@ export class VoterContextProvider implements VoterContext {
     // Initialize the dedicated filterContext
     ////////////////////////////////////////////////////////////
 
-    // Phase 62 D-05: initialize the dedicated filterContext using a closure over
-    // the just-built FilterTree. Phase 88 follow-up: also injects
+    // see phase 62: initialize the dedicated filterContext using a closure over
+    // the just-built FilterTree. see phase 88 follow-up: also injects
     // `currentEntityType` so filterContext can resolve its scope tuple via the
     // voterContext-implied entity type — no longer requires the URL to carry
     // `entityTab` (the route load function no longer force-fills it).
@@ -584,20 +584,20 @@ export class VoterContextProvider implements VoterContext {
   }
 
   ////////////////////////////////////////////////////////////
-  // Resetting voter data (§18 arrow field — survives detach as onclick)
+  // Resetting voter data (arrow field — survives detach as onclick)
   ////////////////////////////////////////////////////////////
 
   resetVoterData = (): void => {
     this.#answers.reset();
     this.#firstQuestionId.set(null);
-    // QUESTION-03: pure $state assignment + reset the seed-guard so the next
+    // pure $state assignment + reset the seed-guard so the next
     // render re-seeds default-all-checked via the $effect above.
     this.#selectedQuestionCategoryIds = [];
     this.#hasSeededCategorySelection = false;
   };
 
   ////////////////////////////////////////////////////////////
-  // Surface members (prototype get/set accessors — spread-safe; §17)
+  // Surface members (prototype get/set accessors — spread-safe)
   ////////////////////////////////////////////////////////////
 
   get answers() {
@@ -619,7 +619,7 @@ export class VoterContextProvider implements VoterContext {
     return this.#entityFilters.value;
   }
   /**
-   * D-05 bundled accessor — delegates to `getFilterContext()` so the same
+   * bundled accessor — delegates to `getFilterContext ` so the same
    * Symbol-keyed context instance is exposed both directly (future LLM chat)
    * and via the voter context (voter-flow UI). Getter delegation avoids
    * capturing a stale reference at construction time.

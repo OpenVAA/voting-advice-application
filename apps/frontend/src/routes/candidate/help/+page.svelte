@@ -22,7 +22,7 @@ Shows a FAQ and other support content for the candidate application.
 
   const ctx = getCandidateContext();
   const { appCustomization, getRoute, t, userData } = ctx;
-  // appSettings is a reactive accessor (Phase 113 flatten) — read via ctx.appSettings,
+  // appSettings is a reactive accessor (see phase 113 flatten) — read via ctx.appSettings,
   // never destructure. This is a one-time init read, so read off ctx directly (no $derived alias).
 
   ////////////////////////////////////////////////////////////////////

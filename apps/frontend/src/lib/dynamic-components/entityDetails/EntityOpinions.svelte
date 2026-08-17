@@ -30,7 +30,7 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
 
   const ctx = getAppContext();
   const { appType, t } = ctx;
-  // appSettings is a reactive accessor (Phase 113 flatten) — read via ctx.X, never destructure.
+  // appSettings is a reactive accessor (see phase 113 flatten) — read via ctx.X, never destructure.
   const appSettings = $derived(ctx.appSettings);
 
   const unwrapped = $derived(unwrapEntity(entity));

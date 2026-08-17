@@ -1,7 +1,7 @@
 /**
  * AppSettingsGenerator — content generator for the `app_settings` table.
  *
- * Routing note (RESEARCH §4.15 Pitfall 5): the writer (Plan 07) MUST route
+ * Routing note (RESEARCH Pitfall 5): the writer (Plan 07) MUST route
  * emitted rows through `updateAppSettings` (direct JSONB merge via the
  * merge_jsonb_column RPC), NOT through `bulk_import`.
  *
@@ -20,13 +20,13 @@
  *      for each — merge_jsonb_column deep-merges into the bootstrap row
  *      (idempotent on the keys supplied)
  *
- * Phase 56 count semantics: `app_settings` is UNIQUE on `project_id`, so a
+ * see phase 56 count semantics: `app_settings` is UNIQUE on `project_id`, so a
  * single project has AT MOST ONE row. The generator clamps `count > 1` to 1
  * and warns via `ctx.logger` — users who genuinely need multiple per-project
  * settings blobs should supply them via `fixed[]` entries tied to distinct
  * project_ids (a Phase 58 multi-project template concern).
  *
- * D-04/D-26/D-08 + GEN-02/GEN-04 apply — see ElectionsGenerator.ts for the
+ * apply — see ElectionsGenerator.ts for the
  * canonical-pattern rationale.
  *
  * Default count = 0: the seed.sql bootstrap row is already usable out of the
@@ -43,7 +43,7 @@ export type AppSettingsFragment = Fragment<TablesInsert<'app_settings'>>;
 export class AppSettingsGenerator {
   constructor(private ctx: Ctx) {}
 
-  // Phase 56 ignores ctx here; kept on the signature for D-08 consistency.
+  // see phase 56 ignores ctx here; kept on the signature for consistency.
 
   defaults(ctx: Ctx): AppSettingsFragment {
     return { count: 0 };
@@ -54,7 +54,7 @@ export class AppSettingsGenerator {
     const rows: Array<TablesInsert<'app_settings'>> = [];
 
     // fixed[] pass-through — typically at most one hand-authored row per project.
-    // external_id prefixed for idempotent teardown (Phase 58 CLI-03 filters by
+    // external_id prefixed for idempotent teardown (see phase 58 filters by
     // prefix); project_id defaulted. Per-project UNIQUE means users supplying
     // multiple fixed entries MUST target distinct project_ids — otherwise the
     // writer's updateAppSettings sequence merges them all into the same row

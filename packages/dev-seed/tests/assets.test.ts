@@ -1,13 +1,13 @@
 /**
- * Asset inventory lock (GEN-10).
+ * Asset inventory lock.
  *
  * Fails if:
- *   - Portrait count drifts from 30 (D-58-05 locked count).
+ *   - Portrait count drifts from 30 (locked count).
  *   - Naming pattern drifts from `portrait-NN.jpg` (deterministic cycling in Writer).
  *   - Any file is empty or not a JPEG.
  *   - LICENSE.md is missing.
  *
- * D-22 contract: pure I/O via `node:fs`. No Supabase imports.
+ * contract: pure I/O via `node:fs`. No Supabase imports.
  */
 
 import { readdirSync, readFileSync, statSync } from 'node:fs';

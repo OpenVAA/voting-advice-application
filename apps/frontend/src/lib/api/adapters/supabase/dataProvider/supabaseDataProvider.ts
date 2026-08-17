@@ -280,7 +280,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     const seenNominationIds = new Set<string>();
 
     // Build nomination_id → entity_type map for parent-type derivation.
-    // Phase 64 P01: the schema's `nominations` table stores `parent_nomination_id`
+    // see phase 64 P01: the schema's `nominations` table stores `parent_nomination_id`
     // but the parent's entity_type is not denormalized into the child row — it
     // must be looked up from the parent. The Nomination base class
     // (packages/data/src/objects/nominations/base/nomination.ts:38-45) throws if
@@ -318,7 +318,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
       };
       const nomObj = toDataObject(nomRow, locale, this.defaultLocale);
 
-      // Phase 64 P01: enforce the Nomination "either both or neither"
+      // see phase 64 P01: enforce the Nomination "either both or neither"
       // invariant (packages/data/src/objects/nominations/base/nomination.ts:38-45).
       // mapRow() doesn't synthesize parentNominationType (no column map entry);
       // we set it here based on the in-memory parent lookup. If the parent's
@@ -362,7 +362,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
         // info + mapped order/customData from toDataObject) plus the JSONB
         // runtime guards for image and answers. Building a variant-specific
         // object below lets the discriminated `AnyEntityVariantData` union
-        // resolve structurally — no union-suppressing cast (D-04).
+        // resolve structurally — no union-suppressing cast.
         const base = {
           id: entityId,
           name: entityObj.name as string | null | undefined,
@@ -595,7 +595,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
       // `categoryId`) explicitly — drawn from the typed row / localized `obj`
       // rather than relying on the opaque `...obj` spread — so the object
       // structurally overlaps the discriminated `AnyQuestionVariantData` union
-      // (D-04). The `type` column is the question_type enum; localized `name`
+      // . The `type` column is the question_type enum; localized `name`
       // falls back to '' (the data model's smart default for a missing name).
       return {
         ...obj,

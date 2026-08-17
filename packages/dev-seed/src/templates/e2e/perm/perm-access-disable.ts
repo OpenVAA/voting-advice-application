@@ -1,5 +1,5 @@
 /**
- * perm-access-disable consolidated minimal-data template (EPERM-11).
+ * perm-access-disable consolidated minimal-data template.
  *
  * Consolidates the former `perm-disable-voter-app` + `perm-disable-candidate-app`
  * templates into a single access-gating perm. The consolidated Phase-120 spec

@@ -8,25 +8,25 @@ import type { AnswerState } from './answerState.type';
 
 /**
  * A Svelte 5 class implementation of the voter's `Answer` store (v2.13
- * context-as-class migration, CLASS-05). The persistence + version bridge is
- * INHERITED from `localStorageState`/`PersistedStateImpl` unchanged (§22) — this
+ * context-as-class migration). The persistence + version bridge is
+ * INHERITED from `localStorageState`/`PersistedStateImpl` unchanged — this
  * class does NOT own a `#version`; the `{ version, data }` payload + expiry live
- * in `persistedState.svelte.ts` (already shipped, Phase 96), so the spike-022
+ * in `persistedState.svelte.ts` (already shipped, see phase 96), so the spike-022
  * silent-spin caveat is already mitigated upstream and is NOT re-implemented here.
  *
  * The answers can be read via the reactive `answers` getter, but setting and
  * deleting them can only be done using the dedicated methods. The returned
  * `Answers` are deep-frozen to prevent accidental modifications.
  *
- * `setAnswer`/`deleteAnswer`/`reset` are ARROW-FUNCTION FIELDS (§18) so they
+ * `setAnswer`/`deleteAnswer`/`reset` are ARROW-FUNCTION FIELDS so they
  * survive being destructured/passed by consumers as detached callbacks (they
  * cross the context boundary). `answers` is a prototype getter read in-place
- * (§17 — answerState is NOT spread by any consumer, so a prototype getter is
+ * (answerState is NOT spread by any consumer, so a prototype getter is
  * safe).
  */
 class AnswerStateImpl implements AnswerState {
   // The persistence + version bridge is inherited from `localStorageState`
-  // unchanged (§22): the `{ version, data }` payload + expiry live in
+  // unchanged: the `{ version, data }` payload + expiry live in
   // `persistedState.svelte.ts`, not here.
   #store = localStorageState('VoterContext-answerStore', Object.freeze({}) as Frozen<Answers>);
   #startEvent: TrackingService['startEvent'];

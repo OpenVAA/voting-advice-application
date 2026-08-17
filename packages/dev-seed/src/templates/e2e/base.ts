@@ -1,11 +1,11 @@
 /**
- * `base` built-in template — Phase 88 journey scaffolding (Plan 88-01).
+ * `base` built-in template — see phase 88 journey scaffolding.
  *
  * Authored from TEST-INVENTORY-REFACTOR-1.md:13-200 (verbatim spec); this is
  * the canonical dataset for the new voter journey at
  * tests/tests/specs/voter/voter-journey.spec.ts.
  *
- * The single canonical base dataset (Phase 93 D-05); all external_ids carry the
+ * The single canonical base dataset (see phase 93); all external_ids carry the
  * `test-e2e-base-` prefix and are cleared by `runTeardown('test-e2e-base-', client)`.
  * Runs as the base playwright chain (data-setup-base → voter-journey →
  * data-teardown-base).
@@ -14,7 +14,7 @@
  *
  * - `externalIdPrefix: ''` — fixed[] external_ids are pre-written with the
  *   full `test-e2e-base-` literal so `runTeardown('test-e2e-base-', ...)`
- *   matches verbatim (Phase 93 D-05 canonical prefix).
+ *   matches verbatim (see phase 93 canonical prefix).
  * - external_id kebabing: `test-e2e-base-{group}-{name}` lowercase. Symbolic
  *   names from the refactor doc map as:
  *     - Elections:           test-e2e-base-el-reg, test-e2e-base-el-mun
@@ -36,7 +36,7 @@
  *     - Organisations:       test-e2e-base-or-aa, test-e2e-base-or-ab, test-e2e-base-or-ba, test-e2e-base-or-bb, test-e2e-base-or-c
  *     - Candidates:          test-e2e-base-ca-{org}-{name} or test-e2e-base-ca-{org}-{n}-gen
  *     - Nominations:         test-e2e-base-nom-{constituency-stub}-{entity-type}-{entity-name}
- * - `generateTranslationsForAllLocales: false` (single-locale e2e per D-58-16).
+ * - `generateTranslationsForAllLocales: false` (single-locale e2e per).
  * - `seed: 42` for deterministic generation.
  *
  * ## Hierarchy (refactor-doc:15-25)
@@ -124,7 +124,7 @@ const OPIN_CATEGORICAL_EN: Array<{ id: string; label: { en: string } }> = [
   { id: 'c', label: { en: 'Option C' } }
 ];
 
-// Multi-choice categorical opinion choices (Phase 129 D-12). 4 choices so the
+// Multi-choice categorical opinion choices (see phase 129). 4 choices so the
 // over-max boundary (4 selections vs maxSelections 3) is exercisable and the
 // POLAR_MAX / POLAR_MIN answer templates can pick disjoint 2-choice subsets
 // for maximal subdimension distance.
@@ -211,7 +211,7 @@ export const BASE_APP_SETTINGS = {
   },
   results: {
     cardContents: {
-      // Phase 88 Plan 04 T3 (Option B — seed-time resolver): the
+      // see phase 88 Plan 04 T3 (Option B — seed-time resolver): the
       // {externalId} shape is flattened to the question's DB UUID by the
       // Writer's Pass-5 resolver (resolveAppSettingsExternalIds) BEFORE the
       // merge_jsonb_column RPC. The persisted JSONB contains plain UUID
@@ -226,7 +226,7 @@ export const BASE_APP_SETTINGS = {
     // invariant (matchState.svelte.ts:104-110) requires 'organization' to
     // precede 'alliance' or orgProxiesById is empty and alliance scores
     // silently degrade. Adding 'alliance' here is the single switch that
-    // turns on BOTH alliance matching and the results tab (UNBLK-06, D-08).
+    // turns on BOTH alliance matching and the results tab.
     sections: ['candidate', 'organization', 'alliance']
   },
   elections: {
@@ -273,7 +273,7 @@ const DEFAULT_INFO_ANSWERS: Record<string, { value: unknown }> = {
   'test-e2e-base-qu-info-number': { value: 42 },
   'test-e2e-base-qu-info-boolean': { value: true },
   'test-e2e-base-qu-info-date': { value: '1980-06-15' },
-  // Phase 129 UNBLK-01: two campaign-keyword strings; the voter-journey
+  // see phase 129: two campaign-keyword strings; the voter-journey
   // asserts both render on the entity-detail info tab (round-trip read proof).
   'test-e2e-base-qu-info-multipleText': { value: ['Campaign keyword alpha', 'Campaign keyword beta'] }
 };
@@ -303,10 +303,10 @@ const POLAR_MAX: Record<string, { value: unknown }> = {
   'test-e2e-base-qu-opin-base-5-boolean': { value: true },
   // Number values are JSON numbers (not strings); multi-choice values are
   // choice-id arrays respecting 2..3 selections, POLAR_MAX/POLAR_MIN disjoint
-  // for maximal subdimension distance (D-12).
+  // for maximal subdimension distance.
   'test-e2e-base-qu-opin-base-6-number': { value: 10 },
   'test-e2e-base-qu-opin-base-7-multichoice': { value: ['a', 'b'] },
-  // Base-8 (exact-one multi-choice, Phase 135 GUARD-01) is DELIBERATELY
+  // Base-8 (exact-one multi-choice, see phase 135) is DELIBERATELY
   // MATCHING-NEUTRAL: every answer template below gives it the SAME value
   // (['a']), and every automated walk selects checkboxes from index 0 upward,
   // so the voter also lands on 'a' in BOTH answerMode='min' and 'max'. Every
@@ -317,7 +317,7 @@ const POLAR_MAX: Record<string, { value: unknown }> = {
   // so base-8 adds exactly 1 unit to the maximum possible distance and 0 to
   // every candidate's actual distance. Scores become 1 - D/(Dmax+1) with D
   // unchanged — a strictly monotone transform, so the existing ranking
-  // assertions (POLAR_MAX first at 100%, POLAR_MIN last, the EQTYP-02
+  // assertions (POLAR_MAX first at 100%, POLAR_MIN last, the
   // min-walk ordering) are preserved EXACTLY rather than merely "probably".
   //
   // Base-7 above remains the multi-choice MATCHING-coverage question (its
@@ -757,7 +757,7 @@ export const baseTemplate: Template = {
         sort_order: 7,
         is_generated: false
       },
-      // Phase 129 UNBLK-01: multipleText info question restored (the frontend
+      // see phase 129: multipleText info question restored (the frontend
       // MultipleTextInput now renders it — plan 05). Its DEFAULT_INFO_ANSWERS
       // entry seeds two keyword strings the voter-journey asserts render on the
       // entity-detail info tab (the round-trip read-path proof).
@@ -772,7 +772,7 @@ export const baseTemplate: Template = {
         is_generated: false
       },
 
-      // Phase 89 Plan 01 (TIR4:94-99): 3 filtered info questions scoped to
+      // see phase 89 Plan 01 (TIR4:94-99): 3 filtered info questions scoped to
       // municipal-only / north-only / south-only constituencies/elections.
       // Voter-journey's voter (CO-Reg-N + CO-Mun-NE per voter-journey
       // fixture's first-option pick) sees ONLY the north-only filtered
@@ -842,7 +842,7 @@ export const baseTemplate: Template = {
         name: { en: '[qu-opin-base-3-likert7] Base opinion 3 — Likert 7.' },
         choices: LIKERT_7_EN,
         category: { external_id: 'test-e2e-base-qg-opin-base' },
-        // EPERM-07 NOTE: additive customData.terms so the Phase-120 voter-journey
+        // NOTE: additive customData.terms so the Phase-120 voter-journey
         // extension can assert the in-text term-trigger affordance + definition
         // popup. The trigger 'Likert' appears verbatim in this question's title
         // text above, so the in-text term affordance renders. customData (not a
@@ -879,7 +879,7 @@ export const baseTemplate: Template = {
         sort_order: 104,
         is_generated: false
       },
-      // Phase 129 D-12: number-scale opinion question in the MAIN category.
+      // see phase 129: number-scale opinion question in the MAIN category.
       // custom_data.min/max makes it matchable via the plan-02 NumberQuestion
       // bridge; surfaces the NumberScaleInput slider in the voter question flow.
       {
@@ -892,8 +892,8 @@ export const baseTemplate: Template = {
         sort_order: 105,
         is_generated: false
       },
-      // Phase 129 D-12: multipleChoiceCategorical opinion question in the MAIN
-      // category. 4 choices + minSelections 2 / maxSelections 3 (D-07 constraint
+      // see phase 129: multipleChoiceCategorical opinion question in the MAIN
+      // category. 4 choices + minSelections 2 / maxSelections 3 (constraint
       // edge-coverage); surfaces the checkbox multi-select input.
       {
         external_id: 'test-e2e-base-qu-opin-base-7-multichoice',
@@ -906,7 +906,7 @@ export const baseTemplate: Template = {
         sort_order: 106,
         is_generated: false
       },
-      // Phase 135 GUARD-01: a SECOND multipleChoiceCategorical opinion question
+      // see phase 135: a SECOND multipleChoiceCategorical opinion question
       // in the MAIN category, carrying an EQUAL selection window
       // (min === max === 1). The equality is the whole point: QuestionChoices
       // .svelte renders `questions.multiChoice.selectExact` when
@@ -915,10 +915,10 @@ export const baseTemplate: Template = {
       // the running app can NEVER reach the `selectExact` branch and the key
       // added in Phase 134 has no runtime coverage. Exact-ONE (not exact-two)
       // is deliberate: it renders the MF2 `countPlural=one` branch — the branch
-      // carrying the constructed non-English singulars (134 D-18), i.e. the one
+      // carrying the constructed non-English singulars (134), i.e. the one
       // most worth guarding.
       //
-      // Base-7 above KEEPS its 2..3 window (Phase 129 D-07 range edge-coverage).
+      // Base-7 above KEEPS its 2..3 window (see phase 129 range edge-coverage).
       // This question is an ADDITION, never a repurposing of that one.
       {
         external_id: 'test-e2e-base-qu-opin-base-8-multichoice-exact',
@@ -1049,12 +1049,12 @@ export const baseTemplate: Template = {
           'test-e2e-base-qu-opin-base-3-likert7': { value: '7' },
           'test-e2e-base-qu-opin-base-4-categorical': { value: 'c' },
           'test-e2e-base-qu-opin-base-5-boolean': { value: true },
-          // base-6/base-7 (new D-12 base questions) — case (a) both answered;
+          // base-6/base-7 (new base questions) — case (a) both answered;
           // max values so CA-AA-Special stays a perfect match for the
           // answerMode='max' voter (number 10, multi-choice ['a','b']).
           'test-e2e-base-qu-opin-base-6-number': { value: 10 },
           'test-e2e-base-qu-opin-base-7-multichoice': { value: ['a', 'b'] },
-          // base-8 (Phase 135 GUARD-01) — case (a) both answered. Matching-
+          // base-8 (see phase 135) — case (a) both answered. Matching-
           // neutral value, identical across every template (see POLAR_MAX).
           'test-e2e-base-qu-opin-base-8-multichoice-exact': { value: ['a'] },
           // case (c) — voter skips these, entity has answers
@@ -1191,12 +1191,12 @@ export const baseTemplate: Template = {
         organization: { external_id: 'test-e2e-base-or-c' },
         answersByExternalId: withInfoAnswers(GENERIC)
       },
-      // Phase 89 Plan 01 (TIR4:86-90): unregistered candidate under party
+      // see phase 89 Plan 01 (TIR4:86-90): unregistered candidate under party
       // AA in CO-Reg-N. NO terms_of_use_accepted (registration must trigger
       // ToU gate). NO answersByExternalId (unregistered → no answers). NO
       // auth_user_id (sendEmail-driven invite flow creates this at runtime).
       // candidates table has NO email column (89-01 Wave 0 R8 verdict);
-      // email lives in a sibling const file consumed by Plan 89-03.
+      // email lives in a sibling const file consumed.
       // Election symbol "999" is set on the paired nomination row below.
       {
         external_id: 'test-e2e-base-ca-aa-unregistered',
@@ -1578,10 +1578,10 @@ export const baseTemplate: Template = {
         constituency: { external_id: 'test-e2e-base-co-reg-n' },
         election_round: 1
       },
-      // Phase 89 Plan 01 (TIR4:90): nomination for the unregistered
+      // see phase 89 Plan 01 (TIR4:90): nomination for the unregistered
       // candidate under OR-AA in CO-Reg-N. Election symbol "999" is the
       // canonical sentinel for the unregistered-candidate fixture used
-      // by Plan 89-03 candidate-journey.
+      // by candidate-journey.
       {
         external_id: 'test-e2e-base-nom-reg-n-ca-aa-unregistered',
         election_symbol: '999',

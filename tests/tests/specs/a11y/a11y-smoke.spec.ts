@@ -5,7 +5,7 @@
  * regression gate (aria-required-parent, list, button-name) so future
  * reintroductions are caught.
  *
- * ## The route contract (D-04)
+ * ## The route contract
  *
  * EVERY scan is declared as an entry in the single `AXE_ROUTES` table — there
  * are no hand-written scan bodies outside it. Each entry MUST declare a
@@ -72,7 +72,7 @@ import type { Page, TestInfo } from '@playwright/test';
 import type { Route } from '../../../../apps/frontend/src/lib/utils/route/route';
 
 /**
- * Append the `?notr=1` escape hatch (decision D-02 / Plan 99-01) to a URL so the
+ * Append the `?notr=1` escape hatch (decision) to a URL so the
  * View-Transition layer is deterministically disabled for E2E — `shouldAnimate`
  * short-circuits on `notr=1` (apps/frontend/src/lib/utils/viewTransition.ts), so
  * the navigation completes WITHOUT racing the ~272ms cross-fade against
@@ -176,7 +176,7 @@ interface AxeRouteBase {
    * so a heading settle lets the scan run against a DOM that does not yet contain
    * the content the scan exists to check. Making the field required means a new
    * scan route physically cannot be added without declaring what "loaded" means
-   * for it (D-04) — and the requirement is uniform, because EVERY scan entry
+   * for it — and the requirement is uniform, because EVERY scan entry
    * (raw and fixture-driven alike) is declared in this one table.
    *
    * A route-unique anchor also detects a `+page.ts` `redirect(307, …)`
@@ -291,7 +291,7 @@ const AXE_ROUTES: ReadonlyArray<AxeRoute> = [
   {
     // The results filter drawer — `NumericEntityFilter` / `EnumeratedEntityFilter`
     // and the Expander rows that hold them. Before this entry these surfaces were
-    // scanned by NOTHING, which is what let the FIX-01 defect class sit on exactly
+    // scanned by NOTHING, which is what let the defect class sit on exactly
     // the components the v2.14 audit named.
     //
     // The content anchor is the numeric filter's range input, NOT the dialog root
@@ -437,7 +437,7 @@ async function assertDarkThemeApplied(page: Page): Promise<void> {
  * reach-the-target settle → data-driven content anchor → animations settle →
  * scan → gates. The content anchor is deliberately the LAST wait before the
  * settle, so a `+page.ts` loader redirect or an unmounted data surface cannot
- * be scanned unnoticed (D-04).
+ * be scanned unnoticed.
  *
  * Lives at module scope so the shared body is not duplicated per loop and so
  * no branch sits inside a `test()` body (playwright/no-conditional-in-test).
@@ -499,7 +499,7 @@ for (const route of RAW_ROUTES) {
     await assertAxeScan(page, route, testInfo, route.name);
   });
 
-  // EFLOW-07: dark-mode colour-contrast (WCAG 2.1 AA gated in both themes).
+  // dark-mode colour-contrast (WCAG 2.1 AA gated in both themes).
   // Re-run the SAME axe scan under emulated `prefers-color-scheme: dark` — there
   // is no toggle/storage; the OS-media emulation IS the dark-theme source
   // (`darkMode.svelte.ts` reads matchMedia only). The dark token palette must
@@ -567,11 +567,11 @@ for (const route of ANSWERED_ROUTES) {
 
 // ── Navigation-a11y assertions (transition stack active) ───────────────────
 //
-// These prove the navigation-a11y stack (Plan 99-01 mechanism + Plan 99-02
+// These prove the navigation-a11y stack (mechanism
 // surfaces) behaves correctly WITH the View-Transition layer active. They run
 // under the same `a11y-smoke` project (PLAYWRIGHT_A11Y=1, depends:
 // data-setup-base) and drive the transition deterministically via the `?notr=1`
-// escape hatch (D-02) so assertions never race the cross-fade animation.
+// escape hatch so assertions never race the cross-fade animation.
 
 /**
  * Assert the `#route-announcer` aria-live region is present, polite, and that
@@ -590,7 +590,7 @@ for (const route of ANSWERED_ROUTES) {
  */
 async function assertRouteDerivedAnnouncer(page: Page): Promise<void> {
   // reason: the announcer has no role and no testId — its stable contract IS the
-  // `#route-announcer` id (Plan 99-01). An id selector is locale-stable and is the
+  // `#route-announcer` id. An id selector is locale-stable and is the
   // canonical hook for this element, so the raw .locator() is justified here.
   // eslint-disable-next-line playwright/no-restricted-locators, playwright/no-raw-locators
   const announcer = page.locator('#route-announcer');
@@ -644,7 +644,7 @@ async function assertRouteDerivedAnnouncer(page: Page): Promise<void> {
 /**
  * Assert focus landed on the question heading after a Q→Q navigation: the
  * active element carries `data-focus-on-nav` (the QuestionHeading callsite
- * marker, Plan 99-02) or is the first `<h1>` fallback. Module-scope helper so
+ * marker) or is the first `<h1>` fallback. Module-scope helper so
  * the `expect()` is not an inline test-block expect.
  */
 async function assertFocusOnHeading(page: Page): Promise<void> {
@@ -672,10 +672,10 @@ voterJourneyTest('navigation-a11y — route announcer is route-derived', async (
 /**
  * NAVA11Y-02 — focus lands on the question heading after a Q→Q navigation. The
  * root-layout `afterNavigate` rAF focus reset targets `[data-focus-on-nav]`
- * (fallback first `<h1>`), placed on the QuestionHeading callsite (Plan 99-02).
+ * (fallback first `<h1>`), placed on the QuestionHeading callsite.
  * The Q→Q hop is driven with `?notr=1` so the cross-fade is disabled and
  * `document.activeElement` is asserted against the settled DOM, not the
- * `::view-transition` pseudo-tree (D-02 determinism).
+ * `::view-transition` pseudo-tree (determinism).
  */
 voterJourneyTest('navigation-a11y — focus lands on heading after Q→Q nav', async ({ page }) => {
   // Walk to the /questions intro, then enter the first question.

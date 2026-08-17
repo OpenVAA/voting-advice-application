@@ -3,7 +3,7 @@
  *
  * Sibling to `candidate-journey.ts` (the full candidate composition root).
  * Kept MINIMAL — wires only the fixtures the bank-auth journey spec
- * (`candidate-bank-auth-journey.spec.ts`, plan 122-05) consumes: the
+ * (`candidate-bank-auth-journey.spec.ts`) consumes: the
  * preregister page-object (elections → constituencies → email/ToU walk),
  * the `emailBucket` (for the preregistration invite email round-trip), and
  * the `candidatePasswordSetter` (for the set-password step after the

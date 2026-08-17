@@ -22,10 +22,10 @@ Shows a dynamic list of the actions the candidate should take to be included in 
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // Phase 61-03 follow-up: read reactive context getters via candCtx.X.
+  // see phase 61 follow-up: read reactive context getters via candCtx.X.
   const candCtx = getCandidateContext();
   const { getRoute, t, userData } = candCtx;
-  // appSettings is a reactive accessor (Phase 113 flatten) — read via candCtx.X, never destructure.
+  // appSettings is a reactive accessor (see phase 113 flatten) — read via candCtx.X, never destructure.
   const appSettings = $derived(candCtx.appSettings);
 
   ////////////////////////////////////////////////////////////////////

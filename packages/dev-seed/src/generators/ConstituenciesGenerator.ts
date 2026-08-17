@@ -1,7 +1,7 @@
 /**
  * ConstituenciesGenerator — foundation generator for `constituencies`.
  *
- * RESEARCH §4.5: `project_id` is required; `keywords` (jsonb) and `parent_id`
+ * RESEARCH: `project_id` is required; `keywords` (jsonb) and `parent_id`
  * (self-FK, ON DELETE SET NULL) are optional. The self-FK is expressed as a ref
  * object `parent: { external_id }` that `_bulk_upsert_record` resolves server
  * side via the `constituencies` relationship (migration line 2640). The ref
@@ -15,7 +15,7 @@
  * generated `TablesInsert` type does not model it (the shape comes from
  * Supabase's row-type introspection, which only sees columns).
  *
- * D-04/D-26/D-08 + GEN-02/GEN-04 apply — see ElectionsGenerator.ts.
+ * apply — see ElectionsGenerator.ts.
  *
  * Cycle-avoidance: each generated row may optionally receive a `parent` ref
  * pointing at a row EARLIER in the same batch (`rows.length > 0` + backward-only
@@ -41,7 +41,7 @@ type ConstituencyRow = TablesInsert<'constituencies'> & {
 export class ConstituenciesGenerator {
   constructor(private ctx: Ctx) {}
 
-  // Phase 56 ignores ctx here; Phase 57/58 generators read ctx.refs to scale counts.
+  // see phase 56 ignores ctx here; see phase 57/58 generators read ctx.refs to scale counts.
 
   defaults(ctx: Ctx): ConstituenciesFragment {
     return { count: 2 };

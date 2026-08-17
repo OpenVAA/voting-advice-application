@@ -8,7 +8,7 @@
 export type Param = RouteParam | PersistentSearchParam;
 
 ////////////////////////////////////////////////////////////////////
-// Name-disjoint dissociation rule (Phase 88 Plan 88-02)
+// Name-disjoint dissociation rule (see phase 88)
 // ----------------------------------------------------------------
 // `ROUTE_PARAMS` and `PERSISTENT_SEARCH_PARAMS` are intentionally
 // NAME-DISJOINT — no string appears in both arrays. The two surfaces

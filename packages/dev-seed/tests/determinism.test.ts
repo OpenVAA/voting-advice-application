@@ -1,14 +1,14 @@
 /**
- * Determinism tests (TMPL-08).
+ * Determinism tests.
  *
  * Cross-cutting: exercises every generator's faker reads through a single
  * `runPipeline({ seed })` call and asserts byte-identical output across runs.
  *
- * Pattern A per RESEARCH §5: each `runPipeline` call constructs a fresh
+ * Pattern A per RESEARCH: each `runPipeline` call constructs a fresh
  * `new Faker()` instance (inside `buildCtx`) and seeds it. No module-level
  * `faker.seed()` — that's the shared-state trap this contract exists to prevent.
  *
- * D-22 contract: pure I/O. No Supabase imports, no `createClient`, no `.rpc()`.
+ * contract: pure I/O. No Supabase imports, no `createClient`, no `.rpc `.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -37,7 +37,7 @@ describe('determinism (TMPL-08)', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // Phase 58 Plan 09 — Pitfall #1 locale fan-out determinism (NF-04)
+  // see phase 58 Plan 09 — Pitfall #1 locale fan-out determinism (NF-04)
   // ---------------------------------------------------------------------------
   //
   // RESEARCH §Pitfall #1: if locale iteration order drifts, fan-out output
@@ -45,12 +45,12 @@ describe('determinism (TMPL-08)', () => {
   // via hardcoded `LOCALES = ['en','fi','sv']` + hardcoded
   // `LOCALIZED_FIELDS` map. These cases prove byte-level determinism survives
   // the full `runPipeline` + `fanOutLocales` pipeline, AND that
-  // `generateTranslationsForAllLocales` is a no-op when absent (Phase 56
+  // `generateTranslationsForAllLocales` is a no-op when absent (see phase 56
   // behavior preserved).
   //
   // TEST DISCIPLINE: templates are constructed via a factory (`makeTemplate()`)
   // rather than shared by reference across both `runPipeline` calls. Under the
-  // hood Phase 56's pipeline spreads `template[table]` into fragments that are
+  // hood see phase 56's pipeline spreads `template[table]` into fragments that are
   // passed to generators — some generators mutate those fragments' `fixed[]`
   // arrays in-place. Sharing the template across calls therefore leaks state
   // into the second invocation. Real CLI usage rebuilds the template per

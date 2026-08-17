@@ -11,7 +11,7 @@ import type { UserPreferences } from './userPreferences.type';
  * The AppContext type.
  *
  * ComponentContext properties are overridden: `locale` is a BARE reactive accessor
- * (Phase 113 FLATTEN-02, read `ctx.locale`); `locales`/`darkMode` remain
+ * (see phase 113, read `ctx.locale`); `locales`/`darkMode` remain
  * `{ readonly current }` rune handles for downstream Phase-52 contexts (VoterContext,
  * CandidateContext, AdminContext) which read them via `.current`.
  *
@@ -21,7 +21,7 @@ export type AppContext = Omit<ComponentContext, 'locale' | 'locales' | 'darkMode
   DataContext &
   TrackingService & {
     /**
-     * The current locale, exposed as a BARE reactive accessor (Phase 113 FLATTEN-02).
+     * The current locale, exposed as a BARE reactive accessor (see phase 113).
      * Read directly via `ctx.locale`. MUST be read off `ctx` (never destructured) —
      * it is a reactive accessor per CLAUDE.md's Context Destructuring Rule.
      */
@@ -52,15 +52,15 @@ export type AppContext = Omit<ComponentContext, 'locale' | 'locales' | 'darkMode
       update(fn: (v: AppCustomization) => AppCustomization): void;
     };
     /**
-     * Currently effective app settings, exposed as a BARE reactive accessor (Phase 113
-     * FLATTEN-02). Read directly via `ctx.appSettings`. MUST be read off `ctx` (never
+     * Currently effective app settings, exposed as a BARE reactive accessor (see phase 113
+     * ). Read directly via `ctx.appSettings`. MUST be read off `ctx` (never
      * destructured) — it is a reactive accessor per CLAUDE.md's Context Destructuring
      * Rule. The former writable `set`/`update` surface had no external callers; internal
      * writes go through the private `#appSettingsValue` $state (re-merge `$effect`s).
      */
     readonly appSettings: AppSettings;
     /**
-     * Rune-native route-builder handle (CTX-08). Read via `getRoute.current(opts)`.
+     * Rune-native route-builder handle. Read via `getRoute.current(opts)`.
      */
     getRoute: { readonly current: RouteBuilder };
     /**

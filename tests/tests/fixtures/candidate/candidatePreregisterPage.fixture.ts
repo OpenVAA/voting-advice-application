@@ -63,7 +63,7 @@ import type { Locator, Page } from '@playwright/test';
  * Both shapes carry the implicit/explicit ARIA role `combobox`; the tag name
  * disambiguates which interaction to use.
  *
- * Selection is by label, never by position (Phase 140 review iter-3 CR-01):
+ * Selection is by label, never by position (see phase 140 review iter-3 CR-01):
  * the provider orders constituencies with no guaranteed tiebreak across
  * datasets, so an index-based pick silently lands on a foreign constituency
  * whenever another dataset shares the DB.
@@ -107,7 +107,7 @@ export function createCandidatePreregisterPage(page: Page) {
     /**
      * Select the election whose label carries `labelSubstring`, then advance.
      *
-     * Selection is BY IDENTITY, never positional (Phase 140 review iter-3
+     * Selection is BY IDENTITY, never positional (see phase 140 review iter-3
      * CR-01). `supabaseDataProvider` orders elections by `sort_order` with no
      * secondary key, and separate datasets routinely both use `sort_order: 0`,
      * so Postgres returns tied rows in plan-dependent order. A `.first()` pick
@@ -145,7 +145,7 @@ export function createCandidatePreregisterPage(page: Page) {
      *
      * Like `submitElection`, selection is by label rather than by index, so a
      * foreign dataset sharing the DB fails the walk loudly instead of being
-     * silently preregistered into (Phase 140 review iter-3 CR-01).
+     * silently preregistered into (see phase 140 review iter-3 CR-01).
      */
     async submitConstituency(labelPrefix: string): Promise<void> {
       const list = page.getByTestId(testIds.candidate.preregister.constituenciesList);

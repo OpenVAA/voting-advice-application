@@ -2,11 +2,11 @@
  * DX-03 integration test — applies `defaultTemplate` + `defaultOverrides` to a
  * live local Supabase and asserts end-to-end correctness.
  *
- * D-58-21 gating: `describe.skipIf(!process.env.SUPABASE_URL)` — the test
+ * gating: `describe.skipIf(!process.env.SUPABASE_URL)` — the test
  * skips in envs without `supabase start`. Developers run `yarn db:start`
  * (or `supabase start` directly) before `yarn test:unit` to exercise it.
  *
- * WHERE THIS RUNS IN CI (Phase 136 plan 03, sweep finding F5): the dedicated
+ * WHERE THIS RUNS IN CI (see phase 136 plan 03, sweep finding F5): the dedicated
  * `dev-seed-integration` job in `.github/workflows/main.yaml` — NOT the
  * `frontend-and-shared-module-validation` job. That job runs `yarn test:unit`
  * with no Supabase and no repo-root `.env`, so this file skips there and always
@@ -16,7 +16,7 @@
  * `supabase status -o env`, and sets `DEV_SEED_INTEGRATION_REQUIRED=1` so a lost
  * wiring is a red build rather than a silent skip (see the guard below).
  *
- * Covers (D-58-20):
+ * Covers:
  *   - Row counts across the bulk-import tables (in-memory + DB-level)
  *   - Relational wiring (candidates → organization_id via organizations ref;
  *     nominations → candidate_id × election_id × constituency_id)
@@ -24,9 +24,9 @@
  *     bucket has ≥327 objects under `${projectId}/candidates/`
  *   - NF-01, expressed as a deterministic OPERATION budget (see below) — NOT
  *     as a wall-clock budget
- *   - TMPL-07: locale fan-out produces every locale key on elections.name
+ *   locale fan-out produces every locale key on elections.name
  *
- * NF-01 (rewritten in Phase 135, plan 135-03): this test used to gate on ELAPSED
+ * NF-01 (rewritten in Phase 135): this test used to gate on ELAPSED
  * WALL-CLOCK TIME, with a hard ten-second ceiling, measured across `runPipeline`
  * + `fanOutLocales` + `writer.write` — i.e. across ~650 sequential HTTP
  * round-trips to a local Supabase. Its outcome therefore depended on how busy
@@ -39,13 +39,13 @@
  * The elapsed time is now MEASURED AND LOGGED but NEVER ASSERTED. What NF-01
  * actually protects — that the write path stays batched and does not degrade
  * into per-row chatter — is asserted directly, as a deterministic budget over
- * `SupabaseAdminClient` operations (§1 in the test body). That budget cannot be
+ * `SupabaseAdminClient` operations (in the test body). That budget cannot be
  * moved by scheduling noise, and it fails loudly on the regressions the 10 s
  * number was only ever a proxy for: a lost batch, or an N+1 write.
  *
  * Teardown strategy: Plan 07 (teardown CLI) has not yet shipped, so this test
  * invokes `SupabaseAdminClient.bulkDelete` directly with the 10 bulk-deletable
- * tables plus an ad-hoc storage cleanup (Path 2 from RESEARCH §3 — reliable
+ * tables plus an ad-hoc storage cleanup (Path 2 from RESEARCH — reliable
  * because `pg_net` trigger cleanup is async and would race assertion).
  *
  * Read-side queries use an ad-hoc `createClient` (Plan 09 decision): the
@@ -67,7 +67,7 @@
  * fire on a real hang.
  *
  * Do NOT retighten this into a performance signal. Performance is guarded by the
- * operation budget in §1 of the test body, where contention cannot reach it.
+ * operation budget of the test body, where contention cannot reach it.
  */
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
@@ -85,13 +85,13 @@ import {
 const hasSupabase = Boolean(process.env.SUPABASE_URL);
 
 /**
- * Guard-of-the-guard (Phase 136 plan 03, sweep finding F5).
+ * Guard-of-the-guard (see phase 136 plan 03, sweep finding F5).
  *
- * `describe.skipIf(!hasSupabase)` below is deliberate (D-58-21) and correct for
+ * `describe.skipIf(!hasSupabase)` below is deliberate and correct for
  * a developer machine without `supabase start`. Its FAILURE MODE is that the
  * skip is SILENT: for every CI run up to Phase 135 this whole file — including
  * the NF-01 operation budget — skipped and the job went green, so the guarantee
- * REQUIREMENTS.md recorded for GUARD-03 was true only locally.
+ * REQUIREMENTS.md recorded for was true only locally.
  *
  * The `dev-seed-integration` job in `.github/workflows/main.yaml` now provides
  * Supabase and exports `SUPABASE_URL`, and sets this variable to declare "this
@@ -142,7 +142,7 @@ async function runTeardown(
   readClient: SupabaseClient
 ): Promise<void> {
   // 1. Delete rows via bulk_delete RPC (10 bulk-deletable tables; accounts,
-  //    projects, app_settings are bootstrap-owned and stay intact per D-11).
+  //    projects, app_settings are bootstrap-owned and stay intact per).
   await adminClient.bulkDelete({
     nominations: { prefix },
     candidates: { prefix },
@@ -191,7 +191,7 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
     await runTeardown('seed_', adminClient, readClient);
   }, 300_000);
 
-  // Remove the `SupabaseAdminClient.prototype` spies installed by the §1
+  // Remove the `SupabaseAdminClient.prototype` spies installed by the
   // operation-budget guard, so they cannot leak into any other test.
   afterEach(() => {
     vi.restoreAllMocks();
@@ -247,7 +247,7 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
     //     JSONB). An N+1 lookup, or a third per-candidate call, fails here —
     //     and this is the term that dominates the wall clock, so a real
     //     performance regression lands precisely on this assertion.
-    //     `rows.candidates.length` is itself pinned to 327 by §2 below, so this
+    //     `rows.candidates.length` is itself pinned to 327 by below, so this
     //     cannot pass by both sides quietly collapsing to zero.
     expect(ops.selectCandidatesForPortraitUpload).toBe(1);
     expect(ops.uploadPortrait).toBe(rows.candidates.length);
@@ -266,7 +266,7 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
     expect(unbudgeted).toEqual([]);
 
     // -----------------------------------------------------------------------
-    // 2. In-memory row counts match the default template (Phase 64 densification)
+    // 2. In-memory row counts match the default template (see phase 64 densification)
     // -----------------------------------------------------------------------
     expect(rows.elections.length).toBe(1);
     expect(rows.constituency_groups.length).toBe(1);
@@ -275,7 +275,7 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
     expect(rows.candidates.length).toBe(327);
     expect(rows.questions.length).toBe(26);
     expect(rows.question_categories.length).toBe(4);
-    // Phase 67: alliances + alliance noms
+    // see phase 67: alliances + alliance noms
     expect(rows.alliances.length).toBe(2);
     // 327 candidate noms + 40 org noms + 10 alliance noms (2 alliances × 5 constituencies)
     expect(rows.nominations.length).toBe(327 + 40 + 10);
@@ -295,7 +295,7 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
     expect(await countByPrefix(readClient, 'candidates', prefix)).toBe(327);
     expect(await countByPrefix(readClient, 'questions', prefix)).toBe(26);
     expect(await countByPrefix(readClient, 'question_categories', prefix)).toBe(4);
-    // Phase 67: 2 alliance entities + 327 cand noms + 40 org noms + 10 alliance noms
+    // see phase 67: 2 alliance entities + 327 cand noms + 40 org noms + 10 alliance noms
     expect(await countByPrefix(readClient, 'alliances', prefix)).toBe(2);
     expect(await countByPrefix(readClient, 'nominations', prefix)).toBe(327 + 40 + 10);
 
@@ -322,9 +322,9 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
     //    - Organization-type:
     //        * 30 of 40 (parties belonging to an alliance) have
     //          parent_nomination_id non-null pointing at an alliance nom
-    //          in the SAME constituency (Phase 67)
+    //          in the SAME constituency (see phase 67)
     //        * 10 of 40 (party_people, party_coast — 2 standalone × 5 const)
-    //          have parent_nomination_id null (Phase 67 no-alliance path)
+    //          have parent_nomination_id null (see phase 67 no-alliance path)
     //    - Alliance-type: alliance_id non-null, parent_nomination_id null
     //      (alliances cannot have parents per validate_nomination trigger)
     //    - All types: election_id + constituency_id non-null
@@ -337,7 +337,7 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
       .eq('project_id', TEST_PROJECT_ID)
       .like('external_id', `${prefix}%`);
     expect(nomErr).toBeNull();
-    // Phase 67: 327 + 40 + 10 = 377 total
+    // see phase 67: 327 + 40 + 10 = 377 total
     expect(nominations?.length).toBe(327 + 40 + 10);
     const candNoms = (nominations ?? []).filter((n) => n.candidate_id != null);
     const orgNoms = (nominations ?? []).filter((n) => n.organization_id != null);
@@ -352,7 +352,7 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
       expect(nom.parent_nomination_id).not.toBeNull();
     }
 
-    // Phase 67: split org-noms by parent presence.
+    // see phase 67: split org-noms by parent presence.
     const orgNomsWithParent = orgNoms.filter((n) => n.parent_nomination_id != null);
     const orgNomsStandalone = orgNoms.filter((n) => n.parent_nomination_id == null);
     // 6 of 8 parties × 5 constituencies = 30 with-parent (alliance members)
@@ -364,7 +364,7 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
       expect(nom.constituency_id).not.toBeNull();
     }
 
-    // Phase 67: alliance noms have NO parent (validate_nomination trigger).
+    // see phase 67: alliance noms have NO parent (validate_nomination trigger).
     const allianceNomIds = new Set(allianceNoms.map((n) => n.id));
     for (const nom of allianceNoms) {
       expect(nom.election_id).not.toBeNull();
@@ -372,7 +372,7 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
       expect(nom.parent_nomination_id).toBeNull();
     }
 
-    // Phase 67: every parent_nomination_id on an org-nom resolves to an
+    // see phase 67: every parent_nomination_id on an org-nom resolves to an
     // alliance-nom in the same constituency (the wiring that powers the
     // v2.6 P64 supabase-adapter reverse-fill of organizationNominationIds).
     const allianceNomById = new Map(allianceNoms.map((n) => [n.id, n]));
@@ -388,7 +388,7 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
     }
 
     // -----------------------------------------------------------------------
-    // 7. TMPL-07: locale fan-out produced all 4 locale keys on elections.name
+    // 7.: locale fan-out produced all 4 locale keys on elections.name
     // -----------------------------------------------------------------------
     const { data: election, error: elErr } = await readClient
       .from('elections')
@@ -415,7 +415,7 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
 
 /**
  * The `SupabaseAdminClient` operations the write path is BUDGETED to perform.
- * Any other operation showing a non-zero count fails §1d by name, so the budget
+ * Any other operation showing a non-zero count fails by name, so the budget
  * stays closed rather than becoming a checklist of the calls we remembered.
  */
 const BUDGETED_WRITE_OPS = new Set([

@@ -5,7 +5,7 @@ import { settingsOverlay } from './SettingsOverlay.svelte';
 import type { SettingsOverlayApi } from './SettingsOverlay.svelte';
 
 /**
- * Registry tests for the token-keyed `settingsOverlay` (CTX-04 / D-07).
+ * Registry tests for the token-keyed `settingsOverlay`.
  *
  * The cases that the old index-based LIFO stack could NOT satisfy —
  * out-of-order revert + idempotent cleanup — are the emphasis here. The

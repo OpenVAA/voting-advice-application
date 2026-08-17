@@ -21,7 +21,7 @@ Page for controlling the argument condensation feature.
 
   // dataRoot is identity-stable (#version-bridge): read `ctx.dataRoot.<prop>` directly in the tracking scope,
   // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md §Context Destructuring Rule +
-  // .planning/spikes/CONVENTIONS.md §9 (Spike-024). Phase 117 COLD-01.
+  // (see spike 024). see phase 117.
   const ctx = getAdminContext();
   const {
     t,

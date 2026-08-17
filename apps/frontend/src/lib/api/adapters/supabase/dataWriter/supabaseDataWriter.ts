@@ -85,7 +85,7 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     // Supabase verifies the active session via cookies automatically.
     const { error } = await this.supabase.auth.updateUser({ password });
     if (error) throw new Error(error.message);
-    // Future-reference note (Phase 86.1 ToU-406 chase): `auth.updateUser({ password })`
+    // Future-reference note (see phase 86.1 ToU-406 chase): `auth.updateUser({ password })`
     // rotates the access token. The browser-side `createBrowserClient` instance is
     // expected to adopt the new token via its internal storage listener, but under
     // some Playwright timings the next PostgREST call from `SupabaseDataWriter` was
@@ -377,7 +377,7 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
 
   ////////////////////////////////////////////////////////////////////
   // ADMIN METHODS
-  // TODO(ADPT-03): Primary access point is SupabaseAdminWriter. These
+  // TODO: Primary access point is SupabaseAdminWriter. These
   // implementations satisfy the abstract contract on UniversalDataWriter.
   ////////////////////////////////////////////////////////////////////
 

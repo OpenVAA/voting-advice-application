@@ -2,15 +2,15 @@ import type { FilterGroup } from '@openvaa/filters';
 import type { SvelteHTMLElements } from 'svelte/elements';
 
 /**
- * Props for the compound `EntityListWithControls` component (Phase 62 D-01).
+ * Props for the compound `EntityListWithControls` component (see phase 62).
  *
  * Compared to the legacy `EntityListControls.type.ts`:
  *   - Drops `onUpdate` — filtering is now derived (no callback chain).
  *   - Adds optional forwarded `EntityList` props: `itemsPerPage`,
  *     `itemsTolerance`, `scrollIntoView`.
  *   - `filterGroup` is optional. When omitted, the component reads
- *     `filterContext.filterGroup` (D-05) — the canonical shape for the
- *     results-page integration in Plan 62-03. The override prop is kept
+ *     `filterContext.filterGroup` — the canonical shape for the
+ *     results-page integration in. The override prop is kept
  *     for off-context usage (tests, candidate-app migration).
  */
 export type EntityListWithControlsProps<TEntity extends MaybeWrappedEntityVariant = MaybeWrappedEntityVariant> =

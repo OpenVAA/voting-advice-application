@@ -1,5 +1,5 @@
 /**
- * perm-analytics-tracking minimal-data template (EFLOW-08, D-01).
+ * perm-analytics-tracking minimal-data template.
  *
  * Carries the ANALYTICS OVERLAY that arms the `trackingIntercept` fixture for
  * the `voter-prefs-tracking` spec (Plan 06). The spec requires the
@@ -181,7 +181,7 @@ export const permAnalyticsTrackingTemplate: Template = {
         external_id: 'app-settings',
         settings: {
           ...MINIMAL_BASE_APP_SETTINGS,
-          // D-01 analytics overlay: FULL platform object (mirrors
+          // analytics overlay: FULL platform object (mirrors
           // staticSettings.type.ts analytics.platform) + trackEvents:true.
           // `code` is a DUMMY value (threat T-121-AN) — never a real key.
           analytics: {

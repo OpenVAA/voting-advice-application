@@ -35,7 +35,7 @@ import type { Locator, Page } from '@playwright/test';
  * `modalRef?.openModal()` — so if the modal was going to open at all, it has
  * already opened by the time the question paint resolves.
  *
- * The modal's testId is stable (CONF-03 post-fix); we still fall back to
+ * The modal's testId is stable (post-fix); we still fall back to
  * `getByRole('dialog')` so the helper also works on older builds that have
  * not yet picked up the testId addition.
  */

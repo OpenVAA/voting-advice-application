@@ -1,5 +1,5 @@
 /**
- * Box-Muller statistics + edge-case tests (Plan 57-01 Task 1).
+ * Box-Muller statistics + edge-case tests (Task 1).
  *
  * Covers the RED gate for `src/emitters/latent/gaussian.ts`:
  *   - Test 1: approx N(0,1) over 10,000 seeded draws (mean ∈ [-0.05, 0.05],
@@ -7,12 +7,12 @@
  *   - Test 2: mean/stdDev scaling — N(3, 0.1²) statistics hold.
  *   - Test 3: Pitfall 1 regression guard — never `NaN` or `Infinity` across 10,000 draws
  *     (proves the `Math.max(u1, Number.MIN_VALUE)` clamp is in place).
- *   - Test 4: D-57-11 short-circuit — `stdDev === 0` returns exactly `mean` and does NOT
+ *   - Test 4: short-circuit — `stdDev === 0` returns exactly `mean` and does NOT
  *     consume faker draws.
  *   - Test 5: determinism — two fresh `Faker` instances seeded with 42 produce
- *     byte-identical sequences (Pattern A per RESEARCH §5).
+ *     byte-identical sequences (Pattern A per RESEARCH).
  *
- * D-22 contract: pure I/O. No Supabase imports, no `createClient`, no `.rpc()`.
+ * contract: pure I/O. No Supabase imports, no `createClient`, no `.rpc `.
  */
 
 import { describe, expect, it } from 'vitest';

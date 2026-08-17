@@ -1,6 +1,6 @@
 /**
  * Default-template questions override — enforces the type mix: majority Likert
- * (ordinal), some categorical, exactly 1 boolean, plus (Phase 129 D-15) one
+ * (ordinal), some categorical, exactly 1 boolean, plus (see phase 129) one
  * number-scale + one multipleChoiceCategorical opinion question so the demo
  * exercises the new question inputs. NO text/date/image/multipleText.
  *
@@ -8,8 +8,8 @@
  *   - 18 singleChoiceOrdinal (5-point Likert)
  *   - 5  singleChoiceCategorical (3-5 choices each)
  *   - 1  boolean
- *   - 1  number (D-15 — custom_data min/max, matchable)
- *   - 1  multipleChoiceCategorical (D-15 — 4 choices, minSelections 2 / maxSelections 3)
+ *   - 1  number (custom_data min/max, matchable)
+ *   - 1  multipleChoiceCategorical (4 choices, minSelections 2 / maxSelections 3)
  *   Total: 26
  *
  * 1/5 of the questions (indices 0, 5, 10, 15, 20, 25) additionally carry a
@@ -45,8 +45,8 @@ type QuestionType = Enums<'question_type'>;
  *   Indices  0..17 → 18 × singleChoiceOrdinal
  *   Indices 18..22 →  5 × singleChoiceCategorical
  *   Index      23  →  1 × boolean
- *   Index      24  →  1 × number (D-15)
- *   Index      25  →  1 × multipleChoiceCategorical (D-15)
+ *   Index      24  →  1 × number
+ *   Index      25  →  1 × multipleChoiceCategorical
  */
 const TYPE_PLAN: ReadonlyArray<QuestionType> = [
   ...(Array(18).fill('singleChoiceOrdinal') as Array<QuestionType>),
@@ -169,11 +169,11 @@ export function questionsOverride(_fragment: unknown, ctx: Ctx): Array<Record<st
       // the default Finnish demo seed.
       row.custom_data = { filterable: true };
     } else if (type === 'number') {
-      // D-15: number-scale opinion question. custom_data min/max makes it
+      // number-scale opinion question. custom_data min/max makes it
       // matchable (NumberQuestion.isMatchable) and drives the slider input.
       row.custom_data = { min: 0, max: 10 };
     } else if (type === 'multipleChoiceCategorical') {
-      // D-15: multi-choice opinion question with 4 choices + the D-07
+      // multi-choice opinion question with 4 choices + the
       // selection-count constraints so the demo exercises the helper text.
       row.choices = buildCategoricalChoices(faker, 4);
       row.custom_data = { filterable: true, minSelections: 2, maxSelections: 3 };

@@ -13,7 +13,7 @@ question never reaches this component and cannot render a broken 0-width range.
 
 Native `<input type="range">` is chosen deliberately so keyboard-arrow exact-value
 stepping works for free: ArrowUp/ArrowRight step +1, ArrowDown/ArrowLeft −1,
-Home→min, End→max (D-03). Values at exactly `min`/`max` are reachable and clamp.
+Home→min, End→max. Values at exactly `min`/`max` are reachable and clamp.
 
 ### Properties
 
@@ -128,7 +128,7 @@ Home→min, End→max (D-03). Values at exactly `min`/`max` are reachable and cl
   style:--range-bg={onShadedBg ? 'var(--color-base-200)' : 'var(--color-base-100)'}
   data-testid="number-scale-input">
   {#if mode === 'display'}
-    <!-- Read-only dual-marker display (D-04) -->
+    <!-- Read-only dual-marker display -->
     <div class="relative pt-24">
       <!-- Markers positioned proportionally above the track -->
       {#if bothEqual && voterPct != null}
@@ -161,7 +161,7 @@ Home→min, End→max (D-03). Values at exactly `min`/`max` are reachable and cl
       <span class="text-secondary text-sm">{max}</span>
     </div>
   {:else}
-    <!-- Answer mode (D-03) -->
+    <!-- Answer mode -->
     <div class="flex items-center justify-between">
       <span id={labelId} class="sr-only">{question.text}</span>
       <span class="text-secondary text-sm">{min}</span>

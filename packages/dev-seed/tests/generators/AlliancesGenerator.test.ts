@@ -1,8 +1,8 @@
 /**
  * AlliancesGenerator unit tests.
  *
- * D-22 acceptance criteria (a)–(e) + default count = 0 (templates must opt-in
- * explicitly per RESEARCH §4.11 — alliances are uncommon in VAA datasets).
+ * acceptance criteria (a)–(e) + default count = 0 (templates must opt-in
+ * explicitly per RESEARCH — alliances are uncommon in VAA datasets).
  */
 
 import { describe, expect, it } from 'vitest';

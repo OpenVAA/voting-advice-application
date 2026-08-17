@@ -1,5 +1,5 @@
 /**
- * voter-alliance (EFLOW-02 + EPERM-03/EPERM-04 riders) — alliance results
+ * voter-alliance (riders) — alliance results
  * surface DEPTH on the base dataset.
  *
  * Read-only LEAF spec on `data-setup-base` (`e2e/base`). Voter routes are
@@ -8,24 +8,24 @@
  * (`answeredVoterPage`: Home → Intro → election-select → constituency-select →
  * answer all opinion questions → /results, landing in the Regional election /
  * CO-Reg-N scope where Alliance A is nominated). The walk is shared config —
- * this leaf does NOT re-implement it (Phase 121 Don't-Hand-Roll). Because
+ * this leaf does NOT re-implement it (see phase 121 Don't-Hand-Roll). Because
  * `views.ts`'s `test` does not expose `answeredVoterPage`, this spec imports
  * `voterJourneyTest as test` and composes the results/entity-details fixtures
  * via their `create*` factories (mirrors `voter-journey-mobile.spec.ts`).
  *
- * ## Scope — DEPTH the voter-journey D-10 step lacks (not a verbatim re-run)
+ * ## Scope — DEPTH the voter-journey step lacks (not a verbatim re-run)
  *
- * The `voter-journey.spec.ts` D-10 step already asserts alliance PRESENCE
+ * The `voter-journey.spec.ts` step already asserts alliance PRESENCE
  * (section + card + gauge + a member subcard visible). This spec deepens that:
- *   - EPERM-03 presence rider made SELF-CONTAINED here (tab set + section),
+ *   - presence rider made SELF-CONTAINED here (tab set + section),
  *   - both member-org subcards ([or-aa] Party AA, [or-ab] Party AB) asserted
  *     by name (not `nth(1)` visibility),
  *   - the clickable in-card children proven by opening THAT member org's own
- *     entity-detail drawer (drawer-identity assertion, D-03),
- *   - the EPERM-04 alliance tab-control rider (EXACTLY ['info','children'], no
- *     opinions tab) and the EFLOW-02 member-orgs drawer (both members listed).
+ *     entity-detail drawer (drawer-identity assertion),
+ *   - the alliance tab-control rider (EXACTLY ['info','children'], no
+ *     opinions tab) and the member-orgs drawer (both members listed).
  *
- * Seed is ASSERT-ONLY (D-04): no dev-seed or product files are modified. The
+ * Seed is ASSERT-ONLY: no dev-seed or product files are modified. The
  * alliance names, member orgs, `results.sections` (['candidate','organization',
  * 'alliance']) and `entityDetails.contents.alliance` (['info','children']) are
  * the frozen `e2e/base` wiring verified at the 129 close.
@@ -58,7 +58,7 @@ test.describe('voter-alliance (EFLOW-02 + EPERM-03/04 riders)', () => {
     await expect(page.getByTestId(testIds.voter.results.list)).toBeVisible({ timeout: TIMEOUTS.slowPage });
 
     await test.step('EPERM-03 rider: alliance section present in results.sections[]', async () => {
-      // Self-contained presence criterion (D-03): the alliances entity tab
+      // Self-contained presence criterion: the alliances entity tab
       // exists alongside candidates + organizations, and selecting it renders
       // the alliance section. `results.sections = ['candidate','organization',
       // 'alliance']` in e2e/base — assert the exact tab set + order.
@@ -81,7 +81,7 @@ test.describe('voter-alliance (EFLOW-02 + EPERM-03/04 riders)', () => {
         timeout: TIMEOUTS.element
       });
 
-      // Both member-org subcards asserted BY NAME (deeper than D-10's nth(1)
+      // Both member-org subcards asserted BY NAME (deeper than 's nth(1)
       // visibility): OR-AA Party AA + OR-AB Party AB are the alliance members.
       const subcards = allianceA.getByTestId(testIds.voter.results.cardSubcard);
       await expect(subcards.filter({ hasText: /Party AA/i })).toBeVisible({ timeout: TIMEOUTS.slowPage });
@@ -92,7 +92,7 @@ test.describe('voter-alliance (EFLOW-02 + EPERM-03/04 riders)', () => {
       // Clicking a member subcard navigates to THAT org's entity-detail drawer
       // (the whole subcard is wrapped by the member org's EntityCardAction <a>
       // — EntityCard.svelte:220). Assert the opened drawer is the ORG's, not
-      // the alliance's (drawer-identity assertion, D-03).
+      // the alliance's (drawer-identity assertion).
       const allianceA = resultsPage
         .getEntityCards()
         .filter({ hasText: /Alliance A/i })

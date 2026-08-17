@@ -26,7 +26,7 @@ export async function load({ fetch, parent, untrack, url }) {
   untrack(() => ({ electionId, constituencyId } = parseParams({ url })));
 
   // reason: voter-app routes allowlist for ?next= deferred target — prevents
-  // open-redirect attacks per CLEAN-02 / CONTEXT D-05. The whitelist accepts
+  // open-redirect attacks per CONTEXT. The whitelist accepts
   // either a locale-prefixed path (`/en/...`) or one of the bare voter-app
   // route roots (`/results`, `/questions`, `/nominations`). Cross-origin
   // values (`https://...`, `//evil.com`) fail the regex and are dropped —
@@ -38,7 +38,7 @@ export async function load({ fetch, parent, untrack, url }) {
    * may emit a base URL that already carries `?electionId=…` (Constituencies branch
    * below), in which case the next-param must join with `&`, not `?`. Concatenating
    * a leading-`?` next directly produced `…?electionId=…?next=…` — a malformed URL
-   * that SvelteKit's URL parser 500s on (CLEAN-02 test 3 reproducer).
+   * that SvelteKit's URL parser 500s on (test 3 reproducer).
    */
   function withNext(base: string): string {
     return nextKv ? `${base}${base.includes('?') ? '&' : '?'}${nextKv}` : base;

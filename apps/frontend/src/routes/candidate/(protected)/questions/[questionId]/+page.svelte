@@ -46,11 +46,11 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   // Stable references (functions, stores, objects with internal getters): destructure-safe.
   const candCtx = getCandidateContext();
   const { getRoute, t, userData } = candCtx;
-  // appSettings/dataRoot are reactive accessors (Phase 113 flatten) — read via candCtx.X, never destructure.
+  // appSettings/dataRoot are reactive accessors (see phase 113 flatten) — read via candCtx.X, never destructure.
   const appSettings = $derived(candCtx.appSettings);
   // dataRoot is identity-stable (#version-bridge): read `candCtx.dataRoot.<prop>` directly in the tracking scope,
   // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md §Context Destructuring Rule +
-  // .planning/spikes/CONVENTIONS.md §9 (Spike-024). Phase 117 COLD-01.
+  // (see spike 024). see phase 117.
   // Reactive accessors ($state / $derived backed): read via candCtx.X. Aliased
   // through $derived for template readability — see CLAUDE.md §Context Destructuring Rule.
   const answersLocked = $derived(candCtx.answersLocked);
@@ -65,7 +65,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   let bypassPreventNavigation = $state(false);
   let errorMessage = $state<string | undefined>(undefined);
   let status = $state<ActionStatus>('loading');
-  // Validity surfaced by `OpinionQuestionInput` (D-07). The `{#key question.id}`
+  // Validity surfaced by `OpinionQuestionInput`. The `{#key question.id}`
   // remount around the input resets it per question; only the multi-choice branch
   // ever sets it false (selection outside min/max). ANDed into `canSubmit` so
   // Save is gated while a multi-choice selection is out of range.

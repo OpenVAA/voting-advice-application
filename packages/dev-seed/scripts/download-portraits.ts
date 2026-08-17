@@ -4,7 +4,7 @@
  *
  * DO NOT invoke on every seed — the 30 fetched images are checked into the
  * repo at `packages/dev-seed/src/assets/portraits/` and consumed from disk
- * by the Writer (Plan 58-04) and by the `default` template (Plan 58-06).
+ * by the Writer and by the `default` template.
  *
  * The one-off nature is deliberate: thispersondoesnotexist.com serves a fresh
  * StyleGAN-generated image per request, so running this script OVERWRITES the

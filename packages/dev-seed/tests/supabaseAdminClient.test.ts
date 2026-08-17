@@ -1,5 +1,5 @@
 /**
- * SupabaseAdminClient portrait-surface unit tests (Phase 58 Plan 04 — GEN-09).
+ * SupabaseAdminClient portrait-surface unit tests (see phase 58 Plan 04).
  *
  * Covers the three narrow methods added for portrait upload:
  *   - selectCandidatesForPortraitUpload — reads candidate rows by external_id prefix (Pitfall #8).
@@ -10,7 +10,7 @@
  * `.from(...)` / `.storage.from(...)` surfaces we exercise. Each test configures
  * the stub's return values to assert success + error branches.
  *
- * D-22: pure I/O contract — no real Supabase contact.
+ * pure I/O contract — no real Supabase contact.
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';

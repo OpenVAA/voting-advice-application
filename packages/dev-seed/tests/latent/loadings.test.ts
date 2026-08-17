@@ -1,16 +1,16 @@
 /**
- * Unit tests for `defaultLoadings` — Plan 57-05 sub-step default.
+ * Unit tests for `defaultLoadings` — sub-step default.
  *
  * Covers:
- *   - Matrix shape keyed by `question.external_id` (D-57-06 storage contract).
+ *   - Matrix shape keyed by `question.external_id` (storage contract).
  *   - Pitfall 3 regression: `questions.length === 0` → `{}` (no throw, no
- *     iteration — Phase 56 determinism tests with empty `{}` template rely on
+ *     iteration — see phase 56 determinism tests with empty `{}` template rely on
  *     this).
  *   - `dims === 0` edge: keys present with length-0 vectors (no throw).
- *   - Phase 56 guard replication: questions with no `external_id` are silently
+ *   - see phase 56 guard replication: questions with no `external_id` are silently
  *     skipped (mirrors `extractChoiceIds` / `defaultRandomValidEmit`).
  *   - N(0, 1) statistics over 60 entries at seed 42 (loose bounds for small N).
- *   - D-57-07 per-question override — supplied vector copied verbatim into the
+ *   - per-question override — supplied vector copied verbatim into the
  *     matching `external_id` slot.
  *   - Override copy semantics — mutating the returned vector does NOT mutate
  *     the source `tplLoadings` entry.

@@ -79,7 +79,7 @@ export const INFO_QUESTION_ANSWERS: Readonly<Record<string, string>> = Object.fr
   // string[] (a row list), which cannot live in this Record<string,string>. It
   // is filled explicitly in step 13 via MULTIPLE_TEXT_ANSWERS (below) +
   // candidateProfilePage.fillMultipleTextQuestion, and round-tripped in step 21
-  // (EQTYP-03 candidate leg). It is required:false, so leaving it out of the
+  // (candidate leg). It is required:false, so leaving it out of the
   // completion-gate map does not affect the required-empty submit choreography.
   'test-qu-info-filt-co-reg-n': '[INFO-FILT-CO-REG-N] Answer for the north-only filtered info question.'
 });
@@ -88,7 +88,7 @@ export const INFO_QUESTION_ANSWERS: Readonly<Record<string, string>> = Object.fr
  * The multipleText info question (`test-qu-info-multipleText`) answer: a list
  * of exactly 2 distinct ASCII marker values. Filled on the candidate profile
  * (step 13) via `candidateProfilePage.fillMultipleTextQuestion` and asserted
- * verbatim in the preview (step 21) — closing the EQTYP-03 candidate
+ * verbatim in the preview (step 21) — closing the candidate
  * round-trip.
  *
  * The values live in a `string[]` (not the INFO_QUESTION_ANSWERS

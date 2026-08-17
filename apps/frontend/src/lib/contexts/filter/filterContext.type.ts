@@ -5,12 +5,12 @@ import type { FilterTree } from '$lib/contexts/voter/filters/filterState.svelte'
 /**
  * Symbol-keyed Svelte context exposing the active `FilterGroup` for the current
  * (`electionId`, `entityTab`) URL scope (`entityTab` renamed from
- * `entityTypePlural` by Phase 88 Plan 88-02), plus a `$state` version counter
+ * `entityTypePlural` by Phase 88), plus a `$state` version counter
  * that bridges `FilterGroup.onChange` imperative notifications into `$derived`
  * reactivity. See `filterContext.svelte.ts` for the implementation analog
  * (`dataContext.svelte.ts` lines 33-50).
  *
- * Per Phase 62 D-05, this context is initialized by `initVoterContext()` and
+ * Per Phase 62, this context is initialized by `initVoterContext ` and
  * accessible either directly via `getFilterContext()` (for the future LLM chat
  * surface) or via `getVoterContext().filterContext` (for the voter-flow UI).
  */
@@ -22,7 +22,7 @@ export type FilterContext = {
    *
    * Reading this getter inside a `$derived` does NOT subscribe to filter-rule
    * mutations — read `version` for that. The reference itself only changes
-   * when scope changes (D-14: filter state resets per (election, plural) tuple).
+   * when scope changes (filter state resets per (election, plural) tuple).
    */
   readonly filterGroup: FilterGroup<MaybeWrappedEntityVariant> | undefined;
   /**
@@ -35,7 +35,7 @@ export type FilterContext = {
   /**
    * Set a filter rule by filter name/id. Routes through `filter.setRule()` to
    * preserve the `onChange` emission that drives the version counter.
-   * Per D-06 this is the typed mutator surface intended for the future LLM chat
+   * Per this is the typed mutator surface intended for the future LLM chat
    * integration; UI components today still call `filter.setRule()` directly via
    * the `EntityFilters` component.
    */
@@ -47,7 +47,7 @@ export type FilterContext = {
   resetFilters(): void;
   /**
    * Add a filter to the active group. Not implemented in Phase 62 — the spec is
-   * deferred to the future LLM chat integration per D-06. Logs a warning when
+   * deferred to the future LLM chat integration per. Logs a warning when
    * called so any pre-completion consumer hits a visible signal.
    */
   addFilter(spec: unknown): void;
@@ -67,7 +67,7 @@ export type InitFilterContextArgs = {
   entityFilters: () => FilterTree;
   /**
    * Optional getter returning the singular `EntityType` implied for the
-   * current results election (Phase 88 post-88-02 follow-up). When provided,
+   * current results election (see phase 88 post-88-02 follow-up). When provided,
    * filterContext resolves its `(electionId, entityType)` scope tuple by
    * reading this getter instead of `page.params.entityTab`. This lets the
    * results route stop force-filling `entityTab` into URLs (which produced

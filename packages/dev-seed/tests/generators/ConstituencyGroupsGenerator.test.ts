@@ -1,8 +1,8 @@
 /**
  * ConstituencyGroupsGenerator unit tests.
  *
- * D-22 acceptance criteria (a)–(e) + sentinel-free output. The `_constituencies`
- * join sentinel (RESEARCH §4.4) is populated by Plan 07's post-topo pass; this
+ * acceptance criteria (a)–(e) + sentinel-free output. The `_constituencies`
+ * join sentinel (RESEARCH) is populated by Plan 07's post-topo pass; this
  * generator emits none.
  */
 

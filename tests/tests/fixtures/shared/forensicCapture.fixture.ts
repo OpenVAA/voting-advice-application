@@ -1,21 +1,21 @@
 /**
- * @file forensicCapture fixture (Phase 138, D-11 — INTEG-01).
+ * @file forensicCapture fixture (see phase 138).
  *
- * Browser-side forensic capture for the DEF-135-04 / EPERM-07 term-trigger
+ * Browser-side forensic capture for the DEF-135-04 term-trigger
  * intermittent: every `console` message, every uncaught `pageerror`, and every
  * `requestfailed` on the page, each stamped with an ISO-8601 timestamp and
  * attached to the test result on teardown.
  *
  * ## Why it exists
  *
- * The EPERM-07 failure is a ~1-in-8 LATENCY signal, not an absence signal
+ * The failure is a ~1-in-8 LATENCY signal, not an absence signal
  * (`deferred-items.md` § DEF-135-04: the post-failure page snapshot SHOWS the
  * trigger). `trace: 'on'` (playwright.config.ts:133) records what the test
  * asserted; it does not record what the page was doing — a late-arriving fetch,
  * a client-side error during the Base-2 → Base-3 hop, or a failed request that
- * stalled the render are all invisible in a trace alone. Phase 138 task 1
+ * stalled the render are all invisible in a trace alone. see phase 138 task 1
  * established that the ORIGINAL occurrence's evidence is unrecoverable
- * (`138-DIAGNOSIS.md` § U-1) precisely because no such capture existed. This
+ * (` ` § U-1) precisely because no such capture existed. This
  * fixture is the fix for the next occurrence.
  *
  * ## Surface

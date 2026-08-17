@@ -1,10 +1,10 @@
 /**
- * defaultSpread — GEN-06c / D-57-04 built-in default.
+ * defaultSpread — GEN-06c built-in default.
  *
  * Returns the std-dev of the isotropic Gaussian used to sample candidate latent
  * positions around their party centroid (`candidate_latent ~ N(centroid, spread²·I)`).
  *
- * D-57-04 locks: default `0.15`, scalar override only (no vector — eigenvalues
+ * locks: default `0.15`, scalar override only (no vector — eigenvalues
  * already anisotropize variance). A vector-shaped override would double-count
  * the anisotropy.
  *

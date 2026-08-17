@@ -4,7 +4,7 @@ import playwright from 'eslint-plugin-playwright';
 export default [
   ...sharedConfig,
   {
-    // `e2e-runs` (Phase 138): per-run evidence dirs written by tests/scripts/e2e-run.sh.
+    // `e2e-runs` (see phase 138): per-run evidence dirs written by tests/scripts/e2e-run.sh.
     // Each holds a full Playwright HTML report, whose bundled vendor JS would otherwise
     // be linted — thousands of errors from third-party minified code, failing
     // `yarn lint:check` for anyone who has run the wrapper. Gitignored too.

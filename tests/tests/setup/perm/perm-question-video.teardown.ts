@@ -1,5 +1,5 @@
 /**
- * perm-question-video data-teardown project (EPERM-06).
+ * perm-question-video data-teardown project.
  *
  * Scoped to PREFIX='e2e-perm-qvid-'.
  */

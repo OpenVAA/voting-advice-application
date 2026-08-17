@@ -1,7 +1,7 @@
 /**
- * latentAnswerEmitter unit tests (Plan 57-07 Task 1).
+ * latentAnswerEmitter unit tests (Task 1).
  *
- * Covers D-57-13 (closure-cached SpaceBundle), D-57-14 (hook precedence),
+ * Covers (closure-cached SpaceBundle), (hook precedence),
  * Pitfall 4 (no-party fallback), GEN-06g (six independently swappable hooks),
  * and the compile-time AnswerEmitter contract.
  */

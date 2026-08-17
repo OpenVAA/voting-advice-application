@@ -254,7 +254,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
    * Read-only — returns integers only, no row content. Scoped by `project_id` and by
    * `external_id LIKE '<prefix>%'`, matching the delete's own prefix semantics.
    *
-   * Phase 140 WR-06 / WR-02 (iteration-2 correction): only `*` is rejected
+   * see phase 140 WR-06 / WR-02 (iteration-2 correction): only `*` is rejected
    * before the query runs. PostgREST's `like` filter (used here) maps a
    * literal `*` in the input to SQL `%`, but `bulk_delete`'s raw SQL
    * `external_id LIKE $2` (`00001_initial_schema.sql`) does not — a `*` in

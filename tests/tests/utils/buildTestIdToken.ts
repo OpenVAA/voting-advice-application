@@ -1,8 +1,8 @@
 /**
  * Shared synthetic JWE id_token builder for bank-auth (Idura/Signicat OIDC) E2E
- * tests (D-03). Extracted verbatim from the in-spec copy in
+ * tests. Extracted verbatim from the in-spec copy in
  * `candidate-bank-auth.spec.ts`, parameterized on `iss`/`aud` so ONE builder
- * serves both the Edge-Function spec (EFLOW-10) and the mock OIDC issuer
+ * serves both the Edge-Function spec and the mock OIDC issuer
  * (EFLOW-10b) — the latter aligns `iss`/`aud` with `IDENTITY_PROVIDER_ISSUER` /
  * `PUBLIC_IDENTITY_PROVIDER_CLIENT_ID`.
  *

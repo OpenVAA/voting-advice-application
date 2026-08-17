@@ -1,16 +1,16 @@
 /**
  * ElectionsGenerator unit tests.
  *
- * D-22 acceptance criteria coverage:
+ * acceptance criteria coverage:
  *   (a) row shape matches TablesInsert<'elections'> — compile-time via typecheck
  *       plus spot-check on `project_id` + `external_id` at runtime
- *   (b) external_id prefix applied (GEN-04) — generated + fixed[] paths
+ *   (b) external_id prefix applied — generated + fixed paths
  *   (c) count is honored
  *   (d) fixed[] pass-through unchanged modulo prefix
  *   (e) seeded faker produces deterministic output (same seed → same bytes)
  *
  * Plus sentinel check: generator does NOT emit the `_constituencyGroups` enrichment
- * sentinel (Plan 07's post-topo pass owns that — RESEARCH §4.3).
+ * sentinel (Plan 07's post-topo pass owns that — RESEARCH).
  */
 
 import { describe, expect, it } from 'vitest';

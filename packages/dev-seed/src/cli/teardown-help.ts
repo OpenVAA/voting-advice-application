@@ -1,9 +1,8 @@
 /**
  * Static --help output for `yarn workspace @openvaa/dev-seed seed:teardown`.
- * CLI-04 / D-58-13.
  *
  * The text documents the `--prefix` override, the two env vars the CLI
- * depends on, and the D-58-17 permissive-prefix contract. Listed flags
+ * depends on, and the permissive-prefix contract. Listed flags
  * stay in sync with `packages/dev-seed/src/cli/teardown.ts`'s parseArgs
  * options block.
  */

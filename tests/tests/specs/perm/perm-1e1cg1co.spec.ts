@@ -10,7 +10,7 @@ import { createNavMenu } from '../../fixtures/shared/navMenu.fixture';
 import { testIds } from '../../utils/testIds';
 import { bypassIntroAndExpectQuestion } from '../../utils/voterIntro';
 
-// EFLOW-09 D-02: the conditional voter nav-menu items — "Select an election"
+// the conditional voter nav-menu items — "Select an election"
 // (elections.title, gated on electionsSelectable) and "Select your
 // constituency" (constituencies.title, gated on constituenciesSelectable) —
 // are OMITTED when the seed makes neither selectable. VoterNav.svelte renders
@@ -26,7 +26,7 @@ test.describe('perm-1e1cg1co', () => {
     await expect(page.getByTestId(testIds.voter.elections.list)).toBeHidden();
     await expect(page.getByTestId(testIds.voter.constituencies.list)).toBeHidden();
 
-    // EFLOW-09 D-02: conditional voter nav item omitted (not-selectable seed).
+    // conditional voter nav item omitted (not-selectable seed).
     const navMenu = createNavMenu(page);
     await navMenu.openMobileNav();
     // The drawer is open and its items resolved (the always-present leading

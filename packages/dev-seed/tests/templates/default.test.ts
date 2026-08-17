@@ -1,11 +1,11 @@
 /**
- * Default-template test suite (TMPL-04) — covers 27 behaviors across:
+ * Default-template test suite — covers 27 behaviors across:
  *   - candidatesOverride: non-uniform distribution + per-locale faker cycling
- *   - questionsOverride: D-58-03 type mix (18 ordinal + 4 categorical + 1 MC + 1 boolean)
+ *   - questionsOverride: type mix (18 ordinal + 4 categorical + 1 MC + 1 boolean)
  *   - defaultTemplate shape: counts, flags, frontmatter constants
  *   - End-to-end pipeline integration: runPipeline(defaultTemplate, defaultOverrides)
  *
- * D-22 contract: pure I/O. No Supabase imports, no `createClient`, no `.rpc()`.
+ * contract: pure I/O. No Supabase imports, no `createClient`, no `.rpc `.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -197,7 +197,7 @@ describe('questionsOverride — D-58-03 type mix', () => {
       refs: { ...makeCtx().refs, question_categories: fourCategories() }
     });
     const rows = questionsOverride({}, ctx);
-    // number + multipleChoiceCategorical are now intentional demo types (D-15);
+    // number + multipleChoiceCategorical are now intentional demo types;
     // text/date/image/multipleText remain excluded from the default template.
     const forbidden = new Set(['text', 'date', 'image', 'multipleText']);
     for (const row of rows) {
@@ -275,13 +275,13 @@ describe('defaultTemplate — shape & frontmatter constants', () => {
     expect(rows.constituency_groups).toHaveLength(1);
     expect(rows.constituencies).toHaveLength(5);
     expect(rows.organizations).toHaveLength(8);
-    // Phase 67: 2 hand-authored alliances (Progressive Front + Conservative Bloc).
+    // see phase 67: 2 hand-authored alliances (Progressive Front + Conservative Bloc).
     expect(rows.alliances).toHaveLength(2);
     expect(rows.question_categories).toHaveLength(4);
     expect(rows.questions).toHaveLength(26);
     expect(rows.candidates).toHaveLength(327);
     // 327 candidate noms + 8 × 5 = 40 organization noms (matrix is dense, every cell ≥ 1)
-    // + 10 alliance noms (2 alliances × 5 constituencies, Phase 67)
+    // + 10 alliance noms (2 alliances × 5 constituencies, see phase 67)
     expect(rows.nominations).toHaveLength(327 + 40 + 10);
   });
 });

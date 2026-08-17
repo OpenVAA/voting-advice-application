@@ -1,8 +1,8 @@
 /**
  * CandidatesGenerator unit tests.
  *
- * D-22 acceptance (a)–(e) plus the D-27 answer-emitter seam — the contract that
- * Phase 57's latent-factor emitter will drop in unchanged:
+ * acceptance (a)–(e) plus the answer-emitter seam — the contract that
+ * see phase 57's latent-factor emitter will drop in unchanged:
  *   - Default path: `ctx.answerEmitter` undefined → `defaultRandomValidEmit`
  *   - Injected path: `ctx.answerEmitter = customEmitter` → custom function called
  *
@@ -132,7 +132,7 @@ describe('CandidatesGenerator', () => {
   it('forwards candidate.organization into ctx.answerEmitter when refs.organizations populated (D-57 Interpretation Note)', () => {
     // B1 regression test: pins the `candidateForEmit` literal to include the
     // organization ref. Prevents future narrowing that would silently break
-    // Phase 57 latent emitter's findPartyIndex.
+    // see phase 57 latent emitter's findPartyIndex.
     const spy = vi.fn(() => ({ seed_q_001: { value: true } })) as unknown as AnswerEmitter;
     const base = makeCtx();
     const gen = new CandidatesGenerator(
@@ -169,7 +169,7 @@ describe('CandidatesGenerator', () => {
 
   it('D-57-20 (a): fixed row with answersByExternalId is used verbatim — emitter NOT invoked', () => {
     // Fixed rows with pre-supplied answersByExternalId must bypass the emitter
-    // entirely. D-57-20 bullet 1.
+    // entirely. bullet 1.
     const spy = vi.fn(() => ({ seed_q_001: { value: true } })) as unknown as AnswerEmitter;
     const base = makeCtx();
     const gen = new CandidatesGenerator(
@@ -193,7 +193,7 @@ describe('CandidatesGenerator', () => {
       ]
     });
     expect(rows).toHaveLength(1);
-    expect(spy).toHaveBeenCalledTimes(0); // D-57-20: emitter NOT invoked for fixed rows
+    expect(spy).toHaveBeenCalledTimes(0); // emitter NOT invoked for fixed rows
     const rowAny = rows[0] as unknown as {
       answersByExternalId?: Record<string, { value: unknown }>;
     };
@@ -201,7 +201,7 @@ describe('CandidatesGenerator', () => {
   });
 
   it('D-57-20 (b): fixed row without answersByExternalId — emitter NOT invoked; row carries no synthesized answers', () => {
-    // D-57-20 bullet 2: fixed rows skip the latent pipeline entirely. The
+    // bullet 2: fixed rows skip the latent pipeline entirely. The
     // generator does NOT invoke the emitter for fixed rows. If a consumer wants
     // answers on a fixed row, they supply answersByExternalId (branch a above).
     const spy = vi.fn(() => ({ seed_q_001: { value: true } })) as unknown as AnswerEmitter;
@@ -224,7 +224,7 @@ describe('CandidatesGenerator', () => {
       ]
     });
     expect(rows).toHaveLength(1);
-    expect(spy).toHaveBeenCalledTimes(0); // D-57-20: fixed row → emitter skipped
+    expect(spy).toHaveBeenCalledTimes(0); // fixed row → emitter skipped
     const rowAny = rows[0] as unknown as {
       answersByExternalId?: Record<string, { value: unknown }>;
     };
@@ -232,7 +232,7 @@ describe('CandidatesGenerator', () => {
   });
 
   it('D-57-20 (c): synthetic (count-generated) rows always run through the latent emitter', () => {
-    // D-57-20 bullet 3: synthetic rows always go through ctx.answerEmitter (the
+    // bullet 3: synthetic rows always go through ctx.answerEmitter (the
     // latent emitter in production wiring). Emitter invoked once per synthetic
     // row; each candidate arg carries `organization` (from Task 0's amendment).
     const spy = vi.fn(() => ({ seed_q_001: { value: false } })) as unknown as AnswerEmitter;
@@ -245,7 +245,7 @@ describe('CandidatesGenerator', () => {
     );
     const rows = gen.generate({ count: 3 });
     expect(rows).toHaveLength(3);
-    expect(spy).toHaveBeenCalledTimes(3); // D-57-20: once per synthetic row
+    expect(spy).toHaveBeenCalledTimes(3); // once per synthetic row
     const mockCalls = (spy as unknown as { mock: { calls: Array<Array<unknown>> } }).mock.calls;
     mockCalls.forEach((args) => {
       const cand = args[0] as { organization?: { external_id: string } };

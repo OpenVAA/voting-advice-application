@@ -129,7 +129,7 @@ const TEXT_RE = {
 
 /**
  * Resolve the `role=meter` inside the score-gauge whose label matches `label`.
- * EFLOW-04 helper: pins a per-category subMatch gauge by its question-group
+ * helper: pins a per-category subMatch gauge by its question-group
  * label (the stable `[<id>]` prefix) so its `aria-valuenow` can be asserted.
  * Module-scope (not an in-test arrow) to satisfy `func-style` + keep the
  * gauge-by-label lookup reusable.
@@ -198,9 +198,9 @@ async function toggleCategoryListItem({
  * Expect a client-side navigation after performing the given action, and settle on
  * the DESTINATION DOM rather than on the URL.
  *
- * reason: (Phase 138, D-06 — INTEG-01) DEF-135-04 / EPERM-07. This helper used to
+ * reason: (see phase 138) DEF-135-04. This helper used to
  * end in `page.waitForURL(...).catch(() => null)` — a URL-only wait that swallowed
- * its own timeout. Under the ordering named in `138-DIAGNOSIS.md` § Named root
+ * its own timeout. Under the ordering named in ` ` § Named root
  * cause, SvelteKit commits the URL (`client.js:1759-1760`) before it swaps the DOM
  * (`:1824`), so that settle released while the PREVIOUS question was still
  * rendered, and any trailing assertion raced a swap that had not happened. The
@@ -211,10 +211,10 @@ async function toggleCategoryListItem({
  * The settle now lives in `helpers/navigation.ts` so this walk and the
  * `eperm07-term-trigger` instrument share ONE implementation and cannot drift —
  * the instrument would otherwise keep its own copy of the defect and stop
- * witnessing this file. Negative control: `138-NEGATIVE-CONTROL.md`.
+ * witnessing this file. Negative control: ` `.
  *
  * The baseline is captured BY THE ACTION, via the `capture` callback it receives,
- * immediately before the navigating click — never here at wrapper entry (Phase 138
+ * immediately before the navigating click — never here at wrapper entry (see phase 138
  * review WR-01). Every action below gates on the heading of the page it is leaving,
  * and that gate targets the SAME element the baseline read targets, so a baseline
  * taken before the gate can be one page stale and would make the settle's stage-2
@@ -322,12 +322,12 @@ async function expectQuestionAndAdvance({
 }
 
 /**
- * Answer a NUMBER-scale opinion question at max and advance (Phase 129 D-12).
+ * Answer a NUMBER-scale opinion question at max and advance (see phase 129).
  *
  * The NumberScaleInput renders a native `<input type=range>` (no question-choice
  * options); a matchable number question carries no radio/checkbox options, so
  * `expectQuestionAndAdvance` cannot drive it. Focus the slider and press End to
- * land the exact max value (the D-03 native-range keyboard contract), then click
+ * land the exact max value (the native-range keyboard contract), then click
  * Next explicitly — number inputs never auto-advance (plan 06).
  */
 async function expectNumberQuestionAndAdvance({ page, text }: { page: Page; text: RegExp | string }): Promise<void> {
@@ -346,7 +346,7 @@ async function expectNumberQuestionAndAdvance({ page, text }: { page: Page; text
 }
 
 /**
- * Answer a MULTI-CHOICE (checkbox) opinion question and advance (Phase 129 D-12).
+ * Answer a MULTI-CHOICE (checkbox) opinion question and advance (see phase 129).
  *
  * The checkbox multi-select renders question-choice checkboxes; a valid answer
  * needs minSelections..maxSelections (2..3 in e2e/base). Click the first 2
@@ -395,10 +395,10 @@ const SELECT_EXACT_ONE_EN = 'Select 1 option.';
 
 /**
  * Answer the EXACT-ONE multi-choice opinion question and advance, asserting the
- * `selectExact` helper text on the way (Phase 135 GUARD-01).
+ * `selectExact` helper text on the way (see phase 135).
  *
  * This is the standing regression guard for
- * `questions.multiChoice.selectExact`. Phase 134 added the key in all 7 locales
+ * `questions.multiChoice.selectExact`. see phase 134 added the key in all 7 locales
  * and proved it renders by importing the compiled Paraglide output at build
  * time, but no seeded question had an equal min/max window, so the RUNNING app
  * always took the `selectRange` branch and a break in the string would have
@@ -428,7 +428,7 @@ async function expectExactOneMultiChoiceQuestionAndAdvance({
     const choices = page.locator(`[data-testid="question-choice"][name="questionChoices-${questionId}"]`);
     await expect(choices.first()).toBeVisible({ timeout: TIMEOUTS.element });
 
-    // ---- GUARD-01 lock ----
+    // ---- lock ----
     // The helper paragraph is emitted only for a multi-choice question carrying
     // authored min/max (`{#if mode === 'answer' && multiConstraints}`), and its
     // text is the branch output. Exact string → a raw-key regression fails here.
@@ -477,7 +477,7 @@ async function settleAndAdvance({ page, text }: { page: Page; text: RegExp | str
 async function expectElectionOptionAndSelect({ page, text }: { page: Page; text: RegExp | string }): Promise<void> {
   const electionAccordion = page.getByTestId(testIds.voter.results.electionAccordion);
   await expect(electionAccordion).toBeVisible({ timeout: TIMEOUTS.element });
-  // FIX-02 lock for `components.accordionSelect.listboxAriaLabel` — the one
+  // lock for `components.accordionSelect.listboxAriaLabel` — the one
   // newly-translated key that is a genuine WCAG 2.1 AA defect: without it the
   // listbox announces the raw dotted key path where a control name belongs.
   // AccordionSelect spreads restProps (incl. data-testid) onto the `role=listbox`
@@ -520,7 +520,7 @@ async function dismissLeftoverDialogsBestEffort(page: Page): Promise<void> {
 /**
  * Read a results-list card's match-score callout as an integer percentage.
  * MatchScore.svelte renders the readout as "<n>%" (mirrors
- * resultsPage.expectOrgMatchScore); parse the integer so the EQTYP-02 boundary
+ * resultsPage.expectOrgMatchScore); parse the integer so the boundary
  * test can compare POLAR_MIN vs POLAR_MAX scores numerically. Module-scope to
  * keep the `expect(...).not.toBeNull()` guard out of the test body.
  */
@@ -883,7 +883,7 @@ test.describe('voter journey', () => {
       await expect.soft(infoButtonQ2).toHaveCount(0, { timeout: TIMEOUTS.element });
     });
 
-    // EPERM-07 customData.terms extension (additive, against e2e/base; the
+    // customData.terms extension (additive, against e2e/base; the
     // `terms` block was seeded on Base-3 / qu-opin-base-3-likert7 in Phase 119,
     // base.ts:782-790). The trigger 'Likert' appears verbatim in the Base-3 title
     // ("Base opinion 3 — Likert 7"), so QuestionHeading renders it as an in-text
@@ -900,7 +900,7 @@ test.describe('voter journey', () => {
       });
       // Settle on Base-3 by its heading.
       const questionHeading = page.getByTestId(testIds.voter.questions.heading);
-      // reason: HARD, not soft (Phase 138, D-08; deferred-items.md § DEF-135-04 "Suggested follow-up") —
+      // reason: HARD, not soft (see phase 138; deferred-items.md § DEF-135-04 "Suggested follow-up") —
       // a mis-timed Base-3 arrival must abort HERE, not two lines below at the term gate that misdirects.
       await expect(questionHeading).toHaveText(TEXT_RE.baseOpinion3Likert7, { timeout: TIMEOUTS.element });
 
@@ -921,11 +921,11 @@ test.describe('voter journey', () => {
       await termTrigger.first().blur();
     });
 
-    // EFLOW-05: skip + delete/back nav + answer-count→results-CTA.
+    // skip + delete/back nav + answer-count→results-CTA.
     // This step (delete answer → results link re-disabled → re-answer → re-enabled,
     // plus the previous-button back-nav) plus the Opt-A skip step below ARE the
-    // confirmed-covered EFLOW-05 behaviour — re-confirmed with NO behaviour change
-    // (Phase 121 scope_fence: EFLOW-05 is confirmed-covered, comment for greppable
+    // confirmed-covered behaviour — re-confirmed with NO behaviour change
+    // (see phase 121 scope_fence: is confirmed-covered, comment for greppable
     // decision-coverage evidence).
     await test.step('answer remaining base questions at polar-MAX, delete answer, results link gated on min answers', async () => {
       // Answer and advance through the rest of the category's questions. We are
@@ -939,13 +939,13 @@ test.describe('voter journey', () => {
           optionIndex: (n) => n - 1 // Answer last option for matching test
         });
       }
-      // Phase 129 D-12 + Phase 135 GUARD-01: the MAIN category now ends with
+      // see phase 129 see phase 135: the MAIN category now ends with
       // Base-6 (number scale), Base-7 (multi-choice 2..3) and Base-8
       // (multi-choice EXACT one). Answer all three (slider End; first 2
       // checkboxes; a single checkbox) before the Opt-A intro shows.
       await expectNumberQuestionAndAdvance({ page, text: TEXT_RE.baseOpinion6Number });
       await expectMultiChoiceQuestionAndAdvance({ page, text: TEXT_RE.baseOpinion7MultiChoice });
-      // GUARD-01: this call carries the `questions.multiChoice.selectExact`
+      // this call carries the `questions.multiChoice.selectExact`
       // resolved-text lock (see expectExactOneMultiChoiceQuestionAndAdvance).
       await expectExactOneMultiChoiceQuestionAndAdvance({ page, text: TEXT_RE.baseOpinion8MultiChoiceExact });
       // We should now see the next category intro
@@ -963,7 +963,7 @@ test.describe('voter journey', () => {
       await expect
         .soft(questionHeading)
         .toHaveText(TEXT_RE.baseOpinion8MultiChoiceExact, { timeout: TIMEOUTS.element });
-      // Min-answers gate (minimumAnswers: 5). Phase 129 D-12 added Base-6/Base-7
+      // Min-answers gate (minimumAnswers: 5). see phase 129 added Base-6/Base-7
       // and Phase 135 added Base-8, so the voter now holds 8 base answers here —
       // deleting ONE no longer crosses the 5-answer threshold. Delete FOUR
       // (Base-8 → Base-7 → Base-6 → Base-5, 8→7→6→5→4) to cross below the gate,
@@ -993,7 +993,7 @@ test.describe('voter journey', () => {
       });
       await expectNumberQuestionAndAdvance({ page, text: TEXT_RE.baseOpinion6Number });
       await expectMultiChoiceQuestionAndAdvance({ page, text: TEXT_RE.baseOpinion7MultiChoice });
-      // Second GUARD-01 pass — on a question whose answer was DELETED and is
+      // Second pass — on a question whose answer was DELETED and is
       // being re-entered, so the helper text is re-asserted against a freshly
       // remounted QuestionChoices (deleteEpoch bump) rather than only the
       // first-paint one.
@@ -1063,8 +1063,8 @@ test.describe('voter journey', () => {
     // CATEGORY SKIP + FILTERED CATEGORIES + REMAINING QUESTIONS
     // ====================================================================
 
-    // EFLOW-05: skip + delete/back nav + answer-count→results-CTA.
-    // The categorySkip click below is the confirmed-covered EFLOW-05 category-skip
+    // skip + delete/back nav + answer-count→results-CTA.
+    // The categorySkip click below is the confirmed-covered category-skip
     // slice (Opt-A skipped → its questions never appear; the de-selected Opt-B
     // category also stays absent) — re-confirmed, NO behaviour change.
     await test.step('skip the Opt-A category, and the deselected Opt-B category never appears', async () => {
@@ -1130,7 +1130,7 @@ test.describe('voter journey', () => {
       const subMatches = firstCard.getByTestId(testIds.voter.results.subMatches);
       await expect.soft(subMatches).toBeVisible();
 
-      // EFLOW-04: per-category subMatch CORRECT values for the pinned
+      // per-category subMatch CORRECT values for the pinned
       // polar-MAX candidate test-ca-bb-1 (NOT count-only). The voter answered
       // every reachable opinion question at polar-MAX; test-ca-bb-1 is itself
       // polar-MAX, so the categories the voter ANSWERED (Base + Regional)
@@ -1212,15 +1212,15 @@ test.describe('voter journey', () => {
     });
 
     // ====================================================================
-    // D-10: ALLIANCE RENDER VERIFICATION (Phase 129 UNBLK-06 / D-09)
+    // ALLIANCE RENDER VERIFICATION (see phase 129)
     //
     // Adding 'alliance' to results.sections (e2e/base seed, this phase) is the
     // single switch that surfaces the alliance tab + cards. Alliance A is
     // nominated in CO-Reg-N (the voter's Regional-election scope) with member
     // orgs OR-AA + OR-AB. The org→alliance imputation (organizationMatching:
-    // 'impute') yields the card-level MatchScore gauge for free (D-09) — no
+    // 'impute') yields the card-level MatchScore gauge for free — no
     // frontend code was built this phase. Presence-level only; the full
-    // card+drawer EFLOW-02 spec is Phase-130 scope.
+    // card+drawer spec is Phase-130 scope.
     // ====================================================================
     await test.step('D-10: alliance tab renders alliance cards with a match-score gauge + member-org subcards', async () => {
       await resultsPage.selectEntityTab('alliances');
@@ -1283,7 +1283,7 @@ test.describe('voter journey', () => {
         .filter({ hasText: TEXT_RE.hiddenCandidate });
       await expect.soft(hiddenCandidates).toHaveCount(0, { timeout: TIMEOUTS.element });
 
-      // EQTYP-01 matching-incorporation proof (+ EQTYP-02 max side). The max-walk
+      // matching-incorporation proof (max side). The max-walk
       // voter's answers equal POLAR_MAX on EVERY dimension INCLUDING the two new
       // opinion types: number (10, slider End) and multi-choice (['a','b'] — the
       // walk's first-2 checkbox click matches POLAR_MAX's seeded pair,
@@ -1332,7 +1332,7 @@ test.describe('voter journey', () => {
       const infoTab = dialog.getByTestId(testIds.voter.entityDetail.infoTab);
       await expect.soft(infoTab).toBeVisible({ timeout: TIMEOUTS.page });
 
-      // EPERM-04 — candidate tab control. `entityDetails.contents.candidate`
+      // candidate tab control. `entityDetails.contents.candidate`
       // is ['info','opinions'] (e2e/base.ts:147), so the candidate drawer must
       // expose EXACTLY [info, opinions] tabs — and CRUCIALLY the org-only
       // 'children'/Members tab must be ABSENT (tab control is per-type, not a
@@ -1344,7 +1344,7 @@ test.describe('voter journey', () => {
 
       const infoItems = infoTab.getByTestId('info-item');
       // 14 = 4 nomination-derived (election/constituency/list/number) + 9 info
-      // questions (multipleText restored, Phase 129 UNBLK-01) + 1 grouped Links
+      // questions (multipleText restored, see phase 129) + 1 grouped Links
       // item. (The link info question is grouped into the trailing Links item,
       // so 9 info questions still yield 8 standalone info-items + Links.)
       await expect.soft(infoItems).toHaveCount(14, { timeout: TIMEOUTS.element });
@@ -1399,8 +1399,8 @@ test.describe('voter journey', () => {
       // (10) date — toLocaleDateString('en', {year,month,day:'numeric'}) on 1980-06-15
       await expect.soft(infoItems.nth(10)).toContainText(/Info: date of birth\./i);
       await expect.soft(infoItems.nth(10)).toContainText(/6\/15\/1980/);
-      // (11) multipleText — the restored "keywords" info item (Phase 129
-      // UNBLK-01 round-trip read proof). CA-AA-Special carries the default
+      // (11) multipleText — the restored "keywords" info item (see phase 129
+      // round-trip read proof). CA-AA-Special carries the default
       // two-keyword answer; both strings must render on the info tab.
       await expect.soft(infoItems.nth(11)).toContainText(/Info: keywords\./i);
       await expect.soft(infoTab).toContainText(/Campaign keyword alpha/i);
@@ -1431,10 +1431,10 @@ test.describe('voter journey', () => {
         .first()
         .waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
 
-      // EFLOW-03: 4-case voter-vs-entity comparison (agree/disagree/voter-missing/entity-missing).
+      // 4-case voter-vs-entity comparison (agree/disagree/voter-missing/entity-missing).
       // The four expectQuestionDisplay calls below ARE the confirmed-covered
-      // EFLOW-03 matrix — re-confirmed here with NO behaviour change (Phase 121
-      // scope_fence: EFLOW-03 is confirmed-covered, this comment makes the
+      // matrix — re-confirmed here with NO behaviour change (see phase 121
+      // scope_fence: is confirmed-covered, this comment makes the
       // evidence greppable for the decision-coverage + verification gates).
       //
       // Voter-vs-entity matrix arrangement (e2e/base.ts CA-AA-Special answers
@@ -1463,7 +1463,7 @@ test.describe('voter journey', () => {
         infoText: TEXT_RE.neitherAnswered
       });
 
-      // EQTYP-01 / EQTYP-02 new-type drawer displays (129 D-04). CA-AA-Special
+      // new-type drawer displays (129). CA-AA-Special
       // answered base-6 number=10 and base-7 multi-choice=['a','b'] (case (a),
       // both answered, base.ts:999-1000); the max-walk voter answered number 10
       // (slider End) and multi-choice a,b (first-2 checkboxes). So:
@@ -1494,12 +1494,12 @@ test.describe('voter journey', () => {
       await resultsPage.selectEntityTab('orgs');
       await resultsPage.openEntityDetailsForCard(/\[or-aa\] Party AA/i);
 
-      // EPERM-04 — organization tab control. `entityDetails.contents.organization`
+      // organization tab control. `entityDetails.contents.organization`
       // is ['info','children','opinions'] (e2e/base.ts:148), so the org drawer
       // exposes EXACTLY [info, children, opinions] — and CRUCIALLY it INCLUDES
       // the 'children'/Members tab that the candidate drawer (above) does NOT.
       // This per-type contrast (candidate=[info,opinions] vs org=[info,children,
-      // opinions]) is the EPERM-04 organization slice. `expectTabs` hard-asserts
+      // opinions]) is the organization slice. `expectTabs` hard-asserts
       // exact count+order+accessible-name; the explicit Members-PRESENT check
       // pins the contrast with the candidate Members-ABSENT assertion above.
       const orgDialog = page.getByRole('dialog');
@@ -1514,7 +1514,7 @@ test.describe('voter journey', () => {
       await entityDetails.expectInfoItem(/Constituency/i, /\[co-reg-n\]/i);
       await entityDetails.expectInfoItem(/Alliance/i, /Alliance A/i);
 
-      // EPERM-05 (org slice) — `showMissingElectionSymbol.organization` is FALSE
+      // (org slice) — `showMissingElectionSymbol.organization` is FALSE
       // (e2e/base.ts:153) and the org nominations carry NO election_symbol
       // (e2e/base.ts:1287-1325). Per EntityInfo.svelte:95 the election-symbol
       // row renders ONLY when `electionSymbol || showMissingElectionSymbol[type]`
@@ -1529,7 +1529,7 @@ test.describe('voter journey', () => {
       await entityDetails.selectTab('children');
       await expect.soft(entityDetails.getMemberCards()).toHaveCount(5, { timeout: TIMEOUTS.page });
 
-      // EPERM-05 (org slice, opinions) — `showMissingAnswers.organization` is
+      // (org slice, opinions) — `showMissingAnswers.organization` is
       // TRUE (e2e/base.ts:157) and Party AA (like every org in base) has NO
       // opinion answers, so EVERY opinion question on the org opinions tab
       // renders an org-typed missing-answer marker (EntityOpinions.svelte:62-72):
@@ -1655,7 +1655,7 @@ test.describe('voter journey', () => {
     });
 
     // ====================================================================
-    // EFLOW-01 — categorical select-all/none + text×filter intersection + reset
+    // categorical select-all/none + text×filter intersection + reset
     //
     // Three net-new cells on TOP of the existing per-filter coverage above.
     // Derived facts (e2e/base, confirmed at build by reading the rendered
@@ -1795,19 +1795,19 @@ test.describe('voter journey', () => {
     // Voter nominations coverage was moved OUT of this journey test. The former
     // commented-out nominations step (SKIPPED for the since-fixed 2026-05-31
     // fetch-all-questions bug) is superseded by the dedicated
-    // tests/tests/specs/voter/voter-nominations.spec.ts (plan 130-04, per D-01).
+    // tests/tests/specs/voter/voter-nominations.spec.ts (per).
   });
 });
 
 // ====================================================================
-// EQTYP-02: NUMBER-SCALE BOUNDARY MATCHING (dedicated test)
+// NUMBER-SCALE BOUNDARY MATCHING (dedicated test)
 //
 // Runs under the SAME voter-journey Playwright project (its exact
 // testMatch /voter-journey\.spec\.ts/ picks this file up). fullyParallel is
 // false, so this describe runs SERIALLY AFTER the journey test — no
 // serial-mode coupling with the journey describe is needed. Proves the number
 // dimension incorporates into matching at the MIN extreme and at a MID value,
-// asserted against the POLAR seed candidates (EQTYP-02 boundary + precision
+// asserted against the POLAR seed candidates (boundary + precision
 // backstop).
 // ====================================================================
 
@@ -1843,7 +1843,7 @@ test.describe('EQTYP-02: number-scale boundary matching', () => {
       // dimension (likert/categorical/boolean/number all at min) while POLAR_MAX
       // is maximally distant on all of them, so score(POLAR_MIN) > score(POLAR_MAX)
       // holds. That ordering — and its monotonic shift under the number re-answer
-      // below — is the EQTYP-02 boundary proof.
+      // below — is the boundary proof.
       const polarMinCard = cards.filter({ hasText: TEXT_RE.polarMin }).first();
       const polarMaxCard = cards.filter({ hasText: TEXT_RE.polarMax }).first();
       minScoreBefore = await readCardMatchScore(polarMinCard);

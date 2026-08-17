@@ -9,7 +9,7 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // Phase 61-03 follow-up: idTokenClaims + preregistrationNominations are
+  // see phase 61 follow-up: idTokenClaims + preregistrationNominations are
   // reactive; access via candCtx.X.
   const candCtx = getCandidateContext();
   const { preregister, t, getRoute } = candCtx;

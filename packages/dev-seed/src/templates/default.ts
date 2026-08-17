@@ -7,7 +7,7 @@
  *   - 327 candidates non-uniformly distributed via `defaultOverrides.candidates`
  *     (`PARTY_WEIGHTS` sum 327; pairs with `candidates.count: 327`)
  *   - 26 questions (18 ordinal + 5 categorical + 1 boolean + 1 number +
- *     1 multipleChoiceCategorical) via `defaultOverrides.questions` (D-15)
+ *     1 multipleChoiceCategorical) via `defaultOverrides.questions`
  *   - 4 categories
  *   - generateTranslationsForAllLocales: true
  *   - seed: 42 (determinism)
@@ -194,7 +194,7 @@ export const defaultTemplate: Template = {
 
   // Exact shape via defaultOverrides.questions — override replaces the
   // class-based QuestionsGenerator and emits the 18 ordinal / 5 categorical /
-  // 1 boolean / 1 number / 1 multi-choice mix (D-15).
+  // 1 boolean / 1 number / 1 multi-choice mix.
   questions: {
     count: 26
   },
@@ -237,7 +237,7 @@ export const defaultTemplate: Template = {
           // Defensive: removes the symptom class where an under-answered
           // candidate empties the candidates tab. All 327 default candidates
           // are fully answered today, so this is a no-op for the current
-          // dataset but guards against future under-answered seeds (UNBLK-03).
+          // dataset but guards against future under-answered seeds.
           entities: {
             showAllNominations: true,
             hideIfMissingAnswers: { candidate: false }

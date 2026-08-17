@@ -3,7 +3,7 @@
  *
  * Tests that getIdTokenClaims correctly decrypts JWE tokens encrypted with
  * both RSA-OAEP (Signicat) and RSA-OAEP-256 (Idura) algorithms, and extracts
- * identity claims from the inner JWT (D-08 from 48-CONTEXT.md).
+ * identity claims from the inner JWT (from).
  *
  * @vitest-environment node
  */

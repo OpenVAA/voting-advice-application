@@ -4,7 +4,7 @@
 
 - Display an error if we can't load the questions.
 - Set top bar actions and initiate progess.
-- Owns question rendering for the `[questionId]` leaf (Phase 100 Plan 100-02
+- Owns question rendering for the `[questionId]` leaf (see phase 100
   hoist — unified-layout-with-empty-leaf shape, mirrors
   `results/[[electionTab]]/+layout.svelte`). The leaf `[questionId]/+page.svelte`
   is an empty stub. The intro (`questions/+page.svelte`) and category
@@ -51,15 +51,15 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // Phase 61-03 voter-side parallel fix: opinionQuestions + selectedQuestionBlocks
+  // see phase 61 voter-side parallel fix: opinionQuestions + selectedQuestionBlocks
   // are reactive context getters; access via voterCtx.X (live $state).
   const voterCtx = getVoterContext();
   const { answers, getRoute, startEvent, t } = voterCtx;
-  // appSettings/dataRoot are reactive accessors (Phase 113 flatten) — read via voterCtx.X, never destructure.
+  // appSettings/dataRoot are reactive accessors (see phase 113 flatten) — read via voterCtx.X, never destructure.
   const appSettings = $derived(voterCtx.appSettings);
   // dataRoot is identity-stable (#version-bridge): read `voterCtx.dataRoot.<prop>` directly in the tracking scope,
   // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md §Context Destructuring Rule +
-  // .planning/spikes/CONVENTIONS.md §9 (Spike-024). Phase 117 COLD-01.
+  // (see spike 024). see phase 117.
   const { topBarSettings, progress, video } = getLayoutContext();
 
   let { children }: { children: Snippet } = $props();
@@ -89,7 +89,7 @@
   // Using $derived instead of $state + $effect avoids a timing gap
   // where the URL has changed but the state hasn't updated yet.
   //
-  // Phase 100-02 sibling-route guard: on the intro (`questions/+page.svelte`)
+  // see phase 100 sibling-route guard: on the intro (`questions/+page.svelte`)
   // and category (`category/[categoryId]/+page.svelte`) routes
   // `page.params.questionId` is `undefined`. EARLY-RETURN `undefined` there
   // (the leaf's old absent-id throw is dropped) so the question UI does not
@@ -160,7 +160,7 @@
   /** Use to disable the response buttons when an answer is set but we're still waiting for the next page to load */
   let disabled = $state(false);
 
-  // Validity surfaced by `OpinionQuestionInput` (D-07). Lives OUTSIDE the {#key}
+  // Validity surfaced by `OpinionQuestionInput`. Lives OUTSIDE the {#key}
   // so it survives same-type Q→Q reuse (the input is not remounted between two
   // multi-choice questions). Reset to `true` on question-id change so a stale
   // invalid state from the previous question does not linger before the input
@@ -173,12 +173,12 @@
 
   // Bumped on every explicit answer deletion (question-delete button). Combined
   // with `question.type` in the input's {#key} so an explicit delete remounts
-  // QuestionChoices, forcing its question-keyed seed (plan 129-09) to re-read the
+  // QuestionChoices, forcing its question-keyed seed to re-read the
   // now-absent answer and visually clear the boxes. Lives OUTSIDE the {#key}.
   let deleteEpoch = $state(0);
 
   function handleAnswer({ question, value }: { question: AnyQuestionVariant; value?: unknown }): void {
-    // Zero selections in a multi-choice question = unanswered (D-07): delete the
+    // Zero selections in a multi-choice question = unanswered: delete the
     // answer rather than persisting an empty array, keeping matching clean and
     // the results-CTA answer count honest.
     if (Array.isArray(value) && value.length === 0) {
@@ -186,9 +186,9 @@
       return;
     }
     // Out-of-range (non-empty) multi-choice selection = in-progress/unanswered
-    // (D-07): NEVER persist it — an invalid selection must not reach matching.
+    // NEVER persist it — an invalid selection must not reach matching.
     // `opinionInputValid` is fresh here because OpinionQuestionInput assigns the
-    // bound valid synchronously before bubbling onChange (plan 129-09 Task 1).
+    // bound valid synchronously before bubbling onChange (Task 1).
     // Delete any previously-persisted answer, but only when one actually exists,
     // so a fresh invalid toggle does not fire a spurious answer_delete tracking
     // event / store churn.
@@ -199,7 +199,7 @@
     answers.setAnswer(question.id, value);
     // Auto-advance is instant only for single-choice / boolean inputs. Number
     // (slider) and multipleChoiceCategorical (checkbox) inputs must NOT auto-jump:
-    // a per-keystep or per-toggle jump breaks the D-03 keyboard exact-value
+    // a per-keystep or per-toggle jump breaks the keyboard exact-value
     // contract and multi-select entirely — the voter proceeds via Next/Skip.
     if (isSingleChoiceQuestion(question) || isBooleanQuestion(question)) {
       disabled = true;
@@ -211,7 +211,7 @@
     if (!question) return;
     answers.deleteAnswer(question.id);
     // Bump the remount epoch so QuestionChoices re-seeds from the now-absent
-    // answer and the rendered selection visually clears (D-07 / plan 129-09).
+    // answer and the rendered selection visually clears.
     deleteEpoch += 1;
   }
 
@@ -300,8 +300,8 @@
       {#snippet primaryActions()}
         <!-- {#key `${question.type}-${deleteEpoch}`}: remount the variant input at
              a question-type boundary (Likert↔open-text↔slider), NOT per question
-             id (QLAYOUT-02 / D-02) — AND on explicit answer deletion (deleteEpoch
-             bump) so QuestionChoices' question-keyed seed (plan 129-09) re-reads
+             id — AND on explicit answer deletion (deleteEpoch
+             bump) so QuestionChoices' question-keyed seed re-reads
              the now-absent answer and visually clears the boxes. A same-type Q→Q
              run keeps the input mounted (deleteEpoch only bumps on the delete
              button); layout-owned `disabled` $state + voterCtx.answers survive. -->

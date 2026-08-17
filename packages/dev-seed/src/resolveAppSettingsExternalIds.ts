@@ -12,7 +12,7 @@
  *   - results.cardContents.alliance[*].question
  *
  * Forward-compatible: additional paths can be added as the cardContents
- * settings schema evolves (see Phase 88 Plan 04 ADR follow-up TODO —
+ * settings schema evolves (see phase 88 Plan 04 ADR follow-up TODO —
  * election-specific cardContents refactor).
  *
  * Companion helper {@link settingsContainsExternalIdRefs} returns `true`
@@ -22,8 +22,8 @@
  *
  * Pure / synchronous / SSR-safe. No Supabase dependency.
  *
- * Rationale: see Phase 88 Plan 04 ADR at
- * `.planning/phases/88-…/88-04-ADR-cardContents-resolver.md` (Option B).
+ * Rationale: see phase 88 Plan 04 ADR at
+ * (Option B).
  */
 
 const CARD_CONTENTS_KEYS = ['candidate', 'organization', 'alliance'] as const;

@@ -2,7 +2,7 @@
  * Navigation assertion + click-and-settle helpers.
  *
  * TWO DIFFERENT SETTLE CONTRACTS LIVE IN THIS FILE, and the difference is
- * load-bearing (Phase 138 review WR-04):
+ * load-bearing (see phase 138 review WR-04):
  *
  *   - `settleAfterClientNavigation` / `expectClientNavigation` settle on the
  *     DESTINATION DOM and do NOT swallow. This is the contract the walk needs:
@@ -10,7 +10,7 @@
  *   - `expectLandedOn` and `clickAndRaceSettle` are thin wrappers around
  *     `expect(page).toHaveURL(...)` and the `click + race-against-URL-change`
  *     pattern. `clickAndRaceSettle` settles on the URL ALONE and swallows its own
- *     timeout — i.e. it still has the shape `138-DIAGNOSIS.md` § Named root cause
+ *     timeout — i.e. it still has the shape ` ` § Named root cause
  *     calls link 4. It is NOT a settle in the sense the fixed helper is; see its
  *     own docblock for the residual exposure and why it is nevertheless correct
  *     at its two call sites.
@@ -42,8 +42,8 @@ import type { Locator, Page } from '@playwright/test';
 /**
  * Settle an in-app (client-side) navigation on the DESTINATION DOM, not on the URL.
  *
- * reason: (Phase 138, D-06 — INTEG-01) DEF-135-04 / EPERM-07. This closes the
- * settle link in the ordering defect named in `138-DIAGNOSIS.md` § Named root
+ * reason: (see phase 138) DEF-135-04. This closes the
+ * settle link in the ordering defect named in ` ` § Named root
  * cause. SvelteKit commits the destination URL to history FIRST
  * (`client.js:1759-1760`), then awaits the `onNavigate` callbacks
  * (`:1779-1785`), and only THEN swaps the DOM (`:1824`). A settle that waits on
@@ -74,7 +74,7 @@ import type { Locator, Page } from '@playwright/test';
  *     because a null landmark is never "different text" and keeps the wait open.
  *
  *     Three ways that comparison can be satisfied WITHOUT the swap having landed,
- *     all closed here (Phase 138 review WR-02):
+ *     all closed here (see phase 138 review WR-02):
  *
  *       (a) a `null` BASELINE made the whole predicate a tautology. The destination
  *           read is always a `string`, and `string !== null` is always `true`, so
@@ -97,7 +97,7 @@ import type { Locator, Page } from '@playwright/test';
  *     CPU rate 40 it exceeds the element budget outright. The text comparison
  *     settles on the swap, which is the link the diagnosis names.
  *
- * NOT a timeout increase (D-07 rejects that outright, and it would not even fix
+ * NOT a timeout increase (rejects that outright, and it would not even fix
  * anything): no budget is raised anywhere. The settle waits for a specific
  * navigation-complete FACT and fails loudly when that fact does not arrive,
  * rather than widening the interval in which a stale DOM goes unnoticed.
@@ -118,7 +118,7 @@ export async function settleAfterClientNavigation(
   // A baseline we cannot trust must fail LOUDLY here, where it reads as "the
   // settle was handed a bad baseline", rather than degrading into an
   // attachment-only wait that passes instantly and surfaces lines later as a
-  // missing element (Phase 138 review WR-02(a)). Reaching this means the caller
+  // missing element (see phase 138 review WR-02(a)). Reaching this means the caller
   // captured its baseline while the origin page had no landmark — i.e. mid-swap,
   // which is precisely when the baseline is meaningless.
   if (landmarkTextBefore === null || landmarkTextBefore.trim() === '') {
@@ -152,7 +152,7 @@ export async function settleAfterClientNavigation(
       // the URL change above — and `page` is that bucket by its own definition
       // (`timeouts.ts:12`). No budget value is edited anywhere; this chooses the
       // correct existing bucket for a navigation wait, which is a different thing
-      // from raising one (D-07).
+      // from raising one.
       timeout: TIMEOUTS.page,
       // Fixed-interval polling, NOT the `raf` default. rAF callbacks are tied to
       // the rendering loop, so rAF polling is starved at precisely the moment
@@ -161,8 +161,8 @@ export async function settleAfterClientNavigation(
       // adversary's 40x CPU throttle the predicate missed a swap that had
       // demonstrably happened — 4 of 5 runs timed out, on a path where the term
       // assertion at the production budget passes at every CPU rate tested
-      // (`138-FORCED-REPRO.md` §B.5). That block is recorded as the discarded
-      // block in `138-NEGATIVE-CONTROL.md` § 5.6; it was an artifact of the
+      // (` ` §B.5). That block is recorded as the discarded
+      // block in ` `; it was an artifact of the
       // observation method, not of the app.
       polling: 50
     }
@@ -177,9 +177,9 @@ export async function settleAfterClientNavigation(
  * The text is whitespace-normalised (runs collapsed, ends trimmed), identically to
  * the settle's own in-page predicate. Raw `textContent` carries template indentation
  * and newlines, so an unnormalised comparison can be satisfied by a server-rendered
- * vs client-rendered pass of the SAME heading — Phase 138 review WR-02(c).
+ * vs client-rendered pass of the SAME heading — see phase 138 review WR-02(c).
  *
- * reason: (Phase 138, D-06 — INTEG-01) the selector mirrors the app's afterNavigate
+ * reason: (see phase 138) the selector mirrors the app's afterNavigate
  * focus target (`+layout.svelte:178-180`); keeping the two reads in one module is
  * what stops the "before" and "after" halves of the comparison from drifting apart.
  */
@@ -200,7 +200,7 @@ export type CaptureNavigationBaseline = () => Promise<void>;
 /**
  * Run a navigating `action` and then settle on the DESTINATION DOM.
  *
- * reason: (Phase 138 review WR-01) the baseline MUST be read from the page the
+ * reason: (see phase 138 review WR-01) the baseline MUST be read from the page the
  * action navigates AWAY from, and only the action knows when the DOM is
  * definitively on that page — its own entry gate (`expect(heading).toHaveText(...)`)
  * is what establishes it. Reading the baseline at wrapper entry instead is
@@ -292,10 +292,10 @@ type UrlPredicate = string | RegExp | ((url: URL) => boolean);
  * asymmetry is intentional: `settleNetworkIdle` is a hard wait helper, this is
  * a defensive click+race helper.
  *
- * RESIDUAL EXPOSURE, stated explicitly (Phase 138 review WR-04). This helper
+ * RESIDUAL EXPOSURE, stated explicitly (see phase 138 review WR-04). This helper
  * still has the exact shape the diagnosis names as link 4 of the DEF-135-04
  * mechanism: it settles on the URL ALONE, and it swallows. Under the ordering in
- * `138-DIAGNOSIS.md` § Named root cause, SvelteKit commits the URL
+ * ` ` § Named root cause, SvelteKit commits the URL
  * (`client.js:1759-1760`) before it swaps the DOM (`:1824`), so this helper can
  * return with the PREVIOUS page still rendered, and it cannot distinguish "the
  * navigation never happened" from "the URL committed but the DOM has not".

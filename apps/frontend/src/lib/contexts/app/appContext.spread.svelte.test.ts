@@ -2,9 +2,9 @@ import { flushSync } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Own-enumerability spread regression guard for `AppContextProvider` (CLASS-04).
+// Own-enumerability spread regression guard for `AppContextProvider`.
 //
-// appContext is spread by ALL THREE downstream orchestrators which Phase 109 does
+// appContext is spread by ALL THREE downstream orchestrators which see phase 109 does
 // NOT touch:
 //   candidateContext.svelte.ts:366   ...appContext
 //   adminContext.svelte.ts:98        ...appContext
@@ -41,7 +41,7 @@ const { stubs } = vi.hoisted(() => {
         locales: ['en', 'fi'],
         darkMode: false
       },
-      // dataCtx: bare own-enumerable reactive accessor (Phase 113 FLATTEN-02) +
+      // dataCtx: bare own-enumerable reactive accessor (see phase 113) +
       // arrow-field writer. `dataRoot` is now a bare value, not a `{ current }` handle.
       data: {
         dataRoot: {} as unknown,
@@ -178,7 +178,7 @@ describe('AppContextProvider — own-enumerability spread guard', () => {
   });
 
   // Test 2 — bare reactive-accessor integrity: appSettings/dataRoot/locale are now
-  // BARE own-enumerable reactive accessors (Phase 113 FLATTEN-02), installed via
+  // BARE own-enumerable reactive accessors (see phase 113), installed via
   // `Object.defineProperty(this, …, { enumerable: true })`. `{ ...instance }` copies
   // a defineProperty enumerable getter as a VALUE (the getter is invoked once at
   // spread time), so the bare members are present and readable on the spread copy.

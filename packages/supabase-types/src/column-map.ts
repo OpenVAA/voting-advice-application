@@ -61,11 +61,11 @@ export const COLUMN_MAP = {
   open_answer: 'openAnswer',
   question_id: 'questionId',
 
-  // Auth columns (Phase 10)
+  // Auth columns (see phase 10)
   auth_user_id: 'authUserId',
   published: 'published',
 
-  // Candidate columns (Phase 22)
+  // Candidate columns (see phase 22)
   terms_of_use_accepted: 'termsOfUseAccepted',
 
   // External ID (used across all content tables)

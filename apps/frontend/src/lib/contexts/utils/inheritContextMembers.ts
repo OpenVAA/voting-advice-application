@@ -2,7 +2,7 @@
  * Forward all own-enumerable members of a source context onto a target context,
  * **preserving accessor semantics**.
  *
- * Phase 113 (FLATTEN-02) converted `appContext`'s `appSettings` / `dataRoot` /
+ * see phase 113 converted `appContext`'s `appSettings` / `dataRoot` /
  * `locale` from stable `{ current }` handle objects into BARE own-enumerable
  * reactive accessors (`Object.defineProperty(this, …, { get, enumerable: true })`).
  *
@@ -13,8 +13,8 @@
  * frozen at construction time and never re-evaluates. For `dataRoot` (populated
  * after construction) and `appSettings` / `locale` this silently freezes
  * reactivity for every consumer that reads `voterCtx.appSettings`,
- * `candidateCtx.dataRoot`, etc. (the exact reactivity-loss bug Phase 113 exists
- * to prevent — see 113-REVIEW.md CR-01).
+ * `candidateCtx.dataRoot`, etc. (the exact reactivity-loss bug see phase 113 exists
+ * to prevent — see CR-01).
  *
  * This helper copies each own-enumerable member by its property descriptor:
  * - **Accessor** members (a `get`/`set` pair) are re-installed as a live

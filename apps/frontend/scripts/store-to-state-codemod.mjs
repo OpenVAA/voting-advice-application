@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * PHASE 114 (RENAME-01) — Codemod: rune-native `*Store` identifiers → `*State`
+ * see phase 114 — Codemod: rune-native `*Store` identifiers → `*State`
  *
  * After the Phase 106–113 class conversions there are NO Svelte stores behind any
  * of the in-scope `*Store` symbols — they are plain classes / factory functions /
@@ -22,7 +22,7 @@
  * `nominationAndQuestionStore` BEFORE `questionStore`; PascalCase `*Impl`/`*Deps`/
  * `*Api` variants BEFORE their base type names.
  *
- * ── HARD EXCLUSIONS (research Pitfalls 1, 2, 4 / RENAME-02) ──────────────────
+ * ── HARD EXCLUSIONS (research Pitfalls 1, 2, 4) ──────────────────
  *  (a) STRING-LITERAL GUARD: a candidate occurrence whose match index falls
  *      between an opening and a closing single/double quote on the same line is
  *      SKIPPED. This protects the two localStorage key literals

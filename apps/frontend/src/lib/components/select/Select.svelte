@@ -290,7 +290,7 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
   </div>
 {:else if autocomplete === 'on'}
   <div class="w-full max-w-md place-self-center" onfocusout={handleFocusOut}>
-    <!-- bind: keep — autocompleteInput is $state() single ref; bind:value={inputValue} is two-way DOM input ($state). Bind directives placed AFTER value-affecting attributes (Phase 65 reorder reverted). -->
+    <!-- bind: keep — autocompleteInput is $state single ref; bind:value={inputValue} is two-way DOM input ($state). Bind directives placed AFTER value-affecting attributes (see phase 65 reorder reverted). -->
     <input
       {...concatClass(restProps, `select ${inputClass}`)}
       class:text-secondary={selected === ''}

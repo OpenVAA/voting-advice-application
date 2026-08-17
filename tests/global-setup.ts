@@ -4,7 +4,7 @@ import { TESTS_DIR } from './tests/utils/testsDir';
 import type { FullConfig } from '@playwright/test';
 
 /**
- * PLAYWRIGHT GLOBAL SETUP — the served-application gate (Phase 137, INTEG-05).
+ * PLAYWRIGHT GLOBAL SETUP — the served-application gate (see phase 137).
  *
  * Thin adapter: it reads the target off the resolved config, derives this
  * checkout's root, and hands both to `assertServedApp`. All the logic lives in
@@ -16,7 +16,7 @@ import type { FullConfig } from '@playwright/test';
  * `tests/README.md` advertises as usable without a dev server; the config-load
  * orphan-probe guard in `playwright.config.ts` covers that path instead.
  *
- * There is no bypass here by design (D-05, D-07): no environment variable skips
+ * There is no bypass here by design: no environment variable skips
  * the gate and there is no CI early return. `FRONTEND_PORT` is the legitimate
  * escape hatch — it points the suite at the operator's OWN server on another
  * port, which the gate then verifies rather than trusts.

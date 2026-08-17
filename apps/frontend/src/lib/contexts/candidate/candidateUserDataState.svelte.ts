@@ -11,11 +11,11 @@ import type { CandidateUserDataState } from './candidateUserDataState.type';
 
 /**
  * A Svelte 5 class implementation of the candidate's composite user-data store
- * (v2.13 context-as-class migration, CLASS-06). Holds all data owned by the user;
+ * (v2.13 context-as-class migration). Holds all data owned by the user;
  * when reading `current`, it returns a composite of the initial data and any
  * unsaved `Answer`s and properties. The edited `Answer`s are stored in
  * `localStorage` for persistence (the persistence + version bridge is INHERITED
- * from `localStorageState`/`PersistedStateImpl` unchanged, §22 — this class does
+ * from `localStorageState`/`PersistedStateImpl` unchanged, — this class does
  * NOT own a `#version`; the `{ version, data }` payload lives in
  * `persistedState.svelte.ts`).
  *
@@ -24,10 +24,10 @@ import type { CandidateUserDataState } from './candidateUserDataState.type';
  * `CandidateUserDataStateImpl` (Phase-110 `AnswerStateImpl` precedent) and the
  * factory `candidateUserDataState(...)` stays byte-identical.
  *
- * The 12 public methods are ARROW-FUNCTION FIELDS (§18) so they survive being
+ * The 12 public methods are ARROW-FUNCTION FIELDS so they survive being
  * held as `userData.X` on the candidate context and called detached. The
  * reactive members (`current`/`hasUnsaved`/`savedCandidateData`/`unsavedQuestionIds`/
- * `unsavedProperties`) are prototype getters read in-place (§17 — this store is
+ * `unsavedProperties`) are prototype getters read in-place (this store is
  * NOT spread by any consumer, so prototype getters are safe).
  *
  * @internal Construct via the `candidateUserDataState(...)` factory at component

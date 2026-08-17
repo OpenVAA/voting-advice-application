@@ -64,7 +64,7 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   'perm-disable-election-1co': permDisableElection1coTemplate,
   'perm-disable-election-2co': permDisableElection2coTemplate,
   'perm-not-located-2e2cg': permNotLocated2e2cgTemplate,
-  // Phase 140 CR-01 remediation — dedicated copy of perm-not-located-2e2cg's
+  // see phase 140 CR-01 remediation — dedicated copy of perm-not-located-2e2cg's
   // shape reserved for bank-auth-journey.setup.ts/.teardown.ts, with its own
   // disjoint externalIdPrefix ('e2e-bankauth-notloc-') so its teardown never
   // shares a PREFIX with (and cannot race) `data-teardown-perm-not-located-2e2cg`.
@@ -90,7 +90,7 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   // JSON files.
   'perm-answers-locked': permAnswersLockedTemplate,
   'perm-hide-hero': permHideHeroTemplate,
-  // EPERM-09: renamed from the former perm-header-show-feedback key. Keeps
+  // renamed from the former perm-header-show-feedback key. Keeps
   // header.showFeedback and extends with the survey/feedback-popup result-view
   // surfaces.
   'show-feedback-survey': showFeedbackSurveyTemplate,
@@ -101,7 +101,7 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   'perm-hide-category-tags': permHideCategoryTagsTemplate,
   'perm-disable-allow-open': permDisableAllowOpenTemplate,
 
-  // Phase 119 Plan 03 — 3 hand-authored perm templates whose layouts
+  // see phase 119 Plan 03 — 3 hand-authored perm templates whose layouts
   // buildMinimal cannot express (multi-category video / multi-type opinion /
   // org-own-answers). Each carries its own distinct externalIdPrefix
   // ('e2e-perm-qvid-', 'e2e-perm-iinfo-', 'e2e-perm-orgmatch-') for parallel
@@ -110,14 +110,14 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   'perm-interactive-info': permInteractiveInfoTemplate,
   'perm-org-matching': permOrgMatchingTemplate,
 
-  // Phase 119 Plan 04 — EPERM-11 consolidated access-gating perm. Covers
+  // see phase 119 Plan 04 — consolidated access-gating perm. Covers
   // access.voterApp/candidateApp/underMaintenance via per-mode singleton
   // re-seed. Distinct externalIdPrefix 'e2e-perm-access-disable-'. The old
   // perm-disable-voter-app/candidate-app keys are RETAINED above because their
   // Phase-120-owned setup consumers still resolve them (Pitfall 3).
   'perm-access-disable': permAccessDisableTemplate,
 
-  // Phase 121 Plan 04 — EFLOW-08 D-01 analytics overlay perm. Seeds the
+  // see phase 121 Plan 04 — analytics overlay perm. Seeds the
   // app_settings analytics platform object (dummy umami code) + trackEvents:true
   // so the voter-prefs-tracking spec (Plan 06) can arm trackingIntercept.
   // Distinct externalIdPrefix 'e2e-perm-analytics-'. Consent NOT seeded —

@@ -25,7 +25,7 @@ export function parseParams({
       }
     }
   }
-  // Name-disjoint dissociation rule (Phase 88 Plan 88-02):
+  // Name-disjoint dissociation rule (see phase 88):
   // ----------------------------------------------------------------
   // `params.electionTab` (route-side, singular SELECTED election) and
   // `url.searchParams.electionId` / `qs.parse(...).electionId` array

@@ -94,14 +94,14 @@ export function initLayoutContext(): LayoutContext {
   const navigation: Navigation = {};
 
   // The video player controller is now a standalone `class VideoController`
-  // (extracted from the formerly-embedded `video` const-ref — v2.13 CLASS-01).
+  // (extracted from the formerly-embedded `video` const-ref — v2.13).
   // Its public read/write surface (`show`/`hasContent`/`mode`/`player`/`load`) is
   // byte-identical, so the 34 `getLayoutContext()` consumers are unchanged.
   const video = new VideoController();
 
   // Setup video player auto-hiding. The navigation-driven auto-hide stays here in
   // the host's beforeNavigate/afterNavigate hooks (NOT an `$effect` on the class —
-  // §20); they toggle the instance's `shouldClearContent` flag and drive it.
+  // ); they toggle the instance's `shouldClearContent` flag and drive it.
   let timeout: NodeJS.Timeout | undefined;
   beforeNavigate(() => {
     video.shouldClearContent = true;

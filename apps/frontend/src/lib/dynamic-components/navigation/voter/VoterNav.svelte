@@ -36,11 +36,11 @@ A template part that outputs the navigation menu for the Voter App for use in `L
 
   const { navigation } = getLayoutContext();
 
-  // Phase 61-03 voter-side parallel fix: reactive context getters
+  // see phase 61 voter-side parallel fix: reactive context getters
   // (constituenciesSelectable, electionsSelectable, resultsAvailable,
   // selectedElections, selectedConstituencies) are read via voterCtx.X.
   const voterCtx = getVoterContext();
-  // `appSettings` is a bare reactive accessor (Phase 113 FLATTEN-02) — read via
+  // `appSettings` is a bare reactive accessor (see phase 113) — read via
   // voterCtx.X / $derived, never destructure (destructuring captures the mount-time
   // snapshot and freezes when mergeAppSettings returns a new object). Stable members
   // (getRoute, openFeedbackModal, resetVoterData, surveyLink, t) destructure safely.

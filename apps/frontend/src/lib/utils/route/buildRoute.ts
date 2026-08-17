@@ -13,11 +13,11 @@ import type { Route } from './route';
 /**
  * Builds a route using the current route params and those passed to it. Some `Route`s have default parameters that can be omitted.
  *
- * Name-disjoint dissociation rule (Phase 88 Plan 88-02):
+ * Name-disjoint dissociation rule (see phase 88):
  * ----------------------------------------------------------------
  * `buildRoute({ electionTab: 'X' })` routes `X` to the PATH SEGMENT via
  * `isRouteParam('electionTab') === true` (the route-side SELECTED-singular
- * surface; new in Plan 88-02). `buildRoute({ electionId: 'X' })` routes
+ * surface; new in). `buildRoute({ electionId: 'X' })` routes
  * `X` to the SEARCH SIDE via `isPersistentSearchParam('electionId') === true`
  * (the search-side AVAILABLE-array surface; unchanged from prior phases).
  * The two keys never alias.

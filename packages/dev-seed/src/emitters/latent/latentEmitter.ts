@@ -1,12 +1,12 @@
 /**
- * latentAnswerEmitter — Phase 57 composition shell behind the D-27 seam.
+ * latentAnswerEmitter — see phase 57 composition shell behind the seam.
  *
  * Factory pattern (`latentAnswerEmitter(template)`):
  *   - Captures `template` + a lazily-initialized `SpaceBundle` in a closure
- *     (D-57-13 — memoization lives HERE, not on ctx; prevents cross-test bleed).
+ *     (memoization lives HERE, not on ctx; prevents cross-test bleed).
  *   - Returns an `AnswerEmitter`-shaped function.
  *   - First invocation builds `SpaceBundle` via six sub-step defaults resolved
- *     as `ctx.latent?.X?.(...) ?? defaultX(...)` (D-57-14 hook precedence —
+ *     as `ctx.latent?.X?.(...)?? defaultX(...)` (hook precedence —
  *     hook wins when present; template data flows into BOTH the hook and the
  *     default as an argument).
  *   - Subsequent invocations reuse the cached bundle and only run
@@ -14,10 +14,10 @@
  *
  * Pitfall 4: candidates without a resolvable `organization` ref (missing ref,
  * empty `refs.organizations`, or unknown `external_id`) fall through to
- * `defaultRandomValidEmit` — no throw, Phase 56 behavior preserved for this
+ * `defaultRandomValidEmit` — no throw, see phase 56 behavior preserved for this
  * class of input.
  *
- * noiseStdDev (D-57-11): `template.latent?.noise ?? 0.1 * mean(eigenvalues)`.
+ * noiseStdDev: `template.latent?.noise?? 0.1 * mean(eigenvalues)`.
  * Uses `??` (not `||`) so a literal `0` override is honored (noise-free mode).
  * If `eigenvalues.length === 0` the mean is undefined; falls back to `0`.
  */
@@ -35,7 +35,7 @@ import type { AnswerEmitter } from '../answers';
 import type { SpaceBundle } from './latentTypes';
 
 /**
- * GEN-06 / GEN-06g public entry: build the Phase 57 latent emitter for a given
+ * / GEN-06g public entry: build the Phase 57 latent emitter for a given
  * validated template. Installed by `pipeline.ts` via `ctx.answerEmitter ??=
  * latentAnswerEmitter(template)` immediately before the topo loop; the `??=`
  * preserves pre-injected emitters used by Phase 56 tests.
@@ -44,7 +44,7 @@ export function latentAnswerEmitter(template: Template): AnswerEmitter {
   let bundle: SpaceBundle | undefined;
 
   return function emit(candidate, questions, ctx) {
-    // One-shot state build on first invocation. Closure-scoped per D-57-13 —
+    // One-shot state build on first invocation. Closure-scoped per —
     // NO mutation of ctx (the WeakMap cache inside defaultProject is per-ctx
     // and is the only state keyed off ctx identity).
     if (bundle === undefined) {
@@ -64,7 +64,7 @@ export function latentAnswerEmitter(template: Template): AnswerEmitter {
         ctx.latent?.loadings?.(questions, dims, ctx, template.latent?.loadings) ??
         defaultLoadings(questions, dims, ctx, template.latent?.loadings);
 
-      // D-57-11 noise std-dev: template override OR 0.1 * mean(eigenvalues).
+      // noise std-dev: template override OR 0.1 * mean(eigenvalues).
       // `??` preserves a literal `0` override (noise-free determinism mode).
       const noiseStdDev =
         template.latent?.noise ??
@@ -115,6 +115,6 @@ function findPartyIndex(
 }
 
 // Compile-time assertion — factory's return value must conform to AnswerEmitter.
-// Mirrors the `_typecheckDefaultEmit` pattern in answers.ts (Phase 56 S-3).
+// Mirrors the `_typecheckDefaultEmit` pattern in answers.ts (see phase 56 S-3).
 const _typecheckLatentFactory: AnswerEmitter = latentAnswerEmitter({} as Template);
 void _typecheckLatentFactory;

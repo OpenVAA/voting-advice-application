@@ -1,6 +1,6 @@
 /**
  * Static --help output for `yarn workspace @openvaa/dev-seed seed`.
- * D-58-13: documents every flag + lists built-in templates + points to the
+ * documents every flag + lists built-in templates + points to the
  * custom-template authoring README.
  *
  * The built-in template list is HARDCODED here rather than derived from

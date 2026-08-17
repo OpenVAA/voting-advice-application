@@ -5,7 +5,7 @@
  * Inventory):
  *
  *  1. The seeded dataset — clears the `e2e-bankauth-notloc-` prefix via
- *     `runTeardown`. Phase 140 CR-01: this prefix is DEDICATED to this
+ *     `runTeardown`. see phase 140 CR-01: this prefix is DEDICATED to this
  *     project (registered via the `perm-bankauth-notloc` template — see
  *     `bank-auth-journey.setup.ts`'s docblock) and is disjoint from
  *     `perm-not-located-2e2cg.teardown.ts`'s `e2e-perm-notloc-` prefix, so the
@@ -34,7 +34,7 @@ const PREFIX = 'e2e-bankauth-notloc-';
 teardown('delete bank-auth-journey dataset + created auth user', async () => {
   const client = new SupabaseAdminClient();
 
-  // 1. Clear the seeded perm-bankauth-notloc rows (own dedicated prefix — Phase 140 CR-01).
+  // 1. Clear the seeded perm-bankauth-notloc rows (own dedicated prefix — see phase 140 CR-01).
   await runTeardownAsserted(PREFIX, client);
 
   // 2. Delete the auth.users + user_roles + candidate-link the journey created.
@@ -52,11 +52,11 @@ teardown('delete bank-auth-journey dataset + created auth user', async () => {
   await client.unregisterCandidate(BANK_AUTH_JOURNEY_PLACEHOLDER_EMAIL);
   await client.unregisterCandidate(BANK_AUTH_JOURNEY_EMAIL);
 
-  // 3. (Phase 140 review WR-08 — REMOVED, not gated) This step used to write
+  // 3. (see phase 140 review WR-08 — REMOVED, not gated) This step used to write
   //    `preRegistration.enabled = false` back onto the shared `app_settings`
   //    singleton via an ADDITIVE merge. That write is NOT ordered relative to
   //    the perm chain — `data-setup-bank-auth-journey` depends only on
-  //    `data-setup-base` (Phase 140 CR-01), not on the perm serial chain
+  //    `data-setup-base` (see phase 140 CR-01), not on the perm serial chain
   //    (A4) — so under `PLAYWRIGHT_BANK_AUTH=1 yarn test:e2e` this step could
   //    fire while the perm family is still mid-run and OWNS the singleton
   //    for its own authoritative REPLACE, clobbering it. Every

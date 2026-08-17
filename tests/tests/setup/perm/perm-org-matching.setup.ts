@@ -1,5 +1,5 @@
 /**
- * perm-org-matching data-setup project (EPERM-10).
+ * perm-org-matching data-setup project.
  *
  * Invokes setupFromTemplate('perm-org-matching'). UNAUTHENTICATED — the spec
  * exercises the voter results flow (answer at max → /results → orgs tab) to

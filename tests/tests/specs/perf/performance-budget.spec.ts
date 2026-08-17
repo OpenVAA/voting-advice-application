@@ -5,7 +5,7 @@
  * user-facing surface in the app (SSR → hydration → Supabase round-trips →
  * match computation → entity-list render).
  *
- * ## Why this measures what it measures (Phase 136, REAL-02)
+ * ## Why this measures what it measures (see phase 136)
  *
  * This spec previously asserted `domContentLoaded < 8000` / `loadEventEnd <
  * 15000` off Navigation Timing. Both assertions were **structurally incapable**

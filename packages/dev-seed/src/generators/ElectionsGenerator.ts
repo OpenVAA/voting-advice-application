@@ -1,24 +1,24 @@
 /**
  * ElectionsGenerator — foundation generator for the `elections` table.
  *
- * D-04/D-26: class with `constructor(private ctx: Ctx)` capturing context at
+ * class with `constructor(private ctx: Ctx)` capturing context at
  * construction; `generate(fragment)` returns typed `TablesInsert<'elections'>[]`
  * rows; `defaults(ctx)` returns the fallback fragment used when a template does
- * not supply one (D-08).
+ * not supply one.
  *
- * GEN-04: every emitted row carries `external_id = `${externalIdPrefix}${suffix}`.
- * GEN-02: `fixed[]` pass-through re-prefixes the user-supplied external_id and
+ * every emitted row carries `external_id = `${externalIdPrefix}${suffix}`.
+ * `fixed ` pass-through re-prefixes the user-supplied external_id and
  * defaults `project_id` to `ctx.projectId`; all other user fields pass through.
  *
  * Sentinel policy: this generator does NOT emit the constituency-groups join
- * sentinel — that sentinel (see RESEARCH §4.3) is populated by Plan 07's
+ * sentinel — that sentinel (see RESEARCH) is populated by Plan 07's
  * post-topo pass after every generator has run, so the full
  * `ctx.refs.constituency_groups` is known. Keeping generator output
  * sentinel-free also means unit tests can assert raw `TablesInsert` shape
  * without filtering sentinels.
  *
- * Scope — Phase 56 emits English-only localized `name` / `short_name`; Phase 58
- * layers the `generateTranslationsForAllLocales` fan-out (TMPL-07).
+ * Scope — see phase 56 emits English-only localized `name` / `short_name`; see phase 58
+ * layers the `generateTranslationsForAllLocales` fan-out.
  */
 
 import type { TablesInsert } from '@openvaa/supabase-types';
@@ -29,7 +29,7 @@ export type ElectionsFragment = Fragment<TablesInsert<'elections'>>;
 export class ElectionsGenerator {
   constructor(private ctx: Ctx) {}
 
-  // Phase 56 ignores ctx here; Phase 57/58 generators read ctx.refs to scale counts.
+  // see phase 56 ignores ctx here; see phase 57/58 generators read ctx.refs to scale counts.
 
   defaults(ctx: Ctx): ElectionsFragment {
     return { count: 1 };

@@ -1,5 +1,5 @@
 /**
- * ALLOWED_TEARDOWN_TABLES completeness check (Phase 140 review WR-04).
+ * ALLOWED_TEARDOWN_TABLES completeness check (see phase 140 review WR-04).
  *
  * `assertTeardown.ts`'s docblock states — as this phase's own residual
  * limitation — that a table dropped from `ALLOWED_TEARDOWN_TABLES` goes blind
@@ -16,7 +16,7 @@
  * (a table added/removed) without `ALLOWED_TEARDOWN_TABLES` being updated to
  * match — exactly the coverage hole WR-04 named.
  *
- * Phase 140 review IN-01 — why TWO arrays are parsed, not one. `bulk_delete`
+ * see phase 140 review IN-01 — why TWO arrays are parsed, not one. `bulk_delete`
  * declares `allowed_collections` (used only to VALIDATE the caller's keys) and
  * `delete_order` (the array it actually ITERATES to perform the deletes). They
  * hold the same 11 names today, so checking either one passes; they are not

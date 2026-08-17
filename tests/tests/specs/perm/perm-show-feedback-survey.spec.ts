@@ -1,7 +1,7 @@
 /**
- * @file perm-show-feedback-survey.spec.ts — EPERM-09 perm-chain spec.
+ * @file perm-show-feedback-survey.spec.ts — perm-chain spec.
  *
- * Renamed in place from perm-header-show-feedback (Phase 120-07) and EXTENDED
+ * Renamed in place from perm-header-show-feedback (see phase 120) and EXTENDED
  * with the results-view feedback/survey popup-coordination assertions + the
  * survey.showIn[] per-surface audit.
  *

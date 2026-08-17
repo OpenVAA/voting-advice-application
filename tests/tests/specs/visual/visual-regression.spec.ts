@@ -21,7 +21,7 @@
  *   function-fixture from the candidate-journey composition root, authenticated
  *   as the base candidate CA-AA-1 registered by `auth-setup`.
  *
- * ## Re-baselining (Phase 136 plan 05)
+ * ## Re-baselining (see phase 136 plan 05)
  *
  * Baselines are Linux/x86_64 PNGs and MUST be regenerated in the container that
  * matches CI's `ubuntu-latest` runner — never on a developer Mac, whose font

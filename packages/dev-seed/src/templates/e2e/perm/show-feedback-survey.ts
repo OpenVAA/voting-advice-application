@@ -1,5 +1,5 @@
 /**
- * show-feedback-survey minimal-data template (EPERM-09).
+ * show-feedback-survey minimal-data template.
  *
  * Renamed + extended from the former `perm-header-show-feedback` template.
  *
@@ -45,8 +45,8 @@ export const showFeedbackSurveyTemplate: Template = buildMinimal({
     // NB: showFeedbackPopup / showSurveyPopup are countdown delays in SECONDS
     // (appContext.svelte.ts:414-437 schedule `setTimeout(…, delay * 1000)`), NOT
     // milliseconds. The prior 180 / 500 values were 3 min / ~8 min — the popups
-    // never surfaced inside the test window (Phase 120-01 trace-confirmed; see
-    // 120-01-PROBE-DIAGNOSIS.md). A 1-second delay is the type-correct "small
+    // never surfaced inside the test window (see phase 120 trace-confirmed; see
+    // ). A 1-second delay is the type-correct "small
     // positive delay" the popup needs to enqueue promptly on /results.
     results: { showSurveyPopup: 1, showFeedbackPopup: 1 },
     survey: { linkTemplate: 'https://example.com/survey?session={sessionId}', showIn: ['resultsPopup'] }

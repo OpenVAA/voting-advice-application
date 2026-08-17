@@ -22,7 +22,7 @@ export type RuneTrackingService = Omit<TrackingService, 'sendTrackingEvent' | 's
 
 /**
  * Pure-rune tracking-service producer as a Svelte 5 CLASS (v2.13 context-as-class
- * migration, CLASS-03). CONVERTED from the factory closure that returned a plain
+ * migration). CONVERTED from the factory closure that returned a plain
  * object literal. Reads its `appSettings` / `userPreferences` inputs via `.current`
  * getters and exposes its outputs as rune handles — no store bridge over the
  * inputs nor the outputs. The store-shaped exported surface
@@ -44,13 +44,13 @@ export type RuneTrackingService = Omit<TrackingService, 'sendTrackingEvent' | 's
  *   - `sessionId` is the own-enumerable `{ current }` handle returned by
  *     `sessionStorageState(...)`, held directly as a field initializer.
  *   - `startPageview`/`startEvent`/`track`/`submitAllEvents`/`resetAllEvents` are
- *     ARROW-FUNCTION FIELDS (§18) so they survive detach after the spread +
+ *     ARROW-FUNCTION FIELDS so they survive detach after the spread +
  *     consumer destructure (`tracking.startEvent` is called at appContext:249).
  *
  * `#pageviewEvent` / `#unsubmittedEvents` are PRIVATE NON-REACTIVE bookkeeping
  * fields (never read in a tracking scope) — NOT `$state`.
  *
- * There is NO `$effect` (§20): `shouldTrack` is a synchronous `$derived`.
+ * There is NO `$effect`: `shouldTrack` is a synchronous `$derived`.
  */
 class TrackingServiceImpl implements RuneTrackingService {
   ////////////////////////////////////////////////////////////////////
@@ -117,7 +117,7 @@ class TrackingServiceImpl implements RuneTrackingService {
     this.#userPreferences = userPreferences;
 
     // Install the consent/browser/trackEvents gate as a `$derived` AFTER the
-    // input handles are assigned (D1 field-init order). No `$effect` (§20).
+    // input handles are assigned (D1 field-init order). No `$effect`.
     this.#shouldTrackValue = $derived(
       browser &&
         this.#appSettings.current.analytics.trackEvents &&
@@ -145,7 +145,7 @@ class TrackingServiceImpl implements RuneTrackingService {
   }
 
   ////////////////////////////////////////////////////////////////////
-  // Tracking functions (§18 arrow fields — survive detach after spread)
+  // Tracking functions (arrow fields — survive detach after spread)
   ////////////////////////////////////////////////////////////////////
 
   startPageview = (href: string, from?: string | null) => {

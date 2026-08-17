@@ -3,7 +3,7 @@
  *
  * Verifies that the Signicat provider module implements the IdentityProvider
  * interface correctly and that getAuthorizeUrl produces client-side PKCE URLs
- * matching the expected format (D-04, D-09, D-10 from 48-CONTEXT.md).
+ * matching the expected format (from).
  *
  * @vitest-environment node
  */

@@ -12,7 +12,7 @@
  *  - video: Locator         — testid-bound `video` anchor (Video.svelte root <div>).
  *  - expectVideo(present)   — assert the Video element is (not) VISIBLE.
  *
- * **Visibility-not-churn caveat (EPERM-06, VERIFIED):** the Video root carries
+ * **Visibility-not-churn caveat (VERIFIED):** the Video root carries
  * `class:hidden={!hasContent}` — it is hidden-not-destroyed (the element stays
  * attached across page loads, toggled by the `hidden` class). So this reader
  * asserts VISIBILITY, never mount/unmount:

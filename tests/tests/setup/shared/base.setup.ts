@@ -25,7 +25,7 @@ setup('import base dataset', async () => {
   //  - 'e2e-perm-' — a perm chain that ran earlier in the same DB session and
   //    left rows (same `[EL1] Region election` / `[EL2] Municipal election`
   //    names as perm-not-located-2e2cg).
-  //  - 'e2e-bankauth-' (Phase 140 CR-01, iteration-2 regression fix) — a
+  //  - 'e2e-bankauth-' (see phase 140 CR-01, iteration-2 regression fix) — a
   //    dataset left behind by an aborted opt-in `PLAYWRIGHT_BANK_AUTH=1`
   //    bank-auth-journey run. Since that project moved to its own dedicated
   //    `e2e-bankauth-notloc-` prefix, nothing else in the suite swept that

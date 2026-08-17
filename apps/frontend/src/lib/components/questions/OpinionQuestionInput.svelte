@@ -55,7 +55,7 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
   }: OpinionQuestionInputProps = $props();
 
   ////////////////////////////////////////////////////////////////////
-  // Multi-choice validity (D-07)
+  // Multi-choice validity
   ////////////////////////////////////////////////////////////////////
 
   // The current multi-choice selection, seeded from the ensured answer value and
@@ -73,7 +73,7 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
     });
   });
 
-  // D-07 validity for the current multi-choice selection count, delegating to
+  // validity for the current multi-choice selection count, delegating to
   // the shared `isMultiChoiceCountValid` helper (single source of truth) so the
   // formula stays in lockstep with its unit test. Reads the authored min/max via
   // `getCustomData` and the choice count off the question.
@@ -89,7 +89,7 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
   }
 
   // Push validity to the bound `valid` prop. Only multi-choice constrains it;
-  // every other question type leaves it `true` (D-07: the component never
+  // every other question type leaves it `true` (the component never
   // disables anything — callers gate on this value). This $effect handles the
   // mount seed, question-identity changes, and the non-multi-choice reset; the
   // multi-choice onChange wrapper additionally assigns `valid` SYNCHRONOUSLY
@@ -185,7 +185,7 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
       {otherLabel}
       onChange={onChange ? (d) => onChange({ value: d.value, question: d.question }) : undefined} />
   {:else if isMultipleChoiceQuestion(question)}
-    <!-- Checkbox multi-select mode (D-07). Values are choice-Id arrays routed
+    <!-- Checkbox multi-select mode. Values are choice-Id arrays routed
          through `ensureValue`; missing / non-array answers coerce to `null`.
          Validity is surfaced via the bound `valid` prop — this component never
          disables anything; callers gate Save (candidate) / Skip (voter). -->
@@ -206,8 +206,8 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
           // `$bindable` writes propagate to the parent's bound $state within this
           // same call stack, whereas the validity $effect above flushes only
           // after the event handler returns. The voter layout's handleAnswer
-          // (plan 129-09) reads `opinionInputValid` inside this synchronous
-          // onChange stack, so it must see fresh validity here (D-07).
+          // reads `opinionInputValid` inside this synchronous
+          // onChange stack, so it must see fresh validity here.
           valid = computeMultiChoiceValid(d.value.length);
         }
         onChange?.({ value: d.value, question: d.question });

@@ -8,7 +8,7 @@ import type { ComponentContext } from './componentContext.type';
 const CONTEXT_KEY = Symbol();
 
 /**
- * Svelte 5 class implementation of the component context (Phase 107 CLASS-02). It
+ * Svelte 5 class implementation of the component context (see phase 107). It
  * is a leaf COMPOSING context: it forwards the i18n surface and owns the
  * `DarkMode` helper.
  *
@@ -22,7 +22,7 @@ const CONTEXT_KEY = Symbol();
  * lifecycle and `t`/`translate`/`locales` are plain values, so a one-time
  * own-property copy reproduces the prior behavior byte-identically.
  *
- * `darkMode` is a delegation GETTER over a private `new DarkMode()` field (§17
+ * `darkMode` is a delegation GETTER over a private `new DarkMode ` field (
  * Group G). A prototype getter is SAFE here because `appContext` reads it via
  * DIRECT property access (`componentCtx.darkMode`, lines ~292/356) and OVERRIDES
  * it after the spread with its own `{ current }` handle — the spread never needs

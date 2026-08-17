@@ -1,11 +1,11 @@
 /**
- * `defaultCentroids` — Phase 57 sub-step default for GEN-06b / D-57-03 / D-57-05.
+ * `defaultCentroids` — see phase 57 sub-step default for GEN-06b.
  *
  * Given `dims`, `eigenvalues`, and a list of parties, produce one centroid vector
  * per party so the resulting positions are spread across the latent space —
  * driving the visible party clustering the latent-factor emitter is designed to
  * produce. Called once per pipeline run by the `latentAnswerEmitter` closure
- * (Plan 57-07) and memoized in `SpaceBundle` (D-57-13).
+ * and memoized in `SpaceBundle`.
  *
  * Pattern analog: `packages/dev-seed/src/emitters/answers.ts` — named-default
  * export + file-local helpers (`extractChoiceIds` style). Compile-time contract
@@ -15,13 +15,13 @@
  *
  * 1. Build a Gaussian-sampled candidate pool — `max(10*N, 50)` vectors. Each
  *    dimension `d` drawn from `N(0, sqrt(eigenvalues[d]))` so the eigenvalue
- *    decay (D-57-02) shows up in raw samples: dominant axis has the widest
+ *    decay shows up in raw samples: dominant axis has the widest
  *    spread, subsequent axes proportionally tighter. Pool size chosen so the
  *    greedy max-min step has enough diversity to actually spread out (`10*N`
  *    is a standard heuristic; `50` floor prevents tiny-N cases from collapsing
  *    to a handful of candidates).
  *
- * 2. Seed anchors from `tplCentroids` (D-57-05) — supplied centroids are
+ * 2. Seed anchors from `tplCentroids` — supplied centroids are
  *    treated as fixed points already placed; the farthest-point loop picks
  *    the remaining slots such that each maximizes the minimum squared-Euclidean
  *    distance to everything currently placed (anchors + earlier picks).
@@ -43,13 +43,13 @@
  * `Math.log(0)`) is inherited from `gaussian.ts` via `boxMuller` — Test 9
  * regression-guards it here over 100 seeds.
  *
- * ## Anchor copy semantics (D-57-05)
+ * ## Anchor copy semantics
  *
  * `centroids[i] = [...anchor]` — anchors are COPIED, not aliased. Mutating the
  * returned centroid array must not leak into the caller's template anchor. Test
  * 5's trailing assertion verifies this boundary.
  *
- * ## Anchor length guard (D-57-15 / threat T-57-15)
+ * ## Anchor length guard (threat T-57-15)
  *
  * Anchors whose length does not match `dims` are silently ignored — the slot
  * falls through to farthest-point sampling instead. The zod schema (Plan 01)
@@ -100,7 +100,7 @@ export function defaultCentroids(
 
   const centroids: Array<Array<number> | undefined> = new Array(N);
 
-  // Seed anchors from template (D-57-05) — fixed points the farthest-point step
+  // Seed anchors from template — fixed points the farthest-point step
   // treats as already-placed. Wrong-length anchors are silently ignored (threat
   // T-57-15) and fall through to farthest-point sampling.
   for (let i = 0; i < N; i++) {

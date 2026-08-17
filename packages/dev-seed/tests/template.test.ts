@@ -1,10 +1,10 @@
 /**
- * Template validation tests (TMPL-02 + TMPL-09).
+ * Template validation tests.
  *
  * Covers:
- *   - TMPL-02: `{}` template passes validation — every field is `.optional()`
- *     per D-18.
- *   - TMPL-09: zod validation errors include the offending field path in the
+ *   `{}` template passes validation — every field is `.optional `
+ *     per.
+ *   zod validation errors include the offending field path in the
  *     format `template.<field>.<subfield>` (formatted via `issues[].path.join('.')`).
  *   - All 12 per-entity fragments (`elections` through `feedback`) are accepted
  *     simultaneously — every non-system public table has a schema slot.
@@ -12,7 +12,7 @@
  *     (`z.record(z.string(), z.unknown())`) so user-authored fixtures need not
  *     enumerate every DB column.
  *
- * D-22 contract: pure I/O. No Supabase imports, no `createClient`, no `.rpc()`.
+ * contract: pure I/O. No Supabase imports, no `createClient`, no `.rpc `.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -74,7 +74,7 @@ describe('validateTemplate', () => {
     expect(() => validateTemplate(allEntities)).not.toThrow();
   });
 
-  // Phase 58 Plan 03: generateTranslationsForAllLocales field (TMPL-07)
+  // see phase 58 Plan 03: generateTranslationsForAllLocales field
 
   it('TMPL-07: accepts generateTranslationsForAllLocales: true', () => {
     const result = validateTemplate({ generateTranslationsForAllLocales: true });

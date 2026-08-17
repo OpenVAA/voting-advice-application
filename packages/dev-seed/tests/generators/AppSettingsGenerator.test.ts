@@ -1,12 +1,12 @@
 /**
  * AppSettingsGenerator unit tests.
  *
- * Phase 56 count semantics (RESEARCH §4.15 Pitfall 5): `app_settings` is UNIQUE
+ * see phase 56 count semantics (RESEARCH Pitfall 5): `app_settings` is UNIQUE
  * on `project_id`, so the generator clamps `count > 1` to 1 and logs a warning.
  * seed.sql bootstrap row covers the zero-count path; writer (Plan 07) routes
  * emissions through `updateAppSettings` (merge_jsonb_column) not bulk_import.
  *
- * D-22 acceptance (a)–(e) adapted for the clamp semantics.
+ * acceptance (a)–(e) adapted for the clamp semantics.
  */
 
 import { describe, expect, it, vi } from 'vitest';

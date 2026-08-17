@@ -46,11 +46,11 @@ type StopAt = 'first-question' | 'questions-intro' | 'category-intro';
  * the button mid-action. With this helper, the click has a tight 3 s
  * timeout and the post-click settle short-circuits the loop iteration.
  *
- * RESIDUAL EXPOSURE, stated explicitly (Phase 138 review WR-04). The
+ * RESIDUAL EXPOSURE, stated explicitly (see phase 138 review WR-04). The
  * `Promise.race` below settles on the URL ALONE (the URL branch normally wins —
  * SvelteKit commits the URL at `client.js:1759-1760` before it swaps the DOM at
  * `:1824`) and BOTH branches swallow. That is the exact shape
- * `138-DIAGNOSIS.md` § Named root cause calls link 4 of the DEF-135-04
+ * ` ` § Named root cause calls link 4 of the DEF-135-04
  * mechanism, and Phase 138's fix did not remove it here. `advanceClick` drives
  * `voter-journey.fixture`'s `answerAndAdvanceToResults` /
  * `walkUntilQuestionsIntro` stack, on which `perm-hide-category-tags`,
@@ -262,7 +262,7 @@ async function advanceVoterFlow(
         //     wait ≈ 55 s, inside the 90 s TIMEOUTS.testMax ceiling) and fails at the terminal
         //     `stopAt` wait at the bottom of this function. Empirically confirmed against a
         //     deliberately-broken build: failure at the terminal `getByTestId('question-choice')`
-        //     wait at 54.4 s (133-UAT.md, test 1).
+        //     wait at 54.4 s (test 1).
         //   - button never renders: each iteration burns this full slowPage wait, so
         //     `maxSteps` × slowPage = 100 s overruns the 90 s TIMEOUTS.testMax ceiling. The test
         //     is killed inside iteration 9's `waitFor` here, naming

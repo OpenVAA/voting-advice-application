@@ -9,7 +9,7 @@
  * precisely so that tag can render — `getElectionsToShow`
  * (`apps/frontend/src/lib/utils/questions/electionTags.ts:13`) returns `[]`
  * below two elections. Deleting the tag-render path therefore reds this spec
- * at the presence assertion (ASSERT-05 / finding F9).
+ * at the presence assertion (finding F9).
  *
  * Rigidity contract: no soft assertions, no .catch fallbacks, testid-only.
  */
@@ -29,7 +29,7 @@ test.describe('perm-hide-category-tags', () => {
     await navigateToFirstQuestion(page);
     await expect(page.getByTestId(testIds.shared.categoryTag)).toHaveCount(0);
 
-    // Positive control (ASSERT-05 / F9). The absence assertion above is also
+    // Positive control (F9). The absence assertion above is also
     // satisfied by a page that renders no tags at all — a deleted render path,
     // a renamed testid, a heading that never mounted. The dataset's second
     // election is the seeded precondition that lets the COMPLEMENTARY
@@ -37,7 +37,7 @@ test.describe('perm-hide-category-tags', () => {
     // here, so asserting its presence is what makes this spec fail when the
     // tag-render path stops rendering anywhere.
     //
-    // Phase 140 WR-01: uses the auto-retrying web-first locator assertion
+    // see phase 140 WR-01: uses the auto-retrying web-first locator assertion
     // (`.not.toHaveCount(0)`) instead of a single-shot `.count()` + generic
     // `expect()` — the sibling absence assertion above retries; this one
     // must too, so a transient pre-flush render state cannot red the spec

@@ -2,7 +2,7 @@
  * OIDC Token exchange endpoint tests.
  *
  * Tests the POST handler that exchanges an authorization code for an id_token
- * via the active identity provider (D-06 from 48-CONTEXT.md).
+ * via the active identity provider (from).
  *
  * For Idura: verifies that private_key_jwt client assertion is sent with
  * correct structure (iss, sub, aud, exp, jti).
@@ -71,7 +71,7 @@ vi.mock('$lib/utils/constants', () => ({
 }));
 
 /**
- * The rejection every Idura test below asserts against (Phase 140 review IN-03).
+ * The rejection every Idura test below asserts against (see phase 140 review IN-03).
  *
  * `POST` wraps its whole body in `try/catch` and re-raises every failure as
  * `error(401, { message: 'Unauthorized' })`, so the value it rejects with is a
@@ -286,18 +286,18 @@ describe('POST /api/oidc/token (Idura - private_key_jwt)', () => {
   });
 });
 
-// ── Signicat test suite (backward compatibility - D-09, D-10) ──
+// ── Signicat test suite (backward compatibility) ──
 
-// Phase 140 review WR-04 — DELIBERATELY OUT OF SCOPE, not an oversight.
+// see phase 140 review WR-04 — DELIBERATELY OUT OF SCOPE, not an oversight.
 //
 // The four `try { await POST(event) } catch {}` blocks below are structurally
-// identical to the six in the Idura describe above, which Phase 140 converted
+// identical to the six in the Idura describe above, which see phase 140 converted
 // to `await expect(POST(event)).rejects.toMatchObject(EXPECTED_REJECTION)`.
 // They were NOT converted,
 // and that asymmetry is a scoping decision recorded here so the file does not
 // read as half-migrated:
 //
-//   Phase 140's remit is the Idura (private_key_jwt) bank-auth path. Signicat
+//   see phase 140's remit is the Idura (private_key_jwt) bank-auth path. Signicat
 //   (client_secret) is a separate provider whose own coverage phase has not
 //   run; converting its assertions here would change what this describe proves
 //   without any Signicat-side gate to catch a regression in the conversion.

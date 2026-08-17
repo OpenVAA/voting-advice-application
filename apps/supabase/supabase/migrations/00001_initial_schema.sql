@@ -46,7 +46,7 @@ $$ LANGUAGE plpgsql;
 --
 -- NOTE: Only used by email helpers (502-email-helpers.sql) for server-side
 -- variable resolution. Voter/candidate API responses return all locales as
--- JSONB; locale selection happens client-side (see 11-DECISION.md).
+-- JSONB; locale selection happens client-side.
 --
 -- Fallback order:
 --   1. p_val->>p_locale          (requested locale)

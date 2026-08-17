@@ -1,17 +1,17 @@
 /**
- * Writer unit tests — D-23 (env-enforcement + mocked-client call shape).
+ * Writer unit tests — (env-enforcement + mocked-client call shape).
  *
  * Covers:
- *   - D-15 / NF-02: constructor throws when `SUPABASE_URL` is missing.
- *   - D-15 / NF-02: constructor throws when `SUPABASE_SERVICE_ROLE_KEY` is
+ *   - NF-02: constructor throws when `SUPABASE_URL` is missing.
+ *   - NF-02: constructor throws when `SUPABASE_SERVICE_ROLE_KEY` is
  *     missing. Error messages are descriptive (mention the env var AND
  *     point at `supabase start` remediation).
  *   - NF-01: `write()` calls `bulkImport` → `importAnswers` → `linkJoinTables`
  *     in that order (single-transaction atomicity + post-pass enrichment).
- *   - D-11 routing: `accounts`, `projects`, `feedback`, `app_settings` are
+ *   - routing: `accounts`, `projects`, `feedback`, `app_settings` are
  *     STRIPPED from the `bulk_import` payload. Each is routed elsewhere or
  *     skipped.
- *   - RESEARCH §4.15 Pitfall 5: `app_settings` routes through
+ *   - RESEARCH Pitfall 5: `app_settings` routes through
  *     `updateAppSettings` (the `merge_jsonb_column` RPC), NOT `bulk_import`
  *     (which fails on the `UNIQUE(project_id)` constraint pre-inserted by
  *     seed.sql).
@@ -24,7 +24,7 @@
  * a list of constructed instances so each test can inspect the one it owns.
  * `vi.clearAllMocks()` in `beforeEach` resets spy state between tests.
  *
- * D-22 contract: pure I/O. No real Supabase contact; no `createClient`, no
+ * contract: pure I/O. No real Supabase contact; no `createClient`, no
  * `.rpc()`.
  */
 
@@ -61,8 +61,8 @@ vi.mock('../src/supabaseAdminClient', () => {
         updateAppSettings: vi.fn().mockImplementation(async () => {
           callOrder.push('updateAppSettings');
         }),
-        // Phase 58 Plan 04 portrait methods — default to "no candidates"
-        // so existing Phase 56/57 tests don't exercise the upload branch.
+        // see phase 58 Plan 04 portrait methods — default to "no candidates"
+        // so existing see phase 56/57 tests don't exercise the upload branch.
         selectCandidatesForPortraitUpload: vi.fn().mockImplementation(async () => {
           callOrder.push('selectCandidatesForPortraitUpload');
           return [];
@@ -126,7 +126,7 @@ describe('Writer', () => {
   });
 
   // -------------------------------------------------------------------------
-  // D-15 + NF-02: env enforcement at construction
+  // + NF-02: env enforcement at construction
   // -------------------------------------------------------------------------
 
   it('throws at construction when SUPABASE_URL is missing (D-15, NF-02)', () => {
@@ -164,7 +164,7 @@ describe('Writer', () => {
   });
 
   // -------------------------------------------------------------------------
-  // NF-01 + D-11: call shape with env present
+  // NF-01: call shape with env present
   // -------------------------------------------------------------------------
 
   describe('with env present', () => {
@@ -283,7 +283,7 @@ describe('Writer', () => {
     });
 
     // ---------------------------------------------------------------------
-    // Phase 58 Plan 04 — uploadPortraits pass (GEN-09)
+    // see phase 58 Plan 04 — uploadPortraits pass
     // ---------------------------------------------------------------------
 
     describe('uploadPortraits pass (Phase 58 Plan 04 — GEN-09)', () => {

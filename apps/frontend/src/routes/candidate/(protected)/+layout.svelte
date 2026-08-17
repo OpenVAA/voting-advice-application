@@ -73,7 +73,7 @@
   // between `$effect` and `$state` writes. This shape removes the Svelte 5
   // SSR+hydration reactivity race that stuck the previous `$effect` +
   // promise-chain pattern at <Loading /> on full page loads.
-  // Ref: 60-RESEARCH §Pattern 1, D-01 + D-03.
+  // Ref: 60-RESEARCH §Pattern 1.
   const validity = $derived.by(() => {
     if (!isValidResult(data.questionData, { allowEmpty: true })) {
       return { state: 'error' as const };
@@ -86,7 +86,7 @@
     // wider loader union (`DPDataType['questions'] | Error`) due to the
     // `.catch((e) => e)` in `+layout.server.ts`. `isValidResult` is already a
     // type guard; the cast is safe at this boundary and mirrors the same
-    // pattern used by the root layout (Plan 60-02 decision #2).
+    // pattern used by the root layout (decision #2).
     return {
       state: 'resolved' as const,
       questionData: data.questionData as DPDataType['questions'],
@@ -116,7 +116,7 @@
   // `.current` registers the version counter as a dependency of this effect, and the
   // `DataRoot.update()` call notifies subscribers (bumping `version`) — retriggering
   // the effect. `setDataRoot` runs the mutation inside `untrack`, so this effect takes
-  // no dependency on the version counter (Spike 017/022 read/write split — it replaces
+  // no dependency on the version counter (see spike 017/022 read/write split — it replaces
   // the former non-reactive producer-read + hand-written `untrack` idiom; matches the
   // root layout). Wrapped in `.update(() => ...)` for batched subscriber notification
   // (canonical form — see apps/frontend/src/lib/admin/utils/loadElectionData.ts).

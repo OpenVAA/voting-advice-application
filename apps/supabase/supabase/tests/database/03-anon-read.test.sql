@@ -1,4 +1,4 @@
--- 03-anon-read.test.sql: QUAL-03 anonymous read access and write denial
+-- 03-anon-read.test.sql: anonymous read access and write denial
 --
 -- Verifies that the anon role can SELECT published records from voter-facing
 -- tables, sees 0 rows for unpublished data, cannot read admin-only tables,

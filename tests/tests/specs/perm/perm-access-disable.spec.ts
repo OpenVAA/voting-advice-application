@@ -1,5 +1,5 @@
 /**
- * @file perm-access-disable.spec.ts — EPERM-11 consolidated perm-chain spec.
+ * @file perm-access-disable.spec.ts — consolidated perm-chain spec.
  *
  * Consolidates the former `perm-disable-voter-app` + `perm-disable-candidate-app`
  * specs into ONE access-gating perm covering all three `access.*` modes, and

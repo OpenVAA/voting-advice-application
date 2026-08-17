@@ -91,7 +91,7 @@ The same component can also be used to display the answers of the voter and anot
   ////////////////////////////////////////////////////////////////////
 
   // Checkbox multi-select mode is activated for `MultipleChoiceCategoricalQuestion`
-  // (D-05/D-07). Radio and boolean modes are untouched below.
+  // . Radio and boolean modes are untouched below.
   let multiMode = $derived(isMultipleChoiceQuestion(question));
 
   // For convenience. `explicitChoices` wins when provided (required for
@@ -149,7 +149,7 @@ The same component can also be used to display the answers of the voter and anot
    * Holds the currently selected `Id`s in checkbox multi-select mode. Seeded per
    * question identity: the effect tracks `question.id` (Q→Q re-seed) and reads
    * the `selectedIds` prop UNTRACKED. The prop is deliberately NOT live-tracked —
-   * when the voter layout deletes an invalid in-progress answer (D-07 gate), the
+   * when the voter layout deletes an invalid in-progress answer (gate), the
    * `selectedIds` prop transitions to null and a live-tracking sync would wipe
    * the voter's checked boxes mid-interaction (the boxes render from
    * `selectedMulti.includes(id)`). Q→Q re-seeding is preserved via the
@@ -168,7 +168,7 @@ The same component can also be used to display the answers of the voter and anot
    * Toggle a checkbox choice and dispatch the full selection as an array of
    * choice `Id`s. Labels play no role in the value. Over-selection beyond
    * `maxSelections` stays physically possible and surfaces as invalidity in the
-   * callers (D-07) — we never disable unchecked boxes here.
+   * callers — we never disable unchecked boxes here.
    */
   function handleToggle(id: Id): void {
     if (disabled || mode !== 'answer') return;
@@ -178,7 +178,7 @@ The same component can also be used to display the answers of the voter and anot
   }
 
   /**
-   * The min/max selection constraints for the helper text (D-07). Returns
+   * The min/max selection constraints for the helper text. Returns
    * `undefined` when neither `minSelections` nor `maxSelections` is authored.
    * `effectiveMin` defaults to 1 and `effectiveMax` to the choice count.
    */
@@ -309,7 +309,7 @@ The same component can also be used to display the answers of the voter and anot
   <!-- The choice buttons -->
   {#each choices ?? [] as { id, label }, i}
     {#if multiMode}
-      <!-- Checkbox multi-select mode (MultipleChoiceCategoricalQuestion, D-05/D-07) -->
+      <!-- Checkbox multi-select mode (MultipleChoiceCategoricalQuestion) -->
       {@const voterSelected = selectedIds?.includes(id) ?? false}
       {@const entitySelected = otherSelectedIds?.includes(id) ?? false}
       {@const hasAnySelection = (selectedIds?.length ?? 0) > 0 || (otherSelectedIds?.length ?? 0) > 0}
@@ -413,7 +413,7 @@ The same component can also be used to display the answers of the voter and anot
   {/each}
 </fieldset>
 
-<!-- Multi-select constraint helper text (D-07). Rendered outside the grid
+<!-- Multi-select constraint helper text. Rendered outside the grid
      `<fieldset>` so it does not create a stray grid cell. -->
 {#if mode === 'answer' && multiConstraints}
   <p class="small-label text-secondary mt-md text-center" data-testid="question-choice-helper">

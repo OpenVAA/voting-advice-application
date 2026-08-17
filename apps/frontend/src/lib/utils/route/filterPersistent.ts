@@ -4,7 +4,7 @@ import type { Params } from './params';
 /**
  * Filter out any non-persistent search parameters from the given params. Used to remove them from the `current` route when updating the URL.
  *
- * Name-disjoint dissociation rule (Phase 88 Plan 88-02):
+ * Name-disjoint dissociation rule (see phase 88):
  * ----------------------------------------------------------------
  * `electionId` lives ONLY in `PERSISTENT_SEARCH_PARAMS` (the AVAILABLE-
  * array search-side surface), and `electionTab` lives ONLY in

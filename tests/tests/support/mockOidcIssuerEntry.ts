@@ -1,5 +1,5 @@
 /**
- * Runnable entrypoint for the Option-B mock OIDC issuer (EFLOW-10b, D-01).
+ * Runnable entrypoint for the Option-B mock OIDC issuer (EFLOW-10b).
  * PLAYWRIGHT_BANK_AUTH-gated, localhost-only, TEST-ONLY.
  *
  * Launched by the Playwright `webServer` entry in `tests/playwright.config.ts`

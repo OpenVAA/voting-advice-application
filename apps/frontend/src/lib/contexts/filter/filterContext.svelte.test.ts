@@ -12,7 +12,7 @@ import type { FilterContext } from './filterContext.type';
 // Helper: assigns to the `mockPage.params` stub. Cast to a permissive Record
 // because SvelteKit's auto-generated `app.d.ts` constrains `page.params` to
 // the route params that exist today (no `electionId` route — that key still
-// lives on the search side; `entityTab` is the Phase 88 Plan 88-02 route key).
+// lives on the search side; `entityTab` is the Phase 88 route key).
 // filterContext reads via `parseParams` which is typed `Partial<Params>` and
 // accepts arbitrary string keys.
 type LooseParams = Record<string, string | undefined>;

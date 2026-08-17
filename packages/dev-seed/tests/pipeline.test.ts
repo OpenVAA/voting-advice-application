@@ -2,34 +2,34 @@
  * Pipeline orchestration tests — cross-cutting coverage that no single generator owns.
  *
  * Covers:
- *   - TMPL-02: `{}` template produces a valid row-set for every real entity
+ *   `{}` template produces a valid row-set for every real entity
  *     (accounts/projects/feedback/app_settings/alliances/factions/nominations
- *     default to 0 rows per D-18 / per-generator defaults; the seven
+ *     default to 0 rows per per-generator defaults; the seven
  *     "content" entities always have ≥1 row).
- *   - GEN-03 / D-25: override signature `(fragment, ctx) => Rows[]` fully
+ *   override signature `(fragment, ctx) => Rows ` fully
  *     replaces the built-in generator's output for that table AND receives
  *     the pipeline's ctx (projectId + seeded faker) as second arg.
- *   - D-08: template fragment wins field-by-field over the generator's
+ *   template fragment wins field-by-field over the generator's
  *     `defaults(ctx)` (template-over-defaults merge order).
  *   - Post-topo sentinel enrichment: `_constituencyGroups` on elections,
  *     `_constituencies` on constituency_groups, `_elections` on
  *     question_categories (sentinels computed from the FINAL ref graph after
  *     every generator has run — Plan 07's post-topo pass).
- *   - Phase 56 topo refinement: `questions` run BEFORE `candidates` so
- *     CandidatesGenerator's answer emitter (D-27 seam) can read question rows
+ *   - see phase 56 topo refinement: `questions` run BEFORE `candidates` so
+ *     CandidatesGenerator's answer emitter (seam) can read question rows
  *     from `ctx.refs.questions`. Validated indirectly via
  *     `candidates[i].answersByExternalId` being populated with one entry per
  *     question.
- *   - GEN-08 end-to-end nomination wiring (plan-checker ISS-05): the default
+ *   - end-to-end nomination wiring (plan-checker): the default
  *     `{}` template emits zero nominations because NominationsGenerator's
- *     `defaults(ctx)` returns `{ count: 0 }`, so Phase 56 Success Criterion 5
- *     is NOT exercised by TMPL-02. This file therefore asserts the full
- *     GEN-08 graph wires correctly when the template DOES request
+ *     `defaults(ctx)` returns `{ count: 0 }`, so see phase 56 Success Criterion 5
+ *     is NOT exercised by. This file therefore asserts the full
+ *     graph wires correctly when the template DOES request
  *     nominations: `{ nominations: { count: 2 } }` produces 2 rows with
  *     populated candidate / election / constituency refs that correspond to
  *     entities actually present in the pipeline output (no orphan FKs).
  *
- * D-22 contract: pure I/O. No Supabase imports, no `createClient`, no `.rpc()`.
+ * contract: pure I/O. No Supabase imports, no `createClient`, no `.rpc `.
  */
 
 import { describe, expect, it, vi } from 'vitest';
@@ -50,7 +50,7 @@ describe('runPipeline', () => {
     expect(out.questions.length).toBeGreaterThan(0);
     expect(out.candidates.length).toBeGreaterThan(0);
 
-    // Entities with default count = 0 per D-18 — pipeline still emits the key.
+    // Entities with default count = 0 per — pipeline still emits the key.
     expect(Array.isArray(out.accounts)).toBe(true);
     expect(Array.isArray(out.projects)).toBe(true);
     expect(Array.isArray(out.alliances)).toBe(true);
@@ -76,7 +76,7 @@ describe('runPipeline', () => {
     expect(overrideSpy).toHaveBeenCalledTimes(1);
     const [receivedFragment, receivedCtx] = overrideSpy.mock.calls[0];
 
-    // Fragment carries the template's count (D-08 merged fragment).
+    // Fragment carries the template's count (merged fragment).
     expect(receivedFragment).toMatchObject({ count: 3 });
 
     // Ctx exposes the seeded faker + the bootstrap project UUID.
@@ -100,7 +100,7 @@ describe('runPipeline', () => {
       expect(elRow._constituencyGroups).toBeDefined();
       const sentinel = elRow._constituencyGroups as { externalId: Array<string> };
       expect(Array.isArray(sentinel.externalId)).toBe(true);
-      // Full-fanout strategy (Phase 56): every election gets ALL groups.
+      // Full-fanout strategy (see phase 56): every election gets ALL groups.
       expect(sentinel.externalId).toEqual(allGroupExtIds);
     });
   });
@@ -212,11 +212,11 @@ describe('runPipeline', () => {
     expect(logger.mock.calls.some((call) => String(call[0]).includes('Clamped'))).toBe(true);
   });
 
-  // GEN-08 end-to-end nomination wiring (plan-checker ISS-05).
+  // end-to-end nomination wiring (plan-checker).
   //
   // The `{}` template emits zero nominations because NominationsGenerator's
-  // `defaults(ctx)` returns `{ count: 0 }` — so Phase 56 Success Criterion 5
-  // ("GEN-08 graph wires end-to-end") is NOT exercised by TMPL-02 alone.
+  // `defaults(ctx)` returns `{ count: 0 }` — so see phase 56 Success Criterion 5
+  // (" graph wires end-to-end") is NOT exercised by alone.
   // This test provides the ONLY runtime proof that the full graph wires:
   // nominations carry candidate / election / constituency refs that point
   // to entities actually present in the pipeline output.

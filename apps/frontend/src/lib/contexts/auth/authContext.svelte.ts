@@ -12,7 +12,7 @@ const CONTEXT_KEY = Symbol();
 
 /**
  * The auth context as a Svelte 5 CLASS (Group F leaf; v2.13 context-as-class
- * migration, CLASS-02). CONVERTED from the factory closure that returned a
+ * migration). CONVERTED from the factory closure that returned a
  * `setContext` object literal inside `initAuthContext()`.
  *
  * `isAuthenticated` is backed by a private `#isAuthenticated = $derived(...)`
@@ -28,23 +28,23 @@ const CONTEXT_KEY = Symbol();
  * are NOT own-enumerable and are therefore dropped by object spread (verified
  * headlessly). The original object-literal `get isAuthenticated()` WAS an
  * own-enumerable accessor, so the spread copied it (as a snapshot — the
- * documented spread-of-context trap, CONVENTIONS Spike 009/019). To stay
+ * documented spread-of-context trap, CONVENTIONS see spike 009/019). To stay
  * byte-identical at the consumer until the Phase 109 spread-of-context fix,
  * `isAuthenticated` MUST remain own-enumerable. Hence the constructor-assigned
  * accessor rather than a bare `$derived` field.
  *
  * The four DataWriter wrappers (`logout` / `requestForgotPasswordEmail` /
- * `resetPassword` / `setPassword`) are ARROW-FUNCTION FIELDS (§18 — they survive
+ * `resetPassword` / `setPassword`) are ARROW-FUNCTION FIELDS (they survive
  * detach: candidateContext does `const { logout: _logout } = authContext`) so
  * they capture `this`. Their bodies are preserved verbatim from the former
  * async-function declarations, including the `prepareDataWriter(dataWriter)`
  * await and the `authToken: ''` cookie-auth stub.
  *
- * There is NO init/post-mount effect (§20): the `page.data.session` read is
+ * There is NO init/post-mount effect: the `page.data.session` read is
  * synchronous via `$derived`.
  */
 export class AuthContextProvider implements AuthContext {
-  // §17/§D — private $derived backing field; exposed as an OWN-ENUMERABLE accessor
+  // /§D — private $derived backing field; exposed as an OWN-ENUMERABLE accessor
   // (assigned in the constructor) so it survives the candidateContext spread.
   #isAuthenticated = $derived(!!page.data.session);
 
@@ -69,7 +69,7 @@ export class AuthContextProvider implements AuthContext {
   }
 
   ////////////////////////////////////////////////////////////////////
-  // Wrappers for DataWriter methods (§18 arrow fields — survive detach)
+  // Wrappers for DataWriter methods (arrow fields — survive detach)
   // NB. These automatically handle authentication via Supabase sessions.
   // authToken is passed as '' to satisfy the WithAuth type constraint --
   // the Supabase adapter ignores it (auth is cookie-based).

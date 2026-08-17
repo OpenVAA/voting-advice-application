@@ -1,7 +1,7 @@
 /**
  * ConstituenciesGenerator unit tests.
  *
- * D-22 acceptance criteria (a)–(e) + the self-FK parent ref's cycle-avoidance
+ * acceptance criteria (a)–(e) + the self-FK parent ref's cycle-avoidance
  * invariant: any generated `parent: { external_id }` ref points to a row emitted
  * EARLIER in the same batch (no forward refs, no self-reference, no cycles).
  */

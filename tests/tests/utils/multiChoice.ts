@@ -2,12 +2,12 @@
  * multiChoice — constraint-agnostic selection helper for
  * `multipleChoiceCategorical` questions.
  *
- * ## Why this exists (Phase 135 GUARD-01)
+ * ## Why this exists (see phase 135)
  *
  * Until Phase 135 the `e2e/base` seed carried exactly ONE multi-choice opinion
  * question (`qu-opin-base-7-multichoice`, minSelections 2 / maxSelections 3), so
  * every walk hard-coded "click the first 2 checkboxes" and cited that window in
- * a COUPLING comment. Phase 135 adds a second multi-choice question with an
+ * a COUPLING comment. see phase 135 adds a second multi-choice question with an
  * EQUAL window (`qu-opin-base-8-multichoice-exact`, min === max === 1) so the
  * app can reach the `questions.multiChoice.selectExact` helper string. Against
  * that question "click 2" is OVER-max, i.e. invalid — the candidate app leaves

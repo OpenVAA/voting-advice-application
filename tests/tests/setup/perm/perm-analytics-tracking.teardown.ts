@@ -1,5 +1,5 @@
 /**
- * perm-analytics-tracking data-teardown project (EFLOW-08, D-01).
+ * perm-analytics-tracking data-teardown project.
  *
  * Scoped to PREFIX='e2e-perm-analytics-' (matches the template's own
  * externalIdPrefix, perm-analytics-tracking.ts). Bare seed-only teardown — no

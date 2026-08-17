@@ -26,14 +26,14 @@ Display a general intro before starting answering the questions and possibly all
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // Phase 61-03 voter-side parallel fix: read reactive context properties
+  // see phase 61 voter-side parallel fix: read reactive context properties
   // (opinionQuestions, voterCtx.opinionQuestionCategories, selectedElections,
   // selectedConstituencies, voterCtx.selectedQuestionBlocks) via voterCtx.X. These were
   // previously destructured into local consts and snapshot the empty initial
-  // state — the originating QUESTION-03 symptom.
+  // state — the originating symptom.
   const voterCtx = getVoterContext();
   const { getRoute, t } = voterCtx;
-  // appSettings is a reactive accessor (Phase 113 flatten) — read via voterCtx.X, never destructure.
+  // appSettings is a reactive accessor (see phase 113 flatten) — read via voterCtx.X, never destructure.
   const appSettings = $derived(voterCtx.appSettings);
   const elections = $derived(voterCtx.selectedElections);
   const constituencies = $derived(voterCtx.selectedConstituencies);
@@ -50,7 +50,7 @@ Display a general intro before starting answering the questions and possibly all
     voterCtx.firstQuestionId = null;
     // Filter stale category IDs (holdovers from a different election/constituency).
     // Navigation-level concern — stays here. Default-seeding moved to voterContext
-    // per QUESTION-03 (Phase 61 D-09 + D-11).
+    // per (see phase 61).
     const filtered = voterCtx.selectedQuestionCategoryIds.filter((id) =>
       voterCtx.opinionQuestionCategories.find((c) => c.id === id)
     );

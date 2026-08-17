@@ -31,14 +31,14 @@ Shows the candidate's basic information, some of which is editable.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // Phase 61-03 follow-up: read reactive context getters via candCtx.X.
+  // see phase 61 follow-up: read reactive context getters via candCtx.X.
   const candCtx = getCandidateContext();
   const { getRoute, t, userData } = candCtx;
-  // appSettings/dataRoot are reactive accessors (Phase 113 flatten) — read via candCtx.X, never destructure.
+  // appSettings/dataRoot are reactive accessors (see phase 113 flatten) — read via candCtx.X, never destructure.
   const appSettings = $derived(candCtx.appSettings);
   // dataRoot is identity-stable (#version-bridge): read `candCtx.dataRoot.<prop>` directly in the tracking scope,
   // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md §Context Destructuring Rule +
-  // .planning/spikes/CONVENTIONS.md §9 (Spike-024). Phase 117 COLD-01.
+  // (see spike 024). see phase 117.
   const { pageStyles } = getLayoutContext();
 
   ////////////////////////////////////////////////////////////////////
@@ -279,7 +279,7 @@ Shows the candidate's basic information, some of which is editable.
       <!-- Image -->
 
       <!--
-        Phase 89 Plan 02 (TIR4:75-76 + 166-188): wrap the image Input in a div
+        see phase 89 Plan 02 (TIR4:75-76 + 166-188): wrap the image Input in a div
         carrying `profile-image-error`. Input.svelte's <ErrorMessage> at
         :640-642 is shared across all input types (text / email / image /
         textarea-multilingual), so a testid added inside Input would be

@@ -1,5 +1,5 @@
 /**
- * @file popupNotice fixture (shared — EPERM-09).
+ * @file popupNotice fixture (shared).
  *
  * Shared function-fixture for the results-page feedback + survey popups
  * (FeedbackPopup.svelte / SurveyPopup.svelte). Authored standalone under

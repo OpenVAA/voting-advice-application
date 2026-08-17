@@ -1,5 +1,5 @@
 /**
- * `e2e/base` template shape tests (Phase 93 Plan 02 / D-03).
+ * `e2e/base` template shape tests (see phase 93 Plan 02).
  *
  * Retargeted from the retired `e2e` template suite to the canonical base
  * dataset (formerly `baseV1`, now `packages/dev-seed/src/templates/e2e/base.ts`).
@@ -13,7 +13,7 @@
  * single-election, 18 candidates) are intentionally NOT reproduced — the base
  * dataset is a different, multi-election shape.
  *
- * D-22 contract: pure I/O. No Supabase imports, no `createClient`, no `.rpc()`.
+ * contract: pure I/O. No Supabase imports, no `createClient`, no `.rpc `.
  */
 
 import { describe, expect, it } from 'vitest';

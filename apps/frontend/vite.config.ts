@@ -39,7 +39,7 @@ export default defineConfig(({ mode }) => {
       // Playwright targets. This does NOT refuse a wildcard shadow-bind: a process holding the IPv6
       // wildcard lets Vite additionally bind the more specific loopback address with no bind error
       // at all — that case is caught by the E2E preflight in `tests/global-setup.ts`. Both halves
-      // are measured in `.planning/phases/137-.../137-RESEARCH.md` QUAL-1.
+      // are measured in QUAL-1.
       strictPort: true
     }
   };

@@ -1602,7 +1602,7 @@ describe('SupabaseDataProvider', () => {
     });
 
     it('nomination objects include entityType, entityId, electionId, constituencyId fields', async () => {
-      // Phase 64 P01: include orgNomRow so the candidate nomination's parent
+      // see phase 64 P01: include orgNomRow so the candidate nomination's parent
       // (n3 → organization) resolves in the in-memory parent-type lookup.
       // Without it, the adapter clears parentNominationId to honor the
       // Nomination "either both or neither" invariant. In production,
@@ -1623,7 +1623,7 @@ describe('SupabaseDataProvider', () => {
       expect(nom?.electionRound).toBe(1);
       expect(nom?.electionSymbol).toBe('42');
       expect(nom?.parentNominationId).toBe('n3');
-      // Phase 64 P01: parentNominationType is derived from the parent's entity_type.
+      // see phase 64 P01: parentNominationType is derived from the parent's entity_type.
       expect(nom?.parentNominationType).toBe('organization');
     });
 

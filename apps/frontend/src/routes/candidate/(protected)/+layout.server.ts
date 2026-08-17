@@ -28,7 +28,7 @@ export async function load({ fetch, locals }) {
   // Typed local: SupabaseAdapterConfig legitimises `serverClient` at the concrete seam.
   // The mixin's return-type annotation (Constructor<SupabaseAdapter> & TBase) erases the
   // widened init override, so a subtype value assignable to AdapterConfig sidesteps the
-  // fresh-object-literal excess-property check without widening the universal layer (D-01).
+  // fresh-object-literal excess-property check without widening the universal layer.
   const writerConfig: SupabaseAdapterConfig = { fetch, serverClient: locals.supabase };
   dataWriter.init(writerConfig);
 
@@ -70,7 +70,7 @@ export async function load({ fetch, locals }) {
 
   // Get question data
   const dataProvider = await dataProviderPromise;
-  // Typed local (see writerConfig above): legitimises `serverClient` at the concrete seam (D-01).
+  // Typed local (see writerConfig above): legitimises `serverClient` at the concrete seam.
   const providerConfig: SupabaseAdapterConfig = { fetch, serverClient: locals.supabase };
   dataProvider.init(providerConfig);
 

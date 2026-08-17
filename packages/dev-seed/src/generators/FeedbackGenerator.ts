@@ -6,7 +6,7 @@
  * feedback rows (uncommon — feedback has little test / demo value), so the
  * pipeline class map treats every table uniformly.
  *
- * Table characteristics (RESEARCH §4.16, migration lines 949–961):
+ * Table characteristics (RESEARCH, migration lines 949–961):
  *   - Required: `project_id`, CHECK (`rating IS NOT NULL OR description IS NOT NULL`)
  *   - Optional: `rating` int, `description` text, `date`, `url`, `user_agent`
  *   - No `external_id` column → NOT idempotent via external_id. Re-runs
@@ -15,16 +15,16 @@
  *     dev-seeded rows are visually indistinguishable (acceptable trade-off per
  *     Claude's Discretion — fixing this is a schema change, out of scope).
  *
- * Writer routing (Plan 07 per D-11): not in bulk_import's processing_order.
+ * Writer routing (Plan 07 per): not in bulk_import's processing_order.
  * Direct `.upsert()` in the writer (if any rows are emitted). Because there
  * is no external_id key, the "upsert" behaves as plain insert — previous
- * runs' feedback rows accumulate in the DB. Teardown (Phase 58 CLI-03) cannot
+ * runs' feedback rows accumulate in the DB. Teardown (see phase 58) cannot
  * target them via prefix because no `external_id` column — manual cleanup
  * required. This limitation is carried forward to Phase 58 if feedback
  * seeding becomes useful.
  *
- * D-04/D-26/D-08 + GEN-02 apply — see ElectionsGenerator.ts for the
- * canonical-pattern rationale. GEN-04 (external_id prefix) does NOT apply
+ * apply — see ElectionsGenerator.ts for the
+ * canonical-pattern rationale. (external_id prefix) does NOT apply
  * because the table has no `external_id` column.
  */
 
@@ -36,7 +36,7 @@ export type FeedbackFragment = Fragment<TablesInsert<'feedback'>>;
 export class FeedbackGenerator {
   constructor(private ctx: Ctx) {}
 
-  // Phase 56 ignores ctx here; kept on the signature for D-08 consistency.
+  // see phase 56 ignores ctx here; kept on the signature for consistency.
 
   defaults(ctx: Ctx): FeedbackFragment {
     return { count: 0 };

@@ -127,9 +127,9 @@ file_size_limit = "500MiB"
 enabled = true
 
 # Image transformation API is available to Supabase Pro plan.
-# Phase 83 DETERM-06 D-01c escalation: re-enabled to unblock the
+# see phase 83 D-01c escalation: re-enabled to unblock the
 # filechooser TIMEOUT cascade in cold-start E2E (the imgproxy container
-# is required for the CAND-03 image-upload happy path; without it, the
+# is required for the image-upload happy path; without it, the
 # storage layer may fail to acknowledge the multipart upload and the
 # filechooser event never settles). D-01a (selector fix) and D-01b
 # (500ms settle delay) were both insufficient — see

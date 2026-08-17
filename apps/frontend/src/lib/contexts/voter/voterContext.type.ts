@@ -32,7 +32,7 @@ export type VoterContext = AppContext & {
   /**
    * The currently-SELECTED election (singular) whose results are being rendered,
    * derived from `page.params.electionTab` (the new route segment introduced in
-   * Phase 88 Plan 88-02). When the route param is absent AND there's exactly
+   * see phase 88). When the route param is absent AND there's exactly
    * one available election, falls back to `selectedElections[0]`. Returns
    * `undefined` when the route param is absent AND there are 0 or 2+ available
    * elections (the picker shape) — OR when the route param names an election
@@ -65,7 +65,7 @@ export type VoterContext = AppContext & {
    * Returns `undefined` when there is no active election OR matches haven't
    * been built yet for that election.
    *
-   * Added by the Phase 88 Plan 88-02 follow-up that broke the route-shape
+   * Added by the Phase 88 follow-up that broke the route-shape
    * redirect loop: the previous behavior force-filled `/candidates` into the
    * results URL whenever `entityTab` was absent (`+layout.ts` GUARD 2 / GUARD
    * 4 + the leaf coupling-guard + `buildListRoute`), and those force-fills
@@ -104,7 +104,7 @@ export type VoterContext = AppContext & {
    * The scoped `FilterContext` for the current (`electionId`, `entityTab`) tuple.
    * Bundled through voterContext for ergonomic consumption from the voter flow UI;
    * also directly accessible via `getFilterContext()` for the future LLM chat
-   * integration (Phase 62 D-05, D-06). Same Symbol-keyed instance both ways.
+   * integration (see phase 62). Same Symbol-keyed instance both ways.
    */
   filterContext: FilterContext;
   /**

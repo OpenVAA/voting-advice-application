@@ -21,7 +21,7 @@ Displays information about the application.
 
   const ctx = getAppContext();
   const { getRoute, t } = ctx;
-  // appSettings is a reactive accessor (Phase 113 flatten) — read via ctx.X, never destructure.
+  // appSettings is a reactive accessor (see phase 113 flatten) — read via ctx.X, never destructure.
   const appSettings = $derived(ctx.appSettings);
 
   const { topBarSettings } = getLayoutContext();

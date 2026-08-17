@@ -1,23 +1,23 @@
 /**
  * QuestionsGenerator — content generator for the `questions` table.
  *
- * RESEARCH §4.13: `project_id`, `type` (enum question_type), and `category_id` FK
+ * RESEARCH: `project_id`, `type` (enum question_type), and `category_id` FK
  * are required; `choices` JSONB is required for
  * singleChoiceOrdinal / singleChoiceCategorical / multipleChoiceCategorical types
  * (validate_question_choices trigger, migration lines 645–689).
  *
  * Ref shape: `category: { external_id }` → resolve_external_ref (bulk_import)
  * converts to `category_id` at write time. Attached AFTER the base row fields —
- * matches the canonical D-06 pattern (refs added inline but only if upstream refs
+ * matches the canonical pattern (refs added inline but only if upstream refs
  * are populated).
  *
- * Subdimensions: per D-20 "subdimension / MISSING_VALUE logic stays in
+ * Subdimensions: per "subdimension / MISSING_VALUE logic stays in
  * @openvaa/matching". This generator emits shape-valid JSONB choices only; it
- * does NOT annotate subdimension loadings. Phase 57's latent-factor model
- * extends this with richer question type distributions; Phase 56 just exercises
+ * does NOT annotate subdimension loadings. see phase 57's latent-factor model
+ * extends this with richer question type distributions; see phase 56 just exercises
  * the plumbing.
  *
- * D-04/D-26/D-08 + GEN-02/GEN-04 apply — see ElectionsGenerator.ts for the
+ * apply — see ElectionsGenerator.ts for the
  * canonical-pattern rationale.
  *
  * Default count = 4: enough questions to exercise the answer emitter & matching
@@ -49,7 +49,7 @@ type QuestionRow = Omit<TablesInsert<'questions'>, 'category_id' | 'type'> & {
 };
 
 /**
- * Standard Phase 56 Likert choices (5-point scale). The DB trigger
+ * Standard see phase 56 Likert choices (5-point scale). The DB trigger
  * validate_question_choices requires ≥2 entries each with a string `id` key;
  * see migration lines 645–689.
  */
@@ -63,7 +63,7 @@ const LIKERT_5: Array<{ id: string; label: { en: string }; normalizableValue: nu
 
 /**
  * Simple categorical choices (for singleChoiceCategorical / multipleChoiceCategorical).
- * Phase 56 emits a minimal 3-option set; Phase 58 templates can supply richer ones.
+ * see phase 56 emits a minimal 3-option set; see phase 58 templates can supply richer ones.
  */
 const CATEGORICAL_3: Array<{ id: string; label: { en: string } }> = [
   { id: 'a', label: { en: 'Option A' } },
@@ -72,7 +72,7 @@ const CATEGORICAL_3: Array<{ id: string; label: { en: string } }> = [
 ];
 
 /**
- * Phase 56 emits a mix of question types so the answer emitter exercises every
+ * see phase 56 emits a mix of question types so the answer emitter exercises every
  * branch. Rotate deterministically (via `i % types.length`) so seeded runs are
  * reproducible. The chosen 4 variants cover: ordinal choice, boolean, categorical
  * choice, and free-text — the main emitter code paths (see emitters/answers.ts).
@@ -87,7 +87,7 @@ const PHASE_56_TYPE_ROTATION = [
 export class QuestionsGenerator {
   constructor(private ctx: Ctx) {}
 
-  // Phase 56 ignores ctx here; Phase 57/58 generators read ctx.refs to scale counts.
+  // see phase 56 ignores ctx here; see phase 57/58 generators read ctx.refs to scale counts.
 
   defaults(ctx: Ctx): QuestionsFragment {
     return { count: 4 };
@@ -133,10 +133,10 @@ export class QuestionsGenerator {
         // category_id injected by bulk_import from the `category` ref below.
       };
 
-      // Choices required for ordinal/categorical types (RESEARCH §4.13). Narrow
+      // Choices required for ordinal/categorical types (RESEARCH). Narrow
       // via a typed tuple so TS recognizes the categorical branch for all types
       // in PHASE_56_TYPE_ROTATION plus any future additions (e.g.
-      // multipleChoiceCategorical when Phase 58 templates enable it).
+      // multipleChoiceCategorical when see phase 58 templates enable it).
       const CATEGORICAL_TYPES: ReadonlyArray<Enums<'question_type'>> = [
         'singleChoiceCategorical',
         'multipleChoiceCategorical'

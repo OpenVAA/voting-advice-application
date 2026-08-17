@@ -14,12 +14,12 @@ const CONTEXT_KEY = Symbol('admin');
 
 /**
  * The admin context (orchestrator) re-expressed as a Svelte 5 CLASS
- * (`AdminContextProvider`; v2.13 context-as-class migration, CLASS-07).
+ * (`AdminContextProvider`; v2.13 context-as-class migration).
  * CONVERTED from the object-literal factory that `initAdminContext()` returned.
  * Constructed via `new AdminContextProvider()` inside `initAdminContext()`, at
  * component-init time exactly as the former factory ran.
  *
- * ── Two-base composition (112-PATTERNS §1–2) ─────────────────────────────────
+ * ── Two-base composition (112-PATTERNS) ─────────────────────────────────
  * adminContext inherits appContext + delegates authContext. The INHERITED
  * appContext members are reproduced via a single `Object.assign(this,
  * this.#appContext)` in the constructor (replacing the former `...appContext`
@@ -31,9 +31,9 @@ const CONTEXT_KEY = Symbol('admin');
  * `isAuthenticated` is a PROTOTYPE GETTER re-reading the LIVE authContext
  * `$derived` on every access (NOT a spread-captured boolean). The four auth
  * FUNCTIONS are plain non-reactive fns forwarded by reference as arrow fields.
- * See the inline CONS-03 / Pitfall-2 comment on the getter for the why.
+ * See the inline Pitfall-2 comment on the getter for the why.
  *
- * ── Getter-collision audit (112-PATTERNS §2; Phase-111 landmine absent) ───────
+ * ── Getter-collision audit (112-PATTERNS; Phase-111 landmine absent) ───────
  * AppContext exposes NONE of `isAuthenticated` / `logout` /
  * `requestForgotPasswordEmail` / `resetPassword` / `setPassword` (verified). So
  * `Object.assign(this, this.#appContext)` cannot overwrite any auth member, and
@@ -111,7 +111,7 @@ export class AdminContextProvider implements AdminContext {
 
   #userData = $state<BasicUserData | undefined>(undefined);
 
-  // CONS-03 / Pitfall 2: do NOT spread the auth context. Object spread (or
+  // / Pitfall 2: do NOT spread the auth context. Object spread (or
   // Object.assign) invokes the source's isAuthenticated $derived getter exactly
   // once at init time and captures the boolean by value, de-reactivating admin
   // auth gating (the nav would show authenticated links to a logged-out user
@@ -145,7 +145,7 @@ export class AdminContextProvider implements AdminContext {
   ////////////////////////////////////////////////////////////////////
   // Wrappers for DataWriter methods
   // NB. These automatically handle authentication. They are arrow fields
-  // (CONVENTIONS §18) so they survive detach from the instance.
+  // (CONVENTIONS) so they survive detach from the instance.
   ////////////////////////////////////////////////////////////////////
 
   /**
@@ -212,7 +212,7 @@ export class AdminContextProvider implements AdminContext {
     // carries NO auth key, so this assign cannot overwrite isAuthenticated (a
     // getter-only accessor) or the auth arrow fields — no exclusion needed.
     //
-    // Phase 113 CR-01: inheritContextMembers (NOT Object.assign) forwards the bare
+    // see phase 113 CR-01: inheritContextMembers (NOT Object.assign) forwards the bare
     // reactive accessors (appSettings / dataRoot / locale) as LIVE accessors;
     // Object.assign would snapshot and freeze their reactivity for consumers.
     inheritContextMembers(this, this.#appContext);

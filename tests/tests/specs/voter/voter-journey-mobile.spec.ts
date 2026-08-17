@@ -1,5 +1,5 @@
 /**
- * voter-journey-mobile (EFLOW-11) — interactive voter journey at the mobile
+ * voter-journey-mobile — interactive voter journey at the mobile
  * viewport.
  *
  * This is the MOBILE-DESCRIPTOR leaf for the voter journey. The walk itself is
@@ -9,7 +9,7 @@
  * `isMobile`, `hasTouch`) lives at PROJECT scope in playwright.config.ts
  * (`voter-journey-mobile` project) — the spec consumes the unchanged walk under
  * that descriptor. Do NOT re-implement a bespoke mobile walk (the descriptor is
- * config; the walk is shared — Phase 121 Don't-Hand-Roll).
+ * config; the walk is shared — see phase 121 Don't-Hand-Roll).
  *
  * On top of the walk, this leaf exercises the mobile-specific affordances that
  * only matter at a touch/narrow viewport:
@@ -45,9 +45,9 @@ import { testIds } from '../../utils/testIds';
 // elections/constituencies pages. The shared walk (`walkUntilQuestionsIntro`)
 // installs an `addLocatorHandler` that grants consent the moment the popup
 // obstructs an actionability check, so this leaf reuses the VIEWPORT-AGNOSTIC
-// walk unchanged (the descriptor is project config — Phase 121 Don't-Hand-Roll).
+// walk unchanged (the descriptor is project config — see phase 121 Don't-Hand-Roll).
 
-// EFLOW-11: interactive voter journey at mobile viewport.
+// interactive voter journey at mobile viewport.
 test.describe('voter-journey-mobile (EFLOW-11)', () => {
   test.describe.configure({ mode: 'serial' });
 

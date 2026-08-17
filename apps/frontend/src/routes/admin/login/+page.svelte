@@ -34,7 +34,7 @@
 
   // `darkMode` / `getRoute` are stable rune-native `{ readonly current }` handles
   // from AdminContext (inherited from AppContext); read `.current` directly.
-  // `appSettings` is a reactive accessor (Phase 113 flatten) — read via
+  // `appSettings` is a reactive accessor (see phase 113 flatten) — read via
   // `ctx.appSettings`, never destructure (the alias below tracks it).
   const ctx = getAdminContext();
   const { darkMode, getRoute, t } = ctx;

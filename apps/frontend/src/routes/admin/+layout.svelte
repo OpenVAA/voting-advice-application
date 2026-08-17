@@ -22,7 +22,7 @@
 
   // `appType` is a rune handle from AdminContext (inherited from AppContext);
   // `appType.set(...)` is unchanged — the handle exposes `.set`. `appSettings` is
-  // a reactive accessor (Phase 113 flatten) — read via `ctx.appSettings`,
+  // a reactive accessor (see phase 113 flatten) — read via `ctx.appSettings`,
   // never destructure (the alias below tracks it).
   const ctx = initAdminContext();
   const { appType, t } = ctx;

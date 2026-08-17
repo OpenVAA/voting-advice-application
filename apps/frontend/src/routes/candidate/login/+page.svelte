@@ -45,7 +45,7 @@
   // Reactive accessors (answersLocked) read via candCtx.X — see CLAUDE.md §Context Destructuring Rule.
   const candCtx = getCandidateContext();
   const { appCustomization, darkMode, getRoute, t } = candCtx;
-  // appSettings is a reactive accessor (Phase 113 flatten) — read via candCtx.X, never destructure.
+  // appSettings is a reactive accessor (see phase 113 flatten) — read via candCtx.X, never destructure.
   const appSettings = $derived(candCtx.appSettings);
   const answersLocked = $derived(candCtx.answersLocked);
   const { pageStyles, topBarSettings } = getLayoutContext();

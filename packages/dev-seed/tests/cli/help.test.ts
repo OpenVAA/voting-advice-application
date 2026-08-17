@@ -1,5 +1,5 @@
 /**
- * help.ts tests (CLI-04 / D-58-13).
+ * help.ts tests.
  */
 
 import { describe, expect, it } from 'vitest';

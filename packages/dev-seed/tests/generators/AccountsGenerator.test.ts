@@ -1,7 +1,7 @@
 /**
- * AccountsGenerator unit tests — pass-through per D-11.
+ * AccountsGenerator unit tests — pass-through.
  *
- * D-22 scope: pure I/O. Asserts `[]` return for every input shape, with a logger
+ * scope: pure I/O. Asserts ` ` return for every input shape, with a logger
  * warning emitted exactly once when the user requests non-empty fragment content.
  */
 

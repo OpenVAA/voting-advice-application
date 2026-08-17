@@ -1,5 +1,5 @@
 /**
- * resolve-template.ts tests (TMPL-06 + D-58-09 + D-58-10).
+ * resolve-template.ts tests.
  */
 
 import { unlinkSync, writeFileSync } from 'node:fs';

@@ -76,7 +76,7 @@
   // microtask boundary between `$effect` and `$state` writes. This shape
   // removes the Svelte 5 SSR+hydration reactivity race that stuck the
   // previous `$effect` + promise-chain pattern at <Loading /> on full page
-  // loads. Ref: 60-RESEARCH §Pattern 1, D-01 + D-03 + D-05.
+  // loads. Ref: 60-RESEARCH §Pattern 1.
   const validity:
     | { error: Error }
     | {
@@ -116,7 +116,7 @@
   // `.current` takes a dependency on the dataContext `version` $state, and
   // `DataRoot.update()` notifies subscribers (bumping `version`) — retriggering the
   // effect. `setDataRoot` runs the mutation inside `untrack`, so this effect takes no
-  // dependency on the version counter (Spike 017/022 read/write split — it replaces
+  // dependency on the version counter (see spike 017/022 read/write split — it replaces
   // the former non-reactive producer-read + hand-written `untrack` idiom).
   $effect(() => {
     if ('error' in validity) return;
@@ -161,7 +161,7 @@
   onNavigate((navigation) => {
     submitAllEvents(); // preserve existing analytics flush
     // LANDMINE: read `navigation.to?.url` — NOT `page.url` (which is the SOURCE url during
-    // onNavigate per spike-015). `shouldAnimate` also gates reduced-motion (VT-03) + ?notr=1 (D-02).
+    // onNavigate per spike-015). `shouldAnimate` also gates reduced-motion (VT-03) +?notr=1.
     if (!shouldAnimate(navigation.to?.url)) return;
     return new Promise<void>((resolve) => {
       startViewTransition(async () => {
@@ -233,7 +233,7 @@
      Text is the active route's already-localized page title (the value fed to the document
      `<title>`, minus the constant app-name/maintenance suffix), surfaced via the layout-context
      `routeTitle` signal that MainContent / SingleCardContent register their localized `title` into
-     (D-03 honored — no new i18n strings; the existing localized title is reused on ALL routes). -->
+     (honored — no new i18n strings; the existing localized title is reused on ALL routes). -->
 <div aria-live="polite" aria-atomic="true" class="sr-only" id="route-announcer">
   {routeTitle}
 </div>
@@ -260,7 +260,7 @@
   {/if}
 {/if}
 
-<!-- Popup service: inline renderer (runes-idiomatic; replaces the v2.1 popup-renderer wrapper per Phase 60 LAYOUT-03) -->
+<!-- Popup service: inline renderer (runes-idiomatic; replaces the v2.1 popup-renderer wrapper per Phase 60) -->
 {#if popupQueue.current}
   {@const item = popupQueue.current}
   {@const Component = item.component}

@@ -38,7 +38,7 @@ export type DynamicSettings = {
       /**
        * The content tabs to show for alliances. Alliances have no own answers,
        * so 'opinions' is typically omitted by default; the broader union allows
-       * future opt-in without a type-rename (Phase 69 D-02).
+       * future opt-in without a type-rename (see phase 69).
        */
       [ENTITY_TYPE.Alliance]?: Array<EntityDetailsContent | ParentEntityDetailsContent>;
     };
@@ -214,7 +214,7 @@ export type DynamicSettings = {
         | 'submatches'
         /**
          * List the parent entity's children (CandidateNominations) within its card.
-         * Only applies to the results list. (Phase 69 D-01: renamed from 'candidates'
+         * Only applies to the results list. (see phase 69: renamed from 'candidates'
          * for semantic-uniform parent-entity children naming.)
          */
         | 'children'
@@ -233,7 +233,7 @@ export type DynamicSettings = {
         | 'submatches'
         /**
          * List the parent entity's children (OrganizationNominations) within its card.
-         * (Phase 69 D-01: alliance children = member organization-nominations.)
+         * (see phase 69: alliance children = member organization-nominations.)
          */
         | 'children'
         /**
@@ -392,7 +392,7 @@ export type EntityDetailsContent =
  * The possible content tabs to show for parent entities (Organization, Alliance).
  * The "children" of an Organization are its CandidateNominations; the "children"
  * of an Alliance are its OrganizationNominations. Single shared opt-in keeps
- * the type surface symmetric across parent entity types (per Phase 69 D-01).
+ * the type surface symmetric across parent entity types (per Phase 69).
  */
 export type ParentEntityDetailsContent =
   /**

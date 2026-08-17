@@ -13,7 +13,7 @@
  * assertion with a CategoryTag presence assertion and thereby FAIL when the
  * tag-render path stops rendering ANYWHERE — which a lone `toHaveCount(0)`,
  * satisfied by a page that renders no tags at all, cannot detect
- * (ASSERT-05 / finding F9).
+ * (finding F9).
  *
  * Prefix: 'e2e-perm-hide-eltags-'.
  *

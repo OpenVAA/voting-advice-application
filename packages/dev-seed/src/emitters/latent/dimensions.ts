@@ -1,14 +1,14 @@
 /**
- * defaultDimensions — GEN-06a / D-57-01 / D-57-02 built-in default.
+ * defaultDimensions — GEN-06a built-in default.
  *
  * Resolves `{ dims, eigenvalues }` from a (possibly empty) `template.latent` block
- * per the rules in 57-CONTEXT.md:
+ * per the rules:
  *
- *   D-57-01: default `dims` is 2 (political-compass shape).
- *   D-57-02: default eigenvalues decay geometrically with ratio 1/3:
+ *   default `dims` is 2 (political-compass shape).
+ *   default eigenvalues decay geometrically with ratio 1/3:
  *            `[1, 1/3, 1/9, ...]` generalizing to `(1/3)^i` for `i in 0..dims-1`.
  *
- * Precedence (all fields optional per D-57-21):
+ * Precedence (all fields optional per):
  *   - `template.latent.dimensions` > unset → 2
  *   - `template.latent.eigenvalues` explicit → used verbatim; `dims` derived from
  *     `eigenvalues.length` when `dimensions` is unset, OR equals `dimensions` when

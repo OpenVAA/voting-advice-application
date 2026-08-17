@@ -1,5 +1,5 @@
 /**
- * perm-interactive-info data-setup project (EPERM-07).
+ * perm-interactive-info data-setup project.
  *
  * Invokes setupFromTemplate('perm-interactive-info'). UNAUTHENTICATED — the spec
  * exercises the voter questions flow (popup-modal vs static-expander info modes,

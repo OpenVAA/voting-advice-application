@@ -1,14 +1,14 @@
 /**
- * Template schema — latent block acceptance + rejection tests (Plan 57-01 Task 2).
+ * Template schema — latent block acceptance + rejection tests (Task 2).
  *
  * Covers the RED gate for the `.extend({ latent: ... })` schema change:
- *   - Test 1: Phase 56 regression — `{}` still validates (TMPL-02).
- *   - Test 2: `{ latent: {} }` accepted — nested block is optional per D-57-21.
+ *   - Test 1: see phase 56 regression — `{}` still validates.
+ *   - Test 2: `{ latent: {} }` accepted — nested block is optional.
  *   - Test 3: matching `dimensions` + `eigenvalues` length accepted.
- *   - Test 4 (D-57-02): mismatched lengths rejected with
+ *   - Test 4: mismatched lengths rejected with
  *     `template.latent.eigenvalues: Expected length 2, got 1`.
  *   - Test 5: negative `noise` rejected (`.nonnegative()` enforcement).
- *   - Test 6 (TMPL-09 + .strict): typo `loading` (singular) surfaces in the
+ *   - Test 6 (.strict): typo `loading` (singular) surfaces in the
  *     error message — proves `.strict()` catches unknown keys. zod v4 emits
  *     `unrecognized_keys` issues with `path: []` relative to the offending
  *     object (`template.latent`) and names the keys inside the message, so the
@@ -16,7 +16,7 @@
  *   - Test 7: importing the `Ctx` type with `latent?: LatentHooks` compiles
  *     (smoke check — if the ctx extension drifts, this test file won't type-check).
  *
- * D-22 contract: pure I/O. No Supabase imports, no `createClient`, no `.rpc()`.
+ * contract: pure I/O. No Supabase imports, no `createClient`, no `.rpc `.
  */
 
 import { describe, expect, it } from 'vitest';

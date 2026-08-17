@@ -2,13 +2,13 @@
 /**
  * `yarn workspace @openvaa/dev-seed seed` — CLI entry point.
  *
- * Sequence per RESEARCH §1:
+ * Sequence per RESEARCH:
  *   1. parseArgs — node:util built-in (keygen.ts precedent, NOT commander/yargs).
  *   2. --help short-circuit => print USAGE => exit 0.
- *   3. resolveTemplate(--template) => validated Template (TMPL-06, D-58-09/10).
+ *   3. resolveTemplate(--template) => validated Template (10).
  *   4. Apply --seed / --external-id-prefix overrides to the template.
- *   5. new Writer() — throws with D-58-12 messages on missing env; CLI catches.
- *   6. runPipeline(template) — Phase 56/57 orchestrator.
+ *   5. new Writer — throws with messages on missing env; CLI catches.
+ *   6. runPipeline(template) — see phase 56/57 orchestrator.
  *   7. fanOutLocales(rows, template, seed) — Plan 03 utility (no-op if flag off).
  *   8. writer.write(rows, prefix) => optionally returns `{ portraits }` once
  *      Plan 04 lands portrait upload support; this CLI tolerates both the
@@ -17,12 +17,12 @@
  *   9. formatSummary(...) => stdout.
  *   10. exit 0 on success, 1 on any error.
  *
- * D-58-12 error handling:
+ * error handling:
  *   - Missing env => Writer constructor throws with exact message; CLI prints +
  *     exit(1).
  *   - Template not found => resolveTemplate throws with built-in list + path
  *     suggestion; CLI prints + exit(1).
- *   - Template validation failed => TMPL-09 field-path message from
+ *   - Template validation failed => field-path message from
  *     validateTemplate; CLI prints + exit(1).
  *   - Supabase unreachable => supabase-js throws `fetch failed`; CLI rephrases
  *     to `Cannot reach Supabase at ${url}. Is 'supabase start' running?`
@@ -100,7 +100,7 @@ try {
 
   const seed = (template as Template & { seed?: number }).seed ?? 42;
 
-  // Writer constructor reads env + throws D-58-12 messages if missing.
+  // Writer constructor reads env + throws messages if missing.
   const writer = new Writer();
 
   // Look up per-template overrides — built-in templates may ship paired
@@ -204,7 +204,7 @@ function extractPortraitCount(result: unknown): number {
 
 function normalizeError(err: unknown): string {
   const msg = (err as Error)?.message ?? String(err);
-  // Rephrase supabase-js fetch failures into actionable D-58-12 form.
+  // Rephrase supabase-js fetch failures into actionable form.
   if (/fetch failed|ECONNREFUSED|ENOTFOUND/.test(msg)) {
     const url = process.env.SUPABASE_URL ?? 'http://127.0.0.1:54321';
     return `Cannot reach Supabase at ${url}. Is 'supabase start' running?`;

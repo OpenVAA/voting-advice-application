@@ -3,7 +3,7 @@
  *
  * Verifies that the Idura provider module implements the IdentityProvider
  * interface correctly and that getAuthorizeUrl produces a JAR-based
- * authorization URL with the expected structure (D-04 from 48-CONTEXT.md).
+ * authorization URL with the expected structure (from).
  *
  * @vitest-environment node
  */
@@ -123,7 +123,7 @@ describe('Idura provider', () => {
         redirectUri: 'http://localhost:5173/callback'
       });
 
-      // Phase 140 WR-08: collapsed from a toBeDefined()+typeof+length triple
+      // see phase 140 WR-08: collapsed from a toBeDefined +typeof+length triple
       // (the sibling null-blind pattern F19 removed elsewhere) into one
       // non-blind assertion, so a future edit dropping a follow-up line can no
       // longer silently restore the blindness.

@@ -34,7 +34,7 @@ Displays a warning if the selected constituency does not have nominations in all
   // Keep context ref for reactive getter access (destructuring captures static values)
   const voterCtx = getVoterContext();
   const { getRoute, t } = voterCtx;
-  // dataRoot is a reactive accessor (Phase 113 flatten) — read via voterCtx.X, never destructure.
+  // dataRoot is a reactive accessor (see phase 113 flatten) — read via voterCtx.X, never destructure.
   const dataRoot = $derived(voterCtx.dataRoot);
 
   /**

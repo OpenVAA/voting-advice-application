@@ -16,13 +16,13 @@ Shown after the front page in the voter app. Displays a list of the steps the vo
   import { getVoterContext } from '$lib/contexts/voter';
   import MainContent from '../../MainContent.svelte';
 
-  // Phase 61-03 voter-side parallel fix: destructuring reactive context
+  // see phase 61 voter-side parallel fix: destructuring reactive context
   // getters (electionsSelectable, constituenciesSelectable) captures the
   // initial empty/false snapshot. Read via `voterCtx.X` instead. Stable
   // functions (getRoute, t) remain destructured.
   const voterCtx = getVoterContext();
   const { getRoute, t } = voterCtx;
-  // appSettings is a reactive accessor (Phase 113 flatten) — read via voterCtx.X, never destructure.
+  // appSettings is a reactive accessor (see phase 113 flatten) — read via voterCtx.X, never destructure.
   const appSettings = $derived(voterCtx.appSettings);
 </script>
 

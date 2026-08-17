@@ -50,7 +50,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
   const ctx = getAppContext();
   const { appType, startEvent, t } = ctx;
-  // appSettings is a reactive accessor (Phase 113 flatten) — read via ctx.X, never destructure.
+  // appSettings is a reactive accessor (see phase 113 flatten) — read via ctx.X, never destructure.
   const appSettings = $derived(ctx.appSettings);
   // appType is determined at app boot and does not change at runtime; we
   // read it once at init to decide whether voter context is available.
@@ -69,8 +69,8 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
   let contentTabs: Array<ContentTab> = $derived.by(() => {
     const { entity: nakedEntity } = unwrapEntity(entity);
-    // Phase 69: cardContents.alliance / entityDetails.contents.alliance are typed
-    // as optional in @openvaa/app-shared (D-02), so the indexed access can yield
+    // see phase 69: cardContents.alliance / entityDetails.contents.alliance are typed
+    // as optional in @openvaa/app-shared, so the indexed access can yield
     // `undefined` when the alliance entry is missing from the active settings.
     // The `!tabs?.length` guard already handles undefined at runtime.
     let tabs: Array<EntityDetailsContent | ParentEntityDetailsContent> | undefined =
@@ -97,7 +97,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     return [];
   });
 
-  // Phase 69 D-04: alliance drawer-header "X candidates across N parties" summary
+  // see phase 69: alliance drawer-header "X candidates across N parties" summary
   let allianceSummary: { numCandidates: number; numParties: number } | undefined = $derived.by(() => {
     const { nomination } = unwrapEntity(entity);
     if (isObjectType(nomination, OBJECT_TYPE.AllianceNomination)) {

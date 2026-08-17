@@ -1,11 +1,11 @@
 /**
  * Shared delete-count assertion helper — the single owner of the F3 assertion
- * (Phase 140, ASSERT-02).
+ * (see phase 140).
  *
  * ROLE: wraps `runTeardown(prefix, client)` and asserts the delete accounted for
  * every ROW that was present under the prefix, and that none survived it —
  * `runTeardown`'s OTHER return value, `storageRemoved` (portrait objects), is
- * NOT asserted here at all (Phase 140 IN-03; see WHAT IT DOES NOT CATCH
+ * NOT asserted here at all (see phase 140 IN-03; see WHAT IT DOES NOT CATCH
  * below). Every
  * `*.teardown.ts` project that performs a prefix delete routes through this
  * function (27 of 28; `candidate-journey.teardown.ts` performs no delete — it
@@ -17,11 +17,11 @@
  * `*.teardown.ts` project's OWN delete is covered by construction — the call
  * sites carry no matcher of their own.
  *
- * NOT covered (Phase 140 WR-05): `setupFromTemplate.ts` performs three
+ * NOT covered (see phase 140 WR-05): `setupFromTemplate.ts` performs three
  * prefix-scoped deletes of its own that do NOT route through this function —
  * the `extraTeardownPrefix` pre-clear loop, the template's own step-1b
  * pre-clear, and the `cleanup` closure returned to callers. Cited by SYMBOL,
- * not by line (Phase 140 WR-01): line-number citations into this file go
+ * not by line (see phase 140 WR-01): line-number citations into this file go
  * stale on its own first edit, as this docblock's own MATCHER paragraph
  * below already observes. These are the deletes that run in the COMMON case
  * (they are why `rowsBefore === 0` at almost every teardown site — see WHAT IT
@@ -39,8 +39,8 @@
  * MATCHER — the before/after invariant (research shape A), adopted under
  * **branch A** of plan 06's pre-specified decision rule. The full measurement
  * (observation counts, per-site breakdown, and the rejected-alternatives cost
- * analysis) lives in `140-MEASUREMENT.md` § 4 / § Adjudication — the single
- * source of truth; figures are deliberately NOT restated here (Phase 140
+ * analysis) lives in ` ` § Adjudication — the single
+ * source of truth; figures are deliberately NOT restated here (see phase 140
  * IN-02 — a duplicated number in a docblock is precisely the F10 failure mode
  * this phase closed elsewhere, and line-number citations into
  * `setupFromTemplate.ts` go stale on that file's first edit). Conclusion:
@@ -60,7 +60,7 @@
  *
  * WHAT IT CATCHES ONLY WHEN `rowsBefore > 0` AT THE SITE IN QUESTION: a
  * silently no-opping `bulk_delete`, a scoping bug that sends the RPC a
- * different prefix from the one counted. Per `140-MEASUREMENT.md` § 4 /
+ * different prefix from the one counted. Per ` `
  * § Adjudication, `rowsBefore > 0` was the RARE outcome, not the common one
  * (see MATCHER above for the mechanism) — so at most observed sites this
  * assertion's discriminating power is limited to the unconditional
@@ -76,7 +76,7 @@
  *     no-op.
  *   - A table removed from `ALLOWED_TEARDOWN_TABLES`. `countRowsByPrefix`
  *     (`tests/tests/utils/supabaseAdminClient.ts` — cited by symbol, not by
- *     line; Phase 140 WR-01) iterates that SAME
+ *     line; see phase 140 WR-01) iterates that SAME
  *     constant, by design (its own docblock: "the SAME list `runTeardown`'s
  *     `bulkDelete` clears — so the probe cannot drift from the delete it
  *     measures" — a second hand-maintained copy under `tests/` was rejected
@@ -88,7 +88,7 @@
  *     `bulk_delete` stops deleting it, `rowsDeleted` drops by the same
  *     amount, and `rowsAfter` never looks at it again — a clean `N/N/0` while
  *     every row in the dropped table survives.
- *   - Portrait STORAGE cleanup (Phase 140 IN-03). `runTeardown` returns
+ *   - Portrait STORAGE cleanup (see phase 140 IN-03). `runTeardown` returns
  *     `{ rowsDeleted, storageRemoved }` (`runTeardown` in
  *     `packages/dev-seed/src/cli/teardown.ts`); this function only
  *     destructures `rowsDeleted`. `storageRemoved` is completely unasserted at
@@ -99,12 +99,12 @@
  *     present… and none survived it" describes rows only — it should not be
  *     read as covering storage too.
  * Stated so nobody reads more into this assertion than the measurement
- * supports (`140-MEASUREMENT.md` § Adjudication).
+ * supports (` ` § Adjudication).
  *
  * The caller's `prefix` is forwarded verbatim — no default, no normalisation, no
  * fallback — so `runTeardown`'s two-character mass-delete guard keeps its full
  * reach over the delete, and the call is not wrapped in a try/catch that would
- * swallow it. Phase 140 WR-07 / IN-02: the SAME guard is re-checked at the top
+ * swallow it. see phase 140 WR-07 / IN-02: the SAME guard is re-checked at the top
  * of `runTeardownAsserted` itself via dev-seed's exported `assertTeardownPrefix`
  * (the SAME implementation `runTeardown` calls, not a hand-maintained mirror
  * that could drift from it), so the before-count probe below never runs an
@@ -121,13 +121,13 @@ import type { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
  *
  * Both assertion messages name the prefix and both counts, so a failure reads as
  * a sentence about the dataset rather than as a bare numeric mismatch
- * (ROADMAP Phase 140 criterion 1: the failure must be "by name").
+ * (ROADMAP see phase 140 criterion 1: the failure must be "by name").
  *
  * @param prefix - `external_id` prefix owned by the calling project, forwarded verbatim.
  * @param client - admin client constructed by the caller (reused for its other steps).
  */
 export async function runTeardownAsserted(prefix: string, client: SupabaseAdminClient): Promise<void> {
-  // Phase 140 WR-07 / IN-02: re-check runTeardown's T-58-07-02 mass-delete
+  // see phase 140 WR-07 / IN-02: re-check runTeardown's T-58-07-02 mass-delete
   // guard here, BEFORE the probe below, via the SAME exported implementation
   // `runTeardown` itself calls (`assertTeardownPrefix` from `@openvaa/dev-seed`)
   // — not a hand-maintained mirror that could silently drift from it (IN-02).
@@ -145,7 +145,7 @@ export async function runTeardownAsserted(prefix: string, client: SupabaseAdminC
   const rowsBefore = await client.countRowsByPrefix(prefix);
   // `storageRemoved` (portrait objects) is intentionally NOT destructured —
   // this function asserts row counts only. See the file docblock's WHAT IT
-  // DOES NOT CATCH entry (Phase 140 IN-03) for why that gap is unclosed.
+  // DOES NOT CATCH entry (see phase 140 IN-03) for why that gap is unclosed.
   const { rowsDeleted } = await runTeardown(prefix, client);
   const rowsAfter = await client.countRowsByPrefix(prefix);
 

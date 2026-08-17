@@ -37,12 +37,12 @@ Accesses `CandidateContext`.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // Phase 61-03 follow-up: read reactive context getters via candCtx.X so
+  // see phase 61 follow-up: read reactive context getters via candCtx.X so
   // updates after data load propagate (the same destructure-snapshot bug class
   // that 61-03 fixed for candidate-questions).
   const candCtx = getCandidateContext();
   const { getRoute, logout, t } = candCtx;
-  // appSettings is a reactive accessor (Phase 113 flatten) — read via candCtx.X, never destructure.
+  // appSettings is a reactive accessor (see phase 113 flatten) — read via candCtx.X, never destructure.
   const appSettings = $derived(candCtx.appSettings);
 
   ////////////////////////////////////////////////////////////////////

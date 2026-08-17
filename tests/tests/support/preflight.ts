@@ -3,14 +3,14 @@ import fs from 'fs';
 import path from 'path';
 
 /**
- * E2E SERVED-APPLICATION PREFLIGHT — Phase 137 (INTEG-04, INTEG-05).
+ * E2E SERVED-APPLICATION PREFLIGHT — see phase 137.
  *
  * Asserts that whatever is listening on the port the specs are about to drive is
  * THIS checkout's Vite dev server — not a sibling checkout, not a container, not
  * a stale server from another branch. A false green produced by a foreign server
  * is undetectable after the fact, which is why this runs before any spec body.
  *
- * The assertion is composite (D-01):
+ * The assertion is composite:
  *
  *   (a) LIVENESS — the base URL answers 2xx after following redirects. Polled,
  *       because a just-started dev server needs a few seconds. Following
@@ -32,7 +32,7 @@ import path from 'path';
  *       maintenance mode legitimately replaces it.
  *
  * Nothing here is hardcoded to a machine: the repo root is derived by the caller
- * and every compared value is read from this checkout at runtime (D-03). CI's
+ * and every compared value is read from this checkout at runtime. CI's
  * checkout path differs from any developer's, so a baked-in absolute path would
  * fail in CI outright.
  */
@@ -41,7 +41,7 @@ import path from 'path';
  * The repo-relative path of the file clause (b) probes.
  *
  * Repo-relative and nothing more: the absolute path is composed at runtime as
- * `path.join(repoRoot, PROBE_RELATIVE_PATH)` (D-03).
+ * `path.join(repoRoot, PROBE_RELATIVE_PATH)`.
  *
  * The path is load-bearing and was chosen by measurement, not by taste.
  * SvelteKit REPLACES Vite's default `server.fs.allow` list with six entries of
@@ -77,7 +77,7 @@ export type PreflightOptions = {
 /**
  * Repo-relative location of the message catalogue clause (c) derives its accepted
  * title set from. Enumerated at runtime — the locale set grows, and hardcoding
- * either the locales or the names is exactly what D-03 forbids.
+ * either the locales or the names is exactly what forbids.
  */
 const MESSAGES_RELATIVE_PATH = 'apps/frontend/messages';
 
@@ -94,7 +94,7 @@ const MODULE_ROOT_NOT_FOUND = '(not found)';
  * First line of every failure. Fixed, because the phase's verification commands
  * and the runbook both grep for it.
  *
- * EXPORTED (Phase 138 review WR-09) so the shell wrappers can assert the literal
+ * EXPORTED (see phase 138 review WR-09) so the shell wrappers can assert the literal
  * they grep for still exists here. `tests/scripts/e2e-run.sh` previously bound
  * itself to this string through a comment alone, which meant a rename here and a
  * stale copy there would agree on "0 preflight failures" forever.
@@ -105,7 +105,7 @@ export const FAILURE_HEADLINE = 'E2E PREFLIGHT FAILED';
  * Printed exactly once, on success. Fixed for the same reason as
  * {@link FAILURE_HEADLINE}, and load-bearing for a different one.
  *
- * reason: (Phase 138 review WR-09) the wrappers' "preflight-confirmed" verdict was
+ * reason: (see phase 138 review WR-09) the wrappers' "preflight-confirmed" verdict was
  * an ABSENCE check — `grep -c 'E2E PREFLIGHT FAILED' == 0`. Three different states
  * produce that zero: the preflight passed, the preflight never executed, or the
  * two copies of the literal drifted apart. All three were recorded identically,
@@ -248,7 +248,7 @@ function findListeningProcess(port: string): string | null {
 }
 
 /**
- * Builds the operator-facing failure block (D-09).
+ * Builds the operator-facing failure block.
  *
  * Front-loaded on purpose: Playwright appends a source code frame and a stack
  * trace immediately after this text, and the operator reads roughly the first ten

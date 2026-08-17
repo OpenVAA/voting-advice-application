@@ -1,15 +1,15 @@
 #!/usr/bin/env tsx
 /**
- * `yarn workspace @openvaa/dev-seed seed:teardown` — CLI-03 entry.
+ * `yarn workspace @openvaa/dev-seed seed:teardown` — entry.
  *
- * Sequence (D-58-07 + RESEARCH §3 + Pitfall #5):
+ * Sequence (RESEARCH Pitfall #5):
  *   1. Parse `--prefix` / `--help` via `parseArgs` (node:util; keygen.ts
  *      precedent; NOT commander/yargs).
  *   2. `--help` short-circuit => print TEARDOWN_USAGE => exit 0.
  *   3. Prefix length guard (T-58-07-02) — `--prefix ''` or a single char
  *      would `LIKE %` against effectively every external_id; refuse.
  *   4. Construct `SupabaseAdminClient` (module-level env fallbacks per
- *      supabaseAdminClient.ts:34-42 — Writer's D-15 env enforcement is not
+ *      supabaseAdminClient.ts:34-42 — Writer's env enforcement is not
  *      replayed here since bulk_delete works against the local demo key
  *      fallback too).
  *   5. `bulkDelete({ nominations, candidates, ... 10 tables }, { prefix })`.
@@ -19,7 +19,7 @@
  *   7. Print summary to stdout (rows deleted + storage objects removed +
  *      echo the prefix used), exit 0.
  *   8. On any error: rephrase `fetch failed`/`ECONNREFUSED`/`ENOTFOUND` to
- *      D-58-12 actionable form, stderr + exit 1.
+ *      actionable form, stderr + exit 1.
  *
  * Pitfall #6 explicit guardrail: `bulkDelete` argument MUST include only
  * the 10 tables in `ALLOWED_TEARDOWN_TABLES`. `accounts`, `projects`,
@@ -28,7 +28,7 @@
  * `allowed_collections` but the writer merges-upserts it (not inserts) —
  * resetting app_settings is `db:reset`'s job, not teardown's.
  *
- * D-58-17: permissive prefix. Trust GEN-04 contract — no shape verification.
+ * permissive prefix. Trust contract — no shape verification.
  *
  * Split into `runTeardown(prefix, client)` (pure orchestration — unit
  * testable with a mocked client) and a thin CLI wrapper (parseArgs +
@@ -62,7 +62,7 @@ if (!process.env.SUPABASE_URL && process.env.PUBLIC_SUPABASE_URL) {
  * Order listed here doesn't matter — the RPC re-orders server-side per
  * schema line 2845-2849.
  *
- * Exported (Phase 140 plan 05) so the row-count probe in `tests/` iterates the
+ * Exported (see phase 140 plan 05) so the row-count probe in `tests/` iterates the
  * SAME ten tables `bulk_delete` clears — a second hand-maintained copy under
  * `tests/` would be exactly the duplicated-fact drift this phase exists to close.
  */
@@ -103,7 +103,7 @@ export interface TeardownResult {
  * be `LIKE %`-adjacent — matching effectively every `external_id` across all
  * 10 content tables. Refuse with an actionable, caller-labelled message.
  *
- * Exported (Phase 140 review IN-02) so callers outside this package — namely
+ * Exported (see phase 140 review IN-02) so callers outside this package — namely
  * `tests/tests/setup/shared/assertTeardown.ts`'s `runTeardownAsserted`, which
  * re-checks the SAME invariant before probing so an unbounded `LIKE '%'`
  * count scan never runs for a prefix `runTeardown` would refuse anyway —
@@ -152,7 +152,7 @@ export async function runTeardown(prefix: string, client: TeardownClient): Promi
   const deleteResult = await client.bulkDelete(collections);
   const rowsDeleted = countDeletedRows(deleteResult);
 
-  // Step 3: Storage Path 2 — explicit list + remove (RESEARCH §3 primary).
+  // Step 3: Storage Path 2 — explicit list + remove (RESEARCH primary).
   // Path 1 (AFTER-DELETE trigger + pg_net) fires asynchronously; we do NOT
   // rely on it for deterministic teardown. The UUID list from step 1 scopes
   // the cleanup to exactly the candidates this prefix owned.

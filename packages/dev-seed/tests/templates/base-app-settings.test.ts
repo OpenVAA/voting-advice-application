@@ -1,5 +1,5 @@
 /**
- * `e2e/base` template app_settings contract tests (Phase 93 Plan 02 / D-03).
+ * `e2e/base` template app_settings contract tests (see phase 93 Plan 02).
  *
  * Retargeted from the retired `e2e` app-settings suite to the canonical base
  * dataset (formerly `baseV1`). Locks:
@@ -16,7 +16,7 @@
  * Every asserted value is derived from `e2e/base.ts` (the surviving dataset),
  * not carried over from the old e2e single-election app-settings.
  *
- * D-22 contract: pure shape assertions. No Supabase imports.
+ * contract: pure shape assertions. No Supabase imports.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -122,7 +122,7 @@ describe('BASE_APP_SETTINGS — base dataset settings contract', () => {
   });
 
   it('results block carries candidate cardContents with the info-text submatch question ref', () => {
-    // 'alliance' LAST — Phase 129 UNBLK-06 (Org-first cascade invariant).
+    // 'alliance' LAST — see phase 129 (Org-first cascade invariant).
     expect(BASE_APP_SETTINGS.results.sections).toEqual(['candidate', 'organization', 'alliance']);
     expect(BASE_APP_SETTINGS.results.cardContents.candidate).toEqual([
       'submatches',

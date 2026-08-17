@@ -139,14 +139,14 @@ export function createEntityDetails(page: Page) {
          * Count of CHECKED voter inputs (radios + checkboxes unioned). For
          * MultipleChoiceCategorical (checkbox) displays the voter answer is
          * ≥1 checked checkbox — the radio-only reads used by single-select
-         * types are invisible to it. EQTYP-01.
+         * types are invisible to it..
          */
         voterSelectedCount?: number;
         /**
          * Count of ENTITY selected-answer markers inside the block. The
          * single-select `entityAnswer` accessible-name path assumes exactly
          * one marker; multi-select entity answers surface N markers, so they
-         * are asserted by count. EQTYP-01.
+         * are asserted by count..
          */
         entitySelectedCount?: number;
         infoText?: RegExp | string;
@@ -156,7 +156,7 @@ export function createEntityDetails(page: Page) {
       await expect(block).toHaveCount(1);
       if (options?.numSelected !== undefined) {
         // Voter-side reads union checked radios AND checked checkboxes so
-        // checkbox multi-choice displays are counted (EQTYP-01); single-select
+        // checkbox multi-choice displays are counted; single-select
         // types have zero checkboxes so the union is a no-op for them.
         const voterChecked = block
           .getByRole('radio', { checked: true })
@@ -193,7 +193,7 @@ export function createEntityDetails(page: Page) {
     },
 
     /**
-     * Assert the 129 D-04 number-scale dual-marker read-only display inside the
+     * Assert the 129 number-scale dual-marker read-only display inside the
      * question block matching `target`. Derived from NumberScaleInput.svelte's
      * display-mode markup:
      *   - the disabled `question-number-slider` carries `value = voter ?? entity

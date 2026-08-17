@@ -1,5 +1,5 @@
 /**
- * fanOutLocales() unit tests (TMPL-07 + NF-04 Pitfall #1).
+ * fanOutLocales unit tests (NF-04 Pitfall #1).
  *
  * Exercises:
  *   - Opt-out default (undefined / false → no-op).
@@ -10,7 +10,7 @@
  *   - Pre-existing locale keys preserved.
  *   - LOCALES constant is hardcoded in ['en', 'fi', 'sv'] order.
  *
- * D-22 contract: pure I/O. No Supabase imports.
+ * contract: pure I/O. No Supabase imports.
  */
 
 import { describe, expect, it } from 'vitest';

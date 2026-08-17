@@ -29,10 +29,10 @@ Shows the opinion questions for the candidate to answer.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // Phase 61-03 follow-up: read reactive context getters via candCtx.X.
+  // see phase 61 follow-up: read reactive context getters via candCtx.X.
   const candCtx = getCandidateContext();
   const { getRoute, t, translate, userData } = candCtx;
-  // appSettings is a reactive accessor (Phase 113 flatten) — read via candCtx.X, never destructure.
+  // appSettings is a reactive accessor (see phase 113 flatten) — read via candCtx.X, never destructure.
   const appSettings = $derived(candCtx.appSettings);
   ////////////////////////////////////////////////////////////////////
   // Choose page variant to show

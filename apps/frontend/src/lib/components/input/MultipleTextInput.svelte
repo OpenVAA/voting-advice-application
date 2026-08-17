@@ -2,12 +2,12 @@
 @component
 A row-list input for `MultipleTextQuestion`s (info questions): one plain text
 input per value, with add / remove / reorder controls. Its value is an
-`Array<string>` (D-01) — opaque strings, no numeric coercion, no dedup.
+`Array<string>` — opaque strings, no numeric coercion, no dedup.
 
 Multilingual `multipleText` values are out of this phase's input scope: rows are
 PLAIN text inputs bound to `Array<string>`.
 
-### Behaviour (D-02)
+### Behaviour
 - Empty rows are dropped on save (`onChange`); duplicates are preserved; array
   order equals on-screen row order.
 - `minItems > 1` renders that many rows initially and disables per-row removal
@@ -59,7 +59,7 @@ See `MultipleTextInput.type.ts`.
   // State
   ////////////////////////////////////////////////////////////////////
 
-  /** The minimum number of rows to render / keep. Never below 1 (D-02). */
+  /** The minimum number of rows to render / keep. Never below 1. */
   const floor = $derived(Math.max(minItems ?? 1, 1));
 
   /**
@@ -72,15 +72,15 @@ See `MultipleTextInput.type.ts`.
 
   function initRows(): Array<string> {
     const initial = Array.isArray(value) ? [...value] : [];
-    // Pad to the floor: `minItems > 1` renders `minItems` rows initially (D-02).
+    // Pad to the floor: `minItems > 1` renders `minItems` rows initially.
     while (initial.length < Math.max(minItems ?? 1, 1)) initial.push('');
     return initial;
   }
 
   const isDisabled = $derived(!!locked);
-  /** Add is disabled once the row count reaches `maxItems` (D-02). */
+  /** Add is disabled once the row count reaches `maxItems`. */
   const canAdd = $derived(maxItems == null || rows.length < maxItems);
-  /** Removal is prevented below the floor (D-02). */
+  /** Removal is prevented below the floor. */
   const canRemove = $derived(rows.length > floor);
 
   ////////////////////////////////////////////////////////////////////

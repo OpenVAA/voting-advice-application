@@ -23,7 +23,7 @@ export const ROUTE = {
   Question: `${VOTER_LOCATED}/questions/[questionId]`,
   QuestionCategory: `${VOTER_LOCATED}/questions/category/[categoryId]`,
   Questions: `${VOTER_LOCATED}/questions`,
-  // Results routes — 4-segment optional shape introduced in Phase 88 Plan 88-02
+  // Results routes — 4-segment optional shape introduced in Phase 88
   // (see `src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]`).
   // Route params:
   //   - electionTab   (freeform)              — SELECTED election (singular) whose results are being rendered.

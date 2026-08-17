@@ -1,19 +1,18 @@
 /**
  * Template schema — zod v4 declarative shape for the `@openvaa/dev-seed` input template.
  *
- * Phase 56 covers the MINIMAL core per D-18: top-level `seed` / `externalIdPrefix` /
+ * see phase 56 covers the MINIMAL core: top-level `seed` / `externalIdPrefix` /
  * `projectId`, plus per-entity fragments for each of the 12 non-system public
  * tables ({@link https://github.com/OpenVAA/voting-advice-application/tree/main/apps/supabase/supabase/migrations}).
  *
- * Phase 57 extends this schema with the latent-factor emitter fields (via `.extend()`,
- * NOT `.merge()` — deprecated in zod v4). Phase 58 adds localization / portrait /
+ * see phase 57 extends this schema with the latent-factor emitter fields (via `.extend `,
+ * NOT `.merge ` — deprecated in zod v4). see phase 58 adds localization / portrait /
  * default-dataset fields the same way.
  *
  * Design contract:
- *  - Every field is `.optional()` per D-18 — a `{}` template MUST pass validation
- *    (TMPL-02).
+ *  - Every field is `.optional ` per — a `{}` template MUST pass validation
  *  - Defaults (count, prefix, UUIDs) live in per-generator `defaults(ctx)` methods
- *    per D-08 — NOT in the schema. Keeping the schema declarative means extending
+ *    per — NOT in the schema. Keeping the schema declarative means extending
  *    generators later doesn't require schema churn.
  *  - Hand-authored `fixed[]` rows are partial records (`z.record(z.string(), z.unknown())`).
  *    NF-03 forbids `unknown`-style escape hatches that accept arbitrary `any`; we use
@@ -30,7 +29,7 @@ import { z } from 'zod';
  *
  * NOTE: `.optional()` is applied at each use site below — not baked into the
  * fragment definition — so every template field stays visibly optional at the
- * schema level (D-18 enforcement).
+ * schema level (enforcement).
  */
 const perEntityFragment = z.object({
   count: z.number().int().nonnegative().optional(),
@@ -38,12 +37,12 @@ const perEntityFragment = z.object({
 });
 
 /**
- * D-57-21: latent-factor emitter configuration (Phase 57).
+ * latent-factor emitter configuration (see phase 57).
  *
  * Top-level optional, every nested field optional. `.strict()` rejects typos
- * (e.g. `latent.loading` vs `latent.loadings`) so TMPL-09 error messages point
+ * (e.g. `latent.loading` vs `latent.loadings`) so error messages point
  * at the offending field instead of silently dropping it. `.superRefine()`
- * enforces the D-57-02 invariant that `eigenvalues.length === dimensions` when
+ * enforces the invariant that `eigenvalues.length === dimensions` when
  * both are provided — prevents downstream sub-steps from reading past the
  * array bounds or operating on a degenerate space.
  *
@@ -55,16 +54,16 @@ const latentBlock = z
   .object({
     dimensions: z.number().int().positive().optional(),
     eigenvalues: z.array(z.number().nonnegative()).optional(),
-    // D-57-05 + D-57-07: per-party centroid anchors keyed by party external_id.
+    // per-party centroid anchors keyed by party external_id.
     centroids: z.record(z.string(), z.array(z.number())).optional(),
     spread: z.number().nonnegative().optional(),
-    // D-57-07: per-question loading vectors keyed by question external_id.
+    // per-question loading vectors keyed by question external_id.
     loadings: z.record(z.string(), z.array(z.number())).optional(),
     noise: z.number().nonnegative().optional()
   })
   .strict()
   .superRefine((data, ctx) => {
-    // D-57-02: eigenvalues length must match dimensions when both are provided.
+    // eigenvalues length must match dimensions when both are provided.
     if (
       data.eigenvalues !== undefined &&
       data.dimensions !== undefined &&
@@ -91,7 +90,7 @@ const latentBlock = z
  * template schema would mean the validator contradicts `buildCtx`'s documented
  * default projectId.
  *
- * The regex below is the 8-4-4-4-12 hex shape from RFC 9562 §5 without the
+ * The regex below is the 8-4-4-4-12 hex shape from RFC 9562 without the
  * version nibble constraint — matches what Postgres actually accepts.
  */
 const UUID_SHAPE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
@@ -102,15 +101,15 @@ export const TemplateSchema = z
     externalIdPrefix: z.string().optional(),
     projectId: z.string().regex(UUID_SHAPE, 'Invalid UUID').optional(),
     /**
-     * TMPL-07 / D-58-04 — when `true`, the pipeline post-processes every
+     * when `true`, the pipeline post-processes every
      * localized JSONB field (`name`, `short_name`, `info`, question
      * `choices[].label`, etc.) to contain keys for every locale in
      * `staticSettings.supportedLocales` (`en`, `fi`, `sv`, `da`). When
      * `false` or `undefined`, only the default locale (`en`) is populated.
      *
-     * The default template (Plan 58-06) sets this to `true` so first-run
+     * The default template sets this to `true` so first-run
      * developers see the app in all four locales. The e2e template
-     * (Plan 58-08) sets it to `false` per D-58-16 — Playwright specs run
+     * sets it to `false` per — Playwright specs run
      * against a single locale and the 4x JSONB payload is pure overhead
      * for them.
      */
@@ -133,7 +132,7 @@ export const TemplateSchema = z
 /**
  * Validate a template input; return the typed Template on success, throw on failure.
  *
- * TMPL-09: errors include the field path via `result.error.issues[].path`. Output:
+ * errors include the field path via `result.error.issues.path`. Output:
  *
  * ```
  * Template validation failed:

@@ -13,16 +13,16 @@ export function getDataContext(): DataContext {
 
 /**
  * DataContext re-expressed as a Svelte 5 CLASS (class-conversion proof, Spikes
- * 020-023; see `.planning/spikes/CONTEXT-MEMBER-AUDIT.md` + CONVENTIONS §17-22).
+ * 020-023; see CONVENTIONS).
  * The documented Svelte 5 idiom is "use classes with `$state` fields to share
  * reactivity between components, instead of using stores" — here the reactive core
  * is the private `#version` `$state` FIELD.
  *
- * This is the Group-C §22 "version-bridge" class (the dataRoot pattern, NOT wholesale
+ * This is the Group-C "version-bridge" class (the dataRoot pattern, NOT wholesale
  * replacement): `DataRoot` has a STABLE identity and is mutated in place; `#version`
  * is bumped (untracked) on every `DataRoot.update()` notification, bridging
- * `Updatable.subscribe()` to `$derived` reactivity. Per §22 this version-bridge is
- * KEPT verbatim — it does NOT simplify away (Spike 022; the bridge is intrinsic to
+ * `Updatable.subscribe ` to `$derived` reactivity. Per this version-bridge is
+ * KEPT verbatim — it does NOT simplify away (see spike 022; the bridge is intrinsic to
  * wrapping a non-rune object).
  *
  * Two deliberate shape choices, both spike-derived:
@@ -31,22 +31,22 @@ export function getDataContext(): DataContext {
  *    `dataRoot` handle and the `setDataRoot` writer are exposed as OWN properties
  *    (instance fields), NOT prototype getters. appContext re-exposes this context via
  *    `{ ...dataCtx }`, and spreading a class INSTANCE copies only own-enumerable
- *    properties — prototype accessors would be silently dropped (Spike 020 finding;
- *    CONVENTIONS "Spread-of-context"). (Phase 113 FLATTEN-01 collapsed the duplicate
+ *    properties — prototype accessors would be silently dropped (see spike 020 finding;
+ *    CONVENTIONS "Spread-of-context"). (see phase 113 collapsed the duplicate
  *    read-only mirror + its non-reactive producer-read split into this single
  *    reactive `dataRoot` handle; the one producer-write consumer moved to
  *    `setDataRoot`.)
  *
- * 2. §18 arrow-function field — survives detach. `setDataRoot` is an ARROW-FUNCTION
+ * 2. arrow-function field — survives detach. `setDataRoot` is an ARROW-FUNCTION
  *    field, not a method, so it survives being destructured/detached
- *    (`const { setDataRoot } = ctx`) with `this` intact (CONVENTIONS §18; Spike 020
+ *    (`const { setDataRoot } = ctx`) with `this` intact (CONVENTIONS; see spike 020
  *    Group E). It internalizes the `untrack` that producers previously hand-wrote at
  *    the call site, so the old `.instance` handle + hand-written `untrack` collapse to
- *    a single write path (Spike 017/022).
+ *    a single write path (see spike 017/022).
  *
- * NB (§22 silent-loop caveat). With a class private `#version`, a producer that reads
+ * NB (silent-loop caveat). With a class private `#version`, a producer that reads
  * the REACTIVE getter then mutates self-perpetuates SILENTLY (no
- * `effect_update_depth_exceeded` throw, unlike the plain-`let` version — Spike 022).
+ * `effect_update_depth_exceeded` throw, unlike the plain-`let` version — see spike 022).
  * Producers MUST go through `setDataRoot`.
  */
 class DataContextProvider implements DataContext {
@@ -57,7 +57,7 @@ class DataContextProvider implements DataContext {
   // Installed via `Object.defineProperty(this, 'dataRoot', { enumerable: true })` in
   // the constructor so the accessor survives the spread (own-enumerable, unlike a
   // prototype getter) AND its getter can close over `this` for the private `#version`
-  // read. (Phase 113 FLATTEN-02: dropped the `.current` wrapper — consumers read
+  // read. (see phase 113: dropped the `.current` wrapper — consumers read
   // `ctx.dataRoot` bare; the `void #version` reactive re-read is preserved inside.)
   readonly dataRoot!: DataRoot;
 
@@ -92,7 +92,7 @@ class DataContextProvider implements DataContext {
    * Mutate the DataRoot. Pass an `updater` that calls `dr.update(() => dr.provide*(...))`.
    * The write runs inside `untrack`, so a producer `$effect` calling this takes NO
    * dependency on `#version` and cannot self-loop. Replaces the previous
-   * former non-reactive producer-read + hand-written `untrack` idiom (Spike 017/022).
+   * former non-reactive producer-read + hand-written `untrack` idiom (see spike 017/022).
    */
   setDataRoot = (updater: (dataRoot: DataRoot) => void): void => {
     untrack(() => updater(this.#dataRoot));

@@ -6,11 +6,11 @@ Renders the matching results list and, when on an entity detail child route, sho
 
 Entity cards are `<a>` links — right-click opens in new tab, normal click triggers SvelteKit client-side navigation which the layout detects and renders in a Drawer.
 
-## Architecture (Phase 62 Plan 62-03 refactor; updated by Phase 88 Plan 88-02)
+## Architecture (see phase 62 refactor; updated by Phase 88)
 
-- URL is the single source of truth (D-09, D-13). Tabs, drawer visibility, and
+- URL is the single source of truth. Tabs, drawer visibility, and
   active entity type are pure `$derived` over `page.params.electionTab` /
-  `entityTab` / `entity` / `id`. As of Plan 88-02 the *selected* election
+  `entityTab` / `entity` / `id`. As of the *selected* election
   whose results are being rendered now lives in the route segment
   `page.params.electionTab` (name-disjoint from the search-side
   `?electionId=…` AVAILABLE-array surface, which keeps its
@@ -19,8 +19,8 @@ Entity cards are `<a>` links — right-click opens in new tab, normal click trig
   No local `$state` twins for URL-derivable state; no `$effect`-based sync.
 - `<EntityListWithControls>` replaces the legacy `<EntityList>` call —
   filters are re-enabled end-to-end through the shared `filterContext`
-  (D-05), which auto-scopes per (electionId, entityTab) per D-14.
-- Drawer-first paint (D-10): the `{#if drawerVisible} <EntityDetailsDrawer/>`
+  which auto-scopes per (electionId, entityTab).
+- Drawer-first paint: the `{#if drawerVisible} <EntityDetailsDrawer/>`
   block is rendered BEFORE the list container in DOM source order; the list
   container carries `content-visibility: auto` so the browser defers its
   layout/paint until it scrolls into view.
@@ -63,7 +63,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // Phase 61-03 voter-side parallel fix: reactive context getters
+  // see phase 61 voter-side parallel fix: reactive context getters
   // (constituenciesSelectable, matches, nominationsAvailable, resultsAvailable,
   // selectedConstituencies, selectedElections) are read via voterCtx.X.
   // Stable stores/functions/objects (appSettings, dataRoot, getRoute, t,
@@ -84,12 +84,12 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   const constituencies = $derived(voterCtx.selectedConstituencies);
 
   ////////////////////////////////////////////////////////////////////
-  // URL-derived state (D-09, D-13) — Phase 88 Plan 88-02 refactor
+  // URL-derived state — see phase 88 refactor
   ////////////////////////////////////////////////////////////////////
   //
   // Two name-disjoint election surfaces coexist on the URL:
   //   - ROUTE side: `page.params.electionTab` (singular) — the *selected*
-  //     election whose results-page is being rendered. New in Plan 88-02.
+  //     election whose results-page is being rendered. New.
   //   - SEARCH side: `?electionId=…` / `electionId[N]=…` (zero-or-more)
   //     — the AVAILABLE elections (voter scope set at `/elections`),
   //     surfaced via `voterContext.selectedElections`. Unchanged from prior
@@ -99,7 +99,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   // `[[electionTab]]/+layout.ts` validates that `params.electionTab`
   // is a member of the AVAILABLE array (Task 6).
   //
-  // entityTab + entity + id are route params (renamed in Plan 88-02 from
+  // entityTab + entity + id are route params (renamed from
   // the prior plural/singular matcher-gated segments via the new etPl /
   // etSg short-name matchers).
   //
@@ -143,7 +143,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
 
   // Plural → singular mapping uses American spelling (RESEARCH Open Question 1
   // RESOLVED). The implied entity type now lives on voterContext via
-  // `currentResultsEntityType` (Phase 88 post-88-02 loop fix): URL-first
+  // `currentResultsEntityType` (see phase 88 post-88-02 loop fix): URL-first
   // with default-pick fallback to the first available tab for the active
   // election. Reading through `voterCtx.X` per the CLAUDE.md Context
   // Destructuring Rule preserves reactivity (must not destructure).
@@ -161,7 +161,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   });
 
   ////////////////////////////////////////////////////////////////////
-  // Drawer visibility (D-09) — drawer renders iff both singular+id present
+  // Drawer visibility — drawer renders iff both singular+id present
   ////////////////////////////////////////////////////////////////////
 
   const drawerVisible = $derived<boolean>(!!(page.params.entity && page.params.id));
@@ -229,16 +229,16 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   });
 
   ////////////////////////////////////////////////////////////////////
-  // Handlers (D-09: all selector changes push to URL)
+  // Handlers (all selector changes push to URL)
   ////////////////////////////////////////////////////////////////////
 
   /**
    * Build a path-only /results URL with the SELECTED election landing on the
-   * new `electionTab` route segment (Plan 88-02 refactor) and the existing
+   * new `electionTab` route segment (refactor) and the existing
    * search params preserved verbatim.
    *
    * Name-disjoint dissociation: `electionTab` is the route-side singular
-   * (Plan 88-02 new); `electionId` is the search-side AVAILABLE-array
+   * (new); `electionId` is the search-side AVAILABLE-array
    * (existing PERSISTENT_SEARCH_PARAMS member at `$lib/utils/route/params.ts`).
    * The two never alias. The pre-88-02 qs.parse round-trip that overwrote
    * the search-side `electionId` is GONE — the search-side AVAILABLE array
@@ -292,7 +292,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
     // `noScroll: true` mirrors the entity-card open path (EntityCardAction
     // uses `data-sveltekit-noscroll`). Without it, SvelteKit's default
     // scroll-on-navigation snaps the list back to the top — surfaced during
-    // Phase 64 manual smoke as "page scrolls when drawer closes".
+    // see phase 64 manual smoke as "page scrolls when drawer closes".
     goto(buildListRoute(activeElectionId, _urlPlural ?? _pluralForActiveType()), { noScroll: true });
   }
 
@@ -310,7 +310,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
 
 {#if Object.values(voterCtx.nominationsAvailable).some(Boolean)}
   <!--
-    DRAWER-FIRST SOURCE ORDER (D-10, Open Question 4 RESOLVED — cheapest-first).
+    DRAWER-FIRST SOURCE ORDER (Open Question 4 RESOLVED — cheapest-first).
     Rendered before MainContent so that on a cold deeplink the drawer paints
     before the list container below it (the list carries
     `content-visibility: auto` so the browser defers its layout/paint until
@@ -367,7 +367,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
     {#snippet fullWidth()}
       <!--
         LIST CONTAINER — `content-visibility: auto` defers layout/paint until
-        scrolled into view (D-10, Open Question 4 RESOLVED). Renders AFTER the
+        scrolled into view (Open Question 4 RESOLVED). Renders AFTER the
         drawer block above in source order so the drawer wins the paint race
         on cold deeplinks.
       -->
@@ -396,7 +396,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
                       : activeEntityType === 'alliance'
                         ? 'voter-results-alliance-section'
                         : undefined}>
-                  <!-- {#key}: keep — scope-tuple change (Phase 62 D-14) discards per-scope filter UI state; without remount, EntityListWithControls would carry filter selections from one election:entityType context into the next. -->
+                  <!-- {#key}: keep — scope-tuple change (see phase 62) discards per-scope filter UI state; without remount, EntityListWithControls would carry filter selections from one election:entityType context into the next. -->
                   {#key `${activeElectionId}:${activeEntityType}`}
                     <h3 class="my-lg mx-10 text-xl">
                       {t(`results.${activeEntityType}.numShown`, { numShown: activeMatches.length })}

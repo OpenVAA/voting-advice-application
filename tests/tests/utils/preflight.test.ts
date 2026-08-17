@@ -9,7 +9,7 @@ import type { Server } from 'http';
 import type { AddressInfo } from 'net';
 
 /**
- * Unit tests for the E2E served-application preflight (Phase 137).
+ * Unit tests for the E2E served-application preflight (see phase 137).
  *
  * They live in `tests/utils/` rather than next to the module in `tests/support/`
  * because this directory is the repo's wired-up vitest location — `tests/vitest.config.ts`

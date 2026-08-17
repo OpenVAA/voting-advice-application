@@ -1,5 +1,5 @@
 /**
- * Shared "not-located 2-election / 2-CG" dataset shape (Phase 140 review
+ * Shared "not-located 2-election / 2-CG" dataset shape (see phase 140 review
  * IN-04).
  *
  * Topology: 2 elections with 2 disjoint CGs × 2 COs each.
@@ -10,7 +10,7 @@
  * to render — `getImpliedElectionIds` cannot auto-imply with 2 elections
  * having disjoint constituency groups. Two consumers need this EXACT shape
  * under DIFFERENT, mutually-disjoint `externalIdPrefix`es (so their teardown
- * projects never race on the same before/after row counts — Phase 140
+ * projects never race on the same before/after row counts — see phase 140
  * CR-01):
  *
  *  - `perm-not-located-2e2cg` — the voter-not-located-redirect spec's
@@ -57,7 +57,7 @@ export function buildNotLocated2e2cgTemplate(prefix: string, labelToken = ''): T
   // CONVENTION, not a dataset identity — twelve templates emit `[EL1]`. A
   // consumer whose dataset can be live in the DB alongside another perm
   // dataset MUST pass a token so its labels are unique, or a label-based
-  // locator silently resolves to the wrong row (Phase 140 WR-03: appending
+  // locator silently resolves to the wrong row (see phase 140 WR-03: appending
   // bank-auth to the chain tail made `[EL1]` resolve to 2 elements and
   // correctly failed the journey's identity assertion).
   const T = labelToken;

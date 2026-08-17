@@ -1,5 +1,5 @@
 /**
- * voter-nominations (UNBLK-04 rider) — the unscoped all-nominations route
+ * voter-nominations (rider) — the unscoped all-nominations route
  * renders its entity list on the base dataset.
  *
  * Read-only LEAF spec on `data-setup-base` (`e2e/base`). The `/nominations`
@@ -9,11 +9,11 @@
  * So a DIRECT `page.goto` reaches it for a fresh leaf context (the raw-goto
  * idiom mirrors `perm-hide-all-nominations.spec.ts`).
  *
- * This is a DEDICATED spec per D-01 — NOT a voter-journey step. The old
- * commented journey step (removed by plan 130-03) used soft assertions; this
+ * This is a DEDICATED spec per — NOT a voter-journey step. The old
+ * commented journey step (removed by) used soft assertions; this
  * spec carries HARD assertions only.
  *
- * Seed is ASSERT-ONLY (D-04): no dev-seed or product files are modified.
+ * Seed is ASSERT-ONLY: no dev-seed or product files are modified.
  *
  * ## Rigidity contract (project E2E Hard Rule)
  *

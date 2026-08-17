@@ -290,7 +290,7 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
 
           <!--
             If there are multiple applicable elections, show the implied constituency for each — but ONLY once a
-            constituency has actually been selected. Phase 134 / D-17 Option A: this block previously rendered
+            constituency has actually been selected. see phase 134 Option A: this block previously rendered
             pre-selection as an em-dash placeholder dimmed to 30% opacity by a global dimming utility (since
             deleted from app.css — this was its only consumer). That composited `text-secondary` down to 1.52:1
             light / 1.46:1 dark, failing WCAG 2.1 AA colour contrast. Opacity is a steady state, so no scan-timing

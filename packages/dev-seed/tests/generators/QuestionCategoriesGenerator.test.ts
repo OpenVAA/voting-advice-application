@@ -1,8 +1,8 @@
 /**
  * QuestionCategoriesGenerator unit tests.
  *
- * D-22 acceptance (a)–(e) + default `category_type: 'opinion'` spot-check
- * (RESEARCH §4.12). The `_elections` join sentinel is populated by Plan 07's
+ * acceptance (a)–(e) + default `category_type: 'opinion'` spot-check
+ * (RESEARCH). The `_elections` join sentinel is populated by Plan 07's
  * post-topo pass; generator output here is sentinel-free.
  */
 

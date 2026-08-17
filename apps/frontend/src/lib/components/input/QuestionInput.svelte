@@ -125,7 +125,7 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
     return props;
   });
 
-  // Props for the MultipleText row-list input (Array<string>, D-01). Reads the
+  // Props for the MultipleText row-list input (Array<string>). Reads the
   // same question + customData sources as the Input path; minItems/maxItems come
   // from the plan-02 customData keys via `getCustomData`.
   const multipleTextProps = $derived.by(() => {

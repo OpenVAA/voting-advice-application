@@ -1,5 +1,5 @@
 /**
- * @file trackingIntercept fixture (EFLOW-08).
+ * @file trackingIntercept fixture.
  *
  * Shared, cross-app function-fixture that captures the analytics events the
  * app emits at the Umami boundary — WITHOUT any real network to

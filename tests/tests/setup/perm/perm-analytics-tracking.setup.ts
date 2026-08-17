@@ -1,5 +1,5 @@
 /**
- * perm-analytics-tracking data-setup project (EFLOW-08, D-01).
+ * perm-analytics-tracking data-setup project.
  *
  * Invokes setupFromTemplate('perm-analytics-tracking'). UNAUTHENTICATED — the
  * voter-prefs-tracking spec (Plan 06) exercises the voter flow (answer →

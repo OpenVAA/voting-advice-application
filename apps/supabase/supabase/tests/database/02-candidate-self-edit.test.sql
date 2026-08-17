@@ -1,4 +1,4 @@
--- 02-candidate-self-edit.test.sql: QUAL-02 candidate own-record access
+-- 02-candidate-self-edit.test.sql: candidate own-record access
 --
 -- Verifies that a candidate can read and update their own record,
 -- cannot read/update/insert/delete other candidates' records, and

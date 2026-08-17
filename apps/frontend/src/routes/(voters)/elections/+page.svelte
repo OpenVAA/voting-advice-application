@@ -25,13 +25,13 @@ See `+page.ts` for possible redirects.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // Phase 61-03 voter-side parallel fix: read selectedConstituencies +
+  // see phase 61 voter-side parallel fix: read selectedConstituencies +
   // selectedElections via voterCtx.X (live $state) rather than destructured
   // snapshots. Stable stores/functions (appSettings, dataRoot, getRoute, t)
   // remain destructured.
   const voterCtx = getVoterContext();
   const { getRoute, t } = voterCtx;
-  // appSettings/dataRoot are reactive accessors (Phase 113 flatten) — read via voterCtx.X, never destructure.
+  // appSettings/dataRoot are reactive accessors (see phase 113 flatten) — read via voterCtx.X, never destructure.
   const appSettings = $derived(voterCtx.appSettings);
 
   ////////////////////////////////////////////////////////////////////
@@ -83,7 +83,7 @@ See `+page.ts` for possible redirects.
   async function handleSubmit(): Promise<void> {
     if (!canSubmit) return;
     const electionId = Array.from(selected);
-    // CLEAN-02 (Phase 78 Plan 02): forward the deferred-target `?next=`
+    // (see phase 78 Plan 02): forward the deferred-target `?next=`
     // parameter through to the constituency selector so the final selector
     // step can resume the originally-requested route. `next` is NOT a
     // persistent search param (see params.ts PERSISTENT_SEARCH_PARAMS), so

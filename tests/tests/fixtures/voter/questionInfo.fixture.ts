@@ -1,5 +1,5 @@
 /**
- * @file questionInfo fixture (voter — EPERM-07).
+ * @file questionInfo fixture (voter).
  *
  * Function-fixture exposing the extended-question-info readers consumed by the
  * Phase-120 EPERM specs: `expectInfoMode`, `expectInfoSections`,
@@ -133,8 +133,8 @@ export function createQuestionInfo(page: Page): QuestionInfoFixture {
       // QuestionExtendedInfo.svelte:58), so each section is an exact-match
       // distinct testid — NOT a `.nth(index)` slice of a shared base testid.
       // Playwright's `getByTestId` is an exact match, so the base
-      // `voter-questions-info-section` never matches `…-section-0` (Phase 120-01
-      // trace-confirmed fixture/component mismatch; see 120-01-PROBE-DIAGNOSIS.md).
+      // `voter-questions-info-section` never matches `…-section-0` (see phase 120
+      // trace-confirmed fixture/component mismatch; see).
       for (const index of sections) {
         await expect(page.getByTestId(`${testIds.voter.questions.infoSection}-${index}`)).toBeVisible();
       }

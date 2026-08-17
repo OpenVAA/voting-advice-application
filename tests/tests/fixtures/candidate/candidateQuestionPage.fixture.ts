@@ -85,7 +85,7 @@ export function createCandidateQuestionPage(page: Page) {
     },
 
     /**
-     * Answer the CURRENT opinion question type-aware (Phase 129 D-12), scoped to
+     * Answer the CURRENT opinion question type-aware (see phase 129), scoped to
      * `questionId` (the DB id from the URL) so a mid-transition read never
      * touches the OUTGOING question's stale (detaching) choices:
      *   - number-scale → focus the native slider + press End (exact max).
@@ -118,7 +118,7 @@ export function createCandidateQuestionPage(page: Page) {
         // min/max window; radio needs 1.
         const isCheckbox = (await scopedChoices.first().getAttribute('type')) === 'checkbox';
         if (isCheckbox) {
-          // Phase 135 GUARD-01: select the SMALLEST VALID count instead of a
+          // see phase 135: select the SMALLEST VALID count instead of a
           // hard-coded 2. The base seed now carries TWO multi-choice opinion
           // questions with DIFFERENT windows (base-7 → 2..3, base-8 → exactly
           // 1), so 2 clicks is over-max on base-8 and leaves Save permanently

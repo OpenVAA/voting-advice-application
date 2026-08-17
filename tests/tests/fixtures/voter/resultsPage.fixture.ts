@@ -215,7 +215,7 @@ export function createResultsPage(page: Page) {
     },
 
     /**
-     * Org-match-score readout (EPERM-10). Asserts the match-score callout for
+     * Org-match-score readout. Asserts the match-score callout for
      * the organization/party card matching `target` is visible, and returns its
      * value as an integer percentage so the spec can assert the EXACT per-mode
      * score (the org-matching mode produces a distinguishable score per mode —
@@ -224,7 +224,7 @@ export function createResultsPage(page: Page) {
      * Reads the RESULTS-LIST card callout (`testIds.voter.results.matchScore`,
      * rendered by MatchScore.svelte as the "<n>%" header readout) scoped to the
      * matched card — NOT the `score-gauge` testid, which only renders inside the
-     * entity-details SubMatches drawer (trace-confirmed in 120-01-PROBE-DIAGNOSIS.md).
+     * entity-details SubMatches drawer (trace-confirmed in).
      * The target card scopes the callout; no org-scoped disambiguation id is needed.
      */
     async expectOrgMatchScore(target: Target): Promise<number> {
@@ -238,7 +238,7 @@ export function createResultsPage(page: Page) {
     },
 
     /**
-     * Per-category sub-match reader (EFLOW-04, optional encapsulation).
+     * Per-category sub-match reader (optional encapsulation).
      *
      * Opening an entity-details view renders a `sub-matches`
      * (`testIds.voter.results.subMatches`) container holding one

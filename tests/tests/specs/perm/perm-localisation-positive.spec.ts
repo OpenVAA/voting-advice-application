@@ -92,7 +92,7 @@ test.use({
   storageState: { cookies: [], origins: [] }
 });
 
-// EFLOW-06: in-flight answer/selection-state preserved across fi→en→fi.
+// in-flight answer/selection-state preserved across fi→en→fi.
 //
 // Module-scope helper so the per-switch assertions live OUTSIDE the test body's
 // loop (playwright/no-standalone-expect + no-conditional-in-test): asserts the
@@ -450,7 +450,7 @@ test.describe('perm-localisation-positive', () => {
     await expect(opinionsTabFi).toContainText('[fi-answer-q3]');
   });
 
-  // EFLOW-06: in-flight answer/selection-state preserved across fi→en→fi.
+  // in-flight answer/selection-state preserved across fi→en→fi.
   //
   // The pre-answer home-page locale switch above (Step 2) only proves UI
   // STRINGS re-localise. The net-new coverage here is the IN-FLIGHT

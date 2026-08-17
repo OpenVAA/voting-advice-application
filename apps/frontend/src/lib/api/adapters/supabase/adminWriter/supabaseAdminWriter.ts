@@ -12,7 +12,7 @@ import type { InsertJobResultOptions, SetQuestionOptions } from '$lib/api/base/d
  * - Admin job result storage (admin_jobs table)
  * - Email sending (send-email Edge Function)
  *
- * TODO: Rename to something more descriptive (see WAUTH-01 future requirement).
+ * TODO: Rename to something more descriptive (future requirement).
  */
 export class SupabaseAdminWriter extends supabaseAdapterMixin(UniversalAdapter) {
   /**

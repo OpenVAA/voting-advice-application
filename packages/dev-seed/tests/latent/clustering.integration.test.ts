@@ -1,5 +1,5 @@
 /**
- * Phase 57 clustering integration test (D-57-17 / D-57-18 / Success Criterion 5).
+ * see phase 57 clustering integration test (Success Criterion 5).
  *
  * Headline test: synthetic candidates generated via the latent emitter cluster
  * by party more tightly than they cluster across parties. With 4 parties × 10
@@ -172,7 +172,7 @@ describe('Clustering integration (D-57-17 / D-57-18 / Success Criterion 5)', () 
     expect(Number.isFinite(meanInter)).toBe(true);
     expect(meanInter).toBeGreaterThan(0);
     // ======================================================================
-    // D-57-17 headline assertion — W2 lock: the `< 0.5` threshold is a HARD
+    // headline assertion — W2 lock: the `< 0.5` threshold is a HARD
     // acceptance criterion. It MUST NOT be lowered by the test author to ship
     // green. If this assertion fails at `seed: 42`, the bug is in the
     // implementation (loadings too random, noise too high, spread too wide,

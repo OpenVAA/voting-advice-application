@@ -166,7 +166,7 @@ export function defaultAnswerForQuestion(question: Record<string, unknown>, full
     return { value: true };
   }
   if (type === 'number') {
-    // D-16: the backend validate_answer_value 'number' branch requires a JSON
+    // the backend validate_answer_value 'number' branch requires a JSON
     // number. Return the midpoint of the question's min/max (read from
     // custom_data, falling back to top-level min/max), else 0. Never a string.
     const cd = (question.custom_data ?? {}) as Record<string, unknown>;
@@ -180,7 +180,7 @@ export function defaultAnswerForQuestion(question: Record<string, unknown>, full
     return { value: 0 };
   }
   if (type === 'multipleChoiceCategorical') {
-    // D-16: the validate_answer_value 'multipleChoiceCategorical' branch requires
+    // the validate_answer_value 'multipleChoiceCategorical' branch requires
     // an array of valid choice ids — a scalar choice id is invalid. Return the
     // first max(minSelections ?? 1, 1) choice ids.
     const mcChoices = question.choices as Array<{ id: string }> | undefined;

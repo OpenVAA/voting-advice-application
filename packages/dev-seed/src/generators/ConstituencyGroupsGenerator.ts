@@ -1,12 +1,12 @@
 /**
  * ConstituencyGroupsGenerator — foundation generator for `constituency_groups`.
  *
- * Standard DataObject scaffolding (RESEARCH §4.4): `project_id` is the only
+ * Standard DataObject scaffolding (RESEARCH): `project_id` is the only
  * required column; no content FKs to other generated rows. The constituencies
- * join sentinel (see RESEARCH §4.4) is populated by Plan 07's post-topo pass
+ * join sentinel (see RESEARCH) is populated by Plan 07's post-topo pass
  * once every generator has run (same two-pass pattern as ElectionsGenerator).
  *
- * D-04/D-26/D-08 + GEN-02/GEN-04 apply — see ElectionsGenerator.ts for the
+ * apply — see ElectionsGenerator.ts for the
  * canonical-pattern rationale.
  */
 
@@ -18,7 +18,7 @@ export type ConstituencyGroupsFragment = Fragment<TablesInsert<'constituency_gro
 export class ConstituencyGroupsGenerator {
   constructor(private ctx: Ctx) {}
 
-  // Phase 56 ignores ctx here; Phase 57/58 generators read ctx.refs to scale counts.
+  // see phase 56 ignores ctx here; see phase 57/58 generators read ctx.refs to scale counts.
 
   defaults(ctx: Ctx): ConstituencyGroupsFragment {
     return { count: 1 };

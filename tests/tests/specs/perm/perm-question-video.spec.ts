@@ -1,5 +1,5 @@
 /**
- * perm-question-video (EPERM-06) — question-media video toggles.
+ * perm-question-video — question-media video toggles.
  *
  * Two slices:
  *
@@ -103,13 +103,13 @@ test.describe('perm-question-video (voter visibility matrix — unauthenticated)
   });
 });
 
-// EFLOW-11 D-03: video renders on mobile.
+// video renders on mobile.
 //
 // A SCOPED mobile-viewport sub-test — `test.use` is INSIDE its own describe so
 // the 390×844 isMobile/hasTouch descriptor NEVER leaks to the sibling
 // unauthenticated/authenticated slices above (a file-scope test.use would flip
 // the whole spec to mobile). Asserts the per-question Video media still renders
-// on the q1 question at the mobile viewport, reusing the EPERM-06 voter
+// on the q1 question at the mobile viewport, reusing the voter
 // visibility assertion adapted to mobile.
 test.describe('mobile viewport smoke', () => {
   test.describe.configure({ mode: 'serial' });

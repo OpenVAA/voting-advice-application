@@ -1,7 +1,7 @@
 /**
  * QuestionsGenerator unit tests.
  *
- * D-22 acceptance (a)–(e) + per-type choices contract (RESEARCH §4.13 /
+ * acceptance (a)–(e) + per-type choices contract (RESEARCH
  * validate_question_choices trigger, migration lines 645–689):
  *   - singleChoiceOrdinal → choices present, ≥2 entries with string `id`
  *   - singleChoiceCategorical → choices present

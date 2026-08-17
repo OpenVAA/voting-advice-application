@@ -1,13 +1,13 @@
 /**
- * perm-show-feedback-survey data-setup project (EPERM-09).
+ * perm-show-feedback-survey data-setup project.
  *
  * Invokes setupFromTemplate('show-feedback-survey'). UNAUTHENTICATED — the spec
  * asserts on the voter intro (Banner.svelte header-feedback testid) and the
  * results-view feedback/survey popups; it does not need a candidate session.
  *
- * Renamed from perm-header-show-feedback (Phase 120-07): the dev-seed registry
+ * Renamed from perm-header-show-feedback (see phase 120): the dev-seed registry
  * key was renamed perm-header-show-feedback → show-feedback-survey in Phase 119
- * (index.ts:89); Plan 120-07 completes the test-layer rename (git mv of
+ * (index.ts:89); completes the test-layer rename (git mv of
  * spec/setup/teardown + the project triple + re-pointed downstream show-help
  * dependency) and extends the spec with the survey/feedback popup-coordination
  * assertions.

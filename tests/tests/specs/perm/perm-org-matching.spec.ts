@@ -1,5 +1,5 @@
 /**
- * @file perm-org-matching.spec.ts — EPERM-10 perm-chain spec.
+ * @file perm-org-matching.spec.ts — perm-chain spec.
  *
  * Asserts the `matching.organizationMatching` matrix (none / answersOnly /
  * impute) against the `perm-org-matching` dataset (seeded by the
@@ -27,7 +27,7 @@
  *   - impute      → 67% — member-candidate answers are imputed into the org's
  *                   blanks (and own answers), producing a non-zero score that is
  *                   DISTINCT from the `none`/`answersOnly` 0%. This is the
- *                   EPERM-10 distinguishability signal at the score layer.
+ *                   distinguishability signal at the score layer.
  *
  * SECONDARY: the /en/about org-matching disclosure block distinguishes all
  * three modes at the disclosure layer — ABSENT under `none`, PRESENT under
@@ -110,7 +110,7 @@ test.describe('perm-org-matching (EPERM-10)', () => {
     await resultsPage.selectEntityTab('orgs');
 
     // PRIMARY: member answers are imputed into OR1 → a non-zero 67% score that is
-    // DISTINCT from the 0% of `none`/`answersOnly` (the EPERM-10 distinguishability
+    // DISTINCT from the 0% of `none`/`answersOnly` (the distinguishability
     // signal at the score layer).
     const score = await resultsPage.expectOrgMatchScore(ORG1);
     expect(score, 'impute org match score').toBe(SCORE_IMPUTE);

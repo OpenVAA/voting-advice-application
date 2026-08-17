@@ -1,5 +1,5 @@
 /**
- * perm-access-disable data-teardown project (EPERM-11, consolidated).
+ * perm-access-disable data-teardown project (consolidated).
  *
  * Scoped to PREFIX='e2e-perm-access-disable-' (matches the template's own externalIdPrefix).
  */

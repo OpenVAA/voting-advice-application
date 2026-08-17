@@ -1,5 +1,5 @@
 /**
- * perm-question-video data-setup project (EPERM-06).
+ * perm-question-video data-setup project.
  *
  * Invokes setupFromTemplate('perm-question-video') then mints a per-perm
  * Playwright storage-state JSON via real `forceRegister` + real UI login through

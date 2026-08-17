@@ -2,22 +2,22 @@
  * @openvaa/dev-seed pipeline orchestrator.
  *
  * `runPipeline(template, overrides?, ctx?)` drives all 14 generators in a
- * topological order, populates `ctx.refs` between steps, bridges the D-25
- * `(fragment, ctx) => Rows[]` override signature with the D-26 class-based
+ * topological order, populates `ctx.refs` between steps, bridges the
+ * `(fragment, ctx) => Rows ` override signature with the class-based
  * built-in generators, and performs a post-topo sentinel enrichment pass.
  *
- * D-06 topo order with one Phase 56 refinement — `question_categories` /
+ * topo order with one see phase 56 refinement — `question_categories` /
  * `questions` run BEFORE `candidates` so `ctx.refs.questions` is populated
- * when CandidatesGenerator's answer emitter (D-27 seam) iterates questions.
+ * when CandidatesGenerator's answer emitter (seam) iterates questions.
  * This diverges from `bulk_import`'s own `processing_order` (migration line
  * 2751), which runs `candidates` before `question_categories`. The database
  * does not care about the `ctx.refs.questions` contract; the pipeline does.
  *
- * D-08: every generator's `generate(fragment)` receives a fragment formed by
+ * every generator's `generate(fragment)` receives a fragment formed by
  *       `{ ...gen.defaults(ctx), ...(template[table] ?? {}) }` so the template
  *       wins field-by-field over the generator's smart defaults.
  *
- * D-25 + D-26 bridge:
+ * bridge:
  *   const gen = new Gen(ctx);
  *   const fragment = { ...gen.defaults(ctx), ...(template[table] ?? {}) };
  *   const rows = overrides[table]?.(fragment, ctx) ?? gen.generate(fragment);
@@ -36,7 +36,7 @@
  * themselves stay simple and each sentinel is computed from the FINAL ref
  * graph — not the partial mid-topo state. `bulkImport` strips these
  * `_`-prefixed fields before the RPC; `linkJoinTables` re-reads them from
- * the same dataset in a second pass (RESEARCH §2).
+ * the same dataset in a second pass (RESEARCH).
  */
 
 import { buildCtx } from './ctx';
@@ -60,18 +60,18 @@ import type { Ctx, Overrides, Template } from './types';
 /**
  * Topological order of generator execution.
  *
- * Source: D-06 (`bulk_import`'s `processing_order`, migration line 2751) with a
- * Phase 56 refinement — `question_categories` / `questions` run BEFORE
+ * Source: (`bulk_import`'s `processing_order`, migration line 2751) with a
+ * see phase 56 refinement — `question_categories` / `questions` run BEFORE
  * `candidates` so `ctx.refs.questions` is populated when the answer emitter
- * (D-27 seam) iterates questions.
+ * (seam) iterates questions.
  *
- * Accounts and projects lead the order: they are pass-through per D-11 (the
+ * Accounts and projects lead the order: they are pass-through per (the
  * seed.sql bootstrap owns those rows). Keeping them in the ordering means the
  * pipeline's generator-class map does not need a special branch for
  * bootstrap-only tables.
  *
  * `feedback` runs last — no downstream ref consumers; writer routes it
- * separately per D-11.
+ * separately.
  */
 export const TOPO_ORDER = [
   'accounts',
@@ -83,7 +83,7 @@ export const TOPO_ORDER = [
   'alliances',
   'factions',
   'question_categories',
-  'questions', // before candidates — Phase 56 refinement of D-06 for the D-27 seam
+  'questions', // before candidates — see phase 56 refinement for the seam
   'candidates', // reads ctx.refs.questions for the answer emitter
   'nominations',
   'app_settings',
@@ -94,8 +94,8 @@ export type TableName = (typeof TOPO_ORDER)[number];
 
 /**
  * Shared shape every generator class satisfies. The pipeline instantiates each
- * class once with `ctx` captured at construction (D-26), then calls
- * `generate(fragment)`. Each class also exposes `defaults(ctx)` (D-08).
+ * class once with `ctx` captured at construction, then calls
+ * `generate(fragment)`. Each class also exposes `defaults(ctx)`.
  *
  * `fragment` / rows are typed at `unknown` / `Record<string, unknown>` on the
  * boundary because different generator classes consume narrower `Fragment<T>`
@@ -134,18 +134,18 @@ const GENERATOR_CLASSES: Record<TableName, GeneratorClass> = {
  * Run the full seeding pipeline.
  *
  * @param template Validated Template (run `validateTemplate()` first to surface
- *        TMPL-09 field-path errors cleanly; `runPipeline` does not re-validate).
+ *        field-path errors cleanly; `runPipeline` does not re-validate).
  * @param overrides Optional `{ [table]: (fragment, ctx) => Rows[] }` map per
- *        D-25. An override fully REPLACES the built-in generator's output for
- *        that table (GEN-03, D-05).
+ *        An override fully REPLACES the built-in generator's output for
+ *        that table.
  * @param ctx Optional pre-built ctx — useful for tests that want to inject a
- *        deterministic logger or a custom `ctx.answerEmitter` (D-27 seam for
- *        Phase 57's latent-factor emitter). Defaults to `buildCtx(template)`.
+ *        deterministic logger or a custom `ctx.answerEmitter` (seam for
+ *        see phase 57's latent-factor emitter). Defaults to `buildCtx(template)`.
  *
  * @returns An object keyed by table name; each value is the full array of rows
  *          emitted for that table. Writer consumes this object directly.
  *
- * D-25 override signature + D-26 class bridge:
+ * override signature class bridge:
  * ```ts
  * const gen = new Gen(ctx);
  * const fragment = { ...gen.defaults(ctx), ...(template[table] ?? {}) };
@@ -158,7 +158,7 @@ const GENERATOR_CLASSES: Record<TableName, GeneratorClass> = {
  *   - `_elections` on every question_category row
  *
  * `bulkImport` strips these `_`-prefixed fields before the RPC; `linkJoinTables`
- * re-reads them from the same dataset in a second pass (RESEARCH §2).
+ * re-reads them from the same dataset in a second pass (RESEARCH).
  */
 export function runPipeline(
   template: Template,
@@ -168,11 +168,11 @@ export function runPipeline(
   const output: Record<string, Array<Record<string, unknown>>> = {};
   const templateFragments = template as unknown as Record<string, unknown>;
 
-  // D-27 seam: install the Phase 57 latent emitter unless a caller has already
-  // wired a custom one (test-injection path). `??=` preserves Phase 56 behavior
+  // seam: install the Phase 57 latent emitter unless a caller has already
+  // wired a custom one (test-injection path). `??=` preserves see phase 56 behavior
   // for tests that pre-set ctx.answerEmitter on an externally-supplied ctx.
   // The latent emitter internally falls back to `defaultRandomValidEmit` for:
-  //   - non-ordinal / non-choice question types (D-57-10)
+  //   - non-ordinal / non-choice question types
   //   - candidates missing an organization ref (Pitfall 4)
   ctx.answerEmitter ??= latentAnswerEmitter(template);
 
@@ -183,9 +183,9 @@ export function runPipeline(
     const templateFragment = (templateFragments[table] ?? {}) as Record<string, unknown>;
     const fragment = { ...fragmentBase, ...templateFragment };
 
-    // D-25 override signature + D-26 class bridge.
+    // override signature class bridge.
     // `overrides[table]?.(fragment, ctx)` fully replaces the built-in output
-    // for that table (GEN-03 + D-05). Falls back to the class-based built-in.
+    // for that table. Falls back to the class-based built-in.
     const rows = overrides[table]?.(fragment, ctx) ?? gen.generate(fragment);
 
     output[table] = rows;
@@ -208,7 +208,7 @@ export function runPipeline(
  * Attach `_`-prefixed sentinel fields to the rows that need them.
  *
  * `bulkImport` strips these before sending to the RPC; `linkJoinTables` re-reads
- * them from the SAME input dataset in a second pass (RESEARCH §2).
+ * them from the SAME input dataset in a second pass (RESEARCH).
  *
  * Sentinels:
  *   - `election._constituencyGroups = { externalId: [...constituency_group extIds] }`
