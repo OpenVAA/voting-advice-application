@@ -15,7 +15,9 @@ segment_overlap_files: 459
 partition_total_files: 4255
 identity_verified: true
 taxonomy_conforming: true
-status: dry-run-proven
+status: operator-approved
+operator_approved: true
+operator_approved_date: 2026-08-17
 ---
 
 # Phase 151 — Stack Manifest
@@ -26,6 +28,34 @@ partition the merge target completely (catch-all `files=0`), with every off-diag
 
 Machine-readable source: [`slices.tsv`](slices.tsv). **No plan hard-codes a pathspec** — every later
 slice-cutting plan reads column 4 of that file.
+
+## Operator approval — 2026-08-17
+
+**The split below is APPROVED as recorded.** The operator read the slice table against criterion 6's
+own question ("does the title describe every file in it, without an *and also*?") and re-opened
+nothing. Approved explicitly:
+
+- the **459-file segment-overlap resolution** — path-partitioning within the chronological framing,
+  zero files shown to a reviewer in two content versions. **D-09 stays closed.**
+- the **01a / 01b split of PR #1**, at the cost of one PR of the 8–12 budget.
+- both **unrequested boundary moves**: `hooks.server.ts` and the six other `src/` shell files into
+  slice 07; the E2E fixture image into slice 04. And `CLAUDE.md` into slice 11 per D-15.
+- the **seven render-budget-exceeding slices**, including slice 11 as unreadable-by-design (D-12).
+
+Both flagged findings are **accepted as recorded, not waived**: the `jest.config.json` dropped-*finding*
+class stays a standing instruction for 151-06, and criterion 4.4's proxy stays a standing instruction
+for 151-17.
+
+**One note raised for the record, explicitly not for re-partitioning.** Slice 10 ("repo plumbing",
+37 files) is the row a reviewer is most likely to challenge as *"this is three things"*. It is
+approved as-is. The obligation this creates is on the **PR body**, not on the partition:
+
+> **Standing instruction for the plan that writes `pr-bodies/11.md` (slice 10).** The justification
+> under "Four partition corrections … § 2" below must reach a reviewer who arrives at that PR cold,
+> in the PR body itself — not by reference to a planning artifact they will not open. Name the three
+> contested files (`apps/frontend/README.md`, the two dead codemods, `tsconfig.tsbuildinfo`), say why
+> each is plumbing, and state the rule that a README is reviewed with the thing it documents (which
+> is also why `packages/*/README.md` are in slice 02). **Do not re-partition slice 10.**
 
 ## The slice table
 
