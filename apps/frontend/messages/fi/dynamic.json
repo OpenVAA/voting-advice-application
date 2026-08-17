@@ -1,0 +1,132 @@
+{
+  "dynamic": {
+    "about": {
+      "heroEmoji": "⚙️"
+    },
+    "appName": "Vaalikone",
+    "candidateAppBasicInfo": {
+      "immutableData": {
+        "title": "Henkilötiedot",
+        "ingress": "Nimesi ja eräät muut tiedot on täytetty valmiiksi tai täydennetään, kun vaaliluettelot vahvistetaan. Et voi itse muuttaa näitä tietoja, mutta jos tiedoissa on virheitä, ota yhteyttä ehdokastukeen.",
+        "emptyPlaceholder": "Vaaliluettelon mukaan"
+      }
+    },
+    "candidateAppName": "Ehdokkaiden vaalikone",
+    "candidateAppNotAccessible": {
+      "content": "Ehdokkaiden vaalikonetta ei ole vielä julkaistu. Palaa tähän osoitteeseen, kun se on käytettävissä.",
+      "title": "Pahoittelut, ehdokkaiden vaalikone ei ole vielä käytössä"
+    },
+    "candidateAppPrivacy": {
+      "heroEmoji": "🛡️",
+      "consent": {
+        "acceptLabel": "Hyväksyn tietojeni tallentamisen ja käytön käyttöehtojen mukaisesti.",
+        "heroEmoji": "🖋️",
+        "ingress": "Sinun on hyväksyttävä käyttöehdot ennen kuin voit jatkaa profiilisi täyttämistä. Lue ne huolellisesti ja rastita alla oleva ruutu.",
+        "title": "Käyttöehdot"
+      },
+      "registryStatement": {
+        "content": "<h3>1. Rekisterinpitäjä</h3><p>DATA_CONTROLLER</p><h3>2. Rekisteristä vastaava yhteyshenkilö</h3><p>DATA_CONTACT_PERSON, <a href=\"mailto:first.last@openvaa.org\">first.last@openvaa.org</a>.</p><h3>3. Rekisterin nimi</h3><p>{appName} - ehdokastietojärjestelmä.</p><h3>4. Oikeusperuste ja henkilötietojen käsittelyn tarkoitus</h3><p>EU:n yleisen tietosuoja-asetuksen mukainen oikeusperuste henkilötietojen käsittelylle on henkilön suostumus. Henkilötietojen käsittelyn tarkoitus on käyttö vaalikoneessa.</p><h3>5. Rekisterin tietosisältö</h3><p>Rekisteriin tallennettavia tietoja ovat: henkilön nimi, puoluetausta, sähköpostisoite, syntymäaika, www-sivustojen osoitteet, sosiaalisen median profiilien osoitteet, muut vapaaehtoiset vastaukset vaalikoneen kysymyksiin sekä julkisista vaaliluetteloista saatavat tiedot.</p><p>DATA_STORAGE_TERM_EG_5_YRS</p><p>Palvelun toiminnoille välttämättömiä evästeitä käsitellään oikeutetun edun perusteella mm. tietoturvasta huolehtimiseksi.</p><h3>6. Säännönmukaiset tietolähteet</h3><p>Rekisteriin tallennettavat tietoja saadaan ehdokkailta verkkolomakkeen kautta, heidän pankkitunnistautumisensa yhteydessä sekä julkisista vaaliluetteloista.</p><h3>7. Tietojen säännönmukaiset luovutukset ja tietojen siirto EU:n tai ETA:n ulkopuolelle</h3><p>Tietoja ei luovuteta säännönmukaisesti muille tahoille, mutta vaalikoneen julkaisun päätyttyä tietoja saatetaan käyttää tutkimustarkoituksiin ja vaalikoneen kehittämiseen.</p><h3>8. Rekisterin suojauksen periaatteet</h3><p>Rekisterin käsittelyssä noudatetaan huolellisuutta ja tietojärjestelmien avulla käsiteltävät tiedot suojataan asianmukaisesti. Kun rekisteritietoja säilytetään Internet-palvelimilla, niiden laitteiston fyysisestä ja digitaalisesta tietoturvasta huolehditaan asiaankuuluvasti. Rekisterinpitäjä huolehtii siitä, että tallennettuja tietoja sekä palvelimien käyttöoikeuksia ja muita henkilötietojen turvallisuuden kannalta kriittisiä tietoja käsitellään luottamuksellisesti ja vain niiden työntekijöiden toimesta, joiden työnkuvaan se kuuluu.</p><h3>9. Tarkastusoikeus ja oikeus vaatia tiedon korjaamista</h3><p>Jokaisella rekisterissä olevalla henkilöllä on oikeus tarkistaa rekisteriin tallennetut tietonsa ja vaatia mahdollisen virheellisen tiedon korjaamista tai puutteellisen tiedon täydentämistä. Mikäli henkilö haluaa tarkistaa hänestä tallennetut tiedot tai vaatia niihin oikaisua, pyyntö tulee lähettää sähköpostitse rekisterinpitäjälle. Rekisterinpitäjä voi pyytää tarvittaessa pyynnön esittäjää todistamaan henkilöllisyytensä. Rekisterinpitäjä vastaa asiakkaalle EU:n tietosuoja-asetuksessa säädetyssä ajassa.</p><h3>10. Muut henkilötietojen käsittelyyn liittyvät oikeudet</h3><p>Rekisterissä olevalla henkilöllä on oikeus pyytää häntä koskevien henkilötietojen poistamiseen rekisteristä (”oikeus tulla unohdetuksi”). Niin ikään rekisteröidyillä on muut EU:n yleisen tietosuoja-asetuksen mukaiset oikeudet, kuten henkilötietojen käsittelyn rajoittaminen tietyissä tilanteissa. Pyynnöt tulee lähettää sähköpostitse rekisterinpitäjälle. Rekisterinpitäjä voi pyytää tarvittaessa pyynnön esittäjää todistamaan henkilöllisyytensä. Rekisterinpitäjä vastaa asiakkaalle EU:n tietosuoja-asetuksessa säädetyssä ajassa.</p>",
+        "title": "Rekisteri- ja tietosuojaseloste"
+      },
+      "otherTermsOfUse": {
+        "content": "",
+        "title": "Muut käyttöehdot"
+      }
+    },
+    "constituencies": {
+      "heroEmoji": "📍",
+      "ingress": {
+        "multipleElections": "Ehdokkaat ja puolueet on jaettu vaalipiireihin. Valitse vaalipiirisi kullekin vaalille.",
+        "singleElection": "Ehdokkaat ja puolueet on jaettu vaalipiireihin. Voit äänestää vain oman vaalipiirisi ehdokkaita.",
+        "singleGroup": "Ehdokkaat ja puolueet on jaettu vaalipiireihin. Valitse vaalipiiri alta."
+      }
+    },
+    "elections": {
+      "heroEmoji": "🗳️",
+      "ingress": {
+        "multipleElections": "Valitse ne vaalit, joiden ehdokkaita tai puolueita haluat löytää.",
+        "singleElection": "Valitsemassasi vaalipiirissä järjestetään vain yhdet vaalit."
+      }
+    },
+    "error": {
+      "heroEmoji": "🙊"
+    },
+    "frontPage": {
+      "ingress": "Vaalikoneen avulla voit etsiä ehdokkaita ja puolueita sen mukaan, miten paljon he ovat samaa mieltä kanssasi.",
+      "startButton": "Löydä sopivimmat ehdokkaat ja puolueet!"
+    },
+    "info": {
+      "content": "Tällä sivulla on tietoa vaaleista.",
+      "dateInfo": [
+        {
+          "declarations": [
+            "input electionDate",
+            "local formattedElectionDate = electionDate: datetime year=numeric month=2-digit day=2-digit"
+          ],
+          "match": {
+            "formattedElectionDate=*": "Vaalipäivä on {formattedElectionDate}."
+          }
+        }
+      ],
+      "heroEmoji": "🗳️"
+    },
+    "intro": {
+      "continue": "Jatka",
+      "heroEmoji": "🚀",
+      "ingress": "Vaalikone auttaa sinua löytämään kanssasi eniten samaa mieltä olevat ehdokkaat ja puolueet näissä vaaleissa.",
+      "list": {
+        "constituencies": "Valitse oma vaalipiirisi",
+        "details": "Tarkastele ehdokkaita ja puolueita tarkemmin",
+        "elections": "Valitse vaalit",
+        "opinions": "Kerro mielipiteesi",
+        "results": "Näe kanssasi eniten samaa mieltä olevat ehdokkaat ja puolueet"
+      },
+      "title": "Aloitetaan!"
+    },
+    "maintenance": {
+      "content": "<p>Olemme hyvin pahoillamme, mutta vaalikone ei juuri nyt ole käytettävissä huoltotoimien vuoksi. Sen pitäisi kuitenkin olla pian jälleen käytössä, joten koeta kohta uudelleen.</p><p>Älä huoli, jos olit juuri vastaamassa kysymyksiin. Kun palaat koneeseen, voit jatkaa siitä mihin jäit.</p>",
+      "heroEmoji": "🛠️"
+    },
+    "nominations": {
+      "title": "Kaikki rekisteröidyt ehdokkaat",
+      "content": "Tältä sivulta löydät kaikki ehdokkaat, jotka ovat täyttäneet vaalikoneen.",
+      "heroEmoji": "🔍"
+    },
+    "privacy": {
+      "content": "Tälle sivulle on koottu sovelluksen yksityisyyteen ja tiedon keräämiseen liittyviä tietoja.",
+      "dataConsentIntro": {
+        "popup": "Voisimmeko kerätä tietoja vaalikoneen käytöstäsi täysin nimettömästi tutkimusta ja vaalikoneiden kehittämistä varten? Emme käytä tähän evästeitä eikä tietoja voi yhdistää sinuun."
+      },
+      "heroEmoji": "🛡️"
+    },
+    "questions": {
+      "heroEmoji": "💬"
+    },
+    "results": {
+      "heroEmoji": "🎊",
+      "ingress": {
+        "browse": "Alla ovat näiden vaalien ehdokkaat ja puolueet järjestettynä vaalinumeron tai nimen mukaan. Voit käyttää suodattimia näiden karsimiseen.",
+        "results": "Alla ovat näiden vaalien ehdokkaat ja puolueet. Eniten samaa mieltä kanssasi olevat ovat ensimmäisenä listalla. Voit lisäksi käyttää suodattimia tulosten karsimiseen."
+      },
+      "multipleElections": "Valitse alta ensin, minkä vaalin ehdokkaat ja puolueet haluat nähdä ja sen jälkeen, haluatko katsoa ehdokkaita vai puolueita."
+    },
+    "statistics": {
+      "heroEmoji": "🧮"
+    },
+    "success": {
+      "heroEmoji": "🎉"
+    },
+    "survey": {
+      "button": "Osallistu käyttäjäkyselyyn",
+      "info": "Haluaisitko auttaa vaalikoneiden kehittämisessä? Avaa kysely uudessa ikkunassa ja täytä nyt tai, kun sinulla on aikaa.",
+      "popupInfo": "Kysely aukeaa uudessa ikkunassa. Voit täyttää sen heti tai, kun sinulla on aikaa.",
+      "popupTitle": "Haluaisitko auttaa vaalikoneiden kehittämisessä?",
+      "thanks": "Kiitos kyselyyn vastaamisesta!",
+      "title": "Osallistu käyttäjäkyselyyn"
+    },
+    "voterAppNotAccessible": {
+      "content": "Vaalikonetta ei ole vielä julkaistu. Palaathan tähän osoitteeseen, kun se on käytettävissä.",
+      "title": "Pahoittelut, vaalikone ei ole vielä käytössä"
+    }
+  }
+}

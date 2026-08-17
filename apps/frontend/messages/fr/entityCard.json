@@ -1,0 +1,6 @@
+{
+  "entityCard": {
+    "hideAllCandidates": "Réduire la liste",
+    "showAllCandidates": "Afficher les {numCandidates} candidat·es"
+  }
+}

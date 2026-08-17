@@ -1,0 +1,7 @@
+{
+  "adminApp.notSupported": {
+    "title": "Halduserakendust ei toetata",
+    "content": "Halduserakendust ei toetata praeguse andmeadapteriga.",
+    "heroEmoji": "🔧"
+  }
+}
