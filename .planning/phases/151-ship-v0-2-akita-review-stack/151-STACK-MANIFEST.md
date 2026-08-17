@@ -20,22 +20,24 @@ operator_approved: true
 operator_approved_date: 2026-08-17
 
 # --- plan 151-09: the bottom three slices cut for real (no longer a dry run) ---
-slices_cut: ["01a", "01b", "02", "03", "04", "05", "06", "07", "08"]
-slices_cut_by: "151-09 (01a, 01b, 02); 151-11 (03; 02 re-cut from the F-18-fixed tip); 151-12 (04); 151-13 (05); 151-14 (06); 151-15 (07, 08; 08 re-cut from its own README-fixed tip)"
+slices_cut: ["01a", "01b", "02", "03", "04", "05", "06", "07", "08", "09", "10"]
+slices_cut_by: "151-09 (01a, 01b, 02); 151-11 (03; 02 re-cut from the F-18-fixed tip); 151-12 (04); 151-13 (05); 151-14 (06); 151-15 (07, 08; 08 re-cut from its own README-fixed tip); 151-16 (09, 10)"
 cut_base_sha: ac30f132a407084bf30626029a0a71a0a521982f
-cut_target_sha: 75c10cb8f
-cut_target_tree: 10ef4af4f
-partition_total_files_at_cut: 4296
-catchall_remaining_files: 2394
+cut_target_sha: 1567c7a23
+cut_target_tree: 40f5d20c5
+partition_total_files_at_cut: 4504
+catchall_remaining_files: 2321
 catchall_deviation_pct: 0.0
 partial_stack_identity_verified: true
-branches_pushed: 8
-prs_opened: 8
-pushed_by: "151-10 (01a, 01b); 151-11 (02); 151-12 (03); 151-13 (04); 151-14 (05); 151-15 (06, 07)"
-prs_open: [863, 864, 865, 866, 867, 868, 869, 870]
+branches_pushed: 10
+prs_opened: 10
+pushed_by: "151-10 (01a, 01b); 151-11 (02); 151-12 (03); 151-13 (04); 151-14 (05); 151-15 (06, 07); 151-16 (08, 09)"
+prs_open: [863, 864, 865, 866, 867, 868, 869, 870, 871, 872]
 adapter_block_dispositioned_by: "151-14"
-cells_filled: 123  # of 163, after 151-15 filled slices 07 and 08
+cells_filled: 147  # of 163, after 151-16 filled slices 09 and 10
 criterion_4_3_satisfied_by: 545cc26c8790c54b532f3d50fe5bceb02d851177
+criterion_4_2_satisfied_by: 2865b05b3846015852ed15bdc3774ce7dce8890a
+slices_tsv_amended_by: "151-16, on the operator's F-15 decision (options 1 and 2 accepted, 3 declined)"
 ruleset_8477541: untouched-active
 pr_860_decision: repurpose-at-151-18
 ---
@@ -93,10 +95,10 @@ later plan — only its cells.
 | 05 | 6 | `ship/v0.2-akita-05-e2e-tests` | `test: add the Playwright end-to-end suite and its runner configuration` | 195 | 23325 | 778 | **lines > 20k** | `545cc26c8` | [#868](https://github.com/OpenVAA/voting-advice-application/pull/868) |
 | 06 | 7 | `ship/v0.2-akita-06-frontend-lib` | `feat: rewrite the frontend library layer on Svelte 5 runes and the Supabase adapter` | **533** | **22715** | **8344** | **files > 300 AND lines > 20k** — 533 files (cap 300) and 31,059 changed lines (cap 20,000); the ONLY row over both budgets other than the by-design planning slice | `8c613634b` | [#869](https://github.com/OpenVAA/voting-advice-application/pull/869) |
 | 07 | 8 | `ship/v0.2-akita-07-frontend-routes` | `feat: rewrite the frontend app shell and the voter and candidate routing surface` | **214** | **10319** | **8268** | ok — 214 files, 18,587 changed lines, inside both caps (GitHub renders 165 / +7,593 / −5,542 with rename detection on) | `342926b93` | [#870](https://github.com/OpenVAA/voting-advice-application/pull/870) |
-| 08 | 9 | `ship/v0.2-akita-08-i18n-messages` | `feat: add the Paraglide message catalogues for every supported locale` | **330** | **8986** | 0 | **files > 300** — 47 messages × 7 locales, one shape, plus the catalogue README | `6a810df8a` | pending (opens at 151-16, per D-07) |
-| 09 | 10 | `ship/v0.2-akita-09-docs` | `docs: update the project documentation - the docs site, the root roadmap and the key-generation guide` | 39 | 490 | 92 | ok | pending | pending |
-| 10 | 11 | `ship/v0.2-akita-10-root-config` | `chore: update the monorepo and frontend-app build, lint, CI and deployment plumbing` | 37 | 8665 | 25535 | **lines > 20k** — `yarn.lock` alone accounts for most of it | pending | pending |
-| 11 | 12 | `ship/v0.2-akita-11-planning` | `docs[planning]: add the v0.2 planning record and agent configuration` | 2287 | 866928 | 100 | **files > 300 and lines > 20k** — unreadable by design (D-12) | pending | pending |
+| 08 | 9 | `ship/v0.2-akita-08-i18n-messages` | `feat: add the Paraglide message catalogues for every supported locale` | **330** | **8986** | 0 | **files > 300** — 47 messages × 7 locales, one shape, plus the catalogue README | `6a810df8a` | [#871](https://github.com/OpenVAA/voting-advice-application/pull/871) |
+| 09 | 10 | `ship/v0.2-akita-09-docs` | `docs: update the project documentation - the docs site, the root README and roadmap, and the key-generation guide` | **152** | **777** | **347** | ok — 152 files, 1,124 changed lines, inside both caps; GitHub renders the same triple (no rename detection: `2 A / 150 M`) | `2865b05b3` | [#872](https://github.com/OpenVAA/voting-advice-application/pull/872) |
+| 10 | 11 | `ship/v0.2-akita-10-root-config` | `chore: update the monorepo and frontend-app build, lint, CI and deployment plumbing` | **129** | **8662** | **27267** | **lines > 20k** — `yarn.lock` alone accounts for most of it; the +90 files are the F-15 Option-2 deletions | `3aa503741` | pending (opens at 151-17, per D-07) |
+| 11 | 12 | `ship/v0.2-akita-11-planning` | `docs[planning]: add the v0.2 planning record and agent configuration` | 2321 | 878943 | 104 | **files > 300 and lines > 20k** — unreadable by design (D-12) | pending | pending |
 
 Pathspecs are **not** duplicated into this table: `slices.tsv` column 4 is the single source, and a
 copy here would be a second source able to drift from it. Reproduce any row's pathspec with
