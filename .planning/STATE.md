@@ -5,15 +5,15 @@ milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 151
 current_phase_name: ship-v0-2-akita-review-stack
 status: executing
-stopped_at: Completed 151-07-PLAN.md
-last_updated: "2026-08-17T07:07:54.952Z"
+stopped_at: Completed 151-08-PLAN.md
+last_updated: "2026-08-17T08:14:21.514Z"
 last_activity: 2026-08-16
 last_activity_desc: Phase 151 execution started
 progress:
   total_phases: 15
   completed_phases: 4
   total_plans: 43
-  completed_plans: 31
+  completed_plans: 32
   percent: 27
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 
 Milestone: v2.15 (Phases 137-151, 15 phases, 38 requirements)
 Phase: 151 (ship-v0-2-akita-review-stack) — EXECUTING
-Plan: 8 of 19
+Plan: 9 of 19
 Status: Ready to execute
 Last activity: 2026-08-16 — Phase 151 execution started
 
@@ -48,8 +48,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-17T07:07:45.091Z
-Stopped at: Completed 151-07-PLAN.md
+Last session: 2026-08-17T08:14:13.180Z
+Stopped at: Completed 151-08-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -156,6 +156,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 151 P05 | 45min | 4 tasks | 2 files |
 | Phase 151 P06 | 50m | 4 tasks | 3 files |
 | Phase 151 P07 | 2h10m | 3 tasks | 352 files |
+| Phase 151 P08 | ~3h | 4 tasks | 151 files |
 
 ## Deferred Items
 
@@ -671,6 +672,10 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: the dropped-finding class is 842 files, 110 unclaimed by any slice pathspec
 - [Phase ?]: 151-07: attributive phase/spike references are reported, not collapsed — 'the see phase 64 fix' is worse noise than the citation it replaces (108 occurrences route to 151-08)
 - [Phase ?]: 151-07: a codemod's own hits+residue arithmetic cannot detect an occurrence no pattern matches; reconcile the report against raw git grep (found 6 silently-dropped section anchors)
+- [Phase ?]: Gate stays honestly red: two named, measured KEEP exceptions beat a gate re-scoped until it passed (151-08)
+- [Phase ?]: task-id KEEP proven by breakage: determinism-batch.sh matches a Playwright step title as a functional string (151-08)
+- [Phase ?]: Decision-IDs stripped from unit-test titles, task-IDs kept — nothing selects tests by decision ID (151-08)
+- [Phase ?]: REPORT-only re-scope of task-id/phase-ref gate rows deferred to plan 151-19 (151-08)
 
 ### Quick Tasks Completed
 
