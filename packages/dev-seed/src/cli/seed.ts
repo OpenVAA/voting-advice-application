@@ -171,10 +171,17 @@ async function loadBuiltIns(): Promise<{
       templates: mod.BUILT_IN_TEMPLATES ?? {},
       overrides: mod.BUILT_IN_OVERRIDES ?? {}
     };
-  } catch {
-    // Plan 06 hasn't shipped yet, or the module failed to load. Treat as
-    // empty built-ins — resolveTemplate's error will list "(none registered
-    // yet)" which is correct in the missing-Plan-06 state.
+  } catch (err) {
+    // The registry failed to load. Fall back to empty built-ins so a
+    // filesystem-path template still works — but REPORT THE CAUSE first.
+    // Without this line the failure is invisible: resolveTemplate then throws
+    // `Unknown template: 'default'. Built-in templates: (none registered
+    // yet).`, which names the wrong problem and sends the reader off to check
+    // their spelling instead of the stack trace they actually need.
+    process.stderr.write(
+      `Warning: could not load the built-in template registry (${(err as Error)?.message ?? String(err)}). ` +
+        'Built-in template names will not resolve; filesystem-path templates still will.\n'
+    );
     return { templates: {}, overrides: {} };
   }
 }
