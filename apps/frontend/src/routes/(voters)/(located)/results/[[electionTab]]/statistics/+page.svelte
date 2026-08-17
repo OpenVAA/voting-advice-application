@@ -122,7 +122,11 @@ Usually accessed by direct link only and not meant for the wide public.
         <div class="mt-xl gap-xl grid">
           <!-- All candidates -->
           <div>
-            <h4>{t('statistics.allCandidates')}</h4>
+            <!-- h2, not h4: the only heading above these on this page is MainContent's <h1>, so h4
+                 skips two levels. `text-base` holds the rendered size at the former h4 (app.css @layer
+                 base gives h2 `text-xl font-bold` and h4 `text-base font-bold`; the utility wins on
+                 size only, so the weight is unchanged). -->
+            <h2 class="text-base">{t('statistics.allCandidates')}</h2>
             <div
               class="after:border-t-md relative grid w-full gap-0 fill-[var(--color)]
                     after:absolute after:top-[3rem] after:right-0 after:left-0 after:h-[1px] after:content-[''] dark:fill-[var(--colorDark)]"
@@ -148,7 +152,7 @@ Usually accessed by direct link only and not meant for the wide public.
             {@const { entity } = unwrapEntity(organization)}
             {@const dist = getAnswerDistribution(question, organization)}
             <div>
-              <h4>{entity.shortName}</h4>
+              <h2 class="text-base">{entity.shortName}</h2>
               <div
                 class="after:border-t-md relative grid w-full gap-0 fill-[var(--color)]
                       after:absolute after:top-[3rem] after:right-0 after:left-0 after:h-[1px] after:content-[''] dark:fill-[var(--colorDark)]"
