@@ -18,6 +18,19 @@ taxonomy_conforming: true
 status: operator-approved
 operator_approved: true
 operator_approved_date: 2026-08-17
+
+# --- plan 151-09: the bottom three slices cut for real (no longer a dry run) ---
+slices_cut: ["01a", "01b", "02"]
+slices_cut_by: "151-09"
+cut_base_sha: ac30f132a407084bf30626029a0a71a0a521982f
+cut_target_sha: 3c40ae8add3d2a6b5c7f22f50dce1c75c01d235f
+cut_target_tree: 6f8fa499e3bed5bd78e4badefe9a4f7effdb122c
+partition_total_files_at_cut: 4274
+catchall_remaining_files: 3925
+catchall_deviation_pct: 0.486
+partial_stack_identity_verified: true
+branches_pushed: 0
+prs_opened: 0
 ---
 
 # Phase 151 — Stack Manifest
@@ -65,9 +78,9 @@ later plan — only its cells.
 
 | id | PR | branch | subject | files | +lines | −lines | render flag | commit | PR # |
 |---|---|---|---|---|---|---|---|---|---|
-| 01a | 1 | `ship/v0.2-akita-01a-layout-move` | `refactor: move the frontend and docs trees into apps/ (renames only, no content change)` | 1316 | 0 | 0 | **files > 300** — 1316 renames, **zero lines** | pending | pending |
-| 01b | 2 | `ship/v0.2-akita-01b-strapi-removal` | `chore: remove the Strapi backend and the frontend tests that drove it` | 252 | 0 | 55663 | **lines > 20k** — deletions only | pending | pending |
-| 02 | 3 | `ship/v0.2-akita-02-shared-packages` | `feat: rework the shared @openvaa packages for the v0.2 data, matching and filter model` | 97 | 1228 | 289 | ok | pending | pending |
+| 01a | 1 | `ship/v0.2-akita-01a-layout-move` | `refactor: move the frontend and docs trees into apps/ (renames only, no content change)` | 1316 | 0 | 0 | **files > 300** — 1316 renames, **zero lines** | `602b79351` | pending |
+| 01b | 2 | `ship/v0.2-akita-01b-strapi-removal` | `chore: remove the Strapi backend and the frontend tests that drove it` | 252 | 0 | 55663 | **lines > 20k** — deletions only | `4a7c85934` | pending |
+| 02 | 3 | `ship/v0.2-akita-02-shared-packages` | `feat: rework the shared @openvaa packages for the v0.2 data, matching and filter model` | 97 | 1273 | 289 | ok | `4c7d3db5a` | pending |
 | 03 | 4 | `ship/v0.2-akita-03-supabase` | `feat[db]: replace the Strapi backend with the Supabase schema, RLS, functions and generated types` | 118 | 16257 | 0 | ok | pending | pending |
 | 04 | 5 | `ship/v0.2-akita-04-dev-seed` | `feat: add the dev-seed package that generates deterministic local and E2E data` | 162 | 19560 | 0 | ok — 19,560 lines, just inside the 20k cap | pending | pending |
 | 05 | 6 | `ship/v0.2-akita-05-e2e-tests` | `test: add the Playwright end-to-end suite and its runner configuration` | 195 | 23297 | 778 | **lines > 20k** | pending | pending |
@@ -163,7 +176,75 @@ done < "$D/slices.tsv"
 ```
 
 A cheap standing assertion for any consumer: the sum of the per-slice `files=` counts must equal
-**4255** (`git -c diff.renameLimit=20000 diff --name-only --no-renames "$C1" "$TARGET" | wc -l`).
+the comparable total, `git -c diff.renameLimit=20000 diff --name-only --no-renames "$C1" "$TARGET" | wc -l`.
+**Do not hard-code the number.** It was 4255 at this dry run, 4257 at plan 151-06 and **4274** at
+plan 151-09's real cut; it rises every time a plan writes its own `.planning/` artifact, all of which
+ride slice 11. The *identity* is the assertion; the literal is a snapshot. Every rise so far has been
+attributed file by file, and no file has ever left the set.
+
+## The bottom three slices, cut for real — plan 151-09
+
+**The dry run above stays as the record of the partition's design. This section records the first
+three slices existing as branches.** Every OID below is a live ref, not a throwaway object.
+
+| ref | value |
+|---|---|
+| base, re-resolved at cut time | `origin/main` = `ac30f132a` — **still unmoved** since research, so C-12's re-measurement trigger did not fire |
+| `TARGET`, the fixed tip | `feat-gsd-roadmap` = `3c40ae8ad`, tree `6f8fa499e` — includes the D-22 integration merge, the 151-07/08 hygiene fixes, and this plan's five sweep fixes |
+| `origin/main` is an ancestor of `TARGET` | yes (`git merge-base --is-ancestor` → 0), so criterion 7's target is a single ref, per 151-06 |
+
+| slice | branch | commit | files | +lines | −lines |
+|---|---|---|---|---|---|
+| 01a | `ship/v0.2-akita-01a-layout-move` | `602b79351` | 1316 | **0** | **0** |
+| 01b | `ship/v0.2-akita-01b-strapi-removal` | `4a7c85934` | 252 | 0 | 55663 |
+| 02 | `ship/v0.2-akita-02-shared-packages` | `4c7d3db5a` | 97 | 1273 | 289 |
+
+**Slice 01a is renames only, asserted at the maximally hostile setting.** At
+`diff.renameLimit=1` the taxonomy is a single row — **`1316 R`, `0 A`, `0 M`, and `0 D`** — and
+`git show -M --shortstat` reads `1316 files changed, 0 insertions(+), 0 deletions(-)`. Measured
+`--no-renames` the same commit reads `2632 files changed, 64860 insertions(+), 64860 deletions(-)`,
+reproducing the dry run's numbers exactly; that is the add-plus-delete *rendering* of a move and is
+not the review cost.
+
+> **Correction — the plan's own `<verify>` command is wrong, and would have passed only on a broken
+> 01a.** `151-09-PLAN.md`'s automated check asserts the sorted status set equals **`"DR"`**. It
+> cannot: `git diff --name-status` renders a rename as **one** line, `R100<TAB>old<TAB>new`, so a
+> correct pure-rename commit yields **`"R"`**. A `D` in that set would mean 01a *deleted* a file —
+> the exact failure the assertion exists to catch. Measured D-line count on 01a: **0**. The plan's
+> prose acceptance criterion ("a non-zero R count and zero A and zero M lines") is the correct
+> statement and is what was asserted. **Any later plan copying that `<verify>` will fail on a correct
+> slice; assert `= "R"`.**
+
+### The per-slice safety check — run here, not deferred to the end
+
+Both checks below are **measurements**. The catch-all was never committed and no ref was created for
+it; it was applied into a scratch `GIT_INDEX_FILE` and the resulting tree compared directly.
+
+| check | result |
+|---|---|
+| remaining-slices catch-all, `TIP02..TARGET` pathspec `.` | **`files=3925`** |
+| partition arithmetic | 252 + 97 + 3925 = **4274** = comparable total (`diff --no-renames C1..TARGET`). **Gap: 0.** |
+| attribution of the 3925 | per-slice sum for 03…11 measured at this `TARGET`: 118 + 162 + 195 + 526 + 213 + 329 + 39 + 37 + 2306 = **3925**. Every slice matches the dry run's table **file for file** except slice 11, which grew by 19 `.planning/` artifacts. |
+| **partial-stack identity** | `read-tree TIP02` + the catch-all applied → tree **`6f8fa499e`** = `TARGET^{tree}` **`6f8fa499e`**. The bottom three slices plus the untouched remainder reproduce the target tree exactly. |
+| deviation from the dry run's predicted remainder (3906) | **0.486%**, inside the 1% halt threshold — and fully attributed to slice 11's `.planning/` growth, so the true gap is 0 rather than 19 |
+| `git ls-remote --heads origin 'ship/*'` | **empty** — nothing pushed. Plan 151-10 owns the first outward-facing action. |
+| `git status --porcelain` | empty — the worktree was never read or written; `HEAD` stayed on `feat-gsd-roadmap` at `3c40ae8ad` |
+
+**Why this check runs per slice rather than once at the end.** A catch-all that absorbs a partition
+bug still reproduces the target tree — measured live during research, 472 files absorbed with the
+tree hash still matching. Running it after every cut is what localises a bug to the slice that caused
+it. Here it localised nothing, because there was nothing to localise: the arithmetic closes at 0.
+
+### One number in the dry-run table moved, and why
+
+Slice 02's `+lines` reads **1273**, not the dry run's 1228. The delta of **45** is this plan's own
+three slice-02 sweep fixes, landed on `feat-gsd-roadmap` before the slice was cut exactly as D-04
+requires: the documented `any` rationale and the `DeepPartial` TSDoc (`63c1a180e`), the
+encrypted-PEM guard (`36dde5287`), and the completed divergence list in `packages/README.md`
+(`572b5dd20`). **This is D-04 working, not drift** — the fix is inside the slice's own diff, so the
+reviewer of PR #3 sees the corrected code and never a fix-of-itself. `−lines` is unchanged at 289.
+The fourth fix (`70c3ad770`, `.prettierignore`) lands in slice **10**, whose file count is unchanged
+at 37 because that file was already in its diff.
 
 ## The tradeoff put to the operator: 459 files in both segments
 
