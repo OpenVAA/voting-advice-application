@@ -5,15 +5,15 @@ milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 151
 current_phase_name: ship-v0-2-akita-review-stack
 status: executing
-stopped_at: Completed 151-06-PLAN.md
-last_updated: "2026-08-17T06:13:30.968Z"
+stopped_at: Completed 151-07-PLAN.md
+last_updated: "2026-08-17T07:07:54.952Z"
 last_activity: 2026-08-16
 last_activity_desc: Phase 151 execution started
 progress:
   total_phases: 15
   completed_phases: 4
   total_plans: 43
-  completed_plans: 30
+  completed_plans: 31
   percent: 27
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 
 Milestone: v2.15 (Phases 137-151, 15 phases, 38 requirements)
 Phase: 151 (ship-v0-2-akita-review-stack) — EXECUTING
-Plan: 7 of 19
+Plan: 8 of 19
 Status: Ready to execute
 Last activity: 2026-08-16 — Phase 151 execution started
 
@@ -48,8 +48,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-17T06:13:21.440Z
-Stopped at: Completed 151-06-PLAN.md
+Last session: 2026-08-17T07:07:45.091Z
+Stopped at: Completed 151-07-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -155,6 +155,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 151 P04 | 51min | 3 tasks | 1 files |
 | Phase 151 P05 | 45min | 4 tasks | 2 files |
 | Phase 151 P06 | 50m | 4 tasks | 3 files |
+| Phase 151 P07 | 2h10m | 3 tasks | 352 files |
 
 ## Deferred Items
 
@@ -668,6 +669,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: cells_expected is 163 not 207 - the plan formula double-counts 4 phase-level items
 - [Phase ?]: origin/main integration commit classed chore, not docs, so it cannot perturb clause 4.2's docs count == 1
 - [Phase ?]: the dropped-finding class is 842 files, 110 unclaimed by any slice pathspec
+- [Phase ?]: 151-07: attributive phase/spike references are reported, not collapsed — 'the see phase 64 fix' is worse noise than the citation it replaces (108 occurrences route to 151-08)
+- [Phase ?]: 151-07: a codemod's own hits+residue arithmetic cannot detect an occurrence no pattern matches; reconcile the report against raw git grep (found 6 silently-dropped section anchors)
 
 ### Quick Tasks Completed
 
@@ -712,6 +715,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - BLOCKER-130-05: multi-choice helper text renders raw i18n key questions.multiChoice.selectRange at runtime — keys missing from Paraglide messages/{locale}/questions.json (added only to type-gen translations/ in 129-06). Also: getSavedAnswer discards saved boolean false. See phase deferred-items.md.
 - ~~Phase 132 Plan 03 milestone-close gate BLOCKED: yarn lint:check is RED on a clean tree (14 frontend errors: func-style + import-sort; 6 tests/ errors: raw-locators + conditional-in-test + import-sort).~~ **RESOLVED by 132-04 (2026-07-22):** all 20 clean-tree lint:check errors cleared via behavior-neutral edits in 8 files (func-style arrow→declaration, import reorder, reasoned `// reason:`-block disables); `yarn lint:check` now exits 0, `yarn test:unit` green (frontend 759 / dev-seed 444), `playwright --list` exit 0. 132-03 can now re-run `yarn lint:check` and honestly record the static gate (SC #3) as green.
 - DEF-135-04's ~4 s field excursion is unlocalised: the mechanism is established but the amplifier is not. Plan 06's waiver discharge must carry this qualification.
+- 151-07: criterion 3 is NOT closed — 528 residue rows, 7 prose-review lines, and hygiene-grep-report.sh --assert-clean still exits 1 on 8 of 9 rows. Plan 151-08 owns all of it; the zero-gates for '.planning/' (5 left) and 'Plan NN-NN' (2 left) are blocked by C-6 routing Markdown whole to the agent pass.
 
 ## Session Continuity
 
